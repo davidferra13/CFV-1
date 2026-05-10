@@ -9,6 +9,8 @@ import { getMenuRecommendations } from '@/lib/analytics/menu-recommendations'
 import { MenuRecommendationHints } from '@/components/analytics/menu-recommendation-hints'
 import { getMenuInquiryLink } from '@/lib/menus/menu-intelligence-actions'
 import { evaluateCompletion } from '@/lib/completion/engine'
+import { getEditorClientList, getCirclePickerList } from '@/lib/menus/editor-actions'
+import { MenuContextDock } from '@/components/menus/menu-context-dock'
 import Link from 'next/link'
 
 type Props = {
@@ -47,28 +49,31 @@ export default async function MenuDetailPage({ params }: Props) {
     }
   }
 
-  const [recipeMapResult, recommendations, inquiryLink, completionData] = await Promise.all([
-    recipeIds.size > 0
-      ? createServerClient()
-          .from('recipes' as any)
-          .select(
-            'id, name, category, calories_per_serving, protein_per_serving_g, fat_per_serving_g, carbs_per_serving_g'
-          )
-          .in('id', Array.from(recipeIds))
-          .eq('tenant_id', user.tenantId!)
-          .then((res: any) => res)
-          .catch((err: any) => {
-            console.error('[menu-detail] Recipe map fetch failed (non-blocking):', err.message)
-            return { data: null }
-          })
-      : Promise.resolve({ data: null }),
-    getMenuRecommendations({
-      dietaryRestrictions: (event as any)?.dietary_restrictions ?? [],
-      allergies: (event as any)?.allergies ?? [],
-    }).catch(() => null),
-    getMenuInquiryLink(id).catch(() => null),
-    evaluateCompletion('menu', id, user.tenantId!).catch(() => null),
-  ])
+  const [recipeMapResult, recommendations, inquiryLink, completionData, clientList, circleList] =
+    await Promise.all([
+      recipeIds.size > 0
+        ? createServerClient()
+            .from('recipes' as any)
+            .select(
+              'id, name, category, calories_per_serving, protein_per_serving_g, fat_per_serving_g, carbs_per_serving_g'
+            )
+            .in('id', Array.from(recipeIds))
+            .eq('tenant_id', user.tenantId!)
+            .then((res: any) => res)
+            .catch((err: any) => {
+              console.error('[menu-detail] Recipe map fetch failed (non-blocking):', err.message)
+              return { data: null }
+            })
+        : Promise.resolve({ data: null }),
+      getMenuRecommendations({
+        dietaryRestrictions: (event as any)?.dietary_restrictions ?? [],
+        allergies: (event as any)?.allergies ?? [],
+      }).catch(() => null),
+      getMenuInquiryLink(id).catch(() => null),
+      evaluateCompletion('menu', id, user.tenantId!).catch(() => null),
+      getEditorClientList().catch(() => []),
+      getCirclePickerList().catch(() => []),
+    ])
 
   let recipeMap: Record<
     string,
@@ -85,6 +90,13 @@ export default async function MenuDetailPage({ params }: Props) {
   if (recipeMapResult.data) {
     recipeMap = Object.fromEntries((recipeMapResult.data as any[]).map((r: any) => [r.id, r]))
   }
+
+  // Resolve context dock data from menu record
+  const menuClientId = (menu as any).client_id ?? null
+  const menuCircleId = (menu as any).dinner_circle_group_id ?? null
+  const menuVisibleToCircle = (menu as any).visible_to_dinner_circle ?? false
+  const resolvedClient = menuClientId ? clientList.find((c) => c.id === menuClientId) : null
+  const resolvedCircle = menuCircleId ? circleList.find((c) => c.id === menuCircleId) : null
 
   return (
     <div className="space-y-6">
@@ -103,6 +115,19 @@ export default async function MenuDetailPage({ params }: Props) {
           )}
         </div>
       )}
+      <MenuContextDock
+        menuId={menu.id}
+        locked={menu.status === 'locked'}
+        clientId={menuClientId}
+        clientName={resolvedClient?.full_name ?? null}
+        circleId={menuCircleId}
+        circleName={resolvedCircle?.name ?? null}
+        circleEmoji={resolvedCircle?.emoji ?? null}
+        visibleToCircle={menuVisibleToCircle}
+        event={event}
+        clients={clientList}
+        circles={circleList}
+      />
       <MenuDetailClient
         menu={menu}
         event={event}

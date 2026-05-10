@@ -21,6 +21,100 @@ export type VendorScorecard = {
   grade: 'A' | 'B' | 'C' | 'D' | 'F'
 }
 
+export type VendorExpenseStats = {
+  totalSpendCents: number
+  expenseCount: number
+  avgPerVisitCents: number
+  firstExpenseDate: string | null
+  lastExpenseDate: string | null
+  categoryBreakdown: Array<{ category: string; totalCents: number; count: number }>
+  monthlyTrend: Array<{ month: string; totalCents: number; count: number }>
+}
+
+/**
+ * Pull spending stats from the expenses table for a given vendor.
+ * Requires the vendor_id FK on expenses (migration 20260510000004).
+ */
+export async function getVendorExpenseStats(vendorId: string): Promise<VendorExpenseStats> {
+  const chef = await requireChef()
+  const tenantId = chef.tenantId!
+  const db: any = createServerClient()
+
+  // Fetch all expenses for this vendor + tenant
+  const rows = await db
+    .from('expenses')
+    .select('amount_cents, expense_date, category')
+    .eq('vendor_id', vendorId)
+    .eq('tenant_id', tenantId)
+
+  if (!rows.length) {
+    return {
+      totalSpendCents: 0,
+      expenseCount: 0,
+      avgPerVisitCents: 0,
+      firstExpenseDate: null,
+      lastExpenseDate: null,
+      categoryBreakdown: [],
+      monthlyTrend: [],
+    }
+  }
+
+  const expenseCount = rows.length
+  const totalSpendCents = rows.reduce((sum: number, r: any) => sum + (r.amount_cents || 0), 0)
+
+  // Unique dates as "visits"
+  const uniqueDates = new Set(rows.map((r: any) => r.expense_date))
+  const visitCount = uniqueDates.size || 1
+  const avgPerVisitCents = Math.round(totalSpendCents / visitCount)
+
+  // Date range
+  const dates = rows.map((r: any) => r.expense_date as string).sort()
+  const firstExpenseDate = dates[0] ?? null
+  const lastExpenseDate = dates[dates.length - 1] ?? null
+
+  // Category breakdown
+  const catMap = new Map<string, { totalCents: number; count: number }>()
+  for (const r of rows) {
+    const cat = (r as any).category || 'uncategorized'
+    const existing = catMap.get(cat) || { totalCents: 0, count: 0 }
+    existing.totalCents += (r as any).amount_cents || 0
+    existing.count += 1
+    catMap.set(cat, existing)
+  }
+  const categoryBreakdown = Array.from(catMap.entries())
+    .map(([category, data]) => ({ category, ...data }))
+    .sort((a, b) => b.totalCents - a.totalCents)
+
+  // Monthly trend (last 6 months)
+  const now = new Date()
+  const sixMonthsAgo = new Date(now.getFullYear(), now.getMonth() - 5, 1)
+  const cutoff = sixMonthsAgo.toISOString().slice(0, 10)
+
+  const monthMap = new Map<string, { totalCents: number; count: number }>()
+  for (const r of rows) {
+    const d = (r as any).expense_date as string
+    if (d < cutoff) continue
+    const month = d.slice(0, 7) // YYYY-MM
+    const existing = monthMap.get(month) || { totalCents: 0, count: 0 }
+    existing.totalCents += (r as any).amount_cents || 0
+    existing.count += 1
+    monthMap.set(month, existing)
+  }
+  const monthlyTrend = Array.from(monthMap.entries())
+    .map(([month, data]) => ({ month, ...data }))
+    .sort((a, b) => a.month.localeCompare(b.month))
+
+  return {
+    totalSpendCents,
+    expenseCount,
+    avgPerVisitCents,
+    firstExpenseDate,
+    lastExpenseDate,
+    categoryBreakdown,
+    monthlyTrend,
+  }
+}
+
 /**
  * Compute a vendor scorecard from existing data.
  * Pure math, no AI. Formula > AI.

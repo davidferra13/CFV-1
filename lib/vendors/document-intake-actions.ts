@@ -1756,7 +1756,6 @@ export async function applyVendorDocumentDraft(
 
     revalidateVendorPaths(uploadRow.vendor_id)
     revalidatePath('/expenses')
-    revalidatePath('/financials')
     revalidatePath('/finance')
     let expenseMessage = `Created ${createdExpenseIds.length} expense record(s) from draft.`
     if (!data.force_apply && skippedDuplicateRowsCount > 0) {

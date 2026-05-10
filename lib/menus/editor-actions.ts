@@ -769,6 +769,33 @@ export async function getEditorClientList(): Promise<ClientPickerOption[]> {
   }))
 }
 
+// ─── getCirclePickerList ─────────────────────────────────────────────────────
+// Lightweight circle list for the context dock circle picker
+
+export type CirclePickerOption = {
+  id: string
+  name: string
+  emoji: string | null
+}
+
+export async function getCirclePickerList(): Promise<CirclePickerOption[]> {
+  const user = await requireChef()
+  const db: any = createServerClient()
+
+  const { data: circles } = await db
+    .from('hub_groups')
+    .select('id, name, emoji')
+    .eq('tenant_id', user.tenantId!)
+    .order('name', { ascending: true })
+    .limit(200)
+
+  return (circles ?? []).map((c: any) => ({
+    id: c.id,
+    name: c.name ?? 'Unnamed Circle',
+    emoji: c.emoji ?? null,
+  }))
+}
+
 // ─── getEditorMenuCost ────────────────────────────────────────────────────────
 
 export async function getEditorMenuCost(menuId: string) {

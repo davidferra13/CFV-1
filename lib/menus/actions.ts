@@ -63,6 +63,7 @@ const UpdateMenuSchema = z.object({
   client_id: z.string().uuid().nullable().optional(),
   target_date: z.string().nullable().optional(),
   visible_to_dinner_circle: z.boolean().optional(),
+  dinner_circle_group_id: z.string().uuid().nullable().optional(),
   expected_updated_at: z.union([z.string(), z.date().transform((d) => d.toISOString())]).optional(),
   idempotency_key: z.string().optional(),
 })

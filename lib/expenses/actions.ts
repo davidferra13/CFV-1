@@ -33,6 +33,8 @@ const CreateExpenseSchema = z.object({
   card_cashback_percent: z.number().nullable().optional(),
   mileage_miles: z.number().nullable().optional(),
   mileage_rate_per_mile_cents: z.number().int().nullable().optional(),
+  vendor_id: z.string().uuid().nullable().optional(),
+  receipt_photo_id: z.string().uuid().nullable().optional(),
 })
 
 export type CreateExpenseInput = z.infer<typeof CreateExpenseSchema>
@@ -53,6 +55,8 @@ const UpdateExpenseSchema = z.object({
   card_cashback_percent: z.number().nullable().optional(),
   mileage_miles: z.number().nullable().optional(),
   mileage_rate_per_mile_cents: z.number().int().nullable().optional(),
+  vendor_id: z.string().uuid().nullable().optional(),
+  receipt_photo_id: z.string().uuid().nullable().optional(),
 })
 
 export type UpdateExpenseInput = z.infer<typeof UpdateExpenseSchema>
@@ -191,7 +195,6 @@ export async function createExpense(input: CreateExpenseInput) {
   if (validated.event_id) {
     revalidatePath(`/events/${validated.event_id}`)
   }
-  revalidatePath('/financials')
   revalidatePath('/finance')
 
   // Log chef activity (non-blocking)
@@ -353,7 +356,6 @@ export async function updateExpense(id: string, input: UpdateExpenseInput) {
   if (data.event_id) {
     revalidatePath(`/events/${data.event_id}`)
   }
-  revalidatePath('/financials')
   revalidatePath('/finance')
 
   return { success: true, expense: data }
@@ -397,7 +399,6 @@ export async function deleteExpense(id: string) {
   if (existing?.event_id) {
     revalidatePath(`/events/${existing.event_id}`)
   }
-  revalidatePath('/financials')
   revalidatePath('/finance')
 
   return { success: true }

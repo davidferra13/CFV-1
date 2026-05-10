@@ -453,7 +453,7 @@ export function MenusClientWrapper({
               ({activeMenus.length} linked to upcoming events)
             </span>
           </div>
-          <div className="grid grid-cols-1 gap-4 md:grid-cols-2 xl:grid-cols-3 stagger-grid">
+          <div className="grid grid-cols-1 gap-4 md:grid-cols-2 xl:grid-cols-3">
             {activeMenus.map((menu) => (
               <MenuCard
                 key={menu.id}
@@ -551,7 +551,7 @@ export function MenusClientWrapper({
         />
       ) : (
         <>
-          <div className="grid grid-cols-1 gap-4 md:grid-cols-2 xl:grid-cols-3 stagger-grid">
+          <div className="grid grid-cols-1 gap-4 md:grid-cols-2 xl:grid-cols-3">
             {paginatedMenus.map((menu) => (
               <MenuCard
                 key={menu.id}

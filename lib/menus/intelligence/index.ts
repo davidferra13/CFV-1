@@ -1,13 +1,7 @@
-// Menu Intelligence Server Actions
-// Phase 1: Core Automation - margin alerts, breakdown, scaling, price alerts, event init
-// Phase 2: Assembly - deep copy dishes from sources, add recipes as components
-// All deterministic (Formula > AI). No LLM calls.
-//
-// This file is a thin re-export barrel. Implementation lives in lib/menus/intelligence/.
+// Menu Intelligence barrel export
+// All sub-modules re-exported for unified access.
 
-// Re-export everything from the intelligence barrel so existing imports keep working.
-// Note: 'use server' is NOT used here because this file re-exports types.
-// Each sub-module in intelligence/ has its own 'use server' directive.
+// Shared types, constants, and helpers
 export {
   // Types (re-exported from clients domain)
   type DietaryConflict,
@@ -33,18 +27,42 @@ export {
   type AssemblySource,
   type AssemblyDish,
   type AddDishResult,
-  // Cache
-  revalidateMenuIntelligenceCache,
-  // Cost and margin
+  // Constants
+  MARGIN_WARNING_THRESHOLD,
+  MARGIN_CRITICAL_THRESHOLD,
+  PRICE_SPIKE_THRESHOLD,
+  BUDGET_WARNING_THRESHOLD,
+  BUDGET_CRITICAL_THRESHOLD,
+  SALT_SPICE_SCALE_FACTOR,
+  LEAVENING_SCALE_FACTOR,
+  BATCH_SPLIT_THRESHOLD,
+  SMALL_BATCH_THRESHOLD,
+  SALT_SPICE_CATEGORIES,
+  LEAVENING_NAMES,
+  OCCASION_SERVICE_MAP,
+  // Helpers
+  getSeason,
+  getGuestTier,
+  loadMenuLinkedClientContext,
+} from './shared'
+
+// Cache utilities
+export { revalidateMenuIntelligenceCache } from './cache-utils'
+
+// Cost and margin analysis
+export {
   checkMenuMargins,
   getMenuBreakdown,
   getIngredientPriceAlerts,
   getMenuVendorHints,
   checkMenuBudgetCompliance,
-  // Scaling and event init
-  scaleMenuToGuestCount,
-  initializeMenuForEvent,
-  // Cross-referencing
+} from './cost-margin'
+
+// Scaling and event initialization
+export { scaleMenuToGuestCount, initializeMenuForEvent } from './scaling-init'
+
+// Cross-referencing queries
+export {
   getMenuContextData,
   getMenuIngredientStock,
   validateMenuAllergens,
@@ -56,10 +74,13 @@ export {
   getMenuClientTaste,
   getMenuPrepEstimate,
   detectMenuDietaryConflicts,
-  // Assembly
+} from './cross-reference'
+
+// Assembly (Phase 2)
+export {
   getAssemblySources,
   getDishesFromMenu,
   addDishFromSource,
   addRecipeAsComponent,
   quickAddDish,
-} from './intelligence'
+} from './assembly'

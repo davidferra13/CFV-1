@@ -21,6 +21,8 @@ import {
 import { getCurrentRegisterSession } from '@/lib/commerce/register-actions'
 import { listSales } from '@/lib/commerce/sale-actions'
 import { listProducts } from '@/lib/commerce/product-actions'
+import { getPopularItems } from '@/lib/commerce/popular-items-actions'
+import { PopularItemsCard } from '@/components/commerce/popular-items-card'
 
 export const metadata: Metadata = { title: 'Commerce' }
 
@@ -38,10 +40,16 @@ export default async function CommerceDashboardPage() {
   await requireFocusAccess()
   await requirePro('commerce')
 
-  const [registerSession, salesData, productsData] = await Promise.all([
+  const [registerSession, salesData, productsData, popularData] = await Promise.all([
     safe('register', () => getCurrentRegisterSession(), null),
     safe('sales', () => listSales({ limit: 5 }), { sales: [], total: 0 }),
     safe('products', () => listProducts({ limit: 0 }), { products: [], total: 0 }),
+    safe('popular', () => getPopularItems('month'), {
+      items: [],
+      period: 'month' as const,
+      totalSalesInPeriod: 0,
+      totalRevenueInPeriod: 0,
+    }),
   ])
 
   const todaySales = salesData.sales.filter((s: any) => {
@@ -116,6 +124,15 @@ export default async function CommerceDashboardPage() {
           </CardContent>
         </Card>
       </div>
+
+      {/* Popular Items */}
+      {popularData.items.length > 0 && (
+        <PopularItemsCard
+          items={popularData.items}
+          period={popularData.period}
+          totalSalesInPeriod={popularData.totalSalesInPeriod}
+        />
+      )}
 
       {/* Quick Links */}
       <div className="grid grid-cols-2 md:grid-cols-4 xl:grid-cols-8 gap-4">

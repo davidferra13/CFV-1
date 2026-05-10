@@ -16,12 +16,15 @@ import { ClientSpendingBadge } from '@/components/quotes/client-spending-badge'
 import { Card } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
+import { WidgetErrorBoundary } from '@/components/ui/widget-error-boundary'
 import { formatCurrency } from '@/lib/utils/currency'
 import { format, formatDistanceToNow } from 'date-fns'
 import { PriceComparisonSummary } from '@/components/pricing/price-comparison-summary'
 import { rowToPriceComparison } from '@/lib/pricing/pricing-decision'
 import { QuotePriceConfidenceWarning } from '@/components/quotes/quote-price-confidence-warning'
 import { QuotePriceFreshnessWarning } from '@/components/quotes/quote-price-freshness-warning'
+import { QuoteCostBreakdownPanel } from '@/components/quotes/quote-cost-breakdown-panel'
+import { getQuoteCostIntelligence } from '@/lib/quotes/quote-cost-intelligence'
 import { Suspense } from 'react'
 
 export default async function QuoteDetailPage({ params }: { params: { id: string } }) {
@@ -31,6 +34,7 @@ export default async function QuoteDetailPage({ params }: { params: { id: string
     quote: () => getQuoteById(params.id),
     versionHistory: () => getQuoteVersionHistory(params.id),
     timelineEntries: () => getEntityActivityTimeline('quote', params.id),
+    costIntelligence: () => getQuoteCostIntelligence(params.id),
   })
 
   if (result.error) {
@@ -48,7 +52,7 @@ export default async function QuoteDetailPage({ params }: { params: { id: string
     notFound()
   }
 
-  const { quote, versionHistory, timelineEntries } = result.data
+  const { quote, versionHistory, timelineEntries, costIntelligence } = result.data
 
   if (!quote) {
     notFound()
@@ -219,7 +223,7 @@ export default async function QuoteDetailPage({ params }: { params: { id: string
         </div>
 
         {/* Pricing Insights Sidebar (right column) */}
-        <div className="lg:col-span-1">
+        <div className="lg:col-span-1 space-y-6">
           <PricingInsightsSidebar
             eventType={quote.event?.occasion || quote.inquiry?.confirmed_occasion || undefined}
             guestCountRange={
@@ -228,6 +232,9 @@ export default async function QuoteDetailPage({ params }: { params: { id: string
                 : undefined
             }
           />
+          <WidgetErrorBoundary name="Cost Intelligence" compact>
+            <QuoteCostBreakdownPanel intelligence={costIntelligence} />
+          </WidgetErrorBoundary>
         </div>
       </div>
 
