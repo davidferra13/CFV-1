@@ -26,6 +26,7 @@ type ClientWithStats = Tables<'clients'> & {
   lastEventDate?: string | null
   healthTier?: string
   healthScore?: number
+  hasRecurring?: boolean
 }
 
 interface ClientsTableProps {
@@ -291,6 +292,11 @@ const ClientTableRow = memo(function ClientTableRow({ client }: { client: Client
               {isDemoClient(client) && (
                 <Badge variant="info" className="ml-2 text-xxs px-1.5 py-0">
                   Sample
+                </Badge>
+              )}
+              {client.hasRecurring && (
+                <Badge variant="default" className="ml-2 text-xxs px-1.5 py-0">
+                  Recurring
                 </Badge>
               )}
             </span>

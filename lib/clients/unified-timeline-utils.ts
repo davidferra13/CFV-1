@@ -11,6 +11,9 @@ export type TimelineItemSource =
   | 'client_activity'
   | 'menu_revision'
   | 'document_version'
+  | 'communication'
+  | 'outreach'
+  | 'scheduled_message'
 
 export const SOURCE_CONFIG: Record<TimelineItemSource, { label: string; className: string }> = {
   event: { label: 'Event', className: 'bg-brand-100 text-brand-400' },
@@ -23,4 +26,17 @@ export const SOURCE_CONFIG: Record<TimelineItemSource, { label: string; classNam
   client_activity: { label: 'Portal', className: 'bg-sky-100 text-sky-700' },
   menu_revision: { label: 'Menu', className: 'bg-lime-100 text-lime-700' },
   document_version: { label: 'Version', className: 'bg-rose-100 text-rose-700' },
+  communication: { label: 'Comms', className: 'bg-indigo-100 text-indigo-700' },
+  outreach: { label: 'Outreach', className: 'bg-fuchsia-100 text-fuchsia-700' },
+  scheduled_message: { label: 'Scheduled', className: 'bg-cyan-100 text-cyan-700' },
 }
+
+/** Sources that represent direct communication with the client. */
+export const COMMUNICATION_SOURCES: TimelineItemSource[] = [
+  'message',
+  'communication',
+  'outreach',
+  'scheduled_message',
+  'inquiry',
+  'client_activity',
+]

@@ -35,7 +35,7 @@ export default async function ClientPresencePage() {
           <h1 className="text-2xl font-bold text-stone-100">Client Portal Monitoring</h1>
           {onlineCount > 0 && (
             <span className="flex items-center gap-1.5 text-sm text-emerald-600 font-medium">
-              <span className="w-2.5 h-2.5 rounded-full bg-emerald-500 animate-pulse" />
+              <span className="w-2.5 h-2.5 rounded-full bg-emerald-500" />
               {onlineCount} online now
             </span>
           )}

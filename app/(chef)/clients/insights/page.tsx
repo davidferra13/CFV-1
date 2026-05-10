@@ -28,6 +28,12 @@ const VIEWS = [
     icon: '⚡',
   },
   {
+    href: '/clients/insights/retention',
+    label: 'Guest Retention',
+    description: 'Repeat guests and dinner group patterns',
+    icon: '🔄',
+  },
+  {
     href: '/clients/presence',
     label: "Who's Online",
     description: "Real-time view of who's on your portal right now",

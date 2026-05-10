@@ -78,7 +78,11 @@ const emptyLegacyInboxStats: InboxStats = {
   bySource: { chat: 0, message: 0, wix: 0, notification: 0 },
 }
 
-export default async function InboxPage({ searchParams }: { searchParams?: { tab?: string } }) {
+export default async function InboxPage({
+  searchParams,
+}: {
+  searchParams?: { tab?: string; clientId?: string }
+}) {
   const user = await requireChef()
 
   const triageEnabled = isCommTriageEnabled()
@@ -91,7 +95,11 @@ export default async function InboxPage({ searchParams }: { searchParams?: { tab
 
     const [items, stats, calendarEvents, gmailConnection, unreadCount, staged, emailChannel] =
       await Promise.all([
-        withInboxTimeout('communication inbox', getCommunicationInbox(undefined, 100), []),
+        withInboxTimeout(
+          'communication inbox',
+          getCommunicationInbox(undefined, 100, searchParams?.clientId),
+          []
+        ),
         withInboxTimeout('communication inbox stats', getCommunicationInboxStats(), emptyStats),
         withInboxTimeout('calendar events', getCalendarEvents(rangeStart, rangeEnd), []),
         withInboxTimeout('google connection', getGoogleConnection(), disconnectedGoogle),
@@ -120,6 +128,15 @@ export default async function InboxPage({ searchParams }: { searchParams?: { tab
           </div>
           <InboxCalendarPeek events={calendarEvents} />
         </div>
+
+        {searchParams?.clientId && (
+          <div className="rounded-lg border border-brand-700/40 bg-brand-950/20 px-4 py-3 text-sm flex items-center justify-between">
+            <span className="text-brand-300">Filtered to emails for this client</span>
+            <Link href="/inbox" className="text-xs text-stone-400 hover:text-stone-200">
+              Clear filter
+            </Link>
+          </div>
+        )}
 
         {!gmailConnection.gmail.connected && (
           <div className="rounded-lg border border-amber-200 bg-amber-950 px-4 py-3 text-sm text-amber-800">

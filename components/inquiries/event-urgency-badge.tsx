@@ -1,7 +1,7 @@
 import type { EventUrgency } from '@/lib/inquiries/event-urgency'
 
 const URGENCY_BADGE_STYLES: Record<string, string> = {
-  critical: 'bg-red-100 text-red-800 border-red-300 animate-pulse',
+  critical: 'bg-red-100 text-red-800 border-red-300',
   high: 'bg-amber-100 text-amber-800 border-amber-300',
   normal: 'bg-blue-50 text-blue-700 border-blue-200',
 }

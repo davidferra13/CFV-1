@@ -3,21 +3,87 @@
 // Unified Client Timeline component
 // Renders a merged chronological feed of events, inquiries, messages,
 // payments, and reviews for a single client.
+// Per-source filtering, preset groups, and text search.
 
 import Link from 'next/link'
-import { useState, memo } from 'react'
+import { useState, useMemo, memo } from 'react'
 import type { UnifiedTimelineItem } from '@/lib/clients/unified-timeline'
-import { SOURCE_CONFIG } from '@/lib/clients/unified-timeline-utils'
+import {
+  SOURCE_CONFIG,
+  COMMUNICATION_SOURCES,
+  type TimelineItemSource,
+} from '@/lib/clients/unified-timeline-utils'
+
+type FilterPreset = 'all' | 'comms'
 
 interface UnifiedClientTimelineProps {
   items: UnifiedTimelineItem[]
+  /** When 'comms', default to the communication sources only. */
+  defaultFilter?: FilterPreset
 }
 
 const INITIAL_SHOW = 20
+const ALL_SOURCES = Object.keys(SOURCE_CONFIG) as TimelineItemSource[]
 
-export function UnifiedClientTimeline({ items }: UnifiedClientTimelineProps) {
+function defaultSources(preset: FilterPreset): Set<TimelineItemSource> {
+  if (preset === 'comms') return new Set(COMMUNICATION_SOURCES)
+  return new Set(ALL_SOURCES)
+}
+
+export function UnifiedClientTimeline({
+  items,
+  defaultFilter = 'all',
+}: UnifiedClientTimelineProps) {
+  const [activeSources, setActiveSources] = useState<Set<TimelineItemSource>>(() =>
+    defaultSources(defaultFilter)
+  )
+  const [search, setSearch] = useState('')
   const [showAll, setShowAll] = useState(false)
-  const visible = showAll ? items : items.slice(0, INITIAL_SHOW)
+
+  // Sources that actually appear in the data
+  const presentSources = useMemo(() => {
+    const s = new Set<TimelineItemSource>()
+    for (const item of items) s.add(item.source as TimelineItemSource)
+    return s
+  }, [items])
+
+  const isAllActive =
+    activeSources.size === presentSources.size &&
+    [...presentSources].every((s) => activeSources.has(s))
+  const isCommsActive =
+    COMMUNICATION_SOURCES.every((s) => !presentSources.has(s) || activeSources.has(s)) &&
+    [...activeSources].every((s) => COMMUNICATION_SOURCES.includes(s))
+
+  const filtered = useMemo(() => {
+    const q = search.toLowerCase()
+    return items.filter((item) => {
+      if (!activeSources.has(item.source as TimelineItemSource)) return false
+      if (q && !(item.summary?.toLowerCase().includes(q) || item.detail?.toLowerCase().includes(q)))
+        return false
+      return true
+    })
+  }, [items, activeSources, search])
+
+  const visible = showAll ? filtered : filtered.slice(0, INITIAL_SHOW)
+
+  function toggleSource(src: TimelineItemSource) {
+    setActiveSources((prev) => {
+      const next = new Set(prev)
+      if (next.has(src)) next.delete(src)
+      else next.add(src)
+      return next
+    })
+    setShowAll(false)
+  }
+
+  function selectPreset(preset: FilterPreset) {
+    setActiveSources(
+      preset === 'comms'
+        ? new Set(COMMUNICATION_SOURCES.filter((s) => presentSources.has(s)))
+        : new Set(presentSources)
+    )
+    setShowAll(false)
+  }
 
   if (items.length === 0) {
     return <div className="text-sm text-stone-400 py-4 text-center">No activity recorded yet</div>
@@ -25,24 +91,90 @@ export function UnifiedClientTimeline({ items }: UnifiedClientTimelineProps) {
 
   return (
     <div>
-      <div className="relative">
-        {/* Vertical line */}
-        <div className="absolute left-[7px] top-2 bottom-2 w-px bg-stone-700" aria-hidden="true" />
+      {/* Search */}
+      <input
+        type="text"
+        value={search}
+        onChange={(e) => {
+          setSearch(e.target.value)
+          setShowAll(false)
+        }}
+        placeholder="Search timeline..."
+        className="w-full mb-2 px-3 py-1.5 text-xs bg-stone-800 text-stone-200 rounded-md border border-stone-700 placeholder:text-stone-500 focus:outline-none focus:ring-1 focus:ring-brand-600"
+      />
 
-        <div className="space-y-0">
-          {visible.map((item, idx) => (
-            <TimelineRow key={item.id} item={item} isLast={idx === visible.length - 1} />
-          ))}
-        </div>
+      {/* Filter pills */}
+      <div className="flex flex-wrap gap-1 mb-2">
+        <button
+          onClick={() => selectPreset('all')}
+          className={`text-xs px-2.5 py-1 rounded-full font-medium transition-colors ${
+            isAllActive
+              ? 'bg-brand-600 text-white'
+              : 'bg-stone-800 text-stone-400 hover:text-stone-200'
+          }`}
+        >
+          All
+        </button>
+        <button
+          onClick={() => selectPreset('comms')}
+          className={`text-xs px-2.5 py-1 rounded-full font-medium transition-colors ${
+            isCommsActive && !isAllActive
+              ? 'bg-brand-600 text-white'
+              : 'bg-stone-800 text-stone-400 hover:text-stone-200'
+          }`}
+        >
+          Comms
+        </button>
+        {ALL_SOURCES.filter((s) => presentSources.has(s)).map((src) => {
+          const cfg = SOURCE_CONFIG[src]
+          return (
+            <button
+              key={src}
+              onClick={() => toggleSource(src)}
+              className={`text-xs px-2.5 py-1 rounded-full font-medium transition-colors ${
+                activeSources.has(src)
+                  ? cfg.className
+                  : 'bg-stone-800 text-stone-500 hover:text-stone-300'
+              }`}
+            >
+              {cfg.label}
+            </button>
+          )
+        })}
       </div>
 
-      {items.length > INITIAL_SHOW && !showAll && (
-        <button
-          onClick={() => setShowAll(true)}
-          className="mt-3 text-xs text-brand-500 hover:text-brand-400 font-medium"
-        >
-          Show {items.length - INITIAL_SHOW} more entries
-        </button>
+      {/* Count */}
+      <div className="text-xxs text-stone-500 mb-2">
+        Showing {filtered.length} of {items.length}
+      </div>
+
+      {filtered.length === 0 ? (
+        <div className="text-sm text-stone-400 py-4 text-center">No matching activity</div>
+      ) : (
+        <>
+          <div className="relative">
+            {/* Vertical line */}
+            <div
+              className="absolute left-[7px] top-2 bottom-2 w-px bg-stone-700"
+              aria-hidden="true"
+            />
+
+            <div className="space-y-0">
+              {visible.map((item, idx) => (
+                <TimelineRow key={item.id} item={item} isLast={idx === visible.length - 1} />
+              ))}
+            </div>
+          </div>
+
+          {filtered.length > INITIAL_SHOW && !showAll && (
+            <button
+              onClick={() => setShowAll(true)}
+              className="mt-3 text-xs text-brand-500 hover:text-brand-400 font-medium"
+            >
+              Show {filtered.length - INITIAL_SHOW} more entries
+            </button>
+          )}
+        </>
       )}
     </div>
   )
@@ -56,7 +188,7 @@ const TimelineRow = memo(function TimelineRow({
   item: UnifiedTimelineItem
   isLast: boolean
 }) {
-  const cfg = SOURCE_CONFIG[item.source]
+  const cfg = SOURCE_CONFIG[item.source] ?? SOURCE_CONFIG.message
   const timeLabel = formatTimeLabel(item.timestamp)
 
   const inner = (

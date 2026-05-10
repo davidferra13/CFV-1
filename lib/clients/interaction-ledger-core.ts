@@ -11,6 +11,9 @@ export type ClientInteractionSource =
   | 'client_activity'
   | 'menu_revision'
   | 'document_version'
+  | 'communication'
+  | 'outreach'
+  | 'scheduled_message'
 
 export type ClientInteractionActor = 'chef' | 'client' | 'system'
 
@@ -57,6 +60,19 @@ export type ClientInteractionCode =
   | 'menu_feedback_recorded'
   | 'menu_allergen_revision_created'
   | 'document_revision_saved'
+  | 'comm_email_sent'
+  | 'comm_email_received'
+  | 'comm_sms_sent'
+  | 'comm_sms_received'
+  | 'comm_phone_logged'
+  | 'comm_system_entry'
+  | 'outreach_email_sent'
+  | 'outreach_sms_sent'
+  | 'outreach_call_noted'
+  | 'outreach_instagram_noted'
+  | 'scheduled_message_pending'
+  | 'scheduled_message_sent'
+  | 'scheduled_message_failed'
 
 export type ClientInteractionArtifactKind =
   | 'event'
@@ -247,6 +263,42 @@ export type DocumentVersionLedgerRow = {
   created_at?: string | null
 }
 
+export type CommunicationLogLedgerRow = {
+  id: string
+  client_id?: string | null
+  channel: string
+  direction: string
+  subject?: string | null
+  content?: string | null
+  entity_type?: string | null
+  entity_id?: string | null
+  logged_by?: string | null
+  created_at: string
+}
+
+export type OutreachLedgerRow = {
+  id: string
+  channel: string
+  subject?: string | null
+  body: string
+  delivered?: boolean | null
+  error_msg?: string | null
+  sent_at: string
+}
+
+export type ScheduledMessageLedgerRow = {
+  id: string
+  channel: string
+  subject?: string | null
+  body: string
+  scheduled_for: string
+  sent_at?: string | null
+  status: string
+  context_type?: string | null
+  context_id?: string | null
+  created_at: string
+}
+
 export type ClientInteractionLedgerInput = {
   clientId: string
   events?: EventLedgerRow[]
@@ -260,6 +312,9 @@ export type ClientInteractionLedgerInput = {
   menus?: MenuLedgerRow[]
   menuRevisions?: MenuRevisionLedgerRow[]
   documentVersions?: DocumentVersionLedgerRow[]
+  communicationLogs?: CommunicationLogLedgerRow[]
+  outreachLogs?: OutreachLedgerRow[]
+  scheduledMessages?: ScheduledMessageLedgerRow[]
 }
 
 type RevisionIndexEntry = {
@@ -643,6 +698,9 @@ export function buildClientInteractionLedgerEntries(
   const menus = input.menus ?? []
   const menuRevisions = input.menuRevisions ?? []
   const documentVersions = input.documentVersions ?? []
+  const communicationLogs = input.communicationLogs ?? []
+  const outreachLogs = input.outreachLogs ?? []
+  const scheduledMessages = input.scheduledMessages ?? []
 
   const eventById = new Map(events.map((event) => [event.id, event]))
   const menuById = new Map(menus.map((menu) => [menu.id, menu]))
@@ -1081,6 +1139,138 @@ export function buildClientInteractionLedgerEntries(
         recordedAt: coalesceTimestamp(row.created_at),
         happenedAt: coalesceTimestamp(row.created_at),
         sourceFields: ['entity_type', 'entity_id', 'version_number', 'change_summary'],
+      },
+    })
+  }
+
+  // Communication log entries (unified comms table)
+  for (const row of communicationLogs) {
+    const inbound = row.direction === 'inbound'
+    const channelLabel = humanizeToken(row.channel)?.toLowerCase() ?? row.channel
+    let code: ClientInteractionCode
+    if (row.channel === 'email') {
+      code = inbound ? 'comm_email_received' : 'comm_email_sent'
+    } else if (row.channel === 'sms') {
+      code = inbound ? 'comm_sms_received' : 'comm_sms_sent'
+    } else if (row.channel === 'phone') {
+      code = 'comm_phone_logged'
+    } else {
+      code = 'comm_system_entry'
+    }
+
+    entries.push({
+      id: `comm:${row.id}`,
+      source: 'communication',
+      code,
+      actor: inbound ? 'client' : row.direction === 'internal' ? 'system' : 'chef',
+      sortAt: row.created_at,
+      occurredAt: row.created_at,
+      recordedAt: row.created_at,
+      summary: inbound
+        ? `${channelLabel} received from client`
+        : row.direction === 'internal'
+          ? `System ${channelLabel} entry`
+          : `${channelLabel} sent to client`,
+      detail: joinParts([row.subject ? snippet(row.subject, 50) : null, snippet(row.content, 60)]),
+      artifact:
+        row.entity_type && row.entity_id
+          ? {
+              kind: row.entity_type as ClientInteractionArtifactKind,
+              id: row.entity_id,
+              label: humanizeToken(row.entity_type) ?? row.entity_type,
+              href:
+                row.entity_type === 'event'
+                  ? `/events/${row.entity_id}`
+                  : row.entity_type === 'quote'
+                    ? `/quotes/${row.entity_id}`
+                    : undefined,
+            }
+          : undefined,
+      provenance: {
+        table: 'communication_log',
+        recordId: row.id,
+        recordedAt: row.created_at,
+        happenedAt: row.created_at,
+        sourceFields: ['channel', 'direction', 'subject', 'content', 'entity_type'],
+      },
+    })
+  }
+
+  // Direct outreach log (1:1 sends from client page)
+  for (const row of outreachLogs) {
+    const channelLabel = humanizeToken(row.channel)?.toLowerCase() ?? row.channel
+    let code: ClientInteractionCode
+    if (row.channel === 'email') code = 'outreach_email_sent'
+    else if (row.channel === 'sms') code = 'outreach_sms_sent'
+    else if (row.channel === 'call_note') code = 'outreach_call_noted'
+    else code = 'outreach_instagram_noted'
+
+    entries.push({
+      id: `outreach:${row.id}`,
+      source: 'outreach',
+      code,
+      actor: 'chef',
+      sortAt: row.sent_at,
+      occurredAt: row.sent_at,
+      recordedAt: row.sent_at,
+      summary: `${channelLabel} outreach sent`,
+      detail: joinParts([
+        row.subject ? snippet(row.subject, 50) : null,
+        snippet(row.body, 60),
+        row.delivered === false ? '(delivery failed)' : null,
+      ]),
+      provenance: {
+        table: 'direct_outreach_log',
+        recordId: row.id,
+        recordedAt: row.sent_at,
+        happenedAt: row.sent_at,
+        sourceFields: ['channel', 'subject', 'body', 'delivered'],
+      },
+    })
+  }
+
+  // Scheduled messages
+  for (const row of scheduledMessages) {
+    const channelLabel = humanizeToken(row.channel)?.toLowerCase() ?? row.channel
+    let code: ClientInteractionCode
+    let summary: string
+    if (row.status === 'sent') {
+      code = 'scheduled_message_sent'
+      summary = `Scheduled ${channelLabel} delivered`
+    } else if (row.status === 'failed') {
+      code = 'scheduled_message_failed'
+      summary = `Scheduled ${channelLabel} failed`
+    } else {
+      code = 'scheduled_message_pending'
+      summary = `${channelLabel} scheduled for later`
+    }
+
+    const sortAt = row.sent_at ?? row.scheduled_for
+    entries.push({
+      id: `scheduled:${row.id}`,
+      source: 'scheduled_message',
+      code,
+      actor: 'chef',
+      sortAt,
+      occurredAt: sortAt,
+      recordedAt: row.created_at,
+      summary,
+      detail: joinParts([row.subject ? snippet(row.subject, 50) : null, snippet(row.body, 60)]),
+      artifact:
+        row.context_type && row.context_id
+          ? {
+              kind: row.context_type as ClientInteractionArtifactKind,
+              id: row.context_id,
+              label: humanizeToken(row.context_type) ?? row.context_type,
+              href: row.context_type === 'event' ? `/events/${row.context_id}` : undefined,
+            }
+          : undefined,
+      provenance: {
+        table: 'scheduled_messages',
+        recordId: row.id,
+        recordedAt: row.created_at,
+        happenedAt: sortAt,
+        sourceFields: ['channel', 'subject', 'body', 'status', 'scheduled_for'],
       },
     })
   }

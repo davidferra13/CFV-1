@@ -1,11 +1,15 @@
 'use server'
 
 // Client Health Score
-// Computes a 0–100 score for each client based on four dimensions:
-//   Recency (30pts)  - days since last event
-//   Frequency (25pts) - events per year
-//   Monetary (25pts)  - lifetime value vs chef median
-//   Engagement (20pts) - profile completeness + referrals
+// Computes a 0-100 score for each client based on six dimensions:
+//   Recency (25pts)             - days since last event
+//   Frequency (20pts)           - events per year
+//   Monetary (20pts)            - lifetime value vs chef median
+//   Engagement (15pts)          - profile completeness + referrals
+//   Payment Promptness (10pts)  - balance status + tipping behavior
+//   Relationship Signals (10pts) - referral source, dietary info, upcoming events, notes
+//
+// Also computes a trend indicator (improving/stable/declining) and alert flags.
 //
 // Used as a badge on client cards, a filter on the client list,
 // and as a trigger condition for automations.
@@ -19,17 +23,25 @@ import {
 
 export type ClientHealthTier = 'champion' | 'loyal' | 'at_risk' | 'dormant' | 'new'
 
+export type ClientHealthTrend = 'improving' | 'stable' | 'declining'
+
 export type ClientHealthScore = {
   clientId: string
-  score: number // 0–100
+  score: number // 0-100
   tier: ClientHealthTier
-  recencyScore: number // 0–30
-  frequencyScore: number // 0–25
-  monetaryScore: number // 0–25
-  engagementScore: number // 0–20
+  recencyScore: number // 0-25
+  frequencyScore: number // 0-20
+  monetaryScore: number // 0-20
+  engagementScore: number // 0-15
+  paymentScore: number // 0-10
+  relationshipScore: number // 0-10
   daysSinceLastEvent: number | null
   totalEvents: number
   lifetimeValueCents: number
+  trend: ClientHealthTrend
+  trendReason: string
+  isAlert: boolean
+  alertReason: string | null
 }
 
 export type ClientHealthSummary = {
@@ -38,53 +50,144 @@ export type ClientHealthSummary = {
   avgEventsPerYear: number
 }
 
-// ─── Internal helpers ─────────────────────────────────────────────────────────
+// ---- Internal helpers -------------------------------------------------------
 
 function recencyScore(daysSince: number | null): number {
   if (daysSince === null) return 0 // never had an event
-  if (daysSince <= 30) return 30
-  if (daysSince <= 60) return 25
-  if (daysSince <= 90) return 20
-  if (daysSince <= 180) return 12
-  if (daysSince <= 365) return 5
+  if (daysSince <= 30) return 25
+  if (daysSince <= 60) return 20
+  if (daysSince <= 90) return 15
+  if (daysSince <= 180) return 10
+  if (daysSince <= 365) return 4
   return 0
 }
 
 function frequencyScore(eventsPerYear: number): number {
-  if (eventsPerYear >= 6) return 25
-  if (eventsPerYear >= 4) return 20
-  if (eventsPerYear >= 2) return 15
-  if (eventsPerYear >= 1) return 10
-  if (eventsPerYear >= 0.5) return 5
+  if (eventsPerYear >= 6) return 20
+  if (eventsPerYear >= 4) return 16
+  if (eventsPerYear >= 2) return 12
+  if (eventsPerYear >= 1) return 8
+  if (eventsPerYear >= 0.5) return 4
   return 0
 }
 
-function monetaryScore(ltv: number, median: number): number {
-  if (median === 0) return ltv > 0 ? 15 : 0
-  const ratio = ltv / median
-  if (ratio >= 3) return 25
-  if (ratio >= 2) return 20
-  if (ratio >= 1) return 15
-  if (ratio >= 0.5) return 8
-  return 3
+function monetaryScore(ltv: number, medianVal: number): number {
+  if (medianVal === 0) return ltv > 0 ? 12 : 0
+  const ratio = ltv / medianVal
+  if (ratio >= 3) return 20
+  if (ratio >= 2) return 16
+  if (ratio >= 1) return 12
+  if (ratio >= 0.5) return 6
+  return 2
+}
+
+/** Payment Promptness (0-10): balance status + tipping behavior */
+function paymentScore(outstandingBalanceCents: number, averageTipPercentage: number): number {
+  let score = 0
+
+  // Balance component (0-5)
+  if (outstandingBalanceCents === 0) {
+    score += 5 // no outstanding balance, full marks
+  } else if (outstandingBalanceCents > 0) {
+    score += 2 // partial credit for having some balance (not delinquent)
+  }
+
+  // Tipping component (0-5)
+  if (averageTipPercentage >= 0.15) {
+    score += 5 // generous tipper (15%+)
+  } else if (averageTipPercentage > 0) {
+    score += 3 // they tip at all
+  }
+
+  return Math.min(score, 10)
+}
+
+/** Relationship Signals (0-10): referral source, dietary info, upcoming events, notes */
+function relationshipScore(opts: {
+  hasReferralSource: boolean
+  wasReferred: boolean
+  hasDietaryRestrictions: boolean
+  hasUpcomingEvent: boolean
+  hasNotes: boolean
+}): number {
+  let score = 0
+
+  // Has referral_source or was referred by another client (+3)
+  if (opts.hasReferralSource || opts.wasReferred) score += 3
+
+  // Has filled dietary restrictions (+2)
+  if (opts.hasDietaryRestrictions) score += 2
+
+  // Has upcoming event (recent activity signal) (+3)
+  if (opts.hasUpcomingEvent) score += 3
+
+  // Has vibe notes or other qualitative info (+2)
+  if (opts.hasNotes) score += 2
+
+  return Math.min(score, 10)
+}
+
+/** Compute trend based on current snapshot heuristics (no historical storage) */
+function computeTrend(
+  daysSince: number | null,
+  totalEvents: number,
+  outstandingBalanceCents: number
+): { trend: ClientHealthTrend; trendReason: string } {
+  // Improving: recent activity or repeat bookings building
+  if (daysSince !== null && daysSince <= 30) {
+    return { trend: 'improving', trendReason: 'Active in last 30 days' }
+  }
+  if (daysSince !== null && daysSince <= 60 && totalEvents > 1) {
+    return { trend: 'improving', trendReason: 'Repeat bookings building' }
+  }
+
+  // Declining: trending toward dormant or has outstanding balance
+  if (daysSince !== null && daysSince > 90 && daysSince <= 365) {
+    return { trend: 'declining', trendReason: `No events in ${daysSince} days` }
+  }
+  if (daysSince !== null && daysSince > 365) {
+    return { trend: 'declining', trendReason: `No events in ${daysSince} days` }
+  }
+  if (outstandingBalanceCents > 0) {
+    const dollars = (outstandingBalanceCents / 100).toFixed(2)
+    return { trend: 'declining', trendReason: `Outstanding balance of $${dollars}` }
+  }
+
+  return { trend: 'stable', trendReason: 'Steady engagement' }
+}
+
+/** Determine if a client needs an alert (active client whose score dropped low) */
+function computeAlert(
+  score: number,
+  totalEvents: number
+): { isAlert: boolean; alertReason: string | null } {
+  // Only alert for clients who have had events (not new clients)
+  // and whose score is below 40
+  if (score < 40 && totalEvents > 0) {
+    return {
+      isAlert: true,
+      alertReason: 'Health score dropped below threshold',
+    }
+  }
+  return { isAlert: false, alertReason: null }
 }
 
 function tier(score: number, daysSince: number | null, totalEvents: number): ClientHealthTier {
   if (totalEvents === 0) return 'new'
   if (daysSince !== null && daysSince > 365) return 'dormant'
   if (daysSince !== null && daysSince > 180) return 'at_risk'
-  if (score >= 75) return 'champion'
+  if (score >= 70) return 'champion'
   return 'loyal'
 }
 
-function median(arr: number[]): number {
+function medianCalc(arr: number[]): number {
   if (arr.length === 0) return 0
   const sorted = [...arr].sort((a, b) => a - b)
   const mid = Math.floor(sorted.length / 2)
   return sorted.length % 2 !== 0 ? sorted[mid] : (sorted[mid - 1] + sorted[mid]) / 2
 }
 
-// ─── Main action ──────────────────────────────────────────────────────────────
+// ---- Main action ------------------------------------------------------------
 
 /**
  * Compute health scores for all active clients of the logged-in chef.
@@ -94,22 +197,32 @@ export async function getClientHealthScores(): Promise<ClientHealthSummary> {
   const user = await requireChef()
   const db: any = createServerClient()
 
-  // Fetch client financial summary + event counts
-  // cast as any - total_events/days_since_last_event may not be in generated types
+  // Fetch client financial summary (includes payment and balance data)
+  // cast as any: some columns may not be in generated types
   const { data: summaries } = await db
     .from('client_financial_summary')
-    .select('client_id, lifetime_value_cents, total_events, days_since_last_event')
+    .select(
+      'client_id, lifetime_value_cents, total_events, days_since_last_event, outstanding_balance_cents, average_tip_percentage'
+    )
     .eq('tenant_id', user.tenantId!)
 
-  // Fetch the fields required by the canonical profile completeness contract.
+  // Fetch client profile fields for completeness + relationship signals.
+  // vibe_notes is already in CLIENT_PROFILE_COMPLETENESS_FIELDS, so no need to add it again.
   const { data: clients } = await db
     .from('clients')
-    .select(['id', ...CLIENT_PROFILE_COMPLETENESS_FIELDS].join(', '))
+    .select(
+      [
+        'id',
+        'referral_source',
+        'referred_by_client_id',
+        ...CLIENT_PROFILE_COMPLETENESS_FIELDS,
+      ].join(', ')
+    )
     .eq('tenant_id', user.tenantId!)
     .is('deleted_at', null)
 
   // Fetch referral counts per client (how many new clients they've referred)
-  // cast as any - referred_by_client_id not in generated types yet
+  // cast as any: referred_by_client_id not in generated types yet
   const { data: referrals } = await db
     .from('clients')
     .select('referred_by_client_id')
@@ -130,7 +243,7 @@ export async function getClientHealthScores(): Promise<ClientHealthSummary> {
   const ltvValues = ((summaries ?? []) as any[])
     .filter((s: any) => s.total_events > 0)
     .map((s: any) => s.lifetime_value_cents ?? 0)
-  const medianLtv = median(ltvValues)
+  const medianLtv = medianCalc(ltvValues)
 
   const clientMap = new Map<string, any>()
   for (const c of clients ?? []) clientMap.set(c.id, c)
@@ -150,20 +263,39 @@ export async function getClientHealthScores(): Promise<ClientHealthSummary> {
     const totalEvents: number = summary?.total_events ?? 0
     const ltv: number = summary?.lifetime_value_cents ?? 0
     const daysSince: number | null = summary?.days_since_last_event ?? null
+    const outstandingCents: number = summary?.outstanding_balance_cents ?? 0
+    const avgTipPct: number = summary?.average_tip_percentage ?? 0
 
     // Frequency: events per year based on account age (rough: total_events / max(1, months/12))
-    const eventsPerYear = totalEvents // simplified - if we have event history we can refine
+    const eventsPerYear = totalEvents // simplified; can refine with event history
 
-    // Engagement: profile completeness (0–15) + referrals (0–5)
-    let engagementScore = getClientProfileEngagementPoints(client, 15)
+    // Engagement: profile completeness (0-10) + referrals (0-5)
+    let engScore = getClientProfileEngagementPoints(client, 10)
     const refs = referralMap.get(clientId) ?? 0
-    engagementScore += Math.min(refs * 2, 5) // up to 5 pts for referrals
-    engagementScore = Math.min(engagementScore, 20)
+    engScore += Math.min(refs * 2, 5) // up to 5 pts for referrals
+    engScore = Math.min(engScore, 15)
+
+    // Payment promptness
+    const pay = paymentScore(outstandingCents, avgTipPct)
+
+    // Relationship signals
+    const rel = relationshipScore({
+      hasReferralSource: !!client.referral_source,
+      wasReferred: !!client.referred_by_client_id,
+      hasDietaryRestrictions:
+        Array.isArray(client.dietary_restrictions) && client.dietary_restrictions.length > 0,
+      hasUpcomingEvent: daysSince !== null && daysSince <= 30,
+      hasNotes: typeof client.vibe_notes === 'string' && client.vibe_notes.trim().length > 0,
+    })
 
     const r = recencyScore(daysSince)
     const f = frequencyScore(eventsPerYear)
     const m = monetaryScore(ltv, medianLtv)
-    const totalScore = Math.min(r + f + m + engagementScore, 100)
+    const totalScore = Math.min(r + f + m + engScore + pay + rel, 100)
+
+    // Trend and alert computation
+    const { trend: trendVal, trendReason } = computeTrend(daysSince, totalEvents, outstandingCents)
+    const { isAlert, alertReason } = computeAlert(totalScore, totalEvents)
 
     scores.push({
       clientId,
@@ -172,10 +304,16 @@ export async function getClientHealthScores(): Promise<ClientHealthSummary> {
       recencyScore: r,
       frequencyScore: f,
       monetaryScore: m,
-      engagementScore,
+      engagementScore: engScore,
+      paymentScore: pay,
+      relationshipScore: rel,
       daysSinceLastEvent: daysSince,
       totalEvents,
       lifetimeValueCents: ltv,
+      trend: trendVal,
+      trendReason,
+      isAlert,
+      alertReason,
     })
   }
 

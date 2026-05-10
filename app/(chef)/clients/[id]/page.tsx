@@ -10,8 +10,7 @@ import {
   getClientFinancialDetail,
 } from '@/lib/clients/actions'
 import { getClientLoyaltyProfile } from '@/lib/loyalty/actions'
-import { getMessageThread, getResponseTemplates } from '@/lib/messages/actions'
-import { MessageThread } from '@/components/messages/message-thread'
+import { getResponseTemplates } from '@/lib/messages/actions'
 import { MessageLogForm } from '@/components/messages/message-log-form'
 import {
   AwardBonusForm,
@@ -99,6 +98,9 @@ import {
 } from '@/lib/client-work-graph/shared-snapshot'
 import { getHouseholdForClient } from '@/lib/hub/household-actions'
 import { ClientHouseholdPanel } from '@/components/clients/client-household-panel'
+import { getRecurringSchedules } from '@/lib/scheduling/recurring-actions'
+import { RecurringBookingPanel } from '@/components/clients/recurring-booking-panel'
+import { getMenus } from '@/lib/menus/actions'
 
 async function ClientCompletionSection({ clientId }: { clientId: string }) {
   const result = await getCompletionForEntity('client', clientId)
@@ -143,7 +145,6 @@ export default async function ClientDetailPage({ params }: ClientDetailPageProps
 
   const [
     client,
-    messages,
     templates,
     loyaltyProfile,
     clientNotes,
@@ -171,9 +172,10 @@ export default async function ClientDetailPage({ params }: ClientDetailPageProps
     culinaryGuidance,
     clientOpsSnapshotState,
     householdData,
+    recurringSchedules,
+    allMenus,
   ] = await Promise.all([
     getClientWithStats(params.id).catch(() => null),
-    getMessageThread('client', params.id).catch(() => []),
     getResponseTemplates().catch(() => []),
     getClientLoyaltyProfile(params.id).catch(() => null),
     getClientNotes(params.id).catch(() => []),
@@ -220,6 +222,8 @@ export default async function ClientDetailPage({ params }: ClientDetailPageProps
           error instanceof Error ? error.message : 'Could not load the shared client ops snapshot.',
       })),
     getHouseholdForClient(params.id).catch(() => null),
+    getRecurringSchedules(params.id).catch(() => []),
+    getMenus().catch(() => []),
   ])
 
   const engagementScore = computeEngagementScore(clientPortalActivity as any[])
@@ -666,7 +670,7 @@ export default async function ClientDetailPage({ params }: ClientDetailPageProps
       />
 
       {/* Statistics */}
-      <div className="grid grid-cols-2 md:grid-cols-4 gap-4 sm:gap-6">
+      <div className="grid grid-cols-2 md:grid-cols-5 gap-4 sm:gap-6">
         <Card>
           <CardContent className="pt-6">
             <div className="text-sm font-medium text-stone-500">Total Events</div>
@@ -700,6 +704,34 @@ export default async function ClientDetailPage({ params }: ClientDetailPageProps
             <div className="text-2xl sm:text-3xl font-bold text-stone-100 mt-2">
               {formatCurrency(client.averageEventValueCents)}
             </div>
+          </CardContent>
+        </Card>
+
+        <Card>
+          <CardContent className="pt-6">
+            <div className="text-sm font-medium text-stone-500">Satisfaction</div>
+            {clientReviews.length > 0 ? (
+              <div className="mt-2">
+                <div className="flex items-center gap-1.5">
+                  <div className="flex gap-0.5">
+                    {[1, 2, 3, 4, 5].map((n) => (
+                      <span
+                        key={n}
+                        className={`text-sm ${n <= Math.round(avgRating ?? 0) ? 'text-amber-400' : 'text-stone-600'}`}
+                      >
+                        ★
+                      </span>
+                    ))}
+                  </div>
+                  <span className="text-2xl sm:text-3xl font-bold text-stone-100">{avgRating}</span>
+                </div>
+                <p className="text-xs text-stone-500 mt-1">
+                  {clientReviews.length} {clientReviews.length === 1 ? 'review' : 'reviews'}
+                </p>
+              </div>
+            ) : (
+              <div className="text-2xl sm:text-3xl font-bold text-stone-500 mt-2">--</div>
+            )}
           </CardContent>
         </Card>
       </div>
@@ -891,6 +923,95 @@ export default async function ClientDetailPage({ params }: ClientDetailPageProps
 
       {/* Culinary History - menus/dishes served to this client */}
       {menuHistory && <MenuHistoryPanel history={menuHistory} />}
+
+      {/* Client Reviews / Feedback */}
+      <Card>
+        <CardHeader>
+          <div className="flex justify-between items-center">
+            <CardTitle>Client Feedback</CardTitle>
+            {avgRating !== null && (
+              <div className="flex items-center gap-1.5">
+                <div className="flex gap-0.5">
+                  {[1, 2, 3, 4, 5].map((n) => (
+                    <span
+                      key={n}
+                      className={n <= Math.round(avgRating) ? 'text-amber-400' : 'text-stone-600'}
+                    >
+                      ★
+                    </span>
+                  ))}
+                </div>
+                <span className="text-2xl font-bold text-stone-100">{avgRating}</span>
+                <span className="text-stone-300">/5</span>
+                <span className="text-xs text-stone-500 ml-1">
+                  ({clientReviews.length} {clientReviews.length === 1 ? 'review' : 'reviews'})
+                </span>
+              </div>
+            )}
+          </div>
+        </CardHeader>
+        <CardContent>
+          {clientReviews.length > 0 ? (
+            <div className="space-y-4">
+              {clientReviews.map((review: any) => (
+                <div
+                  key={review.id}
+                  className="border-b border-stone-800 pb-4 last:border-0 last:pb-0"
+                >
+                  <div className="flex items-center justify-between mb-1">
+                    <div className="flex gap-0.5">
+                      {[1, 2, 3, 4, 5].map((n) => (
+                        <span
+                          key={n}
+                          className={n <= review.rating ? 'text-amber-400' : 'text-stone-200'}
+                        >
+                          ★
+                        </span>
+                      ))}
+                    </div>
+                    <span className="text-xs text-stone-300">
+                      {review.event?.occasion || 'Event'} ·{' '}
+                      {review.event?.event_date
+                        ? format(new Date(review.event.event_date), 'MMM d, yyyy')
+                        : ''}
+                    </span>
+                  </div>
+                  {review.what_they_loved && (
+                    <p className="text-sm text-stone-300 mt-1">
+                      <span className="font-medium text-emerald-700">Loved: </span>
+                      {review.what_they_loved}
+                    </p>
+                  )}
+                  {review.feedback_text && (
+                    <p className="text-sm text-stone-300 mt-1">{review.feedback_text}</p>
+                  )}
+                  {review.what_could_improve && (
+                    <p className="text-sm text-stone-300 mt-1">
+                      <span className="font-medium text-amber-700">Improve: </span>
+                      {review.what_could_improve}
+                    </p>
+                  )}
+                  {review.would_book_again !== null && review.would_book_again !== undefined && (
+                    <p className="text-xs text-stone-500 mt-2">
+                      Would book again: {review.would_book_again ? 'Yes' : 'No'}
+                    </p>
+                  )}
+                </div>
+              ))}
+              <div className="pt-2">
+                <Link href="/reviews" className="text-sm text-brand-500 hover:text-brand-400">
+                  View all reviews
+                </Link>
+              </div>
+            </div>
+          ) : (
+            <div className="text-center py-6 text-stone-500">
+              <p className="text-sm">No reviews from this client yet.</p>
+              <p className="text-xs mt-1">Reviews are collected after completed events.</p>
+            </div>
+          )}
+        </CardContent>
+      </Card>
 
       {/* Direct Outreach */}
       <Card>
@@ -1116,6 +1237,14 @@ export default async function ClientDetailPage({ params }: ClientDetailPageProps
         leftoversPref={(client as any).leftovers_preference ?? null}
       />
 
+      {/* Recurring Booking */}
+      <RecurringBookingPanel
+        clientId={client.id}
+        clientName={client.full_name}
+        schedule={(recurringSchedules as any[]).find((s: any) => s.isActive) ?? null}
+        menus={(allMenus as any[]).map((m: any) => ({ id: m.id, name: m.name }))}
+      />
+
       {/* Client Connections */}
       <ClientConnections
         clientId={client.id}
@@ -1183,14 +1312,28 @@ export default async function ClientDetailPage({ params }: ClientDetailPageProps
         initialAddresses={((client as any).additional_addresses as any[]) ?? []}
       />
 
-      {/* Communication History */}
+      {/* Communication History (unified timeline, comms filter active) */}
       <Card>
         <CardHeader>
-          <CardTitle>Communication History</CardTitle>
+          <div className="flex items-center justify-between">
+            <CardTitle>Communication History</CardTitle>
+            <Link
+              href={`/inbox?clientId=${client.id}`}
+              className="text-xs text-brand-400 hover:text-brand-300"
+            >
+              View all emails →
+            </Link>
+          </div>
+          <p className="text-sm text-stone-400">
+            Every interaction with this client: emails, messages, outreach, portal visits,
+            inquiries, and scheduled sends.
+          </p>
         </CardHeader>
         <CardContent>
           <SentimentBadge clientId={params.id} />
-          <MessageThread messages={messages} showEntityLinks />
+          <div className="mt-3">
+            <UnifiedClientTimeline items={unifiedTimeline} defaultFilter="comms" />
+          </div>
           <div className="mt-4 pt-4 border-t border-stone-700">
             <MessageLogForm clientId={client.id} templates={templates} />
           </div>
@@ -1253,70 +1396,6 @@ export default async function ClientDetailPage({ params }: ClientDetailPageProps
           <ClientMenuHistory clientId={client.id} />
         </CardContent>
       </Card>
-
-      {/* Client Reviews / Feedback */}
-      {clientReviews.length > 0 && (
-        <Card>
-          <CardHeader>
-            <div className="flex justify-between items-center">
-              <CardTitle>Client Feedback</CardTitle>
-              {avgRating !== null && (
-                <div className="flex items-center gap-1.5">
-                  <span className="text-2xl font-bold text-stone-100">{avgRating}</span>
-                  <span className="text-stone-300">/5</span>
-                  <span className="text-xs text-stone-500 ml-1">
-                    ({clientReviews.length} {clientReviews.length === 1 ? 'review' : 'reviews'})
-                  </span>
-                </div>
-              )}
-            </div>
-          </CardHeader>
-          <CardContent>
-            <div className="space-y-4">
-              {clientReviews.map((review: any) => (
-                <div
-                  key={review.id}
-                  className="border-b border-stone-800 pb-4 last:border-0 last:pb-0"
-                >
-                  <div className="flex items-center justify-between mb-1">
-                    <div className="flex gap-0.5">
-                      {[1, 2, 3, 4, 5].map((n) => (
-                        <span
-                          key={n}
-                          className={n <= review.rating ? 'text-amber-400' : 'text-stone-200'}
-                        >
-                          ★
-                        </span>
-                      ))}
-                    </div>
-                    <span className="text-xs text-stone-300">
-                      {review.event?.occasion || 'Event'} ·{' '}
-                      {review.event?.event_date
-                        ? format(new Date(review.event.event_date), 'MMM d, yyyy')
-                        : ''}
-                    </span>
-                  </div>
-                  {review.what_they_loved && (
-                    <p className="text-sm text-stone-300 mt-1">
-                      <span className="font-medium text-emerald-700">Loved: </span>
-                      {review.what_they_loved}
-                    </p>
-                  )}
-                  {review.feedback_text && (
-                    <p className="text-sm text-stone-300 mt-1">{review.feedback_text}</p>
-                  )}
-                  {review.what_could_improve && (
-                    <p className="text-sm text-stone-300 mt-1">
-                      <span className="font-medium text-amber-700">Improve: </span>
-                      {review.what_could_improve}
-                    </p>
-                  )}
-                </div>
-              ))}
-            </div>
-          </CardContent>
-        </Card>
-      )}
     </div>
   )
 }

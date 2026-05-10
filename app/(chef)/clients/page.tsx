@@ -8,6 +8,8 @@ import Link from 'next/link'
 import { requireChef } from '@/lib/auth/get-user'
 import { getClientsWithStats, getPendingInvitations } from '@/lib/clients/actions'
 import { getClientHealthScores } from '@/lib/clients/health-score'
+import { getRecurringClientIds } from '@/lib/scheduling/recurring-actions'
+import { DomainSignals } from '@/components/cil/domain-signals'
 
 export const metadata: Metadata = { title: 'Clients' }
 import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/card'
@@ -135,7 +137,7 @@ export default async function ClientsPage() {
       </div>
 
       {/* Hub tiles */}
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 stagger-grid">
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
         {hubTiles.map((tile) => {
           const colors = accentStyles[tile.accent]
           const Icon = tile.icon
@@ -147,9 +149,7 @@ export default async function ClientsPage() {
               >
                 <CardContent className="pt-5 pb-5">
                   <div className="flex items-start gap-3">
-                    <div
-                      className={`rounded-lg ${colors.iconBg} p-2.5 transition-transform duration-200 group-hover:scale-110`}
-                    >
+                    <div className={`rounded-lg ${colors.iconBg} p-2.5`}>
                       <Icon className={`h-5 w-5 ${colors.iconText}`} weight="duotone" />
                     </div>
                     <div>
@@ -165,6 +165,13 @@ export default async function ClientsPage() {
           )
         })}
       </div>
+
+      {/* Client Intelligence Signals */}
+      <WidgetErrorBoundary name="Client Signals" compact>
+        <Suspense fallback={null}>
+          <DomainSignals domain="clients" limit={3} />
+        </Suspense>
+      </WidgetErrorBoundary>
 
       {/* Rebooking Intelligence */}
       <WidgetErrorBoundary name="Rebooking Intelligence" compact>
@@ -215,9 +222,10 @@ async function PendingInvitationsContent() {
 }
 
 async function ClientsListContent() {
-  const [clientsResult, healthResult] = await Promise.all([
+  const [clientsResult, healthResult, recurringIds] = await Promise.all([
     safeFetch(() => getClientsWithStats()),
     safeFetch(() => getClientHealthScores()),
+    getRecurringClientIds().catch(() => new Set<string>()),
   ])
 
   if (clientsResult.error) {
@@ -249,6 +257,7 @@ async function ClientsListContent() {
     ...client,
     healthTier: healthMap.get(client.id)?.tier ?? 'new',
     healthScore: healthMap.get(client.id)?.score ?? 0,
+    hasRecurring: recurringIds.has(client.id),
   }))
 
   return <ClientsTable clients={clientsWithHealth} />

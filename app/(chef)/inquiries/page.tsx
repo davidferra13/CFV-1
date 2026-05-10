@@ -49,7 +49,7 @@ function getWaitingUrgency(updatedAt: string): 'ok' | 'warm' | 'hot' {
 const URGENCY_STYLES = {
   ok: 'bg-emerald-500',
   warm: 'bg-amber-500',
-  hot: 'bg-red-500 animate-pulse',
+  hot: 'bg-red-500',
 } as const
 
 const URGENCY_LABELS = {
@@ -315,7 +315,7 @@ async function ResponseQueueList() {
         const eventUrgency = scoreEventUrgency(item.confirmedDate)
         const urgencyColor =
           item.waitingHours >= 48
-            ? 'bg-red-500 animate-pulse'
+            ? 'bg-red-500'
             : item.waitingHours >= 24
               ? 'bg-amber-500'
               : 'bg-emerald-500'

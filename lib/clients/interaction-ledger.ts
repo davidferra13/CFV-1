@@ -6,6 +6,7 @@ import {
   HIGH_SIGNAL_CLIENT_ACTIVITY_TYPES,
   buildClientInteractionLedgerEntries,
   type ClientInteractionLedgerEntry,
+  type CommunicationLogLedgerRow,
   type DocumentVersionLedgerRow,
   type EventLedgerRow,
   type InquiryLedgerRow,
@@ -14,8 +15,10 @@ import {
   type MenuRevisionLedgerRow,
   type MessageLedgerRow,
   type NoteLedgerRow,
+  type OutreachLedgerRow,
   type QuoteLedgerRow,
   type ReviewLedgerRow,
+  type ScheduledMessageLedgerRow,
 } from './interaction-ledger-core'
 
 export type { ClientInteractionLedgerEntry } from './interaction-ledger-core'
@@ -37,6 +40,9 @@ export async function getClientInteractionLedger(
     ledgerResponse,
     reviewsResponse,
     activityResponse,
+    communicationLogResponse,
+    outreachLogResponse,
+    scheduledMessagesResponse,
   ] = await Promise.all([
     db
       .from('events')
@@ -100,6 +106,32 @@ export async function getClientInteractionLedger(
       .in('event_type', HIGH_SIGNAL_CLIENT_ACTIVITY_TYPES)
       .order('created_at', { ascending: false })
       .limit(30),
+    db
+      .from('communication_log')
+      .select(
+        'id, client_id, channel, direction, subject, content, entity_type, entity_id, logged_by, created_at'
+      )
+      .eq('tenant_id', tenantId)
+      .eq('client_id', clientId)
+      .order('created_at', { ascending: false })
+      .limit(40),
+    db
+      .from('direct_outreach_log')
+      .select('id, channel, subject, body, delivered, error_msg, sent_at')
+      .eq('chef_id', user.entityId)
+      .eq('client_id', clientId)
+      .order('sent_at', { ascending: false })
+      .limit(30),
+    db
+      .from('scheduled_messages')
+      .select(
+        'id, channel, subject, body, scheduled_for, sent_at, status, context_type, context_id, created_at'
+      )
+      .eq('chef_id', user.entityId)
+      .eq('context_type', 'client')
+      .eq('context_id', clientId)
+      .order('created_at', { ascending: false })
+      .limit(20),
   ])
 
   const events = (eventsResponse.data ?? []) as EventLedgerRow[]
@@ -172,5 +204,8 @@ export async function getClientInteractionLedger(
     menus,
     menuRevisions,
     documentVersions,
+    communicationLogs: (communicationLogResponse.data ?? []) as CommunicationLogLedgerRow[],
+    outreachLogs: (outreachLogResponse.data ?? []) as OutreachLedgerRow[],
+    scheduledMessages: (scheduledMessagesResponse.data ?? []) as ScheduledMessageLedgerRow[],
   }).slice(0, Math.max(limit, 1))
 }
