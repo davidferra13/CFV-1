@@ -15,6 +15,19 @@ const DOMAIN_TO_CATEGORY: Record<string, CurrentCategory> = {
   network: 'growth',
 }
 
+const DOMAIN_ACTION_LABEL: Record<string, string> = {
+  inquiry: 'Reply',
+  message: 'Reply',
+  quote: 'Review',
+  event: 'Open',
+  financial: 'Review',
+  post_event: 'Review',
+  client: 'View',
+  culinary: 'Open',
+  network: 'Open',
+  contact: 'View',
+}
+
 function mapItem(item: QueueItem): CurrentUnit {
   return {
     id: `priority_queue:${item.entityType}:${item.entityId}`,
@@ -23,7 +36,7 @@ function mapItem(item: QueueItem): CurrentUnit {
     title: item.title,
     description: item.description,
     href: item.href,
-    actions: [{ label: item.context.primaryLabel || 'Open', href: item.href }],
+    actions: [{ label: DOMAIN_ACTION_LABEL[item.domain] || 'Open', href: item.href }],
     score: 0, // set by ranker
     source: 'priority_queue',
     entityId: item.entityId,

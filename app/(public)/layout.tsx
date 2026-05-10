@@ -12,6 +12,10 @@ const GlobalReportButton = dynamic(
   () => import('@/components/feedback/global-report-button').then((m) => m.GlobalReportButton),
   { ssr: false }
 )
+const RemyConciergeWidget = dynamic(
+  () => import('@/components/public/remy-concierge-widget').then((m) => m.RemyConciergeWidget),
+  { ssr: false }
+)
 
 export default function PublicLayout({ children }: { children: React.ReactNode }) {
   return (
@@ -35,6 +39,7 @@ export default function PublicLayout({ children }: { children: React.ReactNode }
       </main>
       <PublicFooter />
       <GlobalReportButton />
+      <RemyConciergeWidget />
     </div>
   )
 }

@@ -50,91 +50,94 @@ export function RemyPublicWidget({ tenantId, chefName }: RemyPublicWidgetProps) 
     }
   }, [isOpen])
 
-  const sendMessage = useCallback(async () => {
-    const trimmed = input.trim()
-    if (!trimmed || isStreaming) return
+  const sendMessage = useCallback(
+    async (overrideText?: string) => {
+      const trimmed = (overrideText ?? input).trim()
+      if (!trimmed || isStreaming) return
 
-    setError(null)
+      setError(null)
 
-    const userMsg: Message = {
-      id: `user-${Date.now()}`,
-      role: 'user',
-      content: trimmed,
-      timestamp: new Date().toISOString(),
-    }
-
-    const remyMsg: Message = {
-      id: `remy-${Date.now()}`,
-      role: 'remy',
-      content: '',
-      timestamp: new Date().toISOString(),
-    }
-
-    setMessages((prev) => [...prev, userMsg, remyMsg])
-    setInput('')
-    setIsStreaming(true)
-
-    // Build history for context (last 6 messages)
-    const history = messages.slice(-6).map((m) => ({
-      role: m.role === 'user' ? 'user' : 'assistant',
-      content: m.content,
-    }))
-
-    try {
-      abortRef.current = new AbortController()
-      const response = await fetch('/api/remy/public', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ message: trimmed, history, tenantId }),
-        signal: abortRef.current.signal,
-      })
-
-      if (!response.ok || !response.body) {
-        throw new Error('Failed to connect to Remy')
+      const userMsg: Message = {
+        id: `user-${Date.now()}`,
+        role: 'user',
+        content: trimmed,
+        timestamp: new Date().toISOString(),
       }
 
-      const reader = response.body.getReader()
-      const decoder = new TextDecoder()
-      let buffer = ''
+      const remyMsg: Message = {
+        id: `remy-${Date.now()}`,
+        role: 'remy',
+        content: '',
+        timestamp: new Date().toISOString(),
+      }
 
-      while (true) {
-        const { done, value } = await reader.read()
-        if (done) break
+      setMessages((prev) => [...prev, userMsg, remyMsg])
+      setInput('')
+      setIsStreaming(true)
 
-        buffer += decoder.decode(value, { stream: true })
-        const lines = buffer.split('\n\n')
-        buffer = lines.pop() || ''
+      // Build history for context (last 6 messages)
+      const history = messages.slice(-6).map((m) => ({
+        role: m.role === 'user' ? 'user' : 'assistant',
+        content: m.content,
+      }))
 
-        for (const line of lines) {
-          if (!line.startsWith('data: ')) continue
-          try {
-            const event = JSON.parse(line.slice(6))
-            if (event.type === 'token') {
-              setMessages((prev) => {
-                const updated = [...prev]
-                const last = updated[updated.length - 1]
-                if (last && last.role === 'remy') {
-                  last.content += event.data
-                }
-                return updated
-              })
-            } else if (event.type === 'error') {
-              setError(event.data)
+      try {
+        abortRef.current = new AbortController()
+        const response = await fetch('/api/remy/public', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ message: trimmed, history, tenantId }),
+          signal: abortRef.current.signal,
+        })
+
+        if (!response.ok || !response.body) {
+          throw new Error('Failed to connect to Remy')
+        }
+
+        const reader = response.body.getReader()
+        const decoder = new TextDecoder()
+        let buffer = ''
+
+        while (true) {
+          const { done, value } = await reader.read()
+          if (done) break
+
+          buffer += decoder.decode(value, { stream: true })
+          const lines = buffer.split('\n\n')
+          buffer = lines.pop() || ''
+
+          for (const line of lines) {
+            if (!line.startsWith('data: ')) continue
+            try {
+              const event = JSON.parse(line.slice(6))
+              if (event.type === 'token') {
+                setMessages((prev) => {
+                  const updated = [...prev]
+                  const last = updated[updated.length - 1]
+                  if (last && last.role === 'remy') {
+                    last.content += event.data
+                  }
+                  return updated
+                })
+              } else if (event.type === 'error') {
+                setError(event.data)
+              }
+            } catch {
+              // Skip malformed events
             }
-          } catch {
-            // Skip malformed events
           }
         }
+      } catch (err: any) {
+        if (err?.name !== 'AbortError') {
+          setError("Couldn't reach Remy - try again in a moment.")
+        }
+      } finally {
+        setIsStreaming(false)
+        abortRef.current = null
       }
-    } catch (err: any) {
-      if (err?.name !== 'AbortError') {
-        setError("Couldn't reach Remy - try again in a moment.")
-      }
-    } finally {
-      setIsStreaming(false)
-      abortRef.current = null
-    }
-  }, [input, isStreaming, messages, tenantId])
+    },
+    [input, isStreaming, messages, tenantId]
+  )
 
   const handleKeyDown = (e: React.KeyboardEvent) => {
     if (e.key === 'Enter' && !e.shiftKey) {
@@ -214,10 +217,7 @@ export function RemyPublicWidget({ tenantId, chefName }: RemyPublicWidgetProps) 
               ].map((q) => (
                 <button
                   key={q}
-                  onClick={() => {
-                    setInput(q)
-                    setTimeout(() => sendMessage(), 50)
-                  }}
+                  onClick={() => sendMessage(q)}
                   className="rounded-full border border-brand-700 bg-brand-950 px-3 py-1.5 text-xs text-brand-400 transition-colors hover:bg-brand-900"
                 >
                   {q}
@@ -269,7 +269,7 @@ export function RemyPublicWidget({ tenantId, chefName }: RemyPublicWidgetProps) 
             style={{ maxHeight: '100px' }}
           />
           <button
-            onClick={sendMessage}
+            onClick={() => sendMessage()}
             disabled={!input.trim() || isStreaming}
             className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-brand-600 text-white transition-colors hover:bg-brand-700 disabled:opacity-40"
             aria-label="Send message"

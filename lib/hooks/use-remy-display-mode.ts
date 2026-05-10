@@ -65,21 +65,15 @@ export function useRemyDisplayMode({
 
   const setMode = useCallback(
     (nextMode: RemyDisplayMode) => {
-      // If mobile is configured as hidden, keep runtime mode hidden and
-      // preserve the stored desktop preference instead of overwriting it.
-      if (isMobile && mobileDefault === 'hidden') {
-        setModeState('hidden')
-        return
-      }
       setModeState(nextMode)
       if (typeof window !== 'undefined') {
         window.localStorage.setItem(storageKey, nextMode)
       }
     },
-    [isMobile, mobileDefault, storageKey]
+    [storageKey]
   )
 
-  const effectiveMode: RemyDisplayMode = isMobile && mobileDefault === 'hidden' ? 'hidden' : mode
+  const effectiveMode: RemyDisplayMode = mode
 
   return {
     mode: effectiveMode,

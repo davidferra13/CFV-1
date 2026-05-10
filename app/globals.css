@@ -865,6 +865,93 @@ html {
   }
 }
 
+/* ── Hero headline specular light sweep ── */
+@keyframes hero-glint {
+  0% {
+    background-position:
+      -80% center,
+      0 0;
+  }
+  100% {
+    background-position:
+      220% center,
+      0 0;
+  }
+}
+
+.hero-glint-white {
+  background:
+    linear-gradient(
+      110deg,
+      transparent 30%,
+      rgba(255, 255, 255, 0) 42%,
+      rgba(255, 253, 248, 0.22) 44%,
+      rgba(255, 248, 235, 0.4) 46%,
+      rgba(255, 255, 255, 0.55) 48%,
+      rgba(255, 248, 235, 0.4) 50%,
+      rgba(255, 253, 248, 0.22) 52%,
+      rgba(255, 255, 255, 0) 54%,
+      transparent 66%
+    ),
+    linear-gradient(
+      to right,
+      rgba(255, 255, 255, 0.97),
+      rgba(255, 252, 248, 1),
+      rgba(255, 255, 255, 0.97)
+    );
+  background-size:
+    250% 100%,
+    100% 100%;
+  -webkit-background-clip: text;
+  background-clip: text;
+  -webkit-text-fill-color: transparent;
+  animation: hero-glint 6s cubic-bezier(0.4, 0, 0.2, 1) infinite;
+  animation-delay: 2s;
+}
+
+.hero-glint-gold {
+  background:
+    linear-gradient(
+      110deg,
+      transparent 30%,
+      rgba(255, 240, 210, 0) 42%,
+      rgba(255, 248, 230, 0.3) 44%,
+      rgba(255, 255, 245, 0.55) 46%,
+      rgba(255, 255, 255, 0.7) 48%,
+      rgba(255, 255, 245, 0.55) 50%,
+      rgba(255, 248, 230, 0.3) 52%,
+      rgba(255, 240, 210, 0) 54%,
+      transparent 66%
+    ),
+    linear-gradient(to right, #e8a96b, #d4945a, #c4824a);
+  background-size:
+    250% 100%,
+    100% 100%;
+  -webkit-background-clip: text;
+  background-clip: text;
+  -webkit-text-fill-color: transparent;
+  animation: hero-glint 6s cubic-bezier(0.4, 0, 0.2, 1) infinite;
+  animation-delay: 2s;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .hero-glint-white,
+  .hero-glint-gold {
+    animation: none;
+  }
+  .hero-glint-white {
+    background: none;
+    -webkit-text-fill-color: white;
+  }
+  .hero-glint-gold {
+    background: linear-gradient(to right, #e8a96b, #d4945a, #c4824a);
+    background-size: 100% 100%;
+    -webkit-background-clip: text;
+    background-clip: text;
+    -webkit-text-fill-color: transparent;
+  }
+}
+
 .scroll-reveal {
   opacity: 0;
   transform: translateY(32px) scale(0.98);
