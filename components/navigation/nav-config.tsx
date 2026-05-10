@@ -650,13 +650,9 @@ export const navGroups: NavGroup[] = [
         ],
       },
       {
-        href: '/feedback',
+        href: '/surveys',
         label: 'Client Feedback',
         icon: Star,
-        children: [
-          { href: '/feedback/dashboard', label: 'Feedback Dashboard' },
-          { href: '/feedback/requests', label: 'Send Requests' },
-        ],
       },
       {
         href: '/production',
@@ -1023,12 +1019,10 @@ export const navGroups: NavGroup[] = [
         icon: FileText,
       },
       {
-        href: '/operations/equipment',
+        href: '/ops/equipment',
         label: 'Equipment',
         icon: Wrench,
-        children: [
-          { href: '/operations/equipment?tab=maintenance', label: 'Maintenance Schedule' },
-        ],
+        children: [{ href: '/ops/equipment?tab=maintenance', label: 'Maintenance Schedule' }],
       },
       {
         href: '/kitchen',
@@ -1036,7 +1030,7 @@ export const navGroups: NavGroup[] = [
         icon: Flame,
       },
       {
-        href: '/operations/kitchen-rentals',
+        href: '/ops/kitchen-rentals',
         label: 'Kitchen Rentals',
         icon: Warehouse,
       },
@@ -1052,8 +1046,8 @@ export const navGroups: NavGroup[] = [
         icon: Zap,
       },
       {
-        href: '/scheduling',
-        label: 'Scheduling',
+        href: '/calendar',
+        label: 'Calendar',
         icon: CalendarCheck,
       },
       {
@@ -1214,8 +1208,8 @@ export const navGroups: NavGroup[] = [
         icon: Coins,
       },
       {
-        href: '/testimonials',
-        label: 'Testimonials',
+        href: '/reviews',
+        label: 'Reviews',
         icon: Star,
       },
       {
@@ -1232,7 +1226,7 @@ export const navGroups: NavGroup[] = [
     module: 'protection',
     items: [
       {
-        href: '/protection/audit-trail',
+        href: '/settings/security/audit-trail',
         label: 'Audit Trail',
         icon: ScrollText,
       },
@@ -1433,8 +1427,8 @@ export const navGroups: NavGroup[] = [
         icon: BellRing,
       },
       {
-        href: '/commands',
-        label: 'Quick Commands',
+        href: '/remy',
+        label: 'Remy Hub',
         icon: Zap,
       },
       {
