@@ -295,7 +295,7 @@ test.describe('Public — Unauthenticated Redirect Guards', () => {
   })
 
   test('/financials — redirects unauthenticated user', async ({ page }) => {
-    await page.goto('/financials')
+    await page.goto('/finance')
     await expect(page).toHaveURL(/auth\/signin|login/, { timeout: 10_000 })
   })
 

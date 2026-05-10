@@ -6,7 +6,7 @@ import { test, expect } from '../helpers/fixtures'
 
 test.describe('Financial Hub', () => {
   test('financials page loads with summary', async ({ page }) => {
-    await page.goto('/financials')
+    await page.goto('/finance')
     await page.waitForLoadState('networkidle')
     const bodyText = await page.locator('body').innerText()
     expect(bodyText).not.toMatch(/500|internal server error/i)

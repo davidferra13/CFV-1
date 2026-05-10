@@ -69,7 +69,7 @@ export const JOURNEY_ROUTES = {
   waitlist: '/waitlist',
 
   // Finance
-  financials: '/financials',
+  financials: '/finance',
   financeOverview: '/finance/overview',
   expenses: '/expenses',
   expensesNew: '/expenses/new',
@@ -127,9 +127,9 @@ export const JOURNEY_ROUTES = {
   marketingPushDinners: '/marketing/push-dinners',
   marketingSequences: '/marketing/sequences',
   marketingTemplates: '/marketing/templates',
-  socialPlanner: '/social/planner',
-  socialVault: '/social/vault',
-  socialConnections: '/social/connections',
+  socialPlanner: '/marketing/social',
+  socialVault: '/content/vault',
+  socialConnections: '/marketing/social/connections',
 
   // Network & Community
   network: '/network',
@@ -181,7 +181,7 @@ export const JOURNEY_ROUTES = {
 
   // Remy
   remy: '/remy',
-  commands: '/commands',
+  remyHub: '/remy',
 
   // AAR
   aar: '/aar',

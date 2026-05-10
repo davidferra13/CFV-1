@@ -28,8 +28,8 @@ export const goalDetectors: Record<string, GoalDetector> = {
     return page.url().includes('/quotes')
   },
 
-  navigate_to_financials: async (page) => {
-    return page.url().includes('/financials')
+  navigate_to_finance: async (page) => {
+    return page.url().includes('/finance')
   },
 
   navigate_to_calendar: async (page) => {
@@ -114,7 +114,7 @@ export const goalDetectors: Record<string, GoalDetector> = {
   },
 
   check_financial_summary: async (page) => {
-    if (!page.url().includes('/financials')) return false
+    if (!page.url().includes('/finance')) return false
     // Check for financial data display
     const hasFinancials =
       (await page

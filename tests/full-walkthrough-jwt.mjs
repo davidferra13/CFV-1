@@ -170,9 +170,9 @@ const allPages = [
   { name: '160-marketing', url: '/marketing' },
   { name: '161-marketing-templates', url: '/marketing/templates' },
   { name: '162-marketing-push-dinners', url: '/marketing/push-dinners' },
-  { name: '163-social-hub', url: '/social/hub-overview' },
-  { name: '164-social-planner', url: '/social/planner' },
-  { name: '165-social-vault', url: '/social/vault' },
+  { name: '163-social-hub', url: '/circles/admin' },
+  { name: '164-social-planner', url: '/marketing/social' },
+  { name: '165-social-vault', url: '/content/vault' },
 
   // Leads & Prospecting
   { name: '170-leads', url: '/leads' },
@@ -206,7 +206,7 @@ const allPages = [
   { name: '222-testimonials', url: '/testimonials' },
 
   // Operations
-  { name: '230-operations', url: '/operations' },
+  { name: '230-operations', url: '/ops' },
   { name: '231-stations', url: '/stations' },
   { name: '232-stations-daily-ops', url: '/stations/daily-ops' },
 

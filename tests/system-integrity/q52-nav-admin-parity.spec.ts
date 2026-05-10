@@ -40,7 +40,7 @@ const ADMIN_LAYOUT = resolve(ROOT, 'app/(admin)/layout.tsx')
 const ADMIN_ONLY_CHEF_PAGES = [
   { route: '/settings/remy', page: 'app/(chef)/settings/remy/page.tsx' },
   { route: '/remy', page: 'app/(chef)/remy/page.tsx' },
-  { route: '/commands', page: 'app/(chef)/commands/page.tsx' },
+  { route: '/remy/history', page: 'app/(chef)/remy/history/page.tsx' },
 ]
 
 // Known prospecting pages

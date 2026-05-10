@@ -173,7 +173,7 @@ test.describe('Client Portal â€” Chef Route Rejection', () => {
   })
 
   test('/financials â€” client cannot access chef financials', async ({ page }) => {
-    await page.goto('/financials', { waitUntil: 'domcontentloaded' })
+    await page.goto('/finance', { waitUntil: 'domcontentloaded' })
     const url = page.url()
     expect(url).not.toMatch(/\/financials$/)
   })

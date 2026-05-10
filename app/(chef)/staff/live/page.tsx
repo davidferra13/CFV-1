@@ -65,9 +65,7 @@ function StaffCard({ staff }: { staff: StaffActivity }) {
         <div className="flex items-start justify-between">
           <div className="flex items-center gap-3">
             {/* Status dot */}
-            <div
-              className={`w-3 h-3 rounded-full ${statusStyle.dot} ${staff.status === 'active' ? 'animate-pulse' : ''}`}
-            />
+            <div className={`w-3 h-3 rounded-full ${statusStyle.dot} `} />
             <div>
               <p className="font-medium text-stone-100">{staff.name}</p>
               <p className="text-xs text-stone-500">{ROLE_LABELS[staff.role] ?? staff.role}</p>
@@ -164,7 +162,7 @@ export default async function StaffLivePage() {
         <div className="flex items-center gap-3">
           {activeCount > 0 && (
             <div className="flex items-center gap-1.5">
-              <div className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse" />
+              <div className="w-2 h-2 rounded-full bg-emerald-500" />
               <span className="text-sm text-emerald-400">{activeCount} active</span>
             </div>
           )}

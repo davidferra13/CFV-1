@@ -22,12 +22,11 @@ const TARGET_PRIMARY_HREFS = [
 ]
 
 const DEMOTED_PRIMARY_HREFS = [
-  '/operations',
-  '/growth',
+  '/ops',
   '/circles',
   '/analytics',
   '/marketing',
-  '/social',
+  '/marketing/social',
   '/network',
   '/inventory',
   '/vendors',
@@ -121,9 +120,9 @@ describe('chef nav priority defaults', () => {
     ]
 
     assert.equal(
-      exportedSurfaceHrefs.includes('/social/compose'),
+      exportedSurfaceHrefs.includes('/marketing/social/compose'),
       false,
-      '/social/compose must stay event-context only'
+      '/marketing/social/compose must stay event-context only'
     )
   })
 })

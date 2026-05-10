@@ -32,13 +32,18 @@ test.describe('Deep — Marketing', () => {
 
 test.describe('Deep — Social', () => {
   test('social hub loads', async ({ page }) => {
-    await page.goto('/social')
+    await page.goto('/marketing/social')
     await page.waitForLoadState('domcontentloaded')
     await expect(page).not.toHaveURL(/auth\/signin/)
   })
 
   test('social sub-pages load', async ({ page }) => {
-    const pages = ['/social/connections', '/social/vault', '/social/settings', '/social/planner']
+    const pages = [
+      '/marketing/social/connections',
+      '/content/vault',
+      '/marketing/social/settings',
+      '/marketing/social',
+    ]
     for (const route of pages) {
       await page.goto(route)
       await page.waitForLoadState('domcontentloaded')

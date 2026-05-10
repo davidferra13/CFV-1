@@ -289,11 +289,11 @@ test.describe('Network & Community', () => {
 
 test.describe('Social Media Features', () => {
   const socialRoutes = [
-    '/social',
-    '/social/schedule',
-    '/social/vault',
-    '/social/analytics',
-    '/social/platforms',
+    '/marketing/social',
+    '/marketing/social',
+    '/content/vault',
+    '/marketing/social',
+    '/marketing/social/connections',
   ]
 
   for (const route of socialRoutes) {
@@ -310,10 +310,10 @@ test.describe('Travel & Operations', () => {
   const opsRoutes = [
     '/travel',
     '/production',
-    '/operations',
-    '/operations/equipment',
-    '/operations/kitchen-rentals',
-    '/operations/maintenance',
+    '/ops',
+    '/ops/equipment',
+    '/ops/kitchen-rentals',
+    '/ops/maintenance',
   ]
 
   for (const route of opsRoutes) {

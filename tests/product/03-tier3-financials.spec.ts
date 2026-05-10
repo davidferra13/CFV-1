@@ -82,7 +82,7 @@ test.describe('Tier 3A — Quotes', () => {
 
 test.describe('Tier 3B — Payments & Ledger', () => {
   test('3B.1 — financials page loads with data', async ({ page }) => {
-    await page.goto('/financials')
+    await page.goto('/finance')
     await page.waitForLoadState('domcontentloaded')
 
     await expect(page).not.toHaveURL(/auth\/signin/)

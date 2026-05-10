@@ -117,8 +117,7 @@ async function run() {
     { name: 'Culinary', path: '/culinary', screenshot: '18-culinary.png' },
     { name: 'Menus', path: '/menus', screenshot: '19-menus.png' },
     { name: 'Staff', path: '/staff', screenshot: '20-staff.png' },
-    { name: 'Operations', path: '/operations', screenshot: '21-operations.png' },
-    { name: 'Growth', path: '/growth', screenshot: '22-growth.png' },
+    { name: 'Operations', path: '/ops', screenshot: '21-operations.png' },
     { name: 'Prep', path: '/prep', screenshot: '23-prep.png' },
   ]
 

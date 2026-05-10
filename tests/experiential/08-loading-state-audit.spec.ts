@@ -18,7 +18,7 @@ const DATA_ROUTES = [
   { path: '/inquiries', name: 'inquiries-list' },
   { path: '/clients', name: 'clients-list' },
   { path: '/quotes', name: 'quotes-list' },
-  { path: '/financials', name: 'financials' },
+  { path: '/finance', name: 'finance' },
   { path: '/expenses', name: 'expenses' },
   { path: '/menus', name: 'menus-list' },
   { path: '/recipes', name: 'recipes-list' },

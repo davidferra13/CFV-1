@@ -1,6 +1,6 @@
 {
   "version": "1.0",
-  "timestamp": "2026-05-07T15:38:44.369Z",
+  "timestamp": "2026-05-10T17:05:09.932Z",
   "source": "auto-postool",
   "partial": false,
   "phase": null,
@@ -18,21 +18,365 @@
   "uncommitted_files": [
     {
       "status": "M",
+      "path": ".openclaw-deploy/captured-session.json"
+    },
+    {
+      "status": "M",
       "path": ".planning/HANDOFF.json"
     },
     {
       "status": "M",
-      "path": "docs/simulation-history.md"
+      "path": "app/(admin)/admin/presence/page.tsx"
     },
     {
       "status": "M",
-      "path": "docs/simulation-report.md"
+      "path": "app/(chef)/production/page.tsx"
+    },
+    {
+      "status": "D",
+      "path": "app/(chef)/schedule/loading.tsx"
+    },
+    {
+      "status": "D",
+      "path": "app/(chef)/schedule/page.tsx"
+    },
+    {
+      "status": "M",
+      "path": "app/(chef)/staff/live/page.tsx"
+    },
+    {
+      "status": "M",
+      "path": "app/(chef)/stations/page.tsx"
+    },
+    {
+      "status": "M",
+      "path": "app/book/[chefSlug]/booking-page-client.tsx"
+    },
+    {
+      "status": "M",
+      "path": "app/book/[chefSlug]/page.tsx"
+    },
+    {
+      "status": "M",
+      "path": "app/globals.css"
+    },
+    {
+      "status": "M",
+      "path": "app/robots.ts"
+    },
+    {
+      "status": "M",
+      "path": "docs/chefflow-product-definition.md"
+    },
+    {
+      "status": "M",
+      "path": "docs/feature-inventory.md"
+    },
+    {
+      "status": "M",
+      "path": "docs/sync-status.json"
     },
     {
       "status": "M",
       "path": "docs/uptime-history.json"
+    },
+    {
+      "status": "M",
+      "path": "next.config.js"
+    },
+    {
+      "status": "M",
+      "path": "package-lock.json"
+    },
+    {
+      "status": "M",
+      "path": "package.json"
+    },
+    {
+      "status": "M",
+      "path": "public/sw.js"
+    },
+    {
+      "status": "M",
+      "path": "scripts/extract-chef-nav-report.mjs"
+    },
+    {
+      "status": "M",
+      "path": "scripts/generate-chef-priority-restructure.mjs"
+    },
+    {
+      "status": "M",
+      "path": "scripts/health-score-crawl.mjs"
+    },
+    {
+      "status": "M",
+      "path": "scripts/take-screenshots.mjs"
+    },
+    {
+      "status": "M",
+      "path": "start-chefflow.bat"
+    },
+    {
+      "status": "M",
+      "path": "tests/coverage/01-public-routes.spec.ts"
+    },
+    {
+      "status": "M",
+      "path": "tests/coverage/02-chef-routes.spec.ts"
+    },
+    {
+      "status": "M",
+      "path": "tests/coverage/03-client-routes.spec.ts"
+    },
+    {
+      "status": "M",
+      "path": "tests/coverage/05-auth-boundaries.spec.ts"
+    },
+    {
+      "status": "M",
+      "path": "tests/coverage/screenshot-crawler.spec.ts"
+    },
+    {
+      "status": "M",
+      "path": "tests/crawl-final.ts"
+    },
+    {
+      "status": "M",
+      "path": "tests/crawl-site-v2.ts"
+    },
+    {
+      "status": "M",
+      "path": "tests/crawl-site.ts"
+    },
+    {
+      "status": "M",
+      "path": "tests/diagnostic/08-remaining-features.spec.ts"
+    },
+    {
+      "status": "M",
+      "path": "tests/e2e/17-tenant-isolation.spec.ts"
+    },
+    {
+      "status": "M",
+      "path": "tests/e2e/99-full-site-crawl.spec.ts"
+    },
+    {
+      "status": "M",
+      "path": "tests/experiential/03-chef-navigation.spec.ts"
+    },
+    {
+      "status": "M",
+      "path": "tests/experiential/08-loading-state-audit.spec.ts"
+    },
+    {
+      "status": "M",
+      "path": "tests/full-walkthrough-jwt.mjs"
+    },
+    {
+      "status": "M",
+      "path": "tests/full-walkthrough.mjs"
+    },
+    {
+      "status": "M",
+      "path": "tests/helpers/test-utils.ts"
+    },
+    {
+      "status": "M",
+      "path": "tests/interactions/36-social-network-community.spec.ts"
+    },
+    {
+      "status": "M",
+      "path": "tests/interactions/41-remaining-routes.spec.ts"
+    },
+    {
+      "status": "M",
+      "path": "tests/interactions/49-network-social-deep.spec.ts"
+    },
+    {
+      "status": "M",
+      "path": "tests/journey/25-operations-and-inventory-routes.spec.ts"
+    },
+    {
+      "status": "M",
+      "path": "tests/journey/26-growth-and-pipeline-routes.spec.ts"
+    },
+    {
+      "status": "M",
+      "path": "tests/journey/28-cannabis-and-safety-routes.spec.ts"
+    },
+    {
+      "status": "M",
+      "path": "tests/journey/29-network-partners-and-settings-extensions.spec.ts"
+    },
+    {
+      "status": "M",
+      "path": "tests/journey/helpers/journey-helpers.ts"
+    },
+    {
+      "status": "M",
+      "path": "tests/launch/03-empty-states.spec.ts"
+    },
+    {
+      "status": "M",
+      "path": "tests/launch/07-payments-and-finance.spec.ts"
+    },
+    {
+      "status": "M",
+      "path": "tests/launch/09-staff-and-tasks.spec.ts"
+    },
+    {
+      "status": "M",
+      "path": "tests/product/02-tier2-lifecycle.spec.ts"
+    },
+    {
+      "status": "M",
+      "path": "tests/product/03-tier3-financials.spec.ts"
+    },
+    {
+      "status": "M",
+      "path": "tests/product/04-tier4-operations.spec.ts"
+    },
+    {
+      "status": "M",
+      "path": "tests/product/09-deep-chef-features.spec.ts"
+    },
+    {
+      "status": "M",
+      "path": "tests/product/11-error-resilience.spec.ts"
+    },
+    {
+      "status": "M",
+      "path": "tests/rl/goal-detectors.ts"
+    },
+    {
+      "status": "M",
+      "path": "tests/rl/state-observer.ts"
+    },
+    {
+      "status": "M",
+      "path": "tests/sentinel/critical-paths.spec.ts"
+    },
+    {
+      "status": "M",
+      "path": "tests/soak/03-dashboard-browse.spec.ts"
+    },
+    {
+      "status": "M",
+      "path": "tests/system-audit-verify-prod.mjs"
+    },
+    {
+      "status": "M",
+      "path": "tests/system-audit-verify.mjs"
+    },
+    {
+      "status": "M",
+      "path": "tests/system-integrity/q52-nav-admin-parity.spec.ts"
+    },
+    {
+      "status": "M",
+      "path": "tests/system-integrity/q9-nav-completeness.spec.ts"
+    },
+    {
+      "status": "M",
+      "path": "tests/unit/chef-nav-priority.test.ts"
+    },
+    {
+      "status": "M",
+      "path": "tests/unit/focus-mode.test.ts"
+    },
+    {
+      "status": "M",
+      "path": "tests/unit/surface-governance.test.ts"
+    },
+    {
+      "status": "M",
+      "path": "tsconfig.ci.expanded.json"
+    },
+    {
+      "status": "??",
+      "path": ".playwright-mcp/page-2026-05-09T20-41-31-039Z.yml"
+    },
+    {
+      "status": "??",
+      "path": ".playwright-mcp/page-2026-05-10T01-16-44-481Z.yml"
+    },
+    {
+      "status": "??",
+      "path": ".playwright-mcp/page-2026-05-10T01-22-57-376Z.yml"
+    },
+    {
+      "status": "??",
+      "path": ".playwright-mcp/page-2026-05-10T01-27-54-812Z.yml"
+    },
+    {
+      "status": "??",
+      "path": ".playwright-mcp/page-2026-05-10T01-32-40-449Z.yml"
+    },
+    {
+      "status": "??",
+      "path": "app/(chef)/pipeline/"
+    },
+    {
+      "status": "??",
+      "path": "backup-db.bat"
+    },
+    {
+      "status": "??",
+      "path": "docs/PDFref/"
+    },
+    {
+      "status": "??",
+      "path": "docs/agent-contexts/"
+    },
+    {
+      "status": "??",
+      "path": "docs/local-ai-connector.md"
+    },
+    {
+      "status": "??",
+      "path": "docs/research/settings-ux-visual-scalability-patterns.md"
+    },
+    {
+      "status": "??",
+      "path": "docs/specs/document-formatting-spec.md"
+    },
+    {
+      "status": "??",
+      "path": "docs/specs/hub-consolidation.md"
+    },
+    {
+      "status": "??",
+      "path": "open-chefflow.bat"
+    },
+    {
+      "status": "??",
+      "path": "scripts/apply-local-ai-connectors-migration.mjs"
+    },
+    {
+      "status": "??",
+      "path": "scripts/check-events.mjs"
+    },
+    {
+      "status": "??",
+      "path": "scripts/check-tables.mjs"
+    },
+    {
+      "status": "??",
+      "path": "scripts/chefflow-connector.mjs"
+    },
+    {
+      "status": "??",
+      "path": "scripts/fix-dashboard-schema.mjs"
+    },
+    {
+      "status": "??",
+      "path": "scripts/list-tables.mjs"
+    },
+    {
+      "status": "??",
+      "path": "tests/unit/local-ai-connector.test.ts"
     }
   ],
   "next_action": null,
-  "context_notes": "Recent commits:\n6ead4828f feat(skills): add 8 chef daily ops skills and domain docs\nca63ddb5d feat(pie): Pi API v2, data cleanup, chef accuracy test, Layer 2 APIs\ndffc060ed feat(pie): Pi API v2 with smart matching, data cleanup, chef accuracy test\n5757a0cdc feat(pie): accuracy ground truth, ingredient bridge v2, Layer 2 APIs, region resolver\n6f3105954 fix(pie): coverage gap script COUNT(DISTINCT) for accurate store counts"
+  "context_notes": "Recent commits:\nc12902545 feat: supporting lib, components, API routes, and public pages for S-tier campaign\na95888b9c feat(db): 12 new migrations for campaign domain expansions\n0528aee04 feat(settings+scheduling): scheduling actions and settings completion\n8935778a8 feat(dashboard): real data integration and cross-domain intelligence wiring\n716139719 feat: Wave 4 domain consolidation - merge low-tier domains into parents"
 }

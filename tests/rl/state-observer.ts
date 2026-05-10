@@ -68,7 +68,7 @@ function detectRouteGroup(route: string): string {
     route.startsWith('/clients') ||
     route.startsWith('/inquiries') ||
     route.startsWith('/quotes') ||
-    route.startsWith('/financials') ||
+    route.startsWith('/finance') ||
     route.startsWith('/calendar') ||
     route.startsWith('/settings') ||
     route.startsWith('/culinary') ||

@@ -39,10 +39,10 @@ describe('surface governance', () => {
         '/clients',
         '/finance',
         '/culinary',
-        '/operations',
+        '/ops',
         '/extra',
       ]),
-      ['/dashboard', '/inbox', '/events', '/clients', '/finance', '/culinary', '/operations']
+      ['/dashboard', '/inbox', '/events', '/clients', '/finance', '/culinary', '/ops']
     )
   })
 

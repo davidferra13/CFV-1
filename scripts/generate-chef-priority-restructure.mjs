@@ -152,7 +152,7 @@ function workflowFor(route) {
     route.startsWith('/tasks') ||
     route.startsWith('/schedule') ||
     route.startsWith('/scheduling') ||
-    route.startsWith('/operations') ||
+    route.startsWith('/ops') ||
     route.startsWith('/meal-prep')
   ) {
     return 'day_of_execution_operations'
@@ -181,7 +181,7 @@ function workflowFor(route) {
   if (route.startsWith('/analytics') || route.startsWith('/insights') || route.startsWith('/reports') || route.startsWith('/goals') || route.startsWith('/intelligence')) {
     return 'long_term_review'
   }
-  if (route.startsWith('/settings') || route.startsWith('/onboarding') || route.startsWith('/features') || route.startsWith('/commands') || route.startsWith('/remy') || route.startsWith('/activity') || route.startsWith('/import') || route.startsWith('/help') || route.startsWith('/dev')) {
+  if (route.startsWith('/settings') || route.startsWith('/onboarding') || route.startsWith('/features') || route.startsWith('/remy') || route.startsWith('/activity') || route.startsWith('/import') || route.startsWith('/help') || route.startsWith('/dev')) {
     return 'settings_admin_tools'
   }
   if (route.startsWith('/cannabis')) return 'specialized_cannabis_workflow'

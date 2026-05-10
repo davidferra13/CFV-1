@@ -186,7 +186,7 @@ test.describe('Tier 4D — Staff & Kitchen', () => {
   })
 
   test('4D.4 — operations hub loads', async ({ page }) => {
-    await page.goto('/operations')
+    await page.goto('/ops')
     await page.waitForLoadState('domcontentloaded')
     await expect(page).not.toHaveURL(/auth\/signin/)
   })

@@ -8,6 +8,7 @@ import { getEvents } from '@/lib/events/actions'
 import { formatCurrency } from '@/lib/utils/currency'
 import { dateToDateString } from '@/lib/utils/format'
 import { Badge } from '@/components/ui/badge'
+import { getMonthPrepOverlay } from '@/lib/production/calendar-prep-overlay'
 import {
   startOfMonth,
   endOfMonth,
@@ -75,6 +76,9 @@ export default async function ProductionCalendarPage({
     return d >= monthStart && d <= monthEnd
   })
 
+  // Fetch prep overlay data
+  const prepOverlay = await getMonthPrepOverlay(format(currentMonth, 'yyyy-MM'))
+
   // Build calendar grid
   const days = eachDayOfInterval({ start: monthStart, end: monthEnd })
   // 0 = Sunday ... 6 = Saturday
@@ -137,6 +141,25 @@ export default async function ProductionCalendarPage({
         </div>
       </div>
 
+      {/* Prep phase legend */}
+      {prepOverlay.maxPrepMinutes > 0 && (
+        <div className="flex gap-4 text-xs text-stone-400">
+          <span className="font-medium text-stone-300">Prep phases:</span>
+          <span className="flex items-center gap-1">
+            <span className="w-2 h-2 rounded-full bg-purple-500" /> Grocery
+          </span>
+          <span className="flex items-center gap-1">
+            <span className="w-2 h-2 rounded-full bg-blue-500" /> Prep
+          </span>
+          <span className="flex items-center gap-1">
+            <span className="w-2 h-2 rounded-full bg-amber-500" /> Cook
+          </span>
+          <span className="flex items-center gap-1">
+            <span className="w-2 h-2 rounded-full bg-emerald-500" /> Service
+          </span>
+        </div>
+      )}
+
       {/* Calendar grid */}
       <div className="rounded-xl border border-stone-700 bg-stone-900 overflow-hidden">
         {/* Day-of-week headers */}
@@ -168,11 +191,25 @@ export default async function ProductionCalendarPage({
               )
             })
             const isToday = isSameDay(day, today)
+            const dateKey = format(day, 'yyyy-MM-dd')
+            const prepData = prepOverlay.prepDays[dateKey]
+
+            // Phase border class for event chips
+            const phaseChipBorder =
+              prepData?.phase === 'service'
+                ? 'border-l-2 border-l-emerald-500'
+                : prepData?.phase === 'cook'
+                  ? 'border-l-2 border-l-amber-500'
+                  : prepData?.phase === 'grocery'
+                    ? 'border-l-2 border-l-purple-500'
+                    : prepData?.phase === 'prep'
+                      ? 'border-l-2 border-l-blue-500'
+                      : ''
 
             return (
               <div
                 key={day.toISOString()}
-                className="min-h-[90px] border-b border-r border-stone-800 p-1.5 relative"
+                className="min-h-[90px] border-b border-r border-stone-800 p-1.5 relative flex flex-col"
               >
                 {/* Date number */}
                 <div
@@ -184,12 +221,12 @@ export default async function ProductionCalendarPage({
                 </div>
 
                 {/* Event chips */}
-                <div className="space-y-0.5">
+                <div className="space-y-0.5 flex-1">
                   {dayEvents.map((e: any) => (
                     <Link
                       key={e.id}
                       href={`/events/${e.id}`}
-                      className="block rounded px-1.5 py-0.5 hover:opacity-80 transition-opacity"
+                      className={`block rounded px-1.5 py-0.5 hover:opacity-80 transition-opacity ${phaseChipBorder}`}
                       style={{
                         backgroundColor:
                           e.status === 'cancelled'
@@ -225,6 +262,31 @@ export default async function ProductionCalendarPage({
                     </Link>
                   ))}
                 </div>
+
+                {/* Prep load bar */}
+                {prepData && prepData.totalPrepMinutes > 0 && (
+                  <div className="mt-auto pt-1">
+                    <div className="h-1 rounded-full bg-stone-700 overflow-hidden">
+                      <div
+                        className={`h-full rounded-full ${
+                          prepData.phase === 'service'
+                            ? 'bg-emerald-500'
+                            : prepData.phase === 'cook'
+                              ? 'bg-amber-500'
+                              : prepData.phase === 'grocery'
+                                ? 'bg-purple-500'
+                                : 'bg-blue-500'
+                        }`}
+                        style={{
+                          width: `${Math.min(100, (prepData.totalPrepMinutes / prepOverlay.maxPrepMinutes) * 100)}%`,
+                        }}
+                      />
+                    </div>
+                    <span className="text-[10px] text-stone-500">
+                      {Math.round((prepData.totalPrepMinutes / 60) * 10) / 10}h
+                    </span>
+                  </div>
+                )}
               </div>
             )
           })}

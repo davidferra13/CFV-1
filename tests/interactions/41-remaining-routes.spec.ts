@@ -210,34 +210,34 @@ test.describe('Activity', () => {
   })
 })
 
-// ─── Financials (chef view, separate from /finance) ───────────────────────────
+// ─── Finance ────────────────────────────────────────────────────────────────
 
-test.describe('Financials', () => {
-  test('/financials — loads without redirect', async ({ page }) => {
-    await page.goto('/financials')
+test.describe('Finance', () => {
+  test('/finance — loads without redirect', async ({ page }) => {
+    await page.goto('/finance')
     await page.waitForLoadState('networkidle')
     expect(page.url()).not.toMatch(/auth\/signin/)
     const bodyText = await page.locator('body').innerText()
     expect(bodyText.trim().length).toBeGreaterThan(20)
   })
 
-  test('/financials — shows financial content', async ({ page }) => {
-    await page.goto('/financials')
+  test('/finance — shows financial content', async ({ page }) => {
+    await page.goto('/finance')
     await page.waitForLoadState('networkidle')
     const bodyText = await page.locator('body').innerText()
     expect(bodyText.trim().length).toBeGreaterThan(20)
   })
 
-  test('/financials — no JS errors', async ({ page }) => {
+  test('/finance — no JS errors', async ({ page }) => {
     const errors: string[] = []
     page.on('pageerror', (err) => errors.push(err.message))
-    await page.goto('/financials')
+    await page.goto('/finance')
     await page.waitForLoadState('networkidle')
     expect(errors).toHaveLength(0)
   })
 
-  test('/financials — data is tenant-scoped', async ({ page, seedIds }) => {
-    await page.goto('/financials')
+  test('/finance — data is tenant-scoped', async ({ page, seedIds }) => {
+    await page.goto('/finance')
     await page.waitForLoadState('networkidle')
     const bodyText = await page.locator('body').innerText()
     expect(bodyText).not.toContain(seedIds.chefBId)
@@ -248,7 +248,7 @@ test.describe('Financials', () => {
 
 test.describe('Operations', () => {
   test('/operations — loads without redirect', async ({ page }) => {
-    await page.goto('/operations')
+    await page.goto('/ops')
     await page.waitForLoadState('networkidle')
     expect(page.url()).not.toMatch(/auth\/signin/)
     const bodyText = await page.locator('body').innerText()
@@ -256,7 +256,7 @@ test.describe('Operations', () => {
   })
 
   test('/operations — shows operations content', async ({ page }) => {
-    await page.goto('/operations')
+    await page.goto('/ops')
     await page.waitForLoadState('networkidle')
     const bodyText = await page.locator('body').innerText()
     expect(bodyText.trim().length).toBeGreaterThan(20)
@@ -265,13 +265,13 @@ test.describe('Operations', () => {
   test('/operations — no JS errors', async ({ page }) => {
     const errors: string[] = []
     page.on('pageerror', (err) => errors.push(err.message))
-    await page.goto('/operations')
+    await page.goto('/ops')
     await page.waitForLoadState('networkidle')
     expect(errors).toHaveLength(0)
   })
 
   test('/operations/kitchen-rentals — loads without 500', async ({ page }) => {
-    const resp = await page.goto('/operations/kitchen-rentals')
+    const resp = await page.goto('/ops/kitchen-rentals')
     await page.waitForLoadState('networkidle')
     expect(resp?.status()).not.toBe(500)
   })
@@ -279,13 +279,13 @@ test.describe('Operations', () => {
   test('/operations/kitchen-rentals — no JS errors', async ({ page }) => {
     const errors: string[] = []
     page.on('pageerror', (err) => errors.push(err.message))
-    await page.goto('/operations/kitchen-rentals')
+    await page.goto('/ops/kitchen-rentals')
     await page.waitForLoadState('networkidle')
     expect(errors).toHaveLength(0)
   })
 
   test('/operations/equipment — loads without 500', async ({ page }) => {
-    const resp = await page.goto('/operations/equipment')
+    const resp = await page.goto('/ops/equipment')
     await page.waitForLoadState('networkidle')
     expect(resp?.status()).not.toBe(500)
   })
@@ -293,13 +293,13 @@ test.describe('Operations', () => {
   test('/operations/equipment — no JS errors', async ({ page }) => {
     const errors: string[] = []
     page.on('pageerror', (err) => errors.push(err.message))
-    await page.goto('/operations/equipment')
+    await page.goto('/ops/equipment')
     await page.waitForLoadState('networkidle')
     expect(errors).toHaveLength(0)
   })
 
   test('All operations routes load without 500', async ({ page }) => {
-    const routes = ['/operations', '/operations/kitchen-rentals', '/operations/equipment']
+    const routes = ['/ops', '/ops/kitchen-rentals', '/ops/equipment']
     for (const route of routes) {
       const resp = await page.goto(route)
       await page.waitForLoadState('networkidle')

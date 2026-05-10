@@ -6,8 +6,10 @@ import { requireChef } from '@/lib/auth/get-user'
 import { requireFocusAccess } from '@/lib/billing/require-focus-access'
 import { listStations } from '@/lib/stations/actions'
 import { getAll86dItems } from '@/lib/stations/clipboard-actions'
+import { getServiceModeData } from '@/lib/stations/service-mode-actions'
 import { StationForm } from '@/components/stations/station-form'
 import { EightySixBanner } from '@/components/stations/eighty-six-banner'
+import { ServiceModePanel } from '@/components/stations/service-mode-panel'
 import { Card, CardContent } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
 import Link from 'next/link'
@@ -17,8 +19,11 @@ export const metadata: Metadata = { title: 'Stations' }
 export default async function StationsPage() {
   await requireChef()
   await requireFocusAccess()
-  const stations = await listStations()
-  const eightySixedItems = await getAll86dItems()
+  const [stations, eightySixedItems, serviceMode] = await Promise.all([
+    listStations(),
+    getAll86dItems(),
+    getServiceModeData(),
+  ])
 
   return (
     <div className="max-w-6xl mx-auto px-4 py-8 space-y-6">
@@ -82,6 +87,9 @@ export default async function StationsPage() {
           Menu Performance
         </Link>
       </div>
+
+      {/* Service mode panel - shows live service state when an event is active */}
+      <ServiceModePanel initialData={serviceMode} />
 
       {/* 86'd banner - shows all currently 86'd items across all stations */}
       {eightySixedItems.length > 0 && <EightySixBanner items={eightySixedItems} />}

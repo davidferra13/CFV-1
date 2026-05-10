@@ -21,7 +21,7 @@ test.describe('T1: Critical Paths', () => {
       const criticalPages = [
         { path: '/events', urlPattern: /\/(events|onboarding|dashboard)/ },
         { path: '/recipes', urlPattern: /\/(recipes|onboarding|dashboard)/ },
-        { path: '/financials', urlPattern: /\/(financials|onboarding|dashboard)/ },
+        { path: '/finance', urlPattern: /\/(finance|onboarding|dashboard)/ },
         { path: '/finance', urlPattern: /\/(finance|onboarding|dashboard)/ },
         { path: '/calendar', urlPattern: /\/(calendar|onboarding|dashboard)/ },
         { path: '/settings', urlPattern: /\/(settings|onboarding|dashboard)/ },

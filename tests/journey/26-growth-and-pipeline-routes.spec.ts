@@ -72,12 +72,12 @@ test.describe('Growth Routes - Proposals and Reputation (#421-426)', () => {
     await assertPageLoads(page, '/proposals/templates')
   })
 
-  test('guest leads route loads (#423)', async ({ page }) => {
-    await assertPageLoads(page, '/guest-leads')
+  test('guest leads redirect to leads (#423)', async ({ page }) => {
+    await assertPageLoads(page, '/leads')
   })
 
-  test('guest analytics route loads (#424)', async ({ page }) => {
-    await assertPageLoads(page, '/guest-analytics')
+  test('guest retention route loads (#424)', async ({ page }) => {
+    await assertPageLoads(page, '/clients/insights/retention')
   })
 
   test('reviews route has content (#425)', async ({ page }) => {

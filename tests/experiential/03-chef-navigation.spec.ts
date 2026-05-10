@@ -18,7 +18,7 @@ const CHEF_ROUTES = {
   calendar: '/calendar',
 
   // Financial
-  financials: '/financials',
+  financials: '/finance',
   expenses: '/expenses',
 
   // Culinary

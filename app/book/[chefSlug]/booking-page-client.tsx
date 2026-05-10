@@ -132,7 +132,7 @@ export function BookingPageClient({ chefSlug, bookingConfig, chef, prefill }: Pr
   return (
     <div className="grid gap-8 lg:grid-cols-[minmax(0,1fr)_340px] lg:items-start">
       <div className="space-y-6">
-        <section className="rounded-[28px] border border-stone-700 bg-stone-900/90 p-6 shadow-[var(--shadow-card)]">
+        <section className="rounded-xl border border-stone-700 bg-stone-900/90 p-6 shadow-[var(--shadow-card)]">
           <div className="flex flex-wrap gap-2">
             <StepPill step="1. Choose date" active={!selectedDate} />
             <StepPill step="2. Share details" active={Boolean(selectedDate)} />
@@ -174,7 +174,7 @@ export function BookingPageClient({ chefSlug, bookingConfig, chef, prefill }: Pr
         </section>
 
         {selectedDate ? (
-          <section className="rounded-[28px] border border-stone-700 bg-stone-900/90 p-6 shadow-[var(--shadow-card)]">
+          <section className="rounded-xl border border-stone-700 bg-stone-900/90 p-6 shadow-[var(--shadow-card)]">
             <div className="flex flex-wrap items-start justify-between gap-4">
               <div>
                 <p className="text-xs font-semibold uppercase tracking-[0.18em] text-stone-500">
@@ -208,7 +208,7 @@ export function BookingPageClient({ chefSlug, bookingConfig, chef, prefill }: Pr
       </div>
 
       <aside className="space-y-4 lg:sticky lg:top-8">
-        <div className="rounded-[28px] border border-stone-700 bg-stone-900/90 p-6 shadow-[var(--shadow-card)]">
+        <div className="rounded-xl border border-stone-700 bg-stone-900/90 p-6 shadow-[var(--shadow-card)]">
           <p className="text-xs font-semibold uppercase tracking-[0.18em] text-stone-500">
             Booking terms
           </p>
@@ -259,7 +259,7 @@ export function BookingPageClient({ chefSlug, bookingConfig, chef, prefill }: Pr
           </div>
         </div>
 
-        <div className="rounded-[28px] border border-stone-700 bg-stone-900/90 p-6 shadow-[var(--shadow-card)]">
+        <div className="rounded-xl border border-stone-700 bg-stone-900/90 p-6 shadow-[var(--shadow-card)]">
           <p className="text-xs font-semibold uppercase tracking-[0.18em] text-stone-500">
             What happens next
           </p>
@@ -278,7 +278,7 @@ export function BookingPageClient({ chefSlug, bookingConfig, chef, prefill }: Pr
           </div>
         </div>
 
-        <div className="rounded-[28px] border border-stone-700 bg-stone-900/90 p-6 shadow-[var(--shadow-card)]">
+        <div className="rounded-xl border border-stone-700 bg-stone-900/90 p-6 shadow-[var(--shadow-card)]">
           <div className="flex items-start gap-3">
             <ShieldCheck className="mt-0.5 h-5 w-5 text-emerald-400" />
             <div>
@@ -313,7 +313,7 @@ export function BookingPageClient({ chefSlug, bookingConfig, chef, prefill }: Pr
           </div>
         </div>
 
-        <div className="rounded-[28px] border border-emerald-900/60 bg-emerald-950/20 p-6 shadow-[var(--shadow-card)]">
+        <div className="rounded-xl border border-emerald-900/60 bg-emerald-950/20 p-6 shadow-[var(--shadow-card)]">
           <div className="flex items-start gap-3">
             <CheckCircle className="mt-0.5 h-5 w-5 text-emerald-400" />
             <div>

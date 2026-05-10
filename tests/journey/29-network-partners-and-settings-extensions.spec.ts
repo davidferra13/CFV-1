@@ -417,8 +417,8 @@ test.describe('Remaining Dynamic Chef Route Literals (#520-522)', () => {
 })
 
 test.describe('Static Route Literal Closure (#523-527)', () => {
-  test('commands route loads (#523)', async ({ page }) => {
-    await assertPageLoads(page, '/commands')
+  test('remy hub route loads (#523)', async ({ page }) => {
+    await assertPageLoads(page, '/remy')
   })
 
   test('remy history route loads (#524)', async ({ page }) => {
@@ -558,21 +558,21 @@ test.describe('Remaining Dynamic Detail Routes (#533-537)', () => {
   })
 
   test('social post detail route is reachable via direct path (#537)', async ({ page }) => {
-    await page.goto('/social/planner')
+    await page.goto('/marketing/social')
     await page.waitForLoadState('domcontentloaded')
 
     if (page.url().includes('auth/signin')) return
 
-    const postLink = page.locator('a[href^="/social/posts/"]').first()
+    const postLink = page.locator('a[href^="/marketing/social/posts/"]').first()
     if ((await postLink.count()) === 0) return
 
     const href = await postLink.getAttribute('href')
     if (!href) return
 
-    const postId = href.split('/')[3]
+    const postId = href.split('/')[4]
     if (!postId) return
 
-    await page.goto(`/social/posts/${postId}`)
+    await page.goto(`/marketing/social/posts/${postId}`)
     await page.waitForLoadState('domcontentloaded')
     await assertPageHasContent(page)
   })

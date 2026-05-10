@@ -34,7 +34,7 @@ test.describe('Soak: Dashboard → Multi-page browse', () => {
       await soakNavigate(page, '/dashboard')
       await soakNavigate(page, '/inquiries')
       await soakNavigate(page, '/dashboard')
-      await soakNavigate(page, '/financials')
+      await soakNavigate(page, '/finance')
       await soakNavigate(page, '/dashboard')
 
       const cycleTimeMs = Date.now() - cycleStart

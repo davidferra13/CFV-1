@@ -87,7 +87,7 @@ test.describe('Empty States — Core Pages', () => {
     const errors: string[] = []
     page.on('pageerror', (err) => errors.push(err.message))
 
-    await page.goto('/financials')
+    await page.goto('/finance')
     await page.waitForLoadState('networkidle')
     const bodyText = await page.locator('body').innerText()
     expect(bodyText.trim().length).toBeGreaterThan(30)
@@ -108,7 +108,7 @@ test.describe('Empty States — No 500 Errors', () => {
     '/recipes',
     '/menus',
     '/calendar',
-    '/financials',
+    '/finance',
     '/expenses',
     '/inbox',
     '/schedule',

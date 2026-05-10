@@ -211,7 +211,7 @@ test.describe('Tenant Isolation — Cross-Tenant Access Prevention', () => {
       const context = await browser.newContext()
       const page = await context.newPage()
 
-      await page.goto('/financials')
+      await page.goto('/finance')
       await expect(page).toHaveURL(/auth\/signin/)
 
       await context.close()

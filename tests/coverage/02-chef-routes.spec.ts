@@ -715,8 +715,8 @@ test.describe('Chef â€” Finance (Overview)', () => {
     await assertChefPageLoads(page, '/finance')
   })
 
-  test('/financials', async ({ page }) => {
-    await assertChefPageLoads(page, '/financials')
+  test('/finance', async ({ page }) => {
+    await assertChefPageLoads(page, '/finance')
   })
 
   test('/finance/overview', async ({ page }) => {
@@ -1067,24 +1067,24 @@ test.describe('Chef â€” Marketing & Growth', () => {
     await assertChefPageLoads(page, '/marketing/sequences')
   })
 
-  test('/social', async ({ page }) => {
-    await assertChefPageLoads(page, '/social')
+  test('/marketing/social', async ({ page }) => {
+    await assertChefPageLoads(page, '/marketing/social')
   })
 
-  test('/social/planner', async ({ page }) => {
-    await assertChefPageLoads(page, '/social/planner')
+  test('/marketing/social (planner)', async ({ page }) => {
+    await assertChefPageLoads(page, '/marketing/social')
   })
 
-  test('/social/vault', async ({ page }) => {
-    await assertChefPageLoads(page, '/social/vault')
+  test('/content/vault', async ({ page }) => {
+    await assertChefPageLoads(page, '/content/vault')
   })
 
-  test('/social/connections', async ({ page }) => {
-    await assertChefPageLoads(page, '/social/connections')
+  test('/marketing/social/connections', async ({ page }) => {
+    await assertChefPageLoads(page, '/marketing/social/connections')
   })
 
-  test('/social/settings', async ({ page }) => {
-    await assertChefPageLoads(page, '/social/settings')
+  test('/marketing/social/settings', async ({ page }) => {
+    await assertChefPageLoads(page, '/marketing/social/settings')
   })
 
   test('/leads', async ({ page }) => {
@@ -1191,16 +1191,12 @@ test.describe('Chef â€” Loyalty Program', () => {
 // â”€â”€â”€ Operations â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
 test.describe('Chef â€” Operations', () => {
-  test('/operations', async ({ page }) => {
-    await assertChefPageLoads(page, '/operations')
+  test('/ops/kitchen-rentals', async ({ page }) => {
+    await assertChefPageLoads(page, '/ops/kitchen-rentals')
   })
 
-  test('/operations/kitchen-rentals', async ({ page }) => {
-    await assertChefPageLoads(page, '/operations/kitchen-rentals')
-  })
-
-  test('/operations/equipment', async ({ page }) => {
-    await assertChefPageLoads(page, '/operations/equipment')
+  test('/ops/equipment', async ({ page }) => {
+    await assertChefPageLoads(page, '/ops/equipment')
   })
 })
 

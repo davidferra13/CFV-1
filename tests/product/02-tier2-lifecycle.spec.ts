@@ -202,8 +202,8 @@ test.describe('Tier 2C — Calendar & Scheduling', () => {
     }
   })
 
-  test('2C.3 — scheduling page loads', async ({ page }) => {
-    await page.goto('/scheduling')
+  test('2C.3 — calendar page loads', async ({ page }) => {
+    await page.goto('/calendar')
     await page.waitForLoadState('domcontentloaded')
     await expect(page).not.toHaveURL(/auth\/signin/)
   })

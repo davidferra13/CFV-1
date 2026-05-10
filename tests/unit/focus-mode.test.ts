@@ -21,7 +21,7 @@ const ALL_MODULES = [...CORE_MODULES, ...EXTENDED_MODULES]
 
 const CORE_NAV_HREFS = new Set([
   '/dashboard',
-  '/commands',
+  '/remy',
   '/daily',
   '/inbox',
   '/clients',

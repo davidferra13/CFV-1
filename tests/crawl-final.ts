@@ -23,13 +23,12 @@ const ROUTES: Record<string, string[]> = {
     '/partners',
     '/partners/new',
     '/prospecting',
-    '/guest-leads',
     '/proposals',
     '/proposals/new',
     '/testimonials',
   ],
   financials: [
-    '/financials',
+    '/finance',
     '/expenses',
     '/expenses/new',
     '/invoices',
@@ -139,7 +138,7 @@ const ROUTES: Record<string, string[]> = {
   other: [
     '/loyalty',
     '/safety',
-    '/safety/incidents',
+    '/settings/compliance/incidents',
     '/safety/training',
     '/help',
     '/help/faq',

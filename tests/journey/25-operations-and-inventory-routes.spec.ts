@@ -16,15 +16,15 @@ import {
 
 test.describe('Operations Routes (#395-399)', () => {
   test('operations hub page loads (#395)', async ({ page }) => {
-    await assertPageLoads(page, '/operations')
+    await assertPageLoads(page, '/ops')
   })
 
   test('operations equipment page loads (#396)', async ({ page }) => {
-    await assertPageLoads(page, '/operations/equipment')
+    await assertPageLoads(page, '/ops/equipment')
   })
 
   test('operations kitchen rentals page loads (#397)', async ({ page }) => {
-    await assertPageLoads(page, '/operations/kitchen-rentals')
+    await assertPageLoads(page, '/ops/kitchen-rentals')
   })
 
   test('daily operations route remains reachable (#398)', async ({ page }) => {

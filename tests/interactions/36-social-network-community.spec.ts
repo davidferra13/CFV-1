@@ -2,15 +2,15 @@
 // Tests social media planner, chef network, and community features.
 //
 // Routes covered:
-//   /social                    — social media hub
-//   /social/connections        — social connections
-//   /social/planner            — content planner
-//   /social/settings           — social media settings
-//   /social/vault              — content vault
-//   /network                   — chef network hub
-//   /network/notifications     — network notifications
-//   /network/saved             — saved network content
-//   /community/templates       — community template library
+//   /marketing/social              — social media hub
+//   /marketing/social/connections  — social connections
+//   /marketing/social              — content planner
+//   /marketing/social/settings     — social media settings
+//   /content/vault                 — content vault
+//   /network                       — chef network hub
+//   /network/notifications         — network notifications
+//   /network/saved                 — saved network content
+//   /community/templates           — community template library
 //
 // Uses chef storageState (interactions-chef project).
 
@@ -19,16 +19,16 @@ import { test, expect } from '../helpers/fixtures'
 // ─── Social Hub ───────────────────────────────────────────────────────────────
 
 test.describe('Social — Hub', () => {
-  test('/social — page loads without redirect', async ({ page }) => {
-    await page.goto('/social')
+  test('/marketing/social — page loads without redirect', async ({ page }) => {
+    await page.goto('/marketing/social')
     await page.waitForLoadState('networkidle')
     expect(page.url()).not.toMatch(/auth\/signin/)
     const bodyText = await page.locator('body').innerText()
     expect(bodyText.trim().length).toBeGreaterThan(20)
   })
 
-  test('/social — shows social content or empty state', async ({ page }) => {
-    await page.goto('/social')
+  test('/marketing/social — shows social content or empty state', async ({ page }) => {
+    await page.goto('/marketing/social')
     await page.waitForLoadState('networkidle')
     const hasContent = await page
       .getByText(/social|post|content|instagram|planner|schedule/i)
@@ -40,10 +40,10 @@ test.describe('Social — Hub', () => {
     const _ = hasContent
   })
 
-  test('/social — no JS errors', async ({ page }) => {
+  test('/marketing/social — no JS errors', async ({ page }) => {
     const errors: string[] = []
     page.on('pageerror', (err) => errors.push(err.message))
-    await page.goto('/social')
+    await page.goto('/marketing/social')
     await page.waitForLoadState('networkidle')
     expect(errors).toHaveLength(0)
   })
@@ -51,10 +51,10 @@ test.describe('Social — Hub', () => {
 
 test.describe('Social — Sub-pages', () => {
   const socialRoutes = [
-    '/social/connections',
-    '/social/planner',
-    '/social/settings',
-    '/social/vault',
+    '/marketing/social/connections',
+    '/marketing/social',
+    '/marketing/social/settings',
+    '/content/vault',
   ]
 
   for (const route of socialRoutes) {
@@ -65,23 +65,23 @@ test.describe('Social — Sub-pages', () => {
     })
   }
 
-  test('/social/planner — no JS errors', async ({ page }) => {
+  test('/marketing/social (planner) — no JS errors', async ({ page }) => {
     const errors: string[] = []
     page.on('pageerror', (err) => errors.push(err.message))
-    await page.goto('/social/planner')
+    await page.goto('/marketing/social')
     await page.waitForLoadState('networkidle')
     expect(errors).toHaveLength(0)
   })
 
-  test('/social/vault — shows vault content or empty state', async ({ page }) => {
-    await page.goto('/social/vault')
+  test('/content/vault — shows vault content or empty state', async ({ page }) => {
+    await page.goto('/content/vault')
     await page.waitForLoadState('networkidle')
     const bodyText = await page.locator('body').innerText()
     expect(bodyText.trim().length).toBeGreaterThan(20)
   })
 
   test('Social data is tenant-scoped', async ({ page, seedIds }) => {
-    await page.goto('/social')
+    await page.goto('/marketing/social')
     await page.waitForLoadState('networkidle')
     const bodyText = await page.locator('body').innerText()
     expect(bodyText).not.toContain(seedIds.chefBId)
@@ -180,7 +180,7 @@ test.describe('Social/Network — Cross-Section', () => {
     const errors: string[] = []
     page.on('pageerror', (err) => errors.push(err.message))
 
-    for (const route of ['/social', '/social/planner', '/network']) {
+    for (const route of ['/marketing/social', '/marketing/social', '/network']) {
       await page.goto(route)
       await page.waitForLoadState('networkidle')
     }
@@ -190,11 +190,11 @@ test.describe('Social/Network — Cross-Section', () => {
 
   test('All social/network routes return non-500 status', async ({ page }) => {
     const routes = [
-      '/social',
-      '/social/connections',
-      '/social/planner',
-      '/social/vault',
-      '/social/settings',
+      '/marketing/social',
+      '/marketing/social/connections',
+      '/marketing/social',
+      '/content/vault',
+      '/marketing/social/settings',
       '/network',
       '/network/notifications',
       '/network/saved',

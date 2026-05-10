@@ -1680,7 +1680,7 @@ Sub-flows: `/onboarding/clients/`, `/onboarding/loyalty/`, `/onboarding/recipes/
 
 ### 4.73 Remy Command Hub
 
-Founder-only AI management console. Located at `/commands/`. Restricted to founder email; all others redirected to an unauthorized page.
+Founder-only AI management console. Located at `/remy`. Restricted to founder email; all others redirected to an unauthorized page.
 
 | Function             | Description                              |
 | -------------------- | ---------------------------------------- |

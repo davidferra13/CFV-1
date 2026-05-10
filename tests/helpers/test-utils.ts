@@ -48,7 +48,7 @@ export const ROUTES = {
   menus: '/menus',
   recipes: '/recipes',
   quotes: '/quotes',
-  financials: '/financials',
+  financials: '/finance',
   expenses: '/expenses',
   inbox: '/inbox',
   network: '/network',

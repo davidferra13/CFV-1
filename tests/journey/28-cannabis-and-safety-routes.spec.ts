@@ -55,15 +55,15 @@ test.describe('Cannabis Routes - Foundation (#441-448)', () => {
 
 test.describe('Safety Routes - Incident Operations (#449-454)', () => {
   test('safety incidents route loads (#449)', async ({ page }) => {
-    await assertPageLoads(page, '/safety/incidents')
+    await assertPageLoads(page, '/settings/compliance/incidents')
   })
 
   test('new safety incident route loads (#450)', async ({ page }) => {
-    await assertPageLoads(page, '/safety/incidents/new')
+    await assertPageLoads(page, '/settings/compliance/incidents/new')
   })
 
   test('backup-chef safety route loads (#451)', async ({ page }) => {
-    await assertPageLoads(page, '/safety/backup-chef')
+    await assertPageLoads(page, '/settings/compliance/backup')
   })
 
   test('compliance route remains reachable (#452)', async ({ page }) => {
@@ -133,12 +133,12 @@ test.describe('Additional Cannabis Namespace Routes (#504-505)', () => {
 
 test.describe('Safety Dynamic Detail Coverage (#511)', () => {
   test('safety incident detail route is reachable from incidents list (#511)', async ({ page }) => {
-    await page.goto('/safety/incidents')
+    await page.goto('/settings/compliance/incidents')
     await page.waitForLoadState('domcontentloaded')
 
     if (page.url().includes('auth/signin')) return
 
-    const incidentLink = page.locator('a[href^="/safety/incidents/"]').first()
+    const incidentLink = page.locator('a[href^="/settings/compliance/incidents/"]').first()
     if ((await incidentLink.count()) === 0) return
 
     await incidentLink.click()

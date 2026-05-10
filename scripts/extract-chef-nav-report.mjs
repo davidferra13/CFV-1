@@ -573,7 +573,7 @@ const duplicates = [
   ['/menus/upload', 'Menu Upload | Upload Menu'],
   ['/network', 'Chef Network | Community Hub'],
   ['/network/saved', 'Saved Chefs | Saved Posts'],
-  ['/operations/equipment', 'Equipment | Maintenance Schedule'],
+  ['/ops/equipment', 'Equipment | Maintenance Schedule'],
   ['/queue', 'Priority Queue | Queue'],
   ['/quotes/new', 'New Quote | Quote'],
   ['/receipts', 'Receipt Library | Upload Receipt'],

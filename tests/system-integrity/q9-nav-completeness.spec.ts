@@ -44,7 +44,7 @@ const NAV_LINKS = [
   '/tasks',
   // More Tools
   '/marketing',
-  '/social',
+  '/marketing/social',
   '/network',
   '/analytics',
   // Settings (always-visible, non-module-gated)

@@ -219,8 +219,8 @@ const CHEF_ROUTES = [
   '/proposals/templates',
   '/proposals/addons',
   '/testimonials',
-  '/guest-leads',
-  '/guest-analytics',
+  '/leads',
+  '/clients/insights/retention',
   '/marketplace',
   // Recipes & Menus
   '/recipes',
@@ -282,8 +282,7 @@ const CHEF_ROUTES = [
   '/commerce/reports',
   '/commerce/reports/shifts',
   '/commerce/schedules',
-  // Financials
-  '/financials',
+  // Finance
   '/finance',
   '/expenses',
   '/expenses/new',
@@ -324,7 +323,7 @@ const CHEF_ROUTES = [
   '/marketing',
   '/marketing/campaigns',
   '/marketing/email',
-  '/social',
+  '/marketing/social',
   '/portfolio',
   '/photos',
   '/network',
@@ -357,7 +356,7 @@ const CHEF_ROUTES = [
   '/training',
   '/travel',
   '/compliance',
-  '/consulting',
+  '/quotes/calculator',
   '/production',
   '/shopping',
   '/food-cost',
@@ -491,9 +490,9 @@ const ADMIN_ROUTES = [
   '/prospecting/scripts',
   '/prospecting/pipeline',
   '/prospecting/clusters',
-  // Admin commands
-  '/commands',
+  // Remy AI
   '/remy',
+  '/remy/history',
 ]
 
 test.describe('Screenshot Crawl - Admin Pages', () => {

@@ -243,7 +243,7 @@ export default async function BookingPage({
               </div>
             </div>
 
-            <div className="rounded-[28px] border border-stone-700 bg-stone-950/70 p-6 shadow-[var(--shadow-card)]">
+            <div className="rounded-xl border border-stone-700 bg-stone-950/70 p-6 shadow-[var(--shadow-card)]">
               <p className="text-xs font-semibold uppercase tracking-[0.18em] text-stone-500">
                 Why this path converts cleanly
               </p>

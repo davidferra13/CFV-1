@@ -269,7 +269,7 @@ async function run() {
   console.log('\nPhase 4: Navigation Integrity (sidebar links)')
   const navLinks = [
     '/inbox', '/analytics', '/culinary', '/menus',
-    '/staff', '/operations', '/growth'
+    '/staff', '/ops'
   ]
   for (const link of navLinks) {
     try {

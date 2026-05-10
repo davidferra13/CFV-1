@@ -49,7 +49,7 @@ const nextConfig = {
     optimizePackageImports: ['@phosphor-icons/react', 'recharts', 'lucide-react', 'date-fns'],
     // Next 14 still uses the experimental flag for keeping server-only SDKs out of the
     // RSC/route-handler bundle graph. These packages are only instantiated on Node.
-    serverComponentsExternalPackages: ['resend', 'stripe', 'svix'],
+    serverComponentsExternalPackages: ['resend', 'stripe', 'svix', '@resvg/resvg-js'],
   },
   // Allow LAN access in development so internal /_next assets are not
   // rejected as cross-origin. Extra hosts can be added via NEXT_ALLOWED_DEV_ORIGINS=host1,host2
@@ -332,6 +332,89 @@ const nextConfig = {
         source: '/ingredient',
         destination: '/',
         permanent: false,
+      },
+      // Consolidated onboarding: old routes -> /onboarding/*
+      {
+        source: '/welcome',
+        destination: '/onboarding/welcome',
+        permanent: true,
+      },
+      {
+        source: '/features',
+        destination: '/onboarding/features',
+        permanent: true,
+      },
+      {
+        source: '/help',
+        destination: '/onboarding/help',
+        permanent: true,
+      },
+      // Consolidated analytics: old standalone routes -> /analytics/*
+      {
+        source: '/intelligence',
+        destination: '/analytics/intelligence',
+        permanent: true,
+      },
+      {
+        source: '/reports',
+        destination: '/analytics/reports',
+        permanent: true,
+      },
+      {
+        source: '/goals',
+        destination: '/analytics/goals',
+        permanent: true,
+      },
+      {
+        source: '/goals/:path*',
+        destination: '/analytics/goals/:path*',
+        permanent: true,
+      },
+      // Consolidated event sub-modes: cannabis, charity, travel -> /events/*
+      {
+        source: '/cannabis',
+        destination: '/events/cannabis',
+        permanent: true,
+      },
+      {
+        source: '/cannabis/ledger',
+        destination: '/events/cannabis/ledger',
+        permanent: true,
+      },
+      {
+        source: '/cannabis/events',
+        destination: '/events/cannabis',
+        permanent: true,
+      },
+      {
+        source: '/cannabis/events/:path*',
+        destination: '/events/:path*',
+        permanent: true,
+      },
+      {
+        source: '/cannabis/compliance',
+        destination: '/events/cannabis',
+        permanent: true,
+      },
+      {
+        source: '/cannabis/handbook',
+        destination: '/events/cannabis',
+        permanent: true,
+      },
+      {
+        source: '/charity',
+        destination: '/events/charity',
+        permanent: true,
+      },
+      {
+        source: '/charity/hours',
+        destination: '/events/charity/hours',
+        permanent: true,
+      },
+      {
+        source: '/travel',
+        destination: '/events/travel',
+        permanent: true,
       },
     ]
   },

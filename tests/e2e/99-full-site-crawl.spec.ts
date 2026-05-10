@@ -27,7 +27,6 @@ const ROUTES = {
     '/partners',
     '/partners/new',
     '/prospecting',
-    '/guest-leads',
     '/proposals',
     '/proposals/new',
     '/testimonials',
@@ -35,7 +34,7 @@ const ROUTES = {
 
   // ── FINANCIALS ──
   financials: [
-    '/financials',
+    '/finance',
     '/expenses',
     '/expenses/new',
     '/invoices',
@@ -169,7 +168,7 @@ const ROUTES = {
   other: [
     '/loyalty',
     '/safety',
-    '/safety/incidents',
+    '/settings/compliance/incidents',
     '/safety/training',
     '/help',
     '/help/faq',

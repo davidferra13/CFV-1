@@ -96,7 +96,7 @@ test.describe('Error Resilience — Rapid Navigation', () => {
       '/recipes',
       '/menus',
       '/calendar',
-      '/financials',
+      '/finance',
       '/settings',
       '/dashboard',
     ]

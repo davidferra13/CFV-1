@@ -408,7 +408,7 @@ function computeDomainScores(results) {
     else if (p.startsWith('/marketing') || p.startsWith('/social') || p.startsWith('/content')) domain = 'Marketing'
     else if (p.startsWith('/network') || p.startsWith('/community') || p.startsWith('/circles')) domain = 'Network'
     else if (p.startsWith('/loyalty') || p.startsWith('/rewards')) domain = 'Loyalty'
-    else if (p.startsWith('/safety') || p.startsWith('/reputation') || p.startsWith('/operations')) domain = 'Safety & Ops'
+    else if (p.startsWith('/safety') || p.startsWith('/reputation') || p.startsWith('/ops')) domain = 'Safety & Ops'
     else if (p.startsWith('/my-')) domain = 'Client Portal'
     else if (p.startsWith('/book') || p.startsWith('/chef/') || p.startsWith('/chefs') || p.startsWith('/nearby') || p.startsWith('/ingredients') || p.startsWith('/ingredient') || p.startsWith('/discover') || p.startsWith('/hub') || p.startsWith('/compare') || p.startsWith('/for-operators') || p.startsWith('/marketplace') || p.startsWith('/about') || p.startsWith('/faq') || p.startsWith('/how-it-works') || p.startsWith('/pricing') || p.startsWith('/trust') || p.startsWith('/contact') || p.startsWith('/services') || p.startsWith('/customers') || p.startsWith('/blog') || p.startsWith('/gift-cards')) domain = 'Public Pages'
     else if (p.startsWith('/cannabis')) domain = 'Cannabis'
@@ -416,7 +416,7 @@ function computeDomainScores(results) {
     else if (p.startsWith('/onboarding') || p.startsWith('/import') || p.startsWith('/help')) domain = 'Onboarding'
     else if (p.startsWith('/documents') || p.startsWith('/contracts')) domain = 'Documents'
     else if (p.startsWith('/commerce')) domain = 'Commerce'
-    else if (p.startsWith('/remy') || p.startsWith('/commands')) domain = 'Remy AI'
+    else if (p.startsWith('/remy')) domain = 'Remy AI'
 
     if (!domains[domain]) domains[domain] = { pages: [], scores: [], failures: 0, total: 0 }
     const { score, deductions } = scorePage(r)

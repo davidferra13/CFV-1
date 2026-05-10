@@ -33,8 +33,8 @@ if (target === 'landing') {
     finance: '/finance',
     events: '/events',
     settings: '/settings',
-    operations: '/operations',
-    growth: '/growth',
+    operations: '/ops',
+    analytics: '/analytics',
   };
 
   const url = urlMap[target] || `/${target}`;

@@ -229,8 +229,8 @@ test.describe('Operations Sub-Pages', () => {
     '/stations/waste',
     '/stations/ops-log',
     '/queue',
-    '/operations/kitchen-rentals',
-    '/operations/equipment',
+    '/ops/kitchen-rentals',
+    '/ops/equipment',
   ]
 
   for (const route of routes) {

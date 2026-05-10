@@ -47,7 +47,7 @@ export default function robots(): MetadataRoute.Robots {
           '/quotes',
           '/inquiries',
           '/inbox',
-          '/financials',
+          '/finance',
           '/settings',
           '/recipes',
           '/menus',
