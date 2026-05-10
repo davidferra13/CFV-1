@@ -322,7 +322,6 @@ export async function markCalendarEntryComplete(id: string, actualRevenueCents?:
   }
 
   revalidatePath('/calendar')
-  revalidatePath('/financials')
   revalidatePath('/finance')
 }
 

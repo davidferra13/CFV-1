@@ -12,7 +12,7 @@ import { DndContext, MouseSensor, TouchSensor, useSensor, useSensors } from '@dn
 import type { DragEndEvent } from '@dnd-kit/core'
 import { toast } from 'sonner'
 import { Button } from '@/components/ui/button'
-import { blockDate, unblockDate, addToWaitlist } from '@/lib/availability/actions'
+import { blockDate, unblockByDate, addToWaitlist } from '@/lib/availability/actions'
 import { CalendarFilterPanel } from '@/components/calendar/calendar-filter-panel'
 import { CalendarEntryModal } from '@/components/calendar/calendar-entry-modal'
 import { CalendarLegend } from '@/components/calendar/calendar-legend'
@@ -215,7 +215,7 @@ export function AvailabilityCalendarClient({
   async function handleUnblock(date: string) {
     setLoading(true)
     try {
-      await unblockDate(date)
+      await unblockByDate(date)
       router.refresh()
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Failed to unblock')

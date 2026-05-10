@@ -16,6 +16,7 @@ import type { DateClickArg } from '@fullcalendar/interaction'
 import { toast } from 'sonner'
 import { getUnifiedCalendar } from '@/lib/calendar/actions'
 import { rescheduleEvent } from '@/lib/calendar/reschedule-action'
+import { blockDate, unblockByDate } from '@/lib/availability/actions'
 import { getUSHolidaysInRange, type HolidayEvent } from '@/lib/holidays/us-holidays'
 import { CalendarFilterPanel } from '@/components/calendar/calendar-filter-panel'
 import { CalendarEntryModal } from '@/components/calendar/calendar-entry-modal'
@@ -52,6 +53,8 @@ const DASHED_TYPES = new Set(Object.keys(CALENDAR_BORDER_STYLES))
 type Props = {
   initialItems: UnifiedCalendarItem[]
   chefId: string
+  blockedDaysOfWeek?: number[] // 0=Sun..6=Sat, from scheduling rules
+  preferredDaysOfWeek?: number[] // 0=Sun..6=Sat, from scheduling rules
 }
 
 // Convert UnifiedCalendarItem to FullCalendar EventInput
@@ -88,7 +91,12 @@ function toFullCalendarEvent(item: UnifiedCalendarItem) {
   }
 }
 
-export function UnifiedCalendarView({ initialItems, chefId }: Props) {
+export function UnifiedCalendarView({
+  initialItems,
+  chefId,
+  blockedDaysOfWeek = [],
+  preferredDaysOfWeek = [],
+}: Props) {
   const router = useRouter()
   const calendarRef = useRef<InstanceType<typeof FullCalendar>>(null)
   const [items, setItems] = useState<UnifiedCalendarItem[]>(initialItems)
@@ -102,6 +110,9 @@ export function UnifiedCalendarView({ initialItems, chefId }: Props) {
 
   // Selected date detail panel
   const [selectedDate, setSelectedDate] = useState<string | null>(null)
+  const [blockLoading, setBlockLoading] = useState(false)
+  const [showBlockForm, setShowBlockForm] = useState(false)
+  const [blockReason, setBlockReason] = useState('')
 
   const storageKey = `chef-calendar-filters-${chefId}`
 
@@ -229,6 +240,53 @@ export function UnifiedCalendarView({ initialItems, chefId }: Props) {
     },
     [items]
   )
+
+  // ── Block/unblock availability ───────────────────────────────────────
+
+  const handleBlockDate = useCallback(async () => {
+    if (!selectedDate) return
+    setBlockLoading(true)
+    try {
+      await blockDate({
+        block_date: selectedDate,
+        block_type: 'full_day',
+        reason: blockReason || undefined,
+      })
+      setShowBlockForm(false)
+      setBlockReason('')
+      toast.success('Date blocked')
+      // Refetch current range
+      const api = calendarRef.current?.getApi()
+      if (api) {
+        const start = api.view.activeStart.toISOString().split('T')[0]
+        const end = api.view.activeEnd.toISOString().split('T')[0]
+        getUnifiedCalendar(start, end).then(setItems).catch(console.error)
+      }
+    } catch (err) {
+      toast.error(err instanceof Error ? err.message : 'Failed to block date')
+    } finally {
+      setBlockLoading(false)
+    }
+  }, [selectedDate, blockReason])
+
+  const handleUnblockDate = useCallback(async () => {
+    if (!selectedDate) return
+    setBlockLoading(true)
+    try {
+      await unblockByDate(selectedDate)
+      toast.success('Block removed')
+      const api = calendarRef.current?.getApi()
+      if (api) {
+        const start = api.view.activeStart.toISOString().split('T')[0]
+        const end = api.view.activeEnd.toISOString().split('T')[0]
+        getUnifiedCalendar(start, end).then(setItems).catch(console.error)
+      }
+    } catch (err) {
+      toast.error(err instanceof Error ? err.message : 'Failed to unblock date')
+    } finally {
+      setBlockLoading(false)
+    }
+  }, [selectedDate])
 
   // ── Keyboard shortcuts ──────────────────────────────────────────────
 
@@ -567,6 +625,16 @@ export function UnifiedCalendarView({ initialItems, chefId }: Props) {
                 }}
                 allDaySlot={true}
                 allDayText="All Day"
+                dayCellDidMount={(info) => {
+                  const dow = info.date.getDay()
+                  if (blockedDaysOfWeek.includes(dow)) {
+                    info.el.style.backgroundColor = 'rgba(239, 68, 68, 0.08)'
+                    info.el.style.backgroundImage =
+                      'repeating-linear-gradient(135deg, transparent, transparent 4px, rgba(239, 68, 68, 0.06) 4px, rgba(239, 68, 68, 0.06) 5px)'
+                  } else if (preferredDaysOfWeek.length > 0 && preferredDaysOfWeek.includes(dow)) {
+                    info.el.style.backgroundColor = 'rgba(34, 197, 94, 0.06)'
+                  }
+                }}
                 eventClassNames={(arg) => {
                   const props = arg.event.extendedProps
                   const borderStyle = props.borderStyle as string
@@ -662,78 +730,27 @@ export function UnifiedCalendarView({ initialItems, chefId }: Props) {
       </div>
 
       {/* Selected date detail panel */}
-      {selectedDate && selectedDateItems.length > 0 && (
-        <div className="rounded-xl border border-stone-700 bg-stone-900 p-5 space-y-3">
-          <div className="flex items-center justify-between">
-            <h3 className="font-semibold text-stone-100">
-              {new Date(selectedDate + 'T12:00:00').toLocaleDateString('en-US', {
-                weekday: 'long',
-                month: 'long',
-                day: 'numeric',
-                year: 'numeric',
-              })}
-            </h3>
-            <div className="flex items-center gap-2">
-              <Button
-                variant="secondary"
-                size="sm"
-                onClick={() => {
-                  setNewEntryDefaultDate(selectedDate)
-                  setShowNewEntryModal(true)
-                }}
-              >
-                + Add Entry
-              </Button>
-              <button
-                onClick={() => setSelectedDate(null)}
-                className="text-stone-500 hover:text-stone-300 p-1"
-              >
-                <svg
-                  className="w-4 h-4"
-                  fill="none"
-                  viewBox="0 0 24 24"
-                  stroke="currentColor"
-                  strokeWidth={2}
-                >
-                  <path strokeLinecap="round" strokeLinejoin="round" d="M6 18L18 6M6 6l12 12" />
-                </svg>
-              </button>
-            </div>
-          </div>
-          <div className="space-y-2">
-            {selectedDateItems.map((item) => (
-              <div
-                key={item.id}
-                className="flex items-start gap-2.5 px-3 py-2 rounded-lg"
-                style={{
-                  backgroundColor: item.color + '18',
-                  borderLeft: `3px ${item.borderStyle} ${item.color}`,
-                }}
-              >
-                <div className="flex-1 min-w-0">
-                  <p className="text-sm font-medium text-stone-100 truncate">{item.title}</p>
-                  {item.startTime && (
-                    <p className="text-xs text-stone-500">
-                      {item.startTime}
-                      {item.endTime ? ` - ${item.endTime}` : ''}
-                    </p>
-                  )}
-                  {item.status && (
-                    <p className="text-xs text-stone-500 capitalize">{item.status}</p>
-                  )}
-                </div>
-                {item.url && (
-                  <a
-                    href={item.url}
-                    className="text-xs text-brand-600 hover:underline flex-shrink-0"
-                  >
-                    View
-                  </a>
-                )}
-              </div>
-            ))}
-          </div>
-        </div>
+      {selectedDate && (
+        <SelectedDatePanel
+          selectedDate={selectedDate}
+          selectedDateItems={selectedDateItems}
+          blockLoading={blockLoading}
+          showBlockForm={showBlockForm}
+          blockReason={blockReason}
+          onClose={() => {
+            setSelectedDate(null)
+            setShowBlockForm(false)
+          }}
+          onAddEntry={() => {
+            setNewEntryDefaultDate(selectedDate)
+            setShowNewEntryModal(true)
+          }}
+          onShowBlockForm={() => setShowBlockForm(true)}
+          onCancelBlockForm={() => setShowBlockForm(false)}
+          onBlockReasonChange={setBlockReason}
+          onBlock={handleBlockDate}
+          onUnblock={handleUnblockDate}
+        />
       )}
 
       {/* Legend */}
@@ -756,6 +773,167 @@ export function UnifiedCalendarView({ initialItems, chefId }: Props) {
           }}
         />
       )}
+    </div>
+  )
+}
+
+// ── Selected Date Panel ──────────────────────────────────────────────
+
+function SelectedDatePanel({
+  selectedDate,
+  selectedDateItems,
+  blockLoading,
+  showBlockForm,
+  blockReason,
+  onClose,
+  onAddEntry,
+  onShowBlockForm,
+  onCancelBlockForm,
+  onBlockReasonChange,
+  onBlock,
+  onUnblock,
+}: {
+  selectedDate: string
+  selectedDateItems: UnifiedCalendarItem[]
+  blockLoading: boolean
+  showBlockForm: boolean
+  blockReason: string
+  onClose: () => void
+  onAddEntry: () => void
+  onShowBlockForm: () => void
+  onCancelBlockForm: () => void
+  onBlockReasonChange: (v: string) => void
+  onBlock: () => void
+  onUnblock: () => void
+}) {
+  const hasEvent = selectedDateItems.some((i) => i.type === 'event')
+  const hasManualBlock = selectedDateItems.some((i) => i.type === 'availability_block')
+  const isBlocked = hasEvent || hasManualBlock || selectedDateItems.some((i) => i.isBlocking)
+
+  return (
+    <div className="rounded-xl border border-stone-700 bg-stone-900 p-5 space-y-3">
+      <div className="flex items-center justify-between">
+        <h3 className="font-semibold text-stone-100">
+          {new Date(selectedDate + 'T12:00:00').toLocaleDateString('en-US', {
+            weekday: 'long',
+            month: 'long',
+            day: 'numeric',
+            year: 'numeric',
+          })}
+        </h3>
+        <div className="flex items-center gap-2">
+          <Button variant="secondary" size="sm" onClick={onAddEntry}>
+            + Add Entry
+          </Button>
+          <button
+            type="button"
+            onClick={onClose}
+            className="text-stone-500 hover:text-stone-300 p-1"
+            title="Close"
+            aria-label="Close"
+          >
+            <svg
+              className="w-4 h-4"
+              fill="none"
+              viewBox="0 0 24 24"
+              stroke="currentColor"
+              strokeWidth={2}
+            >
+              <path strokeLinecap="round" strokeLinejoin="round" d="M6 18L18 6M6 6l12 12" />
+            </svg>
+          </button>
+        </div>
+      </div>
+
+      {/* Items on this date */}
+      {selectedDateItems.length > 0 && (
+        <div className="space-y-2">
+          {selectedDateItems.map((item) => (
+            <div
+              key={item.id}
+              className="flex items-start gap-2.5 px-3 py-2 rounded-lg"
+              style={{
+                backgroundColor: item.color + '18',
+                borderLeft: `3px ${item.borderStyle} ${item.color}`,
+              }}
+            >
+              <div className="flex-1 min-w-0">
+                <p className="text-sm font-medium text-stone-100 truncate">{item.title}</p>
+                {item.startTime && (
+                  <p className="text-xs text-stone-500">
+                    {item.startTime}
+                    {item.endTime ? ` - ${item.endTime}` : ''}
+                  </p>
+                )}
+                {item.status && <p className="text-xs text-stone-500 capitalize">{item.status}</p>}
+              </div>
+              {item.url && (
+                <a href={item.url} className="text-xs text-brand-600 hover:underline flex-shrink-0">
+                  View
+                </a>
+              )}
+            </div>
+          ))}
+        </div>
+      )}
+
+      {/* Availability actions */}
+      <div className="pt-1 border-t border-stone-800 space-y-2">
+        {!isBlocked && (
+          <>
+            <p className="text-sm text-stone-500">This date is available.</p>
+            {!showBlockForm ? (
+              <Button size="sm" variant="secondary" onClick={onShowBlockForm}>
+                Mark Unavailable
+              </Button>
+            ) : (
+              <div className="space-y-2">
+                <input
+                  type="text"
+                  value={blockReason}
+                  onChange={(e) => onBlockReasonChange(e.target.value)}
+                  placeholder="Reason (optional)"
+                  className="w-full rounded border border-stone-600 bg-stone-800 px-3 py-2 text-sm text-stone-100 placeholder:text-stone-500"
+                />
+                <div className="flex gap-2">
+                  <Button size="sm" onClick={onBlock} loading={blockLoading}>
+                    Block Date
+                  </Button>
+                  <Button size="sm" variant="ghost" onClick={onCancelBlockForm}>
+                    Cancel
+                  </Button>
+                </div>
+              </div>
+            )}
+          </>
+        )}
+
+        {hasManualBlock && (
+          <div className="flex items-center gap-3">
+            <p className="text-sm text-red-400">Manually blocked.</p>
+            <Button size="sm" variant="secondary" onClick={onUnblock} loading={blockLoading}>
+              Mark Available
+            </Button>
+          </div>
+        )}
+
+        {/* Cross-link to scheduling settings */}
+        <a
+          href="/settings/scheduling"
+          className="inline-flex items-center gap-1 text-xs text-stone-500 hover:text-brand-500 transition-colors"
+        >
+          Edit availability rules
+          <svg
+            className="w-3 h-3"
+            fill="none"
+            viewBox="0 0 24 24"
+            stroke="currentColor"
+            strokeWidth={2}
+          >
+            <path strokeLinecap="round" strokeLinejoin="round" d="M9 5l7 7-7 7" />
+          </svg>
+        </a>
+      </div>
     </div>
   )
 }

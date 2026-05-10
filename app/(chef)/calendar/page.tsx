@@ -8,10 +8,12 @@ import type { Metadata } from 'next'
 import dynamic from 'next/dynamic'
 import { requireChef } from '@/lib/auth/get-user'
 import { getUnifiedCalendar } from '@/lib/calendar/actions'
+import { getSchedulingRules } from '@/lib/availability/rules-actions'
 import { Suspense } from 'react'
 import { WidgetErrorBoundary } from '@/components/ui/widget-error-boundary'
 import { SchedulingInsightsBar } from '@/components/intelligence/scheduling-insights-bar'
 import { CapacitySeasonalBar } from '@/components/intelligence/capacity-seasonal-bar'
+import { DomainSignals } from '@/components/cil/domain-signals'
 
 export const metadata: Metadata = { title: 'Calendar' }
 
@@ -44,7 +46,10 @@ export default async function CalendarPage() {
   const startDate = toLocalISO(startExt)
   const endDate = toLocalISO(endExt)
 
-  const initialItems = await getUnifiedCalendar(startDate, endDate)
+  const [initialItems, rules] = await Promise.all([
+    getUnifiedCalendar(startDate, endDate),
+    getSchedulingRules(),
+  ])
 
   return (
     <div className="max-w-7xl mx-auto px-4 py-6">
@@ -54,6 +59,13 @@ export default async function CalendarPage() {
           Your complete schedule: events, prep, calls, personal commitments, and goals.
         </p>
       </div>
+
+      {/* Calendar Intelligence Signals */}
+      <WidgetErrorBoundary name="Calendar Signals" compact>
+        <Suspense fallback={null}>
+          <DomainSignals domain="calendar" limit={3} />
+        </Suspense>
+      </WidgetErrorBoundary>
 
       {/* Scheduling Intelligence */}
       <WidgetErrorBoundary name="Scheduling Insights" compact>
@@ -69,7 +81,12 @@ export default async function CalendarPage() {
         </Suspense>
       </WidgetErrorBoundary>
 
-      <UnifiedCalendarView initialItems={initialItems} chefId={user.tenantId!} />
+      <UnifiedCalendarView
+        initialItems={initialItems}
+        chefId={user.tenantId!}
+        blockedDaysOfWeek={rules?.blocked_days_of_week ?? []}
+        preferredDaysOfWeek={rules?.preferred_days_of_week ?? []}
+      />
     </div>
   )
 }
