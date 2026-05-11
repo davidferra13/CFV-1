@@ -97,6 +97,7 @@ import { QuickReceiptCapture } from '@/components/events/quick-receipt-capture'
 import { AvailableLeftovers } from '@/components/events/available-leftovers'
 import { getAvailableCarryForwardItems } from '@/lib/events/carry-forward'
 import { getPackingConfirmationCount } from '@/lib/packing/actions'
+import { getEventGearStatus } from '@/lib/gear/actions'
 import { getPaymentPlan } from '@/lib/finance/payment-plan-actions'
 import { PaymentPlanPanel } from '@/components/finance/payment-plan-panel'
 import { getMileageLogs } from '@/lib/finance/mileage-actions'
@@ -886,6 +887,7 @@ export default async function EventDetailPage({
     eventCollaborators,
     settlement,
     packingConfirmedCount,
+    gearStatus,
     hubGroupToken,
     chefHubProfileToken,
     menuLibraryData,
@@ -954,6 +956,17 @@ export default async function EventDetailPage({
     ['confirmed', 'in_progress'].includes(event.status)
       ? getPackingConfirmationCount(params.id).catch(() => 0)
       : Promise.resolve(0),
+    ['confirmed', 'in_progress'].includes(event.status)
+      ? getEventGearStatus(params.id).catch(() => ({
+          gearChecked: false,
+          gearCheckedAt: null,
+          confirmedCount: 0,
+        }))
+      : Promise.resolve({
+          gearChecked: false,
+          gearCheckedAt: null,
+          confirmedCount: 0,
+        }),
     getOrCreateChefCircleTokenForEvent(params.id).catch(() => null),
     getOrCreateChefHubProfileToken().catch(() => null),
     event.status !== 'cancelled'
@@ -1163,6 +1176,7 @@ export default async function EventDetailPage({
     prepBlocksCount: (prepBlocks as any[]).length,
     parAlertCount: (parAlerts as any[]).length,
     packingConfirmedCount,
+    gearStatus,
     hasAAR: Boolean(aar),
   })
   const dinnerCircleSnapshot = buildDinnerCircleSnapshot({
@@ -1479,6 +1493,40 @@ export default async function EventDetailPage({
               </div>
               <DOPProgressBar completed={dopProgress.completed} total={dopProgress.total} />
             </div>
+          </div>
+        </Card>
+      )}
+
+      {/* Gear Check - for confirmed/in_progress events */}
+      {['confirmed', 'in_progress'].includes(event.status) && (
+        <Card className="p-4">
+          <div className="flex items-center justify-between">
+            <div className="flex-1">
+              <div className="flex items-center gap-3 mb-1">
+                <h3 className="text-sm font-semibold text-stone-300">Gear Check</h3>
+                <Link
+                  href={`/events/${event.id}/gear`}
+                  className="text-xs text-brand-500 hover:text-brand-400"
+                >
+                  Open gear check &rarr;
+                </Link>
+              </div>
+              {(gearStatus as any).gearChecked ? (
+                <p className="text-sm text-emerald-700 font-medium">Gear ready</p>
+              ) : (gearStatus as any).confirmedCount > 0 ? (
+                <p className="text-sm text-stone-300">
+                  {(gearStatus as any).confirmedCount} item
+                  {(gearStatus as any).confirmedCount !== 1 ? 's' : ''} confirmed
+                </p>
+              ) : (
+                <p className="text-sm text-stone-300">Not started</p>
+              )}
+            </div>
+            {(gearStatus as any).gearChecked && (
+              <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-emerald-900 text-emerald-800">
+                Ready
+              </span>
+            )}
           </div>
         </Card>
       )}
