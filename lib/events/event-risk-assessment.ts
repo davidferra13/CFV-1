@@ -6,6 +6,7 @@
 
 import { requireChef } from '@/lib/auth/get-user'
 import { createServerClient } from '@/lib/db/server'
+import { pgClient } from '@/lib/db'
 import {
   assessEventRisk,
   assessDishRisk,
@@ -95,6 +96,13 @@ export async function getEventRiskAssessment(
     // 5. Load recipe ingredient counts and sub-recipe counts
     const recipeMetrics = await getRecipeMetrics(db, uniqueRecipeIds)
 
+    // 5.5 Load PIE volatility and seasonal data for recipe ingredients
+    const eventMonth = new Date(event.event_date).getMonth() + 1
+    const [volatileRecipes, seasonalMismatches] = await Promise.all([
+      getVolatileRecipes(db, uniqueRecipeIds),
+      getSeasonalMismatches(db, uniqueRecipeIds, eventMonth),
+    ])
+
     // 6. Load production log (times cooked) for each recipe
     const productionCounts = await getProductionCounts(db, uniqueRecipeIds, tenantId)
 
@@ -136,7 +144,9 @@ export async function getEventRiskAssessment(
       recipes,
       recipeMetrics,
       productionCounts,
-      event.guest_count
+      event.guest_count,
+      volatileRecipes,
+      seasonalMismatches
     )
 
     // 12. Run assessment
@@ -190,6 +200,13 @@ export async function getDishRiskPreview(
     const clientContext = await getClientContext(db, event.client_id, tenantId)
     const venueContext = await getVenueContext(db, event.venue_name, tenantId)
 
+    // Fetch PIE data for the single recipe
+    const eventMonth = new Date().getMonth() + 1
+    const [volatileRecipes, seasonalMismatches] = await Promise.all([
+      getVolatileRecipes(db, [recipeId]),
+      getSeasonalMismatches(db, [recipeId], eventMonth),
+    ])
+
     const dishInput: DishRiskInput = {
       targetGuestCount: event.guest_count ?? null,
       maxPreviousGuestCount: null, // would need production log analysis
@@ -200,8 +217,8 @@ export async function getDishRiskPreview(
       cookTimeMinutes: recipe.cook_time_minutes ?? null,
       hasMultipleTemperatureStages: inferTemperatureStages(recipe.method),
       requiresPrecisionTiming: inferPrecisionTiming(recipe.method),
-      hasVolatilePricing: null,
-      seasonalMismatchCount: null,
+      hasVolatilePricing: volatileRecipes.has(recipeId),
+      seasonalMismatchCount: seasonalMismatches.get(recipeId) ?? 0,
       hardToSourceCount: null,
       mustBeServedImmediately: null,
       holdTimeMinutes: null,
@@ -399,6 +416,73 @@ async function getDietaryRestrictionCount(
   return allRestrictions.size
 }
 
+// ─── PIE Data Bridges ───────────────────────────────────────────────────────────
+
+/**
+ * Find which recipes contain ingredients with volatile pricing.
+ * Bridges ChefFlow ingredients to OpenClaw canonical ingredients by name,
+ * then checks ingredient_trends for volatile direction or high volatility.
+ */
+async function getVolatileRecipes(_db: any, recipeIds: string[]): Promise<Set<string>> {
+  const volatileSet = new Set<string>()
+  if (recipeIds.length === 0) return volatileSet
+
+  try {
+    const rows = await pgClient`
+      SELECT DISTINCT ri.recipe_id
+      FROM recipe_ingredients ri
+      JOIN ingredients i ON i.id = ri.ingredient_id
+      JOIN openclaw.canonical_ingredients ci ON LOWER(ci.name) = LOWER(i.name)
+      JOIN openclaw.ingredient_trends it ON it.ingredient_id = ci.ingredient_id
+      WHERE ri.recipe_id = ANY(${recipeIds})
+        AND (it.direction = 'volatile' OR it.volatility > 0.25)
+    `
+    for (const row of rows) {
+      volatileSet.add(row.recipe_id)
+    }
+  } catch {
+    // OpenClaw tables may not exist in all environments; degrade gracefully
+  }
+
+  return volatileSet
+}
+
+/**
+ * Count ingredients per recipe that are out of season for a given month.
+ * Uses OpenClaw seasonal_patterns monthly_indices (1-indexed array).
+ * An index > 120 for the event month means the ingredient is significantly
+ * more expensive than average, indicating seasonal mismatch.
+ */
+async function getSeasonalMismatches(
+  _db: any,
+  recipeIds: string[],
+  eventMonth: number
+): Promise<Map<string, number>> {
+  const mismatchMap = new Map<string, number>()
+  if (recipeIds.length === 0) return mismatchMap
+
+  try {
+    const rows = await pgClient`
+      SELECT ri.recipe_id, COUNT(*)::int AS mismatch_count
+      FROM recipe_ingredients ri
+      JOIN ingredients i ON i.id = ri.ingredient_id
+      JOIN openclaw.canonical_ingredients ci ON LOWER(ci.name) = LOWER(i.name)
+      JOIN openclaw.seasonal_patterns sp ON sp.ingredient_id = ci.ingredient_id
+      WHERE ri.recipe_id = ANY(${recipeIds})
+        AND sp.monthly_indices[${eventMonth}] > 120
+        AND sp.seasonal_swing_pct > 20
+      GROUP BY ri.recipe_id
+    `
+    for (const row of rows) {
+      mismatchMap.set(row.recipe_id, Number(row.mismatch_count))
+    }
+  } catch {
+    // OpenClaw tables may not exist in all environments; degrade gracefully
+  }
+
+  return mismatchMap
+}
+
 // ─── Input Building ─────────────────────────────────────────────────────────────
 
 function buildDishRiskInputs(
@@ -407,7 +491,9 @@ function buildDishRiskInputs(
   recipes: any[],
   recipeMetrics: Map<string, { ingredientCount: number; subRecipeCount: number }>,
   productionCounts: Map<string, number>,
-  guestCount: number | null
+  guestCount: number | null,
+  volatileRecipes: Set<string>,
+  seasonalMismatches: Map<string, number>
 ): DishRiskInput[] {
   const recipeMap = new Map(recipes.map((r: any) => [r.id, r]))
   const dishComponentMap = new Map<string, any[]>()
@@ -438,8 +524,10 @@ function buildDishRiskInputs(
       cookTimeMinutes: recipe?.cook_time_minutes ?? null,
       hasMultipleTemperatureStages: recipe ? inferTemperatureStages(recipe.method) : null,
       requiresPrecisionTiming: recipe ? inferPrecisionTiming(recipe.method) : null,
-      hasVolatilePricing: null, // future: wire to PIE volatility data
-      seasonalMismatchCount: null, // future: wire to peak windows vs event date
+      hasVolatilePricing: primaryRecipeId ? volatileRecipes.has(primaryRecipeId) : null,
+      seasonalMismatchCount: primaryRecipeId
+        ? (seasonalMismatches.get(primaryRecipeId) ?? 0)
+        : null,
       hardToSourceCount: null, // future: wire to ingredient availability
       mustBeServedImmediately: null, // future: recipe metadata
       holdTimeMinutes: null, // future: recipe metadata
