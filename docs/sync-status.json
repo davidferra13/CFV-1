@@ -1,25 +1,25 @@
 {
-  "last_sync": "2026-05-10T15:54:05.297Z",
+  "last_sync": "2026-05-11T21:30:06.973Z",
   "status": "failed",
-  "next_sync": "2026-05-10T16:24:05.297Z",
+  "next_sync": "2026-05-11T21:38:06.973Z",
   "interval_hours": 2,
-  "consecutive_failures": 12,
+  "consecutive_failures": 4,
   "last_error": "timed out after 5400.0s",
   "last_sync_type": "full",
   "last_success_at": null,
-  "last_failure_at": "2026-05-10T15:54:05.297Z",
-  "completed_at": "2026-05-10T15:54:05.297Z",
+  "last_failure_at": "2026-05-11T21:30:06.973Z",
+  "completed_at": "2026-05-11T21:30:06.973Z",
   "error_kind": "timeout",
   "exit_code": null,
   "last_elapsed_s": 5400,
-  "run_id": "openclaw-full-1778423045291",
-  "started_at": "2026-05-10T14:24:05.291Z",
+  "run_id": "openclaw-full-1778529606969",
+  "started_at": "2026-05-11T20:00:06.969Z",
   "summary": {
-    "runId": "openclaw-full-1778423045348",
+    "runId": "openclaw-full-1778529607039",
     "syncType": "full",
     "status": "running",
     "partialSuccess": true,
-    "startedAt": "2026-05-10T14:24:05.348Z",
+    "startedAt": "2026-05-11T20:00:07.039Z",
     "completedAt": null,
     "durationSeconds": null,
     "failedStepNames": [
@@ -31,8 +31,8 @@
       {
         "name": "Pull catalog from Pi",
         "status": "failed",
-        "startedAt": "2026-05-10T14:24:05.352Z",
-        "completedAt": "2026-05-10T15:24:05.369Z",
+        "startedAt": "2026-05-11T20:00:07.043Z",
+        "completedAt": "2026-05-11T21:00:07.060Z",
         "durationSeconds": 3600,
         "error": "spawnSync node ETIMEDOUT",
         "details": {
@@ -43,9 +43,9 @@
       {
         "name": "Push stores to Pi",
         "status": "failed",
-        "startedAt": "2026-05-10T15:24:05.370Z",
-        "completedAt": "2026-05-10T15:24:06.206Z",
-        "durationSeconds": 0.8,
+        "startedAt": "2026-05-11T21:00:07.064Z",
+        "completedAt": "2026-05-11T21:00:07.511Z",
+        "durationSeconds": 0.4,
         "error": "Command failed: node C:\\Users\\david\\Documents\\CFv1\\scripts\\push-stores-to-pi.mjs",
         "details": {
           "exitCode": 1,
@@ -55,16 +55,16 @@
       {
         "name": "Sync normalization + aliases",
         "status": "success",
-        "startedAt": "2026-05-10T15:24:06.207Z",
-        "completedAt": "2026-05-10T15:25:09.390Z",
-        "durationSeconds": 63.2
+        "startedAt": "2026-05-11T21:00:07.511Z",
+        "completedAt": "2026-05-11T21:02:04.989Z",
+        "durationSeconds": 117.5
       },
       {
         "name": "Promote canonical foods to system ingredients",
         "status": "failed",
-        "startedAt": "2026-05-10T15:25:09.390Z",
-        "completedAt": "2026-05-10T15:25:09.434Z",
-        "durationSeconds": 0,
+        "startedAt": "2026-05-11T21:02:04.990Z",
+        "completedAt": "2026-05-11T21:02:05.044Z",
+        "durationSeconds": 0.1,
         "error": "Command failed: node C:\\Users\\david\\Documents\\CFv1\\scripts\\openclaw-promote-foods.mts",
         "details": {
           "exitCode": 1,
