@@ -1,6 +1,6 @@
 'use client'
 
-// Send Pre-Dinner Worksheet Button
+// Send Pre-Service Worksheet Button
 // Creates a shareable worksheet link for the client to fill out
 // allergies, preferences, guest count, and address before the event.
 
