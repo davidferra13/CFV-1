@@ -5,18 +5,29 @@ export type TriggerEvent =
   | 'inquiry_status_changed'
   | 'wix_submission_received'
   | 'event_status_changed'
+  | 'event_completed'
   | 'follow_up_overdue'
   | 'no_response_timeout'
   | 'quote_expiring'
+  | 'quote_expired'
   | 'event_approaching'
+  | 'event_confirmed'
   | 'payment_due_approaching'
   | 'payment_overdue'
+  | 'inquiry_stale'
+  | 'stock_below_par'
 
 export type ActionType =
   | 'create_notification'
   | 'create_follow_up_task'
   | 'send_template_message'
   | 'create_internal_note'
+  | 'draft_follow_up_email'
+  | 'request_review_email'
+  | 'flag_stale_inquiry'
+  | 'create_purchase_order_draft'
+  | 'block_prep_days'
+  | 'archive_quote'
 
 export type ConditionOp = 'eq' | 'neq' | 'gt' | 'lt' | 'gte' | 'lte' | 'contains' | 'in'
 
@@ -72,12 +83,17 @@ export const TRIGGER_LABELS: Record<TriggerEvent, string> = {
   inquiry_status_changed: 'Inquiry status changed',
   wix_submission_received: 'Wix form submitted',
   event_status_changed: 'Event status changed',
+  event_completed: 'Event completed',
   follow_up_overdue: 'Follow-up overdue',
   no_response_timeout: 'No response timeout',
   quote_expiring: 'Quote expiring soon',
+  quote_expired: 'Quote expired',
   event_approaching: 'Event approaching',
+  event_confirmed: 'Event confirmed',
   payment_due_approaching: 'Payment due soon',
   payment_overdue: 'Payment overdue',
+  inquiry_stale: 'Inquiry gone stale',
+  stock_below_par: 'Stock below par level',
 }
 
 export const ACTION_LABELS: Record<ActionType, string> = {
@@ -85,6 +101,12 @@ export const ACTION_LABELS: Record<ActionType, string> = {
   create_follow_up_task: 'Create follow-up task',
   send_template_message: 'Draft template message',
   create_internal_note: 'Add internal note',
+  draft_follow_up_email: 'Draft follow-up email',
+  request_review_email: 'Send review request email',
+  flag_stale_inquiry: 'Flag stale inquiry',
+  create_purchase_order_draft: 'Create purchase order draft',
+  block_prep_days: 'Block prep days on calendar',
+  archive_quote: 'Archive expired quote',
 }
 
 // ─── Trigger Context Field Definitions ───────────────────────────────────
@@ -171,6 +193,35 @@ export const TRIGGER_CONTEXT_FIELDS: Record<TriggerEvent, TriggerContextField[]>
     { field: 'occasion', label: 'Occasion' },
     { field: 'client_name', label: 'Client name' },
   ],
+  event_completed: [
+    { field: 'client_name', label: 'Client name' },
+    { field: 'occasion', label: 'Occasion' },
+    { field: 'completed_at', label: 'Completed at' },
+    { field: 'guest_count', label: 'Guest count' },
+  ],
+  event_confirmed: [
+    { field: 'client_name', label: 'Client name' },
+    { field: 'occasion', label: 'Occasion' },
+    { field: 'event_date', label: 'Event date' },
+    { field: 'lead_time_days', label: 'Lead time (days)' },
+  ],
+  quote_expired: [
+    { field: 'client_name', label: 'Client name' },
+    { field: 'occasion', label: 'Occasion' },
+    { field: 'days_since_expiry', label: 'Days since expiry' },
+  ],
+  inquiry_stale: [
+    { field: 'client_name', label: 'Client name' },
+    { field: 'occasion', label: 'Occasion' },
+    { field: 'hours_since_activity', label: 'Hours since last activity' },
+    { field: 'channel', label: 'Channel' },
+  ],
+  stock_below_par: [
+    { field: 'ingredient_name', label: 'Ingredient name' },
+    { field: 'current_stock', label: 'Current stock' },
+    { field: 'par_level', label: 'Par level' },
+    { field: 'unit', label: 'Unit' },
+  ],
 }
 
 // ─── Chef Automation Settings ─────────────────────────────────────────────
@@ -254,4 +305,40 @@ export const DEFAULT_AUTOMATION_SETTINGS: Omit<
   event_reminder_7d_enabled: true,
   event_reminder_2d_enabled: true,
   event_reminder_1d_enabled: true,
+}
+
+// ─── Preset Automation Rules ─────────────────────────────────────────────
+// Config-driven rules that chefs toggle on/off with configurable thresholds.
+// No custom code per rule; the engine reads the config and executes.
+
+export type PresetRuleType =
+  | 'auto_draft_follow_up'
+  | 'auto_request_review'
+  | 'auto_flag_stale_inquiry'
+  | 'auto_reorder_ingredient'
+  | 'auto_block_calendar'
+  | 'auto_archive_quote'
+
+export type PresetRuleConfig = {
+  type: PresetRuleType
+  enabled: boolean
+  config: Record<string, number | string | boolean>
+  last_triggered_at: string | null
+}
+
+export type PresetRuleDefinition = {
+  type: PresetRuleType
+  name: string
+  description: string
+  triggerEvent: TriggerEvent
+  actionType: ActionType
+  defaultConfig: Record<string, number | string | boolean>
+  configFields: Array<{
+    key: string
+    label: string
+    type: 'number' | 'boolean'
+    min?: number
+    max?: number
+    suffix?: string
+  }>
 }
