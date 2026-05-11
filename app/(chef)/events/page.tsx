@@ -31,6 +31,9 @@ import { getCachedChefArchetype } from '@/lib/chef/layout-data-cache'
 import { getArchetypeCopy } from '@/lib/archetypes/ui-copy'
 import { detectEventConflicts } from '@/lib/events/conflict-detection'
 import { ConflictBadge } from '@/components/events/conflict-badge'
+import { evaluateCompletion } from '@/lib/completion/engine'
+import { CompletionBadge } from '@/components/completion/completion-badge'
+import type { CompletionStatus } from '@/lib/completion/types'
 
 export const metadata: Metadata = { title: 'Events' }
 
@@ -207,6 +210,30 @@ async function EventsList({ status }: { status: EventStatus }) {
     }
   }
 
+  // Batch completion scores (shallow, capped at 30 for perf)
+  const completionMap: Record<string, { score: number; status: CompletionStatus }> = {}
+  const activeEventIds = eventIds
+    .filter((_id: string, i: number) => {
+      const ev = events[i] as any
+      return ev.status !== 'completed' && ev.status !== 'cancelled'
+    })
+    .slice(0, 30)
+  if (activeEventIds.length > 0) {
+    const completionResults = await Promise.allSettled(
+      activeEventIds.map((id: string) =>
+        evaluateCompletion('event', id, user.tenantId!, { shallow: true })
+      )
+    )
+    completionResults.forEach((result, i) => {
+      if (result.status === 'fulfilled' && result.value) {
+        completionMap[activeEventIds[i]] = {
+          score: result.value.score,
+          status: result.value.status,
+        }
+      }
+    })
+  }
+
   if (events.length === 0) {
     const archetype = await getCachedChefArchetype(user.entityId).catch(() => null)
     const copy = getArchetypeCopy(archetype)
@@ -295,6 +322,13 @@ async function EventsList({ status }: { status: EventStatus }) {
                     <span className="block text-xs text-stone-500 mt-0.5">
                       {event.guest_count} guest{event.guest_count !== 1 ? 's' : ''}
                     </span>
+                  )}
+                  {completionMap[event.id] && (
+                    <CompletionBadge
+                      score={completionMap[event.id].score}
+                      status={completionMap[event.id].status}
+                      className="mt-0.5"
+                    />
                   )}
                 </TableCell>
                 <TableCell>
