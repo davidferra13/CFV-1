@@ -1201,6 +1201,11 @@ export async function ensureCircleForEvent(
       }
     }
 
+    // Post Remy welcome (non-blocking)
+    import('@/lib/hub/remy-circle-actions').then(({ postRemyWelcome }) => {
+      postRemyWelcome(group.id, tenantId, 'circle').catch(() => {})
+    })
+
     return { groupToken: group.group_token }
   } catch {
     // Non-blocking - circle creation failure must never block payment confirmation

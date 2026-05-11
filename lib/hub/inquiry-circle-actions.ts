@@ -149,6 +149,11 @@ export async function createInquiryCircle(input: {
     })
   }
 
+  // Post Remy welcome (non-blocking)
+  import('@/lib/hub/remy-circle-actions').then(({ postRemyWelcome }) => {
+    postRemyWelcome(group.id, tenantId, 'circle').catch(() => {})
+  })
+
   return { groupToken: group.group_token, groupId: group.id }
 }
 
