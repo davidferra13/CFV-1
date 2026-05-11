@@ -7,6 +7,7 @@ import { addReaction, removeReaction, getMessageReaders } from '@/lib/hub/messag
 import { getPoll } from '@/lib/hub/poll-actions'
 import { HubPollCard } from './hub-poll-card'
 import { HubNotificationCard } from './hub-notification-card'
+import { RemyCircleFeedMessage } from './remy-circle-feed-message'
 
 const QUICK_REACTIONS = ['🔥', '❤️', '😂', '🍽️', '👏', '🎉']
 
@@ -19,6 +20,7 @@ interface HubMessageBubbleProps {
   onEdit?: (message: HubMessage) => void
   onDelete?: (messageId: string) => void
   isOwnerOrAdmin?: boolean
+  isChefView?: boolean
 }
 
 // Memoized: rendered in .map() inside hub feed. Receives stable message objects.
@@ -32,11 +34,17 @@ export const HubMessageBubble = memo(function HubMessageBubble({
   onEdit,
   onDelete,
   isOwnerOrAdmin,
+  isChefView,
 }: HubMessageBubbleProps) {
   const [showReactions, setShowReactions] = useState(false)
 
   const isOwn = message.author_profile_id === currentProfileId
   const author = message.author as HubGuestProfile | undefined
+
+  // Remy messages get their own dedicated component
+  if (message.source === 'remy') {
+    return <RemyCircleFeedMessage message={message} isChefView={isChefView ?? false} />
+  }
 
   // Notification cards - rich actionable messages (quote, payment, etc.)
   if (message.message_type === 'notification') {
