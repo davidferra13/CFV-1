@@ -33,6 +33,7 @@ import { useNavigationPending } from '@/components/navigation/navigation-pending
 import { AppLogo } from '@/components/branding/app-logo'
 import { RecentPagesSection } from '@/components/navigation/recent-pages-section'
 import { InboxUnreadBadge } from '@/components/communication/inbox-unread-badge'
+import { AutopilotBadge } from '@/components/autopilot/autopilot-badge'
 import { CirclesUnreadBadge } from '@/components/hub/circles-unread-badge'
 import { InquiriesUnreadBadge } from '@/components/inquiries/inquiries-unread-badge'
 import { ChatNavUnreadBadge } from '@/components/chat/chat-nav-unread-badge'
@@ -548,6 +549,7 @@ const NavGroupSection = memo(function NavGroupSection({
                 />
                 {item.label}
                 {item.href === '/inbox' && <InboxUnreadBadge />}
+                {item.href === '/autopilot' && <AutopilotBadge />}
                 {item.href === '/circles' && <CirclesUnreadBadge />}
                 {item.href === '/events' && <InquiriesUnreadBadge />}
                 {item.href === '/chat' && <ChatNavUnreadBadge />}

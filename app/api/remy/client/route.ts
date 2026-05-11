@@ -3,7 +3,8 @@
 // Routes through configured cloud AI runtime. Scoped to the authenticated client's own data only.
 
 import { NextRequest } from 'next/server'
-import { Ollama } from 'ollama'
+import { streamText } from 'ai'
+import { createOllamaProvider } from '@/lib/ai/ai-provider'
 import { requireClient } from '@/lib/auth/get-user'
 import { isOllamaEnabled, getOllamaConfig, getOllamaModel } from '@/lib/ai/providers'
 import { validateRemyInput } from '@/lib/ai/remy-guardrails'
@@ -25,6 +26,10 @@ import {
   getSurfaceRuntimeOptions,
   trySurfaceInstantAnswer,
 } from '../surface-runtime-utils'
+import { createStreamScanner } from '@/lib/ai/remy-output-guardrails'
+import { db } from '@/lib/db'
+import { clients } from '@/lib/db/schema/schema'
+import { eq, ne, and } from 'drizzle-orm'
 
 // ─── Types ──────────────────────────────────────────────────────────────────
 
@@ -182,8 +187,15 @@ export async function POST(req: NextRequest) {
       )
     }
 
-    // Load client-scoped context
-    const context = await loadRemyClientContext(user.entityId, user.tenantId!)
+    // Load client-scoped context + other client names for guardrails (parallel)
+    const [context, otherClientRows] = await Promise.all([
+      loadRemyClientContext(user.entityId, user.tenantId!),
+      db
+        .select({ fullName: clients.fullName })
+        .from(clients)
+        .where(and(eq(clients.tenantId, user.tenantId!), ne(clients.id, user.entityId)))
+        .then((rows) => rows.map((r) => r.fullName)),
+    ])
     const { contextScope, tokenBudget } = getSurfaceRuntimeOptions(message)
     const latency = createSurfaceLatencyTracker('client', contextScope)
     const instant = trySurfaceInstantAnswer('client', message, {
@@ -209,9 +221,8 @@ export async function POST(req: NextRequest) {
 
     const config = getOllamaConfig()
     const model = getOllamaModel('standard') // Standard model for client (PII requires quality)
-    const ollama = new Ollama({ host: config.baseUrl })
 
-    // Stream response
+    // Stream response via AI SDK (no tools for client surface)
     const abortController = new AbortController()
     const timeout = setTimeout(() => abortController.abort(), 30_000) // 30s
 
@@ -220,32 +231,65 @@ export async function POST(req: NextRequest) {
       async start(controller) {
         try {
           let fullResponse = ''
-          const ollamaStream = await ollama.chat({
-            model,
-            messages: [
-              { role: 'system', content: systemPrompt },
-              { role: 'user', content: fullPrompt },
-            ],
-            stream: true,
-            options: {
-              temperature: 0.7,
-              num_predict: tokenBudget,
-            },
-            keep_alive: '30m',
-          } as any)
+          const outputScanner = createStreamScanner({
+            surface: 'client',
+            currentUserEmail: user.email,
+            currentClientName: context.clientName ?? undefined,
+            otherClientNames: otherClientRows,
+          })
+          let outputBlocked = false
 
-          for await (const chunk of ollamaStream) {
-            if (abortController.signal.aborted) break
-            if (chunk.message?.content) {
+          const ollamaProvider = createOllamaProvider(config.baseUrl)
+          const aiResult = streamText({
+            model: ollamaProvider(model),
+            system: systemPrompt,
+            messages: [{ role: 'user', content: fullPrompt }],
+            temperature: 0.7,
+            maxOutputTokens: tokenBudget,
+            abortSignal: abortController.signal,
+          })
+
+          for await (const token of aiResult.textStream) {
+            if (abortController.signal.aborted || outputBlocked) break
+            if (token) {
               latency.markFirstToken()
-              fullResponse += chunk.message.content
-              controller.enqueue(
-                encoder.encode(encodeSSE({ type: 'token', data: chunk.message.content }))
-              )
+              const scanResult = outputScanner.feed(token)
+              if (scanResult) {
+                if (!scanResult.safe) {
+                  controller.enqueue(
+                    encoder.encode(encodeSSE({ type: 'error', data: scanResult.text }))
+                  )
+                  controller.close()
+                  outputBlocked = true
+                  break
+                }
+                fullResponse += scanResult.text
+                controller.enqueue(
+                  encoder.encode(encodeSSE({ type: 'token', data: scanResult.text }))
+                )
+              }
             }
           }
 
-          if (extractNavSuggestions(fullResponse).length === 0) {
+          // Flush remaining scanner buffer
+          if (!outputBlocked) {
+            const scanFlush = outputScanner.flush()
+            if (scanFlush) {
+              if (!scanFlush.safe) {
+                controller.enqueue(
+                  encoder.encode(encodeSSE({ type: 'error', data: scanFlush.text }))
+                )
+                outputBlocked = true
+              } else {
+                fullResponse += scanFlush.text
+                controller.enqueue(
+                  encoder.encode(encodeSSE({ type: 'token', data: scanFlush.text }))
+                )
+              }
+            }
+          }
+
+          if (!outputBlocked && extractNavSuggestions(fullResponse).length === 0) {
             const navSuggestions = suggestClientNavFromWorkGraph(message, context.workGraph)
             if (navSuggestions.length > 0) {
               controller.enqueue(
@@ -259,8 +303,10 @@ export async function POST(req: NextRequest) {
             }
           }
 
-          latency.logDone({ route_ms: Date.now() - routeStartedAt, token_budget: tokenBudget })
-          controller.enqueue(encoder.encode(encodeSSE({ type: 'done', data: null })))
+          if (!outputBlocked) {
+            latency.logDone({ route_ms: Date.now() - routeStartedAt, token_budget: tokenBudget })
+            controller.enqueue(encoder.encode(encodeSSE({ type: 'done', data: null })))
+          }
         } catch (err: any) {
           if (err?.name === 'AbortError') {
             latency.logError(err)

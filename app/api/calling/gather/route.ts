@@ -27,6 +27,15 @@ import {
   buildVenueStep2Twiml,
   DEFAULT_VOICE,
 } from '@/lib/calling/voice-helpers'
+import {
+  handleStaffDispatch,
+  handleEquipmentRental,
+  handleVenueScout,
+  handleVendorOnboarding,
+  handleVendorFeedback,
+  handlePriceCheck,
+  handlePhoneTreeNavigation,
+} from '@/lib/calling/role-handlers'
 
 // Q51: Strip trailing slash - same vulnerability as Q50 in twilio-webhook-auth.
 // Trailing slash on NEXTAUTH_URL produces double-slash callback URLs that break
@@ -274,6 +283,23 @@ export async function POST(req: NextRequest) {
   if (role === 'inbound_vendor_callback')
     return handleInboundVendorCallback(db, aiCallId, step, speech, digits, confidence)
   if (role === 'inbound_unknown') return handleInboundUnknown(db, aiCallId, speech)
+
+  // New roles (v2 calling system)
+  const params = Object.fromEntries(searchParams.entries())
+  if (role === 'staff_dispatch')
+    return handleStaffDispatch(db, aiCallId, step, speech, digits, confidence, params)
+  if (role === 'equipment_rental')
+    return handleEquipmentRental(db, aiCallId, step, speech, digits, confidence, params)
+  if (role === 'venue_scout')
+    return handleVenueScout(db, aiCallId, step, speech, digits, confidence, params)
+  if (role === 'vendor_onboarding')
+    return handleVendorOnboarding(db, aiCallId, step, speech, digits, confidence, params)
+  if (role === 'vendor_feedback')
+    return handleVendorFeedback(db, aiCallId, step, speech, digits, confidence, params)
+  if (role === 'price_check')
+    return handlePriceCheck(db, aiCallId, step, speech, digits, confidence, params)
+  if (role === 'phone_tree_nav')
+    return handlePhoneTreeNavigation(db, aiCallId, step, speech, digits, confidence, params)
 
   // Default: vendor_availability
   return handleVendorAvailability(db, callId, aiCallId, step, speech, digits, confidence, retry)

@@ -4,7 +4,9 @@
 // Feed mode posts response to hub_messages. Private mode streams only.
 
 import { NextRequest } from 'next/server'
-import { Ollama } from 'ollama'
+import { streamText, stepCountIs } from 'ai'
+import { createOllamaProvider } from '@/lib/ai/ai-provider'
+import { buildCircleTools } from '@/lib/ai/remy-tools'
 import { requireAuth } from '@/lib/auth/get-user'
 import { isOllamaEnabled, getOllamaConfig, getOllamaModel } from '@/lib/ai/providers'
 import { validateRemyInput } from '@/lib/ai/remy-guardrails'
@@ -28,6 +30,10 @@ import { postRemyMessage, determineRemyVisibility } from '@/lib/hub/remy-circle-
 import { createSurfaceLatencyTracker } from '../surface-runtime-utils'
 import { createServerClient } from '@/lib/db/server'
 import { REMY_ARCHETYPES } from '@/lib/ai/remy-archetypes'
+import { createStreamScanner } from '@/lib/ai/remy-output-guardrails'
+import { db } from '@/lib/db'
+import { clients } from '@/lib/db/schema/schema'
+import { eq } from 'drizzle-orm'
 
 // --- Types ---
 
@@ -227,8 +233,15 @@ export async function POST(req: NextRequest) {
     const visibility = determineRemyVisibility(message, member.role)
     const latency = createSurfaceLatencyTracker('circle', contextScope)
 
-    // Load context
-    const ctx = await loadRemyCircleContext(groupId, member.role, contextScope)
+    // Load context + other client names for output guardrails (parallel)
+    const [ctx, otherClientNames] = await Promise.all([
+      loadRemyCircleContext(groupId, member.role, contextScope),
+      db
+        .select({ fullName: clients.fullName })
+        .from(clients)
+        .where(eq(clients.tenantId, member.tenantId))
+        .then((rows) => rows.map((r) => r.fullName)),
+    ])
     const contextBlock = formatCircleContext(ctx)
 
     // Load chef archetype for personality flavor
@@ -260,7 +273,6 @@ export async function POST(req: NextRequest) {
 
     const config = getOllamaConfig()
     const model = getOllamaModel('standard')
-    const ollama = new Ollama({ host: config.baseUrl })
 
     // Emit visibility event so client knows how to render
     const encoder = new TextEncoder()
@@ -274,33 +286,70 @@ export async function POST(req: NextRequest) {
           controller.enqueue(encoder.encode(encodeSSE({ type: 'visibility', data: visibility })))
 
           let fullResponse = ''
-          const ollamaStream = await ollama.chat({
-            model,
-            messages: [
-              { role: 'system', content: systemPrompt },
-              { role: 'user', content: fullPrompt },
-            ],
-            stream: true,
-            options: {
-              temperature: 0.7,
-              num_predict: tokenBudget,
-            },
-            keep_alive: '30m',
-          } as any)
+          const memberDisplayName = ctx.members.find((m) => m.role === member.role)?.displayName
+          const outputScanner = createStreamScanner({
+            surface: 'circle',
+            currentClientName: memberDisplayName ?? undefined,
+            otherClientNames,
+          })
+          let outputBlocked = false
 
-          for await (const chunk of ollamaStream) {
-            if (abortController.signal.aborted) break
-            if (chunk.message?.content) {
+          // AI SDK streamText with limited read-only tools for circle
+          const ollamaProvider = createOllamaProvider(config.baseUrl)
+          const circleTools = buildCircleTools(member.tenantId)
+          const aiResult = streamText({
+            model: ollamaProvider(model),
+            system: systemPrompt,
+            messages: [{ role: 'user', content: fullPrompt }],
+            tools: circleTools,
+            stopWhen: stepCountIs(3),
+            temperature: 0.7,
+            maxOutputTokens: tokenBudget,
+            abortSignal: abortController.signal,
+          })
+
+          for await (const token of aiResult.textStream) {
+            if (abortController.signal.aborted || outputBlocked) break
+            if (token) {
               latency.markFirstToken()
-              fullResponse += chunk.message.content
-              controller.enqueue(
-                encoder.encode(encodeSSE({ type: 'token', data: chunk.message.content }))
-              )
+              const scanResult = outputScanner.feed(token)
+              if (scanResult) {
+                if (!scanResult.safe) {
+                  controller.enqueue(
+                    encoder.encode(encodeSSE({ type: 'error', data: scanResult.text }))
+                  )
+                  controller.close()
+                  outputBlocked = true
+                  break
+                }
+                fullResponse += scanResult.text
+                controller.enqueue(
+                  encoder.encode(encodeSSE({ type: 'token', data: scanResult.text }))
+                )
+              }
+            }
+          }
+
+          // Flush remaining scanner buffer
+          if (!outputBlocked) {
+            const scanFlush = outputScanner.flush()
+            if (scanFlush) {
+              if (!scanFlush.safe) {
+                controller.enqueue(
+                  encoder.encode(encodeSSE({ type: 'error', data: scanFlush.text }))
+                )
+                outputBlocked = true
+              } else {
+                fullResponse += scanFlush.text
+                controller.enqueue(
+                  encoder.encode(encodeSSE({ type: 'token', data: scanFlush.text }))
+                )
+              }
             }
           }
 
           // Post to circle feed if in feed mode (non-blocking)
-          if (mode === 'feed' && fullResponse.trim()) {
+          if (!outputBlocked && mode === 'feed' && fullResponse.trim()) {
             postRemyMessage({
               groupId,
               tenantId: member.tenantId,
@@ -313,8 +362,10 @@ export async function POST(req: NextRequest) {
             })
           }
 
-          latency.logDone({ route_ms: Date.now() - routeStartedAt, token_budget: tokenBudget })
-          controller.enqueue(encoder.encode(encodeSSE({ type: 'done', data: null })))
+          if (!outputBlocked) {
+            latency.logDone({ route_ms: Date.now() - routeStartedAt, token_budget: tokenBudget })
+            controller.enqueue(encoder.encode(encodeSSE({ type: 'done', data: null })))
+          }
         } catch (err: any) {
           if (err?.name === 'AbortError') {
             latency.logError(err)

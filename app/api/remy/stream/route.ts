@@ -3,7 +3,9 @@
 // Uses Server-Sent Events (SSE) to stream token-by-token responses.
 
 import { NextRequest } from 'next/server'
-import { Ollama } from 'ollama'
+import { streamText, stepCountIs } from 'ai'
+import { createOllamaProvider } from '@/lib/ai/ai-provider'
+import { buildRemyTools } from '@/lib/ai/remy-tools'
 import { requireChef } from '@/lib/auth/get-user'
 import { loadRemyContext, resolveMessageEntities } from '@/lib/ai/remy-context'
 import { classifyIntent } from '@/lib/ai/remy-classifier'
@@ -77,6 +79,7 @@ import {
   processVoiceMemo,
 } from '@/lib/ai/remy-vision-actions'
 import { formatVoiceMemoResponse } from '@/lib/ai/voice-memo-format'
+import { createStreamScanner } from '@/lib/ai/remy-output-guardrails'
 
 //  POST Handler
 
@@ -1023,84 +1026,131 @@ export async function POST(req: NextRequest) {
 
           let fullResponse = ''
           const thinkFilter = new ThinkingBlockFilter()
+          const outputScanner = createStreamScanner({ surface: 'chef' })
+          let outputBlocked = false
 
-          const ollama = new Ollama({ host: endpoint.host })
-          const response: any = await ollama.chat({
-            model: endpoint.model,
-            messages: [
-              { role: 'system', content: systemPrompt },
-              { role: 'user', content: userMessage },
-            ],
-            stream: true,
-            options: {
-              num_predict: useThinking ? tokenBudget + 200 : tokenBudget,
-            },
-            keep_alive: '30m',
-            think: useThinking,
-          } as any)
+          // AI SDK streamText with tools for agent loops
+          const ollamaProvider = createOllamaProvider(endpoint.host)
+          const remyTools = buildRemyTools(user.tenantId!)
+          const aiResult = streamText({
+            model: ollamaProvider(endpoint.model),
+            system: systemPrompt,
+            messages: [{ role: 'user', content: userMessage }],
+            tools: remyTools,
+            stopWhen: stepCountIs(5),
+            maxOutputTokens: useThinking ? tokenBudget + 200 : tokenBudget,
+            abortSignal: abortCtrl.signal,
+          })
 
-          for await (const chunk of response) {
-            if (abortCtrl.signal.aborted) break
-            const token = chunk.message?.content ?? ''
+          for await (const token of aiResult.textStream) {
+            if (abortCtrl.signal.aborted || outputBlocked) break
             if (token) {
               const filtered = thinkFilter.process(token)
               if (filtered) {
-                fullResponse += filtered
-                controller.enqueue(encoder.encode(encodeSSE({ type: 'token', data: filtered })))
+                const scanResult = outputScanner.feed(filtered)
+                if (scanResult) {
+                  if (!scanResult.safe) {
+                    controller.enqueue(
+                      encoder.encode(encodeSSE({ type: 'error', data: scanResult.text }))
+                    )
+                    controller.close()
+                    outputBlocked = true
+                    break
+                  }
+                  fullResponse += scanResult.text
+                  controller.enqueue(
+                    encoder.encode(encodeSSE({ type: 'token', data: scanResult.text }))
+                  )
+                }
               }
             }
           }
-          const flushed = thinkFilter.flush()
-          if (flushed) {
-            fullResponse += flushed
-            controller.enqueue(encoder.encode(encodeSSE({ type: 'token', data: flushed })))
-          }
-
-          // Append mixed task results after the streamed response
-          if (mixedTaskSummary) {
-            controller.enqueue(
-              encoder.encode(encodeSSE({ type: 'token', data: `\n\n${mixedTaskSummary}` }))
-            )
-          }
-          if (mixedTasks.length > 0) {
-            controller.enqueue(encoder.encode(encodeSSE({ type: 'tasks', data: mixedTasks })))
-          }
-
-          // Nav suggestions from LLM response
-          const navSuggestions = extractNavSuggestions(fullResponse)
-          if (navSuggestions.length > 0) {
-            controller.enqueue(encoder.encode(encodeSSE({ type: 'nav', data: navSuggestions })))
-          }
-
-          // Deterministic action suggestions when LLM didn't provide nav
-          if (navSuggestions.length === 0) {
-            const actionHints = suggestFollowUpActions(userMessage, fullResponse)
-            if (actionHints.length > 0) {
-              controller.enqueue(
-                encoder.encode(
-                  encodeSSE({
-                    type: 'nav',
-                    data: actionHints.map((a) => ({
-                      label: a.label,
-                      href: `remy:${a.prompt}`,
-                      description: a.description,
-                    })),
-                  })
-                )
-              )
+          if (!outputBlocked) {
+            const thinkFlushed = thinkFilter.flush()
+            if (thinkFlushed) {
+              const scanResult = outputScanner.feed(thinkFlushed)
+              if (scanResult) {
+                if (!scanResult.safe) {
+                  controller.enqueue(
+                    encoder.encode(encodeSSE({ type: 'error', data: scanResult.text }))
+                  )
+                  outputBlocked = true
+                } else {
+                  fullResponse += scanResult.text
+                  controller.enqueue(
+                    encoder.encode(encodeSSE({ type: 'token', data: scanResult.text }))
+                  )
+                }
+              }
+            }
+            // Flush remaining scanner buffer
+            if (!outputBlocked) {
+              const scanFlush = outputScanner.flush()
+              if (scanFlush) {
+                if (!scanFlush.safe) {
+                  controller.enqueue(
+                    encoder.encode(encodeSSE({ type: 'error', data: scanFlush.text }))
+                  )
+                  outputBlocked = true
+                } else {
+                  fullResponse += scanFlush.text
+                  controller.enqueue(
+                    encoder.encode(encodeSSE({ type: 'token', data: scanFlush.text }))
+                  )
+                }
+              }
             }
           }
 
-          const onboardingCloser = await completeStreamOnboardingTurn(
-            user.tenantId!,
-            onboardingStage
-          )
-          if (onboardingCloser) {
-            fullResponse += onboardingCloser
-            controller.enqueue(encoder.encode(encodeSSE({ type: 'token', data: onboardingCloser })))
-          }
+          if (!outputBlocked) {
+            // Append mixed task results after the streamed response
+            if (mixedTaskSummary) {
+              controller.enqueue(
+                encoder.encode(encodeSSE({ type: 'token', data: `\n\n${mixedTaskSummary}` }))
+              )
+            }
+            if (mixedTasks.length > 0) {
+              controller.enqueue(encoder.encode(encodeSSE({ type: 'tasks', data: mixedTasks })))
+            }
 
-          controller.enqueue(encoder.encode(encodeSSE({ type: 'done', data: null })))
+            // Nav suggestions from LLM response
+            const navSuggestions = extractNavSuggestions(fullResponse)
+            if (navSuggestions.length > 0) {
+              controller.enqueue(encoder.encode(encodeSSE({ type: 'nav', data: navSuggestions })))
+            }
+
+            // Deterministic action suggestions when LLM didn't provide nav
+            if (navSuggestions.length === 0) {
+              const actionHints = suggestFollowUpActions(userMessage, fullResponse)
+              if (actionHints.length > 0) {
+                controller.enqueue(
+                  encoder.encode(
+                    encodeSSE({
+                      type: 'nav',
+                      data: actionHints.map((a) => ({
+                        label: a.label,
+                        href: `remy:${a.prompt}`,
+                        description: a.description,
+                      })),
+                    })
+                  )
+                )
+              }
+            }
+
+            const onboardingCloser = await completeStreamOnboardingTurn(
+              user.tenantId!,
+              onboardingStage
+            )
+            if (onboardingCloser) {
+              fullResponse += onboardingCloser
+              controller.enqueue(
+                encoder.encode(encodeSSE({ type: 'token', data: onboardingCloser }))
+              )
+            }
+
+            controller.enqueue(encoder.encode(encodeSSE({ type: 'done', data: null })))
+          }
 
           recordRemyMetric({
             category: 'general',

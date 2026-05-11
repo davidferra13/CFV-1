@@ -145,6 +145,7 @@ export const standaloneTop: NavItem[] = [
     tier: 'primary',
   },
   { href: '/inbox', label: 'Inbox', icon: Inbox, coreFeature: true, tier: 'primary' },
+  { href: '/autopilot', label: 'Autopilot', icon: Zap, coreFeature: true, tier: 'primary' },
   {
     href: '/events',
     label: 'Events',
@@ -643,6 +644,10 @@ export const navGroups: NavGroup[] = [
         href: '/culinary/call-sheet',
         label: 'Voice Hub',
         icon: Phone,
+        children: [
+          { href: '/culinary/sourcing', label: 'Source Ingredients' },
+          { href: '/culinary/call-sheet', label: 'Call Sheet' },
+        ],
       },
     ],
   },

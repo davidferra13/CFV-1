@@ -4,7 +4,8 @@
 // but uses Ollama for consistency.
 
 import { NextRequest } from 'next/server'
-import { Ollama } from 'ollama'
+import { streamText } from 'ai'
+import { createOllamaProvider } from '@/lib/ai/ai-provider'
 import { isOllamaEnabled, getOllamaConfig, getOllamaModel } from '@/lib/ai/providers'
 import { validateRemyInput } from '@/lib/ai/remy-guardrails'
 import {
@@ -24,6 +25,7 @@ import {
   getSurfaceRuntimeOptions,
   trySurfaceInstantAnswer,
 } from '../surface-runtime-utils'
+import { createStreamScanner } from '@/lib/ai/remy-output-guardrails'
 
 // ─── Types ──────────────────────────────────────────────────────────────────
 
@@ -181,9 +183,8 @@ export async function POST(req: NextRequest) {
 
     const config = getOllamaConfig()
     const model = getOllamaModel('fast') // Use fast model for public (lighter, faster)
-    const ollama = new Ollama({ host: config.baseUrl })
 
-    // Stream response
+    // Stream response via AI SDK (no tools for public surface)
     const abortController = new AbortController()
     const timeout = setTimeout(() => abortController.abort(), 60_000) // 60s for public (generous for cold start)
 
@@ -191,32 +192,61 @@ export async function POST(req: NextRequest) {
     const stream = new ReadableStream({
       async start(controller) {
         try {
-          const ollamaStream = await ollama.chat({
-            model,
-            messages: [
-              { role: 'system', content: systemPrompt },
-              { role: 'user', content: fullPrompt },
-            ],
-            stream: true,
-            options: {
-              temperature: 0.7,
-              num_predict: tokenBudget,
-            },
-            keep_alive: '30m',
-          } as any)
+          const outputScanner = createStreamScanner({ surface: 'public' })
+          let outputBlocked = false
 
-          for await (const chunk of ollamaStream) {
-            if (abortController.signal.aborted) break
-            if (chunk.message?.content) {
+          const ollamaProvider = createOllamaProvider(config.baseUrl)
+          const aiResult = streamText({
+            model: ollamaProvider(model),
+            system: systemPrompt,
+            messages: [{ role: 'user', content: fullPrompt }],
+            temperature: 0.7,
+            maxOutputTokens: tokenBudget,
+            abortSignal: abortController.signal,
+          })
+
+          for await (const token of aiResult.textStream) {
+            if (abortController.signal.aborted || outputBlocked) break
+            if (token) {
               latency.markFirstToken()
-              controller.enqueue(
-                encoder.encode(encodeSSE({ type: 'token', data: chunk.message.content }))
-              )
+              const scanResult = outputScanner.feed(token)
+              if (scanResult) {
+                if (!scanResult.safe) {
+                  controller.enqueue(
+                    encoder.encode(encodeSSE({ type: 'error', data: scanResult.text }))
+                  )
+                  controller.close()
+                  outputBlocked = true
+                  break
+                }
+                controller.enqueue(
+                  encoder.encode(encodeSSE({ type: 'token', data: scanResult.text }))
+                )
+              }
             }
           }
 
-          latency.logDone({ route_ms: Date.now() - routeStartedAt, token_budget: tokenBudget })
-          controller.enqueue(encoder.encode(encodeSSE({ type: 'done', data: null })))
+          // Flush remaining scanner buffer
+          if (!outputBlocked) {
+            const scanFlush = outputScanner.flush()
+            if (scanFlush) {
+              if (!scanFlush.safe) {
+                controller.enqueue(
+                  encoder.encode(encodeSSE({ type: 'error', data: scanFlush.text }))
+                )
+                outputBlocked = true
+              } else {
+                controller.enqueue(
+                  encoder.encode(encodeSSE({ type: 'token', data: scanFlush.text }))
+                )
+              }
+            }
+          }
+
+          if (!outputBlocked) {
+            latency.logDone({ route_ms: Date.now() - routeStartedAt, token_budget: tokenBudget })
+            controller.enqueue(encoder.encode(encodeSSE({ type: 'done', data: null })))
+          }
         } catch (err: any) {
           if (err?.name === 'AbortError') {
             latency.logError(err)
