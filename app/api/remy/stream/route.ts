@@ -37,7 +37,7 @@ import {
   addRemyMemoryManual,
 } from '@/lib/ai/remy-memory-actions'
 import { recordRemyMetric } from '@/lib/ai/remy-metrics'
-import { searchRemyConversationSummaries } from '@/lib/ai/mempalace-bridge'
+import { searchSemanticSummaries } from '@/lib/ai/remy-conversation-summary-server'
 import type { RemyMessage, RemyTaskResult, RemyMemoryItem } from '@/lib/ai/remy-types'
 import type { MemoryCategory } from '@/lib/ai/remy-memory-types'
 import {
@@ -651,7 +651,7 @@ export async function POST(req: NextRequest) {
             : getRemyArchetype().catch(() => null),
           activeForm === 'remy-survey' ? getSurveyState().catch(() => null) : Promise.resolve(null),
           history.length === 0 && earlyScopeHint !== 'minimal'
-            ? searchRemyConversationSummaries(message, { limit: 3 }).catch(() => [])
+            ? searchSemanticSummaries(message, user.tenantId!, { limit: 3 }).catch(() => [])
             : Promise.resolve([]),
           getStreamOnboardingStage(user.tenantId!).catch(() => null),
         ]),
@@ -665,7 +665,7 @@ export async function POST(req: NextRequest) {
         Awaited<ReturnType<typeof resolveMessageEntities>>,
         string | null,
         SurveyState | null,
-        Awaited<ReturnType<typeof searchRemyConversationSummaries>>,
+        Awaited<ReturnType<typeof searchSemanticSummaries>>,
         Awaited<ReturnType<typeof getStreamOnboardingStage>>,
       ]
       context = ctx

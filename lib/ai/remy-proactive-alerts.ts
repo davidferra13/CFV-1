@@ -425,6 +425,59 @@ async function checkDormantClients(db: any, tenantId: string): Promise<AlertCand
   return alerts
 }
 
+async function checkHighRiskEvents(db: any, tenantId: string): Promise<AlertCandidate[]> {
+  const alerts: AlertCandidate[] = []
+  const now = new Date()
+  const _li3 = (d: Date) =>
+    `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`
+  const today = _li3(now)
+  const in7d = _li3(new Date(now.getFullYear(), now.getMonth(), now.getDate() + 7))
+
+  // Read persisted risk assessments for upcoming events
+  const { data: riskyEvents, error } = await db
+    .from('event_risk_assessments')
+    .select(
+      'event_id, overall_score, overall_level, top_risks, events!inner(occasion, event_date, client:clients(full_name))'
+    )
+    .eq('tenant_id', tenantId)
+    .gte('events.event_date', today)
+    .lte('events.event_date', in7d)
+    .not('events.status', 'in', '("cancelled","completed")')
+    .gte('overall_score', 50)
+    .order('overall_score', { ascending: false })
+    .limit(5)
+
+  if (error) return alerts
+
+  for (const row of riskyEvents ?? []) {
+    const evt = row.events
+    if (!evt) continue
+    const clientName = evt.client?.full_name ?? 'client'
+    const occasion = evt.occasion ?? 'Event'
+    const daysUntil = Math.ceil(
+      (new Date(evt.event_date).getTime() - now.getTime()) / (1000 * 60 * 60 * 24)
+    )
+    const dayLabel = daysUntil <= 1 ? 'tomorrow' : `in ${daysUntil} days`
+
+    // Summarize top risks for the body
+    const topRiskNames = (row.top_risks ?? [])
+      .slice(0, 3)
+      .map((r: any) => r.label ?? r.dimension)
+      .join(', ')
+
+    alerts.push({
+      alertType: 'high_risk_event',
+      entityType: 'event',
+      entityId: row.event_id,
+      title: `${occasion} is high-risk (${row.overall_score}/100)`,
+      body: `"${occasion}" for ${clientName} ${dayLabel} scored ${row.overall_score}/100 on operational risk.${topRiskNames ? ` Top concerns: ${topRiskNames}.` : ''} Review mitigations before the event.`,
+      priority: row.overall_score >= 75 ? 'urgent' : 'high',
+    })
+  }
+
+  return alerts
+}
+
 // ─── Alert Orchestrator ──────────────────────────────────────────────────────
 
 async function isDuplicate(
@@ -535,6 +588,39 @@ async function checkStuckEvents(db: any, tenantId: string): Promise<AlertCandida
   return alerts
 }
 
+async function checkCostNeedsRefresh(db: any, tenantId: string): Promise<AlertCandidate[]> {
+  const alerts: AlertCandidate[] = []
+  const _n = new Date()
+  const _li = (d: Date) =>
+    `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`
+  const today = _li(_n)
+
+  const { data: events, error } = await db
+    .from('events')
+    .select('id, occasion, event_date, client:clients!events_client_id_fkey(full_name)')
+    .eq('tenant_id', tenantId)
+    .eq('cost_needs_refresh', true)
+    .not('status', 'in', '("cancelled","completed","draft")')
+    .gte('event_date', today)
+    .limit(10)
+
+  if (error) throw error
+
+  for (const e of events ?? []) {
+    const clientName = e.client?.full_name ?? 'Unknown'
+    alerts.push({
+      alertType: 'cost_needs_refresh',
+      entityType: 'event',
+      entityId: e.id,
+      title: `${e.occasion ?? 'Event'} costs may be outdated`,
+      body: `Ingredient prices changed since last cost calculation for ${clientName}'s ${e.occasion ?? 'event'}. Review food cost before quoting.`,
+      priority: 'high',
+    })
+  }
+
+  return alerts
+}
+
 async function runRuleSafely(
   tenantId: string,
   operation: string,
@@ -575,6 +661,8 @@ export async function runAlertRules(tenantId: string): Promise<number> {
     postEventAlerts,
     dormantAlerts,
     stuckAlerts,
+    riskAlerts,
+    costRefreshAlerts,
   ] = await Promise.all([
     runRuleSafely(tenantId, 'check_missing_prep_list', () => checkMissingPrepList(db, tenantId)),
     runRuleSafely(tenantId, 'check_missing_grocery_list', () =>
@@ -591,6 +679,8 @@ export async function runAlertRules(tenantId: string): Promise<number> {
     runRuleSafely(tenantId, 'check_post_event_capture', () => checkPostEventCapture(db, tenantId)),
     runRuleSafely(tenantId, 'check_dormant_clients', () => checkDormantClients(db, tenantId)),
     runRuleSafely(tenantId, 'check_stuck_events', () => checkStuckEvents(db, tenantId)),
+    runRuleSafely(tenantId, 'check_high_risk_events', () => checkHighRiskEvents(db, tenantId)),
+    runRuleSafely(tenantId, 'check_cost_needs_refresh', () => checkCostNeedsRefresh(db, tenantId)),
   ])
 
   const allCandidates = [
@@ -605,6 +695,8 @@ export async function runAlertRules(tenantId: string): Promise<number> {
     ...postEventAlerts,
     ...dormantAlerts,
     ...stuckAlerts,
+    ...riskAlerts,
+    ...costRefreshAlerts,
   ]
 
   let inserted = 0
@@ -721,6 +813,8 @@ export async function runAlertRulesAdmin(tenantId: string): Promise<number> {
     weatherAlerts,
     postEventAlerts,
     dormantAlerts,
+    riskAlerts,
+    costRefreshAlerts,
   ] = await Promise.all([
     runRuleSafely(tenantId, 'check_missing_prep_list', () => checkMissingPrepList(db, tenantId)),
     runRuleSafely(tenantId, 'check_missing_grocery_list', () =>
@@ -732,6 +826,8 @@ export async function runAlertRulesAdmin(tenantId: string): Promise<number> {
     runRuleSafely(tenantId, 'check_weather_for_events', () => checkWeatherForEvents(tenantId)),
     runRuleSafely(tenantId, 'check_post_event_capture', () => checkPostEventCapture(db, tenantId)),
     runRuleSafely(tenantId, 'check_dormant_clients', () => checkDormantClients(db, tenantId)),
+    runRuleSafely(tenantId, 'check_high_risk_events', () => checkHighRiskEvents(db, tenantId)),
+    runRuleSafely(tenantId, 'check_cost_needs_refresh', () => checkCostNeedsRefresh(db, tenantId)),
   ])
 
   const allCandidates = [
@@ -743,6 +839,8 @@ export async function runAlertRulesAdmin(tenantId: string): Promise<number> {
     ...weatherAlerts,
     ...postEventAlerts,
     ...dormantAlerts,
+    ...riskAlerts,
+    ...costRefreshAlerts,
   ]
 
   let inserted = 0

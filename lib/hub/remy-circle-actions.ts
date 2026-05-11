@@ -152,7 +152,10 @@ export async function postRemyWelcome(
  * Business questions (margin, cost, profit, pipeline, client history) are chef-only.
  * Everything else is circle-wide.
  */
-export function determineRemyVisibility(message: string, memberRole: string): RemyVisibility {
+export async function determineRemyVisibility(
+  message: string,
+  memberRole: string
+): Promise<RemyVisibility> {
   // Only chef can trigger chef_only - guests always get circle visibility
   if (memberRole !== 'chef') return 'circle'
 

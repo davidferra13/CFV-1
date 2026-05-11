@@ -230,7 +230,7 @@ export async function POST(req: NextRequest) {
 
     // Determine context scope and visibility
     const contextScope = getCircleContextScope(message, member.role)
-    const visibility = determineRemyVisibility(message, member.role)
+    const visibility = await determineRemyVisibility(message, member.role)
     const latency = createSurfaceLatencyTracker('circle', contextScope)
 
     // Load context + other client names for output guardrails (parallel)

@@ -1143,6 +1143,34 @@ export function saveSummary(conversationId: string, summary: ConversationSummary
   } catch {
     // localStorage unavailable (SSR, private browsing) - silently skip
   }
+
+  // Fire-and-forget: POST conversation to server for LLM summarization + embedding storage
+  postSummaryToServer(conversationId)
+}
+
+/**
+ * Retrieve conversation messages from IndexedDB and POST to the server
+ * for LLM-powered summarization and semantic embedding in rag_chunks.
+ * Non-blocking: errors are silently swallowed.
+ */
+function postSummaryToServer(conversationId: string): void {
+  getMessages(conversationId)
+    .then((messages) => {
+      if (!messages || messages.length < 2) return
+      const formatted = messages.map((m) => ({
+        role: m.role,
+        content: m.content,
+      }))
+      return fetch('/api/remy/summarize', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          messages: formatted,
+          conversationId,
+        }),
+      })
+    })
+    .catch(() => {}) // Fire and forget
 }
 
 /**

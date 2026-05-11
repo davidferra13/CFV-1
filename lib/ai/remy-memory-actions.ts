@@ -6,6 +6,7 @@
 import { z } from 'zod'
 import { requireChef } from '@/lib/auth/get-user'
 import { createServerClient } from '@/lib/db/server'
+import { pgClient } from '@/lib/db'
 import { parseWithOllama } from '@/lib/ai/parse-ollama'
 import { OllamaOfflineError } from '@/lib/ai/ollama-errors'
 import { createHash } from 'crypto'
@@ -13,6 +14,7 @@ import { validateMemoryContent } from '@/lib/ai/remy-guardrails'
 import type { RemyMemory, MemoryCategory } from '@/lib/ai/remy-memory-types'
 import { listRuntimeFileMemories } from '@/lib/ai/remy-runtime-memory'
 import { searchMemPalace } from '@/lib/ai/mempalace-bridge'
+import { embedText } from '@/lib/ai/embeddings'
 
 // ─── Extraction Schema ─────────────────────────────────────────────────────
 
@@ -151,16 +153,34 @@ export async function extractAndSaveMemories(
       }
 
       // Insert new memory
-      await db.from('remy_memories').insert({
-        tenant_id: tenantId,
-        category: mem.category,
-        content: mem.content,
-        importance: mem.importance,
-        content_hash: contentHash,
-        related_client_id: relatedClientId,
-        source_artifact_id: sourceArtifactId ?? null,
-        source_message: userMessage,
-      })
+      const { data: inserted } = await db
+        .from('remy_memories')
+        .insert({
+          tenant_id: tenantId,
+          category: mem.category,
+          content: mem.content,
+          importance: mem.importance,
+          content_hash: contentHash,
+          related_client_id: relatedClientId,
+          source_artifact_id: sourceArtifactId ?? null,
+          source_message: userMessage,
+        })
+        .select('id')
+        .single()
+
+      // Embed and store vector (non-blocking, fire-and-forget)
+      if (inserted?.id) {
+        embedText(mem.content)
+          .then(async (vec) => {
+            if (!vec) return
+            await pgClient`
+              UPDATE remy_memories
+              SET embedding = ${JSON.stringify(vec)}::vector
+              WHERE id = ${inserted.id as string}
+            `
+          })
+          .catch(() => {})
+      }
 
       // CIL observation: feed memory into per-tenant knowledge graph (non-blocking)
       try {
@@ -255,29 +275,60 @@ If you can't determine a clear correction, return: { "oldFact": "", "newFact": "
       return { corrected: false }
     }
 
-    // Search for existing memories that match the OLD (wrong) fact
-    const { data: candidates } = await db
-      .from('remy_memories')
-      .select('id, content, category')
-      .eq('tenant_id', tenantId)
-      .eq('is_active', true)
-      .limit(50)
-
-    // Find the best match by checking content overlap with the old fact
-    const oldWords = result.oldFact
-      .toLowerCase()
-      .split(/\s+/)
-      .filter((w: string) => w.length > 3)
+    // Search for existing memories that match the OLD (wrong) fact.
+    // Prefer semantic search (vector similarity) for better conceptual matching,
+    // then fall back to keyword overlap if embeddings are unavailable.
     let bestMatch: { id: string; content: string; score: number } | null = null
 
-    for (const row of candidates ?? []) {
-      const content = (row.content as string).toLowerCase()
-      const matchScore = oldWords.reduce((score: number, word: string) => {
-        return score + (content.includes(word) ? 1 : 0)
-      }, 0)
-      const normalized = matchScore / Math.max(oldWords.length, 1)
-      if (normalized > 0.4 && (!bestMatch || normalized > bestMatch.score)) {
-        bestMatch = { id: row.id as string, content: row.content as string, score: normalized }
+    try {
+      const oldFactEmbedding = await embedText(result.oldFact)
+      if (oldFactEmbedding) {
+        const vecStr = `[${oldFactEmbedding.join(',')}]`
+        type CorrectionRow = { id: string; content: string; distance: number }
+        const semanticMatches = await pgClient<CorrectionRow[]>`
+          SELECT id, content, (embedding <=> ${vecStr}::vector) as distance
+          FROM remy_memories
+          WHERE tenant_id = ${tenantId}
+            AND is_active = true
+            AND embedding IS NOT NULL
+          ORDER BY distance
+          LIMIT 5
+        `
+        if (semanticMatches.length > 0 && semanticMatches[0].distance < 0.6) {
+          bestMatch = {
+            id: semanticMatches[0].id,
+            content: semanticMatches[0].content,
+            score: 1 - semanticMatches[0].distance,
+          }
+        }
+      }
+    } catch {
+      // Semantic search unavailable, fall through to keyword matching
+    }
+
+    // Keyword fallback if semantic search found nothing
+    if (!bestMatch) {
+      const { data: candidates } = await db
+        .from('remy_memories')
+        .select('id, content, category')
+        .eq('tenant_id', tenantId)
+        .eq('is_active', true)
+        .limit(50)
+
+      const oldWords = result.oldFact
+        .toLowerCase()
+        .split(/\s+/)
+        .filter((w: string) => w.length > 3)
+
+      for (const row of candidates ?? []) {
+        const content = (row.content as string).toLowerCase()
+        const matchScore = oldWords.reduce((score: number, word: string) => {
+          return score + (content.includes(word) ? 1 : 0)
+        }, 0)
+        const normalized = matchScore / Math.max(oldWords.length, 1)
+        if (normalized > 0.4 && (!bestMatch || normalized > bestMatch.score)) {
+          bestMatch = { id: row.id as string, content: row.content as string, score: normalized }
+        }
       }
     }
 
@@ -323,6 +374,20 @@ If you can't determine a clear correction, return: { "oldFact": "", "newFact": "
       .single()
 
     console.log(`[remy-memory] Saved corrected memory: "${result.newFact}"`)
+
+    // Embed the corrected memory (non-blocking)
+    if (newMem?.id) {
+      embedText(result.newFact)
+        .then(async (vec) => {
+          if (!vec) return
+          await pgClient`
+            UPDATE remy_memories
+            SET embedding = ${JSON.stringify(vec)}::vector
+            WHERE id = ${newMem.id as string}
+          `
+        })
+        .catch(() => {})
+    }
 
     return {
       corrected: true,
@@ -387,6 +452,57 @@ export async function loadRelevantMemories(
     }
   } catch {
     // Non-blocking: MemPalace is optional
+  }
+
+  // Layer 0.5: Semantic vector search (pgvector cosine similarity)
+  // Finds conceptually related memories even when keywords don't overlap.
+  // Falls through to keyword layers if Ollama is offline or pgvector is unavailable.
+  try {
+    const queryEmbedding = await embedText(_currentMessage)
+    if (queryEmbedding) {
+      const vecStr = `[${queryEmbedding.join(',')}]`
+      type SemanticRow = {
+        id: string
+        category: string
+        content: string
+        importance: number
+        access_count: number
+        related_client_id: string | null
+        created_at: string
+        last_accessed_at: string
+        distance: number
+      }
+      const semanticRows = await pgClient<SemanticRow[]>`
+        SELECT id, category, content, importance, access_count,
+               related_client_id, created_at, last_accessed_at,
+               (embedding <=> ${vecStr}::vector) as distance
+        FROM remy_memories
+        WHERE tenant_id = ${tenantId}
+          AND is_active = true
+          AND embedding IS NOT NULL
+        ORDER BY distance
+        LIMIT 10
+      `
+      for (const row of semanticRows) {
+        if (row.distance < 0.7) {
+          pushMemory({
+            id: row.id,
+            category: row.category as MemoryCategory,
+            content: row.content,
+            importance: row.importance,
+            accessCount: row.access_count,
+            relatedClientId: row.related_client_id,
+            relatedClientName: null,
+            createdAt: row.created_at,
+            lastAccessedAt: row.last_accessed_at,
+            source: 'database',
+            editable: true,
+          })
+        }
+      }
+    }
+  } catch {
+    // Non-blocking: pgvector or Ollama unavailable, fall through to keyword layers
   }
 
   // Layer 1: Client-specific memories (if a client is mentioned)
@@ -623,6 +739,21 @@ export async function addRemyMemoryManual(input: {
     .single()
 
   if (error) throw new Error(`Failed to add memory: ${error.message}`)
+
+  // Embed manually added memory (non-blocking)
+  if (data?.id) {
+    embedText(input.content)
+      .then(async (vec) => {
+        if (!vec) return
+        await pgClient`
+          UPDATE remy_memories
+          SET embedding = ${JSON.stringify(vec)}::vector
+          WHERE id = ${data.id as string}
+        `
+      })
+      .catch(() => {})
+  }
+
   return { id: data.id }
 }
 
