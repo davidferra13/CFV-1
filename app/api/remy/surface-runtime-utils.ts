@@ -1,7 +1,7 @@
 import { determineContextScope, type ContextScope } from './stream/route-prompt-utils'
 import { getOperatorResponseTokenBudget } from './stream/route-runtime-utils'
 
-export type RemySurface = 'landing' | 'public' | 'client'
+export type RemySurface = 'landing' | 'public' | 'client' | 'circle'
 
 export interface SurfaceInstantContext {
   businessName?: string | null
