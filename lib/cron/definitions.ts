@@ -463,6 +463,13 @@ export const CRON_MONITOR_DEFINITIONS: CronMonitorDefinition[] = [
     cadence: 'daily',
     description: 'Resolve predictions, compute accuracy rollups, cross-validate Pi bridge prices',
   },
+  {
+    cronName: 'automation-rules',
+    routePath: '/api/cron/automation-rules',
+    maxExpectedMinutes: 120,
+    cadence: 'hourly',
+    description: 'Execute config-driven preset automation rules (follow-up, review, stale inquiry, reorder, calendar block, quote archive)',
+  },
 ]
 
 export const CRON_MONITOR_DEFINITION_MAP = new Map(
