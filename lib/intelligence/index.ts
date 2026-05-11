@@ -140,6 +140,26 @@ export type { ProactiveAlertsResult, ProactiveAlert } from './proactive-alerts'
 export { getSmartQuoteSuggestion } from './smart-quote-suggestions'
 export type { QuotePricingSuggestion } from './smart-quote-suggestions'
 
+// ─── Intelligence Features ──────────────────────────────────────────────────
+
+export {
+  forecastIngredientDemand,
+  getBuyingRecommendations,
+} from './ingredient-demand'
+export type {
+  IngredientDemandForecast,
+  IngredientDemandItem,
+  BuyRecommendation,
+  DemandEvent,
+} from './ingredient-demand'
+
+export { calculatePricingConfidence } from './pricing-confidence'
+export type {
+  PricingConfidenceReport,
+  MarketPosition,
+  SimilarEvent,
+} from './pricing-confidence'
+
 // ─── Per-Entity Intelligence Contexts ────────────────────────────────────────
 
 export { getInquiryConversionContext } from './inquiry-conversion-context'

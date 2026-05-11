@@ -25,6 +25,7 @@ import { QuotePriceConfidenceWarning } from '@/components/quotes/quote-price-con
 import { QuotePriceFreshnessWarning } from '@/components/quotes/quote-price-freshness-warning'
 import { QuoteCostBreakdownPanel } from '@/components/quotes/quote-cost-breakdown-panel'
 import { getQuoteCostIntelligence } from '@/lib/quotes/quote-cost-intelligence'
+import { QuotePricingConfidence } from '@/components/intelligence/quote-pricing-confidence'
 import { Suspense } from 'react'
 
 export default async function QuoteDetailPage({ params }: { params: { id: string } }) {
@@ -223,7 +224,10 @@ export default async function QuoteDetailPage({ params }: { params: { id: string
         </div>
 
         {/* Pricing Insights Sidebar (right column) */}
-        <div className="lg:col-span-1 space-y-6">
+        <div className="lg:col-span-1 space-y-4">
+          <Suspense fallback={null}>
+            <QuotePricingConfidence quoteId={params.id} />
+          </Suspense>
           <PricingInsightsSidebar
             eventType={quote.event?.occasion || quote.inquiry?.confirmed_occasion || undefined}
             guestCountRange={
