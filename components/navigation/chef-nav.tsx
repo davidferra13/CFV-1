@@ -21,6 +21,7 @@ import { DEFAULT_ENABLED_MODULES } from '@/lib/billing/modules'
 const DEFAULT_MODULE_SLUGS = new Set(DEFAULT_ENABLED_MODULES)
 import type { NavCollapsibleItem, NavGroup, NavSubItem } from './nav-config'
 import { ActionBar } from './action-bar'
+import { AllFeaturesCollapse } from './all-features-collapse'
 import { NotificationBell } from '@/components/notifications/notification-bell'
 import { GlobalSearch } from '@/components/search/global-search'
 import { OfflineNavIndicator } from '@/components/offline/offline-nav-indicator'
@@ -1072,10 +1073,13 @@ export function ChefSidebar({
               bypassProgressiveDisclosure={isAdmin || isPrivileged}
             />
 
-            {/* ─── Nav Groups (always visible, collapse individually) ─── */}
-            {filteredGroupEntries.length > 0 && (
-              <>
-                <div className="mx-2 my-2 border-t border-stone-800/50" />
+            {/* ─── All Features (collapsible directory of all nav groups) ─── */}
+            <AllFeaturesCollapse
+              hidden={focusMode && !isPrivileged}
+              groups={progressiveGroups}
+              navFilter={navFilter}
+            >
+              {filteredGroupEntries.length > 0 && (
                 <div className="space-y-0.5">
                   {filteredGroupEntries.map(({ group, isLocked }) => (
                     <NavGroupSection
@@ -1091,56 +1095,37 @@ export function ChefSidebar({
                     />
                   ))}
                 </div>
-              </>
-            )}
+              )}
 
-            {/* Show/hide advanced nav groups toggle */}
-            {hasHiddenGroups && (
-              <button
-                type="button"
-                aria-pressed={showAllNav}
-                onClick={() => {
-                  setShowAllNav((prev) => {
-                    const next = !prev
-                    try {
-                      localStorage.setItem(SHOW_ALL_NAV_STORAGE_KEY, String(next))
-                    } catch {
-                      /* ignore */
-                    }
-                    return next
-                  })
-                }}
-                className="flex items-center gap-2 w-full px-3 py-1.5 text-xs font-medium text-stone-500 hover:text-stone-300 transition-colors"
-              >
-                <Sparkles className="w-3.5 h-3.5 flex-shrink-0" />
-                {showAllNav ? 'Simplify menu' : 'Show all features'}
-              </button>
-            )}
+              {/* Show/hide advanced nav groups toggle */}
+              {hasHiddenGroups && (
+                <button
+                  type="button"
+                  aria-pressed={showAllNav}
+                  onClick={() => {
+                    setShowAllNav((prev) => {
+                      const next = !prev
+                      try {
+                        localStorage.setItem(SHOW_ALL_NAV_STORAGE_KEY, String(next))
+                      } catch {
+                        /* ignore */
+                      }
+                      return next
+                    })
+                  }}
+                  className="flex items-center gap-2 w-full px-3 py-1.5 text-xs font-medium text-stone-500 hover:text-stone-300 transition-colors"
+                >
+                  <Sparkles className="w-3.5 h-3.5 flex-shrink-0" />
+                  {showAllNav ? 'Simplify menu' : 'Show all features'}
+                </button>
+              )}
+            </AllFeaturesCollapse>
 
             <RecentPagesSection />
 
             <div className="h-px my-3 mx-3 bg-stone-800/40" />
 
             {/* Settings */}
-            {(() => {
-              const featuresActive = isItemActive(pathname, '/onboarding/features', searchParams)
-              return (
-                <Link
-                  href="/onboarding/features"
-                  className={`flex items-center gap-3 px-3 py-2 rounded-lg text-sm font-semibold transition-colors ${
-                    featuresActive
-                      ? 'bg-brand-950 text-brand-400 nav-active-glow'
-                      : 'text-stone-400 hover:bg-stone-800 hover:text-stone-300'
-                  }`}
-                >
-                  <Compass
-                    className={`w-[18px] h-[18px] flex-shrink-0 ${featuresActive ? 'text-brand-600' : 'text-stone-500'}`}
-                  />
-                  All Features
-                </Link>
-              )
-            })()}
-
             {(() => {
               const settingsActive = isItemActive(pathname, '/settings', searchParams)
               return (

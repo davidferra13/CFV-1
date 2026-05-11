@@ -180,7 +180,9 @@ export const standaloneTop: NavItem[] = [
     tier: 'primary',
     subMenu: [
       { href: '/clients/new', label: 'Add Client' },
+      { href: '/clients/communication', label: 'Communication' },
       { href: '/clients/communication/follow-ups', label: 'Follow-Ups' },
+      { href: '/clients/communication/upcoming-touchpoints', label: 'Touchpoints' },
       { href: '/clients/insights/top-clients', label: 'Top Clients' },
       { href: '/clients/loyalty', label: 'Loyalty' },
     ],
@@ -267,9 +269,24 @@ export const navGroups: NavGroup[] = [
         ],
       },
       {
+        href: '/analytics/forecast',
+        label: 'Revenue Forecast',
+        icon: ChartLineUp,
+      },
+      {
         href: '/surveys',
         label: 'Surveys',
         icon: ClipboardCheck,
+      },
+      {
+        href: '/analytics/vendors',
+        label: 'Vendor Analytics',
+        icon: Store,
+      },
+      {
+        href: '/analytics/weekly',
+        label: 'Weekly Summary',
+        icon: CalendarCheck,
       },
     ],
   },
@@ -844,6 +861,11 @@ export const navGroups: NavGroup[] = [
         ],
       },
       {
+        href: '/finance/tax-prep',
+        label: 'Tax Prep',
+        icon: ClipboardCheck,
+      },
+      {
         href: '/finance/year-end',
         label: 'Year-End Close',
         icon: CalendarCheck,
@@ -1191,13 +1213,13 @@ export const navGroups: NavGroup[] = [
         label: 'Quotes',
         icon: Invoice,
         children: [
-          { href: '/quotes/accepted', label: 'Accepted' },
-          { href: '/quotes/draft', label: 'Draft' },
-          { href: '/quotes/expired', label: 'Expired' },
+          { href: '/quotes?status=accepted', label: 'Accepted' },
+          { href: '/quotes?status=draft', label: 'Draft' },
+          { href: '/quotes?status=expired', label: 'Expired' },
           { href: '/quotes/new', label: 'New Quote' },
-          { href: '/quotes/rejected', label: 'Rejected' },
-          { href: '/quotes/sent', label: 'Sent' },
-          { href: '/quotes/viewed', label: 'Viewed' },
+          { href: '/quotes?status=rejected', label: 'Rejected' },
+          { href: '/quotes?status=sent', label: 'Sent' },
+          { href: '/quotes?status=viewed', label: 'Viewed' },
         ],
       },
       {
@@ -1877,16 +1899,18 @@ export function getPrimaryShortcutOptions() {
   return PRIMARY_SHORTCUT_OPTIONS.map(({ href, label, context }) => ({ href, label, context }))
 }
 
-// Action Bar: 6 primary domains from the approved navigation contract.
-// Today, Inbox, Events, Clients, Culinary, Finance.
+// Action Bar: 8 daily-driver shortcuts from the Navigation Action Bar spec.
+// Logo click = Dashboard (handled by the logo link, not an Action Bar item).
 // All other surfaces reachable via the All Features collapse, command palette, or direct routes.
 export const actionBarItems: NavItem[] = [
-  { href: '/dashboard', label: 'Today', icon: LayoutDashboard },
   { href: '/inbox', label: 'Inbox', icon: Inbox },
+  { href: '/calendar', label: 'Calendar', icon: Calendar },
   { href: '/events', label: 'Events', icon: CalendarDays },
   { href: '/clients', label: 'Clients', icon: Users },
-  { href: '/culinary', label: 'Culinary', icon: UtensilsCrossed },
-  { href: '/finance', label: 'Finance', icon: DollarSign },
+  { href: '/menus', label: 'Menus', icon: UtensilsCrossed },
+  { href: '/finance', label: 'Money', icon: DollarSign },
+  { href: '/culinary/prep', label: 'Prep', icon: Timer },
+  { href: '/circles', label: 'Community', icon: MessagesSquare },
 ]
 
 // ─── + Create dropdown: 15 direct navigation links ───
@@ -1908,6 +1932,7 @@ export const createDropdownItems: CreateDropdownItem[] = [
   { href: '/clients/new', label: 'New Client', icon: Users, group: 'pipeline' },
   { href: '/quotes/new', label: 'New Quote', icon: FileText, group: 'pipeline' },
   { href: '/inquiries/new', label: 'New Inquiry', icon: Inbox, group: 'pipeline' },
+  { href: '/chat', label: 'New Message', icon: MessageCircle, group: 'pipeline' },
   { href: '/expenses/new', label: 'New Expense', icon: DollarSign, group: 'pipeline' },
   // Operational
   { href: '/documents', label: 'Documents', icon: FileText, group: 'operational' },

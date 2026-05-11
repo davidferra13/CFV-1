@@ -14,6 +14,8 @@ type AllFeaturesCollapseProps = {
   hidden?: boolean
   /** The nav groups to check for active-page auto-expand */
   groups?: NavGroup[]
+  /** Active search filter; auto-expands when non-empty */
+  navFilter?: string
 }
 
 /** Check if current pathname lives inside one of the navGroups but NOT in the Action Bar */
@@ -38,6 +40,7 @@ export function AllFeaturesCollapse({
   children,
   hidden = false,
   groups = [],
+  navFilter = '',
 }: AllFeaturesCollapseProps) {
   const pathname = usePathname()
 
@@ -72,6 +75,10 @@ export function AllFeaturesCollapse({
     })
   }, [])
 
+  // When the user is actively filtering, force-expand regardless of collapsed state
+  const isSearching = navFilter.trim().length > 0
+  const isOpen = isSearching || !collapsed
+
   if (hidden) return null
 
   return (
@@ -85,16 +92,16 @@ export function AllFeaturesCollapse({
         onClick={toggle}
         className="flex w-full items-center justify-between px-4 py-2 text-xs font-semibold uppercase tracking-wider text-stone-500 hover:text-stone-400 transition-colors"
       >
-        <span>Browse Everything</span>
+        <span>All Features</span>
         <ChevronDown
-          className={`h-3.5 w-3.5 transition-transform duration-200 ${collapsed ? '-rotate-90' : 'rotate-0'}`}
+          className={`h-3.5 w-3.5 transition-transform duration-200 ${!isOpen ? '-rotate-90' : 'rotate-0'}`}
         />
       </button>
 
       {/* Collapsible content */}
       <div
         className={`overflow-hidden transition-all duration-300 ${
-          collapsed ? 'max-h-0 opacity-0' : 'max-h-[5000px] opacity-100'
+          isOpen ? 'max-h-[5000px] opacity-100' : 'max-h-0 opacity-0'
         }`}
       >
         {children}

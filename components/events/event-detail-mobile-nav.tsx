@@ -1,6 +1,5 @@
 'use client'
 
-import { useSearchParams, useRouter, usePathname } from 'next/navigation'
 import {
   Info,
   DollarSign,
@@ -10,55 +9,57 @@ import {
   ListChecks,
   Store,
 } from '@/components/ui/icons'
+import { useTabNav, type TabDefinition } from '@/lib/shared/use-tab-nav'
 
 export type EventDetailTab = 'overview' | 'popup' | 'money' | 'prep' | 'tickets' | 'ops' | 'wrap'
 
-const TABS: { id: EventDetailTab; label: string; icon: React.ReactNode }[] = [
-  { id: 'overview', label: 'Overview', icon: <Info className="h-4 w-4" /> },
-  { id: 'popup', label: 'Pop-Up', icon: <Store className="h-4 w-4" /> },
-  { id: 'money', label: 'Finance', icon: <DollarSign className="h-4 w-4" /> },
-  { id: 'prep', label: 'Prep', icon: <ListChecks className="h-4 w-4" /> },
-  { id: 'tickets', label: 'Tickets', icon: <Ticket className="h-4 w-4" /> },
-  { id: 'ops', label: 'Ops', icon: <ClipboardList className="h-4 w-4" /> },
-  { id: 'wrap', label: 'Wrap-up', icon: <CheckSquare className="h-4 w-4" /> },
+const EVENT_TABS: TabDefinition<EventDetailTab>[] = [
+  { key: 'overview', label: 'Overview', icon: Info },
+  { key: 'popup', label: 'Pop-Up', icon: Store },
+  { key: 'money', label: 'Finance', icon: DollarSign },
+  { key: 'prep', label: 'Prep', icon: ListChecks },
+  { key: 'tickets', label: 'Tickets', icon: Ticket },
+  { key: 'ops', label: 'Ops', icon: ClipboardList },
+  { key: 'wrap', label: 'Wrap-up', icon: CheckSquare },
 ]
 
 /**
  * Sticky in-page tab bar for event detail on mobile.
- * Hidden on md+ - desktop shows all sections as a full scroll.
- * Uses URL search params so tab state survives refresh and is linkable.
+ * Hidden on md+ (desktop shows all sections as a full scroll).
+ * Uses shared useTabNav hook for URL-synced tab state.
  */
 export function EventDetailMobileNav() {
-  const searchParams = useSearchParams()
-  const router = useRouter()
-  const pathname = usePathname()
-
-  const activeTab = (searchParams?.get('tab') ?? 'overview') as EventDetailTab
-
-  function switchTab(tab: EventDetailTab) {
-    const params = new URLSearchParams(searchParams?.toString() ?? '')
-    params.set('tab', tab)
-    router.replace(`${pathname}?${params.toString()}`, { scroll: false })
-  }
+  const { activeTab, setTab, tabs, isActive } = useTabNav<EventDetailTab>({
+    tabs: EVENT_TABS,
+    defaultTab: 'overview',
+    paramKey: 'tab',
+  })
 
   return (
     <nav className="md:hidden sticky top-14 z-page-bar bg-stone-900 border-b border-stone-700 shadow-sm -mx-4 px-4">
-      <div className="flex">
-        {TABS.map(({ id, label, icon }) => (
-          <button
-            key={id}
-            type="button"
-            onClick={() => switchTab(id)}
-            className={`flex-1 flex flex-col items-center gap-0.5 py-2 text-xs font-medium transition-colors border-b-2 ${
-              activeTab === id
-                ? 'border-brand-600 text-brand-600'
-                : 'border-transparent text-stone-500 hover:text-stone-300'
-            }`}
-          >
-            {icon}
-            {label}
-          </button>
-        ))}
+      <div className="flex" role="tablist" aria-orientation="horizontal">
+        {tabs.map((tab) => {
+          const active = isActive(tab.key)
+          const Icon = tab.icon
+          return (
+            <button
+              key={tab.key}
+              type="button"
+              role="tab"
+              aria-selected={active}
+              tabIndex={active ? 0 : -1}
+              onClick={() => setTab(tab.key)}
+              className={`flex-1 flex flex-col items-center gap-0.5 py-2 text-xs font-medium transition-colors border-b-2 ${
+                active
+                  ? 'border-brand-600 text-brand-600'
+                  : 'border-transparent text-stone-500 hover:text-stone-300'
+              }`}
+            >
+              {Icon && <Icon className="h-4 w-4" />}
+              {tab.label}
+            </button>
+          )
+        })}
       </div>
     </nav>
   )

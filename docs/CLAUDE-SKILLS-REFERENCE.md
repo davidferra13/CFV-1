@@ -157,12 +157,14 @@ Different names are intentional. Don't "fix" one to match another.
 | ------------------------------------- | --------------------------------------------- |
 | "Should I start the server?"          | Check if it's running. If not, start it.      |
 | "Should I run tsc?"                   | If you edited TS files, run it.               |
-| "Should I commit?"                    | If meaningful work is done, commit it.        |
+| "Should I commit?"                    | YES. ALWAYS. Commit now. Core Mandate #8.     |
 | "What file should I put this in?"     | Read the module map. Place it correctly.      |
 | "Should I fix this type error?"       | Fix it.                                       |
 | "Should I update the docs?"           | If you changed UI/features, update them.      |
 | "Want me to run the tests?"           | If you changed code, run them.                |
-| "Should I check the build?"           | If you're about to ship, check it.            |
+| "Should I check the build?"           | Check build-state.md first. Skip if green.    |
+| "Should I restart the dev server?"    | No. Use the running one. Core Mandate #9.     |
+| "Should I run next build to verify?"  | Only if you changed types. Check freshness.   |
 | "Where was this discussed before?"    | Check session digests, MemPalace, memory.     |
 | "What's the current state of X?"      | Read build-state.md, session-log.md, git log. |
 | "Should I clean up imports?"          | Clean them. Always.                           |

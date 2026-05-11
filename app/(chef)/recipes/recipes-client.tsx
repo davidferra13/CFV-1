@@ -6,7 +6,6 @@ import { useRouter, useSearchParams } from 'next/navigation'
 import Link from 'next/link'
 import { Card, CardContent } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
-import { Input } from '@/components/ui/input'
 import { Badge } from '@/components/ui/badge'
 import { RecipeImportDialog } from '@/components/recipes/recipe-import-dialog'
 import { RecipeBatchImport } from '@/components/recipes/recipe-batch-import'
@@ -15,6 +14,8 @@ import type { RecipeListItem } from '@/lib/recipes/actions'
 import { useTaxonomy } from '@/components/hooks/use-taxonomy'
 import { RecipeCoverFlow } from '@/components/recipes/recipe-cover-flow'
 import { EmptyState } from '@/components/ui/empty-state'
+import { useSearch } from '@/lib/shared/use-search'
+import { Search, X } from '@/components/ui/icons'
 
 const CATEGORY_OPTIONS = [
   { value: '', label: 'All Categories' },
@@ -77,7 +78,19 @@ type Props = {
 export function RecipeLibraryClient({ recipes }: Props) {
   const router = useRouter()
   const searchParams = useSearchParams() ?? new URLSearchParams()
-  const [search, setSearch] = useState(searchParams.get('search') || '')
+
+  // Shared search hook: debounced, URL-synced via ?search= param
+  const {
+    query: search,
+    setQuery: setSearch,
+    clearSearch,
+    isSearching,
+  } = useSearch({
+    paramKey: 'search',
+    debounceMs: 400,
+    minLength: 1,
+  })
+
   const [viewMode, setViewMode] = useState<'grid' | 'coverflow'>('grid')
   const [importOpen, setImportOpen] = useState(false)
   const [batchImportOpen, setBatchImportOpen] = useState(false)
@@ -112,14 +125,6 @@ export function RecipeLibraryClient({ recipes }: Props) {
       params.delete(key)
     }
     router.push(`/recipes?${params.toString()}`)
-  }
-
-  const handleSearch = () => {
-    updateFilters('search', search)
-  }
-
-  const handleKeyDown = (e: React.KeyboardEvent) => {
-    if (e.key === 'Enter') handleSearch()
   }
 
   return (
@@ -212,17 +217,37 @@ export function RecipeLibraryClient({ recipes }: Props) {
 
       {/* Search + Filters */}
       <div className="flex flex-wrap gap-3 items-center">
-        <div className="flex gap-2 flex-1 min-w-[200px]">
-          <Input
-            type="text"
+        <div className="relative flex-1 min-w-[200px]">
+          <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-stone-500 pointer-events-none" />
+          <input
+            type="search"
+            inputMode="search"
+            autoComplete="off"
+            autoCorrect="off"
+            autoCapitalize="off"
+            spellCheck={false}
             placeholder="Search recipes..."
             value={search}
             onChange={(e) => setSearch(e.target.value)}
-            onKeyDown={handleKeyDown}
+            style={{ fontSize: '16px' }}
+            className="block w-full rounded-lg border border-stone-600 bg-stone-900 pl-9 pr-9 py-2 text-stone-100 placeholder:text-stone-400 transition-[border-color,box-shadow] duration-200 hover:border-stone-500 focus:outline-none focus:ring-2 focus:border-brand-500 focus:ring-brand-500/20 sm:text-sm sm:leading-6"
+            aria-label="Search recipes"
           />
-          <Button variant="secondary" onClick={handleSearch}>
-            Search
-          </Button>
+          {search && (
+            <button
+              type="button"
+              onClick={clearSearch}
+              className="absolute right-2 top-1/2 -translate-y-1/2 p-1 rounded-md text-stone-500 hover:text-stone-200 hover:bg-stone-800 transition-colors"
+              aria-label="Clear search"
+            >
+              <X className="h-4 w-4" />
+            </button>
+          )}
+          {isSearching && (
+            <div className="absolute right-9 top-1/2 -translate-y-1/2">
+              <div className="h-3.5 w-3.5 border-2 border-stone-600 border-t-brand-500 rounded-full animate-spin" />
+            </div>
+          )}
         </div>
 
         <select

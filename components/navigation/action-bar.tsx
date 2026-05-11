@@ -6,8 +6,8 @@ import { actionBarItems } from './nav-config'
 import { CreateMenuDropdown } from './create-menu-dropdown'
 import { isItemActive } from './chef-nav-helpers'
 import { InboxUnreadBadge } from '@/components/communication/inbox-unread-badge'
-import { NotificationsUnreadBadge } from '@/components/notifications/notifications-unread-badge'
 import { InquiriesUnreadBadge } from '@/components/inquiries/inquiries-unread-badge'
+import { CirclesUnreadBadge } from '@/components/hub/circles-unread-badge'
 import { useNavigationPending } from '@/components/navigation/navigation-pending-provider'
 import { getArchetypeCopy } from '@/lib/archetypes/ui-copy'
 import type { TenantDataPresence } from '@/lib/progressive-disclosure/types'
@@ -87,14 +87,14 @@ export function ActionBar({
                   <InboxUnreadBadge />
                 </span>
               )}
-              {item.href === '/notifications' && (
-                <span className="absolute -top-1 -right-1">
-                  <NotificationsUnreadBadge />
-                </span>
-              )}
               {item.href === '/events' && (
                 <span className="absolute -top-1 -right-1">
                   <InquiriesUnreadBadge />
+                </span>
+              )}
+              {item.href === '/circles' && (
+                <span className="absolute -top-1 -right-1">
+                  <CirclesUnreadBadge />
                 </span>
               )}
             </Link>
@@ -109,7 +109,7 @@ export function ActionBar({
       {/* + Create button */}
       <CreateMenuDropdown />
 
-      {/* 12 primary shortcuts */}
+      {/* 8 primary shortcuts */}
       <div className="mt-1 space-y-0.5">
         {filtered.map((item) => {
           const Icon = item.icon
@@ -133,8 +133,8 @@ export function ActionBar({
               />
               <span className="truncate">{item.label}</span>
               {item.href === '/inbox' && <InboxUnreadBadge />}
-              {item.href === '/notifications' && <NotificationsUnreadBadge />}
               {item.href === '/events' && <InquiriesUnreadBadge />}
+              {item.href === '/circles' && <CirclesUnreadBadge />}
             </Link>
           )
         })}

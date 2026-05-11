@@ -21,13 +21,16 @@ export function isActionBarItemVisible(
     case '/events':
     case '/culinary':
     case '/clients':
+    case '/calendar':
+    case '/menus':
+    case '/culinary/prep':
       return true
     case '/inbox':
       return presence.hasConversations || presence.hasInquiries
-    case '/inquiries':
-      return presence.hasInquiries || presence.hasQuotes
     case '/finance':
       return presence.hasInvoices || presence.hasExpenses || presence.hasEvents
+    case '/circles':
+      return presence.hasCircles || presence.hasNetwork
     default:
       return true
   }

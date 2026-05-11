@@ -15,6 +15,14 @@ DIRTY_FILE="$PROJECT_ROOT/.tsc-dirty"
 # Extract file_path from JSON input
 FILE_PATH=$(echo "$INPUT" | grep -o '"file_path":"[^"]*"' | head -1 | sed 's/"file_path":"//;s/"//')
 
+# Track ALL files this session modified (for auto-commit at session end)
+SESSION_FILES="$PROJECT_ROOT/.session-files"
+if [ -n "$FILE_PATH" ]; then
+  if ! echo "$FILE_PATH" | grep -qE '(node_modules|\.next)'; then
+    echo "$FILE_PATH" >> "$SESSION_FILES"
+  fi
+fi
+
 # Only flag TypeScript source files (skip generated types/node_modules)
 if echo "$FILE_PATH" | grep -qE '\.(ts|tsx)$'; then
   if ! echo "$FILE_PATH" | grep -qE '(node_modules|\.next|types/database\.ts)'; then
