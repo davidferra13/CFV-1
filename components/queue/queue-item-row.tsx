@@ -39,6 +39,7 @@ const DOMAIN_LABELS: Record<QueueDomain, string> = {
   client: 'Client',
   culinary: 'Culinary',
   network: 'Network',
+  prospect: 'Prospect',
 }
 
 const INLINE_ACTION_LABELS: Record<InlineActionType, string> = {

@@ -73,6 +73,7 @@ export async function getDailyPlan(): Promise<DailyPlan> {
             client: 0,
             culinary: 0,
             network: 0,
+            prospect: 0,
           },
           byUrgency: { critical: 0, high: 0, normal: 0, low: 0 },
           allCaughtUp: true,

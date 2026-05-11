@@ -14,6 +14,7 @@ import { getClientQueueItems } from './providers/client'
 import { getCulinaryQueueItems } from './providers/culinary'
 import { getContactQueueItems } from './providers/contact'
 import { getNetworkQueueItems } from './providers/network'
+import { getProspectQueueItems } from './providers/prospect'
 
 /**
  * Build the complete priority queue.
@@ -56,6 +57,7 @@ export async function buildPriorityQueue(
     culinaryItems,
     contactItems,
     networkItems,
+    prospectItems,
   ] = await Promise.all([
     safeProvider('inquiry', () => getInquiryQueueItems(db, tenantId)),
     safeProvider('message', () => getMessageQueueItems(db, tenantId)),
@@ -66,6 +68,7 @@ export async function buildPriorityQueue(
     safeProvider('culinary', () => getCulinaryQueueItems(db, tenantId)),
     safeProvider('contact', () => getContactQueueItems(db, tenantId)),
     safeProvider('network', () => getNetworkQueueItems(db, tenantId)),
+    safeProvider('prospect', () => getProspectQueueItems(db, tenantId)),
   ])
 
   // Merge all items
@@ -80,6 +83,7 @@ export async function buildPriorityQueue(
     ...culinaryItems,
     ...contactItems,
     ...networkItems,
+    ...prospectItems,
   ]
 
   // Deduplicate by ID (first occurrence wins)
@@ -164,6 +168,7 @@ function computeSummary(items: QueueItem[]): QueueSummary {
     client: 0,
     culinary: 0,
     network: 0,
+    prospect: 0,
   }
   const byUrgency: Record<QueueUrgency, number> = {
     critical: 0,

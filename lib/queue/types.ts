@@ -19,6 +19,7 @@ export type QueueDomain =
   | 'client'
   | 'culinary'
   | 'network'
+  | 'prospect'
 
 /**
  * Urgency tiers for visual treatment and filtering.
