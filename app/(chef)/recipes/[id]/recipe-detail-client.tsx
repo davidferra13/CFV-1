@@ -49,6 +49,12 @@ import { Snowflake } from '@/components/ui/icons'
 import { CompletionCard } from '@/components/completion/completion-card'
 import type { CompletionResult } from '@/lib/completion/types'
 import { IngredientPiePopover } from '@/components/pricing/ingredient-pie-popover'
+import {
+  computeRecipeCostProvenance,
+  CONFIDENCE_COLORS,
+  CONFIDENCE_LABELS,
+  type RecipeCostProvenance,
+} from '@/lib/costing/recipe-cost-provenance'
 
 const CATEGORY_COLORS: Record<string, 'default' | 'success' | 'warning' | 'info' | 'error'> = {
   sauce: 'warning',
@@ -93,6 +99,15 @@ export function RecipeDetailClient({ recipe, initialCompletion, provenance }: Pr
   const [showSubRecipeModal, setShowSubRecipeModal] = useState(false)
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(false)
   const [deleteLogEntryId, setDeleteLogEntryId] = useState<string | null>(null)
+
+  // Cost provenance (computed client-side from existing data, no extra query)
+  const costProvenance: RecipeCostProvenance | null = recipe.costSummary
+    ? computeRecipeCostProvenance({
+        ingredients: recipe.ingredients,
+        costSummary: recipe.costSummary,
+        costIssues: recipe.costIssues ?? { missingPrices: 0, unitMismatches: 0, stalePrices: 0 },
+      })
+    : null
 
   // Dietary analysis state
   const [dietaryAnalysis, setDietaryAnalysis] = useState<{
@@ -1004,11 +1019,26 @@ export function RecipeDetailClient({ recipe, initialCompletion, provenance }: Pr
       {/* Cost Summary - always visible so chefs see pricing status */}
       <Card>
         <CardHeader>
-          <CardTitle>Cost Summary</CardTitle>
+          <div className="flex justify-between items-center">
+            <CardTitle>Cost Summary</CardTitle>
+            {costProvenance && costProvenance.confidenceLevel !== 'insufficient' && (
+              <span
+                className={`inline-flex items-center gap-1 rounded border px-2 py-0.5 text-xs font-medium ${CONFIDENCE_COLORS[costProvenance.confidenceLevel].bg} ${CONFIDENCE_COLORS[costProvenance.confidenceLevel].text} ${CONFIDENCE_COLORS[costProvenance.confidenceLevel].border}`}
+                title={costProvenance.confidenceLabel}
+              >
+                {CONFIDENCE_LABELS[costProvenance.confidenceLevel]}
+                <span className="opacity-60">({costProvenance.confidenceScore})</span>
+              </span>
+            )}
+          </div>
         </CardHeader>
         <CardContent>
           {recipe.costSummary ? (
             <>
+              {/* Provenance summary */}
+              {costProvenance && (
+                <p className="text-xs text-stone-500 mb-3">{costProvenance.confidenceLabel}</p>
+              )}
               <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
                 {recipe.costSummary.totalCostCents != null && (
                   <div>
@@ -1094,6 +1124,31 @@ export function RecipeDetailClient({ recipe, initialCompletion, provenance }: Pr
                     })}
                   />
                 </div>
+              )}
+              {/* Provenance issues (actionable items the chef should address) */}
+              {costProvenance && costProvenance.issues.length > 0 && (
+                <details className="mt-3 pt-3 border-t border-stone-800">
+                  <summary className="text-xs text-stone-500 cursor-pointer hover:text-stone-300">
+                    Cost provenance ({costProvenance.issues.length} item
+                    {costProvenance.issues.length !== 1 ? 's' : ''})
+                  </summary>
+                  <div className="mt-2 space-y-1.5">
+                    {costProvenance.issues.map((issue, i) => (
+                      <div
+                        key={i}
+                        className={`text-xs px-2 py-1.5 rounded ${
+                          issue.severity === 'critical'
+                            ? 'bg-red-900/30 text-red-400'
+                            : issue.severity === 'warning'
+                              ? 'bg-amber-900/30 text-amber-400'
+                              : 'bg-stone-800/50 text-stone-400'
+                        }`}
+                      >
+                        {issue.message}
+                      </div>
+                    ))}
+                  </div>
+                </details>
               )}
             </>
           ) : (

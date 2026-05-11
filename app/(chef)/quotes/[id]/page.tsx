@@ -29,6 +29,7 @@ import { QuotePriceFreshnessWarning } from '@/components/quotes/quote-price-fres
 import { QuoteCostBreakdownPanel } from '@/components/quotes/quote-cost-breakdown-panel'
 import { getQuoteCostIntelligence } from '@/lib/quotes/quote-cost-intelligence'
 import { QuotePricingConfidence } from '@/components/intelligence/quote-pricing-confidence'
+import { QuoteCostGuardBanner } from '@/components/costing/quote-cost-guard-banner'
 import { Suspense } from 'react'
 
 export default async function QuoteDetailPage({ params }: { params: { id: string } }) {
@@ -114,6 +115,15 @@ export default async function QuoteDetailPage({ params }: { params: { id: string
         <Suspense fallback={null}>
           <QuotePriceFreshnessWarning eventId={(quote as any).event.id} />
         </Suspense>
+      )}
+
+      {/* Cost confidence guard - shown for draft quotes before sending */}
+      {(quote as any).event?.id && quote.status === 'draft' && (
+        <QuoteCostGuardBanner
+          quoteId={params.id}
+          eventId={(quote as any).event.id}
+          status={quote.status as string}
+        />
       )}
 
       {/* Version History */}
@@ -281,7 +291,14 @@ export default async function QuoteDetailPage({ params }: { params: { id: string
       )}
 
       {/* Actions (Transitions) */}
-      <QuoteTransitions quote={quote} />
+      <QuoteTransitions
+        quote={quote}
+        costWarnings={costIntelligence?.warnings?.map((w) => ({
+          level: w.level,
+          code: w.code,
+          message: w.message,
+        }))}
+      />
 
       <EntityActivityTimeline entityType="quote" entityId={quote.id} entries={timelineEntries} />
 

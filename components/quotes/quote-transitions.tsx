@@ -16,6 +16,12 @@ import { confirmPolicy, type ConfirmPolicyInput } from '@/lib/confirm/confirm-po
 
 type QuoteStatus = 'draft' | 'sent' | 'accepted' | 'rejected' | 'expired'
 
+type CostGuardWarning = {
+  level: 'info' | 'warning' | 'critical'
+  code: string
+  message: string
+}
+
 type Quote = {
   id: string
   status: QuoteStatus
@@ -23,7 +29,12 @@ type Quote = {
   valid_until: string | null
 }
 
-export function QuoteTransitions({ quote }: { quote: Quote }) {
+type Props = {
+  quote: Quote
+  costWarnings?: CostGuardWarning[]
+}
+
+export function QuoteTransitions({ quote, costWarnings }: Props) {
   const router = useRouter()
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState<string | null>(null)
@@ -134,18 +145,29 @@ export function QuoteTransitions({ quote }: { quote: Quote }) {
           {quote.status === 'draft' && (
             <>
               <Button
-                onClick={() =>
+                onClick={() => {
+                  const impactParts = ['Client will receive this quote in the portal.']
+                  const hasCritical = costWarnings?.some((w) => w.level === 'critical')
+                  const hasWarning = costWarnings?.some((w) => w.level === 'warning')
+                  if (hasCritical || hasWarning) {
+                    impactParts.push(
+                      `Cost confidence issues: ${costWarnings!
+                        .filter((w) => w.level !== 'info')
+                        .map((w) => w.message)
+                        .join(' ')}`
+                    )
+                  }
                   requestPolicyConfirmation(
                     {
-                      risk: 'medium',
+                      risk: hasCritical ? 'high' : hasWarning ? 'medium' : 'medium',
                       reversible: true,
                       entityName: quote.id,
-                      impactPreview: 'Client will receive this quote in the portal.',
+                      impactPreview: impactParts.join(' '),
                       actionLabel: 'Send Quote',
                     },
                     () => handleTransition('sent')
                   )
-                }
+                }}
                 loading={loading}
                 disabled={loading}
               >

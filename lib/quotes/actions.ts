@@ -575,6 +575,25 @@ export async function transitionQuote(id: string, newStatus: QuoteStatus) {
     )
   }
 
+  // Cost confidence guard: surface warnings when sending with low-confidence pricing.
+  // Non-blocking: chef can still send, but warnings appear in the response.
+  if (newStatus === 'sent') {
+    try {
+      const { evaluateQuoteCostGuard } = await import('@/lib/costing/quote-cost-guard')
+      const guard = await evaluateQuoteCostGuard(id, user.tenantId!)
+      if (guard) {
+        for (const w of guard.warnings) {
+          if (w.level === 'critical' || w.level === 'warning') {
+            warnings.push(w.message)
+          }
+        }
+      }
+    } catch (guardErr) {
+      // Non-blocking: cost guard failure should never prevent sending
+      console.error('[transitionQuote] Cost guard check failed (non-blocking):', guardErr)
+    }
+  }
+
   const { data: rpcResponse, error: rpcError } = await db.rpc('transition_quote_atomic', {
     p_quote_id: id,
     p_tenant_id: user.tenantId!,
