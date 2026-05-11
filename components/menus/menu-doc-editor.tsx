@@ -42,6 +42,7 @@ import { RecipeLinkPicker } from '@/components/menus/recipe-link-picker'
 import { useProtectedForm } from '@/lib/qol/use-protected-form'
 import { FormShield } from '@/components/forms/form-shield'
 import { AllergenConflictAlert } from '@/components/events/allergen-conflict-alert'
+import { MenuCostTicker } from '@/components/costing/menu-cost-ticker'
 
 // ─── Constants ────────────────────────────────────────────────────────────────
 
@@ -1334,6 +1335,8 @@ function ContextSidebar({
   targetDate,
   onTargetDateChange,
   directClient,
+  linkedRecipeIds,
+  costTickerKey,
 }: {
   menuId: string
   event: EditorEvent | null
@@ -1359,6 +1362,8 @@ function ContextSidebar({
   targetDate: string | null
   onTargetDateChange: (v: string | null) => void
   directClient: DirectClient | null
+  linkedRecipeIds: string[]
+  costTickerKey: number
 }) {
   // Derive season from: 1) explicit menu season, 2) event date, 3) target date
   const derivedSeason = season ? getSeasonData(season) : event ? getSeason(event.event_date) : null
@@ -1398,7 +1403,14 @@ function ContextSidebar({
         locked={locked}
       />
 
-      {/* Food Cost Summary */}
+      {/* Live Cost Ticker (debounced, reacts to recipe link/unlink) */}
+      <MenuCostTicker
+        recipeIds={linkedRecipeIds}
+        guestCount={guestCount}
+        refreshKey={costTickerKey}
+      />
+
+      {/* Food Cost Summary (from DB view, loaded on mount) */}
       <div className="bg-stone-900 rounded-xl border border-stone-700 p-4 shadow-sm">
         <p className="text-xs font-bold uppercase tracking-widest text-stone-400 mb-2">Food Cost</p>
         {menuCost && (menuCost.componentCount ?? 0) > 0 ? (
@@ -1626,6 +1638,7 @@ export function MenuDocEditor({
 
   // Food cost state
   const [menuCost, setMenuCost] = useState<MenuCostData>(null)
+  const [costTickerKey, setCostTickerKey] = useState(0)
 
   const refreshCost = useCallback(async () => {
     const cost = await getEditorMenuCost(initialMenu.id)
@@ -1650,6 +1663,12 @@ export function MenuDocEditor({
     [...initialMenu.dishes].sort((a, b) => a.sort_order - b.sort_order)
   )
   const [showCuisineSuggestions, setShowCuisineSuggestions] = useState(false)
+
+  // All recipe IDs linked across dishes (for live cost ticker)
+  const linkedRecipeIds = useMemo(
+    () => dishes.flatMap((d) => d.linkedRecipes.map((lr) => lr.recipeId)),
+    [dishes]
+  )
 
   // Context dock state
   const [menuSeason, setMenuSeason] = useState<string | null>(initialMenu.season)
@@ -1790,11 +1809,13 @@ export function MenuDocEditor({
       )
     )
     refreshCost()
+    setCostTickerKey((k) => k + 1)
   }
 
   const handleRecipeLinked = () => {
     router.refresh()
     refreshCost()
+    setCostTickerKey((k) => k + 1)
   }
 
   // ─── Guest scaling callback ──────────────────────────────────────────────────
@@ -2161,6 +2182,8 @@ export function MenuDocEditor({
               targetDate={menuTargetDate}
               onTargetDateChange={handleTargetDateChange}
               directClient={currentDirectClient}
+              linkedRecipeIds={linkedRecipeIds}
+              costTickerKey={costTickerKey}
             />
           </div>
         </div>

@@ -1,6 +1,6 @@
 'use client'
 
-import { useMemo, useState } from 'react'
+import { useEffect, useMemo, useState } from 'react'
 import { useRouter } from 'next/navigation'
 import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
@@ -53,6 +53,9 @@ import { buildQuoteDraftHref } from '@/lib/quotes/quote-prefill'
 import { CSVDownloadButton } from '@/components/exports/csv-download-button'
 import { exportMenuCostCSV } from '@/lib/exports/actions'
 import { createMenuShareLink } from '@/lib/menus/foh-public-actions'
+import { evaluateMenuCostProvenance } from '@/lib/costing/menu-cost-guard'
+import type { MenuCostProvenance } from '@/lib/costing/menu-cost-provenance'
+import { MenuCostProvenanceCard } from '@/components/costing/menu-cost-provenance-card'
 
 type RecipeInfo = {
   id: string
@@ -165,6 +168,21 @@ export function MenuDetailClient({
     { id: string; name: string; category: string }[]
   >([])
   const [searchLoading, setSearchLoading] = useState(false)
+
+  // Cost provenance state
+  const [menuProvenance, setMenuProvenance] = useState<MenuCostProvenance | null>(null)
+
+  useEffect(() => {
+    let cancelled = false
+    evaluateMenuCostProvenance(menu.id)
+      .then((result) => {
+        if (!cancelled) setMenuProvenance(result)
+      })
+      .catch(() => {})
+    return () => {
+      cancelled = true
+    }
+  }, [menu.id])
 
   // Edit form state
   const [name, setName] = useState(menu.name)
@@ -675,6 +693,9 @@ export function MenuDetailClient({
           })}
         />
       )}
+
+      {/* Menu Cost Provenance */}
+      {menuProvenance && <MenuCostProvenanceCard provenance={menuProvenance} />}
 
       {/* What-If Simulator Panel */}
       {showSimulator && simulatorDishes.length >= 2 && (
