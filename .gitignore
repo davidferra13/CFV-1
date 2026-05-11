@@ -314,6 +314,7 @@ graphify-out
 .live-ingestion/
 .next-build-*/
 .next-codex-*/
+.next-prod-candidate/
 .next-cp-*/
 .next-intake-*/
 .next-progressive-*/
