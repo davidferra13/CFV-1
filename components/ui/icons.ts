@@ -320,6 +320,16 @@ export { RocketLaunch as Rocket } from '@phosphor-icons/react/ssr'
 export { Flag } from '@phosphor-icons/react/ssr'
 export { GitMerge } from '@phosphor-icons/react/ssr'
 
+// Intelligence feature icons (direct Phosphor names)
+export { TrendUp } from '@phosphor-icons/react/ssr'
+export { TrendDown } from '@phosphor-icons/react/ssr'
+export { CurrencyDollar } from '@phosphor-icons/react/ssr'
+export { Pulse } from '@phosphor-icons/react/ssr'
+export { ClipboardText } from '@phosphor-icons/react/ssr'
+export { Envelope } from '@phosphor-icons/react/ssr'
+export { ChatCircle } from '@phosphor-icons/react/ssr'
+export { Note } from '@phosphor-icons/react/ssr'
+
 // Prep timeline icons (not in SSR barrel export, imported directly)
 export { Snowflake } from '@phosphor-icons/react/dist/ssr/Snowflake'
 export { Key } from '@phosphor-icons/react/dist/ssr/Key'

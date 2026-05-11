@@ -130,6 +130,8 @@ import {
 } from '@/lib/chef/knowledge/tip-actions'
 import { getReviewQueueCount } from '@/lib/knowledge/review-actions'
 import { checkAssignmentConflict, getEventStaffRoster, listStaffMembers } from '@/lib/staff/actions'
+import { HealthDashboardWidget } from '@/components/intelligence/health-dashboard-widget'
+import { fetchBusinessHealthSummaryOnly } from '@/lib/intelligence/business-health-actions'
 import { eventsOverlapInTime } from '@/lib/staff/time-overlap'
 import { getSupportStatus } from '@/lib/monetization/status'
 import { getDecisionQueue, type DecisionQueueResult } from '@/lib/decision-queue/actions'
@@ -2106,6 +2108,13 @@ export default async function ChefDashboard() {
           defaultCollapsed
         >
           <div className="space-y-8">
+            {/* Business Health Score */}
+            <WidgetErrorBoundary name="Business Health Score" compact>
+              <Suspense fallback={<WidgetCardSkeleton size="sm" />}>
+                <BusinessHealthSection />
+              </Suspense>
+            </WidgetErrorBoundary>
+
             {/* Business Overview with sparklines */}
             <WidgetErrorBoundary name="Hero Metrics" compact>
               <Suspense fallback={<HeroMetricsSkeleton />}>
@@ -2174,6 +2183,19 @@ export default async function ChefDashboard() {
       )}
     </div>
   )
+}
+
+// ─── Business Health Score Section ──────────────────────
+async function BusinessHealthSection() {
+  const healthSummary = await safe('healthSummary', fetchBusinessHealthSummaryOnly, null)
+  if (!healthSummary) return null
+
+  const score = healthSummary.scores.overall
+  const recentScore = healthSummary.scores.revenue
+  const trend: 'improving' | 'stable' | 'declining' =
+    score >= 60 && recentScore >= 60 ? 'improving' : score < 40 ? 'declining' : 'stable'
+
+  return <HealthDashboardWidget score={score} trend={trend} />
 }
 
 // ─── ChefTips Section ──────────────────────────────────
