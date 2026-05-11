@@ -75,7 +75,9 @@ function eventsOverlap(
 
 function formatTimeRange(serve: string | null, dep: string | null): string {
   if (!serve) return 'TBD'
-  const end = dep || `${serve.slice(0, 2)}:${String((parseInt(serve.slice(3, 5)) + 180) % 60).padStart(2, '0')}`
+  const end =
+    dep ||
+    `${serve.slice(0, 2)}:${String((parseInt(serve.slice(3, 5)) + 180) % 60).padStart(2, '0')}`
   return `${serve.slice(0, 5)}-${end.slice(0, 5)}`
 }
 
@@ -92,7 +94,9 @@ export async function optimizeStaffSchedule(
   // Fetch events in date range
   const { data: events, error: eventsError } = await db
     .from('events')
-    .select('id, occasion, event_date, serve_time, departure_time, location_address, location_city, status')
+    .select(
+      'id, occasion, event_date, serve_time, departure_time, location_address, location_city, status'
+    )
     .eq('tenant_id', tenantId)
     .in('status', ['confirmed', 'paid', 'accepted', 'in_progress'])
     .gte('event_date', startDate)
@@ -251,9 +255,10 @@ export async function optimizeStaffSchedule(
           location: [e.location_address, e.location_city].filter(Boolean).join(', ') || null,
         })),
         suggestedSharedStaff: suggestedShared,
-        estimatedSavings: suggestedShared.length > 0
-          ? `Share ${suggestedShared.length} staff member(s) across both events`
-          : 'No available staff to share',
+        estimatedSavings:
+          suggestedShared.length > 0
+            ? `Share ${suggestedShared.length} staff member(s) across both events`
+            : 'No available staff to share',
       })
     }
   }
@@ -266,7 +271,7 @@ export async function optimizeStaffSchedule(
     if (!staff || !event) continue
 
     const key = `${a.staff_member_id}_${event.event_date}`
-    const existing = scheduleMap.get(key) ?? {
+    const existing: StaffScheduleEntry = scheduleMap.get(key) ?? {
       staffMemberId: staff.id,
       staffName: staff.name,
       role: a.role_override ?? staff.role,
@@ -290,8 +295,8 @@ export async function optimizeStaffSchedule(
     scheduleMap.set(key, existing)
   }
 
-  const suggestedSchedule = Array.from(scheduleMap.values()).sort((a, b) =>
-    a.date.localeCompare(b.date) || a.staffName.localeCompare(b.staffName)
+  const suggestedSchedule = Array.from(scheduleMap.values()).sort(
+    (a, b) => a.date.localeCompare(b.date) || a.staffName.localeCompare(b.staffName)
   )
 
   const totalEstimatedCostCents = suggestedSchedule.reduce(

@@ -41,7 +41,7 @@ interface VelocityCheck {
 export async function isWithinBusinessHours(
   vendorType?: string,
   timezone?: string
-): SpamCheckResult {
+): Promise<SpamCheckResult> {
   try {
     const tz = timezone || 'America/New_York'
     const now = new Date()
@@ -196,7 +196,7 @@ export async function validateCallRequest(
     }
 
     // 1. Business hours check
-    const hoursCheck = isWithinBusinessHours(vendorType)
+    const hoursCheck = await isWithinBusinessHours(vendorType)
     if (!hoursCheck.allowed) {
       return hoursCheck
     }
@@ -232,7 +232,7 @@ export async function validateCallRequest(
 export async function getCallWindowForVendorType(
   vendorType: string,
   timezone?: string
-): { opensAt: string; closesAt: string; isOpen: boolean } {
+): Promise<{ opensAt: string; closesAt: string; isOpen: boolean }> {
   try {
     const hours = VENDOR_TYPE_HOURS[vendorType] || VENDOR_TYPE_HOURS.default
     const tz = timezone || 'America/New_York'

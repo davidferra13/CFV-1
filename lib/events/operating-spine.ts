@@ -71,6 +71,7 @@ type ChefSpineInput = {
   prepBlocksCount?: number
   parAlertCount?: number
   packingConfirmedCount?: number
+  gearStatus?: unknown
   hasAAR?: boolean
 }
 

@@ -44,21 +44,15 @@ const RECIPE_CATEGORIES = [
 ]
 
 // Optional positive number: empty string = undefined, otherwise must be positive
-const optionalPositiveNum = z
-  .string()
-  .transform((v) => v.trim())
-  .pipe(
-    z.union([
-      z.literal('').transform(() => undefined),
-      z
-        .string()
-        .pipe(
-          z.coerce
-            .number({ invalid_type_error: 'Must be a number' })
-            .positive('Must be a positive number')
-        ),
-    ])
-  )
+const optionalPositiveNum = z.string().refine(
+  (v) => {
+    const trimmed = v.trim()
+    if (trimmed === '') return true
+    const n = Number(trimmed)
+    return !Number.isNaN(n) && n > 0
+  },
+  { message: 'Must be a positive number' }
+)
 
 const recipeFormSchema = z.object({
   name: z.string().min(1, 'Recipe name is required'),

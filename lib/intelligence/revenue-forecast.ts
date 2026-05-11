@@ -56,8 +56,18 @@ export type RevenueForecastResult = {
 // ─── Constants ───────────────────────────────────────────────────────────────
 
 const MONTH_LABELS = [
-  'Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun',
-  'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec',
+  'Jan',
+  'Feb',
+  'Mar',
+  'Apr',
+  'May',
+  'Jun',
+  'Jul',
+  'Aug',
+  'Sep',
+  'Oct',
+  'Nov',
+  'Dec',
 ]
 
 const BOOKED_STATUSES = ['paid', 'confirmed', 'in_progress', 'completed']
@@ -132,7 +142,14 @@ export async function generateRevenueForecast(
   }
 
   // Normalize events
-  const allEvents = (events ?? []).map((e: any) => ({
+  const allEvents: {
+    id: string
+    status: string
+    eventDate: string
+    monthKey: string
+    createdAt: string
+    revenueCents: number
+  }[] = (events ?? []).map((e: any) => ({
     id: e.id as string,
     status: e.status as string,
     eventDate: String(e.event_date).substring(0, 10),
@@ -149,7 +166,10 @@ export async function generateRevenueForecast(
   for (const e of allEvents) {
     if (e.status === 'completed') {
       historicalByMonth.set(e.monthKey, (historicalByMonth.get(e.monthKey) ?? 0) + e.revenueCents)
-      historicalEventCountByMonth.set(e.monthKey, (historicalEventCountByMonth.get(e.monthKey) ?? 0) + 1)
+      historicalEventCountByMonth.set(
+        e.monthKey,
+        (historicalEventCountByMonth.get(e.monthKey) ?? 0) + 1
+      )
     }
   }
 
@@ -168,9 +188,13 @@ export async function generateRevenueForecast(
   const seasonalAvg = monthTotals.map((values) =>
     values.length > 0 ? Math.round(values.reduce((s, v) => s + v, 0) / values.length) : 0
   )
-  const overallMonthlyAvg = seasonalAvg.filter((v) => v > 0).length > 0
-    ? Math.round(seasonalAvg.filter((v) => v > 0).reduce((s, v) => s + v, 0) / seasonalAvg.filter((v) => v > 0).length)
-    : 0
+  const overallMonthlyAvg =
+    seasonalAvg.filter((v) => v > 0).length > 0
+      ? Math.round(
+          seasonalAvg.filter((v) => v > 0).reduce((s, v) => s + v, 0) /
+            seasonalAvg.filter((v) => v > 0).length
+        )
+      : 0
 
   // Build forecast for next N months
   const monthlyForecast: MonthlyForecast[] = []
@@ -209,7 +233,10 @@ export async function generateRevenueForecast(
         .filter((e) => e.status === 'completed' && e.monthKey === mk)
         .reduce((sum, e) => sum + e.revenueCents, 0)
       const paceProjection = Math.round((actualThisMonth / daysPassed) * totalDays)
-      projectedCents = Math.max(0, paceProjection - confirmedCents - probableCents - inquiryProbableCents)
+      projectedCents = Math.max(
+        0,
+        paceProjection - confirmedCents - probableCents - inquiryProbableCents
+      )
     } else {
       // Future months: seasonal average minus what is already booked/probable
       const seasonalBase = seasonalAvg[mIdx] > 0 ? seasonalAvg[mIdx] : overallMonthlyAvg
@@ -256,7 +283,8 @@ export async function generateRevenueForecast(
   }
 
   const totalVelocity = velocityMonths.reduce((s, m) => s + m.eventsBooked, 0)
-  const avgPerMonth = velocityMonths.length > 0 ? Math.round((totalVelocity / velocityMonths.length) * 10) / 10 : 0
+  const avgPerMonth =
+    velocityMonths.length > 0 ? Math.round((totalVelocity / velocityMonths.length) * 10) / 10 : 0
 
   // Trend: compare last 3 months vs prior 3 months
   const recent3 = velocityMonths.slice(-3).reduce((s, m) => s + m.eventsBooked, 0) / 3
@@ -285,9 +313,12 @@ export async function generateRevenueForecast(
     month: idx + 1,
     monthLabel: label,
     avgRevenueCents: seasonalAvg[idx],
-    eventCount: monthEventCounts[idx].length > 0
-      ? Math.round(monthEventCounts[idx].reduce((s, v) => s + v, 0) / monthEventCounts[idx].length)
-      : 0,
+    eventCount:
+      monthEventCounts[idx].length > 0
+        ? Math.round(
+            monthEventCounts[idx].reduce((s, v) => s + v, 0) / monthEventCounts[idx].length
+          )
+        : 0,
   }))
 
   // ── Revenue Health ─────────────────────────────────────────────────────────
@@ -346,7 +377,12 @@ async function buildRevenueHealth(
 
   // Pace calculation
   const proratedTarget = targetCents > 0 ? Math.round((targetCents * daysPassed) / totalDays) : 0
-  const pacePct = proratedTarget > 0 ? Math.round((actualCents / proratedTarget) * 100) : actualCents > 0 ? 100 : 0
+  const pacePct =
+    proratedTarget > 0
+      ? Math.round((actualCents / proratedTarget) * 100)
+      : actualCents > 0
+        ? 100
+        : 0
 
   let paceStatus: RevenueHealth['paceStatus'] = 'on_track'
   if (pacePct >= 110) paceStatus = 'ahead'
@@ -354,7 +390,8 @@ async function buildRevenueHealth(
   else if (pacePct >= 50) paceStatus = 'behind'
   else paceStatus = 'critical'
 
-  const projectedMonthEndCents = daysPassed > 0 ? Math.round((actualCents / daysPassed) * totalDays) : 0
+  const projectedMonthEndCents =
+    daysPassed > 0 ? Math.round((actualCents / daysPassed) * totalDays) : 0
 
   return {
     currentMonthLabel: monthLabel(currentMk),
@@ -403,16 +440,22 @@ function buildInsights(
   if (health.paceStatus === 'ahead') {
     insights.push(`You are ${health.pacePct - 100}% ahead of pace for ${health.currentMonthLabel}.`)
   } else if (health.paceStatus === 'behind') {
-    insights.push(`Revenue is ${100 - health.pacePct}% behind pace for ${health.currentMonthLabel}. Consider pushing open dates.`)
+    insights.push(
+      `Revenue is ${100 - health.pacePct}% behind pace for ${health.currentMonthLabel}. Consider pushing open dates.`
+    )
   } else if (health.paceStatus === 'critical') {
-    insights.push(`Revenue is critically behind for ${health.currentMonthLabel}. Immediate action needed.`)
+    insights.push(
+      `Revenue is critically behind for ${health.currentMonthLabel}. Immediate action needed.`
+    )
   }
 
   // Velocity trend
   if (velocity.trend === 'accelerating' && velocity.trendPercent > 0) {
     insights.push(`Booking rate is ${velocity.trendPercent}% above the prior quarter.`)
   } else if (velocity.trend === 'decelerating' && velocity.trendPercent < 0) {
-    insights.push(`Booking rate has slowed ${Math.abs(velocity.trendPercent)}% compared to the prior quarter.`)
+    insights.push(
+      `Booking rate has slowed ${Math.abs(velocity.trendPercent)}% compared to the prior quarter.`
+    )
   }
 
   // Quarterly projection
@@ -424,13 +467,16 @@ function buildInsights(
       const confirmedPct = Math.round(
         (quarterMonths.reduce((s, m) => s + m.confirmed, 0) / qTotal) * 100
       )
-      insights.push(`Next quarter projected at $${dollars}, with ${confirmedPct}% already confirmed.`)
+      insights.push(
+        `Next quarter projected at $${dollars}, with ${confirmedPct}% already confirmed.`
+      )
     }
   }
 
   // Best month
-  const bestSeasonal = seasonal.reduce((best, m) =>
-    m.avgRevenueCents > best.avgRevenueCents ? m : best, seasonal[0]
+  const bestSeasonal = seasonal.reduce(
+    (best, m) => (m.avgRevenueCents > best.avgRevenueCents ? m : best),
+    seasonal[0]
   )
   if (bestSeasonal && bestSeasonal.avgRevenueCents > 0) {
     insights.push(`Historically, ${bestSeasonal.monthLabel} is your strongest month.`)

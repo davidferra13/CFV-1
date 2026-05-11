@@ -226,7 +226,7 @@ export default function ClaimFormClient() {
         </Button>
         <Button
           type="button"
-          variant="outline"
+          variant="secondary"
           onClick={() => router.push('/settings/compliance/claims')}
           disabled={isPending}
         >

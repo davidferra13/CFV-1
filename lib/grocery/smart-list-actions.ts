@@ -993,6 +993,10 @@ export async function autoAssignAisles(listId: string) {
   return { updated: updates.length }
 }
 
+export async function createSmartListDraftForEvent(eventId: string): Promise<void> {
+  await createSmartList(`Grocery List`, eventId)
+}
+
 export async function saveAislePreference(storeName: string, keyword: string, aisle: AisleSection) {
   const user = await requireChef()
   const db = await createServerClient()

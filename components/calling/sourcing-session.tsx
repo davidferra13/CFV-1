@@ -252,7 +252,10 @@ export function SourcingSession({ tenantId }: Props) {
     setAddPhone('')
   }
 
-  const estimatedCost = estimateSessionCost(candidates.length)
+  const [estimatedCost, setEstimatedCost] = useState(0)
+  useEffect(() => {
+    estimateSessionCost(candidates.length).then(setEstimatedCost)
+  }, [candidates.length])
 
   // -------------------------------------------------------------------------
   // Phase 3: Start and manage active session

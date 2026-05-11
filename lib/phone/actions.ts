@@ -355,3 +355,32 @@ export async function setPrimaryPhone(
 
   return { success: true }
 }
+
+export async function toggleCanText(
+  phoneNumberId: string,
+  canText: boolean
+): Promise<{ success: boolean; error?: string }> {
+  const user = await requireChef()
+  if (!user.tenantId) return { success: false, error: 'No tenant' }
+
+  const [record] = await db
+    .select()
+    .from(phoneNumbers)
+    .where(eq(phoneNumbers.id, phoneNumberId))
+    .limit(1)
+
+  if (!record) return { success: false, error: 'Phone number not found' }
+
+  if (record.entityType === 'chef' && record.entityId !== user.tenantId) {
+    return { success: false, error: 'Unauthorized' }
+  }
+
+  await db
+    .update(phoneNumbers)
+    .set({ canText, updatedAt: new Date().toISOString() })
+    .where(eq(phoneNumbers.id, phoneNumberId))
+
+  revalidateTag(`phone-numbers-${record.entityType}-${record.entityId}`)
+
+  return { success: true }
+}

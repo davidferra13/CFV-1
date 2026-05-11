@@ -399,4 +399,5 @@ export const DOMAIN_CONFIG: Record<
   settings: { label: 'Settings', color: 'text-gray-600', bgColor: 'bg-gray-100' },
   prospecting: { label: 'Prospecting', color: 'text-orange-700', bgColor: 'bg-orange-100' },
   account: { label: 'Account', color: 'text-red-700', bgColor: 'bg-red-100' },
+  autopilot: { label: 'Autopilot', color: 'text-violet-700', bgColor: 'bg-violet-100' },
 }

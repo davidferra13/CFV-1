@@ -231,7 +231,7 @@ export async function generateInboundResponse(
   classification: CallerClassification,
   gatherActionUrl: string,
   businessName?: string
-): string {
+): Promise<string> {
   const biz = businessName || 'this private chef service'
 
   try {

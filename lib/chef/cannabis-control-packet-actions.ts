@@ -104,6 +104,8 @@ type CourseConfigRow = {
   plannedMgPerGuest: number | null
   notes: string | null
   isActive: boolean
+  doseVolumeMlPerGuest?: number | null
+  regulatedBatchRecordId?: string | null
 }
 
 type SnapshotPlan = {
@@ -670,6 +672,13 @@ export async function getCannabisControlPacketData(eventId: string, snapshotId?:
     !!context.sourceGuestUpdatedAt &&
     Date.parse(context.sourceGuestUpdatedAt) > Date.parse(activeSnapshot.generated_at)
 
+  const { data: verifiedBatchRows } = await (db
+    .from('regulated_batch_records' as any)
+    .select('id, batch_code, product_name, estimated_mg_per_ml, status')
+    .eq('tenant_id', user.tenantId!)
+    .in('status', ['released', 'finalized']) as any)
+  const verifiedBatches: any[] = verifiedBatchRows ?? []
+
   const participationSummary = summarizeParticipationStatuses(context.guestSnapshotInput)
   const snapshotPlan = sanitizeSnapshotPlan(activeSnapshot)
   const livePlan: SnapshotPlan = {
@@ -710,6 +719,7 @@ export async function getCannabisControlPacketData(eventId: string, snapshotId?:
     evidence,
     alertRsvpUpdatedAfterSnapshot,
     sourceGuestUpdatedAt: context.sourceGuestUpdatedAt,
+    verifiedBatches,
   }
 }
 
