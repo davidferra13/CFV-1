@@ -156,3 +156,14 @@ export type { PipelineSummary } from './pipeline-summary'
 
 export { getEventsFinancialSummary } from './events-financial-summary'
 export type { EventsFinancialSummary } from './events-financial-summary'
+
+// ─── Client Risk Radar ──────────────────────────────────────────────────────
+
+export { computeClientRiskRadar } from './client-risk'
+export type {
+  ClientRiskReport,
+  ClientRiskRadarResult,
+  ClientRiskSummary,
+  RiskFactor,
+  RiskLevel,
+} from './client-risk'

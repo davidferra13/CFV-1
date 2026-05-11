@@ -95,6 +95,7 @@ import {
 } from './_sections/multi-location-summary'
 import { CompletionSummaryWidgetServer } from '@/components/completion/completion-summary-server'
 import { ClientAttentionSection } from './_sections/client-attention-data'
+import { ClientRiskRadarWidget } from './_sections/client-risk-radar'
 import { NetworkActivitySection } from './_sections/network-activity'
 import { OnboardingChecklistWidget } from '@/components/dashboard/onboarding-checklist-widget'
 import { getOnboardingProgress } from '@/lib/onboarding/progress-actions'
@@ -2089,6 +2090,11 @@ export default async function ChefDashboard() {
               <WidgetErrorBoundary name="Intelligence" compact>
                 <Suspense fallback={<IntelligenceCardsSkeleton />}>
                   <IntelligenceCards />
+                </Suspense>
+              </WidgetErrorBoundary>
+              <WidgetErrorBoundary name="Client Risk Radar" compact>
+                <Suspense fallback={null}>
+                  <ClientRiskRadarWidget />
                 </Suspense>
               </WidgetErrorBoundary>
             </div>
