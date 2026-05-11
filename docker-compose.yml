@@ -4,7 +4,7 @@
 
 services:
   postgres:
-    image: postgres:15-alpine
+    image: pgvector/pgvector:0.8.0-pg15
     container_name: chefflow_postgres
     restart: unless-stopped
     ports:
