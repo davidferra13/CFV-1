@@ -156,3 +156,20 @@ export type { PipelineSummary } from './pipeline-summary'
 
 export { getEventsFinancialSummary } from './events-financial-summary'
 export type { EventsFinancialSummary } from './events-financial-summary'
+
+// ─── Operational Load Heatmap ───────────────────────────────────────────────
+
+export {
+  calculateDayLoad,
+  calculateWeekLoad,
+  calculateMonthLoad,
+  getLoadForecast,
+  buildWeekSummary,
+} from './operational-load'
+export type {
+  DayLoad,
+  DayLoadBreakdown,
+  LoadLevel,
+  WeekLoadSummary,
+  LoadForecast,
+} from './operational-load'
