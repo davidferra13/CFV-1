@@ -77,3 +77,33 @@ export async function getDashboardCompletionSummary(): Promise<DashboardEventCom
   results.sort((a, b) => a.score - b.score)
   return results
 }
+
+/**
+ * Batch completeness scores for a list of entities.
+ * Returns a map of entityId -> { score, status }.
+ * Uses shallow evaluation for performance.
+ */
+export async function getBatchCompleteness(
+  entityType: EntityType,
+  ids: string[]
+): Promise<Record<string, { score: number; status: 'incomplete' | 'partial' | 'complete' }>> {
+  if (ids.length === 0) return {}
+  const user = await requireChef()
+  const tenantId = user.tenantId!
+  const results: Record<string, { score: number; status: 'incomplete' | 'partial' | 'complete' }> =
+    {}
+
+  // Cap at 50 to avoid request overload
+  const capped = ids.slice(0, 50)
+  for (const id of capped) {
+    try {
+      const result = await evaluateCompletion(entityType, id, tenantId, { shallow: true })
+      if (result) {
+        results[id] = { score: result.score, status: result.status }
+      }
+    } catch (err) {
+      console.error(`[Completion] batch ${entityType}/${id} failed:`, err)
+    }
+  }
+  return results
+}
