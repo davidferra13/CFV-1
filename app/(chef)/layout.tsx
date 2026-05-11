@@ -46,6 +46,7 @@ import {
   resolveChefShellBudgetWithDensity,
   type WorkspaceDensity,
 } from '@/lib/interface/surface-governance'
+import { resolveHiddenNavRoutes } from '@/lib/surfaces/resolve-chef-surfaces'
 
 const FeedbackNudgeCard = dynamic(
   () => import('@/components/feedback/feedback-nudge-card').then((m) => m.FeedbackNudgeCard),
@@ -185,6 +186,16 @@ export default async function ChefLayout({ children }: { children: React.ReactNo
   const enabledModules =
     layoutData.enabled_modules.length > 0 ? layoutData.enabled_modules : DEFAULT_ENABLED_MODULES
   const focusMode = layoutData.focus_mode
+  const hiddenRoutes = resolveHiddenNavRoutes({
+    chefId: user.entityId,
+    tenantId: user.tenantId ?? user.entityId,
+    dataPresence: tenantPresence,
+    enabledModules,
+    focusModeEnabled: focusMode,
+    workspaceDensity: density,
+    archetype: chefArchetype as any,
+    isAdmin: effectiveAdmin,
+  })
   const daysSinceCreation = layoutData.created_at
     ? differenceInDays(new Date(), new Date(layoutData.created_at))
     : 0
@@ -247,6 +258,7 @@ export default async function ChefLayout({ children }: { children: React.ReactNo
                           tenantId={user.tenantId ?? user.entityId}
                           archetype={chefArchetype}
                           tenantPresence={tenantPresence}
+                          hiddenRoutes={hiddenRoutes}
                         />
                       ) : null}
                       {/* Mobile nav (top bar + bottom tabs) */}

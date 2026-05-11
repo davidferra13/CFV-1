@@ -692,6 +692,7 @@ export function ChefSidebar({
   tenantId,
   archetype,
   tenantPresence,
+  hiddenRoutes,
 }: {
   primaryNavHrefs?: string[]
   enabledModules?: string[]
@@ -702,6 +703,7 @@ export function ChefSidebar({
   tenantId: string
   archetype?: string | null
   tenantPresence?: TenantDataPresence | null
+  hiddenRoutes?: string[]
 }) {
   const pathname = usePathname() ?? ''
   const searchParams = useSearchParams()
@@ -811,9 +813,27 @@ export function ChefSidebar({
     })
   }, [accessibleGroups, tenantPresence, isPrivileged, isAdmin, pathname, searchParams])
 
+  // Surface graph visibility filter (additive, works alongside existing filters)
+  const hiddenSet = useMemo(() => new Set(hiddenRoutes ?? []), [hiddenRoutes])
+  const surfaceFilteredGroups = useMemo(() => {
+    if (hiddenSet.size === 0) return progressiveGroups
+    return progressiveGroups
+      .map((group) => ({
+        ...group,
+        items: group.items
+          .filter((item) => !hiddenSet.has(item.href))
+          .map((item) =>
+            item.children
+              ? { ...item, children: item.children.filter((child) => !hiddenSet.has(child.href)) }
+              : item
+          ),
+      }))
+      .filter((group) => group.items.length > 0)
+  }, [progressiveGroups, hiddenSet])
+
   const groupEntries = useMemo(
-    () => progressiveGroups.map((group) => ({ group, isLocked: false })),
-    [progressiveGroups]
+    () => surfaceFilteredGroups.map((group) => ({ group, isLocked: false })),
+    [surfaceFilteredGroups]
   )
   const filteredGroupEntries = useMemo(
     () =>
@@ -1078,7 +1098,7 @@ export function ChefSidebar({
             {/* ─── All Features (collapsible directory of all nav groups) ─── */}
             <AllFeaturesCollapse
               hidden={focusMode && !isPrivileged}
-              groups={progressiveGroups}
+              groups={surfaceFilteredGroups}
               navFilter={navFilter}
             >
               {filteredGroupEntries.length > 0 && (
