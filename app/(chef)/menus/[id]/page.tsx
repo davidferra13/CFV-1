@@ -9,6 +9,10 @@ import { getMenuRecommendations } from '@/lib/analytics/menu-recommendations'
 import { MenuRecommendationHints } from '@/components/analytics/menu-recommendation-hints'
 import { getMenuInquiryLink } from '@/lib/menus/menu-intelligence-actions'
 import { evaluateCompletion } from '@/lib/completion/engine'
+import { AuditSummaryBadge } from '@/components/audit-trail/audit-summary-badge'
+import { AuditTimeline } from '@/components/audit-trail/audit-timeline'
+import { fetchEntityHistory } from '@/lib/audit-trail/surface-actions'
+import { Suspense } from 'react'
 import Link from 'next/link'
 
 type Props = {
@@ -47,7 +51,7 @@ export default async function MenuDetailPage({ params }: Props) {
     }
   }
 
-  const [recipeMapResult, recommendations, inquiryLink, completionData] = await Promise.all([
+  const [recipeMapResult, recommendations, inquiryLink, completionData, auditHistory] = await Promise.all([
     recipeIds.size > 0
       ? createServerClient()
           .from('recipes' as any)
@@ -68,6 +72,7 @@ export default async function MenuDetailPage({ params }: Props) {
     }).catch(() => null),
     getMenuInquiryLink(id).catch(() => null),
     evaluateCompletion('menu', id, user.tenantId!).catch(() => null),
+    fetchEntityHistory('menu', id).catch(() => []),
   ])
 
   let recipeMap: Record<
@@ -103,6 +108,11 @@ export default async function MenuDetailPage({ params }: Props) {
           )}
         </div>
       )}
+      <div className="px-1">
+        <Suspense fallback={null}>
+          <AuditSummaryBadge entityType="menu" entityId={id} />
+        </Suspense>
+      </div>
       <MenuDetailClient
         menu={menu}
         event={event}
@@ -111,6 +121,9 @@ export default async function MenuDetailPage({ params }: Props) {
         initialCompletion={completionData}
       />
       {recommendations && <MenuRecommendationHints result={recommendations} />}
+      {auditHistory && auditHistory.length > 0 && (
+        <AuditTimeline entries={auditHistory} title="Menu Change History" />
+      )}
     </div>
   )
 }

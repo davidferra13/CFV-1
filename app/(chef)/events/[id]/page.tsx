@@ -126,6 +126,8 @@ import { PhotoConsentSummary } from '@/components/events/photo-consent-summary'
 import { RSVPTrackerPanel } from '@/components/events/rsvp-tracker-panel'
 import { getEventMessagesForChef } from '@/lib/guests/message-actions'
 import { getEntityActivityTimeline } from '@/lib/activity/entity-timeline'
+import { fetchEntityHistory } from '@/lib/audit-trail/surface-actions'
+import { AuditSummaryBadge } from '@/components/audit-trail/audit-summary-badge'
 import { getQrCodeUrl } from '@/lib/qr/qr-code'
 import { shortenUrl } from '@/lib/links/url-shortener'
 import { EventHubLinkPanel } from '@/components/hub/event-hub-link-panel'
@@ -694,6 +696,7 @@ export default async function EventDetailPage({
     regionalSettings,
     constraintRadarData,
     inquiryReferralSource,
+    auditHistory,
   ] = await Promise.all([
     getEventFinancialSummary(params.id).catch(() => ({
       totalPaid: 0,
@@ -783,6 +786,7 @@ export default async function EventDetailPage({
           }
         })()
       : Promise.resolve(null),
+    fetchEntityHistory('event', params.id).catch(() => []),
   ])
   const readinessAssistant = await getEventReadinessAssistant(params.id, pricingIntelligence).catch(
     () => null
@@ -1187,6 +1191,11 @@ export default async function EventDetailPage({
             {referralSourceLabel && <Badge variant="info">Referral: {referralSourceLabel}</Badge>}
             <DietaryComplexityBadge result={dietaryComplexity} />
             <EventRiskBadge result={eventRisk} />
+          </div>
+          <div className="mt-1">
+            <Suspense fallback={null}>
+              <AuditSummaryBadge entityType="event" entityId={event.id} />
+            </Suspense>
           </div>
           <p className="text-stone-300 mt-1">
             {format(new Date(event.event_date), 'EEEE, MMMM d, yyyy')}
@@ -1671,6 +1680,7 @@ export default async function EventDetailPage({
         hasClosureStatus={!!closureStatus}
         transitions={transitions as any[]}
         timelineEntries={timelineEntries}
+        auditHistory={auditHistory}
       />
     </div>
   )

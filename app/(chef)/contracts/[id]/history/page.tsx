@@ -1,6 +1,7 @@
 import type { Metadata } from 'next'
 import Link from 'next/link'
 import { notFound } from 'next/navigation'
+import { Suspense } from 'react'
 import { requireChef } from '@/lib/auth/get-user'
 import { createServerClient } from '@/lib/db/server'
 import {
@@ -9,6 +10,9 @@ import {
   getContractVersions,
 } from '@/lib/contracts/advanced-contracts'
 import { ContractHistory } from '@/components/contracts/contract-history'
+import { AuditSummaryBadge } from '@/components/audit-trail/audit-summary-badge'
+import { AuditTimeline } from '@/components/audit-trail/audit-timeline'
+import { fetchEntityHistory } from '@/lib/audit-trail/surface-actions'
 
 export const metadata: Metadata = { title: 'Contract History' }
 
@@ -33,10 +37,11 @@ export default async function ContractHistoryPage({ params }: ContractHistoryPag
     notFound()
   }
 
-  const [versions, signers, summary] = await Promise.all([
+  const [versions, signers, summary, auditHistory] = await Promise.all([
     getContractVersions(params.id),
     getContractSigners(params.id),
     getContractSigningSummary(params.id),
+    fetchEntityHistory('contract', params.id).catch(() => []),
   ])
 
   return (
@@ -49,9 +54,14 @@ export default async function ContractHistoryPage({ params }: ContractHistoryPag
           &larr; Back to event
         </Link>
         <h1 className="mt-1 text-3xl font-bold text-stone-100">Contract History</h1>
-        <p className="mt-1 text-stone-400">
-          Contract ID: {contract.id} | Current status: {contract.status}
-        </p>
+        <div className="flex items-center gap-3 mt-1">
+          <p className="text-stone-400">
+            Contract ID: {contract.id} | Current status: {contract.status}
+          </p>
+          <Suspense fallback={null}>
+            <AuditSummaryBadge entityType="contract" entityId={params.id} />
+          </Suspense>
+        </div>
       </div>
 
       <ContractHistory
@@ -60,6 +70,10 @@ export default async function ContractHistoryPage({ params }: ContractHistoryPag
         signers={signers}
         summary={summary}
       />
+
+      {auditHistory.length > 0 && (
+        <AuditTimeline entries={auditHistory} title="Contract Audit Trail" />
+      )}
     </div>
   )
 }
