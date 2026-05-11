@@ -156,3 +156,13 @@ export type { PipelineSummary } from './pipeline-summary'
 
 export { getEventsFinancialSummary } from './events-financial-summary'
 export type { EventsFinancialSummary } from './events-financial-summary'
+
+export { generateRevenueForecast, getBookingVelocity, getSeasonalPattern, getRevenueHealth } from './revenue-forecast'
+export type {
+  RevenueForecastResult,
+  MonthlyForecast,
+  BookingVelocity,
+  BookingVelocityMonth,
+  SeasonalPatternMonth,
+  RevenueHealth,
+} from './revenue-forecast'
