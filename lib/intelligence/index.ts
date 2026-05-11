@@ -156,3 +156,29 @@ export type { PipelineSummary } from './pipeline-summary'
 
 export { getEventsFinancialSummary } from './events-financial-summary'
 export type { EventsFinancialSummary } from './events-financial-summary'
+
+// ─── Multi-Event Intelligence ────────────────────────────────────────────────
+
+export { optimizeStaffSchedule } from './staff-optimization'
+export type {
+  StaffOptimizationReport,
+  StaffConflict,
+  SharingOpportunity,
+  StaffScheduleEntry,
+} from './staff-optimization'
+
+export { checkEquipmentConflicts } from './equipment-allocation'
+export type {
+  EquipmentReport,
+  EquipmentConflict,
+  EquipmentNeed,
+  EquipmentAvailability,
+} from './equipment-allocation'
+
+export { optimizeWeeklyTravel } from './travel-optimization'
+export type {
+  TravelOptimization,
+  EventCluster,
+  ShoppingTrip,
+  MileageSavings,
+} from './travel-optimization'
