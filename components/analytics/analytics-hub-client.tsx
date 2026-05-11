@@ -254,6 +254,24 @@ function OverviewTab({ p }: { p: AnalyticsHubProps }) {
           variant={pctBadge(p.clientRetention.repeatBookingRate, 50)}
         />
       </div>
+
+      {/* Data Health link */}
+      <Card className="p-4">
+        <div className="flex items-center justify-between">
+          <div>
+            <h3 className="text-sm font-medium text-stone-300">Data Reconciliation</h3>
+            <p className="text-xs text-stone-500 mt-0.5">
+              Check for gaps: missing expenses, unpaid invoices, stale data
+            </p>
+          </div>
+          <a
+            href="/analytics/reconciliation"
+            className="text-sm font-medium text-amber-600 hover:underline shrink-0"
+          >
+            View report &rarr;
+          </a>
+        </div>
+      </Card>
     </div>
   )
 }
