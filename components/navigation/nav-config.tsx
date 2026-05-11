@@ -152,10 +152,6 @@ export const standaloneTop: NavItem[] = [
     icon: CalendarDays,
     coreFeature: true,
     tier: 'primary',
-    subMenu: [
-      { href: '/events/new', label: 'New Event' },
-      { href: '/calendar', label: 'Calendar' },
-    ],
   },
   {
     href: '/culinary',
@@ -163,15 +159,6 @@ export const standaloneTop: NavItem[] = [
     icon: ChefHat,
     coreFeature: true,
     tier: 'primary',
-    subMenu: [
-      { href: '/culinary/recipes', label: 'Recipes' },
-      { href: '/menus', label: 'Menus' },
-      { href: '/culinary/price-catalog', label: 'Food Catalog' },
-      { href: '/culinary/costing', label: 'Costing' },
-      { href: '/culinary/prep', label: 'Prep' },
-      { href: '/culinary/prep/shopping', label: 'Shopping Lists' },
-      { href: '/culinary/cheftips', label: 'ChefTips' },
-    ],
   },
   {
     href: '/clients',
@@ -179,14 +166,6 @@ export const standaloneTop: NavItem[] = [
     icon: Users,
     coreFeature: true,
     tier: 'primary',
-    subMenu: [
-      { href: '/clients/new', label: 'Add Client' },
-      { href: '/clients/communication', label: 'Communication' },
-      { href: '/clients/communication/follow-ups', label: 'Follow-Ups' },
-      { href: '/clients/communication/upcoming-touchpoints', label: 'Touchpoints' },
-      { href: '/clients/insights/top-clients', label: 'Top Clients' },
-      { href: '/clients/loyalty', label: 'Loyalty' },
-    ],
   },
   {
     href: '/circles',
@@ -194,10 +173,6 @@ export const standaloneTop: NavItem[] = [
     icon: MessagesSquare,
     coreFeature: true,
     tier: 'primary',
-    subMenu: [
-      { href: '/circles', label: 'All Circles' },
-      { href: '/hub/circles', label: 'Browse Community' },
-    ],
   },
   {
     href: '/finance',
@@ -205,11 +180,6 @@ export const standaloneTop: NavItem[] = [
     icon: DollarSign,
     coreFeature: true,
     tier: 'primary',
-    subMenu: [
-      { href: '/finance/invoices', label: 'Invoices' },
-      { href: '/expenses', label: 'Expenses' },
-      { href: '/finance/reporting/profit-loss', label: 'Profit and Loss' },
-    ],
   },
 ]
 
