@@ -966,6 +966,68 @@ export async function sendContractViaDocuSign(contractId: string) {
 }
 
 // ============================================
+// STANDALONE CONTRACT CREATION
+// Creates a draft contract without going through the full send flow.
+// ============================================
+
+export async function createStandaloneContract(params: {
+  client_id: string
+  template_id: string
+  event_id?: string
+}): Promise<{ success: boolean; contractId?: string; error?: string }> {
+  try {
+    const user = await requireChef()
+    const db: any = createServerClient()
+
+    // Load template
+    const { data: template } = await db
+      .from('contract_templates')
+      .select('id, body_markdown')
+      .eq('id', params.template_id)
+      .eq('chef_id', user.tenantId!)
+      .single()
+
+    if (!template) return { success: false, error: 'Template not found' }
+
+    // Load client for merge fields
+    const { data: client } = await db
+      .from('clients')
+      .select('id, name, email')
+      .eq('id', params.client_id)
+      .eq('chef_id', user.tenantId!)
+      .single()
+
+    if (!client) return { success: false, error: 'Client not found' }
+
+    const bodyMarkdown = (template.body_markdown as string).replace(
+      /{{client_name}}/g,
+      client.name || 'Client'
+    )
+
+    const { data: inserted, error: insertErr } = await db
+      .from('event_contracts')
+      .insert({
+        chef_id: user.tenantId!,
+        client_id: params.client_id,
+        event_id: params.event_id ?? null,
+        template_id: params.template_id,
+        body_markdown: bodyMarkdown,
+        status: 'draft',
+      })
+      .select('id')
+      .single()
+
+    if (insertErr || !inserted) return { success: false, error: 'Failed to create contract' }
+
+    revalidatePath('/contracts')
+    return { success: true, contractId: inserted.id }
+  } catch (err) {
+    console.error('[createStandaloneContract]', err)
+    return { success: false, error: 'Unexpected error' }
+  }
+}
+
+// ============================================
 // FALLBACK TEMPLATE
 // Used when no default template exists.
 // ============================================

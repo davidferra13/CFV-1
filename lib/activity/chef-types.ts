@@ -18,6 +18,7 @@ export type ChefActivityDomain =
   | 'settings'
   | 'prospecting'
   | 'account'
+  | 'autopilot'
 
 export type ChefActivityAction =
   // Events

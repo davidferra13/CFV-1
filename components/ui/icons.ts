@@ -9,6 +9,7 @@ export type { Icon as LucideIcon, IconProps } from '@phosphor-icons/react'
 
 export { Pulse as Activity } from '@phosphor-icons/react/ssr'
 export { WarningCircle as AlertCircle } from '@phosphor-icons/react/ssr'
+export { WarningCircle } from '@phosphor-icons/react/ssr'
 export { WarningOctagon as AlertOctagon } from '@phosphor-icons/react/ssr'
 export { Warning as AlertTriangle } from '@phosphor-icons/react/ssr'
 export { AppleLogo as Apple } from '@phosphor-icons/react/ssr'
