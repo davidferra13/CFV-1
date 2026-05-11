@@ -8,6 +8,8 @@ import { requireChef } from '@/lib/auth/get-user'
 import { createServerClient } from '@/lib/db/server'
 import type { RemyContext, PageEntityContext } from '@/lib/ai/remy-types'
 import { getDailyPlanStats } from '@/lib/daily-ops/actions'
+import { getEventPrepTimeline } from '@/lib/prep-timeline/actions'
+import { format as formatDate } from 'date-fns'
 
 // Safe local-date ISO string - avoids UTC offset shifting after ~7pm ET
 function localDateISO(d: Date): string {
@@ -1404,23 +1406,46 @@ async function loadDetailedContext(db: any, tenantId: string, failedOperations?:
   const equipCategories = [...new Set(equipItems.map((e) => (e.category as string) ?? 'other'))]
 
   return {
-    upcomingEvents: (eventsResult.data ?? []).map((e: Record<string, unknown>) => {
-      const client = (e.client as Record<string, unknown> | null) ?? null
-      return {
-        id: e.id as string,
-        occasion: e.occasion as string | null,
-        date: e.event_date as string | null,
-        status: e.status as string,
-        clientName: (client?.full_name as string) ?? 'Unknown',
-        guestCount: e.guest_count as number | null,
-        clientLoyaltyTier:
-          (client?.loyalty_tier as 'bronze' | 'silver' | 'gold' | 'platinum' | null) ?? null,
-        clientLoyaltyPoints: (client?.loyalty_points as number | null) ?? null,
-        prepReady: (e.prep_list_ready as boolean) ?? false,
-        groceryReady: (e.grocery_list_ready as boolean) ?? false,
-        timelineReady: (e.timeline_ready as boolean) ?? false,
-      }
-    }),
+    upcomingEvents: await Promise.all(
+      (eventsResult.data ?? []).slice(0, 10).map(async (e: Record<string, unknown>) => {
+        const client = (e.client as Record<string, unknown> | null) ?? null
+        // Enrich with prep timeline data (non-blocking)
+        let groceryDeadline: string | null = null
+        let prepStartDate: string | null = null
+        let untimedRecipeCount = 0
+        try {
+          const { timeline } = await getEventPrepTimeline(e.id as string)
+          if (timeline) {
+            if (timeline.groceryDeadline) {
+              groceryDeadline = formatDate(timeline.groceryDeadline, 'yyyy-MM-dd')
+            }
+            if (timeline.days.length > 0) {
+              prepStartDate = formatDate(timeline.days[0].date, 'yyyy-MM-dd')
+            }
+            untimedRecipeCount = timeline.untimedItems.length
+          }
+        } catch {
+          // Non-blocking
+        }
+        return {
+          id: e.id as string,
+          occasion: e.occasion as string | null,
+          date: e.event_date as string | null,
+          status: e.status as string,
+          clientName: (client?.full_name as string) ?? 'Unknown',
+          guestCount: e.guest_count as number | null,
+          clientLoyaltyTier:
+            (client?.loyalty_tier as 'bronze' | 'silver' | 'gold' | 'platinum' | null) ?? null,
+          clientLoyaltyPoints: (client?.loyalty_points as number | null) ?? null,
+          prepReady: (e.prep_list_ready as boolean) ?? false,
+          groceryReady: (e.grocery_list_ready as boolean) ?? false,
+          timelineReady: (e.timeline_ready as boolean) ?? false,
+          groceryDeadline,
+          prepStartDate,
+          untimedRecipeCount,
+        }
+      })
+    ),
     recentClients: (clientsResult.data ?? []).map((c: Record<string, unknown>) => ({
       id: c.id as string,
       name: (c.full_name as string) ?? 'Unknown',

@@ -10,6 +10,8 @@ import { PDFLayout, MARGIN_X, CONTENT_WIDTH, LETTER_WIDTH } from './pdf-layout'
 import { FONT, COLOR } from './pdf-design-tokens'
 import { format, parseISO } from 'date-fns'
 import { dateToDateString } from '@/lib/utils/format'
+import { getEventPrepTimeline } from '@/lib/prep-timeline/actions'
+import { formatPrepTime } from '@/lib/prep-timeline/compute-timeline'
 import type { jsPDF } from 'jspdf'
 
 // ─── Column Geometry ────────────────────────────────────────────────────────
@@ -123,6 +125,11 @@ export type EventSummaryData = {
     }>
   }>
   totalComponentCount: number
+  // Prep timeline data
+  prepStartDate: string | null
+  groceryDeadline: string | null
+  totalPrepMinutes: number | null
+  prepDayCount: number | null
 }
 
 // ─── Data Fetcher ─────────────────────────────────────────────────────────────
@@ -269,6 +276,27 @@ export async function fetchEventSummaryData(eventId: string): Promise<EventSumma
 
   const clientData = event.client as unknown as EventSummaryData['client'] | null
 
+  // Compute prep timeline (non-blocking)
+  let prepStartDate: string | null = null
+  let eventGroceryDeadline: string | null = null
+  let totalPrepMinutes: number | null = null
+  let prepDayCount: number | null = null
+  try {
+    const { timeline } = await getEventPrepTimeline(eventId)
+    if (timeline) {
+      if (timeline.groceryDeadline) {
+        eventGroceryDeadline = format(timeline.groceryDeadline, 'EEE, MMM d')
+      }
+      if (timeline.days.length > 0) {
+        prepStartDate = format(timeline.days[0].date, 'EEE, MMM d')
+        prepDayCount = timeline.days.filter((d) => d.items.length > 0).length
+      }
+      totalPrepMinutes = timeline.days.reduce((sum, d) => sum + d.totalPrepMinutes, 0) || null
+    }
+  } catch {
+    // Non-blocking
+  }
+
   return {
     event: {
       id: event.id,
@@ -329,6 +357,10 @@ export async function fetchEventSummaryData(eventId: string): Promise<EventSumma
     })),
     courses,
     totalComponentCount,
+    prepStartDate,
+    groceryDeadline: eventGroceryDeadline,
+    totalPrepMinutes,
+    prepDayCount,
   }
 }
 
@@ -656,6 +688,31 @@ export function renderEventSummary(pdf: PDFLayout, data: EventSummaryData) {
   }
   if (!event.arrival_time && !event.serve_time) {
     leftY = colText(doc, LEFT_X, COL_WIDTH, leftY, 'Timing not yet confirmed', 7.5, 'italic')
+  }
+
+  // Prep timeline info (from peak windows engine)
+  if (data.prepStartDate || data.groceryDeadline) {
+    leftY += 2
+    leftY = colSectionHeader(doc, LEFT_X, COL_WIDTH, leftY, 'PREP SCHEDULE')
+    if (data.groceryDeadline) {
+      leftY = colKeyValue(doc, LEFT_X, COL_WIDTH, leftY, 'Shop by', data.groceryDeadline)
+    }
+    if (data.prepStartDate) {
+      leftY = colKeyValue(doc, LEFT_X, COL_WIDTH, leftY, 'Prep starts', data.prepStartDate)
+    }
+    if (data.totalPrepMinutes) {
+      leftY = colKeyValue(
+        doc,
+        LEFT_X,
+        COL_WIDTH,
+        leftY,
+        'Total prep',
+        formatPrepTime(data.totalPrepMinutes)
+      )
+    }
+    if (data.prepDayCount && data.prepDayCount > 1) {
+      leftY = colKeyValue(doc, LEFT_X, COL_WIDTH, leftY, 'Prep days', String(data.prepDayCount))
+    }
   }
 
   // ── RIGHT COLUMN ──

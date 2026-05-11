@@ -4,12 +4,13 @@
 //   - The cron route (no user session)
 //   - The app page server action (via requireChef + admin client)
 
-import type { DailyReportContent, HighIntentVisit, DailyReportEvent } from './types'
+import type { DailyReportContent, HighIntentVisit, DailyReportEvent, PrepDayInfo } from './types'
 import {
   attachDerivedOutputProvenance,
   resolveAiDerivedOutputModelMetadata,
 } from '@/lib/analytics/source-provenance'
 import { generateDailyNarrative } from '@/lib/ai/daily-narrative'
+import { computePrepTimeline, type TimelineRecipeInput } from '@/lib/prep-timeline/compute-timeline'
 
 // Accept any client with a database-compatible query builder API
 type AdminClient = { from: (table: string) => any; rpc: (fn: string, params?: any) => any }
@@ -527,6 +528,125 @@ export async function computeDailyReport(
     status: e.status,
   }))
 
+  // Compute prep timeline deadlines for upcoming events (non-blocking)
+  // Check which events have today as a prep day or grocery deadline
+  const prepDayFor: PrepDayInfo[] = []
+  const groceryDeadlineFor: PrepDayInfo[] = []
+  try {
+    // Get upcoming events within 14 days for timeline computation
+    const { data: timelineEvents } = await db
+      .from('events')
+      .select('id, occasion, event_date, client:clients(full_name)')
+      .eq('tenant_id', tenantId)
+      .not('status', 'in', '("cancelled","completed","draft")')
+      .gte('event_date', reportDate)
+      .lte(
+        'event_date',
+        new Date(reportDateObj.getTime() + 14 * 86400000).toISOString().split('T')[0]
+      )
+      .order('event_date', { ascending: true })
+      .limit(10)
+
+    if (timelineEvents && timelineEvents.length > 0) {
+      for (const evt of timelineEvents as any[]) {
+        // Fetch menu components for timeline computation
+        const { data: menus } = await db
+          .from('menus')
+          .select('id')
+          .eq('event_id', evt.id)
+          .eq('tenant_id', tenantId)
+          .limit(1)
+        if (!menus || menus.length === 0) continue
+
+        const { data: dishes } = await db
+          .from('dishes')
+          .select('id, course_name')
+          .eq('menu_id', menus[0].id)
+        if (!dishes || dishes.length === 0) continue
+
+        const dishIds = dishes.map((d: any) => d.id)
+        const { data: components } = await db
+          .from('components')
+          .select('id, name, dish_id, recipe_id, make_ahead_window_hours')
+          .in('dish_id', dishIds)
+        if (!components || components.length === 0) continue
+
+        const recipeIds = [
+          ...new Set(components.filter((c: any) => c.recipe_id).map((c: any) => c.recipe_id)),
+        ]
+        let recipes: any[] = []
+        if (recipeIds.length > 0) {
+          const { data: recipeData } = await db
+            .from('recipes')
+            .select(
+              'id, name, category, peak_hours_min, peak_hours_max, safety_hours_max, storage_method, freezable, frozen_extends_hours, prep_time_minutes, active_prep_minutes, passive_prep_minutes, hold_class, prep_tier'
+            )
+            .in('id', recipeIds)
+          recipes = recipeData ?? []
+        }
+
+        const recipeMap = new Map(recipes.map((r: any) => [r.id, r]))
+        const dishMap = new Map(dishes.map((d: any) => [d.id, d]))
+
+        const items: TimelineRecipeInput[] = components.map((comp: any) => {
+          const recipe: any = comp.recipe_id ? recipeMap.get(comp.recipe_id) : null
+          const dish: any = dishMap.get(comp.dish_id)
+          return {
+            recipeId: recipe?.id ?? comp.id,
+            recipeName: recipe?.name ?? comp.name,
+            componentName: comp.name,
+            dishName: dish?.course_name ?? 'Unknown',
+            courseName: dish?.course_name ?? 'Unknown',
+            category: recipe?.category ?? null,
+            peakHoursMin: recipe?.peak_hours_min ?? null,
+            peakHoursMax: recipe?.peak_hours_max ?? null,
+            safetyHoursMax: recipe?.safety_hours_max ?? null,
+            storageMethod: recipe?.storage_method ?? null,
+            freezable: recipe?.freezable ?? null,
+            frozenExtendsHours: recipe?.frozen_extends_hours ?? null,
+            prepTimeMinutes: recipe?.prep_time_minutes ?? 30,
+            activeMinutes: recipe?.active_prep_minutes ?? null,
+            passiveMinutes: recipe?.passive_prep_minutes ?? null,
+            holdClass: recipe?.hold_class ?? null,
+            prepTier: recipe?.prep_tier ?? null,
+            allergenFlags: [],
+            makeAheadWindowHours: comp.make_ahead_window_hours ?? null,
+          }
+        })
+
+        const eventDate = new Date(evt.event_date)
+        eventDate.setHours(18, 0, 0, 0) // default 6pm
+        const timeline = computePrepTimeline(items, eventDate)
+
+        const info: PrepDayInfo = {
+          eventId: evt.id,
+          occasion: evt.occasion,
+          clientName: evt.client?.full_name ?? 'Unknown',
+          eventDate: evt.event_date,
+        }
+
+        // Check if today is a prep day
+        for (const day of timeline.days) {
+          const dayStr = day.date.toISOString().split('T')[0]
+          if (dayStr === reportDate && day.items.length > 0 && !day.isServiceDay) {
+            prepDayFor.push(info)
+            break
+          }
+        }
+
+        // Check if today is the grocery deadline
+        if (timeline.groceryDeadline) {
+          const groceryStr = timeline.groceryDeadline.toISOString().split('T')[0]
+          if (groceryStr === reportDate) {
+            groceryDeadlineFor.push(info)
+          }
+        }
+      }
+    }
+  } catch (err) {
+    console.error('[daily-report] prep timeline computation failed:', err)
+  }
+
   // Process high-intent visits
   const clientIds = [...new Set(clientActivity.map((a: any) => a.client_id).filter(Boolean))]
   let clientNames: Record<string, string> = {}
@@ -604,6 +724,8 @@ export async function computeDailyReport(
   const reportData: DailyReportContent = {
     eventsToday: eventsTodayMapped,
     upcomingEventsNext7d: upcomingEvents,
+    prepDayFor: prepDayFor.length > 0 ? prepDayFor : undefined,
+    groceryDeadlineFor: groceryDeadlineFor.length > 0 ? groceryDeadlineFor : undefined,
     newInquiriesToday,
     inquiryStats,
     quotesExpiringSoon: quoteStats.length,

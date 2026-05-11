@@ -2,6 +2,8 @@
 
 import { requireChef } from '@/lib/auth/get-user'
 import { createServerClient } from '@/lib/db/server'
+import { getEventPrepTimeline } from '@/lib/prep-timeline/actions'
+import { format } from 'date-fns'
 
 export interface RemyConciergeContext {
   upcomingEventsCount: number
@@ -10,6 +12,9 @@ export interface RemyConciergeContext {
     occasion: string
     eventDate: string
     clientName: string
+    groceryDeadline?: string | null
+    prepStartDate?: string | null
+    untimedRecipeCount?: number
   }>
   overdueInvoiceCount: number
   unreadMessageCount: number
@@ -84,19 +89,66 @@ export async function getRemyConciergeContext(): Promise<RemyConciergeContext> {
     ])
 
   const events = eventsResult.data ?? []
-  const upcomingEvents = events.map(
-    (e: {
-      id: string
-      occasion: string | null
-      event_date: string
-      client?: { full_name?: string }
-    }) => ({
-      id: e.id,
-      occasion: e.occasion ?? 'Event',
-      eventDate: e.event_date,
-      clientName: e.client?.full_name ?? 'Unknown',
-    })
+
+  // Enrich upcoming events with prep timeline data (non-blocking, max 5)
+  const enrichedEvents = await Promise.all(
+    events
+      .slice(0, 5)
+      .map(
+        async (e: {
+          id: string
+          occasion: string | null
+          event_date: string
+          client?: { full_name?: string }
+        }) => {
+          let groceryDeadline: string | null = null
+          let prepStartDate: string | null = null
+          let untimedRecipeCount = 0
+          try {
+            const { timeline } = await getEventPrepTimeline(e.id)
+            if (timeline) {
+              if (timeline.groceryDeadline) {
+                groceryDeadline = format(timeline.groceryDeadline, 'yyyy-MM-dd')
+              }
+              if (timeline.days.length > 0) {
+                prepStartDate = format(timeline.days[0].date, 'yyyy-MM-dd')
+              }
+              untimedRecipeCount = timeline.untimedItems.length
+            }
+          } catch {
+            // Non-blocking: prep timeline failure should not break concierge context
+          }
+          return {
+            id: e.id,
+            occasion: e.occasion ?? 'Event',
+            eventDate: e.event_date,
+            clientName: e.client?.full_name ?? 'Unknown',
+            groceryDeadline,
+            prepStartDate,
+            untimedRecipeCount,
+          }
+        }
+      )
   )
+
+  // Include any remaining events (beyond 5) without timeline enrichment
+  const remainingEvents = events
+    .slice(5)
+    .map(
+      (e: {
+        id: string
+        occasion: string | null
+        event_date: string
+        client?: { full_name?: string }
+      }) => ({
+        id: e.id,
+        occasion: e.occasion ?? 'Event',
+        eventDate: e.event_date,
+        clientName: e.client?.full_name ?? 'Unknown',
+      })
+    )
+
+  const upcomingEvents = [...enrichedEvents, ...remainingEvents]
 
   const alerts = (alertsResult.data ?? []).map(
     (a: {

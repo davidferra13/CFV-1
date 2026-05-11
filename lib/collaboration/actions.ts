@@ -815,6 +815,13 @@ async function deepCopyRecipe(input: {
       yield_unit: original.yield_unit || null,
       yield_description: original.yield_description || null,
       dietary_tags: original.dietary_tags || [],
+      // Peak window fields (prep timeline data)
+      peak_hours_min: original.peak_hours_min ?? null,
+      peak_hours_max: original.peak_hours_max ?? null,
+      safety_hours_max: original.safety_hours_max ?? null,
+      storage_method: original.storage_method ?? null,
+      freezable: original.freezable ?? false,
+      frozen_extends_hours: original.frozen_extends_hours ?? null,
       created_by: toUserId,
       updated_by: toUserId,
     })

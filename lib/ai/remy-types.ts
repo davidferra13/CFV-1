@@ -138,6 +138,10 @@ export interface RemyContext {
     prepReady?: boolean
     groceryReady?: boolean
     timelineReady?: boolean
+    // Prep timeline data (from peak windows engine)
+    groceryDeadline?: string | null
+    prepStartDate?: string | null
+    untimedRecipeCount?: number
   }>
   recentClients?: Array<{
     id: string

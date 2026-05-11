@@ -9,6 +9,8 @@ import { PDFLayout } from './pdf-layout'
 import { FONT } from './pdf-design-tokens'
 import { format, parseISO } from 'date-fns'
 import { dateToDateString } from '@/lib/utils/format'
+import { getEventPrepTimeline } from '@/lib/prep-timeline/actions'
+import { formatPrepTime } from '@/lib/prep-timeline/compute-timeline'
 
 // ─── Types ───────────────────────────────────────────────────────────────────
 
@@ -75,6 +77,11 @@ export type PrepSheetData = {
   clientPreferences: ClientPreferences | null
   dishes: PrepDish[]
   components: PrepComponent[]
+  // Prep timeline data (from peak windows engine)
+  groceryDeadline: string | null
+  prepStartDate: string | null
+  totalPrepMinutes: number | null
+  prepDayCount: number | null
 }
 
 // ─── Helpers ─────────────────────────────────────────────────────────────────
@@ -236,6 +243,27 @@ export async function fetchPrepSheetData(eventId: string): Promise<PrepSheetData
       clientPreferences.regularGuests.some((g) => g.notes) ||
       clientPreferences.regularGuests.length > 0)
 
+  // Compute prep timeline from peak windows (non-blocking)
+  let groceryDeadline: string | null = null
+  let prepStartDate: string | null = null
+  let totalPrepMinutes: number | null = null
+  let prepDayCount: number | null = null
+  try {
+    const { timeline } = await getEventPrepTimeline(eventId)
+    if (timeline) {
+      if (timeline.groceryDeadline) {
+        groceryDeadline = format(timeline.groceryDeadline, 'EEE, MMM d')
+      }
+      if (timeline.days.length > 0) {
+        prepStartDate = format(timeline.days[0].date, 'EEE, MMM d')
+        prepDayCount = timeline.days.filter((d) => d.items.length > 0).length
+      }
+      totalPrepMinutes = timeline.days.reduce((sum, d) => sum + d.totalPrepMinutes, 0) || null
+    }
+  } catch {
+    // Non-blocking: prep timeline computation failure should not prevent PDF generation
+  }
+
   return {
     event: {
       occasion: event.occasion,
@@ -259,6 +287,10 @@ export async function fetchPrepSheetData(eventId: string): Promise<PrepSheetData
       dietary_tags: (d.dietary_tags as string[]) || [],
     })),
     components,
+    groceryDeadline,
+    prepStartDate,
+    totalPrepMinutes,
+    prepDayCount,
   }
 }
 
@@ -308,6 +340,16 @@ export function renderPrepSheet(pdf: PDFLayout, data: PrepSheetData) {
     .join(', ')
   if (location) {
     pdf.text(`Location: ${location}`, 8, 'normal', 0)
+  }
+
+  // Prep timeline summary from peak windows engine
+  const prepParts: string[] = []
+  if (data.groceryDeadline) prepParts.push(`Shop by: ${data.groceryDeadline}`)
+  if (data.prepStartDate) prepParts.push(`Prep starts: ${data.prepStartDate}`)
+  if (data.totalPrepMinutes) prepParts.push(`Total prep: ${formatPrepTime(data.totalPrepMinutes)}`)
+  if (data.prepDayCount && data.prepDayCount > 1) prepParts.push(`${data.prepDayCount} prep days`)
+  if (prepParts.length > 0) {
+    pdf.text(prepParts.join('  |  '), 8, 'bold', 0)
   }
 
   // ─── Guest Preference Notes ────────────────────────────────────────────────

@@ -11,6 +11,7 @@ import { FONT, SPACING, COLOR } from './pdf-design-tokens'
 import { format, parseISO } from 'date-fns'
 import { dateToDateString } from '@/lib/utils/format'
 import { convertQuantity } from '@/lib/units/conversion-engine'
+import { getEventPrepTimeline } from '@/lib/prep-timeline/actions'
 
 // ─── Types ────────────────────────────────────────────────────────────────────
 
@@ -72,6 +73,8 @@ export type GroceryListData = {
   hasStop2: boolean
   // Allergy alert - safety-critical
   allergies: string[]
+  // Prep timeline: computed grocery deadline
+  groceryDeadline: string | null
 }
 
 // ─── Category → Section Mapping ───────────────────────────────────────────────
@@ -268,6 +271,7 @@ export async function fetchGroceryListData(eventId: string): Promise<GroceryList
       totalBuyItems: 0,
       hasStop2: false,
       allergies: event.allergies ?? [],
+      groceryDeadline: null,
     }
   }
 
@@ -553,6 +557,17 @@ export async function fetchGroceryListData(eventId: string): Promise<GroceryList
     for (const a of clientData?.allergies ?? []) allAllergies.add(a.trim())
   }
 
+  // Compute grocery deadline from prep timeline (non-blocking)
+  let groceryDeadline: string | null = null
+  try {
+    const { timeline } = await getEventPrepTimeline(eventId)
+    if (timeline?.groceryDeadline) {
+      groceryDeadline = format(timeline.groceryDeadline, 'EEE, MMM d')
+    }
+  } catch {
+    // Non-blocking: timeline failure should not prevent grocery list generation
+  }
+
   return {
     event: {
       occasion: event.occasion,
@@ -577,6 +592,7 @@ export async function fetchGroceryListData(eventId: string): Promise<GroceryList
     totalBuyItems,
     hasStop2: stop2Items.length > 0,
     allergies: Array.from(allAllergies),
+    groceryDeadline,
   }
 }
 
@@ -628,11 +644,15 @@ export function renderGroceryList(pdf: PDFLayout, data: GroceryListData) {
     parseISO(dateToDateString(event.event_date as Date | string)),
     'EEE, MMM d, yyyy'
   )
-  pdf.headerBar([
+  const headerFields: [string, string][] = [
     ['Client', clientName],
     ['Covers', String(event.guest_count)],
     ['Date', dateStr],
-  ])
+  ]
+  if (data.groceryDeadline) {
+    headerFields.push(['Shop By', data.groceryDeadline])
+  }
+  pdf.headerBar(headerFields)
 
   // Budget line
   const budgetParts: string[] = []

@@ -53,10 +53,21 @@ export type ScheduleConflict = {
   eventCount: number
 }
 
+export type PrepDayInfo = {
+  eventId: string
+  occasion: string | null
+  clientName: string
+  eventDate: string
+}
+
 export type DailyReportContent = {
   // Today's Schedule
   eventsToday: DailyReportEvent[]
   upcomingEventsNext7d: number
+
+  // Prep deadlines for today
+  prepDayFor?: PrepDayInfo[]
+  groceryDeadlineFor?: PrepDayInfo[]
 
   // Pipeline
   newInquiriesToday: number
