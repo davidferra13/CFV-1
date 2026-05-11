@@ -31,6 +31,12 @@ export default async function DemandForecastPage() {
             Seasonal booking patterns to help you plan capacity, pricing, and outreach.
           </p>
         </div>
+        <Link
+          href="/analytics/demand/ingredients"
+          className="px-4 py-2 rounded-lg bg-brand-600 text-white text-sm font-medium hover:bg-brand-700 transition-colors shrink-0"
+        >
+          Ingredient Demand
+        </Link>
       </div>
 
       {heatmapData ? (
