@@ -942,6 +942,25 @@ export default async function SettingsPage() {
             </div>
           </SettingsCategory>
 
+          {/* ── 16b. Data Quality ──────────────────────────────── */}
+          <SettingsCategory
+            title="Data Quality"
+            description="Detect and merge duplicate clients, ingredients, and recipes to keep your data clean."
+            icon="Database"
+            tone="amber"
+          >
+            <Link
+              href="/settings/data-quality"
+              className="block border border-amber-700 rounded-lg p-4 bg-amber-950/40 hover:bg-amber-950 transition-colors"
+            >
+              <p className="font-semibold text-amber-200">Duplicate Detection</p>
+              <p className="text-sm text-amber-400 mt-1">
+                Find similar names, shared emails, and overlapping ingredients. Merge duplicates or
+                dismiss false positives.
+              </p>
+            </Link>
+          </SettingsCategory>
+
           {/* ── 17. API & Developer ──────────────────────────────── */}
           {developerToolsEnabled && (
             <SettingsCategory
