@@ -14,8 +14,12 @@ import {
 import { buildMarketingSourceHref } from '@/lib/marketing/source-links'
 import { buildOperatorWalkthroughHref } from '@/lib/marketing/walkthrough-links'
 import { buildMarketingMetadata } from '@/lib/site/public-site'
-import { HomepageSearch } from './_components/homepage-search'
+import { HomepageDiscovery } from './_components/homepage-discovery'
 import { ScrollReveal } from './_components/scroll-reveal'
+import { getPublicPlatformStats } from '@/lib/directory/public-stats'
+import { getDiscoverableChefs } from '@/lib/directory/actions'
+import { getPublicSeasonalMarketPulse } from '@/lib/public/public-seasonal-market-pulse'
+import type { FeaturedChefRailData, DiscoveryRailItem } from './_components/cuisine-marquee'
 
 export const revalidate = 60
 
@@ -101,7 +105,103 @@ const FEATURE_CARDS = [
   },
 ] as const
 
-export default function Home() {
+import React from 'react'
+import type { PublicPlatformStats } from '@/lib/directory/public-stats'
+
+/** Renders only the stat badges that are backed by real platform data. Hidden when all stats are null. */
+function HeroStatBadges({ stats }: { stats: PublicPlatformStats }) {
+  const items: { value: string; label: string }[] = []
+
+  if (stats.verifiedChefCount !== null) {
+    items.push({ value: String(stats.verifiedChefCount), label: 'Verified chefs' })
+  }
+  if (stats.cuisineTypeCount !== null) {
+    items.push({ value: String(stats.cuisineTypeCount), label: 'Cuisine types' })
+  }
+  if (stats.cityCoveredCount !== null) {
+    items.push({ value: String(stats.cityCoveredCount), label: 'Cities covered' })
+  }
+  if (stats.avgRating !== null) {
+    items.push({ value: stats.avgRating.toFixed(1), label: 'Avg. rating' })
+  }
+
+  if (items.length === 0) return null
+
+  return (
+    <div className="mt-10 flex flex-col items-center gap-5 sm:mt-12">
+      <div className="flex flex-wrap items-center justify-center gap-x-8 gap-y-4 rounded-2xl border border-[#4a3020]/40 bg-[#1a0e08]/60 px-8 py-4 backdrop-blur-sm">
+        {items.map((item, i) => (
+          <React.Fragment key={item.label}>
+            {i > 0 && <div className="h-8 w-px bg-[#5c3520]/40" />}
+            <div className="hero-stat-badge">
+              <span className="hero-stat-badge-value">{item.value}</span>
+              <span className="hero-stat-badge-label">{item.label}</span>
+            </div>
+          </React.Fragment>
+        ))}
+      </div>
+    </div>
+  )
+}
+
+export default async function Home() {
+  const [platformStats, allChefs, seasonalPulse] = await Promise.all([
+    getPublicPlatformStats(),
+    getDiscoverableChefs(),
+    getPublicSeasonalMarketPulse().catch(() => null),
+  ])
+
+  // Select up to 5 featured chefs for the discovery rail.
+  // Prefer chefs with: cuisine info, city/state, and profile image.
+  // Avoid test/demo accounts (already filtered by getDiscoverableChefs).
+  const featuredChefs: FeaturedChefRailData[] = allChefs
+    .filter((c) => c.slug && c.display_name && c.discovery.cuisine_types.length > 0)
+    .sort((a, b) => {
+      // Prefer chefs with more complete profile data
+      const scoreA =
+        (a.profile_image_url ? 2 : 0) +
+        (a.discovery.service_area_city ? 1 : 0) +
+        (a.is_founder ? 1 : 0)
+      const scoreB =
+        (b.profile_image_url ? 2 : 0) +
+        (b.discovery.service_area_city ? 1 : 0) +
+        (b.is_founder ? 1 : 0)
+      return scoreB - scoreA
+    })
+    .slice(0, 5)
+    .map((c) => ({
+      slug: c.slug!,
+      displayName: c.display_name,
+      primaryCuisine: c.discovery.cuisine_types[0] ?? null,
+      city: c.discovery.service_area_city ?? null,
+      state: c.discovery.service_area_state ?? null,
+    }))
+
+  // Build culinary signal rail items from the seasonal market pulse.
+  // These are seasonal ingredient discovery inserts routed to /ingredients.
+  // Derived from the public seasonal calendar — no fake events or external data.
+  const culinarySignals: DiscoveryRailItem[] = seasonalPulse
+    ? [
+        ...seasonalPulse.peakNow.slice(0, 2).map(
+          (ingredient): DiscoveryRailItem => ({
+            type: 'culinary_signal',
+            label: ingredient.name,
+            sublabel: `In season · ${seasonalPulse.season.name}`,
+            href: '/ingredients',
+          })
+        ),
+        ...(seasonalPulse.endingSoon
+          ? [
+              {
+                type: 'culinary_signal' as const,
+                label: seasonalPulse.endingSoon.name,
+                sublabel: 'Ending soon',
+                href: '/ingredients',
+              },
+            ]
+          : []),
+      ].slice(0, 3)
+    : []
   return (
     <main>
       <PublicPageView
@@ -123,13 +223,20 @@ export default function Home() {
           <div className="absolute inset-0 bg-[radial-gradient(ellipse_90%_60%_at_50%_40%,_rgba(120,60,20,0.55),_transparent)]" />
           <div className="absolute inset-0 bg-[radial-gradient(ellipse_70%_50%_at_30%_20%,_rgba(80,35,10,0.4),_transparent)]" />
           <div className="absolute inset-0 bg-[radial-gradient(ellipse_50%_40%_at_70%_70%,_rgba(60,25,5,0.3),_transparent)]" />
+          {/* Extra depth glow spots */}
+          <div className="absolute top-1/4 right-1/4 h-72 w-72 rounded-full bg-[radial-gradient(ellipse,_rgba(180,80,20,0.18),_transparent_70%)] blur-2xl" />
+          <div className="absolute bottom-1/3 left-1/5 h-56 w-56 rounded-full bg-[radial-gradient(ellipse,_rgba(220,120,40,0.12),_transparent_70%)] blur-2xl" />
         </div>
 
         <div className="relative mx-auto w-full max-w-4xl px-4 pb-16 pt-20 sm:px-6 sm:pb-24 sm:pt-28 lg:px-8 lg:pb-28 lg:pt-32">
           <div className="text-center">
-            <h1 className="font-display-serif mx-auto max-w-3xl text-5xl font-bold tracking-tight sm:text-6xl lg:text-7xl">
-              <span className="homepage-hero-shimmer">Find a private chef</span>
-              <span className="homepage-hero-shimmer-orange block">near you</span>
+            <h1 className="font-display-serif mx-auto max-w-3xl text-5xl font-extrabold tracking-[-0.02em] sm:text-6xl lg:text-7xl lg:tracking-[-0.03em]">
+              <span className="homepage-hero-shimmer hero-line hero-line-1">
+                Find a private chef
+              </span>
+              <span className="homepage-hero-shimmer-orange hero-line hero-line-2 block">
+                near you
+              </span>
             </h1>
             <p className="mx-auto mt-6 max-w-xl text-lg font-light leading-relaxed text-stone-300 sm:text-xl">
               Browse by cuisine, location, or occasion. Connect directly with vetted chefs for
@@ -137,25 +244,10 @@ export default function Home() {
             </p>
           </div>
 
-          <div className="mx-auto mt-10 max-w-2xl sm:mt-12">
-            <HomepageSearch />
-          </div>
+          <HomepageDiscovery featuredChefs={featuredChefs} culinarySignals={culinarySignals} />
 
-          {/* Social proof strip */}
-          <div className="mt-10 flex flex-col items-center gap-4 sm:mt-12">
-            <div className="flex -space-x-2">
-              {[1, 2, 3, 4, 5].map((i) => (
-                <div
-                  key={i}
-                  className="h-9 w-9 rounded-full border-2 border-[#1a0e08] bg-gradient-to-br from-[#8b5e3c]/70 to-[#5c3520]/70"
-                  aria-hidden="true"
-                />
-              ))}
-            </div>
-            <p className="text-sm font-medium text-[#a08672]">
-              Trusted by private chefs, caterers, and meal prep professionals nationwide
-            </p>
-          </div>
+          {/* Social proof: stat badges - only rendered when backed by real platform data */}
+          <HeroStatBadges stats={platformStats} />
 
           <div className="mt-8 flex flex-col items-center gap-3 sm:flex-row sm:justify-center">
             <TrackedLink
@@ -165,7 +257,7 @@ export default function Home() {
                 section: 'consumer_hero',
                 destination: PUBLIC_CONSUMER_DISCOVERY_ENTRY.href,
               }}
-              className="inline-flex min-h-14 items-center justify-center rounded-2xl gradient-accent px-8 text-base font-semibold text-white shadow-lg transition-all hover:-translate-y-0.5 hover:shadow-xl active:scale-[0.98]"
+              className="inline-flex min-h-14 items-center justify-center rounded-2xl gradient-accent px-8 text-base font-semibold text-white shadow-lg shadow-[#8b4513]/30 transition-all hover:-translate-y-0.5 hover:shadow-xl hover:shadow-[#8b4513]/40 active:scale-[0.98]"
             >
               Find food now
             </TrackedLink>

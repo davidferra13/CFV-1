@@ -1,4 +1,5 @@
 import type { ClientPattern } from './preference-learning-actions'
+import { canonicalizeCuisineSlug, getCuisineDisplayName } from '@/lib/constants/cuisines'
 
 const RELATIONSHIP_SIGNAL_META = {
   favorite_cuisine: { label: 'Favorite cuisine', order: 10 },
@@ -64,6 +65,22 @@ function uniqueStrings(values: string[] | null | undefined): string[] {
   return result
 }
 
+function cuisineKey(value: string): string {
+  return canonicalizeCuisineSlug(value) ?? value.trim().toLowerCase()
+}
+
+function displaySignalValue(kind: RelationshipSignalKind, value: string): string {
+  return kind === 'favorite_cuisine' ? getCuisineDisplayName(value) : toDisplayValue(value)
+}
+
+function patternDedupeKey(pattern: ClientPattern): string {
+  if (pattern.patternType === 'favorite_cuisine') {
+    return `${pattern.patternType}:${cuisineKey(pattern.patternValue)}`
+  }
+
+  return `${pattern.patternType}:${pattern.patternValue.trim().toLowerCase()}`
+}
+
 function sortSignals(signals: ClientRelationshipSignal[]): ClientRelationshipSignal[] {
   return [...signals].sort((left, right) => {
     const byOrder =
@@ -88,10 +105,10 @@ function buildProfileSignals(client: ProfileSignalSource): ClientRelationshipSig
 
   for (const value of uniqueStrings(client.favorite_cuisines)) {
     signals.push({
-      id: `client_record:favorite_cuisine:${value.toLowerCase()}`,
+      id: `client_record:favorite_cuisine:${cuisineKey(value)}`,
       kind: 'favorite_cuisine',
       label: RELATIONSHIP_SIGNAL_META.favorite_cuisine.label,
-      value,
+      value: getCuisineDisplayName(value),
       source: 'client_record',
       sourceLabel: 'Profile',
       freshness: updatedAt,
@@ -139,7 +156,7 @@ function dedupePatterns(patterns: ClientPattern[]): ClientPattern[] {
 
   for (const pattern of patterns) {
     if (!(pattern.patternType in RELATIONSHIP_SIGNAL_META)) continue
-    const key = `${pattern.patternType}:${pattern.patternValue.trim().toLowerCase()}`
+    const key = patternDedupeKey(pattern)
     const current = bestByKey.get(key)
     if (!current) {
       bestByKey.set(key, pattern)
@@ -180,10 +197,14 @@ export function buildClientRelationshipSignalSnapshot(
       .map((pattern) => {
         const kind = pattern.patternType as RelationshipSignalKind
         return {
-          id: `learned_pattern:${kind}:${pattern.patternValue.trim().toLowerCase()}`,
+          id: `learned_pattern:${kind}:${
+            kind === 'favorite_cuisine'
+              ? cuisineKey(pattern.patternValue)
+              : pattern.patternValue.trim().toLowerCase()
+          }`,
           kind,
           label: RELATIONSHIP_SIGNAL_META[kind].label,
-          value: toDisplayValue(pattern.patternValue),
+          value: displaySignalValue(kind, pattern.patternValue),
           source: 'learned_pattern' as const,
           sourceLabel: 'Learned',
           freshness: pattern.lastSeenAt,

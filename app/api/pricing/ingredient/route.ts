@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { lookupPrice } from '@/lib/pricing/universal-price-lookup'
 import { getCurrentUser } from '@/lib/auth/get-user'
+import { resolveCurrentUserLocation } from '@/lib/location/account-location'
 
 /**
  * GET /api/pricing/ingredient?q=chicken+breast&zip=02101&amount=2&unit=lb
@@ -14,7 +15,11 @@ export async function GET(request: NextRequest) {
     return NextResponse.json({ error: 'Authentication required' }, { status: 401 })
   }
   const q = request.nextUrl.searchParams.get('q')
-  const zip = request.nextUrl.searchParams.get('zip') || undefined
+  let zip = request.nextUrl.searchParams.get('zip') || undefined
+  if (!zip) {
+    const acctLoc = await resolveCurrentUserLocation()
+    zip = acctLoc?.zip || undefined
+  }
   const amount = parseFloat(request.nextUrl.searchParams.get('amount') || '1')
   const unit = request.nextUrl.searchParams.get('unit') || undefined
 

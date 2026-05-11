@@ -17,6 +17,11 @@ import { FormShield } from '@/components/forms/form-shield'
 import { useIdempotentMutation } from '@/lib/offline/use-idempotent-mutation'
 import { mapErrorToUI } from '@/lib/errors/map-error-to-ui'
 import { AddressAutocomplete } from '@/components/ui/address-autocomplete'
+import {
+  getCuisineDisplayName,
+  getCuisineOptions,
+  normalizeCuisineList,
+} from '@/lib/constants/cuisines'
 
 // ─── Validation Schema ──────────────────────────────────────────────────────
 
@@ -223,31 +228,11 @@ function ChildrenManager({
 
 // ─── Main Form ────────────────────────────────────────────────────────────────
 
-const CUISINE_SUGGESTIONS = [
-  'Italian',
-  'French',
-  'Japanese',
-  'Mexican',
-  'Thai',
-  'Indian',
-  'Chinese',
-  'Mediterranean',
-  'Korean',
-  'Spanish',
-  'Greek',
-  'Vietnamese',
-  'Peruvian',
-  'Middle Eastern',
-  'Southern',
-  'Cajun/Creole',
-  'Caribbean',
-  'Ethiopian',
-  'Turkish',
-  'American',
-  'Farm-to-Table',
-  'Seafood',
-  'BBQ/Grilling',
-]
+const CUISINE_SUGGESTIONS = getCuisineOptions({
+  minPopularity: 58,
+  limit: 30,
+  excludeOther: true,
+}).map((cuisine) => cuisine.label)
 
 const RESTRICTION_SUGGESTIONS = [
   'Vegetarian',
@@ -557,7 +542,10 @@ export function ClientCreateForm({ tenantId }: { tenantId: string }) {
         // Dietary (extended - allergies & restrictions already sent above)
         if (dislikes.length > 0) payload.dislikes = dislikes
         if (spiceTolerance) payload.spice_tolerance = spiceTolerance
-        if (favoriteCuisines.length > 0) payload.favorite_cuisines = favoriteCuisines
+        if (favoriteCuisines.length > 0)
+          payload.favorite_cuisines = normalizeCuisineList(favoriteCuisines, {
+            allowCustom: true,
+          })
         if (favoriteDishes.length > 0) payload.favorite_dishes = favoriteDishes
         if (wineBeveragePrefs.trim()) payload.wine_beverage_preferences = wineBeveragePrefs.trim()
 
@@ -875,8 +863,10 @@ export function ClientCreateForm({ tenantId }: { tenantId: string }) {
                 </Select>
                 <TagArrayInput
                   label="Favorite Cuisines"
-                  value={favoriteCuisines}
-                  onChange={setFavoriteCuisines}
+                  value={favoriteCuisines.map(getCuisineDisplayName)}
+                  onChange={(values) =>
+                    setFavoriteCuisines(normalizeCuisineList(values, { allowCustom: true }))
+                  }
                   placeholder="e.g. Italian, Japanese"
                   suggestions={CUISINE_SUGGESTIONS}
                 />

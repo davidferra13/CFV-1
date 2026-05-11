@@ -163,4 +163,64 @@ describe('client profile service', () => {
     )
     assert.ok(recommendation.confidenceJustification.length > 0)
   })
+
+  it('matches candidate cuisines through registry hierarchy expansion', () => {
+    const vector = buildCulinaryProfileVector(
+      makeBaseBundle({
+        client: {
+          id: 'client-3',
+          full_name: 'Sam Rivera',
+          preferred_name: 'Sam',
+          dietary_restrictions: [],
+          dietary_protocols: [],
+          allergies: [],
+          dislikes: [],
+          spice_tolerance: 'mild',
+          favorite_cuisines: ['Mediterranean'],
+          favorite_dishes: [],
+          preferred_service_style: 'family_style',
+          updated_at: '2026-04-22T10:00:00.000Z',
+        },
+      })
+    )
+
+    const recommendation = recommendCandidateMealsAgainstVector(vector, {
+      candidates: [
+        {
+          id: 'meal-1',
+          title: 'Greek Mezze',
+          cuisineTags: ['Greek'],
+          ingredientTags: ['olive', 'feta'],
+          dishTags: ['mezze'],
+          flavorTags: ['bright'],
+          serviceDepth: 'casual_family_style',
+          courseCount: 1,
+          comfortScore: 0.7,
+          boldScore: 0.4,
+          complexityScore: 0.3,
+        },
+        {
+          id: 'meal-2',
+          title: 'Neutral Supper',
+          cuisineTags: ['American'],
+          ingredientTags: ['potato'],
+          dishTags: ['supper'],
+          flavorTags: ['mild'],
+          serviceDepth: 'casual_family_style',
+          courseCount: 1,
+          comfortScore: 0.7,
+          boldScore: 0.4,
+          complexityScore: 0.3,
+        },
+      ],
+    })
+
+    assert.equal(recommendation.status, 'ready')
+    assert.equal(recommendation.recommendedMeal?.id, 'meal-1')
+    assert.ok(
+      recommendation.confidenceJustification.some(
+        (item) => item.label === 'Matched preference: Mediterranean'
+      )
+    )
+  })
 })

@@ -5,6 +5,7 @@ import {
   buildPriceStateReliability,
   priceStateReliabilityApiShape,
 } from '@/lib/pricing/price-state-reliability'
+import { getLocationOrDetect } from '@/lib/location/account-location'
 
 export const dynamic = 'force-dynamic'
 
@@ -35,7 +36,11 @@ export async function GET(request: NextRequest) {
     return NextResponse.json({ error: 'Missing required parameter: ingredient' }, { status: 400 })
   }
 
-  const zipCode = searchParams.get('zip') || undefined
+  let zipCode = searchParams.get('zip') || undefined
+  if (!zipCode) {
+    const { location } = await getLocationOrDetect()
+    zipCode = location?.zip || undefined
+  }
   const radiusMiles = searchParams.get('radius')
     ? parseInt(searchParams.get('radius')!, 10)
     : undefined

@@ -8,6 +8,7 @@ import {
 } from '@/lib/openclaw/ingredient-knowledge-queries'
 import { isKnowledgeIngredientPubliclyIndexable } from '@/lib/openclaw/public-ingredient-publish'
 import { COMPARE_PAGES } from '@/lib/marketing/compare-pages'
+import { listPublicCuisinePages } from '@/lib/discovery/cuisine-pages'
 
 const BASE_URL = (
   process.env.NEXT_PUBLIC_APP_URL ||
@@ -139,6 +140,12 @@ const STATIC_ROUTES: MetadataRoute.Sitemap = [
     priority: 0.4,
   },
   {
+    url: `${BASE_URL}/cannabis/public`,
+    lastModified: new Date(),
+    changeFrequency: 'monthly',
+    priority: 0.45,
+  },
+  {
     url: `${BASE_URL}/privacy`,
     lastModified: new Date(),
     changeFrequency: 'yearly',
@@ -151,6 +158,13 @@ const STATIC_ROUTES: MetadataRoute.Sitemap = [
     priority: 0.3,
   },
 ]
+
+const CUISINE_ROUTES: MetadataRoute.Sitemap = listPublicCuisinePages().map((page) => ({
+  url: `${BASE_URL}/cuisines/${page.slug}`,
+  lastModified: new Date(),
+  changeFrequency: 'monthly' as const,
+  priority: page.popularity >= 90 ? 0.75 : page.popularity >= 75 ? 0.7 : 0.65,
+}))
 
 export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
   try {
@@ -286,6 +300,7 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
 
     return [
       ...STATIC_ROUTES,
+      ...CUISINE_ROUTES,
       ...compareRoutes,
       ...chefRoutes,
       ...storeRoutes,
@@ -298,6 +313,6 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     ]
   } catch {
     // If DB is unavailable, return static routes only - don't break the build
-    return STATIC_ROUTES
+    return [...STATIC_ROUTES, ...CUISINE_ROUTES]
   }
 }

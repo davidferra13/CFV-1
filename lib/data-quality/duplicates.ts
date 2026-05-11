@@ -43,7 +43,7 @@ function levenshteinDistance(a: string, b: string): number {
  * Calculate similarity between two strings as a normalized 0-1 score.
  * 1.0 = identical, 0.0 = completely different.
  */
-export function calculateSimilarity(a: string, b: string): number {
+function calculateSimilarity(a: string, b: string): number {
   const na = normalize(a)
   const nb = normalize(b)
   if (na === nb) return 1.0
@@ -244,11 +244,7 @@ export async function findDuplicateClients(): Promise<DuplicateMatch<ClientDupli
             item2: c2,
             similarity: sim,
             matchReason:
-              sim === 1.0
-                ? 'Identical name'
-                : sim >= 0.9
-                  ? 'Very similar name'
-                  : 'Similar name',
+              sim === 1.0 ? 'Identical name' : sim >= 0.9 ? 'Very similar name' : 'Similar name',
           })
         }
       }
@@ -321,12 +317,7 @@ export async function findDuplicateIngredients(): Promise<
       } else {
         sim = calculateSimilarity(a.name, b.name)
         if (sim < INGREDIENT_SIMILARITY_THRESHOLD) continue
-        reason =
-          sim === 1.0
-            ? 'Identical name'
-            : sim >= 0.9
-              ? 'Very similar name'
-              : 'Similar name'
+        reason = sim === 1.0 ? 'Identical name' : sim >= 0.9 ? 'Very similar name' : 'Similar name'
       }
 
       // Also check if one name contains the other
@@ -417,11 +408,7 @@ export async function findDuplicateRecipes(): Promise<DuplicateMatch<RecipeDupli
 
       if (nameSim >= RECIPE_SIMILARITY_THRESHOLD) {
         reason =
-          nameSim === 1.0
-            ? 'Identical name'
-            : nameSim >= 0.9
-              ? 'Very similar name'
-              : 'Similar name'
+          nameSim === 1.0 ? 'Identical name' : nameSim >= 0.9 ? 'Very similar name' : 'Similar name'
         if (ingredientOverlap >= 0.7) {
           similarity = Math.max(similarity, (nameSim + ingredientOverlap) / 2)
           reason += ' + shared ingredients'

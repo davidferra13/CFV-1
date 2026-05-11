@@ -396,6 +396,8 @@ export async function POST(request: NextRequest) {
       const chefEmail = (chef as any).email as string | null
       if (chefEmail) {
         const { sendNewInquiryChefEmail } = await import('@/lib/email/notifications')
+        const { isCannabisTenantById } = await import('@/lib/chef/cannabis-actions')
+        const isCannabis = await isCannabisTenantById(tenantId).catch(() => false)
         await sendNewInquiryChefEmail({
           chefEmail,
           chefName,
@@ -405,6 +407,7 @@ export async function POST(request: NextRequest) {
           guestCount: data.guest_count ?? null,
           source: 'website',
           inquiryId: inquiry.id,
+          cannabis: isCannabis,
         })
       }
     } catch (chefEmailErr) {

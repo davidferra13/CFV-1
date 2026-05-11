@@ -59,6 +59,7 @@ export const PUBLIC_ROUTE_ROLE: Record<string, PublicRouteRole> = {
   '/for-operators': 'operator_software',
   '/for-operators/walkthrough': 'operator_software',
   '/marketplace-chefs': 'operator_software',
+  '/cannabis/public': 'consumer_browse',
 }
 
 export const PUBLIC_MATCHED_CHEF_HELPER = PUBLIC_MATCHING_EXPLAINER_COPY

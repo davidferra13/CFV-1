@@ -24,6 +24,11 @@ import { useUnsavedChangesGuard } from '@/lib/navigation/use-unsaved-changes-gua
 import { useIdempotentMutation } from '@/lib/offline/use-idempotent-mutation'
 import { ValidationError } from '@/lib/errors/app-error'
 import { mapErrorToUI } from '@/lib/errors/map-error-to-ui'
+import {
+  canonicalizeCuisineSlug,
+  getCuisineDisplayName,
+  getCuisineOptions,
+} from '@/lib/constants/cuisines'
 
 // ─── Constants ────────────────────────────────────────────────────────────────
 
@@ -39,28 +44,11 @@ const SCENE_TYPES = [
   'Other',
 ]
 
-const CUISINE_SUGGESTIONS = [
-  'American',
-  'Italian',
-  'French',
-  'Japanese',
-  'Mediterranean',
-  'Mexican',
-  'Indian',
-  'Thai',
-  'Chinese',
-  'Greek',
-  'Spanish',
-  'Middle Eastern',
-  'Farm-to-Table',
-  'Modern American',
-  'Seasonal Local',
-  'New American',
-  'Pan-Asian',
-  'Latin',
-  'Nordic',
-  'Fusion',
-]
+const CUISINE_OPTIONS = getCuisineOptions({
+  minPopularity: 58,
+  limit: 30,
+  excludeOther: true,
+})
 
 const COURSE_LABEL_SUGGESTIONS = [
   'Amuse-Bouche',
@@ -219,7 +207,7 @@ export function CreateMenuForm({ tenantId }: { tenantId: string }) {
   const applyFormData = (data: DraftData) => {
     setName(data.name)
     setDescription(data.description)
-    setCuisineType(data.cuisine_type)
+    setCuisineType(canonicalizeCuisineSlug(data.cuisine_type) ?? data.cuisine_type)
     setSceneType(data.scene_type ?? '')
     setServiceStyle(data.service_style)
     setGuestCount(data.guest_count ?? '')
@@ -262,6 +250,7 @@ export function CreateMenuForm({ tenantId }: { tenantId: string }) {
 
   const handleSubmit = () => {
     setError('')
+    const cuisineTypeValue = canonicalizeCuisineSlug(cuisineType) ?? cuisineType.trim()
 
     if (!name.trim()) {
       setStep('metadata')
@@ -277,7 +266,7 @@ export function CreateMenuForm({ tenantId }: { tenantId: string }) {
           menuInput: {
             name: name.trim(),
             description: description || undefined,
-            cuisine_type: cuisineType || undefined,
+            cuisine_type: cuisineTypeValue || undefined,
             scene_type: sceneType || undefined,
             service_style: serviceStyle ? (serviceStyle as any) : undefined,
             target_guest_count: guestCount ? parseInt(guestCount, 10) : undefined,
@@ -337,7 +326,7 @@ export function CreateMenuForm({ tenantId }: { tenantId: string }) {
             menuId={createdMenuId}
             menuName={name}
             sceneType={sceneType || null}
-            cuisineType={cuisineType || null}
+            cuisineType={cuisineType ? getCuisineDisplayName(cuisineType) : null}
             serviceStyle={serviceStyle || null}
             guestCount={guestCount ? parseInt(guestCount, 10) : null}
             dishes={createdDishes.map((d: any, i: number) => ({
@@ -438,13 +427,15 @@ export function CreateMenuForm({ tenantId }: { tenantId: string }) {
                 <Input
                   type="text"
                   list="cuisine-suggestions"
-                  value={cuisineType}
-                  onChange={(e) => setCuisineType(e.target.value)}
+                  value={cuisineType ? getCuisineDisplayName(cuisineType) : ''}
+                  onChange={(e) =>
+                    setCuisineType(canonicalizeCuisineSlug(e.target.value) ?? e.target.value)
+                  }
                   placeholder="e.g., Italian, French"
                 />
                 <datalist id="cuisine-suggestions">
-                  {CUISINE_SUGGESTIONS.map((s) => (
-                    <option key={s} value={s} />
+                  {CUISINE_OPTIONS.map((cuisine) => (
+                    <option key={cuisine.value} value={cuisine.label} />
                   ))}
                 </datalist>
               </div>
@@ -696,7 +687,7 @@ export function CreateMenuForm({ tenantId }: { tenantId: string }) {
                           ? `${courses.length} course${courses.length !== 1 ? 's' : ''}`
                           : null,
                         serviceStyle || null,
-                        cuisineType || null,
+                        cuisineType ? getCuisineDisplayName(cuisineType) : null,
                         sceneType || null,
                       ]
                         .filter(Boolean)
@@ -731,7 +722,7 @@ export function CreateMenuForm({ tenantId }: { tenantId: string }) {
               <MenuAISuggestionsPanel
                 context={{
                   sceneType: sceneType || undefined,
-                  cuisineType: cuisineType || undefined,
+                  cuisineType: cuisineType ? getCuisineDisplayName(cuisineType) : undefined,
                   serviceStyle: serviceStyle || undefined,
                   guestCount: guestCount ? parseInt(guestCount, 10) : undefined,
                   season: season || undefined,

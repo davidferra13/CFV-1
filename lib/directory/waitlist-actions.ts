@@ -1,6 +1,7 @@
 'use server'
 
 import { headers } from 'next/headers'
+import { canonicalizeCuisineSlug } from '@/lib/constants/cuisines'
 import { createAdminClient } from '@/lib/db/admin'
 import {
   buildDirectoryWaitlistLocation,
@@ -298,8 +299,9 @@ export async function saveNearbySavedSearchAlert(input: {
     return { success: false, error: 'Select a valid business type or clear the category filter.' }
   }
 
-  const cuisine = cleanText(parsed.data.cuisine)
-  if (cuisine && !DIRECTORY_WAITLIST_CUISINES.has(cuisine)) {
+  const rawCuisine = cleanText(parsed.data.cuisine)
+  const cuisine = rawCuisine ? canonicalizeCuisineSlug(rawCuisine) || rawCuisine : ''
+  if (cuisine && !canonicalizeCuisineSlug(cuisine) && !DIRECTORY_WAITLIST_CUISINES.has(cuisine)) {
     return { success: false, error: 'Select a valid cuisine or leave it blank.' }
   }
 

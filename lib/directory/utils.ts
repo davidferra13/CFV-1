@@ -1,8 +1,10 @@
 import {
   DISCOVERY_PRICE_RANGE_LABELS,
+  canonicalizeDiscoveryCuisine,
   getDiscoveryCuisineLabel,
   getDiscoveryServiceTypeLabel,
 } from '@/lib/discovery/constants'
+import { normalizeCuisineList } from '@/lib/constants/cuisines'
 import { getDiscoveryLocationLabel } from '@/lib/discovery/profile'
 import type { DirectoryChef } from '@/lib/directory/actions'
 import {
@@ -157,13 +159,17 @@ export function buildStateFacets(chefs: DirectoryChef[]) {
 
 export function buildCuisineFacets(chefs: DirectoryChef[]) {
   return buildFacetFromValues(
-    chefs.flatMap((chef) =>
-      chef.discovery.cuisine_types.map((value) => ({
+    chefs.flatMap((chef) => {
+      const cuisineValues = normalizeCuisineList(chef.discovery.cuisine_types, {
+        includeAncestors: true,
+      })
+
+      return cuisineValues.map((value) => ({
         chefId: chef.id,
         value,
         label: getDiscoveryCuisineLabel(value),
       }))
-    )
+    })
   )
 }
 
@@ -344,6 +350,19 @@ function matchesLocationBestForFilter(chef: DirectoryChef, filter: string): bool
   )
 }
 
+function matchesCuisineFilter(chef: DirectoryChef, filter: string): boolean {
+  if (!filter) return true
+
+  const canonicalFilter = canonicalizeDiscoveryCuisine(filter)
+  if (!canonicalFilter) return false
+
+  const chefCuisineValues = normalizeCuisineList(chef.discovery.cuisine_types, {
+    includeAncestors: true,
+  })
+
+  return chefCuisineValues.includes(canonicalFilter)
+}
+
 export function filterDirectoryChefs(chefs: DirectoryChef[], filters: DirectoryFilters) {
   const normalizedQuery = filters.query.toLowerCase()
 
@@ -351,12 +370,7 @@ export function filterDirectoryChefs(chefs: DirectoryChef[], filters: DirectoryF
     if (normalizedQuery && !buildDirectorySearchHaystack(chef).includes(normalizedQuery))
       return false
     if (!hasStateCoverage(chef, filters.stateFilter)) return false
-    if (
-      filters.cuisineFilter &&
-      !chef.discovery.cuisine_types.some(
-        (value) => normalizeDirectoryValue(value) === filters.cuisineFilter
-      )
-    ) {
+    if (filters.cuisineFilter && !matchesCuisineFilter(chef, filters.cuisineFilter)) {
       return false
     }
     if (

@@ -10,6 +10,7 @@ import { createServerClient } from '@/lib/db/server'
 import { getSalesTaxRate, calculateSalesTax } from '@/lib/tax/api-ninjas'
 import type { TaxCalculation } from '@/lib/tax/api-ninjas'
 import type { TaxClass } from './constants'
+import { resolveCurrentUserLocation } from '@/lib/location/account-location'
 
 // ─── Types ────────────────────────────────────────────────────────
 
@@ -69,7 +70,11 @@ export async function computeSaleLineTax(saleId: string): Promise<SaleTaxResult 
 
   if (saleErr || !sale) throw new Error('Sale not found')
 
-  const zipCode = (sale as any).tax_zip_code
+  let zipCode: string | undefined = (sale as any).tax_zip_code
+  if (!zipCode) {
+    const acctLoc = await resolveCurrentUserLocation()
+    zipCode = acctLoc?.zip || undefined
+  }
   if (!zipCode) return null // No zip = no tax computation
 
   // Get jurisdiction rates

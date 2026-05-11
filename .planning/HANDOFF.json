@@ -1,6 +1,6 @@
 {
   "version": "1.0",
-  "timestamp": "2026-05-10T17:05:09.932Z",
+  "timestamp": "2026-05-11T22:01:25.930Z",
   "source": "auto-postool",
   "partial": false,
   "phase": null,
@@ -18,7 +18,7 @@
   "uncommitted_files": [
     {
       "status": "M",
-      "path": ".openclaw-deploy/captured-session.json"
+      "path": ".gitignore"
     },
     {
       "status": "M",
@@ -26,35 +26,75 @@
     },
     {
       "status": "M",
-      "path": "app/(admin)/admin/presence/page.tsx"
+      "path": "app/(chef)/clients/new/client-create-form.tsx"
     },
     {
       "status": "M",
-      "path": "app/(chef)/production/page.tsx"
-    },
-    {
-      "status": "D",
-      "path": "app/(chef)/schedule/loading.tsx"
-    },
-    {
-      "status": "D",
-      "path": "app/(chef)/schedule/page.tsx"
+      "path": "app/(chef)/layout.tsx"
     },
     {
       "status": "M",
-      "path": "app/(chef)/staff/live/page.tsx"
+      "path": "app/(chef)/menus/new/create-menu-form.tsx"
     },
     {
       "status": "M",
-      "path": "app/(chef)/stations/page.tsx"
+      "path": "app/(chef)/settings/account/page.tsx"
     },
     {
       "status": "M",
-      "path": "app/book/[chefSlug]/booking-page-client.tsx"
+      "path": "app/(chef)/settings/system/page.tsx"
     },
     {
       "status": "M",
-      "path": "app/book/[chefSlug]/page.tsx"
+      "path": "app/(client)/my-profile/client-profile-form.tsx"
+    },
+    {
+      "status": "M",
+      "path": "app/(client)/my-profile/meal-collaboration-panel.tsx"
+    },
+    {
+      "status": "M",
+      "path": "app/(client)/my-profile/page.tsx"
+    },
+    {
+      "status": "M",
+      "path": "app/(public)/_components/homepage-search.tsx"
+    },
+    {
+      "status": "M",
+      "path": "app/(public)/_components/landing-below-fold.tsx"
+    },
+    {
+      "status": "M",
+      "path": "app/(public)/cannabis/public/page.tsx"
+    },
+    {
+      "status": "M",
+      "path": "app/(public)/page.tsx"
+    },
+    {
+      "status": "M",
+      "path": "app/api/book/route.ts"
+    },
+    {
+      "status": "M",
+      "path": "app/api/embed/inquiry/route.ts"
+    },
+    {
+      "status": "M",
+      "path": "app/api/pie/v1/price/batch/route.ts"
+    },
+    {
+      "status": "M",
+      "path": "app/api/pie/v1/price/route.ts"
+    },
+    {
+      "status": "M",
+      "path": "app/api/pricing/ingredient/route.ts"
+    },
+    {
+      "status": "M",
+      "path": "app/api/pricing/recipe/route.ts"
     },
     {
       "status": "M",
@@ -66,11 +106,39 @@
     },
     {
       "status": "M",
-      "path": "docs/chefflow-product-definition.md"
+      "path": "app/sitemap.ts"
     },
     {
       "status": "M",
-      "path": "docs/feature-inventory.md"
+      "path": "components/culinary/MenuEditor.tsx"
+    },
+    {
+      "status": "M",
+      "path": "components/culinary/menu-context-sidebar.tsx"
+    },
+    {
+      "status": "M",
+      "path": "components/feedback/global-report-button.tsx"
+    },
+    {
+      "status": "M",
+      "path": "components/menus/menu-doc-editor.tsx"
+    },
+    {
+      "status": "M",
+      "path": "components/menus/menu-preferences-form.tsx"
+    },
+    {
+      "status": "M",
+      "path": "components/navigation/chef-mobile-nav.tsx"
+    },
+    {
+      "status": "M",
+      "path": "components/navigation/chef-nav.tsx"
+    },
+    {
+      "status": "M",
+      "path": "components/onboarding/onboarding-steps/profile-step.tsx"
     },
     {
       "status": "M",
@@ -82,7 +150,79 @@
     },
     {
       "status": "M",
-      "path": "next.config.js"
+      "path": "lib/chef/cannabis-actions.ts"
+    },
+    {
+      "status": "M",
+      "path": "lib/clients/client-profile-actions.ts"
+    },
+    {
+      "status": "M",
+      "path": "lib/clients/client-profile-chef-workflow.ts"
+    },
+    {
+      "status": "M",
+      "path": "lib/clients/client-profile-service.ts"
+    },
+    {
+      "status": "M",
+      "path": "lib/clients/culinary-signals.ts"
+    },
+    {
+      "status": "M",
+      "path": "lib/clients/menu-history.ts"
+    },
+    {
+      "status": "M",
+      "path": "lib/clients/relationship-signals.ts"
+    },
+    {
+      "status": "M",
+      "path": "lib/commerce/tax-actions.ts"
+    },
+    {
+      "status": "M",
+      "path": "lib/data-quality/duplicates.ts"
+    },
+    {
+      "status": "M",
+      "path": "lib/directory/utils.ts"
+    },
+    {
+      "status": "M",
+      "path": "lib/directory/waitlist-actions.ts"
+    },
+    {
+      "status": "M",
+      "path": "lib/discover/constants.ts"
+    },
+    {
+      "status": "M",
+      "path": "lib/discovery/constants.ts"
+    },
+    {
+      "status": "M",
+      "path": "lib/email/notifications.ts"
+    },
+    {
+      "status": "M",
+      "path": "lib/public/public-surface-config.ts"
+    },
+    {
+      "status": "M",
+      "path": "lib/recipes/recipe-constants.ts"
+    },
+    {
+      "status": "M",
+      "path": "lib/reports/client-summary.ts"
+    },
+    {
+      "status": "M",
+      "path": "lib/shared/cross-cutting-queries.ts"
+    },
+    {
+      "status": "M",
+      "path": "lib/wix/process.ts"
     },
     {
       "status": "M",
@@ -94,227 +234,179 @@
     },
     {
       "status": "M",
-      "path": "public/sw.js"
+      "path": "tests/unit/client-culinary-signals.test.ts"
     },
     {
       "status": "M",
-      "path": "scripts/extract-chef-nav-report.mjs"
+      "path": "tests/unit/client-profile-service.test.ts"
     },
     {
       "status": "M",
-      "path": "scripts/generate-chef-priority-restructure.mjs"
+      "path": "tests/unit/directory.discovery-utils.test.ts"
     },
     {
       "status": "M",
-      "path": "scripts/health-score-crawl.mjs"
-    },
-    {
-      "status": "M",
-      "path": "scripts/take-screenshots.mjs"
-    },
-    {
-      "status": "M",
-      "path": "start-chefflow.bat"
-    },
-    {
-      "status": "M",
-      "path": "tests/coverage/01-public-routes.spec.ts"
-    },
-    {
-      "status": "M",
-      "path": "tests/coverage/02-chef-routes.spec.ts"
-    },
-    {
-      "status": "M",
-      "path": "tests/coverage/03-client-routes.spec.ts"
-    },
-    {
-      "status": "M",
-      "path": "tests/coverage/05-auth-boundaries.spec.ts"
-    },
-    {
-      "status": "M",
-      "path": "tests/coverage/screenshot-crawler.spec.ts"
-    },
-    {
-      "status": "M",
-      "path": "tests/crawl-final.ts"
-    },
-    {
-      "status": "M",
-      "path": "tests/crawl-site-v2.ts"
-    },
-    {
-      "status": "M",
-      "path": "tests/crawl-site.ts"
-    },
-    {
-      "status": "M",
-      "path": "tests/diagnostic/08-remaining-features.spec.ts"
-    },
-    {
-      "status": "M",
-      "path": "tests/e2e/17-tenant-isolation.spec.ts"
-    },
-    {
-      "status": "M",
-      "path": "tests/e2e/99-full-site-crawl.spec.ts"
-    },
-    {
-      "status": "M",
-      "path": "tests/experiential/03-chef-navigation.spec.ts"
-    },
-    {
-      "status": "M",
-      "path": "tests/experiential/08-loading-state-audit.spec.ts"
-    },
-    {
-      "status": "M",
-      "path": "tests/full-walkthrough-jwt.mjs"
-    },
-    {
-      "status": "M",
-      "path": "tests/full-walkthrough.mjs"
-    },
-    {
-      "status": "M",
-      "path": "tests/helpers/test-utils.ts"
-    },
-    {
-      "status": "M",
-      "path": "tests/interactions/36-social-network-community.spec.ts"
-    },
-    {
-      "status": "M",
-      "path": "tests/interactions/41-remaining-routes.spec.ts"
-    },
-    {
-      "status": "M",
-      "path": "tests/interactions/49-network-social-deep.spec.ts"
-    },
-    {
-      "status": "M",
-      "path": "tests/journey/25-operations-and-inventory-routes.spec.ts"
-    },
-    {
-      "status": "M",
-      "path": "tests/journey/26-growth-and-pipeline-routes.spec.ts"
-    },
-    {
-      "status": "M",
-      "path": "tests/journey/28-cannabis-and-safety-routes.spec.ts"
-    },
-    {
-      "status": "M",
-      "path": "tests/journey/29-network-partners-and-settings-extensions.spec.ts"
-    },
-    {
-      "status": "M",
-      "path": "tests/journey/helpers/journey-helpers.ts"
-    },
-    {
-      "status": "M",
-      "path": "tests/launch/03-empty-states.spec.ts"
-    },
-    {
-      "status": "M",
-      "path": "tests/launch/07-payments-and-finance.spec.ts"
-    },
-    {
-      "status": "M",
-      "path": "tests/launch/09-staff-and-tasks.spec.ts"
-    },
-    {
-      "status": "M",
-      "path": "tests/product/02-tier2-lifecycle.spec.ts"
-    },
-    {
-      "status": "M",
-      "path": "tests/product/03-tier3-financials.spec.ts"
-    },
-    {
-      "status": "M",
-      "path": "tests/product/04-tier4-operations.spec.ts"
-    },
-    {
-      "status": "M",
-      "path": "tests/product/09-deep-chef-features.spec.ts"
-    },
-    {
-      "status": "M",
-      "path": "tests/product/11-error-resilience.spec.ts"
-    },
-    {
-      "status": "M",
-      "path": "tests/rl/goal-detectors.ts"
-    },
-    {
-      "status": "M",
-      "path": "tests/rl/state-observer.ts"
-    },
-    {
-      "status": "M",
-      "path": "tests/sentinel/critical-paths.spec.ts"
-    },
-    {
-      "status": "M",
-      "path": "tests/soak/03-dashboard-browse.spec.ts"
-    },
-    {
-      "status": "M",
-      "path": "tests/system-audit-verify-prod.mjs"
-    },
-    {
-      "status": "M",
-      "path": "tests/system-audit-verify.mjs"
-    },
-    {
-      "status": "M",
-      "path": "tests/system-integrity/q52-nav-admin-parity.spec.ts"
-    },
-    {
-      "status": "M",
-      "path": "tests/system-integrity/q9-nav-completeness.spec.ts"
-    },
-    {
-      "status": "M",
-      "path": "tests/unit/chef-nav-priority.test.ts"
-    },
-    {
-      "status": "M",
-      "path": "tests/unit/focus-mode.test.ts"
-    },
-    {
-      "status": "M",
-      "path": "tests/unit/surface-governance.test.ts"
-    },
-    {
-      "status": "M",
-      "path": "tsconfig.ci.expanded.json"
+      "path": "tests/unit/directory.waitlist-actions.test.ts"
     },
     {
       "status": "??",
-      "path": ".playwright-mcp/page-2026-05-09T20-41-31-039Z.yml"
+      "path": ".claude/skills/live-preview/"
     },
     {
       "status": "??",
-      "path": ".playwright-mcp/page-2026-05-10T01-16-44-481Z.yml"
+      "path": ".superpowers/"
     },
     {
       "status": "??",
-      "path": ".playwright-mcp/page-2026-05-10T01-22-57-376Z.yml"
+      "path": "app/(chef)/contracts/new/"
     },
     {
       "status": "??",
-      "path": ".playwright-mcp/page-2026-05-10T01-27-54-812Z.yml"
+      "path": "app/(chef)/culinary/sourcing/"
     },
     {
       "status": "??",
-      "path": ".playwright-mcp/page-2026-05-10T01-32-40-449Z.yml"
+      "path": "app/(chef)/dashboard/_sections/automation-feed.tsx"
     },
     {
       "status": "??",
-      "path": "app/(chef)/pipeline/"
+      "path": "app/(chef)/dashboard/_sections/cil-signal-summary.tsx"
+    },
+    {
+      "status": "??",
+      "path": "app/(chef)/payments/page.tsx"
+    },
+    {
+      "status": "??",
+      "path": "app/(chef)/settings/security/mfa/"
+    },
+    {
+      "status": "??",
+      "path": "app/(client)/browse-dates/"
+    },
+    {
+      "status": "??",
+      "path": "app/(client)/my-calendar/"
+    },
+    {
+      "status": "??",
+      "path": "app/(client)/my-dietary/"
+    },
+    {
+      "status": "??",
+      "path": "app/(client)/my-documents/"
+    },
+    {
+      "status": "??",
+      "path": "app/(client)/my-events/[id]/guests/"
+    },
+    {
+      "status": "??",
+      "path": "app/(client)/my-events/[id]/live/service-day-timeline.tsx"
+    },
+    {
+      "status": "??",
+      "path": "app/(client)/my-events/[id]/recap/"
+    },
+    {
+      "status": "??",
+      "path": "app/(client)/my-gift-cards/"
+    },
+    {
+      "status": "??",
+      "path": "app/(client)/my-help/"
+    },
+    {
+      "status": "??",
+      "path": "app/(client)/my-household/"
+    },
+    {
+      "status": "??",
+      "path": "app/(client)/my-hub/g/[groupToken]/meal-board/"
+    },
+    {
+      "status": "??",
+      "path": "app/(client)/my-meals/"
+    },
+    {
+      "status": "??",
+      "path": "app/(client)/my-notifications/"
+    },
+    {
+      "status": "??",
+      "path": "app/(client)/my-passport/"
+    },
+    {
+      "status": "??",
+      "path": "app/(client)/my-preferences/"
+    },
+    {
+      "status": "??",
+      "path": "app/(client)/my-quotes/compare/"
+    },
+    {
+      "status": "??",
+      "path": "app/(client)/my-receipts/"
+    },
+    {
+      "status": "??",
+      "path": "app/(client)/my-recipes/"
+    },
+    {
+      "status": "??",
+      "path": "app/(client)/my-recurring/"
+    },
+    {
+      "status": "??",
+      "path": "app/(client)/my-referrals/"
+    },
+    {
+      "status": "??",
+      "path": "app/(client)/my-reviews/"
+    },
+    {
+      "status": "??",
+      "path": "app/(client)/my-spending/tax-summary/"
+    },
+    {
+      "status": "??",
+      "path": "app/(client)/my-timeline/"
+    },
+    {
+      "status": "??",
+      "path": "app/(public)/_components/cuisine-marquee.tsx"
+    },
+    {
+      "status": "??",
+      "path": "app/(public)/_components/homepage-discovery.tsx"
+    },
+    {
+      "status": "??",
+      "path": "app/(public)/cuisines/"
+    },
+    {
+      "status": "??",
+      "path": "app/api/auth/clear/"
+    },
+    {
+      "status": "??",
+      "path": "app/api/availability/"
+    },
+    {
+      "status": "??",
+      "path": "app/api/calling/auto-resolve/"
+    },
+    {
+      "status": "??",
+      "path": "app/api/cron/reminders/"
+    },
+    {
+      "status": "??",
+      "path": "app/api/scheduled/pi-price-propagation/"
+    },
+    {
+      "status": "??",
+      "path": "app/print/cannabis-dosing-packet/"
     },
     {
       "status": "??",
@@ -322,27 +414,483 @@
     },
     {
       "status": "??",
-      "path": "docs/PDFref/"
+      "path": "components/availability/ical-subscription-card.tsx"
     },
     {
       "status": "??",
-      "path": "docs/agent-contexts/"
+      "path": "components/calling/call-progress-bar.tsx"
     },
     {
       "status": "??",
-      "path": "docs/local-ai-connector.md"
+      "path": "components/calling/event-call-dashboard.tsx"
     },
     {
       "status": "??",
-      "path": "docs/research/settings-ux-visual-scalability-patterns.md"
+      "path": "components/calling/session-results.tsx"
     },
     {
       "status": "??",
-      "path": "docs/specs/document-formatting-spec.md"
+      "path": "components/calling/vendor-call-history.tsx"
     },
     {
       "status": "??",
-      "path": "docs/specs/hub-consolidation.md"
+      "path": "components/calling/voicemail-inbox.tsx"
+    },
+    {
+      "status": "??",
+      "path": "components/communication/communication-health-panel.tsx"
+    },
+    {
+      "status": "??",
+      "path": "components/contracts/contract-analytics.tsx"
+    },
+    {
+      "status": "??",
+      "path": "components/contracts/new-contract-form.tsx"
+    },
+    {
+      "status": "??",
+      "path": "components/costing/quote-current-cost-comparison.tsx"
+    },
+    {
+      "status": "??",
+      "path": "components/dashboard/recipe-gap-card.tsx"
+    },
+    {
+      "status": "??",
+      "path": "components/dashboard/sourcing-phone-button.tsx"
+    },
+    {
+      "status": "??",
+      "path": "components/events/dietary-reminder-banner.tsx"
+    },
+    {
+      "status": "??",
+      "path": "components/events/prep-status-indicators.tsx"
+    },
+    {
+      "status": "??",
+      "path": "components/events/shared-recipes-section.tsx"
+    },
+    {
+      "status": "??",
+      "path": "components/help/faq-accordion.tsx"
+    },
+    {
+      "status": "??",
+      "path": "components/hub/circle-qr-code.tsx"
+    },
+    {
+      "status": "??",
+      "path": "components/location/"
+    },
+    {
+      "status": "??",
+      "path": "components/menus/recipe-gap-indicator.tsx"
+    },
+    {
+      "status": "??",
+      "path": "components/print/cannabis-dosing-packet-print.tsx"
+    },
+    {
+      "status": "??",
+      "path": "components/profile/"
+    },
+    {
+      "status": "??",
+      "path": "components/quotes/quote-compare-selector.tsx"
+    },
+    {
+      "status": "??",
+      "path": "components/recipes/recipe-lineage.tsx"
+    },
+    {
+      "status": "??",
+      "path": "components/recipes/recipe-status-badge.tsx"
+    },
+    {
+      "status": "??",
+      "path": "components/settings/location-settings.tsx"
+    },
+    {
+      "status": "??",
+      "path": "components/settings/mfa-setup-client.tsx"
+    },
+    {
+      "status": "??",
+      "path": "components/settings/security-phone-section.tsx"
+    },
+    {
+      "status": "??",
+      "path": "components/settings/sign-out-button.tsx"
+    },
+    {
+      "status": "??",
+      "path": "components/team/permission-matrix.tsx"
+    },
+    {
+      "status": "??",
+      "path": "components/team/team-activity-feed.tsx"
+    },
+    {
+      "status": "??",
+      "path": "database/migrations/20260510000008_standalone_contracts.sql"
+    },
+    {
+      "status": "??",
+      "path": "database/migrations/20260510000010_cannabis_invite_revoked_status.sql"
+    },
+    {
+      "status": "??",
+      "path": "database/migrations/20260510000011_recipe_shareable_with_client.sql"
+    },
+    {
+      "status": "??",
+      "path": "database/migrations/20260510000012_subscription_status_constraint.sql"
+    },
+    {
+      "status": "??",
+      "path": "database/migrations/20260510000014_venue_profiles.sql"
+    },
+    {
+      "status": "??",
+      "path": "database/migrations/20260510000015_recipe_lifecycle.sql"
+    },
+    {
+      "status": "??",
+      "path": "database/migrations/20260510000016_recipe_gaps_view.sql"
+    },
+    {
+      "status": "??",
+      "path": "database/migrations/20260510000017_regulated_batch_records_and_coas.sql"
+    },
+    {
+      "status": "??",
+      "path": "database/migrations/20260511000001_sourcing_sessions.sql"
+    },
+    {
+      "status": "??",
+      "path": "database/migrations/20260511000001_vendor_call_metrics.sql"
+    },
+    {
+      "status": "??",
+      "path": "database/migrations/20260511000024_user_location_defaults.sql"
+    },
+    {
+      "status": "??",
+      "path": "docs/audits/"
+    },
+    {
+      "status": "??",
+      "path": "docs/chef-portal-navigation-audit.md"
+    },
+    {
+      "status": "??",
+      "path": "docs/research/lecture-change-control-and-risk-pricing.md"
+    },
+    {
+      "status": "??",
+      "path": "docs/specs/account-anchored-location.md"
+    },
+    {
+      "status": "??",
+      "path": "docs/specs/client-portal-expansion-waves.md"
+    },
+    {
+      "status": "??",
+      "path": "docs/specs/culinary-operations-and-costing-system.md"
+    },
+    {
+      "status": "??",
+      "path": "docs/specs/flexible-creation-order-and-recipe-lifecycle.md"
+    },
+    {
+      "status": "??",
+      "path": "docs/specs/homepage-scroll-click-contract.md"
+    },
+    {
+      "status": "??",
+      "path": "docs/specs/operational-loops-audit.md"
+    },
+    {
+      "status": "??",
+      "path": "docs/specs/regulated-product-compliance-foundation.md"
+    },
+    {
+      "status": "??",
+      "path": "docs/superpowers/plans/2026-05-11-adaptive-app-surface.md"
+    },
+    {
+      "status": "??",
+      "path": "docs/wiring-audit.md"
+    },
+    {
+      "status": "??",
+      "path": "lib/availability/client-browse-dates-actions.ts"
+    },
+    {
+      "status": "??",
+      "path": "lib/availability/ical-actions.ts"
+    },
+    {
+      "status": "??",
+      "path": "lib/calendar/client-calendar-actions.ts"
+    },
+    {
+      "status": "??",
+      "path": "lib/calling/anti-spam.ts"
+    },
+    {
+      "status": "??",
+      "path": "lib/calling/auto-resolve.ts"
+    },
+    {
+      "status": "??",
+      "path": "lib/calling/batch-caller.ts"
+    },
+    {
+      "status": "??",
+      "path": "lib/calling/batch-state.ts"
+    },
+    {
+      "status": "??",
+      "path": "lib/calling/batch-voice-scripts.ts"
+    },
+    {
+      "status": "??",
+      "path": "lib/calling/call-llm-processor.ts"
+    },
+    {
+      "status": "??",
+      "path": "lib/calling/call-scripts.ts"
+    },
+    {
+      "status": "??",
+      "path": "lib/calling/conversation-state.ts"
+    },
+    {
+      "status": "??",
+      "path": "lib/calling/conversation-twiml.ts"
+    },
+    {
+      "status": "??",
+      "path": "lib/calling/cost-tracker.ts"
+    },
+    {
+      "status": "??",
+      "path": "lib/calling/delivery-coordinator.ts"
+    },
+    {
+      "status": "??",
+      "path": "lib/calling/event-resolution-actions.ts"
+    },
+    {
+      "status": "??",
+      "path": "lib/calling/inbound-classifier.ts"
+    },
+    {
+      "status": "??",
+      "path": "lib/calling/keyword-extractor.ts"
+    },
+    {
+      "status": "??",
+      "path": "lib/calling/phone-tree-navigator.ts"
+    },
+    {
+      "status": "??",
+      "path": "lib/calling/role-handlers.ts"
+    },
+    {
+      "status": "??",
+      "path": "lib/calling/vendor-history-actions.ts"
+    },
+    {
+      "status": "??",
+      "path": "lib/calling/vendor-memory.ts"
+    },
+    {
+      "status": "??",
+      "path": "lib/calling/vendor-rate-limiter.ts"
+    },
+    {
+      "status": "??",
+      "path": "lib/calling/vendor-routing.ts"
+    },
+    {
+      "status": "??",
+      "path": "lib/cannabis/dosing-packet-data.ts"
+    },
+    {
+      "status": "??",
+      "path": "lib/chef/cannabis-batch-record-actions.ts"
+    },
+    {
+      "status": "??",
+      "path": "lib/chef/cannabis-readiness.ts"
+    },
+    {
+      "status": "??",
+      "path": "lib/communication/call-audit-bridge.ts"
+    },
+    {
+      "status": "??",
+      "path": "lib/communication/health-metrics.ts"
+    },
+    {
+      "status": "??",
+      "path": "lib/communication/voicemail-bridge.ts"
+    },
+    {
+      "status": "??",
+      "path": "lib/compliance/batch-record.ts"
+    },
+    {
+      "status": "??",
+      "path": "lib/compliance/coa-intake.ts"
+    },
+    {
+      "status": "??",
+      "path": "lib/compliance/compliance-packet.ts"
+    },
+    {
+      "status": "??",
+      "path": "lib/constants/cuisines.ts"
+    },
+    {
+      "status": "??",
+      "path": "lib/contracts/analytics-actions.ts"
+    },
+    {
+      "status": "??",
+      "path": "lib/dietary/client-dietary-hub-actions.ts"
+    },
+    {
+      "status": "??",
+      "path": "lib/directory/public-stats.ts"
+    },
+    {
+      "status": "??",
+      "path": "lib/discovery/cuisine-pages.ts"
+    },
+    {
+      "status": "??",
+      "path": "lib/documents/client-document-actions.ts"
+    },
+    {
+      "status": "??",
+      "path": "lib/events/client-dietary-reminder-actions.ts"
+    },
+    {
+      "status": "??",
+      "path": "lib/events/client-guest-actions.ts"
+    },
+    {
+      "status": "??",
+      "path": "lib/events/client-rebook-actions.ts"
+    },
+    {
+      "status": "??",
+      "path": "lib/events/client-recap-actions.ts"
+    },
+    {
+      "status": "??",
+      "path": "lib/events/service-day-live-actions.ts"
+    },
+    {
+      "status": "??",
+      "path": "lib/features/index.ts"
+    },
+    {
+      "status": "??",
+      "path": "lib/finance/client-tax-summary-actions.ts"
+    },
+    {
+      "status": "??",
+      "path": "lib/formulas/regulated-product.ts"
+    },
+    {
+      "status": "??",
+      "path": "lib/gift-cards/"
+    },
+    {
+      "status": "??",
+      "path": "lib/household/"
+    },
+    {
+      "status": "??",
+      "path": "lib/location/"
+    },
+    {
+      "status": "??",
+      "path": "lib/meals/"
+    },
+    {
+      "status": "??",
+      "path": "lib/observability/logger.ts"
+    },
+    {
+      "status": "??",
+      "path": "lib/onboarding/client-revisit-actions.ts"
+    },
+    {
+      "status": "??",
+      "path": "lib/passport/"
+    },
+    {
+      "status": "??",
+      "path": "lib/preferences/"
+    },
+    {
+      "status": "??",
+      "path": "lib/quotes/client-compare-actions.ts"
+    },
+    {
+      "status": "??",
+      "path": "lib/receipts/client-receipt-actions.ts"
+    },
+    {
+      "status": "??",
+      "path": "lib/recipes/client-recipe-actions.ts"
+    },
+    {
+      "status": "??",
+      "path": "lib/recipes/client-shared-recipes-actions.ts"
+    },
+    {
+      "status": "??",
+      "path": "lib/recipes/gap-tracking.ts"
+    },
+    {
+      "status": "??",
+      "path": "lib/recipes/lifecycle-actions.ts"
+    },
+    {
+      "status": "??",
+      "path": "lib/recurring/client-recurring-actions.ts"
+    },
+    {
+      "status": "??",
+      "path": "lib/referrals/"
+    },
+    {
+      "status": "??",
+      "path": "lib/reviews/client-review-actions.ts"
+    },
+    {
+      "status": "??",
+      "path": "lib/team/activity-actions.ts"
+    },
+    {
+      "status": "??",
+      "path": "lib/team/permissions.ts"
+    },
+    {
+      "status": "??",
+      "path": "lib/timeline/"
+    },
+    {
+      "status": "??",
+      "path": "lib/venues/"
     },
     {
       "status": "??",
@@ -350,33 +898,49 @@
     },
     {
       "status": "??",
-      "path": "scripts/apply-local-ai-connectors-migration.mjs"
+      "path": "restart-tunnel.bat"
     },
     {
       "status": "??",
-      "path": "scripts/check-events.mjs"
+      "path": "scripts/wiring-audit-results.json"
     },
     {
       "status": "??",
-      "path": "scripts/check-tables.mjs"
+      "path": "scripts/wiring-audit.mjs"
     },
     {
       "status": "??",
-      "path": "scripts/chefflow-connector.mjs"
+      "path": "scripts/wiring-audit.sh"
     },
     {
       "status": "??",
-      "path": "scripts/fix-dashboard-schema.mjs"
+      "path": "tests/unit/batch-record.test.ts"
     },
     {
       "status": "??",
-      "path": "scripts/list-tables.mjs"
+      "path": "tests/unit/coa-intake.test.ts"
     },
     {
       "status": "??",
-      "path": "tests/unit/local-ai-connector.test.ts"
+      "path": "tests/unit/compliance-packet.test.ts"
+    },
+    {
+      "status": "??",
+      "path": "tests/unit/cuisines-registry.test.ts"
+    },
+    {
+      "status": "??",
+      "path": "tests/unit/directory.public-stats.test.ts"
+    },
+    {
+      "status": "??",
+      "path": "tests/unit/regulated-product-formulas.test.ts"
+    },
+    {
+      "status": "??",
+      "path": "types/vendor-memory.ts"
     }
   ],
   "next_action": null,
-  "context_notes": "Recent commits:\nc12902545 feat: supporting lib, components, API routes, and public pages for S-tier campaign\na95888b9c feat(db): 12 new migrations for campaign domain expansions\n0528aee04 feat(settings+scheduling): scheduling actions and settings completion\n8935778a8 feat(dashboard): real data integration and cross-domain intelligence wiring\n716139719 feat: Wave 4 domain consolidation - merge low-tier domains into parents"
+  "context_notes": "Recent commits:\nbd7e3e713 fix(types): resolve TS regressions - autopilot domain, WarningCircle export, createStandaloneContract\n58667eb88 feat(prep): wire prep timeline and peak windows into consumers\na008211fd feat(lifecycle): critical path tracking and dinner circle onboarding\n019b5c86c feat(email): snapshot footer and portal transition strategy\na27d43b18 feat(events): ops quality bar with pack list enhancements and prep persistence"
 }

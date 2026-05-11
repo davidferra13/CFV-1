@@ -1,4 +1,9 @@
 import { createAdminClient } from '@/lib/db/admin'
+import {
+  canonicalizeCuisineSlug,
+  getCuisineDisplayName,
+  normalizeCuisineList,
+} from '@/lib/constants/cuisines'
 import { z } from 'zod'
 import {
   AffectiveContextSchema,
@@ -301,6 +306,31 @@ function overlapsValue(left: string, right: string): boolean {
   return rightTokens.some((token) => leftTokens.has(token))
 }
 
+function normalizeCuisinePreferenceValues(values: Array<string | null | undefined>): string[] {
+  return normalizeCuisineList(uniqueStrings(values), { allowCustom: true })
+}
+
+function cuisinePreferenceLabel(value: string): string {
+  return getCuisineDisplayName(value)
+}
+
+function cuisineValuesOverlap(leftValues: readonly string[], rightValue: string): boolean {
+  const rightSlugs = normalizeCuisineList([rightValue], {
+    allowCustom: true,
+    includeAncestors: true,
+    includeDescendants: true,
+  })
+  if (rightSlugs.length === 0) return false
+
+  const leftSlugs = normalizeCuisineList(leftValues, {
+    allowCustom: true,
+    includeAncestors: true,
+    includeDescendants: true,
+  })
+
+  return leftSlugs.some((slug) => rightSlugs.includes(slug))
+}
+
 function clamp01(value: number): number {
   if (Number.isNaN(value)) return 0
   return Math.max(0, Math.min(1, value))
@@ -357,7 +387,10 @@ function addPreference(
     evidenceRef: ProfileEvidenceRef
   }
 ) {
-  const key = `${input.category}:${normalizeKey(input.label)}`
+  const key =
+    input.category === 'cuisine'
+      ? `${input.category}:${canonicalizeCuisineSlug(input.label) ?? normalizeKey(input.label)}`
+      : `${input.category}:${normalizeKey(input.label)}`
   const current = map.get(key)
 
   if (!current) {
@@ -1144,9 +1177,9 @@ export function buildCulinaryProfileVector(
     })
   }
 
-  for (const cuisine of uniqueStrings(bundle.client.favorite_cuisines ?? [])) {
+  for (const cuisine of normalizeCuisinePreferenceValues(bundle.client.favorite_cuisines ?? [])) {
     addPreference(likeSignals, {
-      label: cuisine,
+      label: cuisinePreferenceLabel(cuisine),
       category: 'cuisine',
       score: 0.8,
       confidence: 0.82,
@@ -1223,9 +1256,11 @@ export function buildCulinaryProfileVector(
   }
 
   if (bundle.tasteProfile) {
-    for (const cuisine of uniqueStrings(bundle.tasteProfile.favorite_cuisines ?? [])) {
+    for (const cuisine of normalizeCuisinePreferenceValues(
+      bundle.tasteProfile.favorite_cuisines ?? []
+    )) {
       addPreference(likeSignals, {
-        label: cuisine,
+        label: cuisinePreferenceLabel(cuisine),
         category: 'cuisine',
         score: 0.7,
         confidence: 0.76,
@@ -1331,16 +1366,20 @@ export function buildCulinaryProfileVector(
   }
 
   for (const preference of bundle.preferences) {
-    const label = cleanText(preference.item_name)
-    if (!label) continue
+    const rawLabel = cleanText(preference.item_name)
+    if (!rawLabel) continue
     const rating = normalizeKey(preference.rating ?? '')
     const category = inferPreferenceCategory(preference.item_type)
+    const cuisineSlug =
+      category === 'cuisine' ? normalizeCuisineList([rawLabel], { allowCustom: true })[0] : null
+    const label =
+      category === 'cuisine' && cuisineSlug ? cuisinePreferenceLabel(cuisineSlug) : rawLabel
     const ref = makeEvidenceRef({
       sourceType: 'stated_preference',
       sourceTable: 'client_preferences',
       sourceRecordId: bundle.client.id,
       signalKey: `preference_${rating || 'neutral'}`,
-      value: label,
+      value: cuisineSlug ?? label,
       confidence: rating === 'loved' ? 0.82 : rating === 'liked' ? 0.72 : 0.65,
       observedAt: preference.observed_at ?? null,
     })
@@ -2163,7 +2202,12 @@ export function recommendCandidateMealsAgainstVector(
     const justifications: Array<z.infer<typeof ConfidenceJustificationSchema>> = []
 
     for (const like of vector.statedLikes) {
-      if (!texts.some((text) => overlapsValue(text, like.label))) continue
+      const matchesPreference =
+        like.category === 'cuisine'
+          ? cuisineValuesOverlap(candidate.cuisineTags, like.label) ||
+            texts.some((text) => overlapsValue(text, like.label))
+          : texts.some((text) => overlapsValue(text, like.label))
+      if (!matchesPreference) continue
       const delta =
         (like.category === 'cuisine' ? 0.16 : like.category === 'dish' ? 0.14 : 0.08) * like.score
       score += delta

@@ -3,6 +3,7 @@ import { lookupPrice, lookupPricesBatch } from '@/lib/pricing/universal-price-lo
 import { db } from '@/lib/db'
 import { sql } from 'drizzle-orm'
 import { getCurrentUser } from '@/lib/auth/get-user'
+import { resolveCurrentUserLocation } from '@/lib/location/account-location'
 
 const AUTH_ERROR = { error: 'Authentication required' } as const
 
@@ -31,7 +32,11 @@ export async function GET(request: NextRequest) {
   }
 
   const recipeId = request.nextUrl.searchParams.get('recipe_id')
-  const zip = request.nextUrl.searchParams.get('zip') || undefined
+  let zip = request.nextUrl.searchParams.get('zip') || undefined
+  if (!zip) {
+    const acctLoc = await resolveCurrentUserLocation()
+    zip = acctLoc?.zip || undefined
+  }
 
   if (!recipeId) {
     return NextResponse.json({ error: 'Missing required parameter: recipe_id' }, { status: 400 })
@@ -169,9 +174,12 @@ export async function POST(request: NextRequest) {
 
   try {
     const body = await request.json()
-    const { zip, ingredients } = body as {
-      zip?: string
-      ingredients: RecipeIngredient[]
+    let { zip } = body as { zip?: string }
+    const { ingredients } = body as { ingredients: RecipeIngredient[] }
+
+    if (!zip) {
+      const acctLoc = await resolveCurrentUserLocation()
+      zip = acctLoc?.zip || undefined
     }
 
     if (!ingredients || !Array.isArray(ingredients) || ingredients.length === 0) {

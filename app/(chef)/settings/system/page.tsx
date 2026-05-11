@@ -6,6 +6,7 @@ import { SettingsCategory } from '@/components/settings/settings-category'
 import { hasDemoData } from '@/lib/onboarding/demo-data'
 import { DemoDataManager } from '@/components/onboarding/demo-data-manager'
 import { FeedbackForm } from '@/components/feedback/feedback-form'
+import { GlobalReportButton } from '@/components/feedback/global-report-button'
 import { DesktopAppSettings } from '@/components/settings/desktop-app-settings'
 import { isAdmin } from '@/lib/auth/admin'
 
@@ -74,6 +75,9 @@ export default async function SystemSettingsPage() {
           defaultOpen={true}
         >
           <FeedbackForm pageContext="/settings" />
+          <div className="border-t border-stone-700 pt-4 mt-4">
+            <GlobalReportButton />
+          </div>
         </SettingsCategory>
 
         <SettingsCategory

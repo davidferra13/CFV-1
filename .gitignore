@@ -344,3 +344,9 @@ logs/
 
 # Stale worktree artifacts
 .v1-builder-worktrees/
+
+# Playwright MCP snapshots (ephemeral, machine-specific)
+.playwright-mcp/
+
+# Session working files (ephemeral)
+.session-files

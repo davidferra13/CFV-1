@@ -4,7 +4,7 @@
 
 import Link from 'next/link'
 import { usePathname, useSearchParams } from 'next/navigation'
-import { signOut } from '@/lib/auth/actions'
+
 import { useState, useEffect, useRef, useCallback, useMemo, memo } from 'react'
 import type { LucideIcon } from '@/components/ui/icons'
 import {
@@ -33,7 +33,6 @@ import {
   STRICT_FOCUS_PRIMARY_SHORTCUT_HREFS,
 } from '@/lib/navigation/focus-mode-nav'
 import {
-  LogOut,
   Menu,
   X,
   ChevronDown,
@@ -385,6 +384,8 @@ export function ChefMobileNav({
   focusMode,
   userId,
   tenantId,
+  chefName,
+  chefAvatar,
 }: {
   primaryNavHrefs?: string[]
   mobileTabHrefs?: string[]
@@ -394,6 +395,8 @@ export function ChefMobileNav({
   focusMode?: boolean
   userId: string
   tenantId: string
+  chefName?: string | null
+  chefAvatar?: string | null
 }) {
   const pathname = usePathname() ?? ''
   const searchParams = useSearchParams()
@@ -673,45 +676,37 @@ export function ChefMobileNav({
 
               <div className="border-t border-stone-800 my-2" />
 
-              {/* Settings */}
+              {/* Account chip — identity + settings entry */}
               {(() => {
-                const settingsActive = isItemActive(pathname, '/settings', searchParams)
+                const settingsActive = pathname.startsWith('/settings')
                 return (
                   <Link
                     href="/settings"
                     onClick={closeMenu}
-                    className={`flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-semibold transition-colors ${
+                    className={`flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-semibold transition-colors group ${
                       settingsActive
                         ? 'bg-brand-950 text-brand-400'
                         : 'text-stone-300 hover:bg-stone-800'
                     }`}
                   >
+                    <span
+                      className={`flex h-7 w-7 flex-shrink-0 items-center justify-center rounded-full text-xs font-semibold text-white overflow-hidden ring-2 transition-colors ${
+                        settingsActive ? 'ring-brand-500' : 'ring-transparent'
+                      } ${chefAvatar ? '' : 'bg-brand-700'}`}
+                    >
+                      {chefAvatar ? (
+                        <img src={chefAvatar} alt="" className="h-7 w-7 object-cover" />
+                      ) : (
+                        (chefName?.trim().charAt(0) ?? '?').toUpperCase()
+                      )}
+                    </span>
+                    <span className="flex-1 truncate">{chefName?.trim() || 'My Account'}</span>
                     <Settings
-                      className={`w-[18px] h-[18px] flex-shrink-0 ${settingsActive ? 'text-brand-600' : 'text-stone-400'}`}
+                      className={`w-4 h-4 flex-shrink-0 ${settingsActive ? 'text-brand-500' : 'text-stone-500'}`}
                     />
-                    Settings
                   </Link>
                 )
               })()}
-
-              {/* Sign Out */}
-              <div className="pt-4 mt-4 border-t border-stone-800">
-                <button
-                  type="button"
-                  onClick={async () => {
-                    try {
-                      await signOut()
-                    } catch (e) {
-                      console.error('[sign-out]', e)
-                    }
-                    window.location.href = '/'
-                  }}
-                  className="flex items-center gap-3 w-full px-3 py-2.5 rounded-lg text-sm font-medium text-stone-500 hover:bg-stone-800"
-                >
-                  <LogOut className="w-[18px] h-[18px]" />
-                  Sign Out
-                </button>
-              </div>
             </nav>
           </div>
         </>

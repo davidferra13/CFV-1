@@ -3,7 +3,7 @@
 
 import Link from 'next/link'
 import { usePathname, useSearchParams } from 'next/navigation'
-import { signOut } from '@/lib/auth/actions'
+
 import {
   useState,
   useEffect,
@@ -48,7 +48,6 @@ import {
 } from '@/lib/chef/shell-state'
 
 import {
-  LogOut,
   ChevronLeft,
   ChevronRight,
   ChevronDown,
@@ -693,6 +692,8 @@ export function ChefSidebar({
   archetype,
   tenantPresence,
   hiddenRoutes,
+  chefName,
+  chefAvatar,
 }: {
   primaryNavHrefs?: string[]
   enabledModules?: string[]
@@ -704,6 +705,8 @@ export function ChefSidebar({
   archetype?: string | null
   tenantPresence?: TenantDataPresence | null
   hiddenRoutes?: string[]
+  chefName?: string | null
+  chefAvatar?: string | null
 }) {
   const pathname = usePathname() ?? ''
   const searchParams = useSearchParams()
@@ -907,15 +910,6 @@ export function ChefSidebar({
       return next
     })
   }
-  const handleSignOut = useCallback(async () => {
-    try {
-      await signOut()
-    } catch (error) {
-      console.error('[sign-out]', error)
-    }
-    window.location.href = '/'
-  }, [])
-
   return (
     <aside
       className={`hidden md:flex md:flex-col md:fixed md:inset-y-0 glass-subtle sidebar-gradient border-r border-stone-800/40 transition-all duration-200 z-subnav md:w-16 ${
@@ -1144,46 +1138,51 @@ export function ChefSidebar({
             </AllFeaturesCollapse>
 
             <RecentPagesSection />
-
-            <div className="h-px my-3 mx-3 bg-stone-800/40" />
-
-            {/* Settings */}
-            {(() => {
-              const settingsActive = isItemActive(pathname, '/settings', searchParams)
-              return (
-                <Link
-                  href="/settings"
-                  className={`flex items-center gap-3 px-3 py-2 rounded-lg text-sm font-semibold transition-colors ${
-                    settingsActive
-                      ? 'bg-brand-950 text-brand-400 nav-active-glow'
-                      : 'text-stone-300 hover:bg-stone-800'
-                  }`}
-                >
-                  <Settings
-                    className={`w-[18px] h-[18px] flex-shrink-0 ${settingsActive ? 'text-brand-600' : 'text-stone-400'}`}
-                  />
-                  Settings
-                </Link>
-              )
-            })()}
           </div>
         )}
       </nav>
 
-      <div className={`border-t border-stone-800/50 ${effectiveCollapsed ? 'p-1.5' : 'p-3'}`}>
-        <button
-          type="button"
-          onClick={handleSignOut}
-          title={collapsed ? 'Sign Out' : undefined}
-          aria-label={collapsed ? 'Sign Out' : undefined}
-          className={`flex items-center rounded-lg text-sm font-medium text-stone-500 hover:bg-stone-800 hover:text-stone-300 transition-colors ${
-            effectiveCollapsed ? 'mx-auto h-10 w-10 justify-center' : 'w-full gap-3 px-3 py-2'
-          }`}
-        >
-          <LogOut className="w-[18px] h-[18px] flex-shrink-0" />
-          {!effectiveCollapsed && 'Sign Out'}
-        </button>
-      </div>
+      {/* Account chip — identity + settings entry (replaces standalone Settings link) */}
+      {(() => {
+        const settingsActive = pathname.startsWith('/settings')
+        return (
+          <Link
+            href="/settings"
+            title={effectiveCollapsed ? 'Settings' : undefined}
+            className={`flex items-center border-t border-stone-800/50 transition-colors group ${
+              settingsActive ? 'bg-brand-950/60' : 'hover:bg-stone-800/60'
+            } ${effectiveCollapsed ? 'justify-center p-2' : 'gap-3 px-4 py-3'}`}
+          >
+            <span
+              className={`flex h-7 w-7 flex-shrink-0 items-center justify-center rounded-full text-xs font-semibold text-white overflow-hidden ring-2 transition-colors ${
+                settingsActive ? 'ring-brand-500' : 'ring-transparent group-hover:ring-stone-600'
+              } ${chefAvatar ? '' : 'bg-brand-700'}`}
+            >
+              {chefAvatar ? (
+                <img src={chefAvatar} alt="" className="h-7 w-7 object-cover" />
+              ) : (
+                (chefName?.trim().charAt(0) ?? '?').toUpperCase()
+              )}
+            </span>
+            {!effectiveCollapsed && (
+              <>
+                <span
+                  className={`flex-1 truncate text-sm font-medium ${
+                    settingsActive ? 'text-brand-300' : 'text-stone-300'
+                  }`}
+                >
+                  {chefName?.trim() || 'My Account'}
+                </span>
+                <Settings
+                  className={`w-3.5 h-3.5 flex-shrink-0 transition-colors ${
+                    settingsActive ? 'text-brand-500' : 'text-stone-600 group-hover:text-stone-400'
+                  }`}
+                />
+              </>
+            )}
+          </Link>
+        )
+      })()}
     </aside>
   )
 }

@@ -233,6 +233,78 @@ test('buildStateFacets and buildCuisineFacets dedupe counts per chef', () => {
   assert.equal(italian?.count, 2)
 })
 
+test('buildCuisineFacets canonicalizes variants and counts child cuisines under parents', () => {
+  const chefs = [
+    makeChef({
+      id: 'chef-1',
+      discovery: {
+        cuisine_types: ['Italian', 'italian', 'Pizzeria'],
+        completeness_score: 0.9,
+      },
+      partners: [],
+    }),
+    makeChef({
+      id: 'chef-2',
+      slug: 'chef-2',
+      discovery: {
+        cuisine_types: ['pizza'],
+        completeness_score: 0.8,
+      },
+      partners: [],
+    }),
+  ]
+
+  const cuisineFacets = buildCuisineFacets(chefs)
+  const italian = cuisineFacets.find((facet) => facet.value === 'italian')
+  const pizza = cuisineFacets.find((facet) => facet.value === 'pizza')
+
+  assert.equal(italian?.label, 'Italian')
+  assert.equal(italian?.count, 2)
+  assert.equal(pizza?.label, 'Pizzeria')
+  assert.equal(pizza?.count, 2)
+})
+
+test('filterDirectoryChefs matches parent cuisine filters against child cuisines', () => {
+  const chefs = [
+    makeChef({
+      id: 'pizza',
+      slug: 'pizza',
+      discovery: {
+        cuisine_types: ['pizza'],
+        completeness_score: 0.9,
+      },
+      partners: [],
+    }),
+    makeChef({
+      id: 'thai',
+      slug: 'thai',
+      discovery: {
+        cuisine_types: ['thai'],
+        completeness_score: 0.8,
+      },
+      partners: [],
+    }),
+  ]
+
+  const filtered = filterDirectoryChefs(chefs, {
+    query: '',
+    stateFilter: '',
+    cuisineFilter: 'Italian',
+    serviceTypeFilter: '',
+    dietaryFilter: '',
+    priceRangeFilter: '',
+    partnerTypeFilter: '',
+    locationExperienceFilter: '',
+    locationBestForFilter: '',
+    acceptingOnly: false,
+  })
+
+  assert.deepEqual(
+    filtered.map((chef) => chef.slug),
+    ['pizza']
+  )
+})
+
 test('buildLocation facets and filters use the shared public location read model', () => {
   const chefs = [
     makeChef({

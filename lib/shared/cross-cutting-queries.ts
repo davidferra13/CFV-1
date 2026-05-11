@@ -344,7 +344,12 @@ export async function getAllPrepTasks(dateRange?: DateRange): Promise<AggregateP
  * Delegates to the existing shopping list generator which already
  * aggregates across events. Re-exported here for consistent cross-cutting API.
  */
-export { generateShoppingList as getAggregateShoppingList } from '@/lib/culinary/shopping-list-actions'
+export async function getAggregateShoppingList(
+  ...args: Parameters<typeof import('@/lib/culinary/shopping-list-actions').generateShoppingList>
+) {
+  const { generateShoppingList } = await import('@/lib/culinary/shopping-list-actions')
+  return generateShoppingList(...args)
+}
 
 // ── Weekly Aggregate (Dashboard Widget Data) ───────────────────────────────────
 

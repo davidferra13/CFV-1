@@ -4,6 +4,7 @@ import type {
   ProfileConstraint,
   ProfilePreference,
 } from './client-profile-service-schema'
+import { getCuisineDisplayName } from '@/lib/constants/cuisines'
 
 export interface MenuClientTasteSummary {
   clientId: string
@@ -232,7 +233,7 @@ export function mapClientProfileVectorToMenuClientTasteSummary(input: {
       vector.statedLikes,
       (preference) => preference.category === 'cuisine',
       5
-    ),
+    ).map(getCuisineDisplayName),
     favoriteDishes,
     spicePreference: deriveSpicePreference(vector),
     pastEventCount,

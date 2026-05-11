@@ -15,22 +15,9 @@ export const OCCASION_SUGGESTIONS = [
   'Quick Weeknight',
 ] as const
 
-export const CUISINE_DISPLAY: Record<string, string> = {
-  italian: 'Italian',
-  french: 'French',
-  mexican: 'Mexican',
-  japanese: 'Japanese',
-  chinese: 'Chinese',
-  indian: 'Indian',
-  mediterranean: 'Mediterranean',
-  thai: 'Thai',
-  korean: 'Korean',
-  american: 'American',
-  southern: 'Southern',
-  middle_eastern: 'Middle Eastern',
-  fusion: 'Fusion',
-  other: 'Other',
-}
+// Derived from master cuisine list. Shows cuisines with popularity >= 60 in recipe contexts.
+import { buildCuisineDisplayRecord } from '@/lib/constants/cuisines'
+export const CUISINE_DISPLAY: Record<string, string> = buildCuisineDisplayRecord(60)
 
 export const MEAL_TYPE_DISPLAY: Record<string, string> = {
   breakfast: 'Breakfast',

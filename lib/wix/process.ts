@@ -246,6 +246,8 @@ export async function processWixSubmission(submissionId: string): Promise<Proces
       const chefProfile = await getChefProfile(submission.tenant_id)
       if (chefProfile) {
         const { sendNewInquiryChefEmail } = await import('@/lib/email/notifications')
+        const { isCannabisTenantById } = await import('@/lib/chef/cannabis-actions')
+        const isCannabis = await isCannabisTenantById(submission.tenant_id).catch(() => false)
         await sendNewInquiryChefEmail({
           chefEmail: chefProfile.email,
           chefName: chefProfile.name,
@@ -255,6 +257,7 @@ export async function processWixSubmission(submissionId: string): Promise<Proces
           guestCount: parseResult.parsed.confirmed_guest_count ?? null,
           source: 'wix',
           inquiryId: inquiry.id,
+          cannabis: isCannabis,
         })
       }
     } catch (emailErr) {

@@ -1,6 +1,12 @@
 // External Directory Constants
 // Business types, cuisine categories, and filter options for the /nearby directory.
 
+import {
+  canonicalizeCuisineSlug,
+  getCuisineDisplayName,
+  getCuisineOptions,
+} from '@/lib/constants/cuisines'
+
 export const BUSINESS_TYPES = [
   { value: 'restaurant', label: 'Restaurant' },
   { value: 'private_chef', label: 'Private Chef' },
@@ -12,26 +18,9 @@ export const BUSINESS_TYPES = [
   { value: 'supper_club', label: 'Supper Club' },
 ] as const
 
+// Derived from master cuisine list (top 50 by popularity + directory staples)
 export const CUISINE_CATEGORIES = [
-  { value: 'american', label: 'American' },
-  { value: 'italian', label: 'Italian' },
-  { value: 'mexican', label: 'Mexican' },
-  { value: 'japanese', label: 'Japanese' },
-  { value: 'chinese', label: 'Chinese' },
-  { value: 'thai', label: 'Thai' },
-  { value: 'indian', label: 'Indian' },
-  { value: 'french', label: 'French' },
-  { value: 'mediterranean', label: 'Mediterranean' },
-  { value: 'korean', label: 'Korean' },
-  { value: 'vietnamese', label: 'Vietnamese' },
-  { value: 'caribbean', label: 'Caribbean' },
-  { value: 'middle_eastern', label: 'Middle Eastern' },
-  { value: 'southern', label: 'Southern' },
-  { value: 'bbq', label: 'BBQ' },
-  { value: 'seafood', label: 'Seafood' },
-  { value: 'vegan', label: 'Vegan' },
-  { value: 'fusion', label: 'Fusion' },
-  { value: 'farm_to_table', label: 'Farm to Table' },
+  ...getCuisineOptions({ minPopularity: 65, limit: 50 }),
   { value: 'desserts', label: 'Desserts & Pastry' },
   { value: 'other', label: 'Other' },
 ] as const
@@ -84,6 +73,9 @@ export function getBusinessTypeCollectionLabel(value: string): string {
 }
 
 export function getCuisineLabel(value: string): string {
+  const canonical = canonicalizeCuisineSlug(value)
+  if (canonical) return getCuisineDisplayName(canonical)
+
   return CUISINE_CATEGORIES.find((c) => c.value === value)?.label ?? value
 }
 

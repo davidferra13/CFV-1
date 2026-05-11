@@ -5,6 +5,7 @@
 // Helps chef avoid repeating the same menu and spots culinary patterns per client.
 
 import { requireChef } from '@/lib/auth/get-user'
+import { getCuisineDisplayName, normalizeCuisineList } from '@/lib/constants/cuisines'
 import { createServerClient } from '@/lib/db/server'
 
 // ── Types ──────────────────────────────────────────────────────────────────────
@@ -190,7 +191,7 @@ export async function getClientMenuHistory(clientId: string): Promise<ClientMenu
       guestCount: event.guest_count,
       menuId: menu.id,
       menuName: menu.name,
-      cuisineType: menu.cuisine_type,
+      cuisineType: menu.cuisine_type ? getCuisineDisplayName(menu.cuisine_type) : null,
       isSimpleMode: menu.simple_mode,
       simpleContent: menu.simple_mode_content,
       dishes,
@@ -202,7 +203,11 @@ export async function getClientMenuHistory(clientId: string): Promise<ClientMenu
   const cuisineSet = new Set<string>()
 
   for (const entry of entries) {
-    if (entry.cuisineType) cuisineSet.add(entry.cuisineType)
+    if (entry.cuisineType) {
+      for (const cuisine of normalizeCuisineList([entry.cuisineType], { allowCustom: true })) {
+        cuisineSet.add(getCuisineDisplayName(cuisine))
+      }
+    }
     for (const dish of entry.dishes) {
       for (const name of dish.componentNames) {
         componentCounts.set(name, (componentCounts.get(name) ?? 0) + 1)

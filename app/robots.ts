@@ -29,6 +29,7 @@ export default function robots(): MetadataRoute.Robots {
           '/nearby',
           '/nearby/',
           '/book',
+          '/cannabis/public',
         ],
         disallow: [
           '/api/',
@@ -60,6 +61,8 @@ export default function robots(): MetadataRoute.Robots {
           '/my-profile',
           '/my-rewards',
           '/my-inquiries',
+          '/cannabis-invite/',
+          '/admin/',
         ],
       },
       // Block aggressive crawlers that waste bandwidth

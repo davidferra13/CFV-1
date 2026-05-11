@@ -4,27 +4,19 @@ import { useState, useRef, useTransition } from 'react'
 import { US_STATES } from '@/lib/onboarding/onboarding-constants'
 import { uploadChefProfileImage } from '@/lib/network/actions'
 import { uploadChefLogo } from '@/lib/chef/profile-actions'
+import {
+  getCuisineDisplayName,
+  getCuisineOptions,
+  normalizeCuisineList,
+} from '@/lib/constants/cuisines'
 
+const OTHER_CUISINE = 'Other'
 const CUISINE_OPTIONS = [
-  'American',
-  'French',
-  'Italian',
-  'Japanese',
-  'Mexican',
-  'Mediterranean',
-  'Chinese',
-  'Indian',
-  'Thai',
-  'Korean',
-  'Spanish',
-  'Middle Eastern',
-  'Caribbean',
-  'Southern',
-  'Farm-to-Table',
-  'Plant-Based',
-  'Fusion',
-  'Pastry & Baking',
-  'Other',
+  ...getCuisineOptions({ minPopularity: 58, limit: 24, excludeOther: true }),
+  {
+    value: OTHER_CUISINE,
+    label: OTHER_CUISINE,
+  },
 ]
 
 const MAX_PROFILE_SIZE = 5 * 1024 * 1024 // 5MB
@@ -55,7 +47,9 @@ type ProfileStepProps = {
 
 export function ProfileStep({ onComplete, onSkip, existingData }: ProfileStepProps) {
   const [businessName, setBusinessName] = useState(existingData?.businessName ?? '')
-  const [cuisines, setCuisines] = useState<string[]>(existingData?.cuisines ?? [])
+  const [cuisines, setCuisines] = useState<string[]>(
+    normalizeCuisineList(existingData?.cuisines ?? [], { allowCustom: true })
+  )
   const [customCuisines, setCustomCuisines] = useState('')
   const [city, setCity] = useState(existingData?.city ?? '')
   const [state, setState] = useState(existingData?.state ?? '')
@@ -166,13 +160,16 @@ export function ProfileStep({ onComplete, onSkip, existingData }: ProfileStepPro
     setValidationError('')
 
     // Merge custom cuisines with selected ones
-    let allCuisines = cuisines.filter((c) => c !== 'Other')
-    if (cuisines.includes('Other') && customCuisines.trim()) {
+    let allCuisines = normalizeCuisineList(
+      cuisines.filter((c) => c !== OTHER_CUISINE),
+      { allowCustom: true }
+    )
+    if (cuisines.includes(OTHER_CUISINE) && customCuisines.trim()) {
       const custom = customCuisines
         .split(',')
         .map((s) => s.trim())
         .filter(Boolean)
-      allCuisines = [...allCuisines, ...custom]
+      allCuisines = normalizeCuisineList([...allCuisines, ...custom], { allowCustom: true })
     }
 
     const socialLinks: Record<string, string> = {}
@@ -339,20 +336,20 @@ export function ProfileStep({ onComplete, onSkip, existingData }: ProfileStepPro
         <div className="flex flex-wrap gap-2">
           {CUISINE_OPTIONS.map((c) => (
             <button
-              key={c}
+              key={c.value}
               type="button"
-              onClick={() => toggleCuisine(c)}
+              onClick={() => toggleCuisine(c.value)}
               className={`rounded-full px-3 py-1 text-sm border transition-colors ${
-                cuisines.includes(c)
+                cuisines.includes(c.value)
                   ? 'bg-orange-100 border-orange-400 text-orange-800 dark:bg-orange-900/30 dark:border-orange-600 dark:text-orange-300'
                   : 'bg-background border-border text-muted-foreground hover:border-foreground/30'
               }`}
             >
-              {c}
+              {c.value === OTHER_CUISINE ? c.label : getCuisineDisplayName(c.value)}
             </button>
           ))}
         </div>
-        {cuisines.includes('Other') && (
+        {cuisines.includes(OTHER_CUISINE) && (
           <input
             type="text"
             value={customCuisines}

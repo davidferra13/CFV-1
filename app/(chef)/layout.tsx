@@ -86,10 +86,6 @@ const ChefLiveAlerts = dynamic(
   () => import('@/components/calling/chef-live-alerts').then((m) => m.ChefLiveAlerts),
   { ssr: false }
 )
-const GlobalReportButton = dynamic(
-  () => import('@/components/feedback/global-report-button').then((m) => m.GlobalReportButton),
-  { ssr: false }
-)
 // RouteProgress: regular import (not dynamic) so the bar is available from first render
 import { RouteProgress } from '@/components/ui/route-progress'
 import { getTenantDataPresence } from '@/lib/progressive-disclosure/tenant-data-presence'
@@ -115,7 +111,7 @@ export default async function ChefLayout({ children }: { children: React.ReactNo
   )
 
   // Workspace density intent question. This is a one-time redirect, not a forced onboarding gate.
-  if (pathname !== '/welcome' && pathname !== '/api/e2e/auth') {
+  if (pathname !== '/onboarding/welcome' && pathname !== '/api/e2e/auth') {
     const isFirstTimeEver =
       !prefData ||
       (!prefData.archetype &&
@@ -123,7 +119,7 @@ export default async function ChefLayout({ children }: { children: React.ReactNo
         !densityWasExplicitlyChosen)
 
     if (isFirstTimeEver) {
-      redirect('/welcome')
+      redirect('/onboarding/welcome')
     }
   }
 
@@ -259,6 +255,8 @@ export default async function ChefLayout({ children }: { children: React.ReactNo
                           archetype={chefArchetype}
                           tenantPresence={tenantPresence}
                           hiddenRoutes={hiddenRoutes}
+                          chefName={layoutData.business_name}
+                          chefAvatar={layoutData.profile_image_url}
                         />
                       ) : null}
                       {/* Mobile nav (top bar + bottom tabs) */}
@@ -272,6 +270,8 @@ export default async function ChefLayout({ children }: { children: React.ReactNo
                           focusMode={focusMode}
                           userId={user.id}
                           tenantId={user.tenantId ?? user.entityId}
+                          chefName={layoutData.business_name}
+                          chefAvatar={layoutData.profile_image_url}
                         />
                       ) : null}
 
@@ -308,9 +308,6 @@ export default async function ChefLayout({ children }: { children: React.ReactNo
 
                       {/* Mobile quick capture FAB - mobile-only, hidden on desktop */}
                       {shellBudget.showQuickCapture ? <QuickCapture /> : null}
-
-                      {/* Global issue report button - fixed bottom-left */}
-                      <GlobalReportButton />
 
                       {/* Breadcrumb tracker - silent navigation tracking for retrace mode */}
                       <BreadcrumbTracker />

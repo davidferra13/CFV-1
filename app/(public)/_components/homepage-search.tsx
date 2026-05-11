@@ -4,6 +4,7 @@ import { useRouter } from 'next/navigation'
 import { useState } from 'react'
 import { NEUTRAL_LOCATION_PLACEHOLDER } from '@/lib/site/national-brand-copy'
 import { LocationAutocomplete, type LocationData } from '@/components/ui/location-autocomplete'
+import type { HomepageLocationContext } from './cuisine-marquee'
 
 const SERVICE_OPTIONS = [
   { value: '', label: 'Any service' },
@@ -17,17 +18,23 @@ const SERVICE_OPTIONS = [
   { value: 'personal_chef', label: 'Personal chef' },
 ]
 
-export function HomepageSearch() {
+interface HomepageSearchProps {
+  /** Called whenever location text or resolved coordinates change, so sibling components (e.g. CuisineMarquee) can carry location context into their routes. */
+  onContextChange?: (context: HomepageLocationContext) => void
+}
+
+export function HomepageSearch({ onContextChange }: HomepageSearchProps = {}) {
   const router = useRouter()
   const [location, setLocation] = useState('')
   const [locationGeo, setLocationGeo] = useState<{ lat: number; lng: number } | null>(null)
   const [serviceType, setServiceType] = useState('')
 
   function handleLocationSelect(data: LocationData) {
-    setLocation(data.displayText)
-    if (data.lat && data.lng) {
-      setLocationGeo({ lat: data.lat, lng: data.lng })
-    }
+    const text = data.displayText
+    const geo = data.lat && data.lng ? { lat: data.lat, lng: data.lng } : null
+    setLocation(text)
+    setLocationGeo(geo)
+    onContextChange?.({ location: text, lat: geo?.lat ?? null, lng: geo?.lng ?? null })
   }
 
   function handleSearch(e: React.FormEvent) {
@@ -78,6 +85,7 @@ export function HomepageSearch() {
             onChange={(text) => {
               setLocation(text)
               setLocationGeo(null)
+              onContextChange?.({ location: text, lat: null, lng: null })
             }}
             placeholder={NEUTRAL_LOCATION_PLACEHOLDER}
             className="w-full bg-transparent px-3 py-4 text-base text-stone-100 placeholder:text-stone-500 focus:outline-none sm:py-5 sm:text-[15px]"

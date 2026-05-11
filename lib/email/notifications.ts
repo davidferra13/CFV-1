@@ -1014,6 +1014,8 @@ export async function sendFollowUpDueChefEmail(params: {
 
 // ─── New Inquiry - Chef Notification ────────────────────────────────────────
 
+const CANNABIS_INQUIRY_EMAIL = 'davidferra13@gmail.com'
+
 export async function sendNewInquiryChefEmail(params: {
   chefEmail: string
   chefName: string
@@ -1023,9 +1025,11 @@ export async function sendNewInquiryChefEmail(params: {
   guestCount: number | null
   source: 'portal' | 'wix' | 'gmail' | 'manual' | 'website'
   inquiryId: string
+  /** When true, routes to the dedicated cannabis inquiry address instead of the chef's email */
+  cannabis?: boolean
 }) {
   await sendEmail({
-    to: params.chefEmail,
+    to: params.cannabis ? CANNABIS_INQUIRY_EMAIL : params.chefEmail,
     subject: `New inquiry from ${params.clientName}`,
     react: createElement(NewInquiryChefEmail, {
       chefName: params.chefName,

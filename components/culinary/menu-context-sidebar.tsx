@@ -22,6 +22,7 @@ import {
   detectMenuDietaryConflicts,
 } from '@/lib/menus/menu-intelligence-actions'
 import { getSeasonalProduceGrouped } from '@/lib/calendar/seasonal-produce'
+import { getCuisineDisplayName } from '@/lib/constants/cuisines'
 import type {
   MenuIngredientStock,
   MenuAllergenWarning,
@@ -609,7 +610,7 @@ export function MenuContextSidebar({
                 <div className="flex flex-wrap gap-1">
                   {clientTaste.cuisinePreferences.map((c) => (
                     <Badge key={c} variant="info">
-                      {c}
+                      {getCuisineDisplayName(c)}
                     </Badge>
                   ))}
                 </div>

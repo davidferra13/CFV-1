@@ -8,6 +8,7 @@ import { createServerClient } from '@/lib/db/server'
 import { revalidatePath } from 'next/cache'
 import { z } from 'zod'
 import { createNotification, getChefAuthUserId } from '@/lib/notifications/actions'
+import { getCuisineDisplayName, normalizeCuisineList } from '@/lib/constants/cuisines'
 import { FUN_QA_QUESTIONS, type FunQAKey, type FunQAAnswers } from './fun-qa-constants'
 
 // Re-export for any server-side consumers that previously imported from here.
@@ -124,8 +125,23 @@ function normalizeClientPreferenceList(values: string[] | undefined, maxItems: n
   return normalized
 }
 
+function normalizeClientCuisinePreferenceList(
+  values: string[] | undefined,
+  maxItems: number
+): string[] {
+  return normalizeCuisineList(values ?? [], { allowCustom: true, max: maxItems })
+}
+
+function displayCuisinePreferenceList(values: string[]): string[] {
+  return values.map(getCuisineDisplayName)
+}
+
 function serializePreferenceList(values: string[] | null | undefined): string {
   return JSON.stringify(normalizeClientPreferenceList(values ?? [], 500))
+}
+
+function serializeCuisinePreferenceList(values: string[] | null | undefined): string {
+  return JSON.stringify(normalizeClientCuisinePreferenceList(values ?? [], 500))
 }
 
 /**
@@ -182,7 +198,7 @@ export async function updateMyProfile(input: UpdateClientProfileInput) {
     kitchen_constraints: validated.kitchen_constraints || null,
     house_rules: validated.house_rules || null,
     family_notes: validated.family_notes || null,
-    favorite_cuisines: normalizeClientPreferenceList(validated.favorite_cuisines, 25),
+    favorite_cuisines: normalizeClientCuisinePreferenceList(validated.favorite_cuisines, 25),
     favorite_dishes: normalizeClientPreferenceList(validated.favorite_dishes, 50),
   }
 
@@ -326,10 +342,10 @@ export async function updateMyProfile(input: UpdateClientProfileInput) {
         oldProfile.favorite_dishes as string[] | null
       )
       const newFavoriteDishes = serializePreferenceList(cleanedData.favorite_dishes)
-      const oldFavoriteCuisines = serializePreferenceList(
+      const oldFavoriteCuisines = serializeCuisinePreferenceList(
         oldProfile.favorite_cuisines as string[] | null
       )
-      const newFavoriteCuisines = serializePreferenceList(cleanedData.favorite_cuisines)
+      const newFavoriteCuisines = serializeCuisinePreferenceList(cleanedData.favorite_cuisines)
 
       if (oldFavoriteDishes !== newFavoriteDishes || oldFavoriteCuisines !== newFavoriteCuisines) {
         const chefAuthId = await getChefAuthUserId(oldProfile.tenant_id)
@@ -345,7 +361,7 @@ export async function updateMyProfile(input: UpdateClientProfileInput) {
           if (oldFavoriteCuisines !== newFavoriteCuisines) {
             favoritesSummary.push(
               cleanedData.favorite_cuisines.length > 0
-                ? `Favorite cuisines: ${cleanedData.favorite_cuisines.slice(0, 6).join(', ')}`
+                ? `Favorite cuisines: ${displayCuisinePreferenceList(cleanedData.favorite_cuisines).slice(0, 6).join(', ')}`
                 : 'Favorite cuisines cleared'
             )
           }
@@ -454,7 +470,7 @@ export async function getMyMealCollaborationData() {
         ((favorites as any)?.favorite_dishes as string[] | null) ?? [],
         50
       ),
-      favoriteCuisines: normalizeClientPreferenceList(
+      favoriteCuisines: normalizeClientCuisinePreferenceList(
         ((favorites as any)?.favorite_cuisines as string[] | null) ?? [],
         25
       ),
@@ -486,7 +502,7 @@ export async function updateMyMealFavorites(input: UpdateMyMealFavoritesInput) {
     (client.favorite_dishes as string[] | null) ?? [],
     50
   )
-  const previousFavoriteCuisines = normalizeClientPreferenceList(
+  const previousFavoriteCuisines = normalizeClientCuisinePreferenceList(
     (client.favorite_cuisines as string[] | null) ?? [],
     25
   )
@@ -497,13 +513,13 @@ export async function updateMyMealFavorites(input: UpdateMyMealFavoritesInput) {
   const nextFavoriteCuisines =
     validated.favorite_cuisines === undefined
       ? previousFavoriteCuisines
-      : normalizeClientPreferenceList(validated.favorite_cuisines, 25)
+      : normalizeClientCuisinePreferenceList(validated.favorite_cuisines, 25)
 
   const dishChanged =
     serializePreferenceList(previousFavoriteDishes) !== serializePreferenceList(nextFavoriteDishes)
   const cuisineChanged =
-    serializePreferenceList(previousFavoriteCuisines) !==
-    serializePreferenceList(nextFavoriteCuisines)
+    serializeCuisinePreferenceList(previousFavoriteCuisines) !==
+    serializeCuisinePreferenceList(nextFavoriteCuisines)
 
   if (!dishChanged && !cuisineChanged) {
     return {
@@ -548,7 +564,7 @@ export async function updateMyMealFavorites(input: UpdateMyMealFavoritesInput) {
       if (cuisineChanged) {
         summaryParts.push(
           nextFavoriteCuisines.length > 0
-            ? `Favorite cuisines: ${nextFavoriteCuisines.slice(0, 6).join(', ')}`
+            ? `Favorite cuisines: ${displayCuisinePreferenceList(nextFavoriteCuisines).slice(0, 6).join(', ')}`
             : 'Favorite cuisines cleared'
         )
       }

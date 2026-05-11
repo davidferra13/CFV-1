@@ -93,6 +93,27 @@ export async function hasCannabisAccess(authUserId: string): Promise<boolean> {
   }
 }
 
+/**
+ * Check if a chef tenant (by chefs.id) has active cannabis tier access.
+ * Used at inquiry intake to route emails to the cannabis inquiry address.
+ */
+export async function isCannabisTenantById(tenantId: string): Promise<boolean> {
+  try {
+    const db: any = createServerClient()
+    const { data, error } = await db
+      .from('cannabis_tier_users')
+      .select('status')
+      .eq('tenant_id', tenantId)
+      .eq('user_type', 'chef')
+      .single()
+
+    if (error || !data) return false
+    return data.status === 'active'
+  } catch {
+    return false
+  }
+}
+
 // ─── Cannabis Events ──────────────────────────────────────────────────────────
 
 /**

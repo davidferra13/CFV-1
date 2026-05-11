@@ -6,11 +6,14 @@ import { headers } from 'next/headers'
 import { requireChef } from '@/lib/auth/get-user'
 import { getAccountAccessOverview } from '@/lib/auth/account-access'
 import { AccountAccessMonitor } from '@/components/settings/account-access-monitor'
+import { LocationSettings } from '@/components/settings/location-settings'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { ChangePasswordForm } from '@/components/settings/change-password-form'
 import { EmailChangeForm } from '@/components/settings/email-change-form'
 import Link from 'next/link'
 import { createServerClient } from '@/lib/db/server'
+import { getAccountLocation } from '@/lib/location/account-location'
+import { SignOutButton } from '@/components/settings/sign-out-button'
 
 export const metadata: Metadata = { title: 'Account & Security' }
 
@@ -19,9 +22,10 @@ export default async function AccountSettingsPage() {
   const db = createServerClient()
   const requestHeaders = headers()
 
-  const [{ data: chef }, accessOverview] = await Promise.all([
+  const [{ data: chef }, accessOverview, accountLocation] = await Promise.all([
     db.from('chefs').select('email').eq('id', user.entityId).single(),
     getAccountAccessOverview(user.authUserId, requestHeaders),
+    getAccountLocation(user.authUserId).catch(() => null),
   ])
 
   const currentEmail = chef?.email || ''
@@ -36,6 +40,9 @@ export default async function AccountSettingsPage() {
       </div>
 
       <AccountAccessMonitor overview={accessOverview} />
+
+      {/* Home Location */}
+      <LocationSettings currentLocation={accountLocation} userId={user.authUserId} />
 
       {/* Email */}
       <Card>
@@ -65,6 +72,17 @@ export default async function AccountSettingsPage() {
           >
             Manage devices and PINs
           </Link>
+        </CardContent>
+      </Card>
+
+      {/* Session */}
+      <Card>
+        <CardHeader>
+          <CardTitle className="text-base">Session</CardTitle>
+          <p className="text-sm text-stone-400">Sign out of ChefFlow on this device.</p>
+        </CardHeader>
+        <CardContent>
+          <SignOutButton />
         </CardContent>
       </Card>
 

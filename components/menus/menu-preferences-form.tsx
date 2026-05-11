@@ -4,23 +4,12 @@ import { useState } from 'react'
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
 
-const CUISINE_OPTIONS = [
-  'Italian',
-  'French',
-  'Mediterranean',
-  'Japanese',
-  'Mexican',
-  'American',
-  'Thai',
-  'Indian',
-  'Chinese',
-  'Korean',
-  'Spanish',
-  'Greek',
-  'Middle Eastern',
-  'Southern',
-  'Fusion',
-]
+import {
+  getCuisineDisplayName,
+  getCuisineOptions,
+  normalizeCuisineList,
+} from '@/lib/constants/cuisines'
+const CUISINE_OPTIONS = getCuisineOptions({ minPopularity: 70, limit: 30, excludeOther: true })
 
 const SERVICE_STYLES = [
   { value: 'plated', label: 'Plated' },
@@ -51,7 +40,9 @@ type MenuPreferencesFormProps = {
 }
 
 export function MenuPreferencesForm({ onSubmit, loading, initialData }: MenuPreferencesFormProps) {
-  const [cuisines, setCuisines] = useState<string[]>(initialData?.cuisinePreferences ?? [])
+  const [cuisines, setCuisines] = useState<string[]>(
+    normalizeCuisineList(initialData?.cuisinePreferences ?? [], { allowCustom: true })
+  )
   const [serviceStyle, setServiceStyle] = useState(initialData?.serviceStylePref ?? '')
   const [foodsLove, setFoodsLove] = useState(initialData?.foodsLove ?? '')
   const [foodsAvoid, setFoodsAvoid] = useState(initialData?.foodsAvoid ?? '')
@@ -67,7 +58,7 @@ export function MenuPreferencesForm({ onSubmit, loading, initialData }: MenuPref
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault()
     onSubmit({
-      cuisinePreferences: cuisines,
+      cuisinePreferences: normalizeCuisineList(cuisines, { allowCustom: true }),
       serviceStylePref: serviceStyle,
       foodsLove,
       foodsAvoid,
@@ -87,16 +78,16 @@ export function MenuPreferencesForm({ onSubmit, loading, initialData }: MenuPref
         <div className="flex flex-wrap gap-2">
           {CUISINE_OPTIONS.map((c) => (
             <button
-              key={c}
+              key={c.value}
               type="button"
-              onClick={() => toggleCuisine(c)}
+              onClick={() => toggleCuisine(c.value)}
               className={`px-3 py-1.5 rounded-full text-sm border transition ${
-                cuisines.includes(c)
+                cuisines.includes(c.value)
                   ? 'border-brand-500 bg-brand-950/40 text-brand-300'
                   : 'border-stone-700 bg-stone-800 text-stone-400 hover:border-stone-500'
               }`}
             >
-              {c}
+              {getCuisineDisplayName(c.value)}
             </button>
           ))}
         </div>

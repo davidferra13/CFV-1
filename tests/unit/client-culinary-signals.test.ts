@@ -165,4 +165,23 @@ describe('client culinary signals', () => {
     assert.equal(summary.pastEventCount, 3)
     assert.equal(negativeLookup.get('cilantro')?.sourceLabel, 'Taste Profile')
   })
+
+  it('dedupes cuisine signals by registry slug and exposes display labels', () => {
+    const snapshot = buildClientCulinarySignalSnapshot({
+      client: {
+        id: 'client-1',
+        full_name: 'Avery Stone',
+        favorite_cuisines: ['middle_eastern'],
+      },
+      tasteProfile: {
+        favorite_cuisines: ['Middle Eastern'],
+      },
+    })
+
+    const cuisines = snapshot.canonical.filter((signal) => signal.kind === 'favorite_cuisine')
+
+    assert.equal(cuisines.length, 1)
+    assert.equal(cuisines[0]?.value, 'Middle Eastern')
+    assert.equal(cuisines[0]?.id, 'taste_profile:favorite_cuisine:middle_eastern')
+  })
 })

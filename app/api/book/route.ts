@@ -442,6 +442,7 @@ export async function POST(request: NextRequest) {
         // Send chef notification email (non-blocking)
         try {
           const { sendNewInquiryChefEmail } = await import('@/lib/email/notifications')
+          const { isCannabisTenantById } = await import('@/lib/chef/cannabis-actions')
           const { data: chefRecord } = await db
             .from('chefs')
             .select('email')
@@ -449,6 +450,7 @@ export async function POST(request: NextRequest) {
             .single()
           const chefEmail = chefRecord?.email
           if (chefEmail) {
+            const isCannabis = await isCannabisTenantById(tenantId).catch(() => false)
             await sendNewInquiryChefEmail({
               chefEmail,
               chefName: chef.display_name,
@@ -458,6 +460,7 @@ export async function POST(request: NextRequest) {
               guestCount: data.guest_count,
               source: 'portal',
               inquiryId: inquiry.id,
+              cannabis: isCannabis,
             })
           }
         } catch (emailErr) {

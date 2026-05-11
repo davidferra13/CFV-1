@@ -970,11 +970,11 @@ html {
   background-image: linear-gradient(
     105deg,
     rgb(var(--brand-100)) 0%,
-    rgb(var(--stone-950)) 18%,
+    rgb(var(--stone-300)) 18%,
     rgb(var(--brand-200)) 36%,
-    rgb(255 255 255 / 0.92) 46%,
+    rgb(255 255 255 / 0.96) 46%,
     rgb(var(--brand-300)) 54%,
-    rgb(var(--stone-950)) 72%,
+    rgb(var(--stone-300)) 72%,
     rgb(var(--brand-100)) 100%
   );
   background-size: 260% 100%;
@@ -991,7 +991,7 @@ html {
     #c4824a 0%,
     #d4945a 18%,
     #e8a96b 36%,
-    rgb(255 245 230 / 0.95) 46%,
+    rgb(255 245 230 / 0.97) 46%,
     #e8a96b 54%,
     #d4945a 72%,
     #c4824a 100%
@@ -1012,6 +1012,76 @@ html {
   to {
     background-position: 100% 50%;
   }
+}
+
+/* ── Cuisine Marquee ── */
+.cuisine-marquee-container {
+  mask-image: linear-gradient(90deg, transparent 0%, black 8%, black 92%, transparent 100%);
+  -webkit-mask-image: linear-gradient(90deg, transparent 0%, black 8%, black 92%, transparent 100%);
+  scrollbar-width: none;
+  -ms-overflow-style: none;
+}
+
+.cuisine-marquee-container::-webkit-scrollbar {
+  display: none;
+}
+
+/* ── Hero line stagger ── */
+@keyframes hero-line-in {
+  from {
+    opacity: 0;
+    transform: translateY(22px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.hero-line {
+  display: block;
+  opacity: 0;
+  animation: hero-line-in 0.7s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+}
+
+.hero-line-1 {
+  animation-delay: 0.1s;
+}
+.hero-line-2 {
+  animation-delay: 0.35s;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .hero-line {
+    opacity: 1;
+    animation: none;
+  }
+}
+
+/* ── Hero stat badges ── */
+.hero-stat-badge {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 2px;
+}
+
+.hero-stat-badge-value {
+  font-size: 1.25rem;
+  font-weight: 700;
+  line-height: 1;
+  background: linear-gradient(135deg, #e8a96b, #d4945a);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+
+.hero-stat-badge-label {
+  font-size: 0.7rem;
+  font-weight: 500;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: rgb(160 134 114);
 }
 
 .scroll-reveal {

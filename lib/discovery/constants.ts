@@ -1,23 +1,11 @@
-export const DISCOVERY_CUISINE_OPTIONS = [
-  { value: 'american', label: 'American' },
-  { value: 'italian', label: 'Italian' },
-  { value: 'french', label: 'French' },
-  { value: 'japanese', label: 'Japanese' },
-  { value: 'mexican', label: 'Mexican' },
-  { value: 'thai', label: 'Thai' },
-  { value: 'indian', label: 'Indian' },
-  { value: 'mediterranean', label: 'Mediterranean' },
-  { value: 'chinese', label: 'Chinese' },
-  { value: 'korean', label: 'Korean' },
-  { value: 'caribbean', label: 'Caribbean' },
-  { value: 'southern', label: 'Southern' },
-  { value: 'bbq', label: 'BBQ' },
-  { value: 'seafood', label: 'Seafood' },
-  { value: 'vegan', label: 'Vegan' },
-  { value: 'farm_to_table', label: 'Farm-to-table' },
-  { value: 'latin', label: 'Latin' },
-  { value: 'middle_eastern', label: 'Middle Eastern' },
-] as const
+// Derived from master cuisine list (top cuisines for discovery)
+import {
+  canonicalizeCuisineSlug,
+  getCuisineDisplayName,
+  getCuisineOptions,
+} from '@/lib/constants/cuisines'
+
+export const DISCOVERY_CUISINE_OPTIONS = getCuisineOptions({ minPopularity: 70, limit: 30 })
 
 export const DISCOVERY_SERVICE_TYPE_OPTIONS = [
   { value: 'private_dinner', label: 'Private dinner' },
@@ -78,7 +66,7 @@ function canonicalizeOptionValue(
 }
 
 export function canonicalizeDiscoveryCuisine(value: string | null | undefined) {
-  return canonicalizeOptionValue(value, DISCOVERY_CUISINE_OPTIONS)
+  return canonicalizeCuisineSlug(value)
 }
 
 export function canonicalizeDiscoveryServiceType(value: string | null | undefined) {
@@ -101,7 +89,7 @@ export function humanizeDiscoveryValue(value: string | null | undefined) {
 
 export function getDiscoveryCuisineLabel(value: string | null | undefined) {
   const canonical = canonicalizeDiscoveryCuisine(value)
-  return (canonical && DISCOVERY_CUISINE_LABELS[canonical]) || humanizeDiscoveryValue(value)
+  return canonical ? getCuisineDisplayName(canonical) : humanizeDiscoveryValue(value)
 }
 
 export function getDiscoveryServiceTypeLabel(value: string | null | undefined) {

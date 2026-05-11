@@ -1,3 +1,5 @@
+import { canonicalizeCuisineSlug, getCuisineDisplayName } from '@/lib/constants/cuisines'
+
 const CULINARY_SIGNAL_META = {
   allergy: { label: 'Allergy', order: 10 },
   dietary_restriction: { label: 'Dietary restriction', order: 20 },
@@ -189,7 +191,10 @@ function formatTasteProfileSpicePreference(raw: number | null | undefined): stri
 }
 
 function buildFamilyKey(kind: ClientCulinarySignalKind, value: string): string {
-  const normalized = normalizeKey(value)
+  const normalized =
+    kind === 'favorite_cuisine'
+      ? (canonicalizeCuisineSlug(value) ?? normalizeKey(value))
+      : normalizeKey(value)
 
   switch (kind) {
     case 'allergy':
@@ -261,11 +266,15 @@ function createSignal(input: {
   sourceLabel: string
   freshness?: string | null
 }): InternalSignal {
+  const value = input.kind === 'favorite_cuisine' ? getCuisineDisplayName(input.value) : input.value
+  const idValue =
+    input.kind === 'favorite_cuisine' ? (canonicalizeCuisineSlug(input.value) ?? value) : value
+
   return {
-    id: `${input.source}:${input.kind}:${normalizeKey(input.value)}`,
+    id: `${input.source}:${input.kind}:${normalizeKey(idValue)}`,
     kind: input.kind,
     label: CULINARY_SIGNAL_META[input.kind].label,
-    value: input.value,
+    value,
     source: input.source,
     sourceLabel: input.sourceLabel,
     freshness: input.freshness ?? null,

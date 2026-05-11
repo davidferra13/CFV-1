@@ -5,6 +5,7 @@ import {
   buildPriceStateReliability,
   priceStateReliabilityApiShape,
 } from '@/lib/pricing/price-state-reliability'
+import { getLocationOrDetect } from '@/lib/location/account-location'
 
 export const dynamic = 'force-dynamic'
 
@@ -45,9 +46,15 @@ export async function POST(request: NextRequest) {
     return NextResponse.json({ error: 'Max 50 ingredients per batch request' }, { status: 400 })
   }
 
+  let resolvedZip = body.zip || undefined
+  if (!resolvedZip) {
+    const { location } = await getLocationOrDetect()
+    resolvedZip = location?.zip || undefined
+  }
+
   const queries: PriceLookupQuery[] = body.ingredients.map((ing) => ({
     ingredient: ing.trim(),
-    zipCode: body.zip || undefined,
+    zipCode: resolvedZip,
     radiusMiles: body.radius || undefined,
   }))
 
@@ -63,7 +70,7 @@ export async function POST(request: NextRequest) {
         reliabilityByTierAndScore.set(
           key,
           await buildPriceStateReliability({
-            zipCode: body.zip,
+            zipCode: resolvedZip,
             resolutionTier: result.resolution_tier,
             confidenceScore: result.confidence_score,
           })
@@ -73,7 +80,7 @@ export async function POST(request: NextRequest) {
 
     const response = {
       count: results.length,
-      zip: body.zip || null,
+      zip: resolvedZip || null,
       results: results.map((r) => {
         const stateReliability = reliabilityByTierAndScore.get(
           `${r.resolution_tier}:${r.confidence_score}`

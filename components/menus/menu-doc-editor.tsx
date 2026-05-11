@@ -43,6 +43,11 @@ import { useProtectedForm } from '@/lib/qol/use-protected-form'
 import { FormShield } from '@/components/forms/form-shield'
 import { AllergenConflictAlert } from '@/components/events/allergen-conflict-alert'
 import { MenuCostTicker } from '@/components/costing/menu-cost-ticker'
+import {
+  canonicalizeCuisineSlug,
+  getCuisineDisplayName,
+  getCuisineOptions,
+} from '@/lib/constants/cuisines'
 
 // ─── Constants ────────────────────────────────────────────────────────────────
 
@@ -94,28 +99,11 @@ const SERVICE_STYLE_LABELS: Record<string, string> = {
   other: 'Other',
 }
 
-const CUISINE_SUGGESTIONS = [
-  'American',
-  'Italian',
-  'French',
-  'Japanese',
-  'Mediterranean',
-  'Mexican',
-  'Indian',
-  'Thai',
-  'Chinese',
-  'Greek',
-  'Spanish',
-  'Middle Eastern',
-  'Farm-to-Table',
-  'Modern American',
-  'Seasonal Local',
-  'New American',
-  'Pan-Asian',
-  'Latin',
-  'Nordic',
-  'Fusion',
-]
+const CUISINE_OPTIONS = getCuisineOptions({
+  minPopularity: 58,
+  limit: 30,
+  excludeOther: true,
+})
 
 // ─── Season utility ───────────────────────────────────────────────────────────
 
@@ -1651,7 +1639,9 @@ export function MenuDocEditor({
 
   // Menu-level state
   const [menuName, setMenuName] = useState(initialMenu.name)
-  const [cuisineType, setCuisineType] = useState(initialMenu.cuisine_type ?? '')
+  const [cuisineType, setCuisineType] = useState(
+    canonicalizeCuisineSlug(initialMenu.cuisine_type) ?? initialMenu.cuisine_type ?? ''
+  )
   const [serviceStyle, setServiceStyle] = useState(initialMenu.service_style ?? '')
   const [guestCount, setGuestCount] = useState(initialMenu.target_guest_count?.toString() ?? '')
   const [pricePerPerson, setPricePerPerson] = useState(
@@ -1682,7 +1672,8 @@ export function MenuDocEditor({
   const defaultData = useMemo(
     () => ({
       menuName: initialMenu.name,
-      cuisineType: initialMenu.cuisine_type ?? '',
+      cuisineType:
+        canonicalizeCuisineSlug(initialMenu.cuisine_type) ?? initialMenu.cuisine_type ?? '',
       serviceStyle: initialMenu.service_style ?? '',
       guestCount: initialMenu.target_guest_count?.toString() ?? '',
       pricePerPerson: initialMenu.price_per_person_cents
@@ -1716,7 +1707,8 @@ export function MenuDocEditor({
 
   const applyFormData = useCallback((data: Record<string, unknown>) => {
     if (typeof data.menuName === 'string') setMenuName(data.menuName)
-    if (typeof data.cuisineType === 'string') setCuisineType(data.cuisineType)
+    if (typeof data.cuisineType === 'string')
+      setCuisineType(canonicalizeCuisineSlug(data.cuisineType) ?? data.cuisineType)
     if (typeof data.serviceStyle === 'string') setServiceStyle(data.serviceStyle)
     if (typeof data.guestCount === 'string') setGuestCount(data.guestCount)
     if (typeof data.pricePerPerson === 'string') setPricePerPerson(data.pricePerPerson)
@@ -1739,8 +1731,9 @@ export function MenuDocEditor({
   }
 
   const handleCuisineType = (v: string) => {
-    setCuisineType(v)
-    saveMenuMeta({ cuisine_type: v || null })
+    const next = canonicalizeCuisineSlug(v) ?? v
+    setCuisineType(next)
+    saveMenuMeta({ cuisine_type: next || null })
   }
 
   const handleServiceStyle = (v: string) => {
@@ -2016,7 +2009,7 @@ export function MenuDocEditor({
                   {!locked ? (
                     <>
                       <input
-                        value={cuisineType}
+                        value={cuisineType ? getCuisineDisplayName(cuisineType) : ''}
                         onChange={(e) => handleCuisineType(e.target.value)}
                         onFocus={() => setShowCuisineSuggestions(true)}
                         onBlur={() => setTimeout(() => setShowCuisineSuggestions(false), 150)}
@@ -2025,27 +2018,34 @@ export function MenuDocEditor({
                       />
                       {showCuisineSuggestions && (
                         <div className="absolute left-0 top-full z-10 bg-stone-900 border border-stone-700 rounded-lg shadow-lg mt-1 py-1 max-h-48 overflow-y-auto min-w-[160px]">
-                          {CUISINE_SUGGESTIONS.filter(
+                          {CUISINE_OPTIONS.filter(
                             (s) =>
-                              !cuisineType || s.toLowerCase().includes(cuisineType.toLowerCase())
+                              !cuisineType ||
+                              s.label
+                                .toLowerCase()
+                                .includes(getCuisineDisplayName(cuisineType).toLowerCase())
                           ).map((s) => (
                             <button
                               type="button"
-                              key={s}
+                              key={s.value}
                               onMouseDown={() => {
-                                handleCuisineType(s)
+                                handleCuisineType(s.value)
                                 setShowCuisineSuggestions(false)
                               }}
                               className="block w-full text-left px-3 py-1.5 text-sm text-stone-400 hover:bg-stone-800"
                             >
-                              {s}
+                              {s.label}
                             </button>
                           ))}
                         </div>
                       )}
                     </>
                   ) : (
-                    cuisineType && <span className="text-sm text-stone-500">{cuisineType}</span>
+                    cuisineType && (
+                      <span className="text-sm text-stone-500">
+                        {getCuisineDisplayName(cuisineType)}
+                      </span>
+                    )
                   )}
                 </div>
 

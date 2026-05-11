@@ -4,6 +4,7 @@
 
 import { createServerClient } from '@/lib/db/server'
 import { dateToDateString } from '@/lib/utils/format'
+import { getCuisineDisplayName, normalizeCuisineList } from '@/lib/constants/cuisines'
 
 // ── Types ────────────────────────────────────────────────────────────────────
 
@@ -152,7 +153,9 @@ export async function generateClientSummary(
     // Reviews
     db
       .from('client_reviews')
-      .select('id, event_id, rating, feedback_text, what_they_loved, what_could_improve, created_at, events!inner(occasion, event_date)')
+      .select(
+        'id, event_id, rating, feedback_text, what_they_loved, what_could_improve, created_at, events!inner(occasion, event_date)'
+      )
       .eq('tenant_id', tenantId)
       .eq('client_id', clientId)
       .order('created_at', { ascending: false }),
@@ -183,7 +186,10 @@ export async function generateClientSummary(
   }
 
   // Build event financial map
-  const finMap = new Map<string, { paidCents: number; outstandingCents: number; revenueCents: number }>()
+  const finMap = new Map<
+    string,
+    { paidCents: number; outstandingCents: number; revenueCents: number }
+  >()
   for (const f of financialsResult.data ?? []) {
     if (!f.event_id) continue
     finMap.set(f.event_id, {
@@ -267,7 +273,9 @@ export async function generateClientSummary(
     dietaryRestrictions: parseStringArray(client.dietary_restrictions),
     allergies: parseStringArray(client.allergies),
     favoriteDishes: parseStringArray(client.favorite_dishes),
-    favoriteCuisines: parseStringArray(client.favorite_cuisines),
+    favoriteCuisines: normalizeCuisineList(parseStringArray(client.favorite_cuisines), {
+      allowCustom: true,
+    }).map(getCuisineDisplayName),
     preferredServiceStyle: client.preferred_service_style ?? null,
     typicalGuestCount: client.typical_guest_count ?? null,
   }
@@ -318,7 +326,7 @@ export async function generateClientSummary(
 
   const communication: ClientSummaryCommunication = {
     totalInteractions: msgRows.length,
-    lastContactDate: msgRows.length > 0 ? msgRows[0].sent_at ?? msgRows[0].created_at : null,
+    lastContactDate: msgRows.length > 0 ? (msgRows[0].sent_at ?? msgRows[0].created_at) : null,
     recentItems: recentComms.slice(0, 5),
   }
 

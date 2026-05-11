@@ -20,6 +20,7 @@ import {
   deleteComponent,
 } from '@/lib/menus/actions'
 import { searchRecipes } from '@/lib/recipes/actions'
+import { getCuisineDisplayName } from '@/lib/constants/cuisines'
 import {
   COMPONENT_CATEGORIES,
   TRANSPORT_CATEGORIES,
@@ -932,7 +933,9 @@ export function MenuEditorClient({ menu }: { menu: MenuFull }) {
         <div>
           <h1 className="text-2xl font-bold text-stone-100">{menu.name}</h1>
           {menu.cuisine_type && (
-            <p className="text-stone-500 text-sm mt-0.5">{menu.cuisine_type}</p>
+            <p className="text-stone-500 text-sm mt-0.5">
+              {getCuisineDisplayName(menu.cuisine_type)}
+            </p>
           )}
         </div>
         <div className="flex items-center gap-2">
