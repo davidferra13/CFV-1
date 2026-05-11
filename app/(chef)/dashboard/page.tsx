@@ -60,6 +60,7 @@ import {
 // New card-based sections
 import { ScheduleCards } from './_sections/schedule-cards'
 import { PrepPressureCard } from './_sections/prep-pressure-card'
+import { LoadHeatmapCard } from './_sections/load-heatmap-card'
 import { SaturationCards } from './_sections/saturation-cards'
 import { AlertCards } from './_sections/alerts-cards'
 import { BusinessCards } from './_sections/business-cards'
@@ -1889,6 +1890,13 @@ export default async function ChefDashboard() {
               <WidgetErrorBoundary name="Prep Pressure">
                 <div className="col-span-full">
                   <PrepPressureCard />
+                </div>
+              </WidgetErrorBoundary>
+            </Suspense>
+            <Suspense fallback={null}>
+              <WidgetErrorBoundary name="Weekly Load">
+                <div className="col-span-full sm:col-span-2">
+                  <LoadHeatmapCard />
                 </div>
               </WidgetErrorBoundary>
             </Suspense>

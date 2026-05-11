@@ -14,6 +14,7 @@ import { WidgetErrorBoundary } from '@/components/ui/widget-error-boundary'
 import { SchedulingInsightsBar } from '@/components/intelligence/scheduling-insights-bar'
 import { CapacitySeasonalBar } from '@/components/intelligence/capacity-seasonal-bar'
 import { DomainSignals } from '@/components/cil/domain-signals'
+import Link from 'next/link'
 
 export const metadata: Metadata = { title: 'Calendar' }
 
@@ -53,11 +54,19 @@ export default async function CalendarPage() {
 
   return (
     <div className="max-w-7xl mx-auto px-4 py-6">
-      <div className="mb-5">
-        <h1 className="text-2xl font-bold text-stone-100">Calendar</h1>
-        <p className="mt-1 text-sm text-stone-500">
-          Your complete schedule: events, prep, calls, personal commitments, and goals.
-        </p>
+      <div className="mb-5 flex items-start justify-between">
+        <div>
+          <h1 className="text-2xl font-bold text-stone-100">Calendar</h1>
+          <p className="mt-1 text-sm text-stone-500">
+            Your complete schedule: events, prep, calls, personal commitments, and goals.
+          </p>
+        </div>
+        <Link
+          href="/calendar/load"
+          className="shrink-0 rounded-lg border border-stone-700 px-3 py-1.5 text-xs font-medium text-stone-400 hover:text-stone-200 hover:bg-stone-800 transition-colors"
+        >
+          Operational Load
+        </Link>
       </div>
 
       {/* Calendar Intelligence Signals */}
