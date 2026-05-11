@@ -6,7 +6,8 @@ import { createAdminClient } from '@/lib/db/admin'
 import { requireChef } from '@/lib/auth/get-user'
 import type { ChefTipCategory, ChefTip } from './tip-types'
 
-const TIP_FIELDS = 'id, content, tags, shared, pinned, review, promoted_to, created_at, updated_at'
+const TIP_FIELDS =
+  'id, title, content, category, tags, source, event_id, shared, pinned, review, promoted_to, created_at, updated_at'
 
 function revalidateTips(chefId?: string) {
   revalidatePath('/dashboard')
@@ -114,6 +115,7 @@ export async function getTodaysTips(): Promise<ChefTip[]> {
 
 export async function getChefTips(filters?: {
   tag?: string
+  category?: string
   search?: string
   limit?: number
   offset?: number
@@ -130,8 +132,12 @@ export async function getChefTips(filters?: {
     query = query.contains('tags', [filters.tag])
   }
 
+  if (filters?.category) {
+    query = query.eq('category', filters.category)
+  }
+
   if (filters?.search) {
-    query = query.ilike('content', `%${filters.search}%`)
+    query = query.or(`content.ilike.%${filters.search}%,title.ilike.%${filters.search}%`)
   }
 
   query = query.order('created_at', { ascending: false })
@@ -151,6 +157,27 @@ export async function getChefTips(filters?: {
   }
 
   return { tips: data ?? [], total: count ?? 0 }
+}
+
+// ─── RECENT TIPS (for dashboard widget) ──────────────
+
+export async function getRecentTips(limit: number = 3): Promise<ChefTip[]> {
+  const user = await requireChef()
+  const db: any = createServerClient()
+
+  const { data, error } = await db
+    .from('chef_tips')
+    .select(TIP_FIELDS)
+    .eq('chef_id', user.entityId)
+    .order('created_at', { ascending: false })
+    .limit(limit)
+
+  if (error) {
+    console.error('[ChefTips] getRecentTips failed:', error)
+    return []
+  }
+
+  return data ?? []
 }
 
 export async function getChefTipStats(): Promise<{
@@ -223,7 +250,8 @@ export async function getChefTipStats(): Promise<{
 
 export async function addChefTip(
   content: string,
-  tags?: string[]
+  tags?: string[],
+  opts?: { title?: string; category?: string; source?: string; event_id?: string }
 ): Promise<{ success: boolean; id?: string; error?: string }> {
   const user = await requireChef()
 
@@ -239,16 +267,18 @@ export async function addChefTip(
 
   const db: any = createServerClient()
 
-  const { data, error } = await db
-    .from('chef_tips')
-    .insert({
-      chef_id: user.entityId,
-      content: trimmed,
-      tags: cleanTags,
-      shared: false,
-    })
-    .select('id')
-    .single()
+  const row: Record<string, unknown> = {
+    chef_id: user.entityId,
+    content: trimmed,
+    tags: cleanTags,
+    shared: false,
+  }
+  if (opts?.title) row.title = opts.title.trim().slice(0, 200)
+  if (opts?.category) row.category = opts.category
+  if (opts?.source) row.source = opts.source.trim().slice(0, 500)
+  if (opts?.event_id) row.event_id = opts.event_id
+
+  const { data, error } = await db.from('chef_tips').insert(row).select('id').single()
 
   if (error || !data) {
     console.error('[ChefTips] addChefTip failed:', error)
@@ -259,12 +289,16 @@ export async function addChefTip(
   return { success: true, id: data.id }
 }
 
+// Alias matching the build spec naming
+export const createChefTip = addChefTip
+
 // ─── UPDATE ────────────────────────────────────────────
 
 export async function updateChefTip(
   id: string,
   content: string,
-  tags?: string[]
+  tags?: string[],
+  opts?: { title?: string; category?: string; source?: string; event_id?: string | null }
 ): Promise<{ success: boolean; error?: string }> {
   const user = await requireChef()
 
@@ -280,13 +314,20 @@ export async function updateChefTip(
 
   const db: any = createServerClient()
 
+  const updates: Record<string, unknown> = {
+    content: trimmed,
+    tags: cleanTags,
+    updated_at: new Date().toISOString(),
+  }
+  if (opts?.title !== undefined) updates.title = opts.title ? opts.title.trim().slice(0, 200) : null
+  if (opts?.category !== undefined) updates.category = opts.category
+  if (opts?.source !== undefined)
+    updates.source = opts.source ? opts.source.trim().slice(0, 500) : null
+  if (opts?.event_id !== undefined) updates.event_id = opts.event_id
+
   const { error } = await db
     .from('chef_tips')
-    .update({
-      content: trimmed,
-      tags: cleanTags,
-      updated_at: new Date().toISOString(),
-    })
+    .update(updates)
     .eq('id', id)
     .eq('chef_id', user.entityId)
 

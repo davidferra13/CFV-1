@@ -69,8 +69,12 @@ export function ChefTipsWidget({
           setTips((prev) => [
             {
               id: result.id!,
+              title: null,
               content: trimmed,
+              category: 'other' as const,
               tags: selectedTags,
+              source: null,
+              event_id: null,
               shared: false,
               pinned: false,
               review: false,

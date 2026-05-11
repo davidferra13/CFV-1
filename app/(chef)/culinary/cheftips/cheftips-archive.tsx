@@ -108,8 +108,12 @@ export function ChefTipsArchive({
           setTips((prev) => [
             {
               id: result.id!,
+              title: null,
               content: trimmed,
+              category: 'other' as const,
               tags: newTags,
+              source: null,
+              event_id: null,
               shared: false,
               pinned: false,
               review: false,

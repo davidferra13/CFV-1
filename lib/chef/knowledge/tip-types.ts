@@ -1,12 +1,18 @@
 // ChefTips types and constants (separate from 'use server' file)
 
 export type ChefTipCategory =
-  | 'prep'
   | 'technique'
-  | 'timing'
-  | 'plating'
-  | 'ingredients'
+  | 'ingredient'
   | 'equipment'
+  | 'plating'
+  | 'flavor'
+  | 'business'
+  | 'safety'
+  | 'other'
+  // Legacy categories (kept for backwards compat with existing data)
+  | 'prep'
+  | 'timing'
+  | 'ingredients'
   | 'client'
   | 'dietary'
   | 'service'
@@ -16,8 +22,12 @@ export type ChefTipCategory =
 
 export type ChefTip = {
   id: string
+  title: string | null
   content: string
+  category: ChefTipCategory
   tags: string[]
+  source: string | null
+  event_id: string | null
   shared: boolean
   pinned: boolean
   review: boolean
@@ -27,16 +37,12 @@ export type ChefTip = {
 }
 
 export const CHEFTIP_CATEGORIES: { value: ChefTipCategory; label: string }[] = [
-  { value: 'prep', label: 'Prep' },
   { value: 'technique', label: 'Technique' },
-  { value: 'timing', label: 'Timing' },
-  { value: 'plating', label: 'Plating' },
-  { value: 'ingredients', label: 'Ingredients' },
+  { value: 'ingredient', label: 'Ingredient' },
   { value: 'equipment', label: 'Equipment' },
-  { value: 'client', label: 'Client Management' },
-  { value: 'dietary', label: 'Dietary' },
-  { value: 'service', label: 'Service' },
-  { value: 'mistakes', label: 'Mistakes' },
-  { value: 'discovery', label: 'Discovery' },
-  { value: 'general', label: 'General' },
+  { value: 'plating', label: 'Plating' },
+  { value: 'flavor', label: 'Flavor' },
+  { value: 'business', label: 'Business' },
+  { value: 'safety', label: 'Safety' },
+  { value: 'other', label: 'Other' },
 ]
