@@ -929,6 +929,7 @@ export const navGroups: NavGroup[] = [
         href: '/network',
         label: 'Chef Network',
         icon: Users,
+        hidden: true,
         children: [
           { href: '/network/collabs', label: 'Collaborations' },
           { href: '/network/notifications', label: 'Notifications' },
@@ -939,6 +940,7 @@ export const navGroups: NavGroup[] = [
         href: '/community',
         label: 'Community',
         icon: FileText,
+        hidden: true,
         children: [
           { href: '/community/directory', label: 'Chef Directory' },
           { href: '/community/mentorship', label: 'Mentorship' },
@@ -954,6 +956,7 @@ export const navGroups: NavGroup[] = [
         href: '/wix-submissions',
         label: 'Wix Submissions',
         icon: Inbox,
+        hidden: true,
       },
     ],
   },
@@ -1256,7 +1259,7 @@ export const navGroups: NavGroup[] = [
         icon: ShieldAlert,
         children: [
           { href: '/settings/compliance/claims/documents', label: 'Claim Documents' },
-          { href: '/settings/compliance/claims/new', label: 'New Claim', hidden: true },
+          { href: '/settings/compliance/claims/new', label: 'New Claim' },
         ],
       },
     ],

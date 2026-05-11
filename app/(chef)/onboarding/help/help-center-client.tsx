@@ -13,7 +13,9 @@ import {
   BookOpen,
   MessageSquare,
   ChevronDown,
-  Play,
+  Rocket,
+  UtensilsCrossed,
+  ArrowRight,
 } from '@/components/ui/icons'
 
 // ---------------------------------------------------------------------------
@@ -151,11 +153,31 @@ const HELP_CATEGORIES = [
   },
 ]
 
-const VIDEO_PLACEHOLDERS = [
-  'Getting Started Tour',
-  'Your First Event',
-  'Menu Building Basics',
-  'Financial Overview',
+const QUICK_START_GUIDES = [
+  {
+    title: 'Create Your First Event',
+    desc: 'Set up a dinner with date, client, and guest count in under a minute',
+    href: '/events/new',
+    icon: Calendar,
+  },
+  {
+    title: 'Build a Menu',
+    desc: 'Add courses, dishes, and link recipes for automatic costing',
+    href: '/menus',
+    icon: UtensilsCrossed,
+  },
+  {
+    title: 'Add Your Recipes',
+    desc: 'Capture your recipes with ingredients, methods, and yield info',
+    href: '/recipes',
+    icon: ChefHat,
+  },
+  {
+    title: 'Financial Overview',
+    desc: 'Track revenue, expenses, and see your business at a glance',
+    href: '/finance',
+    icon: DollarSign,
+  },
 ]
 
 // ---------------------------------------------------------------------------
@@ -276,25 +298,28 @@ export function HelpCenterClient({ fromPage }: { fromPage: string | null }) {
         </Card>
       </Link>
 
-      {/* Video Walkthroughs */}
+      {/* Quick Start Guides */}
       <section>
-        <h2 className="text-lg font-semibold text-stone-100 mb-3">Video Guides</h2>
+        <h2 className="text-lg font-semibold text-stone-100 mb-3 flex items-center gap-2">
+          <Rocket className="h-5 w-5 text-brand-400" />
+          Quick Start Guides
+        </h2>
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-          {VIDEO_PLACEHOLDERS.map((title) => (
-            <Card key={title} className="bg-stone-900/60 border-stone-800">
-              <CardContent className="py-4 space-y-3">
-                {/* Thumbnail placeholder */}
-                <div className="aspect-video bg-stone-800 rounded-lg flex items-center justify-center">
-                  <Play className="h-8 w-8 text-stone-500" />
-                </div>
-                <div className="flex items-center justify-between">
-                  <p className="text-sm font-medium text-stone-200">{title}</p>
-                  <span className="text-[10px] uppercase tracking-wider font-semibold text-stone-500 bg-stone-800 px-2 py-0.5 rounded">
-                    Coming Soon
-                  </span>
-                </div>
-              </CardContent>
-            </Card>
+          {QUICK_START_GUIDES.map((guide) => (
+            <Link key={guide.title} href={guide.href}>
+              <Card interactive className="h-full bg-stone-900/60 border-stone-800">
+                <CardContent className="py-4 flex items-start gap-4">
+                  <div className="p-2 bg-stone-800 rounded-lg flex-shrink-0 mt-0.5">
+                    <guide.icon className="h-5 w-5 text-stone-300" />
+                  </div>
+                  <div className="flex-1 min-w-0">
+                    <p className="text-sm font-semibold text-stone-100">{guide.title}</p>
+                    <p className="text-xs text-stone-400 mt-1">{guide.desc}</p>
+                  </div>
+                  <ArrowRight className="h-4 w-4 text-stone-500 flex-shrink-0 mt-1" />
+                </CardContent>
+              </Card>
+            </Link>
           ))}
         </div>
       </section>
