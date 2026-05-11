@@ -952,6 +952,48 @@ html {
   }
 }
 
+/* ── Hero headline slow metal shimmer ── */
+.text-mask-hero {
+  background: linear-gradient(
+    135deg,
+    rgb(var(--brand-100)) 0%,
+    rgb(var(--stone-950)) 30%,
+    rgb(var(--brand-200)) 60%,
+    rgb(var(--stone-950)) 100%
+  );
+  -webkit-background-clip: text;
+  background-clip: text;
+  -webkit-text-fill-color: transparent;
+}
+
+.homepage-hero-shimmer {
+  background-image: linear-gradient(
+    105deg,
+    rgb(var(--brand-100)) 0%,
+    rgb(var(--stone-950)) 18%,
+    rgb(var(--brand-200)) 36%,
+    rgb(255 255 255 / 0.92) 46%,
+    rgb(var(--brand-300)) 54%,
+    rgb(var(--stone-950)) 72%,
+    rgb(var(--brand-100)) 100%
+  );
+  background-size: 260% 100%;
+  background-position: 0% 50%;
+  animation: homepage-metal-shimmer 68s ease-in-out infinite alternate;
+  -webkit-background-clip: text;
+  background-clip: text;
+  -webkit-text-fill-color: transparent;
+}
+
+@keyframes homepage-metal-shimmer {
+  from {
+    background-position: 0% 50%;
+  }
+  to {
+    background-position: 100% 50%;
+  }
+}
+
 .scroll-reveal {
   opacity: 0;
   transform: translateY(32px) scale(0.98);
