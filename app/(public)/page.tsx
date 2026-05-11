@@ -127,8 +127,9 @@ export default function Home() {
 
         <div className="relative mx-auto w-full max-w-4xl px-4 pb-16 pt-20 sm:px-6 sm:pb-24 sm:pt-28 lg:px-8 lg:pb-28 lg:pt-32">
           <div className="text-center">
-            <h1 className="homepage-hero-shimmer text-mask-hero font-display-serif mx-auto max-w-3xl text-5xl font-bold tracking-tight sm:text-6xl lg:text-7xl">
-              Find a private chef near you
+            <h1 className="font-display-serif mx-auto max-w-3xl text-5xl font-bold tracking-tight sm:text-6xl lg:text-7xl">
+              <span className="homepage-hero-shimmer">Find a private chef</span>
+              <span className="homepage-hero-shimmer-orange block">near you</span>
             </h1>
             <p className="mx-auto mt-6 max-w-xl text-lg font-light leading-relaxed text-stone-300 sm:text-xl">
               Browse by cuisine, location, or occasion. Connect directly with vetted chefs for

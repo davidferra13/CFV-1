@@ -985,6 +985,26 @@ html {
   -webkit-text-fill-color: transparent;
 }
 
+.homepage-hero-shimmer-orange {
+  background-image: linear-gradient(
+    105deg,
+    #c4824a 0%,
+    #d4945a 18%,
+    #e8a96b 36%,
+    rgb(255 245 230 / 0.95) 46%,
+    #e8a96b 54%,
+    #d4945a 72%,
+    #c4824a 100%
+  );
+  background-size: 260% 100%;
+  background-position: 0% 50%;
+  animation: homepage-metal-shimmer 68s ease-in-out infinite alternate;
+  animation-delay: -22s;
+  -webkit-background-clip: text;
+  background-clip: text;
+  -webkit-text-fill-color: transparent;
+}
+
 @keyframes homepage-metal-shimmer {
   from {
     background-position: 0% 50%;
