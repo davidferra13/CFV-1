@@ -12,6 +12,8 @@ import { CircleBroadcastDialog } from '@/components/circles/circle-broadcast-dia
 import { CircleEngagementCard } from '@/components/circles/circle-engagement-card'
 import { CirclePreferredDishes } from '@/components/circles/circle-preferred-dishes'
 import { IngredientAvailabilityBoard } from '@/components/hub/ingredient-availability-board'
+import { RemyCircleToggle } from '@/components/hub/remy-circle-toggle'
+import { RemyCircleDrawer } from '@/components/hub/remy-circle-drawer'
 import {
   addClientToCircle,
   removeCircleMember,
@@ -26,6 +28,7 @@ export function CircleDetailClient({ circle }: { circle: CircleDetail }) {
   const [tab, setTab] = useState<Tab>('overview')
   const [showSlotForm, setShowSlotForm] = useState(false)
   const [showBroadcast, setShowBroadcast] = useState(false)
+  const [showRemyDrawer, setShowRemyDrawer] = useState(false)
   const router = useRouter()
 
   const tabs: { key: Tab; label: string; count?: number }[] = [
@@ -59,6 +62,14 @@ export function CircleDetailClient({ circle }: { circle: CircleDetail }) {
           </span>
           <button
             type="button"
+            onClick={() => setShowRemyDrawer(true)}
+            className="rounded-lg bg-amber-900/30 px-3 py-1.5 text-xs font-medium text-amber-400 hover:bg-amber-900/50"
+            title="Ask Remy about this circle"
+          >
+            🐀 Remy
+          </button>
+          <button
+            type="button"
             onClick={() => setShowBroadcast(true)}
             className="rounded-lg bg-stone-700 px-3 py-1.5 text-xs font-medium text-stone-300 hover:bg-stone-600"
           >
@@ -90,6 +101,20 @@ export function CircleDetailClient({ circle }: { circle: CircleDetail }) {
         circleName={circle.name}
         open={showBroadcast}
         onClose={() => setShowBroadcast(false)}
+      />
+
+      {/* Remy toggle + drawer */}
+      {circle.chef_profile_token && (
+        <RemyCircleToggle
+          groupId={circle.id}
+          profileToken={circle.chef_profile_token}
+          initialValue={circle.chef_show_remy}
+        />
+      )}
+      <RemyCircleDrawer
+        groupId={circle.id}
+        isOpen={showRemyDrawer}
+        onClose={() => setShowRemyDrawer(false)}
       />
 
       {/* Tabs */}

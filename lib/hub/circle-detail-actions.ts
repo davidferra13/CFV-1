@@ -20,6 +20,7 @@ export interface CircleMemberDetail {
   rsvp_status: string | null
   joined_at: string
   last_read_at: string | null
+  show_remy: boolean
 }
 
 export interface CircleEventLink {
@@ -56,6 +57,8 @@ export interface CircleDetail {
   members: CircleMemberDetail[]
   events: CircleEventLink[]
   recent_messages: CircleMessage[]
+  chef_profile_token: string | null
+  chef_show_remy: boolean
 }
 
 /**
@@ -80,7 +83,7 @@ export async function getCircleDetail(circleId: string): Promise<CircleDetail | 
   // 2. Get members with profile + client data
   const { data: memberships } = await db
     .from('hub_group_members')
-    .select('profile_id, role, joined_at, last_read_at, rsvp_status')
+    .select('profile_id, role, joined_at, last_read_at, rsvp_status, show_remy')
     .eq('group_id', circleId)
     .order('joined_at', { ascending: true })
 
@@ -90,7 +93,7 @@ export async function getCircleDetail(circleId: string): Promise<CircleDetail | 
   if (profileIds.length > 0) {
     const { data: profiles } = await db
       .from('hub_guest_profiles')
-      .select('id, display_name, avatar_url, email, client_id')
+      .select('id, display_name, avatar_url, email, client_id, profile_token')
       .in('id', profileIds)
 
     for (const p of profiles ?? []) {
@@ -125,6 +128,7 @@ export async function getCircleDetail(circleId: string): Promise<CircleDetail | 
       rsvp_status: m.rsvp_status ?? null,
       joined_at: m.joined_at,
       last_read_at: m.last_read_at,
+      show_remy: m.show_remy ?? true,
     }
   })
 
@@ -196,6 +200,10 @@ export async function getCircleDetail(circleId: string): Promise<CircleDetail | 
     }
   })
 
+  // Find the chef (owner) member to expose their profile token and show_remy preference
+  const ownerMembership = (memberships ?? []).find((m: any) => m.role === 'owner')
+  const ownerProfile = ownerMembership ? profileMap[ownerMembership.profile_id] : null
+
   return {
     id: circle.id,
     name: circle.name,
@@ -211,6 +219,8 @@ export async function getCircleDetail(circleId: string): Promise<CircleDetail | 
     members,
     events,
     recent_messages,
+    chef_profile_token: ownerProfile?.profile_token ?? null,
+    chef_show_remy: ownerMembership?.show_remy ?? true,
   }
 }
 
