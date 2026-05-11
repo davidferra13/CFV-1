@@ -246,8 +246,8 @@ export default async function Home() {
 
           <HomepageDiscovery featuredChefs={featuredChefs} culinarySignals={culinarySignals} />
 
-          {/* Social proof: stat badges - only rendered when backed by real platform data */}
-          <HeroStatBadges stats={platformStats} />
+          {/* Social proof: stat badges - hidden */}
+          {/* <HeroStatBadges stats={platformStats} /> */}
 
           <div className="mt-8 flex flex-col items-center gap-3 sm:flex-row sm:justify-center">
             <TrackedLink
@@ -277,10 +277,10 @@ export default async function Home() {
       </section>
 
       {/* ── Audience divider ── */}
-      <div className="relative py-14 sm:py-20">
-        <div className="divider-warm absolute inset-x-0 top-1/2" />
-        <div className="relative mx-auto flex max-w-6xl items-center justify-center px-4">
-          <span className="bg-[#0c0a09] px-8 text-xs font-semibold uppercase tracking-[0.25em] text-warm-gradient">
+      <div className="py-14 sm:py-20">
+        <div className="divider-warm" />
+        <div className="mx-auto flex max-w-6xl items-center justify-center px-4 pt-8">
+          <span className="text-xs font-semibold uppercase tracking-[0.25em] text-warm-gradient">
             Are you a chef-operator?
           </span>
         </div>
