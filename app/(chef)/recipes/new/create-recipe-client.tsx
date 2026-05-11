@@ -3,6 +3,9 @@
 import { useState, useMemo, useCallback, useEffect, useRef } from 'react'
 import { useRouter } from 'next/navigation'
 import Link from 'next/link'
+import { useForm } from 'react-hook-form'
+import { zodResolver } from '@hookform/resolvers/zod'
+import { z } from 'zod'
 import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
@@ -39,6 +42,42 @@ const RECIPE_CATEGORIES = [
   'beverage',
   'other',
 ]
+
+// Optional positive number: empty string = undefined, otherwise must be positive
+const optionalPositiveNum = z
+  .string()
+  .transform((v) => v.trim())
+  .pipe(
+    z.union([
+      z.literal('').transform(() => undefined),
+      z
+        .string()
+        .pipe(
+          z.coerce
+            .number({ invalid_type_error: 'Must be a number' })
+            .positive('Must be a positive number')
+        ),
+    ])
+  )
+
+const recipeFormSchema = z.object({
+  name: z.string().min(1, 'Recipe name is required'),
+  category: z.string().min(1),
+  description: z.string().optional(),
+  method: z.string().optional(),
+  methodDetailed: z.string().optional(),
+  notes: z.string().optional(),
+  prepTime: optionalPositiveNum,
+  cookTime: optionalPositiveNum,
+  yieldQty: optionalPositiveNum,
+  yieldUnit: z.string().optional(),
+  dietaryTags: z.string().optional(),
+  servings: optionalPositiveNum,
+  caloriesPerServing: optionalPositiveNum,
+  equipment: z.string().optional(),
+})
+
+type RecipeFormValues = z.input<typeof recipeFormSchema>
 
 type IngredientRow = {
   name: string
@@ -78,22 +117,53 @@ export function CreateRecipeClient({ aiConfigured, chefId, prefillComponent }: P
   const [warnings, setWarnings] = useState<string[]>([])
   const [phase, setPhase] = useState<'input' | 'review'>('input')
 
-  // Manual form state
-  const [name, setName] = useState(prefillComponent?.name || '')
-  const [category, setCategory] = useState(prefillComponent?.category || 'other')
-  const [method, setMethod] = useState('')
-  const [methodDetailed, setMethodDetailed] = useState('')
-  const [description, setDescription] = useState('')
-  const [notes, setNotes] = useState('')
-  const [prepTime, setPrepTime] = useState('')
-  const [cookTime, setCookTime] = useState('')
-  const [yieldQty, setYieldQty] = useState('')
-  const [yieldUnit, setYieldUnit] = useState('')
-  const [dietaryTags, setDietaryTags] = useState('')
-  const [servings, setServings] = useState('')
-  const [caloriesPerServing, setCaloriesPerServing] = useState('')
+  // --- react-hook-form with zod validation ---
+  const {
+    register,
+    handleSubmit,
+    setValue,
+    watch,
+    reset: resetForm,
+    formState: { errors },
+  } = useForm<RecipeFormValues>({
+    resolver: zodResolver(recipeFormSchema),
+    defaultValues: {
+      name: prefillComponent?.name || '',
+      category: prefillComponent?.category || 'other',
+      method: '',
+      methodDetailed: '',
+      description: '',
+      notes: '',
+      prepTime: '',
+      cookTime: '',
+      yieldQty: '',
+      yieldUnit: '',
+      dietaryTags: '',
+      servings: '',
+      caloriesPerServing: '',
+      equipment: '',
+    },
+    mode: 'onBlur',
+  })
+
+  // Watch form values for draft protection and other derived state
+  const name = watch('name')
+  const category = watch('category')
+  const method = watch('method')
+  const methodDetailed = watch('methodDetailed')
+  const description = watch('description')
+  const notes = watch('notes')
+  const prepTime = watch('prepTime')
+  const cookTime = watch('cookTime')
+  const yieldQty = watch('yieldQty')
+  const yieldUnit = watch('yieldUnit')
+  const dietaryTags = watch('dietaryTags')
+  const servings = watch('servings')
+  const caloriesPerServing = watch('caloriesPerServing')
+  const equipment = watch('equipment')
+
+  // Fields NOT managed by react-hook-form (complex widgets: difficulty, cuisine, mealType, season, occasions, ingredients)
   const [difficulty, setDifficulty] = useState<number>(0)
-  const [equipment, setEquipment] = useState('')
   const [cuisine, setCuisine] = useState('')
   const [mealType, setMealType] = useState('')
   const [season, setSeason] = useState<string[]>([])
@@ -165,17 +235,17 @@ export function CreateRecipeClient({ aiConfigured, chefId, prefillComponent }: P
 
   const currentData = useMemo(
     () => ({
-      name,
-      category,
-      method,
-      methodDetailed,
-      description,
-      notes,
-      prepTime,
-      cookTime,
-      yieldQty,
-      yieldUnit,
-      dietaryTags,
+      name: name || '',
+      category: category || '',
+      method: method || '',
+      methodDetailed: methodDetailed || '',
+      description: description || '',
+      notes: notes || '',
+      prepTime: prepTime || '',
+      cookTime: cookTime || '',
+      yieldQty: yieldQty || '',
+      yieldUnit: yieldUnit || '',
+      dietaryTags: dietaryTags || '',
       ingredients: JSON.stringify(ingredients),
     }),
     [
@@ -203,26 +273,29 @@ export function CreateRecipeClient({ aiConfigured, chefId, prefillComponent }: P
     throttleMs: 10000,
   })
 
-  const applyFormData = useCallback((d: Record<string, unknown>) => {
-    if (typeof d.name === 'string') setName(d.name)
-    if (typeof d.category === 'string') setCategory(d.category)
-    if (typeof d.method === 'string') setMethod(d.method)
-    if (typeof d.methodDetailed === 'string') setMethodDetailed(d.methodDetailed)
-    if (typeof d.description === 'string') setDescription(d.description)
-    if (typeof d.notes === 'string') setNotes(d.notes)
-    if (typeof d.prepTime === 'string') setPrepTime(d.prepTime)
-    if (typeof d.cookTime === 'string') setCookTime(d.cookTime)
-    if (typeof d.yieldQty === 'string') setYieldQty(d.yieldQty)
-    if (typeof d.yieldUnit === 'string') setYieldUnit(d.yieldUnit)
-    if (typeof d.dietaryTags === 'string') setDietaryTags(d.dietaryTags)
-    if (typeof d.ingredients === 'string') {
-      try {
-        setIngredients(JSON.parse(d.ingredients))
-      } catch {
-        /* skip */
+  const applyFormData = useCallback(
+    (d: Record<string, unknown>) => {
+      if (typeof d.name === 'string') setValue('name', d.name)
+      if (typeof d.category === 'string') setValue('category', d.category)
+      if (typeof d.method === 'string') setValue('method', d.method)
+      if (typeof d.methodDetailed === 'string') setValue('methodDetailed', d.methodDetailed)
+      if (typeof d.description === 'string') setValue('description', d.description)
+      if (typeof d.notes === 'string') setValue('notes', d.notes)
+      if (typeof d.prepTime === 'string') setValue('prepTime', d.prepTime)
+      if (typeof d.cookTime === 'string') setValue('cookTime', d.cookTime)
+      if (typeof d.yieldQty === 'string') setValue('yieldQty', d.yieldQty)
+      if (typeof d.yieldUnit === 'string') setValue('yieldUnit', d.yieldUnit)
+      if (typeof d.dietaryTags === 'string') setValue('dietaryTags', d.dietaryTags)
+      if (typeof d.ingredients === 'string') {
+        try {
+          setIngredients(JSON.parse(d.ingredients))
+        } catch {
+          /* skip */
+        }
       }
-    }
-  }, [])
+    },
+    [setValue]
+  )
 
   // Smart Import: parse
   const handleParse = async () => {
@@ -237,18 +310,18 @@ export function CreateRecipeClient({ aiConfigured, chefId, prefillComponent }: P
       setWarnings(result.warnings)
       setPhase('review')
 
-      // Pre-populate manual fields from parsed data for easy editing
-      setName(result.parsed.name)
-      setCategory(result.parsed.category)
-      setMethod(result.parsed.method)
-      setMethodDetailed(result.parsed.method_detailed || '')
-      setDescription(result.parsed.description || '')
-      setNotes(result.parsed.notes || '')
-      setPrepTime(result.parsed.prep_time_minutes?.toString() || '')
-      setCookTime(result.parsed.cook_time_minutes?.toString() || '')
-      setYieldQty(result.parsed.yield_quantity?.toString() || '')
-      setYieldUnit(result.parsed.yield_unit || '')
-      setDietaryTags((result.parsed.dietary_tags || []).join(', '))
+      // Pre-populate form fields from parsed data
+      setValue('name', result.parsed.name)
+      setValue('category', result.parsed.category)
+      setValue('method', result.parsed.method)
+      setValue('methodDetailed', result.parsed.method_detailed || '')
+      setValue('description', result.parsed.description || '')
+      setValue('notes', result.parsed.notes || '')
+      setValue('prepTime', result.parsed.prep_time_minutes?.toString() || '')
+      setValue('cookTime', result.parsed.cook_time_minutes?.toString() || '')
+      setValue('yieldQty', result.parsed.yield_quantity?.toString() || '')
+      setValue('yieldUnit', result.parsed.yield_unit || '')
+      setValue('dietaryTags', (result.parsed.dietary_tags || []).join(', '))
       setIngredients(
         result.parsed.ingredients.length > 0
           ? result.parsed.ingredients.map((ing: ParsedIngredient) => ({
@@ -309,45 +382,44 @@ export function CreateRecipeClient({ aiConfigured, chefId, prefillComponent }: P
     setIngredients(updated)
   }
 
-  // Save recipe
-  const handleSave = async () => {
-    if (!name.trim()) {
-      setError('Recipe name is required')
-      return
-    }
-
+  // Save recipe (called after zod validation passes)
+  const onValidSubmit = async (data: RecipeFormValues) => {
     setLoading(true)
     setError('')
 
     try {
       const validIngredients = ingredients.filter((ing) => ing.name.trim())
 
+      const pTime = data.prepTime ? parseInt(String(data.prepTime)) : undefined
+      const cTime = data.cookTime ? parseInt(String(data.cookTime)) : undefined
+
       // Atomic create: recipe + all ingredients in one call with rollback on failure
       const result = await createRecipeWithIngredients(
         {
-          name: name.trim(),
-          category,
-          method: method.trim(),
-          method_detailed: methodDetailed.trim() || undefined,
-          description: description.trim() || undefined,
-          notes: notes.trim() || undefined,
-          prep_time_minutes: prepTime ? parseInt(prepTime) : undefined,
-          cook_time_minutes: cookTime ? parseInt(cookTime) : undefined,
-          total_time_minutes:
-            prepTime && cookTime ? parseInt(prepTime) + parseInt(cookTime) : undefined,
-          yield_quantity: yieldQty ? parseFloat(yieldQty) : undefined,
-          yield_unit: yieldUnit.trim() || undefined,
-          dietary_tags: dietaryTags
-            ? dietaryTags
+          name: (data.name || '').trim(),
+          category: data.category || 'other',
+          method: (data.method || '').trim(),
+          method_detailed: (data.methodDetailed || '').trim() || undefined,
+          description: (data.description || '').trim() || undefined,
+          notes: (data.notes || '').trim() || undefined,
+          prep_time_minutes: pTime,
+          cook_time_minutes: cTime,
+          total_time_minutes: pTime && cTime ? pTime + cTime : undefined,
+          yield_quantity: data.yieldQty ? parseFloat(String(data.yieldQty)) : undefined,
+          yield_unit: (data.yieldUnit || '').trim() || undefined,
+          dietary_tags: data.dietaryTags
+            ? String(data.dietaryTags)
                 .split(',')
                 .map((t) => t.trim())
                 .filter(Boolean)
             : undefined,
-          servings: servings ? parseInt(servings) : undefined,
-          calories_per_serving: caloriesPerServing ? parseInt(caloriesPerServing) : undefined,
+          servings: data.servings ? parseInt(String(data.servings)) : undefined,
+          calories_per_serving: data.caloriesPerServing
+            ? parseInt(String(data.caloriesPerServing))
+            : undefined,
           difficulty: difficulty >= 1 ? difficulty : undefined,
-          equipment: equipment
-            ? equipment
+          equipment: data.equipment
+            ? String(data.equipment)
                 .split(',')
                 .map((e) => e.trim())
                 .filter(Boolean)
@@ -399,21 +471,23 @@ export function CreateRecipeClient({ aiConfigured, chefId, prefillComponent }: P
     setConfidence(null)
     setWarnings([])
     setRawText('')
-    setName(prefillComponent?.name || '')
-    setCategory(prefillComponent?.category || 'other')
-    setMethod('')
-    setMethodDetailed('')
-    setDescription('')
-    setNotes('')
-    setPrepTime('')
-    setCookTime('')
-    setYieldQty('')
-    setYieldUnit('')
-    setDietaryTags('')
-    setServings('')
-    setCaloriesPerServing('')
+    resetForm({
+      name: prefillComponent?.name || '',
+      category: prefillComponent?.category || 'other',
+      method: '',
+      methodDetailed: '',
+      description: '',
+      notes: '',
+      prepTime: '',
+      cookTime: '',
+      yieldQty: '',
+      yieldUnit: '',
+      dietaryTags: '',
+      servings: '',
+      caloriesPerServing: '',
+      equipment: '',
+    })
     setDifficulty(0)
-    setEquipment('')
     setCuisine('')
     setMealType('')
     setSeason([])
@@ -429,6 +503,13 @@ export function CreateRecipeClient({ aiConfigured, chefId, prefillComponent }: P
         is_optional: false,
       },
     ])
+  }
+
+  // Helper for field error message rendering
+  const fieldError = (fieldName: keyof RecipeFormValues) => {
+    const err = errors[fieldName]
+    if (!err?.message) return null
+    return <p className="text-red-400 text-xs mt-1">{err.message}</p>
   }
 
   return (
@@ -552,7 +633,7 @@ export function CreateRecipeClient({ aiConfigured, chefId, prefillComponent }: P
 
         {/* Manual Form / Review Form (same form for both modes) */}
         {(mode === 'manual' || (mode === 'import' && phase === 'review')) && (
-          <div className="space-y-6">
+          <form onSubmit={handleSubmit(onValidSubmit)} className="space-y-6">
             {/* Basic Info */}
             <Card>
               <CardHeader>
@@ -566,18 +647,18 @@ export function CreateRecipeClient({ aiConfigured, chefId, prefillComponent }: P
                     </label>
                     <Input
                       type="text"
-                      value={name}
-                      onChange={(e) => setName(e.target.value)}
+                      {...register('name')}
                       placeholder="e.g., Diane Sauce"
+                      className={errors.name ? 'border-red-500' : ''}
                     />
+                    {fieldError('name')}
                   </div>
                   <div>
                     <label className="block text-sm font-medium text-stone-300 mb-1">
                       Category <span className="text-red-500">*</span>
                     </label>
                     <select
-                      value={category}
-                      onChange={(e) => setCategory(e.target.value)}
+                      {...register('category')}
                       aria-label="Category"
                       className="w-full border border-stone-600 rounded-md px-3 py-2 text-sm bg-stone-900"
                     >
@@ -590,25 +671,17 @@ export function CreateRecipeClient({ aiConfigured, chefId, prefillComponent }: P
                   </div>
                 </div>
 
-                {description !== undefined && (
-                  <div>
-                    <label className="block text-sm font-medium text-stone-300 mb-1">
-                      Description
-                    </label>
-                    <Input
-                      type="text"
-                      value={description}
-                      onChange={(e) => setDescription(e.target.value)}
-                      placeholder="Brief description"
-                    />
-                  </div>
-                )}
+                <div>
+                  <label className="block text-sm font-medium text-stone-300 mb-1">
+                    Description
+                  </label>
+                  <Input type="text" {...register('description')} placeholder="Brief description" />
+                </div>
 
                 <div>
                   <label className="block text-sm font-medium text-stone-300 mb-1">Method</label>
                   <Textarea
-                    value={method}
-                    onChange={(e) => setMethod(e.target.value)}
+                    {...register('method')}
                     placeholder="Concise, outcome-oriented. The chef knows how to cook - just capture what to do."
                     rows={4}
                   />
@@ -619,8 +692,7 @@ export function CreateRecipeClient({ aiConfigured, chefId, prefillComponent }: P
                     Detailed Method
                   </label>
                   <Textarea
-                    value={methodDetailed}
-                    onChange={(e) => setMethodDetailed(e.target.value)}
+                    {...register('methodDetailed')}
                     placeholder="Optional: more detailed version with specific techniques or timings"
                     rows={3}
                   />
@@ -633,10 +705,11 @@ export function CreateRecipeClient({ aiConfigured, chefId, prefillComponent }: P
                     </label>
                     <Input
                       type="number"
-                      value={prepTime}
-                      onChange={(e) => setPrepTime(e.target.value)}
+                      {...register('prepTime')}
                       placeholder="15"
+                      className={errors.prepTime ? 'border-red-500' : ''}
                     />
+                    {fieldError('prepTime')}
                   </div>
                   <div>
                     <label className="block text-sm font-medium text-stone-300 mb-1">
@@ -644,31 +717,28 @@ export function CreateRecipeClient({ aiConfigured, chefId, prefillComponent }: P
                     </label>
                     <Input
                       type="number"
-                      value={cookTime}
-                      onChange={(e) => setCookTime(e.target.value)}
+                      {...register('cookTime')}
                       placeholder="30"
+                      className={errors.cookTime ? 'border-red-500' : ''}
                     />
+                    {fieldError('cookTime')}
                   </div>
                   <div>
                     <label className="block text-sm font-medium text-stone-300 mb-1">Yield</label>
                     <Input
                       type="number"
-                      value={yieldQty}
-                      onChange={(e) => setYieldQty(e.target.value)}
+                      {...register('yieldQty')}
                       placeholder="4"
                       step="0.25"
+                      className={errors.yieldQty ? 'border-red-500' : ''}
                     />
+                    {fieldError('yieldQty')}
                   </div>
                   <div>
                     <label className="block text-sm font-medium text-stone-300 mb-1">
                       Yield Unit
                     </label>
-                    <Input
-                      type="text"
-                      value={yieldUnit}
-                      onChange={(e) => setYieldUnit(e.target.value)}
-                      placeholder="servings"
-                    />
+                    <Input type="text" {...register('yieldUnit')} placeholder="servings" />
                   </div>
                 </div>
 
@@ -678,8 +748,7 @@ export function CreateRecipeClient({ aiConfigured, chefId, prefillComponent }: P
                   </label>
                   <Input
                     type="text"
-                    value={dietaryTags}
-                    onChange={(e) => setDietaryTags(e.target.value)}
+                    {...register('dietaryTags')}
                     placeholder="gluten-free, dairy-free (comma separated)"
                   />
                 </div>
@@ -691,11 +760,12 @@ export function CreateRecipeClient({ aiConfigured, chefId, prefillComponent }: P
                     </label>
                     <Input
                       type="number"
-                      value={servings}
-                      onChange={(e) => setServings(e.target.value)}
+                      {...register('servings')}
                       placeholder="e.g. 4"
                       min={1}
+                      className={errors.servings ? 'border-red-500' : ''}
                     />
+                    {fieldError('servings')}
                   </div>
                   <div>
                     <label className="block text-sm font-medium text-stone-300 mb-1">
@@ -703,15 +773,16 @@ export function CreateRecipeClient({ aiConfigured, chefId, prefillComponent }: P
                     </label>
                     <Input
                       type="number"
-                      value={caloriesPerServing}
-                      onChange={(e) => setCaloriesPerServing(e.target.value)}
+                      {...register('caloriesPerServing')}
                       placeholder="e.g. 320"
                       min={0}
+                      className={errors.caloriesPerServing ? 'border-red-500' : ''}
                     />
+                    {fieldError('caloriesPerServing')}
                   </div>
                   <div>
                     <label className="block text-sm font-medium text-stone-300 mb-1">
-                      Difficulty (1–5)
+                      Difficulty (1 to 5)
                     </label>
                     <div className="flex gap-1 mt-1">
                       {[1, 2, 3, 4, 5].map((level) => (
@@ -736,8 +807,7 @@ export function CreateRecipeClient({ aiConfigured, chefId, prefillComponent }: P
                   <label className="block text-sm font-medium text-stone-300 mb-1">Equipment</label>
                   <Input
                     type="text"
-                    value={equipment}
-                    onChange={(e) => setEquipment(e.target.value)}
+                    {...register('equipment')}
                     placeholder="stand mixer, food processor, blowtorch (comma separated)"
                   />
                 </div>
@@ -900,8 +970,7 @@ export function CreateRecipeClient({ aiConfigured, chefId, prefillComponent }: P
                 <div>
                   <label className="block text-sm font-medium text-stone-300 mb-1">Notes</label>
                   <Textarea
-                    value={notes}
-                    onChange={(e) => setNotes(e.target.value)}
+                    {...register('notes')}
                     placeholder="Any additional notes about this recipe"
                     rows={2}
                   />
@@ -914,7 +983,7 @@ export function CreateRecipeClient({ aiConfigured, chefId, prefillComponent }: P
               <CardHeader>
                 <div className="flex justify-between items-center">
                   <CardTitle>Ingredients</CardTitle>
-                  <Button size="sm" variant="secondary" onClick={addIngredientRow}>
+                  <Button type="button" size="sm" variant="secondary" onClick={addIngredientRow}>
                     Add Ingredient
                   </Button>
                 </div>
@@ -992,6 +1061,7 @@ export function CreateRecipeClient({ aiConfigured, chefId, prefillComponent }: P
                           <label className="block text-xs text-stone-500 mb-1">&nbsp;</label>
                         )}
                         <button
+                          type="button"
                           onClick={() => removeIngredientRow(index)}
                           className="p-2 text-stone-400 hover:text-red-500"
                           title="Remove ingredient"
@@ -1012,28 +1082,30 @@ export function CreateRecipeClient({ aiConfigured, chefId, prefillComponent }: P
                 unit: ingredient.unit,
               }))}
               servings={parseInt(servings || '1', 10) || 1}
-              onApplyCalories={(calories) => setCaloriesPerServing(String(Math.max(0, calories)))}
+              onApplyCalories={(calories) =>
+                setValue('caloriesPerServing', String(Math.max(0, calories)))
+              }
             />
 
             {/* Actions */}
             <div className="flex justify-between">
               {mode === 'import' && phase === 'review' && (
-                <Button variant="ghost" onClick={handleStartOver} disabled={loading}>
+                <Button type="button" variant="ghost" onClick={handleStartOver} disabled={loading}>
                   Start Over
                 </Button>
               )}
               <div className="flex gap-3 ml-auto">
                 <Link href="/recipes">
-                  <Button variant="ghost" disabled={loading}>
+                  <Button type="button" variant="ghost" disabled={loading}>
                     Cancel
                   </Button>
                 </Link>
-                <Button onClick={handleSave} disabled={loading || !name.trim()}>
+                <Button type="submit" disabled={loading}>
                   {loading ? 'Saving...' : 'Save Recipe'}
                 </Button>
               </div>
             </div>
-          </div>
+          </form>
         )}
       </div>
     </FormShield>

@@ -5,6 +5,7 @@
 'use server'
 
 import { requireChef } from '@/lib/auth/get-user'
+import { checkRateLimit } from '@/lib/api/rate-limit'
 import { createServerClient } from '@/lib/db/server'
 import { revalidatePath } from 'next/cache'
 import { z } from 'zod'
@@ -208,6 +209,8 @@ export type CreateClientInput = z.infer<typeof CreateClientSchema>
  */
 export async function inviteClient(input: InviteClientInput) {
   const user = await requireChef()
+  const rl = await checkRateLimit(`inviteClient:${user.id}`)
+  if (!rl.success) throw new Error('Rate limit exceeded. Please try again shortly.')
   const validated = InviteClientSchema.parse(input)
 
   const db: any = createServerClient()
@@ -337,6 +340,8 @@ export async function inviteClient(input: InviteClientInput) {
  */
 export async function createClient(input: CreateClientInput) {
   const user = await requireChef()
+  const rl = await checkRateLimit(`createClient:${user.id}`)
+  if (!rl.success) throw new Error('Rate limit exceeded. Please try again shortly.')
   const validated = CreateClientSchema.parse(input)
 
   const db: any = createServerClient()
@@ -701,6 +706,8 @@ export async function createClientFromLead(
  */
 export async function updateClient(clientId: string, input: UpdateClientInput) {
   const user = await requireChef()
+  const rl = await checkRateLimit(`updateClient:${user.id}`)
+  if (!rl.success) throw new Error('Rate limit exceeded. Please try again shortly.')
   const validated = UpdateClientSchema.parse(input)
   const { expected_updated_at, idempotency_key, ...updateFields } = validated
 
@@ -935,6 +942,8 @@ export async function updateClient(clientId: string, input: UpdateClientInput) {
  */
 export async function deleteClient(clientId: string) {
   const user = await requireChef()
+  const rl = await checkRateLimit(`deleteClient:${user.id}`)
+  if (!rl.success) throw new Error('Rate limit exceeded. Please try again shortly.')
   const db: any = createServerClient()
 
   const { data: client } = await (db

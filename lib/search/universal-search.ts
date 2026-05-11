@@ -134,14 +134,179 @@ export async function universalSearch(query: string): Promise<SearchResponse> {
     })
   }
 
-  // Search clients (full_name, email, phone - scoped by tenant_id).
-  const { data: clients } = await db
-    .from('clients')
-    .select('id, full_name, email, phone')
-    .eq('tenant_id', chef.tenantId!)
-    .or(`full_name.ilike.${q},email.ilike.${q},phone.ilike.${q}`)
-    .limit(8)
+  // Run all independent DB queries in parallel for performance.
+  const [
+    clientsRes,
+    eventsRes,
+    inquiriesRes,
+    menusRes,
+    recipesRes,
+    quotesRes,
+    expensesRes,
+    partnersRes,
+    staffRes,
+    notesRes,
+    messagesRes,
+    conversationsRes,
+    connectionsOutRes,
+    connectionsInRes,
+    handoffsSentRes,
+    handoffsReceivedRes,
+    collabSpacesRes,
+    hubProfileRes,
+    contractsRes,
+    ingredientsRes,
+  ] = await Promise.allSettled([
+    // 0: clients
+    db
+      .from('clients')
+      .select('id, full_name, email, phone')
+      .eq('tenant_id', chef.tenantId!)
+      .or(`full_name.ilike.${q},email.ilike.${q},phone.ilike.${q}`)
+      .limit(8),
+    // 1: events
+    db
+      .from('events')
+      .select(
+        'id, occasion, event_date, status, location_address, special_requests, ambiance_notes'
+      )
+      .eq('tenant_id', chef.tenantId!)
+      .or(
+        `occasion.ilike.${q},location_address.ilike.${q},special_requests.ilike.${q},ambiance_notes.ilike.${q}`
+      )
+      .limit(8),
+    // 2: inquiries
+    db
+      .from('inquiries')
+      .select('id, source_message, confirmed_occasion, confirmed_date, status')
+      .eq('tenant_id', chef.tenantId!)
+      .or(`source_message.ilike.${q},confirmed_occasion.ilike.${q}`)
+      .limit(8),
+    // 3: menus
+    db
+      .from('menus')
+      .select('id, name, description, notes, status')
+      .eq('tenant_id', chef.tenantId!)
+      .or(`name.ilike.${q},description.ilike.${q},notes.ilike.${q}`)
+      .limit(8),
+    // 4: recipes
+    db
+      .from('recipes')
+      .select('id, name, description, notes, category')
+      .eq('tenant_id', chef.tenantId!)
+      .or(`name.ilike.${q},description.ilike.${q},notes.ilike.${q}`)
+      .limit(8),
+    // 5: quotes
+    db
+      .from('quotes')
+      .select(
+        'id, quote_name, status, total_quoted_cents, valid_until, internal_notes, pricing_notes'
+      )
+      .eq('tenant_id', chef.tenantId!)
+      .or(`quote_name.ilike.${q},internal_notes.ilike.${q},pricing_notes.ilike.${q}`)
+      .limit(8),
+    // 6: expenses
+    db
+      .from('expenses')
+      .select('id, description, vendor_name, category, amount_cents, expense_date, notes')
+      .eq('tenant_id', chef.tenantId!)
+      .or(`description.ilike.${q},vendor_name.ilike.${q},notes.ilike.${q}`)
+      .limit(8),
+    // 7: partners
+    db
+      .from('referral_partners')
+      .select('id, name, contact_name, email, status, notes')
+      .eq('tenant_id', chef.tenantId!)
+      .or(`name.ilike.${q},contact_name.ilike.${q},email.ilike.${q},notes.ilike.${q}`)
+      .limit(8),
+    // 8: staff
+    db
+      .from('staff_members')
+      .select('id, name, role, email, phone, status')
+      .eq('chef_id', chef.tenantId!)
+      .or(`name.ilike.${q},email.ilike.${q},phone.ilike.${q}`)
+      .limit(8),
+    // 9: notes
+    db
+      .from('client_notes')
+      .select('id, client_id, note_text, category, pinned')
+      .eq('tenant_id', chef.tenantId!)
+      .ilike('note_text', q)
+      .limit(8),
+    // 10: messages
+    db
+      .from('messages')
+      .select('id, subject, body, status, channel, client_id, event_id, inquiry_id')
+      .eq('tenant_id', chef.tenantId!)
+      .or(`subject.ilike.${q},body.ilike.${q}`)
+      .limit(8),
+    // 11: conversations
+    db
+      .from('conversations')
+      .select('id, context_type, last_message_preview')
+      .eq('tenant_id', chef.tenantId!)
+      .ilike('last_message_preview', q)
+      .limit(8),
+    // 12: connections out
+    db
+      .from('chef_connections')
+      .select(
+        'id, connected_chef_id, status, chefs!chef_connections_connected_chef_id_fkey(business_name)'
+      )
+      .eq('chef_id', chef.tenantId!)
+      .eq('status', 'accepted')
+      .limit(8),
+    // 13: connections in
+    db
+      .from('chef_connections')
+      .select('id, chef_id, status, chefs!chef_connections_chef_id_fkey(business_name)')
+      .eq('connected_chef_id', chef.tenantId!)
+      .eq('status', 'accepted')
+      .limit(8),
+    // 14: handoffs sent
+    db
+      .from('chef_handoffs')
+      .select('id, title, occasion, status, created_at')
+      .eq('sender_chef_id', chef.tenantId!)
+      .or(`title.ilike.${q},occasion.ilike.${q}`)
+      .limit(8),
+    // 15: handoffs received
+    db
+      .from('chef_collab_handoff_recipients')
+      .select('id, handoff_id, status, chef_handoffs(title, occasion)')
+      .eq('recipient_chef_id', chef.tenantId!)
+      .limit(8),
+    // 16: collab spaces
+    db
+      .from('chef_collab_space_members')
+      .select('collab_space_id, chef_collab_spaces(id, name, description)')
+      .eq('chef_id', chef.tenantId!)
+      .limit(20),
+    // 17: hub profile (for hub circle messages)
+    db.from('hub_guest_profiles').select('id').eq('auth_user_id', chef.userId).maybeSingle(),
+    // 18: contracts
+    db
+      .from('event_contracts')
+      .select('id, event_id, status, body_snapshot, clients(full_name), events(occasion)')
+      .eq('chef_id', chef.tenantId!)
+      .ilike('body_snapshot', q)
+      .order('created_at', { ascending: false })
+      .limit(8),
+    // 19: ingredients (for recipe-by-ingredient search)
+    db
+      .from('ingredients')
+      .select('id, name')
+      .eq('tenant_id', chef.tenantId!)
+      .ilike('name', q)
+      .limit(20),
+  ])
 
+  // Helper to extract data from settled results
+  const getData = <T>(res: PromiseSettledResult<{ data: T }>): T | null =>
+    res.status === 'fulfilled' ? res.value.data : null
+
+  // Process clients
+  const clients = getData<any[]>(clientsRes)
   if (clients) {
     for (const client of clients) {
       results.push({
@@ -154,16 +319,8 @@ export async function universalSearch(query: string): Promise<SearchResponse> {
     }
   }
 
-  // Search events (occasion, notes, address, status - scoped by tenant_id).
-  const { data: events } = await db
-    .from('events')
-    .select('id, occasion, event_date, status, location_address, special_requests, ambiance_notes')
-    .eq('tenant_id', chef.tenantId!)
-    .or(
-      `occasion.ilike.${q},location_address.ilike.${q},special_requests.ilike.${q},ambiance_notes.ilike.${q}`
-    )
-    .limit(8)
-
+  // Process events
+  const events = getData<any[]>(eventsRes)
   if (events) {
     for (const event of events) {
       results.push({
@@ -177,14 +334,8 @@ export async function universalSearch(query: string): Promise<SearchResponse> {
     }
   }
 
-  // Search inquiries (message, occasion, status - scoped by tenant_id).
-  const { data: inquiries } = await db
-    .from('inquiries')
-    .select('id, source_message, confirmed_occasion, confirmed_date, status')
-    .eq('tenant_id', chef.tenantId!)
-    .or(`source_message.ilike.${q},confirmed_occasion.ilike.${q}`)
-    .limit(8)
-
+  // Process inquiries
+  const inquiries = getData<any[]>(inquiriesRes)
   if (inquiries) {
     for (const inquiry of inquiries) {
       results.push({
@@ -198,14 +349,8 @@ export async function universalSearch(query: string): Promise<SearchResponse> {
     }
   }
 
-  // Search menus (name, description, notes - scoped by tenant_id).
-  const { data: menus } = await db
-    .from('menus')
-    .select('id, name, description, notes, status')
-    .eq('tenant_id', chef.tenantId!)
-    .or(`name.ilike.${q},description.ilike.${q},notes.ilike.${q}`)
-    .limit(8)
-
+  // Process menus
+  const menus = getData<any[]>(menusRes)
   if (menus) {
     for (const menu of menus) {
       results.push({
@@ -219,14 +364,8 @@ export async function universalSearch(query: string): Promise<SearchResponse> {
     }
   }
 
-  // Search recipes (name, description, notes - scoped by tenant_id).
-  const { data: recipes } = await db
-    .from('recipes')
-    .select('id, name, description, notes, category')
-    .eq('tenant_id', chef.tenantId!)
-    .or(`name.ilike.${q},description.ilike.${q},notes.ilike.${q}`)
-    .limit(8)
-
+  // Process recipes
+  const recipes = getData<any[]>(recipesRes)
   if (recipes) {
     for (const recipe of recipes) {
       results.push({
@@ -240,16 +379,8 @@ export async function universalSearch(query: string): Promise<SearchResponse> {
     }
   }
 
-  // Search quotes (name, notes - scoped by tenant_id).
-  const { data: quotes } = await db
-    .from('quotes')
-    .select(
-      'id, quote_name, status, total_quoted_cents, valid_until, internal_notes, pricing_notes'
-    )
-    .eq('tenant_id', chef.tenantId!)
-    .or(`quote_name.ilike.${q},internal_notes.ilike.${q},pricing_notes.ilike.${q}`)
-    .limit(8)
-
+  // Process quotes
+  const quotes = getData<any[]>(quotesRes)
   if (quotes) {
     for (const quote of quotes) {
       results.push({
@@ -263,14 +394,8 @@ export async function universalSearch(query: string): Promise<SearchResponse> {
     }
   }
 
-  // Search expenses (description, vendor, notes - scoped by tenant_id).
-  const { data: expenses } = await db
-    .from('expenses')
-    .select('id, description, vendor_name, category, amount_cents, expense_date, notes')
-    .eq('tenant_id', chef.tenantId!)
-    .or(`description.ilike.${q},vendor_name.ilike.${q},notes.ilike.${q}`)
-    .limit(8)
-
+  // Process expenses
+  const expenses = getData<any[]>(expensesRes)
   if (expenses) {
     for (const expense of expenses) {
       results.push({
@@ -284,14 +409,8 @@ export async function universalSearch(query: string): Promise<SearchResponse> {
     }
   }
 
-  // Search referral partners (name, contact, notes - scoped by tenant_id).
-  const { data: partners } = await db
-    .from('referral_partners')
-    .select('id, name, contact_name, email, status, notes')
-    .eq('tenant_id', chef.tenantId!)
-    .or(`name.ilike.${q},contact_name.ilike.${q},email.ilike.${q},notes.ilike.${q}`)
-    .limit(8)
-
+  // Process partners
+  const partners = getData<any[]>(partnersRes)
   if (partners) {
     for (const partner of partners) {
       results.push({
@@ -305,14 +424,8 @@ export async function universalSearch(query: string): Promise<SearchResponse> {
     }
   }
 
-  // Search staff members (name, role, email, phone - scoped by chef_id).
-  const { data: staffRows } = await db
-    .from('staff_members')
-    .select('id, name, role, email, phone, status')
-    .eq('chef_id', chef.tenantId!)
-    .or(`name.ilike.${q},email.ilike.${q},phone.ilike.${q}`)
-    .limit(8)
-
+  // Process staff
+  const staffRows = getData<any[]>(staffRes)
   if (staffRows) {
     for (const staff of staffRows) {
       results.push({
@@ -326,14 +439,8 @@ export async function universalSearch(query: string): Promise<SearchResponse> {
     }
   }
 
-  // Search client notes (note_text - scoped by tenant_id).
-  const { data: notes } = await db
-    .from('client_notes')
-    .select('id, client_id, note_text, category, pinned')
-    .eq('tenant_id', chef.tenantId!)
-    .ilike('note_text', q)
-    .limit(8)
-
+  // Process notes
+  const notes = getData<any[]>(notesRes)
   if (notes) {
     for (const note of notes) {
       results.push({
@@ -347,14 +454,8 @@ export async function universalSearch(query: string): Promise<SearchResponse> {
     }
   }
 
-  // Search messages (subject, body - scoped by tenant_id).
-  const { data: messages } = await db
-    .from('messages')
-    .select('id, subject, body, status, channel, client_id, event_id, inquiry_id')
-    .eq('tenant_id', chef.tenantId!)
-    .or(`subject.ilike.${q},body.ilike.${q}`)
-    .limit(8)
-
+  // Process messages
+  const messages = getData<any[]>(messagesRes)
   if (messages) {
     for (const message of messages) {
       const url = message.inquiry_id
@@ -376,14 +477,8 @@ export async function universalSearch(query: string): Promise<SearchResponse> {
     }
   }
 
-  // Search chat conversations (last preview - scoped by tenant_id).
-  const { data: conversations } = await db
-    .from('conversations')
-    .select('id, context_type, last_message_preview')
-    .eq('tenant_id', chef.tenantId!)
-    .ilike('last_message_preview', q)
-    .limit(8)
-
+  // Process conversations
+  const conversations = getData<any[]>(conversationsRes)
   if (conversations) {
     for (const conversation of conversations) {
       results.push({
@@ -397,23 +492,8 @@ export async function universalSearch(query: string): Promise<SearchResponse> {
     }
   }
 
-  // Search chef connections (both directions - scoped by tenant_id).
-  const { data: connectionsOut } = await db
-    .from('chef_connections')
-    .select(
-      'id, connected_chef_id, status, chefs!chef_connections_connected_chef_id_fkey(business_name)'
-    )
-    .eq('chef_id', chef.tenantId!)
-    .eq('status', 'accepted')
-    .limit(8)
-
-  const { data: connectionsIn } = await db
-    .from('chef_connections')
-    .select('id, chef_id, status, chefs!chef_connections_chef_id_fkey(business_name)')
-    .eq('connected_chef_id', chef.tenantId!)
-    .eq('status', 'accepted')
-    .limit(8)
-
+  // Process connections (both directions)
+  const connectionsOut = getData<any[]>(connectionsOutRes)
   for (const conn of connectionsOut || []) {
     const name = conn.chefs?.business_name || 'Connected Chef'
     if (!name.toLowerCase().includes(needle)) continue
@@ -426,6 +506,7 @@ export async function universalSearch(query: string): Promise<SearchResponse> {
       metadata: { badge: conn.status },
     })
   }
+  const connectionsIn = getData<any[]>(connectionsInRes)
   for (const conn of connectionsIn || []) {
     const name = conn.chefs?.business_name || 'Connected Chef'
     if (!name.toLowerCase().includes(needle)) continue
@@ -439,14 +520,8 @@ export async function universalSearch(query: string): Promise<SearchResponse> {
     })
   }
 
-  // Search handoffs (sent by this chef - by title/occasion).
-  const { data: handoffsSent } = await db
-    .from('chef_handoffs')
-    .select('id, title, occasion, status, created_at')
-    .eq('sender_chef_id', chef.tenantId!)
-    .or(`title.ilike.${q},occasion.ilike.${q}`)
-    .limit(8)
-
+  // Process handoffs sent
+  const handoffsSent = getData<any[]>(handoffsSentRes)
   for (const h of handoffsSent || []) {
     results.push({
       id: makeId('handoff', h.id),
@@ -458,13 +533,8 @@ export async function universalSearch(query: string): Promise<SearchResponse> {
     })
   }
 
-  // Search handoffs received by this chef.
-  const { data: handoffsReceived } = await db
-    .from('chef_collab_handoff_recipients')
-    .select('id, handoff_id, status, chef_handoffs(title, occasion)')
-    .eq('recipient_chef_id', chef.tenantId!)
-    .limit(8)
-
+  // Process handoffs received
+  const handoffsReceived = getData<any[]>(handoffsReceivedRes)
   for (const hr of handoffsReceived || []) {
     const title = hr.chef_handoffs?.title || hr.chef_handoffs?.occasion || 'Handoff'
     if (!title.toLowerCase().includes(needle)) continue
@@ -478,13 +548,8 @@ export async function universalSearch(query: string): Promise<SearchResponse> {
     })
   }
 
-  // Search collab spaces (by name, where chef is a member).
-  const { data: collabSpaces } = await db
-    .from('chef_collab_space_members')
-    .select('collab_space_id, chef_collab_spaces(id, name, description)')
-    .eq('chef_id', chef.tenantId!)
-    .limit(20)
-
+  // Process collab spaces
+  const collabSpaces = getData<any[]>(collabSpacesRes)
   for (const csm of collabSpaces || []) {
     const space = csm.chef_collab_spaces
     if (!space) continue
@@ -499,14 +564,9 @@ export async function universalSearch(query: string): Promise<SearchResponse> {
     })
   }
 
-  // Search hub circle messages (body - scoped to groups chef is a member of).
+  // Process hub circle messages (dependent queries run sequentially from initial profile result)
   try {
-    const { data: hubProfile } = await db
-      .from('hub_guest_profiles')
-      .select('id')
-      .eq('auth_user_id', chef.userId)
-      .maybeSingle()
-
+    const hubProfile = getData<any>(hubProfileRes)
     if (hubProfile) {
       const { data: memberGroups } = await db
         .from('hub_group_members')
@@ -540,16 +600,9 @@ export async function universalSearch(query: string): Promise<SearchResponse> {
     // Non-blocking: hub message search failure doesn't break main search
   }
 
-  // Search contracts (body_snapshot - scoped by chef_id).
+  // Process contracts
   try {
-    const { data: contracts } = await db
-      .from('event_contracts')
-      .select('id, event_id, status, body_snapshot, clients(full_name), events(occasion)')
-      .eq('chef_id', chef.tenantId!)
-      .ilike('body_snapshot', q)
-      .order('created_at', { ascending: false })
-      .limit(8)
-
+    const contracts = getData<any[]>(contractsRes)
     for (const contract of contracts ?? []) {
       const clientName = contract.clients?.full_name || 'Client'
       const occasion = contract.events?.occasion || ''
@@ -571,15 +624,9 @@ export async function universalSearch(query: string): Promise<SearchResponse> {
     // Non-blocking: contract search failure doesn't break main search
   }
 
-  // Search recipes by ingredient name (find recipes containing matching ingredients).
+  // Process recipes by ingredient name (dependent query for recipe_ingredients)
   try {
-    const { data: matchingIngredients } = await db
-      .from('ingredients')
-      .select('id, name')
-      .eq('tenant_id', chef.tenantId!)
-      .ilike('name', q)
-      .limit(20)
-
+    const matchingIngredients = getData<any[]>(ingredientsRes)
     if (matchingIngredients?.length) {
       const ingredientIds = matchingIngredients.map((i: any) => i.id)
       const ingredientNames = new Map(matchingIngredients.map((i: any) => [i.id, i.name]))

@@ -190,6 +190,12 @@ export function RecipeLibraryClient({ recipes }: Props) {
               >
                 URL Import
               </Button>
+              <a
+                href="/recipes/csv-export"
+                className="inline-flex items-center justify-start px-3 py-2 border border-stone-600 text-stone-300 rounded-lg hover:bg-stone-800 transition-colors font-medium text-sm w-full"
+              >
+                Export CSV
+              </a>
             </div>
           )}
         </div>
@@ -209,6 +215,12 @@ export function RecipeLibraryClient({ recipes }: Props) {
           <Button variant="secondary" onClick={() => setBatchImportOpen(true)}>
             URL Import
           </Button>
+          <a
+            href="/recipes/csv-export"
+            className="inline-flex items-center justify-center px-3 py-2 border border-stone-600 text-stone-300 rounded-lg hover:bg-stone-800 transition-colors font-medium text-sm"
+          >
+            Export CSV
+          </a>
           <Link href="/recipes/new" data-tour="add-recipe">
             <Button>New Recipe</Button>
           </Link>

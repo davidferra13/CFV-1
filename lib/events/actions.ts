@@ -4,6 +4,7 @@
 'use server'
 
 import { requireChef } from '@/lib/auth/get-user'
+import { checkRateLimit } from '@/lib/api/rate-limit'
 import { createServerClient } from '@/lib/db/server'
 import { revalidatePath } from 'next/cache'
 import { z } from 'zod'
@@ -203,6 +204,8 @@ export async function findDuplicateEventCandidates(input: {
  */
 export async function createEvent(input: CreateEventInput) {
   const user = await requireChef()
+  const rl = await checkRateLimit(`createEvent:${user.id}`)
+  if (!rl.success) throw new Error('Rate limit exceeded. Please try again shortly.')
 
   // Validate input
   const validated = CreateEventSchema.parse(input)
@@ -565,6 +568,8 @@ export async function getEventById(eventId: string) {
  */
 export async function updateEvent(eventId: string, input: UpdateEventInput) {
   const user = await requireChef()
+  const rl = await checkRateLimit(`updateEvent:${user.id}`)
+  if (!rl.success) throw new Error('Rate limit exceeded. Please try again shortly.')
 
   // Validate input
   const validated = UpdateEventSchema.parse(input)
@@ -934,6 +939,8 @@ export async function updateEvent(eventId: string, input: UpdateEventInput) {
  */
 export async function deleteEvent(eventId: string) {
   const user = await requireChef()
+  const rl = await checkRateLimit(`deleteEvent:${user.id}`)
+  if (!rl.success) throw new Error('Rate limit exceeded. Please try again shortly.')
   const db: any = createServerClient()
 
   // Verify event exists and is draft

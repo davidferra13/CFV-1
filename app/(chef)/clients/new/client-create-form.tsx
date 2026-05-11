@@ -2,6 +2,9 @@
 
 import { useMemo, useState } from 'react'
 import { useRouter } from 'next/navigation'
+import { useForm } from 'react-hook-form'
+import { zodResolver } from '@hookform/resolvers/zod'
+import { z } from 'zod'
 import { createClient } from '@/lib/clients/actions'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
@@ -14,6 +17,28 @@ import { FormShield } from '@/components/forms/form-shield'
 import { useIdempotentMutation } from '@/lib/offline/use-idempotent-mutation'
 import { mapErrorToUI } from '@/lib/errors/map-error-to-ui'
 import { AddressAutocomplete } from '@/components/ui/address-autocomplete'
+
+// ─── Validation Schema ──────────────────────────────────────────────────────
+
+const clientCreateSchema = z.object({
+  full_name: z.string().trim().min(1, 'Full name is required'),
+  email: z
+    .string()
+    .trim()
+    .refine(
+      (val) => val === '' || /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(val),
+      'Please enter a valid email address'
+    ),
+  phone: z
+    .string()
+    .trim()
+    .refine(
+      (val) => val === '' || /^[\d\s()+-]{7,20}$/.test(val),
+      'Please enter a valid phone number'
+    ),
+})
+
+type ClientCreateValidated = z.infer<typeof clientCreateSchema>
 
 // ─── Collapsible Section ──────────────────────────────────────────────────────
 
@@ -306,11 +331,24 @@ export function ClientCreateForm({ tenantId }: { tenantId: string }) {
   const [error, setError] = useState<string | null>(null)
   const [mode, setMode] = useState<'quick' | 'full'>('quick')
 
+  // ─── Validated Fields (react-hook-form + zod) ─────────────────────────
+  const {
+    register,
+    handleSubmit: rhfHandleSubmit,
+    formState: { errors: fieldErrors },
+    setValue: setValidatedField,
+    watch,
+  } = useForm<ClientCreateValidated>({
+    resolver: zodResolver(clientCreateSchema),
+    defaultValues: { full_name: '', email: '', phone: '' },
+    mode: 'onTouched',
+  })
+
+  const fullName = watch('full_name')
+  const email = watch('email')
+  const phone = watch('phone')
+
   // ─── Form State ───────────────────────────────────────────────────────
-  // Identity (Quick Add)
-  const [fullName, setFullName] = useState('')
-  const [email, setEmail] = useState('')
-  const [phone, setPhone] = useState('')
   const [referralSource, setReferralSource] = useState('')
   const [status, setStatus] = useState('active')
 
@@ -457,9 +495,9 @@ export function ClientCreateForm({ tenantId }: { tenantId: string }) {
 
   function applyDraftData(data: Record<string, unknown>) {
     if (typeof data.mode === 'string') setMode(data.mode as 'quick' | 'full')
-    if (typeof data.full_name === 'string') setFullName(data.full_name)
-    if (typeof data.email === 'string') setEmail(data.email)
-    if (typeof data.phone === 'string') setPhone(data.phone)
+    if (typeof data.full_name === 'string') setValidatedField('full_name', data.full_name)
+    if (typeof data.email === 'string') setValidatedField('email', data.email)
+    if (typeof data.phone === 'string') setValidatedField('phone', data.phone)
     if (typeof data.referral_source === 'string') setReferralSource(data.referral_source)
     if (typeof data.status === 'string') setStatus(data.status)
     if (typeof data.preferred_name === 'string') setPreferredName(data.preferred_name)
@@ -473,26 +511,22 @@ export function ClientCreateForm({ tenantId }: { tenantId: string }) {
 
   // ─── Submit ───────────────────────────────────────────────────────────
 
-  async function handleSubmit(e: React.FormEvent<HTMLFormElement>) {
-    e.preventDefault()
+  async function handleSubmit(validated: ClientCreateValidated) {
     setLoading(true)
     setError(null)
 
-    if (!fullName.trim()) {
-      setError('Full name is required')
-      setLoading(false)
-      return
-    }
-
     try {
+      const fullNameVal = validated.full_name
+      const emailVal = validated.email
+      const phoneVal = validated.phone
       // Build the payload - only include non-empty values
       const payload: Record<string, unknown> = {
-        full_name: fullName.trim(),
+        full_name: fullNameVal,
       }
 
       // Quick Add fields (always sent)
-      if (email.trim()) payload.email = email.trim()
-      if (phone.trim()) payload.phone = phone.trim()
+      if (emailVal) payload.email = emailVal
+      if (phoneVal) payload.phone = phoneVal
       if (referralSource) payload.referral_source = referralSource
       if (status && status !== 'active') payload.status = status
       if (preferredName.trim()) payload.preferred_name = preferredName.trim()
@@ -644,14 +678,14 @@ export function ClientCreateForm({ tenantId }: { tenantId: string }) {
           </span>
         </div>
 
-        <form onSubmit={handleSubmit} className="space-y-4">
+        <form onSubmit={rhfHandleSubmit(handleSubmit)} className="space-y-4">
           {/* ─── Quick Add Fields (always visible) ──────────────────────── */}
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <Input
               label="Full Name"
               placeholder="Jane Doe"
-              value={fullName}
-              onChange={(e) => setFullName(e.target.value)}
+              {...register('full_name')}
+              error={fieldErrors.full_name?.message}
               required
             />
             <Input
@@ -664,14 +698,14 @@ export function ClientCreateForm({ tenantId }: { tenantId: string }) {
               label="Email"
               type="email"
               placeholder="client@example.com"
-              value={email}
-              onChange={(e) => setEmail(e.target.value)}
+              {...register('email')}
+              error={fieldErrors.email?.message}
             />
             <Input
               label="Phone"
               placeholder="(555) 555-5555"
-              value={phone}
-              onChange={(e) => setPhone(e.target.value)}
+              {...register('phone')}
+              error={fieldErrors.phone?.message}
             />
             <AddressAutocomplete
               label="Address"

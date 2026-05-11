@@ -5,6 +5,7 @@
 'use server'
 
 import { requireChef } from '@/lib/auth/get-user'
+import { checkRateLimit } from '@/lib/api/rate-limit'
 import { createServerClient } from '@/lib/db/server'
 import { revalidatePath } from 'next/cache'
 import { z } from 'zod'
@@ -102,6 +103,8 @@ export type UpdateQuoteInput = z.infer<typeof UpdateQuoteSchema>
 
 export async function createQuote(input: CreateQuoteInput) {
   const user = await requireChef()
+  const rl = await checkRateLimit(`createQuote:${user.id}`)
+  if (!rl.success) throw new Error('Rate limit exceeded. Please try again shortly.')
   const validated = CreateQuoteSchema.parse(input)
   const db: any = createServerClient()
 
@@ -362,6 +365,8 @@ export async function getQuoteById(id: string) {
 
 export async function updateQuote(id: string, input: UpdateQuoteInput) {
   const user = await requireChef()
+  const rl = await checkRateLimit(`updateQuote:${user.id}`)
+  if (!rl.success) throw new Error('Rate limit exceeded. Please try again shortly.')
   const validated = UpdateQuoteSchema.parse(input)
   const { expected_updated_at, idempotency_key, pricingDecision, ...updateFields } = validated
   const db: any = createServerClient()
@@ -982,6 +987,8 @@ export async function getQuotesForInquiry(inquiryId: string) {
 
 export async function deleteQuote(id: string) {
   const user = await requireChef()
+  const rl = await checkRateLimit(`deleteQuote:${user.id}`)
+  if (!rl.success) throw new Error('Rate limit exceeded. Please try again shortly.')
   const db: any = createServerClient()
 
   const { data: quote } = await (db

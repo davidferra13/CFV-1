@@ -2,8 +2,11 @@
 // Two-step layout: Step 1 = core booking details, Step 2 = pricing & notes
 'use client'
 
-import { useEffect, useMemo, useState } from 'react'
+import { useEffect, useMemo, useState, useCallback } from 'react'
 import { useRouter, useSearchParams } from 'next/navigation'
+import { useForm } from 'react-hook-form'
+import { zodResolver } from '@hookform/resolvers/zod'
+import { z } from 'zod'
 import { Input } from '@/components/ui/input'
 import { Textarea } from '@/components/ui/textarea'
 import { Select } from '@/components/ui/select'
@@ -134,6 +137,87 @@ type EventFormProps = {
     event_date?: string
   }
 }
+
+// Client-side validation schema (mirrors server CreateEventSchema for relevant fields)
+const EventFormValidationSchema = z
+  .object({
+    // Step 1 fields
+    client_id: z.string().min(1, 'Please select a client'),
+    occasion: z
+      .string()
+      .max(255, 'Occasion must be under 255 characters')
+      .optional()
+      .or(z.literal('')),
+    event_date: z
+      .string()
+      .min(1, 'Event date and time is required')
+      .refine((v) => !isNaN(Date.parse(v)), { message: 'Must be a valid date' }),
+    serve_time: z.string().optional().or(z.literal('')),
+    event_timezone: z.string().min(1, 'Timezone is required'),
+    guest_count: z
+      .string()
+      .optional()
+      .or(z.literal(''))
+      .refine((v) => !v || (Number.isInteger(Number(v)) && Number(v) >= 1 && Number(v) <= 10000), {
+        message: 'Guest count must be between 1 and 10,000',
+      }),
+    location_address: z.string().optional().or(z.literal('')),
+    location_city: z.string().optional().or(z.literal('')),
+    location_state: z.string().optional().or(z.literal('')),
+    location_zip: z
+      .string()
+      .optional()
+      .or(z.literal(''))
+      .refine((v) => !v || /^\d{5}(-\d{4})?$/.test(v), {
+        message: 'ZIP must be 5 digits (or 5+4 format)',
+      }),
+    // Step 2 fields
+    quoted_price: z
+      .string()
+      .optional()
+      .or(z.literal(''))
+      .refine((v) => !v || (!isNaN(Number(v)) && Number(v) >= 0), {
+        message: 'Quoted price must be a valid positive number',
+      }),
+    deposit_amount: z
+      .string()
+      .optional()
+      .or(z.literal(''))
+      .refine((v) => !v || (!isNaN(Number(v)) && Number(v) >= 0), {
+        message: 'Deposit must be a valid positive number',
+      }),
+    special_requests: z
+      .string()
+      .max(2000, 'Special requests must be under 2,000 characters')
+      .optional()
+      .or(z.literal('')),
+  })
+  .refine(
+    (data) => {
+      if (!data.deposit_amount || !data.quoted_price) return true
+      return Number(data.deposit_amount) <= Number(data.quoted_price)
+    },
+    {
+      message: 'Deposit cannot exceed the quoted price',
+      path: ['deposit_amount'],
+    }
+  )
+
+type EventFormValidation = z.infer<typeof EventFormValidationSchema>
+
+// Fields validated on step 1 (used with trigger())
+const STEP_1_FIELDS: (keyof EventFormValidation)[] = [
+  'client_id',
+  'occasion',
+  'event_date',
+  'serve_time',
+  'event_timezone',
+  'guest_count',
+  'location_address',
+  'location_city',
+  'location_state',
+  'location_zip',
+]
 
 export function EventForm({
   tenantId,
@@ -284,6 +368,67 @@ export function EventForm({
     [event, initialDeposit, seed?.client_id, seed?.occasion, seed?.event_date]
   )
   const [committedFormData, setCommittedFormData] = useState<EventFormData>(initialFormData)
+
+  // react-hook-form for client-side validation (layered on top of existing state)
+  const {
+    formState: { errors },
+    setValue: setFormValue,
+    trigger,
+  } = useForm<EventFormValidation>({
+    resolver: zodResolver(EventFormValidationSchema),
+    mode: 'onTouched',
+    defaultValues: {
+      client_id: initialFormData.client_id,
+      occasion: initialFormData.occasion,
+      event_date: initialFormData.event_date,
+      serve_time: initialFormData.serve_time,
+      event_timezone: initialFormData.event_timezone,
+      guest_count: initialFormData.guest_count,
+      location_address: initialFormData.location_address,
+      location_city: initialFormData.location_city,
+      location_state: initialFormData.location_state,
+      location_zip: initialFormData.location_zip,
+      quoted_price: initialFormData.quoted_price,
+      deposit_amount: initialFormData.deposit_amount,
+      special_requests: initialFormData.special_requests,
+    },
+  })
+
+  // Sync existing form state into react-hook-form whenever values change
+  const syncFormValues = useCallback(() => {
+    setFormValue('client_id', clientId, { shouldValidate: false })
+    setFormValue('occasion', occasion, { shouldValidate: false })
+    setFormValue('event_date', eventDate, { shouldValidate: false })
+    setFormValue('serve_time', serveTime, { shouldValidate: false })
+    setFormValue('event_timezone', eventTimezone, { shouldValidate: false })
+    setFormValue('guest_count', guestCount, { shouldValidate: false })
+    setFormValue('location_address', locationAddress, { shouldValidate: false })
+    setFormValue('location_city', locationCity, { shouldValidate: false })
+    setFormValue('location_state', locationState, { shouldValidate: false })
+    setFormValue('location_zip', locationZip, { shouldValidate: false })
+    setFormValue('quoted_price', totalAmount, { shouldValidate: false })
+    setFormValue('deposit_amount', depositAmount, { shouldValidate: false })
+    setFormValue('special_requests', specialRequests, { shouldValidate: false })
+  }, [
+    clientId,
+    occasion,
+    eventDate,
+    serveTime,
+    eventTimezone,
+    guestCount,
+    locationAddress,
+    locationCity,
+    locationState,
+    locationZip,
+    totalAmount,
+    depositAmount,
+    specialRequests,
+    setFormValue,
+  ])
+
+  useEffect(() => {
+    syncFormValues()
+  }, [syncFormValues])
 
   const createMutation = useIdempotentMutation<
     CreateEventInput & { idempotency_key?: string },
@@ -504,14 +649,11 @@ export function EventForm({
   // Only client + date are hard requirements. Everything else can stay unknown on drafts.
   const handleContinue = async () => {
     setError(null)
-    if (!clientId) {
-      setError('Please select a client')
-      return
-    }
-    if (!eventDate) {
-      setError('Event date & time is required')
-      return
-    }
+
+    // Sync latest values then validate step 1 fields
+    syncFormValues()
+    const step1Valid = await trigger(STEP_1_FIELDS)
+    if (!step1Valid) return
 
     // If user already acknowledged conflicts, advance
     if (conflictWarnings !== null && conflictOverride) {
@@ -568,6 +710,20 @@ export function EventForm({
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
+
+    // Validate all fields (both steps) before submitting
+    syncFormValues()
+    // Validate step 1 fields first to decide whether to navigate back
+    const step1Valid = await trigger(STEP_1_FIELDS)
+    const step2Valid = await trigger(['quoted_price', 'deposit_amount', 'special_requests'])
+    if (!step1Valid) {
+      setStep(1)
+      return
+    }
+    if (!step2Valid) {
+      return
+    }
+
     setLoading(true)
     setError(null)
     setConflictError(null)
@@ -748,6 +904,7 @@ export function EventForm({
               value={clientId}
               onChange={(e) => setClientId(e.target.value)}
               disabled={mode === 'edit'}
+              error={errors.client_id?.message}
               helperText={
                 mode === 'edit' ? 'Client cannot be changed after event creation' : undefined
               }
@@ -773,6 +930,7 @@ export function EventForm({
               placeholder="e.g., Wedding Reception, Corporate Dinner"
               value={occasion}
               onChange={(e) => setOccasion(e.target.value)}
+              error={errors.occasion?.message}
             />
 
             <Input
@@ -785,6 +943,7 @@ export function EventForm({
                 setConflictWarnings(null)
                 setConflictOverride(false)
               }}
+              error={errors.event_date?.message}
               helperText="Select the date and time of your event"
             />
 
@@ -793,6 +952,7 @@ export function EventForm({
               type="time"
               value={serveTime}
               onChange={(e) => setServeTime(e.target.value)}
+              error={errors.serve_time?.message}
               helperText="When food should be served (can set later)"
             />
 
@@ -801,6 +961,7 @@ export function EventForm({
               options={TIMEZONE_OPTIONS}
               value={eventTimezone}
               onChange={(e) => setEventTimezone(e.target.value)}
+              error={errors.event_timezone?.message}
               helperText="All times for this event are in this timezone"
             />
 
@@ -812,6 +973,7 @@ export function EventForm({
               placeholder="e.g., 8"
               value={guestCount}
               onChange={(e) => setGuestCount(e.target.value)}
+              error={errors.guest_count?.message}
             />
 
             {/* Prep time estimate - appears when guest count is entered */}
@@ -825,6 +987,7 @@ export function EventForm({
               value={locationAddress}
               onChange={(val) => setLocationAddress(val)}
               onPlaceSelect={handlePlaceSelect}
+              error={errors.location_address?.message}
               helperText="Start typing for Google address suggestions (can set later)"
             />
             <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
@@ -833,18 +996,21 @@ export function EventForm({
                 placeholder="City"
                 value={locationCity}
                 onChange={(e) => setLocationCity(e.target.value)}
+                error={errors.location_city?.message}
               />
               <Input
                 label="State"
                 placeholder="State"
                 value={locationState}
                 onChange={(e) => setLocationState(e.target.value)}
+                error={errors.location_state?.message}
               />
               <Input
                 label="ZIP"
                 placeholder="ZIP"
                 value={locationZip}
                 onChange={(e) => setLocationZip(e.target.value)}
+                error={errors.location_zip?.message}
               />
             </div>
 
@@ -944,6 +1110,7 @@ export function EventForm({
                   }
                 }
               }}
+              error={errors.quoted_price?.message}
               helperText="Total quoted price for the event"
             />
 
@@ -963,6 +1130,7 @@ export function EventForm({
                     setDepositSource(e.target.value ? 'manual' : 'none')
                   }
                 }}
+                error={errors.deposit_amount?.message}
                 helperText={
                   depositSource !== 'default' ? 'Required deposit amount (optional)' : undefined
                 }
@@ -995,6 +1163,7 @@ export function EventForm({
               onChange={(e) => setSpecialRequests(e.target.value)}
               onBlur={() => void durableDraft.persistDraft(currentFormData, { immediate: true })}
               rows={4}
+              error={errors.special_requests?.message}
             />
 
             {partners.length > 0 && (

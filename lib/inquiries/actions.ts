@@ -5,6 +5,7 @@
 'use server'
 
 import { requireChef } from '@/lib/auth/get-user'
+import { checkRateLimit } from '@/lib/api/rate-limit'
 import { createServerClient } from '@/lib/db/server'
 import { revalidatePath } from 'next/cache'
 import { z } from 'zod'
@@ -443,6 +444,8 @@ async function materializeSeriesEvents(params: {
  */
 export async function createInquiry(input: CreateInquiryInput) {
   const user = await requireChef()
+  const rl = await checkRateLimit(`createInquiry:${user.id}`)
+  if (!rl.success) throw new Error('Rate limit exceeded. Please try again shortly.')
   const validated = CreateInquirySchema.parse(input)
   const db: any = createServerClient()
 
@@ -827,6 +830,8 @@ export async function getInquiryById(id: string) {
  */
 export async function updateInquiry(id: string, input: UpdateInquiryInput) {
   const user = await requireChef()
+  const rl = await checkRateLimit(`updateInquiry:${user.id}`)
+  if (!rl.success) throw new Error('Rate limit exceeded. Please try again shortly.')
   const validated = UpdateInquirySchema.parse(input)
   const { expected_updated_at, idempotency_key, ...validatedFields } = validated
   const db: any = createServerClient()
@@ -2741,6 +2746,8 @@ export async function getInquiryStats() {
  */
 export async function deleteInquiry(id: string) {
   const user = await requireChef()
+  const rl = await checkRateLimit(`deleteInquiry:${user.id}`)
+  if (!rl.success) throw new Error('Rate limit exceeded. Please try again shortly.')
   const db: any = createServerClient()
 
   const { data: inquiry } = await (db

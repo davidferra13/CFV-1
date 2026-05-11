@@ -5,6 +5,7 @@
 'use server'
 
 import { requireChef } from '@/lib/auth/get-user'
+import { checkRateLimit } from '@/lib/api/rate-limit'
 import { createServerClient } from '@/lib/db/server'
 import { revalidatePath, revalidateTag } from 'next/cache'
 import { z } from 'zod'
@@ -222,6 +223,8 @@ export type UpdateIngredientInput = z.infer<typeof UpdateIngredientSchema>
 
 export async function createRecipe(input: CreateRecipeInput) {
   const user = await requireChef()
+  const rl = await checkRateLimit(`createRecipe:${user.id}`)
+  if (!rl.success) throw new Error('Rate limit exceeded. Please try again shortly.')
   const db: any = createServerClient()
   const validated = CreateRecipeSchema.parse(input)
   const recipeInsert: RecipeInsert = {
@@ -653,6 +656,8 @@ export async function getRecipeById(recipeId: string) {
 
 export async function updateRecipe(recipeId: string, input: UpdateRecipeInput) {
   const user = await requireChef()
+  const rl = await checkRateLimit(`updateRecipe:${user.id}`)
+  if (!rl.success) throw new Error('Rate limit exceeded. Please try again shortly.')
   const db: any = createServerClient()
   const validated = UpdateRecipeSchema.parse(input)
 
@@ -714,6 +719,8 @@ export async function updateRecipe(recipeId: string, input: UpdateRecipeInput) {
 
 export async function deleteRecipe(recipeId: string, force = false) {
   const user = await requireChef()
+  const rl = await checkRateLimit(`deleteRecipe:${user.id}`)
+  if (!rl.success) throw new Error('Rate limit exceeded. Please try again shortly.')
   const db: any = createServerClient()
 
   // Guard: check if recipe is linked to components on active events

@@ -5,6 +5,7 @@
 'use server'
 
 import { requireChef } from '@/lib/auth/get-user'
+import { checkRateLimit } from '@/lib/api/rate-limit'
 import { createServerClient } from '@/lib/db/server'
 import { pgClient } from '@/lib/db/index'
 import { revalidatePath } from 'next/cache'
@@ -174,6 +175,8 @@ export type { ComponentCategory, TransportCategory } from './constants'
  */
 export async function createMenu(input: CreateMenuInput) {
   const user = await requireChef()
+  const rl = await checkRateLimit(`createMenu:${user.id}`)
+  if (!rl.success) throw new Error('Rate limit exceeded. Please try again shortly.')
   const validated = CreateMenuSchema.parse(input)
   const db: any = createServerClient()
 
@@ -450,6 +453,8 @@ export async function getMenuById(menuId: string) {
  */
 export async function updateMenu(menuId: string, input: UpdateMenuInput) {
   const user = await requireChef()
+  const rl = await checkRateLimit(`updateMenu:${user.id}`)
+  if (!rl.success) throw new Error('Rate limit exceeded. Please try again shortly.')
   const validated = UpdateMenuSchema.parse(input)
   const { expected_updated_at, idempotency_key, ...updateFields } = validated
 
@@ -613,6 +618,8 @@ export async function updateMenu(menuId: string, input: UpdateMenuInput) {
  */
 export async function deleteMenu(menuId: string) {
   const user = await requireChef()
+  const rl = await checkRateLimit(`deleteMenu:${user.id}`)
+  if (!rl.success) throw new Error('Rate limit exceeded. Please try again shortly.')
   const db: any = createServerClient()
 
   // Check menu status and event attachment
@@ -732,6 +739,13 @@ export async function attachMenuToEvent(eventId: string, menuId: string) {
     }
   } catch (allergenErr) {
     console.error('[attachMenuToEvent] Allergen check failed (non-blocking):', allergenErr)
+  }
+
+  try {
+    const { createSmartListDraftForEvent } = await import('@/lib/grocery/smart-list-actions')
+    await createSmartListDraftForEvent(eventId)
+  } catch (draftErr) {
+    console.error('[attachMenuToEvent] Grocery draft generation failed (non-blocking):', draftErr)
   }
 
   return { success: true, allergenWarnings }
@@ -2246,4 +2260,94 @@ export async function getMenuHealthData(menuId: string): Promise<MenuHealthData>
     eventId: row.event_id,
     approvalStatus: row.approval_status,
   }
+}
+
+// ============================================
+// CREATE STUB RECIPE AND LINK TO COMPONENT
+// ============================================
+
+/**
+ * Creates a minimal stub recipe using the component/dish name and
+ * immediately links it to the specified component. Useful for quickly
+ * marking intent to document a recipe later.
+ */
+export async function createStubAndLinkToComponent(componentId: string, dishName: string) {
+  const user = await requireChef()
+  const tenantId = user.tenantId!
+  const db: any = createServerClient()
+
+  // Verify component belongs to tenant and is not already linked
+  const { data: component, error: compErr } = await db
+    .from('components')
+    .select('id, name, category, recipe_id')
+    .eq('id', componentId)
+    .eq('tenant_id', tenantId)
+    .single()
+
+  if (compErr || !component) {
+    throw new Error('Component not found')
+  }
+
+  if (component.recipe_id) {
+    throw new Error('Component already has a linked recipe')
+  }
+
+  // Map component category to recipe category (they overlap)
+  const CATEGORY_MAP: Record<string, string> = {
+    sauce: 'sauce',
+    protein: 'protein',
+    starch: 'starch',
+    vegetable: 'vegetable',
+    fruit: 'fruit',
+    dessert: 'dessert',
+    garnish: 'other',
+    bread: 'bread',
+    cheese: 'other',
+    condiment: 'condiment',
+    beverage: 'beverage',
+    other: 'other',
+  }
+
+  const recipeName = `${dishName} - ${component.name}`
+  const recipeCategory = CATEGORY_MAP[component.category || 'other'] || 'other'
+
+  // Create stub recipe
+  const { data: recipe, error: recipeErr } = await db
+    .from('recipes')
+    .insert({
+      tenant_id: tenantId,
+      name: recipeName,
+      category: recipeCategory,
+      method: '',
+      status: 'stub',
+      dietary_tags: [],
+      equipment: [],
+      created_by: user.id,
+      updated_by: user.id,
+    })
+    .select('id, name')
+    .single()
+
+  if (recipeErr) {
+    console.error('[createStubAndLinkToComponent] Recipe insert error:', recipeErr)
+    throw new Error('Failed to create stub recipe')
+  }
+
+  // Link to component
+  const { error: linkErr } = await db
+    .from('components')
+    .update({ recipe_id: recipe.id })
+    .eq('id', componentId)
+    .eq('tenant_id', tenantId)
+
+  if (linkErr) {
+    console.error('[createStubAndLinkToComponent] Link error:', linkErr)
+    throw new Error('Failed to link stub recipe to component')
+  }
+
+  revalidatePath('/menus')
+  revalidatePath('/recipes')
+  invalidateRemyContextCache(tenantId)
+
+  return { success: true, recipeId: recipe.id, recipeName: recipe.name }
 }

@@ -9,6 +9,7 @@ import {
   CalendarDays,
   ChefHat,
   Copy,
+  Download,
   Eye,
   FileText,
   Loader2,
@@ -417,6 +418,12 @@ export function MenusClientWrapper({
           </p>
         </div>
         <div className="flex gap-2">
+          <a href="/menus/csv-export" download>
+            <Button variant="secondary">
+              <Download className="mr-1.5 h-4 w-4" />
+              Export CSV
+            </Button>
+          </a>
           <Link href="/menus/dishes">
             <Button variant="secondary">
               <ChefHat className="mr-1.5 h-4 w-4" />
