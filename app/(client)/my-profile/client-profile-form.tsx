@@ -14,6 +14,11 @@ import { Textarea } from '@/components/ui/textarea'
 import { Button } from '@/components/ui/button'
 import { Alert } from '@/components/ui/alert'
 import { TagInput } from '@/components/ui/tag-input'
+import {
+  getCuisineDisplayName,
+  getCuisineOptions,
+  normalizeCuisineList,
+} from '@/lib/constants/cuisines'
 
 interface ClientProfileFormProps {
   profile: {
@@ -42,27 +47,11 @@ interface ClientProfileFormProps {
   }
 }
 
-const CUISINE_SUGGESTIONS = [
-  'Italian',
-  'French',
-  'Japanese',
-  'Mexican',
-  'Thai',
-  'Indian',
-  'Chinese',
-  'Mediterranean',
-  'Korean',
-  'Vietnamese',
-  'Spanish',
-  'Greek',
-  'Moroccan',
-  'Southern',
-  'Cajun',
-  'BBQ',
-  'Seafood',
-  'Farm-to-Table',
-  'Fusion',
-]
+const CUISINE_SUGGESTIONS = getCuisineOptions({
+  minPopularity: 58,
+  limit: 30,
+  excludeOther: true,
+}).map((cuisine) => cuisine.label)
 
 const DIETARY_SUGGESTIONS = [
   'Vegetarian',
@@ -158,7 +147,7 @@ export function ClientProfileForm({ profile }: ClientProfileFormProps) {
   const [dislikes, setDislikes] = useState<string[]>(profile.dislikes || [])
   const [spiceTolerance, setSpiceTolerance] = useState(profile.spice_tolerance || '')
   const [favoriteCuisines, setFavoriteCuisines] = useState<string[]>(
-    profile.favorite_cuisines || []
+    normalizeCuisineList(profile.favorite_cuisines || [], { allowCustom: true })
   )
   const [favoriteDishes, setFavoriteDishes] = useState<string[]>(profile.favorite_dishes || [])
   const [wineBeveragePreferences, setWineBeveragePreferences] = useState(
@@ -191,7 +180,9 @@ export function ClientProfileForm({ profile }: ClientProfileFormProps) {
         allergies: profile.allergies || [],
         dislikes: profile.dislikes || [],
         spiceTolerance: profile.spice_tolerance || '',
-        favoriteCuisines: profile.favorite_cuisines || [],
+        favoriteCuisines: normalizeCuisineList(profile.favorite_cuisines || [], {
+          allowCustom: true,
+        }),
         favoriteDishes: profile.favorite_dishes || [],
         wineBeveragePreferences: profile.wine_beverage_preferences || '',
         parkingInstructions: profile.parking_instructions || '',
@@ -257,7 +248,7 @@ export function ClientProfileForm({ profile }: ClientProfileFormProps) {
       allergies,
       dislikes,
       spice_tolerance: (spiceTolerance || null) as UpdateClientProfileInput['spice_tolerance'],
-      favorite_cuisines: favoriteCuisines,
+      favorite_cuisines: normalizeCuisineList(favoriteCuisines, { allowCustom: true }),
       favorite_dishes: favoriteDishes,
       wine_beverage_preferences: wineBeveragePreferences || null,
       parking_instructions: parkingInstructions || null,
@@ -417,8 +408,10 @@ export function ClientProfileForm({ profile }: ClientProfileFormProps) {
 
           <TagInput
             label="Favorite Cuisines"
-            value={favoriteCuisines}
-            onChange={setFavoriteCuisines}
+            value={favoriteCuisines.map(getCuisineDisplayName)}
+            onChange={(values) =>
+              setFavoriteCuisines(normalizeCuisineList(values, { allowCustom: true }))
+            }
             placeholder="e.g. Italian, Japanese"
             suggestions={CUISINE_SUGGESTIONS}
           />

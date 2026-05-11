@@ -21,6 +21,11 @@ import { Alert } from '@/components/ui/alert'
 import { Badge } from '@/components/ui/badge'
 import { TagInput } from '@/components/ui/tag-input'
 import { Heart } from '@/components/ui/icons'
+import {
+  getCuisineDisplayName,
+  getCuisineOptions,
+  normalizeCuisineList,
+} from '@/lib/constants/cuisines'
 import { format } from 'date-fns'
 
 interface MealCollaborationPanelProps {
@@ -65,6 +70,11 @@ const RECOMMENDATION_STATUS_VARIANTS: Record<
 
 const REQUEST_TYPE_FIELD_ID = 'meal-request-type'
 const PRIORITY_FIELD_ID = 'meal-request-priority'
+const CUISINE_SUGGESTIONS = getCuisineOptions({
+  minPopularity: 58,
+  limit: 30,
+  excludeOther: true,
+}).map((cuisine) => cuisine.label)
 
 function formatStatus(status: ClientMealRequestEntry['status']) {
   return status.slice(0, 1).toUpperCase() + status.slice(1)
@@ -110,7 +120,9 @@ export function MealCollaborationPanel({
   const [historyQuery, setHistoryQuery] = useState('')
   const [historyLimit, setHistoryLimit] = useState(80)
   const [favoriteDishes, setFavoriteDishes] = useState<string[]>(favorites.favoriteDishes)
-  const [favoriteCuisines, setFavoriteCuisines] = useState<string[]>(favorites.favoriteCuisines)
+  const [favoriteCuisines, setFavoriteCuisines] = useState<string[]>(
+    normalizeCuisineList(favorites.favoriteCuisines, { allowCustom: true })
+  )
 
   const favoriteDishKeys = useMemo(
     () => new Set(favoriteDishes.map((dish) => normalizeFavoriteValue(dish).toLowerCase())),
@@ -221,7 +233,9 @@ export function MealCollaborationPanel({
     const previousFavoriteDishes = favoriteDishes
     const previousFavoriteCuisines = favoriteCuisines
     const nextFavoriteDishes = normalizeFavoriteList(nextFavoriteDishesInput)
-    const nextFavoriteCuisines = normalizeFavoriteList(nextFavoriteCuisinesInput)
+    const nextFavoriteCuisines = normalizeCuisineList(nextFavoriteCuisinesInput, {
+      allowCustom: true,
+    })
 
     clearMessage()
     setFavoriteDishes(nextFavoriteDishes)
@@ -234,7 +248,9 @@ export function MealCollaborationPanel({
           favorite_cuisines: nextFavoriteCuisines,
         })
         setFavoriteDishes(result.favorites.favoriteDishes)
-        setFavoriteCuisines(result.favorites.favoriteCuisines)
+        setFavoriteCuisines(
+          normalizeCuisineList(result.favorites.favoriteCuisines, { allowCustom: true })
+        )
         setSuccess(successMessage)
       } catch (err: any) {
         setFavoriteDishes(previousFavoriteDishes)
@@ -355,9 +371,12 @@ export function MealCollaborationPanel({
             />
             <TagInput
               label="Favorite Cuisines"
-              value={favoriteCuisines}
-              onChange={setFavoriteCuisines}
+              value={favoriteCuisines.map(getCuisineDisplayName)}
+              onChange={(values) =>
+                setFavoriteCuisines(normalizeCuisineList(values, { allowCustom: true }))
+              }
               placeholder="Add a cuisine direction"
+              suggestions={CUISINE_SUGGESTIONS}
             />
           </div>
 

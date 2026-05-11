@@ -7,9 +7,11 @@ import {
   getMyMealCollaborationData,
 } from '@/lib/clients/client-profile-actions'
 import { getClientSignalNotificationPref } from '@/lib/calendar/signal-settings-actions'
+import { getAccountLocation } from '@/lib/location/account-location'
 import { ClientProfileForm } from './client-profile-form'
 import { FunQAForm } from '@/components/clients/fun-qa-form'
 import { ClientSignalNotificationToggle } from '@/components/calendar/client-signal-notification-toggle'
+import { LocationSettings } from '@/components/settings/location-settings'
 import { FeedbackForm } from '@/components/feedback/feedback-form'
 import Link from 'next/link'
 import type { Metadata } from 'next'
@@ -20,18 +22,20 @@ export const metadata: Metadata = {
 }
 
 export default async function MyProfilePage() {
-  await requireClient()
-  const [profile, funQAAnswers, signalNotifEnabled, mealCollab] = await Promise.all([
-    getMyProfile() as Promise<Parameters<typeof ClientProfileForm>[0]['profile']>,
-    getMyFunQA().catch(() => ({})),
-    getClientSignalNotificationPref().catch(() => false),
-    getMyMealCollaborationData().catch(() => ({
-      history: [],
-      requests: [],
-      recommendations: [],
-      favorites: { favoriteDishes: [], favoriteCuisines: [] },
-    })),
-  ])
+  const user = await requireClient()
+  const [profile, funQAAnswers, signalNotifEnabled, mealCollab, accountLocation] =
+    await Promise.all([
+      getMyProfile() as Promise<Parameters<typeof ClientProfileForm>[0]['profile']>,
+      getMyFunQA().catch(() => ({})),
+      getClientSignalNotificationPref().catch(() => false),
+      getMyMealCollaborationData().catch(() => ({
+        history: [],
+        requests: [],
+        recommendations: [],
+        favorites: { favoriteDishes: [], favoriteCuisines: [] },
+      })),
+      getAccountLocation(user.authUserId).catch(() => null),
+    ])
 
   return (
     <div className="max-w-3xl mx-auto space-y-8">
@@ -45,6 +49,9 @@ export default async function MyProfilePage() {
       <div data-tour="client-update-profile">
         <ClientProfileForm profile={profile} />
       </div>
+
+      {/* Home Location */}
+      <LocationSettings currentLocation={accountLocation} userId={user.authUserId} />
 
       <MealCollaborationPanel
         history={mealCollab.history}
