@@ -8,6 +8,8 @@ import { ReviewRequestPanel } from '@/components/ai/review-request-panel'
 import { GratuityPanel } from '@/components/ai/gratuity-panel'
 import { SocialCaptionsPanel } from '@/components/ai/social-captions-panel'
 import { EntityActivityTimeline } from '@/components/activity/entity-activity-timeline'
+import { AuditTimeline } from '@/components/audit-trail/audit-timeline'
+import type { AuditHistoryEntry } from '@/lib/audit-trail/surface-actions'
 import { PostEventLearningPanel } from '@/components/events/post-event-learning-panel'
 import { PostEventTrustPanel } from '@/components/events/post-event-trust-panel'
 import { Button } from '@/components/ui/button'
@@ -33,6 +35,7 @@ type EventDetailWrapTabProps = {
   hasClosureStatus: boolean
   transitions: EventTransition[]
   timelineEntries: any[]
+  auditHistory?: AuditHistoryEntry[]
 }
 
 export function EventDetailWrapTab({
@@ -47,6 +50,7 @@ export function EventDetailWrapTab({
   hasClosureStatus,
   transitions,
   timelineEntries,
+  auditHistory,
 }: EventDetailWrapTabProps) {
   return (
     <EventDetailSection tab="wrap" activeTab={activeTab}>
@@ -186,6 +190,10 @@ export function EventDetailWrapTab({
       )}
 
       <EntityActivityTimeline entityType="event" entityId={eventId} entries={timelineEntries} />
+
+      {auditHistory && auditHistory.length > 0 && (
+        <AuditTimeline entries={auditHistory} title="Audit Trail" />
+      )}
     </EventDetailSection>
   )
 }

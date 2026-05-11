@@ -11,6 +11,10 @@ import { getMenuInquiryLink } from '@/lib/menus/menu-intelligence-actions'
 import { evaluateCompletion } from '@/lib/completion/engine'
 import { getEditorClientList, getCirclePickerList } from '@/lib/menus/editor-actions'
 import { MenuContextDock } from '@/components/menus/menu-context-dock'
+import { AuditSummaryBadge } from '@/components/audit-trail/audit-summary-badge'
+import { AuditTimeline } from '@/components/audit-trail/audit-timeline'
+import { fetchEntityHistory } from '@/lib/audit-trail/surface-actions'
+import { Suspense } from 'react'
 import Link from 'next/link'
 
 type Props = {
@@ -49,7 +53,7 @@ export default async function MenuDetailPage({ params }: Props) {
     }
   }
 
-  const [recipeMapResult, recommendations, inquiryLink, completionData, clientList, circleList] =
+  const [recipeMapResult, recommendations, inquiryLink, completionData, clientList, circleList, auditHistory] =
     await Promise.all([
       recipeIds.size > 0
         ? createServerClient()
@@ -73,6 +77,7 @@ export default async function MenuDetailPage({ params }: Props) {
       evaluateCompletion('menu', id, user.tenantId!).catch(() => null),
       getEditorClientList().catch(() => []),
       getCirclePickerList().catch(() => []),
+      fetchEntityHistory('menu', id).catch(() => []),
     ])
 
   let recipeMap: Record<
@@ -128,6 +133,11 @@ export default async function MenuDetailPage({ params }: Props) {
         clients={clientList}
         circles={circleList}
       />
+      <div className="px-1">
+        <Suspense fallback={null}>
+          <AuditSummaryBadge entityType="menu" entityId={id} />
+        </Suspense>
+      </div>
       <MenuDetailClient
         menu={menu}
         event={event}
@@ -136,6 +146,9 @@ export default async function MenuDetailPage({ params }: Props) {
         initialCompletion={completionData}
       />
       {recommendations && <MenuRecommendationHints result={recommendations} />}
+      {auditHistory && auditHistory.length > 0 && (
+        <AuditTimeline entries={auditHistory} title="Menu Change History" />
+      )}
     </div>
   )
 }

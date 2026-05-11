@@ -11,6 +11,9 @@ import { QuoteVersionHistory } from '@/components/quotes/quote-version-history'
 import { QuoteTransitions } from '@/components/quotes/quote-transitions'
 import { EntityActivityTimeline } from '@/components/activity/entity-activity-timeline'
 import { getEntityActivityTimeline } from '@/lib/activity/entity-timeline'
+import { AuditSummaryBadge } from '@/components/audit-trail/audit-summary-badge'
+import { AuditTimeline } from '@/components/audit-trail/audit-timeline'
+import { fetchEntityHistory } from '@/lib/audit-trail/surface-actions'
 import { PricingInsightsSidebar } from '@/components/quotes/pricing-insights-sidebar'
 import { ClientSpendingBadge } from '@/components/quotes/client-spending-badge'
 import { Card } from '@/components/ui/card'
@@ -36,6 +39,7 @@ export default async function QuoteDetailPage({ params }: { params: { id: string
     versionHistory: () => getQuoteVersionHistory(params.id),
     timelineEntries: () => getEntityActivityTimeline('quote', params.id),
     costIntelligence: () => getQuoteCostIntelligence(params.id),
+    auditHistory: () => fetchEntityHistory('quote', params.id),
   })
 
   if (result.error) {
@@ -53,7 +57,7 @@ export default async function QuoteDetailPage({ params }: { params: { id: string
     notFound()
   }
 
-  const { quote, versionHistory, timelineEntries, costIntelligence } = result.data
+  const { quote, versionHistory, timelineEntries, costIntelligence, auditHistory } = result.data
 
   if (!quote) {
     notFound()
@@ -79,6 +83,9 @@ export default async function QuoteDetailPage({ params }: { params: { id: string
               clientId={(quote as any).client_id ?? null}
               tenantId={user.tenantId!}
             />
+            <Suspense fallback={null}>
+              <AuditSummaryBadge entityType="quote" entityId={quote.id} />
+            </Suspense>
           </div>
         </div>
         <Link href="/quotes">
@@ -277,6 +284,10 @@ export default async function QuoteDetailPage({ params }: { params: { id: string
       <QuoteTransitions quote={quote} />
 
       <EntityActivityTimeline entityType="quote" entityId={quote.id} entries={timelineEntries} />
+
+      {auditHistory && auditHistory.length > 0 && (
+        <AuditTimeline entries={auditHistory} title="Audit Trail" />
+      )}
 
       {/* Notes */}
       {quote.pricing_notes && (

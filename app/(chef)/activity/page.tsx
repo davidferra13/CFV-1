@@ -4,6 +4,7 @@
 
 import type { Metadata } from 'next'
 import type { ChefActivityDomain } from '@/lib/activity/chef-types'
+import Link from 'next/link'
 import { getResumeItems } from '@/lib/activity/resume'
 import { getActivityCountsByDomain, getChefActivityFeed } from '@/lib/activity/chef-actions'
 import { getRecentClientActivity } from '@/lib/activity/actions'
@@ -48,11 +49,19 @@ export default async function ActivityPage() {
 
   return (
     <div className="max-w-4xl mx-auto px-4 sm:px-6 py-6 space-y-6">
-      <div>
-        <h1 className="text-xl font-bold text-stone-200">Activity Log</h1>
-        <p className="text-sm text-stone-500 mt-0.5">
-          Everything you&apos;ve been working on, all in one place.
-        </p>
+      <div className="flex items-start justify-between">
+        <div>
+          <h1 className="text-xl font-bold text-stone-200">Activity Log</h1>
+          <p className="text-sm text-stone-500 mt-0.5">
+            Everything you&apos;ve been working on, all in one place.
+          </p>
+        </div>
+        <Link
+          href="/activity/audit"
+          className="rounded-lg px-3 py-1.5 text-sm font-medium bg-stone-800 text-stone-400 hover:bg-stone-700 hover:text-stone-200 transition-colors"
+        >
+          Audit Log
+        </Link>
       </div>
 
       {resumeItems.length === 0 &&
