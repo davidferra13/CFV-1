@@ -517,6 +517,7 @@ export async function updateMemberNotificationPreferences(input: {
     'quiet_hours_start',
     'quiet_hours_end',
     'digest_mode',
+    'show_remy',
   ]
   const updates: Record<string, unknown> = {}
   for (const key of allowed) {

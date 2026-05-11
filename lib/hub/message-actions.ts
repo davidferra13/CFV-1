@@ -191,6 +191,8 @@ export async function getHubMessages(input: {
   groupToken?: string
   cursor?: string
   limit?: number
+  showRemy?: boolean
+  isChef?: boolean
 }): Promise<{ messages: HubMessage[]; nextCursor: string | null }> {
   await verifyGroupAccess(input.groupId, input.groupToken)
   const db: any = createServerClient({ admin: true })
@@ -219,8 +221,22 @@ export async function getHubMessages(input: {
     hub_guest_profiles: undefined,
   })) as HubMessage[]
 
+  // Filter Remy messages based on member preferences
+  let filtered = messages
+  if (input.showRemy === false) {
+    filtered = filtered.filter((m) => m.source !== 'remy')
+  }
+  // Filter chef_only Remy messages for non-chef members
+  if (!input.isChef) {
+    filtered = filtered.filter((m) => {
+      if (m.source !== 'remy') return true
+      const meta = m.system_metadata as Record<string, unknown> | null
+      return meta?.remy_visible !== 'chef_only'
+    })
+  }
+
   return {
-    messages,
+    messages: filtered,
     nextCursor: hasMore ? (messages[messages.length - 1]?.created_at ?? null) : null,
   }
 }
