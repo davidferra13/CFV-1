@@ -1,13 +1,15 @@
 'use client'
 
-import { useEffect, useMemo, useRef, useState, useTransition } from 'react'
+import { useCallback, useEffect, useMemo, useRef, useState, useTransition } from 'react'
 import { toast } from 'sonner'
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
 import { Card } from '@/components/ui/card'
 import {
   advanceCourseStatus,
+  getCourseProgress,
   initializeCourseProgress,
+  updateCourseNotes,
   type CourseProgress,
   type CourseStatus,
 } from '@/lib/service-execution/actions'
@@ -62,18 +64,27 @@ function CourseStatusBadge({ status }: { status: CourseStatus }) {
       variant={getStatusVariant(status)}
       className={status === 'skipped' ? 'line-through' : ''}
     >
-      {status === 'firing' && <span className="mr-1.5 h-2 w-2 rounded-full bg-amber-400" />}
+      {status === 'firing' && (
+        <span className="mr-1.5 h-2 w-2 rounded-full bg-amber-400 animate-pulse" />
+      )}
       {STATUS_LABELS[status]}
     </Badge>
   )
 }
 
-function CourseTiming({ course }: { course: CourseProgress }) {
+function CourseTiming({ course, now }: { course: CourseProgress; now: number }) {
   const firedAt = formatClock(course.fired_at)
   const servedAt = formatClock(course.served_at)
   const firedMs = parseTimestamp(course.fired_at)
   const servedMs = parseTimestamp(course.served_at)
-  const elapsed = firedMs && servedMs ? formatMinutes(servedMs - firedMs) : null
+
+  // Show elapsed: if served, use fired->served. If firing, use fired->now.
+  let elapsed: string | null = null
+  if (firedMs && servedMs) {
+    elapsed = formatMinutes(servedMs - firedMs)
+  } else if (firedMs && course.status === 'firing') {
+    elapsed = formatMinutes(now - firedMs)
+  }
 
   if (!firedAt && !servedAt) {
     return <span className="text-xs text-stone-500">Waiting</span>
@@ -88,49 +99,86 @@ function CourseTiming({ course }: { course: CourseProgress }) {
   )
 }
 
+function CourseNotesField({
+  progressId,
+  initialNotes,
+}: {
+  progressId: string
+  initialNotes: string | null
+}) {
+  const [value, setValue] = useState(initialNotes ?? '')
+  const debounceRef = useRef<ReturnType<typeof setTimeout> | null>(null)
+
+  const handleChange = useCallback(
+    (newValue: string) => {
+      setValue(newValue)
+      if (debounceRef.current) clearTimeout(debounceRef.current)
+      debounceRef.current = setTimeout(() => {
+        void updateCourseNotes(progressId, newValue).catch(() => {
+          toast.error('Failed to save note')
+        })
+      }, 800)
+    },
+    [progressId]
+  )
+
+  useEffect(() => {
+    return () => {
+      if (debounceRef.current) clearTimeout(debounceRef.current)
+    }
+  }, [])
+
+  return (
+    <textarea
+      className="mt-2 w-full rounded border border-stone-700 bg-stone-900 px-2 py-1.5 text-xs text-stone-200 placeholder:text-stone-500 focus:border-stone-500 focus:outline-none resize-none"
+      rows={2}
+      placeholder="Service notes..."
+      value={value}
+      onChange={(e) => handleChange(e.target.value)}
+    />
+  )
+}
+
 export function LiveServiceTracker({ eventId, initialCourses }: Props) {
   const [courses, setCourses] = useState<CourseProgress[]>(() => sortCourses(initialCourses))
-  const [initializing, setInitializing] = useState(initialCourses.length === 0)
+  const [showInitButton, setShowInitButton] = useState(initialCourses.length === 0)
+  const [initializing, setInitializing] = useState(false)
   const [pendingCourseId, setPendingCourseId] = useState<string | null>(null)
   const [now, setNow] = useState(() => Date.now())
   const [isPending, startTransition] = useTransition()
-  const didInitialize = useRef(false)
 
+  // Sync from parent when initialCourses changes (e.g. from server re-render)
   useEffect(() => {
     if (initialCourses.length > 0) {
       setCourses(sortCourses(initialCourses))
-      setInitializing(false)
+      setShowInitButton(false)
     }
   }, [initialCourses])
 
+  // Poll for fresh data every 30 seconds
   useEffect(() => {
-    if (initialCourses.length > 0 || didInitialize.current) return
+    if (courses.length === 0) return
 
-    didInitialize.current = true
-    let cancelled = false
-
-    async function initialize() {
+    const interval = window.setInterval(async () => {
       try {
-        setInitializing(true)
-        const initialized = await initializeCourseProgress(eventId)
-        if (!cancelled) {
-          setCourses(sortCourses(initialized))
+        const fresh = await getCourseProgress(eventId)
+        if (fresh.length > 0) {
+          setCourses(sortCourses(fresh))
         }
-      } catch (error) {
-        toast.error(error instanceof Error ? error.message : 'Failed to initialize service tracker')
-      } finally {
-        if (!cancelled) {
-          setInitializing(false)
-        }
+      } catch {
+        // Non-blocking: polling failure is silent
       }
-    }
+      setNow(Date.now())
+    }, 30000)
 
-    void initialize()
+    return () => window.clearInterval(interval)
+  }, [eventId, courses.length])
 
-    return () => {
-      cancelled = true
-    }
-  }, [eventId, initialCourses.length])
+  // Also tick the clock every 30s for elapsed display
+  useEffect(() => {
+    const interval = window.setInterval(() => setNow(Date.now()), 30000)
+    return () => window.clearInterval(interval)
+  }, [])
 
   const firstFiredAt = useMemo(() => {
     const firedTimes = courses
@@ -141,14 +189,21 @@ export function LiveServiceTracker({ eventId, initialCourses }: Props) {
     return firedTimes[0] ?? null
   }, [courses])
 
-  useEffect(() => {
-    if (!firstFiredAt) return
-    const interval = window.setInterval(() => setNow(Date.now()), 30000)
-    return () => window.clearInterval(interval)
-  }, [firstFiredAt])
-
   const servedCount = courses.filter((course) => course.status === 'served').length
   const totalElapsed = firstFiredAt ? formatMinutes(now - firstFiredAt) : 'Not started'
+
+  async function handleInitialize() {
+    try {
+      setInitializing(true)
+      const initialized = await initializeCourseProgress(eventId)
+      setCourses(sortCourses(initialized))
+      setShowInitButton(false)
+    } catch (error) {
+      toast.error(error instanceof Error ? error.message : 'Failed to initialize service tracker')
+    } finally {
+      setInitializing(false)
+    }
+  }
 
   function handleAdvance(course: CourseProgress, newStatus: 'firing' | 'served' | 'skipped') {
     setPendingCourseId(course.id)
@@ -169,6 +224,27 @@ export function LiveServiceTracker({ eventId, initialCourses }: Props) {
     })
   }
 
+  // Show "Initialize Service" button when no rows exist
+  if (showInitButton && courses.length === 0) {
+    return (
+      <Card className="p-4 sm:p-5">
+        <h2 className="text-lg font-semibold text-stone-100">Live Service Tracker</h2>
+        <p className="mt-2 text-sm text-stone-400">
+          Initialize the course tracker to begin tracking service progression.
+        </p>
+        <Button
+          className="mt-3"
+          variant="primary"
+          size="sm"
+          disabled={initializing}
+          onClick={handleInitialize}
+        >
+          {initializing ? 'Initializing...' : 'Initialize Service'}
+        </Button>
+      </Card>
+    )
+  }
+
   return (
     <Card className="p-4 sm:p-5">
       <div className="flex flex-col gap-3 border-b border-stone-800 pb-4 sm:flex-row sm:items-center sm:justify-between">
@@ -184,9 +260,7 @@ export function LiveServiceTracker({ eventId, initialCourses }: Props) {
         </div>
       </div>
 
-      {initializing ? (
-        <div className="py-6 text-sm text-stone-400">Preparing course tracker...</div>
-      ) : courses.length === 0 ? (
+      {courses.length === 0 ? (
         <div className="py-6 text-sm text-stone-400">
           No menu attached to this event. Add a menu to track service progression.
         </div>
@@ -215,8 +289,9 @@ export function LiveServiceTracker({ eventId, initialCourses }: Props) {
                     </div>
                     <p className="mt-1 text-xs text-stone-500">Course {course.course_order}</p>
                     <div className="mt-2">
-                      <CourseTiming course={course} />
+                      <CourseTiming course={course} now={now} />
                     </div>
+                    <CourseNotesField progressId={course.id} initialNotes={course.notes} />
                   </div>
 
                   {!isComplete && (
@@ -228,7 +303,7 @@ export function LiveServiceTracker({ eventId, initialCourses }: Props) {
                           size="sm"
                           disabled={isCoursePending}
                           onClick={() => handleAdvance(course, 'firing')}
-                          className="border-amber-600/70 bg-amber-700/20 text-amber-200 hover:bg-amber-700/30 hover:text-amber-100"
+                          className="min-h-[44px] border-amber-600/70 bg-amber-700/20 text-amber-200 hover:bg-amber-700/30 hover:text-amber-100"
                         >
                           Fire
                         </Button>
@@ -241,7 +316,7 @@ export function LiveServiceTracker({ eventId, initialCourses }: Props) {
                             size="sm"
                             disabled={isCoursePending}
                             onClick={() => handleAdvance(course, 'served')}
-                            className="border-emerald-600/70 bg-emerald-700/20 text-emerald-200 hover:bg-emerald-700/30 hover:text-emerald-100"
+                            className="min-h-[44px] border-emerald-600/70 bg-emerald-700/20 text-emerald-200 hover:bg-emerald-700/30 hover:text-emerald-100"
                           >
                             Served
                           </Button>
@@ -251,6 +326,7 @@ export function LiveServiceTracker({ eventId, initialCourses }: Props) {
                             size="sm"
                             disabled={isCoursePending}
                             onClick={() => handleAdvance(course, 'skipped')}
+                            className="min-h-[44px]"
                           >
                             Skip
                           </Button>
