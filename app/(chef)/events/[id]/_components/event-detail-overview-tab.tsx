@@ -36,6 +36,8 @@ import { ChefDecisionBriefPanel } from '@/components/hub/chef-decision-brief'
 import { GarmentFlipToggle } from '@/components/events/garment-flip-toggle'
 import { ConstraintRadarPanel } from '@/components/events/constraint-radar-panel'
 import type { ConstraintRadarData } from '@/lib/events/constraint-radar-actions'
+import { OperationalRiskPanel } from '@/components/events/operational-risk-panel'
+import type { RiskAssessmentResult } from '@/lib/costing/operational-risk'
 import { MenuSharePanel } from '@/components/menus/menu-share-panel'
 import { ShareSplitButton } from '@/components/payments/share-split-button'
 
@@ -80,6 +82,7 @@ type EventDetailOverviewTabProps = {
   collaborators: EventCollaborator[]
   eventMenuData?: ServiceViewMenu[]
   constraintRadarData?: ConstraintRadarData | null
+  operationalRisk?: RiskAssessmentResult | null
   clientPhones?: Array<{
     id: string
     phoneE164: string
@@ -117,6 +120,7 @@ export function EventDetailOverviewTab(props: EventDetailOverviewTabProps) {
     collaborators,
     eventMenuData,
     constraintRadarData,
+    operationalRisk,
     clientPhones,
   } = props
 
@@ -131,6 +135,8 @@ export function EventDetailOverviewTab(props: EventDetailOverviewTabProps) {
         {constraintRadarData && (
           <ConstraintRadarPanel data={constraintRadarData} eventId={event.id} />
         )}
+
+        {operationalRisk && <OperationalRiskPanel data={operationalRisk} />}
 
         {/* Main Content Grid */}
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">

@@ -186,6 +186,7 @@ import { getEventDefaultFlowSnapshotForTenant } from '@/lib/events/default-event
 import { getEventStationPlan } from '@/lib/stations/event-station-actions'
 import { EventCloneButton } from '@/components/events/event-clone-button'
 import { getEventConstraintRadar } from '@/lib/events/constraint-radar-actions'
+import { getEventRiskAssessment } from '@/lib/events/event-risk-assessment'
 import { refreshIngredientCostsForTenant } from '@/lib/pricing/cost-refresh-actions'
 
 async function EventCompletionSection({ eventId }: { eventId: string }) {
@@ -701,6 +702,7 @@ export default async function EventDetailPage({
     pricingIntelligence,
     regionalSettings,
     constraintRadarData,
+    operationalRiskResult,
     inquiryReferralSource,
     auditHistory,
   ] = await Promise.all([
@@ -788,6 +790,7 @@ export default async function EventDetailPage({
       console.warn('[EventDetailPage] constraint radar failed', error)
       return null
     }),
+    getEventRiskAssessment(params.id).catch(() => ({ data: null, error: null })),
     // Fetch inquiry referral_source for referral context badge
     event.inquiry_id
       ? (async () => {
@@ -1593,6 +1596,7 @@ export default async function EventDetailPage({
         collaborators={eventCollaborators as any[]}
         eventMenuData={eventMenuData}
         constraintRadarData={constraintRadarData}
+        operationalRisk={(operationalRiskResult as any)?.data ?? null}
         clientPhones={clientPhoneNumbers as any[]}
       />
 
