@@ -189,6 +189,8 @@ import { EventCloneButton } from '@/components/events/event-clone-button'
 import { getEventConstraintRadar } from '@/lib/events/constraint-radar-actions'
 import { getEventRiskAssessment } from '@/lib/events/event-risk-assessment'
 import { refreshIngredientCostsForTenant } from '@/lib/pricing/cost-refresh-actions'
+import { getCriticalPath } from '@/lib/lifecycle/critical-path'
+import { CriticalPathCard } from '@/components/lifecycle/critical-path-card'
 
 async function EventCompletionSection({ eventId }: { eventId: string }) {
   const result = await getCompletionForEntity('event', eventId)
@@ -694,6 +696,7 @@ export default async function EventDetailPage({
     documentReadinessGate,
     timelineEntries,
     lifecycleProgress,
+    criticalPath,
     menuCostSummary,
     chefArchetype,
     ledgerEntries,
@@ -771,6 +774,9 @@ export default async function EventDetailPage({
     evaluateReadinessForDocumentGeneration(params.id).catch(() => null),
     getEntityActivityTimeline('event', params.id).catch(() => []),
     getLifecycleProgress(event.inquiry_id ?? undefined, params.id).catch(() => null),
+    getCriticalPath({ inquiryId: event.inquiry_id ?? undefined, eventId: params.id }).catch(
+      () => null
+    ),
     getEventMenuCostSummary(params.id).catch(() => null),
     getChefArchetype().catch(() => null),
     import('@/lib/events/offline-payment-actions')
@@ -1338,6 +1344,13 @@ export default async function EventDetailPage({
           description="Day-of snapshot from live event truth. Keep the full walkthrough in Ops, but keep this signal visible above the fold."
         />
       ) : null}
+
+      {criticalPath && (
+        <CriticalPathCard
+          criticalPath={criticalPath}
+          circleToken={hubGroupToken as string | null}
+        />
+      )}
 
       <EventOperatingSpineCard
         spine={operatingSpine}
