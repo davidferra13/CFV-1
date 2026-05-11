@@ -186,3 +186,13 @@ export type {
   SeasonalPatternMonth,
   RevenueHealth,
 } from './revenue-forecast'
+
+// Client Risk Radar
+export { computeClientRiskRadar } from './client-risk'
+export type {
+  ClientRiskReport,
+  ClientRiskRadarResult,
+  ClientRiskSummary,
+  RiskFactor,
+  RiskLevel,
+} from './client-risk'

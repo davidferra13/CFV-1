@@ -261,7 +261,10 @@ export const navGroups: NavGroup[] = [
         href: '/analytics/intelligence',
         label: 'Intelligence Hub',
         icon: Compass,
-        children: [{ href: '/analytics/intelligence', label: 'Full Dashboard' }],
+        children: [
+          { href: '/analytics/intelligence', label: 'Full Dashboard' },
+          { href: '/analytics/intelligence/client-risk', label: 'Client Risk Radar' },
+        ],
       },
       {
         href: '/surveys',
