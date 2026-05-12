@@ -1,4 +1,5 @@
 import type { Metadata } from 'next'
+import Link from 'next/link'
 import { requireClient } from '@/lib/auth/get-user'
 import { getMyPreferences } from '@/lib/preferences/client-preference-actions'
 import { canRevisitOnboarding } from '@/lib/onboarding/client-revisit-actions'
@@ -22,6 +23,12 @@ export default async function MyPreferencesPage() {
         <p className="text-stone-400 mt-1">
           Your chef will see these preferences when planning menus for your events.
         </p>
+        <Link
+          href="/my-preferences/discovery"
+          className="mt-3 inline-flex text-sm font-medium text-brand-300 underline-offset-4 hover:underline"
+        >
+          Review discovery taste learning
+        </Link>
       </div>
       {canRevisit && <OnboardingRevisitCard />}
       <PreferencesClient initialPreferences={preferences} />

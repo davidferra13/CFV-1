@@ -115,6 +115,7 @@ async function deriveRankedDiscoveryPreferences(
     .from('discovery_interactions')
     .select('item_type,item_value,action,created_at')
     .eq('auth_user_id', authUserId)
+    .eq('is_duplicate', false)
     .gte('created_at', cutoff.toISOString())
     .order('created_at', { ascending: false })
     .limit(MAX_DISCOVERY_INTERACTION_ROWS)

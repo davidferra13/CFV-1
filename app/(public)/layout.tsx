@@ -3,6 +3,7 @@
 import dynamic from 'next/dynamic'
 import { PublicHeader } from '@/components/navigation/public-header'
 import { PublicFooter } from '@/components/navigation/public-footer'
+import { DiscoveryOutcomeTracker } from '@/components/discovery/discovery-outcome-tracker'
 
 const PresenceBeacon = dynamic(
   () => import('@/components/admin/presence-beacon').then((m) => m.PresenceBeacon),
@@ -40,6 +41,7 @@ export default function PublicLayout({ children }: { children: React.ReactNode }
       <PublicFooter />
       <GlobalReportButton />
       <RemyConciergeWidget />
+      <DiscoveryOutcomeTracker />
     </div>
   )
 }

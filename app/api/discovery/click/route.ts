@@ -42,6 +42,8 @@ const VALID_ACTIONS = new Set([
   'search_submit',
   'inquiry_started',
   'inquiry_submitted',
+  'book',
+  'booking',
 ])
 
 const MAX_VALUE_LEN = 100
@@ -49,6 +51,8 @@ const MAX_LABEL_LEN = 100
 const MAX_HREF_LEN = 500
 const MAX_DESTINATION_PATH_LEN = 120
 const MAX_SESSION_ID_LEN = 128
+const MAX_ANONYMOUS_ID_LEN = 128
+const MAX_ALGORITHM_VERSION_LEN = 80
 const MAX_CONTEXT_KEY_LEN = 64
 const MAX_CONTEXT_STRING_LEN = 300
 const MAX_CONTEXT_BYTES = 4000
@@ -62,10 +66,6 @@ type JsonValue = string | number | boolean | null | JsonValue[] | { [key: string
 export async function POST(request: NextRequest) {
   try {
     const session = await auth()
-    if (!session?.user?.id) {
-      // Anonymous - silently discard
-      return NextResponse.json({ ok: true })
-    }
 
     let body: unknown
     try {
@@ -83,6 +83,8 @@ export async function POST(request: NextRequest) {
       href,
       action,
       session_id,
+      anonymous_id,
+      algorithm_version,
       base_href,
       destination_path,
       row_role,
@@ -104,6 +106,15 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ ok: true })
     }
 
+    const safeAnonymousId =
+      typeof anonymous_id === 'string' && anonymous_id.trim()
+        ? anonymous_id.slice(0, MAX_ANONYMOUS_ID_LEN)
+        : null
+    const safeAuthUserId = session?.user?.id ?? null
+    if (!safeAuthUserId && !safeAnonymousId) {
+      return NextResponse.json({ ok: true })
+    }
+
     const safeValue = item_value.slice(0, MAX_VALUE_LEN)
     const safeLabel = typeof item_label === 'string' ? item_label.slice(0, MAX_LABEL_LEN) : null
     const safeHref = typeof href === 'string' ? href.slice(0, MAX_HREF_LEN) : null
@@ -115,6 +126,10 @@ export async function POST(request: NextRequest) {
     const safeSessionId =
       typeof session_id === 'string' && session_id.trim()
         ? session_id.slice(0, MAX_SESSION_ID_LEN)
+        : null
+    const safeAlgorithmVersion =
+      typeof algorithm_version === 'string' && algorithm_version.trim()
+        ? algorithm_version.slice(0, MAX_ALGORITHM_VERSION_LEN)
         : null
     const safeBaseHref = typeof base_href === 'string' ? base_href.slice(0, MAX_HREF_LEN) : null
     const safeDestinationPath =
@@ -141,12 +156,14 @@ export async function POST(request: NextRequest) {
       INSERT INTO discovery_interactions
         (
           auth_user_id,
+          anonymous_id,
           item_type,
           item_value,
           item_label,
           href,
           action,
           session_id,
+          algorithm_version,
           base_href,
           destination_path,
           row_role,
@@ -159,13 +176,15 @@ export async function POST(request: NextRequest) {
         )
       VALUES
         (
-          ${session.user.id}::uuid,
+          ${safeAuthUserId}::uuid,
+          ${safeAnonymousId},
           ${item_type},
           ${safeValue},
           ${safeLabel},
           ${safeHref},
           ${safeAction},
           ${safeSessionId},
+          ${safeAlgorithmVersion},
           ${safeBaseHref},
           ${safeDestinationPath},
           ${safeRowRole},

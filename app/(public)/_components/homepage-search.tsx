@@ -5,6 +5,7 @@ import { useState } from 'react'
 import { NEUTRAL_LOCATION_PLACEHOLDER } from '@/lib/site/national-brand-copy'
 import { LocationAutocomplete, type LocationData } from '@/components/ui/location-autocomplete'
 import type { HomepageLocationContext } from './cuisine-marquee'
+import { trackDiscoverySearchSubmit } from '@/lib/discovery/track-discovery-click'
 
 const SERVICE_OPTIONS = [
   { value: '', label: 'Any service' },
@@ -47,7 +48,13 @@ export function HomepageSearch({ onContextChange }: HomepageSearchProps = {}) {
       params.set('lng', String(locationGeo.lng))
     }
     const qs = params.toString()
-    router.push(`/chefs${qs ? `?${qs}` : ''}`)
+    const href = `/chefs${qs ? `?${qs}` : ''}`
+    trackDiscoverySearchSubmit({
+      location: location.trim() || undefined,
+      serviceType: serviceType || undefined,
+      href,
+    })
+    router.push(href)
   }
 
   return (

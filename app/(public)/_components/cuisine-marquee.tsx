@@ -6,6 +6,10 @@ import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import { getCuisinePageHref } from '@/lib/discovery/cuisine-pages'
 import type { UserScrollSignals } from '@/lib/discovery/user-scroll-signals'
 import {
+  applyDiscoveryRailScores,
+  type DiscoveryRailDebugScore,
+} from '@/lib/discovery/discovery-rail-scoring'
+import {
   DISCOVERY_RECENTS_STORAGE_KEY,
   trackDiscoveryClick,
   trackDiscoveryInteraction,
@@ -150,6 +154,8 @@ export interface DiscoveryRailItem {
   eyebrow?: string
   /** Secondary line shown inside the pill — used for featured_chef items (e.g. "Italian · Miami") */
   sublabel?: string
+  /** Dev-only scoring explanation attached by the homepage discovery scorer. */
+  debugScore?: DiscoveryRailDebugScore
 }
 
 /** Slim featured-chef record passed from the server component. Only the fields the rail needs. */
@@ -1294,6 +1300,13 @@ function readRecentDiscoveryItems(): DiscoveryRailItem[] {
   }
 }
 
+function withDiscoveryDebug(
+  item: DiscoveryRailItem,
+  debugScore: DiscoveryRailDebugScore
+): DiscoveryRailItem {
+  return { ...item, debugScore }
+}
+
 /** px a pointer must move before it counts as drag (not click) */
 const DRAG_THRESHOLD = 5
 /** ms after last interaction before auto-scroll resumes */
@@ -1541,6 +1554,15 @@ function DiscoveryPill({
             style={textOutlineStyle}
           >
             {item.sublabel}
+          </span>
+        )}
+        {process.env.NODE_ENV !== 'production' && item.debugScore && !isDuplicate && (
+          <span
+            className="absolute bottom-1 right-1 z-20 rounded-full bg-black/45 px-1.5 py-0.5 text-[9px] font-bold leading-none text-white/65 backdrop-blur-sm"
+            title={`${item.debugScore.reason} (${item.debugScore.score})`}
+            aria-hidden="true"
+          >
+            {item.debugScore.score}
           </span>
         )}
       </Link>
@@ -1923,7 +1945,16 @@ export function CuisineMarquee({
       ...locationSmartItems.slice(1),
       ...pool.slice(10),
     ])
-    return [...enhancedPool, ...enhancedPool]
+    const scoredPool = applyDiscoveryRailScores(
+      enhancedPool,
+      userSignals,
+      {
+        role: 'cuisine',
+        locationActive: Boolean(locationContext?.location.trim()),
+      },
+      withDiscoveryDebug
+    )
+    return [...scoredPool, ...scoredPool]
   }, [locationContext, userSignals])
 
   const row2 = useMemo(() => {
@@ -1933,8 +1964,17 @@ export function CuisineMarquee({
       ...COMBO_ITEMS,
       ...CRAVING_POOL,
     ])
-    return [...pool, ...pool]
-  }, [diningMoment])
+    const scoredPool = applyDiscoveryRailScores(
+      pool,
+      userSignals,
+      {
+        role: 'craving',
+        locationActive: Boolean(locationContext?.location.trim()),
+      },
+      withDiscoveryDebug
+    )
+    return [...scoredPool, ...scoredPool]
+  }, [diningMoment, locationContext, userSignals])
 
   const row3 = useMemo(() => {
     const chefItems = (featuredChefs ?? []).slice(0, 5).map(chefToRailItem)
@@ -1965,7 +2005,16 @@ export function CuisineMarquee({
       servicePool = [...boosted, ...rest]
     }
     const pool = buildRow2(servicePool, chefItems, locationItems, signalItems)
-    return [...pool, ...pool]
+    const scoredPool = applyDiscoveryRailScores(
+      pool,
+      userSignals,
+      {
+        role: 'intent',
+        locationActive: Boolean(locationContext?.location.trim()),
+      },
+      withDiscoveryDebug
+    )
+    return [...scoredPool, ...scoredPool]
   }, [
     culinarySignals,
     diningMoment,
@@ -1992,8 +2041,17 @@ export function CuisineMarquee({
       ...mobileIntentItems.slice(4),
       ...row2Single.slice(10),
     ])
-    return [...pool, ...pool]
-  }, [row2, row3])
+    const scoredPool = applyDiscoveryRailScores(
+      pool,
+      userSignals,
+      {
+        role: 'mobile',
+        locationActive: Boolean(locationContext?.location.trim()),
+      },
+      withDiscoveryDebug
+    )
+    return [...scoredPool, ...scoredPool]
+  }, [locationContext, row2, row3, userSignals])
 
   const rows: DiscoveryRowConfig[] = [
     {

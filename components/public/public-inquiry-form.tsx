@@ -11,6 +11,7 @@ import { TrackedLink } from '@/components/analytics/tracked-link'
 import { IntakeLaneExpectations } from '@/components/public/intake-lane-expectations'
 import { submitPublicInquiry, checkPublicDateAvailability } from '@/lib/inquiries/public-actions'
 import { ANALYTICS_EVENTS, trackEvent } from '@/lib/analytics/posthog'
+import { trackDiscoveryEvent } from '@/lib/discovery/track-discovery-click'
 import {
   DietaryIntakeFields,
   emptyDietaryIntake,
@@ -375,6 +376,20 @@ export function PublicInquiryForm({
       const budgetCents = parseBudgetCents(budgetText)
       const budgetMode = budgetCents != null ? 'exact' : budgetText ? 'range' : 'unset'
 
+      trackDiscoveryEvent({
+        action: 'inquiry_started',
+        itemType: 'featured_chef',
+        itemValue: chefSlug,
+        itemLabel: chefName,
+        href: `/chef/${chefSlug}`,
+        eventContext: {
+          source: 'public_inquiry_form',
+          guest_count: guestCount,
+          occasion: formData.occasion.trim(),
+          budget_mode: budgetMode,
+        },
+      })
+
       await submitPublicInquiry({
         chef_slug: chefSlug,
         full_name: formData.full_name.trim(),
@@ -409,6 +424,20 @@ export function PublicInquiryForm({
         budget_range: budgetText || null,
         budget_exact_entered: budgetCents != null,
         guest_count: guestCount,
+      })
+
+      trackDiscoveryEvent({
+        action: 'inquiry_submitted',
+        itemType: 'featured_chef',
+        itemValue: chefSlug,
+        itemLabel: chefName,
+        href: `/chef/${chefSlug}`,
+        eventContext: {
+          source: 'public_inquiry_form',
+          guest_count: guestCount,
+          occasion: formData.occasion.trim(),
+          budget_mode: budgetMode,
+        },
       })
 
       clearDraft(chefSlug)
