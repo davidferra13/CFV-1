@@ -1,0 +1,97 @@
+# ChefFlow Agent Rules
+
+These rules apply to Codex and other repo agents working in this workspace.
+
+## Build Queue First
+
+The developer is not hand-coding. Treat casual build requests as product intake, not immediate implementation.
+
+Default behavior:
+
+- If the user explicitly asks to queue, backlog, save, batch, or defer work, add it to the build queue instead of editing application code.
+- If the user says they "have to add", "need to add", "want to add", "should add", or otherwise introduces a feature idea conversationally, do not immediately create a queue item. First go through the spec with the user.
+- Use `.agents/skills/build-queue/scripts/build-queue.mjs add` only after the request has enough spec shape to be useful, or when the user explicitly says to queue it now.
+- Preserve the raw request, then shape the queue item with goal, scope, acceptance criteria, risks, dependencies, and verification.
+- Do not start feature work from casual phrasing like "build this", "fix this", "add this", or "make this better".
+- For underspecified ideas, ask concise product/spec questions about the outcome, user flow, scope boundaries, acceptance criteria, edge cases, and verification before queueing.
+
+Implementation is allowed only when the user explicitly says one of:
+
+- "fire the queue"
+- "build the queue"
+- "execute this queue item now"
+- "direct hotfix now"
+- "do not queue this"
+
+## Firing Rules
+
+When firing queued work:
+
+- Claim selected items with `build-queue.mjs fire`, which moves them to `.agents/build-queue/in-flight`.
+- Every fired run must have a run ID.
+- One lead orchestrator owns dependency ordering, file ownership boundaries, merge order, and final verification.
+- Additional orchestrators may work only on non-overlapping wave lanes.
+- Do not let independent agents edit the same files in the same wave.
+- Use separate branches or worktrees for substantial lanes whenever available.
+- Merge serially through the lead orchestrator.
+- Move completed items to `done`; move blocked items to `blocked` with a reason.
+- If a run is cancelled, move its items back to `active` with a reason.
+
+## Finish Gate
+
+After a building agent finishes code changes for any fired queue item, the lead orchestrator must prove the app is running the new work before moving the item to `done`.
+
+Required closeout:
+
+- Restart or reload the owned dev server when needed. Do not kill unrelated live servers.
+- Hard refresh the affected route or page.
+- Check browser console, network, server logs, and runtime errors relevant to the changed surface.
+- Run focused verification commands, tests, type checks, or smoke checks that match the changed files.
+- For UI work, capture visible proof with a screenshot, recording, or explicit manual route check.
+- Generate or update the proof pack with acceptance evidence, wiring proof, runtime proof, verification output, and partial-work notes.
+- Run `build-queue.mjs finish-check` for the selected queue item IDs.
+- Move the item to `done` only when acceptance criteria are proven.
+- Keep the item `in-flight` or move it to `blocked` when verification is incomplete, the page still looks unchanged without objective proof, or a blocker remains.
+
+A build is not complete just because files changed. It is complete only when the running app, proof pack, and finish check all support the queue item's acceptance criteria.
+
+## Dirty Workspace Rule
+
+Before implementation, inspect `git status --short`.
+
+If there is unrelated dirty work, do not overwrite it. Queue the request or create an isolated worktree. Never reset, checkout, or delete user or agent work unless the user explicitly asks.
+
+## Direct Work Exceptions
+
+Direct edits in the main workspace are acceptable for:
+
+- Maintaining the queue system itself.
+- Read-only diagnosis and planning.
+- Tiny direct hotfixes only when the user explicitly says not to queue them.
+
+## Skill Routing Contract
+
+ChefFlow has both Codex-visible skills and repo-local skills under `.claude/skills`.
+Do not assume every historical skill reference is installed in the current checkout.
+
+At the start of every ChefFlow task:
+
+1. Run the `omninet` routing loop mentally or explicitly if `.claude/skills/omninet/SKILL.md` exists.
+2. Load any skill named by the user when its skill file exists.
+3. Load only the most specific skill clearly implied by the task.
+4. If a named or referenced skill is missing, say it is missing and use the nearest available fallback.
+5. Do not run the whole skill inventory for every interaction.
+
+Skill behavior contract:
+
+- Always active: system instructions, this `AGENTS.md`, Build Queue First, dirty workspace protection, and hard-stop safety rules.
+- User-named skills: load when present.
+- Implied skills: load only when the request clearly matches their trigger.
+- Historical or missing skills: guidance only, not an executed skill.
+- Broad build work: prefer the build queue firing workflow unless the user explicitly authorizes a direct hotfix or says not to queue.
+
+Use the inventory audit when routing looks stale:
+
+```powershell
+node .claude/skills/omninet/scripts/skill-inventory.mjs
+```
