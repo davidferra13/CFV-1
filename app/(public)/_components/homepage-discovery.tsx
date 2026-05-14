@@ -61,13 +61,15 @@ export function HomepageDiscovery({
       <div className="mx-auto mt-10 max-w-2xl sm:mt-12">
         <HomepageSearch onContextChange={handleContextChange} />
       </div>
-      <div className="mx-auto max-w-2xl">
-        <CuisineMarquee
-          locationContext={locationContext}
-          featuredChefs={featuredChefs}
-          culinarySignals={culinarySignals}
-          userSignals={userSignals}
-        />
+      <div className="mx-auto mt-4 w-full max-w-6xl px-2">
+        <div className="discovery-container">
+          <CuisineMarquee
+            locationContext={locationContext}
+            featuredChefs={featuredChefs}
+            culinarySignals={culinarySignals}
+            userSignals={userSignals}
+          />
+        </div>
       </div>
     </div>
   )
