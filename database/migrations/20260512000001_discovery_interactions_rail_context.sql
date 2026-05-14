@@ -39,8 +39,14 @@ ALTER TABLE discovery_interactions
   ));
 
 ALTER TABLE discovery_interactions
+  DROP CONSTRAINT IF EXISTS discovery_interactions_row_role_check;
+
+ALTER TABLE discovery_interactions
   ADD CONSTRAINT discovery_interactions_row_role_check
   CHECK (row_role IS NULL OR row_role IN ('cuisine', 'mobile', 'craving', 'intent'));
+
+ALTER TABLE discovery_interactions
+  DROP CONSTRAINT IF EXISTS discovery_interactions_presentation_check;
 
 ALTER TABLE discovery_interactions
   ADD CONSTRAINT discovery_interactions_presentation_check

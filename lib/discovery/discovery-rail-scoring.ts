@@ -115,10 +115,11 @@ function getEditorialScore(
   }
   if (
     context.role === 'intent' &&
-    ['service', 'occasion', 'group_size', 'time'].includes(item.type)
+    ['service', 'occasion', 'circle', 'group_size', 'time'].includes(item.type)
   ) {
     score += 0.6
   }
+  if (item.type === 'circle') score += 1.1
 
   return score
 }
@@ -133,6 +134,7 @@ function buildReason(
   if (preference && preference.score < 0) return `Demoted by learned ${preference.itemType} signal`
   if (negativePenalty > 0) return 'Suppressed by less-like-this feedback'
   if (context.locationActive && item.type === 'location') return 'Boosted by current location'
+  if (item.type === 'circle') return 'Boosted as social dining discovery'
   if (item.type === 'culinary_signal' || item.type === 'seasonal')
     return 'Boosted by seasonal discovery'
   return 'Editorial discovery mix'

@@ -1,4 +1,4 @@
-import type { DiscoveryRailItem } from '@/app/(public)/_components/cuisine-marquee'
+import type { DiscoveryRailItem } from '@/lib/discovery/homepage-discovery-rail'
 
 export const DISCOVERY_RECENTS_STORAGE_KEY = 'cf:public-discovery:recent-clicks'
 const DISCOVERY_ANONYMOUS_ID_STORAGE_KEY = 'cf:public-discovery:anonymous-id'
@@ -15,6 +15,10 @@ export type DiscoveryInteractionAction =
   | 'hate'
   | 'hide'
   | 'save'
+  | 'pin'
+  | 'unpin'
+  | 'dismiss'
+  | 'undismiss'
   | 'long_dwell'
   | 'quick_back'
   | 'search_submit'
@@ -91,6 +95,9 @@ export function trackDiscoveryInteraction(
       presentation: item.presentation ?? null,
       eventContext: {
         source: 'homepage_discovery_marquee',
+        item_icon: item.icon ?? null,
+        item_sublabel: item.sublabel ?? null,
+        item_eyebrow: item.eyebrow ?? null,
       },
     })
   }
@@ -111,6 +118,9 @@ export function trackDiscoveryInteraction(
     presentation: item.presentation ?? null,
     eventContext: {
       source: 'homepage_discovery_marquee',
+      item_icon: item.icon ?? null,
+      item_sublabel: item.sublabel ?? null,
+      item_eyebrow: item.eyebrow ?? null,
     },
   })
 }

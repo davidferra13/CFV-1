@@ -6,12 +6,16 @@ import { pgClient } from '@/lib/db'
 
 export type ConsumerIntent =
   | 'tonight'
+  | 'weekend'
   | 'dinner_party'
   | 'meal_prep'
   | 'private_chef'
   | 'going_out'
   | 'team_dinner'
   | 'work_lunch'
+  | 'late_night'
+  | 'quick_eats'
+  | 'surprise_me'
   | 'visual'
 
 export type FulfillmentMode = 'private_chef' | 'restaurant' | 'meal_prep' | 'any'
@@ -82,16 +86,21 @@ type SpotlightRow = {
 
 const INTENT_TO_FULFILLMENT: Record<ConsumerIntent, FulfillmentMode> = {
   tonight: 'any',
+  weekend: 'private_chef',
   dinner_party: 'private_chef',
   meal_prep: 'meal_prep',
   private_chef: 'private_chef',
   going_out: 'restaurant',
   team_dinner: 'private_chef',
   work_lunch: 'any',
+  late_night: 'any',
+  quick_eats: 'any',
+  surprise_me: 'any',
   visual: 'any',
 }
 
 const INTENT_TO_SERVICE_TYPE: Partial<Record<ConsumerIntent, string>> = {
+  weekend: 'private_dinner',
   dinner_party: 'private_dinner',
   meal_prep: 'meal_prep',
   private_chef: 'private_dinner',
@@ -123,6 +132,16 @@ function locationLabel(city: string | null | undefined, state: string | null | u
   return state || city || null
 }
 
+function withDiscoveryTimeout<T>(promise: Promise<T>, fallback: T, timeoutMs = 4500): Promise<T> {
+  return new Promise((resolve) => {
+    const timer = setTimeout(() => resolve(fallback), timeoutMs)
+    promise
+      .then((value) => resolve(value))
+      .catch(() => resolve(fallback))
+      .finally(() => clearTimeout(timer))
+  })
+}
+
 function matchesText(card: ConsumerResultCard, query: string | undefined) {
   if (!query) return true
   const normalized = query.toLowerCase()
@@ -140,6 +159,9 @@ function chefToCard(chef: DirectoryChef, intent?: ConsumerIntent): ConsumerResul
   let relevance = discovery.completeness_score || 0
 
   if (targetService && serviceTypes.includes(targetService)) relevance += 22
+  if (intent === 'tonight' || intent === 'weekend')
+    relevance += discovery.next_available_date ? 8 : 0
+  if (intent === 'surprise_me') relevance += chef.is_founder ? 8 : 0
   if (chef.profile_image_url || discovery.hero_image_url) relevance += 10
   if (discovery.accepting_inquiries) relevance += 14
   if (chef.partners.length > 0) relevance += 5
@@ -334,15 +356,18 @@ export async function getConsumerDiscoveryFeed(
   const showSpotlights = fulfillment !== 'restaurant'
 
   const [chefs, listingResult, spotlightRows] = await Promise.all([
-    showChefs ? getDiscoverableChefs() : Promise.resolve([]),
+    showChefs ? withDiscoveryTimeout(getDiscoverableChefs(), []) : Promise.resolve([]),
     showListings
-      ? getDirectoryListings({
-          query: filters.craving,
-          state: filters.location,
-          page: 1,
-        }).then((result) => result.listings)
+      ? withDiscoveryTimeout(
+          getDirectoryListings({
+            query: filters.craving,
+            state: filters.location,
+            page: 1,
+          }).then((result) => result.listings),
+          []
+        )
       : Promise.resolve([]),
-    showSpotlights ? getSpotlightRows(filters) : Promise.resolve([]),
+    showSpotlights ? withDiscoveryTimeout(getSpotlightRows(filters), []) : Promise.resolve([]),
   ])
 
   let chefCards = chefs.map((chef) => chefToCard(chef, filters.intent))
