@@ -6,6 +6,7 @@ export const ROLE_HEADER = 'x-cf-role'
 export const ENTITY_ID_HEADER = 'x-cf-entity-id'
 export const TENANT_ID_HEADER = 'x-cf-tenant-id'
 export const REQUEST_ID_HEADER = 'x-request-id'
+export const ACTIVE_ROLE_ID_HEADER = 'x-cf-active-role-id'
 
 const INTERNAL_REQUEST_HEADERS = [
   AUTHENTICATED_HEADER,
@@ -14,6 +15,7 @@ const INTERNAL_REQUEST_HEADERS = [
   ROLE_HEADER,
   ENTITY_ID_HEADER,
   TENANT_ID_HEADER,
+  ACTIVE_ROLE_ID_HEADER,
   // Strip inbound x-request-id to prevent client spoofing; middleware re-sets it
   REQUEST_ID_HEADER,
   // Defense-in-depth: strip Next.js internal header to prevent middleware bypass
@@ -21,12 +23,15 @@ const INTERNAL_REQUEST_HEADERS = [
   'x-middleware-subrequest',
 ] as const
 
+export type PortalRole = 'chef' | 'client' | 'partner' | 'staff' | 'vendor' | 'guest'
+
 export type RequestPortalAuthContext = {
   userId: string
   email: string
-  role: 'chef' | 'client'
+  role: PortalRole
   entityId: string
   tenantId: string | null
+  activeRoleId: string
 }
 
 type HeaderReader = {
@@ -55,6 +60,7 @@ export function setRequestAuthContext(
     headers.delete(ROLE_HEADER)
     headers.delete(ENTITY_ID_HEADER)
     headers.delete(TENANT_ID_HEADER)
+    headers.delete(ACTIVE_ROLE_ID_HEADER)
     return
   }
 
@@ -68,6 +74,12 @@ export function setRequestAuthContext(
     headers.set(TENANT_ID_HEADER, context.tenantId)
   } else {
     headers.delete(TENANT_ID_HEADER)
+  }
+
+  if (context.activeRoleId) {
+    headers.set(ACTIVE_ROLE_ID_HEADER, context.activeRoleId)
+  } else {
+    headers.delete(ACTIVE_ROLE_ID_HEADER)
   }
 }
 
@@ -88,15 +100,22 @@ export function readRequestAuthContext(headers: HeaderReader): RequestPortalAuth
   const role = headers.get(ROLE_HEADER)
   const entityId = headers.get(ENTITY_ID_HEADER)
 
-  if (!userId || !entityId || (role !== 'chef' && role !== 'client')) {
+  const validRoles: PortalRole[] = ['chef', 'client', 'partner', 'staff', 'vendor', 'guest']
+  if (!userId || !entityId || !role || !validRoles.includes(role as PortalRole)) {
+    return null
+  }
+
+  const activeRoleId = headers.get(ACTIVE_ROLE_ID_HEADER)
+  if (!activeRoleId) {
     return null
   }
 
   return {
     userId,
     email: headers.get(EMAIL_HEADER) ?? '',
-    role,
+    role: role as PortalRole,
     entityId,
     tenantId: headers.get(TENANT_ID_HEADER),
+    activeRoleId,
   }
 }

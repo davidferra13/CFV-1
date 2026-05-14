@@ -147,7 +147,7 @@ export const taskTemplateCategory = pgEnum("task_template_category", ['opening',
 export const taxClass = pgEnum("tax_class", ['standard', 'reduced', 'exempt', 'alcohol', 'cannabis', 'prepared_food', 'zero'])
 export const unusedReason = pgEnum("unused_reason", ['leftover_reusable', 'wasted', 'returned'])
 export const uploadJobStatus = pgEnum("upload_job_status", ['uploaded', 'extracting', 'parsing', 'review', 'completed', 'failed'])
-export const userRole = pgEnum("user_role", ['chef', 'client', 'system', 'partner', 'staff'])
+export const userRole = pgEnum("user_role", ['chef', 'client', 'system', 'partner', 'staff', 'vendor', 'guest'])
 export const waitlistStatus = pgEnum("waitlist_status", ['waiting', 'notified', 'seated', 'cancelled', 'no_show'])
 export const wasteReason = pgEnum("waste_reason", ['expired', 'damaged', 'overproduced', 'dropped', 'other'])
 

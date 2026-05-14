@@ -150,6 +150,8 @@ export const STAFF_PROTECTED_PATHS = [
 
 export const PARTNER_PROTECTED_PATHS = ['/partner'] as const
 
+export const VENDOR_PROTECTED_PATHS = ['/vendor'] as const
+
 // Public website and tokenized pages that must remain reachable unauthenticated.
 export const PUBLIC_UNAUTHENTICATED_PATHS = [
   '/account-security',
@@ -189,6 +191,7 @@ export const PUBLIC_UNAUTHENTICATED_PATHS = [
   '/demo',
   '/staff-login',
   '/staff-portal',
+  '/vendor-signup',
   '/reactivate-account',
   '/kiosk',
   '/marketplace-chefs',
@@ -265,6 +268,7 @@ export type RouteAccountMode =
   | 'chef_workspace'
   | 'team_workspace'
   | 'partner_workspace'
+  | 'vendor_workspace'
   | 'admin_console'
 
 export type RoutePolicyDecision = {
@@ -279,6 +283,7 @@ const ROLE_HOME_PATHS: Record<string, string> = {
   chef: '/dashboard',
   staff: '/staff-dashboard',
   partner: '/partner/dashboard',
+  vendor: '/vendor/dashboard',
   admin: '/admin',
 }
 
@@ -310,6 +315,10 @@ export function isPartnerRoutePath(pathname: string): boolean {
   return matchesAnyPathOrChild(pathname, PARTNER_PROTECTED_PATHS)
 }
 
+export function isVendorRoutePath(pathname: string): boolean {
+  return matchesAnyPathOrChild(pathname, VENDOR_PROTECTED_PATHS)
+}
+
 export function isPublicUnauthenticatedPath(pathname: string): boolean {
   return matchesAnyPathOrChild(pathname, PUBLIC_UNAUTHENTICATED_PATHS)
 }
@@ -335,6 +344,7 @@ export function getRouteAccountMode(pathname: string): RouteAccountMode {
   if (isAdminRoutePath(pathname)) return 'admin_console'
   if (isStaffRoutePath(pathname)) return 'team_workspace'
   if (isPartnerRoutePath(pathname)) return 'partner_workspace'
+  if (isVendorRoutePath(pathname)) return 'vendor_workspace'
   if (isClientRoutePath(pathname)) return 'guest'
   if (isChefRoutePath(pathname)) return 'chef_workspace'
   return 'public'
@@ -368,7 +378,8 @@ export function getRoutePolicyDecisionForRole(
     (mode === 'chef_workspace' && role === 'chef') ||
     (mode === 'guest' && role === 'client') ||
     (mode === 'team_workspace' && role === 'staff') ||
-    (mode === 'partner_workspace' && role === 'partner')
+    (mode === 'partner_workspace' && role === 'partner') ||
+    (mode === 'vendor_workspace' && role === 'vendor')
 
   return {
     allowed,

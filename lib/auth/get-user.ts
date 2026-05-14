@@ -3,7 +3,14 @@ import { headers } from 'next/headers'
 import { redirect } from 'next/navigation'
 import { auth } from '@/lib/auth'
 import { db } from '@/lib/db'
-import { userRoles, clients, chefs, staffMembers, referralPartners } from '@/lib/db/schema/schema'
+import {
+  userRoles,
+  clients,
+  chefs,
+  staffMembers,
+  referralPartners,
+  vendors,
+} from '@/lib/db/schema/schema'
 import { eq } from 'drizzle-orm'
 import { isAdmin } from '@/lib/auth/admin'
 import { readRequestAuthContext } from '@/lib/auth/request-auth-context'
@@ -42,6 +49,15 @@ export type PartnerAuthUser = {
   tenantId: string // the chef's ID (referral_partners.tenant_id)
 }
 
+export type VendorAuthUser = {
+  id: string // auth.users.id
+  email: string
+  role: 'vendor'
+  vendorId: string // vendors.id
+  tenantId: string // the chef's ID (vendors.chef_id)
+  activeRoleId: string // user_roles.id
+}
+
 /**
  * Get current authenticated user with authoritative role
  * Cached per request - single DB query
@@ -49,8 +65,13 @@ export type PartnerAuthUser = {
  */
 export const getCurrentUser = stableCache(async (): Promise<AuthUser | null> => {
   // Fast path: middleware already resolved auth context into request headers
+  // getCurrentUser only returns AuthUser for chef/client (backward compat).
+  // Staff, partner, vendor use their own require* functions.
   const requestAuthContext = readRequestAuthContext(headers())
   if (requestAuthContext) {
+    if (requestAuthContext.role !== 'chef' && requestAuthContext.role !== 'client') {
+      return null
+    }
     return {
       id: requestAuthContext.userId,
       userId: requestAuthContext.userId,
@@ -289,6 +310,50 @@ export async function requireStaff(): Promise<StaffAuthUser> {
     role: 'staff',
     staffMemberId: roleData.entityId,
     tenantId: staffMember.chefId,
+  }
+}
+
+/**
+ * Require vendor role - used in vendor portal pages and server actions.
+ * Vendors are suppliers (farmers, fishmongers, etc.) invited by a chef.
+ * They can view POs, update catalog prices, and submit invoices.
+ */
+export async function requireVendor(): Promise<VendorAuthUser> {
+  const session = await auth()
+
+  if (!session?.user) {
+    redirect('/auth/signin?portal=vendor')
+  }
+
+  const { user } = session
+
+  const [roleData] = await db
+    .select({ id: userRoles.id, role: userRoles.role, entityId: userRoles.entityId })
+    .from(userRoles)
+    .where(eq(userRoles.authUserId, user.id))
+    .limit(1)
+
+  if (!roleData || roleData.role !== 'vendor') {
+    redirect('/auth/signin?portal=vendor')
+  }
+
+  const [vendor] = await db
+    .select({ chefId: vendors.chefId, status: vendors.status })
+    .from(vendors)
+    .where(eq(vendors.id, roleData.entityId))
+    .limit(1)
+
+  if (!vendor || vendor.status !== 'active') {
+    redirect('/auth/signin?portal=vendor')
+  }
+
+  return {
+    id: user.id,
+    email: user.email ?? '',
+    role: 'vendor',
+    vendorId: roleData.entityId,
+    tenantId: vendor.chefId,
+    activeRoleId: roleData.id,
   }
 }
 

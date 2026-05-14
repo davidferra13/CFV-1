@@ -165,14 +165,16 @@ export default auth(async (request) => {
     return withRequestId(NextResponse.next({ request: { headers: requestHeaders } }), requestId)
   }
 
-  // Set auth context headers for downstream server components/actions
-  if (role === 'chef' || role === 'client') {
+  // Multi-role: propagate auth headers for all human roles
+  const propagatableRoles = ['chef', 'client', 'partner', 'staff', 'vendor', 'guest']
+  if (role && propagatableRoles.includes(role)) {
     setRequestAuthContext(requestHeaders, {
       userId: user.id,
       email: user.email ?? '',
-      role: role as 'chef' | 'client',
+      role: role as import('@/lib/auth/request-auth-context').PortalRole,
       entityId,
       tenantId,
+      activeRoleId: ((user as Record<string, unknown>).activeRoleId as string) ?? '',
     })
   }
 
