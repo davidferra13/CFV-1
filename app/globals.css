@@ -1014,6 +1014,182 @@ html {
   }
 }
 
+/* ── Discovery Rail Design System ─────────────────────── */
+:root {
+  /* Lane palettes */
+  --discovery-taste-primary: #f59e0b;
+  --discovery-taste-secondary: #fbbf24;
+  --discovery-taste-muted: rgba(245, 158, 11, 0.15);
+  --discovery-taste-glow: rgba(245, 158, 11, 0.25);
+  --discovery-taste-bg: rgba(38, 20, 9, 0.8);
+
+  --discovery-occasion-primary: #10b981;
+  --discovery-occasion-secondary: #34d399;
+  --discovery-occasion-muted: rgba(16, 185, 129, 0.15);
+  --discovery-occasion-glow: rgba(16, 185, 129, 0.25);
+  --discovery-occasion-bg: rgba(24, 25, 15, 0.76);
+
+  --discovery-picks-primary: #8b5cf6;
+  --discovery-picks-secondary: #a78bfa;
+  --discovery-picks-muted: rgba(139, 92, 246, 0.15);
+  --discovery-picks-glow: rgba(139, 92, 246, 0.25);
+  --discovery-picks-bg: rgba(42, 22, 13, 0.85);
+
+  /* Text opacity scale */
+  --discovery-text-primary: 0.95;
+  --discovery-text-secondary: 0.7;
+  --discovery-text-tertiary: 0.45;
+  --discovery-text-disabled: 0.25;
+
+  /* Depth layers */
+  --discovery-depth-bg: rgba(255, 255, 255, 0.01);
+  --discovery-depth-rail: rgba(255, 255, 255, 0.03);
+  --discovery-depth-card: rgba(255, 255, 255, 0.05);
+  --discovery-depth-border: rgba(255, 255, 255, 0.08);
+
+  /* Card dimensions */
+  --discovery-card-w: 200px;
+  --discovery-card-h: 140px;
+  --discovery-card-w-mobile: 170px;
+  --discovery-card-h-mobile: 120px;
+  --discovery-card-radius: 16px;
+  --discovery-card-gap: 16px;
+  --discovery-card-gap-mobile: 12px;
+
+  /* Type scale */
+  --discovery-heading-size: 1.125rem;
+  --discovery-lane-label-size: 0.875rem;
+  --discovery-card-title-size: 0.875rem;
+  --discovery-card-sublabel-size: 0.75rem;
+  --discovery-eyebrow-size: 0.625rem;
+}
+
+@media (max-width: 767px) {
+  :root {
+    --discovery-card-w: 170px;
+    --discovery-card-h: 130px;
+    --discovery-card-gap: 12px;
+  }
+}
+
+.discovery-container {
+  position: relative;
+  background: linear-gradient(
+    135deg,
+    rgba(15, 10, 5, 0.4) 0%,
+    rgba(10, 8, 20, 0.3) 50%,
+    rgba(15, 10, 5, 0.4) 100%
+  );
+  backdrop-filter: blur(40px);
+  -webkit-backdrop-filter: blur(40px);
+  border: 1px solid var(--discovery-depth-border);
+  border-radius: 24px;
+  padding: 24px 0;
+}
+
+.discovery-rail-layer {
+  background: var(--discovery-depth-rail);
+  backdrop-filter: blur(24px);
+  -webkit-backdrop-filter: blur(24px);
+}
+
+.discovery-card-base {
+  width: var(--discovery-card-w);
+  height: var(--discovery-card-h);
+  border-radius: var(--discovery-card-radius);
+  border: 1px solid var(--discovery-depth-border);
+  background: var(--discovery-depth-card);
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
+  overflow: hidden;
+  position: relative;
+  flex-shrink: 0;
+  transition:
+    transform 150ms ease-out,
+    box-shadow 150ms ease-out;
+}
+
+.discovery-card-base:hover {
+  transform: scale(1.04) translateY(-3px);
+}
+
+.discovery-card-base:active {
+  transform: scale(0.97);
+}
+
+/* Lane-specific card glows on hover */
+.discovery-card-taste:hover {
+  box-shadow: 0 8px 32px var(--discovery-taste-glow);
+}
+.discovery-card-occasion:hover {
+  box-shadow: 0 8px 32px var(--discovery-occasion-glow);
+}
+.discovery-card-picks:hover {
+  box-shadow: 0 8px 32px var(--discovery-picks-glow);
+}
+
+/* Gradient scrim for text over images */
+.discovery-card-scrim {
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(
+    to top,
+    rgba(0, 0, 0, 0.85) 0%,
+    rgba(0, 0, 0, 0.3) 50%,
+    transparent 100%
+  );
+  pointer-events: none;
+}
+
+/* Abstract card gradient backgrounds */
+.discovery-abstract-taste {
+  background: linear-gradient(135deg, #78350f 0%, #92400e 50%, #451a03 100%);
+}
+.discovery-abstract-occasion {
+  background: linear-gradient(135deg, #064e3b 0%, #065f46 50%, #022c22 100%);
+}
+.discovery-abstract-picks {
+  background: linear-gradient(135deg, #4c1d95 0%, #5b21b6 50%, #2e1065 100%);
+}
+
+/* Lane separator */
+.discovery-lane-separator {
+  height: 1px;
+  background: linear-gradient(
+    to right,
+    transparent 0%,
+    var(--discovery-depth-border) 20%,
+    var(--discovery-depth-border) 80%,
+    transparent 100%
+  );
+  margin: 8px 0;
+}
+
+/* Edge fade mask */
+.discovery-row-mask {
+  mask-image: linear-gradient(to right, transparent 0%, black 8%, black 92%, transparent 100%);
+  -webkit-mask-image: linear-gradient(
+    to right,
+    transparent 0%,
+    black 8%,
+    black 92%,
+    transparent 100%
+  );
+}
+
+@media (max-width: 767px) {
+  .discovery-row-mask {
+    mask-image: linear-gradient(to right, transparent 0%, black 5%, black 95%, transparent 100%);
+    -webkit-mask-image: linear-gradient(
+      to right,
+      transparent 0%,
+      black 5%,
+      black 95%,
+      transparent 100%
+    );
+  }
+}
+
 /* ── Homepage Discovery Rail ── */
 .homepage-discovery-shell {
   position: relative;
