@@ -436,24 +436,40 @@ async function recalculateAllClientTiers(tenantId: string, config: any) {
   const goldMin = config.tier_gold_min ?? 250
   const platinumMin = config.tier_platinum_min ?? 500
 
-  // Fetch all clients with loyalty points in this tenant
+  // Fetch all clients in this tenant
   const { data: clients } = await db
     .from('clients')
-    .select('id, loyalty_points, loyalty_tier')
+    .select('id, loyalty_tier')
     .eq('tenant_id', tenantId)
 
   if (!clients || clients.length === 0) return
 
+  // Fetch lifetime earned per client in one query (tiers based on lifetime, not balance)
+  const { data: allTx } = await db
+    .from('loyalty_transactions')
+    .select('client_id, points')
+    .eq('tenant_id', tenantId)
+    .in('type', ['earned', 'bonus'])
+
+  const lifetimeByClient = new Map<string, number>()
+  for (const tx of allTx || []) {
+    lifetimeByClient.set(tx.client_id, (lifetimeByClient.get(tx.client_id) || 0) + tx.points)
+  }
+
   let updated = 0
   for (const client of clients) {
-    const points = client.loyalty_points || 0
+    const lifetimeEarned = lifetimeByClient.get(client.id) || 0
     let correctTier: LoyaltyTier = 'bronze'
-    if (points >= platinumMin) correctTier = 'platinum'
-    else if (points >= goldMin) correctTier = 'gold'
-    else if (points >= silverMin) correctTier = 'silver'
+    if (lifetimeEarned >= platinumMin) correctTier = 'platinum'
+    else if (lifetimeEarned >= goldMin) correctTier = 'gold'
+    else if (lifetimeEarned >= silverMin) correctTier = 'silver'
 
     if (client.loyalty_tier !== correctTier) {
-      await db.from('clients').update({ loyalty_tier: correctTier }).eq('id', client.id)
+      await db
+        .from('clients')
+        .update({ loyalty_tier: correctTier })
+        .eq('id', client.id)
+        .eq('tenant_id', tenantId)
       updated++
     }
   }
@@ -1088,6 +1104,21 @@ export async function awardLiteVisit(eventId: string) {
   if (event.loyalty_points_awarded) return { success: true, alreadyAwarded: true }
   if (event.status !== 'completed') throw new Error('Only completed events qualify')
 
+  // ATOMIC CLAIM: prevent race condition where concurrent calls both proceed.
+  // This UPDATE only succeeds if loyalty_points_awarded is still false.
+  const { data: claimed, error: claimError } = await db
+    .from('events')
+    .update({ loyalty_points_awarded: true })
+    .eq('id', eventId)
+    .eq('tenant_id', user.tenantId!)
+    .eq('loyalty_points_awarded', false)
+    .select('id')
+    .maybeSingle()
+
+  if (claimError || !claimed) {
+    return { success: true, alreadyAwarded: true }
+  }
+
   const config = await getLoyaltyConfig()
 
   // Get current client stats
@@ -1151,12 +1182,7 @@ export async function awardLiteVisit(eventId: string) {
     }
   }
 
-  // Mark event as processed
-  await db
-    .from('events')
-    .update({ loyalty_points_awarded: true })
-    .eq('id', eventId)
-    .eq('tenant_id', user.tenantId!)
+  // Event already claimed atomically at the top of this function
 
   revalidatePath(`/events/${eventId}`)
   revalidatePath(`/clients/${event.client_id}`)
@@ -1263,9 +1289,18 @@ export async function redeemReward(clientId: string, rewardId: string, eventId?:
     .maybeSingle()
 
   if (!updatedClient) {
-    // Concurrent redemption depleted points first - roll back the transaction we just inserted
+    // Concurrent redemption depleted points first - insert compensating adjustment
+    // (cannot DELETE from append-only loyalty_transactions due to immutability trigger)
     if (txData?.id) {
-      await db.from('loyalty_transactions').delete().eq('id', txData.id)
+      await db.from('loyalty_transactions').insert({
+        tenant_id: user.tenantId!,
+        client_id: clientId,
+        event_id: eventId || null,
+        type: 'adjustment',
+        points: reward.points_required,
+        description: `Reversal: concurrent redemption conflict for ${reward.name}`,
+        created_by: user.id,
+      })
     }
     throw new Error(
       `Insufficient points (concurrent redemption). Need ${reward.points_required}, but balance was already depleted.`
@@ -1786,10 +1821,22 @@ export async function adjustClientLoyalty(input: AdjustLoyaltyInput) {
     }
   }
 
-  // Tier override
+  // Tier override (with ledger trail so override is visible in transaction history)
   if (validated.overrideTier) {
     updates.loyalty_tier = validated.overrideTier
     actions.push(`Tier set to ${validated.overrideTier}`)
+
+    const oldTier = client.loyalty_tier || 'bronze'
+    if (validated.overrideTier !== oldTier) {
+      await db.from('loyalty_transactions').insert({
+        tenant_id: user.tenantId!,
+        client_id: validated.clientId,
+        type: 'adjustment',
+        points: 0,
+        description: `Tier override: ${oldTier} -> ${validated.overrideTier}${validated.adjustmentReason ? ` (${validated.adjustmentReason})` : ''}`,
+        created_by: user.id,
+      })
+    }
   }
 
   // Stats corrections
@@ -1964,6 +2011,18 @@ export async function backfillLoyaltyForHistoricalImports(): Promise<BackfillLoy
 
       // Process events in chronological order
       for (const event of events) {
+        // Atomic claim FIRST: prevent double-award if concurrent with normal event completion
+        const { data: claimed } = await db
+          .from('events')
+          .update({ loyalty_points_awarded: true })
+          .eq('id', event.id)
+          .eq('tenant_id', user.tenantId!)
+          .eq('loyalty_points_awarded', false)
+          .select('id')
+          .maybeSingle()
+
+        if (!claimed) continue // already processed by concurrent call
+
         const guestCount = event.guest_count || 1
         runningEventsCompleted++
         const oldGuestsServedBeforeEvent = runningGuestsServed
@@ -2082,13 +2141,6 @@ export async function backfillLoyaltyForHistoricalImports(): Promise<BackfillLoy
             }
           }
         }
-
-        // Mark event as loyalty-awarded
-        await db
-          .from('events')
-          .update({ loyalty_points_awarded: true })
-          .eq('id', event.id)
-          .eq('tenant_id', user.tenantId!)
 
         totalEventsProcessed++
       }

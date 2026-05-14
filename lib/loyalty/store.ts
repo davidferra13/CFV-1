@@ -770,8 +770,17 @@ export async function redeemRewardForTenant(
     .maybeSingle()
 
   if (!updatedClient) {
+    // Insert compensating adjustment instead of DELETE (append-only ledger has immutability trigger)
     if (txData?.id) {
-      await db.from('loyalty_transactions').delete().eq('id', txData.id)
+      await db.from('loyalty_transactions').insert({
+        tenant_id: tenantId,
+        client_id: clientId,
+        event_id: eventId || null,
+        type: 'adjustment',
+        points: reward.points_required,
+        description: `Reversal: concurrent redemption conflict for ${reward.name}`,
+        created_by: actorId ?? tenantId,
+      })
     }
     throw new Error('Insufficient points (concurrent redemption)')
   }

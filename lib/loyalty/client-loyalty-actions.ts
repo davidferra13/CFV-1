@@ -35,33 +35,8 @@ export async function clientRedeemReward(rewardId: string) {
     throw new Error(`Insufficient points. Need ${reward.points_required}, have ${currentPoints}`)
   }
 
-  // SECURITY: Atomic conditional update to prevent race condition (double-spend).
-  // The WHERE clause ensures the update only succeeds if the client still has enough points.
-  // Two concurrent requests: one will succeed, the other will get 0 rows updated.
-  const { data: updateData, error: updateError } = await db
-    .from('clients')
-    .update({
-      loyalty_points: currentPoints - reward.points_required,
-    })
-    .eq('id', client.id)
-    .gte('loyalty_points', reward.points_required) // atomic check - prevents double-spend
-    .select('loyalty_points')
-    .single()
-
-  if (updateError || !updateData) {
-    // If gte check failed, another concurrent redemption already consumed the points
-    console.error(
-      '[clientRedeemReward] Atomic update failed (likely concurrent redemption):',
-      updateError
-    )
-    throw new Error(
-      'Failed to redeem - points may have been used by another redemption. Please try again.'
-    )
-  }
-
-  const newBalance = updateData.loyalty_points
-
-  // Insert the redemption transaction AFTER the atomic balance update succeeds
+  // Insert redemption transaction FIRST (audit trail before balance change).
+  // If balance deduction fails due to concurrent redemption, we insert a compensating reversal.
   const { data: txData, error: txError } = await db
     .from('loyalty_transactions')
     .insert({
@@ -77,10 +52,41 @@ export async function clientRedeemReward(rewardId: string) {
     .single()
 
   if (txError) {
-    console.error('[clientRedeemReward] Transaction log error:', txError)
-    // Balance was already deducted atomically - log failure is non-blocking
-    // The points are correctly deducted even if the audit row fails
+    console.error('[clientRedeemReward] Transaction insert error:', txError)
+    throw new Error('Failed to redeem reward')
   }
+
+  // SECURITY: Atomic conditional update to prevent race condition (double-spend).
+  const { data: updateData, error: updateError } = await db
+    .from('clients')
+    .update({
+      loyalty_points: currentPoints - reward.points_required,
+    })
+    .eq('id', client.id)
+    .gte('loyalty_points', reward.points_required)
+    .select('loyalty_points')
+    .single()
+
+  if (updateError || !updateData) {
+    // Concurrent redemption depleted points - insert compensating adjustment
+    // (append-only ledger: cannot DELETE due to immutability trigger)
+    if (txData?.id) {
+      await db.from('loyalty_transactions').insert({
+        tenant_id: client.tenant_id,
+        client_id: client.id,
+        event_id: null,
+        type: 'adjustment',
+        points: reward.points_required,
+        description: `Reversal: concurrent redemption conflict for ${reward.name}`,
+        created_by: user.id,
+      })
+    }
+    throw new Error(
+      'Failed to redeem - points may have been used by another redemption. Please try again.'
+    )
+  }
+
+  const newBalance = updateData.loyalty_points
 
   // Create a pending delivery record so the chef knows what to honour.
   // Non-blocking - delivery tracking failure must not roll back the redemption.

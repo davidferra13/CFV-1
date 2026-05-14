@@ -120,14 +120,25 @@ export async function fireTrigger(
     return SKIP
   }
 
-  // 7. Update client balance + recalculate tier
+  // 7. Update client balance + recalculate tier using lifetime earned (not current balance)
   const newBalance = (client.loyalty_points || 0) + points
-  const newTier = recalculateTier(newBalance, tenantId, db)
+
+  // Fetch lifetime earned+bonus for tier calculation (consistent with awardEventPoints)
+  const { data: lifetimeData } = await db
+    .from('loyalty_transactions')
+    .select('points')
+    .eq('client_id', clientId)
+    .eq('tenant_id', tenantId)
+    .in('type', ['earned', 'bonus'])
+
+  const lifetimeEarned = (lifetimeData || []).reduce((sum: number, tx: any) => sum + tx.points, 0)
+  const newTier = recalculateTier(lifetimeEarned, tenantId, db)
 
   const { error: updateError } = await db
     .from('clients')
     .update({ loyalty_points: newBalance })
     .eq('id', clientId)
+    .eq('tenant_id', tenantId)
 
   if (updateError) {
     console.error(`[fireTrigger] Client balance update failed for ${triggerKey}:`, updateError)
@@ -155,7 +166,11 @@ export async function fireTrigger(
   try {
     const resolvedTier = await newTier
     if (resolvedTier && resolvedTier !== client.loyalty_tier) {
-      await db.from('clients').update({ loyalty_tier: resolvedTier }).eq('id', clientId)
+      await db
+        .from('clients')
+        .update({ loyalty_tier: resolvedTier })
+        .eq('id', clientId)
+        .eq('tenant_id', tenantId)
 
       // Tier upgrade notification (non-blocking)
       try {
