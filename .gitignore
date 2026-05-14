@@ -350,3 +350,10 @@ logs/
 
 # Session working files (ephemeral)
 .session-files
+
+# Build/deploy artifacts
+.openclaw-build/
+.superpowers/
+assets/
+tc-out.txt
+chefflow-watchdog.log.old

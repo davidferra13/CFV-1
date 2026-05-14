@@ -1,6 +1,6 @@
 {
   "version": "1.0",
-  "timestamp": "2026-05-14T05:02:33.597Z",
+  "timestamp": "2026-05-14T05:03:39.765Z",
   "source": "auto-postool",
   "partial": false,
   "phase": null,
@@ -16,10 +16,6 @@
   "human_actions_pending": [],
   "decisions": [],
   "uncommitted_files": [
-    {
-      "status": "M",
-      "path": "docs/uptime-history.json"
-    },
     {
       "status": "??",
       "path": ".openclaw-build/lib/control-plane.mjs"
@@ -43,52 +39,8 @@
     {
       "status": "??",
       "path": "tc-out.txt"
-    },
-    {
-      "status": "??",
-      "path": "tests/unit/direct-orders-cart-contracts.test.ts"
-    },
-    {
-      "status": "??",
-      "path": "tests/unit/direct-orders-cart-ui.test.tsx"
-    },
-    {
-      "status": "??",
-      "path": "tests/unit/eat-in-planning-contracts.test.ts"
-    },
-    {
-      "status": "??",
-      "path": "tests/unit/event-operating-packet.test.ts"
-    },
-    {
-      "status": "??",
-      "path": "tests/unit/menu-item-sharing-contracts.test.ts"
-    },
-    {
-      "status": "??",
-      "path": "tests/unit/multi-role-wrong-context-contract.test.ts"
-    },
-    {
-      "status": "??",
-      "path": "tests/unit/navigation.account-mode-links.test.ts"
-    },
-    {
-      "status": "??",
-      "path": "tests/unit/not-found-recovery.test.ts"
-    },
-    {
-      "status": "??",
-      "path": "tests/unit/openclaw-control-plane.test.ts"
-    },
-    {
-      "status": "??",
-      "path": "tests/unit/pie-cart-contract.test.ts"
-    },
-    {
-      "status": "??",
-      "path": "tests/unit/pie-reliability.test.ts"
     }
   ],
   "next_action": null,
-  "context_notes": "Recent commits:\na850f3609 feat: update public surfaces, navigation, middleware, auth, and add web research layer\ncfc1bfba7 feat: add Remy discovery, safety, and decision contracts\n4b04e7da1 feat: expand hub, circles, and dinner planning with consensus, memory, and meal board upgrades\ne932ec601 feat: expand discovery learning system with rail contracts, preferences, and profile persistence\ndf186fae1 chore(agent): repair skill routing feature/repair-skill-routing"
+  "context_notes": "Recent commits:\n9729dd1ae test: add unit tests for direct orders, PIE cart, god-mode, not-found recovery, and navigation\na850f3609 feat: update public surfaces, navigation, middleware, auth, and add web research layer\ncfc1bfba7 feat: add Remy discovery, safety, and decision contracts\n4b04e7da1 feat: expand hub, circles, and dinner planning with consensus, memory, and meal board upgrades\ne932ec601 feat: expand discovery learning system with rail contracts, preferences, and profile persistence"
 }
