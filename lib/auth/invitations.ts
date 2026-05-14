@@ -16,7 +16,7 @@ import crypto from 'crypto'
  * Tokens created before hashing was introduced are stored as plaintext hex;
  * this function produces the SHA-256 hex digest used for new tokens.
  */
-function hashToken(raw: string): string {
+export function hashToken(raw: string): string {
   return crypto.createHash('sha256').update(raw).digest('hex')
 }
 
