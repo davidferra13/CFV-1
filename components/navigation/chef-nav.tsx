@@ -925,8 +925,13 @@ export function ChefSidebar({
             <AppLogo />
           </span>
           {!effectiveCollapsed && (
-            <span className="text-lg font-display text-stone-100 whitespace-nowrap transition-colors duration-200 group-hover/logo:text-brand-400">
-              ChefFlow
+            <span className="flex flex-col leading-tight transition-colors duration-200 group-hover/logo:text-brand-400">
+              <span className="text-lg font-display text-stone-100 whitespace-nowrap">
+                ChefFlow
+              </span>
+              <span className="text-[11px] font-medium uppercase tracking-[0.12em] text-stone-500">
+                Chef Workspace
+              </span>
             </span>
           )}
         </Link>

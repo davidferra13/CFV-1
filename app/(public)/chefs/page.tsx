@@ -6,6 +6,7 @@ import { TrackedLink } from '@/components/analytics/tracked-link'
 import { PublicSeasonalMarketPulse } from '@/components/seasonal/public-seasonal-market-pulse'
 import { CloudinaryFetchImage } from '@/components/ui/cloudinary-fetch-image'
 import {
+  canonicalizeDiscoveryPriceRange,
   DISCOVERY_SERVICE_TYPE_OPTIONS,
   getDiscoveryPriceRangeLabel,
   getDiscoveryServiceTypeLabel,
@@ -62,6 +63,8 @@ const MAX_QUERY_LENGTH = 80
 const ZERO_RESULT_SUGGESTIONS = DISCOVERY_SERVICE_TYPE_OPTIONS.filter((option) =>
   ['private_dinner', 'catering', 'meal_prep'].includes(option.value)
 )
+
+export const dynamic = 'force-dynamic'
 
 const MARKETPLACE_COLLECTIONS = [
   {
@@ -145,11 +148,13 @@ type PageProps = {
     locationBestFor?: string | string[]
     accepting?: string | string[]
     sort?: string | string[]
+    intent?: string | string[]
     visual?: string | string[]
   }
 }
 
 type DirectoryLocationSource = 'manual' | 'current' | 'approximate'
+type DirectoryDiscoveryIntent = 'tonight' | 'weekend' | 'surprise_me'
 
 function firstParam(value?: string | string[]): string {
   if (Array.isArray(value)) return value[0] ?? ''
@@ -212,6 +217,64 @@ function buildDirectoryLiveSignals(input: {
 function parseDirectoryLocationSource(value: string): DirectoryLocationSource {
   if (value === 'current' || value === 'approximate') return value
   return 'manual'
+}
+
+function parseDirectoryDiscoveryIntent(value: string): DirectoryDiscoveryIntent | null {
+  if (value === 'tonight' || value === 'weekend' || value === 'surprise_me') return value
+  return null
+}
+
+const DIRECTORY_DISCOVERY_INTENT_COPY: Record<
+  DirectoryDiscoveryIntent,
+  {
+    label: string
+    eyebrow: string
+    title: string
+    body: string
+    occasion: string
+  }
+> = {
+  tonight: {
+    label: 'Dinner tonight',
+    eyebrow: 'Availability-led search',
+    title: 'Chefs who are best positioned for a fast request.',
+    body: 'We are ranking accepting chefs and visible availability first. Same-day booking still depends on each chef confirming timing, menu, and location.',
+    occasion: 'Dinner tonight',
+  },
+  weekend: {
+    label: 'This weekend',
+    eyebrow: 'Weekend planning',
+    title: 'Start with chefs most likely to handle a near-term weekend event.',
+    body: 'This view prioritizes accepting chefs and soonest availability, then keeps your location, service, and budget filters intact.',
+    occasion: 'This weekend',
+  },
+  surprise_me: {
+    label: 'Surprise me',
+    eyebrow: 'Curated browsing',
+    title: 'A broad chef-first browse for something outside the usual path.',
+    body: 'This keeps the filter wide, then uses featured profiles, availability, and profile quality to bring stronger options forward.',
+    occasion: 'Surprise me',
+  },
+}
+
+function buildIntentBookingHref(input: {
+  intent: DirectoryDiscoveryIntent
+  locationLabel: string | null
+  serviceTypeLabel: string | null
+  priceRangeLabel: string | null
+}) {
+  const copy = DIRECTORY_DISCOVERY_INTENT_COPY[input.intent]
+  const notes = [
+    input.locationLabel ? `Location: ${input.locationLabel}` : null,
+    input.serviceTypeLabel ? `Service: ${input.serviceTypeLabel}` : null,
+    input.priceRangeLabel ? `Price: ${input.priceRangeLabel}` : null,
+    `Discovery source: ${copy.label}`,
+  ].filter(Boolean)
+  const params = new URLSearchParams({
+    occasion: copy.occasion,
+    additional_notes: notes.join('\n'),
+  })
+  return `/book?${params.toString()}`
 }
 
 function DiscoveryChip({ label }: { label: string }) {
@@ -490,8 +553,13 @@ export default async function ChefDirectoryPage({ searchParams }: PageProps) {
   const requestedLocationBestFor = normalizeDirectoryValue(
     firstParam(searchParams?.locationBestFor)
   )
+  const discoveryIntent = parseDirectoryDiscoveryIntent(
+    normalizeDirectoryValue(firstParam(searchParams?.intent))
+  )
   const acceptingOnly = parseDirectoryBooleanParam(firstParam(searchParams?.accepting))
-  const sortMode = parseDirectorySortMode(firstParam(searchParams?.sort))
+  const requestedSort = firstParam(searchParams?.sort)
+  const sortMode =
+    discoveryIntent && !requestedSort ? 'availability' : parseDirectorySortMode(requestedSort)
   const visualMode = firstParam(searchParams?.visual) === '1'
 
   const legacyStateFilter = stateFacets.some((option) => option.value === requestedState)
@@ -530,8 +598,7 @@ export default async function ChefDirectoryPage({ searchParams }: PageProps) {
     'religious_diets',
   ])
   const dietaryFilter = allowedDietaryFilters.has(requestedDietary) ? requestedDietary : ''
-  const allowedPriceRanges = new Set(['budget', 'mid', 'premium', 'luxury'])
-  const priceRangeFilter = allowedPriceRanges.has(requestedPriceRange) ? requestedPriceRange : ''
+  const priceRangeFilter = canonicalizeDiscoveryPriceRange(requestedPriceRange) ?? ''
 
   const legacyStateLabel =
     stateFacets.find((option) => option.value === legacyStateFilter)?.label ?? null
@@ -617,9 +684,23 @@ export default async function ChefDirectoryPage({ searchParams }: PageProps) {
   if (selectedLocationExperienceLabel)
     activeFilters.push(`Setting vibe: ${selectedLocationExperienceLabel}`)
   if (selectedLocationBestForLabel) activeFilters.push(`Best for: ${selectedLocationBestForLabel}`)
+  if (discoveryIntent)
+    activeFilters.push(`Intent: ${DIRECTORY_DISCOVERY_INTENT_COPY[discoveryIntent].label}`)
   if (acceptingOnly) activeFilters.push('Accepting inquiries only')
   if (visualMode) activeFilters.push('Visual mode')
   if (sortMode !== 'featured') activeFilters.push(`Sort: ${selectedSortLabel}`)
+
+  const discoveryIntentCopy = discoveryIntent
+    ? DIRECTORY_DISCOVERY_INTENT_COPY[discoveryIntent]
+    : null
+  const discoveryIntentBookingHref = discoveryIntent
+    ? buildIntentBookingHref({
+        intent: discoveryIntent,
+        locationLabel: activeLocationLabel,
+        serviceTypeLabel: selectedServiceTypeLabel,
+        priceRangeLabel: selectedPriceRangeLabel,
+      })
+    : null
 
   const directoryStructuredData = {
     '@context': 'https://schema.org',
@@ -676,6 +757,7 @@ export default async function ChefDirectoryPage({ searchParams }: PageProps) {
         partnerTypeFilter={partnerTypeFilter}
         locationExperienceFilter={locationExperienceFilter}
         locationBestForFilter={locationBestForFilter}
+        discoveryIntent={discoveryIntent ?? ''}
         acceptingOnly={acceptingOnly}
         sortMode={sortMode}
         resultCount={chefs.length}
@@ -726,6 +808,36 @@ export default async function ChefDirectoryPage({ searchParams }: PageProps) {
           </div>
         </div>
       </section>
+
+      {discoveryIntentCopy && discoveryIntentBookingHref && (
+        <section className="mx-auto max-w-6xl px-4 pb-4 sm:px-6 lg:px-8">
+          <div className="rounded-[1.5rem] border border-brand-700/35 bg-stone-900/80 p-5 shadow-[var(--shadow-card)] sm:p-6">
+            <div className="flex flex-col gap-5 md:flex-row md:items-center md:justify-between">
+              <div className="max-w-3xl">
+                <p className="text-xs font-semibold uppercase tracking-[0.16em] text-brand-300">
+                  {discoveryIntentCopy.eyebrow}
+                </p>
+                <h2 className="mt-2 font-display text-2xl font-bold tracking-tight text-stone-100">
+                  {discoveryIntentCopy.title}
+                </h2>
+                <p className="mt-2 text-sm leading-6 text-stone-300">{discoveryIntentCopy.body}</p>
+                <div className="mt-4 flex flex-wrap gap-2">
+                  <DiscoveryChip label={discoveryIntentCopy.label} />
+                  <DiscoveryChip label={selectedSortLabel} />
+                  {activeLocationLabel && <DiscoveryChip label={activeLocationLabel} />}
+                  {selectedPriceRangeLabel && <DiscoveryChip label={selectedPriceRangeLabel} />}
+                </div>
+              </div>
+              <Link
+                href={discoveryIntentBookingHref}
+                className="inline-flex min-h-11 shrink-0 items-center justify-center rounded-xl bg-brand-600 px-5 text-sm font-semibold text-white transition-colors hover:bg-brand-500"
+              >
+                Describe this request
+              </Link>
+            </div>
+          </div>
+        </section>
+      )}
 
       <section className="mx-auto max-w-6xl px-4 py-8 sm:px-6 lg:px-8">
         <div className="grid gap-4 lg:grid-cols-[minmax(0,1.1fr)_minmax(340px,0.9fr)]">

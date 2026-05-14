@@ -1,9 +1,8 @@
 import { requireAdmin } from '@/lib/auth/admin'
-import { isFounderEmail } from '@/lib/platform/owner-account'
-import { notFound } from 'next/navigation'
 import { getPricingEngineCoverage } from '@/lib/pricing/region-coverage-actions'
 import { getLearningStatus, type LearningStatus } from '@/lib/pricing/compound-learning'
 import { getAccuracyStats } from '@/lib/pricing/receipt-price-bridge'
+import { summarizeRegionReliability } from '@/lib/pricing/pie-reliability'
 import { PricingHealthDashboard } from './pricing-health-dashboard'
 
 export const metadata = {
@@ -11,10 +10,7 @@ export const metadata = {
 }
 
 export default async function PricingHealthPage() {
-  const admin = await requireAdmin()
-  if (!isFounderEmail(admin.email)) {
-    notFound()
-  }
+  await requireAdmin()
 
   const [coverage, learningStatus, receiptAccuracy] = await Promise.all([
     getPricingEngineCoverage(),
@@ -44,6 +40,7 @@ export default async function PricingHealthPage() {
       data={coverage}
       learningStatus={learningStatus}
       receiptAccuracy={receiptAccuracy}
+      reliabilitySummary={summarizeRegionReliability(coverage.regionCoverage)}
     />
   )
 }

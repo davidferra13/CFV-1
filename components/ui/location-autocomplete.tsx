@@ -29,6 +29,7 @@ type LocationAutocompleteProps = {
   id?: string
   required?: boolean
   name?: string
+  googlePlacesEnabled?: boolean
 }
 
 function extractLocationData(place: google.maps.places.PlaceResult): LocationData {
@@ -76,11 +77,12 @@ export function LocationAutocomplete({
   id,
   required,
   name,
+  googlePlacesEnabled = true,
 }: LocationAutocompleteProps) {
   const apiKey = process.env.NEXT_PUBLIC_GOOGLE_MAPS_API_KEY || ''
-  const { shouldLoad, prime } = useDeferredGoogleMapsLoader(Boolean(apiKey))
+  const { shouldLoad, prime } = useDeferredGoogleMapsLoader(Boolean(apiKey && googlePlacesEnabled))
 
-  if (!apiKey || !shouldLoad) {
+  if (!apiKey || !googlePlacesEnabled || !shouldLoad) {
     return (
       <input
         type="text"

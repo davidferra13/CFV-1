@@ -16,7 +16,7 @@ import { headers } from 'next/headers'
 import { db } from '@/lib/db'
 import { authUsers } from '@/lib/db/schema/auth'
 import { userRoles, clients, staffMembers, referralPartners } from '@/lib/db/schema/schema'
-import { eq } from 'drizzle-orm'
+import { eq, sql } from 'drizzle-orm'
 import { getSessionControlRow, recordSuccessfulAccountAccess } from './account-access'
 import { shouldInvalidateJwtSession } from './account-access-core'
 import { userHasMfaEnabled, getMfaMethodType, createMfaChallenge } from '@/lib/mfa/challenge'
@@ -163,7 +163,7 @@ export const authConfig: NextAuthConfig = {
             bannedUntil: authUsers.bannedUntil,
           })
           .from(authUsers)
-          .where(eq(authUsers.email, email))
+          .where(sql`lower(${authUsers.email}) = ${email}`)
           .limit(1)
 
         if (!user || !user.encryptedPassword) {

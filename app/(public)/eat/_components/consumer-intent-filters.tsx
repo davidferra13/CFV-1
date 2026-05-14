@@ -8,6 +8,7 @@ import {
   ChefHat,
   Moon,
   Salad,
+  Sparkles,
   Users,
   Utensils,
   UtensilsCrossed,
@@ -23,12 +24,14 @@ type IntentChip = {
 
 const INTENT_CHIPS: IntentChip[] = [
   { value: 'tonight', label: 'Tonight', Icon: Moon },
+  { value: 'weekend', label: 'This Weekend', Icon: Sparkles },
   { value: 'dinner_party', label: 'Dinner Party', Icon: UtensilsCrossed },
   { value: 'meal_prep', label: 'Meal Prep', Icon: Salad },
   { value: 'private_chef', label: 'Private Chef', Icon: ChefHat },
   { value: 'going_out', label: 'Going Out', Icon: Wine },
   { value: 'team_dinner', label: 'Team Dinner', Icon: Users },
   { value: 'work_lunch', label: 'Work Lunch', Icon: BriefcaseBusiness },
+  { value: 'surprise_me', label: 'Surprise Me', Icon: Sparkles },
 ]
 
 const BUDGET_OPTIONS = ['Under $30/person', '$30-60/person', '$60-100/person', '$100+/person']
@@ -84,6 +87,15 @@ export function ConsumerIntentFilters({
 
       if (nextValue) {
         params.set('intent', nextValue)
+        if (nextValue === 'tonight') {
+          params.set('dateWindow', 'tonight')
+        }
+        if (nextValue === 'weekend') {
+          params.set('dateWindow', 'this_weekend')
+        }
+        if (nextValue === 'surprise_me') {
+          params.set('useCase', 'adventurous')
+        }
         if (nextValue === 'team_dinner') {
           params.set('useCase', 'team')
           if (!params.get('partySize')) params.set('partySize', '8')

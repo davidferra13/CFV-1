@@ -88,6 +88,7 @@ describe('surface governance', () => {
 
     assert.equal(resolveAdminSurfaceMode('/admin/pulse'), 'monitoring')
     assert.equal(resolveAdminSurfaceMode('/admin/system'), 'configuring')
+    assert.equal(resolveAdminSurfaceMode('/admin/web-research'), 'configuring')
     assert.equal(resolveAdminSurfaceMode('/admin/inquiries'), 'reviewing')
 
     assert.equal(resolveStaffSurfaceMode('/staff-dashboard'), 'monitoring')

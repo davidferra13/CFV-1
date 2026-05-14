@@ -4,27 +4,27 @@ import { MapPin, Utensils, ArrowRight, Globe, ShieldCheck, Zap } from '@/compone
 const HOW_IT_WORKS = [
   {
     step: '01',
-    title: 'Search your area',
+    title: 'Search by location',
     description:
-      'Enter your city or ZIP and filter by cuisine, occasion, or service type. Find private chefs, caterers, and meal prep pros near you.',
+      'Enter your city or ZIP. Filter by cuisine, occasion, or service type. Every chef is vetted and verified.',
     icon: MapPin,
     accent: 'from-[#8b4513]/20 to-[#5c2d0e]/10',
     border: 'border-[#8b4513]/30',
   },
   {
     step: '02',
-    title: 'Browse real menus',
+    title: 'See real menus, real prices',
     description:
-      'See actual dishes, pricing, and availability directly from the chef. No stock photos, no fake listings, no guessing.',
+      'No stock photos. No fake listings. Browse actual dishes and pricing directly from the chef.',
     icon: Utensils,
     accent: 'from-[#7a3b10]/20 to-[#4a2408]/10',
     border: 'border-[#7a3b10]/30',
   },
   {
     step: '03',
-    title: 'Connect and book',
+    title: 'Book directly with the chef',
     description:
-      'Reach out directly to the provider you choose. No middleman, no platform fees on your inquiry. Just you and the chef.',
+      'No middleman fees on your inquiry. Message the chef, get a custom quote, and book on your terms.',
     icon: ArrowRight,
     accent: 'from-[#6b3010]/20 to-[#3a1c08]/10',
     border: 'border-[#6b3010]/30',
@@ -89,37 +89,6 @@ export default function LandingBelowFold() {
         </div>
       </section>
 
-      {/* ── Occasion strip ── */}
-      <section className="border-y border-[#3a1e0c]/60 bg-[#120a05]">
-        <div className="mx-auto w-full max-w-6xl px-4 py-14 sm:px-6 lg:px-8">
-          <p className="mb-6 text-center text-xs font-semibold uppercase tracking-[0.18em] text-stone-500">
-            Perfect for every occasion
-          </p>
-          <div className="flex flex-wrap justify-center gap-3">
-            {[
-              'Private Dinners',
-              'Wedding Catering',
-              'Meal Prep',
-              'Corporate Events',
-              'Birthday Parties',
-              'Anniversary Dinners',
-              'Cooking Classes',
-              'Holiday Gatherings',
-              'Bachelorette',
-              'Baby Showers',
-            ].map((occasion) => (
-              <Link
-                key={occasion}
-                href="/chefs"
-                className="rounded-full border border-[#5c3520]/50 bg-[#1e0f08]/60 px-5 py-2 text-sm font-medium text-stone-300 transition-all hover:border-[#8b5e3c]/60 hover:bg-[#2a1610]/80 hover:text-stone-100"
-              >
-                {occasion}
-              </Link>
-            ))}
-          </div>
-        </div>
-      </section>
-
       {/* ── For operators ── */}
       <section className="mx-auto w-full max-w-6xl px-4 py-20 sm:px-6 md:py-28 lg:px-8">
         <div className="overflow-hidden rounded-3xl border border-[#5c3520]/30 bg-gradient-to-br from-[#1e0f08]/80 via-[#160b04]/80 to-[#0c0804]/80 p-10 sm:p-14">
@@ -127,11 +96,11 @@ export default function LandingBelowFold() {
             For food providers
           </p>
           <h2 className="mt-2 max-w-2xl text-3xl font-bold tracking-tight text-stone-100 md:text-4xl">
-            List your business for free.
+            Get discovered by hungry clients.
           </h2>
           <p className="mt-3 max-w-2xl text-base leading-relaxed text-stone-400">
-            Private chefs, caterers, food trucks, bakeries. Get discovered by consumers searching
-            for exactly what you offer.
+            Private chefs, caterers, food trucks, bakeries. Consumers searching for food near them
+            find you organically. Free listing, no commissions.
           </p>
 
           <div className="mt-10 grid gap-6 md:grid-cols-3">

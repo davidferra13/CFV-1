@@ -1297,6 +1297,9 @@ export default async function EventDetailPage({
           <Link href={`/events/${event.id}/documents`}>
             <Button variant="secondary">Documents</Button>
           </Link>
+          <Link href={`/events/${event.id}/god-mode`}>
+            <Button variant="secondary">GOD MODE</Button>
+          </Link>
           {event.status !== 'cancelled' && (
             <EventPacketDrawer
               eventId={event.id}

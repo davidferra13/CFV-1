@@ -10,6 +10,29 @@ import {
   type DiscoveryRailDebugScore,
 } from '@/lib/discovery/discovery-rail-scoring'
 import {
+  buildDiscoveryHref,
+  buildRow2,
+  dedupeDiscoveryItems,
+} from '@/lib/discovery/homepage-discovery-rail'
+import {
+  buildActiveDiscoveryFilterSummary,
+  discoveryFiltersToHref,
+  emptyDiscoveryFilterState,
+  isDiscoveryFilterStateEmpty,
+  selectionFromRailItem,
+  toggleDiscoveryRailFilter,
+  type DiscoveryFilterState,
+} from '@/lib/discovery/filter-state-contract'
+import { buildHomepageTasteRailItems } from '@/lib/discovery/homepage-taste-rail'
+import { getDiscoveryRailContract } from '@/lib/discovery/rail-contract-registry'
+import type {
+  DiscoveryIconKey,
+  DiscoveryItemType,
+  DiscoveryRailItem,
+  FeaturedChefRailData,
+  HomepageLocationContext,
+} from '@/lib/discovery/homepage-discovery-rail'
+import {
   DISCOVERY_RECENTS_STORAGE_KEY,
   trackDiscoveryClick,
   trackDiscoveryInteraction,
@@ -40,6 +63,8 @@ import {
   Grains,
   Hamburger,
   Heart,
+  Pause,
+  Pin,
   Knife,
   Leaf,
   MapPin,
@@ -47,13 +72,14 @@ import {
   Pepper,
   Pizza,
   Plant,
+  Play,
   Search,
   Shrimp,
   Soup,
   Sparkles,
   Stack,
   Store,
-  ThumbsDown,
+  X,
   UsersFour,
   Utensils,
   Wine,
@@ -71,140 +97,6 @@ import {
 //   /nearby?type=X          — food operator directory by business type
 //   /ingredients[/category] — seasonal food encyclopedia
 //   /chef/{slug}            — featured chef public profile
-
-type DiscoveryItemType =
-  | 'cuisine'
-  | 'food_type'
-  | 'craving'
-  | 'service'
-  | 'occasion'
-  | 'dietary'
-  | 'featured_chef'
-  | 'chef_pick'
-  | 'combo'
-  | 'story'
-  | 'surprise'
-  | 'seasonal'
-  | 'location'
-  | 'mood'
-  | 'price'
-  | 'time'
-  | 'group_size'
-  | 'saved'
-  // special_dining: controlled public discovery items for curated private dining formats
-  | 'special_dining'
-  // culinary_signal: timely seasonal ingredient signals derived from the public market pulse.
-  // Route: /ingredients (or /ingredients/{category}). Never fake events or non-existent routes.
-  | 'culinary_signal'
-
-export type DiscoveryIconKey =
-  | 'avocado'
-  | 'bbq'
-  | 'bowl'
-  | 'bread'
-  | 'brunch'
-  | 'burger'
-  | 'cake'
-  | 'carrot'
-  | 'champagne'
-  | 'chef'
-  | 'cheers'
-  | 'coffee'
-  | 'concierge'
-  | 'confetti'
-  | 'comfort'
-  | 'cookie'
-  | 'crown'
-  | 'dining'
-  | 'dumpling'
-  | 'egg'
-  | 'family'
-  | 'fish'
-  | 'flame'
-  | 'graduation'
-  | 'grains'
-  | 'leaf'
-  | 'location'
-  | 'market'
-  | 'noodles'
-  | 'pasta'
-  | 'pepper'
-  | 'pizza'
-  | 'plant'
-  | 'ramen'
-  | 'salad'
-  | 'sandwich'
-  | 'search'
-  | 'seafood'
-  | 'small_plates'
-  | 'spark'
-  | 'stack'
-  | 'steak'
-  | 'sushi'
-  | 'taco'
-  | 'utensils'
-  | 'wine'
-
-export interface DiscoveryRailItem {
-  type: DiscoveryItemType
-  label: string
-  href: string
-  icon?: DiscoveryIconKey
-  presentation?: 'pill' | 'story'
-  eyebrow?: string
-  /** Secondary line shown inside the pill — used for featured_chef items (e.g. "Italian · Miami") */
-  sublabel?: string
-  /** Dev-only scoring explanation attached by the homepage discovery scorer. */
-  debugScore?: DiscoveryRailDebugScore
-}
-
-/** Slim featured-chef record passed from the server component. Only the fields the rail needs. */
-export interface FeaturedChefRailData {
-  slug: string
-  displayName: string
-  primaryCuisine?: string | null
-  city?: string | null
-  state?: string | null
-}
-
-/** Location context from the homepage search form, shared via HomepageDiscovery wrapper. */
-export interface HomepageLocationContext {
-  location: string
-  lat: number | null
-  /** lng for /chefs routes; converted to lon for /nearby routes internally */
-  lng: number | null
-}
-
-/**
- * Augments a discovery href with location context from the homepage search form.
- * /chefs routes receive location + lat + lng.
- * /nearby routes receive location + lat + lon (note: different param name).
- * /eat routes receive location only.
- * Other routes are returned unchanged.
- */
-export function buildDiscoveryHref(baseHref: string, ctx: HomepageLocationContext | null): string {
-  if (!ctx || !ctx.location.trim()) return baseHref
-  const [path, qs] = baseHref.split('?')
-  const supportsLocation =
-    path.startsWith('/chefs') || path.startsWith('/nearby') || path.startsWith('/eat')
-  if (!supportsLocation) return baseHref
-
-  const params = new URLSearchParams(qs ?? '')
-  params.set('location', ctx.location.trim())
-  if (
-    ctx.lat !== null &&
-    ctx.lng !== null &&
-    (path.startsWith('/chefs') || path.startsWith('/nearby'))
-  ) {
-    params.set('lat', String(ctx.lat))
-    if (path.startsWith('/nearby')) {
-      params.set('lon', String(ctx.lng))
-    } else if (path.startsWith('/chefs')) {
-      params.set('lng', String(ctx.lng))
-    }
-  }
-  return `${path}?${params.toString()}`
-}
 
 function cuisineLandingHref(value: string): string {
   return getCuisinePageHref(value) ?? `/chefs?cuisine=${encodeURIComponent(value)}`
@@ -287,6 +179,7 @@ const TYPE_FALLBACK_ICONS: Record<DiscoveryItemType, DiscoveryIconKey> = {
   group_size: 'family',
   saved: 'search',
   special_dining: 'spark',
+  circle: 'family',
   culinary_signal: 'market',
 }
 
@@ -322,6 +215,7 @@ function getPillStyle(item: DiscoveryRailItem) {
     item.type === 'service' ||
     item.type === 'occasion' ||
     item.type === 'special_dining' ||
+    item.type === 'circle' ||
     item.type === 'location' ||
     item.type === 'time' ||
     item.type === 'group_size' ||
@@ -796,9 +690,34 @@ const SERVICE_POOL: DiscoveryRailItem[] = [
     href: '/cannabis/public',
     icon: 'leaf',
   },
+  {
+    type: 'circle',
+    label: 'Dinner Circles',
+    href: '/hub',
+    icon: 'family',
+  },
 ]
 
 const INTENT_POOL: DiscoveryRailItem[] = [
+  {
+    type: 'circle',
+    label: 'Dinner Circles',
+    href: '/hub',
+    icon: 'family',
+    sublabel: 'Shared guest pages for the whole table',
+  },
+  {
+    type: 'circle',
+    label: 'Open tables',
+    href: '/hub/open-tables',
+    icon: 'cheers',
+  },
+  {
+    type: 'circle',
+    label: 'Community Circles',
+    href: '/hub/circles',
+    icon: 'spark',
+  },
   {
     type: 'service',
     label: 'Private dinner',
@@ -992,6 +911,15 @@ const STORY_ITEMS: DiscoveryRailItem[] = [
 
 const BUYER_INTENT_ITEMS: DiscoveryRailItem[] = [
   {
+    type: 'circle',
+    presentation: 'story',
+    eyebrow: 'Together',
+    label: 'Dinner Circles',
+    sublabel: 'A shared page for guests, menus, chat, and planning',
+    href: '/hub',
+    icon: 'family',
+  },
+  {
     type: 'occasion',
     presentation: 'story',
     eyebrow: 'Soon',
@@ -1123,21 +1051,13 @@ function buildLocationSmartItems(ctx: HomepageLocationContext | null): Discovery
   ]
 }
 
-function dedupeDiscoveryItems(items: DiscoveryRailItem[]): DiscoveryRailItem[] {
-  const seen = new Set<string>()
-  const next: DiscoveryRailItem[] = []
-  for (const item of items) {
-    const key = `${item.type}:${item.label}:${item.href}`
-    if (seen.has(key)) continue
-    seen.add(key)
-    next.push(item)
-  }
-  return next
-}
-
 type DiscoveryRowRole = 'cuisine' | 'mobile' | 'craving' | 'intent'
 
 const DISCOVERY_ROW_ROLES: DiscoveryRowRole[] = ['cuisine', 'mobile', 'craving', 'intent']
+const DISCOVERY_PINNED_STORAGE_KEY = 'cf:public-discovery:pinned-items'
+const DISCOVERY_HIDDEN_STORAGE_KEY = 'cf:public-discovery:hidden-items'
+const DISCOVERY_TASTE_ROTATION_KEY = 'cf:public-discovery:taste-rotation-count'
+const DISCOVERY_STORAGE_LIMIT = 24
 
 interface DiscoveryRowConfig {
   role: DiscoveryRowRole
@@ -1154,12 +1074,12 @@ const ROW_MOTION: Record<
   { base: number; wave: number; period: number; phase: number; secondaryRatio: number }
 > = {
   // cuisine: steady primary discovery — consistent, minimal variation, most reliable
-  mobile: { base: 0.72, wave: 0.05, period: 9800, phase: 1.2, secondaryRatio: 0.48 },
-  cuisine: { base: 0.82, wave: 0.04, period: 11500, phase: 0.0, secondaryRatio: 0.52 },
+  mobile: { base: 0.6, wave: 0.06, period: 12800, phase: 1.3, secondaryRatio: 0.43 },
+  cuisine: { base: 0.92, wave: 0.07, period: 10400, phase: 0.0, secondaryRatio: 0.5 },
   // craving: lively appetite-driven — more speed variation, shorter wave cycle
-  craving: { base: 1.0, wave: 0.12, period: 7200, phase: 2.1, secondaryRatio: 0.37 },
+  craving: { base: 0.52, wave: 0.05, period: 17200, phase: 2.4, secondaryRatio: 0.46 },
   // intent: calm service-oriented — slow drift, long period, feels intentional
-  intent: { base: 0.46, wave: 0.05, period: 18000, phase: 4.7, secondaryRatio: 0.44 },
+  intent: { base: 0.72, wave: 0.1, period: 8600, phase: 4.6, secondaryRatio: 0.36 },
 }
 
 function getRowSpeed(role: DiscoveryRowRole, time: number) {
@@ -1167,6 +1087,35 @@ function getRowSpeed(role: DiscoveryRowRole, time: number) {
   const wave = Math.sin(time / m.period + m.phase) * m.wave
   const secondaryWave = Math.sin(time / (m.period * m.secondaryRatio) + m.phase) * m.wave * 0.35
   return Math.max(0.38, m.base + wave + secondaryWave)
+}
+
+const FEEDBACK_ITEM_TYPES = new Set<DiscoveryItemType>([
+  'featured_chef',
+  'chef_pick',
+  'story',
+  'surprise',
+  'saved',
+  'location',
+  'culinary_signal',
+  'special_dining',
+])
+
+function shouldShowDiscoveryFeedback(item: DiscoveryRailItem): boolean {
+  return item.presentation === 'story' || FEEDBACK_ITEM_TYPES.has(item.type)
+}
+
+function isSelectableDiscoveryItem(item: DiscoveryRailItem): boolean {
+  return getDiscoveryRailContract(item.type).filterFacets.length > 0
+}
+
+function isSelectedDiscoveryItem(
+  filters: DiscoveryFilterState,
+  item: Pick<DiscoveryRailItem, 'type' | 'label' | 'href'>
+): boolean {
+  const selection = selectionFromRailItem(item)
+  return filters.selectedRailItems.some(
+    (entry) => entry.type === selection.type && entry.value === selection.value
+  )
 }
 
 /**
@@ -1180,49 +1129,6 @@ function getRowSpeed(role: DiscoveryRowRole, time: number) {
  * - Insert extras at roughly every INSERT_EVERY static items.
  * - When extras run out, the rest of the static pool fills normally.
  */
-export function buildRow2(
-  staticItems: DiscoveryRailItem[],
-  chefItems: DiscoveryRailItem[],
-  locationItems: DiscoveryRailItem[],
-  signalItems: DiscoveryRailItem[] = []
-): DiscoveryRailItem[] {
-  if (chefItems.length === 0 && locationItems.length === 0 && signalItems.length === 0)
-    return staticItems
-
-  // Alternate chefs and locations, then append signals at lower density.
-  // Signals appear at most once per ~8 static items to stay occasional.
-  const inserts: DiscoveryRailItem[] = []
-  let ci = 0
-  let li = 0
-  while (ci < chefItems.length || li < locationItems.length) {
-    if (ci < chefItems.length) inserts.push(chefItems[ci++])
-    if (li < locationItems.length) inserts.push(locationItems[li++])
-  }
-  // Signals are appended after all chefs and locations
-  for (const signal of signalItems) {
-    inserts.push(signal)
-  }
-
-  // Space inserts evenly across the static pool
-  const spacing = Math.max(4, Math.floor(staticItems.length / (inserts.length + 1)))
-  const result: DiscoveryRailItem[] = []
-  let insertIdx = 0
-
-  for (let i = 0; i < staticItems.length; i++) {
-    result.push(staticItems[i])
-    if (insertIdx < inserts.length && (i + 1) % spacing === 0) {
-      result.push(inserts[insertIdx++])
-    }
-  }
-
-  // Append any remaining inserts at the end
-  while (insertIdx < inserts.length) {
-    result.push(inserts[insertIdx++])
-  }
-
-  return result
-}
-
 /** Converts a FeaturedChefRailData record into a DiscoveryRailItem for the rail. */
 function chefToRailItem(chef: FeaturedChefRailData): DiscoveryRailItem {
   const parts: string[] = []
@@ -1300,6 +1206,120 @@ function readRecentDiscoveryItems(): DiscoveryRailItem[] {
   }
 }
 
+function getDiscoveryItemKey(item: Pick<DiscoveryRailItem, 'type' | 'label' | 'href'>): string {
+  return `${item.type}:${item.href}:${item.label}`.toLowerCase()
+}
+
+function readStoredDiscoveryItems(storageKey: string): DiscoveryRailItem[] {
+  if (typeof window === 'undefined') return []
+
+  try {
+    const parsed = JSON.parse(
+      window.localStorage.getItem(storageKey) ?? '[]'
+    ) as DiscoveryRailItem[]
+    if (!Array.isArray(parsed)) return []
+
+    return parsed
+      .filter((item): item is DiscoveryRailItem =>
+        Boolean(
+          item &&
+          typeof item.type === 'string' &&
+          typeof item.label === 'string' &&
+          typeof item.href === 'string'
+        )
+      )
+      .slice(0, DISCOVERY_STORAGE_LIMIT)
+  } catch {
+    return []
+  }
+}
+
+function writeStoredDiscoveryItems(storageKey: string, items: DiscoveryRailItem[]): void {
+  if (typeof window === 'undefined') return
+
+  try {
+    window.localStorage.setItem(storageKey, JSON.stringify(items.slice(0, DISCOVERY_STORAGE_LIMIT)))
+  } catch {
+    // Local storage is a progressive enhancement.
+  }
+}
+
+function readHiddenDiscoveryKeys(): Set<string> {
+  return new Set(readStoredDiscoveryItems(DISCOVERY_HIDDEN_STORAGE_KEY).map(getDiscoveryItemKey))
+}
+
+function readNextTasteRotationSeed(): string {
+  if (typeof window === 'undefined') return 'server'
+
+  try {
+    const today = new Date().toISOString().slice(0, 10)
+    const currentRaw = window.sessionStorage.getItem(DISCOVERY_TASTE_ROTATION_KEY)
+    const current = currentRaw ? JSON.parse(currentRaw) : null
+    const nextCount =
+      current && current.day === today && Number.isInteger(current.count) ? current.count + 1 : 1
+
+    window.sessionStorage.setItem(
+      DISCOVERY_TASTE_ROTATION_KEY,
+      JSON.stringify({ day: today, count: nextCount })
+    )
+
+    return `${today}:${nextCount}`
+  } catch {
+    return `${Date.now()}`
+  }
+}
+
+type DiscoveryProfileApiItem = {
+  itemType: DiscoveryItemType
+  itemValue: string
+  itemLabel: string | null
+  href: string | null
+  metadata?: Record<string, unknown> | null
+}
+
+type DiscoveryProfileApiResponse = {
+  ok?: boolean
+  authenticated?: boolean
+  profile?: {
+    pinned?: DiscoveryProfileApiItem[]
+    dismissed?: DiscoveryProfileApiItem[]
+  }
+}
+
+function profileItemToRailItem(item: DiscoveryProfileApiItem): DiscoveryRailItem | null {
+  if (!item.href) return null
+
+  const metadata = item.metadata ?? {}
+  const icon = typeof metadata.item_icon === 'string' ? metadata.item_icon : undefined
+  const sublabel =
+    typeof metadata.item_sublabel === 'string' ? metadata.item_sublabel : 'Saved discovery shortcut'
+
+  return {
+    type: item.itemType,
+    label: item.itemLabel ?? item.itemValue,
+    href: item.href,
+    icon: icon as DiscoveryIconKey | undefined,
+    presentation: 'story',
+    eyebrow: 'Pinned',
+    sublabel,
+  }
+}
+
+function toStoredDiscoveryItem(item: DiscoveryRailItem): DiscoveryRailItem {
+  const { debugScore: _debugScore, ...stored } = item
+  return stored
+}
+
+function toPinnedDiscoveryItem(item: DiscoveryRailItem): DiscoveryRailItem {
+  const stored = toStoredDiscoveryItem(item)
+  return {
+    ...stored,
+    presentation: 'story',
+    eyebrow: 'Pinned',
+    sublabel: stored.sublabel ?? 'Saved discovery shortcut',
+  }
+}
+
 function withDiscoveryDebug(
   item: DiscoveryRailItem,
   debugScore: DiscoveryRailDebugScore
@@ -1311,6 +1331,42 @@ function withDiscoveryDebug(
 const DRAG_THRESHOLD = 5
 /** ms after last interaction before auto-scroll resumes */
 const RESUME_DELAY = 2000
+const MOMENTUM_MIN_VELOCITY = 0.025
+const MOMENTUM_MAX_VELOCITY = 3.2
+const MOMENTUM_DECAY_PER_FRAME = 0.94
+const MOMENTUM_MAX_FRAME_MS = 64
+
+function getLoopedScrollLeft(el: HTMLDivElement, nextScrollLeft: number): number {
+  const halfWidth = el.scrollWidth / 2
+  if (halfWidth <= el.clientWidth) {
+    return Math.max(0, Math.min(nextScrollLeft, el.scrollWidth - el.clientWidth))
+  }
+
+  let next = nextScrollLeft
+  while (next < 0) next += halfWidth
+  while (next >= halfWidth) next -= halfWidth
+  return next
+}
+
+function applyLoopedScrollDelta(el: HTMLDivElement, delta: number): void {
+  el.scrollLeft = getLoopedScrollLeft(el, el.scrollLeft + delta)
+}
+
+function capturePointerSafely(el: HTMLDivElement, pointerId: number): void {
+  try {
+    el.setPointerCapture(pointerId)
+  } catch {
+    // Synthetic touch verification and older browsers can lack an active pointer capture target.
+  }
+}
+
+function releasePointerSafely(el: HTMLDivElement, pointerId: number): void {
+  try {
+    if (el.hasPointerCapture(pointerId)) el.releasePointerCapture(pointerId)
+  } catch {
+    // Pointer capture may already be gone after touch cancellation.
+  }
+}
 
 interface CuisineMarqueeProps {
   /** Location context from the homepage search form. When set, cuisine/service/location clicks carry the user's entered location into the destination route. */
@@ -1334,6 +1390,13 @@ interface DiscoveryPillProps {
   rowPosition: number
   rowItemCount: number
   isDuplicate?: boolean
+  isPinned?: boolean
+  isSelectable?: boolean
+  isSelected?: boolean
+  interactionReady?: boolean
+  onPinToggle?: (item: DiscoveryRailItem, pinned: boolean) => void
+  onHide?: (item: DiscoveryRailItem) => void
+  onSelectToggle?: (item: DiscoveryRailItem, rowRole: DiscoveryRowRole) => void
 }
 
 function DiscoveryPill({
@@ -1344,6 +1407,13 @@ function DiscoveryPill({
   rowPosition,
   rowItemCount,
   isDuplicate = false,
+  isPinned = false,
+  isSelectable = false,
+  isSelected = false,
+  interactionReady = true,
+  onPinToggle,
+  onHide,
+  onSelectToggle,
 }: DiscoveryPillProps) {
   const flagRaw = getCuisineFlagUrl(item)
   const flagUrls = flagRaw === null ? [] : Array.isArray(flagRaw) ? flagRaw : [flagRaw]
@@ -1359,6 +1429,7 @@ function DiscoveryPill({
   // Flag cards: cuisine-row flag pills become tall rectangular cards instead of pills
   const isCard = hasFlagBg && primary
   const isStory = item.presentation === 'story'
+  const showFeedbackControls = !isDuplicate && shouldShowDiscoveryFeedback(item)
 
   // Build CSS multi-background for single or multi-flag pills.
   const flagBgStyle: React.CSSProperties | undefined = hasFlagBg
@@ -1392,7 +1463,7 @@ function DiscoveryPill({
     : undefined
   const pillRef = useRef<HTMLAnchorElement | null>(null)
   const impressionTrackedRef = useRef(false)
-  const [feedbackAction, setFeedbackAction] = useState<'love' | 'hate' | null>(null)
+  const [feedbackAction, setFeedbackAction] = useState<'love' | 'hide' | null>(null)
   const trackingContext = useMemo(
     () => ({
       href,
@@ -1429,16 +1500,45 @@ function DiscoveryPill({
     return () => observer.disconnect()
   }, [isDuplicate, item, trackingContext])
 
-  const onFeedbackClick = useCallback(
-    (action: 'love' | 'hate', e: React.MouseEvent<HTMLButtonElement>) => {
+  const onMoreLikeClick = useCallback(
+    (e: React.MouseEvent<HTMLButtonElement>) => {
       e.preventDefault()
       e.stopPropagation()
       if (isDuplicate) return
 
-      setFeedbackAction(action)
-      trackDiscoveryInteraction(action, item, trackingContext)
+      setFeedbackAction('love')
+      trackDiscoveryInteraction('love', item, trackingContext)
     },
     [isDuplicate, item, trackingContext]
+  )
+
+  const onPinClick = useCallback(
+    (e: React.MouseEvent<HTMLButtonElement>) => {
+      e.preventDefault()
+      e.stopPropagation()
+      if (isDuplicate) return
+
+      const nextPinned = !isPinned
+      onPinToggle?.(item, nextPinned)
+      trackDiscoveryInteraction(nextPinned ? 'pin' : 'unpin', item, {
+        ...trackingContext,
+        rowRole,
+      })
+    },
+    [isDuplicate, isPinned, item, onPinToggle, rowRole, trackingContext]
+  )
+
+  const onHideClick = useCallback(
+    (e: React.MouseEvent<HTMLButtonElement>) => {
+      e.preventDefault()
+      e.stopPropagation()
+      if (isDuplicate) return
+
+      setFeedbackAction('hide')
+      onHide?.(item)
+      trackDiscoveryInteraction('dismiss', item, trackingContext)
+    },
+    [isDuplicate, item, onHide, trackingContext]
   )
 
   return (
@@ -1467,10 +1567,31 @@ function DiscoveryPill({
           hasFlagBg
             ? 'relative overflow-hidden border-white/25 text-white shadow-[inset_0_1px_0_rgba(255,255,255,0.18)] hover:border-white/45 hover:text-white'
             : [isStory ? 'backdrop-blur-xl' : 'backdrop-blur-md', style.link].join(' '),
+          isSelected
+            ? 'border-[#e8a96b]/90 ring-2 ring-[#e8a96b]/65 ring-offset-2 ring-offset-[#1a0e08]'
+            : '',
+          isSelectable && !interactionReady ? 'pointer-events-none' : '',
         ].join(' ')}
         aria-hidden={isDuplicate ? true : undefined}
-        tabIndex={isDuplicate ? -1 : undefined}
-        onClick={() => {
+        aria-disabled={isSelectable && !interactionReady ? true : undefined}
+        aria-pressed={isSelectable && !isDuplicate ? isSelected : undefined}
+        data-selected={isSelectable && isSelected && !isDuplicate ? 'true' : undefined}
+        tabIndex={isDuplicate || (isSelectable && !interactionReady) ? -1 : undefined}
+        onClick={(event) => {
+          if (isSelectable && !interactionReady) {
+            event.preventDefault()
+            return
+          }
+
+          if (!isDuplicate && isSelectable && onSelectToggle) {
+            event.preventDefault()
+            onSelectToggle(item, rowRole)
+            event.currentTarget.blur()
+            trackDiscoveryInteraction('click', item, trackingContext)
+            window.dispatchEvent(new Event('cf:discovery-recents-updated'))
+            return
+          }
+
           if (!isDuplicate) {
             trackDiscoveryClick(item, trackingContext)
             window.dispatchEvent(new Event('cf:discovery-recents-updated'))
@@ -1543,7 +1664,7 @@ function DiscoveryPill({
             {item.label}
           </span>
         )}
-        {item.sublabel && (
+        {item.sublabel && !hasFlagBg && (
           <span
             className={[
               isStory
@@ -1556,17 +1677,8 @@ function DiscoveryPill({
             {item.sublabel}
           </span>
         )}
-        {process.env.NODE_ENV !== 'production' && item.debugScore && !isDuplicate && (
-          <span
-            className="absolute bottom-1 right-1 z-20 rounded-full bg-black/45 px-1.5 py-0.5 text-[9px] font-bold leading-none text-white/65 backdrop-blur-sm"
-            title={`${item.debugScore.reason} (${item.debugScore.score})`}
-            aria-hidden="true"
-          >
-            {item.debugScore.score}
-          </span>
-        )}
       </Link>
-      {!isDuplicate && (
+      {showFeedbackControls && (
         <span
           className={[
             'pointer-events-none absolute right-1 top-1 z-20 flex gap-1 rounded-full bg-black/25 p-0.5 shadow-sm backdrop-blur-sm transition-opacity group-focus-within/feedback:pointer-events-auto group-focus-within/feedback:opacity-100 group-hover/feedback:pointer-events-auto group-hover/feedback:opacity-100',
@@ -1584,23 +1696,37 @@ function DiscoveryPill({
             aria-pressed={feedbackAction === 'love'}
             title="More like this"
             onPointerDown={(e) => e.stopPropagation()}
-            onClick={(e) => onFeedbackClick('love', e)}
+            onClick={onMoreLikeClick}
           >
             <Heart className="h-3 w-3" weight={feedbackAction === 'love' ? 'fill' : 'bold'} />
           </button>
           <button
             type="button"
             className={[
-              'grid h-5 w-5 place-items-center rounded-full border border-white/20 bg-black/35 text-white/70 transition-colors hover:border-[#efb49b]/60 hover:bg-[#361b14]/90 hover:text-[#ffd5c3] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#efb49b]/55',
-              feedbackAction === 'hate' ? 'border-[#efb49b]/70 bg-[#361b14] text-[#ffd5c3]' : '',
+              'grid h-5 w-5 place-items-center rounded-full border border-white/20 bg-black/35 text-white/70 transition-colors hover:border-[#cfd9a0]/60 hover:bg-[#242516]/90 hover:text-[#eef4bd] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#cfd9a0]/55',
+              isPinned ? 'border-[#cfd9a0]/70 bg-[#242516] text-[#eef4bd]' : '',
             ].join(' ')}
-            aria-label={`Less like ${item.label}`}
-            aria-pressed={feedbackAction === 'hate'}
-            title="Less like this"
+            aria-label={isPinned ? `Unpin ${item.label}` : `Pin ${item.label}`}
+            aria-pressed={isPinned}
+            title={isPinned ? 'Unpin shortcut' : 'Pin shortcut'}
             onPointerDown={(e) => e.stopPropagation()}
-            onClick={(e) => onFeedbackClick('hate', e)}
+            onClick={onPinClick}
           >
-            <ThumbsDown className="h-3 w-3" weight={feedbackAction === 'hate' ? 'fill' : 'bold'} />
+            <Pin className="h-3 w-3" weight={isPinned ? 'fill' : 'bold'} />
+          </button>
+          <button
+            type="button"
+            className={[
+              'grid h-5 w-5 place-items-center rounded-full border border-white/20 bg-black/35 text-white/70 transition-colors hover:border-[#efb49b]/60 hover:bg-[#361b14]/90 hover:text-[#ffd5c3] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#efb49b]/55',
+              feedbackAction === 'hide' ? 'border-[#efb49b]/70 bg-[#361b14] text-[#ffd5c3]' : '',
+            ].join(' ')}
+            aria-label={`Hide ${item.label}`}
+            aria-pressed={feedbackAction === 'hide'}
+            title="Hide this"
+            onPointerDown={(e) => e.stopPropagation()}
+            onClick={onHideClick}
+          >
+            <X className="h-3 w-3" weight="bold" />
           </button>
         </span>
       )}
@@ -1648,36 +1774,193 @@ export function CuisineMarquee({
     active: boolean
     role: DiscoveryRowRole | null
     el: HTMLDivElement
+    pointerId: number
+    pointerType: string
     startX: number
+    lastX: number
+    lastTime: number
     scrollLeft: number
+    velocity: number
     moved: boolean
   } | null>(null)
+  const momentumState = useRef<
+    Record<
+      DiscoveryRowRole,
+      { raf: number; velocity: number; lastTime: number; el: HTMLDivElement } | null
+    >
+  >({
+    cuisine: null,
+    mobile: null,
+    craving: null,
+    intent: null,
+  })
   // Preserves the "moved" flag across the pointerup→click event gap.
   // dragState is nulled in onPointerUp (before click fires), so we need
   // a separate ref to know whether the last gesture was a drag.
   const dragMovedRef = useRef(false)
   const [diningMoment, setDiningMoment] = useState<DiningMoment>('evening')
   const [recentItems, setRecentItems] = useState<DiscoveryRailItem[]>([])
+  const [pinnedItems, setPinnedItems] = useState<DiscoveryRailItem[]>([])
+  const [hiddenKeys, setHiddenKeys] = useState<Set<string>>(() => new Set())
   const [surpriseItem, setSurpriseItem] = useState<DiscoveryRailItem>(SURPRISE_TARGETS[0])
+  const [profileAuthenticated, setProfileAuthenticated] = useState<boolean | null>(null)
+  const [tasteRotationSeed, setTasteRotationSeed] = useState('server')
+  const [autoScrollEnabled, setAutoScrollEnabled] = useState(true)
+  const [selectedFilters, setSelectedFilters] = useState<DiscoveryFilterState>(() =>
+    emptyDiscoveryFilterState()
+  )
+  const [interactionReady, setInteractionReady] = useState(false)
+  const autoScrollEnabledRef = useRef(true)
 
   useEffect(() => {
+    setInteractionReady(true)
     setDiningMoment(getDiningMoment())
-    setRecentItems(readRecentDiscoveryItems())
     setSurpriseItem(SURPRISE_TARGETS[Math.floor(Math.random() * SURPRISE_TARGETS.length)])
+    setTasteRotationSeed(readNextTasteRotationSeed())
+  }, [])
 
-    function refreshRecents() {
+  useEffect(() => {
+    if (profileAuthenticated !== false) return
+
+    setRecentItems(readRecentDiscoveryItems())
+    setPinnedItems(
+      readStoredDiscoveryItems(DISCOVERY_PINNED_STORAGE_KEY).map(toPinnedDiscoveryItem)
+    )
+    setHiddenKeys(readHiddenDiscoveryKeys())
+
+    function refreshStoredDiscoveryState() {
       setRecentItems(readRecentDiscoveryItems())
+      setPinnedItems(
+        readStoredDiscoveryItems(DISCOVERY_PINNED_STORAGE_KEY).map(toPinnedDiscoveryItem)
+      )
+      setHiddenKeys(readHiddenDiscoveryKeys())
     }
 
-    window.addEventListener('storage', refreshRecents)
-    window.addEventListener('focus', refreshRecents)
-    window.addEventListener('cf:discovery-recents-updated', refreshRecents)
+    window.addEventListener('storage', refreshStoredDiscoveryState)
+    window.addEventListener('focus', refreshStoredDiscoveryState)
+    window.addEventListener('cf:discovery-recents-updated', refreshStoredDiscoveryState)
+    window.addEventListener('cf:discovery-shortcuts-updated', refreshStoredDiscoveryState)
     return () => {
-      window.removeEventListener('storage', refreshRecents)
-      window.removeEventListener('focus', refreshRecents)
-      window.removeEventListener('cf:discovery-recents-updated', refreshRecents)
+      window.removeEventListener('storage', refreshStoredDiscoveryState)
+      window.removeEventListener('focus', refreshStoredDiscoveryState)
+      window.removeEventListener('cf:discovery-recents-updated', refreshStoredDiscoveryState)
+      window.removeEventListener('cf:discovery-shortcuts-updated', refreshStoredDiscoveryState)
+    }
+  }, [profileAuthenticated])
+
+  useEffect(() => {
+    let cancelled = false
+
+    async function hydratePersistentProfile() {
+      try {
+        const response = await fetch('/api/discovery/profile', {
+          method: 'GET',
+          headers: { Accept: 'application/json' },
+        })
+        const data = (await response.json()) as DiscoveryProfileApiResponse
+        if (cancelled) return
+        if (!data.authenticated || !data.profile) {
+          setProfileAuthenticated(false)
+          return
+        }
+
+        const serverPinned = (data.profile.pinned ?? [])
+          .map(profileItemToRailItem)
+          .filter((item): item is DiscoveryRailItem => item !== null)
+        const serverDismissed = (data.profile.dismissed ?? [])
+          .map(profileItemToRailItem)
+          .filter((item): item is DiscoveryRailItem => item !== null)
+
+        setProfileAuthenticated(true)
+        setRecentItems([])
+        setPinnedItems(serverPinned.map(toPinnedDiscoveryItem))
+        setHiddenKeys(new Set(serverDismissed.map(getDiscoveryItemKey)))
+      } catch {
+        // Persistent profile hydration is an authenticated enhancement.
+        if (!cancelled) setProfileAuthenticated(false)
+      }
+    }
+
+    hydratePersistentProfile()
+    return () => {
+      cancelled = true
     }
   }, [])
+
+  const isHiddenItem = useCallback(
+    (item: DiscoveryRailItem) => hiddenKeys.has(getDiscoveryItemKey(item)),
+    [hiddenKeys]
+  )
+
+  const isPinnedItem = useCallback(
+    (item: DiscoveryRailItem) =>
+      pinnedItems.some((pinned) => getDiscoveryItemKey(pinned) === getDiscoveryItemKey(item)),
+    [pinnedItems]
+  )
+
+  const filterHiddenItems = useCallback(
+    (items: DiscoveryRailItem[]) => items.filter((item) => !isHiddenItem(item)),
+    [isHiddenItem]
+  )
+
+  const handlePinToggle = useCallback(
+    (item: DiscoveryRailItem, pinned: boolean) => {
+      const itemKey = getDiscoveryItemKey(item)
+      if (profileAuthenticated !== false) {
+        setPinnedItems((current) =>
+          pinned
+            ? [
+                toPinnedDiscoveryItem(item),
+                ...current.filter((entry) => getDiscoveryItemKey(entry) !== itemKey),
+              ]
+            : current.filter((entry) => getDiscoveryItemKey(entry) !== itemKey)
+        )
+        return
+      }
+
+      const current = readStoredDiscoveryItems(DISCOVERY_PINNED_STORAGE_KEY)
+      const next = pinned
+        ? [
+            toPinnedDiscoveryItem(item),
+            ...current.filter((entry) => getDiscoveryItemKey(entry) !== itemKey),
+          ]
+        : current.filter((entry) => getDiscoveryItemKey(entry) !== itemKey)
+
+      writeStoredDiscoveryItems(DISCOVERY_PINNED_STORAGE_KEY, next)
+      setPinnedItems(next.map(toPinnedDiscoveryItem))
+      window.dispatchEvent(new Event('cf:discovery-shortcuts-updated'))
+    },
+    [profileAuthenticated]
+  )
+
+  const handleHide = useCallback(
+    (item: DiscoveryRailItem) => {
+      const itemKey = getDiscoveryItemKey(item)
+      if (profileAuthenticated !== false) {
+        setPinnedItems((current) =>
+          current.filter((entry) => getDiscoveryItemKey(entry) !== itemKey)
+        )
+        setHiddenKeys((current) => new Set([...current, itemKey]))
+        return
+      }
+
+      const current = readStoredDiscoveryItems(DISCOVERY_HIDDEN_STORAGE_KEY)
+      const next = [
+        toStoredDiscoveryItem(item),
+        ...current.filter((entry) => getDiscoveryItemKey(entry) !== itemKey),
+      ]
+      const nextPinned = readStoredDiscoveryItems(DISCOVERY_PINNED_STORAGE_KEY).filter(
+        (entry) => getDiscoveryItemKey(entry) !== itemKey
+      )
+
+      writeStoredDiscoveryItems(DISCOVERY_HIDDEN_STORAGE_KEY, next)
+      writeStoredDiscoveryItems(DISCOVERY_PINNED_STORAGE_KEY, nextPinned)
+      setPinnedItems(nextPinned.map(toPinnedDiscoveryItem))
+      setHiddenKeys(new Set(next.map(getDiscoveryItemKey)))
+      window.dispatchEvent(new Event('cf:discovery-shortcuts-updated'))
+    },
+    [profileAuthenticated]
+  )
 
   const scheduleResumeRow = useCallback((role: DiscoveryRowRole) => {
     const t = resumeTimers.current[role]
@@ -1686,6 +1969,23 @@ export function CuisineMarquee({
       setRowPaused((prev) => ({ ...prev, [role]: false }))
       resumeTimers.current[role] = null
     }, RESUME_DELAY)
+  }, [])
+
+  const handleSelectionToggle = useCallback(
+    (item: DiscoveryRailItem, rowRole: DiscoveryRowRole) => {
+      setSelectedFilters((current) => toggleDiscoveryRailFilter(current, item))
+      const t = resumeTimers.current[rowRole]
+      if (t) {
+        clearTimeout(t)
+        resumeTimers.current[rowRole] = null
+      }
+      setRowPaused((current) => (current[rowRole] ? { ...current, [rowRole]: false } : current))
+    },
+    []
+  )
+
+  const clearSelections = useCallback(() => {
+    setSelectedFilters(emptyDiscoveryFilterState())
   }, [])
 
   const pauseRow = useCallback((role: DiscoveryRowRole) => {
@@ -1697,6 +1997,72 @@ export function CuisineMarquee({
     setRowPaused((prev) => (prev[role] ? prev : { ...prev, [role]: true }))
   }, [])
 
+  const cancelMomentum = useCallback((role?: DiscoveryRowRole | null) => {
+    const roles = role ? [role] : DISCOVERY_ROW_ROLES
+    roles.forEach((rowRole) => {
+      const active = momentumState.current[rowRole]
+      if (!active) return
+      cancelAnimationFrame(active.raf)
+      momentumState.current[rowRole] = null
+    })
+  }, [])
+
+  const startMomentum = useCallback(
+    (role: DiscoveryRowRole, el: HTMLDivElement, initialVelocity: number) => {
+      cancelMomentum(role)
+      if (reducedMotion.current) {
+        scheduleResumeRow(role)
+        return
+      }
+
+      const clampedVelocity = Math.max(
+        -MOMENTUM_MAX_VELOCITY,
+        Math.min(MOMENTUM_MAX_VELOCITY, initialVelocity)
+      )
+      if (Math.abs(clampedVelocity) < MOMENTUM_MIN_VELOCITY) {
+        scheduleResumeRow(role)
+        return
+      }
+
+      pauseRow(role)
+
+      const tick = (time: number) => {
+        const active = momentumState.current[role]
+        if (!active) return
+
+        if (reducedMotion.current || !pageVisibleRef.current || !containerVisibleRef.current) {
+          momentumState.current[role] = null
+          scheduleResumeRow(role)
+          return
+        }
+
+        const dt = active.lastTime ? Math.min(time - active.lastTime, MOMENTUM_MAX_FRAME_MS) : 16.67
+        active.lastTime = time
+
+        if (dt > 0) {
+          applyLoopedScrollDelta(active.el, active.velocity * dt)
+          active.velocity *= Math.pow(MOMENTUM_DECAY_PER_FRAME, dt / 16.67)
+        }
+
+        if (Math.abs(active.velocity) < MOMENTUM_MIN_VELOCITY) {
+          momentumState.current[role] = null
+          scheduleResumeRow(role)
+          return
+        }
+
+        active.raf = requestAnimationFrame(tick)
+      }
+
+      momentumState.current[role] = {
+        raf: requestAnimationFrame(tick),
+        velocity: clampedVelocity,
+        lastTime: 0,
+        el,
+      }
+    },
+    [cancelMomentum, pauseRow, scheduleResumeRow]
+  )
+
   useEffect(() => {
     const timers = resumeTimers.current
     return () => {
@@ -1704,12 +2070,22 @@ export function CuisineMarquee({
         const t = timers[role]
         if (t) clearTimeout(t)
       })
+      cancelMomentum()
     }
-  }, [])
+  }, [cancelMomentum])
 
   useEffect(() => {
     rowPausedRef.current = rowPaused
   }, [rowPaused])
+
+  useEffect(() => {
+    autoScrollEnabledRef.current = autoScrollEnabled
+    if (autoScrollEnabled) lastTimeRef.current = 0
+  }, [autoScrollEnabled])
+
+  const toggleAutoScroll = useCallback(() => {
+    setAutoScrollEnabled((enabled) => !enabled)
+  }, [])
 
   // ── Pointer handlers (unified mouse + touch) ──
 
@@ -1717,38 +2093,74 @@ export function CuisineMarquee({
     (e: React.PointerEvent<HTMLDivElement>) => {
       const el = e.currentTarget
       const role = (el.getAttribute('data-discovery-row') ?? null) as DiscoveryRowRole | null
-      el.setPointerCapture(e.pointerId)
+      if (role) cancelMomentum(role)
+      capturePointerSafely(el, e.pointerId)
       if (role) pauseRow(role)
       dragMovedRef.current = false
+      const time = e.timeStamp || performance.now()
       dragState.current = {
         active: true,
         role,
         el,
+        pointerId: e.pointerId,
+        pointerType: e.pointerType,
         startX: e.clientX,
+        lastX: e.clientX,
+        lastTime: time,
         scrollLeft: el.scrollLeft,
+        velocity: 0,
         moved: false,
       }
     },
-    [pauseRow]
+    [cancelMomentum, pauseRow]
   )
 
   const onPointerMove = useCallback((e: React.PointerEvent<HTMLDivElement>) => {
     const state = dragState.current
-    if (!state?.active) return
+    if (!state?.active || state.pointerId !== e.pointerId) return
     const dx = e.clientX - state.startX
     if (Math.abs(dx) > DRAG_THRESHOLD) {
       state.moved = true
       dragMovedRef.current = true
     }
-    state.el.scrollLeft = state.scrollLeft - dx
+    const time = e.timeStamp || performance.now()
+    const dt = time - state.lastTime
+    if (dt > 0) {
+      const instantVelocity = (state.lastX - e.clientX) / dt
+      state.velocity = state.velocity * 0.35 + instantVelocity * 0.65
+      state.lastX = e.clientX
+      state.lastTime = time
+    }
+    state.el.scrollLeft = getLoopedScrollLeft(state.el, state.scrollLeft - dx)
   }, [])
 
   const onPointerUp = useCallback(
     (e: React.PointerEvent<HTMLDivElement>) => {
-      if (dragState.current?.el.hasPointerCapture(e.pointerId)) {
-        dragState.current.el.releasePointerCapture(e.pointerId)
+      const state = dragState.current
+      if (!state || state.pointerId !== e.pointerId) return
+      releasePointerSafely(state.el, e.pointerId)
+      const role = state.role
+      dragState.current = null
+      if (!role) return
+      if (
+        state.moved &&
+        (state.pointerType === 'touch' || state.pointerType === 'pen') &&
+        Math.abs(state.velocity) >= MOMENTUM_MIN_VELOCITY
+      ) {
+        startMomentum(role, state.el, state.velocity)
+      } else {
+        scheduleResumeRow(role)
       }
-      const role = dragState.current?.role ?? null
+    },
+    [scheduleResumeRow, startMomentum]
+  )
+
+  const onPointerCancel = useCallback(
+    (e: React.PointerEvent<HTMLDivElement>) => {
+      const state = dragState.current
+      if (!state || state.pointerId !== e.pointerId) return
+      releasePointerSafely(state.el, e.pointerId)
+      const role = state.role
       dragState.current = null
       if (role) scheduleResumeRow(role)
     },
@@ -1765,14 +2177,14 @@ export function CuisineMarquee({
     }
   }, [])
 
-  const onMouseEnter = useCallback(
-    (e: React.MouseEvent<HTMLDivElement>) => {
-      const role = (e.currentTarget.getAttribute('data-discovery-row') ??
-        null) as DiscoveryRowRole | null
-      if (role) pauseRow(role)
-    },
-    [pauseRow]
-  )
+  const onMouseEnter = useCallback((e: React.MouseEvent<HTMLDivElement>) => {
+    const role = (e.currentTarget.getAttribute('data-discovery-row') ??
+      null) as DiscoveryRowRole | null
+    if (role) {
+      const t = resumeTimers.current[role]
+      if (t) clearTimeout(t)
+    }
+  }, [])
 
   const onMouseLeave = useCallback(
     (e: React.MouseEvent<HTMLDivElement>) => {
@@ -1791,12 +2203,15 @@ export function CuisineMarquee({
       const role = (el.getAttribute('data-discovery-row') ?? null) as DiscoveryRowRole | null
       if (Math.abs(e.deltaX) > Math.abs(e.deltaY) || e.shiftKey) {
         e.preventDefault()
-        if (role) pauseRow(role)
-        el.scrollLeft += e.deltaX || e.deltaY
+        if (role) {
+          cancelMomentum(role)
+          pauseRow(role)
+        }
+        applyLoopedScrollDelta(el, e.deltaX || e.deltaY)
         if (role) scheduleResumeRow(role)
       }
     },
-    [pauseRow, scheduleResumeRow]
+    [cancelMomentum, pauseRow, scheduleResumeRow]
   )
 
   // ── Auto-scroll via requestAnimationFrame ──
@@ -1804,9 +2219,12 @@ export function CuisineMarquee({
     (e: React.FocusEvent<HTMLDivElement>) => {
       const role = (e.currentTarget.getAttribute('data-discovery-row') ??
         null) as DiscoveryRowRole | null
-      if (role) pauseRow(role)
+      if (role) {
+        cancelMomentum(role)
+        pauseRow(role)
+      }
     },
-    [pauseRow]
+    [cancelMomentum, pauseRow]
   )
 
   const onRowBlur = useCallback(
@@ -1828,7 +2246,10 @@ export function CuisineMarquee({
       const el = e.currentTarget
       const role = (el.getAttribute('data-discovery-row') ?? null) as DiscoveryRowRole | null
       e.preventDefault()
-      if (role) pauseRow(role)
+      if (role) {
+        cancelMomentum(role)
+        pauseRow(role)
+      }
 
       const halfWidth = el.scrollWidth / 2
       const step = Math.max(120, Math.round(el.clientWidth * 0.7))
@@ -1844,7 +2265,7 @@ export function CuisineMarquee({
 
       if (role) scheduleResumeRow(role)
     },
-    [pauseRow, scheduleResumeRow]
+    [cancelMomentum, pauseRow, scheduleResumeRow]
   )
 
   const rafRef = useRef<number>(0)
@@ -1895,7 +2316,12 @@ export function CuisineMarquee({
     if (reducedMotion.current) return
 
     const tick = (time: number) => {
-      if (reducedMotion.current || !pageVisibleRef.current || !containerVisibleRef.current) {
+      if (
+        reducedMotion.current ||
+        !autoScrollEnabledRef.current ||
+        !pageVisibleRef.current ||
+        !containerVisibleRef.current
+      ) {
         lastTimeRef.current = 0
         rafRef.current = requestAnimationFrame(tick)
         return
@@ -1909,11 +2335,7 @@ export function CuisineMarquee({
           if (rowPausedRef.current[role]) return
           const el = rowRefs.current[role]
           if (!el) return
-          el.scrollLeft += getRowSpeed(role, time) * (dt / 16.67)
-          const halfWidth = el.scrollWidth / 2
-          if (halfWidth > 0 && el.scrollLeft >= halfWidth) {
-            el.scrollLeft -= halfWidth
-          }
+          applyLoopedScrollDelta(el, getRowSpeed(role, time) * (dt / 16.67))
         })
       }
       rafRef.current = requestAnimationFrame(tick)
@@ -1924,27 +2346,21 @@ export function CuisineMarquee({
   }, [])
 
   // Duplicate each row for seamless looping.
-  // Row 2 is built dynamically: static service pool + featured chefs + location items.
+  // Rows are split by purpose first, then personalized and scored.
   const row1 = useMemo(() => {
     // Apply user preference boosting: move matched cuisines to front, keep all others after.
     // This is purely an ordering change — no pills are removed.
-    let pool = CUISINE_POOL.filter((item) => item.type === 'cuisine')
-    if (userSignals?.boostedCuisines.length) {
-      const boosted = pool.filter((item) =>
-        userSignals.boostedCuisines.some((c) => item.href.includes(c))
-      )
-      const rest = pool.filter(
-        (item) => !userSignals.boostedCuisines.some((c) => item.href.includes(c))
-      )
-      pool = [...boosted, ...rest]
-    }
-    const locationSmartItems = buildLocationSmartItems(locationContext)
-    const enhancedPool = dedupeDiscoveryItems([
-      ...locationSmartItems.slice(0, 1),
-      ...pool.slice(0, 10),
-      ...locationSmartItems.slice(1),
-      ...pool.slice(10),
-    ])
+    const pool = buildHomepageTasteRailItems({
+      seed: tasteRotationSeed,
+      boostedCuisineSlugs: userSignals?.boostedCuisines ?? [],
+    })
+    const tastePool = pool.length > 0 ? pool : CUISINE_POOL
+    const locationSmartItems = buildLocationSmartItems(locationContext).filter(
+      (item) => item.type === 'culinary_signal'
+    )
+    const enhancedPool = filterHiddenItems(
+      dedupeDiscoveryItems([...locationSmartItems.slice(0, 1), ...tastePool])
+    )
     const scoredPool = applyDiscoveryRailScores(
       enhancedPool,
       userSignals,
@@ -1955,26 +2371,32 @@ export function CuisineMarquee({
       withDiscoveryDebug
     )
     return [...scoredPool, ...scoredPool]
-  }, [locationContext, userSignals])
+  }, [filterHiddenItems, locationContext, tasteRotationSeed, userSignals])
 
   const row2 = useMemo(() => {
-    const pool = dedupeDiscoveryItems([
-      ...STORY_ITEMS,
-      ...MOMENT_ITEMS[diningMoment],
-      ...COMBO_ITEMS,
-      ...CRAVING_POOL,
-    ])
+    const pool = filterHiddenItems(
+      dedupeDiscoveryItems([
+        ...MOMENT_ITEMS[diningMoment],
+        ...COMBO_ITEMS,
+        ...INTENT_POOL.filter((item) =>
+          ['occasion', 'service', 'time', 'group_size', 'price'].includes(item.type)
+        ),
+        ...SERVICE_POOL.filter((item) =>
+          ['occasion', 'service', 'special_dining'].includes(item.type)
+        ),
+      ])
+    )
     const scoredPool = applyDiscoveryRailScores(
       pool,
       userSignals,
       {
-        role: 'craving',
+        role: 'intent',
         locationActive: Boolean(locationContext?.location.trim()),
       },
       withDiscoveryDebug
     )
     return [...scoredPool, ...scoredPool]
-  }, [diningMoment, locationContext, userSignals])
+  }, [diningMoment, filterHiddenItems, locationContext, userSignals])
 
   const row3 = useMemo(() => {
     const chefItems = (featuredChefs ?? []).slice(0, 5).map(chefToRailItem)
@@ -1983,18 +2405,20 @@ export function CuisineMarquee({
       ...buildLocationSmartItems(locationContext),
     ]
     const signalItems = (culinarySignals ?? []).slice(0, 3)
-    let servicePool = dedupeDiscoveryItems([
-      surpriseItem,
-      ...BUYER_INTENT_ITEMS,
-      ...recentItems,
-      ...MOMENT_ITEMS[diningMoment],
-      ...INTENT_POOL.filter(
-        (item) =>
-          item.label !== 'Surprise me' &&
-          item.label !== 'Recently viewed' &&
-          item.label !== 'Saved chefs'
-      ),
-    ])
+    let servicePool = filterHiddenItems(
+      dedupeDiscoveryItems([
+        ...pinnedItems,
+        surpriseItem,
+        ...BUYER_INTENT_ITEMS,
+        ...STORY_ITEMS,
+        ...recentItems,
+        ...CRAVING_POOL.filter((item) => item.type === 'chef_pick'),
+        ...INTENT_POOL.filter(
+          (item) =>
+            item.type === 'saved' || item.type === 'special_dining' || item.type === 'circle'
+        ),
+      ])
+    )
     if (userSignals?.boostedServiceTypes.length) {
       const boosted = servicePool.filter((item) =>
         userSignals.boostedServiceTypes.some((st) => item.href.includes(st))
@@ -2017,9 +2441,10 @@ export function CuisineMarquee({
     return [...scoredPool, ...scoredPool]
   }, [
     culinarySignals,
-    diningMoment,
     featuredChefs,
+    filterHiddenItems,
     locationContext,
+    pinnedItems,
     recentItems,
     surpriseItem,
     userSignals,
@@ -2030,9 +2455,17 @@ export function CuisineMarquee({
     const row3Single = row3.slice(0, Math.floor(row3.length / 2))
     const mobileIntentItems = row3Single
       .filter((item) =>
-        ['service', 'occasion', 'location', 'featured_chef', 'culinary_signal', 'saved'].includes(
-          item.type
-        )
+        [
+          'featured_chef',
+          'chef_pick',
+          'story',
+          'surprise',
+          'saved',
+          'circle',
+          'location',
+          'culinary_signal',
+          'special_dining',
+        ].includes(item.type)
       )
       .slice(0, 8)
     const pool = dedupeDiscoveryItems([
@@ -2056,35 +2489,35 @@ export function CuisineMarquee({
   const rows: DiscoveryRowConfig[] = [
     {
       role: 'cuisine',
-      label: 'Cuisines',
+      label: 'Taste',
       items: row1,
       offsetClassName: 'pl-0',
-      ariaLabel: 'Cuisine types',
+      ariaLabel: 'Taste discovery by cuisine and dish',
     },
     {
       role: 'mobile',
-      label: 'Discover',
+      label: 'ChefFlow Picks',
       items: mobileRow2,
       offsetClassName: 'pl-4',
-      ariaLabel: 'Personalized dishes, occasions, services, and local picks',
+      ariaLabel: 'ChefFlow picks, stories, chefs, and local signals',
       className: 'sm:hidden',
       labelClassName: 'sm:hidden',
     },
     {
       role: 'craving',
-      label: 'Dishes',
+      label: 'Occasion',
       items: row2,
-      offsetClassName: 'pl-4 sm:pl-14',
-      ariaLabel: 'Favorite dishes and cravings',
+      offsetClassName: 'pl-5 sm:pl-16',
+      ariaLabel: 'Occasions, services, timing, and group planning',
       className: 'hidden sm:block',
       labelClassName: 'hidden sm:flex',
     },
     {
       role: 'intent',
-      label: 'Occasions',
+      label: 'ChefFlow Picks',
       items: row3,
-      offsetClassName: 'pl-2 sm:pl-24',
-      ariaLabel: 'Occasions and service formats',
+      offsetClassName: 'pl-3 sm:pl-28',
+      ariaLabel: 'Curated ChefFlow picks, stories, chefs, and local signals',
       className: 'hidden sm:block',
       labelClassName: 'hidden sm:flex',
     },
@@ -2092,15 +2525,67 @@ export function CuisineMarquee({
 
   const ROW_DOTS: Record<string, string> = {
     cuisine: 'bg-amber-400/60',
-    mobile: 'bg-emerald-400/50',
-    craving: 'bg-red-400/50',
-    intent: 'bg-emerald-400/50',
+    mobile: 'bg-sky-400/55',
+    craving: 'bg-emerald-400/50',
+    intent: 'bg-sky-400/55',
   }
+  const controlButtonClass =
+    'inline-flex h-9 w-9 items-center justify-center rounded-full border border-white/10 bg-white/[0.06] text-white/70 shadow-sm transition hover:border-[#e8a96b]/40 hover:bg-[#e8a96b]/15 hover:text-white focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#e8a96b]/55 disabled:cursor-not-allowed disabled:opacity-50'
+  const hasSelectedFilters = !isDiscoveryFilterStateEmpty(selectedFilters)
+  const selectedFilterTokens = buildActiveDiscoveryFilterSummary(selectedFilters)
+  const selectedCount = selectedFilters.selectedRailItems.length
+  const selectedDestinationBase =
+    selectedFilters.cuisines.length > 0 &&
+    !selectedFilters.occasion &&
+    selectedFilters.cravings.length === 0
+      ? '/chefs'
+      : '/eat'
+  const selectedDestinationHref = discoveryFiltersToHref(selectedDestinationBase, {
+    ...selectedFilters,
+    ...(locationContext?.location.trim() ? { location: locationContext.location.trim() } : {}),
+  })
 
   return (
     <>
+      <div className="mt-5 flex flex-col gap-3 px-2 sm:mt-8 sm:flex-row sm:items-end sm:justify-between sm:gap-4">
+        <div className="min-w-0">
+          <p className="text-[10px] font-bold uppercase tracking-widest text-[#e8a96b]/70">
+            Find your next meal
+          </p>
+          <h2 className="mt-1 text-sm font-semibold leading-tight text-white/85 sm:text-base">
+            Taste, Occasion, ChefFlow Picks
+          </h2>
+        </div>
+        <div className="flex shrink-0 flex-wrap items-center gap-2 sm:justify-end">
+          <p className="hidden max-w-[18rem] text-right text-[12px] font-medium leading-snug text-white/45 sm:block">
+            Cuisines, plans, and timely chef leads.
+          </p>
+          <button
+            type="button"
+            className={controlButtonClass}
+            aria-label={
+              autoScrollEnabled
+                ? 'Pause Discovery Rail auto-scroll'
+                : 'Resume Discovery Rail auto-scroll'
+            }
+            aria-pressed={!autoScrollEnabled}
+            title={
+              autoScrollEnabled
+                ? 'Pause Discovery Rail auto-scroll'
+                : 'Resume Discovery Rail auto-scroll'
+            }
+            onClick={toggleAutoScroll}
+          >
+            {autoScrollEnabled ? (
+              <Pause className="h-4 w-4" weight="bold" aria-hidden="true" />
+            ) : (
+              <Play className="h-4 w-4" weight="bold" aria-hidden="true" />
+            )}
+          </button>
+        </div>
+      </div>
       {/* Section labels */}
-      <div className="mb-3 mt-5 flex items-center gap-2 px-2 sm:mt-8" aria-hidden="true">
+      <div className="mb-3 mt-3 flex items-center gap-2 px-2" aria-hidden="true">
         {rows.map((row, i) => (
           <React.Fragment key={row.role}>
             {i > 0 && (
@@ -2125,7 +2610,8 @@ export function CuisineMarquee({
         className="cuisine-marquee-container relative py-2"
         onClickCapture={onClickCapture}
         role="navigation"
-        aria-label="Browse by cuisine, cravings, service, or occasion"
+        aria-label="Browse by taste, occasion, and ChefFlow picks"
+        data-discovery-hydrated={interactionReady ? 'true' : 'false'}
       >
         <div className="flex flex-col gap-2">
           {rows.map((row, rowIndex) => (
@@ -2141,7 +2627,7 @@ export function CuisineMarquee({
               onPointerDown={onPointerDown}
               onPointerMove={onPointerMove}
               onPointerUp={onPointerUp}
-              onPointerCancel={onPointerUp}
+              onPointerCancel={onPointerCancel}
               onWheel={onWheel}
               onFocus={onRowFocus}
               onBlur={onRowBlur}
@@ -2161,6 +2647,13 @@ export function CuisineMarquee({
                     rowPosition={i % Math.max(1, Math.floor(row.items.length / 2))}
                     rowItemCount={Math.max(1, Math.floor(row.items.length / 2))}
                     isDuplicate={i >= Math.floor(row.items.length / 2)}
+                    isPinned={isPinnedItem(item)}
+                    isSelectable={isSelectableDiscoveryItem(item)}
+                    isSelected={isSelectedDiscoveryItem(selectedFilters, item)}
+                    interactionReady={interactionReady}
+                    onPinToggle={handlePinToggle}
+                    onHide={handleHide}
+                    onSelectToggle={handleSelectionToggle}
                     blockLocationContext={
                       item.type === 'featured_chef' || item.type === 'special_dining'
                     }
@@ -2171,6 +2664,49 @@ export function CuisineMarquee({
           ))}
         </div>
       </div>
+      {hasSelectedFilters && (
+        <div className="mt-3 flex flex-col gap-2 rounded-lg border border-[#e8a96b]/25 bg-[#1b1009]/80 px-3 py-3 shadow-[0_10px_28px_rgba(0,0,0,0.18)] sm:flex-row sm:items-center sm:justify-between">
+          <div className="flex min-w-0 flex-wrap items-center gap-1.5">
+            {selectedFilterTokens.slice(0, 4).map((token) => (
+              <span
+                key={`${token.facet}:${token.key}:${token.label}`}
+                className="inline-flex min-h-7 items-center rounded-full border border-[#e8a96b]/25 bg-[#e8a96b]/10 px-2.5 text-[11px] font-semibold text-[#ffd6a3]"
+              >
+                {token.label}
+              </span>
+            ))}
+            {selectedFilterTokens.length > 4 && (
+              <span className="text-[11px] font-semibold text-white/50">
+                +{selectedFilterTokens.length - 4}
+              </span>
+            )}
+          </div>
+          <div className="flex shrink-0 items-center gap-2">
+            <button
+              type="button"
+              className="inline-flex min-h-8 items-center justify-center rounded-full border border-white/10 px-3 text-[11px] font-semibold text-white/55 transition hover:border-white/20 hover:text-white"
+              onClick={clearSelections}
+            >
+              Clear
+            </button>
+            <Link
+              href={selectedDestinationHref}
+              className="inline-flex min-h-8 items-center justify-center rounded-full border border-[#e8a96b]/50 bg-[#e8a96b]/18 px-3 text-[11px] font-bold text-[#ffe0ad] transition hover:border-[#e8a96b]/75 hover:bg-[#e8a96b]/25"
+              aria-label={`Continue with ${selectedCount} selection${selectedCount === 1 ? '' : 's'}`}
+              onClick={() => {
+                for (const selection of selectedFilters.selectedRailItems) {
+                  trackDiscoveryInteraction('click', selection, {
+                    href: selectedDestinationHref,
+                    rowItemCount: selectedCount,
+                  })
+                }
+              }}
+            >
+              Continue with {selectedCount} selection{selectedCount === 1 ? '' : 's'}
+            </Link>
+          </div>
+        </div>
+      )}
     </>
   )
 }

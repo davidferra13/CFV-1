@@ -14,6 +14,7 @@ type DirectoryResultsTrackerProps = {
   partnerTypeFilter: string
   locationExperienceFilter: string
   locationBestForFilter: string
+  discoveryIntent: string
   acceptingOnly: boolean
   sortMode: DirectorySortMode
   resultCount: number
@@ -30,6 +31,7 @@ export function DirectoryResultsTracker({
   partnerTypeFilter,
   locationExperienceFilter,
   locationBestForFilter,
+  discoveryIntent,
   acceptingOnly,
   sortMode,
   resultCount,
@@ -47,6 +49,7 @@ export function DirectoryResultsTracker({
       partnerTypeFilter ||
       locationExperienceFilter ||
       locationBestForFilter ||
+      discoveryIntent ||
       acceptingOnly ||
       sortMode !== 'featured'
     )
@@ -60,6 +63,7 @@ export function DirectoryResultsTracker({
       partnerTypeFilter,
       locationExperienceFilter,
       locationBestForFilter,
+      discoveryIntent,
       acceptingOnly,
       sortMode,
       resultCount,
@@ -81,6 +85,7 @@ export function DirectoryResultsTracker({
       partner_type_filter: partnerTypeFilter || 'none',
       location_experience_filter: locationExperienceFilter || 'none',
       location_best_for_filter: locationBestForFilter || 'none',
+      discovery_intent: discoveryIntent || 'none',
       accepting_only: acceptingOnly,
       sort_mode: sortMode,
       result_count: resultCount,
@@ -100,6 +105,7 @@ export function DirectoryResultsTracker({
         partner_type_filter: partnerTypeFilter || 'none',
         location_experience_filter: locationExperienceFilter || 'none',
         location_best_for_filter: locationBestForFilter || 'none',
+        discovery_intent: discoveryIntent || 'none',
         accepting_only: acceptingOnly,
         sort_mode: sortMode,
         result_count: resultCount,
@@ -118,6 +124,7 @@ export function DirectoryResultsTracker({
         partner_type_filter: partnerTypeFilter || 'none',
         location_experience_filter: locationExperienceFilter || 'none',
         location_best_for_filter: locationBestForFilter || 'none',
+        discovery_intent: discoveryIntent || 'none',
         accepting_only: acceptingOnly,
         sort_mode: sortMode,
       })
@@ -135,6 +142,7 @@ export function DirectoryResultsTracker({
     locationExperienceFilter,
     locationFilter,
     locationSource,
+    discoveryIntent,
     totalCount,
   ])
 

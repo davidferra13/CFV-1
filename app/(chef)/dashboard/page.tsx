@@ -82,6 +82,7 @@ import { DashboardPriorityActions } from '@/components/dashboard/dashboard-prior
 import { DashboardSection } from '@/components/dashboard/dashboard-section'
 import { getQuickNotes } from '@/lib/quick-notes/actions'
 import { SmartSuggestions, SmartSuggestionsSkeleton } from './_sections/smart-suggestions'
+import { ChefOperatorRail, ChefOperatorRailSkeleton } from './_sections/chef-operator-rail'
 import { MetricsStrip } from './_sections/metrics-strip'
 import { PulseSummary } from './_sections/pulse-summary'
 import { CurrentFeed } from '@/components/current/current-feed'
@@ -1834,6 +1835,12 @@ export default async function ChefDashboard() {
       <WidgetErrorBoundary name="Priority Actions" compact>
         <Suspense fallback={<PriorityActionsSkeleton />}>
           <PriorityActionsSection queuePromise={queuePromise} />
+        </Suspense>
+      </WidgetErrorBoundary>
+
+      <WidgetErrorBoundary name="Operator Rail" compact>
+        <Suspense fallback={<ChefOperatorRailSkeleton />}>
+          <ChefOperatorRail queuePromise={queuePromise} />
         </Suspense>
       </WidgetErrorBoundary>
 

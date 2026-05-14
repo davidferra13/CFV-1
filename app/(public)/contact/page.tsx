@@ -67,14 +67,44 @@ async function getSupportInfo() {
   }
 }
 
-export default async function ContactPage() {
+type ContactPageProps = {
+  searchParams?: Promise<Record<string, string | string[] | undefined>>
+}
+
+function firstParam(value: string | string[] | undefined): string {
+  if (Array.isArray(value)) return value[0] ?? ''
+  return value ?? ''
+}
+
+export default async function ContactPage({ searchParams }: ContactPageProps) {
+  const params = searchParams ? await searchParams : {}
+  const reason = firstParam(params.reason)
+  const missingPath = firstParam(params.path)
+  const referrer = firstParam(params.referrer)
+  const isBrokenLinkReport = reason === 'broken-link'
+  const initialSubject = isBrokenLinkReport ? 'Broken link report' : ''
+  const initialMessage = isBrokenLinkReport
+    ? [
+        'I found a broken ChefFlow link.',
+        '',
+        missingPath ? `Missing path: ${missingPath}` : null,
+        referrer ? `Referrer: ${referrer}` : null,
+      ]
+        .filter(Boolean)
+        .join('\n')
+    : ''
   const [supportInfo, founder] = await Promise.all([getSupportInfo(), getFounderProfile()])
 
   return (
     <main>
       <PublicPageView
         pageName="contact"
-        properties={{ section: 'public_growth', market_scope: PUBLIC_MARKET_SCOPE }}
+        properties={{
+          section: 'public_growth',
+          market_scope: PUBLIC_MARKET_SCOPE,
+          reason: reason || null,
+          missing_path: missingPath || null,
+        }}
       />
       {/* Page Header - server rendered */}
       <section className="container mx-auto px-4 py-16 md:py-24">
@@ -145,7 +175,11 @@ export default async function ContactPage() {
             </div>
           </div>
           <Suspense>
-            <ContactForm supportInfo={supportInfo} />
+            <ContactForm
+              supportInfo={supportInfo}
+              initialSubject={initialSubject}
+              initialMessage={initialMessage}
+            />
           </Suspense>
           <PublicSecondaryEntryCluster
             links={PUBLIC_SECONDARY_ENTRY_CONFIG.contact}

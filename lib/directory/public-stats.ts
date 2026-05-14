@@ -29,7 +29,17 @@ export type PublicPlatformStats = {
   avgRating: number | null
 }
 
-const MIN_REVIEWS_FOR_RATING = 1
+/** Minimum thresholds before stats are shown publicly. Below these = null (hidden). */
+const PUBLIC_DISPLAY_THRESHOLDS = {
+  /** Minimum discoverable chefs before showing chef count */
+  minChefs: 5,
+  /** Minimum distinct cuisine types before showing cuisine count */
+  minCuisines: 3,
+  /** Minimum distinct cities before showing city count */
+  minCities: 3,
+  /** Minimum total reviews across all chefs before showing avg rating */
+  minReviewsForRating: 5,
+} as const
 
 export const getPublicPlatformStats = unstable_cache(
   getPublicPlatformStatsUncached,
@@ -65,7 +75,8 @@ async function getPublicPlatformStatsUncached(): Promise<PublicPlatformStats> {
       return true
     })
 
-    const verifiedChefCount = approved.length > 0 ? approved.length : null
+    const verifiedChefCount =
+      approved.length >= PUBLIC_DISPLAY_THRESHOLDS.minChefs ? approved.length : null
 
     if (approved.length === 0) {
       return emptyStats()
@@ -106,7 +117,8 @@ async function getPublicPlatformStatsUncached(): Promise<PublicPlatformStats> {
     for (const row of listingRows) {
       addCuisineValues(row.cuisines)
     }
-    const cuisineTypeCount = cuisineSet.size > 0 ? cuisineSet.size : null
+    const cuisineTypeCount =
+      cuisineSet.size >= PUBLIC_DISPLAY_THRESHOLDS.minCuisines ? cuisineSet.size : null
 
     // --- Cities covered ---
     const citySet = new Set<string>()
@@ -120,7 +132,8 @@ async function getPublicPlatformStatsUncached(): Promise<PublicPlatformStats> {
         citySet.add(row.city.toLowerCase().trim())
       }
     }
-    const cityCoveredCount = citySet.size > 0 ? citySet.size : null
+    const cityCoveredCount =
+      citySet.size >= PUBLIC_DISPLAY_THRESHOLDS.minCities ? citySet.size : null
 
     // --- Average rating (weighted by review_count) ---
     let totalWeightedRating = 0
@@ -134,14 +147,14 @@ async function getPublicPlatformStatsUncached(): Promise<PublicPlatformStats> {
         Number.isFinite(rating) &&
         rating > 0 &&
         Number.isFinite(count) &&
-        count >= MIN_REVIEWS_FOR_RATING
+        count >= PUBLIC_DISPLAY_THRESHOLDS.minReviewsForRating
       ) {
         totalWeightedRating += rating * count
         totalReviews += count
       }
     }
     const avgRating =
-      totalReviews >= MIN_REVIEWS_FOR_RATING
+      totalReviews >= PUBLIC_DISPLAY_THRESHOLDS.minReviewsForRating
         ? Math.round((totalWeightedRating / totalReviews) * 10) / 10
         : null
 

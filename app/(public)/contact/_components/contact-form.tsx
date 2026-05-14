@@ -24,14 +24,20 @@ interface FormErrors {
 
 type ContactFormProps = {
   supportInfo: ContactSupportInfo
+  initialSubject?: string
+  initialMessage?: string
 }
 
-export default function ContactForm({ supportInfo }: ContactFormProps) {
+export default function ContactForm({
+  supportInfo,
+  initialSubject = '',
+  initialMessage = '',
+}: ContactFormProps) {
   const [formData, setFormData] = useState<FormData>({
     name: '',
     email: '',
-    subject: '',
-    message: '',
+    subject: initialSubject,
+    message: initialMessage,
   })
 
   const [errors, setErrors] = useState<FormErrors>({})

@@ -24,7 +24,52 @@ export function BetaSurveyBannerClient({
   href,
   respectOnboardingPeripherals = true,
 }: BetaSurveyBannerClientProps) {
+  if (!respectOnboardingPeripherals) {
+    return (
+      <BetaSurveyBannerBody
+        surveySlug={surveySlug}
+        surveyTitle={surveyTitle}
+        href={href}
+        onboardingPeripheralsEnabled
+        respectOnboardingPeripherals={false}
+      />
+    )
+  }
+
+  return (
+    <BetaSurveyBannerWithPeripheralGate
+      surveySlug={surveySlug}
+      surveyTitle={surveyTitle}
+      href={href}
+    />
+  )
+}
+
+function BetaSurveyBannerWithPeripheralGate({
+  surveySlug,
+  surveyTitle,
+  href,
+}: Omit<BetaSurveyBannerClientProps, 'respectOnboardingPeripherals'>) {
   const onboardingPeripheralsEnabled = useOnboardingPeripheralsEnabled()
+
+  return (
+    <BetaSurveyBannerBody
+      surveySlug={surveySlug}
+      surveyTitle={surveyTitle}
+      href={href}
+      onboardingPeripheralsEnabled={onboardingPeripheralsEnabled}
+      respectOnboardingPeripherals
+    />
+  )
+}
+
+function BetaSurveyBannerBody({
+  surveySlug,
+  surveyTitle,
+  href,
+  onboardingPeripheralsEnabled,
+  respectOnboardingPeripherals,
+}: BetaSurveyBannerClientProps & { onboardingPeripheralsEnabled: boolean }) {
   const [visible, setVisible] = useState(false)
 
   useEffect(() => {

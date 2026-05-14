@@ -40,6 +40,7 @@ import { getUpcomingPublicEvents } from '@/lib/tickets/purchase-actions'
 import { PublicSecondaryEntryCluster } from '@/components/public/public-secondary-entry-cluster'
 import { PUBLIC_SECONDARY_ENTRY_CONFIG } from '@/lib/public/public-secondary-entry-config'
 import { getCurrentUser } from '@/lib/auth/get-user'
+import { auth } from '@/lib/auth'
 import { triggerVisitorAlert } from '@/lib/activity/visitor-alert'
 import {
   getPublicChefBuyerSignals,
@@ -503,7 +504,9 @@ export default async function ChefProfilePage({ params }: Props) {
   const publicSlug = chef.public_slug || params.slug
   const inquirySlug = chef.inquiry_slug || publicSlug
 
+  // Parallel: get session role for context-aware UI
   const [
+    session,
     reviewFeed,
     availabilitySignals,
     workHistory,
@@ -515,6 +518,7 @@ export default async function ChefProfilePage({ params }: Props) {
     buyerSignals,
     showcaseMenus,
   ] = await Promise.all([
+    auth().catch(() => null),
     getPublicChefReviewFeed(chef.id),
     chef.show_availability_signals ? getPublicAvailabilitySignals(chef.id) : Promise.resolve([]),
     getPublicWorkHistory(chef.id).catch(() => []),
@@ -616,6 +620,7 @@ export default async function ChefProfilePage({ params }: Props) {
   const hasWebsiteLink = Boolean(chef.website_url && chef.show_website_on_public_profile)
   const preferWebsite = chef.preferred_inquiry_destination === 'website_only'
   const preferChefFlow = chef.preferred_inquiry_destination === 'chefflow_only'
+  const isSignedInClient = session?.user?.role === 'client'
   const pageBackgroundStyle = optimizedBgUrl
     ? {
         backgroundColor,
@@ -1186,7 +1191,7 @@ export default async function ChefProfilePage({ params }: Props) {
 
                   <div
                     className={`grid gap-3 ${
-                      hasWebsiteLink && !showWebsitePrimaryCta ? 'sm:grid-cols-3' : 'sm:grid-cols-2'
+                      hasWebsiteLink && !showWebsitePrimaryCta ? 'sm:grid-cols-4' : 'sm:grid-cols-3'
                     }`}
                   >
                     <TrackedLink
@@ -1200,6 +1205,19 @@ export default async function ChefProfilePage({ params }: Props) {
                       }}
                     >
                       Shop store
+                    </TrackedLink>
+
+                    <TrackedLink
+                      href={`/chef/${publicSlug}/cart`}
+                      analyticsName="public_profile_direct_order_cart"
+                      analyticsProps={{ chef_slug: publicSlug }}
+                      className="inline-flex min-h-[52px] w-full items-center justify-center rounded-2xl border px-5 py-3 text-center text-sm font-semibold text-stone-900 transition-colors hover:bg-white focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-stone-950 focus-visible:ring-offset-2"
+                      style={{
+                        borderColor: primaryColor,
+                        backgroundColor: 'rgba(255,255,255,0.78)',
+                      }}
+                    >
+                      Cart
                     </TrackedLink>
 
                     <TrackedLink
@@ -1255,6 +1273,22 @@ export default async function ChefProfilePage({ params }: Props) {
                   {!discovery.accepting_inquiries && (
                     <div className="rounded-2xl border border-stone-300/80 bg-white/70 p-4">
                       <ChefAvailabilityWaitlist chefId={chef.id} chefName={chef.display_name} />
+                    </div>
+                  )}
+
+                  {isSignedInClient && discovery.accepting_inquiries && (
+                    <div className="rounded-2xl border border-emerald-200/80 bg-emerald-50/80 p-4">
+                      <p className="text-xs font-semibold uppercase tracking-wider text-emerald-700 mb-2">
+                        You&apos;re signed in
+                      </p>
+                      <TrackedLink
+                        href={`/chef/${publicSlug}/inquire`}
+                        analyticsName="public_profile_client_inquire_cta"
+                        analyticsProps={{ chef_slug: publicSlug, inquiry_slug: inquirySlug }}
+                        className="inline-flex w-full min-h-[44px] items-center justify-center rounded-xl bg-emerald-600 px-4 text-sm font-semibold text-white shadow-sm transition-all hover:bg-emerald-700 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-emerald-500"
+                      >
+                        Send an inquiry as yourself
+                      </TrackedLink>
                     </div>
                   )}
                 </div>

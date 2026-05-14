@@ -1,11 +1,76 @@
 'use client'
 
-import { useRouter } from 'next/navigation'
-import { useState } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import { NEUTRAL_LOCATION_PLACEHOLDER } from '@/lib/site/national-brand-copy'
 import { LocationAutocomplete, type LocationData } from '@/components/ui/location-autocomplete'
-import type { HomepageLocationContext } from './cuisine-marquee'
+import type { HomepageLocationContext } from '@/lib/discovery/homepage-discovery-rail'
+import { useUserLocation, type SavedLocation } from '@/lib/location/use-user-location'
 import { trackDiscoverySearchSubmit } from '@/lib/discovery/track-discovery-click'
+
+const PLACEHOLDER_PHRASES = [
+  'City, state, or ZIP code',
+  'Private chef in Miami...',
+  'Italian dinner in NYC...',
+  'Catering for 50 in Austin...',
+  'Personal chef in Chicago...',
+  'Wedding chef in LA...',
+  'Meal prep in San Francisco...',
+]
+
+const CHAR_INTERVAL = 55 // ms per character typed
+const ERASE_INTERVAL = 30 // ms per character erased
+const HOLD_MS = 2200 // ms to hold before erasing
+
+function useTypingPlaceholder(phrases: string[], active: boolean) {
+  const [display, setDisplay] = useState(phrases[0])
+  const phraseIdx = useRef(0)
+  const charIdx = useRef(phrases[0].length)
+  const erasing = useRef(false)
+  const timer = useRef<ReturnType<typeof setTimeout> | null>(null)
+
+  useEffect(() => {
+    if (!active) return
+    // Delay start so initial focus is on the hero, not the cycling text
+    const startDelay = setTimeout(() => {
+      phraseIdx.current = 1
+      charIdx.current = 0
+      erasing.current = false
+
+      function tick() {
+        const phrase = phrases[phraseIdx.current]
+        if (!erasing.current) {
+          charIdx.current += 1
+          setDisplay(phrase.slice(0, charIdx.current))
+          if (charIdx.current >= phrase.length) {
+            erasing.current = true
+            timer.current = setTimeout(tick, HOLD_MS)
+            return
+          }
+          timer.current = setTimeout(tick, CHAR_INTERVAL)
+        } else {
+          charIdx.current -= 1
+          setDisplay(phrase.slice(0, charIdx.current))
+          if (charIdx.current <= 0) {
+            phraseIdx.current = (phraseIdx.current + 1) % phrases.length
+            charIdx.current = 0
+            erasing.current = false
+            timer.current = setTimeout(tick, 200)
+            return
+          }
+          timer.current = setTimeout(tick, ERASE_INTERVAL)
+        }
+      }
+      tick()
+    }, 3500)
+
+    return () => {
+      clearTimeout(startDelay)
+      if (timer.current) clearTimeout(timer.current)
+    }
+  }, [active, phrases])
+
+  return display
+}
 
 const SERVICE_OPTIONS = [
   { value: '', label: 'Any service' },
@@ -25,10 +90,23 @@ interface HomepageSearchProps {
 }
 
 export function HomepageSearch({ onContextChange }: HomepageSearchProps = {}) {
-  const router = useRouter()
   const [location, setLocation] = useState('')
   const [locationGeo, setLocationGeo] = useState<{ lat: number; lng: number } | null>(null)
   const [serviceType, setServiceType] = useState('')
+  const typingPlaceholder = useTypingPlaceholder(PLACEHOLDER_PHRASES, location === '')
+
+  const { savedLocation, saveLocation, clearLocation, hydrated } = useUserLocation()
+
+  useEffect(() => {
+    if (!hydrated || !savedLocation) return
+    setLocation(savedLocation.displayLabel)
+    setLocationGeo({ lat: savedLocation.lat, lng: savedLocation.lng })
+    onContextChange?.({
+      location: savedLocation.displayLabel,
+      lat: savedLocation.lat,
+      lng: savedLocation.lng,
+    })
+  }, [hydrated, savedLocation, onContextChange])
 
   function handleLocationSelect(data: LocationData) {
     const text = data.displayText
@@ -36,30 +114,48 @@ export function HomepageSearch({ onContextChange }: HomepageSearchProps = {}) {
     setLocation(text)
     setLocationGeo(geo)
     onContextChange?.({ location: text, lat: geo?.lat ?? null, lng: geo?.lng ?? null })
+    if (geo) {
+      saveLocation({
+        query: text,
+        city: null,
+        state: null,
+        zip: null,
+        lat: geo.lat,
+        lng: geo.lng,
+        displayLabel: text,
+        savedAt: new Date().toISOString(),
+      })
+    }
   }
 
-  function handleSearch(e: React.FormEvent) {
+  function handleSearch(e: React.FormEvent<HTMLFormElement>) {
     e.preventDefault()
+    const formData = new FormData(e.currentTarget)
+    const submittedLocation = String(formData.get('location') ?? location).trim()
+    const submittedServiceType = String(formData.get('serviceType') ?? serviceType)
     const params = new URLSearchParams()
-    if (location.trim()) params.set('location', location.trim())
-    if (serviceType) params.set('serviceType', serviceType)
+    if (submittedLocation) params.set('location', submittedLocation)
+    if (submittedServiceType) params.set('serviceType', submittedServiceType)
     if (locationGeo) {
       params.set('lat', String(locationGeo.lat))
       params.set('lng', String(locationGeo.lng))
     }
     const qs = params.toString()
     const href = `/chefs${qs ? `?${qs}` : ''}`
-    trackDiscoverySearchSubmit({
-      location: location.trim() || undefined,
-      serviceType: serviceType || undefined,
-      href,
-    })
-    router.push(href)
+    try {
+      trackDiscoverySearchSubmit({
+        location: submittedLocation || undefined,
+        serviceType: submittedServiceType || undefined,
+        href,
+      })
+    } finally {
+      window.location.assign(href)
+    }
   }
 
   return (
-    <form onSubmit={handleSearch} className="flex flex-col gap-4">
-      <div className="search-premium flex flex-1 flex-col overflow-hidden rounded-2xl border border-stone-700/60 bg-stone-900/70 shadow-[0_24px_48px_rgba(0,0,0,0.2)] backdrop-blur-xl sm:flex-row sm:rounded-[1.5rem]">
+    <form action="/chefs" method="get" onSubmit={handleSearch} className="flex flex-col gap-4">
+      <div className="search-premium flex flex-1 flex-col overflow-hidden rounded-2xl border border-white/15 bg-white/5 shadow-[0_24px_48px_rgba(0,0,0,0.35),inset_0_1px_0_rgba(255,255,255,0.12)] backdrop-blur-2xl sm:flex-row sm:rounded-[1.5rem]">
         {/* Location input */}
         <div className="flex min-h-[56px] flex-1 items-center border-b border-stone-700/40 sm:min-h-[60px] sm:border-b-0 sm:border-r">
           <label htmlFor="homepage-location" className="sr-only">
@@ -94,8 +190,9 @@ export function HomepageSearch({ onContextChange }: HomepageSearchProps = {}) {
               setLocationGeo(null)
               onContextChange?.({ location: text, lat: null, lng: null })
             }}
-            placeholder={NEUTRAL_LOCATION_PLACEHOLDER}
+            placeholder={typingPlaceholder}
             className="w-full bg-transparent px-3 py-4 text-base text-stone-100 placeholder:text-stone-500 focus:outline-none sm:py-5 sm:text-[15px]"
+            googlePlacesEnabled={false}
           />
         </div>
 
@@ -150,6 +247,22 @@ export function HomepageSearch({ onContextChange }: HomepageSearchProps = {}) {
 
       {/* Search button - full width on mobile, aligned right on desktop */}
       <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+        {savedLocation && location === savedLocation.displayLabel && (
+          <p className="text-xs text-stone-500">
+            Browsing near {savedLocation.displayLabel} &middot;{' '}
+            <button
+              type="button"
+              onClick={() => {
+                clearLocation()
+                setLocation('')
+                setLocationGeo(null)
+              }}
+              className="text-brand-400 underline-offset-2 hover:underline"
+            >
+              change
+            </button>
+          </p>
+        )}
         <p className="text-xs leading-5 text-stone-500">
           Search by place and service, then compare live profiles in the directory.
         </p>

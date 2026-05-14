@@ -1,13 +1,7 @@
-import Link from 'next/link'
+import { auth } from '@/lib/auth'
+import { NotFoundRecovery } from '@/components/errors/not-found-recovery'
 
-export default function NotFound() {
-  return (
-    <div className="flex min-h-[50vh] flex-col items-center justify-center gap-4 p-8">
-      <h2 className="text-xl font-semibold">Page not found</h2>
-      <p className="text-muted-foreground text-sm">The page you're looking for doesn't exist.</p>
-      <Link href="/" className="text-brand-500 hover:text-brand-600 text-sm font-medium underline">
-        Go home
-      </Link>
-    </div>
-  )
+export default async function NotFound() {
+  const session = await auth()
+  return <NotFoundRecovery audience="admin" signedInRole={session?.user?.role ?? 'admin'} />
 }

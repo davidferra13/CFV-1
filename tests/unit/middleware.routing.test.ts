@@ -12,6 +12,9 @@ import {
   API_SKIP_AUTH_PREFIXES,
   PUBLIC_ASSET_PATHS,
   PUBLIC_UNAUTHENTICATED_PATHS,
+  getHomePathForRole,
+  getRouteAccountMode,
+  getRoutePolicyDecisionForRole,
   isAdminRoutePath,
   isApiSkipAuthPath,
   isPublicAssetPath,
@@ -22,28 +25,16 @@ import {
 } from '../../lib/auth/route-policy'
 
 function getRedirectForRole(pathname: string, role: string): string | null {
-  if (isChefRoutePath(pathname) && role !== 'chef') {
-    return '/my-events'
-  }
-  if (isClientRoutePath(pathname) && role !== 'client') {
-    return '/dashboard'
-  }
-  if (isStaffRoutePath(pathname) && role !== 'staff') {
-    return role === 'client' ? '/my-events' : '/dashboard'
-  }
-  return null
+  return getRoutePolicyDecisionForRole(pathname, role).recoveryPath
 }
 
 function getLandingRedirect(role: string): string {
-  if (role === 'client') return '/my-events'
-  if (role === 'staff') return '/staff-dashboard'
-  if (role === 'partner') return '/partner/dashboard'
-  return '/dashboard'
+  return getHomePathForRole(role)
 }
 
 describe('Route Policy - source of truth coverage', () => {
   it('includes key public marketing routes', () => {
-    for (const path of ['/compare', '/customers', '/faq', '/trust', '/unsubscribe']) {
+    for (const path of ['/compare', '/customers', '/faq', '/nearby', '/trust', '/unsubscribe']) {
       assert.equal(PUBLIC_UNAUTHENTICATED_PATHS.includes(path), true)
     }
   })
@@ -55,6 +46,7 @@ describe('Route Policy - source of truth coverage', () => {
       '/api/remy/stream',
       '/api/webhooks',
       '/api/e2e',
+      '/api/discovery',
     ]) {
       assert.equal(API_SKIP_AUTH_PREFIXES.includes(path), true)
     }
@@ -146,6 +138,13 @@ describe('Middleware - public unauthenticated paths', () => {
     const source = fs.readFileSync(path.join(process.cwd(), 'middleware.ts'), 'utf8')
     assert.equal(source.includes('setPathnameHeader(sanitized, pathname)'), true)
   })
+
+  it('keeps stale public route redirects in middleware before auth gating', () => {
+    const source = fs.readFileSync(path.join(process.cwd(), 'middleware.ts'), 'utf8')
+    assert.equal(source.includes("'/food-directory': '/ingredients'"), true)
+    assert.equal(source.includes("'/operators': '/for-operators'"), true)
+    assert.equal(source.includes('X-ChefFlow-Recovery-Redirect'), true)
+  })
 })
 
 describe('Middleware - public asset paths', () => {
@@ -169,6 +168,7 @@ describe('Middleware - API skip paths', () => {
     assert.equal(isApiSkipAuthPath('/api/build-version'), true)
     assert.equal(isApiSkipAuthPath('/api/webhooks/stripe'), true)
     assert.equal(isApiSkipAuthPath('/api/e2e/auth'), true)
+    assert.equal(isApiSkipAuthPath('/api/discovery/click'), true)
     assert.equal(isApiSkipAuthPath('/api/remy/client'), true)
     assert.equal(isApiSkipAuthPath('/api/remy/stream'), true)
     assert.equal(isApiSkipAuthPath('/api/ai/health'), true)
@@ -186,6 +186,7 @@ describe('Middleware - API skip paths', () => {
     assert.equal(source.includes('|health|'), true)
     assert.equal(source.includes('|monitoring|'), true)
     assert.equal(source.includes('|cron|'), true)
+    assert.equal(source.includes('|discovery|'), true)
   })
 })
 
@@ -198,6 +199,44 @@ describe('Middleware - admin route matching', () => {
   it('does not match non-admin paths', () => {
     assert.equal(isAdminRoutePath('/dashboard'), false)
     assert.equal(isAdminRoutePath('/settings'), false)
+  })
+})
+
+describe('Route Policy - account mode classification', () => {
+  it('classifies public, guest, chef, team, partner, and admin route modes', () => {
+    assert.equal(getRouteAccountMode('/eat'), 'public')
+    assert.equal(getRouteAccountMode('/my-events'), 'guest')
+    assert.equal(getRouteAccountMode('/dashboard'), 'chef_workspace')
+    assert.equal(getRouteAccountMode('/staff-dashboard'), 'team_workspace')
+    assert.equal(getRouteAccountMode('/partner/dashboard'), 'partner_workspace')
+    assert.equal(getRouteAccountMode('/admin/users'), 'admin_console')
+  })
+
+  it('returns wrong-context recovery paths for portal routes', () => {
+    const clientOnChefRoute = getRoutePolicyDecisionForRole('/dashboard', 'client')
+    const chefOnGuestRoute = getRoutePolicyDecisionForRole('/my-events', 'chef')
+    const staffOnPartnerRoute = getRoutePolicyDecisionForRole('/partner/dashboard', 'staff')
+
+    assert.equal(clientOnChefRoute.allowed, false)
+    assert.equal(clientOnChefRoute.mode, 'chef_workspace')
+    assert.equal(clientOnChefRoute.recoveryPath, '/my-events')
+
+    assert.equal(chefOnGuestRoute.allowed, false)
+    assert.equal(chefOnGuestRoute.mode, 'guest')
+    assert.equal(chefOnGuestRoute.recoveryPath, '/dashboard')
+
+    assert.equal(staffOnPartnerRoute.allowed, false)
+    assert.equal(staffOnPartnerRoute.mode, 'partner_workspace')
+    assert.equal(staffOnPartnerRoute.recoveryPath, '/staff-dashboard')
+  })
+
+  it('leaves admin routes to the persisted admin runtime gate', () => {
+    const decision = getRoutePolicyDecisionForRole('/admin', 'chef')
+
+    assert.equal(decision.allowed, true)
+    assert.equal(decision.mode, 'admin_console')
+    assert.equal(decision.reason, 'admin_runtime_gate')
+    assert.equal(decision.recoveryPath, null)
   })
 })
 

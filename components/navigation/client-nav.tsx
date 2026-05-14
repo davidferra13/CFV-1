@@ -8,6 +8,7 @@ import { useState, useEffect, useCallback, createContext, useContext } from 'rea
 import {
   Calendar,
   CalendarPlus,
+  Compass,
   DollarSign,
   Gift,
   LogOut,
@@ -31,7 +32,8 @@ interface ClientNavProps {
 const BOOK_NOW_HREF = '/book-now'
 
 const navItems = [
-  { href: '/my-bookings', label: 'Bookings', icon: Calendar, mobileTab: true },
+  { href: '/chefs', label: 'Find a Chef', icon: Compass, mobileTab: true },
+  { href: '/my-bookings', label: 'Bookings', icon: Calendar, mobileTab: true, dividerBefore: true },
   { href: '/my-chat', label: 'Messages', icon: MessageCircle, badge: 'chat', mobileTab: true },
   { href: '/my-hub', label: 'Friends & Groups', icon: Users, badge: 'hub', mobileTab: true },
   { href: '/my-profile', label: 'Profile', icon: User, dividerBefore: true, mobileTab: true },
@@ -102,7 +104,14 @@ export function ClientSidebar({ userEmail }: ClientNavProps) {
       >
         <Link href="/my-events" className="flex items-center gap-2">
           <AppLogo />
-          {!collapsed && <span className="text-lg font-display text-stone-100">ChefFlow</span>}
+          {!collapsed && (
+            <span className="flex flex-col leading-tight">
+              <span className="text-lg font-display text-stone-100">ChefFlow</span>
+              <span className="text-[11px] font-medium uppercase tracking-[0.12em] text-stone-500">
+                Guest Mode
+              </span>
+            </span>
+          )}
         </Link>
         {!collapsed ? (
           <button
@@ -252,7 +261,12 @@ export function ClientMobileNav({ userEmail }: ClientNavProps) {
         <div className="flex items-center justify-between h-14 px-4">
           <Link href="/my-events" className="flex items-center gap-2">
             <AppLogo size={28} className="rounded-md" />
-            <span className="font-display text-stone-100">ChefFlow</span>
+            <span className="flex flex-col leading-tight">
+              <span className="font-display text-stone-100">ChefFlow</span>
+              <span className="text-[10px] font-medium uppercase tracking-[0.12em] text-stone-500">
+                Guest Mode
+              </span>
+            </span>
           </Link>
           <div className="flex items-center gap-2">
             <Link

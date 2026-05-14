@@ -3,6 +3,30 @@ import assert from 'node:assert/strict'
 import routeInventory from '@/lib/interface/route-inventory'
 
 describe('Protected Route Policy Coverage', () => {
+  it('covers every static public route file path', () => {
+    const routePaths = routeInventory.getStaticPageRoutesForRole('public')
+    const uncovered = routeInventory.getRoutePolicyGapsForRole('public')
+
+    assert.equal(routePaths.length > 0, true, 'No public route paths discovered under app')
+    assert.deepEqual(
+      uncovered,
+      [],
+      `Missing route paths in PUBLIC_UNAUTHENTICATED_PATHS:\n${uncovered.join('\n')}`
+    )
+  })
+
+  it('covers every static chef route file path', () => {
+    const routePaths = routeInventory.getStaticPageRoutesForRole('chef')
+    const uncovered = routeInventory.getRoutePolicyGapsForRole('chef')
+
+    assert.equal(routePaths.length > 0, true, 'No chef route paths discovered under app/(chef)')
+    assert.deepEqual(
+      uncovered,
+      [],
+      `Missing route paths in CHEF_PROTECTED_PATHS:\n${uncovered.join('\n')}`
+    )
+  })
+
   it('covers every static client route file path', () => {
     const routePaths = routeInventory.getStaticPageRoutesForRole('client')
     const uncovered = routeInventory.getRoutePolicyGapsForRole('client')
@@ -25,6 +49,14 @@ describe('Protected Route Policy Coverage', () => {
       [],
       `Missing route paths in STAFF_PROTECTED_PATHS:\n${uncovered.join('\n')}`
     )
+  })
+
+  it('covers every static admin route file path', () => {
+    const routePaths = routeInventory.getStaticPageRoutesForRole('admin')
+    const uncovered = routeInventory.getRoutePolicyGapsForRole('admin')
+
+    assert.equal(routePaths.length > 0, true, 'No admin routes discovered under app/(admin)')
+    assert.deepEqual(uncovered, [], `Missing route paths in ADMIN_PATHS:\n${uncovered.join('\n')}`)
   })
 
   it('covers every static partner route file path', () => {

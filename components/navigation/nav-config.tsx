@@ -95,6 +95,7 @@ import {
   Camera,
   Plus,
   Zap,
+  Globe,
 } from '@/components/ui/icons'
 
 type NavItem = {
@@ -1463,6 +1464,8 @@ for (const group of navGroups) {
 
 export const standaloneBottom: NavItem[] = [
   { href: '/features', label: 'All Features', icon: Compass },
+  { href: '/eat', label: 'Explore ChefFlow', icon: Compass },
+  { href: '/settings/public-profile', label: 'My Public Profile', icon: Globe },
   { href: '/settings', label: 'Settings', icon: Settings },
 ]
 

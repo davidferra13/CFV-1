@@ -1,6 +1,7 @@
 // Public Layout - No authentication required
 
 import dynamic from 'next/dynamic'
+import { auth } from '@/lib/auth'
 import { PublicHeader } from '@/components/navigation/public-header'
 import { PublicFooter } from '@/components/navigation/public-footer'
 import { DiscoveryOutcomeTracker } from '@/components/discovery/discovery-outcome-tracker'
@@ -18,7 +19,33 @@ const RemyConciergeWidget = dynamic(
   { ssr: false }
 )
 
-export default function PublicLayout({ children }: { children: React.ReactNode }) {
+export default async function PublicLayout({ children }: { children: React.ReactNode }) {
+  const session = await auth()
+  const role = session?.user?.role ?? null
+  const authUser = role
+    ? {
+        role,
+        portalHref:
+          role === 'client'
+            ? '/my-events'
+            : role === 'staff'
+              ? '/staff-dashboard'
+              : role === 'partner'
+                ? '/partner/dashboard'
+                : '/dashboard',
+        label:
+          role === 'client'
+            ? 'My Events'
+            : role === 'staff'
+              ? 'My Portal'
+              : role === 'partner'
+                ? 'My Portal'
+                : 'My Dashboard',
+        name: null,
+        email: session?.user?.email ?? null,
+      }
+    : null
+
   return (
     <div
       data-cf-portal="public"
@@ -34,7 +61,7 @@ export default function PublicLayout({ children }: { children: React.ReactNode }
         <div className="absolute top-[70%] -right-32 h-[400px] w-[400px] rounded-full bg-[radial-gradient(ellipse,_rgba(142,74,36,0.15),_transparent_70%)] blur-[50px]" />
       </div>
       <PresenceBeacon role="anonymous" />
-      <PublicHeader />
+      <PublicHeader user={authUser} />
       <main id="main-content" className="flex-1 animate-fade-slide-up">
         {children}
       </main>

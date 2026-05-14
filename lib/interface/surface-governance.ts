@@ -203,6 +203,7 @@ export function resolveAdminSurfaceMode(pathname: string): ProductSurfaceMode {
     pathname.startsWith('/admin/system') ||
     pathname.startsWith('/admin/directory') ||
     pathname.startsWith('/admin/directory-listings') ||
+    pathname.startsWith('/admin/web-research') ||
     pathname.startsWith('/admin/referral-partners') ||
     pathname.startsWith('/admin/price-catalog') ||
     pathname.startsWith('/admin/beta')

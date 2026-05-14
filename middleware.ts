@@ -4,11 +4,8 @@ import { auth } from '@/lib/auth'
 import {
   isApiSkipAuthPath,
   isPublicAssetPath,
-  isChefRoutePath,
-  isClientRoutePath,
   isPublicUnauthenticatedPath,
-  isStaffRoutePath,
-  isPartnerRoutePath,
+  getRoutePolicyDecisionForRole,
 } from '@/lib/auth/route-policy'
 import { isKnowledgeIngredientPubliclyIndexable } from '@/lib/openclaw/public-ingredient-publish'
 import {
@@ -25,18 +22,9 @@ function withRequestId(response: NextResponse, requestId: string): NextResponse 
 }
 
 const roleCookieName = 'chefflow-role-cache'
-
-function getHomePathForRole(role: string | null | undefined): string {
-  switch (role) {
-    case 'client':
-      return '/my-events'
-    case 'staff':
-      return '/staff-dashboard'
-    case 'partner':
-      return '/partner/dashboard'
-    default:
-      return '/dashboard'
-  }
+const staleRouteRedirects: Record<string, string> = {
+  '/food-directory': '/ingredients',
+  '/operators': '/for-operators',
 }
 
 /**
@@ -65,6 +53,13 @@ function getBlockedIngredientSlug(pathname: string): string | null {
   return isKnowledgeIngredientPubliclyIndexable({ slug }) ? null : slug
 }
 
+function getStaleRouteRedirectPath(pathname: string): string | null {
+  const normalized =
+    pathname.length > 1 && pathname.endsWith('/') ? pathname.slice(0, -1) : pathname
+
+  return staleRouteRedirects[normalized] ?? null
+}
+
 /**
  * Auth.js v5 middleware wrapper.
  * The auth() function decodes the JWT from the session cookie and attaches
@@ -88,6 +83,15 @@ export default auth(async (request) => {
 
   if (isPublicAssetPath(pathname)) {
     return NextResponse.next()
+  }
+
+  const staleRedirectPath = getStaleRouteRedirectPath(pathname)
+  if (staleRedirectPath) {
+    const redirectUrl = buildRedirectUrl(request, staleRedirectPath)
+    redirectUrl.search = request.nextUrl.search
+    const response = NextResponse.redirect(redirectUrl, 308)
+    response.headers.set('X-ChefFlow-Recovery-Redirect', pathname)
+    return withRequestId(response, requestId)
   }
 
   if (blockedIngredientSlug) {
@@ -187,37 +191,16 @@ export default auth(async (request) => {
   })
 
   // Route-level access control
-  if (pathname === '/') {
-    return withRequestId(
-      NextResponse.redirect(buildRedirectUrl(request, getHomePathForRole(role))),
-      requestId
-    )
+  // Note: authenticated users may freely visit any public path, including '/'.
+  // The public discovery experience is available to all roles.
+  if (isPublicUnauthenticatedPath(pathname)) {
+    return withRequestId(NextResponse.next({ request: { headers: requestHeaders } }), requestId)
   }
 
-  if (isChefRoutePath(pathname) && role !== 'chef') {
+  const routeDecision = getRoutePolicyDecisionForRole(pathname, role)
+  if (!routeDecision.allowed && routeDecision.recoveryPath) {
     return withRequestId(
-      NextResponse.redirect(buildRedirectUrl(request, getHomePathForRole(role))),
-      requestId
-    )
-  }
-
-  if (isClientRoutePath(pathname) && role !== 'client') {
-    return withRequestId(
-      NextResponse.redirect(buildRedirectUrl(request, getHomePathForRole(role))),
-      requestId
-    )
-  }
-
-  if (isStaffRoutePath(pathname) && role !== 'staff') {
-    return withRequestId(
-      NextResponse.redirect(buildRedirectUrl(request, getHomePathForRole(role))),
-      requestId
-    )
-  }
-
-  if (isPartnerRoutePath(pathname) && role !== 'partner') {
-    return withRequestId(
-      NextResponse.redirect(buildRedirectUrl(request, getHomePathForRole(role))),
+      NextResponse.redirect(buildRedirectUrl(request, routeDecision.recoveryPath)),
       requestId
     )
   }
@@ -227,6 +210,6 @@ export default auth(async (request) => {
 
 export const config = {
   matcher: [
-    '/((?!api/(?:auth|webhooks|build-version|gmail|scheduled|e2e|remy/client|remy/stream|remy/public|remy/landing|ollama-status|health|ai/health|ai/monitor|documents|embed|demo|monitoring|inngest|kiosk|feeds|v2|storage|realtime|book|cron|sentinel|openclaw/webhook|ingredients|calling|llm-txt)|_next/static|_next/image|favicon.ico|manifest.json|robots.txt|sitemap.xml|sw.js|inbox-sw.js|.*\\.(?:svg|png|jpg|jpeg|gif|webp|html)$).*)',
+    '/((?!api/(?:auth|webhooks|build-version|gmail|scheduled|e2e|remy/client|remy/stream|remy/public|remy/landing|ollama-status|health|ai/health|ai/monitor|documents|embed|demo|monitoring|inngest|kiosk|feeds|v2|storage|realtime|book|cron|discovery|sentinel|openclaw/webhook|ingredients|calling|llm-txt)|_next/static|_next/image|favicon.ico|manifest.json|robots.txt|sitemap.xml|sw.js|inbox-sw.js|.*\\.(?:svg|png|jpg|jpeg|gif|webp|html)$).*)',
   ],
 }

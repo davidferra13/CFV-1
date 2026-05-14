@@ -6,6 +6,7 @@ import { useEffect, useRef, useState } from 'react'
 import { ChevronDown, Menu, X } from '@/components/ui/icons'
 import { TrackedLink } from '@/components/analytics/tracked-link'
 import { AppLogo } from '@/components/branding/app-logo'
+import { signOut } from '@/lib/auth/actions'
 
 import { PUBLIC_PRIMARY_CONSUMER_CTA } from '@/lib/public/public-surface-config'
 import {
@@ -90,10 +91,113 @@ function NavDropdown({ group, pathname }: { group: PublicNavGroup; pathname: str
 }
 
 // ---------------------------------------------------------------------------
+// Auth user avatar + dropdown
+// ---------------------------------------------------------------------------
+
+interface PublicHeaderUser {
+  role: string
+  portalHref: string
+  label: string
+  name?: string | null
+  email?: string | null
+}
+
+function getInitials(name?: string | null, email?: string | null): string {
+  if (name) {
+    const parts = name.trim().split(/\s+/)
+    if (parts.length >= 2) return (parts[0][0] + parts[parts.length - 1][0]).toUpperCase()
+    return parts[0].slice(0, 2).toUpperCase()
+  }
+  if (email) return email.slice(0, 2).toUpperCase()
+  return '?'
+}
+
+function AuthUserDropdown({ user }: { user: PublicHeaderUser }) {
+  const [open, setOpen] = useState(false)
+  const ref = useRef<HTMLDivElement>(null)
+  const initials = getInitials(user.name, user.email)
+  const displayName = user.name || user.email || 'My Account'
+
+  useEffect(() => {
+    if (!open) return
+    function onClickOutside(e: MouseEvent) {
+      if (ref.current && !ref.current.contains(e.target as Node)) setOpen(false)
+    }
+    document.addEventListener('mousedown', onClickOutside)
+    return () => document.removeEventListener('mousedown', onClickOutside)
+  }, [open])
+
+  useEffect(() => {
+    if (!open) return
+    function onKey(e: KeyboardEvent) {
+      if (e.key === 'Escape') setOpen(false)
+    }
+    document.addEventListener('keydown', onKey)
+    return () => document.removeEventListener('keydown', onKey)
+  }, [open])
+
+  async function handleSignOut() {
+    try {
+      await signOut()
+    } catch {
+      // ignore
+    }
+    window.location.href = '/'
+  }
+
+  return (
+    <div ref={ref} className="relative flex items-center gap-2">
+      <TrackedLink
+        href={user.portalHref}
+        analyticsName="header_my_portal"
+        analyticsProps={{ section: 'public_header', role: user.role }}
+        className="inline-flex h-10 items-center justify-center rounded-lg gradient-accent px-4 text-sm font-semibold text-white glow-hover"
+      >
+        {user.label}
+      </TrackedLink>
+      <button
+        type="button"
+        onClick={() => setOpen((o) => !o)}
+        className="flex h-9 w-9 items-center justify-center rounded-full bg-brand-800/70 text-xs font-bold text-brand-100 ring-2 ring-brand-600/40 transition-all hover:bg-brand-700 hover:ring-brand-500/60 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-400"
+        aria-label="Account menu"
+      >
+        {initials}
+      </button>
+      {open && (
+        <div className="absolute right-0 top-full z-float mt-2 min-w-[200px] rounded-xl border border-[#4a3020]/40 bg-[#1a110c]/95 py-1.5 shadow-[0_12px_40px_rgba(0,0,0,0.5)] backdrop-blur-2xl">
+          <div className="border-b border-[#4a3020]/30 px-4 py-2.5">
+            <p className="text-sm font-medium text-stone-100 truncate">{displayName}</p>
+            {user.email && user.name && (
+              <p className="text-xs text-stone-500 truncate">{user.email}</p>
+            )}
+          </div>
+          <TrackedLink
+            href={user.portalHref}
+            analyticsName="header_dropdown_portal"
+            analyticsProps={{ section: 'public_header', role: user.role }}
+            className="block px-4 py-2 text-sm text-stone-300 transition-colors hover:bg-[#2a1a10]/60 hover:text-stone-100"
+            onClick={() => setOpen(false)}
+          >
+            {user.label}
+          </TrackedLink>
+          <button
+            type="button"
+            onClick={handleSignOut}
+            className="w-full px-4 py-2 text-left text-sm text-stone-400 transition-colors hover:bg-[#2a1a10]/60 hover:text-stone-200"
+          >
+            Sign out
+          </button>
+        </div>
+      )}
+    </div>
+  )
+}
+
+// ---------------------------------------------------------------------------
 // Header
 // ---------------------------------------------------------------------------
 
-export function PublicHeader() {
+export function PublicHeader({ user }: { user?: PublicHeaderUser | null }) {
   const pathname = usePathname()
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false)
   const [isScrolled, setIsScrolled] = useState(false)
@@ -154,22 +258,28 @@ export function PublicHeader() {
 
         {/* Desktop actions */}
         <div className="hidden items-center gap-2 md:flex">
-          <TrackedLink
-            href="/auth/signin"
-            analyticsName="header_signin"
-            analyticsProps={{ section: 'public_header' }}
-            className="inline-flex h-10 items-center justify-center rounded-lg bg-transparent px-3 text-sm font-medium text-stone-300 transition-colors hover:bg-[#2a1a10]/50 hover:text-stone-100"
-          >
-            Sign In
-          </TrackedLink>
-          <TrackedLink
-            href={PUBLIC_PRIMARY_CONSUMER_CTA.href}
-            analyticsName="header_book_a_chef"
-            analyticsProps={{ section: 'public_header' }}
-            className="inline-flex h-10 items-center justify-center rounded-lg gradient-accent px-4 text-sm font-semibold text-white glow-hover"
-          >
-            {PUBLIC_PRIMARY_CONSUMER_CTA.label}
-          </TrackedLink>
+          {user ? (
+            <AuthUserDropdown user={user} />
+          ) : (
+            <>
+              <TrackedLink
+                href="/auth/signin"
+                analyticsName="header_signin"
+                analyticsProps={{ section: 'public_header' }}
+                className="inline-flex h-10 items-center justify-center rounded-lg bg-transparent px-3 text-sm font-medium text-stone-300 transition-colors hover:bg-[#2a1a10]/50 hover:text-stone-100"
+              >
+                Sign In
+              </TrackedLink>
+              <TrackedLink
+                href={PUBLIC_PRIMARY_CONSUMER_CTA.href}
+                analyticsName="header_book_a_chef"
+                analyticsProps={{ section: 'public_header' }}
+                className="inline-flex h-10 items-center justify-center rounded-lg gradient-accent px-4 text-sm font-semibold text-white glow-hover"
+              >
+                {PUBLIC_PRIMARY_CONSUMER_CTA.label}
+              </TrackedLink>
+            </>
+          )}
         </div>
 
         {/* Mobile actions */}
@@ -245,24 +355,55 @@ export function PublicHeader() {
             })}
           </div>
           <div className="mx-auto flex max-w-6xl gap-2 px-4 pb-4 sm:px-6 lg:px-8">
-            <TrackedLink
-              href="/auth/signin"
-              className="inline-flex h-10 flex-1 items-center justify-center rounded-lg border border-[#4a3020]/40 bg-[#1a110c] px-3 text-sm font-medium text-stone-300 transition-colors hover:bg-[#2a1a10]/60 hover:text-stone-100"
-              analyticsName="header_mobile_signin"
-              analyticsProps={{ section: 'public_header_mobile' }}
-              onClick={() => setMobileMenuOpen(false)}
-            >
-              Sign In
-            </TrackedLink>
-            <TrackedLink
-              href={PUBLIC_PRIMARY_CONSUMER_CTA.href}
-              className="inline-flex h-10 flex-1 items-center justify-center rounded-lg gradient-accent px-3 text-sm font-semibold text-white"
-              analyticsName="header_mobile_book_a_chef"
-              analyticsProps={{ section: 'public_header_mobile' }}
-              onClick={() => setMobileMenuOpen(false)}
-            >
-              {PUBLIC_PRIMARY_CONSUMER_CTA.label}
-            </TrackedLink>
+            {user ? (
+              <>
+                <TrackedLink
+                  href={user.portalHref}
+                  className="inline-flex h-10 flex-1 items-center justify-center rounded-lg gradient-accent px-3 text-sm font-semibold text-white"
+                  analyticsName="header_mobile_my_portal"
+                  analyticsProps={{ section: 'public_header_mobile', role: user.role }}
+                  onClick={() => setMobileMenuOpen(false)}
+                >
+                  {user.label}
+                </TrackedLink>
+                <button
+                  type="button"
+                  onClick={async () => {
+                    setMobileMenuOpen(false)
+                    try {
+                      await signOut()
+                    } catch {
+                      /* ignore */
+                    }
+                    window.location.href = '/'
+                  }}
+                  className="inline-flex h-10 items-center justify-center rounded-lg border border-[#4a3020]/40 bg-[#1a110c] px-3 text-sm font-medium text-stone-300 transition-colors hover:bg-[#2a1a10]/60 hover:text-stone-100"
+                >
+                  Sign out
+                </button>
+              </>
+            ) : (
+              <>
+                <TrackedLink
+                  href="/auth/signin"
+                  className="inline-flex h-10 flex-1 items-center justify-center rounded-lg border border-[#4a3020]/40 bg-[#1a110c] px-3 text-sm font-medium text-stone-300 transition-colors hover:bg-[#2a1a10]/60 hover:text-stone-100"
+                  analyticsName="header_mobile_signin"
+                  analyticsProps={{ section: 'public_header_mobile' }}
+                  onClick={() => setMobileMenuOpen(false)}
+                >
+                  Sign In
+                </TrackedLink>
+                <TrackedLink
+                  href={PUBLIC_PRIMARY_CONSUMER_CTA.href}
+                  className="inline-flex h-10 flex-1 items-center justify-center rounded-lg gradient-accent px-3 text-sm font-semibold text-white"
+                  analyticsName="header_mobile_book_a_chef"
+                  analyticsProps={{ section: 'public_header_mobile' }}
+                  onClick={() => setMobileMenuOpen(false)}
+                >
+                  {PUBLIC_PRIMARY_CONSUMER_CTA.label}
+                </TrackedLink>
+              </>
+            )}
           </div>
         </div>
       )}

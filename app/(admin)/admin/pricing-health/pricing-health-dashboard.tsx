@@ -2,6 +2,7 @@
 
 import type { CoverageSummary } from '@/lib/pricing/region-coverage-actions'
 import type { LearningStatus } from '@/lib/pricing/compound-learning'
+import type { PricingReliabilitySummary } from '@/lib/pricing/pie-reliability'
 
 function StatusDot({ status }: { status: string }) {
   const color =
@@ -37,10 +38,12 @@ export function PricingHealthDashboard({
   data,
   learningStatus,
   receiptAccuracy,
+  reliabilitySummary,
 }: {
   data: CoverageSummary
   learningStatus: LearningStatus
   receiptAccuracy: ReceiptAccuracyStats
+  reliabilitySummary: PricingReliabilitySummary
 }) {
   return (
     <div className="space-y-8 p-6 max-w-7xl">
@@ -62,6 +65,34 @@ export function PricingHealthDashboard({
           value={data.feedbackSummary.recentFeedback}
           sub={`${data.feedbackSummary.totalFeedback} total`}
         />
+      </div>
+
+      <div className="bg-stone-900 border border-stone-800 rounded-lg p-4">
+        <div className="flex items-start justify-between gap-4">
+          <div>
+            <h2 className="text-sm font-medium text-stone-300">PIE Reliability Trust Gate</h2>
+            <p className="mt-1 text-xs text-stone-500">{reliabilitySummary.trustGateReason}</p>
+          </div>
+          <span
+            className={
+              reliabilitySummary.trustGateStatus === 'pass'
+                ? 'rounded-md bg-emerald-950 px-2 py-1 text-xs font-medium text-emerald-300'
+                : reliabilitySummary.trustGateStatus === 'watch'
+                  ? 'rounded-md bg-amber-950 px-2 py-1 text-xs font-medium text-amber-300'
+                  : 'rounded-md bg-red-950 px-2 py-1 text-xs font-medium text-red-300'
+            }
+          >
+            {reliabilitySummary.trustGateStatus}
+          </span>
+        </div>
+        <div className="mt-4 grid grid-cols-2 md:grid-cols-6 gap-4">
+          <StatCard label="Direct" value={`${reliabilitySummary.directObservedPct}%`} />
+          <StatCard label="Regional" value={`${reliabilitySummary.regionalObservedPct}%`} />
+          <StatCard label="Estimated" value={`${reliabilitySummary.estimatedPct}%`} />
+          <StatCard label="Synthetic" value={`${reliabilitySummary.syntheticPct}%`} />
+          <StatCard label="Stale" value={reliabilitySummary.staleCount} />
+          <StatCard label="Low Confidence" value={reliabilitySummary.lowConfidenceCount} />
+        </div>
       </div>
 
       {/* Feedback breakdown */}

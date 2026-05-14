@@ -10,7 +10,7 @@ import { NextRequest, NextResponse } from 'next/server'
 import { db } from '@/lib/db'
 import { authUsers } from '@/lib/db/schema/auth'
 import { userRoles, clients } from '@/lib/db/schema/schema'
-import { eq } from 'drizzle-orm'
+import { eq, sql } from 'drizzle-orm'
 import bcrypt from 'bcryptjs'
 import { encode } from 'next-auth/jwt'
 import { resolveAuthCookieOptions } from '@/lib/auth/request-origin'
@@ -57,7 +57,7 @@ export async function POST(req: NextRequest) {
         encryptedPassword: authUsers.encryptedPassword,
       })
       .from(authUsers)
-      .where(eq(authUsers.email, email.trim().toLowerCase()))
+      .where(sql`lower(${authUsers.email}) = ${email.trim().toLowerCase()}`)
       .limit(1)
 
     if (!user?.encryptedPassword) {

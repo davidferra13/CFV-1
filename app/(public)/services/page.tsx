@@ -304,8 +304,39 @@ function ServiceCard({ service, totalChefs }: { service: ServiceInventory; total
   )
 }
 
-export default async function ServicesPage() {
+type ServicesPageProps = {
+  searchParams?: Record<string, string | string[] | undefined>
+}
+
+function firstParam(value: string | string[] | undefined): string {
+  if (Array.isArray(value)) return value[0] ?? ''
+  return value ?? ''
+}
+
+function normalizeServiceSearch(value: string): string {
+  return value.trim().toLowerCase().replace(/\s+/g, ' ').slice(0, 80)
+}
+
+function serviceMatchesQuery(service: ServiceInventory, query: string): boolean {
+  if (!query) return true
+
+  return [service.label, service.noun, service.value, service.description]
+    .join(' ')
+    .toLowerCase()
+    .includes(query)
+}
+
+export default async function ServicesPage({ searchParams = {} }: ServicesPageProps) {
   const snapshot = await getServiceInventorySnapshot()
+  const serviceQuery = normalizeServiceSearch(firstParam(searchParams.q))
+  const visibleServices = serviceQuery
+    ? snapshot.services.filter((service) => serviceMatchesQuery(service, serviceQuery))
+    : snapshot.services
+  const visibleAdditionalFacets = serviceQuery
+    ? snapshot.additionalFacets.filter((facet) =>
+        [facet.label, facet.value].join(' ').toLowerCase().includes(serviceQuery)
+      )
+    : snapshot.additionalFacets
 
   return (
     <main>
@@ -355,6 +386,27 @@ export default async function ServicesPage() {
               {PRIMARY_SERVICES.length.toLocaleString()} headline categories have live tagged supply
             </span>
           </div>
+
+          <form method="get" className="mt-7 max-w-xl">
+            <label htmlFor="services-search" className="sr-only">
+              Search services and help
+            </label>
+            <div className="grid gap-2 rounded-2xl border border-stone-700 bg-stone-900/70 p-2 sm:grid-cols-[minmax(0,1fr)_auto]">
+              <input
+                id="services-search"
+                name="q"
+                defaultValue={serviceQuery}
+                placeholder="Search services, booking, meal prep, catering..."
+                className="min-h-11 rounded-xl bg-stone-950 px-4 text-sm text-stone-100 outline-none placeholder:text-stone-500 focus-visible:ring-2 focus-visible:ring-brand-500"
+              />
+              <button
+                type="submit"
+                className="inline-flex min-h-11 items-center justify-center rounded-xl bg-brand-600 px-5 text-sm font-semibold text-white transition-colors hover:bg-brand-700"
+              >
+                Search services/help
+              </button>
+            </div>
+          </form>
         </div>
       </section>
 
@@ -373,14 +425,38 @@ export default async function ServicesPage() {
       </section>
 
       <section className="mx-auto w-full max-w-5xl px-4 pb-14 sm:px-6 lg:px-8">
-        <div className="grid gap-4 md:grid-cols-2">
-          {snapshot.services.map((service) => (
-            <ServiceCard key={service.value} service={service} totalChefs={snapshot.totalChefs} />
-          ))}
-        </div>
+        {visibleServices.length > 0 ? (
+          <div className="grid gap-4 md:grid-cols-2">
+            {visibleServices.map((service) => (
+              <ServiceCard key={service.value} service={service} totalChefs={snapshot.totalChefs} />
+            ))}
+          </div>
+        ) : (
+          <div className="rounded-2xl border border-stone-800 bg-stone-900/60 p-8 text-center">
+            <h2 className="text-xl font-semibold text-stone-100">No service match found.</h2>
+            <p className="mx-auto mt-2 max-w-xl text-sm leading-6 text-stone-400">
+              Try a broader service search, browse all chefs, or send the request through booking so
+              the team can route it.
+            </p>
+            <div className="mt-5 flex flex-wrap justify-center gap-3">
+              <Link
+                href="/services"
+                className="inline-flex h-11 items-center justify-center rounded-xl border border-stone-700 bg-stone-950 px-4 text-sm font-medium text-stone-200 transition-colors hover:border-stone-600"
+              >
+                Reset service search
+              </Link>
+              <Link
+                href={PUBLIC_PRIMARY_CONSUMER_CTA.href}
+                className="inline-flex h-11 items-center justify-center rounded-xl bg-brand-600 px-4 text-sm font-semibold text-white transition-colors hover:bg-brand-700"
+              >
+                {PUBLIC_PRIMARY_CONSUMER_CTA.label}
+              </Link>
+            </div>
+          </div>
+        )}
       </section>
 
-      {snapshot.additionalFacets.length > 0 && (
+      {visibleAdditionalFacets.length > 0 && (
         <section className="mx-auto w-full max-w-5xl px-4 pb-14 sm:px-6 lg:px-8">
           <div className="rounded-2xl border border-stone-800/70 bg-stone-900/50 p-5">
             <p className="text-xs font-semibold uppercase tracking-[0.14em] text-stone-500">
@@ -395,7 +471,7 @@ export default async function ServicesPage() {
             </p>
 
             <div className="mt-5 flex flex-wrap gap-3">
-              {snapshot.additionalFacets.map((facet) => (
+              {visibleAdditionalFacets.map((facet) => (
                 <Link
                   key={facet.value}
                   href={`/chefs?serviceType=${facet.value}`}

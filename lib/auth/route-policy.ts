@@ -5,10 +5,12 @@ export const CHEF_PROTECTED_PATHS = [
   '/aar',
   '/activity',
   '/analytics',
+  '/autopilot',
   '/briefing',
   '/calendar',
   '/calls',
   '/cannabis',
+  '/capture',
   '/charity',
   '/chat',
   '/chef/cannabis',
@@ -16,6 +18,7 @@ export const CHEF_PROTECTED_PATHS = [
   '/clients',
   '/commerce',
   '/community',
+  '/consulting',
   '/quotes/calculator',
   '/content',
   '/contracts',
@@ -31,6 +34,8 @@ export const CHEF_PROTECTED_PATHS = [
   '/finance',
   '/food-cost',
   '/goals',
+  '/guest-analytics',
+  '/guest-leads',
   '/marketing',
   '/clients/insights/retention',
   '/guests',
@@ -43,6 +48,9 @@ export const CHEF_PROTECTED_PATHS = [
   '/inventory',
   '/kitchen',
   '/leads',
+  '/locations',
+  '/locations/compliance',
+  '/locations/purchasing',
   '/loyalty',
   '/marketing',
   '/marketplace',
@@ -55,12 +63,16 @@ export const CHEF_PROTECTED_PATHS = [
   '/ops',
   '/partners',
   '/payments',
+  '/pipeline',
   '/portfolio',
+  '/prep/consolidation',
   '/prices',
   '/production',
   '/proposals',
   '/prospecting',
+  '/pulse',
   '/queue',
+  '/quick-log',
   '/quotes',
   '/rate-card',
   '/receipts',
@@ -72,6 +84,15 @@ export const CHEF_PROTECTED_PATHS = [
   '/reviews',
   '/safety',
   '/settings',
+  '/shopping/bulk',
+  '/social',
+  '/social/calendar',
+  '/social/connections',
+  '/social/hub-overview',
+  '/social/planner',
+  '/social/settings',
+  '/social/templates',
+  '/social/vault',
   '/marketing/social',
   '/staff',
   '/stations',
@@ -82,21 +103,40 @@ export const CHEF_PROTECTED_PATHS = [
   '/travel',
   '/vendors',
   '/waitlist',
+  '/welcome',
   '/wix-submissions',
 ] as const
 
 export const CLIENT_PROTECTED_PATHS = [
   '/book-now',
+  '/browse-dates',
+  '/my-calendar',
   '/my-bookings',
   '/my-cannabis',
   '/my-chat',
+  '/my-dietary',
+  '/my-documents',
   '/my-events',
+  '/my-gift-cards',
+  '/my-help',
+  '/my-household',
   '/my-hub',
   '/my-inquiries',
+  '/my-meals',
+  '/my-notifications',
+  '/my-passport',
+  '/my-preferences',
+  '/my-preferences/discovery',
   '/my-profile',
   '/my-quotes',
+  '/my-receipts',
+  '/my-recipes',
+  '/my-recurring',
+  '/my-referrals',
   '/my-rewards',
+  '/my-reviews',
   '/my-spending',
+  '/my-timeline',
 ] as const
 
 export const STAFF_PROTECTED_PATHS = [
@@ -123,6 +163,7 @@ export const PUBLIC_UNAUTHENTICATED_PATHS = [
   '/privacy-policy',
   '/terms',
   '/trust',
+  '/web-research-health',
   '/unsubscribe',
   '/unauthorized',
   '/share',
@@ -140,12 +181,17 @@ export const PUBLIC_UNAUTHENTICATED_PATHS = [
   '/chefs',
   '/survey',
   '/book',
+  '/compare',
+  '/customers',
   '/embed',
+  '/eat',
+  '/nearby',
   '/demo',
   '/staff-login',
   '/staff-portal',
   '/reactivate-account',
   '/kiosk',
+  '/marketplace-chefs',
   '/beta',
   '/beta-survey',
   '/hub',
@@ -187,6 +233,7 @@ export const API_SKIP_AUTH_PREFIXES = [
   '/api/remy/landing',
   '/api/ollama-status',
   '/api/health',
+  '/api/web-research/health',
   '/api/ai/health',
   '/api/ai/monitor',
   '/api/documents',
@@ -202,9 +249,35 @@ export const API_SKIP_AUTH_PREFIXES = [
   '/api/realtime',
   '/api/book',
   '/api/cron',
+  '/api/discovery',
   '/api/sentinel',
   '/api/openclaw/webhook',
 ] as const
+
+export type RouteSessionRole = 'chef' | 'client' | 'staff' | 'partner' | 'admin' | string
+
+export type RouteAccountMode =
+  | 'public'
+  | 'guest'
+  | 'chef_workspace'
+  | 'team_workspace'
+  | 'partner_workspace'
+  | 'admin_console'
+
+export type RoutePolicyDecision = {
+  allowed: boolean
+  mode: RouteAccountMode
+  reason: 'public' | 'allowed' | 'wrong_context' | 'admin_runtime_gate'
+  recoveryPath: string | null
+}
+
+const ROLE_HOME_PATHS: Record<string, string> = {
+  client: '/my-events',
+  chef: '/dashboard',
+  staff: '/staff-dashboard',
+  partner: '/partner/dashboard',
+  admin: '/admin',
+}
 
 function matchesPathOrChild(pathname: string, basePath: string): boolean {
   return pathname === basePath || pathname.startsWith(`${basePath}/`)
@@ -248,4 +321,56 @@ export function isAdminRoutePath(pathname: string): boolean {
 
 export function isApiSkipAuthPath(pathname: string): boolean {
   return matchesAnyPrefix(pathname, API_SKIP_AUTH_PREFIXES)
+}
+
+export function getHomePathForRole(role: string | null | undefined): string {
+  if (!role) return '/dashboard'
+  return ROLE_HOME_PATHS[role] ?? '/dashboard'
+}
+
+export function getRouteAccountMode(pathname: string): RouteAccountMode {
+  if (isAdminRoutePath(pathname)) return 'admin_console'
+  if (isStaffRoutePath(pathname)) return 'team_workspace'
+  if (isPartnerRoutePath(pathname)) return 'partner_workspace'
+  if (isClientRoutePath(pathname)) return 'guest'
+  if (isChefRoutePath(pathname)) return 'chef_workspace'
+  return 'public'
+}
+
+export function getRoutePolicyDecisionForRole(
+  pathname: string,
+  role: RouteSessionRole | null | undefined
+): RoutePolicyDecision {
+  const mode = getRouteAccountMode(pathname)
+
+  if (mode === 'public') {
+    return {
+      allowed: true,
+      mode,
+      reason: 'public',
+      recoveryPath: null,
+    }
+  }
+
+  if (mode === 'admin_console') {
+    return {
+      allowed: true,
+      mode,
+      reason: 'admin_runtime_gate',
+      recoveryPath: null,
+    }
+  }
+
+  const allowed =
+    (mode === 'chef_workspace' && role === 'chef') ||
+    (mode === 'guest' && role === 'client') ||
+    (mode === 'team_workspace' && role === 'staff') ||
+    (mode === 'partner_workspace' && role === 'partner')
+
+  return {
+    allowed,
+    mode,
+    reason: allowed ? 'allowed' : 'wrong_context',
+    recoveryPath: allowed ? null : getHomePathForRole(role),
+  }
 }
