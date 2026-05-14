@@ -126,7 +126,8 @@ function normalizeCode(raw: string): string {
 
 function generateCode(type: IncentiveType): string {
   const prefix = type === 'gift_card' ? 'GFT' : 'VCH'
-  return `${prefix}-${crypto.randomBytes(4).toString('hex').toUpperCase()}`
+  // 12 bytes = 96 bits of entropy (OWASP recommends 128+ for tokens with monetary value)
+  return `${prefix}-${crypto.randomBytes(12).toString('hex').toUpperCase()}`
 }
 
 function parseExpiryToIso(expiresAt?: string): string | null {

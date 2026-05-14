@@ -69,24 +69,34 @@ export async function fireTrigger(
     return SKIP
   }
 
-  // 4. Check idempotency guard
+  // 4. Atomic idempotency claim (prevents TOCTOU race + enforces tenant scoping)
   if (definition.idempotencyTable && definition.idempotencyColumn) {
     const table = definition.idempotencyTable
     const column = definition.idempotencyColumn
     const id = table === 'clients' ? clientId : context.eventId
 
     if (!id) {
-      // per_event trigger without eventId: can't check, skip
       if (table === 'events') {
         console.warn(`[fireTrigger] ${triggerKey}: no eventId for per_event guard, skipping`)
         return SKIP
       }
     }
 
-    const { data: guardRow } = await db.from(table).select(column).eq('id', id).maybeSingle()
+    if (id) {
+      // Atomic claim: UPDATE ... WHERE column = false. Only one concurrent call succeeds.
+      const tenantFilter = table === 'clients' ? tenantId : tenantId
+      const { data: claimed } = await db
+        .from(table)
+        .update({ [column]: true })
+        .eq('id', id)
+        .eq('tenant_id', tenantFilter)
+        .eq(column, false)
+        .select('id')
+        .maybeSingle()
 
-    if (guardRow && (guardRow as any)[column] === true) {
-      return SKIP // Already awarded
+      if (!claimed) {
+        return SKIP // Already awarded or not found in this tenant
+      }
     }
   }
 
@@ -120,8 +130,18 @@ export async function fireTrigger(
     return SKIP
   }
 
-  // 7. Update client balance + recalculate tier using lifetime earned (not current balance)
-  const newBalance = (client.loyalty_points || 0) + points
+  // 7. Atomic balance increment (prevents lost-update race on concurrent awards)
+  const { data: updatedClient, error: rpcError } = await db.rpc('increment_loyalty_points', {
+    p_client_id: clientId,
+    p_tenant_id: tenantId,
+    p_points: points,
+  })
+
+  const newBalance = updatedClient ?? (client.loyalty_points || 0) + points
+
+  if (rpcError) {
+    console.error(`[fireTrigger] Atomic balance update failed for ${triggerKey}:`, rpcError)
+  }
 
   // Fetch lifetime earned+bonus for tier calculation (consistent with awardEventPoints)
   const { data: lifetimeData } = await db
@@ -134,33 +154,7 @@ export async function fireTrigger(
   const lifetimeEarned = (lifetimeData || []).reduce((sum: number, tx: any) => sum + tx.points, 0)
   const newTier = recalculateTier(lifetimeEarned, tenantId, db)
 
-  const { error: updateError } = await db
-    .from('clients')
-    .update({ loyalty_points: newBalance })
-    .eq('id', clientId)
-    .eq('tenant_id', tenantId)
-
-  if (updateError) {
-    console.error(`[fireTrigger] Client balance update failed for ${triggerKey}:`, updateError)
-  }
-
-  // 8. Set idempotency guard
-  if (definition.idempotencyTable && definition.idempotencyColumn) {
-    const table = definition.idempotencyTable
-    const column = definition.idempotencyColumn
-    const id = table === 'clients' ? clientId : context.eventId
-
-    if (id) {
-      try {
-        await db
-          .from(table)
-          .update({ [column]: true })
-          .eq('id', id)
-      } catch (err) {
-        console.error(`[fireTrigger] Idempotency guard update failed:`, err)
-      }
-    }
-  }
+  // 8. Idempotency guard already claimed atomically at step 4
 
   // 9. Resolve tier (non-blocking)
   try {

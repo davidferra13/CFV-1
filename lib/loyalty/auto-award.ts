@@ -48,8 +48,19 @@ export async function autoAwardWelcomePoints(
     return { awarded: false, points: 0 }
   }
 
-  if (client.has_received_welcome_points) {
-    return { awarded: false, points: 0 } // Already done
+  // Atomic idempotency claim: UPDATE ... WHERE has_received_welcome_points = false
+  // Prevents double-award under concurrent signup flows (TOCTOU race)
+  const { data: claimed } = await db
+    .from('clients')
+    .update({ has_received_welcome_points: true })
+    .eq('id', clientId)
+    .eq('tenant_id', tenantId)
+    .eq('has_received_welcome_points', false)
+    .select('id')
+    .maybeSingle()
+
+  if (!claimed) {
+    return { awarded: false, points: 0 } // Already done or not in this tenant
   }
 
   // Get loyalty config for this tenant
@@ -59,9 +70,8 @@ export async function autoAwardWelcomePoints(
     .eq('tenant_id', tenantId)
     .single()
 
-  // If program is inactive, no config, or welcome_points = 0 - mark received and skip
+  // If program is inactive, no config, or welcome_points = 0 - already marked, just skip
   if (!config || !config.is_active || (config.welcome_points ?? 0) <= 0) {
-    await db.from('clients').update({ has_received_welcome_points: true }).eq('id', clientId)
     return { awarded: false, points: 0 }
   }
 
@@ -82,19 +92,15 @@ export async function autoAwardWelcomePoints(
     return { awarded: false, points: 0 }
   }
 
-  // Update client balance + mark welcome points received
-  const newBalance = (client.loyalty_points || 0) + welcomePoints
+  // Atomic balance increment (prevents lost-update race with concurrent awards)
+  const { error: rpcError } = await db.rpc('increment_loyalty_points', {
+    p_client_id: clientId,
+    p_tenant_id: tenantId,
+    p_points: welcomePoints,
+  })
 
-  const { error: updateError } = await db
-    .from('clients')
-    .update({
-      loyalty_points: newBalance,
-      has_received_welcome_points: true,
-    })
-    .eq('id', clientId)
-
-  if (updateError) {
-    console.error('[autoAwardWelcomePoints] Client update error:', updateError)
+  if (rpcError) {
+    console.error('[autoAwardWelcomePoints] Atomic balance update error:', rpcError)
   }
 
   console.info(
@@ -324,6 +330,7 @@ export async function getMyPendingRedemptions(): Promise<PendingDelivery[]> {
     .from('loyalty_reward_redemptions')
     .select('*')
     .eq('client_id', user.entityId)
+    .eq('tenant_id', user.tenantId!)
     .order('created_at', { ascending: false })
 
   if (error) {

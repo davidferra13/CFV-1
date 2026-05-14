@@ -1653,7 +1653,19 @@ export async function getLoyaltyOverview(): Promise<LoyaltyOverview> {
     .order('created_at', { ascending: false })
     .limit(10)
 
-  // Clients approaching tier upgrades
+  // Fetch lifetime earned per client for accurate tier-approaching calculation
+  const { data: allEarnedTx } = await db
+    .from('loyalty_transactions')
+    .select('client_id, points')
+    .eq('tenant_id', user.tenantId!)
+    .in('type', ['earned', 'bonus'])
+
+  const lifetimeByClient = new Map<string, number>()
+  for (const tx of allEarnedTx || []) {
+    lifetimeByClient.set(tx.client_id, (lifetimeByClient.get(tx.client_id) || 0) + tx.points)
+  }
+
+  // Clients approaching tier upgrades (using lifetime earned, not current balance)
   const clientsApproachingTierUpgrade = allClients
     .map((c: any) => {
       const tier = (c.loyalty_tier || 'bronze') as LoyaltyTier
@@ -1661,8 +1673,8 @@ export async function getLoyaltyOverview(): Promise<LoyaltyOverview> {
       if (!nextTier) return null
 
       const threshold = getTierThreshold(nextTier.key, config)
-      // Use lifetime earned (approximate with loyalty_points for now since bonus/earned only go up)
-      const pointsNeeded = threshold - (c.loyalty_points || 0)
+      const lifetimeEarned = lifetimeByClient.get(c.id) || 0
+      const pointsNeeded = threshold - lifetimeEarned
       // Within 20% of threshold
       const isApproaching = pointsNeeded > 0 && pointsNeeded <= threshold * 0.2
 
@@ -2265,11 +2277,12 @@ export async function getMyLoyaltyStatus() {
     .eq('is_active', true)
     .order('points_required', { ascending: true })
 
-  // Get recent transactions
+  // Get recent transactions (tenant-scoped for defense-in-depth)
   const { data: transactions } = await db
     .from('loyalty_transactions')
     .select('*')
     .eq('client_id', user.entityId)
+    .eq('tenant_id', client.tenant_id)
     .order('created_at', { ascending: false })
     .limit(10)
 

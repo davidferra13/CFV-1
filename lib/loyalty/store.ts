@@ -240,13 +240,26 @@ export async function getLoyaltyOverviewForTenant(tenantId: string): Promise<Loy
     .order('created_at', { ascending: false })
     .limit(10)
 
+  // Fetch lifetime earned per client for accurate tier-approaching calculation
+  const { data: allEarnedTx } = await db
+    .from('loyalty_transactions')
+    .select('client_id, points')
+    .eq('tenant_id', tenantId)
+    .in('type', ['earned', 'bonus'])
+
+  const lifetimeByClient = new Map<string, number>()
+  for (const tx of allEarnedTx || []) {
+    lifetimeByClient.set(tx.client_id, (lifetimeByClient.get(tx.client_id) || 0) + tx.points)
+  }
+
   const clientsApproachingTierUpgrade = allClients
     .map((c: any) => {
       const tier = (c.loyalty_tier || 'bronze') as LoyaltyTier
       const nextTier = getNextTier(tier)
       if (!nextTier) return null
       const threshold = getTierThreshold(nextTier.key, config)
-      const pointsNeeded = threshold - (c.loyalty_points || 0)
+      const lifetimeEarned = lifetimeByClient.get(c.id) || 0
+      const pointsNeeded = threshold - lifetimeEarned
       if (pointsNeeded <= 0 || pointsNeeded > threshold * 0.2) return null
       return {
         id: c.id,
@@ -300,6 +313,28 @@ export async function createRewardForTenant(
   },
   actorId?: string
 ) {
+  // Validate at API boundary
+  if (!input.name || typeof input.name !== 'string' || input.name.trim().length === 0) {
+    throw new Error('Reward name is required')
+  }
+  if (
+    typeof input.points_required !== 'number' ||
+    input.points_required <= 0 ||
+    !Number.isFinite(input.points_required)
+  ) {
+    throw new Error('points_required must be a positive finite number')
+  }
+  const VALID_TYPES = [
+    'discount_fixed',
+    'discount_percent',
+    'free_course',
+    'free_dinner',
+    'upgrade',
+  ]
+  if (!VALID_TYPES.includes(input.reward_type)) {
+    throw new Error(`Invalid reward_type. Must be one of: ${VALID_TYPES.join(', ')}`)
+  }
+
   const db: any = createServerClient({ admin: true })
   const { data: reward, error } = await db
     .from('loyalty_rewards')
@@ -335,10 +370,32 @@ export async function updateRewardForTenant(
   input: Record<string, unknown>,
   actorId?: string
 ) {
+  // Whitelist allowed columns to prevent arbitrary column injection
+  const ALLOWED_FIELDS = [
+    'name',
+    'description',
+    'points_required',
+    'reward_type',
+    'reward_value_cents',
+    'reward_percent',
+    'is_active',
+    'sort_order',
+  ] as const
+  const sanitized: Record<string, unknown> = {}
+  for (const key of ALLOWED_FIELDS) {
+    if (key in input) sanitized[key] = input[key]
+  }
+  if (
+    sanitized.points_required !== undefined &&
+    (typeof sanitized.points_required !== 'number' || sanitized.points_required <= 0)
+  ) {
+    throw new Error('points_required must be a positive number')
+  }
+
   const db: any = createServerClient({ admin: true })
   const { data: reward, error } = await db
     .from('loyalty_rewards')
-    .update({ ...input, updated_by: actorId ?? tenantId })
+    .update({ ...sanitized, updated_by: actorId ?? tenantId })
     .eq('id', rewardId)
     .eq('tenant_id', tenantId)
     .select()

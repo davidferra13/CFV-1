@@ -259,8 +259,8 @@ export async function drawWinner(
   // Count unique participants
   const uniqueParticipants = new Set(entries.map((e: { client_id: string }) => e.client_id)).size
 
-  // Update the round
-  const { error: updateErr } = await db
+  // Atomic status claim: only update if still 'active' (prevents double-draw race)
+  const { data: drawn, error: updateErr } = await db
     .from('raffle_rounds')
     .update({
       status: 'completed',
@@ -274,10 +274,13 @@ export async function drawWinner(
     })
     .eq('id', raffleId)
     .eq('tenant_id', tenantId)
+    .eq('status', 'active')
+    .select('id')
+    .maybeSingle()
 
-  if (updateErr) {
-    console.error('[raffle] drawWinner update failed:', updateErr)
-    return { success: false, error: 'Failed to record winner.' }
+  if (updateErr || !drawn) {
+    console.error('[raffle] drawWinner update failed (likely concurrent draw):', updateErr)
+    return { success: false, error: 'Raffle was already drawn or failed to record winner.' }
   }
 
   revalidatePath('/loyalty/raffle')
@@ -316,6 +319,7 @@ export async function getRaffleResults(raffleId: string): Promise<{
       .from('clients')
       .select('full_name')
       .eq('id', round.winner_client_id)
+      .eq('tenant_id', user.tenantId!)
       .single()
     winnerName = client?.full_name || null
   }
