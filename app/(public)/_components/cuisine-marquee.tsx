@@ -1756,6 +1756,7 @@ function DiscoveryPill({
   const showIconBadge = !hasFlagBg
   // Flag cards: cuisine-row flag pills become tall rectangular cards instead of pills
   const isCard = hasFlagBg && primary
+  const isVisualCard = item.presentation === 'visual_card'
   const isStory = item.presentation === 'story'
   const showFeedbackControls = !isDuplicate && shouldShowDiscoveryFeedback(item)
 
@@ -1785,10 +1786,28 @@ function DiscoveryPill({
     ? { textShadow: '0 1px 3px rgba(0,0,0,0.72)' }
     : undefined
 
-  const glowColor = isCard ? (CUISINE_GLOW_COLORS[item.label] ?? null) : null
+  const glowColor = isCard || isVisualCard ? (CUISINE_GLOW_COLORS[item.label] ?? null) : null
   const glowStyle: React.CSSProperties | undefined = glowColor
-    ? ({ '--cuisine-glow': glowColor } as React.CSSProperties)
+    ? ({ '--cuisine-glow': glowColor, '--card-glow': glowColor } as React.CSSProperties)
     : undefined
+  // Category-specific pill glow class for Row 2 items
+  const pillGlowClass = (() => {
+    switch (item.type) {
+      case 'occasion':
+        return 'pill-glow-occasion'
+      case 'service':
+        return 'pill-glow-service'
+      case 'dietary':
+        return 'pill-glow-dietary'
+      case 'time':
+        return 'pill-glow-time'
+      case 'group_size':
+      case 'price':
+        return 'pill-glow-group'
+      default:
+        return ''
+    }
+  })()
   const pillRef = useRef<HTMLAnchorElement | null>(null)
   const impressionTrackedRef = useRef(false)
   const [feedbackAction, setFeedbackAction] = useState<'love' | 'hide' | null>(null)
@@ -1870,142 +1889,172 @@ function DiscoveryPill({
   )
 
   return (
-    <span className="group/feedback relative inline-flex shrink-0">
-      <Link
-        ref={pillRef}
-        href={href}
-        draggable={false}
-        style={glowStyle}
-        className={[
-          'discovery-pill group shrink-0 border font-semibold leading-none tracking-normal transition-all duration-200',
-          isStory
-            ? 'inline-flex h-[82px] w-[172px] min-w-[172px] max-w-[172px] flex-col items-start justify-between overflow-hidden rounded-xl px-3 py-2.5 text-left text-[13px] sm:h-[88px] sm:w-[190px] sm:min-w-[190px] sm:max-w-[190px] sm:px-3.5 sm:py-3'
-            : isCard
-              ? // Card layout: tall rect, text pinned to bottom-center
-                'inline-flex min-h-[82px] w-[96px] min-w-[96px] max-w-[96px] flex-col items-center justify-end gap-0 overflow-hidden rounded-xl px-2 py-2 text-[12px] sm:min-h-[96px] sm:w-[116px] sm:min-w-[116px] sm:max-w-[116px] sm:py-2.5 sm:text-[13px]'
-              : // Standard pill layout
-                'inline-flex items-center rounded-full',
-          !isCard && !isStory && (showIconBadge ? 'gap-2' : 'gap-0'),
-          !isCard &&
-            !isStory &&
-            (primary
-              ? 'min-h-[46px] px-4 py-2.5 text-[14px]'
-              : 'min-h-[40px] px-3.5 py-2 text-[13px]'),
-          'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#e8a96b]/55 focus-visible:ring-offset-2 focus-visible:ring-offset-[#1a0e08] active:translate-y-0',
-          hasFlagBg
-            ? 'relative overflow-hidden border-white/25 text-white shadow-[inset_0_1px_0_rgba(255,255,255,0.18)] hover:border-white/45 hover:text-white'
-            : [isStory ? 'backdrop-blur-xl' : 'backdrop-blur-md', style.link].join(' '),
-          isSelected
-            ? 'border-[#e8a96b]/90 ring-2 ring-[#e8a96b]/65 ring-offset-2 ring-offset-[#1a0e08]'
-            : '',
-          isSelectable && !interactionReady ? 'pointer-events-none' : '',
-        ].join(' ')}
-        aria-hidden={isDuplicate ? true : undefined}
-        aria-disabled={isSelectable && !interactionReady ? true : undefined}
-        aria-pressed={isSelectable && !isDuplicate ? isSelected : undefined}
-        data-selected={isSelectable && isSelected && !isDuplicate ? 'true' : undefined}
-        tabIndex={isDuplicate || (isSelectable && !interactionReady) ? -1 : undefined}
-        onClick={(event) => {
-          if (isSelectable && !interactionReady) {
-            event.preventDefault()
-            return
-          }
-
-          if (!isDuplicate && isSelectable && onSelectToggle) {
-            event.preventDefault()
-            onSelectToggle(item, rowRole)
-            event.currentTarget.blur()
-            trackDiscoveryInteraction('click', item, trackingContext)
-            window.dispatchEvent(new Event('cf:discovery-recents-updated'))
-            return
-          }
-
-          if (!isDuplicate) {
-            trackDiscoveryClick(item, trackingContext)
-            window.dispatchEvent(new Event('cf:discovery-recents-updated'))
-          }
-        }}
-      >
-        {isStory && (
-          <span className="flex w-full items-center justify-between gap-3">
-            <span className="truncate text-[10px] font-bold uppercase tracking-widest text-white/45">
-              {item.eyebrow ?? 'Discovery'}
-            </span>
-            <Icon className="h-4 w-4 shrink-0 text-[#f1a381]" weight="bold" aria-hidden="true" />
-          </span>
-        )}
-        {/* Flag background at 50% opacity */}
-        {hasFlagBg && (
-          <span className="absolute inset-0 opacity-50" style={flagBgStyle} aria-hidden="true" />
-        )}
-        {/* Gradient: for cards, strong bottom darkening; for non-card pills, gentle top-to-bottom */}
-        {hasFlagBg && (
-          <span
-            className={
-              isCard
-                ? 'absolute inset-0 bg-gradient-to-t from-black/78 via-black/24 to-black/5'
-                : 'absolute inset-0 bg-gradient-to-t from-black/60 to-black/10'
+    <span
+      className={[
+        'group/feedback relative inline-flex shrink-0',
+        isVisualCard ? 'min-w-[160px] sm:min-w-[180px]' : '',
+        item.type === 'featured_chef' && isStory ? 'min-w-[320px]' : '',
+      ].join(' ')}
+    >
+      {isVisualCard ? (
+        <a
+          ref={pillRef as React.Ref<HTMLAnchorElement>}
+          href={href}
+          draggable={false}
+          className="cuisine-visual-card"
+          style={{ '--card-glow': glowColor ?? undefined, ...glowStyle } as React.CSSProperties}
+          onClick={(event) => {
+            if (!isDuplicate) {
+              trackDiscoveryClick(item, trackingContext)
+              window.dispatchEvent(new Event('cf:discovery-recents-updated'))
             }
-            aria-hidden="true"
-          />
-        )}
-        {showIconBadge && !isStory && (
-          <span
-            className={[
-              'grid shrink-0 place-items-center rounded-full border transition-colors',
-              primary ? 'h-7 w-7' : 'h-6 w-6',
-              style.icon,
-            ].join(' ')}
-            aria-hidden="true"
-          >
-            {emoji ? (
-              <span className={primary ? 'text-base leading-none' : 'text-sm leading-none'}>
-                {emoji}
+          }}
+        >
+          <div className="flex h-full flex-col items-center justify-center gap-1 p-3">
+            <span className="card-emoji">{DISCOVERY_EMOJI_MAP[item.label] ?? emoji ?? '🍽️'}</span>
+            <span className="text-xs font-medium text-white">{item.label}</span>
+            {countryLabel && <span className="text-[10px] text-white/50">{countryLabel}</span>}
+          </div>
+          {flagUrls.length > 0 && <img src={flagUrls[0]} className="card-flag" alt="" />}
+        </a>
+      ) : (
+        <Link
+          ref={pillRef}
+          href={href}
+          draggable={false}
+          style={glowStyle}
+          className={[
+            'discovery-pill group shrink-0 border font-semibold leading-none tracking-normal transition-all duration-200',
+            pillGlowClass,
+            isStory
+              ? 'inline-flex h-[82px] w-[172px] min-w-[172px] max-w-[172px] flex-col items-start justify-between overflow-hidden rounded-xl px-3 py-2.5 text-left text-[13px] sm:h-[88px] sm:w-[190px] sm:min-w-[190px] sm:max-w-[190px] sm:px-3.5 sm:py-3'
+              : isCard
+                ? // Card layout: tall rect, text pinned to bottom-center
+                  'inline-flex min-h-[82px] w-[96px] min-w-[96px] max-w-[96px] flex-col items-center justify-end gap-0 overflow-hidden rounded-xl px-2 py-2 text-[12px] sm:min-h-[96px] sm:w-[116px] sm:min-w-[116px] sm:max-w-[116px] sm:py-2.5 sm:text-[13px]'
+                : // Standard pill layout
+                  'inline-flex items-center rounded-full',
+            !isCard && !isStory && (showIconBadge ? 'gap-2' : 'gap-0'),
+            !isCard &&
+              !isStory &&
+              (primary
+                ? 'min-h-[46px] px-4 py-2.5 text-[14px]'
+                : 'min-h-[40px] px-3.5 py-2 text-[13px]'),
+            'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#e8a96b]/55 focus-visible:ring-offset-2 focus-visible:ring-offset-[#1a0e08] active:translate-y-0',
+            hasFlagBg
+              ? 'relative overflow-hidden border-white/25 text-white shadow-[inset_0_1px_0_rgba(255,255,255,0.18)] hover:border-white/45 hover:text-white'
+              : [isStory ? 'backdrop-blur-xl' : 'backdrop-blur-md', style.link].join(' '),
+            isSelected
+              ? 'border-[#e8a96b]/90 ring-2 ring-[#e8a96b]/65 ring-offset-2 ring-offset-[#1a0e08]'
+              : '',
+            isSelectable && !interactionReady ? 'pointer-events-none' : '',
+          ].join(' ')}
+          aria-hidden={isDuplicate ? true : undefined}
+          aria-disabled={isSelectable && !interactionReady ? true : undefined}
+          aria-pressed={isSelectable && !isDuplicate ? isSelected : undefined}
+          data-selected={isSelectable && isSelected && !isDuplicate ? 'true' : undefined}
+          tabIndex={isDuplicate || (isSelectable && !interactionReady) ? -1 : undefined}
+          onClick={(event) => {
+            if (isSelectable && !interactionReady) {
+              event.preventDefault()
+              return
+            }
+
+            if (!isDuplicate && isSelectable && onSelectToggle) {
+              event.preventDefault()
+              onSelectToggle(item, rowRole)
+              event.currentTarget.blur()
+              trackDiscoveryInteraction('click', item, trackingContext)
+              window.dispatchEvent(new Event('cf:discovery-recents-updated'))
+              return
+            }
+
+            if (!isDuplicate) {
+              trackDiscoveryClick(item, trackingContext)
+              window.dispatchEvent(new Event('cf:discovery-recents-updated'))
+            }
+          }}
+        >
+          {isStory && (
+            <span className="flex w-full items-center justify-between gap-3">
+              <span className="truncate text-[10px] font-bold uppercase tracking-widest text-white/45">
+                {item.eyebrow ?? 'Discovery'}
               </span>
-            ) : (
-              <Icon className={primary ? 'h-4 w-4' : 'h-3.5 w-3.5'} weight="bold" />
-            )}
-          </span>
-        )}
-        {hasFlagBg && countryLabel ? (
-          <span className="relative z-10 flex w-full min-w-0 flex-col items-center gap-0.5 text-center">
-            <span className="max-w-full truncate whitespace-nowrap" style={textOutlineStyle}>
-              {item.label}
+              <Icon className="h-4 w-4 shrink-0 text-[#f1a381]" weight="bold" aria-hidden="true" />
             </span>
+          )}
+          {/* Flag background at 50% opacity */}
+          {hasFlagBg && (
+            <span className="absolute inset-0 opacity-50" style={flagBgStyle} aria-hidden="true" />
+          )}
+          {/* Gradient: for cards, strong bottom darkening; for non-card pills, gentle top-to-bottom */}
+          {hasFlagBg && (
             <span
-              className="max-w-full truncate whitespace-nowrap text-[10px] font-normal tracking-wide opacity-85"
+              className={
+                isCard
+                  ? 'absolute inset-0 bg-gradient-to-t from-black/78 via-black/24 to-black/5'
+                  : 'absolute inset-0 bg-gradient-to-t from-black/60 to-black/10'
+              }
+              aria-hidden="true"
+            />
+          )}
+          {showIconBadge && !isStory && (
+            <span
+              className={[
+                'grid shrink-0 place-items-center rounded-full border transition-colors',
+                primary ? 'h-7 w-7' : 'h-6 w-6',
+                style.icon,
+              ].join(' ')}
+              aria-hidden="true"
+            >
+              {emoji ? (
+                <span className={primary ? 'text-base leading-none' : 'text-sm leading-none'}>
+                  {emoji}
+                </span>
+              ) : (
+                <Icon className={primary ? 'h-4 w-4' : 'h-3.5 w-3.5'} weight="bold" />
+              )}
+            </span>
+          )}
+          {hasFlagBg && countryLabel ? (
+            <span className="relative z-10 flex w-full min-w-0 flex-col items-center gap-0.5 text-center">
+              <span className="max-w-full truncate whitespace-nowrap" style={textOutlineStyle}>
+                {item.label}
+              </span>
+              <span
+                className="max-w-full truncate whitespace-nowrap text-[10px] font-normal tracking-wide opacity-85"
+                style={textOutlineStyle}
+              >
+                {countryLabel}
+              </span>
+            </span>
+          ) : (
+            <span
+              className={[
+                isStory
+                  ? 'max-w-full whitespace-normal text-[15px] leading-tight'
+                  : 'whitespace-nowrap',
+                hasFlagBg ? 'relative z-10' : '',
+              ].join(' ')}
               style={textOutlineStyle}
             >
-              {countryLabel}
+              {item.label}
             </span>
-          </span>
-        ) : (
-          <span
-            className={[
-              isStory
-                ? 'max-w-full whitespace-normal text-[15px] leading-tight'
-                : 'whitespace-nowrap',
-              hasFlagBg ? 'relative z-10' : '',
-            ].join(' ')}
-            style={textOutlineStyle}
-          >
-            {item.label}
-          </span>
-        )}
-        {item.sublabel && !hasFlagBg && (
-          <span
-            className={[
-              isStory
-                ? 'line-clamp-2 max-w-full text-[11px] font-medium leading-snug opacity-65'
-                : 'max-w-[9rem] truncate text-[11px] font-medium leading-none opacity-65',
-              hasFlagBg ? 'relative z-10' : '',
-            ].join(' ')}
-            style={textOutlineStyle}
-          >
-            {item.sublabel}
-          </span>
-        )}
-      </Link>
+          )}
+          {item.sublabel && !hasFlagBg && (
+            <span
+              className={[
+                isStory
+                  ? 'line-clamp-2 max-w-full text-[11px] font-medium leading-snug opacity-65'
+                  : 'max-w-[9rem] truncate text-[11px] font-medium leading-none opacity-65',
+                hasFlagBg ? 'relative z-10' : '',
+              ].join(' ')}
+              style={textOutlineStyle}
+            >
+              {item.sublabel}
+            </span>
+          )}
+        </Link>
+      )}
       {showFeedbackControls && (
         <span
           className={[
@@ -2698,7 +2747,13 @@ export function CuisineMarquee({
       },
       withDiscoveryDebug
     )
-    return [...scoredPool, ...scoredPool]
+    // Mark the first 16 cuisine items as visual cards for large rendering
+    const visualMarked = scoredPool.map((item, idx) =>
+      idx < 16 && item.type === 'cuisine' && !item.presentation
+        ? { ...item, presentation: 'visual_card' as const }
+        : item
+    )
+    return [...visualMarked, ...visualMarked]
   }, [filterHiddenItems, locationContext, tasteRotationSeed, userSignals])
 
   const row2 = useMemo(() => {
@@ -2943,52 +2998,70 @@ export function CuisineMarquee({
       >
         <div className="flex flex-col gap-2">
           {rows.map((row, rowIndex) => (
-            <div
-              key={row.role}
-              ref={(el) => {
-                rowRefs.current[row.role] = el
-              }}
-              className={[
-                `cuisine-marquee-row discovery-row-ready row-${rowIndex + 1} cursor-grab overflow-x-auto py-0.5 active:cursor-grabbing`,
-                row.className ?? '',
-              ].join(' ')}
-              onPointerDown={onPointerDown}
-              onPointerMove={onPointerMove}
-              onPointerUp={onPointerUp}
-              onPointerCancel={onPointerCancel}
-              onWheel={onWheel}
-              onFocus={onRowFocus}
-              onBlur={onRowBlur}
-              onKeyDown={onRowKeyDown}
-              onMouseEnter={onMouseEnter}
-              onMouseLeave={onMouseLeave}
-              aria-label={row.ariaLabel}
-              data-discovery-row={row.role}
-            >
-              <div className={['flex w-max gap-2', row.offsetClassName].join(' ')}>
-                {row.items.map((item, i) => (
-                  <DiscoveryPill
-                    key={`r${rowIndex + 1}-${item.label}-${i}`}
-                    item={item}
-                    locationContext={locationContext}
-                    rowRole={row.role}
-                    rowPosition={i % Math.max(1, Math.floor(row.items.length / 2))}
-                    rowItemCount={Math.max(1, Math.floor(row.items.length / 2))}
-                    isDuplicate={i >= Math.floor(row.items.length / 2)}
-                    isPinned={isPinnedItem(item)}
-                    isSelectable={isSelectableDiscoveryItem(item)}
-                    isSelected={isSelectedDiscoveryItem(selectedFilters, item)}
-                    interactionReady={interactionReady}
-                    onPinToggle={handlePinToggle}
-                    onHide={handleHide}
-                    onSelectToggle={handleSelectionToggle}
-                    blockLocationContext={
-                      item.type === 'featured_chef' || item.type === 'special_dining'
-                    }
-                  />
-                ))}
+            <React.Fragment key={row.role}>
+              {rowIndex > 0 && (
+                <div
+                  className={[
+                    'mx-auto my-2 w-[90%] border-t border-stone-800/30',
+                    row.className ?? '',
+                  ].join(' ')}
+                  aria-hidden="true"
+                />
+              )}
+              <div
+                className={[
+                  'mb-1.5 px-4 text-[11px] font-medium uppercase tracking-widest text-stone-500',
+                  row.labelClassName ?? '',
+                ].join(' ')}
+              >
+                {row.label}
               </div>
-            </div>
+              <div
+                ref={(el) => {
+                  rowRefs.current[row.role] = el
+                }}
+                className={[
+                  `cuisine-marquee-row discovery-row-ready row-${rowIndex + 1} cursor-grab overflow-x-auto py-0.5 active:cursor-grabbing`,
+                  row.className ?? '',
+                ].join(' ')}
+                onPointerDown={onPointerDown}
+                onPointerMove={onPointerMove}
+                onPointerUp={onPointerUp}
+                onPointerCancel={onPointerCancel}
+                onWheel={onWheel}
+                onFocus={onRowFocus}
+                onBlur={onRowBlur}
+                onKeyDown={onRowKeyDown}
+                onMouseEnter={onMouseEnter}
+                onMouseLeave={onMouseLeave}
+                aria-label={row.ariaLabel}
+                data-discovery-row={row.role}
+              >
+                <div className={['flex w-max gap-2', row.offsetClassName].join(' ')}>
+                  {row.items.map((item, i) => (
+                    <DiscoveryPill
+                      key={`r${rowIndex + 1}-${item.label}-${i}`}
+                      item={item}
+                      locationContext={locationContext}
+                      rowRole={row.role}
+                      rowPosition={i % Math.max(1, Math.floor(row.items.length / 2))}
+                      rowItemCount={Math.max(1, Math.floor(row.items.length / 2))}
+                      isDuplicate={i >= Math.floor(row.items.length / 2)}
+                      isPinned={isPinnedItem(item)}
+                      isSelectable={isSelectableDiscoveryItem(item)}
+                      isSelected={isSelectedDiscoveryItem(selectedFilters, item)}
+                      interactionReady={interactionReady}
+                      onPinToggle={handlePinToggle}
+                      onHide={handleHide}
+                      onSelectToggle={handleSelectionToggle}
+                      blockLocationContext={
+                        item.type === 'featured_chef' || item.type === 'special_dining'
+                      }
+                    />
+                  ))}
+                </div>
+              </div>
+            </React.Fragment>
           ))}
         </div>
       </div>

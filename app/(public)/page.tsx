@@ -10,6 +10,11 @@ import {
 } from '@/components/seo/json-ld'
 import { buildMarketingMetadata } from '@/lib/site/public-site'
 import { HomepageDiscovery } from './_components/homepage-discovery'
+import { HeroBackgroundImage } from './_components/hero-background-image'
+import { HomepageSeasonalSpotlight } from './_components/homepage-seasonal-spotlight'
+import { FeaturedChefSpotlight } from './_components/featured-chef-spotlight'
+import { HeroTrustBar } from './_components/hero-trust-bar'
+import LandingBelowFold from './_components/landing-below-fold'
 import { getPublicPlatformStats } from '@/lib/directory/public-stats'
 import { getDiscoverableChefs } from '@/lib/directory/actions'
 import { getPublicSeasonalMarketPulse } from '@/lib/public/public-seasonal-market-pulse'
@@ -156,6 +161,26 @@ export default async function Home() {
     }
   }
 
+  // Build featured chefs with images for the spotlight section.
+  const featuredChefsWithImages = allChefs
+    .filter(
+      (c) => c.slug && c.display_name && c.profile_image_url && c.discovery.cuisine_types.length > 0
+    )
+    .sort((a, b) => {
+      const scoreA = (a.discovery.service_area_city ? 1 : 0) + (a.is_founder ? 1 : 0)
+      const scoreB = (b.discovery.service_area_city ? 1 : 0) + (b.is_founder ? 1 : 0)
+      return scoreB - scoreA
+    })
+    .slice(0, 5)
+    .map((c) => ({
+      slug: c.slug!,
+      displayName: c.display_name,
+      primaryCuisine: c.discovery.cuisine_types[0] ?? null,
+      city: c.discovery.service_area_city ?? null,
+      state: c.discovery.service_area_state ?? null,
+      profileImageUrl: c.profile_image_url,
+    }))
+
   // Build avatar strip: top chefs with profile photos, max 6.
   const avatarChefs: AvatarChef[] = allChefs
     .filter((c) => c.profile_image_url && c.slug && c.display_name)
@@ -237,6 +262,8 @@ export default async function Home() {
           <div className="absolute inset-x-0 top-0 h-32 bg-gradient-to-b from-black/25 to-transparent" />
         </div>
 
+        <HeroBackgroundImage />
+
         <div className="relative mx-auto w-full max-w-4xl px-4 pb-16 pt-20 sm:px-6 sm:pb-24 sm:pt-28 lg:px-8 lg:pb-28 lg:pt-32">
           <div className="text-center">
             {/* Trust badge — only shown when real stats exist */}
@@ -292,18 +319,33 @@ export default async function Home() {
                 section: 'consumer_hero',
                 destination: '/chefs',
               }}
-              className="inline-flex min-h-14 items-center justify-center rounded-2xl gradient-accent px-10 text-base font-semibold text-white shadow-lg shadow-[#8b4513]/30 transition-all hover:-translate-y-0.5 hover:shadow-xl hover:shadow-[#8b4513]/40 active:scale-[0.98]"
+              className="inline-flex min-h-14 items-center justify-center rounded-2xl gradient-accent px-10 text-base font-semibold text-white shadow-lg shadow-[#8b4513]/30 transition-all hover:-translate-y-0.5 hover:shadow-xl hover:shadow-[#8b4513]/40 active:scale-[0.98] cta-shimmer"
             >
               Browse chefs near you
             </TrackedLink>
           </div>
 
-          <ChefAvatarStrip chefs={avatarChefs} />
+          <HeroTrustBar stats={platformStats} avatarChefs={avatarChefs} />
 
           {/* Sentinel: sticky mobile CTA appears when this scrolls out of view */}
           <div id="hero-cta-sentinel" className="h-px" aria-hidden="true" />
         </div>
       </section>
+
+      {/* ── Seasonal Band ── */}
+      <div className="zone-seasonal zone-transition">
+        <HomepageSeasonalSpotlight pulse={seasonalPulse} />
+      </div>
+
+      {/* ── Featured Chef Spotlight ── */}
+      <div className="zone-featured zone-transition">
+        <FeaturedChefSpotlight chefs={featuredChefsWithImages} />
+      </div>
+
+      {/* ── Below Fold Content ── */}
+      <div className="zone-howit">
+        <LandingBelowFold />
+      </div>
     </main>
   )
 }

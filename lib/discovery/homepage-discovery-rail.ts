@@ -96,7 +96,7 @@ export interface DiscoveryRailItem {
   href: string
   lane?: HomepageDiscoveryLane
   icon?: DiscoveryIconKey
-  presentation?: 'pill' | 'story'
+  presentation?: 'pill' | 'story' | 'visual_card' | 'badge'
   eyebrow?: string
   sublabel?: string
   debugScore?: DiscoveryRailDebugScore
