@@ -464,6 +464,20 @@ export const CRON_MONITOR_DEFINITIONS: CronMonitorDefinition[] = [
     description: 'Compute ingredient price trends, seasonal patterns, and volatility alerts',
   },
   {
+    cronName: 'pie-coverage-gaps',
+    routePath: '/api/cron/pie-coverage-gaps',
+    maxExpectedMinutes: 120,
+    cadence: '6h',
+    description: 'Detect underserved pricing regions and queue expansion targets',
+  },
+  {
+    cronName: 'pie-auto-expansion',
+    routePath: '/api/cron/pie-auto-expansion',
+    maxExpectedMinutes: 120,
+    cadence: '6h',
+    description: 'Fill coverage gaps by dispatching scrape jobs to target regions',
+  },
+  {
     cronName: 'pie-accuracy-check',
     routePath: '/api/cron/pie-accuracy-check',
     maxExpectedMinutes: 30,
@@ -475,7 +489,8 @@ export const CRON_MONITOR_DEFINITIONS: CronMonitorDefinition[] = [
     routePath: '/api/cron/automation-rules',
     maxExpectedMinutes: 120,
     cadence: 'hourly',
-    description: 'Execute config-driven preset automation rules (follow-up, review, stale inquiry, reorder, calendar block, quote archive)',
+    description:
+      'Execute config-driven preset automation rules (follow-up, review, stale inquiry, reorder, calendar block, quote archive)',
   },
 ]
 
