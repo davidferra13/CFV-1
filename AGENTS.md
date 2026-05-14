@@ -95,3 +95,49 @@ Use the inventory audit when routing looks stale:
 ```powershell
 node .claude/skills/omninet/scripts/skill-inventory.mjs
 ```
+
+## Security and Auth Invariants
+
+These rules apply to ALL agent work that touches routes, server actions, API routes, or database queries.
+
+### Auth Gates Are Mandatory
+
+- Every server action (`'use server'`) must call `requireChef()`, `requireClient()`, `requireAuth()`, `requireAdmin()`, `requireStaff()`, or `requirePartner()` before any data access.
+- Every API route must either (a) pass through middleware auth, or (b) self-authenticate via `verifyCronAuth`, `withApiAuth`, webhook signature verification, or equivalent.
+- The only exceptions are intentionally public endpoints (health checks, discovery, embeds) that expose no PII or tenant data.
+
+### Tenant Scoping Is Mandatory
+
+- Every DB query returning tenant data must include `.eq('tenant_id', user.tenantId!)` or `.eq('chef_id', user.tenantId!)`.
+- Never use a dynamic route param (e.g., `params.eventId`) as the sole filter. Always combine with tenant scoping: `.eq('id', params.eventId).eq('tenant_id', user.tenantId!)`.
+- If adding a new table, include a `tenant_id` or `chef_id` column with FK to `chefs.id` unless the table is intentionally platform-level.
+
+### Route Registration
+
+- When adding a new page route, add it to the correct array in `lib/auth/route-policy.ts`:
+  - Public pages: `PUBLIC_UNAUTHENTICATED_PATHS`
+  - Chef pages: `CHEF_PROTECTED_PATHS`
+  - Client pages: `CLIENT_PROTECTED_PATHS`
+  - Staff/Partner/Admin: respective arrays
+- The UI (nav hiding, button visibility) is NOT a security boundary. Server-side protection must exist independently.
+
+### Admin Routes Are Runtime-Gated
+
+- Middleware allows all authenticated users to reach `/admin` paths (returns `admin_runtime_gate`).
+- Every admin page and server action MUST call `requireAdmin()`. A missing guard is a privilege escalation vulnerability.
+
+### Key Auth Files
+
+| File                       | Purpose                                      |
+| -------------------------- | -------------------------------------------- |
+| `middleware.ts`            | Edge auth gate                               |
+| `lib/auth/route-policy.ts` | Path classification (single source of truth) |
+| `lib/auth/get-user.ts`     | Role guard functions                         |
+| `lib/auth/admin.ts`        | Admin guard                                  |
+| `lib/auth/permissions.ts`  | RBAC engine                                  |
+| `lib/api/v2/middleware.ts` | V2 API auth                                  |
+| `lib/auth/cron-auth.ts`    | Cron auth                                    |
+
+### Security Audit Prompt
+
+For comprehensive security audits, use `docs/codex-security-route-audit-prompt.md`. It contains the full audit plan, known gaps, commands to run, and deliverable specifications.

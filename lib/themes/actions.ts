@@ -1,5 +1,6 @@
 'use server'
 
+import { requireChef } from '@/lib/auth/get-user'
 import { createServerClient } from '@/lib/db/server'
 import type { EventTheme, ThemeCategory } from '@/lib/hub/types'
 
@@ -56,7 +57,18 @@ export async function getThemeById(themeId: string): Promise<EventTheme | null> 
  * Set theme on an event share.
  */
 export async function setEventShareTheme(shareId: string, themeId: string | null): Promise<void> {
+  const user = await requireChef()
   const db = createServerClient({ admin: true })
+
+  // Verify ownership: share must belong to this tenant
+  const { data: share } = await db
+    .from('event_shares')
+    .select('id')
+    .eq('id', shareId)
+    .eq('tenant_id', user.tenantId!)
+    .single()
+
+  if (!share) throw new Error('Event share not found or access denied')
 
   const { error } = await db.from('event_shares').update({ theme_id: themeId }).eq('id', shareId)
 
@@ -67,7 +79,18 @@ export async function setEventShareTheme(shareId: string, themeId: string | null
  * Set theme on a hub group.
  */
 export async function setGroupTheme(groupId: string, themeId: string | null): Promise<void> {
+  const user = await requireChef()
   const db = createServerClient({ admin: true })
+
+  // Verify ownership: group must belong to this tenant
+  const { data: group } = await db
+    .from('hub_groups')
+    .select('id')
+    .eq('id', groupId)
+    .eq('tenant_id', user.tenantId!)
+    .single()
+
+  if (!group) throw new Error('Hub group not found or access denied')
 
   const { error } = await db
     .from('hub_groups')

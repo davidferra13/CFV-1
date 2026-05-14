@@ -3,7 +3,7 @@
 import { createAdminClient } from '@/lib/db/admin'
 import { resolvePublicLocationQuery } from '@/lib/geo/public-location'
 import { detectMyLocation } from '@/lib/geo/geo-actions'
-import { auth } from '@/lib/auth'
+import { requireAuth, getCurrentUser } from '@/lib/auth/get-user'
 
 // ---------------------------------------------------------------------------
 // Types
@@ -24,12 +24,15 @@ export type AccountLocation = {
 // ---------------------------------------------------------------------------
 
 /** Read a user's saved default location. Returns null when none exists. */
-export async function getAccountLocation(authUserId: string): Promise<AccountLocation | null> {
+// SECURITY: authUserId param kept for caller compatibility but IGNORED.
+// userId is always derived from the authenticated session to prevent IDOR.
+export async function getAccountLocation(_authUserId?: string): Promise<AccountLocation | null> {
+  const user = await requireAuth()
   const db: any = createAdminClient()
   const { data, error } = await db
     .from('user_location_defaults')
     .select('zip, city, state, lat, lng, radius_miles, source')
-    .eq('auth_user_id', authUserId)
+    .eq('auth_user_id', user.authUserId)
     .single()
 
   if (error || !data) return null
@@ -45,11 +48,14 @@ export async function getAccountLocation(authUserId: string): Promise<AccountLoc
 }
 
 /** Geocode a zip, upsert the user's default location, and return it. */
+// SECURITY: _authUserId param kept for caller compatibility but IGNORED.
+// userId is always derived from the authenticated session to prevent IDOR.
 export async function setAccountLocation(
-  authUserId: string,
+  _authUserId: string,
   zip: string,
   radiusMiles = 25
 ): Promise<AccountLocation> {
+  const user = await requireAuth()
   const geo = await resolvePublicLocationQuery(zip)
   const city = geo.data?.city ?? null
   const state = geo.data?.state ?? null
@@ -59,7 +65,7 @@ export async function setAccountLocation(
   const db: any = createAdminClient()
   const { error } = await db.from('user_location_defaults').upsert(
     {
-      auth_user_id: authUserId,
+      auth_user_id: user.authUserId,
       zip,
       city,
       state,
@@ -78,12 +84,15 @@ export async function setAccountLocation(
 }
 
 /** Update only the search radius for a user. */
-export async function updateAccountRadius(authUserId: string, radiusMiles: number): Promise<void> {
+// SECURITY: _authUserId param kept for caller compatibility but IGNORED.
+// userId is always derived from the authenticated session to prevent IDOR.
+export async function updateAccountRadius(_authUserId: string, radiusMiles: number): Promise<void> {
+  const user = await requireAuth()
   const db: any = createAdminClient()
   const { error } = await db
     .from('user_location_defaults')
     .update({ radius_miles: radiusMiles, updated_at: new Date().toISOString() })
-    .eq('auth_user_id', authUserId)
+    .eq('auth_user_id', user.authUserId)
 
   if (error) throw new Error('Failed to update radius: ' + error.message)
 }
@@ -92,11 +101,28 @@ export async function updateAccountRadius(authUserId: string, radiusMiles: numbe
 // Session-aware resolvers
 // ---------------------------------------------------------------------------
 
-/** Resolve the current authenticated user's saved location. */
+/** Resolve the current authenticated user's saved location. Returns null if not signed in. */
 export async function resolveCurrentUserLocation(): Promise<AccountLocation | null> {
-  const session = await auth()
-  if (!session?.user?.id) return null
-  return getAccountLocation(session.user.id)
+  const user = await getCurrentUser()
+  if (!user) return null
+
+  const db: any = createAdminClient()
+  const { data, error } = await db
+    .from('user_location_defaults')
+    .select('zip, city, state, lat, lng, radius_miles, source')
+    .eq('auth_user_id', user.authUserId)
+    .single()
+
+  if (error || !data) return null
+  return {
+    zip: data.zip,
+    city: data.city ?? null,
+    state: data.state ?? null,
+    lat: data.lat ?? null,
+    lng: data.lng ?? null,
+    radiusMiles: data.radius_miles,
+    source: data.source,
+  }
 }
 
 /** Try saved location first, then IP detection. Signals when user needs prompting. */

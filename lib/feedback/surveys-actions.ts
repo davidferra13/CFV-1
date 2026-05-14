@@ -2,6 +2,7 @@
 
 import { z } from 'zod'
 import { createServerClient } from '@/lib/db/server'
+import { requireChef } from '@/lib/auth/get-user'
 import {
   ensurePostEventSurveyForEvent,
   sendPostEventSurveyForEvent,
@@ -11,12 +12,26 @@ import {
 export async function createPostEventSurvey(
   eventId: string
 ): Promise<{ success: boolean; surveyId?: string; error?: string }> {
+  const user = await requireChef()
+  const db: any = createServerClient({ admin: true })
+
+  // Verify event belongs to this tenant
+  const { data: event } = await db
+    .from('events')
+    .select('id')
+    .eq('id', eventId)
+    .eq('tenant_id', user.tenantId!)
+    .maybeSingle()
+
+  if (!event) {
+    return { success: false, error: 'Event not found or access denied.' }
+  }
+
   const token = await ensurePostEventSurveyForEvent(eventId)
   if (!token) {
     return { success: false, error: 'Failed to create survey.' }
   }
 
-  const db: any = createServerClient({ admin: true })
   const { data } = await db
     .from('post_event_surveys')
     .select('id')
@@ -29,7 +44,9 @@ export async function createPostEventSurvey(
 export async function sendSurveyEmail(
   surveyId: string
 ): Promise<{ success: boolean; error?: string }> {
+  const user = await requireChef()
   const db: any = createServerClient({ admin: true })
+
   const { data: survey } = await db
     .from('post_event_surveys')
     .select('event_id')
@@ -38,6 +55,18 @@ export async function sendSurveyEmail(
 
   if (!survey?.event_id) {
     return { success: false, error: 'Survey not found.' }
+  }
+
+  // Verify event belongs to this tenant
+  const { data: event } = await db
+    .from('events')
+    .select('id')
+    .eq('id', survey.event_id)
+    .eq('tenant_id', user.tenantId!)
+    .maybeSingle()
+
+  if (!event) {
+    return { success: false, error: 'Event not found or access denied.' }
   }
 
   const result = await sendPostEventSurveyForEvent(survey.event_id)

@@ -199,12 +199,15 @@ export const PUBLIC_UNAUTHENTICATED_PATHS = [
   '/availability',
   '/cannabis-invite',
   '/cannabis/public',
+  '/client',
   '/e',
   '/for-operators',
   '/gift-cards',
   '/how-it-works',
   '/ingredient',
   '/ingredients',
+  '/intake',
+  '/onboarding',
   '/services',
 ] as const
 

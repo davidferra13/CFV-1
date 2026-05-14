@@ -100,9 +100,12 @@ export async function addPrepTimelineItem(input: {
   const user = await requireChef()
   const db: any = createServerClient()
 
+  const ownerTenantId = await verifyEventAccess(db, input.eventId, user.entityId!)
+  if (!ownerTenantId) return { success: false, error: 'Access denied' }
+
   const { error } = await db.from('event_prep_timeline').insert({
     event_id: input.eventId,
-    tenant_id: user.entityId,
+    tenant_id: ownerTenantId,
     label: input.label.trim(),
     minutes_before: input.minutesBefore,
     duration_minutes: input.durationMinutes || null,
@@ -179,16 +182,25 @@ export async function generatePrepTimeline(eventId: string): Promise<{
   const user = await requireChef()
   const db: any = createServerClient()
 
-  // Get event menus
+  const ownerTenantId = await verifyEventAccess(db, eventId, user.entityId!)
+  if (!ownerTenantId) return { success: false, generated: 0, error: 'Access denied' }
+
+  // Get event menus (tenant-scoped)
   const { data: eventMenus } = await db
     .from('event_menus')
     .select('menu_id')
     .eq('event_id', eventId)
+    .eq('tenant_id', ownerTenantId)
 
   let menuIds: string[] = (eventMenus || []).map((em: any) => em.menu_id)
 
   if (menuIds.length === 0) {
-    const { data: event } = await db.from('events').select('menu_id').eq('id', eventId).single()
+    const { data: event } = await db
+      .from('events')
+      .select('menu_id')
+      .eq('id', eventId)
+      .eq('tenant_id', ownerTenantId)
+      .single()
     if (event?.menu_id) menuIds = [event.menu_id]
   }
 
@@ -196,11 +208,12 @@ export async function generatePrepTimeline(eventId: string): Promise<{
     return { success: false, generated: 0, error: 'No menu assigned to this event' }
   }
 
-  // Get courses and recipes
+  // Get courses and recipes (tenant-scoped)
   const { data: courses } = await db
     .from('menu_courses')
     .select('recipe_id, course_type, sort_order')
     .in('menu_id', menuIds)
+    .eq('tenant_id', ownerTenantId)
     .not('recipe_id', 'is', null)
     .order('sort_order', { ascending: true })
 
@@ -214,6 +227,7 @@ export async function generatePrepTimeline(eventId: string): Promise<{
     .from('recipes')
     .select('id, name, prep_time_minutes, cook_time_minutes, total_time_minutes')
     .in('id', recipeIds)
+    .eq('tenant_id', ownerTenantId)
 
   if (!recipes || recipes.length === 0) {
     return { success: false, generated: 0, error: 'No recipe data found' }
@@ -290,11 +304,11 @@ export async function generatePrepTimeline(eventId: string): Promise<{
     .from('event_prep_timeline')
     .delete()
     .eq('event_id', eventId)
-    .eq('tenant_id', user.entityId)
+    .eq('tenant_id', ownerTenantId)
 
   const rows = items.map((item, idx) => ({
     event_id: eventId,
-    tenant_id: user.entityId,
+    tenant_id: ownerTenantId,
     label: item.label,
     minutes_before: item.minutes_before,
     duration_minutes: item.duration_minutes || null,

@@ -221,8 +221,12 @@ export async function recordGoogleReviewClick(eventId: string) {
     console.error('[recordGoogleReviewClick] Error:', error)
   }
 
-  // Mark review_link_sent on the event
-  await db.from('events').update({ review_link_sent: true }).eq('id', eventId)
+  // Mark review_link_sent on the event (only if this client owns the event)
+  await db
+    .from('events')
+    .update({ review_link_sent: true })
+    .eq('id', eventId)
+    .eq('client_id', user.entityId)
 
   // Loyalty trigger (non-blocking)
   try {
