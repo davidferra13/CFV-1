@@ -1,6 +1,6 @@
 'use client'
 
-import { useRef, type RefObject } from 'react'
+import { useRef } from 'react'
 import type {
   DiscoveryRailItem,
   HomepageDiscoveryLane,
@@ -23,7 +23,7 @@ interface DiscoveryRowProps {
   onItemPin?: (item: DiscoveryRailItem) => void
   onItemHide?: (item: DiscoveryRailItem) => void
   onItemSelect?: (item: DiscoveryRailItem) => void
-  scrollRef?: RefObject<HTMLDivElement | null>
+  scrollRef?: React.Ref<HTMLDivElement>
 }
 
 const LANE_DOT_COLOR: Record<HomepageDiscoveryLane, string> = {
@@ -54,7 +54,7 @@ export function DiscoveryRow({
   scrollRef,
 }: DiscoveryRowProps) {
   const internalRef = useRef<HTMLDivElement>(null)
-  const ref = scrollRef ?? internalRef
+  const ref = scrollRef ?? (internalRef as React.Ref<HTMLDivElement>)
   const loopedItems = [...items, ...items]
 
   return (
