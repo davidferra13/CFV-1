@@ -132,6 +132,11 @@ export default async function Home() {
       primaryCuisine: c.discovery.cuisine_types[0] ?? null,
       city: c.discovery.service_area_city ?? null,
       state: c.discovery.service_area_state ?? null,
+      specialty: c.tagline ?? null,
+      acceptingInquiries: c.discovery.accepting_inquiries ?? null,
+      priceTier: (c.discovery.price_range as 'budget' | 'mid' | 'premium' | 'luxury') ?? null,
+      dietaryStrengths:
+        c.discovery.dietary_specialties.length > 0 ? c.discovery.dietary_specialties : null,
     }))
 
   if (savedChefsForRail.length > 0) {

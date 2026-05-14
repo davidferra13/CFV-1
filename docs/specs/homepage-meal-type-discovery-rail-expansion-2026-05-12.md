@@ -1,6 +1,6 @@
 # Spec: Homepage Meal Type Discovery Rail Expansion
 
-> **Status:** pending future implementation
+> **Status:** implemented
 > **Queue date:** 2026-05-12
 > **Requested date label:** 5/12/26
 > **Priority:** P2 after `homepage-discovery-rail-completion-2026-05-12.md`
@@ -15,6 +15,8 @@ _Every status change, every claim, every verification gets a row. This is the au
 | ------------------------------------- | ---------- | ------------------- | ------ |
 | Queued for future implementation      | 2026-05-12 | Codex queue session |        |
 | Status: pending future implementation | 2026-05-12 | Codex queue session |        |
+| Implemented in production             | 2026-05-13 | Build agent         |        |
+| Status: implemented                   | 2026-05-14 | Housekeeping        |        |
 
 ---
 

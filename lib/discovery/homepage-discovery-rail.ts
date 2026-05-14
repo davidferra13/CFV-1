@@ -241,6 +241,11 @@ export interface FeaturedChefRailData {
   primaryCuisine?: string | null
   city?: string | null
   state?: string | null
+  // Proof enrichment (all optional, degrade cleanly)
+  specialty?: string | null
+  acceptingInquiries?: boolean | null
+  priceTier?: 'budget' | 'mid' | 'premium' | 'luxury' | null
+  dietaryStrengths?: string[] | null
 }
 
 export interface HomepageLocationContext {

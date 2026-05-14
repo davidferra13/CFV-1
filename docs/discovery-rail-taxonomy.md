@@ -35,6 +35,9 @@ This is the source of truth for the public homepage Discovery Rail, `/eat`, prof
 | `combo`           | ChefFlow Picks | Live                          | `/eat`, `/chefs`, `/nearby`                        | Must combine supported filters only.                                  |
 | `story`           | ChefFlow Picks | Live/future editorial         | `/eat`, `/ingredients`, public info                | Do not render empty SEO-thin stories.                                 |
 | `surprise`        | ChefFlow Picks | Live                          | `/eat`, `/chefs`                                   | Keep reversible and broad.                                            |
+| `technique`       | Taste          | Live                          | `/eat`, `/chefs`                                   | Route to technique filter; do not claim chef mastery without proof.   |
+| `ingredient`      | Taste          | Live                          | `/ingredients`, `/eat`                             | Route to ingredient detail or filtered discovery.                     |
+| `vibe`            | Occasion       | Live                          | `/eat`, `/chefs`                                   | Atmosphere and experience intent; treat as preference, not guarantee. |
 | `saved`           | ChefFlow Picks | Live                          | `/chef`, `/chefs`, `/eat`, `/hub`                  | Saved/pinned/recent dedupe; hidden wins.                              |
 
 ## Destination Contract

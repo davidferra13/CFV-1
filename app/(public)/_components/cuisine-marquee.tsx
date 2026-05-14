@@ -38,6 +38,11 @@ import {
   trackDiscoveryInteraction,
   type DiscoveryRecentClick,
 } from '@/lib/discovery/track-discovery-click'
+import {
+  showDiscoveryHideToast,
+  showDiscoveryPinToast,
+  showDiscoveryLoveToast,
+} from '@/components/discovery/discovery-feedback-toast'
 import type { LucideIcon } from '@/components/ui/icons'
 import {
   Avocado,
@@ -1461,7 +1466,6 @@ function isSelectedDiscoveryItem(
 function chefToRailItem(chef: FeaturedChefRailData): DiscoveryRailItem {
   const parts: string[] = []
   if (chef.primaryCuisine) {
-    // Capitalize first letter
     parts.push(chef.primaryCuisine.charAt(0).toUpperCase() + chef.primaryCuisine.slice(1))
   }
   if (chef.city && chef.state) {
@@ -1469,14 +1473,34 @@ function chefToRailItem(chef: FeaturedChefRailData): DiscoveryRailItem {
   } else if (chef.city) {
     parts.push(chef.city)
   }
+  // Proof enrichment: specialty or price tier as third segment (max 3 parts)
+  if (parts.length < 3 && chef.specialty) {
+    parts.push(chef.specialty)
+  } else if (parts.length < 3 && chef.priceTier) {
+    const tierLabels: Record<string, string> = {
+      budget: 'Budget-friendly',
+      mid: 'Mid-range',
+      premium: 'Premium',
+      luxury: 'Luxury',
+    }
+    const label = tierLabels[chef.priceTier]
+    if (label) parts.push(label)
+  }
+  // Dietary strengths if still room (max 3 total)
+  if (parts.length < 3 && chef.dietaryStrengths && chef.dietaryStrengths.length > 0) {
+    parts.push(chef.dietaryStrengths.slice(0, 2).join(', '))
+  }
+
+  const eyebrow = chef.acceptingInquiries === true ? 'Available chef' : 'Featured chef'
+
   return {
     type: 'featured_chef',
     presentation: 'story',
-    eyebrow: 'Featured chef',
+    eyebrow,
     label: chef.displayName,
     href: `/chef/${chef.slug}`,
     icon: 'chef',
-    sublabel: parts.length > 0 ? parts.join(' · ') : undefined,
+    sublabel: parts.length > 0 ? parts.join(' \u00b7 ') : undefined,
   }
 }
 
@@ -1724,6 +1748,7 @@ interface DiscoveryPillProps {
   interactionReady?: boolean
   onPinToggle?: (item: DiscoveryRailItem, pinned: boolean) => void
   onHide?: (item: DiscoveryRailItem) => void
+  onUnhide?: (item: DiscoveryRailItem) => void
   onSelectToggle?: (item: DiscoveryRailItem, rowRole: DiscoveryRowRole) => void
 }
 
@@ -1741,6 +1766,7 @@ function DiscoveryPill({
   interactionReady = true,
   onPinToggle,
   onHide,
+  onUnhide,
   onSelectToggle,
 }: DiscoveryPillProps) {
   const flagRaw = getCuisineFlagUrl(item)
@@ -1855,6 +1881,7 @@ function DiscoveryPill({
 
       setFeedbackAction('love')
       trackDiscoveryInteraction('love', item, trackingContext)
+      showDiscoveryLoveToast(item)
     },
     [isDuplicate, item, trackingContext]
   )
@@ -1871,6 +1898,7 @@ function DiscoveryPill({
         ...trackingContext,
         rowRole,
       })
+      showDiscoveryPinToast(item, nextPinned)
     },
     [isDuplicate, isPinned, item, onPinToggle, rowRole, trackingContext]
   )
@@ -1884,8 +1912,13 @@ function DiscoveryPill({
       setFeedbackAction('hide')
       onHide?.(item)
       trackDiscoveryInteraction('dismiss', item, trackingContext)
+      showDiscoveryHideToast(item, () => {
+        setFeedbackAction(null)
+        onUnhide?.(item)
+        trackDiscoveryInteraction('undismiss', item, trackingContext)
+      })
     },
-    [isDuplicate, item, onHide, trackingContext]
+    [isDuplicate, item, onHide, onUnhide, trackingContext]
   )
 
   return (
@@ -2333,6 +2366,27 @@ export function CuisineMarquee({
       writeStoredDiscoveryItems(DISCOVERY_HIDDEN_STORAGE_KEY, next)
       writeStoredDiscoveryItems(DISCOVERY_PINNED_STORAGE_KEY, nextPinned)
       setPinnedItems(nextPinned.map(toPinnedDiscoveryItem))
+      setHiddenKeys(new Set(next.map(getDiscoveryItemKey)))
+      window.dispatchEvent(new Event('cf:discovery-shortcuts-updated'))
+    },
+    [profileAuthenticated]
+  )
+
+  const handleUnhide = useCallback(
+    (item: DiscoveryRailItem) => {
+      const itemKey = getDiscoveryItemKey(item)
+      if (profileAuthenticated !== false) {
+        setHiddenKeys((current) => {
+          const next = new Set(current)
+          next.delete(itemKey)
+          return next
+        })
+        return
+      }
+
+      const current = readStoredDiscoveryItems(DISCOVERY_HIDDEN_STORAGE_KEY)
+      const next = current.filter((entry) => getDiscoveryItemKey(entry) !== itemKey)
+      writeStoredDiscoveryItems(DISCOVERY_HIDDEN_STORAGE_KEY, next)
       setHiddenKeys(new Set(next.map(getDiscoveryItemKey)))
       window.dispatchEvent(new Event('cf:discovery-shortcuts-updated'))
     },
@@ -3053,6 +3107,7 @@ export function CuisineMarquee({
                       interactionReady={interactionReady}
                       onPinToggle={handlePinToggle}
                       onHide={handleHide}
+                      onUnhide={handleUnhide}
                       onSelectToggle={handleSelectionToggle}
                       blockLocationContext={
                         item.type === 'featured_chef' || item.type === 'special_dining'
