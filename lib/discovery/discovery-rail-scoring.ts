@@ -110,7 +110,10 @@ function getEditorialScore(
   if (item.type === 'featured_chef') score += 1.2
   if (item.type === 'saved') score += 0.8
   if (context.role === 'cuisine' && item.type === 'cuisine') score += 0.6
-  if (context.role === 'craving' && ['food_type', 'craving', 'mood'].includes(item.type)) {
+  if (
+    context.role === 'craving' &&
+    ['food_type', 'craving', 'mood', 'technique', 'ingredient', 'vibe'].includes(item.type)
+  ) {
     score += 0.6
   }
   if (

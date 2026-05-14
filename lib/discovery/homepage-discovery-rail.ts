@@ -37,6 +37,9 @@ export type DiscoveryItemType =
   | 'special_dining'
   | 'circle'
   | 'culinary_signal'
+  | 'technique'
+  | 'ingredient'
+  | 'vibe'
 
 export type DiscoveryIconKey =
   | 'avocado'
@@ -64,6 +67,7 @@ export type DiscoveryIconKey =
   | 'flame'
   | 'graduation'
   | 'grains'
+  | 'knife'
   | 'leaf'
   | 'location'
   | 'market'
@@ -134,7 +138,18 @@ export const HOMEPAGE_DISCOVERY_LANE_ITEM_TYPES: Record<
   HomepageDiscoveryLane,
   readonly DiscoveryItemType[]
 > = {
-  taste: ['cuisine', 'food_type', 'craving', 'dietary', 'mood', 'seasonal', 'culinary_signal'],
+  taste: [
+    'cuisine',
+    'food_type',
+    'craving',
+    'dietary',
+    'mood',
+    'seasonal',
+    'culinary_signal',
+    'technique',
+    'ingredient',
+    'vibe',
+  ],
   occasion: [
     'service',
     'occasion',
@@ -170,6 +185,9 @@ export const DISCOVERY_ITEM_TYPE_LANE_MAP: Record<DiscoveryItemType, HomepageDis
   story: 'chefflow_picks',
   surprise: 'chefflow_picks',
   saved: 'chefflow_picks',
+  technique: 'taste',
+  ingredient: 'taste',
+  vibe: 'taste',
 }
 
 export const HOMEPAGE_DISCOVERY_LANE_METADATA: Record<

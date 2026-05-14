@@ -335,6 +335,36 @@ export const DISCOVERY_RAIL_CONTRACT_REGISTRY: Record<DiscoveryItemType, Discove
       reasonCodes: ['pantry_match', 'seasonal_pick', 'preference_match'],
     }
   ),
+  technique: contract(
+    'technique',
+    'Technique',
+    'A cooking method, preparation style, or chef craft.',
+    'taste',
+    {
+      destinationFamilies: ['eat', 'chefs', 'nearby'],
+      filterFacets: ['craving'],
+      defaultActions: ['navigate', 'select', 'filter', 'save', 'hide', 'share'],
+      reasonCodes: ['preference_match', 'novelty_injection', 'diversity_fill'],
+    }
+  ),
+  ingredient: contract(
+    'ingredient',
+    'Ingredient',
+    'A food ingredient used as a discovery entry point.',
+    'taste',
+    {
+      destinationFamilies: ['eat', 'ingredients', 'nearby', 'chefs'],
+      filterFacets: ['ingredient', 'craving'],
+      defaultActions: ['navigate', 'select', 'filter', 'save', 'hide', 'share'],
+      reasonCodes: ['pantry_match', 'seasonal_pick', 'preference_match', 'diversity_fill'],
+    }
+  ),
+  vibe: contract('vibe', 'Vibe', 'An experience level or dining atmosphere preference.', 'taste', {
+    destinationFamilies: ['eat', 'chefs', 'nearby'],
+    filterFacets: ['mood', 'occasion'],
+    defaultActions: ['navigate', 'select', 'filter', 'save', 'hide', 'share'],
+    reasonCodes: ['preference_match', 'novelty_injection', 'occasion_fit'],
+  }),
 }
 
 export function listDiscoveryRailContracts(): DiscoveryRailContract[] {

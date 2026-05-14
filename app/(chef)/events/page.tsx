@@ -23,6 +23,7 @@ import {
 } from '@/components/ui/table'
 import { Card, CardContent } from '@/components/ui/card'
 import { formatCurrency } from '@/lib/utils/format'
+import { getRegionalSettings } from '@/lib/chef/actions'
 import { format } from 'date-fns'
 import { isDemoEvent } from '@/lib/onboarding/demo-data-utils'
 import { createServerClient } from '@/lib/db/server'
@@ -189,7 +190,7 @@ function getEventStaleness(updatedAt: string | null, status: string): 'ok' | 'wa
 async function EventsList({ status }: { status: EventStatus }) {
   const user = await requireChef()
 
-  const events_raw = await getEvents()
+  const [events_raw, regional] = await Promise.all([getEvents(), getRegionalSettings()])
   let events = events_raw
 
   if (status !== 'all') {
@@ -405,8 +406,8 @@ async function EventsList({ status }: { status: EventStatus }) {
                 </TableCell>
                 <TableCell className="text-right font-medium text-stone-200 tabular-nums">
                   {formatCurrency(event.quoted_price_cents ?? 0, {
-                    locale: 'en-US',
-                    currency: 'USD',
+                    locale: regional.locale,
+                    currency: regional.currencyCode,
                   })}
                 </TableCell>
                 <TableCell>

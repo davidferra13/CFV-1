@@ -512,7 +512,7 @@ function AvailabilityCard({
             </>
           )}
 
-          {false && profileToken && !poll.is_closed && (
+          {profileToken && !poll.is_closed && (
             <button
               type="button"
               onClick={handleClose}

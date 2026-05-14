@@ -136,6 +136,7 @@ const DISCOVERY_ICON_MAP: Record<DiscoveryIconKey, LucideIcon> = {
   flame: Flame,
   graduation: GraduationCap,
   grains: Grains,
+  knife: Knife,
   leaf: Leaf,
   location: MapPin,
   market: Store,
@@ -181,6 +182,9 @@ const TYPE_FALLBACK_ICONS: Record<DiscoveryItemType, DiscoveryIconKey> = {
   special_dining: 'spark',
   circle: 'family',
   culinary_signal: 'market',
+  technique: 'knife',
+  ingredient: 'carrot',
+  vibe: 'spark',
 }
 
 function getDiscoveryIcon(item: DiscoveryRailItem): LucideIcon {
@@ -203,7 +207,9 @@ function getPillStyle(item: DiscoveryRailItem) {
     item.type === 'chef_pick' ||
     item.type === 'combo' ||
     item.type === 'story' ||
-    item.type === 'surprise'
+    item.type === 'surprise' ||
+    item.type === 'technique' ||
+    item.type === 'vibe'
   ) {
     return {
       link: 'border-[#8f4b3b]/55 bg-[#2a1410]/78 text-[#efb49b] shadow-[inset_0_1px_0_rgba(255,255,255,0.05)] hover:border-[#c7795f]/70 hover:bg-[#361b14]/90 hover:text-[#ffd5c3]',
@@ -231,7 +237,8 @@ function getPillStyle(item: DiscoveryRailItem) {
     item.type === 'culinary_signal' ||
     item.type === 'seasonal' ||
     item.type === 'dietary' ||
-    item.type === 'price'
+    item.type === 'price' ||
+    item.type === 'ingredient'
   ) {
     return {
       link: 'border-[#6d6a3e]/55 bg-[#1f1a0e]/78 text-[#dacb85] shadow-[inset_0_1px_0_rgba(255,255,255,0.05)] hover:border-[#b0925a]/65 hover:bg-[#2e2213]/90 hover:text-[#f4d89b]',
@@ -343,6 +350,49 @@ const DISCOVERY_EMOJI_MAP: Record<string, string> = {
   Halal: '🌙',
   'Seasonal menu': '🌿',
   'Farmers market': '🛒',
+  // Techniques
+  Grill: '🔥',
+  'Stir-fry': '🥘',
+  Braise: '🍲',
+  Roast: '🍖',
+  Bake: '🥐',
+  'Sheet pan': '🍳',
+  'One-pan': '🍳',
+  'No-cook': '🥗',
+  'Make-ahead': '📦',
+  Ferment: '🫙',
+  Smoke: '🔥',
+  // Vibes
+  Casual: '😎',
+  Elevated: '✨',
+  Romantic: '🌹',
+  Cozy: '🍵',
+  'Fine dining': '🍽️',
+  'Family-style': '👨‍👩‍👧',
+  'Celebration-worthy': '🎉',
+  // Ingredients
+  Chicken: '🍗',
+  Rice: '🍚',
+  Eggs: '🥚',
+  Salmon: '🐟',
+  Mushrooms: '🍄',
+  Tofu: '🫘',
+  // Additional occasions
+  'Graduation dinner': '🎓',
+  'Engagement dinner': '💍',
+  'Game day': '🏈',
+  'New parent meals': '👶',
+  'Recovery meals': '💚',
+  // Service formats
+  'Drop-off catering': '📦',
+  Buffet: '🍽️',
+  'Grazing table': '🧀',
+  'Freezer meals': '🧊',
+  // Time/effort
+  '15-minute ideas': '⏱️',
+  'Minimal cleanup': '✨',
+  'Weekend project': '🗓️',
+  'Chef handles everything': '👨‍🍳',
 }
 
 /** Returns the flag URL(s) for a cuisine item. Single string or array for multi-flag. Null for non-cuisine. */
@@ -594,6 +644,40 @@ const CRAVING_POOL: DiscoveryRailItem[] = [
   { type: 'occasion', label: 'Breakfast', href: '/eat?eventStyle=Breakfast', icon: 'coffee' },
   { type: 'occasion', label: 'Lunch', href: '/eat?eventStyle=Lunch', icon: 'sandwich' },
   { type: 'occasion', label: 'Late-night', href: '/eat?intent=late_night', icon: 'spark' },
+  // Techniques
+  { type: 'technique', label: 'Grill', href: '/eat?craving=grilled', icon: 'flame' },
+  { type: 'technique', label: 'Stir-fry', href: '/eat?craving=stir+fry', icon: 'flame' },
+  { type: 'technique', label: 'Braise', href: '/eat?craving=braised', icon: 'comfort' },
+  { type: 'technique', label: 'Roast', href: '/eat?craving=roasted', icon: 'flame' },
+  { type: 'technique', label: 'Bake', href: '/eat?craving=baked', icon: 'cookie' },
+  { type: 'technique', label: 'Sheet pan', href: '/eat?craving=sheet+pan', icon: 'utensils' },
+  { type: 'technique', label: 'No-cook', href: '/eat?craving=no+cook', icon: 'salad' },
+  { type: 'technique', label: 'Smoke', href: '/eat?craving=smoked', icon: 'flame' },
+  { type: 'technique', label: 'Ferment', href: '/eat?craving=fermented', icon: 'leaf' },
+  // Vibes
+  { type: 'vibe', label: 'Casual', href: '/eat?craving=casual', icon: 'utensils' },
+  { type: 'vibe', label: 'Elevated', href: '/eat?craving=elevated', icon: 'crown' },
+  {
+    type: 'vibe',
+    label: 'Fine dining',
+    href: '/chefs?serviceType=private_dinner&priceRange=premium',
+    icon: 'crown',
+  },
+  { type: 'vibe', label: 'Romantic', href: '/eat?eventStyle=Date+night', icon: 'champagne' },
+  {
+    type: 'vibe',
+    label: 'Celebration-worthy',
+    href: '/eat?eventStyle=Celebration',
+    icon: 'confetti',
+  },
+  { type: 'vibe', label: 'Family-style', href: '/eat?eventStyle=Family+style', icon: 'family' },
+  // Ingredients
+  { type: 'ingredient', label: 'Chicken', href: '/eat?craving=chicken', icon: 'flame' },
+  { type: 'ingredient', label: 'Salmon', href: '/eat?craving=salmon', icon: 'seafood' },
+  { type: 'ingredient', label: 'Mushrooms', href: '/eat?craving=mushrooms', icon: 'leaf' },
+  { type: 'ingredient', label: 'Tofu', href: '/eat?craving=tofu', icon: 'plant' },
+  { type: 'ingredient', label: 'Rice', href: '/eat?craving=rice', icon: 'bowl' },
+  { type: 'ingredient', label: 'Eggs', href: '/eat?craving=eggs', icon: 'egg' },
 ]
 
 // ── Row 2: Service, occasion, dietary, and seasonal pool ──
@@ -696,6 +780,68 @@ const SERVICE_POOL: DiscoveryRailItem[] = [
     href: '/hub',
     icon: 'family',
   },
+  // Additional service formats from expansion specs
+  {
+    type: 'service',
+    label: 'Drop-off catering',
+    href: '/chefs?serviceType=catering&q=drop+off',
+    icon: 'stack',
+  },
+  {
+    type: 'service',
+    label: 'Buffet',
+    href: '/chefs?serviceType=catering&q=buffet',
+    icon: 'concierge',
+  },
+  {
+    type: 'service',
+    label: 'Grazing table',
+    href: '/chefs?serviceType=catering&q=grazing',
+    icon: 'small_plates',
+  },
+  {
+    type: 'service',
+    label: 'Freezer meals',
+    href: '/chefs?serviceType=meal_prep&q=freezer',
+    icon: 'stack',
+  },
+  {
+    type: 'service',
+    label: "Chef's table",
+    href: '/chefs?serviceType=private_dinner&q=chefs+table',
+    icon: 'chef',
+  },
+  // Additional occasions from expansion specs
+  {
+    type: 'occasion',
+    label: 'Graduation dinner',
+    href: '/eat?eventStyle=Graduation+dinner',
+    icon: 'graduation',
+  },
+  {
+    type: 'occasion',
+    label: 'Engagement dinner',
+    href: '/eat?eventStyle=Engagement+dinner',
+    icon: 'champagne',
+  },
+  { type: 'occasion', label: 'Game day', href: '/eat?eventStyle=Game+day', icon: 'cheers' },
+  { type: 'occasion', label: 'New parent meals', href: '/eat?intent=care_meals', icon: 'family' },
+  { type: 'occasion', label: 'Recovery meals', href: '/eat?intent=care_meals', icon: 'leaf' },
+  {
+    type: 'occasion',
+    label: 'Office celebration',
+    href: '/eat?eventStyle=Office+celebration',
+    icon: 'confetti',
+  },
+  // Additional dietary from expansion specs
+  { type: 'dietary', label: 'Pescatarian', href: '/chefs?dietary=pescatarian', icon: 'seafood' },
+  {
+    type: 'dietary',
+    label: 'Plant-forward',
+    href: '/chefs?dietary=vegan&q=plant+forward',
+    icon: 'plant',
+  },
+  { type: 'dietary', label: 'Kid-friendly', href: '/eat?craving=kid+friendly', icon: 'family' },
 ]
 
 const INTENT_POOL: DiscoveryRailItem[] = [
@@ -805,6 +951,72 @@ const INTENT_POOL: DiscoveryRailItem[] = [
   },
   { type: 'saved', label: 'Saved chefs', href: '/chefs?sort=featured&q=saved', icon: 'chef' },
   { type: 'special_dining', label: 'Cannabis Dining', href: '/cannabis/public', icon: 'leaf' },
+  // Time and effort items from expansion specs
+  { type: 'time', label: '15-minute ideas', href: '/eat?intent=quick_eats', icon: 'flame' },
+  { type: 'time', label: 'One-pan', href: '/eat?craving=one+pan', icon: 'utensils' },
+  { type: 'time', label: 'Minimal cleanup', href: '/eat?craving=easy+cleanup', icon: 'spark' },
+  { type: 'time', label: 'Make-ahead', href: '/eat?craving=make+ahead', icon: 'stack' },
+  {
+    type: 'time',
+    label: 'Weekend project',
+    href: '/eat?craving=weekend+project',
+    icon: 'utensils',
+  },
+  {
+    type: 'time',
+    label: 'This weekend',
+    href: '/chefs?sort=availability&intent=weekend',
+    icon: 'spark',
+  },
+  {
+    type: 'service',
+    label: 'Chef handles everything',
+    href: '/chefs?serviceType=private_dinner',
+    icon: 'chef',
+  },
+  // Group size items from expansion specs
+  { type: 'group_size', label: 'Dinner for two', href: '/eat?partySize=2', icon: 'champagne' },
+  { type: 'group_size', label: 'Small dinner party', href: '/eat?partySize=8', icon: 'cheers' },
+  { type: 'group_size', label: '10-20 guests', href: '/eat?partySize=large', icon: 'family' },
+  {
+    type: 'group_size',
+    label: 'Corporate group',
+    href: '/chefs?serviceType=corporate',
+    icon: 'cheers',
+  },
+  // Budget and price items from expansion specs
+  {
+    type: 'price',
+    label: 'Best value',
+    href: '/chefs?priceRange=budget&sort=featured',
+    icon: 'spark',
+  },
+  {
+    type: 'price',
+    label: 'Group-friendly',
+    href: '/chefs?priceRange=mid&serviceType=catering',
+    icon: 'family',
+  },
+  {
+    type: 'price',
+    label: 'Premium experience',
+    href: '/chefs?priceRange=premium&serviceType=private_dinner',
+    icon: 'crown',
+  },
+  // Vibe items from expansion specs
+  { type: 'vibe', label: 'Impressive but relaxed', href: '/eat?craving=impressive', icon: 'spark' },
+  { type: 'vibe', label: 'Adventurous', href: '/eat?craving=adventurous', icon: 'spark' },
+  { type: 'vibe', label: 'Low-key', href: '/eat?craving=casual', icon: 'utensils' },
+  // Seasonal and timely items from expansion specs
+  { type: 'seasonal', label: 'Summer dinners', href: '/eat?craving=summer', icon: 'flame' },
+  { type: 'seasonal', label: 'Grilling season', href: '/eat?craving=grilled', icon: 'flame' },
+  {
+    type: 'seasonal',
+    label: 'Sunday meal prep',
+    href: '/chefs?serviceType=meal_prep',
+    icon: 'stack',
+  },
+  { type: 'seasonal', label: 'Friday dinner', href: '/eat?intent=tonight', icon: 'champagne' },
 ]
 
 type DiningMoment = 'morning' | 'midday' | 'evening' | 'late'
@@ -907,6 +1119,24 @@ const STORY_ITEMS: DiscoveryRailItem[] = [
     href: '/nearby?q=hidden+gems',
     icon: 'search',
   },
+  {
+    type: 'story',
+    presentation: 'story',
+    eyebrow: 'Local',
+    label: 'Meet a local chef',
+    sublabel: 'Chef backgrounds and specialties',
+    href: '/chefs?sort=featured',
+    icon: 'chef',
+  },
+  {
+    type: 'story',
+    presentation: 'story',
+    eyebrow: 'Explore',
+    label: 'Cuisine deep dive',
+    sublabel: 'Regional food stories and traditions',
+    href: '/eat?craving=regional',
+    icon: 'utensils',
+  },
 ]
 
 const BUYER_INTENT_ITEMS: DiscoveryRailItem[] = [
@@ -964,6 +1194,73 @@ const BUYER_INTENT_ITEMS: DiscoveryRailItem[] = [
     href: '/chefs?serviceType=private_dinner',
     icon: 'crown',
   },
+  // Technique story items from expansion specs
+  {
+    type: 'technique',
+    presentation: 'story',
+    eyebrow: 'Technique',
+    label: 'Live-fire cooking',
+    sublabel: 'Grilling, smoking, and open flame',
+    href: '/eat?craving=grilled',
+    icon: 'flame',
+  },
+  {
+    type: 'technique',
+    presentation: 'story',
+    eyebrow: 'Craft',
+    label: 'Fermentation',
+    sublabel: 'Pickles, kimchi, and cultured flavors',
+    href: '/eat?craving=fermented',
+    icon: 'leaf',
+  },
+  // Ingredient story items from expansion specs
+  {
+    type: 'ingredient',
+    presentation: 'story',
+    eyebrow: 'Ingredient',
+    label: 'Seasonal produce',
+    sublabel: 'Cook with what is good right now',
+    href: '/ingredients',
+    icon: 'market',
+  },
+  // Vibe story items from expansion specs
+  {
+    type: 'vibe',
+    presentation: 'story',
+    eyebrow: 'Vibe',
+    label: 'Cozy dinner',
+    sublabel: 'Comfort, warmth, and intimate evenings',
+    href: '/eat?craving=cozy',
+    icon: 'comfort',
+  },
+  {
+    type: 'vibe',
+    presentation: 'story',
+    eyebrow: 'Experience',
+    label: 'Elevated dining',
+    sublabel: 'Polished, premium, and special',
+    href: '/chefs?priceRange=premium&serviceType=private_dinner',
+    icon: 'crown',
+  },
+  // Service format story items from expansion specs
+  {
+    type: 'service',
+    presentation: 'story',
+    eyebrow: 'Format',
+    label: 'Grazing table',
+    sublabel: 'Casual boards and shared spreads',
+    href: '/chefs?serviceType=catering&q=grazing',
+    icon: 'small_plates',
+  },
+  {
+    type: 'service',
+    presentation: 'story',
+    eyebrow: 'Easy',
+    label: 'Drop-off meals',
+    sublabel: 'Chef-prepared, delivered to your door',
+    href: '/chefs?serviceType=catering&q=drop+off',
+    icon: 'stack',
+  },
 ]
 
 const SURPRISE_TARGETS: DiscoveryRailItem[] = [
@@ -994,6 +1291,34 @@ const SURPRISE_TARGETS: DiscoveryRailItem[] = [
     href: '/chefs?priceRange=mid&sort=availability',
     icon: 'flame',
     sublabel: 'Mid-range chefs with availability',
+  },
+  {
+    type: 'surprise',
+    label: 'Surprise me',
+    href: '/eat?craving=braised',
+    icon: 'comfort',
+    sublabel: 'Try a slow braise',
+  },
+  {
+    type: 'surprise',
+    label: 'Surprise me',
+    href: '/eat?craving=fermented',
+    icon: 'leaf',
+    sublabel: 'Explore fermented flavors',
+  },
+  {
+    type: 'surprise',
+    label: 'Surprise me',
+    href: '/eat?craving=cozy',
+    icon: 'comfort',
+    sublabel: 'Make it cozy tonight',
+  },
+  {
+    type: 'surprise',
+    label: 'Surprise me',
+    href: '/chefs?cuisine=mediterranean&serviceType=private_dinner',
+    icon: 'leaf',
+    sublabel: 'Mediterranean private dinner',
   },
 ]
 
@@ -1098,6 +1423,9 @@ const FEEDBACK_ITEM_TYPES = new Set<DiscoveryItemType>([
   'location',
   'culinary_signal',
   'special_dining',
+  'technique',
+  'ingredient',
+  'vibe',
 ])
 
 function shouldShowDiscoveryFeedback(item: DiscoveryRailItem): boolean {
@@ -2379,10 +2707,12 @@ export function CuisineMarquee({
         ...MOMENT_ITEMS[diningMoment],
         ...COMBO_ITEMS,
         ...INTENT_POOL.filter((item) =>
-          ['occasion', 'service', 'time', 'group_size', 'price'].includes(item.type)
+          ['occasion', 'service', 'time', 'group_size', 'price', 'vibe', 'seasonal'].includes(
+            item.type
+          )
         ),
         ...SERVICE_POOL.filter((item) =>
-          ['occasion', 'service', 'special_dining'].includes(item.type)
+          ['occasion', 'service', 'special_dining', 'dietary'].includes(item.type)
         ),
       ])
     )
@@ -2412,7 +2742,10 @@ export function CuisineMarquee({
         ...BUYER_INTENT_ITEMS,
         ...STORY_ITEMS,
         ...recentItems,
-        ...CRAVING_POOL.filter((item) => item.type === 'chef_pick'),
+        ...CRAVING_POOL.filter(
+          (item) =>
+            item.type === 'chef_pick' || item.type === 'technique' || item.type === 'ingredient'
+        ),
         ...INTENT_POOL.filter(
           (item) =>
             item.type === 'saved' || item.type === 'special_dining' || item.type === 'circle'
@@ -2465,6 +2798,9 @@ export function CuisineMarquee({
           'location',
           'culinary_signal',
           'special_dining',
+          'technique',
+          'ingredient',
+          'vibe',
         ].includes(item.type)
       )
       .slice(0, 8)
@@ -2563,17 +2899,9 @@ export function CuisineMarquee({
           <button
             type="button"
             className={controlButtonClass}
-            aria-label={
-              autoScrollEnabled
-                ? 'Pause Discovery Rail auto-scroll'
-                : 'Resume Discovery Rail auto-scroll'
-            }
+            aria-label={autoScrollEnabled ? 'Pause auto-scroll' : 'Resume auto-scroll'}
             aria-pressed={!autoScrollEnabled}
-            title={
-              autoScrollEnabled
-                ? 'Pause Discovery Rail auto-scroll'
-                : 'Resume Discovery Rail auto-scroll'
-            }
+            title={autoScrollEnabled ? 'Pause auto-scroll' : 'Resume auto-scroll'}
             onClick={toggleAutoScroll}
           >
             {autoScrollEnabled ? (

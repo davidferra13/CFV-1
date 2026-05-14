@@ -163,12 +163,13 @@ export async function handleTicketCheckoutExpired(session: Stripe.Checkout.Sessi
 /**
  * Handle completed ticket purchase checkout session.
  * 1. Mark ticket as paid
- * 2. Store Stripe payment intent ID
- * 3. Create/match hub guest profile
+ * 2. Create/match hub guest profile
+ * 3. Record ticket revenue in ledger
  * 4. Create event guest record
  * 5. Auto-join dinner circle
  * 6. Send confirmation email
  * 7. Notify chef
+ * 8. Cache invalidation
  */
 export async function handleTicketPurchaseCompleted(session: Stripe.Checkout.Session) {
   const { ticket_id, event_id, tenant_id, ticket_type_id } = session.metadata ?? {}
@@ -276,7 +277,28 @@ export async function handleTicketPurchaseCompleted(session: Stripe.Checkout.Ses
     )
   }
 
-  // 3. Create event guest record
+  // 3. Record ticket revenue in ledger
+  try {
+    const amountCents = session.amount_total ?? 0
+    if (amountCents > 0) {
+      await db.from('ledger_entries').insert({
+        tenant_id,
+        event_id,
+        entry_type: 'income',
+        category: 'ticket_sale',
+        amount_cents: amountCents,
+        description: `Ticket purchase: ${ticket.buyer_name} (${ticket.quantity ?? 1}x)`,
+        reference_type: 'event_ticket',
+        reference_id: ticket_id,
+        created_at: new Date().toISOString(),
+      })
+    }
+  } catch (ledgerErr) {
+    // Non-blocking: financial view will be slightly behind until manual reconciliation
+    console.error('[handleTicketPurchaseCompleted] Ledger entry failed (non-blocking):', ledgerErr)
+  }
+
+  // 4. Create event guest record
   try {
     const { data: guest } = await db
       .from('event_guests')
@@ -308,7 +330,7 @@ export async function handleTicketPurchaseCompleted(session: Stripe.Checkout.Ses
     )
   }
 
-  // 4. Auto-join dinner circle
+  // 5. Auto-join dinner circle
   if (hubProfileId) {
     try {
       // Find the circle for this event
@@ -357,7 +379,7 @@ export async function handleTicketPurchaseCompleted(session: Stripe.Checkout.Ses
     }
   }
 
-  // 5. Send confirmation email
+  // 6. Send confirmation email
   try {
     const { data: event } = await db
       .from('events')
@@ -426,7 +448,7 @@ export async function handleTicketPurchaseCompleted(session: Stripe.Checkout.Ses
     )
   }
 
-  // 6. Notify chef
+  // 7. Notify chef
   try {
     const { createNotification, getChefAuthUserId } = await import('@/lib/notifications/actions')
     const chefUserId = await getChefAuthUserId(tenant_id)
@@ -467,7 +489,7 @@ export async function handleTicketPurchaseCompleted(session: Stripe.Checkout.Ses
     },
   })
 
-  // 7. Cache invalidation
+  // 8. Cache invalidation
   try {
     revalidatePath(`/events/${event_id}`)
     revalidatePath('/events')

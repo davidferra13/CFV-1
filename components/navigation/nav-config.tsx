@@ -849,6 +849,29 @@ export const navGroups: NavGroup[] = [
     ],
   },
   {
+    id: 'locations',
+    label: 'Locations',
+    icon: MapPin,
+    module: 'multi-location',
+    items: [
+      {
+        href: '/locations',
+        label: 'Command Center',
+        icon: Activity,
+      },
+      {
+        href: '/locations/purchasing',
+        label: 'Centralized Purchasing',
+        icon: ShoppingCart,
+      },
+      {
+        href: '/locations/compliance',
+        label: 'Recipe Compliance',
+        icon: ClipboardCheck,
+      },
+    ],
+  },
+  {
     id: 'marketing',
     label: 'Marketing',
     icon: Megaphone,
@@ -962,29 +985,6 @@ export const navGroups: NavGroup[] = [
     ],
   },
   {
-    id: 'locations',
-    label: 'Locations',
-    icon: MapPin,
-    module: 'multi-location',
-    items: [
-      {
-        href: '/locations',
-        label: 'Command Center',
-        icon: Activity,
-      },
-      {
-        href: '/locations/compliance',
-        label: 'Recipe Compliance',
-        icon: ClipboardCheck,
-      },
-      {
-        href: '/locations/purchasing',
-        label: 'Centralized Purchasing',
-        icon: ShoppingCart,
-      },
-    ],
-  },
-  {
     id: 'operations',
     label: 'Operations',
     icon: Activity,
@@ -995,11 +995,11 @@ export const navGroups: NavGroup[] = [
         label: 'Ops Hub',
         icon: Activity,
         children: [
-          { href: '/ops/service', label: 'Service Day' },
-          { href: '/ops/prep', label: 'Prep Board' },
-          { href: '/ops/stations', label: 'Station Coordination' },
           { href: '/ops/inventory', label: 'Inventory Status' },
           { href: '/ops/performance', label: 'Menu Performance' },
+          { href: '/ops/prep', label: 'Prep Board' },
+          { href: '/ops/service', label: 'Service Day' },
+          { href: '/ops/stations', label: 'Station Coordination' },
         ],
       },
       {
@@ -1885,12 +1885,16 @@ export function getPrimaryShortcutOptions() {
 // All other surfaces reachable via the All Features collapse, command palette, or direct routes.
 export const actionBarItems: NavItem[] = [
   { href: '/inbox', label: 'Inbox', icon: Inbox },
+  { href: '/notifications', label: 'Notifications', icon: BellRing },
   { href: '/calendar', label: 'Calendar', icon: Calendar },
   { href: '/events', label: 'Events', icon: CalendarDays },
+  { href: '/inquiries', label: 'Inquiries', icon: ChatTeardropText },
   { href: '/clients', label: 'Clients', icon: Users },
   { href: '/menus', label: 'Menus', icon: UtensilsCrossed },
+  { href: '/recipes', label: 'Recipes', icon: BookOpen },
   { href: '/finance', label: 'Money', icon: DollarSign },
   { href: '/culinary/prep', label: 'Prep', icon: Timer },
+  { href: '/tasks', label: 'Tasks', icon: ListChecks },
   { href: '/circles', label: 'Community', icon: MessagesSquare },
 ]
 

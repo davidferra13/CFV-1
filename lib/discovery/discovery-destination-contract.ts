@@ -59,6 +59,9 @@ const TYPE_ROUTE_COMPATIBILITY: Record<DiscoveryItemType, readonly DiscoveryDest
   special_dining: ['eat', 'chefs', 'public_info'],
   circle: ['hub', 'eat'],
   culinary_signal: ['ingredients', 'eat', 'nearby'],
+  technique: ['eat', 'chefs', 'nearby'],
+  ingredient: ['eat', 'ingredients', 'nearby', 'chefs'],
+  vibe: ['eat', 'chefs', 'nearby'],
 }
 
 export function getDiscoveryDestinationFamily(href: string): DiscoveryDestinationFamily | null {

@@ -263,8 +263,7 @@ export default async function Home() {
               </span>
             </h1>
             <p className="mx-auto mt-5 max-w-xl text-base font-light leading-relaxed text-stone-300 sm:text-lg">
-              Search by place and service, or browse live Discovery Rail ideas for chefs,
-              restaurants, occasions, and cravings.
+              Search by place and service, or browse by craving, occasion, and chef.
             </p>
           </div>
 

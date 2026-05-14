@@ -1717,6 +1717,7 @@ export default async function EventDetailPage({
         tickets={ticketList as any[]}
         summary={ticketSummary}
         shareToken={publicTicketShareToken}
+        ticketsEnabled={ticketsEnabled}
         hasCollaborators={(eventCollaborators as any[]).length > 0}
         collaboratorList={(eventCollaborators as any[])
           .filter((c: any) => c.status === 'accepted' && c.chef)

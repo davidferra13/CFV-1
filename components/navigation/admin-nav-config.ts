@@ -98,6 +98,7 @@ export const adminNavGroups: AdminNavGroup[] = [
       { href: '/admin/analytics', label: 'Analytics', icon: BarChart3 },
       { href: '/admin/audit', label: 'Audit Log', icon: NotebookIcon },
       { href: '/admin/openclaw/health', label: 'Data Engine Health', icon: Activity },
+      { href: '/admin/pie-compliance', label: 'PIE Compliance', icon: ShieldCheck },
       { href: '/admin/web-research', label: 'Web Research', icon: Search },
       { href: '/admin/feedback', label: 'Feedback', icon: Star },
       { href: '/admin/presence', label: 'Live Presence', icon: WifiHigh },
