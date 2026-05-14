@@ -1190,6 +1190,26 @@ html {
   }
 }
 
+/* Mobile snap-scroll */
+@media (max-width: 767px) {
+  .discovery-row-snap {
+    scroll-snap-type: x mandatory;
+    -webkit-overflow-scrolling: touch;
+  }
+  .discovery-row-snap > [role='listitem'] {
+    scroll-snap-align: start;
+  }
+}
+
+/* Scrollbar hiding for discovery rows */
+.discovery-row-mask {
+  scrollbar-width: none;
+  -ms-overflow-style: none;
+}
+.discovery-row-mask::-webkit-scrollbar {
+  display: none;
+}
+
 /* ── Homepage Discovery Rail ── */
 .homepage-discovery-shell {
   position: relative;
