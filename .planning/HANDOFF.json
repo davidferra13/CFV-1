@@ -1,6 +1,6 @@
 {
   "version": "1.0",
-  "timestamp": "2026-05-14T05:03:39.765Z",
+  "timestamp": "2026-05-14T14:18:58.381Z",
   "source": "auto-postool",
   "partial": false,
   "phase": null,
@@ -17,30 +17,142 @@
   "decisions": [],
   "uncommitted_files": [
     {
-      "status": "??",
-      "path": ".openclaw-build/lib/control-plane.mjs"
+      "status": "M",
+      "path": ".openclaw-deploy/captured-session.json"
+    },
+    {
+      "status": "M",
+      "path": ".planning/HANDOFF.json"
+    },
+    {
+      "status": "M",
+      "path": "app/(chef)/events/[id]/_components/event-detail-tickets-tab.tsx"
+    },
+    {
+      "status": "M",
+      "path": "app/(chef)/events/[id]/page.tsx"
+    },
+    {
+      "status": "M",
+      "path": "app/(chef)/events/page.tsx"
+    },
+    {
+      "status": "M",
+      "path": "app/(public)/_components/cuisine-marquee.tsx"
+    },
+    {
+      "status": "M",
+      "path": "app/(public)/page.tsx"
+    },
+    {
+      "status": "M",
+      "path": "components/hub/hub-availability-grid.tsx"
+    },
+    {
+      "status": "M",
+      "path": "components/navigation/action-bar.tsx"
+    },
+    {
+      "status": "M",
+      "path": "components/navigation/admin-nav-config.ts"
+    },
+    {
+      "status": "M",
+      "path": "components/navigation/all-features-collapse.tsx"
+    },
+    {
+      "status": "M",
+      "path": "components/navigation/nav-config.tsx"
+    },
+    {
+      "status": "M",
+      "path": "docs/sync-status.json"
+    },
+    {
+      "status": "M",
+      "path": "docs/uptime-history.json"
+    },
+    {
+      "status": "M",
+      "path": "lib/cron/definitions.ts"
+    },
+    {
+      "status": "M",
+      "path": "lib/discovery/discovery-destination-contract.ts"
+    },
+    {
+      "status": "M",
+      "path": "lib/discovery/discovery-rail-scoring.ts"
+    },
+    {
+      "status": "M",
+      "path": "lib/discovery/homepage-discovery-rail.ts"
+    },
+    {
+      "status": "M",
+      "path": "lib/discovery/rail-contract-registry.ts"
+    },
+    {
+      "status": "M",
+      "path": "lib/pricing/resolve-price.ts"
+    },
+    {
+      "status": "M",
+      "path": "lib/tickets/webhook-handler.ts"
     },
     {
       "status": "??",
-      "path": ".openclaw-build/services/control-plane.mjs"
+      "path": "app/(admin)/admin/pie-compliance/"
     },
     {
       "status": "??",
-      "path": ".superpowers/"
+      "path": "app/(chef)/prices/seasonal/"
     },
     {
       "status": "??",
-      "path": "assets/"
+      "path": "app/api/cron/pie-auto-expansion/"
     },
     {
       "status": "??",
-      "path": "chefflow-watchdog.log.old"
+      "path": "app/api/cron/pie-coverage-gaps/"
     },
     {
       "status": "??",
-      "path": "tc-out.txt"
+      "path": "database/migrations/20260514000001_ingredient_provenance_fields.sql"
+    },
+    {
+      "status": "??",
+      "path": "devtools/saturation/"
+    },
+    {
+      "status": "??",
+      "path": "lib/pricing/compliance-actions.ts"
+    },
+    {
+      "status": "??",
+      "path": "lib/pricing/resolve-price-helpers.ts"
+    },
+    {
+      "status": "??",
+      "path": "lib/pricing/seasonal-calendar-actions.ts"
+    },
+    {
+      "status": "??",
+      "path": "lib/pricing/tier-resolver.ts"
+    },
+    {
+      "status": "??",
+      "path": "lib/pricing/tiers/"
+    },
+    {
+      "status": "??",
+      "path": "saturation-tracking/"
+    },
+    {
+      "status": "??",
+      "path": "scripts/pie-nationwide-ingestion.mjs"
     }
   ],
   "next_action": null,
-  "context_notes": "Recent commits:\n9729dd1ae test: add unit tests for direct orders, PIE cart, god-mode, not-found recovery, and navigation\na850f3609 feat: update public surfaces, navigation, middleware, auth, and add web research layer\ncfc1bfba7 feat: add Remy discovery, safety, and decision contracts\n4b04e7da1 feat: expand hub, circles, and dinner planning with consensus, memory, and meal board upgrades\ne932ec601 feat: expand discovery learning system with rail contracts, preferences, and profile persistence"
+  "context_notes": "Recent commits:\n8bb51f39a chore: gitignore build artifacts and update planning/uptime data\n9729dd1ae test: add unit tests for direct orders, PIE cart, god-mode, not-found recovery, and navigation\na850f3609 feat: update public surfaces, navigation, middleware, auth, and add web research layer\ncfc1bfba7 feat: add Remy discovery, safety, and decision contracts\n4b04e7da1 feat: expand hub, circles, and dinner planning with consensus, memory, and meal board upgrades"
 }
