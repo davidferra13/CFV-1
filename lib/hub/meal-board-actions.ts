@@ -16,6 +16,15 @@ function _parseDateLocal(dateStr: string): Date {
   return new Date(y, m - 1, d)
 }
 
+type GroupAccessInput = {
+  groupId: string
+  groupToken?: string
+  profileToken?: string
+}
+
+const MEAL_BOARD_MANAGER_ROLES = new Set(['owner', 'admin', 'chef', 'host'])
+const MEAL_BOARD_CHEF_ROLES = new Set(['owner', 'admin', 'chef'])
+
 async function resolveProfile(db: any, profileToken: string) {
   const { data: profile } = await db
     .from('hub_guest_profiles')
@@ -26,18 +35,81 @@ async function resolveProfile(db: any, profileToken: string) {
   return profile
 }
 
-async function requireChefOrAdmin(db: any, groupId: string, profileId: string) {
+async function getGroupMembership(db: any, groupId: string, profileId: string) {
   const { data: membership } = await db
     .from('hub_group_members')
     .select('role')
     .eq('group_id', groupId)
     .eq('profile_id', profileId)
     .single()
+  return membership
+}
+
+async function requireChefOrAdmin(db: any, groupId: string, profileId: string) {
+  const membership = await getGroupMembership(db, groupId, profileId)
   if (!membership) throw new Error('Not a member of this group')
-  if (!['owner', 'admin', 'chef'].includes(membership.role)) {
+  if (!MEAL_BOARD_CHEF_ROLES.has(membership.role)) {
     throw new Error('Only chefs and admins can modify the meal board')
   }
   return membership
+}
+
+async function hasManagerAccess(db: any, groupId: string, profileToken?: string): Promise<boolean> {
+  if (!profileToken) return false
+
+  try {
+    const profile = await resolveProfile(db, profileToken)
+    const membership = await getGroupMembership(db, groupId, profile.id)
+    return Boolean(membership && MEAL_BOARD_MANAGER_ROLES.has(membership.role))
+  } catch {
+    return false
+  }
+}
+
+async function hasMemberAccess(db: any, groupId: string, profileToken?: string): Promise<boolean> {
+  if (!profileToken) return false
+
+  try {
+    const profile = await resolveProfile(db, profileToken)
+    const membership = await getGroupMembership(db, groupId, profile.id)
+    return Boolean(membership)
+  } catch {
+    return false
+  }
+}
+
+async function verifyGroupToken(db: any, groupId: string, groupToken?: string): Promise<boolean> {
+  if (!groupToken) return false
+
+  const { data: group, error: groupError } = await db
+    .from('hub_groups')
+    .select('id')
+    .eq('id', groupId)
+    .eq('group_token', groupToken)
+    .maybeSingle()
+  if (groupError) throw new Error(`Failed to verify circle access: ${groupError.message}`)
+  return Boolean(group)
+}
+
+async function hasGroupReadAccess(db: any, access: GroupAccessInput): Promise<boolean> {
+  if (await verifyGroupToken(db, access.groupId, access.groupToken)) return true
+  return hasMemberAccess(db, access.groupId, access.profileToken)
+}
+
+function normalizeGroupAccessInput(input: string | GroupAccessInput): GroupAccessInput {
+  return typeof input === 'string' ? { groupId: input } : input
+}
+
+function emptyFeedbackInsight(): FeedbackInsight {
+  return {
+    totalMeals: 0,
+    totalFeedback: 0,
+    overallScore: 0,
+    topDishes: [],
+    bottomDishes: [],
+    categoryBreakdown: [],
+    recentTrend: 'stable',
+  }
 }
 
 // ---------------------------------------------------------------------------
@@ -46,7 +118,8 @@ async function requireChefOrAdmin(db: any, groupId: string, profileId: string) {
 
 const GetMealBoardSchema = z.object({
   groupId: z.string().uuid(),
-  groupToken: z.string().optional(), // SECURITY (Q6): Required for browser callers
+  groupToken: z.string().optional(), // SECURITY (Q6): Required for public/browser callers
+  profileToken: z.string().uuid().optional(),
   startDate: z.string().optional(), // ISO date
   endDate: z.string().optional(),
 })
@@ -54,20 +127,10 @@ const GetMealBoardSchema = z.object({
 export async function getMealBoard(
   input: z.infer<typeof GetMealBoardSchema>
 ): Promise<MealBoardEntry[]> {
-  const { groupId, groupToken, startDate, endDate } = GetMealBoardSchema.parse(input)
+  const { groupId, groupToken, profileToken, startDate, endDate } = GetMealBoardSchema.parse(input)
   const db: any = createServerClient({ admin: true })
 
-  // SECURITY (Q6): Verify group access when called with a token
-  if (groupToken) {
-    const { data: group, error: groupError } = await db
-      .from('hub_groups')
-      .select('id')
-      .eq('id', groupId)
-      .eq('group_token', groupToken)
-      .maybeSingle()
-    if (groupError) throw new Error(`Failed to verify circle access: ${groupError.message}`)
-    if (!group) throw new Error('Access denied')
-  }
+  if (!(await hasGroupReadAccess(db, { groupId, groupToken, profileToken }))) return []
 
   let query = db
     .from('hub_meal_board')
@@ -543,8 +606,11 @@ export async function saveWeekAsTemplate(
 // Get templates for a group
 // ---------------------------------------------------------------------------
 
-export async function getTemplates(groupId: string): Promise<MealTemplate[]> {
+export async function getTemplates(input: string | GroupAccessInput): Promise<MealTemplate[]> {
+  const { groupId, profileToken } = normalizeGroupAccessInput(input)
   const db: any = createServerClient({ admin: true })
+  if (!(await hasManagerAccess(db, groupId, profileToken))) return []
+
   const { data, error } = await db
     .from('hub_meal_templates')
     .select('*')
@@ -762,10 +828,13 @@ export async function postScheduleChange(
 
 export async function getScheduleChanges(input: {
   groupId: string
+  profileToken?: string
   startDate: string
   endDate: string
 }): Promise<ScheduleChange[]> {
   const db: any = createServerClient({ admin: true })
+  if (!(await hasMemberAccess(db, input.groupId, input.profileToken))) return []
+
   const { data, error } = await db
     .from('hub_schedule_changes')
     .select('*, posted_by:hub_guest_profiles!posted_by_profile_id(display_name)')
@@ -790,6 +859,14 @@ export async function acknowledgeScheduleChange(input: {
   try {
     const db: any = createServerClient({ admin: true })
     const profile = await resolveProfile(db, input.profileToken)
+
+    const { data: change } = await db
+      .from('hub_schedule_changes')
+      .select('group_id')
+      .eq('id', input.changeId)
+      .single()
+    if (!change) throw new Error('Schedule change not found')
+    await requireChefOrAdmin(db, change.group_id, profile.id)
 
     const { error } = await db
       .from('hub_schedule_changes')
@@ -818,6 +895,14 @@ export async function resolveScheduleChange(input: {
   try {
     const db: any = createServerClient({ admin: true })
     const profile = await resolveProfile(db, input.profileToken)
+
+    const { data: change } = await db
+      .from('hub_schedule_changes')
+      .select('group_id')
+      .eq('id', input.changeId)
+      .single()
+    if (!change) throw new Error('Schedule change not found')
+    await requireChefOrAdmin(db, change.group_id, profile.id)
 
     const { error } = await db
       .from('hub_schedule_changes')
@@ -891,8 +976,7 @@ export async function createRecurringMeal(
   }
 }
 
-export async function getRecurringMeals(groupId: string): Promise<any[]> {
-  const db: any = createServerClient({ admin: true })
+async function loadRecurringMealsForGroup(db: any, groupId: string): Promise<any[]> {
   const { data, error } = await db
     .from('hub_recurring_meals')
     .select('*')
@@ -904,13 +988,28 @@ export async function getRecurringMeals(groupId: string): Promise<any[]> {
   return data ?? []
 }
 
+export async function getRecurringMeals(input: string | GroupAccessInput): Promise<any[]> {
+  const { groupId, profileToken } = normalizeGroupAccessInput(input)
+  const db: any = createServerClient({ admin: true })
+  if (!(await hasManagerAccess(db, groupId, profileToken))) return []
+  return loadRecurringMealsForGroup(db, groupId)
+}
+
 export async function deleteRecurringMeal(input: {
   recurringId: string
   profileToken: string
 }): Promise<{ success: boolean; error?: string }> {
   try {
     const db: any = createServerClient({ admin: true })
-    await resolveProfile(db, input.profileToken)
+    const profile = await resolveProfile(db, input.profileToken)
+
+    const { data: recurring } = await db
+      .from('hub_recurring_meals')
+      .select('group_id')
+      .eq('id', input.recurringId)
+      .single()
+    if (!recurring) throw new Error('Recurring meal not found')
+    await requireChefOrAdmin(db, recurring.group_id, profile.id)
 
     const { error } = await db
       .from('hub_recurring_meals')
@@ -934,7 +1033,7 @@ export async function applyRecurringMeals(input: {
     const profile = await resolveProfile(db, input.profileToken)
     await requireChefOrAdmin(db, input.groupId, profile.id)
 
-    const recurrings = await getRecurringMeals(input.groupId)
+    const recurrings = await loadRecurringMealsForGroup(db, input.groupId)
     if (recurrings.length === 0) return { success: true, filled: 0 }
 
     const _rws = _parseDateLocal(input.weekStart)
@@ -1016,9 +1115,14 @@ export interface FeedbackInsight {
 
 export async function getFeedbackInsights(input: {
   groupId: string
+  profileToken?: string
   lookbackDays?: number
 }): Promise<FeedbackInsight> {
   const db: any = createServerClient({ admin: true })
+  if (!(await hasManagerAccess(db, input.groupId, input.profileToken))) {
+    return emptyFeedbackInsight()
+  }
+
   const lookback = input.lookbackDays ?? 30
 
   const _cdn = new Date()
@@ -1033,15 +1137,7 @@ export async function getFeedbackInsights(input: {
     .order('meal_date', { ascending: false })
 
   if (!meals || meals.length === 0) {
-    return {
-      totalMeals: 0,
-      totalFeedback: 0,
-      overallScore: 0,
-      topDishes: [],
-      bottomDishes: [],
-      categoryBreakdown: [],
-      recentTrend: 'stable',
-    }
+    return emptyFeedbackInsight()
   }
 
   const mealIds = meals.map((m: any) => m.id)
@@ -1150,9 +1246,11 @@ export interface MealHistoryEntry {
 
 export async function getMealHistory(input: {
   groupId: string
+  profileToken?: string
   limit?: number
 }): Promise<MealHistoryEntry[]> {
   const db: any = createServerClient({ admin: true })
+  if (!(await hasManagerAccess(db, input.groupId, input.profileToken))) return []
 
   const { data: meals } = await db
     .from('hub_meal_board')
@@ -1234,8 +1332,13 @@ export async function updateGroupDefaultHeadCount(input: {
   }
 }
 
-export async function getGroupDefaultHeadCount(groupId: string): Promise<number | null> {
+export async function getGroupDefaultHeadCount(
+  input: string | GroupAccessInput
+): Promise<number | null> {
+  const { groupId, profileToken } = normalizeGroupAccessInput(input)
   const db: any = createServerClient({ admin: true })
+  if (!(await hasManagerAccess(db, groupId, profileToken))) return null
+
   const { data } = await db
     .from('hub_groups')
     .select('default_head_count')
@@ -1248,8 +1351,13 @@ export async function getGroupDefaultHeadCount(groupId: string): Promise<number 
 // DEFAULT MEAL TIMES
 // ===========================================================================
 
-export async function getDefaultMealTimes(groupId: string): Promise<DefaultMealTimes | null> {
+export async function getDefaultMealTimes(
+  input: string | GroupAccessInput
+): Promise<DefaultMealTimes | null> {
+  const { groupId, profileToken } = normalizeGroupAccessInput(input)
   const db: any = createServerClient({ admin: true })
+  if (!(await hasManagerAccess(db, groupId, profileToken))) return null
+
   const { data } = await db
     .from('hub_groups')
     .select('default_meal_times')
@@ -1288,15 +1396,35 @@ export async function updateDefaultMealTimes(input: {
 // ===========================================================================
 
 export async function getBatchCommentCounts(
-  mealEntryIds: string[]
+  input:
+    | string[]
+    | {
+        groupId: string
+        profileToken?: string
+        mealEntryIds: string[]
+      }
 ): Promise<Record<string, number>> {
+  if (Array.isArray(input)) return {}
+
+  const { groupId, mealEntryIds } = input
   if (mealEntryIds.length === 0) return {}
   const db: any = createServerClient({ admin: true })
+  if (!(await hasMemberAccess(db, groupId, input.profileToken))) return {}
+
+  const { data: meals, error: mealError } = await db
+    .from('hub_meal_board')
+    .select('id')
+    .eq('group_id', groupId)
+    .in('id', mealEntryIds)
+  if (mealError || !meals) return {}
+
+  const scopedMealEntryIds = meals.map((meal: any) => meal.id)
+  if (scopedMealEntryIds.length === 0) return {}
 
   const { data, error } = await db
     .from('hub_meal_comments')
     .select('meal_entry_id')
-    .in('meal_entry_id', mealEntryIds)
+    .in('meal_entry_id', scopedMealEntryIds)
 
   if (error || !data) return {}
 
@@ -1307,8 +1435,29 @@ export async function getBatchCommentCounts(
   return counts
 }
 
-export async function getMealComments(mealEntryId: string): Promise<MealComment[]> {
+export async function getMealComments(
+  input:
+    | string
+    | {
+        mealEntryId: string
+        profileToken?: string
+      }
+): Promise<MealComment[]> {
+  if (typeof input === 'string') return []
+
+  const { mealEntryId } = input
   const db: any = createServerClient({ admin: true })
+
+  const { data: meal } = await db
+    .from('hub_meal_board')
+    .select('group_id')
+    .eq('id', mealEntryId)
+    .single()
+  if (!meal) return []
+  if (!(await hasMemberAccess(db, meal.group_id, input.profileToken))) {
+    return []
+  }
+
   const { data, error } = await db
     .from('hub_meal_comments')
     .select('*, author:hub_guest_profiles!author_profile_id(id, display_name, avatar_url)')
@@ -1375,9 +1524,12 @@ export async function addMealComment(input: {
 
 export async function getMealRequests(input: {
   groupId: string
+  profileToken?: string
   status?: string
 }): Promise<MealRequest[]> {
   const db: any = createServerClient({ admin: true })
+  if (!(await hasMemberAccess(db, input.groupId, input.profileToken))) return []
+
   let query = db
     .from('hub_meal_requests')
     .select(

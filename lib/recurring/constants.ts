@@ -9,6 +9,12 @@ export const SERVICE_TYPE_LABELS: Record<string, string> = {
   other: 'Other',
 }
 
+export const FREQUENCY_LABELS: Record<string, string> = {
+  weekly: 'Weekly',
+  biweekly: 'Biweekly',
+  monthly: 'Monthly',
+}
+
 export const REACTION_LABELS: Record<string, string> = {
   loved: 'Loved it',
   liked: 'Liked it',

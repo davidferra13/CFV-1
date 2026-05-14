@@ -49,10 +49,10 @@ export function RecurringMealsManager({
   const [dayOfWeek, setDayOfWeek] = useState<number>(0)
 
   useEffect(() => {
-    getRecurringMeals(groupId)
+    getRecurringMeals({ groupId, profileToken })
       .then(setRecurrings)
       .catch(() => {})
-  }, [groupId])
+  }, [groupId, profileToken])
 
   const handleCreate = () => {
     if (!title.trim()) return
@@ -70,7 +70,7 @@ export function RecurringMealsManager({
         if (result.success) {
           setShowForm(false)
           setTitle('')
-          const fresh = await getRecurringMeals(groupId)
+          const fresh = await getRecurringMeals({ groupId, profileToken })
           setRecurrings(fresh)
         } else {
           setError(result.error ?? 'Failed to create')

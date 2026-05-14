@@ -10,6 +10,7 @@ import { revalidatePath } from 'next/cache'
 // ---------------------------------------------------------------------------
 
 export interface CircleMemberDetail {
+  id: string
   profile_id: string
   display_name: string
   avatar_url: string | null
@@ -17,9 +18,19 @@ export interface CircleMemberDetail {
   client_id: string | null
   client_name: string | null
   role: string
+  can_post: boolean
+  can_invite: boolean
+  can_pin: boolean
   rsvp_status: string | null
   joined_at: string
   last_read_at: string | null
+  notifications_muted: boolean
+  last_notified_at: string | null
+  notify_email: boolean | null
+  notify_push: boolean | null
+  quiet_hours_start: string | null
+  quiet_hours_end: string | null
+  digest_mode: string | null
   show_remy: boolean
 }
 
@@ -50,6 +61,11 @@ export interface CircleDetail {
   group_type: string
   group_token: string
   visibility: string
+  allow_member_invites: boolean
+  allow_anonymous_posts: boolean
+  circle_mode: string
+  default_tab: string
+  silent_by_default: boolean
   is_active: boolean
   message_count: number
   last_message_at: string | null
@@ -59,6 +75,61 @@ export interface CircleDetail {
   recent_messages: CircleMessage[]
   chef_profile_token: string | null
   chef_show_remy: boolean
+}
+
+export interface CircleEventPickerItem {
+  id: string
+  title: string
+  event_date: string | null
+  status: string
+  guest_count: number | null
+}
+
+export interface UpdateCircleSettingsInput {
+  name?: string
+  description?: string | null
+  emoji?: string | null
+  allow_member_invites?: boolean
+  allow_anonymous_posts?: boolean
+  circle_mode?: 'standard' | 'residency'
+  default_tab?: 'chat' | 'meals' | 'events' | 'photos' | 'notes' | 'members'
+  silent_by_default?: boolean
+}
+
+export type CircleMemberRole = 'admin' | 'member' | 'viewer'
+
+export interface UpdateCircleMemberPermissionsInput {
+  can_post?: boolean
+  can_invite?: boolean
+  can_pin?: boolean
+}
+
+type OwnedCircle = {
+  id: string
+  group_token: string | null
+}
+
+async function requireOwnedCircle(
+  db: any,
+  circleId: string,
+  tenantId: string
+): Promise<OwnedCircle | null> {
+  const { data: circle } = await db
+    .from('hub_groups')
+    .select('id, group_token')
+    .eq('id', circleId)
+    .eq('tenant_id', tenantId)
+    .single()
+
+  return circle ?? null
+}
+
+function revalidateCirclePaths(circleId: string, groupToken?: string | null) {
+  revalidatePath(`/circles/${circleId}`)
+  revalidatePath('/circles')
+  if (groupToken) {
+    revalidatePath(`/hub/g/${groupToken}`)
+  }
 }
 
 /**
@@ -83,7 +154,27 @@ export async function getCircleDetail(circleId: string): Promise<CircleDetail | 
   // 2. Get members with profile + client data
   const { data: memberships } = await db
     .from('hub_group_members')
-    .select('profile_id, role, joined_at, last_read_at, rsvp_status, show_remy')
+    .select(
+      [
+        'id',
+        'profile_id',
+        'role',
+        'can_post',
+        'can_invite',
+        'can_pin',
+        'joined_at',
+        'last_read_at',
+        'notifications_muted',
+        'last_notified_at',
+        'notify_email',
+        'notify_push',
+        'quiet_hours_start',
+        'quiet_hours_end',
+        'digest_mode',
+        'rsvp_status',
+        'show_remy',
+      ].join(', ')
+    )
     .eq('group_id', circleId)
     .order('joined_at', { ascending: true })
 
@@ -118,6 +209,7 @@ export async function getCircleDetail(circleId: string): Promise<CircleDetail | 
   const members: CircleMemberDetail[] = (memberships ?? []).map((m: any) => {
     const profile = profileMap[m.profile_id] ?? {}
     return {
+      id: m.id,
       profile_id: m.profile_id,
       display_name: profile.display_name ?? 'Unknown',
       avatar_url: profile.avatar_url ?? null,
@@ -125,9 +217,19 @@ export async function getCircleDetail(circleId: string): Promise<CircleDetail | 
       client_id: profile.client_id ?? null,
       client_name: profile.client_id ? (clientNameMap[profile.client_id] ?? null) : null,
       role: m.role,
+      can_post: m.can_post ?? true,
+      can_invite: m.can_invite ?? false,
+      can_pin: m.can_pin ?? false,
       rsvp_status: m.rsvp_status ?? null,
       joined_at: m.joined_at,
       last_read_at: m.last_read_at,
+      notifications_muted: m.notifications_muted ?? false,
+      last_notified_at: m.last_notified_at ?? null,
+      notify_email: m.notify_email ?? null,
+      notify_push: m.notify_push ?? null,
+      quiet_hours_start: m.quiet_hours_start ?? null,
+      quiet_hours_end: m.quiet_hours_end ?? null,
+      digest_mode: m.digest_mode ?? null,
       show_remy: m.show_remy ?? true,
     }
   })
@@ -135,9 +237,9 @@ export async function getCircleDetail(circleId: string): Promise<CircleDetail | 
   // 3. Get linked events with status
   const { data: eventLinks } = await db
     .from('hub_group_events')
-    .select('event_id, linked_at')
+    .select('event_id, linked_at:added_at')
     .eq('group_id', circleId)
-    .order('linked_at', { ascending: false })
+    .order('added_at', { ascending: false })
 
   const eventIds = (eventLinks ?? []).map((e: any) => e.event_id)
 
@@ -200,8 +302,8 @@ export async function getCircleDetail(circleId: string): Promise<CircleDetail | 
     }
   })
 
-  // Find the chef (owner) member to expose their profile token and show_remy preference
-  const ownerMembership = (memberships ?? []).find((m: any) => m.role === 'owner')
+  // Find the chef member to expose their profile token and show_remy preference.
+  const ownerMembership = (memberships ?? []).find((m: any) => ['owner', 'chef'].includes(m.role))
   const ownerProfile = ownerMembership ? profileMap[ownerMembership.profile_id] : null
 
   return {
@@ -212,6 +314,11 @@ export async function getCircleDetail(circleId: string): Promise<CircleDetail | 
     group_type: circle.group_type ?? 'circle',
     group_token: circle.group_token,
     visibility: circle.visibility ?? 'public',
+    allow_member_invites: circle.allow_member_invites ?? true,
+    allow_anonymous_posts: circle.allow_anonymous_posts ?? false,
+    circle_mode: circle.circle_mode ?? 'standard',
+    default_tab: circle.default_tab ?? 'chat',
+    silent_by_default: circle.silent_by_default ?? false,
     is_active: circle.is_active,
     message_count: circle.message_count ?? 0,
     last_message_at: circle.last_message_at,
@@ -222,6 +329,213 @@ export async function getCircleDetail(circleId: string): Promise<CircleDetail | 
     chef_profile_token: ownerProfile?.profile_token ?? null,
     chef_show_remy: ownerMembership?.show_remy ?? true,
   }
+}
+
+/**
+ * Update chef-owned circle settings from the command center.
+ */
+export async function updateCircleSettings(
+  circleId: string,
+  input: UpdateCircleSettingsInput
+): Promise<{ success: boolean; error?: string }> {
+  const user = await requireChef()
+  const tenantId = user.tenantId!
+  const db: any = createServerClient({ admin: true })
+
+  const circle = await requireOwnedCircle(db, circleId, tenantId)
+  if (!circle) return { success: false, error: 'Circle not found' }
+
+  const updates: Record<string, unknown> = {}
+
+  if (Object.prototype.hasOwnProperty.call(input, 'name')) {
+    const name = input.name?.trim()
+    if (!name) return { success: false, error: 'Circle name is required' }
+    if (name.length > 100) return { success: false, error: 'Circle name is too long' }
+    const { validateCircleName } = await import('@/lib/moderation/content-filter')
+    const modResult = validateCircleName(name)
+    if (!modResult.allowed) {
+      return { success: false, error: modResult.reason ?? 'Circle name is not allowed' }
+    }
+    updates.name = name
+  }
+
+  if (Object.prototype.hasOwnProperty.call(input, 'description')) {
+    const description = input.description?.trim() ?? null
+    if (description && description.length > 500) {
+      return { success: false, error: 'Description is too long' }
+    }
+    if (description) {
+      const { moderateText } = await import('@/lib/moderation/content-filter')
+      const modResult = moderateText(description)
+      if (!modResult.allowed) {
+        return { success: false, error: modResult.reason ?? 'Description is not allowed' }
+      }
+    }
+    updates.description = description || null
+  }
+
+  if (Object.prototype.hasOwnProperty.call(input, 'emoji')) {
+    const emoji = input.emoji?.trim() ?? null
+    if (emoji && emoji.length > 10) return { success: false, error: 'Emoji is too long' }
+    updates.emoji = emoji || null
+  }
+
+  if (Object.prototype.hasOwnProperty.call(input, 'allow_member_invites')) {
+    if (typeof input.allow_member_invites !== 'boolean') {
+      return { success: false, error: 'Invalid invite setting' }
+    }
+    updates.allow_member_invites = input.allow_member_invites
+  }
+
+  if (Object.prototype.hasOwnProperty.call(input, 'allow_anonymous_posts')) {
+    if (typeof input.allow_anonymous_posts !== 'boolean') {
+      return { success: false, error: 'Invalid anonymous posting setting' }
+    }
+    updates.allow_anonymous_posts = input.allow_anonymous_posts
+  }
+
+  if (Object.prototype.hasOwnProperty.call(input, 'circle_mode')) {
+    if (!input.circle_mode || !['standard', 'residency'].includes(input.circle_mode)) {
+      return { success: false, error: 'Invalid circle mode' }
+    }
+    updates.circle_mode = input.circle_mode
+  }
+
+  if (Object.prototype.hasOwnProperty.call(input, 'default_tab')) {
+    if (
+      !input.default_tab ||
+      !['chat', 'meals', 'events', 'photos', 'notes', 'members'].includes(input.default_tab)
+    ) {
+      return { success: false, error: 'Invalid default tab' }
+    }
+    updates.default_tab = input.default_tab
+  }
+
+  if (Object.prototype.hasOwnProperty.call(input, 'silent_by_default')) {
+    if (typeof input.silent_by_default !== 'boolean') {
+      return { success: false, error: 'Invalid silent default setting' }
+    }
+    updates.silent_by_default = input.silent_by_default
+  }
+
+  if (Object.keys(updates).length === 0) {
+    return { success: true }
+  }
+
+  const { error } = await db
+    .from('hub_groups')
+    .update({ ...updates, updated_at: new Date().toISOString() })
+    .eq('id', circleId)
+    .eq('tenant_id', tenantId)
+
+  if (error) return { success: false, error: 'Failed to update circle settings' }
+
+  revalidateCirclePaths(circleId, circle.group_token)
+  return { success: true }
+}
+
+/**
+ * Update a member's role in a chef-owned circle.
+ */
+export async function updateCircleMemberRole(
+  circleId: string,
+  membershipId: string,
+  role: CircleMemberRole
+): Promise<{ success: boolean; error?: string }> {
+  const user = await requireChef()
+  const tenantId = user.tenantId!
+  const db: any = createServerClient({ admin: true })
+
+  const circle = await requireOwnedCircle(db, circleId, tenantId)
+  if (!circle) return { success: false, error: 'Circle not found' }
+
+  if (!['admin', 'member', 'viewer'].includes(role)) {
+    return { success: false, error: 'Invalid member role' }
+  }
+
+  const { data: target } = await db
+    .from('hub_group_members')
+    .select('id, role')
+    .eq('id', membershipId)
+    .eq('group_id', circleId)
+    .single()
+
+  if (!target) return { success: false, error: 'Member not found' }
+  if (target.role === 'owner' || target.role === 'chef') {
+    return { success: false, error: `Cannot change ${target.role} role` }
+  }
+
+  const permissions =
+    role === 'admin'
+      ? { can_post: true, can_invite: true, can_pin: true }
+      : role === 'viewer'
+        ? { can_post: false, can_invite: false, can_pin: false }
+        : { can_post: true, can_invite: false, can_pin: false }
+
+  const { error } = await db
+    .from('hub_group_members')
+    .update({ role, ...permissions })
+    .eq('id', membershipId)
+    .eq('group_id', circleId)
+
+  if (error) return { success: false, error: 'Failed to update member role' }
+
+  revalidateCirclePaths(circleId, circle.group_token)
+  return { success: true }
+}
+
+/**
+ * Update granular member permissions in a chef-owned circle.
+ */
+export async function updateCircleMemberPermissions(
+  circleId: string,
+  membershipId: string,
+  input: UpdateCircleMemberPermissionsInput
+): Promise<{ success: boolean; error?: string }> {
+  const user = await requireChef()
+  const tenantId = user.tenantId!
+  const db: any = createServerClient({ admin: true })
+
+  const circle = await requireOwnedCircle(db, circleId, tenantId)
+  if (!circle) return { success: false, error: 'Circle not found' }
+
+  const { data: target } = await db
+    .from('hub_group_members')
+    .select('id, role')
+    .eq('id', membershipId)
+    .eq('group_id', circleId)
+    .single()
+
+  if (!target) return { success: false, error: 'Member not found' }
+  if (target.role === 'owner' || target.role === 'chef') {
+    return { success: false, error: `Cannot change ${target.role} permissions` }
+  }
+
+  const updates: Record<string, boolean> = {}
+  for (const key of ['can_post', 'can_invite', 'can_pin'] as const) {
+    if (Object.prototype.hasOwnProperty.call(input, key)) {
+      const value = input[key]
+      if (typeof value !== 'boolean') {
+        return { success: false, error: 'Invalid member permission' }
+      }
+      updates[key] = value
+    }
+  }
+
+  if (Object.keys(updates).length === 0) {
+    return { success: true }
+  }
+
+  const { error } = await db
+    .from('hub_group_members')
+    .update(updates)
+    .eq('id', membershipId)
+    .eq('group_id', circleId)
+
+  if (error) return { success: false, error: 'Failed to update member permissions' }
+
+  revalidateCirclePaths(circleId, circle.group_token)
+  return { success: true }
 }
 
 /**
@@ -238,12 +552,7 @@ export async function addClientToCircle(
   const db: any = createServerClient({ admin: true })
 
   // Verify circle belongs to this chef
-  const { data: circle } = await db
-    .from('hub_groups')
-    .select('id')
-    .eq('id', circleId)
-    .eq('tenant_id', tenantId)
-    .single()
+  const circle = await requireOwnedCircle(db, circleId, tenantId)
 
   if (!circle) return { success: false, error: 'Circle not found' }
 
@@ -311,8 +620,7 @@ export async function addClientToCircle(
     return { success: false, error: 'Failed to add member' }
   }
 
-  revalidatePath(`/circles/${circleId}`)
-  revalidatePath('/circles')
+  revalidateCirclePaths(circleId, circle.group_token)
   return { success: true }
 }
 
@@ -328,14 +636,21 @@ export async function removeCircleMember(
   const db: any = createServerClient({ admin: true })
 
   // Verify circle belongs to this chef
-  const { data: circle } = await db
-    .from('hub_groups')
-    .select('id')
-    .eq('id', circleId)
-    .eq('tenant_id', tenantId)
-    .single()
+  const circle = await requireOwnedCircle(db, circleId, tenantId)
 
   if (!circle) return { success: false, error: 'Circle not found' }
+
+  const { data: target } = await db
+    .from('hub_group_members')
+    .select('role')
+    .eq('group_id', circleId)
+    .eq('profile_id', profileId)
+    .single()
+
+  if (!target) return { success: false, error: 'Member not found' }
+  if (target.role === 'owner' || target.role === 'chef') {
+    return { success: false, error: `Cannot remove ${target.role} member` }
+  }
 
   const { error } = await db
     .from('hub_group_members')
@@ -345,9 +660,46 @@ export async function removeCircleMember(
 
   if (error) return { success: false, error: 'Failed to remove member' }
 
-  revalidatePath(`/circles/${circleId}`)
-  revalidatePath('/circles')
+  revalidateCirclePaths(circleId, circle.group_token)
   return { success: true }
+}
+
+/**
+ * Get chef-owned events that are not currently linked to a circle.
+ */
+export async function getEventsNotInCircle(circleId: string): Promise<CircleEventPickerItem[]> {
+  const user = await requireChef()
+  const tenantId = user.tenantId!
+  const db: any = createServerClient({ admin: true })
+
+  if (!(await requireOwnedCircle(db, circleId, tenantId))) return []
+
+  const { data: linked } = await db
+    .from('hub_group_events')
+    .select('event_id')
+    .eq('group_id', circleId)
+
+  const linkedEventIds = (linked ?? []).map((row: any) => row.event_id).filter(Boolean)
+
+  let query = db
+    .from('events')
+    .select('id, title, event_date, status, guest_count')
+    .eq('tenant_id', tenantId)
+    .order('event_date', { ascending: false, nullsFirst: false })
+
+  if (linkedEventIds.length > 0) {
+    query = query.not('id', 'in', `(${linkedEventIds.join(',')})`)
+  }
+
+  const { data: events } = await query
+
+  return (events ?? []).map((event: any) => ({
+    id: event.id,
+    title: event.title ?? 'Untitled Event',
+    event_date: event.event_date ?? null,
+    status: event.status ?? 'draft',
+    guest_count: event.guest_count ?? null,
+  }))
 }
 
 /**
@@ -362,12 +714,7 @@ export async function linkEventToCircle(
   const db: any = createServerClient({ admin: true })
 
   // Verify circle belongs to this chef
-  const { data: circle } = await db
-    .from('hub_groups')
-    .select('id')
-    .eq('id', circleId)
-    .eq('tenant_id', tenantId)
-    .single()
+  const circle = await requireOwnedCircle(db, circleId, tenantId)
 
   if (!circle) return { success: false, error: 'Circle not found' }
 
@@ -398,7 +745,7 @@ export async function linkEventToCircle(
 
   if (error) return { success: false, error: 'Failed to link event' }
 
-  revalidatePath(`/circles/${circleId}`)
+  revalidateCirclePaths(circleId, circle.group_token)
   return { success: true }
 }
 
@@ -413,12 +760,7 @@ export async function unlinkEventFromCircle(
   const tenantId = user.tenantId!
   const db: any = createServerClient({ admin: true })
 
-  const { data: circle } = await db
-    .from('hub_groups')
-    .select('id')
-    .eq('id', circleId)
-    .eq('tenant_id', tenantId)
-    .single()
+  const circle = await requireOwnedCircle(db, circleId, tenantId)
 
   if (!circle) return { success: false, error: 'Circle not found' }
 
@@ -430,7 +772,32 @@ export async function unlinkEventFromCircle(
 
   if (error) return { success: false, error: 'Failed to unlink event' }
 
-  revalidatePath(`/circles/${circleId}`)
+  revalidateCirclePaths(circleId, circle.group_token)
+  return { success: true }
+}
+
+/**
+ * Restore an archived chef-owned circle.
+ */
+export async function restoreCircle(
+  circleId: string
+): Promise<{ success: boolean; error?: string }> {
+  const user = await requireChef()
+  const tenantId = user.tenantId!
+  const db: any = createServerClient({ admin: true })
+
+  const circle = await requireOwnedCircle(db, circleId, tenantId)
+  if (!circle) return { success: false, error: 'Circle not found' }
+
+  const { error } = await db
+    .from('hub_groups')
+    .update({ is_active: true, updated_at: new Date().toISOString() })
+    .eq('id', circleId)
+    .eq('tenant_id', tenantId)
+
+  if (error) return { success: false, error: 'Failed to restore circle' }
+
+  revalidateCirclePaths(circleId, circle.group_token)
   return { success: true }
 }
 
@@ -444,6 +811,8 @@ export async function getClientsNotInCircle(
   const user = await requireChef()
   const tenantId = user.tenantId!
   const db: any = createServerClient({ admin: true })
+
+  if (!(await requireOwnedCircle(db, circleId, tenantId))) return []
 
   // Get all chef's clients
   const { data: allClients } = await db
@@ -502,6 +871,8 @@ export async function getCircleSourcingData(circleId: string): Promise<CircleSou
   const user = await requireChef()
   const tenantId = user.tenantId!
   const db: any = createServerClient({ admin: true })
+
+  if (!(await requireOwnedCircle(db, circleId, tenantId))) return []
 
   // 1. Get linked event IDs for this circle
   const { data: eventLinks } = await db

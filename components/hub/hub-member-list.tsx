@@ -2,7 +2,7 @@
 'use client'
 
 import { useState, useEffect, useTransition } from 'react'
-import type { HubGroupMember } from '@/lib/hub/types'
+import type { HubGroupMember, HubMemberRole } from '@/lib/hub/types'
 import {
   updateMemberRole,
   updateMemberPermissions,
@@ -19,17 +19,44 @@ const ROLE_BADGES: Record<string, { label: string; color: string }> = {
     label: 'Chef',
     color: 'bg-[var(--hub-primary,#e88f47)]/20 text-[var(--hub-primary,#e88f47)]',
   },
+  host: { label: 'Host', color: 'bg-amber-500/20 text-amber-400' },
   member: { label: '', color: '' },
   viewer: { label: 'Viewer', color: 'bg-stone-500/20 text-stone-400' },
+  delegate: { label: 'Delegate', color: 'bg-sky-500/20 text-sky-400' },
 }
 
-type AssignableRole = 'admin' | 'member' | 'viewer'
+type AssignableRole = 'admin' | 'host' | 'member' | 'viewer' | 'delegate'
+type CurrentViewerRole = Extract<HubMemberRole, 'owner' | 'admin' | 'chef' | 'host'>
 
 const ASSIGNABLE_ROLES: { value: AssignableRole; label: string }[] = [
   { value: 'admin', label: 'Admin' },
+  { value: 'host', label: 'Host' },
   { value: 'member', label: 'Member' },
   { value: 'viewer', label: 'Viewer' },
+  { value: 'delegate', label: 'Delegate' },
 ]
+
+const HOST_MANAGEABLE_ROLES = new Set<HubMemberRole>(['member', 'viewer', 'delegate'])
+const PROTECTED_MEMBER_ROLES = new Set<HubMemberRole>(['owner', 'chef'])
+const HOUSEHOLD_SUMMARY_ROLES = new Set<HubMemberRole>(['owner', 'admin', 'chef'])
+
+function getAssignableRolesForViewer(role: CurrentViewerRole): AssignableRole[] {
+  if (role === 'host') return ['member', 'viewer', 'delegate']
+  if (role === 'admin') return ['host', 'member', 'viewer', 'delegate']
+  return ['admin', 'host', 'member', 'viewer', 'delegate']
+}
+
+function canManageTarget(
+  viewerRole: HubMemberRole | undefined,
+  targetRole: HubMemberRole,
+  isCurrentUser: boolean
+) {
+  if (isCurrentUser || !viewerRole) return false
+  if (!['owner', 'admin', 'chef', 'host'].includes(viewerRole)) return false
+  if (PROTECTED_MEMBER_ROLES.has(targetRole)) return false
+  if (viewerRole === 'host') return HOST_MANAGEABLE_ROLES.has(targetRole)
+  return true
+}
 
 interface HubMemberListProps {
   members: HubGroupMember[]
@@ -60,6 +87,19 @@ export function HubMemberList({
     allDietary: string[]
   } | null>(null)
   const currentViewer = localMembers.find((member) => member.profile_id === currentProfileId)
+  const currentViewerRole = currentViewer?.role
+  const isCurrentViewerManager =
+    currentViewerRole === 'owner' ||
+    currentViewerRole === 'admin' ||
+    currentViewerRole === 'chef' ||
+    currentViewerRole === 'host'
+  const currentViewerAssignableRoles = isCurrentViewerManager
+    ? getAssignableRolesForViewer(currentViewerRole)
+    : []
+  const canViewHouseholdSummary =
+    isOwnerOrAdmin === true &&
+    currentViewerRole !== undefined &&
+    HOUSEHOLD_SUMMARY_ROLES.has(currentViewerRole)
   const inviteRole =
     currentViewer?.role === 'chef'
       ? 'chef'
@@ -87,14 +127,26 @@ export function HubMemberList({
               'Copy the join link or drop it into a text. New guests can get into the Dinner Circle in seconds.',
           }
 
-  // Load household dietary summary
+  // Load household dietary summary only for owner/admin/chef viewers.
   useEffect(() => {
-    getCircleHouseholdSummary(groupId, groupToken)
-      .then(setHouseholdSummary)
-      .catch(() => {})
-  }, [groupId, groupToken])
+    if (!canViewHouseholdSummary) {
+      setHouseholdSummary(null)
+      return
+    }
 
-  const handleRoleChange = (memberId: string, newRole: 'admin' | 'member' | 'viewer') => {
+    let isActive = true
+    getCircleHouseholdSummary(groupId, groupToken)
+      .then((summary) => {
+        if (isActive) setHouseholdSummary(summary)
+      })
+      .catch(() => {})
+
+    return () => {
+      isActive = false
+    }
+  }, [canViewHouseholdSummary, groupId, groupToken])
+
+  const handleRoleChange = (memberId: string, newRole: AssignableRole) => {
     if (!profileToken) return
     setError(null)
     startTransition(async () => {
@@ -196,8 +248,9 @@ export function HubMemberList({
         </div>
       )}
 
-      {/* Household Dietary Summary (visible to all, especially chef) */}
-      {householdSummary &&
+      {/* Household Dietary Summary */}
+      {canViewHouseholdSummary &&
+        householdSummary &&
         (householdSummary.allAllergies.length > 0 || householdSummary.allDietary.length > 0) && (
           <div
             className={`mb-4 rounded-xl border p-3 ${
@@ -258,7 +311,11 @@ export function HubMemberList({
           const isCurrentUser = member.profile_id === currentProfileId
           const badge = ROLE_BADGES[member.role]
           const canManage =
-            isOwnerOrAdmin && !isCurrentUser && member.role !== 'owner' && member.role !== 'chef'
+            (isOwnerOrAdmin || currentViewerRole === 'host') &&
+            canManageTarget(currentViewerRole, member.role, isCurrentUser)
+          const assignableRoles = currentViewerAssignableRoles.filter(
+            (role) => role !== member.role
+          )
           const initials = (profile?.display_name ?? '?')
             .split(' ')
             .map((w) => w[0])
@@ -322,7 +379,7 @@ export function HubMemberList({
                 ) : null}
               </div>
 
-              {/* Manage button (owner/admin only, not on self/owner/chef) */}
+              {/* Manage button for server-authorized managers only. */}
               {canManage && (
                 <div className="relative">
                   <button
@@ -340,16 +397,18 @@ export function HubMemberList({
                   {menuOpen === member.id && (
                     <div className="absolute right-0 top-full z-page-bar mt-1 w-48 rounded-lg border border-stone-700 bg-stone-800 py-1 shadow-xl">
                       {/* Role options */}
-                      {ASSIGNABLE_ROLES.filter((r) => r.value !== member.role).map((r) => (
-                        <button
-                          key={r.value}
-                          onClick={() => handleRoleChange(member.id, r.value)}
-                          disabled={isPending}
-                          className="w-full px-3 py-1.5 text-left text-xs text-stone-300 hover:bg-stone-700 disabled:opacity-50"
-                        >
-                          Make {r.label}
-                        </button>
-                      ))}
+                      {ASSIGNABLE_ROLES.filter((r) => assignableRoles.includes(r.value)).map(
+                        (r) => (
+                          <button
+                            key={r.value}
+                            onClick={() => handleRoleChange(member.id, r.value)}
+                            disabled={isPending}
+                            className="w-full px-3 py-1.5 text-left text-xs text-stone-300 hover:bg-stone-700 disabled:opacity-50"
+                          >
+                            Make {r.label}
+                          </button>
+                        )
+                      )}
                       <div className="my-1 border-t border-stone-700" />
                       {/* Permission toggles */}
                       <div className="px-3 py-1.5">

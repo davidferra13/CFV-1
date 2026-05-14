@@ -666,6 +666,71 @@ export async function getOrCreateChefHubProfileToken(): Promise<string | null> {
   return created?.profile_token ?? null
 }
 
+async function getOrCreateEventClientHubProfileId(
+  db: any,
+  input: { clientId: string; tenantId: string }
+): Promise<string | null> {
+  const { data: client } = await db
+    .from('clients')
+    .select('id, full_name, email, auth_user_id')
+    .eq('id', input.clientId)
+    .eq('tenant_id', input.tenantId)
+    .maybeSingle()
+
+  if (!client) return null
+
+  const { data: existingByClientId } = await db
+    .from('hub_guest_profiles')
+    .select('id')
+    .eq('client_id', input.clientId)
+    .maybeSingle()
+
+  if (existingByClientId?.id) return existingByClientId.id
+
+  const normalizedEmail = client.email ? client.email.toLowerCase().trim() : null
+  if (normalizedEmail) {
+    const { data: existingByEmail } = await db
+      .from('hub_guest_profiles')
+      .select('id, client_id, auth_user_id')
+      .eq('email_normalized', normalizedEmail)
+      .maybeSingle()
+
+    if (existingByEmail?.id) {
+      if (existingByEmail.client_id && existingByEmail.client_id !== input.clientId) {
+        return null
+      }
+
+      const updates: Record<string, unknown> = {}
+      if (!existingByEmail.client_id) updates.client_id = input.clientId
+      if (client.auth_user_id && !existingByEmail.auth_user_id) {
+        updates.auth_user_id = client.auth_user_id
+      }
+
+      if (Object.keys(updates).length > 0) {
+        await db
+          .from('hub_guest_profiles')
+          .update({ ...updates, updated_at: new Date().toISOString() })
+          .eq('id', existingByEmail.id)
+      }
+
+      return existingByEmail.id
+    }
+  }
+
+  const { data: created } = await db
+    .from('hub_guest_profiles')
+    .insert({
+      display_name: client.full_name || 'Guest',
+      email: client.email,
+      auth_user_id: client.auth_user_id ?? null,
+      client_id: input.clientId,
+    })
+    .select('id')
+    .single()
+
+  return created?.id ?? null
+}
+
 /**
  * Create a circle manually for an event that doesn't have one.
  */
@@ -765,22 +830,22 @@ export async function createCircleForEvent(eventId: string): Promise<{ groupToke
     .eq('group_id', group.id)
     .eq('profile_id', chefProfile.id)
 
-  // Add client if they have a hub profile
+  // Add the primary event client as host.
+  // RSVP guests and ticket buyers join through separate member flows.
   if (event.client_id) {
-    const { data: clientProfile } = await db
-      .from('hub_guest_profiles')
-      .select('id')
-      .eq('client_id', event.client_id)
-      .maybeSingle()
+    const clientProfileId = await getOrCreateEventClientHubProfileId(db, {
+      clientId: event.client_id,
+      tenantId,
+    })
 
-    if (clientProfile) {
+    if (clientProfileId) {
       await db.from('hub_group_members').insert({
         group_id: group.id,
-        profile_id: clientProfile.id,
-        role: 'member',
+        profile_id: clientProfileId,
+        role: 'host',
         can_post: true,
         can_invite: true,
-        can_pin: false,
+        can_pin: true,
       })
     }
   }
@@ -1181,22 +1246,22 @@ export async function ensureCircleForEvent(
       .eq('group_id', group.id)
       .eq('profile_id', chefProfile.id)
 
-    // Auto-add client if they already have a hub profile
+    // Auto-add the primary event client as host.
+    // RSVP guests and ticket buyers join through separate member flows.
     if (event.client_id) {
-      const { data: clientProfile } = await db
-        .from('hub_guest_profiles')
-        .select('id')
-        .eq('client_id', event.client_id)
-        .maybeSingle()
+      const clientProfileId = await getOrCreateEventClientHubProfileId(db, {
+        clientId: event.client_id,
+        tenantId,
+      })
 
-      if (clientProfile) {
+      if (clientProfileId) {
         await db.from('hub_group_members').insert({
           group_id: group.id,
-          profile_id: clientProfile.id,
-          role: 'member',
+          profile_id: clientProfileId,
+          role: 'host',
           can_post: true,
           can_invite: true,
-          can_pin: false,
+          can_pin: true,
         })
       }
     }

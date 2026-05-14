@@ -177,14 +177,27 @@ export function WeeklyMealBoard({
   const [showMealTimeSettings, setShowMealTimeSettings] = useState(false)
   const [commentCounts, setCommentCounts] = useState<Record<string, number>>({})
   const [householdSummary, setHouseholdSummary] = useState<HouseholdDietarySummary | null>(
-    initialHouseholdSummary ?? null
+    isChefOrAdmin ? (initialHouseholdSummary ?? null) : null
   )
-  const [householdError, setHouseholdError] = useState<string | null>(initialHouseholdError ?? null)
+  const [householdError, setHouseholdError] = useState<string | null>(
+    isChefOrAdmin ? (initialHouseholdError ?? null) : null
+  )
   const [mealBoardLoadError] = useState<string | null>(initialLoadError ?? null)
 
   // Retry household dietary data on the client if the server render could not provide it.
   useEffect(() => {
-    if (initialHouseholdSummary) return
+    if (!isChefOrAdmin) {
+      setHouseholdSummary(null)
+      setHouseholdError(null)
+      return
+    }
+
+    if (initialHouseholdSummary) {
+      setHouseholdSummary(initialHouseholdSummary)
+      setHouseholdError(initialHouseholdError ?? null)
+      return
+    }
+
     let isActive = true
     setHouseholdError(null)
     getCircleHouseholdSummary(groupId, groupToken)
@@ -200,38 +213,46 @@ export function WeeklyMealBoard({
     return () => {
       isActive = false
     }
-  }, [groupId, groupToken, initialHouseholdSummary])
+  }, [groupId, groupToken, initialHouseholdError, initialHouseholdSummary, isChefOrAdmin])
 
   // Check if a meal conflicts with household allergies
   const getMealConflicts = useCallback(
     (entry: MealBoardEntry): string[] => {
-      if (!householdSummary || householdSummary.allAllergies.length === 0) return []
+      if (!isChefOrAdmin || !householdSummary || householdSummary.allAllergies.length === 0) {
+        return []
+      }
       const normalizedAllergies = householdSummary.allAllergies.map((a) => a.toLowerCase())
       return entry.allergen_flags.filter((flag) => normalizedAllergies.includes(flag.toLowerCase()))
     },
-    [householdSummary]
+    [householdSummary, isChefOrAdmin]
   )
 
   // Find which household members are affected by an allergen
   const getAffectedMembers = useCallback(
     (allergen: string): string[] => {
-      if (!householdSummary) return []
+      if (!isChefOrAdmin || !householdSummary) return []
       return householdSummary.members
         .filter((m) => m.allergies.some((a) => a.toLowerCase() === allergen.toLowerCase()))
         .map((m) => m.display_name)
     },
-    [householdSummary]
+    [householdSummary, isChefOrAdmin]
   )
 
   // Load default head count and meal times
   useEffect(() => {
-    getGroupDefaultHeadCount(groupId)
+    if (!isChefOrAdmin || !profileToken) {
+      setDefaultHeadCount(null)
+      setDefaultMealTimes(null)
+      return
+    }
+
+    getGroupDefaultHeadCount({ groupId, profileToken })
       .then(setDefaultHeadCount)
       .catch(() => {})
-    getDefaultMealTimes(groupId)
+    getDefaultMealTimes({ groupId, profileToken })
       .then(setDefaultMealTimes)
       .catch(() => {})
-  }, [groupId])
+  }, [groupId, isChefOrAdmin, profileToken])
 
   // Current week's Monday
   const currentMonday = getMonday(addDays(new Date(), weekOffset * 7))
@@ -251,10 +272,15 @@ export function WeeklyMealBoard({
 
   // Load schedule changes for current week
   const refreshScheduleChanges = useCallback(() => {
-    getScheduleChanges({ groupId, startDate: weekStart, endDate: weekEnd })
+    if (!profileToken) {
+      setScheduleChanges([])
+      return
+    }
+
+    getScheduleChanges({ groupId, profileToken, startDate: weekStart, endDate: weekEnd })
       .then(setScheduleChanges)
       .catch(() => {})
-  }, [groupId, weekStart, weekEnd])
+  }, [groupId, profileToken, weekStart, weekEnd])
 
   useEffect(() => {
     refreshScheduleChanges()
@@ -267,10 +293,14 @@ export function WeeklyMealBoard({
     getBatchMealFeedback({ mealEntryIds: entryIds, profileToken })
       .then(setFeedbackData)
       .catch(() => {})
-    getBatchCommentCounts(entryIds)
+    if (!profileToken) {
+      setCommentCounts({})
+      return
+    }
+    getBatchCommentCounts({ groupId, profileToken, mealEntryIds: entryIds })
       .then(setCommentCounts)
       .catch(() => {})
-  }, [weekEntries.map((e) => e.id).join(','), profileToken]) // eslint-disable-line react-hooks/exhaustive-deps
+  }, [groupId, weekEntries.map((e) => e.id).join(','), profileToken]) // eslint-disable-line react-hooks/exhaustive-deps
 
   // Navigate weeks
   const goToThisWeek = () => setWeekOffset(0)
@@ -430,7 +460,7 @@ export function WeeklyMealBoard({
         })
         if (result.success) {
           setWeekOffset((w) => w + (direction === 'next' ? 1 : -1))
-          const fresh = await getMealBoard({ groupId, groupToken })
+          const fresh = await getMealBoard({ groupId, groupToken, profileToken })
           setEntries(fresh)
         } else {
           setError(result.error ?? 'Failed to clone')
@@ -456,7 +486,7 @@ export function WeeklyMealBoard({
         if (result.success) {
           setShowSaveTemplate(false)
           setTemplateName('')
-          const fresh = await getTemplates(groupId)
+          const fresh = await getTemplates({ groupId, profileToken })
           setTemplates(fresh)
         } else {
           setError(result.error ?? 'Failed to save template')
@@ -481,7 +511,7 @@ export function WeeklyMealBoard({
           targetWeekStart: formatDateISO(currentMonday),
         })
         if (result.success) {
-          const fresh = await getMealBoard({ groupId, groupToken })
+          const fresh = await getMealBoard({ groupId, groupToken, profileToken })
           setEntries(fresh)
         } else {
           setError(result.error ?? 'Failed to load template')
@@ -494,12 +524,14 @@ export function WeeklyMealBoard({
 
   // Load templates list when entering edit mode
   useEffect(() => {
-    if (editMode && isChefOrAdmin) {
-      getTemplates(groupId)
+    if (editMode && isChefOrAdmin && profileToken) {
+      getTemplates({ groupId, profileToken })
         .then(setTemplates)
         .catch(() => {})
+    } else {
+      setTemplates([])
     }
-  }, [editMode, isChefOrAdmin, groupId])
+  }, [editMode, isChefOrAdmin, groupId, profileToken])
 
   return (
     <div className="flex flex-col gap-3 p-4">
@@ -515,7 +547,7 @@ export function WeeklyMealBoard({
       )}
 
       {/* Persistent household dietary banner */}
-      {householdError && (
+      {isChefOrAdmin && householdError && (
         <div className="rounded-lg border border-red-800/60 bg-red-950/30 px-3 py-2">
           <div className="flex items-start gap-2">
             <span className="mt-0.5 shrink-0 text-sm text-red-300">&#x26A0;</span>
@@ -531,7 +563,8 @@ export function WeeklyMealBoard({
         </div>
       )}
 
-      {householdSummary &&
+      {isChefOrAdmin &&
+        householdSummary &&
         (householdSummary.allAllergies.length > 0 ||
           householdSummary.allDietary.length > 0 ||
           householdSummary.profilesNotAnswered > 0) && (
@@ -825,7 +858,7 @@ export function WeeklyMealBoard({
           profileToken={profileToken}
           currentWeekStart={weekStart}
           onMealsApplied={async () => {
-            const fresh = await getMealBoard({ groupId, groupToken })
+            const fresh = await getMealBoard({ groupId, groupToken, profileToken })
             setEntries(fresh)
           }}
         />
@@ -1100,6 +1133,7 @@ export function WeeklyMealBoard({
                                 getMealBoard({
                                   groupId,
                                   groupToken,
+                                  profileToken: profileToken ?? undefined,
                                   startDate: weekStart,
                                   endDate: weekEnd,
                                 })
@@ -1164,7 +1198,11 @@ export function WeeklyMealBoard({
       </div>
 
       {/* Feedback intelligence (chef only, below the grid) */}
-      <FeedbackInsightsPanel groupId={groupId} isChefOrAdmin={isChefOrAdmin} />
+      <FeedbackInsightsPanel
+        groupId={groupId}
+        profileToken={profileToken}
+        isChefOrAdmin={isChefOrAdmin}
+      />
 
       {/* Empty state */}
       {weekEntries.length === 0 && !editMode && !mealBoardLoadError && (

@@ -85,7 +85,23 @@ export interface HubGroup {
   candidates?: HubGroupCandidate[]
 }
 
-export type HubMemberRole = 'owner' | 'admin' | 'chef' | 'member' | 'viewer'
+export const HUB_MEMBER_ROLES = [
+  'owner',
+  'admin',
+  'chef',
+  'host',
+  'member',
+  'viewer',
+  'delegate',
+] as const
+
+export type HubMemberRole = (typeof HUB_MEMBER_ROLES)[number]
+
+export const HUB_CLIENT_CIRCLE_MANAGER_ROLES = ['owner', 'admin', 'host'] as const
+export type HubClientCircleManagerRole = (typeof HUB_CLIENT_CIRCLE_MANAGER_ROLES)[number]
+
+export const HUB_CHEF_OPERATION_ROLES = ['chef'] as const
+export type HubChefOperationRole = (typeof HUB_CHEF_OPERATION_ROLES)[number]
 
 export type HubDigestMode = 'instant' | 'hourly' | 'daily'
 

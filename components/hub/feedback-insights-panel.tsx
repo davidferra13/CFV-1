@@ -10,6 +10,7 @@ import {
 
 interface FeedbackInsightsPanelProps {
   groupId: string
+  profileToken: string | null
   isChefOrAdmin: boolean
 }
 
@@ -37,24 +38,31 @@ function ScoreBar({ score, label }: { score: number; label: string }) {
   )
 }
 
-export function FeedbackInsightsPanel({ groupId, isChefOrAdmin }: FeedbackInsightsPanelProps) {
+export function FeedbackInsightsPanel({
+  groupId,
+  profileToken,
+  isChefOrAdmin,
+}: FeedbackInsightsPanelProps) {
   const [insights, setInsights] = useState<FeedbackInsight | null>(null)
   const [history, setHistory] = useState<MealHistoryEntry[]>([])
   const [tab, setTab] = useState<'insights' | 'history'>('insights')
   const [loading, setLoading] = useState(true)
 
   useEffect(() => {
-    if (!isChefOrAdmin) return
-    Promise.all([getFeedbackInsights({ groupId }), getMealHistory({ groupId, limit: 30 })])
+    if (!isChefOrAdmin || !profileToken) return
+    Promise.all([
+      getFeedbackInsights({ groupId, profileToken }),
+      getMealHistory({ groupId, profileToken, limit: 30 }),
+    ])
       .then(([i, h]) => {
         setInsights(i)
         setHistory(h)
       })
       .catch(() => {})
       .finally(() => setLoading(false))
-  }, [groupId, isChefOrAdmin])
+  }, [groupId, isChefOrAdmin, profileToken])
 
-  if (!isChefOrAdmin) return null
+  if (!isChefOrAdmin || !profileToken) return null
   if (loading) {
     return (
       <div className="rounded-xl border border-stone-800 bg-stone-900/40 p-4">

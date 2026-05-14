@@ -11,25 +11,35 @@ import { CircleSourcingBoard } from '@/components/circles/circle-sourcing-board'
 import { CircleBroadcastDialog } from '@/components/circles/circle-broadcast-dialog'
 import { CircleEngagementCard } from '@/components/circles/circle-engagement-card'
 import { CirclePreferredDishes } from '@/components/circles/circle-preferred-dishes'
+import {
+  ChefCircleEventLinker,
+  ChefCircleMemberControls,
+  ChefCircleSettingsPanel,
+} from '@/components/circles/chef-command-center'
 import { IngredientAvailabilityBoard } from '@/components/hub/ingredient-availability-board'
 import { RemyCircleToggle } from '@/components/hub/remy-circle-toggle'
 import { RemyCircleDrawer } from '@/components/hub/remy-circle-drawer'
 import {
   addClientToCircle,
   removeCircleMember,
-  linkEventToCircle,
-  unlinkEventFromCircle,
   getClientsNotInCircle,
 } from '@/lib/hub/circle-detail-actions'
 
-type Tab = 'overview' | 'members' | 'events' | 'sourcing' | 'ingredients' | 'messages' | 'private'
+type Tab =
+  | 'overview'
+  | 'members'
+  | 'events'
+  | 'sourcing'
+  | 'ingredients'
+  | 'messages'
+  | 'private'
+  | 'controls'
 
 export function CircleDetailClient({ circle }: { circle: CircleDetail }) {
   const [tab, setTab] = useState<Tab>('overview')
   const [showSlotForm, setShowSlotForm] = useState(false)
   const [showBroadcast, setShowBroadcast] = useState(false)
   const [showRemyDrawer, setShowRemyDrawer] = useState(false)
-  const router = useRouter()
 
   const tabs: { key: Tab; label: string; count?: number }[] = [
     { key: 'overview', label: 'Overview' },
@@ -39,6 +49,7 @@ export function CircleDetailClient({ circle }: { circle: CircleDetail }) {
     { key: 'ingredients', label: 'Ingredients' },
     { key: 'messages', label: 'Messages', count: circle.message_count },
     { key: 'private', label: 'Private' },
+    { key: 'controls', label: 'Controls' },
   ]
 
   return (
@@ -146,6 +157,7 @@ export function CircleDetailClient({ circle }: { circle: CircleDetail }) {
       )}
       {tab === 'messages' && <MessagesTab circle={circle} />}
       {tab === 'private' && <PrivateMessagesTabWrapper circle={circle} />}
+      {tab === 'controls' && <ControlsTab circle={circle} />}
     </div>
   )
 }
@@ -299,6 +311,7 @@ function OverviewTab({ circle }: { circle: CircleDetail }) {
 
 function MembersTab({ circle }: { circle: CircleDetail }) {
   const [showAddForm, setShowAddForm] = useState(false)
+  const router = useRouter()
 
   return (
     <div className="space-y-4">
@@ -325,6 +338,8 @@ function MembersTab({ circle }: { circle: CircleDetail }) {
           </div>
         )}
       </div>
+
+      <ChefCircleMemberControls circle={circle} onMembersChange={() => router.refresh()} />
     </div>
   )
 }
@@ -332,9 +347,10 @@ function MembersTab({ circle }: { circle: CircleDetail }) {
 function MemberRow({ member, circleId }: { member: CircleDetail['members'][0]; circleId: string }) {
   const [isPending, startTransition] = useTransition()
   const router = useRouter()
+  const canRemove = member.role !== 'owner' && member.role !== 'chef'
 
   const handleRemove = () => {
-    if (member.role === 'owner') return
+    if (!canRemove) return
     startTransition(async () => {
       try {
         const result = await removeCircleMember(circleId, member.profile_id)
@@ -374,7 +390,7 @@ function MemberRow({ member, circleId }: { member: CircleDetail['members'][0]; c
         </div>
         {member.email && <p className="truncate text-xs text-stone-500">{member.email}</p>}
       </div>
-      {member.role !== 'owner' && (
+      {canRemove && (
         <button
           type="button"
           onClick={handleRemove}
@@ -458,48 +474,14 @@ function AddClientForm({ circleId, onDone }: { circleId: string; onDone: () => v
 // ─── EVENTS TAB ────────────────────────────────────────────
 
 function EventsTab({ circle }: { circle: CircleDetail }) {
-  return (
-    <div className="space-y-4">
-      <div className="flex items-center justify-between">
-        <h3 className="text-sm font-semibold text-stone-200">
-          Linked Events ({circle.events.length})
-        </h3>
-      </div>
-
-      <div className="space-y-2">
-        {circle.events.map((evt) => (
-          <Link
-            key={evt.event_id}
-            href={`/events/${evt.event_id}`}
-            className="flex items-center justify-between rounded-xl border border-stone-700/50 bg-stone-800/30 p-4 transition-colors hover:bg-stone-800/60"
-          >
-            <div>
-              <div className="text-sm font-medium text-stone-200">{evt.event_title}</div>
-              {evt.event_date && (
-                <div className="mt-0.5 text-xs text-stone-400">
-                  {new Date(evt.event_date + 'T00:00:00').toLocaleDateString()}
-                </div>
-              )}
-            </div>
-            <div className="flex items-center gap-3">
-              {evt.guest_count && (
-                <span className="text-xs text-stone-500">{evt.guest_count} guests</span>
-              )}
-              <StatusBadge status={evt.event_status} />
-            </div>
-          </Link>
-        ))}
-        {circle.events.length === 0 && (
-          <div className="py-8 text-center text-sm text-stone-500">
-            No events linked to this circle yet.
-          </div>
-        )}
-      </div>
-    </div>
-  )
+  return <ChefCircleEventLinker circle={circle} />
 }
 
 // ─── MESSAGES TAB ──────────────────────────────────────────
+
+function ControlsTab({ circle }: { circle: CircleDetail }) {
+  return <ChefCircleSettingsPanel circle={circle} />
+}
 
 function MessagesTab({ circle }: { circle: CircleDetail }) {
   return (

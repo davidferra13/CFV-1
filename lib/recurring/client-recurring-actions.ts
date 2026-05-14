@@ -19,22 +19,6 @@ export type ClientRecurringService = {
   chefName: string | null
 }
 
-const SERVICE_TYPE_LABELS: Record<string, string> = {
-  weekly_meal_prep: 'Weekly Meal Prep',
-  weekly_dinners: 'Weekly Dinners',
-  daily_meals: 'Daily Meals',
-  biweekly_prep: 'Biweekly Prep',
-  other: 'Other',
-}
-
-const FREQUENCY_LABELS: Record<string, string> = {
-  weekly: 'Weekly',
-  biweekly: 'Biweekly',
-  monthly: 'Monthly',
-}
-
-export { SERVICE_TYPE_LABELS, FREQUENCY_LABELS }
-
 export async function getMyRecurringServices(): Promise<ClientRecurringService[]> {
   const user = await requireClient()
   const db: any = createServerClient()

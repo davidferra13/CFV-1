@@ -10,6 +10,7 @@ import {
   getGroupEvents,
   joinHubGroup,
 } from '@/lib/hub/group-actions'
+import type { HubGroupMember } from '@/lib/hub/types'
 import { getGroupNotes } from '@/lib/hub/message-actions'
 import { getGroupMedia } from '@/lib/hub/media-actions'
 import { getGroupAvailability } from '@/lib/hub/availability-actions'
@@ -19,6 +20,46 @@ import { HubBridgeView } from '@/components/hub/hub-bridge-view'
 
 interface Props {
   params: Promise<{ groupToken: string }>
+}
+
+function sanitizeMembersForClientRoute(
+  members: HubGroupMember[],
+  viewerProfileToken: string
+): HubGroupMember[] {
+  return members.map((member) => {
+    const isViewer = member.profile?.profile_token === viewerProfileToken
+    const profile = member.profile
+
+    return {
+      id: member.id,
+      group_id: member.group_id,
+      profile_id: member.profile_id,
+      role: member.role,
+      can_post: member.can_post,
+      can_invite: member.can_invite,
+      can_pin: member.can_pin,
+      last_read_at: isViewer ? member.last_read_at : null,
+      notifications_muted: isViewer ? member.notifications_muted : false,
+      notify_email: isViewer ? member.notify_email : undefined,
+      notify_push: isViewer ? member.notify_push : undefined,
+      quiet_hours_start: isViewer ? member.quiet_hours_start : undefined,
+      quiet_hours_end: isViewer ? member.quiet_hours_end : undefined,
+      digest_mode: isViewer ? member.digest_mode : undefined,
+      on_behalf_of_profile_id: undefined,
+      is_co_host: member.is_co_host,
+      rsvp_status: isViewer ? member.rsvp_status : undefined,
+      joined_at: member.joined_at,
+      profile: profile
+        ? ({
+            id: profile.id,
+            display_name: profile.display_name,
+            avatar_url: profile.avatar_url,
+            bio: profile.bio,
+            ...(isViewer ? { profile_token: profile.profile_token } : {}),
+          } as HubGroupMember['profile'])
+        : undefined,
+    }
+  })
 }
 
 export async function generateMetadata({ params }: Props) {
@@ -54,8 +95,9 @@ export default async function ClientHubGroupPage({ params }: Props) {
     getGroupMedia({ groupId: group.id }),
     getGroupAvailability(group.id),
     getGroupEvents(group.id),
-    getMealBoard({ groupId: group.id }),
+    getMealBoard({ groupId: group.id, groupToken, profileToken: profile.profile_token }),
   ])
+  const sanitizedMembers = sanitizeMembersForClientRoute(members, profile.profile_token)
 
   // Bridge groups get the slim intro view
   if (group.group_type === 'bridge') {
@@ -63,7 +105,7 @@ export default async function ClientHubGroupPage({ params }: Props) {
       <div className="mx-auto max-w-4xl p-4">
         <HubBridgeView
           group={group}
-          members={members}
+          members={sanitizedMembers}
           profileToken={profile.profile_token}
           currentProfileId={profile.id}
           bridgeId={null}
@@ -83,7 +125,7 @@ export default async function ClientHubGroupPage({ params }: Props) {
     <div className="mx-auto max-w-4xl">
       <HubGroupView
         group={group}
-        members={members}
+        members={sanitizedMembers}
         notes={notes}
         media={media}
         availability={availability}

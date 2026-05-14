@@ -8,6 +8,71 @@ import { resolvePublicShareDinnerCircleAccess } from '@/lib/hub/public-share-acc
 // Connects hub system to existing RSVP, events, and sharing flows.
 // ---------------------------------------------------------------------------
 
+async function getOrCreateEventClientHubProfileId(
+  db: any,
+  input: { clientId: string; tenantId: string }
+): Promise<string | null> {
+  const { data: client } = await db
+    .from('clients')
+    .select('id, full_name, email, auth_user_id')
+    .eq('id', input.clientId)
+    .eq('tenant_id', input.tenantId)
+    .maybeSingle()
+
+  if (!client) return null
+
+  const { data: existingByClientId } = await db
+    .from('hub_guest_profiles')
+    .select('id')
+    .eq('client_id', input.clientId)
+    .maybeSingle()
+
+  if (existingByClientId?.id) return existingByClientId.id
+
+  const normalizedEmail = client.email ? client.email.toLowerCase().trim() : null
+  if (normalizedEmail) {
+    const { data: existingByEmail } = await db
+      .from('hub_guest_profiles')
+      .select('id, client_id, auth_user_id')
+      .eq('email_normalized', normalizedEmail)
+      .maybeSingle()
+
+    if (existingByEmail?.id) {
+      if (existingByEmail.client_id && existingByEmail.client_id !== input.clientId) {
+        return null
+      }
+
+      const updates: Record<string, unknown> = {}
+      if (!existingByEmail.client_id) updates.client_id = input.clientId
+      if (client.auth_user_id && !existingByEmail.auth_user_id) {
+        updates.auth_user_id = client.auth_user_id
+      }
+
+      if (Object.keys(updates).length > 0) {
+        await db
+          .from('hub_guest_profiles')
+          .update({ ...updates, updated_at: new Date().toISOString() })
+          .eq('id', existingByEmail.id)
+      }
+
+      return existingByEmail.id
+    }
+  }
+
+  const { data: created } = await db
+    .from('hub_guest_profiles')
+    .insert({
+      display_name: client.full_name || 'Guest',
+      email: client.email,
+      auth_user_id: client.auth_user_id ?? null,
+      client_id: input.clientId,
+    })
+    .select('id')
+    .single()
+
+  return created?.id ?? null
+}
+
 /**
  * Auto-create or match a hub guest profile when someone RSVPs.
  * Called from submitRSVP flow (non-blocking).
@@ -315,6 +380,13 @@ export async function ensureEventDinnerCircle(input: {
 
   if (!chefProfileId) throw new Error('Failed to create chef profile for hub')
 
+  const { data: event } = await db
+    .from('events')
+    .select('client_id')
+    .eq('id', input.eventId)
+    .eq('tenant_id', input.tenantId)
+    .maybeSingle()
+
   // Create the group
   const { data: group, error } = await db
     .from('hub_groups')
@@ -330,7 +402,7 @@ export async function ensureEventDinnerCircle(input: {
 
   if (error) throw new Error(`Failed to create hub group: ${error.message}`)
 
-  // Add chef as owner
+  // Add chef as chef role.
   await db.from('hub_group_members').insert({
     group_id: group.id,
     profile_id: chefProfileId,
@@ -339,6 +411,25 @@ export async function ensureEventDinnerCircle(input: {
     can_invite: true,
     can_pin: true,
   })
+
+  // Add the primary event client as host. RSVP guests join through syncRSVPToHubProfile.
+  if (event?.client_id) {
+    const clientProfileId = await getOrCreateEventClientHubProfileId(db, {
+      clientId: event.client_id,
+      tenantId: input.tenantId,
+    })
+
+    if (clientProfileId) {
+      await db.from('hub_group_members').insert({
+        group_id: group.id,
+        profile_id: clientProfileId,
+        role: 'host',
+        can_post: true,
+        can_invite: true,
+        can_pin: true,
+      })
+    }
+  }
 
   try {
     await db.from('hub_group_events').upsert(

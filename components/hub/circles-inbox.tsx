@@ -4,7 +4,12 @@ import { useState, useTransition, memo, useMemo } from 'react'
 import Link from 'next/link'
 import { toast } from 'sonner'
 import type { ChefCircleSummary, PipelineStage } from '@/lib/hub/chef-circle-actions'
-import { archiveCircle, createDinnerClub, markCircleRead } from '@/lib/hub/chef-circle-actions'
+import {
+  archiveCircle,
+  createDinnerClub,
+  markCircleRead,
+  restoreCircle,
+} from '@/lib/hub/chef-circle-actions'
 
 // ---------------------------------------------------------------------------
 // Pipeline stage config
@@ -73,14 +78,45 @@ export function CirclesInbox({ circles }: CirclesInboxProps) {
     }
   }, [items, filter, snoozedIds])
 
-  const handleArchive = async (groupId: string) => {
-    const prev = items
-    setItems((items) => items.filter((c) => c.id !== groupId))
+  const handleArchive = async (circle: ChefCircleSummary) => {
+    const previousItems = items
+    const previousIndex = previousItems.findIndex((item) => item.id === circle.id)
+
+    setItems((items) => items.filter((item) => item.id !== circle.id))
     try {
-      await archiveCircle(groupId)
+      await archiveCircle(circle.id)
+      toast.success('Circle archived', {
+        description: 'Hidden from your active chef inbox.',
+        action: {
+          label: 'Restore',
+          onClick: () => {
+            restoreArchivedCircle(circle, previousIndex)
+          },
+        },
+      })
     } catch {
-      setItems(prev)
+      setItems(previousItems)
       toast.error('Failed to archive circle')
+    }
+  }
+
+  const restoreArchivedCircle = async (circle: ChefCircleSummary, previousIndex: number) => {
+    try {
+      await restoreCircle(circle.id)
+      setItems((currentItems) => {
+        if (currentItems.some((item) => item.id === circle.id)) return currentItems
+
+        const insertAt =
+          previousIndex >= 0 ? Math.min(previousIndex, currentItems.length) : currentItems.length
+        return [
+          ...currentItems.slice(0, insertAt),
+          { ...circle, is_active: true },
+          ...currentItems.slice(insertAt),
+        ]
+      })
+      toast.success('Circle restored')
+    } catch {
+      toast.error('Failed to restore circle')
     }
   }
 
@@ -276,7 +312,7 @@ const CircleRow = memo(function CircleRow({
   onSnooze,
 }: {
   circle: ChefCircleSummary
-  onArchive: (id: string) => void
+  onArchive: (circle: ChefCircleSummary) => void
   onMarkRead: (id: string) => void
   onSnooze: (id: string) => void
 }) {
@@ -469,10 +505,11 @@ const CircleRow = memo(function CircleRow({
           onClick={(e) => {
             e.preventDefault()
             e.stopPropagation()
-            onArchive(circle.id)
+            onArchive(circle)
           }}
-          className="rounded p-1.5 text-stone-500 hover:bg-stone-700 hover:text-red-400"
-          title="Archive"
+          className="rounded p-1.5 text-stone-500 hover:bg-red-500/10 hover:text-red-300"
+          title="Archive from active chef inbox"
+          aria-label="Archive circle from active chef inbox"
         >
           <svg
             className="h-3.5 w-3.5"

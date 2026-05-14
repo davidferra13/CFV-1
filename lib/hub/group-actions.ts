@@ -5,6 +5,17 @@ import { z } from 'zod'
 import type { Json } from '@/types/database'
 import type { HubGroup, HubGroupMember, HubGroupEvent } from './types'
 import { formatInviteSenderLabel, resolveHubInviteAttribution } from './invite-links'
+import {
+  canAssignCircleMemberRole,
+  canManageCircleMember,
+  canManageThread,
+  defaultCircleMemberPermissions,
+  type CircleAccessActor,
+  type CircleAccessContext,
+} from './circle-access-policy'
+
+type HubGroupManagementRole = 'owner' | 'admin' | 'chef' | 'host'
+type ManagedHubMemberRole = 'admin' | 'host' | 'member' | 'viewer' | 'delegate'
 
 // ---------------------------------------------------------------------------
 // Hub Groups - Public (link-based access)
@@ -385,6 +396,40 @@ export async function addEventToGroup(input: { groupId: string; eventId: string 
   }
 }
 
+function buildCircleAccessContext(
+  group: Pick<
+    HubGroup,
+    | 'visibility'
+    | 'tenant_id'
+    | 'created_by_profile_id'
+    | 'allow_anonymous_posts'
+    | 'allow_member_invites'
+  > & { group_type?: HubGroup['group_type'] | null }
+): CircleAccessContext {
+  return {
+    group: {
+      visibility: group.visibility,
+      tenant_id: group.tenant_id,
+      created_by_profile_id: group.created_by_profile_id,
+      allow_anonymous_posts: group.allow_anonymous_posts,
+      allow_member_invites: group.allow_member_invites,
+      group_type: group.group_type ?? undefined,
+    },
+  }
+}
+
+function buildCircleActor(
+  profileId: string,
+  membership: Pick<HubGroupMember, 'role' | 'can_post' | 'can_invite' | 'can_pin'>
+): CircleAccessActor {
+  return {
+    role: membership.role,
+    profileId,
+    isMember: true,
+    member: membership,
+  }
+}
+
 /**
  * Update group settings.
  */
@@ -396,10 +441,13 @@ export async function updateHubGroup(input: {
   emoji?: string | null
   allow_member_invites?: boolean
   allow_anonymous_posts?: boolean
+  circle_mode?: 'standard' | 'residency'
+  default_tab?: 'chat' | 'meals' | 'events' | 'photos' | 'notes' | 'members'
+  silent_by_default?: boolean
 }): Promise<HubGroup> {
   const db = createServerClient({ admin: true })
 
-  // Verify profile is owner/admin
+  // Verify profile can manage client-facing group settings.
   const { data: profile } = await db
     .from('hub_guest_profiles')
     .select('id')
@@ -410,20 +458,69 @@ export async function updateHubGroup(input: {
 
   const { data: membership } = await db
     .from('hub_group_members')
-    .select('role')
+    .select('role, can_post, can_invite, can_pin')
     .eq('group_id', input.groupId)
     .eq('profile_id', profile.id)
     .single()
 
-  if (!membership || !['owner', 'admin'].includes(membership.role)) {
-    throw new Error('Only owners and admins can update group settings')
+  const { data: groupForPolicy } = await db
+    .from('hub_groups')
+    .select(
+      'visibility, tenant_id, created_by_profile_id, allow_anonymous_posts, allow_member_invites, group_type'
+    )
+    .eq('id', input.groupId)
+    .single()
+
+  if (
+    !membership ||
+    !groupForPolicy ||
+    !canManageThread(
+      buildCircleActor(profile.id, membership),
+      buildCircleAccessContext(groupForPolicy)
+    )
+  ) {
+    throw new Error('Only owners, admins, chefs, and hosts can update group settings')
   }
 
-  const { groupId, profileToken, ...updates } = input
+  const updates: {
+    name?: string
+    description?: string | null
+    emoji?: string | null
+    allow_member_invites?: boolean
+    allow_anonymous_posts?: boolean
+    circle_mode?: 'standard' | 'residency'
+    default_tab?: 'chat' | 'meals' | 'events' | 'photos' | 'notes' | 'members'
+    silent_by_default?: boolean
+  } = {}
+  if (input.name !== undefined) updates.name = input.name
+  if (input.description !== undefined) updates.description = input.description
+  if (input.emoji !== undefined) updates.emoji = input.emoji
+  if (input.allow_member_invites !== undefined) {
+    updates.allow_member_invites = input.allow_member_invites
+  }
+  if (input.allow_anonymous_posts !== undefined) {
+    updates.allow_anonymous_posts = input.allow_anonymous_posts
+  }
+  if (input.circle_mode !== undefined) {
+    if (!['standard', 'residency'].includes(input.circle_mode)) {
+      throw new Error('Invalid circle mode')
+    }
+    updates.circle_mode = input.circle_mode
+  }
+  if (input.default_tab !== undefined) {
+    if (!['chat', 'meals', 'events', 'photos', 'notes', 'members'].includes(input.default_tab)) {
+      throw new Error('Invalid default tab')
+    }
+    updates.default_tab = input.default_tab
+  }
+  if (input.silent_by_default !== undefined) {
+    updates.silent_by_default = input.silent_by_default
+  }
+
   const { data, error } = await db
     .from('hub_groups')
     .update({ ...updates, updated_at: new Date().toISOString() })
-    .eq('id', groupId)
+    .eq('id', input.groupId)
     .select('*')
     .single()
 
@@ -541,14 +638,14 @@ export async function updateMemberNotificationPreferences(input: {
 }
 
 // ---------------------------------------------------------------------------
-// Member Management - Owner/Admin actions
+// Member Management - Owner/Admin/Chef/Host actions
 // ---------------------------------------------------------------------------
 
 /**
- * Verify that a profile token corresponds to an owner or admin of a group.
+ * Verify that a profile token corresponds to an owner, admin, chef, or host of a group.
  * Returns the caller's profile ID or throws.
  */
-async function requireGroupAdmin(groupId: string, profileToken: string) {
+async function requireGroupManager(groupId: string, profileToken: string) {
   const db = createServerClient({ admin: true })
 
   const { data: profile } = await db
@@ -561,29 +658,45 @@ async function requireGroupAdmin(groupId: string, profileToken: string) {
 
   const { data: membership } = await db
     .from('hub_group_members')
-    .select('role')
+    .select('role, can_post, can_invite, can_pin')
     .eq('group_id', groupId)
     .eq('profile_id', profile.id)
     .single()
 
-  if (!membership || !['owner', 'admin'].includes(membership.role)) {
-    throw new Error('Only owners and admins can manage group members')
+  const { data: groupForPolicy } = await db
+    .from('hub_groups')
+    .select(
+      'visibility, tenant_id, created_by_profile_id, allow_anonymous_posts, allow_member_invites, group_type'
+    )
+    .eq('id', groupId)
+    .single()
+
+  if (!membership || !groupForPolicy) {
+    throw new Error('Only owners, admins, chefs, and hosts can manage group members')
   }
 
-  return { profileId: profile.id, role: membership.role }
+  const context = buildCircleAccessContext(groupForPolicy)
+  const actor = buildCircleActor(profile.id, membership)
+  if (!canManageThread(actor, context)) {
+    throw new Error('Only owners, admins, chefs, and hosts can manage group members')
+  }
+
+  return { profileId: profile.id, role: membership.role as HubGroupManagementRole, actor, context }
 }
 
 /**
  * Update a member's role within a group.
- * Owners can set any role. Admins can set member/viewer but not owner/admin.
+ * Owners and chefs can set any non-owner/non-chef role.
+ * Admins can set host/member/viewer/delegate.
+ * Hosts can only manage ordinary member/viewer/delegate roles.
  */
 export async function updateMemberRole(input: {
   groupId: string
   profileToken: string
   targetMemberId: string
-  newRole: 'admin' | 'member' | 'viewer'
+  newRole: ManagedHubMemberRole
 }): Promise<void> {
-  const caller = await requireGroupAdmin(input.groupId, input.profileToken)
+  const caller = await requireGroupManager(input.groupId, input.profileToken)
   const db = createServerClient({ admin: true })
 
   // Admins cannot promote to admin
@@ -600,16 +713,11 @@ export async function updateMemberRole(input: {
     .single()
 
   if (!target) throw new Error('Member not found')
-  if (target.role === 'owner') throw new Error("Cannot change the owner's role")
-  if (target.role === 'chef') throw new Error("Cannot change the chef's role")
+  if (!canAssignCircleMemberRole(caller.actor, caller.context, target.role, input.newRole)) {
+    throw new Error('You cannot assign that circle role')
+  }
 
-  // Set default permissions based on role
-  const permissions =
-    input.newRole === 'admin'
-      ? { can_post: true, can_invite: true, can_pin: true }
-      : input.newRole === 'viewer'
-        ? { can_post: false, can_invite: false, can_pin: false }
-        : { can_post: true, can_invite: false, can_pin: false }
+  const permissions = defaultCircleMemberPermissions(input.newRole)
 
   const { error } = await db
     .from('hub_group_members')
@@ -631,10 +739,10 @@ export async function updateMemberPermissions(input: {
   can_invite?: boolean
   can_pin?: boolean
 }): Promise<void> {
-  await requireGroupAdmin(input.groupId, input.profileToken)
+  const caller = await requireGroupManager(input.groupId, input.profileToken)
   const db = createServerClient({ admin: true })
 
-  // Cannot change owner/chef permissions
+  // Cannot change owner/chef permissions. Hosts are limited to ordinary members.
   const { data: target } = await db
     .from('hub_group_members')
     .select('role')
@@ -643,8 +751,8 @@ export async function updateMemberPermissions(input: {
     .single()
 
   if (!target) throw new Error('Member not found')
-  if (target.role === 'owner' || target.role === 'chef') {
-    throw new Error(`Cannot change ${target.role} permissions`)
+  if (!canManageCircleMember(caller.actor, caller.context, target.role)) {
+    throw new Error('You cannot change that circle member')
   }
 
   const updates: Record<string, boolean> = {}
@@ -664,7 +772,7 @@ export async function updateMemberPermissions(input: {
 }
 
 /**
- * Remove a member from a group. Owner/admin only.
+ * Remove a member from a group. Owner/admin/chef/host only.
  * Cannot remove the owner or yourself (use leaveGroup for that).
  */
 export async function removeMember(input: {
@@ -672,7 +780,7 @@ export async function removeMember(input: {
   profileToken: string
   targetMemberId: string
 }): Promise<void> {
-  const caller = await requireGroupAdmin(input.groupId, input.profileToken)
+  const caller = await requireGroupManager(input.groupId, input.profileToken)
   const db = createServerClient({ admin: true })
 
   const { data: target } = await db
@@ -683,7 +791,9 @@ export async function removeMember(input: {
     .single()
 
   if (!target) throw new Error('Member not found')
-  if (target.role === 'owner') throw new Error('Cannot remove the group owner')
+  if (!canManageCircleMember(caller.actor, caller.context, target.role)) {
+    throw new Error('You cannot remove that circle member')
+  }
   if (target.profile_id === caller.profileId) {
     throw new Error('Use leaveGroup to leave the group yourself')
   }
@@ -723,7 +833,8 @@ export async function removeMember(input: {
 
 /**
  * Leave a group voluntarily. Any member can call this.
- * The sole owner cannot leave (must transfer ownership first).
+ * The sole owner cannot leave (must transfer ownership first). A sole host is
+ * held only when no other owner/admin/host remains for client-facing controls.
  */
 export async function leaveGroup(input: { groupId: string; profileToken: string }): Promise<void> {
   const db = createServerClient({ admin: true })
@@ -745,17 +856,21 @@ export async function leaveGroup(input: { groupId: string; profileToken: string 
 
   if (!membership) throw new Error('You are not a member of this group')
 
-  // If owner, check there's another owner or admin to take over
-  if (membership.role === 'owner') {
-    const { data: otherAdmins } = await db
+  // If owner/sole host, check there's another manager to take over.
+  if (membership.role === 'owner' || membership.role === 'host') {
+    const { data: otherManagers } = await db
       .from('hub_group_members')
       .select('id')
       .eq('group_id', input.groupId)
-      .in('role', ['owner', 'admin'])
+      .in('role', membership.role === 'owner' ? ['owner', 'admin'] : ['owner', 'admin', 'host'])
       .neq('profile_id', profile.id)
 
-    if (!otherAdmins?.length) {
-      throw new Error('You are the only owner. Promote another member to admin before leaving.')
+    if (!otherManagers?.length) {
+      throw new Error(
+        membership.role === 'owner'
+          ? 'You are the only owner. Promote another member to admin before leaving.'
+          : 'You are the only host. Promote another member to host or admin before leaving.'
+      )
     }
   }
 

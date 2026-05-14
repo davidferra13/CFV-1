@@ -41,11 +41,17 @@ export function MealRequests({ groupId, profileToken, isChefOrAdmin }: MealReque
   const [error, setError] = useState<string | null>(null)
 
   useEffect(() => {
-    getMealRequests({ groupId })
+    if (!profileToken) {
+      setRequests([])
+      setLoading(false)
+      return
+    }
+
+    getMealRequests({ groupId, profileToken })
       .then(setRequests)
       .catch(() => {})
       .finally(() => setLoading(false))
-  }, [groupId])
+  }, [groupId, profileToken])
 
   const pendingCount = requests.filter((r) => r.status === 'pending').length
 

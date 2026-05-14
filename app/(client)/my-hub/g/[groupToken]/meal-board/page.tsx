@@ -76,8 +76,14 @@ export default async function MealBoardPage({ params }: Props) {
   const endDate = `${futureDate.getFullYear()}-${String(futureDate.getMonth() + 1).padStart(2, '0')}-${String(futureDate.getDate()).padStart(2, '0')}`
 
   const [meals, requests] = await Promise.all([
-    getMealBoard({ groupId: group.id, groupToken, startDate, endDate }),
-    getMealRequests({ groupId: group.id, status: 'pending' }),
+    getMealBoard({
+      groupId: group.id,
+      groupToken,
+      profileToken: profile.profile_token,
+      startDate,
+      endDate,
+    }),
+    getMealRequests({ groupId: group.id, profileToken: profile.profile_token, status: 'pending' }),
   ])
 
   const members = await getGroupMembers(group.id)

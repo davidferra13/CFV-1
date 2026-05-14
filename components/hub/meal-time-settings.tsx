@@ -44,13 +44,13 @@ export function MealTimeSettings({
   const [error, setError] = useState<string | null>(null)
 
   useEffect(() => {
-    getDefaultMealTimes(groupId)
+    getDefaultMealTimes({ groupId, profileToken })
       .then((t) => {
         if (t) setTimes(t)
       })
       .catch(() => {})
       .finally(() => setLoading(false))
-  }, [groupId])
+  }, [groupId, profileToken])
 
   const handleSave = () => {
     startTransition(async () => {

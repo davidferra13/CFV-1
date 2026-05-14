@@ -137,15 +137,15 @@ export async function createInquiryCircle(input: {
     can_pin: true,
   })
 
-  // Client as 'member' role (if profile was created)
+  // Primary inquiry client as host. Guest/RSVP joiners stay members elsewhere.
   if (clientProfileId) {
     await db.from('hub_group_members').insert({
       group_id: group.id,
       profile_id: clientProfileId,
-      role: 'member',
+      role: 'host',
       can_post: true,
-      can_invite: false,
-      can_pin: false,
+      can_invite: true,
+      can_pin: true,
     })
   }
 

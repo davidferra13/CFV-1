@@ -36,11 +36,17 @@ export function MealCommentsThread({
   const inputRef = useRef<HTMLInputElement>(null)
 
   useEffect(() => {
-    getMealComments(mealEntryId)
+    if (!profileToken) {
+      setComments([])
+      setLoading(false)
+      return
+    }
+
+    getMealComments({ mealEntryId, profileToken })
       .then(setComments)
       .catch(() => {})
       .finally(() => setLoading(false))
-  }, [mealEntryId])
+  }, [mealEntryId, profileToken])
 
   // Auto-scroll to bottom when new comments arrive
   useEffect(() => {
@@ -205,10 +211,14 @@ export function MealCommentTrigger({
   // Only self-fetch if no initialCount was provided
   useEffect(() => {
     if (initialCount !== undefined) return
-    getMealComments(mealEntryId)
+    if (!profileToken) {
+      setCommentCount(0)
+      return
+    }
+    getMealComments({ mealEntryId, profileToken })
       .then((c) => setCommentCount(c.length))
       .catch(() => {})
-  }, [mealEntryId, initialCount])
+  }, [mealEntryId, initialCount, profileToken])
 
   return (
     <>
@@ -227,7 +237,11 @@ export function MealCommentTrigger({
           onClose={() => {
             setShowThread(false)
             // Refresh count
-            getMealComments(mealEntryId)
+            if (!profileToken) {
+              setCommentCount(0)
+              return
+            }
+            getMealComments({ mealEntryId, profileToken })
               .then((c) => setCommentCount(c.length))
               .catch(() => {})
           }}

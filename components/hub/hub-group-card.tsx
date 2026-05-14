@@ -1,8 +1,9 @@
 'use client'
 
 import Link from 'next/link'
-import { Users, MessageCircle } from '@/components/ui/icons'
+import { Users, MessageCircle, CheckCircle } from '@/components/ui/icons'
 import type { ClientHubGroup } from '@/lib/hub/client-hub-actions'
+import { buildCirclePlanningListSummary } from '@/lib/hub/shared-dinner-planning'
 
 function timeAgo(dateStr: string | null): string {
   if (!dateStr) return ''
@@ -18,6 +19,12 @@ function timeAgo(dateStr: string | null): string {
 }
 
 export function HubGroupCard({ group }: { group: ClientHubGroup }) {
+  const planning = buildCirclePlanningListSummary({
+    memberCount: group.member_count,
+    messageCount: group.message_count,
+    hasUnread: group.has_unread,
+  })
+
   return (
     <Link
       href={`/my-hub/g/${group.group_token}`}
@@ -62,6 +69,19 @@ export function HubGroupCard({ group }: { group: ClientHubGroup }) {
           <span className="shrink-0 text-xs text-stone-500">{timeAgo(group.last_message_at)}</span>
         </div>
       )}
+
+      <div
+        className={`mt-3 flex items-center gap-2 rounded-lg px-3 py-2 text-xs ${
+          planning.tone === 'ready'
+            ? 'bg-emerald-500/10 text-emerald-300'
+            : planning.tone === 'needs_signal'
+              ? 'bg-brand-500/10 text-brand-300'
+              : 'bg-stone-800/50 text-stone-400'
+        }`}
+      >
+        <CheckCircle className="h-3.5 w-3.5 shrink-0" />
+        <span className="truncate">{planning.label}</span>
+      </div>
     </Link>
   )
 }

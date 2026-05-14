@@ -2,11 +2,8 @@
 
 import { Repeat, Calendar, Users, DollarSign, ChefHat } from '@/components/ui/icons'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
-import {
-  type ClientRecurringService,
-  SERVICE_TYPE_LABELS,
-  FREQUENCY_LABELS,
-} from '@/lib/recurring/client-recurring-actions'
+import type { ClientRecurringService } from '@/lib/recurring/client-recurring-actions'
+import { FREQUENCY_LABELS, SERVICE_TYPE_LABELS } from '@/lib/recurring/constants'
 
 const DAY_NAMES = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat']
 

@@ -25,6 +25,7 @@ import { GuestPrivateChat } from '@/components/hub/guest-private-chat'
 import { WeeklyMealBoard } from '@/components/hub/weekly-meal-board'
 import { MyPrepTasks } from '@/components/hub/my-prep-tasks'
 import { updateMemberNotificationPreferences } from '@/lib/hub/group-actions'
+import { describeCircleAccess } from '@/lib/hub/circle-access-policy'
 import { sendCircleRecoveryEmail } from '@/lib/hub/profile-actions'
 import { NotificationPreferences } from '@/components/hub/notification-preferences'
 import { CircleClientStatus } from '@/components/hub/circle-client-status'
@@ -39,13 +40,22 @@ import { CircleShareCard } from '@/components/hub/circle-share-card'
 import { HostDashboardTab } from '@/components/hub/host-dashboard-tab'
 import { IngredientAvailabilityBoard } from '@/components/hub/ingredient-availability-board'
 import { CircleRsvpBar } from '@/components/hub/circle-rsvp-bar'
+import { SharedDinnerPlanningPanel } from '@/components/hub/shared-dinner-planning-panel'
 import type { RsvpStatus, RsvpSummary } from '@/lib/hub/rsvp-actions'
 import type { GuestCriticalPathResult } from '@/lib/lifecycle/critical-path'
 import type { CircleChefProofData } from '@/lib/hub/circle-chef-proof'
 import type { HouseholdDietarySummary } from '@/lib/hub/household-actions'
 
+const EMPTY_HOUSEHOLD_SUMMARY: HouseholdDietarySummary = {
+  members: [],
+  allAllergies: [],
+  allDietary: [],
+  profilesNotAnswered: 0,
+  profilesConfirmedNone: 0,
+}
+
 function HubMenuPollingPanel({
-  isOwnerOrAdmin,
+  isChefOperationalManager,
   ...props
 }: {
   eventId: string
@@ -53,9 +63,9 @@ function HubMenuPollingPanel({
   groupToken: string
   profileToken: string | null
   currentProfileId: string | null
-  isOwnerOrAdmin: boolean
+  isChefOperationalManager: boolean
 }) {
-  return <DinnerCircleMenuBoard {...props} isManager={isOwnerOrAdmin} />
+  return <DinnerCircleMenuBoard {...props} isManager={isChefOperationalManager} />
 }
 
 type Tab =
@@ -125,7 +135,6 @@ export function HubGroupView({
 }: HubGroupViewProps) {
   const [activeTab, setActiveTab] = useState<Tab>(((group as any).default_tab as Tab) || 'chat')
   const [localGroup, setLocalGroup] = useState<HubGroup>(group)
-  const [profileToken, setProfileToken] = useState<string | null>(profileTokenProp ?? null)
   const [currentProfileId, setCurrentProfileId] = useState<string | null>(null)
   const [currentMember, setCurrentMember] = useState<HubGroupMember | null>(null)
   const [isMuted, setIsMuted] = useState(false)
@@ -163,44 +172,55 @@ export function HubGroupView({
           ?.split('=')[1] ?? null
     }
 
-    if (token) {
+    const member = token ? members.find((m) => m.profile?.profile_token === token) : null
+
+    if (member?.profile?.profile_token) {
       // Set cookie client-side so child hub components can read it
-      document.cookie = `hub_profile_token=${token}; path=/; max-age=${60 * 60 * 24 * 365}; samesite=lax`
-      setProfileToken(token)
-      // Find matching member
-      const member = members.find((m) => m.profile?.profile_token === token)
-      if (member) {
-        setCurrentProfileId(member.profile_id)
-        setCurrentMember(member)
-        setIsMuted(member.notifications_muted)
-        // Default owners/admins to dashboard tab on first load
-        if (['owner', 'admin', 'chef'].includes(member.role)) {
-          setActiveTab((prev) => (prev === 'chat' ? 'dashboard' : prev))
-        }
+      document.cookie = `hub_profile_token=${member.profile.profile_token}; path=/; max-age=${60 * 60 * 24 * 365}; samesite=lax`
+      setCurrentProfileId(member.profile_id)
+      setCurrentMember(member)
+      setIsMuted(member.notifications_muted)
+      // Default operational managers to dashboard tab on first load
+      if (['owner', 'admin', 'chef'].includes(member.role)) {
+        setActiveTab((prev) => (prev === 'chat' ? 'dashboard' : prev))
       }
+    } else {
+      setCurrentProfileId(null)
+      setCurrentMember(null)
+      setIsMuted(false)
     }
   }, [members, profileTokenProp])
 
-  const isOwnerOrAdmin = currentMember
+  const memberProfileToken = currentMember?.profile?.profile_token ?? null
+  const chefOperationalManager = currentMember
     ? ['owner', 'admin', 'chef'].includes(currentMember.role)
     : false
-  const canInviteMembers = currentMember
-    ? isOwnerOrAdmin ||
-      currentMember.can_invite ||
-      (localGroup.allow_member_invites && currentMember.role !== 'viewer')
+  const circleSettingsManager = currentMember
+    ? ['owner', 'admin', 'chef', 'host'].includes(currentMember.role)
     : false
-  const inviteRole = currentMember
-    ? currentMember.role === 'chef'
-      ? 'chef'
-      : currentMember.profile?.client_id
-        ? 'client'
-        : currentMember.profile?.auth_user_id
-          ? 'chef'
-          : 'member'
-    : null
+  const circleAccess = describeCircleAccess(
+    {
+      role: currentMember?.role ?? 'public',
+      profileId: currentProfileId,
+      isMember: Boolean(currentMember),
+      member: currentMember
+        ? {
+            role: currentMember.role,
+            can_post: currentMember.can_post,
+            can_invite: currentMember.can_invite,
+            can_pin: currentMember.can_pin,
+          }
+        : null,
+      activeContext: chefOperationalManager ? 'chef' : currentMember ? 'guest' : undefined,
+    },
+    { group: localGroup }
+  )
+  const canInviteMembers = circleAccess.canInvite
+  const canPostToCircle = circleAccess.canPost
+  const inviteRole = currentMember ? (currentMember.role === 'chef' ? 'chef' : 'member') : null
   const { copyRole } = useHubInviteLink({
     groupToken: group.group_token,
-    profileToken,
+    profileToken: memberProfileToken,
     roleHint: inviteRole,
   })
   const hasPlanLayout =
@@ -208,12 +228,16 @@ export function HubGroupView({
     (circleConfig?.layout?.timeline?.length ?? 0) > 0
 
   const baseTabs: { id: Tab; label: string; emoji: string; count?: number }[] = [
-    ...(isOwnerOrAdmin ? [{ id: 'dashboard' as Tab, label: 'Dashboard', emoji: '📊' }] : []),
-    ...(isOwnerOrAdmin && linkedEventId
+    ...(chefOperationalManager
+      ? [{ id: 'dashboard' as Tab, label: 'Dashboard', emoji: '📊' }]
+      : []),
+    ...(chefOperationalManager && linkedEventId
       ? [{ id: 'ingredients' as Tab, label: 'Ingredients', emoji: '🥬' }]
       : []),
     { id: 'chat', label: 'Chat', emoji: '💬' },
-    ...(profileToken ? [{ id: 'private' as Tab, label: 'Private', emoji: '\u{1F512}' }] : []),
+    ...(currentMember && memberProfileToken
+      ? [{ id: 'private' as Tab, label: 'Private', emoji: '\u{1F512}' }]
+      : []),
     { id: 'meals', label: 'Meals', emoji: '🍽️' },
     { id: 'members', label: 'Members', emoji: '👥', count: members.length },
     { id: 'photos', label: 'Photos', emoji: '📸', count: media.length },
@@ -231,11 +255,19 @@ export function HubGroupView({
     { id: 'search', label: 'Search', emoji: '🔍' },
   ]
 
-  const tabs = isOwnerOrAdmin
+  const tabs = circleSettingsManager
     ? [...baseTabs, { id: 'settings' as Tab, label: 'Settings', emoji: '⚙️' }]
     : baseTabs
 
   const memberAvatars = members.slice(0, 5)
+  const availableTabIds = tabs.map((tab) => tab.id).join('|')
+
+  useEffect(() => {
+    const allowedTabs = availableTabIds.split('|') as Tab[]
+    if (!allowedTabs.includes(activeTab)) {
+      setActiveTab('chat')
+    }
+  }, [activeTab, availableTabIds])
 
   return (
     <ThemedWrapper theme={localGroup.theme} className="flex min-h-screen flex-col bg-stone-950">
@@ -252,7 +284,7 @@ export function HubGroupView({
             </div>
 
             {/* Notification bell (opens preferences) */}
-            {profileToken && currentMember && (
+            {currentMember && memberProfileToken && (
               <div className="relative">
                 <button
                   type="button"
@@ -306,7 +338,7 @@ export function HubGroupView({
                     <div className="absolute right-0 top-full z-float mt-2 w-72 rounded-xl border border-stone-700 bg-stone-900 p-4 shadow-xl">
                       <NotificationPreferences
                         groupId={group.id}
-                        profileToken={profileToken!}
+                        profileToken={memberProfileToken}
                         initialPrefs={{
                           notifications_muted: isMuted,
                           notify_email: currentMember.notify_email ?? true,
@@ -318,7 +350,7 @@ export function HubGroupView({
                         onSave={async (prefs) => {
                           const result = await updateMemberNotificationPreferences({
                             groupId: group.id,
-                            profileToken: profileToken!,
+                            profileToken: memberProfileToken,
                             prefs,
                           })
                           if (result.success && 'notifications_muted' in prefs) {
@@ -334,16 +366,16 @@ export function HubGroupView({
             )}
 
             {/* My Profile link */}
-            {profileToken && currentMember?.profile?.profile_token && (
+            {currentMember && memberProfileToken && (
               <Link
-                href={`/hub/me/${currentMember.profile.profile_token}`}
+                href={`/hub/me/${memberProfileToken}`}
                 className="rounded-full bg-stone-800 px-3 py-1 text-xs text-stone-400 hover:bg-stone-700 hover:text-stone-200"
               >
                 My Profile
               </Link>
             )}
 
-            {/* Invite button - owners/admins only */}
+            {/* Invite button - circle managers and members with invite permission */}
             {canInviteMembers && (
               <button
                 type="button"
@@ -414,7 +446,7 @@ export function HubGroupView({
       )}
 
       {/* RSVP Bar (event-linked circles only, authenticated guests only) */}
-      {linkedEventId && profileToken && rsvpSummary && (
+      {linkedEventId && currentMember && memberProfileToken && rsvpSummary && (
         <CircleRsvpBar
           groupId={group.id}
           summary={rsvpSummary}
@@ -430,14 +462,18 @@ export function HubGroupView({
       )}
 
       {/* Persistent quick actions - visible on every tab, not buried in Chat */}
-      {profileToken && linkedEventId && (
+      {currentMember && memberProfileToken && linkedEventId && (
         <div className="mx-auto w-full max-w-2xl px-4 pt-3">
-          <HubQuickActions groupId={group.id} profileToken={profileToken} eventId={linkedEventId} />
+          <HubQuickActions
+            groupId={group.id}
+            profileToken={memberProfileToken}
+            eventId={linkedEventId}
+          />
         </div>
       )}
 
       {/* Join prompt for guests without a profile token */}
-      {!profileToken && (
+      {!currentMember && (
         <div className="sticky bottom-0 z-20 border-t border-stone-700 bg-stone-900/95 px-4 py-3 backdrop-blur">
           <div className="mx-auto max-w-2xl space-y-2">
             {!showRecovery ? (
@@ -553,7 +589,14 @@ export function HubGroupView({
           </div>
         )}
 
-        {activeTab === 'dashboard' && isOwnerOrAdmin && (
+        <SharedDinnerPlanningPanel
+          group={localGroup}
+          members={members}
+          mealBoardEntries={mealBoardEntries}
+          currentMember={currentMember}
+        />
+
+        {activeTab === 'dashboard' && chefOperationalManager && (
           <HostDashboardTab
             groupId={group.id}
             groupToken={group.group_token}
@@ -564,7 +607,7 @@ export function HubGroupView({
           />
         )}
 
-        {activeTab === 'ingredients' && isOwnerOrAdmin && linkedEventId && (
+        {activeTab === 'ingredients' && chefOperationalManager && linkedEventId && (
           <IngredientAvailabilityBoard
             groupId={group.id}
             eventId={linkedEventId}
@@ -582,7 +625,9 @@ export function HubGroupView({
                 proof={chefProof}
               />
             )}
-            {profileToken && <HubPushPrompt profileToken={profileToken} />}
+            {currentMember && memberProfileToken && (
+              <HubPushPrompt profileToken={memberProfileToken} />
+            )}
             {pendingQuote && (
               <CircleApprovalBanner
                 quoteId={pendingQuote.quoteId}
@@ -595,17 +640,17 @@ export function HubGroupView({
             <HubFeed
               groupId={group.id}
               groupToken={group.group_token}
-              profileToken={profileToken}
+              profileToken={memberProfileToken}
               currentProfileId={currentProfileId}
-              isOwnerOrAdmin={isOwnerOrAdmin}
+              isOwnerOrAdmin={chefOperationalManager}
             />
           </>
         )}
 
-        {activeTab === 'private' && profileToken && currentProfileId && (
+        {activeTab === 'private' && currentMember && memberProfileToken && currentProfileId && (
           <GuestPrivateChat
             groupId={group.id}
-            profileToken={profileToken}
+            profileToken={memberProfileToken}
             currentProfileId={currentProfileId}
             chefProfileId={(() => {
               const chefMember = members.find(
@@ -624,22 +669,26 @@ export function HubGroupView({
 
         {activeTab === 'meals' && (
           <>
-            {profileToken && (
+            {currentMember && memberProfileToken && (
               <MyPrepTasks
                 groupId={group.id}
                 groupToken={group.group_token}
-                profileToken={profileToken}
+                profileToken={memberProfileToken}
               />
             )}
             <WeeklyMealBoard
               groupId={group.id}
-              groupToken={group.group_token}
+              groupToken={chefOperationalManager ? group.group_token : ''}
               initialEntries={mealBoardEntries}
               initialLoadError={mealBoardError}
-              initialHouseholdSummary={householdSummary}
+              initialHouseholdSummary={
+                chefOperationalManager
+                  ? (householdSummary ?? EMPTY_HOUSEHOLD_SUMMARY)
+                  : EMPTY_HOUSEHOLD_SUMMARY
+              }
               initialHouseholdError={householdSummaryError}
-              profileToken={profileToken}
-              isChefOrAdmin={isOwnerOrAdmin}
+              profileToken={memberProfileToken}
+              isChefOrAdmin={chefOperationalManager}
               currentProfileId={currentProfileId}
             />
           </>
@@ -656,9 +705,9 @@ export function HubGroupView({
                   eventId={linkedEventId}
                   groupId={group.id}
                   groupToken={group.group_token}
-                  profileToken={profileToken}
+                  profileToken={memberProfileToken}
                   currentProfileId={currentProfileId}
-                  isOwnerOrAdmin={isOwnerOrAdmin}
+                  isChefOperationalManager={chefOperationalManager}
                 />
               </div>
             )}
@@ -688,8 +737,8 @@ export function HubGroupView({
           <HubPhotoGallery
             groupId={group.id}
             media={media}
-            profileToken={profileToken}
-            canPost={currentMember?.can_post ?? false}
+            profileToken={memberProfileToken}
+            canPost={canPostToCircle}
           />
         )}
 
@@ -697,8 +746,8 @@ export function HubGroupView({
           <HubAvailabilityGrid
             groupId={group.id}
             availabilityPolls={availability}
-            profileToken={profileToken}
-            canPost={currentMember?.can_post ?? false}
+            profileToken={memberProfileToken}
+            canPost={canPostToCircle}
           />
         )}
 
@@ -706,8 +755,8 @@ export function HubGroupView({
           <HubNotesBoard
             groupId={group.id}
             notes={notes}
-            profileToken={profileToken}
-            canPost={currentMember?.can_post ?? false}
+            profileToken={memberProfileToken}
+            canPost={canPostToCircle}
           />
         )}
 
@@ -715,10 +764,10 @@ export function HubGroupView({
           <HubMemberList
             members={members}
             groupId={group.id}
-            groupToken={group.group_token}
+            groupToken={chefOperationalManager ? group.group_token : ''}
             currentProfileId={currentProfileId}
-            profileToken={profileToken}
-            isOwnerOrAdmin={isOwnerOrAdmin}
+            profileToken={memberProfileToken}
+            isOwnerOrAdmin={circleSettingsManager}
             canInvite={canInviteMembers}
           />
         )}
@@ -727,15 +776,18 @@ export function HubGroupView({
           <HubMessageSearch groupId={group.id} groupToken={group.group_token} />
         )}
 
-        {activeTab === 'settings' && isOwnerOrAdmin && profileToken && (
-          <div className="p-4">
-            <HubGroupSettings
-              group={localGroup}
-              profileToken={profileToken}
-              onUpdated={(updated) => setLocalGroup(updated)}
-            />
-          </div>
-        )}
+        {activeTab === 'settings' &&
+          circleSettingsManager &&
+          currentMember &&
+          memberProfileToken && (
+            <div className="p-4">
+              <HubGroupSettings
+                group={localGroup}
+                profileToken={memberProfileToken}
+                onUpdated={(updated) => setLocalGroup(updated)}
+              />
+            </div>
+          )}
       </main>
 
       {/* Footer */}
