@@ -33,7 +33,7 @@ export async function POST(req: NextRequest) {
   const realIp = req.headers.get('x-real-ip')
   const remoteIp = forwardedFor?.split(',')[0]?.trim() ?? realIp ?? ''
   const isLoopback =
-    !remoteIp || remoteIp === '127.0.0.1' || remoteIp === '::1' || remoteIp === 'localhost'
+    !!remoteIp && (remoteIp === '127.0.0.1' || remoteIp === '::1' || remoteIp === 'localhost')
   if (!isLoopback) {
     return new NextResponse('Forbidden', { status: 403 })
   }

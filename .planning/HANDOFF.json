@@ -1,6 +1,6 @@
 {
   "version": "1.0",
-  "timestamp": "2026-05-14T14:18:58.381Z",
+  "timestamp": "2026-05-15T00:41:17.564Z",
   "source": "auto-postool",
   "partial": false,
   "phase": null,
@@ -18,51 +18,23 @@
   "uncommitted_files": [
     {
       "status": "M",
-      "path": ".openclaw-deploy/captured-session.json"
-    },
-    {
-      "status": "M",
       "path": ".planning/HANDOFF.json"
     },
     {
       "status": "M",
-      "path": "app/(chef)/events/[id]/_components/event-detail-tickets-tab.tsx"
+      "path": "app/(admin)/admin/page.tsx"
     },
     {
       "status": "M",
-      "path": "app/(chef)/events/[id]/page.tsx"
+      "path": "app/(partner)/partner/dashboard/page.tsx"
     },
     {
       "status": "M",
-      "path": "app/(chef)/events/page.tsx"
+      "path": "app/(staff)/staff-dashboard/page.tsx"
     },
     {
       "status": "M",
-      "path": "app/(public)/_components/cuisine-marquee.tsx"
-    },
-    {
-      "status": "M",
-      "path": "app/(public)/page.tsx"
-    },
-    {
-      "status": "M",
-      "path": "components/hub/hub-availability-grid.tsx"
-    },
-    {
-      "status": "M",
-      "path": "components/navigation/action-bar.tsx"
-    },
-    {
-      "status": "M",
-      "path": "components/navigation/admin-nav-config.ts"
-    },
-    {
-      "status": "M",
-      "path": "components/navigation/all-features-collapse.tsx"
-    },
-    {
-      "status": "M",
-      "path": "components/navigation/nav-config.tsx"
+      "path": "app/api/e2e/auth/route.ts"
     },
     {
       "status": "M",
@@ -74,85 +46,41 @@
     },
     {
       "status": "M",
-      "path": "lib/cron/definitions.ts"
+      "path": "lib/auth/permission-actions.ts"
     },
     {
       "status": "M",
-      "path": "lib/discovery/discovery-destination-contract.ts"
+      "path": "lib/auth/permissions.ts"
     },
     {
       "status": "M",
-      "path": "lib/discovery/discovery-rail-scoring.ts"
+      "path": "lib/auth/signed-cookie.ts"
     },
     {
       "status": "M",
-      "path": "lib/discovery/homepage-discovery-rail.ts"
+      "path": "lib/db/index.ts"
     },
     {
       "status": "M",
-      "path": "lib/discovery/rail-contract-registry.ts"
+      "path": "lib/discover/outreach-crypto.ts"
     },
     {
       "status": "M",
-      "path": "lib/pricing/resolve-price.ts"
-    },
-    {
-      "status": "M",
-      "path": "lib/tickets/webhook-handler.ts"
+      "path": "middleware.ts"
     },
     {
       "status": "??",
-      "path": "app/(admin)/admin/pie-compliance/"
+      "path": "app/(admin)/admin/_sections/"
     },
     {
       "status": "??",
-      "path": "app/(chef)/prices/seasonal/"
+      "path": "app/(partner)/partner/dashboard/_sections/"
     },
     {
       "status": "??",
-      "path": "app/api/cron/pie-auto-expansion/"
-    },
-    {
-      "status": "??",
-      "path": "app/api/cron/pie-coverage-gaps/"
-    },
-    {
-      "status": "??",
-      "path": "database/migrations/20260514000001_ingredient_provenance_fields.sql"
-    },
-    {
-      "status": "??",
-      "path": "devtools/saturation/"
-    },
-    {
-      "status": "??",
-      "path": "lib/pricing/compliance-actions.ts"
-    },
-    {
-      "status": "??",
-      "path": "lib/pricing/resolve-price-helpers.ts"
-    },
-    {
-      "status": "??",
-      "path": "lib/pricing/seasonal-calendar-actions.ts"
-    },
-    {
-      "status": "??",
-      "path": "lib/pricing/tier-resolver.ts"
-    },
-    {
-      "status": "??",
-      "path": "lib/pricing/tiers/"
-    },
-    {
-      "status": "??",
-      "path": "saturation-tracking/"
-    },
-    {
-      "status": "??",
-      "path": "scripts/pie-nationwide-ingestion.mjs"
+      "path": "app/(staff)/staff-dashboard/_sections/"
     }
   ],
   "next_action": null,
-  "context_notes": "Recent commits:\n8bb51f39a chore: gitignore build artifacts and update planning/uptime data\n9729dd1ae test: add unit tests for direct orders, PIE cart, god-mode, not-found recovery, and navigation\na850f3609 feat: update public surfaces, navigation, middleware, auth, and add web research layer\ncfc1bfba7 feat: add Remy discovery, safety, and decision contracts\n4b04e7da1 feat: expand hub, circles, and dinner planning with consensus, memory, and meal board upgrades"
+  "context_notes": "Recent commits:\n388c0a478 feat(discovery): universal rail system with scoring, registries, and dashboard integration\n44bef56f8 fix(schema): align user_roles Drizzle schema with multi-role migration\nec43eaee2 feat(auth): multi-role self-service signup and role switching\na8c2909c5 fix(auth): remove missing DropdownMenuLabel import from role switcher\n2f61da692 docs(discovery): add 7-layer overhaul design spec and all layer plans (L1-L7)"
 }

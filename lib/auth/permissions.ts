@@ -132,14 +132,18 @@ export class PermissionSet {
  * Resolve a user's tenant_role from user_roles table.
  * Falls back to mapping from the legacy 'role' column if tenant_role is null.
  */
-async function resolveTenantRole(authUserId: string): Promise<TenantRole> {
+async function resolveTenantRole(authUserId: string, tenantId: string | null): Promise<TenantRole> {
   const [row] = await db
     .select({
       role: userRoles.role,
       tenantRole: sql<string | null>`tenant_role`,
     })
     .from(userRoles)
-    .where(eq(userRoles.authUserId, authUserId))
+    .where(
+      tenantId
+        ? and(eq(userRoles.authUserId, authUserId), eq(userRoles.entityId, tenantId))
+        : eq(userRoles.authUserId, authUserId)
+    )
     .limit(1)
 
   if (!row) return 'team_member'
@@ -201,7 +205,7 @@ async function loadUserOverrides(tenantId: string, authUserId: string): Promise<
  */
 export const resolveCurrentUserPermissions = cache(
   async (authUserId: string, tenantId: string | null): Promise<PermissionSet> => {
-    const tenantRole = await resolveTenantRole(authUserId)
+    const tenantRole = await resolveTenantRole(authUserId, tenantId)
 
     // Parallelize: role defaults and user overrides are independent
     const [roleDefaults, overrides] = await Promise.all([

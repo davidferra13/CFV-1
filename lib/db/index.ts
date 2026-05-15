@@ -2,7 +2,12 @@ import { drizzle } from 'drizzle-orm/postgres-js'
 import postgres, { type Sql } from 'postgres'
 
 const connectionString =
-  process.env.DATABASE_URL || 'postgresql://postgres:postgres@127.0.0.1:54322/postgres'
+  process.env.DATABASE_URL ||
+  (process.env.NODE_ENV === 'production'
+    ? (() => {
+        throw new Error('DATABASE_URL is required in production')
+      })()
+    : 'postgresql://postgres:postgres@127.0.0.1:54322/postgres')
 
 // PostgreSQL OIDs for date/time types
 // DATE (1082) is returned as an ISO string 'YYYY-MM-DD' so JS string comparisons work correctly.

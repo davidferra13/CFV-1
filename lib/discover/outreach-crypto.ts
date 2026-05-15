@@ -4,7 +4,13 @@
 import crypto from 'crypto'
 
 const OUTREACH_HASH_SECRET =
-  process.env.OUTREACH_HASH_SECRET || process.env.AUTH_SECRET || 'dev-secret-do-not-use'
+  process.env.OUTREACH_HASH_SECRET ||
+  process.env.AUTH_SECRET ||
+  (process.env.NODE_ENV === 'production'
+    ? (() => {
+        throw new Error('OUTREACH_HASH_SECRET or AUTH_SECRET is required in production')
+      })()
+    : 'dev-secret-do-not-use')
 
 function deriveKeyAndIv(listingId: string): { key: Buffer; iv: Buffer } {
   const keyMaterial = crypto.createHash('sha256').update(OUTREACH_HASH_SECRET).digest()

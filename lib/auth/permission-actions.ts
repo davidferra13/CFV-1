@@ -33,7 +33,7 @@ export async function grantPermissionOverride(input: {
 
   // Verify target user belongs to this tenant
   const [targetRole] = (await db.execute(
-    sql`SELECT role, tenant_role FROM user_roles WHERE auth_user_id = ${input.targetAuthUserId} LIMIT 1`
+    sql`SELECT role, tenant_role FROM user_roles WHERE auth_user_id = ${input.targetAuthUserId} AND entity_id = ${tenantId} LIMIT 1`
   )) as any[]
 
   if (!targetRole) {
@@ -132,7 +132,7 @@ export async function changeTenantRole(input: {
 
   // Get current role for audit
   const [currentRole] = (await db.execute(
-    sql`SELECT tenant_role, role FROM user_roles WHERE auth_user_id = ${input.targetAuthUserId} LIMIT 1`
+    sql`SELECT tenant_role, role FROM user_roles WHERE auth_user_id = ${input.targetAuthUserId} AND entity_id = ${tenantId} LIMIT 1`
   )) as any[]
 
   if (!currentRole) {
@@ -147,7 +147,7 @@ export async function changeTenantRole(input: {
 
   try {
     await db.execute(
-      sql`UPDATE user_roles SET tenant_role = ${input.newRole} WHERE auth_user_id = ${input.targetAuthUserId}`
+      sql`UPDATE user_roles SET tenant_role = ${input.newRole} WHERE auth_user_id = ${input.targetAuthUserId} AND entity_id = ${tenantId}`
     )
 
     // Audit log
