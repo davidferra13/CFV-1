@@ -277,10 +277,21 @@ export async function assembleRailForPage(
     includeDebugScores: false,
   })
 
-  // Inject metadata into templates if provided
-  if (metadata) {
+  // Auto-resolve data if no explicit metadata provided
+  let resolvedMeta = metadata
+  if (!resolvedMeta && userId) {
+    try {
+      const { resolveRailData } = await import('./resolvers')
+      resolvedMeta = await resolveRailData(role, userId, tenantId)
+    } catch {
+      // Resolver failure is non-critical; items keep static labels
+    }
+  }
+
+  // Inject metadata into templates
+  if (resolvedMeta) {
     for (const item of result.items) {
-      const itemMeta = metadata[item.definitionId]
+      const itemMeta = resolvedMeta[item.definitionId]
       if (itemMeta) {
         item.label = resolveTemplate(
           findDefinitionTemplate(item.definitionId) ?? item.label,
