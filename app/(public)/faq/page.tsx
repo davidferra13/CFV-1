@@ -166,7 +166,7 @@ const ALL_FAQ_ITEMS = FAQ_CATEGORIES.flatMap((cat) => cat.items)
 export const metadata: Metadata = buildMarketingMetadata({
   title: 'ChefFlow FAQ | Private Chef Business Questions Answered',
   description:
-    'Answers to common questions about food costing, pricing, hiring a private chef, running a food business, and using ChefFlow to manage your operation.',
+    'How much does a private chef cost? Answers about private chef prices, food costing, hiring a chef, running a food business, and using ChefFlow to manage your operation.',
   path: '/faq',
   imagePath: '/social/chefflow-faq.png',
   imageAlt: 'ChefFlow FAQ preview',

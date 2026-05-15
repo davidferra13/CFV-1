@@ -10,7 +10,13 @@ import { buildContactSupportInfo } from '@/lib/contact/public-support'
 import { createServerClient } from '@/lib/db/server'
 import { resolveOwnerIdentity } from '@/lib/platform/owner-account'
 import { PUBLIC_REQUEST_ROUTING_COPY } from '@/lib/public/public-market-copy'
-import { PUBLIC_MARKET_SCOPE, SUPPORT_EMAIL, getFounderProfile } from '@/lib/site/public-site'
+import {
+  PUBLIC_MARKET_SCOPE,
+  SUPPORT_EMAIL,
+  absoluteUrl,
+  getFounderProfile,
+} from '@/lib/site/public-site'
+import { BreadcrumbJsonLd } from '@/components/seo/json-ld'
 
 export const revalidate = 60
 
@@ -97,6 +103,12 @@ export default async function ContactPage({ searchParams }: ContactPageProps) {
 
   return (
     <main>
+      <BreadcrumbJsonLd
+        items={[
+          { name: 'Home', url: absoluteUrl('/') },
+          { name: 'Contact', url: absoluteUrl('/contact') },
+        ]}
+      />
       <PublicPageView
         pageName="contact"
         properties={{

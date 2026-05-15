@@ -18,9 +18,9 @@ import { PUBLIC_MARKET_SCOPE, buildMarketingMetadata, absoluteUrl } from '@/lib/
 import { BreadcrumbJsonLd } from '@/components/seo/json-ld'
 
 export const metadata: Metadata = buildMarketingMetadata({
-  title: 'Book a Private Chef',
+  title: 'Book a Private Chef - Hire a Chef Near You',
   description:
-    'Tell us about your event and ChefFlow will share your request with matched private chefs in your area. Matched chefs reach out directly. Free to submit, no obligation.',
+    'Hire a private chef for dinner parties, meal prep, or catering. Describe your event and ChefFlow matches you with qualified chefs in your area. Free to submit, no obligation.',
   path: '/book',
   imagePath: '/social/chefflow-booking.png',
   imageAlt: 'ChefFlow booking flow preview',

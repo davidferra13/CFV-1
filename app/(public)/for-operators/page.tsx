@@ -22,9 +22,9 @@ import { PUBLIC_MARKET_POSITIONING_COPY } from '@/lib/public/public-market-copy'
 import { PUBLIC_MARKET_SCOPE, buildMarketingMetadata } from '@/lib/site/public-site'
 
 export const metadata: Metadata = buildMarketingMetadata({
-  title: 'For Operators - ChefFlow for Private Chefs, Caterers, and Meal Prep',
+  title: 'Private Chef Software - CRM, Booking, Menus, and Payments',
   description:
-    'ChefFlow is the operator workspace for private chefs, caterers, and meal prep businesses. Run inquiries, events, menus, payments, and finance in one system, then review real screens and a real demo.',
+    'ChefFlow is private chef software that replaces spreadsheets, email threads, and disconnected tools. Chef CRM, client management, event booking, menu costing, invoicing, and kitchen ops in one platform. Free for all operators.',
   path: '/for-operators',
   imagePath: '/social/chefflow-operators.png',
   imageAlt: 'ChefFlow operator workflow preview',

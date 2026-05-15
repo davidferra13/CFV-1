@@ -6,7 +6,8 @@ import {
 } from '@/lib/public/public-surface-config'
 import { PublicSecondaryEntryCluster } from '@/components/public/public-secondary-entry-cluster'
 import { PUBLIC_SECONDARY_ENTRY_CONFIG } from '@/lib/public/public-secondary-entry-config'
-import { buildMarketingMetadata } from '@/lib/site/public-site'
+import { buildMarketingMetadata, absoluteUrl } from '@/lib/site/public-site'
+import { BreadcrumbJsonLd } from '@/components/seo/json-ld'
 
 const CLIENT_PATHS = [
   {
@@ -31,15 +32,21 @@ const DIRECT_INQUIRY_CHECKLIST = [
 ]
 
 export const metadata: Metadata = buildMarketingMetadata({
-  title: 'How ChefFlow Works - For Clients and Chefs',
+  title: 'How ChefFlow Works - Chef Booking Platform for Clients and Operators',
   description:
-    'Browse the current chef directory or describe your event. ChefFlow routes your request to matched chefs or directly to the chef you choose, with route-specific payment and response expectations.',
+    'Browse the chef directory, describe your event, or inquire directly. ChefFlow is a chef booking platform that routes requests to matched chefs with built-in proposals, payments, and scheduling.',
   path: '/how-it-works',
 })
 
 export default function HowItWorksPage() {
   return (
     <main>
+      <BreadcrumbJsonLd
+        items={[
+          { name: 'Home', url: absoluteUrl('/') },
+          { name: 'How It Works', url: absoluteUrl('/how-it-works') },
+        ]}
+      />
       <section className="mx-auto w-full max-w-4xl px-4 pt-20 pb-8 sm:px-6 md:pt-28 md:pb-12 lg:px-8">
         <h1 className="text-3xl font-display tracking-tight text-white md:text-4xl lg:text-5xl">
           How it works
