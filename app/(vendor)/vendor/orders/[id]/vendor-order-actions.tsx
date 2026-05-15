@@ -49,7 +49,7 @@ export function VendorOrderActions({
           key={target}
           onClick={() => handleAction(target)}
           disabled={isPending}
-          variant="outline"
+          variant="secondary"
           className="border-stone-600 text-stone-200 hover:bg-stone-700"
         >
           {isPending ? 'Updating...' : label}

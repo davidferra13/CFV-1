@@ -3,7 +3,7 @@
 import { db } from '@/lib/db'
 import { vendors, userRoles } from '@/lib/db/schema/schema'
 import { requireChef } from '@/lib/auth/get-user'
-import { eq, and } from 'drizzle-orm'
+import { eq, and, sql } from 'drizzle-orm'
 import { hashToken } from '@/lib/auth/invitations'
 import { randomUUID } from 'crypto'
 import { hash } from 'bcryptjs'
@@ -34,9 +34,8 @@ export async function generateVendorInvite(vendorId: string): Promise<{
   const hashedToken = hashToken(token)
 
   await db.execute(
-    `INSERT INTO vendor_invitations (tenant_id, vendor_id, email, token, expires_at, created_by)
-     VALUES ($1, $2, $3, $4, NOW() + INTERVAL '7 days', $5)`,
-    [chef.entityId, vendorId, vendor.email, hashedToken, chef.authUserId]
+    sql`INSERT INTO vendor_invitations (tenant_id, vendor_id, email, token, expires_at, created_by)
+     VALUES (${chef.entityId}, ${vendorId}, ${vendor.email}, ${hashedToken}, NOW() + INTERVAL '7 days', ${chef.authUserId})`
   )
 
   const inviteUrl = `${APP_URL}/auth/vendor-signup?token=${token}`
@@ -56,16 +55,17 @@ export async function claimVendorInvite(
   const hashedToken = hashToken(token)
 
   const result = await db.execute(
-    `SELECT vi.id, vi.tenant_id, vi.vendor_id, vi.email, vi.used_at, vi.expires_at,
+    sql`SELECT vi.id, vi.tenant_id, vi.vendor_id, vi.email, vi.used_at, vi.expires_at,
             v.name as vendor_name
      FROM vendor_invitations vi
      JOIN vendors v ON v.id = vi.vendor_id
-     WHERE vi.token = $1
-     LIMIT 1`,
-    [hashedToken]
+     WHERE vi.token = ${hashedToken}
+     LIMIT 1`
   )
 
-  const invitation = result.rows?.[0] as Record<string, unknown> | undefined
+  const invitation = (result as unknown as Record<string, unknown>[])[0] as
+    | Record<string, unknown>
+    | undefined
   if (!invitation) {
     return { error: 'Invalid or expired invitation' }
   }
@@ -84,23 +84,22 @@ export async function claimVendorInvite(
 
   try {
     const existingUser = await db.execute(
-      `SELECT id FROM auth.users WHERE lower(email) = lower($1) LIMIT 1`,
-      [email]
+      sql`SELECT id FROM auth.users WHERE lower(email) = lower(${email}) LIMIT 1`
     )
 
     let authUserId: string
 
-    if (existingUser.rows?.length > 0) {
-      authUserId = (existingUser.rows[0] as Record<string, unknown>).id as string
+    const existingUserRows = existingUser as unknown as Record<string, unknown>[]
+    if (existingUserRows.length > 0) {
+      authUserId = existingUserRows[0].id as string
     } else {
       const hashedPassword = await hash(password, 12)
       const newUser = await db.execute(
-        `INSERT INTO auth.users (id, email, encrypted_password, email_confirmed_at, created_at, updated_at)
-         VALUES (gen_random_uuid(), $1, $2, NOW(), NOW(), NOW())
-         RETURNING id`,
-        [email.toLowerCase(), hashedPassword]
+        sql`INSERT INTO auth.users (id, email, encrypted_password, email_confirmed_at, created_at, updated_at)
+         VALUES (gen_random_uuid(), ${email.toLowerCase()}, ${hashedPassword}, NOW(), NOW(), NOW())
+         RETURNING id`
       )
-      authUserId = (newUser.rows[0] as Record<string, unknown>).id as string
+      authUserId = (newUser as unknown as Record<string, unknown>[])[0].id as string
     }
 
     await db.insert(userRoles).values({
@@ -109,7 +108,7 @@ export async function claimVendorInvite(
       entityId: invitation.vendor_id as string,
     })
 
-    await db.execute(`UPDATE vendor_invitations SET used_at = NOW() WHERE id = $1`, [invitation.id])
+    await db.execute(sql`UPDATE vendor_invitations SET used_at = NOW() WHERE id = ${invitation.id}`)
 
     return { success: true }
   } catch (e) {
