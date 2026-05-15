@@ -58,8 +58,9 @@ function ClientSignUpForm() {
     setLoading(true)
 
     try {
-      await signUpClient(formData)
-      router.push('/auth/signin')
+      const result = await signUpClient(formData)
+      router.push(result.autoSignedIn ? '/my-events' : '/auth/signin')
+      router.refresh()
     } catch (err) {
       const error = err as Error
       setError(error.message)

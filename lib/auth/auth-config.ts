@@ -12,11 +12,11 @@ import type { NextAuthConfig } from 'next-auth'
 import Credentials from 'next-auth/providers/credentials'
 import Google from 'next-auth/providers/google'
 import bcrypt from 'bcryptjs'
-import { headers } from 'next/headers'
+import { cookies, headers } from 'next/headers'
 import { db } from '@/lib/db'
 import { authUsers } from '@/lib/db/schema/auth'
 import { userRoles, clients, staffMembers, referralPartners } from '@/lib/db/schema/schema'
-import { eq, sql } from 'drizzle-orm'
+import { and, eq, sql } from 'drizzle-orm'
 import { getSessionControlRow, recordSuccessfulAccountAccess } from './account-access'
 import { shouldInvalidateJwtSession } from './account-access-core'
 import { userHasMfaEnabled, getMfaMethodType, createMfaChallenge } from '@/lib/mfa/challenge'
@@ -29,6 +29,7 @@ declare module 'next-auth' {
     role?: string
     entityId?: string
     tenantId?: string | null
+    activeRoleId?: string
     mfaPending?: boolean
     mfaChallengeId?: string
   }
@@ -39,6 +40,7 @@ declare module 'next-auth' {
       role: string
       entityId: string
       tenantId: string | null
+      activeRoleId?: string
       mfaPending?: boolean
       mfaChallengeId?: string
     }
@@ -51,6 +53,7 @@ type AuthJwtToken = {
   role?: string
   entityId?: string
   tenantId?: string | null
+  activeRoleId?: string
   sessionVersion?: number
   sessionAuthenticatedAt?: number
   sessionControlCheckedAt?: number
@@ -67,14 +70,31 @@ function isEdgeRuntime(): boolean {
 
 /**
  * Resolve role and tenant for a given auth user ID.
- * Reused by both Credentials and Google providers.
+ * Supports multi-role: if preferredRoleId is set, use that role (verified ownership).
+ * Otherwise falls back to the first role found.
  */
-async function resolveRoleAndTenant(authUserId: string) {
-  const [roleRow] = await db
-    .select({ role: userRoles.role, entityId: userRoles.entityId })
-    .from(userRoles)
-    .where(eq(userRoles.authUserId, authUserId))
-    .limit(1)
+async function resolveRoleAndTenant(authUserId: string, preferredRoleId?: string | null) {
+  let roleRow: { id: string; role: string; entityId: string } | undefined
+
+  // Try preferred role first (must belong to this user)
+  if (preferredRoleId) {
+    const [preferred] = await db
+      .select({ id: userRoles.id, role: userRoles.role, entityId: userRoles.entityId })
+      .from(userRoles)
+      .where(and(eq(userRoles.id, preferredRoleId), eq(userRoles.authUserId, authUserId)))
+      .limit(1)
+    roleRow = preferred
+  }
+
+  // Fallback: first available role
+  if (!roleRow) {
+    const [first] = await db
+      .select({ id: userRoles.id, role: userRoles.role, entityId: userRoles.entityId })
+      .from(userRoles)
+      .where(eq(userRoles.authUserId, authUserId))
+      .limit(1)
+    roleRow = first
+  }
 
   if (!roleRow) return null
 
@@ -92,7 +112,6 @@ async function resolveRoleAndTenant(authUserId: string) {
       .from(clients)
       .where(eq(clients.id, roleRow.entityId))
       .limit(1)
-    // Block auth for soft-deleted or GDPR-deletion-scheduled clients past grace period
     if (clientRow?.deletedAt) return null
     if (clientRow?.deletionScheduledFor && new Date(clientRow.deletionScheduledFor) <= new Date()) {
       return null
@@ -115,6 +134,7 @@ async function resolveRoleAndTenant(authUserId: string) {
   }
 
   return {
+    roleId: roleRow.id,
     role: roleRow.role,
     entityId: roleRow.entityId,
     tenantId,
@@ -230,6 +250,7 @@ export const authConfig: NextAuthConfig = {
           role: roleInfo?.role,
           entityId: roleInfo?.entityId,
           tenantId: roleInfo?.tenantId ?? null,
+          activeRoleId: roleInfo?.roleId,
         }
       },
     }),
@@ -292,6 +313,7 @@ export const authConfig: NextAuthConfig = {
             user.role = roleInfo.role
             user.entityId = roleInfo.entityId
             user.tenantId = roleInfo.tenantId
+            user.activeRoleId = roleInfo.roleId
             trackedTenantId = roleInfo.tenantId
           }
           // Audit: Google OAuth login success
@@ -337,15 +359,17 @@ export const authConfig: NextAuthConfig = {
         authToken.role = user.role ?? ''
         authToken.entityId = user.entityId ?? ''
         authToken.tenantId = user.tenantId ?? null
+        authToken.activeRoleId = user.activeRoleId ?? undefined
       }
 
       // On session update, re-resolve role (for role changes after OAuth signup)
       if (trigger === 'update' && authToken.userId) {
-        const roleInfo = await resolveRoleAndTenant(authToken.userId)
+        const roleInfo = await resolveRoleAndTenant(authToken.userId, authToken.activeRoleId)
         if (roleInfo) {
           authToken.role = roleInfo.role
           authToken.entityId = roleInfo.entityId
           authToken.tenantId = roleInfo.tenantId
+          authToken.activeRoleId = roleInfo.roleId
         }
       }
 
@@ -359,6 +383,23 @@ export const authConfig: NextAuthConfig = {
       // Node routes/actions.
       if (isEdgeRuntime()) {
         return authToken
+      }
+
+      // Detect role switch: cookie set by switchRole() server action
+      try {
+        const cookieStore = await cookies()
+        const activeRoleCookie = cookieStore.get('chefflow-active-role-id')?.value
+        if (activeRoleCookie && activeRoleCookie !== authToken.activeRoleId) {
+          const roleInfo = await resolveRoleAndTenant(authToken.userId, activeRoleCookie)
+          if (roleInfo) {
+            authToken.role = roleInfo.role
+            authToken.entityId = roleInfo.entityId
+            authToken.tenantId = roleInfo.tenantId
+            authToken.activeRoleId = roleInfo.roleId
+          }
+        }
+      } catch {
+        // cookies() not available in this context
       }
 
       let sessionControl = null
@@ -400,6 +441,7 @@ export const authConfig: NextAuthConfig = {
       session.user.role = authToken.role ?? ''
       session.user.entityId = authToken.entityId ?? ''
       session.user.tenantId = authToken.tenantId ?? null
+      session.user.activeRoleId = authToken.activeRoleId ?? ''
       return session
     },
   },

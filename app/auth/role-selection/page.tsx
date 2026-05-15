@@ -64,24 +64,15 @@ function RoleSelectionContent() {
 
         <Card>
           <CardHeader>
-            <CardTitle>Choose Your Role</CardTitle>
+            <CardTitle>How will you use ChefFlow?</CardTitle>
           </CardHeader>
-          <CardContent>
+          <CardContent className="space-y-3">
             {error && <Alert variant="error">{error}</Alert>}
             <p className="text-sm text-stone-400">
-              This helps us tailor your experience. This selection cannot be changed later.
+              Pick your primary role. You can add more roles later from your settings.
             </p>
           </CardContent>
-          <CardFooter className="flex flex-col sm:flex-row space-y-2 sm:space-y-0 sm:space-x-4">
-            <Button
-              variant="secondary"
-              className="w-full"
-              loading={loading === 'client'}
-              disabled={!!loading}
-              onClick={() => handleRoleSelection('client')}
-            >
-              I&apos;m a Client
-            </Button>
+          <CardFooter className="flex flex-col space-y-2">
             <Button
               variant="primary"
               className="w-full"
@@ -90,6 +81,15 @@ function RoleSelectionContent() {
               onClick={() => handleRoleSelection('chef')}
             >
               I&apos;m a Chef
+            </Button>
+            <Button
+              variant="secondary"
+              className="w-full"
+              loading={loading === 'client'}
+              disabled={!!loading}
+              onClick={() => handleRoleSelection('client')}
+            >
+              I&apos;m booking a chef
             </Button>
           </CardFooter>
         </Card>

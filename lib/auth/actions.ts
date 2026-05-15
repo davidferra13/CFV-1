@@ -276,7 +276,18 @@ export async function signUpChef(input: ChefSignupInput) {
       },
     })
 
-    return { success: true, userId: authUserId }
+    // Auto-signin after successful signup
+    try {
+      await nextAuthSignIn('credentials', {
+        email,
+        password: validated.password,
+        redirect: false,
+      })
+    } catch {
+      // Non-blocking: user can still manually sign in
+    }
+
+    return { success: true, userId: authUserId, autoSignedIn: true }
   } catch (error) {
     // Ensure cleanup of auth user on any failure
     await db
@@ -324,6 +335,42 @@ export async function signUpClient(input: ClientSignupInput) {
     .limit(1)
 
   if (existingUser) {
+    // If accepting an invitation, add the client role to the existing account
+    if (invitationToken && tenantId) {
+      const existingClientRole = await db
+        .select({ id: userRoles.id })
+        .from(userRoles)
+        .where(eq(userRoles.authUserId, existingUser.id))
+        .limit(1)
+        .then((rows) => rows.find((r) => r.id)) // just check existence
+
+      // Create client profile linked to existing auth user
+      const [client] = await db
+        .insert(clientsTable)
+        .values({
+          authUserId: existingUser.id,
+          tenantId,
+          fullName: validated.full_name.trim(),
+          email,
+          phone: validated.phone?.trim(),
+        })
+        .returning()
+
+      if (!client) throw new Error('Failed to create client profile')
+
+      await db.insert(userRoles).values({
+        authUserId: existingUser.id,
+        role: 'client',
+        entityId: client.id,
+      })
+
+      if (invitationId) {
+        await markInvitationUsed(invitationId)
+      }
+
+      return { success: true, userId: existingUser.id, autoSignedIn: false, existingUser: true }
+    }
+
     throw new Error(
       'Account creation failed. If you already have an account, try signing in instead.'
     )
@@ -437,7 +484,18 @@ export async function signUpClient(input: ClientSignupInput) {
       },
     })
 
-    return { success: true, userId: authUserId }
+    // Auto-signin after successful signup
+    try {
+      await nextAuthSignIn('credentials', {
+        email,
+        password: validated.password,
+        redirect: false,
+      })
+    } catch {
+      // Non-blocking: user can still manually sign in
+    }
+
+    return { success: true, userId: authUserId, autoSignedIn: true }
   } catch (error) {
     await db
       .delete(authUsers)
@@ -911,15 +969,15 @@ export async function assignRole(role: 'chef' | 'client', context?: { signup_ref
   const userId = session.user.id
   const userEmail = session.user.email ?? ''
 
-  // 1. Check if user already has a role
-  const [existingRole] = await db
+  // Check if user already has this specific role
+  const existingRoles = await db
     .select({ role: userRoles.role })
     .from(userRoles)
     .where(eq(userRoles.authUserId, userId))
-    .limit(1)
 
-  if (existingRole) {
-    const destination = existingRole.role === 'chef' ? '/dashboard' : '/my-events'
+  const alreadyHasThisRole = existingRoles.some((r) => r.role === role)
+  if (alreadyHasThisRole) {
+    const destination = role === 'chef' ? '/dashboard' : '/my-events'
     return redirect(destination)
   }
 
@@ -1033,4 +1091,154 @@ export async function assignRole(role: 'chef' | 'client', context?: { signup_ref
 
   const destination = role === 'chef' ? '/dashboard' : '/my-events'
   redirect(destination)
+}
+
+/**
+ * Add a new role to an existing authenticated user (multi-role support).
+ * Unlike assignRole(), this does NOT reject users who already have a role.
+ * Creates the corresponding profile entity and user_roles row.
+ * Sets the new role as the active role.
+ *
+ * Protected roles (system, admin, support) cannot be self-assigned.
+ */
+export async function addRole(
+  role: 'chef' | 'client' | 'partner' | 'staff' | 'vendor' | 'guest',
+  context?: {
+    fullName?: string
+    businessName?: string
+    phone?: string
+    tenantId?: string | null
+    invitationToken?: string
+  }
+) {
+  const session = await auth()
+  const requestHeaders = await headers()
+
+  if (!session?.user?.id) {
+    throw new Error('Not authenticated. Please sign in again.')
+  }
+
+  const userId = session.user.id
+  const userEmail = session.user.email ?? ''
+  const email = normalizeEmail(userEmail)
+
+  // Check if user already has this exact role type
+  const existingRoles = await db
+    .select({ role: userRoles.role, entityId: userRoles.entityId })
+    .from(userRoles)
+    .where(eq(userRoles.authUserId, userId))
+
+  const alreadyHasRole = existingRoles.some((r) => r.role === role)
+  if (alreadyHasRole) {
+    return { success: true, alreadyExists: true }
+  }
+
+  let entityId: string | null = null
+
+  try {
+    if (role === 'chef') {
+      const businessName = context?.businessName?.trim() || email.split('@')[0]
+
+      const [chef] = await db
+        .insert(chefs)
+        .values({
+          authUserId: userId,
+          businessName,
+          email,
+          phone: context?.phone?.trim(),
+        })
+        .returning({ id: chefs.id })
+
+      if (!chef) throw new Error('Failed to create chef profile')
+      entityId = chef.id
+
+      await db.insert(chefPreferences).values({
+        chefId: chef.id,
+        tenantId: chef.id,
+      })
+
+      try {
+        await seedDefaultBudgetQualificationAutomations(chef.id)
+      } catch {
+        // Non-blocking
+      }
+
+      try {
+        const { createStripeCustomer, startTrial } = await import('@/lib/stripe/subscription')
+        await createStripeCustomer(chef.id, email, businessName)
+        await startTrial(chef.id, DEFAULT_TRIAL_DAYS)
+      } catch {
+        // Non-blocking
+      }
+    } else if (role === 'client') {
+      const fullName = context?.fullName?.trim() || 'New Client'
+
+      const [client] = await db
+        .insert(clientsTable)
+        .values({
+          authUserId: userId,
+          tenantId: context?.tenantId ?? null,
+          fullName,
+          email,
+          phone: context?.phone?.trim(),
+        })
+        .returning({ id: clientsTable.id })
+
+      if (!client) throw new Error('Failed to create client profile')
+      entityId = client.id
+    } else if (role === 'guest') {
+      // Guest profile for ticket purchasers / public event attendees
+      entityId = userId // Use auth user ID as entity for guests
+    } else {
+      // Partner, staff, vendor require a tenantId (which chef they belong to)
+      if (!context?.tenantId) {
+        throw new Error(`${role} role requires a tenant association`)
+      }
+      // These roles are typically created by invite flows that already created the entity.
+      // For now, return an error if no entity exists.
+      throw new Error(`${role} role must be added through an invitation flow`)
+    }
+
+    if (!entityId) throw new Error('Failed to create role profile')
+
+    // Create user_roles row
+    const [newRole] = await db
+      .insert(userRoles)
+      .values({
+        authUserId: userId,
+        role,
+        entityId,
+      })
+      .returning({ id: userRoles.id })
+
+    // Set the new role as active
+    const cookieStore = cookies()
+    if (newRole) {
+      cookieStore.set('chefflow-active-role-id', newRole.id, {
+        path: '/',
+        httpOnly: true,
+        sameSite: 'lax',
+        maxAge: 30 * 24 * 60 * 60,
+      })
+    }
+    cookieStore.delete('chefflow-role-cache')
+
+    await recordAccountCreatedEvent({
+      role: role as 'chef' | 'client',
+      entityId,
+      authUserId: userId,
+      email,
+      displayName: context?.fullName || context?.businessName || email.split('@')[0],
+      tenantId: context?.tenantId,
+      source: 'add_role',
+      requestHeaders,
+    })
+
+    revalidatePath('/', 'layout')
+
+    return { success: true, roleId: newRole?.id, entityId }
+  } catch (error) {
+    log.auth.error('Failed to add role', { error, context: { userId, role } })
+    throw error
+  }
 }

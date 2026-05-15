@@ -7,6 +7,9 @@
 
 import { requireChef } from '@/lib/auth/get-user'
 import { createServerClient } from '@/lib/db/server'
+import { db as drizzleDb } from '@/lib/db'
+import { authUsers } from '@/lib/db/schema/auth'
+import { eq } from 'drizzle-orm'
 
 const APP_URL =
   process.env.NEXT_PUBLIC_APP_URL || process.env.NEXT_PUBLIC_SITE_URL || 'https://cheflowhq.com'
@@ -101,37 +104,59 @@ export async function claimPartnerInvite(
     return { error: 'This invite has already been claimed. Try signing in instead.' }
   }
 
-  // Create the Auth.js user
-  // email_confirm: true skips the verification email since the invite IS the trust signal
-  const { data: authData, error: authError } = await db.auth.admin.createUser({
-    email,
-    password,
-    email_confirm: true,
-  })
+  // Check for existing user first (multi-role support)
+  let userId: string
+  let isExistingUser = false
 
-  if (authError || !authData.user) {
-    if (authError?.message?.includes('already')) {
-      return { error: 'An account with this email already exists. Try signing in.' }
+  const [existingUser] = await drizzleDb
+    .select({ id: authUsers.id })
+    .from(authUsers)
+    .where(eq(authUsers.email, email.toLowerCase()))
+    .limit(1)
+
+  if (existingUser) {
+    // Existing user: add partner role to their account
+    userId = existingUser.id
+    isExistingUser = true
+  } else {
+    // New user: create auth record via Supabase admin API
+    const { data: authData, error: authError } = await db.auth.admin.createUser({
+      email,
+      password,
+      email_confirm: true,
+    })
+
+    if (authError || !authData.user) {
+      return { error: authError?.message ?? 'Failed to create account. Please try again.' }
     }
-    return { error: authError?.message ?? 'Failed to create account. Please try again.' }
+    userId = authData.user.id
   }
 
-  const userId = authData.user.id
-
   try {
-    // Insert the user_roles row marking this user as a partner
-    await db.from('user_roles').insert({
-      auth_user_id: userId,
-      role: 'partner' as any,
-      entity_id: partner.id,
-    })
+    // Check if this user already has a partner role for this entity
+    const { data: existingRole } = await db
+      .from('user_roles')
+      .select('id')
+      .eq('auth_user_id', userId)
+      .eq('role', 'partner')
+      .eq('entity_id', partner.id)
+      .maybeSingle()
+
+    if (!existingRole) {
+      // Insert the user_roles row marking this user as a partner
+      await db.from('user_roles').insert({
+        auth_user_id: userId,
+        role: 'partner' as any,
+        entity_id: partner.id,
+      })
+    }
 
     // Mark the invite as claimed
     await db
       .from('referral_partners')
       .update({
         auth_user_id: userId,
-        invite_token: null, // one-time use - clear after claim
+        invite_token: null, // one-time use
         claimed_at: new Date().toISOString(),
       } as any)
       .eq('id', partner.id)
@@ -140,17 +165,20 @@ export async function claimPartnerInvite(
       partnerId: partner.id,
       partnerName: partner.name,
       userId,
+      existingUser: !!existingUser?.id,
     })
 
     return { success: true }
   } catch (err) {
-    // Rollback: delete the auth user if the DB write fails
-    try {
-      await db.auth.admin.deleteUser(userId)
-    } catch {
-      // Best-effort cleanup
+    // Only rollback auth user if we just created it
+    if (!isExistingUser) {
+      try {
+        await db.auth.admin.deleteUser(userId)
+      } catch {
+        // Best-effort cleanup
+      }
     }
-    console.error('[claimPartnerInvite] DB write failed after auth user created', { err })
+    console.error('[claimPartnerInvite] DB write failed', { err })
     return { error: 'Account setup failed. Please try again or contact support.' }
   }
 }

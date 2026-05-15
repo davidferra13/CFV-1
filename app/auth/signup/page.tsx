@@ -78,8 +78,10 @@ function SignUpForm() {
     setLoading(true)
 
     try {
-      await signUpChef(chefFormData)
-      router.push('/auth/signin')
+      const result = await signUpChef(chefFormData)
+      // Auto-signed in: go straight to onboarding/dashboard
+      router.push(result.autoSignedIn ? '/onboarding' : '/auth/signin')
+      router.refresh()
     } catch (err) {
       const error = err as Error
       setError(error.message)
@@ -94,8 +96,9 @@ function SignUpForm() {
     setLoading(true)
 
     try {
-      await signUpClient(clientFormData)
-      router.push('/auth/signin')
+      const result = await signUpClient(clientFormData)
+      router.push(result.autoSignedIn ? '/my-events' : '/auth/signin')
+      router.refresh()
     } catch (err) {
       const error = err as Error
       setError(error.message)
