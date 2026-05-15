@@ -9,6 +9,8 @@ import { getPartnerContributionReport } from '@/lib/partners/actions'
 import { TokenExpiredPage } from '@/components/ui/token-expired-page'
 import { PartnerContributionReport } from '@/components/partners/partner-contribution-report'
 
+export const metadata = { robots: { index: false, follow: false } }
+
 export default async function PublicPartnerReportPage({ params }: { params: { token: string } }) {
   const headersList = await headers()
   const ip = headersList.get('x-forwarded-for')?.split(',')[0] || 'unknown'

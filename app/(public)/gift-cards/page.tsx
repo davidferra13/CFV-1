@@ -1,6 +1,7 @@
 import Image from 'next/image'
 import Link from 'next/link'
 import type { Metadata } from 'next'
+import { JsonLd } from '@/components/seo/json-ld'
 import { PublicSecondaryEntryCluster } from '@/components/public/public-secondary-entry-cluster'
 import { getDiscoveryCuisineLabel, getDiscoveryServiceTypeLabel } from '@/lib/discovery/constants'
 import {
@@ -287,18 +288,9 @@ export default async function GiftCardsPage() {
 
   return (
     <div className="pb-12">
-      <script
-        type="application/ld+json"
-        dangerouslySetInnerHTML={{ __html: JSON.stringify(collectionStructuredData) }}
-      />
-      <script
-        type="application/ld+json"
-        dangerouslySetInnerHTML={{ __html: JSON.stringify(faqStructuredData) }}
-      />
-      <script
-        type="application/ld+json"
-        dangerouslySetInnerHTML={{ __html: JSON.stringify(breadcrumbStructuredData) }}
-      />
+      <JsonLd data={collectionStructuredData} />
+      <JsonLd data={faqStructuredData} />
+      <JsonLd data={breadcrumbStructuredData} />
 
       <section className="relative overflow-hidden border-b border-stone-800/70">
         <div className="pointer-events-none absolute inset-x-0 top-0 h-[340px] bg-gradient-to-b from-brand-600/12 via-brand-600/5 to-transparent" />

@@ -5,6 +5,7 @@ import { TrackedLink } from '@/components/analytics/tracked-link'
 import { LAUNCH_MODE, PRIMARY_SIGNUP_LABEL } from '@/lib/marketing/launch-mode'
 import { buildMarketingSignupHref } from '@/lib/marketing/signup-links'
 import { PublicSecondaryEntryCluster } from '@/components/public/public-secondary-entry-cluster'
+import { JsonLd } from '@/components/seo/json-ld'
 import { PUBLIC_SECONDARY_ENTRY_CONFIG } from '@/lib/public/public-secondary-entry-config'
 
 const BASE_URL = process.env.NEXT_PUBLIC_APP_URL || 'https://cheflowhq.com'
@@ -111,10 +112,7 @@ export default function TrustPage() {
   return (
     <div>
       <PublicPageView pageName="trust" properties={{ section: 'public_growth' }} />
-      <script
-        type="application/ld+json"
-        dangerouslySetInnerHTML={{ __html: JSON.stringify(trustStructuredData) }}
-      />
+      <JsonLd data={trustStructuredData} />
 
       <section className="relative overflow-hidden border-b border-stone-700/50">
         <div className="pointer-events-none absolute left-1/2 top-0 h-[360px] w-[700px] -translate-x-1/2 rounded-full bg-brand-700/20 blur-[80px]" />

@@ -16,6 +16,7 @@ type Props = { params: { token: string } }
 export const metadata: Metadata = {
   title: 'Pre-Service Details',
   description: 'Share your preferences and dietary needs with your chef before your dinner.',
+  robots: { index: false, follow: false },
 }
 
 export default async function WorksheetPage({ params }: Props) {

@@ -1,5 +1,8 @@
 import { NextResponse } from 'next/server'
 import { createAdminClient } from '@/lib/db/admin'
+import { createLogger } from '@/lib/logger'
+
+const log = createLogger('cron-account-purge')
 import { executeFinalPurge } from '@/lib/compliance/account-deletion-actions'
 import { verifyCronAuth } from '@/lib/auth/cron-auth'
 import { runMonitoredCronJob } from '@/lib/cron/monitor'
@@ -27,7 +30,7 @@ export async function GET(request: Request) {
         .not('deletion_requested_at', 'is', null)
 
       if (error) {
-        console.error('[account-purge] Chef DB query failed:', error.message)
+        log.error('Chef DB query failed', { context: { errorMessage: error.message } })
         throw new Error('Failed to query pending chef deletions')
       }
 
@@ -47,7 +50,7 @@ export async function GET(request: Request) {
         .not('account_deletion_requested_at', 'is', null)
 
       if (clientError) {
-        console.error('[account-purge] Client DB query failed:', clientError.message)
+        log.error('Client DB query failed', { context: { errorMessage: clientError.message } })
         // Don't throw; chef purges already ran successfully
       }
 
@@ -102,10 +105,10 @@ export async function GET(request: Request) {
           }
 
           clientResults.push({ clientId: client.id, success: true })
-          console.log(`[account-purge] Client ${client.id} purged successfully`)
+          log.info(`[account-purge] Client ${client.id} purged successfully`)
         } catch (err) {
           const msg = err instanceof Error ? err.message : 'Unknown error'
-          console.error(`[account-purge] Client ${client.id} purge failed:`, msg)
+          log.error(`Client ${client.id} purge failed`, { context: { errorMessage: msg } })
           clientResults.push({ clientId: client.id, success: false, error: msg })
         }
       }
@@ -128,7 +131,7 @@ export async function GET(request: Request) {
 
     return NextResponse.json(result)
   } catch (err) {
-    console.error('[account-purge] Unexpected error:', err)
+    log.error('Unexpected error', { error: err })
     return NextResponse.json({ error: 'Account purge failed' }, { status: 500 })
   }
 }

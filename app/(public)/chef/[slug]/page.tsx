@@ -46,6 +46,7 @@ import {
   getPublicChefBuyerSignals,
   getPublicShowcaseMenus,
 } from '@/lib/public/chef-profile-readiness'
+import { JsonLd } from '@/components/seo/json-ld'
 import { absoluteUrl } from '@/lib/site/public-site'
 
 type Props = { params: { slug: string } }
@@ -326,12 +327,7 @@ function ChefProfileJsonLd({
     }
   }
 
-  return (
-    <script
-      type="application/ld+json"
-      dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }}
-    />
-  )
+  return <JsonLd data={jsonLd} />
 }
 
 function ChefBreadcrumbJsonLd({ chefName, profileUrl }: { chefName: string; profileUrl: string }) {
@@ -344,12 +340,7 @@ function ChefBreadcrumbJsonLd({ chefName, profileUrl }: { chefName: string; prof
       { '@type': 'ListItem', position: 3, name: chefName, item: profileUrl },
     ],
   }
-  return (
-    <script
-      type="application/ld+json"
-      dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }}
-    />
-  )
+  return <JsonLd data={jsonLd} />
 }
 
 function DetailChip({ label }: { label: string }) {

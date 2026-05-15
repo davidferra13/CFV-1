@@ -4,6 +4,9 @@
 
 import { NextRequest, NextResponse } from 'next/server'
 import { parseInboundWebhook } from '@/lib/sms/twilio-client'
+import { createLogger } from '@/lib/logger'
+
+const log = createLogger('twilio-webhook')
 import { ingestManagedInboundCommunication } from '@/lib/communication/managed-ingest'
 import {
   normalizeManagedPhoneAddress,
@@ -96,16 +99,15 @@ export async function POST(request: NextRequest) {
     })
 
     if (!managedChannel?.authToken) {
-      console.warn(
-        '[twilio-webhook] Unmanaged Twilio destination:',
-        statusCallback?.managedAddress || msg?.to
-      )
+      log.warn('Unmanaged Twilio destination', {
+        context: { address: statusCallback?.managedAddress || msg?.to },
+      })
       return twiml()
     }
 
     const twilioSignature = request.headers.get('x-twilio-signature')
     if (!twilioSignature) {
-      console.warn('[twilio-webhook] Missing X-Twilio-Signature header - rejecting')
+      log.warn('[twilio-webhook] Missing X-Twilio-Signature header - rejecting')
       return twiml(403)
     }
 
@@ -118,7 +120,7 @@ export async function POST(request: NextRequest) {
         signature: twilioSignature,
       })
     ) {
-      console.warn('[twilio-webhook] Invalid signature - rejecting forged request')
+      log.warn('[twilio-webhook] Invalid signature - rejecting forged request')
       return twiml(403)
     }
 
@@ -134,10 +136,9 @@ export async function POST(request: NextRequest) {
         .maybeSingle()
 
       if (!event?.id) {
-        console.warn(
-          '[twilio-webhook] Status callback did not match an outbound communication event:',
-          statusCallback.messageSid
-        )
+        log.warn('Status callback did not match an outbound communication event', {
+          context: { messageSid: statusCallback.messageSid },
+        })
         return twiml()
       }
 
@@ -202,12 +203,12 @@ export async function POST(request: NextRequest) {
     })
 
     if (!result.routed) {
-      console.warn('[twilio-webhook] Message was accepted but not routed:', result.reason)
+      log.warn('Message was accepted but not routed', { context: { reason: result.reason } })
     }
 
     return twiml()
   } catch (err) {
-    console.error('[twilio-webhook] Error processing inbound message:', err)
+    log.error('Error processing inbound message', { error: err })
     return twiml(500)
   }
 }

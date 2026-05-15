@@ -258,6 +258,7 @@ export const API_SKIP_AUTH_PREFIXES = [
   '/api/discovery',
   '/api/sentinel',
   '/api/openclaw/webhook',
+  '/api/sms-bridge',
 ] as const
 
 export type RouteSessionRole = 'chef' | 'client' | 'staff' | 'partner' | 'admin' | string
@@ -352,7 +353,8 @@ export function getRouteAccountMode(pathname: string): RouteAccountMode {
 
 export function getRoutePolicyDecisionForRole(
   pathname: string,
-  role: RouteSessionRole | null | undefined
+  role: RouteSessionRole | null | undefined,
+  options?: { isAdmin?: boolean }
 ): RoutePolicyDecision {
   const mode = getRouteAccountMode(pathname)
 
@@ -366,11 +368,21 @@ export function getRoutePolicyDecisionForRole(
   }
 
   if (mode === 'admin_console') {
+    // Middleware-level admin gate: only users with isAdmin JWT claim pass.
+    // Page-level requireAdmin() provides the second check (platform_admins table).
+    if (options?.isAdmin) {
+      return {
+        allowed: true,
+        mode,
+        reason: 'admin_runtime_gate',
+        recoveryPath: null,
+      }
+    }
     return {
-      allowed: true,
+      allowed: false,
       mode,
-      reason: 'admin_runtime_gate',
-      recoveryPath: null,
+      reason: 'wrong_context',
+      recoveryPath: getHomePathForRole(role),
     }
   }
 

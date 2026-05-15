@@ -36,6 +36,19 @@ function isPrivateIpv4(hostname: string): boolean {
   )
 }
 
+function isPrivateIpv6(host: string): boolean {
+  // fc00::/7 (unique local addresses: fc00:: - fdff::)
+  if (host.startsWith('fc') || host.startsWith('fd')) return true
+  // fe80::/10 (link-local)
+  if (host.startsWith('fe80:')) return true
+  // ::ffff:127.0.0.1 (IPv4-mapped loopback)
+  if (host.startsWith('::ffff:')) {
+    const mapped = host.slice(7)
+    return isPrivateIpv4(mapped)
+  }
+  return false
+}
+
 function isLoopbackOrPrivateHost(hostname: string): boolean {
   const host = hostname
     .trim()
@@ -46,7 +59,8 @@ function isLoopbackOrPrivateHost(hostname: string): boolean {
     host === '::1' ||
     host === '0:0:0:0:0:0:0:1' ||
     host.endsWith('.localhost') ||
-    isPrivateIpv4(host)
+    isPrivateIpv4(host) ||
+    isPrivateIpv6(host)
   )
 }
 

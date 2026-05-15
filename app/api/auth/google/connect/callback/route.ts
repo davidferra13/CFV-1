@@ -4,6 +4,9 @@
 // This is SEPARATE from the Google OAuth callback at /auth/callback.
 
 import { NextResponse, type NextRequest } from 'next/server'
+import { createLogger } from '@/lib/logger'
+
+const log = createLogger('google-oauth')
 import { cookies } from 'next/headers'
 import { createServerClient } from '@/lib/db/server'
 import { getCurrentUser } from '@/lib/auth/get-user'
@@ -153,7 +156,7 @@ export async function GET(request: NextRequest) {
 
   if (!tokenResponse.ok) {
     const errText = await tokenResponse.text()
-    console.error('[Google OAuth] Token exchange failed:', errText)
+    log.error('Token exchange failed', { context: { response: errText } })
 
     // Parse specific Google error for a better user-facing message
     let userMessage = 'Failed to exchange authorization code'
@@ -242,7 +245,7 @@ export async function GET(request: NextRequest) {
   )
 
   if (upsertError) {
-    console.error('[Google OAuth] Failed to save connection:', upsertError)
+    log.error('Failed to save connection', { error: upsertError })
     return NextResponse.redirect(
       new URL(
         buildGoogleConnectResultPath({
@@ -273,7 +276,7 @@ export async function GET(request: NextRequest) {
         db,
       })
     } catch (mailboxError) {
-      console.error('[Google OAuth] Failed to save mailbox control row:', mailboxError)
+      log.error('Failed to save mailbox control row', { error: mailboxError })
       return NextResponse.redirect(
         new URL(
           buildGoogleConnectResultPath({

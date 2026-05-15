@@ -7,6 +7,8 @@ import { ViewerIntentForm } from '@/components/sharing/viewer-intent-form'
 import { headers } from 'next/headers'
 import { checkRateLimit } from '@/lib/rateLimit'
 
+export const metadata = { robots: { index: false, follow: false } }
+
 export default async function ViewerSharePage({ params }: { params: { token: string } }) {
   const headersList = await headers()
   const ip = headersList.get('x-forwarded-for')?.split(',')[0] || 'unknown'

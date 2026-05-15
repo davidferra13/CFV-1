@@ -9,6 +9,9 @@
 
 import { NextRequest, NextResponse } from 'next/server'
 import { timingSafeEqual } from 'crypto'
+import { createLogger } from '@/lib/logger'
+
+const log = createLogger('sentinel-auth')
 import { checkRateLimit } from '@/lib/rateLimit'
 import { db } from '@/lib/db'
 import { authUsers } from '@/lib/db/schema/auth'
@@ -138,7 +141,7 @@ export async function POST(req: NextRequest) {
 
     return response
   } catch (err: any) {
-    console.error('[sentinel/auth] Internal error:', err)
+    log.error('Internal error', { error: err })
     return NextResponse.json({ error: 'An unexpected error occurred' }, { status: 500 })
   }
 }

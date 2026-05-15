@@ -1,7 +1,7 @@
 import { getOnboardingData } from '@/lib/clients/onboarding'
 import { OnboardingForm } from '@/components/clients/onboarding-form'
 
-export const metadata = { title: 'Welcome' }
+export const metadata = { title: 'Welcome', robots: { index: false, follow: false } }
 
 export default async function OnboardingPage({ params }: { params: { token: string } }) {
   const data = await getOnboardingData(params.token)

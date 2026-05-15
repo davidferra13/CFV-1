@@ -8,7 +8,7 @@ import { TokenExpiredPage } from '@/components/ui/token-expired-page'
 import { PostActionFooter } from '@/components/public/post-action-footer'
 import { GuestFeedbackForm } from './guest-feedback-form'
 
-export const metadata = { title: 'Guest Feedback' }
+export const metadata = { title: 'Guest Feedback', robots: { index: false, follow: false } }
 
 export default async function GuestFeedbackPage({ params }: { params: { token: string } }) {
   const ip = (await headers()).get('x-forwarded-for') ?? 'unknown'

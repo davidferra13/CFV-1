@@ -18,6 +18,7 @@ export async function generateMetadata({ params }: { params: { token: string } }
 
   return {
     title: `${eventData.occasion || 'Private Dinner'} | Event Recap`,
+    robots: { index: false, follow: false },
     description: `A look back at ${eventData.occasion || 'our private dinner'}${eventData.chefName ? ` with ${eventData.chefName}` : ''}.`,
     openGraph: {
       title: `${eventData.occasion || 'Private Dinner'} | Event Recap`,

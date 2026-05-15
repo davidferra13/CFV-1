@@ -13,6 +13,7 @@
 import { notFound } from 'next/navigation'
 import { Metadata } from 'next'
 import Link from 'next/link'
+import { JsonLd } from '@/components/seo/json-ld'
 import { ArrowLeft, ExternalLink, Globe, Leaf, Utensils } from '@/components/ui/icons'
 import {
   getPublicIngredientDetail,
@@ -126,12 +127,6 @@ function buildBreadcrumbJsonLd(name: string, slug: string, category?: string | n
   }
 
   return { '@context': 'https://schema.org', '@type': 'BreadcrumbList', itemListElement: items }
-}
-
-function JsonLd({ data }: { data: object }) {
-  return (
-    <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(data) }} />
-  )
 }
 
 // ---------------------------------------------------------------------------

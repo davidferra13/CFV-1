@@ -7,6 +7,7 @@ import { buildMarketingSignupHref } from '@/lib/marketing/signup-links'
 import { PublicSecondaryEntryCluster } from '@/components/public/public-secondary-entry-cluster'
 import { PUBLIC_SECONDARY_ENTRY_CONFIG } from '@/lib/public/public-secondary-entry-config'
 import { buildMarketingMetadata } from '@/lib/site/public-site'
+import { JsonLd } from '@/components/seo/json-ld'
 
 type FaqCategory = {
   title: string
@@ -192,10 +193,7 @@ export default function FaqPage() {
   return (
     <div>
       <PublicPageView pageName="faq" properties={{ section: 'public_growth' }} />
-      <script
-        type="application/ld+json"
-        dangerouslySetInnerHTML={{ __html: JSON.stringify(faqStructuredData) }}
-      />
+      <JsonLd data={faqStructuredData} />
 
       <section className="relative overflow-hidden border-b border-stone-700/50">
         <div className="pointer-events-none absolute left-1/2 top-0 h-[360px] w-[700px] -translate-x-1/2 rounded-full bg-brand-700/20 blur-[80px]" />

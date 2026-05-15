@@ -8,6 +8,7 @@
 
 import type { Metadata } from 'next'
 import Link from 'next/link'
+import { JsonLd } from '@/components/seo/json-ld'
 import { PublicPageView } from '@/components/analytics/public-page-view'
 import { TrackedLink } from '@/components/analytics/tracked-link'
 import { pgClient } from '@/lib/db'
@@ -274,10 +275,7 @@ export default async function IngredientsPage({ searchParams }: Props) {
 
   return (
     <>
-      <script
-        type="application/ld+json"
-        dangerouslySetInnerHTML={{ __html: JSON.stringify(collectionLd) }}
-      />
+      <JsonLd data={collectionLd} />
       <div className="mx-auto max-w-7xl px-4 py-10">
         <PublicPageView
           pageName="ingredients"

@@ -8,6 +8,7 @@
 
 import type { Metadata } from 'next'
 import Link from 'next/link'
+import { JsonLd } from '@/components/seo/json-ld'
 import { notFound } from 'next/navigation'
 import { ArrowLeft } from '@/components/ui/icons'
 import {
@@ -119,10 +120,7 @@ export default async function CategoryPage({ params, searchParams }: Params) {
 
   return (
     <>
-      <script
-        type="application/ld+json"
-        dangerouslySetInnerHTML={{ __html: JSON.stringify(collectionLd) }}
-      />
+      <JsonLd data={collectionLd} />
       <div className="mx-auto max-w-6xl px-4 py-10">
         {/* Breadcrumb */}
         <div className="mb-6 flex items-center gap-2 text-sm">

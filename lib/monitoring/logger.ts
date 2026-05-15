@@ -1,11 +1,13 @@
+import pino from 'pino'
 import { getRequestId } from '@/lib/observability/request-id'
+import { sanitizeLogInput } from '@/lib/security/sanitize-log'
 
 /**
  * Structured Logger - ChefFlow V1
  *
- * Provides a consistent JSON log format across all server-side code.
- * In development: pretty-prints to console.
- * In production: outputs JSON lines suitable for log aggregation (Axiom, Logtail, Datadog, etc.)
+ * Uses pino for structured JSON logging with level control.
+ * In development: human-readable output to stdout.
+ * In production: JSON lines suitable for log aggregation (Axiom, Logtail, Datadog, etc.)
  *
  * Every log entry includes:
  *   - timestamp (ISO 8601)
@@ -38,31 +40,35 @@ export interface LogEntry {
 
 const isDev = process.env.NODE_ENV !== 'production'
 
-function formatEntry(entry: LogEntry): string {
-  if (isDev) {
-    const prefix = `[${entry.level.toUpperCase()}] [${entry.scope}]`
-    const context = entry.context ? ` ${JSON.stringify(entry.context)}` : ''
-    const rid = entry.requestId ? ` rid=${entry.requestId}` : ''
-    const dur = entry.durationMs != null ? ` (${entry.durationMs}ms)` : ''
-    return `${prefix} ${entry.message}${rid}${dur}${context}`
-  }
-  return JSON.stringify(entry)
+/** Root pino instance, shared across all scoped loggers */
+export const pinoLogger = pino({
+  level: process.env.LOG_LEVEL || (isDev ? 'debug' : 'info'),
+  transport: isDev ? { target: 'pino/file', options: { destination: 1 } } : undefined,
+  formatters: {
+    level: (label) => ({ level: label }),
+  },
+  timestamp: pino.stdTimeFunctions.isoTime,
+})
+
+/** Sanitize user-controlled strings before logging */
+export function sanitize(input: string): string {
+  return sanitizeLogInput(input)
 }
 
 function emit(entry: LogEntry): void {
-  const line = formatEntry(entry)
-  switch (entry.level) {
+  const { level, message, ...rest } = entry
+  switch (level) {
     case 'debug':
-      console.debug(line)
+      pinoLogger.debug(rest, message)
       break
     case 'info':
-      console.log(line)
+      pinoLogger.info(rest, message)
       break
     case 'warn':
-      console.warn(line)
+      pinoLogger.warn(rest, message)
       break
     case 'error':
-      console.error(line)
+      pinoLogger.error(rest, message)
       break
   }
 }

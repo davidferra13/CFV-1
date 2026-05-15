@@ -4,7 +4,7 @@
 import { COMPANY_NAME, SUPPORT_EMAIL, absoluteUrl } from '@/lib/site/public-site'
 
 type JsonLdProps = {
-  data: Record<string, unknown>
+  data: Record<string, unknown> | object
 }
 
 /** Generic JSON-LD injector - pass any schema.org object */

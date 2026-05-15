@@ -18,6 +18,7 @@ import { authUsers } from '@/lib/db/schema/auth'
 import { userRoles, clients, staffMembers, referralPartners } from '@/lib/db/schema/schema'
 import { and, eq, sql } from 'drizzle-orm'
 import { getSessionControlRow, recordSuccessfulAccountAccess } from './account-access'
+import { hasAdminAccess } from './admin-access'
 import { shouldInvalidateJwtSession } from './account-access-core'
 import { userHasMfaEnabled, getMfaMethodType, createMfaChallenge } from '@/lib/mfa/challenge'
 import { checkLoginAttempts, recordFailedAttempt, clearAttempts } from '@/lib/security/brute-force'
@@ -43,6 +44,7 @@ declare module 'next-auth' {
       activeRoleId?: string
       mfaPending?: boolean
       mfaChallengeId?: string
+      isAdmin?: boolean
     }
   }
 }
@@ -59,6 +61,8 @@ type AuthJwtToken = {
   sessionControlCheckedAt?: number
   mfaPending?: boolean
   mfaChallengeId?: string
+  isAdmin?: boolean
+  adminCheckedAt?: number
   iat?: number
 }
 
@@ -402,8 +406,24 @@ export const authConfig: NextAuthConfig = {
         // cookies() not available in this context
       }
 
-      let sessionControl = null
+      // Refresh admin status periodically (same cadence as session control)
       const now = Date.now()
+      const shouldRefreshAdmin =
+        Boolean(user) ||
+        trigger === 'update' ||
+        !authToken.adminCheckedAt ||
+        now - authToken.adminCheckedAt > AUTH_SESSION_CONTROL_REFRESH_MS
+
+      if (shouldRefreshAdmin && authToken.userId) {
+        try {
+          authToken.isAdmin = await hasAdminAccess(authToken.userId)
+          authToken.adminCheckedAt = now
+        } catch {
+          // Keep previous value on failure
+        }
+      }
+
+      let sessionControl = null
       const shouldRefreshSessionControl =
         Boolean(user) ||
         trigger === 'update' ||
@@ -442,6 +462,7 @@ export const authConfig: NextAuthConfig = {
       session.user.entityId = authToken.entityId ?? ''
       session.user.tenantId = authToken.tenantId ?? null
       session.user.activeRoleId = authToken.activeRoleId ?? ''
+      session.user.isAdmin = authToken.isAdmin ?? false
       return session
     },
   },

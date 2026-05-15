@@ -21,6 +21,7 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
 
   return {
     title: `${proposal.title} - ${chefLabel}`,
+    robots: { index: false, follow: false },
     description: proposal.personalNote
       ? proposal.personalNote.slice(0, 160)
       : `A personalized culinary proposal from ${chefLabel}`,

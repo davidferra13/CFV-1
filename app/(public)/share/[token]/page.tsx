@@ -17,6 +17,8 @@ import { GuestResendLink } from '@/components/sharing/guest-resend-link'
 import { cookies, headers } from 'next/headers'
 import { checkRateLimit } from '@/lib/rateLimit'
 
+export const metadata = { robots: { index: false, follow: false } }
+
 export default async function SharePage({ params }: { params: { token: string } }) {
   const headersList = await headers()
   const ip = headersList.get('x-forwarded-for')?.split(',')[0] || 'unknown'

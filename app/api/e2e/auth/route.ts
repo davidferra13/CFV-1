@@ -7,6 +7,9 @@
 // That env var must never be set in production. Any request without it gets 403.
 
 import { NextRequest, NextResponse } from 'next/server'
+import { createLogger } from '@/lib/logger'
+
+const log = createLogger('e2e-auth')
 import { db } from '@/lib/db'
 import { authUsers } from '@/lib/db/schema/auth'
 import { userRoles, clients } from '@/lib/db/schema/schema'
@@ -130,12 +133,12 @@ export async function POST(req: NextRequest) {
       sameSite: 'lax',
       path: '/',
       secure: useSecure,
-      maxAge: 30 * 24 * 60 * 60, // 30 days
+      maxAge: 7 * 24 * 60 * 60, // 7 days (aligned with normal session)
     })
 
     return response
   } catch (err: any) {
-    console.error('[e2e/auth] Internal error:', err)
+    log.error('Internal error', { error: err })
     return NextResponse.json(
       { error: 'An unexpected error occurred. Please try again.' },
       { status: 500 }

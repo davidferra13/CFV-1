@@ -7,6 +7,7 @@ import {
 import { planningBriefFromSearchParams } from '@/lib/hub/planning-brief'
 import { buildDiscoveryRuntimePlan } from '@/lib/discovery/discovery-runtime-module'
 import { buildMarketingMetadata } from '@/lib/site/public-site'
+import { JsonLd } from '@/components/seo/json-ld'
 import { ConsumerIntentShell } from './_components/consumer-intent-shell'
 
 const APP_URL = process.env.NEXT_PUBLIC_APP_URL || 'https://cheflowhq.com'
@@ -113,10 +114,7 @@ export default async function EatPage({ searchParams }: PageProps) {
 
   return (
     <>
-      <script
-        type="application/ld+json"
-        dangerouslySetInnerHTML={{ __html: JSON.stringify(structuredData) }}
-      />
+      <JsonLd data={structuredData} />
       <ConsumerIntentShell
         feed={feed}
         filters={filters}

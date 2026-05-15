@@ -6,6 +6,8 @@ import { dateToDateString } from '@/lib/utils/format'
 import { checkRateLimit } from '@/lib/rateLimit'
 import { PostActionFooter } from '@/components/public/post-action-footer'
 
+export const metadata = { robots: { index: false, follow: false } }
+
 export default async function PublicAvailabilityPage({
   params,
 }: {

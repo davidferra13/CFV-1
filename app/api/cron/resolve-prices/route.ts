@@ -1,6 +1,9 @@
 import { NextResponse } from 'next/server'
 import { verifyCronAuth } from '@/lib/auth/cron-auth'
 import { runMonitoredCronJob } from '@/lib/cron/monitor'
+import { createLogger } from '@/lib/logger'
+
+const log = createLogger('cron-resolve-prices')
 
 /**
  * Resolved Prices Refresh Cron
@@ -29,7 +32,7 @@ export async function POST(request: Request) {
     return NextResponse.json(result)
   } catch (err) {
     const message = err instanceof Error ? err.message : 'Unknown error'
-    console.error('[resolve-prices cron] Error:', message)
+    log.error('Error', { context: { message } })
     return NextResponse.json(
       { success: false, error: message, timestamp: new Date().toISOString() },
       { status: 500 }

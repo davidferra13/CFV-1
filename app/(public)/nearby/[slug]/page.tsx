@@ -1,6 +1,7 @@
 import type { Metadata } from 'next'
 import Link from 'next/link'
 import { notFound } from 'next/navigation'
+import { JsonLd } from '@/components/seo/json-ld'
 import { getCurrentUser } from '@/lib/auth/get-user'
 import { getDirectoryListingBySlug } from '@/lib/discover/actions'
 import { getBusinessTypeLabel, getCuisineLabel } from '@/lib/discover/constants'
@@ -60,12 +61,7 @@ function ListingJsonLd({ listing }: { listing: any }) {
     jsonLd.servesCuisine = listing.cuisine_types.map(getCuisineLabel)
   }
 
-  return (
-    <script
-      type="application/ld+json"
-      dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }}
-    />
-  )
+  return <JsonLd data={jsonLd} />
 }
 
 type Props = {

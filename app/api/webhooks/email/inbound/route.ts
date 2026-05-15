@@ -1,5 +1,8 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { ingestManagedInboundCommunication } from '@/lib/communication/managed-ingest'
+import { createLogger } from '@/lib/logger'
+
+const log = createLogger('email-inbound')
 
 // Cloudflare Email Worker POSTs here when an email arrives at {alias}@cheflowhq.com
 // Worker format:
@@ -81,7 +84,7 @@ export async function POST(req: NextRequest) {
       tenantId: result.tenantId,
     })
   } catch (err) {
-    console.error('[email/inbound] Ingest failed:', err)
+    log.error('Ingest failed', { error: err })
     return NextResponse.json({ error: 'Ingest failed' }, { status: 500 })
   }
 }

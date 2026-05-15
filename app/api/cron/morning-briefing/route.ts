@@ -4,6 +4,9 @@
 
 import { NextResponse } from 'next/server'
 import { createElement } from 'react'
+import { createLogger } from '@/lib/logger'
+
+const log = createLogger('cron-morning-briefing')
 import { createAdminClient } from '@/lib/db/admin'
 import { generateMorningBriefing } from '@/lib/ai/remy-morning-briefing'
 import { verifyCronAuth } from '@/lib/auth/cron-auth'
@@ -62,19 +65,16 @@ export async function GET(request: Request) {
                     briefingUrl: `${process.env.NEXT_PUBLIC_APP_URL || 'https://cheflowhq.com'}/dashboard`,
                   }),
                 }).catch((emailErr) => {
-                  console.error(`[cron/morning-briefing] Email failed for ${tenant.id}:`, emailErr)
+                  log.error(`Email failed for tenant ${tenant.id}`, { error: emailErr })
                 })
               }
             } catch (emailErr) {
               // Non-blocking: alert was still created
-              console.error(
-                `[cron/morning-briefing] Email lookup failed for ${tenant.id}:`,
-                emailErr
-              )
+              log.error(`Email lookup failed for tenant ${tenant.id}`, { error: emailErr })
             }
           }
         } catch (err) {
-          console.error(`[cron/morning-briefing] Briefing failed for tenant ${tenant.id}:`, err)
+          log.error(`Briefing failed for tenant ${tenant.id}`, { error: err })
           errors.push(`${tenant.id}: briefing generation failed`)
         }
       }
@@ -91,7 +91,7 @@ export async function GET(request: Request) {
       errors: result.errors.length > 0 ? result.errors : undefined,
     })
   } catch (err) {
-    console.error('[cron/morning-briefing] Internal error:', err)
+    log.error('Internal error', { error: err })
     return NextResponse.json(
       { error: 'An unexpected error occurred. Please try again.' },
       { status: 500 }

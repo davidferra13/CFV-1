@@ -1,4 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server'
+import { lookup } from 'dns/promises'
 
 export const runtime = 'nodejs'
 export const dynamic = 'force-dynamic'
@@ -67,6 +68,21 @@ export async function GET(request: NextRequest) {
 
   if (!isAllowedUpstream(target)) {
     return NextResponse.json({ error: 'Disallowed image host' }, { status: 400 })
+  }
+
+  // DNS rebinding protection: resolve hostname and validate the actual IP
+  // before fetching, so an attacker can't pass isAllowedUpstream() with a
+  // public DNS entry then rebind to a private IP before the connection.
+  const hostname = target.hostname
+  if (hostname !== OPENCLAW_HOST && !hostname.match(/^\d+\.\d+\.\d+\.\d+$/)) {
+    try {
+      const resolved = await lookup(hostname)
+      if (isPrivateIpv4(resolved.address) || isPrivateIpv6(resolved.address)) {
+        return NextResponse.json({ error: 'Disallowed image host' }, { status: 400 })
+      }
+    } catch {
+      return NextResponse.json({ error: 'DNS resolution failed' }, { status: 400 })
+    }
   }
 
   const controller = new AbortController()

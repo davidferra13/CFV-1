@@ -4,6 +4,7 @@ import { getPublicEventByShareToken } from '@/lib/tickets/purchase-actions'
 import { checkRateLimit } from '@/lib/rateLimit'
 import { createServerClient } from '@/lib/db/server'
 import { getPublicVenueDetails } from '@/lib/events/venue-details-actions'
+import { JsonLd } from '@/components/seo/json-ld'
 import { PublicEventView } from './public-event-view'
 
 interface Props {
@@ -43,6 +44,7 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
   return {
     title: `${event.eventName} | ChefFlow`,
     description,
+    robots: { index: false, follow: false },
     openGraph: {
       title: event.eventName,
       description,
@@ -172,10 +174,7 @@ export default async function PublicEventPage({ params, searchParams }: Props) {
 
   return (
     <>
-      <script
-        type="application/ld+json"
-        dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }}
-      />
+      <JsonLd data={jsonLd} />
       <PublicEventView
         event={event}
         shareToken={shareToken}

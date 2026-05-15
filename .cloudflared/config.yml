@@ -13,13 +13,13 @@
 #   npm run beta:named
 # =============================================================================
 
-tunnel: 03fc407c-cfe6-4758-a239-299cfa615fcc
-credentials-file: C:\Users\david\.cloudflared\03fc407c-cfe6-4758-a239-299cfa615fcc.json
+# Tunnel UUID and credentials path are set via environment variables:
+#   TUNNEL_ID (e.g. in .env.local)
+#   Credentials file: $HOME/.cloudflared/$TUNNEL_ID.json
+# Run with: cloudflared tunnel --config .cloudflared/config.yml run $TUNNEL_ID
 
 ingress:
   - hostname: beta.cheflowhq.com
     service: http://127.0.0.1:3200
-    originRequest:
-      noTLSVerify: true
   # Catch-all rule (required by cloudflared)
   - service: http_status:404

@@ -2,6 +2,7 @@ import type { Metadata } from 'next'
 import { PublicPageView } from '@/components/analytics/public-page-view'
 import { TrackedLink } from '@/components/analytics/tracked-link'
 import { CUSTOMER_STORIES, getCustomerStory } from '@/lib/marketing/customer-stories'
+import { JsonLd } from '@/components/seo/json-ld'
 import { LAUNCH_MODE, PRIMARY_SIGNUP_LABEL } from '@/lib/marketing/launch-mode'
 import { buildMarketingSignupHref } from '@/lib/marketing/signup-links'
 
@@ -180,10 +181,7 @@ export default function CustomerStoryPage({ params }: Props) {
         pageName="customer_story"
         properties={{ section: 'public_growth', story_slug: story.slug }}
       />
-      <script
-        type="application/ld+json"
-        dangerouslySetInnerHTML={{ __html: JSON.stringify(storyStructuredData) }}
-      />
+      <JsonLd data={storyStructuredData} />
       <section className="relative overflow-hidden border-b border-stone-700/50">
         <div className="pointer-events-none absolute left-1/2 top-0 h-[340px] w-[680px] -translate-x-1/2 rounded-full bg-brand-700/20 blur-[80px]" />
         <div className="relative mx-auto w-full max-w-4xl px-4 py-16 sm:px-6 md:py-24 lg:px-8">

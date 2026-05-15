@@ -5,7 +5,7 @@ import { notFound } from 'next/navigation'
 import { headers } from 'next/headers'
 import { checkRateLimit } from '@/lib/rateLimit'
 
-export const metadata = { title: 'Share Your Feedback' }
+export const metadata = { title: 'Share Your Feedback', robots: { index: false, follow: false } }
 
 export default async function FeedbackPage({ params }: { params: { token: string } }) {
   const headersList = await headers()

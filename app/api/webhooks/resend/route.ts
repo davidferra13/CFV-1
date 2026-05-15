@@ -4,6 +4,9 @@
 
 import { NextRequest, NextResponse } from 'next/server'
 import { createAdminClient } from '@/lib/db/admin'
+import { createLogger, sanitize } from '@/lib/logger'
+
+const log = createLogger('resend-webhook')
 import {
   mapNormalizedEventToCampaignRecipientField,
   normalizeResendWebhookEvent,
@@ -29,13 +32,13 @@ export async function POST(req: NextRequest) {
   const signature = req.headers.get('svix-signature') ?? req.headers.get('resend-signature')
 
   if (!webhookSecret) {
-    console.error('[resend-webhook] RESEND_WEBHOOK_SECRET not configured - rejecting all webhooks')
+    log.error('RESEND_WEBHOOK_SECRET not configured, rejecting all webhooks')
     return NextResponse.json({ error: 'Webhook not configured' }, { status: 503 })
   }
 
   const valid = await verifyResendWebhookSignature(body, signature, webhookSecret)
   if (!valid) {
-    console.warn('[resend-webhook] Invalid signature')
+    log.warn('Invalid signature')
     return NextResponse.json({ error: 'Invalid signature' }, { status: 401 })
   }
 
@@ -87,7 +90,9 @@ export async function POST(req: NextRequest) {
     .is(updateField, null)
 
   if (error) {
-    console.error(`[resend-webhook] DB update failed for ${providerMessageId}:`, error.message)
+    log.error(`DB update failed for ${providerMessageId}`, {
+      context: { errorMessage: error.message },
+    })
     await logWebhookEvent({
       provider: 'resend',
       eventType: normalizedEvent.providerEventType,
@@ -111,9 +116,11 @@ export async function POST(req: NextRequest) {
           },
           { onConflict: 'email' }
         )
-        console.log(`[resend-webhook] Suppressed ${normalized} (${normalizedEvent.suppression})`)
+        log.info(`Suppressed ${sanitize(normalized)}`, {
+          context: { reason: normalizedEvent.suppression },
+        })
       } catch (suppressErr) {
-        console.error('[resend-webhook] Suppression insert failed (non-blocking):', suppressErr)
+        log.error('Suppression insert failed (non-blocking)', { error: suppressErr })
       }
     }
   }
@@ -126,6 +133,6 @@ export async function POST(req: NextRequest) {
     result: { field: updateField, kind: normalizedEvent.kind },
     payloadSizeBytes: body.length,
   })
-  console.log(`[resend-webhook] ${normalizedEvent.providerEventType} -> ${providerMessageId}`)
+  log.info(`${normalizedEvent.providerEventType} processed`, { context: { providerMessageId } })
   return NextResponse.json({ ok: true })
 }

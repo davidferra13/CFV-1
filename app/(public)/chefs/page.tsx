@@ -2,6 +2,7 @@ import type { Metadata } from 'next'
 import Link from 'next/link'
 import { PublicSecondaryEntryCluster } from '@/components/public/public-secondary-entry-cluster'
 import { PUBLIC_SECONDARY_ENTRY_CONFIG } from '@/lib/public/public-secondary-entry-config'
+import { JsonLd } from '@/components/seo/json-ld'
 import { TrackedLink } from '@/components/analytics/tracked-link'
 import {
   canonicalizeDiscoveryPriceRange,
@@ -343,10 +344,7 @@ export default async function ChefDirectoryPage({ searchParams }: PageProps) {
 
   return (
     <div className="min-h-screen bg-stone-900">
-      <script
-        type="application/ld+json"
-        dangerouslySetInnerHTML={{ __html: JSON.stringify(directoryStructuredData) }}
-      />
+      <JsonLd data={directoryStructuredData} />
       <DirectoryResultsTracker
         query={query}
         locationFilter={activeLocationLabel || ''}

@@ -8,7 +8,7 @@ import { TokenExpiredPage } from '@/components/ui/token-expired-page'
 import { PostActionFooter } from '@/components/public/post-action-footer'
 import { ReviewForm } from './review-form'
 
-export const metadata = { title: 'Leave a Review' }
+export const metadata = { title: 'Leave a Review', robots: { index: false, follow: false } }
 
 export default async function ReviewPage({ params }: { params: { token: string } }) {
   const headersList = await headers()

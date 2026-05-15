@@ -12,6 +12,7 @@
  */
 
 const PI_BRIDGE_URL = process.env.PI_BRIDGE_URL || 'http://10.0.0.177:7700'
+const PI_BRIDGE_SECRET = process.env.PI_BRIDGE_SECRET || ''
 const TIMEOUT_MS = 2000 // 2s max - if Pi doesn't respond, skip it
 
 // --- Circuit Breaker ---
@@ -137,8 +138,14 @@ async function piFetch<T>(path: string, options?: RequestInit): Promise<T | null
     const controller = new AbortController()
     const timeout = setTimeout(() => controller.abort(), TIMEOUT_MS)
 
+    const headers = new Headers(options?.headers as HeadersInit | undefined)
+    if (PI_BRIDGE_SECRET) {
+      headers.set('Authorization', `Bearer ${PI_BRIDGE_SECRET}`)
+    }
+
     const response = await fetch(`${PI_BRIDGE_URL}${path}`, {
       ...options,
+      headers,
       signal: controller.signal,
     })
 

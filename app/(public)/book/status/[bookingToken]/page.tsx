@@ -6,7 +6,7 @@ import { getBookingStatus } from '@/lib/booking/status-actions'
 export const metadata: Metadata = {
   title: 'Booking Status | ChefFlow',
   description: 'Track the status of your chef booking request.',
-  robots: { index: false },
+  robots: { index: false, follow: false },
 }
 
 type Props = {

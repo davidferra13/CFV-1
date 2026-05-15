@@ -1,6 +1,7 @@
 import type { Metadata } from 'next'
 import { PublicPageView } from '@/components/analytics/public-page-view'
 import { TrackedLink } from '@/components/analytics/tracked-link'
+import { JsonLd } from '@/components/seo/json-ld'
 import { LAUNCH_MODE, PRIMARY_SIGNUP_LABEL } from '@/lib/marketing/launch-mode'
 import { buildMarketingSignupHref } from '@/lib/marketing/signup-links'
 
@@ -74,10 +75,7 @@ export default function CustomersPage() {
   return (
     <div>
       <PublicPageView pageName="customers" properties={{ section: 'public_growth' }} />
-      <script
-        type="application/ld+json"
-        dangerouslySetInnerHTML={{ __html: JSON.stringify(customersStructuredData) }}
-      />
+      <JsonLd data={customersStructuredData} />
 
       <section className="relative overflow-hidden border-b border-stone-700/50">
         <div className="pointer-events-none absolute left-1/2 top-0 h-[380px] w-[720px] -translate-x-1/2 rounded-full bg-brand-700/20 blur-[80px]" />

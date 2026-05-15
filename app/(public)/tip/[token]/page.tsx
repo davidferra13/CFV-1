@@ -8,7 +8,7 @@ import { TokenExpiredPage } from '@/components/ui/token-expired-page'
 import { PostActionFooter } from '@/components/public/post-action-footer'
 import { TipForm } from './tip-form'
 
-export const metadata = { title: 'Leave a Tip' }
+export const metadata = { title: 'Leave a Tip', robots: { index: false, follow: false } }
 
 export default async function TipPage({ params }: { params: { token: string } }) {
   const headersList = await headers()

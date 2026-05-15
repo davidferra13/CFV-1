@@ -199,7 +199,8 @@ export default auth(async (request) => {
     return withRequestId(NextResponse.next({ request: { headers: requestHeaders } }), requestId)
   }
 
-  const routeDecision = getRoutePolicyDecisionForRole(pathname, role)
+  const isAdmin = (user as Record<string, unknown>).isAdmin === true
+  const routeDecision = getRoutePolicyDecisionForRole(pathname, role, { isAdmin })
   if (!routeDecision.allowed && routeDecision.recoveryPath) {
     return withRequestId(
       NextResponse.redirect(buildRedirectUrl(request, routeDecision.recoveryPath)),
