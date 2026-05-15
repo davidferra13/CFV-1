@@ -41,7 +41,7 @@ function getMissingFields(recipe: { method: string; ingredient_count: number | n
 
 export default async function IncompleteRecipesPage() {
   await requireChef()
-  const allRecipes = await getRecipes()
+  const { recipes: allRecipes } = await getRecipes()
 
   // "Drafts" = recipes missing method or ingredients - not yet fully documented
   const incompleteRecipes = allRecipes.filter(

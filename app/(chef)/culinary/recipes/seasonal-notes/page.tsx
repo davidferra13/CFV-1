@@ -8,7 +8,7 @@ export const metadata: Metadata = { title: 'Seasonal Notes' }
 
 export default async function SeasonalNotesPage() {
   await requireChef()
-  const recipes = await getRecipes()
+  const { recipes } = await getRecipes()
 
   // Recipes with notes or adaptations - likely to contain seasonal guidance
   const withNotes = recipes.filter((r) => (r as any).notes || (r as any).adaptations)

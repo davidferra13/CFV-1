@@ -365,7 +365,7 @@ export async function loadBusinessSectionData({
     safe('equipmentDueForMaintenance', getEquipmentDueForMaintenance, [] as any[]),
     safe('equipmentRentals', listRentals, [] as any[]),
     safe('kitchenRentals', listKitchenRentals, [] as any[]),
-    safe('recipes', getRecipes, [] as any[]),
+    safe('recipes', () => getRecipes().then((r) => r.recipes), [] as any[]),
     safe('menus', getMenus, [] as any[]),
     safe('recipeDebtSummary', getRecipeDebt, {
       last7Days: 0,

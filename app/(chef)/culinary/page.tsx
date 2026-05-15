@@ -173,9 +173,13 @@ async function CulinaryTilesWithStats({
   size: 'primary' | 'secondary'
 }) {
   const [recipes, menus, ingredients, vendors] = await Promise.all([
-    getRecipes().catch(() => []),
+    getRecipes()
+      .then((r) => r.recipes)
+      .catch(() => []),
     getMenus().catch(() => []),
-    getIngredients().catch(() => []),
+    getIngredients()
+      .then((r) => r.ingredients)
+      .catch(() => []),
     listVendors().catch(() => []),
   ])
 

@@ -28,7 +28,7 @@ export default async function RecipesPage({
 }) {
   await requireChef()
 
-  const [recipes, palette] = await Promise.all([
+  const [recipesResult, palette] = await Promise.all([
     getRecipes({
       category: searchParams.category,
       cuisine: searchParams.cuisine,
@@ -38,6 +38,7 @@ export default async function RecipesPage({
     }),
     getActivePalette(),
   ])
+  const recipes = recipesResult.recipes
 
   const activeMicroWindows = palette ? getActiveMicroWindows(palette) : []
   const endingMicroWindows = palette ? getEndingMicroWindows(palette) : []

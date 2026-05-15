@@ -19,13 +19,14 @@ export default async function IngredientsPage({
 }) {
   await requireChef()
 
-  const [ingredients, health] = await Promise.all([
+  const [ingredientsResult, health] = await Promise.all([
     getIngredients({
       category: searchParams.category,
       search: searchParams.search,
     }),
     getIngredientHealthAction().catch(() => null),
   ])
+  const ingredients = ingredientsResult.ingredients
 
   return (
     <div className="space-y-6">

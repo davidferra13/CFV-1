@@ -38,11 +38,12 @@ function isFermentLike(name: string) {
 export default async function FermentsPage() {
   await requireChef()
 
-  const [recipes, components, dishes] = await Promise.all([
+  const [recipesResult, components, dishes] = await Promise.all([
     getRecipes(),
     getAllComponents(),
     getAllDishes(),
   ])
+  const recipes = recipesResult.recipes
 
   const fermentRecipes = recipes.filter((r) => isFermentLike(r.name))
   const fermentComponents = components.filter((c) => isFermentLike(c.name))

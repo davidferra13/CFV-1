@@ -8,7 +8,7 @@ export const metadata: Metadata = { title: 'Vendor Notes' }
 
 export default async function VendorNotesPage() {
   await requireChef()
-  const ingredients = await getIngredients()
+  const { ingredients } = await getIngredients()
 
   const withVendor = ingredients.filter((i: any) => i.preferred_vendor)
 

@@ -445,7 +445,7 @@ export async function createEvent(input: CreateEventInput) {
 /**
  * Get events list (chef-only, tenant-scoped by RLS)
  */
-export async function getEvents() {
+export async function getEvents(options?: { statusFilter?: string }) {
   const user = await requireChef()
   const db: any = createServerClient()
 
@@ -461,6 +461,9 @@ export async function getEvents() {
     `
       )
       .eq('tenant_id', user.tenantId!)
+    if (options?.statusFilter) {
+      query = query.eq('status', options.statusFilter)
+    }
     if (withSoftDeleteFilter) {
       query = query.is('deleted_at' as any, null)
     }

@@ -89,7 +89,7 @@ function guessSeason(name: string): string | null {
 
 export default async function SeasonalAvailabilityPage() {
   await requireChef()
-  const ingredients = await getIngredients()
+  const { ingredients } = await getIngredients()
 
   // Match ingredients to seasons by name heuristic
   const bySeason = new Map<string, typeof ingredients>()

@@ -19,7 +19,9 @@ export default async function CommunityTemplatesPage() {
   const [templates, menus, recipes, messageTemplates, proposalTemplates] = await Promise.all([
     getCommunityTemplates(),
     getMenus().catch(() => []),
-    getRecipes().catch(() => []),
+    getRecipes()
+      .then((r) => r.recipes)
+      .catch(() => []),
     getResponseTemplates().catch(() => []),
     listProposalTemplates().catch(() => []),
   ])

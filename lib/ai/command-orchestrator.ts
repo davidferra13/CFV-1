@@ -644,7 +644,7 @@ async function executeFinanceMonthlySnapshot() {
 
 async function executeRecipeSearch(inputs: Record<string, unknown>) {
   const query = String(inputs.query ?? '')
-  const recipes = await getRecipes({ search: query })
+  const { recipes } = await getRecipes({ search: query })
   return {
     recipes: (recipes ?? []).slice(0, 10).map((r) => ({
       id: r.id,

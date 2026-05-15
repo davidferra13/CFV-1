@@ -1,9 +1,12 @@
 'use server'
 
 import { createServerClient } from '@/lib/db/server'
+import { pgClient } from '@/lib/db'
 import { requireChef } from '@/lib/auth/get-user'
 import { dateToDateString } from '@/lib/utils/format'
 import { navGroups, standaloneBottom, standaloneTop } from '@/components/navigation/nav-config'
+import { toTsQuery, sanitizeSearchQuery } from './search-helpers'
+import { escapeLikePattern } from '@/lib/db/escape-like'
 
 export interface SearchResult {
   id: string
@@ -60,17 +63,53 @@ function fuzzyScore(haystack: string, needle: string): number {
   return Math.round((matched / needle.length) * 50)
 }
 
+/**
+ * FTS-powered search for a single entity type.
+ * Uses search_vector @@ to_tsquery with ts_rank_cd scoring.
+ * Returns rows with a _rank field for relevance sorting.
+ */
+async function ftsSearch(
+  table: string,
+  selectCols: string,
+  tenantCol: string,
+  tenantId: string,
+  tsq: string,
+  limit: number = 8
+): Promise<any[]> {
+  try {
+    const rows = await pgClient.unsafe(
+      `SELECT ${selectCols}, ts_rank_cd(search_vector, to_tsquery('english', $1)) as _rank
+       FROM ${table}
+       WHERE ${tenantCol} = $2
+         AND search_vector @@ to_tsquery('english', $1)
+       ORDER BY _rank DESC
+       LIMIT $3`,
+      [tsq, tenantId, limit]
+    )
+    return rows as any[]
+  } catch {
+    // If search_vector column doesn't exist yet (migration pending), return empty
+    return []
+  }
+}
+
 export async function universalSearch(query: string): Promise<SearchResponse> {
   if (!query || query.length < 2) return { results: [], grouped: {} }
 
   const chef = await requireChef()
   const db: any = createServerClient()
-  // Escape PostgREST filter metacharacters to prevent filter string injection
-  const safeQuery = query.replace(/[%_,.()"'\\]/g, '')
-  const q = `%${safeQuery}%`
+  const sanitized = sanitizeSearchQuery(query)
+  if (!sanitized) return { results: [], grouped: {} }
+
+  const tsq = toTsQuery(sanitized)
   const needle = query.trim().toLowerCase()
   const results: SearchResult[] = []
   const makeId = (type: SearchResult['type'], id: string) => `${type}:${id}`
+  const tenantId = chef.tenantId!
+
+  // ILIKE fallback query string (for tables without FTS)
+  const escapedQ = escapeLikePattern(sanitized)
+  const likeQ = `%${escapedQ}%`
 
   // Search pages/routes from navigation config (plus key public pages).
   const pageMap = new Map<string, { title: string; snippet?: string; keywords: Set<string> }>()
@@ -134,179 +173,164 @@ export async function universalSearch(query: string): Promise<SearchResponse> {
     })
   }
 
-  // Run all independent DB queries in parallel for performance.
+  // Run FTS queries in parallel for all entity types with search_vector columns.
+  // Tables without FTS (connections, handoffs, collab spaces, hub messages) use ILIKE fallback.
   const [
-    clientsRes,
-    eventsRes,
-    inquiriesRes,
-    menusRes,
-    recipesRes,
-    quotesRes,
-    expensesRes,
-    partnersRes,
-    staffRes,
-    notesRes,
-    messagesRes,
-    conversationsRes,
+    clientRows,
+    eventRows,
+    inquiryRows,
+    menuRows,
+    recipeRows,
+    quoteRows,
+    expenseRows,
+    partnerRows,
+    staffRows,
+    noteRows,
+    messageRows,
+    conversationRows,
+    contractRows,
+    ingredientRows,
+    // ILIKE fallback queries for tables without FTS
     connectionsOutRes,
     connectionsInRes,
     handoffsSentRes,
     handoffsReceivedRes,
     collabSpacesRes,
     hubProfileRes,
-    contractsRes,
-    ingredientsRes,
   ] = await Promise.allSettled([
-    // 0: clients
-    db
-      .from('clients')
-      .select('id, full_name, email, phone')
-      .eq('tenant_id', chef.tenantId!)
-      .or(`full_name.ilike.${q},email.ilike.${q},phone.ilike.${q}`)
-      .limit(8),
-    // 1: events
-    db
-      .from('events')
-      .select(
-        'id, occasion, event_date, status, location_address, special_requests, ambiance_notes'
-      )
-      .eq('tenant_id', chef.tenantId!)
-      .or(
-        `occasion.ilike.${q},location_address.ilike.${q},special_requests.ilike.${q},ambiance_notes.ilike.${q}`
-      )
-      .limit(8),
-    // 2: inquiries
-    db
-      .from('inquiries')
-      .select('id, source_message, confirmed_occasion, confirmed_date, status')
-      .eq('tenant_id', chef.tenantId!)
-      .or(`source_message.ilike.${q},confirmed_occasion.ilike.${q}`)
-      .limit(8),
-    // 3: menus
-    db
-      .from('menus')
-      .select('id, name, description, notes, status')
-      .eq('tenant_id', chef.tenantId!)
-      .or(`name.ilike.${q},description.ilike.${q},notes.ilike.${q}`)
-      .limit(8),
-    // 4: recipes
-    db
-      .from('recipes')
-      .select('id, name, description, notes, category')
-      .eq('tenant_id', chef.tenantId!)
-      .or(`name.ilike.${q},description.ilike.${q},notes.ilike.${q}`)
-      .limit(8),
-    // 5: quotes
-    db
-      .from('quotes')
-      .select(
-        'id, quote_name, status, total_quoted_cents, valid_until, internal_notes, pricing_notes'
-      )
-      .eq('tenant_id', chef.tenantId!)
-      .or(`quote_name.ilike.${q},internal_notes.ilike.${q},pricing_notes.ilike.${q}`)
-      .limit(8),
-    // 6: expenses
-    db
-      .from('expenses')
-      .select('id, description, vendor_name, category, amount_cents, expense_date, notes')
-      .eq('tenant_id', chef.tenantId!)
-      .or(`description.ilike.${q},vendor_name.ilike.${q},notes.ilike.${q}`)
-      .limit(8),
-    // 7: partners
-    db
-      .from('referral_partners')
-      .select('id, name, contact_name, email, status, notes')
-      .eq('tenant_id', chef.tenantId!)
-      .or(`name.ilike.${q},contact_name.ilike.${q},email.ilike.${q},notes.ilike.${q}`)
-      .limit(8),
-    // 8: staff
-    db
-      .from('staff_members')
-      .select('id, name, role, email, phone, status')
-      .eq('chef_id', chef.tenantId!)
-      .or(`name.ilike.${q},email.ilike.${q},phone.ilike.${q}`)
-      .limit(8),
-    // 9: notes
-    db
-      .from('client_notes')
-      .select('id, client_id, note_text, category, pinned')
-      .eq('tenant_id', chef.tenantId!)
-      .ilike('note_text', q)
-      .limit(8),
-    // 10: messages
-    db
-      .from('messages')
-      .select('id, subject, body, status, channel, client_id, event_id, inquiry_id')
-      .eq('tenant_id', chef.tenantId!)
-      .or(`subject.ilike.${q},body.ilike.${q}`)
-      .limit(8),
-    // 11: conversations
-    db
-      .from('conversations')
-      .select('id, context_type, last_message_preview')
-      .eq('tenant_id', chef.tenantId!)
-      .ilike('last_message_preview', q)
-      .limit(8),
-    // 12: connections out
+    // FTS-powered queries (use search_vector column)
+    ftsSearch('clients', 'id, full_name, email, phone', 'tenant_id', tenantId, tsq, 8),
+    ftsSearch(
+      'events',
+      'id, occasion, event_date, status, location_address, special_requests, ambiance_notes',
+      'tenant_id',
+      tenantId,
+      tsq,
+      8
+    ),
+    ftsSearch(
+      'inquiries',
+      'id, source_message, confirmed_occasion, confirmed_date, status',
+      'tenant_id',
+      tenantId,
+      tsq,
+      8
+    ),
+    ftsSearch('menus', 'id, name, description, notes, status', 'tenant_id', tenantId, tsq, 8),
+    ftsSearch('recipes', 'id, name, description, notes, category', 'tenant_id', tenantId, tsq, 8),
+    ftsSearch(
+      'quotes',
+      'id, quote_name, status, total_quoted_cents, valid_until, internal_notes, pricing_notes',
+      'tenant_id',
+      tenantId,
+      tsq,
+      8
+    ),
+    ftsSearch(
+      'expenses',
+      'id, description, vendor_name, category, amount_cents, expense_date, notes',
+      'tenant_id',
+      tenantId,
+      tsq,
+      8
+    ),
+    ftsSearch(
+      'referral_partners',
+      'id, name, contact_name, email, status, notes',
+      'tenant_id',
+      tenantId,
+      tsq,
+      8
+    ),
+    ftsSearch('staff_members', 'id, name, role, email, phone, status', 'chef_id', tenantId, tsq, 8),
+    ftsSearch(
+      'client_notes',
+      'id, client_id, note_text, category, pinned',
+      'tenant_id',
+      tenantId,
+      tsq,
+      8
+    ),
+    ftsSearch(
+      'messages',
+      'id, subject, body, status, channel, client_id, event_id, inquiry_id',
+      'tenant_id',
+      tenantId,
+      tsq,
+      8
+    ),
+    ftsSearch(
+      'conversations',
+      'id, context_type, last_message_preview',
+      'tenant_id',
+      tenantId,
+      tsq,
+      8
+    ),
+    // Contracts: FTS on body_snapshot via search_vector
+    (async () => {
+      try {
+        const rows = await pgClient.unsafe(
+          `SELECT ec.id, ec.event_id, ec.status, ec.body_snapshot,
+                  c.full_name as client_name, e.occasion
+           FROM event_contracts ec
+           LEFT JOIN clients c ON c.id = ec.client_id
+           LEFT JOIN events e ON e.id = ec.event_id
+           WHERE ec.chef_id = $1
+             AND ec.search_vector @@ to_tsquery('english', $2)
+           ORDER BY ec.created_at DESC
+           LIMIT 8`,
+          [tenantId, tsq]
+        )
+        return rows as any[]
+      } catch {
+        return []
+      }
+    })(),
+    // Ingredients (for recipe-by-ingredient search)
+    ftsSearch('ingredients', 'id, name', 'tenant_id', tenantId, tsq, 20),
+    // ILIKE fallback for tables without search_vector
     db
       .from('chef_connections')
       .select(
         'id, connected_chef_id, status, chefs!chef_connections_connected_chef_id_fkey(business_name)'
       )
-      .eq('chef_id', chef.tenantId!)
+      .eq('chef_id', tenantId)
       .eq('status', 'accepted')
       .limit(8),
-    // 13: connections in
     db
       .from('chef_connections')
       .select('id, chef_id, status, chefs!chef_connections_chef_id_fkey(business_name)')
-      .eq('connected_chef_id', chef.tenantId!)
+      .eq('connected_chef_id', tenantId)
       .eq('status', 'accepted')
       .limit(8),
-    // 14: handoffs sent
     db
       .from('chef_handoffs')
       .select('id, title, occasion, status, created_at')
-      .eq('sender_chef_id', chef.tenantId!)
-      .or(`title.ilike.${q},occasion.ilike.${q}`)
+      .eq('sender_chef_id', tenantId)
+      .or(`title.ilike.${likeQ},occasion.ilike.${likeQ}`)
       .limit(8),
-    // 15: handoffs received
     db
       .from('chef_collab_handoff_recipients')
       .select('id, handoff_id, status, chef_handoffs(title, occasion)')
-      .eq('recipient_chef_id', chef.tenantId!)
+      .eq('recipient_chef_id', tenantId)
       .limit(8),
-    // 16: collab spaces
     db
       .from('chef_collab_space_members')
       .select('collab_space_id, chef_collab_spaces(id, name, description)')
-      .eq('chef_id', chef.tenantId!)
+      .eq('chef_id', tenantId)
       .limit(20),
-    // 17: hub profile (for hub circle messages)
     db.from('hub_guest_profiles').select('id').eq('auth_user_id', chef.userId).maybeSingle(),
-    // 18: contracts
-    db
-      .from('event_contracts')
-      .select('id, event_id, status, body_snapshot, clients(full_name), events(occasion)')
-      .eq('chef_id', chef.tenantId!)
-      .ilike('body_snapshot', q)
-      .order('created_at', { ascending: false })
-      .limit(8),
-    // 19: ingredients (for recipe-by-ingredient search)
-    db
-      .from('ingredients')
-      .select('id, name')
-      .eq('tenant_id', chef.tenantId!)
-      .ilike('name', q)
-      .limit(20),
   ])
 
   // Helper to extract data from settled results
+  const getFts = <T>(res: PromiseSettledResult<T>): T | null =>
+    res.status === 'fulfilled' ? res.value : null
   const getData = <T>(res: PromiseSettledResult<{ data: T }>): T | null =>
     res.status === 'fulfilled' ? res.value.data : null
 
-  // Process clients
-  const clients = getData<any[]>(clientsRes)
+  // Process FTS results: clients
+  const clients = getFts<any[]>(clientRows)
   if (clients) {
     for (const client of clients) {
       results.push({
@@ -320,7 +344,7 @@ export async function universalSearch(query: string): Promise<SearchResponse> {
   }
 
   // Process events
-  const events = getData<any[]>(eventsRes)
+  const events = getFts<any[]>(eventRows)
   if (events) {
     for (const event of events) {
       results.push({
@@ -335,7 +359,7 @@ export async function universalSearch(query: string): Promise<SearchResponse> {
   }
 
   // Process inquiries
-  const inquiries = getData<any[]>(inquiriesRes)
+  const inquiries = getFts<any[]>(inquiryRows)
   if (inquiries) {
     for (const inquiry of inquiries) {
       results.push({
@@ -350,7 +374,7 @@ export async function universalSearch(query: string): Promise<SearchResponse> {
   }
 
   // Process menus
-  const menus = getData<any[]>(menusRes)
+  const menus = getFts<any[]>(menuRows)
   if (menus) {
     for (const menu of menus) {
       results.push({
@@ -365,7 +389,7 @@ export async function universalSearch(query: string): Promise<SearchResponse> {
   }
 
   // Process recipes
-  const recipes = getData<any[]>(recipesRes)
+  const recipes = getFts<any[]>(recipeRows)
   if (recipes) {
     for (const recipe of recipes) {
       results.push({
@@ -380,7 +404,7 @@ export async function universalSearch(query: string): Promise<SearchResponse> {
   }
 
   // Process quotes
-  const quotes = getData<any[]>(quotesRes)
+  const quotes = getFts<any[]>(quoteRows)
   if (quotes) {
     for (const quote of quotes) {
       results.push({
@@ -395,7 +419,7 @@ export async function universalSearch(query: string): Promise<SearchResponse> {
   }
 
   // Process expenses
-  const expenses = getData<any[]>(expensesRes)
+  const expenses = getFts<any[]>(expenseRows)
   if (expenses) {
     for (const expense of expenses) {
       results.push({
@@ -410,7 +434,7 @@ export async function universalSearch(query: string): Promise<SearchResponse> {
   }
 
   // Process partners
-  const partners = getData<any[]>(partnersRes)
+  const partners = getFts<any[]>(partnerRows)
   if (partners) {
     for (const partner of partners) {
       results.push({
@@ -425,22 +449,22 @@ export async function universalSearch(query: string): Promise<SearchResponse> {
   }
 
   // Process staff
-  const staffRows = getData<any[]>(staffRes)
-  if (staffRows) {
-    for (const staff of staffRows) {
+  const staff = getFts<any[]>(staffRows)
+  if (staff) {
+    for (const s of staff) {
       results.push({
-        id: makeId('staff', staff.id),
+        id: makeId('staff', s.id),
         type: 'staff',
-        title: staff.name,
-        snippet: [staff.role, staff.email].filter(Boolean).join(' - ') || undefined,
-        url: `/staff/${staff.id}`,
-        metadata: { badge: staff.status },
+        title: s.name,
+        snippet: [s.role, s.email].filter(Boolean).join(' - ') || undefined,
+        url: `/staff/${s.id}`,
+        metadata: { badge: s.status },
       })
     }
   }
 
   // Process notes
-  const notes = getData<any[]>(notesRes)
+  const notes = getFts<any[]>(noteRows)
   if (notes) {
     for (const note of notes) {
       results.push({
@@ -455,7 +479,7 @@ export async function universalSearch(query: string): Promise<SearchResponse> {
   }
 
   // Process messages
-  const messages = getData<any[]>(messagesRes)
+  const messages = getFts<any[]>(messageRows)
   if (messages) {
     for (const message of messages) {
       const url = message.inquiry_id
@@ -478,7 +502,7 @@ export async function universalSearch(query: string): Promise<SearchResponse> {
   }
 
   // Process conversations
-  const conversations = getData<any[]>(conversationsRes)
+  const conversations = getFts<any[]>(conversationRows)
   if (conversations) {
     for (const conversation of conversations) {
       results.push({
@@ -492,7 +516,28 @@ export async function universalSearch(query: string): Promise<SearchResponse> {
     }
   }
 
-  // Process connections (both directions)
+  // Process contracts (FTS with joined data)
+  const contracts = getFts<any[]>(contractRows)
+  if (contracts) {
+    for (const contract of contracts) {
+      const clientName = contract.client_name || 'Client'
+      const occasion = contract.occasion || ''
+      const bodyText = (contract.body_snapshot || '').replace(/<[^>]*>/g, '')
+      const matchIdx = bodyText.toLowerCase().indexOf(sanitized.toLowerCase())
+      const snippetStart = Math.max(0, matchIdx - 40)
+      const snippetText = bodyText.slice(snippetStart, snippetStart + 120)
+      results.push({
+        id: makeId('contract', contract.id),
+        type: 'contract',
+        title: `Contract: ${clientName}${occasion ? ` (${occasion})` : ''}`,
+        snippet: snippetText || undefined,
+        url: `/events/${contract.event_id}`,
+        metadata: { badge: contract.status },
+      })
+    }
+  }
+
+  // Process connections (both directions, ILIKE fallback)
   const connectionsOut = getData<any[]>(connectionsOutRes)
   for (const conn of connectionsOut || []) {
     const name = conn.chefs?.business_name || 'Connected Chef'
@@ -579,7 +624,7 @@ export async function universalSearch(query: string): Promise<SearchResponse> {
           .from('hub_messages')
           .select('id, body, group_id, created_at, hub_groups(name, group_token)')
           .in('group_id', groupIds)
-          .ilike('body', q)
+          .ilike('body', likeQ)
           .is('deleted_at', null)
           .order('created_at', { ascending: false })
           .limit(8)
@@ -600,33 +645,9 @@ export async function universalSearch(query: string): Promise<SearchResponse> {
     // Non-blocking: hub message search failure doesn't break main search
   }
 
-  // Process contracts
-  try {
-    const contracts = getData<any[]>(contractsRes)
-    for (const contract of contracts ?? []) {
-      const clientName = contract.clients?.full_name || 'Client'
-      const occasion = contract.events?.occasion || ''
-      // Extract a snippet around the match
-      const bodyText = (contract.body_snapshot || '').replace(/<[^>]*>/g, '')
-      const matchIdx = bodyText.toLowerCase().indexOf(safeQuery.toLowerCase())
-      const snippetStart = Math.max(0, matchIdx - 40)
-      const snippetText = bodyText.slice(snippetStart, snippetStart + 120)
-      results.push({
-        id: makeId('contract', contract.id),
-        type: 'contract',
-        title: `Contract: ${clientName}${occasion ? ` (${occasion})` : ''}`,
-        snippet: snippetText || undefined,
-        url: `/events/${contract.event_id}`,
-        metadata: { badge: contract.status },
-      })
-    }
-  } catch {
-    // Non-blocking: contract search failure doesn't break main search
-  }
-
   // Process recipes by ingredient name (dependent query for recipe_ingredients)
   try {
-    const matchingIngredients = getData<any[]>(ingredientsRes)
+    const matchingIngredients = getFts<any[]>(ingredientRows)
     if (matchingIngredients?.length) {
       const ingredientIds = matchingIngredients.map((i: any) => i.id)
       const ingredientNames = new Map(matchingIngredients.map((i: any) => [i.id, i.name]))
@@ -684,7 +705,7 @@ export async function universalSearch(query: string): Promise<SearchResponse> {
     contract: 'Contracts',
   }
 
-  // FC-G35: Score all results by relevance, sort within groups
+  // Score all results by relevance, sort within groups
   const scored = results.map((r) => ({
     ...r,
     _score: fuzzyScore([r.title, r.snippet || ''].join(' ').toLowerCase(), needle),

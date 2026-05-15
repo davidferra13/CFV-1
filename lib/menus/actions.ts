@@ -18,6 +18,9 @@ import { executeWithIdempotency } from '@/lib/mutations/idempotency'
 import { createConflictError } from '@/lib/mutations/conflict'
 import { UnknownAppError } from '@/lib/errors/app-error'
 import { isMissingSoftDeleteColumn } from '@/lib/mutations/soft-delete-compat'
+import { normalizePagination, buildPaginationMeta } from '@/lib/search/search-helpers'
+import type { PaginationMeta } from '@/lib/search/search-types'
+import { escapeLikePattern } from '@/lib/db/escape-like'
 import { getDuplicateCourseError } from '@/lib/menus/course-utils'
 import { normalizeUnit } from '@/lib/units/conversion-engine'
 import { transitionMenuWithContext } from './menu-lifecycle'
@@ -375,6 +378,62 @@ export async function getMenus({ statusFilter }: { statusFilter?: MenuStatus } =
   }
 
   return menus
+}
+
+/**
+ * Get menus with server-side pagination and optional text search.
+ * Returns { menus, pagination } instead of a plain array.
+ */
+export async function getMenusPaginated({
+  statusFilter,
+  page,
+  pageSize,
+  search,
+}: {
+  statusFilter?: MenuStatus
+  page?: number
+  pageSize?: number
+  search?: string
+} = {}): Promise<{ menus: any[]; pagination: PaginationMeta }> {
+  const user = await requireChef()
+  const db: any = createServerClient()
+  const {
+    page: normalizedPage,
+    pageSize: normalizedPageSize,
+    offset,
+  } = normalizePagination({ page, pageSize })
+  const to = offset + normalizedPageSize - 1
+
+  const buildQuery = (withSoftDeleteFilter: boolean) => {
+    let query = db.from('menus').select('*', { count: 'exact' }).eq('tenant_id', user.tenantId!)
+    if (withSoftDeleteFilter) {
+      query = query.is('deleted_at' as any, null)
+    }
+    if (statusFilter) {
+      query = query.eq('status', statusFilter)
+    }
+    if (search && search.trim()) {
+      const escaped = escapeLikePattern(search.trim())
+      query = query.ilike('name', `%${escaped}%`)
+    }
+    return query
+  }
+
+  let response = await buildQuery(true).order('created_at', { ascending: false }).range(offset, to)
+  if (isMissingSoftDeleteColumn(response.error)) {
+    response = await buildQuery(false).order('created_at', { ascending: false }).range(offset, to)
+  }
+  const { data: menus, error, count } = response
+
+  if (error) {
+    console.error('[getMenusPaginated] Error:', error)
+    throw new UnknownAppError('Failed to fetch menus')
+  }
+
+  const total = count ?? 0
+  const pagination = buildPaginationMeta(total, normalizedPage, normalizedPageSize)
+
+  return { menus: menus ?? [], pagination }
 }
 
 /**

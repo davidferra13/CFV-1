@@ -52,7 +52,7 @@ const CATEGORY_STYLES: Record<string, string> = {
 
 export default async function IngredientsPage() {
   await requireChef()
-  const ingredients = await getIngredients()
+  const { ingredients } = await getIngredients()
   const flaggedPrices = await getFlaggedPrices()
 
   // Fetch stock levels for all ingredients

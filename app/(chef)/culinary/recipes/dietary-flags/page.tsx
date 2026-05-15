@@ -28,7 +28,7 @@ const DIETARY_COLORS: Record<string, string> = {
 
 export default async function DietaryFlagsPage() {
   await requireChef()
-  const recipes = await getRecipes()
+  const { recipes } = await getRecipes()
 
   const flagged = recipes.filter((r) => r.dietary_tags.length > 0)
   const unflagged = recipes.filter((r) => r.dietary_tags.length === 0)

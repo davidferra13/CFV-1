@@ -15,7 +15,7 @@ export default async function EditPalettePage({ params }: { params: { id: string
   if (!palette) notFound()
 
   // Load recipes for "Proven Wins" linking
-  const recipes = await getRecipes({ sort: 'name' })
+  const { recipes } = await getRecipes({ sort: 'name' })
   const recipeOptions = recipes.map((r) => ({ id: r.id, name: r.name }))
 
   return (

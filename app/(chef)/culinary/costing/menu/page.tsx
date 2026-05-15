@@ -32,7 +32,7 @@ export default async function MenuCostPage() {
   const result = await safeFetchAll({
     menus: () => getMenus(),
     components: () => getAllComponents(),
-    recipes: () => getRecipes(),
+    recipes: () => getRecipes().then((r) => r.recipes),
     archetype: () => getChefArchetype(),
   })
 
@@ -50,7 +50,7 @@ export default async function MenuCostPage() {
     )
   }
 
-  const { menus, components, recipes, archetype } = result.data!
+  const { menus, components, recipes, archetype } = result.data! as any
   const targets = getTargetsForArchetype(archetype)
   const targetFoodCostPercent = targets.foodCostPctHigh
 

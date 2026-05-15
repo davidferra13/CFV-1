@@ -190,14 +190,12 @@ function getEventStaleness(updatedAt: string | null, status: string): 'ok' | 'wa
 async function EventsList({ status }: { status: EventStatus }) {
   const user = await requireChef()
 
-  const [events_raw, regional] = await Promise.all([getEvents(), getRegionalSettings()])
-  let events = events_raw
+  const [events_raw, regional] = await Promise.all([
+    getEvents(status !== 'all' ? { statusFilter: status } : undefined),
+    getRegionalSettings(),
+  ])
 
-  if (status !== 'all') {
-    events = events.filter((event: any) => event.status === status)
-  }
-
-  events = events.sort(
+  let events = events_raw.sort(
     (a: any, b: any) => new Date(b.event_date).getTime() - new Date(a.event_date).getTime()
   )
 

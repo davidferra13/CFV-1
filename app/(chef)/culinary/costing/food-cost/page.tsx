@@ -25,11 +25,12 @@ export default async function FoodCostPage() {
   function pctColor(pct: number) {
     return getFoodCostRating(pct, operatorType).color
   }
-  const [recipes, allExpenses, summary] = await Promise.all([
+  const [recipesResult, allExpenses, summary] = await Promise.all([
     getRecipes(),
     getExpenses({}),
     getTenantFinancialSummary(),
   ])
+  const recipes = recipesResult.recipes
 
   // Food-related expense categories
   const FOOD_CATEGORIES = ['groceries', 'alcohol', 'specialty_items']

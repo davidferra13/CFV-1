@@ -27,7 +27,7 @@ function costBar(costCents: number, maxCents: number) {
 
 export default async function RecipeCostPage() {
   await requireChef()
-  const recipes = await getRecipes({ sort: 'name' })
+  const { recipes } = await getRecipes({ sort: 'name' })
 
   const withCost = recipes.filter((r) => r.total_cost_cents != null && r.total_cost_cents > 0)
   const noCost = recipes.filter((r) => !r.total_cost_cents || r.total_cost_cents === 0)

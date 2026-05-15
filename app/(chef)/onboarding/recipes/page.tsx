@@ -6,7 +6,9 @@ import { RecipeEntryForm } from '@/components/onboarding/recipe-entry-form'
 export const metadata = { title: 'Recipe Book' }
 
 export default async function OnboardingRecipesPage() {
-  const recipes = await getRecipes().catch(() => [])
+  const recipes = await getRecipes()
+    .then((r) => r.recipes)
+    .catch(() => [])
 
   return (
     <div className="min-h-screen bg-stone-800">

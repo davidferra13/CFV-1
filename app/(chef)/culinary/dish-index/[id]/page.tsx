@@ -13,13 +13,14 @@ export const metadata: Metadata = { title: 'Dish Detail' }
 
 export default async function DishDetailPage({ params }: { params: { id: string } }) {
   await requireChef()
-  const [dish, appearances, feedback, pairings, recipes] = await Promise.all([
+  const [dish, appearances, feedback, pairings, recipesResult] = await Promise.all([
     getDishById(params.id),
     getDishAppearances(params.id),
     getDishFeedback(params.id),
     getDishPairings(params.id),
     getRecipes(),
   ])
+  const recipes = recipesResult.recipes
 
   return (
     <DishDetailClient

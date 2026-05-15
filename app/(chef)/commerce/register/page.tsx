@@ -60,7 +60,9 @@ export default async function RegisterPage() {
       listProducts({ activeOnly: true }),
       getCurrentRegisterSession(),
       terminal.healthCheck(),
-      getRecipes({ sort: 'name' }).catch(() => []),
+      getRecipes({ sort: 'name' })
+        .then((r) => r.recipes)
+        .catch(() => []),
       listPromotions({ activeOnly: true, limit: 40 }).catch(() => []),
       listOpenDiningChecks({ limit: 60 }).catch(() => []),
     ])

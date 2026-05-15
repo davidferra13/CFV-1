@@ -8,9 +8,10 @@ export const metadata: Metadata = { title: 'Recipe Tags' }
 
 export default async function RecipeTagsPage() {
   await requireChef()
-  let recipes: Awaited<ReturnType<typeof getRecipes>> = []
+  let recipes: Awaited<ReturnType<typeof getRecipes>>['recipes'] = []
   try {
-    recipes = await getRecipes()
+    const result = await getRecipes()
+    recipes = result.recipes
   } catch {
     return (
       <div className="space-y-6">

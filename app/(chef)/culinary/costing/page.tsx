@@ -40,14 +40,17 @@ function priceFreshness(dateStr: string | null): { text: string; color: string }
 
 export default async function CostingPage() {
   await requireChef()
-  const [recipes, menuCosts, allIngredients, ingredientHealth, readinessSummary] =
+  const [recipesResult, menuCosts, allIngredients, ingredientHealth, readinessSummary] =
     await Promise.all([
       getRecipes(),
       getMenuCostSummaries(),
-      getIngredients().catch(() => []),
+      getIngredients()
+        .then((r) => r.ingredients)
+        .catch(() => []),
       getIngredientHealthAction().catch(() => null),
       getPricingReadinessSummary(),
     ])
+  const recipes = recipesResult.recipes
 
   const costedRecipes = recipes.filter((r) => r.total_cost_cents !== null)
   const uncostedRecipes = recipes.length - costedRecipes.length

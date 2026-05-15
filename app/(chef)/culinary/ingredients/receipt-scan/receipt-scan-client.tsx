@@ -101,7 +101,7 @@ export function ReceiptScanClient() {
         // Load user's ingredients for matching
         let userIngredients: Ingredient[] = []
         try {
-          userIngredients = await getIngredients()
+          userIngredients = await getIngredients().then((r) => r.ingredients)
           setIngredients(userIngredients)
         } catch {
           // Non-blocking, user can still manually match

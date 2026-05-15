@@ -8,7 +8,7 @@ export const metadata: Metadata = { title: 'Substitutions & Adaptations' }
 
 export default async function SubstitutionsPage() {
   await requireChef()
-  const recipes = await getRecipes()
+  const { recipes } = await getRecipes()
 
   // Recipes with adaptations = substitution reference
   const withAdaptations = recipes.filter((r) => (r as any).adaptations)

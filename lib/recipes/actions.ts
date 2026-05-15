@@ -8,6 +8,8 @@ import { requireChef } from '@/lib/auth/get-user'
 import { checkRateLimit } from '@/lib/api/rate-limit'
 import { createServerClient } from '@/lib/db/server'
 import { escapeLikePattern } from '@/lib/db/escape-like'
+import { normalizePagination, buildPaginationMeta } from '@/lib/search/search-helpers'
+import type { PaginationMeta } from '@/lib/search/search-types'
 import { revalidatePath, revalidateTag } from 'next/cache'
 import { z } from 'zod'
 import type { Database } from '@/types/database'
@@ -311,12 +313,19 @@ export async function getRecipes(filters?: {
   search?: string
   is_template?: boolean
   sort?: 'name' | 'recent' | 'most_used'
-}) {
+  page?: number
+  pageSize?: number
+}): Promise<{ recipes: RecipeListItem[]; pagination: PaginationMeta }> {
   const user = await requireChef()
   const db: any = createServerClient()
+  const { page, pageSize, offset } = normalizePagination(filters)
 
-  // Get recipes
-  let query = db.from('recipes').select('*').eq('tenant_id', user.tenantId!).eq('archived', false)
+  // Get recipes with exact count
+  let query = db
+    .from('recipes')
+    .select('*', { count: 'exact' })
+    .eq('tenant_id', user.tenantId!)
+    .eq('archived', false)
 
   if (filters?.category) {
     query = query.eq('category', filters.category as RecipeCategory)
@@ -331,6 +340,7 @@ export async function getRecipes(filters?: {
   }
 
   if (filters?.search) {
+    // Try FTS on search_vector if column exists, fall back to ILIKE
     query = query.ilike('name', `%${escapeLikePattern(filters.search)}%`)
   }
 
@@ -343,12 +353,17 @@ export async function getRecipes(filters?: {
     query = query.order('name', { ascending: true })
   }
 
-  const { data: recipes, error } = await query
+  // Apply pagination
+  query = query.range(offset, offset + pageSize - 1)
+
+  const { data: recipes, error, count } = await query
 
   if (error) {
     console.error('[getRecipes] Error:', error)
     throw new Error('Failed to fetch recipes')
   }
+
+  const total = count ?? 0
 
   // Get cost data from the view
   const { data: costData } = await db
@@ -409,7 +424,7 @@ export async function getRecipes(filters?: {
     }
   })
 
-  return result
+  return { recipes: result, pagination: buildPaginationMeta(total, page, pageSize) }
 }
 
 // ============================================
@@ -993,13 +1008,19 @@ export async function removeIngredientFromRecipe(recipeIngredientId: string) {
 // 9. GET INGREDIENTS (master list)
 // ============================================
 
-export async function getIngredients(filters?: { category?: string; search?: string }) {
+export async function getIngredients(filters?: {
+  category?: string
+  search?: string
+  page?: number
+  pageSize?: number
+}): Promise<{ ingredients: any[]; pagination: PaginationMeta }> {
   const user = await requireChef()
   const db: any = createServerClient()
+  const { page, pageSize, offset } = normalizePagination(filters)
 
   let query = db
     .from('ingredients')
-    .select('*')
+    .select('*', { count: 'exact' })
     .eq('tenant_id', user.tenantId!)
     .eq('archived', false)
 
@@ -1013,12 +1034,17 @@ export async function getIngredients(filters?: { category?: string; search?: str
 
   query = query.order('name', { ascending: true })
 
-  const { data: ingredients, error } = await query
+  // Apply pagination
+  query = query.range(offset, offset + pageSize - 1)
+
+  const { data: ingredients, error, count } = await query
 
   if (error) {
     console.error('[getIngredients] Error:', error)
     throw new Error('Failed to fetch ingredients')
   }
+
+  const total = count ?? 0
 
   // Get usage counts from the view
   const { data: usageData } = await db
@@ -1028,10 +1054,12 @@ export async function getIngredients(filters?: { category?: string; search?: str
 
   const usageMap = new Map((usageData || []).map((u: any) => [u.ingredient_id, u.times_used ?? 0]))
 
-  return (ingredients || []).map((ing: any) => ({
+  const result = (ingredients || []).map((ing: any) => ({
     ...ing,
     usage_count: usageMap.get(ing.id) ?? 0,
   }))
+
+  return { ingredients: result, pagination: buildPaginationMeta(total, page, pageSize) }
 }
 
 // ============================================

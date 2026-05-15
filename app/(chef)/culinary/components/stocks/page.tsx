@@ -37,11 +37,12 @@ function isStockLike(name: string) {
 export default async function StocksPage() {
   await requireChef()
 
-  const [recipes, components, dishes] = await Promise.all([
+  const [recipesResult, components, dishes] = await Promise.all([
     getRecipes({ category: 'sauce' }),
     getAllComponents(),
     getAllDishes(),
   ])
+  const recipes = recipesResult.recipes
 
   // Recipes that are stock-like (sauce category with stock keywords)
   const stockRecipes = recipes.filter((r) => isStockLike(r.name))

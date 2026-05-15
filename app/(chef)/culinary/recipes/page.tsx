@@ -73,10 +73,11 @@ async function PairingInsights() {
 export default async function ChefRecipesPage() {
   await requireChef()
 
-  let recipes: Awaited<ReturnType<typeof getRecipes>> = []
+  let recipes: Awaited<ReturnType<typeof getRecipes>>['recipes'] = []
   let fetchError = false
   try {
-    recipes = await getRecipes()
+    const result = await getRecipes()
+    recipes = result.recipes
   } catch {
     fetchError = true
   }

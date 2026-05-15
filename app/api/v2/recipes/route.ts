@@ -5,6 +5,7 @@
 // (AI must never generate recipes, and the API follows the same boundary).
 
 import { withApiAuth, apiSuccess, apiError, parsePagination, paginationMeta } from '@/lib/api/v2'
+import { escapeLikePattern } from '@/lib/db/escape-like'
 
 export const GET = withApiAuth(
   async (req, ctx) => {
@@ -28,7 +29,7 @@ export const GET = withApiAuth(
 
     if (category) query = query.eq('category', category as any)
     if (cuisine) query = query.eq('cuisine', cuisine as any)
-    if (q) query = query.ilike('name', `%${q}%`)
+    if (q) query = query.ilike('name', `%${escapeLikePattern(q)}%`)
 
     const from = (pagination.page - 1) * pagination.per_page
     const to = from + pagination.per_page - 1

@@ -31,7 +31,7 @@ export default async function JournalDetailPage({
     getRecipes({ sort: 'name' }),
   ])
 
-  const recipeOptions = recipes.map((recipe) => ({ id: recipe.id, name: recipe.name }))
+  const recipeOptions = recipes.recipes.map((recipe) => ({ id: recipe.id, name: recipe.name }))
   const requestedTab = typeof searchParams?.tab === 'string' ? searchParams.tab.toLowerCase() : ''
   const initialTab =
     requestedTab === 'scrapbook'
