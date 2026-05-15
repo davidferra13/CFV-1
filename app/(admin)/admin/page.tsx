@@ -6,6 +6,11 @@ import { getPlatformOverviewStats } from '@/lib/admin/platform-stats'
 import { getAdminDebugState } from '@/lib/admin/debug-state'
 import { isFounderEmail } from '@/lib/platform/owner-account'
 import { redirect } from 'next/navigation'
+import { Suspense } from 'react'
+import {
+  AdminUniversalRailSection,
+  AdminUniversalRailSkeleton,
+} from './_sections/admin-universal-rail-section'
 import Link from 'next/link'
 import {
   Radio,
@@ -329,6 +334,11 @@ export default async function AdminOverviewPage() {
           </div>
         )}
       </div>
+
+      {/* Universal Rail */}
+      <Suspense fallback={<AdminUniversalRailSkeleton />}>
+        <AdminUniversalRailSection />
+      </Suspense>
     </div>
   )
 }

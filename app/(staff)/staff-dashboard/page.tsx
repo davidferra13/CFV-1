@@ -14,6 +14,11 @@ import { Badge } from '@/components/ui/badge'
 import Link from 'next/link'
 import { StaffTaskCheckbox } from '@/components/staff/staff-task-checkbox'
 import { dateToDateString } from '@/lib/utils/format'
+import { Suspense } from 'react'
+import {
+  StaffUniversalRailSection,
+  StaffUniversalRailSkeleton,
+} from './_sections/staff-universal-rail-section'
 
 export const metadata: Metadata = { title: 'Dashboard' }
 
@@ -248,6 +253,11 @@ export default async function StaffDashboardPage({
           </CardContent>
         </Card>
       </div>
+
+      {/* Universal Rail */}
+      <Suspense fallback={<StaffUniversalRailSkeleton />}>
+        <StaffUniversalRailSection />
+      </Suspense>
     </div>
   )
 }

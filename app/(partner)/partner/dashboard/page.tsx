@@ -8,6 +8,11 @@ import { getPartnerPortalData } from '@/lib/partners/portal-actions'
 import { format } from 'date-fns'
 import { MapPin, CalendarDays, Users, Image, Heart } from '@/components/ui/icons'
 import Link from 'next/link'
+import { Suspense } from 'react'
+import {
+  PartnerUniversalRailSection,
+  PartnerUniversalRailSkeleton,
+} from './_sections/partner-universal-rail-section'
 
 function StatCard({
   label,
@@ -180,6 +185,11 @@ export default async function PartnerDashboardPage() {
           </div>
         </div>
       )}
+
+      {/* Universal Rail */}
+      <Suspense fallback={<PartnerUniversalRailSkeleton />}>
+        <PartnerUniversalRailSection />
+      </Suspense>
 
       {/* Empty state */}
       {locations.length === 0 && (
