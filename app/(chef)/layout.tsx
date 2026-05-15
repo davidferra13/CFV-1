@@ -90,6 +90,8 @@ const ChefLiveAlerts = dynamic(
 )
 // RouteProgress: regular import (not dynamic) so the bar is available from first render
 import { RouteProgress } from '@/components/ui/route-progress'
+import { Suspense } from 'react'
+import { RailStripWrapper, RailStripSkeleton } from '@/components/rail/rail-strip-wrapper'
 import { getTenantDataPresence } from '@/lib/progressive-disclosure/tenant-data-presence'
 import type { TenantDataPresence } from '@/lib/progressive-disclosure/types'
 
@@ -299,6 +301,9 @@ export default async function ChefLayout({ children }: { children: React.ReactNo
                             channel="chef_portal"
                           />
                         )}
+                        <Suspense fallback={<RailStripSkeleton />}>
+                          <RailStripWrapper />
+                        </Suspense>
                         {children}
                       </ChefMainContent>
 

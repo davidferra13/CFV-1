@@ -51,12 +51,11 @@ export function buildPaymentLabel(row: PaymentRow): string {
 }
 
 export async function resolvePayments(ctx: GodModeResolverContext): Promise<GodModeResolvedItem[]> {
-  const { createServerClient } = await import('@/lib/db/server')
-  const db = createServerClient()
+  const { pgClient } = await import('@/lib/db')
 
   let rows: PaymentRow[]
   try {
-    const result = await db`
+    const result = await pgClient`
       SELECT
         e.id as "eventId",
         e.occasion,

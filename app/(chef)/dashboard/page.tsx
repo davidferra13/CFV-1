@@ -62,6 +62,8 @@ import {
   UniversalRailSection,
   UniversalRailSectionSkeleton,
 } from './_sections/universal-rail-section'
+import { getGodModeRail } from '@/lib/discovery/universal-rail-actions'
+import { RailFull, RailFullSkeleton } from '@/components/rail/rail-full'
 import { ScheduleCards } from './_sections/schedule-cards'
 import { PrepPressureCard } from './_sections/prep-pressure-card'
 import { LoadHeatmapCard } from './_sections/load-heatmap-card'
@@ -1842,6 +1844,13 @@ export default async function ChefDashboard() {
         </Suspense>
       </WidgetErrorBoundary>
 
+      {/* God Mode Rail: tier-grouped actionable items */}
+      <WidgetErrorBoundary name="God Mode Rail" compact>
+        <Suspense fallback={<RailFullSkeleton />}>
+          <GodModeRailSection />
+        </Suspense>
+      </WidgetErrorBoundary>
+
       <WidgetErrorBoundary name="Operator Rail" compact>
         <Suspense fallback={<ChefOperatorRailSkeleton />}>
           <ChefOperatorRail queuePromise={queuePromise} />
@@ -2255,6 +2264,12 @@ async function BusinessHealthSection() {
     score >= 60 && recentScore >= 60 ? 'improving' : score < 40 ? 'declining' : 'stable'
 
   return <HealthDashboardWidget score={score} trend={trend} />
+}
+
+// ─── God Mode Rail Section ─────────────────────────────
+async function GodModeRailSection() {
+  const result = await getGodModeRail()
+  return <RailFull result={result} />
 }
 
 // ─── ChefTips Section ──────────────────────────────────

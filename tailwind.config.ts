@@ -105,6 +105,10 @@ const config: Config = {
           from: { opacity: '0', transform: 'translateY(4px)' },
           to: { opacity: '1', transform: 'translateY(0)' },
         },
+        'pulse-subtle': {
+          '0%, 100%': { borderLeftColor: 'rgb(239 68 68)' },
+          '50%': { borderLeftColor: 'rgb(239 68 68 / 0.4)' },
+        },
       },
       animation: {
         'scale-in': 'scale-in 200ms var(--ease-spring) both',
@@ -113,6 +117,7 @@ const config: Config = {
         'slide-down': 'slide-down 180ms var(--ease-spring) both',
         'slide-up-out': 'slide-up-out 140ms ease-in both',
         'count-up': 'count-up 400ms var(--ease-spring) both',
+        'pulse-subtle': 'pulse-subtle 3s ease-in-out infinite',
       },
     },
   },

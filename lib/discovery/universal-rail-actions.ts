@@ -3,6 +3,11 @@
 import type { UniversalRailRole } from './universal-rail-types'
 import type { UniversalRailAssemblyResult } from './universal-rail-types'
 import type { RailDismissType, RailAuditEventType } from './universal-rail-state'
+import type {
+  GodModeResolverContext,
+  GodModeRailResult,
+  GodModeStripResult,
+} from './god-mode-types'
 import { assembleUniversalRail } from './universal-rail-assembly'
 import {
   recordImpression,
@@ -12,7 +17,11 @@ import {
   saveRailItem,
   unsaveRailItem,
   recordRailAuditEvent,
+  isItemDismissed,
 } from './universal-rail-state'
+import { dispatchAllResolvers, dispatchHotResolvers } from './god-mode-dispatcher'
+import { assembleGodModeRail, extractStrip, applyEscalation } from './god-mode-assembly'
+import { requireChef } from '@/lib/auth/get-user'
 
 // ---------------------------------------------------------------------------
 // Rail assembly action
@@ -145,4 +154,59 @@ export async function trackRailInteraction(
     pageContext,
     metadata,
   })
+}
+
+// ---------------------------------------------------------------------------
+// God Mode actions
+// ---------------------------------------------------------------------------
+
+export async function getGodModeRail(): Promise<GodModeRailResult> {
+  const user = await requireChef()
+  const now = new Date()
+
+  const ctx: GodModeResolverContext = {
+    userId: user.id,
+    tenantId: user.tenantId ?? '',
+    role: 'chef',
+    now,
+  }
+
+  const rawItems = await dispatchAllResolvers(ctx)
+
+  const { loadRailUserState } = await import('./universal-rail-state')
+  const state = await loadRailUserState(user.id, 'chef')
+  const dismissedIds = new Set(
+    Array.from(state?.dismissals.entries() ?? [])
+      .filter(([, d]) => isItemDismissed(d, now))
+      .map(([id]) => id)
+  )
+
+  return assembleGodModeRail(rawItems, dismissedIds, now)
+}
+
+export async function getRailStrip(): Promise<GodModeStripResult> {
+  const user = await requireChef()
+  const now = new Date()
+
+  const ctx: GodModeResolverContext = {
+    userId: user.id,
+    tenantId: user.tenantId ?? '',
+    role: 'chef',
+    now,
+  }
+
+  const rawItems = await dispatchHotResolvers(ctx)
+
+  const { loadRailUserState } = await import('./universal-rail-state')
+  const state = await loadRailUserState(user.id, 'chef')
+  const dismissedIds = new Set(
+    Array.from(state?.dismissals.entries() ?? [])
+      .filter(([, d]) => isItemDismissed(d, now))
+      .map(([id]) => id)
+  )
+
+  const active = rawItems.filter((item) => !dismissedIds.has(item.definitionId))
+  const escalated = active.map((item) => applyEscalation(item, now))
+
+  return extractStrip(escalated, now, 5)
 }
