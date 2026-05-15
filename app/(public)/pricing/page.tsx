@@ -10,8 +10,7 @@ import { SUPPORT_DEFAULT_MONTHLY_AMOUNT_CENTS } from '@/lib/monetization/offers'
 
 const PRO_PRICE_MONTHLY = SUPPORT_DEFAULT_MONTHLY_AMOUNT_CENTS / 100
 import { FAQPageJsonLd } from '@/components/seo/json-ld'
-
-const BASE_URL = process.env.NEXT_PUBLIC_APP_URL || 'https://cheflowhq.com'
+import { buildMarketingMetadata } from '@/lib/site/public-site'
 const PRICING_UPDATED_AT = 'April 21, 2026'
 
 const CATEGORY_LABELS: Record<FeatureCategory, string> = {
@@ -103,28 +102,12 @@ const PRICING_FAQS = [
   },
 ]
 
-export const metadata: Metadata = {
+export const metadata: Metadata = buildMarketingMetadata({
   title: 'Pricing',
   description:
     'ChefFlow pricing, stated plainly: what is free today, what is paid today, what is only classified or planned paid, and what is not publicly available yet.',
-  openGraph: {
-    title: 'ChefFlow Pricing',
-    description:
-      'What is free today, what is paid today, what is only classified or planned paid, and what is not publicly available yet.',
-    url: `${BASE_URL}/pricing`,
-    siteName: 'ChefFlow',
-    type: 'website',
-  },
-  twitter: {
-    card: 'summary',
-    title: 'ChefFlow Pricing',
-    description:
-      'What is free today, what is paid today, what is only classified or planned paid, and what is not publicly available yet.',
-  },
-  alternates: {
-    canonical: `${BASE_URL}/pricing`,
-  },
-}
+  path: '/pricing',
+})
 
 function groupFeaturesByCategory(features: FeatureDefinition[]) {
   return features.reduce(

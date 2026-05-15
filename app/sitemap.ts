@@ -157,6 +157,18 @@ const STATIC_ROUTES: MetadataRoute.Sitemap = [
     changeFrequency: 'yearly',
     priority: 0.3,
   },
+  {
+    url: `${BASE_URL}/pricing`,
+    lastModified: new Date(),
+    changeFrequency: 'monthly',
+    priority: 0.8,
+  },
+  {
+    url: `${BASE_URL}/eat`,
+    lastModified: new Date(),
+    changeFrequency: 'weekly',
+    priority: 0.7,
+  },
 ]
 
 const CUISINE_ROUTES: MetadataRoute.Sitemap = listPublicCuisinePages().map((page) => ({

@@ -55,7 +55,7 @@ export function buildMarketingMetadata(params: {
   title: string
   description: string
   path: string
-  imagePath: string
+  imagePath?: string
   imageAlt?: string
   openGraphTitle?: string
   twitterTitle?: string
@@ -66,7 +66,7 @@ export function buildMarketingMetadata(params: {
     title,
     description,
     path,
-    imagePath,
+    imagePath = '/social/chefflow-home.png',
     imageAlt = `${BRAND_NAME} preview`,
     openGraphTitle = title,
     twitterTitle = openGraphTitle,

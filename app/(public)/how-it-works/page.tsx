@@ -6,8 +6,7 @@ import {
 } from '@/lib/public/public-surface-config'
 import { PublicSecondaryEntryCluster } from '@/components/public/public-secondary-entry-cluster'
 import { PUBLIC_SECONDARY_ENTRY_CONFIG } from '@/lib/public/public-secondary-entry-config'
-
-const BASE_URL = process.env.NEXT_PUBLIC_APP_URL || 'https://cheflowhq.com'
+import { buildMarketingMetadata } from '@/lib/site/public-site'
 
 const CLIENT_PATHS = [
   {
@@ -31,28 +30,12 @@ const DIRECT_INQUIRY_CHECKLIST = [
   'Any timing, kitchen-access, or travel limitations that could affect fit',
 ]
 
-export const metadata: Metadata = {
+export const metadata: Metadata = buildMarketingMetadata({
   title: 'How ChefFlow Works - For Clients and Chefs',
   description:
     'Browse the current chef directory or describe your event. ChefFlow routes your request to matched chefs or directly to the chef you choose, with route-specific payment and response expectations.',
-  openGraph: {
-    title: 'How ChefFlow Works',
-    description:
-      'Understand the real ChefFlow booking paths: matched-chef requests, direct chef inquiries, and instant-book deposits when offered.',
-    url: `${BASE_URL}/how-it-works`,
-    siteName: 'ChefFlow',
-    type: 'website',
-  },
-  twitter: {
-    card: 'summary',
-    title: 'How ChefFlow Works',
-    description:
-      'Understand the real ChefFlow booking paths: matched-chef requests, direct chef inquiries, and instant-book deposits when offered.',
-  },
-  alternates: {
-    canonical: `${BASE_URL}/how-it-works`,
-  },
-}
+  path: '/how-it-works',
+})
 
 export default function HowItWorksPage() {
   return (
