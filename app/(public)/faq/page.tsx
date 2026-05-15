@@ -6,8 +6,8 @@ import { LAUNCH_MODE, PRIMARY_SIGNUP_LABEL } from '@/lib/marketing/launch-mode'
 import { buildMarketingSignupHref } from '@/lib/marketing/signup-links'
 import { PublicSecondaryEntryCluster } from '@/components/public/public-secondary-entry-cluster'
 import { PUBLIC_SECONDARY_ENTRY_CONFIG } from '@/lib/public/public-secondary-entry-config'
-import { buildMarketingMetadata } from '@/lib/site/public-site'
-import { JsonLd } from '@/components/seo/json-ld'
+import { buildMarketingMetadata, absoluteUrl } from '@/lib/site/public-site'
+import { FAQPageJsonLd, BreadcrumbJsonLd } from '@/components/seo/json-ld'
 
 type FaqCategory = {
   title: string
@@ -177,23 +177,17 @@ export const metadata: Metadata = buildMarketingMetadata({
 
 export default function FaqPage() {
   const isBeta = LAUNCH_MODE === 'beta'
-  const faqStructuredData = {
-    '@context': 'https://schema.org',
-    '@type': 'FAQPage',
-    mainEntity: ALL_FAQ_ITEMS.map((faq) => ({
-      '@type': 'Question',
-      name: faq.question,
-      acceptedAnswer: {
-        '@type': 'Answer',
-        text: faq.answer,
-      },
-    })),
-  }
 
   return (
     <div>
       <PublicPageView pageName="faq" properties={{ section: 'public_growth' }} />
-      <JsonLd data={faqStructuredData} />
+      <FAQPageJsonLd faqs={ALL_FAQ_ITEMS} />
+      <BreadcrumbJsonLd
+        items={[
+          { name: 'Home', url: absoluteUrl('/') },
+          { name: 'FAQ', url: absoluteUrl('/faq') },
+        ]}
+      />
 
       <section className="relative overflow-hidden border-b border-stone-700/50">
         <div className="pointer-events-none absolute left-1/2 top-0 h-[360px] w-[700px] -translate-x-1/2 rounded-full bg-brand-700/20 blur-[80px]" />

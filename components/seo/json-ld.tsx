@@ -134,3 +134,41 @@ export function BreadcrumbJsonLd({ items }: { items: { name: string; url: string
     />
   )
 }
+
+/** Person schema - used on /about for founder entity */
+export function PersonJsonLd({
+  name,
+  role,
+  description,
+  image,
+  worksForName,
+  worksForUrl,
+  sameAs,
+}: {
+  name: string
+  role: string
+  description: string
+  image?: string | null
+  worksForName: string
+  worksForUrl: string
+  sameAs?: string[]
+}) {
+  return (
+    <JsonLd
+      data={{
+        '@context': 'https://schema.org',
+        '@type': 'Person',
+        name,
+        jobTitle: role,
+        description,
+        ...(image ? { image } : {}),
+        worksFor: {
+          '@type': 'Organization',
+          name: worksForName,
+          url: worksForUrl,
+        },
+        sameAs: sameAs ?? [],
+      }}
+    />
+  )
+}

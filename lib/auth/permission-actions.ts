@@ -14,7 +14,11 @@ import {
   type PermissionAction,
   type TenantRole,
 } from '@/lib/auth/permissions'
+import { requireTenantMembership } from '@/lib/auth/tenant-scope'
+import { createLogger } from '@/lib/logger'
 import { revalidateTag } from 'next/cache'
+
+const log = createLogger('rbac')
 
 // ─── Grant Permission Override ──────────────────────────────────────────────────
 
@@ -31,18 +35,19 @@ export async function grantPermissionOverride(input: {
     return { success: false, error: 'Cannot modify your own permissions' }
   }
 
-  // Verify target user belongs to this tenant
-  const [targetRole] = (await db.execute(
-    sql`SELECT role, tenant_role FROM user_roles WHERE auth_user_id = ${input.targetAuthUserId} AND entity_id = ${tenantId} LIMIT 1`
-  )) as any[]
-
-  if (!targetRole) {
+  // Verify target user belongs to this tenant (cross-tenant prevention)
+  try {
+    await requireTenantMembership(input.targetAuthUserId, tenantId)
+  } catch {
     return { success: false, error: 'User not found' }
   }
 
   // Cannot override permissions for tenant_owner
+  const [targetRole] = (await db.execute(
+    sql`SELECT role, tenant_role FROM user_roles WHERE auth_user_id = ${input.targetAuthUserId} AND entity_id = ${tenantId} LIMIT 1`
+  )) as any[]
   const effectiveRole =
-    targetRole.tenant_role || (targetRole.role === 'chef' ? 'tenant_owner' : targetRole.role)
+    targetRole?.tenant_role || (targetRole?.role === 'chef' ? 'tenant_owner' : targetRole?.role)
   if (effectiveRole === 'tenant_owner') {
     return { success: false, error: 'Cannot modify owner permissions' }
   }
@@ -67,7 +72,7 @@ export async function grantPermissionOverride(input: {
     revalidateTag(`permissions-${input.targetAuthUserId}`)
     return { success: true }
   } catch (err: any) {
-    console.error('[RBAC] Failed to grant permission override:', err)
+    log.error('Failed to grant permission override', { error: err })
     return { success: false, error: 'Failed to save permission override' }
   }
 }
@@ -83,6 +88,13 @@ export async function revokePermissionOverride(input: {
 
   if (input.targetAuthUserId === user.authUserId) {
     return { success: false, error: 'Cannot modify your own permissions' }
+  }
+
+  // Verify target user belongs to this tenant (cross-tenant prevention)
+  try {
+    await requireTenantMembership(input.targetAuthUserId, tenantId)
+  } catch {
+    return { success: false, error: 'User not found' }
   }
 
   try {
@@ -106,7 +118,7 @@ export async function revokePermissionOverride(input: {
     revalidateTag(`permissions-${input.targetAuthUserId}`)
     return { success: true }
   } catch (err: any) {
-    console.error('[RBAC] Failed to revoke permission override:', err)
+    log.error('Failed to revoke permission override', { error: err })
     return { success: false, error: 'Failed to revoke permission' }
   }
 }
@@ -130,14 +142,17 @@ export async function changeTenantRole(input: {
     return { success: false, error: 'Invalid role. Can only assign manager or team_member.' }
   }
 
+  // Verify target user belongs to this tenant (cross-tenant prevention)
+  try {
+    await requireTenantMembership(input.targetAuthUserId, tenantId)
+  } catch {
+    return { success: false, error: 'User not found' }
+  }
+
   // Get current role for audit
   const [currentRole] = (await db.execute(
     sql`SELECT tenant_role, role FROM user_roles WHERE auth_user_id = ${input.targetAuthUserId} AND entity_id = ${tenantId} LIMIT 1`
   )) as any[]
-
-  if (!currentRole) {
-    return { success: false, error: 'User not found' }
-  }
 
   const currentTenantRole =
     currentRole.tenant_role || (currentRole.role === 'chef' ? 'tenant_owner' : currentRole.role)
@@ -161,7 +176,7 @@ export async function changeTenantRole(input: {
     revalidateTag(`permissions-${input.targetAuthUserId}`)
     return { success: true }
   } catch (err: any) {
-    console.error('[RBAC] Failed to change tenant role:', err)
+    log.error('Failed to change tenant role', { error: err })
     return { success: false, error: 'Failed to change role' }
   }
 }
@@ -194,7 +209,7 @@ export async function getPermissionOverrides(targetAuthUserId: string): Promise<
       })),
     }
   } catch (err: any) {
-    console.error('[RBAC] Failed to load overrides:', err)
+    log.error('Failed to load overrides', { error: err })
     return { success: false, error: 'Failed to load permission overrides' }
   }
 }
@@ -247,7 +262,7 @@ export async function getPermissionAuditLog(options?: {
       })),
     }
   } catch (err: any) {
-    console.error('[RBAC] Failed to load audit log:', err)
+    log.error('Failed to load audit log', { error: err })
     return { success: false, error: 'Failed to load audit log' }
   }
 }

@@ -9,8 +9,12 @@ import {
 import { SUPPORT_DEFAULT_MONTHLY_AMOUNT_CENTS } from '@/lib/monetization/offers'
 
 const PRO_PRICE_MONTHLY = SUPPORT_DEFAULT_MONTHLY_AMOUNT_CENTS / 100
-import { FAQPageJsonLd } from '@/components/seo/json-ld'
-import { buildMarketingMetadata } from '@/lib/site/public-site'
+import {
+  FAQPageJsonLd,
+  SoftwareApplicationJsonLd,
+  BreadcrumbJsonLd,
+} from '@/components/seo/json-ld'
+import { buildMarketingMetadata, absoluteUrl } from '@/lib/site/public-site'
 const PRICING_UPDATED_AT = 'April 21, 2026'
 
 const CATEGORY_LABELS: Record<FeatureCategory, string> = {
@@ -153,6 +157,13 @@ export default function PricingPage() {
 
   return (
     <main>
+      <SoftwareApplicationJsonLd />
+      <BreadcrumbJsonLd
+        items={[
+          { name: 'Home', url: absoluteUrl('/') },
+          { name: 'Pricing', url: absoluteUrl('/pricing') },
+        ]}
+      />
       <FAQPageJsonLd faqs={PRICING_FAQS} />
 
       <section className="border-b border-stone-800/50">

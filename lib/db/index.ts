@@ -1,3 +1,4 @@
+import '@/lib/env' // Activate env validation on first server import
 import { drizzle } from 'drizzle-orm/postgres-js'
 import postgres, { type Sql } from 'postgres'
 

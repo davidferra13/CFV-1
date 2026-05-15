@@ -3,11 +3,14 @@ import Image from 'next/image'
 import { PublicPageView } from '@/components/analytics/public-page-view'
 import { SectionViewTracker } from '@/components/analytics/section-view-tracker'
 import { TrackedLink } from '@/components/analytics/tracked-link'
+import { PersonJsonLd, BreadcrumbJsonLd } from '@/components/seo/json-ld'
 import { PublicSecondaryEntryCluster } from '@/components/public/public-secondary-entry-cluster'
 import { PUBLIC_SECONDARY_ENTRY_CONFIG } from '@/lib/public/public-secondary-entry-config'
 import { PUBLIC_MARKET_POSITIONING_COPY } from '@/lib/public/public-market-copy'
 import {
+  COMPANY_NAME,
   PUBLIC_MARKET_SCOPE,
+  absoluteUrl,
   buildMarketingMetadata,
   getFounderProfile,
 } from '@/lib/site/public-site'
@@ -48,6 +51,20 @@ export default async function AboutPage() {
 
   return (
     <main>
+      <PersonJsonLd
+        name={founder.fullName}
+        role={founder.role}
+        description={founder.bio}
+        image={founder.headshotUrl}
+        worksForName={COMPANY_NAME}
+        worksForUrl={absoluteUrl('/')}
+      />
+      <BreadcrumbJsonLd
+        items={[
+          { name: 'Home', url: absoluteUrl('/') },
+          { name: 'About', url: absoluteUrl('/about') },
+        ]}
+      />
       <PublicPageView
         pageName="about"
         properties={{ section: 'public_growth', market_scope: PUBLIC_MARKET_SCOPE }}

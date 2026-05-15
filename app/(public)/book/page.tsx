@@ -14,7 +14,8 @@ import {
 import { PUBLIC_INTAKE_LANE_KEYS } from '@/lib/public/intake-lane-config'
 import { PUBLIC_SECONDARY_ENTRY_CONFIG } from '@/lib/public/public-secondary-entry-config'
 import { PUBLIC_DIRECTORY_HELPER } from '@/lib/public/public-surface-config'
-import { PUBLIC_MARKET_SCOPE, buildMarketingMetadata } from '@/lib/site/public-site'
+import { PUBLIC_MARKET_SCOPE, buildMarketingMetadata, absoluteUrl } from '@/lib/site/public-site'
+import { BreadcrumbJsonLd } from '@/components/seo/json-ld'
 
 export const metadata: Metadata = buildMarketingMetadata({
   title: 'Book a Private Chef',
@@ -58,6 +59,12 @@ export default async function BookPage({ searchParams }: BookPageProps) {
 
   return (
     <div className="min-h-screen">
+      <BreadcrumbJsonLd
+        items={[
+          { name: 'Home', url: absoluteUrl('/') },
+          { name: 'Book a Chef', url: absoluteUrl('/book') },
+        ]}
+      />
       <PublicPageView
         pageName="open_booking"
         properties={{
