@@ -46,8 +46,8 @@ export interface StoreCandidate {
 // ---------------------------------------------------------------------------
 
 const CONFIG = {
-  /** Max targets to process per run (rate limiting) */
-  maxTargetsPerRun: 10,
+  /** Max targets to process per run (rate limiting). Set high for Phase 0 backfill. */
+  maxTargetsPerRun: 50,
   /** Max stores to dispatch per target */
   maxStoresPerTarget: 5,
   /** Minimum days between re-scraping same store */
@@ -126,11 +126,11 @@ async function findStoreCandidates(
       END AS chain_priority,
       CASE
         WHEN last_scraped IS NULL THEN 0
-        WHEN last_scraped < now() - interval '${CONFIG.minRescrapeIntervalDays} days' THEN 1
+        WHEN last_scraped < now() - make_interval(days => ${CONFIG.minRescrapeIntervalDays}) THEN 1
         ELSE 3
       END AS scrape_recency
     FROM store_scrape_status
-    WHERE (last_scraped IS NULL OR last_scraped < now() - interval '7 days')
+    WHERE (last_scraped IS NULL OR last_scraped < now() - make_interval(days => ${CONFIG.minRescrapeIntervalDays}))
     ORDER BY
       chain_priority ASC,
       scrape_recency ASC,

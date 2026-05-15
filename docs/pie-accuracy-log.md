@@ -4,7 +4,7 @@ Tracks PIE pricing accuracy over time. Each run samples ingredients,
 compares PIE's mean price against median (ground truth), and scores
 accuracy as % within 15% of ground truth.
 
-## 2026-05-05
+## 2026-05-05 (Self-Consistency Only)
 
 **Sample:** 87 ingredients (100 attempted, 13 skipped for insufficient data), random stratified
 **Overall accuracy:** 97.7% within 15%
@@ -61,3 +61,24 @@ accuracy as % within 15% of ground truth.
 - Stale data (0% 7-day freshness at time of test)
 
 **Delta from last run:** First run (baseline established)
+
+---
+
+## 2026-05-14 - Ground Truth Pipeline Established
+
+**METHODOLOGY CHANGE:** From this point forward, accuracy is measured against REAL
+receipt prices from chef imports, not self-referential consistency checks. The prior
+measurement (97.7%) was comparing PIE's mean vs PIE's own median. That measures
+internal consistency, not real-world accuracy.
+
+Real ground truth validation pipeline now active:
+
+- Receipt prices are compared against PIE's resolve-price estimate at import time
+- Compound learning predictions get resolved against real observations
+- Cron runs full validation every cycle
+- SLA target: 90% of prices within 15% of actual receipt price
+
+Run `npx tsx scripts/pie-accuracy-real.mts --append-log` for on-demand measurement.
+Cron endpoint: `GET /api/cron/pie-accuracy-check`
+
+---

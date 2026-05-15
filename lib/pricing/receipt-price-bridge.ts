@@ -17,6 +17,7 @@
 
 import { pgClient as sql } from '@/lib/db'
 import { resolvePrice } from './resolve-price'
+import { recordGroundTruthComparisons } from './ground-truth-validation'
 
 // ---------------------------------------------------------------------------
 // Types
@@ -225,6 +226,13 @@ export async function processReceiptSignals(signals: ReceiptPriceSignal[]): Prom
 
   // Step 4: Record compound learning signals
   await recordLearningSignals(comparisons)
+
+  // Step 5: Ground truth validation pipeline (resolves compound predictions)
+  try {
+    await recordGroundTruthComparisons(signals)
+  } catch {
+    // Non-critical; validation pipeline failure should not block receipt processing
+  }
 
   // Calculate average deviation
   const deviations = comparisons.map((c) => c.deviationPct).filter((d): d is number => d !== null)

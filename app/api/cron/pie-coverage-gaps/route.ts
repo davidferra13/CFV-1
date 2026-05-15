@@ -8,6 +8,9 @@ import { runMonitoredCronJob } from '@/lib/cron/monitor'
  * Runs the PIE coverage gap detector to identify underserved regions.
  * Produces prioritized expansion targets for the auto-expansion engine.
  *
+ * Phase 0 gate: ensures all 50 states have pricing_region rows first,
+ * then seeds expansion_targets for states with OSM stores but no/low coverage.
+ *
  * Recommended schedule: every 6 hours
  * Authorization: Bearer CRON_SECRET
  */
@@ -17,8 +20,22 @@ export async function GET(request: Request) {
 
   try {
     const result = await runMonitoredCronJob('pie-coverage-gaps', async () => {
+      // Step 0: Ensure all 50 states have pricing_region rows so gap
+      // detector can see them (idempotent, fast if already done)
+      const { ensureAllStateRegions, seedExpansionTargetsForAllStates } =
+        await import('@/lib/pricing/ensure-all-state-regions')
+      const regionResult = await ensureAllStateRegions()
+      const seedResult = await seedExpansionTargetsForAllStates()
+
+      // Step 1: Run full gap detection (now sees all 50 states)
       const { detectCoverageGaps } = await import('@/lib/pricing/coverage-gap-detector')
-      return detectCoverageGaps()
+      const gapResult = await detectCoverageGaps()
+
+      return {
+        ...gapResult,
+        regionsEnsured: regionResult,
+        expansionSeeded: seedResult,
+      }
     })
 
     return NextResponse.json({

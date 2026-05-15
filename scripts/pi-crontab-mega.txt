@@ -82,10 +82,12 @@ HERMES_DIR=/home/davidferra/chefflow-mirror/scripts/hermes
 30 20 * * * cd $OPENCLAW_DIR && node services/clean-catalog.mjs >> logs/clean-catalog-evening.log 2>&1
 
 # --- AGGREGATOR + SYNC ---
-0 8 * * *  cd $OPENCLAW_DIR && node services/sync-to-chefflow.mjs >> logs/sync-chefflow.log 2>&1
-0 14 * * * cd $OPENCLAW_DIR && node services/sync-to-chefflow.mjs >> logs/sync-chefflow.log 2>&1
+# Resilient sync: tries ChefFlow HTTP first, falls back to direct Postgres write.
+# Replaces old sync-to-chefflow.mjs which failed when ChefFlow HTTP was down (broken since 2026-04-23).
+0 8 * * *  cd $CHEFFLOW_DIR && node scripts/pi-sync-resilient.cjs >> logs/sync-chefflow.log 2>&1
+0 14 * * * cd $CHEFFLOW_DIR && node scripts/pi-sync-resilient.cjs >> logs/sync-chefflow.log 2>&1
 0 21 * * * cd $OPENCLAW_DIR && node services/aggregator.mjs >> logs/aggregator.log 2>&1
-0 23 * * * cd $OPENCLAW_DIR && node services/sync-to-chefflow.mjs >> logs/sync-chefflow.log 2>&1
+0 23 * * * cd $CHEFFLOW_DIR && node scripts/pi-sync-resilient.cjs >> logs/sync-chefflow.log 2>&1
 
 # [NEW] --- AGGREGATOR + SYNTHESIS SYNC (afternoon + evening) ---
 0 16 * * *  cd $OPENCLAW_DIR && node services/aggregator.mjs >> logs/aggregator-afternoon.log 2>&1

@@ -288,6 +288,14 @@ export const CRON_MONITOR_DEFINITIONS: CronMonitorDefinition[] = [
     description: 'Ingest OpenClaw cartridge updates (4x/day for freshness)',
   },
   {
+    cronName: 'price-sync-pull',
+    routePath: '/api/cron/price-sync-pull',
+    maxExpectedMinutes: 10,
+    cadence: '6h',
+    description:
+      'Self-initiated price pull from Pi (no HTTP dependency on ChefFlow being reachable)',
+  },
+  {
     cronName: 'push-cleanup',
     routePath: '/api/scheduled/push-cleanup',
     maxExpectedMinutes: 2880,

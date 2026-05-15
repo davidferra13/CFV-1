@@ -18,6 +18,12 @@ export async function GET(request: Request) {
 
   try {
     const result = await runMonitoredCronJob('pie-auto-expansion', async () => {
+      // Ensure all 50 states have regions + targets before expanding
+      const { ensureAllStateRegions, seedExpansionTargetsForAllStates } =
+        await import('@/lib/pricing/ensure-all-state-regions')
+      await ensureAllStateRegions()
+      await seedExpansionTargetsForAllStates()
+
       const { runAutoExpansion } = await import('@/lib/pricing/auto-expansion-engine')
       return runAutoExpansion()
     })

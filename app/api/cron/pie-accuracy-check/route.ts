@@ -1,10 +1,7 @@
 import { NextResponse } from 'next/server'
-import {
-  resolvePredictions,
-  computeMonthlyAccuracy,
-  getLearningStatus,
-} from '@/lib/pricing/compound-learning'
+import { getLearningStatus } from '@/lib/pricing/compound-learning'
 import { getAccuracyStats } from '@/lib/pricing/receipt-price-bridge'
+import { runGroundTruthValidation } from '@/lib/pricing/ground-truth-validation'
 import { pgClient } from '@/lib/db'
 
 export const dynamic = 'force-dynamic'
@@ -19,36 +16,46 @@ export async function GET(request: Request) {
   const results: Record<string, unknown> = {}
   const start = Date.now()
 
-  // Step 1: Resolve predictions against actual observed prices
+  // Step 1: Run full ground truth validation pipeline
+  // This resolves predictions, recomputes monthly accuracy, and generates real report
   try {
-    console.log('[pie-accuracy-check] Step 1: Resolving predictions...')
-    results.predictionsResolved = await resolvePredictions()
+    console.log('[pie-accuracy-check] Step 1: Running ground truth validation...')
+    const validation = await runGroundTruthValidation({ days: 30 })
+    results.groundTruthValidation = {
+      predictionsResolved: validation.predictionsResolved,
+      monthlyRollupsUpdated: validation.monthlyRollupsUpdated,
+      report: {
+        totalComparisons: validation.report.totalComparisons,
+        withinSlaPct: validation.report.withinSlaPct,
+        meanAbsoluteErrorPct: validation.report.meanAbsoluteErrorPct,
+        medianAbsoluteErrorPct: validation.report.medianAbsoluteErrorPct,
+        p90ErrorPct: validation.report.p90ErrorPct,
+        slaMet: validation.report.slaMet,
+        slaTarget: validation.report.slaTarget,
+        trendVsPriorMonth: validation.report.trendVsPriorMonth,
+        tierCount: validation.report.byTier.length,
+        categoryCount: validation.report.byCategory.length,
+        worstOffenderCount: validation.report.worstOffenders.length,
+      },
+      durationMs: validation.durationMs,
+    }
   } catch (err) {
-    console.error('[pie-accuracy-check] resolvePredictions failed:', err)
-    results.predictionsResolved = { error: err instanceof Error ? err.message : 'Unknown error' }
+    console.error('[pie-accuracy-check] Ground truth validation failed:', err)
+    results.groundTruthValidation = { error: err instanceof Error ? err.message : 'Unknown error' }
   }
 
-  // Step 2: Roll up monthly accuracy stats
+  // Step 2: Receipt-vs-PIE accuracy stats (legacy, kept for backwards compatibility)
   try {
-    console.log('[pie-accuracy-check] Step 2: Computing monthly accuracy...')
-    results.monthlyRollupsUpdated = await computeMonthlyAccuracy()
-  } catch (err) {
-    console.error('[pie-accuracy-check] computeMonthlyAccuracy failed:', err)
-    results.monthlyRollupsUpdated = { error: err instanceof Error ? err.message : 'Unknown error' }
-  }
-
-  // Step 3: Receipt-vs-PIE accuracy stats
-  try {
-    console.log('[pie-accuracy-check] Step 3: Getting receipt accuracy stats...')
+    console.log('[pie-accuracy-check] Step 2: Getting receipt accuracy stats...')
     results.receiptAccuracy = await getAccuracyStats({ days: 30 })
   } catch (err) {
     console.error('[pie-accuracy-check] getAccuracyStats failed:', err)
     results.receiptAccuracy = { error: err instanceof Error ? err.message : 'Unknown error' }
   }
 
-  // Step 4: Cross-validate Pi bridge prices (tier 2.7) against resolved_prices
+  // Step 3: Cross-validate Pi bridge prices (tier 2.7) against resolved_prices
   try {
-    console.log('[pie-accuracy-check] Step 4: Cross-validating Pi bridge vs resolved prices...')
+    console.log('[pie-accuracy-check] Step 3: Cross-validating Pi bridge vs resolved prices...')
     const sql = pgClient
     const crossValidation = await sql`
       SELECT
@@ -103,7 +110,7 @@ export async function GET(request: Request) {
     }
   }
 
-  // Step 5: Get overall learning status for the summary
+  // Step 4: Get overall learning status for the summary
   try {
     results.learningStatus = await getLearningStatus()
   } catch (err) {
@@ -111,12 +118,49 @@ export async function GET(request: Request) {
     results.learningStatus = { error: err instanceof Error ? err.message : 'Unknown error' }
   }
 
+  // Step 5: Ground truth coverage diagnostic
+  try {
+    const sql = pgClient
+    const [coverage] = await sql`
+      SELECT
+        (SELECT COUNT(*) FROM pie_ground_truth) as ground_truth_total,
+        (SELECT COUNT(*) FROM pie_ground_truth WHERE created_at > NOW() - INTERVAL '30 days') as ground_truth_30d,
+        (SELECT COUNT(*) FROM pie_prediction_resolutions WHERE source IN ('receipt', 'receipt_ground_truth')) as receipt_resolutions,
+        (SELECT COUNT(*) FROM openclaw.price_predictions WHERE actual_cents IS NULL) as unresolved_predictions
+    `
+    results.coverage = {
+      groundTruthTotal: parseInt(coverage.ground_truth_total) || 0,
+      groundTruth30d: parseInt(coverage.ground_truth_30d) || 0,
+      receiptResolutions: parseInt(coverage.receipt_resolutions) || 0,
+      unresolvedPredictions: parseInt(coverage.unresolved_predictions) || 0,
+    }
+  } catch (err) {
+    results.coverage = { error: err instanceof Error ? err.message : 'Unknown error' }
+  }
+
   results.durationMs = Date.now() - start
+
+  // Determine overall health
+  const gtValidation = results.groundTruthValidation as Record<string, unknown> | undefined
+  const slaMet = gtValidation?.report
+    ? (gtValidation.report as Record<string, unknown>).slaMet === true
+    : false
+  const hasData = gtValidation?.report
+    ? ((gtValidation.report as Record<string, unknown>).totalComparisons as number) > 0
+    : false
+
+  results.health = {
+    slaMet,
+    hasGroundTruthData: hasData,
+    status: !hasData ? 'NO_GROUND_TRUTH' : slaMet ? 'HEALTHY' : 'SLA_BREACH',
+  }
 
   console.log(
     `[pie-accuracy-check] Complete in ${results.durationMs}ms.`,
-    `Predictions resolved: ${typeof results.predictionsResolved === 'number' ? results.predictionsResolved : 'error'}.`,
-    `Monthly rollups: ${typeof results.monthlyRollupsUpdated === 'number' ? results.monthlyRollupsUpdated : 'error'}.`
+    `Health: ${(results.health as Record<string, unknown>).status}.`,
+    hasData
+      ? `Accuracy: ${(gtValidation!.report as Record<string, unknown>).withinSlaPct}% within 15%.`
+      : 'No ground truth data yet.'
   )
 
   return NextResponse.json({ success: true, ...results })
