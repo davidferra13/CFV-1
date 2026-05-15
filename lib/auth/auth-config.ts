@@ -20,7 +20,12 @@ import { and, eq, sql } from 'drizzle-orm'
 import { getSessionControlRow, recordSuccessfulAccountAccess } from './account-access'
 import { hasAdminAccess } from './admin-access'
 import { shouldInvalidateJwtSession } from './account-access-core'
-import { userHasMfaEnabled, getMfaMethodType, createMfaChallenge } from '@/lib/mfa/challenge'
+import {
+  userHasMfaEnabled,
+  getMfaMethodType,
+  createMfaChallenge,
+  isMfaChallengeVerified,
+} from '@/lib/mfa/challenge'
 import { checkLoginAttempts, recordFailedAttempt, clearAttempts } from '@/lib/security/brute-force'
 import { logSecurityEvent } from '@/lib/security/audit'
 
@@ -241,7 +246,31 @@ export const authConfig: NextAuthConfig = {
         // Resolve role and tenant
         const roleInfo = await resolveRoleAndTenant(user.id)
 
-        // Audit: credential login success
+        // Check if MFA is enabled for this user
+        const mfaEnabled = await userHasMfaEnabled(user.id)
+        if (mfaEnabled) {
+          const mfaType = await getMfaMethodType(user.id)
+          const { challengeId } = await createMfaChallenge(user.id, mfaType ?? 'totp')
+
+          logSecurityEvent({
+            authUserId: user.id,
+            eventType: 'login_success',
+            metadata: { provider: 'credentials', mfaPending: true },
+          })
+
+          return {
+            id: user.id,
+            email: user.email ?? email,
+            role: roleInfo?.role,
+            entityId: roleInfo?.entityId,
+            tenantId: roleInfo?.tenantId ?? null,
+            activeRoleId: roleInfo?.roleId,
+            mfaPending: true,
+            mfaChallengeId: challengeId,
+          }
+        }
+
+        // Audit: credential login success (no MFA)
         logSecurityEvent({
           authUserId: user.id,
           eventType: 'login_success',
@@ -364,6 +393,31 @@ export const authConfig: NextAuthConfig = {
         authToken.entityId = user.entityId ?? ''
         authToken.tenantId = user.tenantId ?? null
         authToken.activeRoleId = user.activeRoleId ?? undefined
+        authToken.mfaPending = user.mfaPending ?? false
+        authToken.mfaChallengeId = user.mfaChallengeId ?? undefined
+      }
+
+      // On session update: if MFA was pending, check if the challenge is now verified
+      if (
+        trigger === 'update' &&
+        authToken.mfaPending &&
+        authToken.mfaChallengeId &&
+        authToken.userId
+      ) {
+        try {
+          const verified = await isMfaChallengeVerified(authToken.mfaChallengeId)
+          if (verified) {
+            authToken.mfaPending = false
+            authToken.mfaChallengeId = undefined
+            logSecurityEvent({
+              authUserId: authToken.userId,
+              eventType: 'login_success',
+              metadata: { provider: 'credentials', mfaVerified: true },
+            })
+          }
+        } catch {
+          // Keep MFA pending on failure
+        }
       }
 
       // On session update, re-resolve role (for role changes after OAuth signup)
@@ -463,6 +517,8 @@ export const authConfig: NextAuthConfig = {
       session.user.tenantId = authToken.tenantId ?? null
       session.user.activeRoleId = authToken.activeRoleId ?? ''
       session.user.isAdmin = authToken.isAdmin ?? false
+      session.user.mfaPending = authToken.mfaPending ?? false
+      session.user.mfaChallengeId = authToken.mfaChallengeId ?? undefined
       return session
     },
   },

@@ -53,6 +53,37 @@ function getBlockedIngredientSlug(pathname: string): string | null {
   return isKnowledgeIngredientPubliclyIndexable({ slug }) ? null : slug
 }
 
+/** Token-based path prefixes that expose private data via URL tokens. */
+const TOKEN_PATH_PREFIXES = [
+  '/proposal/',
+  '/share/',
+  '/review/',
+  '/feedback/',
+  '/guest-feedback/',
+  '/tip/',
+  '/worksheet/',
+  '/view/',
+  '/availability/',
+  '/menu/',
+  '/e/',
+  '/onboarding/',
+  '/partner-report/',
+  '/hub/me/',
+  '/hub/join/',
+  '/hub/g/',
+  '/survey/',
+  '/book/status/',
+  '/menu-pick/',
+  '/catalog-pick/',
+  '/split/',
+  '/staff-portal/',
+  '/event/',
+]
+
+function isTokenPath(pathname: string): boolean {
+  return TOKEN_PATH_PREFIXES.some((prefix) => pathname.startsWith(prefix))
+}
+
 function getStaleRouteRedirectPath(pathname: string): string | null {
   const normalized =
     pathname.length > 1 && pathname.endsWith('/') ? pathname.slice(0, -1) : pathname
@@ -122,7 +153,11 @@ export default auth(async (request) => {
     stripInternalRequestHeaders(sanitized)
     sanitized.set('x-request-id', requestId)
     setPathnameHeader(sanitized, pathname)
-    return withRequestId(NextResponse.next({ request: { headers: sanitized } }), requestId)
+    const response = NextResponse.next({ request: { headers: sanitized } })
+    if (isTokenPath(pathname)) {
+      response.headers.set('Referrer-Policy', 'no-referrer')
+    }
+    return withRequestId(response, requestId)
   }
 
   const requestHeaders = new Headers(request.headers)
@@ -153,6 +188,22 @@ export default auth(async (request) => {
   const role = user.role
   const entityId = user.entityId
   const tenantId = user.tenantId ?? null
+
+  // MFA pending: only allow the MFA verify page and auth API routes
+  const mfaPending = (user as Record<string, unknown>).mfaPending === true
+  if (mfaPending) {
+    const mfaAllowed =
+      pathname === '/auth/mfa-verify' ||
+      pathname.startsWith('/api/auth') ||
+      pathname === '/auth/signin'
+    if (!mfaAllowed) {
+      return withRequestId(
+        NextResponse.redirect(buildRedirectUrl(request, '/auth/mfa-verify')),
+        requestId
+      )
+    }
+    return withRequestId(NextResponse.next({ request: { headers: requestHeaders } }), requestId)
+  }
 
   if (!role || !entityId) {
     // Authenticated but no role (new OAuth user) - send to role selection

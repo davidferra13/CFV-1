@@ -150,3 +150,16 @@ export async function verifyMfaChallenge(
 
   return { success: true, authUserId: challenge.authUserId }
 }
+
+/**
+ * Check if a challenge has been verified (for JWT callback to clear mfaPending).
+ */
+export async function isMfaChallengeVerified(challengeId: string): Promise<boolean> {
+  const [row] = await db
+    .select({ verified: mfaChallenges.verified })
+    .from(mfaChallenges)
+    .where(eq(mfaChallenges.id, challengeId))
+    .limit(1)
+
+  return row?.verified === true
+}
