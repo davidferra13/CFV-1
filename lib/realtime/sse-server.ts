@@ -4,6 +4,10 @@ import { EventEmitter } from 'events'
 const eventBus = new EventEmitter()
 eventBus.setMaxListeners(500) // Support many concurrent SSE connections
 
+// Per-user SSE connection limit (DoS mitigation)
+const MAX_CONNECTIONS_PER_USER = 5
+const userConnectionCounts = new Map<string, number>()
+
 // Channel-scoped event broadcasting
 export function broadcast(channel: string, event: string, data: any) {
   eventBus.emit(channel, { event, data, timestamp: Date.now() })
@@ -23,6 +27,24 @@ export function subscribe(
 // Get active listener count for a channel
 export function getListenerCount(channel: string): number {
   return eventBus.listenerCount(channel)
+}
+
+// Per-user connection gating. Returns true if connection is allowed.
+export function acquireUserConnection(userId: string): boolean {
+  const current = userConnectionCounts.get(userId) || 0
+  if (current >= MAX_CONNECTIONS_PER_USER) return false
+  userConnectionCounts.set(userId, current + 1)
+  return true
+}
+
+// Release a user connection slot (call on SSE disconnect)
+export function releaseUserConnection(userId: string): void {
+  const current = userConnectionCounts.get(userId) || 0
+  if (current <= 1) {
+    userConnectionCounts.delete(userId)
+  } else {
+    userConnectionCounts.set(userId, current - 1)
+  }
 }
 
 // Presence tracking (in-memory)

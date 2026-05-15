@@ -26,6 +26,7 @@ export async function toggleAdminPreview(enabled: boolean): Promise<void> {
       path: '/',
       httpOnly: true,
       sameSite: 'lax',
+      secure: process.env.NODE_ENV === 'production',
       // No maxAge - session cookie, clears on browser close
     })
   } else {

@@ -2,6 +2,7 @@
 
 import { revalidatePath } from 'next/cache'
 import { createServerClient } from '@/lib/db/server'
+import { escapeLikePattern } from '@/lib/db/escape-like'
 import { requireChef } from '@/lib/auth/get-user'
 
 // ---- Types ----
@@ -132,7 +133,7 @@ export async function searchChefs(filters?: {
   }
 
   if (filters?.area) {
-    query = query.ilike('service_area', `%${filters.area}%`)
+    query = query.ilike('service_area', `%${escapeLikePattern(filters.area)}%`)
   }
 
   if (filters?.cuisine) {

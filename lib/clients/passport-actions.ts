@@ -3,6 +3,34 @@
 import { requireChef } from '@/lib/auth/get-user'
 import { pgClient } from '@/lib/db'
 import { revalidatePath } from 'next/cache'
+import { z } from 'zod'
+
+const PassportDataSchema = z.object({
+  communication_mode: z.string().max(50).optional(),
+  preferred_contact_method: z.string().max(50).optional(),
+  chef_autonomy_level: z.string().max(50).optional(),
+  auto_approve_under_cents: z.number().int().min(0).nullable().optional(),
+  max_interaction_rounds: z.number().int().min(1).max(20).nullable().optional(),
+  standing_instructions: z.string().max(2000).nullable().optional(),
+  default_guest_count: z.number().int().min(1).max(500).nullable().optional(),
+  budget_range_min_cents: z.number().int().min(0).nullable().optional(),
+  budget_range_max_cents: z.number().int().min(0).nullable().optional(),
+  service_style: z.string().max(50).nullable().optional(),
+  default_locations: z
+    .array(
+      z.object({
+        label: z.string().max(100),
+        address: z.string().max(300).optional(),
+        city: z.string().max(100),
+        state: z.string().max(50),
+      })
+    )
+    .max(10)
+    .optional(),
+  delegate_name: z.string().max(200).nullable().optional(),
+  delegate_email: z.string().email().nullable().optional(),
+  delegate_phone: z.string().max(30).nullable().optional(),
+})
 
 type QueryResult<T = Record<string, unknown>> = {
   rows: T[]
@@ -48,6 +76,9 @@ export async function upsertClientPassport(
     delegate_phone?: string | null
   }
 ) {
+  const validated = PassportDataSchema.safeParse(data)
+  if (!validated.success) return null
+
   const user = await requireChef()
   const tenantId = user.tenantId!
 

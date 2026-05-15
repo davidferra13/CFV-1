@@ -4,6 +4,7 @@ import { requireVendor } from '@/lib/auth/get-user'
 import { db } from '@/lib/db'
 import { purchaseOrders } from '@/lib/db/schema/schema'
 import { eq, and } from 'drizzle-orm'
+import { z } from 'zod'
 
 const VALID_TRANSITIONS: Record<string, string[]> = {
   sent: ['acknowledged', 'partially_received'],
@@ -11,7 +12,14 @@ const VALID_TRANSITIONS: Record<string, string[]> = {
   partially_received: ['received'],
 }
 
+const UpdateOrderStatusSchema = z.object({
+  orderId: z.string().uuid(),
+  newStatus: z.string().max(50),
+})
+
 export async function updateOrderStatus(orderId: string, newStatus: string) {
+  const input = UpdateOrderStatusSchema.safeParse({ orderId, newStatus })
+  if (!input.success) return { success: false, error: 'Invalid input' }
   const user = await requireVendor()
 
   const [order] = await db

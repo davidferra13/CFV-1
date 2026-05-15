@@ -2,6 +2,7 @@
 
 import { requireClient } from '@/lib/auth/get-user'
 import { createServerClient } from '@/lib/db/server'
+import { escapeLikePattern } from '@/lib/db/escape-like'
 import { getOrCreateClientHubProfile } from './client-hub-actions'
 import type { HubGuestProfile } from './types'
 
@@ -331,7 +332,7 @@ export async function searchPeople(query: string): Promise<{
     .select(
       'id, display_name, avatar_url, bio, email, profile_token, known_allergies, known_dietary'
     )
-    .ilike('display_name', `%${searchTerm}%`)
+    .ilike('display_name', `%${escapeLikePattern(searchTerm)}%`)
     .neq('id', myProfile.id)
     .limit(20)
 

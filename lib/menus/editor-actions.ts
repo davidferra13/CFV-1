@@ -6,6 +6,7 @@
 
 import { requireChef } from '@/lib/auth/get-user'
 import { createServerClient } from '@/lib/db/server'
+import { escapeLikePattern } from '@/lib/db/escape-like'
 import { revalidatePath } from 'next/cache'
 
 // ─── Menu Edit Post-Approval Notification ────────────────────────────────────
@@ -625,7 +626,7 @@ export async function searchRecipesForEditor(query: string) {
     .select('id, name, category, servings')
     .eq('tenant_id', user.tenantId!)
     .eq('archived', false)
-    .ilike('name', `%${query}%`)
+    .ilike('name', `%${escapeLikePattern(query)}%`)
     .order('name', { ascending: true })
     .limit(15)
 

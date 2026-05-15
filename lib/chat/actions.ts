@@ -6,6 +6,7 @@
 
 import { requireAuth, requireChef, requireClient } from '@/lib/auth/get-user'
 import { createServerClient } from '@/lib/db/server'
+import { escapeLikePattern } from '@/lib/db/escape-like'
 import { checkRateLimit } from '@/lib/rateLimit'
 import { processMessageInsights } from '@/lib/insights/actions'
 import { revalidatePath } from 'next/cache'
@@ -1159,7 +1160,7 @@ export async function searchChatMessages(
     .select('*')
     .eq('conversation_id', conversationId)
     .is('deleted_at', null)
-    .ilike('body', `%${query}%`)
+    .ilike('body', `%${escapeLikePattern(query)}%`)
     .order('created_at', { ascending: false })
     .limit(50)
 

@@ -6,6 +6,22 @@ import { NextResponse } from 'next/server'
 import { createAdminClient } from '@/lib/db/admin'
 import { getCurrentUser } from '@/lib/auth/get-user'
 import { checkRateLimit } from '@/lib/rateLimit'
+import { z } from 'zod'
+
+const BreadcrumbItemSchema = z.object({
+  path: z.string().max(500),
+  breadcrumb_type: z.string().max(50).optional(),
+  label: z.string().max(200).nullable().optional(),
+  referrer_path: z.string().max(500).nullable().optional(),
+  metadata: z.record(z.string(), z.unknown()).optional(),
+  session_id: z.string().max(100).nullable().optional(),
+  timestamp: z.string().optional(),
+})
+
+const BreadcrumbPayloadSchema = z.union([
+  z.object({ items: z.array(BreadcrumbItemSchema).max(50) }),
+  BreadcrumbItemSchema,
+])
 
 const adminClient = createAdminClient()
 
@@ -29,8 +45,13 @@ export async function POST(request: Request) {
       return NextResponse.json({ tracked: false, error: 'forbidden' }, { status: 403 })
     }
 
-    const body = await request.json()
-    const items = Array.isArray(body.items) ? body.items : [body]
+    const raw = await request.json()
+    const parsed = BreadcrumbPayloadSchema.safeParse(raw)
+    if (!parsed.success) {
+      return NextResponse.json({ tracked: false, error: 'invalid_payload' }, { status: 400 })
+    }
+    const body = parsed.data
+    const items = 'items' in body ? body.items : [body]
 
     // Validate and shape rows
     const rows = items

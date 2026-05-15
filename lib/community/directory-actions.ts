@@ -2,6 +2,7 @@
 
 import { requireChef } from '@/lib/auth/get-user'
 import { createServerClient } from '@/lib/db/server'
+import { escapeLikePattern } from '@/lib/db/escape-like'
 import { revalidatePath } from 'next/cache'
 
 // ------------------------------------------------------------------
@@ -127,10 +128,10 @@ export async function searchDirectory(filters?: DirectorySearchFilters) {
     .order('rating_avg', { ascending: false, nullsFirst: false })
 
   if (filters?.city) {
-    query = query.ilike('city', `%${filters.city}%`)
+    query = query.ilike('city', `%${escapeLikePattern(filters.city)}%`)
   }
   if (filters?.state) {
-    query = query.ilike('state', `%${filters.state}%`)
+    query = query.ilike('state', `%${escapeLikePattern(filters.state)}%`)
   }
   if (filters?.cuisine) {
     query = query.contains('cuisines', [filters.cuisine])

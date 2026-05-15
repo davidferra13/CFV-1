@@ -6,6 +6,7 @@
 
 import { requireChef } from '@/lib/auth/get-user'
 import { createServerClient } from '@/lib/db/server'
+import { escapeLikePattern } from '@/lib/db/escape-like'
 import { revalidatePath } from 'next/cache'
 import { z } from 'zod'
 import { canonicalizeDishName } from './dish-index-constants'
@@ -156,7 +157,7 @@ export async function getDishIndex(filters?: {
 
   // Apply filters
   if (filters?.search) {
-    query = query.ilike('name', `%${filters.search}%`)
+    query = query.ilike('name', `%${escapeLikePattern(filters.search)}%`)
   }
   if (filters?.course) {
     query = query.eq('course', filters.course)

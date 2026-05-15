@@ -7,6 +7,7 @@
 import { requireChef } from '@/lib/auth/get-user'
 import { checkRateLimit } from '@/lib/api/rate-limit'
 import { createServerClient } from '@/lib/db/server'
+import { escapeLikePattern } from '@/lib/db/escape-like'
 import { revalidatePath, revalidateTag } from 'next/cache'
 import { z } from 'zod'
 import type { Database } from '@/types/database'
@@ -330,7 +331,7 @@ export async function getRecipes(filters?: {
   }
 
   if (filters?.search) {
-    query = query.ilike('name', `%${filters.search}%`)
+    query = query.ilike('name', `%${escapeLikePattern(filters.search)}%`)
   }
 
   // Sort
@@ -1007,7 +1008,7 @@ export async function getIngredients(filters?: { category?: string; search?: str
   }
 
   if (filters?.search) {
-    query = query.ilike('name', `%${filters.search}%`)
+    query = query.ilike('name', `%${escapeLikePattern(filters.search)}%`)
   }
 
   query = query.order('name', { ascending: true })
@@ -1480,7 +1481,7 @@ export async function searchRecipes(query: string) {
     )
     .eq('tenant_id', user.tenantId!)
     .eq('archived', false)
-    .ilike('name', `%${query}%`)
+    .ilike('name', `%${escapeLikePattern(query)}%`)
     .order('name', { ascending: true })
     .limit(20)
 

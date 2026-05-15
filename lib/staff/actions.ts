@@ -5,6 +5,7 @@
 
 import { requireChef } from '@/lib/auth/get-user'
 import { createServerClient } from '@/lib/db/server'
+import { escapeLikePattern } from '@/lib/db/escape-like'
 import { db } from '@/lib/db'
 import { userRoles } from '@/lib/db/schema/schema'
 import { eq, and } from 'drizzle-orm'
@@ -169,7 +170,7 @@ export async function searchStaffMembers(filters: {
   let query = db.from('staff_members').select('*').eq('chef_id', user.tenantId!).order('name')
 
   if (filters.search) {
-    query = query.ilike('name', `%${filters.search}%`)
+    query = query.ilike('name', `%${escapeLikePattern(filters.search)}%`)
   }
   if (filters.role && filters.role !== 'all') {
     query = query.eq('role', filters.role)

@@ -7,6 +7,15 @@ import { NextRequest, NextResponse } from 'next/server'
 import { validateConnectorKey } from '@/lib/ai/connector/auth'
 import { completeConnectorTask, failConnectorTask } from '@/lib/ai/connector/actions'
 import type { ConnectorResult } from '@/lib/ai/connector/types'
+import { z } from 'zod'
+
+const ConnectorResultSchema = z.object({
+  taskId: z.string().min(1),
+  success: z.boolean(),
+  result: z.unknown().optional(),
+  error: z.string().max(5000).optional(),
+  durationMs: z.number().min(0).optional(),
+})
 
 export const runtime = 'nodejs'
 export const dynamic = 'force-dynamic'
@@ -17,18 +26,19 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
   }
 
-  let body: ConnectorResult
+  let raw: unknown
   try {
-    body = await req.json()
+    raw = await req.json()
   } catch {
     return NextResponse.json({ error: 'Invalid JSON body' }, { status: 400 })
   }
 
-  const { taskId, success, result, error: taskError, durationMs } = body
-
-  if (!taskId || typeof taskId !== 'string') {
-    return NextResponse.json({ error: 'taskId required' }, { status: 400 })
+  const parsed = ConnectorResultSchema.safeParse(raw)
+  if (!parsed.success) {
+    return NextResponse.json({ error: 'Invalid payload' }, { status: 400 })
   }
+
+  const { taskId, success, result, error: taskError, durationMs } = parsed.data
 
   if (success) {
     await completeConnectorTask(taskId, ctx.userId, result, durationMs ?? 0)

@@ -7,6 +7,15 @@ import { reportError } from '@/lib/monitoring/sentry-reporter'
 import { checkRateLimit } from '@/lib/rateLimit'
 import { recordPlatformEvent } from '@/lib/platform-observability/events'
 import { extractRequestMetadata } from '@/lib/platform-observability/context'
+import { z } from 'zod'
+
+const ErrorReportSchema = z.object({
+  message: z.string().max(2000),
+  stack: z.string().max(10000).optional(),
+  name: z.string().max(100).optional(),
+  digest: z.string().max(100).optional(),
+  tags: z.record(z.string(), z.string().max(200)).optional(),
+})
 
 export async function POST(request: NextRequest) {
   try {
@@ -18,18 +27,12 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ ok: false, error: 'Rate limited' }, { status: 429 })
     }
 
-    const body = await request.json()
-    const { message, stack, name, digest, tags } = body as {
-      message?: string
-      stack?: string
-      name?: string
-      digest?: string
-      tags?: Record<string, string>
+    const raw = await request.json()
+    const parsed = ErrorReportSchema.safeParse(raw)
+    if (!parsed.success) {
+      return NextResponse.json({ ok: false, error: 'invalid_payload' }, { status: 400 })
     }
-
-    if (!message) {
-      return NextResponse.json({ ok: false }, { status: 400 })
-    }
+    const { message, stack, name, digest, tags } = parsed.data
 
     // Reconstruct an Error object from the client payload
     const error = new Error(message)

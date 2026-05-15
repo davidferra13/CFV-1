@@ -27,7 +27,7 @@ export function validateWebsiteSignupInput(input: WebsiteSignupValidationInput):
     return INVALID_EMAIL_MESSAGE
   }
 
-  if (input.password.length < 8) {
+  if (input.password.length < 12) {
     return PASSWORD_MIN_LENGTH_MESSAGE
   }
 

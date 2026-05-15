@@ -7,6 +7,7 @@
 import { requireChef } from '@/lib/auth/get-user'
 import { checkRateLimit } from '@/lib/api/rate-limit'
 import { createServerClient } from '@/lib/db/server'
+import { escapeLikePattern } from '@/lib/db/escape-like'
 import { revalidatePath } from 'next/cache'
 import { z } from 'zod'
 import crypto from 'crypto'
@@ -1832,7 +1833,7 @@ export async function searchClientsByName(
     .select('id, full_name, email, status')
     .eq('tenant_id', user.tenantId!)
     .is('deleted_at' as any, null)
-    .ilike('full_name', `%${query}%`)
+    .ilike('full_name', `%${escapeLikePattern(query)}%`)
     .order('full_name', { ascending: true })
     .limit(5)
 

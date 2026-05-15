@@ -4,6 +4,7 @@ import { auth } from '@/lib/auth'
 import { createAdminClient } from '@/lib/db/admin'
 import { recordSavedChefPreferenceSignal } from '@/lib/discovery/culinary-profile-persistence'
 import { revalidatePath } from 'next/cache'
+import { z } from 'zod'
 
 export type SentinelChefRailItem = {
   chefId: string
@@ -20,6 +21,9 @@ export type SentinelChefRailItem = {
  * Returns { saved: false } gracefully if not authenticated.
  */
 export async function toggleSaveChef(chefId: string): Promise<{ saved: boolean }> {
+  const validated = z.string().uuid().safeParse(chefId)
+  if (!validated.success) return { saved: false }
+
   const session = await auth()
   if (!session?.user?.id) return { saved: false }
 
