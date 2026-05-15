@@ -9,7 +9,6 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
   DropdownMenuSeparator,
-  DropdownMenuLabel,
 } from '@/components/ui/dropdown-menu'
 import { Button } from '@/components/ui/button'
 import { ChefHat, User, Users, Truck, ArrowLeftRight } from 'lucide-react'
@@ -79,7 +78,7 @@ export function RoleSwitcher({
         </Button>
       </DropdownMenuTrigger>
       <DropdownMenuContent align="end" className="w-56">
-        <DropdownMenuLabel>Switch Role</DropdownMenuLabel>
+        <div className="px-2 py-1.5 text-sm font-semibold">Switch Role</div>
         <DropdownMenuSeparator />
         {roles.map((role) => {
           const RoleIcon = roleIcons[role.role] ?? User
