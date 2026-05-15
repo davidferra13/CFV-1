@@ -1,5 +1,15 @@
 # Session Log
 
+## 2026-05-14 ~21:00 EST
+
+- Agent: Claude Opus 4.6
+- Task: Security audit Phase 3 (defense-in-depth hardening)
+- Status: COMPLETE. All 12 Phase 3 items shipped.
+- Commit: `630b731fd` (57 files)
+- Files touched: auth-config.ts, route-policy.ts, middleware.ts, pi-bridge.ts, server-runtime-guard.ts, image/route.ts, next.config.js, config.yml, e2e/auth/route.ts, auth/clear/route.ts, 13 public pages (JSON-LD), 10 API routes (pino), new: lib/env.ts, lib/auth/tenant-scope.ts
+- Handoff: `docs/handoffs/2026-05-14-security-phase4-handoff.md` (Phase 4 strategic items)
+- Next: Phase 4 is optional/strategic (Auth.js migration, MFA enforcement, Next.js 15 CSP, RLS). Also: wire lib/env.ts into startup, wire requireTenantMembership into permission-actions.ts, deploy Pi Bridge auth on Pi side.
+
 ## 2026-04-23 13:13 EST
 
 - Agent: Codex
