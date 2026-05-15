@@ -480,14 +480,14 @@ export const userRoles = pgTable("user_roles", {
 	entityId: uuid("entity_id").notNull(),
 	createdAt: timestamp("created_at", { withTimezone: true, mode: 'string' }).defaultNow().notNull(),
 }, (table) => [
-	uniqueIndex("idx_user_roles_auth_user").using("btree", table.authUserId.asc().nullsLast().op("uuid_ops")),
+	index("idx_user_roles_auth_user").using("btree", table.authUserId.asc().nullsLast().op("uuid_ops")),
 	index("idx_user_roles_entity").using("btree", table.entityId.asc().nullsLast().op("uuid_ops")),
 	foreignKey({
 			columns: [table.authUserId],
 			foreignColumns: [users.id],
 			name: "user_roles_auth_user_id_fkey"
 		}).onDelete("cascade"),
-	unique("user_roles_auth_user_id_key").on(table.authUserId),
+	unique("user_roles_auth_entity_unique").on(table.authUserId, table.role, table.entityId),
 	pgPolicy("user_roles_self_select", { as: "permissive", for: "select", to: ["public"], using: sql`(auth.uid() = auth_user_id)` }),
 ]);
 
