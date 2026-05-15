@@ -1,6 +1,6 @@
 {
   "version": "1.0",
-  "timestamp": "2026-05-15T01:58:41.885Z",
+  "timestamp": "2026-05-15T02:06:35.023Z",
   "source": "auto-postool",
   "partial": false,
   "phase": null,
@@ -22,11 +22,11 @@
     },
     {
       "status": "M",
-      "path": "app/(public)/about/page.tsx"
+      "path": "app/(public)/book/page.tsx"
     },
     {
       "status": "M",
-      "path": "app/(public)/book/page.tsx"
+      "path": "app/(public)/contact/page.tsx"
     },
     {
       "status": "M",
@@ -34,15 +34,15 @@
     },
     {
       "status": "M",
+      "path": "app/(public)/for-operators/page.tsx"
+    },
+    {
+      "status": "M",
       "path": "app/(public)/how-it-works/page.tsx"
     },
     {
       "status": "M",
-      "path": "app/(public)/pricing/page.tsx"
-    },
-    {
-      "status": "M",
-      "path": "components/seo/json-ld.tsx"
+      "path": "app/(vendor)/vendor/orders/[id]/vendor-order-actions.tsx"
     },
     {
       "status": "M",
@@ -50,13 +50,13 @@
     },
     {
       "status": "M",
-      "path": "lib/auth/permission-actions.ts"
+      "path": "lib/vendors/invite-actions.ts"
     },
     {
-      "status": "M",
-      "path": "lib/db/index.ts"
+      "status": "??",
+      "path": "docs/superpowers/plans/2026-05-14-rail-god-mode-phase-1-2.md"
     }
   ],
   "next_action": null,
-  "context_notes": "Recent commits:\n961cb74ac chore: add Smartphone icon to settings, update uptime history\n523b8636a feat(sms-bridge): settings UI panel for token management and blocklist\nb655c544d feat(sms-bridge): token-authenticated SMS forwarding into communication pipeline\nf15a5daff fix(seo): robots.txt hardening, sitemap gaps, and OG metadata consistency\n85dfa4a2e docs: session close and Phase 4 handoff for security audit"
+  "context_notes": "Recent commits:\n8d62b713e fix(security): wire MFA enforcement into auth flow (Phase 4)\n6458b1ed0 chore: update SEO metadata, permission actions, db index, and session handoff\n961cb74ac chore: add Smartphone icon to settings, update uptime history\n523b8636a feat(sms-bridge): settings UI panel for token management and blocklist\nb655c544d feat(sms-bridge): token-authenticated SMS forwarding into communication pipeline"
 }
