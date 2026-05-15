@@ -2,6 +2,7 @@
 // Server Component checks role before rendering any child components
 
 import { requireChef } from '@/lib/auth/get-user'
+import { auth } from '@/lib/auth'
 import dynamic from 'next/dynamic'
 import { headers } from 'next/headers'
 import { redirect } from 'next/navigation'
@@ -47,6 +48,7 @@ import {
   type WorkspaceDensity,
 } from '@/lib/interface/surface-governance'
 import { resolveHiddenNavRoutes } from '@/lib/surfaces/resolve-chef-surfaces'
+import { RoleSwitcher } from '@/components/shared/role-switcher'
 
 const FeedbackNudgeCard = dynamic(
   () => import('@/components/feedback/feedback-nudge-card').then((m) => m.FeedbackNudgeCard),
@@ -167,6 +169,10 @@ export default async function ChefLayout({ children }: { children: React.ReactNo
     // Tenant data presence for progressive disclosure (short cached)
     getTenantDataPresence(user.tenantId!).catch(() => null as TenantDataPresence | null),
   ])
+  const session = await auth()
+  const availableRoleCount =
+    ((session?.user as Record<string, unknown>)?.availableRoles as number) ?? 1
+
   const effectiveAdmin = userIsAdmin || process.env.DEMO_MODE_ENABLED === 'true'
   const effectivePrivileged = userIsPrivileged || process.env.DEMO_MODE_ENABLED === 'true'
 
@@ -242,6 +248,10 @@ export default async function ChefLayout({ children }: { children: React.ReactNo
                         )}
                       {/* AI outage banner - shown after 2+ minutes of sustained AI downtime */}
                       <AiOutageBanner />
+                      {/* Role switcher - only visible when user has multiple roles */}
+                      <div className="fixed top-2 right-4 z-chrome">
+                        <RoleSwitcher currentRole="chef" availableRoleCount={availableRoleCount} />
+                      </div>
                       {/* Desktop sidebar */}
                       {shellBudget.showDesktopSidebar ? (
                         <ChefSidebar

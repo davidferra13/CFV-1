@@ -78,14 +78,18 @@ The 10-stage end-to-end engagement model (see `docs/service-lifecycle-blueprint.
 
 ## Roles and Access
 
-| Role               | Access                                     | Key Constraint                     |
-| ------------------ | ------------------------------------------ | ---------------------------------- |
-| **Chef** (role)    | Full access to their tenant data.          | IS the tenant.                     |
-| **Client** (role)  | Own events, hub, menus, invoices.          | Cannot see other clients' data.    |
-| **Staff** (role)   | Assigned events only.                      | Limited operational access.        |
-| **Partner** (role) | Referral stats and shared data.            | Read-only on chef operations.      |
-| **Admin** (role)   | Platform settings, prospecting, audit log. | Prospecting is admin-only. Always. |
-| **System** (role)  | Internal automations, webhooks.            | Not a human.                       |
+| Role               | Access                                     | Key Constraint                                             |
+| ------------------ | ------------------------------------------ | ---------------------------------------------------------- |
+| **Chef** (role)    | Full access to their tenant data.          | IS the tenant.                                             |
+| **Client** (role)  | Own events, hub, menus, invoices.          | Cannot see other clients' data.                            |
+| **Staff** (role)   | Assigned events only.                      | Limited operational access.                                |
+| **Partner** (role) | Referral stats and shared data.            | Read-only on chef operations.                              |
+| **Vendor** (role)  | Own purchase orders, invoices, catalog.    | Scoped to one chef via `vendors.chef_id`. Invited by chef. |
+| **Guest** (role)   | RSVP, dietary prefs, event details.        | Phase 4 (blocked by ticketed events). Not yet active.      |
+| **Admin** (role)   | Platform settings, prospecting, audit log. | Prospecting is admin-only. Always.                         |
+| **System** (role)  | Internal automations, webhooks.            | Not a human.                                               |
+
+**Multi-Role:** A single auth user (`auth_users`) can hold multiple roles via the `user_roles` table (composite unique on `auth_user_id + role`). The active role is stored in the JWT as `activeRoleId`. Users with 2+ roles see a role-switcher dropdown. Each role resolves its own `entityId` and `tenantId`.
 
 **Tenant:** The data isolation boundary. One chef = one tenant. `tenant_id` (core tables) and `chef_id` (feature tables) both reference `chefs(id)`. Never trust tenant from request body; always derive from session.
 

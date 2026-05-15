@@ -13,6 +13,8 @@ import { StaffTourWrapper } from '@/components/onboarding/staff-tour-wrapper'
 import { PATHNAME_HEADER } from '@/lib/auth/request-auth-context'
 import { resolveStaffSurfaceMode } from '@/lib/interface/surface-governance'
 import { GlobalReportButton } from '@/components/feedback/global-report-button'
+import { RoleSwitcher } from '@/components/shared/role-switcher'
+import { auth } from '@/lib/auth'
 
 export const metadata = {
   title: {
@@ -35,6 +37,10 @@ export default async function StaffLayout({ children }: { children: React.ReactN
   const profile = await getMyProfile()
   const staffName = profile?.name ?? 'Staff Member'
 
+  const session = await auth()
+  const availableRoleCount =
+    ((session?.user as Record<string, unknown>)?.availableRoles as number) ?? 1
+
   return (
     <div
       className="min-h-screen bg-stone-900 text-stone-100"
@@ -49,6 +55,9 @@ export default async function StaffLayout({ children }: { children: React.ReactN
         Skip to main content
       </a>
       <StaffNav staffName={staffName} staffEmail={user.email} />
+      <div className="flex items-center justify-end px-6 py-2">
+        <RoleSwitcher currentRole="staff" availableRoleCount={availableRoleCount} />
+      </div>
       <main id="main-content" className="mx-auto max-w-7xl px-4 py-6 sm:px-6 lg:px-8">
         <StaffTourWrapper>{children}</StaffTourWrapper>
       </main>
