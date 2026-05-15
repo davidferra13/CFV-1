@@ -58,6 +58,10 @@ import {
 } from '@/lib/interface/action-layer'
 
 // New card-based sections
+import {
+  UniversalRailSection,
+  UniversalRailSectionSkeleton,
+} from './_sections/universal-rail-section'
 import { ScheduleCards } from './_sections/schedule-cards'
 import { PrepPressureCard } from './_sections/prep-pressure-card'
 import { LoadHeatmapCard } from './_sections/load-heatmap-card'
@@ -1841,6 +1845,12 @@ export default async function ChefDashboard() {
       <WidgetErrorBoundary name="Operator Rail" compact>
         <Suspense fallback={<ChefOperatorRailSkeleton />}>
           <ChefOperatorRail queuePromise={queuePromise} />
+        </Suspense>
+      </WidgetErrorBoundary>
+
+      <WidgetErrorBoundary name="Universal Rail" compact>
+        <Suspense fallback={<UniversalRailSectionSkeleton />}>
+          <UniversalRailSection />
         </Suspense>
       </WidgetErrorBoundary>
 

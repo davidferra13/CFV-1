@@ -1,5 +1,6 @@
 // Client Events Dashboard - Registry-driven widget surface
 
+import { Suspense } from 'react'
 import type { Metadata } from 'next'
 import Link from 'next/link'
 import { format } from 'date-fns'
@@ -27,6 +28,10 @@ import { TrackedActivityLink } from '@/components/activity/tracked-activity-link
 import { PostEventBanner } from '@/components/client/post-event-banner'
 import { BetaOnboardingChecklist } from '@/components/beta/beta-onboarding-checklist'
 import { getMyBetaChecklist, syncBetaChecklistProgress } from '@/lib/beta/onboarding-actions'
+import {
+  ClientUniversalRail,
+  ClientUniversalRailSkeleton,
+} from '@/components/client-dashboard/client-universal-rail'
 import { ClientDashboardWidgetShell } from '@/components/client-dashboard/widget-shell'
 import { ClientDashboardWidgetGrid } from '@/components/client-dashboard/widget-grid'
 import { ClientDashboardEmptyState } from '@/components/client-dashboard/empty-state'
@@ -1700,6 +1705,13 @@ export default async function MyEventsPage() {
           />
         </div>
       )}
+
+      {/* Universal Rail - personalized suggestions */}
+      <div className="mb-6">
+        <Suspense fallback={<ClientUniversalRailSkeleton />}>
+          <ClientUniversalRail />
+        </Suspense>
+      </div>
 
       <ClientDashboardCollapseProvider>
         <div className="mb-4 flex items-center justify-between">

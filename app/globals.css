@@ -1289,6 +1289,338 @@ html {
   }
 }
 
+/* -- Discovery Micro-Interactions -- */
+
+/* Card select border pulse */
+@keyframes discovery-pulse-taste {
+  0%,
+  100% {
+    box-shadow: 0 0 0 2px rgba(245, 158, 11, 0.3);
+  }
+  50% {
+    box-shadow: 0 0 0 4px rgba(245, 158, 11, 0.5);
+  }
+}
+@keyframes discovery-pulse-occasion {
+  0%,
+  100% {
+    box-shadow: 0 0 0 2px rgba(16, 185, 129, 0.3);
+  }
+  50% {
+    box-shadow: 0 0 0 4px rgba(16, 185, 129, 0.5);
+  }
+}
+@keyframes discovery-pulse-picks {
+  0%,
+  100% {
+    box-shadow: 0 0 0 2px rgba(139, 92, 246, 0.3);
+  }
+  50% {
+    box-shadow: 0 0 0 4px rgba(139, 92, 246, 0.5);
+  }
+}
+
+.discovery-card-selected-taste {
+  animation: discovery-pulse-taste 1.5s ease-in-out infinite;
+}
+.discovery-card-selected-occasion {
+  animation: discovery-pulse-occasion 1.5s ease-in-out infinite;
+}
+.discovery-card-selected-picks {
+  animation: discovery-pulse-picks 1.5s ease-in-out infinite;
+}
+
+/* Feedback button spring-in */
+@keyframes discovery-spring-in {
+  0% {
+    transform: scale(0);
+    opacity: 0;
+  }
+  60% {
+    transform: scale(1.15);
+  }
+  100% {
+    transform: scale(1);
+    opacity: 1;
+  }
+}
+
+/* Feedback button bounce on click */
+@keyframes discovery-bounce {
+  0% {
+    transform: scale(1);
+  }
+  30% {
+    transform: scale(0.8);
+  }
+  60% {
+    transform: scale(1.12);
+  }
+  100% {
+    transform: scale(1);
+  }
+}
+
+/* Love confetti burst */
+@keyframes discovery-confetti {
+  0% {
+    transform: scale(1);
+    opacity: 1;
+  }
+  50% {
+    transform: scale(1.6);
+    opacity: 0.6;
+  }
+  100% {
+    transform: scale(2);
+    opacity: 0;
+  }
+}
+
+.discovery-feedback-btn {
+  animation: discovery-spring-in 200ms ease-out both;
+}
+
+.discovery-feedback-btn:active {
+  animation: discovery-bounce 250ms ease-out;
+}
+
+.discovery-love-burst::after {
+  content: '';
+  position: absolute;
+  inset: -4px;
+  border-radius: 50%;
+  background: radial-gradient(circle, rgba(244, 63, 94, 0.4) 0%, transparent 70%);
+  animation: discovery-confetti 400ms ease-out forwards;
+  pointer-events: none;
+}
+
+/* Pause/play morph */
+@keyframes discovery-icon-morph {
+  0% {
+    transform: scale(1) rotate(0deg);
+  }
+  50% {
+    transform: scale(0.8) rotate(90deg);
+  }
+  100% {
+    transform: scale(1) rotate(180deg);
+  }
+}
+
+.discovery-morph-icon {
+  transition: transform 200ms ease-out;
+}
+
+/* Row label dot pulse on content update */
+@keyframes discovery-dot-pulse {
+  0%,
+  100% {
+    transform: scale(1);
+    opacity: 0.6;
+  }
+  50% {
+    transform: scale(1.5);
+    opacity: 1;
+  }
+}
+
+.discovery-dot-updating {
+  animation: discovery-dot-pulse 600ms ease-in-out;
+}
+
+/* Filter token slide-in */
+@keyframes discovery-token-slide-in {
+  0% {
+    transform: translateX(-12px) scale(0.9);
+    opacity: 0;
+  }
+  100% {
+    transform: translateX(0) scale(1);
+    opacity: 1;
+  }
+}
+
+/* Filter token shrink-out */
+@keyframes discovery-token-shrink-out {
+  0% {
+    transform: scale(1);
+    opacity: 1;
+  }
+  100% {
+    transform: scale(0.8);
+    opacity: 0;
+  }
+}
+
+.discovery-token-enter {
+  animation: discovery-token-slide-in 200ms ease-out both;
+}
+
+.discovery-token-exit {
+  animation: discovery-token-shrink-out 150ms ease-in both;
+}
+
+/* -- Discovery Entrance Choreography -- */
+
+/* Container backdrop-blur grow */
+@keyframes discovery-container-enter {
+  0% {
+    opacity: 0;
+    backdrop-filter: blur(0px);
+    -webkit-backdrop-filter: blur(0px);
+  }
+  100% {
+    opacity: 1;
+    backdrop-filter: blur(40px);
+    -webkit-backdrop-filter: blur(40px);
+  }
+}
+
+.discovery-container-entering {
+  animation: discovery-container-enter 200ms ease-out both;
+}
+
+/* Card cascade from left with upward float */
+@keyframes discovery-card-cascade {
+  0% {
+    opacity: 0;
+    transform: translateX(-16px) translateY(8px);
+  }
+  100% {
+    opacity: 1;
+    transform: translateX(0) translateY(0);
+  }
+}
+
+.discovery-card-cascading {
+  animation: discovery-card-cascade 300ms ease-out both;
+}
+
+/* First card spotlight glow */
+@keyframes discovery-spotlight {
+  0% {
+    box-shadow: 0 0 0 0 rgba(245, 158, 11, 0);
+  }
+  50% {
+    box-shadow: 0 0 20px 4px rgba(245, 158, 11, 0.3);
+  }
+  100% {
+    box-shadow: 0 0 0 0 rgba(245, 158, 11, 0);
+  }
+}
+
+.discovery-card-spotlight {
+  animation: discovery-spotlight 800ms ease-in-out 300ms both;
+}
+
+/* Lane label typewriter cursor */
+@keyframes discovery-typewriter-cursor {
+  0%,
+  100% {
+    border-right-color: transparent;
+  }
+  50% {
+    border-right-color: rgba(255, 255, 255, 0.5);
+  }
+}
+
+.discovery-label-typewriter {
+  overflow: hidden;
+  white-space: nowrap;
+  border-right: 2px solid transparent;
+  animation: discovery-typewriter-cursor 400ms step-end 3;
+}
+
+/* -- Discovery Swipe Gestures -- */
+
+/* Swipe tilt transition */
+.discovery-card-swiping {
+  transition: transform 50ms ease-out;
+  will-change: transform;
+}
+
+/* Swipe save animation (upward fade) */
+@keyframes discovery-swipe-save {
+  0% {
+    transform: translateY(0);
+    opacity: 1;
+  }
+  100% {
+    transform: translateY(-40px);
+    opacity: 0;
+  }
+}
+
+/* Swipe dismiss animation (downward fade) */
+@keyframes discovery-swipe-dismiss {
+  0% {
+    transform: translateY(0);
+    opacity: 1;
+  }
+  100% {
+    transform: translateY(40px);
+    opacity: 0;
+  }
+}
+
+.discovery-card-swipe-save {
+  animation: discovery-swipe-save 300ms ease-out forwards;
+}
+
+.discovery-card-swipe-dismiss {
+  animation: discovery-swipe-dismiss 300ms ease-out forwards;
+}
+
+/* Mobile: simplified instant appear */
+@media (max-width: 767px) {
+  .discovery-card-cascading {
+    animation: none;
+    opacity: 1;
+    transform: none;
+  }
+
+  .discovery-container-entering {
+    animation-duration: 100ms;
+  }
+}
+
+/* Reduced motion: disable all discovery L2 animations */
+@media (prefers-reduced-motion: reduce) {
+  .discovery-card-selected-taste,
+  .discovery-card-selected-occasion,
+  .discovery-card-selected-picks,
+  .discovery-feedback-btn,
+  .discovery-love-burst::after,
+  .discovery-morph-icon,
+  .discovery-dot-updating,
+  .discovery-token-enter,
+  .discovery-token-exit,
+  .discovery-container-entering,
+  .discovery-card-cascading,
+  .discovery-card-spotlight,
+  .discovery-label-typewriter,
+  .discovery-card-swiping,
+  .discovery-card-swipe-save,
+  .discovery-card-swipe-dismiss {
+    animation: none !important;
+    transition: none !important;
+  }
+
+  .discovery-card-base:hover {
+    transform: none;
+  }
+
+  .discovery-card-base:active {
+    transform: none;
+  }
+
+  .discovery-card-cascading {
+    opacity: 1;
+    transform: none;
+  }
+}
+
 /* ── Hero line stagger ── */
 @keyframes hero-line-in {
   from {

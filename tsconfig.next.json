@@ -104,7 +104,9 @@
     ".next-codex-build-now/types/**/*.ts",
     ".next-dev-pw-89668-1777851477879/types/**/*.ts",
     ".next-dev-live-ops-43568-1777929302/types/**/*.ts",
-    ".next-prod-candidate/types/**/*.ts"
+    ".next-prod-candidate/types/**/*.ts",
+    ".next-dev-3145/types/**/*.ts",
+    ".next-dev-3135/types/**/*.ts"
   ],
   "exclude": [
     "node_modules",

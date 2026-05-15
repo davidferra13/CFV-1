@@ -1,13 +1,18 @@
 'use client'
 
 import Link from 'next/link'
-import { useState } from 'react'
+import { useRef, useState } from 'react'
 import type {
   DiscoveryRailItem,
   HomepageDiscoveryLane,
 } from '@/lib/discovery/homepage-discovery-rail'
 import { getDiscoveryImage, type DiscoveryImageRef } from '@/lib/discovery/image-map'
 import { DiscoveryCardFeedback } from '@/components/discovery/discovery-card-feedback'
+import {
+  recognizeSwipeGesture,
+  getSwipeTiltTransform,
+  triggerHaptic,
+} from '@/lib/discovery/swipe-gesture'
 
 export type DiscoveryCardVariant = 'food_photo' | 'abstract' | 'proof'
 
@@ -33,6 +38,8 @@ interface DiscoveryCardProps {
   onPin?: () => void
   onHide?: () => void
   onSelect?: () => void
+  onSwipeSave?: () => void
+  onSwipeDismiss?: () => void
 }
 
 function FoodPhotoCard({
@@ -185,6 +192,12 @@ const LANE_GLOW_CLASS: Record<HomepageDiscoveryLane, string> = {
   chefflow_picks: 'discovery-card-picks',
 }
 
+const LANE_SELECT_CLASS: Record<HomepageDiscoveryLane, string> = {
+  taste: 'discovery-card-selected-taste',
+  occasion: 'discovery-card-selected-occasion',
+  chefflow_picks: 'discovery-card-selected-picks',
+}
+
 export function DiscoveryCard({
   item,
   lane,
@@ -194,21 +207,73 @@ export function DiscoveryCard({
   onPin,
   onHide,
   onSelect,
+  onSwipeSave,
+  onSwipeDismiss,
 }: DiscoveryCardProps) {
   const variant = resolveCardVariant(item, lane)
   const imageRef = getDiscoveryImage(item.type, item.label)
   const glowClass = LANE_GLOW_CLASS[lane]
-  const selectedBorder = isSelected ? 'ring-2 ring-amber-400/60' : ''
+  const selectedClass = isSelected ? LANE_SELECT_CLASS[lane] : ''
+  const pointerStart = useRef<{ x: number; y: number; t: number } | null>(null)
+  const [swipeTilt, setSwipeTilt] = useState('none')
+  const [swipeAction, setSwipeAction] = useState<string | null>(null)
+
+  const swipeClasses = [
+    swipeTilt !== 'none' ? 'discovery-card-swiping' : '',
+    swipeAction === 'save' ? 'discovery-card-swipe-save' : '',
+    swipeAction === 'dismiss' ? 'discovery-card-swipe-dismiss' : '',
+  ]
+    .filter(Boolean)
+    .join(' ')
 
   return (
     <Link
       href={item.href}
-      className={`discovery-card-base ${glowClass} ${selectedBorder} group relative block`}
+      className={`discovery-card-base ${glowClass} ${selectedClass} ${swipeClasses} group relative block`}
+      style={swipeTilt !== 'none' ? { transform: swipeTilt } : undefined}
       onClick={(e) => {
         if (onSelect) {
           e.preventDefault()
           onSelect()
         }
+      }}
+      onPointerDown={(e) => {
+        pointerStart.current = { x: e.clientX, y: e.clientY, t: Date.now() }
+        setSwipeTilt('none')
+        setSwipeAction(null)
+      }}
+      onPointerMove={(e) => {
+        if (!pointerStart.current) return
+        const dy = e.clientY - pointerStart.current.y
+        const dx = e.clientX - pointerStart.current.x
+        setSwipeTilt(getSwipeTiltTransform(dy, dx))
+      }}
+      onPointerUp={(e) => {
+        if (!pointerStart.current) return
+        const result = recognizeSwipeGesture({
+          startX: pointerStart.current.x,
+          startY: pointerStart.current.y,
+          endX: e.clientX,
+          endY: e.clientY,
+          startTime: pointerStart.current.t,
+          endTime: Date.now(),
+        })
+        pointerStart.current = null
+        setSwipeTilt('none')
+        if (result.recognized) {
+          triggerHaptic()
+          if (result.action === 'save' && onSwipeSave) {
+            setSwipeAction('save')
+            onSwipeSave()
+          } else if (result.action === 'dismiss' && onSwipeDismiss) {
+            setSwipeAction('dismiss')
+            onSwipeDismiss()
+          }
+        }
+      }}
+      onPointerCancel={() => {
+        pointerStart.current = null
+        setSwipeTilt('none')
       }}
     >
       {variant === 'food_photo' && <FoodPhotoCard item={item} imageRef={imageRef} />}

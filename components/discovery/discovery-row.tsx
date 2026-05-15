@@ -23,6 +23,9 @@ interface DiscoveryRowProps {
   onItemPin?: (item: DiscoveryRailItem) => void
   onItemHide?: (item: DiscoveryRailItem) => void
   onItemSelect?: (item: DiscoveryRailItem) => void
+  onItemSwipeSave?: (item: DiscoveryRailItem) => void
+  onItemSwipeDismiss?: (item: DiscoveryRailItem) => void
+  entranceStaggerMs?: number
   scrollRef?: React.Ref<HTMLDivElement>
 }
 
@@ -51,6 +54,9 @@ export function DiscoveryRow({
   onItemPin,
   onItemHide,
   onItemSelect,
+  onItemSwipeSave,
+  onItemSwipeDismiss,
+  entranceStaggerMs,
   scrollRef,
 }: DiscoveryRowProps) {
   const internalRef = useRef<HTMLDivElement>(null)
@@ -86,7 +92,16 @@ export function DiscoveryRow({
           const key = `${itemKey(item)}-${i}`
           const pinKey = itemKey(item)
           return (
-            <div key={key} role="listitem" className="flex-shrink-0">
+            <div
+              key={key}
+              role="listitem"
+              className={`flex-shrink-0 discovery-card-cascading ${i === 0 ? 'discovery-card-spotlight' : ''}`}
+              style={
+                entranceStaggerMs
+                  ? { animationDelay: `${(i % items.length) * entranceStaggerMs}ms` }
+                  : undefined
+              }
+            >
               <DiscoveryCard
                 item={item}
                 lane={lane}
@@ -96,6 +111,8 @@ export function DiscoveryRow({
                 onPin={onItemPin ? () => onItemPin(item) : undefined}
                 onHide={onItemHide ? () => onItemHide(item) : undefined}
                 onSelect={onItemSelect ? () => onItemSelect(item) : undefined}
+                onSwipeSave={onItemSwipeSave ? () => onItemSwipeSave(item) : undefined}
+                onSwipeDismiss={onItemSwipeDismiss ? () => onItemSwipeDismiss(item) : undefined}
               />
             </div>
           )
