@@ -1,6 +1,6 @@
 {
   "version": "1.0",
-  "timestamp": "2026-05-15T00:41:17.564Z",
+  "timestamp": "2026-05-15T00:42:33.523Z",
   "source": "auto-postool",
   "partial": false,
   "phase": null,
@@ -18,69 +18,9 @@
   "uncommitted_files": [
     {
       "status": "M",
-      "path": ".planning/HANDOFF.json"
-    },
-    {
-      "status": "M",
-      "path": "app/(admin)/admin/page.tsx"
-    },
-    {
-      "status": "M",
-      "path": "app/(partner)/partner/dashboard/page.tsx"
-    },
-    {
-      "status": "M",
-      "path": "app/(staff)/staff-dashboard/page.tsx"
-    },
-    {
-      "status": "M",
-      "path": "app/api/e2e/auth/route.ts"
-    },
-    {
-      "status": "M",
-      "path": "docs/sync-status.json"
-    },
-    {
-      "status": "M",
       "path": "docs/uptime-history.json"
-    },
-    {
-      "status": "M",
-      "path": "lib/auth/permission-actions.ts"
-    },
-    {
-      "status": "M",
-      "path": "lib/auth/permissions.ts"
-    },
-    {
-      "status": "M",
-      "path": "lib/auth/signed-cookie.ts"
-    },
-    {
-      "status": "M",
-      "path": "lib/db/index.ts"
-    },
-    {
-      "status": "M",
-      "path": "lib/discover/outreach-crypto.ts"
-    },
-    {
-      "status": "M",
-      "path": "middleware.ts"
-    },
-    {
-      "status": "??",
-      "path": "app/(admin)/admin/_sections/"
-    },
-    {
-      "status": "??",
-      "path": "app/(partner)/partner/dashboard/_sections/"
-    },
-    {
-      "status": "??",
-      "path": "app/(staff)/staff-dashboard/_sections/"
     }
   ],
   "next_action": null,
-  "context_notes": "Recent commits:\n388c0a478 feat(discovery): universal rail system with scoring, registries, and dashboard integration\n44bef56f8 fix(schema): align user_roles Drizzle schema with multi-role migration\nec43eaee2 feat(auth): multi-role self-service signup and role switching\na8c2909c5 fix(auth): remove missing DropdownMenuLabel import from role switcher\n2f61da692 docs(discovery): add 7-layer overhaul design spec and all layer plans (L1-L7)"
+  "context_notes": "Recent commits:\n0da0b73e7 fix: auth hardening, middleware updates, and sync metadata\n211a4cdbc feat(discovery): wire universal rail to admin, staff, and partner dashboards\n388c0a478 feat(discovery): universal rail system with scoring, registries, and dashboard integration\n44bef56f8 fix(schema): align user_roles Drizzle schema with multi-role migration\nec43eaee2 feat(auth): multi-role self-service signup and role switching"
 }
