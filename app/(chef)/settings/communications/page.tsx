@@ -3,11 +3,14 @@ import Link from 'next/link'
 import { ArrowLeft } from '@/components/ui/icons'
 import { requireChef } from '@/lib/auth/get-user'
 import { SettingsCategory } from '@/components/settings/settings-category'
+import { SmsBridgePanel } from '@/components/settings/sms-bridge-panel'
+import { getSmsBridgeStatus } from '@/lib/sms-bridge/actions'
 
 export const metadata: Metadata = { title: 'Settings - Communications' }
 
 export default async function CommunicationsSettingsPage() {
   await requireChef()
+  const bridgeStatus = await getSmsBridgeStatus()
 
   return (
     <div>
@@ -112,6 +115,17 @@ export default async function CommunicationsSettingsPage() {
               here.
             </p>
           </Link>
+        </SettingsCategory>
+
+        <SettingsCategory
+          title="SMS Bridge"
+          description="Forward texts from your personal phone into ChefFlow. Known clients route automatically; unknown numbers become leads."
+          icon="Smartphone"
+          primary
+          tone="neutral"
+          defaultOpen={true}
+        >
+          <SmsBridgePanel initial={bridgeStatus} />
         </SettingsCategory>
       </div>
     </div>
