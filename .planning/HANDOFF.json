@@ -1,59 +1,38 @@
 {
   "version": "1.0",
-  "timestamp": "2026-05-15T01:30:00.000Z",
-  "source": "security-audit-session",
+  "timestamp": "2026-05-15T01:53:56.566Z",
+  "source": "auto-postool",
   "partial": false,
-  "phase": "security-hardening",
-  "phase_name": "Security Audit Remediation",
-  "phase_dir": "docs/security",
-  "plan": "docs/security/2026-05-14-security-audit.md",
-  "task": "Phase 3 - Defense in Depth",
-  "total_tasks": 29,
-  "status": "phase-2-complete",
-  "completed_tasks": [
-    "H1: Next.js CVE verification (RESOLVED - 14.2.35)",
-    "H2: E2E auth endpoint IP bypass fix",
-    "M2: DB fallback secret - throw in production",
-    "M3: Crypto fallback secret - throw in production",
-    "M5: Cross-tenant permission fixes (4 queries)",
-    "M6: JSON-LD XSS escape",
-    "M7: Middleware test route production guard",
-    "M8: SSE per-user connection cap",
-    "M9: Body limit 50MB to 2MB",
-    "M11: Breadcrumb API Zod validation",
-    "L1: LIKE wildcard injection (12 user-facing endpoints)",
-    "L3: Cookie signing fallback - throw in production",
-    "L4: Password min aligned to 12",
-    "L5: Admin preview cookie secure flag",
-    "L14: Log sanitization utility created",
-    "L15-L17: Zod on order-actions, saved-chefs, passport-actions",
-    "L18: Zod on error report route",
-    "L19: Zod on connector result route"
-  ],
-  "remaining_tasks": [
-    "L2: Admin middleware check",
-    "M10: Pi Bridge auth (shared secret)",
-    "L8: HSTS preload directive",
-    "L9: SSRF IPv6 private ranges",
-    "L10: DNS rebinding pin in image proxy",
-    "L11+L12: Tunnel config hardening",
-    "L6+L7: Session duration + redirect fix",
-    "L20: Structured logging (pino)",
-    "Env validation: lib/env.ts with Zod",
-    "Tenant helper: requireTenantMembership()",
-    "M1: Auth.js upgrade (monitor)",
-    "M4: MFA enforcement (8-16 hrs)",
-    "L21: CSP nonces (Next.js 15 upgrade)"
-  ],
+  "phase": null,
+  "phase_name": null,
+  "phase_dir": null,
+  "plan": null,
+  "task": null,
+  "total_tasks": null,
+  "status": "auto-checkpoint",
+  "completed_tasks": [],
+  "remaining_tasks": [],
   "blockers": [],
   "human_actions_pending": [],
-  "decisions": [
-    "H1 downgraded to RESOLVED (14.2.35 in lockfile)",
-    "LIKE injection: fixed 12 user-facing, left ~90 AI/automation calls (system input, lower risk)",
-    "JSON-LD: fixed shared component, 13 pages still inline their own (need consolidation)",
-    "MFA: deferred to Phase 4 (8-16 hr effort, backend built but middleware not wired)"
+  "decisions": [],
+  "uncommitted_files": [
+    {
+      "status": "M",
+      "path": ".planning/HANDOFF.json"
+    },
+    {
+      "status": "M",
+      "path": "app/(chef)/settings/communications/page.tsx"
+    },
+    {
+      "status": "M",
+      "path": "docs/uptime-history.json"
+    },
+    {
+      "status": "??",
+      "path": "components/settings/sms-bridge-panel.tsx"
+    }
   ],
-  "uncommitted_files": [],
-  "next_action": "Start Phase 3 from docs/security/2026-05-14-security-audit.md remediation roadmap",
-  "context_notes": "Full security audit completed 2026-05-14. 33 vulnerabilities found (1 HIGH remaining, 11 MEDIUM, 20 LOW). 19 fixed in Phase 1+2. Commits: 0da0b73e7 (Phase 1), 8dac067a9 (Phase 2). Both pushed to main. Audit doc has full research findings from 8 parallel agents covering: Next.js CVEs, Auth.js status, tenant isolation, XSS/CSP, SSE/rate limiting, hardcoded secrets, input validation, OWASP mapping."
+  "next_action": null,
+  "context_notes": "Recent commits:\nb655c544d feat(sms-bridge): token-authenticated SMS forwarding into communication pipeline\nf15a5daff fix(seo): robots.txt hardening, sitemap gaps, and OG metadata consistency\n85dfa4a2e docs: session close and Phase 4 handoff for security audit\n1f809d02e docs: Rail God Mode design spec\n630b731fd fix(security): Phase 3 defense-in-depth hardening"
 }

@@ -24,6 +24,7 @@ import {
   Lock,
   Printer,
   Cpu,
+  Smartphone,
   ChevronDown,
   type LucideIcon,
 } from '@/components/ui/icons'
@@ -52,6 +53,7 @@ const iconMap: Record<string, LucideIcon> = {
   Lock,
   Printer,
   Cpu,
+  Smartphone,
 }
 
 function slugifyTitle(title: string) {
