@@ -115,21 +115,31 @@
 
 ---
 
-## CLIENT COMMUNICATION & REMY (11 items)
+## CLIENT COMMUNICATION & REMY (21 items)
 
-| #   | Item                                                   | Status     | Depends On | Notes                                                                                                                                                                                       |
-| --- | ------------------------------------------------------ | ---------- | ---------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| 1   | Remy Routines Foundation And Policy Model              | BLOCKED    | None       | Verified 2026-05-16: Remy routines worktree remains partial; runtime match/apply audit logging, tenant/safety tests, proof packs, browser/runtime proof, and auth scan cleanup are missing. |
-| 2   | Remy Routine Authoring And Approval Experience         | BLOCKED    | #1         | Verified 2026-05-16: blocked by incomplete Remy routines foundation and missing runtime/proof/auth cleanup.                                                                                 |
-| 3   | Remy Routine Runtime Matching And Execution Guardrails | BLOCKED    | #1         | Verified 2026-05-16: blocked by incomplete Remy routines foundation and authoring approval path; runtime/proof/auth cleanup still missing.                                                  |
-| 4   | Remy Routine Safety Audit Tests And Observability      | BLOCKED    | #1         | Verified 2026-05-16: blocked by incomplete Remy runtime foundation and missing tenant/safety tests plus proof packs.                                                                        |
-| 5   | Remy To Codex Skill Proposal Handoff                   | BLOCKED    | #1         | Verified 2026-05-16: blocked by incomplete Remy routines foundation; human-approved skill proposal handoff cannot proceed until routine policy/runtime is complete.                         |
-| 6   | Email Snapshot & Portal Strategy                       | DRAFT      | None       | Claude draft; A/B portal strategy                                                                                                                                                           |
-| 7   | Soft-Close Leverage & Reactivation                     | PARTIAL    | None       | Claude: BUILT, needs verification                                                                                                                                                           |
-| 8   | Loyalty Client Experience                              | SPEC-READY | None       | Claude spec-ready                                                                                                                                                                           |
-| 9   | Loyalty Phase 1: Visibility & Perks                    | SPEC-READY | #8         | Claude spec-ready                                                                                                                                                                           |
-| 10  | Handoff Context Enrichment                             | SPEC-READY | None       | Claude spec-ready                                                                                                                                                                           |
-| 11  | Inquiry Response Cockpit UI Deepening                  | SPEC-READY | None       | Codex active                                                                                                                                                                                |
+| #   | Item                                                   | Status     | Depends On    | Notes                                                                                                                                                                                                                                |
+| --- | ------------------------------------------------------ | ---------- | ------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
+| 1   | Remy Routines Foundation And Policy Model              | BLOCKED    | None          | Verified 2026-05-16: Remy routines worktree remains partial; runtime match/apply audit logging, tenant/safety tests, proof packs, browser/runtime proof, and auth scan cleanup are missing.                                          |
+| 2   | Remy Routine Authoring And Approval Experience         | BLOCKED    | #1            | Verified 2026-05-16: blocked by incomplete Remy routines foundation and missing runtime/proof/auth cleanup.                                                                                                                          |
+| 3   | Remy Routine Runtime Matching And Execution Guardrails | BLOCKED    | #1            | Verified 2026-05-16: blocked by incomplete Remy routines foundation and authoring approval path; runtime/proof/auth cleanup still missing.                                                                                           |
+| 4   | Remy Routine Safety Audit Tests And Observability      | BLOCKED    | #1            | Verified 2026-05-16: blocked by incomplete Remy runtime foundation and missing tenant/safety tests plus proof packs.                                                                                                                 |
+| 5   | Remy To Codex Skill Proposal Handoff                   | BLOCKED    | #1            | Verified 2026-05-16: blocked by incomplete Remy routines foundation; human-approved skill proposal handoff cannot proceed until routine policy/runtime is complete.                                                                  |
+| 6   | Email Snapshot & Portal Strategy                       | DRAFT      | None          | Claude draft; A/B portal strategy                                                                                                                                                                                                    |
+| 7   | Soft-Close Leverage & Reactivation                     | PARTIAL    | None          | Claude: BUILT, needs verification                                                                                                                                                                                                    |
+| 8   | Loyalty Client Experience                              | SPEC-READY | None          | Claude spec-ready                                                                                                                                                                                                                    |
+| 9   | Loyalty Phase 1: Visibility & Perks                    | SPEC-READY | #8            | Claude spec-ready                                                                                                                                                                                                                    |
+| 10  | Handoff Context Enrichment                             | SPEC-READY | None          | Claude spec-ready                                                                                                                                                                                                                    |
+| 11  | Inquiry Response Cockpit UI Deepening                  | SPEC-READY | None          | Codex active                                                                                                                                                                                                                         |
+| 12  | Inquiry-to-Booking Orchestration                       | SPEC-READY | None          | P0. Wires all built pipeline pieces into 5-day flow. Trigger engine, client status updates, response enforcement, referral deep-link, sample menu quick-send, quote auto-gen. Spec: `docs/specs/inquiry-to-booking-orchestration.md` |
+| 13  | Pre-Event Confidence Cadence                           | SPEC-READY | #12           | P1. Automated countdown comms between deposit and event day (30d, 14d, 7d, 3d, 1d, day-of). Kills "do I still have a chef?" anxiety. Spec: `docs/specs/pre-event-confidence-cadence.md`                                              |
+| 14  | Social Proof Loop                                      | SPEC-READY | None          | P1. Post-event review capture -> chef profile display -> next client sees proof. Token-based review submission, moderation, portfolio gallery. Spec: `docs/specs/social-proof-loop.md`                                               |
+| 15  | Referrer Circle Visibility                             | SPEC-READY | #12           | P2. Referrer gets milestone notifications (inquiry received, booked, completed). Privacy-gated. Thank-you flow. Turns referrers into growth engine. Spec: `docs/specs/referrer-circle-visibility.md`                                 |
+| 16  | Client Portal Guest Dietary Surfacing                  | SPEC-READY | None          | P1. Surface dinner circle dietary collection in client portal. "Invite Guests" card, response tracker, dietary summary. Built feature, just buried. Spec: `docs/specs/client-portal-guest-dietary-surfacing.md`                      |
+| 17  | Post-Event Photo Gallery                               | SPEC-READY | #14           | P1. Chef uploads event photos -> client sees gallery in portal -> downloads/shares. Portfolio-tagged photos flow to public profile. Spec: `docs/specs/post-event-photo-gallery.md`                                                   |
+| 18  | One-Click Rebook                                       | SPEC-READY | None          | P1. "Book Again" on completed events pre-fills from past data. Repeat client badge, seasonal rebook prompts (60d before anniversary). Spec: `docs/specs/one-click-rebook.md`                                                         |
+| 19  | Client Communications Brand Voice                      | SPEC-READY | None          | P1. Tone guide for all automated client comms. 3 presets (Polished/Friendly/Minimal). Thank-you before review ask (24h/72h sequence). Template audit. Spec: `docs/specs/client-comms-brand-voice.md`                                 |
+| 20  | Day-Of Live Client Status                              | SPEC-READY | LIFECYCLE #19 | P1. Client-facing live status page on event day (en route -> arrived -> prepping -> serving -> done). 15-min delay auto-notification. Spec: `docs/specs/day-of-live-client-status.md`                                                |
+| 21  | Professional Invoice Delivery                          | SPEC-READY | None          | P1. PDF invoice generation, client portal download, auto-email after final payment, corporate "Bill To" support. Spec: `docs/specs/professional-invoice-delivery.md`                                                                 |
 
 ---
 
@@ -223,18 +233,18 @@
 
 ## AI & INTELLIGENCE (10 items)
 
-| #   | Item                                 | Status     | Depends On | Notes                                                                                                                                                                                 |
-| --- | ------------------------------------ | ---------- | ---------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| 1   | BYOAI Phase 2: Ollama Adapter        | SPEC-READY | None       | Claude spec-ready                                                                                                                                                                     |
-| 2   | BYOAI Phase 2: Privacy Narrative     | SPEC-READY | #1         | Claude spec-ready                                                                                                                                                                     |
-| 3   | Full Cloud AI Runtime & Disclosure   | PARTIAL    | None       | Claude: BUILT, needs verification                                                                                                                                                     |
-| 4   | Local AI Integration                 | PARTIAL    | None       | Claude: BUILT, needs verification                                                                                                                                                     |
-| 5   | Platform Intelligence Hub            | PARTIAL    | None       | Claude: BUILT + IN-PROGRESS                                                                                                                                                           |
-| 6   | Business Health Narrative Dashboard  | SPEC-READY | #5         | Codex active                                                                                                                                                                          |
-| 7   | Chef Operating Loop External Memory  | DRAFT      | None       | Claude draft                                                                                                                                                                          |
-| 8   | Configuration Engine                 | DRAFT      | None       | Claude draft                                                                                                                                                                          |
-| 9   | Culinary Operations & Costing System | DRAFT      | None       | Claude draft                                                                                                                                                                          |
-| 10  | PIE Current Attention Collector      | BLOCKED    | None       | Verified 2026-05-16: still blocked by dirty dashboard/current operating-loop workspace; app/(chef)/dashboard/page.tsx is dirty and The Current/dashboard route proof is not complete. |
+| #   | Item                                 | Status     | Depends On | Notes                                                                                                                                |
+| --- | ------------------------------------ | ---------- | ---------- | ------------------------------------------------------------------------------------------------------------------------------------ |
+| 1   | BYOAI Phase 2: Ollama Adapter        | SPEC-READY | None       | Claude spec-ready                                                                                                                    |
+| 2   | BYOAI Phase 2: Privacy Narrative     | SPEC-READY | #1         | Claude spec-ready                                                                                                                    |
+| 3   | Full Cloud AI Runtime & Disclosure   | PARTIAL    | None       | Claude: BUILT, needs verification                                                                                                    |
+| 4   | Local AI Integration                 | PARTIAL    | None       | Claude: BUILT, needs verification                                                                                                    |
+| 5   | Platform Intelligence Hub            | PARTIAL    | None       | Claude: BUILT + IN-PROGRESS                                                                                                          |
+| 6   | Business Health Narrative Dashboard  | SPEC-READY | #5         | Codex active                                                                                                                         |
+| 7   | Chef Operating Loop External Memory  | DRAFT      | None       | Claude draft                                                                                                                         |
+| 8   | Configuration Engine                 | DRAFT      | None       | Claude draft                                                                                                                         |
+| 9   | Culinary Operations & Costing System | DRAFT      | None       | Claude draft                                                                                                                         |
+| 10  | PIE Current Attention Collector      | SPEC-READY | None       | UNBLOCKED 2026-05-16: dashboard cleaned (fd039de12). 4-tier rail built, 7 action widgets removed, ambient reordered. Ready to build. |
 
 ---
 
@@ -396,17 +406,31 @@
 
 ---
 
+## CHEF AS CONSUMER (4 items)
+
+| #   | Item                                               | Status     | Depends On | Notes                                                                                  |
+| --- | -------------------------------------------------- | ---------- | ---------- | -------------------------------------------------------------------------------------- |
+| 1   | Discover: Browse Food Experiences From Chef Portal | SPEC-READY | None       | Reuses lib/discover (18), lib/public-consumer (2), lib/directory (7). Zero new backend |
+| 2   | Book: Hire Another Chef As A Client                | SPEC-READY | None       | Reuses lib/booking (9), lib/events (68), lib/quotes (9). Client-perspective wrapper    |
+| 3   | Community Events: Attend Peer Dinners And Pop-Ups  | SPEC-READY | None       | Reuses lib/tickets (14), lib/dinner-circles (6), lib/popups (5). Attendee view only    |
+| 4   | Local Food: Farmers Markets, Trucks, Shops Near Me | SPEC-READY | None       | Reuses lib/discover (18), lib/ingredients (5), PIE seasonal data. Consumer lens        |
+
+> Spec: `docs/specs/chef-as-consumer.md`
+> Cohesion multiplier: zero new tables, zero new APIs. New views on existing data.
+
+---
+
 ## SUMMARY
 
 | Status                      | Count   |
 | --------------------------- | ------- |
-| SPEC-READY                  | 162     |
+| SPEC-READY                  | 176     |
 | PARTIAL (built, unverified) | 24      |
 | DRAFT                       | 20      |
 | BLOCKED                     | 15      |
 | IN-FLIGHT                   | 2       |
 | UNSPECCED                   | 14      |
-| **TOTAL**                   | **237** |
+| **TOTAL**                   | **251** |
 
 ### Cross-Category Dependencies
 
