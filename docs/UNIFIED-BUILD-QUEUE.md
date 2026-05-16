@@ -422,6 +422,21 @@
 
 ---
 
+## DISCOVERY INTENSIFICATION (6 items)
+
+> Surfaced by `/intensify discovery` 2026-05-16 (first deep run, 141 files). Pure wiring, no new features.
+
+| #   | Item                                                       | Status | Depends On | Notes                                                                                                                                                    |
+| --- | ---------------------------------------------------------- | ------ | ---------- | -------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| 1   | CIL Signals -> God-Mode Dispatcher                         | DONE   | None       | /intensify: cil-signal-resolver.ts maps ProactiveSignal -> GodModeResolvedItem. Registered in warmResolvers(). Built 2026-05-16.                         |
+| 2   | Intelligence Layer -> God-Mode Resolver(s)                 | DONE   | None       | /intensify: intelligence-resolver.ts wires proactive-alerts, churn, post-event, inquiry-triage. 4 sources parallel, capped at 8 items. Built 2026-05-16. |
+| 3   | Scoring Path Consolidation (3 engines -> layered pipeline) | DONE   | None       | /intensify: getTieredRail() server action in universal-rail-actions.ts. Canonical unified path through assembleTieredRail(). Built 2026-05-16.           |
+| 4   | Wire Orphaned Rail-Tier-Assigner                           | DONE   | #3         | /intensify: tiered-rail.tsx + tier-row.tsx already consume. Server action wrapper added. Built 2026-05-16.                                               |
+| 5   | Cadence Trigger Handler -> God-Mode Resolver               | DONE   | None       | /intensify: scheduled-message-resolver.ts queries pending messages, tiers by urgency (overdue p1, today p2, upcoming p3). Built 2026-05-16.              |
+| 6   | Search Autocomplete -> Rail Registry Query                 | DONE   | None       | /intensify: buildDynamicAutocompleteSources() reads constants + public registry. Deduped, fallback preserved. Built 2026-05-16.                          |
+
+---
+
 ## V1 EXIT CRITERIA (still open)
 
 | #   | Item                                            | Status    | Notes                      |

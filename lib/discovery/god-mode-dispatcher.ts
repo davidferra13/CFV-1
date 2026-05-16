@@ -224,6 +224,14 @@ function warmResolvers(): ResolverEntry[] {
     },
     // --- Wave 2: Intelligence/System resolvers ---
     {
+      name: 'intelligence-signals',
+      resolve: async (ctx) => {
+        const { resolveIntelligenceSignals } =
+          await import('./resolvers/chef/intelligence-resolver')
+        return resolveIntelligenceSignals(ctx)
+      },
+    },
+    {
       name: 'automation-activity',
       resolve: async (ctx) => {
         const { resolveAutomationActivity } = await import('./resolvers/chef/automation-resolver')
@@ -242,6 +250,23 @@ function warmResolvers(): ResolverEntry[] {
       resolve: async (ctx) => {
         const { resolveInsurancePolicies } = await import('./resolvers/chef/insurance-resolver')
         return resolveInsurancePolicies(ctx)
+      },
+    },
+    // --- CIL (Continuous Intelligence Layer) ---
+    {
+      name: 'cil-signals',
+      resolve: async (ctx) => {
+        const { resolveCILSignals } = await import('./resolvers/chef/cil-signal-resolver')
+        return resolveCILSignals(ctx)
+      },
+    },
+    // --- Communication/Cadence ---
+    {
+      name: 'scheduled-messages',
+      resolve: async (ctx) => {
+        const { resolveScheduledMessages } =
+          await import('./resolvers/chef/scheduled-message-resolver')
+        return resolveScheduledMessages(ctx)
       },
     },
     // --- Wave 2: Config/Onboarding resolvers ---
