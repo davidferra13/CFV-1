@@ -21,6 +21,7 @@ export type PublicReviewItem = {
   reviewText: string
   reviewDate: string
   isFeatured: boolean
+  isVerifiedEvent: boolean
 }
 
 export type PublicReviewStats = {
@@ -172,6 +173,7 @@ export async function getPublicChefReviewFeed(tenantId: string): Promise<PublicR
       reviewText: fragments.join(' ') || 'Great experience!',
       reviewDate: r.created_at,
       isFeatured: false,
+      isVerifiedEvent: true,
     }
   })
 
@@ -185,6 +187,7 @@ export async function getPublicChefReviewFeed(tenantId: string): Promise<PublicR
     reviewText: typeof f.feedback_text === 'string' ? f.feedback_text.trim() : '',
     reviewDate: f.feedback_date || f.created_at,
     isFeatured: false,
+    isVerifiedEvent: false,
   }))
 
   const externalItems: PublicReviewItem[] = externalReviews.map((r: any) => ({
@@ -197,6 +200,7 @@ export async function getPublicChefReviewFeed(tenantId: string): Promise<PublicR
     reviewText: typeof r.review_text === 'string' ? r.review_text.trim() : '',
     reviewDate: r.review_date || r.created_at,
     isFeatured: false,
+    isVerifiedEvent: false,
   }))
 
   const testimonialItems: PublicReviewItem[] = testimonials.map((t: any) => {
@@ -216,6 +220,7 @@ export async function getPublicChefReviewFeed(tenantId: string): Promise<PublicR
       reviewText: typeof t.testimonial === 'string' ? t.testimonial.trim() : '',
       reviewDate: t.created_at,
       isFeatured: Boolean(t.is_featured),
+      isVerifiedEvent: true,
     }
   })
 

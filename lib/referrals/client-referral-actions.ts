@@ -10,6 +10,8 @@ export type ClientReferral = {
   referredName: string | null
   referredEmail: string | null
   status: 'invited' | 'signed_up' | 'first_event_completed'
+  /** Lifecycle stage for timeline display */
+  lifecycleStage: 'referred' | 'inquired' | 'booked' | 'completed'
   pointsAwarded: number
   createdAt: string
 }
@@ -17,6 +19,7 @@ export type ClientReferral = {
 export type ReferralStats = {
   totalReferred: number
   totalSignedUp: number
+  totalBooked: number
   totalPointsEarned: number
   referralCode: string | null
 }
@@ -29,9 +32,8 @@ export async function getMyReferrals(): Promise<ClientReferral[]> {
     .from('client_referrals')
     .select(
       `
-      id, created_at, reward_points_awarded,
-      referred_client:clients!client_referrals_referred_client_id_fkey(full_name, email),
-      converted_event_id
+      id, created_at, reward_points_awarded, status, inquiry_id, converted_event_id,
+      referred_client:clients!client_referrals_referred_client_id_fkey(full_name, email)
     `
     )
     .eq('referrer_client_id', user.entityId)
@@ -47,11 +49,23 @@ export async function getMyReferrals(): Promise<ClientReferral[]> {
     if (r.converted_event_id) status = 'first_event_completed'
     else if (r.referred_client) status = 'signed_up'
 
+    // Map DB status to lifecycle stage for timeline
+    let lifecycleStage: ClientReferral['lifecycleStage'] = 'referred'
+    const dbStatus = r.status as string | null
+    if (dbStatus === 'completed' || r.converted_event_id) {
+      lifecycleStage = 'completed'
+    } else if (dbStatus === 'booked') {
+      lifecycleStage = 'booked'
+    } else if (dbStatus === 'contacted' || r.inquiry_id) {
+      lifecycleStage = 'inquired'
+    }
+
     return {
       id: r.id,
       referredName: r.referred_client?.full_name || null,
       referredEmail: r.referred_client?.email || null,
       status,
+      lifecycleStage,
       pointsAwarded: r.reward_points_awarded || 0,
       createdAt: r.created_at,
     }
@@ -77,6 +91,7 @@ export async function getReferralStats(): Promise<ReferralStats> {
   return {
     totalReferred: referrals.length,
     totalSignedUp: referrals.filter((r: any) => r.referred_client_id).length,
+    totalBooked: referrals.filter((r: any) => r.converted_event_id).length,
     totalPointsEarned: referrals.reduce(
       (sum: number, r: any) => sum + (r.reward_points_awarded || 0),
       0

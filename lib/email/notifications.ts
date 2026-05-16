@@ -64,6 +64,8 @@ import { InquiryDeclinedEmail } from './templates/inquiry-declined'
 import { BookingConfirmationEmail } from './templates/booking-confirmation'
 import { BookingFollowUpEmail } from './templates/booking-follow-up'
 import { BookingNoMatchEmail } from './templates/booking-no-match'
+import { LifecycleStatusUpdate } from './templates/lifecycle-status-update'
+import { SampleMenusSent } from './templates/sample-menus-sent'
 
 const APP_URL = process.env.NEXT_PUBLIC_APP_URL || 'https://cheflowhq.com'
 
@@ -1660,6 +1662,56 @@ export async function sendCircleEventBroadcastEmail(params: {
       spotsAvailable: params.spotsAvailable,
       ticketUrl: params.ticketUrl,
       circleUrl: params.circleUrl,
+    }),
+  })
+}
+
+// ─── Lifecycle Status Update ──────────────────────────────────────────
+
+export async function sendLifecycleUpdateEmail(params: {
+  clientEmail: string
+  clientName: string
+  chefName: string
+  stageLabel: string
+  stageMessage: string
+  nextStep: string
+  portalUrl?: string
+}) {
+  await sendEmail({
+    to: params.clientEmail,
+    subject: `Update: ${params.stageLabel}`,
+    react: createElement(LifecycleStatusUpdate, {
+      clientName: params.clientName,
+      chefName: params.chefName,
+      stageLabel: params.stageLabel,
+      stageMessage: params.stageMessage,
+      nextStep: params.nextStep,
+      portalUrl: params.portalUrl,
+    }),
+  })
+}
+
+// ─── Sample Menus Sent ──────────────────────────────────────────
+
+export async function sendSampleMenusEmail(params: {
+  clientEmail: string
+  clientName: string
+  chefName: string
+  menus: Array<{
+    title: string
+    description: string
+    pricePerPerson: string | null
+    viewUrl: string
+    selectUrl: string
+  }>
+}) {
+  await sendEmail({
+    to: params.clientEmail,
+    subject: `${params.chefName} sent you menu options`,
+    react: createElement(SampleMenusSent, {
+      clientName: params.clientName,
+      chefName: params.chefName,
+      menus: params.menus,
     }),
   })
 }

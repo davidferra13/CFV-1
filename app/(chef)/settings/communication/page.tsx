@@ -4,9 +4,11 @@ import { requireChef } from '@/lib/auth/get-user'
 import { getAutoResponseConfig } from '@/lib/communication/auto-response'
 import { getBusinessHoursConfig } from '@/lib/communication/business-hours'
 import { getTemplates } from '@/lib/communication/templates/actions'
+import { getCadenceSettings } from '@/lib/communication/cadence-settings-actions'
 import { AutoResponseSettings } from '@/components/communication/auto-response-settings'
 import { BusinessHoursEditor } from '@/components/communication/business-hours-editor'
 import { TemplateList } from '@/components/communication/template-list'
+import { CadenceSettings } from '@/components/communication/cadence-settings'
 
 export const metadata = { title: 'Communication Settings' }
 
@@ -23,6 +25,16 @@ async function BusinessHoursSection({ chefId }: { chefId: string }) {
 async function TemplatesSection({ chefId }: { chefId: string }) {
   const templates = await getTemplates()
   return <TemplateList templates={templates} chefId={chefId} />
+}
+
+async function CadenceSection() {
+  const settings = await getCadenceSettings()
+  return (
+    <CadenceSettings
+      initialDisabledPoints={settings.disabled_points}
+      initialCustomMessages={settings.custom_messages}
+    />
+  )
 }
 
 export default async function CommunicationSettingsPage() {
@@ -52,6 +64,12 @@ export default async function CommunicationSettingsPage() {
       <WidgetErrorBoundary name="Response Templates">
         <Suspense fallback={<SectionSkeleton title="Response Templates" />}>
           <TemplatesSection chefId={user.entityId!} />
+        </Suspense>
+      </WidgetErrorBoundary>
+
+      <WidgetErrorBoundary name="Pre-Event Cadence">
+        <Suspense fallback={<SectionSkeleton title="Pre-Event Cadence" />}>
+          <CadenceSection />
         </Suspense>
       </WidgetErrorBoundary>
     </div>

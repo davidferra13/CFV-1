@@ -1443,6 +1443,34 @@ export const navGroups: NavGroup[] = [
       },
     ],
   },
+  {
+    id: 'explore',
+    label: 'Explore',
+    icon: Compass,
+    module: 'more',
+    items: [
+      {
+        href: '/explore/discover',
+        label: 'Discover',
+        icon: Compass,
+      },
+      {
+        href: '/explore/book',
+        label: 'Book a Chef',
+        icon: Users,
+      },
+      {
+        href: '/explore/events',
+        label: 'Events',
+        icon: CalendarDays,
+      },
+      {
+        href: '/explore/local',
+        label: 'Local Food',
+        icon: MapPin,
+      },
+    ],
+  },
 ]
 
 // Core groups shown in the sidebar by default.

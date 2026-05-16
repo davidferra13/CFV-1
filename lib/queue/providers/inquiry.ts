@@ -78,8 +78,25 @@ export async function getInquiryQueueItems(db: any, tenantId: string): Promise<Q
 
   if (!inquiries) return items
 
+  // Detect repeat clients: find clients with completed events for this tenant
+  const clientIds = inquiries.map((inq: any) => (inq.client as any)?.id).filter(Boolean) as string[]
+  const repeatClientIds = new Set<string>()
+  if (clientIds.length > 0) {
+    const { data: completedEvents } = await db
+      .from('events')
+      .select('client_id')
+      .eq('tenant_id', tenantId)
+      .eq('status', 'completed')
+      .in('client_id', [...new Set(clientIds)])
+    for (const event of completedEvents ?? []) {
+      if (event.client_id) repeatClientIds.add(event.client_id)
+    }
+  }
+
   for (const inq of inquiries) {
     const clientName = (inq.client as any)?.full_name ?? 'Unknown contact'
+    const clientId = (inq.client as any)?.id ?? null
+    const isRepeatClient = clientId ? repeatClientIds.has(clientId) : false
     const hoursSinceCreated = (now.getTime() - new Date(inq.created_at).getTime()) / 3600000
     const summary = inquirySummary(inq as any)
     const chLabel = channelLabel(inq.channel)
@@ -91,9 +108,11 @@ export async function getInquiryQueueItems(db: any, tenantId: string): Promise<Q
       const isPlatform = isTac || isYhangry
       // Platform leads get a priority boost - platform expectations for response time
       const platformBoost = isPlatform ? 0.15 : 0
+      // Repeat clients get a priority boost - they deserve faster response
+      const repeatBoost = isRepeatClient ? 0.1 : 0
       const inputs: ScoreInputs = {
         hoursUntilDue: Math.max(0, (isPlatform ? 12 : 24) - hoursSinceCreated),
-        impactWeight: 0.8 + platformBoost,
+        impactWeight: 0.8 + platformBoost + repeatBoost,
         isBlocking: true,
         hoursSinceCreated,
         revenueCents: 0,
@@ -120,20 +139,23 @@ export async function getInquiryQueueItems(db: any, tenantId: string): Promise<Q
         description = `${clientName} reached out via ${chLabel}. First response sets the tone.`
       }
 
+      const repeatScoreBoost = isRepeatClient ? 15 : 0
       items.push({
         id: `inquiry:inquiry:${inq.id}:respond_new`,
         domain: 'inquiry',
         urgency: platformStale ? 'critical' : platformUrgent ? 'high' : urgencyFromScore(score),
-        score: score + (isPlatform ? 20 : 0),
-        title,
+        score: score + (isPlatform ? 20 : 0) + repeatScoreBoost,
+        title: isRepeatClient ? `[Repeat] ${title}` : title,
         description,
         href: `/inquiries/${inq.id}`,
         icon: 'MessageSquare',
         context: {
           primaryLabel: clientName,
-          secondaryLabel: isPlatform
-            ? `${chLabel} - ${ageLabel(hoursSinceCreated)}`
-            : `via ${chLabel}`,
+          secondaryLabel: isRepeatClient
+            ? `Repeat client via ${chLabel}`
+            : isPlatform
+              ? `${chLabel} - ${ageLabel(hoursSinceCreated)}`
+              : `via ${chLabel}`,
         },
         createdAt: inq.created_at,
         dueAt: null,
@@ -145,25 +167,30 @@ export async function getInquiryQueueItems(db: any, tenantId: string): Promise<Q
 
     // Awaiting chef - client has replied, ball is in chef's court
     if (inq.status === 'awaiting_chef') {
+      const repeatBoostAwait = isRepeatClient ? 0.1 : 0
       const inputs: ScoreInputs = {
         hoursUntilDue: Math.max(0, 12 - hoursSinceCreated),
-        impactWeight: 0.85,
+        impactWeight: 0.85 + repeatBoostAwait,
         isBlocking: true,
         hoursSinceCreated,
         revenueCents: 0,
         isExpiring: false,
       }
-      const score = computeScore(inputs)
+      const score = computeScore(inputs) + (isRepeatClient ? 15 : 0)
+      const awaitTitle = summary ? `Reply to ${clientName}: ${summary}` : `Reply to ${clientName}`
       items.push({
         id: `inquiry:inquiry:${inq.id}:reply_client`,
         domain: 'inquiry',
         urgency: urgencyFromScore(score),
         score,
-        title: summary ? `Reply to ${clientName}: ${summary}` : `Reply to ${clientName}`,
-        description: `${clientName} is waiting for your response.`,
+        title: isRepeatClient ? `[Repeat] ${awaitTitle}` : awaitTitle,
+        description: `${clientName} is waiting for your response.${isRepeatClient ? ' (Repeat client)' : ''}`,
         href: `/inquiries/${inq.id}`,
         icon: 'MessageSquareDashed',
-        context: { primaryLabel: clientName, secondaryLabel: 'Awaiting your reply' },
+        context: {
+          primaryLabel: clientName,
+          secondaryLabel: isRepeatClient ? 'Repeat client awaiting reply' : 'Awaiting your reply',
+        },
         createdAt: inq.created_at,
         dueAt: null,
         blocks: 'Client booking decision',

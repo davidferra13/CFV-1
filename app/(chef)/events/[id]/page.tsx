@@ -182,6 +182,10 @@ import {
   normalizeDinnerCircleConfig,
 } from '@/lib/dinner-circles/event-circle'
 import { getApprovalGates } from '@/lib/dinner-circles/corporate-actions'
+import {
+  getGuestDietarySummaryForEvent,
+  getEventShareToken,
+} from '@/lib/dinner-circles/guest-dietary-summary'
 import { EventDefaultFlowPanel } from '@/components/events/event-default-flow-panel'
 import { getEventDefaultFlowSnapshotForTenant } from '@/lib/events/default-event-flow-data'
 import { getEventStationPlan } from '@/lib/stations/event-station-actions'
@@ -1061,12 +1065,14 @@ export default async function EventDetailPage({
     rawCircleConfig,
     ticketShareResult,
     popUpProductLibrary,
+    dietarySummaryData,
   ] = await Promise.all([
     getDinnerCircleConfig(params.id).catch(() => null),
     getApprovalGates(params.id).catch(() => []),
     getRawCircleConfigForEvent(params.id).catch(() => ({})),
     getEventPublicTicketShare(params.id).catch(() => ({ token: null, enabled: false })),
     getPopUpProductLibrary(user.tenantId!).catch(() => []),
+    getGuestDietarySummaryForEvent(params.id, user.tenantId!).catch(() => null),
   ])
   const publicTicketShareToken = ticketShareResult?.token ?? null
   const ticketsEnabled = ticketShareResult?.enabled ?? false
@@ -1155,6 +1161,17 @@ export default async function EventDetailPage({
       // Non-blocking: use the full URL
     }
   }
+
+  // Build dietary nudge data for chef overview tab
+  const dietaryNudgeData = dietarySummaryData
+    ? {
+        responded: dietarySummaryData.responded,
+        total: dietarySummaryData.total,
+        summary: dietarySummaryData.summary,
+        guests: dietarySummaryData.guests,
+        shareUrl: shortShareUrl,
+      }
+    : null
 
   // For collaborating chefs (non-owners): find their row to show role context in the banner
   const myCollaboratorRow = !isEventOwner
@@ -1662,6 +1679,7 @@ export default async function EventDetailPage({
         constraintRadarData={constraintRadarData}
         operationalRisk={(operationalRiskResult as any)?.data ?? null}
         clientPhones={clientPhoneNumbers as any[]}
+        dietaryNudge={dietaryNudgeData}
       />
 
       {/* TAB: MONEY â€” Financials, payments, expenses  */}

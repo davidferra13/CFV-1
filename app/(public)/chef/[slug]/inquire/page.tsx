@@ -27,7 +27,10 @@ import { PUBLIC_SECONDARY_ENTRY_CONFIG } from '@/lib/public/public-secondary-ent
 import { getPublicChefBuyerSignals } from '@/lib/public/chef-profile-readiness'
 import type { PublicChefLocationExperience } from '@/lib/partners/location-experiences'
 
-type Props = { params: { slug: string }; searchParams: { ref?: string; loc?: string } }
+type Props = {
+  params: { slug: string }
+  searchParams: { ref?: string; loc?: string; via?: string }
+}
 
 export async function generateMetadata({ params }: Props): Promise<Metadata> {
   const data = await getPublicChefProfile(params.slug)
@@ -88,6 +91,7 @@ export default async function InquirePage({ params, searchParams }: Props) {
   const referralPartnerId =
     selectedLocation?.partner.id ??
     (searchParams.ref && validPartnerIds.has(searchParams.ref) ? searchParams.ref : null)
+  const referrerName = searchParams.via ? decodeURIComponent(searchParams.via).slice(0, 60) : null
 
   const [
     reviewFeed,
@@ -206,6 +210,11 @@ export default async function InquirePage({ params, searchParams }: Props) {
           <div className="flex flex-col-reverse gap-8 lg:flex-row lg:items-start">
             {/* Left column: inquiry form */}
             <div className="flex-1 min-w-0">
+              {referrerName && (
+                <div className="mb-4 px-4 py-2.5 rounded-lg bg-green-50 border border-green-200 text-sm text-green-800">
+                  Referred by <span className="font-medium">{referrerName}</span>
+                </div>
+              )}
               <PublicInquiryForm
                 chefSlug={inquirySlug}
                 chefName={data.chef.display_name}
@@ -214,6 +223,7 @@ export default async function InquirePage({ params, searchParams }: Props) {
                 referralPartnerId={referralPartnerId}
                 partnerLocationId={selectedLocation?.id ?? null}
                 selectedLocation={selectedLocation}
+                referrerName={referrerName}
               />
             </div>
 

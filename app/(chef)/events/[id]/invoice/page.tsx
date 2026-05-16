@@ -7,14 +7,19 @@ import { notFound } from 'next/navigation'
 import Link from 'next/link'
 import { requireChef } from '@/lib/auth/get-user'
 import { getInvoiceData } from '@/lib/events/invoice-actions'
+import { getInvoiceSendHistory } from '@/lib/invoices/delivery-actions'
 import { InvoiceView } from '@/components/events/invoice-view'
+import { InvoiceSendPanel } from '@/components/events/invoice-send-panel'
 import { Button } from '@/components/ui/button'
 import { PrintButton } from '@/components/events/print-button'
 
 export default async function ChefInvoicePage({ params }: { params: { id: string } }) {
   await requireChef()
 
-  const invoice = await getInvoiceData(params.id)
+  const [invoice, sendHistory] = await Promise.all([
+    getInvoiceData(params.id),
+    getInvoiceSendHistory(params.id),
+  ])
   if (!invoice) notFound()
 
   return (
@@ -54,6 +59,15 @@ export default async function ChefInvoicePage({ params }: { params: { id: string
       </div>
 
       <InvoiceView invoice={invoice} />
+
+      {/* Send/Resend Panel */}
+      <div className="rounded-xl border border-stone-700 bg-stone-950/60 p-5">
+        <InvoiceSendPanel
+          eventId={params.id}
+          clientEmail={invoice.client.email}
+          sendHistory={sendHistory}
+        />
+      </div>
     </div>
   )
 }

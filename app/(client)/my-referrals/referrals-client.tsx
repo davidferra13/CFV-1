@@ -2,8 +2,9 @@
 
 import { useState } from 'react'
 import { toast } from 'sonner'
-import { Copy, Gift, UserPlus, CheckCircle, Clock, Trophy } from '@/components/ui/icons'
+import { Copy, Gift, UserPlus, CheckCircle, Clock, Trophy, Calendar } from '@/components/ui/icons'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
+import { ReferralStatusTimeline } from '@/components/referrals/referral-status-timeline'
 import type { ClientReferral, ReferralStats } from '@/lib/referrals/client-referral-actions'
 
 const STATUS_CONFIG: Record<
@@ -47,7 +48,7 @@ export function ReferralsClient({
   return (
     <div className="space-y-6">
       {/* Stats */}
-      <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+      <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
         <Card>
           <CardContent className="pt-6 text-center">
             <UserPlus className="w-6 h-6 text-brand-400 mx-auto mb-2" />
@@ -60,6 +61,13 @@ export function ReferralsClient({
             <CheckCircle className="w-6 h-6 text-emerald-400 mx-auto mb-2" />
             <p className="text-2xl font-bold text-stone-100">{stats.totalSignedUp}</p>
             <p className="text-xs text-stone-500 mt-1">Signed Up</p>
+          </CardContent>
+        </Card>
+        <Card>
+          <CardContent className="pt-6 text-center">
+            <Calendar className="w-6 h-6 text-blue-400 mx-auto mb-2" />
+            <p className="text-2xl font-bold text-stone-100">{stats.totalBooked}</p>
+            <p className="text-xs text-stone-500 mt-1">Events Booked</p>
           </CardContent>
         </Card>
         <Card>
@@ -104,7 +112,19 @@ export function ReferralsClient({
         </Card>
       )}
 
-      {/* Referral List */}
+      {/* Impact Metric */}
+      {stats.totalBooked > 0 && (
+        <Card className="border-emerald-700/30 bg-emerald-950/10">
+          <CardContent className="pt-5 pb-4 text-center">
+            <p className="text-sm text-stone-400">Your impact</p>
+            <p className="text-lg font-semibold text-stone-100 mt-1">
+              You've helped book {stats.totalBooked} event{stats.totalBooked !== 1 ? 's' : ''}
+            </p>
+          </CardContent>
+        </Card>
+      )}
+
+      {/* Referral List with Timeline */}
       <Card>
         <CardHeader>
           <CardTitle>Referral History</CardTitle>
@@ -120,34 +140,22 @@ export function ReferralsClient({
             </div>
           ) : (
             <div className="divide-y divide-stone-800">
-              {referrals.map((ref) => {
-                const config = STATUS_CONFIG[ref.status]
-                const StatusIcon = config.icon
-                return (
-                  <div
-                    key={ref.id}
-                    className="flex items-center justify-between py-3 first:pt-0 last:pb-0"
-                  >
-                    <div className="flex items-center gap-3">
-                      <StatusIcon className={`w-5 h-5 ${config.color}`} />
-                      <div>
-                        <p className="text-sm font-medium text-stone-100">
-                          {ref.referredName || ref.referredEmail || 'Pending'}
-                        </p>
-                        <p className="text-xs text-stone-500">{formatDate(ref.createdAt)}</p>
-                      </div>
-                    </div>
-                    <div className="flex items-center gap-3">
-                      <span className={`text-xs font-medium ${config.color}`}>{config.label}</span>
-                      {ref.pointsAwarded > 0 && (
-                        <span className="text-xs font-medium text-amber-400">
-                          +{ref.pointsAwarded} pts
-                        </span>
-                      )}
-                    </div>
+              {referrals.map((ref) => (
+                <div key={ref.id} className="py-4 first:pt-0 last:pb-0">
+                  <div className="flex items-start justify-between gap-4">
+                    <ReferralStatusTimeline
+                      currentStage={ref.lifecycleStage}
+                      referredName={ref.referredName || ref.referredEmail || 'Pending'}
+                      createdAt={ref.createdAt}
+                    />
+                    {ref.pointsAwarded > 0 && (
+                      <span className="text-xs font-medium text-amber-400 whitespace-nowrap">
+                        +{ref.pointsAwarded} pts
+                      </span>
+                    )}
                   </div>
-                )
-              })}
+                </div>
+              ))}
             </div>
           )}
         </CardContent>

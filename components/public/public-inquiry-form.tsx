@@ -35,6 +35,7 @@ interface Props {
   partnerLocationId?: string | null
   selectedLocation?: PublicChefLocationExperience | null
   circleId?: string | null
+  referrerName?: string | null
   defaultValues?: {
     full_name?: string
     email?: string

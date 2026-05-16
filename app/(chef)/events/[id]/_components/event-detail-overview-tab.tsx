@@ -40,6 +40,11 @@ import { OperationalRiskPanel } from '@/components/events/operational-risk-panel
 import type { RiskAssessmentResult } from '@/lib/costing/operational-risk'
 import { MenuSharePanel } from '@/components/menus/menu-share-panel'
 import { ShareSplitButton } from '@/components/payments/share-split-button'
+import { DietaryCollectionNudge } from '@/components/events/dietary-collection-nudge'
+import type {
+  DietarySummaryCounts,
+  GuestDietaryEntry,
+} from '@/lib/dinner-circles/guest-dietary-summary'
 
 type ServiceViewMenu = {
   id: string
@@ -92,6 +97,13 @@ type EventDetailOverviewTabProps = {
     canText: boolean | null
     verified: boolean | null
   }>
+  dietaryNudge?: {
+    responded: number
+    total: number
+    summary: DietarySummaryCounts
+    guests: GuestDietaryEntry[]
+    shareUrl: string | null
+  } | null
 }
 
 export function EventDetailOverviewTab(props: EventDetailOverviewTabProps) {
@@ -122,6 +134,7 @@ export function EventDetailOverviewTab(props: EventDetailOverviewTabProps) {
     constraintRadarData,
     operationalRisk,
     clientPhones,
+    dietaryNudge,
   } = props
 
   return (
@@ -544,6 +557,18 @@ export function EventDetailOverviewTab(props: EventDetailOverviewTabProps) {
               </div>
             )}
           </Card>
+        )}
+
+        {/* Dietary Collection Nudge */}
+        {dietaryNudge && event.status !== 'draft' && event.status !== 'cancelled' && (
+          <DietaryCollectionNudge
+            eventId={event.id}
+            responded={dietaryNudge.responded}
+            total={dietaryNudge.total}
+            summary={dietaryNudge.summary}
+            guests={dietaryNudge.guests}
+            shareUrl={dietaryNudge.shareUrl}
+          />
         )}
 
         {/* Share Recap â€” for completed events with an active share link */}

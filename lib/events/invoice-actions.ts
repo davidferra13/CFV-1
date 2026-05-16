@@ -41,12 +41,21 @@ export type InvoiceData = {
     businessName: string
     email: string
     phone: string | null
+    paymentTerms: string | null
+    taxId: string | null
+    footerNote: string | null
   }
   // Client (recipient)
   client: {
     displayName: string
     email: string
   }
+  // Corporate billing (optional)
+  billTo: {
+    company: string | null
+    attention: string | null
+    poNumber: string | null
+  } | null
   // Event
   event: {
     id: string
@@ -206,6 +215,7 @@ export async function getInvoiceData(eventId: string): Promise<InvoiceData | nul
       tip_amount_cents, pricing_model, override_kind, price_per_person_cents,
       invoice_number, invoice_issued_at,
       location_city, location_state, location_zip,
+      bill_to_company, bill_to_attention, bill_to_po_number,
       client:clients(id, full_name, email)
     `
     )
@@ -217,7 +227,9 @@ export async function getInvoiceData(eventId: string): Promise<InvoiceData | nul
 
   const { data: chef } = await db
     .from('chefs')
-    .select('business_name, email, phone')
+    .select(
+      'business_name, email, phone, invoice_payment_terms, invoice_tax_id, invoice_footer_note'
+    )
     .eq('id', user.tenantId!)
     .single()
 
@@ -304,6 +316,7 @@ export async function getInvoiceDataByTenant(
       tip_amount_cents, pricing_model, override_kind, price_per_person_cents,
       invoice_number, invoice_issued_at,
       location_city, location_state, location_zip,
+      bill_to_company, bill_to_attention, bill_to_po_number,
       client:clients(id, full_name, email)
     `
     )
@@ -315,7 +328,9 @@ export async function getInvoiceDataByTenant(
 
   const { data: chef } = await db
     .from('chefs')
-    .select('business_name, email, phone')
+    .select(
+      'business_name, email, phone, invoice_payment_terms, invoice_tax_id, invoice_footer_note'
+    )
     .eq('id', tenantId)
     .single()
 
@@ -394,6 +409,7 @@ export async function getInvoiceDataForClient(eventId: string): Promise<InvoiceD
       tip_amount_cents, pricing_model,
       invoice_number, invoice_issued_at,
       location_city, location_state, location_zip,
+      bill_to_company, bill_to_attention, bill_to_po_number,
       client:clients(id, full_name, email)
     `
     )
@@ -405,7 +421,9 @@ export async function getInvoiceDataForClient(eventId: string): Promise<InvoiceD
 
   const { data: chef } = await db
     .from('chefs')
-    .select('business_name, email, phone')
+    .select(
+      'business_name, email, phone, invoice_payment_terms, invoice_tax_id, invoice_footer_note'
+    )
     .eq('id', event.tenant_id as string)
     .single()
 
@@ -488,6 +506,9 @@ type RawEvent = {
   location_city: string | null
   location_state: string | null
   location_zip: string | null
+  bill_to_company: string | null
+  bill_to_attention: string | null
+  bill_to_po_number: string | null
   client: unknown
   tenant_id?: string
 }
@@ -496,6 +517,9 @@ type RawChef = {
   business_name: string
   email: string
   phone: string | null
+  invoice_payment_terms: string | null
+  invoice_tax_id: string | null
+  invoice_footer_note: string | null
 }
 
 type RawLedgerEntry = {
@@ -759,11 +783,22 @@ function buildInvoiceData(
       businessName: chef.business_name,
       email: chef.email,
       phone: chef.phone,
+      paymentTerms: chef.invoice_payment_terms ?? null,
+      taxId: chef.invoice_tax_id ?? null,
+      footerNote: chef.invoice_footer_note ?? null,
     },
     client: {
       displayName: clientData?.full_name ?? 'Client',
       email: clientData?.email ?? '',
     },
+    billTo:
+      event.bill_to_company || event.bill_to_attention || event.bill_to_po_number
+        ? {
+            company: event.bill_to_company ?? null,
+            attention: event.bill_to_attention ?? null,
+            poNumber: event.bill_to_po_number ?? null,
+          }
+        : null,
     event: {
       id: event.id,
       occasion: event.occasion,

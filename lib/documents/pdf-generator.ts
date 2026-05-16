@@ -178,6 +178,23 @@ export function generateInvoicePdf(data: InvoiceData): Promise<Buffer> {
     doc.text('BILL TO', MARGIN_LEFT, y)
     y += 14
 
+    // Corporate billing: company name and attention line
+    if (data.billTo?.company) {
+      doc.font('Helvetica-Bold').fontSize(11).fillColor(TEXT_PRIMARY)
+      doc.text(data.billTo.company, MARGIN_LEFT, y, { width: colWidth })
+      y += doc.heightOfString(data.billTo.company, { width: colWidth }) + 2
+      if (data.billTo.attention) {
+        doc.font('Helvetica').fontSize(9).fillColor(TEXT_SECONDARY)
+        doc.text(data.billTo.attention, MARGIN_LEFT, y, { width: colWidth })
+        y += 12
+      }
+      if (data.billTo.poNumber) {
+        doc.font('Helvetica').fontSize(9).fillColor(TEXT_SECONDARY)
+        doc.text(`PO: ${data.billTo.poNumber}`, MARGIN_LEFT, y, { width: colWidth })
+        y += 12
+      }
+    }
+
     doc.font('Helvetica-Bold').fontSize(11).fillColor(TEXT_PRIMARY)
     doc.text(data.client.displayName, MARGIN_LEFT, y, { width: colWidth })
     const clientNameHeight = doc.heightOfString(data.client.displayName, { width: colWidth })
@@ -536,7 +553,30 @@ export function generateInvoicePdf(data: InvoiceData): Promise<Buffer> {
       .stroke()
 
     // ── FOOTER ──────────────────────────────────────────────────────────
-    const footerY = PAGE_HEIGHT - MARGIN_BOTTOM - 10
+    let footerY = PAGE_HEIGHT - MARGIN_BOTTOM - 50
+
+    // Payment terms, tax ID, and custom footer note
+    const footerLines: string[] = []
+    if (data.chef.paymentTerms) {
+      footerLines.push(`Payment Terms: ${data.chef.paymentTerms}`)
+    }
+    if (data.chef.taxId) {
+      footerLines.push(`Tax ID: ${data.chef.taxId}`)
+    }
+    if (data.chef.footerNote) {
+      footerLines.push(data.chef.footerNote)
+    }
+
+    if (footerLines.length > 0) {
+      doc.font('Helvetica').fontSize(8).fillColor(TEXT_MUTED)
+      for (const line of footerLines) {
+        doc.text(line, MARGIN_LEFT, footerY, { width: CONTENT_WIDTH, align: 'center' })
+        footerY += 10
+      }
+      footerY += 4
+    } else {
+      footerY = PAGE_HEIGHT - MARGIN_BOTTOM - 10
+    }
 
     // Orange accent line
     doc

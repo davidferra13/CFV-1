@@ -626,3 +626,68 @@ export async function getClientPortalToken(clientId: string): Promise<ClientPort
     hasActiveLink: hasActivePortalLink(row),
   }
 }
+
+// ── Client Portal Event Photos (Token-Based) ──────────────────────────────────
+
+export type ClientPortalPhoto = {
+  id: string
+  signedUrl: string
+  caption: string | null
+  photo_type: string | null
+  filename_original: string
+}
+
+/**
+ * Retrieve photos for a specific event using portal token authentication.
+ * Only returns photos that are not deleted and belong to a completed event
+ * owned by the client identified by the token.
+ */
+export async function getClientPortalEventPhotos(
+  token: string,
+  eventId: string
+): Promise<ClientPortalPhoto[]> {
+  const db: any = createServerClient({ admin: true })
+  const access = await resolveClientPortalAccess(db, token)
+  if (!access) return []
+
+  const { clientId, tenantId } = access
+
+  // Verify the event belongs to this client and tenant, and is completed
+  const { data: event } = await db
+    .from('events')
+    .select('id, status')
+    .eq('id', eventId)
+    .eq('client_id', clientId)
+    .eq('tenant_id', tenantId)
+    .single()
+
+  if (!event || event.status !== 'completed') return []
+
+  // Fetch active photos for this event (all non-private photos visible to client)
+  const { data: photos, error } = await db
+    .from('event_photos')
+    .select('id, storage_path, caption, photo_type, filename_original')
+    .eq('event_id', eventId)
+    .eq('tenant_id', tenantId)
+    .is('deleted_at', null)
+    .order('display_order', { ascending: true })
+
+  if (error || !photos?.length) return []
+
+  // Generate signed URLs
+  const paths = photos.map((p: any) => p.storage_path)
+  const { data: signedData } = await db.storage.from('event-photos').createSignedUrls(paths, 3600)
+
+  const signedMap: Record<string, string> = {}
+  for (const s of signedData ?? []) {
+    if (s.signedUrl && s.path) signedMap[s.path] = s.signedUrl
+  }
+
+  return photos.map((p: any) => ({
+    id: p.id,
+    signedUrl: signedMap[p.storage_path] ?? '',
+    caption: p.caption,
+    photo_type: p.photo_type,
+    filename_original: p.filename_original,
+  }))
+}

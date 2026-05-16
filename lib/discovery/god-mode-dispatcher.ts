@@ -214,6 +214,14 @@ function warmResolvers(): ResolverEntry[] {
         return resolveStaffIssues(ctx)
       },
     },
+    // --- Wave 2: Pricing Intelligence (PIE) resolvers ---
+    {
+      name: 'pie-attention',
+      resolve: async (ctx) => {
+        const { resolvePieAttention } = await import('@/lib/pricing/pie-attention-resolver')
+        return resolvePieAttention(ctx)
+      },
+    },
     // --- Wave 2: Intelligence/System resolvers ---
     {
       name: 'automation-activity',

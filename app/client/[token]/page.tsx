@@ -16,8 +16,14 @@ import {
   Users,
 } from '@/components/ui/icons'
 import { EventStatusBadge } from '@/components/events/event-status-badge'
-import { getClientPortalData } from '@/lib/client-portal/actions'
+import { PortalInvoiceActions } from '@/components/client-portal/invoice-actions'
+import { RebookButton } from '@/components/client-portal/rebook-button'
+import { getClientPortalData, getClientPortalEventPhotos } from '@/lib/client-portal/actions'
+import { getClientPortalAllEventsDietaryData } from '@/lib/client-portal/dietary-actions'
 import { checkRateLimit } from '@/lib/api/rate-limit'
+import { GuestInviteCard } from '@/components/client-portal/guest-invite-card'
+import { DietarySummaryPanel } from '@/components/client-portal/dietary-summary-panel'
+import { ClientEventPhotoGallery } from '@/components/client-portal/event-photo-gallery'
 import { formatCurrency } from '@/lib/utils/currency'
 
 export const dynamic = 'force-dynamic'
@@ -185,6 +191,22 @@ export default async function ClientPortalPage({ params, searchParams }: PagePro
   if (!portal) {
     notFound()
   }
+
+  const dietaryDataByEvent = await getClientPortalAllEventsDietaryData(params.token)
+  const dietaryMap = new Map(dietaryDataByEvent.map((d) => [d.eventId, d]))
+
+  // Fetch photos for completed past events
+  const completedEventIds = portal.pastEvents
+    .filter((e) => e.status === 'completed')
+    .map((e) => e.id)
+  const photosByEvent = new Map(
+    await Promise.all(
+      completedEventIds.map(async (eventId) => {
+        const photos = await getClientPortalEventPhotos(params.token, eventId)
+        return [eventId, photos] as const
+      })
+    )
+  )
 
   const paymentState = firstParam(searchParams?.payment)
   const paymentEventId = firstParam(searchParams?.event)
@@ -426,94 +448,120 @@ export default async function ClientPortalPage({ params, searchParams }: PagePro
                   outstandingCents: event.outstandingCents,
                   hasProposal: Boolean(pendingProposal),
                 })
+                const dietaryData = dietaryMap.get(event.id)
 
                 return (
-                  <Card key={event.id} className="border-stone-700 bg-stone-950/70">
-                    <CardContent className="p-6">
-                      <div className="flex flex-col gap-5 lg:flex-row lg:items-start lg:justify-between">
-                        <div className="min-w-0 flex-1">
-                          <div className="flex flex-wrap items-center gap-3">
-                            <h3 className="text-xl font-semibold text-stone-100">
-                              {event.occasion || 'Upcoming event'}
-                            </h3>
-                            <EventStatusBadge status={event.status as any} />
-                          </div>
-                          <div className="mt-4 flex flex-wrap gap-4 text-sm text-stone-400">
-                            <span className="inline-flex items-center gap-2">
-                              <Calendar className="h-4 w-4 text-brand-400" />
-                              {formatEventDate(event.event_date)}
-                            </span>
-                            {event.guest_count ? (
+                  <div key={event.id} className="space-y-4">
+                    <Card className="border-stone-700 bg-stone-950/70">
+                      <CardContent className="p-6">
+                        <div className="flex flex-col gap-5 lg:flex-row lg:items-start lg:justify-between">
+                          <div className="min-w-0 flex-1">
+                            <div className="flex flex-wrap items-center gap-3">
+                              <h3 className="text-xl font-semibold text-stone-100">
+                                {event.occasion || 'Upcoming event'}
+                              </h3>
+                              <EventStatusBadge status={event.status as any} />
+                            </div>
+                            <div className="mt-4 flex flex-wrap gap-4 text-sm text-stone-400">
                               <span className="inline-flex items-center gap-2">
-                                <Users className="h-4 w-4 text-brand-400" />
-                                {event.guest_count} guests
+                                <Calendar className="h-4 w-4 text-brand-400" />
+                                {formatEventDate(event.event_date)}
                               </span>
-                            ) : null}
-                          </div>
+                              {event.guest_count ? (
+                                <span className="inline-flex items-center gap-2">
+                                  <Users className="h-4 w-4 text-brand-400" />
+                                  {event.guest_count} guests
+                                </span>
+                              ) : null}
+                            </div>
 
-                          <div className="mt-5 rounded-2xl border border-stone-800 bg-stone-900/70 p-4">
-                            <p className="text-sm font-semibold text-stone-100">{stepCopy.title}</p>
-                            <p className="mt-2 text-sm leading-relaxed text-stone-400">
-                              {stepCopy.detail}
-                            </p>
-                          </div>
-                        </div>
-
-                        <div className="lg:w-72 lg:flex-shrink-0">
-                          {pendingProposal ? (
-                            <Link
-                              href={pendingProposal.publicUrl}
-                              className="flex items-center justify-between rounded-2xl border border-brand-800/60 bg-brand-950/20 px-4 py-4 text-left transition-colors hover:border-brand-700"
-                            >
-                              <div>
-                                <p className="text-xs font-semibold uppercase tracking-[0.16em] text-brand-300">
-                                  Proposal ready
-                                </p>
-                                <p className="mt-2 text-sm font-semibold text-stone-100">
-                                  Review current proposal
-                                </p>
-                                <p className="mt-1 text-xs text-stone-400">
-                                  {formatCurrency(pendingProposal.amountCents)}
-                                </p>
-                              </div>
-                              <ArrowRight className="h-4 w-4 text-brand-300" />
-                            </Link>
-                          ) : pendingPayment ? (
-                            <Link
-                              href={pendingPayment.paymentUrl}
-                              className="flex items-center justify-between rounded-2xl border border-amber-800/60 bg-amber-950/20 px-4 py-4 text-left transition-colors hover:border-amber-700"
-                            >
-                              <div>
-                                <p className="text-xs font-semibold uppercase tracking-[0.16em] text-amber-300">
-                                  Payment due
-                                </p>
-                                <p className="mt-2 text-sm font-semibold text-stone-100">
-                                  Continue to Stripe
-                                </p>
-                                <p className="mt-1 text-xs text-stone-400">
-                                  {formatCurrency(pendingPayment.outstandingCents)}
-                                </p>
-                              </div>
-                              <CreditCard className="h-4 w-4 text-amber-300" />
-                            </Link>
-                          ) : (
-                            <div className="rounded-2xl border border-stone-800 bg-stone-900/70 px-4 py-4">
-                              <p className="text-xs font-semibold uppercase tracking-[0.16em] text-stone-500">
-                                Status
+                            <div className="mt-5 rounded-2xl border border-stone-800 bg-stone-900/70 p-4">
+                              <p className="text-sm font-semibold text-stone-100">
+                                {stepCopy.title}
                               </p>
-                              <p className="mt-2 text-sm font-semibold text-stone-100">
-                                No client action published right now
-                              </p>
-                              <p className="mt-1 text-xs leading-relaxed text-stone-400">
-                                Keep this link handy for updates and reply to your chef directly if
-                                you need changes.
+                              <p className="mt-2 text-sm leading-relaxed text-stone-400">
+                                {stepCopy.detail}
                               </p>
                             </div>
-                          )}
+                          </div>
+
+                          <div className="lg:w-72 lg:flex-shrink-0">
+                            {pendingProposal ? (
+                              <Link
+                                href={pendingProposal.publicUrl}
+                                className="flex items-center justify-between rounded-2xl border border-brand-800/60 bg-brand-950/20 px-4 py-4 text-left transition-colors hover:border-brand-700"
+                              >
+                                <div>
+                                  <p className="text-xs font-semibold uppercase tracking-[0.16em] text-brand-300">
+                                    Proposal ready
+                                  </p>
+                                  <p className="mt-2 text-sm font-semibold text-stone-100">
+                                    Review current proposal
+                                  </p>
+                                  <p className="mt-1 text-xs text-stone-400">
+                                    {formatCurrency(pendingProposal.amountCents)}
+                                  </p>
+                                </div>
+                                <ArrowRight className="h-4 w-4 text-brand-300" />
+                              </Link>
+                            ) : pendingPayment ? (
+                              <Link
+                                href={pendingPayment.paymentUrl}
+                                className="flex items-center justify-between rounded-2xl border border-amber-800/60 bg-amber-950/20 px-4 py-4 text-left transition-colors hover:border-amber-700"
+                              >
+                                <div>
+                                  <p className="text-xs font-semibold uppercase tracking-[0.16em] text-amber-300">
+                                    Payment due
+                                  </p>
+                                  <p className="mt-2 text-sm font-semibold text-stone-100">
+                                    Continue to Stripe
+                                  </p>
+                                  <p className="mt-1 text-xs text-stone-400">
+                                    {formatCurrency(pendingPayment.outstandingCents)}
+                                  </p>
+                                </div>
+                                <CreditCard className="h-4 w-4 text-amber-300" />
+                              </Link>
+                            ) : (
+                              <div className="rounded-2xl border border-stone-800 bg-stone-900/70 px-4 py-4">
+                                <p className="text-xs font-semibold uppercase tracking-[0.16em] text-stone-500">
+                                  Status
+                                </p>
+                                <p className="mt-2 text-sm font-semibold text-stone-100">
+                                  No client action published right now
+                                </p>
+                                <p className="mt-1 text-xs leading-relaxed text-stone-400">
+                                  Keep this link handy for updates and reply to your chef directly
+                                  if you need changes.
+                                </p>
+                              </div>
+                            )}
+                          </div>
                         </div>
-                      </div>
-                    </CardContent>
-                  </Card>
+                      </CardContent>
+                    </Card>
+
+                    {/* Guest Dietary Collection */}
+                    {['accepted', 'paid', 'confirmed'].includes(event.status) && (
+                      <>
+                        <GuestInviteCard
+                          chefName={chefLabel}
+                          shareUrl={dietaryData?.shareUrl ?? null}
+                          responded={dietaryData?.dietary.responded ?? 0}
+                          total={dietaryData?.dietary.total ?? event.guest_count ?? 0}
+                          eventDate={event.event_date}
+                        />
+                        {dietaryData && dietaryData.dietary.total > 0 && (
+                          <DietarySummaryPanel
+                            responded={dietaryData.dietary.responded}
+                            total={dietaryData.dietary.total}
+                            summary={dietaryData.dietary.summary}
+                            guests={dietaryData.dietary.guests}
+                          />
+                        )}
+                      </>
+                    )}
+                  </div>
                 )
               })}
             </div>
@@ -533,16 +581,33 @@ export default async function ClientPortalPage({ params, searchParams }: PagePro
                 <div className="mt-5 space-y-3">
                   {portal.pastEvents.map((event) => (
                     <Card key={event.id} className="border-stone-700 bg-stone-950/70">
-                      <CardContent className="flex items-center justify-between gap-4 p-5">
-                        <div>
-                          <p className="text-base font-semibold text-stone-100">
-                            {event.occasion || 'Past event'}
-                          </p>
-                          <p className="mt-1 text-sm text-stone-400">
-                            {format(new Date(event.event_date), 'MMMM d, yyyy')}
-                          </p>
+                      <CardContent className="p-5">
+                        <div className="flex items-center justify-between gap-4">
+                          <div>
+                            <p className="text-base font-semibold text-stone-100">
+                              {event.occasion || 'Past event'}
+                            </p>
+                            <p className="mt-1 text-sm text-stone-400">
+                              {format(new Date(event.event_date), 'MMMM d, yyyy')}
+                            </p>
+                          </div>
+                          <EventStatusBadge status={event.status as any} />
                         </div>
-                        <EventStatusBadge status={event.status as any} />
+                        {event.status === 'completed' && rebookHref && (
+                          <RebookButton
+                            chefName={portal.chefName}
+                            chefBusinessName={portal.chefBusinessName}
+                            rebookHref={rebookHref}
+                            eventId={event.id}
+                          />
+                        )}
+                        <div className="mt-3">
+                          <PortalInvoiceActions
+                            eventId={event.id}
+                            token={params.token}
+                            hasCharges={true}
+                          />
+                        </div>
                       </CardContent>
                     </Card>
                   ))}

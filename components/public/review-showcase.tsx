@@ -2,13 +2,14 @@
 // No authentication required. Shows consented reviews from all platforms.
 'use client'
 
-import { useState } from 'react'
+import { useState, useId } from 'react'
 import { Star, ChevronDown, ExternalLink } from '@/components/ui/icons'
 import type { PublicReviewItem, PublicReviewStats } from '@/lib/reviews/public-actions'
 
 // Star display
 
 function Stars({ rating, size = 'md' }: { rating: number; size?: 'sm' | 'md' | 'lg' }) {
+  const uid = useId()
   const rounded = Math.round(rating * 2) / 2 // round to nearest 0.5
   const sizeClass = size === 'sm' ? 'w-3.5 h-3.5' : size === 'lg' ? 'w-6 h-6' : 'w-4.5 h-4.5'
 
@@ -30,14 +31,14 @@ function Stars({ rating, size = 'md' }: { rating: number; size?: 'sm' | 'md' | '
             {half ? (
               <>
                 <defs>
-                  <clipPath id={`half-${star}`}>
+                  <clipPath id={`${uid}-half-${star}`}>
                     <rect x="0" y="0" width="12" height="24" />
                   </clipPath>
                 </defs>
                 <path
                   d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"
                   fill="currentColor"
-                  clipPath={`url(#half-${star})`}
+                  clipPath={`url(#${uid}-half-${star})`}
                 />
                 <path
                   d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"
@@ -112,8 +113,20 @@ function ReviewCard({ review }: { review: PublicReviewItem }) {
     >
       <div className="flex items-start justify-between gap-3 mb-3">
         <div className="min-w-0">
-          <div className="flex items-center gap-2">
+          <div className="flex items-center gap-2 flex-wrap">
             <p className="font-medium text-stone-200 truncate">{review.reviewerName}</p>
+            {review.isVerifiedEvent && (
+              <span className="flex-shrink-0 inline-flex items-center gap-1 text-xxs font-semibold uppercase tracking-wider text-emerald-400">
+                <svg className="w-3 h-3" viewBox="0 0 16 16" fill="currentColor">
+                  <path
+                    fillRule="evenodd"
+                    d="M8 16A8 8 0 108 0a8 8 0 000 16zm3.78-9.72a.75.75 0 00-1.06-1.06L7 8.94 5.28 7.22a.75.75 0 00-1.06 1.06l2.25 2.25a.75.75 0 001.06 0l4.25-4.25z"
+                    clipRule="evenodd"
+                  />
+                </svg>
+                Verified Event
+              </span>
+            )}
             {review.isFeatured && (
               <span className="flex-shrink-0 inline-flex items-center gap-1 text-xxs font-semibold uppercase tracking-wider text-amber-400">
                 <Star className="w-3 h-3 fill-amber-400" />

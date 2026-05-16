@@ -54,6 +54,7 @@ type PhotoCardProps = {
   onMoveDown: () => void
   onPreview: () => void
   onTogglePortfolio: () => void
+  onVisibilityToggle: () => void
   onPhotoTypeChange: (type: PhotoType | null) => void
 }
 
@@ -67,6 +68,7 @@ function PhotoCard({
   onMoveDown,
   onPreview,
   onTogglePortfolio,
+  onVisibilityToggle,
   onPhotoTypeChange,
 }: PhotoCardProps) {
   const [caption, setCaption] = useState(photo.caption ?? '')
@@ -213,6 +215,23 @@ function PhotoCard({
             </option>
           ))}
         </select>
+        {/* Visibility toggle */}
+        <div className="flex items-center gap-2">
+          <label
+            className="flex items-center gap-1.5 cursor-pointer group"
+            title="When enabled, photo is visible to the client in their portal"
+          >
+            <input
+              type="checkbox"
+              checked={photo.is_public}
+              onChange={() => onVisibilityToggle()}
+              className="w-3.5 h-3.5 rounded border-stone-600 bg-stone-800 text-brand-500 focus:ring-brand-400 focus:ring-offset-0"
+            />
+            <span className="text-xs text-stone-400 group-hover:text-stone-300">
+              Client visible
+            </span>
+          </label>
+        </div>
         <div className="flex items-center justify-between gap-1">
           <span className="text-xs text-stone-400 truncate" title={photo.filename_original}>
             {photo.filename_original || 'photo'}
@@ -409,6 +428,29 @@ export function EventPhotoGallery({ eventId, initialPhotos }: Props) {
     })
   }
 
+  // ── Visibility toggle ──
+
+  function handleVisibilityToggle(photoId: string) {
+    const previous = [...photos]
+    setPhotos((prev) => prev.map((p) => (p.id === photoId ? { ...p, is_public: !p.is_public } : p)))
+    startTransition(async () => {
+      try {
+        const photo = previous.find((p) => p.id === photoId)
+        const newValue = !photo?.is_public
+        const result = await updatePhotoDetails(photoId, { is_public: newValue })
+        if (!result.success) {
+          setPhotos(previous)
+          toast.error(result.error ?? 'Failed to update visibility')
+        } else {
+          toast.success(newValue ? 'Visible to client' : 'Hidden from client')
+        }
+      } catch {
+        setPhotos(previous)
+        toast.error('Failed to update visibility')
+      }
+    })
+  }
+
   // ── Photo type change ──
 
   function handlePhotoTypeChange(photoId: string, type: PhotoType | null) {
@@ -578,6 +620,7 @@ export function EventPhotoGallery({ eventId, initialPhotos }: Props) {
                 onMoveDown={() => handleMove(index, 'down')}
                 onPreview={() => setPreviewIndex(index)}
                 onTogglePortfolio={() => handleTogglePortfolio(photo.id)}
+                onVisibilityToggle={() => handleVisibilityToggle(photo.id)}
                 onPhotoTypeChange={(type) => handlePhotoTypeChange(photo.id, type)}
               />
             ))}

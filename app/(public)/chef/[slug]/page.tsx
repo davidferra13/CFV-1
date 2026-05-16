@@ -36,6 +36,8 @@ import {
   getPublicCharityImpact,
 } from '@/lib/credentials/actions'
 import { getPublicPortfolio } from '@/lib/events/photo-actions'
+import { getPublicPortfolioEntries } from '@/lib/profile/portfolio-actions'
+import { PortfolioGallery } from '@/components/profile/portfolio-gallery'
 import { getUpcomingPublicEvents } from '@/lib/tickets/purchase-actions'
 import { PublicSecondaryEntryCluster } from '@/components/public/public-secondary-entry-cluster'
 import { PUBLIC_SECONDARY_ENTRY_CONFIG } from '@/lib/public/public-secondary-entry-config'
@@ -508,6 +510,7 @@ export default async function ChefProfilePage({ params }: Props) {
     upcomingEvents,
     buyerSignals,
     showcaseMenus,
+    portfolioEntries,
   ] = await Promise.all([
     auth().catch(() => null),
     getPublicChefReviewFeed(chef.id),
@@ -600,6 +603,7 @@ export default async function ChefProfilePage({ params }: Props) {
       },
     })),
     getPublicShowcaseMenus(chef.id).catch(() => []),
+    getPublicPortfolioEntries(chef.id).catch(() => []),
   ])
 
   const primaryColor = chef.portal_primary_color || '#1c1917'
@@ -2109,6 +2113,14 @@ export default async function ChefProfilePage({ params }: Props) {
             </div>
 
             <ReviewShowcase reviews={reviewFeed.reviews} stats={reviewFeed.stats} />
+          </div>
+        </section>
+      )}
+
+      {portfolioEntries.length > 0 && (
+        <section id="portfolio-entries" className="py-16 px-6 bg-stone-900/50">
+          <div className="max-w-5xl mx-auto">
+            <PortfolioGallery entries={portfolioEntries} />
           </div>
         </section>
       )}

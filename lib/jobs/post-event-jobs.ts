@@ -196,7 +196,7 @@ export const postEventThankYou = inngest.createFunction(
   }
 )
 
-// ─── Job 2: Review Request (7 days after completion) ────────────────────────
+// ─── Job 2: Review Request (48 hours after completion) ──────────────────────
 
 export const postEventReviewRequest = inngest.createFunction(
   {
@@ -206,8 +206,8 @@ export const postEventReviewRequest = inngest.createFunction(
   },
   { event: 'chefflow/event.completed' },
   async ({ event, step }) => {
-    // Wait 7 days
-    await step.sleep('wait-7-days', '7d')
+    // Wait 48 hours
+    await step.sleep('wait-48-hours', '48h')
 
     const result = await step.run('send-review-request-email', async () => {
       const ctx = await getPostEventContext(
@@ -449,6 +449,95 @@ export const postEventGuestFeedback = inngest.createFunction(
       })
 
       return { sent, total: feedbackRows.length, errors }
+    })
+
+    return result
+  }
+)
+
+// ─── Job 5: Review Reminder (7 days after completion, if no review yet) ─────
+
+export const postEventReviewReminder = inngest.createFunction(
+  {
+    id: 'post-event-review-reminder',
+    name: 'Post-Event Review Reminder (One-Time)',
+    retries: 2,
+  },
+  { event: 'chefflow/event.completed' },
+  async ({ event, step }) => {
+    // Wait 7 days (5 days after the initial 48h request)
+    await step.sleep('wait-7-days-for-reminder', '7d')
+
+    const result = await step.run('send-review-reminder-if-needed', async () => {
+      const ctx = await getPostEventContext(
+        event.data.eventId,
+        event.data.tenantId,
+        event.data.clientId
+      )
+      if (!ctx) return { skipped: true, reason: 'context unavailable or opted out' }
+
+      const db: any = createAdminClient()
+
+      // Check if a review was already submitted (client_reviews or testimonials)
+      const { data: existingReview } = await db
+        .from('client_reviews')
+        .select('id')
+        .eq('event_id', event.data.eventId)
+        .limit(1)
+        .single()
+
+      if (existingReview) {
+        return { skipped: true, reason: 'review already submitted (client_reviews)' }
+      }
+
+      // Also check testimonials table for token-based submissions
+      const { data: existingTestimonial } = await db
+        .from('testimonials')
+        .select('id, submitted_at')
+        .eq('event_id', event.data.eventId)
+        .not('submitted_at', 'is', null)
+        .limit(1)
+        .single()
+
+      if (existingTestimonial) {
+        return { skipped: true, reason: 'review already submitted (testimonials)' }
+      }
+
+      // Check for a reminder_sent flag to ensure one reminder only
+      const { data: testimonialRow } = await db
+        .from('testimonials')
+        .select('id, reminder_sent_at')
+        .eq('event_id', event.data.eventId)
+        .single()
+
+      if (testimonialRow?.reminder_sent_at) {
+        return { skipped: true, reason: 'reminder already sent' }
+      }
+
+      const { sendPostEventReviewRequestEmail } = await import('@/lib/email/notifications')
+
+      await sendPostEventReviewRequestEmail({
+        clientEmail: ctx.client.email,
+        clientName: ctx.client.name,
+        chefName: ctx.chefName,
+        occasion: ctx.occasion,
+        eventDate: ctx.eventDate,
+        reviewUrl: `${APP_URL}/my-events/${event.data.eventId}#review`,
+      })
+
+      // Mark reminder as sent (if testimonial row exists)
+      if (testimonialRow) {
+        await db
+          .from('testimonials')
+          .update({ reminder_sent_at: new Date().toISOString() })
+          .eq('id', testimonialRow.id)
+      }
+
+      log.info('Post-event review reminder sent', {
+        context: { eventId: event.data.eventId, clientEmail: ctx.client.email },
+      })
+
+      return { sent: true, to: ctx.client.email }
     })
 
     return result
