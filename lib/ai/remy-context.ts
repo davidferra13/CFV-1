@@ -33,6 +33,8 @@ import { getClientIntelligenceContext } from '@/lib/intelligence/client-intellig
 import { getInquiryConversionContext } from '@/lib/intelligence/inquiry-conversion-context'
 import { getServiceConfigForTenant } from '@/lib/chef-services/service-config-internal'
 import { formatServiceConfigForPrompt } from '@/lib/chef-services/service-config-actions'
+import { getClientLifetimeJourneys } from '@/lib/intelligence/client-lifetime-journey'
+import { getSeasonalMenuCorrelation } from '@/lib/intelligence/seasonal-menu-correlation'
 
 const OPENCLAW_API = process.env.OPENCLAW_API_URL || 'http://10.0.0.177:8081'
 
@@ -368,12 +370,14 @@ export async function loadRemyContext(
   let recentSurveyFeedback: any
   let pendingMilestones: any
   let priceContext: RemyContext['priceContext'] | undefined
+  let seasonalMenuCorrelation: string | undefined
 
   if (isMinimal) {
     emailDigest = undefined
     recentSurveyFeedback = undefined
     pendingMilestones = undefined
     priceContext = undefined
+    seasonalMenuCorrelation = undefined
   } else {
     emailDigest =
       (await withContextFallback(
@@ -445,6 +449,19 @@ export async function loadRemyContext(
         undefined,
         failedOperations
       )) ?? undefined
+
+    seasonalMenuCorrelation = await withContextFallback(
+      tenantId,
+      'load_seasonal_menu_correlation',
+      undefined,
+      async () => {
+        const result = await getSeasonalMenuCorrelation()
+        if (!result) return undefined
+        return formatSeasonalCorrelationForPrompt(result)
+      },
+      undefined,
+      failedOperations
+    )
   }
 
   // Tier 3: Page-specific entity context - always load (cheap and useful even for minimal)
@@ -482,6 +499,37 @@ export async function loadRemyContext(
           const { getProactiveSignals, formatSignalsForRemy } = await import('@/lib/cil/api')
           const signals = await getProactiveSignals(tenantId)
           return signals.length > 0 ? formatSignalsForRemy(signals) : undefined
+        },
+        undefined,
+        failedOperations
+      )
+
+  const clientLifetimeJourney = isMinimal
+    ? undefined
+    : await withContextFallback(
+        tenantId,
+        'load_client_lifetime_journey',
+        undefined,
+        async () => {
+          const result = await getClientLifetimeJourneys()
+          if (!result) return undefined
+          return {
+            avgLifetimeValueCents: result.avgLifetimeValueCents,
+            avgEventsPerClient: result.avgEventsPerClient,
+            retentionRate: result.retentionRate,
+            atRiskClients: result.atRiskClients.slice(0, 5).map((c) => {
+              const daysSince = c.lastEventDate
+                ? Math.floor((Date.now() - new Date(c.lastEventDate).getTime()) / 86400000)
+                : 9999
+              return {
+                name: c.clientName,
+                stage: c.stage,
+                riskLevel: c.riskLevel,
+                daysSinceLastEvent: daysSince,
+              }
+            }),
+            stageDistribution: result.stageDistribution,
+          }
         },
         undefined,
         failedOperations
@@ -554,7 +602,53 @@ export async function loadRemyContext(
     cilInsights,
     // CIL: Proactive business signals (actionable intelligence from domain analyzers)
     proactiveSignals,
+    // Seasonal menu correlation (what worked in which seasons)
+    seasonalMenuCorrelation,
+    // Client lifetime journey (stage distribution, at-risk clients, LTV)
+    clientLifetimeJourney: clientLifetimeJourney ?? undefined,
   }
+}
+
+// ─── Seasonal Menu Correlation Formatter ────────────────────────────────────
+
+function formatSeasonalCorrelationForPrompt(
+  result: import('@/lib/intelligence/seasonal-menu-correlation').SeasonalMenuResult
+): string | undefined {
+  const lines: string[] = []
+
+  // Current season recommendations (most actionable)
+  if (result.currentSeasonRecommendations.length > 0) {
+    lines.push(...result.currentSeasonRecommendations)
+  }
+
+  // Top seasonal patterns
+  for (const pattern of result.patterns.slice(0, 4)) {
+    if (pattern.topDishes.length > 0) {
+      lines.push(
+        `${pattern.season} (${pattern.months}): ${pattern.eventCount} events, top dishes: ${pattern.topDishes.map((d) => `${d.name} (${d.count}x)`).join(', ')}` +
+          (pattern.popularOccasions.length > 0
+            ? `, occasions: ${pattern.popularOccasions.join(', ')}`
+            : '')
+      )
+    }
+  }
+
+  // Highly seasonal dishes (chef's signature seasonal items)
+  const seasonal = result.dishSeasonality.filter((d) => d.seasonality === 'highly_seasonal')
+  if (seasonal.length > 0) {
+    lines.push(
+      `Seasonal specialties: ${seasonal.map((d) => `${d.dishName} (best in ${d.bestSeason})`).join(', ')}`
+    )
+  }
+
+  // Menu diversity insight
+  if (result.menuDiversityScore > 0) {
+    lines.push(
+      `Menu diversity: ${result.menuDiversityScore}/100 across ${result.totalDishesTracked} tracked dishes`
+    )
+  }
+
+  return lines.length > 0 ? lines.join('\n') : undefined
 }
 
 // ─── Tier 1: Chef Profile ───────────────────────────────────────────────────

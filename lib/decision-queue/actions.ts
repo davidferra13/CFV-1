@@ -6,6 +6,11 @@ import {
   type ProactiveAlert,
   type ProactiveAlertsResult,
 } from '@/lib/intelligence/proactive-alerts'
+import {
+  getPriceAnomalies,
+  type PriceAnomaly,
+  type PriceAnomalyResult,
+} from '@/lib/intelligence/price-anomaly'
 import { getDashboardWorkSurface } from '@/lib/workflow/actions'
 import type { DashboardWorkSurface, WorkItem, WorkStage } from '@/lib/workflow/types'
 
@@ -16,7 +21,7 @@ export interface DecisionQueueItem {
   description: string
   href: string | null
   urgency: 'critical' | 'high' | 'normal' | 'low'
-  source: 'work_surface' | 'next_best_action' | 'proactive_alert'
+  source: 'work_surface' | 'next_best_action' | 'proactive_alert' | 'price_anomaly'
   context: string
   category: string
 }
@@ -29,6 +34,7 @@ export interface DecisionQueueResult {
 
 type DecisionUrgency = DecisionQueueItem['urgency']
 type DecisionSource = DecisionQueueItem['source']
+type AnomalySeverity = PriceAnomaly['severity']
 
 const EMPTY_RESULT: DecisionQueueResult = {
   items: [],
@@ -45,8 +51,9 @@ const URGENCY_ORDER: Record<DecisionUrgency, number> = {
 
 const SOURCE_ORDER: Record<DecisionSource, number> = {
   proactive_alert: 0,
-  work_surface: 1,
-  next_best_action: 2,
+  price_anomaly: 1,
+  work_surface: 2,
+  next_best_action: 3,
 }
 
 const STAGE_CATEGORY: Record<WorkStage, string> = {
@@ -191,12 +198,33 @@ function mapProactiveAlerts(result: ProactiveAlertsResult): DecisionQueueItem[] 
   }))
 }
 
+const ANOMALY_URGENCY: Record<AnomalySeverity, DecisionUrgency> = {
+  alert: 'critical',
+  warning: 'high',
+  info: 'normal',
+}
+
+function mapPriceAnomalies(result: PriceAnomalyResult): DecisionQueueItem[] {
+  return result.anomalies.map((anomaly) => ({
+    id: `price_anomaly:${anomaly.type}:${anomaly.relatedEventId ?? anomaly.deviationPercent}`,
+    rank: 0,
+    title: anomaly.title,
+    description: anomaly.description,
+    href: anomaly.relatedEventId ? `/events/${anomaly.relatedEventId}` : null,
+    urgency: ANOMALY_URGENCY[anomaly.severity],
+    source: 'price_anomaly' as const,
+    context: `Deviation: ${anomaly.deviationPercent > 0 ? '+' : ''}${anomaly.deviationPercent}%`,
+    category: 'pricing',
+  }))
+}
+
 export async function getDecisionQueue(): Promise<DecisionQueueResult> {
-  const [workSurfaceResult, nextBestActionsResult, proactiveAlertsResult] =
+  const [workSurfaceResult, nextBestActionsResult, proactiveAlertsResult, priceAnomalyResult] =
     await Promise.allSettled([
       getDashboardWorkSurface(),
       getNextBestActions(15),
       getProactiveAlerts(),
+      getPriceAnomalies(),
     ])
 
   const mapped: DecisionQueueItem[] = []
@@ -217,6 +245,12 @@ export async function getDecisionQueue(): Promise<DecisionQueueResult> {
     mapped.push(...mapProactiveAlerts(proactiveAlertsResult.value))
   } else {
     console.error('[getDecisionQueue] Proactive alerts failed:', proactiveAlertsResult.reason)
+  }
+
+  if (priceAnomalyResult.status === 'fulfilled' && priceAnomalyResult.value) {
+    mapped.push(...mapPriceAnomalies(priceAnomalyResult.value))
+  } else if (priceAnomalyResult.status === 'rejected') {
+    console.error('[getDecisionQueue] Price anomalies failed:', priceAnomalyResult.reason)
   }
 
   if (mapped.length === 0) return EMPTY_RESULT

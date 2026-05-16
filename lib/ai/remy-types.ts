@@ -407,6 +407,21 @@ export interface RemyContext {
   }
   cilInsights?: string
   proactiveSignals?: string
+  /** Seasonal menu correlation - which dishes performed well in which seasons */
+  seasonalMenuCorrelation?: string
+  /** Client lifetime journey summary (stage distribution, at-risk clients, LTV) */
+  clientLifetimeJourney?: {
+    avgLifetimeValueCents: number
+    avgEventsPerClient: number
+    retentionRate: number
+    atRiskClients: Array<{
+      name: string
+      stage: string
+      riskLevel: string
+      daysSinceLastEvent: number
+    }>
+    stageDistribution: Array<{ stage: string; count: number; percent: number }>
+  }
 }
 
 // ─── Page Entity Context ────────────────────────────────────────────────────

@@ -2,6 +2,7 @@
 // Detects dormant clients, at-risk clients, and VIP activity
 
 import { createServerClient } from '@/lib/db/server'
+import { computeRebookingPredictions } from '@/lib/intelligence/rebooking-predictions'
 import type { ProactiveSignal } from '../types'
 
 function generateId(): string {
@@ -22,6 +23,9 @@ export async function analyzeClients(tenantId: string): Promise<ProactiveSignal[
 
     // 3. VIP activity: top 20% by revenue with recent activity
     await analyzeVIPActivity(client, tenantId, signals, now)
+
+    // 4. Rebooking predictions: flag clients likely to rebook soon
+    await analyzeRebookingOutreach(tenantId, signals, now)
 
     return signals
   } catch (err) {
@@ -201,5 +205,70 @@ async function analyzeVIPActivity(
         createdAt: now,
       })
     }
+  }
+}
+
+// ── 4. Rebooking Predictions (one-way feed from intelligence layer) ──────────
+
+async function analyzeRebookingOutreach(
+  tenantId: string,
+  signals: ProactiveSignal[],
+  now: number
+): Promise<void> {
+  const insights = await computeRebookingPredictions(tenantId)
+  if (!insights) return
+
+  // Surface upcoming rebookers as outreach opportunities
+  for (const pred of insights.upcomingRebookers) {
+    if (pred.likelihood === 'unlikely') continue
+
+    const daysUntil = pred.predictedNextBookingDate
+      ? Math.round(
+          (new Date(pred.predictedNextBookingDate).getTime() - now) / (24 * 60 * 60 * 1000)
+        )
+      : null
+
+    const timing =
+      daysUntil !== null && daysUntil > 0
+        ? `predicted to rebook in ~${daysUntil} days`
+        : 'predicted rebooking window is now'
+
+    signals.push({
+      id: generateId(),
+      domain: 'clients',
+      urgency: daysUntil !== null && daysUntil <= 7 ? 4 : 3,
+      confidence: pred.rebookingScore / 100,
+      title: `Rebooking opportunity: ${pred.clientName}`,
+      detail: `${pred.clientName} is ${pred.likelihood} to rebook (score ${pred.rebookingScore}/100). ${timing}. ${pred.totalEvents} past events, avg ${pred.avgDaysBetweenEvents} days between bookings.`,
+      suggestedAction: 'Reach out with availability or seasonal menu',
+      actionType: 'navigate',
+      actionPayload: { path: `/clients/${pred.clientId}` },
+      entityIds: [pred.clientId],
+      source: 'clients.rebookingPrediction',
+      createdAt: now,
+    })
+  }
+
+  // Surface overdue rebookers (past their typical interval)
+  for (const pred of insights.overdueRebookers) {
+    // Skip if already surfaced as upcoming
+    if (insights.upcomingRebookers.some((u) => u.clientId === pred.clientId)) continue
+
+    const overdueDays = pred.daysSinceLastEvent - pred.avgDaysBetweenEvents
+
+    signals.push({
+      id: generateId(),
+      domain: 'clients',
+      urgency: overdueDays > 30 ? 4 : 3,
+      confidence: pred.rebookingScore / 100,
+      title: `Overdue rebooker: ${pred.clientName}`,
+      detail: `${pred.clientName} typically books every ${pred.avgDaysBetweenEvents} days but it has been ${pred.daysSinceLastEvent} days (~${overdueDays} days overdue). Consider reaching out.`,
+      suggestedAction: 'Send a personalized check-in or menu preview',
+      actionType: 'navigate',
+      actionPayload: { path: `/clients/${pred.clientId}` },
+      entityIds: [pred.clientId],
+      source: 'clients.rebookingOverdue',
+      createdAt: now,
+    })
   }
 }

@@ -26,13 +26,29 @@ export interface RebookingInsights {
   repeatClientRate: number // % of clients with 2+ events
 }
 
+// ─── Core (tenant-scoped, no auth gate) ─────────────────────────────────────
+
+/**
+ * Compute rebooking predictions for a given tenant.
+ * Used by CIL analyzers and other internal callers that already have tenantId.
+ * One-way data feed: callers read from here; this module never imports callers.
+ */
+export async function computeRebookingPredictions(
+  tenantId: string
+): Promise<RebookingInsights | null> {
+  const db: any = createServerClient()
+  return _computePredictions(db, tenantId)
+}
+
 // ─── Main Action ─────────────────────────────────────────────────────────────
 
 export async function getRebookingPredictions(): Promise<RebookingInsights | null> {
   const user = await requireChef()
   const tenantId = user.tenantId!
-  const db: any = createServerClient()
+  return _computePredictions(createServerClient() as any, tenantId)
+}
 
+async function _computePredictions(db: any, tenantId: string): Promise<RebookingInsights | null> {
   // Fetch clients with their completed events
   const { data: clients, error } = await db
     .from('clients')

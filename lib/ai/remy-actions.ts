@@ -692,6 +692,22 @@ ${context.proactiveSignals}
 These are active business signals requiring attention. When greeting the chef or when relevant to conversation, proactively surface the highest urgency items with their suggested actions. Frame suggestions as helpful nudges, not commands.`)
   }
 
+  // Client lifetime journey (retention, at-risk, LTV)
+  if (context.clientLifetimeJourney) {
+    const clj = context.clientLifetimeJourney
+    const lines: string[] = [
+      `Avg LTV: $${(clj.avgLifetimeValueCents / 100).toFixed(0)}, Avg events/client: ${clj.avgEventsPerClient}, Retention rate: ${clj.retentionRate}%`,
+      `Stages: ${clj.stageDistribution.map((s) => `${s.stage}(${s.count})`).join(', ')}`,
+    ]
+    if (clj.atRiskClients.length > 0) {
+      lines.push(
+        `AT-RISK: ${clj.atRiskClients.map((c) => `${c.name} [${c.stage}, ${c.riskLevel} risk, ${c.daysSinceLastEvent}d since last event]`).join('; ')}`
+      )
+    }
+    parts.push(`\nCLIENT LIFETIME JOURNEY:\n${lines.join('\n')}
+Use when discussing client retention, re-engagement, or business growth. Proactively mention at-risk clients when relevant.`)
+  }
+
   // Revenue pattern awareness
   if (context.revenuePattern) {
     const rp = context.revenuePattern

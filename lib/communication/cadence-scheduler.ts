@@ -7,6 +7,7 @@
 import { createServerClient } from '@/lib/db/server'
 import { createClientPortalLinkForClient } from '@/lib/client-portal/actions'
 import { getChefTonePreset } from '@/lib/email/brand-voice'
+import { sendSms } from '@/lib/sms/send'
 
 // ---------------------------------------------------------------------------
 // Types
@@ -18,14 +19,17 @@ export type CadencePoint =
   | '14_days_before'
   | '7_days_before'
   | '3_days_before'
+  | '48_hours_before'
   | '1_day_before'
   | 'event_day'
+  | 'post_event'
 
 export interface CadenceItem {
   id?: string
   event_id: string
   tenant_id: string
   cadence_point: CadencePoint
+  channel?: 'email' | 'sms'
   scheduled_at: string
   sent_at: string | null
   skipped_at: string | null
@@ -103,6 +107,44 @@ export const CADENCE_POINTS: CadencePointConfig[] = [
 ]
 
 // ---------------------------------------------------------------------------
+// SMS Cadence Points (additional points for SMS channel)
+// ---------------------------------------------------------------------------
+
+export const SMS_CADENCE_POINTS: CadencePointConfig[] = [
+  {
+    point: '48_hours_before',
+    daysBefore: 2,
+    label: '48 Hours Out (SMS)',
+    subject: '',
+    defaultMessage: '',
+  },
+  {
+    point: 'post_event',
+    daysBefore: -2, // 1 day AFTER event
+    label: 'Post Event (SMS)',
+    subject: '',
+    defaultMessage: '',
+  },
+]
+
+// SMS points that also fire for existing email cadence points
+const SMS_OVERLAY_POINTS: CadencePoint[] = ['deposit_confirmed', '7_days_before']
+
+// ---------------------------------------------------------------------------
+// SMS Templates (160-char max after interpolation)
+// ---------------------------------------------------------------------------
+
+export const SMS_CADENCE_TEMPLATES: Partial<Record<CadencePoint, string>> = {
+  deposit_confirmed:
+    'Booked! {chefName} confirmed for {occasion}. Details in your portal: {portalUrl}',
+  '7_days_before':
+    'One week out! {chefName} is sourcing ingredients for your {occasion}. Any last updates? Reply here.',
+  '48_hours_before':
+    "2 days! {chefName} arrives {arrivalTime} on {eventDate}. Can't wait to cook for you.",
+  post_event: 'Hope you loved it! {chefName} would love your feedback. Reply or visit: {portalUrl}',
+}
+
+// ---------------------------------------------------------------------------
 // Schedule Creation
 // ---------------------------------------------------------------------------
 
@@ -134,6 +176,7 @@ export async function createCadenceSchedule(
   const items: Omit<CadenceItem, 'id'>[] = []
   let skipped = 0
 
+  // --- Email cadence items (existing 7 points) ---
   for (const config of CADENCE_POINTS) {
     let scheduledAt: Date
 
@@ -157,6 +200,81 @@ export async function createCadenceSchedule(
       event_id: eventId,
       tenant_id: tenantId,
       cadence_point: config.point,
+      channel: 'email',
+      scheduled_at: scheduledAt.toISOString(),
+      sent_at: null,
+      skipped_at: null,
+      skip_reason: null,
+    })
+  }
+
+  // --- SMS cadence items ---
+  // SMS overlays on existing email points (deposit_confirmed, 7_days_before)
+  for (const point of SMS_OVERLAY_POINTS) {
+    const config = CADENCE_POINTS.find((c) => c.point === point)
+    if (!config) continue
+
+    let scheduledAt: Date
+
+    if (config.daysBefore === -1) {
+      // deposit_confirmed SMS: 1 hour after email
+      scheduledAt = new Date(now.getTime() + 60 * 60 * 1000)
+    } else {
+      // SMS sends at 10am (email is 9am)
+      scheduledAt = new Date(eventDt)
+      scheduledAt.setDate(scheduledAt.getDate() - config.daysBefore)
+      scheduledAt.setHours(10, 0, 0, 0)
+    }
+
+    if (config.daysBefore !== -1 && scheduledAt <= now) {
+      skipped++
+      continue
+    }
+
+    items.push({
+      event_id: eventId,
+      tenant_id: tenantId,
+      cadence_point: point,
+      channel: 'sms',
+      scheduled_at: scheduledAt.toISOString(),
+      sent_at: null,
+      skipped_at: null,
+      skip_reason: null,
+    })
+  }
+
+  // SMS-only points (48_hours_before, post_event)
+  for (const config of SMS_CADENCE_POINTS) {
+    let scheduledAt: Date
+
+    if (config.daysBefore === -2) {
+      // post_event: 1 day after event at 10am
+      scheduledAt = new Date(eventDt)
+      scheduledAt.setDate(scheduledAt.getDate() + 1)
+      scheduledAt.setHours(10, 0, 0, 0)
+    } else {
+      // 48_hours_before: 2 days before at 10am
+      scheduledAt = new Date(eventDt)
+      scheduledAt.setDate(scheduledAt.getDate() - config.daysBefore)
+      scheduledAt.setHours(10, 0, 0, 0)
+    }
+
+    // Skip if already passed (except post_event which is after the event)
+    if (config.daysBefore !== -2 && scheduledAt <= now) {
+      skipped++
+      continue
+    }
+    // For post_event, skip if it's already passed
+    if (config.daysBefore === -2 && scheduledAt <= now) {
+      skipped++
+      continue
+    }
+
+    items.push({
+      event_id: eventId,
+      tenant_id: tenantId,
+      cadence_point: config.point,
+      channel: 'sms',
       scheduled_at: scheduledAt.toISOString(),
       sent_at: null,
       skipped_at: null,
@@ -277,8 +395,13 @@ export async function processDueCadenceItems(): Promise<{
         continue
       }
 
-      // Send the cadence email
-      await sendCadenceEmail(item.tenant_id, item.event_id, item.cadence_point)
+      // Fork by channel (null/undefined = legacy email rows)
+      const channel = item.channel || 'email'
+      if (channel === 'sms') {
+        await sendCadenceSMS(item.tenant_id, item.event_id, item.cadence_point)
+      } else {
+        await sendCadenceEmail(item.tenant_id, item.event_id, item.cadence_point)
+      }
       await db
         .from('cadence_schedule')
         .update({ sent_at: new Date().toISOString() })
@@ -448,6 +571,96 @@ async function sendCadenceEmail(
       appUrl: process.env.NEXT_PUBLIC_APP_URL || 'https://app.cheflowhq.com',
     }),
   })
+}
+
+/**
+ * Send a cadence SMS for a specific event and cadence point.
+ * Skips silently if client has no phone number.
+ */
+async function sendCadenceSMS(
+  tenantId: string,
+  eventId: string,
+  cadencePoint: CadencePoint
+): Promise<void> {
+  const db = createServerClient()
+
+  // Load event data
+  const { data: event } = await db
+    .from('events')
+    .select('*, client_id, inquiry_id')
+    .eq('id', eventId)
+    .eq('tenant_id', tenantId)
+    .single()
+
+  if (!event) return
+
+  // Load chef info
+  const { data: chef } = await db
+    .from('chefs')
+    .select('display_name, business_name')
+    .eq('id', tenantId)
+    .single()
+
+  const chefName = chef?.display_name || chef?.business_name || 'Your chef'
+
+  // Load client phone
+  let clientPhone: string | null = null
+
+  if (event.client_id) {
+    const { data: client } = await db
+      .from('clients')
+      .select('phone')
+      .eq('id', event.client_id)
+      .single()
+    if (client?.phone) {
+      clientPhone = client.phone
+    }
+  }
+
+  if (!clientPhone) {
+    // No phone number; mark as skipped upstream would be ideal,
+    // but we throw a specific error the caller can catch for logging
+    console.warn(`[cadence-sms] No phone for event ${eventId}, skipping`)
+    return
+  }
+
+  // Get SMS template
+  const template = SMS_CADENCE_TEMPLATES[cadencePoint]
+  if (!template) return
+
+  // Build portal URL
+  let portalUrl = ''
+  if (event.client_id) {
+    try {
+      const link = await createClientPortalLinkForClient({
+        clientId: event.client_id,
+        tenantId,
+        db,
+      })
+      portalUrl = link.url
+    } catch {
+      // Non-fatal
+    }
+  }
+
+  // Interpolate variables
+  const occasion = event.occasion || event.title || 'dinner'
+  const arrivalTime = event.arrival_time || event.serve_time || 'TBD'
+  const eventDate = event.event_date || event.serve_time || ''
+
+  let message = template
+    .replace(/{chefName}/g, chefName)
+    .replace(/{occasion}/g, occasion)
+    .replace(/{arrivalTime}/g, arrivalTime)
+    .replace(/{eventDate}/g, eventDate)
+    .replace(/{portalUrl}/g, portalUrl)
+
+  // Enforce 160-char SMS limit
+  if (message.length > 160) {
+    message = message.slice(0, 157) + '...'
+  }
+
+  await sendSms(clientPhone, message)
 }
 
 async function getChefCadenceMessage(

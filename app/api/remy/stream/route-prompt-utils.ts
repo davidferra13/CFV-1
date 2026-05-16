@@ -803,6 +803,13 @@ Lead with a brief heads-up about this before answering the chef's question. Keep
     )
   }
 
+  // Seasonal menu correlation - what dishes worked in which seasons
+  if (includeOperationalContext && context.seasonalMenuCorrelation) {
+    parts.push(`\nSEASONAL MENU INTELLIGENCE (historical dish performance by season):
+${context.seasonalMenuCorrelation}
+Use when the chef asks "what worked last time", plans a menu for a specific season, or needs dish recommendations. Reference specific dishes and seasons from this data.`)
+  }
+
   // Navigation trail - what pages the chef visited this session
   if (includeSessionContext && recentPages && recentPages.length > 0) {
     const trail = recentPages.map((p) => {

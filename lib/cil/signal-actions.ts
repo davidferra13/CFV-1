@@ -10,6 +10,7 @@ import { createServerClient } from '@/lib/db/server'
 import { generateReengagementDraft } from '@/lib/ai/reengagement-draft'
 import { createNotification } from '@/lib/notifications/actions'
 import { recordSideEffectFailure } from '@/lib/monitoring/non-blocking'
+import { buildDedupKey, shouldDispatch, markDispatched } from '@/lib/cil/signal-dedup'
 
 /**
  * Get all active proactive signals for the current chef's tenant.
@@ -76,6 +77,14 @@ export async function actOnSignal(signal: ProactiveSignal): Promise<{ success: b
 async function dispatchSignalAction(signal: ProactiveSignal, tenantId: string): Promise<void> {
   const { source, entityIds, actionPayload } = signal
 
+  // Dedup gate: skip if this exact signal was dispatched recently
+  const entityId = entityIds[0] || signal.id
+  const dedupKey = buildDedupKey(tenantId, source, entityId)
+  if (!shouldDispatch(dedupKey, { tenantId, signalType: source })) {
+    return
+  }
+  markDispatched(dedupKey, { tenantId, signalType: source })
+
   switch (source) {
     // ── Finance: overdue invoices -> payment reminder ──────────────────────
     case 'finance.overdueInvoices': {
@@ -133,6 +142,129 @@ async function dispatchSignalAction(signal: ProactiveSignal, tenantId: string): 
         await scheduleChurnReengagement(tenantId, atRiskClientId, signal)
       }
       await processDueCadenceItems()
+      break
+    }
+
+    // ── Calendar: overload -> flag chef to consider rescheduling ──────────
+    case 'calendar.overload': {
+      await createNotification({
+        tenantId,
+        recipientId: tenantId,
+        category: 'event',
+        action: 'event_status_change' as any,
+        title: signal.title,
+        body:
+          signal.suggestedAction || 'Consider rescheduling or batching prep for this heavy week.',
+        actionUrl: (actionPayload?.path as string) || '/calendar',
+        metadata: { origin: 'cil', signalSource: source },
+      })
+      break
+    }
+
+    // ── Calendar: dead spots -> suggest outreach to dormant clients ───────
+    case 'calendar.deadSpots': {
+      await createNotification({
+        tenantId,
+        recipientId: tenantId,
+        category: 'client',
+        action: 'client_reengagement_draft' as any,
+        title: signal.title,
+        body: signal.suggestedAction || 'Reach out to dormant clients to fill empty dates.',
+        actionUrl: (actionPayload?.path as string) || '/pipeline',
+        metadata: { origin: 'cil', signalSource: source },
+      })
+      break
+    }
+
+    // ── Calendar: booking pace -> informational insight ───────────────────
+    case 'calendar.bookingPace': {
+      await createNotification({
+        tenantId,
+        recipientId: tenantId,
+        category: 'ops',
+        action: 'system_alert' as any,
+        title: signal.title,
+        body: signal.detail,
+        actionUrl: (actionPayload?.path as string) || '/analytics/pipeline',
+        metadata: { origin: 'cil', signalSource: source, informational: true },
+      })
+      break
+    }
+
+    // ── Inventory: price spikes -> alert chef about cost increase ─────────
+    case 'inventory.priceSpikes': {
+      await createNotification({
+        tenantId,
+        recipientId: tenantId,
+        category: 'ops',
+        action: 'system_alert' as any,
+        title: signal.title,
+        body: signal.suggestedAction || 'Ingredient costs spiked. Check vendors or adjust pricing.',
+        actionUrl: (actionPayload?.path as string) || '/culinary/ingredients',
+        metadata: { origin: 'cil', signalSource: source },
+      })
+      break
+    }
+
+    // ── Inventory: waste patterns -> suggest portion/order adjustments ────
+    case 'inventory.wastePatterns': {
+      await createNotification({
+        tenantId,
+        recipientId: tenantId,
+        category: 'ops',
+        action: 'system_alert' as any,
+        title: signal.title,
+        body: signal.suggestedAction || 'Reduce order quantities or improve storage to cut waste.',
+        actionUrl: (actionPayload?.path as string) || '/culinary/ingredients',
+        metadata: { origin: 'cil', signalSource: source },
+      })
+      break
+    }
+
+    // ── Reputation: testimonial opportunity -> prompt chef to request ─────
+    case 'reputation.testimonialOpportunity': {
+      const reviewEventId = entityIds[0]
+      await createNotification({
+        tenantId,
+        recipientId: tenantId,
+        category: 'review',
+        action: 'review_received' as any,
+        title: signal.title,
+        body: signal.suggestedAction || 'Ask this happy client for a publishable testimonial.',
+        actionUrl: reviewEventId ? `/events/${reviewEventId}` : '/clients',
+        eventId: reviewEventId || undefined,
+        metadata: { origin: 'cil', signalSource: source },
+      })
+      break
+    }
+
+    // ── Reputation: rating trend -> surface direction (improving/declining)
+    case 'reputation.ratingTrend': {
+      await createNotification({
+        tenantId,
+        recipientId: tenantId,
+        category: 'review',
+        action: 'review_received' as any,
+        title: signal.title,
+        body: signal.detail,
+        actionUrl: (actionPayload?.path as string) || '/clients/insights',
+        metadata: { origin: 'cil', signalSource: source, informational: true },
+      })
+      break
+    }
+
+    // ── Reputation: unreviewed events -> remind chef to follow up ─────────
+    case 'reputation.unreviewedEvents': {
+      await createNotification({
+        tenantId,
+        recipientId: tenantId,
+        category: 'review',
+        action: 'review_received' as any,
+        title: signal.title,
+        body: signal.suggestedAction || 'Send review requests to recent clients.',
+        actionUrl: (actionPayload?.path as string) || '/clients',
+        metadata: { origin: 'cil', signalSource: source, eventIds: entityIds },
+      })
       break
     }
 
