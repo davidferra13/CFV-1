@@ -51,12 +51,15 @@ export const API_AUTH_ALTERNATIVE_PATTERNS = [
   'Twilio',
   'twilio',
   'stripe',
+  'guest_token',
+  'validateConnectorKey',
   'NODE_ENV',
   'process.env',
 ] as const
 
 export const API_NO_STANDARD_AUTH_ALLOWLIST_EXTRAS = [
   'activity',
+  'availability/ical',
   'admin',
   'ai',
   'booking',
@@ -64,12 +67,16 @@ export const API_NO_STANDARD_AUTH_ALLOWLIST_EXTRAS = [
   'cannabis',
   'chefs/parse-search',
   'comms',
+  'connector/v1',
   'discover',
   'features',
   'hub',
   'ical',
   'integrations',
+  'ingredients/search',
+  'llm-txt',
   'openclaw',
+  'pricing/bridge-health',
   'prospecting',
   'public',
   'push',
@@ -79,6 +86,7 @@ export const API_NO_STANDARD_AUTH_ALLOWLIST_EXTRAS = [
   'social',
   'stripe',
   'survey',
+  'tickets',
 ] as const
 
 export const MIN_PROTECTED_API_ROUTE_RATIO = 0.1

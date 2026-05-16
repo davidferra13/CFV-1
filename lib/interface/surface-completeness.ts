@@ -337,7 +337,15 @@ type SurfaceModeContractExpectation = {
   role: CoverageRole | null
 }
 
-const COVERAGE_ROLES: CoverageRole[] = ['public', 'chef', 'client', 'admin', 'staff', 'partner']
+const COVERAGE_ROLES: CoverageRole[] = [
+  'public',
+  'chef',
+  'client',
+  'admin',
+  'staff',
+  'partner',
+  'vendor',
+]
 const MAX_FINDING_PATHS = 50
 const SEO_SIGNAL_PATTERNS = [
   /export\s+const\s+metadata\b/,

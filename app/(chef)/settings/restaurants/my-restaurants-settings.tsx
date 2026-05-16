@@ -243,7 +243,7 @@ export function MyRestaurantsSettings({ restaurantGroupName, restaurants }: Prop
                 <Input
                   value={newCity}
                   onChange={(e) => setNewCity(e.target.value)}
-                  placeholder="Boston"
+                  placeholder="City"
                 />
               </div>
               <div>

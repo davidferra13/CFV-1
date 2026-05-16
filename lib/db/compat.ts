@@ -1131,6 +1131,21 @@ class QueryBuilder<T = any> {
     relationAliases: Map<string, string> = new Map()
   ): string | null {
     const qCol = this.qualifyColumn(column, relationAliases)
+    const ftsMatch = /^(fts|plfts|phfts|wfts)(?:\(([a-zA-Z0-9_]+)\))?$/.exec(operator)
+    if (ftsMatch) {
+      const [, type, config = 'english'] = ftsMatch
+      const fn =
+        type === 'wfts'
+          ? 'websearch_to_tsquery'
+          : type === 'plfts'
+            ? 'plainto_tsquery'
+            : type === 'phfts'
+              ? 'phraseto_tsquery'
+              : 'to_tsquery'
+      params.push(value)
+      return `${qCol} @@ ${fn}('${config}', $${nextIdx()})`
+    }
+
     switch (operator) {
       case 'eq':
         params.push(value)

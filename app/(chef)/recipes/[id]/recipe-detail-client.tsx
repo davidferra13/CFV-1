@@ -27,6 +27,11 @@ import { SubRecipeSearchModal } from '@/components/recipes/sub-recipe-search-mod
 import { DishPhotoUpload } from '@/components/dishes/dish-photo-upload'
 import { RecipeUsagePanel } from '@/components/recipes/recipe-usage-panel'
 import { RecipeTrackRecordPanel } from '@/components/recipes/recipe-track-record'
+import { RecipeStatusBadge } from '@/components/recipes/recipe-status-badge'
+import { RecipeLineage } from '@/components/recipes/recipe-lineage'
+import { ScaleForEventButton } from '@/components/recipes/scale-for-event-button'
+import { RecipeSlideshow } from '@/components/recipes/recipe-slideshow'
+import { StepPhotoGallery } from '@/components/recipes/step-photo-gallery'
 import { PurchaseFeedbackPanel } from '@/components/recipes/purchase-feedback-panel'
 import { trackAction } from '@/lib/ai/remy-activity-tracker'
 import { useDeferredAction } from '@/lib/hooks/use-deferred-action'
@@ -78,13 +83,82 @@ type RecipeProvenance = {
   originalRecipeId: string
 } | null
 
+type RecipeLifecycle = {
+  status: 'stub' | 'draft' | 'active' | 'archived'
+  versionNumber: number
+  versionNote?: string | null
+  forkCount: number
+  forkedFrom?: { id: string; name: string } | null
+} | null
+
+type RecipeEvent = {
+  event_id: string
+  event_name: string
+  event_date: string | null
+  menu_name: string | null
+  guest_count: number | null
+}
+
+type RecipeStepPhoto = {
+  id: string
+  chef_id: string
+  recipe_id: string
+  step_number: number
+  photo_url: string
+  caption: string | null
+  sort_order: number
+  created_at: string
+  updated_at: string
+}
+
 type Props = {
   recipe: RecipeDetail
   initialCompletion?: CompletionResult | null
   provenance?: RecipeProvenance
+  lifecycle?: RecipeLifecycle
+  recipeEvents?: RecipeEvent[]
+  stepPhotos?: RecipeStepPhoto[]
 }
 
-export function RecipeDetailClient({ recipe, initialCompletion, provenance }: Props) {
+function buildRecipePhotoSteps(recipe: RecipeDetail, stepPhotos: RecipeStepPhoto[]) {
+  if (stepPhotos.length === 0) return []
+
+  const methodText = recipe.method_detailed || recipe.method || ''
+  const methodLines = methodText
+    .split(/\r?\n/)
+    .map((line: string) => line.trim())
+    .filter(Boolean)
+
+  const photosByStep = new Map<number, RecipeStepPhoto[]>()
+  for (const photo of stepPhotos) {
+    const existing = photosByStep.get(photo.step_number) ?? []
+    existing.push(photo)
+    photosByStep.set(photo.step_number, existing)
+  }
+
+  return Array.from(photosByStep.entries())
+    .sort(([a], [b]) => a - b)
+    .map(([stepNumber, photos]) => ({
+      number: stepNumber,
+      instruction: methodLines[stepNumber - 1] ?? `Step ${stepNumber}`,
+      photos: photos
+        .sort((a, b) => a.sort_order - b.sort_order)
+        .map((photo) => ({
+          id: photo.id,
+          photo_url: photo.photo_url,
+          caption: photo.caption,
+        })),
+    }))
+}
+
+export function RecipeDetailClient({
+  recipe,
+  initialCompletion,
+  provenance,
+  lifecycle,
+  recipeEvents = [],
+  stepPhotos = [],
+}: Props) {
   const router = useRouter()
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState('')
@@ -370,6 +444,18 @@ export function RecipeDetailClient({ recipe, initialCompletion, provenance }: Pr
     }
   }
 
+  const upcomingRecipeEvents = recipeEvents.filter(
+    (event) =>
+      event.guest_count &&
+      event.guest_count > 0 &&
+      event.event_date &&
+      new Date(event.event_date) >= new Date()
+  )
+  const photoSteps = buildRecipePhotoSteps(recipe, stepPhotos)
+  const stepNumbersWithPhotos = Array.from(
+    new Set(stepPhotos.map((photo) => photo.step_number))
+  ).sort((a, b) => a - b)
+
   return (
     <div className="max-w-4xl mx-auto space-y-6">
       {/* Header */}
@@ -377,9 +463,19 @@ export function RecipeDetailClient({ recipe, initialCompletion, provenance }: Pr
         <div>
           <div className="flex items-center gap-3">
             <h1 className="text-3xl font-bold text-stone-100">{recipe.name}</h1>
+            {lifecycle && <RecipeStatusBadge status={lifecycle.status} />}
             <Badge variant={CATEGORY_COLORS[recipe.category] || 'default'}>{recipe.category}</Badge>
             {provenance && <Badge variant="info">Shared by {provenance.fromChefName}</Badge>}
           </div>
+          {lifecycle && (
+            <RecipeLineage
+              recipeId={recipe.id}
+              forkedFrom={lifecycle.forkedFrom}
+              forkCount={lifecycle.forkCount}
+              versionNumber={lifecycle.versionNumber}
+              versionNote={lifecycle.versionNote}
+            />
+          )}
           {recipe.description && <p className="text-stone-400 mt-1">{recipe.description}</p>}
         </div>
         <div className="flex gap-2">
@@ -705,6 +801,24 @@ export function RecipeDetailClient({ recipe, initialCompletion, provenance }: Pr
       {/* Track Record (AAR feedback across events) */}
       <RecipeTrackRecordPanel recipeId={recipe.id} />
 
+      {upcomingRecipeEvents.length > 0 && (
+        <Card>
+          <CardHeader>
+            <CardTitle>Scale for Upcoming Events</CardTitle>
+          </CardHeader>
+          <CardContent className="space-y-3">
+            {upcomingRecipeEvents.map((event) => (
+              <ScaleForEventButton
+                key={event.event_id}
+                recipeId={recipe.id}
+                eventName={event.event_name}
+                guestCount={event.guest_count!}
+              />
+            ))}
+          </CardContent>
+        </Card>
+      )}
+
       {/* Scaling Calculator */}
       <RecipeScalingCalculator recipe={recipe} />
 
@@ -730,6 +844,26 @@ export function RecipeDetailClient({ recipe, initialCompletion, provenance }: Pr
                 <p className="text-sm text-stone-300 whitespace-pre-wrap">
                   {recipe.method_detailed}
                 </p>
+              </div>
+            )}
+            {photoSteps.length > 0 && (
+              <div className="mt-4 pt-4 border-t border-stone-800">
+                <RecipeSlideshow recipeName={recipe.name} steps={photoSteps} />
+              </div>
+            )}
+            {stepNumbersWithPhotos.length > 0 && (
+              <div className="mt-4 space-y-4 border-t border-stone-800 pt-4">
+                <p className="text-sm font-medium text-stone-500">Step Photos</p>
+                {stepNumbersWithPhotos.map((stepNumber) => (
+                  <div key={stepNumber} className="space-y-2">
+                    <p className="text-xs font-medium text-stone-400">Step {stepNumber}</p>
+                    <StepPhotoGallery
+                      recipeId={recipe.id}
+                      stepNumber={stepNumber}
+                      photos={stepPhotos.filter((photo) => photo.step_number === stepNumber)}
+                    />
+                  </div>
+                ))}
               </div>
             )}
           </CardContent>

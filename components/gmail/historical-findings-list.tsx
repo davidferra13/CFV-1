@@ -127,6 +127,10 @@ function FindingCard({
 
   function handleImport() {
     setError(null)
+    if (finding.classification !== 'inquiry' && finding.classification !== 'existing_thread') {
+      window.location.href = '/imports/business-history#review'
+      return
+    }
     startTransition(async () => {
       try {
         const res = await importHistoricalFinding(finding.id)
@@ -162,6 +166,10 @@ function FindingCard({
         year: 'numeric',
       })
     : null
+  const importButtonLabel =
+    finding.classification === 'inquiry' || finding.classification === 'existing_thread'
+      ? 'Import as Inquiry'
+      : 'Review Business Record'
 
   if (result) {
     return (
@@ -226,7 +234,7 @@ function FindingCard({
             disabled={isPending}
             className="px-3 py-1.5 text-xs font-medium rounded-md bg-brand-600 text-white hover:bg-brand-700 disabled:opacity-50 transition-colors"
           >
-            {isPending ? 'Importing…' : 'Import as Inquiry'}
+            {isPending ? 'Importing...' : importButtonLabel}
           </button>
           <button
             onClick={handleDismiss}
@@ -330,10 +338,20 @@ function ClassificationBadge({ classification }: { classification: string }) {
   const styles: Record<string, string> = {
     inquiry: 'bg-emerald-900 text-emerald-700',
     existing_thread: 'bg-brand-900 text-brand-700',
+    client: 'bg-sky-950 text-sky-400',
+    event: 'bg-violet-950 text-violet-400',
+    preference: 'bg-rose-950 text-rose-400',
+    payment_invoice: 'bg-amber-950 text-amber-400',
+    follow_up: 'bg-cyan-950 text-cyan-400',
   }
   const labels: Record<string, string> = {
     inquiry: 'inquiry',
     existing_thread: 'existing thread',
+    client: 'client',
+    event: 'past event',
+    preference: 'preference',
+    payment_invoice: 'payment/invoice',
+    follow_up: 'follow-up',
   }
   return (
     <span

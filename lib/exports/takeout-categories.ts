@@ -20,7 +20,13 @@ export type TakeoutCategory = {
   label: string
   description: string
   /** Tables to query (tenant_id or chef_id scoped) */
-  tables: { name: string; fkColumn?: string }[]
+  tables: {
+    name: string
+    fkColumn?: string
+    parentTable?: string
+    parentFkColumn?: string
+    parentIdColumn?: string
+  }[]
   /** Output formats included in ZIP */
   formats: ('json' | 'csv' | 'ics' | 'pdf' | 'files')[]
   /** Folder name inside ZIP */
@@ -36,9 +42,9 @@ export const TAKEOUT_CATEGORIES: TakeoutCategory[] = [
     description: 'All recipes with ingredients, instructions, tags, and timing',
     tables: [
       { name: 'recipes', fkColumn: 'chef_id' },
-      { name: 'recipe_ingredients' },
-      { name: 'components' },
-      { name: 'recipe_tags' },
+      { name: 'recipe_ingredients', parentTable: 'recipes', parentFkColumn: 'recipe_id' },
+      { name: 'components', fkColumn: 'tenant_id' },
+      { name: 'recipe_tags', parentTable: 'recipes', parentFkColumn: 'recipe_id' },
     ],
     formats: ['json', 'csv'],
     folder: 'recipes',
@@ -48,11 +54,11 @@ export const TAKEOUT_CATEGORIES: TakeoutCategory[] = [
     label: 'Clients',
     description: 'Client contact info, preferences, allergies, and taste profiles',
     tables: [
-      { name: 'clients', fkColumn: 'chef_id' },
-      { name: 'client_preferences' },
-      { name: 'client_allergy_records' },
-      { name: 'client_notes' },
-      { name: 'client_tags' },
+      { name: 'clients', fkColumn: 'tenant_id' },
+      { name: 'client_preferences', fkColumn: 'tenant_id' },
+      { name: 'client_allergy_records', fkColumn: 'tenant_id' },
+      { name: 'client_notes', fkColumn: 'tenant_id' },
+      { name: 'client_tags', fkColumn: 'tenant_id' },
     ],
     formats: ['json', 'csv'],
     folder: 'clients',
@@ -64,7 +70,7 @@ export const TAKEOUT_CATEGORIES: TakeoutCategory[] = [
     tables: [
       { name: 'events' },
       { name: 'event_guests' },
-      { name: 'event_staff_assignments' },
+      { name: 'event_staff_assignments', fkColumn: 'chef_id' },
       { name: 'event_state_transitions' },
     ],
     formats: ['json', 'csv', 'ics'],
@@ -89,9 +95,9 @@ export const TAKEOUT_CATEGORIES: TakeoutCategory[] = [
     description: 'Menu layouts, sections, and item assignments',
     tables: [
       { name: 'menus' },
-      { name: 'menu_sections' },
-      { name: 'menu_items' },
-      { name: 'dishes' },
+      { name: 'menu_sections', parentTable: 'menus', parentFkColumn: 'menu_id' },
+      { name: 'menu_items', parentTable: 'menus', parentFkColumn: 'menu_id' },
+      { name: 'dishes', parentTable: 'menus', parentFkColumn: 'menu_id' },
     ],
     formats: ['json'],
     folder: 'menus',
@@ -127,9 +133,13 @@ export const TAKEOUT_CATEGORIES: TakeoutCategory[] = [
     description: 'Client conversation threads, messages, and AI chat history',
     tables: [
       { name: 'conversations' },
-      { name: 'chat_messages' },
+      { name: 'chat_messages', parentTable: 'conversations', parentFkColumn: 'conversation_id' },
       { name: 'remy_conversations' },
-      { name: 'remy_messages' },
+      {
+        name: 'remy_messages',
+        parentTable: 'remy_conversations',
+        parentFkColumn: 'conversation_id',
+      },
     ],
     formats: ['json'],
     folder: 'conversations',

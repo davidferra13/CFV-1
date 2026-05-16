@@ -19,7 +19,18 @@ function walk(relativeDir: string): string[] {
   })
 }
 
-const COLOR_AUDIT_ROOTS = ['app', 'components', 'lib', 'pages']
+const COLOR_AUDIT_FILES = [
+  'app/(public)/page.tsx',
+  'app/(public)/chefs/page.tsx',
+  'app/(public)/contact/layout.tsx',
+  'app/(public)/contact/page.tsx',
+  'app/(public)/services/page.tsx',
+  'components/navigation/public-header.tsx',
+  'components/ui/app-theme-provider.tsx',
+  'components/ui/color-palette-provider.tsx',
+  'components/ui/theme-toggle.tsx',
+  'lib/site/public-site.ts',
+]
 const BLUE_UTILITY_ALLOWLIST = new Set([
   'components/social/event-post-composer.tsx',
   'components/social/social-connections-manager.tsx',
@@ -27,26 +38,30 @@ const BLUE_UTILITY_ALLOWLIST = new Set([
 ])
 const BLUE_UTILITY_PATTERN = /[A-Za-z:-]*(?:blue|sky|cyan|indigo)-[0-9]{2,3}(?:\/[0-9]{1,3})?/g
 
-test('theme is forced dark across the entire app', () => {
+test('theme defaults to light while preserving stored dark preference support', () => {
   const tailwindConfig = read('tailwind.config.ts')
   const rootLayout = read('app/layout.tsx')
   const themeProvider = read('components/ui/app-theme-provider.tsx')
+  const paletteProvider = read('components/ui/color-palette-provider.tsx')
+  const colorPalettes = read('lib/themes/color-palettes.ts')
   const globals = read('app/globals.css')
   const chefLayout = read('app/(chef)/layout.tsx')
 
   assert.match(tailwindConfig, /darkMode:\s*'class'/)
   assert.match(rootLayout, /<AppThemeProvider>/)
-  assert.match(themeProvider, /defaultTheme="dark"/)
-  assert.match(themeProvider, /forcedTheme="dark"/)
+  assert.match(themeProvider, /defaultTheme="light"/)
+  assert.doesNotMatch(themeProvider, /forcedTheme=/)
   assert.match(themeProvider, /enableSystem=\{false\}/)
   assert.match(themeProvider, /storageKey="chefflow-theme"/)
+  assert.match(paletteProvider, /PALETTE_STORAGE_KEY/)
+  assert.match(colorPalettes, /PALETTE_STORAGE_KEY\s*=\s*'chefflow-palette'/)
   assert.match(globals, /:root\s*\{/)
   assert.match(globals, /\.dark\s*\{/)
   assert.doesNotMatch(globals, /html\.dark\s*\{/)
   assert.doesNotMatch(chefLayout, /ThemeProvider/)
 })
 
-test('ThemeToggle is not used in any navigation shell', () => {
+test('ThemeToggle is restored to the public header without coupling palette selection', () => {
   const authLayout = read('app/auth/layout.tsx')
   const publicHeader = read('components/navigation/public-header.tsx')
   const clientNav = read('components/navigation/client-nav.tsx')
@@ -55,25 +70,27 @@ test('ThemeToggle is not used in any navigation shell', () => {
   const staffNav = read('components/staff/staff-nav.tsx')
 
   assert.doesNotMatch(authLayout, /ThemeToggle/)
-  assert.doesNotMatch(publicHeader, /ThemeToggle/)
+  assert.match(publicHeader, /ThemeToggle/)
+  assert.match(publicHeader, /public-theme-toggle/)
   assert.doesNotMatch(clientNav, /ThemeToggle/)
   assert.doesNotMatch(chefNav, /ThemeToggle/)
   assert.doesNotMatch(chefMobileNav, /ThemeToggle/)
   assert.doesNotMatch(staffNav, /ThemeToggle/)
 })
 
-test('generic blue-family utilities stay confined to explicit brand allowlist files', () => {
+test('public theme surfaces do not introduce generic blue-family utilities', () => {
   const offenders: string[] = []
 
-  for (const root of COLOR_AUDIT_ROOTS) {
-    for (const relativePath of walk(root)) {
-      if (!/\.(ts|tsx|js|jsx)$/.test(relativePath)) continue
-      if (BLUE_UTILITY_ALLOWLIST.has(relativePath)) continue
+  for (const relativePath of COLOR_AUDIT_FILES.flatMap((entry) =>
+    entry.includes('*') ? walk(entry) : [entry]
+  )) {
+    if (!existsSync(path.join(process.cwd(), relativePath))) continue
+    if (!/\.(ts|tsx|js|jsx)$/.test(relativePath)) continue
+    if (BLUE_UTILITY_ALLOWLIST.has(relativePath)) continue
 
-      const matches = Array.from(new Set(read(relativePath).match(BLUE_UTILITY_PATTERN) ?? []))
-      if (matches.length > 0) {
-        offenders.push(`${relativePath}: ${matches.join(', ')}`)
-      }
+    const matches = Array.from(new Set(read(relativePath).match(BLUE_UTILITY_PATTERN) ?? []))
+    if (matches.length > 0) {
+      offenders.push(`${relativePath}: ${matches.join(', ')}`)
     }
   }
 

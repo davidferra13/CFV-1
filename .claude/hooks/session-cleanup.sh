@@ -20,11 +20,14 @@ if [ "$PLAYWRIGHT_COUNT" -gt 0 ] 2>/dev/null; then
   echo "[$(timestamp)] Killed $PLAYWRIGHT_COUNT Playwright MCP zombies" >> "$LOG_FILE"
 fi
 
-# 2. Kill orphaned dev servers on non-standard ports (keep 3000 and 3100)
-ORPHAN_DEVS=$(powershell -Command "(Get-CimInstance Win32_Process | Where-Object { \$_.CommandLine -like '*CFv1*next*dev*' -and \$_.CommandLine -notlike '*-p 3100*' } | Measure-Object).Count" 2>/dev/null)
-if [ "$ORPHAN_DEVS" -gt 0 ] 2>/dev/null; then
-  powershell -Command "(Get-CimInstance Win32_Process | Where-Object { \$_.CommandLine -like '*CFv1*next*dev*' -and \$_.CommandLine -notlike '*-p 3100*' }).ProcessId | ForEach-Object { taskkill /F /PID \$_ 2>&1 | Out-Null }" 2>/dev/null
-  echo "[$(timestamp)] Killed $ORPHAN_DEVS orphaned dev servers" >> "$LOG_FILE"
+# 2. Kill duplicate ChefFlow dev runtimes through the canonical controller.
+ORPHAN_DEVS=0
+RUNTIME_CLEANUP=$(cd "$PROJECT_DIR" && node scripts/dev-runtime.mjs stop-duplicates --json 2>/dev/null || true)
+if [ -n "$RUNTIME_CLEANUP" ]; then
+  ORPHAN_DEVS=$(printf '%s' "$RUNTIME_CLEANUP" | node -e "let s='';process.stdin.on('data',d=>s+=d);process.stdin.on('end',()=>{try{const j=JSON.parse(s);console.log((j.killed||[]).length)}catch{console.log(0)}})" 2>/dev/null || echo 0)
+  if [ "$ORPHAN_DEVS" -gt 0 ] 2>/dev/null; then
+    echo "[$(timestamp)] Killed $ORPHAN_DEVS duplicate ChefFlow dev runtime(s)" >> "$LOG_FILE"
+  fi
 fi
 
 # 3. Kill rogue prod servers on non-standard ports (keep 3000 only)

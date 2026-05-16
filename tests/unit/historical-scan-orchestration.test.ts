@@ -40,7 +40,7 @@ test('historical scan marks itself in progress before listing Gmail pages', () =
   assert.ok(inProgressIndex < listMessagesIndex)
   assert.match(
     source,
-    /checkpointHistoricalScanProgress\(\s*db,\s*chefId,\s*scanConn\.mailbox_id,\s*baseTotalProcessed \+ result\.processed,\s*baseTotalSeen \+ result\.seen\s*\)/
+    /checkpointHistoricalScanProgress\(\s*db,\s*chefId,\s*tenantId,\s*scanConn\.mailbox_id,\s*baseTotalProcessed \+ result\.processed,\s*baseTotalSeen \+ result\.seen\s*\)/
   )
   assert.match(
     source,

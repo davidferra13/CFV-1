@@ -41,6 +41,7 @@ export const CHEF_PROTECTED_PATHS = [
   '/guests',
   '/help',
   '/import',
+  '/imports',
   '/inbox',
   '/inquiries',
   '/insights',
@@ -64,6 +65,7 @@ export const CHEF_PROTECTED_PATHS = [
   '/partners',
   '/payments',
   '/pipeline',
+  '/pie-cart',
   '/portfolio',
   '/prep/consolidation',
   '/prices',
@@ -78,6 +80,7 @@ export const CHEF_PROTECTED_PATHS = [
   '/receipts',
   '/recipes',
   '/remy',
+  '/remy/operating',
   '/reminders',
   '/reports',
   '/reputation',
@@ -156,15 +159,24 @@ export const VENDOR_PROTECTED_PATHS = ['/vendor'] as const
 export const PUBLIC_UNAUTHENTICATED_PATHS = [
   '/account-security',
   '/about',
+  '/acceptable-use',
   '/auth',
+  '/chef-agreement',
+  '/client-terms',
+  '/cookie-policy',
   '/data-request',
+  '/dmca',
   '/faq',
   '/contact',
+  '/guest-terms',
   '/pricing',
   '/privacy',
   '/privacy-policy',
+  '/refund-cancellation',
+  '/staff-terms',
   '/terms',
   '/trust',
+  '/vendor-agreement',
   '/web-research-health',
   '/unsubscribe',
   '/unauthorized',
@@ -192,6 +204,7 @@ export const PUBLIC_UNAUTHENTICATED_PATHS = [
   '/staff-login',
   '/staff-portal',
   '/vendor-signup',
+  '/partner-terms',
   '/reactivate-account',
   '/kiosk',
   '/marketplace-chefs',
@@ -222,6 +235,9 @@ export const PUBLIC_ASSET_PATHS = [
   '/inbox-sw.js',
 ] as const
 
+const PUBLIC_ASSET_PATH_PREFIXES = ['/_next/static', '/_next/image', '/images'] as const
+const PUBLIC_ASSET_EXTENSION_PATTERN = /\.(?:svg|png|jpg|jpeg|gif|webp|html)$/i
+
 export const ADMIN_PATHS = ['/admin'] as const
 
 // Prefix-based (not exact) because these are technical namespaces.
@@ -239,6 +255,7 @@ export const API_SKIP_AUTH_PREFIXES = [
   '/api/remy/landing',
   '/api/ollama-status',
   '/api/health',
+  '/api/pie',
   '/api/web-research/health',
   '/api/ai/health',
   '/api/ai/monitor',
@@ -325,7 +342,11 @@ export function isPublicUnauthenticatedPath(pathname: string): boolean {
 }
 
 export function isPublicAssetPath(pathname: string): boolean {
-  return PUBLIC_ASSET_PATHS.includes(pathname as (typeof PUBLIC_ASSET_PATHS)[number])
+  return (
+    PUBLIC_ASSET_PATHS.includes(pathname as (typeof PUBLIC_ASSET_PATHS)[number]) ||
+    PUBLIC_ASSET_PATH_PREFIXES.some((path) => matchesPathOrChild(pathname, path)) ||
+    PUBLIC_ASSET_EXTENSION_PATTERN.test(pathname)
+  )
 }
 
 export function isAdminRoutePath(pathname: string): boolean {
@@ -354,7 +375,7 @@ export function getRouteAccountMode(pathname: string): RouteAccountMode {
 export function getRoutePolicyDecisionForRole(
   pathname: string,
   role: RouteSessionRole | null | undefined,
-  options?: { isAdmin?: boolean }
+  _options?: { isAdmin?: boolean }
 ): RoutePolicyDecision {
   const mode = getRouteAccountMode(pathname)
 
@@ -368,21 +389,13 @@ export function getRoutePolicyDecisionForRole(
   }
 
   if (mode === 'admin_console') {
-    // Middleware-level admin gate: only users with isAdmin JWT claim pass.
-    // Page-level requireAdmin() provides the second check (platform_admins table).
-    if (options?.isAdmin) {
-      return {
-        allowed: true,
-        mode,
-        reason: 'admin_runtime_gate',
-        recoveryPath: null,
-      }
-    }
+    // Middleware only requires authentication for admin routes.
+    // Page-level requireAdmin() is the privileged runtime gate.
     return {
-      allowed: false,
+      allowed: true,
       mode,
-      reason: 'wrong_context',
-      recoveryPath: getHomePathForRole(role),
+      reason: 'admin_runtime_gate',
+      recoveryPath: null,
     }
   }
 

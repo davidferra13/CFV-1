@@ -57,7 +57,11 @@ const FEATURE_VARS = [
 ] as const
 
 function validateEnv(): Env {
-  const result = envSchema.safeParse(process.env)
+  const envInput = {
+    ...process.env,
+    NEXTAUTH_URL: process.env.NEXTAUTH_URL || process.env.CHEFFLOW_AUTH_ORIGIN,
+  }
+  const result = envSchema.safeParse(envInput)
 
   if (!result.success) {
     const issues = result.error.issues
@@ -77,8 +81,9 @@ function validateEnv(): Env {
 
     if (required.length > 0) {
       const msgs = required.map((i) => `  ${i.path.join('.')}: ${i.message}`)
+      const isBuildPhase = process.env.NEXT_PHASE === 'phase-production-build'
 
-      if (process.env.NODE_ENV === 'production') {
+      if (process.env.NODE_ENV === 'production' && !isBuildPhase) {
         throw new Error(`Missing required environment variables:\n${msgs.join('\n')}`)
       }
 
@@ -87,11 +92,11 @@ function validateEnv(): Env {
       )
 
       return envSchema.parse({
-        ...process.env,
+        ...envInput,
         DATABASE_URL:
           process.env.DATABASE_URL || 'postgresql://postgres:postgres@127.0.0.1:54322/postgres',
         NEXTAUTH_SECRET: process.env.NEXTAUTH_SECRET || 'dev-secret-minimum-32-characters-long!!',
-        NEXTAUTH_URL: process.env.NEXTAUTH_URL || 'http://localhost:3100',
+        NEXTAUTH_URL: envInput.NEXTAUTH_URL || 'http://localhost:3100',
       })
     }
   }

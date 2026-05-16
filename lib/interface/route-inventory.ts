@@ -7,9 +7,10 @@ import {
   isPartnerRoutePath,
   isPublicUnauthenticatedPath,
   isStaffRoutePath,
+  isVendorRoutePath,
 } from '@/lib/auth/route-policy'
 
-export type CoverageRole = 'public' | 'chef' | 'client' | 'admin' | 'staff' | 'partner'
+export type CoverageRole = 'public' | 'chef' | 'client' | 'admin' | 'staff' | 'partner' | 'vendor'
 
 export type PageRouteEntry = {
   filePath: string
@@ -64,6 +65,10 @@ export const COVERAGE_SPEC_REGISTRY: Record<CoverageRole, CoverageSpecRegistryEn
   partner: {
     manualSpecPaths: [],
     completionSpecPaths: ['tests/coverage/12-partner-routes.spec.ts'],
+  },
+  vendor: {
+    manualSpecPaths: [],
+    completionSpecPaths: ['tests/coverage/13-vendor-routes.spec.ts'],
   },
 }
 
@@ -120,6 +125,7 @@ function classifyCoverageRole(route: string, segments: string[]): CoverageRole {
   if (hasRouteGroup(segments, '(client)') || isClientRoutePath(route)) return 'client'
   if (hasRouteGroup(segments, '(staff)') || isStaffRoutePath(route)) return 'staff'
   if (hasRouteGroup(segments, '(partner)') || isPartnerRoutePath(route)) return 'partner'
+  if (hasRouteGroup(segments, '(vendor)') || isVendorRoutePath(route)) return 'vendor'
   if (hasRouteGroup(segments, '(chef)') || isChefRoutePath(route)) return 'chef'
   return 'public'
 }
@@ -297,6 +303,8 @@ export function getRoutePolicyGapsForRole(role: CoverageRole): string[] {
       return staticRoutes.filter((route) => !isStaffRoutePath(route))
     case 'partner':
       return staticRoutes.filter((route) => !isPartnerRoutePath(route))
+    case 'vendor':
+      return staticRoutes.filter((route) => !isVendorRoutePath(route))
     default:
       return []
   }

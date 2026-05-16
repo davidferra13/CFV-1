@@ -55,6 +55,8 @@ export async function scanReceipt(
  */
 export async function importReceiptPrices(params: {
   storeName: string
+  storeState?: string | null
+  storeZip?: string | null
   purchaseDate: string
   items: Array<{
     ingredientId: string
@@ -169,8 +171,8 @@ export async function importReceiptPrices(params: {
           unit: item.unit || 'each',
           quantity: item.quantity || 1,
           storeName: params.storeName,
-          storeState: null as string | null,
-          storeZip: null as string | null,
+          storeState: params.storeState ?? null,
+          storeZip: params.storeZip ?? null,
           purchaseDate: params.purchaseDate,
           tenantId,
         }))

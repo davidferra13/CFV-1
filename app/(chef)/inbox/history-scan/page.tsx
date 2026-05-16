@@ -9,7 +9,7 @@ import { getHistoricalFindings, getHistoricalScanStatus } from '@/lib/gmail/hist
 import { HistoricalFindingsList } from '@/components/gmail/historical-findings-list'
 import { ScanStatusBar } from '@/components/gmail/scan-status-bar'
 
-export const metadata: Metadata = { title: 'Email History Scan' }
+export const metadata: Metadata = { title: 'Business History Email Recovery' }
 
 export default async function HistoryScanPage() {
   await requireChef()
@@ -32,11 +32,18 @@ export default async function HistoryScanPage() {
           <span>/</span>
           <span>Email History Scan</span>
         </div>
-        <h1 className="text-2xl font-semibold text-stone-100">Email History Scan</h1>
+        <h1 className="text-2xl font-semibold text-stone-100">Business History Email Recovery</h1>
         <p className="mt-1 text-sm text-stone-400">
-          Emails from your Gmail history that may be missed booking inquiries or client
-          conversations. Review each one and import what matters.
+          Emails from your Gmail history that may be business records: inquiries, clients, past
+          events, menu preferences, payments, invoices, and follow-ups. Review each one before
+          anything is saved.
         </p>
+        <Link
+          href="/imports/business-history"
+          className="mt-3 inline-block text-sm font-medium text-brand-400 hover:text-brand-300"
+        >
+          Open unified Business History review
+        </Link>
       </div>
 
       {/* Scan status bar - auto-refreshes every 5s when scan is running */}

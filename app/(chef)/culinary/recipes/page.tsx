@@ -24,6 +24,7 @@ import {
   calculateRecipeConfidence,
   type RecipeConfidenceInput,
 } from '@/lib/recipes/confidence-score'
+import { RecipeStatusBadge } from '@/components/recipes/recipe-status-badge'
 
 export const metadata: Metadata = { title: 'Recipe Book' }
 
@@ -198,6 +199,7 @@ export default async function ChefRecipesPage() {
                         >
                           {recipe.name}
                         </Link>
+                        <RecipeStatusBadge status={recipe.status ?? 'draft'} size="sm" />
                       </div>
                     </TableCell>
                     <TableCell>

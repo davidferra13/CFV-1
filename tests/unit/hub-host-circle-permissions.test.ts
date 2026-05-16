@@ -20,58 +20,50 @@ test('host is a narrow server-side circle manager for client-facing group settin
   const src = readFile('lib/hub/group-actions.ts')
   const updateHubGroup = functionBody(src, 'updateHubGroup')
 
-  assert.ok(
-    src.includes(
-      "const GROUP_MANAGEMENT_ROLES = new Set<string>(['owner', 'admin', 'chef', 'host'])"
-    )
-  )
-  assert.ok(updateHubGroup.includes('isGroupManagementRole(membership.role)'))
+  assert.ok(src.includes('canManageThread'))
+  assert.ok(updateHubGroup.includes('canManageThread('))
+  assert.ok(updateHubGroup.includes('buildCircleActor(profile.id, membership)'))
+  assert.ok(updateHubGroup.includes('buildCircleAccessContext(groupForPolicy)'))
   assert.ok(updateHubGroup.includes(".select('id')"))
   assert.ok(updateHubGroup.includes(".eq('profile_token', input.profileToken)"))
   assert.ok(updateHubGroup.includes(".eq('group_id', input.groupId)"))
   assert.ok(updateHubGroup.includes(".eq('profile_id', profile.id)"))
-  assert.ok(!updateHubGroup.includes('tenant_id'))
 })
 
 test('host member management cannot change protected circle authority or chef permissions', () => {
   const src = readFile('lib/hub/group-actions.ts')
+  const policy = readFile('lib/hub/circle-access-policy.ts')
   const updateMemberRole = functionBody(src, 'updateMemberRole')
   const updateMemberPermissions = functionBody(src, 'updateMemberPermissions')
   const removeMember = functionBody(src, 'removeMember')
 
   assert.ok(
-    src.includes(
-      "const HOST_MANAGEABLE_MEMBER_ROLES = new Set<string>(['member', 'viewer', 'delegate'])"
+    policy.includes(
+      "const HOST_MANAGEABLE_MEMBER_ROLES = new Set<CircleActorRole>(['member', 'viewer', 'delegate'])"
     )
   )
   assert.ok(
-    src.includes(
-      "const HOST_ASSIGNABLE_MEMBER_ROLES = new Set<string>(['member', 'viewer', 'delegate'])"
-    )
+    policy.includes("const PROTECTED_MEMBER_ROLES = new Set<CircleActorRole>(['owner', 'chef'])")
   )
   assert.ok(
-    src.includes(
-      "const HOST_PROTECTED_MEMBER_ROLES = new Set<string>(['owner', 'admin', 'chef', 'host'])"
-    )
+    policy.includes("if (actorRole === 'host') return HOST_MANAGEABLE_MEMBER_ROLES.has(targetRole)")
+  )
+  assert.ok(
+    policy.includes("if (actorRole === 'host') return HOST_MANAGEABLE_MEMBER_ROLES.has(nextRole)")
   )
 
-  assert.ok(updateMemberRole.includes("target.role === 'owner'"))
-  assert.ok(updateMemberRole.includes("target.role === 'chef'"))
-  assert.ok(updateMemberRole.includes("caller.role === 'host'"))
-  assert.ok(updateMemberRole.includes("input.newRole === 'admin'"))
-  assert.ok(updateMemberRole.includes('isHostProtectedMemberRole(target.role)'))
-  assert.ok(updateMemberRole.includes('!canHostManageMemberRole(target.role)'))
-  assert.ok(updateMemberRole.includes('!HOST_ASSIGNABLE_MEMBER_ROLES.has(input.newRole)'))
+  assert.ok(updateMemberRole.includes('canAssignCircleMemberRole('))
+  assert.ok(updateMemberRole.includes('caller.actor'))
+  assert.ok(updateMemberRole.includes('caller.context'))
+  assert.ok(updateMemberRole.includes('target.role'))
+  assert.ok(updateMemberRole.includes('input.newRole'))
 
-  assert.ok(updateMemberPermissions.includes("target.role === 'owner' || target.role === 'chef'"))
-  assert.ok(updateMemberPermissions.includes("caller.role === 'host'"))
-  assert.ok(updateMemberPermissions.includes('isHostProtectedMemberRole(target.role)'))
-  assert.ok(updateMemberPermissions.includes('!canHostManageMemberRole(target.role)'))
+  assert.ok(updateMemberPermissions.includes('canManageCircleMember('))
+  assert.ok(updateMemberPermissions.includes('caller.actor'))
+  assert.ok(updateMemberPermissions.includes('caller.context'))
+  assert.ok(updateMemberPermissions.includes('target.role'))
 
-  assert.ok(removeMember.includes("target.role === 'owner'"))
-  assert.ok(removeMember.includes("caller.role === 'host'"))
-  assert.ok(removeMember.includes('isHostProtectedMemberRole(target.role)'))
-  assert.ok(removeMember.includes('!canHostManageMemberRole(target.role)'))
+  assert.ok(removeMember.includes('canManageCircleMember('))
 })
 
 test('sole host cannot leave when no owner admin or other host remains', () => {

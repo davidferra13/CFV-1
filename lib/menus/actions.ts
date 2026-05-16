@@ -18,7 +18,7 @@ import { executeWithIdempotency } from '@/lib/mutations/idempotency'
 import { createConflictError } from '@/lib/mutations/conflict'
 import { UnknownAppError } from '@/lib/errors/app-error'
 import { isMissingSoftDeleteColumn } from '@/lib/mutations/soft-delete-compat'
-import { normalizePagination, buildPaginationMeta } from '@/lib/search/search-helpers'
+import { normalizePagination, buildPaginationMeta, ftsMatchIds } from '@/lib/search/search-helpers'
 import type { PaginationMeta } from '@/lib/search/search-types'
 import { escapeLikePattern } from '@/lib/db/escape-like'
 import { getDuplicateCourseError } from '@/lib/menus/course-utils'
@@ -404,6 +404,15 @@ export async function getMenusPaginated({
   } = normalizePagination({ page, pageSize })
   const to = offset + normalizedPageSize - 1
 
+  // Try FTS for search, fall back to ILIKE if migration not applied
+  let ftsIds: string[] | null = null
+  if (search && search.trim()) {
+    ftsIds = await ftsMatchIds('menus', user.tenantId!, search)
+    if (ftsIds !== null && ftsIds.length === 0) {
+      return { menus: [], pagination: buildPaginationMeta(0, normalizedPage, normalizedPageSize) }
+    }
+  }
+
   const buildQuery = (withSoftDeleteFilter: boolean) => {
     let query = db.from('menus').select('*', { count: 'exact' }).eq('tenant_id', user.tenantId!)
     if (withSoftDeleteFilter) {
@@ -413,8 +422,12 @@ export async function getMenusPaginated({
       query = query.eq('status', statusFilter)
     }
     if (search && search.trim()) {
-      const escaped = escapeLikePattern(search.trim())
-      query = query.ilike('name', `%${escaped}%`)
+      if (ftsIds !== null) {
+        query = query.in('id', ftsIds)
+      } else {
+        const escaped = escapeLikePattern(search.trim())
+        query = query.ilike('name', `%${escaped}%`)
+      }
     }
     return query
   }

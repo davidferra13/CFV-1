@@ -127356,6 +127356,23 @@
           "method": "btree",
           "with": {}
         },
+        "idx_directory_listings_city_trgm": {
+          "name": "idx_directory_listings_city_trgm",
+          "columns": [
+            {
+              "expression": "city",
+              "asc": true,
+              "nulls": "last",
+              "opclass": "gin_trgm_ops",
+              "isExpression": false
+            }
+          ],
+          "isUnique": false,
+          "concurrently": false,
+          "method": "gin",
+          "where": "((city IS NOT NULL) AND (status = ANY (ARRAY['discovered'::text, 'claimed'::text, 'verified'::text])))",
+          "with": {}
+        },
         "idx_directory_listings_city": {
           "name": "idx_directory_listings_city",
           "columns": [
@@ -127495,6 +127512,132 @@
         },
         "directory_listings_public_read": {
           "name": "directory_listings_public_read",
+          "as": "PERMISSIVE",
+          "for": "SELECT",
+          "to": ["public"]
+        }
+      },
+      "isRLSEnabled": true
+    },
+    "public.directory_listing_favorites": {
+      "name": "directory_listing_favorites",
+      "schema": "",
+      "columns": {
+        "id": {
+          "name": "id",
+          "type": "uuid",
+          "primaryKey": true,
+          "notNull": true,
+          "default": "gen_random_uuid()"
+        },
+        "client_id": {
+          "name": "client_id",
+          "type": "uuid",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "listing_id": {
+          "name": "listing_id",
+          "type": "uuid",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "created_at": {
+          "name": "created_at",
+          "type": "timestamp with time zone",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "now()"
+        }
+      },
+      "indexes": {
+        "idx_directory_listing_favorites_client_created": {
+          "name": "idx_directory_listing_favorites_client_created",
+          "columns": [
+            {
+              "expression": "client_id",
+              "asc": true,
+              "nulls": "last",
+              "opclass": "uuid_ops",
+              "isExpression": false
+            },
+            {
+              "expression": "created_at",
+              "asc": false,
+              "nulls": "first",
+              "opclass": "timestamptz_ops",
+              "isExpression": false
+            }
+          ],
+          "isUnique": false,
+          "concurrently": false,
+          "method": "btree",
+          "with": {}
+        },
+        "idx_directory_listing_favorites_listing": {
+          "name": "idx_directory_listing_favorites_listing",
+          "columns": [
+            {
+              "expression": "listing_id",
+              "asc": true,
+              "nulls": "last",
+              "opclass": "uuid_ops",
+              "isExpression": false
+            }
+          ],
+          "isUnique": false,
+          "concurrently": false,
+          "method": "btree",
+          "with": {}
+        }
+      },
+      "foreignKeys": {
+        "directory_listing_favorites_client_id_fkey": {
+          "name": "directory_listing_favorites_client_id_fkey",
+          "tableFrom": "directory_listing_favorites",
+          "tableTo": "clients",
+          "schemaTo": "public",
+          "columnsFrom": ["client_id"],
+          "columnsTo": ["id"],
+          "onDelete": "cascade",
+          "onUpdate": "no action"
+        },
+        "directory_listing_favorites_listing_id_fkey": {
+          "name": "directory_listing_favorites_listing_id_fkey",
+          "tableFrom": "directory_listing_favorites",
+          "tableTo": "directory_listings",
+          "schemaTo": "public",
+          "columnsFrom": ["listing_id"],
+          "columnsTo": ["id"],
+          "onDelete": "cascade",
+          "onUpdate": "no action"
+        }
+      },
+      "compositePrimaryKeys": {},
+      "uniqueConstraints": {
+        "directory_listing_favorites_client_id_listing_id_key": {
+          "columns": ["client_id", "listing_id"],
+          "nullsNotDistinct": false,
+          "name": "directory_listing_favorites_client_id_listing_id_key"
+        }
+      },
+      "checkConstraints": {},
+      "policies": {
+        "directory_listing_favorites_client_delete": {
+          "name": "directory_listing_favorites_client_delete",
+          "as": "PERMISSIVE",
+          "for": "DELETE",
+          "to": ["public"],
+          "using": "(client_id = ( SELECT user_roles.entity_id\n   FROM user_roles\n  WHERE ((user_roles.auth_user_id = auth.uid()) AND (user_roles.role = 'client'::user_role))\n LIMIT 1))"
+        },
+        "directory_listing_favorites_client_insert": {
+          "name": "directory_listing_favorites_client_insert",
+          "as": "PERMISSIVE",
+          "for": "INSERT",
+          "to": ["public"]
+        },
+        "directory_listing_favorites_client_read": {
+          "name": "directory_listing_favorites_client_read",
           "as": "PERMISSIVE",
           "for": "SELECT",
           "to": ["public"]

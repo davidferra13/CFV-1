@@ -580,32 +580,22 @@ function Ensure-MissionControlTrayRunning {
 }
 
 function Ensure-DevServerRunning {
-    Clear-ExitedManagedProcess 'dev'
-
-    if (Test-PortInUse $devPort) {
-        if (Test-PortOwnedByProject $devPort) {
-            return
-        }
-
-        Write-Log "Port $devPort occupied by non-ChefFlow process. Reclaiming before dev launch."
-        Stop-NonProjectPortOwners $devPort
-        return
-    }
-
-    if (Test-ManagedProcessRunning 'dev') {
-        return
-    }
-
     if (-not (Ensure-PostgresRunning)) {
         return
     }
 
-    Write-Log "[dev] Launching dev server on port $devPort."
-    Start-ManagedProcess `
-        -Key 'dev' `
-        -Label '[dev] Dev server' `
-        -FileName $nodeExe `
-        -Arguments "`"$projectDir\node_modules\next\dist\bin\next`" dev -p $devPort -H 0.0.0.0"
+    try {
+        $output = & $nodeExe "$projectDir\scripts\dev-runtime.mjs" start 2>&1
+        if ($LASTEXITCODE -eq 0) {
+            if ($output) {
+                Write-Log "[dev] Runtime controller: $output"
+            }
+        } else {
+            Write-Log "[dev] Runtime controller failed: $output"
+        }
+    } catch {
+        Write-Log "[dev] Runtime controller exception: $($_.Exception.Message)"
+    }
 }
 
 function Ensure-BetaServerRunning {

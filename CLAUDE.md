@@ -9,7 +9,7 @@ This file is read by Claude Code at the start of every conversation. These rules
 > 1. **Test your own work.** Playwright + agent account (`.auth/agent.json`). After writing code: sign in, navigate, screenshot, verify. If broken, fix it.
 > 2. **Keep moving.** If you know the next step, do it. No unnecessary back-and-forth.
 > 3. **Be terse.** No caveats, no restating, no multiple options when one is right.
-> 4. **Start dead things, don't kill live things.** Dead server? Start it. Running server? Don't kill it.
+> 4. **Use the canonical app server.** Reuse `http://localhost:3100` for ChefFlow app work. If it is stale or broken, restart it. Do not start duplicate app servers on random ports.
 > 5. **FIX IT, DON'T REPORT IT.** Broken/dirty/unhealthy = fix it silently. Never report without fixing.
 > 6. **Act, don't ask.** If you can determine the answer from context, code, memory, or prior conversations, act. Only ask about irreversible actions, ambiguous product decisions, or unspecified scope.
 > 7. **DELEGATE BUILDS.** Main session = architect/coordinator. Build work goes to parallel agents (Agent tool, `model: "haiku"` for mechanical, `model: "opus"` for complex). Only build directly for tiny fixes (< 20 lines) or debugging requiring conversation context. Dispatch multiple agents in parallel when tasks are independent. NEVER single-handedly build an entire feature in main session.
@@ -181,6 +181,18 @@ Run `/close-session`. Commit + push. Work must be on GitHub before signing off.
 ### Agent Testing
 
 Credentials in `.auth/agent.json`. Sign in via `POST http://localhost:3100/api/e2e/auth`. Full loop: test, find bugs, fix bugs, verify fixes.
+
+### Canonical Dev Server
+
+- ChefFlow app work uses `http://localhost:3100` from `npm run dev`.
+- Before starting a server, check whether `3100` is already serving this checkout.
+- If `3100` is running, reuse it. Do not start another ChefFlow app server on `3116`, `3135`, `3201`, or any other ad hoc port.
+- If `3100` is unhealthy, restart the canonical server instead of creating a second server.
+- Alternate ChefFlow app ports require explicit test isolation or an approved separate worktree. State the reason, port, checkout path, and cleanup plan.
+- Stop temporary test servers after verification unless the user asks to keep them running.
+- Do not touch unrelated external project servers such as the Wix rebuild unless explicitly asked.
+- Mission Control, Persona inbox, sync daemons, Playwright MCP, Ollama, and cloudflared are tools, not duplicate app builds. Do not stop them unless the task is specifically about those tools.
+- Closeout must name the exact URL verified. Normal app closeout should verify `http://localhost:3100`.
 
 ---
 

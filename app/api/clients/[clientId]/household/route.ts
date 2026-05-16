@@ -4,6 +4,7 @@ import {
   removeClientHouseholdMember,
   updateClientHouseholdMember,
 } from '@/lib/hub/household-actions'
+import { requireChef } from '@/lib/auth/get-user'
 
 interface RouteContext {
   params: {
@@ -25,6 +26,8 @@ function mutationResponse(result: { success: boolean; error?: string }) {
 }
 
 export async function POST(request: NextRequest, { params }: RouteContext) {
+  await requireChef()
+
   const body = await readJson(request)
   if (!body) {
     return mutationResponse({ success: false, error: 'Invalid household member payload' })
@@ -39,6 +42,8 @@ export async function POST(request: NextRequest, { params }: RouteContext) {
 }
 
 export async function PATCH(request: NextRequest, { params }: RouteContext) {
+  await requireChef()
+
   const body = await readJson(request)
   if (!body) {
     return mutationResponse({ success: false, error: 'Invalid household member payload' })
@@ -53,6 +58,8 @@ export async function PATCH(request: NextRequest, { params }: RouteContext) {
 }
 
 export async function DELETE(request: NextRequest, { params }: RouteContext) {
+  await requireChef()
+
   const body = await readJson(request)
   if (!body) {
     return mutationResponse({ success: false, error: 'Invalid household member payload' })

@@ -16,7 +16,7 @@ import crypto from 'crypto'
  * Tokens created before hashing was introduced are stored as plaintext hex;
  * this function produces the SHA-256 hex digest used for new tokens.
  */
-export function hashToken(raw: string): string {
+export async function hashToken(raw: string): Promise<string> {
   return crypto.createHash('sha256').update(raw).digest('hex')
 }
 
@@ -27,7 +27,7 @@ export function hashToken(raw: string): string {
  */
 export async function getInvitationByToken(token: string) {
   const db: any = createServerClient()
-  const hashed = hashToken(token)
+  const hashed = await hashToken(token)
 
   // Try hashed match first (new tokens)
   const { data: invitation } = await db

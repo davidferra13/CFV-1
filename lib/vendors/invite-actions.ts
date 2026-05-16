@@ -7,6 +7,7 @@ import { eq, and, sql } from 'drizzle-orm'
 import { hashToken } from '@/lib/auth/invitations'
 import { randomUUID } from 'crypto'
 import { hash } from 'bcryptjs'
+import { recordPolicyAcceptancesForSubject } from '@/lib/legal/persistence'
 
 const APP_URL = process.env.NEXT_PUBLIC_APP_URL || 'http://localhost:3000'
 
@@ -31,7 +32,7 @@ export async function generateVendorInvite(vendorId: string): Promise<{
   }
 
   const token = randomUUID()
-  const hashedToken = hashToken(token)
+  const hashedToken = await hashToken(token)
 
   await db.execute(
     sql`INSERT INTO vendor_invitations (tenant_id, vendor_id, email, token, expires_at, created_by)
@@ -46,13 +47,18 @@ export async function generateVendorInvite(vendorId: string): Promise<{
 export async function claimVendorInvite(
   token: string,
   email: string,
-  password: string
+  password: string,
+  acceptedLegalTerms: boolean
 ): Promise<{ success: true } | { error: string }> {
+  if (!acceptedLegalTerms) {
+    return { error: 'You must accept the required ChefFlow policies.' }
+  }
+
   if (!token || token.length < 10) {
     return { error: 'Invalid invitation token' }
   }
 
-  const hashedToken = hashToken(token)
+  const hashedToken = await hashToken(token)
 
   const result = await db.execute(
     sql`SELECT vi.id, vi.tenant_id, vi.vendor_id, vi.email, vi.used_at, vi.expires_at,
@@ -109,6 +115,20 @@ export async function claimVendorInvite(
     })
 
     await db.execute(sql`UPDATE vendor_invitations SET used_at = NOW() WHERE id = ${invitation.id}`)
+
+    const acceptanceResult = await recordPolicyAcceptancesForSubject({
+      role: 'vendor',
+      userId: authUserId,
+      tenantId: invitation.tenant_id as string,
+      subjectId: invitation.vendor_id as string,
+      source: 'auth/vendor-invite-claim',
+    })
+    if (!acceptanceResult.success || acceptanceResult.warning) {
+      console.warn('[claimVendorInvite] Legal acceptance persistence warning', {
+        vendorId: invitation.vendor_id,
+        warning: acceptanceResult.warning,
+      })
+    }
 
     return { success: true }
   } catch (e) {

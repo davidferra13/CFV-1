@@ -1,7 +1,7 @@
 'use server'
 
 import { createServerClient } from '@/lib/db/server'
-import { requireChef } from '@/lib/auth/get-user'
+import { requireChefTenantScope } from '@/lib/db/tenant-scope'
 import { revalidatePath } from 'next/cache'
 import { z } from 'zod'
 
@@ -43,6 +43,12 @@ export type VendorInput = {
   is_preferred?: boolean
 }
 
+export type VendorListInput = {
+  limit?: number
+  offset?: number
+  search?: string
+}
+
 const UpdateVendorSchema = CreateVendorSchema.partial()
 export type UpdateVendorInput = z.infer<typeof UpdateVendorSchema>
 
@@ -51,12 +57,11 @@ export type UpdateVendorInput = z.infer<typeof UpdateVendorSchema>
 // ============================================
 
 export async function createVendor(input: VendorInput | CreateVendorInput) {
-  const user = await requireChef()
+  const vendorScope = await requireChefTenantScope('chef_id')
   const db: any = createServerClient()
 
-  const { data: vendor, error } = await db
-    .from('vendors')
-    .insert({
+  const { data: vendor, error } = await vendorScope
+    .insert(db.from('vendors'), {
       name: input.name,
       phone: input.phone || null,
       email: input.email || null,
@@ -66,7 +71,6 @@ export async function createVendor(input: VendorInput | CreateVendorInput) {
       website: ('website' in input ? input.website : undefined) || null,
       is_preferred: ('is_preferred' in input ? input.is_preferred : false) || false,
       status: 'active',
-      chef_id: user.tenantId!,
     })
     .select()
     .single()
@@ -81,7 +85,7 @@ export async function createVendor(input: VendorInput | CreateVendorInput) {
 }
 
 export async function updateVendor(id: string, input: UpdateVendorInput) {
-  const user = await requireChef()
+  const vendorScope = await requireChefTenantScope('chef_id')
   const db: any = createServerClient()
   const data = UpdateVendorSchema.parse(input)
 
@@ -95,11 +99,9 @@ export async function updateVendor(id: string, input: UpdateVendorInput) {
   if (data.payment_terms !== undefined) updateData.payment_terms = data.payment_terms || null
   if (data.notes !== undefined) updateData.notes = data.notes || null
 
-  const { error } = await db
-    .from('vendors')
-    .update(updateData)
-    .eq('id', id)
-    .eq('chef_id', user.tenantId!)
+  const { error } = (await vendorScope.updateById(db.from('vendors'), id, updateData)) as {
+    error: unknown
+  }
 
   if (error) {
     console.error('[vendors] updateVendor error:', error)
@@ -111,14 +113,12 @@ export async function updateVendor(id: string, input: UpdateVendorInput) {
 }
 
 export async function deactivateVendor(id: string) {
-  const user = await requireChef()
+  const vendorScope = await requireChefTenantScope('chef_id')
   const db: any = createServerClient()
 
-  const { error } = await db
-    .from('vendors')
-    .update({ status: 'inactive' })
-    .eq('id', id)
-    .eq('chef_id', user.tenantId!)
+  const { error } = (await vendorScope.updateById(db.from('vendors'), id, {
+    status: 'inactive',
+  })) as { error: unknown }
 
   if (error) {
     console.error('[vendors] deactivateVendor error:', error)
@@ -129,14 +129,10 @@ export async function deactivateVendor(id: string) {
 }
 
 export async function listVendors(activeOnly = true) {
-  const user = await requireChef()
+  const vendorScope = await requireChefTenantScope('chef_id')
   const db: any = createServerClient()
 
-  let q = db
-    .from('vendors')
-    .select('*')
-    .eq('chef_id', user.tenantId!)
-    .order('name', { ascending: true })
+  let q = vendorScope.apply(db.from('vendors').select('*')).order('name', { ascending: true })
 
   if (activeOnly) {
     q = q.eq('status', 'active')
@@ -152,15 +148,43 @@ export async function listVendors(activeOnly = true) {
   return data ?? []
 }
 
+export async function listVendorsPage(activeOnly = true, input: VendorListInput = {}) {
+  const vendorScope = await requireChefTenantScope('chef_id')
+  const db: any = createServerClient()
+  const limit = Math.min(Math.max(input.limit ?? 25, 1), 100)
+  const offset = Math.max(input.offset ?? 0, 0)
+  const search = input.search?.trim()
+
+  let q = vendorScope
+    .apply(db.from('vendors').select('*', { count: 'exact' }))
+    .order('is_preferred', { ascending: false })
+    .order('name', { ascending: true })
+    .range(offset, offset + limit - 1)
+
+  if (activeOnly) {
+    q = q.eq('status', 'active')
+  }
+
+  if (search) {
+    q = q.filter('search_vector', 'wfts(english)', search)
+  }
+
+  const { data, error, count } = await q
+
+  if (error) {
+    console.error('[vendors] listVendorsPage error:', error)
+    throw new Error('Failed to list vendors')
+  }
+
+  return { items: data ?? [], total: count ?? 0 }
+}
+
 export async function getVendor(id: string) {
-  const user = await requireChef()
+  const vendorScope = await requireChefTenantScope('chef_id')
   const db: any = createServerClient()
 
-  const { data: vendor, error } = await db
-    .from('vendors')
-    .select('*')
-    .eq('id', id)
-    .eq('chef_id', user.tenantId!)
+  const { data: vendor, error } = await vendorScope
+    .byId(db.from('vendors').select('*'), id)
     .single()
 
   if (error) {
@@ -169,21 +193,18 @@ export async function getVendor(id: string) {
   }
 
   // Also fetch vendor items
-  const { data: items } = await db
-    .from('vendor_items')
-    .select('*')
-    .eq('vendor_id', id)
-    .eq('chef_id', user.tenantId!)
+  const { data: items } = await vendorScope
+    .apply(db.from('vendor_items').select('*').eq('vendor_id', id))
     .order('vendor_item_name', { ascending: true })
 
   return { ...vendor, items: items ?? [] }
 }
 
 export async function deleteVendor(id: string) {
-  const user = await requireChef()
+  const vendorScope = await requireChefTenantScope('chef_id')
   const db: any = createServerClient()
 
-  const { error } = await db.from('vendors').delete().eq('id', id).eq('chef_id', user.tenantId!)
+  const { error } = (await vendorScope.deleteById(db.from('vendors'), id)) as { error: unknown }
 
   if (error) {
     console.error('[vendors] deleteVendor error:', error)
@@ -194,14 +215,12 @@ export async function deleteVendor(id: string) {
 }
 
 export async function setVendorPreferred(id: string, preferred: boolean) {
-  const user = await requireChef()
+  const vendorScope = await requireChefTenantScope('chef_id')
   const db: any = createServerClient()
 
-  const { error } = await db
-    .from('vendors')
-    .update({ is_preferred: preferred })
-    .eq('id', id)
-    .eq('chef_id', user.tenantId!)
+  const { error } = (await vendorScope.updateById(db.from('vendors'), id, {
+    is_preferred: preferred,
+  })) as { error: unknown }
 
   if (error) {
     console.error('[vendors] setVendorPreferred error:', error)

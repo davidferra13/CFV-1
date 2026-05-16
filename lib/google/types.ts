@@ -52,7 +52,17 @@ export interface ParsedEmail {
   precedence: string // "bulk", "list", "junk" - mass email indicator
 }
 
-export type EmailCategory = 'inquiry' | 'existing_thread' | 'personal' | 'spam' | 'marketing'
+export type EmailCategory =
+  | 'inquiry'
+  | 'existing_thread'
+  | 'client'
+  | 'event'
+  | 'preference'
+  | 'payment_invoice'
+  | 'follow_up'
+  | 'personal'
+  | 'spam'
+  | 'marketing'
 
 export interface EmailClassification {
   category: EmailCategory

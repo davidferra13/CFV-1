@@ -3,6 +3,7 @@
 import { createServerClient } from '@/lib/db/server'
 import { requireChef } from '@/lib/auth/get-user'
 import { revalidatePath } from 'next/cache'
+import { recordPolicyAcceptancesForSubject } from '@/lib/legal/persistence'
 import {
   linkDirectoryListingToChefAccount,
   resolveChefDirectoryListingLink,
@@ -276,18 +277,33 @@ export async function getOnboardingProgressSummary() {
 export async function completeOnboardingWizard() {
   const user = await requireChef()
   const db: any = createServerClient()
+  const completedAt = new Date().toISOString()
 
   const { error } = await db
     .from('chefs')
     .update({
-      onboarding_completed_at: new Date().toISOString(),
-      onboarding_banner_dismissed_at: new Date().toISOString(),
+      onboarding_completed_at: completedAt,
+      onboarding_banner_dismissed_at: completedAt,
     })
     .eq('id', user.entityId)
 
   if (error) {
     console.error('[onboarding] Failed to mark wizard complete', error)
     return { success: false, error: 'Failed to complete onboarding' }
+  }
+
+  const acceptanceResult = await recordPolicyAcceptancesForSubject({
+    role: 'chef',
+    userId: user.authUserId,
+    tenantId: user.tenantId ?? user.entityId,
+    subjectId: user.entityId,
+    source: 'onboarding/wizard-complete',
+  })
+  if (!acceptanceResult.success || acceptanceResult.warning) {
+    console.warn('[onboarding] Legal acceptance persistence warning', {
+      chefId: user.entityId,
+      warning: acceptanceResult.warning,
+    })
   }
 
   revalidatePath('/dashboard')

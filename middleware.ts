@@ -6,6 +6,7 @@ import {
   isPublicAssetPath,
   isPublicUnauthenticatedPath,
   getRoutePolicyDecisionForRole,
+  getHomePathForRole,
 } from '@/lib/auth/route-policy'
 import { isKnowledgeIngredientPubliclyIndexable } from '@/lib/openclaw/public-ingredient-publish'
 import {
@@ -168,6 +169,13 @@ export default auth(async (request) => {
 
   // Auth.js attaches the decoded JWT session to request.auth
   const session = request.auth
+
+  // Authenticated users on "/" redirect to their role home (skip with ?public=true)
+  const showPublicHomepage = request.nextUrl.searchParams.get('public') === 'true'
+  if (session?.user && pathname === '/' && !showPublicHomepage) {
+    const homePath = getHomePathForRole(session.user.role)
+    return withRequestId(NextResponse.redirect(buildRedirectUrl(request, homePath), 302), requestId)
+  }
 
   if (!session?.user) {
     if (pathname === '/') {

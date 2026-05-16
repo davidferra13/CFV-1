@@ -247,7 +247,13 @@ export const authConfig: NextAuthConfig = {
         const roleInfo = await resolveRoleAndTenant(user.id)
 
         // Check if MFA is enabled for this user
-        const mfaEnabled = await userHasMfaEnabled(user.id)
+        // Wrapped in try/catch: MFA tables may not exist yet (migration pending)
+        let mfaEnabled = false
+        try {
+          mfaEnabled = await userHasMfaEnabled(user.id)
+        } catch (mfaErr) {
+          console.error('[auth] MFA check failed (table may not exist):', (mfaErr as Error).message)
+        }
         if (mfaEnabled) {
           const mfaType = await getMfaMethodType(user.id)
           const { challengeId } = await createMfaChallenge(user.id, mfaType ?? 'totp')

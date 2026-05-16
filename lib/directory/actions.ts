@@ -106,6 +106,32 @@ export const getDiscoverableChefs = unstable_cache(
   { revalidate: 300, tags: ['directory-chefs'] }
 )
 
+export const getDirectorySearchChefIds = unstable_cache(
+  getDirectorySearchChefIdsUncached,
+  ['directory-search-chef-ids'],
+  { revalidate: 300, tags: ['directory-chefs'] }
+)
+
+async function getDirectorySearchChefIdsUncached(query: string): Promise<string[]> {
+  const term = query.trim()
+  if (!term) return []
+
+  const db = createServerClient({ admin: true })
+  const { data, error } = await (db as any)
+    .from('chef_directory_listings')
+    .select('chef_id')
+    .eq('is_published', true)
+    .filter('search_vector', 'wfts(english)', term)
+    .limit(200)
+
+  if (error) {
+    console.error('[getDirectorySearchChefIds]', error)
+    return []
+  }
+
+  return Array.from(new Set((data ?? []).map((row: any) => row.chef_id).filter(Boolean)))
+}
+
 async function getDiscoverableChefsUncached(): Promise<DirectoryChef[]> {
   const db = createServerClient({ admin: true })
 

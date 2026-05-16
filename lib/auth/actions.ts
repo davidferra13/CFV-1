@@ -30,6 +30,7 @@ import { extractRequestMetadata } from '@/lib/platform-observability/context'
 import { appendAccountSecurityControlEvent } from './account-access'
 import { requireAccessSessionSubject } from './access-session'
 import { passwordPolicySchema } from './password-policy'
+import { recordPolicyAcceptancesForSubject } from '@/lib/legal/persistence'
 
 const ChefSignupSchema = z.object({
   email: z.string().email('Valid email required'),
@@ -37,6 +38,9 @@ const ChefSignupSchema = z.object({
   business_name: z.string().optional(),
   phone: z.string().optional(),
   signup_ref: z.string().optional(),
+  accepted_legal_terms: z
+    .boolean()
+    .refine((accepted) => accepted, 'You must accept the required ChefFlow policies'),
 })
 
 const ClientSignupSchema = z.object({
@@ -45,6 +49,9 @@ const ClientSignupSchema = z.object({
   full_name: z.string().min(1, 'Full name required'),
   phone: z.string().optional(),
   invitation_token: z.string().optional(),
+  accepted_legal_terms: z
+    .boolean()
+    .refine((accepted) => accepted, 'You must accept the required ChefFlow policies'),
 })
 
 const SignInSchema = z.object({
@@ -147,6 +154,28 @@ async function recordAccountCreatedEvent(input: {
       ...input.metadata,
     },
   })
+}
+
+async function recordSignupLegalAcceptance(input: {
+  role: 'chef' | 'client' | 'staff' | 'vendor' | 'partner'
+  userId: string
+  tenantId?: string | null
+  subjectId?: string | null
+  source: string
+}) {
+  try {
+    const result = await recordPolicyAcceptancesForSubject(input)
+    if (!result.success || result.warning) {
+      log.auth.warn('Signup legal acceptance persistence warning', {
+        context: { role: input.role, userId: input.userId, warning: result.warning },
+      })
+    }
+  } catch (error) {
+    log.auth.warn('Signup legal acceptance persistence failed (non-blocking)', {
+      error,
+      context: { role: input.role, userId: input.userId },
+    })
+  }
 }
 
 /**
@@ -276,6 +305,14 @@ export async function signUpChef(input: ChefSignupInput) {
       },
     })
 
+    await recordSignupLegalAcceptance({
+      role: 'chef',
+      userId: authUserId,
+      tenantId: chef.id,
+      subjectId: chef.id,
+      source: isBetaSignup ? 'auth/chef-beta-signup' : 'auth/chef-signup',
+    })
+
     // Auto-signin after successful signup
     try {
       await nextAuthSignIn('credentials', {
@@ -367,6 +404,14 @@ export async function signUpClient(input: ClientSignupInput) {
       if (invitationId) {
         await markInvitationUsed(invitationId)
       }
+
+      await recordSignupLegalAcceptance({
+        role: 'client',
+        userId: existingUser.id,
+        tenantId,
+        subjectId: client.id,
+        source: 'auth/client-invitation-existing-user',
+      })
 
       return { success: true, userId: existingUser.id, autoSignedIn: false, existingUser: true }
     }
@@ -482,6 +527,14 @@ export async function signUpClient(input: ClientSignupInput) {
         invitation_id: invitationId,
         tenant_id: tenantId,
       },
+    })
+
+    await recordSignupLegalAcceptance({
+      role: 'client',
+      userId: authUserId,
+      tenantId,
+      subjectId: client.id,
+      source: invitationId ? 'auth/client-invitation-signup' : 'auth/client-signup',
     })
 
     // Auto-signin after successful signup

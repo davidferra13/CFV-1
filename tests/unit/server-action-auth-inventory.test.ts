@@ -329,6 +329,33 @@ export async function syncOrderCache() {
   })
 })
 
+test('buildServerActionMutationInventory treats requireChefTenantScope as session-derived tenant scope', () => {
+  withFixtureRoot((rootDir) => {
+    writeFixtureFile(
+      rootDir,
+      'lib/vendors/actions.ts',
+      `'use server'
+import { requireChefTenantScope } from '@/lib/db/tenant-scope'
+import { revalidatePath } from 'next/cache'
+
+export async function createVendor(input: { name: string }) {
+  const vendorScope = await requireChefTenantScope('chef_id')
+  await vendorScope.insert(db.from('vendors'), { name: input.name })
+  revalidatePath('/vendors')
+  return { ok: true }
+}
+`
+    )
+
+    const inventory = buildServerActionMutationInventory({ rootDir })
+    const entry = inventory.entries.find((item) => item.functionName === 'createVendor')
+
+    assert.equal(entry?.authClassification, 'auth-guarded')
+    assert.equal(entry?.guardTiming, 'early')
+    assert.equal(entry?.tenantScopeSignal, 'session-derived')
+  })
+})
+
 test('buildServerActionMutationInventory classifies critical privileged actions separately from standard writes', () => {
   withFixtureRoot((rootDir) => {
     writeFixtureFile(

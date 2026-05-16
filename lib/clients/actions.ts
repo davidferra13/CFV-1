@@ -1144,6 +1144,80 @@ export async function getClientsWithStats() {
   }))
 }
 
+export async function getClientsWithStatsPage(
+  input: {
+    limit?: number
+    offset?: number
+    search?: string
+  } = {}
+) {
+  const user = await requireChef()
+  const db: any = createServerClient()
+  const limit = Math.min(Math.max(input.limit ?? 50, 1), 200)
+  const offset = Math.max(input.offset ?? 0, 0)
+  const search = input.search?.trim()
+
+  let clientsQuery = db
+    .from('clients')
+    .select('*', { count: 'exact' })
+    .eq('tenant_id', user.tenantId!)
+    .is('deleted_at' as any, null)
+    .order('created_at', { ascending: false })
+    .range(offset, offset + limit - 1)
+
+  if (search) {
+    clientsQuery = clientsQuery.filter('search_vector', 'wfts(english)', search)
+  }
+
+  const { data: clients, error: clientsError, count } = await clientsQuery
+
+  if (clientsError) {
+    console.error('[getClientsWithStatsPage] Error:', clientsError)
+    throw new UnknownAppError('Failed to fetch clients')
+  }
+
+  const clientIds = (clients ?? []).map((client: any) => client.id)
+  const { data: financialSummaries } =
+    clientIds.length > 0
+      ? await db
+          .from('client_financial_summary')
+          .select('*')
+          .eq('tenant_id', user.tenantId!)
+          .in('client_id', clientIds)
+      : { data: [] as any[] }
+
+  const statsMap = new Map<
+    string,
+    {
+      totalEvents: number
+      totalSpentCents: number
+      lastEventDate: string | null
+    }
+  >()
+
+  if (financialSummaries) {
+    for (const summary of financialSummaries) {
+      if (summary.client_id) {
+        statsMap.set(summary.client_id, {
+          totalEvents: summary.total_events_count ?? 0,
+          totalSpentCents: summary.lifetime_value_cents ?? 0,
+          lastEventDate: summary.last_event_date,
+        })
+      }
+    }
+  }
+
+  return {
+    items: (clients ?? []).map((client: any) => ({
+      ...client,
+      totalEvents: statsMap.get(client.id)?.totalEvents ?? 0,
+      totalSpentCents: statsMap.get(client.id)?.totalSpentCents ?? 0,
+      lastEventDate: statsMap.get(client.id)?.lastEventDate ?? null,
+    })),
+    total: count ?? 0,
+  }
+}
+
 /**
  * Get events for a specific client (chef-only)
  */

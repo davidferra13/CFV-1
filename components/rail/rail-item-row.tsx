@@ -5,8 +5,10 @@ import { useTransition } from 'react'
 import type { GodModeResolvedItem } from '@/lib/discovery/god-mode-types'
 import type { InlineAction } from '@/lib/discovery/god-mode-types'
 import { executeInlineAction } from '@/lib/discovery/inline-action-registry'
+import { EvidencePill } from '@/components/evidence/evidence-pill'
 import { useRouter } from 'next/navigation'
 import { cn } from '@/lib/utils'
+import { formatRailMemoryLine } from '@/lib/operating-loop/rail-memory'
 
 const ICON_MAP: Record<string, string> = {
   lightning: '\u26a1',
@@ -14,6 +16,7 @@ const ICON_MAP: Record<string, string> = {
   dollar: '\ud83d\udcb0',
   calendar: '\ud83d\udcc5',
   document: '\ud83d\udcc4',
+  network: '\ud83e\udd1d',
 }
 
 const ACTION_VARIANT_CLASSES: Record<string, string> = {
@@ -71,6 +74,7 @@ export function RailItemRow({
   const router = useRouter()
   const icon = item.icon ? (ICON_MAP[item.icon] ?? item.icon) : null
   const hasDestination = !!item.destination
+  const memoryLine = formatRailMemoryLine(item)
 
   const handleActionComplete = (redirect?: string) => {
     if (redirect) router.push(redirect)
@@ -90,7 +94,23 @@ export function RailItemRow({
         </span>
       )}
 
-      <span className="text-sm text-stone-200 truncate flex-1 min-w-0">{item.label}</span>
+      <span className="flex min-w-0 flex-1 flex-col gap-0.5">
+        <span className="flex min-w-0 items-center gap-2">
+          <span className="truncate text-sm text-stone-200">{item.label}</span>
+          {item.evidenceLabel && (
+            <EvidencePill
+              label={item.evidenceLabel}
+              source={item.sourceKind}
+              confidence={item.confidence}
+              timestamp={item.resumeContext?.timestamp ?? undefined}
+              href={item.proofHref ?? item.destination}
+              compact
+              className="hidden shrink-0 sm:inline-flex"
+            />
+          )}
+        </span>
+        {memoryLine && <span className="truncate text-xs text-stone-500">{memoryLine}</span>}
+      </span>
 
       {item.inlineActions && item.inlineActions.length > 0 && (
         <span className="flex gap-1 flex-shrink-0">

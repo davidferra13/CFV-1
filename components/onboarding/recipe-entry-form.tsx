@@ -115,6 +115,7 @@ export function RecipeEntryForm({ initialRecipes }: { initialRecipes: RecipeList
           id: result.recipe.id,
           name: result.recipe.name,
           category: result.recipe.category,
+          status: result.recipe.status ?? 'draft',
           method: result.recipe.method,
           photo_url: null,
           dietary_tags: result.recipe.dietary_tags ?? [],

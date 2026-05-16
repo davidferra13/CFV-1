@@ -77,7 +77,7 @@ function normalizeState(input: string | null | undefined): string | null {
 }
 
 function asIsoDate(input: Date): string {
-  return `${input.getFullYear()}-${String(input.getMonth() + 1).padStart(2, '0')}-${String(input.getDate()).padStart(2, '0')}`
+  return `${input.getUTCFullYear()}-${String(input.getUTCMonth() + 1).padStart(2, '0')}-${String(input.getUTCDate()).padStart(2, '0')}`
 }
 
 function parseHourMinute(rawHour: string, rawMinute: string | undefined, meridiem?: string) {

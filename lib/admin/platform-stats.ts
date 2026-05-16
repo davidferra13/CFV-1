@@ -45,6 +45,17 @@ export type PlatformClientRow = {
   ltvCents: number
 }
 
+export type PlatformClientListInput = {
+  limit?: number
+  offset?: number
+  search?: string
+}
+
+export type PlatformClientListResult = {
+  items: PlatformClientRow[]
+  total: number
+}
+
 export type PlatformEventRow = {
   id: string
   occasion: string | null
@@ -243,18 +254,31 @@ export async function getPlatformChefList(): Promise<PlatformChefRow[]> {
   }))
 }
 
-export async function getPlatformClientList(): Promise<PlatformClientRow[]> {
+export async function getPlatformClientList(
+  input: PlatformClientListInput = {}
+): Promise<PlatformClientListResult> {
   await requireAdmin()
   const db: any = createAdminClient()
+  const limit = Math.min(Math.max(input.limit ?? 50, 1), 200)
+  const offset = Math.max(input.offset ?? 0, 0)
+  const search = input.search?.trim()
 
-  const { data: rawClients } = await db
+  let clientsQuery = db
     .from('clients')
-    .select('id, full_name, email, tenant_id, created_at')
+    .select('id, full_name, email, tenant_id, created_at', { count: 'exact' })
     .order('created_at', { ascending: false })
+    .range(offset, offset + limit - 1)
+
+  if (search) {
+    clientsQuery = clientsQuery.filter('search_vector', 'wfts(english)', search)
+  }
+
+  const { data: rawClients, count, error: clientsError } = await clientsQuery
+  if (clientsError) throw new Error(`Failed to load clients: ${clientsError.message}`)
 
   const clients = rawClients as any[] | null
 
-  if (!clients?.length) return []
+  if (!clients?.length) return { items: [], total: count ?? 0 }
 
   const tenantIds = [...new Set(clients.map((c) => c.tenant_id).filter(Boolean))] as string[]
   const { data: chefs } = await db.from('chefs').select('id, business_name').in('id', tenantIds)
@@ -298,16 +322,19 @@ export async function getPlatformClientList(): Promise<PlatformClientRow[]> {
     if (clientId) ltvMap[clientId] = (ltvMap[clientId] ?? 0) + (l.amount_cents ?? 0)
   })
 
-  return clients.map((client) => ({
-    id: client.id,
-    name: client.full_name,
-    email: client.email,
-    tenant_id: client.tenant_id,
-    chefBusinessName: client.tenant_id ? (chefMap[client.tenant_id] ?? null) : null,
-    created_at: client.created_at,
-    eventCount: eventCountMap[client.id] ?? 0,
-    ltvCents: ltvMap[client.id] ?? 0,
-  }))
+  return {
+    items: clients.map((client) => ({
+      id: client.id,
+      name: client.full_name,
+      email: client.email,
+      tenant_id: client.tenant_id,
+      chefBusinessName: client.tenant_id ? (chefMap[client.tenant_id] ?? null) : null,
+      created_at: client.created_at,
+      eventCount: eventCountMap[client.id] ?? 0,
+      ltvCents: ltvMap[client.id] ?? 0,
+    })),
+    total: count ?? clients.length,
+  }
 }
 
 export async function getAllPlatformEvents(): Promise<PlatformEventRow[]> {

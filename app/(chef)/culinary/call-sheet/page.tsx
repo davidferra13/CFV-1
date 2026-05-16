@@ -15,7 +15,7 @@ import Link from 'next/link'
 import { requireChef } from '@/lib/auth/get-user'
 import { createServerClient } from '@/lib/db/server'
 import { getRecentCalls, getRecentAiCalls, getRoutingRules } from '@/lib/calling/twilio-actions'
-import { listVendors } from '@/lib/vendors/actions'
+import { listVendorsPage } from '@/lib/vendors/actions'
 import {
   Phone,
   Check,
@@ -120,7 +120,7 @@ type Tab = 'call' | 'log' | 'inbox' | 'vendors' | 'settings'
 export default async function CallSheetPage({
   searchParams,
 }: {
-  searchParams: Promise<{ tab?: string }>
+  searchParams: Promise<{ tab?: string; vendorPage?: string; vendorQ?: string }>
 }) {
   const user = await requireChef()
   const enabled = await isCallingEnabled(user.tenantId!)
@@ -135,6 +135,10 @@ export default async function CallSheetPage({
 
   const params = await searchParams
   const rawTab = params.tab
+  const vendorSearch = params.vendorQ?.trim() ?? ''
+  const vendorPage = Math.max(1, parseInt(params.vendorPage ?? '1', 10) || 1)
+  const vendorPageSize = 25
+  const vendorOffset = (vendorPage - 1) * vendorPageSize
   const tab: Tab =
     rawTab === 'log'
       ? 'log'
@@ -156,7 +160,7 @@ export default async function CallSheetPage({
 
   // Q60: Guard each fetch independently - single failure must not crash entire page.
   // Chef sees degraded Call Sheet (missing tab data) instead of blank server error.
-  const [calls, aiCalls, vendors, nationalCount, routingRules] = await Promise.all([
+  const [calls, aiCalls, vendorResult, nationalCount, routingRules] = await Promise.all([
     getRecentCalls(100).catch((err: any) => {
       console.error('[call-sheet] calls fetch failed:', err)
       return [] as any[]
@@ -165,9 +169,13 @@ export default async function CallSheetPage({
       console.error('[call-sheet] aiCalls fetch failed:', err)
       return [] as any[]
     }),
-    listVendors().catch((err: any) => {
+    listVendorsPage(true, {
+      limit: vendorPageSize,
+      offset: vendorOffset,
+      search: vendorSearch,
+    }).catch((err: any) => {
       console.error('[call-sheet] vendors fetch failed:', err)
-      return [] as any[]
+      return { items: [] as any[], total: 0 }
     }),
     getNationalVendorCount(chefState).catch((err: any) => {
       console.error('[call-sheet] nationalCount fetch failed:', err)
@@ -179,7 +187,9 @@ export default async function CallSheetPage({
     }),
   ])
 
-  const savedWithPhone = (vendors as any[]).filter((v) => v.phone)
+  const vendors = vendorResult.items as any[]
+  const savedWithPhone = vendors.filter((v) => v.phone)
+  const totalSavedVendors = vendorResult.total
   const addedVendorIds = new Set(savedWithPhone.map((v: any) => v.id as string))
 
   // vendor_availability ai_calls already appear via supplier_calls  - exclude them
@@ -205,8 +215,8 @@ export default async function CallSheetPage({
             prices. You hear back in minutes, not hours.
           </p>
           <p className="text-xs text-stone-600 mt-1.5">
-            {savedWithPhone.length > 0
-              ? `${savedWithPhone.length} saved vendor${savedWithPhone.length !== 1 ? 's' : ''}`
+            {totalSavedVendors > 0
+              ? `${totalSavedVendors} saved vendor${totalSavedVendors !== 1 ? 's' : ''}`
               : 'No saved vendors'}
             {nationalCount > 0 && ` + ${nationalCount.toLocaleString()} in directory`}
             {calls.length > 0 && ` · ${calls.length} call${calls.length !== 1 ? 's' : ''} logged`}
@@ -356,7 +366,13 @@ export default async function CallSheetPage({
               Saved vendors are auto-selected when you search for relevant ingredients in the Call
               tab.
             </p>
-            <VendorDirectoryClient initialVendors={vendors as any} />
+            <VendorDirectoryClient
+              initialVendors={vendors as any}
+              total={vendorResult.total}
+              page={vendorPage}
+              pageSize={vendorPageSize}
+              search={vendorSearch}
+            />
           </div>
         </div>
       )}

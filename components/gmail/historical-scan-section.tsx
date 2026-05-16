@@ -3,8 +3,8 @@
 // Historical Email Scan Section
 // Rendered inside the Gmail settings block. Uses a deliberate two-step
 // confirmation flow instead of a toggle - users should feel in control,
-// not pressured. Heavy emphasis on privacy: we FILTER OUT junk, we don't
-// read your emails.
+// not pressured. Copy is explicit: Gmail is processed read-only, unrelated
+// messages are discarded, and business details are staged for review.
 
 import { useState, useTransition } from 'react'
 import Link from 'next/link'
@@ -82,12 +82,11 @@ export function HistoricalScanSection({ initialStatus }: HistoricalScanSectionPr
       <div className="space-y-3">
         {/* Header */}
         <div>
-          <p className="text-sm font-medium text-stone-100">Find Missed Inquiries</p>
+          <p className="text-sm font-medium text-stone-100">Recover Business History from Gmail</p>
           <p className="mt-1 text-xs text-stone-500 leading-relaxed">
-            Scan your complete Gmail history to surface booking inquiries you may have missed. This
-            works by <span className="text-stone-400">filtering out</span> everything that
-            isn&apos;t a potential client &mdash; spam, newsletters, notifications, personal emails
-            &mdash; so only real business inquiries surface for your review.
+            Check connected Gmail for catering-related history: inquiries, clients, past events,
+            preferences, payments, invoices, and follow-ups. Unrelated messages are discarded, and
+            business details are staged for review before anything is saved.
           </p>
         </div>
 
@@ -111,21 +110,22 @@ export function HistoricalScanSection({ initialStatus }: HistoricalScanSectionPr
               <div className="text-xs text-stone-400 space-y-1.5">
                 <p>
                   <span className="text-stone-300 font-medium">How it works:</span> A 6-layer
-                  filtration system runs on each email &mdash; Gmail&apos;s own spam labels, mailing
-                  list headers, unsubscribe patterns, and known marketing domains are checked{' '}
-                  <em>before</em> any AI runs. Most junk is blocked by pure math, no AI needed.
+                  filtration system runs on each message &mdash; Gmail&apos;s own spam labels,
+                  mailing list headers, unsubscribe patterns, and known marketing domains are
+                  checked <em>before</em> any AI runs. Most junk is blocked by pure math, no AI
+                  needed.
                 </p>
                 <p>
-                  <span className="text-stone-300 font-medium">What we don&apos;t do:</span> We
-                  don&apos;t store, read, or index your emails. The scan checks each email against
-                  the filter, keeps a one-line summary if it looks like a booking inquiry, and moves
-                  on. Everything else is discarded immediately.
+                  <span className="text-stone-300 font-medium">What is saved:</span> ChefFlow uses
+                  read-only processing on connected Gmail, keeps only short staged business findings
+                  for your review, and does not train models on your email. Unrelated messages are
+                  not kept.
                 </p>
                 <p>
                   <span className="text-stone-300 font-medium">You stay in control:</span> Nothing
-                  is imported automatically. Any potential inquiries found are staged for your
-                  review &mdash; you decide what to keep and what to dismiss. You can pause or stop
-                  the scan at any time.
+                  is imported automatically. Findings are staged in Business History review &mdash;
+                  you decide what to approve, dismiss, or delete. You can pause or stop the scan at
+                  any time.
                 </p>
               </div>
             </div>
@@ -143,12 +143,12 @@ export function HistoricalScanSection({ initialStatus }: HistoricalScanSectionPr
         {showConfirm && (
           <div className="rounded-lg border border-amber-900/50 bg-amber-950/20 p-4 space-y-3">
             <p className="text-sm text-stone-200">
-              This will scan your <span className="font-medium">entire Gmail history</span> in the
-              background. It may take a while depending on how many emails you have.
+              This will process your <span className="font-medium">connected Gmail history</span> in
+              the background. It may take a while depending on how many messages you have.
             </p>
             <p className="text-xs text-stone-400">
-              Only potential booking inquiries will be surfaced for review. Everything else (spam,
-              newsletters, personal emails) is filtered out and discarded.
+              ChefFlow looks for catering business records only. Spam, newsletters, personal
+              messages, and unrelated email are filtered out and not retained.
             </p>
             <div className="space-y-2">
               <label htmlFor="confirm-scan" className="text-xs text-stone-500">
@@ -197,13 +197,13 @@ export function HistoricalScanSection({ initialStatus }: HistoricalScanSectionPr
               <div className="flex items-center gap-2">
                 <div className="h-2 w-2 rounded-full bg-brand-600" />
                 <p className="text-xs text-brand-500">
-                  Scanning&hellip; {status.totalProcessed.toLocaleString()} emails filtered so far
+                  Scanning&hellip; {status.totalProcessed.toLocaleString()} messages checked so far
                 </p>
               </div>
             )}
             {status.status === 'completed' && (
               <p className="text-xs text-emerald-500">
-                Scan complete &mdash; {status.totalProcessed.toLocaleString()} emails filtered
+                Scan complete &mdash; {status.totalProcessed.toLocaleString()} messages checked
               </p>
             )}
             {status.status === 'paused' && (
@@ -218,7 +218,7 @@ export function HistoricalScanSection({ initialStatus }: HistoricalScanSectionPr
                 href="/inbox/history-scan"
                 className="inline-block text-xs font-medium text-brand-500 hover:text-brand-400 underline underline-offset-2"
               >
-                Review Findings &rarr;
+                Review Business History &rarr;
               </Link>
             )}
 

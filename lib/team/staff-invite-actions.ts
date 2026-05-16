@@ -19,6 +19,7 @@ import { authUsers } from '@/lib/db/schema/auth'
 import { staffMembers, userRoles } from '@/lib/db/schema/schema'
 import { eq, and } from 'drizzle-orm'
 import { requireChef } from '@/lib/auth/get-user'
+import { recordPolicyAcceptancesForSubject } from '@/lib/legal/persistence'
 
 const APP_URL =
   process.env.NEXT_PUBLIC_APP_URL || process.env.NEXT_PUBLIC_SITE_URL || 'https://cheflowhq.com'
@@ -126,8 +127,13 @@ export async function decodeStaffInviteToken(
 export async function claimStaffInvite(
   token: string,
   email: string,
-  password: string
+  password: string,
+  acceptedLegalTerms: boolean
 ): Promise<{ success: true } | { error: string }> {
+  if (!acceptedLegalTerms) {
+    return { error: 'You must accept the required ChefFlow policies.' }
+  }
+
   const payload = verifyAndDecodeToken(token)
   if (!payload) {
     return { error: 'This invite link is invalid or has expired. Ask your chef for a new one.' }
@@ -202,6 +208,20 @@ export async function claimStaffInvite(
     .update(staffMembers)
     .set({ status: 'active', updatedAt: new Date().toISOString() })
     .where(eq(staffMembers.id, member.id))
+
+  const acceptanceResult = await recordPolicyAcceptancesForSubject({
+    role: 'staff',
+    userId: authUserId,
+    tenantId: member.chefId,
+    subjectId: member.id,
+    source: 'auth/staff-invite-claim',
+  })
+  if (!acceptanceResult.success || acceptanceResult.warning) {
+    console.warn('[claimStaffInvite] Legal acceptance persistence warning', {
+      memberId: member.id,
+      warning: acceptanceResult.warning,
+    })
+  }
 
   return { success: true }
 }

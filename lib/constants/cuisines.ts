@@ -2268,7 +2268,7 @@ export const CUISINE_TYPES: readonly CuisineEntry[] = [
   },
   {
     slug: 'new_england',
-    name: 'New England',
+    name: 'Northeastern American',
     popularity: 30,
     region: 'Americas',
     subregion: 'North America',

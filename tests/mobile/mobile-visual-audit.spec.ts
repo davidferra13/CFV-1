@@ -44,6 +44,10 @@ function timestampTag() {
   return new Date().toISOString().replace(/[:.]/g, '-')
 }
 
+function getRunTag() {
+  return process.env.MOBILE_AUDIT_RUN_TAG || timestampTag()
+}
+
 function getAuditMode(): 'quick' | 'full' {
   const value = String(process.env.MOBILE_AUDIT_MODE || 'quick').toLowerCase()
   return value === 'full' ? 'full' : 'quick'
@@ -70,6 +74,58 @@ function routeStates(role: MobileAuditRole, path: string): AuditState[] {
 function shouldRunRole(role: MobileAuditRole, scope: 'public' | 'all'): boolean {
   if (scope === 'public') return role === 'public'
   return true
+}
+
+function getRouteFilter(): Set<string> | null {
+  const value = process.env.MOBILE_AUDIT_ROUTES
+  if (!value) return null
+  const routes = value
+    .split(',')
+    .map((route) => route.trim())
+    .filter(Boolean)
+  return routes.length > 0 ? new Set(routes) : null
+}
+
+function matchesRouteFilter(
+  route: ReturnType<typeof buildMobileAuditRoutes>[number],
+  routeFilter: Set<string> | null
+): boolean {
+  if (!routeFilter) return true
+  return routeFilter.has(route.path) || routeFilter.has(`${route.role}:${route.path}`)
+}
+
+function explicitRoutesFromFilter(
+  routeFilter: Set<string> | null,
+  harvestedRoutes: ReturnType<typeof buildMobileAuditRoutes>
+): ReturnType<typeof buildMobileAuditRoutes> {
+  if (!routeFilter) return []
+
+  const harvestedKeys = new Set(
+    harvestedRoutes.flatMap((route) => [route.path, `${route.role}:${route.path}`])
+  )
+  const explicitRoutes: ReturnType<typeof buildMobileAuditRoutes> = []
+  const seen = new Set<string>()
+
+  for (const entry of routeFilter) {
+    if (harvestedKeys.has(entry)) continue
+
+    const roleMatch = entry.match(/^(public|chef|client|admin):(\/.+)$/)
+    const role = (roleMatch?.[1] || 'public') as MobileAuditRole
+    const path = roleMatch?.[2] || entry
+    if (!path.startsWith('/')) continue
+
+    const key = `${role}:${path}`
+    if (seen.has(key)) continue
+    seen.add(key)
+    explicitRoutes.push({
+      role,
+      path,
+      template: path,
+      sourceFile: 'MOBILE_AUDIT_ROUTES',
+    })
+  }
+
+  return explicitRoutes
 }
 
 function trimRoutesForMode(
@@ -119,13 +175,18 @@ test.describe('Mobile Visual Audit', () => {
 
     const mode = getAuditMode()
     const scope = getAuditScope()
+    const routeFilter = getRouteFilter()
     const viewports = chooseViewports(mode)
     const harvestedRoutes = buildMobileAuditRoutes(seedIds)
-    const allRoutes = trimRoutesForMode(harvestedRoutes, mode).filter((route) =>
-      shouldRunRole(route.role, scope)
+    const catalogRoutes = [
+      ...explicitRoutesFromFilter(routeFilter, harvestedRoutes),
+      ...harvestedRoutes,
+    ]
+    const allRoutes = trimRoutesForMode(catalogRoutes, mode).filter(
+      (route) => shouldRunRole(route.role, scope) && matchesRouteFilter(route, routeFilter)
     )
 
-    const runTag = timestampTag()
+    const runTag = getRunTag()
     const runDir = resolve('reports', 'mobile-audit', runTag)
     mkdirSync(runDir, { recursive: true })
 
@@ -138,6 +199,17 @@ test.describe('Mobile Visual Audit', () => {
       screenshot: string
       overflowX: number
     }> = []
+
+    if (routeFilter && allRoutes.length === 0) {
+      failures.push({
+        role: 'public',
+        path: Array.from(routeFilter).join(', '),
+        viewport: '-',
+        state: 'default',
+        reason: 'no_matching_routes',
+        details: 'No harvested mobile audit route matched MOBILE_AUDIT_ROUTES',
+      })
+    }
 
     for (const roleConfig of ROLE_STORAGE) {
       if (!shouldRunRole(roleConfig.role, scope)) continue
@@ -278,12 +350,16 @@ test.describe('Mobile Visual Audit', () => {
     const summary = {
       mode,
       scope,
+      runTag,
+      runDir,
+      routeFilter: routeFilter ? Array.from(routeFilter) : null,
       generatedAt: new Date().toISOString(),
       totals: {
         routes: allRoutes.length,
         executions: executed.length,
         failures: failures.length,
       },
+      executed,
       failures,
     }
 

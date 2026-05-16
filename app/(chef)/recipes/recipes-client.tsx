@@ -10,6 +10,7 @@ import { Badge } from '@/components/ui/badge'
 import { RecipeImportDialog } from '@/components/recipes/recipe-import-dialog'
 import { RecipeBatchImport } from '@/components/recipes/recipe-batch-import'
 import { RecipePhotoBatchImport } from '@/components/recipes/recipe-photo-batch-import'
+import { RecipeStatusBadge } from '@/components/recipes/recipe-status-badge'
 import type { RecipeListItem } from '@/lib/recipes/actions'
 import { useTaxonomy } from '@/components/hooks/use-taxonomy'
 import { RecipeCoverFlow } from '@/components/recipes/recipe-cover-flow'
@@ -437,9 +438,12 @@ export function RecipeLibraryClient({ recipes }: Props) {
                       </div>
                     )}
                     <div className="absolute top-2 right-2">
-                      <Badge variant={CATEGORY_COLORS[recipe.category] || 'default'}>
-                        {recipe.category}
-                      </Badge>
+                      <div className="flex flex-wrap justify-end gap-1.5">
+                        <RecipeStatusBadge status={recipe.status ?? 'draft'} size="sm" />
+                        <Badge variant={CATEGORY_COLORS[recipe.category] || 'default'}>
+                          {recipe.category}
+                        </Badge>
+                      </div>
                     </div>
                   </div>
 

@@ -15,6 +15,7 @@ import { resolveSettingsFixTasks } from '@/lib/interface/action-layer'
 import { SettingsFixActions } from '@/components/settings/settings-fix-actions'
 import { SettingsGuidedOverview } from '@/components/settings/settings-guided-overview'
 import { SettingsMobileNav } from '@/components/settings/settings-mobile-nav'
+import { FeedbackForm } from '@/components/feedback/feedback-form'
 
 export const metadata: Metadata = { title: 'Settings' }
 
@@ -109,6 +110,8 @@ export default async function SettingsPage() {
         <h2 className="text-lg font-semibold text-stone-200 mb-4">Categories</h2>
         <SettingsMobileNav developerToolsEnabled={developerToolsEnabled} />
       </div>
+
+      <FeedbackForm pageContext="/settings" />
     </>
   )
 }

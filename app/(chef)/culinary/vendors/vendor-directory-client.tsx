@@ -32,7 +32,19 @@ type Vendor = {
 
 const VENDOR_TYPES = Object.entries(VENDOR_TYPE_LABELS)
 
-export function VendorDirectoryClient({ initialVendors }: { initialVendors: Vendor[] }) {
+export function VendorDirectoryClient({
+  initialVendors,
+  total,
+  page,
+  pageSize,
+  search,
+}: {
+  initialVendors: Vendor[]
+  total: number
+  page: number
+  pageSize: number
+  search: string
+}) {
   const router = useRouter()
   const [vendors, setVendors] = useState(initialVendors)
   const [showForm, setShowForm] = useState(false)
@@ -135,9 +147,44 @@ export function VendorDirectoryClient({ initialVendors }: { initialVendors: Vend
 
   const preferred = vendors.filter((v) => v.is_preferred)
   const rest = vendors.filter((v) => !v.is_preferred)
+  const offset = (page - 1) * pageSize
+
+  function buildVendorUrl(nextPage: number) {
+    const params = new URLSearchParams()
+    params.set('tab', 'vendors')
+    if (search) params.set('vendorQ', search)
+    if (nextPage > 1) params.set('vendorPage', String(nextPage))
+    return `/culinary/call-sheet?${params.toString()}`
+  }
 
   return (
     <div className="space-y-6">
+      <form
+        action="/culinary/call-sheet"
+        method="get"
+        className="flex flex-wrap items-center gap-2"
+      >
+        <input type="hidden" name="tab" value="vendors" />
+        <Input
+          type="search"
+          name="vendorQ"
+          defaultValue={search}
+          placeholder="Search saved vendors..."
+          className="max-w-sm"
+        />
+        <Button type="submit" variant="secondary" size="sm">
+          Search
+        </Button>
+        {search && (
+          <a
+            href="/culinary/call-sheet?tab=vendors"
+            className="text-sm text-stone-500 hover:text-stone-300"
+          >
+            Clear
+          </a>
+        )}
+      </form>
+
       {/* Preferred */}
       {preferred.length > 0 && (
         <div className="space-y-2">
@@ -173,7 +220,9 @@ export function VendorDirectoryClient({ initialVendors }: { initialVendors: Vend
       )}
 
       {vendors.length === 0 && !showForm && (
-        <p className="text-sm text-stone-500">No vendors added yet.</p>
+        <p className="text-sm text-stone-500">
+          {search ? `No vendors found matching "${search}".` : 'No vendors added yet.'}
+        </p>
       )}
 
       {/* Add form toggle */}
@@ -285,6 +334,32 @@ export function VendorDirectoryClient({ initialVendors }: { initialVendors: Vend
         onConfirm={handleConfirmedDelete}
         onCancel={() => setShowDeleteConfirm(false)}
       />
+
+      {total > pageSize && (
+        <div className="flex items-center justify-between border-t border-stone-800 pt-3">
+          <p className="text-xs text-stone-500">
+            Showing {offset + 1}-{Math.min(offset + pageSize, total)} of {total}
+          </p>
+          <div className="flex gap-2">
+            {page > 1 && (
+              <a
+                href={buildVendorUrl(page - 1)}
+                className="rounded-lg bg-stone-800 px-3 py-1.5 text-xs text-stone-300 hover:bg-stone-700"
+              >
+                Previous
+              </a>
+            )}
+            {offset + pageSize < total && (
+              <a
+                href={buildVendorUrl(page + 1)}
+                className="rounded-lg bg-stone-800 px-3 py-1.5 text-xs text-stone-300 hover:bg-stone-700"
+              >
+                Next
+              </a>
+            )}
+          </div>
+        </div>
+      )}
     </div>
   )
 }

@@ -538,6 +538,7 @@ const SERVER_ACTION_SESSION_TENANT_PATTERNS = [
   /\buser\.entityId\b/,
   /\btenant_id\s*:\s*user\./,
   /\btenantId\s*:\s*user\./,
+  /\brequireChefTenantScope\s*\(/,
 ] as const
 const SERVER_ACTION_TABLE_REFERENCE_PATTERNS = [
   /\.from\(\s*['"`]([\w.]+)['"`]\s*\)/g,

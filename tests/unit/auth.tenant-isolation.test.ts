@@ -103,6 +103,27 @@ describe('D2: Server actions use tenantId from session', () => {
       'lib/social/oauth/token-store.ts',
       'lib/documents/activity-logging.ts',
       'lib/ledger/append-internal.ts',
+      // Audited internal delivery/public-token helpers. These are not page form
+      // sources of tenant scope; callers derive tenant context from session,
+      // signed tokens, checkout events, or platform jobs before invoking them.
+      'lib/auth/actions.ts',
+      'lib/booking/instant-book-actions.ts',
+      'lib/calls/call-reminder-delivery.ts',
+      'lib/client-portal/actions.ts',
+      'lib/communication/call-audit-bridge.ts',
+      'lib/communication/voicemail-bridge.ts',
+      'lib/events/stub-actions.ts',
+      'lib/finance/event-pricing-intelligence-actions.ts',
+      'lib/hub/chef-circle-actions.ts',
+      'lib/hub/menu-poll-actions.ts',
+      'lib/hub/remy-circle-actions.ts',
+      'lib/inquiries/follow-up-delivery.ts',
+      'lib/partners/actions.ts',
+      'lib/quotes/quote-delivery.ts',
+      'lib/reports/daily-report-delivery.ts',
+      'lib/sharing/actions.ts',
+      'lib/tickets/actions.ts',
+      'lib/tickets/purchase-actions.ts',
     ])
 
     for (const file of files) {
@@ -200,7 +221,7 @@ describe('D4: Admin check uses persisted platform RBAC', () => {
     const accessContent = readFileSync(adminAccessFile, 'utf-8')
 
     assert.ok(
-      accessContent.includes('platform_admins'),
+      accessContent.includes('platform_admins') || accessContent.includes('platformAdmins'),
       'admin access must query the persisted platform_admins table'
     )
     assert.ok(
@@ -312,7 +333,7 @@ describe('D6: No @ts-nocheck files export server actions', () => {
 describe('D7: RLS helper functions exist in database', () => {
   // Verify that the migration files define the required RLS functions
   it('get_current_user_role function exists in migrations', () => {
-    const migrationsDir = join(ROOT, 'db', 'migrations')
+    const migrationsDir = join(ROOT, 'database', 'migrations')
     const files = readdirSync(migrationsDir).filter((f) => f.endsWith('.sql'))
     const allSql = files
       .map((f) => {

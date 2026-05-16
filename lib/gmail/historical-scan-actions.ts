@@ -32,7 +32,14 @@ export interface HistoricalFinding {
   subject: string | null
   bodyPreview: string | null
   receivedAt: string | null
-  classification: 'inquiry' | 'existing_thread'
+  classification:
+    | 'inquiry'
+    | 'existing_thread'
+    | 'client'
+    | 'event'
+    | 'preference'
+    | 'payment_invoice'
+    | 'follow_up'
   confidence: 'high' | 'medium' | 'low'
   aiReasoning: string | null
   status: 'pending' | 'imported' | 'dismissed'
@@ -78,6 +85,7 @@ export async function enableHistoricalEmailScan(): Promise<void> {
         'id',
         mailboxes.map((mailbox) => mailbox.id)
       )
+      .eq('tenant_id', user.tenantId!)
   }
 
   await db
@@ -88,8 +96,11 @@ export async function enableHistoricalEmailScan(): Promise<void> {
       historical_scan_lookback_days: 0, // 0 = full scan (no date limit)
     })
     .eq('chef_id', user.entityId)
+    .eq('tenant_id', user.tenantId!)
 
   revalidatePath('/settings')
+  revalidatePath('/settings/connections')
+  revalidatePath('/imports/business-history')
 }
 
 // ─── Disable Historical Scan ──────────────────────────────────────────────────
@@ -116,6 +127,7 @@ export async function disableHistoricalEmailScan(): Promise<void> {
         'id',
         mailboxes.map((mailbox) => mailbox.id)
       )
+      .eq('tenant_id', user.tenantId!)
   }
 
   // Pause (not reset) - preserves progress and existing findings
@@ -126,8 +138,11 @@ export async function disableHistoricalEmailScan(): Promise<void> {
       historical_scan_status: 'paused',
     })
     .eq('chef_id', user.entityId)
+    .eq('tenant_id', user.tenantId!)
 
   revalidatePath('/settings')
+  revalidatePath('/settings/connections')
+  revalidatePath('/imports/business-history')
 }
 
 // ─── Get Scan Status ──────────────────────────────────────────────────────────
@@ -208,7 +223,7 @@ export async function getHistoricalFindings(
     subject: row.subject,
     bodyPreview: row.body_preview,
     receivedAt: row.received_at,
-    classification: row.classification as 'inquiry' | 'existing_thread',
+    classification: row.classification as HistoricalFinding['classification'],
     confidence: row.confidence as 'high' | 'medium' | 'low',
     aiReasoning: row.ai_reasoning,
     status: row.status as 'pending' | 'imported' | 'dismissed',
@@ -333,6 +348,7 @@ export async function importHistoricalFinding(findingId: string): Promise<{ inqu
 
   revalidatePath('/inbox/history-scan')
   revalidatePath('/inquiries')
+  revalidatePath('/imports/business-history')
 
   return { inquiryId: inquiry.id }
 }
@@ -353,13 +369,14 @@ export async function dismissHistoricalFinding(findingId: string): Promise<void>
     .eq('tenant_id', user.tenantId!)
 
   revalidatePath('/inbox/history-scan')
+  revalidatePath('/imports/business-history')
 }
 
 // ─── Dismiss Many Findings ────────────────────────────────────────────────────
 
 export async function dismissAllFindings(filter: {
   confidence?: 'high' | 'medium' | 'low'
-  classification?: 'inquiry' | 'existing_thread'
+  classification?: HistoricalFinding['classification']
 }): Promise<{ count: number }> {
   const user = await requireChef()
   const db: any = createServerClient()
@@ -381,5 +398,6 @@ export async function dismissAllFindings(filter: {
   if (error) throw new Error(error.message)
 
   revalidatePath('/inbox/history-scan')
+  revalidatePath('/imports/business-history')
   return { count: data?.length ?? 0 }
 }

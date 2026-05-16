@@ -14,6 +14,11 @@ import { MenuContextDock } from '@/components/menus/menu-context-dock'
 import { AuditSummaryBadge } from '@/components/audit-trail/audit-summary-badge'
 import { AuditTimeline } from '@/components/audit-trail/audit-timeline'
 import { fetchEntityHistory } from '@/lib/audit-trail/surface-actions'
+import { SaveAsTemplateButton } from '@/components/menus/save-as-template-button'
+import { CloneMenuButton } from '@/components/menus/clone-menu-button'
+import { MenuHealthScore } from '@/components/menus/menu-health-score'
+import { MenuPdfButton } from '@/components/menus/menu-pdf-button'
+import MenuHistoryTimeline from '@/components/menus/menu-history-timeline'
 import { Suspense } from 'react'
 import Link from 'next/link'
 
@@ -53,32 +58,39 @@ export default async function MenuDetailPage({ params }: Props) {
     }
   }
 
-  const [recipeMapResult, recommendations, inquiryLink, completionData, clientList, circleList, auditHistory] =
-    await Promise.all([
-      recipeIds.size > 0
-        ? createServerClient()
-            .from('recipes' as any)
-            .select(
-              'id, name, category, calories_per_serving, protein_per_serving_g, fat_per_serving_g, carbs_per_serving_g'
-            )
-            .in('id', Array.from(recipeIds))
-            .eq('tenant_id', user.tenantId!)
-            .then((res: any) => res)
-            .catch((err: any) => {
-              console.error('[menu-detail] Recipe map fetch failed (non-blocking):', err.message)
-              return { data: null }
-            })
-        : Promise.resolve({ data: null }),
-      getMenuRecommendations({
-        dietaryRestrictions: (event as any)?.dietary_restrictions ?? [],
-        allergies: (event as any)?.allergies ?? [],
-      }).catch(() => null),
-      getMenuInquiryLink(id).catch(() => null),
-      evaluateCompletion('menu', id, user.tenantId!).catch(() => null),
-      getEditorClientList().catch(() => []),
-      getCirclePickerList().catch(() => []),
-      fetchEntityHistory('menu', id).catch(() => []),
-    ])
+  const [
+    recipeMapResult,
+    recommendations,
+    inquiryLink,
+    completionData,
+    clientList,
+    circleList,
+    auditHistory,
+  ] = await Promise.all([
+    recipeIds.size > 0
+      ? createServerClient()
+          .from('recipes' as any)
+          .select(
+            'id, name, category, status, calories_per_serving, protein_per_serving_g, fat_per_serving_g, carbs_per_serving_g'
+          )
+          .in('id', Array.from(recipeIds))
+          .eq('tenant_id', user.tenantId!)
+          .then((res: any) => res)
+          .catch((err: any) => {
+            console.error('[menu-detail] Recipe map fetch failed (non-blocking):', err.message)
+            return { data: null }
+          })
+      : Promise.resolve({ data: null }),
+    getMenuRecommendations({
+      dietaryRestrictions: (event as any)?.dietary_restrictions ?? [],
+      allergies: (event as any)?.allergies ?? [],
+    }).catch(() => null),
+    getMenuInquiryLink(id).catch(() => null),
+    evaluateCompletion('menu', id, user.tenantId!).catch(() => null),
+    getEditorClientList().catch(() => []),
+    getCirclePickerList().catch(() => []),
+    fetchEntityHistory('menu', id).catch(() => []),
+  ])
 
   let recipeMap: Record<
     string,
@@ -86,6 +98,7 @@ export default async function MenuDetailPage({ params }: Props) {
       id: string
       name: string
       category: string
+      status: 'stub' | 'draft' | 'active' | 'archived' | null
       calories_per_serving: number | null
       protein_per_serving_g: number | null
       fat_per_serving_g: number | null
@@ -133,6 +146,12 @@ export default async function MenuDetailPage({ params }: Props) {
         clients={clientList}
         circles={circleList}
       />
+      <MenuHealthScore menuId={id} className="px-1" />
+      <div className="flex items-center gap-2 flex-wrap px-1">
+        <SaveAsTemplateButton menuId={id} menuName={menu.name} />
+        <CloneMenuButton menuId={id} />
+        <MenuPdfButton menuId={id} menuName={menu.name} />
+      </div>
       <div className="px-1">
         <Suspense fallback={null}>
           <AuditSummaryBadge entityType="menu" entityId={id} />
@@ -149,6 +168,7 @@ export default async function MenuDetailPage({ params }: Props) {
       {auditHistory && auditHistory.length > 0 && (
         <AuditTimeline entries={auditHistory} title="Menu Change History" />
       )}
+      {menuClientId && <MenuHistoryTimeline clientId={menuClientId} />}
     </div>
   )
 }

@@ -56,11 +56,14 @@ import { createMenuShareLink } from '@/lib/menus/foh-public-actions'
 import { evaluateMenuCostProvenance } from '@/lib/costing/menu-cost-guard'
 import type { MenuCostProvenance } from '@/lib/costing/menu-cost-provenance'
 import { MenuCostProvenanceCard } from '@/components/costing/menu-cost-provenance-card'
+import { RecipeGapIndicator } from '@/components/menus/recipe-gap-indicator'
+import { createStubRecipe } from '@/lib/recipes/lifecycle-actions'
 
 type RecipeInfo = {
   id: string
   name: string
   category: string
+  status?: 'stub' | 'draft' | 'active' | 'archived' | null
   calories_per_serving?: number | null
   protein_per_serving_g?: number | null
   fat_per_serving_g?: number | null
@@ -936,16 +939,41 @@ export function MenuDetailClient({
                                           : `+${(comp as any).prep_day_offset}`}
                                       </span>
                                     )}
-                                  {linkedRecipe ? (
-                                    <Link
-                                      href={`/recipes/${linkedRecipe.id}`}
-                                      className="text-xs text-emerald-600 hover:underline"
-                                    >
-                                      Recipe
-                                    </Link>
-                                  ) : (
-                                    <span className="text-xs text-stone-400">No recipe</span>
-                                  )}
+                                  <RecipeGapIndicator
+                                    hasRecipe={Boolean(linkedRecipe)}
+                                    recipeName={linkedRecipe?.name}
+                                    recipeId={linkedRecipe?.id}
+                                    recipeStatus={linkedRecipe?.status ?? undefined}
+                                    onCreateStub={
+                                      linkedRecipe
+                                        ? undefined
+                                        : async () => {
+                                            setLoading(true)
+                                            try {
+                                              await createStubRecipe(comp.name, {
+                                                menuId: menu.id,
+                                                componentId: comp.id,
+                                              })
+                                              router.refresh()
+                                            } catch (err) {
+                                              setMutationError(err)
+                                            } finally {
+                                              setLoading(false)
+                                            }
+                                          }
+                                    }
+                                    onLinkRecipe={
+                                      linkedRecipe
+                                        ? undefined
+                                        : () => {
+                                            setLinkingComponentId(
+                                              linkingComponentId === comp.id ? null : comp.id
+                                            )
+                                            setRecipeSearch('')
+                                            setRecipeResults([])
+                                          }
+                                    }
+                                  />
                                   {linkedRecipe?.calories_per_serving != null && (
                                     <span className="text-xs text-stone-500">
                                       {linkedRecipe.calories_per_serving} kcal/serv
@@ -962,29 +990,7 @@ export function MenuDetailClient({
                                     >
                                       Unlink
                                     </button>
-                                  ) : (
-                                    <>
-                                      <button
-                                        type="button"
-                                        onClick={() => {
-                                          setLinkingComponentId(
-                                            linkingComponentId === comp.id ? null : comp.id
-                                          )
-                                          setRecipeSearch('')
-                                          setRecipeResults([])
-                                        }}
-                                        className="text-xs text-brand-600 hover:underline"
-                                      >
-                                        Link Recipe
-                                      </button>
-                                      <Link
-                                        href={`/recipes/new?component=${comp.id}&componentName=${encodeURIComponent(comp.name)}&componentCategory=${encodeURIComponent(comp.category || 'other')}`}
-                                        className="text-xs text-brand-600 hover:underline ml-1"
-                                      >
-                                        Create
-                                      </Link>
-                                    </>
-                                  )}
+                                  ) : null}
                                 </div>
                               </div>
                             )

@@ -116,15 +116,16 @@ The 10-stage end-to-end engagement model (see `docs/service-lifecycle-blueprint.
 
 ## UI and Navigation
 
-| Term                   | Definition                                                                                                        |
-| ---------------------- | ----------------------------------------------------------------------------------------------------------------- |
-| **Surface**            | A UI portal: `public`, `chef`, `client`, `admin`, `partner`. Each has its own layout and auth.                    |
-| **Six Pillars**        | Organizational framework: SELL, PLAN, COOK, STOCK, MONEY, GROW. Every feature maps to one pillar.                 |
-| **Hub**                | The client-facing event portal. Media, pinned notes, polls, guest history, messages.                              |
-| **Embed Widget**       | External inquiry capture widget (vanilla JS). Public, no auth, inline styles. Embeddable on any website.          |
-| **Dinner Circle**      | The atomic relationship primitive. Operational circles auto-create; elective circles are manual.                  |
-| **Upgrade Gate**       | UI component that blocks/blurs paid features for free-tier users. Never a locked button.                          |
-| **Web Sourcing Panel** | Fallback when catalog searches return empty. DuckDuckGo search filtered to specialty retailers. Never a dead end. |
+| Term                   | Definition                                                                                                                                                                                                                                                                                                  |
+| ---------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| **Surface**            | A UI portal: `public`, `chef`, `client`, `admin`, `partner`. Each has its own layout and auth.                                                                                                                                                                                                              |
+| **Six Pillars**        | Organizational framework: SELL, PLAN, COOK, STOCK, MONEY, GROW. Every feature maps to one pillar.                                                                                                                                                                                                           |
+| **Hub**                | The client-facing event portal. Media, pinned notes, polls, guest history, messages.                                                                                                                                                                                                                        |
+| **Embed Widget**       | External inquiry capture widget (vanilla JS). Public, no auth, inline styles. Embeddable on any website.                                                                                                                                                                                                    |
+| **Circle**             | The shared relationship workspace where multi-party context, trust, messages, decisions, status, memory, and handoffs live. Backed by `hub_groups`. Circles coordinate around canonical records but do not own Event, Menu, Quote, Client, Staff, Vendor, Partner, Inventory, Contract, or financial truth. |
+| **Dinner Circle**      | A Circle type for a client dinner, Inquiry, or Event. Operational Dinner Circles auto-create; elective circles are manual. Guest/client views are client-safe and must not expose chef-only notes, lead score, payment state, or unrelated tenant data.                                                     |
+| **Upgrade Gate**       | UI component that blocks/blurs paid features for free-tier users. Never a locked button.                                                                                                                                                                                                                    |
+| **Web Sourcing Panel** | Fallback when catalog searches return empty. DuckDuckGo search filtered to specialty retailers. Never a dead end.                                                                                                                                                                                           |
 
 ---
 

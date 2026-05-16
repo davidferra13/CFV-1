@@ -42,8 +42,8 @@ CREATE TABLE IF NOT EXISTS event_ticket_types (
   updated_at      TIMESTAMPTZ NOT NULL DEFAULT now()
 );
 
-CREATE INDEX idx_event_ticket_types_event ON event_ticket_types(event_id);
-CREATE INDEX idx_event_ticket_types_tenant ON event_ticket_types(tenant_id);
+CREATE INDEX IF NOT EXISTS idx_event_ticket_types_event ON event_ticket_types(event_id);
+CREATE INDEX IF NOT EXISTS idx_event_ticket_types_tenant ON event_ticket_types(tenant_id);
 
 -- ─── Tickets (individual purchases) ─────────────────────────────────
 
@@ -87,13 +87,13 @@ CREATE TABLE IF NOT EXISTS event_tickets (
   cancelled_at    TIMESTAMPTZ
 );
 
-CREATE INDEX idx_event_tickets_event ON event_tickets(event_id);
-CREATE INDEX idx_event_tickets_tenant ON event_tickets(tenant_id);
-CREATE INDEX idx_event_tickets_buyer_email ON event_tickets(buyer_email);
-CREATE INDEX idx_event_tickets_guest_token ON event_tickets(guest_token);
-CREATE INDEX idx_event_tickets_stripe_session ON event_tickets(stripe_checkout_session_id)
+CREATE INDEX IF NOT EXISTS idx_event_tickets_event ON event_tickets(event_id);
+CREATE INDEX IF NOT EXISTS idx_event_tickets_tenant ON event_tickets(tenant_id);
+CREATE INDEX IF NOT EXISTS idx_event_tickets_buyer_email ON event_tickets(buyer_email);
+CREATE INDEX IF NOT EXISTS idx_event_tickets_guest_token ON event_tickets(guest_token);
+CREATE INDEX IF NOT EXISTS idx_event_tickets_stripe_session ON event_tickets(stripe_checkout_session_id)
   WHERE stripe_checkout_session_id IS NOT NULL;
-CREATE INDEX idx_event_tickets_payment_status ON event_tickets(event_id, payment_status);
+CREATE INDEX IF NOT EXISTS idx_event_tickets_payment_status ON event_tickets(event_id, payment_status);
 
 -- ─── Distribution Channels (event syndication to external platforms) ──
 
@@ -116,8 +116,8 @@ CREATE TABLE IF NOT EXISTS event_distribution (
   UNIQUE (event_id, platform)
 );
 
-CREATE INDEX idx_event_distribution_event ON event_distribution(event_id);
-CREATE INDEX idx_event_distribution_tenant ON event_distribution(tenant_id);
+CREATE INDEX IF NOT EXISTS idx_event_distribution_event ON event_distribution(event_id);
+CREATE INDEX IF NOT EXISTS idx_event_distribution_tenant ON event_distribution(tenant_id);
 
 -- ─── Enable ticketing on event share settings ───────────────────────
 

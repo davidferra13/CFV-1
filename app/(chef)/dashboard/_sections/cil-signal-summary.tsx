@@ -5,7 +5,7 @@ import { DomainSignals } from '@/components/cil/domain-signals'
 import { WidgetCardShell } from '@/components/dashboard/widget-cards/widget-card-shell'
 import { getSignalsForDisplay } from '@/lib/cil/signal-actions'
 
-const DOMAINS = ['finance', 'pipeline', 'calendar'] as const
+const DOMAINS = ['finance', 'pipeline', 'calendar', 'clients', 'inventory', 'reputation'] as const
 
 function DomainSection({ domain, limit }: { domain: (typeof DOMAINS)[number]; limit: number }) {
   return (

@@ -154,6 +154,9 @@ describe('Middleware - public asset paths', () => {
     assert.equal(isPublicAssetPath('/sitemap.xml'), true)
     assert.equal(isPublicAssetPath('/sw.js'), true)
     assert.equal(isPublicAssetPath('/inbox-sw.js'), true)
+    assert.equal(isPublicAssetPath('/_next/image'), true)
+    assert.equal(isPublicAssetPath('/images/hero-bg.jpg'), true)
+    assert.equal(isPublicAssetPath('/logo.jpg'), true)
   })
 
   it('does not classify application pages as public assets', () => {

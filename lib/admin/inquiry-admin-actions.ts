@@ -86,27 +86,43 @@ export async function getPlatformInquiryList(
 
   const limit = Math.min(input.limit ?? 50, 200)
   const offset = input.offset ?? 0
+  const search = input.search?.trim()
 
   // Build query
   let q = db
     .from('inquiries')
     .select(
-      'id, tenant_id, client_id, channel, status, confirmed_occasion, confirmed_guest_count, confirmed_location, first_contact_at, created_at, converted_to_event_id, unknown_fields, utm_medium'
+      'id, tenant_id, client_id, channel, status, confirmed_occasion, confirmed_guest_count, confirmed_location, first_contact_at, created_at, converted_to_event_id, unknown_fields, utm_medium',
+      { count: 'exact' }
     )
     .order('created_at', { ascending: false })
+
+  if (!input.localOnly) {
+    q = q.range(offset, offset + limit - 1)
+  }
 
   if (input.status) {
     q = q.eq('status', input.status)
   }
 
-  const { data: inquiries, error } = await q
+  if (search) {
+    q = q.filter('search_vector', 'wfts(english)', search)
+  }
+
+  const { data: inquiries, error, count } = await q
   if (error) throw new Error(`Failed to load inquiries: ${error.message}`)
   const allInquiries: any[] = inquiries ?? []
+  const tenantIds = [...new Set(allInquiries.map((row) => row.tenant_id).filter(Boolean))]
+  const clientIds = [...new Set(allInquiries.map((row) => row.client_id).filter(Boolean))]
 
   // Load chefs and clients in parallel for lookups
   const [chefsResult, clientsResult, founderInfo] = await Promise.all([
-    db.from('chefs').select('id, display_name, business_name, email'),
-    db.from('clients').select('id, full_name, email'),
+    tenantIds.length
+      ? db.from('chefs').select('id, display_name, business_name, email').in('id', tenantIds)
+      : { data: [] },
+    clientIds.length
+      ? db.from('clients').select('id, full_name, email').in('id', clientIds)
+      : { data: [] },
     getFounderInfo(db),
   ])
 
@@ -164,26 +180,13 @@ export async function getPlatformInquiryList(
     }
   })
 
-  // Apply search filter (client name or email)
-  if (input.search) {
-    const term = input.search.toLowerCase().trim()
-    items = items.filter(
-      (i) =>
-        i.client_name.toLowerCase().includes(term) ||
-        i.client_email.toLowerCase().includes(term) ||
-        i.location.toLowerCase().includes(term)
-    )
-  }
-
   // Apply local-only filter
   if (input.localOnly) {
     items = items.filter((i) => i.is_local)
+    return { items: items.slice(offset, offset + limit), total: items.length }
   }
 
-  const total = items.length
-  const paged = items.slice(offset, offset + limit)
-
-  return { items: paged, total }
+  return { items, total: count ?? items.length }
 }
 
 // ---------------------------------------------------------------------------

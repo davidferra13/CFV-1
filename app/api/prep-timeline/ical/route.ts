@@ -1,4 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server'
+import { requireChef } from '@/lib/auth/get-user'
 import { generatePrepTimelineICal } from '@/lib/prep-timeline/ical-export'
 
 function sanitizeFilenamePart(value: string): string {
@@ -6,6 +7,8 @@ function sanitizeFilenamePart(value: string): string {
 }
 
 export async function GET(req: NextRequest) {
+  await requireChef()
+
   const eventId = req.nextUrl.searchParams.get('eventId')
   if (!eventId) {
     return NextResponse.json({ error: 'eventId required' }, { status: 400 })

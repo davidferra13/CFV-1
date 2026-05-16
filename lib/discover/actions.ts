@@ -351,7 +351,7 @@ async function getViewerClientId(includeViewerState: boolean): Promise<string | 
 }
 
 async function hydrateDirectoryFavoriteFlags<T extends DirectoryFavoriteHydratable>(
-  db: any,
+  db: any | null,
   listings: T[],
   options: DirectoryListingQueryOptions = {}
 ): Promise<Array<T & { is_favorited: boolean }>> {
@@ -363,7 +363,8 @@ async function hydrateDirectoryFavoriteFlags<T extends DirectoryFavoriteHydratab
   }
 
   const listingIds = Array.from(new Set(listings.map((listing) => listing.id)))
-  const { data, error } = await db
+  const favoriteDb = db ?? createServerClient({ admin: true })
+  const { data, error } = await favoriteDb
     .from('directory_listing_favorites')
     .select('listing_id')
     .eq('client_id', clientId)
@@ -539,7 +540,6 @@ export async function getDirectoryListings(
   }
 
   try {
-    const db = createServerClient({ admin: true })
     const conditions: string[] = ["status IN ('discovered', 'claimed', 'verified')"]
     const params: Array<string | number> = []
     let paramIndex = 1
@@ -661,7 +661,7 @@ export async function getDirectoryListings(
         ITEMS_PER_PAGE
       )
       const favoriteAwareListings = await hydrateDirectoryFavoriteFlags(
-        db,
+        null,
         curated.listings,
         options
       )
@@ -703,7 +703,7 @@ export async function getDirectoryListings(
     const total = parseInt(countResult[0].count, 10)
     const totalPages = Math.max(1, Math.ceil(total / ITEMS_PER_PAGE))
     const listings = await hydrateDirectoryFavoriteFlags(
-      db,
+      null,
       (dataResult as any[]).map(normalizeDirectoryListingSummary),
       options
     )

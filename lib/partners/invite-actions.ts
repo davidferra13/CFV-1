@@ -10,6 +10,7 @@ import { createServerClient } from '@/lib/db/server'
 import { db as drizzleDb } from '@/lib/db'
 import { authUsers } from '@/lib/db/schema/auth'
 import { eq } from 'drizzle-orm'
+import { recordPolicyAcceptancesForSubject } from '@/lib/legal/persistence'
 
 const APP_URL =
   process.env.NEXT_PUBLIC_APP_URL || process.env.NEXT_PUBLIC_SITE_URL || 'https://cheflowhq.com'
@@ -77,8 +78,13 @@ export async function generatePartnerInvite(
 export async function claimPartnerInvite(
   token: string,
   email: string,
-  password: string
+  password: string,
+  acceptedLegalTerms: boolean
 ): Promise<{ success: true } | { error: string }> {
+  if (!acceptedLegalTerms) {
+    return { error: 'You must accept the required ChefFlow policies.' }
+  }
+
   if (!token || token.length < 10) {
     return { error: 'Invalid invite link. Please ask your chef for a new one.' }
   }
@@ -160,6 +166,20 @@ export async function claimPartnerInvite(
         claimed_at: new Date().toISOString(),
       } as any)
       .eq('id', partner.id)
+
+    const acceptanceResult = await recordPolicyAcceptancesForSubject({
+      role: 'partner',
+      userId,
+      tenantId: partner.tenant_id,
+      subjectId: partner.id,
+      source: 'auth/partner-invite-claim',
+    })
+    if (!acceptanceResult.success || acceptanceResult.warning) {
+      console.warn('[claimPartnerInvite] Legal acceptance persistence warning', {
+        partnerId: partner.id,
+        warning: acceptanceResult.warning,
+      })
+    }
 
     console.log('[claimPartnerInvite] Partner account claimed', {
       partnerId: partner.id,

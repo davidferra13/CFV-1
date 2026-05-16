@@ -55,6 +55,23 @@ Required closeout:
 
 A build is not complete just because files changed. It is complete only when the running app, proof pack, and finish check all support the queue item's acceptance criteria.
 
+## Canonical Dev Server Policy
+
+ChefFlow app work must use one canonical dev server by default:
+
+- Canonical app URL: `http://localhost:3100`
+- Canonical command: `npm run dev`
+- Before starting any app server, inspect existing listeners/processes for port `3100`.
+- If `3100` is already serving this checkout, reuse it. Do not start another ChefFlow app server on a random port.
+- If `3100` is stale or broken, restart the canonical server instead of creating a second server.
+- Alternate ChefFlow app ports are allowed only for explicit test isolation or an explicitly approved separate worktree run. The agent must state the reason, port, checkout path, and cleanup plan before using one.
+- Temporary test servers must be stopped after verification unless the user explicitly asks to keep them running.
+- Do not touch unrelated external project servers such as the Wix rebuild unless the user explicitly asks.
+- Mission Control, Persona inbox, sync daemons, Playwright MCP, Ollama, cloudflared, and other tooling are not app build servers. Do not confuse them with the canonical ChefFlow app server, and do not stop them unless the task is specifically about those tools.
+- Build closeout must identify the exact URL verified. For normal app work this should be `http://localhost:3100`.
+
+Builds should converge into the main ChefFlow checkout. Do not segment implementation across ad hoc ports, duplicate dev servers, or untracked worktrees as a substitute for the queue firing workflow. If a separate worktree is necessary, it must have a named purpose, non-overlapping ownership, and a merge/cleanup plan.
+
 ## Dirty Workspace Rule
 
 Before implementation, inspect `git status --short`.

@@ -8,6 +8,7 @@ import { getGoogleAccessToken } from '@/lib/google/auth'
 import { getGoogleGmailControl } from '@/lib/google/mailbox-control'
 import { listMessagesPage, getFullMessage } from './client'
 import { classifyEmail } from './classify'
+import { promoteBusinessHistoryClassification } from '@/lib/business-history-import/gmail-recovery'
 
 const DEFAULT_BATCH_SIZE = 50
 const PROGRESS_CHECKPOINT_INTERVAL = 10
@@ -232,34 +233,40 @@ export async function runHistoricalScanBatch(
     result.status = 'error'
     return result
   }
-  const activeScanConn = scanConn
-
-  if (!activeScanConn.gmail_connected) {
+  if (!scanConn.gmail_connected) {
     result.errors.push('Gmail not connected')
     result.status = 'error'
     return result
   }
 
-  if (!activeScanConn.historical_scan_enabled) {
+  if (!scanConn.historical_scan_enabled) {
     result.errors.push('Historical scan not enabled')
     result.status = 'error'
     return result
   }
 
-  if (activeScanConn.historical_scan_status === 'completed') {
+  if (scanConn.historical_scan_status === 'completed') {
     result.status = 'completed'
     return result
   }
 
   async function updateScanState(updates: Record<string, unknown>) {
-    await db.from('google_connections').update(updates).eq('chef_id', chefId)
+    await db
+      .from('google_connections')
+      .update(updates)
+      .eq('chef_id', chefId)
+      .eq('tenant_id', tenantId)
 
-    if (activeScanConn.mailbox_id) {
-      await db.from('google_mailboxes').update(updates).eq('id', activeScanConn.mailbox_id)
+    if (scanConn.mailbox_id) {
+      await db
+        .from('google_mailboxes')
+        .update(updates)
+        .eq('id', scanConn.mailbox_id)
+        .eq('tenant_id', tenantId)
     }
   }
 
-  const scanStartedAt = activeScanConn.historical_scan_started_at ?? new Date().toISOString()
+  const scanStartedAt = scanConn.historical_scan_started_at ?? new Date().toISOString()
   const startUpdates = {
     historical_scan_status: 'in_progress',
     historical_scan_started_at: scanStartedAt,
@@ -279,7 +286,7 @@ export async function runHistoricalScanBatch(
   try {
     accessToken = await getGoogleAccessToken(chefId, {
       skipSessionCheck: true,
-      mailboxId: activeScanConn.mailbox_id,
+      mailboxId: scanConn.mailbox_id,
     })
   } catch (err) {
     result.errors.push(`Token error: ${(err as Error).message}`)
@@ -294,8 +301,8 @@ export async function runHistoricalScanBatch(
   }
   try {
     pageResult = await listMessagesPage(accessToken, {
-      pageToken: activeScanConn.historical_scan_page_token ?? undefined,
-      query: buildHistoricalScanQuery(activeScanConn.historical_scan_lookback_days ?? 0),
+      pageToken: scanConn.historical_scan_page_token ?? undefined,
+      query: buildHistoricalScanQuery(scanConn.historical_scan_lookback_days ?? 0),
       maxResults: batchSize,
     })
   } catch (err) {
@@ -323,8 +330,8 @@ export async function runHistoricalScanBatch(
       .select('gmail_message_id')
       .in('gmail_message_id', pageMessageIds)
 
-    alreadySyncedQuery = activeScanConn.mailbox_id
-      ? alreadySyncedQuery.eq('mailbox_id', activeScanConn.mailbox_id)
+    alreadySyncedQuery = scanConn.mailbox_id
+      ? alreadySyncedQuery.eq('mailbox_id', scanConn.mailbox_id).eq('tenant_id', tenantId)
       : alreadySyncedQuery.eq('tenant_id', tenantId)
 
     const { data: alreadySynced, error: syncedErr } = await alreadySyncedQuery
@@ -340,9 +347,9 @@ export async function runHistoricalScanBatch(
     )
   }
 
-  const baseTotalProcessed = activeScanConn.historical_scan_total_processed ?? 0
-  const baseTotalSeen = Math.max(activeScanConn.historical_scan_total_seen ?? 0, baseTotalProcessed)
-  const connectedEmail = activeScanConn.connected_email
+  const baseTotalProcessed = scanConn.historical_scan_total_processed ?? 0
+  const baseTotalSeen = Math.max(scanConn.historical_scan_total_seen ?? 0, baseTotalProcessed)
+  const connectedEmail = scanConn.connected_email
 
   for (const msgRef of pageResult.messages) {
     result.seen++
@@ -359,7 +366,7 @@ export async function runHistoricalScanBatch(
         msgRef.id,
         chefId,
         tenantId,
-        activeScanConn.mailbox_id,
+        scanConn.mailbox_id,
         connectedEmail,
         knownClientEmails,
         result
@@ -372,7 +379,8 @@ export async function runHistoricalScanBatch(
       await checkpointHistoricalScanProgress(
         db,
         chefId,
-        activeScanConn.mailbox_id,
+        tenantId,
+        scanConn.mailbox_id,
         baseTotalProcessed + result.processed,
         baseTotalSeen + result.seen
       )
@@ -383,7 +391,7 @@ export async function runHistoricalScanBatch(
   const newTotalProcessed = baseTotalProcessed + result.processed
   const newTotalSeen = baseTotalSeen + result.seen
   const resultSizeEstimate = Math.max(
-    activeScanConn.historical_scan_result_size_estimate ?? 0,
+    scanConn.historical_scan_result_size_estimate ?? 0,
     pageResult.resultSizeEstimate ?? 0,
     newTotalSeen
   )
@@ -436,7 +444,17 @@ async function processHistoricalMessage(
     return
   }
 
-  const classification = await classifyHistoricalEmailWithRetry(email, knownClientEmails, tenantId)
+  const baseClassification = await classifyHistoricalEmailWithRetry(
+    email,
+    knownClientEmails,
+    tenantId
+  )
+  const classification = promoteBusinessHistoryClassification(baseClassification, {
+    subject: email.subject,
+    body: email.body,
+    fromAddress: email.from.email,
+    knownClientEmails,
+  })
 
   await logScanEntry(
     db,
@@ -449,7 +467,17 @@ async function processHistoricalMessage(
     'historical_scan'
   )
 
-  if (classification.category !== 'inquiry' && classification.category !== 'existing_thread') {
+  const stagedCategories = new Set([
+    'inquiry',
+    'existing_thread',
+    'client',
+    'event',
+    'preference',
+    'payment_invoice',
+    'follow_up',
+  ])
+
+  if (!stagedCategories.has(classification.category)) {
     result.skipped++
     return
   }
@@ -492,6 +520,7 @@ async function processHistoricalMessage(
 async function checkpointHistoricalScanProgress(
   db: any,
   chefId: string,
+  tenantId: string,
   mailboxId: string | null,
   totalProcessed: number,
   totalSeen: number
@@ -502,10 +531,14 @@ async function checkpointHistoricalScanProgress(
     historical_scan_last_run_at: new Date().toISOString(),
   }
 
-  await db.from('google_connections').update(payload).eq('chef_id', chefId)
+  await db
+    .from('google_connections')
+    .update(payload)
+    .eq('chef_id', chefId)
+    .eq('tenant_id', tenantId)
 
   if (mailboxId) {
-    await db.from('google_mailboxes').update(payload).eq('id', mailboxId)
+    await db.from('google_mailboxes').update(payload).eq('id', mailboxId).eq('tenant_id', tenantId)
   }
 }
 
@@ -533,7 +566,7 @@ async function saveHistoricalFinding(
     .eq('gmail_message_id', finding.gmail_message_id)
 
   existingQuery = finding.mailbox_id
-    ? existingQuery.eq('mailbox_id', finding.mailbox_id)
+    ? existingQuery.eq('mailbox_id', finding.mailbox_id).eq('tenant_id', finding.tenant_id)
     : existingQuery.eq('tenant_id', finding.tenant_id)
 
   const { data: existing, error: existingErr } = await existingQuery.maybeSingle()

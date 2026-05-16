@@ -12,6 +12,9 @@ import { PriceBadgeFromFlat } from '@/components/pricing/price-badge'
 import { NutritionLookupPanel } from '@/components/recipes/nutrition-lookup-panel'
 import { FoodPlaceholderImage } from '@/components/ui/food-placeholder-image'
 import { Badge } from '@/components/ui/badge'
+import { RecipeStatusBadge } from '@/components/recipes/recipe-status-badge'
+import { RecipeLineage } from '@/components/recipes/recipe-lineage'
+import { getRecipeLifecycleStatus } from '@/lib/recipes/lifecycle-actions'
 import { Card } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { getIngredientKnowledgeBatch } from '@/lib/openclaw/ingredient-knowledge-queries'
@@ -20,6 +23,10 @@ import { IngredientPiePopover } from '@/components/pricing/ingredient-pie-popove
 import { getRecipeStockCoverage } from '@/lib/inventory/stock-lookup-actions'
 import { StockStatusBadge, StockCoverageSummary } from '@/components/inventory/stock-status-badge'
 import { getEventsUsingRecipe } from '@/lib/recipes/recipe-events-action'
+import { ScaleForEventButton } from '@/components/recipes/scale-for-event-button'
+import { RecipeSlideshow } from '@/components/recipes/recipe-slideshow'
+import { StepPhotoGallery } from '@/components/recipes/step-photo-gallery'
+import { getRecipeStepPhotos } from '@/lib/recipes/recipe-photo-actions'
 
 const VOLUME_UNITS = new Set([
   'cup',
@@ -77,6 +84,39 @@ const COUNT_UNITS = new Set([
   'sprigs',
 ])
 
+type RecipeStepPhoto = Awaited<ReturnType<typeof getRecipeStepPhotos>>[number]
+
+function buildRecipePhotoSteps(recipe: any, stepPhotos: RecipeStepPhoto[]) {
+  if (stepPhotos.length === 0) return []
+
+  const methodText = recipe.method_detailed || recipe.method || ''
+  const methodLines = methodText
+    .split(/\r?\n/)
+    .map((line: string) => line.trim())
+    .filter(Boolean)
+
+  const photosByStep = new Map<number, RecipeStepPhoto[]>()
+  for (const photo of stepPhotos) {
+    const existing = photosByStep.get(photo.step_number) ?? []
+    existing.push(photo)
+    photosByStep.set(photo.step_number, existing)
+  }
+
+  return Array.from(photosByStep.entries())
+    .sort(([a], [b]) => a - b)
+    .map(([stepNumber, photos]) => ({
+      number: stepNumber,
+      instruction: methodLines[stepNumber - 1] ?? `Step ${stepNumber}`,
+      photos: photos
+        .sort((a, b) => a.sort_order - b.sort_order)
+        .map((photo) => ({
+          id: photo.id,
+          photo_url: photo.photo_url,
+          caption: photo.caption,
+        })),
+    }))
+}
+
 function unitCategory(unit: string | null | undefined): string | null {
   if (!unit) return null
   const u = unit.toLowerCase().trim()
@@ -133,18 +173,27 @@ export default async function ChefRecipeDetailPage({ params }: { params: { id: s
       unit: ri.unit,
     }))
 
-  const [placeholderImage, ingredientKnowledge, stockCoverage, livePrices, recipeEvents] =
-    await Promise.all([
-      hasOwnPhoto ? Promise.resolve(null) : getPlaceholderImage(r.name),
-      getIngredientKnowledgeBatch(ingredientNames).catch(() => new Map()),
-      getRecipeStockCoverage(stockInput).catch(
-        () => [] as Awaited<ReturnType<typeof getRecipeStockCoverage>>
-      ),
-      ingredientIds.length > 0
-        ? resolvePricesBatch(ingredientIds, user.tenantId!).catch(() => new Map<string, any>())
-        : Promise.resolve(new Map<string, any>()),
-      getEventsUsingRecipe(params.id).catch(() => []),
-    ])
+  const [
+    placeholderImage,
+    ingredientKnowledge,
+    stockCoverage,
+    livePrices,
+    recipeEvents,
+    lifecycle,
+    stepPhotos,
+  ] = await Promise.all([
+    hasOwnPhoto ? Promise.resolve(null) : getPlaceholderImage(r.name),
+    getIngredientKnowledgeBatch(ingredientNames).catch(() => new Map()),
+    getRecipeStockCoverage(stockInput).catch(
+      () => [] as Awaited<ReturnType<typeof getRecipeStockCoverage>>
+    ),
+    ingredientIds.length > 0
+      ? resolvePricesBatch(ingredientIds, user.tenantId!).catch(() => new Map<string, any>())
+      : Promise.resolve(new Map<string, any>()),
+    getEventsUsingRecipe(params.id).catch(() => []),
+    getRecipeLifecycleStatus(params.id).catch(() => null),
+    getRecipeStepPhotos(params.id).catch(() => []),
+  ])
 
   // Compute live total from PIE prices
   let liveTotalCents = 0
@@ -159,6 +208,10 @@ export default async function ChefRecipeDetailPage({ params }: { params: { id: s
 
   // Build a lookup map for stock status by ingredient ID
   const stockByIngredient = new Map(stockCoverage.map((s) => [s.ingredientId, s]))
+  const photoSteps = buildRecipePhotoSteps(r, stepPhotos)
+  const stepNumbersWithPhotos = Array.from(
+    new Set(stepPhotos.map((photo) => photo.step_number))
+  ).sort((a, b) => a - b)
 
   return (
     <div className="space-y-6">
@@ -181,7 +234,27 @@ export default async function ChefRecipeDetailPage({ params }: { params: { id: s
       {/* Header */}
       <div className="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-3">
         <div>
-          <h1 className="text-2xl font-bold text-stone-100">{r.name}</h1>
+          <div className="flex items-center gap-3">
+            <h1 className="text-2xl font-bold text-stone-100">{r.name}</h1>
+            {lifecycle && (
+              <RecipeStatusBadge
+                status={lifecycle.status as 'stub' | 'draft' | 'active' | 'archived'}
+              />
+            )}
+          </div>
+          {lifecycle && (
+            <RecipeLineage
+              recipeId={r.id}
+              forkedFrom={
+                lifecycle.forkedFromId && lifecycle.forkedFromName
+                  ? { id: lifecycle.forkedFromId, name: lifecycle.forkedFromName }
+                  : null
+              }
+              forkCount={lifecycle.forkCount}
+              versionNumber={lifecycle.versionNumber}
+              versionNote={lifecycle.versionNote}
+            />
+          )}
           <div className="flex flex-wrap items-center gap-2 mt-1">
             {r.category && <Badge variant="info">{r.category.replace(/_/g, ' ')}</Badge>}
             {r.archived && <Badge variant="error">Archived</Badge>}
@@ -342,6 +415,28 @@ export default async function ChefRecipeDetailPage({ params }: { params: { id: s
             <div>
               <h3 className="text-sm font-medium text-stone-300 mb-1">Method</h3>
               <p className="text-sm text-stone-400 whitespace-pre-wrap">{r.method}</p>
+            </div>
+          )}
+
+          {photoSteps.length > 0 && (
+            <div className="border-t border-stone-800 pt-4">
+              <RecipeSlideshow recipeName={r.name} steps={photoSteps} />
+            </div>
+          )}
+
+          {stepNumbersWithPhotos.length > 0 && (
+            <div className="space-y-4 border-t border-stone-800 pt-4">
+              <p className="text-sm font-medium text-stone-300">Step Photos</p>
+              {stepNumbersWithPhotos.map((stepNumber) => (
+                <div key={stepNumber} className="space-y-2">
+                  <p className="text-xs font-medium text-stone-500">Step {stepNumber}</p>
+                  <StepPhotoGallery
+                    recipeId={r.id}
+                    stepNumber={stepNumber}
+                    photos={stepPhotos.filter((photo) => photo.step_number === stepNumber)}
+                  />
+                </div>
+              ))}
             </div>
           )}
 
@@ -533,6 +628,24 @@ export default async function ChefRecipeDetailPage({ params }: { params: { id: s
           </div>
         </Card>
       )}
+
+      {/* Scale for upcoming events */}
+      {recipeEvents
+        .filter(
+          (ev) =>
+            ev.guest_count &&
+            ev.guest_count > 0 &&
+            ev.event_date &&
+            new Date(ev.event_date) >= new Date()
+        )
+        .map((ev) => (
+          <ScaleForEventButton
+            key={ev.event_id}
+            recipeId={params.id}
+            eventName={ev.event_name}
+            guestCount={ev.guest_count!}
+          />
+        ))}
 
       {/* Nutrition Lookup - Open Food Facts */}
       <NutritionLookupPanel defaultQuery={r.name} />

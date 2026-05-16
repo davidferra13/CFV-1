@@ -4,6 +4,7 @@ import { requireChef } from '@/lib/auth/get-user'
 import { getMenus } from '@/lib/menus/actions'
 import { Card } from '@/components/ui/card'
 import { format } from 'date-fns'
+import { TemplateLibrary } from '@/components/menus/template-library'
 
 export const metadata: Metadata = { title: 'Menu Templates' }
 
@@ -36,6 +37,8 @@ export default async function MenuTemplatesPage() {
         </div>
         <p className="text-stone-500 mt-1">Reusable menu templates you can copy for new events</p>
       </div>
+
+      <TemplateLibrary />
 
       {templates.length === 0 ? (
         <Card className="p-12 text-center">

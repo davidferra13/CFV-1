@@ -8,7 +8,7 @@ import { requireChef } from '@/lib/auth/get-user'
 import { checkRateLimit } from '@/lib/api/rate-limit'
 import { createServerClient } from '@/lib/db/server'
 import { escapeLikePattern } from '@/lib/db/escape-like'
-import { normalizePagination, buildPaginationMeta } from '@/lib/search/search-helpers'
+import { normalizePagination, buildPaginationMeta, ftsMatchIds } from '@/lib/search/search-helpers'
 import type { PaginationMeta } from '@/lib/search/search-types'
 import { revalidatePath, revalidateTag } from 'next/cache'
 import { z } from 'zod'
@@ -278,6 +278,7 @@ export type RecipeListItem = {
   id: string
   name: string
   category: RecipeCategory
+  status?: 'stub' | 'draft' | 'active' | 'archived'
   method: string
   dietary_tags: string[]
   servings: number | null
@@ -340,8 +341,15 @@ export async function getRecipes(filters?: {
   }
 
   if (filters?.search) {
-    // Try FTS on search_vector if column exists, fall back to ILIKE
-    query = query.ilike('name', `%${escapeLikePattern(filters.search)}%`)
+    const ftsIds = await ftsMatchIds('recipes', user.tenantId!, filters.search)
+    if (ftsIds !== null) {
+      if (ftsIds.length === 0) {
+        return { recipes: [], pagination: buildPaginationMeta(0, page, pageSize) }
+      }
+      query = query.in('id', ftsIds)
+    } else {
+      query = query.ilike('name', `%${escapeLikePattern(filters.search)}%`)
+    }
   }
 
   // Sort
@@ -392,6 +400,7 @@ export async function getRecipes(filters?: {
       id: r.id,
       name: r.name,
       category: r.category,
+      status: r.status ?? 'draft',
       method: r.method,
       dietary_tags: r.dietary_tags || [],
       servings: r.servings ?? null,
@@ -1029,7 +1038,15 @@ export async function getIngredients(filters?: {
   }
 
   if (filters?.search) {
-    query = query.ilike('name', `%${escapeLikePattern(filters.search)}%`)
+    const ftsIds = await ftsMatchIds('ingredients', user.tenantId!, filters.search)
+    if (ftsIds !== null) {
+      if (ftsIds.length === 0) {
+        return { ingredients: [], pagination: buildPaginationMeta(0, page, pageSize) }
+      }
+      query = query.in('id', ftsIds)
+    } else {
+      query = query.ilike('name', `%${escapeLikePattern(filters.search)}%`)
+    }
   }
 
   query = query.order('name', { ascending: true })

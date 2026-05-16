@@ -119,9 +119,21 @@ export async function buildTakeoutZip(
   // Helper: query a table with tenant scoping
   async function queryTable(
     tableName: string,
-    fkColumn: string = 'tenant_id'
+    fkColumn: string = 'tenant_id',
+    parentIds?: string[],
+    parentFkColumn?: string
   ): Promise<Record<string, unknown>[]> {
     try {
+      if (parentIds && parentFkColumn) {
+        if (parentIds.length === 0) return []
+        const { data } = await db
+          .from(tableName)
+          .select('*')
+          .in(parentFkColumn, parentIds.slice(0, MAX_ROWS))
+          .limit(MAX_ROWS)
+        return (data || []) as Record<string, unknown>[]
+      }
+
       const { data } = await db.from(tableName).select('*').eq(fkColumn, tenantId).limit(MAX_ROWS)
       return (data || []) as Record<string, unknown>[]
     } catch {
@@ -145,13 +157,19 @@ export async function buildTakeoutZip(
     const cat = TAKEOUT_CATEGORY_MAP.get(catId)
     if (!cat) continue
 
-    // Fetch all tables for this category in parallel
-    const tableData = await Promise.all(
-      cat.tables.map(async (t) => ({
-        name: t.name,
-        rows: await queryTable(t.name, t.fkColumn),
-      }))
-    )
+    const tableData: Array<{ name: string; rows: Record<string, unknown>[] }> = []
+    const rowsByTable = new Map<string, Record<string, unknown>[]>()
+
+    for (const t of cat.tables) {
+      const parentRows = t.parentTable ? rowsByTable.get(t.parentTable) : null
+      const parentIds =
+        parentRows
+          ?.map((row) => row[t.parentIdColumn ?? 'id'])
+          .filter((id): id is string => typeof id === 'string') ?? undefined
+      const rows = await queryTable(t.name, t.fkColumn, parentIds, t.parentFkColumn)
+      tableData.push({ name: t.name, rows })
+      rowsByTable.set(t.name, rows)
+    }
 
     const primaryRows = tableData[0]?.rows ?? []
     counts[catId] = primaryRows.length
