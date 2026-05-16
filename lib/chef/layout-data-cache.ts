@@ -203,3 +203,32 @@ export function getCachedIsPrivileged(authUserId: string): Promise<boolean> {
     { revalidate: 60, tags: [`is-privileged-${authUserId}`] }
   )()
 }
+
+// ─── Usage Ranking (cached 120s) ─────────────────────────────────────────
+// Per-chef visit counts for action bar sorting. Longer TTL since visit
+// frequency changes slowly and a stale ranking is perfectly acceptable.
+
+export function getCachedUsageRanking(chefId: string): Promise<Record<string, number>> {
+  return unstable_cache(
+    async (): Promise<Record<string, number>> => {
+      const { pgClient } = await import('@/lib/db')
+      const rows = await pgClient`
+        SELECT route_path, COUNT(*)::int AS visits
+        FROM surface_usage_events
+        WHERE chef_id = ${chefId}
+          AND event_type = 'visit'
+          AND created_at >= NOW() - INTERVAL '30 days'
+        GROUP BY route_path
+        ORDER BY visits DESC
+        LIMIT 20
+      `
+      const map: Record<string, number> = {}
+      for (const r of rows) {
+        map[r.route_path as string] = r.visits as number
+      }
+      return map
+    },
+    [`usage-ranking-${chefId}`],
+    { revalidate: 120, tags: [`usage-ranking-${chefId}`] }
+  )()
+}

@@ -14,19 +14,16 @@ import { getArchetypeCopy } from '@/lib/archetypes/ui-copy'
 import type { TenantDataPresence } from '@/lib/progressive-disclosure/types'
 import { isActionBarItemVisible } from '@/lib/progressive-disclosure/nav-visibility'
 
+const PINNED_HREFS = new Set(['/inbox', '/notifications', '/inquiries', '/circles'])
+
 type ActionBarProps = {
-  /** Filter string from nav search input */
   navFilter?: string
-  /** Rail/collapsed mode: icon-only rendering */
   collapsed?: boolean
-  /** Chef archetype for contextual labels */
   archetype?: string | null
-  /** Tenant data presence for first-time progressive disclosure */
   tenantPresence?: TenantDataPresence | null
-  /** Whether the user explicitly expanded advanced features */
   showAllFeatures?: boolean
-  /** Admin and privileged roles keep the full operational shell */
   bypassProgressiveDisclosure?: boolean
+  usageRanking?: Record<string, number>
 }
 
 export function ActionBar({
@@ -36,13 +33,14 @@ export function ActionBar({
   tenantPresence,
   showAllFeatures = false,
   bypassProgressiveDisclosure = false,
+  usageRanking,
 }: ActionBarProps) {
   const pathname = usePathname()
   const searchParams = useSearchParams()
   const { pendingHref, setPendingHref } = useNavigationPending()
 
   const copy = getArchetypeCopy(archetype)
-  const items = actionBarItems
+  const visibleItems = actionBarItems
     .filter(
       (item) =>
         isItemActive(pathname, item.href, searchParams) ||
@@ -54,6 +52,12 @@ export function ActionBar({
         )
     )
     .map((item) => (item.href === '/events' ? { ...item, label: copy.eventsLabel } : item))
+
+  const items =
+    usageRanking && Object.keys(usageRanking).length > 0
+      ? sortByUsage(visibleItems, usageRanking)
+      : visibleItems
+
   const query = navFilter.toLowerCase().trim()
   const filtered = query ? items.filter((item) => item.label.toLowerCase().includes(query)) : items
 
@@ -148,4 +152,14 @@ export function ActionBar({
       </div>
     </div>
   )
+}
+
+function sortByUsage(
+  items: typeof actionBarItems,
+  ranking: Record<string, number>
+): typeof actionBarItems {
+  const pinned = items.filter((i) => PINNED_HREFS.has(i.href))
+  const sortable = items.filter((i) => !PINNED_HREFS.has(i.href))
+  sortable.sort((a, b) => (ranking[b.href] ?? 0) - (ranking[a.href] ?? 0))
+  return [...pinned, ...sortable]
 }

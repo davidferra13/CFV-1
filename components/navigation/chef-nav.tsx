@@ -32,6 +32,8 @@ import { SystemHeartbeat } from '@/components/navigation/system-heartbeat'
 import { useNavigationPending } from '@/components/navigation/navigation-pending-provider'
 import { AppLogo } from '@/components/branding/app-logo'
 import { RecentPagesSection } from '@/components/navigation/recent-pages-section'
+import { PinnedSurfacesSection } from '@/components/navigation/pinned-surfaces-section'
+import type { PinnedSurface } from '@/lib/surfaces/analytics/usage-tracking'
 import { InboxUnreadBadge } from '@/components/communication/inbox-unread-badge'
 import { AutopilotBadge } from '@/components/autopilot/autopilot-badge'
 import { CirclesUnreadBadge } from '@/components/hub/circles-unread-badge'
@@ -694,6 +696,9 @@ export function ChefSidebar({
   hiddenRoutes,
   chefName,
   chefAvatar,
+  pinnedSurfaces,
+  usageRanking,
+  railGroupPriorities,
 }: {
   primaryNavHrefs?: string[]
   enabledModules?: string[]
@@ -707,6 +712,9 @@ export function ChefSidebar({
   hiddenRoutes?: string[]
   chefName?: string | null
   chefAvatar?: string | null
+  pinnedSurfaces?: PinnedSurface[]
+  usageRanking?: Record<string, number>
+  railGroupPriorities?: { groupId: string; score: number }[]
 }) {
   const pathname = usePathname() ?? ''
   const searchParams = useSearchParams()
@@ -848,6 +856,16 @@ export function ChefSidebar({
         .filter((entry): entry is { group: NavGroup; isLocked: boolean } => Boolean(entry.group)),
     [groupEntries, navFilter]
   )
+  const railSortedEntries = useMemo(() => {
+    if (!railGroupPriorities || railGroupPriorities.length === 0) return filteredGroupEntries
+    const scoreMap = new Map(railGroupPriorities.map((p) => [p.groupId, p.score]))
+    return [...filteredGroupEntries].sort((a, b) => {
+      const aScore = scoreMap.get(a.group.id) ?? 0
+      const bScore = scoreMap.get(b.group.id) ?? 0
+      return bScore - aScore
+    })
+  }, [filteredGroupEntries, railGroupPriorities])
+
   const visibleBottomItems = useMemo(
     () => (isAdmin ? standaloneBottom : standaloneBottom.filter((item) => !item.adminOnly)),
     [isAdmin]
@@ -1009,12 +1027,13 @@ export function ChefSidebar({
               tenantPresence={tenantPresence}
               showAllFeatures={showAllNav}
               bypassProgressiveDisclosure={isAdmin || isPrivileged}
+              usageRanking={usageRanking}
             />
 
             <div className="w-6 border-t border-stone-800 my-1.5" />
 
-            {/* Nav Groups - rail flyouts */}
-            {filteredGroupEntries.map(({ group }) => (
+            {/* Nav Groups - rail flyouts (ordered by rail tier priority) */}
+            {railSortedEntries.map(({ group }) => (
               <RailFlyout
                 key={group.id}
                 group={group}
@@ -1092,6 +1111,7 @@ export function ChefSidebar({
               tenantPresence={tenantPresence}
               showAllFeatures={showAllNav}
               bypassProgressiveDisclosure={isAdmin || isPrivileged}
+              usageRanking={usageRanking}
             />
 
             {/* ─── All Features (collapsible directory of all nav groups) ─── */}
@@ -1142,6 +1162,7 @@ export function ChefSidebar({
               )}
             </AllFeaturesCollapse>
 
+            <PinnedSurfacesSection pinnedSurfaces={pinnedSurfaces ?? []} />
             <RecentPagesSection />
           </div>
         )}

@@ -28,6 +28,7 @@ import {
   getCachedDeletionStatus,
   getCachedIsAdmin,
   getCachedIsPrivileged,
+  getCachedUsageRanking,
 } from '@/lib/chef/layout-data-cache'
 import { TestAccountBanner } from '@/components/dev/test-account-banner'
 const CommandPalette = dynamic(
@@ -48,6 +49,7 @@ import {
   type WorkspaceDensity,
 } from '@/lib/interface/surface-governance'
 import { resolveHiddenNavRoutes } from '@/lib/surfaces/resolve-chef-surfaces'
+import { getPinnedSurfaces } from '@/lib/surfaces/analytics/usage-tracking'
 import { RoleSwitcher } from '@/components/shared/role-switcher'
 
 const FeedbackNudgeCard = dynamic(
@@ -92,6 +94,10 @@ const ChefLiveAlerts = dynamic(
 import { RouteProgress } from '@/components/ui/route-progress'
 import { Suspense } from 'react'
 import { RailStripWrapper, RailStripSkeleton } from '@/components/rail/rail-strip-wrapper'
+import {
+  getRailGroupPriorities,
+  type RailGroupPriority,
+} from '@/lib/discovery/universal-rail-actions'
 import { getTenantDataPresence } from '@/lib/progressive-disclosure/tenant-data-presence'
 import type { TenantDataPresence } from '@/lib/progressive-disclosure/types'
 
@@ -143,6 +149,9 @@ export default async function ChefLayout({ children }: { children: React.ReactNo
     remyEnabled,
     chefArchetype,
     tenantPresence,
+    pinnedSurfaces,
+    usageRanking,
+    railGroupPriorities,
   ] = await Promise.all([
     // Cached for 60s - slug and nav prefs change rarely, keyed per chef
     getChefLayoutData(user.entityId),
@@ -170,6 +179,9 @@ export default async function ChefLayout({ children }: { children: React.ReactNo
     getCachedChefArchetype(user.entityId).catch(() => null),
     // Tenant data presence for progressive disclosure (short cached)
     getTenantDataPresence(user.tenantId!).catch(() => null as TenantDataPresence | null),
+    getPinnedSurfaces().catch(() => []),
+    getCachedUsageRanking(user.entityId).catch(() => ({}) as Record<string, number>),
+    getRailGroupPriorities().catch(() => [] as RailGroupPriority[]),
   ])
   const session = await auth()
   const availableRoleCount =
@@ -269,6 +281,9 @@ export default async function ChefLayout({ children }: { children: React.ReactNo
                           hiddenRoutes={hiddenRoutes}
                           chefName={layoutData.business_name}
                           chefAvatar={layoutData.profile_image_url}
+                          pinnedSurfaces={pinnedSurfaces}
+                          usageRanking={usageRanking}
+                          railGroupPriorities={railGroupPriorities}
                         />
                       ) : null}
                       {/* Mobile nav (top bar + bottom tabs) */}
