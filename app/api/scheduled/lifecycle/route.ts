@@ -68,6 +68,8 @@ async function handleLifecycle(request: NextRequest): Promise<NextResponse> {
       midpointSkipped: 0,
       quoteExpiryWarnings: 0,
       quotesNotified: 0,
+      seasonalRebookCandidates: 0,
+      seasonalRebookNotified: 0,
       errors: [] as string[],
     }
 
@@ -478,7 +480,7 @@ async function handleLifecycle(request: NextRequest): Promise<NextResponse> {
       const paymentReminderResults = { sent: 0, skipped: 0 }
 
       if (unpaidEvents && unpaidEvents.length > 0) {
-        const { sendPaymentReminderEmail } = await import('@/lib/email/notifications')
+        const { sendPaymentReminder } = await import('@/lib/invoices/reminder-actions')
 
         for (const event of unpaidEvents) {
           try {
@@ -509,46 +511,18 @@ async function handleLifecycle(request: NextRequest): Promise<NextResponse> {
               (eventDateMs - today.getTime()) / (1000 * 60 * 60 * 24)
             )
 
-            // Get chef details
-            const { data: chef } = await db
-              .from('chefs')
-              .select('business_name')
-              .eq('id', event.tenant_id)
-              .single()
-
-            // Get outstanding balance
-            const { data: financial } = await db
-              .from('event_financial_summary')
-              .select('outstanding_balance_cents')
-              .eq('event_id', event.id)
-              .single()
-
-            const amountDueCents =
-              financial?.outstanding_balance_cents ?? event.quoted_price_cents ?? 0
-            const depositCents = event.deposit_amount_cents ?? 0
-
             for (const threshold of reminderThresholds) {
               if (daysUntilEvent > threshold.days) continue
 
-              // Check if this reminder was already sent
               const alreadySent = event[threshold.column] !== null
               if (alreadySent) continue
 
-              // Send the reminder (use actual days, not just the threshold bucket)
-              await sendPaymentReminderEmail({
-                clientEmail: client.email,
-                clientName: client.full_name,
-                chefName: chef?.business_name || 'Your Chef',
-                occasion: event.occasion || 'your event',
-                eventDate: dateToDateString(event.event_date as Date | string),
-                daysUntilEvent: daysUntilEvent,
-                amountDueCents,
-                depositAmountCents: depositCents > 0 ? depositCents : null,
-                eventId: event.id,
-              })
+              const result = await sendPaymentReminder(event.id, event.tenant_id)
+              if (!result.success) {
+                paymentReminderResults.skipped++
+                break
+              }
 
-              // Mark as sent
-              // Cast to any: new column not yet in generated types
               const reminderSentAt = new Date().toISOString()
               const { error: paymentReminderMarkerError } = await db
                 .from('events')
@@ -568,7 +542,7 @@ async function handleLifecycle(request: NextRequest): Promise<NextResponse> {
               })
 
               paymentReminderResults.sent++
-              break // Only send the most-urgent threshold per cron run
+              break
             }
           } catch (err) {
             results.errors.push(`Payment reminder for event ${event.id}: ${(err as Error).message}`)
@@ -1306,6 +1280,46 @@ ${chefName}`
       }
     } catch (err) {
       results.errors.push(`Review requests: ${(err as Error).message}`)
+    }
+
+    // ── Seasonal Rebook Detection ───────────────────────────────────────
+    // Find clients approaching their one-year anniversary and notify chefs.
+    try {
+      const { findSeasonalRebookCandidates } = await import('@/lib/lifecycle/seasonal-rebook')
+      const { data: allChefs } = await db.from('chefs').select('id').eq('is_active', true)
+
+      if (allChefs) {
+        for (const chef of allChefs) {
+          try {
+            const candidates = await findSeasonalRebookCandidates(chef.id)
+            results.seasonalRebookCandidates += candidates.length
+
+            if (candidates.length > 0) {
+              const { createChefNotification } = await import('@/lib/notifications/chef-actions')
+              for (const candidate of candidates) {
+                try {
+                  await createChefNotification({
+                    tenantId: chef.id,
+                    category: 'ops',
+                    action: 'seasonal_rebook_opportunity' as any,
+                    title: 'Rebook opportunity',
+                    body: `${candidate.clientName}'s "${candidate.occasion || 'event'}" anniversary is approaching. Consider reaching out to rebook.`,
+                    actionUrl: `/clients/${candidate.clientId}`,
+                    metadata: { clientId: candidate.clientId, eventId: candidate.eventId },
+                  })
+                  results.seasonalRebookNotified++
+                } catch {
+                  // Non-blocking per candidate
+                }
+              }
+            }
+          } catch {
+            // Non-blocking per chef
+          }
+        }
+      }
+    } catch (err) {
+      results.errors.push(`Seasonal rebook: ${(err as Error).message}`)
     }
 
     await recordCronHeartbeat(
