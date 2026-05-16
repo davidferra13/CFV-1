@@ -2,11 +2,12 @@
 
 import { usePathname } from 'next/navigation'
 import Link from 'next/link'
-import { Sparkles, History, Settings, Lightbulb } from '@/components/ui/icons'
+import { Sparkles, History, Settings, Lightbulb, Shield } from '@/components/ui/icons'
 import { RemyAvatar } from '@/components/ai/remy-avatar'
 
 const NAV_ITEMS = [
   { href: '/remy', label: 'Chat', icon: Sparkles, exact: true },
+  { href: '/remy/operating', label: 'Hub', icon: Shield, exact: false },
   { href: '/remy/signals', label: 'Signals', icon: Lightbulb, exact: false },
   { href: '/remy/history', label: 'History', icon: History, exact: false },
   { href: '/remy/settings', label: 'Settings', icon: Settings, exact: false },
