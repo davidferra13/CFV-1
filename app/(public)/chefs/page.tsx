@@ -9,7 +9,7 @@ import {
   DISCOVERY_SERVICE_TYPE_OPTIONS,
   getDiscoveryPriceRangeLabel,
 } from '@/lib/discovery/constants'
-import { getDiscoverableChefs } from '@/lib/directory/actions'
+import { getDirectorySearchChefIds, getDiscoverableChefs } from '@/lib/directory/actions'
 import {
   DIRECTORY_SORT_OPTIONS,
   buildCuisineFacets,
@@ -51,9 +51,9 @@ export const dynamic = 'force-dynamic'
 
 export const metadata: Metadata = {
   ...buildMarketingMetadata({
-    title: "Browse ChefFlow's Curated Chef Directory",
+    title: 'Browse Private Chefs Near You',
     description:
-      'Browse the chefs currently live on ChefFlow, filter by service and location, and describe your event if you want matched outreach.',
+      'Browse live private chef profiles on ChefFlow, filter by service and location, and start a booking request for dinners, catering, meal prep, and events.',
     path: '/chefs',
     imagePath: '/social/chefflow-home.png',
     imageAlt: 'ChefFlow chef directory preview',
@@ -264,8 +264,14 @@ export default async function ChefDirectoryPage({ searchParams }: PageProps) {
       : ''
     : legacyStateFilter
 
-  const filteredChefs = filterDirectoryChefs(locationFilteredChefs, {
-    query,
+  const ftsChefIds = query ? new Set(await getDirectorySearchChefIds(query)) : null
+  const queryMatchedChefs =
+    ftsChefIds && ftsChefIds.size > 0
+      ? locationFilteredChefs.filter((chef) => ftsChefIds.has(chef.id))
+      : locationFilteredChefs
+
+  const filteredChefs = filterDirectoryChefs(queryMatchedChefs, {
+    query: ftsChefIds && ftsChefIds.size > 0 ? '' : query,
     stateFilter,
     cuisineFilter,
     serviceTypeFilter,
@@ -369,6 +375,36 @@ export default async function ChefDirectoryPage({ searchParams }: PageProps) {
         topCoverage={directorySummary.topCoverage.slice(0, 6)}
       />
 
+      <section className="border-b border-stone-800 bg-stone-950/60">
+        <div className="mx-auto grid max-w-6xl gap-3 px-4 py-4 text-sm text-stone-300 sm:grid-cols-3 sm:px-6 lg:px-8">
+          <div className="rounded-xl border border-stone-800 bg-stone-900/60 px-4 py-3">
+            <span className="block text-xs font-semibold uppercase tracking-[0.14em] text-stone-500">
+              Public profiles
+            </span>
+            <span className="mt-1 block text-stone-200">
+              {directorySummary.totalChefs.toLocaleString()} chef
+              {directorySummary.totalChefs === 1 ? '' : 's'} currently listed
+            </span>
+          </div>
+          <div className="rounded-xl border border-stone-800 bg-stone-900/60 px-4 py-3">
+            <span className="block text-xs font-semibold uppercase tracking-[0.14em] text-stone-500">
+              Inquiry status
+            </span>
+            <span className="mt-1 block text-stone-200">
+              {directorySummary.acceptingChefs.toLocaleString()} marked as accepting inquiries
+            </span>
+          </div>
+          <div className="rounded-xl border border-stone-800 bg-stone-900/60 px-4 py-3">
+            <span className="block text-xs font-semibold uppercase tracking-[0.14em] text-stone-500">
+              Trust notes
+            </span>
+            <Link href="/trust" className="mt-1 block text-brand-300 hover:text-brand-200">
+              See what ChefFlow verifies and what it does not.
+            </Link>
+          </div>
+        </div>
+      </section>
+
       {/* Sticky filter bar */}
       <section className="sticky top-0 z-30 border-b border-stone-800 bg-stone-900/95 backdrop-blur-sm">
         <div className="mx-auto max-w-6xl px-4 py-3 sm:px-6 lg:px-8">
@@ -465,7 +501,11 @@ export default async function ChefDirectoryPage({ searchParams }: PageProps) {
 
         {/* Trust line */}
         <p className="mt-12 text-center text-xs text-stone-600">
-          Every chef profile is reviewed before listing.
+          Public profiles are approved before listing. ChefFlow does not claim universal background
+          checks, insurance, or replacement guarantees.{' '}
+          <Link href="/trust" className="font-medium text-brand-400 hover:text-brand-300">
+            Read the Trust Center.
+          </Link>
         </p>
 
         <PublicSecondaryEntryCluster links={PUBLIC_SECONDARY_ENTRY_CONFIG.directory} theme="dark" />

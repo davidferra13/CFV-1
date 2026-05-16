@@ -11,17 +11,54 @@ import {
 } from '@/lib/brand/constants'
 export { PUBLIC_MARKET_SCOPE } from '@/lib/public/public-market-scope'
 
-const DEFAULT_PUBLIC_SITE_URL = 'https://app.cheflowhq.com'
+const DEFAULT_PUBLIC_SITE_URL = 'https://cheflowhq.com'
+const APP_SUBDOMAIN_PUBLIC_URL = 'https://app.cheflowhq.com'
 
 export { BRAND_NAME as COMPANY_NAME } from '@/lib/brand/constants'
 export { BRAND_SUPPORT_EMAIL as SUPPORT_EMAIL } from '@/lib/brand/constants'
 export { BRAND_FOUNDER as FOUNDER_FULL_NAME } from '@/lib/brand/constants'
 export { BRAND_FOUNDER_ROLE as FOUNDER_ROLE } from '@/lib/brand/constants'
-export const PUBLIC_SITE_URL = (
-  process.env.NEXT_PUBLIC_APP_URL ||
-  process.env.NEXT_PUBLIC_SITE_URL ||
-  DEFAULT_PUBLIC_SITE_URL
-).replace(/\/+$/, '')
+function resolvePublicSiteUrl() {
+  const configuredUrl =
+    process.env.NEXT_PUBLIC_MARKETING_SITE_URL ||
+    process.env.NEXT_PUBLIC_SITE_URL ||
+    process.env.NEXT_PUBLIC_APP_URL ||
+    DEFAULT_PUBLIC_SITE_URL
+
+  const normalizedUrl = configuredUrl.replace(/\/+$/, '')
+
+  return normalizedUrl === APP_SUBDOMAIN_PUBLIC_URL ? DEFAULT_PUBLIC_SITE_URL : normalizedUrl
+}
+
+export const PUBLIC_SITE_URL = resolvePublicSiteUrl()
+
+export const PUBLIC_SITE_NAME = BRAND_NAME
+export const PUBLIC_SITE_ALTERNATE_NAMES = [
+  'ChefFlow Marketplace',
+  'ChefFlow Chef Marketplace',
+  'ChefFlow Food Directory',
+] as const
+
+export const PUBLIC_SITE_DESCRIPTION =
+  'ChefFlow is a food and chef marketplace where clients find private chefs, caterers, and meal prep professionals, and chefs run inquiries, menus, quotes, payments, and kitchen operations.'
+
+export const PUBLIC_MARKETPLACE_DESCRIPTION =
+  'Find private chefs, caterers, and meal prep professionals near you, browse services and menus, and book food experiences through ChefFlow.'
+
+export const PUBLIC_MARKETPLACE_CONTACT_POINTS = [
+  {
+    '@type': 'ContactPoint',
+    email: BRAND_SUPPORT_EMAIL,
+    contactType: 'customer support',
+    availableLanguage: 'English',
+  },
+  {
+    '@type': 'ContactPoint',
+    email: BRAND_SUPPORT_EMAIL,
+    contactType: 'marketplace inquiries',
+    availableLanguage: 'English',
+  },
+] as const
 
 const stableCache: typeof cache =
   typeof cache === 'function'
@@ -51,6 +88,18 @@ export function absoluteUrl(path = ''): string {
   return `${PUBLIC_SITE_URL}${normalizePath(path)}`
 }
 
+export function canonicalUrl(path = ''): string {
+  const url = new URL(absoluteUrl(path || '/'))
+  url.hash = ''
+  url.search = ''
+
+  if (url.pathname !== '/') {
+    url.pathname = url.pathname.replace(/\/+$/, '')
+  }
+
+  return url.toString()
+}
+
 export function buildMarketingMetadata(params: {
   title: string
   description: string
@@ -74,17 +123,20 @@ export function buildMarketingMetadata(params: {
     type = 'website',
   } = params
 
-  const pageUrl = absoluteUrl(path)
+  const pageUrl = canonicalUrl(path)
   const socialImageUrl = absoluteUrl(imagePath)
 
   return {
+    applicationName: PUBLIC_SITE_NAME,
+    metadataBase: new URL(PUBLIC_SITE_URL),
     title,
     description,
+    category: 'Food marketplace',
     openGraph: {
       title: openGraphTitle,
       description,
       url: pageUrl,
-      siteName: BRAND_NAME,
+      siteName: PUBLIC_SITE_NAME,
       type,
       images: [{ url: socialImageUrl, alt: imageAlt }],
     },

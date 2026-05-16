@@ -57,7 +57,8 @@ export function HeroTrustBar({ stats, avatarChefs }: HeroTrustBarProps) {
             {/* Trust headline */}
             {stats.verifiedChefCount !== null && stats.cityCoveredCount !== null && (
               <p className="text-sm text-stone-400">
-                Trusted by {stats.verifiedChefCount}+ chefs across {stats.cityCoveredCount}+ cities
+                {stats.verifiedChefCount}+ directory-approved public chef profiles across{' '}
+                {stats.cityCoveredCount}+ cities
               </p>
             )}
 
@@ -83,7 +84,12 @@ export function HeroTrustBar({ stats, avatarChefs }: HeroTrustBarProps) {
             )}
 
             {/* Tagline */}
-            <p className="text-xs text-stone-500">Real chefs. Real kitchens.</p>
+            <p className="text-xs text-stone-500">
+              Profile data comes from live ChefFlow records.{' '}
+              <Link href="/trust" className="font-medium text-brand-300 hover:text-brand-200">
+                See what ChefFlow verifies.
+              </Link>
+            </p>
           </div>
         </div>
       </div>

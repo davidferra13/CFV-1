@@ -11,9 +11,14 @@ import { COMPARE_PAGES } from '@/lib/marketing/compare-pages'
 import { listPublicCuisinePages } from '@/lib/discovery/cuisine-pages'
 
 const BASE_URL = (
-  process.env.NEXT_PUBLIC_APP_URL ||
-  process.env.NEXT_PUBLIC_SITE_URL ||
-  'https://app.cheflowhq.com'
+  process.env.NEXT_PUBLIC_MARKETING_SITE_URL ||
+  (process.env.NEXT_PUBLIC_SITE_URL === 'https://app.cheflowhq.com'
+    ? 'https://cheflowhq.com'
+    : process.env.NEXT_PUBLIC_SITE_URL) ||
+  (process.env.NEXT_PUBLIC_APP_URL === 'https://app.cheflowhq.com'
+    ? 'https://cheflowhq.com'
+    : process.env.NEXT_PUBLIC_APP_URL) ||
+  'https://cheflowhq.com'
 ).replace(/\/+$/, '')
 const SITEMAP_QUERY_TIMEOUT_MS = Number(process.env.SITEMAP_QUERY_TIMEOUT_MS ?? 5000)
 
@@ -178,6 +183,21 @@ const CUISINE_ROUTES: MetadataRoute.Sitemap = listPublicCuisinePages().map((page
   priority: page.popularity >= 90 ? 0.75 : page.popularity >= 75 ? 0.7 : 0.65,
 }))
 
+const SERVICE_INTENT_ROUTES: MetadataRoute.Sitemap = [
+  'private-chef',
+  'dinner-party-chef',
+  'catering',
+  'meal-prep',
+  'cooking-classes',
+  'wedding-chef',
+  'corporate-dining',
+].map((slug) => ({
+  url: `${BASE_URL}/services/${slug}`,
+  lastModified: new Date(),
+  changeFrequency: 'monthly' as const,
+  priority: slug === 'private-chef' ? 0.82 : 0.74,
+}))
+
 export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
   try {
     const db: any = createAdminClient()
@@ -313,6 +333,7 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     return [
       ...STATIC_ROUTES,
       ...CUISINE_ROUTES,
+      ...SERVICE_INTENT_ROUTES,
       ...compareRoutes,
       ...chefRoutes,
       ...storeRoutes,
@@ -325,6 +346,6 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     ]
   } catch {
     // If DB is unavailable, return static routes only - don't break the build
-    return [...STATIC_ROUTES, ...CUISINE_ROUTES]
+    return [...STATIC_ROUTES, ...CUISINE_ROUTES, ...SERVICE_INTENT_ROUTES]
   }
 }

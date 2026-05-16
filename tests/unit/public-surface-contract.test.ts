@@ -1,5 +1,7 @@
 import { describe, it } from 'node:test'
 import assert from 'node:assert/strict'
+import { readFileSync } from 'node:fs'
+import path from 'node:path'
 import {
   PUBLIC_DIRECTORY_HELPER,
   PUBLIC_OPERATOR_ENTRY,
@@ -10,6 +12,7 @@ import {
 } from '../../lib/public/public-surface-config'
 import { PUBLIC_SECONDARY_ENTRY_CONFIG } from '../../lib/public/public-secondary-entry-config'
 import { FOOTER_SECTIONS, PUBLIC_NAV, isGroup } from '../../components/navigation/public-nav-config'
+import { SERVICE_INTENT_PAGES } from '../../app/(public)/services/_intent-pages'
 
 describe('Public Surface Contract', () => {
   it('keeps one canonical buyer CTA hierarchy', () => {
@@ -41,7 +44,7 @@ describe('Public Surface Contract', () => {
     assert.equal(hireAChefEntry.items.length, 7)
     assert.deepEqual(
       hireAChefEntry.items.map((item) => item.href),
-      ['/book', '/chefs', '/hub', '/services', '/how-it-works', '/faq', '/nearby']
+      ['/book', '/chefs', '/services', '/gift-cards', '/how-it-works', '/trust', '/nearby']
     )
 
     const operatorEntry = PUBLIC_NAV[1]
@@ -59,12 +62,13 @@ describe('Public Surface Contract', () => {
       [
         'Book Now',
         'Browse Chefs',
-        'Dinner Circles',
         'Services',
         'Gift Cards',
         'How It Works',
+        'Trust Center',
         'FAQ',
         'Food Directory',
+        'Dinner Circles',
       ]
     )
     assert.equal(FOOTER_SECTIONS.forOperators.links[0]?.href, '/for-operators')
@@ -75,5 +79,34 @@ describe('Public Surface Contract', () => {
       PUBLIC_SECONDARY_ENTRY_CONFIG.for_operators.map((link) => link.href),
       ['/for-operators/walkthrough', '/compare', '/marketplace-chefs']
     )
+  })
+
+  it('maps high-intent service searches to real service landing routes', () => {
+    assert.deepEqual(
+      SERVICE_INTENT_PAGES.map((page) => page.slug),
+      [
+        'private-chef',
+        'dinner-party-chef',
+        'catering',
+        'meal-prep',
+        'cooking-classes',
+        'wedding-chef',
+        'corporate-dining',
+      ]
+    )
+
+    for (const page of SERVICE_INTENT_PAGES) {
+      assert.match(page.h1, /chef|catering|cooking/i)
+      assert.ok(page.metaDescription.length > 80)
+      assert.ok(page.queryExamples.length >= 3)
+    }
+  })
+
+  it('includes service-intent routes in the sitemap contract', () => {
+    const sitemapSource = readFileSync(path.join(process.cwd(), 'app/sitemap.ts'), 'utf8')
+
+    for (const page of SERVICE_INTENT_PAGES) {
+      assert.match(sitemapSource, new RegExp(`'${page.slug}'`))
+    }
   })
 })

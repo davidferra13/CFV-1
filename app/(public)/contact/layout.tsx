@@ -3,14 +3,14 @@ import { BreadcrumbJsonLd, JsonLd } from '@/components/seo/json-ld'
 import { SUPPORT_EMAIL, absoluteUrl, buildMarketingMetadata } from '@/lib/site/public-site'
 
 export const metadata: Metadata = buildMarketingMetadata({
-  title: 'Contact ChefFlow | Private Chef Software Support',
+  title: 'Private Chef Marketplace Support',
   description:
-    'Questions about ChefFlow? Contact support@cheflowhq.com or use the form. We respond within 1 business day.',
+    'Contact ChefFlow for help with chef bookings, private dining, catering, meal prep, chef profiles, marketplace support, partnerships, or chef operator tools.',
   path: '/contact',
   imagePath: '/social/chefflow-booking.png',
   imageAlt: 'ChefFlow contact and booking preview',
-  openGraphTitle: 'Contact ChefFlow',
-  twitterTitle: 'Contact ChefFlow',
+  openGraphTitle: 'Contact ChefFlow Marketplace Support',
+  twitterTitle: 'Contact ChefFlow Marketplace Support',
   twitterCard: 'summary_large_image',
 })
 
@@ -28,18 +28,26 @@ export default function ContactLayout({ children }: { children: React.ReactNode 
             name: 'ChefFlow',
             email: SUPPORT_EMAIL,
             url: absoluteUrl('/'),
-            contactPoint: {
-              '@type': 'ContactPoint',
-              email: SUPPORT_EMAIL,
-              contactType: 'customer support',
-              availableLanguage: 'English',
-              hoursAvailable: {
-                '@type': 'OpeningHoursSpecification',
-                dayOfWeek: ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday'],
-                opens: '09:00',
-                closes: '17:00',
+            contactPoint: [
+              {
+                '@type': 'ContactPoint',
+                email: SUPPORT_EMAIL,
+                contactType: 'customer support',
+                availableLanguage: 'English',
+                hoursAvailable: {
+                  '@type': 'OpeningHoursSpecification',
+                  dayOfWeek: ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday'],
+                  opens: '09:00',
+                  closes: '17:00',
+                },
               },
-            },
+              {
+                '@type': 'ContactPoint',
+                email: SUPPORT_EMAIL,
+                contactType: 'marketplace inquiries',
+                availableLanguage: 'English',
+              },
+            ],
           },
         }}
       />

@@ -1,23 +1,6 @@
-'use client'
-
 import Image from 'next/image'
-import { useState, useMemo } from 'react'
-
-const HERO_PHOTOS = [
-  'https://images.unsplash.com/photo-1504674900247-0877df9cc836?w=1920&q=80&fm=webp',
-  'https://images.unsplash.com/photo-1556910103-1c02745aae4d?w=1920&q=80&fm=webp',
-  'https://images.unsplash.com/photo-1414235077428-338989a2e8c0?w=1920&q=80&fm=webp',
-  'https://images.unsplash.com/photo-1547592180-85f173990554?w=1920&q=80&fm=webp',
-  'https://images.unsplash.com/photo-1495521821757-a1efb6729352?w=1920&q=80&fm=webp',
-  'https://images.unsplash.com/photo-1551218808-94e220e084d2?w=1920&q=80&fm=webp',
-] as const
 
 export function HeroBackgroundImage() {
-  const [failed, setFailed] = useState(false)
-  const src = useMemo(() => HERO_PHOTOS[Math.floor(Math.random() * HERO_PHOTOS.length)], [])
-
-  if (failed) return null
-
   return (
     <>
       <style>{`
@@ -35,22 +18,23 @@ export function HeroBackgroundImage() {
           inset: 0,
           zIndex: 0,
           overflow: 'hidden',
-          opacity: 0.18,
+          opacity: 0.25,
         }}
       >
         <Image
-          src={src}
+          src="/images/hero-bg.jpg"
           alt=""
           fill
           sizes="100vw"
           priority
-          onError={() => setFailed(true)}
+          placeholder="blur"
+          blurDataURL="data:image/jpeg;base64,/9j/2wBDAAYEBQYFBAYGBQYHBwYIChAKCgkJChQODwwQFxQYGBcUFhYaHSUfGhsjHBYWICwgIyYnKSopGR8tMC0oMCUoKSj/2wBDAQcHBwoIChMKChMoGhYaKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCj/wAARCAALABQDASIAAhEBAxEB/8QAGAAAAwEBAAAAAAAAAAAAAAAAAAUGBAf/xAAjEAACAQQBAwUAAAAAAAAAAAACAwEABAYRBwcSIRMjMTJC/8QAFgEBAQEAAAAAAAAAAAAAAAAABQME/8QAGxEBAAICAwAAAAAAAAAAAAAAAQACERIhIjH/2gAMAwEAAhEDEQA/AF+Y5Y/H+PWFkoze7xBDG+2lvTjPsiXzCbYRO5Q4vcg/zFUa0resPWAT18d0brRw9nb25ExCQWe58jGqMs62yHMVrbo1fGdLnmQKd90RRUFLT39poqwuJkak/9k="
           style={{
             objectFit: 'cover',
+            objectPosition: 'center 40%',
             animation: 'ken-burns 20s ease-out forwards',
           }}
           className="hero-bg-ken-burns"
-          unoptimized
         />
       </div>
     </>

@@ -7,6 +7,7 @@ import { buildServiceTypeFacets, normalizeDirectoryValue } from '@/lib/directory
 import { PUBLIC_SECONDARY_ENTRY_CONFIG } from '@/lib/public/public-secondary-entry-config'
 import { PUBLIC_PRIMARY_CONSUMER_CTA } from '@/lib/public/public-surface-config'
 import { absoluteUrl, buildMarketingMetadata } from '@/lib/site/public-site'
+import { SERVICE_INTENT_PAGES } from './_intent-pages'
 
 export const revalidate = 300
 
@@ -421,6 +422,32 @@ export default async function ServicesPage({ searchParams = {} }: ServicesPagePr
             category has no tagged supply, the fallback here is the broader live directory or the
             booking request path instead of inventing inventory.
           </p>
+        </div>
+      </section>
+
+      <section className="mx-auto w-full max-w-5xl px-4 pb-8 sm:px-6 lg:px-8">
+        <div className="rounded-2xl border border-stone-800/70 bg-stone-900/50 p-5">
+          <p className="text-xs font-semibold uppercase tracking-[0.14em] text-stone-500">
+            Search Intent Pages
+          </p>
+          <h2 className="mt-2 text-2xl font-semibold text-stone-100">
+            Start from the client job, then browse live supply.
+          </h2>
+          <p className="mt-2 max-w-3xl text-sm leading-relaxed text-stone-400">
+            These pages map common client searches to the directory and booking request path without
+            inventing local supply.
+          </p>
+          <div className="mt-5 flex flex-wrap gap-3">
+            {SERVICE_INTENT_PAGES.map((page) => (
+              <Link
+                key={page.slug}
+                href={`/services/${page.slug}`}
+                className="inline-flex rounded-full border border-stone-700 bg-stone-950/80 px-4 py-2 text-sm font-medium text-stone-200 transition-colors hover:border-brand-600/50 hover:text-white"
+              >
+                {page.label}
+              </Link>
+            ))}
+          </div>
         </div>
       </section>
 

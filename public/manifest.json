@@ -1,15 +1,15 @@
 {
   "name": "ChefFlow",
   "short_name": "ChefFlow",
-  "description": "Ops for Artists - Private chef business operating system",
+  "description": "Food and chef marketplace for chef-made meals, private dining, catering, meal prep, and chef operating tools",
   "id": "/",
-  "start_url": "/",
+  "start_url": "/dashboard",
   "scope": "/",
   "display": "standalone",
   "background_color": "#faf9f7",
   "theme_color": "#e88f47",
   "orientation": "portrait",
-  "categories": ["business", "productivity"],
+  "categories": ["food", "business", "productivity"],
   "shortcuts": [
     {
       "name": "New Event",

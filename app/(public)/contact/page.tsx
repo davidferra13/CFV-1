@@ -10,13 +10,7 @@ import { buildContactSupportInfo } from '@/lib/contact/public-support'
 import { createServerClient } from '@/lib/db/server'
 import { resolveOwnerIdentity } from '@/lib/platform/owner-account'
 import { PUBLIC_REQUEST_ROUTING_COPY } from '@/lib/public/public-market-copy'
-import {
-  PUBLIC_MARKET_SCOPE,
-  SUPPORT_EMAIL,
-  absoluteUrl,
-  getFounderProfile,
-} from '@/lib/site/public-site'
-import { BreadcrumbJsonLd } from '@/components/seo/json-ld'
+import { PUBLIC_MARKET_SCOPE, SUPPORT_EMAIL, getFounderProfile } from '@/lib/site/public-site'
 
 export const revalidate = 60
 
@@ -103,12 +97,6 @@ export default async function ContactPage({ searchParams }: ContactPageProps) {
 
   return (
     <main>
-      <BreadcrumbJsonLd
-        items={[
-          { name: 'Home', url: absoluteUrl('/') },
-          { name: 'Contact', url: absoluteUrl('/contact') },
-        ]}
-      />
       <PublicPageView
         pageName="contact"
         properties={{
@@ -123,8 +111,8 @@ export default async function ContactPage({ searchParams }: ContactPageProps) {
         <div className="max-w-4xl mx-auto text-center">
           <h1 className="text-4xl md:text-5xl font-bold text-stone-100 mb-4">Get in Touch</h1>
           <p className="text-lg md:text-xl text-stone-300">
-            Questions about booking, operator setup, or support expectations? The company details
-            are explicit below.
+            Get help with booking, chef onboarding, marketplace listings, partnerships, or product
+            support.
           </p>
         </div>
       </section>
@@ -154,7 +142,8 @@ export default async function ContactPage({ searchParams }: ContactPageProps) {
                 </div>
               </div>
               <p className="mt-4 text-sm leading-relaxed text-stone-400">
-                Founder-led support and product decisions remain tied to live operator workflows.
+                Founder-led support stays close to real client bookings, chef listings, and operator
+                workflows.
               </p>
             </div>
             <div className="rounded-2xl border border-stone-700/60 bg-stone-900/50 p-5">

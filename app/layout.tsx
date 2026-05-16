@@ -28,11 +28,11 @@ export const viewport: Viewport = {
 
 export const metadata: Metadata = {
   title: {
-    default: 'ChefFlow - Curated Chef Network And Food Directory',
+    default: 'ChefFlow - Food & Chef Marketplace',
     template: `%s | ${COMPANY_NAME}`,
   },
   description:
-    "Browse ChefFlow's curated chef network, describe your event for matched outreach, and explore food operators in the public directory.",
+    'ChefFlow is a food and chef marketplace for discovering chef-made meals, private dining, catering, and meal prep while chefs manage bookings, menus, and client relationships.',
   manifest: '/manifest.json',
   icons: {
     icon: [
@@ -50,9 +50,9 @@ export const metadata: Metadata = {
     'mobile-web-app-capable': 'yes',
   },
   openGraph: {
-    title: 'ChefFlow - Curated Chef Network And Food Directory',
+    title: 'ChefFlow - Food & Chef Marketplace',
     description:
-      "Browse ChefFlow's curated chef network, describe your event for matched outreach, and explore food operators in the public directory.",
+      'Discover chef-made meals, private dining, catering, and meal prep while chefs manage bookings, menus, and client relationships.',
     siteName: COMPANY_NAME,
     type: 'website',
     locale: 'en_US',
@@ -60,9 +60,9 @@ export const metadata: Metadata = {
   },
   twitter: {
     card: 'summary_large_image',
-    title: 'ChefFlow - Curated Chef Network And Food Directory',
+    title: 'ChefFlow - Food & Chef Marketplace',
     description:
-      "Browse ChefFlow's curated chef network, describe your event for matched outreach, and explore food operators in the public directory.",
+      'Discover chef-made meals, private dining, catering, and meal prep while chefs manage bookings, menus, and client relationships.',
     images: [absoluteUrl('/social/chefflow-home.png')],
   },
   robots: {

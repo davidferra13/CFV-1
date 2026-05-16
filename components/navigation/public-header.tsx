@@ -6,6 +6,7 @@ import { useEffect, useRef, useState } from 'react'
 import { ChevronDown, Menu, X } from '@/components/ui/icons'
 import { TrackedLink } from '@/components/analytics/tracked-link'
 import { AppLogo } from '@/components/branding/app-logo'
+import { ThemeToggle } from '@/components/ui/theme-toggle'
 import { signOut } from '@/lib/auth/actions'
 
 import { PUBLIC_PRIMARY_CONSUMER_CTA } from '@/lib/public/public-surface-config'
@@ -201,6 +202,7 @@ export function PublicHeader({ user }: { user?: PublicHeaderUser | null }) {
   const pathname = usePathname()
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false)
   const [isScrolled, setIsScrolled] = useState(false)
+  const solidChrome = isScrolled || mobileMenuOpen
 
   useEffect(() => {
     const onScroll = () => setIsScrolled(window.scrollY > 12)
@@ -217,8 +219,8 @@ export function PublicHeader({ user }: { user?: PublicHeaderUser | null }) {
   return (
     <header
       className={`sticky top-0 z-chrome border-b transition-all duration-300 ${
-        isScrolled
-          ? 'border-[#4a3020]/40 bg-[#1a110c]/85 shadow-[0_4px_24px_rgba(0,0,0,0.3)] backdrop-blur-2xl'
+        solidChrome
+          ? 'border-stone-700/70 bg-stone-950/88 shadow-[0_4px_24px_rgba(0,0,0,0.12)] backdrop-blur-2xl dark:border-[#4a3020]/40 dark:bg-[#1a110c]/85 dark:shadow-[0_4px_24px_rgba(0,0,0,0.3)]'
           : 'border-transparent bg-transparent'
       }`}
     >
@@ -226,7 +228,13 @@ export function PublicHeader({ user }: { user?: PublicHeaderUser | null }) {
         <div className="flex items-center gap-5 sm:gap-8">
           <Link href="/" className="flex items-center gap-2.5">
             <AppLogo size={36} className="shadow-sm" />
-            <span className="text-base font-display tracking-tight text-stone-100">ChefFlow</span>
+            <span
+              className={`text-base font-display tracking-tight ${
+                solidChrome ? 'text-stone-100' : 'text-white'
+              }`}
+            >
+              ChefFlow
+            </span>
           </Link>
 
           {/* Desktop nav */}
@@ -258,6 +266,10 @@ export function PublicHeader({ user }: { user?: PublicHeaderUser | null }) {
 
         {/* Desktop actions */}
         <div className="hidden items-center gap-2 md:flex">
+          <ThemeToggle
+            className="h-10 w-10 rounded-lg text-stone-300 hover:bg-[#2a1a10]/50 hover:text-stone-100 dark:text-stone-300"
+            dataTestId="public-theme-toggle"
+          />
           {user ? (
             <AuthUserDropdown user={user} />
           ) : (
@@ -284,6 +296,10 @@ export function PublicHeader({ user }: { user?: PublicHeaderUser | null }) {
 
         {/* Mobile actions */}
         <div className="flex items-center gap-2 md:hidden">
+          <ThemeToggle
+            className="h-10 w-10 rounded-xl text-stone-300 hover:bg-[#2a1a10]/50 hover:text-stone-100"
+            dataTestId="public-mobile-theme-toggle"
+          />
           <TrackedLink
             href={PUBLIC_PRIMARY_CONSUMER_CTA.href}
             analyticsName="header_mobile_book_a_chef_quick"
@@ -295,7 +311,7 @@ export function PublicHeader({ user }: { user?: PublicHeaderUser | null }) {
           <button
             type="button"
             onClick={() => setMobileMenuOpen((open) => !open)}
-            className="flex h-10 w-10 items-center justify-center rounded-xl text-muted-soft hover:bg-stone-700 touch-manipulation"
+            className="flex h-10 w-10 items-center justify-center rounded-xl text-stone-300 hover:bg-[#2a1a10]/50 hover:text-stone-100 touch-manipulation"
             aria-label="Toggle menu"
           >
             {mobileMenuOpen ? <X className="h-5 w-5" /> : <Menu className="h-5 w-5" />}

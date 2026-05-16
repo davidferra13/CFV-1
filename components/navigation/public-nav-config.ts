@@ -13,7 +13,6 @@
 
 import {
   PUBLIC_DINNER_CIRCLES_ENTRY,
-  PUBLIC_CONSUMER_DISCOVERY_ENTRY,
   PUBLIC_OPERATOR_ENTRY,
   PUBLIC_PRIMARY_CONSUMER_CTA,
   PUBLIC_SECONDARY_CONSUMER_CTA,
@@ -51,12 +50,12 @@ export const PUBLIC_NAV: PublicNavEntry[] = [
   {
     label: 'Hire a Chef',
     items: [
-      PUBLIC_CONSUMER_DISCOVERY_ENTRY,
       PUBLIC_PRIMARY_CONSUMER_CTA,
       PUBLIC_SECONDARY_CONSUMER_CTA,
-      PUBLIC_DINNER_CIRCLES_ENTRY,
+      { href: '/services', label: 'Services' },
       { href: '/gift-cards', label: 'Gift Cards' },
       { href: '/how-it-works', label: 'How It Works' },
+      { href: '/trust', label: 'Trust Center' },
       PUBLIC_SUPPORTING_DIRECTORY_ENTRY,
     ],
   },
@@ -72,15 +71,15 @@ export const FOOTER_SECTIONS = {
   discover: {
     heading: 'Hire a Chef',
     links: [
-      PUBLIC_CONSUMER_DISCOVERY_ENTRY,
       PUBLIC_PRIMARY_CONSUMER_CTA,
       PUBLIC_SECONDARY_CONSUMER_CTA,
-      PUBLIC_DINNER_CIRCLES_ENTRY,
       { href: '/services', label: 'Services' },
       { href: '/gift-cards', label: 'Gift Cards' },
       { href: '/how-it-works', label: 'How It Works' },
+      { href: '/trust', label: 'Trust Center' },
       { href: '/faq', label: 'FAQ' },
       PUBLIC_SUPPORTING_DIRECTORY_ENTRY,
+      PUBLIC_DINNER_CIRCLES_ENTRY,
     ],
   },
   forOperators: {

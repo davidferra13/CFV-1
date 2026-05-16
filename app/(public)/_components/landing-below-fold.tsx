@@ -6,7 +6,7 @@ const HOW_IT_WORKS = [
     step: '01',
     title: 'Search by location',
     description:
-      'Enter your city or ZIP. Filter by cuisine, occasion, or service type. Every chef is vetted and verified.',
+      'Enter your city or ZIP. Filter by cuisine, occasion, or service type. Public listings are tied to live ChefFlow profiles.',
     icon: MapPin,
     accent: 'from-[#8b4513]/20 to-[#5c2d0e]/10',
     border: 'border-[#8b4513]/30',
@@ -15,7 +15,7 @@ const HOW_IT_WORKS = [
     step: '02',
     title: 'See real menus, real prices',
     description:
-      'No stock photos. No fake listings. Browse actual dishes and pricing directly from the chef.',
+      'Browse the service tags, menus, prices, and availability details chefs have published on their profiles.',
     icon: Utensils,
     accent: 'from-[#7a3b10]/20 to-[#4a2408]/10',
     border: 'border-[#7a3b10]/30',
@@ -24,7 +24,7 @@ const HOW_IT_WORKS = [
     step: '03',
     title: 'Book directly with the chef',
     description:
-      'No middleman fees on your inquiry. Message the chef, get a custom quote, and book on your terms.',
+      'Send an inquiry, compare written terms, and keep planning details in the chef-client conversation.',
     icon: ArrowRight,
     accent: 'from-[#6b3010]/20 to-[#3a1c08]/10',
     border: 'border-[#6b3010]/30',

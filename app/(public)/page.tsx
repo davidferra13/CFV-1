@@ -3,11 +3,7 @@ import Image from 'next/image'
 import Link from 'next/link'
 import { PublicPageView } from '@/components/analytics/public-page-view'
 import { TrackedLink } from '@/components/analytics/tracked-link'
-import {
-  OrganizationJsonLd,
-  SoftwareApplicationJsonLd,
-  WebSiteJsonLd,
-} from '@/components/seo/json-ld'
+import { OrganizationJsonLd, WebSiteJsonLd } from '@/components/seo/json-ld'
 import { buildMarketingMetadata } from '@/lib/site/public-site'
 import { HomepageDiscovery } from './_components/homepage-discovery'
 import { HeroBackgroundImage } from './_components/hero-background-image'
@@ -24,20 +20,17 @@ import type {
   FeaturedChefRailData,
   HomepageLocationContext,
 } from '@/lib/discovery/homepage-discovery-rail'
-import { auth } from '@/lib/auth'
-import { getUserScrollSignals } from '@/lib/discovery/user-scroll-signals'
-import { getSavedChefsForRail } from '@/lib/discovery/saved-chefs'
 import { getServerSavedLocation } from '@/lib/location/server-location'
 
 export const revalidate = 60
 
 const marketingMetadata = buildMarketingMetadata({
-  title: 'ChefFlow | Find a Private Chef, Caterer, or Meal Prep Service Near You',
+  title: 'Book Private Chefs Near You for Dinners, Events & Meal Prep',
   description:
-    'Search for private chefs, caterers, and meal prep professionals in your area. Browse profiles, compare services, and book directly. ChefFlow connects you with vetted food professionals.',
+    'Book private chefs near you for dinner parties, catering, weekly meal prep, weddings, corporate dining, and chef-led events. Browse live chef profiles or start one request.',
   path: '/',
   imagePath: '/social/chefflow-home.png',
-  imageAlt: 'ChefFlow homepage preview',
+  imageAlt: 'ChefFlow private chef booking preview',
 })
 
 export const metadata: Metadata = {
@@ -45,6 +38,9 @@ export const metadata: Metadata = {
   keywords: [
     'hire private chef',
     'private chef near me',
+    'food marketplace',
+    'chef marketplace',
+    'chef-made meals',
     'book a private chef',
     'catering near me',
     'meal prep service',
@@ -89,22 +85,10 @@ function ChefAvatarStrip({ chefs }: { chefs: AvatarChef[] }) {
 }
 
 export default async function Home() {
-  const session = await auth()
-  const authUserId = session?.user?.id ?? null
-
-  const [
-    platformStats,
-    allChefs,
-    seasonalPulse,
-    userSignals,
-    savedChefsForRail,
-    serverSavedLocation,
-  ] = await Promise.all([
+  const [platformStats, allChefs, seasonalPulse, serverSavedLocation] = await Promise.all([
     getPublicPlatformStats(),
     getDiscoverableChefs(),
     getPublicSeasonalMarketPulse().catch(() => null),
-    authUserId ? getUserScrollSignals(authUserId).catch(() => null) : Promise.resolve(null),
-    authUserId ? getSavedChefsForRail().catch(() => []) : Promise.resolve([]),
     getServerSavedLocation().catch(() => null),
   ])
 
@@ -139,21 +123,8 @@ export default async function Home() {
         c.discovery.dietary_specialties.length > 0 ? c.discovery.dietary_specialties : null,
     }))
 
-  if (savedChefsForRail.length > 0) {
-    const savedChefRailItems: FeaturedChefRailData[] = savedChefsForRail.map((sc) => ({
-      slug: sc.slug,
-      displayName: sc.displayName,
-      primaryCuisine: sc.primaryCuisine,
-      city: sc.city,
-      state: sc.state,
-    }))
-    const savedSlugs = new Set(savedChefsForRail.map((sc) => sc.slug))
-    const otherChefs = featuredChefs.filter((c) => !savedSlugs.has(c.slug))
-    featuredChefs = [...savedChefRailItems, ...otherChefs].slice(0, 5)
-  }
-
   // When server has a saved location, prefer chefs in the same state
-  if (serverSavedLocation?.state && savedChefsForRail.length === 0) {
+  if (serverSavedLocation?.state) {
     const savedState = serverSavedLocation.state
     const localChefs = featuredChefs.filter(
       (c) => c.state?.toLowerCase() === savedState.toLowerCase()
@@ -203,7 +174,7 @@ export default async function Home() {
 
   // Build culinary signal rail items from the seasonal market pulse.
   // These are seasonal ingredient discovery inserts routed to /ingredients.
-  // Derived from the public seasonal calendar — no fake events or external data.
+  // Derived from the public seasonal calendar, with no fake events or external data.
   const culinarySignals: DiscoveryRailItem[] = seasonalPulse
     ? [
         ...seasonalPulse.peakNow.slice(0, 2).map(
@@ -244,25 +215,24 @@ export default async function Home() {
         properties={{
           section: 'consumer_and_operator',
           entry_context: 'direct',
-          primary_intent: 'consumer_search',
+          primary_intent: 'book_private_chef',
         }}
       />
       <OrganizationJsonLd />
-      <SoftwareApplicationJsonLd />
       <WebSiteJsonLd />
 
       {/* ── Consumer Hero ── */}
       <section className="relative overflow-hidden">
-        {/* Deep warm brown gradient background */}
-        <div className="pointer-events-none absolute inset-0 bg-[#1a0e08]">
-          {/* Primary warm amber bloom — centre of attention */}
-          <div className="absolute inset-0 bg-[radial-gradient(ellipse_75%_55%_at_50%_38%,_rgba(180,80,20,0.75),_transparent)]" />
-          {/* Secondary depth layers */}
-          <div className="absolute inset-0 bg-[radial-gradient(ellipse_55%_45%_at_25%_15%,_rgba(120,50,10,0.45),_transparent)]" />
-          <div className="absolute inset-0 bg-[radial-gradient(ellipse_45%_38%_at_75%_72%,_rgba(80,30,5,0.35),_transparent)]" />
-          {/* Hot copper accent spots */}
-          <div className="absolute top-[18%] right-[22%] h-80 w-80 rounded-full bg-[radial-gradient(ellipse,_rgba(220,100,20,0.22),_transparent_70%)] blur-3xl" />
-          <div className="absolute bottom-[28%] left-[18%] h-64 w-64 rounded-full bg-[radial-gradient(ellipse,_rgba(255,140,40,0.14),_transparent_70%)] blur-2xl" />
+        {/* Deep burgundy gradient background, tuned for beet dish hero */}
+        <div className="pointer-events-none absolute inset-0 bg-[#1a0a0f]">
+          {/* Primary ruby/burgundy bloom, center of attention */}
+          <div className="absolute inset-0 bg-[radial-gradient(ellipse_75%_55%_at_50%_38%,_rgba(140,20,45,0.75),_transparent)]" />
+          {/* Secondary depth layers with purple and deep red undertones */}
+          <div className="absolute inset-0 bg-[radial-gradient(ellipse_55%_45%_at_25%_15%,_rgba(80,15,60,0.45),_transparent)]" />
+          <div className="absolute inset-0 bg-[radial-gradient(ellipse_45%_38%_at_75%_72%,_rgba(60,10,25,0.35),_transparent)]" />
+          {/* Golden-orange accent spots matching sauce tones */}
+          <div className="absolute top-[18%] right-[22%] h-80 w-80 rounded-full bg-[radial-gradient(ellipse,_rgba(210,150,40,0.22),_transparent_70%)] blur-3xl" />
+          <div className="absolute bottom-[28%] left-[18%] h-64 w-64 rounded-full bg-[radial-gradient(ellipse,_rgba(230,170,50,0.14),_transparent_70%)] blur-2xl" />
           {/* Very subtle top vignette to ground the text */}
           <div className="absolute inset-x-0 top-0 h-32 bg-gradient-to-b from-black/25 to-transparent" />
         </div>
@@ -271,7 +241,7 @@ export default async function Home() {
 
         <div className="relative mx-auto w-full max-w-4xl px-4 pb-16 pt-20 sm:px-6 sm:pb-24 sm:pt-28 lg:px-8 lg:pb-28 lg:pt-32">
           <div className="text-center">
-            {/* Trust badge — only shown when real stats exist */}
+            {/* Trust badge shown only when real stats exist */}
             {platformStats.verifiedChefCount != null && (
               <div className="mb-6 trust-badge-ring inline-flex items-center gap-2 rounded-full border border-amber-500/30 bg-amber-500/10 px-4 py-1.5 text-sm font-medium text-amber-200/90 backdrop-blur-sm">
                 {platformStats.avgRating != null && (
@@ -282,7 +252,7 @@ export default async function Home() {
                   </>
                 )}
                 <span>
-                  {platformStats.verifiedChefCount}+ vetted chefs
+                  {platformStats.verifiedChefCount}+ directory-approved chef profiles
                   {platformStats.cityCoveredCount != null && (
                     <>&nbsp;&middot;&nbsp;{platformStats.cityCoveredCount}+ cities</>
                   )}
@@ -291,40 +261,41 @@ export default async function Home() {
             )}
             <h1 className="font-display-serif mx-auto max-w-4xl text-5xl font-extrabold tracking-[-0.02em] sm:text-6xl lg:text-7xl lg:tracking-[-0.03em]">
               <span className="homepage-hero-shimmer hero-line hero-line-1">
-                Find food near you
+                Book a private chef near you
               </span>
             </h1>
             <p className="mx-auto mt-5 max-w-xl text-base font-light leading-relaxed text-stone-300 sm:text-lg">
-              Search by place and service, or browse by craving, occasion, and chef.
+              Find chefs for dinner parties, catering, weekly meal prep, weddings, corporate meals,
+              and private events. Browse live profiles or send one request for matched chef review.
             </p>
           </div>
 
           <HomepageDiscovery
             featuredChefs={featuredChefs}
             culinarySignals={culinarySignals}
-            userSignals={userSignals}
+            userSignals={null}
             initialLocationContext={initialLocationContext}
           />
           <div className="mt-8 flex flex-col items-center justify-center gap-3 sm:flex-row">
             <TrackedLink
-              href="/nearby"
-              analyticsName="home_consumer_hero_restaurants"
+              href="/book"
+              analyticsName="home_consumer_hero_book_private_chef"
               analyticsProps={{
                 section: 'consumer_hero',
-                destination: '/nearby',
+                destination: '/book',
               }}
-              className="inline-flex min-h-14 items-center justify-center rounded-2xl border border-[#4a3020]/55 bg-[#1a110c]/60 px-10 text-base font-semibold text-stone-100 backdrop-blur-sm transition-all hover:-translate-y-0.5 hover:border-[#e8a96b]/45 hover:bg-[#2a1a10]/70 active:scale-[0.98]"
+              className="inline-flex min-h-14 items-center justify-center rounded-2xl gradient-accent px-10 text-base font-semibold text-white shadow-lg shadow-[#8b4513]/30 transition-all hover:-translate-y-0.5 hover:shadow-xl hover:shadow-[#8b4513]/40 active:scale-[0.98] cta-shimmer"
             >
-              Browse restaurants
+              Book a private chef
             </TrackedLink>
             <TrackedLink
               href="/chefs"
-              analyticsName="home_consumer_hero_chefs"
+              analyticsName="home_consumer_hero_browse_chefs"
               analyticsProps={{
                 section: 'consumer_hero',
                 destination: '/chefs',
               }}
-              className="inline-flex min-h-14 items-center justify-center rounded-2xl gradient-accent px-10 text-base font-semibold text-white shadow-lg shadow-[#8b4513]/30 transition-all hover:-translate-y-0.5 hover:shadow-xl hover:shadow-[#8b4513]/40 active:scale-[0.98] cta-shimmer"
+              className="inline-flex min-h-14 items-center justify-center rounded-2xl border border-[#4a3020]/55 bg-[#1a110c]/60 px-10 text-base font-semibold text-stone-100 backdrop-blur-sm transition-all hover:-translate-y-0.5 hover:border-[#e8a96b]/45 hover:bg-[#2a1a10]/70 active:scale-[0.98]"
             >
               Browse chefs near you
             </TrackedLink>

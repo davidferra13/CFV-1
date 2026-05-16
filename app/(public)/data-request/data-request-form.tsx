@@ -1,15 +1,15 @@
 'use client'
 
 import { useState, useTransition } from 'react'
-import { submitContactForm } from '@/lib/contact/actions'
+import { submitPublicDataRightsRequest } from '@/lib/legal/actions'
 
 const REQUEST_TYPES = [
   { value: 'deletion', label: 'Delete my data' },
   { value: 'access', label: 'Access a copy of my data' },
   { value: 'correction', label: 'Correct my data' },
-  { value: 'portability', label: 'Export my data in a portable format' },
-  { value: 'objection', label: 'Object to processing of my data' },
-]
+  { value: 'export', label: 'Export my data in a portable format' },
+  { value: 'opt_out', label: 'Opt out of eligible processing' },
+] as const
 
 export function DataRequestForm() {
   const [name, setName] = useState('')
@@ -25,15 +25,14 @@ export function DataRequestForm() {
     e.preventDefault()
     setError(null)
 
-    const typeLabel = REQUEST_TYPES.find((t) => t.value === requestType)?.label ?? requestType
-
     startTransition(async () => {
       try {
-        await submitContactForm({
+        await submitPublicDataRightsRequest({
           name: name.trim(),
           email: email.trim(),
-          subject: `Data Request: ${typeLabel}`,
-          message: details.trim() || `Request type: ${typeLabel}. No additional details provided.`,
+          requestType: requestType as (typeof REQUEST_TYPES)[number]['value'],
+          details: details.trim(),
+          requesterRole: 'public',
           website,
         })
         setDone(true)
