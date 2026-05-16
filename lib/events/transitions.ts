@@ -1791,6 +1791,14 @@ export async function transitionEvent({
     // CIL failure is non-fatal
   }
 
+  // Lifecycle journey orchestration: evaluate trigger rules and execute actions (non-blocking)
+  try {
+    const { orchestrateJourney } = await import('@/lib/lifecycle/journey-orchestrator')
+    await orchestrateJourney(event.tenant_id, event.inquiry_id ?? null, eventId)
+  } catch (err) {
+    log.events.warn('Journey orchestration failed (non-blocking)', { error: err })
+  }
+
   return {
     success: true,
     fromStatus,

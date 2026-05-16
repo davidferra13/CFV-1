@@ -184,6 +184,79 @@ async function executeAction(
       }
       break
     }
+    case 'generate_invoice': {
+      if (eventId) {
+        const { invoiceType } = trigger.action.payload as {
+          invoiceType: string
+          requiresReview: boolean
+        }
+        await db.from('journey_drafts').insert({
+          chef_id: chefId,
+          inquiry_id: inquiryId,
+          event_id: eventId,
+          trigger_id: trigger.triggerId,
+          action_type: 'generate_invoice',
+          action_label: trigger.action.label,
+          payload: JSON.stringify({ invoiceType }),
+          status: 'pending_review',
+          created_at: new Date().toISOString(),
+        })
+      }
+      break
+    }
+    case 'generate_contract': {
+      if (eventId) {
+        await db.from('journey_drafts').insert({
+          chef_id: chefId,
+          inquiry_id: inquiryId,
+          event_id: eventId,
+          trigger_id: trigger.triggerId,
+          action_type: 'generate_contract',
+          action_label: trigger.action.label,
+          payload: JSON.stringify(trigger.action.payload),
+          status: 'pending_review',
+          created_at: new Date().toISOString(),
+        })
+      }
+      break
+    }
+    case 'schedule_cadence': {
+      if (eventId) {
+        try {
+          const eventDate =
+            (trigger.action.payload.eventDate as string | undefined) ??
+            (await db.from('events').select('event_date').eq('id', eventId).single()).data
+              ?.event_date
+          if (eventDate) {
+            const { initializeConfidenceCadence } =
+              await import('@/lib/lifecycle/confidence-cadence')
+            await initializeConfidenceCadence(chefId, eventId, eventDate)
+          }
+        } catch {
+          // Cadence module may not be ready yet; degrade gracefully
+        }
+      }
+      break
+    }
+    case 'send_checklist': {
+      if (eventId) {
+        const { checklistType } = trigger.action.payload as {
+          checklistType: string
+          daysOut: number
+        }
+        await db.from('journey_state').upsert(
+          {
+            chef_id: chefId,
+            inquiry_id: inquiryId,
+            event_id: eventId,
+            checklist_surfaced: checklistType,
+            updated_at: new Date().toISOString(),
+          },
+          { onConflict: 'chef_id,inquiry_id' }
+        )
+      }
+      break
+    }
     default:
       break
   }

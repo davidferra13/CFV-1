@@ -1215,6 +1215,15 @@ export async function transitionInquiry(id: string, newStatus: InquiryStatus) {
     console.error('[transitionInquiry] Lifecycle detection failed (non-blocking):', err)
   }
 
+  // Journey orchestration: evaluate trigger rules and execute pipeline actions (non-blocking)
+  try {
+    const { orchestrateJourney } = await import('@/lib/lifecycle/journey-orchestrator')
+    const eventId = (updated as any)?.converted_to_event_id ?? null
+    await orchestrateJourney(user.tenantId!, id, eventId)
+  } catch (err) {
+    console.error('[transitionInquiry] Journey orchestration failed (non-blocking):', err)
+  }
+
   return { success: true, inquiry: updated }
 }
 
