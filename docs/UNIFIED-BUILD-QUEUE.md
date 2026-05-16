@@ -155,6 +155,7 @@
 | 29  | Wire cadence-trigger-handler Into deposit-actions.ts   | SPEC-READY | #13           | /intensify: cadence-trigger-handler.ts built, zero importers. deposit-actions.ts is natural trigger. 3-5 lines. Enables auto-cadence on deposit. MED yield.                                                                                                             |
 | 30  | Consolidate Dual Push Notification Systems             | SPEC-READY | None          | /intensify: lib/communication/push-notify.ts (1 consumer) vs lib/notifications/channel-router.ts#deliverPush. Channel-router more integrated. MED yield.                                                                                                                |
 | 31  | Audit Dual Follow-Up Engines                           | DRAFT      | None          | /intensify: lib/communication/follow-up-actions.ts vs lib/follow-up/sequence-engine.ts. May serve different lifecycle stages. Audit before merge. MED yield, unstable.                                                                                                  |
+| 32  | Remy SMS Auto-Triage & Intelligent Response            | SPEC-READY | None          | P0 CRITICAL. Spec: `docs/specs/remy-sms-auto-triage.md`. Inbound texts auto-classified, Remy instant ack (<60s), priority queue with escalation, draft-and-approve mobile UI. All infra exists. Stops dropped texts while cooking.                                      |
 
 ---
 
@@ -434,6 +435,21 @@
 | 4   | Wire Orphaned Rail-Tier-Assigner                           | DONE   | #3         | /intensify: tiered-rail.tsx + tier-row.tsx already consume. Server action wrapper added. Built 2026-05-16.                                               |
 | 5   | Cadence Trigger Handler -> God-Mode Resolver               | DONE   | None       | /intensify: scheduled-message-resolver.ts queries pending messages, tiers by urgency (overdue p1, today p2, upcoming p3). Built 2026-05-16.              |
 | 6   | Search Autocomplete -> Rail Registry Query                 | DONE   | None       | /intensify: buildDynamicAutocompleteSources() reads constants + public registry. Deduped, fallback preserved. Built 2026-05-16.                          |
+
+---
+
+## RAIL INTENSIFICATION (6 items)
+
+> Surfaced by `/intensify rail` 2026-05-16 (deep pass #2, 120+ files). Trigger met from run #1. Pure wiring + cleanup.
+
+| #   | Item                                                          | Status     | Depends On | Notes                                                                                                                                                                     |
+| --- | ------------------------------------------------------------- | ---------- | ---------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| 1   | Wire Lifecycle Journey-Orchestrator -> Rail Resolver          | SPEC-READY | None       | /intensify: new lifecycle-stage-resolver.ts. Reads getJourneyState + evaluateTriggers, emits rail items per active event. 10-stage lifecycle, zero rail visibility today. |
+| 2   | Wire Cadence-Scheduler Due Items -> Rail Resolver             | SPEC-READY | None       | /intensify: new cadence-due-resolver.ts. Lookahead on processDueCadenceItems, surfaces "email firing in X hours". 7 cadence points invisible today.                       |
+| 3   | Delete Dead Rail Code (GodModeRailSection + old 5-tier)       | SPEC-READY | None       | /intensify: remove GodModeRailSection (dashboard page), rail-full.tsx, rail-tier-group.tsx, getGodModeRail/assembleGodModeRail. All superseded by tiered-rail.tsx.        |
+| 4   | Wire Completion Resolver (hydrate chef-rail-registry entries) | SPEC-READY | None       | /intensify: completion engine stable. Registry declares items (chef.completion_menu etc.) but no resolver fills them. Mechanical wiring.                                  |
+| 5   | Rail Item State Table + Seen/Snoozed/Dismissed Tracking       | SPEC-READY | #1, #2, #4 | /intensify: migration + thin persistence. Spec defines state machine (surfaced->seen->acted->resolved->expired->archived). Value compounds after resolvers land.          |
+| 6   | Density Caps Enforcement (3/8/12/6 per tier)                  | SPEC-READY | None       | /intensify: clamp logic in assembleTieredRail. Prevents tier overflow as resolver count grows. Simple, low-risk.                                                          |
 
 ---
 
