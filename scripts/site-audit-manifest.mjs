@@ -191,9 +191,9 @@ const STATIC_PARAM_FALLBACKS = {
     },
   },
   '/nearby/collections/[slug]': {
-    source: 'config/nearby-collections.ts#NEARBY_COLLECTIONS',
+    source: 'lib/config/nearby-collections.ts#NEARBY_COLLECTIONS',
     resolve(loadModule) {
-      const module = loadModule('config/nearby-collections.ts')
+      const module = loadModule('lib/config/nearby-collections.ts')
       return Array.isArray(module.NEARBY_COLLECTIONS)
         ? module.NEARBY_COLLECTIONS.map((collection) => ({ slug: collection.slug }))
         : []
@@ -216,17 +216,19 @@ async function withTsxRequire(rootDir, callback) {
   try {
     const { register } = require('tsx/cjs/api')
     hook = register({ namespace: `site-audit-${process.pid}-${Date.now()}` })
+  } catch {
+    return await callback(() => {
+      throw new Error('tsx module loading is unavailable')
+    })
+  }
 
+  try {
     return await callback((projectRelativePath) =>
       hook.require(
         toScriptRelativeSpecifier(path.resolve(rootDir, projectRelativePath)),
         import.meta.url
       )
     )
-  } catch {
-    return await callback(() => {
-      throw new Error('tsx module loading is unavailable')
-    })
   } finally {
     if (hook?.unregister) {
       await hook.unregister()

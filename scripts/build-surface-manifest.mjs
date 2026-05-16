@@ -18,6 +18,8 @@ const WEB_BETA_INCLUDE = Object.freeze([
   { path: 'app/layout.tsx', kind: BUILD_SURFACE_INCLUDE_KINDS.SUPPORT_FILE },
   { path: 'app/globals.css', kind: BUILD_SURFACE_INCLUDE_KINDS.SUPPORT_FILE },
   { path: 'app/not-found.tsx', kind: BUILD_SURFACE_INCLUDE_KINDS.SUPPORT_FILE },
+  { path: 'app/robots.ts', kind: BUILD_SURFACE_INCLUDE_KINDS.SUPPORT_FILE },
+  { path: 'app/sitemap.ts', kind: BUILD_SURFACE_INCLUDE_KINDS.SUPPORT_FILE },
   { path: 'app/(public)', kind: BUILD_SURFACE_INCLUDE_KINDS.PAGE_TREE },
   { path: 'app/api/health', kind: BUILD_SURFACE_INCLUDE_KINDS.API_TREE },
   { path: 'app/auth/layout.tsx', kind: BUILD_SURFACE_INCLUDE_KINDS.SUPPORT_FILE },

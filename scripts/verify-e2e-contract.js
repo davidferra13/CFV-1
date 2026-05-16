@@ -11,9 +11,11 @@
  * Exit 0 on pass, non-zero on fail.
  */
 
-const fs = require('node:fs')
-const path = require('node:path')
+import fs from 'node:fs'
+import path from 'node:path'
+import { fileURLToPath } from 'node:url'
 
+const __dirname = path.dirname(fileURLToPath(import.meta.url))
 const ROOT = path.resolve(__dirname, '..')
 const failures = []
 
@@ -30,10 +32,12 @@ function check(name, condition) {
 const playwrightConfigPath = path.join(ROOT, 'playwright.config.ts')
 const packageJsonPath = path.join(ROOT, 'package.json')
 const envLocalPath = path.join(ROOT, '.env.local')
+const playwrightDevServerPath = path.join(ROOT, 'scripts', 'run-playwright-dev-server.mjs')
 
 let playwrightConfig = ''
 let packageJson = ''
 let envLocal = ''
+let playwrightDevServer = ''
 
 try {
   playwrightConfig = fs.readFileSync(playwrightConfigPath, 'utf8')
@@ -53,6 +57,12 @@ try {
   // .env.local is optional, env vars may come from environment
 }
 
+try {
+  playwrightDevServer = fs.readFileSync(playwrightDevServerPath, 'utf8')
+} catch (e) {
+  failures.push('scripts/run-playwright-dev-server.mjs file not found')
+}
+
 // ============================================================
 // 2. Playwright config checks
 // ============================================================
@@ -69,6 +79,20 @@ check(
 // ============================================================
 
 check('package.json "dev" script must use port 3100', packageJson.includes('-p 3100'))
+check(
+  'package.json must expose dev:verify runtime controller',
+  packageJson.includes('"dev:verify"')
+)
+
+// ============================================================
+// 3b. Runtime controller checks
+// ============================================================
+
+check(
+  'Playwright dev server must refuse noncanonical ports without explicit isolation',
+  playwrightDevServer.includes('PLAYWRIGHT_ALLOW_ISOLATED_RUNTIME') &&
+    playwrightDevServer.includes("port !== '3100'")
+)
 
 // ============================================================
 // 4. Test directory structure

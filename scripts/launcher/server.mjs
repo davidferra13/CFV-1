@@ -12,7 +12,7 @@
 // ═══════════════════════════════════════════════════════════════════
 
 import { createServer } from 'node:http'
-import { exec, spawn } from 'node:child_process'
+import { exec, execFile, spawn } from 'node:child_process'
 import { readFile, writeFile, appendFile, stat, readdir } from 'node:fs/promises'
 import { readFileSync, watch } from 'node:fs'
 import { join, dirname } from 'node:path'
@@ -20,6 +20,7 @@ import { fileURLToPath } from 'node:url'
 import { promisify } from 'node:util'
 
 const execAsync = promisify(exec)
+const execFileAsync = promisify(execFile)
 const __dirname = dirname(fileURLToPath(import.meta.url))
 const PROJECT_ROOT = join(__dirname, '..', '..')
 const PORT = 41937
@@ -628,74 +629,48 @@ async function readPersistentLog(lines = 100) {
 
 // ── Actions ───────────────────────────────────────────────────────
 
-async function startDevServer() {
-  const pid = await findPidOnPort(CONFIG.devPort)
-  if (pid) return { ok: true, message: 'Dev server already running', alreadyRunning: true }
-
-  log('dev', 'Starting dev server on port 3100...', 'info')
-  devServerProcess = spawn('npx', ['next', 'dev', '-p', String(CONFIG.devPort), '-H', '0.0.0.0'], {
-    cwd: PROJECT_ROOT,
-    shell: true,
-    stdio: ['ignore', 'pipe', 'pipe'],
-  })
-
-  devServerProcess.stdout.on('data', (d) => {
-    const text = d.toString().trim()
-    if (text) log('dev', text)
-  })
-  devServerProcess.stderr.on('data', (d) => {
-    const text = d.toString().trim()
-    if (text && !text.includes('ExperimentalWarning')) log('dev', text, 'warn')
-  })
-  devServerProcess.on('close', (code) => {
-    log('dev', `Dev server exited (code ${code})`, code === 0 ? 'info' : 'error')
-    feedEvent('dev', `Dev server exited (code ${code})`, code === 0 ? 'info' : 'error')
-    devServerProcess = null
-  })
-
-  // If live feed is active, tap this new process
-  if (liveFeedActive) {
-    devServerProcess.stdout.on('data', (d) => {
-      const text = d.toString().trim().replace(ANSI_REGEX, '')
-      if (text) feedEvent('dev', text, parseLogLevel(text))
-    })
-    devServerProcess.stderr.on('data', (d) => {
-      const text = d.toString().trim().replace(ANSI_REGEX, '')
-      if (text && !text.includes('ExperimentalWarning')) feedEvent('dev', text, 'warn')
-    })
+async function runDevRuntime(command, args = []) {
+  const { stdout, stderr } = await execFileAsync(
+    process.execPath,
+    ['scripts/dev-runtime.mjs', command, '--json', ...args],
+    { cwd: PROJECT_ROOT, maxBuffer: 5 * 1024 * 1024 }
+  )
+  const output = stdout.trim() || stderr.trim()
+  try {
+    return output ? JSON.parse(output) : { ok: true }
+  } catch {
+    return { ok: true, message: output }
   }
+}
 
-  return { ok: true, message: 'Dev server starting...' }
+async function startDevServer() {
+  log('dev', 'Ensuring canonical dev server on port 3100...', 'info')
+  try {
+    const result = await runDevRuntime('start')
+    if (result.ok) log('dev', 'Canonical dev server is running on port 3100.', 'success')
+    else log('dev', result.error || 'Canonical dev server failed to start.', 'error')
+    return {
+      ok: Boolean(result.ok),
+      message: result.alreadyRunning ? 'Canonical dev server already running' : 'Canonical dev server ensured',
+      runtime: result.snapshot,
+      error: result.error,
+    }
+  } catch (err) {
+    log('dev', `Canonical dev server start failed: ${err.message}`, 'error')
+    return { ok: false, error: err.message }
+  }
 }
 
 async function stopDevServer() {
-  if (devServerProcess) {
-    log('dev', 'Stopping dev server...', 'info')
-    try {
-      if (process.platform === 'win32') {
-        exec(`taskkill /PID ${devServerProcess.pid} /T /F`, { shell: 'cmd' })
-      } else {
-        devServerProcess.kill('SIGTERM')
-      }
-    } catch {
-      /* ignore */
-    }
+  log('dev', 'Stopping canonical dev server on port 3100...', 'info')
+  try {
+    const result = await runDevRuntime('stop')
     devServerProcess = null
-    return { ok: true, message: 'Dev server stopped' }
+    return { ok: true, message: result.message || 'Canonical dev server stopped' }
+  } catch (err) {
+    log('dev', `Canonical dev server stop failed: ${err.message}`, 'error')
+    return { ok: false, error: err.message }
   }
-
-  const pid = await findPidOnPort(CONFIG.devPort)
-  if (pid) {
-    log('dev', `Killing external dev server (PID ${pid})...`, 'info')
-    try {
-      exec(`taskkill /PID ${pid} /T /F`, { shell: 'cmd' })
-      return { ok: true, message: `Stopped external process (PID ${pid})` }
-    } catch (err) {
-      return { ok: false, error: err.message }
-    }
-  }
-
-  return { ok: true, message: 'Dev server not running' }
 }
 
 async function restartBeta() {

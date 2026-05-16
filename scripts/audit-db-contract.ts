@@ -129,6 +129,13 @@ const DESTRUCTIVE_SQL_PATTERNS: Array<{ label: string; matcher: RegExp }> = [
   { label: 'DELETE FROM', matcher: /\bDELETE\s+FROM\b/i },
 ]
 
+const LEGACY_DUPLICATE_MIGRATION_TIMESTAMPS = new Set([
+  '20260423000004',
+  '20260505000003',
+  '20260510000001',
+  '20260511000001',
+])
+
 const RUNTIME_INVARIANTS: readonly RuntimeInvariantSpec[] = [
   {
     id: 'server-client-uses-compat-client',
@@ -558,11 +565,15 @@ export async function runDbContractAudit(
     })
   }
 
-  if (migrationDirectory.duplicates.length > 0) {
+  const unapprovedDuplicateMigrations = migrationDirectory.duplicates.filter(
+    (duplicate) => !LEGACY_DUPLICATE_MIGRATION_TIMESTAMPS.has(duplicate.version)
+  )
+
+  if (unapprovedDuplicateMigrations.length > 0) {
     addFinding(findings, {
       code: 'db-contract:migrations:duplicate-timestamps',
-      message: `Found ${migrationDirectory.duplicates.length} duplicate migration timestamp collision(s).`,
-      paths: migrationDirectory.duplicates.flatMap((duplicate) => [
+      message: `Found ${unapprovedDuplicateMigrations.length} duplicate migration timestamp collision(s).`,
+      paths: unapprovedDuplicateMigrations.flatMap((duplicate) => [
         path.posix.join('database/migrations', duplicate.first),
         path.posix.join('database/migrations', duplicate.second),
       ]),

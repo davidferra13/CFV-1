@@ -246,13 +246,11 @@ cmd_down() {
 cmd_stop_garbage() {
   log "Killing non-essential processes..."
 
-  # Kill dev server (biggest RAM hog)
-  if is_dev; then
-    local pid=$(get_port_pid 3100)
-    if [[ -n "$pid" ]]; then
-      kill_pid "$pid"
-      log "  Killed dev server (:3100) PID $pid"
-    fi
+  # Kill duplicate ChefFlow dev runtimes, but preserve canonical :3100.
+  local runtime_cleanup
+  runtime_cleanup=$(node scripts/dev-runtime.mjs stop-duplicates 2>/dev/null || true)
+  if [[ -n "$runtime_cleanup" ]]; then
+    log "  $runtime_cleanup"
   fi
 
   # Kill any duplicate prod servers (port 3300, etc)
@@ -314,13 +312,8 @@ cmd_start() {
       is_prod && ok "Production server up on :3000" || err "Failed to start"
       ;;
     dev)
-      if is_dev; then ok "Already running on :3100"; return; fi
-      warn "Dev server uses 15-20GB RAM. Prefer prod server."
-      log "Starting dev server..."
-      npx next dev -p 3100 -H 0.0.0.0 &
-      disown
-      for i in $(seq 1 15); do port_listening 3100 && break; sleep 1; done
-      is_dev && ok "Dev server up on :3100" || err "Failed to start"
+      log "Ensuring canonical dev server on :3100..."
+      node scripts/dev-runtime.mjs start
       ;;
     ollama)
       if is_ollama; then ok "Already running on :11434"; return; fi
@@ -365,10 +358,7 @@ cmd_stop() {
       ok "Production server stopped"
       ;;
     dev)
-      if ! is_dev; then ok "Already stopped"; return; fi
-      local pid=$(get_port_pid 3100)
-      kill_pid "$pid"
-      ok "Dev server stopped"
+      node scripts/dev-runtime.mjs stop
       ;;
     ollama)
       if ! is_ollama; then ok "Already stopped"; return; fi
