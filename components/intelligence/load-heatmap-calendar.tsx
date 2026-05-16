@@ -14,21 +14,31 @@ const DAY_HEADERS = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun']
 
 function cellColor(level: string): string {
   switch (level) {
-    case 'overloaded': return 'bg-red-500/80 hover:bg-red-500'
-    case 'heavy': return 'bg-orange-500/80 hover:bg-orange-500'
-    case 'moderate': return 'bg-yellow-500/70 hover:bg-yellow-500'
-    case 'light': return 'bg-emerald-600/70 hover:bg-emerald-600'
-    default: return 'bg-stone-800/60 hover:bg-stone-800'
+    case 'overloaded':
+      return 'bg-red-500/80 hover:bg-red-500'
+    case 'heavy':
+      return 'bg-orange-500/80 hover:bg-orange-500'
+    case 'moderate':
+      return 'bg-yellow-500/70 hover:bg-yellow-500'
+    case 'light':
+      return 'bg-emerald-600/70 hover:bg-emerald-600'
+    default:
+      return 'bg-stone-800/60 hover:bg-stone-800'
   }
 }
 
 function textColor(level: string): string {
   switch (level) {
-    case 'overloaded': return 'text-red-100'
-    case 'heavy': return 'text-orange-100'
-    case 'moderate': return 'text-yellow-100'
-    case 'light': return 'text-emerald-100'
-    default: return 'text-stone-500'
+    case 'overloaded':
+      return 'text-red-100'
+    case 'heavy':
+      return 'text-orange-100'
+    case 'moderate':
+      return 'text-yellow-100'
+    case 'light':
+      return 'text-emerald-100'
+    default:
+      return 'text-stone-500'
   }
 }
 
@@ -62,30 +72,33 @@ export function LoadHeatmapCalendar({
   const [weekSummary, setWeekSummary] = useState<WeekLoadSummary>(initialWeekSummary)
   const [error, setError] = useState<string | null>(null)
 
-  const loadMonth = useCallback(
-    (m: number, y: number) => {
-      startTransition(async () => {
-        try {
-          const result = await getMonthLoad(m, y)
-          setDays(result)
-          setMonth(m)
-          setYear(y)
-          setSelectedDay(null)
-          setError(null)
-        } catch {
-          setError('Failed to load month data.')
-        }
-      })
-    },
-    []
-  )
+  const loadMonth = useCallback((m: number, y: number) => {
+    startTransition(async () => {
+      try {
+        const result = await getMonthLoad(m, y)
+        setDays(result)
+        setMonth(m)
+        setYear(y)
+        setSelectedDay(null)
+        setError(null)
+      } catch {
+        setError('Failed to load month data.')
+      }
+    })
+  }, [])
 
   const navigateMonth = useCallback(
     (direction: 1 | -1) => {
       let newMonth = month + direction
       let newYear = year
-      if (newMonth > 12) { newMonth = 1; newYear++ }
-      if (newMonth < 1) { newMonth = 12; newYear-- }
+      if (newMonth > 12) {
+        newMonth = 1
+        newYear++
+      }
+      if (newMonth < 1) {
+        newMonth = 12
+        newYear--
+      }
       loadMonth(newMonth, newYear)
     },
     [month, year, loadMonth]
@@ -146,16 +159,32 @@ export function LoadHeatmapCalendar({
   // Day cells
   for (let d = 1; d <= daysInMonth; d++) {
     const dateStr = `${year}-${String(month).padStart(2, '0')}-${String(d).padStart(2, '0')}`
-    cells.push(dayMap.get(dateStr) ?? { date: dateStr, score: 0, level: 'empty' as const, breakdown: { events: 0, prepTasks: 0, components: 0, staffGap: 0, travelMinutes: 0, shoppingTasks: 0 } })
+    cells.push(
+      dayMap.get(dateStr) ?? {
+        date: dateStr,
+        score: 0,
+        level: 'empty' as const,
+        breakdown: {
+          events: 0,
+          prepTasks: 0,
+          components: 0,
+          staffGap: 0,
+          travelMinutes: 0,
+          shoppingTasks: 0,
+          weatherRisk: 0,
+        },
+      }
+    )
   }
   // Trailing empty cells
   while (cells.length % 7 !== 0) cells.push(null)
 
   // Stats for the month
   const nonEmptyDays = days.filter((d) => d.score > 0)
-  const avgScore = nonEmptyDays.length > 0
-    ? Math.round(nonEmptyDays.reduce((s, d) => s + d.score, 0) / nonEmptyDays.length)
-    : 0
+  const avgScore =
+    nonEmptyDays.length > 0
+      ? Math.round(nonEmptyDays.reduce((s, d) => s + d.score, 0) / nonEmptyDays.length)
+      : 0
   const heavyDayCount = days.filter((d) => d.level === 'heavy' || d.level === 'overloaded').length
   const totalEvents = days.reduce((s, d) => s + d.breakdown.events, 0)
   const totalComponents = days.reduce((s, d) => s + d.breakdown.components, 0)
@@ -172,7 +201,12 @@ export function LoadHeatmapCalendar({
             aria-label="Previous month"
           >
             <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
+              <path
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                strokeWidth={2}
+                d="M15 19l-7-7 7-7"
+              />
             </svg>
           </button>
           <h2 className="text-lg font-semibold text-stone-100 min-w-[160px] text-center">
@@ -274,7 +308,9 @@ export function LoadHeatmapCalendar({
                   {dayNum}
                 </span>
                 {cell.score > 0 && (
-                  <span className={`text-[9px] leading-none mt-0.5 ${textColor(cell.level)} opacity-70`}>
+                  <span
+                    className={`text-[9px] leading-none mt-0.5 ${textColor(cell.level)} opacity-70`}
+                  >
                     {cell.score}
                   </span>
                 )}
@@ -285,9 +321,7 @@ export function LoadHeatmapCalendar({
       </div>
 
       {/* Selected day detail */}
-      {selectedDay && (
-        <LoadDayDetail day={selectedDay} onClose={() => setSelectedDay(null)} />
-      )}
+      {selectedDay && <LoadDayDetail day={selectedDay} onClose={() => setSelectedDay(null)} />}
 
       {/* Week summary bar */}
       <div className="rounded-xl border border-stone-700 bg-stone-900/50 p-4">

@@ -25,7 +25,7 @@ import { TicketWaitlistPanel } from '@/components/tickets/ticket-waitlist-panel'
 import { DistributionPanel } from '@/components/tickets/distribution-panel'
 import { RevenueSplitPanel } from '@/components/tickets/revenue-split-panel'
 import { CoHostDashboard } from '@/components/tickets/cohost-dashboard'
-import { WeatherAlertPanel } from '@/components/events/weather-alert-panel'
+import { WeatherForecastCard } from '@/components/events/weather-forecast-card'
 import { DayOfChecklistPanel } from '@/components/events/day-of-checklist-panel'
 import { PrepTimelinePanel } from '@/components/events/prep-timeline-panel'
 import { VenueDetailsPanel } from '@/components/events/venue-details-panel'
@@ -53,8 +53,8 @@ export function EventDetailTicketsTab({
   eventId,
   eventStatus,
   eventDate,
-  eventLatitude,
-  eventLongitude,
+  eventLatitude: _eventLatitude,
+  eventLongitude: _eventLongitude,
   ticketTypes,
   tickets,
   summary,
@@ -1054,13 +1054,8 @@ export function EventDetailTicketsTab({
           </Card>
         )}
 
-        {/* Weather Alert - outdoor event forecast */}
-        <WeatherAlertPanel
-          eventDate={eventDate}
-          location={null}
-          latitude={eventLatitude}
-          longitude={eventLongitude}
-        />
+        {/* Weather Forecast - cached server action with risk badge */}
+        <WeatherForecastCard eventId={eventId} />
 
         {/* Day-of Checklist */}
         <DayOfChecklistPanel eventId={eventId} />

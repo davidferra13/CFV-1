@@ -278,6 +278,54 @@ const INGESTORS: Record<
     }
   },
 
+  cadence(db, signal, now) {
+    const payload = JSON.parse(signal.payload)
+    const entityIds = JSON.parse(signal.entity_ids) as string[]
+
+    const clientId = entityIds.find((e) => e.startsWith('client_'))
+    const eventId = entityIds.find((e) => e.startsWith('event_'))
+
+    if (clientId) {
+      const state: Record<string, unknown> = {}
+      if (payload.channel) state.last_cadence_channel = payload.channel
+      if (payload.cadence_point) state.last_cadence_point = payload.cadence_point
+      if (payload.action === 'sent') {
+        const existing = db.prepare('SELECT state FROM entities WHERE id = ?').get(clientId) as
+          | { state: string }
+          | undefined
+        const previousState = existing ? JSON.parse(existing.state) : {}
+        const previousReceived = Number(previousState.cadence_messages_received ?? 0)
+        state.cadence_messages_received = previousReceived + 1
+      }
+      if (payload.action === 'skipped') {
+        state.last_cadence_skip_reason = payload.skip_reason
+      }
+      if (payload.preferred_channel) {
+        state.preferred_channel = payload.preferred_channel
+      }
+      upsertEntity(db, clientId, 'client', payload.client_name || inferLabel(clientId), state, now)
+    }
+
+    if (eventId) {
+      upsertEntity(
+        db,
+        eventId,
+        'event',
+        payload.occasion || inferLabel(eventId),
+        {
+          cadence_stage: payload.cadence_point,
+          cadence_channel: payload.channel,
+        },
+        now
+      )
+    }
+
+    // Client receives cadence for event -> reinforce booking relation
+    if (clientId && eventId && payload.action === 'sent') {
+      upsertRelation(db, clientId, eventId, 'books', 'EXTRACTED', 0.9, signal.id, now)
+    }
+  },
+
   sse(db, signal, now) {
     // SSE events are catch-all. Extract entities from payload if present.
     const payload = JSON.parse(signal.payload)
@@ -296,6 +344,20 @@ const INGESTORS: Record<
         },
         now
       )
+    }
+  },
+
+  weather(db, signal, now) {
+    const payload = JSON.parse(signal.payload)
+    const entityIds = JSON.parse(signal.entity_ids) as string[]
+
+    const eventId = entityIds.find((e) => e.startsWith('event_'))
+    if (eventId) {
+      const state: Record<string, unknown> = {}
+      if (payload.weather_risk_score != null) state.weather_risk_score = payload.weather_risk_score
+      if (payload.weather_condition) state.weather_condition = payload.weather_condition
+      if (payload.alert_level) state.weather_alert_level = payload.alert_level
+      upsertEntity(db, eventId, 'event', payload.occasion || inferLabel(eventId), state, now)
     }
   },
 

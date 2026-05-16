@@ -78,6 +78,12 @@ export interface DishRiskInput {
   crossContaminationRisk: boolean | null // shares equipment with allergen sources
 }
 
+export interface WeatherRiskInput {
+  weatherRiskScore: number | null
+  weatherWarnings: string[] | null
+  isOutdoor: boolean | null
+}
+
 export interface EventRiskInput {
   // Venue context
   isFirstTimeVenue: boolean | null
@@ -86,6 +92,9 @@ export interface EventRiskInput {
   venueBurnerCount: number | null
   hasRefrigeration: boolean | null
   travelDistanceMinutes: number | null
+
+  // Weather context
+  weather: WeatherRiskInput | null
 
   // Timing context
   totalServiceHours: number | null
@@ -361,6 +370,19 @@ function scoreVenue(event: EventRiskInput): RiskFactor {
     mitigations.push('Bring coolers with ice; minimize perishable hold times')
   }
 
+  // Weather risk: elevate venue score for outdoor events with adverse weather
+  const w = event.weather
+  if (w && w.isOutdoor && w.weatherRiskScore != null) {
+    if (w.weatherRiskScore > 75) {
+      score += 30
+      mitigations.push('Prepare indoor backup plan')
+      mitigations.push('Monitor weather forecast for changes')
+    } else if (w.weatherRiskScore > 50) {
+      score += 15
+      mitigations.push('Monitor weather forecast for changes')
+    }
+  }
+
   score = Math.min(score, 100)
 
   return {
@@ -383,6 +405,10 @@ function buildVenueReasoning(event: EventRiskInput, score: number): string {
     parts.push(`only ${event.venueBurnerCount} burners`)
   }
   if (event.hasRefrigeration === false) parts.push('no refrigeration')
+  const w = event.weather
+  if (w && w.isOutdoor && w.weatherRiskScore != null && w.weatherRiskScore > 50) {
+    parts.push(`outdoor with weather risk ${w.weatherRiskScore}/100`)
+  }
   return parts.join('; ') || 'Some venue constraints'
 }
 
@@ -726,6 +752,7 @@ function calculateAssessmentConfidence(dish: DishRiskInput, event: EventRiskInpu
     'venueBurnerCount',
     'hasRefrigeration',
     'travelDistanceMinutes',
+    'weather',
     'totalServiceHours',
     'courseCount',
     'simultaneousServings',

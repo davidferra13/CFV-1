@@ -11,6 +11,7 @@ import { format, parseISO } from 'date-fns'
 import { dateToDateString } from '@/lib/utils/format'
 import { getEventPrepTimeline } from '@/lib/prep-timeline/actions'
 import { formatPrepTime } from '@/lib/prep-timeline/compute-timeline'
+import { fetchForecast, type DailyForecast } from '@/lib/weather/open-meteo'
 
 // ─── Types ───────────────────────────────────────────────────────────────────
 
@@ -82,6 +83,8 @@ export type PrepSheetData = {
   prepStartDate: string | null
   totalPrepMinutes: number | null
   prepDayCount: number | null
+  // Weather forecast line (null = omit entirely)
+  weatherLine: string | null
 }
 
 // ─── Helpers ─────────────────────────────────────────────────────────────────
@@ -148,6 +151,7 @@ export async function fetchPrepSheetData(eventId: string): Promise<PrepSheetData
       `
       occasion, event_date, serve_time, arrival_time, departure_time,
       guest_count, location_address, location_city, location_state, location_zip,
+      location_lat, location_lng,
       client:clients(full_name, allergies, dietary_restrictions, dislikes, regular_guests)
     `
     )
@@ -264,6 +268,29 @@ export async function fetchPrepSheetData(eventId: string): Promise<PrepSheetData
     // Non-blocking: prep timeline computation failure should not prevent PDF generation
   }
 
+  // Fetch weather forecast for event date (non-blocking)
+  let weatherLine: string | null = null
+  try {
+    if (event.location_lat != null && event.location_lng != null) {
+      const eventDateStr = dateToDateString(event.event_date as Date | string)
+      const now = new Date()
+      now.setHours(0, 0, 0, 0)
+      const eventDateObj = new Date(eventDateStr + 'T00:00:00')
+      const diffDays = Math.ceil((eventDateObj.getTime() - now.getTime()) / 86_400_000)
+
+      // Only fetch if event is within forecast window (7 days) and not in the past
+      if (diffDays >= 0 && diffDays <= 7) {
+        const result = await fetchForecast(event.location_lat, event.location_lng)
+        const dayForecast = result.forecasts.find((f: DailyForecast) => f.date === eventDateStr)
+        if (dayForecast) {
+          weatherLine = `Weather: ${dayForecast.condition}, High ${dayForecast.tempHighF}F / Low ${dayForecast.tempLowF}F | Rain: ${dayForecast.precipProbability}% | Wind: ${dayForecast.windSpeedMph} mph`
+        }
+      }
+    }
+  } catch {
+    // Non-blocking: weather fetch failure should not prevent PDF generation
+  }
+
   return {
     event: {
       occasion: event.occasion,
@@ -291,6 +318,7 @@ export async function fetchPrepSheetData(eventId: string): Promise<PrepSheetData
     prepStartDate,
     totalPrepMinutes,
     prepDayCount,
+    weatherLine,
   }
 }
 
@@ -350,6 +378,11 @@ export function renderPrepSheet(pdf: PDFLayout, data: PrepSheetData) {
   if (data.prepDayCount && data.prepDayCount > 1) prepParts.push(`${data.prepDayCount} prep days`)
   if (prepParts.length > 0) {
     pdf.text(prepParts.join('  |  '), 8, 'bold', 0)
+  }
+
+  // Weather forecast line (only shown when available)
+  if (data.weatherLine) {
+    pdf.text(data.weatherLine, 8, 'normal', 0)
   }
 
   // ─── Guest Preference Notes ────────────────────────────────────────────────

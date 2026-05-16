@@ -21,12 +21,14 @@ export type SignalSource =
   | 'automation' // automation_executions
   | 'inventory' // inventory_transactions
   | 'sse' // SSE EventEmitter bus
+  | 'cadence' // cadence scheduler send/skip/preference
   | 'finance' // revenue, expenses, overdue invoices
   | 'client_health' // dormant, at-risk, VIP activity
   | 'calendar' // overload, dead spots, booking pace
   | 'inventory_analysis' // par levels, price spikes, waste
   | 'reputation' // reviews, ratings, testimonials
   | 'pipeline' // stale leads, expiring proposals, unsigned contracts
+  | 'weather' // weather risk for upcoming events
 
 export type ConfidenceLabel = 'EXTRACTED' | 'INFERRED' | 'AMBIGUOUS'
 

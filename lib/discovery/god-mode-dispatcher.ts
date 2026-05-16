@@ -277,6 +277,14 @@ function warmResolvers(): ResolverEntry[] {
         return resolveOnboardingGaps(ctx)
       },
     },
+    // --- Weather risk ---
+    {
+      name: 'weather-alerts',
+      resolve: async (ctx) => {
+        const { resolveWeatherAlerts } = await import('./resolvers/chef/weather-resolver')
+        return resolveWeatherAlerts(ctx)
+      },
+    },
     // --- Wave 2: Network/Social resolvers ---
     {
       name: 'network-activity',

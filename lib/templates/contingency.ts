@@ -2,6 +2,9 @@
 // Standard "if X happens, do Y" plans based on event characteristics.
 // Every experienced caterer has these memorized - we're just writing them down.
 
+import { assessWeatherRisk } from '@/lib/formulas/weather-risk'
+import type { DailyForecast } from '@/lib/weather/open-meteo'
+
 // ── Types ──────────────────────────────────────────────────────────────────
 
 export type ContingencyPlan = {
@@ -31,6 +34,10 @@ export type ContingencyVars = {
   isHighValue: boolean // quoted > $2,000
   serviceStyle?: string
   notes?: string
+  /** Live weather warnings from assessWeatherRisk(). Supplements static thresholds. */
+  weatherWarnings?: string[]
+  /** Raw forecast data; if provided, assessWeatherRisk runs internally */
+  forecast?: DailyForecast
 }
 
 // ── Rules ──────────────────────────────────────────────────────────────────
@@ -44,22 +51,57 @@ export function generateContingencyFormula(v: ContingencyVars): ContingencyResul
 
   // ── Weather (outdoor events) ────────────────────────────────────────
   if (v.isOutdoor) {
-    plans.push({
-      risk: 'Rain or severe weather',
-      likelihood: 'medium',
-      impact: 'critical',
-      mitigation:
-        'Identify indoor backup space before event day. Have tarps/canopies staged. Move service indoors if forecast shows >60% rain chance 24h before.',
-      triggerCondition: 'Check weather forecast 48h and 24h before event.',
-    })
-    plans.push({
-      risk: 'Extreme heat (food safety)',
-      likelihood: 'medium',
-      impact: 'critical',
-      mitigation:
-        'Keep all cold items on ice or in coolers until service. Set up shade over food stations. Monitor holding temps every 30 minutes. Discard anything in danger zone >1 hour.',
-      triggerCondition: 'Forecast above 85°F / 30°C.',
-    })
+    // Resolve live warnings: explicit array takes precedence, then raw forecast
+    const liveWarnings: string[] =
+      v.weatherWarnings && v.weatherWarnings.length > 0
+        ? v.weatherWarnings
+        : v.forecast
+          ? assessWeatherRisk(v.forecast).warnings
+          : []
+
+    if (liveWarnings.length > 0) {
+      // Live data available: inject real warnings as trigger conditions
+      plans.push({
+        risk: 'Rain or severe weather',
+        likelihood: 'high',
+        impact: 'critical',
+        mitigation:
+          'Identify indoor backup space before event day. Have tarps/canopies staged. Move service indoors immediately based on current forecast.',
+        triggerCondition: `Live forecast warnings: ${liveWarnings.join('; ')}.`,
+      })
+      // If any heat-related warning exists, add heat plan with live context
+      const heatWarning = liveWarnings.find(
+        (w) => w.toLowerCase().includes('heat') || w.toLowerCase().includes('temp')
+      )
+      if (heatWarning) {
+        plans.push({
+          risk: 'Extreme heat (food safety)',
+          likelihood: 'high',
+          impact: 'critical',
+          mitigation:
+            'Keep all cold items on ice or in coolers until service. Set up shade over food stations. Monitor holding temps every 30 minutes. Discard anything in danger zone >1 hour.',
+          triggerCondition: `Live warning: ${heatWarning}.`,
+        })
+      }
+    } else {
+      // No live data: fall back to static thresholds (safety net)
+      plans.push({
+        risk: 'Rain or severe weather',
+        likelihood: 'medium',
+        impact: 'critical',
+        mitigation:
+          'Identify indoor backup space before event day. Have tarps/canopies staged. Move service indoors if forecast shows >60% rain chance 24h before.',
+        triggerCondition: 'Check weather forecast 48h and 24h before event.',
+      })
+      plans.push({
+        risk: 'Extreme heat (food safety)',
+        likelihood: 'medium',
+        impact: 'critical',
+        mitigation:
+          'Keep all cold items on ice or in coolers until service. Set up shade over food stations. Monitor holding temps every 30 minutes. Discard anything in danger zone >1 hour.',
+        triggerCondition: 'Forecast above 85°F / 30°C.',
+      })
+    }
   }
 
   // ── Allergen emergencies ────────────────────────────────────────────

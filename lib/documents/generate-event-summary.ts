@@ -12,6 +12,7 @@ import { format, parseISO } from 'date-fns'
 import { dateToDateString } from '@/lib/utils/format'
 import { getEventPrepTimeline } from '@/lib/prep-timeline/actions'
 import { formatPrepTime } from '@/lib/prep-timeline/compute-timeline'
+import { fetchForecast, type DailyForecast } from '@/lib/weather/open-meteo'
 import type { jsPDF } from 'jspdf'
 
 // ─── Column Geometry ────────────────────────────────────────────────────────
@@ -130,6 +131,8 @@ export type EventSummaryData = {
   groceryDeadline: string | null
   totalPrepMinutes: number | null
   prepDayCount: number | null
+  // Weather forecast for event day
+  forecast: DailyForecast | null
 }
 
 // ─── Data Fetcher ─────────────────────────────────────────────────────────────
@@ -145,6 +148,7 @@ export async function fetchEventSummaryData(eventId: string): Promise<EventSumma
       id, event_date, serve_time, arrival_time, guest_count, status, occasion,
       allergies, dietary_restrictions, special_requests,
       location_address, location_city, location_state, location_zip,
+      location_lat, location_lng,
       access_instructions, kitchen_notes, ambiance_notes,
       quoted_price_cents, pricing_model, payment_status, payment_method_primary,
       tip_amount_cents, created_at,
@@ -276,25 +280,45 @@ export async function fetchEventSummaryData(eventId: string): Promise<EventSumma
 
   const clientData = event.client as unknown as EventSummaryData['client'] | null
 
-  // Compute prep timeline (non-blocking)
+  // Compute prep timeline and weather forecast (non-blocking, parallel)
   let prepStartDate: string | null = null
   let eventGroceryDeadline: string | null = null
   let totalPrepMinutes: number | null = null
   let prepDayCount: number | null = null
-  try {
-    const { timeline } = await getEventPrepTimeline(eventId)
-    if (timeline) {
-      if (timeline.groceryDeadline) {
-        eventGroceryDeadline = format(timeline.groceryDeadline, 'EEE, MMM d')
-      }
-      if (timeline.days.length > 0) {
-        prepStartDate = format(timeline.days[0].date, 'EEE, MMM d')
-        prepDayCount = timeline.days.filter((d) => d.items.length > 0).length
-      }
-      totalPrepMinutes = timeline.days.reduce((sum, d) => sum + d.totalPrepMinutes, 0) || null
+  let forecast: DailyForecast | null = null
+
+  const [prepResult, forecastResult] = await Promise.allSettled([
+    getEventPrepTimeline(eventId),
+    (async (): Promise<DailyForecast | null> => {
+      if (event.location_lat == null || event.location_lng == null) return null
+      const eventDateObj = new Date(
+        dateToDateString(event.event_date as Date | string) + 'T00:00:00'
+      )
+      const now = new Date()
+      now.setHours(0, 0, 0, 0)
+      if (eventDateObj < now) return null
+      const diffDays = Math.ceil((eventDateObj.getTime() - now.getTime()) / 86_400_000)
+      if (diffDays > 7) return null
+      const result = await fetchForecast(event.location_lat, event.location_lng)
+      const dateStr = dateToDateString(event.event_date as Date | string)
+      return result.forecasts.find((f) => f.date === dateStr) ?? null
+    })(),
+  ])
+
+  if (prepResult.status === 'fulfilled' && prepResult.value.timeline) {
+    const timeline = prepResult.value.timeline
+    if (timeline.groceryDeadline) {
+      eventGroceryDeadline = format(timeline.groceryDeadline, 'EEE, MMM d')
     }
-  } catch {
-    // Non-blocking
+    if (timeline.days.length > 0) {
+      prepStartDate = format(timeline.days[0].date, 'EEE, MMM d')
+      prepDayCount = timeline.days.filter((d) => d.items.length > 0).length
+    }
+    totalPrepMinutes = timeline.days.reduce((sum, d) => sum + d.totalPrepMinutes, 0) || null
+  }
+
+  if (forecastResult.status === 'fulfilled') {
+    forecast = forecastResult.value
   }
 
   return {
@@ -361,6 +385,7 @@ export async function fetchEventSummaryData(eventId: string): Promise<EventSumma
     groceryDeadline: eventGroceryDeadline,
     totalPrepMinutes,
     prepDayCount,
+    forecast,
   }
 }
 
@@ -713,6 +738,30 @@ export function renderEventSummary(pdf: PDFLayout, data: EventSummaryData) {
     if (data.prepDayCount && data.prepDayCount > 1) {
       leftY = colKeyValue(doc, LEFT_X, COL_WIDTH, leftY, 'Prep days', String(data.prepDayCount))
     }
+  }
+
+  // Section: FORECAST (only if weather data available)
+  if (data.forecast) {
+    leftY += 2
+    leftY = colSectionHeader(doc, LEFT_X, COL_WIDTH, leftY, 'FORECAST')
+    leftY = colKeyValue(doc, LEFT_X, COL_WIDTH, leftY, 'Condition', data.forecast.condition)
+    leftY = colKeyValue(
+      doc,
+      LEFT_X,
+      COL_WIDTH,
+      leftY,
+      'Temperature',
+      `${data.forecast.tempLowF}-${data.forecast.tempHighF}°F`
+    )
+    leftY = colKeyValue(doc, LEFT_X, COL_WIDTH, leftY, 'Wind', `${data.forecast.windSpeedMph} mph`)
+    leftY = colKeyValue(
+      doc,
+      LEFT_X,
+      COL_WIDTH,
+      leftY,
+      'Rain',
+      `${data.forecast.precipProbability}%`
+    )
   }
 
   // ── RIGHT COLUMN ──

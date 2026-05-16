@@ -6,6 +6,7 @@
 
 import { requireChef } from '@/lib/auth/get-user'
 import { createServerClient } from '@/lib/db/server'
+import { getEventWeather, type EventWeather } from '@/lib/weather/open-meteo'
 
 export type DriveBriefing = {
   event: {
@@ -36,6 +37,7 @@ export type DriveBriefing = {
     name: string
     dishes: { courseName: string; description: string | null }[]
   }[]
+  weather: EventWeather | null
   specialNotes: string | null
   accessInstructions: string | null
   kitchenNotes: string | null
@@ -113,6 +115,17 @@ export async function getDriveBriefing(eventId: string): Promise<DriveBriefing |
     }
   }
 
+  // Fetch weather - never fails the briefing
+  let weather: EventWeather | null = null
+  try {
+    if (event.location_lat != null && event.location_lng != null && event.event_date) {
+      const result = await getEventWeather(event.location_lat, event.location_lng, event.event_date)
+      weather = result.data
+    }
+  } catch {
+    // Weather API down - proceed without it
+  }
+
   return {
     event: {
       id: event.id,
@@ -139,6 +152,7 @@ export async function getDriveBriefing(eventId: string): Promise<DriveBriefing |
       allergies: (event.allergies ?? []).filter(Boolean),
     },
     menu: menuData,
+    weather,
     specialNotes: event.special_requests || event.site_notes || null,
     accessInstructions: event.access_instructions || null,
     kitchenNotes: event.kitchen_notes || null,

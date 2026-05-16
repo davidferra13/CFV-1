@@ -272,6 +272,31 @@ async function checkWeatherForEvents(tenantId: string): Promise<AlertCandidate[]
     const { getWeatherAlerts } = await import('@/lib/ai/remy-weather')
     const weatherResult = await getWeatherAlerts(tenantId)
 
+    // Emit CIL signals for each weather-checked event (non-blocking)
+    try {
+      const { notifyCIL } = await import('@/lib/cil/notify')
+      for (const w of weatherResult.alerts) {
+        const riskScore = w.alertLevel === 'severe' ? 1.0 : w.alertLevel === 'warning' ? 0.6 : 0.2
+        await notifyCIL({
+          tenantId,
+          source: 'weather',
+          entityIds: [`event_${w.eventId}`],
+          payload: {
+            weather_risk_score: riskScore,
+            weather_condition: w.forecast.weatherDescription,
+            alert_level: w.alertLevel,
+            occasion: w.occasion,
+            event_date: w.eventDate,
+            temp_high_f: w.forecast.tempHighF,
+            temp_low_f: w.forecast.tempLowF,
+            wind_speed_kmh: w.forecast.windSpeedKmh,
+          },
+        })
+      }
+    } catch {
+      // CIL emission failure must never block alert generation
+    }
+
     return weatherResult.alerts.map((w) => {
       const eventLabel = w.occasion ?? 'Event'
       const clientLabel = w.clientName ? ` for ${w.clientName}` : ''

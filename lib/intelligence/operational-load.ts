@@ -4,6 +4,8 @@
 
 import { requireChef } from '@/lib/auth/get-user'
 import { createServerClient } from '@/lib/db/server'
+import { fetchForecast } from '@/lib/weather/open-meteo'
+import { assessWeatherRisk } from '@/lib/formulas/weather-risk'
 
 // ---- Types ----------------------------------------------------------------
 
@@ -16,6 +18,7 @@ export interface DayLoadBreakdown {
   staffGap: number
   travelMinutes: number
   shoppingTasks: number
+  weatherRisk: number
 }
 
 export interface DayLoad {
@@ -57,6 +60,7 @@ const WEIGHT_COMPONENT_CAP = 30
 const WEIGHT_STAFF_GAP = 10
 const WEIGHT_TRAVEL_PER_30MIN = 5
 const WEIGHT_SHOPPING_TASK = 4
+const WEIGHT_WEATHER_RISK = 0.15
 
 // ---- Helpers ---------------------------------------------------------------
 
@@ -95,10 +99,7 @@ function eventWeight(serviceStyle: string | null, status: string): number {
 
 // ---- Core Calculation ------------------------------------------------------
 
-export async function calculateDayLoad(
-  tenantId: string,
-  date: string
-): Promise<DayLoad> {
+export async function calculateDayLoad(tenantId: string, date: string): Promise<DayLoad> {
   const db: any = createServerClient()
 
   // Run all queries in parallel
@@ -106,7 +107,9 @@ export async function calculateDayLoad(
     // Events on this day
     db
       .from('events')
-      .select('id, service_style, status, time_travel_minutes, time_shopping_minutes, guest_count')
+      .select(
+        'id, service_style, status, time_travel_minutes, time_shopping_minutes, guest_count, location_lat, location_lng'
+      )
       .eq('tenant_id', tenantId)
       .eq('event_date', date)
       .not('status', 'eq', 'cancelled'),
@@ -168,10 +171,7 @@ export async function calculateDayLoad(
 
     if (menus && menus.length > 0) {
       const menuIds = menus.map((m: any) => m.id)
-      const { data: dishes } = await db
-        .from('dishes')
-        .select('id')
-        .in('menu_id', menuIds)
+      const { data: dishes } = await db.from('dishes').select('id').in('menu_id', menuIds)
 
       if (dishes && dishes.length > 0) {
         const dishIds = dishes.map((d: any) => d.id)
@@ -180,7 +180,7 @@ export async function calculateDayLoad(
           .select('id', { count: 'exact' })
           .in('dish_id', dishIds)
 
-        componentCount = count ?? (components?.length ?? 0)
+        componentCount = count ?? components?.length ?? 0
       }
     }
   }
@@ -195,15 +195,67 @@ export async function calculateDayLoad(
       const neededStaff = Math.max(Math.ceil(guestCount / 10) - 1, 0)
       if (neededStaff > 0) {
         // Check actual staff assignments
-        const { data: assignments } = await db
+        const { data: assignments } = (await db
           .from('event_staff_assignments' as any)
           .select('id', { count: 'exact' })
-          .eq('event_id', event.id) as any
+          .eq('event_id', event.id)) as any
 
         const assignedCount = assignments?.length ?? 0
         staffGap += Math.max(neededStaff - assignedCount, 0)
       }
     }
+  }
+
+  // Weather risk: average across events with coordinates
+  let weatherRiskScore = 0
+  try {
+    const eventsWithCoords = events.filter(
+      (e: any) => e.location_lat != null && e.location_lng != null
+    )
+    if (eventsWithCoords.length > 0) {
+      const riskScores: number[] = []
+      // Dedupe by coords to avoid redundant API calls for same location
+      const seen = new Set<string>()
+      const uniqueLocations: Array<{ lat: number; lng: number }> = []
+      for (const ev of eventsWithCoords) {
+        const key = `${ev.location_lat},${ev.location_lng}`
+        if (!seen.has(key)) {
+          seen.add(key)
+          uniqueLocations.push({ lat: ev.location_lat, lng: ev.location_lng })
+        }
+      }
+
+      const forecastResults = await Promise.all(
+        uniqueLocations.map((loc) =>
+          fetchForecast(loc.lat, loc.lng).catch(() => ({ forecasts: [], error: 'failed' }))
+        )
+      )
+
+      // Map coords back to forecast for the target date
+      const forecastByKey = new Map<string, number>()
+      for (let i = 0; i < uniqueLocations.length; i++) {
+        const loc = uniqueLocations[i]
+        const result = forecastResults[i]
+        const dayForecast = result.forecasts.find((f) => f.date === date)
+        if (dayForecast) {
+          const risk = assessWeatherRisk(dayForecast)
+          forecastByKey.set(`${loc.lat},${loc.lng}`, risk.score)
+        }
+      }
+
+      for (const ev of eventsWithCoords) {
+        const key = `${ev.location_lat},${ev.location_lng}`
+        const risk = forecastByKey.get(key)
+        if (risk != null) riskScores.push(risk)
+      }
+
+      if (riskScores.length > 0) {
+        weatherRiskScore = riskScores.reduce((sum, s) => sum + s, 0) / riskScores.length
+      }
+    }
+  } catch {
+    // Weather failure never breaks load calculation
+    weatherRiskScore = 0
   }
 
   // Calculate final score
@@ -212,8 +264,16 @@ export async function calculateDayLoad(
   const staffScore = staffGap * WEIGHT_STAFF_GAP
   const travelScore = Math.floor(totalTravelMinutes / 30) * WEIGHT_TRAVEL_PER_30MIN
   const shoppingScore = shoppingTasks * WEIGHT_SHOPPING_TASK
+  const weatherScore = weatherRiskScore * WEIGHT_WEATHER_RISK
 
-  const rawScore = eventScore + prepScore + componentScore + staffScore + travelScore + shoppingScore
+  const rawScore =
+    eventScore +
+    prepScore +
+    componentScore +
+    staffScore +
+    travelScore +
+    shoppingScore +
+    weatherScore
   const score = Math.min(Math.round(rawScore), 100)
 
   return {
@@ -227,16 +287,14 @@ export async function calculateDayLoad(
       staffGap,
       travelMinutes: totalTravelMinutes,
       shoppingTasks,
+      weatherRisk: Math.round(weatherRiskScore),
     },
   }
 }
 
 // ---- Batch: Week -----------------------------------------------------------
 
-export async function calculateWeekLoad(
-  tenantId: string,
-  weekStart: string
-): Promise<DayLoad[]> {
+export async function calculateWeekLoad(tenantId: string, weekStart: string): Promise<DayLoad[]> {
   const startDate = new Date(weekStart + 'T00:00:00')
   const dates: string[] = []
 
@@ -247,9 +305,7 @@ export async function calculateWeekLoad(
   }
 
   // Run all 7 days in parallel
-  const results = await Promise.all(
-    dates.map((date) => calculateDayLoad(tenantId, date))
-  )
+  const results = await Promise.all(dates.map((date) => calculateDayLoad(tenantId, date)))
 
   return results
 }
@@ -265,18 +321,14 @@ export async function calculateMonthLoad(
   const dates: string[] = []
 
   for (let d = 1; d <= daysInMonth; d++) {
-    dates.push(
-      `${year}-${String(month).padStart(2, '0')}-${String(d).padStart(2, '0')}`
-    )
+    dates.push(`${year}-${String(month).padStart(2, '0')}-${String(d).padStart(2, '0')}`)
   }
 
   // Batch in groups of 7 to avoid overwhelming the database
   const results: DayLoad[] = []
   for (let i = 0; i < dates.length; i += 7) {
     const batch = dates.slice(i, i + 7)
-    const batchResults = await Promise.all(
-      batch.map((date) => calculateDayLoad(tenantId, date))
-    )
+    const batchResults = await Promise.all(batch.map((date) => calculateDayLoad(tenantId, date)))
     results.push(...batchResults)
   }
 
@@ -285,10 +337,7 @@ export async function calculateMonthLoad(
 
 // ---- Forecast --------------------------------------------------------------
 
-export async function getLoadForecast(
-  tenantId: string,
-  days: number
-): Promise<LoadForecast> {
+export async function getLoadForecast(tenantId: string, days: number): Promise<LoadForecast> {
   const today = new Date()
   const dates: string[] = []
 
@@ -302,9 +351,7 @@ export async function getLoadForecast(
   const allResults: DayLoad[] = []
   for (let i = 0; i < dates.length; i += 7) {
     const batch = dates.slice(i, i + 7)
-    const batchResults = await Promise.all(
-      batch.map((date) => calculateDayLoad(tenantId, date))
-    )
+    const batchResults = await Promise.all(batch.map((date) => calculateDayLoad(tenantId, date)))
     allResults.push(...batchResults)
   }
 
@@ -314,13 +361,9 @@ export async function getLoadForecast(
   const secondHalf = allResults.slice(midpoint)
 
   const firstAvg =
-    firstHalf.length > 0
-      ? firstHalf.reduce((s, d) => s + d.score, 0) / firstHalf.length
-      : 0
+    firstHalf.length > 0 ? firstHalf.reduce((s, d) => s + d.score, 0) / firstHalf.length : 0
   const secondAvg =
-    secondHalf.length > 0
-      ? secondHalf.reduce((s, d) => s + d.score, 0) / secondHalf.length
-      : 0
+    secondHalf.length > 0 ? secondHalf.reduce((s, d) => s + d.score, 0) / secondHalf.length : 0
 
   let trend: 'increasing' | 'decreasing' | 'stable' = 'stable'
   if (secondAvg > firstAvg + 5) trend = 'increasing'
@@ -349,9 +392,7 @@ export function buildWeekSummary(days: DayLoad[]): WeekLoadSummary {
     null as DayLoad | null
   )
   const averageScore =
-    days.length > 0
-      ? Math.round(days.reduce((s, d) => s + d.score, 0) / days.length)
-      : 0
+    days.length > 0 ? Math.round(days.reduce((s, d) => s + d.score, 0) / days.length) : 0
 
   return { days, totalEvents, totalComponents, heaviestDay, averageScore }
 }

@@ -8,141 +8,93 @@ import { createServerClient } from '@/lib/db/server'
 import { createClientPortalLinkForClient } from '@/lib/client-portal/actions'
 import { getChefTonePreset } from '@/lib/email/brand-voice'
 import { sendSms } from '@/lib/sms/send'
+import { notifyCIL } from '@/lib/cil/notify'
+import { fetchForecast, type DailyForecast } from '@/lib/weather/open-meteo'
+import { CADENCE_POINTS, SMS_CADENCE_POINTS, SMS_CADENCE_TEMPLATES } from './cadence-types'
+import type { CadencePoint, CadenceItem, CadencePointConfig } from './cadence-types'
 
-// ---------------------------------------------------------------------------
-// Types
-// ---------------------------------------------------------------------------
+export type { CadencePoint, CadenceItem, CadencePointConfig }
 
-export type CadencePoint =
-  | 'deposit_confirmed'
-  | '30_days_before'
-  | '14_days_before'
-  | '7_days_before'
-  | '3_days_before'
-  | '48_hours_before'
-  | '1_day_before'
-  | 'event_day'
-  | 'post_event'
+// Cadence points close enough to event day to include weather context
+const WEATHER_ELIGIBLE_POINTS: CadencePoint[] = ['3_days_before', '48_hours_before']
 
-export interface CadenceItem {
-  id?: string
-  event_id: string
-  tenant_id: string
-  cadence_point: CadencePoint
-  channel?: 'email' | 'sms'
-  scheduled_at: string
-  sent_at: string | null
-  skipped_at: string | null
-  skip_reason: string | null
+/**
+ * Format a DailyForecast into a client-friendly one-liner for email.
+ * Example: "Beautiful evening expected, 74F"
+ */
+function formatWeatherLineEmail(forecast: DailyForecast): string {
+  const temp = forecast.tempHighF
+  const condition = forecast.condition
+  const wind = forecast.windSpeedMph
+
+  // Client-friendly phrasing based on conditions
+  if (condition === 'Clear' || condition === 'Partly Cloudy') {
+    return `Beautiful evening expected, ${temp}F`
+  }
+  if (condition === 'Overcast') {
+    return `Mild and overcast, ${temp}F`
+  }
+  if (wind > 20) {
+    return `${temp}F, ${condition.toLowerCase()}, breezy`
+  }
+  if (condition === 'Rain' || condition === 'Rain Showers' || condition === 'Drizzle') {
+    return `${temp}F with rain expected`
+  }
+  if (condition === 'Snow' || condition === 'Snow Showers') {
+    return `${temp}F with snow expected`
+  }
+  if (condition === 'Thunderstorm') {
+    return `${temp}F, storms possible`
+  }
+  // Generic fallback
+  const windNote = wind > 12 ? ', light wind' : ''
+  return `Forecast: ${temp}F, ${condition}${windNote}`
 }
 
-export interface CadencePointConfig {
-  point: CadencePoint
-  daysBefore: number
-  label: string
-  subject: string
-  defaultMessage: string
+/**
+ * Format a DailyForecast into a short SMS-safe string (under 50 chars).
+ * Example: "74F Clear"
+ */
+function formatWeatherLineSMS(forecast: DailyForecast): string {
+  return `${forecast.tempHighF}F ${forecast.condition}`
 }
 
-// ---------------------------------------------------------------------------
-// Cadence Definitions (ordered by timeline)
-// ---------------------------------------------------------------------------
+/**
+ * Fetch weather for a cadence event. Returns null on any failure.
+ * Does NOT require auth context (uses raw DB + open-meteo directly).
+ */
+async function getWeatherForCadenceEvent(
+  tenantId: string,
+  eventId: string
+): Promise<DailyForecast | null> {
+  try {
+    const db = createServerClient()
+    const { data: event } = await db
+      .from('events')
+      .select('event_date, location_lat, location_lng')
+      .eq('id', eventId)
+      .eq('tenant_id', tenantId)
+      .single()
 
-export const CADENCE_POINTS: CadencePointConfig[] = [
-  {
-    point: 'deposit_confirmed',
-    daysBefore: -1, // fires immediately on deposit
-    label: 'Booking Confirmation',
-    subject: "You're booked!",
-    defaultMessage:
-      "You're booked! Here's your event portal link. Your chef will begin planning closer to the date.",
-  },
-  {
-    point: '30_days_before',
-    daysBefore: 30,
-    label: '30 Days Out',
-    subject: 'Your event is 30 days away',
-    defaultMessage:
-      'Your event is 30 days away. {chefName} is beginning menu preparation. Any dietary updates? Reply here or update in your portal.',
-  },
-  {
-    point: '14_days_before',
-    daysBefore: 14,
-    label: '14 Days Out',
-    subject: 'Two weeks until your event',
-    defaultMessage:
-      'Two weeks out. Your menu is {menuStatus}. Guest count: {guestCount}. Anything to update?',
-  },
-  {
-    point: '7_days_before',
-    daysBefore: 7,
-    label: '7 Days Out',
-    subject: 'One week to go',
-    defaultMessage:
-      'One week to go. {chefName} is sourcing ingredients this week. Here is your final menu.',
-  },
-  {
-    point: '3_days_before',
-    daysBefore: 3,
-    label: '3 Days Out',
-    subject: 'Almost here!',
-    defaultMessage:
-      'Almost here! {chefName} begins prep on {prepDate}. Arrival time: {arrivalTime}. Any last questions?',
-  },
-  {
-    point: '1_day_before',
-    daysBefore: 1,
-    label: '1 Day Before',
-    subject: "Tomorrow's the day",
-    defaultMessage:
-      "Tomorrow's the day. {chefName} arrives at {arrivalTime} at {location}. Everything is set.",
-  },
-  {
-    point: 'event_day',
-    daysBefore: 0,
-    label: 'Event Day',
-    subject: 'Today is the day!',
-    defaultMessage: 'Today! {chefName} is preparing for your {occasion}. Enjoy your evening.',
-  },
-]
+    if (!event) return null
+    if (event.location_lat == null || event.location_lng == null) return null
 
-// ---------------------------------------------------------------------------
-// SMS Cadence Points (additional points for SMS channel)
-// ---------------------------------------------------------------------------
+    const result = await fetchForecast(event.location_lat, event.location_lng)
+    if (!result.forecasts.length) return null
 
-export const SMS_CADENCE_POINTS: CadencePointConfig[] = [
-  {
-    point: '48_hours_before',
-    daysBefore: 2,
-    label: '48 Hours Out (SMS)',
-    subject: '',
-    defaultMessage: '',
-  },
-  {
-    point: 'post_event',
-    daysBefore: -2, // 1 day AFTER event
-    label: 'Post Event (SMS)',
-    subject: '',
-    defaultMessage: '',
-  },
-]
+    // Find the day matching the event date
+    const dateStr =
+      typeof event.event_date === 'string'
+        ? event.event_date.slice(0, 10)
+        : new Date(event.event_date).toISOString().slice(0, 10)
 
-// SMS points that also fire for existing email cadence points
+    return result.forecasts.find((f) => f.date === dateStr) || null
+  } catch {
+    return null
+  }
+}
+
 const SMS_OVERLAY_POINTS: CadencePoint[] = ['deposit_confirmed', '7_days_before']
-
-// ---------------------------------------------------------------------------
-// SMS Templates (160-char max after interpolation)
-// ---------------------------------------------------------------------------
-
-export const SMS_CADENCE_TEMPLATES: Partial<Record<CadencePoint, string>> = {
-  deposit_confirmed:
-    'Booked! {chefName} confirmed for {occasion}. Details in your portal: {portalUrl}',
-  '7_days_before':
-    'One week out! {chefName} is sourcing ingredients for your {occasion}. Any last updates? Reply here.',
-  '48_hours_before':
-    "2 days! {chefName} arrives {arrivalTime} on {eventDate}. Can't wait to cook for you.",
-  post_event: 'Hope you loved it! {chefName} would love your feedback. Reply or visit: {portalUrl}',
-}
 
 // ---------------------------------------------------------------------------
 // Schedule Creation
@@ -378,6 +330,7 @@ export async function processDueCadenceItems(): Promise<{
       const isDisabled = await isCadencePointDisabled(item.tenant_id, item.cadence_point)
       if (isDisabled) {
         await markSkipped(item.id, 'Chef disabled this cadence point')
+        await emitCadenceCIL(item, 'skipped', 'Chef disabled this cadence point')
         skipped++
         continue
       }
@@ -391,6 +344,7 @@ export async function processDueCadenceItems(): Promise<{
 
       if (skip) {
         await markSkipped(item.id, reason)
+        await emitCadenceCIL(item, 'skipped', reason)
         skipped++
         continue
       }
@@ -406,6 +360,7 @@ export async function processDueCadenceItems(): Promise<{
         .from('cadence_schedule')
         .update({ sent_at: new Date().toISOString() })
         .eq('id', item.id)
+      await emitCadenceCIL(item, 'sent', null)
       sent++
     } catch (err) {
       console.error('[cadence-scheduler] Error processing item:', item.id, err)
@@ -537,6 +492,19 @@ async function sendCadenceEmail(
   // Resolve chef's brand voice tone for template rendering
   const tone = await getChefTonePreset(tenantId)
 
+  // Fetch weather for close-to-event touchpoints
+  let weatherLine = ''
+  if (WEATHER_ELIGIBLE_POINTS.includes(cadencePoint)) {
+    try {
+      const forecast = await getWeatherForCadenceEvent(tenantId, eventId)
+      if (forecast) {
+        weatherLine = formatWeatherLineEmail(forecast)
+      }
+    } catch {
+      // Non-fatal: weather is optional context
+    }
+  }
+
   const messageTemplate = customMessage || config.defaultMessage
   const message = messageTemplate
     .replace(/{chefName}/g, chefName)
@@ -546,6 +514,7 @@ async function sendCadenceEmail(
     .replace(/{location}/g, location || 'your location')
     .replace(/{arrivalTime}/g, arrivalTime || 'TBD')
     .replace(/{prepDate}/g, arrivalTime || 'soon')
+    .replace(/{weatherLine}/g, weatherLine)
 
   // Send via email system
   const { sendEmail } = await import('@/lib/email/send')
@@ -649,12 +618,26 @@ async function sendCadenceSMS(
   const arrivalTime = event.arrival_time || event.serve_time || 'TBD'
   const eventDate = event.event_date || event.serve_time || ''
 
+  // Fetch weather for close-to-event SMS touchpoints
+  let weatherLine = ''
+  if (WEATHER_ELIGIBLE_POINTS.includes(cadencePoint)) {
+    try {
+      const forecast = await getWeatherForCadenceEvent(tenantId, eventId)
+      if (forecast) {
+        weatherLine = formatWeatherLineSMS(forecast)
+      }
+    } catch {
+      // Non-fatal: weather is optional context
+    }
+  }
+
   let message = template
     .replace(/{chefName}/g, chefName)
     .replace(/{occasion}/g, occasion)
     .replace(/{arrivalTime}/g, arrivalTime)
     .replace(/{eventDate}/g, eventDate)
     .replace(/{portalUrl}/g, portalUrl)
+    .replace(/{weatherLine}/g, weatherLine)
 
   // Enforce 160-char SMS limit
   if (message.length > 160) {
@@ -662,6 +645,42 @@ async function sendCadenceSMS(
   }
 
   await sendSms(clientPhone, message)
+}
+
+async function emitCadenceCIL(
+  item: { tenant_id: string; event_id: string; cadence_point: string; channel?: string },
+  action: 'sent' | 'skipped',
+  skipReason: string | null
+): Promise<void> {
+  try {
+    const db = createServerClient()
+    const { data: event } = await db
+      .from('events')
+      .select('client_id, occasion')
+      .eq('id', item.event_id)
+      .eq('tenant_id', item.tenant_id)
+      .single()
+
+    const clientId = event?.client_id
+    const entityIds: string[] = [`event_${item.event_id}`]
+    if (clientId) entityIds.push(`client_${clientId}`)
+
+    await notifyCIL({
+      tenantId: item.tenant_id,
+      source: 'cadence',
+      entityIds,
+      payload: {
+        action,
+        cadence_point: item.cadence_point,
+        channel: item.channel || 'email',
+        skip_reason: skipReason,
+        occasion: event?.occasion || null,
+        client_name: null,
+      },
+    })
+  } catch {
+    // Non-fatal: CIL observation must never block cadence delivery
+  }
 }
 
 async function getChefCadenceMessage(

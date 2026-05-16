@@ -224,7 +224,9 @@ export async function getWeatherAlerts(tenantId: string): Promise<WeatherAlertRe
 
   const { data: events } = await db
     .from('events')
-    .select('id, event_date, location_address, occasion, client:clients(full_name)')
+    .select(
+      'id, event_date, location_address, location_lat, location_lng, occasion, client:clients(full_name)'
+    )
     .eq('tenant_id', tenantId)
     .not('status', 'in', '("cancelled","completed")')
     .gte('event_date', today)
@@ -245,19 +247,30 @@ export async function getWeatherAlerts(tenantId: string): Promise<WeatherAlertRe
     if (!event.location_address) continue
     const eventDate = dateToDateString(event.event_date as Date | string)
 
-    // Geocode (with cache)
-    const locKey = event.location_address.toLowerCase().trim()
-    if (!geoCache.has(locKey)) {
-      geoCache.set(locKey, await geocodeLocation(event.location_address))
-    }
-    const geo = geoCache.get(locKey)
-    if (!geo) {
-      failedCount++
-      continue
+    let lat: number
+    let lng: number
+
+    // Use stored coordinates when available; fall back to geocoding
+    if (event.location_lat != null && event.location_lng != null) {
+      lat = event.location_lat as number
+      lng = event.location_lng as number
+    } else {
+      // Geocode (with cache)
+      const locKey = event.location_address.toLowerCase().trim()
+      if (!geoCache.has(locKey)) {
+        geoCache.set(locKey, await geocodeLocation(event.location_address))
+      }
+      const geo = geoCache.get(locKey)
+      if (!geo) {
+        failedCount++
+        continue
+      }
+      lat = geo.latitude
+      lng = geo.longitude
     }
 
     // Fetch forecast
-    const forecast = await fetchForecast(geo.latitude, geo.longitude, eventDate)
+    const forecast = await fetchForecast(lat, lng, eventDate)
     if (!forecast) {
       failedCount++
       continue

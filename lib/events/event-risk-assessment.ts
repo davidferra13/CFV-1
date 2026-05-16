@@ -12,8 +12,10 @@ import {
   assessDishRisk,
   type DishRiskInput,
   type EventRiskInput,
+  type WeatherRiskInput,
   type RiskAssessmentResult,
 } from '@/lib/costing/operational-risk'
+import { getEventWeatherForecast } from '@/lib/weather/weather-actions'
 
 // ─── Public Actions ─────────────────────────────────────────────────────────────
 
@@ -112,17 +114,24 @@ export async function getEventRiskAssessment(
     // 8. Load venue visit history
     const venueContext = await getVenueContext(db, event.venue_name, tenantId)
 
+    // 8.5 Load venue equipment from venue_profiles
+    const venueEquipment = await getVenueEquipment(db, event.venue_name, tenantId)
+
+    // 8.6 Fetch weather risk (3-second timeout, non-blocking)
+    const weatherRiskInput = await fetchWeatherRiskInput(eventId)
+
     // 9. Load dietary restriction count for this event
     const dietaryCount = await getDietaryRestrictionCount(db, eventId, tenantId)
 
     // 10. Build EventRiskInput
     const eventRiskInput: EventRiskInput = {
       isFirstTimeVenue: venueContext.isFirstTime,
-      venueHasFullKitchen: null, // not tracked yet
-      venueOvenCount: null, // not tracked yet
-      venueBurnerCount: null, // not tracked yet
-      hasRefrigeration: null, // not tracked yet
+      venueHasFullKitchen: venueEquipment.venueHasFullKitchen,
+      venueOvenCount: venueEquipment.venueOvenCount,
+      venueBurnerCount: venueEquipment.venueBurnerCount,
+      hasRefrigeration: venueEquipment.hasRefrigeration,
       travelDistanceMinutes: event.travel_time_minutes ?? null,
+      weather: weatherRiskInput,
       totalServiceHours: event.service_hours ?? null,
       courseCount: getUniqueCourseCount(dishes),
       simultaneousServings: event.guest_count ?? null,
@@ -199,6 +208,7 @@ export async function getDishRiskPreview(
     const productionCounts = await getProductionCounts(db, [recipeId], tenantId)
     const clientContext = await getClientContext(db, event.client_id, tenantId)
     const venueContext = await getVenueContext(db, event.venue_name, tenantId)
+    const venueEquipment = await getVenueEquipment(db, event.venue_name, tenantId)
 
     // Fetch PIE data for the single recipe
     const eventMonth = new Date().getMonth() + 1
@@ -228,11 +238,12 @@ export async function getDishRiskPreview(
 
     const eventInput: EventRiskInput = {
       isFirstTimeVenue: venueContext.isFirstTime,
-      venueHasFullKitchen: null,
-      venueOvenCount: null,
-      venueBurnerCount: null,
-      hasRefrigeration: null,
+      venueHasFullKitchen: venueEquipment.venueHasFullKitchen,
+      venueOvenCount: venueEquipment.venueOvenCount,
+      venueBurnerCount: venueEquipment.venueBurnerCount,
+      hasRefrigeration: venueEquipment.hasRefrigeration,
       travelDistanceMinutes: event.travel_time_minutes ?? null,
+      weather: null, // Quick preview skips weather fetch
       totalServiceHours: event.service_hours ?? null,
       courseCount: null,
       simultaneousServings: event.guest_count ?? null,
@@ -387,6 +398,49 @@ async function getVenueContext(
   return {
     isFirstTime: visitCount === 0,
     visitCount,
+  }
+}
+
+interface VenueEquipment {
+  venueHasFullKitchen: boolean | null
+  venueOvenCount: number | null
+  venueBurnerCount: number | null
+  hasRefrigeration: boolean | null
+}
+
+const NULL_VENUE_EQUIPMENT: VenueEquipment = {
+  venueHasFullKitchen: null,
+  venueOvenCount: null,
+  venueBurnerCount: null,
+  hasRefrigeration: null,
+}
+
+async function getVenueEquipment(
+  db: any,
+  venueName: string | null,
+  tenantId: string
+): Promise<VenueEquipment> {
+  if (!venueName) return NULL_VENUE_EQUIPMENT
+
+  try {
+    const { data } = await db
+      .from('venue_profiles')
+      .select('has_full_kitchen, oven_count, burner_count, has_refrigeration')
+      .eq('tenant_id', tenantId)
+      .eq('venue_name', venueName)
+      .single()
+
+    if (!data) return NULL_VENUE_EQUIPMENT
+
+    return {
+      venueHasFullKitchen: data.has_full_kitchen ?? null,
+      venueOvenCount: data.oven_count ?? null,
+      venueBurnerCount: data.burner_count ?? null,
+      hasRefrigeration: data.has_refrigeration ?? null,
+    }
+  } catch {
+    // Table may not exist or query failed; degrade gracefully
+    return NULL_VENUE_EQUIPMENT
   }
 }
 
@@ -593,6 +647,34 @@ function inferTemperatureStages(method: string | null): boolean | null {
     if (lower.includes(kw)) stageCount++
   }
   return stageCount >= 2
+}
+
+// ─── Weather Risk Bridge ────────────────────────────────────────────────────────
+
+/**
+ * Fetch weather forecast and convert to WeatherRiskInput.
+ * Uses Promise.race with 3-second timeout. Returns null on timeout, error,
+ * or if weather data is unavailable (no coords, event too far out, etc.).
+ */
+async function fetchWeatherRiskInput(eventId: string): Promise<WeatherRiskInput | null> {
+  try {
+    const TIMEOUT_MS = 3000
+    const timeoutPromise = new Promise<null>((resolve) =>
+      setTimeout(() => resolve(null), TIMEOUT_MS)
+    )
+    const weatherPromise = getEventWeatherForecast(eventId)
+
+    const result = await Promise.race([weatherPromise, timeoutPromise])
+    if (!result) return null
+
+    return {
+      weatherRiskScore: result.risk.score,
+      weatherWarnings: result.risk.warnings.length > 0 ? result.risk.warnings : null,
+      isOutdoor: true, // If we got here, event has weather_exposure/outdoor context
+    }
+  } catch {
+    return null
+  }
 }
 
 // ─── Persistence ────────────────────────────────────────────────────────────────
