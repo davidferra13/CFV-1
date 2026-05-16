@@ -2399,6 +2399,17 @@ async function TieredRailSection({ queuePromise }: { queuePromise: Promise<Prior
   } catch {
     // Universal rail data is non-critical; proceed without it
   }
+  try {
+    const { injectRailLifecycleItems } = await import('@/lib/discovery/rail-lifecycle-bridge')
+    universalItems = await injectRailLifecycleItems(
+      universalItems,
+      'chef',
+      user.id,
+      user.tenantId ?? undefined
+    )
+  } catch {
+    // Lifecycle bridge is non-critical
+  }
   return <TieredRail queuePromise={queuePromise} universalItems={universalItems} />
 }
 
