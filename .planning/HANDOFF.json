@@ -1,6 +1,6 @@
 {
   "version": "1.0",
-  "timestamp": "2026-05-16T21:27:35.197Z",
+  "timestamp": "2026-05-16T21:28:40.175Z",
   "source": "auto-postool",
   "partial": false,
   "phase": null,
@@ -18,31 +18,7 @@
   "uncommitted_files": [
     {
       "status": "M",
-      "path": ".planning/HANDOFF.json"
-    },
-    {
-      "status": "M",
-      "path": "CLAUDE.md"
-    },
-    {
-      "status": "M",
-      "path": "docs/UNIFIED-BUILD-QUEUE.md"
-    },
-    {
-      "status": "M",
       "path": "docs/uptime-history.json"
-    },
-    {
-      "status": "M",
-      "path": "lib/communication/cadence-scheduler.ts"
-    },
-    {
-      "status": "M",
-      "path": "lib/lifecycle/confidence-cadence.ts"
-    },
-    {
-      "status": "??",
-      "path": ".claude/skills/dispatch/"
     },
     {
       "status": "??",
@@ -71,52 +47,8 @@
     {
       "status": "??",
       "path": "_write-qa-test.js"
-    },
-    {
-      "status": "??",
-      "path": "database/migrations/20260517000003_cadence_sms_channel.sql"
-    },
-    {
-      "status": "??",
-      "path": "docs/intensify/client-messaging.md"
-    },
-    {
-      "status": "??",
-      "path": "docs/specs/client-messaging-cadence.md"
-    },
-    {
-      "status": "??",
-      "path": "docs/specs/collaborative-menu-editing.md"
-    },
-    {
-      "status": "??",
-      "path": "docs/specs/dish-level-menu-assembly.md"
-    },
-    {
-      "status": "??",
-      "path": "docs/specs/fixed-menu-offerings.md"
-    },
-    {
-      "status": "??",
-      "path": "docs/specs/menu-fate-tracking.md"
-    },
-    {
-      "status": "??",
-      "path": "docs/specs/menu-fork-lineage.md"
-    },
-    {
-      "status": "??",
-      "path": "docs/specs/menu-proposal-sets.md"
-    },
-    {
-      "status": "??",
-      "path": "docs/specs/menu-provenance-system.md"
-    },
-    {
-      "status": "??",
-      "path": "lib/pricing/learning-corrections.ts"
     }
   ],
   "next_action": null,
-  "context_notes": "Recent commits:\nc233f31ca docs: swarm handoff prompt for next session (7 agents, 3 waves)\n48ebcde0d feat(intelligence): wire 5 orphaned outputs into active consumers + signal dedup\ncaa18af49 feat(menus): ownership model deep-pass - schema sync, RLS, collaborator gate\n81c481b86 feat(rail): wire Rail Item Lifecycle Engine into dashboard UI\n039abad5a docs: mark Rail Item Lifecycle Engine as PARTIAL (built, not wired)"
+  "context_notes": "Recent commits:\n3d534306c feat(cadence): SMS channel variant for lifecycle messaging\nc233f31ca docs: swarm handoff prompt for next session (7 agents, 3 waves)\n48ebcde0d feat(intelligence): wire 5 orphaned outputs into active consumers + signal dedup\ncaa18af49 feat(menus): ownership model deep-pass - schema sync, RLS, collaborator gate\n81c481b86 feat(rail): wire Rail Item Lifecycle Engine into dashboard UI"
 }
