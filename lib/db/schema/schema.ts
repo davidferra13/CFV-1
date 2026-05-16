@@ -11945,6 +11945,10 @@ export const menus = pgTable("menus", {
 	isShowcase: boolean("is_showcase").default(false).notNull(),
 	timesUsed: integer("times_used").default(0).notNull(),
 	sceneType: text("scene_type"),
+	clientId: uuid("client_id"),
+	season: text("season"),
+	targetDate: date("target_date"),
+	visibleToDinnerCircle: boolean("visible_to_dinner_circle").default(false).notNull(),
 }, (table): any[] => [
 	index("idx_menus_active_tenant_created_at").using("btree", table.tenantId.asc().nullsLast().op("uuid_ops"), table.createdAt.desc().nullsFirst().op("uuid_ops")).where(sql`(deleted_at IS NULL)`),
 	index("idx_menus_event_id").using("btree", table.eventId.asc().nullsLast().op("uuid_ops")),
@@ -11972,6 +11976,13 @@ export const menus = pgTable("menus", {
 			foreignColumns: [users.id],
 			name: "menus_updated_by_fkey"
 		}).onDelete("set null"),
+	foreignKey({
+			columns: [table.clientId],
+			foreignColumns: [clients.id],
+			name: "menus_client_id_fkey"
+		}).onDelete("set null"),
+	index("idx_menus_client_id").using("btree", table.clientId.asc().nullsLast().op("uuid_ops")).where(sql`(client_id IS NOT NULL)`),
+	index("idx_menus_season").using("btree", table.tenantId.asc().nullsLast().op("uuid_ops"), table.season.asc().nullsLast()).where(sql`(season IS NOT NULL)`),
 	pgPolicy("client_can_view_own_event_menu", { as: "permissive", for: "select", to: ["public"], using: sql`((get_current_user_role() = 'client'::user_role) AND (event_id IN ( SELECT events.id
    FROM events
   WHERE (events.client_id IN ( SELECT user_roles.entity_id

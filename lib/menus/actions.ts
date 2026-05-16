@@ -544,6 +544,25 @@ export async function updateMenu(menuId: string, input: UpdateMenuInput) {
     throw new UnknownAppError('Menu not found')
   }
 
+  // Collaborator permission check: if actor is not the menu owner,
+  // verify they are an accepted collaborator with can_modify_menu permission
+  if (user.tenantId !== currentMenu.tenant_id && currentMenu.event_id) {
+    const { data: collaborator } = await db
+      .from('event_collaborators')
+      .select('permissions')
+      .eq('event_id', currentMenu.event_id)
+      .eq('chef_id', user.tenantId!)
+      .eq('status', 'accepted')
+      .maybeSingle()
+
+    if (!collaborator || (collaborator.permissions as any)?.can_modify_menu !== true) {
+      throw new UnknownAppError('Not authorized to modify this menu')
+    }
+  } else if (user.tenantId !== currentMenu.tenant_id) {
+    // No event_id means no collaboration path exists
+    throw new UnknownAppError('Not authorized to modify this menu')
+  }
+
   if (currentMenu.status === 'locked') {
     throw new UnknownAppError('Cannot edit a locked menu')
   }
