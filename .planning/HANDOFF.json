@@ -1,6 +1,6 @@
 {
   "version": "1.0",
-  "timestamp": "2026-05-16T14:31:14.760Z",
+  "timestamp": "2026-05-16T14:32:17.271Z",
   "source": "auto-postool",
   "partial": false,
   "phase": null,
@@ -18,134 +18,6 @@
   "uncommitted_files": [
     {
       "status": "M",
-      "path": ".claude/hooks/session-cleanup.sh"
-    },
-    {
-      "status": "M",
-      "path": ".openclaw-deploy/captured-session.json"
-    },
-    {
-      "status": "M",
-      "path": ".planning/HANDOFF.json"
-    },
-    {
-      "status": "M",
-      "path": "AGENTS.md"
-    },
-    {
-      "status": "M",
-      "path": "CLAUDE.md"
-    },
-    {
-      "status": "M",
-      "path": "CONTEXT.md"
-    },
-    {
-      "status": "M",
-      "path": "app/(admin)/admin/clients/page.tsx"
-    },
-    {
-      "status": "M",
-      "path": "app/(chef)/culinary/call-sheet/page.tsx"
-    },
-    {
-      "status": "M",
-      "path": "app/(chef)/culinary/menus/templates/page.tsx"
-    },
-    {
-      "status": "M",
-      "path": "app/(chef)/culinary/recipes/[id]/page.tsx"
-    },
-    {
-      "status": "M",
-      "path": "app/(chef)/culinary/recipes/page.tsx"
-    },
-    {
-      "status": "M",
-      "path": "app/(chef)/culinary/vendors/vendor-directory-client.tsx"
-    },
-    {
-      "status": "M",
-      "path": "app/(chef)/dashboard/_sections/cil-signal-summary.tsx"
-    },
-    {
-      "status": "M",
-      "path": "app/(chef)/dashboard/page.tsx"
-    },
-    {
-      "status": "M",
-      "path": "app/(chef)/inbox/history-scan/page.tsx"
-    },
-    {
-      "status": "M",
-      "path": "app/(chef)/menus/[id]/menu-detail-client.tsx"
-    },
-    {
-      "status": "M",
-      "path": "app/(chef)/menus/[id]/page.tsx"
-    },
-    {
-      "status": "M",
-      "path": "app/(chef)/recipes/[id]/page.tsx"
-    },
-    {
-      "status": "M",
-      "path": "app/(chef)/recipes/[id]/recipe-detail-client.tsx"
-    },
-    {
-      "status": "M",
-      "path": "app/(chef)/recipes/recipes-client.tsx"
-    },
-    {
-      "status": "M",
-      "path": "app/(chef)/settings/page.tsx"
-    },
-    {
-      "status": "M",
-      "path": "app/(chef)/settings/restaurants/my-restaurants-settings.tsx"
-    },
-    {
-      "status": "M",
-      "path": "app/api/clients/[clientId]/household/route.ts"
-    },
-    {
-      "status": "M",
-      "path": "app/api/interactions/route.ts"
-    },
-    {
-      "status": "M",
-      "path": "app/api/prep-timeline/ical/route.ts"
-    },
-    {
-      "status": "M",
-      "path": "chefflow-watchdog.ps1"
-    },
-    {
-      "status": "M",
-      "path": "components/gmail/historical-findings-list.tsx"
-    },
-    {
-      "status": "M",
-      "path": "components/gmail/historical-scan-section.tsx"
-    },
-    {
-      "status": "M",
-      "path": "components/onboarding/recipe-entry-form.tsx"
-    },
-    {
-      "status": "M",
-      "path": "components/rail/rail-item-row.tsx"
-    },
-    {
-      "status": "M",
-      "path": "components/ui/app-theme-provider.tsx"
-    },
-    {
-      "status": "M",
-      "path": "database/migrations/20260416000004_event_ticketing.sql"
-    },
-    {
-      "status": "M",
       "path": "docs/.codex-workspace-brief.md"
     },
     {
@@ -153,242 +25,66 @@
       "path": "docs/agent-contexts/circles-domain.md"
     },
     {
+      "status": "A",
+      "path": "docs/architecture/circles-current-state-inventory.md"
+    },
+    {
+      "status": "A",
+      "path": "docs/architecture/circles-policy-matrix.md"
+    },
+    {
+      "status": "A",
+      "path": "docs/architecture/circles-source-of-truth-boundaries.md"
+    },
+    {
+      "status": "A",
+      "path": "docs/architecture/circles-swarm-execution-plan.md"
+    },
+    {
+      "status": "A",
+      "path": "docs/domain/circles.md"
+    },
+    {
+      "status": "A",
+      "path": "docs/research/2026-05-15-chefflow-operating-loop-verbatim-research.md"
+    },
+    {
       "status": "M",
       "path": "docs/session-log.md"
+    },
+    {
+      "status": "A",
+      "path": "docs/specs/chefflow-human-body-build-extraction-2026-05-15.md"
+    },
+    {
+      "status": "A",
+      "path": "docs/specs/chefflow-human-body-master-transcript-2026-05-15.md"
+    },
+    {
+      "status": "A",
+      "path": "docs/specs/circles-operating-loop-build-extraction.md"
+    },
+    {
+      "status": "A",
+      "path": "docs/specs/human-systems-product-doctrine.md"
+    },
+    {
+      "status": "A",
+      "path": "docs/specs/research-derived-human-systems-builds-index.md"
     },
     {
       "status": "M",
       "path": "docs/sync-status.json"
     },
     {
-      "status": "M",
+      "status": "MM",
       "path": "docs/uptime-history.json"
-    },
-    {
-      "status": "M",
-      "path": "lib/admin/inquiry-admin-actions.ts"
-    },
-    {
-      "status": "M",
-      "path": "lib/admin/platform-stats.ts"
-    },
-    {
-      "status": "M",
-      "path": "lib/api/auth-inventory.ts"
-    },
-    {
-      "status": "M",
-      "path": "lib/auth/actions.ts"
-    },
-    {
-      "status": "M",
-      "path": "lib/auth/auth-config.ts"
-    },
-    {
-      "status": "M",
-      "path": "lib/auth/invitations.ts"
-    },
-    {
-      "status": "M",
-      "path": "lib/auth/route-policy.ts"
-    },
-    {
-      "status": "M",
-      "path": "lib/auth/server-action-inventory.ts"
-    },
-    {
-      "status": "M",
-      "path": "lib/clients/actions.ts"
-    },
-    {
-      "status": "M",
-      "path": "lib/constants/cuisines.ts"
-    },
-    {
-      "status": "M",
-      "path": "lib/db/compat.ts"
-    },
-    {
-      "status": "M",
-      "path": "lib/db/migrations/meta/0000_snapshot.json"
-    },
-    {
-      "status": "M",
-      "path": "lib/directory/actions.ts"
-    },
-    {
-      "status": "M",
-      "path": "lib/discover/actions.ts"
-    },
-    {
-      "status": "M",
-      "path": "lib/env.ts"
-    },
-    {
-      "status": "M",
-      "path": "lib/exports/data-takeout-actions.ts"
-    },
-    {
-      "status": "M",
-      "path": "lib/exports/takeout-categories.ts"
-    },
-    {
-      "status": "M",
-      "path": "lib/gmail/historical-scan-actions.ts"
-    },
-    {
-      "status": "M",
-      "path": "lib/gmail/historical-scan.ts"
-    },
-    {
-      "status": "M",
-      "path": "lib/google/types.ts"
-    },
-    {
-      "status": "M",
-      "path": "lib/ingredients/receipt-scan-actions.ts"
-    },
-    {
-      "status": "M",
-      "path": "lib/inquiries/conversation-scaffold.ts"
-    },
-    {
-      "status": "M",
-      "path": "lib/interface/route-inventory.ts"
-    },
-    {
-      "status": "M",
-      "path": "lib/interface/surface-completeness.ts"
-    },
-    {
-      "status": "M",
-      "path": "lib/menus/actions.ts"
-    },
-    {
-      "status": "M",
-      "path": "lib/onboarding/onboarding-actions.ts"
-    },
-    {
-      "status": "M",
-      "path": "lib/partners/invite-actions.ts"
-    },
-    {
-      "status": "M",
-      "path": "lib/recipes/actions.ts"
-    },
-    {
-      "status": "M",
-      "path": "lib/team/staff-invite-actions.ts"
-    },
-    {
-      "status": "M",
-      "path": "lib/vendors/actions.ts"
-    },
-    {
-      "status": "M",
-      "path": "lib/vendors/invite-actions.ts"
-    },
-    {
-      "status": "M",
-      "path": "middleware.ts"
-    },
-    {
-      "status": "M",
-      "path": "package.json"
-    },
-    {
-      "status": "M",
-      "path": "tests/mobile/mobile-visual-audit.spec.ts"
-    },
-    {
-      "status": "M",
-      "path": "tests/unit/auth.tenant-isolation.test.ts"
-    },
-    {
-      "status": "M",
-      "path": "tests/unit/historical-scan-orchestration.test.ts"
-    },
-    {
-      "status": "M",
-      "path": "tests/unit/hub-host-circle-permissions.test.ts"
-    },
-    {
-      "status": "M",
-      "path": "tests/unit/middleware.routing.test.ts"
-    },
-    {
-      "status": "M",
-      "path": "tests/unit/server-action-auth-inventory.test.ts"
-    },
-    {
-      "status": "M",
-      "path": "tests/unit/theme-and-color-guards.test.ts"
-    },
-    {
-      "status": "M",
-      "path": "tsconfig.next.json"
-    },
-    {
-      "status": "??",
-      "path": "docs/architecture/circles-current-state-inventory.md"
-    },
-    {
-      "status": "??",
-      "path": "docs/architecture/circles-policy-matrix.md"
-    },
-    {
-      "status": "??",
-      "path": "docs/architecture/circles-source-of-truth-boundaries.md"
-    },
-    {
-      "status": "??",
-      "path": "docs/architecture/circles-swarm-execution-plan.md"
-    },
-    {
-      "status": "??",
-      "path": "docs/domain/"
-    },
-    {
-      "status": "??",
-      "path": "docs/research/2026-05-15-chefflow-operating-loop-verbatim-research.md"
-    },
-    {
-      "status": "??",
-      "path": "docs/specs/chefflow-human-body-build-extraction-2026-05-15.md"
-    },
-    {
-      "status": "??",
-      "path": "docs/specs/chefflow-human-body-master-transcript-2026-05-15.md"
-    },
-    {
-      "status": "??",
-      "path": "docs/specs/circles-operating-loop-build-extraction.md"
-    },
-    {
-      "status": "??",
-      "path": "docs/specs/human-systems-product-doctrine.md"
-    },
-    {
-      "status": "??",
-      "path": "docs/specs/research-derived-human-systems-builds-index.md"
-    },
-    {
-      "status": "??",
-      "path": "lib/db/tenant-scope.ts"
-    },
-    {
-      "status": "??",
-      "path": "tests/coverage/13-vendor-routes.spec.ts"
     },
     {
       "status": "??",
       "path": "tests/unit/resolvers/handoff-resolver.test.ts"
-    },
-    {
-      "status": "??",
-      "path": "tests/unit/tenant-scope-query-helper.test.ts"
     }
   ],
   "next_action": null,
-  "context_notes": "Recent commits:\ned79acf9d chore: scripts, skills, tooling, and prompt infrastructure\nd0de1efb9 feat(public): public surface, SEO, services pages, and hero refresh\n5208e4c54 feat(discovery): god mode resolvers, command surface, and search enhancements\n042afe679 feat(pie): pricing lifecycle ledger, accuracy validation, and cost refresh wiring\n7cb9f72c4 feat(client-intelligence): client intelligence projections and business history import"
+  "context_notes": "Recent commits:\n599db364c chore: core config, auth hardening, and remaining lib updates\ned79acf9d chore: scripts, skills, tooling, and prompt infrastructure\nd0de1efb9 feat(public): public surface, SEO, services pages, and hero refresh\n5208e4c54 feat(discovery): god mode resolvers, command surface, and search enhancements\n042afe679 feat(pie): pricing lifecycle ledger, accuracy validation, and cost refresh wiring"
 }
