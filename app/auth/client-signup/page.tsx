@@ -26,6 +26,7 @@ function ClientSignUpForm() {
     full_name: '',
     phone: '',
     invitation_token: token || '',
+    accepted_legal_terms: false,
   })
 
   useEffect(() => {
@@ -133,6 +134,33 @@ function ClientSignUpForm() {
                 helperText="Minimum 8 characters"
                 autoComplete="new-password"
               />
+
+              <label className="flex items-start gap-2 rounded-lg border border-stone-200 bg-stone-50 p-3 text-sm text-stone-700">
+                <input
+                  type="checkbox"
+                  checked={formData.accepted_legal_terms}
+                  onChange={(e) =>
+                    setFormData({ ...formData, accepted_legal_terms: e.target.checked })
+                  }
+                  required
+                  className="mt-1"
+                />
+                <span>
+                  I accept the ChefFlow{' '}
+                  <Link href="/terms" className="text-brand-700">
+                    Terms
+                  </Link>
+                  ,{' '}
+                  <Link href="/privacy" className="text-brand-700">
+                    Privacy Policy
+                  </Link>
+                  , and{' '}
+                  <Link href="/client-terms" className="text-brand-700">
+                    Client Terms
+                  </Link>
+                  .
+                </span>
+              </label>
             </CardContent>
 
             <CardFooter className="flex flex-col gap-3">

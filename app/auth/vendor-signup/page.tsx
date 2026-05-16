@@ -18,6 +18,7 @@ function VendorSignupForm() {
   const [password, setPassword] = useState('')
   const [error, setError] = useState<string | null>(null)
   const [loading, setLoading] = useState(false)
+  const [acceptedLegalTerms, setAcceptedLegalTerms] = useState(false)
 
   if (!token) {
     return (
@@ -45,7 +46,7 @@ function VendorSignupForm() {
     setLoading(true)
 
     try {
-      const result = await claimVendorInvite(token!, email, password)
+      const result = await claimVendorInvite(token!, email, password, acceptedLegalTerms)
 
       if ('error' in result) {
         setError(result.error)
@@ -96,6 +97,26 @@ function VendorSignupForm() {
                 minLength={8}
               />
             </div>
+            <label className="flex items-start gap-2 rounded-lg border border-stone-200 bg-stone-50 p-3 text-sm text-stone-700">
+              <input
+                type="checkbox"
+                checked={acceptedLegalTerms}
+                onChange={(e) => setAcceptedLegalTerms(e.target.checked)}
+                required
+                className="mt-1"
+              />
+              <span>
+                I accept the ChefFlow{' '}
+                <Link href="/privacy" className="text-blue-600 hover:underline">
+                  Privacy Policy
+                </Link>{' '}
+                and{' '}
+                <Link href="/vendor-agreement" className="text-blue-600 hover:underline">
+                  Vendor Agreement
+                </Link>
+                .
+              </span>
+            </label>
             {error && <p className="text-sm text-red-600">{error}</p>}
             <Button type="submit" className="w-full" disabled={loading}>
               {loading ? 'Creating account...' : 'Create Account'}

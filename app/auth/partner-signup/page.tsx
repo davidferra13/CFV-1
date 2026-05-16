@@ -25,6 +25,7 @@ function PartnerSignupForm() {
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState<string | null>(null)
   const [step, setStep] = useState<'form' | 'signing-in'>('form')
+  const [acceptedLegalTerms, setAcceptedLegalTerms] = useState(false)
 
   if (!token) {
     return (
@@ -49,7 +50,7 @@ function PartnerSignupForm() {
 
     try {
       // Step 1: Server action creates the auth user + claims the invite
-      const result = await claimPartnerInvite(token, email, password)
+      const result = await claimPartnerInvite(token, email, password, acceptedLegalTerms)
 
       if ('error' in result) {
         setError(result.error)
@@ -117,6 +118,27 @@ function PartnerSignupForm() {
               placeholder="Min. 8 characters"
             />
           </div>
+
+          <label className="flex items-start gap-2 rounded-lg border border-stone-600 bg-stone-900/40 p-3 text-sm text-stone-300">
+            <input
+              type="checkbox"
+              checked={acceptedLegalTerms}
+              onChange={(e) => setAcceptedLegalTerms(e.target.checked)}
+              required
+              className="mt-1"
+            />
+            <span>
+              I accept the ChefFlow{' '}
+              <Link href="/privacy" className="underline">
+                Privacy Policy
+              </Link>{' '}
+              and{' '}
+              <Link href="/partner-terms" className="underline">
+                Partner Terms
+              </Link>
+              .
+            </span>
+          </label>
 
           {error && (
             <div className="rounded-lg bg-red-950 border border-red-200 px-4 py-3 text-sm text-red-700">

@@ -22,6 +22,7 @@ function StaffSignupForm() {
   const [inviteInfo, setInviteInfo] = useState<{ name: string; email: string } | null>(null)
   const [inviteError, setInviteError] = useState<string | null>(null)
   const [inviteLoading, setInviteLoading] = useState(true)
+  const [acceptedLegalTerms, setAcceptedLegalTerms] = useState(false)
 
   useEffect(() => {
     if (!token) {
@@ -51,7 +52,7 @@ function StaffSignupForm() {
     setLoading(true)
 
     try {
-      const result = await claimStaffInvite(token, email, password)
+      const result = await claimStaffInvite(token, email, password, acceptedLegalTerms)
 
       if ('error' in result) {
         setError(result.error)
@@ -135,6 +136,27 @@ function StaffSignupForm() {
                 autoFocus
                 helperText="Minimum 8 characters"
               />
+
+              <label className="flex items-start gap-2 rounded-lg border border-stone-700 bg-stone-900/50 p-3 text-sm text-stone-300">
+                <input
+                  type="checkbox"
+                  checked={acceptedLegalTerms}
+                  onChange={(e) => setAcceptedLegalTerms(e.target.checked)}
+                  required
+                  className="mt-1"
+                />
+                <span>
+                  I accept the ChefFlow{' '}
+                  <Link href="/privacy" className="text-brand-400">
+                    Privacy Policy
+                  </Link>{' '}
+                  and{' '}
+                  <Link href="/staff-terms" className="text-brand-400">
+                    Staff Terms
+                  </Link>
+                  .
+                </span>
+              </label>
 
               {error && <Alert variant="error">{error}</Alert>}
 

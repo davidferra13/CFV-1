@@ -40,6 +40,16 @@ export default async function LegalProtectionSettingsPage() {
         >
           <div className="space-y-3">
             <Link
+              href="/settings/legal-readiness"
+              className="block border border-orange-700 rounded-lg p-4 bg-orange-950/30 hover:bg-orange-950 transition-colors"
+            >
+              <p className="font-semibold text-orange-200">Legal Readiness Center</p>
+              <p className="text-sm text-orange-400 mt-1">
+                Track policy acceptance, consent, data rights, tax, payment, marketplace, and
+                takedown readiness without treating draft records as legal approval.
+              </p>
+            </Link>
+            <Link
               href="/settings/protection"
               className="block border border-amber-700 rounded-lg p-4 bg-amber-950/40 hover:bg-amber-950 transition-colors"
             >

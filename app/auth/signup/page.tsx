@@ -35,6 +35,7 @@ function SignUpForm() {
     password: '',
     business_name: '',
     phone: '',
+    accepted_legal_terms: false,
   })
 
   const [clientFormData, setClientFormData] = useState<ClientSignupInput>({
@@ -43,6 +44,7 @@ function SignUpForm() {
     full_name: '',
     phone: '',
     invitation_token: token || '',
+    accepted_legal_terms: false,
   })
 
   // Check invitation if token present
@@ -177,6 +179,36 @@ function SignUpForm() {
                   helperText="Minimum 8 characters"
                   autoComplete="new-password"
                 />
+
+                <label className="flex items-start gap-2 rounded-lg border border-stone-700 bg-stone-900/50 p-3 text-sm text-stone-300">
+                  <input
+                    type="checkbox"
+                    checked={clientFormData.accepted_legal_terms}
+                    onChange={(e) =>
+                      setClientFormData({
+                        ...clientFormData,
+                        accepted_legal_terms: e.target.checked,
+                      })
+                    }
+                    required
+                    className="mt-1"
+                  />
+                  <span>
+                    I accept the ChefFlow{' '}
+                    <Link href="/terms" className="text-brand-400">
+                      Terms
+                    </Link>
+                    ,{' '}
+                    <Link href="/privacy" className="text-brand-400">
+                      Privacy Policy
+                    </Link>
+                    , and{' '}
+                    <Link href="/client-terms" className="text-brand-400">
+                      Client Terms
+                    </Link>
+                    .
+                  </span>
+                </label>
               </CardContent>
 
               <CardFooter>
@@ -264,6 +296,33 @@ function SignUpForm() {
                 onChange={(e) => setChefFormData({ ...chefFormData, phone: e.target.value })}
                 helperText="Optional"
               />
+
+              <label className="flex items-start gap-2 rounded-lg border border-stone-700 bg-stone-900/50 p-3 text-sm text-stone-300">
+                <input
+                  type="checkbox"
+                  checked={chefFormData.accepted_legal_terms}
+                  onChange={(e) =>
+                    setChefFormData({ ...chefFormData, accepted_legal_terms: e.target.checked })
+                  }
+                  required
+                  className="mt-1"
+                />
+                <span>
+                  I accept the ChefFlow{' '}
+                  <Link href="/terms" className="text-brand-400">
+                    Terms
+                  </Link>
+                  ,{' '}
+                  <Link href="/privacy" className="text-brand-400">
+                    Privacy Policy
+                  </Link>
+                  , and{' '}
+                  <Link href="/chef-agreement" className="text-brand-400">
+                    Chef Agreement
+                  </Link>
+                  .
+                </span>
+              </label>
             </CardContent>
 
             <CardFooter className="flex flex-col space-y-4">
