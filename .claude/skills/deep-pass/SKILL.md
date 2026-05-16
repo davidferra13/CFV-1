@@ -1,11 +1,11 @@
 ---
 name: deep-pass
-description: Combined intensify + over-the-shoulder in one invocation. Mines depth moves then validates them against expert public methods. Use when user says /deep-pass, wants to go deep AND get expert validation, or uses intensify and over-the-shoulder together.
+description: Closed-loop depth mining. Mines zone, validates with experts, forges build-ready agent prompts. Use when user says /deep-pass, wants to go deep AND get expert validation, or uses intensify and over-the-shoulder together.
 ---
 
 # /deep-pass
 
-Chains `/intensify` then `/over-the-shoulder` into a single flow. Mines the zone for high-yield depth moves, then holds those moves up against expert public methods for validation, critique, and refinement.
+Closed-loop depth-to-build pipeline. Mines zone for high-yield moves, validates against expert methods, then forges dispatch-ready agent prompts. Output is gold: validated builds ready for swarm execution.
 
 ## Input
 
@@ -76,6 +76,8 @@ Present unified results:
 ### Best Next Move
 
 {single highest-leverage action now}
+
+### → Phase 4 below (Build Prompts)
 ```
 
 Then persist to `docs/intensify/{zone}.md` using the extended format:
@@ -146,10 +148,60 @@ OTS receives this and attaches per-move: `endorsement|caveat|failure_mode`. Arch
 
 When `YIELD_TREND` is "declining", OTS focuses lenses on "what would reset saturation" rather than validating existing moves.
 
+### Phase 4: Forge Agent Prompts
+
+For every endorsed move (not rejected, not skipped), generate a dispatch-ready agent prompt. This is the gold output. The dev pastes these into a fresh session or swarm orchestrator and builds happen.
+
+**Prompt shape per move:**
+
+```markdown
+### Agent: {move-name-slug}
+
+- **Model:** haiku | opus (match complexity: single-file mechanical = haiku, multi-file judgment = opus)
+- **Zone:** {zone}
+- **Task:** {concrete build instruction, not vague. What to create/modify, where, acceptance criteria}
+- **Read first:** {specific files agent needs for context}
+- **Expert backing:** {which lens endorsed this and why}
+- **Done when:** {verification criteria: test passes, type-checks, route responds, UI renders}
+- **Caveats:** {any expert-flagged failure modes to watch for}
+```
+
+**Forge rules:**
+
+1. Every prompt is self-contained. Agent doesn't need conversation context.
+2. "Read first" must be specific files, not "the zone" or "relevant docs."
+3. "Done when" must be verifiable (command exits 0, screenshot matches, HTTP 200).
+4. Rejected moves get NO prompt. Cautioned moves get a prompt WITH the caveat prominent.
+5. Group prompts into waves if dependencies exist between moves.
+6. If > 5 prompts, assign wave numbers. Wave 1 = no dependencies. Wave 2+ = depends on prior wave.
+
+**Output block (after Phase 3 summary):**
+
+```markdown
+## Build Prompts (Ready to Dispatch)
+
+### Wave 1 (Parallel)
+
+{agent prompts with no dependencies}
+
+### Wave 2 (After Wave 1 Verified)
+
+{agent prompts that depend on Wave 1}
+
+### Dispatch Notes
+
+- Total agents: {n}
+- Estimated tier cost: {haiku count} haiku + {opus count} opus
+- Verification after all waves: `npx tsc --noEmit --skipLibCheck && npm run test:experiential`
+```
+
+**Persist prompts** to `docs/intensify/{zone}.md` under a `BUILD_PROMPTS:` section so they survive session boundaries. Mark prompts as `DISPATCHED` or `PENDING` when acted on.
+
 ## Rules
 
 - All intensify anti-patterns apply (never suggest new features, cosmetic polish, documentation)
 - All over-the-shoulder hard rules apply (source first, cite public methods, no impersonation)
-- Do NOT auto-execute moves. Present list. User picks.
 - Expert lenses must be relevant to the zone. Chef/food/event zones get ChefFlow-native lenses.
 - If intensify returns "saturated" status, over-the-shoulder still runs but focuses on "what would reset saturation" rather than forcing new moves.
+- Phase 4 is ALWAYS generated. Deep-pass without prompts is incomplete.
+- User may say "dispatch wave 1" to immediately spawn agents from the prompts. Otherwise prompts persist for later use.

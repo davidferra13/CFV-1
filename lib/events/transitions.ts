@@ -1799,6 +1799,30 @@ export async function transitionEvent({
     log.events.warn('Journey orchestration failed (non-blocking)', { error: err })
   }
 
+  // Lifecycle detection: run checkpoint detection on event status changes (non-blocking)
+  // Detects status-mapped checkpoints (e.g. event_status:paid, event_status:completed)
+  if (event.inquiry_id) {
+    try {
+      const { runFieldDetectionAndUpdate } = await import('@/lib/lifecycle/actions')
+      const db2 = createServerClient({ admin: true })
+      const { data: inquiry } = await db2
+        .from('inquiries')
+        .select('*')
+        .eq('id', event.inquiry_id)
+        .eq('tenant_id', event.tenant_id)
+        .single()
+      if (inquiry) {
+        await runFieldDetectionAndUpdate(event.tenant_id, event.inquiry_id, inquiry as any, {
+          status: toStatus,
+        })
+      }
+    } catch (err) {
+      log.events.warn('Lifecycle detection on event transition failed (non-blocking)', {
+        error: err,
+      })
+    }
+  }
+
   return {
     success: true,
     fromStatus,

@@ -15,6 +15,7 @@ import {
   type ConsentLevel,
 } from './trigger-engine'
 import { sendLifecycleStatusNotification } from './client-notifications'
+import { executeCadenceTrigger } from './cadence-trigger-handler'
 
 // ---------------------------------------------------------------------------
 // Types
@@ -41,17 +42,26 @@ export interface OrchestratorResult {
 
 /**
  * Run the journey orchestrator for a given inquiry/event.
- * 1. Build trigger context from current DB state
- * 2. Evaluate all trigger rules
- * 3. Execute actions per consent level
- * 4. Log journey timeline
- * 5. Notify client of stage transitions
+ * 1. Ensure lifecycle templates are seeded for this chef
+ * 2. Build trigger context from current DB state
+ * 3. Evaluate all trigger rules
+ * 4. Execute actions per consent level
+ * 5. Log journey timeline
+ * 6. Notify client of stage transitions
  */
 export async function orchestrateJourney(
   chefId: string,
   inquiryId: string | null,
   eventId: string | null
 ): Promise<OrchestratorResult> {
+  // Auto-seed lifecycle templates on first orchestration (idempotent, fast path if already seeded)
+  try {
+    const { ensureTemplateSeeded } = await import('./seed')
+    await ensureTemplateSeeded(chefId)
+  } catch {
+    // Non-blocking: orchestrator can proceed without templates
+  }
+
   const ctx = await buildTriggerContext(chefId, inquiryId, eventId)
   const consent = await loadChefConsent(chefId)
   const triggered = evaluateTriggers(ctx, consent)
@@ -223,15 +233,7 @@ async function executeAction(
     case 'schedule_cadence': {
       if (eventId) {
         try {
-          const eventDate =
-            (trigger.action.payload.eventDate as string | undefined) ??
-            (await db.from('events').select('event_date').eq('id', eventId).single()).data
-              ?.event_date
-          if (eventDate) {
-            const { initializeConfidenceCadence } =
-              await import('@/lib/lifecycle/confidence-cadence')
-            await initializeConfidenceCadence(chefId, eventId, eventDate)
-          }
+          await executeCadenceTrigger(chefId, eventId, [trigger])
         } catch {
           // Cadence module may not be ready yet; degrade gracefully
         }

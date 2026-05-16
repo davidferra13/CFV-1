@@ -19,6 +19,14 @@ import { computeUniversalRailScore, ROLE_WEIGHT_PROFILES } from './universal-rai
 import { scoreChefRailCandidate } from './chef-rail-priority'
 import { requireChef } from '@/lib/auth/get-user'
 import { isItemDismissed } from './universal-rail-state'
+import { DENSITY_CAPS, RAIL_ITEM_TIER_ORDER } from './rail-item-types'
+import type { RailItemTier } from './rail-item-types'
+import {
+  getCurrentTimeWindow,
+  computeTimeMultiplier,
+  isNightSuppressed,
+  shouldForcePromoteToCritical,
+} from './rail-item-scoring'
 
 // ---------------------------------------------------------------------------
 // Public types
@@ -322,7 +330,34 @@ export async function assembleTieredRail(
   // 7. Deduplicate (same entity ID keeps highest scored version)
   const deduped = dedupeOperatingLoopItems(allItems, now)
 
-  // 8. Assign to 4 tiers
+  // 8. Score items and apply time-of-day multiplier
+  const timeWindow = getCurrentTimeWindow(now)
+
+  const scoredItems: Array<{ item: GodModeResolvedItem; score: number; tier: UnifiedTier }> = []
+
+  for (const item of deduped) {
+    let score = scoreGodModeItem(item, now)
+
+    // Apply time-of-day multiplier based on preliminary tier
+    const prelimTier = mapGodModeTierToUnified(item, score)
+    const timeMult = computeTimeMultiplier(prelimTier as RailItemTier, timeWindow)
+    score = Math.max(0, Math.min(100, score * timeMult))
+
+    // Force-promote to critical if expiring within 2 hours
+    if (shouldForcePromoteToCritical(item.expiresAt, now)) {
+      score = Math.max(score, 80)
+    }
+
+    const tier = mapGodModeTierToUnified(item, score)
+    scoredItems.push({ item: { ...item, score }, score, tier })
+  }
+
+  // 9. Night suppression: only Critical surfaces at night
+  const afterNight = scoredItems.filter((s) => {
+    return !isNightSuppressed(s.tier as RailItemTier, now)
+  })
+
+  // 10. Distribute to tiers
   const result: TieredRailResult = {
     critical: [],
     action: [],
@@ -332,20 +367,22 @@ export async function assembleTieredRail(
     assembledAt: now.toISOString(),
   }
 
-  for (const item of deduped) {
-    const score = scoreGodModeItem(item, now)
-    const tier = mapGodModeTierToUnified(item, score)
-    // Attach computed score for sorting
-    const scored = { ...item, score }
-    result[tier].push(scored)
+  for (const s of afterNight) {
+    result[s.tier].push(s.item)
   }
 
-  // 9. Sort each tier by score descending
+  // 11. Sort each tier by score descending
   for (const tier of UNIFIED_TIER_ORDER) {
     result[tier].sort((a, b) => (b.score ?? 0) - (a.score ?? 0))
   }
 
-  result.totalItems = deduped.length
+  // 12. Apply density caps per tier
+  for (const tier of UNIFIED_TIER_ORDER) {
+    const cap = DENSITY_CAPS[tier as RailItemTier].maxVisible
+    result[tier] = result[tier].slice(0, cap)
+  }
+
+  result.totalItems = UNIFIED_TIER_ORDER.reduce((sum, tier) => sum + result[tier].length, 0)
 
   return result
 }

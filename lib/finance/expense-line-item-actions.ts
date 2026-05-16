@@ -414,7 +414,7 @@ export async function applyLineItemPrices(
   // Verify expense belongs to chef
   const { data: expense } = await db
     .from('expenses')
-    .select('id, event_id')
+    .select('id, event_id, vendor_name, vendor_state, vendor_zip, expense_date')
     .eq('id', expenseId)
     .eq('tenant_id', user.tenantId!)
     .single()
@@ -436,7 +436,7 @@ export async function applyLineItemPrices(
   const ingredientIds = [...new Set((lineItems as any[]).map((li: any) => li.ingredient_id))]
   const { data: ingredientRows } = await db
     .from('ingredients')
-    .select('id, default_unit, average_price_cents, price_unit')
+    .select('id, name, default_unit, average_price_cents, price_unit')
     .eq('tenant_id', user.tenantId!)
     .in('id', ingredientIds)
 
@@ -457,6 +457,20 @@ export async function applyLineItemPrices(
   let updated = 0
   let flagged = 0
   const SANITY_THRESHOLD = 0.5 // 50% deviation from average
+
+  // Collect signals for PIE learning pipeline
+  const pieSignals: Array<{
+    ingredientId: string
+    ingredientName: string
+    priceCents: number
+    unit: string
+    quantity: number
+    storeName: string
+    storeState: string | null
+    storeZip: string | null
+    purchaseDate: string
+    tenantId: string
+  }> = []
 
   for (const item of lineItems as any[]) {
     const ingredient = ingredientMap.get(item.ingredient_id)
@@ -526,7 +540,31 @@ export async function applyLineItemPrices(
     // Mark line item as applied
     await db.from('expense_line_items').update({ price_applied: true }).eq('id', item.id)
 
+    // Collect PIE signal for this successful price application
+    pieSignals.push({
+      ingredientId: item.ingredient_id,
+      ingredientName: ingredient?.name ?? item.description ?? 'unknown',
+      priceCents: unitPriceCents,
+      unit: ingredientUnit,
+      quantity: qtyInIngredientUnit,
+      storeName: expense.vendor_name ?? 'unknown',
+      storeState: expense.vendor_state ?? null,
+      storeZip: expense.vendor_zip ?? null,
+      purchaseDate: today,
+      tenantId: user.tenantId!,
+    })
+
     updated++
+  }
+
+  // Feed PIE learning pipeline (fire-and-forget; failure must not block expense workflow)
+  if (pieSignals.length > 0) {
+    try {
+      const { processReceiptSignals } = await import('@/lib/pricing/receipt-price-bridge')
+      await processReceiptSignals(pieSignals)
+    } catch (err) {
+      console.error('[applyLineItemPrices] PIE signal bridge error (non-blocking):', err)
+    }
   }
 
   // Revalidate

@@ -1,7 +1,10 @@
 // Scheduled: Client Re-Engagement Emails (Q56)
-// Sends "we'd love to cook for you again" email to clients whose last
+// Creates AI-personalized re-engagement DRAFTS for clients whose last
 // completed event was 60-90 days ago. Runs weekly. Window-based dedup:
 // clients only enter the 60-90 day window once per dormancy cycle.
+//
+// AI BOUNDARY: Drafts are queued for chef review, NOT auto-sent.
+// Chef is notified via in-app notification with one-tap send/dismiss.
 
 import { NextResponse, type NextRequest } from 'next/server'
 import { createServerClient } from '@/lib/db/server'
@@ -9,8 +12,7 @@ import { verifyCronAuth } from '@/lib/auth/cron-auth'
 import { runMonitoredCronJob } from '@/lib/cron/monitor'
 import { recordSideEffectFailure } from '@/lib/monitoring/non-blocking'
 import { generateReengagementDraft } from '@/lib/ai/reengagement-draft'
-
-const APP_URL = process.env.NEXT_PUBLIC_APP_URL || 'https://app.cheflowhq.com'
+import { createNotification } from '@/lib/notifications/actions'
 
 async function handleReengagement(request: NextRequest): Promise<NextResponse> {
   const authError = verifyCronAuth(request.headers.get('authorization'))
@@ -39,7 +41,7 @@ async function handleReengagement(request: NextRequest): Promise<NextResponse> {
         .limit(50)
 
       if (!clients || clients.length === 0) {
-        return { sent: 0, skipped: 0 }
+        return { drafted: 0, skipped: 0 }
       }
 
       // Fetch chef display names for personalization
@@ -54,12 +56,7 @@ async function handleReengagement(request: NextRequest): Promise<NextResponse> {
         chefMap.set(chef.id, { display_name: chef.display_name, business_name: chef.business_name })
       }
 
-      const { sendEmail } = await import('@/lib/email/send')
-      const { createElement, Fragment } = await import('react')
-      const { Text } = await import('@react-email/components')
-      const { BaseLayout } = await import('@/lib/email/templates/base-layout')
-
-      let sent = 0
+      let drafted = 0
       let skipped = 0
 
       for (const client of clients) {
@@ -81,7 +78,6 @@ async function handleReengagement(request: NextRequest): Promise<NextResponse> {
             (1000 * 60 * 60 * 24)
         )
 
-        // Fetch last event details for AI personalization
         const { data: lastEvents } = await db
           .from('events')
           .select('occasion, guest_count')
@@ -92,7 +88,6 @@ async function handleReengagement(request: NextRequest): Promise<NextResponse> {
           .limit(1)
         const lastEvent = lastEvents?.[0]
 
-        // AI: generate personalized email copy (non-blocking, falls back to static)
         const aiDraft = await generateReengagementDraft({
           clientName,
           chefName,
@@ -102,81 +97,45 @@ async function handleReengagement(request: NextRequest): Promise<NextResponse> {
         })
 
         const greeting = aiDraft?.greeting || `Hi ${clientName},`
-        const body =
+        const bodyText =
           aiDraft?.body ||
           `It has been a while since your last experience with ${chefName}, and we wanted to check in. Whether you are planning a celebration, a quiet dinner, or just craving a memorable meal, ${chefName} would be happy to hear from you.`
-        const ctaText = aiDraft?.cta || 'Plan Your Next Event'
+        const subject = `${chefName} would love to cook for you again`
 
         try {
-          await sendEmail({
-            to: client.email,
-            subject: `${chefName} would love to cook for you again`,
-            react: createElement(BaseLayout, {
-              preview: `It has been a while since your last dinner with ${chefName}`,
-              children: createElement(
-                Fragment,
-                null,
-                createElement(
-                  Text,
-                  { style: { fontSize: 15, color: '#374151', marginBottom: 16 } },
-                  greeting
-                ),
-                createElement(
-                  Text,
-                  { style: { fontSize: 15, color: '#374151', marginBottom: 16 } },
-                  body
-                ),
-                createElement(
-                  Text,
-                  { style: { fontSize: 15, color: '#374151', marginBottom: 24 } },
-                  'No pressure at all. Whenever you are ready, your chef is just a message away.'
-                ),
-                createElement(
-                  'table',
-                  { style: { width: '100%', marginBottom: 24 } },
-                  createElement(
-                    'tbody',
-                    null,
-                    createElement(
-                      'tr',
-                      null,
-                      createElement(
-                        'td',
-                        { align: 'center' },
-                        createElement(
-                          'a',
-                          {
-                            href: `${APP_URL}/my-events`,
-                            style: {
-                              display: 'inline-block',
-                              backgroundColor: '#e88f47',
-                              color: '#18181b',
-                              fontSize: 15,
-                              fontWeight: 600,
-                              padding: '12px 24px',
-                              borderRadius: 8,
-                              textDecoration: 'none',
-                            },
-                          },
-                          ctaText
-                        )
-                      )
-                    )
-                  )
-                ),
-                createElement(
-                  Text,
-                  { style: { fontSize: 12, color: '#9ca3af' } },
-                  'You are receiving this because you previously booked through ChefFlow. To stop these emails, update your preferences in your client portal.'
-                )
-              ),
-            }),
+          await db.from('scheduled_messages').insert({
+            tenant_id: client.tenant_id,
+            client_id: client.id,
+            channel: 'email',
+            status: 'draft',
+            subject,
+            body: `${greeting}\n\n${bodyText}\n\nNo pressure at all. Whenever you are ready, your chef is just a message away.`,
+            recipient_email: client.email,
+            metadata: {
+              type: 'reengagement',
+              ai_generated: true,
+              days_since_last_event: daysSince,
+              last_occasion: lastEvent?.occasion || null,
+            },
           })
-          sent++
+
+          await createNotification({
+            tenantId: client.tenant_id,
+            recipientId: client.tenant_id,
+            category: 'client',
+            action: 'client_reengagement_draft' as any,
+            title: `Re-engagement draft ready for ${clientName}`,
+            body: `AI drafted a "we miss you" email for ${clientName} (${daysSince} days since last event). Review and send from your message center.`,
+            actionUrl: `/clients/${client.id}?tab=messages`,
+            clientId: client.id,
+            metadata: { origin: 'ai', type: 'reengagement' },
+          })
+
+          drafted++
         } catch (err) {
           recordSideEffectFailure({
             source: 'cron',
-            operation: 'client-reengagement-email',
+            operation: 'client-reengagement-draft',
             errorMessage: err instanceof Error ? err.message : String(err),
             severity: 'low',
           })
@@ -184,7 +143,7 @@ async function handleReengagement(request: NextRequest): Promise<NextResponse> {
         }
       }
 
-      return { sent, skipped }
+      return { drafted, skipped }
     })
 
     return NextResponse.json(result)

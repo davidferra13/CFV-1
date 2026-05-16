@@ -8,6 +8,7 @@ import { normalizeUnit, canConvert, addQuantities } from '@/lib/grocery/unit-con
 import { lookupDensity } from '@/lib/units/conversion-engine'
 import { ingredientMatchesAllergen } from '@/lib/menus/allergen-check'
 import { PORTIONS_BY_SERVICE_STYLE } from '@/lib/finance/industry-benchmarks'
+import { resolvePricesBatch } from '@/lib/pricing/resolve-price'
 
 const ShoppingListInputSchema = z.object({
   startDate: z.string().regex(/^\d{4}-\d{2}-\d{2}$/),
@@ -447,6 +448,10 @@ export async function generateShoppingList(input: {
     }
   }
 
+  // Batch-resolve live PIE prices for all ingredients in the list
+  const allIngredientIds = Array.from(aggregated.keys())
+  const resolvedPrices = await resolvePricesBatch(allIngredientIds, user.tenantId!)
+
   // Compute waste buffer rate: use max waste% across all events' service styles
   const serviceStyles = [...eventServiceStyles.values()]
   const wasteBufferPct = serviceStyles.reduce((max, style) => {
@@ -460,7 +465,8 @@ export async function generateShoppingList(input: {
     const buffered = item.totalRequired * (1 + wasteBufferPct / 100)
     const toBuy = Math.max(0, buffered - onHand)
     const ingredient = ingredientMap.get(item.ingredientId)
-    const estimatedUnitCost = ingredient?.last_price_cents ?? 0
+    const resolved = resolvedPrices.get(item.ingredientId)
+    const estimatedUnitCost = resolved?.cents ?? ingredient?.last_price_cents ?? 0
 
     return {
       ...item,
@@ -468,6 +474,8 @@ export async function generateShoppingList(input: {
       onHand: round2(onHand),
       toBuy: round2(toBuy),
       estimatedCostCents: Math.round(toBuy * estimatedUnitCost),
+      priceStore: resolved?.store ?? item.priceStore,
+      priceSource: resolved?.source ?? item.priceSource,
     }
   })
 

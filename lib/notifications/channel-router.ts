@@ -16,7 +16,7 @@
 import { createServerClient } from '@/lib/db/server'
 import { resolveChannels } from './resolve-preferences'
 import type { NotificationAction } from './types'
-import { DEFAULT_TIER_MAP } from './tier-config'
+import { DEFAULT_TIER_MAP, CLIENT_FACING_ACTIONS } from './tier-config'
 import { isOffHours, BYPASS_ACTIONS } from './off-hours-check'
 import { sendPushNotification } from '@/lib/push/send'
 import {

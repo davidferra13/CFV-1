@@ -16,7 +16,7 @@ import { Card, CardContent } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
 import { formatCurrency } from '@/lib/utils/currency'
 import { resolveEventMenuCostLive } from '@/lib/pricing/live-menu-cost-actions'
-import type { LiveMenuCostResponse, LiveMenuCostDish } from '@/lib/pricing/live-menu-cost-actions'
+import type { LiveMenuCostResponse } from '@/lib/pricing/live-menu-cost-actions'
 
 interface Props {
   eventId: string

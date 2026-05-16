@@ -242,6 +242,14 @@ export async function recordDeposit(
     log.ledger.warn('Cadence trigger failed (non-blocking)', { error: err })
   }
 
+  // Lifecycle journey orchestration: deposit is a key lifecycle event (non-blocking)
+  try {
+    const { orchestrateJourney } = await import('@/lib/lifecycle/journey-orchestrator')
+    await orchestrateJourney(user.tenantId!, null, eventId)
+  } catch (err) {
+    log.ledger.warn('Journey orchestration on deposit failed (non-blocking)', { error: err })
+  }
+
   // Log activity (non-blocking)
   try {
     const { logChefActivity } = await import('@/lib/activity/log-chef')

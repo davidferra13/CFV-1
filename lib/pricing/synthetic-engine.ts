@@ -21,6 +21,50 @@ import type { Sql } from 'postgres'
 import { recordPredictionsBatch, type PredictionRecord } from './compound-learning'
 
 // ---------------------------------------------------------------------------
+// Learned method weights (from compound-learning-accelerator)
+// ---------------------------------------------------------------------------
+
+interface MethodWeight {
+  derivation_method: string
+  weight: number
+  sample_size: number
+  mean_error_pct: number
+}
+
+/**
+ * Get the best-performing derivation method for a category,
+ * as determined by the compound-learning-accelerator.
+ * Returns null if no learned weights exist or confidence is insufficient.
+ * CANARY: only returns a method when confidence > 0.7 weight AND sample_size > 10.
+ */
+async function getLearnedPreferredMethod(
+  sql: PgSql,
+  category: string
+): Promise<MethodWeight | null> {
+  try {
+    const rows = await sql`
+      SELECT derivation_method, weight, sample_size, mean_error_pct
+      FROM openclaw.method_weights
+      WHERE category = ${category}
+        AND weight > 0.7
+        AND sample_size > 10
+      ORDER BY weight DESC
+      LIMIT 1
+    `
+    if (rows.length === 0) return null
+    return {
+      derivation_method: rows[0].derivation_method as string,
+      weight: Number(rows[0].weight),
+      sample_size: Number(rows[0].sample_size),
+      mean_error_pct: Number(rows[0].mean_error_pct),
+    }
+  } catch {
+    // Table may not exist or be empty; gracefully skip
+    return null
+  }
+}
+
+// ---------------------------------------------------------------------------
 // Types
 // ---------------------------------------------------------------------------
 
@@ -222,6 +266,9 @@ export async function runSyntheticEngine(): Promise<SyntheticRunResult> {
 
   console.log(`[synthetic] ${gaps.length} price cells need synthetic generation...`)
 
+  // Pre-load learned method preferences per category (batch to avoid N+1)
+  const learnedMethodCache = new Map<string, MethodWeight | null>()
+
   for (const gap of gaps) {
     try {
       // Try derivation methods in priority order
@@ -229,10 +276,51 @@ export async function runSyntheticEngine(): Promise<SyntheticRunResult> {
         null
       let method = ''
 
-      // Method 1: Nearby region
-      result = await tryNearbyRegion(sql, gap.ingredient_id, gap.region_id)
-      if (result) {
-        method = 'nearby_state'
+      // LEARNED METHOD FIRST (compound-learning-accelerator feedback loop)
+      // If the accelerator has determined a preferred method for this category
+      // with high confidence, try it first before the fixed waterfall.
+      if (!learnedMethodCache.has(gap.census_category)) {
+        learnedMethodCache.set(
+          gap.census_category,
+          await getLearnedPreferredMethod(sql, gap.census_category)
+        )
+      }
+      const learnedPref = learnedMethodCache.get(gap.census_category)
+      if (learnedPref) {
+        const preferredMethod = learnedPref.derivation_method
+        if (preferredMethod === 'nearby_state') {
+          result = await tryNearbyRegion(sql, gap.ingredient_id, gap.region_id)
+          if (result) method = 'nearby_state'
+        } else if (preferredMethod === 'regional_avg') {
+          result = await tryRegionalCategoryAvg(sql, gap.census_category, gap.region_id)
+          if (result) method = 'regional_avg'
+        } else if (preferredMethod === 'usda_adjusted') {
+          result = await tryUsdaAdjusted(sql, gap.name, gap.cost_index)
+          if (result) method = 'usda_adjusted'
+        } else if (preferredMethod === 'category_baseline') {
+          result = await tryCategoryBaseline(sql, gap.census_category)
+          if (result) method = 'category_baseline'
+        }
+        // If the learned method produced a result, boost confidence slightly
+        // (the system has validated this method works well for this category)
+        if (result) {
+          result.confidence = Math.min(result.confidence * 1.1, 0.85)
+          result.inputs = {
+            ...result.inputs,
+            learned_method: true,
+            learned_weight: learnedPref.weight,
+            learned_sample_size: learnedPref.sample_size,
+          }
+        }
+        // If learned method returned null, fall through to fixed waterfall below
+      }
+
+      // Method 1: Nearby region (fixed waterfall fallback)
+      if (!result) {
+        result = await tryNearbyRegion(sql, gap.ingredient_id, gap.region_id)
+        if (result) {
+          method = 'nearby_state'
+        }
       }
 
       // Method 2: Regional category average

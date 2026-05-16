@@ -13,6 +13,7 @@ import {
   type FoodCostRatingResult,
 } from './food-cost-calculator'
 import { dateToMonthString } from '@/lib/utils/format'
+import { resolvePricesBatch } from '@/lib/pricing/resolve-price'
 
 // ── Types ──────────────────────────────────────────────────────────────
 
@@ -153,12 +154,36 @@ export async function getEventFoodCost(eventId: string): Promise<EventFoodCost> 
           )
           .in('recipe_id', recipeIds)
 
+        // Resolve live PIE prices for all ingredients in batch
+        const ingredientIds = [
+          ...new Set(
+            ((recipeIngredients ?? []) as any[])
+              .filter((ri: any) => ri.ingredient_id)
+              .map((ri: any) => ri.ingredient_id)
+          ),
+        ] as string[]
+
+        let piePrices = new Map<string, { cents: number; unit: string }>()
+        if (ingredientIds.length > 0) {
+          try {
+            const resolved = await resolvePricesBatch(ingredientIds, tenantId)
+            for (const [id, price] of resolved) {
+              piePrices.set(id, { cents: price.cents, unit: price.unit })
+            }
+          } catch {
+            // Non-blocking: PIE resolution failure falls through to stale DB values
+          }
+        }
+
         for (const ri of (recipeIngredients ?? []) as any[]) {
           const ing = ri.ingredients
           if (!ing) continue
 
-          const costPerUnit = ing.cost_per_unit_cents ?? ing.last_price_cents ?? 0
-          const hasCostData = !!(ing.cost_per_unit_cents || ing.last_price_cents)
+          // Prefer live PIE price, fall back to stale DB snapshot
+          const piePrice = ri.ingredient_id ? piePrices.get(ri.ingredient_id) : undefined
+          const costPerUnit =
+            piePrice?.cents ?? ing.cost_per_unit_cents ?? ing.last_price_cents ?? 0
+          const hasCostData = !!(piePrice?.cents || ing.cost_per_unit_cents || ing.last_price_cents)
 
           // Use unit conversion engine for accurate cross-unit cost calculation
           let totalCost: number
@@ -166,7 +191,7 @@ export async function getEventFoodCost(eventId: string): Promise<EventFoodCost> 
             const { computeIngredientCost, lookupDensity } =
               await import('@/lib/units/conversion-engine')
             const recipeUnit = ri.unit || ing.default_unit || 'ea'
-            const costUnit = ing.default_unit || 'ea'
+            const costUnit = piePrice?.unit || ing.default_unit || 'ea'
             const density = lookupDensity(ing.name)
             const convertedCost = computeIngredientCost(
               ri.quantity,
@@ -350,13 +375,35 @@ export async function getIngredientCostEstimate(
   _unit: string
 ): Promise<{ unitCostCents: number; totalCostCents: number; hasCostData: boolean }> {
   const user = await requireChef()
+  const tenantId = user.tenantId!
   const db: any = createServerClient()
+
+  // Try live PIE resolution first (13-tier chain including Pi bridge)
+  let pieCents: number | null = null
+  try {
+    const resolved = await resolvePricesBatch([ingredientId], tenantId)
+    const price = resolved.get(ingredientId)
+    if (price && price.cents > 0) {
+      pieCents = price.cents
+    }
+  } catch {
+    // Non-blocking: fall through to stale DB values
+  }
+
+  // Fall back to stale DB snapshot if PIE returned nothing
+  if (pieCents !== null) {
+    return {
+      unitCostCents: pieCents,
+      totalCostCents: Math.round(quantity * pieCents),
+      hasCostData: true,
+    }
+  }
 
   const { data: ingredient } = await db
     .from('ingredients')
     .select('cost_per_unit_cents, last_price_cents')
     .eq('id', ingredientId)
-    .eq('tenant_id', user.tenantId!)
+    .eq('tenant_id', tenantId)
     .single()
 
   const unitCostCents = ingredient?.cost_per_unit_cents ?? ingredient?.last_price_cents ?? 0

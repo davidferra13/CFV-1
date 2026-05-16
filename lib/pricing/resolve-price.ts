@@ -36,6 +36,11 @@ import {
   seasonalConfidenceMultiplier,
   shouldExcludeForSeason,
 } from './farmers-market-seasonal'
+import {
+  getRegionalBiasCorrection,
+  getConfidenceAdjustment,
+  applyLearningCorrections,
+} from './learning-corrections'
 
 // Re-export types and helpers from the shared module so external consumers
 // that import from resolve-price.ts continue to work unchanged.
@@ -203,7 +208,10 @@ async function resolvePriceUncached(
 
   for (const tier of tierResolvers) {
     const result = await tier.resolve(ctx)
-    if (result) return result
+    if (result) {
+      // Apply compound-learning corrections (regional bias + confidence calibration)
+      return applyLearningCorrections(result, preferredState)
+    }
   }
 
   // Should never reach here due to synthetic inline (PIE Law 9), but TypeScript needs this
@@ -903,6 +911,15 @@ export async function resolvePricesBatch(
         reason: synReason,
       })
     )
+  }
+
+  // Apply compound-learning corrections (regional bias + confidence calibration)
+  // to all batch results before caching. Skips chef overrides/receipts internally.
+  for (const [id, price] of result) {
+    const corrected = await applyLearningCorrections(price, preferredState)
+    if (corrected !== price) {
+      result.set(id, corrected)
+    }
   }
 
   // Pre-warm LRU cache with batch results (5min TTL) so subsequent single

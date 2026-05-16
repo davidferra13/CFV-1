@@ -633,6 +633,7 @@ function escapeXmlAttr(val: string): string {
 
 /**
  * Build TwiML for a specific step of a call script.
+ * Step 1 prepends upfront AI disclosure (TCPA/FCC compliance).
  */
 export function buildStepTwiml(
   script: CallScript,
@@ -648,6 +649,19 @@ export function buildStepTwiml(
 
   const interpolatedPrompt = interpolateParams(callStep.prompt, params)
   const promptSsml = speak(interpolatedPrompt)
+
+  // Upfront AI disclosure on first step (TCPA/FCC requires disclosure at call start)
+  let upfrontDisclosure = ''
+  if (step === 1) {
+    const disclosureParts: SpeakPart[] = [
+      'Hi, just so you know, this is an automated call on behalf of ',
+      { type: 'emphasis', text: '[businessName]' },
+      '. ',
+      { type: 'break', ms: 300 },
+    ]
+    const interpolatedDisclosure = interpolateParams(disclosureParts, params)
+    upfrontDisclosure = `\n  ${sayElement(speak(interpolatedDisclosure), voice)}`
+  }
 
   const { input, timeout, speechTimeout, hints, enhanced } = script.gatherConfig
   const escapedUrl = escapeXmlAttr(gatherActionUrl)
@@ -667,7 +681,7 @@ export function buildStepTwiml(
 
   return `<?xml version="1.0" encoding="UTF-8"?>
 <Response>
-  <Pause length="1"/>
+  <Pause length="1"/>${upfrontDisclosure}
   ${sayElement(promptSsml, voice)}
   <Gather input="${input}" timeout="${timeout}" speechTimeout="${speechTimeoutAttr}" action="${escapedUrl}" method="POST"${hintsAttr}${enhancedAttr}>${gatherContent}
   </Gather>

@@ -8,6 +8,7 @@ import { recordCallCost, estimateSessionCost } from './cost-tracker'
 import { initiateSupplierCall, initiateAdHocCall } from './twilio-actions'
 import { normalizePhone } from './phone-utils'
 import { broadcast } from '@/lib/realtime/broadcast'
+import { runPostCallActions, type IngredientCallResult } from './post-call-actions'
 
 const TWILIO_ACCOUNT_SID = process.env.TWILIO_ACCOUNT_SID
 const TWILIO_AUTH_TOKEN = process.env.TWILIO_AUTH_TOKEN
@@ -44,6 +45,44 @@ interface ActionResult {
   success: boolean
   error?: string
   data?: any
+}
+
+// ---------------------------------------------------------------------------
+// Post-call automation trigger
+// ---------------------------------------------------------------------------
+
+async function triggerPostCallActions(sessionId: string): Promise<void> {
+  try {
+    const db: any = createServerClient()
+
+    const { data: session } = await db
+      .from('sourcing_sessions')
+      .select('id, ingredient_query')
+      .eq('id', sessionId)
+      .single()
+
+    if (!session) return
+
+    const { data: candidates } = await db
+      .from('sourcing_session_candidates')
+      .select('vendor_name, result, price_cents, unit')
+      .eq('session_id', sessionId)
+      .in('status', ['completed'])
+
+    if (!candidates?.length) return
+
+    const ingredientResults: IngredientCallResult[] = candidates.map((c: any) => ({
+      ingredient: session.ingredient_query,
+      available: c.result === 'confirmed',
+      vendorName: c.vendor_name,
+      price: c.price_cents ? c.price_cents / 100 : undefined,
+      unit: c.unit || undefined,
+    }))
+
+    await runPostCallActions({ ingredientResults })
+  } catch (err) {
+    console.error('[sourcing-session] triggerPostCallActions failed (non-blocking):', err)
+  }
 }
 
 // ---------------------------------------------------------------------------
@@ -427,6 +466,9 @@ export async function updateCandidateResult(
         .from('sourcing_sessions')
         .update({ status: 'completed', completed_at: new Date().toISOString() })
         .eq('id', session.id)
+
+      // Fire post-call automation (non-blocking)
+      triggerPostCallActions(session.id)
     }
 
     // Build summary
@@ -588,6 +630,9 @@ export async function completeSourcingSession(sessionId: string): Promise<Action
       console.error('[sourcing-session] completeSourcingSession failed:', error)
       return { success: false, error: 'Failed to complete session' }
     }
+
+    // Fire post-call automation (non-blocking)
+    triggerPostCallActions(sessionId)
 
     return {
       success: true,

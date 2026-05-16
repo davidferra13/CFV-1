@@ -5,7 +5,7 @@
 'use server'
 
 import { createServerClient } from '@/lib/db/server'
-import { createCadenceSchedule } from '@/lib/communication/cadence-scheduler'
+import { initializeConfidenceCadence } from './confidence-cadence'
 import type { TriggerResult } from './trigger-engine'
 
 /**
@@ -44,6 +44,6 @@ export async function executeCadenceTrigger(
     return { scheduled: false }
   }
 
-  const result = await createCadenceSchedule(chefId, eventId, eventDate)
+  const result = await initializeConfidenceCadence(chefId, eventId, eventDate)
   return { scheduled: true, created: result.created, skipped: result.skipped }
 }

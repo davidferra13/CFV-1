@@ -74,7 +74,10 @@ import { HeroMetrics } from './_sections/hero-metrics'
 import { getWeeklyPriceBriefing } from '@/lib/openclaw/weekly-briefing-actions'
 import { WeeklyBriefingCard } from '@/components/pricing/weekly-briefing-card'
 import { PriceTrendAlerts } from '@/components/pricing/price-trend-alerts'
+import { MarginFeedbackCard } from '@/components/dashboard/margin-feedback-card'
 import { getTrendAlerts } from '@/lib/pricing/trend-alerts-actions'
+import { getPieAttentionItems } from '@/lib/pricing/pie-attention-actions'
+import { PieAttentionList } from '@/components/dashboard/pie-attention-card'
 import { isAdmin } from '@/lib/auth/admin'
 import { CoverageHealthWidget } from '@/components/pricing/coverage-health-widget'
 import { DinnerCirclesSection } from './_sections/dinner-circles-cards'
@@ -1540,6 +1543,12 @@ async function PriceTrendAlertsSection() {
   return <PriceTrendAlerts alerts={alerts} />
 }
 
+async function PieAttentionSection() {
+  const items = await safe('pieAttention', getPieAttentionItems, [])
+  if (items.length === 0) return null
+  return <PieAttentionList items={items} />
+}
+
 /** Compact pricing glance for the Focus section (always visible, not collapsed). */
 async function PriceGlanceSection() {
   const alerts = await safe('trendAlerts', getTrendAlerts, [])
@@ -2287,6 +2296,18 @@ export default async function ChefDashboard() {
             <WidgetErrorBoundary name="PriceTrendAlerts" compact>
               <Suspense fallback={null}>
                 <PriceTrendAlertsSection />
+              </Suspense>
+            </WidgetErrorBoundary>
+
+            <WidgetErrorBoundary name="MarginFeedback" compact>
+              <Suspense fallback={null}>
+                <MarginFeedbackCard />
+              </Suspense>
+            </WidgetErrorBoundary>
+
+            <WidgetErrorBoundary name="PieAttention" compact>
+              <Suspense fallback={null}>
+                <PieAttentionSection />
               </Suspense>
             </WidgetErrorBoundary>
 
