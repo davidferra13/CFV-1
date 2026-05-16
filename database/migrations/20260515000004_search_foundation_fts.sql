@@ -3,7 +3,9 @@
 -- and additional filter indexes for fast querying.
 -- Idempotent: safe to run multiple times.
 
-BEGIN;
+SET search_path TO public, extensions;
+
+-- Each table in its own transaction to avoid lock contention
 
 -- ============================================
 -- 1. CLIENTS
@@ -26,8 +28,7 @@ BEGIN
     setweight(to_tsvector('english', COALESCE(NEW.full_name, '')), 'A') ||
     setweight(to_tsvector('english', COALESCE(NEW.email, '')), 'B') ||
     setweight(to_tsvector('english', COALESCE(NEW.phone, '')), 'C') ||
-    setweight(to_tsvector('english', COALESCE(NEW.company_name, '')), 'B') ||
-    setweight(to_tsvector('english', COALESCE(NEW.notes, '')), 'D');
+    setweight(to_tsvector('english', COALESCE(NEW.company_name, '')), 'B');
   RETURN NEW;
 END;
 $$ LANGUAGE plpgsql;
@@ -41,8 +42,7 @@ UPDATE clients SET search_vector =
   setweight(to_tsvector('english', COALESCE(full_name, '')), 'A') ||
   setweight(to_tsvector('english', COALESCE(email, '')), 'B') ||
   setweight(to_tsvector('english', COALESCE(phone, '')), 'C') ||
-  setweight(to_tsvector('english', COALESCE(company_name, '')), 'B') ||
-  setweight(to_tsvector('english', COALESCE(notes, '')), 'D');
+  setweight(to_tsvector('english', COALESCE(company_name, '')), 'B');
 
 
 -- ============================================
@@ -143,7 +143,7 @@ BEGIN
     setweight(to_tsvector('english', COALESCE(NEW.name, '')), 'A') ||
     setweight(to_tsvector('english', COALESCE(NEW.description, '')), 'B') ||
     setweight(to_tsvector('english', COALESCE(NEW.notes, '')), 'C') ||
-    setweight(to_tsvector('english', COALESCE(NEW.category, '')), 'B');
+    setweight(to_tsvector('english', COALESCE(NEW.category::text, '')), 'B');
   RETURN NEW;
 END;
 $$ LANGUAGE plpgsql;
@@ -157,7 +157,7 @@ UPDATE recipes SET search_vector =
   setweight(to_tsvector('english', COALESCE(name, '')), 'A') ||
   setweight(to_tsvector('english', COALESCE(description, '')), 'B') ||
   setweight(to_tsvector('english', COALESCE(notes, '')), 'C') ||
-  setweight(to_tsvector('english', COALESCE(category, '')), 'B');
+  setweight(to_tsvector('english', COALESCE(category::text, '')), 'B');
 
 
 -- ============================================
@@ -173,7 +173,8 @@ CREATE OR REPLACE FUNCTION inquiries_search_vector_update() RETURNS trigger AS $
 BEGIN
   NEW.search_vector :=
     setweight(to_tsvector('english', COALESCE(NEW.source_message, '')), 'A') ||
-    setweight(to_tsvector('english', COALESCE(NEW.confirmed_occasion, '')), 'B');
+    setweight(to_tsvector('english', COALESCE(NEW.confirmed_occasion, '')), 'B') ||
+    setweight(to_tsvector('english', COALESCE(NEW.confirmed_location, '')), 'C');
   RETURN NEW;
 END;
 $$ LANGUAGE plpgsql;
@@ -185,7 +186,8 @@ CREATE TRIGGER trg_inquiries_search_vector
 
 UPDATE inquiries SET search_vector =
   setweight(to_tsvector('english', COALESCE(source_message, '')), 'A') ||
-  setweight(to_tsvector('english', COALESCE(confirmed_occasion, '')), 'B');
+  setweight(to_tsvector('english', COALESCE(confirmed_occasion, '')), 'B') ||
+  setweight(to_tsvector('english', COALESCE(confirmed_location, '')), 'C');
 
 
 -- ============================================
@@ -483,7 +485,7 @@ CREATE OR REPLACE FUNCTION ingredients_search_vector_update() RETURNS trigger AS
 BEGIN
   NEW.search_vector :=
     setweight(to_tsvector('english', COALESCE(NEW.name, '')), 'A') ||
-    setweight(to_tsvector('english', COALESCE(NEW.category, '')), 'B') ||
+    setweight(to_tsvector('english', COALESCE(NEW.category::text, '')), 'B') ||
     setweight(to_tsvector('english', COALESCE(NEW.description, '')), 'C');
   RETURN NEW;
 END;
@@ -496,12 +498,96 @@ CREATE TRIGGER trg_ingredients_search_vector
 
 UPDATE ingredients SET search_vector =
   setweight(to_tsvector('english', COALESCE(name, '')), 'A') ||
-  setweight(to_tsvector('english', COALESCE(category, '')), 'B') ||
+  setweight(to_tsvector('english', COALESCE(category::text, '')), 'B') ||
   setweight(to_tsvector('english', COALESCE(description, '')), 'C');
 
 
 -- ============================================
--- 16. ADDITIONAL FILTER INDEXES (dishes table)
+-- 16. VENDORS
+-- ============================================
+
+ALTER TABLE vendors ADD COLUMN IF NOT EXISTS search_vector tsvector;
+
+CREATE INDEX IF NOT EXISTS idx_vendors_search_vector
+  ON vendors USING gin(search_vector);
+
+CREATE INDEX IF NOT EXISTS idx_vendors_name_trgm
+  ON vendors USING gin(name gin_trgm_ops);
+
+CREATE OR REPLACE FUNCTION vendors_search_vector_update() RETURNS trigger AS $$
+BEGIN
+  NEW.search_vector :=
+    setweight(to_tsvector('english', COALESCE(NEW.name, '')), 'A') ||
+    setweight(to_tsvector('english', COALESCE(NEW.vendor_type, '')), 'B') ||
+    setweight(to_tsvector('english', COALESCE(NEW.category, '')), 'B') ||
+    setweight(to_tsvector('english', COALESCE(NEW.contact_name, '')), 'C') ||
+    setweight(to_tsvector('english', COALESCE(NEW.email, '')), 'C') ||
+    setweight(to_tsvector('english', COALESCE(NEW.address, '')), 'C') ||
+    setweight(to_tsvector('english', COALESCE(NEW.notes, '')), 'D');
+  RETURN NEW;
+END;
+$$ LANGUAGE plpgsql;
+
+DROP TRIGGER IF EXISTS trg_vendors_search_vector ON vendors;
+CREATE TRIGGER trg_vendors_search_vector
+  BEFORE INSERT OR UPDATE ON vendors
+  FOR EACH ROW EXECUTE FUNCTION vendors_search_vector_update();
+
+UPDATE vendors SET search_vector =
+  setweight(to_tsvector('english', COALESCE(name, '')), 'A') ||
+  setweight(to_tsvector('english', COALESCE(vendor_type, '')), 'B') ||
+  setweight(to_tsvector('english', COALESCE(category, '')), 'B') ||
+  setweight(to_tsvector('english', COALESCE(contact_name, '')), 'C') ||
+  setweight(to_tsvector('english', COALESCE(email, '')), 'C') ||
+  setweight(to_tsvector('english', COALESCE(address, '')), 'C') ||
+  setweight(to_tsvector('english', COALESCE(notes, '')), 'D');
+
+
+-- ============================================
+-- 17. CHEF DIRECTORY LISTINGS
+-- ============================================
+
+ALTER TABLE chef_directory_listings ADD COLUMN IF NOT EXISTS search_vector tsvector;
+
+CREATE INDEX IF NOT EXISTS idx_chef_directory_listings_search_vector
+  ON chef_directory_listings USING gin(search_vector);
+
+CREATE INDEX IF NOT EXISTS idx_chef_directory_listings_business_name_trgm
+  ON chef_directory_listings USING gin(business_name gin_trgm_ops);
+
+CREATE OR REPLACE FUNCTION chef_directory_listings_search_vector_update() RETURNS trigger AS $$
+BEGIN
+  NEW.search_vector :=
+    setweight(to_tsvector('english', COALESCE(NEW.business_name, '')), 'A') ||
+    setweight(to_tsvector('english', COALESCE(NEW.tagline, '')), 'B') ||
+    setweight(to_tsvector('english', COALESCE(array_to_string(NEW.cuisines, ' '), '')), 'B') ||
+    setweight(to_tsvector('english', COALESCE(array_to_string(NEW.service_types, ' '), '')), 'B') ||
+    setweight(to_tsvector('english', COALESCE(array_to_string(NEW.dietary_specialties, ' '), '')), 'C') ||
+    setweight(to_tsvector('english', COALESCE(NEW.city, '')), 'C') ||
+    setweight(to_tsvector('english', COALESCE(NEW.state, '')), 'C') ||
+    setweight(to_tsvector('english', COALESCE(NEW.zip_code, '')), 'C');
+  RETURN NEW;
+END;
+$$ LANGUAGE plpgsql;
+
+DROP TRIGGER IF EXISTS trg_chef_directory_listings_search_vector ON chef_directory_listings;
+CREATE TRIGGER trg_chef_directory_listings_search_vector
+  BEFORE INSERT OR UPDATE ON chef_directory_listings
+  FOR EACH ROW EXECUTE FUNCTION chef_directory_listings_search_vector_update();
+
+UPDATE chef_directory_listings SET search_vector =
+  setweight(to_tsvector('english', COALESCE(business_name, '')), 'A') ||
+  setweight(to_tsvector('english', COALESCE(tagline, '')), 'B') ||
+  setweight(to_tsvector('english', COALESCE(array_to_string(cuisines, ' '), '')), 'B') ||
+  setweight(to_tsvector('english', COALESCE(array_to_string(service_types, ' '), '')), 'B') ||
+  setweight(to_tsvector('english', COALESCE(array_to_string(dietary_specialties, ' '), '')), 'C') ||
+  setweight(to_tsvector('english', COALESCE(city, '')), 'C') ||
+  setweight(to_tsvector('english', COALESCE(state, '')), 'C') ||
+  setweight(to_tsvector('english', COALESCE(zip_code, '')), 'C');
+
+
+-- ============================================
+-- 18. ADDITIONAL FILTER INDEXES (dishes table)
 -- ============================================
 
 CREATE INDEX IF NOT EXISTS idx_dishes_dietary_tags
@@ -511,4 +597,4 @@ CREATE INDEX IF NOT EXISTS idx_dishes_allergen_flags
   ON dishes USING gin(allergen_flags);
 
 
-COMMIT;
+-- Done. Each statement auto-commits individually.

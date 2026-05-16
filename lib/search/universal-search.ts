@@ -29,6 +29,8 @@ export interface SearchResult {
     | 'collab_space'
     | 'hub_message'
     | 'contract'
+    | 'dish'
+    | 'ingredient'
   title: string
   snippet?: string
   url: string
@@ -87,8 +89,12 @@ async function ftsSearch(
       [tsq, tenantId, limit]
     )
     return rows as any[]
-  } catch {
+  } catch (err: unknown) {
+    const msg = err instanceof Error ? err.message : String(err)
     // If search_vector column doesn't exist yet (migration pending), return empty
+    if (msg.includes('column') && msg.includes('does not exist')) return []
+    if (msg.includes('search_vector')) return []
+    console.error(`[ftsSearch] ${table}:`, msg)
     return []
   }
 }
@@ -102,6 +108,7 @@ export async function universalSearch(query: string): Promise<SearchResponse> {
   if (!sanitized) return { results: [], grouped: {} }
 
   const tsq = toTsQuery(sanitized)
+  if (!tsq) return { results: [], grouped: {} }
   const needle = query.trim().toLowerCase()
   const results: SearchResult[] = []
   const makeId = (type: SearchResult['type'], id: string) => `${type}:${id}`
@@ -190,6 +197,7 @@ export async function universalSearch(query: string): Promise<SearchResponse> {
     conversationRows,
     contractRows,
     ingredientRows,
+    dishIndexRows,
     // ILIKE fallback queries for tables without FTS
     connectionsOutRes,
     connectionsInRes,
@@ -288,7 +296,22 @@ export async function universalSearch(query: string): Promise<SearchResponse> {
       }
     })(),
     // Ingredients (for recipe-by-ingredient search)
-    ftsSearch('ingredients', 'id, name', 'tenant_id', tenantId, tsq, 20),
+    ftsSearch(
+      'ingredients',
+      'id, name, category, default_unit, description',
+      'tenant_id',
+      tenantId,
+      tsq,
+      20
+    ),
+    ftsSearch(
+      'dish_index',
+      'id, name, description, course, rotation_status, linked_recipe_id',
+      'tenant_id',
+      tenantId,
+      tsq,
+      8
+    ),
     // ILIKE fallback for tables without search_vector
     db
       .from('chef_connections')
@@ -537,6 +560,37 @@ export async function universalSearch(query: string): Promise<SearchResponse> {
     }
   }
 
+  // Process ingredients as first-class culinary search results
+  const ingredients = getFts<any[]>(ingredientRows)
+  if (ingredients) {
+    for (const ingredient of ingredients.slice(0, 8)) {
+      const meta = [ingredient.category, ingredient.default_unit].filter(Boolean).join(' - ')
+      results.push({
+        id: makeId('ingredient', ingredient.id),
+        type: 'ingredient',
+        title: ingredient.name,
+        snippet: ingredient.description || meta || undefined,
+        url: '/culinary/ingredients',
+        metadata: { badge: ingredient.category },
+      })
+    }
+  }
+
+  // Process dish index entries
+  const dishes = getFts<any[]>(dishIndexRows)
+  if (dishes) {
+    for (const dish of dishes) {
+      results.push({
+        id: makeId('dish', dish.id),
+        type: 'dish',
+        title: dish.name,
+        snippet: dish.description || dish.course || undefined,
+        url: `/culinary/dish-index/${dish.id}`,
+        metadata: { badge: dish.rotation_status || dish.course },
+      })
+    }
+  }
+
   // Process connections (both directions, ILIKE fallback)
   const connectionsOut = getData<any[]>(connectionsOutRes)
   for (const conn of connectionsOut || []) {
@@ -703,6 +757,8 @@ export async function universalSearch(query: string): Promise<SearchResponse> {
     collab_space: 'Chef Network',
     hub_message: 'Circle Messages',
     contract: 'Contracts',
+    dish: 'Dishes',
+    ingredient: 'Ingredients',
   }
 
   // Score all results by relevance, sort within groups

@@ -91,6 +91,17 @@ export async function resolvePayments(ctx: GodModeResolverContext): Promise<GodM
       context: `${formatCents(row.outstandingBalanceCents)} outstanding of ${formatCents(row.quotedPriceCents)}`,
       destination: `/chef/events/${row.eventId}/financials`,
       icon: 'dollar',
+      loopState: 'waiting',
+      sourceKind: 'payment',
+      evidenceLabel: 'computed',
+      confidence: 1,
+      proofHref: `/chef/events/${row.eventId}/financials`,
+      nextAction: tier === 'p0' ? 'Send payment reminder' : 'Track outstanding balance',
+      waitingOn: {
+        kind: 'payment',
+        label: 'Payment',
+        followUpAt: row.eventDate ? `${row.eventDate}T00:00:00.000Z` : null,
+      },
       inlineActions:
         tier === 'p0'
           ? [

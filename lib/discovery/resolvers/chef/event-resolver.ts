@@ -79,6 +79,12 @@ export async function resolveEvents(ctx: GodModeResolverContext): Promise<GodMod
       context: `${event.guest_count ?? '?'} guests, ${event.status}`,
       destination: `/chef/events/${event.id}`,
       icon: 'calendar',
+      loopState: 'active',
+      sourceKind: 'event',
+      evidenceLabel: 'confirmed',
+      confidence: 1,
+      proofHref: `/chef/events/${event.id}`,
+      nextAction: tier === 'p0' ? 'Open event checklist' : 'Review event plan',
       inlineActions:
         tier === 'p0' && event.serve_time
           ? [

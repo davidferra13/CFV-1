@@ -3,6 +3,7 @@
 // and inline action support.
 
 import type { UniversalRailRole } from './universal-rail-types'
+import type { EvidenceLabel, LoopState, SourceKind, WaitingOn } from '@/lib/operating-loop/types'
 
 // ---------------------------------------------------------------------------
 // Tier system
@@ -64,6 +65,19 @@ export interface GodModeResolvedItem {
   expiresAt?: Date
   escalatesAt?: Date
   score?: number
+  loopState?: LoopState
+  sourceKind?: SourceKind
+  evidenceLabel?: EvidenceLabel
+  confidence?: number | null
+  proofHref?: string | null
+  nextAction?: string | null
+  waitingOn?: WaitingOn | null
+  resumeContext?: {
+    lastAction: string | null
+    timestamp: string | null
+    sourceRoute: string | null
+    nextStep: string | null
+  } | null
 }
 
 // ---------------------------------------------------------------------------

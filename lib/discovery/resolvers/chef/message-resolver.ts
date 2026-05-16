@@ -65,6 +65,12 @@ export async function resolveMessages(ctx: GodModeResolverContext): Promise<GodM
       context: convo.last_message_preview ?? 'New message',
       destination: `/chef/messages/${convo.id}`,
       icon: 'chat',
+      loopState: 'active',
+      sourceKind: 'message',
+      evidenceLabel: 'confirmed',
+      confidence: 1,
+      proofHref: `/chef/messages/${convo.id}`,
+      nextAction: 'Read and reply',
       data: {
         conversationId: convo.id,
         eventId: convo.event_id,

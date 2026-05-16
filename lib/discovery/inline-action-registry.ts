@@ -1,7 +1,5 @@
 'use server'
 
-import { revalidatePath } from 'next/cache'
-
 export type InlineActionResult = {
   success: boolean
   message?: string
@@ -36,6 +34,27 @@ export async function executeInlineAction(
       const quoteId = params.quoteId as string | undefined
       if (!quoteId) return { success: false, message: 'No quoteId' }
       return { success: true, redirect: `/chef/quotes/${quoteId}` }
+    }
+
+    case 'respond_collab_handoff': {
+      const handoffId = params.handoffId as string | undefined
+      const response = params.action ?? params.response
+      const handoffAction = response === 'rejected' ? 'rejected' : 'accepted'
+      const responseNote = params.responseNote as string | undefined
+
+      if (!handoffId) return { success: false, message: 'No handoffId' }
+
+      const { respondToCollabHandoff } = await import('@/lib/network/collab-actions')
+      await respondToCollabHandoff({
+        handoffId,
+        action: handoffAction,
+        responseNote,
+      })
+
+      return {
+        success: true,
+        redirect: `/network?tab=collab&handoff=${encodeURIComponent(handoffId)}`,
+      }
     }
 
     default:

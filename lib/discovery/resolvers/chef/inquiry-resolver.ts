@@ -108,6 +108,16 @@ export async function resolveInquiries(
       context: buildInquiryContext(row),
       destination: `/chef/inquiries/${row.id}`,
       icon: 'lightning',
+      loopState: row.status === 'awaiting_client' ? 'waiting' : 'active',
+      sourceKind: 'inquiry',
+      evidenceLabel: 'confirmed',
+      confidence: 1,
+      proofHref: `/chef/inquiries/${row.id}`,
+      nextAction: row.status === 'awaiting_client' ? 'Track client reply' : 'Respond to inquiry',
+      waitingOn:
+        row.status === 'awaiting_client'
+          ? { kind: 'reply', label: 'Client reply', followUpAt: null }
+          : null,
       inlineActions:
         tier === 'p0' || tier === 'p1'
           ? [

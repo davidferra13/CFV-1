@@ -63,6 +63,27 @@ function hotResolvers(): ResolverEntry[] {
 function warmResolvers(): ResolverEntry[] {
   return [
     {
+      name: 'handoffs',
+      resolve: async (ctx) => {
+        const { resolveHandoffs } = await import('./resolvers/chef/handoff-resolver')
+        return resolveHandoffs(ctx)
+      },
+    },
+    {
+      name: 'waiting',
+      resolve: async (ctx) => {
+        const { resolveWaitingItems } = await import('./resolvers/chef/waiting-resolver')
+        return resolveWaitingItems(ctx)
+      },
+    },
+    {
+      name: 'resume',
+      resolve: async (ctx) => {
+        const { resolveResumeTrails } = await import('./resolvers/chef/resume-resolver')
+        return resolveResumeTrails(ctx)
+      },
+    },
+    {
       name: 'events',
       resolve: async (ctx) => {
         const { resolveEvents } = await import('./resolvers/chef/event-resolver')

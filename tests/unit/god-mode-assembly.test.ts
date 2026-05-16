@@ -5,6 +5,8 @@ import {
   assembleGodModeRail,
   extractStrip,
   applyEscalation,
+  dedupeOperatingLoopItems,
+  getOperatingLoopScore,
 } from '@/lib/discovery/god-mode-assembly'
 
 const now = new Date('2026-05-14T12:00:00.000Z')
@@ -124,4 +126,114 @@ test('extractStrip sets hasP0 when P0 items exist', () => {
   const strip = extractStrip(items, now)
   assert.equal(strip.hasP0, true)
   assert.equal(strip.totalUrgent, 3) // 1 P0 + 2 P1
+})
+
+test('operating-loop score lifts due waiting items with proof and next action', () => {
+  const base: GodModeResolvedItem = {
+    definitionId: 'chef.task_waiting',
+    tier: 'p1',
+    label: 'Vendor COI',
+    context: 'Waiting on vendor',
+    destination: '/vendors/acme',
+    loopState: 'waiting',
+    sourceKind: 'vendor',
+    evidenceLabel: 'computed',
+    confidence: 0.8,
+    proofHref: '/vendors/acme',
+    nextAction: 'Follow up with vendor',
+    waitingOn: {
+      kind: 'vendor',
+      label: 'COI from Acme',
+      followUpAt: '2026-05-14T10:00:00.000Z',
+    },
+  }
+
+  const lower: GodModeResolvedItem = {
+    ...base,
+    definitionId: 'chef.task_note',
+    loopState: 'active',
+    evidenceLabel: 'unknown',
+    confidence: null,
+    proofHref: null,
+    nextAction: null,
+    waitingOn: null,
+  }
+
+  assert.ok(getOperatingLoopScore(base, now) > getOperatingLoopScore(lower, now))
+})
+
+test('assembleGodModeRail dedupes overlapping resolver memories and keeps stronger item', () => {
+  const result = assembleGodModeRail(
+    [
+      {
+        definitionId: 'chef.waiting_inquiry',
+        tier: 'p1',
+        label: 'Mina reply waiting',
+        context: 'Waiting on client',
+        destination: '/inquiries/inq-1',
+        sourceKind: 'inquiry',
+        loopState: 'waiting',
+        evidenceLabel: 'computed',
+        score: 40,
+        nextAction: 'Follow up',
+        waitingOn: {
+          kind: 'reply',
+          label: 'Client reply',
+          followUpAt: '2026-05-14T09:00:00.000Z',
+        },
+        data: { sourceId: 'inq-1' },
+      },
+      {
+        definitionId: 'chef.inquiry_awaiting_client',
+        tier: 'p2',
+        label: 'Mina inquiry',
+        context: 'Private dinner',
+        destination: '/inquiries/inq-1',
+        sourceKind: 'inquiry',
+        loopState: 'active',
+        evidenceLabel: 'confirmed',
+        score: 50,
+        proofHref: '/inquiries/inq-1',
+        data: { sourceId: 'inq-1' },
+      },
+    ],
+    new Set(),
+    now
+  )
+
+  assert.equal(result.totalItems, 1)
+  assert.equal(result.tiers.p1.length, 1)
+  assert.equal(result.tiers.p1[0].definitionId, 'chef.waiting_inquiry')
+  assert.equal(result.tiers.p1[0].proofHref, '/inquiries/inq-1')
+  assert.deepEqual(result.tiers.p1[0].data?.duplicateDefinitionIds, [
+    'chef.inquiry_awaiting_client',
+  ])
+})
+
+test('dedupeOperatingLoopItems preserves distinct source entities on the same route shell', () => {
+  const result = dedupeOperatingLoopItems(
+    [
+      {
+        definitionId: 'chef.message_a',
+        tier: 'p1',
+        label: 'A',
+        context: 'A',
+        destination: '/messages',
+        sourceKind: 'message',
+        data: { sourceId: 'thread-a' },
+      },
+      {
+        definitionId: 'chef.message_b',
+        tier: 'p1',
+        label: 'B',
+        context: 'B',
+        destination: '/messages',
+        sourceKind: 'message',
+        data: { sourceId: 'thread-b' },
+      },
+    ],
+    now
+  )
+
+  assert.equal(result.length, 2)
 })

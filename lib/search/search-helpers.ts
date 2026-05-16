@@ -1,4 +1,5 @@
 import type { PaginationParams, PaginationMeta, PaginatedResponse } from './search-types'
+import { pgClient } from '@/lib/db'
 
 /**
  * Normalize pagination params with sensible defaults.
@@ -49,14 +50,14 @@ export function paginatedResponse<T>(
  * Handles multiple words by joining with & (AND).
  * Strips special characters that could break tsquery parsing.
  */
-export function toTsQuery(query: string): string {
-  return query
+export function toTsQuery(query: string): string | null {
+  const tokens = query
     .trim()
     .replace(/[^\w\s]/g, ' ')
     .split(/\s+/)
     .filter((w) => w.length > 0)
-    .map((w) => w + ':*')
-    .join(' & ')
+  if (tokens.length === 0) return null
+  return tokens.map((w) => w + ':*').join(' & ')
 }
 
 /**
@@ -78,4 +79,48 @@ export function sanitizeSearchQuery(query: string): string {
     .trim()
     .replace(/[%_\\'";\-\-]/g, '')
     .slice(0, 200)
+}
+
+/**
+ * Try FTS search on a table's search_vector column, returning matching IDs
+ * ranked by relevance. Returns null if FTS is unavailable (migration not applied),
+ * signaling the caller to fall back to ILIKE.
+ *
+ * Used by domain actions (getRecipes, getIngredients, getMenusPaginated) to
+ * upgrade search without breaking if the migration hasn't run yet.
+ */
+const FTS_MATCH_TABLES = {
+  ingredients: 'tenant_id',
+  menus: 'tenant_id',
+  recipes: 'tenant_id',
+} as const
+
+export async function ftsMatchIds(
+  table: keyof typeof FTS_MATCH_TABLES,
+  tenantId: string,
+  searchQuery: string,
+  limit: number = 200
+): Promise<string[] | null> {
+  const sanitized = sanitizeSearchQuery(searchQuery)
+  if (!sanitized) return null
+  const tsq = toTsQuery(sanitized)
+  if (!tsq) return null
+  try {
+    const tenantCol = FTS_MATCH_TABLES[table]
+    const rows = await pgClient.unsafe(
+      `SELECT id FROM ${table}
+       WHERE ${tenantCol} = $1
+         AND search_vector @@ to_tsquery('english', $2)
+       ORDER BY ts_rank_cd(search_vector, to_tsquery('english', $2)) DESC
+       LIMIT $3`,
+      [tenantId, tsq, limit]
+    )
+    return (rows as any[]).map((r) => r.id)
+  } catch (err: unknown) {
+    const msg = err instanceof Error ? err.message : String(err)
+    if (msg.includes('column') && msg.includes('does not exist')) return null
+    if (msg.includes('search_vector')) return null
+    console.error(`[ftsMatchIds] ${table}:`, msg)
+    return null
+  }
 }

@@ -97,6 +97,25 @@ export async function resolveQuotes(ctx: GodModeResolverContext): Promise<GodMod
         : 'Quote pending',
       destination: `/chef/quotes/${quote.id}`,
       icon: 'document',
+      loopState: quote.status === 'sent' ? 'waiting' : 'active',
+      sourceKind: 'quote',
+      evidenceLabel: quote.total_quoted_cents ? 'computed' : 'confirmed',
+      confidence: quote.total_quoted_cents ? 1 : 0.8,
+      proofHref: `/chef/quotes/${quote.id}`,
+      nextAction:
+        quote.status === 'draft'
+          ? 'Finish quote draft'
+          : tier === 'p0'
+            ? 'Nudge client before quote expires'
+            : 'Track client quote response',
+      waitingOn:
+        quote.status === 'sent'
+          ? {
+              kind: 'reply',
+              label: 'Client quote response',
+              followUpAt: quote.valid_until ? `${quote.valid_until}T00:00:00.000Z` : null,
+            }
+          : null,
       inlineActions:
         quote.status === 'draft'
           ? [
