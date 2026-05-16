@@ -587,21 +587,27 @@ export async function ingestCommunicationEvent(input: CommunicationEventInput) {
     }).catch((err) => console.error('[pipeline] auto-stage failed (non-fatal):', err))
   }
 
-  // Send push notification for inbound messages (non-blocking)
+  // Notify chef of inbound messages via the unified notification system
+  // (routes to push, email, SMS based on preferences + quiet hours)
   if (input.direction === 'inbound') {
-    import('./push-notify')
-      .then(({ sendInboxPushNotification }) =>
-        sendInboxPushNotification(input.tenantId, {
+    import('@/lib/notifications/actions')
+      .then(async ({ createNotification, getChefAuthUserId }) => {
+        const recipientId = await getChefAuthUserId(input.tenantId)
+        if (!recipientId) return
+        await createNotification({
+          tenantId: input.tenantId,
+          recipientId,
+          category: 'chat',
+          action: 'new_message',
           title: `New message from ${input.senderIdentity.split('<')[0].trim() || 'Unknown'}`,
           body:
             input.rawContent.length > 100
               ? input.rawContent.substring(0, 97) + '...'
               : input.rawContent,
-          url: `/inbox/triage/${threadId}`,
-          tag: `inbox-${threadId}`,
+          actionUrl: `/inbox/triage/${threadId}`,
         })
-      )
-      .catch((err) => console.error('[push-notify] Failed:', err))
+      })
+      .catch((err) => console.error('[pipeline] inbound notification failed (non-fatal):', err))
   }
 
   return {
