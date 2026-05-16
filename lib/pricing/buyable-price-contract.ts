@@ -7,6 +7,8 @@ export type BuyablePriceTrustLevel =
   | 'no_trusted_price'
 
 export type BuyablePriceSourceHealth = 'fresh' | 'stale' | 'degraded' | 'unknown'
+export type BuyablePriceFreshnessLabel = 'fresh' | 'recent' | 'stale' | 'unknown'
+export type BuyablePriceState = 'real_local' | 'real_nonlocal' | 'synthetic_or_modeled' | 'missing'
 
 export interface BuyablePriceProof {
   storeName: string | null
@@ -26,8 +28,24 @@ export interface BuyablePriceContract {
   displayLabel: string
   confidenceLabel: 'high' | 'medium' | 'low' | 'none'
   sourceHealth: BuyablePriceSourceHealth
+  freshness: {
+    days: number | null
+    label: BuyablePriceFreshnessLabel
+    observedAt: string | null
+  }
+  fallbackTier: BuildBuyablePriceContractInput['resolutionTier']
+  priceState: BuyablePriceState
+  localProof: {
+    present: boolean
+    hasStore: boolean
+    hasProduct: boolean
+    hasLocality: boolean
+    hasFreshTimestamp: boolean
+  }
   reasons: string[]
   requiredProof: string[]
+  missingProof: string[]
+  recommendedAction: string
   proof: BuyablePriceProof
 }
 
@@ -91,6 +109,35 @@ function healthFor(input: BuildBuyablePriceContractInput): BuyablePriceSourceHea
   return 'degraded'
 }
 
+function freshnessLabel(freshnessDays: number | null): BuyablePriceFreshnessLabel {
+  if (freshnessDays === null) return 'unknown'
+  if (freshnessDays <= 3) return 'fresh'
+  if (freshnessDays <= 14) return 'recent'
+  return 'stale'
+}
+
+function priceStateFor(input: BuildBuyablePriceContractInput): BuyablePriceState {
+  const hasPrice = input.priceCents !== null && input.priceCents > 0
+  if (!hasPrice) return 'missing'
+  if (
+    input.resolutionTier === 'estimated' ||
+    input.resolutionTier === 'government' ||
+    input.resolutionTier === 'historical' ||
+    input.resolutionTier === 'category_baseline' ||
+    input.sourceLabels?.some((label) => /synthetic|floor|estimate|baseline/i.test(label))
+  ) {
+    return 'synthetic_or_modeled'
+  }
+  if (
+    input.resolutionTier === 'zip_local' ||
+    input.resolutionTier === 'chef_receipt' ||
+    input.resolutionTier === 'wholesale'
+  ) {
+    return 'real_local'
+  }
+  return 'real_nonlocal'
+}
+
 function daysSince(iso: string | null | undefined): number | null {
   if (!iso) return null
   const parsed = new Date(iso).getTime()
@@ -116,11 +163,13 @@ export function buildBuyablePriceContract(
   const hasStoreProof = Boolean(input.storeName)
   const hasProductProof = Boolean(input.productName)
   const hasPrice = input.priceCents !== null && input.priceCents > 0
+  const hasLocalityProof = localTier && hasStoreProof && Boolean(input.zipRequested)
+  const hasFreshTimestamp = isRecentLocal(input.freshnessDays)
 
   if (hasStoreProof) missingProof.delete('current store or vendor observation')
   if (hasProductProof) missingProof.delete('exact product or ingredient match')
   if (input.unit) missingProof.delete('unit and package size normalization')
-  if (isRecentLocal(input.freshnessDays)) missingProof.delete('fresh timestamp')
+  if (hasFreshTimestamp) missingProof.delete('fresh timestamp')
   if (localTier && hasStoreProof) missingProof.delete('local store or chef-owned purchase proof')
 
   if (!hasPrice) reasons.push('No usable price was returned.')
@@ -163,6 +212,8 @@ export function buildBuyablePriceContract(
 
   const safeForShopping = trustLevel === 'confirmed_local_buyable'
   const displayLabel = labelForTrustLevel(trustLevel)
+  const requiredProof = Array.from(missingProof)
+  const recommendedAction = shoppingActionForTrustLevel(trustLevel)
 
   if (safeForShopping && reasons.length === 0) {
     reasons.push('Local store, product, unit, timestamp, and confidence proof are present.')
@@ -174,8 +225,24 @@ export function buildBuyablePriceContract(
     displayLabel,
     confidenceLabel: confidenceLabel(input.confidenceScore),
     sourceHealth: healthFor(input),
+    freshness: {
+      days: input.freshnessDays,
+      label: freshnessLabel(input.freshnessDays),
+      observedAt: input.observedAt ?? null,
+    },
+    fallbackTier: input.resolutionTier,
+    priceState: priceStateFor(input),
+    localProof: {
+      present: localTier && hasStoreProof && hasProductProof && hasFreshTimestamp,
+      hasStore: hasStoreProof,
+      hasProduct: hasProductProof,
+      hasLocality: hasLocalityProof,
+      hasFreshTimestamp,
+    },
     reasons,
-    requiredProof: Array.from(missingProof),
+    requiredProof,
+    missingProof: requiredProof,
+    recommendedAction,
     proof: {
       storeName: input.storeName ?? null,
       productName: input.productName ?? null,
@@ -208,7 +275,11 @@ export function labelForTrustLevel(level: BuyablePriceTrustLevel): string {
 }
 
 export function shoppingActionForContract(contract: BuyablePriceContract): string {
-  switch (contract.trustLevel) {
+  return shoppingActionForTrustLevel(contract.trustLevel)
+}
+
+function shoppingActionForTrustLevel(level: BuyablePriceTrustLevel): string {
+  switch (level) {
     case 'confirmed_local_buyable':
       return 'Buy this exact item locally.'
     case 'recent_local_observed':
@@ -221,5 +292,34 @@ export function shoppingActionForContract(contract: BuyablePriceContract): strin
       return 'Confirm manually before quoting or shopping.'
     case 'no_trusted_price':
       return 'Resolve by vendor, receipt, or manual price.'
+  }
+}
+
+export function priceProofApiShape(contract: BuyablePriceContract) {
+  return {
+    trust_level: contract.trustLevel,
+    display_label: contract.displayLabel,
+    safe_for_shopping: contract.safeForShopping,
+    confidence_label: contract.confidenceLabel,
+    source_health: contract.sourceHealth,
+    freshness: {
+      days: contract.freshness.days,
+      label: contract.freshness.label,
+      observed_at: contract.freshness.observedAt,
+    },
+    fallback_tier: contract.fallbackTier,
+    price_state: contract.priceState,
+    local_proof: {
+      present: contract.localProof.present,
+      has_store: contract.localProof.hasStore,
+      has_product: contract.localProof.hasProduct,
+      has_locality: contract.localProof.hasLocality,
+      has_fresh_timestamp: contract.localProof.hasFreshTimestamp,
+    },
+    missing_proof: contract.missingProof,
+    source_labels: contract.proof.sourceLabels,
+    data_points: contract.proof.dataPoints,
+    recommended_action: contract.recommendedAction,
+    reasons: contract.reasons,
   }
 }

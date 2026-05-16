@@ -5,6 +5,7 @@ import {
   buildPriceStateReliability,
   priceStateReliabilityApiShape,
 } from '@/lib/pricing/price-state-reliability'
+import { priceProofApiShape } from '@/lib/pricing/buyable-price-contract'
 import { getLocationOrDetect } from '@/lib/location/account-location'
 
 export const dynamic = 'force-dynamic'
@@ -77,6 +78,8 @@ export async function GET(request: NextRequest) {
       data_points: result.data_points,
       last_updated: result.last_updated,
       state_reliability: priceStateReliabilityApiShape(stateReliability),
+      price_proof: priceProofApiShape(result.buyable_price),
+      buyable_price: result.buyable_price,
 
       range: result.range,
       location: result.location,

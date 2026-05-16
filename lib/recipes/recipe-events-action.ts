@@ -9,6 +9,7 @@ export type RecipeEvent = {
   event_name: string
   event_date: string | null
   menu_name: string | null
+  guest_count: number | null
 }
 
 export async function getEventsUsingRecipe(recipeId: string): Promise<RecipeEvent[]> {
@@ -19,7 +20,8 @@ export async function getEventsUsingRecipe(recipeId: string): Promise<RecipeEven
       e.id AS event_id,
       e.name AS event_name,
       e.event_date::text AS event_date,
-      m.name AS menu_name
+      m.name AS menu_name,
+      e.guest_count AS guest_count
     FROM components c
     JOIN dishes d ON d.id = c.dish_id
     JOIN menus m ON m.id = d.menu_id
@@ -35,5 +37,6 @@ export async function getEventsUsingRecipe(recipeId: string): Promise<RecipeEven
     event_name: r.event_name,
     event_date: r.event_date,
     menu_name: r.menu_name,
+    guest_count: r.guest_count ?? null,
   }))
 }

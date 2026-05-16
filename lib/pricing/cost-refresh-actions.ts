@@ -13,37 +13,58 @@ import { convertCostToUnit, lookupDensity, normalizeUnit } from '@/lib/units/con
 
 /**
  * After an ingredient price changes, propagate the change to all recipes
- * that use the ingredient, then flag affected events for review.
+ * in the same tenant that use the ingredient, then flag affected events for review.
  * This is a NON-BLOCKING side effect: wrap calls in try/catch.
  */
-export async function propagatePriceChange(ingredientIds: string[], options?: { admin?: boolean }) {
+export async function propagatePriceChange(
+  ingredientIds: string[],
+  options?: { admin?: boolean; tenantId?: string }
+) {
   if (ingredientIds.length === 0) return
 
+  const tenantId = await resolvePriceCascadeTenantId(options)
   const db: any = createServerClient(options?.admin ? { admin: true } : undefined)
+  const inputIngredientIds = [...new Set(ingredientIds)]
+
+  const { data: tenantIngredientRows } = await db
+    .from('ingredients')
+    .select('id')
+    .in('id', inputIngredientIds)
+    .eq('tenant_id', tenantId)
+
+  const scopedIngredientIds = [
+    ...new Set((tenantIngredientRows ?? []).map((row: any) => row.id as string)),
+  ]
+
+  if (scopedIngredientIds.length === 0) return
 
   // Find all recipe_ingredients referencing these ingredients
   const { data: riRows } = await db
     .from('recipe_ingredients')
     .select('id, recipe_id, ingredient_id, quantity, unit, yield_pct')
-    .in('ingredient_id', ingredientIds)
+    .in('ingredient_id', scopedIngredientIds)
 
   if (!riRows || riRows.length === 0) return
 
-  // Get tenant from first recipe
-  const recipeIds: string[] = [
+  const candidateRecipeIds: string[] = [
     ...new Set(riRows.map((r: any) => r.recipe_id as string)),
   ] as string[]
-  const { data: firstRecipe } = await db
+  const { data: recipeRows } = await db
     .from('recipes')
-    .select('tenant_id')
-    .eq('id', recipeIds[0])
-    .single()
+    .select('id')
+    .in('id', candidateRecipeIds)
+    .eq('tenant_id', tenantId)
 
-  if (!firstRecipe) return
-  const tenantId = firstRecipe.tenant_id
+  const recipeIds: string[] = [
+    ...new Set((recipeRows ?? []).map((row: any) => row.id as string)),
+  ] as string[]
+
+  if (recipeIds.length === 0) return
+
+  const scopedRiRows = riRows.filter((ri: any) => recipeIds.includes(ri.recipe_id as string))
 
   // Recompute each recipe ingredient cost
-  for (const ri of riRows) {
+  for (const ri of scopedRiRows) {
     try {
       const result = await computeRecipeIngredientCost(
         db,
@@ -58,6 +79,7 @@ export async function propagatePriceChange(ingredientIds: string[], options?: { 
         .from('recipe_ingredients')
         .update({ computed_cost_cents: result.costCents } as any)
         .eq('id', ri.id)
+        .eq('recipe_id', ri.recipe_id)
     } catch (err) {
       console.error(`[propagatePriceChange] Failed to recompute ri ${ri.id}:`, err)
     }
@@ -80,7 +102,15 @@ export async function propagatePriceChange(ingredientIds: string[], options?: { 
       .in('child_recipe_id', recipeIds)
 
     if (parentLinks && parentLinks.length > 0) {
-      const parentIds = Array.from(new Set<string>(parentLinks.map((p: any) => p.parent_recipe_id)))
+      const parentCandidateIds = Array.from(
+        new Set<string>(parentLinks.map((p: any) => p.parent_recipe_id))
+      )
+      const { data: parentRecipes } = await db
+        .from('recipes')
+        .select('id')
+        .in('id', parentCandidateIds)
+        .eq('tenant_id', tenantId)
+      const parentIds = Array.from(new Set<string>((parentRecipes ?? []).map((p: any) => p.id)))
       for (const parentId of parentIds) {
         if (!recipeIds.includes(parentId)) {
           await refreshRecipeTotalCost(db, tenantId, parentId)
@@ -101,9 +131,10 @@ export async function propagatePriceChange(ingredientIds: string[], options?: { 
         JOIN dishes d ON d.menu_id = m.id
         JOIN components c ON c.dish_id = d.id
         WHERE c.recipe_id = ANY($1)
+        AND e.tenant_id = $2
         AND e.cost_needs_refresh = false
       `,
-      params: [recipeIds],
+      params: [recipeIds, tenantId],
     })
 
     // Fallback: use compat query if rpc not available
@@ -130,6 +161,7 @@ export async function propagatePriceChange(ingredientIds: string[], options?: { 
             .from('events')
             .select('id')
             .eq('menu_id', dish.menu_id)
+            .eq('tenant_id', tenantId)
             .eq('cost_needs_refresh', false)
 
           for (const evt of events ?? []) {
@@ -137,6 +169,7 @@ export async function propagatePriceChange(ingredientIds: string[], options?: { 
               .from('events')
               .update({ cost_needs_refresh: true } as any)
               .eq('id', evt.id)
+              .eq('tenant_id', tenantId)
           }
         }
       }
@@ -146,6 +179,7 @@ export async function propagatePriceChange(ingredientIds: string[], options?: { 
           .from('events')
           .update({ cost_needs_refresh: true } as any)
           .eq('id', evt.id)
+          .eq('tenant_id', tenantId)
       }
     }
   } catch (err) {
@@ -328,7 +362,7 @@ async function refreshIngredientCostsForTenantInternal(
         const updatedIds = ids.filter(
           (id) => resolvedMap.has(id) && resolvedMap.get(id)?.cents != null
         )
-        await propagatePriceChange(updatedIds, { admin: options?.admin })
+        await propagatePriceChange(updatedIds, { admin: options?.admin, tenantId })
       } catch (err) {
         console.error('[refreshIngredientCosts] Cascade failed (non-blocking):', err)
       }
@@ -389,4 +423,17 @@ function hashTenantId(tenantId: string): number {
   }
   // Keep within 32-bit integer range for pg_advisory_lock
   return Math.abs(hash) % 2147483647
+}
+
+async function resolvePriceCascadeTenantId(options?: {
+  admin?: boolean
+  tenantId?: string
+}): Promise<string> {
+  if (options?.tenantId) return options.tenantId
+  if (options?.admin) {
+    throw new Error('tenantId is required for admin price cascades')
+  }
+
+  const user = await requireChef()
+  return user.tenantId!
 }

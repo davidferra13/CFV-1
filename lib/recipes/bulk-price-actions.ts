@@ -6,6 +6,7 @@
 
 import { requireChef } from '@/lib/auth/get-user'
 import { createServerClient } from '@/lib/db/server'
+import { propagatePriceChange } from '@/lib/pricing/cost-refresh-actions'
 import { revalidatePath } from 'next/cache'
 
 export async function bulkUpdateIngredientPrices(
@@ -16,7 +17,7 @@ export async function bulkUpdateIngredientPrices(
 
   if (updates.length === 0) return
 
-  await Promise.all(
+  const updateResults = await Promise.all(
     updates.map(({ ingredientId, pricePerUnitCents }) =>
       db
         .from('ingredients')
@@ -29,8 +30,22 @@ export async function bulkUpdateIngredientPrices(
         })
         .eq('id', ingredientId)
         .eq('tenant_id', user.tenantId!)
+        .select('id')
     )
   )
+
+  const changedIngredientIds = [
+    ...new Set(
+      updateResults.flatMap((result: any) => (result.data ?? []).map((row: any) => row.id))
+    ),
+  ]
+  if (changedIngredientIds.length > 0) {
+    try {
+      await propagatePriceChange(changedIngredientIds, { tenantId: user.tenantId! })
+    } catch (err) {
+      console.error('[bulkUpdateIngredientPrices] Price cascade failed (non-blocking):', err)
+    }
+  }
 
   // Bust recipe/costing caches so food cost % and menu profitability update
   revalidatePath('/recipes')
