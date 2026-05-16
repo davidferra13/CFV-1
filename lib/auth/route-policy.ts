@@ -269,6 +269,7 @@ export const API_SKIP_AUTH_PREFIXES = [
   '/api/ai/monitor',
   '/api/documents',
   '/api/embed',
+  '/api/client-portal',
   '/api/demo',
   '/api/monitoring',
   '/api/inngest',

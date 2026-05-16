@@ -12,13 +12,13 @@ import { csvRowSafe as toCsvRow } from '@/lib/security/csv-sanitize'
 
 // ─── CSV Helpers ──────────────────────────────────────────────────
 
-function formatCents(cents: number): string {
+function formatCentsRaw(cents: number): string {
   return (cents / 100).toFixed(2)
 }
 
 function formatNullableCents(cents: number | null | undefined): string {
   if (typeof cents !== 'number') return ''
-  return formatCents(cents)
+  return formatCentsRaw(cents)
 }
 
 function parseReconciliationFlags(raw: unknown): Array<{ status?: string; message?: string }> {
@@ -70,11 +70,11 @@ export async function exportSalesCsv(from: string, to: string): Promise<string> 
       new Date(s.created_at).toISOString(),
       SALE_STATUS_LABELS[s.status as SaleStatus] ?? s.status,
       SALE_CHANNEL_LABELS[s.channel as SaleChannel] ?? s.channel,
-      formatCents(s.subtotal_cents ?? 0),
-      formatCents(s.tax_cents ?? 0),
-      formatCents(s.discount_cents ?? 0),
-      formatCents(s.tip_cents ?? 0),
-      formatCents(s.total_cents ?? 0),
+      formatCentsRaw(s.subtotal_cents ?? 0),
+      formatCentsRaw(s.tax_cents ?? 0),
+      formatCentsRaw(s.discount_cents ?? 0),
+      formatCentsRaw(s.tip_cents ?? 0),
+      formatCentsRaw(s.total_cents ?? 0),
       s.client_id,
       s.event_id,
       s.notes,
@@ -115,8 +115,8 @@ export async function exportPaymentsCsv(from: string, to: string): Promise<strin
     toCsvRow([
       new Date(p.created_at).toISOString(),
       p.sale_id,
-      formatCents(p.amount_cents ?? 0),
-      formatCents(p.tip_cents ?? 0),
+      formatCentsRaw(p.amount_cents ?? 0),
+      formatCentsRaw(p.tip_cents ?? 0),
       p.payment_method,
       p.status,
       p.processor_type,
@@ -150,7 +150,7 @@ export async function exportRefundsCsv(from: string, to: string): Promise<string
       new Date(r.created_at).toISOString(),
       r.sale_id,
       r.payment_id,
-      formatCents(r.amount_cents ?? 0),
+      formatCentsRaw(r.amount_cents ?? 0),
       r.reason,
       r.status,
     ])
@@ -198,12 +198,12 @@ export async function exportTaxSummaryCsv(from: string, to: string): Promise<str
       t.county,
       t.city,
       t.tax_class,
-      formatCents(t.taxable_amount_cents ?? 0),
-      formatCents(t.tax_collected_cents ?? 0),
+      formatCentsRaw(t.taxable_amount_cents ?? 0),
+      formatCentsRaw(t.tax_collected_cents ?? 0),
       t.tax_rate,
-      formatCents(t.state_tax_cents ?? 0),
-      formatCents(t.county_tax_cents ?? 0),
-      formatCents(t.city_tax_cents ?? 0),
+      formatCentsRaw(t.state_tax_cents ?? 0),
+      formatCentsRaw(t.county_tax_cents ?? 0),
+      formatCentsRaw(t.city_tax_cents ?? 0),
       t.transaction_count,
     ])
   )
@@ -253,14 +253,14 @@ export async function exportReconciliationCsv(from: string, to: string): Promise
     return toCsvRow([
       report.report_date,
       report.total_sales_count ?? 0,
-      formatCents(report.total_revenue_cents ?? 0),
-      formatCents(report.total_tips_cents ?? 0),
-      formatCents(report.total_tax_cents ?? 0),
-      formatCents(report.total_refunds_cents ?? 0),
-      formatCents(report.net_revenue_cents ?? 0),
-      formatCents(report.cash_total_cents ?? 0),
-      formatCents(report.card_total_cents ?? 0),
-      formatCents(report.other_total_cents ?? 0),
+      formatCentsRaw(report.total_revenue_cents ?? 0),
+      formatCentsRaw(report.total_tips_cents ?? 0),
+      formatCentsRaw(report.total_tax_cents ?? 0),
+      formatCentsRaw(report.total_refunds_cents ?? 0),
+      formatCentsRaw(report.net_revenue_cents ?? 0),
+      formatCentsRaw(report.cash_total_cents ?? 0),
+      formatCentsRaw(report.card_total_cents ?? 0),
+      formatCentsRaw(report.other_total_cents ?? 0),
       formatNullableCents(report.opening_cash_cents),
       formatNullableCents(report.expected_cash_cents),
       formatNullableCents(report.closing_cash_cents),
@@ -321,9 +321,9 @@ export async function exportShiftSessionsCsv(from: string, to: string): Promise<
       session.opened_at ? new Date(session.opened_at).toISOString() : '',
       session.closed_at ? new Date(session.closed_at).toISOString() : '',
       session.total_sales_count ?? 0,
-      formatCents(session.total_revenue_cents ?? 0),
-      formatCents(session.total_tips_cents ?? 0),
-      formatCents(session.opening_cash_cents ?? 0),
+      formatCentsRaw(session.total_revenue_cents ?? 0),
+      formatCentsRaw(session.total_tips_cents ?? 0),
+      formatCentsRaw(session.opening_cash_cents ?? 0),
       formatNullableCents(session.expected_cash_cents),
       formatNullableCents(session.closing_cash_cents),
       formatNullableCents(session.cash_variance_cents),

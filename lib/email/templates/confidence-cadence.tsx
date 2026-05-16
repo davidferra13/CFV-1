@@ -5,6 +5,7 @@
 import { Text, Button, Hr } from '@react-email/components'
 import * as React from 'react'
 import { BaseLayout } from './base-layout'
+import { type TonePreset, applyGreeting, DEFAULT_TONE } from '../brand-voice'
 
 type CadencePoint =
   | 'deposit_confirmed'
@@ -27,6 +28,7 @@ type ConfidenceCadenceProps = {
   arrivalTime: string | null
   portalUrl?: string
   appUrl: string
+  tone?: TonePreset
 }
 
 function getPreviewText(cadencePoint: CadencePoint, occasion: string): string {
@@ -83,14 +85,16 @@ export function ConfidenceCadenceEmail({
   arrivalTime,
   portalUrl,
   appUrl,
+  tone = DEFAULT_TONE,
 }: ConfidenceCadenceProps) {
   const showDetails = cadencePoint !== 'event_day' && cadencePoint !== 'deposit_confirmed'
   const showArrival = cadencePoint === '3_days_before' || cadencePoint === '1_day_before'
+  const greeting = applyGreeting(tone, clientName)
 
   return (
     <BaseLayout preview={getPreviewText(cadencePoint, occasion)}>
       <Text style={heading}>{getHeading(cadencePoint, chefName)}</Text>
-      <Text style={paragraph}>Hi {clientName},</Text>
+      <Text style={paragraph}>{greeting},</Text>
       <Text style={paragraph}>{message}</Text>
 
       {showDetails && (

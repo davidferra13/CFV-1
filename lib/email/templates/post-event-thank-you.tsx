@@ -5,6 +5,7 @@
 import { Button, Text, Hr } from '@react-email/components'
 import * as React from 'react'
 import { BaseLayout } from './base-layout'
+import { type TonePreset, applyGreeting, applySignOff, DEFAULT_TONE } from '../brand-voice'
 
 type PostEventThankYouProps = {
   clientName: string
@@ -17,6 +18,7 @@ type PostEventThankYouProps = {
   loyaltyPointsBalance?: number | null
   circleJoinUrl?: string | null
   circleGroupName?: string | null
+  tone?: TonePreset
 }
 
 export function PostEventThankYouEmail({
@@ -30,12 +32,16 @@ export function PostEventThankYouEmail({
   loyaltyPointsBalance,
   circleJoinUrl,
   circleGroupName,
+  tone = DEFAULT_TONE,
 }: PostEventThankYouProps) {
+  const greeting = applyGreeting(tone, clientName)
+  const signoffText = applySignOff(tone, chefName)
+
   return (
     <BaseLayout preview={`${chefName} wanted to say thank you`}>
       <Text style={heading}>A personal thank you</Text>
 
-      <Text style={paragraph}>Hi {clientName},</Text>
+      <Text style={paragraph}>{greeting},</Text>
 
       <Text style={paragraph}>
         It has been a few days since your <strong>{occasion}</strong> on {eventDate}, and{' '}
@@ -102,9 +108,12 @@ export function PostEventThankYouEmail({
       </Button>
 
       <Text style={muted}>
-        With gratitude,
-        <br />
-        {chefName} via ChefFlow
+        {signoffText.split('\n').map((line, i) => (
+          <React.Fragment key={i}>
+            {i > 0 && <br />}
+            {line}
+          </React.Fragment>
+        ))}
       </Text>
     </BaseLayout>
   )

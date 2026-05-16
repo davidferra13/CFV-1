@@ -5,6 +5,8 @@
 'use server'
 
 import { createServerClient } from '@/lib/db/server'
+import { createClientPortalLinkForClient } from '@/lib/client-portal/actions'
+import { getChefTonePreset, applyGreeting } from '@/lib/email/brand-voice'
 
 // ---------------------------------------------------------------------------
 // Types
@@ -123,16 +125,18 @@ export async function sendLifecycleStatusNotification(
         }
       }
 
-      // Get portal token from hub_groups
-      const { data: group } = await db
-        .from('hub_groups')
-        .select('group_token')
-        .eq('inquiry_id', inquiryId)
-        .eq('tenant_id', chefId)
-        .limit(1)
-        .single()
-      if (group) {
-        portalToken = group.group_token
+      // Get canonical portal link for this client
+      if (inquiry.client_id) {
+        try {
+          const link = await createClientPortalLinkForClient({
+            clientId: inquiry.client_id,
+            tenantId: chefId,
+            db,
+          })
+          portalToken = link.token
+        } catch {
+          // Non-fatal: email sends without portal link
+        }
       }
     }
   }
@@ -141,15 +145,19 @@ export async function sendLifecycleStatusNotification(
     return { sent: false, error: 'No client email found' }
   }
 
-  // Send the email
+  // Send the email with brand voice
   try {
+    const tone = await getChefTonePreset(chefId)
+    const resolvedClientName = clientName || 'there'
+    const greeting = applyGreeting(tone, resolvedClientName)
+
     const { sendLifecycleUpdateEmail } = await import('@/lib/email/notifications')
     await sendLifecycleUpdateEmail({
       clientEmail,
-      clientName: clientName || 'there',
+      clientName: resolvedClientName,
       chefName: chefName || 'Your chef',
       stageLabel: stageInfo.label,
-      stageMessage: stageInfo.clientMessage,
+      stageMessage: `${greeting},\n\n${stageInfo.clientMessage}`,
       nextStep: stageInfo.nextStep,
       portalUrl: portalToken
         ? `${process.env.NEXT_PUBLIC_APP_URL || 'https://app.cheflowhq.com'}/client/${portalToken}`

@@ -2923,3 +2923,46 @@ select:focus {
 .card-transition:hover {
   border-color: var(--border-default);
 }
+
+/* ============================================
+   RAIL ANIMATIONS
+   ============================================ */
+
+@keyframes rail-item-enter {
+  from {
+    opacity: 0;
+    transform: translateY(8px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes rail-glow-critical {
+  0%,
+  100% {
+    box-shadow:
+      0 0 0 1px rgb(239 68 68 / 0.15),
+      0 0 12px 0 rgb(239 68 68 / 0.06);
+  }
+  50% {
+    box-shadow:
+      0 0 0 1px rgb(239 68 68 / 0.25),
+      0 0 20px 2px rgb(239 68 68 / 0.1);
+  }
+}
+
+@keyframes rail-glow-action {
+  0%,
+  100% {
+    box-shadow:
+      0 0 0 1px rgb(245 158 11 / 0.1),
+      0 0 8px 0 rgb(245 158 11 / 0.04);
+  }
+  50% {
+    box-shadow:
+      0 0 0 1px rgb(245 158 11 / 0.18),
+      0 0 14px 1px rgb(245 158 11 / 0.07);
+  }
+}

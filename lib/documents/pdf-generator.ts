@@ -7,6 +7,7 @@
 import PDFDocument from 'pdfkit'
 import type { InvoiceData } from '@/lib/events/invoice-actions'
 import { formatTaxRate } from '@/lib/tax/api-ninjas'
+import { formatCurrency } from '@/lib/utils/currency'
 
 // ─── Constants ──────────────────────────────────────────────────────────────
 
@@ -28,13 +29,6 @@ const HEADER_BG = '#fef7f0' // light warm tint
 const PAID_GREEN = '#16a34a'
 
 // ─── Format helpers ─────────────────────────────────────────────────────────
-
-function formatCents(cents: number): string {
-  return `$${(cents / 100).toLocaleString('en-US', {
-    minimumFractionDigits: 2,
-    maximumFractionDigits: 2,
-  })}`
-}
 
 function labelForEntryType(entryType: string, isRefund: boolean): string {
   if (isRefund) return 'Refund'
@@ -281,7 +275,7 @@ export function generateInvoicePdf(data: InvoiceData): Promise<Buffer> {
       doc.text(desc, tableLeft + 8, y, { width: CONTENT_WIDTH - amountColWidth - 16 })
       doc
         .font('Helvetica-Bold')
-        .text(formatCents(data.quotedPriceCents), tableRight - amountColWidth, y, {
+        .text(formatCurrency(data.quotedPriceCents), tableRight - amountColWidth, y, {
           width: amountColWidth - 8,
           align: 'right',
         })
@@ -291,7 +285,7 @@ export function generateInvoicePdf(data: InvoiceData): Promise<Buffer> {
       if (data.pricePerPersonCents) {
         doc.font('Helvetica').fontSize(8).fillColor(TEXT_MUTED)
         doc.text(
-          `${formatCents(data.pricePerPersonCents)} per person x ${data.event.guestCount} guests`,
+          `${formatCurrency(data.pricePerPersonCents)} per person x ${data.event.guestCount} guests`,
           tableLeft + 16,
           y
         )
@@ -309,7 +303,7 @@ export function generateInvoicePdf(data: InvoiceData): Promise<Buffer> {
           { width: CONTENT_WIDTH - amountColWidth - 24 }
         )
         doc.font('Helvetica').fontSize(9).fillColor(PAID_GREEN)
-        doc.text(`(${formatCents(adjustment.discountCents)})`, tableRight - amountColWidth, y, {
+        doc.text(`(${formatCurrency(adjustment.discountCents)})`, tableRight - amountColWidth, y, {
           width: amountColWidth - 8,
           align: 'right',
         })
@@ -323,7 +317,7 @@ export function generateInvoicePdf(data: InvoiceData): Promise<Buffer> {
         width: CONTENT_WIDTH - amountColWidth - 24,
       })
       doc.font('Helvetica-Bold').fontSize(9).fillColor(TEXT_PRIMARY)
-      doc.text(formatCents(data.serviceSubtotalCents), tableRight - amountColWidth, y, {
+      doc.text(formatCurrency(data.serviceSubtotalCents), tableRight - amountColWidth, y, {
         width: amountColWidth - 8,
         align: 'right',
       })
@@ -336,7 +330,7 @@ export function generateInvoicePdf(data: InvoiceData): Promise<Buffer> {
       doc.text('Deposit required', tableLeft + 16, y, {
         width: CONTENT_WIDTH - amountColWidth - 24,
       })
-      doc.text(formatCents(data.depositAmountCents), tableRight - amountColWidth, y, {
+      doc.text(formatCurrency(data.depositAmountCents), tableRight - amountColWidth, y, {
         width: amountColWidth - 8,
         align: 'right',
       })
@@ -349,7 +343,7 @@ export function generateInvoicePdf(data: InvoiceData): Promise<Buffer> {
       doc.text(`Sales Tax (${formatTaxRate(data.salesTax.taxRate)})`, tableLeft + 8, y, {
         width: CONTENT_WIDTH - amountColWidth - 16,
       })
-      doc.text(formatCents(data.salesTax.taxAmountCents), tableRight - amountColWidth, y, {
+      doc.text(formatCurrency(data.salesTax.taxAmountCents), tableRight - amountColWidth, y, {
         width: amountColWidth - 8,
         align: 'right',
       })
@@ -368,7 +362,7 @@ export function generateInvoicePdf(data: InvoiceData): Promise<Buffer> {
       doc.text('Gratuity', tableLeft + 8, y, {
         width: CONTENT_WIDTH - amountColWidth - 16,
       })
-      doc.text(formatCents(data.tipAmountCents), tableRight - amountColWidth, y, {
+      doc.text(formatCurrency(data.tipAmountCents), tableRight - amountColWidth, y, {
         width: amountColWidth - 8,
         align: 'right',
       })
@@ -419,8 +413,8 @@ export function generateInvoicePdf(data: InvoiceData): Promise<Buffer> {
 
         const label = labelForEntryType(entry.entryType, entry.isRefund)
         const amount = entry.isRefund
-          ? `(${formatCents(Math.abs(entry.amountCents))})`
-          : formatCents(entry.amountCents)
+          ? `(${formatCurrency(Math.abs(entry.amountCents))})`
+          : formatCurrency(entry.amountCents)
 
         const textColor = entry.isRefund ? '#dc2626' : entry.isTip ? '#7c3aed' : TEXT_PRIMARY
 
@@ -469,37 +463,37 @@ export function generateInvoicePdf(data: InvoiceData): Promise<Buffer> {
     if (data.quotedPriceCents) {
       summaryLines.push({
         label: 'Service Total',
-        value: formatCents(data.quotedPriceCents),
+        value: formatCurrency(data.quotedPriceCents),
       })
     }
     if (data.loyaltyDiscountCents > 0) {
       summaryLines.push({
         label: 'Loyalty Discount',
-        value: `(${formatCents(data.loyaltyDiscountCents)})`,
+        value: `(${formatCurrency(data.loyaltyDiscountCents)})`,
         color: PAID_GREEN,
       })
       summaryLines.push({
         label: 'Adjusted Service Subtotal',
-        value: formatCents(data.serviceSubtotalCents),
+        value: formatCurrency(data.serviceSubtotalCents),
       })
     }
     if (data.salesTax && data.salesTax.taxAmountCents > 0) {
       summaryLines.push({
         label: `Sales Tax (${formatTaxRate(data.salesTax.taxRate)})`,
-        value: formatCents(data.salesTax.taxAmountCents),
+        value: formatCurrency(data.salesTax.taxAmountCents),
       })
     }
     if (data.totalPaidCents > 0) {
       summaryLines.push({
         label: 'Total Paid',
-        value: formatCents(data.totalPaidCents),
+        value: formatCurrency(data.totalPaidCents),
         color: PAID_GREEN,
       })
     }
     if (data.totalRefundedCents > 0) {
       summaryLines.push({
         label: 'Total Refunded',
-        value: `(${formatCents(data.totalRefundedCents)})`,
+        value: `(${formatCurrency(data.totalRefundedCents)})`,
         color: '#dc2626',
       })
     }
@@ -537,7 +531,7 @@ export function generateInvoicePdf(data: InvoiceData): Promise<Buffer> {
       doc.text('BALANCE DUE', MARGIN_LEFT, y)
 
       doc.font('Helvetica-Bold').fontSize(16).fillColor(TEXT_PRIMARY)
-      doc.text(formatCents(data.balanceDueCents), tableRight - 160, y - 2, {
+      doc.text(formatCurrency(data.balanceDueCents), tableRight - 160, y - 2, {
         width: 160 - 8,
         align: 'right',
       })

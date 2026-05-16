@@ -4,6 +4,7 @@ import { z } from 'zod'
 import { revalidatePath } from 'next/cache'
 import { requireChef } from '@/lib/auth/get-user'
 import { createServerClient } from '@/lib/db/server'
+import { sendInvoiceForRecurring } from '@/lib/invoices/delivery-actions'
 
 // ─── Types ───────────────────────────────────────────────────────
 
@@ -197,7 +198,13 @@ export async function processRecurringInvoices(): Promise<{
 
   for (const invoice of due || []) {
     try {
-      // Advance the next_send_date
+      // Send the invoice via the delivery system
+      const result = await sendInvoiceForRecurring(invoice.id, user.tenantId!)
+      if (result.status === 'error') {
+        errors.push(`Invoice ${invoice.id}: ${result.message}`)
+      }
+
+      // Advance the next_send_date regardless of send success
       const newNextDate = nextDate(invoice.next_send_date, invoice.frequency)
 
       await db

@@ -36,6 +36,7 @@ export type RouteInput = {
   title: string
   body?: string
   actionUrl?: string
+  origin?: 'manual' | 'automated' | 'ai'
 }
 
 /**
@@ -128,15 +129,23 @@ export async function routeNotification(input: RouteInput): Promise<void> {
       )
     }
 
-    if (channels.sms && channels.smsPhone) {
+    const isAutomatedClientSms =
+      channels.sms &&
+      CLIENT_FACING_ACTIONS.has(action) &&
+      (input.origin === 'automated' || input.origin === 'ai')
+
+    if (channels.sms && channels.smsPhone && !isAutomatedClientSms) {
       sends.push(
         deliverSms(input, notificationId, tenantId, channels.smsPhone).catch((err) => {
           console.error('[routeNotification] sms delivery error:', err)
         })
       )
     } else {
+      const skipReason = isAutomatedClientSms
+        ? 'Automated client SMS suppressed - requires chef review'
+        : undefined
       sends.push(
-        logDelivery(notificationId, tenantId, 'sms', 'skipped').catch((err) => {
+        logDelivery(notificationId, tenantId, 'sms', 'skipped', skipReason).catch((err) => {
           console.error('[non-blocking] logDelivery sms-skipped failed:', err)
         })
       )

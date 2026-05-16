@@ -160,10 +160,15 @@ const nextConfig = {
       {
         source: '/embed/:path*',
         headers: [
-          {
-            key: 'Strict-Transport-Security',
-            value: 'max-age=31536000; includeSubDomains; preload',
-          },
+          // HSTS breaks local dev (Chromium upgrades to HTTPS on localhost)
+          ...(isDev
+            ? []
+            : [
+                {
+                  key: 'Strict-Transport-Security',
+                  value: 'max-age=31536000; includeSubDomains; preload',
+                },
+              ]),
           {
             key: 'X-Content-Type-Options',
             value: 'nosniff',
@@ -204,10 +209,15 @@ const nextConfig = {
       {
         source: '/kiosk/:path*',
         headers: [
-          {
-            key: 'Strict-Transport-Security',
-            value: 'max-age=31536000; includeSubDomains; preload',
-          },
+          // HSTS breaks local dev (Chromium upgrades to HTTPS on localhost)
+          ...(isDev
+            ? []
+            : [
+                {
+                  key: 'Strict-Transport-Security',
+                  value: 'max-age=31536000; includeSubDomains; preload',
+                },
+              ]),
           {
             key: 'X-Content-Type-Options',
             value: 'nosniff',
@@ -250,10 +260,15 @@ const nextConfig = {
       {
         source: '/((?!embed/|kiosk/).*)',
         headers: [
-          {
-            key: 'Strict-Transport-Security',
-            value: 'max-age=31536000; includeSubDomains; preload',
-          },
+          // HSTS breaks local dev (Chromium upgrades to HTTPS on localhost)
+          ...(isDev
+            ? []
+            : [
+                {
+                  key: 'Strict-Transport-Security',
+                  value: 'max-age=31536000; includeSubDomains; preload',
+                },
+              ]),
           {
             key: 'X-Content-Type-Options',
             value: 'nosniff',

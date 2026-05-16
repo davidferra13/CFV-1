@@ -71,6 +71,13 @@ export const restrictedAgentActions: AgentActionDefinition[] = [
     'Ask Remy to draft the email, then copy it and send from your email client.'
   ),
   restrictedAction(
+    'agent.send_sms',
+    'Send SMS / Text Directly',
+    'Send a text message or SMS directly to a client.',
+    'AI cannot send texts to clients. SMS is more intrusive than email and requires explicit chef action. Automated SMS to clients is a TCPA compliance risk.',
+    'Go to the client profile or conversation thread and use the Send Text button to compose and send manually.'
+  ),
+  restrictedAction(
     'agent.refund',
     'Issue Refund',
     'Process a refund or financial adjustment.',

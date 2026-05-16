@@ -4,6 +4,7 @@
 // Send/resend professional invoice PDFs via email.
 // Supports: manual chef send, auto-send on final payment, client portal request.
 
+import { formatCurrency } from '@/lib/utils/currency'
 import { requireChef } from '@/lib/auth/get-user'
 import { createServerClient } from '@/lib/db/server'
 import { revalidatePath } from 'next/cache'
@@ -68,8 +69,8 @@ export async function sendInvoiceToClient(
         invoiceNumber: invoiceRef,
         occasion: invoiceData.event.occasion ?? 'your event',
         eventDate: invoiceData.event.formattedDate,
-        totalFormatted: formatCents(invoiceData.quotedPriceCents ?? 0),
-        balanceDueFormatted: formatCents(invoiceData.balanceDueCents),
+        totalFormatted: formatCurrency(invoiceData.quotedPriceCents ?? 0),
+        balanceDueFormatted: formatCurrency(invoiceData.balanceDueCents),
         isPaidInFull: invoiceData.isPaidInFull,
       }),
       attachments: [
@@ -144,7 +145,7 @@ export async function autoSendInvoiceOnFinalPayment(
         invoiceNumber: invoiceRef,
         occasion: invoiceData.event.occasion ?? 'your event',
         eventDate: invoiceData.event.formattedDate,
-        totalFormatted: formatCents(invoiceData.quotedPriceCents ?? 0),
+        totalFormatted: formatCurrency(invoiceData.quotedPriceCents ?? 0),
         balanceDueFormatted: '$0.00',
         isPaidInFull: true,
       }),
@@ -231,8 +232,8 @@ export async function requestInvoiceEmailFromPortal(
         invoiceNumber: invoiceRef,
         occasion: invoiceData.event.occasion ?? 'your event',
         eventDate: invoiceData.event.formattedDate,
-        totalFormatted: formatCents(invoiceData.quotedPriceCents ?? 0),
-        balanceDueFormatted: formatCents(invoiceData.balanceDueCents),
+        totalFormatted: formatCurrency(invoiceData.quotedPriceCents ?? 0),
+        balanceDueFormatted: formatCurrency(invoiceData.balanceDueCents),
         isPaidInFull: invoiceData.isPaidInFull,
       }),
       attachments: [
@@ -274,6 +275,162 @@ export async function requestInvoiceEmailFromPortal(
   }
 }
 
+// ─── Send Recurring Invoice (System/Cron) ──────────────────────────────────
+
+/**
+ * Sends an invoice for a recurring billing schedule.
+ * No auth session needed; uses admin client (runs from cron/queue).
+ * Non-blocking: errors are returned, never thrown.
+ */
+export async function sendInvoiceForRecurring(
+  scheduleId: string,
+  tenantId: string,
+  options?: { ccEmail?: string }
+): Promise<InvoiceDeliveryResult> {
+  try {
+    const db: any = createServerClient({ admin: true })
+
+    // Fetch recurring invoice + client data
+    const { data: schedule } = await db
+      .from('recurring_invoices')
+      .select('*, clients(id, full_name, email)')
+      .eq('id', scheduleId)
+      .eq('chef_id', tenantId)
+      .single()
+
+    if (!schedule) {
+      return { status: 'error', message: 'Recurring invoice schedule not found' }
+    }
+
+    const clientEmail = schedule.clients?.email
+    if (!clientEmail) {
+      return { status: 'error', message: 'Client has no email address on file' }
+    }
+
+    // Get chef info for the invoice header
+    const { data: chef } = await db
+      .from('chefs')
+      .select('business_name, email, phone')
+      .eq('id', tenantId)
+      .single()
+
+    if (!chef) {
+      return { status: 'error', message: 'Chef not found' }
+    }
+
+    const now = new Date()
+    const invoiceRef = `REC-${scheduleId.slice(0, 8).toUpperCase()}-${format(now, 'yyyyMMdd')}`
+    const periodLabel = schedule.name || schedule.description || 'Recurring Service'
+
+    // Build synthetic InvoiceData for PDF generation
+    const invoiceData: Parameters<typeof generateInvoicePdf>[0] = {
+      invoiceNumber: invoiceRef,
+      invoiceIssuedAt: now.toISOString(),
+      chef: {
+        businessName: chef.business_name || 'Chef',
+        email: chef.email || '',
+        phone: chef.phone || null,
+        paymentTerms: null,
+        taxId: null,
+        footerNote: null,
+      },
+      client: {
+        displayName: schedule.clients?.full_name || 'Client',
+        email: clientEmail,
+      },
+      billTo: null,
+      event: {
+        id: scheduleId,
+        occasion: periodLabel,
+        eventDate: now.toISOString(),
+        formattedDate: format(now, 'MMMM d, yyyy'),
+        guestCount: 0,
+        locationCity: null,
+        locationState: null,
+        status: 'recurring',
+        pricingModel: null,
+      },
+      quotedPriceCents: schedule.amount_cents,
+      serviceSubtotalCents: schedule.amount_cents,
+      loyaltyDiscountCents: 0,
+      loyaltyAdjustments: null,
+      pricePerPersonCents: null,
+      depositAmountCents: null,
+      paymentStatus: 'unpaid',
+      paymentEntries: [],
+      totalPaidCents: 0,
+      totalRefundedCents: 0,
+      tipAmountCents: 0,
+      balanceDueCents: schedule.amount_cents,
+      isPaidInFull: false,
+      salesTax: null,
+    }
+
+    const pdfBuffer = await generateInvoicePdf(invoiceData)
+    const dateSuffix = format(now, 'yyyy-MM-dd')
+
+    const recipients: string[] = [clientEmail]
+    if (options?.ccEmail) {
+      recipients.push(options.ccEmail)
+    }
+
+    await sendEmail({
+      to: recipients,
+      subject: `Invoice ${invoiceRef} from ${chef.business_name || 'Your Chef'}`,
+      react: InvoiceDeliveryEmail({
+        clientName: schedule.clients?.full_name || 'Client',
+        chefBusinessName: chef.business_name || 'Your Chef',
+        invoiceNumber: invoiceRef,
+        occasion: periodLabel,
+        eventDate: format(now, 'MMMM d, yyyy'),
+        totalFormatted: formatCurrency(schedule.amount_cents),
+        balanceDueFormatted: formatCurrency(schedule.amount_cents),
+        isPaidInFull: false,
+      }),
+      attachments: [
+        {
+          filename: `${invoiceRef}-${dateSuffix}.pdf`,
+          content: pdfBuffer,
+          contentType: 'application/pdf',
+        },
+      ],
+      isTransactional: true,
+    })
+
+    // Record in recurring_invoice_history
+    const periodStart = schedule.next_send_date || format(now, 'yyyy-MM-dd')
+    const { data: inserted } = await db
+      .from('recurring_invoice_history')
+      .insert({
+        schedule_id: scheduleId,
+        chef_id: tenantId,
+        client_id: schedule.client_id,
+        invoice_number: invoiceRef,
+        amount_cents: schedule.amount_cents,
+        period_start: periodStart,
+        period_end: periodStart,
+        status: 'sent',
+      })
+      .select('id, created_at')
+      .single()
+
+    return {
+      status: 'sent',
+      sentTo: clientEmail,
+      record: {
+        id: inserted?.id ?? crypto.randomUUID(),
+        sentAt: inserted?.created_at ?? now.toISOString(),
+        sentTo: clientEmail,
+        ccTo: options?.ccEmail ?? null,
+        sentBy: 'system',
+      },
+    }
+  } catch (err) {
+    console.error('[invoice-delivery] Recurring invoice send failed (non-blocking)', err)
+    return { status: 'error', message: 'Failed to send recurring invoice' }
+  }
+}
+
 // ─── Get Send History ───────────────────────────────────────────────────────
 
 export async function getInvoiceSendHistory(eventId: string): Promise<InvoiceSendHistory[]> {
@@ -296,13 +453,4 @@ export async function getInvoiceSendHistory(eventId: string): Promise<InvoiceSen
     ccTo: row.cc_to,
     sentBy: row.sent_by,
   }))
-}
-
-// ─── Helpers ────────────────────────────────────────────────────────────────
-
-function formatCents(cents: number): string {
-  return `$${(cents / 100).toLocaleString('en-US', {
-    minimumFractionDigits: 2,
-    maximumFractionDigits: 2,
-  })}`
 }

@@ -29,6 +29,7 @@ import {
   EventFoodCostInsight,
   type MenuCostData,
 } from '@/components/costing/event-food-cost-insight'
+import { LiveMenuCostPanel } from '@/components/costing/live-menu-cost-panel'
 import type { EventPricingIntelligencePayload } from '@/lib/finance/event-pricing-intelligence-actions'
 import { EventDetailGuestCountRequests } from './event-detail-guest-count-requests'
 import type { GuestCountChange } from '@/lib/guests/count-changes'
@@ -151,6 +152,15 @@ export function EventDetailMoneyTab(props: EventDetailMoneyTabProps) {
           quotedPriceCents={event.quoted_price_cents ?? null}
           guestCount={event.guest_count ?? null}
           archetype={chefArchetype}
+        />
+      )}
+
+      {/* Live PIE cost fallback: when precomputed costs are missing but menu exists */}
+      {!menuCostSummary && eventMenus && eventMenus.length > 0 && (
+        <LiveMenuCostPanel
+          eventId={event.id}
+          guestCount={event.guest_count ?? null}
+          quotedPriceCents={event.quoted_price_cents ?? null}
         />
       )}
 

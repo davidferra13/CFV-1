@@ -219,6 +219,29 @@ export async function recordDeposit(
   revalidatePath('/finance')
   revalidatePath(`/events/${eventId}`)
 
+  // Auto-send invoice PDF if event is now paid in full (non-blocking)
+  try {
+    const { autoSendInvoiceOnFinalPayment } = await import('@/lib/invoices')
+    await autoSendInvoiceOnFinalPayment(eventId, user.tenantId!)
+  } catch (err) {
+    log.ledger.warn('Auto invoice send failed (non-blocking)', { error: err })
+  }
+
+  // Start pre-event confidence cadence after deposit confirmation (non-blocking)
+  try {
+    const { executeCadenceTrigger } = await import('@/lib/lifecycle/cadence-trigger-handler')
+    await executeCadenceTrigger(user.tenantId!, eventId, [
+      {
+        triggerId: 'deposit_confirmed_cadence',
+        action: { type: 'schedule_cadence', label: 'Start pre-event cadence', payload: {} },
+        consent: 'auto',
+        fired: true,
+      },
+    ])
+  } catch (err) {
+    log.ledger.warn('Cadence trigger failed (non-blocking)', { error: err })
+  }
+
   // Log activity (non-blocking)
   try {
     const { logChefActivity } = await import('@/lib/activity/log-chef')
@@ -288,6 +311,14 @@ export async function recordBalancePayment(
   revalidatePath('/dashboard')
   revalidatePath('/finance')
   revalidatePath(`/events/${eventId}`)
+
+  // Auto-send invoice PDF if event is now paid in full (non-blocking)
+  try {
+    const { autoSendInvoiceOnFinalPayment } = await import('@/lib/invoices')
+    await autoSendInvoiceOnFinalPayment(eventId, user.tenantId!)
+  } catch (err) {
+    log.ledger.warn('Auto invoice send failed (non-blocking)', { error: err })
+  }
 
   // Log activity (non-blocking)
   try {

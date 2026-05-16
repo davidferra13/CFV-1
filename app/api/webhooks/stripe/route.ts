@@ -776,6 +776,16 @@ async function handlePaymentSucceeded(event: Stripe.Event) {
       })
     }
 
+    // Auto-send invoice PDF if event is now paid in full (non-blocking)
+    try {
+      const { autoSendInvoiceOnFinalPayment } = await import('@/lib/invoices')
+      await autoSendInvoiceOnFinalPayment(event_id, tenant_id)
+    } catch (invoiceSendErr) {
+      log.error('[handlePaymentSucceeded] Auto invoice send failed (non-blocking)', {
+        error: invoiceSendErr,
+      })
+    }
+
     // Notify chef of payment (non-blocking)
     try {
       const { createNotification, getChefAuthUserId } = await import('@/lib/notifications/actions')

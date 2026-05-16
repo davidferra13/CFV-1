@@ -2,6 +2,7 @@
 export {
   sendInvoiceToClient,
   autoSendInvoiceOnFinalPayment,
+  sendInvoiceForRecurring,
   requestInvoiceEmailFromPortal,
   getInvoiceSendHistory,
 } from './delivery-actions'
@@ -15,3 +16,5 @@ export {
 export type { InvoiceDeliveryResult, InvoiceSendHistory } from './delivery-actions'
 
 export type { ChefInvoiceSettings } from './corporate-billing-actions'
+
+export { sendPaymentReminder, getLastReminderSent } from './reminder-actions'

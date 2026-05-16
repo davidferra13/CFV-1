@@ -5,6 +5,8 @@
 'use server'
 
 import { createServerClient } from '@/lib/db/server'
+import { createClientPortalLinkForClient } from '@/lib/client-portal/actions'
+import { getChefTonePreset } from '@/lib/email/brand-voice'
 
 // ---------------------------------------------------------------------------
 // Types
@@ -387,19 +389,18 @@ async function sendCadenceEmail(
   // Get chef custom message override (if any)
   const customMessage = await getChefCadenceMessage(tenantId, cadencePoint)
 
-  // Build portal URL
+  // Build portal URL via canonical token system
   let portalUrl: string | undefined
-  if (event.inquiry_id) {
-    const { data: group } = await db
-      .from('hub_groups')
-      .select('group_token')
-      .eq('inquiry_id', event.inquiry_id)
-      .eq('tenant_id', tenantId)
-      .limit(1)
-      .single()
-    if (group) {
-      const appUrl = process.env.NEXT_PUBLIC_APP_URL || 'https://app.cheflowhq.com'
-      portalUrl = `${appUrl}/client/${group.group_token}`
+  if (event.client_id) {
+    try {
+      const link = await createClientPortalLinkForClient({
+        clientId: event.client_id,
+        tenantId,
+        db,
+      })
+      portalUrl = link.url
+    } catch {
+      // Non-fatal: email sends without portal link
     }
   }
 
@@ -409,6 +410,9 @@ async function sendCadenceEmail(
   const location = event.location || event.confirmed_location || null
   const arrivalTime = event.arrival_time || event.serve_time || null
   const menuStatus = event.menu_locked ? 'finalized' : 'in progress'
+
+  // Resolve chef's brand voice tone for template rendering
+  const tone = await getChefTonePreset(tenantId)
 
   const messageTemplate = customMessage || config.defaultMessage
   const message = messageTemplate
@@ -440,6 +444,7 @@ async function sendCadenceEmail(
       location,
       arrivalTime,
       portalUrl,
+      tone,
       appUrl: process.env.NEXT_PUBLIC_APP_URL || 'https://app.cheflowhq.com',
     }),
   })

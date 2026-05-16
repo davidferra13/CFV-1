@@ -166,6 +166,16 @@ Run `/close-session`. Commit + push. Work must be on GitHub before signing off.
 
 - **`docs/USER_MANUAL.md`** - update when UI/workflow/behavior changes
 - **`docs/app-complete-audit.md`** - update when adding/removing/renaming UI elements
+- **`docs/test-coverage-blueprint.md`** - update when adding routes/features/tests
+
+### Test Coverage Blueprint Contract
+
+**`docs/test-coverage-blueprint.md` tracks what is tested and what is not.** Both Claude and Codex maintain it.
+
+- **After building a feature:** Add its test status (UNTESTED, PARTIAL, COVERED)
+- **Before testing:** Check the blueprint. Never re-test what already passes.
+- **End of session:** Run `/test-scan` to reconcile routes vs. tests
+- **Critical gaps** in the blueprint are P0 work targets for test authors
 
 ### Commits & Git
 
@@ -193,6 +203,21 @@ Credentials in `.auth/agent.json`. Sign in via `POST http://localhost:3100/api/e
 - Do not touch unrelated external project servers such as the Wix rebuild unless explicitly asked.
 - Mission Control, Persona inbox, sync daemons, Playwright MCP, Ollama, and cloudflared are tools, not duplicate app builds. Do not stop them unless the task is specifically about those tools.
 - Closeout must name the exact URL verified. Normal app closeout should verify `http://localhost:3100`.
+
+---
+
+## BUILD QUEUE CONTRACT (SHARED WITH CODEX)
+
+**`docs/UNIFIED-BUILD-QUEUE.md` is the single source of truth for all build work.** Both Claude and Codex read from and update this file. No separate inventories.
+
+- **Before building:** read the queue. Claim items by marking status `IN-FLIGHT`.
+- **After building:** mark items `PARTIAL` (built, unverified) or `DONE` (verified).
+- **New work discovered:** add it to the appropriate category with correct status tag.
+- **Blocked items:** mark `BLOCKED` with reason. Unblock by fixing the dependency.
+- **Never rebuild the queue from scratch.** Update in place. The merge history matters.
+- **Swarm handoff** (`/swarm-handoff`) reads this queue to assign waves and tiers.
+
+Status tags: `SPEC-READY`, `PARTIAL`, `DRAFT`, `UNSPECCED`, `BLOCKED`, `IN-FLIGHT`, `DONE`
 
 ---
 
