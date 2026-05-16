@@ -7,6 +7,7 @@ import {
   isPublicUnauthenticatedPath,
   getRoutePolicyDecisionForRole,
   getHomePathForRole,
+  isAdminRoutePath,
 } from '@/lib/auth/route-policy'
 import { isKnowledgeIngredientPubliclyIndexable } from '@/lib/openclaw/public-ingredient-publish'
 import {
@@ -263,6 +264,14 @@ export default auth(async (request) => {
   if (!routeDecision.allowed && routeDecision.recoveryPath) {
     return withRequestId(
       NextResponse.redirect(buildRedirectUrl(request, routeDecision.recoveryPath)),
+      requestId
+    )
+  }
+
+  // Defense-in-depth: block non-admin users from /admin/* even if route policy allows
+  if (isAdminRoutePath(pathname) && !isAdmin) {
+    return withRequestId(
+      NextResponse.redirect(buildRedirectUrl(request, getHomePathForRole(role))),
       requestId
     )
   }
