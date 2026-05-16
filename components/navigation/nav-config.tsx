@@ -1896,6 +1896,7 @@ export const actionBarItems: NavItem[] = [
   { href: '/culinary/prep', label: 'Prep', icon: Timer },
   { href: '/tasks', label: 'Tasks', icon: ListChecks },
   { href: '/circles', label: 'Community', icon: MessagesSquare },
+  { href: '/culinary/call-sheet', label: 'Phone', icon: Phone },
 ]
 
 // ─── + Create dropdown: 15 direct navigation links ───

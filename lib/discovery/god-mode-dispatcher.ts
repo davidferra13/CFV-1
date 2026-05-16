@@ -97,6 +97,161 @@ function warmResolvers(): ResolverEntry[] {
         return resolveQuotes(ctx)
       },
     },
+    // --- Wave 2: Pipeline/Revenue resolvers ---
+    {
+      name: 'contracts',
+      resolve: async (ctx) => {
+        const { resolveContracts } = await import('./resolvers/chef/contract-resolver')
+        return resolveContracts(ctx)
+      },
+    },
+    {
+      name: 'menu-approvals',
+      resolve: async (ctx) => {
+        const { resolveMenuApprovals } = await import('./resolvers/chef/menu-approval-resolver')
+        return resolveMenuApprovals(ctx)
+      },
+    },
+    {
+      name: 'vendor-invoices',
+      resolve: async (ctx) => {
+        const { resolveVendorInvoices } = await import('./resolvers/chef/vendor-invoice-resolver')
+        return resolveVendorInvoices(ctx)
+      },
+    },
+    {
+      name: 'recurring-invoices',
+      resolve: async (ctx) => {
+        const { resolveRecurringInvoices } =
+          await import('./resolvers/chef/recurring-invoice-resolver')
+        return resolveRecurringInvoices(ctx)
+      },
+    },
+    {
+      name: 'revenue-goals',
+      resolve: async (ctx) => {
+        const { resolveRevenueGoals } = await import('./resolvers/chef/revenue-goal-resolver')
+        return resolveRevenueGoals(ctx)
+      },
+    },
+    // --- Wave 2: Communication resolvers ---
+    {
+      name: 'proposal-activity',
+      resolve: async (ctx) => {
+        const { resolveProposalActivity } =
+          await import('./resolvers/chef/proposal-activity-resolver')
+        return resolveProposalActivity(ctx)
+      },
+    },
+    {
+      name: 'followups',
+      resolve: async (ctx) => {
+        const { resolveFollowUps } = await import('./resolvers/chef/followup-resolver')
+        return resolveFollowUps(ctx)
+      },
+    },
+    {
+      name: 'dormant-clients',
+      resolve: async (ctx) => {
+        const { resolveDormantClients } = await import('./resolvers/chef/dormant-client-resolver')
+        return resolveDormantClients(ctx)
+      },
+    },
+    {
+      name: 'client-birthdays',
+      resolve: async (ctx) => {
+        const { resolveClientBirthdays } = await import('./resolvers/chef/client-birthday-resolver')
+        return resolveClientBirthdays(ctx)
+      },
+    },
+    {
+      name: 'review-requests',
+      resolve: async (ctx) => {
+        const { resolveReviewRequests } = await import('./resolvers/chef/review-request-resolver')
+        return resolveReviewRequests(ctx)
+      },
+    },
+    // --- Wave 2: Operations/Events resolvers ---
+    {
+      name: 'prep-status',
+      resolve: async (ctx) => {
+        const { resolvePrepStatus } = await import('./resolvers/chef/prep-resolver')
+        return resolvePrepStatus(ctx)
+      },
+    },
+    {
+      name: 'shopping-lists',
+      resolve: async (ctx) => {
+        const { resolveShoppingLists } = await import('./resolvers/chef/shopping-list-resolver')
+        return resolveShoppingLists(ctx)
+      },
+    },
+    {
+      name: 'packing-status',
+      resolve: async (ctx) => {
+        const { resolvePackingStatus } = await import('./resolvers/chef/packing-resolver')
+        return resolvePackingStatus(ctx)
+      },
+    },
+    {
+      name: 'receipt-capture',
+      resolve: async (ctx) => {
+        const { resolveReceiptCapture } = await import('./resolvers/chef/receipt-resolver')
+        return resolveReceiptCapture(ctx)
+      },
+    },
+    {
+      name: 'hours-logging',
+      resolve: async (ctx) => {
+        const { resolveHoursNotLogged } = await import('./resolvers/chef/hours-resolver')
+        return resolveHoursNotLogged(ctx)
+      },
+    },
+    {
+      name: 'staff-issues',
+      resolve: async (ctx) => {
+        const { resolveStaffIssues } = await import('./resolvers/chef/staff-resolver')
+        return resolveStaffIssues(ctx)
+      },
+    },
+    // --- Wave 2: Intelligence/System resolvers ---
+    {
+      name: 'automation-activity',
+      resolve: async (ctx) => {
+        const { resolveAutomationActivity } = await import('./resolvers/chef/automation-resolver')
+        return resolveAutomationActivity(ctx)
+      },
+    },
+    {
+      name: 'certifications',
+      resolve: async (ctx) => {
+        const { resolveCertifications } = await import('./resolvers/chef/certification-resolver')
+        return resolveCertifications(ctx)
+      },
+    },
+    {
+      name: 'insurance',
+      resolve: async (ctx) => {
+        const { resolveInsurancePolicies } = await import('./resolvers/chef/insurance-resolver')
+        return resolveInsurancePolicies(ctx)
+      },
+    },
+    // --- Wave 2: Config/Onboarding resolvers ---
+    {
+      name: 'onboarding',
+      resolve: async (ctx) => {
+        const { resolveOnboardingGaps } = await import('./resolvers/chef/onboarding-resolver')
+        return resolveOnboardingGaps(ctx)
+      },
+    },
+    // --- Wave 2: Network/Social resolvers ---
+    {
+      name: 'network-activity',
+      resolve: async (ctx) => {
+        const { resolveNetworkActivity } = await import('./resolvers/chef/network-resolver')
+        return resolveNetworkActivity(ctx)
+      },
+    },
   ]
 }
 
