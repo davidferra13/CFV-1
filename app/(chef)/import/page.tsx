@@ -85,6 +85,24 @@ export default async function ImportPage({ searchParams }: { searchParams: { mod
         </p>
       </div>
 
+      <div className="rounded-lg border border-stone-700 bg-stone-900 p-4">
+        <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+          <div>
+            <p className="text-sm font-semibold text-stone-100">Setting up an existing business?</p>
+            <p className="mt-1 text-sm text-stone-500">
+              Use Business History Import to choose organized files or Gmail recovery, then review
+              staged clients, events, inquiries, payments, preferences, and follow-ups.
+            </p>
+          </div>
+          <Link
+            href="/imports/business-history"
+            className="shrink-0 rounded-md bg-brand-600 px-3 py-2 text-sm font-medium text-white hover:bg-brand-500"
+          >
+            Open Business History
+          </Link>
+        </div>
+      </div>
+
       {!aiConfigured && (
         <Alert variant="warning" title="Smart Import Not Configured">
           Set the{' '}

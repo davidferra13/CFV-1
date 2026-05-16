@@ -7,6 +7,7 @@ import {
   Contact,
   MessageSquareDashed,
   ChartLineUp,
+  Brain,
   History as HistoryIcon,
   UserPlus,
 } from '@/components/ui/icons'
@@ -15,6 +16,7 @@ const tabs = [
   { label: 'Directory', href: '/clients', icon: Contact },
   { label: 'Communication', href: '/clients/communication', icon: MessageSquareDashed },
   { label: 'Insights', href: '/clients/insights', icon: ChartLineUp },
+  { label: 'Intelligence', href: '/clients/intelligence', icon: Brain },
   { label: 'History', href: '/clients/history', icon: HistoryIcon },
 ] as const
 
@@ -28,6 +30,7 @@ const hubPrefixes = [
   '/clients/history',
   '/clients/active',
   '/clients/inactive',
+  '/clients/intelligence',
   '/clients/csv-export',
   '/clients/duplicates',
   '/clients/gift-cards',
