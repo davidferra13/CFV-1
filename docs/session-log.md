@@ -1,5 +1,15 @@
 # Session Log
 
+## 2026-05-15 18:28 EDT
+
+- Agent: Codex
+- Task: Created Mobile Pass v1 skill/tooling, verified a focused public mobile pass, and queued Mobile Pass v2 follow-up.
+- Status: completed
+- Files touched: `.claude/skills/mobile-pass/SKILL.md`, `scripts/mobile-pass.mjs`, `tests/mobile/mobile-visual-audit.spec.ts`, `.agents/skills/build-queue/scripts/build-queue.mjs`, `.agents/build-queue/active/BQ-20260515T222803Z-mobile-pass-v2-automatic-ui-criteria-and-changed-route-proof.md`, `docs/session-log.md`
+- Commits: none; checkout had extensive unrelated dirty work, so no staging/commit/push was attempted.
+- Build state on departure: no full build or typecheck run. Targeted checks passed: `node --check scripts/mobile-pass.mjs`, `node --check .agents/skills/build-queue/scripts/build-queue.mjs`, focused Prettier checks, and `node scripts/mobile-pass.mjs --routes "/" --scope public --mode quick --skip-auth-bootstrap`.
+- Notes: Canonical app server at `http://localhost:3100` was reused. Focused mobile pass produced `reports/mobile-pass/latest.md` with 1 route, 6 executions, 0 failures. New active queue item: `BQ-20260515T222803Z-mobile-pass-v2-automatic-ui-criteria-and-changed-route-proof`.
+
 ## 2026-05-14 ~21:00 EST
 
 - Agent: Claude Opus 4.6

@@ -1,26 +1,59 @@
 # Agent Context: Circles Domain
 
 > **Load this document into any agent working on circles, hub, communication, events, clients, inquiries, menus, sourcing, corporate, crew, or community features.**
-> Last updated: 2026-05-09
+> Last updated: 2026-05-15
 
 ---
 
+## 0. Current North Star
+
+Users live in portals and Circles.
+
+- **Portal:** private cockpit for a role. Source-of-truth edits, settings, private work, finance, admin, and canonical records live here.
+- **Circle:** shared operating space for relationships. Multi-party context, messages, decisions, status, memory, evidence, approvals, and handoffs live here.
+
+If work is private or canonical, it belongs in a portal. If work involves other people, shared context, approvals, visibility, support, or relationship continuity, it belongs in a Circle or is projected into one.
+
+The canonical domain charter is `docs/domain/circles.md`. The research-to-build extraction is `docs/specs/circles-operating-loop-build-extraction.md`.
+
 ## 1. What Circles Are
 
-Circles are ChefFlow's **atomic relationship primitive**. One table (`hub_groups`), one messaging infrastructure, one permission model, seven relationship types. Every relationship between actors on ChefFlow lives inside a circle.
+Circles are ChefFlow's **shared relationship primitive**. One table (`hub_groups`) backs the shared workspace substrate: members, messages, notes, media, polls, invitations, notifications, and public token access.
 
-A circle is NOT a chat group. It is simultaneously a **communication channel** AND an **operational workspace** (ingredient sourcing, menu versioning, money configuration, layout planning, corporate procurement).
+A Circle is NOT a chat group. It is a communication channel, operational workspace, shared memory layer, and handoff surface. It coordinates around canonical business records but does not replace them.
+
+### Source-Of-Truth Boundary
+
+Circles coordinate. Domain records own canonical truth.
+
+| Canonical truth                              | Owning domain                              |
+| -------------------------------------------- | ------------------------------------------ |
+| Event lifecycle, date, address, status       | Events                                     |
+| Menu contents, approval state, revisions     | Menus                                      |
+| Quote pricing, quote state, line items       | Quotes                                     |
+| Payments, deposits, balance, refunds         | Ledger / financials                        |
+| Client CRM identity and relationship history | Clients                                    |
+| Guest dietary facts and RSVP facts           | Guests / event guests / hub profile inputs |
+| Staff identity and assignments               | Staff                                      |
+| Vendor identity, sourcing, orders            | Vendors / purchasing                       |
+| Contract status and document state           | Contracts                                  |
 
 ### Group Types (discriminator on `hub_groups.group_type`)
 
-| Type          | Purpose                                          | Auto-created?           |
-| ------------- | ------------------------------------------------ | ----------------------- |
-| `circle`      | Chef-to-client around an event/inquiry           | Yes, at inquiry         |
-| `dinner_club` | Multi-event persistent group (recurring clients) | Yes, on recurring setup |
-| `crew`        | Event staff coordination                         | Manual                  |
-| `community`   | Public food community (no chef owner)            | Manual                  |
-| `planning`    | Pre-booking collaborative planning               | Manual                  |
-| `bridge`      | Chef-to-chef collaboration workspace             | Manual                  |
+Current and planned naming is still being consolidated. Treat the following as the compatibility map until `lib/hub/circle-types.ts` exists.
+
+| Current value | Canonical Circle type   | Purpose                                                                                                                       | Auto-created?                                    |
+| ------------- | ----------------------- | ----------------------------------------------------------------------------------------------------------------------------- | ------------------------------------------------ |
+| `circle`      | Dinner Circle           | Chef-to-client around an event/inquiry                                                                                        | Yes, at inquiry / event share                    |
+| `dinner_club` | Client/recurring Circle | Multi-event persistent group for recurring clients; public discovery may legacy-project visible rows as community-style cards | Yes, on recurring setup where implemented        |
+| `crew`        | Crew Circle             | Event staff coordination                                                                                                      | Yes, on first staff assignment where implemented |
+| `community`   | Community Circle        | Public or member-scoped community group                                                                                       | Manual/system                                    |
+| `planning`    | Planning Circle         | Pre-booking collaborative planning                                                                                            | Manual/system                                    |
+| `bridge`      | Bridge Circle           | Chef-to-chef or cross-context collaboration workspace                                                                         | Manual/system                                    |
+
+Potential future types such as `client`, `vendor`, `partner`, `chef_collab`, or `event_collab` must go through the Circle taxonomy/access policy first. Do not add ad hoc `group_type` strings from feature code.
+
+Current drift to preserve for the next policy item: `crew` is live in `lib/hub/crew-circle-actions.ts`, but `HubGroup.group_type` and `CreateGroupSchema` still omit it. `dinner_club` is policy-canonical as client/recurring, while some public discovery behavior still projects it beside community Circles. Public join/email copy also still treats non-community groups as Dinner Circles.
 
 ---
 
@@ -28,7 +61,7 @@ A circle is NOT a chat group. It is simultaneously a **communication channel** A
 
 All tables in `lib/db/schema/schema.ts`.
 
-### `hub_groups` (the circle container)
+### `hub_groups` (the Circle container)
 
 - `group_type` - discriminator (see above)
 - `event_id` FK - links to `events`
@@ -43,7 +76,7 @@ All tables in `lib/db/schema/schema.ts`.
 
 ### `hub_group_members` (membership + permissions)
 
-- `role` - `'owner' | 'admin' | 'chef' | 'member' | 'viewer'`
+- `role` - `'owner' | 'admin' | 'chef' | 'host' | 'member' | 'viewer' | 'delegate'`
 - `can_post`, `can_invite`, `can_pin` - granular permissions
 - `notify_email`, `notify_push`, `quiet_hours_start/end`, `digest_mode` - notification prefs
 - `last_read_at`, `last_notified_at` - read/notification tracking
@@ -321,32 +354,34 @@ Defined in `lib/dinner-circles/types.ts`. Stored per-event in `event_share_setti
 
 ## 6. Architectural Invariants (Do Not Violate)
 
-1. **One table, many types.** All relationship types are `hub_groups` rows with different `group_type`. Never create separate relationship tables.
-2. **Circle-first communication.** Email is a notification layer pointing back to circles. Never make email the primary channel.
-3. **Auto-creation at inquiry.** Every inquiry gets a circle. Never require manual circle creation for the standard event flow.
-4. **Tenant isolation.** Each chef's data stays in their tenant. Circles allow controlled sharing through membership, not data copying.
-5. **Operational JSONB.** `DinnerCircleConfig` carries operational state (money, sourcing, menu, layout, corporate). Never split this into separate tables.
-6. **Readiness gates.** `DinnerCircleSnapshot.checks` gates event execution. Never bypass readiness checks.
-7. **Source tracking.** Every message records its `source` (circle, email, remy, system). Never lose provenance.
-8. **Lifecycle hooks.** Every event transition posts a structured message via `circleFirstNotify`. Never skip lifecycle notifications.
+1. **Portals own private/canonical work. Circles own shared coordination.** Do not make Circle membership equivalent to full linked-record access.
+2. **One substrate, many Circle types.** Relationship work should use `hub_groups`, membership, messages, notes, media, polls, invites, and access policy instead of new parallel group/chat systems.
+3. **Circle-first communication.** Email can notify or bridge back into Circles. Do not make email the long-term primary shared workspace when a Circle exists.
+4. **Auto-creation at inquiry/event-share.** Standard chef-client flows should not require manual Dinner Circle creation.
+5. **Tenant isolation.** Each chef's tenant data stays tenant-scoped. Circles allow controlled sharing through membership, token access, and linked-object policy, not data copying.
+6. **Client-safe token views.** Public `/hub/g/[groupToken]` access is intentionally low-friction but must sanitize members, profile tokens, financial data, chef-only notes, internal risk, and private household detail.
+7. **Operational JSONB is event projection, not Circle identity.** `DinnerCircleConfig` carries event-specific operational projection. `hub_groups` owns the shared workspace container.
+8. **Readiness and status are evidence-labeled.** Unknown, claimed, inferred, stale, and disputed facts must not be smoothed into confirmed public copy.
+9. **Source tracking.** Every message records its `source` (`circle`, `email`, `remy`, `system`). Never lose provenance.
+10. **Lifecycle hooks.** Event and quote transitions should post structured Circle messages through Circle-first notification paths where applicable.
 
 ---
 
 ## 7. Common Agent Tasks & Entry Points
 
-| Task                      | Start Here                                                                                                                                     |
-| ------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------- |
-| Add new notification type | `lib/hub/types.ts` (add to `HubNotificationType`), `lib/hub/circle-first-notify.ts` (add case), `lib/hub/circle-lifecycle-hooks.ts` (add hook) |
-| Add circle config section | `lib/dinner-circles/types.ts` (extend `DinnerCircleConfig`), `lib/dinner-circles/actions.ts` (update normalization)                            |
-| New readiness check       | `lib/dinner-circles/event-circle.ts` (add to `checks` array in `buildDinnerCircleSnapshot`)                                                    |
-| New group type            | `lib/hub/types.ts` (extend `HubGroup.group_type`), `lib/db/schema/schema.ts` (update enum)                                                     |
-| Circle UI work            | `app/(chef)/circles/` (pages), `components/hub/` (components)                                                                                  |
-| Corporate features        | `lib/dinner-circles/corporate-actions.ts`, `lib/hub/circle-approval-actions.ts`                                                                |
-| Menu polling              | `lib/hub/menu-poll-actions.ts`, `lib/hub/menu-poll-core.ts`                                                                                    |
-| Ingredient/sourcing       | `lib/dinner-circles/sourcing-actions.ts`, `lib/dinner-circles/ingredient-showcase.ts`                                                          |
-| Email integration         | `lib/hub/email-to-circle.ts` (inbound), `lib/hub/circle-first-notify.ts` (outbound)                                                            |
-| Community/discovery       | `lib/hub/community-circle-actions.ts`, `app/(public)/hub/circles/page.tsx`                                                                     |
-| Crew circles              | `lib/hub/crew-circle-actions.ts`, `components/events/crew-circle-card.tsx`                                                                     |
+| Task                      | Start Here                                                                                                                                                       |
+| ------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Add new notification type | `lib/hub/types.ts` (add to `HubNotificationType`), `lib/hub/circle-first-notify.ts` (add case), `lib/hub/circle-lifecycle-hooks.ts` (add hook)                   |
+| Add circle config section | `lib/dinner-circles/types.ts` (extend `DinnerCircleConfig`), `lib/dinner-circles/actions.ts` (update normalization)                                              |
+| New readiness check       | `lib/dinner-circles/event-circle.ts` (add to `checks` array in `buildDinnerCircleSnapshot`)                                                                      |
+| New Circle type           | Start with `docs/domain/circles.md`, then add/extend a taxonomy helper such as `lib/hub/circle-types.ts`; do not bypass policy with ad hoc `group_type` strings. |
+| Circle UI work            | `app/(chef)/circles/` (pages), `components/hub/` (components)                                                                                                    |
+| Corporate features        | `lib/dinner-circles/corporate-actions.ts`, `lib/hub/circle-approval-actions.ts`                                                                                  |
+| Menu polling              | `lib/hub/menu-poll-actions.ts`, `lib/hub/menu-poll-core.ts`                                                                                                      |
+| Ingredient/sourcing       | `lib/dinner-circles/sourcing-actions.ts`, `lib/dinner-circles/ingredient-showcase.ts`                                                                            |
+| Email integration         | `lib/hub/email-to-circle.ts` (inbound), `lib/hub/circle-first-notify.ts` (outbound)                                                                              |
+| Community/discovery       | `lib/hub/community-circle-actions.ts`, `app/(public)/hub/circles/page.tsx`                                                                                       |
+| Crew circles              | `lib/hub/crew-circle-actions.ts`, `components/events/crew-circle-card.tsx`                                                                                       |
 
 ---
 
