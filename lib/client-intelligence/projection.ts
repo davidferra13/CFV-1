@@ -1414,7 +1414,7 @@ function buildEmptyStates(
   if (!facts.some((fact) => fact.category === 'Events & Occasions')) {
     states.push('No birthdays, anniversaries, or occasion dates are available.')
   }
-  if (!facts.some((fact) => fact.sourceType === 'event')) {
+  if (!facts.some((fact) => fact.evidence.some((e) => e.sourceType === 'event'))) {
     states.push('No event history is available for projection.')
   }
   if (predictions.length === 0) {

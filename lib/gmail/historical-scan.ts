@@ -250,6 +250,10 @@ export async function runHistoricalScanBatch(
     return result
   }
 
+  // scanConn is guaranteed non-null here (early returns above), but TS
+  // cannot narrow across closure boundaries, so capture a local const.
+  const conn = scanConn!
+
   async function updateScanState(updates: Record<string, unknown>) {
     await db
       .from('google_connections')
@@ -257,11 +261,11 @@ export async function runHistoricalScanBatch(
       .eq('chef_id', chefId)
       .eq('tenant_id', tenantId)
 
-    if (scanConn.mailbox_id) {
+    if (conn.mailbox_id) {
       await db
         .from('google_mailboxes')
         .update(updates)
-        .eq('id', scanConn.mailbox_id)
+        .eq('id', conn.mailbox_id)
         .eq('tenant_id', tenantId)
     }
   }

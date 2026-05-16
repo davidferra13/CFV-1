@@ -67,7 +67,8 @@ export function classifyBusinessHistoryEmail({
       /\b(loves|hates|does not eat|favorite|avoid)\b/i,
     ])
   ) {
-    if (!category || category === 'existing_thread') category = 'preference'
+    if (!category || (category as BusinessHistoryFindingCategory) === 'existing_thread')
+      category = 'preference'
     score += 2
     signals.push('menu_or_preference_signal')
   }
@@ -78,7 +79,8 @@ export function classifyBusinessHistoryEmail({
       /\b(awaiting|pending|no response|haven't heard|have not heard)\b/i,
     ])
   ) {
-    if (!category || category === 'existing_thread') category = 'follow_up'
+    if (!category || (category as BusinessHistoryFindingCategory) === 'existing_thread')
+      category = 'follow_up'
     score += 2
     signals.push('follow_up_signal')
   }
@@ -91,7 +93,7 @@ export function classifyBusinessHistoryEmail({
       /\b(january|february|march|april|may|june|july|august|september|october|november|december)\b/i,
     ])
   ) {
-    if (!category || category === 'client') category = 'event'
+    if (!category || (category as BusinessHistoryFindingCategory) === 'client') category = 'event'
     score += 2
     signals.push('event_history_signal')
   }
