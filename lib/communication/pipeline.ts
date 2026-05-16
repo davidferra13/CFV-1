@@ -575,6 +575,21 @@ export async function ingestCommunicationEvent(input: CommunicationEventInput) {
     actorId: input.actorId,
   })
 
+  // SMS triage gate: create triage entry for chef review
+  if (input.direction === 'inbound' && input.source === 'sms') {
+    import('@/lib/sms/triage-gate')
+      .then(({ createSmsTriage }) =>
+        createSmsTriage({
+          tenantId: input.tenantId,
+          threadId,
+          senderPhone: input.senderIdentity,
+          content: normalizedContent,
+          resolvedClientId,
+        })
+      )
+      .catch((err) => console.error('[pipeline] sms triage-gate failed (non-fatal):', err))
+  }
+
   // Auto-stage: when sender is unknown and message is triage-visible,
   // create a staged client + staged inquiry so the chef can confirm or dismiss.
   if (input.direction === 'inbound' && !resolvedClientId && !event.is_raw_signal_only) {
@@ -608,6 +623,13 @@ export async function ingestCommunicationEvent(input: CommunicationEventInput) {
         })
       })
       .catch((err) => console.error('[pipeline] inbound notification failed (non-fatal):', err))
+  }
+
+  // SMS auto-ack (non-blocking, <500ms fast path)
+  if (input.direction === 'inbound' && input.source === 'sms') {
+    import('@/lib/sms/auto-ack')
+      .then(({ triggerSmsAck }) => triggerSmsAck(input.tenantId, threadId, input.senderIdentity))
+      .catch((err) => console.error('[pipeline] sms auto-ack failed (non-fatal):', err))
   }
 
   return {
