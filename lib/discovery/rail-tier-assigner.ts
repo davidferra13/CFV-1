@@ -14,11 +14,8 @@ import type { PriorityQueue } from '@/lib/queue/types'
 import type { ChefRailCandidate } from './chef-rail-contracts'
 import type { UniversalRailItem } from './universal-rail-types'
 import { dispatchAllResolvers } from './god-mode-dispatcher'
-import {
-  applyEscalation,
-  dedupeOperatingLoopItems,
-  getOperatingLoopScore,
-} from './god-mode-assembly'
+import { applyEscalation, dedupeOperatingLoopItems } from './god-mode-assembly'
+import { computeUniversalRailScore, ROLE_WEIGHT_PROFILES } from './universal-rail-scoring'
 import { scoreChefRailCandidate } from './chef-rail-priority'
 import { requireChef } from '@/lib/auth/get-user'
 import { isItemDismissed } from './universal-rail-state'
@@ -45,14 +42,100 @@ export interface TieredRailResult {
 // ---------------------------------------------------------------------------
 
 function mapGodModeTierToUnified(item: GodModeResolvedItem, score: number): UnifiedTier {
-  // p0 items or very high scores are Critical
-  if (item.tier === 'p0' || score > 90) return 'critical'
-  // p1 or high scores are Action
-  if (item.tier === 'p1' || score > 60) return 'action'
-  // p2/p3 are Awareness
-  if (item.tier === 'p2' || item.tier === 'p3' || score > 30) return 'awareness'
-  // p4 and low scores are Opportunity
+  if (item.tier === 'p0' || score >= 80) return 'critical'
+  if (item.tier === 'p1' || score >= 50) return 'action'
+  if (item.tier === 'p2' || item.tier === 'p3' || score >= 20) return 'awareness'
   return 'opportunity'
+}
+
+// ---------------------------------------------------------------------------
+// Spec-aligned multiplicative scoring adapter for GodModeResolvedItem
+// ---------------------------------------------------------------------------
+
+const LOOP_STATE_URGENCY: Record<string, number> = {
+  blocked: 95,
+  waiting: 80,
+  active: 70,
+  uncertain: 50,
+  stale: 20,
+  snoozed: 10,
+  dismissed: 5,
+  done: 0,
+}
+
+const EVIDENCE_RELEVANCE: Record<string, number> = {
+  confirmed: 90,
+  computed: 75,
+  user_entered: 65,
+  inferred: 40,
+  claimed: 30,
+  unknown: 15,
+  stale: 10,
+  disputed: 5,
+}
+
+function scoreGodModeItem(item: GodModeResolvedItem, now: Date): number {
+  const baseUrgency = LOOP_STATE_URGENCY[item.loopState ?? ''] ?? 50
+  const relevance = EVIDENCE_RELEVANCE[item.evidenceLabel ?? ''] ?? 30
+  const confidence = typeof item.confidence === 'number' ? item.confidence * 100 : 50
+
+  let ageMs = 0
+  let windowMs = 0
+  if (item.expiresAt) {
+    const totalWindow = item.expiresAt.getTime() - now.getTime() + 7 * 86_400_000
+    windowMs = Math.max(totalWindow, 1)
+    ageMs = Math.max(0, windowMs - (item.expiresAt.getTime() - now.getTime()))
+  }
+
+  let boostValue = 0
+  if (item.nextAction) boostValue += 8
+  if (item.proofHref) boostValue += 4
+  if (item.waitingOn?.followUpAt) {
+    const hrs = (Date.parse(item.waitingOn.followUpAt) - now.getTime()) / 3_600_000
+    if (hrs <= 0) boostValue += 15
+    else if (hrs <= 24) boostValue += 10
+    else if (hrs <= 72) boostValue += 5
+  }
+
+  const breakdown = computeUniversalRailScore({
+    definition: {
+      id: item.definitionId,
+      role: 'chef',
+      label: item.label,
+      labelTemplate: '',
+      category: item.sourceKind ?? 'system',
+      baseUrgency,
+      urgencyDecayFn: item.expiresAt ? 'deadline' : 'none',
+      relevanceSignals: [],
+      freshnessWindow: '7d',
+      pageAffinity: '',
+      pageAffinityBoost: 0,
+      href: item.destination,
+      hrefTemplate: '',
+      dataSources: [],
+      privacy: 'tenant_scoped',
+      dismissable: true,
+      expandable: false,
+      hoverAction: 'none',
+      clickAction: 'navigate',
+      renderHints: { presentation: 'card' },
+      maxImpressions: -1,
+      cooldownMinutes: 0,
+      scoringNotes: '',
+    },
+    weights: ROLE_WEIGHT_PROFILES.chef,
+    now,
+    ageMs,
+    windowMs,
+    relevanceScore: relevance,
+    userAffinityScore: confidence,
+    impressionCount: 0,
+    lastSeenAt: null,
+    currentPage: null,
+    boostValue,
+  })
+
+  return breakdown.final
 }
 
 // ---------------------------------------------------------------------------
@@ -250,7 +333,7 @@ export async function assembleTieredRail(
   }
 
   for (const item of deduped) {
-    const score = getOperatingLoopScore(item, now)
+    const score = scoreGodModeItem(item, now)
     const tier = mapGodModeTierToUnified(item, score)
     // Attach computed score for sorting
     const scored = { ...item, score }
