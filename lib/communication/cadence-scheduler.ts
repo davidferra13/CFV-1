@@ -561,7 +561,8 @@ async function sendCadenceEmail(
       chefName,
       message,
       occasion,
-      cadencePoint,
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      cadencePoint: cadencePoint as any,
       eventDate: event.event_date || event.serve_time || '',
       guestCount,
       location,

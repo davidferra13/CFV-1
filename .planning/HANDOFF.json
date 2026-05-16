@@ -1,6 +1,6 @@
 {
   "version": "1.0",
-  "timestamp": "2026-05-16T20:11:07.716Z",
+  "timestamp": "2026-05-16T21:27:35.197Z",
   "source": "auto-postool",
   "partial": false,
   "phase": null,
@@ -26,31 +26,7 @@
     },
     {
       "status": "M",
-      "path": "app/(chef)/events/[id]/_components/event-detail-money-tab.tsx"
-    },
-    {
-      "status": "M",
-      "path": "app/api/webhooks/stripe/route.ts"
-    },
-    {
-      "status": "M",
-      "path": "components/rail/rail-item-row.tsx"
-    },
-    {
-      "status": "M",
-      "path": "components/rail/tier-row.tsx"
-    },
-    {
-      "status": "M",
-      "path": "docs/build-state.md"
-    },
-    {
-      "status": "M",
-      "path": "docs/intensify/lifecycle.md"
-    },
-    {
-      "status": "M",
-      "path": "docs/sync-status.json"
+      "path": "docs/UNIFIED-BUILD-QUEUE.md"
     },
     {
       "status": "M",
@@ -58,75 +34,15 @@
     },
     {
       "status": "M",
-      "path": "lib/ai/agent-actions/restricted-actions.ts"
-    },
-    {
-      "status": "M",
-      "path": "lib/auth/route-policy.ts"
-    },
-    {
-      "status": "M",
-      "path": "lib/commerce/export-actions.ts"
-    },
-    {
-      "status": "M",
       "path": "lib/communication/cadence-scheduler.ts"
     },
     {
       "status": "M",
-      "path": "lib/documents/pdf-generator.ts"
-    },
-    {
-      "status": "M",
-      "path": "lib/email/templates/confidence-cadence.tsx"
-    },
-    {
-      "status": "M",
-      "path": "lib/email/templates/post-event-thank-you.tsx"
-    },
-    {
-      "status": "M",
-      "path": "lib/finance/deposit-actions.ts"
-    },
-    {
-      "status": "M",
-      "path": "lib/finance/recurring-invoice-actions.ts"
-    },
-    {
-      "status": "M",
-      "path": "lib/invoices/delivery-actions.ts"
-    },
-    {
-      "status": "M",
-      "path": "lib/invoices/index.ts"
-    },
-    {
-      "status": "M",
-      "path": "lib/lifecycle/client-notifications.ts"
-    },
-    {
-      "status": "M",
-      "path": "next.config.js"
-    },
-    {
-      "status": "M",
-      "path": "tsconfig.next.json"
+      "path": "lib/lifecycle/confidence-cadence.ts"
     },
     {
       "status": "??",
-      "path": ".claude/skills/deep-pass/"
-    },
-    {
-      "status": "??",
-      "path": ".claude/skills/intensify/"
-    },
-    {
-      "status": "??",
-      "path": ".claude/skills/swarm-handoff/"
-    },
-    {
-      "status": "??",
-      "path": ".claude/skills/test-scan/"
+      "path": ".claude/skills/dispatch/"
     },
     {
       "status": "??",
@@ -158,113 +74,49 @@
     },
     {
       "status": "??",
-      "path": "app/(chef)/explore/"
+      "path": "database/migrations/20260517000003_cadence_sms_channel.sql"
     },
     {
       "status": "??",
-      "path": "components/costing/live-menu-cost-panel.tsx"
+      "path": "docs/intensify/client-messaging.md"
     },
     {
       "status": "??",
-      "path": "docs/CODEX-QUEUE-SYNC-PROMPT.md"
+      "path": "docs/specs/client-messaging-cadence.md"
     },
     {
       "status": "??",
-      "path": "docs/MERGED-BUILD-QUEUE-PROMPT.md"
+      "path": "docs/specs/collaborative-menu-editing.md"
     },
     {
       "status": "??",
-      "path": "docs/handoffs/2026-05-16-route-consolidation-swarm.md"
+      "path": "docs/specs/dish-level-menu-assembly.md"
     },
     {
       "status": "??",
-      "path": "docs/intensify/README.md"
+      "path": "docs/specs/fixed-menu-offerings.md"
     },
     {
       "status": "??",
-      "path": "docs/intensify/SWARM-HANDOFF-INTENSIFY.md"
+      "path": "docs/specs/menu-fate-tracking.md"
     },
     {
       "status": "??",
-      "path": "docs/intensify/build-performance.md"
+      "path": "docs/specs/menu-fork-lineage.md"
     },
     {
       "status": "??",
-      "path": "docs/intensify/cil.md"
+      "path": "docs/specs/menu-proposal-sets.md"
     },
     {
       "status": "??",
-      "path": "docs/intensify/client-portal.md"
+      "path": "docs/specs/menu-provenance-system.md"
     },
     {
       "status": "??",
-      "path": "docs/intensify/communication.md"
-    },
-    {
-      "status": "??",
-      "path": "docs/intensify/deep-pass.md"
-    },
-    {
-      "status": "??",
-      "path": "docs/intensify/intelligence.md"
-    },
-    {
-      "status": "??",
-      "path": "docs/intensify/intensify.md"
-    },
-    {
-      "status": "??",
-      "path": "docs/intensify/invoices.md"
-    },
-    {
-      "status": "??",
-      "path": "docs/intensify/pricing.md"
-    },
-    {
-      "status": "??",
-      "path": "docs/intensify/route-proliferation.md"
-    },
-    {
-      "status": "??",
-      "path": "docs/specs/chef-as-consumer.md"
-    },
-    {
-      "status": "??",
-      "path": "docs/specs/remy-sms-auto-triage.md"
-    },
-    {
-      "status": "??",
-      "path": "docs/swarm-handoff-2026-05-16-test-verification.md"
-    },
-    {
-      "status": "??",
-      "path": "docs/test-coverage-blueprint.md"
-    },
-    {
-      "status": "??",
-      "path": "lib/email/brand-voice.ts"
-    },
-    {
-      "status": "??",
-      "path": "lib/email/templates/personal-thank-you.tsx"
-    },
-    {
-      "status": "??",
-      "path": "lib/invoices/reminder-actions.ts"
-    },
-    {
-      "status": "??",
-      "path": "lib/lifecycle/cadence-trigger-handler.ts"
-    },
-    {
-      "status": "??",
-      "path": "lib/pricing/live-menu-cost-actions.ts"
-    },
-    {
-      "status": "??",
-      "path": "tests/unit/tiered-rail-action.test.ts"
+      "path": "lib/pricing/learning-corrections.ts"
     }
   ],
   "next_action": null,
-  "context_notes": "Recent commits:\n0bc6447fc docs(rail): intensify deep pass #2 + swarm handoff for 6 build items\n997a8065c docs: swarm handoff for intelligence wiring (8 queue items, 3 waves)\n3007f154d feat(nav): wire navigation PROMOTE layer (usage-weighted, pinned, rail-priority)\n2a3e0999d feat(discovery): wire CIL + intelligence + scheduled-messages into god-mode rail\nf159306a8 feat(rail): scoring engine migration + lifecycle spec + intensify swarm handoff"
+  "context_notes": "Recent commits:\nc233f31ca docs: swarm handoff prompt for next session (7 agents, 3 waves)\n48ebcde0d feat(intelligence): wire 5 orphaned outputs into active consumers + signal dedup\ncaa18af49 feat(menus): ownership model deep-pass - schema sync, RLS, collaborator gate\n81c481b86 feat(rail): wire Rail Item Lifecycle Engine into dashboard UI\n039abad5a docs: mark Rail Item Lifecycle Engine as PARTIAL (built, not wired)"
 }

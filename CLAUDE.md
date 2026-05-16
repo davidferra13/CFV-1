@@ -21,13 +21,25 @@ This file is read by Claude Code at the start of every conversation. These rules
 | Tier         | Model         | Agent/Tool        | Cost      | Purpose                                              |
 | ------------ | ------------- | ----------------- | --------- | ---------------------------------------------------- |
 | **Local**    | Gemma 4 (e4b) | `ollama-delegate` | $0        | Mechanical bulk work. Drafts, boilerplate, summaries |
+| **Codex**    | Codex CLI     | `codex exec`      | Flat-rate | Spec-following builds, tests, UI, single-concern     |
 | **Worker**   | Haiku 4.5     | `haiku-worker`    | Cheap     | Judgment-light Claude agent tasks                    |
 | **Executor** | Opus 4.6      | (main session)    | Standard  | All normal work. Default                             |
 | **Advisor**  | Opus 4.6      | `opus-advisor`    | Expensive | Hard decisions only                                  |
 
 ### MODEL SELECTION
 
-Agent tool calls can use `model: "haiku"` (cheap/mechanical), `model: "sonnet"` (balanced), or `model: "opus"` (complex). Prefer direct Grep/Glob/Read over spawning agents for simple lookups.
+Agent tool calls can use `model: "haiku"` (cheap/mechanical), `model: "sonnet"` (balanced), or `model: "opus"` (complex). **Default bias: Codex first** for any spec-following work. Only escalate to Haiku/Opus agents when judgment needed. Prefer direct Grep/Glob/Read over spawning agents for simple lookups.
+
+### CODEX DISPATCH (PRIMARY BUILD TIER)
+
+Codex handles bulk of build work. Invoke via `/dispatch` skill or directly:
+
+- `codex exec "Read [spec-path] and execute it. [constraints]"`
+- One task per invocation (git isolation)
+- Always reference spec file, scope constraints, and done-when criteria
+- Sequential dispatch (Codex handles one at a time)
+- Codex-safe: single-concern, spec-following, tests, UI polish, migrations, mechanical wiring
+- Opus-only: multi-system integration, security, architecture, debugging without repro steps
 
 ### LOCAL DELEGATION
 

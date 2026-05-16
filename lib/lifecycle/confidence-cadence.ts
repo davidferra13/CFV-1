@@ -86,6 +86,13 @@ const PORTAL_CONTENT_MAP: Record<CadencePoint, PortalContent> = {
     showMenu: true,
     showChecklist: true,
   },
+  '48_hours_before': {
+    headline: '48 hours out',
+    description: 'Final prep is underway. Confirm any last-minute details with your chef.',
+    showCountdown: true,
+    showMenu: true,
+    showChecklist: true,
+  },
   '3_days_before': {
     headline: 'Almost here',
     description: 'Prep begins soon. Review arrival details and any last requests.',
@@ -105,6 +112,13 @@ const PORTAL_CONTENT_MAP: Record<CadencePoint, PortalContent> = {
     description: 'Your chef is preparing for your event. Enjoy!',
     showCountdown: false,
     showMenu: true,
+    showChecklist: false,
+  },
+  post_event: {
+    headline: 'Hope you enjoyed it!',
+    description: 'Your event is complete. Leave feedback or rebook anytime.',
+    showCountdown: false,
+    showMenu: false,
     showChecklist: false,
   },
 }
