@@ -42,7 +42,7 @@ test('autocomplete ranks prefix, alias, recent, and favorite matches across disc
   })
 
   assert.equal(suggestions[0].label, 'Sushi')
-  assert.equal(suggestions[0].type, 'dish')
+  assert.equal(suggestions[0].type, 'cuisine')
   assert.equal(suggestions[0].reason, 'favorite')
   assert.ok(suggestions.some((suggestion) => suggestion.label === 'Japanese'))
   assert.ok(suggestions.every((suggestion) => suggestion.href.startsWith('/')))
