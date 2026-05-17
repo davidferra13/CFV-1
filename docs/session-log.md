@@ -1,5 +1,24 @@
 # Session Log
 
+## 2026-05-17 14:40 EDT
+
+- Agent: Claude Opus 4.6 (main session + 4 parallel agents)
+- Task: /intensify events deep-pass, 5 moves (6 proposed, 1 dropped)
+- Status: completed
+- Files touched:
+  - lib/events/shared-event-query.ts (NEW, 5 query helpers)
+  - lib/events/event-risk-assessment.ts (migrated to shared query)
+  - lib/calls/actions.ts (migrated to shared query)
+  - lib/cil/types.ts (added event_debrief signal source)
+  - lib/cil/ingest.ts (added event_debrief ingestor)
+  - lib/events/post-event-learning-actions.ts (CIL emission on learning save)
+  - lib/communication/cadence-scheduler.ts (risk-aware + touchpoint-aware)
+  - lib/events/closeout-types.ts (unified from two parallel files)
+  - lib/lifecycle/closeout-loop-actions.ts (import migration)
+- Commits: 4d7e202aa
+- Build state on departure: green (6 pre-existing errors in lib/ui/, 0 new)
+- Notes: Move 4 (operating-spine -> critical-path) dropped because operating-spine.ts does not exist. 58 more event query consumers remain as backlog for shared-event-query migration. closeout-loop-types.ts was never git-tracked so deletion is implicit.
+
 ## 2026-05-17 09:00 EDT
 
 - Agent: Claude Opus 4.6 (main session + 13 parallel agents)
