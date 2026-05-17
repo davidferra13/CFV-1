@@ -12,7 +12,10 @@ import {
   getResponseQueue,
 } from '@/lib/inquiries/actions'
 import type { ReadinessScore, ResponseQueueItem } from '@/lib/inquiries/actions'
-import { getBookingScoresForOpenInquiries } from '@/lib/analytics/booking-score'
+import {
+  getBookingScoresForOpenInquiries,
+  getPipelineQualityScore,
+} from '@/lib/analytics/booking-score'
 import { BookingScoreBadge } from '@/components/analytics/booking-score-badge'
 import { ReadinessScoreBadge } from '@/components/inquiries/readiness-score-badge'
 
@@ -35,6 +38,7 @@ import { getGmailSyncStatus } from '@/lib/gmail/actions'
 import { QuickLogButton } from '@/components/inquiries/quick-log-button'
 import { scoreEventUrgency } from '@/lib/inquiries/event-urgency'
 import { EventUrgencyBadge } from '@/components/inquiries/event-urgency-badge'
+import { ReturningClientBadge } from '@/components/inquiries/returning-client-badge'
 
 const CHEF_ACTION_STATUSES = new Set(['new', 'awaiting_chef'])
 
@@ -152,6 +156,11 @@ async function InquiryList({ filter }: { filter: InquiryFilter }) {
                   <span className="font-medium text-stone-900">{name}</span>
                   <InquiryStatusBadge status={inquiry.status as any} />
                   <InquiryChannelBadge channel={inquiry.channel} />
+                  {(inquiry as any).source_type === 'guest_feedback' && (
+                    <Badge variant="secondary" className="text-xxs px-1.5 py-0">
+                      From dinner guest
+                    </Badge>
+                  )}
                   {isDemoInquiry(inquiry) && (
                     <Badge variant="info" className="text-xxs px-1.5 py-0">
                       Sample
@@ -160,6 +169,19 @@ async function InquiryList({ filter }: { filter: InquiryFilter }) {
                   {score && <BookingScoreBadge score={score} />}
                   {readiness && <ReadinessScoreBadge score={readiness} />}
                   <EventUrgencyBadge urgency={eventUrgency} />
+                  {(() => {
+                    const rcMatch = (inquiry.unknown_fields as any)?.returning_client_match
+                    if (!(inquiry as any).returning_client_id || !rcMatch) return null
+                    return (
+                      <ReturningClientBadge
+                        previousEvents={rcMatch.previousEvents ?? 0}
+                        lastEventDate={rcMatch.lastEventDate ?? null}
+                        isLapsed={rcMatch.isLapsed ?? false}
+                        lapsedMonths={rcMatch.lapsedMonths ?? null}
+                        confidence={(inquiry as any).returning_client_confidence ?? 'possible'}
+                      />
+                    )
+                  })()}
                 </div>
                 {inquiry.confirmed_occasion && (
                   <p className="text-sm text-stone-600 mt-1">{inquiry.confirmed_occasion}</p>
@@ -209,10 +231,10 @@ export default async function InquiriesPage({
   await requireChef()
 
   const filter = (searchParams.status || 'all') as InquiryFilter
-  const gmailStatus = await getGmailSyncStatus().catch(() => ({
-    connected: false,
-    lastSyncedAt: null,
-  }))
+  const [gmailStatus, pipelineQuality] = await Promise.all([
+    getGmailSyncStatus().catch(() => ({ connected: false, lastSyncedAt: null })),
+    getPipelineQualityScore().catch(() => null),
+  ])
 
   // Primary tabs (max 6 visible per interface philosophy Section 6)
   const primaryTabs: { value: InquiryFilter; label: string }[] = [
@@ -256,6 +278,31 @@ export default async function InquiriesPage({
           </Link>
         </div>
       </div>
+
+      {pipelineQuality && pipelineQuality.totalInquiries > 0 && (
+        <div className="flex items-center gap-6 text-xs">
+          <span className="text-stone-400">
+            Pipeline Quality:{' '}
+            <span className="text-stone-100 font-medium">
+              {Math.round(pipelineQuality.avgScore)}/100
+            </span>
+          </span>
+          {pipelineQuality.highQualityCount > 0 && (
+            <span className="text-emerald-400">
+              {pipelineQuality.highQualityCount} high-quality
+            </span>
+          )}
+          {pipelineQuality.lowQualityCount > 0 && (
+            <span className="text-amber-400">{pipelineQuality.lowQualityCount} low-quality</span>
+          )}
+          <span className="text-stone-400">
+            Est. conversion:{' '}
+            <span className="text-stone-100 font-medium">
+              {Math.round(pipelineQuality.estimatedConversionRate * 100)}%
+            </span>
+          </span>
+        </div>
+      )}
 
       {/* Status Tabs (5 primary + 1 overflow select = 6 controls) */}
       <Card className="p-4">

@@ -171,6 +171,49 @@ export async function getBookingScoreForInquiry(inquiryId: string): Promise<Book
 // ─── Batch scorer for inquiry list ───────────────────────────────────────────
 // requireChef() is called ONCE here, not once per inquiry (avoids N+1 DB queries)
 
+export type PipelineQualityScore = {
+  avgScore: number
+  medianScore: number
+  highQualityCount: number
+  lowQualityCount: number
+  totalInquiries: number
+  estimatedConversionRate: number
+}
+
+export async function getPipelineQualityScore(): Promise<PipelineQualityScore> {
+  const scores = await getBookingScoresForOpenInquiries()
+
+  if (scores.length === 0) {
+    return {
+      avgScore: 0,
+      medianScore: 0,
+      highQualityCount: 0,
+      lowQualityCount: 0,
+      totalInquiries: 0,
+      estimatedConversionRate: 0,
+    }
+  }
+
+  const values = scores.map((s) => s.score)
+  const sorted = [...values].sort((a, b) => a - b)
+  const mid = Math.floor(sorted.length / 2)
+  const medianScore = sorted.length % 2 === 0 ? (sorted[mid - 1] + sorted[mid]) / 2 : sorted[mid]
+
+  const highQualityCount = values.filter((v) => v >= 65).length
+  const lowQualityCount = values.filter((v) => v < 40).length
+  const totalInquiries = scores.length
+  const avgScore = values.reduce((sum, v) => sum + v, 0) / totalInquiries
+
+  return {
+    avgScore,
+    medianScore,
+    highQualityCount,
+    lowQualityCount,
+    totalInquiries,
+    estimatedConversionRate: (highQualityCount / totalInquiries) * 0.6,
+  }
+}
+
 export async function getBookingScoresForOpenInquiries(): Promise<BookingScore[]> {
   const user = await requireChef()
   const db: any = createServerClient()

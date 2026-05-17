@@ -780,6 +780,21 @@ function ClientsTab({ p }: { p: AnalyticsHubProps }) {
           href="/clients"
         />
       </div>
+      {p.clientRetention.newClientsThisPeriod + p.clientRetention.returningClientsThisPeriod >
+        0 && (
+        <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
+          <StatCard
+            label="Client Composition"
+            value={`${p.clientRetention.newClientsThisPeriod} new / ${p.clientRetention.returningClientsThisPeriod} returning`}
+          />
+          <StatCard
+            label="Returning Client Revenue"
+            value={`${p.clientRetention.returningClientRevenuePercent}%`}
+            sub={`${p.clientRetention.newClientRevenuePercent}% from new clients`}
+            variant={p.clientRetention.returningClientRevenuePercent >= 50 ? 'success' : 'default'}
+          />
+        </div>
+      )}
       <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
         <StatCard
           label="Churn Rate"

@@ -6,6 +6,7 @@ import type { ProactiveSignal, SignalDomain } from '@/lib/cil/types'
 import { sendPaymentReminder } from '@/lib/invoices/reminder-actions'
 import { sendFollowUpDueEmailDelivery } from '@/lib/inquiries/follow-up-delivery'
 import { processDueCadenceItems } from '@/lib/communication/cadence-scheduler'
+import { processChurnTriggersForCadence } from '@/lib/intelligence/churn-cadence-bridge'
 import { createServerClient } from '@/lib/db/server'
 import { generateReengagementDraft } from '@/lib/ai/reengagement-draft'
 import { createNotification } from '@/lib/notifications/actions'
@@ -268,21 +269,169 @@ async function dispatchSignalAction(signal: ProactiveSignal, tenantId: string): 
       break
     }
 
+    // ── Pipeline: unsigned contracts -> notify chef to follow up ────────
+    case 'pipeline.unsignedContracts': {
+      const contractEventId = entityIds[0]
+      await createNotification({
+        tenantId,
+        recipientId: tenantId,
+        category: 'event',
+        action: 'event_status_change' as any,
+        title: signal.title,
+        body: signal.suggestedAction || 'Follow up on unsigned contracts before they expire.',
+        actionUrl: contractEventId ? `/events/${contractEventId}` : '/pipeline',
+        eventId: contractEventId || undefined,
+        metadata: { origin: 'cil', signalSource: source },
+      })
+      break
+    }
+
+    // ── Clients: VIP activity -> notify chef of high-value client action ──
+    case 'clients.vipActivity': {
+      const vipClientId = entityIds[0]
+      await createNotification({
+        tenantId,
+        recipientId: tenantId,
+        category: 'client',
+        action: 'client_reengagement_draft' as any,
+        title: signal.title,
+        body: signal.suggestedAction || 'A VIP client is active. Consider personalized outreach.',
+        actionUrl: vipClientId ? `/clients/${vipClientId}` : '/clients',
+        clientId: vipClientId || undefined,
+        metadata: { origin: 'cil', signalSource: source },
+      })
+      break
+    }
+
+    // ── Clients: rebooking prediction -> notify chef of upcoming window ──
+    case 'clients.rebookingPrediction': {
+      const predClientId = entityIds[0]
+      await createNotification({
+        tenantId,
+        recipientId: tenantId,
+        category: 'client',
+        action: 'client_reengagement_draft' as any,
+        title: signal.title,
+        body: signal.suggestedAction || 'Reach out with availability or a seasonal menu.',
+        actionUrl: predClientId ? `/clients/${predClientId}` : '/clients',
+        clientId: predClientId || undefined,
+        metadata: { origin: 'cil', signalSource: source, informational: true },
+      })
+      break
+    }
+
+    // ── Clients: spending decline -> notify chef of revenue drop ────────
+    case 'clients.spendingDecline': {
+      const declineClientId = entityIds[0]
+      await createNotification({
+        tenantId,
+        recipientId: tenantId,
+        category: 'client',
+        action: 'client_reengagement_draft' as any,
+        title: signal.title,
+        body:
+          signal.suggestedAction || 'A client is spending significantly less. Consider outreach.',
+        actionUrl: declineClientId ? `/clients/${declineClientId}` : '/clients',
+        clientId: declineClientId || undefined,
+        metadata: { origin: 'cil', signalSource: source },
+      })
+      break
+    }
+
+    // ── Clients: rebooking overdue -> prompt chef to re-engage ───────────
+    case 'clients.rebookingOverdue': {
+      const rebookClientId = entityIds[0]
+      if (rebookClientId) {
+        await scheduleChurnReengagement(tenantId, rebookClientId, signal)
+      }
+      break
+    }
+
+    // ── Churn prevention triggers -> differentiated re-engagement ────────
+    // These 6 sources come from the churn-prevention-triggers intelligence
+    // module, wired through the CIL clients analyzer. Each trigger type
+    // produces a tailored re-engagement draft with context-aware messaging.
+    case 'clients.churnOverdue':
+    case 'clients.churnDecliningFrequency':
+    case 'clients.churnDecliningSpend':
+    case 'clients.churnRejectedQuote':
+    case 'clients.churnNoResponse':
+    case 'clients.churnLongSilence':
+    case 'clients.churnGeneric': {
+      const churnClientId = entityIds[0]
+      if (churnClientId) {
+        await scheduleChurnReengagement(tenantId, churnClientId, signal)
+      }
+      // Also run the batch cadence bridge to catch any at-risk clients
+      // not yet surfaced by individual signals. Non-blocking.
+      try {
+        await processChurnTriggersForCadence(tenantId)
+      } catch {
+        // Bridge failure must never break signal dispatch
+      }
+      break
+    }
+
+    // ── Finance: revenue trends -> informational insight on revenue direction
+    case 'finance.revenueTrends': {
+      await createNotification({
+        tenantId,
+        recipientId: tenantId,
+        category: 'ops',
+        action: 'system_alert' as any,
+        title: signal.title,
+        body: signal.detail,
+        actionUrl: (actionPayload?.path as string) || '/analytics',
+        metadata: { origin: 'cil', signalSource: source, informational: true },
+      })
+      break
+    }
+
+    // ── Finance: expense spikes -> alert chef about cost anomaly ─────────
+    case 'finance.expenseSpikes': {
+      await createNotification({
+        tenantId,
+        recipientId: tenantId,
+        category: 'ops',
+        action: 'system_alert' as any,
+        title: signal.title,
+        body: signal.suggestedAction || 'Expenses spiked. Review recent purchases.',
+        actionUrl: (actionPayload?.path as string) || '/analytics/finance',
+        metadata: { origin: 'cil', signalSource: source },
+      })
+      break
+    }
+
     default:
       // Signal types without a wired dispatcher are silently dismissed
       break
+  }
+
+  // Non-blocking: bridge signal to outbound communication channels.
+  // Creates a notification with a valid action type so channel-router
+  // can deliver via email, push, and/or SMS. Has its own 24h dedup
+  // layer on top of the 1h signal dedup above.
+  try {
+    const { bridgeSignalToComm } = await import('@/lib/cil/signal-comm-bridge')
+    await bridgeSignalToComm(signal, tenantId)
+  } catch (err) {
+    console.error('[CIL] signal-comm-bridge failed (non-blocking):', err)
   }
 }
 
 // ─── Churn Re-Engagement Bridge ───────────────────────────────────────────────
 
 /**
- * When a churn signal fires (dormant or at-risk), create a personalized
- * re-engagement draft in scheduled_messages for chef review. Uses the AI
- * draft generator for personalized copy. Non-blocking: failures are logged
- * but never break the signal pipeline.
+ * When a churn signal fires (dormant, at-risk, or churn-prevention-trigger),
+ * create a personalized re-engagement draft in scheduled_messages for chef
+ * review. Uses the AI draft generator for personalized copy. Non-blocking:
+ * failures are logged but never break the signal pipeline.
  *
- * Dedup: skips if an unsent reengagement draft already exists for this client.
+ * Spam prevention (3 layers):
+ *   1. Pending draft dedup: skips if an unsent reengagement draft exists
+ *   2. 30-day outreach guard: skips if client was contacted in last 30 days
+ *      (checks both communication_events and sent scheduled_messages)
+ *   3. Signal-level dedup via buildDedupKey/shouldDispatch upstream
  */
 async function scheduleChurnReengagement(
   tenantId: string,
@@ -292,7 +441,7 @@ async function scheduleChurnReengagement(
   try {
     const db = createServerClient()
 
-    // Dedup: skip if a pending reengagement draft already exists for this client
+    // Layer 1: skip if a pending reengagement draft already exists for this client
     const { data: existing } = await db
       .from('scheduled_messages')
       .select('id')
@@ -303,6 +452,10 @@ async function scheduleChurnReengagement(
       .limit(1)
 
     if (existing && existing.length > 0) return
+
+    // Layer 2: 30-day recent outreach guard (prevents spam)
+    const recentlySent = await wasRecentlyContacted(db, tenantId, clientId, 30)
+    if (recentlySent) return
 
     // Fetch client info
     const { data: client } = await db
@@ -352,10 +505,9 @@ async function scheduleChurnReengagement(
     const bodyText =
       aiDraft?.body ||
       `It has been a while since your last experience with ${chefName}. Whether you are planning a celebration or a quiet dinner, ${chefName} would love to hear from you.`
-    const subject =
-      signal.source === 'clients.atRisk'
-        ? `${chefName} is thinking of you`
-        : `${chefName} would love to cook for you again`
+
+    // Differentiated subject lines based on churn trigger type
+    const subject = getChurnSubjectLine(signal.source, chefName)
 
     // Insert re-engagement draft for chef review (not auto-sent)
     await db.from('scheduled_messages').insert({
@@ -370,6 +522,8 @@ async function scheduleChurnReengagement(
         type: 'reengagement',
         ai_generated: true,
         churn_signal: signal.source,
+        churn_trigger_type: (signal.actionPayload?.churnTriggerType as string) || null,
+        churn_risk_level: (signal.actionPayload?.churnRiskLevel as string) || null,
         days_since_last_event: daysSince,
         last_occasion: lastEvent?.occasion || null,
         signal_detail: signal.detail,
@@ -398,5 +552,71 @@ async function scheduleChurnReengagement(
       errorMessage: err instanceof Error ? err.message : String(err),
       severity: 'low',
     })
+  }
+}
+
+/**
+ * Check if a client was contacted within the last N days.
+ * Checks two sources:
+ *   1. communication_events: outbound messages (email, SMS) to this client
+ *   2. scheduled_messages: sent re-engagement drafts for this client
+ * Returns true if any outreach was found, preventing spam.
+ */
+async function wasRecentlyContacted(
+  db: ReturnType<typeof createServerClient>,
+  tenantId: string,
+  clientId: string,
+  withinDays: number
+): Promise<boolean> {
+  const cutoff = new Date(Date.now() - withinDays * 24 * 60 * 60 * 1000).toISOString()
+
+  // Check communication_events for outbound messages to this client
+  const { data: recentComms } = await db
+    .from('communication_events')
+    .select('id')
+    .eq('tenant_id', tenantId)
+    .eq('resolved_client_id', clientId)
+    .eq('direction', 'outbound')
+    .gte('event_timestamp', cutoff)
+    .limit(1)
+
+  if (recentComms && recentComms.length > 0) return true
+
+  // Check scheduled_messages for recently sent re-engagement to this client
+  const { data: recentSent } = await db
+    .from('scheduled_messages')
+    .select('id')
+    .eq('tenant_id', tenantId)
+    .eq('client_id', clientId)
+    .eq('status', 'sent')
+    .gte('sent_at', cutoff)
+    .limit(1)
+
+  return !!(recentSent && recentSent.length > 0)
+}
+
+/**
+ * Returns a differentiated email subject line based on which churn trigger
+ * type fired. Different triggers warrant different tones: a rejected quote
+ * needs a different approach than simple long silence.
+ */
+function getChurnSubjectLine(signalSource: string, chefName: string): string {
+  switch (signalSource) {
+    case 'clients.churnRejectedQuote':
+      return `${chefName} has some new ideas for you`
+    case 'clients.churnDecliningSpend':
+      return `Something special from ${chefName}`
+    case 'clients.churnDecliningFrequency':
+      return `What is new with ${chefName}`
+    case 'clients.churnOverdue':
+      return `${chefName} is thinking of you`
+    case 'clients.churnLongSilence':
+      return `${chefName} would love to cook for you again`
+    case 'clients.churnNoResponse':
+      return `Quick check-in from ${chefName}`
+    case 'clients.atRisk':
+      return `${chefName} is thinking of you`
+    default:
+      return `${chefName} would love to cook for you again`
   }
 }

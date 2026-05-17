@@ -409,6 +409,26 @@ export interface RemyContext {
   proactiveSignals?: string
   /** Seasonal menu correlation - which dishes performed well in which seasons */
   seasonalMenuCorrelation?: string
+  /** Portfolio LTV summary (total value, avg, at-risk revenue) */
+  portfolioLtv?: {
+    totalPortfolioValueCents: number
+    averageLtvCents: number
+    clientCount: number
+    atRiskRevenueCents: number
+  }
+  /** Client health score distribution */
+  healthScoreDistribution?: {
+    meanScore: number
+    percentHealthy: number
+    alertCount: number
+    totalClients: number
+  }
+  /** Pipeline quality score (open inquiry quality) */
+  pipelineQuality?: {
+    avgScore: number
+    totalInquiries: number
+    highQualityCount: number
+  }
   /** Client lifetime journey summary (stage distribution, at-risk clients, LTV) */
   clientLifetimeJourney?: {
     avgLifetimeValueCents: number

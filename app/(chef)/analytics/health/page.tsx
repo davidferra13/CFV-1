@@ -5,11 +5,17 @@ import type { Metadata } from 'next'
 import Link from 'next/link'
 import { requireChef } from '@/lib/auth/get-user'
 import { fetchBusinessHealthScore } from '@/lib/intelligence/business-health-actions'
+import { getHealthScoreDistribution } from '@/lib/clients/health-score'
 import { HealthScoreDial } from '@/components/intelligence/health-score-dial'
 import { HealthQuadrant } from '@/components/intelligence/health-quadrant'
 import { HealthTrendChart } from '@/components/intelligence/health-trend-chart'
 import {
-  ArrowLeft, TrendUp, TrendDown, WarningCircle, CheckCircle, Lightbulb,
+  ArrowLeft,
+  TrendUp,
+  TrendDown,
+  WarningCircle,
+  CheckCircle,
+  Lightbulb,
 } from '@/components/ui/icons'
 
 export const metadata: Metadata = {
@@ -20,8 +26,12 @@ export default async function BusinessHealthPage() {
   await requireChef()
 
   let healthData
+  let distribution: Awaited<ReturnType<typeof getHealthScoreDistribution>> | null = null
   try {
-    healthData = await fetchBusinessHealthScore()
+    ;[healthData, distribution] = await Promise.all([
+      fetchBusinessHealthScore(),
+      getHealthScoreDistribution(),
+    ])
   } catch (err) {
     console.error('[BusinessHealthPage] Failed to load:', err)
     return (
@@ -43,13 +53,78 @@ export default async function BusinessHealthPage() {
       {/* Header */}
       <div>
         <BackLink />
-        <h1 className="text-xl font-semibold text-stone-200 mt-3">
-          Business Health Score
-        </h1>
+        <h1 className="text-xl font-semibold text-stone-200 mt-3">Business Health Score</h1>
         <p className="text-sm text-stone-500 mt-1">
           Composite view of your business across four dimensions.
         </p>
       </div>
+
+      {distribution && distribution.totalClients > 0 && (
+        <div className="rounded-xl border border-stone-800 bg-stone-900/50 px-5 py-4 space-y-3">
+          <h2 className="text-sm font-semibold uppercase tracking-wide text-stone-400">
+            Client Health Overview
+          </h2>
+          <div className="flex items-center gap-6 text-sm">
+            <span className="text-stone-300">
+              Mean Score{' '}
+              <span className="font-semibold text-stone-100">{distribution.meanScore}/100</span>
+            </span>
+            <span className="text-stone-300">
+              Healthy{' '}
+              <span className="font-semibold text-emerald-400">{distribution.percentHealthy}%</span>
+            </span>
+            <span className="text-stone-300">
+              Alerts <span className="font-semibold text-amber-400">{distribution.alertCount}</span>
+            </span>
+            <span className="text-stone-300">
+              Total{' '}
+              <span className="font-semibold text-stone-100">{distribution.totalClients}</span>
+            </span>
+          </div>
+          <div className="flex h-2 rounded-full overflow-hidden">
+            {distribution.tierDistribution.champion > 0 && (
+              <div
+                className="bg-emerald-500"
+                style={{
+                  width: `${(distribution.tierDistribution.champion / distribution.totalClients) * 100}%`,
+                }}
+              />
+            )}
+            {distribution.tierDistribution.loyal > 0 && (
+              <div
+                className="bg-blue-500"
+                style={{
+                  width: `${(distribution.tierDistribution.loyal / distribution.totalClients) * 100}%`,
+                }}
+              />
+            )}
+            {distribution.tierDistribution.at_risk > 0 && (
+              <div
+                className="bg-amber-500"
+                style={{
+                  width: `${(distribution.tierDistribution.at_risk / distribution.totalClients) * 100}%`,
+                }}
+              />
+            )}
+            {distribution.tierDistribution.dormant > 0 && (
+              <div
+                className="bg-red-500"
+                style={{
+                  width: `${(distribution.tierDistribution.dormant / distribution.totalClients) * 100}%`,
+                }}
+              />
+            )}
+            {distribution.tierDistribution.new > 0 && (
+              <div
+                className="bg-stone-500"
+                style={{
+                  width: `${(distribution.tierDistribution.new / distribution.totalClients) * 100}%`,
+                }}
+              />
+            )}
+          </div>
+        </div>
+      )}
 
       {/* Score + Trend */}
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
@@ -57,7 +132,8 @@ export default async function BusinessHealthPage() {
         <div className="rounded-xl border border-stone-800 bg-stone-900/50 p-6 flex flex-col items-center justify-center">
           <HealthScoreDial score={score} trend={trend} />
           <p className="text-xs text-stone-600 mt-4 text-center">
-            Updated {new Date(summary.generatedAt).toLocaleDateString('en-US', {
+            Updated{' '}
+            {new Date(summary.generatedAt).toLocaleDateString('en-US', {
               month: 'short',
               day: 'numeric',
               hour: 'numeric',
@@ -113,9 +189,7 @@ export default async function BusinessHealthPage() {
           <div className="rounded-xl border border-red-800/40 bg-red-950/20 p-5">
             <div className="flex items-center gap-2 mb-3">
               <WarningCircle className="h-5 w-5 text-red-400" />
-              <h2 className="text-sm font-medium text-red-300 uppercase tracking-wide">
-                Risks
-              </h2>
+              <h2 className="text-sm font-medium text-red-300 uppercase tracking-wide">Risks</h2>
             </div>
             <ul className="space-y-2">
               {risks.map((r, i) => (
@@ -159,8 +233,16 @@ export default async function BusinessHealthPage() {
             {summary.alerts.slice(0, 8).map((alert, i) => {
               const severityConfig = {
                 critical: { border: 'border-red-800/40', bg: 'bg-red-950/20', dot: 'bg-red-500' },
-                warning: { border: 'border-amber-800/40', bg: 'bg-amber-950/20', dot: 'bg-amber-500' },
-                opportunity: { border: 'border-emerald-800/40', bg: 'bg-emerald-950/20', dot: 'bg-emerald-500' },
+                warning: {
+                  border: 'border-amber-800/40',
+                  bg: 'bg-amber-950/20',
+                  dot: 'bg-amber-500',
+                },
+                opportunity: {
+                  border: 'border-emerald-800/40',
+                  bg: 'bg-emerald-950/20',
+                  dot: 'bg-emerald-500',
+                },
                 info: { border: 'border-stone-800', bg: 'bg-stone-900/50', dot: 'bg-stone-500' },
               }[alert.severity]
 

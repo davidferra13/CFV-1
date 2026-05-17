@@ -6,6 +6,7 @@ export type ConcentrationRisk = {
   topClientName: string
   topClientRevenuePct: number // 0-100
   riskLevel: 'safe' | 'moderate' | 'high' // safe <30%, moderate 30-50%, high >50%
+  herfindahlIndex: number // 0-1, sum of squared market shares. Higher = more concentrated.
   distribution: Array<{
     clientId: string
     name: string
@@ -22,13 +23,12 @@ export function computeConcentrationRisk(
   const totalCents = revenues.reduce((sum, r) => sum + r.totalCents, 0)
   if (totalCents === 0) return null
 
-  // Sort by revenue descending
   const sorted = [...revenues].sort((a, b) => b.totalCents - a.totalCents)
 
   const distribution = sorted.map((r) => ({
     clientId: r.clientId,
     name: r.name,
-    revenuePct: Math.round((r.totalCents / totalCents) * 1000) / 10, // one decimal
+    revenuePct: Math.round((r.totalCents / totalCents) * 1000) / 10,
     amountCents: r.totalCents,
   }))
 
@@ -43,11 +43,16 @@ export function computeConcentrationRisk(
     riskLevel = 'high'
   }
 
+  const herfindahlIndex =
+    Math.round(sorted.reduce((sum, r) => sum + Math.pow(r.totalCents / totalCents, 2), 0) * 1000) /
+    1000
+
   return {
     topClientId: top.clientId,
     topClientName: top.name,
     topClientRevenuePct: top.revenuePct,
     riskLevel,
+    herfindahlIndex,
     distribution,
   }
 }

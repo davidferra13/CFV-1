@@ -8,6 +8,7 @@ import { requireChef } from '@/lib/auth/get-user'
 import { createServerClient } from '@/lib/db/server'
 import { z } from 'zod'
 import { dateToDateString } from '@/lib/utils/format'
+import { getAllClientLTV, type ClientLTV as IntelClientLTV } from '@/lib/analytics/client-ltv'
 
 // --- Types ---
 
@@ -311,4 +312,60 @@ export async function getRetentionCohort(): Promise<RetentionCohortRow[]> {
     .sort((a, b) => a.cohortQuarter.localeCompare(b.cohortQuarter))
 
   return results
+}
+
+// --- Portfolio LTV Summary ---
+
+export type PortfolioLTVSummary = {
+  totalPortfolioValueCents: number
+  averageLtvCents: number
+  medianLtvCents: number
+  clientCount: number
+  atRiskRevenueCents: number
+}
+
+export async function getPortfolioLTVSummary(): Promise<PortfolioLTVSummary> {
+  const clients = await getAllClientLTV()
+
+  if (clients.length === 0) {
+    return {
+      totalPortfolioValueCents: 0,
+      averageLtvCents: 0,
+      medianLtvCents: 0,
+      clientCount: 0,
+      atRiskRevenueCents: 0,
+    }
+  }
+
+  const totalPortfolioValueCents = clients.reduce((sum, c) => sum + c.estimatedAnnualValueCents, 0)
+
+  const averageLtvCents = Math.round(totalPortfolioValueCents / clients.length)
+
+  const sorted = [...clients].sort(
+    (a, b) => a.estimatedAnnualValueCents - b.estimatedAnnualValueCents
+  )
+  const mid = Math.floor(sorted.length / 2)
+  const medianLtvCents =
+    sorted.length % 2 === 0
+      ? Math.round(
+          (sorted[mid - 1].estimatedAnnualValueCents + sorted[mid].estimatedAnnualValueCents) / 2
+        )
+      : sorted[mid].estimatedAnnualValueCents
+
+  const now = Date.now()
+  const atRiskRevenueCents = clients.reduce((sum, c) => {
+    if (!c.lastEventDate) return sum
+    const daysSince = Math.floor(
+      (now - new Date(c.lastEventDate).getTime()) / (1000 * 60 * 60 * 24)
+    )
+    return daysSince > 90 ? sum + c.estimatedAnnualValueCents : sum
+  }, 0)
+
+  return {
+    totalPortfolioValueCents,
+    averageLtvCents,
+    medianLtvCents,
+    clientCount: clients.length,
+    atRiskRevenueCents,
+  }
 }

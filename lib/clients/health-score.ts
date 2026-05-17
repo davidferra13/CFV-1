@@ -50,6 +50,14 @@ export type ClientHealthSummary = {
   avgEventsPerYear: number
 }
 
+export type HealthScoreDistribution = {
+  meanScore: number
+  tierDistribution: Record<ClientHealthTier, number>
+  percentHealthy: number
+  totalClients: number
+  alertCount: number
+}
+
 // ---- Internal helpers -------------------------------------------------------
 
 function recencyScore(daysSince: number | null): number {
@@ -229,6 +237,20 @@ export async function getClientHealthScores(): Promise<ClientHealthSummary> {
     .eq('tenant_id', user.tenantId!)
     .not('referred_by_client_id', 'is', null)
 
+  const { data: circleProfiles } = await db
+    .from('hub_guest_profiles')
+    .select('client_id, hub_group_members(group_id)')
+    .not('client_id', 'is', null)
+    .in('id', db.from('hub_group_members').select('profile_id'))
+
+  const circleCountMap = new Map<string, number>()
+  for (const p of circleProfiles ?? []) {
+    if (p.client_id) {
+      const count = Array.isArray(p.hub_group_members) ? p.hub_group_members.length : 0
+      circleCountMap.set(p.client_id, (circleCountMap.get(p.client_id) ?? 0) + count)
+    }
+  }
+
   const referralMap = new Map<string, number>()
   for (const r of referrals ?? []) {
     if (r.referred_by_client_id) {
@@ -269,10 +291,12 @@ export async function getClientHealthScores(): Promise<ClientHealthSummary> {
     // Frequency: events per year based on account age (rough: total_events / max(1, months/12))
     const eventsPerYear = totalEvents // simplified; can refine with event history
 
-    // Engagement: profile completeness (0-10) + referrals (0-5)
+    // Engagement: profile completeness (0-10) + referrals (0-5) + circles (0-3)
     let engScore = getClientProfileEngagementPoints(client, 10)
     const refs = referralMap.get(clientId) ?? 0
-    engScore += Math.min(refs * 2, 5) // up to 5 pts for referrals
+    engScore += Math.min(refs * 2, 5)
+    const circleCount = circleCountMap.get(clientId) ?? 0
+    engScore += Math.min(circleCount * 1, 3)
     engScore = Math.min(engScore, 15)
 
     // Payment promptness
@@ -338,6 +362,48 @@ export async function getSingleClientHealthScore(
 ): Promise<ClientHealthScore | null> {
   const summary = await getClientHealthScores()
   return summary.scores.find((s) => s.clientId === clientId) ?? null
+}
+
+export async function getHealthScoreDistribution(): Promise<HealthScoreDistribution> {
+  const { scores } = await getClientHealthScores()
+
+  if (scores.length === 0) {
+    return {
+      meanScore: 0,
+      tierDistribution: { champion: 0, loyal: 0, at_risk: 0, dormant: 0, new: 0 },
+      percentHealthy: 0,
+      totalClients: 0,
+      alertCount: 0,
+    }
+  }
+
+  const tierDistribution: Record<ClientHealthTier, number> = {
+    champion: 0,
+    loyal: 0,
+    at_risk: 0,
+    dormant: 0,
+    new: 0,
+  }
+
+  let totalScore = 0
+  let alertCount = 0
+
+  for (const s of scores) {
+    totalScore += s.score
+    tierDistribution[s.tier]++
+    if (s.isAlert) alertCount++
+  }
+
+  const total = scores.length
+  const healthyCount = tierDistribution.champion + tierDistribution.loyal
+
+  return {
+    meanScore: Math.round((totalScore / total) * 10) / 10,
+    tierDistribution,
+    percentHealthy: Math.round((healthyCount / total) * 100),
+    totalClients: total,
+    alertCount,
+  }
 }
 
 // TIER_LABELS and TIER_COLORS moved to lib/clients/health-score-utils.ts

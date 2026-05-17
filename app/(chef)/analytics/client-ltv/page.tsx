@@ -6,6 +6,8 @@ import dynamic from 'next/dynamic'
 import Link from 'next/link'
 import { requireChef } from '@/lib/auth/get-user'
 import { getTopClientsByLTV } from '@/lib/analytics/client-ltv-actions'
+import { getClientLifetimeJourneys } from '@/lib/intelligence/client-lifetime-journey'
+import { CohortRetentionTable } from '@/components/analytics/cohort-retention-table'
 import { CrossDomainLinks } from '@/components/ui/cross-domain-links'
 
 const ClientLTVChart = dynamic(
@@ -26,6 +28,7 @@ export default async function ClientLTVPage() {
   const user = await requireChef()
 
   const topClients = await getTopClientsByLTV().catch(() => [])
+  const lifetimeResult = await getClientLifetimeJourneys().catch(() => null)
 
   return (
     <div className="space-y-6">
@@ -64,6 +67,8 @@ export default async function ClientLTVPage() {
           </p>
         </div>
       )}
+
+      {lifetimeResult?.cohorts && <CohortRetentionTable cohorts={lifetimeResult.cohorts} />}
     </div>
   )
 }

@@ -1360,6 +1360,23 @@ export default async function ClientDetailPage({ params }: ClientDetailPageProps
         paymentBehavior={(client as any).payment_behavior ?? null}
         tippingPattern={(client as any).tipping_pattern ?? null}
         farewellStyle={(client as any).farewell_style ?? null}
+        financialHints={
+          financialDetail
+            ? {
+                avgTipPercent:
+                  financialDetail.summary.totalPaidCents > 0
+                    ? Math.round(
+                        (financialDetail.summary.totalTipsCents /
+                          financialDetail.summary.totalPaidCents) *
+                          100
+                      )
+                    : null,
+                outstandingBalanceCents: financialDetail.summary.totalOutstandingCents,
+                paymentTimeliness:
+                  financialDetail.summary.totalOutstandingCents === 0 ? 'prompt' : 'delayed',
+              }
+            : undefined
+        }
       />
 
       {/* Unified Client Timeline */}

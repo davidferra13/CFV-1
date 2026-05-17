@@ -2,6 +2,11 @@
 
 import { useEffect, useState, useTransition } from 'react'
 import { getClientStats, type ClientStats } from '@/lib/clients/client-stats'
+import {
+  getClientSpendingInsights,
+  type ClientSpendingInsights,
+} from '@/lib/finance/client-spending-insights'
+import { getClientRankings } from '@/lib/clients/rankings'
 import { formatCurrency } from '@/lib/utils/currency'
 import { Badge } from '@/components/ui/badge'
 import Link from 'next/link'
@@ -37,6 +42,8 @@ function StatCell({
 
 export function ClientStatsBar({ clientId, cannabisPermissioned }: Props) {
   const [stats, setStats] = useState<ClientStats | null>(null)
+  const [spending, setSpending] = useState<ClientSpendingInsights | null>(null)
+  const [spendPercentile, setSpendPercentile] = useState<number | null>(null)
   const [loading, startTransition] = useTransition()
   const [error, setError] = useState(false)
 
@@ -44,8 +51,19 @@ export function ClientStatsBar({ clientId, cannabisPermissioned }: Props) {
     setError(false)
     startTransition(async () => {
       try {
-        const result = await getClientStats(clientId)
+        const [result, spendingResult, rankings] = await Promise.all([
+          getClientStats(clientId),
+          getClientSpendingInsights(clientId, '').catch(() => null),
+          getClientRankings().catch(() => null),
+        ])
         setStats(result)
+        setSpending(spendingResult)
+        if (rankings) {
+          const match = rankings.byLifetimeSpend.clients.find((c) => c.id === clientId)
+          if (match) {
+            setSpendPercentile(100 - match.percentile + 1)
+          }
+        }
       } catch {
         setError(true)
       }
@@ -78,6 +96,9 @@ export function ClientStatsBar({ clientId, cannabisPermissioned }: Props) {
           Relationship Intelligence
         </h3>
         <div className="flex gap-2">
+          {spendPercentile !== null && (
+            <Badge variant="success">Top {spendPercentile}% by spend</Badge>
+          )}
           {stats.isDormant && (
             <Badge variant="warning">Dormant ({stats.daysSinceLastEvent}d)</Badge>
           )}
@@ -97,12 +118,19 @@ export function ClientStatsBar({ clientId, cannabisPermissioned }: Props) {
           value={formatCurrency(stats.outstandingBalanceCents)}
           warning={stats.outstandingBalanceCents > 0}
         />
-        <StatCell label="Avg Event Value" value={formatCurrency(stats.averageEventValueCents)} />
+        <StatCell
+          label="Avg Event"
+          value={formatCurrency(spending?.avgEventCents ?? stats.averageEventValueCents)}
+          sub={spending ? `${spending.eventCount} events` : undefined}
+        />
         <StatCell
           label="Highest Event"
           value={formatCurrency(stats.highestValueEventCents)}
           sub={stats.highestValueEventId ? 'View event' : undefined}
         />
+        {spending && spending.eventCount > 0 && (
+          <StatCell label="Lowest Event" value={formatCurrency(spending.lowestEventCents)} />
+        )}
         <StatCell
           label="Quote Rate"
           value={stats.quoteAcceptanceRate !== null ? `${stats.quoteAcceptanceRate}%` : 'N/A'}

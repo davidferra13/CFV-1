@@ -17,9 +17,14 @@ type Props = {
   paymentBehavior: string | null
   tippingPattern: string | null
   farewellStyle: string | null
+  financialHints?: {
+    avgTipPercent: number | null
+    outstandingBalanceCents: number
+    paymentTimeliness: 'prompt' | 'delayed' | 'unknown'
+  }
 }
 
-export function BusinessIntelPanel({ clientId, ...initial }: Props) {
+export function BusinessIntelPanel({ clientId, financialHints, ...initial }: Props) {
   const [editing, setEditing] = useState(false)
   const [saving, setSaving] = useState(false)
   const [referralPotential, setReferralPotential] = useState(initial.referralPotential || '')
@@ -188,12 +193,58 @@ export function BusinessIntelPanel({ clientId, ...initial }: Props) {
           onChange={(e) => setPaymentBehavior(e.target.value)}
           placeholder="Pays promptly? Always late? Prefers Venmo?"
         />
+        {!paymentBehavior && financialHints && (
+          <button
+            type="button"
+            className="text-xs text-stone-600 bg-stone-800 rounded-md px-2 py-0.5 cursor-pointer hover:bg-stone-700"
+            onClick={() =>
+              setPaymentBehavior(
+                financialHints.outstandingBalanceCents === 0 &&
+                  financialHints.paymentTimeliness === 'prompt'
+                  ? 'Always pays promptly'
+                  : financialHints.outstandingBalanceCents === 0
+                    ? 'No outstanding balance'
+                    : 'Has outstanding balance'
+              )
+            }
+          >
+            {financialHints.outstandingBalanceCents === 0 &&
+            financialHints.paymentTimeliness === 'prompt'
+              ? 'Always pays promptly'
+              : financialHints.outstandingBalanceCents === 0
+                ? 'No outstanding balance'
+                : 'Has outstanding balance'}
+          </button>
+        )}
         <Textarea
           label="Tipping Pattern"
           value={tippingPattern}
           onChange={(e) => setTippingPattern(e.target.value)}
           placeholder="Generous? Standard 20%? Never tips?"
         />
+        {!tippingPattern &&
+          financialHints?.avgTipPercent != null &&
+          financialHints.avgTipPercent > 0 && (
+            <button
+              type="button"
+              className="text-xs text-stone-600 bg-stone-800 rounded-md px-2 py-0.5 cursor-pointer hover:bg-stone-700"
+              onClick={() =>
+                setTippingPattern(
+                  financialHints.avgTipPercent! >= 15
+                    ? `Generous tipper (${financialHints.avgTipPercent}%)`
+                    : financialHints.avgTipPercent! >= 5
+                      ? `Moderate tipper (${financialHints.avgTipPercent}%)`
+                      : `Minimal tipper (${financialHints.avgTipPercent}%)`
+                )
+              }
+            >
+              {financialHints.avgTipPercent >= 15
+                ? `Generous tipper (${financialHints.avgTipPercent}%)`
+                : financialHints.avgTipPercent >= 5
+                  ? `Moderate tipper (${financialHints.avgTipPercent}%)`
+                  : `Minimal tipper (${financialHints.avgTipPercent}%)`}
+            </button>
+          )}
         <Textarea
           label="Wow Factors"
           value={wowFactors}

@@ -708,6 +708,30 @@ These are active business signals requiring attention. When greeting the chef or
 Use when discussing client retention, re-engagement, or business growth. Proactively mention at-risk clients when relevant.`)
   }
 
+  // Portfolio LTV summary
+  if (context.portfolioLtv) {
+    const p = context.portfolioLtv
+    parts.push(
+      `\nPORTFOLIO: ${p.clientCount} clients, $${(p.totalPortfolioValueCents / 100).toFixed(0)} total value, $${(p.averageLtvCents / 100).toFixed(0)} avg LTV, $${(p.atRiskRevenueCents / 100).toFixed(0)} at-risk revenue.`
+    )
+  }
+
+  // Client health score distribution
+  if (context.healthScoreDistribution) {
+    const h = context.healthScoreDistribution
+    parts.push(
+      `\nCLIENT HEALTH: ${h.percentHealthy}% healthy, ${h.alertCount} alerts, mean score ${h.meanScore}/100.`
+    )
+  }
+
+  // Pipeline quality score
+  if (context.pipelineQuality) {
+    const pq = context.pipelineQuality
+    parts.push(
+      `\nPIPELINE: ${pq.totalInquiries} open inquiries, avg quality ${pq.avgScore}/100, ${pq.highQualityCount} high-quality leads.`
+    )
+  }
+
   // Revenue pattern awareness
   if (context.revenuePattern) {
     const rp = context.revenuePattern

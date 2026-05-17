@@ -2,6 +2,7 @@
 
 import { requireChef } from '@/lib/auth/get-user'
 import { createServerClient } from '@/lib/db/server'
+import { getConcentrationRisk } from '@/lib/finance/concentration-actions'
 
 // ─── Types ───────────────────────────────────────────────────────────────────
 
@@ -10,6 +11,10 @@ export interface ClientRetentionStats {
   repeatClients: number
   repeatBookingRate: number // % of events from returning clients
   retentionRate: number // % of clients who booked again in next 6 months
+  newClientsThisPeriod: number
+  returningClientsThisPeriod: number
+  newClientRevenuePercent: number
+  returningClientRevenuePercent: number
 }
 
 export interface ClientChurnStats {
@@ -85,7 +90,16 @@ export async function getClientRetentionStats(): Promise<ClientRetentionStats> {
     .order('event_date')
 
   if (!events?.length) {
-    return { activeClients: 0, repeatClients: 0, repeatBookingRate: 0, retentionRate: 0 }
+    return {
+      activeClients: 0,
+      repeatClients: 0,
+      repeatBookingRate: 0,
+      retentionRate: 0,
+      newClientsThisPeriod: 0,
+      returningClientsThisPeriod: 0,
+      newClientRevenuePercent: 0,
+      returningClientRevenuePercent: 0,
+    }
   }
 
   // Group events by client
@@ -125,11 +139,56 @@ export async function getClientRetentionStats(): Promise<ClientRetentionStats> {
     }
   }
 
+  const newClientsThisPeriod = activeClients - repeatClients
+  const returningClientsThisPeriod = repeatClients
+
+  let newClientRevenuePercent = 0
+  let returningClientRevenuePercent = 0
+
+  const newClientIds = Array.from(clientEvents.entries())
+    .filter(([, dates]) => dates.length < 2)
+    .map(([id]) => id)
+  const repeatClientIds = Array.from(clientEvents.entries())
+    .filter(([, dates]) => dates.length >= 2)
+    .map(([id]) => id)
+
+  const { data: revData } = await db
+    .from('events')
+    .select('client_id, quoted_price_cents')
+    .eq('tenant_id', chef.tenantId!)
+    .eq('is_demo', false)
+    .eq('status', 'completed')
+    .not('client_id', 'is', null)
+    .not('quoted_price_cents', 'is', null)
+
+  if (revData?.length) {
+    let newRev = 0
+    let repeatRev = 0
+    const repeatSet = new Set(repeatClientIds)
+    for (const ev of revData) {
+      if (!ev.client_id || !ev.quoted_price_cents) continue
+      if (repeatSet.has(ev.client_id)) {
+        repeatRev += ev.quoted_price_cents
+      } else {
+        newRev += ev.quoted_price_cents
+      }
+    }
+    const totalRev = newRev + repeatRev
+    if (totalRev > 0) {
+      newClientRevenuePercent = pct(newRev, totalRev)
+      returningClientRevenuePercent = pct(repeatRev, totalRev)
+    }
+  }
+
   return {
     activeClients,
     repeatClients,
     repeatBookingRate,
     retentionRate: pct(retainedClients.size, cohortClients.size),
+    newClientsThisPeriod,
+    returningClientsThisPeriod,
+    newClientRevenuePercent,
+    returningClientRevenuePercent,
   }
 }
 
@@ -179,69 +238,25 @@ export async function getClientChurnStats(): Promise<ClientChurnStats> {
 }
 
 export async function getRevenueConcentration(): Promise<RevenueConcentrationStats> {
-  const chef = await requireChef()
-  const db: any = createServerClient()
+  const risk = await getConcentrationRisk()
 
-  // Get total revenue per client from ledger
-  const { data: ledger } = await db
-    .from('ledger_entries')
-    .select('client_id, amount_cents, is_refund')
-    .eq('tenant_id', chef.tenantId!)
-    .in('entry_type', ['payment', 'deposit', 'installment', 'final_payment', 'add_on', 'credit'])
-
-  if (!ledger?.length) {
+  if (!risk) {
     return { top5Clients: [], top5SharePercent: 0, herfindahlIndex: 0 }
   }
 
-  // Sum by client
-  const clientRevenue = new Map<string, number>()
-  let totalRevenue = 0
-  for (const entry of ledger) {
-    if (!entry.client_id) continue
-    const current = clientRevenue.get(entry.client_id) ?? 0
-    const amount = entry.is_refund ? -entry.amount_cents : entry.amount_cents
-    clientRevenue.set(entry.client_id, current + amount)
-    totalRevenue += amount
-  }
-
-  if (totalRevenue === 0) {
-    return { top5Clients: [], top5SharePercent: 0, herfindahlIndex: 0 }
-  }
-
-  // Sort by revenue, take top 5
-  const sorted = Array.from(clientRevenue.entries())
-    .sort(([, a], [, b]) => b - a)
-    .slice(0, 5)
-
-  // Get client names
-  const clientIds = sorted.map(([id]) => id)
-  const { data: clients } = await db.from('clients').select('id, full_name').in('id', clientIds)
-
-  const nameMap = new Map<string, string>()
-  for (const c of clients ?? []) {
-    nameMap.set(c.id, c.full_name)
-  }
-
-  const top5Clients = sorted.map(([clientId, revenueCents]) => ({
-    clientId,
-    name: nameMap.get(clientId) ?? 'Unknown',
-    revenueCents,
-    sharePercent: pct(revenueCents, totalRevenue),
-  }))
-
-  const top5SharePercent = pct(
-    sorted.reduce((sum, [, r]) => sum + r, 0),
-    totalRevenue
-  )
-
-  // Herfindahl-Hirschman Index: sum of squared market shares (0 = perfect spread, 1 = monopoly)
-  const allShares = Array.from(clientRevenue.values()).map((r) => r / totalRevenue)
-  const hhi = allShares.reduce((sum, s) => sum + s * s, 0)
+  const top5 = risk.distribution.slice(0, 5)
+  const totalCents = risk.distribution.reduce((sum, d) => sum + d.amountCents, 0)
+  const top5RevenueCents = top5.reduce((sum, d) => sum + d.amountCents, 0)
 
   return {
-    top5Clients,
-    top5SharePercent,
-    herfindahlIndex: Math.round(hhi * 1000) / 1000,
+    top5Clients: top5.map((d) => ({
+      clientId: d.clientId,
+      name: d.name,
+      revenueCents: d.amountCents,
+      sharePercent: d.revenuePct,
+    })),
+    top5SharePercent: totalCents > 0 ? Math.round((top5RevenueCents / totalCents) * 1000) / 10 : 0,
+    herfindahlIndex: risk.herfindahlIndex,
   }
 }
 

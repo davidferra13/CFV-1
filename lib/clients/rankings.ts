@@ -9,6 +9,7 @@ export type RankedClient = {
   email: string | null
   metric: number
   metricLabel: string
+  percentile: number
 }
 
 export type RankingResult = {
@@ -23,6 +24,7 @@ export async function getClientRankings(): Promise<{
   byRepeatBookings: RankingResult
   byCurrentYear: RankingResult
   dormantHighValue: RankingResult
+  totalClients: number
 }> {
   const user = await requireChef()
   const db: any = createServerClient()
@@ -46,16 +48,19 @@ export async function getClientRankings(): Promise<{
   const clients = clientsResult.data ?? []
   const events = eventsResult.data ?? []
 
+  const totalClients = clients.length
+
   // By lifetime spend (already sorted)
   const byLifetimeSpend: RankingResult = {
     title: 'Top Clients by Lifetime Spend',
     description: 'Ranked by total revenue generated across all events',
-    clients: clients.slice(0, 20).map((c: any) => ({
+    clients: clients.slice(0, 20).map((c: any, index: number) => ({
       id: c.id,
       fullName: c.full_name,
       email: c.email,
       metric: c.lifetime_value_cents ?? 0,
       metricLabel: 'lifetime spend',
+      percentile: totalClients > 0 ? Math.round(((totalClients - index) / totalClients) * 100) : 0,
     })),
   }
 
@@ -73,12 +78,13 @@ export async function getClientRankings(): Promise<{
   const byCovers: RankingResult = {
     title: 'Top Clients by Covers Generated',
     description: 'Ranked by total diners served across all their events',
-    clients: coversSorted.map((c: any) => ({
+    clients: coversSorted.map((c: any, index: number) => ({
       id: c.id,
       fullName: c.full_name,
       email: c.email,
       metric: c.covers,
       metricLabel: 'covers',
+      percentile: totalClients > 0 ? Math.round(((totalClients - index) / totalClients) * 100) : 0,
     })),
   }
 
@@ -90,12 +96,13 @@ export async function getClientRankings(): Promise<{
   const byRepeatBookings: RankingResult = {
     title: 'Top Clients by Repeat Bookings',
     description: 'Ranked by number of events booked',
-    clients: repeatSorted.map((c: any) => ({
+    clients: repeatSorted.map((c: any, index: number) => ({
       id: c.id,
       fullName: c.full_name,
       email: c.email,
       metric: c.total_events_count ?? 0,
       metricLabel: 'bookings',
+      percentile: totalClients > 0 ? Math.round(((totalClients - index) / totalClients) * 100) : 0,
     })),
   }
 
@@ -120,12 +127,13 @@ export async function getClientRankings(): Promise<{
   const byCurrentYear: RankingResult = {
     title: 'Top Clients This Year',
     description: `Ranked by revenue generated in ${new Date().getFullYear()}`,
-    clients: yearSorted.map((c: any) => ({
+    clients: yearSorted.map((c: any, index: number) => ({
       id: c.id,
       fullName: c.full_name,
       email: c.email,
       metric: c.yearSpend,
       metricLabel: 'this year',
+      percentile: totalClients > 0 ? Math.round(((totalClients - index) / totalClients) * 100) : 0,
     })),
   }
 
@@ -143,14 +151,23 @@ export async function getClientRankings(): Promise<{
       })
       .sort((a: any, b: any) => (b.lifetime_value_cents ?? 0) - (a.lifetime_value_cents ?? 0))
       .slice(0, 20)
-      .map((c: any) => ({
+      .map((c: any, index: number) => ({
         id: c.id,
         fullName: c.full_name,
         email: c.email,
         metric: c.lifetime_value_cents ?? 0,
         metricLabel: 'lifetime (dormant)',
+        percentile:
+          totalClients > 0 ? Math.round(((totalClients - index) / totalClients) * 100) : 0,
       })),
   }
 
-  return { byLifetimeSpend, byCovers, byRepeatBookings, byCurrentYear, dormantHighValue }
+  return {
+    byLifetimeSpend,
+    byCovers,
+    byRepeatBookings,
+    byCurrentYear,
+    dormantHighValue,
+    totalClients,
+  }
 }

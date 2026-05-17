@@ -1,7 +1,8 @@
+// Consolidated: delegates to canonical forecast system (lib/finance/revenue-forecast-actions)
 'use server'
-import { requireChef } from '@/lib/auth/get-user'
-import { createServerClient } from '@/lib/db/server'
-import { subMonths, addMonths, format } from 'date-fns'
+
+import { getRevenueForecast as getCanonicalForecast } from '@/lib/finance/revenue-forecast-actions'
+import { format, addMonths } from 'date-fns'
 
 export interface MonthlyRevenue {
   month: string // 'Jan 2026'
@@ -18,67 +19,70 @@ export interface RevenueForecast {
 }
 
 export async function getRevenueForecast(): Promise<RevenueForecast> {
-  const user = await requireChef()
-  const db: any = createServerClient()
+  const canonical = await getCanonicalForecast(12)
 
-  // Fetch last 12 months of completed event revenue
-  const twelveMonthsAgo = subMonths(new Date(), 12)
-  const { data: events } = await db
-    .from('events')
-    .select('event_date, quoted_price_cents')
-    .eq('tenant_id', user.entityId)
-    .eq('is_demo', false)
-    .eq('status', 'completed')
-    .gte(
-      'event_date',
-      `${twelveMonthsAgo.getFullYear()}-${String(twelveMonthsAgo.getMonth() + 1).padStart(2, '0')}-${String(twelveMonthsAgo.getDate()).padStart(2, '0')}`
-    )
-    .order('event_date', { ascending: true })
+  const now = new Date()
+  const currentMonthKey = format(now, 'yyyy-MM')
 
-  // Group by month
-  const monthMap = new Map<string, number>()
+  // Map monthlyForecast entries to historical (past/current) and forecast (future)
+  const historical: MonthlyRevenue[] = []
+  const forecast: MonthlyRevenue[] = []
 
-  // Pre-populate last 12 months with 0
-  for (let i = 11; i >= 0; i--) {
-    const d = subMonths(new Date(), i)
-    monthMap.set(format(d, 'MMM yyyy'), 0)
+  for (const entry of canonical.monthlyForecast) {
+    const entryMonth = entry.month // 'yyyy-MM' format
+    const label = format(new Date(entryMonth + '-01'), 'MMM yyyy')
+
+    if (entryMonth <= currentMonthKey) {
+      historical.push({
+        month: label,
+        actual: entry.bookedRevenueCents,
+      })
+    } else {
+      forecast.push({
+        month: label,
+        actual: 0,
+        projected: entry.expectedRevenueCents,
+      })
+    }
   }
 
-  for (const event of events || []) {
-    const key = format(new Date(event.event_date), 'MMM yyyy')
-    monthMap.set(key, (monthMap.get(key) || 0) + (event.quoted_price_cents || 0))
+  // Ensure at least 3 forecast months
+  if (forecast.length < 3) {
+    const needed = 3 - forecast.length
+    const startOffset = forecast.length + 1
+    for (let i = startOffset; i < startOffset + needed; i++) {
+      const d = addMonths(now, i)
+      forecast.push({
+        month: format(d, 'MMM yyyy'),
+        actual: 0,
+        projected:
+          canonical.windowTotals.expectedCents > 0
+            ? Math.round(canonical.windowTotals.expectedCents / 6)
+            : 0,
+      })
+    }
   }
 
-  const historical: MonthlyRevenue[] = Array.from(monthMap.entries()).map(([month, actual]) => ({
-    month,
-    actual,
-  }))
+  // Derive trend from historical data
+  const last3 = historical.slice(-3)
+  const prev3 = historical.slice(-6, -3)
+  const last3avg = last3.length > 0 ? last3.reduce((s, m) => s + m.actual, 0) / last3.length : 0
+  const prev3avg = prev3.length > 0 ? prev3.reduce((s, m) => s + m.actual, 0) / prev3.length : 0
+  const trend: 'up' | 'down' | 'flat' =
+    prev3avg === 0
+      ? 'flat'
+      : last3avg > prev3avg * 1.05
+        ? 'up'
+        : last3avg < prev3avg * 0.95
+          ? 'down'
+          : 'flat'
 
-  // Calculate average of last 6 months
   const last6 = historical.slice(-6)
   const avgMonthlyRevenueCents =
-    last6.length > 0 ? Math.round(last6.reduce((sum, m) => sum + m.actual, 0) / last6.length) : 0
-
-  // Simple trend: compare last 3 months vs prior 3 months
-  const last3avg = historical.slice(-3).reduce((s, m) => s + m.actual, 0) / 3
-  const prev3avg = historical.slice(-6, -3).reduce((s, m) => s + m.actual, 0) / 3
-  const trend: 'up' | 'down' | 'flat' =
-    last3avg > prev3avg * 1.05 ? 'up' : last3avg < prev3avg * 0.95 ? 'down' : 'flat'
-
-  // Project next 3 months using weighted moving average + trend factor
-  const trendFactor = trend === 'up' ? 1.05 : trend === 'down' ? 0.95 : 1.0
-  const forecast: MonthlyRevenue[] = []
-  for (let i = 1; i <= 3; i++) {
-    const d = addMonths(new Date(), i)
-    forecast.push({
-      month: format(d, 'MMM yyyy'),
-      actual: 0,
-      projected: Math.round(avgMonthlyRevenueCents * Math.pow(trendFactor, i)),
-    })
-  }
+    last6.length > 0 ? Math.round(last6.reduce((s, m) => s + m.actual, 0) / last6.length) : 0
 
   const projectedAnnualCents =
-    historical.slice(-12).reduce((s, m) => s + m.actual, 0) +
+    historical.reduce((s, m) => s + m.actual, 0) +
     forecast.reduce((s, m) => s + (m.projected || 0), 0)
 
   return { historical, forecast, trend, avgMonthlyRevenueCents, projectedAnnualCents }

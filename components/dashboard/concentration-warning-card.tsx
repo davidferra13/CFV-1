@@ -25,7 +25,8 @@ export function ConcentrationWarningCard({ risk }: ConcentrationWarningCardProps
     )
   }
 
-  const { riskLevel, topClientName, topClientRevenuePct } = risk
+  const { riskLevel, topClientName, topClientRevenuePct, herfindahlIndex } = risk
+  const hhiDisplay = (herfindahlIndex * 10000).toFixed(0)
 
   const cardConfig = {
     safe: {
@@ -57,6 +58,18 @@ export function ConcentrationWarningCard({ risk }: ConcentrationWarningCardProps
     <div className={`rounded-xl border p-4 ${config.bg}`}>
       <h4 className={`text-sm font-semibold ${config.titleColor}`}>{config.title}</h4>
       <p className={`text-sm mt-1 ${config.bodyColor}`}>{config.body}</p>
+      <p className="text-xs text-stone-500 mt-1">
+        HHI: {hhiDisplay}{' '}
+        <span className="text-stone-400">
+          (
+          {Number(hhiDisplay) < 1500
+            ? 'diversified'
+            : Number(hhiDisplay) <= 2500
+              ? 'moderate'
+              : 'concentrated'}
+          )
+        </span>
+      </p>
       <Link
         href="/finance"
         className="text-xs font-medium text-stone-600 hover:text-stone-800 underline underline-offset-2 mt-3 inline-block"
