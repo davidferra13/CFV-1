@@ -1,5 +1,19 @@
 # Session Log
 
+## 2026-05-17 09:00 EDT
+
+- Agent: Claude Opus 4.6 (main session + 13 parallel agents)
+- Task: Cannabis dining + portal deep-pass. Mined zone for high-yield moves, validated with 5 expert lenses, built 13 dispatch-ready agent prompts across 4 waves, executed all.
+- Status: completed
+- Wave 1 (Safety): COA range validation (two-layer defense), guest_event_profile tenant isolation (migration + 18 query sites), age attestation 1-year expiry, reconciliation audit hasIssues bug fix
+- Wave 2 (Wiring): 5 dead notification functions wired to triggers, admin cannabis request review/convert UI, guest intelligence wired to RSVP dashboard
+- Wave 3 (Intelligence): CIL cannabis analyzer (4 signal types), Remy event context (4 parallel sub-queries), cannabis cadence touchpoints (3 lifecycle emails)
+- Wave 4 (UX): readiness dashboard (10 gates), invite send form, completion contract cannabis merge
+- Files touched: 43 files (8,428 insertions). Key new files: lib/cil/analyzers/cannabis.ts, lib/email/templates/cannabis-cadence-chef.tsx, database/migrations/20260517200300_guest_event_profile_tenant_scoping.sql, docs/intensify/cannabis-dining.md
+- Commits: 4c4ef7159 feat(cannabis): deep-pass waves 1-4
+- Build state: tsc clean (26 pre-existing errors in unrelated files, 0 cannabis errors). Migration NOT applied yet.
+- Next session: Apply migration (backup DB first). Remaining deep-pass items: print layout pagination for large events, cannabis passport section, IRC 280E tax ledger, audit trail export.
+
 ## 2026-05-15 18:28 EDT
 
 - Agent: Codex
