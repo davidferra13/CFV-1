@@ -66,7 +66,7 @@ export default async function ContactedLeadsPage() {
           <Table>
             <TableHeader>
               <TableRow>
-                <TableHead>Lead</TableHead>
+                <TableHead>Inquiry</TableHead>
                 <TableHead>Date</TableHead>
                 <TableHead>Occasion</TableHead>
                 <TableHead>Guests</TableHead>

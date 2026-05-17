@@ -1,4 +1,4 @@
-'use client'
+﻿'use client'
 
 // Client Spending Badge
 // Small inline component showing client's historical spending average.
@@ -6,7 +6,10 @@
 // when setting pricing for a new quote.
 
 import { useEffect, useState, useTransition } from 'react'
-import { getClientSpendingInsights, type ClientSpendingInsights } from '@/lib/finance/client-spending-insights'
+import {
+  getClientSpendingInsights,
+  type ClientSpendingInsights,
+} from '@/lib/finance/client-spending-insights'
 
 function formatCents(cents: number): string {
   return `$${(cents / 100).toLocaleString('en-US', { minimumFractionDigits: 0, maximumFractionDigits: 0 })}`
@@ -62,18 +65,16 @@ export function ClientSpendingBadge({ clientId, tenantId }: Props) {
 
   return (
     <div className="inline-flex items-center gap-2 rounded-md bg-zinc-800/60 border border-zinc-700 px-3 py-1.5 text-xs text-zinc-300">
-      <span className="font-medium text-zinc-100">
-        Avg: {formatCents(avgEventCents)}
+      <span className="font-medium text-zinc-100">Avg: {formatCents(avgEventCents)}</span>
+      <span className="text-zinc-500">
+        across {eventCount} event{eventCount !== 1 ? 's' : ''}
       </span>
-      <span className="text-zinc-500">across {eventCount} event{eventCount !== 1 ? 's' : ''}</span>
       {eventCount > 1 && (
         <span className="text-zinc-500">
           ({formatCents(lowestEventCents)} - {formatCents(highestEventCents)})
         </span>
       )}
-      {formattedDate && (
-        <span className="text-zinc-600">Last: {formattedDate}</span>
-      )}
+      {formattedDate && <span className="text-zinc-600">Last: {formattedDate}</span>}
     </div>
   )
 }

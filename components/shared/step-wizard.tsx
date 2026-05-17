@@ -26,8 +26,9 @@ function useWizardContext<TData extends Record<string, unknown>>() {
 type StepRenderProps<TData extends Record<string, unknown>> = {
   data: TData
   setData: (partial: Partial<TData>) => void
-  next: () => Promise<boolean>
+  next: (options?: { skipValidation?: boolean }) => Promise<boolean>
   prev: () => void
+  skip: () => void
   isFirstStep: boolean
   isLastStep: boolean
   stepIndex: number
@@ -92,8 +93,8 @@ function StepIndicator<TData extends Record<string, unknown>>() {
               {/* Dot */}
               <button
                 type="button"
-                onClick={() => isVisited && ctx.goTo(step.key)}
-                disabled={!isVisited}
+                onClick={() => ctx.goTo(step.key)}
+                disabled={false}
                 className={cn(
                   'relative flex items-center justify-center rounded-full transition-all duration-200',
                   'w-8 h-8 text-xs font-semibold shrink-0',
@@ -101,8 +102,7 @@ function StepIndicator<TData extends Record<string, unknown>>() {
                   isDone && !isActive && 'bg-brand-500/20 text-brand-400',
                   !isActive && !isDone && isVisited && 'bg-stone-700 text-stone-300',
                   !isActive && !isDone && !isVisited && 'bg-stone-800 text-stone-500',
-                  isVisited && 'cursor-pointer hover:ring-2 hover:ring-stone-600',
-                  !isVisited && 'cursor-default'
+                  'cursor-pointer hover:ring-2 hover:ring-stone-600'
                 )}
                 aria-current={isActive ? 'step' : undefined}
                 aria-label={`${step.title}${isDone ? ' (completed)' : ''}`}
@@ -214,7 +214,7 @@ function Navigation<TData extends Record<string, unknown>>({
 
       <button
         type="button"
-        onClick={ctx.next}
+        onClick={() => ctx.next()}
         disabled={loading}
         className={cn(
           'rounded-md px-5 py-2 text-sm font-medium transition-colors',
@@ -345,6 +345,7 @@ function StepWizardRoot<TData extends Record<string, unknown>>({
     setData: wizard.setData,
     next: wizard.next,
     prev: wizard.prev,
+    skip: wizard.skip,
     isFirstStep: wizard.isFirstStep,
     isLastStep: wizard.isLastStep,
     stepIndex: wizard.stepIndex,

@@ -797,7 +797,7 @@ function ClientsTab({ p }: { p: AnalyticsHubProps }) {
       )}
       <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
         <StatCard
-          label="Churn Rate"
+          label="Drop-off Rate"
           value={`${p.clientChurn.churnRate}%`}
           variant={
             p.clientChurn.churnRate <= 10

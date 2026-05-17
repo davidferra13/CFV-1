@@ -115,8 +115,10 @@ export default async function OpsHubPage() {
         />
         <MetricCard
           label="Revenue"
-          value={data.sales.revenue_cents ? formatCurrency(data.sales.revenue_cents) : '$0'}
-          sub={`${data.sales.items_sold} items sold`}
+          value={data.sales.revenue_cents ? formatCurrency(data.sales.revenue_cents) : '-'}
+          sub={
+            data.sales.items_sold > 0 ? `${data.sales.items_sold} items sold` : 'No sales recorded'
+          }
           status={data.sales.revenue_cents > 0 ? 'good' : 'off'}
           href="/ops/performance"
         />

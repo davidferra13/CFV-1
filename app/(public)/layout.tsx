@@ -18,6 +18,10 @@ const RemyConciergeWidget = dynamic(
   () => import('@/components/public/remy-concierge-widget').then((m) => m.RemyConciergeWidget),
   { ssr: false }
 )
+const MetaPixel = dynamic(
+  () => import('@/components/tracking/meta-pixel').then((m) => m.MetaPixel),
+  { ssr: false }
+)
 
 export default async function PublicLayout({ children }: { children: React.ReactNode }) {
   const session = await auth()
@@ -69,6 +73,7 @@ export default async function PublicLayout({ children }: { children: React.React
       <GlobalReportButton />
       <RemyConciergeWidget />
       <DiscoveryOutcomeTracker />
+      <MetaPixel />
     </div>
   )
 }

@@ -1,4 +1,4 @@
-﻿import { QuoteAcceptanceInsightsPanel } from '@/components/analytics/quote-acceptance-insights'
+import { QuoteAcceptanceInsightsPanel } from '@/components/analytics/quote-acceptance-insights'
 import { AccountabilityPanel } from '@/components/dashboard/accountability-panel'
 import { ChefActivityFeed } from '@/components/activity/chef-activity-feed'
 import { LivePresencePanel } from '@/components/activity/live-presence-panel'
@@ -600,7 +600,7 @@ export function BusinessSectionMobileContent(
       href: '/guests',
       rows: [
         { label: 'Upcoming Reservations', value: toInteger(guestUpcomingReservations) },
-        { label: 'Guest Leads', value: toInteger(guestLeadStats.total) },
+        { label: 'Guest Referrals', value: toInteger(guestLeadStats.total) },
         { label: 'Unique Guests', value: toInteger(guestFrequencyStats.totalUniqueGuests) },
       ],
     },

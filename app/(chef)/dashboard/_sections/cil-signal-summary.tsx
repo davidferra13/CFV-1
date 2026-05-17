@@ -1,50 +1,60 @@
-// CIL Signal Summary - surfaces top intelligence signals by domain
+// CIL Signal Summary - System Pulse card for the dashboard
+// Shows signal count, domain breakdown, top 3 signals with confidence + actions
 
-import { Suspense } from 'react'
-import { DomainSignals } from '@/components/cil/domain-signals'
-import { WidgetCardShell } from '@/components/dashboard/widget-cards/widget-card-shell'
 import { getSignalsForDisplay } from '@/lib/cil/signal-actions'
+import type { ProactiveSignal, SignalDomain } from '@/lib/cil/types'
+import { CilSignalSummaryClient } from '@/components/cil/cil-signal-summary-client'
 
-const DOMAINS = ['finance', 'pipeline', 'calendar', 'clients', 'inventory', 'reputation'] as const
-
-function DomainSection({ domain, limit }: { domain: (typeof DOMAINS)[number]; limit: number }) {
-  return (
-    <div>
-      <p className="text-xs text-stone-500 uppercase mb-1">{domain}</p>
-      <DomainSignals domain={domain} limit={limit} />
-    </div>
-  )
-}
-
-function DomainFallback() {
-  return <div className="h-6 animate-pulse rounded bg-stone-800/50" />
+const DOMAIN_LABELS: Record<SignalDomain, string> = {
+  finance: 'Finance',
+  clients: 'Clients',
+  calendar: 'Calendar',
+  inventory: 'Inventory',
+  reputation: 'Reputation',
+  pipeline: 'Pipeline',
+  cannabis: 'Cannabis',
+  commitment: 'Commitment',
 }
 
 export async function CilSignalSummary() {
   try {
-    // Pre-check if any signals exist for these domains
     const allSignals = await getSignalsForDisplay()
-    const hasAny = allSignals.some((s) => DOMAINS.includes(s.domain as (typeof DOMAINS)[number]))
+    if (allSignals.length === 0) return null
+
+    // Domain breakdown: count per domain
+    const domainCounts: Partial<Record<SignalDomain, number>> = {}
+    for (const s of allSignals) {
+      domainCounts[s.domain] = (domainCounts[s.domain] || 0) + 1
+    }
+
+    // Top 3 by urgency then confidence
+    const top3 = [...allSignals]
+      .sort((a, b) => {
+        if (b.urgency !== a.urgency) return b.urgency - a.urgency
+        if (b.confidence !== a.confidence) return b.confidence - a.confidence
+        return b.createdAt - a.createdAt
+      })
+      .slice(0, 3)
+
+    // Filter to signals from last 24h for the count display
+    const dayAgo = Date.now() - 86_400_000
+    const recent = allSignals.filter((s) => s.createdAt > dayAgo)
+
+    const breakdown = Object.entries(domainCounts)
+      .sort(([, a], [, b]) => b - a)
+      .map(([domain, count]) => ({
+        domain: domain as SignalDomain,
+        label: DOMAIN_LABELS[domain as SignalDomain] || domain,
+        count,
+      }))
 
     return (
-      <WidgetCardShell
-        widgetId="cil_signals"
-        title="Intelligence Signals"
-        href="/remy/signals"
-        size="md"
-      >
-        {hasAny ? (
-          <div className="space-y-3">
-            {DOMAINS.map((domain) => (
-              <Suspense key={domain} fallback={<DomainFallback />}>
-                <DomainSection domain={domain} limit={3} />
-              </Suspense>
-            ))}
-          </div>
-        ) : (
-          <p className="text-xs text-stone-500 italic">No active signals</p>
-        )}
-      </WidgetCardShell>
+      <CilSignalSummaryClient
+        totalCount={allSignals.length}
+        recentCount={recent.length}
+        breakdown={breakdown}
+        topSignals={top3}
+      />
     )
   } catch (err) {
     console.error('[Dashboard/CilSignalSummary] failed:', err)

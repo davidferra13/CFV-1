@@ -156,7 +156,7 @@ export function BenchmarkDashboard({ current, history }: BenchmarkDashboardProps
       {history.length > 0 && (
         <Card>
           <CardHeader>
-            <CardTitle>KPI Trends</CardTitle>
+            <CardTitle>Performance Trends</CardTitle>
           </CardHeader>
           <CardContent>
             <ResponsiveContainer width="100%" height={350}>

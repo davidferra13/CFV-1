@@ -48,6 +48,33 @@ export function ForecastWidget({ data }: Props) {
     }
   }
 
+  const allZero =
+    projectedNext30DaysCents === 0 &&
+    pipelineWeightedCents === 0 &&
+    pipelineTotalCents === 0 &&
+    currentMonthActualCents === 0
+
+  if (allZero) {
+    return (
+      <Card>
+        <CardHeader>
+          <CardTitle>Revenue Forecast</CardTitle>
+        </CardHeader>
+        <CardContent>
+          <p className="text-sm text-stone-500">
+            No revenue data yet. Create events and log payments to see forecasts.
+          </p>
+          <Link
+            href="/events"
+            className="text-sm text-brand-500 hover:text-brand-400 font-medium mt-2 inline-block"
+          >
+            Create an event
+          </Link>
+        </CardContent>
+      </Card>
+    )
+  }
+
   return (
     <Card>
       <CardHeader>

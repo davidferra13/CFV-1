@@ -37,7 +37,6 @@ import {
 } from '@/lib/network/opportunity-actions'
 import { Button } from '@/components/ui/button'
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar'
-import { ConfirmModal } from '@/components/ui/confirm-modal'
 import { toast } from 'sonner'
 import { useDeferredAction } from '@/lib/hooks/use-deferred-action'
 
@@ -723,7 +722,6 @@ export function SocialPostCard({
   const [savesCount, setSavesCount] = useState(post.saves_count)
   const [showMenu, setShowMenu] = useState(false)
   const [copied, setCopied] = useState(false)
-  const [showDeleteConfirm, setShowDeleteConfirm] = useState(false)
   const [deleted, setDeleted] = useState(false)
   const [, startTransition] = useTransition()
 
@@ -760,11 +758,6 @@ export function SocialPostCard({
     })
   }
 
-  function handleDelete() {
-    setShowMenu(false)
-    setShowDeleteConfirm(true)
-  }
-
   const { execute: deferPostDelete } = useDeferredAction({
     delay: 8000,
     toastMessage: 'Post deleted',
@@ -781,8 +774,8 @@ export function SocialPostCard({
     },
   })
 
-  function handleConfirmedDelete() {
-    setShowDeleteConfirm(false)
+  function handleDelete() {
+    setShowMenu(false)
     setDeleted(true)
     deferPostDelete()
   }
@@ -970,17 +963,6 @@ export function SocialPostCard({
           <span>{copied ? 'Copied!' : 'Share'}</span>
         </button>
       </div>
-
-      <ConfirmModal
-        open={showDeleteConfirm}
-        title="Delete this post?"
-        description="You'll have 8 seconds to undo."
-        confirmLabel="Delete"
-        variant="danger"
-        loading={deleted}
-        onConfirm={handleConfirmedDelete}
-        onCancel={() => setShowDeleteConfirm(false)}
-      />
     </article>
   )
 }

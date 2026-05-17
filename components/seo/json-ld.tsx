@@ -7,6 +7,7 @@ import {
   PUBLIC_MARKETPLACE_DESCRIPTION,
   PUBLIC_SITE_ALTERNATE_NAMES,
   PUBLIC_SITE_DESCRIPTION,
+  SOCIAL_PROFILE_URLS,
   absoluteUrl,
   canonicalUrl,
 } from '@/lib/site/public-site'
@@ -38,7 +39,7 @@ export function OrganizationJsonLd() {
         logo: absoluteUrl('/logo.jpg'),
         description: PUBLIC_SITE_DESCRIPTION,
         foundingDate: '2025',
-        sameAs: [],
+        sameAs: SOCIAL_PROFILE_URLS,
         contactPoint: PUBLIC_MARKETPLACE_CONTACT_POINTS,
       }}
     />

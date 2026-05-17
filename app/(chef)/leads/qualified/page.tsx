@@ -35,14 +35,14 @@ export default async function QualifiedLeadsPage() {
           </span>
         </div>
         <p className="text-stone-500 mt-1">
-          Leads who have received a quote - confirmed as viable prospects
+          Inquiries that have received a quote - confirmed as viable prospects
         </p>
       </div>
 
       {inquiries.length === 0 ? (
         <Card className="p-12 text-center">
           <p className="text-stone-400 font-medium mb-1">No qualified leads</p>
-          <p className="text-stone-400 text-sm">Leads move here once you send them a quote</p>
+          <p className="text-stone-400 text-sm">Inquiries move here once you send them a quote</p>
           <Link
             href="/leads/contacted"
             className="text-sm text-brand-600 hover:underline mt-2 block"
@@ -55,7 +55,7 @@ export default async function QualifiedLeadsPage() {
           <Table>
             <TableHeader>
               <TableRow>
-                <TableHead>Lead</TableHead>
+                <TableHead>Inquiry</TableHead>
                 <TableHead>Inquiry Date</TableHead>
                 <TableHead>Occasion</TableHead>
                 <TableHead>Guests</TableHead>

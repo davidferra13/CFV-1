@@ -43,8 +43,10 @@ export interface UseStepWizardReturn<TData extends Record<string, unknown>> {
   setData: (partial: Partial<TData>) => void
   /** Replace wizard data entirely */
   replaceData: (next: TData) => void
-  /** Go to next step. Returns false if validation fails. */
-  next: () => Promise<boolean>
+  /** Go to next step. Returns false if validation fails. Pass skipValidation to bypass. */
+  next: (options?: { skipValidation?: boolean }) => Promise<boolean>
+  /** Skip current step (navigate forward without validation) */
+  skip: () => void
   /** Go to previous step */
   prev: () => void
   /** Jump to a step by key. Skips validation. */
@@ -143,39 +145,42 @@ export function useStepWizard<TData extends Record<string, unknown>>(
     })
   }, [])
 
-  const next = useCallback(async (): Promise<boolean> => {
-    if (!validateCurrentStep()) return false
+  const next = useCallback(
+    async (options?: { skipValidation?: boolean }): Promise<boolean> => {
+      if (!options?.skipValidation && !validateCurrentStep()) return false
 
-    markStepCompleted(currentStep.key)
+      markStepCompleted(currentStep.key)
 
-    if (isLastStep) {
-      setIsComplete(true)
-      if (onComplete) {
-        await onComplete(dataRef.current)
+      if (isLastStep) {
+        setIsComplete(true)
+        if (onComplete) {
+          await onComplete(dataRef.current)
+        }
+        return true
+      }
+
+      const nextIndex = clampedIndex + 1
+      const nextStep = visibleSteps[nextIndex]
+      setStepIndex(nextIndex)
+      setValidationError(null)
+      if (nextStep) {
+        markStepVisited(nextStep.key)
+        onStepChange?.(nextStep.key, nextIndex)
       }
       return true
-    }
-
-    const nextIndex = clampedIndex + 1
-    const nextStep = visibleSteps[nextIndex]
-    setStepIndex(nextIndex)
-    setValidationError(null)
-    if (nextStep) {
-      markStepVisited(nextStep.key)
-      onStepChange?.(nextStep.key, nextIndex)
-    }
-    return true
-  }, [
-    validateCurrentStep,
-    markStepCompleted,
-    currentStep,
-    isLastStep,
-    onComplete,
-    clampedIndex,
-    visibleSteps,
-    markStepVisited,
-    onStepChange,
-  ])
+    },
+    [
+      validateCurrentStep,
+      markStepCompleted,
+      currentStep,
+      isLastStep,
+      onComplete,
+      clampedIndex,
+      visibleSteps,
+      markStepVisited,
+      onStepChange,
+    ]
+  )
 
   const prev = useCallback(() => {
     if (isFirstStep) return
@@ -187,6 +192,19 @@ export function useStepWizard<TData extends Record<string, unknown>>(
       onStepChange?.(prevStep.key, prevIndex)
     }
   }, [isFirstStep, clampedIndex, visibleSteps, onStepChange])
+
+  const skip = useCallback(() => {
+    if (!currentStep) return
+    if (isLastStep) return
+    const nextIndex = clampedIndex + 1
+    const nextStep = visibleSteps[nextIndex]
+    setStepIndex(nextIndex)
+    setValidationError(null)
+    if (nextStep) {
+      markStepVisited(nextStep.key)
+      onStepChange?.(nextStep.key, nextIndex)
+    }
+  }, [currentStep, isLastStep, clampedIndex, visibleSteps, markStepVisited, onStepChange])
 
   const goTo = useCallback(
     (key: StepKey) => {
@@ -220,6 +238,7 @@ export function useStepWizard<TData extends Record<string, unknown>>(
     replaceData,
     next,
     prev,
+    skip,
     goTo,
     canGoNext: !isLastStep,
     canGoPrev: !isFirstStep,

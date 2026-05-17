@@ -1,4 +1,4 @@
-'use client'
+﻿'use client'
 
 import { memo } from 'react'
 import type { HubMessage, HubNotificationType } from '@/lib/hub/types'
@@ -142,7 +142,15 @@ export const HubNotificationCard = memo(function HubNotificationCard({
   message,
 }: NotificationCardProps) {
   const notifType = message.notification_type
-  if (!notifType) return null
+  if (!notifType) {
+    return (
+      <div className="flex justify-center px-4 py-2">
+        <div className="w-full max-w-md rounded-xl border p-3 bg-stone-800/50 border-stone-600/50">
+          <span className="text-xs text-stone-500">System notification</span>
+        </div>
+      </div>
+    )
+  }
 
   const config = NOTIFICATION_CONFIG[notifType] ?? {
     icon: '📢',

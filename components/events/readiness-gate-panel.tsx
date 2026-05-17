@@ -1,19 +1,19 @@
 'use client'
 
-import { useRouter } from 'next/navigation'
-import { useTransition } from 'react'
-import { toast } from 'sonner'
+import { useState } from 'react'
 import { AlertTriangle, CheckCircle2, ShieldAlert, XCircle } from '@/components/ui/icons'
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
-import { overrideGate } from '@/lib/events/readiness'
+import { OverrideDialog } from '@/components/events/override-dialog'
 import type { GateResult, ReadinessResult } from '@/lib/events/readiness'
 
 interface ReadinessGatePanelProps {
   eventId: string
   readiness: ReadinessResult
   targetLabel: string
+  /** Event date (ISO string) for time-pressure detection in override dialog */
+  eventDate?: string | null
 }
 
 function ProofStatusIcon({ gate }: { gate: GateResult }) {
@@ -34,24 +34,20 @@ function appendReturnTo(route: string, returnTo: string) {
   return `${route}${separator}returnTo=${encodeURIComponent(returnTo)}`
 }
 
-function ProofRow({ eventId, gate }: { eventId: string; gate: GateResult }) {
-  const router = useRouter()
-  const [isPending, startTransition] = useTransition()
+function ProofRow({
+  eventId,
+  gate,
+  eventDate,
+}: {
+  eventId: string
+  gate: GateResult
+  eventDate?: string | null
+}) {
+  const [dialogOpen, setDialogOpen] = useState(false)
   const verifyHref = appendReturnTo(
     gate.verifyRoute,
     `/events/${eventId}?tab=ops#service-simulation`
   )
-
-  function handleOverride() {
-    startTransition(async () => {
-      try {
-        await overrideGate(eventId, gate.gate, `Override acknowledged for ${gate.label}`)
-        router.refresh()
-      } catch (err) {
-        toast.error(err instanceof Error ? err.message : 'Failed to override proof')
-      }
-    })
-  }
 
   return (
     <div className="rounded-lg border border-stone-800 bg-stone-950/50 p-3">
@@ -84,18 +80,31 @@ function ProofRow({ eventId, gate }: { eventId: string; gate: GateResult }) {
               {gate.ctaLabel}
             </Button>
             {gate.status !== 'verified' && gate.status !== 'overridden' ? (
-              <Button variant="ghost" size="sm" onClick={handleOverride} loading={isPending}>
+              <Button variant="ghost" size="sm" onClick={() => setDialogOpen(true)}>
                 Override Proof
               </Button>
             ) : null}
           </div>
         </div>
       </div>
+
+      <OverrideDialog
+        open={dialogOpen}
+        onClose={() => setDialogOpen(false)}
+        eventId={eventId}
+        gate={gate}
+        eventDate={eventDate}
+      />
     </div>
   )
 }
 
-export function ReadinessGatePanel({ eventId, readiness, targetLabel }: ReadinessGatePanelProps) {
+export function ReadinessGatePanel({
+  eventId,
+  readiness,
+  targetLabel,
+  eventDate,
+}: ReadinessGatePanelProps) {
   if (readiness.gates.length === 0) return null
 
   const headerTone =
@@ -126,7 +135,7 @@ export function ReadinessGatePanel({ eventId, readiness, targetLabel }: Readines
       </CardHeader>
       <CardContent className="space-y-3">
         {readiness.gates.map((gate) => (
-          <ProofRow key={gate.gate} eventId={eventId} gate={gate} />
+          <ProofRow key={gate.gate} eventId={eventId} gate={gate} eventDate={eventDate} />
         ))}
       </CardContent>
     </Card>

@@ -39,10 +39,8 @@ export default async function BenchmarksPage() {
           <Link href="/analytics" className="text-sm text-stone-500 hover:text-stone-300">
             &larr; Analytics
           </Link>
-          <h1 className="text-3xl font-bold text-stone-100 mt-1">KPI Trends</h1>
-          <p className="text-stone-400 mt-1">
-            Track how your key performance metrics have changed over time.
-          </p>
+          <h1 className="text-3xl font-bold text-stone-100 mt-1">Performance Trends</h1>
+          <p className="text-stone-400 mt-1">Track how your numbers have changed over time.</p>
         </div>
       </div>
 

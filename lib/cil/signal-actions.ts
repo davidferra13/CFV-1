@@ -12,6 +12,7 @@ import { generateReengagementDraft } from '@/lib/ai/reengagement-draft'
 import { createNotification } from '@/lib/notifications/actions'
 import { recordSideEffectFailure } from '@/lib/monitoring/non-blocking'
 import { buildDedupKey, shouldDispatch, markDispatched } from '@/lib/cil/signal-dedup'
+import { autoDispatchDraft } from '@/lib/cil/auto-dispatch'
 
 /**
  * Get all active proactive signals for the current chef's tenant.
@@ -402,9 +403,106 @@ async function dispatchSignalAction(signal: ProactiveSignal, tenantId: string): 
       break
     }
 
+    // ── Commitment: gate override frequency -> notify about pattern ──────
+    case 'commitment.gateFrequency': {
+      if (signal.urgency >= 3) {
+        await createNotification({
+          tenantId,
+          recipientId: tenantId,
+          category: 'ops',
+          action: 'system_alert' as any,
+          title: signal.title,
+          body: signal.suggestedAction || 'A readiness gate is being overridden frequently.',
+          actionUrl: (actionPayload?.path as string) || '/calendar',
+          metadata: { origin: 'cil', signalSource: source },
+        })
+      }
+      break
+    }
+
+    // ── Commitment: time pressure overrides -> urgent prep warning ────────
+    case 'commitment.timePressure': {
+      await createNotification({
+        tenantId,
+        recipientId: tenantId,
+        category: 'event',
+        action: 'event_status_change' as any,
+        title: signal.title,
+        body:
+          signal.suggestedAction ||
+          'Multiple overrides under time pressure. Consider earlier prep deadlines.',
+        actionUrl: (actionPayload?.path as string) || '/calendar',
+        metadata: { origin: 'cil', signalSource: source },
+      })
+      break
+    }
+
+    // ── Commitment: client-correlated overrides -> informational ──────────
+    case 'commitment.clientCorrelation': {
+      const correlatedClientId = entityIds[0]
+      if (signal.urgency >= 3) {
+        await createNotification({
+          tenantId,
+          recipientId: tenantId,
+          category: 'client',
+          action: 'client_reengagement_draft' as any,
+          title: signal.title,
+          body: signal.suggestedAction || "Review this client's event patterns.",
+          actionUrl: correlatedClientId ? `/clients/${correlatedClientId}` : '/clients',
+          clientId: correlatedClientId || undefined,
+          metadata: { origin: 'cil', signalSource: source, informational: true },
+        })
+      }
+      break
+    }
+
+    // ── Commitment: confidence erosion -> alert about low-confidence overrides
+    case 'commitment.confidenceErosion': {
+      if (signal.urgency >= 3) {
+        await createNotification({
+          tenantId,
+          recipientId: tenantId,
+          category: 'ops',
+          action: 'system_alert' as any,
+          title: signal.title,
+          body:
+            signal.suggestedAction ||
+            'Override confidence is low. Address blockers instead of bypassing.',
+          actionUrl: (actionPayload?.path as string) || '/calendar',
+          metadata: { origin: 'cil', signalSource: source },
+        })
+      }
+      break
+    }
+
+    // ── Commitment: menu unlocks -> pattern awareness ─────────────────────
+    case 'commitment.menuUnlocks': {
+      if (signal.urgency >= 3) {
+        await createNotification({
+          tenantId,
+          recipientId: tenantId,
+          category: 'ops',
+          action: 'system_alert' as any,
+          title: signal.title,
+          body: signal.suggestedAction || 'Menus are being unlocked frequently after finalization.',
+          actionUrl: (actionPayload?.path as string) || '/menus',
+          metadata: { origin: 'cil', signalSource: source },
+        })
+      }
+      break
+    }
+
     default:
       // Signal types without a wired dispatcher are silently dismissed
       break
+  }
+
+  // Non-blocking: generate actionable draft if signal type supports it.
+  // Chef reviews and approves before anything sends.
+  try {
+    await autoDispatchDraft(signal, tenantId)
+  } catch {
+    // Draft generation failure must never break signal dispatch
   }
 
   // Non-blocking: bridge signal to outbound communication channels.

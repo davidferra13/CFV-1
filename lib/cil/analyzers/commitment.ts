@@ -19,6 +19,7 @@ export async function analyzeCommitment(tenantId: string): Promise<ProactiveSign
     await analyzeClientCorrelatedOverrides(client, tenantId, signals, now)
     await analyzeConfidenceErosion(client, tenantId, signals, now)
     await analyzeMenuUnlockPattern(client, tenantId, signals, now)
+    await analyzeMonthlyReview(client, tenantId, signals, now)
 
     return signals
   } catch (err) {
@@ -277,6 +278,21 @@ async function analyzeConfidenceErosion(
 
 // ── Pattern 5: Menu Unlock Pattern ──────────────────────────────────────────
 
+const MONTH_NAMES = [
+  'January',
+  'February',
+  'March',
+  'April',
+  'May',
+  'June',
+  'July',
+  'August',
+  'September',
+  'October',
+  'November',
+  'December',
+]
+
 async function analyzeMenuUnlockPattern(
   client: ReturnType<typeof createServerClient>,
   tenantId: string,
@@ -307,6 +323,124 @@ async function analyzeMenuUnlockPattern(
     actionType: 'dismiss',
     entityIds: unlocks.map((u: any) => u.event_id).filter(Boolean),
     source: 'commitment.menuUnlocks',
+    createdAt: now,
+  })
+}
+
+// ── Pattern 6: Monthly Commitment Review ──────────────────────────────────
+
+async function analyzeMonthlyReview(
+  client: ReturnType<typeof createServerClient>,
+  tenantId: string,
+  signals: ProactiveSignal[],
+  now: number
+): Promise<void> {
+  // Dedup: skip if a monthlyReview signal was created in the last 25 days
+  try {
+    const { getOrCreateDB } = await import('../db')
+    const db = getOrCreateDB(tenantId)
+    const twentyFiveDaysAgo = now - 25 * 24 * 60 * 60 * 1000
+    const existing = db
+      .prepare(`SELECT id FROM proactive_signals WHERE source = ? AND created_at > ? LIMIT 1`)
+      .get('commitment.monthlyReview', twentyFiveDaysAgo) as { id: string } | undefined
+    if (existing) return
+  } catch {
+    // If SQLite check fails (table missing, etc.), proceed with generation
+  }
+
+  // Determine prior calendar month boundaries
+  const today = new Date(now)
+  const priorMonthEnd = new Date(today.getFullYear(), today.getMonth(), 1) // 1st of current month
+  const priorMonthStart = new Date(priorMonthEnd.getFullYear(), priorMonthEnd.getMonth() - 1, 1)
+  const twoMonthsAgoStart = new Date(
+    priorMonthStart.getFullYear(),
+    priorMonthStart.getMonth() - 1,
+    1
+  )
+
+  // Must be at least 30 days since the start of the prior month (ensures month has ended)
+  const daysSincePriorMonthStart = (now - priorMonthStart.getTime()) / (24 * 60 * 60 * 1000)
+  if (daysSincePriorMonthStart < 30) return
+
+  // Query overrides for the prior calendar month
+  const { data: priorOverrides } = await client
+    .from('event_readiness_gates' as any)
+    .select('gate, event_id, resolved_at')
+    .eq('tenant_id', tenantId)
+    .eq('status', 'overridden')
+    .gte('resolved_at', priorMonthStart.toISOString())
+    .lt('resolved_at', priorMonthEnd.toISOString())
+
+  if (!priorOverrides || priorOverrides.length === 0) return
+
+  const totalOverrides = priorOverrides.length
+
+  // Query overrides for the month before (for trend comparison)
+  const { data: olderOverrides } = await client
+    .from('event_readiness_gates' as any)
+    .select('gate')
+    .eq('tenant_id', tenantId)
+    .eq('status', 'overridden')
+    .gte('resolved_at', twoMonthsAgoStart.toISOString())
+    .lt('resolved_at', priorMonthStart.toISOString())
+
+  const olderCount = olderOverrides?.length ?? 0
+  const trendPercent =
+    olderCount > 0 ? Math.round(((totalOverrides - olderCount) / olderCount) * 100) : 100
+
+  // Most-overridden gate
+  const gateCounts = new Map<string, number>()
+  for (const row of priorOverrides) {
+    gateCounts.set(row.gate, (gateCounts.get(row.gate) || 0) + 1)
+  }
+  const topGateEntry = [...gateCounts.entries()].sort((a, b) => b[1] - a[1])[0]
+  const topGate = GATE_LABELS[topGateEntry?.[0] ?? ''] || topGateEntry?.[0] || 'unknown'
+
+  // Time-pressure override count (within 48hrs of event)
+  const eventIdSet = new Set<string>()
+  for (const o of priorOverrides) {
+    if (o.event_id) eventIdSet.add(o.event_id as string)
+  }
+  const eventIds = Array.from(eventIdSet)
+  let timePressureCount = 0
+
+  if (eventIds.length > 0) {
+    const { data: events } = await client.from('events').select('id, event_date').in('id', eventIds)
+
+    if (events) {
+      const eventDateMap = new Map<string, string>()
+      for (const e of events) {
+        if (e.event_date) eventDateMap.set(e.id, e.event_date)
+      }
+
+      for (const override of priorOverrides) {
+        const eventDate = eventDateMap.get(override.event_id)
+        if (!eventDate || !override.resolved_at) continue
+        const eventMs = new Date(eventDate).getTime()
+        const overrideMs = new Date(override.resolved_at).getTime()
+        const hoursBeforeEvent = (eventMs - overrideMs) / (60 * 60 * 1000)
+        if (hoursBeforeEvent >= 0 && hoursBeforeEvent < 48) {
+          timePressureCount++
+        }
+      }
+    }
+  }
+
+  const monthName = MONTH_NAMES[priorMonthStart.getMonth()] ?? 'Unknown'
+  const trendLabel = trendPercent >= 0 ? `+${trendPercent}` : `${trendPercent}`
+
+  signals.push({
+    id: generateId(),
+    domain: 'commitment',
+    urgency: 2,
+    confidence: 0.9,
+    title: `Monthly commitment review: ${monthName}`,
+    detail: `${totalOverrides} overrides (${trendLabel}% vs prior month). Most overridden: ${topGate}. ${timePressureCount} under time pressure.`,
+    suggestedAction: 'Review override patterns and adjust preparation timelines',
+    actionType: 'navigate',
+    actionPayload: { path: '/analytics/intelligence' },
+    entityIds: eventIds,
+    source: 'commitment.monthlyReview',
     createdAt: now,
   })
 }

@@ -21,6 +21,19 @@ export function RevenueProjectionWidget({ projection }: Props) {
     daysRemaining,
   } = projection
 
+  if (goalCents === 0 && confirmedCents === 0 && pendingCents === 0) {
+    return (
+      <Card className="border-stone-700">
+        <CardContent className="py-4">
+          <span className="text-sm font-semibold text-stone-200">Monthly Projection</span>
+          <p className="text-sm text-stone-500 mt-2">
+            Set a monthly revenue goal to unlock projections.
+          </p>
+        </CardContent>
+      </Card>
+    )
+  }
+
   const totalExpected = confirmedCents + pipelineExpectedCents
   const progressPct =
     goalCents > 0 ? Math.min(100, Math.round((totalExpected / goalCents) * 100)) : 0

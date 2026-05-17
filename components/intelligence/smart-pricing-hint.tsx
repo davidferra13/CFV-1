@@ -1,4 +1,4 @@
-'use client'
+﻿'use client'
 
 import { useEffect, useState, useTransition } from 'react'
 import { Card, CardContent } from '@/components/ui/card'
@@ -47,7 +47,20 @@ export function SmartPricingHint({
     return () => clearTimeout(timer)
   }, [guestCount, occasion, serviceStyle])
 
-  if (dismissed || !suggestion || isPending) return null
+  if (dismissed) return null
+
+  if (isPending && !suggestion) {
+    return (
+      <div className="rounded-lg border border-stone-700/50 bg-stone-800/30 px-4 py-3">
+        <div className="flex items-center gap-2">
+          <div className="h-3 w-3 animate-spin rounded-full border-2 border-stone-600 border-t-brand-500" />
+          <span className="text-xs text-stone-400">Calculating smart price...</span>
+        </div>
+      </div>
+    )
+  }
+
+  if (!suggestion) return null
 
   const confidenceColor =
     suggestion.confidence === 'high'

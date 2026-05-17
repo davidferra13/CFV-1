@@ -1,4 +1,4 @@
-// Comprehensive Analytics Hub
+﻿// Comprehensive Analytics Hub
 // All statistics tracked by ChefFlow - 9 tabs covering every business and chef metric
 
 import type { Metadata } from 'next'
@@ -15,7 +15,10 @@ const AnalyticsHub = dynamic(
     ssr: false,
     loading: () => (
       <div className="flex min-h-[200px] items-center justify-center">
-        <div className="h-6 w-6 animate-spin rounded-full border-2 border-brand-500 border-t-transparent" />
+        <div className="flex flex-col items-center gap-3">
+          <div className="h-6 w-6 animate-spin rounded-full border-2 border-brand-500 border-t-transparent" />
+          <span className="text-sm text-stone-400">Loading analytics...</span>
+        </div>
       </div>
     ),
   }
@@ -570,7 +573,14 @@ export default async function AnalyticsHubPage() {
         )}
       />
 
-      <Suspense fallback={null}>
+      <Suspense
+        fallback={
+          <div className="flex items-center gap-2 p-4 rounded-xl border border-stone-700/60 bg-stone-900/80">
+            <div className="h-4 w-4 animate-spin rounded-full border-2 border-stone-600 border-t-brand-500" />
+            <span className="text-sm text-stone-400">Loading collaboration data...</span>
+          </div>
+        }
+      >
         <CollaborationRevenueCard />
       </Suspense>
     </div>

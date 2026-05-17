@@ -10,7 +10,6 @@ import { showUndoToast } from '@/components/ui/undo-toast'
 import { Card } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
-import { ConfirmModal } from '@/components/ui/confirm-modal'
 import {
   markLegComplete,
   markLegInProgress,
@@ -149,7 +148,6 @@ function LegCard({
   onIngredientStatusChange: (ingredientId: string, status: TravelIngredientStatus) => void
 }) {
   const [expanded, setExpanded] = useState(leg.status !== 'completed' && leg.status !== 'cancelled')
-  const [showDeleteConfirm, setShowDeleteConfirm] = useState(false)
 
   const hasStops = leg.stops.length > 0
   const hasIngredients = leg.ingredients.length > 0
@@ -357,25 +355,12 @@ function LegCard({
                 Cancel trip
               </Button>
             )}
-            <Button size="sm" variant="danger" onClick={() => setShowDeleteConfirm(true)}>
+            <Button size="sm" variant="danger" onClick={() => onDelete(leg.id)}>
               Delete
             </Button>
           </div>
         </div>
       )}
-
-      <ConfirmModal
-        open={showDeleteConfirm}
-        title="Delete this travel leg?"
-        description="You'll have 8 seconds to undo."
-        confirmLabel="Delete"
-        variant="danger"
-        onConfirm={() => {
-          setShowDeleteConfirm(false)
-          onDelete(leg.id)
-        }}
-        onCancel={() => setShowDeleteConfirm(false)}
-      />
     </Card>
   )
 }

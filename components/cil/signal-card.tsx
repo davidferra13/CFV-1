@@ -60,10 +60,15 @@ export function SignalCard({ signal, onDismiss, onAct, compact }: SignalCardProp
   if (compact) {
     return (
       <div
-        className={`flex items-center gap-3 rounded-lg border border-stone-700/40 bg-stone-800/50 px-3 py-2 transition-opacity ${isPending ? 'opacity-50' : ''}`}
+        className={`relative flex items-center gap-3 rounded-lg border border-stone-700/40 bg-stone-800/50 px-3 py-2 transition-opacity ${isPending ? 'opacity-50 pointer-events-none' : ''}`}
         role="article"
         aria-label={`Signal: ${signal.title}`}
       >
+        {isPending && (
+          <span className="absolute inset-0 flex items-center justify-center bg-stone-800/80 rounded-lg text-xs text-stone-400 z-10">
+            Dismissing...
+          </span>
+        )}
         <div className={`h-2 w-2 shrink-0 rounded-full ${urgencyColor}`} aria-hidden="true" />
         <Icon className="h-4 w-4 shrink-0 text-stone-400" aria-hidden="true" />
         <span className="min-w-0 flex-1 truncate text-sm text-stone-100">{signal.title}</span>
@@ -86,10 +91,15 @@ export function SignalCard({ signal, onDismiss, onAct, compact }: SignalCardProp
 
   return (
     <div
-      className={`relative flex overflow-hidden rounded-xl border border-stone-700/40 bg-stone-800/50 transition-opacity ${isPending ? 'opacity-50' : ''}`}
+      className={`relative flex overflow-hidden rounded-xl border border-stone-700/40 bg-stone-800/50 transition-opacity ${isPending ? 'opacity-50 pointer-events-none' : ''}`}
       role="article"
       aria-label={`Signal: ${signal.title}`}
     >
+      {isPending && (
+        <span className="absolute inset-0 flex items-center justify-center bg-stone-800/80 rounded-xl text-xs text-stone-400 z-10">
+          Dismissing...
+        </span>
+      )}
       {/* Left urgency stripe */}
       <div className={`w-1 shrink-0 ${urgencyColor}`} aria-hidden="true" />
 

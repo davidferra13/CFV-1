@@ -12,7 +12,20 @@ interface Props {
 }
 
 export function RetentionWidget({ metrics }: Props) {
-  if (metrics.totalClients === 0) return null
+  if (metrics.totalClients === 0) {
+    return (
+      <Card>
+        <CardHeader>
+          <CardTitle>Client Retention</CardTitle>
+        </CardHeader>
+        <CardContent>
+          <p className="text-sm text-stone-500">
+            Add your first client to start tracking retention and lifetime value.
+          </p>
+        </CardContent>
+      </Card>
+    )
+  }
 
   const { activeClients, churningClients, lostClients, totalClients } = metrics
 
@@ -31,7 +44,7 @@ export function RetentionWidget({ metrics }: Props) {
       desc: 'Event in last 90 days',
     },
     {
-      label: 'Churning',
+      label: 'Going Quiet',
       count: churningClients,
       pct: churningPct,
       color: 'bg-amber-500',

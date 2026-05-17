@@ -28,13 +28,13 @@ export default async function LeadsPage() {
     <div className="space-y-8">
       <div className="flex justify-between items-center">
         <div>
-          <h1 className="text-3xl font-bold text-stone-100">Leads</h1>
+          <h1 className="text-3xl font-bold text-stone-100">Inquiries</h1>
           <p className="text-stone-400 mt-1">
-            Website leads, operator evaluations, and guest referrals in one place.
+            Website inquiries, operator evaluations, and guest referrals in one place.
           </p>
         </div>
         <Link href="/inquiries/new">
-          <Button>+ Log Manual Lead</Button>
+          <Button>+ Log Inquiry</Button>
         </Link>
       </div>
 
@@ -53,9 +53,9 @@ export default async function LeadsPage() {
 
       <section className="space-y-4">
         <div>
-          <h2 className="text-2xl font-semibold text-stone-100">General website leads</h2>
+          <h2 className="text-2xl font-semibold text-stone-100">Website inquiries</h2>
           <p className="mt-1 text-sm text-stone-400">
-            Claim inbound public contact leads here to move them into your inquiry pipeline.
+            Claim inbound contact submissions here to move them into your inquiry pipeline.
           </p>
         </div>
         <LeadsList submissions={submissions} />
@@ -72,7 +72,7 @@ export default async function LeadsPage() {
         <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
           <Card className="p-4 text-center">
             <p className="text-2xl font-bold text-stone-100">{guestLeadStats.total}</p>
-            <p className="text-sm text-stone-500">Total Leads</p>
+            <p className="text-sm text-stone-500">Total Referrals</p>
           </Card>
           <Card className="p-4 text-center">
             <p className="text-2xl font-bold text-brand-600">{guestLeadStats.new}</p>
@@ -91,7 +91,7 @@ export default async function LeadsPage() {
         {guestLeads.length === 0 ? (
           <Card className="p-12 text-center">
             <div className="max-w-md mx-auto">
-              <p className="text-stone-400 text-lg mb-2">No guest leads yet</p>
+              <p className="text-stone-400 text-lg mb-2">No guest referrals yet</p>
               <p className="text-stone-500 text-sm">
                 Display the QR code from your event pages at your next dinner. When guests scan it
                 and fill out the form, they will appear here.

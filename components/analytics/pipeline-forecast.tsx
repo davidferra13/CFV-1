@@ -134,7 +134,8 @@ export function PipelineForecast({ pipeline }: PipelineForecastProps) {
         <CardContent>
           {pipeline.length === 0 ? (
             <p className="text-sm text-stone-300 italic text-center py-8">
-              No events in the pipeline.
+              No events in the pipeline. Create an event or convert an inquiry to populate your
+              forecast.
             </p>
           ) : (
             <div className="space-y-2">

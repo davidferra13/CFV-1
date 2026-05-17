@@ -10,7 +10,7 @@ import type { PipelineFinancials } from '@/lib/hub/circle-pipeline-stats'
 
 const STAGE_GROUPS = [
   {
-    label: 'Leads',
+    label: 'New Inquiries',
     stages: ['new_inquiry', 'awaiting_client', 'awaiting_chef'] as PipelineStage[],
     color: 'bg-blue-500',
   },

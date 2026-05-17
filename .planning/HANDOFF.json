@@ -1,6 +1,6 @@
 {
   "version": "1.0",
-  "timestamp": "2026-05-17T19:19:55.232Z",
+  "timestamp": "2026-05-17T20:02:02.178Z",
   "source": "auto-postool",
   "partial": false,
   "phase": null,
@@ -18,35 +18,279 @@
   "uncommitted_files": [
     {
       "status": "M",
-      "path": "docs/CLAUDE-SKILLS-REFERENCE.md"
+      "path": ".claude/settings.json"
     },
     {
       "status": "M",
-      "path": "docs/intensify/events.md"
+      "path": ".claude/skills/omninet/SKILL.md"
     },
     {
       "status": "M",
-      "path": "docs/intensify/ingredient-verification.md"
+      "path": ".claude/skills/omninet/scripts/skill-inventory.mjs"
     },
     {
       "status": "M",
-      "path": "docs/specs/continuous-verification-loop.md"
+      "path": ".planning/HANDOFF.json"
     },
     {
       "status": "M",
-      "path": "docs/specs/operational-action-bridge-spec.md"
+      "path": "app/(chef)/analytics/benchmarks/page.tsx"
     },
     {
       "status": "M",
-      "path": "docs/specs/operational-copilot-philosophy.md"
+      "path": "app/(chef)/analytics/intelligence/client-risk/page.tsx"
     },
     {
       "status": "M",
-      "path": "docs/sync-status.json"
+      "path": "app/(chef)/analytics/page.tsx"
     },
     {
       "status": "M",
-      "path": "docs/test-coverage-blueprint.md"
+      "path": "app/(chef)/clients/[id]/relationship/page.tsx"
+    },
+    {
+      "status": "M",
+      "path": "app/(chef)/dashboard/_sections/business-cards.tsx"
+    },
+    {
+      "status": "M",
+      "path": "app/(chef)/dashboard/_sections/business-section-mobile-content.tsx"
+    },
+    {
+      "status": "M",
+      "path": "app/(chef)/dashboard/_sections/cil-signal-summary.tsx"
+    },
+    {
+      "status": "M",
+      "path": "app/(chef)/dashboard/_sections/pipeline-snapshot.tsx"
+    },
+    {
+      "status": "M",
+      "path": "app/(chef)/dashboard/page.tsx"
+    },
+    {
+      "status": "M",
+      "path": "app/(chef)/events/[id]/page.tsx"
+    },
+    {
+      "status": "M",
+      "path": "app/(chef)/finance/goals/page.tsx"
+    },
+    {
+      "status": "M",
+      "path": "app/(chef)/inquiries/page.tsx"
+    },
+    {
+      "status": "M",
+      "path": "app/(chef)/leads/archived/page.tsx"
+    },
+    {
+      "status": "M",
+      "path": "app/(chef)/leads/contacted/page.tsx"
+    },
+    {
+      "status": "M",
+      "path": "app/(chef)/leads/page.tsx"
+    },
+    {
+      "status": "M",
+      "path": "app/(chef)/leads/qualified/page.tsx"
+    },
+    {
+      "status": "M",
+      "path": "app/(chef)/loyalty/learn/loyalty-guide-content.tsx"
+    },
+    {
+      "status": "M",
+      "path": "app/(chef)/marketplace/page.tsx"
+    },
+    {
+      "status": "M",
+      "path": "app/(chef)/ops/page.tsx"
+    },
+    {
+      "status": "M",
+      "path": "app/(public)/layout.tsx"
+    },
+    {
+      "status": "M",
+      "path": "app/feed.xml/route.ts"
+    },
+    {
+      "status": "M",
+      "path": "app/kiosk/page.tsx"
+    },
+    {
+      "status": "M",
+      "path": "components/ai/lead-score-badge.tsx"
+    },
+    {
+      "status": "M",
+      "path": "components/analytics/analytics-hub-client.tsx"
+    },
+    {
+      "status": "M",
+      "path": "components/analytics/benchmark-dashboard.tsx"
+    },
+    {
+      "status": "M",
+      "path": "components/analytics/channel-comparison.tsx"
+    },
+    {
+      "status": "M",
+      "path": "components/analytics/conversion-dashboard.tsx"
+    },
+    {
+      "status": "M",
+      "path": "components/analytics/conversion-funnel.tsx"
+    },
+    {
+      "status": "M",
+      "path": "components/analytics/pipeline-forecast.tsx"
+    },
+    {
+      "status": "M",
+      "path": "components/analytics/referral-dashboard.tsx"
+    },
+    {
+      "status": "M",
+      "path": "components/analytics/source-charts.tsx"
+    },
+    {
+      "status": "M",
+      "path": "components/analytics/yoy-cards.tsx"
+    },
+    {
+      "status": "M",
+      "path": "components/calendar/calendar-filter-panel.tsx"
+    },
+    {
+      "status": "M",
+      "path": "components/cil/signal-card.tsx"
+    },
+    {
+      "status": "M",
+      "path": "components/cil/signal-feed.tsx"
+    },
+    {
+      "status": "M",
+      "path": "components/clients/event-countdown.tsx"
+    },
+    {
+      "status": "M",
+      "path": "components/communication/cadence-settings.tsx"
+    },
+    {
+      "status": "M",
+      "path": "components/dashboard/food-cost-trend-widget.tsx"
+    },
+    {
+      "status": "M",
+      "path": "components/dashboard/forecast-widget.tsx"
+    },
+    {
+      "status": "M",
+      "path": "components/dashboard/payout-summary-widget.tsx"
+    },
+    {
+      "status": "M",
+      "path": "components/dashboard/pipeline-forecast-widget.tsx"
+    },
+    {
+      "status": "M",
+      "path": "components/dashboard/retention-widget.tsx"
+    },
+    {
+      "status": "M",
+      "path": "components/dashboard/revenue-comparison-widget.tsx"
+    },
+    {
+      "status": "M",
+      "path": "components/dashboard/revenue-projection-widget.tsx"
+    },
+    {
+      "status": "M",
+      "path": "components/dashboard/top-events-profit-widget.tsx"
+    },
+    {
+      "status": "M",
+      "path": "components/events/close-out-wizard.tsx"
+    },
+    {
+      "status": "M",
+      "path": "components/events/event-creation-wizard.tsx"
+    },
+    {
+      "status": "M",
+      "path": "components/events/readiness-gate-panel.tsx"
+    },
+    {
+      "status": "M",
+      "path": "components/events/travel-plan-client.tsx"
+    },
+    {
+      "status": "M",
+      "path": "components/events/weather-forecast-card.tsx"
+    },
+    {
+      "status": "M",
+      "path": "components/finance/cost-variance-card.tsx"
+    },
+    {
+      "status": "M",
+      "path": "components/finance/event-pricing-intelligence-panel.tsx"
+    },
+    {
+      "status": "M",
+      "path": "components/hub/circles-pipeline-header.tsx"
+    },
+    {
+      "status": "M",
+      "path": "components/hub/hub-notification-card.tsx"
+    },
+    {
+      "status": "M",
+      "path": "components/hub/ingredient-availability-board.tsx"
+    },
+    {
+      "status": "M",
+      "path": "components/intelligence/intelligence-hub.tsx"
+    },
+    {
+      "status": "M",
+      "path": "components/intelligence/prep-time-estimate-hint.tsx"
+    },
+    {
+      "status": "M",
+      "path": "components/intelligence/smart-pricing-hint.tsx"
+    },
+    {
+      "status": "M",
+      "path": "components/navigation/nav-config.tsx"
+    },
+    {
+      "status": "M",
+      "path": "components/pipeline/pipeline-alerts.tsx"
+    },
+    {
+      "status": "M",
+      "path": "components/quotes/client-spending-badge.tsx"
+    },
+    {
+      "status": "M",
+      "path": "components/seo/json-ld.tsx"
+    },
+    {
+      "status": "M",
+      "path": "components/shared/step-wizard.tsx"
+    },
+    {
+      "status": "M",
+      "path": "components/social/social-post-card.tsx"
+    },
+    {
+      "status": "M",
+      "path": "docs/UNIFIED-BUILD-QUEUE.md"
     },
     {
       "status": "M",
@@ -54,251 +298,15 @@
     },
     {
       "status": "M",
-      "path": "lib/ai/remy-tools.ts"
+      "path": "lib/cil/analyzers/commitment.ts"
     },
     {
       "status": "M",
-      "path": "lib/audit/audit-actions.ts"
+      "path": "lib/cil/signal-actions.ts"
     },
     {
       "status": "M",
-      "path": "lib/audit/audit-types.ts"
-    },
-    {
-      "status": "M",
-      "path": "lib/autopilot/draft-generator.ts"
-    },
-    {
-      "status": "M",
-      "path": "lib/calendar/production-planning-actions.ts"
-    },
-    {
-      "status": "M",
-      "path": "lib/cannabis/cannabis-circle-actions.ts"
-    },
-    {
-      "status": "M",
-      "path": "lib/capture/capture-actions.ts"
-    },
-    {
-      "status": "M",
-      "path": "lib/capture/capture-types.ts"
-    },
-    {
-      "status": "M",
-      "path": "lib/chef-consumer/book-actions.ts"
-    },
-    {
-      "status": "M",
-      "path": "lib/chef-consumer/community-actions.ts"
-    },
-    {
-      "status": "M",
-      "path": "lib/chef-consumer/discover-actions.ts"
-    },
-    {
-      "status": "M",
-      "path": "lib/chef-consumer/local-food-actions.ts"
-    },
-    {
-      "status": "M",
-      "path": "lib/cil/signal-comm-bridge.ts"
-    },
-    {
-      "status": "M",
-      "path": "lib/clients/change-request-actions.ts"
-    },
-    {
-      "status": "M",
-      "path": "lib/clients/change-request-types.ts"
-    },
-    {
-      "status": "M",
-      "path": "lib/clients/command-timeline-actions.ts"
-    },
-    {
-      "status": "M",
-      "path": "lib/clients/corporate-actions.ts"
-    },
-    {
-      "status": "M",
-      "path": "lib/clients/index.ts"
-    },
-    {
-      "status": "M",
-      "path": "lib/clients/loyalty-actions.ts"
-    },
-    {
-      "status": "M",
-      "path": "lib/clients/loyalty-visibility-actions.ts"
-    },
-    {
-      "status": "M",
-      "path": "lib/clients/mutation-pipeline.ts"
-    },
-    {
-      "status": "M",
-      "path": "lib/clients/passport-actions.ts"
-    },
-    {
-      "status": "M",
-      "path": "lib/clients/relationship-cockpit-actions.ts"
-    },
-    {
-      "status": "M",
-      "path": "lib/communication/pipeline.ts"
-    },
-    {
-      "status": "M",
-      "path": "lib/crew/crew-circle-actions.ts"
-    },
-    {
-      "status": "M",
-      "path": "lib/crew/crew-circle-types.ts"
-    },
-    {
-      "status": "M",
-      "path": "lib/culinary/taste-memory-actions.ts"
-    },
-    {
-      "status": "M",
-      "path": "lib/culinary/taste-memory-types.ts"
-    },
-    {
-      "status": "M",
-      "path": "lib/delegation/delegate-actions.ts"
-    },
-    {
-      "status": "M",
-      "path": "lib/delegation/delegate-types.ts"
-    },
-    {
-      "status": "M",
-      "path": "lib/devinfra/codex-readiness-actions.ts"
-    },
-    {
-      "status": "M",
-      "path": "lib/dietary/allergy-severity-actions.ts"
-    },
-    {
-      "status": "M",
-      "path": "lib/dietary/propagate.ts"
-    },
-    {
-      "status": "M",
-      "path": "lib/dietary/safety-check.ts"
-    },
-    {
-      "status": "M",
-      "path": "lib/dinner-circles/approval-actions.ts"
-    },
-    {
-      "status": "M",
-      "path": "lib/dinner-circles/collaborator-bridge-actions.ts"
-    },
-    {
-      "status": "M",
-      "path": "lib/dinner-circles/collaborator-types.ts"
-    },
-    {
-      "status": "M",
-      "path": "lib/dinner-circles/event-hub-actions.ts"
-    },
-    {
-      "status": "M",
-      "path": "lib/dinner-circles/marisol-bridge-actions.ts"
-    },
-    {
-      "status": "M",
-      "path": "lib/dinner-circles/qr-join-actions.ts"
-    },
-    {
-      "status": "M",
-      "path": "lib/dinner-circles/qr-utils.ts"
-    },
-    {
-      "status": "M",
-      "path": "lib/dinner-circles/recurring-actions.ts"
-    },
-    {
-      "status": "M",
-      "path": "lib/dinner-circles/reminder-actions.ts"
-    },
-    {
-      "status": "M",
-      "path": "lib/discover/claim-types.ts"
-    },
-    {
-      "status": "M",
-      "path": "lib/discover/consumer-discovery-actions.ts"
-    },
-    {
-      "status": "M",
-      "path": "lib/discovery/homepage-discovery-destinations.ts"
-    },
-    {
-      "status": "M",
-      "path": "lib/discovery/inline-action-registry.ts"
-    },
-    {
-      "status": "M",
-      "path": "lib/discovery/rail-item-state-actions.ts"
-    },
-    {
-      "status": "M",
-      "path": "lib/discovery/rail-tier-assigner.ts"
-    },
-    {
-      "status": "M",
-      "path": "lib/discovery/resolvers/chef/cadence-due-resolver.ts"
-    },
-    {
-      "status": "M",
-      "path": "lib/discovery/resolvers/chef/completion-resolver.ts"
-    },
-    {
-      "status": "M",
-      "path": "lib/discovery/resolvers/chef/lifecycle-stage-resolver.ts"
-    },
-    {
-      "status": "M",
-      "path": "lib/email/templates/guest-conversion.tsx"
-    },
-    {
-      "status": "M",
-      "path": "lib/equipment/packing-list-actions.ts"
-    },
-    {
-      "status": "M",
-      "path": "lib/equipment/packing-list-types.ts"
-    },
-    {
-      "status": "M",
-      "path": "lib/equipment/technique-equipment-map.ts"
-    },
-    {
-      "status": "M",
-      "path": "lib/events/closeout-actions.ts"
-    },
-    {
-      "status": "M",
-      "path": "lib/events/countdown-actions.ts"
-    },
-    {
-      "status": "M",
-      "path": "lib/events/guest-count-actions.ts"
-    },
-    {
-      "status": "M",
-      "path": "lib/events/handoff-actions.ts"
-    },
-    {
-      "status": "M",
-      "path": "lib/events/live-status-actions.ts"
-    },
-    {
-      "status": "M",
-      "path": "lib/events/playbook-actions.ts"
+      "path": "lib/db/schema/schema.ts"
     },
     {
       "status": "M",
@@ -306,665 +314,117 @@
     },
     {
       "status": "M",
-      "path": "lib/events/recall-actions.ts"
+      "path": "lib/shared/use-step-wizard.ts"
     },
     {
       "status": "M",
-      "path": "lib/events/service-tracker-actions.ts"
+      "path": "lib/site/public-site.ts"
     },
     {
-      "status": "M",
-      "path": "lib/events/timeline-estimator.ts"
-    },
-    {
-      "status": "M",
-      "path": "lib/events/timeline-generator-actions.ts"
-    },
-    {
-      "status": "M",
-      "path": "lib/events/tip-tracking-actions.ts"
-    },
-    {
-      "status": "M",
-      "path": "lib/events/touchpoint-actions.ts"
-    },
-    {
-      "status": "M",
-      "path": "lib/events/touchpoint-types.ts"
-    },
-    {
-      "status": "M",
-      "path": "lib/events/transitions.ts"
-    },
-    {
-      "status": "M",
-      "path": "lib/exports/ical-actions.ts"
-    },
-    {
-      "status": "M",
-      "path": "lib/exports/ical-generator.ts"
-    },
-    {
-      "status": "M",
-      "path": "lib/freshness/freshness-actions.ts"
-    },
-    {
-      "status": "M",
-      "path": "lib/hub/group-actions.ts"
-    },
-    {
-      "status": "M",
-      "path": "lib/hub/ingredient-board-actions.ts"
-    },
-    {
-      "status": "M",
-      "path": "lib/ingredients/sourcing-actions.ts"
-    },
-    {
-      "status": "M",
-      "path": "lib/inquiries/inquiry-cockpit-actions.ts"
-    },
-    {
-      "status": "M",
-      "path": "lib/inquiries/returning-client-matcher.ts"
-    },
-    {
-      "status": "M",
-      "path": "lib/intelligence/churn-cadence-bridge.ts"
-    },
-    {
-      "status": "M",
-      "path": "lib/intelligence/churn-prevention-triggers.ts"
-    },
-    {
-      "status": "M",
-      "path": "lib/intelligence/smart-quote-suggestions.ts"
-    },
-    {
-      "status": "M",
-      "path": "lib/interaction/consent-actions.ts"
-    },
-    {
-      "status": "M",
-      "path": "lib/interaction/consent-types.ts"
-    },
-    {
-      "status": "M",
-      "path": "lib/interaction/continuity-actions.ts"
-    },
-    {
-      "status": "M",
-      "path": "lib/interaction/density-actions.ts"
-    },
-    {
-      "status": "M",
-      "path": "lib/interaction/fixture-actions.ts"
-    },
-    {
-      "status": "M",
-      "path": "lib/interaction/fixture-types.ts"
-    },
-    {
-      "status": "M",
-      "path": "lib/interaction/inline-edit-actions.ts"
-    },
-    {
-      "status": "M",
-      "path": "lib/interaction/memory-search-actions.ts"
-    },
-    {
-      "status": "M",
-      "path": "lib/interaction/memory-search-types.ts"
-    },
-    {
-      "status": "M",
-      "path": "lib/interaction/notification-prefs-actions.ts"
-    },
-    {
-      "status": "M",
-      "path": "lib/interaction/progress-tracker-actions.ts"
-    },
-    {
-      "status": "M",
-      "path": "lib/interaction/shortcut-actions.ts"
-    },
-    {
-      "status": "M",
-      "path": "lib/invoices/generate-invoice-pdf.ts"
-    },
-    {
-      "status": "M",
-      "path": "lib/invoices/invoice-actions.ts"
-    },
-    {
-      "status": "M",
-      "path": "lib/jobs/inngest-client.ts"
-    },
-    {
-      "status": "M",
-      "path": "lib/jobs/post-event-jobs.ts"
-    },
-    {
-      "status": "M",
-      "path": "lib/lifecycle/action-card-actions.ts"
-    },
-    {
-      "status": "M",
-      "path": "lib/lifecycle/action-graph-actions.ts"
-    },
-    {
-      "status": "M",
-      "path": "lib/lifecycle/action-vocabulary-actions.ts"
-    },
-    {
-      "status": "M",
-      "path": "lib/lifecycle/dashboard-feed-actions.ts"
-    },
-    {
-      "status": "M",
-      "path": "lib/lifecycle/fixture-matrix-actions.ts"
-    },
-    {
-      "status": "M",
-      "path": "lib/lifecycle/graph-security-actions.ts"
-    },
-    {
-      "status": "M",
-      "path": "lib/lifecycle/graph-security-types.ts"
-    },
-    {
-      "status": "M",
-      "path": "lib/lifecycle/naming-surface-actions.ts"
-    },
-    {
-      "status": "M",
-      "path": "lib/lifecycle/operating-state-actions.ts"
-    },
-    {
-      "status": "M",
-      "path": "lib/lifecycle/ownership-merge-actions.ts"
-    },
-    {
-      "status": "M",
-      "path": "lib/lifecycle/proof-surface-actions.ts"
-    },
-    {
-      "status": "M",
-      "path": "lib/lifecycle/rail-navigation-actions.ts"
-    },
-    {
-      "status": "M",
-      "path": "lib/lifecycle/sticky-footer-actions.ts"
-    },
-    {
-      "status": "M",
-      "path": "lib/lifecycle/waiting-age-actions.ts"
-    },
-    {
-      "status": "M",
-      "path": "lib/lifecycle/waiting-state-actions.ts"
-    },
-    {
-      "status": "M",
-      "path": "lib/media/vault-actions.ts"
-    },
-    {
-      "status": "M",
-      "path": "lib/media/vault-types.ts"
-    },
-    {
-      "status": "M",
-      "path": "lib/menus/builder-workspace-actions.ts"
-    },
-    {
-      "status": "M",
-      "path": "lib/menus/client-menu-actions.ts"
-    },
-    {
-      "status": "M",
-      "path": "lib/menus/client-menu-types.ts"
-    },
-    {
-      "status": "M",
-      "path": "lib/menus/collab-edit-actions.ts"
-    },
-    {
-      "status": "M",
-      "path": "lib/menus/collab-edit-types.ts"
-    },
-    {
-      "status": "M",
-      "path": "lib/menus/costing-interrogation-actions.ts"
-    },
-    {
-      "status": "M",
-      "path": "lib/menus/dish-catalog-actions.ts"
-    },
-    {
-      "status": "M",
-      "path": "lib/menus/fate-derivation.ts"
-    },
-    {
-      "status": "M",
-      "path": "lib/menus/fixed-offering-actions.ts"
-    },
-    {
-      "status": "M",
-      "path": "lib/menus/performance-actions.ts"
-    },
-    {
-      "status": "M",
-      "path": "lib/menus/proposal-set-actions.ts"
-    },
-    {
-      "status": "M",
-      "path": "lib/menus/storytelling-actions.ts"
-    },
-    {
-      "status": "M",
-      "path": "lib/menus/storytelling-types.ts"
-    },
-    {
-      "status": "M",
-      "path": "lib/mobile/mobile-ops-actions.ts"
-    },
-    {
-      "status": "M",
-      "path": "lib/mobile/offline-actions.ts"
-    },
-    {
-      "status": "M",
-      "path": "lib/mobile/widget-actions.ts"
-    },
-    {
-      "status": "M",
-      "path": "lib/mobile/widget-types.ts"
-    },
-    {
-      "status": "M",
-      "path": "lib/navigation/nav-config-actions.ts"
-    },
-    {
-      "status": "M",
-      "path": "lib/navigation/nav-config-types.ts"
-    },
-    {
-      "status": "M",
-      "path": "lib/notifications/types.ts"
-    },
-    {
-      "status": "M",
-      "path": "lib/onboarding/activation-actions.ts"
-    },
-    {
-      "status": "M",
-      "path": "lib/openclaw/countdown-actions.ts"
-    },
-    {
-      "status": "M",
-      "path": "lib/openclaw/countdown-types.ts"
-    },
-    {
-      "status": "M",
-      "path": "lib/openclaw/goal-governor-types.ts"
-    },
-    {
-      "status": "M",
-      "path": "lib/partners/actions.ts"
-    },
-    {
-      "status": "M",
-      "path": "lib/popups/popup-actions.ts"
-    },
-    {
-      "status": "M",
-      "path": "lib/portal/portal-experience-actions.ts"
-    },
-    {
-      "status": "M",
-      "path": "lib/prep/prep-schedule-actions.ts"
-    },
-    {
-      "status": "M",
-      "path": "lib/pricing/auto-cost-bridge.ts"
-    },
-    {
-      "status": "M",
-      "path": "lib/pricing/cost-propagation-actions.ts"
-    },
-    {
-      "status": "M",
-      "path": "lib/profile/trust-visual-actions.ts"
-    },
-    {
-      "status": "M",
-      "path": "lib/public-consumer/featured-chef-actions.ts"
-    },
-    {
-      "status": "M",
-      "path": "lib/qa/visual-qa-actions.ts"
-    },
-    {
-      "status": "M",
-      "path": "lib/quotes/proposal-builder-types.ts"
-    },
-    {
-      "status": "M",
-      "path": "lib/quotes/proposal-experience-actions.ts"
-    },
-    {
-      "status": "M",
-      "path": "lib/scheduling/batch-view-actions.ts"
-    },
-    {
-      "status": "M",
-      "path": "lib/scheduling/burnout-capacity-actions.ts"
-    },
-    {
-      "status": "M",
-      "path": "lib/scheduling/saturation-actions.ts"
-    },
-    {
-      "status": "M",
-      "path": "lib/scheduling/weekly-command-actions.ts"
-    },
-    {
-      "status": "M",
-      "path": "lib/scheduling/weekly-retro-actions.ts"
-    },
-    {
-      "status": "M",
-      "path": "lib/security/confidence-actions.ts"
-    },
-    {
-      "status": "M",
-      "path": "lib/security/confidence-types.ts"
-    },
-    {
-      "status": "M",
-      "path": "lib/security/rate-limit-actions.ts"
-    },
-    {
-      "status": "M",
-      "path": "lib/settings/guided-settings-actions.ts"
-    },
-    {
-      "status": "M",
-      "path": "lib/settings/settings-registry-actions.ts"
-    },
-    {
-      "status": "M",
-      "path": "lib/settings/settings-registry-types.ts"
-    },
-    {
-      "status": "M",
-      "path": "lib/shopping/receipt-actions.ts"
-    },
-    {
-      "status": "M",
-      "path": "lib/simulation/dt-simulation-actions.ts"
-    },
-    {
-      "status": "M",
-      "path": "lib/sms/triage-actions.ts"
-    },
-    {
-      "status": "M",
-      "path": "lib/staff/task-assignment-actions.ts"
-    },
-    {
-      "status": "M",
-      "path": "lib/ui/accessibility-actions.ts"
-    },
-    {
-      "status": "M",
-      "path": "lib/ui/action-bar-actions.ts"
-    },
-    {
-      "status": "M",
-      "path": "lib/ui/card-rules-actions.ts"
-    },
-    {
-      "status": "M",
-      "path": "lib/ui/card-rules-types.ts"
-    },
-    {
-      "status": "M",
-      "path": "lib/ui/color-semantics-actions.ts"
-    },
-    {
-      "status": "M",
-      "path": "lib/ui/command-center-actions.ts"
-    },
-    {
-      "status": "M",
-      "path": "lib/ui/culinary-visual-actions.ts"
-    },
-    {
-      "status": "M",
-      "path": "lib/ui/data-viz-actions.ts"
-    },
-    {
-      "status": "M",
-      "path": "lib/ui/data-viz-types.ts"
-    },
-    {
-      "status": "M",
-      "path": "lib/ui/design-debt-actions.ts"
-    },
-    {
-      "status": "M",
-      "path": "lib/ui/design-system-actions.ts"
-    },
-    {
-      "status": "M",
-      "path": "lib/ui/document-workspace-actions.ts"
-    },
-    {
-      "status": "M",
-      "path": "lib/ui/event-detail-proof-actions.ts"
-    },
-    {
-      "status": "M",
-      "path": "lib/ui/evidence-grammar-actions.ts"
-    },
-    {
-      "status": "M",
-      "path": "lib/ui/evidence-grammar-types.ts"
-    },
-    {
-      "status": "M",
-      "path": "lib/ui/evidence-label-actions.ts"
-    },
-    {
-      "status": "M",
-      "path": "lib/ui/evidence-label-types.ts"
-    },
-    {
-      "status": "M",
-      "path": "lib/ui/form-wizard-actions.ts"
-    },
-    {
-      "status": "M",
-      "path": "lib/ui/heuristic-gate-actions.ts"
-    },
-    {
-      "status": "M",
-      "path": "lib/ui/high-contrast-actions.ts"
-    },
-    {
-      "status": "M",
-      "path": "lib/ui/high-contrast-types.ts"
-    },
-    {
-      "status": "M",
-      "path": "lib/ui/icon-language-types.ts"
-    },
-    {
-      "status": "M",
-      "path": "lib/ui/interaction-soundness-actions.ts"
-    },
-    {
-      "status": "M",
-      "path": "lib/ui/interaction-soundness-types.ts"
-    },
-    {
-      "status": "M",
-      "path": "lib/ui/layout-grid-actions.ts"
-    },
-    {
-      "status": "M",
-      "path": "lib/ui/lifecycle-action-hierarchy-actions.ts"
-    },
-    {
-      "status": "M",
-      "path": "lib/ui/lifecycle-mobile-ergonomics-actions.ts"
-    },
-    {
-      "status": "M",
-      "path": "lib/ui/lifecycle-visual-state-actions.ts"
+      "status": "??",
+      "path": ".claude-session-scope"
     },
     {
-      "status": "M",
-      "path": "lib/ui/lifecycle-visual-state-types.ts"
-    },
-    {
-      "status": "M",
-      "path": "lib/ui/magic-components-actions.ts"
-    },
-    {
-      "status": "M",
-      "path": "lib/ui/magic-gate-actions.ts"
-    },
-    {
-      "status": "M",
-      "path": "lib/ui/metric-hierarchy-actions.ts"
-    },
-    {
-      "status": "M",
-      "path": "lib/ui/microcopy-actions.ts"
-    },
-    {
-      "status": "M",
-      "path": "lib/ui/modal-drawer-sheet-actions.ts"
-    },
-    {
-      "status": "M",
-      "path": "lib/ui/motion-system-actions.ts"
-    },
-    {
-      "status": "M",
-      "path": "lib/ui/portal-modes-actions.ts"
-    },
-    {
-      "status": "M",
-      "path": "lib/ui/premium-detail-actions.ts"
-    },
-    {
-      "status": "M",
-      "path": "lib/ui/route-screenshot-actions.ts"
-    },
-    {
-      "status": "M",
-      "path": "lib/ui/signature-workflow-actions.ts"
+      "status": "??",
+      "path": ".tsc-baseline-errors"
     },
     {
-      "status": "M",
-      "path": "lib/ui/state-patterns-actions.ts"
+      "status": "??",
+      "path": "app/api/tracking/"
     },
     {
-      "status": "M",
-      "path": "lib/ui/status-badge-actions.ts"
+      "status": "??",
+      "path": "components/commitment/"
     },
     {
-      "status": "M",
-      "path": "lib/ui/style-guardrails-actions.ts"
+      "status": "??",
+      "path": "components/events/override-dialog.tsx"
     },
     {
-      "status": "M",
-      "path": "lib/ui/table-config-actions.ts"
+      "status": "??",
+      "path": "components/intelligence/commitment-insights-card.tsx"
     },
     {
-      "status": "M",
-      "path": "lib/ui/theme-token-actions.ts"
+      "status": "??",
+      "path": "components/tracking/"
     },
     {
-      "status": "M",
-      "path": "lib/ui/theme-token-types.ts"
+      "status": "??",
+      "path": "database/migrations/20260517220000_override_category_column.sql"
     },
     {
-      "status": "M",
-      "path": "lib/ui/typography-roles-actions.ts"
+      "status": "??",
+      "path": "database/migrations/20260517230000_commitment_engine.sql"
     },
     {
-      "status": "M",
-      "path": "lib/ui/typography-roles-types.ts"
+      "status": "??",
+      "path": "docs/intensify/feed-architecture.md"
     },
     {
-      "status": "M",
-      "path": "lib/ui/viewport-discipline-actions.ts"
+      "status": "??",
+      "path": "docs/intensify/omninet.md"
     },
     {
-      "status": "M",
-      "path": "lib/ui/visual-lint-actions.ts"
+      "status": "??",
+      "path": "docs/intensify/social-media-feeds.md"
     },
     {
-      "status": "M",
-      "path": "lib/ui/visual-lint-types.ts"
+      "status": "??",
+      "path": "docs/superpowers/specs/2026-05-17-ulysses-universe-design.md"
     },
     {
-      "status": "M",
-      "path": "lib/ui/visual-priority-actions.ts"
+      "status": "??",
+      "path": "lib/ai/signal-draft-prompts.ts"
     },
     {
-      "status": "M",
-      "path": "lib/venues/recon-actions.ts"
+      "status": "??",
+      "path": "lib/cil/auto-dispatch.ts"
     },
     {
-      "status": "M",
-      "path": "lib/venues/recon-types.ts"
+      "status": "??",
+      "path": "lib/cil/draft-generators/"
     },
     {
-      "status": "M",
-      "path": "lib/weather/solar-actions.ts"
+      "status": "??",
+      "path": "lib/commitment/"
     },
     {
-      "status": "M",
-      "path": "lib/weather/solar-times.ts"
+      "status": "??",
+      "path": "lib/email/entity-extraction-bridge.ts"
     },
     {
-      "status": "M",
-      "path": "lib/weather/weather-alert-enrichment.ts"
+      "status": "??",
+      "path": "lib/email/entity-extraction.ts"
     },
     {
-      "status": "M",
-      "path": "lib/weather/weather-checklist-actions.ts"
+      "status": "??",
+      "path": "lib/events/override-history.ts"
     },
     {
-      "status": "M",
-      "path": "lib/weather/weather-checklist.ts"
+      "status": "??",
+      "path": "lib/events/override-taxonomy.ts"
     },
     {
-      "status": "M",
-      "path": "lib/weather/weather-snapshot-actions.ts"
+      "status": "??",
+      "path": "lib/intelligence/lifecycle-cil-bridge.ts"
     },
     {
-      "status": "M",
-      "path": "tests/ci/route-coverage.test.ts"
+      "status": "??",
+      "path": "lib/intelligence/lifecycle-stage-actions.ts"
     },
     {
-      "status": "M",
-      "path": "tests/unit/action-layer.test.ts"
+      "status": "??",
+      "path": "lib/intelligence/lifecycle-stage-detector.ts"
     },
     {
-      "status": "M",
-      "path": "tests/unit/homepage-discovery-destinations.test.ts"
+      "status": "??",
+      "path": "lib/tracking/"
     },
     {
-      "status": "M",
-      "path": "tests/unit/live-service-tracker-source-guard.test.ts"
+      "status": "??",
+      "path": "scripts/_fix1.js"
     }
   ],
   "next_action": null,
-  "context_notes": "Recent commits:\n57e569886 feat: deep-pass swarm accumulation - 590+ files across 20+ domains\n50e6b1707 fix: resolve 28 TypeScript errors from deep-pass swarm accumulation\naae0fe3fe docs: 20 philosophical principles swarm prompt\n7ee2f57af feat(intelligence): CIL commitment analyzer + Ulysses swarm handoff\nb2530dec3 docs: session log for events deep-pass intensification"
+  "context_notes": "Recent commits:\nba4b42d3d feat(realtime): wire Phase 1 bloodstream fixes - RailStrip SSE, inquiry comms, broadcast parity\n3d3d7b478 style: prettier formatting from lint-staged\n57e569886 feat: deep-pass swarm accumulation - 590+ files across 20+ domains\n50e6b1707 fix: resolve 28 TypeScript errors from deep-pass swarm accumulation\naae0fe3fe docs: 20 philosophical principles swarm prompt"
 }

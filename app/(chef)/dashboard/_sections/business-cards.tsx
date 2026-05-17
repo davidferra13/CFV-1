@@ -124,12 +124,12 @@ export async function BusinessCards() {
       {(openInquiries > 0 || hotPipeline > 0) && (
         <StatCard
           widgetId="lead_funnel_live"
-          title="Lead Funnel"
+          title="Booking Flow"
           value={String(openInquiries)}
           subtitle="open inquiries"
           trend={
             hotPipeline > 0
-              ? `${hotPipeline} hot leads`
+              ? `${hotPipeline} hot inquiries`
               : `${prospectStats.total ?? 0} total prospects`
           }
           trendDirection={openInquiries > 0 ? 'up' : 'flat'}

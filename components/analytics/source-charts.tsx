@@ -73,7 +73,7 @@ export function ConversionFunnelChart({
 }: {
   data: { name: string; inquiries: number; confirmed: number; completed: number }[]
 }) {
-  if (data.length === 0) return <EmptyChart message="No conversion data yet" />
+  if (data.length === 0) return <EmptyChart message="No booking data yet" />
 
   return (
     <ResponsiveContainer width="100%" height={300}>

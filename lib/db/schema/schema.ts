@@ -19770,6 +19770,7 @@ export const eventReadinessGates = pgTable("event_readiness_gates", {
 	resolvedAt: timestamp("resolved_at", { withTimezone: true, mode: 'string' }),
 	overriddenBy: uuid("overridden_by"),
 	overrideReason: text("override_reason"),
+	overrideCategory: text("override_category"),
 	metadata: jsonb(),
 	createdAt: timestamp("created_at", { withTimezone: true, mode: 'string' }).defaultNow().notNull(),
 	updatedAt: timestamp("updated_at", { withTimezone: true, mode: 'string' }).defaultNow().notNull(),
@@ -19779,6 +19780,7 @@ export const eventReadinessGates = pgTable("event_readiness_gates", {
 	index("idx_event_readiness_gates_tenant_pending").using("btree", table.tenantId.asc().nullsLast().op("uuid_ops"), table.status.asc().nullsLast().op("uuid_ops")).where(sql`(status = 'pending'::text)`),
 	index("idx_readiness_gates_event").using("btree", table.eventId.asc().nullsLast().op("text_ops"), table.status.asc().nullsLast().op("uuid_ops")),
 	index("idx_readiness_gates_tenant_pending").using("btree", table.tenantId.asc().nullsLast().op("uuid_ops"), table.status.asc().nullsLast().op("uuid_ops")).where(sql`(status = 'pending'::text)`),
+	index("idx_event_readiness_gates_override_category").using("btree", table.overrideCategory.asc().nullsLast().op("text_ops")).where(sql`(override_category IS NOT NULL)`),
 	foreignKey({
 			columns: [table.eventId],
 			foreignColumns: [events.id],

@@ -123,7 +123,7 @@ export function ConversionFunnel({ funnel }: ConversionFunnelProps) {
                                     : 'error'
                               }
                             >
-                              {(stage.conversionRate * 100).toFixed(1)}% conversion
+                              {(stage.conversionRate * 100).toFixed(1)}% booking rate
                             </Badge>
                           ) : (
                             (() => {
@@ -143,7 +143,7 @@ export function ConversionFunnel({ funnel }: ConversionFunnelProps) {
                                         : 'error'
                                   }
                                 >
-                                  {calcRate}% conversion
+                                  {calcRate}% booking rate
                                 </Badge>
                               )
                             })()

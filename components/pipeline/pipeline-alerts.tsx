@@ -18,7 +18,7 @@ const alertConfig: Record<
   { label: string; icon: React.ReactNode; themeClass: string }
 > = {
   stale_lead: {
-    label: 'Stale Leads',
+    label: 'Stale Inquiries',
     icon: <Clock size={18} className="text-amber-400" />,
     themeClass: 'border-amber-600/30',
   },
@@ -28,7 +28,7 @@ const alertConfig: Record<
     themeClass: 'border-red-600/30',
   },
   hot_lead: {
-    label: 'Hot Leads',
+    label: 'Hot Inquiries',
     icon: <Flame size={18} className="text-orange-400" />,
     themeClass: 'border-orange-600/30',
   },

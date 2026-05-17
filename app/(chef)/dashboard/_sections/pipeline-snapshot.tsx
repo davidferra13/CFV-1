@@ -114,7 +114,7 @@ export async function PipelineSnapshot() {
         {/* Metrics row */}
         <div className="flex items-center justify-between border-t border-stone-800 pt-2 text-xs">
           <div className="text-stone-400">
-            <span className="text-stone-300 font-medium">{conversionRate}%</span> conversion
+            <span className="text-stone-300 font-medium">{conversionRate}%</span> booking rate
           </div>
           {pipelineValue > 0 && (
             <div className="text-stone-400">

@@ -1,4 +1,4 @@
-// Cadence Settings Component
+﻿// Cadence Settings Component
 // Chef can enable/disable individual cadence points and customize messages.
 'use client'
 
@@ -42,7 +42,7 @@ export function CadenceSettings({
       } else {
         setFeedback('Saved')
       }
-      setTimeout(() => setFeedback(null), 2000)
+      if (result.success) setTimeout(() => setFeedback(null), 2000)
     })
   }
 
@@ -74,7 +74,7 @@ export function CadenceSettings({
       } else {
         setFeedback('Message saved')
       }
-      setTimeout(() => setFeedback(null), 2000)
+      if (result.success) setTimeout(() => setFeedback(null), 2000)
     })
   }
 

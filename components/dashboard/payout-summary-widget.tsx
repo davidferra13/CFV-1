@@ -42,6 +42,21 @@ export function PayoutSummaryWidget({ summary }: Props) {
     )
   }
 
+  if (summary.transferCount === 0 && summary.pendingCount === 0) {
+    return (
+      <Card>
+        <CardHeader>
+          <CardTitle>Payout Summary</CardTitle>
+        </CardHeader>
+        <CardContent>
+          <p className="text-sm text-stone-500">
+            No payouts yet. Payouts appear here after your first client payment.
+          </p>
+        </CardContent>
+      </Card>
+    )
+  }
+
   return (
     <Card>
       <CardHeader>

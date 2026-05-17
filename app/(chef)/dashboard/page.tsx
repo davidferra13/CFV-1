@@ -24,6 +24,14 @@ import {
   RevenueGoalSection,
   ChefTipsSection,
 } from './_sections/widget-sections'
+import {
+  AlertsSkeleton,
+  HeroMetricsSkeleton,
+  BusinessSkeleton,
+  ActivitySkeleton,
+  ScheduleSkeleton,
+  IntelligenceCardsSkeleton,
+} from './_sections/section-skeletons'
 
 export const metadata: Metadata = { title: 'Dashboard' }
 
@@ -34,11 +42,11 @@ export default async function ChefDashboard() {
 
   return (
     <div className="space-y-10">
-      <Suspense fallback={null}>
+      <Suspense fallback={<AlertsSkeleton />}>
         <OpenClawLiveAlertsSection />
       </Suspense>
 
-      <Suspense fallback={null}>
+      <Suspense fallback={<HeroMetricsSkeleton />}>
         <HeroZone
           tenantId={user.tenantId!}
           userId={user.id}
@@ -57,15 +65,15 @@ export default async function ChefDashboard() {
         <DailyPlanBanner stats={dailyPlanStats} />
       )}
 
-      <Suspense fallback={null}>
+      <Suspense fallback={<ActivitySkeleton />}>
         <OnboardingZone />
       </Suspense>
 
-      <Suspense fallback={null}>
+      <Suspense fallback={<IntelligenceCardsSkeleton />}>
         <AmbientLayer />
       </Suspense>
 
-      <Suspense fallback={null}>
+      <Suspense fallback={<ScheduleSkeleton />}>
         <ThisWeekSection queuePromise={queuePromise} />
       </Suspense>
 
@@ -82,12 +90,12 @@ export default async function ChefDashboard() {
       </WidgetErrorBoundary>
 
       <WidgetErrorBoundary name="ChefTips" compact>
-        <Suspense fallback={null}>
+        <Suspense fallback={<IntelligenceCardsSkeleton />}>
           <ChefTipsSection />
         </Suspense>
       </WidgetErrorBoundary>
 
-      <Suspense fallback={null}>
+      <Suspense fallback={<BusinessSkeleton />}>
         <BusinessHealthFullSection />
       </Suspense>
     </div>

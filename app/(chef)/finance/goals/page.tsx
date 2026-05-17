@@ -171,7 +171,7 @@ export default async function FinanceGoalsPage() {
 
       {/* YTD KPIs */}
       <div>
-        <h2 className="text-lg font-semibold text-stone-100 mb-3">Year-to-Date KPIs</h2>
+        <h2 className="text-lg font-semibold text-stone-100 mb-3">Year-to-Date Numbers</h2>
         <div className="grid grid-cols-2 gap-4 sm:grid-cols-3">
           <Card className="p-4">
             <p className="text-2xl font-bold text-stone-100">
@@ -201,7 +201,7 @@ export default async function FinanceGoalsPage() {
           </Card>
           <Card className="p-4">
             <p className="text-2xl font-bold text-stone-100">{kpis.conversionRate.value}%</p>
-            <p className="text-xs text-stone-500 mt-1">Conversion rate</p>
+            <p className="text-xs text-stone-500 mt-1">Booking rate</p>
           </Card>
         </div>
       </div>

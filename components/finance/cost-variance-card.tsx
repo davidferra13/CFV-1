@@ -103,7 +103,7 @@ export function CostVarianceCard({ eventId }: Props) {
     ? `+${formatCents(data.varianceCents)}`
     : data.varianceCents < 0
       ? `-${formatCents(data.varianceCents)}`
-      : '$0.00'
+      : 'On target'
 
   const varianceSub =
     data.variancePercent !== null

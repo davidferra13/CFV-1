@@ -26,7 +26,7 @@ export default async function ClientRiskRadarPage() {
           </Link>
           <h1 className="text-3xl font-bold text-stone-100 mt-1">Client Risk Radar</h1>
           <p className="text-stone-400 mt-1">
-            Proactive churn detection. Clients ranked by risk of disengagement based on contact
+            Spot clients going quiet. Clients ranked by risk of disengagement based on contact
             recency, booking patterns, and revenue trends.
           </p>
         </div>

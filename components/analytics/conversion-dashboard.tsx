@@ -35,11 +35,11 @@ function SourceBreakdownTable({ data }: { data: SourceConversionRow[] }) {
     return (
       <Card>
         <CardHeader>
-          <CardTitle>Conversion by Source</CardTitle>
+          <CardTitle>Bookings by Source</CardTitle>
         </CardHeader>
         <CardContent>
           <p className="text-sm text-stone-400 italic text-center py-6">
-            No source data available.
+            No source data available. Inquiries need a source tag to appear here.
           </p>
         </CardContent>
       </Card>
@@ -49,7 +49,7 @@ function SourceBreakdownTable({ data }: { data: SourceConversionRow[] }) {
   return (
     <Card>
       <CardHeader>
-        <CardTitle>Conversion by Source</CardTitle>
+        <CardTitle>Bookings by Source</CardTitle>
       </CardHeader>
       <CardContent>
         <div className="overflow-x-auto">
@@ -63,7 +63,7 @@ function SourceBreakdownTable({ data }: { data: SourceConversionRow[] }) {
                 <th className="text-right py-2 px-3 font-medium text-stone-400">Paid</th>
                 <th className="text-right py-2 px-3 font-medium text-stone-400">Completed</th>
                 <th className="text-right py-2 px-3 font-medium text-stone-400">Cancelled</th>
-                <th className="text-right py-2 px-3 font-medium text-stone-400">Conv. Rate</th>
+                <th className="text-right py-2 px-3 font-medium text-stone-400">Booking Rate</th>
               </tr>
             </thead>
             <tbody>
@@ -180,7 +180,7 @@ function MonthlyTrendTable({ data }: { data: MonthlyConversionRow[] }) {
     return (
       <Card>
         <CardHeader>
-          <CardTitle>Monthly Conversion Trend</CardTitle>
+          <CardTitle>Monthly Booking Trend</CardTitle>
         </CardHeader>
         <CardContent>
           <p className="text-sm text-stone-400 italic text-center py-6">
@@ -194,7 +194,7 @@ function MonthlyTrendTable({ data }: { data: MonthlyConversionRow[] }) {
   return (
     <Card>
       <CardHeader>
-        <CardTitle>Monthly Conversion Trend (Last 6 Months)</CardTitle>
+        <CardTitle>Monthly Booking Trend (Last 6 Months)</CardTitle>
       </CardHeader>
       <CardContent>
         <div className="overflow-x-auto">
@@ -205,7 +205,7 @@ function MonthlyTrendTable({ data }: { data: MonthlyConversionRow[] }) {
                 <th className="text-right py-2 px-3 font-medium text-stone-400">Created</th>
                 <th className="text-right py-2 px-3 font-medium text-stone-400">Completed</th>
                 <th className="text-right py-2 px-3 font-medium text-stone-400">Cancelled</th>
-                <th className="text-right py-2 px-3 font-medium text-stone-400">Conv. Rate</th>
+                <th className="text-right py-2 px-3 font-medium text-stone-400">Booking Rate</th>
               </tr>
             </thead>
             <tbody>
@@ -261,7 +261,7 @@ function LeadQualityTable({ data }: { data: SourceQualityRow[] }) {
         <CardHeader>
           <CardTitle className="flex items-center gap-2">
             <DollarSign className="h-5 w-5 text-stone-400" />
-            Lead Quality by Source
+            Inquiry Quality by Source
           </CardTitle>
         </CardHeader>
         <CardContent>
@@ -278,7 +278,7 @@ function LeadQualityTable({ data }: { data: SourceQualityRow[] }) {
       <CardHeader>
         <CardTitle className="flex items-center gap-2">
           <DollarSign className="h-5 w-5 text-stone-400" />
-          Lead Quality by Source
+          Inquiry Quality by Source
         </CardTitle>
       </CardHeader>
       <CardContent>
@@ -291,7 +291,7 @@ function LeadQualityTable({ data }: { data: SourceQualityRow[] }) {
                 <th className="text-right py-2 px-3 font-medium text-stone-400">Completed</th>
                 <th className="text-right py-2 px-3 font-medium text-stone-400">Total Revenue</th>
                 <th className="text-right py-2 px-3 font-medium text-stone-400">Avg Revenue</th>
-                <th className="text-right py-2 px-3 font-medium text-stone-400">Conv. Rate</th>
+                <th className="text-right py-2 px-3 font-medium text-stone-400">Booking Rate</th>
               </tr>
             </thead>
             <tbody>
@@ -447,7 +447,7 @@ export function ConversionDashboard() {
         setLostDeals(lost)
       } catch (err) {
         if (cancelled) return
-        setError('Failed to load conversion analytics')
+        setError('Failed to load booking analytics')
         console.error('[ConversionDashboard]', err)
       } finally {
         if (!cancelled) setLoading(false)

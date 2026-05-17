@@ -84,7 +84,7 @@ export function ReferralDashboardPage() {
       <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
         <StatCard label="Total Referrals" value={String(data.totalReferrals)} />
         <StatCard
-          label="Conversion Rate"
+          label="Booking Rate"
           value={`${data.conversionRate}%`}
           sub={`${data.convertedReferrals} converted`}
         />

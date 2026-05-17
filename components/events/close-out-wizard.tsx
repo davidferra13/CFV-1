@@ -33,20 +33,81 @@ const TOTAL_STEPS = STEPS.length
 
 // ─── Progress Bar ─────────────────────────────────────────────────────────────
 
-function ProgressBar({ current, total }: { current: number; total: number }) {
+function ProgressBar({
+  current,
+  total,
+  onStepClick,
+}: {
+  current: number
+  total: number
+  onStepClick: (step: number) => void
+}) {
   return (
     <div className="mb-8">
-      <div className="flex items-center justify-between mb-2">
-        <span className="text-sm font-medium text-stone-400">
-          Step {current + 1} of {total} - {STEPS[current]}
-        </span>
-        <span className="text-sm text-stone-400">{Math.round(((current + 1) / total) * 100)}%</span>
+      {/* Mobile: compact text + progress bar */}
+      <div className="sm:hidden">
+        <div className="flex items-center justify-between mb-2">
+          <span className="text-sm font-medium text-stone-400">
+            Step {current + 1} of {total} - {STEPS[current]}
+          </span>
+          <span className="text-sm text-stone-400">
+            {Math.round(((current + 1) / total) * 100)}%
+          </span>
+        </div>
+        <div className="w-full bg-stone-800 rounded-full h-2">
+          <div
+            className="bg-brand-500 h-2 rounded-full transition-all duration-300"
+            style={{ width: `${Math.round(((current + 1) / total) * 100)}%` }}
+          />
+        </div>
       </div>
-      <div className="w-full bg-stone-800 rounded-full h-2">
-        <div
-          className="bg-brand-500 h-2 rounded-full transition-all duration-300"
-          style={{ width: `${Math.round(((current + 1) / total) * 100)}%` }}
-        />
+
+      {/* Desktop: clickable step indicators */}
+      <div className="hidden sm:flex items-center justify-center gap-0 mb-2">
+        {STEPS.map((label, i) => {
+          const isActive = i === current
+          const isDone = i < current
+          return (
+            <div key={label} className="flex items-center">
+              <button
+                type="button"
+                onClick={() => onStepClick(i)}
+                className={`relative flex items-center justify-center rounded-full transition-all duration-200 w-8 h-8 text-xs font-semibold shrink-0 cursor-pointer hover:ring-2 hover:ring-stone-600 ${
+                  isActive
+                    ? 'bg-brand-500 text-white ring-2 ring-brand-500/30'
+                    : isDone
+                      ? 'bg-brand-500/20 text-brand-400'
+                      : 'bg-stone-800 text-stone-500'
+                }`}
+                aria-current={isActive ? 'step' : undefined}
+                aria-label={`${label}${isDone ? ' (completed)' : ''}`}
+                title={label}
+              >
+                {isDone ? (
+                  <svg className="w-4 h-4" viewBox="0 0 16 16" fill="none">
+                    <path
+                      d="M4 8l3 3 5-5"
+                      stroke="currentColor"
+                      strokeWidth="2"
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                    />
+                  </svg>
+                ) : (
+                  i + 1
+                )}
+              </button>
+              {i < STEPS.length - 1 && (
+                <div
+                  className={`h-0.5 w-6 lg:w-8 transition-colors duration-200 ${isDone ? 'bg-brand-500/40' : 'bg-stone-700'}`}
+                />
+              )}
+            </div>
+          )
+        })}
+      </div>
+      <div className="hidden sm:block text-center">
+        <span className="text-sm font-semibold text-stone-200">{STEPS[current]}</span>
       </div>
     </div>
   )
@@ -1060,9 +1121,25 @@ function CloseStep({ data }: { data: CloseOutData }) {
 
 // ─── Main Wizard ──────────────────────────────────────────────────────────────
 
+function computeStartStep(data: CloseOutData): number {
+  if (data.existingTip) {
+    if (!data.hasAnyExpenses || data.expensesNeedingReceipts.length === 0) {
+      if (data.event.mileageMiles !== null) {
+        if (data.aarExists || data.event.aarFiled) {
+          return 4
+        }
+        return 3
+      }
+      return 2
+    }
+    return 1
+  }
+  return 0
+}
+
 export function CloseOutWizard({ data }: { data: CloseOutData }) {
   const router = useRouter()
-  const [step, setStep] = useState(0)
+  const [step, setStep] = useState(() => computeStartStep(data))
 
   const next = () => setStep((s) => Math.min(s + 1, TOTAL_STEPS - 1))
 
@@ -1092,7 +1169,7 @@ export function CloseOutWizard({ data }: { data: CloseOutData }) {
         <p className="text-stone-500 text-sm mt-1">{eventLabel}</p>
       </div>
 
-      <ProgressBar current={step} total={TOTAL_STEPS} />
+      <ProgressBar current={step} total={TOTAL_STEPS} onStepClick={setStep} />
 
       {/* Step content */}
       <div className="min-h-[300px]">

@@ -1,10 +1,11 @@
-'use client'
+﻿'use client'
 
 import { useState, useEffect } from 'react'
 import Link from 'next/link'
 import { Card, CardContent } from '@/components/ui/card'
 import { CalendarDays, Clock } from '@/components/ui/icons'
 import { getUnsourcedIngredientStatus } from '@/lib/culinary/ingredient-lifecycle'
+import { EventStatusBadge } from '@/components/events/event-status-badge'
 
 type CountdownWeather = {
   condition: string
@@ -156,7 +157,9 @@ export function EventCountdown({
             </div>
           )}
 
-          <p className="text-xs text-stone-400 mt-3">Status: {status}</p>
+          <div className="mt-3">
+            <EventStatusBadge status={status as any} size="sm" />
+          </div>
 
           {isChefView && unsourcedCount > 0 && eventId && (
             <Link

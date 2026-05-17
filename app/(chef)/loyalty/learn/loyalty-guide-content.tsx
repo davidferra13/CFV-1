@@ -74,7 +74,7 @@ export function LoyaltyGuideContent() {
               'CLV / LTV',
               'Customer Lifetime Value - total revenue from one client over your whole relationship',
             ],
-            ['Churn', 'Rate at which clients stop booking with you'],
+            ['Drop-off', 'Rate at which clients stop booking with you'],
           ]}
         />
       </GuideSection>

@@ -14,6 +14,7 @@ import type {
   ServiceSimulationProofStatus,
 } from '@/lib/service-simulation/types'
 import type { EventStatus } from './fsm'
+import { classifyOverrideReason, type OverrideCategory } from './override-taxonomy'
 
 export type ReadinessGate = ServiceSimulationProofId
 export type GateStatus = ServiceSimulationProofStatus | 'overridden'
@@ -459,7 +460,12 @@ export async function evaluateReadinessForDocumentGeneration(
   })
 }
 
-export async function overrideGate(eventId: string, gate: ReadinessGate, reason: string) {
+export async function overrideGate(
+  eventId: string,
+  gate: ReadinessGate,
+  reason: string,
+  category?: OverrideCategory
+) {
   const user = await requireChef()
   const db: any = createServerClient()
   const readiness = await evaluateReadinessInternal({
@@ -478,6 +484,8 @@ export async function overrideGate(eventId: string, gate: ReadinessGate, reason:
     throw new Error('A brief override reason is required')
   }
 
+  const resolvedCategory = category ?? classifyOverrideReason(normalizedReason)
+
   const { error } = await db.from('event_readiness_gates' as any).upsert(
     {
       tenant_id: user.tenantId!,
@@ -487,6 +495,7 @@ export async function overrideGate(eventId: string, gate: ReadinessGate, reason:
       resolved_at: new Date().toISOString(),
       overridden_by: user.id,
       override_reason: normalizedReason,
+      override_category: resolvedCategory,
       metadata: {
         contextHash: readiness.contextHash,
         targetStatus: readiness.targetStatus,

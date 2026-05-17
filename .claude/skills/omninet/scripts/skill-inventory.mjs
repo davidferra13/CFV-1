@@ -43,6 +43,18 @@ const nonSkillRefs = new Set([
   "finish-check",
   "in-flight",
   "status",
+  // Model tier names (CLAUDE.md § MODEL STRATEGY)
+  "haiku-worker",
+  "opus-advisor",
+  "ollama-delegate",
+  // Build-queue status tags (case-insensitive regex catches uppercase)
+  "BLOCKED",
+  "DONE",
+  "DRAFT",
+  "IN-FLIGHT",
+  "PARTIAL",
+  "SPEC-READY",
+  "UNSPECCED",
 ]);
 const skillRefPattern = /`([a-z0-9][a-z0-9-]{1,80})`/gi;
 

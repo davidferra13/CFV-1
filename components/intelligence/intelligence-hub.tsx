@@ -1,5 +1,6 @@
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
+import { CommitmentInsightsCard } from './commitment-insights-card'
 import {
   getSeasonalDemandForecast,
   getRebookingPredictions,
@@ -1519,6 +1520,9 @@ export async function IntelligenceHubContent() {
           )}
         </CardContent>
       </Card>
+
+      {/* 25. Commitment Insights */}
+      <CommitmentInsightsCard />
     </div>
   )
 }

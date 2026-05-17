@@ -560,20 +560,113 @@
 
 ---
 
-## ULYSSES CONTRACT / COMMITMENT LAYER (6 items)
+## ULYSSES CONTRACT / COMMITMENT LAYER (55 items)
 
 > Surfaced by Ulysses Contract research 2026-05-17. CIL commitment analyzer built same session.
-> Research: user's research-to-build extraction (conversation context)
+> Full Ulysses Universe brainstorm 2026-05-17. Unified Commitment Engine architecture.
+> Design: Approach A (unified engine, all domains plug in). Progressive friction (5 tiers, never fully blocks). Chef-declared + system-suggested commitments.
 > Spec: `docs/specs/cil-commitment-analyzer.md`
+> Vision spec: `docs/superpowers/specs/2026-05-17-ulysses-universe-design.md`
 
-| #   | Item                                            | Status     | Depends On | Notes                                                                                                                              |
-| --- | ----------------------------------------------- | ---------- | ---------- | ---------------------------------------------------------------------------------------------------------------------------------- |
-| 1   | CIL Commitment Analyzer (8th domain)            | DONE       | None       | BUILT 2026-05-17. 5 patterns: gate frequency, time-pressure, client-correlated, confidence erosion, menu unlocks. tsc clean.       |
-| 2   | Commitment Insights Analytics Card              | SPEC-READY | #1         | Surface override patterns in intelligence hub. Follow existing analytics card pattern.                                             |
-| 3   | Override Reason Taxonomy                        | SPEC-READY | #1         | Normalize free-text override reasons into categories. Mechanical text classification + UI for category picker on override dialog.  |
-| 4   | Pre-Commitment Profile Settings                 | DRAFT      | #2         | Chef sets pricing floors, menu deadlines, communication standards. System enforces with proportional friction. Needs product spec. |
-| 5   | Prep Deadline Ulysses Enforcement               | DRAFT      | #4         | Escalating nudges as prep deadlines approach. Builds on existing prep_timeline + cadence primitives. Needs friction design.        |
-| 6   | Override-Then-Issue Correlation (CIL Pattern 6) | DRAFT      | #1         | Correlate overrides with post-event issues. Needs event debrief data maturity. Deferred from Phase 1.                              |
+### Wave 0: Foundation (DONE)
+
+| #   | Item                                 | Status | Depends On | Notes                                                                                                                        |
+| --- | ------------------------------------ | ------ | ---------- | ---------------------------------------------------------------------------------------------------------------------------- |
+| 1   | CIL Commitment Analyzer (8th domain) | DONE   | None       | BUILT 2026-05-17. 5 patterns: gate frequency, time-pressure, client-correlated, confidence erosion, menu unlocks. tsc clean. |
+
+### Wave 1: Engine + Top 3 Domains
+
+| #   | Item                                                    | Status     | Depends On | Notes                                                                                                                                                                |
+| --- | ------------------------------------------------------- | ---------- | ---------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| 2   | Unified Commitment Engine: Registry                     | DRAFT      | #1         | `lib/commitment/registry.ts`. Commitment type, CommitmentRule discriminated union, CRUD actions, per-tenant storage. Stores chef-declared + system-accepted rules.   |
+| 3   | Unified Commitment Engine: Friction Gradient Calculator | DRAFT      | #2         | `lib/commitment/friction.ts`. 5-tier escalation (awareness/pause/justify/witness/ceremony). Auto-escalates on override frequency. De-escalates after 60 days clean.  |
+| 4   | Unified Commitment Engine: Override Ceremony Component  | DRAFT      | #3         | Unified override dialog. Shows commitment context, history, friction-tier UI (banner/countdown/reason/witness/ceremony). All domains route through one component.    |
+| 5   | Commitment Insights Analytics Card                      | SPEC-READY | #1         | Surface override patterns in intelligence hub. Follow existing analytics card pattern.                                                                               |
+| 6   | Override Reason Taxonomy                                | SPEC-READY | #1         | Normalize free-text override reasons into 7 categories. Keyword classifier + UI category picker on override dialog.                                                  |
+| 7   | Domain: Pricing Commitments                             | DRAFT      | #2         | Pricing floor (min $/head), margin floor (max food cost %), no-late-discounts (no price cuts within N days of event). Integrates with quote builder.                 |
+| 8   | Domain: Scheduling Commitments                          | DRAFT      | #2         | Max events/week, min rest days, max consecutive work days, protected time locks, no same-day doubles after X PM. Integrates with booking + availability.             |
+| 9   | Domain: Dietary Safety Commitments                      | DRAFT      | #2         | All allergens verified before confirm, cross-contamination check required, no unverified substitutions, dietary summary sent N days before. Default Tier 3 friction. |
+| 10  | Streak Counter + Commitment Integrity Score             | DRAFT      | #2         | Rolling 90-day score (0-100) across all domains. Per-commitment streak tracking. 30/60/90/180/365-day milestone markers. Loss aversion reinforcement.                |
+| 11  | Commitment Cockpit Dashboard Section                    | DRAFT      | #10        | Dashboard widget: overall integrity score, domain health grid (10 domains), active streaks, recent overrides, system suggestions, commitment weather pressure gauge. |
+
+### Wave 2: Next 4 Domains + Psychology
+
+| #   | Item                                    | Status | Depends On | Notes                                                                                                                                                                    |
+| --- | --------------------------------------- | ------ | ---------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
+| 12  | Domain: Menu Integrity Commitments      | DRAFT  | #4         | Menu lock cooldown (X hours), max revision cap per event, no new dishes within X days of service, recipe-required before lock. Integrates with menu lifecycle FSM.       |
+| 13  | Domain: Closeout Discipline Commitments | DRAFT  | #4         | Invoice within X days, payment follow-up within X days, cost reconciliation required, no-new-events-until-closeout (cap unclosed events). Integrates with closeout loop. |
+| 14  | Domain: Communication Commitments       | DRAFT  | #4         | Response time SLA (X hours), cadence integrity (never skip cadence touchpoint), no radio silence beyond X days, post-event follow-up within 48 hours.                    |
+| 15  | Domain: Capacity Commitments            | DRAFT  | #4         | Max guests/event without sous chef, revenue concentration cap (Herfindahl), minimum prep time per guest tier, minimum gap between same-day events.                       |
+| 16  | Future Self Letters                     | DRAFT  | #4         | When setting commitment, chef writes note to future self explaining WHY. Displayed during Tier 4+ override ceremonies. Chef's own words, not system lectures.            |
+| 17  | Cooling-Off Periods                     | DRAFT  | #3         | Configurable delay between decision and execution. 4hr for pricing overrides, 24hr for client drops, 48hr for commitment removal. Chef decides twice.                    |
+| 18  | Commitment Portfolios (Preset Bundles)  | DRAFT  | #2         | Quality-First, Growth, Sustainability, Recovery portfolios. Pre-configured commitment sets. Chef picks to start, customizes. Seasonal auto-switching support.            |
+
+### Wave 3: Remaining Domains + Compound Intelligence
+
+| #   | Item                                            | Status | Depends On | Notes                                                                                                                                                      |
+| --- | ----------------------------------------------- | ------ | ---------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| 19  | Domain: Contingency Commitments                 | DRAFT  | #4         | Emergency contacts before confirm, backup plan required for high-value events, insurance currency required, equipment checklist before in_progress.        |
+| 20  | Domain: Travel Commitments                      | DRAFT  | #4         | Travel time buffer (X min before service), travel plan required before confirm, no events beyond X miles without overnight, travel surcharge auto-include. |
+| 21  | Domain: Business Health Commitments             | DRAFT  | #4         | Weekly financial review (dashboard viewed), quarterly rate review, certification currency (block if expired), savings reserve advisory tracking.           |
+| 22  | Compound Signal: Spiral Detector                | DRAFT  | #10        | Overrides across 3+ domains within 2-week window = spiral. Urgency 5 CIL signal. Remy morning briefing integration.                                        |
+| 23  | Compound Signal: Client Vortex Detector         | DRAFT  | #10        | One client driving overrides across multiple domains. Surfaces disproportionate energy/standards cost of that relationship.                                |
+| 24  | Compound Signal: Seasonal Erosion Detector      | DRAFT  | #10        | Override frequency mapped to calendar. Pre-warns before historically high-override months. Learns chef's seasonal pattern.                                 |
+| 25  | Compound Signal: Fatigue Cascade Detector       | DRAFT  | #10, #22   | Burnout score + override frequency + response time + closeout backlog all trending worse simultaneously. Predicts operational crash.                       |
+| 26  | Compound Signal: New Client Risk Detector       | DRAFT  | #10        | First-time client events have higher override rates. Suggests stricter commitments for first engagements.                                                  |
+| 27  | Commitment Seasons                              | DRAFT  | #18        | Seasonal commitment profiles (peak/quiet/custom). Auto-swap on season boundaries. Different rules for different times. Chef configures once.               |
+| 28  | Event-Specific Commitment Contracts             | DRAFT  | #2         | Pre-acceptance quality standards per event. Auto-tiers by event value/complexity. Post-event scoring of contract adherence. Running integrity average.     |
+| 29  | Override-Then-Issue Correlation (CIL Pattern 6) | DRAFT  | #1         | Correlate overrides with post-event issues. Proves overrides have real consequences. Needs event debrief data maturity.                                    |
+
+### Wave 4: Advanced Behavioral Systems
+
+| #   | Item                                         | Status | Depends On | Notes                                                                                                                                                                                             |
+| --- | -------------------------------------------- | ------ | ---------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| 30  | Temptation Catalog                           | DRAFT  | #10        | Learns override triggers: time-of-day, day-of-week, client type, event proximity, season, emotional state, communication triggers. Personalized temptation profile.                               |
+| 31  | Accountability Witness                       | DRAFT  | #4         | Chef designates human (spouse, mentor, sous chef) notified on Tier 4+ overrides. Weekly digest. Social accountability. Fully opt-in.                                                              |
+| 32  | Commitment Archaeology                       | DRAFT  | #10        | Retroactive simulation: "If current commitments had been active for last 12 months, what would have happened?" Evidence from chef's own history that commitments work.                            |
+| 33  | Best-Month Mirror                            | DRAFT  | #10        | Identifies chef's best-performing month. Creates behavioral snapshot. Shows comparison when drifting. Chef compared to own peak, not industry benchmarks.                                         |
+| 34  | Commitment Negotiation (Conflict Resolution) | DRAFT  | #2         | When two commitments conflict (max 3/week vs never reject repeat clients), system offers resolution options. Learns priority hierarchy over time.                                                 |
+| 35  | Regret Minimizer                             | DRAFT  | #4, #29    | Pre-override question: "If this goes wrong, how much will you regret?" (1-5). Post-event correlation calibrates prediction accuracy. "Your regret predictions are 40% too optimistic on pricing." |
+
+### Wave 5: Ecosystem + AI Coaching
+
+| #   | Item                                          | Status | Depends On | Notes                                                                                                                                                                      |
+| --- | --------------------------------------------- | ------ | ---------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| 36  | Remy Commitment Coach: Morning Briefing       | DRAFT  | #10, #11   | Commitment status in daily briefing. Capacity warnings, pending verifications, streak updates, pressure forecast. Remy illuminates, never judges.                          |
+| 37  | Remy Commitment Coach: Post-Override Coaching | DRAFT  | #4, #36    | After override, Remy offers non-judgmental coaching. "Want to talk about why?" Pattern surfacing. Helps chef decide if commitment needs adjusting vs. temporary pressure.  |
+| 38  | Remy Commitment Coach: Monthly Review         | DRAFT  | #36        | Monthly integrity report. Strongest/weakest domains. Suggestions for new commitments. Trend analysis. Pattern surfacing ("you override more on Fridays").                  |
+| 39  | Anti-Commitment Detection                     | DRAFT  | #10        | Detects chefs with NO commitments who exhibit erratic behavior. Suggests commitments based on observed volatility. "Your quotes range $60-$200. Want a floor?"             |
+| 40  | Recovery Protocol                             | DRAFT  | #22, #18   | Spiral circuit breaker. Auto-pause non-safety commitments, activate Recovery Portfolio, 7-day check-in cadence, gradual re-activation over 2 weeks. Post-recovery debrief. |
+| 41  | Commitment DNA (Chef Personality Typing)      | DRAFT  | #10        | Operational personality fingerprint from commitment patterns: Perfectionist, Hustler, Balanced, Artisan, Caretaker. Self-awareness + onboarding guidance.                  |
+| 42  | Commitment Diffusion                          | DRAFT  | #10        | When commitment works in one domain, suggest analogous commitments in other domains. Commitments spread from strength. Cross-domain learning.                              |
+| 43  | "Is This Still Me?" Quarterly Audit           | DRAFT  | #2         | Quarterly auto-prompt to review all active commitments. Keep/adjust/retire. Prevents zombie rules. Growth-aware recalibration.                                             |
+
+### Wave 6: Business Growth Layer
+
+| #   | Item                                        | Status | Depends On | Notes                                                                                                                                                                          |
+| --- | ------------------------------------------- | ------ | ---------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
+| 44  | Anti-Scope-Creep Lock                       | DRAFT  | #3         | Post-proposal scope soft-lock. Minor changes = Tier 1, medium = Tier 2 + re-pricing prompt, major = Tier 3 mandatory re-proposal. Prevents margin erosion from "oh and also."  |
+| 45  | Delegation Commitment (Bus-Factor Contract) | DRAFT  | #2         | Pre-written crisis protocol. If incapacitated: which clients get notified, which events cancelled/rescheduled, who accesses what. Healthy chef writes injured chef's playbook. |
+| 46  | No Free Work Commitment                     | DRAFT  | #7         | Tasting fee required, revision cap with overage fees, consultation fee, recipe dev fee, travel surcharge minimum. Tracks waived fees: "$1,200 waived this quarter."            |
+| 47  | Client-Facing Commitment Transparency       | DRAFT  | #10        | Optional public exposure: profile badge (integrity score), contract addendum (specific promises), post-event report (commitments honored). Trust differentiation.              |
+| 48  | "Say No" Pre-Commitment                     | DRAFT  | #2         | Pre-declared refusal categories: under $X total, over X miles, previously cancelled clients without prepay, too many dietary accommodations. Auto-decline or flag.             |
+| 49  | Milestone Commitments                       | DRAFT  | #2         | Business growth milestones with committed actions: "At 100 events, hire sous chef." "At $X/month for 3 months, raise floor." System tracks + triggers.                         |
+| 50  | Commitment-Aware Quoting                    | DRAFT  | #7, #15    | Quote builder checks all commitments before send. Shows: "Accepting this quote breaks 2 commitments: pricing floor and capacity." Compatibility pre-check.                     |
+
+### Wave 7: Mastery Layer
+
+| #   | Item                          | Status | Depends On | Notes                                                                                                                                                                                 |
+| --- | ----------------------------- | ------ | ---------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| 51  | Commitment Decay Detection    | DRAFT  | #10        | Detects gradual threshold erosion (floor creeping from $125 to $108), increasing override frequency, friction tier ineffectiveness, commitment abandonment. Honest recalibration.     |
+| 52  | Vendor & Supplier Commitments | DRAFT  | #2         | Preferred vendor lock, order lead time, no same-day market runs, quality tier lock. Supply chain discipline. Correlates same-day sourcing with quality issues.                        |
+| 53  | Learning Commitment           | DRAFT  | #2, #29    | Debrief required within X days, one lesson captured per event, recipe update trigger for in-service modifications, photo documentation minimum. Feeds override-issue correlation.     |
+| 54  | Time-of-Day Commitments       | DRAFT  | #2         | Rules active only during windows: no client responses after 9pm, no quote changes after 6pm, no event accepts 10pm-7am, no business comms on protected days. +1 tier during hours.    |
+| 55  | Reputation Firewall           | DRAFT  | #2         | Brand protection: no unplated photos, review response SLA, portfolio currency (quarterly update), no public pricing, brand-consistent templates.                                      |
+| 56  | Energy Budget                 | DRAFT  | #8         | Emotional energy tracking beyond time: high-energy event cap, difficult client limit, creative energy reserve, admin energy boundary. Energy expenditure by complexity.               |
+| 57  | Client Education Commitment   | DRAFT  | #14        | Timeline transparency (realistic prep timelines), pricing transparency (explain components), scope confirmation after changes, limitation honesty (refer vs overcommit).              |
+| 58  | Gratitude Commitment          | DRAFT  | #13        | Post-event rituals: thank vendors within 48hr, personal client thank-you within 24hr, team recognition, host venue thanks. Tracks relationship reliability correlation.               |
+| 59  | Living Recipe Commitment      | DRAFT  | #2         | Document new dishes within 7 days of serving, update recipes after in-service modifications within 48hr, cost-link required for "complete", scaling verified for large events.        |
+| 60  | Pre-Mortem Commitment         | DRAFT  | #28        | Before confirming event, 30-second pre-mortem: pick expected failure modes. Each selection auto-activates corresponding domain commitment for that event. Anxiety becomes protection. |
 
 ---
 
@@ -584,12 +677,13 @@
 | SPEC-READY                  | 172     |
 | DONE                        | 40      |
 | PARTIAL (built, unverified) | 24      |
-| DRAFT                       | 20      |
+| DRAFT                       | 74      |
 | BLOCKED                     | 15      |
 | IN-FLIGHT                   | 2       |
 | UNSPECCED                   | 14      |
-| **TOTAL**                   | **287** |
+| **TOTAL**                   | **341** |
 
+> Updated 2026-05-17: +54 DRAFT items from Ulysses Universe brainstorm. Full commitment engine + 10 domains + 35 dream systems across 7 build waves.
 > Updated 2026-05-16: +28 items DONE from Waves 5-9 build swarm (Saturation, Loyalty, Fixed Offerings, Circle Approval, Prep Scheduling, Allergy Severity, Handoff, Collaborator Bridge, Pop-Up OS, Corporate Procurement, Consumer Discovery, Ingredient Sourcing, Timeline Auto-Gen, Delegate Access, Shell Clarity, Menu Performance, Featured Chef, Mission Control, Live Client Status, Cost CSV, Cost Propagation, Closeout, Batch View, Client Passport, Chef-as-Consumer, Day-Of Timeline, Menu Variant Accommodations, Equipment Packing).
 
 ### Cross-Category Dependencies
@@ -599,3 +693,7 @@
 - PIE Attention Collector (AI) depends on PIE infrastructure (separate system on Pi)
 - UI System items (#1 Design Contract) is upstream of ~40 visual/interaction items
 - Lifecycle items feed into many UI items (visual styling, mobile ergonomics, etc.)
+- Ulysses Engine (#2-#4) is upstream of all 10 domain commitment sets and all dream systems
+- Ulysses Remy Coach (Wave 5) depends on Remy Routines Foundation (BLOCKED)
+- Ulysses Compound Signals (Wave 3) depend on Streak/Integrity Score (#10)
+- Ulysses Commitment-Aware Quoting (#50) depends on Pricing (#7) + Capacity (#15) domains

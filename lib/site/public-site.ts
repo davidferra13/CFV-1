@@ -45,6 +45,16 @@ export const PUBLIC_SITE_DESCRIPTION =
 export const PUBLIC_MARKETPLACE_DESCRIPTION =
   'Find private chefs, caterers, and meal prep professionals near you, browse services and menus, and book food experiences through ChefFlow.'
 
+export const SOCIAL_PROFILE_URLS = [
+  'https://www.facebook.com/cheflowhq',
+  'https://www.instagram.com/cheflowhq',
+  'https://x.com/cheflowhq',
+  'https://www.tiktok.com/@cheflowhq',
+  'https://www.youtube.com/@cheflowhq',
+  'https://www.pinterest.com/cheflowhq',
+  'https://www.linkedin.com/company/cheflowhq',
+] as const
+
 export const PUBLIC_MARKETPLACE_CONTACT_POINTS = [
   {
     '@type': 'ContactPoint',

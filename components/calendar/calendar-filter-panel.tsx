@@ -67,7 +67,7 @@ const FILTER_DEFS: FilterDef[] = [
   },
   {
     key: 'showLeads',
-    label: 'Leads',
+    label: 'Inquiries',
     activeColor: 'bg-orange-900 text-orange-800 border-orange-300',
     dotColor: '#EA580C',
   },

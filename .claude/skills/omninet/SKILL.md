@@ -38,6 +38,12 @@ Omninet is a lightweight routing loop. It does not run every skill. It decides w
 - Skill drift, missed rule, recurring behavior: use `heal-skill` for one failed skill or `write-a-skill` for a new skill.
 - Broad research: use `research`.
 - Architecture/refactor: use `improve-codebase-architecture`.
+- Price, cost, ingredient cost, PIE, pricing: use the matching `pie-*` skill (`pie-measure`, `pie-forecast`, `pie-simulate`, `pie-census`, `pie-ratchet`, `pie-accuracy`, `pie-alert`, `pie-fix`).
+- Session start, resume, status, context: use `morning` (fresh), `pick-up` (resume), `status` (quick check), or `warmup` (pre-work).
+- Connect, wire, integrate, hook up: use `wire` for new connections, `wiring-audit` for checking existing.
+- Document, explain, write docs: use `document`.
+- Signals, intelligence, CIL, insights, automated detection: use `intensify` for depth mining or check `lib/cil/` directly.
+- Implement, build feature, add functionality: use `feature-dev` or `builder`. All new features use `tdd` by default.
 
 ## Inventory Audit
 

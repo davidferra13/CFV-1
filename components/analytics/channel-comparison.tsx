@@ -33,7 +33,7 @@ const COLUMNS: { key: SortKey; label: string; align: 'left' | 'right' }[] = [
   { key: 'sourceLabel', label: 'Source', align: 'left' },
   { key: 'inquiryCount', label: 'Inquiries', align: 'right' },
   { key: 'bookedCount', label: 'Bookings', align: 'right' },
-  { key: 'conversionRate', label: 'Conversion %', align: 'right' },
+  { key: 'conversionRate', label: 'Booking %', align: 'right' },
   { key: 'totalRevenueCents', label: 'Total Revenue', align: 'right' },
   { key: 'avgRevenueCents', label: 'Avg Revenue', align: 'right' },
 ]

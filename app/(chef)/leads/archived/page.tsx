@@ -70,7 +70,7 @@ export default async function ArchivedLeadsPage() {
           <Table>
             <TableHeader>
               <TableRow>
-                <TableHead>Lead</TableHead>
+                <TableHead>Inquiry</TableHead>
                 <TableHead>Date</TableHead>
                 <TableHead>Occasion</TableHead>
                 <TableHead>Reason</TableHead>

@@ -26,7 +26,26 @@ interface Props {
 }
 
 export function PipelineForecastWidget({ forecast }: Props) {
-  if (forecast.stages.length === 0 && forecast.expectedCents === 0) return null
+  if (forecast.stages.length === 0 && forecast.expectedCents === 0) {
+    return (
+      <Card>
+        <CardHeader>
+          <CardTitle>Pipeline Forecast</CardTitle>
+        </CardHeader>
+        <CardContent>
+          <p className="text-sm text-stone-500">
+            Your booking pipeline is empty. Convert inquiries to events to track revenue potential.
+          </p>
+          <Link
+            href="/inquiries"
+            className="text-sm text-brand-500 hover:text-brand-400 font-medium mt-2 inline-block"
+          >
+            View inquiries
+          </Link>
+        </CardContent>
+      </Card>
+    )
+  }
 
   const activeStages = forecast.stages.filter((s) => s.count > 0)
 

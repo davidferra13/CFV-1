@@ -123,7 +123,7 @@ export default async function ClientRelationshipPage({ params }: { params: { id:
           value={daysSinceLastEvent !== null ? `${daysSinceLastEvent}` : '-'}
           detail={
             churnLevel
-              ? `Current churn signal: ${churnLevel.replace(/_/g, ' ')}`
+              ? `Current activity signal: ${churnLevel.replace(/_/g, ' ')}`
               : 'Need more event history for risk scoring'
           }
         />

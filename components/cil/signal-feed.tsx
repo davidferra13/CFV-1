@@ -12,6 +12,7 @@ const DOMAINS: Array<{ key: SignalDomain | 'all'; label: string }> = [
   { key: 'inventory', label: 'Inventory' },
   { key: 'reputation', label: 'Reputation' },
   { key: 'pipeline', label: 'Pipeline' },
+  { key: 'commitment', label: 'Commitment' },
 ]
 
 interface SignalFeedProps {

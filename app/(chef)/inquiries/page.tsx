@@ -296,7 +296,7 @@ export default async function InquiriesPage({
             <span className="text-amber-400">{pipelineQuality.lowQualityCount} low-quality</span>
           )}
           <span className="text-stone-400">
-            Est. conversion:{' '}
+            Est. booking chance:{' '}
             <span className="text-stone-100 font-medium">
               {Math.round(pipelineQuality.estimatedConversionRate * 100)}%
             </span>

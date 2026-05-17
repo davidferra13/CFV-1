@@ -364,7 +364,7 @@ export default async function MarketplacePage() {
         <>
           <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 xl:grid-cols-4">
             <StatCard
-              label="Untouched Leads"
+              label="New Requests"
               value={data.summary.untouchedLeadCount}
               icon={ClipboardList}
               subtitle="Brand-new requests with no action yet"
@@ -376,7 +376,7 @@ export default async function MarketplacePage() {
               subtitle="Requests waiting on your response"
             />
             <StatCard
-              label="Stale Leads"
+              label="Stale Requests"
               value={data.summary.staleLeadCount}
               icon={AlertTriangle}
               subtitle="New requests older than 24 hours"
@@ -417,7 +417,7 @@ export default async function MarketplacePage() {
             <Card>
               <CardHeader className="flex flex-row items-center justify-between gap-4">
                 <div>
-                  <CardTitle className="text-base">Lead Action Queue</CardTitle>
+                  <CardTitle className="text-base">Request Action Queue</CardTitle>
                   <p className="mt-1 text-sm text-stone-400">
                     Work the requests most likely to slip if you do nothing.
                   </p>

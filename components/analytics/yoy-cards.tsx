@@ -31,15 +31,20 @@ export function YoYCards({ data }: Props) {
 function YoYCard({ metric, isCurrency = false }: { metric: YoYMetric; isCurrency?: boolean }) {
   const fmt = (v: number) => (isCurrency ? formatCurrency(v) : String(v))
 
-  const trendColor =
-    metric.changeDirection === 'up'
+  // Suppress misleading trend arrow when previous year is 0 (first-year account)
+  const isFirstYear = metric.previousYear === 0
+
+  const trendColor = isFirstYear
+    ? 'text-stone-400'
+    : metric.changeDirection === 'up'
       ? 'text-emerald-600'
       : metric.changeDirection === 'down'
         ? 'text-red-500'
         : 'text-stone-400'
 
-  const TrendIcon =
-    metric.changeDirection === 'up'
+  const TrendIcon = isFirstYear
+    ? Minus
+    : metric.changeDirection === 'up'
       ? TrendingUp
       : metric.changeDirection === 'down'
         ? TrendingDown
@@ -54,10 +59,16 @@ function YoYCard({ metric, isCurrency = false }: { metric: YoYMetric; isCurrency
       <div className={`flex items-center gap-1 mt-1 ${trendColor}`}>
         <TrendIcon className="h-3 w-3 shrink-0" />
         <span className="text-xxs font-medium">
-          {metric.changePercent !== null ? `${metric.changePercent}%` : '-'}
+          {isFirstYear
+            ? 'First year'
+            : metric.changePercent !== null
+              ? `${metric.changePercent}%`
+              : '-'}
         </span>
       </div>
-      <p className="text-xxs text-stone-400 mt-0.5 truncate">{fmt(metric.previousYear)} prior yr</p>
+      <p className="text-xxs text-stone-400 mt-0.5 truncate">
+        {isFirstYear ? 'No prior year' : `${fmt(metric.previousYear)} prior yr`}
+      </p>
     </Card>
   )
 }

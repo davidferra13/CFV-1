@@ -20,7 +20,28 @@ interface Props {
 }
 
 export function TopEventsProfitWidget({ events }: Props) {
-  if (events.length === 0) return null
+  if (events.length === 0) {
+    return (
+      <Card>
+        <CardHeader>
+          <div className="flex justify-between items-center">
+            <CardTitle>Top Events by Profit</CardTitle>
+          </div>
+        </CardHeader>
+        <CardContent>
+          <p className="text-sm text-stone-500">
+            Complete events with cost tracking to see your most profitable work.
+          </p>
+          <Link
+            href="/events"
+            className="text-sm text-brand-500 hover:text-brand-400 font-medium mt-2 inline-block"
+          >
+            View events
+          </Link>
+        </CardContent>
+      </Card>
+    )
+  }
 
   return (
     <Card>

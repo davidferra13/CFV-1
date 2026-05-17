@@ -1,7 +1,8 @@
-// Chef Event Detail Page: decomposed into server component sections
+﻿// Chef Event Detail Page: decomposed into server component sections
 
 import { notFound } from 'next/navigation'
 import { Suspense } from 'react'
+import { SkeletonCard } from '@/components/ui/skeleton'
 import { requireChef } from '@/lib/auth/get-user'
 import { getEventById } from '@/lib/events/actions'
 import { EventDetailMobileNav } from '@/components/events/event-detail-mobile-nav'
@@ -32,22 +33,22 @@ export default async function EventDetailPage({
 
   return (
     <div className="space-y-6">
-      <Suspense fallback={null}>
+      <Suspense fallback={<SkeletonCard />}>
         <EventIntelligenceSection eventId={params.id} tenantId={tenantId} event={event} />
       </Suspense>
-      <Suspense fallback={null}>
+      <Suspense fallback={<SkeletonCard />}>
         <EventHeaderSection eventId={params.id} tenantId={tenantId} event={event} />
       </Suspense>
-      <Suspense fallback={null}>
+      <Suspense fallback={<SkeletonCard />}>
         <EventSpineSection eventId={params.id} tenantId={tenantId} event={event} />
       </Suspense>
-      <Suspense fallback={null}>
+      <Suspense fallback={<SkeletonCard />}>
         <EventScheduleSection eventId={params.id} tenantId={tenantId} event={event} />
       </Suspense>
 
       <EventDetailMobileNav />
 
-      <Suspense fallback={null}>
+      <Suspense fallback={<SkeletonCard />}>
         <EventPopUpSection
           eventId={params.id}
           tenantId={tenantId}
@@ -55,7 +56,7 @@ export default async function EventDetailPage({
           activeTab={activeTab}
         />
       </Suspense>
-      <Suspense fallback={null}>
+      <Suspense fallback={<SkeletonCard />}>
         <EventOverviewSection
           eventId={params.id}
           tenantId={tenantId}
@@ -63,7 +64,7 @@ export default async function EventDetailPage({
           activeTab={activeTab}
         />
       </Suspense>
-      <Suspense fallback={null}>
+      <Suspense fallback={<SkeletonCard />}>
         <EventMoneySection
           eventId={params.id}
           tenantId={tenantId}
@@ -71,7 +72,7 @@ export default async function EventDetailPage({
           activeTab={activeTab}
         />
       </Suspense>
-      <Suspense fallback={null}>
+      <Suspense fallback={<SkeletonCard />}>
         <EventPrepSection
           eventId={params.id}
           tenantId={tenantId}
@@ -79,7 +80,7 @@ export default async function EventDetailPage({
           activeTab={activeTab}
         />
       </Suspense>
-      <Suspense fallback={null}>
+      <Suspense fallback={<SkeletonCard />}>
         <EventTicketsSection
           eventId={params.id}
           tenantId={tenantId}
@@ -87,7 +88,7 @@ export default async function EventDetailPage({
           activeTab={activeTab}
         />
       </Suspense>
-      <Suspense fallback={null}>
+      <Suspense fallback={<SkeletonCard />}>
         <EventOpsSection
           eventId={params.id}
           tenantId={tenantId}
@@ -95,7 +96,7 @@ export default async function EventDetailPage({
           activeTab={activeTab}
         />
       </Suspense>
-      <Suspense fallback={null}>
+      <Suspense fallback={<SkeletonCard />}>
         <EventWrapSection
           eventId={params.id}
           tenantId={tenantId}

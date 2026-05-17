@@ -1199,7 +1199,7 @@ export const navGroups: NavGroup[] = [
       },
       {
         href: '/leads',
-        label: 'Leads',
+        label: 'Inquiries',
         icon: Target,
         children: [
           { href: '/leads/archived', label: 'Archived' },

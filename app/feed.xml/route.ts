@@ -55,6 +55,93 @@ export async function GET() {
     // If DB is unavailable, return feed with static items only
   }
 
+  let eventItems = ''
+
+  try {
+    const db: any = createAdminClient()
+    const timeoutPromise = new Promise<never>((_, reject) => {
+      setTimeout(() => reject(new Error('feed query timeout')), FEED_QUERY_TIMEOUT_MS)
+    })
+
+    const { data: events } = (await Promise.race([
+      db
+        .from('events')
+        .select('id, title, description, event_date, updated_at, slug')
+        .eq('visibility', 'public')
+        .eq('status', 'confirmed')
+        .order('event_date', { ascending: false })
+        .limit(20),
+      timeoutPromise,
+    ])) as {
+      data: Array<{
+        id: string
+        title: string
+        description: string | null
+        event_date: string | null
+        updated_at: string | null
+        slug: string | null
+      }> | null
+    }
+
+    if (events) {
+      eventItems = events
+        .map(
+          (event) => `    <item>
+      <title>${escapeXml(event.title)} - Event on ChefFlow</title>
+      <link>${BASE_URL}/events/${escapeXml(event.slug || event.id)}</link>
+      <description>${escapeXml(event.description || `${event.title} hosted through ChefFlow.`)}</description>
+      <pubDate>${event.event_date ? new Date(event.event_date).toUTCString() : new Date().toUTCString()}</pubDate>
+      <guid isPermaLink="true">${BASE_URL}/events/${escapeXml(event.slug || event.id)}</guid>
+    </item>`
+        )
+        .join('\n')
+    }
+  } catch {
+    // Events query failed; continue without event items
+  }
+
+  let serviceItems = ''
+
+  try {
+    const db: any = createAdminClient()
+    const timeoutPromise = new Promise<never>((_, reject) => {
+      setTimeout(() => reject(new Error('feed query timeout')), FEED_QUERY_TIMEOUT_MS)
+    })
+
+    const { data: services } = (await Promise.race([
+      db
+        .from('services')
+        .select('slug, name, description, updated_at')
+        .eq('active', true)
+        .not('slug', 'is', null)
+        .limit(20),
+      timeoutPromise,
+    ])) as {
+      data: Array<{
+        slug: string
+        name: string
+        description: string | null
+        updated_at: string | null
+      }> | null
+    }
+
+    if (services) {
+      serviceItems = services
+        .map(
+          (service) => `    <item>
+      <title>${escapeXml(service.name)} - Service on ChefFlow</title>
+      <link>${BASE_URL}/services/${escapeXml(service.slug)}</link>
+      <description>${escapeXml(service.description || `${service.name} available through ChefFlow.`)}</description>
+      <pubDate>${service.updated_at ? new Date(service.updated_at).toUTCString() : new Date().toUTCString()}</pubDate>
+      <guid isPermaLink="true">${BASE_URL}/services/${escapeXml(service.slug)}</guid>
+    </item>`
+        )
+        .join('\n')
+    }
+  } catch {
+    // Services query failed; continue without service items
+  }
+
   const compareItems = COMPARE_PAGES.map(
     (page) => `    <item>
       <title>${escapeXml(page.title)}</title>
@@ -67,13 +154,15 @@ export async function GET() {
   const rss = `<?xml version="1.0" encoding="UTF-8"?>
 <rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom">
   <channel>
-    <title>ChefFlow - Private Chef Directory</title>
+    <title>ChefFlow - Private Chef Network &amp; Events</title>
     <link>${BASE_URL}</link>
-    <description>Browse ChefFlow's curated chef network, describe an event for matched outreach, and explore food service providers in the directory.</description>
+    <description>Browse ChefFlow's curated chef network, discover upcoming private dining events, explore services, and find food service providers in the directory.</description>
     <language>en-us</language>
     <lastBuildDate>${new Date().toUTCString()}</lastBuildDate>
     <atom:link href="${BASE_URL}/feed.xml" rel="self" type="application/rss+xml" />
 ${chefItems}
+${eventItems}
+${serviceItems}
 ${compareItems}
   </channel>
 </rss>`

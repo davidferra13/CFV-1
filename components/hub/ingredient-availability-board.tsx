@@ -1,4 +1,4 @@
-'use client'
+﻿'use client'
 
 import { useState, useTransition, useEffect } from 'react'
 import { Card } from '@/components/ui/card'
@@ -178,7 +178,16 @@ export function IngredientAvailabilityBoard({ groupId, eventId, isCoHost }: Prop
     }
   }
 
-  if (!board) return null
+  if (!board) {
+    return (
+      <Card className="p-5">
+        <div className="flex items-center gap-3">
+          <div className="h-4 w-4 animate-spin rounded-full border-2 border-stone-600 border-t-brand-500" />
+          <span className="text-sm text-stone-400">Loading ingredient board...</span>
+        </div>
+      </Card>
+    )
+  }
 
   // Group items by category
   const grouped = CATEGORIES.map((cat) => ({

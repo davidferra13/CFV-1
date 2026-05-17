@@ -1,4 +1,4 @@
-'use client'
+﻿'use client'
 
 import { useEffect, useState, useTransition } from 'react'
 import { estimatePrepTime } from '@/lib/intelligence/prep-time-estimator'
@@ -33,7 +33,18 @@ export function PrepTimeEstimateHint({ guestCount, occasion }: PrepTimeEstimateH
     return () => clearTimeout(timer)
   }, [guestCount, occasion])
 
-  if (!estimate || isPending) return null
+  if (isPending && !estimate) {
+    return (
+      <div className="rounded-lg border border-stone-700/50 bg-stone-800/30 px-4 py-3">
+        <div className="flex items-center gap-2">
+          <div className="h-3 w-3 animate-spin rounded-full border-2 border-stone-600 border-t-brand-500" />
+          <span className="text-xs text-stone-400">Estimating prep time...</span>
+        </div>
+      </div>
+    )
+  }
+
+  if (!estimate) return null
 
   const totalMin = estimate.estimatedTotalMinutes
   const phases = [

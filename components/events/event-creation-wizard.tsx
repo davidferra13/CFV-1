@@ -119,57 +119,10 @@ export function EventCreationWizard({ clients }: EventCreationWizardProps) {
     }
   }
 
-  // Step validation
-  const validateStep = (s: WizardStep): boolean => {
-    setError(null)
-    switch (s) {
-      case 1:
-        if (!clientId) {
-          setError('Please select a client')
-          return false
-        }
-        return true
-      case 2:
-        if (!eventDate) {
-          setError('Event date is required')
-          return false
-        }
-        if (!serveTime) {
-          setError('Serve time is required')
-          return false
-        }
-        if (!guestCount || parseInt(guestCount) <= 0) {
-          setError('Guest count must be a positive number')
-          return false
-        }
-        if (!locationAddress) {
-          setError('Address is required')
-          return false
-        }
-        if (!locationCity) {
-          setError('City is required')
-          return false
-        }
-        if (!locationZip) {
-          setError('ZIP code is required')
-          return false
-        }
-        return true
-      case 3:
-        // No required fields on step 3
-        return true
-      case 4:
-        return true
-      default:
-        return true
-    }
-  }
-
   const goNext = () => {
-    if (validateStep(step)) {
-      setStep((step + 1) as WizardStep)
-      window.scrollTo({ top: 0, behavior: 'smooth' })
-    }
+    setError(null)
+    setStep((step + 1) as WizardStep)
+    window.scrollTo({ top: 0, behavior: 'smooth' })
   }
 
   const goBack = () => {
@@ -178,7 +131,23 @@ export function EventCreationWizard({ clients }: EventCreationWizardProps) {
     window.scrollTo({ top: 0, behavior: 'smooth' })
   }
 
+  const validateAll = (): boolean => {
+    setError(null)
+    if (!clientId) {
+      setError('Please select a client')
+      setStep(1)
+      return false
+    }
+    if (!eventDate) {
+      setError('Event date is required')
+      setStep(2)
+      return false
+    }
+    return true
+  }
+
   const handleCreate = () => {
+    if (!validateAll()) return
     setError(null)
 
     const guestCountNum = parseInt(guestCount)
@@ -268,8 +237,10 @@ export function EventCreationWizard({ clients }: EventCreationWizardProps) {
           return (
             <div key={label} className="flex items-center gap-2 flex-1">
               <div className="flex items-center gap-1.5 min-w-0">
-                <div
-                  className={`w-7 h-7 rounded-full flex items-center justify-center text-xs font-bold shrink-0 ${
+                <button
+                  type="button"
+                  onClick={() => setStep(stepNum)}
+                  className={`w-7 h-7 rounded-full flex items-center justify-center text-xs font-bold shrink-0 cursor-pointer hover:ring-2 hover:ring-stone-300 transition-all ${
                     isCompleted
                       ? 'bg-green-500 text-white'
                       : isActive
@@ -278,7 +249,7 @@ export function EventCreationWizard({ clients }: EventCreationWizardProps) {
                   }`}
                 >
                   {isCompleted ? '\u2713' : stepNum}
-                </div>
+                </button>
                 <span
                   className={`text-sm font-medium truncate ${
                     isActive ? 'text-stone-900' : isCompleted ? 'text-green-700' : 'text-stone-400'
@@ -403,7 +374,6 @@ export function EventCreationWizard({ clients }: EventCreationWizardProps) {
               <Input
                 label="Serve Time"
                 type="time"
-                required
                 value={serveTime}
                 onChange={(e) => setServeTime(e.target.value)}
                 helperText="When food should be served"
@@ -414,7 +384,6 @@ export function EventCreationWizard({ clients }: EventCreationWizardProps) {
               <Input
                 label="Guest Count"
                 type="number"
-                required
                 min="1"
                 placeholder="e.g., 12"
                 value={guestCount}
@@ -430,7 +399,6 @@ export function EventCreationWizard({ clients }: EventCreationWizardProps) {
 
             <AddressAutocomplete
               label="Address"
-              required
               placeholder="e.g., 123 Main St"
               value={locationAddress}
               onChange={(val) => setLocationAddress(val)}
@@ -445,7 +413,6 @@ export function EventCreationWizard({ clients }: EventCreationWizardProps) {
             <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
               <Input
                 label="City"
-                required
                 placeholder="City"
                 value={locationCity}
                 onChange={(e) => setLocationCity(e.target.value)}
@@ -458,7 +425,6 @@ export function EventCreationWizard({ clients }: EventCreationWizardProps) {
               />
               <Input
                 label="ZIP"
-                required
                 placeholder="ZIP"
                 value={locationZip}
                 onChange={(e) => setLocationZip(e.target.value)}

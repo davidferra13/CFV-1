@@ -238,7 +238,7 @@ export function EventPricingIntelligencePanel({ data, compact = false }: Props) 
           label="Cost Variance"
           value={
             data.variance.estimatedVsActualCostCents === 0
-              ? '$0.00'
+              ? 'On target'
               : `${data.variance.estimatedVsActualCostCents > 0 ? '+' : '-'}${formatCurrency(
                   Math.abs(data.variance.estimatedVsActualCostCents)
                 )}`

@@ -24,7 +24,20 @@ interface Props {
 
 export function FoodCostTrendWidget({ trend }: Props) {
   const hasData = trend.months.some((m) => m.eventCount > 0)
-  if (!hasData) return null
+  if (!hasData) {
+    return (
+      <Card>
+        <CardHeader>
+          <CardTitle>Food Cost Trend</CardTitle>
+        </CardHeader>
+        <CardContent>
+          <p className="text-sm text-stone-500">
+            Log ingredient costs on recipes to track food cost trends over time.
+          </p>
+        </CardContent>
+      </Card>
+    )
+  }
 
   const maxPercent = Math.max(...trend.months.map((m) => m.avgFoodCostPercent), 1)
 

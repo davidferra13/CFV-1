@@ -28,6 +28,11 @@ export function RevenueComparisonWidget({
     return (
       <Card className="p-5">
         <p className="text-sm text-stone-500">No revenue data yet this month.</p>
+        <div className="mt-2">
+          <a href="/events" className="text-sm text-brand-500 hover:text-brand-400 font-medium">
+            Create an event to start tracking revenue
+          </a>
+        </div>
       </Card>
     )
   }
