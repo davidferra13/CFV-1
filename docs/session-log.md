@@ -1,5 +1,21 @@
 # Session Log
 
+## 2026-05-17 ~15:30 EDT
+
+- Agent: Claude Opus 4.6 (main session + 2 verification agents)
+- Task: Ulysses Contract research-to-build extraction. Verified 9 existing pre-commitment primitives against codebase (8 accurate, 1 understated). Corrected gap analysis (backward scheduling exists in 3 forms, not a gap). Built CIL commitment analyzer (8th domain, 5 detection patterns). Generated swarm handoff for follow-up wave.
+- Status: completed
+- Files touched:
+  - docs/specs/cil-commitment-analyzer.md (NEW, full spec)
+  - lib/cil/analyzers/commitment.ts (NEW, 5 patterns: gate frequency, time-pressure, client-correlated, confidence erosion, menu unlocks)
+  - lib/cil/types.ts (added 'commitment' to SignalDomain)
+  - lib/cil/analyzers/index.ts (wired 8th analyzer)
+  - docs/UNIFIED-BUILD-QUEUE.md (added Ulysses Contract section, 6 items)
+  - docs/swarm-prompts/ulysses-commitment-swarm.md (NEW, 5-agent swarm across 2 waves)
+- Commits: pending
+- Build state on departure: tsc clean (0 new errors)
+- Notes: Swarm prompt ready at docs/swarm-prompts/ulysses-commitment-swarm.md. 2 SPEC-READY items (analytics card, override taxonomy), 3 DRAFT items need product spec, 1 deferred. Next session: paste swarm prompt into fresh orchestrator window.
+
 ## 2026-05-17 14:40 EDT
 
 - Agent: Claude Opus 4.6 (main session + 4 parallel agents)
