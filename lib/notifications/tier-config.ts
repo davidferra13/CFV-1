@@ -177,6 +177,19 @@ export const DEFAULT_TIER_MAP: Record<NotificationAction, NotificationTier> = {
 
   // Personal reminders
   reminder_fired: 'alert',
+
+  // Cannabis
+  cannabis_access_granted: 'alert',
+  cannabis_access_revoked: 'alert',
+  cannabis_age_required: 'alert',
+  cannabis_age_approved: 'info',
+  cannabis_age_rejected: 'alert',
+  cannabis_age_expired: 'alert',
+  cannabis_request_submitted: 'alert',
+  cannabis_request_reviewed: 'info',
+  cannabis_guest_intake_incomplete: 'info',
+  cannabis_event_readiness_incomplete: 'info',
+  cannabis_closeout_pending: 'alert',
 }
 
 // Default Channels per Tier

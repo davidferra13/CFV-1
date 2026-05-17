@@ -4,6 +4,9 @@ import {
   CannabisPortalHeader,
 } from '@/components/cannabis/cannabis-portal-header'
 import { getCannabisControlPacketData } from '@/lib/chef/cannabis-control-packet-actions'
+import { getCannabisEventReadiness } from '@/lib/chef/cannabis-readiness'
+import { requireChef } from '@/lib/auth/get-user'
+import { createServerClient } from '@/lib/db/server'
 import { ControlPacketClient } from './control-packet-client'
 
 export default async function CannabisEventControlPacketPage({
@@ -13,7 +16,18 @@ export default async function CannabisEventControlPacketPage({
   params: { id: string }
   searchParams?: { snapshot?: string }
 }) {
-  const data = await getCannabisControlPacketData(params.id, searchParams?.snapshot ?? null)
+  const [data, user] = await Promise.all([
+    getCannabisControlPacketData(params.id, searchParams?.snapshot ?? null),
+    requireChef(),
+  ])
+
+  const db: any = createServerClient()
+  const readiness = await getCannabisEventReadiness(
+    db,
+    { id: user.id, tenantId: user.tenantId },
+    params.id,
+    searchParams?.snapshot ?? null
+  )
 
   return (
     <CannabisPageWrapper>
@@ -51,7 +65,7 @@ export default async function CannabisEventControlPacketPage({
           }
         />
 
-        <ControlPacketClient eventId={params.id} initialData={data} />
+        <ControlPacketClient eventId={params.id} initialData={data} readiness={readiness} />
       </div>
     </CannabisPageWrapper>
   )

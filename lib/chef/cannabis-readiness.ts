@@ -94,7 +94,8 @@ export async function getCannabisEventReadiness(
     db
       .from('guest_event_profile' as any)
       .select('*')
-      .eq('event_id', eventId) as any,
+      .eq('event_id', eventId)
+      .eq('tenant_id', user.tenantId) as any,
     db
       .from('regulated_batch_coas' as any)
       .select('id')

@@ -5,6 +5,7 @@
 
 import { pgClient } from '@/lib/db/index'
 import { getClientProfileCompleteness } from '@/lib/clients/completeness'
+import { checkCannabisReadinessForTransition } from '@/lib/cannabis/readiness-integration'
 import { evaluateMenu } from './menu'
 import { evaluateClient } from './client'
 import type { CompletionRequirement } from '../types'
@@ -25,6 +26,7 @@ interface EventRow {
   prep_list_ready: boolean | null
   packing_list_ready: boolean | null
   aar_filed: boolean | null
+  cannabis_preference: boolean | null
 }
 
 interface FinancialRow {
@@ -52,7 +54,7 @@ export async function evaluateEvent(
     SELECT id, occasion, event_date, serve_time, location_address, guest_count,
            client_id, menu_id, status, access_instructions,
            grocery_list_ready, prep_list_ready, packing_list_ready,
-           aar_filed
+           aar_filed, cannabis_preference
     FROM events
     WHERE id = ${eventId} AND tenant_id = ${tenantId}
   `
@@ -374,6 +376,45 @@ export async function evaluateEvent(
       actionLabel: 'Upload receipts',
     },
   ]
+
+  // Cannabis readiness gates (only for cannabis events)
+  if (event.cannabis_preference) {
+    // Check against 'confirmed' as the next meaningful transition target
+    const targetStatus = event.status === 'confirmed' ? 'in_progress' : 'confirmed'
+    const cannabisBlock = await checkCannabisReadinessForTransition(eventId, tenantId, targetStatus)
+
+    const gateLabels: Record<string, string> = {
+      host_agreement_signed: 'Cannabis host agreement signed',
+      guest_intake_complete: 'All guest cannabis intake forms completed',
+      guest_age_clearance: 'Age verification for participating guests',
+      cannabis_event_details_set: 'Cannabis event details configured',
+    }
+
+    for (const gate of cannabisBlock.missingGates) {
+      reqs.push({
+        key: `cannabis_${gate}`,
+        label: gateLabels[gate] || gate,
+        met: false,
+        blocking: true,
+        weight: 5,
+        category: 'cannabis',
+        actionUrl: eventUrl,
+        actionLabel: gateLabels[gate] || `Resolve: ${gate}`,
+      })
+    }
+
+    // If all cannabis gates are met, add a single "passed" requirement for score contribution
+    if (cannabisBlock.missingGates.length === 0) {
+      reqs.push({
+        key: 'cannabis_ready',
+        label: 'Cannabis readiness verified',
+        met: true,
+        blocking: false,
+        weight: 5,
+        category: 'cannabis',
+      })
+    }
+  }
 
   const children: CompletionResult[] = []
   if (clientResult) children.push(clientResult)

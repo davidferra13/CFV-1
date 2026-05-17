@@ -196,13 +196,30 @@ export async function createRegulatedCoa(formData: FormData) {
   if (!labName) throw new Error('Lab is required')
   if (!reportIssuedAt) throw new Error('Report date is required')
 
+  const potencyUnit = (textFromForm(formData, 'potencyUnit') || 'percent') as
+    | 'percent'
+    | 'mg_g'
+    | 'mg_ml'
+  const analyteMaxValue = potencyUnit === 'mg_ml' ? 5000 : potencyUnit === 'mg_g' ? 1000 : 100
+  const unitLabel = potencyUnit === 'mg_ml' ? 'mg/mL' : potencyUnit === 'mg_g' ? 'mg/g' : '%'
+
+  function validateAnalyte(name: string, value: number | null): number | null {
+    if (value === null) return null
+    if (value < 0) throw new Error(`${name} must be >= 0`)
+    if (value > analyteMaxValue)
+      throw new Error(
+        `${name} value ${value}${unitLabel} exceeds maximum plausible range (0-${analyteMaxValue}${unitLabel})`
+      )
+    return value
+  }
+
   const cannabinoidPanel = {
-    unit: (textFromForm(formData, 'potencyUnit') || 'percent') as 'percent' | 'mg_g' | 'mg_ml',
+    unit: potencyUnit,
     analytes: {
-      THC: numberFromForm(formData, 'thc'),
-      THCA: numberFromForm(formData, 'thca'),
-      CBD: numberFromForm(formData, 'cbd'),
-      CBDA: numberFromForm(formData, 'cbda'),
+      THC: validateAnalyte('THC', numberFromForm(formData, 'thc')),
+      THCA: validateAnalyte('THCA', numberFromForm(formData, 'thca')),
+      CBD: validateAnalyte('CBD', numberFromForm(formData, 'cbd')),
+      CBDA: validateAnalyte('CBDA', numberFromForm(formData, 'cbda')),
     },
   }
 

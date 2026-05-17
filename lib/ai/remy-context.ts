@@ -35,6 +35,9 @@ import { getServiceConfigForTenant } from '@/lib/chef-services/service-config-in
 import { formatServiceConfigForPrompt } from '@/lib/chef-services/service-config-actions'
 import { getClientLifetimeJourneys } from '@/lib/intelligence/client-lifetime-journey'
 import { getSeasonalMenuCorrelation } from '@/lib/intelligence/seasonal-menu-correlation'
+import { getPortfolioLTVSummary } from '@/lib/analytics/client-ltv-actions'
+import { getHealthScoreDistribution } from '@/lib/clients/health-score'
+import { getPipelineQualityScore } from '@/lib/analytics/booking-score'
 
 const OPENCLAW_API = process.env.OPENCLAW_API_URL || 'http://10.0.0.177:8081'
 
@@ -371,6 +374,9 @@ export async function loadRemyContext(
   let pendingMilestones: any
   let priceContext: RemyContext['priceContext'] | undefined
   let seasonalMenuCorrelation: string | undefined
+  let portfolioLtv: RemyContext['portfolioLtv'] | undefined
+  let healthScoreDist: RemyContext['healthScoreDistribution'] | undefined
+  let pipelineQuality: RemyContext['pipelineQuality'] | undefined
 
   if (isMinimal) {
     emailDigest = undefined
@@ -378,6 +384,9 @@ export async function loadRemyContext(
     pendingMilestones = undefined
     priceContext = undefined
     seasonalMenuCorrelation = undefined
+    portfolioLtv = undefined
+    healthScoreDist = undefined
+    pipelineQuality = undefined
   } else {
     emailDigest =
       (await withContextFallback(
@@ -458,6 +467,59 @@ export async function loadRemyContext(
         const result = await getSeasonalMenuCorrelation()
         if (!result) return undefined
         return formatSeasonalCorrelationForPrompt(result)
+      },
+      undefined,
+      failedOperations
+    )
+
+    portfolioLtv = await withContextFallback(
+      tenantId,
+      'load_portfolio_ltv',
+      undefined,
+      async () => {
+        const result = await getPortfolioLTVSummary()
+        if (result.clientCount === 0) return undefined
+        return {
+          totalPortfolioValueCents: result.totalPortfolioValueCents,
+          averageLtvCents: result.averageLtvCents,
+          clientCount: result.clientCount,
+          atRiskRevenueCents: result.atRiskRevenueCents,
+        }
+      },
+      undefined,
+      failedOperations
+    )
+
+    healthScoreDist = await withContextFallback(
+      tenantId,
+      'load_health_score_distribution',
+      undefined,
+      async () => {
+        const result = await getHealthScoreDistribution()
+        if (result.totalClients === 0) return undefined
+        return {
+          meanScore: result.meanScore,
+          percentHealthy: result.percentHealthy,
+          alertCount: result.alertCount,
+          totalClients: result.totalClients,
+        }
+      },
+      undefined,
+      failedOperations
+    )
+
+    pipelineQuality = await withContextFallback(
+      tenantId,
+      'load_pipeline_quality',
+      undefined,
+      async () => {
+        const result = await getPipelineQualityScore()
+        if (result.totalInquiries === 0) return undefined
+        return {
+          avgScore: result.avgScore,
+          totalInquiries: result.totalInquiries,
+          highQualityCount: result.highQualityCount,
+        }
       },
       undefined,
       failedOperations
@@ -606,6 +668,9 @@ export async function loadRemyContext(
     seasonalMenuCorrelation,
     // Client lifetime journey (stage distribution, at-risk clients, LTV)
     clientLifetimeJourney: clientLifetimeJourney ?? undefined,
+    portfolioLtv: portfolioLtv ?? undefined,
+    healthScoreDistribution: healthScoreDist ?? undefined,
+    pipelineQuality: pipelineQuality ?? undefined,
   }
 }
 
@@ -1970,7 +2035,7 @@ async function loadEventEntity(
          quoted_price_cents, payment_status, kitchen_notes,
          prep_list_ready, grocery_list_ready, timeline_ready,
          menu_approval_status, menu_sent_at, menu_approved_at, menu_revision_notes,
-         ambiance_notes,
+         ambiance_notes, cannabis_preference,
          client:clients(full_name, email, phone, dietary_restrictions, allergies, vibe_notes, loyalty_tier, loyalty_points)`
       )
       .eq('id', eventId)
@@ -2393,6 +2458,100 @@ async function loadEventEntity(
     }
     if (eventIntel.insights.length > 0) {
       lines.push(`INSIGHTS: ${eventIntel.insights.join('. ')}`)
+    }
+  }
+
+  // Cannabis event context (only when cannabis_preference is true)
+  if (data.cannabis_preference) {
+    const [cannabisDetailsResult, hostAgreementResult, guestProfilesResult, courseConfigResult] =
+      await Promise.all([
+        // Cannabis event details (category, consent)
+        db
+          .from('cannabis_event_details')
+          .select('cannabis_category, guest_consent_confirmed')
+          .eq('event_id', eventId)
+          .eq('tenant_id', tenantId)
+          .maybeSingle(),
+        // Host agreement status (need auth_user_id from user_roles)
+        db
+          .from('user_roles')
+          .select('auth_user_id')
+          .eq('entity_id', tenantId)
+          .eq('role', 'chef')
+          .limit(1)
+          .single()
+          .then((roleResult: any) => {
+            if (!roleResult.data?.auth_user_id) return { data: null, error: null }
+            return db
+              .from('cannabis_host_agreements')
+              .select('id, signed_at')
+              .eq('host_user_id', roleResult.data.auth_user_id)
+              .order('signed_at', { ascending: false })
+              .limit(1)
+              .maybeSingle()
+          }),
+        // Guest onboarding completion count
+        db
+          .from('guest_event_profile')
+          .select('id, cannabis_participation')
+          .eq('event_id', eventId)
+          .eq('tenant_id', tenantId),
+        // Course config summary (active courses with infusion)
+        db
+          .from('event_cannabis_course_config')
+          .select('course_index, infusion_enabled, planned_mg_per_guest, is_active')
+          .eq('event_id', eventId)
+          .eq('tenant_id', tenantId)
+          .eq('is_active', true),
+      ])
+
+    await reportContextQueryErrors(tenantId, {
+      load_event_cannabis_details: cannabisDetailsResult,
+      load_event_host_agreement: hostAgreementResult,
+      load_event_guest_profiles: guestProfilesResult,
+      load_event_course_config: courseConfigResult,
+    })
+
+    lines.push(`\nCANNABIS EVENT CONTEXT:`)
+
+    // Category
+    const cannabisDetails = cannabisDetailsResult.data
+    const category = cannabisDetails?.cannabis_category ?? 'unknown'
+    lines.push(`- Category: ${category.replace(/_/g, ' ')}`)
+
+    // Host agreement
+    const agreement = hostAgreementResult.data
+    lines.push(`- Host Agreement: ${agreement ? 'signed' : 'not signed'}`)
+
+    // Guest onboarding
+    const guestProfiles = guestProfilesResult.data ?? []
+    const completedIntake = guestProfiles.filter(
+      (p: any) => p.cannabis_participation != null
+    ).length
+    const totalProfiles = guestProfiles.length
+    const guestCount = (data.guest_count as number) ?? totalProfiles
+    lines.push(`- Guest Onboarding: ${completedIntake} of ${guestCount} guests completed intake`)
+
+    // Course config
+    const courses = courseConfigResult.data ?? []
+    const infusedCourses = courses.filter((c: any) => c.infusion_enabled)
+    const totalPlannedMg = infusedCourses.reduce(
+      (sum: number, c: any) => sum + (parseFloat(c.planned_mg_per_guest) || 0),
+      0
+    )
+    if (courses.length > 0) {
+      lines.push(
+        `- Course Config: ${infusedCourses.length} courses with infusion configured, total planned mg: ${totalPlannedMg}`
+      )
+    } else {
+      lines.push(`- Course Config: no courses configured yet`)
+    }
+
+    // Consent status
+    if (cannabisDetails?.guest_consent_confirmed) {
+      lines.push(`- Guest Consent: confirmed`)
+    } else {
+      lines.push(`- Guest Consent: not yet confirmed`)
     }
   }
 

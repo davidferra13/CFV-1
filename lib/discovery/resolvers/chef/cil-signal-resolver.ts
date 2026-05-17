@@ -16,6 +16,7 @@ const DOMAIN_ICONS: Record<SignalDomain, string> = {
   inventory: 'package',
   pipeline: 'trending-up',
   reputation: 'star',
+  cannabis: 'leaf',
 }
 
 function signalToItem(signal: ProactiveSignal): GodModeResolvedItem {

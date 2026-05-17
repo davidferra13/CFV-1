@@ -7,15 +7,17 @@ import {
   getPendingInvites,
   getAllCannabisInvites,
 } from '@/lib/admin/cannabis-actions'
+import { getAllCannabisRequests } from '@/lib/admin/cannabis-request-actions'
 import { AdminCannabisClient } from './admin-cannabis-client'
 
 export default async function AdminCannabisPage() {
   await requireAdmin()
 
-  const [users, pendingInvites, allInvites] = await Promise.all([
+  const [users, pendingInvites, allInvites, dinnerRequests] = await Promise.all([
     getAllCannabisUsers().catch(() => []),
     getPendingInvites().catch(() => []),
     getAllCannabisInvites().catch(() => []),
+    getAllCannabisRequests().catch(() => []),
   ])
 
   return (
@@ -35,7 +37,12 @@ export default async function AdminCannabisPage() {
         </p>
       </div>
 
-      <AdminCannabisClient users={users} pendingInvites={pendingInvites} allInvites={allInvites} />
+      <AdminCannabisClient
+        users={users}
+        pendingInvites={pendingInvites}
+        allInvites={allInvites}
+        dinnerRequests={dinnerRequests}
+      />
     </div>
   )
 }

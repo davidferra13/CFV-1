@@ -51,6 +51,7 @@ import { buildIcsAttachment } from './ics-attachment'
 import { PostEventReviewRequestEmail } from './templates/post-event-review-request'
 import { PostEventReferralAskEmail } from './templates/post-event-referral-ask'
 import { PostEventTipPromptEmail } from './templates/post-event-tip-prompt'
+import { GuestConversionEmail } from './templates/guest-conversion'
 import { ContractSignedChefEmail } from './templates/contract-signed-chef'
 import { ContractSignedClientEmail } from './templates/contract-signed-client'
 import { MenuApprovedChefEmail } from './templates/menu-approved-chef'
@@ -66,6 +67,8 @@ import { BookingFollowUpEmail } from './templates/booking-follow-up'
 import { BookingNoMatchEmail } from './templates/booking-no-match'
 import { LifecycleStatusUpdate } from './templates/lifecycle-status-update'
 import { SampleMenusSent } from './templates/sample-menus-sent'
+import { CannabisGuestOnboardingEmail } from './templates/cannabis-guest-onboarding'
+import { CannabisCadenceChefEmail } from './templates/cannabis-cadence-chef'
 
 const APP_URL = process.env.NEXT_PUBLIC_APP_URL || 'https://cheflowhq.com'
 
@@ -1471,6 +1474,27 @@ export async function sendGuestFeedbackEmail(params: {
   })
 }
 
+// ─── Guest Conversion Email (3 days after positive feedback) ────────────────
+
+export async function sendGuestConversionEmail(params: {
+  guestEmail: string
+  guestName: string
+  chefName: string
+  occasion: string
+  inquiryUrl: string
+}) {
+  await sendEmail({
+    to: params.guestEmail,
+    subject: `Book your own experience with ${params.chefName}`,
+    react: createElement(GuestConversionEmail, {
+      guestName: params.guestName,
+      chefName: params.chefName,
+      occasion: params.occasion,
+      inquiryUrl: params.inquiryUrl,
+    }),
+  })
+}
+
 // ─── Contract Signed - Chef Notification ────────────────────────────────────
 
 export async function sendContractSignedChefEmail(params: {
@@ -1712,6 +1736,61 @@ export async function sendSampleMenusEmail(params: {
       clientName: params.clientName,
       chefName: params.chefName,
       menus: params.menus,
+    }),
+  })
+}
+
+export async function sendCannabisGuestOnboardingEmail(params: {
+  guestEmail: string
+  guestName: string
+  chefName: string
+  occasion: string
+  eventDate: string
+  intakeUrl: string
+}) {
+  await sendEmail({
+    to: params.guestEmail,
+    subject: `Cannabis dining intake for ${params.occasion}`,
+    react: createElement(CannabisGuestOnboardingEmail, {
+      guestName: params.guestName,
+      chefName: params.chefName,
+      occasion: params.occasion,
+      eventDate: params.eventDate,
+      intakeUrl: params.intakeUrl,
+    }),
+  })
+}
+
+export async function sendCannabisCadenceChefEmail(params: {
+  chefEmail: string
+  chefName: string
+  occasion: string
+  eventDate: string
+  cadencePoint:
+    | 'cannabis_attestation_reminder'
+    | 'cannabis_onboarding_reminder'
+    | 'cannabis_closeout_reminder'
+  message: string
+  actionUrl: string
+  pendingItems?: string[]
+}) {
+  const subjectTemplate = {
+    cannabis_attestation_reminder: `Cannabis compliance action needed for ${params.occasion}`,
+    cannabis_onboarding_reminder: `Guest cannabis intake incomplete for ${params.occasion}`,
+    cannabis_closeout_reminder: `Cannabis control packet needs attention for ${params.occasion}`,
+  }
+
+  await sendEmail({
+    to: params.chefEmail,
+    subject: subjectTemplate[params.cadencePoint],
+    react: createElement(CannabisCadenceChefEmail, {
+      chefName: params.chefName,
+      occasion: params.occasion,
+      eventDate: params.eventDate,
+      cadencePoint: params.cadencePoint,
+      message: params.message,
+      actionUrl: params.actionUrl,
+      pendingItems: params.pendingItems,
     }),
   })
 }

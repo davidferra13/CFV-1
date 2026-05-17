@@ -10,7 +10,12 @@ import { getChefTonePreset } from '@/lib/email/brand-voice'
 import { sendSms } from '@/lib/sms/send'
 import { notifyCIL } from '@/lib/cil/notify'
 import { fetchForecast, type DailyForecast } from '@/lib/weather/open-meteo'
-import { CADENCE_POINTS, SMS_CADENCE_POINTS, SMS_CADENCE_TEMPLATES } from './cadence-types'
+import {
+  CADENCE_POINTS,
+  SMS_CADENCE_POINTS,
+  SMS_CADENCE_TEMPLATES,
+  CANNABIS_CADENCE_POINTS,
+} from './cadence-types'
 import type { CadencePoint, CadenceItem, CadencePointConfig } from './cadence-types'
 
 export type { CadencePoint, CadenceItem, CadencePointConfig }
@@ -234,6 +239,48 @@ export async function createCadenceSchedule(
     })
   }
 
+  // --- Cannabis-specific cadence items (only for cannabis events) ---
+  const { data: eventRow } = await db
+    .from('events')
+    .select('cannabis_preference')
+    .eq('id', eventId)
+    .eq('tenant_id', tenantId)
+    .single()
+
+  if (eventRow?.cannabis_preference) {
+    for (const config of CANNABIS_CADENCE_POINTS) {
+      let scheduledAt: Date
+
+      if (config.daysBefore < 0) {
+        // Post-event: absolute days after event at 9am
+        scheduledAt = new Date(eventDt)
+        scheduledAt.setDate(scheduledAt.getDate() + Math.abs(config.daysBefore))
+        scheduledAt.setHours(9, 0, 0, 0)
+      } else {
+        // Pre-event: days before event at 9am
+        scheduledAt = new Date(eventDt)
+        scheduledAt.setDate(scheduledAt.getDate() - config.daysBefore)
+        scheduledAt.setHours(9, 0, 0, 0)
+      }
+
+      if (scheduledAt <= now) {
+        skipped++
+        continue
+      }
+
+      items.push({
+        event_id: eventId,
+        tenant_id: tenantId,
+        cadence_point: config.point,
+        channel: 'email',
+        scheduled_at: scheduledAt.toISOString(),
+        sent_at: null,
+        skipped_at: null,
+        skip_reason: null,
+      })
+    }
+  }
+
   if (items.length > 0) {
     await db.from('cadence_schedule').insert(items)
   }
@@ -349,9 +396,26 @@ export async function processDueCadenceItems(): Promise<{
         continue
       }
 
-      // Fork by channel (null/undefined = legacy email rows)
+      // Fork by channel and type
       const channel = item.channel || 'email'
-      if (channel === 'sms') {
+      const isCannabisPoint = item.cadence_point.startsWith('cannabis_')
+
+      if (isCannabisPoint) {
+        // Cannabis cadence points have conditional send logic:
+        // skip if the compliance gap has already been resolved.
+        const shouldSend = await checkCannabisCadenceCondition(
+          item.tenant_id,
+          item.event_id,
+          item.cadence_point
+        )
+        if (!shouldSend) {
+          await markSkipped(item.id, 'Cannabis compliance condition already satisfied')
+          await emitCadenceCIL(item, 'skipped', 'Cannabis compliance condition already satisfied')
+          skipped++
+          continue
+        }
+        await sendCannabisCadenceChefReminder(item.tenant_id, item.event_id, item.cadence_point)
+      } else if (channel === 'sms') {
         await sendCadenceSMS(item.tenant_id, item.event_id, item.cadence_point)
       } else {
         await sendCadenceEmail(item.tenant_id, item.event_id, item.cadence_point)
@@ -697,6 +761,321 @@ async function getChefCadenceMessage(
   if (!data?.custom_messages) return null
   const messages: Record<string, string> = data.custom_messages as Record<string, string>
   return messages[cadencePoint] || null
+}
+
+// ---------------------------------------------------------------------------
+// Cannabis Cadence Helpers
+// ---------------------------------------------------------------------------
+
+const CANNABIS_CADENCE_POINT_SET = new Set<string>([
+  'cannabis_attestation_reminder',
+  'cannabis_onboarding_reminder',
+  'cannabis_closeout_reminder',
+])
+
+/**
+ * Check whether a cannabis cadence point still needs to fire.
+ * Returns false (skip) if the compliance gap has been resolved.
+ */
+async function checkCannabisCadenceCondition(
+  tenantId: string,
+  eventId: string,
+  cadencePoint: CadencePoint
+): Promise<boolean> {
+  if (!CANNABIS_CADENCE_POINT_SET.has(cadencePoint)) return true
+
+  const db = createServerClient()
+
+  if (cadencePoint === 'cannabis_onboarding_reminder') {
+    // Check if any guest has incomplete cannabis onboarding (cannabis_participation is null)
+    const { data: guests } = await db
+      .from('event_guests')
+      .select('guest_token')
+      .eq('event_id', eventId)
+      .eq('tenant_id', tenantId)
+
+    if (!guests || guests.length === 0) return false
+
+    const tokens = guests.map((g: any) => g.guest_token).filter(Boolean)
+    if (tokens.length === 0) return false
+
+    const { data: profiles } = await db
+      .from('guest_event_profile')
+      .select('guest_token, cannabis_participation')
+      .eq('event_id', eventId)
+      .eq('tenant_id', tenantId)
+      .in('guest_token', tokens)
+
+    const profileMap = new Map<string, any>((profiles ?? []).map((p: any) => [p.guest_token, p]))
+
+    // If any guest has no profile or undecided cannabis_participation, onboarding is incomplete
+    const hasIncomplete = tokens.some((token: string) => {
+      const p = profileMap.get(token)
+      return !p || !p.cannabis_participation || p.cannabis_participation === 'undecided'
+    })
+
+    return hasIncomplete
+  }
+
+  if (cadencePoint === 'cannabis_attestation_reminder') {
+    // Check host agreement and guest age attestation
+    const { data: chefRole } = await db
+      .from('user_roles')
+      .select('auth_user_id')
+      .eq('entity_id', tenantId)
+      .eq('role', 'chef')
+      .limit(1)
+      .single()
+
+    if (!chefRole?.auth_user_id) return true
+
+    const { data: agreement } = await db
+      .from('cannabis_host_agreements')
+      .select('id')
+      .eq('host_user_id', chefRole.auth_user_id)
+      .limit(1)
+      .maybeSingle()
+
+    if (!agreement) return true // No agreement signed, still needs reminder
+
+    // Check guest age attestation for participating guests
+    const { data: guests } = await db
+      .from('event_guests')
+      .select('guest_token')
+      .eq('event_id', eventId)
+      .eq('tenant_id', tenantId)
+
+    if (!guests || guests.length === 0) return false
+
+    const tokens = guests.map((g: any) => g.guest_token).filter(Boolean)
+    if (tokens.length === 0) return false
+
+    const { data: profiles } = await db
+      .from('guest_event_profile')
+      .select('guest_token, cannabis_participation, age_confirmed')
+      .eq('event_id', eventId)
+      .eq('tenant_id', tenantId)
+      .in('guest_token', tokens)
+
+    const participating = (profiles ?? []).filter(
+      (p: any) => p.cannabis_participation === 'participate'
+    )
+    const allAgeConfirmed =
+      participating.length === 0 || participating.every((p: any) => p.age_confirmed === true)
+
+    return !allAgeConfirmed // If all confirmed, skip the reminder
+  }
+
+  if (cadencePoint === 'cannabis_closeout_reminder') {
+    // Check if control packet is finalized
+    const { data: snapshot } = await db
+      .from('cannabis_control_packet_snapshots')
+      .select('id')
+      .eq('event_id', eventId)
+      .eq('tenant_id', tenantId)
+      .not('finalized_by', 'is', null)
+      .limit(1)
+      .maybeSingle()
+
+    return !snapshot // If finalized snapshot exists, skip the reminder
+  }
+
+  return true
+}
+
+/**
+ * Gather pending items list for a cannabis cadence email.
+ */
+async function getCannabisPendingItems(
+  tenantId: string,
+  eventId: string,
+  cadencePoint: CadencePoint
+): Promise<string[]> {
+  const items: string[] = []
+  const db = createServerClient()
+
+  if (cadencePoint === 'cannabis_attestation_reminder') {
+    const { data: chefRole } = await db
+      .from('user_roles')
+      .select('auth_user_id')
+      .eq('entity_id', tenantId)
+      .eq('role', 'chef')
+      .limit(1)
+      .single()
+
+    if (chefRole?.auth_user_id) {
+      const { data: agreement } = await db
+        .from('cannabis_host_agreements')
+        .select('id')
+        .eq('host_user_id', chefRole.auth_user_id)
+        .limit(1)
+        .maybeSingle()
+
+      if (!agreement) {
+        items.push('Host agreement not signed')
+      }
+    }
+
+    const { data: guests } = await db
+      .from('event_guests')
+      .select('guest_token, full_name')
+      .eq('event_id', eventId)
+      .eq('tenant_id', tenantId)
+
+    if (guests && guests.length > 0) {
+      const tokens = guests.map((g: any) => g.guest_token).filter(Boolean)
+      const { data: profiles } = await db
+        .from('guest_event_profile')
+        .select('guest_token, cannabis_participation, age_confirmed')
+        .eq('event_id', eventId)
+        .eq('tenant_id', tenantId)
+        .in('guest_token', tokens)
+
+      const profileMap = new Map<string, any>((profiles ?? []).map((p: any) => [p.guest_token, p]))
+
+      for (const guest of guests) {
+        const p = profileMap.get(guest.guest_token)
+        if (p?.cannabis_participation === 'participate' && !p.age_confirmed) {
+          items.push(`Age attestation pending: ${guest.full_name || 'Guest'}`)
+        }
+      }
+    }
+  }
+
+  if (cadencePoint === 'cannabis_onboarding_reminder') {
+    const { data: guests } = await db
+      .from('event_guests')
+      .select('guest_token, full_name')
+      .eq('event_id', eventId)
+      .eq('tenant_id', tenantId)
+
+    if (guests && guests.length > 0) {
+      const tokens = guests.map((g: any) => g.guest_token).filter(Boolean)
+      const { data: profiles } = await db
+        .from('guest_event_profile')
+        .select('guest_token, cannabis_participation')
+        .eq('event_id', eventId)
+        .eq('tenant_id', tenantId)
+        .in('guest_token', tokens)
+
+      const profileMap = new Map<string, any>((profiles ?? []).map((p: any) => [p.guest_token, p]))
+
+      for (const guest of guests) {
+        const p = profileMap.get(guest.guest_token)
+        if (!p || !p.cannabis_participation || p.cannabis_participation === 'undecided') {
+          items.push(`Intake incomplete: ${guest.full_name || 'Guest'}`)
+        }
+      }
+    }
+  }
+
+  if (cadencePoint === 'cannabis_closeout_reminder') {
+    items.push('Control packet not finalized')
+
+    const { data: recon } = await db
+      .from('cannabis_control_packet_reconciliations')
+      .select('id')
+      .eq('event_id', eventId)
+      .eq('tenant_id', tenantId)
+      .limit(1)
+      .maybeSingle()
+
+    if (!recon) {
+      items.push('Post-event reconciliation not started')
+    }
+  }
+
+  return items
+}
+
+/**
+ * Send a cannabis cadence reminder email to the chef.
+ */
+async function sendCannabisCadenceChefReminder(
+  tenantId: string,
+  eventId: string,
+  cadencePoint: CadencePoint
+): Promise<void> {
+  const db = createServerClient()
+
+  // Load event
+  const { data: event } = await db
+    .from('events')
+    .select('id, occasion, event_date, title')
+    .eq('id', eventId)
+    .eq('tenant_id', tenantId)
+    .single()
+
+  if (!event) return
+
+  // Load chef info + email
+  const { data: chef } = await db
+    .from('chefs')
+    .select('id, display_name, business_name')
+    .eq('id', tenantId)
+    .single()
+
+  const chefName = chef?.display_name || chef?.business_name || 'Chef'
+
+  // Get chef's auth user email
+  const { data: chefRole } = await db
+    .from('user_roles')
+    .select('auth_user_id')
+    .eq('entity_id', tenantId)
+    .eq('role', 'chef')
+    .limit(1)
+    .single()
+
+  if (!chefRole?.auth_user_id) return
+
+  const { data: authUser } = await db
+    .from('users')
+    .select('email')
+    .eq('id', chefRole.auth_user_id)
+    .single()
+
+  if (!authUser?.email) return
+
+  // Get cadence config
+  const config = CANNABIS_CADENCE_POINTS.find((c) => c.point === cadencePoint)
+  if (!config) return
+
+  const occasion = event.occasion || event.title || 'Cannabis Dinner'
+  const eventDate = event.event_date || ''
+  const daysAgo = config.daysBefore < 0 ? Math.abs(config.daysBefore) : 0
+
+  const message = config.defaultMessage
+    .replace(/{occasion}/g, occasion)
+    .replace(/{eventDate}/g, eventDate)
+    .replace(/{daysAgo}/g, String(daysAgo))
+
+  // Build action URL
+  const appUrl = process.env.NEXT_PUBLIC_APP_URL || 'https://app.cheflowhq.com'
+  let actionUrl: string
+  if (cadencePoint === 'cannabis_closeout_reminder') {
+    actionUrl = `${appUrl}/cannabis/events/${eventId}/control-packet`
+  } else {
+    actionUrl = `${appUrl}/events/${eventId}`
+  }
+
+  // Gather pending items
+  const pendingItems = await getCannabisPendingItems(tenantId, eventId, cadencePoint)
+
+  const { sendCannabisCadenceChefEmail } = await import('@/lib/email/notifications')
+
+  await sendCannabisCadenceChefEmail({
+    chefEmail: authUser.email,
+    chefName,
+    occasion,
+    eventDate,
+    cadencePoint: cadencePoint as
+      | 'cannabis_attestation_reminder'
+      | 'cannabis_onboarding_reminder'
+      | 'cannabis_closeout_reminder',
+    message,
+    actionUrl,
+    pendingItems,
+  })
 }
 
 // ---------------------------------------------------------------------------

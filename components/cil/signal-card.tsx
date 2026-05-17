@@ -2,7 +2,7 @@
 
 import { useTransition } from 'react'
 import type { ProactiveSignal, SignalDomain } from '@/lib/cil/types'
-import { DollarSign, Users, Calendar, Package, Star, TrendingUp, X } from 'lucide-react'
+import { DollarSign, Users, Calendar, Package, Star, TrendingUp, X, Leaf } from 'lucide-react'
 
 const urgencyColors: Record<number, string> = {
   5: 'bg-red-500',
@@ -19,6 +19,7 @@ const domainIcons: Record<SignalDomain, typeof DollarSign> = {
   inventory: Package,
   reputation: Star,
   pipeline: TrendingUp,
+  cannabis: Leaf,
 }
 
 interface SignalCardProps {

@@ -414,6 +414,7 @@ async function loadCannabisEventContext(eventId: string, tenantId: string) {
       .from('guest_event_profile' as any)
       .select('*')
       .eq('event_id', eventId)
+      .eq('tenant_id', tenantId)
       .in('guest_token', guestTokens) as any)
 
     if (profileError) {
@@ -1226,7 +1227,13 @@ export async function upsertControlPacketReconciliation(
       details: {
         eventId: validated.eventId,
         isUpdate: !!existing,
-        hasMismatches: !!(mismatchSummary as any)?.hasIssues,
+        hasMismatches: !!(
+          mismatchSummary.missingEntries.length ||
+          mismatchSummary.plannedVsServedMismatch.length ||
+          mismatchSummary.courseMismatch.length ||
+          mismatchSummary.invalidPerCourseSum.length ||
+          mismatchSummary.missingGuestName
+        ),
       },
     })
   } catch {}

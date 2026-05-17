@@ -2347,6 +2347,7 @@ async function loadGuestPortalContext(eventId: string, secureToken: string) {
     .from('guest_event_profile' as any)
     .select('*')
     .eq('event_id', eventId)
+    .eq('tenant_id', event.tenant_id)
     .eq('guest_token', secureToken)
     .maybeSingle() as any)
 
@@ -3267,6 +3268,7 @@ export async function saveGuestEventPortalRSVP(input: SaveGuestPortalRSVPInput) 
 
   const profilePayload = {
     event_id: validated.eventId,
+    tenant_id: event.tenant_id,
     guest_token: validated.secureToken,
     attending_status: validated.attending_status,
     dietary_notes: validated.dietary_notes?.trim() || null,
@@ -3550,7 +3552,7 @@ export async function submitGuestFeedback(input: z.infer<typeof SubmitGuestFeedb
 
   const { data: existing } = await (db as any)
     .from('guest_feedback')
-    .select('id, submitted_at, event_id, tenant_id')
+    .select('id, submitted_at, event_id, tenant_id, guest_id')
     .eq('token', validated.token)
     .maybeSingle()
 
@@ -3587,6 +3589,39 @@ export async function submitGuestFeedback(input: z.infer<typeof SubmitGuestFeedb
       console.error(
         '[submitGuestFeedback] Failed to refresh event outcome learning:',
         learningError
+      )
+    }
+  }
+
+  // Fire conversion job for positive feedback (4+ stars)
+  if (validated.overall_rating >= 4 && (existing as any).event_id && (existing as any).tenant_id) {
+    try {
+      // Look up guest email/name for the conversion email
+      const { data: guestRow } = await (db as any)
+        .from('event_guests')
+        .select('email, full_name')
+        .eq('id', (existing as any).guest_id)
+        .maybeSingle()
+
+      if (guestRow?.email) {
+        const { inngest } = await import('@/lib/jobs/inngest-client')
+        await inngest.send({
+          name: 'chefflow/guest-feedback.positive',
+          data: {
+            feedbackId: (existing as any).id,
+            eventId: (existing as any).event_id,
+            tenantId: (existing as any).tenant_id,
+            guestEmail: guestRow.email,
+            guestName: guestRow.full_name || 'Guest',
+            overallRating: validated.overall_rating,
+            submittedAt: new Date().toISOString(),
+          },
+        })
+      }
+    } catch (inngestErr) {
+      console.error(
+        '[submitGuestFeedback] Failed to send conversion event (non-blocking):',
+        inngestErr
       )
     }
   }

@@ -4,9 +4,11 @@
 // Submitting goes to the admin approval queue, not directly to the invitee.
 
 import { useState } from 'react'
+import { useRouter } from 'next/navigation'
 import { sendCannabisInvite } from '@/lib/chef/cannabis-actions'
 
 export function CannabisInviteForm() {
+  const router = useRouter()
   const [email, setEmail] = useState('')
   const [name, setName] = useState('')
   const [note, setNote] = useState('')
@@ -15,7 +17,7 @@ export function CannabisInviteForm() {
 
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault()
-    if (!email.trim()) return
+    if (!email.trim() || !name.trim()) return
 
     setStatus('loading')
     setErrorMsg('')
@@ -23,13 +25,14 @@ export function CannabisInviteForm() {
     try {
       await sendCannabisInvite({
         inviteeEmail: email.trim(),
-        inviteeName: name.trim() || undefined,
+        inviteeName: name.trim(),
         personalNote: note.trim() || undefined,
       })
       setStatus('success')
       setEmail('')
       setName('')
       setNote('')
+      router.refresh()
     } catch (err: any) {
       setStatus('error')
       setErrorMsg(err.message ?? 'Something went wrong.')
@@ -92,10 +95,11 @@ export function CannabisInviteForm() {
 
       <div>
         <label className="block text-xs font-medium mb-1.5" style={{ color: '#8bc34a' }}>
-          Guest Name <span style={{ color: '#4a7c4e' }}>(optional)</span>
+          Guest Name <span style={{ color: '#e57373' }}>*</span>
         </label>
         <input
           type="text"
+          required
           value={name}
           onChange={(e) => setName(e.target.value)}
           placeholder="First Last"
@@ -152,7 +156,7 @@ export function CannabisInviteForm() {
       </button>
 
       <p className="text-center text-xs" style={{ color: '#4a7c4e' }}>
-        Invitations are reviewed before being sent.
+        Invitations are reviewed before being sent. Limit: 10 per day.
       </p>
     </form>
   )

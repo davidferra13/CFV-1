@@ -12,6 +12,7 @@ export type RequirementCategory =
   | 'logistics'
   | 'communication'
   | 'profile'
+  | 'cannabis'
 
 export interface CompletionRequirement {
   key: string

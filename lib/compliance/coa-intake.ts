@@ -56,6 +56,7 @@ export type CoaRedFlagCode =
   | 'missing_panel'
   | 'missing_residual_solvents'
   | 'failed_panel'
+  | 'analyte_out_of_range'
 
 export interface CoaRedFlag {
   code: CoaRedFlagCode
@@ -153,6 +154,28 @@ export function evaluateCoaForBatch({
       message: 'COA is missing cannabinoid potency results.',
       severity: 'reject',
     })
+  }
+
+  if (coa.cannabinoidPanel) {
+    const unit = coa.cannabinoidPanel.unit
+    const maxValue = unit === 'mg_ml' ? 5000 : unit === 'mg_g' ? 1000 : 100
+    const unitLabel = unit === 'mg_ml' ? 'mg/mL' : unit === 'mg_g' ? 'mg/g' : '%'
+    for (const [name, value] of Object.entries(coa.cannabinoidPanel.analytes)) {
+      if (value == null || !Number.isFinite(value)) continue
+      if (value < 0) {
+        addFlag(redFlags, {
+          code: 'analyte_out_of_range',
+          message: `${name} value ${value}${unitLabel} is negative. Values must be >= 0.`,
+          severity: 'reject',
+        })
+      } else if (value > maxValue) {
+        addFlag(redFlags, {
+          code: 'analyte_out_of_range',
+          message: `${name} value ${value}${unitLabel} exceeds maximum plausible range (0-${maxValue}${unitLabel}).`,
+          severity: 'reject',
+        })
+      }
+    }
   }
 
   const panels = coa.contaminantPanels ?? {}

@@ -1150,6 +1150,33 @@ export const menuStateTransitions = pgTable("menu_state_transitions", {
 	pgPolicy("tenant_isolation_select_menu_transitions", { as: "permissive", for: "select", to: ["public"] }),
 ]);
 
+export const menuFateTransitions = pgTable("menu_fate_transitions", {
+	id: uuid().defaultRandom().primaryKey().notNull(),
+	menuId: uuid("menu_id").notNull(),
+	tenantId: uuid("tenant_id").notNull(),
+	fromFate: text("from_fate"),
+	toFate: text("to_fate").notNull(),
+	source: text().default('auto').notNull(),
+	triggerType: text("trigger_type").notNull(),
+	triggerEntityId: uuid("trigger_entity_id"),
+	reason: text(),
+	transitionedAt: timestamp("transitioned_at", { withTimezone: true, mode: 'string' }).defaultNow().notNull(),
+	transitionedBy: uuid("transitioned_by"),
+}, (table) => [
+	index("idx_menu_fate_transitions_menu").using("btree", table.menuId.asc().nullsLast()),
+	index("idx_menu_fate_transitions_tenant").using("btree", table.tenantId.asc().nullsLast()),
+	foreignKey({
+			columns: [table.menuId],
+			foreignColumns: [menus.id],
+			name: "menu_fate_transitions_menu_id_fkey"
+		}).onDelete("cascade"),
+	foreignKey({
+			columns: [table.tenantId],
+			foreignColumns: [chefs.id],
+			name: "menu_fate_transitions_tenant_id_fkey"
+		}).onDelete("cascade"),
+]);
+
 export const newsletterSubscribers = pgTable("newsletter_subscribers", {
 	id: uuid().defaultRandom().primaryKey().notNull(),
 	email: text().notNull(),
@@ -11949,6 +11976,15 @@ export const menus = pgTable("menus", {
 	season: text("season"),
 	targetDate: date("target_date"),
 	visibleToDinnerCircle: boolean("visible_to_dinner_circle").default(false).notNull(),
+	originType: text("origin_type").default('chef_created').notNull(),
+	originMetadata: jsonb("origin_metadata").default({}).notNull(),
+	forkedFromId: uuid("forked_from_id"),
+	forkGeneration: integer("fork_generation").default(0).notNull(),
+	forkReason: text("fork_reason"),
+	fate: text(),
+	fateReason: text("fate_reason"),
+	fateSetAt: timestamp("fate_set_at", { withTimezone: true, mode: 'string' }),
+	fateSetBy: text("fate_set_by"),
 }, (table): any[] => [
 	index("idx_menus_active_tenant_created_at").using("btree", table.tenantId.asc().nullsLast().op("uuid_ops"), table.createdAt.desc().nullsFirst().op("uuid_ops")).where(sql`(deleted_at IS NULL)`),
 	index("idx_menus_event_id").using("btree", table.eventId.asc().nullsLast().op("uuid_ops")),
@@ -11983,6 +12019,15 @@ export const menus = pgTable("menus", {
 		}).onDelete("set null"),
 	index("idx_menus_client_id").using("btree", table.clientId.asc().nullsLast().op("uuid_ops")).where(sql`(client_id IS NOT NULL)`),
 	index("idx_menus_season").using("btree", table.tenantId.asc().nullsLast().op("uuid_ops"), table.season.asc().nullsLast()).where(sql`(season IS NOT NULL)`),
+	index("idx_menus_origin_type").using("btree", table.tenantId.asc().nullsLast().op("uuid_ops"), table.originType.asc().nullsLast()).where(sql`(deleted_at IS NULL)`),
+	foreignKey({
+			columns: [table.forkedFromId],
+			foreignColumns: [table.id],
+			name: "menus_forked_from_id_fkey"
+		}).onDelete("set null"),
+	index("idx_menus_forked_from").using("btree", table.forkedFromId.asc().nullsLast().op("uuid_ops")).where(sql`(forked_from_id IS NOT NULL)`),
+	index("idx_menus_fork_generation").using("btree", table.tenantId.asc().nullsLast().op("uuid_ops"), table.forkGeneration.asc().nullsLast()),
+	check("chk_menus_fork_generation_positive", sql`fork_generation >= 0`),
 	pgPolicy("client_can_view_own_event_menu", { as: "permissive", for: "select", to: ["public"], using: sql`((get_current_user_role() = 'client'::user_role) AND (event_id IN ( SELECT events.id
    FROM events
   WHERE (events.client_id IN ( SELECT user_roles.entity_id
@@ -15000,6 +15045,7 @@ export const hubGroups = pgTable("hub_groups", {
 	chefApprovalRequired: boolean("chef_approval_required").default(true).notNull(),
 	consentStatus: text("consent_status").default('pending'),
 	planningBrief: jsonb("planning_brief"),
+	approvalMode: text("approval_mode").default('auto').notNull(),
 }, (table): any[] => [
 	index("idx_hub_groups_creator").using("btree", table.createdByProfileId.asc().nullsLast().op("uuid_ops")),
 	index("idx_hub_groups_event").using("btree", table.eventId.asc().nullsLast().op("uuid_ops")).where(sql`(event_id IS NOT NULL)`),
@@ -19829,6 +19875,7 @@ export const rebookTokens = pgTable("rebook_tokens", {
 export const guestEventProfile = pgTable("guest_event_profile", {
 	id: uuid().defaultRandom().primaryKey().notNull(),
 	eventId: uuid("event_id").notNull(),
+	tenantId: uuid("tenant_id").notNull(),
 	guestToken: text("guest_token").notNull(),
 	attendingStatus: guestAttendingStatus("attending_status").default('yes').notNull(),
 	dietaryNotes: text("dietary_notes"),
@@ -19852,18 +19899,24 @@ export const guestEventProfile = pgTable("guest_event_profile", {
 }, (table) => [
 	index("idx_guest_event_profile_event_id").using("btree", table.eventId.asc().nullsLast().op("uuid_ops")),
 	index("idx_guest_event_profile_guest_token").using("btree", table.guestToken.asc().nullsLast().op("text_ops")),
+	index("idx_guest_event_profile_tenant_id").using("btree", table.tenantId.asc().nullsLast().op("uuid_ops")),
+	index("idx_guest_event_profile_tenant_event").using("btree", table.tenantId.asc().nullsLast().op("uuid_ops"), table.eventId.asc().nullsLast().op("uuid_ops")),
 	foreignKey({
 			columns: [table.eventId],
 			foreignColumns: [events.id],
 			name: "guest_event_profile_event_id_fkey"
 		}).onDelete("cascade"),
+	foreignKey({
+			columns: [table.tenantId],
+			foreignColumns: [chefs.id],
+			name: "guest_event_profile_tenant_id_fkey"
+		}).onDelete("cascade"),
 	unique("guest_event_profile_event_token_unique").on(table.eventId, table.guestToken),
 	unique("guest_event_profile_guest_token_key").on(table.guestToken),
-	pgPolicy("guest_event_profile_anon_insert", { as: "permissive", for: "insert", to: ["anon"], withCheck: sql`(event_id IN ( SELECT e.id
-   FROM events e))`  }),
-	pgPolicy("guest_event_profile_anon_select", { as: "permissive", for: "select", to: ["anon"] }),
-	pgPolicy("guest_event_profile_anon_update", { as: "permissive", for: "update", to: ["anon"] }),
-	pgPolicy("guest_event_profile_chef_all", { as: "permissive", for: "all", to: ["public"] }),
+	pgPolicy("guest_event_profile_anon_insert", { as: "permissive", for: "insert", to: ["anon"], withCheck: sql`(event_id IN ( SELECT e.id FROM events e WHERE e.tenant_id = guest_event_profile.tenant_id))`  }),
+	pgPolicy("guest_event_profile_anon_select", { as: "permissive", for: "select", to: ["anon"], using: sql`(event_id IN ( SELECT e.id FROM events e WHERE e.tenant_id = guest_event_profile.tenant_id))` }),
+	pgPolicy("guest_event_profile_anon_update", { as: "permissive", for: "update", to: ["anon"], using: sql`(event_id IN ( SELECT e.id FROM events e WHERE e.tenant_id = guest_event_profile.tenant_id))` }),
+	pgPolicy("guest_event_profile_chef_all", { as: "permissive", for: "all", to: ["public"], using: sql`(tenant_id = ( SELECT ur.entity_id FROM user_roles ur WHERE ur.auth_user_id = auth.uid() AND ur.role = 'chef' LIMIT 1))` }),
 ]);
 
 export const eventTemplates = pgTable("event_templates", {
@@ -20063,6 +20116,9 @@ export const chefs = pgTable("chefs", {
 	icalFeedLastAccessedAt: timestamp("ical_feed_last_accessed_at", { withTimezone: true, mode: 'string' }),
 	kdsPin: text("kds_pin"),
 	restaurantGroupName: text("restaurant_group_name"),
+	invoicePaymentTerms: text("invoice_payment_terms"),
+	invoiceTaxId: text("invoice_tax_id"),
+	invoiceFooterNote: text("invoice_footer_note"),
 }, (table): any[] => [
 	index("idx_chefs_account_status").using("btree", table.accountStatus.asc().nullsLast().op("text_ops")),
 	index("idx_chefs_auth_user").using("btree", table.authUserId.asc().nullsLast().op("uuid_ops")),
@@ -22757,6 +22813,8 @@ export const inquiries = pgTable("inquiries", {
 	selectedMenuId: uuid("selected_menu_id"),
 	autoRespondedAt: timestamp("auto_responded_at", { withTimezone: true, mode: 'string' }),
 	autoResponseTemplateId: uuid("auto_response_template_id"),
+	sourceType: text("source_type"),
+	sourceEventId: uuid("source_event_id"),
 }, (table) => [
 	index("idx_inquiries_active_tenant_created_at").using("btree", table.tenantId.asc().nullsLast().op("timestamptz_ops"), table.createdAt.desc().nullsFirst().op("timestamptz_ops")).where(sql`(deleted_at IS NULL)`),
 	index("idx_inquiries_client").using("btree", table.clientId.asc().nullsLast().op("uuid_ops")),
@@ -22813,6 +22871,12 @@ export const inquiries = pgTable("inquiries", {
 			foreignColumns: [chefs.id],
 			name: "inquiries_tenant_id_fkey"
 		}).onDelete("cascade"),
+	foreignKey({
+			columns: [table.sourceEventId],
+			foreignColumns: [events.id],
+			name: "inquiries_source_event_id_fkey"
+		}).onDelete("set null"),
+	index("idx_inquiries_source_type").using("btree", table.tenantId.asc().nullsLast().op("uuid_ops"), table.sourceType.asc().nullsLast().op("text_ops")).where(sql`(source_type IS NOT NULL)`),
 	pgPolicy("inquiries_chef_delete", { as: "permissive", for: "delete", to: ["public"], using: sql`((get_current_user_role() = 'chef'::user_role) AND (tenant_id = get_current_tenant_id()))` }),
 	pgPolicy("inquiries_chef_insert", { as: "permissive", for: "insert", to: ["public"] }),
 	pgPolicy("inquiries_chef_select", { as: "permissive", for: "select", to: ["public"] }),
@@ -23163,6 +23227,9 @@ export const events = pgTable("events", {
 	menuRevisionCount: integer("menu_revision_count").default(0),
 	menuLastClientFeedbackAt: timestamp("menu_last_client_feedback_at", { withTimezone: true, mode: 'string' }),
 	guestCountChangeLog: jsonb("guest_count_change_log").default([]),
+	billToCompany: text("bill_to_company"),
+	billToAttention: text("bill_to_attention"),
+	billToPoNumber: text("bill_to_po_number"),
 }, (table): any[] => [
 	index("events_inquiry_received_at_idx").using("btree", table.tenantId.asc().nullsLast().op("timestamptz_ops"), table.inquiryReceivedAt.asc().nullsLast().op("timestamptz_ops")).where(sql`(inquiry_received_at IS NOT NULL)`),
 	index("idx_events_active_tenant_created_at").using("btree", table.tenantId.asc().nullsLast().op("timestamptz_ops"), table.createdAt.desc().nullsFirst().op("uuid_ops")).where(sql`(deleted_at IS NULL)`),
@@ -24646,6 +24713,8 @@ export const chefPricingConfig = pgTable("chef_pricing_config", {
 	minimumBookingCents: integer("minimum_booking_cents").default(30000).notNull(),
 	balanceDueHours: integer("balance_due_hours").default(24).notNull(),
 	mileageRateCents: integer("mileage_rate_cents").default(70).notNull(),
+	overheadPercent: integer("overhead_percent").default(15).notNull(),
+	hourlyRateCents: integer("hourly_rate_cents").default(5000).notNull(),
 	weekendPremiumPct: integer("weekend_premium_pct").default(10).notNull(),
 	weekendPremiumOn: boolean("weekend_premium_on").default(false).notNull(),
 	holidayTier1Pct: integer("holiday_tier1_pct").default(45).notNull(),
@@ -25642,6 +25711,38 @@ export const rateLimits = pgTable("rate_limits", {
 ])
 
 // ---------------------------------------------------------------------------
+// Circle Join Tokens (QR-based circle enrollment)
+// ---------------------------------------------------------------------------
+
+export const circleJoinTokens = pgTable("circle_join_tokens", {
+	id: uuid().defaultRandom().primaryKey().notNull(),
+	tenantId: uuid("tenant_id").notNull(),
+	circleId: uuid("circle_id").notNull(),
+	token: text().unique().notNull(),
+	tokenType: text("token_type").notNull(),
+	eventId: uuid("event_id"),
+	expiresAt: timestamp("expires_at", { withTimezone: true, mode: 'string' }),
+	maxUses: integer("max_uses"),
+	useCount: integer("use_count").default(0).notNull(),
+	createdAt: timestamp("created_at", { withTimezone: true, mode: 'string' }).defaultNow().notNull(),
+	updatedAt: timestamp("updated_at", { withTimezone: true, mode: 'string' }).defaultNow().notNull(),
+}, (table) => [
+	index("idx_circle_join_tokens_circle").using("btree", table.circleId.asc().nullsLast()),
+	index("idx_circle_join_tokens_tenant").using("btree", table.tenantId.asc().nullsLast()),
+	index("idx_circle_join_tokens_event").using("btree", table.eventId.asc().nullsLast()),
+	foreignKey({
+		columns: [table.tenantId],
+		foreignColumns: [chefs.id],
+		name: "circle_join_tokens_tenant_id_fkey"
+	}).onDelete("cascade"),
+	foreignKey({
+		columns: [table.eventId],
+		foreignColumns: [events.id],
+		name: "circle_join_tokens_event_id_fkey"
+	}).onDelete("set null"),
+])
+
+// ---------------------------------------------------------------------------
 // Security Events (Audit Log)
 // ---------------------------------------------------------------------------
 
@@ -25657,4 +25758,4625 @@ export const securityEvents = pgTable("security_events", {
 	index("idx_security_events_user").using("btree", table.authUserId.asc().nullsLast(), table.createdAt.desc().nullsLast()),
 	index("idx_security_events_type").using("btree", table.eventType.asc().nullsLast(), table.createdAt.desc().nullsLast()),
 	index("idx_security_events_ip").using("btree", table.ipAddress.asc().nullsLast(), table.createdAt.desc().nullsLast()),
+])
+
+// ---------------------------------------------------------------------------
+// Rail Item States (persistence for rail item seen/snoozed/dismissed/resolved)
+// ---------------------------------------------------------------------------
+
+export const railItemStates = pgTable("rail_item_states", {
+	id: uuid().defaultRandom().primaryKey().notNull(),
+	tenantId: uuid("tenant_id").notNull(),
+	userId: uuid("user_id").notNull(),
+	itemKey: text("item_key").notNull(),
+	state: text().default('surfaced').notNull(),
+	snoozedUntil: timestamp("snoozed_until", { withTimezone: true, mode: 'string' }),
+	createdAt: timestamp("created_at", { withTimezone: true, mode: 'string' }).defaultNow().notNull(),
+	updatedAt: timestamp("updated_at", { withTimezone: true, mode: 'string' }).defaultNow().notNull(),
+}, (table) => [
+	index("idx_rail_item_states_user_state").using("btree", table.tenantId.asc().nullsLast(), table.userId.asc().nullsLast(), table.state.asc().nullsLast()),
+	unique("rail_item_states_tenant_user_item_key").on(table.tenantId, table.userId, table.itemKey),
+	check("rail_item_states_state_check", sql`state = ANY (ARRAY['surfaced'::text, 'seen'::text, 'acted'::text, 'snoozed'::text, 'dismissed'::text, 'resolved'::text, 'expired'::text, 'archived'::text])`),
+])
+
+// -------------------------------------------------------------------
+// Menu Proposal Sets
+// -------------------------------------------------------------------
+
+export const menuProposalSets = pgTable("menu_proposal_sets", {
+	id: uuid().defaultRandom().primaryKey().notNull(),
+	tenantId: uuid("tenant_id").notNull(),
+	eventId: uuid("event_id").notNull(),
+	title: text(),
+	status: text().default('draft').notNull(),
+	createdAt: timestamp("created_at", { withTimezone: true, mode: 'string' }).defaultNow().notNull(),
+	updatedAt: timestamp("updated_at", { withTimezone: true, mode: 'string' }).defaultNow().notNull(),
+}, (table) => [
+	index("idx_proposal_sets_tenant").using("btree", table.tenantId.asc().nullsLast()),
+	index("idx_proposal_sets_event").using("btree", table.eventId.asc().nullsLast()),
+	index("idx_proposal_sets_status").using("btree", table.status.asc().nullsLast()),
+	foreignKey({
+			columns: [table.tenantId],
+			foreignColumns: [chefs.id],
+			name: "menu_proposal_sets_tenant_id_fkey"
+		}).onDelete("cascade"),
+	foreignKey({
+			columns: [table.eventId],
+			foreignColumns: [events.id],
+			name: "menu_proposal_sets_event_id_fkey"
+		}).onDelete("cascade"),
+	check("menu_proposal_sets_status_check", sql`status IN ('draft', 'sent', 'chosen', 'expired')`),
+])
+
+export const menuProposalSetItems = pgTable("menu_proposal_set_items", {
+	id: uuid().defaultRandom().primaryKey().notNull(),
+	proposalSetId: uuid("proposal_set_id").notNull(),
+	menuId: uuid("menu_id").notNull(),
+	position: smallint().default(0).notNull(),
+	label: text(),
+	isChosen: boolean("is_chosen").default(false).notNull(),
+	clientNotes: text("client_notes"),
+	createdAt: timestamp("created_at", { withTimezone: true, mode: 'string' }).defaultNow().notNull(),
+}, (table) => [
+	index("idx_proposal_items_set").using("btree", table.proposalSetId.asc().nullsLast()),
+	index("idx_proposal_items_menu").using("btree", table.menuId.asc().nullsLast()),
+	foreignKey({
+			columns: [table.proposalSetId],
+			foreignColumns: [menuProposalSets.id],
+			name: "menu_proposal_set_items_proposal_set_id_fkey"
+		}).onDelete("cascade"),
+	foreignKey({
+			columns: [table.menuId],
+			foreignColumns: [menus.id],
+			name: "menu_proposal_set_items_menu_id_fkey"
+		}).onDelete("cascade"),
+	unique("menu_proposal_set_items_set_menu_key").on(table.proposalSetId, table.menuId),
+	unique("menu_proposal_set_items_set_position_key").on(table.proposalSetId, table.position),
+])
+
+export const eventWeatherSnapshots = pgTable("event_weather_snapshots", {
+	id: uuid().defaultRandom().primaryKey().notNull(),
+	tenantId: uuid("tenant_id").notNull(),
+	eventId: uuid("event_id").notNull(),
+	forecastHighF: real("forecast_high_f"),
+	forecastLowF: real("forecast_low_f"),
+	condition: text(),
+	precipProbability: real("precip_probability"),
+	windSpeedMph: real("wind_speed_mph"),
+	actualNotes: text("actual_notes"),
+	capturedAt: timestamp("captured_at", { withTimezone: true, mode: 'string' }).defaultNow().notNull(),
+	createdAt: timestamp("created_at", { withTimezone: true, mode: 'string' }).defaultNow().notNull(),
+}, (table) => [
+	index("idx_event_weather_snapshots_tenant").using("btree", table.tenantId.asc().nullsLast().op("uuid_ops")),
+	index("idx_event_weather_snapshots_event").using("btree", table.eventId.asc().nullsLast().op("uuid_ops")),
+	index("idx_event_weather_snapshots_captured").using("btree", table.capturedAt.desc().nullsFirst().op("timestamptz_ops")),
+	foreignKey({
+			columns: [table.tenantId],
+			foreignColumns: [chefs.id],
+			name: "event_weather_snapshots_tenant_id_fkey"
+		}).onDelete("cascade"),
+	foreignKey({
+			columns: [table.eventId],
+			foreignColumns: [events.id],
+			name: "event_weather_snapshots_event_id_fkey"
+		}).onDelete("cascade"),
+	unique("event_weather_snapshots_event_unique").on(table.eventId),
+])
+
+// ---------------------------------------------------------------------------
+// Menu Variant Accommodations
+// ---------------------------------------------------------------------------
+
+export const menuVariants = pgTable("menu_variants", {
+	id: uuid().defaultRandom().primaryKey().notNull(),
+	menuId: uuid("menu_id").notNull(),
+	tenantId: uuid("tenant_id").notNull(),
+	name: text().notNull(),
+	reason: text(),
+	swapDescription: text("swap_description"),
+	priceAdjustmentCents: integer("price_adjustment_cents").default(0).notNull(),
+	createdAt: timestamp("created_at", { withTimezone: true, mode: 'string' }).defaultNow().notNull(),
+	updatedAt: timestamp("updated_at", { withTimezone: true, mode: 'string' }).defaultNow().notNull(),
+}, (table) => [
+	index("idx_menu_variants_menu").using("btree", table.menuId.asc().nullsLast()),
+	index("idx_menu_variants_tenant").using("btree", table.tenantId.asc().nullsLast()),
+	foreignKey({
+			columns: [table.menuId],
+			foreignColumns: [menus.id],
+			name: "menu_variants_menu_id_fkey"
+		}).onDelete("cascade"),
+	foreignKey({
+			columns: [table.tenantId],
+			foreignColumns: [chefs.id],
+			name: "menu_variants_tenant_id_fkey"
+		}).onDelete("cascade"),
+])
+
+export const menuVariantDishes = pgTable("menu_variant_dishes", {
+	id: uuid().defaultRandom().primaryKey().notNull(),
+	variantId: uuid("variant_id").notNull(),
+	originalDishId: uuid("original_dish_id").notNull(),
+	substituteDishId: uuid("substitute_dish_id"),
+	notes: text(),
+	createdAt: timestamp("created_at", { withTimezone: true, mode: 'string' }).defaultNow().notNull(),
+}, (table) => [
+	index("idx_menu_variant_dishes_variant").using("btree", table.variantId.asc().nullsLast()),
+	index("idx_menu_variant_dishes_original").using("btree", table.originalDishId.asc().nullsLast()),
+	uniqueIndex("uq_menu_variant_dish_pair").on(table.variantId, table.originalDishId),
+	foreignKey({
+			columns: [table.variantId],
+			foreignColumns: [menuVariants.id],
+			name: "menu_variant_dishes_variant_id_fkey"
+		}).onDelete("cascade"),
+	foreignKey({
+			columns: [table.originalDishId],
+			foreignColumns: [dishes.id],
+			name: "menu_variant_dishes_original_dish_id_fkey"
+		}).onDelete("cascade"),
+	foreignKey({
+			columns: [table.substituteDishId],
+			foreignColumns: [dishes.id],
+			name: "menu_variant_dishes_substitute_dish_id_fkey"
+		}).onDelete("set null"),
+])
+
+export const guestVariantAssignments = pgTable("guest_variant_assignments", {
+	id: uuid().defaultRandom().primaryKey().notNull(),
+	guestId: uuid("guest_id").notNull(),
+	variantId: uuid("variant_id").notNull(),
+	assignedBy: uuid("assigned_by"),
+	assignedAt: timestamp("assigned_at", { withTimezone: true, mode: 'string' }).defaultNow().notNull(),
+}, (table) => [
+	index("idx_guest_variant_guest").using("btree", table.guestId.asc().nullsLast()),
+	index("idx_guest_variant_variant").using("btree", table.variantId.asc().nullsLast()),
+	uniqueIndex("uq_guest_variant").on(table.guestId, table.variantId),
+	foreignKey({
+			columns: [table.guestId],
+			foreignColumns: [eventGuests.id],
+			name: "guest_variant_assignments_guest_id_fkey"
+		}).onDelete("cascade"),
+	foreignKey({
+			columns: [table.variantId],
+			foreignColumns: [menuVariants.id],
+			name: "guest_variant_assignments_variant_id_fkey"
+		}).onDelete("cascade"),
+	foreignKey({
+			columns: [table.assignedBy],
+			foreignColumns: [chefs.id],
+			name: "guest_variant_assignments_assigned_by_fkey"
+		}).onDelete("set null"),
+])
+
+// ---------------------------------------------------------------------------
+// Service Execution Tracker
+// ---------------------------------------------------------------------------
+
+export const serviceExecutions = pgTable("service_executions", {
+	id: uuid().defaultRandom().primaryKey().notNull(),
+	eventId: uuid("event_id").notNull(),
+	tenantId: uuid("tenant_id").notNull(),
+	currentStage: text("current_stage").default('en_route').notNull(),
+	startedAt: timestamp("started_at", { withTimezone: true, mode: 'string' }).defaultNow().notNull(),
+	completedAt: timestamp("completed_at", { withTimezone: true, mode: 'string' }),
+	createdAt: timestamp("created_at", { withTimezone: true, mode: 'string' }).defaultNow().notNull(),
+}, (table) => [
+	index("idx_service_executions_event").using("btree", table.eventId.asc().nullsLast().op("uuid_ops")),
+	index("idx_service_executions_tenant").using("btree", table.tenantId.asc().nullsLast().op("uuid_ops")),
+	uniqueIndex("idx_service_executions_event_unique").using("btree", table.eventId.asc().nullsLast().op("uuid_ops")),
+	foreignKey({
+			columns: [table.eventId],
+			foreignColumns: [events.id],
+			name: "service_executions_event_id_fkey"
+		}).onDelete("cascade"),
+	foreignKey({
+			columns: [table.tenantId],
+			foreignColumns: [chefs.id],
+			name: "service_executions_tenant_id_fkey"
+		}).onDelete("cascade"),
+	check("service_executions_stage_check", sql`current_stage = ANY (ARRAY['en_route'::text, 'arrived'::text, 'prepping'::text, 'cooking'::text, 'plating'::text, 'serving'::text, 'cleanup'::text, 'done'::text])`),
+])
+
+export const serviceStageTransitions = pgTable("service_stage_transitions", {
+	id: uuid().defaultRandom().primaryKey().notNull(),
+	executionId: uuid("execution_id").notNull(),
+	fromStage: text("from_stage"),
+	toStage: text("to_stage").notNull(),
+	transitionedAt: timestamp("transitioned_at", { withTimezone: true, mode: 'string' }).defaultNow().notNull(),
+	notes: text(),
+	photoUrl: text("photo_url"),
+}, (table) => [
+	index("idx_service_stage_transitions_execution").using("btree", table.executionId.asc().nullsLast().op("uuid_ops")),
+	index("idx_service_stage_transitions_time").using("btree", table.transitionedAt.asc().nullsLast().op("timestamptz_ops")),
+	foreignKey({
+			columns: [table.executionId],
+			foreignColumns: [serviceExecutions.id],
+			name: "service_stage_transitions_execution_id_fkey"
+		}).onDelete("cascade"),
+	check("service_stage_transitions_to_check", sql`to_stage = ANY (ARRAY['en_route'::text, 'arrived'::text, 'prepping'::text, 'cooking'::text, 'plating'::text, 'serving'::text, 'cleanup'::text, 'done'::text])`),
+])
+
+// ---------------------------------------------------------------------------
+// Fixed Menu Offerings (bookable menu products on chef storefront)
+// ---------------------------------------------------------------------------
+
+export const menuOfferings = pgTable("menu_offerings", {
+	id: uuid().defaultRandom().primaryKey().notNull(),
+	tenantId: uuid("tenant_id").notNull(),
+	menuId: uuid("menu_id").notNull(),
+	pricePerHeadCents: integer("price_per_head_cents").notNull(),
+	minGuests: integer("min_guests").default(2).notNull(),
+	maxGuests: integer("max_guests").default(20).notNull(),
+	availableSeasons: text("available_seasons").array().default(["all_season"]).notNull(),
+	availableDaysOfWeek: integer("available_days_of_week").array(),
+	bookingLeadTimeDays: integer("booking_lead_time_days").default(7).notNull(),
+	active: boolean().default(true).notNull(),
+	slug: text().notNull(),
+	sortOrder: integer("sort_order").default(0).notNull(),
+	tagline: text(),
+	heroImageUrl: text("hero_image_url"),
+	description: text(),
+	viewCount: integer("view_count").default(0).notNull(),
+	bookingCount: integer("booking_count").default(0).notNull(),
+	lastBookedAt: timestamp("last_booked_at", { withTimezone: true, mode: 'string' }),
+	createdAt: timestamp("created_at", { withTimezone: true, mode: 'string' }).defaultNow().notNull(),
+	updatedAt: timestamp("updated_at", { withTimezone: true, mode: 'string' }).defaultNow().notNull(),
+	archivedAt: timestamp("archived_at", { withTimezone: true, mode: 'string' }),
+}, (table) => [
+	index("idx_menu_offerings_tenant_active").using("btree", table.tenantId.asc().nullsLast().op("uuid_ops")).where(sql`(active = true AND archived_at IS NULL)`),
+	index("idx_menu_offerings_menu").using("btree", table.menuId.asc().nullsLast().op("uuid_ops")),
+	foreignKey({
+			columns: [table.tenantId],
+			foreignColumns: [chefs.id],
+			name: "menu_offerings_tenant_id_fkey"
+		}).onDelete("cascade"),
+	foreignKey({
+			columns: [table.menuId],
+			foreignColumns: [menus.id],
+			name: "menu_offerings_menu_id_fkey"
+		}).onDelete("cascade"),
+	unique("menu_offerings_tenant_id_slug_key").on(table.tenantId, table.slug),
+])
+
+export const offeringBookings = pgTable("offering_bookings", {
+	id: uuid().defaultRandom().primaryKey().notNull(),
+	offeringId: uuid("offering_id").notNull(),
+	eventId: uuid("event_id").notNull(),
+	clientId: uuid("client_id").notNull(),
+	bookedAt: timestamp("booked_at", { withTimezone: true, mode: 'string' }).defaultNow().notNull(),
+	guestCount: integer("guest_count").notNull(),
+	pricePerHeadCents: integer("price_per_head_cents").notNull(),
+	totalCents: integer("total_cents").notNull(),
+}, (table) => [
+	index("idx_offering_bookings_client").using("btree", table.clientId.asc().nullsLast().op("uuid_ops"), table.bookedAt.desc().nullsFirst()),
+	index("idx_offering_bookings_offering").using("btree", table.offeringId.asc().nullsLast().op("uuid_ops"), table.bookedAt.desc().nullsFirst()),
+	foreignKey({
+			columns: [table.offeringId],
+			foreignColumns: [menuOfferings.id],
+			name: "offering_bookings_offering_id_fkey"
+		}).onDelete("cascade"),
+	foreignKey({
+			columns: [table.eventId],
+			foreignColumns: [events.id],
+			name: "offering_bookings_event_id_fkey"
+		}).onDelete("cascade"),
+	unique("offering_bookings_event_id_key").on(table.eventId),
+])
+
+// ---------------------------------------------------------------------------
+// Circle Event Hub: Updates Feed
+// ---------------------------------------------------------------------------
+
+export const circleUpdates = pgTable("circle_updates", {
+	id: uuid().defaultRandom().primaryKey().notNull(),
+	circleId: uuid("circle_id").notNull(),
+	tenantId: uuid("tenant_id"),
+	authorType: text("author_type").notNull(),
+	authorName: text("author_name").default('System').notNull(),
+	content: text().notNull(),
+	pinned: boolean().default(false).notNull(),
+	revealAt: timestamp("reveal_at", { withTimezone: true, mode: 'string' }),
+	createdAt: timestamp("created_at", { withTimezone: true, mode: 'string' }).defaultNow().notNull(),
+}, (table) => [
+	index("idx_circle_updates_circle").using("btree", table.circleId.asc().nullsLast(), table.createdAt.desc().nullsFirst()),
+	index("idx_circle_updates_tenant").using("btree", table.tenantId.asc().nullsLast()).where(sql`(tenant_id IS NOT NULL)`),
+	index("idx_circle_updates_pinned").using("btree", table.circleId.asc().nullsLast()).where(sql`(pinned = true)`),
+	foreignKey({
+		columns: [table.circleId],
+		foreignColumns: [hubGroups.id],
+		name: "circle_updates_circle_id_fkey"
+	}).onDelete("cascade"),
+	foreignKey({
+		columns: [table.tenantId],
+		foreignColumns: [chefs.id],
+		name: "circle_updates_tenant_id_fkey"
+	}).onDelete("set null"),
+	check("circle_updates_author_type_check", sql`author_type = ANY (ARRAY['chef'::text, 'host'::text, 'system'::text])`),
+	pgPolicy("circle_updates_select_anon", { as: "permissive", for: "select", to: ["public"] }),
+	pgPolicy("circle_updates_insert_service", { as: "permissive", for: "insert", to: ["public"], withCheck: sql`true` }),
+	pgPolicy("circle_updates_manage_service", { as: "permissive", for: "all", to: ["public"] }),
+])
+
+// ---------------------------------------------------------------------------
+// Equipment Packing List Auto-Generation
+// ---------------------------------------------------------------------------
+
+export const chefEquipmentRegistry = pgTable("chef_equipment_registry", {
+	id: uuid().defaultRandom().primaryKey().notNull(),
+	tenantId: uuid("tenant_id").notNull(),
+	name: text().notNull(),
+	category: text().default('misc').notNull(),
+	quantity: integer().default(1).notNull(),
+	notes: text(),
+	portable: boolean().default(true).notNull(),
+	createdAt: timestamp("created_at", { withTimezone: true, mode: 'string' }).defaultNow().notNull(),
+}, (table) => [
+	index("idx_chef_equipment_registry_tenant").using("btree", table.tenantId.asc().nullsLast().op("uuid_ops")),
+	index("idx_chef_equipment_registry_category").using("btree", table.tenantId.asc().nullsLast().op("uuid_ops"), table.category.asc().nullsLast().op("text_ops")),
+	foreignKey({
+			columns: [table.tenantId],
+			foreignColumns: [chefs.id],
+			name: "chef_equipment_registry_tenant_id_fkey"
+		}).onDelete("cascade"),
+	pgPolicy("chef_equipment_registry_tenant_isolation", { as: "permissive", for: "all", to: ["public"], using: sql`(tenant_id = get_current_tenant_id())`, withCheck: sql`(tenant_id = get_current_tenant_id())`  }),
+	check("chef_equipment_registry_quantity_check", sql`quantity >= 0`),
+])
+
+export const eventPackingLists = pgTable("event_packing_lists", {
+	id: uuid().defaultRandom().primaryKey().notNull(),
+	eventId: uuid("event_id").notNull(),
+	tenantId: uuid("tenant_id").notNull(),
+	generatedAt: timestamp("generated_at", { withTimezone: true, mode: 'string' }).defaultNow().notNull(),
+	finalizedAt: timestamp("finalized_at", { withTimezone: true, mode: 'string' }),
+}, (table) => [
+	index("idx_event_packing_lists_tenant").using("btree", table.tenantId.asc().nullsLast().op("uuid_ops")),
+	index("idx_event_packing_lists_event").using("btree", table.eventId.asc().nullsLast().op("uuid_ops")),
+	foreignKey({
+			columns: [table.eventId],
+			foreignColumns: [events.id],
+			name: "event_packing_lists_event_id_fkey"
+		}).onDelete("cascade"),
+	foreignKey({
+			columns: [table.tenantId],
+			foreignColumns: [chefs.id],
+			name: "event_packing_lists_tenant_id_fkey"
+		}).onDelete("cascade"),
+	unique("event_packing_lists_event_unique").on(table.eventId),
+	pgPolicy("event_packing_lists_tenant_isolation", { as: "permissive", for: "all", to: ["public"], using: sql`(tenant_id = get_current_tenant_id())`, withCheck: sql`(tenant_id = get_current_tenant_id())`  }),
+])
+
+export const eventPackingItems = pgTable("event_packing_items", {
+	id: uuid().defaultRandom().primaryKey().notNull(),
+	packingListId: uuid("packing_list_id").notNull(),
+	name: text().notNull(),
+	category: text().default('misc').notNull(),
+	quantity: integer().default(1).notNull(),
+	source: text().default('custom').notNull(),
+	section: text().default('must_bring').notNull(),
+	checked: boolean().default(false).notNull(),
+	checkedAt: timestamp("checked_at", { withTimezone: true, mode: 'string' }),
+	notes: text(),
+}, (table) => [
+	index("idx_event_packing_items_list").using("btree", table.packingListId.asc().nullsLast().op("uuid_ops")),
+	index("idx_event_packing_items_section").using("btree", table.packingListId.asc().nullsLast().op("uuid_ops"), table.section.asc().nullsLast().op("text_ops")),
+	foreignKey({
+			columns: [table.packingListId],
+			foreignColumns: [eventPackingLists.id],
+			name: "event_packing_items_packing_list_id_fkey"
+		}).onDelete("cascade"),
+	pgPolicy("event_packing_items_list_access", { as: "permissive", for: "all", to: ["public"], using: sql`(packing_list_id IN ( SELECT event_packing_lists.id FROM event_packing_lists WHERE (event_packing_lists.tenant_id = get_current_tenant_id())))`, withCheck: sql`(packing_list_id IN ( SELECT event_packing_lists.id FROM event_packing_lists WHERE (event_packing_lists.tenant_id = get_current_tenant_id())))`  }),
+])
+
+// ---------------------------------------------------------------------------
+// Circle Join Requests (approval flow for circle membership)
+// ---------------------------------------------------------------------------
+
+export const circleJoinRequests = pgTable("circle_join_requests", {
+	id: uuid().defaultRandom().primaryKey().notNull(),
+	circleId: uuid("circle_id").notNull(),
+	guestName: text("guest_name").notNull(),
+	guestEmail: text("guest_email").notNull(),
+	guestPhone: text("guest_phone"),
+	message: text(),
+	status: text().default('pending').notNull(),
+	reviewedBy: uuid("reviewed_by"),
+	reviewedAt: timestamp("reviewed_at", { withTimezone: true, mode: 'string' }),
+	rejectionReason: text("rejection_reason"),
+	createdAt: timestamp("created_at", { withTimezone: true, mode: 'string' }).defaultNow().notNull(),
+}, (table) => [
+	index("idx_circle_join_requests_circle").using("btree", table.circleId.asc().nullsLast()),
+	index("idx_circle_join_requests_status").using("btree", table.circleId.asc().nullsLast(), table.status.asc().nullsLast()),
+	foreignKey({
+		columns: [table.circleId],
+		foreignColumns: [hubGroups.id],
+		name: "circle_join_requests_circle_id_fkey"
+	}).onDelete("cascade"),
+	foreignKey({
+		columns: [table.reviewedBy],
+		foreignColumns: [chefs.id],
+		name: "circle_join_requests_reviewed_by_fkey"
+	}).onDelete("set null"),
+])
+
+// ---------------------------------------------------------------------------
+// Chef Capacity Configs (saturation tracking)
+// ---------------------------------------------------------------------------
+
+export const chefCapacityConfigs = pgTable("chef_capacity_configs", {
+	id: uuid().defaultRandom().primaryKey().notNull(),
+	tenantId: uuid("tenant_id").notNull(),
+	maxEventsPerDay: integer("max_events_per_day").default(2).notNull(),
+	maxEventsPerWeek: integer("max_events_per_week").default(7).notNull(),
+	prepDaysBefore: integer("prep_days_before").default(1).notNull(),
+	restDaysAfter: integer("rest_days_after").default(0).notNull(),
+	blackoutDaysJson: jsonb("blackout_days_json").default([]).notNull(),
+	createdAt: timestamp("created_at", { withTimezone: true, mode: 'string' }).defaultNow().notNull(),
+	updatedAt: timestamp("updated_at", { withTimezone: true, mode: 'string' }).defaultNow().notNull(),
+}, (table) => [
+	uniqueIndex("idx_chef_capacity_configs_tenant").using("btree", table.tenantId.asc().nullsLast().op("uuid_ops")),
+	foreignKey({
+			columns: [table.tenantId],
+			foreignColumns: [chefs.id],
+			name: "chef_capacity_configs_tenant_id_fkey"
+		}).onDelete("cascade"),
+	pgPolicy("Chefs manage own capacity configs", { as: "permissive", for: "all", to: ["public"], using: sql`(tenant_id IN ( SELECT user_roles.entity_id
+   FROM user_roles
+  WHERE ((user_roles.auth_user_id = auth.uid()) AND (user_roles.role = 'chef'::user_role))))`, withCheck: sql`(tenant_id IN ( SELECT user_roles.entity_id
+   FROM user_roles
+  WHERE ((user_roles.auth_user_id = auth.uid()) AND (user_roles.role = 'chef'::user_role))))`  }),
+	pgPolicy("Service role manages capacity configs", { as: "permissive", for: "all", to: ["public"] }),
+	check("chef_capacity_configs_max_events_per_day_check", sql`(max_events_per_day >= 1) AND (max_events_per_day <= 10)`),
+	check("chef_capacity_configs_max_events_per_week_check", sql`(max_events_per_week >= 1) AND (max_events_per_week <= 50)`),
+	check("chef_capacity_configs_prep_days_before_check", sql`(prep_days_before >= 0) AND (prep_days_before <= 7)`),
+	check("chef_capacity_configs_rest_days_after_check", sql`(rest_days_after >= 0) AND (rest_days_after <= 7)`),
+])
+
+// ---------------------------------------------------------------------------
+// Chef Loyalty Tier Configs (per-tier thresholds, discounts, perks)
+// ---------------------------------------------------------------------------
+
+export const chefLoyaltyConfigs = pgTable("chef_loyalty_configs", {
+	id: uuid().defaultRandom().primaryKey().notNull(),
+	tenantId: uuid("tenant_id").notNull(),
+	tier: loyaltyTier().notNull(),
+	minEvents: integer("min_events").default(0).notNull(),
+	minSpendCents: integer("min_spend_cents").default(0).notNull(),
+	discountPercent: integer("discount_percent").default(0).notNull(),
+	perksJson: jsonb("perks_json").default([]).notNull(),
+	createdAt: timestamp("created_at", { withTimezone: true, mode: 'string' }).defaultNow().notNull(),
+}, (table) => [
+	index("idx_chef_loyalty_configs_tenant").using("btree", table.tenantId.asc().nullsLast().op("uuid_ops")),
+	foreignKey({
+			columns: [table.tenantId],
+			foreignColumns: [chefs.id],
+			name: "chef_loyalty_configs_tenant_id_fkey"
+		}).onDelete("cascade"),
+	unique("chef_loyalty_configs_tenant_tier_unique").on(table.tenantId, table.tier),
+	check("chef_loyalty_configs_discount_range", sql`discount_percent >= 0 AND discount_percent <= 100`),
+	pgPolicy("tenant_isolation_select_chef_loyalty_configs", { as: "permissive", for: "select", to: ["public"], using: sql`(tenant_id = get_current_tenant_id())` }),
+	pgPolicy("tenant_isolation_insert_chef_loyalty_configs", { as: "permissive", for: "insert", to: ["public"], withCheck: sql`(tenant_id = get_current_tenant_id())` }),
+	pgPolicy("tenant_isolation_update_chef_loyalty_configs", { as: "permissive", for: "update", to: ["public"], using: sql`(tenant_id = get_current_tenant_id())`, withCheck: sql`(tenant_id = get_current_tenant_id())` }),
+])
+
+// ── Event Handoffs (chef delegation) ─────────────────────────────────────────
+
+export const handoffStatusEnum = pgEnum("handoff_status", ['pending', 'accepted', 'completed', 'cancelled'])
+
+export const eventHandoffs = pgTable("event_handoffs", {
+	id: uuid().defaultRandom().primaryKey().notNull(),
+	eventId: uuid("event_id").notNull(),
+	tenantId: uuid("tenant_id").notNull(),
+	fromUserId: uuid("from_user_id").notNull(),
+	toUserId: uuid("to_user_id").notNull(),
+	notes: text(),
+	status: handoffStatusEnum().default('pending').notNull(),
+	packetJson: jsonb("packet_json"),
+	createdAt: timestamp("created_at", { withTimezone: true, mode: 'string' }).defaultNow().notNull(),
+	acceptedAt: timestamp("accepted_at", { withTimezone: true, mode: 'string' }),
+	completedAt: timestamp("completed_at", { withTimezone: true, mode: 'string' }),
+}, (table) => [
+	index("idx_event_handoffs_event").using("btree", table.eventId.asc().nullsLast().op("uuid_ops")),
+	index("idx_event_handoffs_tenant").using("btree", table.tenantId.asc().nullsLast().op("uuid_ops")),
+	index("idx_event_handoffs_to_user").using("btree", table.toUserId.asc().nullsLast().op("uuid_ops"), table.status.asc().nullsLast().op("enum_ops")),
+	index("idx_event_handoffs_from_user").using("btree", table.fromUserId.asc().nullsLast().op("uuid_ops"), table.status.asc().nullsLast().op("enum_ops")),
+	foreignKey({
+			columns: [table.eventId],
+			foreignColumns: [events.id],
+			name: "event_handoffs_event_id_fkey"
+		}).onDelete("cascade"),
+	foreignKey({
+			columns: [table.tenantId],
+			foreignColumns: [chefs.id],
+			name: "event_handoffs_tenant_id_fkey"
+		}).onDelete("cascade"),
+	foreignKey({
+			columns: [table.fromUserId],
+			foreignColumns: [users.id],
+			name: "event_handoffs_from_user_id_fkey"
+		}),
+	foreignKey({
+			columns: [table.toUserId],
+			foreignColumns: [users.id],
+			name: "event_handoffs_to_user_id_fkey"
+		}),
+	pgPolicy("event_handoffs_tenant_isolation", { as: "permissive", for: "all", to: ["public"], using: sql`(tenant_id = get_current_tenant_id())`, withCheck: sql`(tenant_id = get_current_tenant_id())` }),
+])
+
+// ── Guest Allergies (severity-tiered allergen tracking) ────────────────────
+
+export const guestAllergies = pgTable("guest_allergies", {
+	id: uuid().defaultRandom().primaryKey().notNull(),
+	guestId: uuid("guest_id").notNull(),
+	tenantId: uuid("tenant_id").notNull(),
+	allergen: text().notNull(),
+	severity: text().default('preference').notNull(),
+	notes: text(),
+	emergencyContactName: text("emergency_contact_name"),
+	emergencyContactPhone: text("emergency_contact_phone"),
+	hasEpipen: boolean("has_epipen").default(false).notNull(),
+	createdAt: timestamp("created_at", { withTimezone: true, mode: 'string' }).defaultNow().notNull(),
+	updatedAt: timestamp("updated_at", { withTimezone: true, mode: 'string' }).defaultNow().notNull(),
+}, (table) => [
+	uniqueIndex("idx_guest_allergies_unique_allergen").using("btree", table.guestId.asc().nullsLast().op("uuid_ops"), sql`lower(allergen)`),
+	index("idx_guest_allergies_tenant").using("btree", table.tenantId.asc().nullsLast().op("uuid_ops")),
+	index("idx_guest_allergies_guest").using("btree", table.guestId.asc().nullsLast().op("uuid_ops")),
+	index("idx_guest_allergies_critical").using("btree", table.tenantId.asc().nullsLast().op("uuid_ops"), table.severity.asc().nullsLast().op("text_ops")).where(sql`(severity = 'allergy'::text)`),
+	foreignKey({
+			columns: [table.guestId],
+			foreignColumns: [eventGuests.id],
+			name: "guest_allergies_guest_id_fkey"
+		}).onDelete("cascade"),
+	foreignKey({
+			columns: [table.tenantId],
+			foreignColumns: [chefs.id],
+			name: "guest_allergies_tenant_id_fkey"
+		}).onDelete("cascade"),
+	check("guest_allergies_severity_check", sql`severity = ANY (ARRAY['preference'::text, 'intolerance'::text, 'allergy'::text])`),
+	pgPolicy("guest_allergies_tenant_isolation", { as: "permissive", for: "all", to: ["public"], using: sql`(tenant_id = get_current_tenant_id())`, withCheck: sql`(tenant_id = get_current_tenant_id())`  }),
+])
+
+// ─── Pop-Up Operating System ────────────────────────────────────────────────
+
+export const chefPopups = pgTable("chef_popups", {
+	id: uuid().defaultRandom().primaryKey().notNull(),
+	tenantId: uuid("tenant_id").notNull(),
+	name: text().notNull(),
+	description: text(),
+	venueName: text("venue_name"),
+	venueAddress: text("venue_address"),
+	venueLat: doublePrecision("venue_lat"),
+	venueLng: doublePrecision("venue_lng"),
+	eventDate: date("event_date"),
+	doorsOpen: time("doors_open"),
+	serviceStart: time("service_start"),
+	capacity: integer(),
+	ticketPriceCents: integer("ticket_price_cents"),
+	menuId: uuid("menu_id"),
+	status: text().default('draft').notNull(),
+	publishedAt: timestamp("published_at", { withTimezone: true, mode: 'string' }),
+	cancelledAt: timestamp("cancelled_at", { withTimezone: true, mode: 'string' }),
+	cancelReason: text("cancel_reason"),
+	createdAt: timestamp("created_at", { withTimezone: true, mode: 'string' }).defaultNow().notNull(),
+	updatedAt: timestamp("updated_at", { withTimezone: true, mode: 'string' }).defaultNow().notNull(),
+}, (table) => [
+	index("idx_chef_popups_tenant").using("btree", table.tenantId.asc().nullsLast().op("uuid_ops")),
+	index("idx_chef_popups_status").using("btree", table.tenantId.asc().nullsLast().op("uuid_ops"), table.status.asc().nullsLast().op("text_ops")),
+	index("idx_chef_popups_event_date").using("btree", table.eventDate.asc().nullsLast()),
+	foreignKey({
+			columns: [table.tenantId],
+			foreignColumns: [chefs.id],
+			name: "chef_popups_tenant_id_fkey"
+		}).onDelete("cascade"),
+	pgPolicy("chef_popups_tenant_isolation", { as: "permissive", for: "all", to: ["public"], using: sql`(tenant_id = get_current_tenant_id())`, withCheck: sql`(tenant_id = get_current_tenant_id())`  }),
+])
+
+// ============================================
+// PREP SCHEDULING (Component-Aware)
+// ============================================
+
+export const eventPrepSchedules = pgTable("event_prep_schedules", {
+	id: uuid().defaultRandom().primaryKey().notNull(),
+	eventId: uuid("event_id").notNull(),
+	tenantId: uuid("tenant_id").notNull(),
+	generatedAt: timestamp("generated_at", { withTimezone: true, mode: 'string' }).defaultNow().notNull(),
+	status: text().default('draft').notNull(),
+	createdAt: timestamp("created_at", { withTimezone: true, mode: 'string' }).defaultNow().notNull(),
+	updatedAt: timestamp("updated_at", { withTimezone: true, mode: 'string' }).defaultNow().notNull(),
+}, (table) => [
+	index("idx_prep_schedules_event").using("btree", table.eventId.asc().nullsLast().op("uuid_ops")),
+	index("idx_prep_schedules_tenant").using("btree", table.tenantId.asc().nullsLast().op("uuid_ops")),
+	index("idx_prep_schedules_status").using("btree", table.tenantId.asc().nullsLast().op("uuid_ops"), table.status.asc().nullsLast().op("text_ops")),
+	foreignKey({
+			columns: [table.eventId],
+			foreignColumns: [events.id],
+			name: "event_prep_schedules_event_id_fkey"
+		}).onDelete("cascade"),
+	foreignKey({
+			columns: [table.tenantId],
+			foreignColumns: [chefs.id],
+			name: "event_prep_schedules_tenant_id_fkey"
+		}).onDelete("cascade"),
+	pgPolicy("eps_chef_select", { as: "permissive", for: "select", to: ["authenticated"], using: sql`(tenant_id = get_current_tenant_id())` }),
+	pgPolicy("eps_chef_insert", { as: "permissive", for: "insert", to: ["authenticated"], withCheck: sql`(tenant_id = get_current_tenant_id())` }),
+	pgPolicy("eps_chef_update", { as: "permissive", for: "update", to: ["authenticated"], using: sql`(tenant_id = get_current_tenant_id())` }),
+	pgPolicy("eps_chef_delete", { as: "permissive", for: "delete", to: ["authenticated"], using: sql`(tenant_id = get_current_tenant_id())` }),
+])
+
+export const prepTasks = pgTable("prep_tasks", {
+	id: uuid().defaultRandom().primaryKey().notNull(),
+	scheduleId: uuid("schedule_id").notNull(),
+	componentId: uuid("component_id"),
+	description: text().notNull(),
+	estimatedMinutes: integer("estimated_minutes").default(60).notNull(),
+	actualMinutes: integer("actual_minutes"),
+	sequenceOrder: integer("sequence_order").default(0).notNull(),
+	startTime: timestamp("start_time", { withTimezone: true, mode: 'string' }),
+	dueTime: timestamp("due_time", { withTimezone: true, mode: 'string' }),
+	completedAt: timestamp("completed_at", { withTimezone: true, mode: 'string' }),
+	notes: text(),
+	createdAt: timestamp("created_at", { withTimezone: true, mode: 'string' }).defaultNow().notNull(),
+}, (table) => [
+	index("idx_prep_tasks_schedule").using("btree", table.scheduleId.asc().nullsLast().op("uuid_ops")),
+	index("idx_prep_tasks_component").using("btree", table.componentId.asc().nullsLast().op("uuid_ops")).where(sql`(component_id IS NOT NULL)`),
+	index("idx_prep_tasks_sequence").using("btree", table.scheduleId.asc().nullsLast().op("uuid_ops"), table.sequenceOrder.asc().nullsLast().op("int4_ops")),
+	index("idx_prep_tasks_incomplete").using("btree", table.scheduleId.asc().nullsLast().op("uuid_ops")).where(sql`(completed_at IS NULL)`),
+	foreignKey({
+			columns: [table.scheduleId],
+			foreignColumns: [eventPrepSchedules.id],
+			name: "prep_tasks_schedule_id_fkey"
+		}).onDelete("cascade"),
+	foreignKey({
+			columns: [table.componentId],
+			foreignColumns: [components.id],
+			name: "prep_tasks_component_id_fkey"
+		}).onDelete("set null"),
+	pgPolicy("pt_chef_select", { as: "permissive", for: "select", to: ["authenticated"], using: sql`(schedule_id IN ( SELECT event_prep_schedules.id FROM event_prep_schedules WHERE (event_prep_schedules.tenant_id = get_current_tenant_id())))` }),
+	pgPolicy("pt_chef_insert", { as: "permissive", for: "insert", to: ["authenticated"], withCheck: sql`(schedule_id IN ( SELECT event_prep_schedules.id FROM event_prep_schedules WHERE (event_prep_schedules.tenant_id = get_current_tenant_id())))` }),
+	pgPolicy("pt_chef_update", { as: "permissive", for: "update", to: ["authenticated"], using: sql`(schedule_id IN ( SELECT event_prep_schedules.id FROM event_prep_schedules WHERE (event_prep_schedules.tenant_id = get_current_tenant_id())))` }),
+	pgPolicy("pt_chef_delete", { as: "permissive", for: "delete", to: ["authenticated"], using: sql`(schedule_id IN ( SELECT event_prep_schedules.id FROM event_prep_schedules WHERE (event_prep_schedules.tenant_id = get_current_tenant_id())))` }),
+])
+
+// ---------------------------------------------------------------------------
+// Chef Delegates (PA / Assistant / Coordinator access)
+// ---------------------------------------------------------------------------
+
+export const chefDelegates = pgTable("chef_delegates", {
+	id: uuid().defaultRandom().primaryKey().notNull(),
+	chefTenantId: uuid("chef_tenant_id").notNull(),
+	delegateUserId: uuid("delegate_user_id"),
+	delegateEmail: text("delegate_email").notNull(),
+	delegateName: text("delegate_name"),
+	delegatePhone: text("delegate_phone"),
+	role: text().default('view_coordinate').notNull(),
+	permissionsJson: jsonb("permissions_json").default([]).notNull(),
+	status: text().default('invited').notNull(),
+	inviteToken: text("invite_token").notNull(),
+	invitedAt: timestamp("invited_at", { withTimezone: true, mode: 'string' }).defaultNow().notNull(),
+	acceptedAt: timestamp("accepted_at", { withTimezone: true, mode: 'string' }),
+	revokedAt: timestamp("revoked_at", { withTimezone: true, mode: 'string' }),
+}, (table) => [
+	index("idx_chef_delegates_tenant").using("btree", table.chefTenantId.asc().nullsLast()),
+	index("idx_chef_delegates_email").using("btree", table.delegateEmail.asc().nullsLast()),
+	index("idx_chef_delegates_status").using("btree", table.chefTenantId.asc().nullsLast(), table.status.asc().nullsLast()),
+	uniqueIndex("idx_chef_delegates_invite_token").using("btree", table.inviteToken.asc().nullsLast()),
+	foreignKey({
+		columns: [table.chefTenantId],
+		foreignColumns: [chefs.id],
+		name: "chef_delegates_chef_tenant_id_fkey"
+	}).onDelete("cascade"),
+	foreignKey({
+		columns: [table.delegateUserId],
+		foreignColumns: [authUsers.id],
+		name: "chef_delegates_delegate_user_id_fkey"
+	}).onDelete("set null"),
+	check("chef_delegates_role_check", sql`role IN ('full_delegate', 'view_coordinate')`),
+	check("chef_delegates_status_check", sql`status IN ('invited', 'active', 'revoked')`),
+])
+
+// ---------------------------------------------------------------------------
+// Delegate Activity Log
+// ---------------------------------------------------------------------------
+
+export const delegateActivityLog = pgTable("delegate_activity_log", {
+	id: uuid().defaultRandom().primaryKey().notNull(),
+	delegateId: uuid("delegate_id").notNull(),
+	action: text().notNull(),
+	resourceType: text("resource_type"),
+	resourceId: uuid("resource_id"),
+	detailsJson: jsonb("details_json"),
+	createdAt: timestamp("created_at", { withTimezone: true, mode: 'string' }).defaultNow().notNull(),
+}, (table) => [
+	index("idx_delegate_activity_log_delegate").using("btree", table.delegateId.asc().nullsLast()),
+	index("idx_delegate_activity_log_time").using("btree", table.createdAt.asc().nullsLast()),
+	foreignKey({
+		columns: [table.delegateId],
+		foreignColumns: [chefDelegates.id],
+		name: "delegate_activity_log_delegate_id_fkey"
+	}).onDelete("cascade"),
+])
+
+// ---------------------------------------------------------------------------
+// Client Passports (portable preference profile per client)
+// ---------------------------------------------------------------------------
+
+export const clientPassports = pgTable("client_passports", {
+	id: uuid().defaultRandom().primaryKey().notNull(),
+	tenantId: uuid("tenant_id").notNull(),
+	clientId: uuid("client_id").notNull(),
+	communicationMode: text("communication_mode").default('direct').notNull(),
+	preferredContactMethod: text("preferred_contact_method").default('email'),
+	chefAutonomyLevel: text("chef_autonomy_level").default('moderate').notNull(),
+	autoApproveUnderCents: integer("auto_approve_under_cents").default(0),
+	maxInteractionRounds: integer("max_interaction_rounds"),
+	standingInstructions: text("standing_instructions"),
+	defaultGuestCount: integer("default_guest_count").default(2),
+	budgetRangeMinCents: integer("budget_range_min_cents"),
+	budgetRangeMaxCents: integer("budget_range_max_cents"),
+	serviceStyle: text("service_style"),
+	defaultLocations: jsonb("default_locations").default([]).notNull(),
+	delegateName: text("delegate_name"),
+	delegateEmail: text("delegate_email"),
+	delegatePhone: text("delegate_phone"),
+	createdAt: timestamp("created_at", { withTimezone: true, mode: 'string' }).defaultNow().notNull(),
+	updatedAt: timestamp("updated_at", { withTimezone: true, mode: 'string' }).defaultNow().notNull(),
+}, (table) => [
+	index("idx_client_passports_tenant").using("btree", table.tenantId.asc().nullsLast()),
+	index("idx_client_passports_client").using("btree", table.clientId.asc().nullsLast()),
+	foreignKey({
+		columns: [table.tenantId],
+		foreignColumns: [chefs.id],
+		name: "client_passports_tenant_id_fkey"
+	}).onDelete("cascade"),
+	foreignKey({
+		columns: [table.clientId],
+		foreignColumns: [clients.id],
+		name: "client_passports_client_id_fkey"
+	}).onDelete("cascade"),
+	unique("client_passports_tenant_id_client_id_key").on(table.tenantId, table.clientId),
+	check("client_passports_communication_mode_check", sql`communication_mode IN ('direct', 'delegate_only', 'delegate_preferred')`),
+	check("client_passports_preferred_contact_method_check", sql`preferred_contact_method IN ('email', 'sms', 'phone', 'circle')`),
+	check("client_passports_chef_autonomy_level_check", sql`chef_autonomy_level IN ('full', 'high', 'moderate', 'low')`),
+	check("client_passports_service_style_check", sql`service_style IS NULL OR service_style IN ('formal_plated', 'family_style', 'buffet', 'cocktail', 'tasting_menu', 'no_preference')`),
+])
+
+// ---------------------------------------------------------------------------
+// Client Special Dates (birthdays, anniversaries, recurring occasions)
+// ---------------------------------------------------------------------------
+
+export const clientSpecialDates = pgTable("client_special_dates", {
+	id: uuid().defaultRandom().primaryKey().notNull(),
+	clientId: uuid("client_id").notNull(),
+	tenantId: uuid("tenant_id").notNull(),
+	label: text().notNull(),
+	date: date().notNull(),
+	recurrence: text().default('annual').notNull(),
+	notes: text(),
+	createdAt: timestamp("created_at", { withTimezone: true, mode: 'string' }).defaultNow().notNull(),
+}, (table) => [
+	index("idx_client_special_dates_tenant_client").using("btree", table.tenantId.asc().nullsLast(), table.clientId.asc().nullsLast()),
+	index("idx_client_special_dates_upcoming").using("btree", table.tenantId.asc().nullsLast(), table.date.asc().nullsLast()),
+	foreignKey({
+		columns: [table.clientId],
+		foreignColumns: [clients.id],
+		name: "client_special_dates_client_id_fkey"
+	}).onDelete("cascade"),
+	foreignKey({
+		columns: [table.tenantId],
+		foreignColumns: [chefs.id],
+		name: "client_special_dates_tenant_id_fkey"
+	}).onDelete("cascade"),
+	check("client_special_dates_recurrence_check", sql`recurrence IN ('annual', 'once')`),
+])
+
+// ---------------------------------------------------------------------------
+// Ingredient Sourcing Intelligence
+// ---------------------------------------------------------------------------
+
+export const ingredientVendorPreferences = pgTable("ingredient_vendor_preferences", {
+	id: uuid().defaultRandom().primaryKey().notNull(),
+	ingredientId: uuid("ingredient_id").notNull(),
+	tenantId: uuid("tenant_id").notNull(),
+	vendorName: text("vendor_name").notNull(),
+	vendorType: text("vendor_type").default('other').notNull(),
+	notes: text(),
+	isPreferred: boolean("is_preferred").default(false).notNull(),
+	createdAt: timestamp("created_at", { withTimezone: true, mode: 'string' }).defaultNow().notNull(),
+}, (table) => [
+	index("idx_ivp_tenant").using("btree", table.tenantId.asc().nullsLast().op("uuid_ops")),
+	index("idx_ivp_ingredient").using("btree", table.ingredientId.asc().nullsLast().op("uuid_ops")),
+	unique("ingredient_vendor_preferences_ingredient_tenant_vendor").on(table.ingredientId, table.tenantId, table.vendorName),
+	foreignKey({
+			columns: [table.ingredientId],
+			foreignColumns: [ingredients.id],
+			name: "ingredient_vendor_preferences_ingredient_id_fkey"
+		}).onDelete("cascade"),
+	foreignKey({
+			columns: [table.tenantId],
+			foreignColumns: [chefs.id],
+			name: "ingredient_vendor_preferences_tenant_id_fkey"
+		}).onDelete("cascade"),
+	pgPolicy("ivp_tenant_isolation", { as: "permissive", for: "all", to: ["public"], using: sql`(tenant_id = get_current_tenant_id())`, withCheck: sql`(tenant_id = get_current_tenant_id())` }),
+	check("ivp_vendor_type_check", sql`vendor_type = ANY (ARRAY['grocery'::text, 'specialty'::text, 'butcher'::text, 'fishmonger'::text, 'farm'::text, 'liquor'::text, 'equipment'::text, 'bakery'::text, 'produce'::text, 'dairy'::text, 'other'::text])`),
+])
+
+export const ingredientPurchaseLog = pgTable("ingredient_purchase_log", {
+	id: uuid().defaultRandom().primaryKey().notNull(),
+	ingredientId: uuid("ingredient_id").notNull(),
+	tenantId: uuid("tenant_id").notNull(),
+	vendorName: text("vendor_name").notNull(),
+	priceCents: integer("price_cents").notNull(),
+	quantity: text().notNull(),
+	unit: text().notNull(),
+	qualityRating: integer("quality_rating"),
+	purchasedAt: timestamp("purchased_at", { withTimezone: true, mode: 'string' }).defaultNow().notNull(),
+	notes: text(),
+	createdAt: timestamp("created_at", { withTimezone: true, mode: 'string' }).defaultNow().notNull(),
+}, (table) => [
+	index("idx_ipl_tenant").using("btree", table.tenantId.asc().nullsLast().op("uuid_ops")),
+	index("idx_ipl_ingredient").using("btree", table.ingredientId.asc().nullsLast().op("uuid_ops"), table.purchasedAt.desc().nullsFirst().op("timestamptz_ops")),
+	index("idx_ipl_vendor").using("btree", table.tenantId.asc().nullsLast().op("uuid_ops"), table.vendorName.asc().nullsLast().op("text_ops")),
+	foreignKey({
+			columns: [table.ingredientId],
+			foreignColumns: [ingredients.id],
+			name: "ingredient_purchase_log_ingredient_id_fkey"
+		}).onDelete("cascade"),
+	foreignKey({
+			columns: [table.tenantId],
+			foreignColumns: [chefs.id],
+			name: "ingredient_purchase_log_tenant_id_fkey"
+		}).onDelete("cascade"),
+	pgPolicy("ipl_tenant_isolation", { as: "permissive", for: "all", to: ["public"], using: sql`(tenant_id = get_current_tenant_id())`, withCheck: sql`(tenant_id = get_current_tenant_id())` }),
+	check("ipl_quality_rating_check", sql`(quality_rating IS NULL) OR ((quality_rating >= 1) AND (quality_rating <= 5))`),
+])
+
+// ---------------------------------------------------------------------------
+// Circle Collaborators (multi-chef collaboration on Dinner Circles)
+// ---------------------------------------------------------------------------
+
+export const circleCollaborators = pgTable("circle_collaborators", {
+	id: uuid().defaultRandom().primaryKey().notNull(),
+	circleId: uuid("circle_id").notNull(),
+	userId: uuid("user_id").notNull(),
+	role: text().default('sous_chef').notNull(),
+	invitedBy: uuid("invited_by").notNull(),
+	invitedAt: timestamp("invited_at", { withTimezone: true, mode: 'string' }).defaultNow().notNull(),
+	acceptedAt: timestamp("accepted_at", { withTimezone: true, mode: 'string' }),
+	status: text().default('pending').notNull(),
+}, (table) => [
+	uniqueIndex("unique_circle_collaborator").using("btree", table.circleId.asc().nullsLast().op("uuid_ops"), table.userId.asc().nullsLast().op("uuid_ops")),
+	index("idx_circle_collaborators_circle").using("btree", table.circleId.asc().nullsLast().op("uuid_ops")),
+	index("idx_circle_collaborators_user").using("btree", table.userId.asc().nullsLast().op("uuid_ops")),
+	index("idx_circle_collaborators_status").using("btree", table.status.asc().nullsLast().op("text_ops")),
+	foreignKey({
+		columns: [table.circleId],
+		foreignColumns: [hubGroups.id],
+		name: "circle_collaborators_circle_id_fkey"
+	}).onDelete("cascade"),
+	foreignKey({
+		columns: [table.userId],
+		foreignColumns: [users.id],
+		name: "circle_collaborators_user_id_fkey"
+	}).onDelete("cascade"),
+	foreignKey({
+		columns: [table.invitedBy],
+		foreignColumns: [users.id],
+		name: "circle_collaborators_invited_by_fkey"
+	}).onDelete("cascade"),
+	check("circle_collaborators_role_check", sql`role IN ('co_host', 'sous_chef', 'server', 'observer')`),
+	check("circle_collaborators_status_check", sql`status IN ('pending', 'active', 'removed')`),
+])
+
+// ---------------------------------------------------------------------------
+// Event Timelines (Day-Of Timeline Auto-Generation)
+// ---------------------------------------------------------------------------
+
+export const eventTimelines = pgTable("event_timelines", {
+	id: uuid().defaultRandom().primaryKey().notNull(),
+	eventId: uuid("event_id").notNull(),
+	tenantId: uuid("tenant_id").notNull(),
+	serviceTime: timestamp("service_time", { withTimezone: true, mode: 'string' }).notNull(),
+	generatedAt: timestamp("generated_at", { withTimezone: true, mode: 'string' }).defaultNow().notNull(),
+	status: text().default('draft').notNull(),
+	travelMinutes: integer("travel_minutes"),
+	setupMinutes: integer("setup_minutes").default(30).notNull(),
+	cleanupMinutes: integer("cleanup_minutes").default(30).notNull(),
+	createdAt: timestamp("created_at", { withTimezone: true, mode: 'string' }).defaultNow().notNull(),
+	updatedAt: timestamp("updated_at", { withTimezone: true, mode: 'string' }).defaultNow().notNull(),
+}, (table) => [
+	index("idx_event_timelines_event").using("btree", table.eventId.asc().nullsLast().op("uuid_ops")),
+	index("idx_event_timelines_tenant").using("btree", table.tenantId.asc().nullsLast().op("uuid_ops")),
+	uniqueIndex("idx_event_timelines_event_unique").using("btree", table.eventId.asc().nullsLast().op("uuid_ops")),
+	foreignKey({
+			columns: [table.eventId],
+			foreignColumns: [events.id],
+			name: "event_timelines_event_id_fkey"
+		}).onDelete("cascade"),
+	foreignKey({
+			columns: [table.tenantId],
+			foreignColumns: [chefs.id],
+			name: "event_timelines_tenant_id_fkey"
+		}).onDelete("cascade"),
+	check("event_timelines_status_check", sql`status IN ('draft', 'finalized', 'in_progress', 'completed')`),
+])
+
+export const timelineBlocks = pgTable("timeline_blocks", {
+	id: uuid().defaultRandom().primaryKey().notNull(),
+	timelineId: uuid("timeline_id").notNull(),
+	blockType: text("block_type").notNull(),
+	label: text().notNull(),
+	startTime: timestamp("start_time", { withTimezone: true, mode: 'string' }).notNull(),
+	endTime: timestamp("end_time", { withTimezone: true, mode: 'string' }).notNull(),
+	durationMinutes: integer("duration_minutes").notNull(),
+	sequence: integer().default(0).notNull(),
+	notes: text(),
+	completedAt: timestamp("completed_at", { withTimezone: true, mode: 'string' }),
+	courseNumber: integer("course_number"),
+	isParallel: boolean("is_parallel").default(false).notNull(),
+	createdAt: timestamp("created_at", { withTimezone: true, mode: 'string' }).defaultNow().notNull(),
+}, (table) => [
+	index("idx_timeline_blocks_timeline").using("btree", table.timelineId.asc().nullsLast().op("uuid_ops")),
+	index("idx_timeline_blocks_sequence").using("btree", table.timelineId.asc().nullsLast().op("uuid_ops"), table.sequence.asc().nullsLast()),
+	index("idx_timeline_blocks_type").using("btree", table.blockType.asc().nullsLast()),
+	foreignKey({
+			columns: [table.timelineId],
+			foreignColumns: [eventTimelines.id],
+			name: "timeline_blocks_timeline_id_fkey"
+		}).onDelete("cascade"),
+	check("timeline_blocks_block_type_check", sql`block_type IN ('travel', 'setup', 'prep', 'cook', 'fire', 'plate', 'serve', 'cleanup', 'advance_prep', 'custom')`),
+	check("timeline_blocks_duration_check", sql`duration_minutes > 0`),
+])
+
+// ── Event Closeouts ─────────────────────────────────────────────────────────
+
+export const eventCloseouts = pgTable("event_closeouts", {
+	id: uuid().defaultRandom().primaryKey().notNull(),
+	eventId: uuid("event_id").notNull(),
+	tenantId: uuid("tenant_id").notNull(),
+	status: text().default('in_progress').notNull(),
+	checklistJson: jsonb("checklist_json").default([]).notNull(),
+	initiatedAt: timestamp("initiated_at", { withTimezone: true, mode: 'string' }).defaultNow().notNull(),
+	finalizedAt: timestamp("finalized_at", { withTimezone: true, mode: 'string' }),
+	createdAt: timestamp("created_at", { withTimezone: true, mode: 'string' }).defaultNow().notNull(),
+	updatedAt: timestamp("updated_at", { withTimezone: true, mode: 'string' }).defaultNow().notNull(),
+}, (table) => [
+	unique("event_closeouts_event_id_tenant_id_key").on(table.eventId, table.tenantId),
+	index("idx_event_closeouts_event").using("btree", table.eventId.asc().nullsLast().op("uuid_ops")),
+	index("idx_event_closeouts_tenant").using("btree", table.tenantId.asc().nullsLast().op("uuid_ops")),
+	index("idx_event_closeouts_status").using("btree", table.tenantId.asc().nullsLast().op("uuid_ops"), table.status.asc().nullsLast().op("text_ops")),
+	foreignKey({
+			columns: [table.eventId],
+			foreignColumns: [events.id],
+			name: "event_closeouts_event_id_fkey"
+		}).onDelete("cascade"),
+	pgPolicy("ec_chef_select", { as: "permissive", for: "select", to: ["authenticated"], using: sql`(tenant_id = get_current_tenant_id())` }),
+	pgPolicy("ec_chef_insert", { as: "permissive", for: "insert", to: ["authenticated"], withCheck: sql`(tenant_id = get_current_tenant_id())` }),
+	pgPolicy("ec_chef_update", { as: "permissive", for: "update", to: ["authenticated"], using: sql`(tenant_id = get_current_tenant_id())` }),
+])
+
+// ---------------------------------------------------------------------------
+// Corporate Procurement Layer
+// ---------------------------------------------------------------------------
+
+export const corporateProfiles = pgTable("corporate_profiles", {
+	id: uuid().defaultRandom().primaryKey().notNull(),
+	clientId: uuid("client_id").notNull(),
+	tenantId: uuid("tenant_id").notNull(),
+	companyName: text("company_name").notNull(),
+	billingAddress: text("billing_address"),
+	billingCity: text("billing_city"),
+	billingState: text("billing_state"),
+	billingZip: text("billing_zip"),
+	taxId: text("tax_id"),
+	defaultPoNumber: text("default_po_number"),
+	paymentTerms: text("payment_terms").default('due_on_receipt').notNull(),
+	billingContactName: text("billing_contact_name"),
+	billingContactEmail: text("billing_contact_email"),
+	notes: text(),
+	createdAt: timestamp("created_at", { withTimezone: true, mode: 'string' }).defaultNow().notNull(),
+	updatedAt: timestamp("updated_at", { withTimezone: true, mode: 'string' }).defaultNow().notNull(),
+}, (table) => [
+	uniqueIndex("idx_corporate_profiles_client_tenant").using("btree", table.clientId.asc().nullsLast().op("uuid_ops"), table.tenantId.asc().nullsLast().op("uuid_ops")),
+	index("idx_corporate_profiles_tenant").using("btree", table.tenantId.asc().nullsLast().op("uuid_ops")),
+	foreignKey({
+			columns: [table.clientId],
+			foreignColumns: [clients.id],
+			name: "corporate_profiles_client_id_fkey"
+		}).onDelete("cascade"),
+	foreignKey({
+			columns: [table.tenantId],
+			foreignColumns: [chefs.id],
+			name: "corporate_profiles_tenant_id_fkey"
+		}).onDelete("cascade"),
+	check("corporate_profiles_payment_terms_check", sql`payment_terms = ANY (ARRAY['net30'::text, 'net60'::text, 'net90'::text, 'due_on_receipt'::text])`),
+])
+
+// ---------------------------------------------------------------------------
+// Guest Count Flex: change history and cutoff policies
+// ---------------------------------------------------------------------------
+
+export const guestCountChanges = pgTable("guest_count_changes", {
+	id: uuid().defaultRandom().primaryKey().notNull(),
+	eventId: uuid("event_id").notNull(),
+	tenantId: uuid("tenant_id").notNull(),
+	fromCount: integer("from_count").notNull(),
+	toCount: integer("to_count").notNull(),
+	stage: text().notNull(),
+	changedBy: uuid("changed_by").notNull(),
+	reason: text(),
+	impactJson: jsonb("impact_json"),
+	changedAt: timestamp("changed_at", { withTimezone: true, mode: 'string' }).defaultNow().notNull(),
+}, (table) => [
+	index("idx_guest_count_changes_event").using("btree", table.eventId.asc().nullsLast().op("uuid_ops")),
+	index("idx_guest_count_changes_tenant").using("btree", table.tenantId.asc().nullsLast().op("uuid_ops")),
+	index("idx_guest_count_changes_time").using("btree", table.changedAt.desc().nullsLast()),
+	foreignKey({
+			columns: [table.eventId],
+			foreignColumns: [events.id],
+			name: "guest_count_changes_event_id_fkey"
+		}).onDelete("cascade"),
+	foreignKey({
+			columns: [table.tenantId],
+			foreignColumns: [chefs.id],
+			name: "guest_count_changes_tenant_id_fkey"
+		}).onDelete("cascade"),
+	check("guest_count_changes_stage_check", sql`stage = ANY (ARRAY['quoted'::text, 'confirmed'::text, 'final'::text, 'actual'::text])`),
+])
+
+export const eventCutoffPolicies = pgTable("event_cutoff_policies", {
+	id: uuid().defaultRandom().primaryKey().notNull(),
+	eventId: uuid("event_id").notNull(),
+	tenantId: uuid("tenant_id").notNull(),
+	cutoffDate: timestamp("cutoff_date", { withTimezone: true, mode: 'string' }).notNull(),
+	mode: text().notNull(),
+	message: text(),
+	createdAt: timestamp("created_at", { withTimezone: true, mode: 'string' }).defaultNow().notNull(),
+	updatedAt: timestamp("updated_at", { withTimezone: true, mode: 'string' }).defaultNow().notNull(),
+}, (table) => [
+	index("idx_event_cutoff_policies_event").using("btree", table.eventId.asc().nullsLast().op("uuid_ops")),
+	index("idx_event_cutoff_policies_tenant").using("btree", table.tenantId.asc().nullsLast().op("uuid_ops")),
+	unique("event_cutoff_policies_event_tenant_unique").on(table.eventId, table.tenantId),
+	foreignKey({
+			columns: [table.eventId],
+			foreignColumns: [events.id],
+			name: "event_cutoff_policies_event_id_fkey"
+		}).onDelete("cascade"),
+	foreignKey({
+			columns: [table.tenantId],
+			foreignColumns: [chefs.id],
+			name: "event_cutoff_policies_tenant_id_fkey"
+		}).onDelete("cascade"),
+	check("event_cutoff_policies_mode_check", sql`mode = ANY (ARRAY['hard'::text, 'soft'::text, 'flexible'::text])`),
+])
+
+// ---------------------------------------------------------------------------
+// Circle Reminder Configs (per-circle reminder type configuration)
+// ---------------------------------------------------------------------------
+
+export const circleReminderConfigs = pgTable("circle_reminder_configs", {
+	id: uuid().defaultRandom().primaryKey().notNull(),
+	circleId: uuid("circle_id").notNull(),
+	tenantId: uuid("tenant_id").notNull(),
+	reminderType: text("reminder_type").notNull(),
+	daysBefore: integer("days_before").default(1).notNull(),
+	enabled: boolean().default(true).notNull(),
+	channel: text().default('email').notNull(),
+	createdAt: timestamp("created_at", { withTimezone: true, mode: 'string' }).defaultNow().notNull(),
+	updatedAt: timestamp("updated_at", { withTimezone: true, mode: 'string' }).defaultNow().notNull(),
+}, (table) => [
+	index("idx_crc_circle").using("btree", table.circleId.asc().nullsLast()),
+	index("idx_crc_tenant").using("btree", table.tenantId.asc().nullsLast()),
+	index("idx_crc_enabled").using("btree", table.circleId.asc().nullsLast()).where(sql`(enabled = true)`),
+	uniqueIndex("crc_unique_type_per_circle").using("btree", table.circleId.asc().nullsLast(), table.tenantId.asc().nullsLast(), table.reminderType.asc().nullsLast()),
+	foreignKey({
+			columns: [table.circleId],
+			foreignColumns: [hubGroups.id],
+			name: "circle_reminder_configs_circle_id_fkey"
+		}).onDelete("cascade"),
+	foreignKey({
+			columns: [table.tenantId],
+			foreignColumns: [chefs.id],
+			name: "circle_reminder_configs_tenant_id_fkey"
+		}).onDelete("cascade"),
+	check("crc_reminder_type_check", sql`reminder_type = ANY (ARRAY['rsvp_deadline'::text, 'dietary_collection'::text, 'event_countdown'::text, 'payment_reminder'::text, 'day_of_prep'::text])`),
+	check("crc_channel_check", sql`channel = ANY (ARRAY['email'::text, 'sms'::text, 'in_app'::text])`),
+	check("crc_days_before_positive", sql`(days_before >= 0)`),
+	pgPolicy("crc_tenant_isolation", { as: "permissive", for: "all", to: ["public"], using: sql`(tenant_id = get_current_tenant_id())`, withCheck: sql`(tenant_id = get_current_tenant_id())` }),
+])
+
+// ---------------------------------------------------------------------------
+// Circle Reminders (individual reminder instances tied to events)
+// ---------------------------------------------------------------------------
+
+export const circleReminders = pgTable("circle_reminders", {
+	id: uuid().defaultRandom().primaryKey().notNull(),
+	configId: uuid("config_id").notNull(),
+	circleId: uuid("circle_id").notNull(),
+	eventId: uuid("event_id").notNull(),
+	tenantId: uuid("tenant_id").notNull(),
+	status: text().default('pending').notNull(),
+	scheduledFor: timestamp("scheduled_for", { withTimezone: true, mode: 'string' }).notNull(),
+	sentAt: timestamp("sent_at", { withTimezone: true, mode: 'string' }),
+	recipientCount: integer("recipient_count").default(0).notNull(),
+	errorMessage: text("error_message"),
+	createdAt: timestamp("created_at", { withTimezone: true, mode: 'string' }).defaultNow().notNull(),
+}, (table) => [
+	index("idx_cr_circle").using("btree", table.circleId.asc().nullsLast(), table.scheduledFor.asc().nullsLast()),
+	index("idx_cr_tenant").using("btree", table.tenantId.asc().nullsLast()),
+	index("idx_cr_event").using("btree", table.eventId.asc().nullsLast()),
+	index("idx_cr_pending").using("btree", table.tenantId.asc().nullsLast(), table.scheduledFor.asc().nullsLast()).where(sql`(status = 'pending'::text)`),
+	index("idx_cr_config").using("btree", table.configId.asc().nullsLast()),
+	foreignKey({
+			columns: [table.configId],
+			foreignColumns: [circleReminderConfigs.id],
+			name: "circle_reminders_config_id_fkey"
+		}).onDelete("cascade"),
+	foreignKey({
+			columns: [table.circleId],
+			foreignColumns: [hubGroups.id],
+			name: "circle_reminders_circle_id_fkey"
+		}).onDelete("cascade"),
+	foreignKey({
+			columns: [table.eventId],
+			foreignColumns: [events.id],
+			name: "circle_reminders_event_id_fkey"
+		}).onDelete("cascade"),
+	foreignKey({
+			columns: [table.tenantId],
+			foreignColumns: [chefs.id],
+			name: "circle_reminders_tenant_id_fkey"
+		}).onDelete("cascade"),
+	check("cr_status_check", sql`status = ANY (ARRAY['pending'::text, 'sent'::text, 'skipped'::text, 'failed'::text])`),
+	pgPolicy("cr_tenant_isolation", { as: "permissive", for: "all", to: ["public"], using: sql`(tenant_id = get_current_tenant_id())`, withCheck: sql`(tenant_id = get_current_tenant_id())` }),
+])
+
+// ---------------------------------------------------------------------------
+// Client Menu Submissions: clients submit menu ideas for chef review
+// ---------------------------------------------------------------------------
+
+export const clientMenuSubmissions = pgTable("client_menu_submissions", {
+	id: uuid().defaultRandom().primaryKey().notNull(),
+	eventId: uuid("event_id").notNull(),
+	tenantId: uuid("tenant_id").notNull(),
+	submittedByToken: uuid("submitted_by_token").notNull(),
+	status: text().default('pending').notNull(),
+	rawText: text("raw_text").notNull(),
+	parsedDishes: jsonb("parsed_dishes").default([]).notNull(),
+	dietaryNotes: text("dietary_notes"),
+	inspirationUrls: text("inspiration_urls").array(),
+	chefNotes: text("chef_notes"),
+	counterMenuId: uuid("counter_menu_id"),
+	reviewedAt: timestamp("reviewed_at", { withTimezone: true, mode: 'string' }),
+	createdAt: timestamp("created_at", { withTimezone: true, mode: 'string' }).defaultNow().notNull(),
+}, (table): any[] => [
+	index("idx_client_menu_submissions_event").using("btree", table.eventId.asc().nullsLast().op("uuid_ops")),
+	index("idx_client_menu_submissions_tenant").using("btree", table.tenantId.asc().nullsLast().op("uuid_ops")),
+	index("idx_client_menu_submissions_status").using("btree", table.tenantId.asc().nullsLast().op("uuid_ops"), table.status.asc().nullsLast()),
+	foreignKey({
+			columns: [table.eventId],
+			foreignColumns: [events.id],
+			name: "client_menu_submissions_event_id_fkey"
+		}).onDelete("cascade"),
+	foreignKey({
+			columns: [table.tenantId],
+			foreignColumns: [chefs.id],
+			name: "client_menu_submissions_tenant_id_fkey"
+		}).onDelete("cascade"),
+	foreignKey({
+			columns: [table.counterMenuId],
+			foreignColumns: [menus.id],
+			name: "client_menu_submissions_counter_menu_id_fkey"
+		}).onDelete("set null"),
+	check("client_menu_submissions_status_check", sql`status = ANY (ARRAY['pending'::text, 'accepted'::text, 'modified'::text, 'rejected'::text, 'counter_proposed'::text])`),
+])
+
+// ---------------------------------------------------------------------------
+// Circle Recurrence Configs (recurring event support)
+// ---------------------------------------------------------------------------
+
+export const circleRecurrenceConfigs = pgTable("circle_recurrence_configs", {
+	id: uuid().defaultRandom().primaryKey().notNull(),
+	circleId: uuid("circle_id").notNull(),
+	tenantId: uuid("tenant_id").notNull(),
+	pattern: text().notNull(),
+	dayOfWeek: integer("day_of_week"),
+	preferredTime: text("preferred_time"),
+	autoCreateDaysAhead: integer("auto_create_days_ahead").default(0).notNull(),
+	customIntervalDays: integer("custom_interval_days"),
+	lastOccurrenceAt: timestamp("last_occurrence_at", { withTimezone: true, mode: 'string' }),
+	nextScheduledAt: timestamp("next_scheduled_at", { withTimezone: true, mode: 'string' }),
+	createdAt: timestamp("created_at", { withTimezone: true, mode: 'string' }).defaultNow().notNull(),
+	updatedAt: timestamp("updated_at", { withTimezone: true, mode: 'string' }).defaultNow().notNull(),
+}, (table) => [
+	index("idx_crc2_circle").using("btree", table.circleId.asc().nullsLast()),
+	index("idx_crc2_tenant").using("btree", table.tenantId.asc().nullsLast()),
+	index("idx_crc2_next_scheduled").using("btree", table.nextScheduledAt.asc().nullsLast()).where(sql`(next_scheduled_at IS NOT NULL)`),
+	unique("crc2_unique_circle").on(table.circleId),
+	foreignKey({
+			columns: [table.circleId],
+			foreignColumns: [hubGroups.id],
+			name: "circle_recurrence_configs_circle_id_fkey"
+		}).onDelete("cascade"),
+	foreignKey({
+			columns: [table.tenantId],
+			foreignColumns: [chefs.id],
+			name: "circle_recurrence_configs_tenant_id_fkey"
+		}).onDelete("cascade"),
+	check("crc2_pattern_check", sql`pattern = ANY (ARRAY['weekly'::text, 'biweekly'::text, 'monthly'::text, 'quarterly'::text, 'custom'::text])`),
+	check("crc2_day_of_week_check", sql`(day_of_week IS NULL) OR (day_of_week >= 0 AND day_of_week <= 6)`),
+	check("crc2_auto_create_positive", sql`auto_create_days_ahead >= 0`),
+	check("crc2_custom_interval_positive", sql`(custom_interval_days IS NULL) OR (custom_interval_days > 0)`),
+	pgPolicy("crc2_tenant_isolation", { as: "permissive", for: "all", to: ["public"] }),
+])
+
+// ─── Event Media Vault ────────────────────────────────────────────────────────
+
+export const mediaVaultAssets = pgTable("media_vault_assets", {
+	id: uuid().defaultRandom().primaryKey().notNull(),
+	eventId: uuid("event_id").notNull(),
+	tenantId: uuid("tenant_id").notNull(),
+	tier: text().default('raw').notNull(),
+	mediaType: text("media_type").default('photo').notNull(),
+	filePath: text("file_path"),
+	externalUrl: text("external_url"),
+	thumbnailPath: text("thumbnail_path"),
+	caption: text(),
+	tags: jsonb().default([]).notNull(),
+	dishName: text("dish_name"),
+	courseName: text("course_name"),
+	venueAddress: text("venue_address"),
+	socialPlatform: text("social_platform"),
+	socialCaption: text("social_caption"),
+	socialPostDate: timestamp("social_post_date", { withTimezone: true, mode: 'string' }),
+	annotation: text(),
+	sourceAttribution: text("source_attribution"),
+	displayOrder: integer("display_order").default(0).notNull(),
+	createdAt: timestamp("created_at", { withTimezone: true, mode: 'string' }).defaultNow().notNull(),
+	updatedAt: timestamp("updated_at", { withTimezone: true, mode: 'string' }).defaultNow().notNull(),
+}, (table) => [
+	index("idx_mva_event_tenant").using("btree", table.eventId.asc().nullsLast(), table.tenantId.asc().nullsLast()),
+	index("idx_mva_tenant_tier").using("btree", table.tenantId.asc().nullsLast(), table.tier.asc().nullsLast()),
+	index("idx_mva_tenant_dish").using("btree", table.tenantId.asc().nullsLast(), table.dishName.asc().nullsLast()).where(sql`(dish_name IS NOT NULL)`),
+	index("idx_mva_tenant_venue").using("btree", table.tenantId.asc().nullsLast(), table.venueAddress.asc().nullsLast()).where(sql`(venue_address IS NOT NULL)`),
+	index("idx_mva_tenant_type").using("btree", table.tenantId.asc().nullsLast(), table.mediaType.asc().nullsLast()),
+	foreignKey({
+			columns: [table.eventId],
+			foreignColumns: [events.id],
+			name: "media_vault_assets_event_id_fkey"
+		}).onDelete("cascade"),
+	foreignKey({
+			columns: [table.tenantId],
+			foreignColumns: [chefs.id],
+			name: "media_vault_assets_tenant_id_fkey"
+		}).onDelete("cascade"),
+	check("mva_tier_check", sql`tier IN ('raw', 'curated', 'polished', 'published')`),
+	check("mva_media_type_check", sql`media_type IN ('photo', 'video', 'social_post')`),
+	check("mva_has_content", sql`(file_path IS NOT NULL) OR (external_url IS NOT NULL)`),
+	pgPolicy("mva_tenant_isolation", { as: "permissive", for: "all", to: ["public"], using: sql`(tenant_id IN ( SELECT user_roles.entity_id
+   FROM user_roles
+  WHERE ((user_roles.auth_user_id = auth.uid()) AND (user_roles.role = 'chef'::user_role))))`, withCheck: sql`(tenant_id IN ( SELECT user_roles.entity_id
+   FROM user_roles
+  WHERE ((user_roles.auth_user_id = auth.uid()) AND (user_roles.role = 'chef'::user_role))))` }),
+	pgPolicy("mva_service_role", { as: "permissive", for: "all", to: ["public"] }),
+])
+
+export const mediaConsents = pgTable("media_consents", {
+	id: uuid().defaultRandom().primaryKey().notNull(),
+	eventId: uuid("event_id").notNull(),
+	tenantId: uuid("tenant_id").notNull(),
+	guestId: uuid("guest_id"),
+	status: text().default('private_only').notNull(),
+	notes: text(),
+	recordedAt: timestamp("recorded_at", { withTimezone: true, mode: 'string' }).defaultNow().notNull(),
+	createdAt: timestamp("created_at", { withTimezone: true, mode: 'string' }).defaultNow().notNull(),
+	updatedAt: timestamp("updated_at", { withTimezone: true, mode: 'string' }).defaultNow().notNull(),
+}, (table) => [
+	index("idx_mc_tenant").using("btree", table.tenantId.asc().nullsLast()),
+	foreignKey({
+			columns: [table.eventId],
+			foreignColumns: [events.id],
+			name: "media_consents_event_id_fkey"
+		}).onDelete("cascade"),
+	foreignKey({
+			columns: [table.tenantId],
+			foreignColumns: [chefs.id],
+			name: "media_consents_tenant_id_fkey"
+		}).onDelete("cascade"),
+	foreignKey({
+			columns: [table.guestId],
+			foreignColumns: [eventGuests.id],
+			name: "media_consents_guest_id_fkey"
+		}).onDelete("set null"),
+	check("mc_status_check", sql`status IN ('no_photos', 'private_only', 'portfolio_ok', 'social_ok')`),
+	pgPolicy("mc_tenant_isolation", { as: "permissive", for: "all", to: ["public"], using: sql`(tenant_id IN ( SELECT user_roles.entity_id
+   FROM user_roles
+  WHERE ((user_roles.auth_user_id = auth.uid()) AND (user_roles.role = 'chef'::user_role))))`, withCheck: sql`(tenant_id IN ( SELECT user_roles.entity_id
+   FROM user_roles
+  WHERE ((user_roles.auth_user_id = auth.uid()) AND (user_roles.role = 'chef'::user_role))))` }),
+	pgPolicy("mc_service_role", { as: "permissive", for: "all", to: ["public"] }),
+])
+
+// ---------------------------------------------------------------------------
+// Collaborative Menu Editing (turn-based chef+client co-editing)
+// ---------------------------------------------------------------------------
+
+export const menuEditSessionStatus = pgEnum("menu_edit_session_status", ['draft', 'submitted', 'accepted', 'rejected', 'superseded'])
+export const menuChangeType = pgEnum("menu_change_type", ['swap_dish', 'remove_dish', 'add_dish', 'reorder', 'modify_component', 'add_course', 'remove_course', 'comment'])
+export const menuChangeResolution = pgEnum("menu_change_resolution", ['pending', 'approved', 'rejected', 'modified'])
+export const menuEditorType = pgEnum("menu_editor_type", ['chef', 'client', 'co_host'])
+
+export const menuCollabSessions = pgTable("menu_collab_sessions", {
+	id: uuid().defaultRandom().primaryKey().notNull(),
+	menuId: uuid("menu_id").notNull(),
+	eventId: uuid("event_id").notNull(),
+	tenantId: uuid("tenant_id").notNull(),
+	editorType: menuEditorType("editor_type").notNull(),
+	editorId: uuid("editor_id").notNull(),
+	forkedFromMenuId: uuid("forked_from_menu_id"),
+	versionNumber: integer("version_number").default(1).notNull(),
+	baseSnapshot: jsonb("base_snapshot").default({}).notNull(),
+	proposedSnapshot: jsonb("proposed_snapshot"),
+	currentTurn: menuEditorType("current_turn").default('client').notNull(),
+	turnChangedAt: timestamp("turn_changed_at", { withTimezone: true, mode: 'string' }).defaultNow().notNull(),
+	status: menuEditSessionStatus().default('draft').notNull(),
+	clientToken: text("client_token"),
+	startedAt: timestamp("started_at", { withTimezone: true, mode: 'string' }).defaultNow().notNull(),
+	submittedAt: timestamp("submitted_at", { withTimezone: true, mode: 'string' }),
+	resolvedAt: timestamp("resolved_at", { withTimezone: true, mode: 'string' }),
+	resolutionNotes: text("resolution_notes"),
+	createdAt: timestamp("created_at", { withTimezone: true, mode: 'string' }).defaultNow().notNull(),
+	updatedAt: timestamp("updated_at", { withTimezone: true, mode: 'string' }).defaultNow().notNull(),
+}, (table) => [
+	index("idx_collab_sessions_menu").using("btree", table.menuId.asc().nullsLast()),
+	index("idx_collab_sessions_event").using("btree", table.eventId.asc().nullsLast()),
+	index("idx_collab_sessions_tenant").using("btree", table.tenantId.asc().nullsLast(), table.status.asc().nullsLast()),
+	index("idx_collab_sessions_editor").using("btree", table.editorType.asc().nullsLast(), table.editorId.asc().nullsLast()),
+	index("idx_collab_sessions_token").using("btree", table.clientToken.asc().nullsLast()),
+	foreignKey({
+		columns: [table.menuId],
+		foreignColumns: [menus.id],
+		name: "menu_collab_sessions_menu_id_fkey"
+	}).onDelete("cascade"),
+	foreignKey({
+		columns: [table.eventId],
+		foreignColumns: [events.id],
+		name: "menu_collab_sessions_event_id_fkey"
+	}).onDelete("cascade"),
+	foreignKey({
+		columns: [table.tenantId],
+		foreignColumns: [chefs.id],
+		name: "menu_collab_sessions_tenant_id_fkey"
+	}).onDelete("cascade"),
+	foreignKey({
+		columns: [table.forkedFromMenuId],
+		foreignColumns: [menus.id],
+		name: "menu_collab_sessions_forked_menu_fkey"
+	}).onDelete("set null"),
+])
+
+export const menuEditSuggestions = pgTable("menu_edit_suggestions", {
+	id: uuid().defaultRandom().primaryKey().notNull(),
+	sessionId: uuid("session_id").notNull(),
+	changeType: menuChangeType("change_type").notNull(),
+	targetDishId: uuid("target_dish_id"),
+	targetCourseName: text("target_course_name"),
+	targetCourseNumber: integer("target_course_number"),
+	changeData: jsonb("change_data").default({}).notNull(),
+	resolution: menuChangeResolution().default('pending').notNull(),
+	resolutionNotes: text("resolution_notes"),
+	counterProposal: jsonb("counter_proposal"),
+	sortOrder: integer("sort_order").default(0).notNull(),
+	createdAt: timestamp("created_at", { withTimezone: true, mode: 'string' }).defaultNow().notNull(),
+	resolvedAt: timestamp("resolved_at", { withTimezone: true, mode: 'string' }),
+}, (table) => [
+	index("idx_edit_suggestions_session").using("btree", table.sessionId.asc().nullsLast(), table.sortOrder.asc().nullsLast()),
+	foreignKey({
+		columns: [table.sessionId],
+		foreignColumns: [menuCollabSessions.id],
+		name: "menu_edit_suggestions_session_id_fkey"
+	}).onDelete("cascade"),
+])
+
+export const menuEditHistory = pgTable("menu_edit_history", {
+	id: uuid().defaultRandom().primaryKey().notNull(),
+	menuId: uuid("menu_id").notNull(),
+	sessionId: uuid("session_id"),
+	versionNumber: integer("version_number").notNull(),
+	snapshot: jsonb().notNull(),
+	changeSummary: text("change_summary"),
+	authorType: menuEditorType("author_type").notNull(),
+	authorId: uuid("author_id").notNull(),
+	createdAt: timestamp("created_at", { withTimezone: true, mode: 'string' }).defaultNow().notNull(),
+}, (table) => [
+	index("idx_edit_history_menu").using("btree", table.menuId.asc().nullsLast(), table.versionNumber.asc().nullsLast()),
+	foreignKey({
+		columns: [table.menuId],
+		foreignColumns: [menus.id],
+		name: "menu_edit_history_menu_id_fkey"
+	}).onDelete("cascade"),
+	foreignKey({
+		columns: [table.sessionId],
+		foreignColumns: [menuCollabSessions.id],
+		name: "menu_edit_history_session_id_fkey"
+	}).onDelete("set null"),
+])
+
+// ---------------------------------------------------------------------------
+// AI Usage Log (provider usage tracking for analytics)
+// ---------------------------------------------------------------------------
+
+export const aiUsageLog = pgTable("ai_usage_log", {
+	id: uuid().defaultRandom().primaryKey().notNull(),
+	tenantId: uuid("tenant_id").notNull(),
+	provider: text().notNull(),
+	model: text().notNull(),
+	promptTokens: integer("prompt_tokens").default(0).notNull(),
+	completionTokens: integer("completion_tokens").default(0).notNull(),
+	latencyMs: integer("latency_ms").default(0).notNull(),
+	createdAt: timestamp("created_at", { withTimezone: true, mode: 'string' }).defaultNow().notNull(),
+}, (table) => [
+	index("idx_ai_usage_log_tenant_time").using("btree", table.tenantId.asc().nullsLast(), table.createdAt.desc().nullsLast()),
+	index("idx_ai_usage_log_provider").using("btree", table.provider.asc().nullsLast(), table.createdAt.desc().nullsLast()),
+	foreignKey({
+			columns: [table.tenantId],
+			foreignColumns: [chefs.id],
+			name: "ai_usage_log_tenant_id_fkey"
+		}).onDelete("cascade"),
+	pgPolicy("Chefs read own AI usage", { as: "permissive", for: "select", to: ["public"], using: sql`(tenant_id IN ( SELECT user_roles.entity_id
+   FROM user_roles
+  WHERE ((user_roles.auth_user_id = auth.uid()) AND (user_roles.role = 'chef'::user_role))))` }),
+	pgPolicy("Service role manages AI usage", { as: "permissive", for: "all", to: ["public"] }),
+])
+
+// ---------------------------------------------------------------------------
+// Crew Circles (team coordination for chef staff/crew)
+// ---------------------------------------------------------------------------
+
+export const crewCircles = pgTable("crew_circles", {
+	id: uuid().defaultRandom().primaryKey().notNull(),
+	tenantId: uuid("tenant_id").notNull(),
+	name: text().notNull(),
+	description: text(),
+	createdAt: timestamp("created_at", { withTimezone: true, mode: 'string' }).defaultNow().notNull(),
+	updatedAt: timestamp("updated_at", { withTimezone: true, mode: 'string' }).defaultNow().notNull(),
+}, (table) => [
+	index("idx_crew_circles_tenant").using("btree", table.tenantId.asc().nullsLast().op("uuid_ops")),
+	foreignKey({
+			columns: [table.tenantId],
+			foreignColumns: [chefs.id],
+			name: "crew_circles_tenant_id_fkey"
+		}).onDelete("cascade"),
+	pgPolicy("tenant_isolation_select_crew_circles", { as: "permissive", for: "select", to: ["public"], using: sql`(tenant_id IN ( SELECT user_roles.entity_id FROM user_roles WHERE ((user_roles.auth_user_id = auth.uid()) AND (user_roles.role = 'chef'::user_role))))` }),
+	pgPolicy("tenant_isolation_insert_crew_circles", { as: "permissive", for: "insert", to: ["public"], withCheck: sql`(tenant_id IN ( SELECT user_roles.entity_id FROM user_roles WHERE ((user_roles.auth_user_id = auth.uid()) AND (user_roles.role = 'chef'::user_role))))` }),
+	pgPolicy("tenant_isolation_update_crew_circles", { as: "permissive", for: "update", to: ["public"], using: sql`(tenant_id IN ( SELECT user_roles.entity_id FROM user_roles WHERE ((user_roles.auth_user_id = auth.uid()) AND (user_roles.role = 'chef'::user_role))))`, withCheck: sql`(tenant_id IN ( SELECT user_roles.entity_id FROM user_roles WHERE ((user_roles.auth_user_id = auth.uid()) AND (user_roles.role = 'chef'::user_role))))` }),
+	pgPolicy("tenant_isolation_delete_crew_circles", { as: "permissive", for: "delete", to: ["public"], using: sql`(tenant_id IN ( SELECT user_roles.entity_id FROM user_roles WHERE ((user_roles.auth_user_id = auth.uid()) AND (user_roles.role = 'chef'::user_role))))` }),
+	pgPolicy("service_role_crew_circles", { as: "permissive", for: "all", to: ["public"] }),
+])
+
+export const crewMembers = pgTable("crew_members", {
+	id: uuid().defaultRandom().primaryKey().notNull(),
+	crewCircleId: uuid("crew_circle_id").notNull(),
+	staffMemberId: uuid("staff_member_id").notNull(),
+	role: text().default('other').notNull(),
+	joinedAt: timestamp("joined_at", { withTimezone: true, mode: 'string' }).defaultNow().notNull(),
+}, (table) => [
+	index("idx_crew_members_circle").using("btree", table.crewCircleId.asc().nullsLast().op("uuid_ops")),
+	index("idx_crew_members_staff").using("btree", table.staffMemberId.asc().nullsLast().op("uuid_ops")),
+	unique("crew_members_circle_staff_unique").on(table.crewCircleId, table.staffMemberId),
+	foreignKey({
+			columns: [table.crewCircleId],
+			foreignColumns: [crewCircles.id],
+			name: "crew_members_crew_circle_id_fkey"
+		}).onDelete("cascade"),
+	foreignKey({
+			columns: [table.staffMemberId],
+			foreignColumns: [staffMembers.id],
+			name: "crew_members_staff_member_id_fkey"
+		}).onDelete("cascade"),
+	pgPolicy("tenant_isolation_select_crew_members", { as: "permissive", for: "select", to: ["public"], using: sql`(crew_circle_id IN ( SELECT cc.id FROM crew_circles cc WHERE (cc.tenant_id IN ( SELECT ur.entity_id FROM user_roles ur WHERE ((ur.auth_user_id = auth.uid()) AND (ur.role = 'chef'::user_role))))))` }),
+	pgPolicy("tenant_isolation_insert_crew_members", { as: "permissive", for: "insert", to: ["public"], withCheck: sql`(crew_circle_id IN ( SELECT cc.id FROM crew_circles cc WHERE (cc.tenant_id IN ( SELECT ur.entity_id FROM user_roles ur WHERE ((ur.auth_user_id = auth.uid()) AND (ur.role = 'chef'::user_role))))))` }),
+	pgPolicy("tenant_isolation_delete_crew_members", { as: "permissive", for: "delete", to: ["public"], using: sql`(crew_circle_id IN ( SELECT cc.id FROM crew_circles cc WHERE (cc.tenant_id IN ( SELECT ur.entity_id FROM user_roles ur WHERE ((ur.auth_user_id = auth.uid()) AND (ur.role = 'chef'::user_role))))))` }),
+	pgPolicy("service_role_crew_members", { as: "permissive", for: "all", to: ["public"] }),
+])
+
+export const crewAvailability = pgTable("crew_availability", {
+	id: uuid().defaultRandom().primaryKey().notNull(),
+	crewCircleId: uuid("crew_circle_id").notNull(),
+	staffMemberId: uuid("staff_member_id").notNull(),
+	eventId: uuid("event_id"),
+	date: date().notNull(),
+	status: text().default('available').notNull(),
+	note: text(),
+	createdAt: timestamp("created_at", { withTimezone: true, mode: 'string' }).defaultNow().notNull(),
+	updatedAt: timestamp("updated_at", { withTimezone: true, mode: 'string' }).defaultNow().notNull(),
+}, (table) => [
+	index("idx_crew_availability_circle").using("btree", table.crewCircleId.asc().nullsLast().op("uuid_ops")),
+	index("idx_crew_availability_staff").using("btree", table.staffMemberId.asc().nullsLast().op("uuid_ops")),
+	index("idx_crew_availability_date").using("btree", table.crewCircleId.asc().nullsLast().op("uuid_ops"), table.date.asc().nullsLast()),
+	index("idx_crew_availability_event").using("btree", table.eventId.asc().nullsLast().op("uuid_ops")).where(sql`(event_id IS NOT NULL)`),
+	unique("crew_availability_circle_staff_date_unique").on(table.crewCircleId, table.staffMemberId, table.date),
+	foreignKey({
+			columns: [table.crewCircleId],
+			foreignColumns: [crewCircles.id],
+			name: "crew_availability_crew_circle_id_fkey"
+		}).onDelete("cascade"),
+	foreignKey({
+			columns: [table.staffMemberId],
+			foreignColumns: [staffMembers.id],
+			name: "crew_availability_staff_member_id_fkey"
+		}).onDelete("cascade"),
+	foreignKey({
+			columns: [table.eventId],
+			foreignColumns: [events.id],
+			name: "crew_availability_event_id_fkey"
+		}).onDelete("set null"),
+	check("crew_availability_status_check", sql`status IN ('available', 'tentative', 'unavailable')`),
+	pgPolicy("tenant_isolation_select_crew_availability", { as: "permissive", for: "select", to: ["public"], using: sql`(crew_circle_id IN ( SELECT cc.id FROM crew_circles cc WHERE (cc.tenant_id IN ( SELECT ur.entity_id FROM user_roles ur WHERE ((ur.auth_user_id = auth.uid()) AND (ur.role = 'chef'::user_role))))))` }),
+	pgPolicy("tenant_isolation_insert_crew_availability", { as: "permissive", for: "insert", to: ["public"], withCheck: sql`(crew_circle_id IN ( SELECT cc.id FROM crew_circles cc WHERE (cc.tenant_id IN ( SELECT ur.entity_id FROM user_roles ur WHERE ((ur.auth_user_id = auth.uid()) AND (ur.role = 'chef'::user_role))))))` }),
+	pgPolicy("tenant_isolation_update_crew_availability", { as: "permissive", for: "update", to: ["public"], using: sql`(crew_circle_id IN ( SELECT cc.id FROM crew_circles cc WHERE (cc.tenant_id IN ( SELECT ur.entity_id FROM user_roles ur WHERE ((ur.auth_user_id = auth.uid()) AND (ur.role = 'chef'::user_role))))))`, withCheck: sql`(crew_circle_id IN ( SELECT cc.id FROM crew_circles cc WHERE (cc.tenant_id IN ( SELECT ur.entity_id FROM user_roles ur WHERE ((ur.auth_user_id = auth.uid()) AND (ur.role = 'chef'::user_role))))))` }),
+	pgPolicy("tenant_isolation_delete_crew_availability", { as: "permissive", for: "delete", to: ["public"], using: sql`(crew_circle_id IN ( SELECT cc.id FROM crew_circles cc WHERE (cc.tenant_id IN ( SELECT ur.entity_id FROM user_roles ur WHERE ((ur.auth_user_id = auth.uid()) AND (ur.role = 'chef'::user_role))))))` }),
+	pgPolicy("service_role_crew_availability", { as: "permissive", for: "all", to: ["public"] }),
+])
+
+export const clientChangeRequests = pgTable('client_change_requests', {
+	id: uuid('id').primaryKey().defaultRandom(),
+	eventId: uuid('event_id').notNull().references(() => events.id),
+	clientId: uuid('client_id').notNull().references(() => clients.id),
+	tenantId: uuid('tenant_id').notNull(),
+	requestType: text('request_type').notNull().default('other'),
+	description: text('description').notNull(),
+	clientNotes: text('client_notes'),
+	chefNotes: text('chef_notes'),
+	status: text('status').notNull().default('pending'),
+	impact: text('impact'),
+	submittedAt: timestamp('submitted_at', { withTimezone: true }).notNull().defaultNow(),
+	reviewedAt: timestamp('reviewed_at', { withTimezone: true }),
+	reviewedBy: uuid('reviewed_by'),
+	createdAt: timestamp('created_at', { withTimezone: true }).notNull().defaultNow(),
+})
+
+// ---------------------------------------------------------------------------
+// Chef Burnout Boundaries (burnout risk / capacity boundaries)
+// ---------------------------------------------------------------------------
+
+export const chefBurnoutBoundaries = pgTable("chef_burnout_boundaries", {
+	id: uuid().defaultRandom().primaryKey().notNull(),
+	tenantId: uuid("tenant_id").notNull(),
+	maxEventsPerWeek: integer("max_events_per_week").default(7).notNull(),
+	maxGuestsPerEvent: integer("max_guests_per_event").default(20).notNull(),
+	minRestDays: integer("min_rest_days").default(1).notNull(),
+	maxConsecutiveDays: integer("max_consecutive_days").default(5).notNull(),
+	createdAt: timestamp("created_at", { withTimezone: true, mode: 'string' }).defaultNow().notNull(),
+	updatedAt: timestamp("updated_at", { withTimezone: true, mode: 'string' }).defaultNow().notNull(),
+}, (table) => [
+	uniqueIndex("idx_chef_burnout_boundaries_tenant").using("btree", table.tenantId.asc().nullsLast().op("uuid_ops")),
+	foreignKey({
+			columns: [table.tenantId],
+			foreignColumns: [chefs.id],
+			name: "chef_burnout_boundaries_tenant_id_fkey"
+		}).onDelete("cascade"),
+	check("chef_burnout_boundaries_max_events_per_week_check", sql`(max_events_per_week >= 1) AND (max_events_per_week <= 50)`),
+	check("chef_burnout_boundaries_max_guests_per_event_check", sql`(max_guests_per_event >= 1) AND (max_guests_per_event <= 500)`),
+	check("chef_burnout_boundaries_min_rest_days_check", sql`(min_rest_days >= 0) AND (min_rest_days <= 7)`),
+	check("chef_burnout_boundaries_max_consecutive_days_check", sql`(max_consecutive_days >= 1) AND (max_consecutive_days <= 14)`),
+])
+
+// ---------------------------------------------------------------------------
+// Chef Blocked Dates (rest / personal days)
+// ---------------------------------------------------------------------------
+
+export const chefBlockedDates = pgTable("chef_blocked_dates", {
+	id: uuid().defaultRandom().primaryKey().notNull(),
+	tenantId: uuid("tenant_id").notNull(),
+	blockedDate: date("blocked_date").notNull(),
+	reason: text("reason"),
+	createdAt: timestamp("created_at", { withTimezone: true, mode: 'string' }).defaultNow().notNull(),
+}, (table) => [
+	uniqueIndex("idx_chef_blocked_dates_tenant_date").using("btree", table.tenantId.asc().nullsLast().op("uuid_ops"), table.blockedDate.asc().nullsLast()),
+	foreignKey({
+			columns: [table.tenantId],
+			foreignColumns: [chefs.id],
+			name: "chef_blocked_dates_tenant_id_fkey"
+		}).onDelete("cascade"),
+])
+
+// ---------------------------------------------------------------------------
+// Capture Entries (Quick Capture Everything Inbox)
+// ---------------------------------------------------------------------------
+
+export const captureEntries = pgTable("capture_entries", {
+	id: uuid().defaultRandom().primaryKey().notNull(),
+	tenantId: uuid("tenant_id").notNull(),
+	content: text().notNull(),
+	category: text().default('general').notNull(),
+	status: text().default('inbox').notNull(),
+	priority: text().default('normal').notNull(),
+	linkedEventId: uuid("linked_event_id"),
+	linkedClientId: uuid("linked_client_id"),
+	linkedRecipeId: uuid("linked_recipe_id"),
+	tags: text().array().default([]),
+	capturedAt: timestamp("captured_at", { withTimezone: true, mode: 'string' }).defaultNow().notNull(),
+	triagedAt: timestamp("triaged_at", { withTimezone: true, mode: 'string' }),
+	actionedAt: timestamp("actioned_at", { withTimezone: true, mode: 'string' }),
+	createdAt: timestamp("created_at", { withTimezone: true, mode: 'string' }).defaultNow().notNull(),
+}, (table) => [
+	index("idx_capture_tenant_status").using("btree", table.tenantId.asc().nullsLast().op("uuid_ops"), table.status.asc().nullsLast()),
+	foreignKey({
+			columns: [table.tenantId],
+			foreignColumns: [chefs.id],
+			name: "capture_entries_tenant_id_fkey"
+		}).onDelete("cascade"),
+])
+
+// ---------------------------------------------------------------------------
+// Chef Taste Memory & Preference Learning
+// ---------------------------------------------------------------------------
+
+export const chefTastePreferences = pgTable("chef_taste_preferences", {
+	id: uuid().defaultRandom().primaryKey().notNull(),
+	tenantId: uuid("tenant_id").notNull(),
+	ingredientName: text("ingredient_name").notNull(),
+	rating: integer().default(3).notNull(),
+	notes: text(),
+	frequencyCount: integer("frequency_count").default(1).notNull(),
+	lastUsedAt: timestamp("last_used_at", { withTimezone: true, mode: 'string' }),
+	createdAt: timestamp("created_at", { withTimezone: true, mode: 'string' }).defaultNow().notNull(),
+	updatedAt: timestamp("updated_at", { withTimezone: true, mode: 'string' }).defaultNow().notNull(),
+}, (table) => [
+	uniqueIndex("idx_taste_pref_tenant_ingredient").using("btree", table.tenantId.asc().nullsLast(), table.ingredientName.asc().nullsLast()),
+	foreignKey({
+			columns: [table.tenantId],
+			foreignColumns: [chefs.id],
+			name: "chef_taste_preferences_tenant_id_fkey"
+		}).onDelete("cascade"),
+	check("chef_taste_preferences_rating_check", sql`(rating >= 1) AND (rating <= 5)`),
+	pgPolicy("tenant_isolation_select_chef_taste_preferences", { as: "permissive", for: "select", to: ["public"] }),
+	pgPolicy("tenant_isolation_insert_chef_taste_preferences", { as: "permissive", for: "insert", to: ["public"], withCheck: sql`(tenant_id = get_current_tenant_id())` }),
+	pgPolicy("tenant_isolation_update_chef_taste_preferences", { as: "permissive", for: "update", to: ["public"], using: sql`(tenant_id = get_current_tenant_id())` }),
+	pgPolicy("tenant_isolation_delete_chef_taste_preferences", { as: "permissive", for: "delete", to: ["public"], using: sql`(tenant_id = get_current_tenant_id())` }),
+])
+
+// ---------------------------------------------------------------------------
+// Service Playbooks (reusable event templates)
+// ---------------------------------------------------------------------------
+
+export const servicePlaybooks = pgTable("service_playbooks", {
+	id: uuid().defaultRandom().primaryKey().notNull(),
+	tenantId: uuid("tenant_id").notNull(),
+	name: text().notNull(),
+	description: text(),
+	serviceStyle: text("service_style"),
+	guestCountMin: integer("guest_count_min"),
+	guestCountMax: integer("guest_count_max"),
+	menuTemplateId: uuid("menu_template_id"),
+	prepTimelineTemplate: jsonb("prep_timeline_template").default({}),
+	equipmentChecklist: jsonb("equipment_checklist").default([]),
+	serviceNotes: text("service_notes"),
+	tags: text().array().default(sql`'{}'::text[]`),
+	timesUsed: integer("times_used").notNull().default(0),
+	lastUsedAt: timestamp("last_used_at", { withTimezone: true, mode: 'string' }),
+	deletedAt: timestamp("deleted_at", { withTimezone: true, mode: 'string' }),
+	createdAt: timestamp("created_at", { withTimezone: true, mode: 'string' }).defaultNow().notNull(),
+	updatedAt: timestamp("updated_at", { withTimezone: true, mode: 'string' }).defaultNow().notNull(),
+}, (table) => [
+	index("idx_playbooks_tenant").using("btree", table.tenantId.asc().nullsLast()).where(sql`deleted_at IS NULL`),
+	foreignKey({
+			columns: [table.tenantId],
+			foreignColumns: [chefs.id],
+			name: "service_playbooks_tenant_id_fkey"
+		}).onDelete("cascade"),
+])
+
+// ---------------------------------------------------------------------------
+// Proposal Experiences (Add-Ons, Tradeoffs, Tier-Based Pricing)
+// ---------------------------------------------------------------------------
+
+export const proposalExperiences = pgTable("proposal_experiences", {
+	id: uuid().defaultRandom().primaryKey().notNull(),
+	eventId: uuid("event_id").notNull(),
+	tenantId: uuid("tenant_id").notNull(),
+	tiers: jsonb().default([]).notNull(),
+	addOns: jsonb("add_ons").default([]).notNull(),
+	tradeoffs: jsonb().default([]).notNull(),
+	selectedTierId: text("selected_tier_id"),
+	selectedAddOnIds: text("selected_add_on_ids").array().default([]),
+	selectedTradeoffIds: text("selected_tradeoff_ids").array().default([]),
+	totalCents: integer("total_cents").default(0).notNull(),
+	status: text().default('draft').notNull(),
+	sentAt: timestamp("sent_at", { withTimezone: true, mode: 'string' }),
+	viewedAt: timestamp("viewed_at", { withTimezone: true, mode: 'string' }),
+	acceptedAt: timestamp("accepted_at", { withTimezone: true, mode: 'string' }),
+	createdAt: timestamp("created_at", { withTimezone: true, mode: 'string' }).defaultNow().notNull(),
+}, (table) => [
+	index("idx_proposal_tenant_event").using("btree", table.tenantId.asc().nullsLast().op("uuid_ops"), table.eventId.asc().nullsLast().op("uuid_ops")),
+	foreignKey({
+			columns: [table.eventId],
+			foreignColumns: [events.id],
+			name: "proposal_experiences_event_id_fkey"
+		}),
+	foreignKey({
+			columns: [table.tenantId],
+			foreignColumns: [chefs.id],
+			name: "proposal_experiences_tenant_id_fkey"
+		}).onDelete("cascade"),
+])
+
+// ---------------------------------------------------------------------------
+// Venue Profiles (Venue & Kitchen Recon Intelligence)
+// ---------------------------------------------------------------------------
+
+export const venueProfiles = pgTable("venue_profiles", {
+	id: uuid().defaultRandom().primaryKey().notNull(),
+	tenantId: uuid("tenant_id").notNull(),
+	venueName: text("venue_name").notNull(),
+	address: text(),
+	venueType: text("venue_type").default('other'),
+	kitchenNotes: text("kitchen_notes"),
+	equipmentAvailable: text("equipment_available").array().default([]),
+	ovenType: text("oven_type"),
+	ovenCount: smallint("oven_count"),
+	burnerCount: smallint("burner_count"),
+	counterSpaceRating: integer("counter_space_rating"),
+	hasFullKitchen: boolean("has_full_kitchen"),
+	hasRefrigeration: boolean("has_refrigeration"),
+	hasFreezer: boolean("has_freezer"),
+	hasRunningWater: boolean("has_running_water"),
+	refrigerationNotes: text("refrigeration_notes"),
+	parkingNotes: text("parking_notes"),
+	accessInstructions: text("access_instructions"),
+	powerOutlets: text("power_outlets"),
+	waterAccess: text("water_access"),
+	photos: text().array().default([]),
+	quirks: text(),
+	notes: text(),
+	lastVisitedAt: date("last_visited_at"),
+	visitCount: integer("visit_count").default(0).notNull(),
+	createdAt: timestamp("created_at", { withTimezone: true, mode: 'string' }).defaultNow().notNull(),
+	updatedAt: timestamp("updated_at", { withTimezone: true, mode: 'string' }).defaultNow().notNull(),
+}, (table) => [
+	index("idx_venue_profiles_tenant").using("btree", table.tenantId.asc().nullsLast()),
+	index("idx_venue_profiles_lookup").using("btree", table.tenantId.asc().nullsLast(), table.venueName.asc().nullsLast()),
+	index("idx_venue_profiles_address").using("btree", table.tenantId.asc().nullsLast(), table.address.asc().nullsLast()).where(sql`(address IS NOT NULL)`),
+	unique("venue_profiles_tenant_id_venue_name_key").on(table.tenantId, table.venueName),
+	foreignKey({
+			columns: [table.tenantId],
+			foreignColumns: [chefs.id],
+			name: "venue_profiles_tenant_id_fkey"
+		}).onDelete("cascade"),
+	check("venue_profiles_counter_space_rating_check", sql`(counter_space_rating IS NULL) OR ((counter_space_rating >= 1) AND (counter_space_rating <= 5))`),
+	check("venue_profiles_venue_type_check", sql`(venue_type IS NULL) OR (venue_type = ANY (ARRAY['residential'::text, 'commercial_kitchen'::text, 'outdoor'::text, 'venue_hall'::text, 'restaurant'::text, 'office'::text, 'other'::text]))`),
+	check("venue_profiles_oven_count_check", sql`(oven_count IS NULL) OR (oven_count >= 0)`),
+	check("venue_profiles_burner_count_check", sql`(burner_count IS NULL) OR (burner_count >= 0)`),
+	pgPolicy("venue_profiles_chef_all", { as: "permissive", for: "all", to: ["public"], using: sql`(tenant_id IN ( SELECT user_roles.entity_id
+   FROM user_roles
+  WHERE ((user_roles.auth_user_id = auth.uid()) AND (user_roles.role = 'chef'::user_role))))`, withCheck: sql`(tenant_id IN ( SELECT user_roles.entity_id
+   FROM user_roles
+  WHERE ((user_roles.auth_user_id = auth.uid()) AND (user_roles.role = 'chef'::user_role))))` }),
+])
+
+export const shoppingReceipts = pgTable("shopping_receipts", {
+	id: uuid().defaultRandom().primaryKey().notNull(),
+	tenantId: uuid("tenant_id").notNull(),
+	storeName: text("store_name").notNull(),
+	receiptDate: date("receipt_date").notNull(),
+	totalCents: integer("total_cents").default(0).notNull(),
+	taxCents: integer("tax_cents").default(0),
+	items: jsonb().default([]).notNull(),
+	eventId: uuid("event_id"),
+	photoUrl: text("photo_url"),
+	notes: text(),
+	createdAt: timestamp("created_at", { withTimezone: true, mode: 'string' }).defaultNow().notNull(),
+}, (table) => [
+	index("idx_receipts_tenant_date").using("btree", table.tenantId.asc().nullsLast(), table.receiptDate.desc().nullsFirst()),
+])
+
+export const fixtureSets = pgTable("fixture_sets", {
+	id: uuid().defaultRandom().primaryKey().notNull(),
+	tenantId: uuid("tenant_id").notNull(),
+	scenario: text().notNull(),
+	name: text().notNull(),
+	description: text(),
+	data: jsonb().default({}).notNull(),
+	createdAt: timestamp("created_at", { withTimezone: true, mode: 'string' }).defaultNow().notNull(),
+}, (table) => [
+	index("idx_fixture_sets_tenant").using("btree", table.tenantId.asc().nullsLast()),
+	foreignKey({
+			columns: [table.tenantId],
+			foreignColumns: [chefs.id],
+			name: "fixture_sets_tenant_id_fkey"
+		}).onDelete("cascade"),
+	pgPolicy("fixture_sets_tenant_isolation", { as: "permissive", for: "all", to: ["public"], using: sql`(tenant_id = get_current_tenant_id())`, withCheck: sql`(tenant_id = get_current_tenant_id())` }),
+])
+
+export const inventoryEntries = pgTable("inventory_entries", {
+	id: uuid().defaultRandom().primaryKey().notNull(),
+	tenantId: uuid("tenant_id").notNull(),
+	ingredientId: uuid("ingredient_id"),
+	ingredientName: text("ingredient_name").notNull(),
+	quantityOnHand: numeric("quantity_on_hand").default('0').notNull(),
+	unit: text().default('each').notNull(),
+	lastPurchasedAt: timestamp("last_purchased_at", { withTimezone: true, mode: 'string' }),
+	expiryDate: date("expiry_date"),
+	location: text(),
+	createdAt: timestamp("created_at", { withTimezone: true, mode: 'string' }).defaultNow().notNull(),
+	updatedAt: timestamp("updated_at", { withTimezone: true, mode: 'string' }).defaultNow().notNull(),
+}, (table) => [
+	index("idx_inventory_tenant").using("btree", table.tenantId.asc().nullsLast()),
+])
+
+export const auditEntries = pgTable("audit_entries", {
+	id: uuid().defaultRandom().primaryKey().notNull(),
+	tenantId: uuid("tenant_id").notNull(),
+	entityType: text("entity_type").notNull(),
+	entityId: uuid("entity_id").notNull(),
+	action: text().notNull(),
+	actorId: uuid("actor_id").notNull(),
+	actorName: text("actor_name"),
+	changes: jsonb().default([]).notNull(),
+	metadata: jsonb().default({}),
+	createdAt: timestamp("created_at", { withTimezone: true, mode: 'string' }).defaultNow().notNull(),
+}, (table) => [
+	index("idx_audit_entity").using("btree", table.tenantId.asc().nullsLast(), table.entityType.asc().nullsLast(), table.entityId.asc().nullsLast()),
+	index("idx_audit_actor").using("btree", table.tenantId.asc().nullsLast(), table.actorId.asc().nullsLast()),
+	index("idx_audit_created").using("btree", table.tenantId.asc().nullsLast(), table.createdAt.desc().nullsFirst()),
+	foreignKey({
+			columns: [table.tenantId],
+			foreignColumns: [chefs.id],
+			name: "audit_entries_tenant_id_fkey"
+		}).onDelete("cascade"),
+])
+
+export const eventTouchpoints = pgTable("event_touchpoints", {
+	id: uuid().defaultRandom().primaryKey().notNull(),
+	eventId: uuid("event_id").notNull(),
+	tenantId: uuid("tenant_id").notNull(),
+	type: text().default('custom').notNull(),
+	name: text().notNull(),
+	description: text(),
+	timingMinutes: integer("timing_minutes"),
+	durationMinutes: integer("duration_minutes"),
+	notes: text(),
+	sortOrder: integer("sort_order").default(0).notNull(),
+	createdAt: timestamp("created_at", { withTimezone: true, mode: 'string' }).defaultNow().notNull(),
+}, (table) => [
+	index("idx_touchpoints_event").using("btree", table.tenantId.asc().nullsLast(), table.eventId.asc().nullsLast()),
+	foreignKey({
+			columns: [table.eventId],
+			foreignColumns: [events.id],
+			name: "event_touchpoints_event_id_fkey"
+		}).onDelete("cascade"),
+	foreignKey({
+			columns: [table.tenantId],
+			foreignColumns: [chefs.id],
+			name: "event_touchpoints_tenant_id_fkey"
+		}).onDelete("cascade"),
+]);
+
+export const touchpointTemplates = pgTable("touchpoint_templates", {
+	id: uuid().defaultRandom().primaryKey().notNull(),
+	tenantId: uuid("tenant_id").notNull(),
+	name: text().notNull(),
+	touchpoints: jsonb().default([]).notNull(),
+	timesUsed: integer("times_used").default(0).notNull(),
+	createdAt: timestamp("created_at", { withTimezone: true, mode: 'string' }).defaultNow().notNull(),
+}, (table) => [
+	index("idx_touchpoint_templates_tenant").using("btree", table.tenantId.asc().nullsLast()),
+	foreignKey({
+			columns: [table.tenantId],
+			foreignColumns: [chefs.id],
+			name: "touchpoint_templates_tenant_id_fkey"
+		}).onDelete("cascade"),
+]);
+
+export const undoRecords = pgTable("undo_records", {
+	id: uuid().defaultRandom().primaryKey().notNull(),
+	tenantId: uuid("tenant_id").notNull(),
+	actionType: text("action_type").notNull(),
+	entityType: text("entity_type").notNull(),
+	entityIds: text("entity_ids").array().default([]).notNull(),
+	previousState: jsonb("previous_state").default([]).notNull(),
+	description: text().notNull(),
+	performedBy: uuid("performed_by").notNull(),
+	performedAt: timestamp("performed_at", { withTimezone: true, mode: 'string' }).defaultNow().notNull(),
+	expiresAt: timestamp("expires_at", { withTimezone: true, mode: 'string' }).notNull(),
+	undone: boolean().default(false).notNull(),
+	undoneAt: timestamp("undone_at", { withTimezone: true, mode: 'string' }),
+	createdAt: timestamp("created_at", { withTimezone: true, mode: 'string' }).defaultNow().notNull(),
+}, (table) => [
+	index("idx_undo_tenant_expires").using("btree", table.tenantId.asc().nullsLast(), table.expiresAt.asc().nullsLast()).where(sql`(undone = false)`),
+	foreignKey({
+			columns: [table.tenantId],
+			foreignColumns: [chefs.id],
+			name: "undo_records_tenant_id_fkey"
+		}).onDelete("cascade"),
+	foreignKey({
+			columns: [table.performedBy],
+			foreignColumns: [users.id],
+			name: "undo_records_performed_by_fkey"
+		}).onDelete("cascade"),
+]);
+
+export const revisionEntries = pgTable('revision_entries', {
+	id: uuid('id').defaultRandom().primaryKey(),
+	tenantId: uuid('tenant_id').notNull(),
+	entityType: text('entity_type').notNull(),
+	entityId: uuid('entity_id').notNull(),
+	version: integer('version').notNull(),
+	snapshot: jsonb('snapshot').notNull(),
+	changedBy: uuid('changed_by').notNull(),
+	changedByName: text('changed_by_name'),
+	changeNote: text('change_note'),
+	createdAt: timestamp('created_at', { withTimezone: true, mode: 'string' }).defaultNow().notNull(),
+})
+
+// ---------------------------------------------------------------------------
+// Referral Records: granular referral log per partner
+// ---------------------------------------------------------------------------
+
+export const referralRecords = pgTable("referral_records", {
+	id: uuid().defaultRandom().primaryKey().notNull(),
+	tenantId: uuid("tenant_id").notNull(),
+	partnerId: uuid("partner_id").notNull(),
+	clientId: uuid("client_id"),
+	eventId: uuid("event_id"),
+	revenueCents: integer("revenue_cents").default(0).notNull(),
+	notes: text(),
+	referredAt: timestamp("referred_at", { withTimezone: true, mode: 'string' }).defaultNow().notNull(),
+}, (table) => [
+	index("idx_referral_records_tenant").using("btree", table.tenantId.asc().nullsLast().op("uuid_ops")),
+	index("idx_referral_records_partner").using("btree", table.tenantId.asc().nullsLast().op("uuid_ops"), table.partnerId.asc().nullsLast().op("uuid_ops")),
+	foreignKey({
+			columns: [table.tenantId],
+			foreignColumns: [chefs.id],
+			name: "referral_records_tenant_id_fkey"
+		}).onDelete("cascade"),
+	foreignKey({
+			columns: [table.partnerId],
+			foreignColumns: [referralPartners.id],
+			name: "referral_records_partner_id_fkey"
+		}).onDelete("cascade"),
+]);
+
+// ---------------------------------------------------------------------------
+// Custom Shortcuts (chef keyboard shortcut overrides)
+// ---------------------------------------------------------------------------
+
+export const customShortcuts = pgTable("custom_shortcuts", {
+	id: uuid().defaultRandom().primaryKey().notNull(),
+	tenantId: uuid("tenant_id").notNull(),
+	action: text().notNull(),
+	key: text().notNull(),
+	modifiers: jsonb().default([]).notNull(),
+	createdAt: timestamp("created_at", { withTimezone: true, mode: 'string' }).defaultNow().notNull(),
+}, (table) => [
+	uniqueIndex("idx_custom_shortcuts_tenant_action").using("btree", table.tenantId.asc().nullsLast(), table.action.asc().nullsLast()),
+	foreignKey({
+			columns: [table.tenantId],
+			foreignColumns: [chefs.id],
+			name: "custom_shortcuts_tenant_id_fkey"
+		}).onDelete("cascade"),
+]);
+
+// ---------------------------------------------------------------------------
+// Workspace Preferences: UI density and workspace mode per chef
+// ---------------------------------------------------------------------------
+
+export const workspacePreferences = pgTable("workspace_preferences", {
+	id: uuid().defaultRandom().primaryKey().notNull(),
+	tenantId: uuid("tenant_id").notNull(),
+	densityMode: text("density_mode").default('comfortable').notNull(),
+	workspaceMode: text("workspace_mode").default('overview').notNull(),
+	sidebarCollapsed: boolean("sidebar_collapsed").default(false).notNull(),
+	compactTables: boolean("compact_tables").default(false).notNull(),
+	showQuickActions: boolean("show_quick_actions").default(true).notNull(),
+	createdAt: timestamp("created_at", { withTimezone: true, mode: 'string' }).defaultNow().notNull(),
+	updatedAt: timestamp("updated_at", { withTimezone: true, mode: 'string' }).defaultNow().notNull(),
+}, (table) => [
+	uniqueIndex("idx_workspace_prefs_tenant").using("btree", table.tenantId.asc().nullsLast()),
+	foreignKey({
+			columns: [table.tenantId],
+			foreignColumns: [chefs.id],
+			name: "workspace_preferences_tenant_id_fkey"
+		}).onDelete("cascade"),
+	check("wp_density_mode_check", sql`density_mode = ANY (ARRAY['compact'::text, 'comfortable'::text, 'spacious'::text])`),
+	check("wp_workspace_mode_check", sql`workspace_mode = ANY (ARRAY['focus'::text, 'overview'::text, 'planning'::text])`),
+	pgPolicy("wp_tenant_isolation", { as: "permissive", for: "all", to: ["public"], using: sql`(tenant_id = get_current_tenant_id())`, withCheck: sql`(tenant_id = get_current_tenant_id())` }),
+]);
+
+// ---------------------------------------------------------------------------
+// Consent Records (client privacy consent tracking)
+// ---------------------------------------------------------------------------
+
+export const consentRecords = pgTable("consent_records", {
+	id: uuid().defaultRandom().primaryKey().notNull(),
+	tenantId: uuid("tenant_id").notNull(),
+	clientId: uuid("client_id").notNull(),
+	consentType: text("consent_type").notNull(),
+	status: text().default('pending').notNull(),
+	grantedAt: timestamp("granted_at", { withTimezone: true, mode: 'string' }),
+	withdrawnAt: timestamp("withdrawn_at", { withTimezone: true, mode: 'string' }),
+	ipAddress: text("ip_address"),
+	source: text().default('portal').notNull(),
+	notes: text(),
+	createdAt: timestamp("created_at", { withTimezone: true, mode: 'string' }).defaultNow().notNull(),
+}, (table) => [
+	index("idx_consent_records_client").using("btree", table.tenantId.asc().nullsLast(), table.clientId.asc().nullsLast()),
+	index("idx_consent_records_type").using("btree", table.tenantId.asc().nullsLast(), table.consentType.asc().nullsLast(), table.status.asc().nullsLast()),
+	foreignKey({
+			columns: [table.tenantId],
+			foreignColumns: [chefs.id],
+			name: "consent_records_tenant_id_fkey"
+		}).onDelete("cascade"),
+	pgPolicy("consent_records_tenant_isolation", { as: "permissive", for: "all", to: ["public"], using: sql`(tenant_id = get_current_tenant_id())`, withCheck: sql`(tenant_id = get_current_tenant_id())` }),
+])
+
+// ---------------------------------------------------------------------------
+// Sharing Permissions (entity-level visibility controls)
+// ---------------------------------------------------------------------------
+
+export const sharingPermissions = pgTable("sharing_permissions", {
+	id: uuid().defaultRandom().primaryKey().notNull(),
+	tenantId: uuid("tenant_id").notNull(),
+	entityType: text("entity_type").notNull(),
+	entityId: uuid("entity_id").notNull(),
+	visibility: text().default('private').notNull(),
+	expiresAt: timestamp("expires_at", { withTimezone: true, mode: 'string' }),
+	createdAt: timestamp("created_at", { withTimezone: true, mode: 'string' }).defaultNow().notNull(),
+}, (table) => [
+	uniqueIndex("idx_sharing_perms_entity").using("btree", table.tenantId.asc().nullsLast(), table.entityType.asc().nullsLast(), table.entityId.asc().nullsLast()),
+	foreignKey({
+			columns: [table.tenantId],
+			foreignColumns: [chefs.id],
+			name: "sharing_permissions_tenant_id_fkey"
+		}).onDelete("cascade"),
+	pgPolicy("sharing_permissions_tenant_isolation", { as: "permissive", for: "all", to: ["public"], using: sql`(tenant_id = get_current_tenant_id())`, withCheck: sql`(tenant_id = get_current_tenant_id())` }),
+])
+
+// ---------------------------------------------------------------------------
+// Session States (cross-surface continuity: where user left off)
+// ---------------------------------------------------------------------------
+
+export const sessionStates = pgTable("session_states", {
+	id: uuid().defaultRandom().primaryKey().notNull(),
+	tenantId: uuid("tenant_id").notNull(),
+	lastRoute: text("last_route").notNull(),
+	lastEntityType: text("last_entity_type"),
+	lastEntityId: uuid("last_entity_id"),
+	scrollPosition: integer("scroll_position").default(0).notNull(),
+	tabIndex: integer("tab_index"),
+	filterState: jsonb("filter_state"),
+	updatedAt: timestamp("updated_at", { withTimezone: true, mode: 'string' }).defaultNow().notNull(),
+}, (table) => [
+	uniqueIndex("idx_session_states_tenant").using("btree", table.tenantId.asc().nullsLast()),
+	foreignKey({
+			columns: [table.tenantId],
+			foreignColumns: [chefs.id],
+			name: "session_states_tenant_id_fkey"
+		}).onDelete("cascade"),
+	pgPolicy("session_states_tenant_isolation", { as: "permissive", for: "all", to: ["public"], using: sql`(tenant_id = get_current_tenant_id())`, withCheck: sql`(tenant_id = get_current_tenant_id())` }),
+])
+
+// ---------------------------------------------------------------------------
+// Session Breadcrumbs (navigation history per tenant)
+// ---------------------------------------------------------------------------
+
+export const sessionBreadcrumbs = pgTable("session_breadcrumbs", {
+	id: uuid().defaultRandom().primaryKey().notNull(),
+	tenantId: uuid("tenant_id").notNull(),
+	route: text().notNull(),
+	label: text().notNull(),
+	visitedAt: timestamp("visited_at", { withTimezone: true, mode: 'string' }).defaultNow().notNull(),
+}, (table) => [
+	index("idx_breadcrumbs_tenant").using("btree", table.tenantId.asc().nullsLast(), table.visitedAt.desc().nullsLast()),
+	foreignKey({
+			columns: [table.tenantId],
+			foreignColumns: [chefs.id],
+			name: "session_breadcrumbs_tenant_id_fkey"
+		}).onDelete("cascade"),
+	pgPolicy("session_breadcrumbs_tenant_isolation", { as: "permissive", for: "all", to: ["public"], using: sql`(tenant_id = get_current_tenant_id())`, withCheck: sql`(tenant_id = get_current_tenant_id())` }),
+])
+
+// ---------------------------------------------------------------------------
+// Resume Points (bookmarked positions to return to)
+// ---------------------------------------------------------------------------
+
+export const resumePoints = pgTable("resume_points", {
+	id: uuid().defaultRandom().primaryKey().notNull(),
+	tenantId: uuid("tenant_id").notNull(),
+	route: text().notNull(),
+	label: text().notNull(),
+	context: jsonb().default({}).notNull(),
+	createdAt: timestamp("created_at", { withTimezone: true, mode: 'string' }).defaultNow().notNull(),
+}, (table) => [
+	index("idx_resume_points_tenant").using("btree", table.tenantId.asc().nullsLast()),
+	foreignKey({
+			columns: [table.tenantId],
+			foreignColumns: [chefs.id],
+			name: "resume_points_tenant_id_fkey"
+		}).onDelete("cascade"),
+	pgPolicy("resume_points_tenant_isolation", { as: "permissive", for: "all", to: ["public"], using: sql`(tenant_id = get_current_tenant_id())`, withCheck: sql`(tenant_id = get_current_tenant_id())` }),
+])
+
+// ---------------------------------------------------------------------------
+// Event Progress Tracking (client-visible milestone progress)
+// ---------------------------------------------------------------------------
+
+export const eventProgress = pgTable("event_progress", {
+	id: uuid().defaultRandom().primaryKey().notNull(),
+	tenantId: uuid("tenant_id").notNull(),
+	eventId: uuid("event_id").notNull(),
+	steps: jsonb().default([]).notNull(),
+	currentStepKey: text("current_step_key").default('inquiry').notNull(),
+	overallPercent: integer("overall_percent").default(0).notNull(),
+	clientVisible: boolean("client_visible").default(true).notNull(),
+	lastUpdatedAt: timestamp("last_updated_at", { withTimezone: true, mode: 'string' }).defaultNow().notNull(),
+	createdAt: timestamp("created_at", { withTimezone: true, mode: 'string' }).defaultNow().notNull(),
+}, (table) => [
+	uniqueIndex("idx_event_progress_event").using("btree", table.tenantId.asc().nullsLast(), table.eventId.asc().nullsLast()),
+	foreignKey({
+			columns: [table.tenantId],
+			foreignColumns: [chefs.id],
+			name: "event_progress_tenant_id_fkey"
+		}).onDelete("cascade"),
+	foreignKey({
+			columns: [table.eventId],
+			foreignColumns: [events.id],
+			name: "event_progress_event_id_fkey"
+		}).onDelete("cascade"),
+])
+
+// ---------------------------------------------------------------------------
+// Progress Templates (reusable step templates for progress tracking)
+// ---------------------------------------------------------------------------
+
+export const progressTemplates = pgTable("progress_templates", {
+	id: uuid().defaultRandom().primaryKey().notNull(),
+	tenantId: uuid("tenant_id").notNull(),
+	name: text().notNull(),
+	steps: jsonb().default([]).notNull(),
+	isDefault: boolean("is_default").default(false).notNull(),
+	createdAt: timestamp("created_at", { withTimezone: true, mode: 'string' }).defaultNow().notNull(),
+}, (table) => [
+	index("idx_progress_templates_tenant").using("btree", table.tenantId.asc().nullsLast()),
+	foreignKey({
+			columns: [table.tenantId],
+			foreignColumns: [chefs.id],
+			name: "progress_templates_tenant_id_fkey"
+		}).onDelete("cascade"),
+])
+
+// ---------------------------------------------------------------------------
+// Notification Preferences (severity + interruption controls per category)
+// ---------------------------------------------------------------------------
+
+export const notificationPreferences = pgTable("notification_preferences", {
+	id: uuid().defaultRandom().primaryKey().notNull(),
+	tenantId: uuid("tenant_id").notNull(),
+	category: text().notNull(),
+	severity: text().default('informational').notNull(),
+	channels: jsonb().default(['in_app']).notNull(),
+	interruptionLevel: text("interruption_level").default('business_hours').notNull(),
+	mutedUntil: timestamp("muted_until", { withTimezone: true, mode: 'string' }),
+	createdAt: timestamp("created_at", { withTimezone: true, mode: 'string' }).defaultNow().notNull(),
+	updatedAt: timestamp("updated_at", { withTimezone: true, mode: 'string' }).defaultNow().notNull(),
+}, (table) => [
+	uniqueIndex("idx_notif_prefs_tenant_cat").using("btree", table.tenantId.asc().nullsLast(), table.category.asc().nullsLast()),
+	foreignKey({
+			columns: [table.tenantId],
+			foreignColumns: [chefs.id],
+			name: "notification_preferences_tenant_id_fkey"
+		}).onDelete("cascade"),
+	check("notif_prefs_severity_check", sql`severity = ANY (ARRAY['critical'::text, 'important'::text, 'informational'::text, 'silent'::text])`),
+	check("notif_prefs_interruption_check", sql`interruption_level = ANY (ARRAY['always'::text, 'business_hours'::text, 'urgent_only'::text, 'never'::text])`),
+	pgPolicy("notif_prefs_tenant_isolation", { as: "permissive", for: "all", to: ["public"], using: sql`(tenant_id = get_current_tenant_id())`, withCheck: sql`(tenant_id = get_current_tenant_id())` }),
+])
+
+// ---------------------------------------------------------------------------
+// Quiet Hours (global notification silence window per chef)
+// ---------------------------------------------------------------------------
+
+export const quietHours = pgTable("quiet_hours", {
+	id: uuid().defaultRandom().primaryKey().notNull(),
+	tenantId: uuid("tenant_id").notNull(),
+	enabled: boolean().default(false).notNull(),
+	startTime: text("start_time").default('22:00').notNull(),
+	endTime: text("end_time").default('07:00').notNull(),
+	timezone: text().default('America/New_York').notNull(),
+	allowCritical: boolean("allow_critical").default(true).notNull(),
+	createdAt: timestamp("created_at", { withTimezone: true, mode: 'string' }).defaultNow().notNull(),
+	updatedAt: timestamp("updated_at", { withTimezone: true, mode: 'string' }).defaultNow().notNull(),
+}, (table) => [
+	uniqueIndex("idx_quiet_hours_tenant").using("btree", table.tenantId.asc().nullsLast()),
+	foreignKey({
+			columns: [table.tenantId],
+			foreignColumns: [chefs.id],
+			name: "quiet_hours_tenant_id_fkey"
+		}).onDelete("cascade"),
+	pgPolicy("quiet_hours_tenant_isolation", { as: "permissive", for: "all", to: ["public"], using: sql`(tenant_id = get_current_tenant_id())`, withCheck: sql`(tenant_id = get_current_tenant_id())` }),
+])
+
+// ---------------------------------------------------------------------------
+// Staff Tasks (kanban task board for staff assignment and tracking)
+// ---------------------------------------------------------------------------
+
+export const staffTasks = pgTable("staff_tasks", {
+	id: uuid().defaultRandom().primaryKey().notNull(),
+	tenantId: uuid("tenant_id").notNull(),
+	eventId: uuid("event_id"),
+	assigneeId: uuid("assignee_id"),
+	assigneeName: text("assignee_name"),
+	title: text().notNull(),
+	description: text(),
+	priority: text().default('normal').notNull(),
+	status: text().default('unassigned').notNull(),
+	dueAt: timestamp("due_at", { withTimezone: true, mode: 'string' }),
+	completedAt: timestamp("completed_at", { withTimezone: true, mode: 'string' }),
+	category: text().default('general').notNull(),
+	createdAt: timestamp("created_at", { withTimezone: true, mode: 'string' }).defaultNow().notNull(),
+	updatedAt: timestamp("updated_at", { withTimezone: true, mode: 'string' }).defaultNow().notNull(),
+}, (table) => [
+	index("idx_staff_tasks_tenant").using("btree", table.tenantId.asc().nullsLast(), table.status.asc().nullsLast()),
+	index("idx_staff_tasks_assignee").using("btree", table.tenantId.asc().nullsLast(), table.assigneeId.asc().nullsLast()).where(sql`(assignee_id IS NOT NULL)`),
+	index("idx_staff_tasks_event").using("btree", table.tenantId.asc().nullsLast(), table.eventId.asc().nullsLast()).where(sql`(event_id IS NOT NULL)`),
+	foreignKey({
+			columns: [table.tenantId],
+			foreignColumns: [chefs.id],
+			name: "staff_tasks_tenant_id_fkey"
+		}).onDelete("cascade"),
+	pgPolicy("staff_tasks_tenant_isolation", { as: "permissive", for: "all", to: ["public"], using: sql`(tenant_id = get_current_tenant_id())`, withCheck: sql`(tenant_id = get_current_tenant_id())` }),
+])
+
+// ---------------------------------------------------------------------------
+// Shift Assignments (staff shift scheduling per event)
+// ---------------------------------------------------------------------------
+
+export const shiftAssignments = pgTable("shift_assignments", {
+	id: uuid().defaultRandom().primaryKey().notNull(),
+	tenantId: uuid("tenant_id").notNull(),
+	staffId: uuid("staff_id").notNull(),
+	eventId: uuid("event_id").notNull(),
+	role: text().default('assistant').notNull(),
+	startTime: timestamp("start_time", { withTimezone: true, mode: 'string' }).notNull(),
+	endTime: timestamp("end_time", { withTimezone: true, mode: 'string' }).notNull(),
+	confirmed: boolean().default(false).notNull(),
+	notes: text(),
+	createdAt: timestamp("created_at", { withTimezone: true, mode: 'string' }).defaultNow().notNull(),
+}, (table) => [
+	index("idx_shifts_event").using("btree", table.tenantId.asc().nullsLast(), table.eventId.asc().nullsLast()),
+	index("idx_shifts_staff").using("btree", table.tenantId.asc().nullsLast(), table.staffId.asc().nullsLast()),
+	foreignKey({
+			columns: [table.tenantId],
+			foreignColumns: [chefs.id],
+			name: "shift_assignments_tenant_id_fkey"
+		}).onDelete("cascade"),
+	pgPolicy("shift_assignments_tenant_isolation", { as: "permissive", for: "all", to: ["public"], using: sql`(tenant_id = get_current_tenant_id())`, withCheck: sql`(tenant_id = get_current_tenant_id())` }),
+])
+
+// ---------------------------------------------------------------------------
+// Edit History (inline editing audit trail)
+// ---------------------------------------------------------------------------
+
+export const editHistory = pgTable("edit_history", {
+	id: uuid().defaultRandom().primaryKey().notNull(),
+	tenantId: uuid("tenant_id").notNull(),
+	entityType: text("entity_type").notNull(),
+	entityId: uuid("entity_id").notNull(),
+	field: text().notNull(),
+	oldValue: jsonb("old_value"),
+	newValue: jsonb("new_value"),
+	editedBy: text("edited_by").notNull(),
+	editedAt: timestamp("edited_at", { withTimezone: true, mode: 'string' }).defaultNow().notNull(),
+	reverted: boolean().default(false).notNull(),
+}, (table) => [
+	index("idx_edit_history_entity").using("btree", table.tenantId.asc().nullsLast(), table.entityType.asc().nullsLast(), table.entityId.asc().nullsLast()),
+	index("idx_edit_history_recent").using("btree", table.tenantId.asc().nullsLast(), table.editedAt.desc().nullsLast()),
+	foreignKey({
+			columns: [table.tenantId],
+			foreignColumns: [chefs.id],
+			name: "edit_history_tenant_id_fkey"
+		}).onDelete("cascade"),
+	pgPolicy("edit_history_tenant_isolation", { as: "permissive", for: "all", to: ["public"], using: sql`(tenant_id = get_current_tenant_id())`, withCheck: sql`(tenant_id = get_current_tenant_id())` }),
+])
+
+// ---------------------------------------------------------------------------
+// Search Log (operational memory search history)
+// ---------------------------------------------------------------------------
+
+export const searchLog = pgTable("search_log", {
+	id: uuid().defaultRandom().primaryKey().notNull(),
+	tenantId: uuid("tenant_id").notNull(),
+	query: text().notNull(),
+	resultCount: integer("result_count").default(0).notNull(),
+	searchedAt: timestamp("searched_at", { withTimezone: true, mode: 'string' }).defaultNow().notNull(),
+}, (table) => [
+	index("idx_search_log_tenant").using("btree", table.tenantId.asc().nullsLast(), table.searchedAt.desc().nullsLast()),
+	foreignKey({
+			columns: [table.tenantId],
+			foreignColumns: [chefs.id],
+			name: "search_log_tenant_id_fkey"
+		}).onDelete("cascade"),
+	pgPolicy("search_log_tenant_isolation", { as: "permissive", for: "all", to: ["public"], using: sql`(tenant_id = get_current_tenant_id())`, withCheck: sql`(tenant_id = get_current_tenant_id())` }),
+])
+
+export const qualityAlerts = pgTable("quality_alerts", {
+	id: uuid().defaultRandom().primaryKey().notNull(),
+	tenantId: uuid("tenant_id"),
+	alertType: text("alert_type").notNull(),
+	severity: text().default('low').notNull(),
+	message: text().notNull(),
+	resolved: boolean().default(false).notNull(),
+	resolvedAt: timestamp("resolved_at", { withTimezone: true, mode: 'string' }),
+	createdAt: timestamp("created_at", { withTimezone: true, mode: 'string' }).defaultNow().notNull(),
+}, (table) => [
+	index("idx_quality_alerts_active").using("btree", table.resolved.asc().nullsLast(), table.severity.asc().nullsLast()),
+])
+
+// ---------------------------------------------------------------------------
+// Rate Limit Rules & Events (admin-only, no tenant scoping)
+// ---------------------------------------------------------------------------
+export const rateLimitRules = pgTable("rate_limit_rules", {
+	id: uuid().defaultRandom().primaryKey().notNull(),
+	pathPattern: text("path_pattern").notNull(),
+	maxRequests: integer("max_requests").default(10).notNull(),
+	windowSeconds: integer("window_seconds").default(60).notNull(),
+	action: text().default('block').notNull(),
+	enabled: boolean().default(true).notNull(),
+	description: text(),
+	createdAt: timestamp("created_at", { withTimezone: true, mode: 'string' }).defaultNow().notNull(),
+}, (table) => [
+	uniqueIndex("idx_rate_rules_path").using("btree", table.pathPattern.asc().nullsLast()),
+])
+
+export const rateLimitEvents = pgTable("rate_limit_events", {
+	id: uuid().defaultRandom().primaryKey().notNull(),
+	ipAddress: text("ip_address").notNull(),
+	path: text().notNull(),
+	blocked: boolean().default(false).notNull(),
+	ruleId: uuid("rule_id").references(() => rateLimitRules.id),
+	userAgent: text("user_agent"),
+	createdAt: timestamp("created_at", { withTimezone: true, mode: 'string' }).defaultNow().notNull(),
+}, (table) => [
+	index("idx_rate_events_recent").using("btree", table.createdAt.desc().nullsLast()),
+	index("idx_rate_events_ip").using("btree", table.ipAddress.asc().nullsLast(), table.createdAt.desc().nullsLast()),
+])
+
+// ---------------------------------------------------------------------------
+// Setting Values (preference registry for settings IA)
+// ---------------------------------------------------------------------------
+
+export const settingValues = pgTable("setting_values", {
+	id: uuid().defaultRandom().primaryKey().notNull(),
+	tenantId: uuid("tenant_id").notNull(),
+	key: text().notNull(),
+	value: jsonb().notNull(),
+	updatedAt: timestamp("updated_at", { withTimezone: true, mode: 'string' }).defaultNow().notNull(),
+}, (table) => [
+	uniqueIndex("idx_setting_values_tenant_key").using("btree", table.tenantId.asc().nullsLast(), table.key.asc().nullsLast()),
+	foreignKey({
+			columns: [table.tenantId],
+			foreignColumns: [chefs.id],
+			name: "setting_values_tenant_id_fkey"
+		}).onDelete("cascade"),
+	pgPolicy("setting_values_tenant_isolation", { as: "permissive", for: "all", to: ["public"], using: sql`(tenant_id = get_current_tenant_id())`, withCheck: sql`(tenant_id = get_current_tenant_id())` }),
+])
+
+// ---------------------------------------------------------------------------
+// Import Jobs (onboarding data import from external sources)
+// ---------------------------------------------------------------------------
+
+export const importJobs = pgTable("import_jobs", {
+	id: uuid().defaultRandom().primaryKey().notNull(),
+	tenantId: uuid("tenant_id").notNull(),
+	source: text().notNull(),
+	entityType: text("entity_type").notNull(),
+	status: text().default('pending').notNull(),
+	totalRows: integer("total_rows").default(0).notNull(),
+	processedRows: integer("processed_rows").default(0).notNull(),
+	errorRows: integer("error_rows").default(0).notNull(),
+	errors: jsonb().default([]).notNull(),
+	createdAt: timestamp("created_at", { withTimezone: true, mode: 'string' }).defaultNow().notNull(),
+	completedAt: timestamp("completed_at", { withTimezone: true, mode: 'string' }),
+}, (table) => [
+	index("idx_import_jobs_tenant").using("btree", table.tenantId.asc().nullsLast(), table.createdAt.desc().nullsLast()),
+	foreignKey({
+			columns: [table.tenantId],
+			foreignColumns: [chefs.id],
+			name: "import_jobs_tenant_id_fkey"
+		}).onDelete("cascade"),
+	pgPolicy("import_jobs_tenant_isolation", { as: "permissive", for: "all", to: ["public"], using: sql`(tenant_id = get_current_tenant_id())`, withCheck: sql`(tenant_id = get_current_tenant_id())` }),
+])
+
+// ---------------------------------------------------------------------------
+// Activation Checkpoints (first-week activation tracking)
+// ---------------------------------------------------------------------------
+
+export const activationCheckpoints = pgTable("activation_checkpoints", {
+	id: uuid().defaultRandom().primaryKey().notNull(),
+	tenantId: uuid("tenant_id").notNull(),
+	checkpoint: text().notNull(),
+	completed: boolean().default(false).notNull(),
+	completedAt: timestamp("completed_at", { withTimezone: true, mode: 'string' }),
+	sortOrder: integer("sort_order").default(0).notNull(),
+	createdAt: timestamp("created_at", { withTimezone: true, mode: 'string' }).defaultNow().notNull(),
+}, (table) => [
+	uniqueIndex("idx_activation_tenant_cp").using("btree", table.tenantId.asc().nullsLast(), table.checkpoint.asc().nullsLast()),
+	foreignKey({
+			columns: [table.tenantId],
+			foreignColumns: [chefs.id],
+			name: "activation_checkpoints_tenant_id_fkey"
+		}).onDelete("cascade"),
+	pgPolicy("activation_checkpoints_tenant_isolation", { as: "permissive", for: "all", to: ["public"], using: sql`(tenant_id = get_current_tenant_id())`, withCheck: sql`(tenant_id = get_current_tenant_id())` }),
+])
+
+// ---------------------------------------------------------------------------
+// Action Usage Log (canonical chef-client action vocabulary tracking)
+// ---------------------------------------------------------------------------
+
+export const actionUsageLog = pgTable("action_usage_log", {
+	id: uuid().defaultRandom().primaryKey().notNull(),
+	tenantId: uuid("tenant_id").notNull(),
+	actionName: text("action_name").notNull(),
+	entityType: text("entity_type").notNull(),
+	entityId: uuid("entity_id").notNull(),
+	performedAt: timestamp("performed_at", { withTimezone: true, mode: 'string' }).defaultNow().notNull(),
+}, (table) => [
+	index("idx_action_usage_tenant").using("btree", table.tenantId.asc().nullsLast(), table.actionName.asc().nullsLast()),
+	index("idx_action_usage_recent").using("btree", table.tenantId.asc().nullsLast(), table.performedAt.desc().nullsLast()),
+	foreignKey({
+			columns: [table.tenantId],
+			foreignColumns: [chefs.id],
+			name: "action_usage_log_tenant_id_fkey"
+		}).onDelete("cascade"),
+	pgPolicy("action_usage_log_tenant_isolation", { as: "permissive", for: "all", to: ["public"], using: sql`(tenant_id = get_current_tenant_id())`, withCheck: sql`(tenant_id = get_current_tenant_id())` }),
+])
+
+// ---------------------------------------------------------------------------
+// Closeout Items (post-event completeness tracking)
+// ---------------------------------------------------------------------------
+
+export const closeoutItems = pgTable("closeout_items", {
+	id: uuid().defaultRandom().primaryKey().notNull(),
+	tenantId: uuid("tenant_id").notNull(),
+	eventId: uuid("event_id").notNull(),
+	itemKey: text("item_key").notNull(),
+	status: text().default('pending').notNull(),
+	completedAt: timestamp("completed_at", { withTimezone: true, mode: 'string' }),
+	skippedReason: text("skipped_reason"),
+	createdAt: timestamp("created_at", { withTimezone: true, mode: 'string' }).defaultNow().notNull(),
+}, (table) => [
+	uniqueIndex("idx_closeout_items_event_key").using("btree", table.tenantId.asc().nullsLast(), table.eventId.asc().nullsLast(), table.itemKey.asc().nullsLast()),
+	foreignKey({
+			columns: [table.tenantId],
+			foreignColumns: [chefs.id],
+			name: "closeout_items_tenant_id_fkey"
+		}).onDelete("cascade"),
+	pgPolicy("closeout_items_tenant_isolation", { as: "permissive", for: "all", to: ["public"], using: sql`(tenant_id = get_current_tenant_id())`, withCheck: sql`(tenant_id = get_current_tenant_id())` }),
+])
+
+// ---------------------------------------------------------------------------
+// Closeout Reminders (scheduled nudges for incomplete closeout items)
+// ---------------------------------------------------------------------------
+
+export const closeoutReminders = pgTable("closeout_reminders", {
+	id: uuid().defaultRandom().primaryKey().notNull(),
+	tenantId: uuid("tenant_id").notNull(),
+	eventId: uuid("event_id").notNull(),
+	itemKey: text("item_key").notNull(),
+	reminderAt: timestamp("reminder_at", { withTimezone: true, mode: 'string' }).notNull(),
+	sent: boolean().default(false).notNull(),
+	createdAt: timestamp("created_at", { withTimezone: true, mode: 'string' }).defaultNow().notNull(),
+}, (table) => [
+	index("idx_closeout_reminders_pending").using("btree", table.reminderAt.asc().nullsLast()).where(sql`sent = false`),
+	foreignKey({
+			columns: [table.tenantId],
+			foreignColumns: [chefs.id],
+			name: "closeout_reminders_tenant_id_fkey"
+		}).onDelete("cascade"),
+	pgPolicy("closeout_reminders_tenant_isolation", { as: "permissive", for: "all", to: ["public"], using: sql`(tenant_id = get_current_tenant_id())`, withCheck: sql`(tenant_id = get_current_tenant_id())` }),
+])
+
+// ---------------------------------------------------------------------------
+// Menu Story Elements (narrative content for FOH presentation)
+// ---------------------------------------------------------------------------
+
+export const menuStoryElements = pgTable("menu_story_elements", {
+	id: uuid().defaultRandom().primaryKey().notNull(),
+	tenantId: uuid("tenant_id").notNull(),
+	menuId: uuid("menu_id").notNull(),
+	type: text().notNull(),
+	title: text(),
+	content: text().notNull(),
+	dishId: uuid("dish_id"),
+	sortOrder: integer("sort_order").default(0).notNull(),
+	fohOnly: boolean("foh_only").default(false).notNull(),
+	createdAt: timestamp("created_at", { withTimezone: true, mode: 'string' }).defaultNow().notNull(),
+}, (table) => [
+	index("idx_story_elements_menu").using("btree", table.tenantId.asc().nullsLast(), table.menuId.asc().nullsLast()),
+	foreignKey({
+			columns: [table.tenantId],
+			foreignColumns: [chefs.id],
+			name: "menu_story_elements_tenant_id_fkey"
+		}).onDelete("cascade"),
+])
+
+// ---------------------------------------------------------------------------
+// Menu Wine Pairings
+// ---------------------------------------------------------------------------
+
+export const menuWinePairings = pgTable("menu_wine_pairings", {
+	id: uuid().defaultRandom().primaryKey().notNull(),
+	tenantId: uuid("tenant_id").notNull(),
+	menuId: uuid("menu_id").notNull(),
+	dishId: uuid("dish_id"),
+	wineName: text("wine_name").notNull(),
+	vineyard: text(),
+	vintage: text(),
+	notes: text(),
+	pricePerBottle: integer("price_per_bottle"),
+	sortOrder: integer("sort_order").default(0).notNull(),
+	createdAt: timestamp("created_at", { withTimezone: true, mode: 'string' }).defaultNow().notNull(),
+}, (table) => [
+	index("idx_wine_pairings_menu").using("btree", table.tenantId.asc().nullsLast(), table.menuId.asc().nullsLast()),
+	foreignKey({
+			columns: [table.tenantId],
+			foreignColumns: [chefs.id],
+			name: "menu_wine_pairings_tenant_id_fkey"
+		}).onDelete("cascade"),
+])
+
+// ---------------------------------------------------------------------------
+// Offline Sync (mobile offline queue and conflict resolution)
+// ---------------------------------------------------------------------------
+
+export const offlineActions = pgTable("offline_actions", {
+	id: uuid().defaultRandom().primaryKey().notNull(),
+	tenantId: uuid("tenant_id").notNull(),
+	actionType: text("action_type").notNull(),
+	entityType: text("entity_type").notNull(),
+	entityId: uuid("entity_id"),
+	payload: jsonb().default({}).notNull(),
+	status: text().default('pending').notNull(),
+	createdOfflineAt: timestamp("created_offline_at", { withTimezone: true, mode: 'string' }).notNull(),
+	syncedAt: timestamp("synced_at", { withTimezone: true, mode: 'string' }),
+	conflictData: jsonb("conflict_data"),
+	retryCount: integer("retry_count").default(0).notNull(),
+	createdAt: timestamp("created_at", { withTimezone: true, mode: 'string' }).defaultNow().notNull(),
+}, (table) => [
+	index("idx_offline_actions_pending").using("btree", table.tenantId.asc().nullsLast(), table.status.asc().nullsLast()),
+	foreignKey({
+			columns: [table.tenantId],
+			foreignColumns: [chefs.id],
+			name: "offline_actions_tenant_id_fkey"
+		}).onDelete("cascade"),
+	pgPolicy("offline_actions_tenant_isolation", { as: "permissive", for: "all", to: ["public"], using: sql`(tenant_id = get_current_tenant_id())`, withCheck: sql`(tenant_id = get_current_tenant_id())` }),
+])
+
+export const syncSessions = pgTable("sync_sessions", {
+	id: uuid().defaultRandom().primaryKey().notNull(),
+	tenantId: uuid("tenant_id").notNull(),
+	startedAt: timestamp("started_at", { withTimezone: true, mode: 'string' }).defaultNow().notNull(),
+	completedAt: timestamp("completed_at", { withTimezone: true, mode: 'string' }),
+	actionsTotal: integer("actions_total").default(0).notNull(),
+	actionsSynced: integer("actions_synced").default(0).notNull(),
+	actionsFailed: integer("actions_failed").default(0).notNull(),
+	conflicts: integer().default(0).notNull(),
+}, (table) => [
+	index("idx_sync_sessions_tenant").using("btree", table.tenantId.asc().nullsLast(), table.startedAt.desc().nullsLast()),
+	foreignKey({
+			columns: [table.tenantId],
+			foreignColumns: [chefs.id],
+			name: "sync_sessions_tenant_id_fkey"
+		}).onDelete("cascade"),
+	pgPolicy("sync_sessions_tenant_isolation", { as: "permissive", for: "all", to: ["public"], using: sql`(tenant_id = get_current_tenant_id())`, withCheck: sql`(tenant_id = get_current_tenant_id())` }),
+])
+
+// ---------------------------------------------------------------------------
+// Menu Builder States (workspace preferences per menu)
+// ---------------------------------------------------------------------------
+
+export const menuBuilderStates = pgTable("menu_builder_states", {
+	id: uuid().defaultRandom().primaryKey().notNull(),
+	tenantId: uuid("tenant_id").notNull(),
+	menuId: uuid("menu_id").notNull(),
+	viewMode: text("view_mode").default("edit").notNull(),
+	showPrices: boolean("show_prices").default(true).notNull(),
+	showDescriptions: boolean("show_descriptions").default(true).notNull(),
+	showAllergens: boolean("show_allergens").default(true).notNull(),
+	expandedSections: jsonb("expanded_sections").default([]).notNull(),
+	lastSavedAt: timestamp("last_saved_at", { withTimezone: true, mode: 'string' }).defaultNow().notNull(),
+}, (table) => [
+	uniqueIndex("idx_builder_state_menu").using("btree", table.tenantId.asc().nullsLast(), table.menuId.asc().nullsLast()),
+	pgPolicy("menu_builder_states_tenant_isolation", { as: "permissive", for: "all", to: ["public"], using: sql`(tenant_id = get_current_tenant_id())`, withCheck: sql`(tenant_id = get_current_tenant_id())` }),
+])
+
+// ---------------------------------------------------------------------------
+// Menu Builder Templates (saved section structures for reuse)
+// ---------------------------------------------------------------------------
+
+export const menuBuilderTemplates = pgTable("menu_builder_templates", {
+	id: uuid().defaultRandom().primaryKey().notNull(),
+	tenantId: uuid("tenant_id").notNull(),
+	name: text().notNull(),
+	sections: jsonb().default([]).notNull(),
+	createdAt: timestamp("created_at", { withTimezone: true, mode: 'string' }).defaultNow().notNull(),
+}, (table) => [
+	index("idx_menu_builder_templates_tenant").using("btree", table.tenantId.asc().nullsLast()),
+	pgPolicy("menu_builder_templates_tenant_isolation", { as: "permissive", for: "all", to: ["public"], using: sql`(tenant_id = get_current_tenant_id())`, withCheck: sql`(tenant_id = get_current_tenant_id())` }),
+])
+
+// ---------------------------------------------------------------------------
+// Simulation Scenarios (Digital Twin Simulation Protocol)
+// ---------------------------------------------------------------------------
+
+export const simulationScenarios = pgTable("simulation_scenarios", {
+	id: uuid().defaultRandom().primaryKey().notNull(),
+	tenantId: uuid("tenant_id").notNull(),
+	name: text().notNull(),
+	description: text(),
+	steps: jsonb().default([]).notNull(),
+	status: text().default('draft').notNull(),
+	startedAt: timestamp("started_at", { withTimezone: true, mode: 'string' }),
+	completedAt: timestamp("completed_at", { withTimezone: true, mode: 'string' }),
+	results: jsonb(),
+	createdAt: timestamp("created_at", { withTimezone: true, mode: 'string' }).defaultNow().notNull(),
+}, (table) => [
+	index("idx_simulation_tenant").using("btree", table.tenantId.asc().nullsLast(), table.createdAt.desc().nullsLast()),
+	foreignKey({
+			columns: [table.tenantId],
+			foreignColumns: [chefs.id],
+			name: "simulation_scenarios_tenant_id_fkey"
+		}).onDelete("cascade"),
+	pgPolicy("simulation_scenarios_tenant_isolation", { as: "permissive", for: "all", to: ["public"], using: sql`(tenant_id = get_current_tenant_id())`, withCheck: sql`(tenant_id = get_current_tenant_id())` }),
+])
+
+// ---------------------------------------------------------------------------
+// Codex Readiness Pack (dev infra, admin-only, no tenant scoping)
+// ---------------------------------------------------------------------------
+export const codexTasks = pgTable("codex_tasks", {
+	id: uuid().defaultRandom().primaryKey().notNull(),
+	area: text().notNull(),
+	description: text(),
+	readiness: text().default('needs_spec').notNull(),
+	specPath: text("spec_path"),
+	testPath: text("test_path"),
+	complexity: text().default('medium').notNull(),
+	dependencies: jsonb().default([]).notNull(),
+	lastAssessed: timestamp("last_assessed", { withTimezone: true, mode: 'string' }).defaultNow().notNull(),
+	createdAt: timestamp("created_at", { withTimezone: true, mode: 'string' }).defaultNow().notNull(),
+}, (table) => [
+	uniqueIndex("idx_codex_tasks_area").using("btree", table.area.asc().nullsLast()),
+])
+
+export const codexDispatchRecords = pgTable("codex_dispatch_records", {
+	id: uuid().defaultRandom().primaryKey().notNull(),
+	taskDescription: text("task_description").notNull(),
+	area: text().notNull(),
+	dispatchedAt: timestamp("dispatched_at", { withTimezone: true, mode: 'string' }).defaultNow().notNull(),
+	completedAt: timestamp("completed_at", { withTimezone: true, mode: 'string' }),
+	success: boolean(),
+	notes: text(),
+}, (table) => [
+	index("idx_codex_dispatches_recent").using("btree", table.dispatchedAt.desc().nullsLast()),
+])
+
+export const confidenceLabels = pgTable("confidence_labels", {
+	id: uuid().defaultRandom().primaryKey().notNull(),
+	tenantId: uuid("tenant_id").notNull(),
+	entityType: text("entity_type").notNull(),
+	entityId: uuid("entity_id").notNull(),
+	field: text().notNull(),
+	confidence: text().default('unverified').notNull(),
+	source: text().default('user_input').notNull(),
+	lastVerified: timestamp("last_verified", { withTimezone: true, mode: 'string' }),
+	verifiedBy: text("verified_by"),
+	staleDays: integer("stale_days").default(90).notNull(),
+	createdAt: timestamp("created_at", { withTimezone: true, mode: 'string' }).defaultNow().notNull(),
+	updatedAt: timestamp("updated_at", { withTimezone: true, mode: 'string' }).defaultNow().notNull(),
+}, (table) => [
+	uniqueIndex("idx_confidence_entity_field").using("btree", table.tenantId.asc().nullsLast(), table.entityType.asc().nullsLast(), table.entityId.asc().nullsLast(), table.field.asc().nullsLast()),
+	index("idx_confidence_stale").using("btree", table.tenantId.asc().nullsLast(), table.confidence.asc().nullsLast()),
+	foreignKey({
+			columns: [table.tenantId],
+			foreignColumns: [chefs.id],
+			name: "confidence_labels_tenant_id_fkey"
+		}).onDelete("cascade"),
+	pgPolicy("confidence_labels_tenant_isolation", { as: "permissive", for: "all", to: ["public"], using: sql`(tenant_id = get_current_tenant_id())`, withCheck: sql`(tenant_id = get_current_tenant_id())` }),
+])
+
+export const widgetConfigs = pgTable("widget_configs", {
+	id: uuid().defaultRandom().primaryKey().notNull(),
+	tenantId: uuid("tenant_id").notNull(),
+	widgetType: text("widget_type").notNull(),
+	position: integer().default(0).notNull(),
+	settings: jsonb().default({}).notNull(),
+	enabled: boolean().default(true).notNull(),
+	createdAt: timestamp("created_at", { withTimezone: true, mode: 'string' }).defaultNow().notNull(),
+}, (table) => [
+	uniqueIndex("idx_widget_configs_tenant_type").using("btree", table.tenantId.asc().nullsLast(), table.widgetType.asc().nullsLast()),
+	foreignKey({
+			columns: [table.tenantId],
+			foreignColumns: [chefs.id],
+			name: "widget_configs_tenant_id_fkey"
+		}).onDelete("cascade"),
+	pgPolicy("widget_configs_tenant_isolation", { as: "permissive", for: "all", to: ["public"], using: sql`(tenant_id = get_current_tenant_id())`, withCheck: sql`(tenant_id = get_current_tenant_id())` }),
+])
+
+// ---------------------------------------------------------------------------
+// Mobile Preferences (Mobile Chef Operations)
+// ---------------------------------------------------------------------------
+
+export const mobilePreferences = pgTable("mobile_preferences", {
+	id: uuid().defaultRandom().primaryKey().notNull(),
+	tenantId: uuid("tenant_id").notNull(),
+	defaultView: text("default_view").default('today').notNull(),
+	quickActions: jsonb("quick_actions").default(['respond', 'confirm', 'prep']).notNull(),
+	showRevenue: boolean("show_revenue").default(true).notNull(),
+	compactMode: boolean("compact_mode").default(false).notNull(),
+	createdAt: timestamp("created_at", { withTimezone: true, mode: 'string' }).defaultNow().notNull(),
+	updatedAt: timestamp("updated_at", { withTimezone: true, mode: 'string' }).defaultNow().notNull(),
+}, (table) => [
+	uniqueIndex("idx_mobile_prefs_tenant").using("btree", table.tenantId.asc().nullsLast()),
+	foreignKey({
+			columns: [table.tenantId],
+			foreignColumns: [chefs.id],
+			name: "mobile_preferences_tenant_id_fkey"
+		}).onDelete("cascade"),
+	pgPolicy("mobile_preferences_tenant_isolation", { as: "permissive", for: "all", to: ["public"], using: sql`(tenant_id = get_current_tenant_id())`, withCheck: sql`(tenant_id = get_current_tenant_id())` }),
+])
+
+export const densityPreferences = pgTable('density_preferences', {
+	id: uuid('id').defaultRandom().primaryKey(),
+	tenantId: uuid('tenant_id').notNull(),
+	chefId: uuid('chef_id').notNull(),
+	mode: text('mode').notNull().default('comfortable'),
+	customOverrides: jsonb('custom_overrides').default('{}'),
+	createdAt: timestamp('created_at', { withTimezone: true, mode: 'string' }).defaultNow().notNull(),
+	updatedAt: timestamp('updated_at', { withTimezone: true, mode: 'string' }).defaultNow().notNull(),
+})
+
+export const designAuditEntries = pgTable('design_audit_entries', {
+	id: uuid('id').defaultRandom().primaryKey(),
+	tenantId: uuid('tenant_id').notNull(),
+	route: text('route').notNull(),
+	violations: jsonb('violations').default('[]'),
+	score: integer('score'),
+	checkedAt: timestamp('checked_at', { withTimezone: true, mode: 'string' }).defaultNow().notNull(),
+})
+
+// ---------------------------------------------------------------------------
+// Nav Preferences (Chef Navigation Unification)
+// ---------------------------------------------------------------------------
+
+export const navPreferences = pgTable('nav_preferences', {
+	id: uuid('id').defaultRandom().primaryKey(),
+	tenantId: uuid('tenant_id').notNull(),
+	chefId: uuid('chef_id').notNull(),
+	pinnedItems: jsonb('pinned_items').default([]),
+	collapsedSections: jsonb('collapsed_sections').default([]),
+	recentPages: jsonb('recent_pages').default([]),
+	updatedAt: timestamp('updated_at', { withTimezone: true, mode: 'string' }).defaultNow().notNull(),
+})
+
+// ---------------------------------------------------------------------------
+// Lifecycle Naming & Surface Decisions (LIFECYCLE #2)
+// ---------------------------------------------------------------------------
+
+export const lifecycleNameEntries = pgTable('lifecycle_name_entries', {
+	id: uuid('id').defaultRandom().primaryKey(),
+	tenantId: uuid('tenant_id').notNull(),
+	internalName: text('internal_name').notNull(),
+	chefLabel: text('chef_label').notNull(),
+	clientLabel: text('client_label').notNull(),
+	surfaceContext: text('surface_context').notNull().default('dashboard'),
+	icon: text('icon'),
+	color: text('color'),
+	sortOrder: integer('sort_order').notNull().default(0),
+	active: boolean('active').notNull().default(true),
+	createdAt: timestamp('created_at', { withTimezone: true }).defaultNow().notNull(),
+})
+
+export const namingDecisions = pgTable('naming_decisions', {
+	id: uuid('id').defaultRandom().primaryKey(),
+	tenantId: uuid('tenant_id').notNull(),
+	internalName: text('internal_name').notNull(),
+	decision: text('decision').notNull(),
+	rationale: text('rationale'),
+	decidedBy: text('decided_by').notNull(),
+	decidedAt: timestamp('decided_at', { withTimezone: true }).defaultNow().notNull(),
+	createdAt: timestamp('created_at', { withTimezone: true }).defaultNow().notNull(),
+})
+
+// ---------------------------------------------------------------------------
+// Nav Audit Entries (Page Header Audit Tracking)
+// ---------------------------------------------------------------------------
+
+export const navAuditEntries = pgTable('nav_audit_entries', {
+	id: uuid('id').defaultRandom().primaryKey(),
+	tenantId: uuid('tenant_id').notNull(),
+	route: text('route').notNull(),
+	hasHeader: boolean('has_header').default(false),
+	headerComplete: boolean('header_complete').default(false),
+	missingFields: jsonb('missing_fields').default([]),
+	checkedAt: timestamp('checked_at', { withTimezone: true, mode: 'string' }).defaultNow().notNull(),
+})
+
+// ---------------------------------------------------------------------------
+// Visual QA Entries (Visual QA Matrix)
+// ---------------------------------------------------------------------------
+
+export const visualQaEntries = pgTable('visual_qa_entries', {
+	id: uuid('id').defaultRandom().primaryKey(),
+	tenantId: uuid('tenant_id').notNull(),
+	route: text('route').notNull(),
+	screenshotPath: text('screenshot_path'),
+	status: text('status').notNull().default('pending'),
+	violations: jsonb('violations').default('[]'),
+	score: integer('score'),
+	viewport: text('viewport').notNull().default('desktop'),
+	theme: text('theme').notNull().default('light'),
+	checkedAt: timestamp('checked_at').defaultNow().notNull(),
+	checkedBy: text('checked_by'),
+})
+
+// ---------------------------------------------------------------------------
+// Screenshot Comparisons (Visual QA Matrix)
+// ---------------------------------------------------------------------------
+
+export const screenshotComparisons = pgTable('screenshot_comparisons', {
+	id: uuid('id').defaultRandom().primaryKey(),
+	tenantId: uuid('tenant_id').notNull(),
+	route: text('route').notNull(),
+	baselinePath: text('baseline_path').notNull(),
+	currentPath: text('current_path').notNull(),
+	diffPath: text('diff_path'),
+	pixelDiffPercent: real('pixel_diff_percent'),
+	status: text('status').notNull().default('pending'),
+	createdAt: timestamp('created_at').defaultNow().notNull(),
+})
+
+export const portalExperienceConfigs = pgTable('portal_experience_configs', {
+	id: uuid('id').defaultRandom().primaryKey(),
+	tenantId: uuid('tenant_id').notNull(),
+	eventId: uuid('event_id').notNull(),
+	visibleSections: jsonb('visible_sections').default('[]'),
+	customBranding: jsonb('custom_branding'),
+	welcomeMessage: text('welcome_message'),
+	createdAt: timestamp('created_at').defaultNow().notNull(),
+})
+
+export const portalInteractions = pgTable('portal_interactions', {
+	id: uuid('id').defaultRandom().primaryKey(),
+	tenantId: uuid('tenant_id').notNull(),
+	eventId: uuid('event_id').notNull(),
+	clientId: uuid('client_id').notNull(),
+	section: text('section').notNull(),
+	action: text('action').notNull(),
+	createdAt: timestamp('created_at').defaultNow().notNull(),
+})
+
+// ---------------------------------------------------------------------------
+// Inquiry Cockpit (Inquiry Response Cockpit UI Deepening)
+// ---------------------------------------------------------------------------
+
+export const inquiryCockpitEntries = pgTable('inquiry_cockpit_entries', {
+	id: uuid('id').defaultRandom().primaryKey(),
+	tenantId: uuid('tenant_id').notNull(),
+	clientName: text('client_name').notNull(),
+	clientEmail: text('client_email'),
+	clientPhone: text('client_phone'),
+	source: text('source').notNull().default('website'),
+	eventType: text('event_type'),
+	eventDate: timestamp('event_date', { withTimezone: true, mode: 'string' }),
+	guestCount: integer('guest_count'),
+	budget: text('budget'),
+	status: text('status').notNull().default('new'),
+	priority: text('priority').notNull().default('normal'),
+	notes: text('notes'),
+	responseTimeMinutes: integer('response_time_minutes'),
+	assignedTo: uuid('assigned_to'),
+	createdAt: timestamp('created_at', { withTimezone: true, mode: 'string' }).defaultNow().notNull(),
+	updatedAt: timestamp('updated_at', { withTimezone: true, mode: 'string' }).defaultNow().notNull(),
+})
+
+export const inquiryResponseTemplates = pgTable('inquiry_response_templates', {
+	id: uuid('id').defaultRandom().primaryKey(),
+	tenantId: uuid('tenant_id').notNull(),
+	name: text('name').notNull(),
+	subject: text('subject').notNull(),
+	body: text('body').notNull(),
+	category: text('category'),
+	useCount: integer('use_count').default(0),
+	createdAt: timestamp('created_at', { withTimezone: true, mode: 'string' }).defaultNow().notNull(),
+})
+
+export const portalFeedback = pgTable('portal_feedback', {
+	id: uuid('id').defaultRandom().primaryKey(),
+	tenantId: uuid('tenant_id').notNull(),
+	eventId: uuid('event_id').notNull(),
+	clientId: uuid('client_id').notNull(),
+	rating: integer('rating'),
+	comment: text('comment'),
+	section: text('section'),
+	createdAt: timestamp('created_at').defaultNow().notNull(),
+})
+
+export const trustProfiles = pgTable('trust_profiles', {
+	id: uuid('id').defaultRandom().primaryKey(),
+	tenantId: uuid('tenant_id').notNull(),
+	chefId: uuid('chef_id').notNull(),
+	badges: jsonb('badges').default('[]'),
+	signals: jsonb('signals').default('[]'),
+	trustScore: integer('trust_score').default(0),
+	displayConfig: jsonb('display_config').default('{}'),
+	verifiedAt: timestamp('verified_at', { withTimezone: true, mode: 'string' }),
+	updatedAt: timestamp('updated_at', { withTimezone: true, mode: 'string' }).defaultNow().notNull(),
+})
+
+export const heuristicEvaluations = pgTable('heuristic_evaluations', {
+	id: uuid('id').defaultRandom().primaryKey(),
+	tenantId: uuid('tenant_id').notNull(),
+	route: text('route').notNull(),
+	phase: text('phase').notNull(),
+	ruleName: text('rule_name').notNull(),
+	passed: boolean('passed').notNull(),
+	details: text('details'),
+	evaluatedAt: timestamp('evaluated_at').defaultNow().notNull(),
+})
+
+export const designDebtItems = pgTable('design_debt_items', {
+	id: uuid('id').defaultRandom().primaryKey(),
+	tenantId: uuid('tenant_id').notNull(),
+	route: text('route').notNull(),
+	component: text('component'),
+	category: text('category').notNull(),
+	severity: text('severity').notNull(),
+	description: text('description').notNull(),
+	screenshotPath: text('screenshot_path'),
+	assignedTo: uuid('assigned_to'),
+	status: text('status').notNull().default('open'),
+	createdAt: timestamp('created_at').defaultNow().notNull(),
+	resolvedAt: timestamp('resolved_at'),
+})
+
+export const statePatternConfigs = pgTable('state_pattern_configs', {
+	id: uuid('id').defaultRandom().primaryKey(),
+	tenantId: uuid('tenant_id').notNull(),
+	route: text('route').notNull(),
+	component: text('component').notNull(),
+	stateType: text('state_type').notNull(),
+	title: text('title').notNull(),
+	message: text('message'),
+	icon: text('icon'),
+	actionLabel: text('action_label'),
+	actionHref: text('action_href'),
+	illustration: text('illustration'),
+	createdAt: timestamp('created_at').defaultNow().notNull(),
+})
+
+export const statePatternAudits = pgTable('state_pattern_audits', {
+	id: uuid('id').defaultRandom().primaryKey(),
+	tenantId: uuid('tenant_id').notNull(),
+	route: text('route').notNull(),
+	component: text('component').notNull(),
+	hasEmptyState: boolean('has_empty_state').default(false),
+	hasLoadingState: boolean('has_loading_state').default(false),
+	hasErrorState: boolean('has_error_state').default(false),
+	hasSuccessState: boolean('has_success_state').default(false),
+	score: integer('score').default(0),
+	auditedAt: timestamp('audited_at').defaultNow().notNull(),
+})
+
+export const entityStatusMappings = pgTable('entity_status_mappings', {
+	id: uuid('id').defaultRandom().primaryKey(),
+	tenantId: uuid('tenant_id').notNull(),
+	entityType: text('entity_type').notNull(),
+	statusField: text('status_field').notNull(),
+	statusValue: text('status_value').notNull(),
+	badgeConfig: jsonb('badge_config').notNull(),
+	createdAt: timestamp('created_at').defaultNow().notNull(),
+})
+
+export const progressLanguageEntries = pgTable('progress_language_entries', {
+	id: uuid('id').defaultRandom().primaryKey(),
+	tenantId: uuid('tenant_id').notNull(),
+	entityType: text('entity_type').notNull(),
+	stage: text('stage').notNull(),
+	label: text('label').notNull(),
+	description: text('description'),
+	percentComplete: integer('percent_complete').default(0),
+	createdAt: timestamp('created_at').defaultNow().notNull(),
+})
+
+// ---------------------------------------------------------------------------
+// Print/Share Asset Configs (Visual Consistency Pass)
+// ---------------------------------------------------------------------------
+
+export const printShareConfigs = pgTable('print_share_configs', {
+	id: uuid('id').defaultRandom().primaryKey(),
+	tenantId: uuid('tenant_id').notNull(),
+	assetType: text('asset_type').notNull(),
+	format: text('format').notNull().default('pdf'),
+	template: text('template'),
+	branding: jsonb('branding'),
+	headerLogo: text('header_logo'),
+	footerText: text('footer_text'),
+	colorScheme: text('color_scheme'),
+	createdAt: timestamp('created_at').defaultNow().notNull(),
+})
+
+export const generatedAssets = pgTable('generated_assets', {
+	id: uuid('id').defaultRandom().primaryKey(),
+	tenantId: uuid('tenant_id').notNull(),
+	assetType: text('asset_type').notNull(),
+	entityId: uuid('entity_id').notNull(),
+	format: text('format').notNull(),
+	filePath: text('file_path').notNull(),
+	fileSize: integer('file_size'),
+	generatedAt: timestamp('generated_at').defaultNow().notNull(),
+	expiresAt: timestamp('expires_at'),
+})
+
+export const shareLinks = pgTable('share_links', {
+	id: uuid('id').defaultRandom().primaryKey(),
+	tenantId: uuid('tenant_id').notNull(),
+	assetType: text('asset_type').notNull(),
+	entityId: uuid('entity_id').notNull(),
+	token: text('token').notNull(),
+	accessCount: integer('access_count').default(0),
+	maxAccesses: integer('max_accesses'),
+	expiresAt: timestamp('expires_at'),
+	createdAt: timestamp('created_at').defaultNow().notNull(),
+})
+
+export const tablePreferences = pgTable('table_preferences', {
+	id: uuid('id').defaultRandom().primaryKey(),
+	tenantId: uuid('tenant_id').notNull(),
+	chefId: uuid('chef_id').notNull(),
+	tableId: text('table_id').notNull(),
+	columns: jsonb('columns').default('[]'),
+	pageSize: integer('page_size').default(25),
+	density: text('density').default('normal'),
+	sortColumn: text('sort_column'),
+	sortDirection: text('sort_direction').default('asc'),
+	createdAt: timestamp('created_at').defaultNow().notNull(),
+	updatedAt: timestamp('updated_at').defaultNow().notNull(),
+})
+
+export const filterPresets = pgTable('filter_presets', {
+	id: uuid('id').defaultRandom().primaryKey(),
+	tenantId: uuid('tenant_id').notNull(),
+	chefId: uuid('chef_id').notNull(),
+	tableId: text('table_id').notNull(),
+	name: text('name').notNull(),
+	filters: jsonb('filters').notNull(),
+	isDefault: boolean('is_default').default(false),
+	createdAt: timestamp('created_at').defaultNow().notNull(),
+})
+
+export const bulkActionLogs = pgTable('bulk_action_logs', {
+	id: uuid('id').defaultRandom().primaryKey(),
+	tenantId: uuid('tenant_id').notNull(),
+	tableId: text('table_id').notNull(),
+	action: text('action').notNull(),
+	entityIds: jsonb('entity_ids').notNull(),
+	result: jsonb('result'),
+	performedBy: uuid('performed_by').notNull(),
+	performedAt: timestamp('performed_at').defaultNow().notNull(),
+})
+
+// ---------------------------------------------------------------------------
+// Form Wizards & Client Intake (UI SYSTEM #5)
+// ---------------------------------------------------------------------------
+
+export const wizardConfigs = pgTable('wizard_configs', {
+	id: uuid('id').defaultRandom().primaryKey(),
+	tenantId: uuid('tenant_id').notNull(),
+	wizardId: text('wizard_id').notNull(),
+	name: text('name').notNull(),
+	steps: jsonb('steps').default('[]'),
+	currentStep: integer('current_step').default(0),
+	completedSteps: jsonb('completed_steps').default('[]'),
+	createdAt: timestamp('created_at').defaultNow().notNull(),
+	updatedAt: timestamp('updated_at').defaultNow().notNull(),
+})
+
+export const intakeFormConfigs = pgTable('intake_form_configs', {
+	id: uuid('id').defaultRandom().primaryKey(),
+	tenantId: uuid('tenant_id').notNull(),
+	name: text('name').notNull(),
+	fields: jsonb('fields').default('[]'),
+	successMessage: text('success_message'),
+	redirectUrl: text('redirect_url'),
+	active: boolean('active').default(true),
+	createdAt: timestamp('created_at').defaultNow().notNull(),
+})
+
+export const formSubmissions = pgTable('form_submissions', {
+	id: uuid('id').defaultRandom().primaryKey(),
+	tenantId: uuid('tenant_id').notNull(),
+	formId: uuid('form_id').notNull(),
+	data: jsonb('data').notNull(),
+	submittedBy: uuid('submitted_by'),
+	submittedAt: timestamp('submitted_at').defaultNow().notNull(),
+	status: text('status').notNull().default('new'),
+})
+
+export const dashboardLayouts = pgTable('dashboard_layouts', {
+	id: uuid('id').defaultRandom().primaryKey(),
+	tenantId: uuid('tenant_id').notNull(),
+	chefId: uuid('chef_id').notNull(),
+	name: text('name').notNull(),
+	widgets: jsonb('widgets').default('[]'),
+	isDefault: boolean('is_default').default(false),
+	createdAt: timestamp('created_at').defaultNow().notNull(),
+	updatedAt: timestamp('updated_at').defaultNow().notNull(),
+})
+
+export const dashboardMetrics = pgTable('dashboard_metrics', {
+	id: uuid('id').defaultRandom().primaryKey(),
+	tenantId: uuid('tenant_id').notNull(),
+	key: text('key').notNull(),
+	label: text('label').notNull(),
+	value: text('value').notNull(),
+	previousValue: text('previous_value'),
+	trend: text('trend'),
+	unit: text('unit'),
+	updatedAt: timestamp('updated_at').defaultNow().notNull(),
+})
+
+export const actionBarConfigs = pgTable('action_bar_configs', {
+	id: uuid('id').defaultRandom().primaryKey(),
+	tenantId: uuid('tenant_id').notNull(),
+	context: text('context').notNull(),
+	items: jsonb('items').default('[]'),
+	lifecycleStage: text('lifecycle_stage'),
+	createdAt: timestamp('created_at').defaultNow().notNull(),
+	updatedAt: timestamp('updated_at').defaultNow().notNull(),
+})
+
+export const actionBarUsageLogs = pgTable('action_bar_usage_logs', {
+	id: uuid('id').defaultRandom().primaryKey(),
+	tenantId: uuid('tenant_id').notNull(),
+	context: text('context').notNull(),
+	actionId: text('action_id').notNull(),
+	lifecycleStage: text('lifecycle_stage'),
+	usedAt: timestamp('used_at').defaultNow().notNull(),
+})
+
+export const magicGateEvaluations = pgTable('magic_gate_evaluations', {
+	id: uuid('id').defaultRandom().primaryKey(),
+	tenantId: uuid('tenant_id').notNull(),
+	route: text('route').notNull(),
+	scores: jsonb('scores').default('[]'),
+	overallScore: integer('overall_score').default(0),
+	passed: boolean('passed').default(false),
+	evaluatedBy: text('evaluated_by'),
+	evaluatedAt: timestamp('evaluated_at').defaultNow().notNull(),
+})
+
+export const magicGateThresholds = pgTable('magic_gate_thresholds', {
+	id: uuid('id').defaultRandom().primaryKey(),
+	tenantId: uuid('tenant_id').notNull(),
+	dimension: text('dimension').notNull(),
+	minScore: integer('min_score').notNull().default(70),
+	weight: real('weight').notNull().default(1.0),
+	active: boolean('active').default(true),
+})
+
+export const guardrailRules = pgTable('guardrail_rules', {
+	id: uuid('id').defaultRandom().primaryKey(),
+	tenantId: uuid('tenant_id').notNull(),
+	category: text('category').notNull(),
+	name: text('name').notNull(),
+	description: text('description'),
+	pattern: text('pattern'),
+	severity: text('severity').notNull().default('warning'),
+	active: boolean('active').default(true),
+	createdAt: timestamp('created_at').defaultNow().notNull(),
+})
+
+export const guardrailViolations = pgTable('guardrail_violations', {
+	id: uuid('id').defaultRandom().primaryKey(),
+	tenantId: uuid('tenant_id').notNull(),
+	ruleId: uuid('rule_id').notNull(),
+	route: text('route').notNull(),
+	component: text('component'),
+	details: text('details'),
+	autoFixable: boolean('auto_fixable').default(false),
+	fixedAt: timestamp('fixed_at'),
+	detectedAt: timestamp('detected_at').defaultNow().notNull(),
+})
+
+export const chartConfigs = pgTable('chart_configs', {
+	id: uuid('id').defaultRandom().primaryKey(),
+	tenantId: uuid('tenant_id').notNull(),
+	chartId: text('chart_id').notNull(),
+	type: text('type').notNull(),
+	title: text('title').notNull(),
+	series: jsonb('series').default('[]'),
+	xAxis: jsonb('x_axis'),
+	yAxis: jsonb('y_axis'),
+	legend: boolean('legend').default(true),
+	responsive: boolean('responsive').default(true),
+	createdAt: timestamp('created_at').defaultNow().notNull(),
+})
+
+export const visualizationPresets = pgTable('visualization_presets', {
+	id: uuid('id').defaultRandom().primaryKey(),
+	tenantId: uuid('tenant_id').notNull(),
+	name: text('name').notNull(),
+	chartId: text('chart_id').notNull(),
+	dateRange: jsonb('date_range'),
+	filters: jsonb('filters').default('{}'),
+	createdAt: timestamp('created_at').defaultNow().notNull(),
+})
+
+export const motionPreferences = pgTable('motion_preferences', {
+	id: uuid('id').defaultRandom().primaryKey(),
+	tenantId: uuid('tenant_id').notNull(),
+	chefId: uuid('chef_id').notNull(),
+	intensity: text('intensity').notNull().default('moderate'),
+	reducedMotion: boolean('reduced_motion').default(false),
+	customTokens: jsonb('custom_tokens').default('[]'),
+	updatedAt: timestamp('updated_at').defaultNow().notNull(),
+})
+
+export const stateTransitionRules = pgTable('state_transition_rules', {
+	id: uuid('id').defaultRandom().primaryKey(),
+	tenantId: uuid('tenant_id').notNull(),
+	fromState: text('from_state').notNull(),
+	toState: text('to_state').notNull(),
+	transitionType: text('transition_type').notNull().default('fade'),
+	duration: integer('duration').notNull().default(200),
+	easing: text('easing').notNull().default('ease-in-out'),
+	component: text('component'),
+	createdAt: timestamp('created_at').defaultNow().notNull(),
+})
+
+// ---------------------------------------------------------------------------
+// Culinary Visual Language (UI SYSTEM #17)
+// ---------------------------------------------------------------------------
+
+export const culinaryIcons = pgTable('culinary_icons', {
+	id: uuid('id').defaultRandom().primaryKey(),
+	tenantId: uuid('tenant_id').notNull(),
+	name: text('name').notNull(),
+	category: text('category').notNull(),
+	svgPath: text('svg_path'),
+	emoji: text('emoji'),
+	description: text('description'),
+	createdAt: timestamp('created_at').defaultNow().notNull(),
+})
+
+export const culinaryColorPalettes = pgTable('culinary_color_palettes', {
+	id: uuid('id').defaultRandom().primaryKey(),
+	tenantId: uuid('tenant_id').notNull(),
+	name: text('name').notNull(),
+	cuisine: text('cuisine'),
+	primaryColor: text('primary_color').notNull(),
+	secondaryColor: text('secondary_color'),
+	accentColor: text('accent_color'),
+	textColor: text('text_color'),
+	bgColor: text('bg_color'),
+	createdAt: timestamp('created_at').defaultNow().notNull(),
+})
+
+export const culinaryVisualTokens = pgTable('culinary_visual_tokens', {
+	id: uuid('id').defaultRandom().primaryKey(),
+	tenantId: uuid('tenant_id').notNull(),
+	category: text('category').notNull(),
+	key: text('key').notNull(),
+	value: text('value').notNull(),
+	description: text('description'),
+	createdAt: timestamp('created_at').defaultNow().notNull(),
+})
+
+export const magicComponents = pgTable('magic_components', {
+	id: uuid('id').defaultRandom().primaryKey(),
+	tenantId: uuid('tenant_id').notNull(),
+	name: text('name').notNull(),
+	category: text('category').notNull(),
+	variant: text('variant'),
+	props: jsonb('props').default('{}'),
+	previewRoute: text('preview_route'),
+	score: integer('score'),
+	createdAt: timestamp('created_at').defaultNow().notNull(),
+})
+
+export const componentVariants = pgTable('component_variants', {
+	id: uuid('id').defaultRandom().primaryKey(),
+	tenantId: uuid('tenant_id').notNull(),
+	componentId: uuid('component_id').notNull(),
+	name: text('name').notNull(),
+	propsOverrides: jsonb('props_overrides').default('{}'),
+	isDefault: boolean('is_default').default(false),
+	createdAt: timestamp('created_at').defaultNow().notNull(),
+})
+
+export const componentUsageLogs = pgTable('component_usage_logs', {
+	id: uuid('id').defaultRandom().primaryKey(),
+	tenantId: uuid('tenant_id').notNull(),
+	componentName: text('component_name').notNull(),
+	route: text('route').notNull(),
+	usedAt: timestamp('used_at').defaultNow().notNull(),
+})
+
+export const evidenceItems = pgTable('evidence_items', {
+	id: uuid('id').defaultRandom().primaryKey(),
+	tenantId: uuid('tenant_id').notNull(),
+	entityType: text('entity_type').notNull(),
+	entityId: uuid('entity_id').notNull(),
+	type: text('type').notNull(),
+	level: text('level').notNull().default('self_reported'),
+	label: text('label').notNull(),
+	value: text('value'),
+	mediaUrl: text('media_url'),
+	verifiedAt: timestamp('verified_at'),
+	expiresAt: timestamp('expires_at'),
+	createdAt: timestamp('created_at').defaultNow().notNull(),
+})
+
+export const evidenceDisplayRules = pgTable('evidence_display_rules', {
+	id: uuid('id').defaultRandom().primaryKey(),
+	tenantId: uuid('tenant_id').notNull(),
+	entityType: text('entity_type').notNull(),
+	evidenceType: text('evidence_type').notNull(),
+	position: integer('position').default(0),
+	showLevel: boolean('show_level').default(true),
+	showDate: boolean('show_date').default(true),
+	required: boolean('required').default(false),
+	createdAt: timestamp('created_at').defaultNow().notNull(),
+})
+
+export const cardCompositionRules = pgTable('card_composition_rules', {
+	id: uuid('id').defaultRandom().primaryKey(),
+	tenantId: uuid('tenant_id').notNull(),
+	cardType: text('card_type').notNull(),
+	section: text('section').notNull(),
+	maxItems: integer('max_items'),
+	required: boolean('required').default(false),
+	order: integer('order').default(0),
+	description: text('description'),
+	createdAt: timestamp('created_at').defaultNow().notNull(),
+})
+
+export const cardAudits = pgTable('card_audits', {
+	id: uuid('id').defaultRandom().primaryKey(),
+	tenantId: uuid('tenant_id').notNull(),
+	route: text('route').notNull(),
+	cardType: text('card_type').notNull(),
+	violations: jsonb('violations').default('[]'),
+	score: integer('score').default(0),
+	auditedAt: timestamp('audited_at').defaultNow().notNull(),
+})
+
+export const surfaceConfigs = pgTable('surface_configs', {
+	id: uuid('id').defaultRandom().primaryKey(),
+	tenantId: uuid('tenant_id').notNull(),
+	route: text('route').notNull(),
+	component: text('component'),
+	surfaceLevel: text('surface_level').notNull(),
+	visualPriority: text('visual_priority').notNull(),
+	zIndex: integer('z_index'),
+	elevation: integer('elevation'),
+	createdAt: timestamp('created_at').defaultNow().notNull(),
+})
+
+export const lifecycleFeedItems = pgTable('lifecycle_feed_items', {
+	id: uuid('id').defaultRandom().primaryKey(),
+	tenantId: uuid('tenant_id').notNull(),
+	eventId: uuid('event_id'),
+	itemType: text('item_type').notNull(),
+	title: text('title').notNull(),
+	description: text('description'),
+	actorId: uuid('actor_id'),
+	actorName: text('actor_name'),
+	metadata: jsonb('metadata').default('{}'),
+	readAt: timestamp('read_at', { withTimezone: true, mode: 'string' }),
+	createdAt: timestamp('created_at', { withTimezone: true, mode: 'string' }).defaultNow().notNull(),
+}, (table) => [
+	index('idx_lfi_tenant_created').using('btree', table.tenantId.asc().nullsLast(), table.createdAt.desc().nullsFirst()),
+	index('idx_lfi_tenant_read').using('btree', table.tenantId.asc().nullsLast(), table.readAt.asc().nullsLast()),
+	index('idx_lfi_tenant_type').using('btree', table.tenantId.asc().nullsLast(), table.itemType.asc().nullsLast()),
+])
+
+export const lifecycleFeedFilters = pgTable('lifecycle_feed_filters', {
+	id: uuid('id').defaultRandom().primaryKey(),
+	tenantId: uuid('tenant_id').notNull(),
+	name: text('name').notNull(),
+	itemTypes: text('item_types').array().default([]).notNull(),
+	eventIds: uuid('event_ids').array().default([]).notNull(),
+	dateRange: jsonb('date_range'),
+	createdAt: timestamp('created_at', { withTimezone: true, mode: 'string' }).defaultNow().notNull(),
+}, (table) => [
+	index('idx_lff_tenant').using('btree', table.tenantId.asc().nullsLast()),
+])
+
+export const priorityAudits = pgTable('priority_audits', {
+	id: uuid('id').defaultRandom().primaryKey(),
+	tenantId: uuid('tenant_id').notNull(),
+	route: text('route').notNull(),
+	totalElements: integer('total_elements').default(0),
+	byPriority: jsonb('by_priority').default('{}'),
+	bySurface: jsonb('by_surface').default('{}'),
+	score: integer('score').default(0),
+	auditedAt: timestamp('audited_at').defaultNow().notNull(),
+})
+
+export const iconDefinitions = pgTable('icon_definitions', {
+	id: uuid('id').defaultRandom().primaryKey(),
+	tenantId: uuid('tenant_id').notNull(),
+	name: text('name').notNull(),
+	category: text('category').notNull(),
+	svgContent: text('svg_content'),
+	lucideIcon: text('lucide_icon'),
+	emoji: text('emoji'),
+	meaning: text('meaning').notNull(),
+	usageGuidelines: text('usage_guidelines'),
+	createdAt: timestamp('created_at').defaultNow().notNull(),
+})
+
+export const iconMappings = pgTable('icon_mappings', {
+	id: uuid('id').defaultRandom().primaryKey(),
+	tenantId: uuid('tenant_id').notNull(),
+	context: text('context').notNull(),
+	iconName: text('icon_name').notNull(),
+	purpose: text('purpose'),
+	createdAt: timestamp('created_at').defaultNow().notNull(),
+})
+
+export const signatureWorkflows = pgTable('signature_workflows', {
+	id: uuid('id').defaultRandom().primaryKey(),
+	tenantId: uuid('tenant_id').notNull(),
+	type: text('type').notNull(),
+	name: text('name').notNull(),
+	steps: jsonb('steps').default('[]'),
+	active: boolean('active').default(true),
+	createdAt: timestamp('created_at').defaultNow().notNull(),
+	updatedAt: timestamp('updated_at').defaultNow().notNull(),
+})
+
+export const workflowExecutions = pgTable('workflow_executions', {
+	id: uuid('id').defaultRandom().primaryKey(),
+	tenantId: uuid('tenant_id').notNull(),
+	workflowId: uuid('workflow_id').notNull(),
+	entityId: uuid('entity_id'),
+	currentStep: integer('current_step').default(0),
+	completedSteps: jsonb('completed_steps').default('[]'),
+	startedAt: timestamp('started_at').defaultNow().notNull(),
+	completedAt: timestamp('completed_at'),
+})
+
+export const portalVisualModes = pgTable('portal_visual_modes', {
+	id: uuid('id').defaultRandom().primaryKey(),
+	tenantId: uuid('tenant_id').notNull(),
+	role: text('role').notNull(),
+	name: text('name').notNull(),
+	theme: text('theme').notNull().default('light'),
+	colorOverrides: jsonb('color_overrides'),
+	layoutOverrides: jsonb('layout_overrides'),
+	logoUrl: text('logo_url'),
+	createdAt: timestamp('created_at').defaultNow().notNull(),
+	updatedAt: timestamp('updated_at').defaultNow().notNull(),
+})
+
+export const portalRolePermissions = pgTable('portal_role_permissions', {
+	id: uuid('id').defaultRandom().primaryKey(),
+	tenantId: uuid('tenant_id').notNull(),
+	role: text('role').notNull(),
+	canView: jsonb('can_view').default('[]'),
+	canEdit: jsonb('can_edit').default('[]'),
+	canDelete: jsonb('can_delete').default('[]'),
+	createdAt: timestamp('created_at').defaultNow().notNull(),
+})
+
+export const typographyConfigs = pgTable('typography_configs', {
+	id: uuid('id').defaultRandom().primaryKey(),
+	tenantId: uuid('tenant_id').notNull(),
+	role: text('role').notNull(),
+	fontFamily: text('font_family').notNull(),
+	fontSize: text('font_size').notNull(),
+	fontWeight: text('font_weight').notNull(),
+	lineHeight: text('line_height').notNull(),
+	letterSpacing: text('letter_spacing'),
+	color: text('color'),
+	textTransform: text('text_transform'),
+	createdAt: timestamp('created_at').defaultNow().notNull(),
+})
+
+export const textHierarchyRules = pgTable('text_hierarchy_rules', {
+	id: uuid('id').defaultRandom().primaryKey(),
+	tenantId: uuid('tenant_id').notNull(),
+	parentRole: text('parent_role').notNull(),
+	childRole: text('child_role').notNull(),
+	maxNesting: integer('max_nesting').default(1),
+	description: text('description'),
+	createdAt: timestamp('created_at').defaultNow().notNull(),
+})
+
+export const metricConfigs = pgTable('metric_configs', {
+	id: uuid('id').defaultRandom().primaryKey(),
+	tenantId: uuid('tenant_id').notNull(),
+	key: text('key').notNull(),
+	label: text('label').notNull(),
+	tier: text('tier').notNull().default('secondary'),
+	format: text('format').notNull().default('number'),
+	icon: text('icon'),
+	route: text('route'),
+	order: integer('order').default(0),
+	groupName: text('group_name'),
+	createdAt: timestamp('created_at').defaultNow().notNull(),
+})
+
+export const colorTokens = pgTable('color_tokens', {
+	id: uuid('id').defaultRandom().primaryKey(),
+	tenantId: uuid('tenant_id').notNull(),
+	role: text('role').notNull(),
+	name: text('name').notNull(),
+	lightValue: text('light_value').notNull(),
+	darkValue: text('dark_value').notNull(),
+	contrastRatio: real('contrast_ratio'),
+	usage: text('usage'),
+	createdAt: timestamp('created_at').defaultNow().notNull(),
+})
+
+export const colorViolations = pgTable('color_violations', {
+	id: uuid('id').defaultRandom().primaryKey(),
+	tenantId: uuid('tenant_id').notNull(),
+	route: text('route').notNull(),
+	component: text('component'),
+	violationType: text('violation_type').notNull(),
+	rawColor: text('raw_color').notNull(),
+	suggestedToken: text('suggested_token'),
+	severity: text('severity').notNull().default('warning'),
+	resolved: boolean('resolved').default(false),
+	detectedAt: timestamp('detected_at').defaultNow().notNull(),
+})
+
+export const viewportAudits = pgTable('viewport_audits', { id: uuid('id').defaultRandom().primaryKey(), tenantId: uuid('tenant_id').notNull(), route: text('route').notNull(), viewport: text('viewport').notNull(), aboveFoldElements: integer('above_fold_elements').default(0), criticalContentVisible: boolean('critical_content_visible').default(true), scrollRequired: boolean('scroll_required').default(false), loadTime: integer('load_time'), score: integer('score').default(0), auditedAt: timestamp('audited_at').defaultNow().notNull() })
+export const viewportRules = pgTable('viewport_rules', { id: uuid('id').defaultRandom().primaryKey(), tenantId: uuid('tenant_id').notNull(), viewport: text('viewport').notNull(), maxAboveFoldElements: integer('max_above_fold_elements').default(10), requiredElements: jsonb('required_elements').default('[]'), maxLoadTimeMs: integer('max_load_time_ms').default(3000), createdAt: timestamp('created_at').defaultNow().notNull() })
+
+export const gridConfigs = pgTable('grid_configs', {
+	id: uuid('id').defaultRandom().primaryKey(),
+	tenantId: uuid('tenant_id').notNull(),
+	name: text('name').notNull(),
+	columns: integer('columns').notNull().default(12),
+	gutter: text('gutter').notNull().default('16px'),
+	margin: text('margin').notNull().default('24px'),
+	maxWidth: text('max_width').notNull().default('1440px'),
+	breakpoints: jsonb('breakpoints').default('{}'),
+	createdAt: timestamp('created_at').defaultNow().notNull(),
+})
+
+export const containerConfigs = pgTable('container_configs', {
+	id: uuid('id').defaultRandom().primaryKey(),
+	tenantId: uuid('tenant_id').notNull(),
+	name: text('name').notNull(),
+	maxWidth: text('max_width').notNull(),
+	padding: text('padding').notNull().default('16px'),
+	responsive: boolean('responsive').default(true),
+	breakpointOverrides: jsonb('breakpoint_overrides'),
+	createdAt: timestamp('created_at').defaultNow().notNull(),
+})
+
+export const layoutAudits = pgTable('layout_audits', {
+	id: uuid('id').defaultRandom().primaryKey(),
+	tenantId: uuid('tenant_id').notNull(),
+	route: text('route').notNull(),
+	gridCompliant: boolean('grid_compliant').default(false),
+	containerCompliant: boolean('container_compliant').default(false),
+	issues: jsonb('issues').default('[]'),
+	score: integer('score').default(0),
+	auditedAt: timestamp('audited_at').defaultNow().notNull(),
+})
+// ---------------------------------------------------------------------------
+// Premium Detail Items (UI craft tracking)
+// ---------------------------------------------------------------------------
+export const premiumDetailItems = pgTable('premium_detail_items', {
+	id: uuid('id').defaultRandom().primaryKey(),
+	tenantId: uuid('tenant_id').notNull(),
+	route: text('route').notNull(),
+	component: text('component'),
+	category: text('category').notNull(),
+	description: text('description').notNull(),
+	implemented: boolean('implemented').default(false),
+	priority: text('priority').notNull().default('medium'),
+	createdAt: timestamp('created_at').defaultNow().notNull(),
+	implementedAt: timestamp('implemented_at'),
+})
+
+// ---------------------------------------------------------------------------
+// Premium Detail Audits (route-level UI craft scores)
+// ---------------------------------------------------------------------------
+export const premiumDetailAudits = pgTable('premium_detail_audits', {
+	id: uuid('id').defaultRandom().primaryKey(),
+	tenantId: uuid('tenant_id').notNull(),
+	route: text('route').notNull(),
+	totalDetails: integer('total_details').default(0),
+	implemented: integer('implemented').default(0),
+	missing: integer('missing').default(0),
+	score: integer('score').default(0),
+	auditedAt: timestamp('audited_at').defaultNow().notNull(),
+})
+
+// ---------------------------------------------------------------------------
+// Microcopy & Content Design System (UI SYSTEM #33)
+// ---------------------------------------------------------------------------
+
+export const microcopyEntries = pgTable('microcopy_entries', {
+	id: uuid('id').defaultRandom().primaryKey(),
+	tenantId: uuid('tenant_id').notNull(),
+	key: text('key').notNull(),
+	category: text('category').notNull(),
+	text: text('text').notNull(),
+	context: text('context'),
+	route: text('route'),
+	tone: text('tone').default('professional'),
+	maxLength: integer('max_length'),
+	createdAt: timestamp('created_at').defaultNow().notNull(),
+	updatedAt: timestamp('updated_at').defaultNow().notNull(),
+})
+
+export const microcopyGlossary = pgTable('microcopy_glossary', {
+	id: uuid('id').defaultRandom().primaryKey(),
+	tenantId: uuid('tenant_id').notNull(),
+	term: text('term').notNull(),
+	definition: text('definition').notNull(),
+	preferredUsage: text('preferred_usage'),
+	avoidUsage: text('avoid_usage'),
+	createdAt: timestamp('created_at').defaultNow().notNull(),
+})
+
+// ---------------------------------------------------------------------------
+// Lifecycle Mobile Visual Ergonomics (UI SYSTEM #14)
+// ---------------------------------------------------------------------------
+
+export const mobileErgonomicsRules = pgTable('mobile_ergonomics_rules', {
+	id: uuid('id').defaultRandom().primaryKey(),
+	tenantId: uuid('tenant_id').notNull(),
+	route: text('route').notNull(),
+	component: text('component'),
+	minTouchTarget: integer('min_touch_target').notNull().default(44),
+	thumbZone: text('thumb_zone').notNull().default('easy'),
+	swipeEnabled: boolean('swipe_enabled').notNull().default(false),
+	swipeAction: text('swipe_action'),
+	mobileOverride: jsonb('mobile_override'),
+	createdAt: timestamp('created_at').defaultNow().notNull(),
+})
+
+export const mobileErgonomicsAudits = pgTable('mobile_ergonomics_audits', {
+	id: uuid('id').defaultRandom().primaryKey(),
+	tenantId: uuid('tenant_id').notNull(),
+	route: text('route').notNull(),
+	totalComponents: integer('total_components').default(0),
+	passingComponents: integer('passing_components').default(0),
+	failingTargets: integer('failing_targets').default(0),
+	thumbZoneDistribution: jsonb('thumb_zone_distribution').default('{"easy":0,"stretch":0,"hard":0}'),
+	score: integer('score').default(0),
+	auditedAt: timestamp('audited_at').defaultNow().notNull(),
+})
+
+// ---------------------------------------------------------------------------
+// Event Detail Visual Proof (before/after snapshots and comparisons)
+// ---------------------------------------------------------------------------
+export const proofSnapshots = pgTable('proof_snapshots', {
+	id: uuid('id').defaultRandom().primaryKey(),
+	tenantId: uuid('tenant_id').notNull(),
+	eventId: uuid('event_id').notNull(),
+	route: text('route').notNull(),
+	stage: text('stage').notNull(),
+	screenshotUrl: text('screenshot_url'),
+	metadata: jsonb('metadata'),
+	capturedAt: timestamp('captured_at', { withTimezone: true }).defaultNow().notNull(),
+})
+
+export const proofComparisons = pgTable('proof_comparisons', {
+	id: uuid('id').defaultRandom().primaryKey(),
+	tenantId: uuid('tenant_id').notNull(),
+	eventId: uuid('event_id').notNull(),
+	beforeSnapshotId: uuid('before_snapshot_id').notNull(),
+	afterSnapshotId: uuid('after_snapshot_id').notNull(),
+	diffScore: integer('diff_score').default(0).notNull(),
+	changedFields: jsonb('changed_fields').default([]).notNull(),
+	notes: text('notes'),
+	createdAt: timestamp('created_at', { withTimezone: true }).defaultNow().notNull(),
+})
+
+// ---------------------------------------------------------------------------
+// Lifecycle Action Hierarchy Visual System (UI SYSTEM #13)
+// ---------------------------------------------------------------------------
+
+export const lifecycleActionRules = pgTable('lifecycle_action_rules', {
+	id: uuid('id').defaultRandom().primaryKey(),
+	tenantId: uuid('tenant_id').notNull(),
+	lifecycleStage: text('lifecycle_stage').notNull(),
+	actionName: text('action_name').notNull(),
+	tier: text('tier').notNull().default('secondary'),
+	visualWeight: integer('visual_weight').notNull().default(5),
+	sortOrder: integer('sort_order').notNull().default(0),
+	contextCondition: jsonb('context_condition'),
+	createdAt: timestamp('created_at').defaultNow().notNull(),
+})
+
+export const actionGroupConfigs = pgTable('action_group_configs', {
+	id: uuid('id').defaultRandom().primaryKey(),
+	tenantId: uuid('tenant_id').notNull(),
+	groupName: text('group_name').notNull(),
+	lifecycleStage: text('lifecycle_stage').notNull(),
+	maxVisible: integer('max_visible').notNull().default(3),
+	collapseBehavior: text('collapse_behavior').notNull().default('overflow'),
+	createdAt: timestamp('created_at').defaultNow().notNull(),
+})
+
+// ---------------------------------------------------------------------------
+// Lifecycle Visual State Styling System (UI SYSTEM #15)
+// ---------------------------------------------------------------------------
+
+export const visualStateStyles = pgTable('visual_state_styles', {
+	id: uuid('id').defaultRandom().primaryKey(),
+	tenantId: uuid('tenant_id').notNull(),
+	state: text('state').notNull(),
+	bgColor: text('bg_color').notNull().default('#ffffff'),
+	textColor: text('text_color').notNull().default('#000000'),
+	borderColor: text('border_color'),
+	borderWidth: integer('border_width').notNull().default(0),
+	opacity: numeric('opacity', { precision: 3, scale: 2 }).notNull().default('1.00'),
+	animation: text('animation').notNull().default('none'),
+	icon: text('icon'),
+	createdAt: timestamp('created_at', { withTimezone: true }).defaultNow().notNull(),
+})
+
+export const lifecycleStateMappings = pgTable('lifecycle_state_mappings', {
+	id: uuid('id').defaultRandom().primaryKey(),
+	tenantId: uuid('tenant_id').notNull(),
+	lifecycleStage: text('lifecycle_stage').notNull(),
+	visualState: text('visual_state').notNull(),
+	label: text('label').notNull(),
+	description: text('description'),
+	createdAt: timestamp('created_at', { withTimezone: true }).defaultNow().notNull(),
+})
+
+// ---------------------------------------------------------------------------
+// Modal / Drawer / Sheet Interaction System (overlay behavior rules)
+// ---------------------------------------------------------------------------
+export const overlayConfigs = pgTable('overlay_configs', {
+	id: uuid('id').defaultRandom().primaryKey(),
+	tenantId: uuid('tenant_id').notNull(),
+	name: text('name').notNull(),
+	overlayType: text('overlay_type').notNull(),
+	sizePreset: text('size_preset').notNull(),
+	position: text('position').notNull(),
+	animation: text('animation').notNull(),
+	closeOnBackdrop: boolean('close_on_backdrop').default(true).notNull(),
+	closeOnEscape: boolean('close_on_escape').default(true).notNull(),
+	mobileOverride: text('mobile_override'),
+	stackable: boolean('stackable').default(false).notNull(),
+	maxStackDepth: integer('max_stack_depth').default(1).notNull(),
+	createdAt: timestamp('created_at', { withTimezone: true }).defaultNow().notNull(),
+}, (table) => [
+	unique('overlay_configs_tenant_name_key').on(table.tenantId, table.name),
+	index('idx_overlay_configs_tenant').using('btree', table.tenantId.asc().nullsLast()),
+	foreignKey({
+		columns: [table.tenantId],
+		foreignColumns: [chefs.id],
+		name: 'overlay_configs_tenant_id_fkey',
+	}).onDelete('cascade'),
+	check('overlay_configs_overlay_type_check', sql`overlay_type = ANY (ARRAY['modal'::text, 'drawer'::text, 'sheet'::text, 'popover'::text, 'dialog'::text])`),
+	check('overlay_configs_size_preset_check', sql`size_preset = ANY (ARRAY['sm'::text, 'md'::text, 'lg'::text, 'xl'::text, 'full'::text])`),
+	check('overlay_configs_position_check', sql`position = ANY (ARRAY['center'::text, 'left'::text, 'right'::text, 'bottom'::text])`),
+	check('overlay_configs_animation_check', sql`animation = ANY (ARRAY['fade'::text, 'slide'::text, 'scale'::text, 'none'::text])`),
+	check('overlay_configs_max_stack_depth_check', sql`max_stack_depth >= 1`),
+])
+
+export const overlayUsageRules = pgTable('overlay_usage_rules', {
+	id: uuid('id').defaultRandom().primaryKey(),
+	tenantId: uuid('tenant_id').notNull(),
+	route: text('route').notNull(),
+	component: text('component').notNull(),
+	overlayConfigId: uuid('overlay_config_id').notNull(),
+	purpose: text('purpose'),
+	createdAt: timestamp('created_at', { withTimezone: true }).defaultNow().notNull(),
+}, (table) => [
+	unique('overlay_usage_rules_tenant_route_component_key').on(table.tenantId, table.route, table.component),
+	index('idx_overlay_usage_rules_tenant_route').using('btree', table.tenantId.asc().nullsLast(), table.route.asc().nullsLast()),
+	foreignKey({
+		columns: [table.tenantId],
+		foreignColumns: [chefs.id],
+		name: 'overlay_usage_rules_tenant_id_fkey',
+	}).onDelete('cascade'),
+	foreignKey({
+		columns: [table.overlayConfigId],
+		foreignColumns: [overlayConfigs.id],
+		name: 'overlay_usage_rules_overlay_config_id_fkey',
+	}).onDelete('cascade'),
+])
+
+// ---------------------------------------------------------------------------
+// Route Screenshot Gallery and Design Review Board
+// ---------------------------------------------------------------------------
+export const routeScreenshots = pgTable('route_screenshots', {
+	id: uuid('id').defaultRandom().primaryKey(),
+	tenantId: uuid('tenant_id').notNull(),
+	route: text('route').notNull(),
+	viewport: text('viewport').notNull(),
+	screenshotUrl: text('screenshot_url').notNull(),
+	capturedAt: timestamp('captured_at', { withTimezone: true }).defaultNow().notNull(),
+	version: integer('version').default(1).notNull(),
+})
+
+export const designReviewComments = pgTable('design_review_comments', {
+	id: uuid('id').defaultRandom().primaryKey(),
+	tenantId: uuid('tenant_id').notNull(),
+	screenshotId: uuid('screenshot_id').notNull(),
+	authorId: uuid('author_id').notNull(),
+	x: integer('x').default(0).notNull(),
+	y: integer('y').default(0).notNull(),
+	comment: text('comment').notNull(),
+	resolved: boolean('resolved').default(false).notNull(),
+	createdAt: timestamp('created_at', { withTimezone: true }).defaultNow().notNull(),
+})
+
+export const routeDesignReviews = pgTable('route_design_reviews', {
+	id: uuid('id').defaultRandom().primaryKey(),
+	tenantId: uuid('tenant_id').notNull(),
+	route: text('route').notNull(),
+	status: text('status').default('pending').notNull(),
+	reviewerId: uuid('reviewer_id'),
+	lastReviewedAt: timestamp('last_reviewed_at', { withTimezone: true }),
+	createdAt: timestamp('created_at', { withTimezone: true }).defaultNow().notNull(),
+})
+
+// ---------------------------------------------------------------------------
+// High Contrast & Service Environment Readability (UI SYSTEM #38)
+// ---------------------------------------------------------------------------
+
+export const readabilityProfiles = pgTable('readability_profiles', {
+	id: uuid('id').defaultRandom().primaryKey(),
+	tenantId: uuid('tenant_id').notNull(),
+	mode: text('mode').notNull(),
+	label: text('label').notNull(),
+	bgColor: text('bg_color').notNull().default('#ffffff'),
+	textColor: text('text_color').notNull().default('#000000'),
+	accentColor: text('accent_color').notNull().default('#3b82f6'),
+	contrastRatio: real('contrast_ratio').notNull().default(4.5),
+	fontSize: text('font_size').notNull().default('16px'),
+	fontWeight: text('font_weight').notNull().default('400'),
+	reducedMotion: boolean('reduced_motion').notNull().default(false),
+	increasedSpacing: boolean('increased_spacing').notNull().default(false),
+	autoActivateCondition: jsonb('auto_activate_condition'),
+	createdAt: timestamp('created_at', { withTimezone: true }).defaultNow().notNull(),
+})
+
+export const readabilityPreferences = pgTable('readability_preferences', {
+	id: uuid('id').defaultRandom().primaryKey(),
+	tenantId: uuid('tenant_id').notNull(),
+	activeMode: text('active_mode').notNull().default('standard'),
+	autoSwitch: boolean('auto_switch').notNull().default(false),
+	scheduledModes: jsonb('scheduled_modes'),
+	createdAt: timestamp('created_at', { withTimezone: true }).defaultNow().notNull(),
+	updatedAt: timestamp('updated_at', { withTimezone: true }).defaultNow().notNull(),
+})
+
+// ---------------------------------------------------------------------------
+// Theme Token Management (UI SYSTEM #43)
+// ---------------------------------------------------------------------------
+
+export const themeTokens = pgTable('theme_tokens', {
+	id: uuid('id').defaultRandom().primaryKey(),
+	tenantId: uuid('tenant_id').notNull(),
+	tokenName: text('token_name').notNull(),
+	category: text('category').notNull(),
+	lightValue: text('light_value').notNull(),
+	darkValue: text('dark_value'),
+	description: text('description'),
+	inheritsFrom: text('inherits_from'),
+	createdAt: timestamp('created_at', { withTimezone: true }).defaultNow().notNull(),
+	updatedAt: timestamp('updated_at', { withTimezone: true }).defaultNow().notNull(),
+})
+
+export const themeConsistencyIssues = pgTable('theme_consistency_issues', {
+	id: uuid('id').defaultRandom().primaryKey(),
+	tenantId: uuid('tenant_id').notNull(),
+	tokenName: text('token_name').notNull(),
+	mode: text('mode').notNull(),
+	issue: text('issue').notNull(),
+	severity: text('severity').notNull(),
+	route: text('route'),
+	resolvedAt: timestamp('resolved_at', { withTimezone: true }),
+	createdAt: timestamp('created_at', { withTimezone: true }).defaultNow().notNull(),
+})
+
+// ---------------------------------------------------------------------------
+// Visual Consistency Lint (UI SYSTEM #44)
+// ---------------------------------------------------------------------------
+
+export const lintRules = pgTable('lint_rules', {
+	id: uuid('id').defaultRandom().primaryKey(),
+	tenantId: uuid('tenant_id').notNull(),
+	name: text('name').notNull(),
+	category: text('category').notNull(),
+	pattern: text('pattern').notNull().default(''),
+	severity: text('severity').notNull().default('warning'),
+	autoFixable: boolean('auto_fixable').default(false),
+	description: text('description').default(''),
+	createdAt: timestamp('created_at', { withTimezone: true }).defaultNow().notNull(),
+}, (table) => [
+	unique('idx_lint_rules_name').on(table.tenantId, table.name),
+	index('idx_lint_rules_tenant').using('btree', table.tenantId.asc().nullsLast()),
+	foreignKey({
+		columns: [table.tenantId],
+		foreignColumns: [chefs.id],
+		name: 'lint_rules_tenant_id_fkey',
+	}).onDelete('cascade'),
+	check('lint_rules_category_check', sql`category = ANY (ARRAY['spacing'::text, 'alignment'::text, 'color'::text, 'typography'::text, 'layout'::text, 'accessibility'::text, 'motion'::text])`),
+	check('lint_rules_severity_check', sql`severity = ANY (ARRAY['error'::text, 'warning'::text, 'info'::text])`),
+])
+
+export const lintViolations = pgTable('lint_violations', {
+	id: uuid('id').defaultRandom().primaryKey(),
+	tenantId: uuid('tenant_id').notNull(),
+	ruleId: uuid('rule_id').notNull(),
+	route: text('route').notNull(),
+	component: text('component').default(''),
+	line: integer('line').default(0),
+	column: integer('column').default(0),
+	message: text('message').default(''),
+	autoFixed: boolean('auto_fixed').default(false),
+	createdAt: timestamp('created_at', { withTimezone: true }).defaultNow().notNull(),
+	resolvedAt: timestamp('resolved_at', { withTimezone: true }),
+}, (table) => [
+	index('idx_lint_violations_route').using('btree', table.tenantId.asc().nullsLast(), table.route.asc().nullsLast()),
+	foreignKey({
+		columns: [table.tenantId],
+		foreignColumns: [chefs.id],
+		name: 'lint_violations_tenant_id_fkey',
+	}).onDelete('cascade'),
+	foreignKey({
+		columns: [table.ruleId],
+		foreignColumns: [lintRules.id],
+		name: 'lint_violations_rule_id_fkey',
+	}).onDelete('cascade'),
+])
+
+export const lintAuditRuns = pgTable('lint_audit_runs', {
+	id: uuid('id').defaultRandom().primaryKey(),
+	tenantId: uuid('tenant_id').notNull(),
+	routesScanned: integer('routes_scanned').default(0),
+	violationsFound: integer('violations_found').default(0),
+	autoFixed: integer('auto_fixed').default(0),
+	duration: integer('duration').default(0),
+	createdAt: timestamp('created_at', { withTimezone: true }).defaultNow().notNull(),
+}, (table) => [
+	index('idx_lint_audit_runs_tenant').using('btree', table.tenantId.asc().nullsLast()),
+	foreignKey({
+		columns: [table.tenantId],
+		foreignColumns: [chefs.id],
+		name: 'lint_audit_runs_tenant_id_fkey',
+	}).onDelete('cascade'),
+])
+
+// ---------------------------------------------------------------------------
+// Accessibility Keyboard And Focus Reliability Pass (UI SYSTEM #46)
+// ---------------------------------------------------------------------------
+
+export const a11yAuditEntries = pgTable('a11y_audit_entries', {
+	id: uuid('id').defaultRandom().primaryKey(),
+	tenantId: uuid('tenant_id').notNull(),
+	route: text('route').notNull(),
+	category: text('category').notNull(),
+	element: text('element').notNull(),
+	issue: text('issue').notNull(),
+	severity: text('severity').notNull().default('minor'),
+	wcagCriterion: text('wcag_criterion'),
+	recommendation: text('recommendation'),
+	resolvedAt: timestamp('resolved_at', { withTimezone: true }),
+	createdAt: timestamp('created_at', { withTimezone: true }).defaultNow().notNull(),
+})
+
+export const a11yRouteScores = pgTable('a11y_route_scores', {
+	id: uuid('id').defaultRandom().primaryKey(),
+	tenantId: uuid('tenant_id').notNull(),
+	route: text('route').notNull(),
+	keyboardScore: integer('keyboard_score').notNull().default(0),
+	focusScore: integer('focus_score').notNull().default(0),
+	ariaScore: integer('aria_score').notNull().default(0),
+	overallScore: integer('overall_score').notNull().default(0),
+	auditedAt: timestamp('audited_at', { withTimezone: true }).defaultNow().notNull(),
+})
+
+// ---------------------------------------------------------------------------
+// Evidence Label Visual Treatment (UI SYSTEM #12)
+// ---------------------------------------------------------------------------
+
+export const evidenceLabelConfigs = pgTable('evidence_label_configs', {
+	id: uuid('id').defaultRandom().primaryKey(),
+	tenantId: uuid('tenant_id').notNull(),
+	evidenceLevel: text('evidence_level').notNull(),
+	displayLabel: text('display_label').notNull(),
+	bgColor: text('bg_color').default('#f3f4f6').notNull(),
+	textColor: text('text_color').default('#111827').notNull(),
+	borderColor: text('border_color'),
+	icon: text('icon'),
+	tooltipTemplate: text('tooltip_template'),
+	priority: integer('priority').default(0).notNull(),
+	createdAt: timestamp('created_at', { withTimezone: true }).defaultNow().notNull(),
+})
+
+export const evidenceLabelPlacements = pgTable('evidence_label_placements', {
+	id: uuid('id').defaultRandom().primaryKey(),
+	tenantId: uuid('tenant_id').notNull(),
+	route: text('route').notNull(),
+	fieldName: text('field_name').notNull(),
+	evidenceLevel: text('evidence_level').notNull(),
+	position: text('position').default('inline').notNull(),
+	visible: boolean('visible').default(true).notNull(),
+	createdAt: timestamp('created_at', { withTimezone: true }).defaultNow().notNull(),
+})
+
+// ---------------------------------------------------------------------------
+// Waiting State Command Surface (LIFECYCLE #8)
+// ---------------------------------------------------------------------------
+
+export const waitingStateEntries = pgTable('waiting_state_entries', {
+	id: uuid('id').defaultRandom().primaryKey(),
+	tenantId: uuid('tenant_id').notNull(),
+	eventId: uuid('event_id'),
+	lifecycleStage: text('lifecycle_stage').notNull(),
+	reason: text('reason').notNull(),
+	waitingOn: text('waiting_on').notNull(),
+	description: text('description'),
+	startedAt: timestamp('started_at', { withTimezone: true }).defaultNow().notNull(),
+	resolvedAt: timestamp('resolved_at', { withTimezone: true }),
+	escalationLevel: integer('escalation_level').notNull().default(0),
+	lastNudgeAt: timestamp('last_nudge_at', { withTimezone: true }),
+	timeoutAt: timestamp('timeout_at', { withTimezone: true }),
+	timeoutAction: text('timeout_action'),
+	createdAt: timestamp('created_at', { withTimezone: true }).defaultNow().notNull(),
+})
+
+export const nudgeTemplates = pgTable('nudge_templates', {
+	id: uuid('id').defaultRandom().primaryKey(),
+	tenantId: uuid('tenant_id').notNull(),
+	reason: text('reason').notNull(),
+	channel: text('channel').notNull(),
+	templateText: text('template_text').notNull(),
+	delayDays: integer('delay_days').notNull().default(1),
+	createdAt: timestamp('created_at', { withTimezone: true }).defaultNow().notNull(),
+})
+
+// ---------------------------------------------------------------------------
+// Event Current Operating State Card (LIFECYCLE #10)
+// ---------------------------------------------------------------------------
+
+export const operatingStates = pgTable('operating_states', {
+	id: uuid('id').defaultRandom().primaryKey(),
+	tenantId: uuid('tenant_id').notNull(),
+	eventId: uuid('event_id').notNull(),
+	phase: text('phase').notNull().default('setup'),
+	activeTasks: jsonb('active_tasks').notNull().default([]),
+	teamMembers: jsonb('team_members').notNull().default([]),
+	equipmentStatus: jsonb('equipment_status').notNull().default([]),
+	notes: text('notes'),
+	startedAt: timestamp('started_at', { withTimezone: true }).defaultNow().notNull(),
+	updatedAt: timestamp('updated_at', { withTimezone: true }).defaultNow().notNull(),
+})
+
+export const operatingStateLogs = pgTable('operating_state_logs', {
+	id: uuid('id').defaultRandom().primaryKey(),
+	tenantId: uuid('tenant_id').notNull(),
+	eventId: uuid('event_id').notNull(),
+	fromPhase: text('from_phase'),
+	toPhase: text('to_phase').notNull(),
+	changedBy: text('changed_by'),
+	reason: text('reason'),
+	createdAt: timestamp('created_at', { withTimezone: true }).defaultNow().notNull(),
+})
+
+// ---------------------------------------------------------------------------
+// Documents And Proof Pack Workspace (UI SYSTEM #47)
+// ---------------------------------------------------------------------------
+
+export const proofPackDocuments = pgTable('proof_pack_documents', {
+	id: uuid('id').defaultRandom().primaryKey(),
+	tenantId: uuid('tenant_id').notNull(),
+	eventId: uuid('event_id'),
+	documentType: text('document_type').notNull().default('other'),
+	title: text('title').notNull(),
+	filePath: text('file_path'),
+	version: integer('version').notNull().default(1),
+	status: text('status').notNull().default('draft'),
+	uploadedBy: uuid('uploaded_by'),
+	createdAt: timestamp('created_at', { withTimezone: true }).defaultNow().notNull(),
+	updatedAt: timestamp('updated_at', { withTimezone: true }).defaultNow().notNull(),
+})
+
+export const proofPacks = pgTable('proof_packs', {
+	id: uuid('id').defaultRandom().primaryKey(),
+	tenantId: uuid('tenant_id').notNull(),
+	eventId: uuid('event_id'),
+	title: text('title').notNull(),
+	documentIds: jsonb('document_ids').notNull().default([]),
+	status: text('status').notNull().default('assembling'),
+	sentTo: text('sent_to'),
+	sentAt: timestamp('sent_at', { withTimezone: true }),
+	createdAt: timestamp('created_at', { withTimezone: true }).defaultNow().notNull(),
+})
+
+export const documentApprovals = pgTable('document_approvals', {
+	id: uuid('id').defaultRandom().primaryKey(),
+	tenantId: uuid('tenant_id').notNull(),
+	documentId: uuid('document_id').notNull(),
+	approverId: uuid('approver_id'),
+	status: text('status').notNull().default('pending'),
+	comments: text('comments'),
+	decidedAt: timestamp('decided_at', { withTimezone: true }),
+	createdAt: timestamp('created_at', { withTimezone: true }).defaultNow().notNull(),
+})
+
+// ---- Perceived Performance ----
+
+export const skeletonConfigs = pgTable('skeleton_configs', {
+	id: uuid('id').defaultRandom().primaryKey(),
+	tenantId: uuid('tenant_id').notNull(),
+	route: text('route').notNull(),
+	component: text('component').notNull(),
+	skeletonType: text('skeleton_type').notNull().default('card'),
+	layoutHint: jsonb('layout_hint').default({}),
+	animationType: text('animation_type').notNull().default('pulse'),
+	createdAt: timestamp('created_at', { withTimezone: true }).defaultNow().notNull(),
+}, (table) => [
+	uniqueIndex('idx_skeleton_configs_tenant_route_component').using('btree', table.tenantId, table.route, table.component),
+	index('idx_skeleton_configs_tenant_route').using('btree', table.tenantId, table.route),
+	foreignKey({ columns: [table.tenantId], foreignColumns: [chefs.id], name: 'skeleton_configs_tenant_id_fkey' }).onDelete('cascade'),
+	check('skeleton_configs_skeleton_type_check', sql`skeleton_type IN ('card', 'list', 'table', 'form', 'chart', 'custom')`),
+	check('skeleton_configs_animation_type_check', sql`animation_type IN ('pulse', 'wave', 'none')`),
+])
+
+export const performanceBudgets = pgTable('performance_budgets', {
+	id: uuid('id').defaultRandom().primaryKey(),
+	tenantId: uuid('tenant_id').notNull(),
+	route: text('route').notNull(),
+	maxFcp: integer('max_fcp').notNull().default(1500),
+	maxLcp: integer('max_lcp').notNull().default(2500),
+	maxTti: integer('max_tti').notNull().default(3500),
+	maxCls: numeric('max_cls', { precision: 5, scale: 3 }).notNull().default('0.1'),
+	maxBundleSize: integer('max_bundle_size').notNull().default(250),
+	createdAt: timestamp('created_at', { withTimezone: true }).defaultNow().notNull(),
+}, (table) => [
+	uniqueIndex('idx_performance_budgets_tenant_route').using('btree', table.tenantId, table.route),
+	foreignKey({ columns: [table.tenantId], foreignColumns: [chefs.id], name: 'performance_budgets_tenant_id_fkey' }).onDelete('cascade'),
+	check('performance_budgets_max_fcp_positive', sql`max_fcp > 0`),
+	check('performance_budgets_max_lcp_positive', sql`max_lcp > 0`),
+	check('performance_budgets_max_tti_positive', sql`max_tti > 0`),
+	check('performance_budgets_max_cls_positive', sql`max_cls >= 0`),
+	check('performance_budgets_max_bundle_size_positive', sql`max_bundle_size > 0`),
+])
+
+export const performanceMetrics = pgTable('performance_metrics', {
+	id: uuid('id').defaultRandom().primaryKey(),
+	tenantId: uuid('tenant_id').notNull(),
+	route: text('route').notNull(),
+	fcp: integer('fcp'),
+	lcp: integer('lcp'),
+	tti: integer('tti'),
+	cls: numeric('cls', { precision: 5, scale: 3 }),
+	bundleSize: integer('bundle_size'),
+	viewport: text('viewport'),
+	measuredAt: timestamp('measured_at', { withTimezone: true }).defaultNow().notNull(),
+	createdAt: timestamp('created_at', { withTimezone: true }).defaultNow().notNull(),
+}, (table) => [
+	index('idx_performance_metrics_tenant_route').using('btree', table.tenantId, table.route),
+	index('idx_performance_metrics_tenant_measured').using('btree', table.tenantId, table.measuredAt.desc()),
+	foreignKey({ columns: [table.tenantId], foreignColumns: [chefs.id], name: 'performance_metrics_tenant_id_fkey' }).onDelete('cascade'),
+])
+
+// ---------------------------------------------------------------------------
+// Lifecycle Action Graph (LIFECYCLE #3)
+// ---------------------------------------------------------------------------
+
+export const lifecycleGraphNodes = pgTable('lifecycle_graph_nodes', {
+	id: uuid('id').defaultRandom().primaryKey(),
+	tenantId: uuid('tenant_id').notNull(),
+	stageName: text('stage_name').notNull(),
+	label: text('label').notNull(),
+	nodeType: text('node_type').notNull().default('stage'),
+	position: jsonb('position').notNull().default({ x: 0, y: 0 }),
+	metadata: jsonb('metadata').notNull().default({}),
+	createdAt: timestamp('created_at', { withTimezone: true }).defaultNow().notNull(),
+})
+
+export const lifecycleGraphEdges = pgTable('lifecycle_graph_edges', {
+	id: uuid('id').defaultRandom().primaryKey(),
+	tenantId: uuid('tenant_id').notNull(),
+	fromNodeId: uuid('from_node_id').notNull(),
+	toNodeId: uuid('to_node_id').notNull(),
+	label: text('label').notNull().default(''),
+	condition: jsonb('condition'),
+	weight: integer('weight').notNull().default(1),
+	edgeType: text('edge_type').notNull().default('transition'),
+	createdAt: timestamp('created_at', { withTimezone: true }).defaultNow().notNull(),
+})
+
+export const lifecycleGraphSnapshots = pgTable('lifecycle_graph_snapshots', {
+	id: uuid('id').defaultRandom().primaryKey(),
+	tenantId: uuid('tenant_id').notNull(),
+	version: integer('version').notNull(),
+	nodes: jsonb('nodes').notNull().default([]),
+	edges: jsonb('edges').notNull().default([]),
+	description: text('description'),
+	createdAt: timestamp('created_at', { withTimezone: true }).defaultNow().notNull(),
+})
+
+// ---------------------------------------------------------------------------
+// Rail Navigation - Event Lifecycle Rail & Stage Navigation (LIFECYCLE #11)
+// ---------------------------------------------------------------------------
+
+export const railStages = pgTable('rail_stages', {
+	id: uuid('id').defaultRandom().primaryKey(),
+	tenantId: uuid('tenant_id').notNull(),
+	stageName: text('stage_name').notNull(),
+	label: text('label').notNull(),
+	icon: text('icon'),
+	sortOrder: integer('sort_order').notNull().default(0),
+	color: text('color'),
+	completionCriteria: jsonb('completion_criteria'),
+	createdAt: timestamp('created_at', { withTimezone: true }).defaultNow().notNull(),
+}, (table) => [
+	uniqueIndex('uq_rail_stages_tenant_stage').on(table.tenantId, table.stageName),
+	index('idx_rail_stages_tenant_sort').on(table.tenantId, table.sortOrder),
+])
+
+export const railProgress = pgTable('rail_progress', {
+	id: uuid('id').defaultRandom().primaryKey(),
+	tenantId: uuid('tenant_id').notNull(),
+	eventId: uuid('event_id').notNull(),
+	stageId: uuid('stage_id').notNull(),
+	status: text('status').notNull().default('pending'),
+	completedAt: timestamp('completed_at', { withTimezone: true }),
+	completionPercent: integer('completion_percent').notNull().default(0),
+	blockers: text('blockers').array().notNull().default([]),
+	createdAt: timestamp('created_at', { withTimezone: true }).defaultNow().notNull(),
+}, (table) => [
+	uniqueIndex('uq_rail_progress_tenant_event_stage').on(table.tenantId, table.eventId, table.stageId),
+	index('idx_rail_progress_event').on(table.tenantId, table.eventId),
+])
+
+export const railNavShortcuts = pgTable('rail_nav_shortcuts', {
+	id: uuid('id').defaultRandom().primaryKey(),
+	tenantId: uuid('tenant_id').notNull(),
+	stageName: text('stage_name').notNull(),
+	shortcutLabel: text('shortcut_label').notNull(),
+	targetRoute: text('target_route').notNull(),
+	hotkey: text('hotkey'),
+	createdAt: timestamp('created_at', { withTimezone: true }).defaultNow().notNull(),
+}, (table) => [
+	index('idx_rail_nav_shortcuts_tenant_stage').on(table.tenantId, table.stageName),
+])
+
+// ---- Ownership & Merge Plans (LIFECYCLE #13) ----
+
+export const ownershipAssignments = pgTable('ownership_assignments', {
+	id: uuid('id').defaultRandom().primaryKey(),
+	tenantId: uuid('tenant_id').notNull(),
+	eventId: uuid('event_id').notNull(),
+	lifecycleStage: text('lifecycle_stage').notNull(),
+	ownerId: uuid('owner_id').notNull(),
+	ownerName: text('owner_name').notNull().default(''),
+	role: text('role').notNull().default('lead'),
+	active: boolean('active').default(true),
+	assignedAt: timestamp('assigned_at', { withTimezone: true }).defaultNow().notNull(),
+	createdAt: timestamp('created_at', { withTimezone: true }).defaultNow().notNull(),
+})
+
+export const mergePlans = pgTable('merge_plans', {
+	id: uuid('id').defaultRandom().primaryKey(),
+	tenantId: uuid('tenant_id').notNull(),
+	eventId: uuid('event_id').notNull(),
+	title: text('title').notNull(),
+	sourceStages: jsonb('source_stages').notNull().default([]),
+	targetStage: text('target_stage').notNull().default(''),
+	strategy: text('strategy').notNull().default('sequential'),
+	status: text('status').notNull().default('draft'),
+	createdAt: timestamp('created_at', { withTimezone: true }).defaultNow().notNull(),
+	completedAt: timestamp('completed_at', { withTimezone: true }),
+})
+
+export const handoffRules = pgTable('handoff_rules', {
+	id: uuid('id').defaultRandom().primaryKey(),
+	tenantId: uuid('tenant_id').notNull(),
+	fromStage: text('from_stage').notNull(),
+	toStage: text('to_stage').notNull(),
+	requiresApproval: boolean('requires_approval').default(false),
+	checklist: jsonb('checklist').notNull().default({}),
+	autoAssignTo: text('auto_assign_to'),
+	createdAt: timestamp('created_at', { withTimezone: true }).defaultNow().notNull(),
+})
+
+// ---------------------------------------------------------------------------
+// Fixture Matrix (finish-gate proof tracking) - LIFECYCLE #14
+// ---------------------------------------------------------------------------
+
+export const gateCriteria = pgTable('gate_criteria', {
+	id: uuid('id').defaultRandom().primaryKey(),
+	tenantId: uuid('tenant_id').notNull(),
+	lifecycleStage: text('lifecycle_stage').notNull(),
+	criterionName: text('criterion_name').notNull(),
+	description: text('description'),
+	checkType: text('check_type').default('manual').notNull(),
+	required: boolean('required').default(true).notNull(),
+	sortOrder: integer('sort_order').default(0).notNull(),
+	createdAt: timestamp('created_at', { withTimezone: true }).defaultNow().notNull(),
+}, (table) => [
+	uniqueIndex('idx_gate_criteria_tenant_stage_name').on(table.tenantId, table.lifecycleStage, table.criterionName),
+	index('idx_gate_criteria_tenant_stage').on(table.tenantId, table.lifecycleStage),
+])
+
+export const gateResults = pgTable('gate_results', {
+	id: uuid('id').defaultRandom().primaryKey(),
+	tenantId: uuid('tenant_id').notNull(),
+	eventId: uuid('event_id').notNull(),
+	criterionId: uuid('criterion_id').notNull(),
+	passed: boolean('passed').default(false).notNull(),
+	evidence: jsonb('evidence'),
+	checkedBy: uuid('checked_by'),
+	checkedAt: timestamp('checked_at', { withTimezone: true }).defaultNow().notNull(),
+	notes: text('notes'),
+	createdAt: timestamp('created_at', { withTimezone: true }).defaultNow().notNull(),
+}, (table) => [
+	index('idx_gate_results_tenant_event').on(table.tenantId, table.eventId),
+	index('idx_gate_results_criterion').on(table.criterionId),
+])
+
+export const finishGates = pgTable('finish_gates', {
+	id: uuid('id').defaultRandom().primaryKey(),
+	tenantId: uuid('tenant_id').notNull(),
+	eventId: uuid('event_id').notNull(),
+	lifecycleStage: text('lifecycle_stage').notNull(),
+	totalCriteria: integer('total_criteria').default(0).notNull(),
+	passedCriteria: integer('passed_criteria').default(0).notNull(),
+	status: text('status').default('open').notNull(),
+	evaluatedAt: timestamp('evaluated_at', { withTimezone: true }),
+	createdAt: timestamp('created_at', { withTimezone: true }).defaultNow().notNull(),
+}, (table) => [
+	uniqueIndex('idx_finish_gates_tenant_event_stage').on(table.tenantId, table.eventId, table.lifecycleStage),
+	index('idx_finish_gates_tenant_event').on(table.tenantId, table.eventId),
+])
+
+// ---------------------------------------------------------------------------
+// Graph Security - Regression tests, security audits, doc entries (LIFECYCLE #6)
+// ---------------------------------------------------------------------------
+
+export const regressionTestCases = pgTable('regression_test_cases', {
+	id: uuid('id').defaultRandom().primaryKey(),
+	tenantId: uuid('tenant_id').notNull(),
+	name: text('name').notNull(),
+	lifecycleStage: text('lifecycle_stage').notNull(),
+	inputState: jsonb('input_state').notNull().default({}),
+	expectedOutput: jsonb('expected_output').notNull().default({}),
+	lastResult: text('last_result').notNull().default('skip'),
+	lastRunAt: timestamp('last_run_at', { withTimezone: true }),
+	createdAt: timestamp('created_at', { withTimezone: true }).defaultNow().notNull(),
+}, (table) => [
+	uniqueIndex('idx_regression_test_cases_tenant_name').on(table.tenantId, table.name),
+])
+
+export const securityAuditEntries = pgTable('security_audit_entries', {
+	id: uuid('id').defaultRandom().primaryKey(),
+	tenantId: uuid('tenant_id').notNull(),
+	lifecycleStage: text('lifecycle_stage').notNull(),
+	auditType: text('audit_type').notNull(),
+	finding: text('finding').notNull(),
+	severity: text('severity').notNull().default('medium'),
+	mitigated: boolean('mitigated').notNull().default(false),
+	mitigatedAt: timestamp('mitigated_at', { withTimezone: true }),
+	createdAt: timestamp('created_at', { withTimezone: true }).defaultNow().notNull(),
+}, (table) => [
+	index('idx_security_audit_entries_tenant_stage').on(table.tenantId, table.lifecycleStage),
+])
+
+export const graphDocEntries = pgTable('graph_doc_entries', {
+	id: uuid('id').defaultRandom().primaryKey(),
+	tenantId: uuid('tenant_id').notNull(),
+	section: text('section').notNull(),
+	title: text('title').notNull(),
+	content: text('content').notNull().default(''),
+	version: integer('version').notNull().default(1),
+	updatedBy: text('updated_by').notNull().default(''),
+	createdAt: timestamp('created_at', { withTimezone: true }).defaultNow().notNull(),
+	updatedAt: timestamp('updated_at', { withTimezone: true }).defaultNow().notNull(),
+}, (table) => [
+	index('idx_graph_doc_entries_tenant').on(table.tenantId),
+])
+
+// ---------------------------------------------------------------------------
+// Lifecycle Action Cards (LIFECYCLE #5)
+// ---------------------------------------------------------------------------
+
+export const lifecycleActionCards = pgTable('lifecycle_action_cards', {
+	id: uuid('id').defaultRandom().primaryKey(),
+	tenantId: uuid('tenant_id').notNull(),
+	eventId: uuid('event_id').notNull(),
+	lifecycleStage: text('lifecycle_stage').notNull(),
+	title: text('title').notNull(),
+	description: text('description'),
+	actionType: text('action_type').notNull().default('navigate'),
+	targetRoute: text('target_route'),
+	priority: text('priority').notNull().default('normal'),
+	dueAt: timestamp('due_at', { withTimezone: true }),
+	completedAt: timestamp('completed_at', { withTimezone: true }),
+	dismissedAt: timestamp('dismissed_at', { withTimezone: true }),
+	createdAt: timestamp('created_at', { withTimezone: true }).defaultNow().notNull(),
+}, (table) => [
+	index('idx_lifecycle_action_cards_tenant_event').using('btree', table.tenantId, table.eventId),
+	index('idx_lifecycle_action_cards_stage').using('btree', table.tenantId, table.lifecycleStage),
+	foreignKey({ columns: [table.tenantId], foreignColumns: [chefs.id], name: 'lifecycle_action_cards_tenant_id_fkey' }).onDelete('cascade'),
+	foreignKey({ columns: [table.eventId], foreignColumns: [events.id], name: 'lifecycle_action_cards_event_id_fkey' }).onDelete('cascade'),
+	pgPolicy('action_cards_chef_all', { as: 'permissive', for: 'all', to: ['public'], using: sql`(tenant_id IN ( SELECT user_roles.entity_id FROM user_roles WHERE ((user_roles.auth_user_id = auth.uid()) AND (user_roles.role = 'chef'::user_role))))` }),
+])
+
+export const actionRecommendations = pgTable('action_recommendations', {
+	id: uuid('id').defaultRandom().primaryKey(),
+	tenantId: uuid('tenant_id').notNull(),
+	lifecycleStage: text('lifecycle_stage').notNull(),
+	triggerCondition: jsonb('trigger_condition').notNull().default({}),
+	recommendedAction: text('recommended_action').notNull(),
+	title: text('title').notNull(),
+	description: text('description'),
+	autoCreate: boolean('auto_create').notNull().default(false),
+	createdAt: timestamp('created_at', { withTimezone: true }).defaultNow().notNull(),
+}, (table) => [
+	index('idx_action_recommendations_tenant_stage').using('btree', table.tenantId, table.lifecycleStage),
+	foreignKey({ columns: [table.tenantId], foreignColumns: [chefs.id], name: 'action_recommendations_tenant_id_fkey' }).onDelete('cascade'),
+	pgPolicy('action_recommendations_chef_all', { as: 'permissive', for: 'all', to: ['public'], using: sql`(tenant_id IN ( SELECT user_roles.entity_id FROM user_roles WHERE ((user_roles.auth_user_id = auth.uid()) AND (user_roles.role = 'chef'::user_role))))` }),
+])
+
+// ---------------------------------------------------------------------------
+// Waiting Age + Owner Language (LIFECYCLE #17)
+// ---------------------------------------------------------------------------
+
+export const waitingAgeConfigs = pgTable('waiting_age_configs', {
+	id: uuid('id').defaultRandom().primaryKey(),
+	tenantId: uuid('tenant_id').notNull(),
+	lifecycleStage: text('lifecycle_stage').notNull(),
+	bracket: text('bracket').notNull(),
+	minDays: integer('min_days').notNull().default(0),
+	maxDays: integer('max_days'),
+	label: text('label').notNull().default(''),
+	color: text('color').notNull().default(''),
+	icon: text('icon'),
+	escalationAction: text('escalation_action'),
+	createdAt: timestamp('created_at', { withTimezone: true }).defaultNow().notNull(),
+})
+
+export const ownerLanguageRules = pgTable('owner_language_rules', {
+	id: uuid('id').defaultRandom().primaryKey(),
+	tenantId: uuid('tenant_id').notNull(),
+	lifecycleStage: text('lifecycle_stage').notNull(),
+	ageBracket: text('age_bracket').notNull(),
+	ownerType: text('owner_type').notNull(),
+	messageTemplate: text('message_template').notNull().default(''),
+	tone: text('tone').notNull().default('neutral'),
+	createdAt: timestamp('created_at', { withTimezone: true }).defaultNow().notNull(),
+})
+
+// ---------------------------------------------------------------------------
+// Interaction Soundness Pass (UI SYSTEM #36)
+// ---------------------------------------------------------------------------
+
+export const interactionRules = pgTable('interaction_rules', {
+	id: uuid('id').defaultRandom().primaryKey(),
+	tenantId: uuid('tenant_id').notNull(),
+	component: text('component').notNull(),
+	interactionState: text('interaction_state').notNull(),
+	cssProperty: text('css_property').notNull(),
+	value: text('value').notNull(),
+	transition: text('transition'),
+	description: text('description'),
+	createdAt: timestamp('created_at', { withTimezone: true }).defaultNow().notNull(),
+}, (table) => [
+	uniqueIndex('idx_interaction_rules_tenant_component_state_prop').on(table.tenantId, table.component, table.interactionState, table.cssProperty),
+	index('idx_interaction_rules_tenant').using('btree', table.tenantId),
+	foreignKey({ columns: [table.tenantId], foreignColumns: [chefs.id], name: 'interaction_rules_tenant_id_fkey' }).onDelete('cascade'),
+	check('interaction_rules_state_check', sql`interaction_state IN ('hover', 'focus', 'active', 'disabled', 'loading', 'error')`),
+])
+
+export const interactionAudits = pgTable('interaction_audits', {
+	id: uuid('id').defaultRandom().primaryKey(),
+	tenantId: uuid('tenant_id').notNull(),
+	route: text('route').notNull(),
+	component: text('component').notNull(),
+	missingStates: jsonb('missing_states').notNull().default([]),
+	score: integer('score').notNull().default(0),
+	notes: text('notes'),
+	auditedAt: timestamp('audited_at', { withTimezone: true }).defaultNow().notNull(),
+	createdAt: timestamp('created_at', { withTimezone: true }).defaultNow().notNull(),
+}, (table) => [
+	index('idx_interaction_audits_tenant_route').using('btree', table.tenantId, table.route),
+	index('idx_interaction_audits_tenant').using('btree', table.tenantId),
+	foreignKey({ columns: [table.tenantId], foreignColumns: [chefs.id], name: 'interaction_audits_tenant_id_fkey' }).onDelete('cascade'),
+])
+
+// ---------------------------------------------------------------------------
+// Client Visibility and Redaction Rules (Lifecycle #12)
+// ---------------------------------------------------------------------------
+
+export const visibilityRules = pgTable('visibility_rules', {
+	id: uuid('id').defaultRandom().primaryKey(),
+	tenantId: uuid('tenant_id').notNull(),
+	lifecycleStage: text('lifecycle_stage').notNull(),
+	fieldName: text('field_name').notNull(),
+	entityType: text('entity_type').notNull(),
+	visibility: text('visibility').notNull(),
+	redactWith: text('redact_with'),
+	reason: text('reason'),
+	createdAt: timestamp('created_at').defaultNow().notNull(),
+})
+
+export const redactionPolicies = pgTable('redaction_policies', {
+	id: uuid('id').defaultRandom().primaryKey(),
+	tenantId: uuid('tenant_id').notNull(),
+	name: text('name').notNull(),
+	description: text('description'),
+	rules: jsonb('rules').default('[]').notNull(),
+	appliesTo: jsonb('applies_to').default('[]').notNull(),
+	active: boolean('active').default(true).notNull(),
+	createdAt: timestamp('created_at').defaultNow().notNull(),
+})
+
+export const stickyFooterConfigs = pgTable('sticky_footer_configs', {
+	id: uuid('id').defaultRandom().primaryKey(),
+	tenantId: uuid('tenant_id').notNull(),
+	lifecycleStage: text('lifecycle_stage').notNull(),
+	actionLabel: text('action_label').notNull(),
+	actionType: text('action_type').notNull().default('primary'),
+	icon: text('icon'),
+	targetRoute: text('target_route'),
+	sortOrder: integer('sort_order').notNull().default(0),
+	showBadge: boolean('show_badge').notNull().default(false),
+	badgeCount: integer('badge_count'),
+	visible: boolean('visible').notNull().default(true),
+	createdAt: timestamp('created_at', { withTimezone: true, mode: 'string' }).defaultNow().notNull(),
+}, (table) => [
+	index('idx_sticky_footer_configs_tenant_stage').using('btree', table.tenantId.asc().nullsLast(), table.lifecycleStage.asc().nullsLast()),
+	foreignKey({
+		columns: [table.tenantId],
+		foreignColumns: [chefs.id],
+		name: 'sticky_footer_configs_tenant_id_fkey',
+	}).onDelete('cascade'),
+	pgPolicy('sfc_chef_select', { as: 'permissive', for: 'select', to: ['public'] }),
+	pgPolicy('sfc_chef_insert', { as: 'permissive', for: 'insert', to: ['public'] }),
+	pgPolicy('sfc_chef_update', { as: 'permissive', for: 'update', to: ['public'], using: sql`((get_current_user_role() = 'chef'::user_role) AND (tenant_id = get_current_tenant_id()))` }),
+	pgPolicy('sfc_chef_delete', { as: 'permissive', for: 'delete', to: ['public'], using: sql`((get_current_user_role() = 'chef'::user_role) AND (tenant_id = get_current_tenant_id()))` }),
+	check('sticky_footer_configs_action_type_check', sql`action_type = ANY (ARRAY['primary'::text, 'secondary'::text, 'danger'::text, 'info'::text])`),
+])
+
+export const stickyFooterOverrides = pgTable('sticky_footer_overrides', {
+	id: uuid('id').defaultRandom().primaryKey(),
+	tenantId: uuid('tenant_id').notNull(),
+	eventId: uuid('event_id').notNull(),
+	lifecycleStage: text('lifecycle_stage').notNull(),
+	configId: uuid('config_id').notNull(),
+	overrideLabel: text('override_label'),
+	overrideAction: text('override_action'),
+	visible: boolean('visible').notNull().default(true),
+	createdAt: timestamp('created_at', { withTimezone: true, mode: 'string' }).defaultNow().notNull(),
+}, (table) => [
+	index('idx_sticky_footer_overrides_tenant_event').using('btree', table.tenantId.asc().nullsLast(), table.eventId.asc().nullsLast()),
+	foreignKey({
+		columns: [table.tenantId],
+		foreignColumns: [chefs.id],
+		name: 'sticky_footer_overrides_tenant_id_fkey',
+	}).onDelete('cascade'),
+	foreignKey({
+		columns: [table.eventId],
+		foreignColumns: [events.id],
+		name: 'sticky_footer_overrides_event_id_fkey',
+	}).onDelete('cascade'),
+	foreignKey({
+		columns: [table.configId],
+		foreignColumns: [stickyFooterConfigs.id],
+		name: 'sticky_footer_overrides_config_id_fkey',
+	}).onDelete('cascade'),
+	pgPolicy('sfo_chef_select', { as: 'permissive', for: 'select', to: ['public'] }),
+	pgPolicy('sfo_chef_insert', { as: 'permissive', for: 'insert', to: ['public'] }),
+	pgPolicy('sfo_chef_update', { as: 'permissive', for: 'update', to: ['public'], using: sql`((get_current_user_role() = 'chef'::user_role) AND (tenant_id = get_current_tenant_id()))` }),
+	pgPolicy('sfo_chef_delete', { as: 'permissive', for: 'delete', to: ['public'], using: sql`((get_current_user_role() = 'chef'::user_role) AND (tenant_id = get_current_tenant_id()))` }),
 ])

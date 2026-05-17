@@ -3,6 +3,7 @@
 // Admin Cannabis Client - interactive management panel
 
 import { useState } from 'react'
+import { useRouter } from 'next/navigation'
 import { ConfirmModal } from '@/components/ui/confirm-modal'
 import {
   approveInvite,
@@ -10,6 +11,11 @@ import {
   revokeCannabisTier,
   adminGrantTierByEmail,
 } from '@/lib/admin/cannabis-actions'
+import {
+  reviewCannabisRequest,
+  convertCannabisRequestToEvent,
+} from '@/lib/admin/cannabis-request-actions'
+import type { CannabisRequest } from '@/lib/admin/cannabis-request-actions'
 
 interface CannabisUser {
   id: string
@@ -48,18 +54,22 @@ interface Props {
   users: CannabisUser[]
   pendingInvites: PendingInvite[]
   allInvites: AllInvite[]
+  dinnerRequests: CannabisRequest[]
 }
 
-export function AdminCannabisClient({ users, pendingInvites, allInvites }: Props) {
-  const [tab, setTab] = useState<'queue' | 'users' | 'grant' | 'history'>('queue')
+export function AdminCannabisClient({ users, pendingInvites, allInvites, dinnerRequests }: Props) {
+  const router = useRouter()
+  const [tab, setTab] = useState<'queue' | 'users' | 'grant' | 'history' | 'requests'>('queue')
   const [loading, setLoading] = useState<string | null>(null)
   const [showRevokeConfirm, setShowRevokeConfirm] = useState(false)
   const [revokeTargetId, setRevokeTargetId] = useState<string | null>(null)
   const [localPending, setLocalPending] = useState(pendingInvites)
   const [localUsers, setLocalUsers] = useState(users)
+  const [localRequests, setLocalRequests] = useState(dinnerRequests)
   const [grantEmail, setGrantEmail] = useState('')
   const [grantNotes, setGrantNotes] = useState('')
   const [grantMsg, setGrantMsg] = useState('')
+  const [requestMsg, setRequestMsg] = useState('')
 
   async function handleApprove(inviteId: string) {
     setLoading(inviteId)
@@ -127,6 +137,57 @@ export function AdminCannabisClient({ users, pendingInvites, allInvites }: Props
     }
   }
 
+  const pendingRequestCount = localRequests.filter(
+    (r) => r.status === 'submitted' || r.status === 'under_review'
+  ).length
+
+  async function handleReviewRequest(requestId: string, decision: 'approved' | 'declined') {
+    const adminNotes =
+      decision === 'declined' ? (prompt('Decline reason (optional):') ?? undefined) : undefined
+    setLoading(requestId)
+    setRequestMsg('')
+    try {
+      await reviewCannabisRequest({ requestId, decision, adminNotes })
+      setLocalRequests((prev) =>
+        prev.map((r) =>
+          r.id === requestId
+            ? { ...r, status: decision, admin_notes: adminNotes ?? r.admin_notes }
+            : r
+        )
+      )
+      setRequestMsg(`Request ${decision} successfully.`)
+    } catch (err: any) {
+      setRequestMsg('Error: ' + err.message)
+    } finally {
+      setLoading(null)
+    }
+  }
+
+  async function handleConvertToEvent(requestId: string) {
+    setLoading(requestId)
+    setRequestMsg('')
+    try {
+      const result = await convertCannabisRequestToEvent({ requestId })
+      setLocalRequests((prev) =>
+        prev.map((r) =>
+          r.id === requestId
+            ? { ...r, status: 'converted' as const, converted_event_id: result.eventId ?? null }
+            : r
+        )
+      )
+      setRequestMsg(
+        result.eventId
+          ? `Event created successfully. View at /inquiries/${result.eventId}`
+          : 'Event created successfully.'
+      )
+      router.refresh()
+    } catch (err: any) {
+      setRequestMsg('Error: ' + err.message)
+    } finally {
+      setLoading(null)
+    }
+  }
+
   const tabClass = (t: string) =>
     `px-4 py-2 text-sm font-medium rounded-lg transition-colors ${
       tab === t
@@ -161,6 +222,17 @@ export function AdminCannabisClient({ users, pendingInvites, allInvites }: Props
             onClick={() => setTab('grant')}
           >
             Direct Grant
+          </button>
+          <button
+            className={`${tabClass('requests')} whitespace-nowrap`}
+            onClick={() => setTab('requests')}
+          >
+            Requests{' '}
+            {pendingRequestCount > 0 && (
+              <span className="ml-1.5 px-1.5 py-0.5 text-xs rounded-full bg-amber-900/50 text-amber-400">
+                {pendingRequestCount}
+              </span>
+            )}
           </button>
           <button
             className={`${tabClass('history')} whitespace-nowrap`}
@@ -318,6 +390,177 @@ export function AdminCannabisClient({ users, pendingInvites, allInvites }: Props
               {loading === 'grant' ? 'Granting...' : 'Grant Cannabis Tier'}
             </button>
           </form>
+        </div>
+      )}
+
+      {/* Dinner Requests */}
+      {tab === 'requests' && (
+        <div className="space-y-3">
+          {requestMsg && (
+            <p
+              className={`text-sm mb-2 ${requestMsg.startsWith('Error') ? 'text-red-400' : 'text-green-400'}`}
+            >
+              {requestMsg}
+            </p>
+          )}
+          {localRequests.length === 0 ? (
+            <p className="text-sm text-slate-500 py-8 text-center">
+              No cannabis dinner requests yet.
+            </p>
+          ) : (
+            localRequests.map((req) => {
+              const isPending = req.status === 'submitted' || req.status === 'under_review'
+              const isApproved = req.status === 'approved'
+              const statusColors: Record<string, string> = {
+                submitted: 'bg-amber-900/30 text-amber-400 border border-amber-700/30',
+                under_review: 'bg-blue-900/30 text-blue-400 border border-blue-700/30',
+                approved: 'bg-green-900/30 text-green-400 border border-green-700/30',
+                declined: 'bg-red-900/30 text-red-400 border border-red-700/30',
+                converted: 'bg-purple-900/30 text-purple-400 border border-purple-700/30',
+              }
+              return (
+                <div
+                  key={req.id}
+                  className="rounded-xl p-4 bg-slate-800/60 border border-slate-700/50"
+                >
+                  <div className="flex items-start justify-between gap-4">
+                    <div className="min-w-0 flex-1">
+                      {/* Client info + status badge */}
+                      <div className="flex items-center gap-2 mb-1">
+                        <p className="text-sm font-medium text-slate-100">
+                          {req.client_name ?? 'Unknown Client'}
+                        </p>
+                        <span
+                          className={`text-xs px-2 py-0.5 rounded-full font-medium ${statusColors[req.status] ?? 'bg-slate-700 text-slate-300'}`}
+                        >
+                          {req.status}
+                        </span>
+                      </div>
+                      {req.client_email && (
+                        <p className="text-xs text-slate-400">{req.client_email}</p>
+                      )}
+
+                      {/* Request details grid */}
+                      <div className="mt-2 grid grid-cols-2 sm:grid-cols-3 gap-x-4 gap-y-1">
+                        {req.preferred_date && (
+                          <p className="text-xs text-slate-400">
+                            <span className="text-slate-500">Date:</span>{' '}
+                            {new Date(req.preferred_date + 'T00:00:00').toLocaleDateString()}
+                          </p>
+                        )}
+                        {req.guest_count && (
+                          <p className="text-xs text-slate-400">
+                            <span className="text-slate-500">Guests:</span> {req.guest_count}
+                          </p>
+                        )}
+                        {req.desired_intensity && (
+                          <p className="text-xs text-slate-400">
+                            <span className="text-slate-500">Intensity:</span>{' '}
+                            {req.desired_intensity}
+                          </p>
+                        )}
+                        {req.format_preference && (
+                          <p className="text-xs text-slate-400">
+                            <span className="text-slate-500">Format:</span> {req.format_preference}
+                          </p>
+                        )}
+                      </div>
+
+                      {/* Experience goal */}
+                      {req.cannabis_experience_goal && (
+                        <p className="text-xs text-slate-400 mt-2">
+                          <span className="text-slate-500">Goal:</span>{' '}
+                          {req.cannabis_experience_goal}
+                        </p>
+                      )}
+
+                      {/* Location */}
+                      {req.location_notes && (
+                        <p className="text-xs text-slate-400 mt-1">
+                          <span className="text-slate-500">Location:</span> {req.location_notes}
+                        </p>
+                      )}
+
+                      {/* Menu preferences */}
+                      {req.menu_preferences && (
+                        <p className="text-xs text-slate-400 mt-1">
+                          <span className="text-slate-500">Menu notes:</span> {req.menu_preferences}
+                        </p>
+                      )}
+
+                      {/* Notes */}
+                      {req.notes && (
+                        <p className="text-xs text-slate-400 mt-1 italic">
+                          &ldquo;{req.notes}&rdquo;
+                        </p>
+                      )}
+
+                      {/* Admin notes (if reviewed) */}
+                      {req.admin_notes && (
+                        <p className="text-xs text-slate-500 mt-1">Admin: {req.admin_notes}</p>
+                      )}
+
+                      {/* Submission date + reviewer */}
+                      <p className="text-xs text-slate-500 mt-2">
+                        Submitted {new Date(req.created_at).toLocaleDateString()}
+                        {req.reviewed_by && (
+                          <span>
+                            {' · '}Reviewed by {req.reviewed_by}
+                            {req.reviewed_at &&
+                              ` on ${new Date(req.reviewed_at).toLocaleDateString()}`}
+                          </span>
+                        )}
+                      </p>
+
+                      {/* Converted event link */}
+                      {req.status === 'converted' && req.converted_event_id && (
+                        <a
+                          href={`/inquiries/${req.converted_event_id}`}
+                          className="inline-block text-xs text-green-400 hover:text-green-300 mt-1 underline"
+                        >
+                          View created event
+                        </a>
+                      )}
+                    </div>
+
+                    {/* Action buttons */}
+                    <div className="flex flex-col gap-2 shrink-0">
+                      {isPending && (
+                        <>
+                          <button
+                            type="button"
+                            disabled={loading === req.id}
+                            onClick={() => handleReviewRequest(req.id, 'approved')}
+                            className="px-3 py-1.5 text-xs font-medium rounded-lg bg-green-900/50 text-green-300 border border-green-700/30 hover:bg-green-900/70 disabled:opacity-50 transition-colors"
+                          >
+                            Approve
+                          </button>
+                          <button
+                            type="button"
+                            disabled={loading === req.id}
+                            onClick={() => handleReviewRequest(req.id, 'declined')}
+                            className="px-3 py-1.5 text-xs font-medium rounded-lg bg-slate-700/50 text-slate-300 hover:bg-slate-700 disabled:opacity-50 transition-colors"
+                          >
+                            Decline
+                          </button>
+                        </>
+                      )}
+                      {isApproved && (
+                        <button
+                          type="button"
+                          disabled={loading === req.id}
+                          onClick={() => handleConvertToEvent(req.id)}
+                          className="px-3 py-1.5 text-xs font-medium rounded-lg bg-purple-900/50 text-purple-300 border border-purple-700/30 hover:bg-purple-900/70 disabled:opacity-50 transition-colors"
+                        >
+                          {loading === req.id ? 'Converting...' : 'Convert to Event'}
+                        </button>
+                      )}
+                    </div>
+                  </div>
+                </div>
+              )
+            })
+          )}
         </div>
       )}
 

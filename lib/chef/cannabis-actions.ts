@@ -428,7 +428,7 @@ export async function getCannabisRSVPDashboardData(selectedEventId?: string | nu
   const { data: guestRows, error: guestsError } = await db
     .from('event_guests')
     .select(
-      'id, full_name, rsvp_status, guest_token, dietary_restrictions, notes, created_at, updated_at'
+      'id, full_name, email, rsvp_status, guest_token, dietary_restrictions, notes, created_at, updated_at'
     )
     .eq('tenant_id', user.tenantId!)
     .eq('event_id', selectedEvent.id)
@@ -441,6 +441,7 @@ export async function getCannabisRSVPDashboardData(selectedEventId?: string | nu
   const guests = (guestRows ?? []) as {
     id: string
     full_name: string
+    email: string | null
     rsvp_status: string
     guest_token: string
     dietary_restrictions: string[] | null
@@ -457,6 +458,7 @@ export async function getCannabisRSVPDashboardData(selectedEventId?: string | nu
       .from('guest_event_profile' as any)
       .select('*')
       .eq('event_id', selectedEvent.id)
+      .eq('tenant_id', user.tenantId!)
       .in('guest_token', guestTokens) as any)
 
     if (profileError) {
@@ -484,6 +486,7 @@ export async function getCannabisRSVPDashboardData(selectedEventId?: string | nu
     return {
       id: guest.id,
       fullName: guest.full_name,
+      email: guest.email ?? null,
       attendingStatus,
       cannabisParticipation: participation,
       familiarityLevel: profile?.familiarity_level ?? null,
@@ -608,11 +611,13 @@ export async function updateChefCannabisGuestProfile(
     .from('guest_event_profile' as any)
     .select('*')
     .eq('event_id', validated.eventId)
+    .eq('tenant_id', user.tenantId!)
     .eq('guest_token', guest.guest_token)
     .maybeSingle() as any)
 
   const profilePayload = {
     event_id: validated.eventId,
+    tenant_id: user.tenantId!,
     guest_token: guest.guest_token,
     attending_status:
       validated.attendingStatus ??
@@ -671,6 +676,7 @@ export async function updateChefCannabisGuestProfile(
       .from('guest_event_profile' as any)
       .update(profilePayload)
       .eq('event_id', validated.eventId)
+      .eq('tenant_id', user.tenantId!)
       .eq('guest_token', guest.guest_token)
       .eq('updated_at', existingProfile.updated_at)
       .select('id') as any)

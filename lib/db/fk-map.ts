@@ -668,6 +668,7 @@ export const FK_MAP: Record<string, string> = {
   'guest_dietary_confirmations::chefs': 'tenant_id',
   'guest_dietary_confirmations::event_guests': 'guest_id',
   'guest_dietary_confirmations::events': 'event_id',
+  'guest_event_profile::chefs': 'tenant_id',
   'guest_event_profile::events': 'event_id',
   'guest_feedback::chefs': 'tenant_id',
   'guest_feedback::event_guests': 'guest_id',

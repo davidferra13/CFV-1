@@ -77,6 +77,7 @@ export type SignalDomain =
   | 'inventory'
   | 'reputation'
   | 'pipeline'
+  | 'cannabis'
 
 export interface ProactiveSignal {
   id: string

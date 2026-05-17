@@ -11,6 +11,11 @@ import { logAdminAction } from './audit'
 import { randomBytes } from 'crypto'
 import { sendEmail } from '@/lib/email/send'
 import { CannabisInviteApprovedEmail } from '@/lib/email/templates/cannabis-invite-approved'
+import {
+  notifyCannabisAccessGranted,
+  notifyCannabisAccessRevoked,
+  notifyCannabisAgeRequired,
+} from '@/lib/cannabis/notifications'
 
 // ─── Fetch All Cannabis Tier Users ───────────────────────────────────────────
 
@@ -132,6 +137,35 @@ export async function grantCannabisTier(input: {
     details: { entity_id: input.entityId, notes: input.notes },
   })
 
+  // Fire-and-forget notifications: access granted + age required if no age permission
+  try {
+    const tenantId = input.tenantId ?? input.entityId
+
+    // Check if user already has age permission
+    const { data: agePerm } = await db
+      .from('cannabis_age_permissions')
+      .select('status')
+      .eq('auth_user_id', input.authUserId)
+      .maybeSingle()
+
+    const ageApproved =
+      agePerm && ['approved', 'manually_verified', 'self_attested'].includes(agePerm.status)
+
+    await notifyCannabisAccessGranted({
+      recipientId: input.authUserId,
+      tenantId,
+    })
+
+    if (!ageApproved) {
+      await notifyCannabisAgeRequired({
+        recipientId: input.authUserId,
+        tenantId,
+      })
+    }
+  } catch (notifErr) {
+    console.error('[CANNABIS] Non-blocking: grant notification failed:', notifErr)
+  }
+
   return { success: true }
 }
 
@@ -158,6 +192,22 @@ export async function revokeCannabisTier(authUserId: string) {
     targetType: 'user',
     details: {},
   })
+
+  // Fire-and-forget revocation notification
+  try {
+    const { data: tierRow } = await db
+      .from('cannabis_tier_users')
+      .select('tenant_id, entity_id')
+      .eq('auth_user_id', authUserId)
+      .maybeSingle()
+
+    await notifyCannabisAccessRevoked({
+      recipientId: authUserId,
+      tenantId: tierRow?.tenant_id ?? tierRow?.entity_id ?? authUserId,
+    })
+  } catch (notifErr) {
+    console.error('[CANNABIS] Non-blocking: revoke notification failed:', notifErr)
+  }
 
   return { success: true }
 }

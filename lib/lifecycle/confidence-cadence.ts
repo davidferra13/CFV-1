@@ -121,6 +121,28 @@ const PORTAL_CONTENT_MAP: Record<CadencePoint, PortalContent> = {
     showMenu: false,
     showChecklist: false,
   },
+  // Cannabis cadence points (chef-facing, not shown in client portal)
+  cannabis_attestation_reminder: {
+    headline: 'Compliance check',
+    description: 'Cannabis compliance items need attention before this event.',
+    showCountdown: true,
+    showMenu: false,
+    showChecklist: true,
+  },
+  cannabis_onboarding_reminder: {
+    headline: 'Guest intake pending',
+    description: 'Some guests have not completed their cannabis intake forms.',
+    showCountdown: true,
+    showMenu: false,
+    showChecklist: true,
+  },
+  cannabis_closeout_reminder: {
+    headline: 'Post-event documentation',
+    description: 'Cannabis control packet requires finalization.',
+    showCountdown: false,
+    showMenu: false,
+    showChecklist: true,
+  },
 }
 
 // ---------------------------------------------------------------------------

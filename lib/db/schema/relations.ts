@@ -627,6 +627,7 @@ export const chefsRelations = relations(chefs, ({one, many}) => ({
 	eventReadinessGates: many(eventReadinessGates),
 	dopTaskCompletions: many(dopTaskCompletions),
 	rebookTokens: many(rebookTokens),
+	guestEventProfiles: many(guestEventProfile),
 	eventTemplates: many(eventTemplates),
 	eventSeries: many(eventSeries),
 	usersInAuth: one(usersInAuth, {
@@ -8587,6 +8588,10 @@ export const guestEventProfileRelations = relations(guestEventProfile, ({one}) =
 	event: one(events, {
 		fields: [guestEventProfile.eventId],
 		references: [events.id]
+	}),
+	chef: one(chefs, {
+		fields: [guestEventProfile.tenantId],
+		references: [chefs.id]
 	}),
 }));
 

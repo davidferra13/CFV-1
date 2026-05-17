@@ -129,9 +129,10 @@ async function fetchAllergyCardData(eventId: string): Promise<AllergyCardData | 
 
   // Fetch guest event profile dietary notes
   const { data: guestProfiles } = (await (db as any)
-    .from('guest_event_profiles')
+    .from('guest_event_profile')
     .select('dietary_notes')
-    .eq('event_id', eventId)) as { data: Array<{ dietary_notes: string | null }> | null }
+    .eq('event_id', eventId)
+    .eq('tenant_id', user.tenantId!)) as { data: Array<{ dietary_notes: string | null }> | null }
 
   const clientData = event.client as unknown as {
     full_name: string

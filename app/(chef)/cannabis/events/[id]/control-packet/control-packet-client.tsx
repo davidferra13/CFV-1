@@ -3,6 +3,7 @@
 
 import { useEffect, useMemo, useState, useTransition } from 'react'
 import { usePathname, useRouter } from 'next/navigation'
+import { CheckCircle2, XCircle } from 'lucide-react'
 import {
   finalizeControlPacket,
   generateCannabisControlPacketSnapshot,
@@ -87,6 +88,33 @@ type GuestInput = {
   notes: string
   courses: CourseInput[]
 }
+
+type ReadinessGate = {
+  key: string
+  label: string
+  passed: boolean
+  detail: string
+  href?: string
+}
+
+type ReadinessData = {
+  readyToFinalize: boolean
+  gates: ReadinessGate[]
+  missing: ReadinessGate[]
+}
+
+const PRE_EVENT_GATES = new Set([
+  'host_agreement_signed',
+  'event_cannabis_enabled',
+  'menu_attached',
+  'guest_intake_complete',
+  'age_consent_acknowledged',
+  'coa_accepted',
+  'batch_record_present',
+  'infusion_plan_saved',
+])
+
+const POST_EVENT_GATES = new Set(['reconciliation_saved', 'evidence_uploaded'])
 
 const LAYOUT_OPTIONS = [
   { value: 'linear', label: 'Linear' },
@@ -187,9 +215,11 @@ function seatGuestRows(
 export function ControlPacketClient({
   eventId,
   initialData,
+  readiness,
 }: {
   eventId: string
   initialData: InitialData
+  readiness: ReadinessData
 }) {
   const router = useRouter()
   const pathname = usePathname() || ''
@@ -499,6 +529,81 @@ export function ControlPacketClient({
           changed.
         </div>
       )}
+
+      <section
+        className="rounded-xl p-4 space-y-3"
+        style={{ background: '#0f1a0f', border: '1px solid #27432b' }}
+      >
+        <div className="flex items-center justify-between">
+          <h2 className="text-sm font-semibold text-[#d2e8d4]">Readiness Gates</h2>
+          <span
+            className="text-xs font-semibold px-2 py-0.5 rounded-full"
+            style={{
+              background: readiness.readyToFinalize
+                ? 'rgba(74, 180, 80, 0.2)'
+                : 'rgba(200, 80, 60, 0.2)',
+              color: readiness.readyToFinalize ? '#7de882' : '#ff9b8a',
+            }}
+          >
+            {readiness.missing.length === 0
+              ? 'Ready to finalize'
+              : `${readiness.missing.length} remaining`}
+          </span>
+        </div>
+
+        {(() => {
+          const preEvent = readiness.gates.filter((g) => PRE_EVENT_GATES.has(g.key))
+          const postEvent = readiness.gates.filter((g) => POST_EVENT_GATES.has(g.key))
+          return (
+            <div className="grid md:grid-cols-2 gap-4">
+              <div className="space-y-1.5">
+                <p className="text-xs font-medium text-[#6aaa6e] mb-1">Pre-Event</p>
+                {preEvent.map((gate) => (
+                  <div key={gate.key} className="flex items-start gap-2 text-xs">
+                    {gate.passed ? (
+                      <CheckCircle2 className="w-4 h-4 text-[#5cb85c] shrink-0 mt-0.5" />
+                    ) : (
+                      <XCircle className="w-4 h-4 text-[#d9534f] shrink-0 mt-0.5" />
+                    )}
+                    <div>
+                      {gate.href && !gate.passed ? (
+                        <a href={gate.href} className="text-[#d2e8d4] underline">
+                          {gate.label}
+                        </a>
+                      ) : (
+                        <span className="text-[#d2e8d4]">{gate.label}</span>
+                      )}
+                      <p className="text-[#7cab80]">{gate.detail}</p>
+                    </div>
+                  </div>
+                ))}
+              </div>
+              <div className="space-y-1.5">
+                <p className="text-xs font-medium text-[#6aaa6e] mb-1">Post-Event</p>
+                {postEvent.map((gate) => (
+                  <div key={gate.key} className="flex items-start gap-2 text-xs">
+                    {gate.passed ? (
+                      <CheckCircle2 className="w-4 h-4 text-[#5cb85c] shrink-0 mt-0.5" />
+                    ) : (
+                      <XCircle className="w-4 h-4 text-[#d9534f] shrink-0 mt-0.5" />
+                    )}
+                    <div>
+                      {gate.href && !gate.passed ? (
+                        <a href={gate.href} className="text-[#d2e8d4] underline">
+                          {gate.label}
+                        </a>
+                      ) : (
+                        <span className="text-[#d2e8d4]">{gate.label}</span>
+                      )}
+                      <p className="text-[#7cab80]">{gate.detail}</p>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </div>
+          )
+        })()}
+      </section>
 
       <section className="grid md:grid-cols-4 gap-3 text-sm">
         <div

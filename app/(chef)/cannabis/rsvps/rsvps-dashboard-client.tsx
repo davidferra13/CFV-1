@@ -15,9 +15,26 @@ type DashboardEvent = {
   status: string | null
 }
 
+type GuestIntelligence = {
+  guestEmail: string
+  totalCannabisAttendances: number
+  events: Array<{
+    eventId: string
+    eventDate: string
+    participation: string | null
+    familiarityLevel: string | null
+    doseNote: string | null
+    comfortNotes: string | null
+  }>
+  latestParticipation: string | null
+  latestFamiliarity: string | null
+  hasAbstained: boolean
+}
+
 type GuestRow = {
   id: string
   fullName: string
+  email: string | null
   attendingStatus: 'yes' | 'no' | 'no_response'
   cannabisParticipation: 'participate' | 'not_consume' | 'undecided' | 'no_response'
   familiarityLevel: string | null
@@ -107,7 +124,13 @@ function formatUpdated(value: string) {
   return format(date, 'MMM d, p')
 }
 
-export function CannabisRsvpsDashboardClient({ initialData }: { initialData: DashboardData }) {
+export function CannabisRsvpsDashboardClient({
+  initialData,
+  guestIntelligence = {},
+}: {
+  initialData: DashboardData
+  guestIntelligence?: Record<string, GuestIntelligence>
+}) {
   const data = initialData
   const router = useRouter()
   const pathname = usePathname()
@@ -389,7 +412,14 @@ export function CannabisRsvpsDashboardClient({ initialData }: { initialData: Das
                         borderTop: '1px solid rgba(74,124,78,0.1)',
                       }}
                     >
-                      <td className="px-3 py-3 text-[#e4f2e5]">{guest.fullName}</td>
+                      <td className="px-3 py-3">
+                        <span className="text-[#e4f2e5]">{guest.fullName}</span>
+                        <GuestIntelHint
+                          intel={
+                            guest.email ? guestIntelligence[guest.email.toLowerCase()] : undefined
+                          }
+                        />
+                      </td>
                       <td className="px-3 py-3 text-[#b7ceb9]">
                         {labelize(guest.attendingStatus)}
                       </td>
@@ -440,9 +470,16 @@ export function CannabisRsvpsDashboardClient({ initialData }: { initialData: Das
                   }}
                 >
                   <div className="flex items-start justify-between gap-3">
-                    <p className="text-sm font-medium" style={{ color: '#e4f2e5' }}>
-                      {guest.fullName}
-                    </p>
+                    <div>
+                      <p className="text-sm font-medium" style={{ color: '#e4f2e5' }}>
+                        {guest.fullName}
+                      </p>
+                      <GuestIntelHint
+                        intel={
+                          guest.email ? guestIntelligence[guest.email.toLowerCase()] : undefined
+                        }
+                      />
+                    </div>
                     <span
                       className="inline-flex px-2 py-0.5 rounded-full text-xs-tight"
                       style={{
@@ -467,8 +504,44 @@ export function CannabisRsvpsDashboardClient({ initialData }: { initialData: Das
         eventId={selectedEvent?.id || null}
         guest={selectedGuest}
         onClose={() => setSelectedGuest(null)}
+        intel={
+          selectedGuest?.email ? guestIntelligence[selectedGuest.email.toLowerCase()] : undefined
+        }
       />
     </>
+  )
+}
+
+function GuestIntelHint({ intel }: { intel: GuestIntelligence | undefined }) {
+  if (!intel || intel.totalCannabisAttendances === 0) return null
+
+  const parts: string[] = []
+  parts.push(
+    `${intel.totalCannabisAttendances} past cannabis event${intel.totalCannabisAttendances === 1 ? '' : 's'}`
+  )
+  if (intel.latestFamiliarity) {
+    parts.push(intel.latestFamiliarity.replace(/_/g, ' '))
+  }
+  if (intel.hasAbstained) {
+    parts.push('has opted out before')
+  }
+
+  const lastEvent = intel.events[0]
+  const lastDateStr = lastEvent?.eventDate
+    ? (() => {
+        try {
+          return format(new Date(lastEvent.eventDate), 'MMM d, yyyy')
+        } catch {
+          return null
+        }
+      })()
+    : null
+
+  return (
+    <p className="text-[10px] mt-0.5 leading-tight" style={{ color: '#7a9f7d' }}>
+      {parts.join(' · ')}
+      {lastDateStr ? ` (last: ${lastDateStr})` : ''}
+    </p>
   )
 }
 
@@ -517,10 +590,12 @@ function GuestDrawer({
   eventId,
   guest,
   onClose,
+  intel,
 }: {
   eventId: string | null
   guest: GuestRow | null
   onClose: () => void
+  intel?: GuestIntelligence
 }) {
   const router = useRouter()
   const [isPending, startTransition] = useTransition()
@@ -644,6 +719,49 @@ function GuestDrawer({
               Close
             </button>
           </div>
+
+          {intel && intel.totalCannabisAttendances > 0 && (
+            <div
+              className="rounded-lg px-3 py-2.5"
+              style={{
+                background: 'rgba(74,124,78,0.1)',
+                border: '1px solid rgba(74,124,78,0.2)',
+              }}
+            >
+              <p className="text-xs uppercase tracking-wider mb-1.5" style={{ color: '#4a7c4e' }}>
+                Cannabis History
+              </p>
+              <div className="flex flex-wrap gap-x-4 gap-y-1 text-xs" style={{ color: '#b7ceb9' }}>
+                <span>
+                  {intel.totalCannabisAttendances} past event
+                  {intel.totalCannabisAttendances === 1 ? '' : 's'}
+                </span>
+                {intel.latestFamiliarity && (
+                  <span>Familiarity: {intel.latestFamiliarity.replace(/_/g, ' ')}</span>
+                )}
+                {intel.hasAbstained && (
+                  <span style={{ color: '#c9a96e' }}>Has opted out before</span>
+                )}
+              </div>
+              {intel.events[0]?.comfortNotes && (
+                <p className="text-xs mt-1.5" style={{ color: '#97b89c' }}>
+                  Last comfort note: {intel.events[0].comfortNotes}
+                </p>
+              )}
+              {intel.events[0]?.eventDate && (
+                <p className="text-[10px] mt-1" style={{ color: '#7a9f7d' }}>
+                  Last cannabis event:{' '}
+                  {(() => {
+                    try {
+                      return format(new Date(intel.events[0].eventDate), 'MMM d, yyyy')
+                    } catch {
+                      return intel.events[0].eventDate
+                    }
+                  })()}
+                </p>
+              )}
+            </div>
+          )}
 
           {!editable && (
             <div
