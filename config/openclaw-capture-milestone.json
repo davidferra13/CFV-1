@@ -1,0 +1,10 @@
+{
+  "label": "Projected OpenClaw Capture",
+  "title": "Full Catalog and Database Window",
+  "subtitle": "Projected from the current total-capture roadmap",
+  "countdownStartedAt": "2026-04-01T00:00:00-04:00",
+  "targetAt": "2026-06-24T23:59:00-04:00",
+  "targetTimezone": "America/New_York",
+  "progressLabel": "timeline elapsed",
+  "status": "projected"
+}

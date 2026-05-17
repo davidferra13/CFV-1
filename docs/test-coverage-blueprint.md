@@ -111,13 +111,26 @@ These flows have NO behavioral tests beyond "page loads":
 
 ---
 
+## Verification States
+
+Every feature has exactly one state. No "partial" or "in progress."
+
+| State | Meaning | Action |
+| ----- | ------- | ------ |
+| **VERIFIED** | Test exists, passes, covers the feature | None. Done. Never retest unless code changes. |
+| **NEEDS-TEST** | Feature exists without behavioral test | Write test, run it, mark VERIFIED |
+| **REGRESSED** | Test exists but now fails | P0 fix. Blocks all other work. |
+| **EXEMPT** | Pure layout/config, no testable logic | Document why. |
+
 ## Rules for Agents
 
-1. **When building a new feature:** Add its test status to this file BEFORE marking done.
-2. **When tests break:** Update status to BROKEN with date.
+1. **When building a new feature:** Add blueprint entry as NEEDS-TEST immediately. Cannot mark task done until VERIFIED.
+2. **When tests fail:** Mark REGRESSED with date. Fix before building anything else.
 3. **When running `/test-scan`:** Skill auto-updates this file.
-4. **Never re-test what's already passing:** Check this file first.
+4. **Never retest what's VERIFIED:** Passing tests are permanent proof. Only re-run if underlying code changed.
 5. **Coverage crawl = baseline:** If a route passes crawl, it LOADS. That's it. Business logic needs unit/integration/e2e.
+6. **Changed code for VERIFIED feature:** Re-run its test. Still passes? Still VERIFIED. Fails? Mark REGRESSED.
+7. **Run `npm run test:affected` before every commit.** Failures block the commit.
 
 ---
 

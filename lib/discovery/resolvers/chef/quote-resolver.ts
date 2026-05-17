@@ -125,6 +125,12 @@ export async function resolveQuotes(ctx: GodModeResolverContext): Promise<GodMod
                 params: { href: `/chef/quotes/${quote.id}/edit` },
                 variant: 'default',
               },
+              {
+                label: 'Send',
+                action: 'send_quote',
+                params: { entityId: quote.id },
+                variant: 'success',
+              },
             ]
           : tier === 'p0'
             ? [

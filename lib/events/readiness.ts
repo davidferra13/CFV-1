@@ -272,6 +272,68 @@ async function evaluateReadinessInternal(params: {
     }
   }
 
+  // Cannabis readiness gates: block cannabis events missing required clearances
+  if (targetStatus === 'confirmed' || targetStatus === 'in_progress') {
+    try {
+      const { data: event } = await (db as any)
+        .from('events')
+        .select('cannabis_preference')
+        .eq('id', eventId)
+        .eq('tenant_id', tenantId)
+        .single()
+
+      if (event?.cannabis_preference) {
+        const { checkCannabisReadinessForTransition } = await import(
+          '@/lib/cannabis/readiness-integration'
+        )
+        const cannabisCheck = await checkCannabisReadinessForTransition(
+          eventId,
+          tenantId,
+          targetStatus
+        )
+        if (cannabisCheck.blocked) {
+          for (const gate of cannabisCheck.missingGates) {
+            const labels: Record<string, { label: string; description: string }> = {
+              host_agreement_signed: {
+                label: 'Host Agreement',
+                description: 'Chef must sign the cannabis host agreement before this event can proceed.',
+              },
+              guest_intake_complete: {
+                label: 'Guest Intake',
+                description: 'All invited guests must complete their cannabis intake form.',
+              },
+              guest_age_clearance: {
+                label: 'Guest Age Verification',
+                description: 'All participating guests must confirm they are 21 or older.',
+              },
+              cannabis_event_details_set: {
+                label: 'Cannabis Event Details',
+                description: 'Cannabis event details (category, dosing plan) must be configured.',
+              },
+            }
+            const info = labels[gate] ?? { label: gate, description: `Missing: ${gate}` }
+            gates.push({
+              gate: 'service_plan_flow' as ReadinessGate,
+              status: 'unverified',
+              label: info.label,
+              description: info.description,
+              isHardBlock: true,
+              blocking: true,
+              severity: 'critical',
+              sourceOfTruth: 'cannabis readiness',
+              lastVerifiedAt: null,
+              verifyRoute: `/events/${eventId}`,
+              verifyTarget: gate,
+              ctaLabel: `Resolve ${info.label}`,
+            })
+          }
+        }
+      }
+    } catch {
+      // Non-blocking if cannabis readiness check unavailable
+    }
+  }
+
   const blockers = gates.filter((gate) => gate.isHardBlock)
   const risks = gates.filter(
     (gate) => gate.status === 'overridden' || (gate.status === 'unverified' && !gate.isHardBlock)

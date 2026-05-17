@@ -56,6 +56,8 @@ const PublicInquirySchema = z.object({
   menu_recommendation_lead_days: z.number().int().min(1).max(21).optional(),
   schedule_request_jsonb: ScheduleRequestSchema.optional(),
   website_url: z.string().max(2048).optional().or(z.literal('')),
+  source_type: z.string().max(50).optional(),
+  source_event_id: z.string().uuid().optional(),
 })
 
 export type PublicInquiryInput = z.infer<typeof PublicInquirySchema>
@@ -366,6 +368,8 @@ export async function submitPublicInquiry(input: PublicInquiryInput) {
       partner_location_id: resolvedAttribution.partnerLocationId,
       service_mode: serviceMode,
       schedule_request_jsonb: validated.schedule_request_jsonb ?? null,
+      source_type: validated.source_type ?? null,
+      source_event_id: validated.source_event_id ?? null,
       unknown_fields: withSubmissionSource(PUBLIC_INTAKE_LANE_KEYS.public_profile_inquiry, {
         address: validated.address.trim(),
         serve_time: validated.serve_time.trim(),

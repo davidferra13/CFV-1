@@ -104,6 +104,47 @@ async function getPostEventContext(eventId: string, tenantId: string, clientId: 
   }
 }
 
+// ─── Job 0: Weather Snapshot (immediate on completion) ─────────────────────
+//
+// Captures weather conditions for the event location/date right when the event
+// is marked complete. Non-blocking: failures are logged, never thrown.
+
+export const postEventWeatherSnapshot = inngest.createFunction(
+  {
+    id: 'post-event-weather-snapshot',
+    name: 'Post-Event Weather Snapshot Capture',
+    retries: 2,
+  },
+  { event: 'chefflow/event.completed' },
+  async ({ event, step }) => {
+    const result = await step.run('capture-weather-snapshot', async () => {
+      try {
+        const { captureWeatherSnapshot } = await import(
+          '@/lib/weather/weather-snapshot-actions'
+        )
+        const outcome = await captureWeatherSnapshot(
+          event.data.tenantId,
+          event.data.eventId
+        )
+        log.info('Weather snapshot capture attempted', {
+          context: { eventId: event.data.eventId, outcome },
+        })
+        return outcome
+      } catch (err) {
+        log.warn('Weather snapshot capture failed (non-blocking)', {
+          context: {
+            eventId: event.data.eventId,
+            error: err instanceof Error ? err.message : String(err),
+          },
+        })
+        return { captured: false, error: 'exception in capture' }
+      }
+    })
+
+    return result
+  }
+)
+
 // ─── Job 1: Thank-You Email (3 days after completion) ───────────────────────
 
 export const postEventThankYou = inngest.createFunction(
@@ -538,6 +579,128 @@ export const postEventReviewReminder = inngest.createFunction(
       })
 
       return { sent: true, to: ctx.client.email }
+    })
+
+    return result
+  }
+)
+
+// ─── Job 7: Guest Conversion Email (3 days after positive feedback) ────────
+//
+// When a guest rates 4+ stars, wait 3 days then send a "book your own dinner"
+// email. Only sends to guests who are NOT already clients of the chef and
+// have not already submitted an inquiry.
+
+export const postGuestFeedbackConversion = inngest.createFunction(
+  {
+    id: 'post-guest-feedback-conversion',
+    name: 'Guest Conversion Email (Positive Feedback)',
+    retries: 2,
+  },
+  { event: 'chefflow/guest-feedback.positive' },
+  async ({ event, step }) => {
+    // Wait 3 days before sending conversion email
+    await step.sleep('wait-3-days-conversion', '3d')
+
+    const result = await step.run('send-guest-conversion-email', async () => {
+      const db: any = createAdminClient()
+      const {
+        eventId,
+        tenantId,
+        guestEmail,
+        guestName,
+      } = event.data
+
+      // Check: is this guest already a client of the chef?
+      const { data: existingClient } = await db
+        .from('clients')
+        .select('id')
+        .eq('tenant_id', tenantId)
+        .ilike('email', guestEmail.toLowerCase().trim())
+        .maybeSingle()
+
+      if (existingClient) {
+        log.info('Guest conversion: skipping, guest is already a client', {
+          context: { guestEmail, tenantId },
+        })
+        return { skipped: true, reason: 'guest is already a client' }
+      }
+
+      // Check: has the guest already submitted an inquiry?
+      const { data: existingInquiry } = await db
+        .from('inquiries')
+        .select('id')
+        .eq('tenant_id', tenantId)
+        .eq('contact_email', guestEmail.toLowerCase().trim())
+        .limit(1)
+        .maybeSingle()
+
+      if (existingInquiry) {
+        log.info('Guest conversion: skipping, guest already has an inquiry', {
+          context: { guestEmail, tenantId },
+        })
+        return { skipped: true, reason: 'guest already has an inquiry' }
+      }
+
+      // Also check via client_id linkage
+      const { data: clientInquiry } = await db
+        .from('inquiries')
+        .select('id, client:clients!inner(email)')
+        .eq('tenant_id', tenantId)
+        .ilike('clients.email' as any, guestEmail.toLowerCase().trim())
+        .limit(1)
+        .maybeSingle()
+
+      if (clientInquiry) {
+        log.info('Guest conversion: skipping, guest has inquiry via client record', {
+          context: { guestEmail, tenantId },
+        })
+        return { skipped: true, reason: 'guest has inquiry via client record' }
+      }
+
+      // Fetch chef details for the email
+      const { data: chef } = await db
+        .from('chefs')
+        .select('business_name, booking_slug')
+        .eq('id', tenantId)
+        .single()
+
+      const chefName: string = chef?.business_name || 'Your Chef'
+      const chefSlug: string | null = chef?.booking_slug ?? null
+
+      // Fetch event occasion for context
+      const { data: evt } = await db
+        .from('events')
+        .select('occasion')
+        .eq('id', eventId)
+        .single()
+
+      const occasion: string = evt?.occasion || 'your recent dinner'
+
+      if (!chefSlug) {
+        log.warn('Guest conversion: skipping, chef has no booking slug', {
+          context: { tenantId },
+        })
+        return { skipped: true, reason: 'chef has no booking slug' }
+      }
+
+      const inquiryUrl = `${APP_URL}/chef/${chefSlug}/inquire?ref=guest-feedback&via=${encodeURIComponent(guestName)}&source_event_id=${eventId}`
+
+      const { sendGuestConversionEmail } = await import('@/lib/email/notifications')
+
+      await sendGuestConversionEmail({
+        guestEmail,
+        guestName,
+        chefName,
+        occasion,
+        inquiryUrl,
+      })
+
+      log.info('Guest conversion email sent', {
+        context: { eventId, guestEmail, tenantId },
+      })
+
+      return { sent: true, to: guestEmail }
     })
 
     return result

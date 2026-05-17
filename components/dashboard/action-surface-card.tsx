@@ -1,6 +1,6 @@
 import Link from 'next/link'
 import { ArrowRight } from '@/components/ui/icons'
-import type { SurfaceActionTask } from '@/lib/interface/action-layer'
+import type { SurfaceActionTask } from '@/lib/interface/shared-types'
 
 const TONE_STYLES = {
   brand: {

@@ -202,7 +202,9 @@ export const navGroups: NavGroup[] = [
         children: [
           { href: '/analytics/client-ltv', label: 'Client Value' },
           { href: '/analytics/demand', label: 'Demand Heatmap' },
+          { href: '/analytics/demand/ingredients', label: 'Ingredient Demand' },
           { href: '/analytics/pipeline', label: 'Pipeline Forecast' },
+          { href: '/analytics/reconciliation', label: 'Reconciliation' },
           { href: '/analytics/referral-sources', label: 'Referral Sources' },
         ],
       },
@@ -241,9 +243,20 @@ export const navGroups: NavGroup[] = [
         ],
       },
       {
+        href: '/analytics/marketing/spend',
+        label: 'Marketing Analytics',
+        icon: Megaphone,
+        children: [{ href: '/analytics/marketing/spend', label: 'Marketing Spend' }],
+      },
+      {
         href: '/analytics/forecast',
         label: 'Revenue Forecast',
         icon: ChartLineUp,
+      },
+      {
+        href: '/analytics/health',
+        label: 'System Health',
+        icon: Activity,
       },
       {
         href: '/surveys',
@@ -298,6 +311,7 @@ export const navGroups: NavGroup[] = [
         icon: ChartLineUp,
         children: [
           { href: '/clients/insights/at-risk', label: 'At Risk' },
+          { href: '/guest-analytics', label: 'Guest Analytics' },
           { href: '/clients/insights/most-frequent', label: 'Most Frequent' },
           { href: '/clients/insights/top-clients', label: 'Top Clients' },
         ],
@@ -509,6 +523,11 @@ export const navGroups: NavGroup[] = [
         icon: ChefHat,
       },
       {
+        href: '/culinary/chefnotes',
+        label: 'ChefNotes',
+        icon: NotebookIcon,
+      },
+      {
         href: '/culinary/cheftips',
         label: 'ChefTips',
         icon: Lightbulb,
@@ -551,6 +570,8 @@ export const navGroups: NavGroup[] = [
           { href: '/menus/upload', label: 'Menu Upload', icon: Upload },
           { href: '/menus/new', label: 'New Menu' },
           { href: '/culinary/menus/scaling', label: 'Scaling' },
+          { href: '/menus/seasonal', label: 'Seasonal Menus' },
+          { href: '/menus/selections', label: 'Selections' },
           { href: '/culinary/menus/substitutions', label: 'Substitutions' },
           { href: '/menus/tasting', label: 'Tasting Menus' },
           { href: '/culinary/menus/templates', label: 'Templates' },
@@ -566,6 +587,7 @@ export const navGroups: NavGroup[] = [
         label: 'Prep Workspace',
         icon: Timer,
         children: [
+          { href: '/prep/consolidation', label: 'Consolidation' },
           { href: '/culinary/prep/timeline', label: 'Prep Timeline' },
           { href: '/culinary/prep/shopping', label: 'Shopping Lists' },
         ],
@@ -612,12 +634,18 @@ export const navGroups: NavGroup[] = [
         icon: RefreshCw,
       },
       {
+        href: '/culinary/vendors',
+        label: 'Culinary Vendors',
+        icon: Store,
+      },
+      {
         href: '/culinary/call-sheet',
         label: 'Voice Hub',
         icon: Phone,
         children: [
-          { href: '/culinary/sourcing', label: 'Source Ingredients' },
           { href: '/culinary/call-sheet', label: 'Call Sheet' },
+          { href: '/culinary/sourcing', label: 'Source Ingredients' },
+          { href: '/culinary/supplier-calls', label: 'Supplier Calls' },
         ],
       },
     ],
@@ -634,7 +662,9 @@ export const navGroups: NavGroup[] = [
         icon: CalendarDays,
         children: [
           { href: '/calendar/day', label: 'Day View' },
+          { href: '/calendar/load', label: 'Load View' },
           { href: '/calendar/share', label: 'Share Calendar' },
+          { href: '/calendar/travel', label: 'Travel Calendar' },
           { href: '/waitlist', label: 'Waitlist' },
           { href: '/calendar/week', label: 'Week Planner' },
           { href: '/calendar/year', label: 'Year View' },
@@ -644,6 +674,11 @@ export const navGroups: NavGroup[] = [
         href: '/surveys',
         label: 'Client Feedback',
         icon: Star,
+      },
+      {
+        href: '/events/equipment-check',
+        label: 'Equipment Check',
+        icon: Wrench,
       },
       {
         href: '/production',
@@ -754,6 +789,7 @@ export const navGroups: NavGroup[] = [
         icon: NotebookIcon,
         children: [
           { href: '/finance/ledger/adjustments', label: 'Adjustments' },
+          { href: '/finance/ledger/owner-draws', label: 'Owner Draws' },
           { href: '/finance/ledger/transaction-log', label: 'Transaction Log' },
         ],
       },
@@ -1037,7 +1073,11 @@ export const navGroups: NavGroup[] = [
         href: '/meal-prep',
         label: 'Meal Prep',
         icon: RefreshCw,
-        children: [{ href: '/meal-prep', label: 'Dashboard' }],
+        children: [
+          { href: '/meal-prep/batch', label: 'Batch Prep' },
+          { href: '/meal-prep', label: 'Dashboard' },
+          { href: '/meal-prep/retro', label: 'Retro' },
+        ],
       },
       {
         href: '/queue',
@@ -1058,6 +1098,7 @@ export const navGroups: NavGroup[] = [
           { href: '/staff/clock', label: 'Clock In/Out' },
           { href: '/staff/labor', label: 'Labor Dashboard' },
           { href: '/staff/live', label: 'Live Activity' },
+          { href: '/staff/optimization', label: 'Optimization' },
           { href: '/staff/performance', label: 'Performance' },
           { href: '/staff/permissions', label: 'Permissions' },
           { href: '/staff/roster', label: 'Location Roster' },
@@ -1069,9 +1110,16 @@ export const navGroups: NavGroup[] = [
         label: 'Station Clipboards',
         icon: Notepad,
         children: [
+          { href: '/stations/knowledge', label: 'Knowledge Base' },
+          { href: '/stations/menu-board', label: 'Menu Board' },
+          { href: '/stations/menu-performance', label: 'Menu Performance' },
           { href: '/stations/ops-log', label: 'Ops Log' },
           { href: '/stations/orders', label: 'Order Sheet' },
+          { href: '/stations/orders/print', label: 'Print Orders' },
+          { href: '/stations/service-log', label: 'Service Log' },
+          { href: '/stations/service-log/new', label: 'New Service Log' },
           { href: '/stations/waste', label: 'Waste Log' },
+          { href: '/stations/waste/patterns', label: 'Waste Patterns' },
         ],
       },
       {
@@ -1123,10 +1171,18 @@ export const navGroups: NavGroup[] = [
         icon: Compass,
       },
       {
+        href: '/consulting',
+        label: 'Consulting',
+        icon: Compass,
+      },
+      {
         href: '/contracts',
         label: 'Contracts',
         icon: ScrollText,
-        children: [{ href: '/settings/contracts', label: 'Templates' }],
+        children: [
+          { href: '/contracts/new', label: 'New Contract' },
+          { href: '/settings/contracts', label: 'Templates' },
+        ],
       },
       {
         href: '/inquiries',
@@ -1184,6 +1240,7 @@ export const navGroups: NavGroup[] = [
           { href: '/prospecting/scripts', label: 'Call Scripts' },
           { href: '/prospecting/clusters', label: 'Clusters' },
           { href: '/prospecting/import', label: 'Import Leads' },
+          { href: '/prospecting/openclaw', label: 'Engine Prospects' },
           { href: '/prospecting/pipeline', label: 'Pipeline' },
         ],
       },
@@ -1426,9 +1483,10 @@ export const navGroups: NavGroup[] = [
         icon: BellRing,
       },
       {
-        href: '/remy',
-        label: 'Remy Hub',
-        icon: Zap,
+        href: '/prices',
+        label: 'Price Browser',
+        icon: DollarSign,
+        children: [{ href: '/prices/store/[storeId]', label: 'Store Prices' }],
       },
       {
         href: '/capture',
@@ -1436,10 +1494,25 @@ export const navGroups: NavGroup[] = [
         icon: Camera,
       },
       {
+        href: '/quick-log',
+        label: 'Quick Log',
+        icon: Zap,
+      },
+      {
         href: '/remy',
-        label: 'Remy History',
-        icon: Bot,
-        adminOnly: true,
+        label: 'Remy Hub',
+        icon: Zap,
+        children: [
+          { href: '/remy/history', label: 'Remy History' },
+          { href: '/remy/settings', label: 'Remy Settings' },
+          { href: '/remy/signals', label: 'Remy Signals' },
+        ],
+      },
+      {
+        href: '/reputation',
+        label: 'Reputation',
+        icon: Star,
+        children: [{ href: '/reputation/mentions', label: 'Mentions' }],
       },
     ],
   },

@@ -500,6 +500,13 @@ export const CRON_MONITOR_DEFINITIONS: CronMonitorDefinition[] = [
     description:
       'Execute config-driven preset automation rules (follow-up, review, stale inquiry, reorder, calendar block, quote archive)',
   },
+  {
+    cronName: 'calling-auto-resolve',
+    routePath: '/api/calling/auto-resolve',
+    maxExpectedMinutes: 120,
+    cadence: '6h',
+    description: 'Pre-event ingredient sourcing scan',
+  },
 ]
 
 export const CRON_MONITOR_DEFINITION_MAP = new Map(

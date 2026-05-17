@@ -1,0 +1,4 @@
+CREATE TABLE IF NOT EXISTS portal_visual_modes (id UUID PRIMARY KEY DEFAULT gen_random_uuid(), tenant_id UUID NOT NULL, role TEXT NOT NULL, name TEXT NOT NULL, theme TEXT NOT NULL DEFAULT 'light', color_overrides JSONB, layout_overrides JSONB, logo_url TEXT, created_at TIMESTAMPTZ DEFAULT NOW() NOT NULL, updated_at TIMESTAMPTZ DEFAULT NOW() NOT NULL);
+CREATE UNIQUE INDEX idx_portal_modes_role ON portal_visual_modes(tenant_id, role);
+CREATE TABLE IF NOT EXISTS portal_role_permissions (id UUID PRIMARY KEY DEFAULT gen_random_uuid(), tenant_id UUID NOT NULL, role TEXT NOT NULL, can_view JSONB DEFAULT '[]', can_edit JSONB DEFAULT '[]', can_delete JSONB DEFAULT '[]', created_at TIMESTAMPTZ DEFAULT NOW() NOT NULL);
+CREATE UNIQUE INDEX idx_portal_perms_role ON portal_role_permissions(tenant_id, role);

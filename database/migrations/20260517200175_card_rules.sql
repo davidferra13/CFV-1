@@ -1,0 +1,3 @@
+CREATE TABLE IF NOT EXISTS card_composition_rules (id UUID PRIMARY KEY DEFAULT gen_random_uuid(), tenant_id UUID NOT NULL, card_type TEXT NOT NULL, section TEXT NOT NULL, max_items INTEGER, required BOOLEAN DEFAULT FALSE, "order" INTEGER DEFAULT 0, description TEXT, created_at TIMESTAMPTZ DEFAULT NOW() NOT NULL);
+CREATE UNIQUE INDEX idx_card_rules_unique ON card_composition_rules(tenant_id, card_type, section);
+CREATE TABLE IF NOT EXISTS card_audits (id UUID PRIMARY KEY DEFAULT gen_random_uuid(), tenant_id UUID NOT NULL, route TEXT NOT NULL, card_type TEXT NOT NULL, violations JSONB DEFAULT '[]', score INTEGER DEFAULT 0, audited_at TIMESTAMPTZ DEFAULT NOW() NOT NULL);

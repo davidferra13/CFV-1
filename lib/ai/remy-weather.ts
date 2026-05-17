@@ -1,19 +1,26 @@
 'use server'
 
 // Remy - Weather Awareness (Phase 6A)
-// Fetches weather forecasts for upcoming events using Open-Meteo (free, no API key).
-// Used by the proactive alert engine to warn about bad weather for outdoor events.
-// PRIVACY: Only sends location text (city/address) to Open-Meteo for geocoding.
+// Uses shared weather utilities (lib/weather/open-meteo, lib/geocoding/nominatim)
+// and shared enrichment (lib/weather/weather-alert-enrichment).
+// PRIVACY: Only sends location text for geocoding.
 // No client names, event details, or business data leaves the server.
 
 import { getCurrentUser } from '@/lib/auth/get-user'
 import { dateToDateString } from '@/lib/utils/format'
+import { fetchForecast, type DailyForecast } from '@/lib/weather/open-meteo'
+import { geocodeAddress } from '@/lib/geocoding/nominatim'
+import {
+  enrichWeatherAlert,
+  inferEventType,
+  type EventType,
+} from '@/lib/weather/weather-alert-enrichment'
 
-interface GeoResult {
-  latitude: number
-  longitude: number
-  name: string
-}
+// Re-export enrichment types so existing callers don't break
+export { enrichWeatherAlert, inferEventType, type EventType }
+export type { EnrichedWeatherAlert, WeatherGuidance } from '@/lib/weather/weather-alert-enrichment'
+
+// ---- Remy-specific types (exported, consumed by weather-resolver + callers) ----
 
 interface WeatherForecast {
   date: string
@@ -37,105 +44,11 @@ export interface EventWeatherAlert {
   forecast: WeatherForecast
   alertLevel: 'info' | 'warning' | 'severe'
   alertMessage: string
+  /** Chef-specific contextual guidance (outdoor/indoor aware) */
+  chefGuidance: string[]
 }
 
-// WMO Weather interpretation codes → human-readable descriptions
-const WMO_CODES: Record<number, string> = {
-  0: 'Clear sky',
-  1: 'Mainly clear',
-  2: 'Partly cloudy',
-  3: 'Overcast',
-  45: 'Fog',
-  48: 'Depositing rime fog',
-  51: 'Light drizzle',
-  53: 'Moderate drizzle',
-  55: 'Dense drizzle',
-  56: 'Light freezing drizzle',
-  57: 'Dense freezing drizzle',
-  61: 'Slight rain',
-  63: 'Moderate rain',
-  65: 'Heavy rain',
-  66: 'Light freezing rain',
-  67: 'Heavy freezing rain',
-  71: 'Slight snow',
-  73: 'Moderate snow',
-  75: 'Heavy snow',
-  77: 'Snow grains',
-  80: 'Slight rain showers',
-  81: 'Moderate rain showers',
-  82: 'Violent rain showers',
-  85: 'Slight snow showers',
-  86: 'Heavy snow showers',
-  95: 'Thunderstorm',
-  96: 'Thunderstorm with slight hail',
-  99: 'Thunderstorm with heavy hail',
-}
-
-/**
- * Geocode a location string to lat/lng using Open-Meteo's geocoding API.
- * Returns null if geocoding fails (no match, network error, etc.).
- */
-async function geocodeLocation(location: string): Promise<GeoResult | null> {
-  try {
-    const query = encodeURIComponent(location.trim())
-    const res = await fetch(
-      `https://geocoding-api.open-meteo.com/v1/search?name=${query}&count=1&language=en&format=json`,
-      { signal: AbortSignal.timeout(5000) }
-    )
-    if (!res.ok) return null
-    const data = await res.json()
-    const result = data?.results?.[0]
-    if (!result) return null
-    return {
-      latitude: result.latitude,
-      longitude: result.longitude,
-      name: result.name,
-    }
-  } catch {
-    return null
-  }
-}
-
-/**
- * Fetch weather forecast for a specific date at given coordinates.
- * Uses Open-Meteo's free forecast API (no API key needed).
- * Returns null if the date is outside the forecast range (typically 16 days).
- */
-async function fetchForecast(
-  lat: number,
-  lng: number,
-  date: string
-): Promise<WeatherForecast | null> {
-  try {
-    const res = await fetch(
-      `https://api.open-meteo.com/v1/forecast?latitude=${lat}&longitude=${lng}` +
-        `&daily=temperature_2m_max,temperature_2m_min,precipitation_sum,precipitation_probability_max,weather_code,wind_speed_10m_max` +
-        `&start_date=${date}&end_date=${date}&timezone=auto`,
-      { signal: AbortSignal.timeout(5000) }
-    )
-    if (!res.ok) return null
-    const data = await res.json()
-    const daily = data?.daily
-    if (!daily || !daily.time || daily.time.length === 0) return null
-
-    const tempHighC = daily.temperature_2m_max[0]
-    const tempLowC = daily.temperature_2m_min[0]
-    return {
-      date: daily.time[0],
-      tempHighC,
-      tempLowC,
-      tempHighF: Math.round((tempHighC * 9) / 5 + 32),
-      tempLowF: Math.round((tempLowC * 9) / 5 + 32),
-      precipitationMm: daily.precipitation_sum[0] ?? 0,
-      precipitationProbability: daily.precipitation_probability_max[0] ?? 0,
-      weatherCode: daily.weather_code[0] ?? 0,
-      weatherDescription: WMO_CODES[daily.weather_code[0]] ?? 'Unknown',
-      windSpeedKmh: daily.wind_speed_10m_max[0] ?? 0,
-    }
-  } catch {
-    return null
-  }
-}
+// ---- Core evaluation (now uses mph internally, matches shared module) ----
 
 /**
  * Evaluate weather conditions and generate alert if warranted.
@@ -147,6 +60,7 @@ function evaluateWeather(forecast: WeatherForecast): {
 } | null {
   const issues: string[] = []
   let level: 'info' | 'warning' | 'severe' = 'info'
+  const windMph = Math.round(forecast.windSpeedKmh * 0.621)
 
   // Severe: thunderstorms, heavy rain/snow, freezing conditions
   if ([95, 96, 99].includes(forecast.weatherCode)) {
@@ -172,23 +86,26 @@ function evaluateWeather(forecast: WeatherForecast): {
 
   // Extreme temperatures
   if (forecast.tempHighF >= 100) {
-    issues.push(`Extreme heat: ${forecast.tempHighF}°F high`)
+    issues.push(`Extreme heat: ${forecast.tempHighF}F high`)
     if (level !== 'severe') level = 'warning'
   } else if (forecast.tempLowF <= 25) {
-    issues.push(`Extreme cold: ${forecast.tempLowF}°F low`)
+    issues.push(`Extreme cold: ${forecast.tempLowF}F low`)
     if (level !== 'severe') level = 'warning'
   } else if (forecast.tempHighF >= 95) {
-    issues.push(`High heat: ${forecast.tempHighF}°F`)
+    issues.push(`High heat: ${forecast.tempHighF}F`)
   } else if (forecast.tempLowF <= 32) {
-    issues.push(`Freezing temps: ${forecast.tempLowF}°F low`)
+    issues.push(`Freezing temps: ${forecast.tempLowF}F low`)
   }
 
-  // High winds
-  if (forecast.windSpeedKmh >= 60) {
-    issues.push(`Very high winds: ${Math.round(forecast.windSpeedKmh * 0.621)}mph`)
+  // High winds (now in mph for consistency)
+  if (windMph >= 40) {
+    issues.push(`Very high winds: ${windMph}mph`)
     if (level !== 'severe') level = 'warning'
-  } else if (forecast.windSpeedKmh >= 40) {
-    issues.push(`Windy: ${Math.round(forecast.windSpeedKmh * 0.621)}mph`)
+  } else if (windMph >= 25) {
+    issues.push(`Strong winds: ${windMph}mph`)
+    if (level !== 'severe') level = 'warning'
+  } else if (windMph >= 15) {
+    issues.push(`Breezy: ${windMph}mph`)
   }
 
   if (issues.length === 0) return null
@@ -196,17 +113,19 @@ function evaluateWeather(forecast: WeatherForecast): {
   return { level, message: issues.join('. ') + '.' }
 }
 
-/**
- * Get weather alerts for upcoming events.
- * Queries events within the next 7 days, geocodes their locations,
- * fetches forecasts, and returns alerts for concerning weather.
- */
+// ---- Main alert fetcher ----
+
 export type WeatherAlertResult = {
   alerts: EventWeatherAlert[]
   checkedCount: number
   failedCount: number
 }
 
+/**
+ * Get weather alerts for upcoming events.
+ * Queries events within the next 7 days, uses shared weather utilities
+ * for geocoding and forecasts, and returns alerts for concerning weather.
+ */
 export async function getWeatherAlerts(tenantId: string): Promise<WeatherAlertResult> {
   // Tenant isolation: verify tenantId matches session when called from user context
   const sessionUser = await getCurrentUser()
@@ -241,7 +160,9 @@ export async function getWeatherAlerts(tenantId: string): Promise<WeatherAlertRe
   let failedCount = 0
 
   // Geocode cache to avoid re-geocoding the same location
-  const geoCache = new Map<string, GeoResult | null>()
+  const geoCache = new Map<string, { lat: number; lng: number } | null>()
+  // Forecast cache: one 7-day fetch per unique lat/lng covers all events at that location
+  const forecastCache = new Map<string, DailyForecast[]>()
 
   for (const event of events) {
     if (!event.location_address) continue
@@ -250,36 +171,70 @@ export async function getWeatherAlerts(tenantId: string): Promise<WeatherAlertRe
     let lat: number
     let lng: number
 
-    // Use stored coordinates when available; fall back to geocoding
+    // Use stored coordinates when available; fall back to shared geocoder
     if (event.location_lat != null && event.location_lng != null) {
       lat = event.location_lat as number
       lng = event.location_lng as number
     } else {
-      // Geocode (with cache)
+      // Geocode via shared Nominatim utility (cached in Upstash)
       const locKey = event.location_address.toLowerCase().trim()
       if (!geoCache.has(locKey)) {
-        geoCache.set(locKey, await geocodeLocation(event.location_address))
+        try {
+          const geo = await geocodeAddress(event.location_address)
+          geoCache.set(locKey, geo ? { lat: geo.lat, lng: geo.lng } : null)
+        } catch {
+          geoCache.set(locKey, null)
+        }
       }
       const geo = geoCache.get(locKey)
       if (!geo) {
         failedCount++
         continue
       }
-      lat = geo.latitude
-      lng = geo.longitude
+      lat = geo.lat
+      lng = geo.lng
     }
 
-    // Fetch forecast
-    const forecast = await fetchForecast(lat, lng, eventDate)
-    if (!forecast) {
+    // Fetch 7-day forecast via shared Open-Meteo utility (cached per location)
+    const coordKey = `${lat.toFixed(4)},${lng.toFixed(4)}`
+    if (!forecastCache.has(coordKey)) {
+      try {
+        const result = await fetchForecast(lat, lng)
+        forecastCache.set(coordKey, result.forecasts)
+      } catch {
+        forecastCache.set(coordKey, [])
+      }
+    }
+
+    const forecasts = forecastCache.get(coordKey) ?? []
+    const dayMatch = forecasts.find((f) => f.date === eventDate)
+    if (!dayMatch) {
       failedCount++
       continue
     }
     checkedCount++
 
+    // Map shared DailyForecast to Remy's WeatherForecast shape
+    const forecast: WeatherForecast = {
+      date: dayMatch.date,
+      tempHighF: dayMatch.tempHighF,
+      tempLowF: dayMatch.tempLowF,
+      tempHighC: Math.round(((dayMatch.tempHighF - 32) * 5) / 9),
+      tempLowC: Math.round(((dayMatch.tempLowF - 32) * 5) / 9),
+      precipitationMm: 0, // shared forecast uses probability, not mm
+      precipitationProbability: dayMatch.precipProbability,
+      weatherCode: dayMatch.weatherCode,
+      weatherDescription: dayMatch.condition,
+      windSpeedKmh: Math.round(dayMatch.windSpeedMph / 0.621),
+    }
+
     // Evaluate
     const evaluation = evaluateWeather(forecast)
     if (!evaluation) continue
+
+    // Enrich with chef-specific guidance
+    const eventType = inferEventType(event.occasion ?? null)
+    const chefGuidance = enrichWeatherAlert(forecast, eventType)
 
     alerts.push({
       eventId: event.id,
@@ -290,6 +245,7 @@ export async function getWeatherAlerts(tenantId: string): Promise<WeatherAlertRe
       forecast,
       alertLevel: evaluation.level,
       alertMessage: evaluation.message,
+      chefGuidance,
     })
   }
 
@@ -298,6 +254,7 @@ export async function getWeatherAlerts(tenantId: string): Promise<WeatherAlertRe
 
 /**
  * Format weather alerts as a Remy response.
+ * Now includes chef-specific guidance when available.
  */
 export async function formatWeatherAlerts(result: WeatherAlertResult): Promise<string> {
   const { alerts, checkedCount, failedCount } = result
@@ -330,8 +287,18 @@ export async function formatWeatherAlerts(result: WeatherAlertResult): Promise<s
     lines.push(`${icon} **${eventLabel}${clientLabel}** - ${dateLabel} @ ${alert.location}`)
     lines.push(`  ${alert.alertMessage}`)
     lines.push(
-      `  ${alert.forecast.weatherDescription}, ${alert.forecast.tempLowF}–${alert.forecast.tempHighF}°F`
+      `  ${alert.forecast.weatherDescription}, ${alert.forecast.tempLowF}-${alert.forecast.tempHighF}F`
     )
+
+    // Chef-specific guidance
+    if (alert.chefGuidance.length > 0) {
+      lines.push('')
+      lines.push('  **Chef prep notes:**')
+      for (const tip of alert.chefGuidance) {
+        lines.push(`  - ${tip}`)
+      }
+    }
+
     lines.push('')
   }
 

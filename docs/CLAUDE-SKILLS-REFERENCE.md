@@ -44,6 +44,16 @@
 | "Recipe blitz" / batch recipes       | `/recipe-blitz`                  | Rapid-fire batch recipe capture           |
 | "Money check" / "who owes me"        | `/money-check`                   | Quick P&L snapshot                        |
 | "Inbox zero" / "what's unread"       | `/inbox-zero`                    | Multi-channel inbox triage                |
+| "How are we doing" / queue status    | `/progress`                      | Build queue dashboard + burndown          |
+| After a swarm produces PARTIAL items | `/sweep`                         | Batch Playwright verification             |
+| Dirty tree from parallel agents      | `/untangle`                      | Sort into logical atomic commits          |
+| "What's disconnected" / post-build   | `/wiring-audit`                  | Diagnostic orphan scan                    |
+| After wiring-audit finds orphans     | `/wire`                          | Connect orphaned code to consumers        |
+| "Apply migrations" / blocked items   | `/migrate`                       | Safe migration with backup + verify       |
+| "Run tests" / pre-ship               | `/qa`                            | Unified QA pass (dev/pass/full levels)    |
+| End of session / coverage check      | `/test-scan`                     | Reconcile routes vs tests, update blueprint |
+| "Crawl the site" / pre-release       | `/site-audit`                    | Full route crawl for errors               |
+| "Continue X work" / resume topic     | `/pick-up [topic]`               | Reconstruct prior session context         |
 
 ## Autonomous Behaviors (No Trigger Needed)
 
@@ -97,6 +107,19 @@
 - **`/recipe-blitz`** - Rapid-fire batch recipe capture. 5-10 recipes per session, bare minimum fields, flesh out later via `/brain-dump`.
 - **`/money-check`** - Quick P&L snapshot: outstanding balances, deposits due, monthly revenue/expenses/profit, pipeline forecast.
 - **`/inbox-zero`** - Multi-channel inbox consolidation. All unread items across chat, messages, Wix, notifications, Gmail in one view with triage actions.
+
+### Build Lifecycle Skills
+
+- **`/progress`** - Build queue dashboard: status counts, burndown, blockers, next action.
+- **`/sweep`** - Batch-verify PARTIAL items via Playwright. Run after swarm sessions.
+- **`/untangle`** - Sort dirty git tree into logical atomic commits.
+- **`/wire`** - Connect orphaned code (exports with no consumers, actions with no triggers).
+- **`/wiring-audit`** - Read-only diagnostic: find disconnected code. Feeds into `/wire`.
+- **`/migrate`** - Safely apply pending migrations with backup and verification.
+- **`/qa`** - Unified QA pass (dev/pass/full levels) using existing qa-* scripts.
+- **`/test-scan`** - Reconcile routes vs tests, update test-coverage-blueprint.md.
+- **`/site-audit`** - Full site crawl for broken pages, errors, accessibility.
+- **`/pick-up [topic]`** - Resume specific work thread from prior session.
 
 ### Infrastructure Skills
 

@@ -195,6 +195,24 @@ export default async function ListingDetailPage({ params }: Props) {
       </div>
 
       <div className="mx-auto max-w-4xl px-4 py-10 sm:px-6 lg:px-8">
+        {listing.status === 'discovered' && (
+          <div className="mb-8 flex flex-col gap-3 rounded-2xl border border-brand-700/30 bg-brand-950/20 p-5 sm:flex-row sm:items-center sm:justify-between">
+            <div>
+              <p className="text-sm font-semibold text-stone-100">Is this your business?</p>
+              <p className="mt-1 text-sm leading-relaxed text-stone-400">
+                Claim your free listing to add photos, update your hours, and control how you
+                appear.
+              </p>
+            </div>
+            <Link
+              href={`/nearby/${listing.slug}/enhance`}
+              className="inline-flex h-11 flex-shrink-0 items-center justify-center rounded-xl bg-brand-600 px-5 text-sm font-semibold text-white transition-colors hover:bg-brand-700"
+            >
+              Claim this business
+            </Link>
+          </div>
+        )}
+
         <div className="flex flex-col gap-6 sm:flex-row sm:items-start sm:justify-between">
           <div>
             <div className="flex flex-wrap items-center gap-3">

@@ -278,6 +278,32 @@ export async function transitionEvent({
     }
   }
 
+  // ── Cannabis Readiness Gate (pre-transition) ─────────────────────────────
+  if (['confirmed', 'in_progress'].includes(toStatus) && !isSystemTransition) {
+    try {
+      const { checkCannabisReadinessForTransition } = await import(
+        '@/lib/cannabis/readiness-integration'
+      )
+      const cannabisCheck = await checkCannabisReadinessForTransition(
+        eventId,
+        event.tenant_id,
+        toStatus
+      )
+      if (cannabisCheck.blocked) {
+        throw new Error(`Cannot proceed: ${cannabisCheck.reason}`)
+      }
+    } catch (cannabisErr: any) {
+      if (cannabisErr.message?.startsWith('Cannot proceed:')) {
+        throw cannabisErr
+      }
+      log.events.error('Cannabis readiness check failed (non-blocking)', {
+        error: cannabisErr,
+        context: { eventId, fromStatus, toStatus },
+      })
+      readinessWarnings.push('Cannabis readiness check could not be verified')
+    }
+  }
+
   // ── Same-date conflict check when confirming ────────────────────────────────
   // Soft warning only (no hard block). Chefs may legitimately have multiple events.
   // Returns a conflict notice as metadata for the UI to surface.
@@ -1413,6 +1439,14 @@ export async function transitionEvent({
       log.events.warn('Menu history auto-log failed (non-blocking)', { error: menuLogErr })
     }
 
+    // Auto-derive menu fate: event completed means linked menus are 'served' (non-blocking)
+    try {
+      const { applyFateForEventMenus } = await import('@/lib/menus/fate-derivation')
+      await applyFateForEventMenus(eventId, 'event_completed')
+    } catch (fateErr) {
+      log.events.warn('Menu fate derivation on completion failed (non-blocking)', { error: fateErr })
+    }
+
     await runCompletedEventPostProcessing(eventId, event.tenant_id)
 
     // Send circle thank-you emails to all participants (non-blocking)
@@ -1568,6 +1602,14 @@ export async function transitionEvent({
       }
     } catch (err) {
       log.events.warn('Circle archive on cancellation failed (non-blocking)', { error: err })
+    }
+
+    // Auto-derive menu fate: cancelled event means linked menus get abandoned/approved_unserved (non-blocking)
+    try {
+      const { applyFateForEventMenus } = await import('@/lib/menus/fate-derivation')
+      await applyFateForEventMenus(eventId, 'event_cancelled')
+    } catch (fateErr) {
+      log.events.warn('Menu fate derivation on cancellation failed (non-blocking)', { error: fateErr })
     }
   }
 
@@ -1736,6 +1778,17 @@ export async function transitionEvent({
       }
     } catch (err) {
       log.events.warn('Circle retention note on completion failed (non-blocking)', { error: err })
+    }
+  }
+
+  // Capture weather snapshot on event completion (non-blocking)
+  // Stores forecast/historical weather for future reference and pattern analysis.
+  if (toStatus === 'completed' && fromStatus === 'in_progress') {
+    try {
+      const { captureWeatherSnapshot } = await import('@/lib/weather/weather-snapshot-actions')
+      await captureWeatherSnapshot(event.tenant_id, eventId)
+    } catch (err) {
+      log.events.warn('Weather snapshot capture failed (non-blocking)', { error: err })
     }
   }
 

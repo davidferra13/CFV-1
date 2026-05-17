@@ -1,0 +1,3 @@
+CREATE TABLE IF NOT EXISTS chart_configs (id UUID PRIMARY KEY DEFAULT gen_random_uuid(), tenant_id UUID NOT NULL, chart_id TEXT NOT NULL, type TEXT NOT NULL, title TEXT NOT NULL, series JSONB DEFAULT '[]', x_axis JSONB, y_axis JSONB, legend BOOLEAN DEFAULT TRUE, responsive BOOLEAN DEFAULT TRUE, created_at TIMESTAMPTZ DEFAULT NOW() NOT NULL);
+CREATE UNIQUE INDEX idx_chart_configs_id ON chart_configs(tenant_id, chart_id);
+CREATE TABLE IF NOT EXISTS visualization_presets (id UUID PRIMARY KEY DEFAULT gen_random_uuid(), tenant_id UUID NOT NULL, name TEXT NOT NULL, chart_id TEXT NOT NULL, date_range JSONB, filters JSONB DEFAULT '{}', created_at TIMESTAMPTZ DEFAULT NOW() NOT NULL);

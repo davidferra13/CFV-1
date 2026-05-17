@@ -281,16 +281,21 @@ export async function handleTicketPurchaseCompleted(session: Stripe.Checkout.Ses
   try {
     const amountCents = session.amount_total ?? 0
     if (amountCents > 0) {
+      // Idempotency: use ticket_id as transaction_reference so duplicate webhook
+      // deliveries do not create duplicate ledger rows.
+      const txRef = `ticket_${ticket_id}`
       await db.from('ledger_entries').insert({
         tenant_id,
         event_id,
-        entry_type: 'income',
-        category: 'ticket_sale',
+        client_id: null,
+        entry_type: 'payment',
         amount_cents: amountCents,
         description: `Ticket purchase: ${ticket.buyer_name} (${ticket.quantity ?? 1}x)`,
-        reference_type: 'event_ticket',
-        reference_id: ticket_id,
-        created_at: new Date().toISOString(),
+        payment_method: 'card',
+        transaction_reference: txRef,
+        is_refund: false,
+        received_at: new Date().toISOString(),
+        internal_notes: `Stripe session ${session.id}`,
       })
     }
   } catch (ledgerErr) {

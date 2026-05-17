@@ -19,6 +19,11 @@ export interface QuotePricingSuggestion {
     basedOnSeason: boolean
     basedOnServiceStyle: boolean
   }
+  profitabilityContext: {
+    avgMargin: number | null
+    bestMargin: number | null
+    worstMargin: number | null
+  } | null
 }
 
 // ─── Main Action ─────────────────────────────────────────────────────────────
@@ -123,6 +128,49 @@ export async function getSmartQuoteSuggestion(params: {
     return { ...dp, score, matchFlags }
   })
 
+  // H1: Fetch profitability data and apply weighting
+  let profitabilityContext: QuotePricingSuggestion['profitabilityContext'] = null
+  try {
+    const { getEventProfitability } = await import('@/lib/intelligence/event-profitability')
+    const profitData = await getEventProfitability()
+    if (profitData && profitData.events.length > 0) {
+      const margins = profitData.events.map((e) => e.marginPercent)
+      profitabilityContext = {
+        avgMargin: profitData.avgMarginPercent,
+        bestMargin: Math.max(...margins),
+        worstMargin: Math.min(...margins),
+      }
+
+      // Build a margin lookup by event ID
+      const marginByEventId = new Map<string, number>()
+      for (const pe of profitData.events) {
+        marginByEventId.set(pe.eventId, pe.marginPercent)
+      }
+
+      // Weight scored data points by profitability
+      for (const dp of scored) {
+        // Match by per-guest price similarity to profitable events
+        for (const pe of profitData.events) {
+          if (pe.guestCount > 0) {
+            const pePerGuest = Math.round(pe.revenueCents / pe.guestCount)
+            const ratio = Math.min(dp.perGuestCents, pePerGuest) / Math.max(dp.perGuestCents, pePerGuest)
+            if (ratio >= 0.7) {
+              // This data point corresponds to a similarly-priced event
+              if (pe.marginPercent > 30) {
+                dp.score *= 1.2 // Boost high-margin matches
+              } else if (pe.marginPercent < 10) {
+                dp.score *= 0.7 // Penalize low-margin matches
+              }
+              break
+            }
+          }
+        }
+      }
+    }
+  } catch {
+    // Profitability data unavailable; proceed without weighting
+  }
+
   // Filter to relevant matches (score > 20) and sort by relevance
   const relevant = scored
     .filter((s: any) => s.score > 20)
@@ -149,6 +197,7 @@ export async function getSmartQuoteSuggestion(params: {
         basedOnSeason: false,
         basedOnServiceStyle: false,
       },
+      profitabilityContext,
     }
   }
 
@@ -213,6 +262,7 @@ export async function getSmartQuoteSuggestion(params: {
     acceptanceRateAtSuggested: acceptanceRate,
     similarEvents: relevant.length,
     breakdown,
+    profitabilityContext,
   }
 }
 

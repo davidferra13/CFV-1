@@ -612,6 +612,25 @@ async function signContractForContext(context: ContractClientContext, input: Sig
     console.error('[signContract] Circle notification failed (non-blocking):', err)
   }
 
+  // Lifecycle journey orchestration: contract signing is a key lifecycle checkpoint (non-blocking)
+  try {
+    const { data: eventForLifecycle } = await db
+      .from('events')
+      .select('tenant_id, inquiry_id')
+      .eq('id', contract.event_id)
+      .single()
+    if (eventForLifecycle) {
+      const { orchestrateJourney } = await import('@/lib/lifecycle/journey-orchestrator')
+      await orchestrateJourney(
+        eventForLifecycle.tenant_id,
+        (eventForLifecycle as any).inquiry_id ?? null,
+        contract.event_id
+      )
+    }
+  } catch (err) {
+    console.error('[signContract] Journey orchestration failed (non-blocking):', err)
+  }
+
   return { success: true }
 }
 

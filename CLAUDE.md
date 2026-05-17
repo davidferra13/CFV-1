@@ -170,6 +170,27 @@ Run `/close-session`. Commit + push. Work must be on GitHub before signing off.
 
 **Skip TDD only for:** pure layout/styling changes, config edits, documentation updates.
 
+### Continuous Verification Loop (MANDATORY)
+
+**Every feature built has a verified test. Every passing test is permanent proof. The system never regresses silently.** Full spec: `docs/specs/continuous-verification-loop.md`
+
+**The loop:** Build it -> Test it -> Passes? -> Mark VERIFIED in blueprint -> Run affected suite -> All green? -> Commit. Failures block progress until fixed.
+
+**Verification states** (used in `docs/test-coverage-blueprint.md`):
+
+- **VERIFIED** = test exists, passes, covers the feature. Done. No retest needed.
+- **NEEDS-TEST** = feature exists without a test. Write one before moving on.
+- **REGRESSED** = test exists but fails. P0 fix. Blocks all other work.
+- **EXEMPT** = pure layout/config, no testable logic. Document why.
+
+**Rules:**
+
+1. New feature = new blueprint entry. Cannot be marked done without VERIFIED status.
+2. Never retest what already passes (deterministic tests are permanent proof).
+3. Code change to verified feature = re-run its test. Still green? Still VERIFIED.
+4. Test failure = REGRESSED. Fix before building anything else.
+5. `npm run test:affected` before every commit. Failures block the commit.
+
 ### Ubiquitous Language (CONTEXT.md)
 
 **`CONTEXT.md` is the canonical domain glossary.** Every domain term has exactly one meaning. Use these terms in code, specs, conversations, and AI prompts. If a term isn't in the glossary, define it there before using it. Updated during `/grill-with-docs` sessions.

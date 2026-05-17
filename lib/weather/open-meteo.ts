@@ -12,6 +12,10 @@ export interface DailyForecast {
   windSpeedMph: number
   weatherCode: number
   condition: string
+  /** ISO 8601 datetime string for sunrise (e.g. "2026-05-16T05:23") */
+  sunrise: string | null
+  /** ISO 8601 datetime string for sunset (e.g. "2026-05-16T20:12") */
+  sunset: string | null
 }
 
 const WEATHER_CODE_CONDITIONS: Record<number, string> = {
@@ -64,7 +68,7 @@ export async function fetchForecast(lat: number, lng: number): Promise<ForecastR
       latitude: String(lat),
       longitude: String(lng),
       daily:
-        'temperature_2m_max,temperature_2m_min,precipitation_probability_max,wind_speed_10m_max,weather_code',
+        'temperature_2m_max,temperature_2m_min,precipitation_probability_max,wind_speed_10m_max,weather_code,sunrise,sunset',
       timezone: 'America/New_York',
       forecast_days: '7',
       temperature_unit: 'fahrenheit',
@@ -95,6 +99,8 @@ export async function fetchForecast(lat: number, lng: number): Promise<ForecastR
         windSpeedMph: Math.round(daily.wind_speed_10m_max[i] ?? 0),
         weatherCode: code,
         condition: weatherCodeToCondition(code),
+        sunrise: daily.sunrise?.[i] ?? null,
+        sunset: daily.sunset?.[i] ?? null,
       })
     }
 
@@ -145,7 +151,7 @@ const WMO_DESCRIPTIONS: Record<number, { text: string; emoji: string }> = {
   99: { text: 'Severe thunderstorm', emoji: '⛈️' },
 }
 
-function wmoLookup(code: number): { text: string; emoji: string } {
+export function wmoLookup(code: number): { text: string; emoji: string } {
   return WMO_DESCRIPTIONS[code] ?? { text: 'Variable', emoji: '🌡️' }
 }
 
@@ -267,5 +273,57 @@ export async function getEventWeather(
   } catch (err) {
     console.error('[open-meteo] EventWeather error:', err)
     return { data: null, error: 'Weather service unreachable' }
+  }
+}
+
+// ── Sunset/Sunrise for a specific event date ──────────────────────────────
+
+export interface SunTimes {
+  /** Formatted time string, e.g. "7:42 PM" */
+  sunrise: string
+  /** Formatted time string, e.g. "8:12 PM" */
+  sunset: string
+  /** Raw ISO datetime for sunrise */
+  sunriseRaw: string
+  /** Raw ISO datetime for sunset */
+  sunsetRaw: string
+}
+
+/**
+ * Format an ISO datetime like "2026-05-16T20:12" to "8:12 PM".
+ */
+function formatSunTime(iso: string): string {
+  const timePart = iso.split('T')[1]
+  if (!timePart) return iso
+  const [hStr, mStr] = timePart.split(':')
+  const h = parseInt(hStr, 10)
+  const m = mStr ?? '00'
+  const period = h >= 12 ? 'PM' : 'AM'
+  const hour12 = h % 12 || 12
+  return `${hour12}:${m} ${period}`
+}
+
+/**
+ * Get sunset and sunrise times for a specific date and location.
+ * Returns null if coords missing, date out of forecast range, or API fails.
+ */
+export async function getSunsetForEvent(
+  eventDate: string,
+  lat: number,
+  lng: number
+): Promise<SunTimes | null> {
+  try {
+    const result = await fetchForecast(lat, lng)
+    const dayMatch = result.forecasts.find((f) => f.date === eventDate)
+    if (!dayMatch?.sunrise || !dayMatch?.sunset) return null
+
+    return {
+      sunrise: formatSunTime(dayMatch.sunrise),
+      sunset: formatSunTime(dayMatch.sunset),
+      sunriseRaw: dayMatch.sunrise,
+      sunsetRaw: dayMatch.sunset,
+    }
+  } catch {
+    return null
   }
 }

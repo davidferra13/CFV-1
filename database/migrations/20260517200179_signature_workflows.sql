@@ -1,0 +1,3 @@
+CREATE TABLE IF NOT EXISTS signature_workflows (id UUID PRIMARY KEY DEFAULT gen_random_uuid(), tenant_id UUID NOT NULL, type TEXT NOT NULL, name TEXT NOT NULL, steps JSONB DEFAULT '[]', active BOOLEAN DEFAULT TRUE, created_at TIMESTAMPTZ DEFAULT NOW() NOT NULL, updated_at TIMESTAMPTZ DEFAULT NOW() NOT NULL);
+CREATE UNIQUE INDEX idx_sig_workflows_type ON signature_workflows(tenant_id, type);
+CREATE TABLE IF NOT EXISTS workflow_executions (id UUID PRIMARY KEY DEFAULT gen_random_uuid(), tenant_id UUID NOT NULL, workflow_id UUID NOT NULL, entity_id UUID, current_step INTEGER DEFAULT 0, completed_steps JSONB DEFAULT '[]', started_at TIMESTAMPTZ DEFAULT NOW() NOT NULL, completed_at TIMESTAMPTZ);

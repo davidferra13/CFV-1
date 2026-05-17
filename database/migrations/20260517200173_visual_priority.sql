@@ -1,0 +1,3 @@
+CREATE TABLE IF NOT EXISTS surface_configs (id UUID PRIMARY KEY DEFAULT gen_random_uuid(), tenant_id UUID NOT NULL, route TEXT NOT NULL, component TEXT, surface_level TEXT NOT NULL, visual_priority TEXT NOT NULL, z_index INTEGER, elevation INTEGER, created_at TIMESTAMPTZ DEFAULT NOW() NOT NULL);
+CREATE TABLE IF NOT EXISTS priority_audits (id UUID PRIMARY KEY DEFAULT gen_random_uuid(), tenant_id UUID NOT NULL, route TEXT NOT NULL, total_elements INTEGER DEFAULT 0, by_priority JSONB DEFAULT '{}', by_surface JSONB DEFAULT '{}', score INTEGER DEFAULT 0, audited_at TIMESTAMPTZ DEFAULT NOW() NOT NULL);
+CREATE INDEX idx_priority_audits_route ON priority_audits(tenant_id, route, audited_at DESC);

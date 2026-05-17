@@ -256,6 +256,10 @@ export default async function AnalyticsHubPage() {
             repeatClients: 0,
             repeatBookingRate: 0,
             retentionRate: 0,
+            newClientsThisPeriod: 0,
+            returningClientsThisPeriod: 0,
+            newClientRevenuePercent: 0,
+            returningClientRevenuePercent: 0,
           },
           'clients'
         )}

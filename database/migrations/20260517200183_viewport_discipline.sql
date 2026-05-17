@@ -1,0 +1,4 @@
+CREATE TABLE IF NOT EXISTS viewport_audits (id UUID PRIMARY KEY DEFAULT gen_random_uuid(), tenant_id UUID NOT NULL, route TEXT NOT NULL, viewport TEXT NOT NULL, above_fold_elements INTEGER DEFAULT 0, critical_content_visible BOOLEAN DEFAULT TRUE, scroll_required BOOLEAN DEFAULT FALSE, load_time INTEGER, score INTEGER DEFAULT 0, audited_at TIMESTAMPTZ DEFAULT NOW() NOT NULL);
+CREATE INDEX idx_viewport_audits_route ON viewport_audits(tenant_id, route, viewport);
+CREATE TABLE IF NOT EXISTS viewport_rules (id UUID PRIMARY KEY DEFAULT gen_random_uuid(), tenant_id UUID NOT NULL, viewport TEXT NOT NULL, max_above_fold_elements INTEGER DEFAULT 10, required_elements JSONB DEFAULT '[]', max_load_time_ms INTEGER DEFAULT 3000, created_at TIMESTAMPTZ DEFAULT NOW() NOT NULL);
+CREATE UNIQUE INDEX idx_viewport_rules_vp ON viewport_rules(tenant_id, viewport);

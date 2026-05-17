@@ -762,6 +762,15 @@ export function renderEventSummary(pdf: PDFLayout, data: EventSummaryData) {
       'Rain',
       `${data.forecast.precipProbability}%`
     )
+    if (data.forecast.sunset) {
+      const sunsetTime = data.forecast.sunset.split('T')[1] ?? ''
+      const [hStr, mStr] = sunsetTime.split(':')
+      const h = parseInt(hStr, 10)
+      const period = h >= 12 ? 'PM' : 'AM'
+      const hour12 = h % 12 || 12
+      const formatted = `${hour12}:${mStr ?? '00'} ${period}`
+      leftY = colKeyValue(doc, LEFT_X, COL_WIDTH, leftY, 'Sunset', formatted)
+    }
   }
 
   // ── RIGHT COLUMN ──

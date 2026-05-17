@@ -236,6 +236,16 @@ export async function createQuote(input: CreateQuoteInput) {
     console.error('[createQuote] Webhook emit failed (non-blocking):', err)
   }
 
+  // Auto-resolve ingredient prices for linked event menu (non-blocking)
+  if (validated.event_id) {
+    try {
+      const { autoCostEventMenu } = await import('@/lib/pricing/auto-cost-bridge')
+      await autoCostEventMenu(validated.event_id, user.tenantId!)
+    } catch (costErr) {
+      console.error('[createQuote] Auto-cost failed (non-blocking):', costErr)
+    }
+  }
+
   return result
 }
 
@@ -892,6 +902,14 @@ export async function transitionQuote(id: string, newStatus: QuoteStatus) {
     }
   } catch (err) {
     console.error('[updateQuoteStatus] Webhook emit failed (non-blocking):', err)
+  }
+
+  // Lifecycle journey orchestration: quote status changes affect lifecycle checkpoints (non-blocking)
+  try {
+    const { orchestrateJourney } = await import('@/lib/lifecycle/journey-orchestrator')
+    await orchestrateJourney(user.tenantId!, updated.inquiry_id ?? null, updated.event_id ?? null)
+  } catch (err) {
+    console.error('[transitionQuote] Journey orchestration failed (non-blocking):', err)
   }
 
   return { success: true, quote: updated, warnings: warnings.length > 0 ? warnings : undefined }

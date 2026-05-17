@@ -1,0 +1,4 @@
+CREATE TABLE IF NOT EXISTS culinary_icons (id UUID PRIMARY KEY DEFAULT gen_random_uuid(), tenant_id UUID NOT NULL, name TEXT NOT NULL, category TEXT NOT NULL, svg_path TEXT, emoji TEXT, description TEXT, created_at TIMESTAMPTZ DEFAULT NOW() NOT NULL);
+CREATE TABLE IF NOT EXISTS culinary_color_palettes (id UUID PRIMARY KEY DEFAULT gen_random_uuid(), tenant_id UUID NOT NULL, name TEXT NOT NULL, cuisine TEXT, primary_color TEXT NOT NULL, secondary_color TEXT, accent_color TEXT, text_color TEXT, bg_color TEXT, created_at TIMESTAMPTZ DEFAULT NOW() NOT NULL);
+CREATE TABLE IF NOT EXISTS culinary_visual_tokens (id UUID PRIMARY KEY DEFAULT gen_random_uuid(), tenant_id UUID NOT NULL, category TEXT NOT NULL, key TEXT NOT NULL, value TEXT NOT NULL, description TEXT, created_at TIMESTAMPTZ DEFAULT NOW() NOT NULL);
+CREATE UNIQUE INDEX idx_culinary_token_key ON culinary_visual_tokens(tenant_id, category, key);

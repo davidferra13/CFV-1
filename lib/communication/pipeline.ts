@@ -588,6 +588,19 @@ export async function ingestCommunicationEvent(input: CommunicationEventInput) {
         })
       )
       .catch((err) => console.error('[pipeline] sms triage-gate failed (non-fatal):', err))
+
+    // Remy draft generation: create a suggested reply for chef approval
+    import('@/lib/sms/remy-draft')
+      .then(({ createRemySmsDraft }) =>
+        createRemySmsDraft({
+          tenantId: input.tenantId,
+          threadId,
+          senderPhone: input.senderIdentity,
+          content: normalizedContent,
+          resolvedClientId,
+        })
+      )
+      .catch((err) => console.error('[pipeline] remy sms draft failed (non-fatal):', err))
   }
 
   // Auto-stage: when sender is unknown and message is triage-visible,
@@ -630,6 +643,16 @@ export async function ingestCommunicationEvent(input: CommunicationEventInput) {
     import('@/lib/sms/auto-ack')
       .then(({ triggerSmsAck }) => triggerSmsAck(input.tenantId, threadId, input.senderIdentity))
       .catch((err) => console.error('[pipeline] sms auto-ack failed (non-fatal):', err))
+  }
+
+  // Passive channel preference writer: tally inbound channels per client,
+  // update clients.preferred_contact_method with the most-used channel.
+  if (input.direction === 'inbound' && resolvedClientId) {
+    import('@/lib/communication/channel-preference-writer')
+      .then(({ updateClientChannelPreference }) =>
+        updateClientChannelPreference(input.tenantId, resolvedClientId!)
+      )
+      .catch((err) => console.error('[pipeline] channel-preference-writer failed (non-fatal):', err))
   }
 
   return {

@@ -57,6 +57,8 @@ export default async function CountdownPage({ params }: { params: { id: string }
           guestCount={countdownData.guestCount}
           specialRequests={countdownData.specialRequests}
           accessInstructions={countdownData.accessInstructions}
+          weather={countdownData.weather}
+          daysUntil={countdownData.daysUntil}
         />
       ) : (
         <div className="rounded-lg border border-stone-700 bg-stone-800 p-8 text-center">

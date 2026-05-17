@@ -699,6 +699,48 @@ export async function createInquiry(input: CreateInquiryInput) {
     console.error('[createInquiry] Lifecycle detection failed (non-blocking):', err)
   }
 
+  // Returning client recognition: match inquiry signals against past clients (non-blocking)
+  try {
+    const { matchReturningClient } = await import('@/lib/inquiries/returning-client-matcher')
+    const uf = inquiry.unknown_fields as Record<string, string> | null
+    const match = await matchReturningClient(user.tenantId!, {
+      email: validated.client_email || uf?.client_email || null,
+      phone: validated.client_phone || uf?.client_phone || null,
+      name: validated.client_name || uf?.client_name || null,
+      address: validated.confirmed_location || null,
+    })
+    if (match) {
+      const updateDb: any = createServerClient()
+      // Merge returning client match summary into unknown_fields
+      const existingUf = (inquiry.unknown_fields as Record<string, unknown>) || {}
+      const enrichedUf = {
+        ...existingUf,
+        returning_client_match: {
+          matchType: match.matchType,
+          previousEvents: match.previousEvents,
+          lastEventDate: match.lastEventDate,
+          totalSpentCents: match.totalSpentCents,
+          isLapsed: match.isLapsed,
+          lapsedMonths: match.lapsedMonths,
+          clientName: match.clientName,
+        },
+      }
+      await updateDb
+        .from('inquiries')
+        .update({
+          returning_client_id: match.clientId,
+          returning_client_confidence: match.confidence,
+          unknown_fields: enrichedUf,
+          // Also auto-link client_id if not already set
+          ...(clientId ? {} : { client_id: match.clientId }),
+        })
+        .eq('id', inquiry.id)
+        .eq('tenant_id', user.tenantId!)
+    }
+  } catch (err) {
+    console.error('[createInquiry] Returning client recognition failed (non-blocking):', err)
+  }
+
   return { success: true, inquiry }
 }
 

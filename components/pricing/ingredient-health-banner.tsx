@@ -1,8 +1,8 @@
 'use client'
 
-import { useState, useTransition } from 'react'
+import { useState, useTransition, useEffect } from 'react'
 import { useRouter } from 'next/navigation'
-import { Check, X, ChevronDown, ChevronRight, Zap } from '@/components/ui/icons'
+import { Check, X, ChevronDown, ChevronRight, Zap, Phone } from '@/components/ui/icons'
 import { Button } from '@/components/ui/button'
 import { Card } from '@/components/ui/card'
 import { confirmMatchAction, dismissMatchAction } from '@/lib/pricing/ingredient-matching-actions'
@@ -31,6 +31,14 @@ export function IngredientHealthBanner({ health }: Props) {
         ? 'unmatched'
         : null
   )
+  const [sourcingEnabled, setSourcingEnabled] = useState(false)
+
+  useEffect(() => {
+    fetch('/api/calling/enabled')
+      .then((r) => r.json())
+      .then((d) => setSourcingEnabled(d.enabled === true))
+      .catch(() => {})
+  }, [])
 
   const needsAttention = stats.pending + stats.unmatched
   const isFullyResolved = needsAttention === 0
@@ -205,6 +213,27 @@ export function IngredientHealthBanner({ health }: Props) {
               <Zap className="w-3 h-3 mr-1" />
               Confirm All ({pendingMatches.length})
             </Button>
+          )}
+          {sourcingEnabled && unresolved.length > 0 && (
+            <div className="relative group">
+              <Button
+                size="sm"
+                variant="ghost"
+                onClick={() => {
+                  const names = unresolved.map((u) => u.name).join(',')
+                  router.push(`/culinary/sourcing?ingredient=${encodeURIComponent(names)}`)
+                }}
+                className="text-xs text-stone-300 hover:text-stone-100"
+              >
+                <Phone className="w-3 h-3 mr-1" />
+                Source Unresolved ({unresolved.length})
+              </Button>
+              {pendingMatches.length > 0 && (
+                <span className="absolute bottom-full left-1/2 -translate-x-1/2 mb-1 px-2 py-1 text-[10px] text-amber-300 bg-stone-900 border border-stone-700 rounded whitespace-nowrap opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none">
+                  Confirm matches first for better sourcing results
+                </span>
+              )}
+            </div>
           )}
         </div>
       </div>

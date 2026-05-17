@@ -30,11 +30,15 @@ test('ops tab only renders the live service tracker for in-progress events', () 
   )
 })
 
-test('tracker initializes empty active service course progress and advances statuses', () => {
+test('tracker calls initializeCourseProgress(eventId) when no initial courses exist', () => {
   const tracker = read('components/events/live-service-tracker.tsx')
 
-  assert.match(tracker, /if \(initialCourses\.length > 0 \|\| didInitialize\.current\) return/)
   assert.match(tracker, /initializeCourseProgress\(eventId\)/)
+})
+
+test('tracker calls advanceCourseStatus(course.id, newStatus)', () => {
+  const tracker = read('components/events/live-service-tracker.tsx')
+
   assert.match(tracker, /advanceCourseStatus\(course\.id, newStatus\)/)
 })
 

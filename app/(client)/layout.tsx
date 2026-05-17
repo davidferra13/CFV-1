@@ -21,6 +21,7 @@ import { MarketResearchBannerWrapper } from '@/components/beta-survey/market-res
 import { GlobalReportButton } from '@/components/feedback/global-report-button'
 import { PATHNAME_HEADER } from '@/lib/auth/request-auth-context'
 import { resolveClientSurfaceMode } from '@/lib/interface/surface-governance'
+import { getClientCannabisAccessStatus } from '@/lib/cannabis/client-portal-guards'
 
 export default async function ClientLayout({ children }: { children: React.ReactNode }) {
   const pathname = headers().get(PATHNAME_HEADER) ?? '/my-events'
@@ -31,6 +32,14 @@ export default async function ClientLayout({ children }: { children: React.React
     user = await requireClient()
   } catch {
     redirect('/auth/signin?portal=client')
+  }
+
+  let cannabisAccess = false
+  try {
+    const status = await getClientCannabisAccessStatus(user.id)
+    cannabisAccess = status.hasTierAccess
+  } catch {
+    // Non-blocking: cannabis access check failure hides the nav link
   }
 
   return (
@@ -49,8 +58,8 @@ export default async function ClientLayout({ children }: { children: React.React
           >
             Skip to main content
           </a>
-          <ClientSidebar userEmail={user.email} />
-          <ClientMobileNav userEmail={user.email} />
+          <ClientSidebar userEmail={user.email} cannabisAccess={cannabisAccess} />
+          <ClientMobileNav userEmail={user.email} cannabisAccess={cannabisAccess} />
           <ActivityTracker eventType="portal_login" />
           <ClientMainContent>
             <MarketResearchBannerWrapper

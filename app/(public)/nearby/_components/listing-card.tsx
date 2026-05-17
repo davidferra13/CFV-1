@@ -72,13 +72,18 @@ function buildTrustPresentation(status: string) {
   }
 
   return {
-    statusLabel: 'Discovered',
+    statusLabel: 'Listed',
     confidenceLabel: 'Public-source only',
     confidenceTone: 'public' as const,
-    summary:
-      'This listing was discovered from public sources and may need confirmation before use.',
+    summary: 'This listing was assembled from public sources and may need confirmation before use.',
     fallbackPrefix: 'Public-source listing',
   }
+}
+
+function statusRingClass(status: string): string {
+  if (status === 'verified') return 'hover:ring-emerald-600'
+  if (status === 'claimed') return 'hover:ring-brand-600'
+  return ''
 }
 
 export function ListingCard({ listing, favoriteMode = 'hidden', visualMode = false }: Props) {
@@ -89,6 +94,7 @@ export function ListingCard({ listing, favoriteMode = 'hidden', visualMode = fal
   const hasPhoto = Boolean(primaryPhoto)
   const trust = getDirectoryListingTrust(listing)
   const trustPresentation = buildTrustPresentation(listing.status)
+  const isUnclaimed = listing.status === 'discovered'
   const cuisineLabels = Array.isArray(listing.cuisine_types)
     ? listing.cuisine_types
         .filter((c) => c !== 'other')
@@ -146,7 +152,9 @@ export function ListingCard({ listing, favoriteMode = 'hidden', visualMode = fal
 
   return (
     <React.Fragment>
-      <article className="group relative flex flex-col overflow-hidden rounded-2xl bg-stone-900 ring-1 ring-stone-800 transition-all duration-300 hover:-translate-y-1 hover:ring-stone-600 hover:shadow-[0_8px_40px_rgb(0,0,0,0.25)]">
+      <article
+        className={`group relative flex flex-col overflow-hidden rounded-2xl bg-stone-900 ring-1 ring-stone-800 transition-all duration-300 hover:-translate-y-1 hover:shadow-[0_8px_40px_rgb(0,0,0,0.25)] ${statusRingClass(listing.status) || 'hover:ring-stone-600'}`}
+      >
         {/* Image area */}
         <div className={`relative ${imageAspectClass} overflow-hidden`}>
           {hasPhoto ? (
@@ -285,6 +293,15 @@ export function ListingCard({ listing, favoriteMode = 'hidden', visualMode = fal
               Review details
             </Link>
           </div>
+
+          {isUnclaimed && (
+            <Link
+              href={`/nearby/${listing.slug}`}
+              className="mt-3 block text-center text-xs text-stone-500 transition-colors hover:text-brand-400"
+            >
+              Is this your business? Claim for free
+            </Link>
+          )}
         </div>
       </article>
     </React.Fragment>

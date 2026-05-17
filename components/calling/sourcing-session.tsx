@@ -82,15 +82,17 @@ type SessionSummary = {
 
 interface Props {
   tenantId: string
+  initialQuery?: string
+  eventId?: string
 }
 
 // ---------------------------------------------------------------------------
 // SourcingSession Component
 // ---------------------------------------------------------------------------
 
-export function SourcingSession({ tenantId }: Props) {
+export function SourcingSession({ tenantId, initialQuery, eventId }: Props) {
   const [phase, setPhase] = useState<SessionPhase>('search')
-  const [ingredient, setIngredient] = useState('')
+  const [ingredient, setIngredient] = useState(initialQuery || '')
   const [resolving, setResolving] = useState(false)
   const [unresolvedCount, setUnresolvedCount] = useState(0)
   const [resolvedCount, setResolvedCount] = useState(0)
@@ -209,6 +211,20 @@ export function SourcingSession({ tenantId }: Props) {
   }
 
   // -------------------------------------------------------------------------
+  // Auto-trigger search when initialQuery is provided via URL params
+  // -------------------------------------------------------------------------
+
+  const initialQueryTriggered = useRef(false)
+
+  useEffect(() => {
+    if (initialQuery && !initialQueryTriggered.current) {
+      initialQueryTriggered.current = true
+      handleIngredientChange(initialQuery)
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [])
+
+  // -------------------------------------------------------------------------
   // Phase 2: Configuration helpers
   // -------------------------------------------------------------------------
 
@@ -266,6 +282,7 @@ export function SourcingSession({ tenantId }: Props) {
     try {
       const res = await createSourcingSession({
         ingredientQuery: ingredient.trim(),
+        eventId: eventId || undefined,
         stopAfterConfirmations: config.stopAfterConfirmations,
         askPrice: config.askPrice,
         askHold: config.askHold,

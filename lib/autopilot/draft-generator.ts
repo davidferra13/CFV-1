@@ -10,6 +10,7 @@ import { isOllamaEnabled, getOllamaConfig, getOllamaModel } from '@/lib/ai/provi
 import { OllamaOfflineError } from '@/lib/ai/ollama-errors'
 import { Ollama, type ChatResponse } from 'ollama'
 import type { AutopilotDraft } from './types'
+import { fetchForecast } from '@/lib/weather/open-meteo'
 
 const TIMEOUT_MS = 60_000
 
@@ -55,6 +56,7 @@ export async function generateAutopilotDraft(
         `
         id, event_date, status, occasion, guest_count,
         location_address, location_city, location_state,
+        location_lat, location_lng,
         quoted_price_cents, service_style,
         client:clients!events_client_id_fkey(full_name, email),
         quotes(status, total_quoted_cents, valid_until)
@@ -117,6 +119,21 @@ export async function generateAutopilotDraft(
     ? `A ${latestQuote.status} quote of $${Math.round((latestQuote.total_quoted_cents ?? 0) / 100)} is on file.`
     : 'No formal quote has been sent yet.'
 
+  // Fetch weather context for the event (non-blocking, skip on failure)
+  let weatherContext = ''
+  if (event.location_lat != null && event.location_lng != null && daysUntil >= 0 && daysUntil <= 7) {
+    try {
+      const eventDateStr = eventDate.toISOString().slice(0, 10)
+      const result = await fetchForecast(event.location_lat, event.location_lng)
+      const dayMatch = result.forecasts.find((f) => f.date === eventDateStr)
+      if (dayMatch) {
+        weatherContext = `Weather forecast for event day: ${dayMatch.condition}, ${dayMatch.tempLowF}-${dayMatch.tempHighF}F, ${dayMatch.precipProbability}% chance of rain`
+      }
+    } catch {
+      // Weather fetch failed; proceed without it
+    }
+  }
+
   const systemPrompt = `You are drafting a status update email for ${chefFullName}, a private chef.
 The email is from ${chefFirstName} to a client. It must sound like ${chefFirstName} wrote it personally.
 
@@ -150,7 +167,7 @@ Event status: ${event.status}
 ${quoteContext}
 
 Current situation: ${pendingContext}
-
+${weatherContext ? `\n${weatherContext}` : ''}
 The goal is a warm, professional check-in that moves things forward. What does ${clientName} need to know or do next? Keep it to the point.`
 
   const config = getOllamaConfig()

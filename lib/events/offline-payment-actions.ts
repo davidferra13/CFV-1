@@ -262,6 +262,16 @@ export async function recordOfflinePayment(input: RecordOfflinePaymentInput) {
     console.error('[recordOfflinePayment] Notification failed (non-blocking):', pushErr)
   }
 
+  // ── 8. Auto-send invoice on final payment (non-blocking) ──────────────
+  if (remainingBalanceCents !== null && remainingBalanceCents <= 0) {
+    try {
+      const { autoSendInvoiceOnFinalPayment } = await import('@/lib/invoices/invoice-actions')
+      await autoSendInvoiceOnFinalPayment(user.tenantId!, eventId)
+    } catch (invoiceErr) {
+      console.error('[recordOfflinePayment] Auto-invoice failed (non-blocking):', invoiceErr)
+    }
+  }
+
   revalidatePath(`/events/${eventId}`)
   revalidatePath(`/my-events/${eventId}`)
   revalidatePath('/events')

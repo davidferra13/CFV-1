@@ -704,6 +704,14 @@ export async function linkRecipeToEditorDish(dishId: string, recipeId: string, r
     revalidatePath(`/menus/${dish.menu_id}/editor`)
   }
 
+  // Auto-resolve ingredient prices for the linked recipe (non-blocking)
+  try {
+    const { autoCostRecipeIngredients } = await import('@/lib/pricing/auto-cost-bridge')
+    await autoCostRecipeIngredients(recipeId, user.tenantId!)
+  } catch (costErr) {
+    console.error('[linkRecipeToEditorDish] Auto-cost failed (non-blocking):', costErr)
+  }
+
   return { success: true, alreadyLinked: false }
 }
 

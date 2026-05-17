@@ -293,6 +293,30 @@ function warmResolvers(): ResolverEntry[] {
         return resolveNetworkActivity(ctx)
       },
     },
+    // --- Lifecycle/Journey resolvers ---
+    {
+      name: 'lifecycle-stages',
+      resolve: async (ctx) => {
+        const { resolveLifecycleStages } = await import('./resolvers/chef/lifecycle-stage-resolver')
+        return resolveLifecycleStages(ctx)
+      },
+    },
+    // --- Cadence/Communication resolvers ---
+    {
+      name: 'cadence-due',
+      resolve: async (ctx) => {
+        const { resolveCadenceDueItems } = await import('./resolvers/chef/cadence-due-resolver')
+        return resolveCadenceDueItems(ctx)
+      },
+    },
+    // --- Completion resolvers ---
+    {
+      name: 'completion',
+      resolve: async (ctx) => {
+        const { resolveCompletionItems } = await import('./resolvers/chef/completion-resolver')
+        return resolveCompletionItems(ctx)
+      },
+    },
   ]
 }
 
@@ -308,7 +332,7 @@ export async function dispatchHotResolvers(
 
 /**
  * All resolvers: hot + warm.
- * Used by RailFull (dashboard only).
+ * Used by TieredRail (dashboard only).
  */
 export async function dispatchAllResolvers(
   ctx: GodModeResolverContext

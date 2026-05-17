@@ -14,11 +14,17 @@ function mapWeatherAlert(alert: EventWeatherAlert): GodModeResolvedItem {
   const eventLabel = alert.occasion ?? 'Event'
   const clientLabel = alert.clientName ? ` for ${alert.clientName}` : ''
 
+  // Include chef guidance in context when available
+  const contextParts = [alert.alertMessage]
+  if (alert.chefGuidance?.length) {
+    contextParts.push(...alert.chefGuidance)
+  }
+
   return {
     definitionId: 'chef.event_risk_weather',
     tier,
     label: `Weather alert: ${eventLabel}${clientLabel}`,
-    context: alert.alertMessage,
+    context: contextParts.join(' | '),
     destination: '/events',
     icon: alert.alertLevel === 'severe' ? '🔴' : alert.alertLevel === 'warning' ? '🟡' : '🔵',
     sourceKind: 'system',

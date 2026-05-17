@@ -1,4 +1,4 @@
-import type { DashboardResolveNextTask } from '@/lib/interface/action-layer'
+import type { DashboardResolveNextTask } from '@/lib/dashboard/view-types'
 import { ActionSurfaceCard } from '@/components/dashboard/action-surface-card'
 
 export function ResolveNextCard({ task }: { task: DashboardResolveNextTask }) {

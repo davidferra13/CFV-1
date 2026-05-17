@@ -8,6 +8,7 @@ import { requireChef } from '@/lib/auth/get-user'
 import { createServerClient } from '@/lib/db/server'
 import { revalidatePath } from 'next/cache'
 import { z } from 'zod'
+import type { MenuOriginMetadata } from './provenance-types'
 
 // ============================================
 // TYPES
@@ -284,6 +285,13 @@ export async function createMenuFromTemplate(templateId: string, eventId?: strin
       is_template: false,
       created_by: user.id,
       updated_by: user.id,
+      origin_type: 'templated' as const,
+      origin_metadata: {
+        type: 'templated',
+        template_id: templateId,
+        template_name: template.name ?? '',
+        seasonal_context: template.season ?? undefined,
+      } satisfies MenuOriginMetadata,
     })
     .select()
     .single()

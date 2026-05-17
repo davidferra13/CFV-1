@@ -30,6 +30,17 @@ export type InngestEvents = {
       completedAt: string
     }
   }
+  'chefflow/guest-feedback.positive': {
+    data: {
+      feedbackId: string
+      eventId: string
+      tenantId: string
+      guestEmail: string
+      guestName: string
+      overallRating: number
+      submittedAt: string
+    }
+  }
   'chefflow/commerce.day-closeout': {
     data: {
       tenantId: string

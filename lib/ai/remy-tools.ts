@@ -328,6 +328,139 @@ export function buildRemyTools(tenantId: string) {
         }
       },
     }),
+
+    sourceIngredient: tool({
+      description:
+        'Start a voice sourcing session to call vendors about an ingredient. Requires the supplier_calling feature flag.',
+      inputSchema: z.object({
+        ingredientName: z.string().describe('Name of the ingredient to source'),
+        eventId: z.string().optional().describe('Optional event ID to associate with the sourcing session'),
+      }),
+      execute: async ({ ingredientName, eventId }) => {
+        try {
+          // Check supplier_calling feature flag
+          const db: any = createServerClient()
+          const { data: flagData } = await db
+            .from('chef_feature_flags')
+            .select('enabled')
+            .eq('chef_id', tenantId)
+            .eq('flag_name', 'supplier_calling')
+            .maybeSingle()
+
+          if (!flagData?.enabled) {
+            return {
+              success: false,
+              message: 'Voice sourcing is not enabled for your account.',
+            }
+          }
+
+          // Resolve ingredient to get vendor call candidates
+          const { resolveIngredientAvailability } = await import(
+            '@/lib/calling/ingredient-resolution'
+          )
+          const resolution = await resolveIngredientAvailability(ingredientName)
+
+          if (resolution.unresolved.length === 0) {
+            return {
+              success: false,
+              message: `No vendors to call for "${ingredientName}". Data already available at tier ${resolution.confidenceLevel}.`,
+            }
+          }
+
+          // Build candidates from unresolved vendors
+          const candidates = resolution.unresolved.slice(0, 5).map((v, idx) => ({
+            vendorId: v.id || undefined,
+            vendorName: v.name,
+            vendorPhone: v.phone,
+            vendorType: (v.source === 'saved' ? 'saved' : 'directory') as 'saved' | 'directory',
+            priorityOrder: idx + 1,
+          }))
+
+          const { createSourcingSession } = await import(
+            '@/lib/calling/sourcing-session-actions'
+          )
+          const result = await createSourcingSession({
+            ingredientQuery: ingredientName,
+            candidates,
+          })
+
+          if (!result.success) {
+            return { success: false, message: result.error || 'Failed to create sourcing session.' }
+          }
+
+          return {
+            success: true,
+            sessionId: result.data?.sessionId,
+            candidateCount: result.data?.candidateCount,
+            message: `Started sourcing session for ${ingredientName}. I'll call vendors to check availability.`,
+          }
+        } catch (err) {
+          return {
+            success: false,
+            message: 'Failed to start sourcing session. Please try again.',
+          }
+        }
+      },
+    }),
+
+    checkIngredientAvailability: tool({
+      description:
+        'Check ingredient availability across all data sources without making any calls. Returns a confidence tier and summary.',
+      inputSchema: z.object({
+        ingredientName: z.string().describe('Name of the ingredient to check availability for'),
+      }),
+      execute: async ({ ingredientName }) => {
+        try {
+          const { resolveIngredientAvailability } = await import(
+            '@/lib/calling/ingredient-resolution'
+          )
+          const resolution = await resolveIngredientAvailability(ingredientName)
+
+          // Tier 1: resolved with recent price data
+          if (resolution.resolvedCount > 0) {
+            const best = resolution.resolved[0]
+            const priceStr = `$${(best.priceCents / 100).toFixed(2)}`
+            const source = `${best.chainName} (${best.city})`
+            return {
+              tier: 1,
+              confidence: resolution.confidenceLevel,
+              message: `Available: found recent price data at ${priceStr} from ${source}`,
+              resolvedCount: resolution.resolvedCount,
+              partialCount: resolution.partialCount,
+            }
+          }
+
+          // Tier 2: partial signals (stale data or vendor price points)
+          if (resolution.partialCount > 0) {
+            const best = resolution.partial[0]
+            const priceStr = best.priceCents
+              ? `$${(best.priceCents / 100).toFixed(2)}`
+              : 'unknown price'
+            return {
+              tier: 2,
+              confidence: resolution.confidenceLevel,
+              message: `Likely available: have older data suggesting ${priceStr}. May want to verify.`,
+              partialCount: resolution.partialCount,
+              unresolvedCount: resolution.unresolvedCount,
+            }
+          }
+
+          // Tier 3: unresolved
+          return {
+            tier: 3,
+            confidence: resolution.confidenceLevel,
+            message: 'Unresolved: no recent data. Want me to start a sourcing call?',
+            unresolvedCount: resolution.unresolvedCount,
+          }
+        } catch {
+          return {
+            tier: 3,
+            confidence: 'none' as const,
+            message: 'Availability check failed. The data sources may be offline.',
+          }
+        }
+      },
+    }),
   }
 }
 

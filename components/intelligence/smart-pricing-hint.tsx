@@ -86,6 +86,11 @@ export function SmartPricingHint({
                 ~{suggestion.acceptanceRateAtSuggested}% acceptance rate at this price
               </p>
             )}
+            {suggestion.profitabilityContext?.avgMargin != null && (
+              <p className="text-xs text-stone-500 mt-0.5">
+                Similar events averaged {suggestion.profitabilityContext.avgMargin}% margin
+              </p>
+            )}
             <div className="flex items-center gap-3 mt-2">
               <span className="text-xs text-stone-600">
                 Range: ${Math.round(suggestion.historicalRange.minCents / 100)}-$

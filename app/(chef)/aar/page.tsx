@@ -12,7 +12,7 @@ import { Button } from '@/components/ui/button'
 import { FileAARButton } from '@/components/aar/file-aar-button'
 import { format } from 'date-fns'
 import { NoReviewsIllustration } from '@/components/ui/branded-illustrations'
-import { type CloseOutCandidate, resolveCloseOutNextTask } from '@/lib/interface/action-layer'
+import { type CloseOutCandidate, resolveCloseOutNextTask } from '@/lib/events/view-types'
 
 export const metadata: Metadata = { title: 'Event Reviews' }
 

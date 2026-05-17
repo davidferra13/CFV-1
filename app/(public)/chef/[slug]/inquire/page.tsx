@@ -29,7 +29,7 @@ import type { PublicChefLocationExperience } from '@/lib/partners/location-exper
 
 type Props = {
   params: { slug: string }
-  searchParams: { ref?: string; loc?: string; via?: string }
+  searchParams: { ref?: string; loc?: string; via?: string; source_event_id?: string }
 }
 
 export async function generateMetadata({ params }: Props): Promise<Metadata> {
@@ -92,6 +92,8 @@ export default async function InquirePage({ params, searchParams }: Props) {
     selectedLocation?.partner.id ??
     (searchParams.ref && validPartnerIds.has(searchParams.ref) ? searchParams.ref : null)
   const referrerName = searchParams.via ? decodeURIComponent(searchParams.via).slice(0, 60) : null
+  const sourceType = searchParams.ref === 'guest-feedback' ? 'guest_feedback' : null
+  const sourceEventId = searchParams.source_event_id ?? null
 
   const [
     reviewFeed,
@@ -224,6 +226,8 @@ export default async function InquirePage({ params, searchParams }: Props) {
                 partnerLocationId={selectedLocation?.id ?? null}
                 selectedLocation={selectedLocation}
                 referrerName={referrerName}
+                sourceType={sourceType}
+                sourceEventId={sourceEventId}
               />
             </div>
 

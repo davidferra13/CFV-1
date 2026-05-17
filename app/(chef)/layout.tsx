@@ -114,24 +114,8 @@ export default async function ChefLayout({ children }: { children: React.ReactNo
 
   const prefData = await getCachedChefPreferences(user.entityId)
 
-  const densityWasExplicitlyChosen = Boolean(
-    prefData?.workspace_density &&
-    (prefData.workspace_density !== 'standard' ||
-      (prefData.created_at && prefData.updated_at && prefData.created_at !== prefData.updated_at))
-  )
-
-  // Workspace density intent question. This is a one-time redirect, not a forced onboarding gate.
-  if (pathname !== '/onboarding/welcome' && pathname !== '/api/e2e/auth') {
-    const isFirstTimeEver =
-      !prefData ||
-      (!prefData.archetype &&
-        prefData.workspace_density === 'standard' &&
-        !densityWasExplicitlyChosen)
-
-    if (isFirstTimeEver) {
-      redirect('/onboarding/welcome')
-    }
-  }
+  // Onboarding redirect removed (PUBLIC SURFACE #6: Kill Onboarding Redirect).
+  // New users now land directly on the dashboard. Onboarding pages remain accessible manually.
 
   const density = (prefData?.workspace_density as WorkspaceDensity) ?? 'standard'
   const shellBudget = resolveChefShellBudgetWithDensity(pathname, density)

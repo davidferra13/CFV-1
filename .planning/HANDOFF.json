@@ -1,6 +1,6 @@
 {
   "version": "1.0",
-  "timestamp": "2026-05-16T21:28:40.175Z",
+  "timestamp": "2026-05-17T19:18:54.316Z",
   "source": "auto-postool",
   "partial": false,
   "phase": null,
@@ -18,37 +18,2421 @@
   "uncommitted_files": [
     {
       "status": "M",
+      "path": ".openclaw-deploy/captured-session.json"
+    },
+    {
+      "status": "M",
+      "path": ".planning/HANDOFF.json"
+    },
+    {
+      "status": "M",
+      "path": "CLAUDE.md"
+    },
+    {
+      "status": "M",
+      "path": "app/(admin)/admin/price-catalog/price-catalog-client.tsx"
+    },
+    {
+      "status": "M",
+      "path": "app/(chef)/aar/page.tsx"
+    },
+    {
+      "status": "M",
+      "path": "app/(chef)/analytics/page.tsx"
+    },
+    {
+      "status": "M",
+      "path": "app/(chef)/charity/hours/page.tsx"
+    },
+    {
+      "status": "M",
+      "path": "app/(chef)/charity/page.tsx"
+    },
+    {
+      "status": "M",
+      "path": "app/(chef)/culinary/price-catalog/page.tsx"
+    },
+    {
+      "status": "M",
+      "path": "app/(chef)/culinary/sourcing/page.tsx"
+    },
+    {
+      "status": "M",
+      "path": "app/(chef)/dashboard/_sections/section-skeletons.tsx"
+    },
+    {
+      "status": "M",
+      "path": "app/(chef)/dashboard/page.tsx"
+    },
+    {
+      "status": "M",
+      "path": "app/(chef)/events/[id]/page.tsx"
+    },
+    {
+      "status": "M",
+      "path": "app/(chef)/inbox/page.tsx"
+    },
+    {
+      "status": "M",
+      "path": "app/(chef)/inquiries/[id]/page.tsx"
+    },
+    {
+      "status": "M",
+      "path": "app/(chef)/inquiries/page.tsx"
+    },
+    {
+      "status": "M",
+      "path": "app/(chef)/layout.tsx"
+    },
+    {
+      "status": "M",
+      "path": "app/(chef)/payments/page.tsx"
+    },
+    {
+      "status": "M",
+      "path": "app/(chef)/pipeline/page.tsx"
+    },
+    {
+      "status": "M",
+      "path": "app/(chef)/prices/page.tsx"
+    },
+    {
+      "status": "M",
+      "path": "app/(chef)/settings/page.tsx"
+    },
+    {
+      "status": "M",
+      "path": "app/(chef)/social/compose/[eventId]/page.tsx"
+    },
+    {
+      "status": "M",
+      "path": "app/(chef)/social/hub-overview/page.tsx"
+    },
+    {
+      "status": "M",
+      "path": "app/(chef)/social/planner/[month]/page.tsx"
+    },
+    {
+      "status": "M",
+      "path": "app/(chef)/social/posts/[id]/page.tsx"
+    },
+    {
+      "status": "M",
+      "path": "app/(chef)/travel/page.tsx"
+    },
+    {
+      "status": "M",
+      "path": "app/(client)/layout.tsx"
+    },
+    {
+      "status": "M",
+      "path": "app/(client)/my-cannabis/page.tsx"
+    },
+    {
+      "status": "M",
+      "path": "app/(client)/my-events/[id]/countdown/page.tsx"
+    },
+    {
+      "status": "M",
+      "path": "app/(public)/_components/cuisine-marquee.tsx"
+    },
+    {
+      "status": "M",
+      "path": "app/(public)/chef/[slug]/inquire/page.tsx"
+    },
+    {
+      "status": "M",
+      "path": "app/(public)/guest-feedback/[token]/page.tsx"
+    },
+    {
+      "status": "M",
+      "path": "app/(public)/nearby/[slug]/page.tsx"
+    },
+    {
+      "status": "M",
+      "path": "app/(public)/nearby/_components/listing-card.tsx"
+    },
+    {
+      "status": "M",
+      "path": "app/(public)/nearby/page.tsx"
+    },
+    {
+      "status": "M",
+      "path": "app/api/inngest/route.ts"
+    },
+    {
+      "status": "M",
+      "path": "components/calling/sourcing-session.tsx"
+    },
+    {
+      "status": "M",
+      "path": "components/cil/signal-card.tsx"
+    },
+    {
+      "status": "M",
+      "path": "components/clients/event-countdown.tsx"
+    },
+    {
+      "status": "M",
+      "path": "components/communication/cadence-settings.tsx"
+    },
+    {
+      "status": "M",
+      "path": "components/dashboard/action-surface-card.tsx"
+    },
+    {
+      "status": "M",
+      "path": "components/dashboard/resolve-next-card.tsx"
+    },
+    {
+      "status": "M",
+      "path": "components/hub/hub-notification-card.tsx"
+    },
+    {
+      "status": "M",
+      "path": "components/hub/ingredient-availability-board.tsx"
+    },
+    {
+      "status": "M",
+      "path": "components/intelligence/smart-pricing-hint.tsx"
+    },
+    {
+      "status": "M",
+      "path": "components/navigation/client-nav.tsx"
+    },
+    {
+      "status": "M",
+      "path": "components/navigation/nav-config.tsx"
+    },
+    {
+      "status": "M",
+      "path": "components/pricing/ingredient-health-banner.tsx"
+    },
+    {
+      "status": "M",
+      "path": "components/public/public-inquiry-form.tsx"
+    },
+    {
+      "status": "D",
+      "path": "components/rail/rail-full.tsx"
+    },
+    {
+      "status": "D",
+      "path": "components/rail/rail-tier-group.tsx"
+    },
+    {
+      "status": "M",
+      "path": "components/settings/settings-fix-actions.tsx"
+    },
+    {
+      "status": "M",
+      "path": "docs/CLAUDE-SKILLS-REFERENCE.md"
+    },
+    {
+      "status": "M",
+      "path": "docs/sync-status.json"
+    },
+    {
+      "status": "M",
+      "path": "docs/test-coverage-blueprint.md"
+    },
+    {
+      "status": "M",
       "path": "docs/uptime-history.json"
     },
     {
-      "status": "??",
-      "path": "_gen-qa.js"
+      "status": "M",
+      "path": "lib/admin/audit.ts"
+    },
+    {
+      "status": "M",
+      "path": "lib/ai/remy-tools.ts"
+    },
+    {
+      "status": "M",
+      "path": "lib/ai/remy-weather.ts"
+    },
+    {
+      "status": "M",
+      "path": "lib/autopilot/draft-generator.ts"
+    },
+    {
+      "status": "M",
+      "path": "lib/calling/sourcing-session-actions.ts"
+    },
+    {
+      "status": "M",
+      "path": "lib/clients/actions.ts"
+    },
+    {
+      "status": "M",
+      "path": "lib/clients/index.ts"
+    },
+    {
+      "status": "M",
+      "path": "lib/clients/passport-actions.ts"
+    },
+    {
+      "status": "M",
+      "path": "lib/communication/pipeline.ts"
+    },
+    {
+      "status": "M",
+      "path": "lib/contracts/actions.ts"
+    },
+    {
+      "status": "M",
+      "path": "lib/cron/definitions.ts"
+    },
+    {
+      "status": "M",
+      "path": "lib/culinary/ingredient-lifecycle.ts"
+    },
+    {
+      "status": "M",
+      "path": "lib/db/schema/schema.ts"
+    },
+    {
+      "status": "M",
+      "path": "lib/discovery/discovery-destination-contract.ts"
+    },
+    {
+      "status": "M",
+      "path": "lib/discovery/god-mode-dispatcher.ts"
+    },
+    {
+      "status": "M",
+      "path": "lib/discovery/inline-action-registry.ts"
+    },
+    {
+      "status": "M",
+      "path": "lib/discovery/rail-contract-registry.ts"
+    },
+    {
+      "status": "M",
+      "path": "lib/discovery/rail-tier-assigner.ts"
+    },
+    {
+      "status": "M",
+      "path": "lib/discovery/resolvers/chef/cil-signal-resolver.ts"
+    },
+    {
+      "status": "M",
+      "path": "lib/discovery/resolvers/chef/event-resolver.ts"
+    },
+    {
+      "status": "M",
+      "path": "lib/discovery/resolvers/chef/inquiry-resolver.ts"
+    },
+    {
+      "status": "M",
+      "path": "lib/discovery/resolvers/chef/quote-resolver.ts"
+    },
+    {
+      "status": "M",
+      "path": "lib/discovery/resolvers/chef/weather-resolver.ts"
+    },
+    {
+      "status": "M",
+      "path": "lib/documents/generate-event-summary.ts"
+    },
+    {
+      "status": "M",
+      "path": "lib/events/actions.ts"
+    },
+    {
+      "status": "M",
+      "path": "lib/events/countdown-actions.ts"
+    },
+    {
+      "status": "M",
+      "path": "lib/events/offline-payment-actions.ts"
+    },
+    {
+      "status": "M",
+      "path": "lib/events/readiness.ts"
+    },
+    {
+      "status": "M",
+      "path": "lib/events/transitions.ts"
+    },
+    {
+      "status": "M",
+      "path": "lib/hub/group-actions.ts"
+    },
+    {
+      "status": "M",
+      "path": "lib/hub/ingredient-board-actions.ts"
+    },
+    {
+      "status": "M",
+      "path": "lib/inquiries/actions.ts"
+    },
+    {
+      "status": "M",
+      "path": "lib/inquiries/public-actions.ts"
+    },
+    {
+      "status": "M",
+      "path": "lib/intelligence/churn-prevention-triggers.ts"
+    },
+    {
+      "status": "M",
+      "path": "lib/intelligence/smart-quote-suggestions.ts"
+    },
+    {
+      "status": "D",
+      "path": "lib/interface/action-layer.ts"
+    },
+    {
+      "status": "M",
+      "path": "lib/jobs/inngest-client.ts"
+    },
+    {
+      "status": "M",
+      "path": "lib/jobs/post-event-jobs.ts"
+    },
+    {
+      "status": "M",
+      "path": "lib/menus/actions.ts"
+    },
+    {
+      "status": "M",
+      "path": "lib/menus/dish-index-actions.ts"
+    },
+    {
+      "status": "M",
+      "path": "lib/menus/editor-actions.ts"
+    },
+    {
+      "status": "M",
+      "path": "lib/menus/template-actions.ts"
+    },
+    {
+      "status": "M",
+      "path": "lib/notifications/types.ts"
+    },
+    {
+      "status": "M",
+      "path": "lib/partners/actions.ts"
+    },
+    {
+      "status": "M",
+      "path": "lib/pricing/cost-refresh-actions.ts"
+    },
+    {
+      "status": "M",
+      "path": "lib/queue/types.ts"
+    },
+    {
+      "status": "M",
+      "path": "lib/quotes/actions.ts"
+    },
+    {
+      "status": "M",
+      "path": "lib/quotes/client-actions.ts"
+    },
+    {
+      "status": "M",
+      "path": "lib/recipes/actions.ts"
+    },
+    {
+      "status": "M",
+      "path": "lib/scheduling/actions.ts"
+    },
+    {
+      "status": "M",
+      "path": "lib/tickets/webhook-handler.ts"
+    },
+    {
+      "status": "M",
+      "path": "lib/venues/actions.ts"
+    },
+    {
+      "status": "M",
+      "path": "lib/weather/open-meteo.ts"
+    },
+    {
+      "status": "M",
+      "path": "tests/unit/action-layer.test.ts"
+    },
+    {
+      "status": "M",
+      "path": "tests/unit/live-service-tracker-source-guard.test.ts"
     },
     {
       "status": "??",
-      "path": "_gen.js"
+      "path": ".claude/skills/migrate/"
     },
     {
       "status": "??",
-      "path": "_qa-debug.mjs"
+      "path": ".claude/skills/pick-up/"
     },
     {
       "status": "??",
-      "path": "_qa-run.mjs"
+      "path": ".claude/skills/progress/"
     },
     {
       "status": "??",
-      "path": "_run-write.sh"
+      "path": ".claude/skills/qa/"
     },
     {
       "status": "??",
-      "path": "_test_line.txt"
+      "path": ".claude/skills/site-audit/"
     },
     {
       "status": "??",
-      "path": "_write-qa-test.js"
+      "path": ".claude/skills/sweep/"
+    },
+    {
+      "status": "??",
+      "path": ".claude/skills/test-scan/SKILL.md"
+    },
+    {
+      "status": "??",
+      "path": ".claude/skills/untangle/"
+    },
+    {
+      "status": "??",
+      "path": ".claude/skills/wire/"
+    },
+    {
+      "status": "??",
+      "path": ".claude/skills/wiring-audit/"
+    },
+    {
+      "status": "??",
+      "path": "app/(admin)/admin/cannabis/access/"
+    },
+    {
+      "status": "??",
+      "path": "app/(chef)/dashboard/_sections/ambient-layer.tsx"
+    },
+    {
+      "status": "??",
+      "path": "app/(chef)/dashboard/_sections/business-health-section.tsx"
+    },
+    {
+      "status": "??",
+      "path": "app/(chef)/dashboard/_sections/hero-zone.tsx"
+    },
+    {
+      "status": "??",
+      "path": "app/(chef)/dashboard/_sections/lifecycle-actions.tsx"
+    },
+    {
+      "status": "??",
+      "path": "app/(chef)/dashboard/_sections/onboarding-zone.tsx"
+    },
+    {
+      "status": "??",
+      "path": "app/(chef)/dashboard/_sections/pricing-sections.tsx"
+    },
+    {
+      "status": "??",
+      "path": "app/(chef)/dashboard/_sections/this-week-section.tsx"
+    },
+    {
+      "status": "??",
+      "path": "app/(chef)/dashboard/_sections/widget-sections.tsx"
+    },
+    {
+      "status": "??",
+      "path": "app/(chef)/events/[id]/_sections/"
+    },
+    {
+      "status": "??",
+      "path": "app/(client)/my-cannabis/age-required/"
+    },
+    {
+      "status": "??",
+      "path": "app/(client)/my-cannabis/cannabis-portal-dashboard.tsx"
+    },
+    {
+      "status": "??",
+      "path": "app/(client)/my-cannabis/layout.tsx"
+    },
+    {
+      "status": "??",
+      "path": "app/(public)/join/"
+    },
+    {
+      "status": "??",
+      "path": "components/actions/"
+    },
+    {
+      "status": "??",
+      "path": "components/communication/sms-triage-card.tsx"
+    },
+    {
+      "status": "??",
+      "path": "components/inquiries/returning-client-badge.tsx"
+    },
+    {
+      "status": "??",
+      "path": "components/openclaw/"
+    },
+    {
+      "status": "??",
+      "path": "config/openclaw-capture-milestone.json"
+    },
+    {
+      "status": "??",
+      "path": "database/migrations/20260517100001_guest_conversion_attribution.sql"
+    },
+    {
+      "status": "??",
+      "path": "database/migrations/20260517100002_menu_provenance.sql"
+    },
+    {
+      "status": "??",
+      "path": "database/migrations/20260517100005_menu_fork_lineage.sql"
+    },
+    {
+      "status": "??",
+      "path": "database/migrations/20260517100006_menu_proposal_sets.sql"
+    },
+    {
+      "status": "??",
+      "path": "database/migrations/20260517100010_returning_client_recognition.sql"
+    },
+    {
+      "status": "??",
+      "path": "database/migrations/20260517100012_qr_circle_join.sql"
+    },
+    {
+      "status": "??",
+      "path": "database/migrations/20260517100015_rail_item_state.sql"
+    },
+    {
+      "status": "??",
+      "path": "database/migrations/20260517100020_menu_fate_tracking.sql"
+    },
+    {
+      "status": "??",
+      "path": "database/migrations/20260517100025_weather_snapshots.sql"
+    },
+    {
+      "status": "??",
+      "path": "database/migrations/20260517100032_circle_event_hub.sql"
+    },
+    {
+      "status": "??",
+      "path": "database/migrations/20260517100035_menu_variants.sql"
+    },
+    {
+      "status": "??",
+      "path": "database/migrations/20260517100037_equipment_packing.sql"
+    },
+    {
+      "status": "??",
+      "path": "database/migrations/20260517100044_fixed_menu_offerings.sql"
+    },
+    {
+      "status": "??",
+      "path": "database/migrations/20260517100046_circle_approval.sql"
+    },
+    {
+      "status": "??",
+      "path": "database/migrations/20260517100048_loyalty_tiers.sql"
+    },
+    {
+      "status": "??",
+      "path": "database/migrations/20260517100052_saturation_config.sql"
+    },
+    {
+      "status": "??",
+      "path": "database/migrations/20260517100054_prep_scheduling.sql"
+    },
+    {
+      "status": "??",
+      "path": "database/migrations/20260517100056_allergy_severity.sql"
+    },
+    {
+      "status": "??",
+      "path": "database/migrations/20260517100058_event_handoffs.sql"
+    },
+    {
+      "status": "??",
+      "path": "database/migrations/20260517100060_circle_collaborators.sql"
+    },
+    {
+      "status": "??",
+      "path": "database/migrations/20260517100062_popups.sql"
+    },
+    {
+      "status": "??",
+      "path": "database/migrations/20260517100064_corporate_procurement.sql"
+    },
+    {
+      "status": "??",
+      "path": "database/migrations/20260517100068_ingredient_sourcing.sql"
+    },
+    {
+      "status": "??",
+      "path": "database/migrations/20260517200001_cannabis_client_portal_access.sql"
+    },
+    {
+      "status": "??",
+      "path": "database/migrations/20260517200002_service_execution.sql"
+    },
+    {
+      "status": "??",
+      "path": "database/migrations/20260517200005_event_timeline.sql"
+    },
+    {
+      "status": "??",
+      "path": "database/migrations/20260517200007_delegate_access.sql"
+    },
+    {
+      "status": "??",
+      "path": "database/migrations/20260517200015_live_status.sql"
+    },
+    {
+      "status": "??",
+      "path": "database/migrations/20260517200017_event_closeout.sql"
+    },
+    {
+      "status": "??",
+      "path": "database/migrations/20260517200019_client_passport.sql"
+    },
+    {
+      "status": "??",
+      "path": "database/migrations/20260517200021_guest_count_flex.sql"
+    },
+    {
+      "status": "??",
+      "path": "database/migrations/20260517200023_circle_reminders.sql"
+    },
+    {
+      "status": "??",
+      "path": "database/migrations/20260517200025_event_recall.sql"
+    },
+    {
+      "status": "??",
+      "path": "database/migrations/20260517200027_client_menus.sql"
+    },
+    {
+      "status": "??",
+      "path": "database/migrations/20260517200029_circle_recurrence.sql"
+    },
+    {
+      "status": "??",
+      "path": "database/migrations/20260517200033_crew_circles.sql"
+    },
+    {
+      "status": "??",
+      "path": "database/migrations/20260517200035_collab_editing.sql"
+    },
+    {
+      "status": "??",
+      "path": "database/migrations/20260517200039_media_vault.sql"
+    },
+    {
+      "status": "??",
+      "path": "database/migrations/20260517200041_ai_usage.sql"
+    },
+    {
+      "status": "??",
+      "path": "database/migrations/20260517200047_client_change_requests.sql"
+    },
+    {
+      "status": "??",
+      "path": "database/migrations/20260517200049_burnout_boundaries.sql"
+    },
+    {
+      "status": "??",
+      "path": "database/migrations/20260517200051_quick_capture.sql"
+    },
+    {
+      "status": "??",
+      "path": "database/migrations/20260517200053_taste_memory.sql"
+    },
+    {
+      "status": "??",
+      "path": "database/migrations/20260517200055_service_playbooks.sql"
+    },
+    {
+      "status": "??",
+      "path": "database/migrations/20260517200059_proposal_experiences.sql"
+    },
+    {
+      "status": "??",
+      "path": "database/migrations/20260517200061_venue_recon.sql"
+    },
+    {
+      "status": "??",
+      "path": "database/migrations/20260517200063_shopping_receipts.sql"
+    },
+    {
+      "status": "??",
+      "path": "database/migrations/20260517200065_guest_touchpoints.sql"
+    },
+    {
+      "status": "??",
+      "path": "database/migrations/20260517200067_undo_records.sql"
+    },
+    {
+      "status": "??",
+      "path": "database/migrations/20260517200069_audit_trail.sql"
+    },
+    {
+      "status": "??",
+      "path": "database/migrations/20260517200073_referral_records.sql"
+    },
+    {
+      "status": "??",
+      "path": "database/migrations/20260517200075_workspace_preferences.sql"
+    },
+    {
+      "status": "??",
+      "path": "database/migrations/20260517200077_custom_shortcuts.sql"
+    },
+    {
+      "status": "??",
+      "path": "database/migrations/20260517200079_consent_records.sql"
+    },
+    {
+      "status": "??",
+      "path": "database/migrations/20260517200081_session_continuity.sql"
+    },
+    {
+      "status": "??",
+      "path": "database/migrations/20260517200083_notification_preferences.sql"
+    },
+    {
+      "status": "??",
+      "path": "database/migrations/20260517200085_progress_tracking.sql"
+    },
+    {
+      "status": "??",
+      "path": "database/migrations/20260517200087_staff_tasks.sql"
+    },
+    {
+      "status": "??",
+      "path": "database/migrations/20260517200089_edit_history.sql"
+    },
+    {
+      "status": "??",
+      "path": "database/migrations/20260517200091_search_log.sql"
+    },
+    {
+      "status": "??",
+      "path": "database/migrations/20260517200093_quality_alerts.sql"
+    },
+    {
+      "status": "??",
+      "path": "database/migrations/20260517200095_onboarding_activation.sql"
+    },
+    {
+      "status": "??",
+      "path": "database/migrations/20260517200097_settings_registry.sql"
+    },
+    {
+      "status": "??",
+      "path": "database/migrations/20260517200099_rate_limit.sql"
+    },
+    {
+      "status": "??",
+      "path": "database/migrations/20260517200101_action_usage_log.sql"
+    },
+    {
+      "status": "??",
+      "path": "database/migrations/20260517200103_closeout_completeness.sql"
+    },
+    {
+      "status": "??",
+      "path": "database/migrations/20260517200105_menu_builder.sql"
+    },
+    {
+      "status": "??",
+      "path": "database/migrations/20260517200107_menu_storytelling.sql"
+    },
+    {
+      "status": "??",
+      "path": "database/migrations/20260517200109_offline_sync.sql"
+    },
+    {
+      "status": "??",
+      "path": "database/migrations/20260517200111_simulation_scenarios.sql"
+    },
+    {
+      "status": "??",
+      "path": "database/migrations/20260517200113_fixture_sets.sql"
+    },
+    {
+      "status": "??",
+      "path": "database/migrations/20260517200115_confidence_labels.sql"
+    },
+    {
+      "status": "??",
+      "path": "database/migrations/20260517200117_codex_readiness.sql"
+    },
+    {
+      "status": "??",
+      "path": "database/migrations/20260517200119_mobile_preferences.sql"
+    },
+    {
+      "status": "??",
+      "path": "database/migrations/20260517200121_widget_configs.sql"
+    },
+    {
+      "status": "??",
+      "path": "database/migrations/20260517200123_design_system.sql"
+    },
+    {
+      "status": "??",
+      "path": "database/migrations/20260517200127_portal_experience.sql"
+    },
+    {
+      "status": "??",
+      "path": "database/migrations/20260517200129_visual_qa.sql"
+    },
+    {
+      "status": "??",
+      "path": "database/migrations/20260517200131_revision_entries.sql"
+    },
+    {
+      "status": "??",
+      "path": "database/migrations/20260517200133_inquiry_cockpit.sql"
+    },
+    {
+      "status": "??",
+      "path": "database/migrations/20260517200135_trust_profiles.sql"
+    },
+    {
+      "status": "??",
+      "path": "database/migrations/20260517200137_nav_config.sql"
+    },
+    {
+      "status": "??",
+      "path": "database/migrations/20260517200139_heuristic_gate.sql"
+    },
+    {
+      "status": "??",
+      "path": "database/migrations/20260517200141_design_debt.sql"
+    },
+    {
+      "status": "??",
+      "path": "database/migrations/20260517200143_print_share.sql"
+    },
+    {
+      "status": "??",
+      "path": "database/migrations/20260517200145_status_badges.sql"
+    },
+    {
+      "status": "??",
+      "path": "database/migrations/20260517200147_state_patterns.sql"
+    },
+    {
+      "status": "??",
+      "path": "database/migrations/20260517200149_table_config.sql"
+    },
+    {
+      "status": "??",
+      "path": "database/migrations/20260517200151_form_wizards.sql"
+    },
+    {
+      "status": "??",
+      "path": "database/migrations/20260517200153_action_bars.sql"
+    },
+    {
+      "status": "??",
+      "path": "database/migrations/20260517200155_command_center.sql"
+    },
+    {
+      "status": "??",
+      "path": "database/migrations/20260517200157_magic_gate.sql"
+    },
+    {
+      "status": "??",
+      "path": "database/migrations/20260517200159_style_guardrails.sql"
+    },
+    {
+      "status": "??",
+      "path": "database/migrations/20260517200161_culinary_visual.sql"
+    },
+    {
+      "status": "??",
+      "path": "database/migrations/20260517200163_data_viz.sql"
+    },
+    {
+      "status": "??",
+      "path": "database/migrations/20260517200165_motion_system.sql"
+    },
+    {
+      "status": "??",
+      "path": "database/migrations/20260517200167_magic_components.sql"
+    },
+    {
+      "status": "??",
+      "path": "database/migrations/20260517200169_portal_modes.sql"
+    },
+    {
+      "status": "??",
+      "path": "database/migrations/20260517200171_evidence_grammar.sql"
+    },
+    {
+      "status": "??",
+      "path": "database/migrations/20260517200173_visual_priority.sql"
+    },
+    {
+      "status": "??",
+      "path": "database/migrations/20260517200175_card_rules.sql"
+    },
+    {
+      "status": "??",
+      "path": "database/migrations/20260517200177_icon_language.sql"
+    },
+    {
+      "status": "??",
+      "path": "database/migrations/20260517200179_signature_workflows.sql"
+    },
+    {
+      "status": "??",
+      "path": "database/migrations/20260517200181_typography.sql"
+    },
+    {
+      "status": "??",
+      "path": "database/migrations/20260517200183_viewport_discipline.sql"
+    },
+    {
+      "status": "??",
+      "path": "database/migrations/20260517200185_metric_hierarchy.sql"
+    },
+    {
+      "status": "??",
+      "path": "database/migrations/20260517200187_premium_detail.sql"
+    },
+    {
+      "status": "??",
+      "path": "database/migrations/20260517200189_color_semantics.sql"
+    },
+    {
+      "status": "??",
+      "path": "database/migrations/20260517200191_microcopy.sql"
+    },
+    {
+      "status": "??",
+      "path": "database/migrations/20260517200193_layout_grid.sql"
+    },
+    {
+      "status": "??",
+      "path": "database/migrations/20260517200195_event_detail_proof.sql"
+    },
+    {
+      "status": "??",
+      "path": "database/migrations/20260517200197_evidence_labels.sql"
+    },
+    {
+      "status": "??",
+      "path": "database/migrations/20260517200199_lifecycle_action_hierarchy.sql"
+    },
+    {
+      "status": "??",
+      "path": "database/migrations/20260517200201_lifecycle_mobile_ergonomics.sql"
+    },
+    {
+      "status": "??",
+      "path": "database/migrations/20260517200203_lifecycle_visual_state.sql"
+    },
+    {
+      "status": "??",
+      "path": "database/migrations/20260517200205_modal_drawer_sheet.sql"
+    },
+    {
+      "status": "??",
+      "path": "database/migrations/20260517200207_high_contrast.sql"
+    },
+    {
+      "status": "??",
+      "path": "database/migrations/20260517200209_route_screenshots.sql"
+    },
+    {
+      "status": "??",
+      "path": "database/migrations/20260517200211_theme_tokens.sql"
+    },
+    {
+      "status": "??",
+      "path": "database/migrations/20260517200213_visual_lint.sql"
+    },
+    {
+      "status": "??",
+      "path": "database/migrations/20260517200215_accessibility.sql"
+    },
+    {
+      "status": "??",
+      "path": "database/migrations/20260517200217_lifecycle_naming.sql"
+    },
+    {
+      "status": "??",
+      "path": "database/migrations/20260517200219_lifecycle_action_graph.sql"
+    },
+    {
+      "status": "??",
+      "path": "database/migrations/20260517200221_waiting_state.sql"
+    },
+    {
+      "status": "??",
+      "path": "database/migrations/20260517200223_operating_state.sql"
+    },
+    {
+      "status": "??",
+      "path": "database/migrations/20260517200225_rail_navigation.sql"
+    },
+    {
+      "status": "??",
+      "path": "database/migrations/20260517200227_ownership_merge.sql"
+    },
+    {
+      "status": "??",
+      "path": "database/migrations/20260517200229_fixture_matrix.sql"
+    },
+    {
+      "status": "??",
+      "path": "database/migrations/20260517200231_document_workspace.sql"
+    },
+    {
+      "status": "??",
+      "path": "database/migrations/20260517200233_perceived_performance.sql"
+    },
+    {
+      "status": "??",
+      "path": "database/migrations/20260517200235_dashboard_feed.sql"
+    },
+    {
+      "status": "??",
+      "path": "database/migrations/20260517200237_action_card.sql"
+    },
+    {
+      "status": "??",
+      "path": "database/migrations/20260517200239_graph_security.sql"
+    },
+    {
+      "status": "??",
+      "path": "database/migrations/20260517200241_waiting_age.sql"
+    },
+    {
+      "status": "??",
+      "path": "database/migrations/20260517200243_interaction_soundness.sql"
+    },
+    {
+      "status": "??",
+      "path": "database/migrations/20260517200245_client_visibility.sql"
+    },
+    {
+      "status": "??",
+      "path": "database/migrations/20260517200247_sticky_footer.sql"
+    },
+    {
+      "status": "??",
+      "path": "database/migrations/20260517200400_sms_draft_responses.sql"
+    },
+    {
+      "status": "??",
+      "path": "database/migrations/20260517210000_ticketed_events_fixes.sql"
+    },
+    {
+      "status": "??",
+      "path": "docs/intensify/events.md"
+    },
+    {
+      "status": "??",
+      "path": "docs/intensify/ingredient-verification.md"
+    },
+    {
+      "status": "??",
+      "path": "docs/specs/continuous-verification-loop.md"
+    },
+    {
+      "status": "??",
+      "path": "docs/specs/operational-action-bridge-spec.md"
+    },
+    {
+      "status": "??",
+      "path": "docs/specs/operational-copilot-philosophy.md"
+    },
+    {
+      "status": "??",
+      "path": "lib/actions/"
+    },
+    {
+      "status": "??",
+      "path": "lib/admin/mission-control-actions.ts"
+    },
+    {
+      "status": "??",
+      "path": "lib/admin/mission-control-types.ts"
+    },
+    {
+      "status": "??",
+      "path": "lib/admin/quality-console-actions.ts"
+    },
+    {
+      "status": "??",
+      "path": "lib/admin/quality-console-types.ts"
+    },
+    {
+      "status": "??",
+      "path": "lib/ai/ai-usage-actions.ts"
+    },
+    {
+      "status": "??",
+      "path": "lib/ai/ollama-adapter.ts"
+    },
+    {
+      "status": "??",
+      "path": "lib/ai/provider-registry.ts"
+    },
+    {
+      "status": "??",
+      "path": "lib/ai/provider-types.ts"
+    },
+    {
+      "status": "??",
+      "path": "lib/audit/"
+    },
+    {
+      "status": "??",
+      "path": "lib/calendar/production-planning-actions.ts"
+    },
+    {
+      "status": "??",
+      "path": "lib/calendar/production-planning-types.ts"
+    },
+    {
+      "status": "??",
+      "path": "lib/cannabis/cannabis-circle-actions.ts"
+    },
+    {
+      "status": "??",
+      "path": "lib/capture/capture-actions.ts"
+    },
+    {
+      "status": "??",
+      "path": "lib/capture/capture-types.ts"
+    },
+    {
+      "status": "??",
+      "path": "lib/chef-consumer/"
+    },
+    {
+      "status": "??",
+      "path": "lib/cil/signal-comm-bridge.ts"
+    },
+    {
+      "status": "??",
+      "path": "lib/clients/change-request-actions.ts"
+    },
+    {
+      "status": "??",
+      "path": "lib/clients/change-request-types.ts"
+    },
+    {
+      "status": "??",
+      "path": "lib/clients/command-timeline-actions.ts"
+    },
+    {
+      "status": "??",
+      "path": "lib/clients/command-timeline-types.ts"
+    },
+    {
+      "status": "??",
+      "path": "lib/clients/corporate-actions.ts"
+    },
+    {
+      "status": "??",
+      "path": "lib/clients/corporate-types.ts"
+    },
+    {
+      "status": "??",
+      "path": "lib/clients/loyalty-actions.ts"
+    },
+    {
+      "status": "??",
+      "path": "lib/clients/loyalty-types.ts"
+    },
+    {
+      "status": "??",
+      "path": "lib/clients/loyalty-visibility-actions.ts"
+    },
+    {
+      "status": "??",
+      "path": "lib/clients/loyalty-visibility-types.ts"
+    },
+    {
+      "status": "??",
+      "path": "lib/clients/mutation-pipeline.ts"
+    },
+    {
+      "status": "??",
+      "path": "lib/clients/passport-types.ts"
+    },
+    {
+      "status": "??",
+      "path": "lib/clients/relationship-cockpit-actions.ts"
+    },
+    {
+      "status": "??",
+      "path": "lib/clients/relationship-cockpit-types.ts"
+    },
+    {
+      "status": "??",
+      "path": "lib/clients/view-types.ts"
+    },
+    {
+      "status": "??",
+      "path": "lib/communication/channel-preference-writer.ts"
+    },
+    {
+      "status": "??",
+      "path": "lib/crew/"
+    },
+    {
+      "status": "??",
+      "path": "lib/culinary/taste-memory-actions.ts"
+    },
+    {
+      "status": "??",
+      "path": "lib/culinary/taste-memory-types.ts"
+    },
+    {
+      "status": "??",
+      "path": "lib/dashboard/view-types.ts"
+    },
+    {
+      "status": "??",
+      "path": "lib/delegation/"
+    },
+    {
+      "status": "??",
+      "path": "lib/devinfra/"
+    },
+    {
+      "status": "??",
+      "path": "lib/dietary/allergy-severity-actions.ts"
+    },
+    {
+      "status": "??",
+      "path": "lib/dietary/allergy-severity-types.ts"
+    },
+    {
+      "status": "??",
+      "path": "lib/dietary/propagate.ts"
+    },
+    {
+      "status": "??",
+      "path": "lib/dietary/safety-check.ts"
+    },
+    {
+      "status": "??",
+      "path": "lib/dinner-circles/approval-actions.ts"
+    },
+    {
+      "status": "??",
+      "path": "lib/dinner-circles/approval-types.ts"
+    },
+    {
+      "status": "??",
+      "path": "lib/dinner-circles/collaborator-bridge-actions.ts"
+    },
+    {
+      "status": "??",
+      "path": "lib/dinner-circles/collaborator-types.ts"
+    },
+    {
+      "status": "??",
+      "path": "lib/dinner-circles/event-hub-actions.ts"
+    },
+    {
+      "status": "??",
+      "path": "lib/dinner-circles/event-hub-types.ts"
+    },
+    {
+      "status": "??",
+      "path": "lib/dinner-circles/marisol-bridge-actions.ts"
+    },
+    {
+      "status": "??",
+      "path": "lib/dinner-circles/marisol-bridge-types.ts"
+    },
+    {
+      "status": "??",
+      "path": "lib/dinner-circles/qr-join-actions.ts"
+    },
+    {
+      "status": "??",
+      "path": "lib/dinner-circles/qr-utils.ts"
+    },
+    {
+      "status": "??",
+      "path": "lib/dinner-circles/recurring-actions.ts"
+    },
+    {
+      "status": "??",
+      "path": "lib/dinner-circles/recurring-types.ts"
+    },
+    {
+      "status": "??",
+      "path": "lib/dinner-circles/reminder-actions.ts"
+    },
+    {
+      "status": "??",
+      "path": "lib/dinner-circles/reminder-types.ts"
+    },
+    {
+      "status": "??",
+      "path": "lib/discover/claim-actions.ts"
+    },
+    {
+      "status": "??",
+      "path": "lib/discover/claim-types.ts"
+    },
+    {
+      "status": "??",
+      "path": "lib/discover/consumer-discovery-actions.ts"
+    },
+    {
+      "status": "??",
+      "path": "lib/discover/consumer-discovery-types.ts"
+    },
+    {
+      "status": "??",
+      "path": "lib/discovery/homepage-discovery-destinations.ts"
+    },
+    {
+      "status": "??",
+      "path": "lib/discovery/rail-item-state-actions.ts"
+    },
+    {
+      "status": "??",
+      "path": "lib/discovery/resolvers/chef/cadence-due-resolver.ts"
+    },
+    {
+      "status": "??",
+      "path": "lib/discovery/resolvers/chef/completion-resolver.ts"
+    },
+    {
+      "status": "??",
+      "path": "lib/discovery/resolvers/chef/lifecycle-stage-resolver.ts"
+    },
+    {
+      "status": "??",
+      "path": "lib/email/templates/cannabis-guest-onboarding.tsx"
+    },
+    {
+      "status": "??",
+      "path": "lib/email/templates/guest-conversion.tsx"
+    },
+    {
+      "status": "??",
+      "path": "lib/equipment/packing-list-actions.ts"
+    },
+    {
+      "status": "??",
+      "path": "lib/equipment/packing-list-types.ts"
+    },
+    {
+      "status": "??",
+      "path": "lib/equipment/technique-equipment-map.ts"
+    },
+    {
+      "status": "??",
+      "path": "lib/events/closeout-actions.ts"
+    },
+    {
+      "status": "??",
+      "path": "lib/events/guest-count-actions.ts"
+    },
+    {
+      "status": "??",
+      "path": "lib/events/guest-count-types.ts"
+    },
+    {
+      "status": "??",
+      "path": "lib/events/handoff-actions.ts"
+    },
+    {
+      "status": "??",
+      "path": "lib/events/handoff-types.ts"
+    },
+    {
+      "status": "??",
+      "path": "lib/events/live-status-actions.ts"
+    },
+    {
+      "status": "??",
+      "path": "lib/events/live-status-types.ts"
+    },
+    {
+      "status": "??",
+      "path": "lib/events/playbook-actions.ts"
+    },
+    {
+      "status": "??",
+      "path": "lib/events/playbook-types.ts"
+    },
+    {
+      "status": "??",
+      "path": "lib/events/recall-actions.ts"
+    },
+    {
+      "status": "??",
+      "path": "lib/events/recall-types.ts"
+    },
+    {
+      "status": "??",
+      "path": "lib/events/service-tracker-actions.ts"
+    },
+    {
+      "status": "??",
+      "path": "lib/events/service-tracker-types.ts"
+    },
+    {
+      "status": "??",
+      "path": "lib/events/timeline-estimator.ts"
+    },
+    {
+      "status": "??",
+      "path": "lib/events/timeline-generator-actions.ts"
+    },
+    {
+      "status": "??",
+      "path": "lib/events/timeline-generator-types.ts"
+    },
+    {
+      "status": "??",
+      "path": "lib/events/tip-tracking-actions.ts"
+    },
+    {
+      "status": "??",
+      "path": "lib/events/tip-tracking-types.ts"
+    },
+    {
+      "status": "??",
+      "path": "lib/events/touchpoint-actions.ts"
+    },
+    {
+      "status": "??",
+      "path": "lib/events/touchpoint-types.ts"
+    },
+    {
+      "status": "??",
+      "path": "lib/events/view-types.ts"
+    },
+    {
+      "status": "??",
+      "path": "lib/exports/ical-actions.ts"
+    },
+    {
+      "status": "??",
+      "path": "lib/exports/ical-generator.ts"
+    },
+    {
+      "status": "??",
+      "path": "lib/exports/ical-types.ts"
+    },
+    {
+      "status": "??",
+      "path": "lib/freshness/"
+    },
+    {
+      "status": "??",
+      "path": "lib/ingredients/sourcing-actions.ts"
+    },
+    {
+      "status": "??",
+      "path": "lib/ingredients/sourcing-types.ts"
+    },
+    {
+      "status": "??",
+      "path": "lib/inquiries/inquiry-cockpit-actions.ts"
+    },
+    {
+      "status": "??",
+      "path": "lib/inquiries/inquiry-cockpit-types.ts"
+    },
+    {
+      "status": "??",
+      "path": "lib/inquiries/returning-client-matcher.ts"
+    },
+    {
+      "status": "??",
+      "path": "lib/intelligence/churn-cadence-bridge.ts"
+    },
+    {
+      "status": "??",
+      "path": "lib/intelligence/churn-prevention-triggers-internal.ts"
+    },
+    {
+      "status": "??",
+      "path": "lib/interaction/"
+    },
+    {
+      "status": "??",
+      "path": "lib/interface/shared-types.ts"
+    },
+    {
+      "status": "??",
+      "path": "lib/invoices/generate-invoice-pdf.ts"
+    },
+    {
+      "status": "??",
+      "path": "lib/invoices/invoice-actions.ts"
+    },
+    {
+      "status": "??",
+      "path": "lib/lifecycle/action-card-actions.ts"
+    },
+    {
+      "status": "??",
+      "path": "lib/lifecycle/action-card-types.ts"
+    },
+    {
+      "status": "??",
+      "path": "lib/lifecycle/action-graph-actions.ts"
+    },
+    {
+      "status": "??",
+      "path": "lib/lifecycle/action-graph-types.ts"
+    },
+    {
+      "status": "??",
+      "path": "lib/lifecycle/action-vocabulary-actions.ts"
+    },
+    {
+      "status": "??",
+      "path": "lib/lifecycle/action-vocabulary-types.ts"
+    },
+    {
+      "status": "??",
+      "path": "lib/lifecycle/client-visibility-actions.ts"
+    },
+    {
+      "status": "??",
+      "path": "lib/lifecycle/client-visibility-types.ts"
+    },
+    {
+      "status": "??",
+      "path": "lib/lifecycle/dashboard-feed-actions.ts"
+    },
+    {
+      "status": "??",
+      "path": "lib/lifecycle/dashboard-feed-types.ts"
+    },
+    {
+      "status": "??",
+      "path": "lib/lifecycle/fixture-matrix-actions.ts"
+    },
+    {
+      "status": "??",
+      "path": "lib/lifecycle/fixture-matrix-types.ts"
+    },
+    {
+      "status": "??",
+      "path": "lib/lifecycle/graph-security-actions.ts"
+    },
+    {
+      "status": "??",
+      "path": "lib/lifecycle/graph-security-types.ts"
+    },
+    {
+      "status": "??",
+      "path": "lib/lifecycle/naming-surface-actions.ts"
+    },
+    {
+      "status": "??",
+      "path": "lib/lifecycle/naming-surface-types.ts"
+    },
+    {
+      "status": "??",
+      "path": "lib/lifecycle/operating-state-actions.ts"
+    },
+    {
+      "status": "??",
+      "path": "lib/lifecycle/operating-state-types.ts"
+    },
+    {
+      "status": "??",
+      "path": "lib/lifecycle/ownership-merge-actions.ts"
+    },
+    {
+      "status": "??",
+      "path": "lib/lifecycle/ownership-merge-types.ts"
+    },
+    {
+      "status": "??",
+      "path": "lib/lifecycle/proof-surface-actions.ts"
+    },
+    {
+      "status": "??",
+      "path": "lib/lifecycle/proof-surface-types.ts"
+    },
+    {
+      "status": "??",
+      "path": "lib/lifecycle/rail-navigation-actions.ts"
+    },
+    {
+      "status": "??",
+      "path": "lib/lifecycle/rail-navigation-types.ts"
+    },
+    {
+      "status": "??",
+      "path": "lib/lifecycle/sticky-footer-actions.ts"
+    },
+    {
+      "status": "??",
+      "path": "lib/lifecycle/sticky-footer-types.ts"
+    },
+    {
+      "status": "??",
+      "path": "lib/lifecycle/waiting-age-actions.ts"
+    },
+    {
+      "status": "??",
+      "path": "lib/lifecycle/waiting-age-types.ts"
+    },
+    {
+      "status": "??",
+      "path": "lib/lifecycle/waiting-state-actions.ts"
+    },
+    {
+      "status": "??",
+      "path": "lib/lifecycle/waiting-state-types.ts"
+    },
+    {
+      "status": "??",
+      "path": "lib/media/"
+    },
+    {
+      "status": "??",
+      "path": "lib/menus/assembly-types.ts"
+    },
+    {
+      "status": "??",
+      "path": "lib/menus/builder-workspace-actions.ts"
+    },
+    {
+      "status": "??",
+      "path": "lib/menus/builder-workspace-types.ts"
+    },
+    {
+      "status": "??",
+      "path": "lib/menus/client-menu-actions.ts"
+    },
+    {
+      "status": "??",
+      "path": "lib/menus/client-menu-types.ts"
+    },
+    {
+      "status": "??",
+      "path": "lib/menus/collab-edit-actions.ts"
+    },
+    {
+      "status": "??",
+      "path": "lib/menus/collab-edit-types.ts"
+    },
+    {
+      "status": "??",
+      "path": "lib/menus/costing-interrogation-actions.ts"
+    },
+    {
+      "status": "??",
+      "path": "lib/menus/costing-interrogation-types.ts"
+    },
+    {
+      "status": "??",
+      "path": "lib/menus/dish-catalog-actions.ts"
+    },
+    {
+      "status": "??",
+      "path": "lib/menus/fate-actions.ts"
+    },
+    {
+      "status": "??",
+      "path": "lib/menus/fate-derivation.ts"
+    },
+    {
+      "status": "??",
+      "path": "lib/menus/fixed-offering-actions.ts"
+    },
+    {
+      "status": "??",
+      "path": "lib/menus/fixed-offering-types.ts"
+    },
+    {
+      "status": "??",
+      "path": "lib/menus/fork-lineage.ts"
+    },
+    {
+      "status": "??",
+      "path": "lib/menus/menu-assembly-actions.ts"
+    },
+    {
+      "status": "??",
+      "path": "lib/menus/performance-actions.ts"
+    },
+    {
+      "status": "??",
+      "path": "lib/menus/performance-types.ts"
+    },
+    {
+      "status": "??",
+      "path": "lib/menus/proposal-set-actions.ts"
+    },
+    {
+      "status": "??",
+      "path": "lib/menus/provenance-types.ts"
+    },
+    {
+      "status": "??",
+      "path": "lib/menus/storytelling-actions.ts"
+    },
+    {
+      "status": "??",
+      "path": "lib/menus/storytelling-types.ts"
+    },
+    {
+      "status": "??",
+      "path": "lib/menus/variant-actions.ts"
+    },
+    {
+      "status": "??",
+      "path": "lib/menus/variant-types.ts"
+    },
+    {
+      "status": "??",
+      "path": "lib/mobile/mobile-ops-actions.ts"
+    },
+    {
+      "status": "??",
+      "path": "lib/mobile/mobile-ops-types.ts"
+    },
+    {
+      "status": "??",
+      "path": "lib/mobile/offline-actions.ts"
+    },
+    {
+      "status": "??",
+      "path": "lib/mobile/offline-types.ts"
+    },
+    {
+      "status": "??",
+      "path": "lib/mobile/widget-actions.ts"
+    },
+    {
+      "status": "??",
+      "path": "lib/mobile/widget-types.ts"
+    },
+    {
+      "status": "??",
+      "path": "lib/navigation/nav-config-actions.ts"
+    },
+    {
+      "status": "??",
+      "path": "lib/navigation/nav-config-types.ts"
+    },
+    {
+      "status": "??",
+      "path": "lib/onboarding/activation-actions.ts"
+    },
+    {
+      "status": "??",
+      "path": "lib/onboarding/activation-types.ts"
+    },
+    {
+      "status": "??",
+      "path": "lib/openclaw/countdown-actions.ts"
+    },
+    {
+      "status": "??",
+      "path": "lib/openclaw/countdown-types.ts"
+    },
+    {
+      "status": "??",
+      "path": "lib/openclaw/goal-governor-actions.ts"
+    },
+    {
+      "status": "??",
+      "path": "lib/openclaw/goal-governor-types.ts"
+    },
+    {
+      "status": "??",
+      "path": "lib/partners/referral-types.ts"
+    },
+    {
+      "status": "??",
+      "path": "lib/popups/popup-actions.ts"
+    },
+    {
+      "status": "??",
+      "path": "lib/popups/popup-types.ts"
+    },
+    {
+      "status": "??",
+      "path": "lib/portal/portal-experience-actions.ts"
+    },
+    {
+      "status": "??",
+      "path": "lib/portal/portal-experience-types.ts"
+    },
+    {
+      "status": "??",
+      "path": "lib/prep/prep-schedule-actions.ts"
+    },
+    {
+      "status": "??",
+      "path": "lib/prep/prep-schedule-types.ts"
+    },
+    {
+      "status": "??",
+      "path": "lib/prep/prep-time-estimator.ts"
+    },
+    {
+      "status": "??",
+      "path": "lib/pricing/auto-cost-bridge.ts"
+    },
+    {
+      "status": "??",
+      "path": "lib/pricing/cost-propagation-actions.ts"
+    },
+    {
+      "status": "??",
+      "path": "lib/pricing/cost-propagation-types.ts"
+    },
+    {
+      "status": "??",
+      "path": "lib/profile/trust-visual-actions.ts"
+    },
+    {
+      "status": "??",
+      "path": "lib/profile/trust-visual-types.ts"
+    },
+    {
+      "status": "??",
+      "path": "lib/public-consumer/featured-chef-actions.ts"
+    },
+    {
+      "status": "??",
+      "path": "lib/public-consumer/featured-chef-types.ts"
+    },
+    {
+      "status": "??",
+      "path": "lib/qa/"
+    },
+    {
+      "status": "??",
+      "path": "lib/quotes/proposal-builder-types.ts"
+    },
+    {
+      "status": "??",
+      "path": "lib/quotes/proposal-experience-actions.ts"
+    },
+    {
+      "status": "??",
+      "path": "lib/revisions/"
+    },
+    {
+      "status": "??",
+      "path": "lib/scheduling/batch-view-actions.ts"
+    },
+    {
+      "status": "??",
+      "path": "lib/scheduling/batch-view-types.ts"
+    },
+    {
+      "status": "??",
+      "path": "lib/scheduling/burnout-capacity-actions.ts"
+    },
+    {
+      "status": "??",
+      "path": "lib/scheduling/burnout-capacity-types.ts"
+    },
+    {
+      "status": "??",
+      "path": "lib/scheduling/saturation-actions.ts"
+    },
+    {
+      "status": "??",
+      "path": "lib/scheduling/saturation-types.ts"
+    },
+    {
+      "status": "??",
+      "path": "lib/scheduling/weekly-command-actions.ts"
+    },
+    {
+      "status": "??",
+      "path": "lib/scheduling/weekly-command-types.ts"
+    },
+    {
+      "status": "??",
+      "path": "lib/scheduling/weekly-retro-actions.ts"
+    },
+    {
+      "status": "??",
+      "path": "lib/scheduling/weekly-retro-types.ts"
+    },
+    {
+      "status": "??",
+      "path": "lib/security/confidence-actions.ts"
+    },
+    {
+      "status": "??",
+      "path": "lib/security/confidence-types.ts"
+    },
+    {
+      "status": "??",
+      "path": "lib/security/rate-limit-actions.ts"
+    },
+    {
+      "status": "??",
+      "path": "lib/security/rate-limit-types.ts"
+    },
+    {
+      "status": "??",
+      "path": "lib/security/route-policy.ts"
+    },
+    {
+      "status": "??",
+      "path": "lib/settings/guided-settings-actions.ts"
+    },
+    {
+      "status": "??",
+      "path": "lib/settings/guided-settings-types.ts"
+    },
+    {
+      "status": "??",
+      "path": "lib/settings/settings-registry-actions.ts"
+    },
+    {
+      "status": "??",
+      "path": "lib/settings/settings-registry-types.ts"
+    },
+    {
+      "status": "??",
+      "path": "lib/settings/view-types.ts"
+    },
+    {
+      "status": "??",
+      "path": "lib/shopping/receipt-actions.ts"
+    },
+    {
+      "status": "??",
+      "path": "lib/shopping/receipt-types.ts"
+    },
+    {
+      "status": "??",
+      "path": "lib/simulation/dt-simulation-actions.ts"
+    },
+    {
+      "status": "??",
+      "path": "lib/simulation/simulation-types.ts"
+    },
+    {
+      "status": "??",
+      "path": "lib/sms/remy-draft.ts"
+    },
+    {
+      "status": "??",
+      "path": "lib/sms/triage-actions.ts"
+    },
+    {
+      "status": "??",
+      "path": "lib/staff/task-assignment-actions.ts"
+    },
+    {
+      "status": "??",
+      "path": "lib/staff/task-assignment-types.ts"
+    },
+    {
+      "status": "??",
+      "path": "lib/ui/accessibility-actions.ts"
+    },
+    {
+      "status": "??",
+      "path": "lib/ui/accessibility-types.ts"
+    },
+    {
+      "status": "??",
+      "path": "lib/ui/action-bar-actions.ts"
+    },
+    {
+      "status": "??",
+      "path": "lib/ui/action-bar-types.ts"
+    },
+    {
+      "status": "??",
+      "path": "lib/ui/card-rules-actions.ts"
+    },
+    {
+      "status": "??",
+      "path": "lib/ui/card-rules-types.ts"
+    },
+    {
+      "status": "??",
+      "path": "lib/ui/color-semantics-actions.ts"
+    },
+    {
+      "status": "??",
+      "path": "lib/ui/color-semantics-types.ts"
+    },
+    {
+      "status": "??",
+      "path": "lib/ui/command-center-actions.ts"
+    },
+    {
+      "status": "??",
+      "path": "lib/ui/command-center-types.ts"
+    },
+    {
+      "status": "??",
+      "path": "lib/ui/culinary-visual-actions.ts"
+    },
+    {
+      "status": "??",
+      "path": "lib/ui/culinary-visual-types.ts"
+    },
+    {
+      "status": "??",
+      "path": "lib/ui/data-viz-actions.ts"
+    },
+    {
+      "status": "??",
+      "path": "lib/ui/data-viz-types.ts"
+    },
+    {
+      "status": "??",
+      "path": "lib/ui/design-debt-actions.ts"
+    },
+    {
+      "status": "??",
+      "path": "lib/ui/design-debt-types.ts"
+    },
+    {
+      "status": "??",
+      "path": "lib/ui/design-system-actions.ts"
+    },
+    {
+      "status": "??",
+      "path": "lib/ui/design-system-types.ts"
+    },
+    {
+      "status": "??",
+      "path": "lib/ui/document-workspace-actions.ts"
+    },
+    {
+      "status": "??",
+      "path": "lib/ui/document-workspace-types.ts"
+    },
+    {
+      "status": "??",
+      "path": "lib/ui/event-detail-proof-actions.ts"
+    },
+    {
+      "status": "??",
+      "path": "lib/ui/event-detail-proof-types.ts"
+    },
+    {
+      "status": "??",
+      "path": "lib/ui/evidence-grammar-actions.ts"
+    },
+    {
+      "status": "??",
+      "path": "lib/ui/evidence-grammar-types.ts"
+    },
+    {
+      "status": "??",
+      "path": "lib/ui/evidence-label-actions.ts"
+    },
+    {
+      "status": "??",
+      "path": "lib/ui/evidence-label-types.ts"
+    },
+    {
+      "status": "??",
+      "path": "lib/ui/form-wizard-actions.ts"
+    },
+    {
+      "status": "??",
+      "path": "lib/ui/form-wizard-types.ts"
+    },
+    {
+      "status": "??",
+      "path": "lib/ui/heuristic-gate-actions.ts"
+    },
+    {
+      "status": "??",
+      "path": "lib/ui/heuristic-gate-types.ts"
+    },
+    {
+      "status": "??",
+      "path": "lib/ui/high-contrast-actions.ts"
+    },
+    {
+      "status": "??",
+      "path": "lib/ui/high-contrast-types.ts"
+    },
+    {
+      "status": "??",
+      "path": "lib/ui/icon-language-actions.ts"
+    },
+    {
+      "status": "??",
+      "path": "lib/ui/icon-language-types.ts"
+    },
+    {
+      "status": "??",
+      "path": "lib/ui/interaction-soundness-actions.ts"
+    },
+    {
+      "status": "??",
+      "path": "lib/ui/interaction-soundness-types.ts"
+    },
+    {
+      "status": "??",
+      "path": "lib/ui/layout-grid-actions.ts"
+    },
+    {
+      "status": "??",
+      "path": "lib/ui/layout-grid-types.ts"
+    },
+    {
+      "status": "??",
+      "path": "lib/ui/lifecycle-action-hierarchy-actions.ts"
+    },
+    {
+      "status": "??",
+      "path": "lib/ui/lifecycle-action-hierarchy-types.ts"
+    },
+    {
+      "status": "??",
+      "path": "lib/ui/lifecycle-mobile-ergonomics-actions.ts"
+    },
+    {
+      "status": "??",
+      "path": "lib/ui/lifecycle-mobile-ergonomics-types.ts"
+    },
+    {
+      "status": "??",
+      "path": "lib/ui/lifecycle-visual-state-actions.ts"
+    },
+    {
+      "status": "??",
+      "path": "lib/ui/lifecycle-visual-state-types.ts"
+    },
+    {
+      "status": "??",
+      "path": "lib/ui/magic-components-actions.ts"
+    },
+    {
+      "status": "??",
+      "path": "lib/ui/magic-components-types.ts"
+    },
+    {
+      "status": "??",
+      "path": "lib/ui/magic-gate-actions.ts"
+    },
+    {
+      "status": "??",
+      "path": "lib/ui/magic-gate-types.ts"
+    },
+    {
+      "status": "??",
+      "path": "lib/ui/metric-hierarchy-actions.ts"
+    },
+    {
+      "status": "??",
+      "path": "lib/ui/metric-hierarchy-types.ts"
+    },
+    {
+      "status": "??",
+      "path": "lib/ui/microcopy-actions.ts"
+    },
+    {
+      "status": "??",
+      "path": "lib/ui/microcopy-types.ts"
+    },
+    {
+      "status": "??",
+      "path": "lib/ui/modal-drawer-sheet-actions.ts"
+    },
+    {
+      "status": "??",
+      "path": "lib/ui/modal-drawer-sheet-types.ts"
+    },
+    {
+      "status": "??",
+      "path": "lib/ui/motion-system-actions.ts"
+    },
+    {
+      "status": "??",
+      "path": "lib/ui/motion-system-types.ts"
+    },
+    {
+      "status": "??",
+      "path": "lib/ui/perceived-performance-actions.ts"
+    },
+    {
+      "status": "??",
+      "path": "lib/ui/perceived-performance-types.ts"
+    },
+    {
+      "status": "??",
+      "path": "lib/ui/portal-modes-actions.ts"
+    },
+    {
+      "status": "??",
+      "path": "lib/ui/portal-modes-types.ts"
+    },
+    {
+      "status": "??",
+      "path": "lib/ui/premium-detail-actions.ts"
+    },
+    {
+      "status": "??",
+      "path": "lib/ui/premium-detail-types.ts"
+    },
+    {
+      "status": "??",
+      "path": "lib/ui/print-share-actions.ts"
+    },
+    {
+      "status": "??",
+      "path": "lib/ui/print-share-types.ts"
+    },
+    {
+      "status": "??",
+      "path": "lib/ui/route-screenshot-actions.ts"
+    },
+    {
+      "status": "??",
+      "path": "lib/ui/route-screenshot-types.ts"
+    },
+    {
+      "status": "??",
+      "path": "lib/ui/signature-workflow-actions.ts"
+    },
+    {
+      "status": "??",
+      "path": "lib/ui/signature-workflow-types.ts"
+    },
+    {
+      "status": "??",
+      "path": "lib/ui/state-patterns-actions.ts"
+    },
+    {
+      "status": "??",
+      "path": "lib/ui/state-patterns-types.ts"
+    },
+    {
+      "status": "??",
+      "path": "lib/ui/status-badge-actions.ts"
+    },
+    {
+      "status": "??",
+      "path": "lib/ui/status-badge-types.ts"
+    },
+    {
+      "status": "??",
+      "path": "lib/ui/style-guardrails-actions.ts"
+    },
+    {
+      "status": "??",
+      "path": "lib/ui/style-guardrails-types.ts"
+    },
+    {
+      "status": "??",
+      "path": "lib/ui/table-config-actions.ts"
+    },
+    {
+      "status": "??",
+      "path": "lib/ui/table-config-types.ts"
+    },
+    {
+      "status": "??",
+      "path": "lib/ui/theme-token-actions.ts"
+    },
+    {
+      "status": "??",
+      "path": "lib/ui/theme-token-types.ts"
+    },
+    {
+      "status": "??",
+      "path": "lib/ui/typography-roles-actions.ts"
+    },
+    {
+      "status": "??",
+      "path": "lib/ui/typography-roles-types.ts"
+    },
+    {
+      "status": "??",
+      "path": "lib/ui/viewport-discipline-actions.ts"
+    },
+    {
+      "status": "??",
+      "path": "lib/ui/viewport-discipline-types.ts"
+    },
+    {
+      "status": "??",
+      "path": "lib/ui/visual-lint-actions.ts"
+    },
+    {
+      "status": "??",
+      "path": "lib/ui/visual-lint-types.ts"
+    },
+    {
+      "status": "??",
+      "path": "lib/ui/visual-priority-actions.ts"
+    },
+    {
+      "status": "??",
+      "path": "lib/ui/visual-priority-types.ts"
+    },
+    {
+      "status": "??",
+      "path": "lib/venues/recon-actions.ts"
+    },
+    {
+      "status": "??",
+      "path": "lib/venues/recon-types.ts"
+    },
+    {
+      "status": "??",
+      "path": "lib/weather/solar-actions.ts"
+    },
+    {
+      "status": "??",
+      "path": "lib/weather/solar-times.ts"
+    },
+    {
+      "status": "??",
+      "path": "lib/weather/weather-alert-enrichment.ts"
+    },
+    {
+      "status": "??",
+      "path": "lib/weather/weather-checklist-actions.ts"
+    },
+    {
+      "status": "??",
+      "path": "lib/weather/weather-checklist.ts"
+    },
+    {
+      "status": "??",
+      "path": "lib/weather/weather-snapshot-actions.ts"
+    },
+    {
+      "status": "??",
+      "path": "tests/ci/"
+    },
+    {
+      "status": "??",
+      "path": "tests/integration/client-mutation-pipeline.integration.test.ts"
+    },
+    {
+      "status": "??",
+      "path": "tests/unit/homepage-discovery-destinations.test.ts"
     }
   ],
   "next_action": null,
-  "context_notes": "Recent commits:\n3d534306c feat(cadence): SMS channel variant for lifecycle messaging\nc233f31ca docs: swarm handoff prompt for next session (7 agents, 3 waves)\n48ebcde0d feat(intelligence): wire 5 orphaned outputs into active consumers + signal dedup\ncaa18af49 feat(menus): ownership model deep-pass - schema sync, RLS, collaborator gate\n81c481b86 feat(rail): wire Rail Item Lifecycle Engine into dashboard UI"
+  "context_notes": "Recent commits:\naae0fe3fe docs: 20 philosophical principles swarm prompt\n7ee2f57af feat(intelligence): CIL commitment analyzer + Ulysses swarm handoff\nb2530dec3 docs: session log for events deep-pass intensification\n4d7e202aa feat(events): deep-pass intensification - 5 moves across event domain\n2916ec289 docs: architecture deepening swarm prompt + build queue update"
 }

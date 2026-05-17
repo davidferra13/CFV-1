@@ -1,0 +1,3 @@
+CREATE TABLE IF NOT EXISTS action_bar_configs (id UUID PRIMARY KEY DEFAULT gen_random_uuid(), tenant_id UUID NOT NULL, context TEXT NOT NULL, items JSONB DEFAULT '[]', lifecycle_stage TEXT, created_at TIMESTAMPTZ DEFAULT NOW() NOT NULL, updated_at TIMESTAMPTZ DEFAULT NOW() NOT NULL);
+CREATE UNIQUE INDEX idx_action_bar_configs_unique ON action_bar_configs(tenant_id, context, lifecycle_stage);
+CREATE TABLE IF NOT EXISTS action_bar_usage_logs (id UUID PRIMARY KEY DEFAULT gen_random_uuid(), tenant_id UUID NOT NULL, context TEXT NOT NULL, action_id TEXT NOT NULL, lifecycle_stage TEXT, used_at TIMESTAMPTZ DEFAULT NOW() NOT NULL);

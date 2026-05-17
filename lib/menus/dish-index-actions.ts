@@ -340,6 +340,14 @@ export async function linkRecipeToDish(dishId: string, recipeId: string) {
   if (error) throw new Error(`Failed to link recipe: ${error.message}`)
   revalidatePath('/culinary/dish-index')
   revalidatePath(`/culinary/dish-index/${dishId}`)
+
+  // Auto-resolve ingredient prices for the linked recipe (non-blocking)
+  try {
+    const { autoCostRecipeIngredients } = await import('@/lib/pricing/auto-cost-bridge')
+    await autoCostRecipeIngredients(recipeId, user.tenantId!)
+  } catch (costErr) {
+    console.error('[linkRecipeToDish] Auto-cost failed (non-blocking):', costErr)
+  }
 }
 
 /**

@@ -805,135 +805,17 @@ export async function updateClient(clientId: string, input: UpdateClientInput) {
     },
   })
 
-  const client = result.client
-
-  // Log chef activity (non-blocking)
-  try {
-    const { logChefActivity } = await import('@/lib/activity/log-chef')
-    const changedFields = Object.keys(updateFields)
-    const fieldDiffs = Object.fromEntries(
-      changedFields.map((field) => [
-        field,
-        {
-          before: (currentClient as Record<string, unknown>)[field] ?? null,
-          after: (client as Record<string, unknown>)[field] ?? null,
-        },
-      ])
-    )
-    await logChefActivity({
-      tenantId: user.tenantId!,
-      actorId: user.id,
-      action: 'client_updated',
-      domain: 'client',
-      entityType: 'client',
-      entityId: clientId,
-      summary: `Updated client: ${client.full_name} - ${changedFields.join(', ')}`,
-      context: {
-        client_name: client.full_name,
-        changed_fields: changedFields,
-        field_diffs: fieldDiffs,
-      },
-      clientId,
-    })
-  } catch (err) {
-    console.error('[updateClient] Activity log failed (non-blocking):', err)
-  }
-
-  // Outbound webhook dispatch (non-blocking)
-  try {
-    const { emitWebhook } = await import('@/lib/webhooks/emitter')
-    await emitWebhook(user.tenantId!, 'client.updated', {
-      client_id: clientId,
-      full_name: client.full_name,
-      changed_fields: Object.keys(updateFields),
-    })
-  } catch (err) {
-    console.error('[updateClient] Webhook dispatch failed (non-blocking):', err)
-  }
-
-  // Log dietary changes for the alert pipeline (non-blocking)
-  try {
-    const dietaryFields = ['allergies', 'dietary_restrictions'] as const
-    const changedDietaryFields = dietaryFields.filter((field) => field in updateFields)
-    if (changedDietaryFields.length > 0) {
-      const { logDietaryChange } = await import('@/lib/clients/dietary-alert-actions')
-      for (const field of changedDietaryFields) {
-        const oldVal = currentClient[field]
-        const newVal = (updateFields as Record<string, unknown>)[field]
-        const oldStr = Array.isArray(oldVal) ? oldVal.join(', ') : String(oldVal ?? '')
-        const newStr = Array.isArray(newVal)
-          ? (newVal as string[]).join(', ')
-          : String(newVal ?? '')
-        if (oldStr !== newStr) {
-          const oldArr = Array.isArray(oldVal) ? oldVal : []
-          const newArr = Array.isArray(newVal) ? (newVal as string[]) : []
-          const isRemoval = newArr.length < oldArr.length
-          const changeType =
-            field === 'allergies'
-              ? isRemoval
-                ? 'allergy_removed'
-                : 'allergy_added'
-              : isRemoval
-                ? 'restriction_removed'
-                : 'restriction_added'
-          await logDietaryChange(clientId, changeType, field, oldStr || null, newStr || null)
-        }
-      }
-    }
-  } catch (err) {
-    console.error('[updateClient] Dietary change log failed (non-blocking):', err)
-  }
-
-  // Sync allergy stores bidirectionally (non-blocking)
-  // Ensures client_allergy_records (readiness gates, menu checks) stays in sync
-  // with clients.allergies (documents, Remy, staff briefings)
-  try {
-    if ('allergies' in updateFields) {
-      const { syncFlatToStructured } = await import('@/lib/dietary/allergy-sync')
-      await syncFlatToStructured({ tenantId: user.tenantId!, clientId, db })
-    }
-  } catch (err) {
-    console.error('[updateClient] Allergy sync failed (non-blocking):', err)
-  }
-
-  // Recheck upcoming event menus for allergen conflicts (non-blocking)
-  try {
-    if ('allergies' in updateFields || 'dietary_restrictions' in updateFields) {
-      const { recheckUpcomingMenusForClient } = await import('@/lib/dietary/menu-recheck')
-      await recheckUpcomingMenusForClient({ tenantId: user.tenantId!, clientId, db })
-    }
-  } catch (err) {
-    console.error('[updateClient] Menu recheck failed (non-blocking):', err)
-  }
-
-  // Propagate dietary/allergy changes to active events (non-blocking)
-  // Ensures prep sheets and event detail show current data, not stale copy-at-creation data
-  try {
-    const dietaryFields = ['allergies', 'dietary_restrictions'] as const
-    const changedDietaryForPropagation = dietaryFields.filter((field) => field in updateFields)
-    if (changedDietaryForPropagation.length > 0) {
-      const activeStatuses = ['accepted', 'paid', 'confirmed', 'in_progress']
-      const propagateFields: Record<string, unknown> = {}
-      for (const field of changedDietaryForPropagation) {
-        propagateFields[field] = (updateFields as Record<string, unknown>)[field] ?? []
-      }
-      const { data: affectedEvents } = await db
-        .from('events')
-        .update(propagateFields)
-        .eq('client_id', clientId)
-        .eq('tenant_id', user.tenantId!)
-        .in('status', activeStatuses)
-        .select('id')
-      // Revalidate affected event pages so dietary badges update
-      if (affectedEvents?.length) {
-        for (const evt of affectedEvents) {
-          revalidatePath(`/events/${evt.id}`)
-        }
-      }
-    }
-  } catch (err) {
-    console.error('[updateClient] Dietary propagation to events failed (non-blocking):', err)
-  }
+  // Execute side-effect pipeline (activity log, webhooks, dietary propagation)
+  const { executeClientMutation } = await import('@/lib/clients/mutation-pipeline')
+  await executeClientMutation({
+    tenantId: user.tenantId!,
+    actorId: user.id,
+    clientId,
+    patch: updateFields as Record<string, unknown>,
+    previousState: currentClient as Record<string, unknown>,
+    updatedState: result.client as Record<string, unknown>,
+    db,
+  })
 
   return result
 }

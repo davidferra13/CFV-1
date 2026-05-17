@@ -189,6 +189,9 @@ export async function propagatePriceChange(
   // Bust UI caches
   revalidatePath('/culinary/costing')
   revalidatePath('/culinary/recipes')
+  // M1: Also revalidate menu and event surfaces that render cost data
+  revalidatePath('/menus')
+  revalidatePath('/events')
   revalidateTag('recipe-costs')
 }
 

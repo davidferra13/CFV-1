@@ -159,6 +159,18 @@ export type NotificationAction =
   | 'directory_listing_claimed'
   | 'directory_listing_verified'
   | 'directory_listing_removed'
+  // Cannabis portal
+  | 'cannabis_access_granted'
+  | 'cannabis_access_revoked'
+  | 'cannabis_age_required'
+  | 'cannabis_age_approved'
+  | 'cannabis_age_rejected'
+  | 'cannabis_age_expired'
+  | 'cannabis_request_submitted'
+  | 'cannabis_request_reviewed'
+  | 'cannabis_guest_intake_incomplete'
+  | 'cannabis_event_readiness_incomplete'
+  | 'cannabis_closeout_pending'
   // Personal reminders
   | 'reminder_fired'
 
@@ -383,6 +395,19 @@ export const NOTIFICATION_CONFIG: Record<
   directory_listing_claimed: { category: 'system', icon: 'MapPin', toastByDefault: true },
   directory_listing_verified: { category: 'system', icon: 'CheckCircle', toastByDefault: false },
   directory_listing_removed: { category: 'system', icon: 'Trash2', toastByDefault: false },
+
+  // Cannabis portal
+  cannabis_access_granted: { category: 'system', icon: 'Shield', toastByDefault: true },
+  cannabis_access_revoked: { category: 'system', icon: 'ShieldOff', toastByDefault: true },
+  cannabis_age_required: { category: 'system', icon: 'ShieldAlert', toastByDefault: true },
+  cannabis_age_approved: { category: 'system', icon: 'ShieldCheck', toastByDefault: true },
+  cannabis_age_rejected: { category: 'system', icon: 'ShieldX', toastByDefault: true },
+  cannabis_age_expired: { category: 'system', icon: 'Clock', toastByDefault: true },
+  cannabis_request_submitted: { category: 'event', icon: 'Send', toastByDefault: true },
+  cannabis_request_reviewed: { category: 'event', icon: 'CheckSquare', toastByDefault: true },
+  cannabis_guest_intake_incomplete: { category: 'event', icon: 'AlertCircle', toastByDefault: false },
+  cannabis_event_readiness_incomplete: { category: 'event', icon: 'AlertTriangle', toastByDefault: false },
+  cannabis_closeout_pending: { category: 'event', icon: 'FileQuestion', toastByDefault: false },
 
   // Personal reminders
   reminder_fired: { category: 'system', icon: 'Bell', toastByDefault: true },

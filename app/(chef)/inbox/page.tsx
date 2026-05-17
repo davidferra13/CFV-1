@@ -7,12 +7,14 @@ import { CommunicationInboxClient } from '@/components/communication/communicati
 import { InboxCalendarPeek } from '@/components/communication/inbox-calendar-peek'
 import { TriageSuggestionsSection } from '@/components/communication/triage-suggestions-section'
 import { StagedSignalsPanel } from '@/components/communication/staged-signals-panel'
+import { SmsTriage } from '@/components/communication/sms-triage-card'
 import {
   getCommunicationInbox,
   getCommunicationInboxStats,
   getUnreadThreadCount,
 } from '@/lib/communication/actions'
 import { getStagedEntities } from '@/lib/comms/staging-actions'
+import { getPendingSmsDrafts } from '@/lib/sms/triage-actions'
 import { getOrCreateEmailChannel } from '@/lib/comms/email-channel'
 import type { CommunicationTab } from '@/lib/communication/types'
 import { getCalendarEvents } from '@/lib/scheduling/actions'
@@ -93,20 +95,29 @@ export default async function InboxPage({
     const rangeStart = _li(new Date(now.getFullYear(), now.getMonth(), 1))
     const rangeEnd = _li(new Date(now.getFullYear(), now.getMonth() + 1, 0))
 
-    const [items, stats, calendarEvents, gmailConnection, unreadCount, staged, emailChannel] =
-      await Promise.all([
-        withInboxTimeout(
-          'communication inbox',
-          getCommunicationInbox(undefined, 100, searchParams?.clientId),
-          []
-        ),
-        withInboxTimeout('communication inbox stats', getCommunicationInboxStats(), emptyStats),
-        withInboxTimeout('calendar events', getCalendarEvents(rangeStart, rangeEnd), []),
-        withInboxTimeout('google connection', getGoogleConnection(), disconnectedGoogle),
-        withInboxTimeout('unread thread count', getUnreadThreadCount(), 0),
-        withInboxTimeout('staged entities', getStagedEntities(), { clients: [], inquiries: [] }),
-        withInboxTimeout('email channel', getOrCreateEmailChannel(user.entityId!), null),
-      ])
+    const [
+      items,
+      stats,
+      calendarEvents,
+      gmailConnection,
+      unreadCount,
+      staged,
+      emailChannel,
+      smsDrafts,
+    ] = await Promise.all([
+      withInboxTimeout(
+        'communication inbox',
+        getCommunicationInbox(undefined, 100, searchParams?.clientId),
+        []
+      ),
+      withInboxTimeout('communication inbox stats', getCommunicationInboxStats(), emptyStats),
+      withInboxTimeout('calendar events', getCalendarEvents(rangeStart, rangeEnd), []),
+      withInboxTimeout('google connection', getGoogleConnection(), disconnectedGoogle),
+      withInboxTimeout('unread thread count', getUnreadThreadCount(), 0),
+      withInboxTimeout('staged entities', getStagedEntities(), { clients: [], inquiries: [] }),
+      withInboxTimeout('email channel', getOrCreateEmailChannel(user.entityId!), null),
+      withInboxTimeout('sms drafts', getPendingSmsDrafts(), []),
+    ])
 
     // Smart default: if user specified a tab use it, otherwise pick the tab with content
     // Prefer needs_attention (actionable), fall back to unlinked (new/unsorted)
@@ -150,6 +161,9 @@ export default async function InboxPage({
 
         {/* Staged signals - auto-detected contacts awaiting confirmation */}
         {staged.clients.length > 0 && <StagedSignalsPanel clients={staged.clients} />}
+
+        {/* SMS triage: Remy draft responses awaiting chef approval */}
+        <SmsTriage drafts={smsDrafts} />
 
         {/* Per-chef inbound email address + pipeline health */}
         {emailChannel && (

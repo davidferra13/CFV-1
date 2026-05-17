@@ -8,7 +8,12 @@ export const metadata: Metadata = {
   description: 'Find ingredients by calling vendors automatically',
 }
 
-export default async function SourcingPage() {
+export default async function SourcingPage({
+  searchParams,
+}: {
+  searchParams: Promise<{ ingredient?: string; eventId?: string }>
+}) {
+  const params = await searchParams
   const user = await requireChef()
   const tenantId = (user as any).tenantId as string
 
@@ -42,7 +47,11 @@ export default async function SourcingPage() {
           Type what you need. The system calls vendors for you and reports back.
         </p>
       </div>
-      <SourcingSession tenantId={tenantId} />
+      <SourcingSession
+        tenantId={tenantId}
+        initialQuery={params.ingredient}
+        eventId={params.eventId}
+      />
     </div>
   )
 }

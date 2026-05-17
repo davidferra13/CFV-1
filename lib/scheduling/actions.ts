@@ -9,6 +9,7 @@ import { revalidatePath } from 'next/cache'
 import { getChefPreferences } from '@/lib/chef/actions'
 import { generateTimeline } from './timeline'
 import { dateToDateString } from '@/lib/utils/format'
+import { getSunsetForEvent } from '@/lib/weather/open-meteo'
 import { getDOPSchedule, getDOPProgress } from './dop'
 import { getActivePrompts } from './prep-prompts'
 import type {
@@ -83,7 +84,7 @@ async function fetchSchedulingEvent(eventId: string): Promise<SchedulingEvent | 
       `
       id, occasion, event_date, serve_time, arrival_time,
       guest_count, status,
-      location_address, location_city,
+      location_address, location_city, location_lat, location_lng,
       grocery_list_ready, prep_list_ready, packing_list_ready,
       equipment_list_ready, timeline_ready, execution_sheet_ready,
       non_negotiables_checked, car_packed,
@@ -165,13 +166,59 @@ async function fetchUpcomingSchedulingEvents(): Promise<SchedulingEvent[]> {
 
 /**
  * Get the full timeline for a single event.
+ * Injects sunset marker when venue coordinates are available and event is within forecast range.
  */
 export async function getEventTimeline(eventId: string): Promise<EventTimeline | null> {
   const event = await fetchSchedulingEvent(eventId)
   if (!event) return null
 
   const prefs = await getChefPreferences()
-  return generateTimeline(event, prefs)
+  const timeline = generateTimeline(event, prefs)
+
+  // Fetch venue coordinates for sunset injection (non-blocking)
+  try {
+    const user = await requireChef()
+    const db: any = createServerClient()
+    const { data: coords } = await db
+      .from('events')
+      .select('location_lat, location_lng')
+      .eq('id', eventId)
+      .eq('tenant_id', user.tenantId!)
+      .single()
+
+    if (coords?.location_lat != null && coords?.location_lng != null) {
+      const sunTimes = await getSunsetForEvent(
+        event.event_date,
+        coords.location_lat,
+        coords.location_lng
+      )
+      if (sunTimes) {
+        const sunsetTimePart = sunTimes.sunsetRaw.split('T')[1]
+        if (sunsetTimePart) {
+          const sunsetHHMM = sunsetTimePart.slice(0, 5)
+          timeline.timeline.push({
+            id: 'sunset',
+            time: sunsetHHMM,
+            label: `Sunset at ${sunTimes.sunset}`,
+            description: `Golden hour begins ~1h before sunset. Plan plating and outdoor lighting accordingly.`,
+            type: 'milestone',
+            isDeadline: false,
+            isFlexible: false,
+          })
+          // Re-sort timeline chronologically
+          timeline.timeline.sort((a, b) => {
+            const [ah, am] = a.time.split(':').map(Number)
+            const [bh, bm] = b.time.split(':').map(Number)
+            return ah * 60 + (am || 0) - (bh * 60 + (bm || 0))
+          })
+        }
+      }
+    }
+  } catch {
+    // Weather/coord fetch failed; skip silently
+  }
+
+  return timeline
 }
 
 /**

@@ -2934,23 +2934,23 @@ export function CuisineMarquee({
   const rows: DiscoveryRowConfig[] = [
     {
       role: 'cuisine',
-      label: 'Taste',
+      label: 'Cuisines',
       items: row1,
       offsetClassName: 'pl-0',
-      ariaLabel: 'Taste discovery by cuisine and dish',
+      ariaLabel: 'Browse by cuisine and dish type',
     },
     {
       role: 'mobile',
-      label: 'ChefFlow Picks',
+      label: 'For you',
       items: mobileRow2,
       offsetClassName: 'pl-4',
-      ariaLabel: 'ChefFlow picks, stories, chefs, and local signals',
+      ariaLabel: 'Curated picks, featured chefs, and local suggestions',
       className: 'sm:hidden',
       labelClassName: 'sm:hidden',
     },
     {
       role: 'craving',
-      label: 'Occasion',
+      label: 'Plans',
       items: row2,
       offsetClassName: 'pl-5 sm:pl-16',
       ariaLabel: 'Occasions, services, timing, and group planning',
@@ -2959,10 +2959,10 @@ export function CuisineMarquee({
     },
     {
       role: 'intent',
-      label: 'ChefFlow Picks',
+      label: 'For you',
       items: row3,
       offsetClassName: 'pl-3 sm:pl-28',
-      ariaLabel: 'Curated ChefFlow picks, stories, chefs, and local signals',
+      ariaLabel: 'Curated picks, featured chefs, and local suggestions',
       className: 'hidden sm:block',
       labelClassName: 'hidden sm:flex',
     },
@@ -2995,15 +2995,15 @@ export function CuisineMarquee({
       <div className="mt-5 flex flex-col gap-3 px-2 sm:mt-8 sm:flex-row sm:items-end sm:justify-between sm:gap-4">
         <div className="min-w-0">
           <p className="text-[10px] font-bold uppercase tracking-widest text-[#e8a96b]/70">
-            Find your next meal
+            What are you in the mood for?
           </p>
           <h2 className="mt-1 text-sm font-semibold leading-tight text-white/85 sm:text-base">
-            Taste, Occasion, ChefFlow Picks
+            Browse by craving, plan, or chef
           </h2>
         </div>
         <div className="flex shrink-0 flex-wrap items-center gap-2 sm:justify-end">
           <p className="hidden max-w-[18rem] text-right text-[12px] font-medium leading-snug text-white/45 sm:block">
-            Cuisines, plans, and timely chef leads.
+            Cuisines, occasions, and chefs worth remembering.
           </p>
           <button
             type="button"
@@ -3047,7 +3047,7 @@ export function CuisineMarquee({
         className="cuisine-marquee-container relative py-2"
         onClickCapture={onClickCapture}
         role="navigation"
-        aria-label="Browse by taste, occasion, and ChefFlow picks"
+        aria-label="Browse by cuisine, plan, or chef"
         data-discovery-hydrated={interactionReady ? 'true' : 'false'}
       >
         <div className="flex flex-col gap-2">

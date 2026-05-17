@@ -4,6 +4,7 @@ import { getCatalogStats } from '@/lib/openclaw/catalog-actions'
 import { getStoreCatalogStats } from '@/lib/openclaw/store-catalog-actions'
 import { getOpenClawRefreshStatus } from '@/lib/openclaw/refresh-status-actions'
 import { OpenClawRefreshStatus } from '@/components/pricing/openclaw-refresh-status'
+import { OpenClawCountdownCard } from '@/components/openclaw/countdown-card'
 import { CatalogBrowser } from './catalog-browser'
 
 export const metadata = { title: 'Food Catalog' }
@@ -109,6 +110,8 @@ export default async function FoodCatalogPage({
           Search ingredient prices across stores. Pick a store or search to get started.
         </p>
       </div>
+
+      <OpenClawCountdownCard />
 
       {/* Infrastructure stats: admin only */}
       {admin && (

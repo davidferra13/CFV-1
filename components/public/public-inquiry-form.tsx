@@ -36,6 +36,8 @@ interface Props {
   selectedLocation?: PublicChefLocationExperience | null
   circleId?: string | null
   referrerName?: string | null
+  sourceType?: string | null
+  sourceEventId?: string | null
   defaultValues?: {
     full_name?: string
     email?: string
@@ -187,6 +189,8 @@ export function PublicInquiryForm({
   referralPartnerId,
   partnerLocationId,
   selectedLocation,
+  sourceType,
+  sourceEventId,
   circleId,
   defaultValues,
 }: Props) {
@@ -417,6 +421,8 @@ export function PublicInquiryForm({
         referral_partner_id: referralPartnerId || undefined,
         partner_location_id: partnerLocationId || undefined,
         existing_circle_id: circleId || undefined,
+        source_type: sourceType || undefined,
+        source_event_id: sourceEventId || undefined,
       })
 
       trackEvent(ANALYTICS_EVENTS.INQUIRY_SUBMITTED, {

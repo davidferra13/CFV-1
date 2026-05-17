@@ -119,7 +119,7 @@ export async function resolveInquiries(
           ? { kind: 'reply', label: 'Client reply', followUpAt: null }
           : null,
       inlineActions:
-        tier === 'p0' || tier === 'p1'
+        tier === 'p0'
           ? [
               {
                 label: 'Respond',
@@ -127,8 +127,23 @@ export async function resolveInquiries(
                 params: { href: `/chef/inquiries/${row.id}` },
                 variant: 'default',
               },
+              {
+                label: 'Mark Responded',
+                action: 'mark_inquiry_responded',
+                params: { entityId: row.id },
+                variant: 'default',
+              },
             ]
-          : undefined,
+          : tier === 'p1'
+            ? [
+                {
+                  label: 'Respond',
+                  action: 'navigate',
+                  params: { href: `/chef/inquiries/${row.id}` },
+                  variant: 'default',
+                },
+              ]
+            : undefined,
       data: {
         inquiryId: row.id,
         clientId: row.client?.id,

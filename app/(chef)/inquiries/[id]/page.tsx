@@ -78,6 +78,7 @@ import { LifecycleProgressPanel } from '@/components/lifecycle/lifecycle-progres
 import { getNextActions } from '@/lib/lifecycle/next-action'
 import { NextActionBanner } from '@/components/lifecycle/next-action-banner'
 import { RepeatClientPanel } from '@/components/clients/repeat-client-panel'
+import { ReturningClientBadge } from '@/components/inquiries/returning-client-badge'
 import { getHandoffForInquiry } from '@/lib/network/collab-actions'
 import {
   readPublicSeasonalMarketPulseIntentFromUnknownFields,
@@ -381,6 +382,21 @@ export default async function InquiryDetailPage({ params }: { params: { id: stri
             )}
             {bookingScore && <BookingScoreBadge score={bookingScore} />}
             {leadScore ? <LeadScoreBadge score={leadScore} /> : null}
+            {(() => {
+              const rcMatch =
+                (inquiry as any).returning_client_match ??
+                ((inquiry.unknown_fields as any)?.returning_client_match || null)
+              if (!(inquiry as any).returning_client_id || !rcMatch) return null
+              return (
+                <ReturningClientBadge
+                  previousEvents={rcMatch.previousEvents ?? 0}
+                  lastEventDate={rcMatch.lastEventDate ?? null}
+                  isLapsed={rcMatch.isLapsed ?? false}
+                  lapsedMonths={rcMatch.lapsedMonths ?? null}
+                  confidence={(inquiry as any).returning_client_confidence ?? 'possible'}
+                />
+              )
+            })()}
             {handoffInfo && (
               <Link href={`/network?tab=handoffs`}>
                 <Badge variant="info">

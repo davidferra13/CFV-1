@@ -7,8 +7,8 @@ import {
   updateCadenceDisabledPoints,
   updateCadenceMessage,
 } from '@/lib/communication/cadence-settings-actions'
-import { CADENCE_POINTS } from '@/lib/communication/cadence-scheduler'
-import type { CadencePoint } from '@/lib/communication/cadence-scheduler'
+import { CADENCE_POINTS } from '@/lib/communication/cadence-types'
+import type { CadencePoint } from '@/lib/communication/cadence-types'
 
 interface CadenceSettingsProps {
   initialDisabledPoints: CadencePoint[]

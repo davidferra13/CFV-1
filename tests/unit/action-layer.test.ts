@@ -1,11 +1,10 @@
 import { describe, it } from 'node:test'
 import assert from 'node:assert/strict'
+import { resolveDashboardNextTask } from '@/lib/dashboard/view-types'
 import {
-  hasSchedulingRulesConfigured,
   resolveCollectBalanceTask,
   resolveCommitNextTask,
   resolveCloseOutNextTask,
-  resolveDashboardNextTask,
   resolveExecutionNextTask,
   resolveFixMissingFactTask,
   resolveMenuDecisionTask,
@@ -13,15 +12,15 @@ import {
   resolvePrepareNextTask,
   resolveProcurementNextTask,
   resolveReceiptCaptureTask,
-  resolveRelationshipNextTask,
   resolveResetNextTask,
   resolveSafetyCheckTask,
   resolveServiceReadyTask,
-  resolveSettingsFixTasks,
   resolveTeamReadyTask,
   resolveTravelConfirmTask,
   resolveTrustLoopNextTask,
-} from '@/lib/interface/action-layer'
+} from '@/lib/events/view-types'
+import { resolveRelationshipNextTask } from '@/lib/clients/view-types'
+import { hasSchedulingRulesConfigured, resolveSettingsFixTasks } from '@/lib/settings/view-types'
 import { buildFirstWeekActivationProgress } from '@/lib/onboarding/first-week-activation'
 import type { PriorityQueue } from '@/lib/queue/types'
 import type { DashboardWorkSurface } from '@/lib/workflow/types'

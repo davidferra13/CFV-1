@@ -10,6 +10,7 @@ import {
   CalendarPlus,
   Compass,
   DollarSign,
+  Flower,
   Gift,
   LogOut,
   Menu,
@@ -27,6 +28,7 @@ import { ClientChatUnreadBadge } from '@/components/chat/client-chat-unread-badg
 
 interface ClientNavProps {
   userEmail: string
+  cannabisAccess?: boolean
 }
 
 const BOOK_NOW_HREF = '/book-now'
@@ -89,9 +91,22 @@ export function ClientSidebarProvider({ children }: { children: React.ReactNode 
   )
 }
 
-export function ClientSidebar({ userEmail }: ClientNavProps) {
+export function ClientSidebar({ userEmail, cannabisAccess }: ClientNavProps) {
   const pathname = usePathname() ?? ''
   const { collapsed, setCollapsed } = useClientSidebar()
+
+  const resolvedNavItems = cannabisAccess
+    ? [
+        ...navItems,
+        {
+          href: '/my-cannabis',
+          label: 'Cannabis Portal',
+          icon: Flower,
+          dividerBefore: true,
+          mobileTab: false as const,
+        },
+      ]
+    : navItems
 
   return (
     <aside
@@ -148,7 +163,7 @@ export function ClientSidebar({ userEmail }: ClientNavProps) {
               <CalendarPlus className="w-[18px] h-[18px]" />
             </Link>
             <div className="w-6 border-t border-stone-800 my-1.5" />
-            {navItems.map((item) => {
+            {resolvedNavItems.map((item) => {
               const Icon = item.icon
               const active = isItemActive(pathname, item.href)
               return (
@@ -184,7 +199,7 @@ export function ClientSidebar({ userEmail }: ClientNavProps) {
               <CalendarPlus className="w-[18px] h-[18px] flex-shrink-0" />
               Book Now
             </Link>
-            {navItems.map((item) => {
+            {resolvedNavItems.map((item) => {
               const Icon = item.icon
               const active = isItemActive(pathname, item.href)
               return (
@@ -208,8 +223,6 @@ export function ClientSidebar({ userEmail }: ClientNavProps) {
                 </div>
               )
             })}
-
-            {/* Cannabis Tier - admin-only feature, hidden from client portal */}
           </div>
         )}
       </nav>
@@ -249,9 +262,22 @@ export function ClientSidebar({ userEmail }: ClientNavProps) {
   )
 }
 
-export function ClientMobileNav({ userEmail }: ClientNavProps) {
+export function ClientMobileNav({ userEmail, cannabisAccess }: ClientNavProps) {
   const pathname = usePathname() ?? ''
   const [menuOpen, setMenuOpen] = useState(false)
+
+  const resolvedNavItems = cannabisAccess
+    ? [
+        ...navItems,
+        {
+          href: '/my-cannabis',
+          label: 'Cannabis Portal',
+          icon: Flower,
+          dividerBefore: true,
+          mobileTab: false as const,
+        },
+      ]
+    : navItems
 
   const closeMenu = () => setMenuOpen(false)
 
@@ -316,7 +342,7 @@ export function ClientMobileNav({ userEmail }: ClientNavProps) {
                 <CalendarPlus className="w-[18px] h-[18px]" />
                 Book Now
               </Link>
-              {navItems.map((item) => {
+              {resolvedNavItems.map((item) => {
                 const Icon = item.icon
                 const active = isItemActive(pathname, item.href)
                 return (
@@ -339,7 +365,6 @@ export function ClientMobileNav({ userEmail }: ClientNavProps) {
                   </div>
                 )
               })}
-              {/* Cannabis Tier - admin-only feature, hidden from client portal */}
 
               <div className="pt-4 mt-4 border-t border-stone-800">
                 <p className="px-3 pb-2 text-xs text-stone-400 truncate">{userEmail}</p>

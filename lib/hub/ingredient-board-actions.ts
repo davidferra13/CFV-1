@@ -7,6 +7,14 @@ import { requireChef } from '@/lib/auth/get-user'
 import { createServerClient } from '@/lib/db/server'
 import { revalidatePath } from 'next/cache'
 
+// ---------------------------------------------------------------------------
+// Debounce map: boardId -> timestamp of last "unavailable" mark.
+// Best-effort in-memory debounce (no migration needed). Resets on server restart.
+// The manual "Source Unavailable" button is the reliable path for triggering sourcing.
+// ---------------------------------------------------------------------------
+const boardSourcingDebounce = new Map<string, number>()
+const DEBOUNCE_WINDOW_MS = 5 * 60 * 1000 // 5 minutes
+
 export type IngredientCategory =
   | 'produce'
   | 'protein'
@@ -253,6 +261,29 @@ export async function updateIngredientItem(input: {
     })
   }
 
+  // Debounced sourcing intent: when an item is marked unavailable,
+  // log the intent. If this is the first mark in the debounce window,
+  // log sourcing intent (the manual button or future cron handles actual dispatch).
+  if (input.status === 'unavailable' && input.status !== previousStatus) {
+    const boardId = item.board_id
+    const now = Date.now()
+    const lastQueued = boardSourcingDebounce.get(boardId) || 0
+    const isFirstInWindow = now - lastQueued > DEBOUNCE_WINDOW_MS
+
+    if (isFirstInWindow) {
+      boardSourcingDebounce.set(boardId, now)
+      // Check flag before logging intent
+      const flagEnabled = await checkCallingFlag()
+      if (flagEnabled) {
+        console.log(
+          `[ingredient-board] Sourcing intent queued for board ${boardId}. ` +
+          `Use "Source Unavailable" button or wait for cron pickup.`
+        )
+      }
+    }
+    // If within debounce window, skip (manual button is the reliable path)
+  }
+
   revalidatePath(`/hub`)
   return { success: true }
 }
@@ -389,4 +420,157 @@ export async function bulkAddIngredients(input: {
 
   revalidatePath(`/hub`)
   return { success: true, added: newItems.length }
+}
+
+// ---------------------------------------------------------------------------
+// Sourcing integration
+// ---------------------------------------------------------------------------
+
+export type BoardSourcingResult = {
+  success: boolean
+  reason?: string
+  sessionId?: string | null
+  unresolvedCount?: number
+  resolvedCount?: number
+  message?: string
+}
+
+/**
+ * Check the supplier_calling feature flag for current chef.
+ */
+async function checkCallingFlag(): Promise<boolean> {
+  const user = await requireChef()
+  const db: any = createServerClient()
+  const { data: flagData } = await db
+    .from('chef_feature_flags')
+    .select('enabled')
+    .eq('chef_id', user.entityId)
+    .eq('flag_name', 'supplier_calling')
+    .maybeSingle()
+  return !!flagData?.enabled
+}
+
+/**
+ * Trigger sourcing for all unavailable items on a board.
+ * Resolves each through the 3-tier engine. Creates a DRAFT sourcing session
+ * for any Tier 3 (unresolved) items. Chef must still confirm/start.
+ */
+export async function triggerBoardSourcing(boardId: string): Promise<BoardSourcingResult> {
+  const flagEnabled = await checkCallingFlag()
+  if (!flagEnabled) {
+    return { success: false, reason: 'calling_disabled' }
+  }
+
+  const user = await requireChef()
+  const db: any = createServerClient()
+
+  // Verify board ownership
+  const { data: board } = await db
+    .from('circle_ingredient_board')
+    .select('id, tenant_id')
+    .eq('id', boardId)
+    .eq('tenant_id', user.entityId)
+    .single()
+
+  if (!board) return { success: false, reason: 'board_not_found' }
+
+  // Fetch all unavailable items
+  const { data: unavailableItems } = await db
+    .from('circle_ingredient_items')
+    .select('id, ingredient_name')
+    .eq('board_id', boardId)
+    .eq('status', 'unavailable')
+
+  if (!unavailableItems || unavailableItems.length === 0) {
+    return { success: true, sessionId: null, unresolvedCount: 0, resolvedCount: 0, message: 'No unavailable items to source' }
+  }
+
+  // Resolve each through 3-tier engine
+  const { resolveIngredientAvailability } = await import('@/lib/calling/ingredient-resolution')
+  const { createSourcingSession } = await import('@/lib/calling/sourcing-session-actions')
+
+  let resolvedCount = 0
+  const allUnresolvedCandidates: Array<{
+    vendorId?: string
+    vendorName: string
+    vendorPhone: string
+    vendorType?: 'saved' | 'directory' | 'adhoc'
+    priorityOrder?: number
+  }> = []
+  const unresolvedIngredientNames: string[] = []
+
+  for (const item of unavailableItems) {
+    const resolution = await resolveIngredientAvailability(item.ingredient_name)
+    if (resolution.unresolved.length > 0) {
+      unresolvedIngredientNames.push(item.ingredient_name)
+      // Collect vendor candidates from Tier 3
+      for (const candidate of resolution.unresolved) {
+        allUnresolvedCandidates.push({
+          vendorId: candidate.id || undefined,
+          vendorName: candidate.name,
+          vendorPhone: candidate.phone || '',
+          vendorType: (candidate.source as 'saved' | 'directory' | 'adhoc') || 'directory',
+          priorityOrder: allUnresolvedCandidates.length + 1,
+        })
+      }
+    } else {
+      resolvedCount++
+    }
+  }
+
+  // If all resolved at Tier 1/2, no call session needed
+  if (allUnresolvedCandidates.length === 0) {
+    return {
+      success: true,
+      sessionId: null,
+      unresolvedCount: 0,
+      resolvedCount,
+      message: 'All items resolved without calling',
+    }
+  }
+
+  // Filter out candidates without a phone number (can't call them)
+  const callableCandidates = allUnresolvedCandidates.filter((c) => c.vendorPhone)
+
+  if (callableCandidates.length === 0) {
+    return {
+      success: true,
+      sessionId: null,
+      unresolvedCount: unresolvedIngredientNames.length,
+      resolvedCount,
+      message: 'Unresolved items found but no callable vendor candidates',
+    }
+  }
+
+  // Create DRAFT sourcing session (chef must confirm/start)
+  const sessionResult = await createSourcingSession({
+    ingredientQuery: unresolvedIngredientNames.join(', '),
+    candidates: callableCandidates,
+  })
+
+  if (!sessionResult.success) {
+    return { success: false, reason: sessionResult.error || 'session_creation_failed' }
+  }
+
+  return {
+    success: true,
+    sessionId: sessionResult.data?.sessionId || null,
+    unresolvedCount: unresolvedIngredientNames.length,
+    resolvedCount,
+  }
+}
+
+/**
+ * Manual trigger: calls triggerBoardSourcing immediately (no debounce).
+ */
+export async function manualBoardSourcing(boardId: string): Promise<BoardSourcingResult> {
+  return triggerBoardSourcing(boardId)
+}
+
+/**
+ * Check if the supplier_calling flag is enabled for the current chef.
+ * Used by client components to conditionally show sourcing UI.
+ */
+export async function isCallingEnabled(): Promise<boolean> {
+  return checkCallingFlag()
 }

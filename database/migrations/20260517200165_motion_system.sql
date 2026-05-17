@@ -1,0 +1,3 @@
+CREATE TABLE IF NOT EXISTS motion_preferences (id UUID PRIMARY KEY DEFAULT gen_random_uuid(), tenant_id UUID NOT NULL, chef_id UUID NOT NULL, intensity TEXT NOT NULL DEFAULT 'moderate', reduced_motion BOOLEAN DEFAULT FALSE, custom_tokens JSONB DEFAULT '[]', updated_at TIMESTAMPTZ DEFAULT NOW() NOT NULL);
+CREATE UNIQUE INDEX idx_motion_prefs_chef ON motion_preferences(tenant_id, chef_id);
+CREATE TABLE IF NOT EXISTS state_transition_rules (id UUID PRIMARY KEY DEFAULT gen_random_uuid(), tenant_id UUID NOT NULL, from_state TEXT NOT NULL, to_state TEXT NOT NULL, transition_type TEXT NOT NULL DEFAULT 'fade', duration INTEGER NOT NULL DEFAULT 200, easing TEXT NOT NULL DEFAULT 'ease-in-out', component TEXT, created_at TIMESTAMPTZ DEFAULT NOW() NOT NULL);

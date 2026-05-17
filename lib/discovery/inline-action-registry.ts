@@ -1,5 +1,8 @@
 'use server'
 
+import { executeAction, getAction } from '@/lib/actions/action-registry'
+import '@/lib/actions'
+
 export type InlineActionResult = {
   success: boolean
   message?: string
@@ -8,56 +11,55 @@ export type InlineActionResult = {
 
 /**
  * Dispatch an inline action from a rail item.
- * Maps action identifiers to server action calls.
+ * Delegates to universal action registry when possible, falls back to legacy handlers.
  */
 export async function executeInlineAction(
   action: string,
   params: Record<string, unknown>
 ): Promise<InlineActionResult> {
-  switch (action) {
-    case 'navigate': {
-      const href = params.href as string | undefined
-      if (!href) return { success: false, message: 'No href provided' }
-      return { success: true, redirect: href }
-    }
-
-    case 'send_payment_reminder': {
-      // Phase 4: wire to actual email/notification action
-      // For now, navigate to the event financials page
-      const eventId = params.eventId as string | undefined
-      if (!eventId) return { success: false, message: 'No eventId' }
-      return { success: true, redirect: `/chef/events/${eventId}/financials` }
-    }
-
-    case 'send_quote_reminder': {
-      // Phase 4: wire to actual follow-up action
-      const quoteId = params.quoteId as string | undefined
-      if (!quoteId) return { success: false, message: 'No quoteId' }
-      return { success: true, redirect: `/chef/quotes/${quoteId}` }
-    }
-
-    case 'respond_collab_handoff': {
-      const handoffId = params.handoffId as string | undefined
-      const response = params.action ?? params.response
-      const handoffAction = response === 'rejected' ? 'rejected' : 'accepted'
-      const responseNote = params.responseNote as string | undefined
-
-      if (!handoffId) return { success: false, message: 'No handoffId' }
-
-      const { respondToCollabHandoff } = await import('@/lib/network/collab-actions')
-      await respondToCollabHandoff({
-        handoffId,
-        action: handoffAction,
-        responseNote,
-      })
-
-      return {
-        success: true,
-        redirect: `/network?tab=collab&handoff=${encodeURIComponent(handoffId)}`,
-      }
-    }
-
-    default:
-      return { success: false, message: `Unknown action: ${action}` }
+  if (action === 'navigate') {
+    const href = params.href as string | undefined
+    if (!href) return { success: false, message: 'No href provided' }
+    return { success: true, redirect: href }
   }
+
+  if (action === 'respond_collab_handoff') {
+    const handoffId = params.handoffId as string | undefined
+    const response = params.action ?? params.response
+    const handoffAction = response === 'rejected' ? 'rejected' : 'accepted'
+    const responseNote = params.responseNote as string | undefined
+
+    if (!handoffId) return { success: false, message: 'No handoffId' }
+
+    const { respondToCollabHandoff } = await import('@/lib/network/collab-actions')
+    await respondToCollabHandoff({
+      handoffId,
+      action: handoffAction,
+      responseNote,
+    })
+
+    return {
+      success: true,
+      redirect: `/network?tab=collab&handoff=${encodeURIComponent(handoffId)}`,
+    }
+  }
+
+  const registeredAction = getAction(action)
+  if (registeredAction) {
+    const entityId = (params.entityId ?? params.eventId ?? params.quoteId ?? params.contractId ?? params.inquiryId ?? '') as string
+    const result = await executeAction(action, entityId, params)
+
+    if (result.success && result.circleNotification) {
+      const { postActionResultToCircle } = await import('@/lib/actions/action-circle-bridge')
+      postActionResultToCircle(result).catch(() => {})
+    }
+
+    return {
+      success: result.success,
+      message: result.message,
+      redirect: undefined,
+    }
+  }
+
+  return { success: false, message: `Unknown action: ${action}` }
 }

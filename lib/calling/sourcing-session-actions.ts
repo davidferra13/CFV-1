@@ -28,6 +28,7 @@ const TWILIO_AUTH_TOKEN = process.env.TWILIO_AUTH_TOKEN
 
 interface CreateSessionParams {
   ingredientQuery: string
+  eventId?: string
   stopAfterConfirmations?: number
   askPrice?: boolean
   askHold?: boolean

@@ -8,10 +8,13 @@ import {
   addIngredientItem,
   updateIngredientItem,
   removeIngredientItem,
+  manualBoardSourcing,
+  isCallingEnabled,
   type IngredientBoard,
   type IngredientBoardItem,
   type IngredientCategory,
   type IngredientStatus,
+  type BoardSourcingResult,
 } from '@/lib/hub/ingredient-board-actions'
 import { syncMenuToIngredientBoard } from '@/lib/hub/ingredient-board-sync'
 
@@ -47,10 +50,16 @@ export function IngredientAvailabilityBoard({ groupId, eventId, isCoHost }: Prop
   const [newCategory, setNewCategory] = useState<IngredientCategory>('produce')
   const [newQuantity, setNewQuantity] = useState('')
   const [newOfferedBy, setNewOfferedBy] = useState('')
+  const [callingEnabled, setCallingEnabled] = useState(false)
+  const [sourcingResult, setSourcingResult] = useState<BoardSourcingResult | null>(null)
+  const [isSourcing, setIsSourcing] = useState(false)
 
   useEffect(() => {
     getOrCreateIngredientBoard({ groupId, eventId })
       .then(setBoard)
+      .catch(() => {})
+    isCallingEnabled()
+      .then(setCallingEnabled)
       .catch(() => {})
   }, [groupId, eventId])
 
@@ -147,6 +156,28 @@ export function IngredientAvailabilityBoard({ groupId, eventId, isCoHost }: Prop
     })
   }
 
+  async function handleSourceUnavailable() {
+    if (!board) return
+    setIsSourcing(true)
+    setSourcingResult(null)
+    setError(null)
+    try {
+      const result = await manualBoardSourcing(board.id)
+      setSourcingResult(result)
+      if (!result.success && result.reason) {
+        setError(
+          result.reason === 'calling_disabled'
+            ? 'Supplier calling is not enabled for your account.'
+            : result.reason
+        )
+      }
+    } catch (err: any) {
+      setError(err.message || 'Sourcing failed')
+    } finally {
+      setIsSourcing(false)
+    }
+  }
+
   if (!board) return null
 
   // Group items by category
@@ -191,6 +222,40 @@ export function IngredientAvailabilityBoard({ groupId, eventId, isCoHost }: Prop
           ? 'Track what your co-host is supplying and what you need to source.'
           : `${availableCount} available, ${needsSourcing} need sourcing`}
       </p>
+
+      {/* Source Unavailable button: visible when flag enabled and items are unavailable */}
+      {callingEnabled && needsSourcing > 0 && !isCoHost && (
+        <div className="mb-3">
+          <Button
+            variant="primary"
+            onClick={handleSourceUnavailable}
+            disabled={isSourcing || isPending}
+            className="text-xs"
+          >
+            {isSourcing ? 'Sourcing...' : `Source Unavailable (${needsSourcing})`}
+          </Button>
+          {sourcingResult && sourcingResult.success && (
+            <div className="mt-2 rounded-lg bg-stone-800/50 border border-stone-700 px-3 py-2 text-xs text-stone-300">
+              {sourcingResult.message ? (
+                <span>{sourcingResult.message}</span>
+              ) : (
+                <span>
+                  {sourcingResult.resolvedCount} resolved without calling,{' '}
+                  {sourcingResult.unresolvedCount} need vendor calls.
+                  {sourcingResult.sessionId && (
+                    <a
+                      href={`/culinary/call-sheet?session=${sourcingResult.sessionId}`}
+                      className="ml-1 text-blue-400 underline"
+                    >
+                      View draft session
+                    </a>
+                  )}
+                </span>
+              )}
+            </div>
+          )}
+        </div>
+      )}
 
       {error && (
         <div className="mb-3 rounded-lg bg-red-900/50 border border-red-700 px-3 py-2 text-xs text-red-200">

@@ -10,12 +10,14 @@ import {
   postEventReferralAsk,
   postEventGuestFeedback,
   postEventTipPrompt,
+  postGuestFeedbackConversion,
 } from '@/lib/jobs/post-event-jobs'
 import {
   commerceDayCloseout,
   commercePaymentReconciliation,
   commerceSettlementMapping,
 } from '@/lib/jobs/commerce-jobs'
+import { postEventCannabisCloseout } from '@/lib/jobs/post-event-cannabis-closeout'
 
 export const { GET, POST, PUT } = serve({
   client: inngest,
@@ -25,8 +27,10 @@ export const { GET, POST, PUT } = serve({
     postEventReviewRequest,
     postEventReferralAsk,
     postEventTipPrompt,
+    postGuestFeedbackConversion,
     commerceDayCloseout,
     commercePaymentReconciliation,
     commerceSettlementMapping,
+    postEventCannabisCloseout,
   ],
 })

@@ -1,0 +1,4 @@
+CREATE TABLE IF NOT EXISTS typography_configs (id UUID PRIMARY KEY DEFAULT gen_random_uuid(), tenant_id UUID NOT NULL, role TEXT NOT NULL, font_family TEXT NOT NULL, font_size TEXT NOT NULL, font_weight TEXT NOT NULL, line_height TEXT NOT NULL, letter_spacing TEXT, color TEXT, text_transform TEXT, created_at TIMESTAMPTZ DEFAULT NOW() NOT NULL);
+CREATE UNIQUE INDEX idx_typo_config_role ON typography_configs(tenant_id, role);
+CREATE TABLE IF NOT EXISTS text_hierarchy_rules (id UUID PRIMARY KEY DEFAULT gen_random_uuid(), tenant_id UUID NOT NULL, parent_role TEXT NOT NULL, child_role TEXT NOT NULL, max_nesting INTEGER DEFAULT 1, description TEXT, created_at TIMESTAMPTZ DEFAULT NOW() NOT NULL);
+CREATE UNIQUE INDEX idx_hierarchy_rule_pair ON text_hierarchy_rules(tenant_id, parent_role, child_role);

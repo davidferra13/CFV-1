@@ -1,8 +1,18 @@
 'use client'
 
 import { useState, useEffect } from 'react'
+import Link from 'next/link'
 import { Card, CardContent } from '@/components/ui/card'
 import { CalendarDays, Clock } from '@/components/ui/icons'
+import { getUnsourcedIngredientStatus } from '@/lib/culinary/ingredient-lifecycle'
+
+type CountdownWeather = {
+  condition: string
+  emoji: string
+  tempHighF: number
+  tempLowF: number
+  precipProbability: number
+} | null
 
 type Props = {
   eventName: string
@@ -17,6 +27,10 @@ type Props = {
   guestCount?: number | null
   specialRequests?: string | null
   accessInstructions?: string | null
+  weather?: CountdownWeather
+  daysUntil?: number
+  isChefView?: boolean
+  eventId?: string
 }
 
 function computeCountdown(eventDate: string, serveTime?: string, arrivalTime?: string | null) {
@@ -64,8 +78,13 @@ export function EventCountdown({
   guestCount,
   specialRequests,
   accessInstructions,
+  weather,
+  daysUntil,
+  isChefView,
+  eventId,
 }: Props) {
   const [countdown, setCountdown] = useState(computeCountdown(eventDate, serveTime, arrivalTime))
+  const [unsourcedCount, setUnsourcedCount] = useState(0)
 
   useEffect(() => {
     if (!countdownEnabled) return
@@ -74,6 +93,26 @@ export function EventCountdown({
     }, 60000) // Update every minute
     return () => clearInterval(interval)
   }, [eventDate, serveTime, arrivalTime, countdownEnabled])
+
+  // Fetch unsourced ingredient count for chef view when event is within 48h
+  useEffect(() => {
+    if (!isChefView || !eventId) return
+    const now = new Date()
+    const [year, month, day] = eventDate.split('-').map(Number)
+    const eventTime = new Date(year, month - 1, day, 18, 0)
+    const hoursUntil = (eventTime.getTime() - now.getTime()) / (1000 * 60 * 60)
+    if (hoursUntil > 48 || hoursUntil <= 0) return
+
+    getUnsourcedIngredientStatus(eventId)
+      .then((result) => {
+        if (result.flagEnabled) {
+          setUnsourcedCount(result.unsourcedCount)
+        }
+      })
+      .catch(() => {
+        // Silently fail; badge simply won't show
+      })
+  }, [isChefView, eventId, eventDate])
 
   if (!countdownEnabled) return null
 
@@ -118,6 +157,16 @@ export function EventCountdown({
           )}
 
           <p className="text-xs text-stone-400 mt-3">Status: {status}</p>
+
+          {isChefView && unsourcedCount > 0 && eventId && (
+            <Link
+              href={`/culinary/sourcing?eventId=${eventId}`}
+              className="inline-flex items-center gap-1.5 mt-3 px-3 py-1 rounded-full text-xs font-medium bg-amber-900/40 text-amber-300 border border-amber-700/50 hover:bg-amber-900/60 transition-colors"
+            >
+              <span className="inline-block w-1.5 h-1.5 rounded-full bg-amber-400" />
+              {unsourcedCount} ingredient{unsourcedCount !== 1 ? 's' : ''} unsourced
+            </Link>
+          )}
         </CardContent>
       </Card>
 
@@ -167,6 +216,42 @@ export function EventCountdown({
           </div>
         </CardContent>
       </Card>
+
+      {/* Weather forecast */}
+      {weather ? (
+        <Card className="border-stone-700">
+          <CardContent className="py-5">
+            <h4 className="text-sm font-semibold text-stone-300 mb-3 uppercase tracking-wide">
+              Weather Forecast
+            </h4>
+            <div className="flex items-center gap-4">
+              <span className="text-3xl">{weather.emoji}</span>
+              <div className="space-y-1">
+                <p className="text-stone-200 font-medium">{weather.condition}</p>
+                <p className="text-sm text-stone-400">
+                  {weather.tempLowF}&deg;F to {weather.tempHighF}&deg;F
+                </p>
+                {weather.precipProbability > 0 && (
+                  <p className="text-sm text-stone-400">
+                    {weather.precipProbability}% chance of rain
+                  </p>
+                )}
+              </div>
+            </div>
+          </CardContent>
+        </Card>
+      ) : daysUntil != null && daysUntil > 7 && !countdown.isPast ? (
+        <Card className="border-stone-700">
+          <CardContent className="py-5">
+            <h4 className="text-sm font-semibold text-stone-300 mb-2 uppercase tracking-wide">
+              Weather Forecast
+            </h4>
+            <p className="text-sm text-stone-500">
+              Weather forecast available closer to your event date.
+            </p>
+          </CardContent>
+        </Card>
+      ) : null}
 
       {/* Last-minute reminders when event is close */}
       {countdown.days <= 3 && !countdown.isPast && (

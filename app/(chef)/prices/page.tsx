@@ -10,6 +10,7 @@ import { getTrendAlerts } from '@/lib/pricing/trend-alerts-actions'
 import { getCategoryBaselinesBatch } from '@/lib/pricing/category-baseline'
 import { PriceTrendAlerts } from '@/components/pricing/price-trend-alerts'
 import { PriceWatchList } from '@/components/pricing/price-watch-list'
+import { OpenClawCountdownCard } from '@/components/openclaw/countdown-card'
 import { PricesCatalogClient } from './prices-client'
 
 export const metadata: Metadata = { title: 'Store Prices' }
@@ -73,6 +74,8 @@ export default async function PricesPage() {
           coverage is still in progress.
         </p>
       </div>
+
+      <OpenClawCountdownCard />
 
       <PricingReadinessCard summary={readinessSummary} variant="market" />
 

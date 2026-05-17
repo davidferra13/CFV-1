@@ -1,7 +1,7 @@
 import Link from 'next/link'
 import { ArrowRight } from '@/components/ui/icons'
 import { SETTINGS_TONE_STYLES, type SettingsTone } from '@/components/settings/settings-tone'
-import type { SettingsFixTask } from '@/lib/interface/action-layer'
+import type { SettingsFixTask } from '@/lib/settings/view-types'
 
 function mapToSettingsTone(tone: string): SettingsTone {
   if (tone === 'brand') return 'brand'

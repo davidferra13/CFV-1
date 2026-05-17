@@ -45,7 +45,10 @@ export default async function GuestFeedbackPage({ params }: { params: { token: s
             chefName={feedback.chefName}
             crossLink={
               feedback.chefSlug
-                ? { href: `/chef/${feedback.chefSlug}/inquire`, label: 'Book Again' }
+                ? {
+                    href: `/chef/${feedback.chefSlug}/inquire?ref=guest-feedback&via=${encodeURIComponent(feedback.guestName)}${feedback.event_id ? `&source_event_id=${feedback.event_id}` : ''}`,
+                    label: `Hire ${feedback.chefName || 'This Chef'}`,
+                  }
                 : null
             }
           />
@@ -80,7 +83,10 @@ export default async function GuestFeedbackPage({ params }: { params: { token: s
           chefName={feedback.chefName}
           crossLink={
             feedback.chefSlug
-              ? { href: `/chef/${feedback.chefSlug}/inquire`, label: 'Book Again' }
+              ? {
+                  href: `/chef/${feedback.chefSlug}/inquire?ref=guest-feedback&via=${encodeURIComponent(feedback.guestName)}${feedback.event_id ? `&source_event_id=${feedback.event_id}` : ''}`,
+                  label: `Hire ${feedback.chefName || 'This Chef'}`,
+                }
               : null
           }
         />

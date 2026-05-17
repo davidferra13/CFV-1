@@ -1571,3 +1571,231 @@ export async function getShowcasePartners(chefSlug: string) {
     partners: partnersWithActiveLocations,
   }
 }
+
+// ============================================
+// 20. RECORD REFERRAL
+// ============================================
+
+const RecordReferralSchema = z.object({
+  partner_id: z.string().uuid(),
+  client_id: z.string().uuid().nullable().optional(),
+  event_id: z.string().uuid().nullable().optional(),
+  revenue_cents: z.number().int().min(0).optional().default(0),
+  notes: z.string().max(2000).optional().or(z.literal('')),
+})
+
+/**
+ * Log an individual referral from a partner.
+ * Complements the event-level referral_partner_id FK by capturing
+ * referrals that may not yet have an event or client record.
+ */
+export async function recordReferral(input: {
+  partner_id: string
+  client_id?: string | null
+  event_id?: string | null
+  revenue_cents?: number
+  notes?: string
+}) {
+  const user = await requireChef()
+  const validated = RecordReferralSchema.parse(input)
+  const db: any = createServerClient()
+
+  // Verify partner belongs to this tenant
+  const { data: partner } = await db
+    .from('referral_partners')
+    .select('id')
+    .eq('id', validated.partner_id)
+    .eq('tenant_id', user.tenantId!)
+    .single()
+
+  if (!partner) throw new Error('Partner not found')
+
+  const { data: record, error } = await db
+    .from('referral_records')
+    .insert({
+      tenant_id: user.tenantId!,
+      partner_id: validated.partner_id,
+      client_id: validated.client_id || null,
+      event_id: validated.event_id || null,
+      revenue_cents: validated.revenue_cents,
+      notes: validated.notes || null,
+    })
+    .select()
+    .single()
+
+  if (error) {
+    console.error('[recordReferral] Error:', error)
+    throw new Error('Failed to record referral')
+  }
+
+  revalidatePath(`/partners/${validated.partner_id}`)
+  return { success: true, record }
+}
+
+// ============================================
+// 21. GET PARTNER PERFORMANCE
+// ============================================
+
+/**
+ * Compute conversion rate, revenue, and avg deal value for a single partner.
+ * Combines data from referral_records (granular log) and events table
+ * (event-level attribution via referral_partner_id).
+ */
+export async function getPartnerPerformance(partnerId: string) {
+  const user = await requireChef()
+  const db: any = createServerClient()
+
+  // Verify partner belongs to this tenant
+  const { data: partner } = await db
+    .from('referral_partners')
+    .select('id, name')
+    .eq('id', partnerId)
+    .eq('tenant_id', user.tenantId!)
+    .single()
+
+  if (!partner) throw new Error('Partner not found')
+
+  // Get referral records count
+  const { count: referralCount } = await db
+    .from('referral_records')
+    .select('*', { count: 'exact', head: true })
+    .eq('tenant_id', user.tenantId!)
+    .eq('partner_id', partnerId)
+
+  // Get inquiry count (total referrals via event-level attribution)
+  const { count: inquiryCount } = await db
+    .from('inquiries')
+    .select('*', { count: 'exact', head: true })
+    .eq('tenant_id', user.tenantId!)
+    .eq('referral_partner_id', partnerId)
+
+  // Get completed events for conversion and revenue
+  const { data: completedEvents } = await db
+    .from('events')
+    .select('id, quoted_price_cents')
+    .eq('tenant_id', user.tenantId!)
+    .eq('referral_partner_id', partnerId)
+    .eq('status', 'completed')
+
+  // Get total events for conversion denominator
+  const { count: totalEventCount } = await db
+    .from('events')
+    .select('*', { count: 'exact', head: true })
+    .eq('tenant_id', user.tenantId!)
+    .eq('referral_partner_id', partnerId)
+    .neq('status', 'cancelled')
+
+  const completed = completedEvents || []
+  const totalRevenueCents = completed.reduce(
+    (sum: number, e: any) => sum + (e.quoted_price_cents || 0),
+    0
+  )
+  const convertedReferrals = completed.length
+  const totalReferrals = Math.max(referralCount || 0, inquiryCount || 0, totalEventCount || 0)
+  const conversionRate =
+    totalReferrals > 0 ? Math.round((convertedReferrals / totalReferrals) * 100) : 0
+  const avgDealValueCents =
+    convertedReferrals > 0 ? Math.round(totalRevenueCents / convertedReferrals) : 0
+
+  return {
+    partnerId: partner.id,
+    partnerName: partner.name,
+    totalReferrals,
+    convertedReferrals,
+    conversionRate,
+    totalRevenueCents,
+    avgDealValueCents,
+  }
+}
+
+// ============================================
+// 22. GET TOP PARTNERS (ranked by revenue)
+// ============================================
+
+/**
+ * Returns partners ranked by total completed-event revenue.
+ * Lightweight summary for dashboard widgets and reports.
+ */
+export async function getTopPartners(limit: number = 10) {
+  const user = await requireChef()
+  const db: any = createServerClient()
+
+  // Get all active partners
+  const { data: partners, error } = await db
+    .from('referral_partners')
+    .select('id, name, partner_type, status')
+    .eq('tenant_id', user.tenantId!)
+    .eq('status', 'active')
+
+  if (error) {
+    console.error('[getTopPartners] Error:', error)
+    throw new Error('Failed to fetch partners')
+  }
+
+  if (!partners || partners.length === 0) return []
+
+  const partnerIds = partners.map((p: any) => p.id)
+
+  // Get completed events with revenue for all partners in one query
+  const { data: events } = await db
+    .from('events')
+    .select('referral_partner_id, quoted_price_cents, status')
+    .eq('tenant_id', user.tenantId!)
+    .in('referral_partner_id', partnerIds)
+    .eq('status', 'completed')
+
+  // Get inquiry counts
+  const { data: inquiries } = await db
+    .from('inquiries')
+    .select('referral_partner_id')
+    .eq('tenant_id', user.tenantId!)
+    .in('referral_partner_id', partnerIds)
+
+  // Aggregate
+  const revenueMap: Record<string, number> = {}
+  const completedMap: Record<string, number> = {}
+  const inquiryMap: Record<string, number> = {}
+
+  for (const evt of events || []) {
+    if (evt.referral_partner_id) {
+      revenueMap[evt.referral_partner_id] =
+        (revenueMap[evt.referral_partner_id] || 0) + (evt.quoted_price_cents || 0)
+      completedMap[evt.referral_partner_id] =
+        (completedMap[evt.referral_partner_id] || 0) + 1
+    }
+  }
+
+  for (const inq of inquiries || []) {
+    if (inq.referral_partner_id) {
+      inquiryMap[inq.referral_partner_id] =
+        (inquiryMap[inq.referral_partner_id] || 0) + 1
+    }
+  }
+
+  const ranked = partners
+    .map((p: any) => {
+      const totalRevenueCents = revenueMap[p.id] || 0
+      const convertedReferrals = completedMap[p.id] || 0
+      const totalReferrals = inquiryMap[p.id] || 0
+      return {
+        partnerId: p.id,
+        partnerName: p.name,
+        partnerType: p.partner_type,
+        totalReferrals,
+        convertedReferrals,
+        conversionRate:
+          totalReferrals > 0
+            ? Math.round((convertedReferrals / totalReferrals) * 100)
+            : 0,
+        totalRevenueCents,
+        avgDealValueCents:
+          convertedReferrals > 0
+            ? Math.round(totalRevenueCents / convertedReferrals)
+            : 0,
+      }
+    })
+    .sort((a: any, b: any) => b.totalRevenueCents - a.totalRevenueCents)
+    .slice(0, limit)
+
+  return ranked
+}

@@ -1,25 +1,16 @@
 'use server'
 
+// Legacy venue actions - preserved for backward compatibility.
+// New code should import from '@/lib/venues/recon-actions' and '@/lib/venues/recon-types'.
+
 import { requireChef } from '@/lib/auth/get-user'
 import { createServerClient } from '@/lib/db/server'
 import { revalidatePath } from 'next/cache'
 
-export interface VenueProfile {
-  id: string
-  venue_name: string
-  has_full_kitchen: boolean | null
-  oven_count: number | null
-  burner_count: number | null
-  has_refrigeration: boolean | null
-  has_freezer: boolean | null
-  has_running_water: boolean | null
-  notes: string | null
-  last_visited_at: string | null
-  created_at: string
-  updated_at: string
-}
+export type { VenueProfile } from './recon-types'
 
-export async function getVenueProfile(venueName: string): Promise<VenueProfile | null> {
+/** @deprecated Use getVenueProfile(id) from recon-actions. This one looks up by name. */
+export async function getVenueProfileByName(venueName: string) {
   const chef = await requireChef()
   const db: any = createServerClient()
 
@@ -34,7 +25,8 @@ export async function getVenueProfile(venueName: string): Promise<VenueProfile |
   return data
 }
 
-export async function getVenueProfiles(): Promise<VenueProfile[]> {
+/** @deprecated Use getVenues() from recon-actions. */
+export async function getVenueProfiles() {
   const chef = await requireChef()
   const db: any = createServerClient()
 
@@ -48,6 +40,7 @@ export async function getVenueProfiles(): Promise<VenueProfile[]> {
   return data ?? []
 }
 
+/** @deprecated Use createVenueProfile() or updateVenueProfile() from recon-actions. */
 export async function upsertVenueProfile(input: {
   venue_name: string
   has_full_kitchen?: boolean | null

@@ -94,8 +94,33 @@ export async function resolveEvents(ctx: GodModeResolverContext): Promise<GodMod
                 params: { href: `/chef/events/${event.id}/checklist` },
                 variant: 'default',
               },
+              ...(event.status === 'confirmed'
+                ? [
+                    {
+                      label: 'Complete',
+                      action: 'complete_event' as const,
+                      params: { entityId: event.id },
+                      variant: 'success' as const,
+                    },
+                  ]
+                : []),
             ]
-          : undefined,
+          : event.status === 'pending_confirmation'
+            ? [
+                {
+                  label: 'View',
+                  action: 'navigate',
+                  params: { href: `/chef/events/${event.id}` },
+                  variant: 'default',
+                },
+                {
+                  label: 'Confirm',
+                  action: 'confirm_event',
+                  params: { entityId: event.id },
+                  variant: 'success',
+                },
+              ]
+            : undefined,
       data: {
         eventId: event.id,
         eventDate: event.event_date,

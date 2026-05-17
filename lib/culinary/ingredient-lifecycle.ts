@@ -278,3 +278,33 @@ export async function getEventIngredientLifecycle(eventId: string): Promise<Life
 function round3(value: number): number {
   return Math.round(value * 1000) / 1000
 }
+
+/**
+ * Lightweight check: returns the count of unsourced ingredients for an event,
+ * along with whether the supplier_calling flag is enabled.
+ * Used by the countdown badge to warn chefs about unsourced items near event time.
+ */
+export async function getUnsourcedIngredientStatus(
+  eventId: string
+): Promise<{ unsourcedCount: number; flagEnabled: boolean }> {
+  const user = await requireChef()
+  const db: any = createServerClient()
+
+  // Check supplier_calling flag
+  const { data: flagRow } = await db
+    .from('chef_feature_flags')
+    .select('enabled')
+    .eq('chef_id', user.tenantId!)
+    .eq('flag_name', 'supplier_calling')
+    .maybeSingle()
+
+  if (!flagRow?.enabled) {
+    return { unsourcedCount: 0, flagEnabled: false }
+  }
+
+  // Get lifecycle and count items with purchasedQty === null
+  const lifecycle = await getEventIngredientLifecycle(eventId)
+  const unsourcedCount = lifecycle.items.filter((i) => i.purchasedQty === null).length
+
+  return { unsourcedCount, flagEnabled: true }
+}

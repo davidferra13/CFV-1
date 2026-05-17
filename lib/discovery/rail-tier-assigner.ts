@@ -43,6 +43,8 @@ export interface TieredRailResult {
   opportunity: GodModeResolvedItem[]
   totalItems: number
   assembledAt: string
+  /** Per-item persistent state map (definitionId -> state). Absent = 'surfaced'. */
+  itemStates?: Record<string, string>
 }
 
 // ---------------------------------------------------------------------------
@@ -299,18 +301,23 @@ export async function assembleTieredRail(
   // 1. Fetch God Mode items (all resolvers)
   const godModeItems = await dispatchAllResolvers(ctx)
 
-  // 2. Load dismissal state
+  // 2. Load dismissal state + persistent rail item states
   const { loadRailUserState } = await import('./universal-rail-state')
-  const state = await loadRailUserState(user.id, 'chef')
+  const { getSuppressedItemKeys } = await import('./rail-item-state-actions')
+  const tenantId = user.tenantId ?? user.entityId
+  const [state, suppressedKeys] = await Promise.all([
+    loadRailUserState(user.id, 'chef'),
+    getSuppressedItemKeys(tenantId, user.id).catch(() => new Set<string>()),
+  ])
   const dismissedIds = new Set(
     Array.from(state?.dismissals.entries() ?? [])
       .filter(([, d]) => isItemDismissed(d, now))
       .map(([id]) => id)
   )
 
-  // 3. Filter dismissed, apply escalation
+  // 3. Filter dismissed + persistent state suppressed, apply escalation
   const activeGodMode = godModeItems
-    .filter((item) => !dismissedIds.has(item.definitionId))
+    .filter((item) => !dismissedIds.has(item.definitionId) && !suppressedKeys.has(item.definitionId))
     .map((item) => applyEscalation(item, now))
     .filter((item) => {
       if (!item.expiresAt) return true
@@ -328,7 +335,14 @@ export async function assembleTieredRail(
   const allItems = [...activeGodMode, ...operatorAdapted, ...universalAdapted]
 
   // 7. Deduplicate (same entity ID keeps highest scored version)
-  const deduped = dedupeOperatingLoopItems(allItems, now)
+  const dedupedRaw = dedupeOperatingLoopItems(allItems, now)
+
+  // 7b. Apply persistent rail item state filter to all sources
+  // (God Mode items were pre-filtered in step 3, but operator + universal
+  // items need this filter applied here after adaptation.)
+  const deduped = dedupedRaw.filter(
+    (item) => !suppressedKeys.has(item.definitionId)
+  )
 
   // 8. Score items and apply time-of-day multiplier
   const timeWindow = getCurrentTimeWindow(now)
@@ -383,6 +397,22 @@ export async function assembleTieredRail(
   }
 
   result.totalItems = UNIFIED_TIER_ORDER.reduce((sum, tier) => sum + result[tier].length, 0)
+
+  // 13. Attach persistent item states for UI (seen vs surfaced styling)
+  const { getRailItemStateMap } = await import('./rail-item-state-actions')
+  const stateMap = await getRailItemStateMap(tenantId, user.id).catch(() => new Map())
+  if (stateMap.size > 0) {
+    const states: Record<string, string> = {}
+    for (const tier of UNIFIED_TIER_ORDER) {
+      for (const item of result[tier]) {
+        const s = stateMap.get(item.definitionId)
+        if (s) states[item.definitionId] = s
+      }
+    }
+    if (Object.keys(states).length > 0) {
+      result.itemStates = states
+    }
+  }
 
   return result
 }

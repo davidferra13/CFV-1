@@ -12,6 +12,8 @@ import {
   type SyncResult,
 } from '@/lib/openclaw/sync'
 import { CatalogBrowser } from '@/app/(chef)/culinary/price-catalog/catalog-browser'
+import { OpenClawCountdownCard } from '@/components/openclaw/countdown-card'
+import { ScheduleBoard } from '@/components/openclaw/schedule-board'
 import { VendorImportTab } from './vendor-import-tab'
 
 type Tab = 'overview' | 'prices' | 'sources' | 'changes' | 'sync' | 'catalog' | 'vendor-import'
@@ -101,6 +103,11 @@ export function PriceCatalogClient() {
         Browse live market pricing, inspect source coverage, import vendor lists, and sync current
         prices into your ingredient library.
       </p>
+
+      <div className="grid gap-4 lg:grid-cols-2 mb-6">
+        <OpenClawCountdownCard />
+        <ScheduleBoard />
+      </div>
 
       {/* Tabs */}
       <div className="flex gap-1 mb-6 border-b">

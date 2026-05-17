@@ -168,7 +168,7 @@ export const DISCOVERY_RAIL_CONTRACT_REGISTRY: Record<DiscoveryItemType, Discove
     reasonCodes: ['preference_match', 'recovery_prompt', 'random_pick'],
   }),
   service: contract('service', 'Service', 'A fulfillment or service format.', 'occasion', {
-    destinationFamilies: ['chefs', 'eat', 'public_info'],
+    destinationFamilies: ['chefs', 'eat', 'nearby', 'public_info'],
     filterFacets: ['fulfillment'],
     defaultActions: ['navigate', 'select', 'filter', 'save', 'share'],
     reasonCodes: ['occasion_fit', 'manual_editorial', 'preference_match'],
@@ -203,7 +203,7 @@ export const DISCOVERY_RAIL_CONTRACT_REGISTRY: Record<DiscoveryItemType, Discove
     'A chef, menu, or service shortcut picked by ChefFlow.',
     'chefflow_picks',
     {
-      destinationFamilies: ['chef_profile', 'chefs', 'eat', 'public_info'],
+      destinationFamilies: ['chef_profile', 'chefs', 'eat', 'nearby', 'public_info'],
       filterFacets: ['resultType'],
       defaultActions: ['navigate', 'select', 'filter', 'save', 'hide', 'compare', 'share'],
       reasonCodes: ['manual_editorial', 'preference_match', 'freshness_return'],
@@ -227,14 +227,14 @@ export const DISCOVERY_RAIL_CONTRACT_REGISTRY: Record<DiscoveryItemType, Discove
     'Editorial or explanatory discovery content.',
     'chefflow_picks',
     {
-      destinationFamilies: ['eat', 'public_info', 'ingredients', 'chef_profile'],
+      destinationFamilies: ['eat', 'public_info', 'ingredients', 'chef_profile', 'chefs', 'nearby'],
       filterFacets: [],
       defaultActions: ['navigate', 'save', 'hide', 'share'],
       reasonCodes: ['manual_editorial', 'seasonal_pick', 'novelty_injection'],
     }
   ),
   surprise: contract('surprise', 'Surprise', 'A stochastic exploration prompt.', 'chefflow_picks', {
-    destinationFamilies: ['eat', 'chefs'],
+    destinationFamilies: ['eat', 'chefs', 'nearby'],
     filterFacets: ['mood'],
     defaultActions: ['navigate', 'select', 'filter', 'hide', 'share'],
     reasonCodes: ['random_pick', 'novelty_injection', 'diversity_fill'],
@@ -245,7 +245,7 @@ export const DISCOVERY_RAIL_CONTRACT_REGISTRY: Record<DiscoveryItemType, Discove
     'A seasonal dish, ingredient, or dining moment.',
     'taste',
     {
-      destinationFamilies: ['ingredients', 'eat', 'nearby'],
+      destinationFamilies: ['ingredients', 'eat', 'nearby', 'chefs'],
       filterFacets: ['ingredient', 'dateWindow'],
       defaultActions: ['navigate', 'select', 'filter', 'save', 'hide', 'share'],
       reasonCodes: ['seasonal_pick', 'freshness_return', 'pantry_match'],
@@ -276,7 +276,7 @@ export const DISCOVERY_RAIL_CONTRACT_REGISTRY: Record<DiscoveryItemType, Discove
     reasonCodes: ['budget_fit', 'preference_match'],
   }),
   time: contract('time', 'Time', 'A date, timing, or effort window.', 'occasion', {
-    destinationFamilies: ['eat', 'chefs'],
+    destinationFamilies: ['eat', 'chefs', 'nearby'],
     filterFacets: ['dateWindow'],
     defaultActions: ['navigate', 'select', 'filter', 'save', 'lock', 'share'],
     reasonCodes: ['occasion_fit', 'freshness_return', 'recovery_prompt'],

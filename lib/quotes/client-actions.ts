@@ -323,6 +323,16 @@ async function acceptQuoteForContext(quoteId: string, context: QuoteResponseCont
     )
   }
 
+  // Lifecycle journey orchestration: quote acceptance is a key lifecycle checkpoint (non-blocking)
+  if (quote.tenant_id) {
+    try {
+      const { orchestrateJourney } = await import('@/lib/lifecycle/journey-orchestrator')
+      await orchestrateJourney(quote.tenant_id, quote.inquiry_id ?? null, quote.event_id ?? null)
+    } catch (err) {
+      console.error('[acceptQuote] Journey orchestration failed (non-blocking):', err)
+    }
+  }
+
   return { success: true, eventId: quote.event_id }
 }
 
@@ -452,6 +462,16 @@ async function rejectQuoteForContext(
         attempts: 1,
       })
     })
+  }
+
+  // Lifecycle journey orchestration: quote rejection affects lifecycle stage (non-blocking)
+  if (quote.tenant_id) {
+    try {
+      const { orchestrateJourney } = await import('@/lib/lifecycle/journey-orchestrator')
+      await orchestrateJourney(quote.tenant_id, quote.inquiry_id ?? null, quote.event_id ?? null)
+    } catch (err) {
+      console.error('[rejectQuote] Journey orchestration failed (non-blocking):', err)
+    }
   }
 
   return { success: true }

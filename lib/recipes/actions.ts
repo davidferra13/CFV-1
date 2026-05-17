@@ -2087,8 +2087,21 @@ export async function computeRecipeIngredientCost(
 
   if (!ingredient) return { costCents: null, warning: 'ingredient_not_found' }
 
-  // Determine the cost and its unit
-  const costPerUnit = ingredient.cost_per_unit_cents ?? ingredient.last_price_cents
+  // C2: Use resolvePrice() for freshest available price, fall back to stale column
+  let costPerUnit: number | null = null
+  try {
+    const { resolvePrice } = await import('@/lib/pricing/resolve-price')
+    const resolved = await resolvePrice(ingredientId, tenantId)
+    if (resolved.cents != null) {
+      costPerUnit = resolved.cents
+    }
+  } catch {
+    // resolvePrice unavailable; fall through to stale column
+  }
+  // Fallback: stale column becomes the safety net
+  if (costPerUnit == null) {
+    costPerUnit = ingredient.cost_per_unit_cents ?? ingredient.last_price_cents
+  }
   if (!costPerUnit) {
     return { costCents: null, warning: 'no_price' }
   }

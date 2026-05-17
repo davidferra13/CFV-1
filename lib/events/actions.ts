@@ -410,6 +410,29 @@ export async function createEvent(input: CreateEventInput) {
     console.error('[createEvent] Webhook dispatch failed (non-blocking):', err)
   }
 
+  // Lifecycle journey orchestration: seed templates and evaluate triggers for new event (non-blocking)
+  try {
+    const { orchestrateJourney } = await import('@/lib/lifecycle/journey-orchestrator')
+    await orchestrateJourney(user.tenantId!, null, result.event.id)
+  } catch (err) {
+    console.error('[createEvent] Journey orchestration failed (non-blocking):', err)
+  }
+
+  // Seed cannabis circle for cannabis events (non-blocking)
+  if (validated.cannabis_preference) {
+    try {
+      const { seedCannabisCircleForEvent } = await import('@/lib/cannabis/cannabis-circle-actions')
+      await seedCannabisCircleForEvent({
+        eventId: result.event.id,
+        tenantId: user.tenantId!,
+        clientId: validated.client_id,
+        occasion: validated.occasion || null,
+      })
+    } catch (err) {
+      console.error('[createEvent] Cannabis circle seed failed (non-blocking):', err)
+    }
+  }
+
   // Check for scheduling conflicts with existing events (non-blocking)
   let warnings: string[] = []
   try {
@@ -931,6 +954,16 @@ export async function updateEvent(eventId: string, input: UpdateEventInput) {
     })
   } catch (err) {
     console.error('[updateEvent] Webhook dispatch failed (non-blocking):', err)
+  }
+
+  // Lifecycle journey orchestration: re-evaluate triggers after field changes (non-blocking)
+  // Fields like date, guest count, dietary info, and location affect lifecycle checkpoints.
+  try {
+    const { orchestrateJourney } = await import('@/lib/lifecycle/journey-orchestrator')
+    const inquiryId = (currentEvent as any)?.inquiry_id ?? null
+    await orchestrateJourney(user.tenantId!, inquiryId, eventId)
+  } catch (err) {
+    console.error('[updateEvent] Journey orchestration failed (non-blocking):', err)
   }
 
   return result

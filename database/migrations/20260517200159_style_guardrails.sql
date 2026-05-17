@@ -1,0 +1,3 @@
+CREATE TABLE IF NOT EXISTS guardrail_rules (id UUID PRIMARY KEY DEFAULT gen_random_uuid(), tenant_id UUID NOT NULL, category TEXT NOT NULL, name TEXT NOT NULL, description TEXT, pattern TEXT, severity TEXT NOT NULL DEFAULT 'warning', active BOOLEAN DEFAULT TRUE, created_at TIMESTAMPTZ DEFAULT NOW() NOT NULL);
+CREATE TABLE IF NOT EXISTS guardrail_violations (id UUID PRIMARY KEY DEFAULT gen_random_uuid(), tenant_id UUID NOT NULL, rule_id UUID NOT NULL, route TEXT NOT NULL, component TEXT, details TEXT, auto_fixable BOOLEAN DEFAULT FALSE, fixed_at TIMESTAMPTZ, detected_at TIMESTAMPTZ DEFAULT NOW() NOT NULL);
+CREATE INDEX idx_guardrail_violations_route ON guardrail_violations(tenant_id, route);

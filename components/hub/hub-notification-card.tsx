@@ -3,6 +3,7 @@
 import { memo } from 'react'
 import type { HubMessage, HubNotificationType } from '@/lib/hub/types'
 import { CircleMenuCard, type CircleMenuCardData } from './circle-menu-card'
+import { InlineActionExecutor } from '@/components/actions/inline-action-executor'
 
 // ---------------------------------------------------------------------------
 // Notification Card - Rich actionable cards rendered inside the circle feed.
@@ -124,6 +125,18 @@ const NOTIFICATION_CONFIG: Record<
   },
 }
 
+// ---------------------------------------------------------------------------
+// Action button mapping: notification_type -> inline actions to render
+// ---------------------------------------------------------------------------
+const NOTIFICATION_ACTIONS: Partial<
+  Record<HubNotificationType, { actionId: string; entityKey: string }[]>
+> = {
+  contract_ready: [{ actionId: 'send_contract', entityKey: 'contractId' }],
+  quote_sent: [{ actionId: 'send_quote_reminder', entityKey: 'quoteId' }],
+  invoice_sent: [{ actionId: 'send_payment_reminder', entityKey: 'invoiceId' }],
+  repeat_booking_request: [{ actionId: 'convert_inquiry_to_proposal', entityKey: 'inquiryId' }],
+}
+
 // Memoized: rendered in .map() inside hub message feed. Props are stable data objects.
 export const HubNotificationCard = memo(function HubNotificationCard({
   message,
@@ -173,6 +186,9 @@ export const HubNotificationCard = memo(function HubNotificationCard({
         {/* Structured metadata display */}
         <NotificationMetadata notifType={notifType} metadata={metadata} />
 
+        {/* Inline action buttons */}
+        <NotificationActionButtons notifType={notifType} metadata={metadata} />
+
         {/* CTA button */}
         {message.action_url && message.action_label && (
           <a
@@ -196,6 +212,31 @@ export const HubNotificationCard = memo(function HubNotificationCard({
     </div>
   )
 })
+
+// Render inline action buttons for actionable notification types
+function NotificationActionButtons({
+  notifType,
+  metadata,
+}: {
+  notifType: HubNotificationType
+  metadata: Record<string, unknown>
+}) {
+  const actions = NOTIFICATION_ACTIONS[notifType]
+  if (!actions || actions.length === 0) return null
+
+  return (
+    <div className="flex gap-1.5 mt-2">
+      {actions.map((a) => (
+        <InlineActionExecutor
+          key={a.actionId}
+          actionId={a.actionId}
+          entityId={(metadata[a.entityKey] as string) ?? ''}
+          variant="chip"
+        />
+      ))}
+    </div>
+  )
+}
 
 // Render structured data based on notification type
 function NotificationMetadata({

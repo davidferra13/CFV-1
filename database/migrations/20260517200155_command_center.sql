@@ -1,0 +1,3 @@
+CREATE TABLE IF NOT EXISTS dashboard_layouts (id UUID PRIMARY KEY DEFAULT gen_random_uuid(), tenant_id UUID NOT NULL, chef_id UUID NOT NULL, name TEXT NOT NULL, widgets JSONB DEFAULT '[]', is_default BOOLEAN DEFAULT FALSE, created_at TIMESTAMPTZ DEFAULT NOW() NOT NULL, updated_at TIMESTAMPTZ DEFAULT NOW() NOT NULL);
+CREATE TABLE IF NOT EXISTS dashboard_metrics (id UUID PRIMARY KEY DEFAULT gen_random_uuid(), tenant_id UUID NOT NULL, key TEXT NOT NULL, label TEXT NOT NULL, value TEXT NOT NULL, previous_value TEXT, trend TEXT, unit TEXT, updated_at TIMESTAMPTZ DEFAULT NOW() NOT NULL);
+CREATE UNIQUE INDEX idx_dashboard_metrics_key ON dashboard_metrics(tenant_id, key);
