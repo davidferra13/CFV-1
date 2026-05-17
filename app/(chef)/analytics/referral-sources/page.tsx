@@ -55,10 +55,16 @@ export default async function ReferralSourcesPage() {
       {data ? (
         <ReferralAnalyticsDashboard data={data} />
       ) : (
-        <div className="rounded-lg border border-stone-700 bg-stone-800 p-8 text-center">
+        <div className="rounded-lg border border-stone-700 bg-stone-800 p-8 text-center space-y-3">
           <p className="text-stone-500 text-sm">
-            Unable to load referral analytics. Please try again later.
+            Referral analytics failed to load. Your connection may have dropped.
           </p>
+          <Link
+            href="/analytics/referral-sources"
+            className="inline-flex items-center gap-1.5 px-4 py-2 text-sm font-medium bg-brand-500 text-white rounded-lg hover:bg-brand-600 transition-colors"
+          >
+            Refresh Page
+          </Link>
         </div>
       )}
     </div>

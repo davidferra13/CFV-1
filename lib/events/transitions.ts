@@ -989,6 +989,27 @@ export async function transitionEvent({
           occasion,
           eventDate: dateToDateString(event.event_date as Date | string),
         })
+
+        // Notify chef via email that their proposal was accepted
+        if (chef.email) {
+          try {
+            const { sendQuoteAcceptedChefEmail } = await import('@/lib/email/notifications')
+            await sendQuoteAcceptedChefEmail({
+              chefEmail: chef.email,
+              chefName,
+              clientName: client.full_name || 'Client',
+              quoteName: occasion,
+              totalCents: event.quoted_price_cents || 0,
+              depositRequired: (event.deposit_amount_cents ?? 0) > 0,
+              depositCents: event.deposit_amount_cents ?? null,
+              inquiryId: event.inquiry_id ?? eventId,
+            })
+          } catch (chefAcceptedEmailErr) {
+            log.events.warn('Chef proposal-accepted email failed (non-blocking)', {
+              error: chefAcceptedEmailErr,
+            })
+          }
+        }
       }
 
       if (toStatus === 'confirmed' && fromStatus === 'paid') {

@@ -62,7 +62,9 @@ export default function AdminError({
           </div>
           <div>
             <h1 className="text-base font-semibold text-slate-100">Admin Error</h1>
-            <p className="text-xs text-slate-400">Something went wrong in the admin panel.</p>
+            <p className="text-xs text-slate-400">
+              The admin panel failed to load. Retry or go back.
+            </p>
           </div>
         </div>
 

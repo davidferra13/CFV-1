@@ -38,6 +38,7 @@ import { ConstraintRadarPanel } from '@/components/events/constraint-radar-panel
 import type { ConstraintRadarData } from '@/lib/events/constraint-radar-actions'
 import { OperationalRiskPanel } from '@/components/events/operational-risk-panel'
 import type { RiskAssessmentResult } from '@/lib/costing/operational-risk'
+import { EventMenuCostHint } from '@/components/pricing/event-menu-cost-hint'
 import { MenuSharePanel } from '@/components/menus/menu-share-panel'
 import { ShareSplitButton } from '@/components/payments/share-split-button'
 import { DietaryCollectionNudge } from '@/components/events/dietary-collection-nudge'
@@ -150,6 +151,14 @@ export function EventDetailOverviewTab(props: EventDetailOverviewTabProps) {
         )}
 
         {operationalRisk && <OperationalRiskPanel data={operationalRisk} />}
+
+        {eventMenus && eventMenus.length > 0 && (
+          <EventMenuCostHint
+            eventId={event.id}
+            guestCount={event.guest_count ?? null}
+            quotedPriceCents={event.quoted_price_cents ?? null}
+          />
+        )}
 
         {/* Main Content Grid */}
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">

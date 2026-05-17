@@ -373,6 +373,14 @@ export function EventTimelineView({ events }: Props) {
                               {event.guest_count}
                             </span>
                           )}
+                          {!event.serve_time && (
+                            <span
+                              className="flex-shrink-0 text-[9px] text-amber-400/70"
+                              title="Add a serve time to auto-generate a prep timeline"
+                            >
+                              (no time)
+                            </span>
+                          )}
                         </div>
                       </div>
                     </div>

@@ -32,7 +32,7 @@ export function BusinessHealthCard({ score, total }: { score: number; total: num
 
   return (
     <Link href="/settings/protection">
-      <Card className={`border ${c.card} hover:shadow-sm transition-shadow cursor-pointer`}>
+      <Card interactive className={`border ${c.card}`}>
         <CardContent className="pt-4 pb-3">
           <div className="flex items-center gap-2 mb-2">
             <ShieldCheck className={`w-4 h-4 ${c.icon}`} />

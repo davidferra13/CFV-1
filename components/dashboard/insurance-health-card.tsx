@@ -31,7 +31,7 @@ export function InsuranceHealthCard({ policies }: { policies: Policy[] }) {
 
   return (
     <Link href="/settings/protection/insurance">
-      <Card className={`border ${borderColor} hover:shadow-sm transition-shadow cursor-pointer`}>
+      <Card interactive className={`border ${borderColor}`}>
         <CardContent className="pt-4 pb-3">
           <div className="flex items-center gap-2">
             <ShieldAlert className={`w-4 h-4 ${textColor}`} />

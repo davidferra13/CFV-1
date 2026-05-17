@@ -5,7 +5,7 @@ import {
   type ActionGraphAction,
   type BookingAction,
 } from '@/lib/action-graph/bookings'
-import { getCurrentJourneyAction } from '@/lib/events/journey-steps'
+import { getCurrentJourneyAction } from '@/lib/events'
 import type {
   ClientEventAction,
   ClientEventStubSummary,

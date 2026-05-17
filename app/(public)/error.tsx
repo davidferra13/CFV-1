@@ -66,9 +66,9 @@ export default function PublicError({
               />
             </svg>
           </div>
-          <CardTitle className="text-xl">Something went wrong</CardTitle>
+          <CardTitle className="text-xl">Page failed to load</CardTitle>
           <p className="text-sm text-muted-foreground mt-1">
-            This page encountered an error. Please try again.
+            This page could not be displayed. Try again or return to the homepage.
           </p>
         </CardHeader>
         <CardContent className="space-y-4">

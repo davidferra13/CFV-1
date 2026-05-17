@@ -29,10 +29,10 @@ export default function EmbedError({
     >
       <div style={{ textAlign: 'center', maxWidth: '360px' }}>
         <p style={{ fontSize: '16px', fontWeight: 600, marginBottom: '8px', color: '#1a1a1a' }}>
-          Something went wrong
+          Booking form failed to load
         </p>
         <p style={{ fontSize: '14px', color: '#666', marginBottom: '16px' }}>
-          Unable to load the booking form. Please try again.
+          Check your internet connection and try again.
         </p>
         <button
           onClick={reset}

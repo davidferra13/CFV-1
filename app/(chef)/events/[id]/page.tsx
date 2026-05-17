@@ -17,6 +17,23 @@ import { EventPrepSection } from './_sections/event-prep-section'
 import { EventTicketsSection } from './_sections/event-tickets-section'
 import { EventOpsSection } from './_sections/event-ops-section'
 import { EventWrapSection } from './_sections/event-wrap-section'
+import { getCompletionForEntity } from '@/lib/completion/actions'
+import { buildEventSuggestions } from '@/lib/suggestions/event-suggestions'
+import { ContextualNextAction } from '@/components/suggestions/contextual-next-action'
+
+async function EventSuggestionsSection({ eventId, event }: { eventId: string; event: any }) {
+  const completion = await getCompletionForEntity('event', eventId).catch(() => null)
+  const suggestions = buildEventSuggestions(
+    eventId,
+    {
+      status: event.status,
+      menu_id: event.menu_id ?? null,
+      event_date: event.event_date ?? null,
+    },
+    completion
+  )
+  return <ContextualNextAction suggestions={suggestions} />
+}
 
 export default async function EventDetailPage({
   params,
@@ -38,6 +55,9 @@ export default async function EventDetailPage({
       </Suspense>
       <Suspense fallback={<SkeletonCard />}>
         <EventHeaderSection eventId={params.id} tenantId={tenantId} event={event} />
+      </Suspense>
+      <Suspense fallback={null}>
+        <EventSuggestionsSection eventId={params.id} event={event} />
       </Suspense>
       <Suspense fallback={<SkeletonCard />}>
         <EventSpineSection eventId={params.id} tenantId={tenantId} event={event} />

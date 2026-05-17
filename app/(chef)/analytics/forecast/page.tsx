@@ -24,7 +24,7 @@ export default async function RevenueForecastPage() {
     forecast = await getRevenueForecastAction(6)
   } catch (err) {
     console.error('[RevenueForecast] Failed to load:', err)
-    loadError = 'Failed to load revenue forecast. Please try again later.'
+    loadError = 'Revenue forecast failed to load. Check your connection and refresh.'
   }
 
   if (loadError || !forecast) {
@@ -36,8 +36,16 @@ export default async function RevenueForecastPage() {
           </Link>
           <h1 className="text-3xl font-bold text-stone-100 mt-1">Revenue Forecast</h1>
         </div>
-        <div className="rounded-lg border border-red-800/40 bg-red-950/20 px-4 py-6 text-center">
+        <div className="rounded-lg border border-red-800/40 bg-red-950/20 px-4 py-6 text-center space-y-3">
           <p className="text-stone-400">{loadError ?? 'No forecast data available.'}</p>
+          {loadError && (
+            <Link
+              href="/analytics/forecast"
+              className="inline-flex items-center gap-1.5 px-4 py-2 text-sm font-medium bg-brand-500 text-white rounded-lg hover:bg-brand-600 transition-colors"
+            >
+              Refresh Page
+            </Link>
+          )}
         </div>
       </div>
     )
@@ -141,7 +149,9 @@ export default async function RevenueForecastPage() {
                 <td className="py-2 text-right text-emerald-400">{formatDollars(m.confirmed)}</td>
                 <td className="py-2 text-right text-emerald-300/70">{formatDollars(m.probable)}</td>
                 <td className="py-2 text-right text-stone-500">{formatDollars(m.projected)}</td>
-                <td className="py-2 text-right text-stone-100 font-medium">{formatDollars(m.total)}</td>
+                <td className="py-2 text-right text-stone-100 font-medium">
+                  {formatDollars(m.total)}
+                </td>
                 <td className="py-2 text-right">
                   <span
                     className={`inline-block rounded-full px-2 py-0.5 text-xs ${
@@ -181,7 +191,8 @@ export default async function RevenueForecastPage() {
 
       {/* Footer */}
       <p className="text-xs text-stone-600 text-center">
-        Forecast generated {new Date(forecast.generatedAt).toLocaleString()}. Updates with every page load.
+        Forecast generated {new Date(forecast.generatedAt).toLocaleString()}. Updates with every
+        page load.
       </p>
     </div>
   )

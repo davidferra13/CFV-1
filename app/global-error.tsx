@@ -125,7 +125,7 @@ export default function GlobalError({
           <p style={{ color: '#a8a29e', fontSize: '0.875rem', margin: '0 0 1.5rem' }}>
             {isChunkError
               ? 'A new version of ChefFlow is available. Clearing cache and reloading...'
-              : 'An unexpected error occurred. Our team has been notified.'}
+              : 'This page failed to load. Our team has been notified. Try again or go home.'}
           </p>
 
           {!isChunkError && error.digest && (

@@ -66,9 +66,9 @@ export default function ClientError({
               />
             </svg>
           </div>
-          <CardTitle className="text-xl">Something went wrong</CardTitle>
+          <CardTitle className="text-xl">Page failed to load</CardTitle>
           <p className="text-sm text-muted-foreground mt-1">
-            An error occurred. Your data is safe.
+            Your data is safe. Try again or go back to your events.
           </p>
         </CardHeader>
         <CardContent className="space-y-4">

@@ -377,10 +377,16 @@ export default async function MyEventsPage() {
           <h1 className="text-3xl font-bold text-stone-100">My Events</h1>
           <p className="text-stone-400 mt-1">Your upcoming and past events</p>
         </div>
-        <div className="rounded-xl border border-red-800/50 bg-red-950/30 p-6 text-center">
+        <div className="rounded-xl border border-red-800/50 bg-red-950/30 p-6 text-center space-y-3">
           <p className="text-sm text-red-400">
-            Could not load your dashboard. Please refresh the page or try again later.
+            Could not load your dashboard. Your connection may have dropped.
           </p>
+          <Link
+            href="/my-events"
+            className="inline-flex items-center gap-1.5 px-4 py-2 text-sm font-medium bg-brand-500 text-white rounded-lg hover:bg-brand-600 transition-colors"
+          >
+            Refresh Page
+          </Link>
         </div>
       </div>
     )

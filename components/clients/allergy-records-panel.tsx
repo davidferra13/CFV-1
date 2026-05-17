@@ -365,9 +365,15 @@ export function AllergyRecordsPanel({ clientId, initialRecords }: AllergyRecords
       </CardHeader>
       <CardContent className="space-y-2">
         {records.length === 0 && (
-          <p className="text-sm text-stone-400 text-center py-4">
-            No allergens recorded yet. Add any known allergies or dietary restrictions.
-          </p>
+          <div className="text-center py-4 space-y-2">
+            <p className="text-sm text-stone-400">
+              Dietary info <span className="text-amber-500/80">(not provided)</span>
+            </p>
+            <p className="text-xs text-stone-600">
+              No allergens or dietary restrictions on file. Add them manually above, or send the
+              client a worksheet to collect this info.
+            </p>
+          </div>
         )}
 
         {/* Unconfirmed first (AI-detected) */}

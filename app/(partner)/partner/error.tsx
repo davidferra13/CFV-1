@@ -22,9 +22,9 @@ export default function PartnerError({
     <div className="min-h-screen bg-stone-800 flex items-center justify-center px-4">
       <Card className="w-full max-w-md">
         <CardHeader className="text-center">
-          <CardTitle className="text-xl">Something went wrong</CardTitle>
+          <CardTitle className="text-xl">Partner portal failed to load</CardTitle>
           <p className="text-sm text-muted-foreground mt-1">
-            An error occurred in the partner portal.
+            There was a connection issue. Try again or contact support.
           </p>
         </CardHeader>
         <CardContent className="space-y-4">

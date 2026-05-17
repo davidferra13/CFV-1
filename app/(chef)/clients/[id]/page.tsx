@@ -1,4 +1,4 @@
-// Chef Client Detail Page
+﻿// Chef Client Detail Page
 // Shows client information, statistics, and event history
 
 import { Suspense } from 'react'
@@ -93,6 +93,8 @@ import { ScheduleMessageDialog } from '@/components/communication/schedule-messa
 import { CompletionCard, CompletionCardSkeleton } from '@/components/completion/completion-card'
 import { getCompletionForEntity } from '@/lib/completion/actions'
 import { buildClientWorkGraph } from '@/lib/client-work-graph/build'
+import { buildClientSuggestions } from '@/lib/suggestions/client-suggestions'
+import { ContextualNextAction } from '@/components/suggestions/contextual-next-action'
 import {
   buildClientActionRequiredSummary,
   getSharedClientWorkGraphSnapshot,
@@ -379,6 +381,18 @@ export default async function ClientDetailPage({ params }: ClientDetailPageProps
 
       {/* Next Best Action */}
       {clientNBA ? <NextBestActionCard action={clientNBA} /> : null}
+
+      {/* Contextual Suggestions */}
+      <ContextualNextAction
+        suggestions={buildClientSuggestions({
+          clientId: client.id,
+          lastEventDate: dormancyInfo?.lastEventDate ?? null,
+          upcomingEventCount: (client as any).upcomingEvents ?? 0,
+          outstandingBalanceCents: client.outstandingBalanceCents ?? 0,
+          totalEvents: client.totalEvents ?? 0,
+          isDormant: dormancyInfo?.isDormant ?? false,
+        })}
+      />
 
       {/* Relationship Intelligence Stats Bar */}
       <WidgetErrorBoundary name="Stats" compact>

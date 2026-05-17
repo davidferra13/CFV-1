@@ -62,8 +62,19 @@ export function EventMenuCostHint({ eventId, guestCount, quotedPriceCents }: Pro
     )
   }
 
-  // No data or unavailable: render nothing
-  if (!data || !data.available) return null
+  // No data or unavailable: show self-healing fallback instead of nothing
+  if (!data || !data.available) {
+    const reason = data && !data.available ? data.reason : null
+    return (
+      <div className="flex items-center gap-x-3 px-3 py-2 rounded-md bg-stone-800/30 border border-stone-700/40">
+        <span className="text-xs font-medium text-stone-400">Est. ingredient cost:</span>
+        <span className="text-xs text-amber-500/80">(unavailable)</span>
+        <span className="text-xs text-stone-600">
+          {reason || 'Add priced ingredients to your menu to see cost estimates'}
+        </span>
+      </div>
+    )
+  }
 
   const foodCostPct =
     quotedPriceCents && quotedPriceCents > 0

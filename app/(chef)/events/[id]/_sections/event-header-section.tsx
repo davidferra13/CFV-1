@@ -22,6 +22,8 @@ import { EventCloneButton } from '@/components/events/event-clone-button'
 import { EventActionsOverflow } from '@/components/events/event-actions-overflow'
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
+import { ProgressPill } from '@/components/ui/progress-pill'
+import { getCompletionForEntity } from '@/lib/completion/actions'
 
 function isEventToday(eventDate: Date | string): boolean {
   const today = new Date()
@@ -69,6 +71,7 @@ export async function EventHeaderSection({ eventId, tenantId, event }: Props) {
     eventMenus,
     { totalPaid, outstandingBalance },
     inquiryReferralSource,
+    completion,
   ] = await Promise.all([
     getEventGuests(eventId).catch(() => []),
     getEventCollaborators(eventId).catch(() => []),
@@ -114,6 +117,7 @@ export async function EventHeaderSection({ eventId, tenantId, event }: Props) {
           }
         })()
       : Promise.resolve(null),
+    getCompletionForEntity('event', eventId).catch(() => null),
   ])
 
   // Supplier calling feature flag
@@ -182,6 +186,13 @@ export async function EventHeaderSection({ eventId, tenantId, event }: Props) {
           {referralSourceLabel && <Badge variant="info">Referral: {referralSourceLabel}</Badge>}
           <DietaryComplexityBadge result={dietaryComplexity} />
           <EventRiskBadge result={eventRisk} />
+          {completion && (
+            <ProgressPill
+              current={completion.requirements.filter((r) => r.met).length}
+              total={completion.requirements.length}
+              label="complete"
+            />
+          )}
         </div>
         <div className="mt-1">
           <Suspense fallback={null}>

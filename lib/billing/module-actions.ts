@@ -7,7 +7,7 @@
 import { createServerClient } from '@/lib/db/server'
 import { requireChef } from '@/lib/auth/get-user'
 import { revalidateTag } from 'next/cache'
-import { CHEF_LAYOUT_CACHE_TAG } from '@/lib/chef/layout-cache'
+import { CHEF_LAYOUT_CACHE_TAG } from '@/lib/chef'
 import { ALL_MODULE_SLUGS, DEFAULT_ENABLED_MODULES } from '@/lib/billing/modules'
 
 /**

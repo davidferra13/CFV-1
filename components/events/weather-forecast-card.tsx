@@ -36,7 +36,20 @@ export function WeatherForecastCard({ eventId }: WeatherForecastCardProps) {
   if (!loaded && isPending) return null
 
   // No data available (no coords, too far out, past event)
-  if (!error && !data) return null
+  // Show a helpful message instead of nothing
+  if (!error && !data && loaded) {
+    return (
+      <div className="rounded-lg border border-stone-700 bg-stone-800/50 p-4">
+        <h3 className="text-sm font-semibold text-stone-200">Weather Forecast</h3>
+        <p className="text-sm text-stone-500 mt-1">
+          (unavailable) Forecast available closer to event date
+        </p>
+        <p className="text-xs text-stone-600 mt-1">
+          Weather data appears within 7 days of the event.
+        </p>
+      </div>
+    )
+  }
 
   // Fetch failed
   if (error) {

@@ -34,6 +34,7 @@ import {
 } from '@/lib/menus/constants'
 import type { getMenuById } from '@/lib/menus/actions'
 import { getNextCourseNumber } from '@/lib/menus/course-utils'
+import { ProgressPill } from '@/components/ui/progress-pill'
 
 // ─── Types ────────────────────────────────────────────────────────────────────
 
@@ -955,6 +956,11 @@ export function MenuEditorClient({ menu }: { menu: MenuFull }) {
           {menu.target_guest_count && (
             <span className="text-sm text-stone-500">{menu.target_guest_count} guests</span>
           )}
+          <ProgressPill
+            current={(menu.dishes ?? []).length}
+            total={Math.max((menu.dishes ?? []).length, 1)}
+            label={`course${(menu.dishes ?? []).length === 1 ? '' : 's'}`}
+          />
         </div>
       </div>
 

@@ -32,6 +32,9 @@ import {
   ScheduleSkeleton,
   IntelligenceCardsSkeleton,
 } from './_sections/section-skeletons'
+import { CilSignalSummary } from './_sections/cil-signal-summary'
+import { getWeeklyRetroSummary } from '@/lib/scheduling/weekly-retro-summary-action'
+import { WeeklyReflectionWidget } from '@/components/dashboard/weekly-reflection-widget'
 
 export const metadata: Metadata = { title: 'Dashboard' }
 
@@ -73,6 +76,18 @@ export default async function ChefDashboard() {
         <AmbientLayer />
       </Suspense>
 
+      <WidgetErrorBoundary name="System Pulse" compact>
+        <Suspense fallback={<IntelligenceCardsSkeleton />}>
+          <CilSignalSummary />
+        </Suspense>
+      </WidgetErrorBoundary>
+
+      <WidgetErrorBoundary name="Weekly Reflection" compact>
+        <Suspense fallback={null}>
+          <WeeklyReflectionLoader />
+        </Suspense>
+      </WidgetErrorBoundary>
+
       <Suspense fallback={<ScheduleSkeleton />}>
         <ThisWeekSection queuePromise={queuePromise} />
       </Suspense>
@@ -100,4 +115,11 @@ export default async function ChefDashboard() {
       </Suspense>
     </div>
   )
+}
+
+/** Async server component that fetches retro summary and passes to client widget. */
+async function WeeklyReflectionLoader() {
+  const summary = await getWeeklyRetroSummary().catch(() => null)
+  if (!summary || !summary.hasActivity) return null
+  return <WeeklyReflectionWidget summary={summary} />
 }

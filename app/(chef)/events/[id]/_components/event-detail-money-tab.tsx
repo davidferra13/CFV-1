@@ -30,6 +30,7 @@ import {
   type MenuCostData,
 } from '@/components/costing/event-food-cost-insight'
 import { LiveMenuCostPanel } from '@/components/costing/live-menu-cost-panel'
+import { PieCoverageHint } from '@/components/pricing/pie-coverage-hint'
 import type { EventPricingIntelligencePayload } from '@/lib/finance/event-pricing-intelligence-actions'
 import { EventDetailGuestCountRequests } from './event-detail-guest-count-requests'
 import type { GuestCountChange } from '@/lib/guests/count-changes'
@@ -163,6 +164,8 @@ export function EventDetailMoneyTab(props: EventDetailMoneyTabProps) {
           quotedPriceCents={event.quoted_price_cents ?? null}
         />
       )}
+
+      {eventMenus && eventMenus.length > 0 && <PieCoverageHint eventId={event.id} />}
 
       {/* Labor Cost (per-event staff hours + pay, rolls into P&L) */}
       <EventLaborCostCard eventId={event.id} quotedPriceCents={event.quoted_price_cents} />

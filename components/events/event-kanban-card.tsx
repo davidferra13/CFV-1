@@ -33,34 +33,34 @@ export function EventKanbanCard({ event, isDragging = false }: EventKanbanCardPr
         isDragging ? 'shadow-xl opacity-80 ring-2 ring-brand-400' : 'shadow-sm hover:shadow-md',
       ].join(' ')}
     >
-      {/* Occasion / title */}
-      <div className="mb-1.5">
+      {/* Occasion / title - primary info, loudest */}
+      <div className="mb-1">
         <Link
           href={`/events/${event.id}`}
           onClick={(e) => e.stopPropagation()}
-          className="text-sm font-semibold text-stone-100 hover:text-brand-600 hover:underline leading-snug line-clamp-2"
+          className="text-base font-bold text-stone-50 hover:text-brand-400 hover:underline leading-snug line-clamp-2"
         >
           {event.occasion}
         </Link>
       </div>
 
-      {/* Client name */}
+      {/* Client name - secondary */}
       <p className="text-xs text-stone-500 mb-2 truncate">{event.client_name}</p>
 
-      {/* Meta row */}
-      <div className="flex items-center justify-between gap-2 flex-wrap">
-        <span className="text-xs text-stone-400">
-          {format(parseISO(event.event_date), 'MMM d, yyyy')}
-        </span>
-        <span className="text-xs text-stone-400">{event.guest_count} guests</span>
-      </div>
-
-      {/* Price */}
+      {/* Price - key metric, visually prominent */}
       {event.quoted_price_cents > 0 && (
-        <div className="mt-1.5 text-xs font-medium text-emerald-700">
+        <div className="mb-1.5 text-sm font-semibold text-emerald-400">
           {formatCurrency(event.quoted_price_cents)}
         </div>
       )}
+
+      {/* Meta row - muted metadata */}
+      <div className="flex items-center justify-between gap-2 flex-wrap">
+        <span className="text-xs text-stone-500">
+          {format(parseISO(event.event_date), 'MMM d, yyyy')}
+        </span>
+        <span className="text-xs text-stone-500">{event.guest_count} guests</span>
+      </div>
     </div>
   )
 }
@@ -69,19 +69,19 @@ export function EventKanbanCard({ event, isDragging = false }: EventKanbanCardPr
 export function EventKanbanCardOverlay({ event }: { event: KanbanEvent }) {
   return (
     <div className="bg-stone-900 rounded-lg border border-brand-600 p-3 shadow-2xl ring-2 ring-brand-400 rotate-1 opacity-95 w-64">
-      <p className="text-sm font-semibold text-stone-100 line-clamp-2">{event.occasion}</p>
+      <p className="text-base font-bold text-stone-50 line-clamp-2">{event.occasion}</p>
       <p className="text-xs text-stone-500 mt-1 truncate">{event.client_name}</p>
-      <div className="flex items-center justify-between gap-2 mt-2 flex-wrap">
-        <span className="text-xs text-stone-400">
-          {format(parseISO(event.event_date), 'MMM d, yyyy')}
-        </span>
-        <span className="text-xs text-stone-400">{event.guest_count} guests</span>
-      </div>
       {event.quoted_price_cents > 0 && (
-        <div className="mt-1.5 text-xs font-medium text-emerald-700">
+        <div className="mt-1.5 text-sm font-semibold text-emerald-400">
           {formatCurrency(event.quoted_price_cents)}
         </div>
       )}
+      <div className="flex items-center justify-between gap-2 mt-1.5 flex-wrap">
+        <span className="text-xs text-stone-500">
+          {format(parseISO(event.event_date), 'MMM d, yyyy')}
+        </span>
+        <span className="text-xs text-stone-500">{event.guest_count} guests</span>
+      </div>
     </div>
   )
 }

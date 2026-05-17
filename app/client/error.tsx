@@ -38,18 +38,28 @@ export default function ClientPortalError({
           </svg>
         </div>
         <div>
-          <h1 className="text-xl font-semibold text-stone-200">Something went wrong</h1>
+          <h1 className="text-xl font-semibold text-stone-200">Portal failed to load</h1>
           <p className="text-sm text-stone-500 mt-1">
-            There was a problem loading your portal. Please try again.
+            Could not load your portal. Check your connection and try again.
           </p>
         </div>
         {error.digest && <p className="text-xs text-stone-400">Reference: {error.digest}</p>}
-        <button
-          onClick={reset}
-          className="inline-flex items-center justify-center px-5 py-2.5 text-sm font-medium bg-stone-800 text-white rounded-lg hover:bg-stone-700 transition-colors"
-        >
-          Try Again
-        </button>
+        <div className="flex gap-3 justify-center">
+          <button
+            type="button"
+            onClick={reset}
+            className="inline-flex items-center justify-center px-5 py-2.5 text-sm font-medium bg-brand-500 text-white rounded-lg hover:bg-brand-600 transition-colors"
+          >
+            Retry
+          </button>
+          <button
+            type="button"
+            onClick={() => window.history.back()}
+            className="inline-flex items-center justify-center px-5 py-2.5 text-sm font-medium bg-stone-800 text-white rounded-lg hover:bg-stone-700 transition-colors"
+          >
+            Go Back
+          </button>
+        </div>
       </div>
     </div>
   )

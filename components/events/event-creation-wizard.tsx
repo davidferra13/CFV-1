@@ -20,6 +20,7 @@ import { ANALYTICS_EVENTS, trackEvent } from '@/lib/analytics/posthog'
 import { formatCurrency, parseCurrencyToCents } from '@/lib/utils/currency'
 import { toast } from 'sonner'
 import { AddressAutocomplete } from '@/components/ui/address-autocomplete'
+import type { EventSmartDefaults } from '@/lib/intelligence/smart-defaults'
 
 type Client = {
   id: string
@@ -31,6 +32,7 @@ type Client = {
 
 type EventCreationWizardProps = {
   clients: Client[]
+  smartDefaults?: EventSmartDefaults | null
 }
 
 type WizardStep = 1 | 2 | 3 | 4
@@ -70,7 +72,7 @@ const COMMON_ALLERGY_SUGGESTIONS = [
   'Sesame',
 ]
 
-export function EventCreationWizard({ clients }: EventCreationWizardProps) {
+export function EventCreationWizard({ clients, smartDefaults }: EventCreationWizardProps) {
   const router = useRouter()
   const [isPending, startTransition] = useTransition()
   const [step, setStep] = useState<WizardStep>(1)
@@ -81,9 +83,9 @@ export function EventCreationWizard({ clients }: EventCreationWizardProps) {
   const [clientId, setClientId] = useState('')
   const [occasion, setOccasion] = useState('')
   const [eventDate, setEventDate] = useState('')
-  const [serveTime, setServeTime] = useState('')
-  const [guestCount, setGuestCount] = useState('')
-  const [serviceStyle, setServiceStyle] = useState('')
+  const [serveTime, setServeTime] = useState(smartDefaults?.serveTime ?? '')
+  const [guestCount, setGuestCount] = useState(smartDefaults?.guestCount?.toString() ?? '')
+  const [serviceStyle, setServiceStyle] = useState(smartDefaults?.serviceStyle ?? '')
   const [locationAddress, setLocationAddress] = useState('')
   const [locationCity, setLocationCity] = useState('')
   const [locationState, setLocationState] = useState('')

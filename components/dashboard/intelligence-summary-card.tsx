@@ -26,7 +26,7 @@ export async function IntelligenceSummaryCard() {
 
   return (
     <Link href="/analytics/intelligence" className="block">
-      <Card className="hover:border-primary/50 transition-colors cursor-pointer">
+      <Card interactive className="hover:border-primary/50">
         <CardHeader className="pb-2">
           <CardTitle className="text-sm font-medium flex items-center justify-between">
             Intelligence Hub

@@ -66,7 +66,7 @@ export function StatusBadge({ status, label, className = '', ...props }: StatusB
 
   return (
     <span
-      className={`inline-flex items-center px-2 py-0.5 rounded-md text-xs font-medium ${TIER_STYLES[config.tier]} ${className}`}
+      className={`inline-flex items-center px-2 py-0.5 rounded-md text-xs font-medium transition-colors duration-300 ${TIER_STYLES[config.tier]} ${className}`}
       {...props}
     >
       {displayLabel}

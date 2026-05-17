@@ -3,7 +3,7 @@
 // Non-blocking - failures are logged, never thrown.
 
 import { createServerClient } from '@/lib/db/server'
-import { sendNotification } from '@/lib/notifications/send'
+import { sendNotification } from '@/lib/notifications'
 import type { ActivityEventType } from './types'
 
 const DEBOUNCE_MINUTES = 30

@@ -27,9 +27,9 @@ export default function GoalsError({
     <div className="flex items-center justify-center px-4 py-20">
       <Card className="w-full max-w-md">
         <CardHeader className="text-center">
-          <CardTitle className="text-xl">Goals Error</CardTitle>
+          <CardTitle className="text-xl">Goals failed to load</CardTitle>
           <p className="text-sm text-muted-foreground mt-1">
-            Something went wrong loading your goals.
+            Could not load your goals data. Check your connection and retry.
           </p>
         </CardHeader>
         <CardContent className="space-y-4">

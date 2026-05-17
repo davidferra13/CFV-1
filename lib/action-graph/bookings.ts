@@ -1,4 +1,4 @@
-import { buildQuoteDraftHref } from '@/lib/quotes/quote-prefill'
+import { buildQuoteDraftHref } from '@/lib/quotes'
 
 export type BookingActionKind =
   | 'proposal_review'

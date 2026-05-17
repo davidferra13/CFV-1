@@ -93,7 +93,7 @@ export function ActionSurfaceCard({
 
         <Link
           href={task.href}
-          className={`inline-flex items-center justify-center gap-2 rounded-2xl px-5 py-3 text-sm font-semibold transition-colors ${toneStyles.cta}`}
+          className={`inline-flex items-center justify-center gap-2 rounded-2xl px-5 py-3 text-sm font-semibold transition-all duration-200 active:scale-95 active:duration-75 hover:shadow-md ${toneStyles.cta}`}
         >
           <span>{task.ctaLabel}</span>
           <ArrowRight className="h-4 w-4" />

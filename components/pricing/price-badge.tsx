@@ -546,10 +546,29 @@ function tierTooltipText(tier: ResolutionTier, store: string | null): string {
  * NoPriceBadge - Explicit empty state for when no price is available.
  * Use this instead of showing $0.00 or blank space.
  */
-export function NoPriceBadge({ className = '' }: { className?: string }) {
+export function NoPriceBadge({
+  className = '',
+  ingredientId,
+  onRequestQuote,
+}: {
+  className?: string
+  ingredientId?: string
+  onRequestQuote?: () => void
+}) {
   return (
-    <span className={`text-sm text-stone-500 ${className}`}>
-      No price data <span className="text-xs text-stone-600">- Log a receipt to set price</span>
+    <span className={`text-sm text-stone-500 inline-flex items-center gap-1.5 ${className}`}>
+      <span className="text-amber-500/80">(price unavailable)</span>
+      {ingredientId && onRequestQuote ? (
+        <button
+          type="button"
+          onClick={onRequestQuote}
+          className="text-xs text-brand-400 hover:text-brand-300 underline underline-offset-2 transition-colors"
+        >
+          Request quote
+        </button>
+      ) : (
+        <span className="text-xs text-stone-600">Log a receipt or set your price</span>
+      )}
     </span>
   )
 }

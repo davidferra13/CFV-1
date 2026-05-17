@@ -37,10 +37,16 @@ export default async function ClientQuotesPage() {
           <h1 className="text-3xl font-bold text-stone-100">My Quotes</h1>
           <p className="text-stone-400 mt-1">Review and respond to pricing quotes from your chef</p>
         </div>
-        <div className="rounded-xl border border-red-800/50 bg-red-950/30 p-6 text-center">
+        <div className="rounded-xl border border-red-800/50 bg-red-950/30 p-6 text-center space-y-3">
           <p className="text-sm text-red-400">
-            Could not load your quotes. Please refresh the page or try again later.
+            Could not load your quotes. Your connection may have dropped.
           </p>
+          <Link
+            href="/my-quotes"
+            className="inline-flex items-center gap-1.5 px-4 py-2 text-sm font-medium bg-brand-500 text-white rounded-lg hover:bg-brand-600 transition-colors"
+          >
+            Refresh Page
+          </Link>
         </div>
       </div>
     )

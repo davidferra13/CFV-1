@@ -1,4 +1,4 @@
-// Inquiry Detail Page
+﻿// Inquiry Detail Page
 // Shows everything about a single inquiry and allows the chef to work it through the pipeline
 
 import { notFound } from 'next/navigation'
@@ -68,8 +68,10 @@ import { getEntityActivityTimeline } from '@/lib/activity/entity-timeline'
 import { ScheduleRequestSchema, summarizeScheduleRequest } from '@/lib/booking/schedule-schema'
 import { Suspense } from 'react'
 import { InquiryIntelligencePanel } from '@/components/intelligence/inquiry-intelligence-panel'
+import { SmartPricingHint } from '@/components/intelligence/smart-pricing-hint'
 import { getInquiryCircleToken } from '@/lib/hub/inquiry-circle-actions'
 import { SoftCloseLeverageCard } from '@/components/inquiries/soft-close-leverage-card'
+import { ProgressPill } from '@/components/ui/progress-pill'
 import { getCriticalPath } from '@/lib/lifecycle/critical-path'
 import { CriticalPathCard } from '@/components/lifecycle/critical-path-card'
 import { getEmailSnapshot } from '@/lib/lifecycle/email-snapshot'
@@ -80,6 +82,8 @@ import { NextActionBanner } from '@/components/lifecycle/next-action-banner'
 import { RepeatClientPanel } from '@/components/clients/repeat-client-panel'
 import { ReturningClientBadge } from '@/components/inquiries/returning-client-badge'
 import { getHandoffForInquiry } from '@/lib/network/collab-actions'
+import { buildInquirySuggestions } from '@/lib/suggestions/inquiry-suggestions'
+import { ContextualNextAction } from '@/components/suggestions/contextual-next-action'
 import {
   readPublicSeasonalMarketPulseIntentFromUnknownFields,
   type PublicSeasonalMarketPulseIntent,
@@ -410,6 +414,9 @@ export default async function InquiryDetailPage({ params }: { params: { id: stri
                 currentLikelihood={(inquiry as any).chef_likelihood ?? null}
               />
             )}
+            {inquiry.status !== 'declined' && inquiry.status !== 'expired' && (
+              <ProgressPill current={5 - missingFacts.length} total={5} label="facts confirmed" />
+            )}
           </div>
           {inquiry.confirmed_occasion && (
             <p className="text-stone-400 mt-1">{inquiry.confirmed_occasion}</p>
@@ -440,6 +447,20 @@ export default async function InquiryDetailPage({ params }: { params: { id: stri
 
       {/* Next Action - what to do right now */}
       {nextActions && <NextActionBanner data={nextActions} />}
+
+      {/* Contextual Suggestions */}
+      <ContextualNextAction
+        suggestions={buildInquirySuggestions({
+          inquiryId: inquiry.id,
+          status: inquiry.status as string,
+          createdAt: inquiry.created_at,
+          firstResponseAt: (inquiry as any).first_response_at ?? null,
+          lastResponseAt: inquiry.last_response_at ?? null,
+          quoteCount: quotes.length,
+          hasAcceptedQuote: quotes.some((q: any) => q.status === 'accepted'),
+          convertedToEventId: convertedEventId,
+        })}
+      />
 
       {/* Soft-Close Leverage Card - State 1: detected soft close, inquiry still open */}
       {nextActions?.softCloseWorkflow?.futureInterest && inquiry.status === 'awaiting_chef' && (
@@ -968,6 +989,15 @@ export default async function InquiryDetailPage({ params }: { params: { id: stri
 
       {/* Quotes Section */}
       <Card className="p-6" data-testid="inquiry-quotes-section">
+        {inquiry.confirmed_guest_count && inquiry.confirmed_guest_count > 0 && (
+          <div className="mb-4">
+            <SmartPricingHint
+              guestCount={inquiry.confirmed_guest_count}
+              occasion={inquiry.confirmed_occasion ?? null}
+              serviceStyle={inquiry.confirmed_service_expectations ?? null}
+            />
+          </div>
+        )}
         <div className="flex justify-between items-center mb-4">
           <h2 className="text-xl font-semibold">Quotes</h2>
           <Link

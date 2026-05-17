@@ -83,7 +83,7 @@ export default function Error({
           ) : (
             <div className="bg-red-950 border border-red-200 rounded-md p-4">
               <p className="text-sm text-red-800">
-                An unexpected error occurred. Please try again.
+                This page failed to load. Try again, or go home and navigate back.
               </p>
               {error.digest && (
                 <div className="mt-2">

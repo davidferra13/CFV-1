@@ -34,8 +34,10 @@ export default function KioskError({
             />
           </svg>
         </div>
-        <h1 className="text-2xl font-semibold">Something went wrong</h1>
-        <p className="text-stone-400">The kiosk encountered an error. Tap below to try again.</p>
+        <h1 className="text-2xl font-semibold">Kiosk failed to load</h1>
+        <p className="text-stone-400">
+          The display encountered a connection issue. Tap below to reload.
+        </p>
         {error.digest && (
           <p className="text-xs text-stone-500 font-mono">Error ID: {error.digest}</p>
         )}

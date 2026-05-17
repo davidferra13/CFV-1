@@ -1,8 +1,5 @@
 import { createServerClient } from '@/lib/db/server'
-import {
-  getLatestPendingClientGuestCountChangeMap,
-  type GuestCountChange,
-} from '@/lib/guests/count-changes'
+import { getLatestPendingClientGuestCountChangeMap, type GuestCountChange } from '@/lib/guests'
 import type {
   ClientGraphEvent,
   ClientGraphInquiry,
