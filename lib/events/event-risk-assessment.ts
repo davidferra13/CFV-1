@@ -16,6 +16,7 @@ import {
   type RiskAssessmentResult,
 } from '@/lib/costing/operational-risk'
 import { getEventWeatherForecast } from '@/lib/weather/weather-actions'
+import { getEventBase } from '@/lib/events/shared-event-query'
 
 // ─── Public Actions ─────────────────────────────────────────────────────────────
 
@@ -32,16 +33,8 @@ export async function getEventRiskAssessment(
     const tenantId = chef.tenantId!
     const db: any = createServerClient()
 
-    // 1. Load event details
-    const { data: event, error: eventError } = await db
-      .from('events')
-      .select(
-        'id, guest_count, service_style, event_type, venue_name, staff_count, ' +
-          'service_hours, travel_time_minutes, client_id, event_date'
-      )
-      .eq('id', eventId)
-      .eq('tenant_id', tenantId)
-      .single()
+    // 1. Load event details via shared query helper
+    const { data: event, error: eventError } = await getEventBase(db, eventId, tenantId)
 
     if (eventError || !event) {
       return { data: null, error: 'Event not found' }
@@ -99,7 +92,9 @@ export async function getEventRiskAssessment(
     const recipeMetrics = await getRecipeMetrics(db, uniqueRecipeIds)
 
     // 5.5 Load PIE volatility and seasonal data for recipe ingredients
-    const eventMonth = new Date(event.event_date).getMonth() + 1
+    const eventMonth = event.event_date
+      ? new Date(event.event_date).getMonth() + 1
+      : new Date().getMonth() + 1
     const [volatileRecipes, seasonalMismatches] = await Promise.all([
       getVolatileRecipes(db, uniqueRecipeIds),
       getSeasonalMismatches(db, uniqueRecipeIds, eventMonth),

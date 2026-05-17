@@ -361,6 +361,47 @@ const INGESTORS: Record<
     }
   },
 
+  event_debrief(db, signal, now) {
+    const payload = JSON.parse(signal.payload)
+    const entityIds = JSON.parse(signal.entity_ids) as string[]
+
+    const eventId = entityIds.find((e) => e.startsWith('event_'))
+    const clientId = entityIds.find((e) => e.startsWith('client_'))
+
+    if (eventId) {
+      const state: Record<string, unknown> = {
+        success_score: payload.successScore ?? null,
+        prep_accuracy: payload.prepAccuracy ?? null,
+        time_accuracy: payload.timeAccuracy ?? null,
+        guest_satisfaction: payload.guestAvgOverall ?? null,
+        debrief_completed: true,
+      }
+      upsertEntity(db, eventId, 'event', payload.occasion || inferLabel(eventId), state, now)
+    }
+
+    if (clientId) {
+      // Classify outcome: >=80 success, >=50 mixed, <50 poor
+      const score = typeof payload.successScore === 'number' ? payload.successScore : null
+      const outcome =
+        score === null ? 'unknown' : score >= 80 ? 'success' : score >= 50 ? 'mixed' : 'poor'
+      upsertEntity(
+        db,
+        clientId,
+        'client',
+        payload.clientName || inferLabel(clientId),
+        { last_event_outcome: outcome },
+        now
+      )
+    }
+
+    // Reinforce client-books-event relation with strength based on success score
+    if (clientId && eventId) {
+      const score = typeof payload.successScore === 'number' ? payload.successScore : 70
+      const relationScore = Math.max(0.5, Math.min(1.0, score / 100))
+      upsertRelation(db, clientId, eventId, 'books', 'EXTRACTED', relationScore, signal.id, now)
+    }
+  },
+
   // Proactive analyzer sources: these don't produce graph signals via ingestion.
   // Their output goes through the ProactiveSignal pipeline instead.
   finance() {},

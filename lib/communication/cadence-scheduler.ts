@@ -17,6 +17,7 @@ import {
   CANNABIS_CADENCE_POINTS,
 } from './cadence-types'
 import type { CadencePoint, CadenceItem, CadencePointConfig } from './cadence-types'
+import type { RiskLevel } from '@/lib/costing/operational-risk'
 
 export type { CadencePoint, CadenceItem, CadencePointConfig }
 
@@ -163,6 +164,45 @@ export async function createCadenceSchedule(
       skipped_at: null,
       skip_reason: null,
     })
+  }
+
+  // --- Risk-aware extra touchpoints ---
+  // High/critical risk events get additional pre-event cadence at 14 and 3 days.
+  // Uses persisted risk assessment (non-fatal if unavailable).
+  try {
+    const riskLevel = await getPersistedRiskLevel(tenantId, eventId)
+    if (riskLevel === 'high' || riskLevel === 'critical') {
+      const RISK_EXTRA_POINTS: { point: CadencePoint; daysBefore: number }[] = [
+        { point: '14_days_before', daysBefore: 14 },
+        { point: '3_days_before', daysBefore: 3 },
+      ]
+      for (const extra of RISK_EXTRA_POINTS) {
+        // Only add if not already scheduled from the standard cadence
+        const alreadyScheduled = items.some(
+          (i) => i.cadence_point === extra.point && i.channel === 'email'
+        )
+        if (alreadyScheduled) continue
+
+        const scheduledAt = new Date(eventDt)
+        scheduledAt.setDate(scheduledAt.getDate() - extra.daysBefore)
+        scheduledAt.setHours(9, 0, 0, 0)
+
+        if (scheduledAt <= now) continue
+
+        items.push({
+          event_id: eventId,
+          tenant_id: tenantId,
+          cadence_point: extra.point,
+          channel: 'email',
+          scheduled_at: scheduledAt.toISOString(),
+          sent_at: null,
+          skipped_at: null,
+          skip_reason: null,
+        })
+      }
+    }
+  } catch (err) {
+    console.warn('[cadence-scheduler] Risk check failed, proceeding with standard cadence:', err)
   }
 
   // --- SMS cadence items ---
@@ -335,6 +375,17 @@ export async function shouldSkipCadencePoint(
     }
   }
 
+  // Check for overlapping client touchpoint rules (birthday, anniversary, etc.)
+  // If a touchpoint fires within +/- 2 days of this cadence point, skip to avoid double-sends.
+  try {
+    const overlap = await checkTouchpointOverlap(tenantId, event.client_id, cadencePoint)
+    if (overlap) {
+      return { skip: true, reason: overlap }
+    }
+  } catch (err) {
+    console.warn('[cadence-scheduler] Touchpoint overlap check failed, proceeding:', err)
+  }
+
   return { skip: false, reason: null }
 }
 
@@ -445,6 +496,108 @@ async function markSkipped(itemId: string, reason: string | null): Promise<void>
     .from('cadence_schedule')
     .update({ skipped_at: new Date().toISOString(), skip_reason: reason })
     .eq('id', itemId)
+}
+
+/**
+ * Read the persisted risk level for an event from event_risk_assessments.
+ * Returns null if no assessment exists or table is missing.
+ * Does NOT run the risk engine (avoids auth requirement in cron context).
+ */
+async function getPersistedRiskLevel(tenantId: string, eventId: string): Promise<RiskLevel | null> {
+  try {
+    const db = createServerClient()
+    const { data } = await db
+      .from('event_risk_assessments')
+      .select('overall_level')
+      .eq('event_id', eventId)
+      .eq('tenant_id', tenantId)
+      .single()
+
+    if (!data?.overall_level) return null
+    return data.overall_level as RiskLevel
+  } catch {
+    // Table may not exist or no assessment persisted; degrade gracefully
+    return null
+  }
+}
+
+/**
+ * Check whether a client has an active touchpoint rule (birthday, anniversary, etc.)
+ * that fires within +/- 2 days of the cadence point's scheduled date.
+ * Returns a skip reason string if overlap is found, null otherwise.
+ */
+async function checkTouchpointOverlap(
+  tenantId: string,
+  clientId: string | null,
+  cadencePoint: CadencePoint
+): Promise<string | null> {
+  if (!clientId) return null
+
+  const db = createServerClient()
+
+  // Load active touchpoint rules for this chef/tenant
+  const { data: rules } = await db
+    .from('client_touchpoint_rules')
+    .select('id, rule_type, trigger_value, is_active')
+    .eq('chef_id', tenantId)
+    .eq('is_active', true)
+
+  if (!rules || rules.length === 0) return null
+
+  // Load client's date_of_birth for birthday/anniversary checks
+  const { data: client } = await db
+    .from('clients')
+    .select('date_of_birth')
+    .eq('id', clientId)
+    .single()
+
+  // Load client's first event date for anniversary checks
+  const { data: firstEvents } = await db
+    .from('events')
+    .select('event_date')
+    .eq('tenant_id', tenantId)
+    .eq('client_id', clientId)
+    .order('event_date', { ascending: true })
+    .limit(1)
+
+  const now = new Date()
+  const OVERLAP_WINDOW_DAYS = 2
+
+  for (const rule of rules) {
+    let touchpointDate: Date | null = null
+
+    if (rule.rule_type === 'birthday' && client?.date_of_birth) {
+      const dob = new Date(client.date_of_birth)
+      touchpointDate = new Date(now.getFullYear(), dob.getMonth(), dob.getDate())
+      if (touchpointDate < now) {
+        touchpointDate.setFullYear(touchpointDate.getFullYear() + 1)
+      }
+    } else if (rule.rule_type === 'anniversary' && firstEvents && firstEvents.length > 0) {
+      const firstDate = new Date(firstEvents[0].event_date)
+      touchpointDate = new Date(now.getFullYear(), firstDate.getMonth(), firstDate.getDate())
+      if (touchpointDate < now) {
+        touchpointDate.setFullYear(touchpointDate.getFullYear() + 1)
+      }
+    } else {
+      // days_since_last_event, lifetime_spend_milestone, streak_milestone, custom
+      // These are not date-anchored, so no overlap detection possible
+      continue
+    }
+
+    if (!touchpointDate) continue
+
+    // Check if the cadence point date is within +/- 2 days of the touchpoint date
+    const daysDiff = Math.abs(
+      Math.round((touchpointDate.getTime() - now.getTime()) / (1000 * 60 * 60 * 24))
+    )
+
+    // Only relevant if the touchpoint itself is near "now" (when the cadence fires)
+    if (daysDiff <= OVERLAP_WINDOW_DAYS) {
+      return `Client touchpoint rule '${rule.rule_type}' fires within ${OVERLAP_WINDOW_DAYS} days`
+    }
+  }
+
+  return null
 }
 
 async function isCadencePointDisabled(

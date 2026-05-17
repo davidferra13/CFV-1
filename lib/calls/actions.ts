@@ -9,6 +9,7 @@ import { createServerClient } from '@/lib/db/server'
 import { revalidatePath } from 'next/cache'
 import { z } from 'zod'
 import { randomUUID } from 'crypto'
+import { getEventBase } from '@/lib/events/shared-event-query'
 
 // ============================================
 // TYPES
@@ -232,12 +233,7 @@ export async function createCall(input: CreateCallInput) {
   }
 
   if (validated.event_id) {
-    const { data: event } = await db
-      .from('events')
-      .select('event_date, guest_count, status')
-      .eq('id', validated.event_id)
-      .eq('tenant_id', user.tenantId!)
-      .single()
+    const { data: event } = await getEventBase(db, validated.event_id, user.tenantId!)
 
     if (event) {
       if (event.event_date) {

@@ -29,6 +29,7 @@ export type SignalSource =
   | 'reputation' // reviews, ratings, testimonials
   | 'pipeline' // stale leads, expiring proposals, unsigned contracts
   | 'weather' // weather risk for upcoming events
+  | 'event_debrief' // post-event learning outcomes, success scores, guest satisfaction
 
 export type ConfidenceLabel = 'EXTRACTED' | 'INFERRED' | 'AMBIGUOUS'
 

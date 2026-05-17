@@ -24,6 +24,7 @@ import {
 type EventRow = {
   id: string
   tenant_id: string
+  client_id: string | null
   occasion: string | null
   event_date: string | null
   guest_count: number | null
@@ -259,7 +260,7 @@ function parseDishFeedbackPayload(value: unknown): DishFeedbackPayload[] {
 async function getEventRow(db: any, eventId: string, tenantId?: string): Promise<EventRow | null> {
   let query = db
     .from('events')
-    .select('id, tenant_id, occasion, event_date, guest_count, status, menu_id')
+    .select('id, tenant_id, client_id, occasion, event_date, guest_count, status, menu_id')
     .eq('id', eventId)
   if (tenantId) query = query.eq('tenant_id', tenantId)
 
@@ -834,6 +835,29 @@ export async function refreshEventOutcomeLearningByTenant(
     })
     .eq('id', outcome.id)
     .eq('tenant_id', event.tenant_id)
+
+  // CIL observation: feed debrief outcomes into per-tenant knowledge graph (non-blocking)
+  try {
+    const { notifyCIL } = await import('@/lib/cil/notify')
+    const cilEntityIds = [`event_${event.id}`]
+    if (event.client_id) cilEntityIds.push(`client_${event.client_id}`)
+    await notifyCIL({
+      tenantId: event.tenant_id,
+      source: 'event_debrief',
+      entityIds: cilEntityIds,
+      payload: {
+        successScore: metrics.successScore,
+        prepAccuracy: outcome.prep_accuracy,
+        timeAccuracy: outcome.time_accuracy,
+        issueCount: metrics.issueCount,
+        guestAvgOverall: metrics.guestAvgOverall,
+        feedbackCount: metrics.guestResponseCount,
+        occasion: event.occasion,
+      },
+    })
+  } catch {
+    // CIL failure is non-fatal
+  }
 
   revalidatePath(`/events/${event.id}`)
   revalidatePath(`/events/${event.id}/outcome`)
