@@ -167,6 +167,12 @@ export async function recordPayment(input: RecordPaymentInput) {
     revalidatePath(`/events/${(sale as any).event_id}`)
     revalidatePath(`/my-events/${(sale as any).event_id}`)
   }
+  // Broadcast rail refresh so RailStrip updates in real time (non-blocking)
+  try {
+    const { broadcast } = await import('@/lib/realtime/sse-server')
+    broadcast('rail', 'refresh', { type: 'payment_recorded' })
+  } catch {}
+
   return payment
 }
 

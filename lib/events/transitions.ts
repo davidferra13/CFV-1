@@ -542,6 +542,12 @@ export async function transitionEvent({
     log.events.warn('SSE broadcast for client event status failed (non-blocking)', { error: err })
   }
 
+  // Broadcast rail refresh so RailStrip picks up status changes (non-blocking)
+  try {
+    const { broadcast: railBroadcast } = await import('@/lib/realtime/sse-server')
+    railBroadcast('rail', 'refresh', { type: 'event_transition', fromStatus, toStatus })
+  } catch {}
+
   // EC-G30 fix: notify collaborators on meaningful transitions (non-blocking)
   if (
     ['accepted', 'paid', 'confirmed', 'in_progress', 'completed', 'cancelled'].includes(toStatus)

@@ -272,6 +272,28 @@ export async function captureTakeAChefBooking(
     revalidatePath('/events')
     revalidatePath('/clients')
 
+    // SSE push to chef dashboard (non-blocking)
+    try {
+      const { broadcast } = await import('@/lib/realtime/broadcast')
+      await broadcast(`chef-${tenantId}`, 'new_inquiry_received', {
+        inquiryId: inquiry.id,
+        clientName: validated.full_name.trim(),
+        occasion: validated.occasion.trim(),
+        eventDate: validated.event_date || null,
+        guestCount: validated.guest_count,
+        channel: 'take_a_chef',
+        urgent: true,
+      })
+    } catch (err) {
+      console.error('[captureTakeAChefBooking] SSE broadcast failed (non-blocking):', err)
+    }
+
+    // Broadcast rail refresh so RailStrip updates (non-blocking)
+    try {
+      const { broadcast: railBroadcast } = await import('@/lib/realtime/sse-server')
+      railBroadcast('rail', 'refresh', { type: 'inquiry_created' })
+    } catch {}
+
     return {
       success: true,
       inquiryId: inquiry.id,

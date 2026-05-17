@@ -209,6 +209,12 @@ async function acceptQuoteForContext(quoteId: string, context: QuoteResponseCont
     revalidatePath('/events')
   }
 
+  // Broadcast rail refresh so RailStrip picks up quote acceptance (non-blocking)
+  try {
+    const { broadcast } = await import('@/lib/realtime/sse-server')
+    broadcast('rail', 'refresh', { type: 'quote_accepted' })
+  } catch {}
+
   await executeInteraction({
     action_type: 'approve_quote',
     actor_id: context.actorId ?? context.clientId,

@@ -219,6 +219,12 @@ export async function recordDeposit(
   revalidatePath('/finance')
   revalidatePath(`/events/${eventId}`)
 
+  // Broadcast rail refresh so RailStrip picks up deposit recording (non-blocking)
+  try {
+    const { broadcast } = await import('@/lib/realtime/sse-server')
+    broadcast('rail', 'refresh', { type: 'deposit_recorded' })
+  } catch {}
+
   // Auto-send invoice PDF if event is now paid in full (non-blocking)
   try {
     const { autoSendInvoiceOnFinalPayment } = await import('@/lib/invoices')
@@ -319,6 +325,12 @@ export async function recordBalancePayment(
   revalidatePath('/dashboard')
   revalidatePath('/finance')
   revalidatePath(`/events/${eventId}`)
+
+  // Broadcast rail refresh so RailStrip picks up balance payment (non-blocking)
+  try {
+    const { broadcast } = await import('@/lib/realtime/sse-server')
+    broadcast('rail', 'refresh', { type: 'balance_payment_recorded' })
+  } catch {}
 
   // Auto-send invoice PDF if event is now paid in full (non-blocking)
   try {

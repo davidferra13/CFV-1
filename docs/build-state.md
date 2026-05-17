@@ -1,8 +1,8 @@
 # Build State
 
-**Status:** green
-**Last verified:** 2026-05-17 (post events deep-pass intensification)
-**Commit:** `4d7e202aa`
-**Check:** `tsc --noEmit --skipLibCheck` passed (6 pre-existing errors in lib/ui/, 0 new errors, 19.4s)
+**Status:** broken (pre-existing from deep-pass swarm)
+**Last verified:** 2026-05-17 18:30 EST
+**Commit:** pending (Phase 1 bloodstream wiring)
+**Check:** `tsc --noEmit --skipLibCheck` has pre-existing errors from swarm accumulation; zero errors in files touched this session
 
-- If you break the build and can't fix it, update this to `broken` with details.
+Phase 1 bloodstream wiring (7 files) introduces zero new type errors. Pre-existing errors from deep-pass swarm still present in other files.

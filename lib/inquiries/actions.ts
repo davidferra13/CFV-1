@@ -699,6 +699,54 @@ export async function createInquiry(input: CreateInquiryInput) {
     console.error('[createInquiry] Lifecycle detection failed (non-blocking):', err)
   }
 
+  // Send acknowledgment email to client (non-blocking, mirrors public-actions.ts)
+  if (validated.client_email) {
+    try {
+      const chefDb: any = createServerClient()
+      const { data: chefRec } = await chefDb
+        .from('chefs')
+        .select('full_name, business_name')
+        .eq('id', user.tenantId)
+        .single()
+      const chefName = chefRec?.full_name || chefRec?.business_name || 'Your Chef'
+      const { sendInquiryReceivedEmail } = await import('@/lib/email/notifications')
+      await sendInquiryReceivedEmail({
+        clientEmail: validated.client_email.toLowerCase().trim(),
+        clientName: validated.client_name.trim(),
+        chefName,
+        occasion: validated.confirmed_occasion?.trim() || 'your event',
+        eventDate: validated.confirmed_date || null,
+        guestCount: validated.confirmed_guest_count ?? null,
+        location: validated.confirmed_location?.trim() || null,
+        serveTime: null,
+      })
+    } catch (err) {
+      console.error('[createInquiry] Acknowledgment email failed (non-blocking):', err)
+    }
+  }
+
+  // SSE push to chef dashboard (non-blocking, mirrors public-actions.ts)
+  try {
+    const { broadcast } = await import('@/lib/realtime/broadcast')
+    await broadcast(`chef-${user.tenantId}`, 'new_inquiry_received', {
+      inquiryId: inquiry.id,
+      clientName: validated.client_name.trim(),
+      occasion: validated.confirmed_occasion?.trim() || null,
+      eventDate: validated.confirmed_date || null,
+      guestCount: validated.confirmed_guest_count ?? null,
+      channel: validated.channel,
+      urgent: true,
+    })
+  } catch (err) {
+    console.error('[createInquiry] SSE broadcast failed (non-blocking):', err)
+  }
+
+  // Broadcast rail refresh so RailStrip updates (non-blocking)
+  try {
+    const { broadcast: railBroadcast } = await import('@/lib/realtime/sse-server')
+    railBroadcast('rail', 'refresh', { type: 'inquiry_created' })
+  } catch {}
+
   // Returning client recognition: match inquiry signals against past clients (non-blocking)
   try {
     const { matchReturningClient } = await import('@/lib/inquiries/returning-client-matcher')

@@ -19,7 +19,9 @@ export async function validateRealtimeChannelAccess(
   const colonIdx = channel.indexOf(':')
 
   if (colonIdx === -1) {
-    return channel === 'site' ? context.isAdmin : false
+    if (channel === 'site') return context.isAdmin
+    if (channel === 'rail') return Boolean(context.tenantId)
+    return false
   }
 
   const prefix = channel.slice(0, colonIdx)
