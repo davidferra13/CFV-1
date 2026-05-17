@@ -16,6 +16,18 @@ const VIEWS = [
     icon: '🏆',
   },
   {
+    href: '/clients/insights/top-covers',
+    label: 'Top by Covers',
+    description: 'Clients ranked by total diners served',
+    icon: '🍽',
+  },
+  {
+    href: '/clients/insights/this-year',
+    label: 'This Year',
+    description: `Top clients by ${new Date().getFullYear()} revenue`,
+    icon: '📅',
+  },
+  {
     href: '/clients/insights/most-frequent',
     label: 'Most Frequent',
     description: 'Clients who book the most often',
@@ -26,6 +38,12 @@ const VIEWS = [
     label: 'At-Risk Clients',
     description: "Clients who haven't booked in 90+ days",
     icon: '⚡',
+  },
+  {
+    href: '/clients/insights/dormant-high-value',
+    label: 'Dormant High-Value',
+    description: 'High spenders who went quiet (90+ days)',
+    icon: '💤',
   },
   {
     href: '/clients/insights/retention',

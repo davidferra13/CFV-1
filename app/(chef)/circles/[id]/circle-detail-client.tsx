@@ -24,6 +24,7 @@ import {
   removeCircleMember,
   getClientsNotInCircle,
 } from '@/lib/hub/circle-detail-actions'
+import { CircleStatsBar } from '@/components/circles/circle-stats-bar'
 
 type Tab =
   | 'overview'
@@ -127,6 +128,9 @@ export function CircleDetailClient({ circle }: { circle: CircleDetail }) {
         isOpen={showRemyDrawer}
         onClose={() => setShowRemyDrawer(false)}
       />
+
+      {/* Circle Intelligence Stats */}
+      <CircleStatsBar circleId={circle.id} />
 
       {/* Tabs */}
       <div className="flex gap-1 rounded-lg bg-stone-800/50 p-1">

@@ -78,6 +78,7 @@ import { PetManager } from '@/components/clients/pet-manager'
 import { SecurityAccessPanel } from '@/components/clients/security-access-panel'
 import { ServiceDefaultsPanel } from '@/components/clients/service-defaults-panel'
 import { BusinessIntelPanel } from '@/components/clients/business-intel-panel'
+import { ClientStatsBar } from '@/components/clients/client-stats-bar'
 import { ClientPhotoGallery } from '@/components/clients/client-photo-gallery'
 import { getClientPhotos } from '@/lib/clients/photo-actions'
 import { computeEngagementScore } from '@/lib/activity/engagement'
@@ -378,6 +379,11 @@ export default async function ClientDetailPage({ params }: ClientDetailPageProps
 
       {/* Next Best Action */}
       {clientNBA ? <NextBestActionCard action={clientNBA} /> : null}
+
+      {/* Relationship Intelligence Stats Bar */}
+      <WidgetErrorBoundary name="Stats" compact>
+        <ClientStatsBar clientId={client.id} />
+      </WidgetErrorBoundary>
 
       {/* Client Ops Snapshot */}
       {clientOpsSnapshot ? (
