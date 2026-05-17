@@ -11,13 +11,8 @@ import {
   type DiscoveryDestinationFamily,
   type DiscoveryDestinationValidation,
 } from '@/lib/discovery/discovery-destination-contract'
-import {
-  discoveryHrefHasPrivateIdentifier,
-} from '@/lib/discovery/rail-contract-registry'
-import type {
-  DiscoveryItemType,
-  DiscoveryRailItem,
-} from '@/lib/discovery/homepage-discovery-rail'
+import { discoveryHrefHasPrivateIdentifier } from '@/lib/discovery/rail-contract-registry'
+import type { DiscoveryItemType, DiscoveryRailItem } from '@/lib/discovery/homepage-discovery-rail'
 
 export type RailDestinationValidation = {
   valid: boolean
@@ -56,9 +51,7 @@ export function validateRailItemDestination(
  * Filters an array of rail items, removing any that route to invalid or
  * private destinations. Items without a valid public destination are dropped.
  */
-export function filterValidRailDestinations<T extends DiscoveryRailItem>(
-  items: T[]
-): T[] {
+export function filterValidRailDestinations<T extends DiscoveryRailItem>(items: T[]): T[] {
   return items.filter((item) => validateRailItemDestination(item).valid)
 }
 

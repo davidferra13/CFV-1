@@ -24,9 +24,9 @@ function mapProfile(r: any): ReadabilityProfile {
     reducedMotion: r.reduced_motion ?? false,
     increasedSpacing: r.increased_spacing ?? false,
     autoActivateCondition: r.auto_activate_condition
-      ? (typeof r.auto_activate_condition === 'string'
-          ? JSON.parse(r.auto_activate_condition)
-          : r.auto_activate_condition)
+      ? typeof r.auto_activate_condition === 'string'
+        ? JSON.parse(r.auto_activate_condition)
+        : r.auto_activate_condition
       : null,
     createdAt: new Date(r.created_at),
   }
@@ -39,16 +39,18 @@ function mapPreference(r: any): ReadabilityPreference {
     activeMode: r.active_mode as ReadabilityMode,
     autoSwitch: r.auto_switch ?? false,
     scheduledModes: r.scheduled_modes
-      ? (typeof r.scheduled_modes === 'string'
-          ? JSON.parse(r.scheduled_modes)
-          : r.scheduled_modes)
+      ? typeof r.scheduled_modes === 'string'
+        ? JSON.parse(r.scheduled_modes)
+        : r.scheduled_modes
       : null,
     createdAt: new Date(r.created_at),
     updatedAt: new Date(r.updated_at),
   }
 }
 
-export async function getReadabilityProfiles(mode?: ReadabilityMode): Promise<ReadabilityProfile[]> {
+export async function getReadabilityProfiles(
+  mode?: ReadabilityMode
+): Promise<ReadabilityProfile[]> {
   const user = await requireChef()
   const db: any = createServerClient()
   const params: any[] = [user.tenantId]
@@ -100,7 +102,7 @@ export async function upsertReadabilityProfile(params: {
       params.reducedMotion ?? false,
       params.increasedSpacing ?? false,
       params.autoActivateCondition ? JSON.stringify(params.autoActivateCondition) : null,
-    ],
+    ]
   )
   return mapProfile(rows[0])
 }
@@ -108,10 +110,9 @@ export async function upsertReadabilityProfile(params: {
 export async function getReadabilityPreference(): Promise<ReadabilityPreference | null> {
   const user = await requireChef()
   const db: any = createServerClient()
-  const rows = await db.query(
-    'SELECT * FROM readability_preferences WHERE tenant_id = $1',
-    [user.tenantId],
-  )
+  const rows = await db.query('SELECT * FROM readability_preferences WHERE tenant_id = $1', [
+    user.tenantId,
+  ])
   if (!rows.length) return null
   return mapPreference(rows[0])
 }
@@ -134,7 +135,7 @@ export async function updateReadabilityPreference(params: {
       params.activeMode,
       params.autoSwitch ?? false,
       params.scheduledModes ? JSON.stringify(params.scheduledModes) : null,
-    ],
+    ]
   )
   return mapPreference(rows[0])
 }
@@ -144,7 +145,7 @@ export async function deleteReadabilityProfile(id: string): Promise<{ success: b
   const db: any = createServerClient()
   const rows = await db.query(
     'DELETE FROM readability_profiles WHERE id = $1 AND tenant_id = $2 RETURNING id',
-    [id, user.tenantId],
+    [id, user.tenantId]
   )
   return { success: rows.length > 0 }
 }
@@ -154,18 +155,19 @@ export async function getReadabilitySummary(): Promise<ReadabilitySummary> {
   const db: any = createServerClient()
   const profileRows = await db.query(
     'SELECT COUNT(*)::int as total FROM readability_profiles WHERE tenant_id = $1',
-    [user.tenantId],
+    [user.tenantId]
   )
   const prefRows = await db.query(
     'SELECT active_mode, auto_switch, scheduled_modes FROM readability_preferences WHERE tenant_id = $1',
-    [user.tenantId],
+    [user.tenantId]
   )
   const pref = prefRows[0] ?? null
   let scheduledCount = 0
   if (pref?.scheduled_modes) {
-    const modes = typeof pref.scheduled_modes === 'string'
-      ? JSON.parse(pref.scheduled_modes)
-      : pref.scheduled_modes
+    const modes =
+      typeof pref.scheduled_modes === 'string'
+        ? JSON.parse(pref.scheduled_modes)
+        : pref.scheduled_modes
     scheduledCount = Array.isArray(modes) ? modes.length : 0
   }
   return {

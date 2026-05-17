@@ -1,6 +1,12 @@
 export type ConfidenceLevel = 'verified' | 'high' | 'medium' | 'low' | 'unverified' | 'stale'
 
-export type EvidenceSource = 'user_input' | 'system_calculated' | 'ai_generated' | 'imported' | 'inferred' | 'external_api'
+export type EvidenceSource =
+  | 'user_input'
+  | 'system_calculated'
+  | 'ai_generated'
+  | 'imported'
+  | 'inferred'
+  | 'external_api'
 
 export interface ConfidenceLabel {
   entityType: string

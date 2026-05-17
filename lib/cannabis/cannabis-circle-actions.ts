@@ -86,9 +86,7 @@ export async function seedCannabisCircleForEvent(input: {
     clientProfileId = newClient?.id ?? null
   }
 
-  const groupName = input.occasion
-    ? `Cannabis Circle: ${input.occasion}`
-    : `Cannabis Dinner Circle`
+  const groupName = input.occasion ? `Cannabis Circle: ${input.occasion}` : `Cannabis Dinner Circle`
 
   const { data: group, error } = await db
     .from('hub_groups')

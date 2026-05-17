@@ -121,7 +121,12 @@ export async function generateAutopilotDraft(
 
   // Fetch weather context for the event (non-blocking, skip on failure)
   let weatherContext = ''
-  if (event.location_lat != null && event.location_lng != null && daysUntil >= 0 && daysUntil <= 7) {
+  if (
+    event.location_lat != null &&
+    event.location_lng != null &&
+    daysUntil >= 0 &&
+    daysUntil <= 7
+  ) {
     try {
       const eventDateStr = eventDate.toISOString().slice(0, 10)
       const result = await fetchForecast(event.location_lat, event.location_lng)

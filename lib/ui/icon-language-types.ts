@@ -1,4 +1,11 @@
-export type IconCategory = 'navigation' | 'action' | 'status' | 'entity' | 'culinary' | 'finance' | 'communication'
+export type IconCategory =
+  | 'navigation'
+  | 'action'
+  | 'status'
+  | 'entity'
+  | 'culinary'
+  | 'finance'
+  | 'communication'
 
 export type IconDefinition = {
   id: string

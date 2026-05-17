@@ -41,7 +41,9 @@ export async function browseLocalFood(
     // Build query against directory_listings
     let query = db
       .from('directory_listings')
-      .select('id, name, slug, business_type, cuisine_types, city, state, address, phone, price_range, description, photo_urls, lat, lon')
+      .select(
+        'id, name, slug, business_type, cuisine_types, city, state, address, phone, price_range, description, photo_urls, lat, lon'
+      )
       .eq('status', 'approved')
       .limit(40)
 
@@ -88,9 +90,7 @@ export async function browseLocalFood(
 
     // Apply radius filter
     if (lat != null && lng != null) {
-      listings = listings.filter(
-        (l) => l.distanceMiles == null || l.distanceMiles <= radiusMiles
-      )
+      listings = listings.filter((l) => l.distanceMiles == null || l.distanceMiles <= radiusMiles)
     }
 
     // Sort by distance (closest first), null distances last
@@ -122,26 +122,29 @@ export async function getSeasonalPicks(
     const calendarData = await getSeasonalCalendarData(undefined, region)
 
     // Combine peaking now + last chance as "seasonal picks"
-    const picks: SeasonalPick[] = [
-      ...calendarData.peakingNow,
-      ...calendarData.lastChance,
-    ].map((item) => ({
-      ingredientName: item.ingredientName,
-      category: item.category,
-      peakMonths: item.peakMonths,
-      isYearRound: item.isYearRound,
-      imageUrl: item.imageUrl,
-      flavorProfile: item.flavorProfile,
-      culinaryUses: item.culinaryUses,
-      typicalPairings: item.typicalPairings,
-      bestPriceCents: item.bestPriceCents,
-      bestPriceStore: item.bestPriceStore,
-    }))
+    const picks: SeasonalPick[] = [...calendarData.peakingNow, ...calendarData.lastChance].map(
+      (item) => ({
+        ingredientName: item.ingredientName,
+        category: item.category,
+        peakMonths: item.peakMonths,
+        isYearRound: item.isYearRound,
+        imageUrl: item.imageUrl,
+        flavorProfile: item.flavorProfile,
+        culinaryUses: item.culinaryUses,
+        typicalPairings: item.typicalPairings,
+        bestPriceCents: item.bestPriceCents,
+        bestPriceStore: item.bestPriceStore,
+      })
+    )
 
     return { picks, currentMonth: calendarData.currentMonth, error: null }
   } catch (err) {
     console.error('[getSeasonalPicks]', err)
-    return { picks: [], currentMonth: new Date().getMonth() + 1, error: 'Failed to load seasonal data' }
+    return {
+      picks: [],
+      currentMonth: new Date().getMonth() + 1,
+      error: 'Failed to load seasonal data',
+    }
   }
 }
 
@@ -150,12 +153,7 @@ export async function getSeasonalPicks(
 /**
  * Haversine distance between two lat/lng points in miles.
  */
-function haversineDistance(
-  lat1: number,
-  lon1: number,
-  lat2: number,
-  lon2: number
-): number {
+function haversineDistance(lat1: number, lon1: number, lat2: number, lon2: number): number {
   const R = 3959 // Earth radius in miles
   const dLat = toRad(lat2 - lat1)
   const dLon = toRad(lon2 - lon1)

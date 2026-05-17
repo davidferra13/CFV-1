@@ -652,7 +652,9 @@ export async function ingestCommunicationEvent(input: CommunicationEventInput) {
       .then(({ updateClientChannelPreference }) =>
         updateClientChannelPreference(input.tenantId, resolvedClientId!)
       )
-      .catch((err) => console.error('[pipeline] channel-preference-writer failed (non-fatal):', err))
+      .catch((err) =>
+        console.error('[pipeline] channel-preference-writer failed (non-fatal):', err)
+      )
   }
 
   return {

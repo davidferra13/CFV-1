@@ -152,17 +152,18 @@ export async function getClientStatusTimeline(
 
   // Filter out same-stage note entries (from_stage === to_stage) for the timeline
   // but keep them if they have notes (chef messages to client)
-  return (transitions as Array<{ to_stage: string; notes: string | null; transitioned_at: string }>)
-    .map((t) => {
-      const stage = t.to_stage as ServiceStage
-      return {
-        stage,
-        stageLabel: STAGE_LABELS[stage] || stage,
-        clientMessage: CLIENT_STATUS_MESSAGES[stage] || '',
-        note: t.notes,
-        occurredAt: t.transitioned_at,
-      }
-    })
+  return (
+    transitions as Array<{ to_stage: string; notes: string | null; transitioned_at: string }>
+  ).map((t) => {
+    const stage = t.to_stage as ServiceStage
+    return {
+      stage,
+      stageLabel: STAGE_LABELS[stage] || stage,
+      clientMessage: CLIENT_STATUS_MESSAGES[stage] || '',
+      note: t.notes,
+      occurredAt: t.transitioned_at,
+    }
+  })
 }
 
 // ── Chef Action: Publish Status to Client ────────────────────────────────────
@@ -264,9 +265,7 @@ export async function publishStatusToClient(
 
 // ── Chef Action: Enable Auto Status Updates ──────────────────────────────────
 
-export async function enableAutoStatusUpdates(
-  eventId: string
-): Promise<AutoNotifyConfig> {
+export async function enableAutoStatusUpdates(eventId: string): Promise<AutoNotifyConfig> {
   const user = await requireChef()
   const tenantId = user.tenantId!
   const db: any = createServerClient()
@@ -286,18 +285,16 @@ export async function enableAutoStatusUpdates(
   }
 
   // Upsert auto-notify config
-  const { error } = await db
-    .from('client_status_config')
-    .upsert(
-      {
-        event_id: eventId,
-        tenant_id: tenantId,
-        auto_notify_enabled: true,
-        delay_threshold_minutes: DEFAULT_DELAY_THRESHOLD_MINUTES,
-        updated_at: new Date().toISOString(),
-      },
-      { onConflict: 'event_id' }
-    )
+  const { error } = await db.from('client_status_config').upsert(
+    {
+      event_id: eventId,
+      tenant_id: tenantId,
+      auto_notify_enabled: true,
+      delay_threshold_minutes: DEFAULT_DELAY_THRESHOLD_MINUTES,
+      updated_at: new Date().toISOString(),
+    },
+    { onConflict: 'event_id' }
+  )
 
   if (error) {
     throw new UnknownAppError('Failed to enable auto status updates', {
@@ -330,18 +327,16 @@ export async function setStatusDelay(
   }
 
   // Upsert with custom delay
-  const { error } = await db
-    .from('client_status_config')
-    .upsert(
-      {
-        event_id: eventId,
-        tenant_id: tenantId,
-        auto_notify_enabled: true,
-        delay_threshold_minutes: delayMinutes,
-        updated_at: new Date().toISOString(),
-      },
-      { onConflict: 'event_id' }
-    )
+  const { error } = await db.from('client_status_config').upsert(
+    {
+      event_id: eventId,
+      tenant_id: tenantId,
+      auto_notify_enabled: true,
+      delay_threshold_minutes: delayMinutes,
+      updated_at: new Date().toISOString(),
+    },
+    { onConflict: 'event_id' }
+  )
 
   if (error) {
     throw new UnknownAppError('Failed to set delay threshold', {
@@ -359,9 +354,7 @@ export async function setStatusDelay(
 
 // ── Chef Action: Check Delay Status ──────────────────────────────────────────
 
-export async function checkDelayStatus(
-  eventId: string
-): Promise<DelayCheckResult> {
+export async function checkDelayStatus(eventId: string): Promise<DelayCheckResult> {
   const user = await requireChef()
   const tenantId = user.tenantId!
   const db: any = createServerClient()

@@ -40,7 +40,10 @@ export async function searchDishes(
 
   let query = db
     .from('dish_index')
-    .select('id, name, course, description, dietary_tags, allergen_flags, times_served, is_signature, season_affinity, rotation_status, linked_recipe_id', { count: 'exact' })
+    .select(
+      'id, name, course, description, dietary_tags, allergen_flags, times_served, is_signature, season_affinity, rotation_status, linked_recipe_id',
+      { count: 'exact' }
+    )
     .eq('tenant_id', tenantId)
     .eq('archived', false)
 
@@ -88,7 +91,11 @@ export async function searchDishes(
 export async function getDishDetails(
   tenantId: string,
   dishId: string
-): Promise<AssemblyDishInfo & { components: Array<{ id: string; name: string; category: string; description: string | null }> }> {
+): Promise<
+  AssemblyDishInfo & {
+    components: Array<{ id: string; name: string; category: string; description: string | null }>
+  }
+> {
   const user = await requireChef()
   if (user.tenantId !== tenantId) {
     throw new Error('Tenant mismatch')
@@ -98,7 +105,9 @@ export async function getDishDetails(
 
   const { data: dish, error } = await db
     .from('dish_index')
-    .select('id, name, course, description, dietary_tags, allergen_flags, times_served, is_signature, season_affinity, rotation_status, linked_recipe_id')
+    .select(
+      'id, name, course, description, dietary_tags, allergen_flags, times_served, is_signature, season_affinity, rotation_status, linked_recipe_id'
+    )
     .eq('id', dishId)
     .eq('tenant_id', tenantId)
     .single()
@@ -132,10 +141,7 @@ export async function getDishDetails(
 /**
  * Most-used dishes across menus, ranked by times_served.
  */
-export async function getPopularDishes(
-  tenantId: string,
-  limit = 10
-): Promise<AssemblyDishInfo[]> {
+export async function getPopularDishes(tenantId: string, limit = 10): Promise<AssemblyDishInfo[]> {
   const user = await requireChef()
   if (user.tenantId !== tenantId) {
     throw new Error('Tenant mismatch')
@@ -146,7 +152,9 @@ export async function getPopularDishes(
 
   const { data, error } = await db
     .from('dish_index')
-    .select('id, name, course, description, dietary_tags, allergen_flags, times_served, is_signature, season_affinity, rotation_status, linked_recipe_id')
+    .select(
+      'id, name, course, description, dietary_tags, allergen_flags, times_served, is_signature, season_affinity, rotation_status, linked_recipe_id'
+    )
     .eq('tenant_id', tenantId)
     .eq('archived', false)
     .eq('rotation_status', 'active')
@@ -198,12 +206,12 @@ export async function getComplementaryDishes(
     return []
   }
 
-  const menuIds = Array.from(new Set(
-    appearances.map((a: any) => a.menu_id).filter(Boolean) as string[]
-  ))
-  const jobIds = Array.from(new Set(
-    appearances.map((a: any) => a.menu_upload_job_id).filter(Boolean) as string[]
-  ))
+  const menuIds = Array.from(
+    new Set(appearances.map((a: any) => a.menu_id).filter(Boolean) as string[])
+  )
+  const jobIds = Array.from(
+    new Set(appearances.map((a: any) => a.menu_upload_job_id).filter(Boolean) as string[])
+  )
 
   if (menuIds.length === 0 && jobIds.length === 0) {
     return []
@@ -211,10 +219,7 @@ export async function getComplementaryDishes(
 
   // Step 2: Find other dishes that appeared in those same menus
   // Use menu_id first (more reliable), fall back to job_id
-  let coQuery = db
-    .from('dish_appearances')
-    .select('dish_id')
-    .eq('tenant_id', tenantId)
+  let coQuery = db.from('dish_appearances').select('dish_id').eq('tenant_id', tenantId)
 
   if (menuIds.length > 0) {
     coQuery = coQuery.in('menu_id', menuIds)
@@ -250,7 +255,9 @@ export async function getComplementaryDishes(
   // Step 5: Fetch dish details for the top candidates
   const { data: dishDetails, error: detailError } = await db
     .from('dish_index')
-    .select('id, name, course, description, dietary_tags, allergen_flags, times_served, is_signature, season_affinity, rotation_status, linked_recipe_id')
+    .select(
+      'id, name, course, description, dietary_tags, allergen_flags, times_served, is_signature, season_affinity, rotation_status, linked_recipe_id'
+    )
     .eq('tenant_id', tenantId)
     .eq('archived', false)
     .in('id', topIds)

@@ -113,12 +113,7 @@ export function isOutdoorEvent(event: {
     'open air',
   ]
 
-  const searchText = [
-    event.venue_type,
-    event.notes,
-    event.title,
-    ...(event.tags ?? []),
-  ]
+  const searchText = [event.venue_type, event.notes, event.title, ...(event.tags ?? [])]
     .filter(Boolean)
     .join(' ')
     .toLowerCase()

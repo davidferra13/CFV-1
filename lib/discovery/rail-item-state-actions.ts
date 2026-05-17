@@ -18,11 +18,7 @@ export type RailItemState =
   | 'archived'
 
 /** States that suppress a rail item from appearing in the rail. */
-const SUPPRESSED_STATES: ReadonlySet<RailItemState> = new Set([
-  'dismissed',
-  'resolved',
-  'archived',
-])
+const SUPPRESSED_STATES: ReadonlySet<RailItemState> = new Set(['dismissed', 'resolved', 'archived'])
 
 export interface RailItemStateRecord {
   id: string

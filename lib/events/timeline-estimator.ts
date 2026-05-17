@@ -48,10 +48,7 @@ type CourseInput = {
 /**
  * Estimate timing for a single course based on complexity and variants.
  */
-export function estimateCourseTiming(
-  course: CourseInput,
-  guestCount: number
-): CourseEstimate {
+export function estimateCourseTiming(course: CourseInput, guestCount: number): CourseEstimate {
   // Base prep time
   const basePrepMinutes = course.isComplex ? DEFAULTS.COMPLEX_PREP : DEFAULTS.SIMPLE_PREP
 
@@ -95,9 +92,7 @@ export function estimateTravelTime(driveMinutes: number): {
   arrivalBuffer: number
 } {
   const trafficBuffer =
-    driveMinutes >= DEFAULTS.TRAFFIC_BUFFER_THRESHOLD
-      ? DEFAULTS.TRAFFIC_BUFFER_MINUTES
-      : 0
+    driveMinutes >= DEFAULTS.TRAFFIC_BUFFER_THRESHOLD ? DEFAULTS.TRAFFIC_BUFFER_MINUTES : 0
 
   return {
     totalMinutes: driveMinutes + trafficBuffer + DEFAULTS.ARRIVAL_BUFFER_MINUTES,
@@ -133,9 +128,7 @@ type DayEstimation = {
  * All times are relative to service time (first course served).
  */
 export function estimateFullDay(input: DayEstimationInput): DayEstimation {
-  const courseEstimates = input.courses.map((c) =>
-    estimateCourseTiming(c, input.guestCount)
-  )
+  const courseEstimates = input.courses.map((c) => estimateCourseTiming(c, input.guestCount))
 
   // Total prep = sum of all course preps + variant extras
   const totalPrepMinutes = courseEstimates.reduce(
@@ -144,14 +137,11 @@ export function estimateFullDay(input: DayEstimationInput): DayEstimation {
   )
 
   // Total service = fire + plate per course + between-course gaps
-  const totalServiceMinutes = courseEstimates.reduce(
-    (sum, c, i) => {
-      const courseService = c.fireMinutes + c.plateMinutes
-      const gap = i < courseEstimates.length - 1 ? DEFAULTS.BETWEEN_COURSES_MINUTES : 0
-      return sum + courseService + gap
-    },
-    0
-  )
+  const totalServiceMinutes = courseEstimates.reduce((sum, c, i) => {
+    const courseService = c.fireMinutes + c.plateMinutes
+    const gap = i < courseEstimates.length - 1 ? DEFAULTS.BETWEEN_COURSES_MINUTES : 0
+    return sum + courseService + gap
+  }, 0)
 
   const setupMinutes = input.setupMinutes ?? DEFAULTS.SETUP_MINUTES
   const cleanupMinutes = input.cleanupMinutes ?? DEFAULTS.CLEANUP_MINUTES
@@ -162,9 +152,7 @@ export function estimateFullDay(input: DayEstimationInput): DayEstimation {
   // How many minutes before service time to depart:
   // travel + setup + all prep + fire/plate for first course
   const firstCourse = courseEstimates[0]
-  const firstCourseFirePlate = firstCourse
-    ? firstCourse.fireMinutes + firstCourse.plateMinutes
-    : 0
+  const firstCourseFirePlate = firstCourse ? firstCourse.fireMinutes + firstCourse.plateMinutes : 0
 
   const departureOffsetMinutes =
     travel.totalMinutes + setupMinutes + totalPrepMinutes + firstCourseFirePlate

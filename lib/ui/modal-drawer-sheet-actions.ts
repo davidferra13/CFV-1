@@ -57,10 +57,18 @@ export async function upsertOverlayConfig(params: {
        stackable = $10, max_stack_depth = $11
      RETURNING *`,
     [
-      user.tenantId, params.name, params.overlayType, params.sizePreset,
-      params.position, params.animation, closeOnBackdrop, closeOnEscape,
-      mobileOverride, stackable, maxStackDepth,
-    ],
+      user.tenantId,
+      params.name,
+      params.overlayType,
+      params.sizePreset,
+      params.position,
+      params.animation,
+      closeOnBackdrop,
+      closeOnEscape,
+      mobileOverride,
+      stackable,
+      maxStackDepth,
+    ]
   )
   return mapConfig(rows[0])
 }
@@ -95,7 +103,7 @@ export async function upsertOverlayUsageRule(params: {
      ON CONFLICT (tenant_id, route, component)
      DO UPDATE SET overlay_config_id = $4, purpose = $5
      RETURNING *`,
-    [user.tenantId, params.route, params.component, params.overlayConfigId, purpose],
+    [user.tenantId, params.route, params.component, params.overlayConfigId, purpose]
   )
   return mapUsageRule(rows[0])
 }
@@ -105,7 +113,7 @@ export async function deleteOverlayConfig(id: string): Promise<{ success: boolea
   const db: any = createServerClient()
   const rows = await db.query(
     'DELETE FROM overlay_configs WHERE id = $1 AND tenant_id = $2 RETURNING id',
-    [id, user.tenantId],
+    [id, user.tenantId]
   )
   if (!rows.length) {
     throw new Error('Overlay config not found or not owned by tenant')
@@ -119,7 +127,7 @@ export async function getOverlaySummary(): Promise<OverlaySummary> {
 
   const configRows = await db.query(
     'SELECT overlay_type, COUNT(*)::int as cnt FROM overlay_configs WHERE tenant_id = $1 GROUP BY overlay_type',
-    [user.tenantId],
+    [user.tenantId]
   )
   const typeDistribution: Record<string, number> = {}
   let totalConfigs = 0
@@ -130,7 +138,7 @@ export async function getOverlaySummary(): Promise<OverlaySummary> {
 
   const usageRows = await db.query(
     'SELECT COUNT(*)::int as total, COUNT(DISTINCT route)::int as routes FROM overlay_usage_rules WHERE tenant_id = $1',
-    [user.tenantId],
+    [user.tenantId]
   )
 
   return {

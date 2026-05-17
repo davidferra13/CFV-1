@@ -7,7 +7,11 @@ export type ClaimStatus = 'unclaimed' | 'pending' | 'claimed' | 'verified' | 're
 
 // ---- Verification Data ----
 
-export type ClaimVerificationMethod = 'email_match' | 'phone_call' | 'document_upload' | 'admin_override'
+export type ClaimVerificationMethod =
+  | 'email_match'
+  | 'phone_call'
+  | 'document_upload'
+  | 'admin_override'
 
 export interface ClaimVerificationData {
   method: ClaimVerificationMethod

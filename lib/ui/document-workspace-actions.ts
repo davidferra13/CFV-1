@@ -68,10 +68,7 @@ export async function createDocument(params: {
   if (params.eventId) payload.event_id = params.eventId
   if (params.filePath) payload.file_path = params.filePath
 
-  const { data, error } = await fromDocuments(db)
-    .insert(payload)
-    .select('*')
-    .single()
+  const { data, error } = await fromDocuments(db).insert(payload).select('*').single()
 
   if (error) throw new Error(`Failed to create document: ${error.message}`)
   return mapDocument(data)
@@ -143,10 +140,7 @@ export async function createProofPack(params: {
   }
   if (params.eventId) payload.event_id = params.eventId
 
-  const { data, error } = await fromPacks(db)
-    .insert(payload)
-    .select('*')
-    .single()
+  const { data, error } = await fromPacks(db).insert(payload).select('*').single()
 
   if (error) throw new Error(`Failed to create proof pack: ${error.message}`)
   return mapPack(data)
@@ -218,10 +212,7 @@ export async function submitApproval(
   }
   if (comments !== undefined) payload.comments = comments
 
-  const { data, error } = await fromApprovals(db)
-    .insert(payload)
-    .select('*')
-    .single()
+  const { data, error } = await fromApprovals(db).insert(payload).select('*').single()
 
   if (error) throw new Error(`Failed to submit approval: ${error.message}`)
   return mapApproval(data)
@@ -284,9 +275,8 @@ function mapDocument(row: any): ProofPackDocument {
 function mapPack(row: any): ProofPack {
   let documentIds: string[] = []
   try {
-    documentIds = typeof row.document_ids === 'string'
-      ? JSON.parse(row.document_ids)
-      : (row.document_ids ?? [])
+    documentIds =
+      typeof row.document_ids === 'string' ? JSON.parse(row.document_ids) : (row.document_ids ?? [])
   } catch {
     documentIds = []
   }

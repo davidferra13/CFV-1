@@ -158,10 +158,7 @@ export async function promoteMedia(
  * All media for an event, optionally filtered by tier.
  * Ordered by display_order, then created_at.
  */
-export async function getEventMedia(
-  eventId: string,
-  tier?: MediaTier
-): Promise<MediaAsset[]> {
+export async function getEventMedia(eventId: string, tier?: MediaTier): Promise<MediaAsset[]> {
   const user = await requireChef()
   const db: any = createServerClient()
   const tenantId = user.tenantId!
@@ -189,9 +186,7 @@ export async function getEventMedia(
  * Cross-event dish photo search. Finds all media matching a dish name
  * (case-insensitive partial match). Returns matches with event context.
  */
-export async function searchMediaByDish(
-  dishName: string
-): Promise<DishPhotoMatch[]> {
+export async function searchMediaByDish(dishName: string): Promise<DishPhotoMatch[]> {
   const user = await requireChef()
   const db: any = createServerClient()
   const tenantId = user.tenantId!
@@ -240,9 +235,7 @@ export async function searchMediaByDish(
  * All photos at a venue across events (matched by address).
  * Only returns venue-tagged or venue-address-matched media.
  */
-export async function getVenuePhotos(
-  venueAddress: string
-): Promise<MediaAsset[]> {
+export async function getVenuePhotos(venueAddress: string): Promise<MediaAsset[]> {
   const user = await requireChef()
   const db: any = createServerClient()
   const tenantId = user.tenantId!

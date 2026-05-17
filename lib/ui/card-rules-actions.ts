@@ -2,7 +2,13 @@
 
 import { requireChef } from '@/lib/auth/get-user'
 import { createServerClient } from '@/lib/db/server'
-import type { CardType, CardSection, CardCompositionRule, CardAudit, CardRulesSummary } from './card-rules-types'
+import type {
+  CardType,
+  CardSection,
+  CardCompositionRule,
+  CardAudit,
+  CardRulesSummary,
+} from './card-rules-types'
 
 export async function getCardRules(cardType?: CardType): Promise<CardCompositionRule[]> {
   const user = await requireChef()
@@ -34,7 +40,7 @@ export async function upsertCardRule(
   maxItems: number | null,
   required: boolean,
   order: number,
-  description?: string,
+  description?: string
 ): Promise<CardCompositionRule> {
   const user = await requireChef()
   const db: any = createServerClient()
@@ -44,7 +50,7 @@ export async function upsertCardRule(
      ON CONFLICT (tenant_id, card_type, section)
      DO UPDATE SET max_items = $4, required = $5, "order" = $6, description = $7
      RETURNING *`,
-    [user.tenantId, cardType, section, maxItems, required, order, description ?? null],
+    [user.tenantId, cardType, section, maxItems, required, order, description ?? null]
   )
   const r = rows[0]
   return {
@@ -64,7 +70,7 @@ export async function auditCard(
   route: string,
   cardType: CardType,
   violations: unknown[],
-  score: number,
+  score: number
 ): Promise<CardAudit> {
   const user = await requireChef()
   const db: any = createServerClient()
@@ -72,7 +78,7 @@ export async function auditCard(
     `INSERT INTO card_audits (tenant_id, route, card_type, violations, score)
      VALUES ($1, $2, $3, $4, $5)
      RETURNING *`,
-    [user.tenantId, route, cardType, JSON.stringify(violations), score],
+    [user.tenantId, route, cardType, JSON.stringify(violations), score]
   )
   const r = rows[0]
   return {
@@ -89,7 +95,7 @@ export async function auditCard(
 export async function getCardAudits(
   cardType?: CardType,
   route?: string,
-  limit?: number,
+  limit?: number
 ): Promise<CardAudit[]> {
   const user = await requireChef()
   const db: any = createServerClient()
@@ -126,7 +132,7 @@ export async function getCardRulesSummary(): Promise<CardRulesSummary> {
   const db: any = createServerClient()
   const ruleRows = await db.query(
     'SELECT card_type, COUNT(*)::int as cnt FROM card_composition_rules WHERE tenant_id = $1 GROUP BY card_type',
-    [user.tenantId],
+    [user.tenantId]
   )
   const byCardType: Record<string, number> = {} as any
   let totalRules = 0
@@ -136,18 +142,22 @@ export async function getCardRulesSummary(): Promise<CardRulesSummary> {
   }
   const auditRows = await db.query(
     'SELECT COUNT(*)::int as total, COALESCE(AVG(score), 0)::int as avg_score FROM card_audits WHERE tenant_id = $1',
-    [user.tenantId],
+    [user.tenantId]
   )
   const worstRows = await db.query(
     'SELECT route, card_type, score FROM card_audits WHERE tenant_id = $1 ORDER BY score ASC LIMIT 5',
-    [user.tenantId],
+    [user.tenantId]
   )
   return {
     totalRules,
     byCardType: byCardType as CardRulesSummary['byCardType'],
     totalAudits: auditRows[0]?.total ?? 0,
     avgScore: auditRows[0]?.avg_score ?? 0,
-    worstCards: worstRows.map((r: any) => ({ route: r.route, cardType: r.card_type, score: r.score })),
+    worstCards: worstRows.map((r: any) => ({
+      route: r.route,
+      cardType: r.card_type,
+      score: r.score,
+    })),
   }
 }
 
@@ -157,7 +167,7 @@ export async function getCardsWithViolations(minViolations?: number): Promise<Ca
   const threshold = minViolations ?? 1
   const rows = await db.query(
     `SELECT * FROM card_audits WHERE tenant_id = $1 AND jsonb_array_length(violations) >= $2 ORDER BY jsonb_array_length(violations) DESC`,
-    [user.tenantId, threshold],
+    [user.tenantId, threshold]
   )
   return rows.map((r: any) => ({
     id: r.id,

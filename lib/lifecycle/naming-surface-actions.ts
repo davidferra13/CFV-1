@@ -47,7 +47,7 @@ function mapDecision(r: any): NamingDecision {
 // ---------------------------------------------------------------------------
 
 export async function getLifecycleNames(
-  surfaceContext?: SurfaceContext,
+  surfaceContext?: SurfaceContext
 ): Promise<LifecycleNameEntry[]> {
   const user = await requireChef()
   const db: any = createServerClient()
@@ -97,7 +97,7 @@ export async function upsertLifecycleName(params: {
       params.color ?? null,
       params.sortOrder ?? 0,
       params.active ?? true,
-    ],
+    ]
   )
   return mapNameEntry(rows[0])
 }
@@ -107,7 +107,7 @@ export async function getNameDecisions(): Promise<NamingDecision[]> {
   const db: any = createServerClient()
   const rows = await db.query(
     'SELECT * FROM naming_decisions WHERE tenant_id = $1 ORDER BY decided_at DESC',
-    [user.tenantId],
+    [user.tenantId]
   )
   return rows.map(mapDecision)
 }
@@ -130,7 +130,7 @@ export async function createNameDecision(params: {
       params.decision,
       params.rationale ?? null,
       params.decidedBy,
-    ],
+    ]
   )
   return mapDecision(rows[0])
 }
@@ -140,7 +140,7 @@ export async function deleteLifecycleName(id: string): Promise<boolean> {
   const db: any = createServerClient()
   const rows = await db.query(
     'DELETE FROM lifecycle_name_entries WHERE id = $1 AND tenant_id = $2 RETURNING id',
-    [id, user.tenantId],
+    [id, user.tenantId]
   )
   return rows.length > 0
 }
@@ -151,7 +151,7 @@ export async function getNamingSummary(): Promise<NamingSummary> {
 
   const entryRows = await db.query(
     'SELECT surface_context, COUNT(*)::int AS cnt FROM lifecycle_name_entries WHERE tenant_id = $1 GROUP BY surface_context',
-    [user.tenantId],
+    [user.tenantId]
   )
   const totalEntries = entryRows.reduce((s: number, r: any) => s + r.cnt, 0)
   const surfaceCoverage: Record<string, number> = {
@@ -167,19 +167,19 @@ export async function getNamingSummary(): Promise<NamingSummary> {
 
   const decisionRows = await db.query(
     'SELECT COUNT(*)::int AS cnt FROM naming_decisions WHERE tenant_id = $1',
-    [user.tenantId],
+    [user.tenantId]
   )
   const totalDecisions = decisionRows[0]?.cnt ?? 0
 
   const decidedRows = await db.query(
     'SELECT DISTINCT internal_name FROM naming_decisions WHERE tenant_id = $1',
-    [user.tenantId],
+    [user.tenantId]
   )
   const decidedNames = new Set(decidedRows.map((r: any) => r.internal_name))
 
   const allNameRows = await db.query(
     'SELECT DISTINCT internal_name FROM lifecycle_name_entries WHERE tenant_id = $1',
-    [user.tenantId],
+    [user.tenantId]
   )
   const undecidedStages = allNameRows
     .map((r: any) => r.internal_name)

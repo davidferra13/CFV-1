@@ -125,7 +125,13 @@ export async function updateVenueProfile(
 // ---------------------------------------------------------------------------
 export async function getVenueHistory(venueId: string): Promise<{
   success: boolean
-  events?: Array<{ id: string; event_date: string; occasion: string | null; guest_count: number; status: string }>
+  events?: Array<{
+    id: string
+    event_date: string
+    occasion: string | null
+    guest_count: number
+    status: string
+  }>
   error?: string
 }> {
   try {

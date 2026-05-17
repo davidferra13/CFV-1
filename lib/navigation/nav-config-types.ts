@@ -1,13 +1,7 @@
 // Navigation configuration and page header types for NAV #1
 // Chef Navigation And Page Header Unification
 
-export type NavSection =
-  | 'operations'
-  | 'clients'
-  | 'menus'
-  | 'finance'
-  | 'settings'
-  | 'admin'
+export type NavSection = 'operations' | 'clients' | 'menus' | 'finance' | 'settings' | 'admin'
 
 export type NavItem = {
   id: string

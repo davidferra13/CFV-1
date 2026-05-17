@@ -3,7 +3,7 @@ export type AuditAction = 'create' | 'update' | 'delete' | 'archive' | 'restore'
 export interface AuditEntry {
   id: string
   tenant_id: string
-  entity_type: string  // 'event', 'menu', 'quote', etc.
+  entity_type: string // 'event', 'menu', 'quote', etc.
   entity_id: string
   action: AuditAction
   actor_id: string

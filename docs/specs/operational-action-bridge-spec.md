@@ -11,6 +11,7 @@
 ## Problem
 
 Three registries exist but don't connect:
+
 1. **Interaction Registry** (`lib/interactions/`) - knows 40 action types, logs them, but doesn't execute
 2. **Inline-Action-Registry** (`lib/discovery/inline-action-registry.ts`) - dispatches but only 4 entries, mostly redirects
 3. **Circle Notification Types** (`hub_messages.notification_type`) - 15 types displayed as cards, no response buttons
@@ -22,6 +23,7 @@ Meanwhile, domain actions (`lib/events/transitions.ts`, `lib/quotes/actions.ts`,
 ## Solution: Universal Action Executor
 
 One bridge layer that:
+
 1. Maps action identifiers to actual server action calls
 2. Provides a UI primitive for inline execution (no navigation)
 3. Works identically in rail items, circle messages, and any future surface
@@ -101,18 +103,18 @@ type ActionResult = {
 
 ### Initial Action Set (Wave 1 - highest impact)
 
-| Action ID | Domain | Server Action | Surfaces |
-|-----------|--------|---------------|----------|
-| `send_payment_reminder` | payments | `sendPaymentReminder` | rail, circle |
-| `request_deposit` | payments | `requestDeposit` | rail, circle, page |
-| `record_offline_payment` | payments | `recordOfflinePayment` | rail, page |
-| `send_quote` | quotes | `sendQuoteToClient` | rail, circle, page |
-| `convert_inquiry_to_proposal` | inquiries | `transitionInquiry('quoted')` | rail, page |
-| `mark_inquiry_responded` | inquiries | `transitionInquiry('responded')` | rail, page |
-| `send_contract` | contracts | `sendContractToClient` | rail, circle |
-| `confirm_event` | events | `transitionEvent('confirmed')` | rail, circle, page |
-| `share_menu` | menus | `shareMenuWithClient` | rail, circle, page |
-| `send_followup` | communication | `sendFollowUp` | rail, circle |
+| Action ID                     | Domain        | Server Action                    | Surfaces           |
+| ----------------------------- | ------------- | -------------------------------- | ------------------ |
+| `send_payment_reminder`       | payments      | `sendPaymentReminder`            | rail, circle       |
+| `request_deposit`             | payments      | `requestDeposit`                 | rail, circle, page |
+| `record_offline_payment`      | payments      | `recordOfflinePayment`           | rail, page         |
+| `send_quote`                  | quotes        | `sendQuoteToClient`              | rail, circle, page |
+| `convert_inquiry_to_proposal` | inquiries     | `transitionInquiry('quoted')`    | rail, page         |
+| `mark_inquiry_responded`      | inquiries     | `transitionInquiry('responded')` | rail, page         |
+| `send_contract`               | contracts     | `sendContractToClient`           | rail, circle       |
+| `confirm_event`               | events        | `transitionEvent('confirmed')`   | rail, circle, page |
+| `share_menu`                  | menus         | `shareMenuWithClient`            | rail, circle, page |
+| `send_followup`               | communication | `sendFollowUp`                   | rail, circle       |
 
 ### File: `components/actions/inline-action-executor.tsx`
 
@@ -193,27 +195,27 @@ Example: Chef records offline payment -> circle auto-posts "Deposit confirmed" -
 
 ## Files to Create
 
-| File | Purpose |
-|------|---------|
-| `lib/actions/action-registry.ts` | Central registry + types |
-| `lib/actions/action-definitions/payments.ts` | Payment action wiring |
-| `lib/actions/action-definitions/inquiries.ts` | Inquiry action wiring |
-| `lib/actions/action-definitions/quotes.ts` | Quote action wiring |
-| `lib/actions/action-definitions/contracts.ts` | Contract action wiring |
-| `lib/actions/action-definitions/events.ts` | Event action wiring |
-| `lib/actions/action-definitions/menus.ts` | Menu action wiring |
-| `lib/actions/action-definitions/communication.ts` | Communication action wiring |
-| `components/actions/inline-action-executor.tsx` | Universal inline executor UI |
-| `components/actions/action-confirm-dialog.tsx` | Confirmation overlay for destructive actions |
+| File                                              | Purpose                                      |
+| ------------------------------------------------- | -------------------------------------------- |
+| `lib/actions/action-registry.ts`                  | Central registry + types                     |
+| `lib/actions/action-definitions/payments.ts`      | Payment action wiring                        |
+| `lib/actions/action-definitions/inquiries.ts`     | Inquiry action wiring                        |
+| `lib/actions/action-definitions/quotes.ts`        | Quote action wiring                          |
+| `lib/actions/action-definitions/contracts.ts`     | Contract action wiring                       |
+| `lib/actions/action-definitions/events.ts`        | Event action wiring                          |
+| `lib/actions/action-definitions/menus.ts`         | Menu action wiring                           |
+| `lib/actions/action-definitions/communication.ts` | Communication action wiring                  |
+| `components/actions/inline-action-executor.tsx`   | Universal inline executor UI                 |
+| `components/actions/action-confirm-dialog.tsx`    | Confirmation overlay for destructive actions |
 
 ## Files to Modify
 
-| File | Change |
-|------|--------|
-| `components/rail/rail-item-row.tsx` | Use InlineActionExecutor instead of executeInlineAction |
-| `lib/discovery/inline-action-registry.ts` | Delegate to action-registry |
-| `components/hub/circle-message-card.tsx` (or equivalent) | Add response action buttons to notification cards |
-| `lib/hub/circle-lifecycle-hooks.ts` | Add action result posting |
+| File                                                     | Change                                                  |
+| -------------------------------------------------------- | ------------------------------------------------------- |
+| `components/rail/rail-item-row.tsx`                      | Use InlineActionExecutor instead of executeInlineAction |
+| `lib/discovery/inline-action-registry.ts`                | Delegate to action-registry                             |
+| `components/hub/circle-message-card.tsx` (or equivalent) | Add response action buttons to notification cards       |
+| `lib/hub/circle-lifecycle-hooks.ts`                      | Add action result posting                               |
 
 ---
 

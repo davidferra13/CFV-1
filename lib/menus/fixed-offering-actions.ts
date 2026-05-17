@@ -47,7 +47,9 @@ function validateDaysOfWeek(days: number[] | null | undefined): void {
   if (!days) return
   for (const d of days) {
     if (!Number.isInteger(d) || d < 0 || d > 6) {
-      throw new UnknownAppError(`Invalid day of week: ${d}. Must be 0 (Sunday) through 6 (Saturday).`)
+      throw new UnknownAppError(
+        `Invalid day of week: ${d}. Must be 0 (Sunday) through 6 (Saturday).`
+      )
     }
   }
 }
@@ -220,12 +222,15 @@ export async function updateOffering(
   // Build update payload (only provided fields)
   const updates: Record<string, unknown> = { updated_at: new Date().toISOString() }
 
-  if (input.price_per_head_cents !== undefined) updates.price_per_head_cents = input.price_per_head_cents
+  if (input.price_per_head_cents !== undefined)
+    updates.price_per_head_cents = input.price_per_head_cents
   if (input.min_guests !== undefined) updates.min_guests = input.min_guests
   if (input.max_guests !== undefined) updates.max_guests = input.max_guests
   if (input.available_seasons !== undefined) updates.available_seasons = input.available_seasons
-  if (input.available_days_of_week !== undefined) updates.available_days_of_week = input.available_days_of_week
-  if (input.booking_lead_time_days !== undefined) updates.booking_lead_time_days = input.booking_lead_time_days
+  if (input.available_days_of_week !== undefined)
+    updates.available_days_of_week = input.available_days_of_week
+  if (input.booking_lead_time_days !== undefined)
+    updates.booking_lead_time_days = input.booking_lead_time_days
   if (input.tagline !== undefined) updates.tagline = input.tagline
   if (input.hero_image_url !== undefined) updates.hero_image_url = input.hero_image_url
   if (input.description !== undefined) updates.description = input.description
@@ -303,9 +308,7 @@ export async function getChefOfferings(): Promise<
  * Get active offerings for a chef's public profile page.
  * No auth required. Uses admin client to bypass RLS.
  */
-export async function getPublicOfferings(
-  chefSlug: string
-): Promise<PublicOffering[]> {
+export async function getPublicOfferings(chefSlug: string): Promise<PublicOffering[]> {
   const db: any = createServerClient({ admin: true })
 
   // Resolve chef by booking slug or public slug
@@ -475,7 +478,15 @@ export async function bookOffering(
   if (offering.available_days_of_week && offering.available_days_of_week.length > 0) {
     const requestedDay = eventDate.getDay()
     if (!offering.available_days_of_week.includes(requestedDay)) {
-      const dayNames = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday']
+      const dayNames = [
+        'Sunday',
+        'Monday',
+        'Tuesday',
+        'Wednesday',
+        'Thursday',
+        'Friday',
+        'Saturday',
+      ]
       const allowedDays = offering.available_days_of_week.map((d: number) => dayNames[d]).join(', ')
       throw new UnknownAppError(`This menu is only available on ${allowedDays}.`)
     }
@@ -592,10 +603,7 @@ export async function bookOffering(
   }
 
   // Link the duplicated menu to the event
-  await db
-    .from('menus')
-    .update({ event_id: event.id })
-    .eq('id', duplicatedMenu.id)
+  await db.from('menus').update({ event_id: event.id }).eq('id', duplicatedMenu.id)
 
   // Record the booking
   const totalCents = offering.price_per_head_cents * input.guest_count

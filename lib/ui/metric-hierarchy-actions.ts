@@ -2,9 +2,18 @@
 
 import { requireChef } from '@/lib/auth/get-user'
 import { createServerClient } from '@/lib/db/server'
-import type { MetricTier, MetricFormat, MetricConfig, MetricGroup, MetricHierarchySummary } from './metric-hierarchy-types'
+import type {
+  MetricTier,
+  MetricFormat,
+  MetricConfig,
+  MetricGroup,
+  MetricHierarchySummary,
+} from './metric-hierarchy-types'
 
-export async function getMetricConfigs(tier?: MetricTier, groupName?: string): Promise<MetricConfig[]> {
+export async function getMetricConfigs(
+  tier?: MetricTier,
+  groupName?: string
+): Promise<MetricConfig[]> {
   const user = await requireChef()
   const db: any = createServerClient()
   const params: any[] = [user.tenantId]
@@ -42,7 +51,7 @@ export async function upsertMetricConfig(
   icon?: string,
   route?: string,
   order?: number,
-  groupName?: string,
+  groupName?: string
 ): Promise<MetricConfig> {
   const user = await requireChef()
   const db: any = createServerClient()
@@ -85,7 +94,7 @@ export async function getMetricGroups(): Promise<MetricGroup[]> {
   const db: any = createServerClient()
   const rows = await db.query(
     'SELECT * FROM metric_configs WHERE tenant_id = $1 ORDER BY group_name, "order", created_at',
-    [user.tenantId],
+    [user.tenantId]
   )
   const groups = new Map<string, MetricConfig[]>()
   for (const r of rows) {
@@ -115,20 +124,21 @@ export async function reorderMetrics(metricIds: string[]): Promise<void> {
   const user = await requireChef()
   const db: any = createServerClient()
   for (let i = 0; i < metricIds.length; i++) {
-    await db.query(
-      'UPDATE metric_configs SET "order" = $1 WHERE id = $2 AND tenant_id = $3',
-      [i, metricIds[i], user.tenantId],
-    )
+    await db.query('UPDATE metric_configs SET "order" = $1 WHERE id = $2 AND tenant_id = $3', [
+      i,
+      metricIds[i],
+      user.tenantId,
+    ])
   }
 }
 
 export async function deleteMetricConfig(metricId: string): Promise<void> {
   const user = await requireChef()
   const db: any = createServerClient()
-  await db.query(
-    'DELETE FROM metric_configs WHERE id = $1 AND tenant_id = $2',
-    [metricId, user.tenantId],
-  )
+  await db.query('DELETE FROM metric_configs WHERE id = $1 AND tenant_id = $2', [
+    metricId,
+    user.tenantId,
+  ])
 }
 
 export async function getMetricHierarchySummary(): Promise<MetricHierarchySummary> {
@@ -136,10 +146,16 @@ export async function getMetricHierarchySummary(): Promise<MetricHierarchySummar
   const db: any = createServerClient()
   const rows = await db.query(
     'SELECT tier, format, group_name FROM metric_configs WHERE tenant_id = $1',
-    [user.tenantId],
+    [user.tenantId]
   )
   const byTier: Record<MetricTier, number> = { hero: 0, primary: 0, secondary: 0, detail: 0 }
-  const byFormat: Record<MetricFormat, number> = { number: 0, currency: 0, percentage: 0, duration: 0, count: 0 }
+  const byFormat: Record<MetricFormat, number> = {
+    number: 0,
+    currency: 0,
+    percentage: 0,
+    duration: 0,
+    count: 0,
+  }
   const groupNames = new Set<string>()
   for (const r of rows) {
     if (r.tier in byTier) byTier[r.tier as MetricTier]++

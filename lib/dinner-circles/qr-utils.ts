@@ -6,9 +6,7 @@
  */
 
 const BASE_URL =
-  process.env.NEXT_PUBLIC_APP_URL ||
-  process.env.NEXT_PUBLIC_SITE_URL ||
-  'https://chefflow.co'
+  process.env.NEXT_PUBLIC_APP_URL || process.env.NEXT_PUBLIC_SITE_URL || 'https://chefflow.co'
 
 /** Return the public join URL for a given circle join token. */
 export function getJoinUrl(token: string): string {
@@ -16,10 +14,7 @@ export function getJoinUrl(token: string): string {
 }
 
 /** Return the full join URL with optional UTM source for attribution. */
-export function getJoinUrlWithAttribution(
-  token: string,
-  source?: string
-): string {
+export function getJoinUrlWithAttribution(token: string, source?: string): string {
   const base = getJoinUrl(token)
   if (!source) return base
   return `${base}?src=${encodeURIComponent(source)}`

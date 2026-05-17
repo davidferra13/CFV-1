@@ -128,9 +128,7 @@ export async function configureCircleReminders(
 // getCircleReminderConfig
 // ---------------------------------------------------------------------------
 
-export async function getCircleReminderConfig(
-  circleId: string
-): Promise<ReminderConfig[]> {
+export async function getCircleReminderConfig(circleId: string): Promise<ReminderConfig[]> {
   const user = await requireChef()
   const db: any = createServerClient()
 
@@ -152,9 +150,7 @@ export async function getCircleReminderConfig(
 // All pending reminders across circles (or filtered to one)
 // ---------------------------------------------------------------------------
 
-export async function getUpcomingReminders(
-  circleId?: string
-): Promise<ReminderRecord[]> {
+export async function getUpcomingReminders(circleId?: string): Promise<ReminderRecord[]> {
   const user = await requireChef()
   const db: any = createServerClient()
   const tenantId = user.tenantId!
@@ -276,9 +272,7 @@ export async function skipReminder(
 // Past reminders with delivery status for a circle
 // ---------------------------------------------------------------------------
 
-export async function getCircleReminderHistory(
-  circleId: string
-): Promise<ReminderRecord[]> {
+export async function getCircleReminderHistory(circleId: string): Promise<ReminderRecord[]> {
   const user = await requireChef()
   const db: any = createServerClient()
 

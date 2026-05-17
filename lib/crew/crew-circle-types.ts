@@ -4,18 +4,15 @@
 // ---------------------------------------------------------------------------
 
 export type CrewRole =
-  | 'lead'       // head chef, team lead
-  | 'sous_chef'  // sous chef
-  | 'prep_cook'  // prep cook
-  | 'server'     // front-of-house server
-  | 'bartender'  // bar staff
-  | 'assistant'  // general assistant
-  | 'other'      // catch-all
+  | 'lead' // head chef, team lead
+  | 'sous_chef' // sous chef
+  | 'prep_cook' // prep cook
+  | 'server' // front-of-house server
+  | 'bartender' // bar staff
+  | 'assistant' // general assistant
+  | 'other' // catch-all
 
-export type CrewAvailabilityStatus =
-  | 'available'
-  | 'tentative'
-  | 'unavailable'
+export type CrewAvailabilityStatus = 'available' | 'tentative' | 'unavailable'
 
 export interface CrewCircle {
   id: string

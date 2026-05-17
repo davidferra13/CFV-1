@@ -12,7 +12,7 @@ export async function saveSessionState(
   route: string,
   entityType?: string,
   entityId?: string,
-  extra?: Record<string, unknown>,
+  extra?: Record<string, unknown>
 ): Promise<void> {
   const user = await requireChef()
   const db: any = createServerClient()
@@ -44,30 +44,26 @@ export async function saveSessionState(
 
     if (error) throw new Error(`Failed to update session state: ${error.message}`)
   } else {
-    const { error } = await db
-      .from('session_states')
-      .insert({
-        tenant_id: user.tenantId,
-        last_route: route,
-        last_entity_type: entityType ?? null,
-        last_entity_id: entityId ?? null,
-        scroll_position: extra?.scrollPosition ?? 0,
-        tab_index: extra?.tabIndex ?? null,
-        filter_state: extra?.filterState ?? null,
-      })
+    const { error } = await db.from('session_states').insert({
+      tenant_id: user.tenantId,
+      last_route: route,
+      last_entity_type: entityType ?? null,
+      last_entity_id: entityId ?? null,
+      scroll_position: extra?.scrollPosition ?? 0,
+      tab_index: extra?.tabIndex ?? null,
+      filter_state: extra?.filterState ?? null,
+    })
 
     if (error) throw new Error(`Failed to create session state: ${error.message}`)
   }
 
   // Also record breadcrumb
   const label = route.split('/').filter(Boolean).pop() || 'home'
-  const { error: crumbErr } = await db
-    .from('session_breadcrumbs')
-    .insert({
-      tenant_id: user.tenantId,
-      route,
-      label,
-    })
+  const { error: crumbErr } = await db.from('session_breadcrumbs').insert({
+    tenant_id: user.tenantId,
+    route,
+    label,
+  })
 
   if (crumbErr) throw new Error(`Failed to save breadcrumb: ${crumbErr.message}`)
 }
@@ -135,7 +131,7 @@ export async function getRecentRoutes(limit: number = 10): Promise<NavigationBre
 export async function saveResumePoint(
   route: string,
   label: string,
-  context: Record<string, unknown> = {},
+  context: Record<string, unknown> = {}
 ): Promise<void> {
   const user = await requireChef()
   const db: any = createServerClient()
@@ -147,14 +143,12 @@ export async function saveResumePoint(
     throw new Error('Label is required')
   }
 
-  const { error } = await db
-    .from('resume_points')
-    .insert({
-      tenant_id: user.tenantId,
-      route,
-      label,
-      context,
-    })
+  const { error } = await db.from('resume_points').insert({
+    tenant_id: user.tenantId,
+    route,
+    label,
+    context,
+  })
 
   if (error) throw new Error(`Failed to save resume point: ${error.message}`)
 }

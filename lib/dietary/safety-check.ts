@@ -36,15 +36,28 @@ export type MenuSafetyResult = {
 
 // FDA Big 9 allergens (lowercase for matching)
 const CRITICAL_ALLERGENS = new Set([
-  'milk', 'dairy', 'eggs', 'egg', 'fish', 'shellfish',
-  'tree nuts', 'nuts', 'peanuts', 'peanut', 'wheat',
-  'soybeans', 'soy', 'sesame',
+  'milk',
+  'dairy',
+  'eggs',
+  'egg',
+  'fish',
+  'shellfish',
+  'tree nuts',
+  'nuts',
+  'peanuts',
+  'peanut',
+  'wheat',
+  'soybeans',
+  'soy',
+  'sesame',
 ])
 
 function isCriticalAllergen(allergen: string): boolean {
   const lower = allergen.toLowerCase().trim()
-  return CRITICAL_ALLERGENS.has(lower) ||
+  return (
+    CRITICAL_ALLERGENS.has(lower) ||
     [...CRITICAL_ALLERGENS].some((c) => lower.includes(c) || c.includes(lower))
+  )
 }
 
 /**
@@ -62,10 +75,7 @@ export function checkMenuSafety(
   const safeDishesByGuest: Record<string, string[]> = {}
 
   for (const guest of guests) {
-    const guestRestrictions = [
-      ...guest.allergies,
-      ...guest.dietaryRestrictions,
-    ].filter(Boolean)
+    const guestRestrictions = [...guest.allergies, ...guest.dietaryRestrictions].filter(Boolean)
 
     if (guestRestrictions.length === 0) {
       safeDishesByGuest[guest.name] = dishes.map((d) => d.name)
@@ -81,15 +91,13 @@ export function checkMenuSafety(
         // Check allergen flags
         const flagMatch = dish.allergenFlags.some((flag) => {
           const flagLower = flag.toLowerCase().trim()
-          return flagLower.includes(restrictionLower) ||
-            restrictionLower.includes(flagLower)
+          return flagLower.includes(restrictionLower) || restrictionLower.includes(flagLower)
         })
 
         // Check ingredient names
         const ingredientMatch = dish.ingredientNames.some((ing) => {
           const ingLower = ing.toLowerCase().trim()
-          return ingLower.includes(restrictionLower) ||
-            restrictionLower.includes(ingLower)
+          return ingLower.includes(restrictionLower) || restrictionLower.includes(ingLower)
         })
 
         if (flagMatch || ingredientMatch) {
@@ -125,9 +133,6 @@ export function checkMenuSafety(
  * Returns true if the menu is safe (no conflicts).
  * Lightweight alternative to checkMenuSafety when you only need a boolean.
  */
-export function isMenuSafeForGuests(
-  dishes: MenuSafetyDish[],
-  guests: MenuSafetyGuest[]
-): boolean {
+export function isMenuSafeForGuests(dishes: MenuSafetyDish[], guests: MenuSafetyGuest[]): boolean {
   return checkMenuSafety(dishes, guests).safe
 }

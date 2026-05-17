@@ -50,10 +50,7 @@ const DEFAULT_BOUNDARIES = {
 
 // ── Internal: get or create boundaries row ──────────────────────────────────────
 
-async function getOrCreateBoundaries(
-  db: any,
-  tenantId: string
-): Promise<CapacityBoundaries> {
+async function getOrCreateBoundaries(db: any, tenantId: string): Promise<CapacityBoundaries> {
   const { data, error } = await db
     .from('chef_burnout_boundaries')
     .select('*')
@@ -145,9 +142,11 @@ export async function setCapacityBoundaries(
     updated_at: new Date().toISOString(),
   }
   if (input.maxEventsPerWeek !== undefined) updateData.max_events_per_week = input.maxEventsPerWeek
-  if (input.maxGuestsPerEvent !== undefined) updateData.max_guests_per_event = input.maxGuestsPerEvent
+  if (input.maxGuestsPerEvent !== undefined)
+    updateData.max_guests_per_event = input.maxGuestsPerEvent
   if (input.minRestDays !== undefined) updateData.min_rest_days = input.minRestDays
-  if (input.maxConsecutiveDays !== undefined) updateData.max_consecutive_days = input.maxConsecutiveDays
+  if (input.maxConsecutiveDays !== undefined)
+    updateData.max_consecutive_days = input.maxConsecutiveDays
 
   const { error } = await db
     .from('chef_burnout_boundaries')
@@ -180,9 +179,10 @@ export async function getCapacityBoundaries(): Promise<CapacityBoundaries> {
  * Returns a risk score (0-100) with contributing factors.
  * Defaults to next 14 days if no date range specified.
  */
-export async function getBurnoutRiskAssessment(
-  dateRange?: { start: string; end: string }
-): Promise<BurnoutRiskAssessment> {
+export async function getBurnoutRiskAssessment(dateRange?: {
+  start: string
+  end: string
+}): Promise<BurnoutRiskAssessment> {
   const chef = await requireChef()
   const db: any = createServerClient()
   const tenantId = chef.tenantId!
@@ -229,9 +229,10 @@ export async function getBurnoutRiskAssessment(
     }
     cursor = addDays(cursor, 1)
   }
-  const consecutiveScore = boundaries.maxConsecutiveDays > 0
-    ? clamp(Math.round((maxConsecutive / boundaries.maxConsecutiveDays) * 100), 0, 100)
-    : 0
+  const consecutiveScore =
+    boundaries.maxConsecutiveDays > 0
+      ? clamp(Math.round((maxConsecutive / boundaries.maxConsecutiveDays) * 100), 0, 100)
+      : 0
   factors.push({
     name: 'consecutive_days',
     score: consecutiveScore,
@@ -244,9 +245,10 @@ export async function getBurnoutRiskAssessment(
     const gc = e.guest_count ?? 0
     if (gc > maxGuestsInOneEvent) maxGuestsInOneEvent = gc
   }
-  const guestDensityScore = boundaries.maxGuestsPerEvent > 0
-    ? clamp(Math.round((maxGuestsInOneEvent / boundaries.maxGuestsPerEvent) * 100), 0, 100)
-    : 0
+  const guestDensityScore =
+    boundaries.maxGuestsPerEvent > 0
+      ? clamp(Math.round((maxGuestsInOneEvent / boundaries.maxGuestsPerEvent) * 100), 0, 100)
+      : 0
   factors.push({
     name: 'guest_density',
     score: guestDensityScore,
@@ -264,9 +266,7 @@ export async function getBurnoutRiskAssessment(
       if (d > range.end) break
       weekTotal += dailyEvents.get(d) ?? 0
     }
-    const ratio = boundaries.maxEventsPerWeek > 0
-      ? weekTotal / boundaries.maxEventsPerWeek
-      : 0
+    const ratio = boundaries.maxEventsPerWeek > 0 ? weekTotal / boundaries.maxEventsPerWeek : 0
     if (ratio > worstWeeklyRatio) {
       worstWeeklyRatio = ratio
       worstWeekEvents = weekTotal
@@ -285,22 +285,27 @@ export async function getBurnoutRiskAssessment(
     (d) => (dailyEvents.get(d as string) ?? 0) > 0
   ).length
   const blockedTotal = blockedSet.size
-  const restScore = blockedTotal > 0
-    ? clamp(Math.round((blockedViolations / blockedTotal) * 100), 0, 100)
-    : 0
+  const restScore =
+    blockedTotal > 0 ? clamp(Math.round((blockedViolations / blockedTotal) * 100), 0, 100) : 0
   factors.push({
     name: 'rest_day_violations',
     score: restScore,
-    description: blockedTotal > 0
-      ? `${blockedViolations} of ${blockedTotal} blocked dates have events scheduled`
-      : 'No blocked dates in range',
+    description:
+      blockedTotal > 0
+        ? `${blockedViolations} of ${blockedTotal} blocked dates have events scheduled`
+        : 'No blocked dates in range',
   })
 
   // Factor 5: Variety score (how many days have multiple event types / back-to-back)
   // Simplified: ratio of event-days to total days (density)
-  const totalDaysInRange = Math.max(1, Math.round(
-    (new Date(range.end + 'T00:00:00').getTime() - new Date(range.start + 'T00:00:00').getTime()) / 86400000
-  ) + 1)
+  const totalDaysInRange = Math.max(
+    1,
+    Math.round(
+      (new Date(range.end + 'T00:00:00').getTime() -
+        new Date(range.start + 'T00:00:00').getTime()) /
+        86400000
+    ) + 1
+  )
   const eventDayCount = dailyEvents.size
   const densityRatio = eventDayCount / totalDaysInRange
   const varietyScore = clamp(Math.round(densityRatio * 100), 0, 100)
@@ -312,11 +317,11 @@ export async function getBurnoutRiskAssessment(
 
   // Overall score: weighted average
   const weights: Record<string, number> = {
-    consecutive_days: 0.30,
+    consecutive_days: 0.3,
     guest_density: 0.15,
     weekly_event_load: 0.25,
-    rest_day_violations: 0.20,
-    schedule_density: 0.10,
+    rest_day_violations: 0.2,
+    schedule_density: 0.1,
   }
   let overallScore = 0
   for (const f of factors) {
@@ -327,16 +332,24 @@ export async function getBurnoutRiskAssessment(
   // Recommendations
   const recommendations: string[] = []
   if (consecutiveScore >= 80) {
-    recommendations.push(`Schedule a rest day: ${maxConsecutive} consecutive days exceeds your ${boundaries.maxConsecutiveDays}-day limit`)
+    recommendations.push(
+      `Schedule a rest day: ${maxConsecutive} consecutive days exceeds your ${boundaries.maxConsecutiveDays}-day limit`
+    )
   }
   if (guestDensityScore >= 80) {
-    recommendations.push(`Consider reducing guest count: ${maxGuestsInOneEvent} guests exceeds your ${boundaries.maxGuestsPerEvent}-guest limit`)
+    recommendations.push(
+      `Consider reducing guest count: ${maxGuestsInOneEvent} guests exceeds your ${boundaries.maxGuestsPerEvent}-guest limit`
+    )
   }
   if (weeklyLoadScore >= 80) {
-    recommendations.push(`Spread events across weeks: ${worstWeekEvents} events in one week exceeds your ${boundaries.maxEventsPerWeek}-event limit`)
+    recommendations.push(
+      `Spread events across weeks: ${worstWeekEvents} events in one week exceeds your ${boundaries.maxEventsPerWeek}-event limit`
+    )
   }
   if (blockedViolations > 0) {
-    recommendations.push(`${blockedViolations} blocked date(s) have events; move or cancel to protect rest time`)
+    recommendations.push(
+      `${blockedViolations} blocked date(s) have events; move or cancel to protect rest time`
+    )
   }
   if (overallScore < 30) {
     recommendations.push('Schedule looks sustainable. Keep it up.')
@@ -355,9 +368,10 @@ export async function getBurnoutRiskAssessment(
  * Get dates the chef has blocked off for rest/personal in a given month.
  * Defaults to current month if none specified.
  */
-export async function getBlockedDates(
-  month?: { year: number; month: number }
-): Promise<BlockedDate[]> {
+export async function getBlockedDates(month?: {
+  year: number
+  month: number
+}): Promise<BlockedDate[]> {
   const chef = await requireChef()
   const db: any = createServerClient()
   const tenantId = chef.tenantId!
@@ -458,9 +472,7 @@ export async function setBlockedDate(
  * Unblock a previously blocked date.
  * No-op if date is not blocked.
  */
-export async function removeBlockedDate(
-  date: string
-): Promise<{ success: boolean }> {
+export async function removeBlockedDate(date: string): Promise<{ success: boolean }> {
   const chef = await requireChef()
   const db: any = createServerClient()
   const tenantId = chef.tenantId!

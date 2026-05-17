@@ -15,7 +15,7 @@ export async function getEvidenceLabelConfigs(): Promise<EvidenceLabelConfig[]> 
   const db: any = createServerClient()
   const rows = await db.query(
     'SELECT * FROM evidence_label_configs WHERE tenant_id = $1 ORDER BY priority ASC',
-    [user.tenantId],
+    [user.tenantId]
   )
   return rows.map((r: any) => ({
     id: r.id,
@@ -68,7 +68,7 @@ export async function upsertEvidenceLabelConfig(params: {
       params.icon ?? null,
       params.tooltipTemplate ?? null,
       params.priority ?? 0,
-    ],
+    ]
   )
   const r = rows[0]
   return {
@@ -86,7 +86,9 @@ export async function upsertEvidenceLabelConfig(params: {
   }
 }
 
-export async function getEvidenceLabelPlacements(route?: string): Promise<EvidenceLabelPlacement[]> {
+export async function getEvidenceLabelPlacements(
+  route?: string
+): Promise<EvidenceLabelPlacement[]> {
   const user = await requireChef()
   const db: any = createServerClient()
   const params: any[] = [user.tenantId]
@@ -135,7 +137,7 @@ export async function upsertEvidenceLabelPlacement(params: {
       params.evidenceLevel,
       params.position,
       params.visible ?? true,
-    ],
+    ]
   )
   const r = rows[0]
   return {
@@ -153,10 +155,10 @@ export async function upsertEvidenceLabelPlacement(params: {
 export async function deleteEvidenceLabelPlacement(id: string): Promise<void> {
   const user = await requireChef()
   const db: any = createServerClient()
-  await db.query(
-    'DELETE FROM evidence_label_placements WHERE id = $1 AND tenant_id = $2',
-    [id, user.tenantId],
-  )
+  await db.query('DELETE FROM evidence_label_placements WHERE id = $1 AND tenant_id = $2', [
+    id,
+    user.tenantId,
+  ])
 }
 
 export async function getEvidenceLabelSummary(): Promise<EvidenceLabelSummary> {
@@ -164,15 +166,15 @@ export async function getEvidenceLabelSummary(): Promise<EvidenceLabelSummary> {
   const db: any = createServerClient()
   const configRows = await db.query(
     'SELECT COUNT(*)::int as total FROM evidence_label_configs WHERE tenant_id = $1',
-    [user.tenantId],
+    [user.tenantId]
   )
   const placementRows = await db.query(
     'SELECT COUNT(*)::int as total FROM evidence_label_placements WHERE tenant_id = $1',
-    [user.tenantId],
+    [user.tenantId]
   )
   const levelRows = await db.query(
     'SELECT evidence_level, COUNT(*)::int as cnt FROM evidence_label_placements WHERE tenant_id = $1 GROUP BY evidence_level',
-    [user.tenantId],
+    [user.tenantId]
   )
   const coverageByLevel: Record<string, number> = {
     verified: 0,

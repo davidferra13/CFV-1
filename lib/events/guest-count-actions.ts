@@ -173,9 +173,7 @@ export async function updateGuestCount(
 
 // ── Get Guest Count History ───────────────────────────────────────────────────
 
-export async function getGuestCountHistory(
-  eventId: string
-): Promise<GuestCountChange[]> {
+export async function getGuestCountHistory(eventId: string): Promise<GuestCountChange[]> {
   const user = await requireChef()
   const tenantId = user.tenantId!
   const db: any = createServerClient()
@@ -328,9 +326,7 @@ export async function setGuestCountCutoff(
 
 // ── Get Guest Count Summary ───────────────────────────────────────────────────
 
-export async function getGuestCountSummary(
-  eventId: string
-): Promise<GuestCountSummary> {
+export async function getGuestCountSummary(eventId: string): Promise<GuestCountSummary> {
   const user = await requireChef()
   const tenantId = user.tenantId!
   const db: any = createServerClient()

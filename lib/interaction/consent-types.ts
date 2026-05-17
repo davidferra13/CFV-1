@@ -1,4 +1,10 @@
-export type ConsentType = 'marketing' | 'photos' | 'testimonials' | 'data_sharing' | 'dietary_storage' | 'contact_reuse'
+export type ConsentType =
+  | 'marketing'
+  | 'photos'
+  | 'testimonials'
+  | 'data_sharing'
+  | 'dietary_storage'
+  | 'contact_reuse'
 export type ConsentStatus = 'granted' | 'denied' | 'withdrawn' | 'pending'
 export interface ConsentRecord {
   id: string

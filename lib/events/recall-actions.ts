@@ -408,9 +408,7 @@ export async function getEventRecall(eventId: string): Promise<EventRecall | nul
  * All past events for a client, with summary cards.
  * Ordered by event_date descending (most recent first).
  */
-export async function getClientEventHistory(
-  clientId: string
-): Promise<ClientHistory | null> {
+export async function getClientEventHistory(clientId: string): Promise<ClientHistory | null> {
   const user = await requireChef()
   const db: any = createServerClient()
   const tenantId = user.tenantId!
@@ -611,12 +609,8 @@ export async function searchPastEvents(
         (e.location_city ?? '').toLowerCase().includes(keyword) ||
         (e.location_state ?? '').toLowerCase().includes(keyword) ||
         (e.location_address ?? '').toLowerCase().includes(keyword)
-      const menuMatch = menus.some((m: any) =>
-        (m.name ?? '').toLowerCase().includes(keyword)
-      )
-      const dishMatch = dishes.some((d: any) =>
-        (d.name ?? '').toLowerCase().includes(keyword)
-      )
+      const menuMatch = menus.some((m: any) => (m.name ?? '').toLowerCase().includes(keyword))
+      const dishMatch = dishes.some((d: any) => (d.name ?? '').toLowerCase().includes(keyword))
 
       if (clientMatch) matchedOn.push('client')
       if (occasionMatch) matchedOn.push('occasion')
@@ -662,9 +656,7 @@ export async function searchPastEvents(
  * in prior years, and nearby events in the same timeframe.
  * Helps the chef understand seasonal shifts when a returning client rebooks.
  */
-export async function getSeasonalContext(
-  eventId: string
-): Promise<SeasonalContext | null> {
+export async function getSeasonalContext(eventId: string): Promise<SeasonalContext | null> {
   const user = await requireChef()
   const db: any = createServerClient()
   const tenantId = user.tenantId!

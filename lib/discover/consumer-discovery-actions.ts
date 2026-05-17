@@ -398,9 +398,7 @@ export const getCuisineCategories = unstable_cache(
 
     const results: CuisineCategoryWithCount[] = []
     counts.forEach((chefCount, value) => {
-      const label = value
-        .replace(/_/g, ' ')
-        .replace(/\b\w/g, (c) => c.toUpperCase())
+      const label = value.replace(/_/g, ' ').replace(/\b\w/g, (c) => c.toUpperCase())
       results.push({ value, label, chefCount })
     })
 
@@ -487,9 +485,7 @@ export async function getDiscoveryFeed(
  * Get a chef's summary profile for discovery cards.
  * Public, no auth required.
  */
-export async function getChefQuickProfile(
-  chefId: string
-): Promise<ChefQuickProfile | null> {
+export async function getChefQuickProfile(chefId: string): Promise<ChefQuickProfile | null> {
   const db = createServerClient({ admin: true })
 
   // Fetch base chef data

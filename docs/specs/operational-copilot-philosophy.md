@@ -25,6 +25,7 @@ The entire inquiry to proposal to booking to execution lifecycle must have minim
 ### 2. Actions Live Where Work Happens
 
 Contextual actions are accessible from multiple surfaces simultaneously:
+
 - Inquiry pages
 - Dinner Circles
 - Event dashboards
@@ -53,6 +54,7 @@ Some chefs operate almost entirely from Dinner Circles and the rail without usin
 ## The Rail as Live Operational Action Surface
 
 The rail surfaces and enables action on:
+
 - Pending approvals
 - Stalled inquiries
 - Missing deposits
@@ -67,6 +69,7 @@ The rail surfaces and enables action on:
 - Event readiness risks
 
 The rail functions as:
+
 - Operational inbox
 - Workflow accelerator
 - Real-time command layer
@@ -93,6 +96,7 @@ The rail functions as:
 ## Dinner Circles as Workflow Engine
 
 Dinner Circles are NOT merely "chat." They are:
+
 - Operational memory
 - Collaboration layer
 - Guest coordination layer
@@ -102,6 +106,7 @@ Dinner Circles are NOT merely "chat." They are:
 ### Inline Capabilities
 
 Dinner Circles support:
+
 - Inline approvals
 - Embedded menu publishing
 - Proposal acceptance
@@ -118,6 +123,7 @@ Dinner Circles support:
 ### State Propagation
 
 Actions performed inside Dinner Circles automatically update:
+
 - Inquiry states
 - Event states
 - Analytics
@@ -133,6 +139,7 @@ Actions performed inside Dinner Circles automatically update:
 ## Fast Micro-Updates
 
 Critical interaction patterns:
+
 - Swipe actions
 - One-tap statuses
 - Lightweight progress updates
@@ -145,6 +152,7 @@ Critical interaction patterns:
 ## Progress Signaling (Client-Facing)
 
 Lightweight status updates visible to clients:
+
 - "Menu revision in progress"
 - "Chef sourcing ingredients"
 - "Waiting on venue confirmation"
@@ -159,6 +167,7 @@ Lightweight status updates visible to clients:
 ## Permission Model
 
 Updates/actions may be scoped:
+
 - Internal-only
 - Chef-team-only
 - Client-visible
@@ -171,6 +180,7 @@ Updates/actions may be scoped:
 ## AI/Workflow Intelligence
 
 The system must:
+
 - Detect stalled inquiries
 - Identify ghosting risk
 - Identify conversion opportunities

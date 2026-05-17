@@ -2,9 +2,23 @@
 
 import { requireChef } from '@/lib/auth/get-user'
 import { createServerClient } from '@/lib/db/server'
-import type { MicrocopyCategory, MicrocopyEntry, MicrocopyGlossary, MicrocopySummary } from './microcopy-types'
+import type {
+  MicrocopyCategory,
+  MicrocopyEntry,
+  MicrocopyGlossary,
+  MicrocopySummary,
+} from './microcopy-types'
 
-const ALL_CATEGORIES: MicrocopyCategory[] = ['button', 'label', 'placeholder', 'tooltip', 'error', 'success', 'empty_state', 'confirmation']
+const ALL_CATEGORIES: MicrocopyCategory[] = [
+  'button',
+  'label',
+  'placeholder',
+  'tooltip',
+  'error',
+  'success',
+  'empty_state',
+  'confirmation',
+]
 
 function mapEntry(r: any): MicrocopyEntry {
   return {
@@ -34,7 +48,10 @@ function mapGlossary(r: any): MicrocopyGlossary {
   }
 }
 
-export async function getMicrocopyEntries(category?: MicrocopyCategory, route?: string): Promise<MicrocopyEntry[]> {
+export async function getMicrocopyEntries(
+  category?: MicrocopyCategory,
+  route?: string
+): Promise<MicrocopyEntry[]> {
   const user = await requireChef()
   const db: any = createServerClient()
   const params: any[] = [user.tenantId]
@@ -59,7 +76,7 @@ export async function upsertMicrocopy(
   context?: string,
   route?: string,
   tone?: MicrocopyEntry['tone'],
-  maxLength?: number,
+  maxLength?: number
 ): Promise<MicrocopyEntry> {
   const user = await requireChef()
   const db: any = createServerClient()
@@ -74,7 +91,16 @@ export async function upsertMicrocopy(
       max_length = EXCLUDED.max_length,
       updated_at = NOW()
     RETURNING *`
-  const params = [user.tenantId, key, category, text, context ?? null, route ?? null, tone ?? 'professional', maxLength ?? null]
+  const params = [
+    user.tenantId,
+    key,
+    category,
+    text,
+    context ?? null,
+    route ?? null,
+    tone ?? 'professional',
+    maxLength ?? null,
+  ]
   const rows = await db.query(sql, params)
   return mapEntry((rows.rows ?? rows)[0])
 }
@@ -82,7 +108,10 @@ export async function upsertMicrocopy(
 export async function deleteMicrocopy(entryId: string): Promise<void> {
   const user = await requireChef()
   const db: any = createServerClient()
-  await db.query('DELETE FROM microcopy_entries WHERE id = $1 AND tenant_id = $2', [entryId, user.tenantId])
+  await db.query('DELETE FROM microcopy_entries WHERE id = $1 AND tenant_id = $2', [
+    entryId,
+    user.tenantId,
+  ])
 }
 
 export async function getGlossaryEntries(search?: string): Promise<MicrocopyGlossary[]> {
@@ -103,7 +132,7 @@ export async function upsertGlossaryEntry(
   term: string,
   definition: string,
   preferredUsage?: string,
-  avoidUsage?: string,
+  avoidUsage?: string
 ): Promise<MicrocopyGlossary> {
   const user = await requireChef()
   const db: any = createServerClient()
@@ -122,7 +151,10 @@ export async function upsertGlossaryEntry(
 export async function deleteGlossaryEntry(entryId: string): Promise<void> {
   const user = await requireChef()
   const db: any = createServerClient()
-  await db.query('DELETE FROM microcopy_glossary WHERE id = $1 AND tenant_id = $2', [entryId, user.tenantId])
+  await db.query('DELETE FROM microcopy_glossary WHERE id = $1 AND tenant_id = $2', [
+    entryId,
+    user.tenantId,
+  ])
 }
 
 export async function getMicrocopySummary(): Promise<MicrocopySummary> {
@@ -131,26 +163,26 @@ export async function getMicrocopySummary(): Promise<MicrocopySummary> {
 
   const catRows = await db.query(
     'SELECT category, COUNT(*)::int AS cnt FROM microcopy_entries WHERE tenant_id = $1 GROUP BY category',
-    [user.tenantId],
+    [user.tenantId]
   )
   const byCategory = {} as Record<MicrocopyCategory, number>
   for (const c of ALL_CATEGORIES) byCategory[c] = 0
-  for (const r of (catRows.rows ?? catRows)) byCategory[r.category as MicrocopyCategory] = r.cnt
+  for (const r of catRows.rows ?? catRows) byCategory[r.category as MicrocopyCategory] = r.cnt
 
   const totalEntries = Object.values(byCategory).reduce((a, b) => a + b, 0)
 
   const glossaryRes = await db.query(
     'SELECT COUNT(*)::int AS cnt FROM microcopy_glossary WHERE tenant_id = $1',
-    [user.tenantId],
+    [user.tenantId]
   )
   const totalGlossary = (glossaryRes.rows ?? glossaryRes)[0]?.cnt ?? 0
 
   const routeRows = await db.query(
-    'SELECT COALESCE(route, \'(none)\') AS route, COUNT(*)::int AS cnt FROM microcopy_entries WHERE tenant_id = $1 GROUP BY route',
-    [user.tenantId],
+    "SELECT COALESCE(route, '(none)') AS route, COUNT(*)::int AS cnt FROM microcopy_entries WHERE tenant_id = $1 GROUP BY route",
+    [user.tenantId]
   )
   const coverageByRoute: Record<string, number> = {}
-  for (const r of (routeRows.rows ?? routeRows)) coverageByRoute[r.route] = r.cnt
+  for (const r of routeRows.rows ?? routeRows) coverageByRoute[r.route] = r.cnt
 
   return { totalEntries, byCategory, totalGlossary, coverageByRoute }
 }

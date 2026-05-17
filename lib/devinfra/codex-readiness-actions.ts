@@ -16,9 +16,7 @@ export async function getReadinessReport(): Promise<ReadinessReport> {
   await requireAdmin()
   const db: any = createServerClient()
 
-  const { data: tasks } = await db
-    .from('codex_tasks')
-    .select('readiness,area,description')
+  const { data: tasks } = await db.from('codex_tasks').select('readiness,area,description')
 
   const rows: { readiness: string; area: string; description: string | null }[] = tasks || []
 
@@ -89,11 +87,7 @@ export async function assessArea(
   const db: any = createServerClient()
 
   // Check if area already exists
-  const { data: existing } = await db
-    .from('codex_tasks')
-    .select('id')
-    .eq('area', area)
-    .single()
+  const { data: existing } = await db.from('codex_tasks').select('id').eq('area', area).single()
 
   if (existing) {
     const { error } = await db

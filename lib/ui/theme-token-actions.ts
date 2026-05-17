@@ -61,7 +61,7 @@ export async function upsertThemeToken(params: {
       params.darkValue ?? null,
       params.description ?? null,
       params.inheritsFrom ?? null,
-    ],
+    ]
   )
   const r = rows[0]
   return {
@@ -123,7 +123,7 @@ export async function createConsistencyIssue(params: {
       params.issue,
       params.severity,
       params.route ?? null,
-    ],
+    ]
   )
   const r = rows[0]
   return {
@@ -144,7 +144,7 @@ export async function resolveConsistencyIssue(id: string): Promise<ThemeConsiste
   const db: any = createServerClient()
   const rows = await db.query(
     `UPDATE theme_consistency_issues SET resolved_at = now() WHERE id = $1 AND tenant_id = $2 RETURNING *`,
-    [id, user.tenantId],
+    [id, user.tenantId]
   )
   if (!rows.length) throw new Error('Issue not found')
   const r = rows[0]
@@ -166,7 +166,7 @@ export async function getThemeTokenSummary(): Promise<ThemeTokenSummary> {
   const db: any = createServerClient()
   const tokenRows = await db.query(
     'SELECT category, COUNT(*)::int as cnt FROM theme_tokens WHERE tenant_id = $1 GROUP BY category',
-    [user.tenantId],
+    [user.tenantId]
   )
   const categoryDistribution: Record<string, number> = {} as any
   let totalTokens = 0
@@ -176,13 +176,12 @@ export async function getThemeTokenSummary(): Promise<ThemeTokenSummary> {
   }
   const issueRows = await db.query(
     `SELECT COUNT(*)::int as total, COUNT(*) FILTER (WHERE resolved_at IS NULL)::int as unresolved FROM theme_consistency_issues WHERE tenant_id = $1`,
-    [user.tenantId],
+    [user.tenantId]
   )
   const totalIssues = issueRows[0]?.total ?? 0
   const unresolvedIssues = issueRows[0]?.unresolved ?? 0
-  const consistencyScore = totalTokens > 0
-    ? Math.round(((totalTokens - unresolvedIssues) / totalTokens) * 100)
-    : 100
+  const consistencyScore =
+    totalTokens > 0 ? Math.round(((totalTokens - unresolvedIssues) / totalTokens) * 100) : 100
   return {
     totalTokens,
     totalIssues,

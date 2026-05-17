@@ -334,7 +334,10 @@ export function buildRemyTools(tenantId: string) {
         'Start a voice sourcing session to call vendors about an ingredient. Requires the supplier_calling feature flag.',
       inputSchema: z.object({
         ingredientName: z.string().describe('Name of the ingredient to source'),
-        eventId: z.string().optional().describe('Optional event ID to associate with the sourcing session'),
+        eventId: z
+          .string()
+          .optional()
+          .describe('Optional event ID to associate with the sourcing session'),
       }),
       execute: async ({ ingredientName, eventId }) => {
         try {
@@ -355,9 +358,8 @@ export function buildRemyTools(tenantId: string) {
           }
 
           // Resolve ingredient to get vendor call candidates
-          const { resolveIngredientAvailability } = await import(
-            '@/lib/calling/ingredient-resolution'
-          )
+          const { resolveIngredientAvailability } =
+            await import('@/lib/calling/ingredient-resolution')
           const resolution = await resolveIngredientAvailability(ingredientName)
 
           if (resolution.unresolved.length === 0) {
@@ -376,9 +378,7 @@ export function buildRemyTools(tenantId: string) {
             priorityOrder: idx + 1,
           }))
 
-          const { createSourcingSession } = await import(
-            '@/lib/calling/sourcing-session-actions'
-          )
+          const { createSourcingSession } = await import('@/lib/calling/sourcing-session-actions')
           const result = await createSourcingSession({
             ingredientQuery: ingredientName,
             candidates,
@@ -411,9 +411,8 @@ export function buildRemyTools(tenantId: string) {
       }),
       execute: async ({ ingredientName }) => {
         try {
-          const { resolveIngredientAvailability } = await import(
-            '@/lib/calling/ingredient-resolution'
-          )
+          const { resolveIngredientAvailability } =
+            await import('@/lib/calling/ingredient-resolution')
           const resolution = await resolveIngredientAvailability(ingredientName)
 
           // Tier 1: resolved with recent price data

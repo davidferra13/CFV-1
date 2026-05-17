@@ -4,12 +4,7 @@ import { requireChef } from '@/lib/auth/get-user'
 import { pgClient } from '@/lib/db'
 import { revalidatePath } from 'next/cache'
 import { z } from 'zod'
-import type {
-  ClientPassport,
-  ClientNote,
-  SpecialDate,
-  ClientInsight,
-} from './passport-types'
+import type { ClientPassport, ClientNote, SpecialDate, ClientInsight } from './passport-types'
 
 // ---------------------------------------------------------------------------
 // Internal DB helper (raw SQL via postgres.js)
@@ -34,13 +29,8 @@ const db = {
 // ---------------------------------------------------------------------------
 
 const PassportUpdateSchema = z.object({
-  communication_mode: z
-    .enum(['direct', 'delegate_only', 'delegate_preferred'])
-    .optional(),
-  preferred_contact_method: z
-    .enum(['email', 'sms', 'phone', 'circle'])
-    .nullable()
-    .optional(),
+  communication_mode: z.enum(['direct', 'delegate_only', 'delegate_preferred']).optional(),
+  preferred_contact_method: z.enum(['email', 'sms', 'phone', 'circle']).nullable().optional(),
   chef_autonomy_level: z.enum(['full', 'high', 'moderate', 'low']).optional(),
   auto_approve_under_cents: z.number().int().min(0).nullable().optional(),
   max_interaction_rounds: z.number().int().min(1).max(20).nullable().optional(),
@@ -49,14 +39,7 @@ const PassportUpdateSchema = z.object({
   budget_range_min_cents: z.number().int().min(0).nullable().optional(),
   budget_range_max_cents: z.number().int().min(0).nullable().optional(),
   service_style: z
-    .enum([
-      'formal_plated',
-      'family_style',
-      'buffet',
-      'cocktail',
-      'tasting_menu',
-      'no_preference',
-    ])
+    .enum(['formal_plated', 'family_style', 'buffet', 'cocktail', 'tasting_menu', 'no_preference'])
     .nullable()
     .optional(),
   default_locations: z
@@ -86,9 +69,7 @@ const SpecialDateInputSchema = z.object({
 // getClientPassport - Complete client profile with passport data
 // ---------------------------------------------------------------------------
 
-export async function getClientPassport(
-  clientId: string
-): Promise<ClientPassport | null> {
+export async function getClientPassport(clientId: string): Promise<ClientPassport | null> {
   const user = await requireChef()
   const tenantId = user.tenantId!
 
@@ -178,9 +159,7 @@ export async function updateClientPassport(
 // getClientInsights - AI-generated insights from event history
 // ---------------------------------------------------------------------------
 
-export async function getClientInsights(
-  clientId: string
-): Promise<ClientInsight[]> {
+export async function getClientInsights(clientId: string): Promise<ClientInsight[]> {
   const user = await requireChef()
   const tenantId = user.tenantId!
   const insights: ClientInsight[] = []
@@ -349,9 +328,7 @@ export async function addClientNote(
 // getClientNotes - All notes for a client (respects confidentiality)
 // ---------------------------------------------------------------------------
 
-export async function getClientNotes(
-  clientId: string
-): Promise<ClientNote[]> {
+export async function getClientNotes(clientId: string): Promise<ClientNote[]> {
   const user = await requireChef()
   const tenantId = user.tenantId!
 
@@ -375,9 +352,7 @@ export async function getClientNotes(
 // getClientSpecialDates - Birthdays, anniversaries, recurring events
 // ---------------------------------------------------------------------------
 
-export async function getClientSpecialDates(
-  clientId: string
-): Promise<SpecialDate[]> {
+export async function getClientSpecialDates(clientId: string): Promise<SpecialDate[]> {
   const user = await requireChef()
   const tenantId = user.tenantId!
 

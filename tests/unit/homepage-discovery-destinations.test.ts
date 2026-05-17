@@ -35,7 +35,10 @@ function isAllowedPublicPath(href: string): boolean {
   try {
     const url = new URL(href, 'https://chef.test')
     return ALLOWED_PATH_PREFIXES.some(
-      (prefix) => url.pathname === prefix || url.pathname.startsWith(`${prefix}/`) || url.pathname.startsWith(prefix)
+      (prefix) =>
+        url.pathname === prefix ||
+        url.pathname.startsWith(`${prefix}/`) ||
+        url.pathname.startsWith(prefix)
     )
   } catch {
     return false
@@ -159,7 +162,11 @@ const INGREDIENT_ITEMS: DiscoveryRailItem[] = [
 ]
 
 const VIBE_ITEMS: DiscoveryRailItem[] = [
-  { type: 'vibe', label: 'Fine dining', href: '/chefs?serviceType=private_dinner&priceRange=premium' },
+  {
+    type: 'vibe',
+    label: 'Fine dining',
+    href: '/chefs?serviceType=private_dinner&priceRange=premium',
+  },
   { type: 'vibe', label: 'Casual', href: '/eat?craving=casual' },
 ]
 
@@ -174,7 +181,11 @@ const CULINARY_SIGNAL_ITEMS: DiscoveryRailItem[] = [
 ]
 
 const COMBO_ITEMS: DiscoveryRailItem[] = [
-  { type: 'combo', label: 'Vegan dinner party', href: '/chefs?dietary=vegan&serviceType=private_dinner' },
+  {
+    type: 'combo',
+    label: 'Vegan dinner party',
+    href: '/chefs?dietary=vegan&serviceType=private_dinner',
+  },
   { type: 'combo', label: 'Big group BBQ', href: '/chefs?cuisine=barbecue&serviceType=catering' },
 ]
 
@@ -226,7 +237,10 @@ test('every rail item type routes to an allowed public destination', () => {
   const { invalid } = auditRailDestinations(ALL_RAIL_ITEMS)
   if (invalid.length > 0) {
     const report = invalid
-      .map((entry) => `  ${entry.item.type} "${entry.item.label}" -> ${entry.item.href}: ${entry.reason}`)
+      .map(
+        (entry) =>
+          `  ${entry.item.type} "${entry.item.label}" -> ${entry.item.href}: ${entry.reason}`
+      )
       .join('\n')
     assert.fail(`${invalid.length} rail items have invalid destinations:\n${report}`)
   }
@@ -330,7 +344,13 @@ test('filterValidRailDestinations removes invalid items and keeps valid ones', (
 })
 
 test('private routes are rejected for all item types', () => {
-  const privateHrefs = ['/admin', '/api/discovery', '/dashboard', '/events/123', '/recipes/my-secret']
+  const privateHrefs = [
+    '/admin',
+    '/api/discovery',
+    '/dashboard',
+    '/events/123',
+    '/recipes/my-secret',
+  ]
 
   for (const href of privateHrefs) {
     const result = getDiscoveryDestinationFamily(href)

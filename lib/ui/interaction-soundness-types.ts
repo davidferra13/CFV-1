@@ -1,10 +1,4 @@
-export type InteractionState =
-  | 'hover'
-  | 'focus'
-  | 'active'
-  | 'disabled'
-  | 'loading'
-  | 'error'
+export type InteractionState = 'hover' | 'focus' | 'active' | 'disabled' | 'loading' | 'error'
 
 export interface InteractionRule {
   id: string

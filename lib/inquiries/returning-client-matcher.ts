@@ -46,7 +46,9 @@ export async function matchReturningClient(
   // Fetch all active clients for this tenant (with event stats)
   const { data: clients, error } = await db
     .from('clients')
-    .select('id, full_name, email, phone, address, last_event_date, total_events_completed, lifetime_value_cents')
+    .select(
+      'id, full_name, email, phone, address, last_event_date, total_events_completed, lifetime_value_cents'
+    )
     .eq('tenant_id', tenantId)
     .is('deleted_at' as any, null)
     .order('total_events_completed', { ascending: false })

@@ -114,7 +114,9 @@ export async function getStaleRecipes(
       .map((r: { id: string; name: string; updated_at: string | null }) =>
         classifyFreshness(r.updated_at, 'recipe', r.id, r.name)
       )
-      .filter((r: FreshnessResult) => r.level === 'aging' || r.level === 'stale' || r.level === 'outdated')
+      .filter(
+        (r: FreshnessResult) => r.level === 'aging' || r.level === 'stale' || r.level === 'outdated'
+      )
 
     return { ok: true, data: results }
   } catch (err) {
@@ -152,7 +154,9 @@ export async function getStaleClients(
       .map((r: { id: string; full_name: string; updated_at: string | null }) =>
         classifyFreshness(r.updated_at, 'client', r.id, r.full_name ?? 'Unnamed client')
       )
-      .filter((r: FreshnessResult) => r.level === 'aging' || r.level === 'stale' || r.level === 'outdated')
+      .filter(
+        (r: FreshnessResult) => r.level === 'aging' || r.level === 'stale' || r.level === 'outdated'
+      )
 
     return { ok: true, data: results }
   } catch (err) {
@@ -196,10 +200,7 @@ export async function getStalenessOverview(): Promise<{
         .select('id, name, updated_at')
         .eq('tenant_id', tenantId)
         .is('deleted_at', null),
-      db
-        .from('events')
-        .select('id, occasion, event_date, updated_at')
-        .eq('tenant_id', tenantId),
+      db.from('events').select('id, occasion, event_date, updated_at').eq('tenant_id', tenantId),
     ])
 
     const allResults: FreshnessResult[] = []

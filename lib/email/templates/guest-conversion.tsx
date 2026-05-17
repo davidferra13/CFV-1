@@ -26,9 +26,8 @@ export function GuestConversionEmail({
       <Text style={paragraph}>Hi {guestName},</Text>
 
       <Text style={paragraph}>
-        We are glad you enjoyed the <strong>{occasion}</strong> with{' '}
-        <strong>{chefName}</strong>. Many guests tell us it was one of the most memorable meals
-        they have had.
+        We are glad you enjoyed the <strong>{occasion}</strong> with <strong>{chefName}</strong>.
+        Many guests tell us it was one of the most memorable meals they have had.
       </Text>
 
       <Text style={paragraph}>

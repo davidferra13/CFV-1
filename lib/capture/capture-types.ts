@@ -1,4 +1,12 @@
-export type CaptureCategory = 'recipe_idea' | 'client_note' | 'shopping' | 'prep_reminder' | 'event_note' | 'menu_idea' | 'feedback' | 'general'
+export type CaptureCategory =
+  | 'recipe_idea'
+  | 'client_note'
+  | 'shopping'
+  | 'prep_reminder'
+  | 'event_note'
+  | 'menu_idea'
+  | 'feedback'
+  | 'general'
 export type CaptureStatus = 'inbox' | 'triaged' | 'actioned' | 'dismissed'
 export type CapturePriority = 'low' | 'normal' | 'high' | 'urgent'
 

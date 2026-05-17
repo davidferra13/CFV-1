@@ -66,9 +66,5 @@ export const DEFAULT_PERMISSIONS: Record<DelegateRole, DelegatePermission[]> = {
     'answer_logistics',
     'post_updates',
   ],
-  view_coordinate: [
-    'view_events',
-    'manage_guests',
-    'answer_logistics',
-  ],
+  view_coordinate: ['view_events', 'manage_guests', 'answer_logistics'],
 }

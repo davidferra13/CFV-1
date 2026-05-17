@@ -49,10 +49,7 @@ describe('Route Coverage', () => {
   })
 
   it('pageFileToRoute handles backslash paths (Windows)', () => {
-    assert.equal(
-      pageFileToRoute('app\\(chef)\\events\\[id]\\page.tsx'),
-      '/events/[id]'
-    )
+    assert.equal(pageFileToRoute('app\\(chef)\\events\\[id]\\page.tsx'), '/events/[id]')
   })
 
   it('route policy map has no empty-string keys', () => {

@@ -56,7 +56,8 @@ export async function updateOperatingState(
   if (params.phase !== undefined) payload.phase = params.phase
   if (params.activeTasks !== undefined) payload.active_tasks = JSON.stringify(params.activeTasks)
   if (params.teamMembers !== undefined) payload.team_members = JSON.stringify(params.teamMembers)
-  if (params.equipmentStatus !== undefined) payload.equipment_status = JSON.stringify(params.equipmentStatus)
+  if (params.equipmentStatus !== undefined)
+    payload.equipment_status = JSON.stringify(params.equipmentStatus)
   if (params.notes !== undefined) payload.notes = params.notes
 
   // Upsert: create if not exists, update if exists
@@ -103,10 +104,7 @@ export async function createOperatingStateLog(
   if (params.changedBy !== undefined) payload.changed_by = params.changedBy
   if (params.reason !== undefined) payload.reason = params.reason
 
-  const { data, error } = await fromLogs(db)
-    .insert(payload)
-    .select('*')
-    .single()
+  const { data, error } = await fromLogs(db).insert(payload).select('*').single()
 
   if (error) throw new Error(`Failed to create operating state log: ${error.message}`)
   return mapLog(data)
@@ -126,7 +124,9 @@ export async function getActiveEvents(): Promise<OperatingState[]> {
   return (data ?? []).map(mapState)
 }
 
-export async function getOperatingStateSummary(eventId: string): Promise<OperatingStateSummary | null> {
+export async function getOperatingStateSummary(
+  eventId: string
+): Promise<OperatingStateSummary | null> {
   const user = await requireChef()
   const db: any = createServerClient()
 
@@ -160,7 +160,7 @@ export async function getOperatingStateSummary(eventId: string): Promise<Operati
       const curr = new Date(logs[i].created_at).getTime()
       totalMs += curr - prev
     }
-    avgPhaseDurationMinutes = Math.round((totalMs / (logs.length - 1)) / 60000 * 10) / 10
+    avgPhaseDurationMinutes = Math.round((totalMs / (logs.length - 1) / 60000) * 10) / 10
   }
 
   return {

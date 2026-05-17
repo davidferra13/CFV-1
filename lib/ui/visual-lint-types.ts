@@ -1,4 +1,11 @@
-export type LintRuleCategory = 'spacing' | 'alignment' | 'color' | 'typography' | 'layout' | 'accessibility' | 'motion'
+export type LintRuleCategory =
+  | 'spacing'
+  | 'alignment'
+  | 'color'
+  | 'typography'
+  | 'layout'
+  | 'accessibility'
+  | 'motion'
 
 export type LintRule = {
   id: string

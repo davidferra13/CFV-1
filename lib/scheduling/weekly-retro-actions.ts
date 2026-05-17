@@ -181,22 +181,24 @@ export async function generateWeeklyRetro(weekStart?: string): Promise<WeeklyRet
       value: clientFeedback.avgOverallRating ?? 0,
       unit: '/5',
       previousValue: null,
-      flag: clientFeedback.avgOverallRating !== null && clientFeedback.avgOverallRating >= 4
-        ? 'positive'
-        : clientFeedback.avgOverallRating !== null
-          ? 'negative'
-          : 'neutral',
+      flag:
+        clientFeedback.avgOverallRating !== null && clientFeedback.avgOverallRating >= 4
+          ? 'positive'
+          : clientFeedback.avgOverallRating !== null
+            ? 'negative'
+            : 'neutral',
     },
     {
       label: 'Prep Accuracy',
       value: timeManagement.accuracyPercent ?? 0,
       unit: '%',
       previousValue: null,
-      flag: timeManagement.accuracyPercent !== null && timeManagement.accuracyPercent >= 90
-        ? 'positive'
-        : timeManagement.accuracyPercent !== null
-          ? 'negative'
-          : 'neutral',
+      flag:
+        timeManagement.accuracyPercent !== null && timeManagement.accuracyPercent >= 90
+          ? 'positive'
+          : timeManagement.accuracyPercent !== null
+            ? 'negative'
+            : 'neutral',
     },
     {
       label: 'Total Guests Served',
@@ -302,7 +304,8 @@ export async function addRetroNote(
       if (error.code === '42P01' || error.message?.includes('does not exist')) {
         return {
           success: false,
-          error: 'Retro notes storage is not yet available. Notes will be supported in a future update.',
+          error:
+            'Retro notes storage is not yet available. Notes will be supported in a future update.',
         }
       }
       return { success: false, error: error.message ?? 'Failed to save note' }
@@ -440,14 +443,9 @@ async function fetchEventsCompleted(
 
   // "Changed" = events that moved from one status to another during the week
   // We approximate by counting non-draft, non-completed statuses
-  const changed = eventList.filter(
-    (e: any) => e.status === 'proposed' || e.status === 'accepted'
-  )
+  const changed = eventList.filter((e: any) => e.status === 'proposed' || e.status === 'accepted')
 
-  const totalGuests = completed.reduce(
-    (sum: number, e: any) => sum + (e.guest_count ?? 0),
-    0
-  )
+  const totalGuests = completed.reduce((sum: number, e: any) => sum + (e.guest_count ?? 0), 0)
 
   return {
     total: completed.length,
@@ -502,9 +500,7 @@ async function fetchRevenueSummary(
   }
 
   const eventCount = new Set(
-    entryList
-      .filter((e: any) => e.event_id && !e.is_refund)
-      .map((e: any) => e.event_id)
+    entryList.filter((e: any) => e.event_id && !e.is_refund).map((e: any) => e.event_id)
   ).size
 
   return {
@@ -553,9 +549,7 @@ async function fetchClientFeedback(
     .map((f: any) => f.suggestion_text)
     .filter((t: any) => t && t.trim()) as string[]
 
-  const testimonialCount = feedbackList.filter(
-    (f: any) => f.testimonial_consent === true
-  ).length
+  const testimonialCount = feedbackList.filter((f: any) => f.testimonial_consent === true).length
 
   return {
     feedbackCount: feedbackList.length,
@@ -609,10 +603,7 @@ async function fetchMenuPerformance(
   const menuIds = menuList.map((m: any) => m.id)
   let totalDishes = 0
   if (menuIds.length > 0) {
-    const { data: dishes } = await db
-      .from('dishes')
-      .select('id')
-      .in('menu_id', menuIds)
+    const { data: dishes } = await db.from('dishes').select('id').in('menu_id', menuIds)
     totalDishes = (dishes ?? []).length
   }
 
@@ -764,11 +755,7 @@ async function fetchClientBreakdown(
   }
 }
 
-async function fetchRetroNotes(
-  db: any,
-  tenantId: string,
-  weekStart: string
-): Promise<RetroNote[]> {
+async function fetchRetroNotes(db: any, tenantId: string, weekStart: string): Promise<RetroNote[]> {
   try {
     const { data, error } = await db
       .from('retro_notes')

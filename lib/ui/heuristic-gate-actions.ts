@@ -46,9 +46,13 @@ function buildGateResult(route: string, evals: HeuristicEvaluation[]): Heuristic
     overallScore,
     passed: failedRules.length === 0,
     failedRules,
-    evaluatedAt: evals.length > 0
-      ? evals.reduce((latest, e) => (e.evaluatedAt > latest ? e.evaluatedAt : latest), evals[0].evaluatedAt)
-      : new Date().toISOString(),
+    evaluatedAt:
+      evals.length > 0
+        ? evals.reduce(
+            (latest, e) => (e.evaluatedAt > latest ? e.evaluatedAt : latest),
+            evals[0].evaluatedAt
+          )
+        : new Date().toISOString(),
   }
 }
 
@@ -167,9 +171,10 @@ export async function getHeuristicSummary(): Promise<HeuristicSummary> {
 
   const passing = results.filter((r) => r.passed).length
   const failing = results.length - passing
-  const avgScore = results.length > 0
-    ? Math.round(results.reduce((sum, r) => sum + r.overallScore, 0) / results.length)
-    : 0
+  const avgScore =
+    results.length > 0
+      ? Math.round(results.reduce((sum, r) => sum + r.overallScore, 0) / results.length)
+      : 0
 
   const worstRoutes = results
     .filter((r) => !r.passed)

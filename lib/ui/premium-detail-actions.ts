@@ -176,8 +176,14 @@ export async function getPremiumDetailSummary(): Promise<PremiumDetailSummary> {
   )
 
   const categories: DetailCategory[] = [
-    'micro_interaction', 'loading_polish', 'transition', 'hover_state',
-    'focus_ring', 'shadow', 'border_radius', 'spacing_rhythm',
+    'micro_interaction',
+    'loading_polish',
+    'transition',
+    'hover_state',
+    'focus_ring',
+    'shadow',
+    'border_radius',
+    'spacing_rhythm',
   ]
 
   const byCategory = {} as Record<DetailCategory, { total: number; implemented: number }>

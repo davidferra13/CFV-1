@@ -52,20 +52,24 @@ export type MissionScheduleRow = {
 
 // ── Countdown Status (returned by server action) ──────────────────────────
 
-export type CountdownStatus = {
-  available: true
-  countdown: OpenClawMissionCountdown
-} | {
-  available: false
-  error: string
-}
+export type CountdownStatus =
+  | {
+      available: true
+      countdown: OpenClawMissionCountdown
+    }
+  | {
+      available: false
+      error: string
+    }
 
 // ── Job Schedule Status (returned by server action) ───────────────────────
 
-export type JobScheduleStatus = {
-  available: true
-  rows: MissionScheduleRow[]
-} | {
-  available: false
-  error: string
-}
+export type JobScheduleStatus =
+  | {
+      available: true
+      rows: MissionScheduleRow[]
+    }
+  | {
+      available: false
+      error: string
+    }

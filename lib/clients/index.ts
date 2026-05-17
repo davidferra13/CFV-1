@@ -37,11 +37,7 @@ export type {
 
 // ── Health score types ─────────────────────────────────────────────────
 
-export type {
-  ClientHealthTier,
-  ClientHealthScore,
-  ClientHealthSummary,
-} from './health-score'
+export type { ClientHealthTier, ClientHealthScore, ClientHealthSummary } from './health-score'
 
 // ── Churn types ────────────────────────────────────────────────────────
 

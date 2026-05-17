@@ -14,9 +14,7 @@ import type {
 // ---------------------------------------------------------------------------
 // 1. getPortalConfig - get portal experience config for an event
 // ---------------------------------------------------------------------------
-export async function getPortalConfig(
-  eventId: string
-): Promise<PortalExperienceConfig | null> {
+export async function getPortalConfig(eventId: string): Promise<PortalExperienceConfig | null> {
   const chef = await requireChef()
   const db: any = createServerClient()
 
@@ -52,19 +50,17 @@ export async function updatePortalConfig(
   const chef = await requireChef()
   const db: any = createServerClient()
 
-  await db
-    .from('portal_experience_configs')
-    .upsert(
-      {
-        tenant_id: chef.id,
-        event_id: eventId,
-        visible_sections: JSON.stringify(visibleSections),
-        welcome_message: welcomeMessage ?? null,
-        custom_branding: customBranding ? JSON.stringify(customBranding) : null,
-        created_at: new Date().toISOString(),
-      },
-      { onConflict: 'tenant_id,event_id' }
-    )
+  await db.from('portal_experience_configs').upsert(
+    {
+      tenant_id: chef.id,
+      event_id: eventId,
+      visible_sections: JSON.stringify(visibleSections),
+      welcome_message: welcomeMessage ?? null,
+      custom_branding: customBranding ? JSON.stringify(customBranding) : null,
+      created_at: new Date().toISOString(),
+    },
+    { onConflict: 'tenant_id,event_id' }
+  )
 
   return { success: true }
 }
@@ -81,16 +77,14 @@ export async function recordPortalInteraction(
   const chef = await requireChef()
   const db: any = createServerClient()
 
-  await db
-    .from('portal_interactions')
-    .insert({
-      tenant_id: chef.id,
-      event_id: eventId,
-      client_id: clientId,
-      section,
-      action,
-      created_at: new Date().toISOString(),
-    })
+  await db.from('portal_interactions').insert({
+    tenant_id: chef.id,
+    event_id: eventId,
+    client_id: clientId,
+    section,
+    action,
+    created_at: new Date().toISOString(),
+  })
 
   return { success: true }
 }
@@ -108,17 +102,15 @@ export async function recordPortalFeedback(
   const chef = await requireChef()
   const db: any = createServerClient()
 
-  await db
-    .from('portal_feedback')
-    .insert({
-      tenant_id: chef.id,
-      event_id: eventId,
-      client_id: clientId,
-      rating,
-      comment: comment ?? null,
-      section: section ?? null,
-      created_at: new Date().toISOString(),
-    })
+  await db.from('portal_feedback').insert({
+    tenant_id: chef.id,
+    event_id: eventId,
+    client_id: clientId,
+    rating,
+    comment: comment ?? null,
+    section: section ?? null,
+    created_at: new Date().toISOString(),
+  })
 
   return { success: true }
 }
@@ -203,9 +195,7 @@ export async function getPortalExperienceSummary(
     .map((r: any) => r.rating)
     .filter((r: number | null) => r !== null) as number[]
   const feedbackScore =
-    ratings.length > 0
-      ? ratings.reduce((a: number, b: number) => a + b, 0) / ratings.length
-      : null
+    ratings.length > 0 ? ratings.reduce((a: number, b: number) => a + b, 0) / ratings.length : null
 
   return {
     eventId,
@@ -220,9 +210,7 @@ export async function getPortalExperienceSummary(
 // ---------------------------------------------------------------------------
 // 7. getPortalFeedbackSummary - feedback ratings and comments
 // ---------------------------------------------------------------------------
-export async function getPortalFeedbackSummary(
-  eventId?: string
-): Promise<PortalFeedback[]> {
+export async function getPortalFeedbackSummary(eventId?: string): Promise<PortalFeedback[]> {
   const chef = await requireChef()
   const db: any = createServerClient()
 

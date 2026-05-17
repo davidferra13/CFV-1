@@ -405,8 +405,16 @@ export const NOTIFICATION_CONFIG: Record<
   cannabis_age_expired: { category: 'system', icon: 'Clock', toastByDefault: true },
   cannabis_request_submitted: { category: 'event', icon: 'Send', toastByDefault: true },
   cannabis_request_reviewed: { category: 'event', icon: 'CheckSquare', toastByDefault: true },
-  cannabis_guest_intake_incomplete: { category: 'event', icon: 'AlertCircle', toastByDefault: false },
-  cannabis_event_readiness_incomplete: { category: 'event', icon: 'AlertTriangle', toastByDefault: false },
+  cannabis_guest_intake_incomplete: {
+    category: 'event',
+    icon: 'AlertCircle',
+    toastByDefault: false,
+  },
+  cannabis_event_readiness_incomplete: {
+    category: 'event',
+    icon: 'AlertTriangle',
+    toastByDefault: false,
+  },
   cannabis_closeout_pending: { category: 'event', icon: 'FileQuestion', toastByDefault: false },
 
   // Personal reminders

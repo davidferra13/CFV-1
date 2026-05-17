@@ -15,7 +15,14 @@ import type {
   ActivationStep,
 } from './activation-types'
 
-export type { ImportSource, ImportEntity, ImportJob, ActivationCheckpoint, ActivationProgress, ActivationStep }
+export type {
+  ImportSource,
+  ImportEntity,
+  ImportJob,
+  ActivationCheckpoint,
+  ActivationProgress,
+  ActivationStep,
+}
 
 const ACTIVATION_STEPS: { step: ActivationStep; order: number; label: string }[] = [
   { step: 'profile', order: 1, label: 'Complete your profile' },
@@ -69,9 +76,7 @@ export async function createImportJob(
       const row = data[i]
       const mapped = mapRowToEntity(entityType, row, user.tenantId!)
 
-      const { error: insertError } = await (db as any)
-        .from(entityType)
-        .insert(mapped)
+      const { error: insertError } = await (db as any).from(entityType).insert(mapped)
 
       if (insertError) {
         errors.push({ row: i + 1, field: 'insert', message: insertError.message })
@@ -198,7 +203,10 @@ export async function getActivationProgress(): Promise<ActivationProgress> {
     .single()
 
   const createdAt = chef?.created_at ? new Date(chef.created_at) : new Date()
-  const daysActive = Math.max(1, Math.ceil((Date.now() - createdAt.getTime()) / (1000 * 60 * 60 * 24)))
+  const daysActive = Math.max(
+    1,
+    Math.ceil((Date.now() - createdAt.getTime()) / (1000 * 60 * 60 * 24))
+  )
 
   return {
     tenantId: user.tenantId!,

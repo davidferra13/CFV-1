@@ -38,11 +38,7 @@ function addDays(dateStr: string, days: number): string {
 // Internal: build a ProductionDay from raw DB rows
 // ---------------------------------------------------------------------------
 
-async function buildProductionDay(
-  db: any,
-  tenantId: string,
-  date: string
-): Promise<ProductionDay> {
+async function buildProductionDay(db: any, tenantId: string, date: string): Promise<ProductionDay> {
   // Fetch events for the date
   const { data: rawEvents } = await db
     .from('events')
@@ -158,9 +154,11 @@ export async function getWeeklyPlan(weekStart: string): Promise<WeeklyProduction
 
   const totalEvents = days.reduce((sum, d) => sum + d.events.length, 0)
   const totalPrepHours = Math.round(days.reduce((sum, d) => sum + d.workloadHours, 0) * 10) / 10
-  const peakDay = days.reduce((peak, d) =>
-    d.workloadHours + d.events.length > peak.workloadHours + peak.events.length ? d : peak
-  , days[0])
+  const peakDay = days.reduce(
+    (peak, d) =>
+      d.workloadHours + d.events.length > peak.workloadHours + peak.events.length ? d : peak,
+    days[0]
+  )
 
   return {
     weekStart,
@@ -224,9 +222,7 @@ export async function getMonthlyOverview(
 // 4. getProcurementTimeline
 // ---------------------------------------------------------------------------
 
-export async function getProcurementTimeline(
-  daysAhead: number = 7
-): Promise<ProcurementItem[]> {
+export async function getProcurementTimeline(daysAhead: number = 7): Promise<ProcurementItem[]> {
   const user = await requireChef()
   const db: any = createServerClient()
 
@@ -250,10 +246,7 @@ export async function getProcurementTimeline(
   }
 
   // Get menus for those events
-  const { data: rawMenus } = await db
-    .from('menus')
-    .select('id, event_id')
-    .in('event_id', eventIds)
+  const { data: rawMenus } = await db.from('menus').select('id, event_id').in('event_id', eventIds)
 
   if (!rawMenus || rawMenus.length === 0) return []
 
@@ -286,9 +279,10 @@ export async function getProcurementTimeline(
 // 5. getProductionConflicts
 // ---------------------------------------------------------------------------
 
-export async function getProductionConflicts(
-  dateRange: { start: string; end: string }
-): Promise<ProductionConflict[]> {
+export async function getProductionConflicts(dateRange: {
+  start: string
+  end: string
+}): Promise<ProductionConflict[]> {
   const user = await requireChef()
   const db: any = createServerClient()
 
@@ -357,10 +351,7 @@ export async function markProcurementOrdered(
   const db: any = createServerClient()
 
   // Find menus for this event
-  const { data: rawMenus } = await db
-    .from('menus')
-    .select('id')
-    .eq('event_id', eventId)
+  const { data: rawMenus } = await db.from('menus').select('id').eq('event_id', eventId)
 
   if (!rawMenus || rawMenus.length === 0) {
     throw new Error('No menus found for event')

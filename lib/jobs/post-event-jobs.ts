@@ -119,13 +119,8 @@ export const postEventWeatherSnapshot = inngest.createFunction(
   async ({ event, step }) => {
     const result = await step.run('capture-weather-snapshot', async () => {
       try {
-        const { captureWeatherSnapshot } = await import(
-          '@/lib/weather/weather-snapshot-actions'
-        )
-        const outcome = await captureWeatherSnapshot(
-          event.data.tenantId,
-          event.data.eventId
-        )
+        const { captureWeatherSnapshot } = await import('@/lib/weather/weather-snapshot-actions')
+        const outcome = await captureWeatherSnapshot(event.data.tenantId, event.data.eventId)
         log.info('Weather snapshot capture attempted', {
           context: { eventId: event.data.eventId, outcome },
         })
@@ -604,12 +599,7 @@ export const postGuestFeedbackConversion = inngest.createFunction(
 
     const result = await step.run('send-guest-conversion-email', async () => {
       const db: any = createAdminClient()
-      const {
-        eventId,
-        tenantId,
-        guestEmail,
-        guestName,
-      } = event.data
+      const { eventId, tenantId, guestEmail, guestName } = event.data
 
       // Check: is this guest already a client of the chef?
       const { data: existingClient } = await db
@@ -669,11 +659,7 @@ export const postGuestFeedbackConversion = inngest.createFunction(
       const chefSlug: string | null = chef?.booking_slug ?? null
 
       // Fetch event occasion for context
-      const { data: evt } = await db
-        .from('events')
-        .select('occasion')
-        .eq('id', eventId)
-        .single()
+      const { data: evt } = await db.from('events').select('occasion').eq('id', eventId).single()
 
       const occasion: string = evt?.occasion || 'your recent dinner'
 

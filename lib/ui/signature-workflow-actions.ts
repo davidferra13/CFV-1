@@ -14,8 +14,13 @@ const WORKFLOWS_TABLE = 'signature_workflows'
 const EXECUTIONS_TABLE = 'workflow_executions'
 
 const VALID_TYPES: WorkflowType[] = [
-  'event_creation', 'menu_building', 'client_onboarding',
-  'quote_approval', 'invoice_collection', 'prep_day', 'post_event',
+  'event_creation',
+  'menu_building',
+  'client_onboarding',
+  'quote_approval',
+  'invoice_collection',
+  'prep_day',
+  'post_event',
 ]
 
 function mapWorkflowRow(row: any): SignatureWorkflow {
@@ -45,16 +50,11 @@ function mapExecutionRow(row: any): WorkflowExecution {
 }
 
 /** List workflows, optionally filtered by type. */
-export async function getSignatureWorkflows(
-  type?: WorkflowType
-): Promise<SignatureWorkflow[]> {
+export async function getSignatureWorkflows(type?: WorkflowType): Promise<SignatureWorkflow[]> {
   const user = await requireChef()
   const db: any = createServerClient()
 
-  let query = db
-    .from(WORKFLOWS_TABLE)
-    .select('*')
-    .where('tenant_id', user.tenantId)
+  let query = db.from(WORKFLOWS_TABLE).select('*').where('tenant_id', user.tenantId)
 
   if (type) {
     if (!VALID_TYPES.includes(type)) return []
@@ -102,11 +102,7 @@ export async function upsertSignatureWorkflow(
         updated_at: now,
       })
 
-    const updated = await db
-      .from(WORKFLOWS_TABLE)
-      .select('*')
-      .where('id', existing.id)
-      .first()
+    const updated = await db.from(WORKFLOWS_TABLE).select('*').where('id', existing.id).first()
     return mapWorkflowRow(updated)
   }
 
@@ -204,19 +200,13 @@ export async function advanceWorkflowStep(
       ...(isComplete ? { completed_at: new Date().toISOString() } : {}),
     })
 
-  const updated = await db
-    .from(EXECUTIONS_TABLE)
-    .select('*')
-    .where('id', executionId)
-    .first()
+  const updated = await db.from(EXECUTIONS_TABLE).select('*').where('id', executionId).first()
 
   return mapExecutionRow(updated)
 }
 
 /** Get a single execution by ID. */
-export async function getWorkflowExecution(
-  executionId: string
-): Promise<WorkflowExecution | null> {
+export async function getWorkflowExecution(executionId: string): Promise<WorkflowExecution | null> {
   const user = await requireChef()
   const db: any = createServerClient()
 
@@ -238,10 +228,7 @@ export async function getWorkflowExecutions(
   const user = await requireChef()
   const db: any = createServerClient()
 
-  let query = db
-    .from(EXECUTIONS_TABLE)
-    .select('*')
-    .where('tenant_id', user.tenantId)
+  let query = db.from(EXECUTIONS_TABLE).select('*').where('tenant_id', user.tenantId)
 
   if (workflowId) {
     query = query.where('workflow_id', workflowId)
@@ -277,9 +264,7 @@ export async function getWorkflowSummary(): Promise<WorkflowSummary> {
 
   const totalExecutions = executions.length
   const completedExecs = executions.filter((e: any) => e.completed_at)
-  const completionRate = totalExecutions > 0
-    ? completedExecs.length / totalExecutions
-    : 0
+  const completionRate = totalExecutions > 0 ? completedExecs.length / totalExecutions : 0
 
   let avgCompletionTime = 0
   if (completedExecs.length > 0) {

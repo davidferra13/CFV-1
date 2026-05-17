@@ -15,7 +15,7 @@ import type {
 // ---------------------------------------------------------------------------
 export async function getA11yAuditEntries(
   route?: string,
-  category?: A11yCategory,
+  category?: A11yCategory
 ): Promise<A11yAuditEntry[]> {
   const user = await requireChef()
   const db: any = createServerClient()
@@ -63,7 +63,7 @@ export async function createA11yAuditEntry(params: {
       params.severity,
       params.wcagCriterion ?? null,
       params.recommendation ?? null,
-    ],
+    ]
   )
   return mapAuditEntry(rows[0])
 }
@@ -79,7 +79,7 @@ export async function resolveA11yEntry(id: string): Promise<A11yAuditEntry> {
      SET resolved_at = NOW()
      WHERE id = $1 AND tenant_id = $2
      RETURNING *`,
-    [id, user.tenantId],
+    [id, user.tenantId]
   )
   if (!rows.length) throw new Error('Entry not found')
   return mapAuditEntry(rows[0])
@@ -93,7 +93,7 @@ export async function getA11yRouteScores(): Promise<A11yRouteScore[]> {
   const db: any = createServerClient()
   const rows = await db.query(
     'SELECT * FROM a11y_route_scores WHERE tenant_id = $1 ORDER BY overall_score ASC',
-    [user.tenantId],
+    [user.tenantId]
   )
   return rows.map(mapRouteScore)
 }
@@ -129,7 +129,7 @@ export async function upsertA11yRouteScore(params: {
       params.focusScore,
       params.ariaScore,
       params.overallScore,
-    ],
+    ]
   )
   return mapRouteScore(rows[0])
 }
@@ -148,7 +148,7 @@ export async function getA11ySummary(): Promise<A11ySummary> {
        COUNT(*) FILTER (WHERE severity = 'critical' AND resolved_at IS NULL)::int AS critical
      FROM a11y_audit_entries
      WHERE tenant_id = $1`,
-    [user.tenantId],
+    [user.tenantId]
   )
 
   const catRows = await db.query(
@@ -156,14 +156,14 @@ export async function getA11ySummary(): Promise<A11ySummary> {
      FROM a11y_audit_entries
      WHERE tenant_id = $1 AND resolved_at IS NULL
      GROUP BY category`,
-    [user.tenantId],
+    [user.tenantId]
   )
 
   const scoreRows = await db.query(
     `SELECT COUNT(*)::int AS routes_audited, COALESCE(AVG(overall_score), 0)::int AS avg_score
      FROM a11y_route_scores
      WHERE tenant_id = $1`,
-    [user.tenantId],
+    [user.tenantId]
   )
 
   const breakdown: Record<string, number> = {}

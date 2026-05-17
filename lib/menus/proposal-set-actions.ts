@@ -186,10 +186,7 @@ export async function addMenuToProposalSet(
  * Mark a menu as the chosen option in a proposal set.
  * Sets is_chosen = true on the item, updates set status to 'chosen'.
  */
-export async function markMenuChosen(
-  proposalSetId: string,
-  menuId: string
-): Promise<void> {
+export async function markMenuChosen(proposalSetId: string, menuId: string): Promise<void> {
   const user = await requireChef()
   const db: any = createServerClient()
 

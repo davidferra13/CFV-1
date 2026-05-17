@@ -21,9 +21,7 @@ function fromOverrides(db: any): any {
 
 // ---- actions ----
 
-export async function getStickyFooterConfigs(
-  stage?: string
-): Promise<StickyFooterConfig[]> {
+export async function getStickyFooterConfigs(stage?: string): Promise<StickyFooterConfig[]> {
   const user = await requireChef()
   const db: any = createServerClient()
 
@@ -79,9 +77,7 @@ export async function upsertStickyFooterConfig(params: {
   return mapConfig(data)
 }
 
-export async function getStickyFooterOverrides(
-  eventId?: string
-): Promise<StickyFooterOverride[]> {
+export async function getStickyFooterOverrides(eventId?: string): Promise<StickyFooterOverride[]> {
   const user = await requireChef()
   const db: any = createServerClient()
 
@@ -135,10 +131,7 @@ export async function deleteStickyFooterConfig(id: string): Promise<void> {
   const user = await requireChef()
   const db: any = createServerClient()
 
-  const { error } = await fromConfigs(db)
-    .delete()
-    .eq('id', id)
-    .eq('tenant_id', user.tenantId)
+  const { error } = await fromConfigs(db).delete().eq('id', id).eq('tenant_id', user.tenantId)
 
   if (error) throw new Error(`Failed to delete sticky footer config: ${error.message}`)
 }

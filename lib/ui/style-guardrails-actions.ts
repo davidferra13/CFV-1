@@ -12,9 +12,7 @@ import type {
 /**
  * List guardrail rules, optionally filtered by category.
  */
-export async function getGuardrailRules(
-  category?: GuardrailCategory
-): Promise<GuardrailRule[]> {
+export async function getGuardrailRules(category?: GuardrailCategory): Promise<GuardrailRule[]> {
   const user = await requireChef()
   const db: any = createServerClient()
 
@@ -159,9 +157,7 @@ export async function getViolations(
 /**
  * Mark a violation as fixed.
  */
-export async function markViolationFixed(
-  violationId: string
-): Promise<void> {
+export async function markViolationFixed(violationId: string): Promise<void> {
   const user = await requireChef()
   const db: any = createServerClient()
 
@@ -200,8 +196,13 @@ export async function getGuardrailSummary(): Promise<GuardrailSummary> {
   const openViolations = violations ?? []
 
   const byCategory: Record<string, number> = {
-    spacing: 0, color: 0, typography: 0, border: 0,
-    shadow: 0, animation: 0, layout: 0,
+    spacing: 0,
+    color: 0,
+    typography: 0,
+    border: 0,
+    shadow: 0,
+    animation: 0,
+    layout: 0,
   }
   const bySeverity: Record<string, number> = { error: 0, warning: 0, info: 0 }
 

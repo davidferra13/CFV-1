@@ -277,7 +277,7 @@ export async function updateIngredientItem(input: {
       if (flagEnabled) {
         console.log(
           `[ingredient-board] Sourcing intent queued for board ${boardId}. ` +
-          `Use "Source Unavailable" button or wait for cron pickup.`
+            `Use "Source Unavailable" button or wait for cron pickup.`
         )
       }
     }
@@ -482,7 +482,13 @@ export async function triggerBoardSourcing(boardId: string): Promise<BoardSourci
     .eq('status', 'unavailable')
 
   if (!unavailableItems || unavailableItems.length === 0) {
-    return { success: true, sessionId: null, unresolvedCount: 0, resolvedCount: 0, message: 'No unavailable items to source' }
+    return {
+      success: true,
+      sessionId: null,
+      unresolvedCount: 0,
+      resolvedCount: 0,
+      message: 'No unavailable items to source',
+    }
   }
 
   // Resolve each through 3-tier engine

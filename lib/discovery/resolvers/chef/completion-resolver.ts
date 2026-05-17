@@ -67,9 +67,7 @@ function completionToRailItem(
 ): GodModeResolvedItem | null {
   const label = event.occasion || 'Event'
   const daysUntil = event.event_date
-    ? Math.ceil(
-        (new Date(event.event_date).getTime() - ctx.now.getTime()) / 86_400_000
-      )
+    ? Math.ceil((new Date(event.event_date).getTime() - ctx.now.getTime()) / 86_400_000)
     : null
 
   // Promote tier for events happening soon with low completion
@@ -84,9 +82,13 @@ function completionToRailItem(
     definitionId: `chef.completion_event-${event.id}`,
     tier,
     label: `${label}: ${result.score}% ready`,
-    context: result.missingRequirements.length > 0
-      ? `Missing: ${result.missingRequirements.slice(0, 3).map((r) => r.label).join(', ')}`
-      : '',
+    context:
+      result.missingRequirements.length > 0
+        ? `Missing: ${result.missingRequirements
+            .slice(0, 3)
+            .map((r) => r.label)
+            .join(', ')}`
+        : '',
     destination: result.nextAction?.url ?? `/chef/events/${event.id}`,
     icon: 'calendar',
     score: Math.max(10, 100 - result.score),
@@ -119,9 +121,7 @@ function buildBlockingItem(
     definitionId: `chef.completion_recursive-${event.id}`,
     tier: 'p2',
     label: `${label} blocked: ${topBlocker.label}`,
-    context: blockers.length > 1
-      ? `${blockers.length} blocking requirements`
-      : topBlocker.label,
+    context: blockers.length > 1 ? `${blockers.length} blocking requirements` : topBlocker.label,
     destination: topBlocker.actionUrl ?? `/chef/events/${event.id}`,
     icon: 'alert-triangle',
     score: 65,

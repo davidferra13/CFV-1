@@ -1,4 +1,13 @@
-export type TouchpointType = 'welcome' | 'amuse_bouche' | 'course_intro' | 'palate_cleanser' | 'chef_visit' | 'intermezzo' | 'dessert_reveal' | 'farewell' | 'custom'
+export type TouchpointType =
+  | 'welcome'
+  | 'amuse_bouche'
+  | 'course_intro'
+  | 'palate_cleanser'
+  | 'chef_visit'
+  | 'intermezzo'
+  | 'dessert_reveal'
+  | 'farewell'
+  | 'custom'
 
 export interface EventTouchpoint {
   id: string
@@ -7,7 +16,7 @@ export interface EventTouchpoint {
   type: TouchpointType
   name: string
   description: string | null
-  timing_minutes: number | null  // minutes after service start
+  timing_minutes: number | null // minutes after service start
   duration_minutes: number | null
   notes: string | null
   sort_order: number

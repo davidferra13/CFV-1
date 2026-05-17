@@ -257,14 +257,15 @@ export async function getMenuPerformanceDetail(
     .eq('menu_id', menuId)
 
   // Get events for direct linkage
-  const { data: linkedEvents } = eventIds.length > 0
-    ? await db
-        .from('events')
-        .select('id, event_date, guest_count, quoted_price_cents, client_id')
-        .in('id', eventIds)
-        .eq('tenant_id', tenantId)
-        .order('event_date', { ascending: false })
-    : { data: [] }
+  const { data: linkedEvents } =
+    eventIds.length > 0
+      ? await db
+          .from('events')
+          .select('id, event_date, guest_count, quoted_price_cents, client_id')
+          .in('id', eventIds)
+          .eq('tenant_id', tenantId)
+          .order('event_date', { ascending: false })
+      : { data: [] }
 
   // Get all menus that share same event_id (for menus used across multiple events)
   const { data: otherMenusWithEvents } = await db
@@ -301,10 +302,7 @@ export async function getMenuPerformanceDetail(
   const clientIds = [...new Set(allEvents.map((e: any) => e.client_id).filter(Boolean))]
   let clientNameMap = new Map<string, string>()
   if (clientIds.length > 0) {
-    const { data: clients } = await db
-      .from('clients')
-      .select('id, full_name')
-      .in('id', clientIds)
+    const { data: clients } = await db.from('clients').select('id, full_name').in('id', clientIds)
 
     for (const c of clients ?? []) {
       clientNameMap.set(c.id, c.full_name)
@@ -372,7 +370,9 @@ export async function getMenuPerformanceDetail(
     const itemIds = menuItems.map((mi: any) => mi.id)
     const { data: perfData } = await db
       .from('menu_item_performance')
-      .select('menu_item_id, item_name, category, total_sold, total_revenue_cents, food_cost_pct, profit_per_unit_cents')
+      .select(
+        'menu_item_id, item_name, category, total_sold, total_revenue_cents, food_cost_pct, profit_per_unit_cents'
+      )
       .eq('chef_id', tenantId)
       .in('menu_item_id', itemIds)
 
@@ -422,9 +422,7 @@ export async function getMenuPerformanceDetail(
     }
 
     const foodCostPct =
-      totalRevenueCents > 0
-        ? Math.round((totalFoodCostCents / totalRevenueCents) * 1000) / 10
-        : 0
+      totalRevenueCents > 0 ? Math.round((totalFoodCostCents / totalRevenueCents) * 1000) / 10 : 0
 
     costAnalysis = {
       totalRevenueCents,
@@ -456,9 +454,7 @@ export async function getMenuPerformanceDetail(
 // Best performing menus ranked by composite score.
 // Score = (times_served * 2) + (avg_rating * 10) + (reuse_count * 3) + revenue_factor
 
-export async function getTopMenus(
-  limit: number = 10
-): Promise<MenuPerformance[]> {
+export async function getTopMenus(limit: number = 10): Promise<MenuPerformance[]> {
   const all = await getMenuPerformanceOverview()
 
   // Compute composite score for ranking
@@ -467,10 +463,7 @@ export async function getTopMenus(
   const scored = all.map((menu) => {
     const revFactor = maxRev > 0 ? (menu.avgRevenueCents / maxRev) * 20 : 0
     const score =
-      menu.timesServed * 2 +
-      (menu.avgRating ?? 0) * 10 +
-      menu.reuseCount * 3 +
-      revFactor
+      menu.timesServed * 2 + (menu.avgRating ?? 0) * 10 + menu.reuseCount * 3 + revFactor
     return { ...menu, _score: score }
   })
 
@@ -482,9 +475,7 @@ export async function getTopMenus(
 // ── getMenuSeasonalPerformance ────────────────────────────────────────────
 // Which seasons a given menu performs best in, based on events.
 
-export async function getMenuSeasonalPerformance(
-  menuId: string
-): Promise<SeasonalTrend[]> {
+export async function getMenuSeasonalPerformance(menuId: string): Promise<SeasonalTrend[]> {
   const user = await requireChef()
   const db: any = createServerClient()
   const tenantId = user.tenantId!
@@ -554,12 +545,15 @@ export async function getMenuSeasonalPerformance(
   }
 
   // Group by season
-  const seasonBuckets = new Map<string, {
-    events: any[]
-    totalRev: number
-    ratings: number[]
-    totalGuests: number
-  }>()
+  const seasonBuckets = new Map<
+    string,
+    {
+      events: any[]
+      totalRev: number
+      ratings: number[]
+      totalGuests: number
+    }
+  >()
 
   for (const ev of events) {
     const season = dateSeason(ev.event_date)
@@ -586,7 +580,8 @@ export async function getMenuSeasonalPerformance(
       season,
       eventCount: bucket.events.length,
       totalRevenueCents: bucket.totalRev,
-      avgRevenueCents: bucket.events.length > 0 ? Math.round(bucket.totalRev / bucket.events.length) : 0,
+      avgRevenueCents:
+        bucket.events.length > 0 ? Math.round(bucket.totalRev / bucket.events.length) : 0,
       avgRating,
       avgGuestCount:
         bucket.events.length > 0 ? Math.round(bucket.totalGuests / bucket.events.length) : 0,
@@ -608,7 +603,9 @@ export async function getDishPerformanceRanking(): Promise<DishRanking[]> {
 
   const { data: dishes, error } = await db
     .from('dish_index')
-    .select('id, name, course, times_served, is_signature, rotation_status, last_served, season_affinity')
+    .select(
+      'id, name, course, times_served, is_signature, rotation_status, last_served, season_affinity'
+    )
     .eq('tenant_id', tenantId)
     .eq('archived', false)
     .order('times_served', { ascending: false })
@@ -641,7 +638,9 @@ export async function getDishPerformanceRanking(): Promise<DishRanking[]> {
     const fb = feedbackMap.get(dish.id)
     const avgRating =
       fb && fb.ratings.length > 0
-        ? Math.round((fb.ratings.reduce((s: number, r: number) => s + r, 0) / fb.ratings.length) * 10) / 10
+        ? Math.round(
+            (fb.ratings.reduce((s: number, r: number) => s + r, 0) / fb.ratings.length) * 10
+          ) / 10
         : null
 
     return {

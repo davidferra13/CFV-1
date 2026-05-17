@@ -198,10 +198,7 @@ export async function updateProposalExperience(
     return { success: false, error: 'No updates provided' }
   }
 
-  const { error } = await db
-    .from('proposal_experiences')
-    .update(payload)
-    .eq('id', proposalId)
+  const { error } = await db.from('proposal_experiences').update(payload).eq('id', proposalId)
 
   if (error) {
     console.error('[proposal-experience] update failed:', error)

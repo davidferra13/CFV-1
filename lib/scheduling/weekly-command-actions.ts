@@ -240,11 +240,7 @@ export async function getWeeklyConflicts(weekStart: string): Promise<WeeklyConfl
     }
 
     // Back-to-back: afternoon + evening on same day with 2+ events total
-    if (
-      dayEvents.length >= 2 &&
-      slotGroups.has('afternoon') &&
-      slotGroups.has('evening')
-    ) {
+    if (dayEvents.length >= 2 && slotGroups.has('afternoon') && slotGroups.has('evening')) {
       const affectedIds = [
         ...(slotGroups.get('afternoon') ?? []),
         ...(slotGroups.get('evening') ?? []),
@@ -260,11 +256,7 @@ export async function getWeeklyConflicts(weekStart: string): Promise<WeeklyConfl
     }
 
     // Back-to-back: morning + afternoon
-    if (
-      dayEvents.length >= 2 &&
-      slotGroups.has('morning') &&
-      slotGroups.has('afternoon')
-    ) {
+    if (dayEvents.length >= 2 && slotGroups.has('morning') && slotGroups.has('afternoon')) {
       const affectedIds = [
         ...(slotGroups.get('morning') ?? []),
         ...(slotGroups.get('afternoon') ?? []),
@@ -337,10 +329,7 @@ export async function getWeeklyIngredientConsolidation(
 
   // Get dishes for these menus
   const menuIds = menuList.map((m: any) => m.id)
-  const { data: dishes } = await db
-    .from('dishes')
-    .select('id, menu_id')
-    .in('menu_id', menuIds)
+  const { data: dishes } = await db.from('dishes').select('id, menu_id').in('menu_id', menuIds)
 
   const dishList: any[] = dishes ?? []
   if (dishList.length === 0) return emptyResult
@@ -418,7 +407,10 @@ export async function getWeeklyIngredientConsolidation(
     .eq('tenant_id', tenantId)
     .in('id', ingredientIds)
 
-  const ingredientNameMap = new Map<string, { name: string; category: string | null; lastPriceCents: number | null }>()
+  const ingredientNameMap = new Map<
+    string,
+    { name: string; category: string | null; lastPriceCents: number | null }
+  >()
   for (const row of (ingredientRows ?? []) as any[]) {
     ingredientNameMap.set(row.id, {
       name: row.name ?? 'Unknown',

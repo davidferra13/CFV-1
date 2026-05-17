@@ -70,12 +70,14 @@ NEXT TRIGGER: Twilio credentials configured in prod + supplier_calling enabled f
 BUILD_PROMPTS:
 
 Wave 1 (DISPATCHED 2026-05-17):
+
 - wire-auto-resolve-cron (haiku): register in lib/cron/definitions.ts
 - remy-calling-tools (opus): 2 new tools in lib/ai/remy-tools.ts
 - sourcing-page-context-params (haiku): searchParams on sourcing page
 - event-countdown-sourcing-badge (haiku): 48h warning badge
 
 Wave 2 (PENDING):
+
 - ingredient-health-source-button (opus): "Source Unresolved" on health banner
 - ingredient-board-auto-queue (opus): unavailable -> draft session with debounce
 - event-detail-source-button (haiku): "Source Ingredients" on event detail

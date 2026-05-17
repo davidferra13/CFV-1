@@ -1,4 +1,11 @@
-export type FixtureScenario = 'new_chef' | 'busy_week' | 'first_event' | 'returning_client' | 'multi_event' | 'overdue_payments' | 'empty_state'
+export type FixtureScenario =
+  | 'new_chef'
+  | 'busy_week'
+  | 'first_event'
+  | 'returning_client'
+  | 'multi_event'
+  | 'overdue_payments'
+  | 'empty_state'
 
 export interface FixtureSet {
   id: string

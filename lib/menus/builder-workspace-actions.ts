@@ -52,7 +52,12 @@ export async function getBuilderState(menuId: string): Promise<BuilderState> {
 
 export async function updateBuilderState(
   menuId: string,
-  updates: Partial<Pick<BuilderState, 'viewMode' | 'showPrices' | 'showDescriptions' | 'showAllergens' | 'expandedSections'>>
+  updates: Partial<
+    Pick<
+      BuilderState,
+      'viewMode' | 'showPrices' | 'showDescriptions' | 'showAllergens' | 'expandedSections'
+    >
+  >
 ) {
   const user = await requireChef()
   const db: any = createServerClient()
@@ -107,16 +112,13 @@ export async function reorderSections(menuId: string, sectionOrder: string[]) {
 
   // Update each section's order
   const updates = sectionOrder.map((sectionId, index) =>
-    db
-      .from('menu_sections')
-      .update({ sort_order: index })
-      .eq('id', sectionId)
-      .eq('menu_id', menuId)
+    db.from('menu_sections').update({ sort_order: index }).eq('id', sectionId).eq('menu_id', menuId)
   )
 
   const results = await Promise.all(updates)
   const failed = results.find((r: { error: unknown }) => r.error)
-  if (failed?.error) throw new Error(`Failed to reorder sections: ${(failed.error as { message: string }).message}`)
+  if (failed?.error)
+    throw new Error(`Failed to reorder sections: ${(failed.error as { message: string }).message}`)
 
   revalidatePath('/menus')
   return { success: true }
@@ -147,7 +149,8 @@ export async function reorderDishes(sectionId: string, dishOrder: string[]) {
 
   const results = await Promise.all(updates)
   const failed = results.find((r: { error: unknown }) => r.error)
-  if (failed?.error) throw new Error(`Failed to reorder dishes: ${(failed.error as { message: string }).message}`)
+  if (failed?.error)
+    throw new Error(`Failed to reorder dishes: ${(failed.error as { message: string }).message}`)
 
   revalidatePath('/menus')
   return { success: true }
@@ -187,10 +190,12 @@ export async function saveAsTemplate(menuId: string, name: string) {
 
   if (secErr) throw new Error(`Failed to read menu sections: ${secErr.message}`)
 
-  const templateSections = (sections ?? []).map((s: { title: string; description: string | null }) => ({
-    title: s.title,
-    description: s.description ?? null,
-  }))
+  const templateSections = (sections ?? []).map(
+    (s: { title: string; description: string | null }) => ({
+      title: s.title,
+      description: s.description ?? null,
+    })
+  )
 
   const { data, error } = await db
     .from('menu_builder_templates')
@@ -235,10 +240,7 @@ export async function applyTemplate(menuId: string, templateId: string) {
   const sections = template.sections as { title: string; description: string | null }[]
 
   // Delete existing sections for this menu
-  const { error: delErr } = await db
-    .from('menu_sections')
-    .delete()
-    .eq('menu_id', menuId)
+  const { error: delErr } = await db.from('menu_sections').delete().eq('menu_id', menuId)
 
   if (delErr) throw new Error(`Failed to clear existing sections: ${delErr.message}`)
 
@@ -251,9 +253,7 @@ export async function applyTemplate(menuId: string, templateId: string) {
       sort_order: i,
     }))
 
-    const { error: insertErr } = await db
-      .from('menu_sections')
-      .insert(inserts)
+    const { error: insertErr } = await db.from('menu_sections').insert(inserts)
 
     if (insertErr) throw new Error(`Failed to apply template sections: ${insertErr.message}`)
   }

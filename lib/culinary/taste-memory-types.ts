@@ -27,7 +27,11 @@ export type FlavorAffinity = {
 
 /** Detected pattern from recipe/menu history */
 export type CookingStylePattern = {
-  patternType: 'cuisine_tendency' | 'technique_preference' | 'ingredient_category_bias' | 'seasonal_preference'
+  patternType:
+    | 'cuisine_tendency'
+    | 'technique_preference'
+    | 'ingredient_category_bias'
+    | 'seasonal_preference'
   label: string
   /** Confidence score 0-1 based on frequency relative to total */
   confidence: number

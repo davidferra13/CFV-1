@@ -23,20 +23,18 @@ export async function setConfidenceLabel(
   const chef = await requireChef()
   const db: any = createServerClient()
 
-  await db
-    .from('confidence_labels')
-    .upsert(
-      {
-        tenant_id: chef.id,
-        entity_type: entityType,
-        entity_id: entityId,
-        field,
-        confidence,
-        source,
-        updated_at: new Date().toISOString(),
-      },
-      { onConflict: 'tenant_id,entity_type,entity_id,field' }
-    )
+  await db.from('confidence_labels').upsert(
+    {
+      tenant_id: chef.id,
+      entity_type: entityType,
+      entity_id: entityId,
+      field,
+      confidence,
+      source,
+      updated_at: new Date().toISOString(),
+    },
+    { onConflict: 'tenant_id,entity_type,entity_id,field' }
+  )
 
   return { success: true }
 }
@@ -136,43 +134,143 @@ export async function getConfidencePolicies(): Promise<ConfidencePolicy[]> {
 
   return [
     // Events: 5 fields
-    { entityType: 'event', field: 'date', minConfidence: 'high', staleAfterDays: 30, requiresVerification: true, allowAiGenerated: false },
-    { entityType: 'event', field: 'guest_count', minConfidence: 'medium', staleAfterDays: 14, requiresVerification: false, allowAiGenerated: false },
-    { entityType: 'event', field: 'location', minConfidence: 'high', staleAfterDays: 30, requiresVerification: true, allowAiGenerated: false },
-    { entityType: 'event', field: 'price', minConfidence: 'verified', staleAfterDays: 7, requiresVerification: true, allowAiGenerated: false },
-    { entityType: 'event', field: 'menu', minConfidence: 'medium', staleAfterDays: 14, requiresVerification: false, allowAiGenerated: true },
+    {
+      entityType: 'event',
+      field: 'date',
+      minConfidence: 'high',
+      staleAfterDays: 30,
+      requiresVerification: true,
+      allowAiGenerated: false,
+    },
+    {
+      entityType: 'event',
+      field: 'guest_count',
+      minConfidence: 'medium',
+      staleAfterDays: 14,
+      requiresVerification: false,
+      allowAiGenerated: false,
+    },
+    {
+      entityType: 'event',
+      field: 'location',
+      minConfidence: 'high',
+      staleAfterDays: 30,
+      requiresVerification: true,
+      allowAiGenerated: false,
+    },
+    {
+      entityType: 'event',
+      field: 'price',
+      minConfidence: 'verified',
+      staleAfterDays: 7,
+      requiresVerification: true,
+      allowAiGenerated: false,
+    },
+    {
+      entityType: 'event',
+      field: 'menu',
+      minConfidence: 'medium',
+      staleAfterDays: 14,
+      requiresVerification: false,
+      allowAiGenerated: true,
+    },
 
     // Clients: 4 fields
-    { entityType: 'client', field: 'name', minConfidence: 'high', staleAfterDays: 365, requiresVerification: false, allowAiGenerated: false },
-    { entityType: 'client', field: 'email', minConfidence: 'verified', staleAfterDays: 180, requiresVerification: true, allowAiGenerated: false },
-    { entityType: 'client', field: 'phone', minConfidence: 'verified', staleAfterDays: 180, requiresVerification: true, allowAiGenerated: false },
-    { entityType: 'client', field: 'address', minConfidence: 'medium', staleAfterDays: 90, requiresVerification: false, allowAiGenerated: false },
+    {
+      entityType: 'client',
+      field: 'name',
+      minConfidence: 'high',
+      staleAfterDays: 365,
+      requiresVerification: false,
+      allowAiGenerated: false,
+    },
+    {
+      entityType: 'client',
+      field: 'email',
+      minConfidence: 'verified',
+      staleAfterDays: 180,
+      requiresVerification: true,
+      allowAiGenerated: false,
+    },
+    {
+      entityType: 'client',
+      field: 'phone',
+      minConfidence: 'verified',
+      staleAfterDays: 180,
+      requiresVerification: true,
+      allowAiGenerated: false,
+    },
+    {
+      entityType: 'client',
+      field: 'address',
+      minConfidence: 'medium',
+      staleAfterDays: 90,
+      requiresVerification: false,
+      allowAiGenerated: false,
+    },
 
     // Menus: 3 fields
-    { entityType: 'menu', field: 'dishes', minConfidence: 'medium', staleAfterDays: 30, requiresVerification: false, allowAiGenerated: true },
-    { entityType: 'menu', field: 'dietary_notes', minConfidence: 'high', staleAfterDays: 14, requiresVerification: true, allowAiGenerated: false },
-    { entityType: 'menu', field: 'pricing', minConfidence: 'verified', staleAfterDays: 7, requiresVerification: true, allowAiGenerated: false },
+    {
+      entityType: 'menu',
+      field: 'dishes',
+      minConfidence: 'medium',
+      staleAfterDays: 30,
+      requiresVerification: false,
+      allowAiGenerated: true,
+    },
+    {
+      entityType: 'menu',
+      field: 'dietary_notes',
+      minConfidence: 'high',
+      staleAfterDays: 14,
+      requiresVerification: true,
+      allowAiGenerated: false,
+    },
+    {
+      entityType: 'menu',
+      field: 'pricing',
+      minConfidence: 'verified',
+      staleAfterDays: 7,
+      requiresVerification: true,
+      allowAiGenerated: false,
+    },
 
     // Recipes: 3 fields
-    { entityType: 'recipe', field: 'ingredients', minConfidence: 'high', staleAfterDays: 90, requiresVerification: false, allowAiGenerated: true },
-    { entityType: 'recipe', field: 'instructions', minConfidence: 'medium', staleAfterDays: 180, requiresVerification: false, allowAiGenerated: true },
-    { entityType: 'recipe', field: 'yield', minConfidence: 'high', staleAfterDays: 60, requiresVerification: true, allowAiGenerated: false },
+    {
+      entityType: 'recipe',
+      field: 'ingredients',
+      minConfidence: 'high',
+      staleAfterDays: 90,
+      requiresVerification: false,
+      allowAiGenerated: true,
+    },
+    {
+      entityType: 'recipe',
+      field: 'instructions',
+      minConfidence: 'medium',
+      staleAfterDays: 180,
+      requiresVerification: false,
+      allowAiGenerated: true,
+    },
+    {
+      entityType: 'recipe',
+      field: 'yield',
+      minConfidence: 'high',
+      staleAfterDays: 60,
+      requiresVerification: true,
+      allowAiGenerated: false,
+    },
   ]
 }
 
 // ---------------------------------------------------------------------------
 // 5. getStaleData - find data past its stale threshold
 // ---------------------------------------------------------------------------
-export async function getStaleData(
-  entityType?: string
-): Promise<ConfidenceLabel[]> {
+export async function getStaleData(entityType?: string): Promise<ConfidenceLabel[]> {
   const chef = await requireChef()
   const db: any = createServerClient()
 
-  let query = db
-    .from('confidence_labels')
-    .select('*')
-    .eq('tenant_id', chef.id)
+  let query = db.from('confidence_labels').select('*').eq('tenant_id', chef.id)
 
   if (entityType) {
     query = query.eq('entity_type', entityType)

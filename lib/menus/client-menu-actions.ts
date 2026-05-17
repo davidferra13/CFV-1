@@ -106,9 +106,7 @@ export async function getSubmissionStatus(
 /**
  * Get all client menu submissions for an event. Chef auth-gated.
  */
-export async function getClientMenuSubmissions(
-  eventId: string
-): Promise<ClientMenuSubmission[]> {
+export async function getClientMenuSubmissions(eventId: string): Promise<ClientMenuSubmission[]> {
   const user = await requireChef()
   const tenantId = user.tenantId!
   const db: any = createServerClient()

@@ -91,9 +91,7 @@ export async function resolveCadenceDueItems(
 }
 
 function formatCadencePoint(point: string): string {
-  return point
-    .replace(/_/g, ' ')
-    .replace(/\b\w/g, (c) => c.toUpperCase())
+  return point.replace(/_/g, ' ').replace(/\b\w/g, (c) => c.toUpperCase())
 }
 
 function formatHours(hours: number): string {

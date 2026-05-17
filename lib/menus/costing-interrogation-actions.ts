@@ -31,9 +31,10 @@ function toConfidenceLabel(value: number): CostConfidence {
 }
 
 /** Aggregate confidence from child rows. Returns weighted average or 'unknown' if no data. */
-function aggregateConfidence(
-  items: Array<{ confidence: CostConfidence; weight: number }>
-): { label: CostConfidence; weighted: number } {
+function aggregateConfidence(items: Array<{ confidence: CostConfidence; weight: number }>): {
+  label: CostConfidence
+  weighted: number
+} {
   if (items.length === 0) return { label: 'unknown', weighted: 0 }
 
   const weights: Record<CostConfidence, number> = {
@@ -98,9 +99,7 @@ function detectGaps(
  * Each level has subtotal, confidence, and gap flags.
  * Read-only. Auth-gated, tenant-scoped.
  */
-export async function getMenuCostBreakdown(
-  menuId: string
-): Promise<MenuCostBreakdown> {
+export async function getMenuCostBreakdown(menuId: string): Promise<MenuCostBreakdown> {
   const user = await requireChef()
   const tenantId = user.tenantId!
   const db: any = createServerClient()
@@ -149,9 +148,7 @@ export async function getMenuCostBreakdown(
   // 4. Get recipe names for linked recipes
   const recipeIds = Array.from(
     new Set<string>(
-      (components ?? [])
-        .filter((c: any) => c.recipe_id)
-        .map((c: any) => c.recipe_id as string)
+      (components ?? []).filter((c: any) => c.recipe_id).map((c: any) => c.recipe_id as string)
     )
   )
 
@@ -243,9 +240,7 @@ export async function getMenuCostBreakdown(
 
       if (resolved && resolved.confidence > 0) {
         rawCostCents = Math.round(resolved.cents * quantity)
-        const yieldMultiplier = yieldPct && yieldPct > 0 && yieldPct < 100
-          ? 100 / yieldPct
-          : 1
+        const yieldMultiplier = yieldPct && yieldPct > 0 && yieldPct < 100 ? 100 / yieldPct : 1
         adjustedCostCents = Math.round(rawCostCents * yieldMultiplier)
         totalCosted++
       } else {
@@ -302,7 +297,7 @@ export async function getMenuCostBreakdown(
       componentName: comp.name || 'Unknown Component',
       category: comp.category || 'other',
       recipeId,
-      recipeName: recipeId ? (recipeNameMap.get(recipeId) || null) : null,
+      recipeName: recipeId ? recipeNameMap.get(recipeId) || null : null,
       subtotalCents: compSubtotal,
       confidence: compConfidence.label,
       ingredients: ingredientRows,
@@ -505,8 +500,7 @@ export async function getMenuCostComparison(
         courseName: a?.courseName || b?.courseName || `Course ${num}`,
         aCents,
         bCents,
-        deltaCents:
-          aCents != null && bCents != null ? bCents - aCents : null,
+        deltaCents: aCents != null && bCents != null ? bCents - aCents : null,
       }
     })
 
@@ -556,9 +550,7 @@ export async function getMenuProfitabilityPreview(
 
   // Overhead as percentage of food cost
   const overheadCents =
-    totalFoodCostCents != null
-      ? Math.round(totalFoodCostCents * (overheadPct / 100))
-      : null
+    totalFoodCostCents != null ? Math.round(totalFoodCostCents * (overheadPct / 100)) : null
 
   // Profit calculation
   let estimatedProfitCents: number | null = null
@@ -566,13 +558,10 @@ export async function getMenuProfitabilityPreview(
   let foodCostPct: number | null = null
 
   if (totalFoodCostCents != null && overheadCents != null) {
-    estimatedProfitCents =
-      totalRevenueCents - totalFoodCostCents - laborCostCents - overheadCents
+    estimatedProfitCents = totalRevenueCents - totalFoodCostCents - laborCostCents - overheadCents
     if (totalRevenueCents > 0) {
-      profitMarginPct =
-        Math.round((estimatedProfitCents / totalRevenueCents) * 10000) / 100
-      foodCostPct =
-        Math.round((totalFoodCostCents / totalRevenueCents) * 10000) / 100
+      profitMarginPct = Math.round((estimatedProfitCents / totalRevenueCents) * 10000) / 100
+      foodCostPct = Math.round((totalFoodCostCents / totalRevenueCents) * 10000) / 100
     }
   }
 
@@ -587,9 +576,7 @@ export async function getMenuProfitabilityPreview(
     warnings.push('Overall cost confidence is low; numbers may be inaccurate')
   }
   if (foodCostPct != null && foodCostPct > 35) {
-    warnings.push(
-      `Food cost is ${foodCostPct}% of revenue (target: under 35%)`
-    )
+    warnings.push(`Food cost is ${foodCostPct}% of revenue (target: under 35%)`)
   }
   if (profitMarginPct != null && profitMarginPct < 10) {
     warnings.push(

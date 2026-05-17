@@ -1,4 +1,12 @@
-export type TypographyRole = 'page_title' | 'section_heading' | 'card_title' | 'body' | 'caption' | 'label' | 'metric' | 'overline'
+export type TypographyRole =
+  | 'page_title'
+  | 'section_heading'
+  | 'card_title'
+  | 'body'
+  | 'caption'
+  | 'label'
+  | 'metric'
+  | 'overline'
 
 export type TypographyConfig = {
   id: string

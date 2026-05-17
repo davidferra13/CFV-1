@@ -69,11 +69,7 @@ export async function upsertVisualMode(
 
   let rows: any[]
   if (existing && existing.length > 0) {
-    rows = await db
-      .from('portal_visual_modes')
-      .update(payload)
-      .eq('id', existing[0].id)
-      .select('*')
+    rows = await db.from('portal_visual_modes').update(payload).eq('id', existing[0].id).select('*')
   } else {
     rows = await db
       .from('portal_visual_modes')
@@ -195,10 +191,7 @@ export async function getPortalModeSummary(): Promise<PortalModeSummary> {
   const user = await requireChef()
   const db: any = createServerClient()
 
-  const rows = await db
-    .from('portal_visual_modes')
-    .select('*')
-    .eq('tenant_id', user.tenantId)
+  const rows = await db.from('portal_visual_modes').select('*').eq('tenant_id', user.tenantId)
 
   const modes: VisualMode[] = (rows ?? []).map((r: any) => ({
     id: r.id,
@@ -226,9 +219,10 @@ export async function getPortalModeSummary(): Promise<PortalModeSummary> {
     }
   }
 
-  const activeMode = modes.length > 0
-    ? modes.reduce((latest, m) => (m.updatedAt > latest.updatedAt ? m : latest), modes[0])
-    : null
+  const activeMode =
+    modes.length > 0
+      ? modes.reduce((latest, m) => (m.updatedAt > latest.updatedAt ? m : latest), modes[0])
+      : null
 
   return {
     totalModes: modes.length,

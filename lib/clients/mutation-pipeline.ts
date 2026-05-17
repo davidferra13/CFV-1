@@ -106,9 +106,7 @@ export function buildMutationSteps(params: ClientMutationParams): MutationStep[]
       name: 'dietary_change_log',
       critical: false,
       execute: async () => {
-        const { logDietaryChangeInternal } = await import(
-          '@/lib/clients/dietary-alert-actions'
-        )
+        const { logDietaryChangeInternal } = await import('@/lib/clients/dietary-alert-actions')
         const changedDietaryFields = getChangedDietaryFields(patch)
         for (const field of changedDietaryFields) {
           const oldVal = previousState[field]
@@ -161,9 +159,7 @@ export function buildMutationSteps(params: ClientMutationParams): MutationStep[]
       name: 'menu_recheck',
       critical: false,
       execute: async () => {
-        const { recheckUpcomingMenusForClient } = await import(
-          '@/lib/dietary/menu-recheck'
-        )
+        const { recheckUpcomingMenusForClient } = await import('@/lib/dietary/menu-recheck')
         await recheckUpcomingMenusForClient({ tenantId, clientId, db })
       },
     })
@@ -175,9 +171,7 @@ export function buildMutationSteps(params: ClientMutationParams): MutationStep[]
       name: 'event_dietary_propagation',
       critical: false,
       execute: async () => {
-        const { propagateDietaryToEvents } = await import(
-          '@/lib/dietary/propagate'
-        )
+        const { propagateDietaryToEvents } = await import('@/lib/dietary/propagate')
         await propagateDietaryToEvents({
           tenantId,
           clientId,
@@ -195,9 +189,7 @@ export function buildMutationSteps(params: ClientMutationParams): MutationStep[]
  * Execute the client mutation pipeline.
  * Critical steps abort on failure. Non-critical steps log warnings and continue.
  */
-export async function executeClientMutation(
-  params: ClientMutationParams
-): Promise<MutationResult> {
+export async function executeClientMutation(params: ClientMutationParams): Promise<MutationResult> {
   const steps = buildMutationSteps(params)
   const results: StepResult[] = []
 

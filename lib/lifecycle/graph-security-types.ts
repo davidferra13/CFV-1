@@ -2,11 +2,7 @@
 
 export type TestResult = 'pass' | 'fail' | 'skip'
 
-export type AuditType =
-  | 'access-control'
-  | 'data-flow'
-  | 'state-transition'
-  | 'input-validation'
+export type AuditType = 'access-control' | 'data-flow' | 'state-transition' | 'input-validation'
 
 export type AuditSeverity = 'critical' | 'high' | 'medium' | 'low'
 

@@ -124,10 +124,7 @@ export async function recordGateResult(params: {
   if (params.evidence !== undefined) payload.evidence = params.evidence
   if (params.notes !== undefined) payload.notes = params.notes
 
-  const { data, error } = await fromGateResults(db)
-    .insert(payload)
-    .select('*')
-    .single()
+  const { data, error } = await fromGateResults(db).insert(payload).select('*').single()
 
   if (error) throw new Error(`Failed to record gate result: ${error.message}`)
   return mapResult(data)

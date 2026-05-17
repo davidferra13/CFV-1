@@ -46,7 +46,12 @@ export async function executeInlineAction(
 
   const registeredAction = getAction(action)
   if (registeredAction) {
-    const entityId = (params.entityId ?? params.eventId ?? params.quoteId ?? params.contractId ?? params.inquiryId ?? '') as string
+    const entityId = (params.entityId ??
+      params.eventId ??
+      params.quoteId ??
+      params.contractId ??
+      params.inquiryId ??
+      '') as string
     const result = await executeAction(action, entityId, params)
 
     if (result.success && result.circleNotification) {

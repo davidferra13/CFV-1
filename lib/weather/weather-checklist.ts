@@ -195,8 +195,25 @@ export function inferEventType(opts: {
   // Check location notes for outdoor keywords
   if (opts.locationNotes) {
     const lower = opts.locationNotes.toLowerCase()
-    const outdoorKeywords = ['outdoor', 'patio', 'garden', 'backyard', 'terrace', 'rooftop', 'lawn', 'poolside', 'deck']
-    const indoorKeywords = ['indoor', 'inside', 'dining room', 'kitchen', 'ballroom', 'banquet hall']
+    const outdoorKeywords = [
+      'outdoor',
+      'patio',
+      'garden',
+      'backyard',
+      'terrace',
+      'rooftop',
+      'lawn',
+      'poolside',
+      'deck',
+    ]
+    const indoorKeywords = [
+      'indoor',
+      'inside',
+      'dining room',
+      'kitchen',
+      'ballroom',
+      'banquet hall',
+    ]
 
     if (outdoorKeywords.some((k) => lower.includes(k))) return 'outdoor'
     if (indoorKeywords.some((k) => lower.includes(k))) return 'indoor'

@@ -88,10 +88,7 @@ export async function getRecentAuditEntries(
  * Get a summary of changes for a specific entity:
  * total count, last changed by/when, and recent entries.
  */
-export async function getAuditSummary(
-  entityType: string,
-  entityId: string
-): Promise<AuditSummary> {
+export async function getAuditSummary(entityType: string, entityId: string): Promise<AuditSummary> {
   const user = await requireChef()
   const db: any = createServerClient()
 
@@ -133,10 +130,7 @@ export async function getAuditSummary(
 /**
  * Get all changes made by a specific user/actor, newest first.
  */
-export async function getActorActivity(
-  actorId: string,
-  limit = 50
-): Promise<AuditEntry[]> {
+export async function getActorActivity(actorId: string, limit = 50): Promise<AuditEntry[]> {
   const user = await requireChef()
   const db: any = createServerClient()
 

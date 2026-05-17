@@ -55,11 +55,7 @@ export async function getSurfaceConfig(
 
   if (!route) return { success: false, error: 'Route is required' }
 
-  let query = db
-    .from(CONFIGS_TABLE)
-    .select('*')
-    .eq('tenant_id', user.tenantId!)
-    .eq('route', route)
+  let query = db.from(CONFIGS_TABLE).select('*').eq('tenant_id', user.tenantId!).eq('route', route)
 
   if (component) {
     query = query.eq('component', component)
@@ -86,8 +82,10 @@ export async function upsertSurfaceConfig(
   const db: any = createServerClient()
 
   if (!route || !component) return { success: false, error: 'Route and component are required' }
-  if (!VALID_LEVELS.includes(surfaceLevel)) return { success: false, error: 'Invalid surface level' }
-  if (!VALID_PRIORITIES.includes(visualPriority)) return { success: false, error: 'Invalid visual priority' }
+  if (!VALID_LEVELS.includes(surfaceLevel))
+    return { success: false, error: 'Invalid surface level' }
+  if (!VALID_PRIORITIES.includes(visualPriority))
+    return { success: false, error: 'Invalid visual priority' }
 
   // Check for existing config
   const { data: existing } = await db
@@ -228,9 +226,10 @@ export async function getVisualPrioritySummary(): Promise<{
   }
 
   const scores = allAudits.map((a: any) => a.score ?? 0)
-  const avgScore = scores.length > 0
-    ? Math.round(scores.reduce((s: number, v: number) => s + v, 0) / scores.length)
-    : 0
+  const avgScore =
+    scores.length > 0
+      ? Math.round(scores.reduce((s: number, v: number) => s + v, 0) / scores.length)
+      : 0
 
   // Deduplicate routes, keep worst (lowest) score per route
   const routeScores = new Map<string, number>()
@@ -279,13 +278,18 @@ export async function getImbalancedRoutes(): Promise<{
 
   // Deduplicate: keep latest audit per route
   const latestByRoute = new Map<string, any>()
-  for (const a of (audits ?? [])) {
+  for (const a of audits ?? []) {
     if (!latestByRoute.has(a.route)) {
       latestByRoute.set(a.route, a)
     }
   }
 
-  const imbalanced: Array<{ route: string; criticalCount: number; totalElements: number; ratio: number }> = []
+  const imbalanced: Array<{
+    route: string
+    criticalCount: number
+    totalElements: number
+    ratio: number
+  }> = []
 
   latestByRoute.forEach((audit, route) => {
     const bp = (audit.by_priority as Record<string, number>) ?? {}
@@ -295,7 +299,12 @@ export async function getImbalancedRoutes(): Promise<{
     const ratio = criticalCount / total
     // Flag if more than 30% of elements are critical
     if (ratio > 0.3) {
-      imbalanced.push({ route, criticalCount, totalElements: total, ratio: Math.round(ratio * 100) / 100 })
+      imbalanced.push({
+        route,
+        criticalCount,
+        totalElements: total,
+        ratio: Math.round(ratio * 100) / 100,
+      })
     }
   })
 

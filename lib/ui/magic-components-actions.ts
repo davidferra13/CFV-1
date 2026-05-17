@@ -14,9 +14,7 @@ import type {
 // 1. getMagicComponents
 // ---------------------------------------------------------------------------
 
-export async function getMagicComponents(
-  category?: ComponentCategory,
-): Promise<MagicComponent[]> {
+export async function getMagicComponents(category?: ComponentCategory): Promise<MagicComponent[]> {
   const user = await requireChef()
   const db: any = createServerClient()
 
@@ -56,7 +54,7 @@ export async function upsertMagicComponent(
   variant: string | null,
   props: Record<string, unknown>,
   previewRoute?: string,
-  score?: number,
+  score?: number
 ): Promise<MagicComponent> {
   const user = await requireChef()
   const db: any = createServerClient()
@@ -89,11 +87,7 @@ export async function upsertMagicComponent(
     if (error) throw new Error(error.message)
     result = data
   } else {
-    const { data, error } = await db
-      .from('magic_components')
-      .insert(row)
-      .select()
-      .single()
+    const { data, error } = await db.from('magic_components').insert(row).select().single()
     if (error) throw new Error(error.message)
     result = data
   }
@@ -115,9 +109,7 @@ export async function upsertMagicComponent(
 // 3. getComponentVariants
 // ---------------------------------------------------------------------------
 
-export async function getComponentVariants(
-  componentId: string,
-): Promise<ComponentVariant[]> {
+export async function getComponentVariants(componentId: string): Promise<ComponentVariant[]> {
   const user = await requireChef()
   const db: any = createServerClient()
 
@@ -149,7 +141,7 @@ export async function upsertComponentVariant(
   componentId: string,
   name: string,
   propsOverrides: Record<string, unknown>,
-  isDefault?: boolean,
+  isDefault?: boolean
 ): Promise<ComponentVariant> {
   const user = await requireChef()
   const db: any = createServerClient()
@@ -181,11 +173,7 @@ export async function upsertComponentVariant(
     if (error) throw new Error(error.message)
     result = data
   } else {
-    const { data, error } = await db
-      .from('component_variants')
-      .insert(row)
-      .select()
-      .single()
+    const { data, error } = await db.from('component_variants').insert(row).select().single()
     if (error) throw new Error(error.message)
     result = data
   }
@@ -207,7 +195,7 @@ export async function upsertComponentVariant(
 
 export async function logComponentUsage(
   componentName: string,
-  route: string,
+  route: string
 ): Promise<ComponentUsage> {
   const user = await requireChef()
   const db: any = createServerClient()

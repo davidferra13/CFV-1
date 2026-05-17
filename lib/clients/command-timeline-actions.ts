@@ -137,7 +137,9 @@ export async function getClientTimeline(
       .limit(limit),
     db
       .from('quotes')
-      .select('id, created_at, sent_at, accepted_at, rejected_at, status, quote_name, total_quoted_cents, event_id')
+      .select(
+        'id, created_at, sent_at, accepted_at, rejected_at, status, quote_name, total_quoted_cents, event_id'
+      )
       .eq('tenant_id', tenantId)
       .eq('client_id', clientId)
       .is('deleted_at' as any, null)
@@ -145,7 +147,9 @@ export async function getClientTimeline(
       .limit(limit),
     db
       .from('ledger_entries')
-      .select('id, created_at, received_at, entry_type, amount_cents, payment_method, description, event_id')
+      .select(
+        'id, created_at, received_at, entry_type, amount_cents, payment_method, description, event_id'
+      )
       .eq('tenant_id', tenantId)
       .eq('client_id', clientId)
       .order('created_at', { ascending: false })
@@ -283,7 +287,9 @@ export async function getClientTimeline(
       id: `ledger:${row.id}`,
       type: paymentType,
       title: label,
-      description: cents ? `$${(cents / 100).toFixed(0)}${row.payment_method ? ` via ${row.payment_method}` : ''}` : row.description ?? null,
+      description: cents
+        ? `$${(cents / 100).toFixed(0)}${row.payment_method ? ` via ${row.payment_method}` : ''}`
+        : (row.description ?? null),
       event_id: row.event_id ?? null,
       metadata: { ledger_id: row.id, amount_cents: row.amount_cents, entry_type: row.entry_type },
       occurred_at: row.received_at ?? row.created_at,
@@ -311,7 +317,11 @@ export async function getClientTimeline(
       id: `note:${row.id}`,
       type: 'note_added',
       title: 'Note added',
-      description: row.note_text ? (row.note_text.length > 120 ? row.note_text.slice(0, 120) + '...' : row.note_text) : null,
+      description: row.note_text
+        ? row.note_text.length > 120
+          ? row.note_text.slice(0, 120) + '...'
+          : row.note_text
+        : null,
       event_id: row.event_id ?? null,
       metadata: { note_id: row.id, category: row.category },
       occurred_at: row.created_at,
@@ -324,7 +334,11 @@ export async function getClientTimeline(
       id: `message:${row.id}`,
       type: 'communication_sent',
       title: row.direction === 'inbound' ? 'Client messaged' : 'Message sent to client',
-      description: row.subject ? row.subject.slice(0, 120) : (row.body ? row.body.slice(0, 120) : null),
+      description: row.subject
+        ? row.subject.slice(0, 120)
+        : row.body
+          ? row.body.slice(0, 120)
+          : null,
       event_id: null,
       metadata: { message_id: row.id, channel: row.channel, direction: row.direction },
       occurred_at: row.sent_at ?? row.created_at,
@@ -337,7 +351,11 @@ export async function getClientTimeline(
       id: `comm:${row.id}`,
       type: 'communication_sent',
       title: row.direction === 'inbound' ? `${row.channel} received` : `${row.channel} sent`,
-      description: row.subject ? row.subject.slice(0, 120) : (row.content ? row.content.slice(0, 120) : null),
+      description: row.subject
+        ? row.subject.slice(0, 120)
+        : row.content
+          ? row.content.slice(0, 120)
+          : null,
       event_id: null,
       metadata: { comm_id: row.id, channel: row.channel, direction: row.direction },
       occurred_at: row.created_at,
@@ -454,7 +472,8 @@ export async function getClientTimelineSummary(clientId: string) {
     .reduce((sum: number, le: any) => sum + (le.amount_cents ?? 0), 0)
 
   const firstInquiry = (inquiriesRes.data ?? [])[0] as any | undefined
-  const firstContact = firstInquiry?.first_contact_at ?? firstInquiry?.created_at ?? client.created_at
+  const firstContact =
+    firstInquiry?.first_contact_at ?? firstInquiry?.created_at ?? client.created_at
 
   const lastActivity = (lastActivityRes.data ?? [])[0] as any | undefined
   const lastEventDate = events[0]?.event_date ?? null
@@ -489,7 +508,9 @@ export async function getRecentClientActivity(limit: number = 20) {
       .limit(limit),
     db
       .from('quotes')
-      .select('id, created_at, sent_at, status, quote_name, total_quoted_cents, client_id, clients(full_name)')
+      .select(
+        'id, created_at, sent_at, status, quote_name, total_quoted_cents, client_id, clients(full_name)'
+      )
       .eq('tenant_id', tenantId)
       .is('deleted_at' as any, null)
       .in('status', ['sent', 'accepted', 'rejected'])
@@ -497,7 +518,9 @@ export async function getRecentClientActivity(limit: number = 20) {
       .limit(limit),
     db
       .from('ledger_entries')
-      .select('id, created_at, received_at, entry_type, amount_cents, client_id, clients(full_name)')
+      .select(
+        'id, created_at, received_at, entry_type, amount_cents, client_id, clients(full_name)'
+      )
       .eq('tenant_id', tenantId)
       .order('created_at', { ascending: false })
       .limit(limit),

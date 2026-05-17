@@ -102,10 +102,7 @@ export async function assignTask(
 // 3. updateTaskStatus
 // ============================================
 
-export async function updateTaskStatus(
-  taskId: string,
-  status: TaskStatus
-): Promise<StaffTask> {
+export async function updateTaskStatus(taskId: string, status: TaskStatus): Promise<StaffTask> {
   const user = await requireChef()
   const db: any = createServerClient()
 
@@ -228,9 +225,7 @@ export async function getStaffWorkloads(): Promise<StaffWorkload[]> {
 
     const staffShifts = (shiftRows ?? []).filter((sh: any) => sh.staff_id === s.id)
     const upcomingEventIds = new Set(
-      staffShifts
-        .filter((sh: any) => sh.start_time >= todayStr)
-        .map((sh: any) => sh.event_id)
+      staffShifts.filter((sh: any) => sh.start_time >= todayStr).map((sh: any) => sh.event_id)
     )
 
     let hoursScheduled = 0

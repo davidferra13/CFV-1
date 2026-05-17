@@ -4,7 +4,13 @@ import { requireChef } from '@/lib/auth/get-user'
 import { createServerClient } from '@/lib/db/server'
 import { revalidatePath } from 'next/cache'
 import { UnknownAppError } from '@/lib/errors/app-error'
-import type { ChangeRequestType, ChangeRequestStatus, ChangeRequestImpact, ChangeRequest, ChangeRequestStats } from './change-request-types'
+import type {
+  ChangeRequestType,
+  ChangeRequestStatus,
+  ChangeRequestImpact,
+  ChangeRequest,
+  ChangeRequestStats,
+} from './change-request-types'
 
 export async function submitChangeRequest(
   eventId: string,
@@ -44,10 +50,7 @@ export async function getChangeRequests(
   const user = await requireChef()
   const db: any = createServerClient()
 
-  let query = db
-    .from('client_change_requests')
-    .select('*')
-    .eq('tenant_id', user.tenantId!)
+  let query = db.from('client_change_requests').select('*').eq('tenant_id', user.tenantId!)
 
   if (eventId) {
     query = query.eq('event_id', eventId)
@@ -56,9 +59,7 @@ export async function getChangeRequests(
     query = query.eq('status', status)
   }
 
-  const { data, error } = await query
-    .order('submitted_at', { ascending: false })
-    .limit(50)
+  const { data, error } = await query.order('submitted_at', { ascending: false }).limit(50)
 
   if (error) throw new UnknownAppError(`Failed to fetch change requests: ${error.message}`)
 
@@ -122,7 +123,11 @@ export async function getChangeRequestStats(): Promise<ChangeRequestStats> {
 
   if (error) throw new UnknownAppError(`Failed to fetch change request stats: ${error.message}`)
 
-  const rows = (data ?? []) as Array<{ status: string; submitted_at: string; reviewed_at: string | null }>
+  const rows = (data ?? []) as Array<{
+    status: string
+    submitted_at: string
+    reviewed_at: string | null
+  }>
 
   let pending = 0
   let approved = 0
@@ -149,7 +154,8 @@ export async function getChangeRequestStats(): Promise<ChangeRequestStats> {
     approved,
     rejected,
     total: rows.length,
-    avgResponseHours: responseCount > 0 ? Math.round((totalResponseMs / responseCount / 3600000) * 10) / 10 : null,
+    avgResponseHours:
+      responseCount > 0 ? Math.round((totalResponseMs / responseCount / 3600000) * 10) / 10 : null,
   }
 }
 

@@ -30,7 +30,9 @@ const CreateGroupSchema = z.object({
   event_stub_id: z.string().uuid().optional().nullable(),
   tenant_id: z.string().uuid().optional().nullable(),
   created_by_profile_id: z.string().uuid(),
-  group_type: z.enum(['circle', 'dinner_club', 'planning', 'bridge', 'community', 'cannabis_circle']).optional(),
+  group_type: z
+    .enum(['circle', 'dinner_club', 'planning', 'bridge', 'community', 'cannabis_circle'])
+    .optional(),
   visibility: z.enum(['public', 'private', 'secret']).optional(),
   display_vibe: z.array(z.string()).optional().nullable(),
   planning_brief: z.record(z.string(), z.unknown()).optional().nullable(),

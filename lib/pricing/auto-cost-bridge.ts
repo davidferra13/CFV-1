@@ -41,21 +41,16 @@ export async function autoCostMenuIngredients(
       .from('components')
       .select('recipe_id, dish_id')
       .eq('tenant_id', tenantId)
-      .in(
-        'dish_id',
-        db
-          .from('dishes')
-          .select('id')
-          .eq('menu_id', menuId)
-          .eq('tenant_id', tenantId)
-      )
+      .in('dish_id', db.from('dishes').select('id').eq('menu_id', menuId).eq('tenant_id', tenantId))
       .not('recipe_id', 'is', null)
 
     if (!components || components.length === 0) {
       return { triggered: false, reason: 'no_recipes', elapsed: Date.now() - start }
     }
 
-    const recipeIds: string[] = components.map((c: any) => c.recipe_id as string).filter((v: string, i: number, a: string[]) => a.indexOf(v) === i)
+    const recipeIds: string[] = components
+      .map((c: any) => c.recipe_id as string)
+      .filter((v: string, i: number, a: string[]) => a.indexOf(v) === i)
 
     return await autoCostRecipes(recipeIds, tenantId, start)
   } catch (err) {
@@ -194,11 +189,8 @@ async function autoCostRecipes(
           .single()
 
         if (ingredient?.default_unit && ingredient.default_unit !== resolvedUnit) {
-          const { convertCostToUnit, lookupDensity } = await import(
-            '@/lib/units/conversion-engine'
-          )
-          const density =
-            ingredient.weight_to_volume_ratio ?? lookupDensity(ingredient.name)
+          const { convertCostToUnit, lookupDensity } = await import('@/lib/units/conversion-engine')
+          const density = ingredient.weight_to_volume_ratio ?? lookupDensity(ingredient.name)
           if (density) {
             const converted = convertCostToUnit(
               resolved.cents,
@@ -239,9 +231,8 @@ async function autoCostRecipes(
   // Recompute recipe_ingredients.computed_cost_cents for affected recipes
   if (updated > 0) {
     try {
-      const { computeRecipeIngredientCost, refreshRecipeTotalCost } = await import(
-        '@/lib/recipes/actions'
-      )
+      const { computeRecipeIngredientCost, refreshRecipeTotalCost } =
+        await import('@/lib/recipes/actions')
       for (const ri of riRows) {
         if (!ri.ingredient_id || !resolvedMap.has(ri.ingredient_id)) continue
         try {

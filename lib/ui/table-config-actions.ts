@@ -91,14 +91,12 @@ export async function updateTablePreference(
 
     if (error) return { success: false, error: error.message }
   } else {
-    const { error } = await db
-      .from('table_preferences')
-      .insert({
-        tenant_id: user.tenantId!,
-        chef_id: user.entityId!,
-        table_id: tableId,
-        ...payload,
-      })
+    const { error } = await db.from('table_preferences').insert({
+      tenant_id: user.tenantId!,
+      chef_id: user.entityId!,
+      table_id: tableId,
+      ...payload,
+    })
 
     if (error) return { success: false, error: error.message }
   }
@@ -222,16 +220,14 @@ export async function logBulkAction(
     return { success: false, error: 'At least one entity ID is required' }
   }
 
-  const { error } = await db
-    .from('bulk_action_logs')
-    .insert({
-      tenant_id: user.tenantId!,
-      table_id: tableId,
-      action: action.trim(),
-      entity_ids: entityIds,
-      result,
-      performed_by: user.entityId!,
-    })
+  const { error } = await db.from('bulk_action_logs').insert({
+    tenant_id: user.tenantId!,
+    table_id: tableId,
+    action: action.trim(),
+    entity_ids: entityIds,
+    result,
+    performed_by: user.entityId!,
+  })
 
   if (error) return { success: false, error: error.message }
 

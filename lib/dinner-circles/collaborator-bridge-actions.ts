@@ -117,15 +117,13 @@ export async function inviteCollaborator(
   }
 
   // Insert new collaborator row
-  const { error } = await db
-    .from('circle_collaborators')
-    .insert({
-      circle_id: parsed.circleId,
-      user_id: targetChef.auth_user_id,
-      role: parsed.role,
-      invited_by: user.authUserId,
-      status: 'pending',
-    })
+  const { error } = await db.from('circle_collaborators').insert({
+    circle_id: parsed.circleId,
+    user_id: targetChef.auth_user_id,
+    role: parsed.role,
+    invited_by: user.authUserId,
+    status: 'pending',
+  })
 
   if (error) {
     console.error('[inviteCollaborator]', error)
@@ -182,9 +180,7 @@ export async function acceptCollaboration(
 /**
  * Get all collaborators for a circle. Only the circle owner can view.
  */
-export async function getCircleCollaborators(
-  circleId: string
-): Promise<CircleCollaborator[]> {
+export async function getCircleCollaborators(circleId: string): Promise<CircleCollaborator[]> {
   const user = await requireChef()
   const db: any = createServerClient()
 
@@ -289,14 +285,8 @@ export async function getMyCollaborations(): Promise<CollaborationInvite[]> {
   const inviterIds = [...new Set(rows.map((r: any) => r.invited_by))]
 
   const [circleResult, inviterResult] = await Promise.all([
-    db
-      .from('hub_groups')
-      .select('id, name')
-      .in('id', circleIds),
-    db
-      .from('chefs')
-      .select('auth_user_id, display_name')
-      .in('auth_user_id', inviterIds),
+    db.from('hub_groups').select('id, name').in('id', circleIds),
+    db.from('chefs').select('auth_user_id, display_name').in('auth_user_id', inviterIds),
   ])
 
   const circleMap = new Map<string, string>()

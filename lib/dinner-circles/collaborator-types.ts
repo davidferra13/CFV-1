@@ -2,15 +2,15 @@
 // Defines roles, statuses, and shapes for circle-level collaboration.
 
 export type CircleCollaboratorRole =
-  | 'co_host'    // Equal partner in the circle, can manage guests and post updates
-  | 'sous_chef'  // Kitchen-side collaborator, can view circle and post updates
-  | 'server'     // Front-of-house staff, can view guest info and post updates
-  | 'observer'   // Read-only access to the circle
+  | 'co_host' // Equal partner in the circle, can manage guests and post updates
+  | 'sous_chef' // Kitchen-side collaborator, can view circle and post updates
+  | 'server' // Front-of-house staff, can view guest info and post updates
+  | 'observer' // Read-only access to the circle
 
 export type CircleCollaboratorStatus =
-  | 'pending'    // Invitation sent, awaiting response
-  | 'active'     // Accepted and participating
-  | 'removed'    // Removed by circle owner
+  | 'pending' // Invitation sent, awaiting response
+  | 'active' // Accepted and participating
+  | 'removed' // Removed by circle owner
 
 export interface CircleCollaborator {
   id: string

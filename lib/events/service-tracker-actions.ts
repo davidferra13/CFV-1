@@ -4,11 +4,7 @@ import { requireChef } from '@/lib/auth/get-user'
 import { createServerClient } from '@/lib/db/server'
 import { UnknownAppError } from '@/lib/errors/app-error'
 import { revalidatePath } from 'next/cache'
-import type {
-  ServiceStage,
-  ServiceExecution,
-  ServiceTimelineEntry,
-} from './service-tracker-types'
+import type { ServiceStage, ServiceExecution, ServiceTimelineEntry } from './service-tracker-types'
 import { SERVICE_STAGES } from './service-tracker-types'
 
 // ── Start Service Execution ───────────────────────────────────────────────────
@@ -121,9 +117,7 @@ export async function advanceServiceStage(
 
 // ── Get Service Status ────────────────────────────────────────────────────────
 
-export async function getServiceStatus(
-  eventId: string
-): Promise<ServiceExecution | null> {
+export async function getServiceStatus(eventId: string): Promise<ServiceExecution | null> {
   const user = await requireChef()
   const tenantId = user.tenantId!
   const db: any = createServerClient()
@@ -141,9 +135,7 @@ export async function getServiceStatus(
 
 // ── Get Service Timeline ──────────────────────────────────────────────────────
 
-export async function getServiceTimeline(
-  eventId: string
-): Promise<ServiceTimelineEntry[]> {
+export async function getServiceTimeline(eventId: string): Promise<ServiceTimelineEntry[]> {
   const user = await requireChef()
   const tenantId = user.tenantId!
   const db: any = createServerClient()
@@ -170,10 +162,7 @@ export async function getServiceTimeline(
 
 // ── Add Service Note ──────────────────────────────────────────────────────────
 
-export async function addServiceNote(
-  eventId: string,
-  note: string
-): Promise<ServiceTimelineEntry> {
+export async function addServiceNote(eventId: string, note: string): Promise<ServiceTimelineEntry> {
   const user = await requireChef()
   const tenantId = user.tenantId!
   const db: any = createServerClient()

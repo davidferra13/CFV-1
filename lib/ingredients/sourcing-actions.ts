@@ -43,7 +43,9 @@ export async function getIngredientSourcingOptions(
     // Get all active vendors for this chef
     const { data: vendors, error: vendorErr } = await db
       .from('vendors')
-      .select('id, name, vendor_type, phone, email, contact_name, is_preferred, reliability_score, minimum_order_cents, notes')
+      .select(
+        'id, name, vendor_type, phone, email, contact_name, is_preferred, reliability_score, minimum_order_cents, notes'
+      )
       .eq('chef_id', tenantId)
       .eq('status', 'active')
 
@@ -90,7 +92,9 @@ export async function getIngredientSourcingOptions(
       .eq('tenant_id', tenantId)
 
     const prefVendorNames = new Set(
-      (prefs ?? []).filter((p: { is_preferred: boolean }) => p.is_preferred).map((p: { vendor_name: string }) => p.vendor_name.toLowerCase())
+      (prefs ?? [])
+        .filter((p: { is_preferred: boolean }) => p.is_preferred)
+        .map((p: { vendor_name: string }) => p.vendor_name.toLowerCase())
     )
 
     const options: SourcingOption[] = (vendors ?? []).map((v: Record<string, unknown>) => {
@@ -159,18 +163,16 @@ export async function setPreferredVendor(
       .eq('tenant_id', tenantId)
 
     // Upsert the new preferred vendor
-    const { error: upsertErr } = await db
-      .from('ingredient_vendor_preferences')
-      .upsert(
-        {
-          ingredient_id: ingredientId,
-          tenant_id: tenantId,
-          vendor_name: vendor.name,
-          vendor_type: vendor.vendor_type ?? 'other',
-          is_preferred: true,
-        },
-        { onConflict: 'ingredient_id,tenant_id,vendor_name' }
-      )
+    const { error: upsertErr } = await db.from('ingredient_vendor_preferences').upsert(
+      {
+        ingredient_id: ingredientId,
+        tenant_id: tenantId,
+        vendor_name: vendor.name,
+        vendor_type: vendor.vendor_type ?? 'other',
+        is_preferred: true,
+      },
+      { onConflict: 'ingredient_id,tenant_id,vendor_name' }
+    )
 
     if (upsertErr) {
       console.error('[sourcing] setPreferredVendor upsert error:', upsertErr.message)
@@ -258,44 +260,54 @@ export async function getSourcingReport(
     // Get all active vendors
     const { data: vendors } = await db
       .from('vendors')
-      .select('id, name, vendor_type, phone, email, contact_name, is_preferred, reliability_score, minimum_order_cents, notes')
+      .select(
+        'id, name, vendor_type, phone, email, contact_name, is_preferred, reliability_score, minimum_order_cents, notes'
+      )
       .eq('chef_id', tenantId)
       .eq('status', 'active')
 
     // Build report items
-    const items: SourcingReportItem[] = (ingredientRows ?? []).map((ing: Record<string, unknown>) => {
-      const qty = ingredientMap.get(ing.id as string)
-      const vendorOptions: SourcingOption[] = (vendors ?? []).map((v: Record<string, unknown>) => ({
-        vendorId: v.id as string,
-        vendorName: v.name as string,
-        vendorType: (v.vendor_type as string) ?? 'other',
-        phone: (v.phone as string) ?? null,
-        email: (v.email as string) ?? null,
-        contactName: (v.contact_name as string) ?? null,
-        isPreferred: (v.is_preferred as boolean) || (v.name as string) === (ing.preferred_vendor as string),
-        reliabilityScore: v.reliability_score ? Number(v.reliability_score) : null,
-        minimumOrderCents: (v.minimum_order_cents as number) ?? null,
-        notes: (v.notes as string) ?? null,
-        lastPriceCents: null,
-        lastPriceDate: null,
-        lastPriceUnit: null,
-      }))
+    const items: SourcingReportItem[] = (ingredientRows ?? []).map(
+      (ing: Record<string, unknown>) => {
+        const qty = ingredientMap.get(ing.id as string)
+        const vendorOptions: SourcingOption[] = (vendors ?? []).map(
+          (v: Record<string, unknown>) => ({
+            vendorId: v.id as string,
+            vendorName: v.name as string,
+            vendorType: (v.vendor_type as string) ?? 'other',
+            phone: (v.phone as string) ?? null,
+            email: (v.email as string) ?? null,
+            contactName: (v.contact_name as string) ?? null,
+            isPreferred:
+              (v.is_preferred as boolean) ||
+              (v.name as string) === (ing.preferred_vendor as string),
+            reliabilityScore: v.reliability_score ? Number(v.reliability_score) : null,
+            minimumOrderCents: (v.minimum_order_cents as number) ?? null,
+            notes: (v.notes as string) ?? null,
+            lastPriceCents: null,
+            lastPriceDate: null,
+            lastPriceUnit: null,
+          })
+        )
 
-      vendorOptions.sort((a, b) => {
-        if (a.isPreferred !== b.isPreferred) return a.isPreferred ? -1 : 1
-        return (VENDOR_TYPE_PRIORITY[a.vendorType] ?? 99) - (VENDOR_TYPE_PRIORITY[b.vendorType] ?? 99)
-      })
+        vendorOptions.sort((a, b) => {
+          if (a.isPreferred !== b.isPreferred) return a.isPreferred ? -1 : 1
+          return (
+            (VENDOR_TYPE_PRIORITY[a.vendorType] ?? 99) - (VENDOR_TYPE_PRIORITY[b.vendorType] ?? 99)
+          )
+        })
 
-      return {
-        ingredientId: ing.id as string,
-        ingredientName: ing.name as string,
-        requiredQuantity: qty?.quantity ?? null,
-        requiredUnit: qty?.unit ?? null,
-        preferredVendor: (ing.preferred_vendor as string) ?? null,
-        estimatedPriceCents: (ing.last_price_cents as number) ?? null,
-        sourcingOptions: vendorOptions,
+        return {
+          ingredientId: ing.id as string,
+          ingredientName: ing.name as string,
+          requiredQuantity: qty?.quantity ?? null,
+          requiredUnit: qty?.unit ?? null,
+          preferredVendor: (ing.preferred_vendor as string) ?? null,
+          estimatedPriceCents: (ing.last_price_cents as number) ?? null,
+          sourcingOptions: vendorOptions,
+        }
       }
-    })
+    )
 
     // Vendor summary
     const vendorCounts: Record<string, { itemCount: number; estimatedCents: number }> = {}
@@ -332,7 +344,10 @@ export async function getSourcingReport(
 const CATEGORY_SEASONS: Record<string, { peak: number[]; available: number[] }> = {
   produce: { peak: [6, 7, 8, 9], available: [5, 6, 7, 8, 9, 10] },
   fresh_herb: { peak: [5, 6, 7, 8, 9], available: [4, 5, 6, 7, 8, 9, 10] },
-  protein: { peak: [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12], available: [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12] },
+  protein: {
+    peak: [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12],
+    available: [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12],
+  },
   dairy: { peak: [4, 5, 6, 7, 8, 9], available: [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12] },
   fruit: { peak: [6, 7, 8, 9], available: [5, 6, 7, 8, 9, 10] },
 }
@@ -477,7 +492,9 @@ export async function getPurchaseHistory(
 
     const { data: rows, error: fetchErr } = await db
       .from('ingredient_purchase_log')
-      .select('id, ingredient_id, tenant_id, vendor_name, price_cents, quantity, unit, quality_rating, purchased_at, notes, created_at')
+      .select(
+        'id, ingredient_id, tenant_id, vendor_name, price_cents, quantity, unit, quality_rating, purchased_at, notes, created_at'
+      )
       .eq('ingredient_id', ingredientId)
       .eq('tenant_id', tenantId)
       .order('purchased_at', { ascending: false })

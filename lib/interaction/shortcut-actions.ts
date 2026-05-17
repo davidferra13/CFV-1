@@ -11,18 +11,108 @@ import type { ShortcutBinding, CommandEntry, CustomShortcut } from './shortcut-t
 export async function getDefaultShortcuts(): Promise<ShortcutBinding[]> {
   return [
     // Navigation (G + key sequences)
-    { id: 'nav-dashboard', key: 'd', modifiers: [], action: 'nav:dashboard', label: 'Go to Dashboard', category: 'navigation', scope: 'global', enabled: true },
-    { id: 'nav-events', key: 'e', modifiers: [], action: 'nav:events', label: 'Go to Events', category: 'navigation', scope: 'global', enabled: true },
-    { id: 'nav-clients', key: 'c', modifiers: [], action: 'nav:clients', label: 'Go to Clients', category: 'navigation', scope: 'global', enabled: true },
-    { id: 'nav-menus', key: 'm', modifiers: [], action: 'nav:menus', label: 'Go to Menus', category: 'navigation', scope: 'global', enabled: true },
-    { id: 'nav-recipes', key: 'r', modifiers: [], action: 'nav:recipes', label: 'Go to Recipes', category: 'navigation', scope: 'global', enabled: true },
+    {
+      id: 'nav-dashboard',
+      key: 'd',
+      modifiers: [],
+      action: 'nav:dashboard',
+      label: 'Go to Dashboard',
+      category: 'navigation',
+      scope: 'global',
+      enabled: true,
+    },
+    {
+      id: 'nav-events',
+      key: 'e',
+      modifiers: [],
+      action: 'nav:events',
+      label: 'Go to Events',
+      category: 'navigation',
+      scope: 'global',
+      enabled: true,
+    },
+    {
+      id: 'nav-clients',
+      key: 'c',
+      modifiers: [],
+      action: 'nav:clients',
+      label: 'Go to Clients',
+      category: 'navigation',
+      scope: 'global',
+      enabled: true,
+    },
+    {
+      id: 'nav-menus',
+      key: 'm',
+      modifiers: [],
+      action: 'nav:menus',
+      label: 'Go to Menus',
+      category: 'navigation',
+      scope: 'global',
+      enabled: true,
+    },
+    {
+      id: 'nav-recipes',
+      key: 'r',
+      modifiers: [],
+      action: 'nav:recipes',
+      label: 'Go to Recipes',
+      category: 'navigation',
+      scope: 'global',
+      enabled: true,
+    },
     // Actions
-    { id: 'act-new', key: 'n', modifiers: [], action: 'action:new', label: 'New Item', category: 'actions', scope: 'page', enabled: true },
-    { id: 'act-edit', key: 'e', modifiers: [], action: 'action:edit', label: 'Edit', category: 'actions', scope: 'page', enabled: true },
-    { id: 'act-save', key: 's', modifiers: ['ctrl'], action: 'action:save', label: 'Save', category: 'actions', scope: 'page', enabled: true },
+    {
+      id: 'act-new',
+      key: 'n',
+      modifiers: [],
+      action: 'action:new',
+      label: 'New Item',
+      category: 'actions',
+      scope: 'page',
+      enabled: true,
+    },
+    {
+      id: 'act-edit',
+      key: 'e',
+      modifiers: [],
+      action: 'action:edit',
+      label: 'Edit',
+      category: 'actions',
+      scope: 'page',
+      enabled: true,
+    },
+    {
+      id: 'act-save',
+      key: 's',
+      modifiers: ['ctrl'],
+      action: 'action:save',
+      label: 'Save',
+      category: 'actions',
+      scope: 'page',
+      enabled: true,
+    },
     // Search
-    { id: 'search-open', key: '/', modifiers: [], action: 'search:open', label: 'Open Search', category: 'search', scope: 'global', enabled: true },
-    { id: 'search-close', key: 'Escape', modifiers: [], action: 'search:close', label: 'Close Search', category: 'search', scope: 'modal', enabled: true },
+    {
+      id: 'search-open',
+      key: '/',
+      modifiers: [],
+      action: 'search:open',
+      label: 'Open Search',
+      category: 'search',
+      scope: 'global',
+      enabled: true,
+    },
+    {
+      id: 'search-close',
+      key: 'Escape',
+      modifiers: [],
+      action: 'search:close',
+      label: 'Close Search',
+      category: 'search',
+      scope: 'modal',
+      enabled: true,
+    },
   ]
 }
 
@@ -65,17 +155,15 @@ export async function saveCustomShortcut(
   const db: any = createServerClient()
 
   // Upsert on (tenant_id, action)
-  const { error } = await db
-    .from('custom_shortcuts')
-    .upsert(
-      {
-        tenant_id: user.tenantId!,
-        action,
-        key,
-        modifiers: JSON.stringify(modifiers),
-      },
-      { onConflict: 'tenant_id,action' }
-    )
+  const { error } = await db.from('custom_shortcuts').upsert(
+    {
+      tenant_id: user.tenantId!,
+      action,
+      key,
+      modifiers: JSON.stringify(modifiers),
+    },
+    { onConflict: 'tenant_id,action' }
+  )
 
   if (error) throw error
 }
@@ -122,19 +210,105 @@ export async function getCommandPaletteEntries(): Promise<CommandEntry[]> {
 
   return [
     // Navigation
-    { id: 'cmd-dashboard', label: 'Go to Dashboard', description: 'Open the main dashboard', action: 'nav:dashboard', keywords: ['home', 'overview'], category: 'navigation', shortcut: 'G D' },
-    { id: 'cmd-events', label: 'Go to Events', description: 'View all events', action: 'nav:events', keywords: ['dinners', 'calendar'], category: 'navigation', shortcut: 'G E' },
-    { id: 'cmd-clients', label: 'Go to Clients', description: 'View client list', action: 'nav:clients', keywords: ['guests', 'contacts'], category: 'navigation', shortcut: 'G C' },
-    { id: 'cmd-menus', label: 'Go to Menus', description: 'View all menus', action: 'nav:menus', keywords: ['courses', 'dishes'], category: 'navigation', shortcut: 'G M' },
-    { id: 'cmd-recipes', label: 'Go to Recipes', description: 'View recipe library', action: 'nav:recipes', keywords: ['cookbook', 'ingredients'], category: 'navigation', shortcut: 'G R' },
+    {
+      id: 'cmd-dashboard',
+      label: 'Go to Dashboard',
+      description: 'Open the main dashboard',
+      action: 'nav:dashboard',
+      keywords: ['home', 'overview'],
+      category: 'navigation',
+      shortcut: 'G D',
+    },
+    {
+      id: 'cmd-events',
+      label: 'Go to Events',
+      description: 'View all events',
+      action: 'nav:events',
+      keywords: ['dinners', 'calendar'],
+      category: 'navigation',
+      shortcut: 'G E',
+    },
+    {
+      id: 'cmd-clients',
+      label: 'Go to Clients',
+      description: 'View client list',
+      action: 'nav:clients',
+      keywords: ['guests', 'contacts'],
+      category: 'navigation',
+      shortcut: 'G C',
+    },
+    {
+      id: 'cmd-menus',
+      label: 'Go to Menus',
+      description: 'View all menus',
+      action: 'nav:menus',
+      keywords: ['courses', 'dishes'],
+      category: 'navigation',
+      shortcut: 'G M',
+    },
+    {
+      id: 'cmd-recipes',
+      label: 'Go to Recipes',
+      description: 'View recipe library',
+      action: 'nav:recipes',
+      keywords: ['cookbook', 'ingredients'],
+      category: 'navigation',
+      shortcut: 'G R',
+    },
     // Actions
-    { id: 'cmd-new', label: 'Create New', description: 'Create a new item in current context', action: 'action:new', keywords: ['add', 'create'], category: 'actions', shortcut: 'N' },
-    { id: 'cmd-edit', label: 'Edit Current', description: 'Edit the currently selected item', action: 'action:edit', keywords: ['modify', 'change'], category: 'actions', shortcut: 'E' },
-    { id: 'cmd-save', label: 'Save', description: 'Save current changes', action: 'action:save', keywords: ['submit', 'update'], category: 'actions', shortcut: 'Ctrl+S' },
+    {
+      id: 'cmd-new',
+      label: 'Create New',
+      description: 'Create a new item in current context',
+      action: 'action:new',
+      keywords: ['add', 'create'],
+      category: 'actions',
+      shortcut: 'N',
+    },
+    {
+      id: 'cmd-edit',
+      label: 'Edit Current',
+      description: 'Edit the currently selected item',
+      action: 'action:edit',
+      keywords: ['modify', 'change'],
+      category: 'actions',
+      shortcut: 'E',
+    },
+    {
+      id: 'cmd-save',
+      label: 'Save',
+      description: 'Save current changes',
+      action: 'action:save',
+      keywords: ['submit', 'update'],
+      category: 'actions',
+      shortcut: 'Ctrl+S',
+    },
     // Search
-    { id: 'cmd-search', label: 'Search', description: 'Open global search', action: 'search:open', keywords: ['find', 'lookup', 'filter'], category: 'search', shortcut: '/' },
+    {
+      id: 'cmd-search',
+      label: 'Search',
+      description: 'Open global search',
+      action: 'search:open',
+      keywords: ['find', 'lookup', 'filter'],
+      category: 'search',
+      shortcut: '/',
+    },
     // Views
-    { id: 'cmd-calendar', label: 'Calendar View', description: 'Switch to calendar view', action: 'view:calendar', keywords: ['schedule', 'week', 'month'], category: 'views' },
-    { id: 'cmd-list', label: 'List View', description: 'Switch to list view', action: 'view:list', keywords: ['table', 'rows'], category: 'views' },
+    {
+      id: 'cmd-calendar',
+      label: 'Calendar View',
+      description: 'Switch to calendar view',
+      action: 'view:calendar',
+      keywords: ['schedule', 'week', 'month'],
+      category: 'views',
+    },
+    {
+      id: 'cmd-list',
+      label: 'List View',
+      description: 'Switch to list view',
+      action: 'view:list',
+      keywords: ['table', 'rows'],
+      category: 'views',
+    },
   ]
 }

@@ -1,8 +1,19 @@
 export type ThemeMode = 'light' | 'dark' | 'system'
 
-export type ThemeTokenCategory = 'color' | 'spacing' | 'typography' | 'shadow' | 'border' | 'animation'
+export type ThemeTokenCategory =
+  | 'color'
+  | 'spacing'
+  | 'typography'
+  | 'shadow'
+  | 'border'
+  | 'animation'
 
-export type ThemeConsistencyIssueType = 'missing-dark' | 'missing-light' | 'contrast-fail' | 'orphaned' | 'override-conflict'
+export type ThemeConsistencyIssueType =
+  | 'missing-dark'
+  | 'missing-light'
+  | 'contrast-fail'
+  | 'orphaned'
+  | 'override-conflict'
 
 export type ThemeConsistencyIssueSeverity = 'error' | 'warning' | 'info'
 

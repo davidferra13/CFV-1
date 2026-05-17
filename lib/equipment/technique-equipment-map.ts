@@ -135,7 +135,11 @@ export const GUEST_SCALE_EQUIPMENT: {
     minGuests: 20,
     items: [
       { name: 'Folding prep table', category: 'prep', note: 'Counter space for 20+ covers' },
-      { name: 'Extra burner (portable)', category: 'cooking', note: 'Additional heat source for 20+ covers' },
+      {
+        name: 'Extra burner (portable)',
+        category: 'cooking',
+        note: 'Additional heat source for 20+ covers',
+      },
       { name: 'Bus tubs', category: 'service', note: 'Cleanup at scale' },
     ],
   },
@@ -143,7 +147,11 @@ export const GUEST_SCALE_EQUIPMENT: {
     minGuests: 40,
     items: [
       { name: 'Speed racks', category: 'transport', note: 'Sheet pan storage for 40+ covers' },
-      { name: 'Cambro containers', category: 'transport', note: 'Hot/cold transport for 40+ covers' },
+      {
+        name: 'Cambro containers',
+        category: 'transport',
+        note: 'Hot/cold transport for 40+ covers',
+      },
     ],
   },
 ]

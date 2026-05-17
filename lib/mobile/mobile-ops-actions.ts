@@ -99,13 +99,12 @@ export async function getMobileEventList(
 
   if (!events || events.length === 0) return []
 
-  const clientIds = Array.from(new Set((events as any[]).map((e: any) => e.client_id).filter(Boolean)))
+  const clientIds = Array.from(
+    new Set((events as any[]).map((e: any) => e.client_id).filter(Boolean))
+  )
   let clientMap: Record<string, string> = {}
   if (clientIds.length > 0) {
-    const { data: clients } = await db
-      .from('clients')
-      .select('id, name')
-      .in('id', clientIds)
+    const { data: clients } = await db.from('clients').select('id, name').in('id', clientIds)
     if (clients) {
       clientMap = Object.fromEntries((clients as any[]).map((c: any) => [c.id, c.name]))
     }
@@ -154,7 +153,9 @@ export async function getMobilePreferences(): Promise<MobilePreferences> {
       id: data.id,
       tenantId: data.tenant_id,
       defaultView: data.default_view as MobileView,
-      quickActions: Array.isArray(data.quick_actions) ? data.quick_actions : ['respond', 'confirm', 'prep'],
+      quickActions: Array.isArray(data.quick_actions)
+        ? data.quick_actions
+        : ['respond', 'confirm', 'prep'],
       showRevenue: data.show_revenue ?? true,
       compactMode: data.compact_mode ?? false,
     }
@@ -298,13 +299,12 @@ async function getTodayEvents(
 
   if (!events || events.length === 0) return []
 
-  const clientIds = Array.from(new Set((events as any[]).map((e: any) => e.client_id).filter(Boolean)))
+  const clientIds = Array.from(
+    new Set((events as any[]).map((e: any) => e.client_id).filter(Boolean))
+  )
   let clientMap: Record<string, string> = {}
   if (clientIds.length > 0) {
-    const { data: clients } = await db
-      .from('clients')
-      .select('id, name')
-      .in('id', clientIds)
+    const { data: clients } = await db.from('clients').select('id, name').in('id', clientIds)
     if (clients) {
       clientMap = Object.fromEntries((clients as any[]).map((c: any) => [c.id, c.name]))
     }
@@ -322,10 +322,7 @@ async function getTodayEvents(
   }))
 }
 
-async function getUrgentActionsForTenant(
-  db: any,
-  tenantId: string
-): Promise<MobileAction[]> {
+async function getUrgentActionsForTenant(db: any, tenantId: string): Promise<MobileAction[]> {
   const actions: MobileAction[] = []
   const now = new Date()
 
@@ -460,7 +457,9 @@ function mapPrefsRow(row: any): MobilePreferences {
     id: row?.id ?? '',
     tenantId: row?.tenant_id ?? '',
     defaultView: (row?.default_view as MobileView) ?? 'today',
-    quickActions: Array.isArray(row?.quick_actions) ? row.quick_actions : ['respond', 'confirm', 'prep'],
+    quickActions: Array.isArray(row?.quick_actions)
+      ? row.quick_actions
+      : ['respond', 'confirm', 'prep'],
     showRevenue: row?.show_revenue ?? true,
     compactMode: row?.compact_mode ?? false,
   }

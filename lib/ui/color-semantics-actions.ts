@@ -2,7 +2,12 @@
 
 import { requireChef } from '@/lib/auth/get-user'
 import { createServerClient } from '@/lib/db/server'
-import type { ColorRole, ColorToken, ColorViolation, ColorSemanticsSummary } from './color-semantics-types'
+import type {
+  ColorRole,
+  ColorToken,
+  ColorViolation,
+  ColorSemanticsSummary,
+} from './color-semantics-types'
 
 // ---- helpers ----
 
@@ -85,10 +90,7 @@ export async function recordColorViolation(
   if (component !== undefined) payload.component = component
   if (suggestedToken !== undefined) payload.suggested_token = suggestedToken
 
-  const { data, error } = await fromColorViolations(db)
-    .insert(payload)
-    .select('*')
-    .single()
+  const { data, error } = await fromColorViolations(db).insert(payload).select('*').single()
 
   if (error) throw new Error(`Failed to record color violation: ${error.message}`)
   return mapViolation(data)

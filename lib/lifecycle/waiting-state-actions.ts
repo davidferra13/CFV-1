@@ -93,7 +93,7 @@ export async function createWaitingState(params: {
       params.description ?? null,
       params.timeoutAt?.toISOString() ?? null,
       params.timeoutAction ?? null,
-    ],
+    ]
   )
   return mapEntry(rows[0])
 }
@@ -110,7 +110,7 @@ export async function resolveWaitingState(id: string): Promise<WaitingStateEntry
      SET resolved_at = NOW()
      WHERE id = $1 AND tenant_id = $2
      RETURNING *`,
-    [id, user.tenantId],
+    [id, user.tenantId]
   )
   if (!rows.length) throw new Error('Waiting state entry not found')
   return mapEntry(rows[0])
@@ -152,7 +152,7 @@ export async function upsertNudgeTemplate(params: {
      ON CONFLICT (tenant_id, reason, channel)
      DO UPDATE SET template_text = $4, delay_days = $5
      RETURNING *`,
-    [user.tenantId, params.reason, params.channel, params.templateText, params.delayDays],
+    [user.tenantId, params.reason, params.channel, params.templateText, params.delayDays]
   )
   return mapTemplate(rows[0])
 }
@@ -171,7 +171,7 @@ export async function getOverdueWaitingStates(): Promise<WaitingStateEntry[]> {
        AND timeout_at IS NOT NULL
        AND timeout_at < NOW()
      ORDER BY timeout_at ASC`,
-    [user.tenantId],
+    [user.tenantId]
   )
   return rows.map(mapEntry)
 }
@@ -194,7 +194,7 @@ export async function getWaitingStateSummary(): Promise<WaitingStateSummary> {
        COUNT(*) FILTER (WHERE resolved_at IS NULL AND timeout_at IS NOT NULL AND timeout_at < NOW())::int AS overdue_count
      FROM waiting_state_entries
      WHERE tenant_id = $1`,
-    [user.tenantId],
+    [user.tenantId]
   )
 
   const reasonRows = await db.query(
@@ -202,7 +202,7 @@ export async function getWaitingStateSummary(): Promise<WaitingStateSummary> {
      FROM waiting_state_entries
      WHERE tenant_id = $1 AND resolved_at IS NULL
      GROUP BY reason`,
-    [user.tenantId],
+    [user.tenantId]
   )
 
   const byReason: Record<string, number> = {}

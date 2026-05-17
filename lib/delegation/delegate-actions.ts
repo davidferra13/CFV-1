@@ -31,28 +31,36 @@ const InviteSchema = z.object({
   name: z.string().max(200).optional(),
   phone: z.string().max(30).optional(),
   role: z.enum(['full_delegate', 'view_coordinate']),
-  permissions: z.array(z.enum([
-    'view_events',
-    'view_finances',
-    'manage_guests',
-    'approve_menus',
-    'handle_payments',
-    'answer_logistics',
-    'post_updates',
-  ])).min(1),
+  permissions: z
+    .array(
+      z.enum([
+        'view_events',
+        'view_finances',
+        'manage_guests',
+        'approve_menus',
+        'handle_payments',
+        'answer_logistics',
+        'post_updates',
+      ])
+    )
+    .min(1),
 })
 
 const UpdatePermissionsSchema = z.object({
   delegateId: z.string().uuid(),
-  permissions: z.array(z.enum([
-    'view_events',
-    'view_finances',
-    'manage_guests',
-    'approve_menus',
-    'handle_payments',
-    'answer_logistics',
-    'post_updates',
-  ])).min(1),
+  permissions: z
+    .array(
+      z.enum([
+        'view_events',
+        'view_finances',
+        'manage_guests',
+        'approve_menus',
+        'handle_payments',
+        'answer_logistics',
+        'post_updates',
+      ])
+    )
+    .min(1),
 })
 
 // ---------------------------------------------------------------------------
@@ -292,9 +300,7 @@ export async function getDelegates(): Promise<{
 /**
  * Get permissions for a specific delegate. Tenant-scoped.
  */
-export async function getDelegatePermissions(
-  delegateId: string
-): Promise<{
+export async function getDelegatePermissions(delegateId: string): Promise<{
   success: boolean
   permissions?: DelegatePermission[]
   role?: DelegateRole

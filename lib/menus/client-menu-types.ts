@@ -1,12 +1,7 @@
 // Client-Provided Menus: types for client menu submissions and chef review workflow.
 // Clients submit menu ideas (token-based, no login). Chefs review, accept, modify, or counter-propose.
 
-export type SubmissionStatus =
-  | 'pending'
-  | 'accepted'
-  | 'modified'
-  | 'rejected'
-  | 'counter_proposed'
+export type SubmissionStatus = 'pending' | 'accepted' | 'modified' | 'rejected' | 'counter_proposed'
 
 export type ChefReviewAction = 'accept' | 'reject' | 'modify' | 'counter_propose'
 

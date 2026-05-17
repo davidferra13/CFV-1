@@ -51,9 +51,7 @@ export async function addTouchpoint(
 }
 
 // ---- 2. Get touchpoints ----
-export async function getTouchpoints(
-  eventId: string
-): Promise<EventTouchpoint[]> {
+export async function getTouchpoints(eventId: string): Promise<EventTouchpoint[]> {
   const user = await requireChef()
   const db: any = createServerClient()
 
@@ -81,7 +79,13 @@ export async function updateTouchpoint(
   const db: any = createServerClient()
 
   // Strip immutable fields
-  const { id: _id, event_id: _eid, tenant_id: _tid, created_at: _ca, ...safeUpdates } = updates as any
+  const {
+    id: _id,
+    event_id: _eid,
+    tenant_id: _tid,
+    created_at: _ca,
+    ...safeUpdates
+  } = updates as any
 
   const { error } = await db
     .from('event_touchpoints')
@@ -227,9 +231,7 @@ export async function applyTouchpointTemplate(
     sort_order: tp.sort_order ?? 0,
   }))
 
-  const { error: insertErr } = await db
-    .from('event_touchpoints')
-    .insert(rows)
+  const { error: insertErr } = await db.from('event_touchpoints').insert(rows)
 
   if (insertErr) {
     console.error('[touchpoint] apply template failed', insertErr)

@@ -22,10 +22,7 @@ function fromRecommendations(db: any): any {
 
 // ---- actions ----
 
-export async function getActionCards(
-  eventId: string,
-  stage?: string
-): Promise<ActionCard[]> {
+export async function getActionCards(eventId: string, stage?: string): Promise<ActionCard[]> {
   const user = await requireChef()
   const db: any = createServerClient()
 
@@ -69,10 +66,7 @@ export async function createActionCard(params: {
   if (params.priority !== undefined) payload.priority = params.priority
   if (params.dueAt !== undefined) payload.due_at = params.dueAt
 
-  const { data, error } = await fromActionCards(db)
-    .insert(payload)
-    .select('*')
-    .single()
+  const { data, error } = await fromActionCards(db).insert(payload).select('*').single()
 
   if (error) throw new Error(`Failed to create action card: ${error.message}`)
   return mapCard(data)
@@ -102,9 +96,7 @@ export async function dismissActionCard(id: string): Promise<void> {
   if (error) throw new Error(`Failed to dismiss action card: ${error.message}`)
 }
 
-export async function getActionRecommendations(
-  stage?: string
-): Promise<ActionRecommendation[]> {
+export async function getActionRecommendations(stage?: string): Promise<ActionRecommendation[]> {
   const user = await requireChef()
   const db: any = createServerClient()
 
@@ -122,9 +114,7 @@ export async function getActionRecommendations(
   return (data ?? []).map(mapRecommendation)
 }
 
-export async function getActionCardSummary(
-  eventId: string
-): Promise<ActionCardSummary> {
+export async function getActionCardSummary(eventId: string): Promise<ActionCardSummary> {
   const user = await requireChef()
   const db: any = createServerClient()
 

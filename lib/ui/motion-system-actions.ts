@@ -113,16 +113,11 @@ export async function updateMotionPreference(
 /**
  * List state transition rules, optionally filtered by component.
  */
-export async function getStateTransitionRules(
-  component?: string
-): Promise<StateTransitionRule[]> {
+export async function getStateTransitionRules(component?: string): Promise<StateTransitionRule[]> {
   const user = await requireChef()
   const db: any = createServerClient()
 
-  let query = db
-    .from(RULES_TABLE)
-    .select('*')
-    .eq('tenant_id', user.tenantId!)
+  let query = db.from(RULES_TABLE).select('*').eq('tenant_id', user.tenantId!)
 
   if (component) {
     query = query.eq('component', component)
@@ -198,11 +193,7 @@ export async function upsertStateTransitionRule(
     if (error) throw new Error(`Failed to update transition rule: ${error.message}`)
     result = data
   } else {
-    const { data, error } = await db
-      .from(RULES_TABLE)
-      .insert(payload)
-      .select('*')
-      .single()
+    const { data, error } = await db.from(RULES_TABLE).insert(payload).select('*').single()
     if (error) throw new Error(`Failed to create transition rule: ${error.message}`)
     result = data
   }
@@ -217,13 +208,55 @@ export async function getDefaultMotionTokens(): Promise<MotionToken[]> {
   await requireChef()
 
   return [
-    { name: 'instant', duration: 0, easing: 'linear', transitionType: 'fade', description: 'No animation' },
-    { name: 'fast', duration: 100, easing: 'ease-out', transitionType: 'fade', description: 'Quick micro-interaction' },
-    { name: 'normal', duration: 200, easing: 'ease-in-out', transitionType: 'fade', description: 'Standard transition' },
-    { name: 'smooth', duration: 300, easing: 'ease-in-out', transitionType: 'slide', description: 'Panel or drawer slide' },
-    { name: 'deliberate', duration: 500, easing: 'cubic-bezier(0.4, 0, 0.2, 1)', transitionType: 'scale', description: 'Emphasis transition' },
-    { name: 'collapse', duration: 250, easing: 'ease-out', transitionType: 'collapse', description: 'Accordion collapse/expand' },
-    { name: 'morph', duration: 400, easing: 'cubic-bezier(0.4, 0, 0.2, 1)', transitionType: 'morph', description: 'Shape or layout morph' },
+    {
+      name: 'instant',
+      duration: 0,
+      easing: 'linear',
+      transitionType: 'fade',
+      description: 'No animation',
+    },
+    {
+      name: 'fast',
+      duration: 100,
+      easing: 'ease-out',
+      transitionType: 'fade',
+      description: 'Quick micro-interaction',
+    },
+    {
+      name: 'normal',
+      duration: 200,
+      easing: 'ease-in-out',
+      transitionType: 'fade',
+      description: 'Standard transition',
+    },
+    {
+      name: 'smooth',
+      duration: 300,
+      easing: 'ease-in-out',
+      transitionType: 'slide',
+      description: 'Panel or drawer slide',
+    },
+    {
+      name: 'deliberate',
+      duration: 500,
+      easing: 'cubic-bezier(0.4, 0, 0.2, 1)',
+      transitionType: 'scale',
+      description: 'Emphasis transition',
+    },
+    {
+      name: 'collapse',
+      duration: 250,
+      easing: 'ease-out',
+      transitionType: 'collapse',
+      description: 'Accordion collapse/expand',
+    },
+    {
+      name: 'morph',
+      duration: 400,
+      easing: 'cubic-bezier(0.4, 0, 0.2, 1)',
+      transitionType: 'morph',
+      description: 'Shape or layout morph',
+    },
   ]
 }
 
@@ -251,7 +284,11 @@ export async function getMotionSummary(): Promise<MotionSummary> {
   if (prefsErr) throw new Error(`Failed to load preferences: ${prefsErr.message}`)
 
   const byTransitionType: Record<TransitionType, number> = {
-    fade: 0, slide: 0, scale: 0, collapse: 0, morph: 0,
+    fade: 0,
+    slide: 0,
+    scale: 0,
+    collapse: 0,
+    morph: 0,
   }
   for (const r of rules ?? []) {
     const tt = r.transition_type as TransitionType
@@ -259,7 +296,10 @@ export async function getMotionSummary(): Promise<MotionSummary> {
   }
 
   const preferenceDistribution: Record<MotionIntensity, number> = {
-    none: 0, subtle: 0, moderate: 0, full: 0,
+    none: 0,
+    subtle: 0,
+    moderate: 0,
+    full: 0,
   }
   let reducedMotionCount = 0
   for (const p of prefs ?? []) {

@@ -121,12 +121,10 @@ function buildProgressBar(
   const eventsRequired = cfg?.minEvents ?? DEFAULT_TIER_THRESHOLDS[nextTierName].minEvents
   const spendRequired = cfg?.minSpendCents ?? DEFAULT_TIER_THRESHOLDS[nextTierName].minSpendCents
 
-  const eventProgress = eventsRequired > 0
-    ? Math.min(100, Math.round((totalEvents / eventsRequired) * 100))
-    : 100
-  const spendProgress = spendRequired > 0
-    ? Math.min(100, Math.round((totalSpendCents / spendRequired) * 100))
-    : 100
+  const eventProgress =
+    eventsRequired > 0 ? Math.min(100, Math.round((totalEvents / eventsRequired) * 100)) : 100
+  const spendProgress =
+    spendRequired > 0 ? Math.min(100, Math.round((totalSpendCents / spendRequired) * 100)) : 100
 
   // Average of both progress metrics, capped at 100
   const progressPercent = Math.min(100, Math.round((eventProgress + spendProgress) / 2))
@@ -190,7 +188,8 @@ export async function getMyLoyaltyStatus(
     const currentTier = computeTier(totalEvents, totalSpendCents, configs)
     const tierConfig = configs.find((c) => c.tier === currentTier)
     const availablePerks = tierConfig?.perksJson ?? DEFAULT_TIER_PERKS[currentTier] ?? []
-    const discountPercent = tierConfig?.discountPercent ?? DEFAULT_TIER_THRESHOLDS[currentTier].discountPercent
+    const discountPercent =
+      tierConfig?.discountPercent ?? DEFAULT_TIER_THRESHOLDS[currentTier].discountPercent
 
     const progress = buildProgressBar(currentTier, totalEvents, totalSpendCents, configs)
 

@@ -17,11 +17,7 @@ export type MediaTag =
   | 'behind_scenes'
   | 'client_sent'
 
-export type ConsentStatus =
-  | 'no_photos'
-  | 'private_only'
-  | 'portfolio_ok'
-  | 'social_ok'
+export type ConsentStatus = 'no_photos' | 'private_only' | 'portfolio_ok' | 'social_ok'
 
 // ─── Core Types ───────────────────────────────────────────────────────────────
 

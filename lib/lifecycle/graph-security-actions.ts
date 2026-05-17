@@ -27,9 +27,7 @@ function fromGraphDocEntries(db: any): any {
 
 // ---- actions ----
 
-export async function getRegressionTests(
-  stage?: string
-): Promise<RegressionTestCase[]> {
+export async function getRegressionTests(stage?: string): Promise<RegressionTestCase[]> {
   const user = await requireChef()
   const db: any = createServerClient()
 
@@ -78,9 +76,7 @@ export async function upsertRegressionTest(params: {
   return mapTestCase(data)
 }
 
-export async function getSecurityAuditEntries(
-  stage?: string
-): Promise<SecurityAuditEntry[]> {
+export async function getSecurityAuditEntries(stage?: string): Promise<SecurityAuditEntry[]> {
   const user = await requireChef()
   const db: any = createServerClient()
 
@@ -115,10 +111,7 @@ export async function createSecurityAuditEntry(params: {
     severity: params.severity,
   }
 
-  const { data, error } = await fromSecurityAuditEntries(db)
-    .insert(payload)
-    .select('*')
-    .single()
+  const { data, error } = await fromSecurityAuditEntries(db).insert(payload).select('*').single()
 
   if (error) throw new Error(`Failed to create security audit entry: ${error.message}`)
   return mapAuditEntry(data)

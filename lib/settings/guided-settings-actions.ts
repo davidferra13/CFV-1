@@ -105,7 +105,7 @@ async function fetchSettingsData(tenantId: string) {
   return {
     chef: (chefResult.data ?? {}) as ChefRow,
     prefs: (prefsResult.data ?? {}) as PrefsRow,
-    integrations: ((intResult.data ?? []) as IntegrationRow[]),
+    integrations: (intResult.data ?? []) as IntegrationRow[],
   }
 }
 
@@ -130,9 +130,7 @@ function buildChecklist(
   integrations: IntegrationRow[]
 ): SettingItem[] {
   const connectedProviders = new Set(
-    integrations
-      .filter((i) => i.status === 'connected')
-      .map((i) => i.provider)
+    integrations.filter((i) => i.status === 'connected').map((i) => i.provider)
   )
 
   const items: SettingItem[] = [
@@ -215,7 +213,10 @@ function buildChecklist(
       key: 'cancellation_policy',
       label: 'Cancellation policy',
       hint: 'Set your cutoff days and deposit refund rules.',
-      status: chef.cancellation_cutoff_days != null && chef.cancellation_cutoff_days !== 15 ? 'set' : 'default',
+      status:
+        chef.cancellation_cutoff_days != null && chef.cancellation_cutoff_days !== 15
+          ? 'set'
+          : 'default',
       href: '/settings/business',
       categoryId: 'your_business',
       priority: 60,
@@ -233,7 +234,8 @@ function buildChecklist(
       key: 'target_margin',
       label: 'Target margin',
       hint: 'Your desired profit margin, used for pricing guidance.',
-      status: prefs.target_margin_percent && prefs.target_margin_percent !== '60.00' ? 'set' : 'default',
+      status:
+        prefs.target_margin_percent && prefs.target_margin_percent !== '60.00' ? 'set' : 'default',
       href: '/settings/business',
       categoryId: 'your_business',
       priority: 55,
@@ -251,7 +253,10 @@ function buildChecklist(
       key: 'food_cost_target',
       label: 'Food cost target',
       hint: 'Target food cost percentage for menu pricing.',
-      status: prefs.food_cost_target_percent != null && prefs.food_cost_target_percent !== 30 ? 'set' : 'default',
+      status:
+        prefs.food_cost_target_percent != null && prefs.food_cost_target_percent !== 30
+          ? 'set'
+          : 'default',
       href: '/settings/business',
       categoryId: 'your_business',
       priority: 35,
@@ -493,9 +498,7 @@ export async function getSettingsChecklist(): Promise<SettingsCategory[]> {
     id: catId,
     label: CATEGORY_META[catId].label,
     description: CATEGORY_META[catId].description,
-    items: items
-      .filter((i) => i.categoryId === catId)
-      .sort((a, b) => b.priority - a.priority),
+    items: items.filter((i) => i.categoryId === catId).sort((a, b) => b.priority - a.priority),
   }))
 }
 
@@ -508,9 +511,7 @@ export async function getNextSettingToComplete(): Promise<SettingItem | null> {
   const data = await fetchSettingsData(user.tenantId!)
   const items = buildChecklist(data.chef, data.prefs, data.integrations)
 
-  const unset = items
-    .filter((i) => i.status === 'unset')
-    .sort((a, b) => b.priority - a.priority)
+  const unset = items.filter((i) => i.status === 'unset').sort((a, b) => b.priority - a.priority)
 
   return unset[0] ?? null
 }
@@ -519,9 +520,7 @@ export async function getNextSettingToComplete(): Promise<SettingItem | null> {
  * Returns settings grouped by category (alias for components that need
  * the category structure without the full checklist metadata).
  */
-export async function getSettingsByCategory(): Promise<
-  Record<SettingsCategoryId, SettingItem[]>
-> {
+export async function getSettingsByCategory(): Promise<Record<SettingsCategoryId, SettingItem[]>> {
   const user = await requireChef()
   const data = await fetchSettingsData(user.tenantId!)
   const items = buildChecklist(data.chef, data.prefs, data.integrations)

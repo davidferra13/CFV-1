@@ -10,10 +10,7 @@ import type {
   CloseoutItemStatus,
   CloseoutStatus,
 } from './closeout-types'
-import {
-  CLOSEOUT_ITEM_KEYS,
-  CLOSEOUT_ITEM_LABELS,
-} from './closeout-types'
+import { CLOSEOUT_ITEM_KEYS, CLOSEOUT_ITEM_LABELS } from './closeout-types'
 
 // ── Helpers ─────────────────────────────────────────────────────────────────
 
@@ -30,7 +27,7 @@ function parseChecklist(row: any): CloseoutChecklist {
   const rawItems: any[] =
     typeof row.checklist_json === 'string'
       ? JSON.parse(row.checklist_json)
-      : row.checklist_json ?? buildDefaultItems()
+      : (row.checklist_json ?? buildDefaultItems())
 
   // Normalize legacy snake_case fields and 'complete' status from stored JSON
   const items: CloseoutItem[] = rawItems.map((item: any) => ({
@@ -98,9 +95,7 @@ export async function initiateCloseout(eventId: string): Promise<{
 
 // ── Get Closeout Checklist ──────────────────────────────────────────────────
 
-export async function getCloseoutChecklist(
-  eventId: string
-): Promise<CloseoutChecklist | null> {
+export async function getCloseoutChecklist(eventId: string): Promise<CloseoutChecklist | null> {
   const user = await requireChef()
   const tenantId = user.tenantId!
   const db: any = createServerClient()
@@ -153,8 +148,7 @@ export async function updateCloseoutItem(
     return {
       ...item,
       status,
-      completedAt:
-        status === 'completed' ? new Date().toISOString() : null,
+      completedAt: status === 'completed' ? new Date().toISOString() : null,
     }
   })
 

@@ -283,9 +283,8 @@ async function evaluateReadinessInternal(params: {
         .single()
 
       if (event?.cannabis_preference) {
-        const { checkCannabisReadinessForTransition } = await import(
-          '@/lib/cannabis/readiness-integration'
-        )
+        const { checkCannabisReadinessForTransition } =
+          await import('@/lib/cannabis/readiness-integration')
         const cannabisCheck = await checkCannabisReadinessForTransition(
           eventId,
           tenantId,
@@ -296,7 +295,8 @@ async function evaluateReadinessInternal(params: {
             const labels: Record<string, { label: string; description: string }> = {
               host_agreement_signed: {
                 label: 'Host Agreement',
-                description: 'Chef must sign the cannabis host agreement before this event can proceed.',
+                description:
+                  'Chef must sign the cannabis host agreement before this event can proceed.',
               },
               guest_intake_complete: {
                 label: 'Guest Intake',

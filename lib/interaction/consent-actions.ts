@@ -2,7 +2,13 @@
 
 import { requireChef } from '@/lib/auth/get-user'
 import { createServerClient } from '@/lib/db/server'
-import type { ConsentType, ConsentStatus, ConsentRecord, SharingPermission, ConsentSummary } from './consent-types'
+import type {
+  ConsentType,
+  ConsentStatus,
+  ConsentRecord,
+  SharingPermission,
+  ConsentSummary,
+} from './consent-types'
 
 // ---- 1. Record consent ----
 export async function recordConsent(
@@ -38,9 +44,7 @@ export async function recordConsent(
 }
 
 // ---- 2. Get client consents ----
-export async function getClientConsents(
-  clientId: string
-): Promise<ConsentRecord[]> {
+export async function getClientConsents(clientId: string): Promise<ConsentRecord[]> {
   const user = await requireChef()
   const db: any = createServerClient()
 
@@ -69,16 +73,14 @@ export async function withdrawConsent(
   const tenantId = user.tenantId!
 
   // Insert a new withdrawal record (audit trail, not overwrite)
-  const { error } = await db
-    .from('consent_records')
-    .insert({
-      tenant_id: tenantId,
-      client_id: clientId,
-      consent_type: consentType,
-      status: 'withdrawn',
-      source: 'portal',
-      withdrawn_at: new Date().toISOString(),
-    })
+  const { error } = await db.from('consent_records').insert({
+    tenant_id: tenantId,
+    client_id: clientId,
+    consent_type: consentType,
+    status: 'withdrawn',
+    source: 'portal',
+    withdrawn_at: new Date().toISOString(),
+  })
 
   if (error) {
     console.error('[consent] withdraw failed', error)
@@ -89,9 +91,7 @@ export async function withdrawConsent(
 }
 
 // ---- 4. Get consent summary ----
-export async function getConsentSummary(
-  clientId?: string
-): Promise<ConsentSummary[]> {
+export async function getConsentSummary(clientId?: string): Promise<ConsentSummary[]> {
   const user = await requireChef()
   const db: any = createServerClient()
   const tenantId = user.tenantId!
@@ -129,8 +129,18 @@ export async function getConsentSummary(
   }
 
   // Group by client, take latest record per consent type
-  const allConsentTypes: ConsentType[] = ['marketing', 'photos', 'testimonials', 'data_sharing', 'dietary_storage', 'contact_reuse']
-  const grouped = new Map<string, Map<string, { type: ConsentType; status: ConsentStatus; grantedAt: string | null }>>()
+  const allConsentTypes: ConsentType[] = [
+    'marketing',
+    'photos',
+    'testimonials',
+    'data_sharing',
+    'dietary_storage',
+    'contact_reuse',
+  ]
+  const grouped = new Map<
+    string,
+    Map<string, { type: ConsentType; status: ConsentStatus; grantedAt: string | null }>
+  >()
 
   for (const r of records) {
     if (!grouped.has(r.client_id)) {
@@ -149,8 +159,10 @@ export async function getConsentSummary(
 
   const summaries: ConsentSummary[] = []
   for (const [cid, consentMap] of grouped) {
-    const consents = allConsentTypes.map(t => consentMap.get(t) ?? { type: t, status: 'pending' as ConsentStatus, grantedAt: null })
-    const answered = consents.filter(c => c.status !== 'pending').length
+    const consents = allConsentTypes.map(
+      (t) => consentMap.get(t) ?? { type: t, status: 'pending' as ConsentStatus, grantedAt: null }
+    )
+    const answered = consents.filter((c) => c.status !== 'pending').length
     summaries.push({
       clientId: cid,
       clientName: clientMap.get(cid) ?? 'Unknown',
@@ -222,9 +234,7 @@ export async function getSharingPermissions(
 }
 
 // ---- 7. Get expiring consents ----
-export async function getExpiringConsents(
-  daysAhead: number
-): Promise<ConsentRecord[]> {
+export async function getExpiringConsents(daysAhead: number): Promise<ConsentRecord[]> {
   const user = await requireChef()
   const db: any = createServerClient()
   const tenantId = user.tenantId!

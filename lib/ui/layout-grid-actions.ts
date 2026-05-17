@@ -2,7 +2,13 @@
 
 import { requireChef } from '@/lib/auth/get-user'
 import { createServerClient } from '@/lib/db/server'
-import type { Breakpoint, GridConfig, ContainerConfig, LayoutAudit, LayoutGridSummary } from './layout-grid-types'
+import type {
+  Breakpoint,
+  GridConfig,
+  ContainerConfig,
+  LayoutAudit,
+  LayoutGridSummary,
+} from './layout-grid-types'
 
 /**
  * List all grid configs for the current tenant.
@@ -73,17 +79,15 @@ export async function upsertGridConfig(
 
     if (error) return { success: false, error: error.message }
   } else {
-    const { error } = await db
-      .from('grid_configs')
-      .insert({
-        tenant_id: user.tenantId!,
-        name,
-        columns,
-        gutter,
-        margin,
-        max_width: maxWidth,
-        breakpoints,
-      })
+    const { error } = await db.from('grid_configs').insert({
+      tenant_id: user.tenantId!,
+      name,
+      columns,
+      gutter,
+      margin,
+      max_width: maxWidth,
+      breakpoints,
+    })
 
     if (error) return { success: false, error: error.message }
   }
@@ -153,16 +157,14 @@ export async function upsertContainerConfig(
 
     if (error) return { success: false, error: error.message }
   } else {
-    const { error } = await db
-      .from('container_configs')
-      .insert({
-        tenant_id: user.tenantId!,
-        name,
-        max_width: maxWidth,
-        padding,
-        responsive,
-        breakpoint_overrides: breakpointOverrides ?? null,
-      })
+    const { error } = await db.from('container_configs').insert({
+      tenant_id: user.tenantId!,
+      name,
+      max_width: maxWidth,
+      padding,
+      responsive,
+      breakpoint_overrides: breakpointOverrides ?? null,
+    })
 
     if (error) return { success: false, error: error.message }
   }
@@ -187,16 +189,14 @@ export async function auditLayout(
     return { success: false, error: 'Score must be between 0 and 100' }
   }
 
-  const { error } = await db
-    .from('layout_audits')
-    .insert({
-      tenant_id: user.tenantId!,
-      route,
-      grid_compliant: gridCompliant,
-      container_compliant: containerCompliant,
-      issues,
-      score,
-    })
+  const { error } = await db.from('layout_audits').insert({
+    tenant_id: user.tenantId!,
+    route,
+    grid_compliant: gridCompliant,
+    container_compliant: containerCompliant,
+    issues,
+    score,
+  })
 
   if (error) return { success: false, error: error.message }
   return { success: true }
@@ -209,10 +209,7 @@ export async function getLayoutGridSummary(): Promise<LayoutGridSummary> {
   const user = await requireChef()
   const db: any = createServerClient()
 
-  const { data: grids } = await db
-    .from('grid_configs')
-    .select('id')
-    .eq('tenant_id', user.tenantId!)
+  const { data: grids } = await db.from('grid_configs').select('id').eq('tenant_id', user.tenantId!)
 
   const { data: containers } = await db
     .from('container_configs')
@@ -228,9 +225,12 @@ export async function getLayoutGridSummary(): Promise<LayoutGridSummary> {
   const totalContainers = containers?.length ?? 0
   const totalAudits = audits?.length ?? 0
 
-  const avgScore = totalAudits > 0
-    ? Math.round((audits as any[]).reduce((sum: number, a: any) => sum + (a.score ?? 0), 0) / totalAudits)
-    : 0
+  const avgScore =
+    totalAudits > 0
+      ? Math.round(
+          (audits as any[]).reduce((sum: number, a: any) => sum + (a.score ?? 0), 0) / totalAudits
+        )
+      : 0
 
   const nonCompliantRoutes: string[] = []
   if (audits) {

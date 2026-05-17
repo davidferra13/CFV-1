@@ -11,18 +11,9 @@ export type SuggestionType =
   | 'add_course'
   | 'remove_course'
 
-export type SuggestionStatus =
-  | 'pending'
-  | 'approved'
-  | 'rejected'
-  | 'modified'
+export type SuggestionStatus = 'pending' | 'approved' | 'rejected' | 'modified'
 
-export type CollabSessionStatus =
-  | 'draft'
-  | 'submitted'
-  | 'accepted'
-  | 'rejected'
-  | 'superseded'
+export type CollabSessionStatus = 'draft' | 'submitted' | 'accepted' | 'rejected' | 'superseded'
 
 export type EditorType = 'chef' | 'client' | 'co_host'
 

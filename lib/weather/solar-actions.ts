@@ -19,9 +19,7 @@ const GOLDEN_HOUR_LABEL = 'Golden Hour (photography)'
  * Fetch solar times for an event by looking up its location and date.
  * Returns null if the event has no coordinates, no date, or is out of forecast range.
  */
-export async function getSolarTimesForEvent(
-  eventId: string
-): Promise<SolarTimes | null> {
+export async function getSolarTimesForEvent(eventId: string): Promise<SolarTimes | null> {
   const user = await requireChef()
   const tenantId = user.tenantId!
   const db: any = createServerClient()
@@ -62,9 +60,7 @@ export interface InjectSolarResult {
  *
  * Requires an existing timeline (generate one first).
  */
-export async function injectSolarMarkers(
-  eventId: string
-): Promise<InjectSolarResult> {
+export async function injectSolarMarkers(eventId: string): Promise<InjectSolarResult> {
   const user = await requireChef()
   const tenantId = user.tenantId!
   const db: any = createServerClient()
@@ -94,11 +90,7 @@ export async function injectSolarMarkers(
       ? event.event_date.slice(0, 10)
       : new Date(event.event_date).toISOString().slice(0, 10)
 
-  const solar = await getSolarTimes(
-    event.location_lat,
-    event.location_lng,
-    dateStr
-  )
+  const solar = await getSolarTimes(event.location_lat, event.location_lng, dateStr)
 
   if (!solar) {
     return { injected: [], skipped: [], isOutdoor: false, solar: null }
@@ -131,9 +123,7 @@ export async function injectSolarMarkers(
     .select('label')
     .eq('timeline_id', timeline.id)
 
-  const existingLabels = new Set(
-    (allBlocks || []).map((b: { label: string }) => b.label)
-  )
+  const existingLabels = new Set((allBlocks || []).map((b: { label: string }) => b.label))
   const maxSequence = existingBlocks?.[0]?.sequence ?? 0
 
   const injected: string[] = []
@@ -196,7 +186,8 @@ export async function injectSolarMarkers(
       end_time: sunsetTime.toISOString(),
       duration_minutes: 0,
       sequence: nextSequence++,
-      notes: `Sunset at ${solar.sunsetFormatted}. ${outdoor ? 'Plan lighting transition.' : ''}`.trim(),
+      notes:
+        `Sunset at ${solar.sunsetFormatted}. ${outdoor ? 'Plan lighting transition.' : ''}`.trim(),
       course_number: null,
       is_parallel: false,
     })

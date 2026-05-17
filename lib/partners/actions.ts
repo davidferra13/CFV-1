@@ -1760,15 +1760,13 @@ export async function getTopPartners(limit: number = 10) {
     if (evt.referral_partner_id) {
       revenueMap[evt.referral_partner_id] =
         (revenueMap[evt.referral_partner_id] || 0) + (evt.quoted_price_cents || 0)
-      completedMap[evt.referral_partner_id] =
-        (completedMap[evt.referral_partner_id] || 0) + 1
+      completedMap[evt.referral_partner_id] = (completedMap[evt.referral_partner_id] || 0) + 1
     }
   }
 
   for (const inq of inquiries || []) {
     if (inq.referral_partner_id) {
-      inquiryMap[inq.referral_partner_id] =
-        (inquiryMap[inq.referral_partner_id] || 0) + 1
+      inquiryMap[inq.referral_partner_id] = (inquiryMap[inq.referral_partner_id] || 0) + 1
     }
   }
 
@@ -1784,14 +1782,10 @@ export async function getTopPartners(limit: number = 10) {
         totalReferrals,
         convertedReferrals,
         conversionRate:
-          totalReferrals > 0
-            ? Math.round((convertedReferrals / totalReferrals) * 100)
-            : 0,
+          totalReferrals > 0 ? Math.round((convertedReferrals / totalReferrals) * 100) : 0,
         totalRevenueCents,
         avgDealValueCents:
-          convertedReferrals > 0
-            ? Math.round(totalRevenueCents / convertedReferrals)
-            : 0,
+          convertedReferrals > 0 ? Math.round(totalRevenueCents / convertedReferrals) : 0,
       }
     })
     .sort((a: any, b: any) => b.totalRevenueCents - a.totalRevenueCents)

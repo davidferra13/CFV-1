@@ -108,9 +108,7 @@ function renderEvent(event: ICalEvent, dtstamp: string): string[] {
 
   // CATEGORIES
   if (event.categories && event.categories.length > 0) {
-    lines.push(
-      foldLine(`CATEGORIES:${event.categories.map(escapeText).join(',')}`)
-    )
+    lines.push(foldLine(`CATEGORIES:${event.categories.map(escapeText).join(',')}`))
   }
 
   lines.push('END:VEVENT')

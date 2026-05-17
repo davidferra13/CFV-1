@@ -145,7 +145,8 @@ export async function getMyBookingsAsClient(): Promise<{
     // Find inquiries across all tenants where the chef's email matches the client email
     const { data: inquiries, error } = await db
       .from('inquiries')
-      .select(`
+      .select(
+        `
         id,
         status,
         confirmed_date,
@@ -153,7 +154,8 @@ export async function getMyBookingsAsClient(): Promise<{
         confirmed_occasion,
         created_at,
         tenant_id
-      `)
+      `
+      )
       .eq('client_email', user.email)
       .neq('tenant_id', user.entityId)
       .order('created_at', { ascending: false })
@@ -175,9 +177,7 @@ export async function getMyBookingsAsClient(): Promise<{
       .select('id, display_name, slug, profile_image_url')
       .in('id', tenantIds)
 
-    const chefMap = new Map(
-      (chefs ?? []).map((c: any) => [c.id, c])
-    )
+    const chefMap = new Map((chefs ?? []).map((c: any) => [c.id, c]))
 
     const bookings: MyBookingAsClient[] = inquiries.map((inq: any) => {
       const chef = chefMap.get(inq.tenant_id) as any

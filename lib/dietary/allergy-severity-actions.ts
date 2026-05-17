@@ -91,11 +91,7 @@ export async function setGuestAllergySeverity(
     }
     result = data as GuestAllergy
   } else {
-    const { data, error } = await db
-      .from('guest_allergies')
-      .insert(row)
-      .select('*')
-      .single()
+    const { data, error } = await db.from('guest_allergies').insert(row).select('*').single()
 
     if (error || !data) {
       throw new UnknownAppError(`Failed to create allergy: ${error?.message ?? 'unknown'}`)
@@ -311,10 +307,7 @@ export async function getEventCrossContaminationRisks(
 // ---------------------------------------------------------------------------
 // Set emergency info (EpiPen, emergency contact) for a guest
 // ---------------------------------------------------------------------------
-export async function setGuestEmergencyInfo(
-  guestId: string,
-  info: EmergencyInfo
-): Promise<void> {
+export async function setGuestEmergencyInfo(guestId: string, info: EmergencyInfo): Promise<void> {
   const user = await requireChef()
   const tenantId = user.tenantId!
   const db: any = createServerClient()
@@ -354,9 +347,7 @@ export async function setGuestEmergencyInfo(
 // ---------------------------------------------------------------------------
 // Kitchen allergy briefing: prep-ready, severity-coded
 // ---------------------------------------------------------------------------
-export async function getKitchenAllergyBriefing(
-  eventId: string
-): Promise<KitchenAllergyBriefing> {
+export async function getKitchenAllergyBriefing(eventId: string): Promise<KitchenAllergyBriefing> {
   const user = await requireChef()
   const tenantId = user.tenantId!
   const db: any = createServerClient()
@@ -424,19 +415,13 @@ export async function getKitchenAllergyBriefing(
   const allergyAllergens = [...new Set(critical.map((c) => c.allergen))]
 
   for (const allergen of allergyAllergens) {
-    const affectedGuests = critical
-      .filter((c) => c.allergen === allergen)
-      .map((c) => c.guest_name)
+    const affectedGuests = critical.filter((c) => c.allergen === allergen).map((c) => c.guest_name)
 
     separationProtocols.push(
       `Prep allergy-safe dishes FIRST before any ${allergen} enters the kitchen. Affected: ${affectedGuests.join(', ')}.`
     )
-    separationProtocols.push(
-      `Use separate cutting boards and utensils for ${allergen}-free prep.`
-    )
-    separationProtocols.push(
-      `Verify all ingredient labels for hidden ${allergen} content.`
-    )
+    separationProtocols.push(`Use separate cutting boards and utensils for ${allergen}-free prep.`)
+    separationProtocols.push(`Verify all ingredient labels for hidden ${allergen} content.`)
   }
 
   return {

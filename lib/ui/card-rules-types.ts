@@ -1,4 +1,12 @@
-export type CardType = 'event' | 'client' | 'menu' | 'recipe' | 'invoice' | 'task' | 'metric' | 'notification'
+export type CardType =
+  | 'event'
+  | 'client'
+  | 'menu'
+  | 'recipe'
+  | 'invoice'
+  | 'task'
+  | 'metric'
+  | 'notification'
 
 export type CardSection = 'header' | 'body' | 'footer' | 'actions' | 'media' | 'metadata'
 

@@ -2,11 +2,20 @@
 
 import { requireChef } from '@/lib/auth/get-user'
 import { createServerClient } from '@/lib/db/server'
-import type { EvidenceItem, EvidenceDisplayRule, EvidenceGrammarSummary, EvidenceType, EvidenceLevel } from './evidence-grammar-types'
+import type {
+  EvidenceItem,
+  EvidenceDisplayRule,
+  EvidenceGrammarSummary,
+  EvidenceType,
+  EvidenceLevel,
+} from './evidence-grammar-types'
 
 const db: any = createServerClient()
 
-export async function getEvidenceItems(entityType: string, entityId: string): Promise<EvidenceItem[]> {
+export async function getEvidenceItems(
+  entityType: string,
+  entityId: string
+): Promise<EvidenceItem[]> {
   const chef = await requireChef()
   const rows = await db.query(
     `SELECT id, tenant_id, entity_type, entity_id, type, level, label, value, media_url, verified_at, expires_at, created_at
@@ -36,7 +45,17 @@ export async function upsertEvidenceItem(
        type = EXCLUDED.type, level = EXCLUDED.level, label = EXCLUDED.label,
        value = EXCLUDED.value, media_url = EXCLUDED.media_url, expires_at = EXCLUDED.expires_at
      RETURNING id, tenant_id, entity_type, entity_id, type, level, label, value, media_url, verified_at, expires_at, created_at`,
-    [chef.tenantId, entityType, entityId, type, level, label, value ?? null, mediaUrl ?? null, expiresAt ?? null]
+    [
+      chef.tenantId,
+      entityType,
+      entityId,
+      type,
+      level,
+      label,
+      value ?? null,
+      mediaUrl ?? null,
+      expiresAt ?? null,
+    ]
   )
   return mapEvidenceRow(rows[0])
 }
@@ -105,7 +124,14 @@ export async function getEvidenceGrammarSummary(): Promise<EvidenceGrammarSummar
     `SELECT type, level, expires_at FROM evidence_items WHERE tenant_id = $1`,
     [chef.tenantId]
   )
-  const byType: Record<string, number> = { photo: 0, document: 0, review: 0, certification: 0, metric: 0, testimonial: 0 }
+  const byType: Record<string, number> = {
+    photo: 0,
+    document: 0,
+    review: 0,
+    certification: 0,
+    metric: 0,
+    testimonial: 0,
+  }
   const byLevel: Record<string, number> = { verified: 0, self_reported: 0, pending: 0, expired: 0 }
   const now = new Date()
   const thirtyDays = new Date(now.getTime() + 30 * 24 * 60 * 60 * 1000)

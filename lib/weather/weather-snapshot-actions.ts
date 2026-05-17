@@ -65,9 +65,10 @@ export async function captureWeatherSnapshot(
 
     // Try fetchForecast first (returns DailyForecast with precip + wind data).
     // Falls back to getEventWeather for historical dates beyond forecast range.
-    const eventDateStr = typeof event.event_date === 'string'
-      ? event.event_date
-      : new Date(event.event_date).toISOString().slice(0, 10)
+    const eventDateStr =
+      typeof event.event_date === 'string'
+        ? event.event_date
+        : new Date(event.event_date).toISOString().slice(0, 10)
 
     let highF: number | null = null
     let lowF: number | null = null
@@ -133,16 +134,16 @@ export async function captureWeatherSnapshot(
  * Retrieve the weather snapshot for an event.
  * Auth: requireChef(), tenant-scoped.
  */
-export async function getWeatherSnapshot(
-  eventId: string
-): Promise<WeatherSnapshot | null> {
+export async function getWeatherSnapshot(eventId: string): Promise<WeatherSnapshot | null> {
   try {
     const user = await requireChef()
     const db: any = createServerClient()
 
     const { data, error } = await db
       .from('event_weather_snapshots')
-      .select('id, event_id, forecast_high_f, forecast_low_f, condition, precip_probability, wind_speed_mph, actual_notes, captured_at')
+      .select(
+        'id, event_id, forecast_high_f, forecast_low_f, condition, precip_probability, wind_speed_mph, actual_notes, captured_at'
+      )
       .eq('event_id', eventId)
       .eq('tenant_id', user.tenantId!)
       .maybeSingle()
@@ -199,16 +200,19 @@ export async function addWeatherNotes(
  * Retrieve weather history across events for a tenant within a date range.
  * Auth: requireChef(), tenant-scoped.
  */
-export async function getWeatherHistory(
-  dateRange?: { from: string; to: string }
-): Promise<WeatherSnapshot[]> {
+export async function getWeatherHistory(dateRange?: {
+  from: string
+  to: string
+}): Promise<WeatherSnapshot[]> {
   try {
     const user = await requireChef()
     const db: any = createServerClient()
 
     let query = db
       .from('event_weather_snapshots')
-      .select('id, event_id, forecast_high_f, forecast_low_f, condition, precip_probability, wind_speed_mph, actual_notes, captured_at')
+      .select(
+        'id, event_id, forecast_high_f, forecast_low_f, condition, precip_probability, wind_speed_mph, actual_notes, captured_at'
+      )
       .eq('tenant_id', user.tenantId!)
       .order('captured_at', { ascending: false })
 

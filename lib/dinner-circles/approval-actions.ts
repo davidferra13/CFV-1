@@ -11,10 +11,26 @@ import type { JoinRequest, ApprovalMode, RequestStatus } from './approval-types'
 // ---------------------------------------------------------------------------
 
 const GuestInputSchema = z.object({
-  name: z.string().min(1).max(200).transform((s) => s.trim()),
-  email: z.string().email().max(320).transform((s) => s.toLowerCase().trim()),
-  phone: z.string().max(30).optional().transform((s) => s?.trim() || undefined),
-  message: z.string().max(1000).optional().transform((s) => s?.trim() || undefined),
+  name: z
+    .string()
+    .min(1)
+    .max(200)
+    .transform((s) => s.trim()),
+  email: z
+    .string()
+    .email()
+    .max(320)
+    .transform((s) => s.toLowerCase().trim()),
+  phone: z
+    .string()
+    .max(30)
+    .optional()
+    .transform((s) => s?.trim() || undefined),
+  message: z
+    .string()
+    .max(1000)
+    .optional()
+    .transform((s) => s?.trim() || undefined),
 })
 
 // ---------------------------------------------------------------------------
@@ -192,9 +208,7 @@ export async function rejectJoinRequest(
 // getPendingRequests - All pending join requests for a circle
 // ---------------------------------------------------------------------------
 
-export async function getPendingRequests(
-  circleId: string
-): Promise<JoinRequest[]> {
+export async function getPendingRequests(circleId: string): Promise<JoinRequest[]> {
   const user = await requireChef()
   const db: any = createServerClient()
 

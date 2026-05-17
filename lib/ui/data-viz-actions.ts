@@ -2,7 +2,13 @@
 
 import { requireChef } from '@/lib/auth/get-user'
 import { createServerClient } from '@/lib/db/server'
-import type { ChartConfig, ChartType, DataSeries, DataVizSummary, VisualizationPreset } from './data-viz-types'
+import type {
+  ChartConfig,
+  ChartType,
+  DataSeries,
+  DataVizSummary,
+  VisualizationPreset,
+} from './data-viz-types'
 
 // ---------------------------------------------------------------------------
 // getChartConfig
@@ -44,25 +50,23 @@ export async function upsertChartConfig(
   title: string,
   series: DataSeries[],
   xAxis?: Record<string, unknown>,
-  yAxis?: Record<string, unknown>,
+  yAxis?: Record<string, unknown>
 ): Promise<{ success: boolean }> {
   const user = await requireChef()
   const db: any = createServerClient()
 
-  await db
-    .from('chart_configs')
-    .upsert(
-      {
-        tenant_id: user.id,
-        chart_id: chartId,
-        type,
-        title,
-        series: JSON.stringify(series),
-        x_axis: xAxis ? JSON.stringify(xAxis) : null,
-        y_axis: yAxis ? JSON.stringify(yAxis) : null,
-      },
-      { onConflict: ['tenant_id', 'chart_id'] },
-    )
+  await db.from('chart_configs').upsert(
+    {
+      tenant_id: user.id,
+      chart_id: chartId,
+      type,
+      title,
+      series: JSON.stringify(series),
+      x_axis: xAxis ? JSON.stringify(xAxis) : null,
+      y_axis: yAxis ? JSON.stringify(yAxis) : null,
+    },
+    { onConflict: ['tenant_id', 'chart_id'] }
+  )
 
   return { success: true }
 }
@@ -71,7 +75,7 @@ export async function upsertChartConfig(
 // getRevenueChartData
 // ---------------------------------------------------------------------------
 export async function getRevenueChartData(
-  period: 'week' | 'month' | 'quarter' | 'year',
+  period: 'week' | 'month' | 'quarter' | 'year'
 ): Promise<{ labels: string[]; values: number[] }> {
   const user = await requireChef()
   const db: any = createServerClient()
@@ -89,7 +93,7 @@ export async function getRevenueChartData(
      WHERE tenant_id = $1
        AND created_at >= NOW() - INTERVAL '${intervalMap[period]}'
      GROUP BY day ORDER BY day`,
-    [user.id],
+    [user.id]
   )
 
   return {
@@ -102,7 +106,7 @@ export async function getRevenueChartData(
 // getEventVolumeData
 // ---------------------------------------------------------------------------
 export async function getEventVolumeData(
-  period: 'week' | 'month' | 'quarter' | 'year',
+  period: 'week' | 'month' | 'quarter' | 'year'
 ): Promise<{ labels: string[]; values: number[] }> {
   const user = await requireChef()
   const db: any = createServerClient()
@@ -120,7 +124,7 @@ export async function getEventVolumeData(
      WHERE tenant_id = $1
        AND created_at >= NOW() - INTERVAL '${intervalMap[period]}'
      GROUP BY day ORDER BY day`,
-    [user.id],
+    [user.id]
   )
 
   return {
@@ -144,7 +148,7 @@ export async function getClientDistributionData(): Promise<{
      FROM clients
      WHERE tenant_id = $1
      GROUP BY status ORDER BY cnt DESC`,
-    [user.id],
+    [user.id]
   )
 
   return {
@@ -160,7 +164,7 @@ export async function saveVisualizationPreset(
   name: string,
   chartId: string,
   dateRange: Record<string, unknown> | null,
-  filters: Record<string, unknown>,
+  filters: Record<string, unknown>
 ): Promise<{ success: boolean; id: string }> {
   const user = await requireChef()
   const db: any = createServerClient()
@@ -189,12 +193,11 @@ export async function getDataVizSummary(): Promise<DataVizSummary> {
   const [chartRows, presetRows] = await Promise.all([
     db.query(
       `SELECT type, COUNT(*)::int AS cnt FROM chart_configs WHERE tenant_id = $1 GROUP BY type`,
-      [user.id],
+      [user.id]
     ),
-    db.query(
-      `SELECT COUNT(*)::int AS cnt FROM visualization_presets WHERE tenant_id = $1`,
-      [user.id],
-    ),
+    db.query(`SELECT COUNT(*)::int AS cnt FROM visualization_presets WHERE tenant_id = $1`, [
+      user.id,
+    ]),
   ])
 
   const byType: Record<string, number> = {}
@@ -210,7 +213,7 @@ export async function getDataVizSummary(): Promise<DataVizSummary> {
      FROM visualization_presets
      WHERE tenant_id = $1
      GROUP BY chart_id ORDER BY cnt DESC LIMIT 1`,
-    [user.id],
+    [user.id]
   )
 
   return {

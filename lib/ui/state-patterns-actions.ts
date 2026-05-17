@@ -96,19 +96,17 @@ export async function upsertStatePattern(
 
     if (error) return { success: false, error: error.message }
   } else {
-    const { error } = await db
-      .from('state_pattern_configs')
-      .insert({
-        tenant_id: user.tenantId!,
-        route,
-        component,
-        state_type: stateType,
-        title,
-        message: message ?? null,
-        icon: icon ?? null,
-        action_label: actionLabel ?? null,
-        action_href: actionHref ?? null,
-      })
+    const { error } = await db.from('state_pattern_configs').insert({
+      tenant_id: user.tenantId!,
+      route,
+      component,
+      state_type: stateType,
+      title,
+      message: message ?? null,
+      icon: icon ?? null,
+      action_label: actionLabel ?? null,
+      action_href: actionHref ?? null,
+    })
 
     if (error) return { success: false, error: error.message }
   }
@@ -162,18 +160,16 @@ export async function auditComponentStates(
 
     if (error) return { success: false, error: error.message }
   } else {
-    const { error } = await db
-      .from('state_pattern_audits')
-      .insert({
-        tenant_id: user.tenantId!,
-        route,
-        component,
-        has_empty_state: hasEmpty,
-        has_loading_state: hasLoading,
-        has_error_state: hasError,
-        has_success_state: hasSuccess,
-        score,
-      })
+    const { error } = await db.from('state_pattern_audits').insert({
+      tenant_id: user.tenantId!,
+      route,
+      component,
+      has_empty_state: hasEmpty,
+      has_loading_state: hasLoading,
+      has_error_state: hasError,
+      has_success_state: hasSuccess,
+      score,
+    })
 
     if (error) return { success: false, error: error.message }
   }
@@ -208,18 +204,20 @@ export async function getStatePatternAudits(
 
   if (error || !data) return []
 
-  return data.map((row: any): StatePatternAudit => ({
-    id: row.id,
-    tenantId: row.tenant_id,
-    route: row.route,
-    component: row.component,
-    hasEmptyState: row.has_empty_state ?? false,
-    hasLoadingState: row.has_loading_state ?? false,
-    hasErrorState: row.has_error_state ?? false,
-    hasSuccessState: row.has_success_state ?? false,
-    score: row.score ?? 0,
-    auditedAt: row.audited_at,
-  }))
+  return data.map(
+    (row: any): StatePatternAudit => ({
+      id: row.id,
+      tenantId: row.tenant_id,
+      route: row.route,
+      component: row.component,
+      hasEmptyState: row.has_empty_state ?? false,
+      hasLoadingState: row.has_loading_state ?? false,
+      hasErrorState: row.has_error_state ?? false,
+      hasSuccessState: row.has_success_state ?? false,
+      score: row.score ?? 0,
+      auditedAt: row.audited_at,
+    })
+  )
 }
 
 /**
@@ -270,9 +268,8 @@ export async function getStatePatternSummary(): Promise<StatePatternSummary> {
   }
 
   const totalComponents = data.length
-  const coveragePercent = totalComponents > 0
-    ? Math.round((fullyHandled / totalComponents) * 100)
-    : 0
+  const coveragePercent =
+    totalComponents > 0 ? Math.round((fullyHandled / totalComponents) * 100) : 0
 
   return {
     totalComponents,
@@ -300,16 +297,18 @@ export async function getUnhandledStates(): Promise<StatePatternAudit[]> {
 
   if (error || !data) return []
 
-  return data.map((row: any): StatePatternAudit => ({
-    id: row.id,
-    tenantId: row.tenant_id,
-    route: row.route,
-    component: row.component,
-    hasEmptyState: row.has_empty_state ?? false,
-    hasLoadingState: row.has_loading_state ?? false,
-    hasErrorState: row.has_error_state ?? false,
-    hasSuccessState: row.has_success_state ?? false,
-    score: row.score ?? 0,
-    auditedAt: row.audited_at,
-  }))
+  return data.map(
+    (row: any): StatePatternAudit => ({
+      id: row.id,
+      tenantId: row.tenant_id,
+      route: row.route,
+      component: row.component,
+      hasEmptyState: row.has_empty_state ?? false,
+      hasLoadingState: row.has_loading_state ?? false,
+      hasErrorState: row.has_error_state ?? false,
+      hasSuccessState: row.has_success_state ?? false,
+      score: row.score ?? 0,
+      auditedAt: row.audited_at,
+    })
+  )
 }

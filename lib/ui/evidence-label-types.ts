@@ -1,4 +1,9 @@
-export type EvidenceLevel = 'verified' | 'calculated' | 'estimated' | 'user-provided' | 'system-default'
+export type EvidenceLevel =
+  | 'verified'
+  | 'calculated'
+  | 'estimated'
+  | 'user-provided'
+  | 'system-default'
 
 export type EvidenceLabelPosition = 'inline' | 'badge' | 'tooltip'
 

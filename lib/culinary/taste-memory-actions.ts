@@ -58,16 +58,14 @@ export async function recordTastePreference(
     if (error) return { success: false, error: error.message }
   } else {
     // Insert new
-    const { error } = await db
-      .from('chef_taste_preferences')
-      .insert({
-        tenant_id: tenantId,
-        ingredient_name: trimmed.toLowerCase(),
-        rating,
-        notes: notes ?? null,
-        frequency_count: 1,
-        last_used_at: new Date().toISOString(),
-      })
+    const { error } = await db.from('chef_taste_preferences').insert({
+      tenant_id: tenantId,
+      ingredient_name: trimmed.toLowerCase(),
+      rating,
+      notes: notes ?? null,
+      frequency_count: 1,
+      last_used_at: new Date().toISOString(),
+    })
 
     if (error) return { success: false, error: error.message }
   }
@@ -83,13 +81,12 @@ export async function getTasteProfile(): Promise<TasteProfile> {
   const user = await requireChef()
   const tenantId = user.tenantId!
 
-  const [topIngredients, favoriteAffinities, stylePatterns, mostUsed] =
-    await Promise.all([
-      getTopIngredients(tenantId),
-      getFlavorAffinities(10),
-      getCookingStylePatterns(),
-      getIngredientFrequency(10),
-    ])
+  const [topIngredients, favoriteAffinities, stylePatterns, mostUsed] = await Promise.all([
+    getTopIngredients(tenantId),
+    getFlavorAffinities(10),
+    getCookingStylePatterns(),
+    getIngredientFrequency(10),
+  ])
 
   return {
     topIngredients,
@@ -104,9 +101,7 @@ export async function getTasteProfile(): Promise<TasteProfile> {
  * Get most common ingredient pairings from the chef's recipes.
  * Derived from recipe_ingredients: pairs that appear in the same recipe frequently.
  */
-export async function getFlavorAffinities(
-  limit: number = 20
-): Promise<FlavorAffinity[]> {
+export async function getFlavorAffinities(limit: number = 20): Promise<FlavorAffinity[]> {
   const user = await requireChef()
   const tenantId = user.tenantId!
 
@@ -144,10 +139,7 @@ export async function getCookingStylePatterns(): Promise<CookingStylePattern[]> 
   const patterns: CookingStylePattern[] = []
 
   // 1. Cuisine/category tendencies from recipes
-  const { data: recipeCats } = await db
-    .from('recipes')
-    .select('category')
-    .eq('tenant_id', tenantId)
+  const { data: recipeCats } = await db.from('recipes').select('category').eq('tenant_id', tenantId)
 
   if (recipeCats && recipeCats.length > 0) {
     const catCounts: Record<string, number> = {}
@@ -300,10 +292,7 @@ async function getTopIngredients(tenantId: string): Promise<TastePreference[]> {
  * Fallback: compute flavor affinities in JS when the RPC is unavailable.
  * Groups recipe_ingredients by recipe, finds co-occurring ingredient pairs.
  */
-async function computeAffinitiesInApp(
-  tenantId: string,
-  limit: number
-): Promise<FlavorAffinity[]> {
+async function computeAffinitiesInApp(tenantId: string, limit: number): Promise<FlavorAffinity[]> {
   const db: any = createServerClient()
 
   // Get recipe_ingredients with ingredient names for this tenant

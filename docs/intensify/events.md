@@ -9,6 +9,7 @@ DEPTH: deep
 YIELD_TREND: increasing
 
 SURFACED:
+
 - 57+ raw `.from('events')` queries in intelligence/lifecycle/communication bypass lib/events/actions.ts
 - post-event-learning-logic.ts computes success scores, dish memory, learning insights consumed by ZERO intelligence modules
 - CIL ingests event transitions but has no debrief/outcome signal handler
@@ -21,9 +22,11 @@ SURFACED:
 - handoff-actions.ts not reflected in lifecycle or operating-loop
 
 ACTED ON:
+
 - (awaiting user selection)
 
 SKIPPED:
+
 - recall -> intelligence: naming collision not functional duplication (food safety vs event archive)
 - countdown -> weather dedup: different auth contexts, not stable
 - handoff -> lifecycle: fresh code, let stabilize

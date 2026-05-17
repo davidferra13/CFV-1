@@ -61,7 +61,8 @@ export async function getQAMatrix(): Promise<QAMatrix> {
   const failed = rows.filter((r) => r.status === 'fail').length
   const needsReview = rows.filter((r) => r.status === 'needs_review').length
   const scores = rows.map((r) => r.score).filter((s): s is number => s != null)
-  const avgScore = scores.length > 0 ? Math.round(scores.reduce((a, b) => a + b, 0) / scores.length) : 0
+  const avgScore =
+    scores.length > 0 ? Math.round(scores.reduce((a, b) => a + b, 0) / scores.length) : 0
 
   return {
     totalRoutes: uniqueRoutes.size,
@@ -183,10 +184,7 @@ export async function getScreenshotComparisons(
 /**
  * Update a QA entry status after manual review.
  */
-export async function markQAReviewed(
-  entryId: string,
-  status: QAStatus
-): Promise<void> {
+export async function markQAReviewed(entryId: string, status: QAStatus): Promise<void> {
   const user = await requireChef()
   const db: any = createServerClient()
 

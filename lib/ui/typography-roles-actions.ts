@@ -2,9 +2,23 @@
 
 import { requireChef } from '@/lib/auth/get-user'
 import { createServerClient } from '@/lib/db/server'
-import type { TypographyRole, TypographyConfig, TextHierarchyRule, TypographySummary } from './typography-roles-types'
+import type {
+  TypographyRole,
+  TypographyConfig,
+  TextHierarchyRule,
+  TypographySummary,
+} from './typography-roles-types'
 
-const ALL_ROLES: TypographyRole[] = ['page_title', 'section_heading', 'card_title', 'body', 'caption', 'label', 'metric', 'overline']
+const ALL_ROLES: TypographyRole[] = [
+  'page_title',
+  'section_heading',
+  'card_title',
+  'body',
+  'caption',
+  'label',
+  'metric',
+  'overline',
+]
 
 function mapConfig(r: any): TypographyConfig {
   return {
@@ -56,7 +70,7 @@ export async function upsertTypographyConfig(
   lineHeight: string,
   letterSpacing?: string,
   color?: string,
-  textTransform?: string,
+  textTransform?: string
 ): Promise<TypographyConfig> {
   const user = await requireChef()
   const db: any = createServerClient()
@@ -66,7 +80,17 @@ export async function upsertTypographyConfig(
      ON CONFLICT (tenant_id, role)
      DO UPDATE SET font_family = $3, font_size = $4, font_weight = $5, line_height = $6, letter_spacing = $7, color = $8, text_transform = $9
      RETURNING *`,
-    [user.tenantId, role, fontFamily, fontSize, fontWeight, lineHeight, letterSpacing ?? null, color ?? null, textTransform ?? null],
+    [
+      user.tenantId,
+      role,
+      fontFamily,
+      fontSize,
+      fontWeight,
+      lineHeight,
+      letterSpacing ?? null,
+      color ?? null,
+      textTransform ?? null,
+    ]
   )
   return mapConfig(rows[0])
 }
@@ -76,7 +100,7 @@ export async function getTextHierarchyRules(): Promise<TextHierarchyRule[]> {
   const db: any = createServerClient()
   const rows = await db.query(
     'SELECT * FROM text_hierarchy_rules WHERE tenant_id = $1 ORDER BY parent_role, child_role',
-    [user.tenantId],
+    [user.tenantId]
   )
   return rows.map(mapRule)
 }
@@ -85,7 +109,7 @@ export async function upsertHierarchyRule(
   parentRole: TypographyRole,
   childRole: TypographyRole,
   maxNesting: number,
-  description?: string,
+  description?: string
 ): Promise<TextHierarchyRule> {
   const user = await requireChef()
   const db: any = createServerClient()
@@ -95,7 +119,7 @@ export async function upsertHierarchyRule(
      ON CONFLICT (tenant_id, parent_role, child_role)
      DO UPDATE SET max_nesting = $4, description = $5
      RETURNING *`,
-    [user.tenantId, parentRole, childRole, maxNesting, description ?? null],
+    [user.tenantId, parentRole, childRole, maxNesting, description ?? null]
   )
   return mapRule(rows[0])
 }
@@ -105,7 +129,7 @@ export async function deleteHierarchyRule(ruleId: string): Promise<{ success: bo
   const db: any = createServerClient()
   const rows = await db.query(
     'DELETE FROM text_hierarchy_rules WHERE id = $1 AND tenant_id = $2 RETURNING id',
-    [ruleId, user.tenantId],
+    [ruleId, user.tenantId]
   )
   if (!rows.length) {
     throw new Error('Hierarchy rule not found or access denied')
@@ -118,11 +142,11 @@ export async function getTypographySummary(): Promise<TypographySummary> {
   const db: any = createServerClient()
   const configs = await db.query(
     'SELECT role, COUNT(*)::int as cnt FROM typography_configs WHERE tenant_id = $1 GROUP BY role',
-    [user.tenantId],
+    [user.tenantId]
   )
   const ruleCount = await db.query(
     'SELECT COUNT(*)::int as cnt FROM text_hierarchy_rules WHERE tenant_id = $1',
-    [user.tenantId],
+    [user.tenantId]
   )
   const byRole = {} as Record<TypographyRole, number>
   let totalConfigs = 0

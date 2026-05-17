@@ -70,11 +70,7 @@ export async function getPendingSmsDrafts(): Promise<SmsDraftWithClient[]> {
   )
 
   const clientIds = Array.from(
-    new Set(
-      (threads || [])
-        .map((t: any) => t.client_id)
-        .filter(Boolean)
-    )
+    new Set((threads || []).map((t: any) => t.client_id).filter(Boolean))
   ) as string[]
 
   const { data: clients } = clientIds.length
@@ -146,9 +142,7 @@ export async function approveSmsDraft(
 
   // Send SMS
   try {
-    const { sendManagedTwilioMessage } = await import(
-      '@/lib/communication/managed-channels'
-    )
+    const { sendManagedTwilioMessage } = await import('@/lib/communication/managed-channels')
 
     const sendResult = await sendManagedTwilioMessage({
       tenantId: user.tenantId!,
@@ -197,9 +191,7 @@ export async function approveSmsDraft(
 
   // Log outbound message to communication pipeline
   try {
-    const { ingestCommunicationEvent } = await import(
-      '@/lib/communication/pipeline'
-    )
+    const { ingestCommunicationEvent } = await import('@/lib/communication/pipeline')
     await ingestCommunicationEvent({
       tenantId: user.tenantId!,
       source: 'sms',
@@ -356,9 +348,7 @@ export async function escalateStaleDrafts(tenantId: string): Promise<number> {
     // Level 1: push notification to chef
     // Level 2+: mark as requiring attention in dashboard
     try {
-      const { createNotification, getChefAuthUserId } = await import(
-        '@/lib/notifications/actions'
-      )
+      const { createNotification, getChefAuthUserId } = await import('@/lib/notifications/actions')
       const recipientId = await getChefAuthUserId(tenantId)
       if (recipientId) {
         const preview =

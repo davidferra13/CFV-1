@@ -1,4 +1,11 @@
-export type VenueType = 'residential' | 'commercial_kitchen' | 'outdoor' | 'venue_hall' | 'restaurant' | 'office' | 'other'
+export type VenueType =
+  | 'residential'
+  | 'commercial_kitchen'
+  | 'outdoor'
+  | 'venue_hall'
+  | 'restaurant'
+  | 'office'
+  | 'other'
 
 export interface VenueProfile {
   id: string

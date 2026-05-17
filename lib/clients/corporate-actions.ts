@@ -27,9 +27,7 @@ const CorporateProfileSchema = z.object({
   billingZip: z.string().max(20).nullable().optional(),
   taxId: z.string().max(50).nullable().optional(),
   defaultPoNumber: z.string().max(100).nullable().optional(),
-  paymentTerms: z
-    .enum(['net30', 'net60', 'net90', 'due_on_receipt'])
-    .default('due_on_receipt'),
+  paymentTerms: z.enum(['net30', 'net60', 'net90', 'due_on_receipt']).default('due_on_receipt'),
   billingContactName: z.string().max(200).nullable().optional(),
   billingContactEmail: z.string().email().max(320).nullable().optional(),
   notes: z.string().max(2000).nullable().optional(),
@@ -102,9 +100,7 @@ export async function createCorporateProfile(
 // getCorporateProfile
 // ---------------------------------------------------------------------------
 
-export async function getCorporateProfile(
-  clientId: string
-): Promise<CorporateProfile | null> {
+export async function getCorporateProfile(clientId: string): Promise<CorporateProfile | null> {
   const user = await requireChef()
   const db: any = createServerClient()
 
@@ -243,9 +239,7 @@ export async function getCorporateClients(): Promise<
 // generateCorporateInvoice
 // ---------------------------------------------------------------------------
 
-export async function generateCorporateInvoice(
-  eventId: string
-): Promise<CorporateInvoice | null> {
+export async function generateCorporateInvoice(eventId: string): Promise<CorporateInvoice | null> {
   const user = await requireChef()
   const db: any = createServerClient()
 

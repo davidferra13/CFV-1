@@ -27,9 +27,7 @@ function fromHandoffRules(db: any): any {
 
 // ---- actions ----
 
-export async function getOwnershipAssignments(
-  eventId?: string
-): Promise<OwnershipAssignment[]> {
+export async function getOwnershipAssignments(eventId?: string): Promise<OwnershipAssignment[]> {
   const user = await requireChef()
   const db: any = createServerClient()
 
@@ -114,10 +112,7 @@ export async function createMergePlan(params: {
   }
   if (params.strategy !== undefined) payload.strategy = params.strategy
 
-  const { data, error } = await fromMergePlans(db)
-    .insert(payload)
-    .select('*')
-    .single()
+  const { data, error } = await fromMergePlans(db).insert(payload).select('*').single()
 
   if (error) throw new Error(`Failed to create merge plan: ${error.message}`)
   return mapMergePlan(data)
@@ -136,9 +131,7 @@ export async function getHandoffRules(): Promise<HandoffRule[]> {
   return (data ?? []).map(mapHandoffRule)
 }
 
-export async function getOwnershipSummary(
-  eventId: string
-): Promise<OwnershipSummary> {
+export async function getOwnershipSummary(eventId: string): Promise<OwnershipSummary> {
   const user = await requireChef()
   const db: any = createServerClient()
 

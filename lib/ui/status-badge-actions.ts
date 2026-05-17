@@ -36,9 +36,7 @@ export async function getStatusBadgeConfig(
 /**
  * List all status-to-badge mappings, optionally filtered by entity type.
  */
-export async function getEntityStatusMappings(
-  entityType?: string
-): Promise<EntityStatusMapping[]> {
+export async function getEntityStatusMappings(entityType?: string): Promise<EntityStatusMapping[]> {
   const user = await requireChef()
   const db: any = createServerClient()
 
@@ -71,18 +69,16 @@ export async function upsertStatusMapping(
   const user = await requireChef()
   const db: any = createServerClient()
 
-  const { error } = await db
-    .from('entity_status_mappings')
-    .upsert(
-      {
-        tenant_id: user.tenantId!,
-        entity_type: entityType,
-        status_field: statusField,
-        status_value: statusValue,
-        badge_config: badgeConfig,
-      },
-      { onConflict: 'tenant_id,entity_type,status_field,status_value' }
-    )
+  const { error } = await db.from('entity_status_mappings').upsert(
+    {
+      tenant_id: user.tenantId!,
+      entity_type: entityType,
+      status_field: statusField,
+      status_value: statusValue,
+      badge_config: badgeConfig,
+    },
+    { onConflict: 'tenant_id,entity_type,status_field,status_value' }
+  )
 
   if (error) throw error
 }
@@ -90,9 +86,7 @@ export async function upsertStatusMapping(
 /**
  * Get progress stage labels for an entity type.
  */
-export async function getProgressLanguage(
-  entityType: string
-): Promise<ProgressLanguageEntry[]> {
+export async function getProgressLanguage(entityType: string): Promise<ProgressLanguageEntry[]> {
   const user = await requireChef()
   const db: any = createServerClient()
 
@@ -120,19 +114,17 @@ export async function upsertProgressLanguage(
   const user = await requireChef()
   const db: any = createServerClient()
 
-  const { error } = await db
-    .from('progress_language_entries')
-    .upsert(
-      {
-        tenant_id: user.tenantId!,
-        entity_type: entityType,
-        stage,
-        label,
-        description,
-        percent_complete: percentComplete,
-      },
-      { onConflict: 'tenant_id,entity_type,stage' }
-    )
+  const { error } = await db.from('progress_language_entries').upsert(
+    {
+      tenant_id: user.tenantId!,
+      entity_type: entityType,
+      stage,
+      label,
+      description,
+      percent_complete: percentComplete,
+    },
+    { onConflict: 'tenant_id,entity_type,stage' }
+  )
 
   if (error) throw error
 }

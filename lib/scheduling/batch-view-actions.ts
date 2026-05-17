@@ -152,10 +152,7 @@ export async function getWeeklyBatchView(weekStart?: string): Promise<WeeklyBatc
   let componentCountMap = new Map<string, number>()
 
   if (eventIds.length > 0) {
-    const { data: menus } = await db
-      .from('menus')
-      .select('id, event_id')
-      .in('event_id', eventIds)
+    const { data: menus } = await db.from('menus').select('id, event_id').in('event_id', eventIds)
 
     const menuList: any[] = menus ?? []
     for (const m of menuList) {
@@ -165,10 +162,7 @@ export async function getWeeklyBatchView(weekStart?: string): Promise<WeeklyBatc
     // Get dish/component counts
     const menuIds = menuList.map((m: any) => m.id)
     if (menuIds.length > 0) {
-      const { data: dishes } = await db
-        .from('dishes')
-        .select('id, menu_id')
-        .in('menu_id', menuIds)
+      const { data: dishes } = await db.from('dishes').select('id, menu_id').in('menu_id', menuIds)
 
       const dishList: any[] = dishes ?? []
       const menuToEvent = new Map<string, string>()
@@ -323,9 +317,7 @@ export async function getBatchPrepConsolidation(dateRange: {
  * Common ingredients across multiple specified events for bulk purchasing.
  * Only returns ingredients used by 2+ of the given events.
  */
-export async function getSharedIngredientsList(
-  eventIds: string[]
-): Promise<SharedIngredient[]> {
+export async function getSharedIngredientsList(eventIds: string[]): Promise<SharedIngredient[]> {
   const user = await requireChef()
   const db: any = createServerClient()
   const tenantId = user.tenantId!
@@ -342,7 +334,11 @@ export async function getSharedIngredientsList(
   const verified: any[] = verifiedEvents ?? []
   if (verified.length < 2) return []
 
-  return fetchSharedIngredients(db, verified.map((e: any) => e.id), verified)
+  return fetchSharedIngredients(
+    db,
+    verified.map((e: any) => e.id),
+    verified
+  )
 }
 
 // ============================================
@@ -482,7 +478,9 @@ export async function getDayLoadForecast(date: string): Promise<DayLoad> {
   // Get events on this day
   const { data: events } = await db
     .from('events')
-    .select('id, occasion, event_date, serve_time, arrival_time, travel_time_minutes, guest_count, status')
+    .select(
+      'id, occasion, event_date, serve_time, arrival_time, travel_time_minutes, guest_count, status'
+    )
     .eq('tenant_id', tenantId)
     .not('status', 'eq', 'cancelled')
     .gte('event_date', date)
@@ -592,10 +590,7 @@ async function fetchSharedIngredients(
   }
 
   // Get dishes for these menus
-  const { data: dishes } = await db
-    .from('dishes')
-    .select('id, menu_id')
-    .in('menu_id', menuIds)
+  const { data: dishes } = await db.from('dishes').select('id, menu_id').in('menu_id', menuIds)
 
   if (!dishes || dishes.length === 0) return []
 
@@ -666,5 +661,7 @@ async function fetchSharedIngredients(
     }
   }
 
-  return result.sort((a, b) => b.sharedCount - a.sharedCount || a.ingredientName.localeCompare(b.ingredientName))
+  return result.sort(
+    (a, b) => b.sharedCount - a.sharedCount || a.ingredientName.localeCompare(b.ingredientName)
+  )
 }

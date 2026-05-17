@@ -113,10 +113,7 @@ async function ensureTierConfigsExist(tenantId: string): Promise<TierConfig[]> {
     perks_json: DEFAULT_TIER_PERKS[tier],
   }))
 
-  const { data: inserted, error } = await db
-    .from('chef_loyalty_configs')
-    .insert(rows)
-    .select()
+  const { data: inserted, error } = await db.from('chef_loyalty_configs').insert(rows).select()
 
   if (error) {
     console.error('[ensureTierConfigsExist] Seed error:', error)
@@ -284,9 +281,12 @@ export async function getLoyaltyPerks(tier: LoyaltyTierName): Promise<LoyaltyPer
 // 4. applyLoyaltyDiscount - Apply tier-based discount to an event
 // =====================================================================================
 
-export async function applyLoyaltyDiscount(
-  eventId: string
-): Promise<{ success: boolean; discountPercent: number; discountCents: number; tier: LoyaltyTierName }> {
+export async function applyLoyaltyDiscount(eventId: string): Promise<{
+  success: boolean
+  discountPercent: number
+  discountCents: number
+  tier: LoyaltyTierName
+}> {
   const user = await requireChef()
   const db: any = createServerClient()
 
@@ -325,7 +325,8 @@ export async function applyLoyaltyDiscount(
   const totalEvents = client.total_events_completed || 0
   const tier = computeTierFromHistory(totalEvents, totalSpendCents, configs)
   const tierConfig = configs.find((c) => c.tier === tier)
-  const discountPercent = tierConfig?.discountPercent ?? DEFAULT_TIER_THRESHOLDS[tier].discountPercent
+  const discountPercent =
+    tierConfig?.discountPercent ?? DEFAULT_TIER_THRESHOLDS[tier].discountPercent
 
   if (discountPercent <= 0) {
     return { success: true, discountPercent: 0, discountCents: 0, tier }
@@ -436,7 +437,8 @@ export async function setLoyaltyPerks(
   }
   if (validated.minEvents !== undefined) updatePayload.min_events = validated.minEvents
   if (validated.minSpendCents !== undefined) updatePayload.min_spend_cents = validated.minSpendCents
-  if (validated.discountPercent !== undefined) updatePayload.discount_percent = validated.discountPercent
+  if (validated.discountPercent !== undefined)
+    updatePayload.discount_percent = validated.discountPercent
 
   const { data: updated, error } = await db
     .from('chef_loyalty_configs')

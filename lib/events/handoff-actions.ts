@@ -21,11 +21,7 @@ import type {
 
 // ── Helpers ──────────────────────────────────────────────────────────────────
 
-async function verifyEventOwnership(
-  db: any,
-  eventId: string,
-  tenantId: string
-): Promise<boolean> {
+async function verifyEventOwnership(db: any, eventId: string, tenantId: string): Promise<boolean> {
   const { data } = await db
     .from('events')
     .select('id')
@@ -112,11 +108,7 @@ export async function generateHandoffPacket(
     if (eventMenus?.length) {
       const menuId = eventMenus[0].menu_id
 
-      const { data: menu } = await db
-        .from('menus')
-        .select('id, name')
-        .eq('id', menuId)
-        .single()
+      const { data: menu } = await db.from('menus').select('id, name').eq('id', menuId).single()
 
       const { data: dishes } = await db
         .from('dishes')
@@ -137,9 +129,10 @@ export async function generateHandoffPacket(
           })
         }
 
-        const courses: HandoffCourse[] = Array.from(courseMap.entries()).map(
-          ([name, items]) => ({ name, dishes: items })
-        )
+        const courses: HandoffCourse[] = Array.from(courseMap.entries()).map(([name, items]) => ({
+          name,
+          dishes: items,
+        }))
 
         menuSummary = {
           id: menu.id,
@@ -324,7 +317,11 @@ export async function getActiveHandoffs(): Promise<{
 
   if (recvErr) {
     console.error('[handoff] received query failed:', recvErr.message)
-    return { sent: (sent ?? []) as HandoffRecord[], received: [], error: 'Failed to load received handoffs' }
+    return {
+      sent: (sent ?? []) as HandoffRecord[],
+      received: [],
+      error: 'Failed to load received handoffs',
+    }
   }
 
   return {

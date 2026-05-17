@@ -47,9 +47,7 @@ function mapAudit(r: any): MobileErgonomicsAudit {
   }
 }
 
-export async function getMobileErgonomicsRules(
-  route?: string,
-): Promise<MobileErgonomicsRule[]> {
+export async function getMobileErgonomicsRules(route?: string): Promise<MobileErgonomicsRule[]> {
   const user = await requireChef()
   const db: any = createServerClient()
   const params: any[] = [user.tenantId]
@@ -95,14 +93,14 @@ export async function upsertMobileErgonomicsRule(params: {
       params.swipeEnabled,
       params.swipeAction ?? null,
       params.mobileOverride ? JSON.stringify(params.mobileOverride) : null,
-    ],
+    ]
   )
   return mapRule(rows[0])
 }
 
 export async function getMobileErgonomicsAudits(
   route?: string,
-  limit?: number,
+  limit?: number
 ): Promise<MobileErgonomicsAudit[]> {
   const user = await requireChef()
   const db: any = createServerClient()
@@ -145,7 +143,7 @@ export async function createMobileErgonomicsAudit(params: {
       params.failingTargets,
       JSON.stringify(params.thumbZoneDistribution),
       params.score,
-    ],
+    ]
   )
   return mapAudit(rows[0])
 }
@@ -155,7 +153,7 @@ export async function deleteMobileErgonomicsRule(id: string): Promise<boolean> {
   const db: any = createServerClient()
   const rows = await db.query(
     'DELETE FROM mobile_ergonomics_rules WHERE id = $1 AND tenant_id = $2 RETURNING id',
-    [id, user.tenantId],
+    [id, user.tenantId]
   )
   return rows.length > 0
 }
@@ -166,17 +164,17 @@ export async function getMobileErgonomicsSummary(): Promise<MobileErgonomicsSumm
 
   const ruleRows = await db.query(
     'SELECT COUNT(*)::int as total FROM mobile_ergonomics_rules WHERE tenant_id = $1',
-    [user.tenantId],
+    [user.tenantId]
   )
 
   const auditRows = await db.query(
     'SELECT COUNT(*)::int as total, COALESCE(AVG(score), 0)::int as avg_score FROM mobile_ergonomics_audits WHERE tenant_id = $1',
-    [user.tenantId],
+    [user.tenantId]
   )
 
   const worstRows = await db.query(
     'SELECT route, score FROM mobile_ergonomics_audits WHERE tenant_id = $1 ORDER BY score ASC LIMIT 5',
-    [user.tenantId],
+    [user.tenantId]
   )
 
   return {

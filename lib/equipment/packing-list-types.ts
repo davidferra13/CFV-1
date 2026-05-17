@@ -1,7 +1,12 @@
 // Equipment Packing List Auto-Generation - Types
 // Shared between server actions, technique map, and UI components.
 
-export type PackingItemSource = 'menu_technique' | 'guest_scale' | 'venue_gap' | 'registry' | 'custom'
+export type PackingItemSource =
+  | 'menu_technique'
+  | 'guest_scale'
+  | 'venue_gap'
+  | 'registry'
+  | 'custom'
 export type PackingSection = 'must_bring' | 'recommended' | 'not_needed'
 
 export interface PackingItem {
@@ -37,13 +42,7 @@ export interface EquipmentRegistryItem {
   createdAt: string
 }
 
-export type EquipmentCategory =
-  | 'cooking'
-  | 'prep'
-  | 'plating'
-  | 'service'
-  | 'transport'
-  | 'misc'
+export type EquipmentCategory = 'cooking' | 'prep' | 'plating' | 'service' | 'transport' | 'misc'
 
 export const EQUIPMENT_REGISTRY_CATEGORIES: EquipmentCategory[] = [
   'cooking',

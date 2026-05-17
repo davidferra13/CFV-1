@@ -21,9 +21,7 @@ function fromInteractionAudits(db: any): any {
 
 // ---- actions ----
 
-export async function getInteractionRules(
-  component?: string
-): Promise<InteractionRule[]> {
+export async function getInteractionRules(component?: string): Promise<InteractionRule[]> {
   const user = await requireChef()
   const db: any = createServerClient()
 
@@ -73,9 +71,7 @@ export async function upsertInteractionRule(params: {
   return mapRule(data)
 }
 
-export async function getInteractionAudits(
-  route?: string
-): Promise<InteractionAudit[]> {
+export async function getInteractionAudits(route?: string): Promise<InteractionAudit[]> {
   const user = await requireChef()
   const db: any = createServerClient()
 
@@ -112,10 +108,7 @@ export async function createInteractionAudit(params: {
   }
   if (params.notes !== undefined) payload.notes = params.notes
 
-  const { data, error } = await fromInteractionAudits(db)
-    .insert(payload)
-    .select('*')
-    .single()
+  const { data, error } = await fromInteractionAudits(db).insert(payload).select('*').single()
 
   if (error) throw new Error(`Failed to create interaction audit: ${error.message}`)
   return mapAudit(data)
@@ -154,10 +147,7 @@ export async function getInteractionSummary(): Promise<InteractionSummary> {
   if (auditErr) throw new Error(`Failed to load audit summary: ${auditErr.message}`)
 
   const auditList = audits ?? []
-  const totalScore = auditList.reduce(
-    (sum: number, a: any) => sum + (a.score ?? 0),
-    0
-  )
+  const totalScore = auditList.reduce((sum: number, a: any) => sum + (a.score ?? 0), 0)
   const avgScore = auditList.length > 0 ? Math.round(totalScore / auditList.length) : 0
 
   const missingStateCounts: Record<string, number> = {}

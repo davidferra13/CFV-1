@@ -85,9 +85,7 @@ export async function propagateFullDietaryChange(params: {
   const changedDietaryFields = DIETARY_FIELDS.filter((field) => field in patch)
   if (changedDietaryFields.length > 0) {
     try {
-      const { logDietaryChangeInternal } = await import(
-        '@/lib/clients/dietary-alert-actions'
-      )
+      const { logDietaryChangeInternal } = await import('@/lib/clients/dietary-alert-actions')
       for (const field of changedDietaryFields) {
         const oldVal = previousState[field]
         const newVal = patch[field]
@@ -125,9 +123,7 @@ export async function propagateFullDietaryChange(params: {
   // 3. Menu recheck
   if (changedDietaryFields.length > 0) {
     try {
-      const { recheckUpcomingMenusForClient } = await import(
-        '@/lib/dietary/menu-recheck'
-      )
+      const { recheckUpcomingMenusForClient } = await import('@/lib/dietary/menu-recheck')
       await recheckUpcomingMenusForClient({ tenantId, clientId, db })
     } catch (err) {
       console.warn('[dietary/propagate] Menu recheck failed:', err)

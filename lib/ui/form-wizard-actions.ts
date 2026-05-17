@@ -15,9 +15,7 @@ import type {
 // Wizard Config
 // ---------------------------------------------------------------------------
 
-export async function getWizardConfig(
-  wizardId: string
-): Promise<WizardConfig | null> {
+export async function getWizardConfig(wizardId: string): Promise<WizardConfig | null> {
   const user = await requireChef()
   const db: any = createServerClient()
 
@@ -41,18 +39,16 @@ export async function upsertWizardConfig(
   const user = await requireChef()
   const db: any = createServerClient()
 
-  const { error } = await db
-    .from('wizard_configs')
-    .upsert(
-      {
-        tenant_id: user.tenantId!,
-        wizard_id: wizardId,
-        name,
-        steps,
-        updated_at: new Date().toISOString(),
-      },
-      { onConflict: 'tenant_id,wizard_id' }
-    )
+  const { error } = await db.from('wizard_configs').upsert(
+    {
+      tenant_id: user.tenantId!,
+      wizard_id: wizardId,
+      name,
+      steps,
+      updated_at: new Date().toISOString(),
+    },
+    { onConflict: 'tenant_id,wizard_id' }
+  )
 
   if (error) throw error
 }
@@ -82,9 +78,7 @@ export async function updateWizardProgress(
 // Intake Form Config
 // ---------------------------------------------------------------------------
 
-export async function getIntakeFormConfig(
-  formId: string
-): Promise<IntakeFormConfig | null> {
+export async function getIntakeFormConfig(formId: string): Promise<IntakeFormConfig | null> {
   const user = await requireChef()
   const db: any = createServerClient()
 
@@ -194,18 +188,9 @@ export async function getFormWizardSummary(): Promise<FormWizardSummary> {
   const db: any = createServerClient()
 
   const [wizards, forms, submissions] = await Promise.all([
-    db
-      .from('wizard_configs')
-      .select('id, completed_steps, steps')
-      .eq('tenant_id', user.tenantId!),
-    db
-      .from('intake_form_configs')
-      .select('id')
-      .eq('tenant_id', user.tenantId!),
-    db
-      .from('form_submissions')
-      .select('id')
-      .eq('tenant_id', user.tenantId!),
+    db.from('wizard_configs').select('id, completed_steps, steps').eq('tenant_id', user.tenantId!),
+    db.from('intake_form_configs').select('id').eq('tenant_id', user.tenantId!),
+    db.from('form_submissions').select('id').eq('tenant_id', user.tenantId!),
   ])
 
   if (wizards.error) throw wizards.error
@@ -221,8 +206,7 @@ export async function getFormWizardSummary(): Promise<FormWizardSummary> {
     0
   )
   const totalCompleted = wizardRows.reduce(
-    (sum, w) =>
-      sum + (Array.isArray(w.completed_steps) ? w.completed_steps.length : 0),
+    (sum, w) => sum + (Array.isArray(w.completed_steps) ? w.completed_steps.length : 0),
     0
   )
 
@@ -231,8 +215,7 @@ export async function getFormWizardSummary(): Promise<FormWizardSummary> {
     totalForms: (forms.data ?? []).length,
     totalSubmissions: (submissions.data ?? []).length,
     completionRate: totalSteps > 0 ? totalCompleted / totalSteps : 0,
-    avgStepsCompleted:
-      wizardRows.length > 0 ? totalCompleted / wizardRows.length : 0,
+    avgStepsCompleted: wizardRows.length > 0 ? totalCompleted / wizardRows.length : 0,
   }
 }
 

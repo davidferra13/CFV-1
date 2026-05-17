@@ -9,11 +9,7 @@ import { requireChef } from '@/lib/auth/get-user'
 import { createServerClient } from '@/lib/db/server'
 import { getAccountLocation } from '@/lib/location/account-location'
 import { getDiscoverableChefs } from '@/lib/directory/actions'
-import type {
-  ChefExperienceCard,
-  ChefConsumerFeedSection,
-  ExploreFilters,
-} from './consumer-types'
+import type { ChefExperienceCard, ChefConsumerFeedSection, ExploreFilters } from './consumer-types'
 
 // ── Helpers ─────────────────────────────────────────────────────────────
 

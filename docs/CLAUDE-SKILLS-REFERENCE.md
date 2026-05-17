@@ -5,55 +5,55 @@
 
 ## Auto-Trigger Map
 
-| Trigger Condition                    | Skill                            | Why                                       |
-| ------------------------------------ | -------------------------------- | ----------------------------------------- |
-| **ANY first message (ALWAYS)**       | `context-load` (HOOK-ENFORCED)   | Never start cold. Silent context recovery |
-| First message is greeting/open-ended | `/morning`                       | Full briefing when no specific task       |
-| Error encountered during work        | `/debug`                         | Root cause before fix                     |
-| About to commit/push code            | `/review` (HOOK-ENFORCED)        | Quality gate                              |
-| After writing/editing code files     | `/compliance` (HOOK-ENFORCED)    | Rule violations caught early              |
-| After code changes to UI/features    | `/document`                      | Living docs stay current                  |
-| Bug persists after 2 fix attempts    | `/5-whys`                        | Stop thrashing, find root cause           |
-| About to build a feature from spec   | `/builder` (TDD default)         | Full gate procedure, TDD-first            |
-| Building any new feature or fix      | `/tdd`                           | Default build method. Red-green-refactor  |
-| Writing or reviewing a spec          | `/planner`                       | Full gate procedure                       |
-| Investigating a question for report  | `/research`                      | Full gate procedure                       |
-| End of session / user says goodbye   | `/close-session`                 | Nothing left uncommitted                  |
-| User asks "what's going on" / status | `/status`                        | Structured snapshot                       |
-| Build fails or type errors appear    | `/health`                        | Diagnose before guessing                  |
-| Hard bug or performance regression   | `/diagnose`                      | 6-phase disciplined diagnosis (Pocock)    |
-| After significant code changes       | `/review` then `/ship`           | Ship clean code                           |
-| Feature work complete                | `/feature-closeout`              | tsc + build + commit + push               |
-| Stress testing or persona simulation | `/persona-stress-test`           | Deterministic audit                       |
-| Need to start dev environment        | `/warmup`                        | Server + auth + browser ready             |
-| Planning a feature or major change   | `/grill-me`                      | Stress-test plan before building          |
-| Planning with domain model impact    | `/grill-with-docs`               | Grill + update CONTEXT.md/ADRs            |
-| Breaking work into tasks/issues      | `/to-issues`                     | Vertical-slice issue decomposition        |
-| Need higher-level code understanding | `/zoom-out`                      | Module map before diving in               |
-| Architecture feels muddy/coupled     | `/improve-codebase-architecture` | Deep module analysis (Ousterhout)         |
-| Synthesizing conversation into spec  | `/to-prd`                        | PRD from current context                  |
-| New issue/bug report arrives         | `/triage`                        | State machine triage workflow             |
-| Creating a new skill                 | `/write-a-skill`                 | Proper structure + progressive disclosure |
-| Feature touches Remy-accessible area | `/remy-gate`                     | Ensure Remy write parity                  |
-| Feature discussion concluded         | `/audit`                         | Lock down before moving on                |
-| "Who's waiting" / client silence     | `/client-pulse`                  | Show clients needing response             |
-| "Tell [client]..." / update client   | `/quick-update`                  | Draft and send status update              |
-| "Let me tell you a recipe..."        | `/brain-dump`                    | Capture recipe from memory                |
-| Unacked inquiries found              | `/acknowledge`                   | Bulk-ack new inquiries                    |
-| "Next dinner" / "what's coming up"   | `/next-dinner`                   | Full event briefing                       |
-| "Recipe blitz" / batch recipes       | `/recipe-blitz`                  | Rapid-fire batch recipe capture           |
-| "Money check" / "who owes me"        | `/money-check`                   | Quick P&L snapshot                        |
-| "Inbox zero" / "what's unread"       | `/inbox-zero`                    | Multi-channel inbox triage                |
-| "How are we doing" / queue status    | `/progress`                      | Build queue dashboard + burndown          |
-| After a swarm produces PARTIAL items | `/sweep`                         | Batch Playwright verification             |
-| Dirty tree from parallel agents      | `/untangle`                      | Sort into logical atomic commits          |
-| "What's disconnected" / post-build   | `/wiring-audit`                  | Diagnostic orphan scan                    |
-| After wiring-audit finds orphans     | `/wire`                          | Connect orphaned code to consumers        |
-| "Apply migrations" / blocked items   | `/migrate`                       | Safe migration with backup + verify       |
-| "Run tests" / pre-ship               | `/qa`                            | Unified QA pass (dev/pass/full levels)    |
+| Trigger Condition                    | Skill                            | Why                                         |
+| ------------------------------------ | -------------------------------- | ------------------------------------------- |
+| **ANY first message (ALWAYS)**       | `context-load` (HOOK-ENFORCED)   | Never start cold. Silent context recovery   |
+| First message is greeting/open-ended | `/morning`                       | Full briefing when no specific task         |
+| Error encountered during work        | `/debug`                         | Root cause before fix                       |
+| About to commit/push code            | `/review` (HOOK-ENFORCED)        | Quality gate                                |
+| After writing/editing code files     | `/compliance` (HOOK-ENFORCED)    | Rule violations caught early                |
+| After code changes to UI/features    | `/document`                      | Living docs stay current                    |
+| Bug persists after 2 fix attempts    | `/5-whys`                        | Stop thrashing, find root cause             |
+| About to build a feature from spec   | `/builder` (TDD default)         | Full gate procedure, TDD-first              |
+| Building any new feature or fix      | `/tdd`                           | Default build method. Red-green-refactor    |
+| Writing or reviewing a spec          | `/planner`                       | Full gate procedure                         |
+| Investigating a question for report  | `/research`                      | Full gate procedure                         |
+| End of session / user says goodbye   | `/close-session`                 | Nothing left uncommitted                    |
+| User asks "what's going on" / status | `/status`                        | Structured snapshot                         |
+| Build fails or type errors appear    | `/health`                        | Diagnose before guessing                    |
+| Hard bug or performance regression   | `/diagnose`                      | 6-phase disciplined diagnosis (Pocock)      |
+| After significant code changes       | `/review` then `/ship`           | Ship clean code                             |
+| Feature work complete                | `/feature-closeout`              | tsc + build + commit + push                 |
+| Stress testing or persona simulation | `/persona-stress-test`           | Deterministic audit                         |
+| Need to start dev environment        | `/warmup`                        | Server + auth + browser ready               |
+| Planning a feature or major change   | `/grill-me`                      | Stress-test plan before building            |
+| Planning with domain model impact    | `/grill-with-docs`               | Grill + update CONTEXT.md/ADRs              |
+| Breaking work into tasks/issues      | `/to-issues`                     | Vertical-slice issue decomposition          |
+| Need higher-level code understanding | `/zoom-out`                      | Module map before diving in                 |
+| Architecture feels muddy/coupled     | `/improve-codebase-architecture` | Deep module analysis (Ousterhout)           |
+| Synthesizing conversation into spec  | `/to-prd`                        | PRD from current context                    |
+| New issue/bug report arrives         | `/triage`                        | State machine triage workflow               |
+| Creating a new skill                 | `/write-a-skill`                 | Proper structure + progressive disclosure   |
+| Feature touches Remy-accessible area | `/remy-gate`                     | Ensure Remy write parity                    |
+| Feature discussion concluded         | `/audit`                         | Lock down before moving on                  |
+| "Who's waiting" / client silence     | `/client-pulse`                  | Show clients needing response               |
+| "Tell [client]..." / update client   | `/quick-update`                  | Draft and send status update                |
+| "Let me tell you a recipe..."        | `/brain-dump`                    | Capture recipe from memory                  |
+| Unacked inquiries found              | `/acknowledge`                   | Bulk-ack new inquiries                      |
+| "Next dinner" / "what's coming up"   | `/next-dinner`                   | Full event briefing                         |
+| "Recipe blitz" / batch recipes       | `/recipe-blitz`                  | Rapid-fire batch recipe capture             |
+| "Money check" / "who owes me"        | `/money-check`                   | Quick P&L snapshot                          |
+| "Inbox zero" / "what's unread"       | `/inbox-zero`                    | Multi-channel inbox triage                  |
+| "How are we doing" / queue status    | `/progress`                      | Build queue dashboard + burndown            |
+| After a swarm produces PARTIAL items | `/sweep`                         | Batch Playwright verification               |
+| Dirty tree from parallel agents      | `/untangle`                      | Sort into logical atomic commits            |
+| "What's disconnected" / post-build   | `/wiring-audit`                  | Diagnostic orphan scan                      |
+| After wiring-audit finds orphans     | `/wire`                          | Connect orphaned code to consumers          |
+| "Apply migrations" / blocked items   | `/migrate`                       | Safe migration with backup + verify         |
+| "Run tests" / pre-ship               | `/qa`                            | Unified QA pass (dev/pass/full levels)      |
 | End of session / coverage check      | `/test-scan`                     | Reconcile routes vs tests, update blueprint |
-| "Crawl the site" / pre-release       | `/site-audit`                    | Full route crawl for errors               |
-| "Continue X work" / resume topic     | `/pick-up [topic]`               | Reconstruct prior session context         |
+| "Crawl the site" / pre-release       | `/site-audit`                    | Full route crawl for errors                 |
+| "Continue X work" / resume topic     | `/pick-up [topic]`               | Reconstruct prior session context           |
 
 ## Autonomous Behaviors (No Trigger Needed)
 
@@ -116,7 +116,7 @@
 - **`/wire`** - Connect orphaned code (exports with no consumers, actions with no triggers).
 - **`/wiring-audit`** - Read-only diagnostic: find disconnected code. Feeds into `/wire`.
 - **`/migrate`** - Safely apply pending migrations with backup and verification.
-- **`/qa`** - Unified QA pass (dev/pass/full levels) using existing qa-* scripts.
+- **`/qa`** - Unified QA pass (dev/pass/full levels) using existing qa-\* scripts.
 - **`/test-scan`** - Reconcile routes vs tests, update test-coverage-blueprint.md.
 - **`/site-audit`** - Full site crawl for broken pages, errors, accessibility.
 - **`/pick-up [topic]`** - Resume specific work thread from prior session.

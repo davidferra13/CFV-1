@@ -109,9 +109,7 @@ export async function sendInvoiceEmail(
 
     // Send email with PDF attachment
     const { sendEmail } = await import('@/lib/email/send')
-    const { InvoiceDeliveryEmail } = await import(
-      '@/lib/email/templates/invoice-delivery'
-    )
+    const { InvoiceDeliveryEmail } = await import('@/lib/email/templates/invoice-delivery')
 
     const recipients = ccEmail ? [toEmail, ccEmail] : toEmail
 
@@ -206,9 +204,7 @@ export async function autoSendInvoiceOnFinalPayment(
     const filename = `invoice-${data.invoiceNumber}-${data.client.fullName.replace(/\s+/g, '-').toLowerCase()}.pdf`
 
     const { sendEmail } = await import('@/lib/email/send')
-    const { InvoiceDeliveryEmail } = await import(
-      '@/lib/email/templates/invoice-delivery'
-    )
+    const { InvoiceDeliveryEmail } = await import('@/lib/email/templates/invoice-delivery')
 
     await sendEmail({
       to: data.client.email,
@@ -242,7 +238,9 @@ export async function autoSendInvoiceOnFinalPayment(
       sent_by: 'system',
     })
 
-    console.log(`[autoSendInvoice] Invoice ${data.invoiceNumber} sent to client for event ${eventId}`)
+    console.log(
+      `[autoSendInvoice] Invoice ${data.invoiceNumber} sent to client for event ${eventId}`
+    )
   } catch (err) {
     // Non-blocking: payment success must never fail because of invoice
     console.error('[autoSendInvoice] Failed (non-blocking):', err)

@@ -20,9 +20,9 @@ function mapRule(r: any): LifecycleActionRule {
     visualWeight: r.visual_weight ?? 5,
     sortOrder: r.sort_order ?? 0,
     contextCondition: r.context_condition
-      ? (typeof r.context_condition === 'string'
-          ? JSON.parse(r.context_condition)
-          : r.context_condition)
+      ? typeof r.context_condition === 'string'
+        ? JSON.parse(r.context_condition)
+        : r.context_condition
       : null,
     createdAt: new Date(r.created_at),
   }
@@ -78,7 +78,7 @@ export async function upsertActionRule(params: {
       params.visualWeight,
       params.sortOrder,
       params.contextCondition ? JSON.stringify(params.contextCondition) : null,
-    ],
+    ]
   )
   return mapRule(rows[0])
 }
@@ -86,10 +86,10 @@ export async function upsertActionRule(params: {
 export async function deleteActionRule(id: string): Promise<void> {
   const user = await requireChef()
   const db: any = createServerClient()
-  await db.query(
-    'DELETE FROM lifecycle_action_rules WHERE id = $1 AND tenant_id = $2',
-    [id, user.tenantId],
-  )
+  await db.query('DELETE FROM lifecycle_action_rules WHERE id = $1 AND tenant_id = $2', [
+    id,
+    user.tenantId,
+  ])
 }
 
 export async function getActionGroups(lifecycleStage?: string): Promise<ActionGroupConfig[]> {
@@ -126,7 +126,7 @@ export async function upsertActionGroup(params: {
       params.lifecycleStage,
       params.maxVisible,
       params.collapseBehavior,
-    ],
+    ]
   )
   return mapGroup(rows[0])
 }
@@ -136,19 +136,19 @@ export async function getActionHierarchySummary(): Promise<ActionHierarchySummar
   const db: any = createServerClient()
   const ruleCount = await db.query(
     'SELECT COUNT(*)::int as cnt FROM lifecycle_action_rules WHERE tenant_id = $1',
-    [user.tenantId],
+    [user.tenantId]
   )
   const groupCount = await db.query(
     'SELECT COUNT(*)::int as cnt FROM action_group_configs WHERE tenant_id = $1',
-    [user.tenantId],
+    [user.tenantId]
   )
   const stages = await db.query(
     'SELECT DISTINCT lifecycle_stage FROM lifecycle_action_rules WHERE tenant_id = $1 ORDER BY lifecycle_stage',
-    [user.tenantId],
+    [user.tenantId]
   )
   const groupedStages = await db.query(
     'SELECT DISTINCT lifecycle_stage FROM action_group_configs WHERE tenant_id = $1',
-    [user.tenantId],
+    [user.tenantId]
   )
   const groupedStageSet = new Set(groupedStages.map((r: any) => r.lifecycle_stage))
   const ungroupedCount = await db.query(
@@ -156,7 +156,7 @@ export async function getActionHierarchySummary(): Promise<ActionHierarchySummar
      WHERE tenant_id = $1 AND lifecycle_stage NOT IN (
        SELECT DISTINCT lifecycle_stage FROM action_group_configs WHERE tenant_id = $1
      )`,
-    [user.tenantId],
+    [user.tenantId]
   )
   return {
     totalRules: ruleCount[0]?.cnt ?? 0,

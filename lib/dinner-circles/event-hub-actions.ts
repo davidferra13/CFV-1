@@ -22,7 +22,11 @@ import type {
 
 const PostUpdateSchema = z.object({
   circleId: z.string().uuid(),
-  content: z.string().min(1).max(2000).transform((s) => s.trim()),
+  content: z
+    .string()
+    .min(1)
+    .max(2000)
+    .transform((s) => s.trim()),
   pinned: z.boolean().optional().default(false),
   revealAt: z.string().datetime().nullable().optional().default(null),
 })
@@ -74,14 +78,16 @@ async function assertCircleOwner(db: any, circleId: string, tenantId: string) {
 async function fetchCircleWithEvent(db: any, circleId: string) {
   const { data: circle } = await db
     .from('hub_groups')
-    .select(`
+    .select(
+      `
       id,
       name,
       event_id,
       tenant_id,
       description,
       planning_brief
-    `)
+    `
+    )
     .eq('id', circleId)
     .single()
 
@@ -91,7 +97,8 @@ async function fetchCircleWithEvent(db: any, circleId: string) {
   if (circle.event_id) {
     const { data: ev } = await db
       .from('events')
-      .select(`
+      .select(
+        `
         id,
         event_date,
         serve_time,
@@ -108,7 +115,8 @@ async function fetchCircleWithEvent(db: any, circleId: string) {
         dietary_restrictions,
         allergies,
         status
-      `)
+      `
+      )
       .eq('id', circle.event_id)
       .single()
     event = ev
@@ -200,12 +208,14 @@ export async function getCircleEventHub(circleId: string): Promise<CircleEventHu
   // Fetch members
   const { data: members } = await db
     .from('hub_group_members')
-    .select(`
+    .select(
+      `
       id,
       profile_id,
       role,
       joined_at
-    `)
+    `
+    )
     .eq('group_id', circleId)
     .order('joined_at', { ascending: true })
 
@@ -218,7 +228,10 @@ export async function getCircleEventHub(circleId: string): Promise<CircleEventHu
 
   // Fetch profiles for members
   const profileIds = memberRows.map((m) => m.profile_id)
-  let profileMap = new Map<string, { displayName: string; dietary: string[]; allergies: string[] }>()
+  let profileMap = new Map<
+    string,
+    { displayName: string; dietary: string[]; allergies: string[] }
+  >()
 
   if (profileIds.length > 0) {
     const { data: profiles } = await db
@@ -226,7 +239,7 @@ export async function getCircleEventHub(circleId: string): Promise<CircleEventHu
       .select('id, display_name, known_dietary, known_allergies')
       .in('id', profileIds)
 
-    for (const p of (profiles ?? [])) {
+    for (const p of profiles ?? []) {
       profileMap.set(p.id, {
         displayName: p.display_name,
         dietary: (p.known_dietary ?? []).filter(Boolean),
@@ -252,7 +265,13 @@ export async function getCircleEventHub(circleId: string): Promise<CircleEventHu
   const updates = await fetchCircleUpdates(db, circleId)
 
   // Build dietary summary (also uses event_guests if event is linked)
-  const dietarySummary = await buildDietarySummary(db, circleId, event?.id, user.tenantId!, profileMap)
+  const dietarySummary = await buildDietarySummary(
+    db,
+    circleId,
+    event?.id,
+    user.tenantId!,
+    profileMap
+  )
 
   const overview = buildOverview(circle, event, chefName, settings, guests.length)
   const details = buildDetails(event, settings)
@@ -383,7 +402,10 @@ export async function getCircleDietarySummary(circleId: string): Promise<CircleD
     .eq('group_id', circleId)
 
   const profileIds = ((members ?? []) as any[]).map((m: any) => m.profile_id)
-  const profileMap = new Map<string, { displayName: string; dietary: string[]; allergies: string[] }>()
+  const profileMap = new Map<
+    string,
+    { displayName: string; dietary: string[]; allergies: string[] }
+  >()
 
   if (profileIds.length > 0) {
     const { data: profiles } = await db
@@ -391,7 +413,7 @@ export async function getCircleDietarySummary(circleId: string): Promise<CircleD
       .select('id, display_name, known_dietary, known_allergies')
       .in('id', profileIds)
 
-    for (const p of (profiles ?? [])) {
+    for (const p of profiles ?? []) {
       profileMap.set(p.id, {
         displayName: p.display_name,
         dietary: (p.known_dietary ?? []).filter(Boolean),
@@ -410,7 +432,12 @@ async function buildDietarySummary(
   tenantId: string,
   profileMap: Map<string, { displayName: string; dietary: string[]; allergies: string[] }>
 ): Promise<CircleDietarySummary> {
-  const guestEntries: Array<{ name: string; restrictions: string[]; allergies: string[]; hasResponded: boolean }> = []
+  const guestEntries: Array<{
+    name: string
+    restrictions: string[]
+    allergies: string[]
+    hasResponded: boolean
+  }> = []
 
   // From hub_guest_profiles (circle members)
   for (const [, profile] of profileMap) {
@@ -432,7 +459,7 @@ async function buildDietarySummary(
       .eq('tenant_id', tenantId)
       .order('created_at', { ascending: true })
 
-    for (const eg of (eventGuests ?? [])) {
+    for (const eg of eventGuests ?? []) {
       const restrictions = (eg.dietary_restrictions ?? []).filter(Boolean)
       const allergies = (eg.allergies ?? []).filter(Boolean)
       // Avoid duplicates: if a name already exists in the list, skip

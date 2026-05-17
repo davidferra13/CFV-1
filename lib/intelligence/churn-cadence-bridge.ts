@@ -16,10 +16,7 @@ import { createServerClient } from '@/lib/db/server'
 import { generateReengagementDraft } from '@/lib/ai/reengagement-draft'
 import { createNotification } from '@/lib/notifications/actions'
 import { recordSideEffectFailure } from '@/lib/monitoring/non-blocking'
-import type {
-  ChurnPreventionResult,
-  ChurnRiskClient,
-} from './churn-prevention-triggers-internal'
+import type { ChurnPreventionResult, ChurnRiskClient } from './churn-prevention-triggers-internal'
 
 // ── Types ────────────────────────────────────────────────────────────────────
 
@@ -69,9 +66,8 @@ export async function processChurnTriggersForCadence(
 
   try {
     // Import dynamically to avoid circular deps with 'use server' modules
-    const { getChurnPreventionTriggersForTenant } = await import(
-      './churn-prevention-triggers-internal'
-    )
+    const { getChurnPreventionTriggersForTenant } =
+      await import('./churn-prevention-triggers-internal')
 
     const churnData = await getChurnPreventionTriggersForTenant(tenantId)
     if (!churnData || churnData.atRiskClients.length === 0) {
@@ -345,11 +341,7 @@ async function createReengagementDraft(
 
 // ── Dedup Helpers ────────────────────────────────────────────────────────────
 
-async function checkPendingDraft(
-  db: any,
-  tenantId: string,
-  clientId: string
-): Promise<boolean> {
+async function checkPendingDraft(db: any, tenantId: string, clientId: string): Promise<boolean> {
   const { data } = await db
     .from('scheduled_messages')
     .select('id')

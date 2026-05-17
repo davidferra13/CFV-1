@@ -281,9 +281,8 @@ export async function transitionEvent({
   // ── Cannabis Readiness Gate (pre-transition) ─────────────────────────────
   if (['confirmed', 'in_progress'].includes(toStatus) && !isSystemTransition) {
     try {
-      const { checkCannabisReadinessForTransition } = await import(
-        '@/lib/cannabis/readiness-integration'
-      )
+      const { checkCannabisReadinessForTransition } =
+        await import('@/lib/cannabis/readiness-integration')
       const cannabisCheck = await checkCannabisReadinessForTransition(
         eventId,
         event.tenant_id,
@@ -1444,7 +1443,9 @@ export async function transitionEvent({
       const { applyFateForEventMenus } = await import('@/lib/menus/fate-derivation')
       await applyFateForEventMenus(eventId, 'event_completed')
     } catch (fateErr) {
-      log.events.warn('Menu fate derivation on completion failed (non-blocking)', { error: fateErr })
+      log.events.warn('Menu fate derivation on completion failed (non-blocking)', {
+        error: fateErr,
+      })
     }
 
     await runCompletedEventPostProcessing(eventId, event.tenant_id)
@@ -1609,7 +1610,9 @@ export async function transitionEvent({
       const { applyFateForEventMenus } = await import('@/lib/menus/fate-derivation')
       await applyFateForEventMenus(eventId, 'event_cancelled')
     } catch (fateErr) {
-      log.events.warn('Menu fate derivation on cancellation failed (non-blocking)', { error: fateErr })
+      log.events.warn('Menu fate derivation on cancellation failed (non-blocking)', {
+        error: fateErr,
+      })
     }
   }
 

@@ -14,12 +14,7 @@ import { getPublicChefProfile } from '@/lib/profile/actions'
 import { getPublicAvailabilitySignals } from '@/lib/calendar/entry-actions'
 import { createServerClient } from '@/lib/db/server'
 
-import type {
-  FeaturedChef,
-  ChefProof,
-  BookingCTA,
-  FeatureScore,
-} from './featured-chef-types'
+import type { FeaturedChef, ChefProof, BookingCTA, FeatureScore } from './featured-chef-types'
 
 // ============================================
 // HELPERS
@@ -169,8 +164,7 @@ export async function getChefPublicProof(
     // Non-critical; degrade gracefully
   }
 
-  const showWebsite =
-    (chef.show_website_on_public_profile ?? false) && !!chef.website_url
+  const showWebsite = (chef.show_website_on_public_profile ?? false) && !!chef.website_url
 
   return {
     avgRating: reviewFeed.stats.averageRating,
@@ -196,9 +190,7 @@ export async function getChefPublicProof(
  *
  * @param chefSlug - The chef's public URL slug
  */
-export async function getChefBookingCTA(
-  chefSlug: string
-): Promise<BookingCTA | null> {
+export async function getChefBookingCTA(chefSlug: string): Promise<BookingCTA | null> {
   const profile = await getPublicChefProfile(chefSlug)
   if (!profile) return null
 
@@ -220,10 +212,8 @@ export async function getChefBookingCTA(
   // Determine starting price from booking config or marketplace data
   const startingPriceCents = chef.booking_base_price_cents ?? null
 
-  const showWebsite =
-    (chef.show_website_on_public_profile ?? false) && !!chef.website_url
-  const isInstantBook =
-    chef.booking_model === 'instant_book' && chef.booking_enabled
+  const showWebsite = (chef.show_website_on_public_profile ?? false) && !!chef.website_url
+  const isInstantBook = chef.booking_model === 'instant_book' && chef.booking_enabled
 
   const inquirySlug = chef.inquiry_slug || chef.public_slug || chef.slug
   const inquiryPath = `/chef/${inquirySlug}/inquire`
@@ -237,9 +227,7 @@ export async function getChefBookingCTA(
     inquiryPath,
     websiteUrl: showWebsite ? chef.website_url : null,
     isInstantBook,
-    bookingPath: isInstantBook && chef.booking_slug
-      ? `/book/${chef.booking_slug}`
-      : null,
+    bookingPath: isInstantBook && chef.booking_slug ? `/book/${chef.booking_slug}` : null,
   }
 }
 

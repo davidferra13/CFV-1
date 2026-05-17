@@ -1,4 +1,10 @@
-export type EvidenceType = 'photo' | 'document' | 'review' | 'certification' | 'metric' | 'testimonial'
+export type EvidenceType =
+  | 'photo'
+  | 'document'
+  | 'review'
+  | 'certification'
+  | 'metric'
+  | 'testimonial'
 export type EvidenceLevel = 'verified' | 'self_reported' | 'pending' | 'expired'
 
 export interface EvidenceItem {

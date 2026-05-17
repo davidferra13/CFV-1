@@ -144,10 +144,7 @@ export async function deleteRateLimitRule(ruleId: string): Promise<{ success: bo
   await requireAdmin()
   const db: any = createServerClient()
 
-  const { error } = await db
-    .from('rate_limit_rules')
-    .delete()
-    .eq('id', ruleId)
+  const { error } = await db.from('rate_limit_rules').delete().eq('id', ruleId)
 
   if (error) throw new Error(`Failed to delete rate limit rule: ${error.message}`)
   return { success: true }

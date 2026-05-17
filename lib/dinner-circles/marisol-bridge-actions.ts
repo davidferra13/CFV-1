@@ -37,9 +37,7 @@ function daysBetween(a: Date, b: Date): number {
 
 function computeAverageFrequency(dates: string[]): number | null {
   if (dates.length < 2) return null
-  const sorted = dates
-    .map((d) => new Date(d).getTime())
-    .sort((a, b) => a - b)
+  const sorted = dates.map((d) => new Date(d).getTime()).sort((a, b) => a - b)
   let totalGap = 0
   for (let i = 1; i < sorted.length; i++) {
     totalGap += sorted[i] - sorted[i - 1]
@@ -47,11 +45,7 @@ function computeAverageFrequency(dates: string[]): number | null {
   return Math.round(totalGap / ((sorted.length - 1) * 1000 * 60 * 60 * 24))
 }
 
-async function fetchCircleEvents(
-  db: any,
-  circleId: string,
-  tenantId: string
-): Promise<any[]> {
+async function fetchCircleEvents(db: any, circleId: string, tenantId: string): Promise<any[]> {
   // Events linked via hub_groups.event_id
   const { data: directEvents } = await db
     .from('events')
@@ -67,10 +61,7 @@ async function fetchCircleEvents(
     .select('id, event_date, status, guest_count, menu_id')
     .eq('tenant_id', tenantId)
     .is('deleted_at' as any, null)
-    .in(
-      'id',
-      db.from('event_shares').select('event_id').eq('hub_group_id', circleId)
-    )
+    .in('id', db.from('event_shares').select('event_id').eq('hub_group_id', circleId))
 
   // Deduplicate
   const map = new Map<string, any>()
@@ -103,7 +94,11 @@ function buildDietaryBrief(members: CircleMemberProfile[]): CircleDietaryBrief {
   if (!allergyCounts['dairy'] && !restrictionCounts['dairy-free']) {
     safeAssumptions.push('dairy is safe for all members')
   }
-  if (!allergyCounts['gluten'] && !restrictionCounts['gluten-free'] && !restrictionCounts['celiac']) {
+  if (
+    !allergyCounts['gluten'] &&
+    !restrictionCounts['gluten-free'] &&
+    !restrictionCounts['celiac']
+  ) {
     safeAssumptions.push('gluten is safe for all members')
   }
   if (!allergyCounts['nuts'] && !allergyCounts['tree nuts'] && !allergyCounts['peanuts']) {
@@ -146,10 +141,7 @@ export async function getCircleSchedulingContext(
 
   // Parallel: members, collaborators, events
   const [membersResult, collabResult, allEvents] = await Promise.all([
-    db
-      .from('hub_group_members')
-      .select('profile_id')
-      .eq('group_id', circleId),
+    db.from('hub_group_members').select('profile_id').eq('group_id', circleId),
     db
       .from('circle_collaborators')
       .select('user_id, role')
@@ -227,16 +219,11 @@ export async function getCircleSchedulingContext(
   }))
 
   // Build past events with menu names
-  const menuIds = allEvents
-    .filter((e: any) => e.menu_id)
-    .map((e: any) => e.menu_id)
+  const menuIds = allEvents.filter((e: any) => e.menu_id).map((e: any) => e.menu_id)
   let menuNameMap = new Map<string, string>()
   if (menuIds.length > 0) {
     try {
-      const { data: menus } = await db
-        .from('menus')
-        .select('id, name')
-        .in('id', menuIds)
+      const { data: menus } = await db.from('menus').select('id, name').in('id', menuIds)
       for (const m of menus ?? []) {
         menuNameMap.set(m.id, m.name)
       }
@@ -263,9 +250,7 @@ export async function getCircleSchedulingContext(
     (e) => e.status === 'completed' || new Date(e.eventDate) < new Date()
   )
   const upcoming = pastEvents.filter(
-    (e) =>
-      !['completed', 'cancelled'].includes(e.status) &&
-      new Date(e.eventDate) >= new Date()
+    (e) => !['completed', 'cancelled'].includes(e.status) && new Date(e.eventDate) >= new Date()
   )
 
   return {
@@ -277,11 +262,12 @@ export async function getCircleSchedulingContext(
     collaborators,
     averageFrequencyDays,
     lastEventDate: completedOrPast[0]?.eventDate ?? null,
-    nextScheduledDate: upcoming.length > 0
-      ? upcoming.sort(
-          (a, b) => new Date(a.eventDate).getTime() - new Date(b.eventDate).getTime()
-        )[0].eventDate
-      : null,
+    nextScheduledDate:
+      upcoming.length > 0
+        ? upcoming.sort(
+            (a, b) => new Date(a.eventDate).getTime() - new Date(b.eventDate).getTime()
+          )[0].eventDate
+        : null,
   }
 }
 
@@ -293,9 +279,7 @@ export async function getCircleSchedulingContext(
  * Based on circle history: suggest next date (using frequency pattern),
  * menu direction (avoid repeats), seasonal considerations.
  */
-export async function suggestNextCircleEvent(
-  circleId: string
-): Promise<CircleSuggestion | null> {
+export async function suggestNextCircleEvent(circleId: string): Promise<CircleSuggestion | null> {
   const ctx = await getCircleSchedulingContext(circleId)
   if (!ctx) return null
 
@@ -316,11 +300,13 @@ export async function suggestNextCircleEvent(
     if (nextDate < now) {
       const nextWeek = new Date(now.getTime() + 7 * 24 * 60 * 60 * 1000)
       suggestedDate = nextWeek.toISOString().split('T')[0]
-      reasoning = `This circle meets roughly every ${ctx.averageFrequencyDays} days. ` +
+      reasoning =
+        `This circle meets roughly every ${ctx.averageFrequencyDays} days. ` +
         `The last event was ${ctx.lastEventDate}, so scheduling is overdue.`
     } else {
       suggestedDate = nextDate.toISOString().split('T')[0]
-      reasoning = `This circle meets roughly every ${ctx.averageFrequencyDays} days. ` +
+      reasoning =
+        `This circle meets roughly every ${ctx.averageFrequencyDays} days. ` +
         `Based on the last event (${ctx.lastEventDate}), the next one falls around this date.`
     }
   } else if (ctx.lastEventDate) {
@@ -347,9 +333,10 @@ export async function suggestNextCircleEvent(
     .map((e) => e.menuName)
     .filter(Boolean) as string[]
 
-  const menuDirection = recentMenuNames.length > 0
-    ? `Recent menus include: ${recentMenuNames.join(', ')}. Consider a different direction.`
-    : 'No past menu data on record. Start fresh with any direction.'
+  const menuDirection =
+    recentMenuNames.length > 0
+      ? `Recent menus include: ${recentMenuNames.join(', ')}. Consider a different direction.`
+      : 'No past menu data on record. Start fresh with any direction.'
 
   // Seasonal notes
   const seasonalNotes: string[] = []
@@ -360,7 +347,9 @@ export async function suggestNextCircleEvent(
   } else if (currentSeason === 'winter') {
     seasonalNotes.push('Hearty, warming dishes. Braised meats, soups, and citrus are strong.')
   } else if (currentSeason === 'spring') {
-    seasonalNotes.push('Light, bright flavors. Asparagus, peas, ramps, and lamb are seasonal standouts.')
+    seasonalNotes.push(
+      'Light, bright flavors. Asparagus, peas, ramps, and lamb are seasonal standouts.'
+    )
   }
 
   // Dietary reminders from the brief
@@ -419,10 +408,7 @@ export async function getCircleCoordinationOverview(): Promise<CircleCoordinatio
       try {
         const [eventsData, membersResult, collabResult] = await Promise.all([
           fetchCircleEvents(db, circle.id, tenantId),
-          db
-            .from('hub_group_members')
-            .select('profile_id, created_at')
-            .eq('group_id', circle.id),
+          db.from('hub_group_members').select('profile_id, created_at').eq('group_id', circle.id),
           db
             .from('circle_collaborators')
             .select('id')
@@ -433,9 +419,7 @@ export async function getCircleCoordinationOverview(): Promise<CircleCoordinatio
         const events = eventsData ?? []
         const members = membersResult.data ?? []
 
-        const eventDates = events
-          .filter((e: any) => e.event_date)
-          .map((e: any) => e.event_date)
+        const eventDates = events.filter((e: any) => e.event_date).map((e: any) => e.event_date)
 
         const sortedDesc = eventDates
           .map((d: string) => new Date(d))
@@ -451,23 +435,25 @@ export async function getCircleCoordinationOverview(): Promise<CircleCoordinatio
             new Date(e.event_date) >= now
         )
 
-        const lastEventDate = completedOrPast.length > 0
-          ? completedOrPast.sort(
-              (a: any, b: any) => new Date(b.event_date).getTime() - new Date(a.event_date).getTime()
-            )[0].event_date
-          : null
+        const lastEventDate =
+          completedOrPast.length > 0
+            ? completedOrPast.sort(
+                (a: any, b: any) =>
+                  new Date(b.event_date).getTime() - new Date(a.event_date).getTime()
+              )[0].event_date
+            : null
 
-        const upcomingEventDate = upcoming.length > 0
-          ? upcoming.sort(
-              (a: any, b: any) => new Date(a.event_date).getTime() - new Date(b.event_date).getTime()
-            )[0].event_date
-          : null
+        const upcomingEventDate =
+          upcoming.length > 0
+            ? upcoming.sort(
+                (a: any, b: any) =>
+                  new Date(a.event_date).getTime() - new Date(b.event_date).getTime()
+              )[0].event_date
+            : null
 
         const avgFreq = computeAverageFrequency(eventDates)
 
-        const daysSinceLast = lastEventDate
-          ? daysBetween(now, new Date(lastEventDate))
-          : null
+        const daysSinceLast = lastEventDate ? daysBetween(now, new Date(lastEventDate)) : null
 
         const overdueForScheduling =
           !upcomingEventDate &&
@@ -519,9 +505,7 @@ export async function getCircleCoordinationOverview(): Promise<CircleCoordinatio
 /**
  * Aggregated dietary needs across all circle members for menu planning.
  */
-export async function getCircleDietaryBrief(
-  circleId: string
-): Promise<CircleDietaryBrief | null> {
+export async function getCircleDietaryBrief(circleId: string): Promise<CircleDietaryBrief | null> {
   const ctx = await getCircleSchedulingContext(circleId)
   if (!ctx) return null
   return ctx.dietaryBrief

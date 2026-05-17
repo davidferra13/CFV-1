@@ -64,7 +64,12 @@ export async function resolveLifecycleStages(
 
     // Fetch active events for this tenant
     const events = await pgClient<
-      { id: string; inquiry_id: string | null; occasion: string | null; event_date: string | null }[]
+      {
+        id: string
+        inquiry_id: string | null
+        occasion: string | null
+        event_date: string | null
+      }[]
     >`
       SELECT e.id, e.inquiry_id, e.occasion, e.event_date
       FROM events e
@@ -79,11 +84,7 @@ export async function resolveLifecycleStages(
 
     for (const event of events) {
       try {
-        const triggerCtx = await buildTriggerContext(
-          ctx.tenantId,
-          event.inquiry_id,
-          event.id
-        )
+        const triggerCtx = await buildTriggerContext(ctx.tenantId, event.inquiry_id, event.id)
 
         const stage = triggerCtx.lifecycleStage
         const label = STAGE_LABELS[stage] ?? `Stage ${stage}`

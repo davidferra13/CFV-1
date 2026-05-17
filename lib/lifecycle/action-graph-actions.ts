@@ -47,7 +47,7 @@ export async function upsertGraphNode(params: {
        SET stage_name = $2, label = $3, node_type = $4, position = $5, metadata = $6
        WHERE id = $1 AND tenant_id = $7
        RETURNING *`,
-      [params.id, params.stageName, params.label, params.nodeType, pos, meta, user.tenantId],
+      [params.id, params.stageName, params.label, params.nodeType, pos, meta, user.tenantId]
     )
     if (!rows.length) throw new Error('Node not found')
     return mapNode(rows[0])
@@ -59,7 +59,7 @@ export async function upsertGraphNode(params: {
      ON CONFLICT (tenant_id, stage_name)
      DO UPDATE SET label = $3, node_type = $4, position = $5, metadata = $6
      RETURNING *`,
-    [user.tenantId, params.stageName, params.label, params.nodeType, pos, meta],
+    [user.tenantId, params.stageName, params.label, params.nodeType, pos, meta]
   )
   return mapNode(rows[0])
 }
@@ -70,11 +70,11 @@ export async function deleteGraphNode(id: string): Promise<{ deleted: boolean }>
   // Remove edges referencing this node first
   await db.query(
     'DELETE FROM lifecycle_graph_edges WHERE tenant_id = $1 AND (from_node_id = $2 OR to_node_id = $2)',
-    [user.tenantId, id],
+    [user.tenantId, id]
   )
   const rows = await db.query(
     'DELETE FROM lifecycle_graph_nodes WHERE id = $1 AND tenant_id = $2 RETURNING id',
-    [id, user.tenantId],
+    [id, user.tenantId]
   )
   return { deleted: rows.length > 0 }
 }
@@ -115,7 +115,16 @@ export async function upsertGraphEdge(params: {
        SET from_node_id = $2, to_node_id = $3, label = $4, condition = $5, weight = $6, edge_type = $7
        WHERE id = $1 AND tenant_id = $8
        RETURNING *`,
-      [params.id, params.fromNodeId, params.toNodeId, params.label, cond, weight, params.edgeType, user.tenantId],
+      [
+        params.id,
+        params.fromNodeId,
+        params.toNodeId,
+        params.label,
+        cond,
+        weight,
+        params.edgeType,
+        user.tenantId,
+      ]
     )
     if (!rows.length) throw new Error('Edge not found')
     return mapEdge(rows[0])
@@ -125,7 +134,7 @@ export async function upsertGraphEdge(params: {
     `INSERT INTO lifecycle_graph_edges (tenant_id, from_node_id, to_node_id, label, condition, weight, edge_type)
      VALUES ($1, $2, $3, $4, $5, $6, $7)
      RETURNING *`,
-    [user.tenantId, params.fromNodeId, params.toNodeId, params.label, cond, weight, params.edgeType],
+    [user.tenantId, params.fromNodeId, params.toNodeId, params.label, cond, weight, params.edgeType]
   )
   return mapEdge(rows[0])
 }
@@ -139,25 +148,25 @@ export async function createGraphSnapshot(description?: string): Promise<GraphSn
   // Get current max version
   const vRows = await db.query(
     'SELECT COALESCE(MAX(version), 0)::int AS max_v FROM lifecycle_graph_snapshots WHERE tenant_id = $1',
-    [user.tenantId],
+    [user.tenantId]
   )
   const nextVersion = (vRows[0]?.max_v ?? 0) + 1
 
   // Fetch current graph state
   const nodes = await db.query(
     'SELECT * FROM lifecycle_graph_nodes WHERE tenant_id = $1 ORDER BY stage_name',
-    [user.tenantId],
+    [user.tenantId]
   )
   const edges = await db.query(
     'SELECT * FROM lifecycle_graph_edges WHERE tenant_id = $1 ORDER BY created_at',
-    [user.tenantId],
+    [user.tenantId]
   )
 
   const rows = await db.query(
     `INSERT INTO lifecycle_graph_snapshots (tenant_id, version, nodes, edges, description)
      VALUES ($1, $2, $3, $4, $5)
      RETURNING *`,
-    [user.tenantId, nextVersion, JSON.stringify(nodes), JSON.stringify(edges), description ?? null],
+    [user.tenantId, nextVersion, JSON.stringify(nodes), JSON.stringify(edges), description ?? null]
   )
   const r = rows[0]
   return {
@@ -179,26 +188,26 @@ export async function getGraphSummary(): Promise<GraphSummary> {
 
   const nodeCount = await db.query(
     'SELECT COUNT(*)::int AS cnt FROM lifecycle_graph_nodes WHERE tenant_id = $1',
-    [user.tenantId],
+    [user.tenantId]
   )
   const edgeCount = await db.query(
     'SELECT COUNT(*)::int AS cnt FROM lifecycle_graph_edges WHERE tenant_id = $1',
-    [user.tenantId],
+    [user.tenantId]
   )
   const terminalCount = await db.query(
     `SELECT COUNT(*)::int AS cnt FROM lifecycle_graph_nodes WHERE tenant_id = $1 AND node_type = 'terminal'`,
-    [user.tenantId],
+    [user.tenantId]
   )
   // Orphaned = nodes with no inbound or outbound edges
   const orphanCount = await db.query(
     `SELECT COUNT(*)::int AS cnt FROM lifecycle_graph_nodes n
      WHERE n.tenant_id = $1
        AND NOT EXISTS (SELECT 1 FROM lifecycle_graph_edges e WHERE e.tenant_id = $1 AND (e.from_node_id = n.id OR e.to_node_id = n.id))`,
-    [user.tenantId],
+    [user.tenantId]
   )
   const latestVersion = await db.query(
     'SELECT MAX(version)::int AS v FROM lifecycle_graph_snapshots WHERE tenant_id = $1',
-    [user.tenantId],
+    [user.tenantId]
   )
 
   return {
@@ -242,5 +251,9 @@ function mapEdge(r: any): GraphEdge {
 function parseJson<T>(val: unknown, fallback: T): T {
   if (val === null || val === undefined) return fallback
   if (typeof val === 'object') return val as T
-  try { return JSON.parse(val as string) } catch { return fallback }
+  try {
+    return JSON.parse(val as string)
+  } catch {
+    return fallback
+  }
 }

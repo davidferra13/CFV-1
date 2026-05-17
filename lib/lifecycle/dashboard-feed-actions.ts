@@ -22,9 +22,7 @@ function fromFeedFilters(db: any): any {
 
 // ---- actions ----
 
-export async function getFeedItems(
-  filters?: FeedItemsQuery
-): Promise<FeedItem[]> {
+export async function getFeedItems(filters?: FeedItemsQuery): Promise<FeedItem[]> {
   const user = await requireChef()
   const db: any = createServerClient()
 
@@ -77,10 +75,7 @@ export async function createFeedItem(params: {
   if (params.actorName) payload.actor_name = params.actorName
   if (params.metadata) payload.metadata = params.metadata
 
-  const { data, error } = await fromFeedItems(db)
-    .insert(payload)
-    .select('*')
-    .single()
+  const { data, error } = await fromFeedItems(db).insert(payload).select('*').single()
 
   if (error) throw new Error(`Failed to create feed item: ${error.message}`)
   return mapFeedItem(data)
@@ -140,10 +135,7 @@ export async function saveFeedFilter(params: {
   }
   if (params.dateRange !== undefined) payload.date_range = params.dateRange
 
-  const { data, error } = await fromFeedFilters(db)
-    .insert(payload)
-    .select('*')
-    .single()
+  const { data, error } = await fromFeedFilters(db).insert(payload).select('*').single()
 
   if (error) throw new Error(`Failed to save feed filter: ${error.message}`)
   return mapFeedFilter(data)

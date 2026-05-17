@@ -2,7 +2,12 @@
 
 import { requireChef } from '@/lib/auth/get-user'
 import { createServerClient } from '@/lib/db/server'
-import type { AgeBracket, WaitingAgeConfig, OwnerLanguageRule, WaitingAgeSummary } from './waiting-age-types'
+import type {
+  AgeBracket,
+  WaitingAgeConfig,
+  OwnerLanguageRule,
+  WaitingAgeSummary,
+} from './waiting-age-types'
 
 // ---- helpers ----
 
@@ -107,10 +112,7 @@ export async function upsertOwnerLanguageRule(params: {
   }
   if (params.id) payload.id = params.id
 
-  const { data, error } = await fromRules(db)
-    .upsert(payload)
-    .select('*')
-    .single()
+  const { data, error } = await fromRules(db).upsert(payload).select('*').single()
 
   if (error) throw new Error(`Failed to upsert owner language rule: ${error.message}`)
   return mapRule(data)
@@ -120,10 +122,7 @@ export async function deleteOwnerLanguageRule(id: string): Promise<void> {
   const user = await requireChef()
   const db: any = createServerClient()
 
-  const { error } = await fromRules(db)
-    .delete()
-    .eq('id', id)
-    .eq('tenant_id', user.tenantId)
+  const { error } = await fromRules(db).delete().eq('id', id).eq('tenant_id', user.tenantId)
 
   if (error) throw new Error(`Failed to delete owner language rule: ${error.message}`)
 }

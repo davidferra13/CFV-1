@@ -57,10 +57,7 @@ export interface EnrichableForecast {
  *
  * Special codes: thunderstorms, snow, fog
  */
-export function enrichWeatherAlert(
-  forecast: EnrichableForecast,
-  eventType: EventType
-): string[] {
+export function enrichWeatherAlert(forecast: EnrichableForecast, eventType: EventType): string[] {
   const guidance: string[] = []
   const windMph = Math.round(forecast.windSpeedKmh * 0.621)
   const isOutdoor = eventType === 'outdoor' || eventType === 'unknown'
@@ -86,17 +83,17 @@ export function enrichWeatherAlert(
   if (forecast.tempHighF >= 100) {
     guidance.push(
       `Extreme heat ${forecast.tempHighF}F: cold chain critical. Double ice for all stations. ` +
-      `Prep ice bath stations for holding. Rotate perishables every 30 min. Staff hydration mandatory.`
+        `Prep ice bath stations for holding. Rotate perishables every 30 min. Staff hydration mandatory.`
     )
   } else if (forecast.tempHighF >= 90) {
     guidance.push(
       `Heat ${forecast.tempHighF}F: cold chain risk. Prep ice bath stations for cold holds. ` +
-      `Keep backup ice on hand. Dairy, seafood, and sauces need constant monitoring.`
+        `Keep backup ice on hand. Dairy, seafood, and sauces need constant monitoring.`
     )
   } else if (forecast.tempHighF >= 85 && isOutdoor) {
     guidance.push(
       `Warm day ${forecast.tempHighF}F: keep proteins in coolers until last possible moment. ` +
-      `Consider shade placement for buffet stations.`
+        `Consider shade placement for buffet stations.`
     )
   }
 
@@ -104,12 +101,12 @@ export function enrichWeatherAlert(
   if (forecast.tempLowF <= 15) {
     guidance.push(
       `Dangerously cold ${forecast.tempLowF}F: pipes and water lines at risk. ` +
-      `Hot holding gear essential. Transport insulation is critical.`
+        `Hot holding gear essential. Transport insulation is critical.`
     )
   } else if (forecast.tempLowF <= 32) {
     guidance.push(
       `Freezing temps ${forecast.tempLowF}F: protect sauces and liquids during transport. ` +
-      `Warm plating if serving outdoors. Sterno supply check.`
+        `Warm plating if serving outdoors. Sterno supply check.`
     )
   }
 
@@ -118,7 +115,7 @@ export function enrichWeatherAlert(
     if (isOutdoor) {
       guidance.push(
         'High rain probability: cover all electronics and speakers. Bring tarps for setup area. ' +
-        'Non-slip mats for serving stations. Tent sidewalls recommended.'
+          'Non-slip mats for serving stations. Tent sidewalls recommended.'
       )
     } else {
       guidance.push(
@@ -135,7 +132,7 @@ export function enrichWeatherAlert(
   if ([95, 96, 99].includes(forecast.weatherCode)) {
     guidance.push(
       'Thunderstorms forecast: mandatory indoor backup plan. No metal tent poles during lightning. ' +
-      'Have a 30-minute shelter protocol ready for guests and staff.'
+        'Have a 30-minute shelter protocol ready for guests and staff.'
     )
   }
 
@@ -144,12 +141,12 @@ export function enrichWeatherAlert(
     if (isOutdoor) {
       guidance.push(
         'Snow expected: outdoor service not advisable. If proceeding, heated serving stations required. ' +
-        'Salt walkways, clear paths frequently.'
+          'Salt walkways, clear paths frequently.'
       )
     } else {
       guidance.push(
         'Snow expected: guests may arrive late. Build 30-min buffer into timeline. ' +
-        'Check delivery access and parking for your vehicle.'
+          'Check delivery access and parking for your vehicle.'
       )
     }
   }
@@ -182,13 +179,39 @@ export function inferEventType(occasion: string | null): EventType {
   if (!occasion) return 'unknown'
   const lower = occasion.toLowerCase()
   const outdoorKeywords = [
-    'outdoor', 'garden', 'patio', 'backyard', 'bbq', 'barbecue', 'grill',
-    'picnic', 'farm', 'vineyard', 'rooftop', 'poolside', 'pool party',
-    'beach', 'lawn', 'terrace', 'courtyard', 'tent', 'al fresco',
+    'outdoor',
+    'garden',
+    'patio',
+    'backyard',
+    'bbq',
+    'barbecue',
+    'grill',
+    'picnic',
+    'farm',
+    'vineyard',
+    'rooftop',
+    'poolside',
+    'pool party',
+    'beach',
+    'lawn',
+    'terrace',
+    'courtyard',
+    'tent',
+    'al fresco',
   ]
   const indoorKeywords = [
-    'indoor', 'kitchen', 'dining room', 'restaurant', 'studio',
-    'apartment', 'condo', 'house', 'home', 'loft', 'hall', 'ballroom',
+    'indoor',
+    'kitchen',
+    'dining room',
+    'restaurant',
+    'studio',
+    'apartment',
+    'condo',
+    'house',
+    'home',
+    'loft',
+    'hall',
+    'ballroom',
   ]
 
   if (outdoorKeywords.some((kw) => lower.includes(kw))) return 'outdoor'

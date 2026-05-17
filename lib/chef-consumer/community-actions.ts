@@ -29,7 +29,8 @@ export async function browsePeerEvents(): Promise<{
     // 1. Ticketed events from other chefs (events with share settings and ticket types)
     const { data: ticketedEvents, error: ticketErr } = await db
       .from('events')
-      .select(`
+      .select(
+        `
         id,
         title,
         event_date,
@@ -38,7 +39,8 @@ export async function browsePeerEvents(): Promise<{
           share_token,
           is_published
         )
-      `)
+      `
+      )
       .neq('tenant_id', user.entityId)
       .gte('event_date', now.split('T')[0])
       .eq('event_share_settings.is_published', true)
@@ -61,9 +63,7 @@ export async function browsePeerEvents(): Promise<{
           : { data: [], error: null },
       ])
 
-      const chefMap = new Map(
-        (chefsResult.data ?? []).map((c: any) => [c.id, c])
-      )
+      const chefMap = new Map((chefsResult.data ?? []).map((c: any) => [c.id, c]))
 
       // Aggregate ticket info per event
       const ticketInfoMap = new Map<
@@ -78,9 +78,7 @@ export async function browsePeerEvents(): Promise<{
         }
         if (tt.price_cents != null) {
           existing.minPrice =
-            existing.minPrice == null
-              ? tt.price_cents
-              : Math.min(existing.minPrice, tt.price_cents)
+            existing.minPrice == null ? tt.price_cents : Math.min(existing.minPrice, tt.price_cents)
         }
         if (tt.capacity != null) {
           existing.totalCapacity = (existing.totalCapacity ?? 0) + tt.capacity
@@ -123,7 +121,8 @@ export async function browsePeerEvents(): Promise<{
     // 2. Pop-ups from other chefs
     const { data: popups, error: popupErr } = await db
       .from('chef_popups')
-      .select(`
+      .select(
+        `
         id,
         name,
         event_date,
@@ -133,7 +132,8 @@ export async function browsePeerEvents(): Promise<{
         ticket_price_cents,
         tenant_id,
         status
-      `)
+      `
+      )
       .neq('tenant_id', user.entityId)
       .eq('status', 'published')
       .gte('event_date', now.split('T')[0])
@@ -147,9 +147,7 @@ export async function browsePeerEvents(): Promise<{
         .select('id, display_name, slug, profile_image_url')
         .in('id', popupTenantIds)
 
-      const popupChefMap = new Map(
-        (popupChefs ?? []).map((c: any) => [c.id, c])
-      )
+      const popupChefMap = new Map((popupChefs ?? []).map((c: any) => [c.id, c]))
 
       for (const popup of popups) {
         const p = popup as any
@@ -258,7 +256,8 @@ export async function getMyTickets(): Promise<{
 
     const { data: tickets, error } = await db
       .from('event_tickets')
-      .select(`
+      .select(
+        `
         id,
         event_id,
         quantity,
@@ -271,7 +270,8 @@ export async function getMyTickets(): Promise<{
           event_date,
           tenant_id
         )
-      `)
+      `
+      )
       .eq('buyer_email', user.email)
       .order('created_at', { ascending: false })
       .limit(50)
@@ -288,21 +288,18 @@ export async function getMyTickets(): Promise<{
     // Fetch chef names for the events
     const tenantIds = [
       ...new Set(
-        tickets.map((t: any) => {
-          const evt = Array.isArray(t.events) ? t.events[0] : t.events
-          return evt?.tenant_id
-        }).filter(Boolean)
+        tickets
+          .map((t: any) => {
+            const evt = Array.isArray(t.events) ? t.events[0] : t.events
+            return evt?.tenant_id
+          })
+          .filter(Boolean)
       ),
     ]
 
-    const { data: chefs } = await db
-      .from('chefs')
-      .select('id, display_name')
-      .in('id', tenantIds)
+    const { data: chefs } = await db.from('chefs').select('id, display_name').in('id', tenantIds)
 
-    const chefMap = new Map(
-      (chefs ?? []).map((c: any) => [c.id, c.display_name || 'Chef'])
-    )
+    const chefMap = new Map((chefs ?? []).map((c: any) => [c.id, c.display_name || 'Chef']))
 
     const result: MyTicket[] = tickets.map((t: any) => {
       const evt = Array.isArray(t.events) ? t.events[0] : t.events
@@ -310,7 +307,7 @@ export async function getMyTickets(): Promise<{
         ticketId: t.id,
         eventId: t.event_id,
         eventTitle: evt?.title || 'Event',
-        chefName: chefMap.get(evt?.tenant_id) as string || 'Chef',
+        chefName: (chefMap.get(evt?.tenant_id) as string) || 'Chef',
         eventDate: evt?.event_date ?? null,
         quantity: t.quantity,
         totalCents: t.total_cents,

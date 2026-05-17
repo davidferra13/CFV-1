@@ -13,8 +13,13 @@ const CONFIGS_TABLE = 'action_bar_configs'
 const USAGE_TABLE = 'action_bar_usage_logs'
 
 const VALID_CONTEXTS: ActionBarContext[] = [
-  'event_detail', 'client_detail', 'menu_editor',
-  'dashboard', 'calendar', 'finance', 'settings',
+  'event_detail',
+  'client_detail',
+  'menu_editor',
+  'dashboard',
+  'calendar',
+  'finance',
+  'settings',
 ]
 
 const VALID_VARIANTS = ['primary', 'secondary', 'danger', 'ghost']
@@ -156,14 +161,12 @@ export async function logActionBarUsage(
     return { success: false, error: 'actionId is required' }
   }
 
-  const { error } = await db
-    .from(USAGE_TABLE)
-    .insert({
-      tenant_id: user.tenantId!,
-      context,
-      action_id: actionId,
-      lifecycle_stage: lifecycleStage ?? null,
-    })
+  const { error } = await db.from(USAGE_TABLE).insert({
+    tenant_id: user.tenantId!,
+    context,
+    action_id: actionId,
+    lifecycle_stage: lifecycleStage ?? null,
+  })
 
   if (error) return { success: false, error: error.message }
   return { success: true }
@@ -179,10 +182,7 @@ export async function getActionBarUsageStats(
   const user = await requireChef()
   const db: any = createServerClient()
 
-  let query = db
-    .from(USAGE_TABLE)
-    .select('action_id, context')
-    .eq('tenant_id', user.tenantId!)
+  let query = db.from(USAGE_TABLE).select('action_id, context').eq('tenant_id', user.tenantId!)
 
   if (context && VALID_CONTEXTS.includes(context)) {
     query = query.eq('context', context)
@@ -252,9 +252,7 @@ export async function getActionBarSummary(): Promise<ActionBarSummary> {
 /**
  * Return sensible default action bar items for a context.
  */
-export async function getDefaultActionBar(
-  context: ActionBarContext
-): Promise<ActionBarConfig> {
+export async function getDefaultActionBar(context: ActionBarContext): Promise<ActionBarConfig> {
   const user = await requireChef()
   return buildDefaultConfig(user.tenantId!, context)
 }

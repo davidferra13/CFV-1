@@ -70,7 +70,9 @@ export async function deriveMenuFate(
   // Fetch menu with full context
   const { data: menu, error: menuErr } = await db
     .from('menus')
-    .select('id, tenant_id, event_id, status, is_template, fate, fate_set_by, forked_from_id, fork_generation, updated_at')
+    .select(
+      'id, tenant_id, event_id, status, is_template, fate, fate_set_by, forked_from_id, fork_generation, updated_at'
+    )
     .eq('id', menuId)
     .is('deleted_at', null)
     .single()
@@ -253,10 +255,7 @@ export async function applyDerivedFate(
  * After an event transition, derive and apply fate for all menus
  * linked to that event. Non-blocking.
  */
-export async function applyFateForEventMenus(
-  eventId: string,
-  triggerType: string
-): Promise<void> {
+export async function applyFateForEventMenus(eventId: string, triggerType: string): Promise<void> {
   try {
     const db: any = createServerClient({ admin: true })
 
@@ -365,11 +364,7 @@ async function checkProposalNotSelected(
  * Check if a newer fork of this menu exists (and is active or served).
  * Returns the fork ID or null.
  */
-async function checkSuperseded(
-  db: any,
-  menuId: string,
-  tenantId: string
-): Promise<string | null> {
+async function checkSuperseded(db: any, menuId: string, tenantId: string): Promise<string | null> {
   const { data: forks } = await db
     .from('menus')
     .select('id, fate, status')

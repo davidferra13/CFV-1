@@ -41,7 +41,7 @@ function snippet(text: string | null, query: string, maxLen = 120): string {
 
 export async function searchOperationalMemory(
   query: string,
-  filters?: SearchFilters,
+  filters?: SearchFilters
 ): Promise<{ results: SearchResult[]; stats: SearchStats }> {
   const user = await requireChef()
   const db: any = createServerClient()
@@ -51,7 +51,13 @@ export async function searchOperationalMemory(
   const pattern = `%${query}%`
 
   const activeSources: SearchableSource[] = filters?.sources ?? [
-    'events', 'clients', 'recipes', 'menus', 'notes', 'communication_log', 'invoices',
+    'events',
+    'clients',
+    'recipes',
+    'menus',
+    'notes',
+    'communication_log',
+    'invoices',
   ]
 
   const results: SearchResult[] = []
@@ -93,7 +99,9 @@ export async function searchOperationalMemory(
       .from('clients')
       .select('id, first_name, last_name, email, notes, created_at')
       .eq('tenant_id', tenantId)
-      .or(`first_name.ilike.${pattern},last_name.ilike.${pattern},email.ilike.${pattern},notes.ilike.${pattern}`)
+      .or(
+        `first_name.ilike.${pattern},last_name.ilike.${pattern},email.ilike.${pattern},notes.ilike.${pattern}`
+      )
       .order('created_at', { ascending: false })
       .limit(limit)
 
@@ -108,9 +116,10 @@ export async function searchOperationalMemory(
         id: `cli-${row.id}`,
         source: 'clients',
         title: fullName || row.email || 'Unknown Client',
-        snippet: matchField === 'name'
-          ? fullName
-          : snippet(row[matchField === 'email' ? 'email' : 'notes'], query),
+        snippet:
+          matchField === 'name'
+            ? fullName
+            : snippet(row[matchField === 'email' ? 'email' : 'notes'], query),
         matchField,
         entityId: row.id,
         relevanceScore: scoreResult(matchField === 'name' ? 'first_name' : matchField, query, row),
@@ -255,7 +264,9 @@ export async function searchOperationalMemory(
   }
 
   // Sort by relevance descending, then by date
-  results.sort((a, b) => b.relevanceScore - a.relevanceScore || (b.createdAt > a.createdAt ? 1 : -1))
+  results.sort(
+    (a, b) => b.relevanceScore - a.relevanceScore || (b.createdAt > a.createdAt ? 1 : -1)
+  )
 
   // Apply date filters client-side (simpler than per-source SQL)
   let filtered = results
@@ -284,7 +295,7 @@ export async function searchOperationalMemory(
 
 export async function getSourcePreview(
   source: SearchableSource,
-  entityId: string,
+  entityId: string
 ): Promise<SourcePreview | null> {
   const user = await requireChef()
   const db: any = createServerClient()
@@ -308,7 +319,11 @@ export async function getSourcePreview(
           .eq('id', evt.client_id)
           .maybeSingle()
         if (cli) {
-          related.push({ type: 'client', id: cli.id, label: `${cli.first_name ?? ''} ${cli.last_name ?? ''}`.trim() })
+          related.push({
+            type: 'client',
+            id: cli.id,
+            label: `${cli.first_name ?? ''} ${cli.last_name ?? ''}`.trim(),
+          })
         }
       }
 
@@ -422,9 +437,7 @@ export async function getSourcePreview(
         source: 'menus',
         entityId: mnu.id,
         title: mnu.title ?? 'Untitled Menu',
-        fields: [
-          { label: 'Created', value: mnu.created_at ?? '' },
-        ],
+        fields: [{ label: 'Created', value: mnu.created_at ?? '' }],
         relatedEntities: related,
       }
     }
@@ -472,7 +485,11 @@ export async function getSourcePreview(
           .eq('id', comm.client_id)
           .maybeSingle()
         if (cli) {
-          related.push({ type: 'client', id: cli.id, label: `${cli.first_name ?? ''} ${cli.last_name ?? ''}`.trim() })
+          related.push({
+            type: 'client',
+            id: cli.id,
+            label: `${cli.first_name ?? ''} ${cli.last_name ?? ''}`.trim(),
+          })
         }
       }
 
@@ -494,7 +511,9 @@ export async function getSourcePreview(
     case 'invoices': {
       const { data: inv } = await db
         .from('invoices')
-        .select('id, invoice_number, total_amount, status, due_date, event_id, client_id, notes, created_at')
+        .select(
+          'id, invoice_number, total_amount, status, due_date, event_id, client_id, notes, created_at'
+        )
         .eq('id', entityId)
         .eq('tenant_id', tenantId)
         .maybeSingle()
@@ -518,7 +537,11 @@ export async function getSourcePreview(
           .eq('id', inv.client_id)
           .maybeSingle()
         if (cli) {
-          related.push({ type: 'client', id: cli.id, label: `${cli.first_name ?? ''} ${cli.last_name ?? ''}`.trim() })
+          related.push({
+            type: 'client',
+            id: cli.id,
+            label: `${cli.first_name ?? ''} ${cli.last_name ?? ''}`.trim(),
+          })
         }
       }
 
@@ -547,7 +570,9 @@ export async function getSourcePreview(
 // 3. getRecentSearches
 // ---------------------------------------------------------------------------
 
-export async function getRecentSearches(): Promise<{ query: string; resultCount: number; searchedAt: string }[]> {
+export async function getRecentSearches(): Promise<
+  { query: string; resultCount: number; searchedAt: string }[]
+> {
   const user = await requireChef()
   const db: any = createServerClient()
 
@@ -577,13 +602,11 @@ export async function logSearch(query: string, resultCount: number): Promise<voi
 
   if (!query.trim()) return
 
-  const { error } = await db
-    .from('search_log')
-    .insert({
-      tenant_id: user.tenantId!,
-      query: query.trim(),
-      result_count: resultCount,
-    })
+  const { error } = await db.from('search_log').insert({
+    tenant_id: user.tenantId!,
+    query: query.trim(),
+    result_count: resultCount,
+  })
 
   if (error) throw error
 }

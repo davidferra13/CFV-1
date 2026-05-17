@@ -1,4 +1,10 @@
-export type ReadabilityMode = 'standard' | 'high-contrast' | 'kitchen' | 'outdoor' | 'night-service' | 'accessibility'
+export type ReadabilityMode =
+  | 'standard'
+  | 'high-contrast'
+  | 'kitchen'
+  | 'outdoor'
+  | 'night-service'
+  | 'accessibility'
 
 export type ReadabilityProfile = {
   id: string

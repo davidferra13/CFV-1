@@ -173,9 +173,7 @@ export async function setCircleRecurrence(
 // getCircleRecurrence
 // ---------------------------------------------------------------------------
 
-export async function getCircleRecurrence(
-  circleId: string
-): Promise<RecurrenceConfig | null> {
+export async function getCircleRecurrence(circleId: string): Promise<RecurrenceConfig | null> {
   const user = await requireChef()
   const db: any = createServerClient()
 
@@ -208,9 +206,7 @@ export async function getCircleRecurrence(
 // getCircleEventSeries
 // ---------------------------------------------------------------------------
 
-export async function getCircleEventSeries(
-  circleId: string
-): Promise<RecurringEventSeries> {
+export async function getCircleEventSeries(circleId: string): Promise<RecurringEventSeries> {
   const user = await requireChef()
   const db: any = createServerClient()
   const tenantId = user.tenantId!
@@ -234,13 +230,15 @@ export async function getCircleEventSeries(
   // We look at events owned by this tenant that reference this circle
   const { data: events } = await db
     .from('events')
-    .select(`
+    .select(
+      `
       id,
       event_date,
       status,
       guest_count,
       created_at
-    `)
+    `
+    )
     .eq('tenant_id', tenantId)
     .eq('circle_id', circleId)
     .order('event_date', { ascending: true })
@@ -310,11 +308,7 @@ export async function createNextOccurrence(circleId: string): Promise<string> {
   // Get the most recent event to clone from
   let sourceEvent: any = null
   if (circle.event_id) {
-    const { data: ev } = await db
-      .from('events')
-      .select('*')
-      .eq('id', circle.event_id)
-      .single()
+    const { data: ev } = await db.from('events').select('*').eq('id', circle.event_id).single()
     sourceEvent = ev
   }
 
@@ -330,9 +324,7 @@ export async function createNextOccurrence(circleId: string): Promise<string> {
     .single()
 
   // Compute the next event date
-  const baseDate = sourceEvent.event_date
-    ? new Date(sourceEvent.event_date)
-    : new Date()
+  const baseDate = sourceEvent.event_date ? new Date(sourceEvent.event_date) : new Date()
 
   const nextDate = recConfig
     ? computeNextDate(
@@ -446,20 +438,18 @@ export async function createNextOccurrence(circleId: string): Promise<string> {
           .eq('dish_id', dish.id)
 
         for (const comp of sourceComponents ?? []) {
-          const { error: compError } = await db
-            .from('components')
-            .insert({
-              tenant_id: tenantId,
-              dish_id: newDish.id,
-              name: comp.name,
-              category: comp.category,
-              quantity: comp.quantity,
-              unit: comp.unit,
-              notes: comp.notes,
-              prep_station: comp.prep_station,
-              created_by: user.id,
-              updated_by: user.id,
-            } as any)
+          const { error: compError } = await db.from('components').insert({
+            tenant_id: tenantId,
+            dish_id: newDish.id,
+            name: comp.name,
+            category: comp.category,
+            quantity: comp.quantity,
+            unit: comp.unit,
+            notes: comp.notes,
+            prep_station: comp.prep_station,
+            created_by: user.id,
+            updated_by: user.id,
+          } as any)
           if (compError) {
             console.error('[createNextOccurrence] Component clone error:', compError)
           }
@@ -469,23 +459,14 @@ export async function createNextOccurrence(circleId: string): Promise<string> {
   }
 
   // Reset RSVPs: keep guest list but set all to 'pending'
-  const { data: members } = await db
-    .from('hub_group_members')
-    .select('id')
-    .eq('group_id', circleId)
+  const { data: members } = await db.from('hub_group_members').select('id').eq('group_id', circleId)
 
   if (members?.length) {
-    await db
-      .from('hub_group_members')
-      .update({ rsvp_status: 'pending' })
-      .eq('group_id', circleId)
+    await db.from('hub_group_members').update({ rsvp_status: 'pending' }).eq('group_id', circleId)
   }
 
   // Update circle to point to the new event
-  await db
-    .from('hub_groups')
-    .update({ event_id: newEvent.id })
-    .eq('id', circleId)
+  await db.from('hub_groups').update({ event_id: newEvent.id }).eq('id', circleId)
 
   // Update recurrence config with last/next occurrence
   if (recConfig) {
@@ -513,9 +494,7 @@ export async function createNextOccurrence(circleId: string): Promise<string> {
 // getSeriesInsights
 // ---------------------------------------------------------------------------
 
-export async function getSeriesInsights(
-  circleId: string
-): Promise<SeriesStats> {
+export async function getSeriesInsights(circleId: string): Promise<SeriesStats> {
   const user = await requireChef()
   const db: any = createServerClient()
   const tenantId = user.tenantId!
@@ -547,10 +526,7 @@ export async function getSeriesInsights(
   }
 
   // Average guest count
-  const totalGuests = eventList.reduce(
-    (sum: number, ev: any) => sum + (ev.guest_count ?? 0),
-    0
-  )
+  const totalGuests = eventList.reduce((sum: number, ev: any) => sum + (ev.guest_count ?? 0), 0)
   const averageGuestCount = Math.round(totalGuests / totalEvents)
 
   // Attendance trend
@@ -588,10 +564,7 @@ export async function getSeriesInsights(
       .eq('tenant_id', tenantId)
 
     for (const menu of menus ?? []) {
-      const { data: dishes } = await db
-        .from('dishes')
-        .select('name')
-        .eq('menu_id', menu.id)
+      const { data: dishes } = await db.from('dishes').select('name').eq('menu_id', menu.id)
 
       for (const dish of dishes ?? []) {
         if (dish.name) {
@@ -613,9 +586,7 @@ export async function getSeriesInsights(
     .select('profile_id')
     .eq('group_id', circleId)
 
-  const uniqueProfileIds = new Set(
-    (members ?? []).map((m: any) => m.profile_id).filter(Boolean)
-  )
+  const uniqueProfileIds = new Set((members ?? []).map((m: any) => m.profile_id).filter(Boolean))
   const totalUniqueGuests = uniqueProfileIds.size
 
   // Retention rate is meaningless with < 2 events, but we still compute
@@ -641,9 +612,7 @@ export async function getSeriesInsights(
 // getNextScheduledDate
 // ---------------------------------------------------------------------------
 
-export async function getNextScheduledDate(
-  circleId: string
-): Promise<NextOccurrence | null> {
+export async function getNextScheduledDate(circleId: string): Promise<NextOccurrence | null> {
   const user = await requireChef()
   const db: any = createServerClient()
 
@@ -661,9 +630,7 @@ export async function getNextScheduledDate(
   if (config.next_scheduled_at) {
     const nextDate = new Date(config.next_scheduled_at)
     const now = new Date()
-    const daysUntil = Math.ceil(
-      (nextDate.getTime() - now.getTime()) / (1000 * 60 * 60 * 24)
-    )
+    const daysUntil = Math.ceil((nextDate.getTime() - now.getTime()) / (1000 * 60 * 60 * 24))
 
     return {
       circleId,
@@ -706,9 +673,7 @@ export async function getNextScheduledDate(
     config.custom_interval_days
   )
   const now = new Date()
-  const daysUntil = Math.ceil(
-    (nextDate.getTime() - now.getTime()) / (1000 * 60 * 60 * 24)
-  )
+  const daysUntil = Math.ceil((nextDate.getTime() - now.getTime()) / (1000 * 60 * 60 * 24))
 
   return {
     circleId,

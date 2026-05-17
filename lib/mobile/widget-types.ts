@@ -1,7 +1,12 @@
 // Widget Types - Home Screen Widget Data Shapes
 // Powers Android/PWA home screen widgets with live chef data.
 
-export type WidgetType = 'today_schedule' | 'quick_stats' | 'upcoming_events' | 'prep_countdown' | 'revenue_tracker'
+export type WidgetType =
+  | 'today_schedule'
+  | 'quick_stats'
+  | 'upcoming_events'
+  | 'prep_countdown'
+  | 'revenue_tracker'
 
 export interface WidgetConfig {
   id: string
@@ -28,7 +33,14 @@ export interface QuickStatsWidget {
 }
 
 export interface UpcomingEventsWidget {
-  events: { id: string; title: string; date: string; clientName: string; guests: number; daysUntil: number }[]
+  events: {
+    id: string
+    title: string
+    date: string
+    clientName: string
+    guests: number
+    daysUntil: number
+  }[]
 }
 
 export interface PrepCountdownWidget {

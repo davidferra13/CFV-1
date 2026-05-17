@@ -136,9 +136,7 @@ export async function createCollabSession(
 /**
  * Chef retrieves all suggestions for a session.
  */
-export async function getSuggestions(
-  sessionId: string
-): Promise<EditSuggestion[]> {
+export async function getSuggestions(sessionId: string): Promise<EditSuggestion[]> {
   const user = await requireChef()
   const tenantId = user.tenantId!
   const db: any = createServerClient()
@@ -331,17 +329,15 @@ export async function applyApprovedSuggestions(
     const changeType = s.change_type as SuggestionType
 
     if (changeType === 'add_dish') {
-      await db
-        .from('dishes')
-        .insert({
-          menu_id: session.menu_id,
-          tenant_id: tenantId,
-          name: data.name || 'New Dish',
-          description: data.description || null,
-          course_name: s.target_course_name || (data.course_name as string) || null,
-          course_number: s.target_course_number ?? (data.course_number as number) ?? null,
-          sort_order: s.sort_order,
-        })
+      await db.from('dishes').insert({
+        menu_id: session.menu_id,
+        tenant_id: tenantId,
+        name: data.name || 'New Dish',
+        description: data.description || null,
+        course_name: s.target_course_name || (data.course_name as string) || null,
+        course_number: s.target_course_number ?? (data.course_number as number) ?? null,
+        sort_order: s.sort_order,
+      })
     } else if (changeType === 'remove_dish' && s.target_dish_id) {
       await db
         .from('dishes')
@@ -399,17 +395,15 @@ export async function applyApprovedSuggestions(
   const nextVersion = (lastHistory?.[0]?.version_number ?? 0) + 1
 
   // Record history
-  await db
-    .from('menu_edit_history')
-    .insert({
-      menu_id: session.menu_id,
-      session_id: sessionId,
-      version_number: nextVersion,
-      snapshot: proposedSnapshot,
-      change_summary: `${approved.length} suggestion(s) applied from collaborative session.`,
-      author_type: 'chef' as EditorType,
-      author_id: user.id,
-    })
+  await db.from('menu_edit_history').insert({
+    menu_id: session.menu_id,
+    session_id: sessionId,
+    version_number: nextVersion,
+    snapshot: proposedSnapshot,
+    change_summary: `${approved.length} suggestion(s) applied from collaborative session.`,
+    author_type: 'chef' as EditorType,
+    author_id: user.id,
+  })
 
   // Mark session accepted
   await db
@@ -430,9 +424,7 @@ export async function applyApprovedSuggestions(
 /**
  * Chef retrieves a collab session by ID.
  */
-export async function getCollabSession(
-  sessionId: string
-): Promise<CollabSession | null> {
+export async function getCollabSession(sessionId: string): Promise<CollabSession | null> {
   const user = await requireChef()
   const tenantId = user.tenantId!
   const db: any = createServerClient()
@@ -450,9 +442,7 @@ export async function getCollabSession(
 /**
  * Chef lists active collab sessions for an event.
  */
-export async function getCollabSessionsForEvent(
-  eventId: string
-): Promise<CollabSession[]> {
+export async function getCollabSessionsForEvent(eventId: string): Promise<CollabSession[]> {
   const user = await requireChef()
   const tenantId = user.tenantId!
   const db: any = createServerClient()
@@ -612,10 +602,13 @@ export async function submitCollabSession(
 export async function getCollabSessionStatus(
   sessionId: string,
   clientToken: string
-): Promise<{
-  session: CollabSession
-  suggestions: EditSuggestion[]
-} | { error: string }> {
+): Promise<
+  | {
+      session: CollabSession
+      suggestions: EditSuggestion[]
+    }
+  | { error: string }
+> {
   const access = await getClientPortalAccess(clientToken)
   if (!access) return { error: 'Invalid or expired portal link.' }
 

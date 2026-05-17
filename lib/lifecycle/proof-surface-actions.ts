@@ -35,9 +35,7 @@ const STUCK_THRESHOLD_DAYS = 14
 
 function daysBetween(a: string | Date, b: string | Date): number {
   const msPerDay = 86_400_000
-  return Math.floor(
-    (new Date(b).getTime() - new Date(a).getTime()) / msPerDay
-  )
+  return Math.floor((new Date(b).getTime() - new Date(a).getTime()) / msPerDay)
 }
 
 function eventTitle(ev: Record<string, unknown>): string {
@@ -95,9 +93,7 @@ async function buildInquiryProof(
   return {
     stage: 'inquiry',
     reached,
-    reachedAt: inquiryRow
-      ? (inquiryRow.created_at as string)
-      : (event.created_at as string),
+    reachedAt: inquiryRow ? (inquiryRow.created_at as string) : (event.created_at as string),
     proofPoints,
     completeness,
   }
@@ -338,7 +334,8 @@ async function buildPrepProof(
   return {
     stage: 'prep',
     reached,
-    reachedAt: (event.shopping_started_at as string | null) ??
+    reachedAt:
+      (event.shopping_started_at as string | null) ??
       (event.prep_started_at as string | null) ??
       null,
     proofPoints,
@@ -575,9 +572,7 @@ function computeNextActions(stages: StageProof[], currentStage: LifecycleStage):
 /**
  * Compute full lifecycle state for a single event from actual data.
  */
-export async function getEventLifecycleState(
-  eventId: string
-): Promise<EventLifecycleState> {
+export async function getEventLifecycleState(eventId: string): Promise<EventLifecycleState> {
   const user = await requireChef()
   const db: any = createServerClient()
 
@@ -630,19 +625,32 @@ export async function getLifecycleOverview(): Promise<LifecycleOverview> {
 
   const { data: allEvents } = await db
     .from('events')
-    .select('id, occasion, event_date, status, created_at, updated_at, cancelled_at, archived, inquiry_id, menu_id, deposit_amount_cents, guest_count_confirmed, grocery_list_ready, prep_list_ready, shopping_started_at, prep_started_at, car_packed, service_started_at, service_completed_at, financially_closed, follow_up_sent, aar_filed')
+    .select(
+      'id, occasion, event_date, status, created_at, updated_at, cancelled_at, archived, inquiry_id, menu_id, deposit_amount_cents, guest_count_confirmed, grocery_list_ready, prep_list_ready, shopping_started_at, prep_started_at, car_packed, service_started_at, service_completed_at, financially_closed, follow_up_sent, aar_filed'
+    )
     .eq('tenant_id', user.tenantId!)
     .order('event_date', { ascending: false })
 
   if (!allEvents || allEvents.length === 0) {
-    const emptyStages = Object.fromEntries(ALL_STAGES.map((s) => [s, 0])) as Record<LifecycleStage, number>
-    const emptyAvg = Object.fromEntries(ALL_STAGES.map((s) => [s, 0])) as Record<LifecycleStage, number>
+    const emptyStages = Object.fromEntries(ALL_STAGES.map((s) => [s, 0])) as Record<
+      LifecycleStage,
+      number
+    >
+    const emptyAvg = Object.fromEntries(ALL_STAGES.map((s) => [s, 0])) as Record<
+      LifecycleStage,
+      number
+    >
     return { byStage: emptyStages, stuckEvents: [], avgDaysPerStage: emptyAvg }
   }
 
-  const byStage = Object.fromEntries(ALL_STAGES.map((s) => [s, 0])) as Record<LifecycleStage, number>
+  const byStage = Object.fromEntries(ALL_STAGES.map((s) => [s, 0])) as Record<
+    LifecycleStage,
+    number
+  >
   const stuckEvents: LifecycleOverview['stuckEvents'] = []
-  const stageDayTotals = Object.fromEntries(ALL_STAGES.map((s) => [s, { total: 0, count: 0 }])) as Record<LifecycleStage, { total: number; count: number }>
+  const stageDayTotals = Object.fromEntries(
+    ALL_STAGES.map((s) => [s, { total: 0, count: 0 }])
+  ) as Record<LifecycleStage, { total: number; count: number }>
 
   for (const ev of allEvents) {
     // Skip cancelled events
@@ -657,7 +665,11 @@ export async function getLifecycleOverview(): Promise<LifecycleOverview> {
     stageDayTotals[currentStage].total += days
     stageDayTotals[currentStage].count++
 
-    if (days >= STUCK_THRESHOLD_DAYS && currentStage !== 'archived' && currentStage !== 'closeout') {
+    if (
+      days >= STUCK_THRESHOLD_DAYS &&
+      currentStage !== 'archived' &&
+      currentStage !== 'closeout'
+    ) {
       stuckEvents.push({
         eventId: ev.id,
         title: eventTitle(ev),
@@ -685,10 +697,7 @@ export async function getLifecycleOverview(): Promise<LifecycleOverview> {
 /**
  * Detailed proof points for a single stage of an event.
  */
-export async function getStageProof(
-  eventId: string,
-  stage: LifecycleStage
-): Promise<StageProof> {
+export async function getStageProof(eventId: string, stage: LifecycleStage): Promise<StageProof> {
   const user = await requireChef()
   const db: any = createServerClient()
 
@@ -715,9 +724,7 @@ export async function getStageProof(
  * Chronological stage transitions for an event.
  * Reconstructs timeline from proof data.
  */
-export async function getLifecycleTimeline(
-  eventId: string
-): Promise<LifecycleTimelineEntry[]> {
+export async function getLifecycleTimeline(eventId: string): Promise<LifecycleTimelineEntry[]> {
   const user = await requireChef()
   const db: any = createServerClient()
 
@@ -776,11 +783,16 @@ export async function getLifecycleHealthScore(): Promise<LifecycleHealthScore> {
 
   const { data: allEvents } = await db
     .from('events')
-    .select('id, occasion, event_date, status, created_at, updated_at, cancelled_at, archived, inquiry_id, menu_id, deposit_amount_cents, guest_count_confirmed, grocery_list_ready, prep_list_ready, shopping_started_at, prep_started_at, car_packed, service_started_at, service_completed_at, financially_closed, follow_up_sent, aar_filed')
+    .select(
+      'id, occasion, event_date, status, created_at, updated_at, cancelled_at, archived, inquiry_id, menu_id, deposit_amount_cents, guest_count_confirmed, grocery_list_ready, prep_list_ready, shopping_started_at, prep_started_at, car_packed, service_started_at, service_completed_at, financially_closed, follow_up_sent, aar_filed'
+    )
     .eq('tenant_id', user.tenantId!)
 
   if (!allEvents || allEvents.length === 0) {
-    const emptyAvg = Object.fromEntries(ALL_STAGES.map((s) => [s, 0])) as Record<LifecycleStage, number>
+    const emptyAvg = Object.fromEntries(ALL_STAGES.map((s) => [s, 0])) as Record<
+      LifecycleStage,
+      number
+    >
     return {
       totalEvents: 0,
       activeEvents: 0,
@@ -799,8 +811,13 @@ export async function getLifecycleHealthScore(): Promise<LifecycleHealthScore> {
 
   let stuckCount = 0
   let progressingCount = 0
-  const stageDayTotals = Object.fromEntries(ALL_STAGES.map((s) => [s, { total: 0, count: 0 }])) as Record<LifecycleStage, { total: number; count: number }>
-  const stageCounts = Object.fromEntries(ALL_STAGES.map((s) => [s, 0])) as Record<LifecycleStage, number>
+  const stageDayTotals = Object.fromEntries(
+    ALL_STAGES.map((s) => [s, { total: 0, count: 0 }])
+  ) as Record<LifecycleStage, { total: number; count: number }>
+  const stageCounts = Object.fromEntries(ALL_STAGES.map((s) => [s, 0])) as Record<
+    LifecycleStage,
+    number
+  >
 
   for (const ev of active) {
     const currentStage = determineCurrentStageFromEvent(ev)
@@ -839,10 +856,7 @@ export async function getLifecycleHealthScore(): Promise<LifecycleHealthScore> {
     }
   }
 
-  const healthPercent =
-    activeEvents > 0
-      ? Math.round((progressingCount / activeEvents) * 100)
-      : 100
+  const healthPercent = activeEvents > 0 ? Math.round((progressingCount / activeEvents) * 100) : 100
 
   return {
     totalEvents,
@@ -870,7 +884,8 @@ function determineCurrentStageFromEvent(ev: Record<string, unknown>): LifecycleS
   if (ev.service_started_at || (ev.status as string) === 'in_progress') return 'execution'
 
   // Prep signals
-  if (ev.shopping_started_at || ev.prep_started_at || ev.grocery_list_ready || ev.car_packed) return 'prep'
+  if (ev.shopping_started_at || ev.prep_started_at || ev.grocery_list_ready || ev.car_packed)
+    return 'prep'
 
   // Planning signals
   if (ev.menu_id || ev.guest_count_confirmed) return 'planning'
@@ -878,7 +893,8 @@ function determineCurrentStageFromEvent(ev: Record<string, unknown>): LifecycleS
   // Contracted signals
   const contractedStatuses = ['accepted', 'paid', 'confirmed']
   if (contractedStatuses.includes(ev.status as string)) return 'contracted'
-  if ((ev.deposit_amount_cents as number | null) != null && (ev.deposit_amount_cents as number) > 0) return 'contracted'
+  if ((ev.deposit_amount_cents as number | null) != null && (ev.deposit_amount_cents as number) > 0)
+    return 'contracted'
 
   // Quoting: check via status (proposed means quote sent)
   if ((ev.status as string) === 'proposed') return 'quoting'
@@ -891,7 +907,11 @@ function estimateStageEnteredAt(ev: Record<string, unknown>, stage: LifecycleSta
     case 'execution':
       return (ev.service_started_at as string) ?? (ev.updated_at as string)
     case 'prep':
-      return (ev.shopping_started_at as string) ?? (ev.prep_started_at as string) ?? (ev.updated_at as string)
+      return (
+        (ev.shopping_started_at as string) ??
+        (ev.prep_started_at as string) ??
+        (ev.updated_at as string)
+      )
     case 'closeout':
       return (ev.service_completed_at as string) ?? (ev.updated_at as string)
     case 'archived':

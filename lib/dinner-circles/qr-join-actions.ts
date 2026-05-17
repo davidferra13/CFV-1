@@ -10,9 +10,21 @@ import { createServerClient } from '@/lib/db/server'
 // ---------------------------------------------------------------------------
 
 const GuestInfoSchema = z.object({
-  name: z.string().min(1).max(200).transform((s) => s.trim()),
-  email: z.string().email().max(320).transform((s) => s.toLowerCase().trim()),
-  phone: z.string().max(30).optional().transform((s) => s?.trim() || undefined),
+  name: z
+    .string()
+    .min(1)
+    .max(200)
+    .transform((s) => s.trim()),
+  email: z
+    .string()
+    .email()
+    .max(320)
+    .transform((s) => s.toLowerCase().trim()),
+  phone: z
+    .string()
+    .max(30)
+    .optional()
+    .transform((s) => s?.trim() || undefined),
 })
 
 // ---------------------------------------------------------------------------
@@ -101,7 +113,8 @@ export async function resolveJoinToken(token: string) {
 
   const { data, error } = await db
     .from('circle_join_tokens')
-    .select(`
+    .select(
+      `
       id,
       tenant_id,
       circle_id,
@@ -110,7 +123,8 @@ export async function resolveJoinToken(token: string) {
       expires_at,
       max_uses,
       use_count
-    `)
+    `
+    )
     .eq('token', token)
     .single()
 
@@ -217,13 +231,11 @@ export async function joinCircleViaToken(
   }
 
   // Add to circle
-  const { error: joinError } = await db
-    .from('hub_group_members')
-    .insert({
-      group_id: resolved.circleId,
-      profile_id: profileId,
-      role: 'member',
-    })
+  const { error: joinError } = await db.from('hub_group_members').insert({
+    group_id: resolved.circleId,
+    profile_id: profileId,
+    role: 'member',
+  })
 
   if (joinError) {
     // Duplicate join (race condition); treat as success
@@ -234,26 +246,28 @@ export async function joinCircleViaToken(
   }
 
   // Increment use_count atomically via raw SQL
-  await db.rpc('exec_sql', {
-    query: `UPDATE circle_join_tokens SET use_count = use_count + 1, updated_at = now() WHERE token = $1`,
-    params: [token],
-  }).catch(async () => {
-    // Fallback: non-atomic increment if rpc not available
-    const { data: current } = await db
-      .from('circle_join_tokens')
-      .select('use_count')
-      .eq('token', token)
-      .single()
-    if (current) {
-      await db
+  await db
+    .rpc('exec_sql', {
+      query: `UPDATE circle_join_tokens SET use_count = use_count + 1, updated_at = now() WHERE token = $1`,
+      params: [token],
+    })
+    .catch(async () => {
+      // Fallback: non-atomic increment if rpc not available
+      const { data: current } = await db
         .from('circle_join_tokens')
-        .update({
-          use_count: (current.use_count ?? 0) + 1,
-          updated_at: new Date().toISOString(),
-        })
+        .select('use_count')
         .eq('token', token)
-    }
-  })
+        .single()
+      if (current) {
+        await db
+          .from('circle_join_tokens')
+          .update({
+            use_count: (current.use_count ?? 0) + 1,
+            updated_at: new Date().toISOString(),
+          })
+          .eq('token', token)
+      }
+    })
 
   revalidatePath(`/join/${token}`)
 

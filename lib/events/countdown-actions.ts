@@ -99,7 +99,12 @@ export async function getEventCountdown(eventId: string): Promise<EventCountdown
   // Fetch weather if coordinates exist and event is within 7 days
   let weather: CountdownWeather | null = null
   const eventDateStr = dateToDateString(event.event_date as Date | string)
-  if (event.location_lat != null && event.location_lng != null && daysUntil >= 0 && daysUntil <= 7) {
+  if (
+    event.location_lat != null &&
+    event.location_lng != null &&
+    daysUntil >= 0 &&
+    daysUntil <= 7
+  ) {
     try {
       const result = await fetchForecast(event.location_lat, event.location_lng)
       const dayMatch = result.forecasts.find((f) => f.date === eventDateStr)

@@ -2,7 +2,13 @@
 
 import { requireChef } from '@/lib/auth/get-user'
 import { createServerClient } from '@/lib/db/server'
-import type { LintRuleCategory, LintRule, LintViolation, LintAuditRun, LintSummary } from './visual-lint-types'
+import type {
+  LintRuleCategory,
+  LintRule,
+  LintViolation,
+  LintAuditRun,
+  LintSummary,
+} from './visual-lint-types'
 
 // ---- helpers ----
 
@@ -119,10 +125,7 @@ export async function createLintViolation(params: {
   if (params.column !== undefined) payload.column = params.column
   if (params.autoFixed !== undefined) payload.auto_fixed = params.autoFixed
 
-  const { data, error } = await fromLintViolations(db)
-    .insert(payload)
-    .select('*')
-    .single()
+  const { data, error } = await fromLintViolations(db).insert(payload).select('*').single()
 
   if (error) throw new Error(`Failed to create lint violation: ${error.message}`)
   return mapViolation(data)

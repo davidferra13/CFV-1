@@ -96,9 +96,7 @@ export async function fetchInvoiceData(
       .single(),
     db
       .from('ledger_entries')
-      .select(
-        'entry_type, amount_cents, description, payment_method, received_at, is_refund'
-      )
+      .select('entry_type, amount_cents, description, payment_method, received_at, is_refund')
       .eq('event_id', eventId)
       .eq('tenant_id', tenantId)
       .order('created_at', { ascending: true }),
@@ -226,7 +224,8 @@ function renderInvoice(pdf: PDFLayout, data: InvoiceData) {
   leftY = renderLine(doc, leftX, leftY, data.chef.businessName, 'bold')
   if (data.chef.email) leftY = renderLine(doc, leftX, leftY, data.chef.email)
   if (data.chef.phone) leftY = renderLine(doc, leftX, leftY, data.chef.phone)
-  if (data.chef.invoiceTaxId) leftY = renderLine(doc, leftX, leftY, `Tax ID: ${data.chef.invoiceTaxId}`)
+  if (data.chef.invoiceTaxId)
+    leftY = renderLine(doc, leftX, leftY, `Tax ID: ${data.chef.invoiceTaxId}`)
 
   // Right column: Bill To / Client
   let rightY = pdf.y
@@ -234,7 +233,8 @@ function renderInvoice(pdf: PDFLayout, data: InvoiceData) {
     rightY = renderLabel(doc, rightX, rightY, 'BILL TO')
     rightY = renderLine(doc, rightX, rightY, data.billTo.company, 'bold')
     if (data.billTo.attention) rightY = renderLine(doc, rightX, rightY, data.billTo.attention)
-    if (data.billTo.poNumber) rightY = renderLine(doc, rightX, rightY, `PO #${data.billTo.poNumber}`)
+    if (data.billTo.poNumber)
+      rightY = renderLine(doc, rightX, rightY, `PO #${data.billTo.poNumber}`)
     rightY += 3
     rightY = renderLabel(doc, rightX, rightY, 'CLIENT')
   } else {
@@ -262,7 +262,13 @@ function renderInvoice(pdf: PDFLayout, data: InvoiceData) {
   renderKeyValue(doc, leftX, pdf.y, 'Guests', String(data.event.guestCount))
   pdf.y += 5
   const styleLabel = data.event.serviceStyle.replace(/_/g, ' ')
-  renderKeyValue(doc, leftX, pdf.y, 'Service Style', styleLabel.charAt(0).toUpperCase() + styleLabel.slice(1))
+  renderKeyValue(
+    doc,
+    leftX,
+    pdf.y,
+    'Service Style',
+    styleLabel.charAt(0).toUpperCase() + styleLabel.slice(1)
+  )
   pdf.y += 5
   if (location) {
     renderKeyValue(doc, leftX, pdf.y, 'Location', location)
@@ -294,9 +300,10 @@ function renderInvoice(pdf: PDFLayout, data: InvoiceData) {
   doc.setFontSize(9)
   doc.setFont('helvetica', 'normal')
 
-  const pricingDesc = data.event.pricingModel === 'per_person'
-    ? `Private chef service (${data.event.guestCount} guests)`
-    : 'Private chef service (flat rate)'
+  const pricingDesc =
+    data.event.pricingModel === 'per_person'
+      ? `Private chef service (${data.event.guestCount} guests)`
+      : 'Private chef service (flat rate)'
   doc.text(pricingDesc, colXDesc, pdf.y)
   doc.text(
     data.event.quotedPriceCents ? cents(data.event.quotedPriceCents) : 'TBD',
@@ -357,9 +364,8 @@ function renderInvoice(pdf: PDFLayout, data: InvoiceData) {
       const method = entry.paymentMethod.charAt(0).toUpperCase() + entry.paymentMethod.slice(1)
 
       // Truncate description to fit
-      const desc = entry.description.length > 30
-        ? entry.description.slice(0, 28) + '..'
-        : entry.description
+      const desc =
+        entry.description.length > 30 ? entry.description.slice(0, 28) + '..' : entry.description
 
       doc.text(dateStr, leftX, pdf.y)
       doc.text(method, leftX + 45, pdf.y)
@@ -476,10 +482,7 @@ function renderKeyValue(doc: jsPDF, x: number, y: number, label: string, value: 
 
 // ─── Entry Point ──────────────────────────────────────────────────────────────
 
-export async function generateInvoicePdf(
-  tenantId: string,
-  eventId: string
-): Promise<Buffer> {
+export async function generateInvoicePdf(tenantId: string, eventId: string): Promise<Buffer> {
   const data = await fetchInvoiceData(tenantId, eventId)
   if (!data) throw new Error('Cannot generate invoice: event not found or missing data')
 

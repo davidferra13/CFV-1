@@ -10,7 +10,12 @@
 import { requireChef } from '@/lib/auth/get-user'
 import { createServerClient } from '@/lib/db/server'
 import { revalidatePath } from 'next/cache'
-import type { StoryElementType, StoryElement, WinePairing, PresentationGuide } from './storytelling-types'
+import type {
+  StoryElementType,
+  StoryElement,
+  WinePairing,
+  PresentationGuide,
+} from './storytelling-types'
 
 // -------------------------------------------------------------------
 // addStoryElement
@@ -84,7 +89,9 @@ export async function getMenuStory(menuId: string): Promise<{
 
   const { data: pairings, error: pairErr } = await db
     .from('menu_wine_pairings')
-    .select('id, menu_id, dish_id, wine_name, vineyard, vintage, notes, price_per_bottle, sort_order, created_at')
+    .select(
+      'id, menu_id, dish_id, wine_name, vineyard, vintage, notes, price_per_bottle, sort_order, created_at'
+    )
     .eq('menu_id', menuId)
     .eq('tenant_id', user.tenantId!)
     .order('sort_order', { ascending: true })
@@ -103,7 +110,9 @@ export async function getMenuStory(menuId: string): Promise<{
 
 export async function updateStoryElement(
   elementId: string,
-  updates: Partial<Pick<StoryElement, 'type' | 'title' | 'content' | 'dishId' | 'order' | 'fohOnly'>>
+  updates: Partial<
+    Pick<StoryElement, 'type' | 'title' | 'content' | 'dishId' | 'order' | 'fohOnly'>
+  >
 ): Promise<void> {
   const user = await requireChef()
   const db: any = createServerClient()
@@ -238,7 +247,9 @@ export async function getPresentationGuide(menuId: string): Promise<Presentation
 
   const { data: pairings, error: pairErr } = await db
     .from('menu_wine_pairings')
-    .select('id, menu_id, dish_id, wine_name, vineyard, vintage, notes, price_per_bottle, sort_order, created_at')
+    .select(
+      'id, menu_id, dish_id, wine_name, vineyard, vintage, notes, price_per_bottle, sort_order, created_at'
+    )
     .eq('menu_id', menuId)
     .eq('tenant_id', user.tenantId!)
     .order('sort_order', { ascending: true })

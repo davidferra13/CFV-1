@@ -58,7 +58,8 @@ export async function upsertRailStage(params: {
   }
   if (params.icon !== undefined) payload.icon = params.icon
   if (params.color !== undefined) payload.color = params.color
-  if (params.completionCriteria !== undefined) payload.completion_criteria = params.completionCriteria
+  if (params.completionCriteria !== undefined)
+    payload.completion_criteria = params.completionCriteria
 
   const { data, error } = await fromRailStages(db)
     .upsert(payload, { onConflict: 'tenant_id,stage_name' })
@@ -200,10 +201,7 @@ export async function upsertRailNavShortcut(params: {
   }
   if (params.hotkey !== undefined) payload.hotkey = params.hotkey
 
-  const { data, error } = await fromRailNavShortcuts(db)
-    .insert(payload)
-    .select('*')
-    .single()
+  const { data, error } = await fromRailNavShortcuts(db).insert(payload).select('*').single()
 
   if (error) throw new Error(`Failed to upsert rail nav shortcut: ${error.message}`)
   return mapShortcut(data)

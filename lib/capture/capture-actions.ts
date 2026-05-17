@@ -3,7 +3,13 @@
 import { requireChef } from '@/lib/auth/get-user'
 import { createServerClient } from '@/lib/db/server'
 import { revalidatePath } from 'next/cache'
-import type { CaptureCategory, CaptureStatus, CapturePriority, CaptureEntry, CaptureStats } from './capture-types'
+import type {
+  CaptureCategory,
+  CaptureStatus,
+  CapturePriority,
+  CaptureEntry,
+  CaptureStats,
+} from './capture-types'
 
 // ============================================
 // Quick Capture - fast brain dump

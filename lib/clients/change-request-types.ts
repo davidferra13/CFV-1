@@ -1,5 +1,18 @@
-export type ChangeRequestType = 'menu_change' | 'guest_count' | 'date_change' | 'dietary_update' | 'service_style' | 'venue_change' | 'budget_adjustment' | 'other'
-export type ChangeRequestStatus = 'pending' | 'reviewed' | 'approved' | 'rejected' | 'partially_approved'
+export type ChangeRequestType =
+  | 'menu_change'
+  | 'guest_count'
+  | 'date_change'
+  | 'dietary_update'
+  | 'service_style'
+  | 'venue_change'
+  | 'budget_adjustment'
+  | 'other'
+export type ChangeRequestStatus =
+  | 'pending'
+  | 'reviewed'
+  | 'approved'
+  | 'rejected'
+  | 'partially_approved'
 export type ChangeRequestImpact = 'none' | 'minor' | 'moderate' | 'major'
 
 export interface ChangeRequest {

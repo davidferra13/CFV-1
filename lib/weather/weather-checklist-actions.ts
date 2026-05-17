@@ -45,9 +45,7 @@ export async function getPreEventWeatherChecklist(
     // Fetch event with location and site assessment data
     const { data: event, error } = await db
       .from('events')
-      .select(
-        'id, event_date, location_lat, location_lng, location_notes, status'
-      )
+      .select('id, event_date, location_lat, location_lng, location_notes, status')
       .eq('id', eventId)
       .eq('tenant_id', user.tenantId!)
       .single()

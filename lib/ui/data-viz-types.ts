@@ -1,4 +1,12 @@
-export type ChartType = 'bar' | 'line' | 'pie' | 'donut' | 'area' | 'scatter' | 'heatmap' | 'sparkline'
+export type ChartType =
+  | 'bar'
+  | 'line'
+  | 'pie'
+  | 'donut'
+  | 'area'
+  | 'scatter'
+  | 'heatmap'
+  | 'sparkline'
 
 export type DataSeries = {
   name: string

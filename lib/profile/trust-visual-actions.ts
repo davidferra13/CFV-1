@@ -2,10 +2,7 @@
 
 import { requireChef } from '@/lib/auth/get-user'
 import { createServerClient } from '@/lib/db/server'
-import {
-  TRUST_SIGNAL_WEIGHTS,
-  DEFAULT_DISPLAY_CONFIG,
-} from './trust-visual-types'
+import { TRUST_SIGNAL_WEIGHTS, DEFAULT_DISPLAY_CONFIG } from './trust-visual-types'
 import type {
   TrustBadge,
   TrustDisplayConfig,
@@ -238,9 +235,7 @@ export async function calculateTrustScore(
 // 6. GET TRUST LEADERBOARD
 // ============================================
 
-export async function getTrustLeaderboard(
-  limit: number = 10
-): Promise<TrustProfileSummary[]> {
+export async function getTrustLeaderboard(limit: number = 10): Promise<TrustProfileSummary[]> {
   const user = await requireChef()
   const tenantId = user.tenantId!
   const db = createServerClient()
@@ -260,11 +255,12 @@ export async function getTrustLeaderboard(
   return (data ?? []).map((row: any) => {
     const badges = (row.badges ?? []) as TrustBadge[]
     const signals = (row.signals ?? []) as TrustSignalEntry[]
-    const topBadge = badges.length > 0
-      ? badges.reduce((best: TrustBadge, b: TrustBadge) =>
-          tierRank(b.tier) > tierRank(best.tier) ? b : best
-        )
-      : undefined
+    const topBadge =
+      badges.length > 0
+        ? badges.reduce((best: TrustBadge, b: TrustBadge) =>
+            tierRank(b.tier) > tierRank(best.tier) ? b : best
+          )
+        : undefined
 
     return {
       chefId: row.chef_id,
@@ -288,10 +284,7 @@ export async function getExpiringCertifications(
   const tenantId = user.tenantId!
   const db = createServerClient()
 
-  const { data, error } = await db
-    .from(TABLE)
-    .select('chef_id, signals')
-    .eq('tenant_id', tenantId)
+  const { data, error } = await db.from(TABLE).select('chef_id, signals').eq('tenant_id', tenantId)
 
   if (error) {
     console.error('[getExpiringCertifications] error:', error)
@@ -382,7 +375,7 @@ function badgeNameToIcon(name: string): string {
     'Quick Responder': 'zap',
     'Client Favorite': 'heart',
     'Veteran Chef': 'award',
-    'Insured': 'shield',
+    Insured: 'shield',
     'Background Verified': 'user-check',
   }
   return map[name] ?? 'badge'

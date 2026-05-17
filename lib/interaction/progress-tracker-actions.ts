@@ -14,21 +14,69 @@ import type {
 // ---------------------------------------------------------------------------
 
 const DEFAULT_STEPS: Omit<ProgressStep, 'id' | 'status' | 'completedAt'>[] = [
-  { key: 'inquiry', label: 'Inquiry Received', description: 'Initial inquiry from client', order: 0, icon: 'inbox' },
-  { key: 'quote', label: 'Quote Sent', description: 'Price quote prepared and sent', order: 1, icon: 'file-text' },
-  { key: 'menu', label: 'Menu Finalized', description: 'Menu selections confirmed', order: 2, icon: 'utensils' },
-  { key: 'contract', label: 'Contract Signed', description: 'Service agreement executed', order: 3, icon: 'pen-tool' },
-  { key: 'deposit', label: 'Deposit Collected', description: 'Initial payment received', order: 4, icon: 'credit-card' },
-  { key: 'prep', label: 'Prep Underway', description: 'Shopping and mise en place', order: 5, icon: 'shopping-cart' },
-  { key: 'service', label: 'Service Complete', description: 'Dinner executed successfully', order: 6, icon: 'check-circle' },
-  { key: 'closeout', label: 'Closeout', description: 'Final billing and follow-up', order: 7, icon: 'archive' },
+  {
+    key: 'inquiry',
+    label: 'Inquiry Received',
+    description: 'Initial inquiry from client',
+    order: 0,
+    icon: 'inbox',
+  },
+  {
+    key: 'quote',
+    label: 'Quote Sent',
+    description: 'Price quote prepared and sent',
+    order: 1,
+    icon: 'file-text',
+  },
+  {
+    key: 'menu',
+    label: 'Menu Finalized',
+    description: 'Menu selections confirmed',
+    order: 2,
+    icon: 'utensils',
+  },
+  {
+    key: 'contract',
+    label: 'Contract Signed',
+    description: 'Service agreement executed',
+    order: 3,
+    icon: 'pen-tool',
+  },
+  {
+    key: 'deposit',
+    label: 'Deposit Collected',
+    description: 'Initial payment received',
+    order: 4,
+    icon: 'credit-card',
+  },
+  {
+    key: 'prep',
+    label: 'Prep Underway',
+    description: 'Shopping and mise en place',
+    order: 5,
+    icon: 'shopping-cart',
+  },
+  {
+    key: 'service',
+    label: 'Service Complete',
+    description: 'Dinner executed successfully',
+    order: 6,
+    icon: 'check-circle',
+  },
+  {
+    key: 'closeout',
+    label: 'Closeout',
+    description: 'Final billing and follow-up',
+    order: 7,
+    icon: 'archive',
+  },
 ]
 
 function buildDefaultSteps(): ProgressStep[] {
   return DEFAULT_STEPS.map((s, i) => ({
     ...s,
     id: `default-${s.key}`,
-    status: i === 0 ? 'active' as const : 'pending' as const,
+    status: i === 0 ? ('active' as const) : ('pending' as const),
     completedAt: null,
   }))
 }
@@ -80,7 +128,7 @@ export async function getEventProgress(eventId: string): Promise<EventProgress |
 
 export async function initializeProgress(
   eventId: string,
-  templateId?: string,
+  templateId?: string
 ): Promise<EventProgress> {
   const user = await requireChef()
   const db: any = createServerClient()
@@ -148,10 +196,7 @@ export async function initializeProgress(
 // 3. advanceStep
 // ---------------------------------------------------------------------------
 
-export async function advanceStep(
-  eventId: string,
-  stepKey: string,
-): Promise<EventProgress> {
+export async function advanceStep(eventId: string, stepKey: string): Promise<EventProgress> {
   const user = await requireChef()
   const db: any = createServerClient()
 
@@ -204,10 +249,7 @@ export async function advanceStep(
 // 4. skipStep
 // ---------------------------------------------------------------------------
 
-export async function skipStep(
-  eventId: string,
-  stepKey: string,
-): Promise<EventProgress> {
+export async function skipStep(eventId: string, stepKey: string): Promise<EventProgress> {
   const user = await requireChef()
   const db: any = createServerClient()
 
@@ -286,7 +328,7 @@ export async function getProgressTemplates(): Promise<ProgressTemplate[]> {
 
 export async function createProgressTemplate(
   name: string,
-  steps: { key: string; label: string; description: string; icon: string }[],
+  steps: { key: string; label: string; description: string; icon: string }[]
 ): Promise<ProgressTemplate> {
   const user = await requireChef()
   const db: any = createServerClient()
@@ -321,9 +363,7 @@ export async function createProgressTemplate(
 // 7. getClientProgressView
 // ---------------------------------------------------------------------------
 
-export async function getClientProgressView(
-  eventId: string,
-): Promise<ClientProgressView | null> {
+export async function getClientProgressView(eventId: string): Promise<ClientProgressView | null> {
   const user = await requireChef()
   const db: any = createServerClient()
 
@@ -339,20 +379,14 @@ export async function getClientProgressView(
   if (!prog || !prog.client_visible) return null
 
   // Fetch event title
-  const { data: evt } = await db
-    .from('events')
-    .select('title')
-    .eq('id', eventId)
-    .maybeSingle()
+  const { data: evt } = await db.from('events').select('title').eq('id', eventId).maybeSingle()
 
   const steps: ProgressStep[] = Array.isArray(prog.steps)
     ? prog.steps
     : JSON.parse(prog.steps ?? '[]')
 
   // Find next uncompleted milestone
-  const nextStep = steps.find(
-    (s) => s.status === 'pending' || s.status === 'active',
-  )
+  const nextStep = steps.find((s) => s.status === 'pending' || s.status === 'active')
 
   return {
     eventTitle: evt?.title ?? 'Upcoming Event',

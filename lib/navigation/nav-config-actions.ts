@@ -2,12 +2,7 @@
 
 import { requireChef } from '@/lib/auth/get-user'
 import { createServerClient } from '@/lib/db/server'
-import type {
-  NavSection,
-  NavPreference,
-  NavAuditEntry,
-  RecentPage,
-} from './nav-config-types'
+import type { NavSection, NavPreference, NavAuditEntry, RecentPage } from './nav-config-types'
 
 // ---------------------------------------------------------------------------
 // 1. getNavPreferences
@@ -57,10 +52,7 @@ export async function updateNavPreferences(
     if (pinnedItems !== undefined) updates.pinned_items = pinnedItems
     if (collapsedSections !== undefined) updates.collapsed_sections = collapsedSections
 
-    const { error } = await db
-      .from('nav_preferences')
-      .update(updates)
-      .eq('id', existing.id)
+    const { error } = await db.from('nav_preferences').update(updates).eq('id', existing.id)
 
     if (error) throw error
   } else {
@@ -82,10 +74,7 @@ export async function updateNavPreferences(
 
 const MAX_RECENT_PAGES = 20
 
-export async function recordRecentPage(
-  route: string,
-  title: string
-): Promise<void> {
+export async function recordRecentPage(route: string, title: string): Promise<void> {
   const user = await requireChef()
   const db: any = createServerClient()
 
@@ -94,9 +83,7 @@ export async function recordRecentPage(
   const entry: RecentPage = { route, title, visitedAt: now }
 
   if (prefs) {
-    const pages = (prefs.recentPages ?? []).filter(
-      (p: RecentPage) => p.route !== route
-    )
+    const pages = (prefs.recentPages ?? []).filter((p: RecentPage) => p.route !== route)
     pages.unshift(entry)
     const trimmed = pages.slice(0, MAX_RECENT_PAGES)
 
@@ -143,11 +130,7 @@ export async function auditPageHeader(
   const db: any = createServerClient()
 
   // Upsert: delete existing entry for this route, then insert fresh
-  await db
-    .from('nav_audit_entries')
-    .delete()
-    .eq('tenant_id', user.tenantId!)
-    .eq('route', route)
+  await db.from('nav_audit_entries').delete().eq('tenant_id', user.tenantId!).eq('route', route)
 
   const { error } = await db.from('nav_audit_entries').insert({
     tenant_id: user.tenantId!,
@@ -164,9 +147,7 @@ export async function auditPageHeader(
 // 6. getHeaderAuditResults
 // ---------------------------------------------------------------------------
 
-export async function getHeaderAuditResults(
-  limit = 100
-): Promise<NavAuditEntry[]> {
+export async function getHeaderAuditResults(limit = 100): Promise<NavAuditEntry[]> {
   const user = await requireChef()
   const db: any = createServerClient()
 

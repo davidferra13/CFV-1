@@ -74,10 +74,7 @@ const DEFAULT_REST_DAYS_AFTER = 0
 
 // ── Get or create capacity config ────────────────────────────────────────────────
 
-async function getOrCreateConfig(
-  db: any,
-  tenantId: string
-): Promise<CapacityConfig> {
+async function getOrCreateConfig(db: any, tenantId: string): Promise<CapacityConfig> {
   const { data, error } = await db
     .from('chef_capacity_configs')
     .select('*')
@@ -162,11 +159,7 @@ async function fetchEventCountsByDate(
 
 // ── Build SaturationDay for a single date ────────────────────────────────────────
 
-function buildDay(
-  date: string,
-  eventCount: number,
-  config: CapacityConfig
-): SaturationDay {
+function buildDay(date: string, eventCount: number, config: CapacityConfig): SaturationDay {
   const dayName = getDayName(date)
   const isBlocked = config.blackoutDays.includes(dayName)
   const maxEvents = config.maxEventsPerDay
@@ -217,9 +210,8 @@ export async function getWeeklySaturation(weekStart: string): Promise<Saturation
   }
 
   const maxWeeklyEvents = config.maxEventsPerWeek
-  const weekPercent = maxWeeklyEvents > 0
-    ? clamp(Math.round((totalEvents / maxWeeklyEvents) * 100), 0, 100)
-    : 0
+  const weekPercent =
+    maxWeeklyEvents > 0 ? clamp(Math.round((totalEvents / maxWeeklyEvents) * 100), 0, 100) : 0
 
   return {
     weekStart: start,
@@ -236,10 +228,7 @@ export async function getWeeklySaturation(weekStart: string): Promise<Saturation
  * Get saturation data for each day of the given month.
  * month is 1-based (1 = January).
  */
-export async function getMonthlySaturation(
-  year: number,
-  month: number
-): Promise<SaturationMonth> {
+export async function getMonthlySaturation(year: number, month: number): Promise<SaturationMonth> {
   const chef = await requireChef()
   const db: any = createServerClient()
   const tenantId = chef.tenantId!
@@ -271,9 +260,8 @@ export async function getMonthlySaturation(
 
   // Monthly saturation: events / (available days * max per day)
   const maxMonthlyEvents = availableDays * config.maxEventsPerDay
-  const monthPercent = maxMonthlyEvents > 0
-    ? clamp(Math.round((totalEvents / maxMonthlyEvents) * 100), 0, 100)
-    : 0
+  const monthPercent =
+    maxMonthlyEvents > 0 ? clamp(Math.round((totalEvents / maxMonthlyEvents) * 100), 0, 100) : 0
 
   return {
     year,
@@ -456,8 +444,18 @@ export async function getSaturationTrends(months: number = 6): Promise<Saturatio
   const points: SaturationTrendPoint[] = []
 
   const MONTH_LABELS = [
-    'Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun',
-    'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec',
+    'Jan',
+    'Feb',
+    'Mar',
+    'Apr',
+    'May',
+    'Jun',
+    'Jul',
+    'Aug',
+    'Sep',
+    'Oct',
+    'Nov',
+    'Dec',
   ]
 
   for (let i = months - 1; i >= 0; i--) {
@@ -483,9 +481,7 @@ export async function getSaturationTrends(months: number = 6): Promise<Saturatio
     }
 
     const maxEvents = availableDays * config.maxEventsPerDay
-    const percent = maxEvents > 0
-      ? clamp(Math.round((totalEvents / maxEvents) * 100), 0, 100)
-      : 0
+    const percent = maxEvents > 0 ? clamp(Math.round((totalEvents / maxEvents) * 100), 0, 100) : 0
 
     points.push({
       year,
@@ -498,9 +494,10 @@ export async function getSaturationTrends(months: number = 6): Promise<Saturatio
     })
   }
 
-  const avgSaturation = points.length > 0
-    ? Math.round(points.reduce((sum, p) => sum + p.saturationPercent, 0) / points.length)
-    : 0
+  const avgSaturation =
+    points.length > 0
+      ? Math.round(points.reduce((sum, p) => sum + p.saturationPercent, 0) / points.length)
+      : 0
 
   let peakMonth: SaturationTrendPoint | null = null
   let lowestMonth: SaturationTrendPoint | null = null

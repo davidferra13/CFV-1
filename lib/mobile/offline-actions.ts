@@ -60,18 +60,16 @@ export async function submitOfflineQueue(
     } catch (err) {
       failed++
       // Insert as failed so it can be retried
-      await db
-        .from('offline_actions')
-        .insert({
-          tenant_id: tenantId,
-          action_type: action.actionType,
-          entity_type: action.entityType,
-          entity_id: action.entityId || null,
-          payload: action.payload,
-          status: 'failed',
-          created_offline_at: action.createdOfflineAt,
-          retry_count: 1,
-        })
+      await db.from('offline_actions').insert({
+        tenant_id: tenantId,
+        action_type: action.actionType,
+        entity_type: action.entityType,
+        entity_id: action.entityId || null,
+        payload: action.payload,
+        status: 'failed',
+        created_offline_at: action.createdOfflineAt,
+        retry_count: 1,
+      })
     }
   }
 
@@ -248,7 +246,11 @@ export async function getOfflineCapabilities(): Promise<OfflineCapability[]> {
 /**
  * Retry all failed actions for the current tenant.
  */
-export async function retryFailedActions(): Promise<{ retried: number; succeeded: number; stillFailed: number }> {
+export async function retryFailedActions(): Promise<{
+  retried: number
+  succeeded: number
+  stillFailed: number
+}> {
   const user = await requireChef()
   const tenantId = user.tenantId!
   const db: any = createServerClient()

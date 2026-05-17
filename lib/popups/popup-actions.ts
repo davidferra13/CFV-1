@@ -109,11 +109,7 @@ export async function createPopup(
     status: 'draft' as PopupStatus,
   }
 
-  const { data, error } = await db
-    .from('chef_popups')
-    .insert(row)
-    .select('*')
-    .single()
+  const { data, error } = await db.from('chef_popups').insert(row).select('*').single()
 
   if (error || !data) throw new Error(error?.message ?? 'Failed to create pop-up')
   revalidatePath('/popups')
@@ -169,9 +165,7 @@ export async function getChefPopups(): Promise<Popup[]> {
   return (data ?? []) as Popup[]
 }
 
-export async function getPopupDashboard(
-  popupId: string
-): Promise<PopupDashboard> {
+export async function getPopupDashboard(popupId: string): Promise<PopupDashboard> {
   const user = await requireChef()
   const db: any = createServerClient()
 
@@ -229,9 +223,7 @@ export async function getPopupDashboard(
   }
 }
 
-export async function publishPopup(
-  popupId: string
-): Promise<{ success: true; popup: Popup }> {
+export async function publishPopup(popupId: string): Promise<{ success: true; popup: Popup }> {
   const user = await requireChef()
   const db: any = createServerClient()
 
@@ -296,9 +288,7 @@ export async function cancelPopup(
   return { success: true, popup: data as Popup }
 }
 
-export async function getPopupTicketSales(
-  popupId: string
-): Promise<TicketSale[]> {
+export async function getPopupTicketSales(popupId: string): Promise<TicketSale[]> {
   const user = await requireChef()
   const db: any = createServerClient()
 

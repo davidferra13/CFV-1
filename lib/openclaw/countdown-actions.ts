@@ -135,7 +135,9 @@ export async function getJobSchedule(): Promise<JobScheduleStatus> {
  * In v1 this is a no-op placeholder; config is file-based.
  * Future: persist to DB or write to config.
  */
-export async function updateCountdownTarget(newTargetAt: string): Promise<{ success: boolean; error?: string }> {
+export async function updateCountdownTarget(
+  newTargetAt: string
+): Promise<{ success: boolean; error?: string }> {
   await requireChef()
   const admin = await isAdmin().catch(() => false)
   if (!admin) {
@@ -150,7 +152,11 @@ export async function updateCountdownTarget(newTargetAt: string): Promise<{ succ
 
   // v1: config is file-based, cannot write at runtime
   // This action exists for future wiring to a DB-backed config
-  return { success: false, error: 'Config updates require a code change in v1. Edit config/openclaw-capture-milestone.json directly.' }
+  return {
+    success: false,
+    error:
+      'Config updates require a code change in v1. Edit config/openclaw-capture-milestone.json directly.',
+  }
 }
 
 // ── Placeholder schedule data ─────────────────────────────────────────────
@@ -168,16 +174,66 @@ function getPlaceholderSchedule(): MissionScheduleRow[] {
     command: string
     cadenceLabel: string
   }> = [
-    { name: 'price-sync', cronExpr: '*/15 * * * *', command: 'node price-sync.mjs', cadenceLabel: 'every 15m' },
-    { name: 'store-catalog-pull', cronExpr: '0 */2 * * *', command: 'node store-catalog-pull.mjs', cadenceLabel: 'every 2h' },
-    { name: 'ingredient-enrichment', cronExpr: '30 */4 * * *', command: 'node ingredient-enrichment.mjs', cadenceLabel: 'every 4h' },
-    { name: 'seasonal-analyzer', cronExpr: '0 6 * * *', command: 'node seasonal-analyzer.mjs', cadenceLabel: 'daily 6:00 AM' },
-    { name: 'yield-factor-sync', cronExpr: '0 7 * * *', command: 'node yield-factor-sync.mjs', cadenceLabel: 'daily 7:00 AM' },
-    { name: 'anomaly-detector', cronExpr: '0 8 * * *', command: 'node anomaly-detector.mjs', cadenceLabel: 'daily 8:00 AM' },
-    { name: 'usda-baseline-update', cronExpr: '0 3 * * 0', command: 'node usda-baseline.mjs', cadenceLabel: 'weekly Sun 3:00 AM' },
-    { name: 'store-coverage-audit', cronExpr: '0 4 * * 3', command: 'node store-coverage-audit.mjs', cadenceLabel: 'weekly Wed 4:00 AM' },
-    { name: 'flyer-archiver', cronExpr: '0 23 * * *', command: 'node flyer-archiver.mjs', cadenceLabel: 'daily 11:00 PM' },
-    { name: 'log-rotation', cronExpr: '0 0 * * *', command: 'find /logs -mtime +7 -delete', cadenceLabel: 'daily midnight' },
+    {
+      name: 'price-sync',
+      cronExpr: '*/15 * * * *',
+      command: 'node price-sync.mjs',
+      cadenceLabel: 'every 15m',
+    },
+    {
+      name: 'store-catalog-pull',
+      cronExpr: '0 */2 * * *',
+      command: 'node store-catalog-pull.mjs',
+      cadenceLabel: 'every 2h',
+    },
+    {
+      name: 'ingredient-enrichment',
+      cronExpr: '30 */4 * * *',
+      command: 'node ingredient-enrichment.mjs',
+      cadenceLabel: 'every 4h',
+    },
+    {
+      name: 'seasonal-analyzer',
+      cronExpr: '0 6 * * *',
+      command: 'node seasonal-analyzer.mjs',
+      cadenceLabel: 'daily 6:00 AM',
+    },
+    {
+      name: 'yield-factor-sync',
+      cronExpr: '0 7 * * *',
+      command: 'node yield-factor-sync.mjs',
+      cadenceLabel: 'daily 7:00 AM',
+    },
+    {
+      name: 'anomaly-detector',
+      cronExpr: '0 8 * * *',
+      command: 'node anomaly-detector.mjs',
+      cadenceLabel: 'daily 8:00 AM',
+    },
+    {
+      name: 'usda-baseline-update',
+      cronExpr: '0 3 * * 0',
+      command: 'node usda-baseline.mjs',
+      cadenceLabel: 'weekly Sun 3:00 AM',
+    },
+    {
+      name: 'store-coverage-audit',
+      cronExpr: '0 4 * * 3',
+      command: 'node store-coverage-audit.mjs',
+      cadenceLabel: 'weekly Wed 4:00 AM',
+    },
+    {
+      name: 'flyer-archiver',
+      cronExpr: '0 23 * * *',
+      command: 'node flyer-archiver.mjs',
+      cadenceLabel: 'daily 11:00 PM',
+    },
+    {
+      name: 'log-rotation',
+      cronExpr: '0 0 * * *',
+      command: 'find /logs -mtime +7 -delete',
+      cadenceLabel: 'daily midnight',
+    },
   ]
 
   return jobs.map((job): MissionScheduleRow => {

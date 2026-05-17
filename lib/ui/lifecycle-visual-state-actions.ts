@@ -60,7 +60,7 @@ export async function upsertVisualStateStyle(
   borderWidth: number,
   opacity: number,
   animation: AnimationType,
-  icon: string | null,
+  icon: string | null
 ): Promise<VisualStateStyle> {
   const user = await requireChef()
   const db: any = createServerClient()
@@ -70,7 +70,17 @@ export async function upsertVisualStateStyle(
      ON CONFLICT (tenant_id, state)
      DO UPDATE SET bg_color = $3, text_color = $4, border_color = $5, border_width = $6, opacity = $7, animation = $8, icon = $9
      RETURNING *`,
-    [user.tenantId, state, bgColor, textColor, borderColor, borderWidth, opacity, animation, icon ?? null],
+    [
+      user.tenantId,
+      state,
+      bgColor,
+      textColor,
+      borderColor,
+      borderWidth,
+      opacity,
+      animation,
+      icon ?? null,
+    ]
   )
   return rowToStyle(rows[0])
 }
@@ -80,12 +90,14 @@ export async function deleteVisualStateStyle(id: string): Promise<{ success: boo
   const db: any = createServerClient()
   const rows = await db.query(
     'DELETE FROM visual_state_styles WHERE id = $1 AND tenant_id = $2 RETURNING id',
-    [id, user.tenantId],
+    [id, user.tenantId]
   )
   return { success: rows.length > 0 }
 }
 
-export async function getLifecycleStateMappings(lifecycleStage?: string): Promise<LifecycleStateMapping[]> {
+export async function getLifecycleStateMappings(
+  lifecycleStage?: string
+): Promise<LifecycleStateMapping[]> {
   const user = await requireChef()
   const db: any = createServerClient()
   const params: any[] = [user.tenantId]
@@ -103,7 +115,7 @@ export async function upsertLifecycleStateMapping(
   lifecycleStage: string,
   visualState: VisualState,
   label: string,
-  description?: string,
+  description?: string
 ): Promise<LifecycleStateMapping> {
   const user = await requireChef()
   const db: any = createServerClient()
@@ -113,7 +125,7 @@ export async function upsertLifecycleStateMapping(
      ON CONFLICT (tenant_id, lifecycle_stage)
      DO UPDATE SET visual_state = $3, label = $4, description = $5
      RETURNING *`,
-    [user.tenantId, lifecycleStage, visualState, label, description ?? null],
+    [user.tenantId, lifecycleStage, visualState, label, description ?? null]
   )
   return rowToMapping(rows[0])
 }
@@ -124,7 +136,7 @@ export async function getVisualStateSummary(): Promise<VisualStateSummary> {
 
   const styleRows = await db.query(
     'SELECT state, COUNT(*)::int as cnt FROM visual_state_styles WHERE tenant_id = $1 GROUP BY state',
-    [user.tenantId],
+    [user.tenantId]
   )
   const totalStyles = styleRows.reduce((sum: number, r: any) => sum + r.cnt, 0)
   const stateDistribution: Record<string, number> = {}
@@ -134,14 +146,14 @@ export async function getVisualStateSummary(): Promise<VisualStateSummary> {
 
   const mappingRows = await db.query(
     'SELECT COUNT(*)::int as cnt FROM lifecycle_state_mappings WHERE tenant_id = $1',
-    [user.tenantId],
+    [user.tenantId]
   )
   const totalMappings = mappingRows[0]?.cnt ?? 0
 
   const unmappedRows = await db.query(
     `SELECT DISTINCT lifecycle_stage FROM lifecycle_state_mappings WHERE tenant_id = $1
      AND visual_state NOT IN (SELECT state FROM visual_state_styles WHERE tenant_id = $1)`,
-    [user.tenantId],
+    [user.tenantId]
   )
   const unmappedStages = unmappedRows.map((r: any) => r.lifecycle_stage)
 

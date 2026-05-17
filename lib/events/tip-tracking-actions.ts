@@ -219,7 +219,10 @@ export async function getTipTrends(
   }
 
   // Group by month
-  const monthMap = new Map<string, { totalCents: number; tipCount: number; eventSet: Set<string> }>()
+  const monthMap = new Map<
+    string,
+    { totalCents: number; tipCount: number; eventSet: Set<string> }
+  >()
 
   for (const tip of tips || []) {
     const date = new Date(tip.received_at)
@@ -478,11 +481,7 @@ export async function deleteTip(
   const tenantId = user.tenantId!
   const db: any = createServerClient()
 
-  const { error } = await db
-    .from('event_tips')
-    .delete()
-    .eq('id', tipId)
-    .eq('tenant_id', tenantId)
+  const { error } = await db.from('event_tips').delete().eq('id', tipId).eq('tenant_id', tenantId)
 
   if (error) {
     console.error('[tip-tracking] deleteTip error', error)

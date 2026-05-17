@@ -146,7 +146,13 @@ export async function generateEventTimeline(
 
   // 1. Travel to venue (if travel time provided)
   if (travelMinutes && travelMinutes > 0) {
-    const arriveTime = subtractMinutes(serviceDate, estimation.totalPrepMinutes + estimation.courseEstimates[0]?.fireMinutes + (estimation.courseEstimates[0]?.plateMinutes ?? 0) + effectiveSetup)
+    const arriveTime = subtractMinutes(
+      serviceDate,
+      estimation.totalPrepMinutes +
+        estimation.courseEstimates[0]?.fireMinutes +
+        (estimation.courseEstimates[0]?.plateMinutes ?? 0) +
+        effectiveSetup
+    )
     const departTime = subtractMinutes(arriveTime, estimation.travelWithBuffers)
 
     blocks.push({
@@ -157,9 +163,10 @@ export async function generateEventTimeline(
       end_time: arriveTime.toISOString(),
       duration_minutes: estimation.travelWithBuffers,
       sequence: sequence++,
-      notes: travelMinutes >= TIMELINE_DEFAULTS.TRAFFIC_BUFFER_THRESHOLD
-        ? `${travelMinutes} min drive + ${TIMELINE_DEFAULTS.TRAFFIC_BUFFER_MINUTES} min traffic buffer + ${TIMELINE_DEFAULTS.ARRIVAL_BUFFER_MINUTES} min arrival buffer`
-        : `${travelMinutes} min drive + ${TIMELINE_DEFAULTS.ARRIVAL_BUFFER_MINUTES} min arrival buffer`,
+      notes:
+        travelMinutes >= TIMELINE_DEFAULTS.TRAFFIC_BUFFER_THRESHOLD
+          ? `${travelMinutes} min drive + ${TIMELINE_DEFAULTS.TRAFFIC_BUFFER_MINUTES} min traffic buffer + ${TIMELINE_DEFAULTS.ARRIVAL_BUFFER_MINUTES} min arrival buffer`
+          : `${travelMinutes} min drive + ${TIMELINE_DEFAULTS.ARRIVAL_BUFFER_MINUTES} min arrival buffer`,
       course_number: null,
       is_parallel: false,
     })
@@ -334,9 +341,7 @@ export async function generateEventTimeline(
 
 // ── Get Event Timeline ───────────────────────────────────────────────────────
 
-export async function getEventTimeline(
-  eventId: string
-): Promise<EventTimeline | null> {
+export async function getEventTimeline(eventId: string): Promise<EventTimeline | null> {
   const user = await requireChef()
   const tenantId = user.tenantId!
   const db: any = createServerClient()
@@ -498,10 +503,7 @@ export async function addTimelineBlock(
 
 // ── Reorder Timeline ─────────────────────────────────────────────────────────
 
-export async function reorderTimeline(
-  eventId: string,
-  blockIds: string[]
-): Promise<void> {
+export async function reorderTimeline(eventId: string, blockIds: string[]): Promise<void> {
   const user = await requireChef()
   const tenantId = user.tenantId!
   const db: any = createServerClient()

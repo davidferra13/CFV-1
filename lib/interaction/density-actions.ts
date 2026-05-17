@@ -92,7 +92,7 @@ export async function updateWorkspaceMode(mode: WorkspaceMode): Promise<void> {
 // ---------------------------------------------------------------------------
 
 const BOOLEAN_FIELDS = ['sidebar_collapsed', 'compact_tables', 'show_quick_actions'] as const
-type BooleanField = typeof BOOLEAN_FIELDS[number]
+type BooleanField = (typeof BOOLEAN_FIELDS)[number]
 
 const FIELD_MAP: Record<string, BooleanField> = {
   sidebarCollapsed: 'sidebar_collapsed',
@@ -131,19 +131,51 @@ export async function getAvailableLayouts() {
 
   return {
     densityModes: [
-      { value: 'compact' as const, label: 'Compact', description: 'Maximum information density, minimal spacing' },
-      { value: 'comfortable' as const, label: 'Comfortable', description: 'Balanced spacing for everyday use' },
-      { value: 'spacious' as const, label: 'Spacious', description: 'Generous whitespace, relaxed layout' },
+      {
+        value: 'compact' as const,
+        label: 'Compact',
+        description: 'Maximum information density, minimal spacing',
+      },
+      {
+        value: 'comfortable' as const,
+        label: 'Comfortable',
+        description: 'Balanced spacing for everyday use',
+      },
+      {
+        value: 'spacious' as const,
+        label: 'Spacious',
+        description: 'Generous whitespace, relaxed layout',
+      },
     ],
     workspaceModes: [
-      { value: 'focus' as const, label: 'Focus', description: 'Single-task view, minimal distractions' },
-      { value: 'overview' as const, label: 'Overview', description: 'Dashboard view with key metrics visible' },
-      { value: 'planning' as const, label: 'Planning', description: 'Expanded view for scheduling and prep work' },
+      {
+        value: 'focus' as const,
+        label: 'Focus',
+        description: 'Single-task view, minimal distractions',
+      },
+      {
+        value: 'overview' as const,
+        label: 'Overview',
+        description: 'Dashboard view with key metrics visible',
+      },
+      {
+        value: 'planning' as const,
+        label: 'Planning',
+        description: 'Expanded view for scheduling and prep work',
+      },
     ],
     toggles: [
-      { field: 'sidebarCollapsed', label: 'Collapse Sidebar', description: 'Hide sidebar navigation' },
+      {
+        field: 'sidebarCollapsed',
+        label: 'Collapse Sidebar',
+        description: 'Hide sidebar navigation',
+      },
       { field: 'compactTables', label: 'Compact Tables', description: 'Reduce table row height' },
-      { field: 'showQuickActions', label: 'Show Quick Actions', description: 'Display quick action buttons' },
+      {
+        field: 'showQuickActions',
+        label: 'Show Quick Actions',
+        description: 'Display quick action buttons',
+      },
     ],
   }
 }

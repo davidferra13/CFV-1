@@ -72,9 +72,7 @@ export async function updateEquipmentRegistry(
       if (error) throw new Error(`Failed to update registry item: ${error.message}`)
     } else {
       // Insert new
-      const { error } = await db
-        .from('chef_equipment_registry')
-        .insert(row)
+      const { error } = await db.from('chef_equipment_registry').insert(row)
 
       if (error) throw new Error(`Failed to add registry item: ${error.message}`)
     }
@@ -152,9 +150,7 @@ export async function generatePackingList(eventId: string): Promise<PackingList>
       .in('menu_id', menuIds)
       .not('recipe_id', 'is', null)
 
-    const recipeIds = (menuItemData ?? [])
-      .map((mi: any) => mi.recipe_id)
-      .filter(Boolean)
+    const recipeIds = (menuItemData ?? []).map((mi: any) => mi.recipe_id).filter(Boolean)
 
     if (recipeIds.length > 0) {
       const { data: recipeData } = await db
@@ -213,7 +209,9 @@ export async function generatePackingList(eventId: string): Promise<PackingList>
   const allTexts = [
     ...recipeTexts,
     ...recipeEquipmentArrays,
-    ...dishes.map((d: any) => [d.description, d.chef_notes, d.course_name].filter(Boolean).join(' ')),
+    ...dishes.map((d: any) =>
+      [d.description, d.chef_notes, d.course_name].filter(Boolean).join(' ')
+    ),
     event.service_style || '',
   ]
 
@@ -285,9 +283,7 @@ export async function generatePackingList(eventId: string): Promise<PackingList>
       notes: item.notes,
     }))
 
-    const { error: itemsErr } = await db
-      .from('event_packing_items')
-      .insert(rows)
+    const { error: itemsErr } = await db.from('event_packing_items').insert(rows)
 
     if (itemsErr) throw new Error(`Failed to insert packing items: ${itemsErr.message}`)
   }

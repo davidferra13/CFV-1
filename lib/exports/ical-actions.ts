@@ -62,11 +62,7 @@ export async function exportPrepTimelineAsICal(
     }
 
     // Include untimed items on service day if option is set
-    if (
-      options?.includeUntimed &&
-      day.isServiceDay &&
-      timeline.untimedItems.length > 0
-    ) {
+    if (options?.includeUntimed && day.isServiceDay && timeline.untimedItems.length > 0) {
       const untimedBlock = timeline.untimedItems
         .map((item) => `- ${item.recipeName} (no timing data)`)
         .join('\n')
@@ -216,9 +212,7 @@ export async function exportWeeklyScheduleAsICal(
     const description = descParts.join('\n')
 
     const title = event.occasion || 'Event'
-    const clientSuffix = event.client?.full_name
-      ? ` (${event.client.full_name})`
-      : ''
+    const clientSuffix = event.client?.full_name ? ` (${event.client.full_name})` : ''
 
     // If event has a serve time, create a timed event
     const timeStr = event.serve_time || event.event_time
@@ -281,8 +275,7 @@ export async function exportWeeklyScheduleAsICal(
 
   const feed: ICalFeed = {
     prodId: PRODID,
-    calendarName:
-      options?.calendarName ?? `ChefFlow Week of ${weekStart}`,
+    calendarName: options?.calendarName ?? `ChefFlow Week of ${weekStart}`,
     events: calEvents,
   }
 

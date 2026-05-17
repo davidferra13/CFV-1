@@ -1,4 +1,11 @@
-export type SearchableSource = 'events' | 'clients' | 'recipes' | 'menus' | 'notes' | 'communication_log' | 'invoices'
+export type SearchableSource =
+  | 'events'
+  | 'clients'
+  | 'recipes'
+  | 'menus'
+  | 'notes'
+  | 'communication_log'
+  | 'invoices'
 
 export interface SearchResult {
   id: string

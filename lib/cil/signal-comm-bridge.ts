@@ -213,10 +213,7 @@ function resolveOrigin(_urgency: number): 'automated' | 'ai' {
  *
  * Never throws. All errors are caught and logged.
  */
-export async function bridgeSignalToComm(
-  signal: ProactiveSignal,
-  tenantId: string
-): Promise<void> {
+export async function bridgeSignalToComm(signal: ProactiveSignal, tenantId: string): Promise<void> {
   const mapping = SIGNAL_COMM_MAP[signal.source]
   if (!mapping) return // No comm mapping for this signal type
 
@@ -249,8 +246,8 @@ export async function bridgeSignalToComm(
     title: signal.title,
     body: signal.suggestedAction || signal.detail,
     actionUrl: (signal.actionPayload?.path as string) || undefined,
-    clientId: mapping.category === 'client' ? (signal.entityIds[0] || undefined) : undefined,
-    eventId: mapping.category === 'event' ? (signal.entityIds[0] || undefined) : undefined,
+    clientId: mapping.category === 'client' ? signal.entityIds[0] || undefined : undefined,
+    eventId: mapping.category === 'event' ? signal.entityIds[0] || undefined : undefined,
     metadata: {
       origin: resolveOrigin(signal.urgency),
       cil_signal_source: signal.source,

@@ -1,4 +1,11 @@
-export type VisualState = 'active' | 'inactive' | 'pending' | 'error' | 'success' | 'warning' | 'disabled'
+export type VisualState =
+  | 'active'
+  | 'inactive'
+  | 'pending'
+  | 'error'
+  | 'success'
+  | 'warning'
+  | 'disabled'
 
 export type AnimationType = 'none' | 'pulse' | 'fade' | 'glow'
 

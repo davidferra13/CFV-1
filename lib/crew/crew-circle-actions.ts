@@ -221,7 +221,9 @@ export async function setCrewAvailability(input: {
       },
       { onConflict: 'crew_circle_id,staff_member_id,date' }
     )
-    .select('id, crew_circle_id, staff_member_id, event_id, date, status, note, created_at, updated_at')
+    .select(
+      'id, crew_circle_id, staff_member_id, event_id, date, status, note, created_at, updated_at'
+    )
     .single()
 
   if (error) {
@@ -267,13 +269,12 @@ export async function getCrewForEvent(input: {
 
   // Fetch staff details and availability in parallel
   const [staffResult, availResult] = await Promise.all([
-    db
-      .from('staff_members')
-      .select('id, name, email, phone')
-      .in('id', staffIds),
+    db.from('staff_members').select('id, name, email, phone').in('id', staffIds),
     db
       .from('crew_availability')
-      .select('id, crew_circle_id, staff_member_id, event_id, date, status, note, created_at, updated_at')
+      .select(
+        'id, crew_circle_id, staff_member_id, event_id, date, status, note, created_at, updated_at'
+      )
       .eq('crew_circle_id', input.crew_circle_id)
       .eq('event_id', input.event_id),
   ])

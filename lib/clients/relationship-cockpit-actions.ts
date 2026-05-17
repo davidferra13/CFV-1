@@ -13,9 +13,7 @@ import type {
 // ---------------------------------------------------------------------------
 
 function daysBetween(a: string, b: string): number {
-  return Math.floor(
-    (new Date(b).getTime() - new Date(a).getTime()) / (1000 * 60 * 60 * 24)
-  )
+  return Math.floor((new Date(b).getTime() - new Date(a).getTime()) / (1000 * 60 * 60 * 24))
 }
 
 function daysSinceNow(dateStr: string | null): number | null {
@@ -23,9 +21,7 @@ function daysSinceNow(dateStr: string | null): number | null {
   return Math.max(0, daysBetween(dateStr, new Date().toISOString()))
 }
 
-function healthLabel(
-  daysSince: number | null
-): ClientRelationshipProfile['relationshipHealth'] {
+function healthLabel(daysSince: number | null): ClientRelationshipProfile['relationshipHealth'] {
   if (daysSince === null) return 'dormant'
   if (daysSince < 30) return 'thriving'
   if (daysSince < 90) return 'stable'
@@ -84,9 +80,7 @@ function computeHealthFactors(
     satisfaction = Math.min(100, Math.round((avgRating / 5) * 100))
   }
 
-  const overall = Math.round(
-    recency * 0.35 + frequency * 0.25 + value * 0.25 + satisfaction * 0.15
-  )
+  const overall = Math.round(recency * 0.35 + frequency * 0.25 + value * 0.25 + satisfaction * 0.15)
 
   return { recency, frequency, value, satisfaction, overall }
 }
@@ -102,40 +96,31 @@ export async function getClientRelationshipProfile(
   const db: any = createServerClient()
   const tenantId = user.tenantId!
 
-  const [clientRes, eventsRes, commRes, reviewsRes, tagsRes] =
-    await Promise.all([
-      db
-        .from('clients')
-        .select(
-          'id, full_name, lifetime_value_cents, total_events_count, first_event_date, last_event_date, dietary_restrictions, allergies, preferred_service_style'
-        )
-        .eq('id', clientId)
-        .eq('tenant_id', tenantId)
-        .is('deleted_at' as any, null)
-        .single(),
-      db
-        .from('events')
-        .select('id, event_date, quoted_price_cents, status')
-        .eq('tenant_id', tenantId)
-        .eq('client_id', clientId)
-        .order('event_date', { ascending: true }),
-      db
-        .from('communication_log')
-        .select('id, created_at')
-        .eq('tenant_id', tenantId)
-        .eq('client_id', clientId)
-        .order('created_at', { ascending: false }),
-      db
-        .from('client_reviews')
-        .select('rating')
-        .eq('tenant_id', tenantId)
-        .eq('client_id', clientId),
-      db
-        .from('client_tags')
-        .select('tag')
-        .eq('tenant_id', tenantId)
-        .eq('client_id', clientId),
-    ])
+  const [clientRes, eventsRes, commRes, reviewsRes, tagsRes] = await Promise.all([
+    db
+      .from('clients')
+      .select(
+        'id, full_name, lifetime_value_cents, total_events_count, first_event_date, last_event_date, dietary_restrictions, allergies, preferred_service_style'
+      )
+      .eq('id', clientId)
+      .eq('tenant_id', tenantId)
+      .is('deleted_at' as any, null)
+      .single(),
+    db
+      .from('events')
+      .select('id, event_date, quoted_price_cents, status')
+      .eq('tenant_id', tenantId)
+      .eq('client_id', clientId)
+      .order('event_date', { ascending: true }),
+    db
+      .from('communication_log')
+      .select('id, created_at')
+      .eq('tenant_id', tenantId)
+      .eq('client_id', clientId)
+      .order('created_at', { ascending: false }),
+    db.from('client_reviews').select('rating').eq('tenant_id', tenantId).eq('client_id', clientId),
+    db.from('client_tags').select('tag').eq('tenant_id', tenantId).eq('client_id', clientId),
+  ])
 
   const client = clientRes.data
   if (!client) return null
@@ -147,8 +132,7 @@ export async function getClientRelationshipProfile(
 
   const lifetimeValueCents: number = client.lifetime_value_cents ?? 0
   const totalEvents: number = client.total_events_count ?? events.length
-  const avgEventValueCents =
-    totalEvents > 0 ? Math.round(lifetimeValueCents / totalEvents) : 0
+  const avgEventValueCents = totalEvents > 0 ? Math.round(lifetimeValueCents / totalEvents) : 0
 
   const lastDate: string | null = client.last_event_date ?? null
   const dSince = daysSinceNow(lastDate)
@@ -156,7 +140,10 @@ export async function getClientRelationshipProfile(
   // Booking frequency: avg days between consecutive events
   let bookingFrequencyDays: number | null = null
   if (events.length >= 2) {
-    const dates = events.map((e: any) => e.event_date).filter(Boolean).sort()
+    const dates = events
+      .map((e: any) => e.event_date)
+      .filter(Boolean)
+      .sort()
     if (dates.length >= 2) {
       let totalGap = 0
       for (let i = 1; i < dates.length; i++) {
@@ -214,9 +201,7 @@ export async function getRelationshipHealthScore(
   const [clientRes, medianRes, reviewsRes] = await Promise.all([
     db
       .from('clients')
-      .select(
-        'id, lifetime_value_cents, total_events_count, first_event_date, last_event_date'
-      )
+      .select('id, lifetime_value_cents, total_events_count, first_event_date, last_event_date')
       .eq('id', clientId)
       .eq('tenant_id', tenantId)
       .is('deleted_at' as any, null)
@@ -227,11 +212,7 @@ export async function getRelationshipHealthScore(
       .eq('tenant_id', tenantId)
       .is('deleted_at' as any, null)
       .gt('lifetime_value_cents', 0),
-    db
-      .from('client_reviews')
-      .select('rating')
-      .eq('tenant_id', tenantId)
-      .eq('client_id', clientId),
+    db.from('client_reviews').select('rating').eq('tenant_id', tenantId).eq('client_id', clientId),
   ])
 
   const client = clientRes.data
@@ -242,21 +223,14 @@ export async function getRelationshipHealthScore(
     .map((c: any) => c.lifetime_value_cents)
     .filter((v: number) => v > 0)
     .sort((a: number, b: number) => a - b)
-  const medianLtv =
-    ltvValues.length > 0
-      ? ltvValues[Math.floor(ltvValues.length / 2)]
-      : 0
+  const medianLtv = ltvValues.length > 0 ? ltvValues[Math.floor(ltvValues.length / 2)] : 0
 
   const dSince = daysSinceNow(client.last_event_date)
 
   // Frequency: avg days between events
   let freqDays: number | null = null
   const totalEvents: number = client.total_events_count ?? 0
-  if (
-    totalEvents >= 2 &&
-    client.first_event_date &&
-    client.last_event_date
-  ) {
+  if (totalEvents >= 2 && client.first_event_date && client.last_event_date) {
     const span = daysBetween(client.first_event_date, client.last_event_date)
     freqDays = span > 0 ? Math.round(span / (totalEvents - 1)) : null
   }
@@ -291,10 +265,7 @@ export async function getClientPortfolio(
   const tenantId = user.tenantId!
 
   // Sort mapping to DB columns
-  const orderCol =
-    sortBy === 'recency'
-      ? 'last_event_date'
-      : 'lifetime_value_cents'
+  const orderCol = sortBy === 'recency' ? 'last_event_date' : 'lifetime_value_cents'
 
   const { data: rawClients } = await db
     .from('clients')
@@ -360,17 +331,13 @@ export async function getClientPortfolio(
     const ratings = reviewsByClient[c.id] ?? []
     const avgRating =
       ratings.length > 0
-        ? Math.round(
-            (ratings.reduce((s: number, v: number) => s + v, 0) /
-              ratings.length) *
-              10
-          ) / 10
+        ? Math.round((ratings.reduce((s: number, v: number) => s + v, 0) / ratings.length) * 10) /
+          10
         : null
 
-    const dietary: string[] = [
-      ...(c.dietary_restrictions ?? []),
-      ...(c.allergies ?? []),
-    ].filter((d: string) => d && d.trim() !== '')
+    const dietary: string[] = [...(c.dietary_restrictions ?? []), ...(c.allergies ?? [])].filter(
+      (d: string) => d && d.trim() !== ''
+    )
 
     const comm = commsByClient[c.id]
 
@@ -404,9 +371,7 @@ export async function getClientPortfolio(
       dormant: 4,
     }
     profiles.sort(
-      (a, b) =>
-        (tierOrder[a.relationshipHealth] ?? 5) -
-        (tierOrder[b.relationshipHealth] ?? 5)
+      (a, b) => (tierOrder[a.relationshipHealth] ?? 5) - (tierOrder[b.relationshipHealth] ?? 5)
     )
   }
 
@@ -417,9 +382,7 @@ export async function getClientPortfolio(
 // 4. getAtRiskClients
 // ---------------------------------------------------------------------------
 
-export async function getAtRiskClients(
-  limit: number = 25
-): Promise<ClientRelationshipProfile[]> {
+export async function getAtRiskClients(limit: number = 25): Promise<ClientRelationshipProfile[]> {
   const portfolio = await getClientPortfolio('recency', 200)
   const atRisk = portfolio.filter(
     (c) =>
@@ -435,9 +398,7 @@ export async function getAtRiskClients(
     dormant: 2,
   }
   atRisk.sort(
-    (a, b) =>
-      (tierPriority[a.relationshipHealth] ?? 3) -
-      (tierPriority[b.relationshipHealth] ?? 3)
+    (a, b) => (tierPriority[a.relationshipHealth] ?? 3) - (tierPriority[b.relationshipHealth] ?? 3)
   )
 
   return atRisk.slice(0, limit)
@@ -447,15 +408,7 @@ export async function getAtRiskClients(
 // 5. getClientBookingPatterns
 // ---------------------------------------------------------------------------
 
-const DAY_NAMES = [
-  'Sunday',
-  'Monday',
-  'Tuesday',
-  'Wednesday',
-  'Thursday',
-  'Friday',
-  'Saturday',
-]
+const DAY_NAMES = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday']
 
 export async function getClientBookingPatterns(
   clientId: string
@@ -500,18 +453,13 @@ export async function getClientBookingPatterns(
   const leadTimes: number[] = []
   for (const e of events) {
     if (e.created_at && e.event_date) {
-      const lead = daysBetween(
-        e.created_at,
-        new Date(e.event_date).toISOString()
-      )
+      const lead = daysBetween(e.created_at, new Date(e.event_date).toISOString())
       if (lead >= 0) leadTimes.push(lead)
     }
   }
   const avgLeadTimeDays =
     leadTimes.length > 0
-      ? Math.round(
-          leadTimes.reduce((s, v) => s + v, 0) / leadTimes.length
-        )
+      ? Math.round(leadTimes.reduce((s, v) => s + v, 0) / leadTimes.length)
       : null
 
   // Day of week frequency
@@ -556,10 +504,7 @@ export async function getClientBookingPatterns(
     .filter((g: number | null) => g !== null && g > 0)
   const avgGuestCount =
     guestCounts.length > 0
-      ? Math.round(
-          guestCounts.reduce((s: number, v: number) => s + v, 0) /
-            guestCounts.length
-        )
+      ? Math.round(guestCounts.reduce((s: number, v: number) => s + v, 0) / guestCounts.length)
       : null
 
   return {

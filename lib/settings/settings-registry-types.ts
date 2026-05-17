@@ -1,4 +1,11 @@
-export type SettingCategory = 'profile' | 'branding' | 'notifications' | 'billing' | 'integrations' | 'privacy' | 'advanced'
+export type SettingCategory =
+  | 'profile'
+  | 'branding'
+  | 'notifications'
+  | 'billing'
+  | 'integrations'
+  | 'privacy'
+  | 'advanced'
 export type SettingType = 'toggle' | 'text' | 'select' | 'number' | 'color' | 'textarea'
 
 export interface SettingDefinition {

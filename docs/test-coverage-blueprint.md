@@ -115,12 +115,12 @@ These flows have NO behavioral tests beyond "page loads":
 
 Every feature has exactly one state. No "partial" or "in progress."
 
-| State | Meaning | Action |
-| ----- | ------- | ------ |
-| **VERIFIED** | Test exists, passes, covers the feature | None. Done. Never retest unless code changes. |
-| **NEEDS-TEST** | Feature exists without behavioral test | Write test, run it, mark VERIFIED |
-| **REGRESSED** | Test exists but now fails | P0 fix. Blocks all other work. |
-| **EXEMPT** | Pure layout/config, no testable logic | Document why. |
+| State          | Meaning                                 | Action                                        |
+| -------------- | --------------------------------------- | --------------------------------------------- |
+| **VERIFIED**   | Test exists, passes, covers the feature | None. Done. Never retest unless code changes. |
+| **NEEDS-TEST** | Feature exists without behavioral test  | Write test, run it, mark VERIFIED             |
+| **REGRESSED**  | Test exists but now fails               | P0 fix. Blocks all other work.                |
+| **EXEMPT**     | Pure layout/config, no testable logic   | Document why.                                 |
 
 ## Rules for Agents
 

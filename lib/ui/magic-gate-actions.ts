@@ -18,9 +18,7 @@ export async function evaluateMagicGate(
   const db: any = createServerClient()
 
   const overallScore =
-    scores.length > 0
-      ? Math.round(scores.reduce((sum, s) => sum + s.score, 0) / scores.length)
-      : 0
+    scores.length > 0 ? Math.round(scores.reduce((sum, s) => sum + s.score, 0) / scores.length) : 0
 
   // Check thresholds to determine pass/fail
   const thresholds = await db
@@ -64,9 +62,7 @@ export async function evaluateMagicGate(
   }
 }
 
-export async function getMagicGateResult(
-  route: string
-): Promise<MagicGateEvaluation | null> {
+export async function getMagicGateResult(route: string): Promise<MagicGateEvaluation | null> {
   const user = await requireChef()
   const db: any = createServerClient()
 
@@ -151,10 +147,7 @@ export async function getMagicGateSummary(): Promise<MagicGateSummary> {
   const user = await requireChef()
   const db: any = createServerClient()
 
-  const rows = await db
-    .from('magic_gate_evaluations')
-    .select('*')
-    .eq('tenant_id', user.tenantId)
+  const rows = await db.from('magic_gate_evaluations').select('*').eq('tenant_id', user.tenantId)
 
   if (!rows || rows.length === 0) {
     return {
@@ -189,7 +182,7 @@ export async function getMagicGateSummary(): Promise<MagicGateSummary> {
   const dimensionTotals = new Map<MagicDimension, { sum: number; count: number }>()
   for (const row of latest) {
     const scores: MagicScore[] =
-      typeof row.scores === 'string' ? JSON.parse(row.scores) : row.scores ?? []
+      typeof row.scores === 'string' ? JSON.parse(row.scores) : (row.scores ?? [])
     for (const s of scores) {
       const entry = dimensionTotals.get(s.dimension) ?? { sum: 0, count: 0 }
       entry.sum += s.score

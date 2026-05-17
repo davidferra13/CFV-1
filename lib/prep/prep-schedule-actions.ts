@@ -297,9 +297,7 @@ export async function generatePrepSchedule(eventId: string): Promise<{
 
     // Insert tasks if any
     if (tasks.length > 0) {
-      const { error: taskError } = await (db as any)
-        .from('prep_tasks')
-        .insert(tasks)
+      const { error: taskError } = await (db as any).from('prep_tasks').insert(tasks)
 
       if (taskError) {
         return {
@@ -359,10 +357,7 @@ export async function updatePrepTask(
     return { success: true }
   }
 
-  const { error } = await (db as any)
-    .from('prep_tasks')
-    .update(updatePayload)
-    .eq('id', taskId)
+  const { error } = await (db as any).from('prep_tasks').update(updatePayload).eq('id', taskId)
 
   if (error) return { success: false, error: error.message }
 

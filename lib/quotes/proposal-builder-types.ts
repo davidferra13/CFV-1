@@ -1,4 +1,10 @@
-export type AddOnCategory = 'course' | 'beverage' | 'equipment' | 'service' | 'dietary' | 'experience'
+export type AddOnCategory =
+  | 'course'
+  | 'beverage'
+  | 'equipment'
+  | 'service'
+  | 'dietary'
+  | 'experience'
 export type TradeoffDirection = 'upgrade' | 'downgrade' | 'swap'
 
 export interface ProposalAddOn {

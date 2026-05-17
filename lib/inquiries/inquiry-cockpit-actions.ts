@@ -42,9 +42,7 @@ export async function getInquiryCockpit(
     query = query.lte('created_at', filters.dateRange.to)
   }
   if (filters?.search) {
-    query = query.or(
-      `client_name.ilike.%${filters.search}%,client_email.ilike.%${filters.search}%`
-    )
+    query = query.or(`client_name.ilike.%${filters.search}%,client_email.ilike.%${filters.search}%`)
   }
 
   const { data, count, error } = await query
@@ -142,16 +140,14 @@ export async function setInquiryPriority(
 // ---------------------------------------------------------------------------
 // 4. getInquiryMetrics - conversion rates, response times, source breakdown
 // ---------------------------------------------------------------------------
-export async function getInquiryMetrics(
-  dateRange?: { from: string; to: string }
-): Promise<InquiryMetrics> {
+export async function getInquiryMetrics(dateRange?: {
+  from: string
+  to: string
+}): Promise<InquiryMetrics> {
   const chef = await requireChef()
   const db: any = createServerClient()
 
-  let query = db
-    .from('inquiry_cockpit_entries')
-    .select('*')
-    .eq('tenant_id', chef.id)
+  let query = db.from('inquiry_cockpit_entries').select('*').eq('tenant_id', chef.id)
 
   if (dateRange?.from) query = query.gte('created_at', dateRange.from)
   if (dateRange?.to) query = query.lte('created_at', dateRange.to)
@@ -168,10 +164,7 @@ export async function getInquiryMetrics(
     .filter((t: any): t is number => t != null)
   const avgResponseTime =
     responseTimes.length > 0
-      ? Math.round(
-          responseTimes.reduce((a: number, b: number) => a + b, 0) /
-            responseTimes.length
-        )
+      ? Math.round(responseTimes.reduce((a: number, b: number) => a + b, 0) / responseTimes.length)
       : null
 
   // Conversion rate
@@ -232,9 +225,7 @@ export async function saveResponseTemplate(
 // ---------------------------------------------------------------------------
 // 6. getResponseTemplates - list response templates
 // ---------------------------------------------------------------------------
-export async function getResponseTemplates(
-  category?: string
-): Promise<InquiryTemplate[]> {
+export async function getResponseTemplates(category?: string): Promise<InquiryTemplate[]> {
   const chef = await requireChef()
   const db: any = createServerClient()
 

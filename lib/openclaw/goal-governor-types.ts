@@ -18,11 +18,7 @@ export type CalibrationStatus = 'pending' | 'provisional' | 'locked'
 export type LeadingOrLagging = 'leading' | 'lagging'
 
 /** Metric hierarchy tier */
-export type MetricTier =
-  | 'primary_outcome'
-  | 'guardrail'
-  | 'leading_indicator'
-  | 'lagging_indicator'
+export type MetricTier = 'primary_outcome' | 'guardrail' | 'leading_indicator' | 'lagging_indicator'
 
 /** KPI metric families */
 export type KpiFamily =
@@ -280,7 +276,12 @@ export function classifyMetricType(metricName: string): MetricType {
     'current_pct',
     'availability_pct',
   ]
-  if (rateMetrics.includes(metricName) || metricName.endsWith('_rate') || metricName.endsWith('_coverage') || metricName.endsWith('_pct')) {
+  if (
+    rateMetrics.includes(metricName) ||
+    metricName.endsWith('_rate') ||
+    metricName.endsWith('_coverage') ||
+    metricName.endsWith('_pct')
+  ) {
     return 'rate'
   }
   return 'count'

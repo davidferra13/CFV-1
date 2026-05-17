@@ -14,8 +14,14 @@ const TABLE = 'design_debt_items'
 
 const VALID_SEVERITIES: DebtSeverity[] = ['critical', 'major', 'minor', 'cosmetic']
 const VALID_CATEGORIES: DebtCategory[] = [
-  'spacing', 'typography', 'color', 'layout',
-  'interaction', 'accessibility', 'consistency', 'responsiveness',
+  'spacing',
+  'typography',
+  'color',
+  'layout',
+  'interaction',
+  'accessibility',
+  'consistency',
+  'responsiveness',
 ]
 const VALID_STATUSES: DebtStatus[] = ['open', 'in_progress', 'resolved', 'wont_fix']
 
@@ -90,10 +96,7 @@ export async function getDesignDebtItems(
   const user = await requireChef()
   const db: any = createServerClient()
 
-  let query = db
-    .from(TABLE)
-    .select('*')
-    .eq('tenant_id', user.tenantId!)
+  let query = db.from(TABLE).select('*').eq('tenant_id', user.tenantId!)
 
   if (status && VALID_STATUSES.includes(status)) {
     query = query.eq('status', status)
@@ -105,9 +108,7 @@ export async function getDesignDebtItems(
     query = query.eq('category', category)
   }
 
-  const { data, error } = await query
-    .order('created_at', { ascending: false })
-    .limit(limit)
+  const { data, error } = await query.order('created_at', { ascending: false }).limit(limit)
 
   if (error || !data) return []
   return (data as any[]).map(mapRow)
@@ -149,17 +150,20 @@ export async function getDesignDebtSummary(): Promise<DesignDebtSummary> {
   const user = await requireChef()
   const db: any = createServerClient()
 
-  const { data, error } = await db
-    .from(TABLE)
-    .select('*')
-    .eq('tenant_id', user.tenantId!)
+  const { data, error } = await db.from(TABLE).select('*').eq('tenant_id', user.tenantId!)
 
   const items: any[] = error || !data ? [] : data
 
   const bySeverity: Record<DebtSeverity, number> = { critical: 0, major: 0, minor: 0, cosmetic: 0 }
   const byCategory: Record<DebtCategory, number> = {
-    spacing: 0, typography: 0, color: 0, layout: 0,
-    interaction: 0, accessibility: 0, consistency: 0, responsiveness: 0,
+    spacing: 0,
+    typography: 0,
+    color: 0,
+    layout: 0,
+    interaction: 0,
+    accessibility: 0,
+    consistency: 0,
+    responsiveness: 0,
   }
   const byStatus: Record<DebtStatus, number> = { open: 0, in_progress: 0, resolved: 0, wont_fix: 0 }
   const routeCounts: Record<string, number> = {}
@@ -191,9 +195,10 @@ export async function getDesignDebtSummary(): Promise<DesignDebtSummary> {
     .sort((a, b) => b.count - a.count)
     .slice(0, 10)
 
-  const avgResolutionDays = resolvedCount > 0
-    ? Math.round((totalResolutionMs / resolvedCount / (1000 * 60 * 60 * 24)) * 10) / 10
-    : null
+  const avgResolutionDays =
+    resolvedCount > 0
+      ? Math.round((totalResolutionMs / resolvedCount / (1000 * 60 * 60 * 24)) * 10) / 10
+      : null
 
   return {
     totalItems: items.length,

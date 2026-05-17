@@ -95,9 +95,7 @@ export async function getReceipts(
 // Get Receipt Detail - single receipt
 // ============================================
 
-export async function getReceiptDetail(
-  receiptId: string
-): Promise<ShoppingReceipt | null> {
+export async function getReceiptDetail(receiptId: string): Promise<ShoppingReceipt | null> {
   const user = await requireChef()
   const db: any = createServerClient()
 

@@ -32,7 +32,7 @@ function mapMetric(row: any): DashboardMetric {
     label: row.label,
     value: row.value,
     previousValue: row.previous_value ?? undefined,
-    trend: row.trend as DashboardMetric['trend'] ?? undefined,
+    trend: (row.trend as DashboardMetric['trend']) ?? undefined,
     unit: row.unit ?? undefined,
     updatedAt: row.updated_at,
   }
@@ -119,15 +119,13 @@ export async function saveDashboardLayout(
 
     if (error) return { success: false, error: error.message }
   } else {
-    const { error } = await db
-      .from('dashboard_layouts')
-      .insert({
-        tenant_id: user.tenantId!,
-        chef_id: user.entityId!,
-        name,
-        widgets,
-        is_default: isDefault ?? false,
-      })
+    const { error } = await db.from('dashboard_layouts').insert({
+      tenant_id: user.tenantId!,
+      chef_id: user.entityId!,
+      name,
+      widgets,
+      is_default: isDefault ?? false,
+    })
 
     if (error) return { success: false, error: error.message }
   }
@@ -255,10 +253,7 @@ export async function getCommandCenterSummary(): Promise<CommandCenterSummary> {
       .select('id, widgets, updated_at')
       .eq('tenant_id', user.tenantId!)
       .eq('chef_id', user.entityId!),
-    db
-      .from('dashboard_metrics')
-      .select('id, updated_at')
-      .eq('tenant_id', user.tenantId!),
+    db.from('dashboard_metrics').select('id, updated_at').eq('tenant_id', user.tenantId!),
   ])
 
   const layouts = layoutRes.data ?? []
@@ -274,9 +269,7 @@ export async function getCommandCenterSummary(): Promise<CommandCenterSummary> {
     ...metrics.map((m: any) => m.updated_at),
   ].filter(Boolean)
 
-  const lastUpdated = allDates.length
-    ? allDates.sort().reverse()[0]
-    : null
+  const lastUpdated = allDates.length ? allDates.sort().reverse()[0] : null
 
   return {
     totalLayouts: layouts.length,

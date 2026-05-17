@@ -66,15 +66,13 @@ export async function updateWidgetConfig(
       .eq('tenant_id', user.tenantId!)
     if (error) throw new Error('Failed to update widget config')
   } else {
-    const { error } = await db
-      .from('widget_configs')
-      .insert({
-        tenant_id: user.tenantId!,
-        widget_type: widgetType,
-        position: 0,
-        settings,
-        enabled: enabled ?? true,
-      })
+    const { error } = await db.from('widget_configs').insert({
+      tenant_id: user.tenantId!,
+      widget_type: widgetType,
+      position: 0,
+      settings,
+      enabled: enabled ?? true,
+    })
     if (error) throw new Error('Failed to create widget config')
   }
 }
@@ -219,10 +217,7 @@ export async function getUpcomingEventsData(limit?: number): Promise<UpcomingEve
   const clientIds = [...new Set((events ?? []).map((e: any) => e.client_id).filter(Boolean))]
   let clientMap: Record<string, string> = {}
   if (clientIds.length > 0) {
-    const { data: clients } = await db
-      .from('clients')
-      .select('id, full_name')
-      .in('id', clientIds)
+    const { data: clients } = await db.from('clients').select('id, full_name').in('id', clientIds)
     for (const c of clients ?? []) {
       clientMap[c.id] = c.full_name ?? 'Unknown'
     }
@@ -323,15 +318,13 @@ export async function reorderWidgets(
         .eq('id', existing.id)
         .eq('tenant_id', user.tenantId!)
     } else {
-      await db
-        .from('widget_configs')
-        .insert({
-          tenant_id: user.tenantId!,
-          widget_type: item.widgetType,
-          position: item.position,
-          settings: {},
-          enabled: true,
-        })
+      await db.from('widget_configs').insert({
+        tenant_id: user.tenantId!,
+        widget_type: item.widgetType,
+        position: item.position,
+        settings: {},
+        enabled: true,
+      })
     }
   }
 }

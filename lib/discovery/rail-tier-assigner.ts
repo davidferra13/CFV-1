@@ -317,7 +317,9 @@ export async function assembleTieredRail(
 
   // 3. Filter dismissed + persistent state suppressed, apply escalation
   const activeGodMode = godModeItems
-    .filter((item) => !dismissedIds.has(item.definitionId) && !suppressedKeys.has(item.definitionId))
+    .filter(
+      (item) => !dismissedIds.has(item.definitionId) && !suppressedKeys.has(item.definitionId)
+    )
     .map((item) => applyEscalation(item, now))
     .filter((item) => {
       if (!item.expiresAt) return true
@@ -340,9 +342,7 @@ export async function assembleTieredRail(
   // 7b. Apply persistent rail item state filter to all sources
   // (God Mode items were pre-filtered in step 3, but operator + universal
   // items need this filter applied here after adaptation.)
-  const deduped = dedupedRaw.filter(
-    (item) => !suppressedKeys.has(item.definitionId)
-  )
+  const deduped = dedupedRaw.filter((item) => !suppressedKeys.has(item.definitionId))
 
   // 8. Score items and apply time-of-day multiplier
   const timeWindow = getCurrentTimeWindow(now)

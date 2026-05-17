@@ -8,11 +8,7 @@ import { createServerClient } from '@/lib/db/server'
 import { revalidatePath } from 'next/cache'
 import { UnknownAppError } from '@/lib/errors/app-error'
 import { duplicateMenu } from '@/lib/menus/actions'
-import type {
-  ServicePlaybook,
-  PlaybookApplication,
-  PlaybookSummary,
-} from './playbook-types'
+import type { ServicePlaybook, PlaybookApplication, PlaybookSummary } from './playbook-types'
 
 const TABLE = 'service_playbooks'
 
@@ -23,7 +19,7 @@ const TABLE = 'service_playbooks'
 export async function createPlaybook(
   name: string,
   description: string,
-  sourceEventId?: string,
+  sourceEventId?: string
 ): Promise<ServicePlaybook> {
   const user = await requireChef()
   const db: any = createServerClient()
@@ -147,9 +143,7 @@ export async function createPlaybook(
 // 2. getPlaybooks - list all playbooks for the chef
 // ---------------------------------------------------------------------------
 
-export async function getPlaybooks(
-  tags?: string[],
-): Promise<PlaybookSummary[]> {
+export async function getPlaybooks(tags?: string[]): Promise<PlaybookSummary[]> {
   const user = await requireChef()
   const db: any = createServerClient()
 
@@ -179,9 +173,7 @@ export async function getPlaybooks(
 // 3. getPlaybookDetail - full playbook with all config
 // ---------------------------------------------------------------------------
 
-export async function getPlaybookDetail(
-  playbookId: string,
-): Promise<ServicePlaybook | null> {
+export async function getPlaybookDetail(playbookId: string): Promise<ServicePlaybook | null> {
   const user = await requireChef()
   const db: any = createServerClient()
 
@@ -207,7 +199,7 @@ export async function getPlaybookDetail(
 
 export async function applyPlaybookToEvent(
   playbookId: string,
-  eventId: string,
+  eventId: string
 ): Promise<PlaybookApplication> {
   const user = await requireChef()
   const db: any = createServerClient()
@@ -244,10 +236,7 @@ export async function applyPlaybookToEvent(
   // Copy menu template if playbook has one
   if (playbook.menu_template_id) {
     try {
-      const dupeResult = await duplicateMenu(
-        playbook.menu_template_id,
-        'playbook_application',
-      )
+      const dupeResult = await duplicateMenu(playbook.menu_template_id, 'playbook_application')
       const newMenuId = dupeResult.menu.id
 
       // Attach duplicated menu to the target event
@@ -361,7 +350,7 @@ export async function applyPlaybookToEvent(
       result.service_notes_copied = true
     } else {
       result.adjustments_needed.push(
-        'Event already has notes; playbook service notes were not applied',
+        'Event already has notes; playbook service notes were not applied'
       )
     }
   }
@@ -401,7 +390,7 @@ export async function updatePlaybook(
       | 'service_notes'
       | 'tags'
     >
-  >,
+  >
 ): Promise<ServicePlaybook> {
   const user = await requireChef()
   const db: any = createServerClient()

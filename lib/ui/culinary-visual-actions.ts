@@ -13,9 +13,7 @@ import type {
 // Icons
 // ---------------------------------------------------------------------------
 
-export async function getCulinaryIcons(
-  category?: CulinaryVisualCategory,
-): Promise<CulinaryIcon[]> {
+export async function getCulinaryIcons(category?: CulinaryVisualCategory): Promise<CulinaryIcon[]> {
   const user = await requireChef()
   const db: any = createServerClient()
 
@@ -47,7 +45,7 @@ export async function upsertCulinaryIcon(
   category: CulinaryVisualCategory,
   svgPath?: string,
   emoji?: string,
-  description?: string,
+  description?: string
 ): Promise<CulinaryIcon> {
   const user = await requireChef()
   const db: any = createServerClient()
@@ -111,7 +109,7 @@ export async function getCulinaryPalettes(): Promise<CulinaryColorPalette[]> {
   const { data, error } = await db
     .from('culinary_color_palettes')
     .select(
-      'id, tenant_id, name, cuisine, primary_color, secondary_color, accent_color, text_color, bg_color',
+      'id, tenant_id, name, cuisine, primary_color, secondary_color, accent_color, text_color, bg_color'
     )
     .eq('tenant_id', user.tenantId)
     .order('name')
@@ -138,7 +136,7 @@ export async function upsertCulinaryPalette(
   secondaryColor?: string,
   accentColor?: string,
   textColor?: string,
-  bgColor?: string,
+  bgColor?: string
 ): Promise<CulinaryColorPalette> {
   const user = await requireChef()
   const db: any = createServerClient()
@@ -169,7 +167,7 @@ export async function upsertCulinaryPalette(
       .update(row)
       .eq('id', existing[0].id)
       .select(
-        'id, tenant_id, name, cuisine, primary_color, secondary_color, accent_color, text_color, bg_color',
+        'id, tenant_id, name, cuisine, primary_color, secondary_color, accent_color, text_color, bg_color'
       )
     if (error) throw new Error(error.message ?? 'Failed to update culinary palette')
     result = data?.[0]
@@ -178,7 +176,7 @@ export async function upsertCulinaryPalette(
       .from('culinary_color_palettes')
       .insert(row)
       .select(
-        'id, tenant_id, name, cuisine, primary_color, secondary_color, accent_color, text_color, bg_color',
+        'id, tenant_id, name, cuisine, primary_color, secondary_color, accent_color, text_color, bg_color'
       )
     if (error) throw new Error(error.message ?? 'Failed to create culinary palette')
     result = data?.[0]
@@ -204,7 +202,7 @@ export async function upsertCulinaryPalette(
 // ---------------------------------------------------------------------------
 
 export async function getCulinaryVisualTokens(
-  category?: CulinaryVisualCategory,
+  category?: CulinaryVisualCategory
 ): Promise<CulinaryVisualToken[]> {
   const user = await requireChef()
   const db: any = createServerClient()
@@ -238,7 +236,7 @@ export async function upsertCulinaryToken(
   category: CulinaryVisualCategory,
   key: string,
   value: string,
-  description?: string,
+  description?: string
 ): Promise<CulinaryVisualToken> {
   const user = await requireChef()
   const db: any = createServerClient()

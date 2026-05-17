@@ -1,4 +1,11 @@
-export type StoryElementType = 'intro' | 'course_note' | 'wine_pairing' | 'chef_note' | 'sourcing_story' | 'technique_note' | 'closing'
+export type StoryElementType =
+  | 'intro'
+  | 'course_note'
+  | 'wine_pairing'
+  | 'chef_note'
+  | 'sourcing_story'
+  | 'technique_note'
+  | 'closing'
 
 export interface StoryElement {
   id: string

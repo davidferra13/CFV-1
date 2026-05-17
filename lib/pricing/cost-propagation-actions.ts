@@ -26,9 +26,7 @@ import type {
  *
  * Auth-gated, tenant-scoped.
  */
-export async function propagateCostChange(
-  ingredientId: string
-): Promise<PropagationResult> {
+export async function propagateCostChange(ingredientId: string): Promise<PropagationResult> {
   const start = Date.now()
   const user = await requireChef()
   const tenantId = user.tenantId!
@@ -124,9 +122,7 @@ export async function propagateCostChange(
  * for every ingredient in every recipe linked to the menu's components.
  * Auth-gated, tenant-scoped.
  */
-export async function recalculateMenuCosts(
-  menuId: string
-): Promise<PropagationResult> {
+export async function recalculateMenuCosts(menuId: string): Promise<PropagationResult> {
   const start = Date.now()
   const user = await requireChef()
   const tenantId = user.tenantId!
@@ -138,14 +134,7 @@ export async function recalculateMenuCosts(
     .from('components')
     .select('recipe_id, dish_id')
     .eq('tenant_id', tenantId)
-    .in(
-      'dish_id',
-      db
-        .from('dishes')
-        .select('id')
-        .eq('menu_id', menuId)
-        .eq('tenant_id', tenantId)
-    )
+    .in('dish_id', db.from('dishes').select('id').eq('menu_id', menuId).eq('tenant_id', tenantId))
     .not('recipe_id', 'is', null)
 
   if (!components || components.length === 0) {
@@ -159,7 +148,9 @@ export async function recalculateMenuCosts(
     }
   }
 
-  const recipeIds: string[] = Array.from(new Set<string>(components.map((c: any) => c.recipe_id as string)))
+  const recipeIds: string[] = Array.from(
+    new Set<string>(components.map((c: any) => c.recipe_id as string))
+  )
 
   // 2. Get all recipe_ingredients for these recipes
   const { data: riRows } = await db
@@ -178,11 +169,11 @@ export async function recalculateMenuCosts(
     }
   }
 
-  const ingredientIds: string[] = Array.from(new Set<string>(
-    riRows
-      .filter((ri: any) => ri.ingredient_id)
-      .map((ri: any) => ri.ingredient_id as string)
-  ))
+  const ingredientIds: string[] = Array.from(
+    new Set<string>(
+      riRows.filter((ri: any) => ri.ingredient_id).map((ri: any) => ri.ingredient_id as string)
+    )
+  )
 
   // 3. Recompute each recipe ingredient cost using resolvePrice
   let recipesUpdated = 0
@@ -202,7 +193,9 @@ export async function recalculateMenuCosts(
         .eq('id', ri.id)
         .eq('recipe_id', ri.recipe_id)
     } catch (err) {
-      errors.push(`Failed to recompute ri ${ri.id}: ${err instanceof Error ? err.message : String(err)}`)
+      errors.push(
+        `Failed to recompute ri ${ri.id}: ${err instanceof Error ? err.message : String(err)}`
+      )
     }
   }
 
@@ -212,7 +205,9 @@ export async function recalculateMenuCosts(
       await refreshRecipeTotalCost(db, tenantId, recipeId)
       recipesUpdated++
     } catch (err) {
-      errors.push(`Failed to refresh recipe ${recipeId}: ${err instanceof Error ? err.message : String(err)}`)
+      errors.push(
+        `Failed to refresh recipe ${recipeId}: ${err instanceof Error ? err.message : String(err)}`
+      )
     }
   }
 
@@ -263,9 +258,7 @@ export async function recalculateMenuCosts(
  * Force recalculate all costs for an event by recalculating its menu.
  * Auth-gated, tenant-scoped.
  */
-export async function recalculateEventCosts(
-  eventId: string
-): Promise<PropagationResult> {
+export async function recalculateEventCosts(eventId: string): Promise<PropagationResult> {
   const start = Date.now()
   const user = await requireChef()
   const tenantId = user.tenantId!
@@ -348,7 +341,9 @@ export async function getCostImpactPreview(
     .select('recipe_id, quantity, unit')
     .eq('ingredient_id', ingredientId)
 
-  const recipeIds = Array.from(new Set<string>((riRows ?? []).map((ri: any) => ri.recipe_id as string)))
+  const recipeIds = Array.from(
+    new Set<string>((riRows ?? []).map((ri: any) => ri.recipe_id as string))
+  )
 
   // Get recipe details
   const affectedRecipes: AffectedRecipe[] = []

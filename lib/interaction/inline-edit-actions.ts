@@ -43,20 +43,21 @@ export async function inlineUpdate(request: InlineEditRequest): Promise<{ succes
     .eq('id', request.entityId)
     .eq('tenant_id', tenantId)
 
-  if (updateError) throw new Error(`Failed to update ${request.entityType}.${request.field}: ${updateError.message}`)
+  if (updateError)
+    throw new Error(
+      `Failed to update ${request.entityType}.${request.field}: ${updateError.message}`
+    )
 
   // Record edit history
-  const { error: historyError } = await db
-    .from('edit_history')
-    .insert({
-      tenant_id: tenantId,
-      entity_type: request.entityType,
-      entity_id: request.entityId,
-      field: request.field,
-      old_value: JSON.stringify(request.oldValue),
-      new_value: JSON.stringify(request.newValue),
-      edited_by: user.email || user.id,
-    })
+  const { error: historyError } = await db.from('edit_history').insert({
+    tenant_id: tenantId,
+    entity_type: request.entityType,
+    entity_id: request.entityId,
+    field: request.field,
+    old_value: JSON.stringify(request.oldValue),
+    new_value: JSON.stringify(request.newValue),
+    edited_by: user.email || user.id,
+  })
 
   if (historyError) throw new Error(`Failed to record edit history: ${historyError.message}`)
 
@@ -69,7 +70,7 @@ export async function inlineUpdate(request: InlineEditRequest): Promise<{ succes
 
 export async function getEditHistory(
   entityType: string,
-  entityId: string,
+  entityId: string
 ): Promise<EditHistoryEntry[]> {
   const user = await requireChef()
   const db: any = createServerClient()
@@ -157,50 +158,212 @@ export async function getRecentEdits(limit: number = 20): Promise<EditHistoryEnt
 // ---------------------------------------------------------------------------
 
 export async function getEditableFields(
-  entityType: EditableEntity,
+  entityType: EditableEntity
 ): Promise<EditableFieldConfig[]> {
   await requireChef()
 
   const configs: Record<EditableEntity, EditableFieldConfig[]> = {
     event: [
-      { field: 'title', label: 'Title', type: 'text', validation: { required: true, maxLength: 200 }, entityType: 'event' },
-      { field: 'description', label: 'Description', type: 'textarea', validation: { maxLength: 2000 }, entityType: 'event' },
-      { field: 'event_date', label: 'Date', type: 'date', validation: { required: true }, entityType: 'event' },
-      { field: 'guest_count', label: 'Guest Count', type: 'number', validation: { min: 1, max: 500 }, entityType: 'event' },
-      { field: 'location', label: 'Location', type: 'text', validation: { maxLength: 500 }, entityType: 'event' },
-      { field: 'notes', label: 'Notes', type: 'textarea', validation: { maxLength: 5000 }, entityType: 'event' },
+      {
+        field: 'title',
+        label: 'Title',
+        type: 'text',
+        validation: { required: true, maxLength: 200 },
+        entityType: 'event',
+      },
+      {
+        field: 'description',
+        label: 'Description',
+        type: 'textarea',
+        validation: { maxLength: 2000 },
+        entityType: 'event',
+      },
+      {
+        field: 'event_date',
+        label: 'Date',
+        type: 'date',
+        validation: { required: true },
+        entityType: 'event',
+      },
+      {
+        field: 'guest_count',
+        label: 'Guest Count',
+        type: 'number',
+        validation: { min: 1, max: 500 },
+        entityType: 'event',
+      },
+      {
+        field: 'location',
+        label: 'Location',
+        type: 'text',
+        validation: { maxLength: 500 },
+        entityType: 'event',
+      },
+      {
+        field: 'notes',
+        label: 'Notes',
+        type: 'textarea',
+        validation: { maxLength: 5000 },
+        entityType: 'event',
+      },
     ],
     menu: [
-      { field: 'name', label: 'Name', type: 'text', validation: { required: true, maxLength: 200 }, entityType: 'menu' },
-      { field: 'description', label: 'Description', type: 'textarea', validation: { maxLength: 2000 }, entityType: 'menu' },
-      { field: 'notes', label: 'Notes', type: 'textarea', validation: { maxLength: 5000 }, entityType: 'menu' },
+      {
+        field: 'name',
+        label: 'Name',
+        type: 'text',
+        validation: { required: true, maxLength: 200 },
+        entityType: 'menu',
+      },
+      {
+        field: 'description',
+        label: 'Description',
+        type: 'textarea',
+        validation: { maxLength: 2000 },
+        entityType: 'menu',
+      },
+      {
+        field: 'notes',
+        label: 'Notes',
+        type: 'textarea',
+        validation: { maxLength: 5000 },
+        entityType: 'menu',
+      },
     ],
     recipe: [
-      { field: 'name', label: 'Name', type: 'text', validation: { required: true, maxLength: 200 }, entityType: 'recipe' },
-      { field: 'description', label: 'Description', type: 'textarea', validation: { maxLength: 2000 }, entityType: 'recipe' },
-      { field: 'prep_time_minutes', label: 'Prep Time (min)', type: 'number', validation: { min: 0, max: 1440 }, entityType: 'recipe' },
-      { field: 'cook_time_minutes', label: 'Cook Time (min)', type: 'number', validation: { min: 0, max: 1440 }, entityType: 'recipe' },
-      { field: 'servings', label: 'Servings', type: 'number', validation: { min: 1, max: 1000 }, entityType: 'recipe' },
+      {
+        field: 'name',
+        label: 'Name',
+        type: 'text',
+        validation: { required: true, maxLength: 200 },
+        entityType: 'recipe',
+      },
+      {
+        field: 'description',
+        label: 'Description',
+        type: 'textarea',
+        validation: { maxLength: 2000 },
+        entityType: 'recipe',
+      },
+      {
+        field: 'prep_time_minutes',
+        label: 'Prep Time (min)',
+        type: 'number',
+        validation: { min: 0, max: 1440 },
+        entityType: 'recipe',
+      },
+      {
+        field: 'cook_time_minutes',
+        label: 'Cook Time (min)',
+        type: 'number',
+        validation: { min: 0, max: 1440 },
+        entityType: 'recipe',
+      },
+      {
+        field: 'servings',
+        label: 'Servings',
+        type: 'number',
+        validation: { min: 1, max: 1000 },
+        entityType: 'recipe',
+      },
       { field: 'instructions', label: 'Instructions', type: 'textarea', entityType: 'recipe' },
-      { field: 'notes', label: 'Notes', type: 'textarea', validation: { maxLength: 5000 }, entityType: 'recipe' },
+      {
+        field: 'notes',
+        label: 'Notes',
+        type: 'textarea',
+        validation: { maxLength: 5000 },
+        entityType: 'recipe',
+      },
     ],
     client: [
-      { field: 'name', label: 'Name', type: 'text', validation: { required: true, maxLength: 200 }, entityType: 'client' },
-      { field: 'email', label: 'Email', type: 'text', validation: { maxLength: 320 }, entityType: 'client' },
-      { field: 'phone', label: 'Phone', type: 'text', validation: { maxLength: 30 }, entityType: 'client' },
-      { field: 'notes', label: 'Notes', type: 'textarea', validation: { maxLength: 5000 }, entityType: 'client' },
+      {
+        field: 'name',
+        label: 'Name',
+        type: 'text',
+        validation: { required: true, maxLength: 200 },
+        entityType: 'client',
+      },
+      {
+        field: 'email',
+        label: 'Email',
+        type: 'text',
+        validation: { maxLength: 320 },
+        entityType: 'client',
+      },
+      {
+        field: 'phone',
+        label: 'Phone',
+        type: 'text',
+        validation: { maxLength: 30 },
+        entityType: 'client',
+      },
+      {
+        field: 'notes',
+        label: 'Notes',
+        type: 'textarea',
+        validation: { maxLength: 5000 },
+        entityType: 'client',
+      },
     ],
     ingredient: [
-      { field: 'name', label: 'Name', type: 'text', validation: { required: true, maxLength: 200 }, entityType: 'ingredient' },
-      { field: 'category', label: 'Category', type: 'text', validation: { maxLength: 100 }, entityType: 'ingredient' },
-      { field: 'unit', label: 'Unit', type: 'text', validation: { maxLength: 50 }, entityType: 'ingredient' },
-      { field: 'notes', label: 'Notes', type: 'textarea', validation: { maxLength: 2000 }, entityType: 'ingredient' },
+      {
+        field: 'name',
+        label: 'Name',
+        type: 'text',
+        validation: { required: true, maxLength: 200 },
+        entityType: 'ingredient',
+      },
+      {
+        field: 'category',
+        label: 'Category',
+        type: 'text',
+        validation: { maxLength: 100 },
+        entityType: 'ingredient',
+      },
+      {
+        field: 'unit',
+        label: 'Unit',
+        type: 'text',
+        validation: { maxLength: 50 },
+        entityType: 'ingredient',
+      },
+      {
+        field: 'notes',
+        label: 'Notes',
+        type: 'textarea',
+        validation: { maxLength: 2000 },
+        entityType: 'ingredient',
+      },
     ],
     quote: [
-      { field: 'title', label: 'Title', type: 'text', validation: { required: true, maxLength: 200 }, entityType: 'quote' },
-      { field: 'notes', label: 'Notes', type: 'textarea', validation: { maxLength: 5000 }, entityType: 'quote' },
-      { field: 'price_per_person_cents', label: 'Price Per Person', type: 'number', validation: { min: 0 }, entityType: 'quote' },
-      { field: 'total_cents', label: 'Total', type: 'number', validation: { min: 0 }, entityType: 'quote' },
+      {
+        field: 'title',
+        label: 'Title',
+        type: 'text',
+        validation: { required: true, maxLength: 200 },
+        entityType: 'quote',
+      },
+      {
+        field: 'notes',
+        label: 'Notes',
+        type: 'textarea',
+        validation: { maxLength: 5000 },
+        entityType: 'quote',
+      },
+      {
+        field: 'price_per_person_cents',
+        label: 'Price Per Person',
+        type: 'number',
+        validation: { min: 0 },
+        entityType: 'quote',
+      },
+      {
+        field: 'total_cents',
+        label: 'Total',
+        type: 'number',
+        validation: { min: 0 },
+        entityType: 'quote',
+      },
     ],
   }
 
@@ -214,7 +377,7 @@ export async function getEditableFields(
 export async function getFieldEditCount(
   entityType: string,
   entityId: string,
-  field: string,
+  field: string
 ): Promise<number> {
   const user = await requireChef()
   const db: any = createServerClient()

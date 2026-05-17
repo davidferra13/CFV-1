@@ -153,7 +153,8 @@ export async function getSmartQuoteSuggestion(params: {
         for (const pe of profitData.events) {
           if (pe.guestCount > 0) {
             const pePerGuest = Math.round(pe.revenueCents / pe.guestCount)
-            const ratio = Math.min(dp.perGuestCents, pePerGuest) / Math.max(dp.perGuestCents, pePerGuest)
+            const ratio =
+              Math.min(dp.perGuestCents, pePerGuest) / Math.max(dp.perGuestCents, pePerGuest)
             if (ratio >= 0.7) {
               // This data point corresponds to a similarly-priced event
               if (pe.marginPercent > 30) {
