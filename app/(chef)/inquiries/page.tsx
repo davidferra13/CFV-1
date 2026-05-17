@@ -157,7 +157,7 @@ async function InquiryList({ filter }: { filter: InquiryFilter }) {
                   <InquiryStatusBadge status={inquiry.status as any} />
                   <InquiryChannelBadge channel={inquiry.channel} />
                   {(inquiry as any).source_type === 'guest_feedback' && (
-                    <Badge variant="secondary" className="text-xxs px-1.5 py-0">
+                    <Badge variant="default" className="text-xxs px-1.5 py-0">
                       From dinner guest
                     </Badge>
                   )}

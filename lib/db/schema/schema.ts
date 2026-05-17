@@ -26790,36 +26790,8 @@ export const corporateProfiles = pgTable("corporate_profiles", {
 ])
 
 // ---------------------------------------------------------------------------
-// Guest Count Flex: change history and cutoff policies
+// Event Cutoff Policies
 // ---------------------------------------------------------------------------
-
-export const guestCountChanges = pgTable("guest_count_changes", {
-	id: uuid().defaultRandom().primaryKey().notNull(),
-	eventId: uuid("event_id").notNull(),
-	tenantId: uuid("tenant_id").notNull(),
-	fromCount: integer("from_count").notNull(),
-	toCount: integer("to_count").notNull(),
-	stage: text().notNull(),
-	changedBy: uuid("changed_by").notNull(),
-	reason: text(),
-	impactJson: jsonb("impact_json"),
-	changedAt: timestamp("changed_at", { withTimezone: true, mode: 'string' }).defaultNow().notNull(),
-}, (table) => [
-	index("idx_guest_count_changes_event").using("btree", table.eventId.asc().nullsLast().op("uuid_ops")),
-	index("idx_guest_count_changes_tenant").using("btree", table.tenantId.asc().nullsLast().op("uuid_ops")),
-	index("idx_guest_count_changes_time").using("btree", table.changedAt.desc().nullsLast()),
-	foreignKey({
-			columns: [table.eventId],
-			foreignColumns: [events.id],
-			name: "guest_count_changes_event_id_fkey"
-		}).onDelete("cascade"),
-	foreignKey({
-			columns: [table.tenantId],
-			foreignColumns: [chefs.id],
-			name: "guest_count_changes_tenant_id_fkey"
-		}).onDelete("cascade"),
-	check("guest_count_changes_stage_check", sql`stage = ANY (ARRAY['quoted'::text, 'confirmed'::text, 'final'::text, 'actual'::text])`),
-])
 
 export const eventCutoffPolicies = pgTable("event_cutoff_policies", {
 	id: uuid().defaultRandom().primaryKey().notNull(),
@@ -27941,32 +27913,6 @@ export const progressTemplates = pgTable("progress_templates", {
 			foreignColumns: [chefs.id],
 			name: "progress_templates_tenant_id_fkey"
 		}).onDelete("cascade"),
-])
-
-// ---------------------------------------------------------------------------
-// Notification Preferences (severity + interruption controls per category)
-// ---------------------------------------------------------------------------
-
-export const notificationPreferences = pgTable("notification_preferences", {
-	id: uuid().defaultRandom().primaryKey().notNull(),
-	tenantId: uuid("tenant_id").notNull(),
-	category: text().notNull(),
-	severity: text().default('informational').notNull(),
-	channels: jsonb().default(['in_app']).notNull(),
-	interruptionLevel: text("interruption_level").default('business_hours').notNull(),
-	mutedUntil: timestamp("muted_until", { withTimezone: true, mode: 'string' }),
-	createdAt: timestamp("created_at", { withTimezone: true, mode: 'string' }).defaultNow().notNull(),
-	updatedAt: timestamp("updated_at", { withTimezone: true, mode: 'string' }).defaultNow().notNull(),
-}, (table) => [
-	uniqueIndex("idx_notif_prefs_tenant_cat").using("btree", table.tenantId.asc().nullsLast(), table.category.asc().nullsLast()),
-	foreignKey({
-			columns: [table.tenantId],
-			foreignColumns: [chefs.id],
-			name: "notification_preferences_tenant_id_fkey"
-		}).onDelete("cascade"),
-	check("notif_prefs_severity_check", sql`severity = ANY (ARRAY['critical'::text, 'important'::text, 'informational'::text, 'silent'::text])`),
-	check("notif_prefs_interruption_check", sql`interruption_level = ANY (ARRAY['always'::text, 'business_hours'::text, 'urgent_only'::text, 'never'::text])`),
-	pgPolicy("notif_prefs_tenant_isolation", { as: "permissive", for: "all", to: ["public"], using: sql`(tenant_id = get_current_tenant_id())`, withCheck: sql`(tenant_id = get_current_tenant_id())` }),
 ])
 
 // ---------------------------------------------------------------------------
@@ -29232,17 +29178,6 @@ export const signatureWorkflows = pgTable('signature_workflows', {
 	active: boolean('active').default(true),
 	createdAt: timestamp('created_at').defaultNow().notNull(),
 	updatedAt: timestamp('updated_at').defaultNow().notNull(),
-})
-
-export const workflowExecutions = pgTable('workflow_executions', {
-	id: uuid('id').defaultRandom().primaryKey(),
-	tenantId: uuid('tenant_id').notNull(),
-	workflowId: uuid('workflow_id').notNull(),
-	entityId: uuid('entity_id'),
-	currentStep: integer('current_step').default(0),
-	completedSteps: jsonb('completed_steps').default('[]'),
-	startedAt: timestamp('started_at').defaultNow().notNull(),
-	completedAt: timestamp('completed_at'),
 })
 
 export const portalVisualModes = pgTable('portal_visual_modes', {

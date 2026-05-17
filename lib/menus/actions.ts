@@ -24,6 +24,8 @@ import { escapeLikePattern } from '@/lib/db/escape-like'
 import { getDuplicateCourseError } from '@/lib/menus/course-utils'
 import { normalizeUnit } from '@/lib/units/conversion-engine'
 import { transitionMenuWithContext } from './menu-lifecycle'
+import type { MenuOriginType, MenuOriginMetadata } from './provenance-types'
+import { getForkGeneration } from './provenance-types'
 
 type MenuStatus = Database['public']['Enums']['menu_status']
 // 'draft' | 'shared' | 'locked' | 'archived'
@@ -50,6 +52,18 @@ const CreateMenuSchema = z.object({
   client_id: z.string().uuid().optional(),
   target_date: z.string().optional(),
   idempotency_key: z.string().optional(),
+  origin_type: z
+    .enum([
+      'chef_created',
+      'client_provided',
+      'forked',
+      'templated',
+      'uploaded',
+      'suggested',
+      'collaborative',
+    ])
+    .optional(),
+  origin_metadata: z.record(z.string(), z.unknown()).optional(),
 })
 
 const UpdateMenuSchema = z.object({
@@ -223,6 +237,8 @@ export async function createMenu(input: CreateMenuInput) {
           target_date: validated.target_date ?? null,
           created_by: user.id,
           updated_by: user.id,
+          origin_type: validated.origin_type ?? 'chef_created',
+          origin_metadata: validated.origin_metadata ?? { type: 'chef_created' },
         })
         .select()
         .single()
@@ -839,6 +855,14 @@ export async function attachMenuToEvent(eventId: string, menuId: string) {
     console.error('[attachMenuToEvent] Grocery draft generation failed (non-blocking):', draftErr)
   }
 
+  // Auto-resolve ingredient prices via PIE chain (non-blocking)
+  try {
+    const { autoCostMenuIngredients } = await import('@/lib/pricing/auto-cost-bridge')
+    await autoCostMenuIngredients(menuId, user.tenantId!)
+  } catch (costErr) {
+    console.error('[attachMenuToEvent] Auto-cost resolution failed (non-blocking):', costErr)
+  }
+
   return { success: true, allergenWarnings }
 }
 
@@ -1222,6 +1246,13 @@ export async function addComponentToDish(input: CreateComponentInput) {
     throw new UnknownAppError('Failed to add component')
   }
 
+  // C3: Flag linked event for cost review + revalidate
+  try {
+    await flagEventCostForDish(db, user.tenantId!, validated.dish_id)
+  } catch (err) {
+    console.error('[addComponentToDish] Event cost flagging failed (non-blocking):', err)
+  }
+
   return { success: true, component }
 }
 
@@ -1251,6 +1282,15 @@ export async function updateComponent(componentId: string, input: UpdateComponen
     throw new UnknownAppError('Failed to update component')
   }
 
+  // C3: Flag linked event for cost review + revalidate
+  try {
+    if (component?.dish_id) {
+      await flagEventCostForDish(db, user.tenantId!, component.dish_id)
+    }
+  } catch (err) {
+    console.error('[updateComponent] Event cost flagging failed (non-blocking):', err)
+  }
+
   return { success: true, component }
 }
 
@@ -1261,6 +1301,14 @@ export async function deleteComponent(componentId: string) {
   const user = await requireChef()
   const db: any = createServerClient()
 
+  // C3: Capture dish_id before deletion for event flagging
+  const { data: existing } = await db
+    .from('components')
+    .select('dish_id')
+    .eq('id', componentId)
+    .eq('tenant_id', user.tenantId!)
+    .single()
+
   const { error } = await db
     .from('components')
     .delete()
@@ -1270,6 +1318,15 @@ export async function deleteComponent(componentId: string) {
   if (error) {
     console.error('[deleteComponent] Error:', error)
     throw new UnknownAppError('Failed to delete component')
+  }
+
+  // C3: Flag linked event for cost review + revalidate
+  try {
+    if (existing?.dish_id) {
+      await flagEventCostForDish(db, user.tenantId!, existing.dish_id)
+    }
+  } catch (err) {
+    console.error('[deleteComponent] Event cost flagging failed (non-blocking):', err)
   }
 
   return { success: true }
@@ -1400,7 +1457,7 @@ export async function getMenuCostSummaries(): Promise<MenuCostSummary[]> {
  * Copies: menu → dishes → components
  * New menu is always 'draft' with no event attachment
  */
-export async function duplicateMenu(menuId: string) {
+export async function duplicateMenu(menuId: string, forkReason?: string) {
   const user = await requireChef()
 
   // Get full menu with dishes and components
@@ -1410,6 +1467,9 @@ export async function duplicateMenu(menuId: string) {
   }
 
   const db: any = createServerClient()
+  const parentGeneration =
+    (original as any).fork_generation ?? getForkGeneration(original.origin_metadata)
+  const reason = forkReason ?? 'chef_iteration'
 
   // Create menu copy (no event attachment, draft status)
   const { data: newMenu, error: menuError } = await db
@@ -1425,6 +1485,16 @@ export async function duplicateMenu(menuId: string) {
       is_template: original.is_template,
       created_by: user.id,
       updated_by: user.id,
+      origin_type: 'forked' as const,
+      origin_metadata: {
+        type: 'forked',
+        forked_from_id: menuId,
+        fork_generation: parentGeneration + 1,
+        fork_reason: reason,
+      },
+      forked_from_id: menuId,
+      fork_generation: parentGeneration + 1,
+      fork_reason: reason,
     })
     .select()
     .single()
@@ -1520,7 +1590,7 @@ export async function duplicateMenu(menuId: string) {
  */
 export async function cloneMenu(menuId: string) {
   // Delegate to the existing duplicateMenu which performs a full deep copy
-  const result = await duplicateMenu(menuId)
+  const result = await duplicateMenu(menuId, 'chef_iteration')
 
   // Ensure the clone is not marked as a template
   try {
@@ -1817,7 +1887,7 @@ export async function applyMenuToEvent(menuId: string, eventId: string) {
   let wasDuplicated = false
 
   if (menu.is_template || menu.is_showcase) {
-    const result = await duplicateMenu(menuId)
+    const result = await duplicateMenu(menuId, 'template_instantiation')
     targetMenuId = result.menu.id
     wasDuplicated = true
 
@@ -2441,4 +2511,53 @@ export async function createStubAndLinkToComponent(componentId: string, dishName
   invalidateRemyContextCache(tenantId)
 
   return { success: true, recipeId: recipe.id, recipeName: recipe.name }
+}
+
+// ============================================
+// C3 HELPER: Flag event cost when a dish's components change
+// ============================================
+
+/**
+ * Given a dish_id, walk up to its menu and linked event.
+ * If an event exists and cost_needs_refresh is false, set it to true (CAS guard).
+ * Revalidate menu and event routes so the UI reflects stale cost state.
+ * Non-blocking: callers wrap in try/catch.
+ */
+async function flagEventCostForDish(db: any, tenantId: string, dishId: string): Promise<void> {
+  // Get the dish's parent menu
+  const { data: dish } = await db
+    .from('dishes')
+    .select('menu_id')
+    .eq('id', dishId)
+    .eq('tenant_id', tenantId)
+    .single()
+
+  if (!dish?.menu_id) return
+
+  const menuId = dish.menu_id as string
+
+  // Find linked event(s)
+  const { data: events } = await db
+    .from('events')
+    .select('id')
+    .eq('menu_id', menuId)
+    .eq('tenant_id', tenantId)
+    .eq('cost_needs_refresh', false)
+
+  for (const evt of events ?? []) {
+    await db
+      .from('events')
+      .update({ cost_needs_refresh: true } as any)
+      .eq('id', evt.id)
+      .eq('tenant_id', tenantId)
+      .eq('cost_needs_refresh', false) // CAS guard
+  }
+
+  // Revalidate real routes
+  revalidatePath('/menus')
+  revalidatePath(`/menus/${menuId}`)
+  revalidatePath('/events')
+  for (const evt of events ?? []) {
+    revalidatePath(`/events/${evt.id}`)
+  }
 }
