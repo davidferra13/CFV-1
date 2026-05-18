@@ -17,6 +17,7 @@ import { EventPrepSection } from './_sections/event-prep-section'
 import { EventTicketsSection } from './_sections/event-tickets-section'
 import { EventOpsSection } from './_sections/event-ops-section'
 import { EventWrapSection } from './_sections/event-wrap-section'
+import { EventBeverageSection } from './_sections/event-beverage-section'
 import { getCompletionForEntity } from '@/lib/completion/actions'
 import { buildEventSuggestions } from '@/lib/suggestions/event-suggestions'
 import { ContextualNextAction } from '@/components/suggestions/contextual-next-action'
@@ -78,6 +79,14 @@ export default async function EventDetailPage({
       </Suspense>
       <Suspense fallback={<SkeletonCard />}>
         <EventOverviewSection
+          eventId={params.id}
+          tenantId={tenantId}
+          event={event}
+          activeTab={activeTab}
+        />
+      </Suspense>
+      <Suspense fallback={<SkeletonCard />}>
+        <EventBeverageSection
           eventId={params.id}
           tenantId={tenantId}
           event={event}

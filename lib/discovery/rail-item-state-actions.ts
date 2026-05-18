@@ -243,7 +243,7 @@ export async function getRailItemStateMap(
 /**
  * Check if a given item key is currently suppressed for a user.
  */
-export function isItemKeySuppressed(state: RailItemState | undefined): boolean {
+function isItemKeySuppressed(state: RailItemState | undefined): boolean {
   if (!state) return false
   if (SUPPRESSED_STATES.has(state)) return true
   // Snoozed items are suppressed by the query (snoozed_until > now()),
