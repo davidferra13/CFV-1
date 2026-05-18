@@ -130,3 +130,45 @@ SKIPPED:
 - CIL bridge: blocked on trigger-engine
 
 NEXT TRIGGER: trigger-engine dispatch table built -> SATURATED until new communication module added or CIL phase 3 lands
+
+---
+
+## Run 2026-05-17 (#4)
+
+STATUS: fresh (RESET by Wave 2)
+DEPTH: deep
+YIELD_TREND: increasing
+
+RESETS:
+
+- Wave 2 (d7e6b7dfe) added CIL auto-dispatch, social-bridge, draft review UI, feed engine
+- Prior "near-saturated" fully invalidated: 3 new subsystems, 2 broken
+- "Scheduled SMS no dispatch worker": PARTIALLY_INVALIDATED (cron exists, gap is narrower)
+
+SURFACED:
+
+- CRITICAL BUG: auto-dispatch.ts inserts status='draft', getDraftMessages() queries status='scheduled'. Draft review UI permanently empty.
+- processSocialSignals in social-bridge.ts has ZERO callers. Social draft generation unreachable.
+- inquiry->communication: ZERO imports. #1 business domain has no communication wiring.
+- event->communication: ZERO imports. Only reachable via hourly CIL scan (60min latency).
+- Feed pipeline has no communication category items configured.
+- /communication route group has no index page (404).
+
+ACTED ON:
+
+- (pending user selection)
+
+SKIPPED:
+
+- SMS channel delivery: no provider configured, premature
+- Dual follow-up audit: same finding 3 runs, no new data
+- Lifecycle-state awareness: spec-stage, wiring produces dead code
+
+CROSS_REFS:
+
+- [[cil]]: status mismatch in auto-dispatch, social-bridge zero callers
+- [[feed]]: communication category unconfigured in aggregation
+- [[inquiries]]: zero cross-domain edge to communication
+- [[events]]: zero cross-domain edge to communication
+
+NEXT TRIGGER: Ranks 1-2 fixed + rank 3 design decision made -> partially-mined

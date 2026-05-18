@@ -1,6 +1,7 @@
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
 import { CommitmentInsightsCard } from './commitment-insights-card'
+import { CommitmentCockpit } from '@/components/commitment/commitment-cockpit'
 import {
   getSeasonalDemandForecast,
   getRebookingPredictions,

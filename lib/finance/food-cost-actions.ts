@@ -78,7 +78,9 @@ export async function getEventFoodCost(eventId: string): Promise<EventFoodCost> 
       .single(),
     db
       .from('grocery_spend_entries' as any)
-      .select('id, store_name, amount_cents, purchase_date, notes, receipt_url')
+      .select(
+        'id, store_name, amount_cents, purchase_date, notes, receipt_url, source_name, source_type, source_notes'
+      )
       .eq('event_id', eventId)
       .eq('tenant_id', tenantId)
       .order('purchase_date', { ascending: false }),
