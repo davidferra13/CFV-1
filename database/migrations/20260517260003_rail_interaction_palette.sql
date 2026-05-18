@@ -1,0 +1,4 @@
+ALTER TABLE rail_item_state ADD COLUMN IF NOT EXISTS delegated_to UUID REFERENCES users(id);
+ALTER TABLE rail_item_state ADD COLUMN IF NOT EXISTS note_text TEXT;
+ALTER TABLE rail_item_state ADD COLUMN IF NOT EXISTS follow_up_at TIMESTAMPTZ;
+ALTER TABLE rail_item_state ADD COLUMN IF NOT EXISTS saved_at TIMESTAMPTZ;

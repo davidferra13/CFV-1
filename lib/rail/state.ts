@@ -118,3 +118,58 @@ export async function getSnoozedExpired(tenantId: string, userId: string): Promi
   `
   return rows.map((r) => r.item_key as string)
 }
+
+export async function delegateItem(
+  tenantId: string,
+  userId: string,
+  itemKey: string,
+  delegateToUserId: string
+): Promise<void> {
+  const pgClient = await db()
+  await pgClient`
+    INSERT INTO rail_item_state (id, tenant_id, user_id, item_key, state, delegated_to)
+    VALUES (${crypto.randomUUID()}, ${tenantId}, ${userId}, ${itemKey}, 'delegated', ${delegateToUserId})
+    ON CONFLICT (tenant_id, user_id, item_key) DO UPDATE
+    SET state = 'delegated', delegated_to = ${delegateToUserId}
+  `
+}
+
+export async function saveItem(tenantId: string, userId: string, itemKey: string): Promise<void> {
+  const pgClient = await db()
+  await pgClient`
+    INSERT INTO rail_item_state (id, tenant_id, user_id, item_key, state, saved_at)
+    VALUES (${crypto.randomUUID()}, ${tenantId}, ${userId}, ${itemKey}, 'saved', NOW())
+    ON CONFLICT (tenant_id, user_id, item_key) DO UPDATE
+    SET state = 'saved', saved_at = NOW()
+  `
+}
+
+export async function addNote(
+  tenantId: string,
+  userId: string,
+  itemKey: string,
+  noteText: string
+): Promise<void> {
+  const pgClient = await db()
+  await pgClient`
+    INSERT INTO rail_item_state (id, tenant_id, user_id, item_key, state, note_text)
+    VALUES (${crypto.randomUUID()}, ${tenantId}, ${userId}, ${itemKey}, 'noted', ${noteText})
+    ON CONFLICT (tenant_id, user_id, item_key) DO UPDATE
+    SET note_text = ${noteText}
+  `
+}
+
+export async function scheduleFollowUp(
+  tenantId: string,
+  userId: string,
+  itemKey: string,
+  followUpAt: Date
+): Promise<void> {
+  const pgClient = await db()
+  await pgClient`
+    INSERT INTO rail_item_state (id, tenant_id, user_id, item_key, state, follow_up_at)
+    VALUES (${crypto.randomUUID()}, ${tenantId}, ${userId}, ${itemKey}, 'follow_up', ${followUpAt.toISOString()})
+    ON CONFLICT (tenant_id, user_id, item_key) DO UPDATE
+    SET state = 'follow_up', follow_up_at = ${followUpAt.toISOString()}
+  `
+}

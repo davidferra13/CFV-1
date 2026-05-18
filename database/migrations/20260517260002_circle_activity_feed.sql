@@ -11,5 +11,5 @@ CREATE TABLE IF NOT EXISTS circle_activity (
   created_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
 );
 
-CREATE INDEX idx_circle_activity_event ON circle_activity(event_id, created_at DESC);
-CREATE INDEX idx_circle_activity_tenant ON circle_activity(tenant_id);
+CREATE INDEX IF NOT EXISTS idx_circle_activity_event ON circle_activity(event_id, created_at DESC);
+CREATE INDEX IF NOT EXISTS idx_circle_activity_tenant ON circle_activity(tenant_id);

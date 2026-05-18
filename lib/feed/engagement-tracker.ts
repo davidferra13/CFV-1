@@ -1,55 +1,23 @@
-import { db } from '@/lib/db'
-import { sql } from 'drizzle-orm'
+﻿'use server'
 
-// ---------------------------------------------------------------------------
-// Action types for rail engagement tracking
-// ---------------------------------------------------------------------------
+export type EngagementActionType = 'act' | 'dismiss' | 'snooze' | 'save' | 'click'
 
-export type RailActionType = 'click' | 'dismiss' | 'save' | 'expand' | 'hover'
+async function db() {
+  const { pgClient } = await import('@/lib/db')
+  return pgClient
+}
 
-// ---------------------------------------------------------------------------
-// Record a single engagement event
-// ---------------------------------------------------------------------------
-
-export async function recordEngagement(
+export async function recordRailEngagement(
   tenantId: string,
   userId: string,
-  itemSource: string,
-  actionType: RailActionType
+  itemKey: string,
+  source: string,
+  category: string,
+  actionType: EngagementActionType
 ): Promise<void> {
-  await db.execute(sql`
-    INSERT INTO rail_engagement_log (tenant_id, user_id, item_source, action_type)
-    VALUES (${tenantId}, ${userId}, ${itemSource}, ${actionType})
-  `)
-}
-
-// ---------------------------------------------------------------------------
-// Fetch raw engagement counts per source within a time window
-// ---------------------------------------------------------------------------
-
-export interface SourceEngagementRow {
-  itemSource: string
-  actionCount: number
-  latestAt: Date
-}
-
-export async function getEngagementsBySource(
-  tenantId: string,
-  userId: string,
-  windowDays: number = 30
-): Promise<SourceEngagementRow[]> {
-  const rows = await db.execute(sql`
-    SELECT
-      item_source AS "itemSource",
-      COUNT(*)::int AS "actionCount",
-      MAX(created_at) AS "latestAt"
-    FROM rail_engagement_log
-    WHERE tenant_id = ${tenantId}
-      AND user_id = ${userId}
-      AND created_at >= NOW() - INTERVAL '1 day' * ${windowDays}
-    GROUP BY item_source
-    ORDER BY "actionCount" DESC
-  `)
-
-  return rows as unknown as SourceEngagementRow[]
+  const pgClient = await db()
+  await pgClient`
+    INSERT INTO rail_engagement_log (tenant_id, user_id, item_source, item_category, action_type, item_key)
+    VALUES (${tenantId}, ${userId}, ${source}, ${category}, ${actionType}, ${itemKey})
+  `
 }

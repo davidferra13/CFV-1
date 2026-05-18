@@ -8,6 +8,10 @@ export type RailItemState =
   | 'resolved'
   | 'expired'
   | 'archived'
+  | 'delegated'
+  | 'saved'
+  | 'noted'
+  | 'follow_up'
 
 export type RailTier = 'critical' | 'action' | 'awareness' | 'opportunity'
 

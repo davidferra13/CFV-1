@@ -1,66 +1,104 @@
-import { getEngagementsBySource } from './engagement-tracker'
-
-// ---------------------------------------------------------------------------
-// EMA-based source affinity computation
-//
-// Computes a 0-100 score per source category using an Exponential Moving
-// Average (alpha = 0.1) over a 30-day engagement window. Sources with no
-// engagement default to 50. Floor is 10 (never fully suppress a source).
-// ---------------------------------------------------------------------------
-
-const EMA_ALPHA = 0.1
-const DEFAULT_AFFINITY = 50
-const AFFINITY_FLOOR = 10
-const AFFINITY_CEILING = 100
-const WINDOW_DAYS = 30
-
-function clampAffinity(value: number): number {
-  return Math.max(AFFINITY_FLOOR, Math.min(AFFINITY_CEILING, Math.round(value)))
+﻿async function db() {
+  const { pgClient } = await import('@/lib/db')
+  return pgClient
 }
 
-/**
- * Compute per-source affinity scores for a user.
- *
- * Returns a Map where keys are source categories and values are 0-100 scores.
- * Sources the user has never interacted with get DEFAULT_AFFINITY (50).
- * The floor is AFFINITY_FLOOR (10), so no source is ever fully suppressed.
- */
+export interface SourceAffinity {
+  source: string
+  actRate: number
+  affinityScore: number
+  actionCount: number
+  totalCount: number
+}
+
+const POSITIVE_ACTIONS = new Set(['act', 'save', 'click'])
+const NEGATIVE_ACTIONS = new Set(['dismiss'])
+
+const DEFAULT_AFFINITY = 50
+const FLOOR_AFFINITY = 10
+const CAP_AFFINITY = 95
+const EMA_ALPHA = 0.1
+
 export async function computeSourceAffinity(
   tenantId: string,
-  userId: string
+  userId: string,
+  lookbackDays: number = 30
 ): Promise<Map<string, number>> {
-  const engagements = await getEngagementsBySource(tenantId, userId, WINDOW_DAYS)
+  const pgClient = await db()
 
-  const affinityMap = new Map<string, number>()
+  const rows = await pgClient`
+    SELECT
+      item_source,
+      action_type,
+      DATE(created_at) as action_date,
+      COUNT(*)::int as cnt
+    FROM rail_engagement_log
+    WHERE tenant_id = ${tenantId}
+      AND user_id = ${userId}
+      AND created_at > NOW() - ${lookbackDays + ' days'}::interval
+    GROUP BY item_source, action_type, DATE(created_at)
+    ORDER BY item_source, action_date ASC
+  `
 
-  if (engagements.length === 0) {
-    return affinityMap // empty map; caller uses DEFAULT_AFFINITY for unknown sources
+  // Group by source, then compute EMA over daily buckets
+  const sourceData = new Map<
+    string,
+    Array<{ date: string; positive: number; negative: number; neutral: number }>
+  >()
+
+  for (const row of rows) {
+    const source = row.item_source as string
+    const actionType = row.action_type as string
+    const date = String(row.action_date)
+    const count = row.cnt as number
+
+    if (!sourceData.has(source)) {
+      sourceData.set(source, [])
+    }
+
+    const buckets = sourceData.get(source)!
+    let bucket = buckets.find((b) => b.date === date)
+    if (!bucket) {
+      bucket = { date, positive: 0, negative: 0, neutral: 0 }
+      buckets.push(bucket)
+    }
+
+    if (POSITIVE_ACTIONS.has(actionType)) {
+      bucket.positive += count
+    } else if (NEGATIVE_ACTIONS.has(actionType)) {
+      bucket.negative += count
+    } else {
+      bucket.neutral += count
+    }
   }
 
-  // Find the max action count for normalization
-  const maxCount = Math.max(...engagements.map((e) => e.actionCount))
-  if (maxCount === 0) return affinityMap
+  const result = new Map<string, number>()
 
-  for (const engagement of engagements) {
-    // Normalize action count to 0-100 range
-    const normalized = (engagement.actionCount / maxCount) * 100
+  for (const [source, buckets] of sourceData) {
+    // Sort by date ascending for EMA
+    buckets.sort((a, b) => a.date.localeCompare(b.date))
 
-    // Apply EMA: blend normalized score with default baseline
-    // EMA formula: score = alpha * newValue + (1 - alpha) * baseline
-    const emaScore = EMA_ALPHA * normalized + (1 - EMA_ALPHA) * DEFAULT_AFFINITY
+    let ema = 0.5 // start at neutral
+    for (const bucket of buckets) {
+      const total = bucket.positive + bucket.negative + bucket.neutral
+      if (total === 0) continue
+      const dailyRate = bucket.positive / total
+      ema = EMA_ALPHA * dailyRate + (1 - EMA_ALPHA) * ema
+    }
 
-    affinityMap.set(engagement.itemSource, clampAffinity(emaScore))
+    // Scale to 0-100 and clamp
+    const score = Math.max(FLOOR_AFFINITY, Math.min(CAP_AFFINITY, Math.round(ema * 100)))
+    result.set(source, score)
   }
 
-  return affinityMap
+  return result
 }
 
-/**
- * Look up a single source's affinity from a precomputed map.
- * Returns DEFAULT_AFFINITY if the source has no engagement data.
- */
-export function getAffinityForSource(affinityMap: Map<string, number>, source: string): number {
-  return affinityMap.get(source) ?? DEFAULT_AFFINITY
+export async function getAffinityBoost(
+  tenantId: string,
+  userId: string,
+  source: string
+): Promise<number> {
+  const affinities = await computeSourceAffinity(tenantId, userId)
+  return affinities.get(source) ?? DEFAULT_AFFINITY
 }
-
-export { DEFAULT_AFFINITY, AFFINITY_FLOOR }
