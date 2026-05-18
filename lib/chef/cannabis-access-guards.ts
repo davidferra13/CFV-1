@@ -1,6 +1,7 @@
 import 'server-only'
 
 import { createHash } from 'crypto'
+import { cache } from 'react'
 import { redirect } from 'next/navigation'
 import { requireChef, type AuthUser } from '@/lib/auth/get-user'
 import { hasCannabisAccess } from '@/lib/chef/cannabis-actions'
@@ -28,34 +29,36 @@ export async function requireCannabisInviteAccess(): Promise<AuthUser> {
   return user
 }
 
-export async function getCannabisHostAgreement(
-  hostUserId: string,
-  agreementVersion = CANNABIS_HOST_AGREEMENT_VERSION
-): Promise<CannabisHostAgreementRecord | null> {
-  const db: any = createServerClient()
-  const { data, error } = await (db as any)
-    .from('cannabis_host_agreements')
-    .select(
-      'id, host_user_id, signed_at, signature_name, agreement_version, agreement_text_snapshot, immutable_hash, ip_address, created_at'
-    )
-    .eq('host_user_id', hostUserId)
-    .eq('agreement_version', agreementVersion)
-    .maybeSingle()
+export const getCannabisHostAgreement = cache(
+  async (
+    hostUserId: string,
+    agreementVersion = CANNABIS_HOST_AGREEMENT_VERSION
+  ): Promise<CannabisHostAgreementRecord | null> => {
+    const db: any = createServerClient()
+    const { data, error } = await (db as any)
+      .from('cannabis_host_agreements')
+      .select(
+        'id, host_user_id, signed_at, signature_name, agreement_version, agreement_text_snapshot, immutable_hash, ip_address, created_at'
+      )
+      .eq('host_user_id', hostUserId)
+      .eq('agreement_version', agreementVersion)
+      .maybeSingle()
 
-  if (error || !data) return null
+    if (error || !data) return null
 
-  // Verify immutable hash to detect tampering
-  const recomputedHash = createHash('sha256').update(data.agreement_text_snapshot).digest('hex')
-  if (recomputedHash !== data.immutable_hash) {
-    console.error(
-      `[cannabis] Host agreement hash mismatch for user ${hostUserId}. ` +
-        `Expected ${data.immutable_hash}, got ${recomputedHash}. Possible tampering.`
-    )
-    return null
+    // Verify immutable hash to detect tampering
+    const recomputedHash = createHash('sha256').update(data.agreement_text_snapshot).digest('hex')
+    if (recomputedHash !== data.immutable_hash) {
+      console.error(
+        `[cannabis] Host agreement hash mismatch for user ${hostUserId}. ` +
+          `Expected ${data.immutable_hash}, got ${recomputedHash}. Possible tampering.`
+      )
+      return null
+    }
+
+    return data as CannabisHostAgreementRecord
   }
-
-  return data as CannabisHostAgreementRecord
-}
+)
 
 export async function requireCannabisAgreementSigned(
   hostUserId: string,

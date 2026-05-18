@@ -5,6 +5,7 @@
 // Portal server actions (settings-actions.ts, tier-actions.ts) should delegate
 // to these helpers after calling requireChef().
 
+import { cache } from 'react'
 import { createServerClient } from '@/lib/db/server'
 import { DEFAULT_TIER_MAP, type NotificationTier } from './tier-config'
 import { NOTIFICATION_CONFIG, type NotificationAction, type NotificationCategory } from './types'
@@ -160,21 +161,23 @@ export async function markNotificationReadForTenant(
 
 // ── Preferences ────────────────────────────────────────────────────────────
 
-export async function getPreferencesForTenant(authUserId: string): Promise<CategoryPreference[]> {
-  const db: any = createServerClient({ admin: true })
+export const getPreferencesForTenant = cache(
+  async (authUserId: string): Promise<CategoryPreference[]> => {
+    const db: any = createServerClient({ admin: true })
 
-  const { data, error } = await db
-    .from('notification_preferences')
-    .select('category, email_enabled, push_enabled, sms_enabled')
-    .eq('auth_user_id', authUserId)
+    const { data, error } = await db
+      .from('notification_preferences')
+      .select('category, email_enabled, push_enabled, sms_enabled')
+      .eq('auth_user_id', authUserId)
 
-  if (error) {
-    console.error('[store.getPreferencesForTenant] Query failed:', error)
-    return []
+    if (error) {
+      console.error('[store.getPreferencesForTenant] Query failed:', error)
+      return []
+    }
+
+    return (data ?? []) as CategoryPreference[]
   }
-
-  return (data ?? []) as CategoryPreference[]
-}
+)
 
 export async function upsertPreferenceForTenant(
   tenantId: string,
@@ -205,7 +208,7 @@ export async function upsertPreferenceForTenant(
 
 // ── SMS Settings ───────────────────────────────────────────────────────────
 
-export async function getSmsSettingsForTenant(tenantId: string): Promise<SmsSettings> {
+export const getSmsSettingsForTenant = cache(async (tenantId: string): Promise<SmsSettings> => {
   const db: any = createServerClient({ admin: true })
 
   const { data } = await db
@@ -218,7 +221,7 @@ export async function getSmsSettingsForTenant(tenantId: string): Promise<SmsSett
     sms_opt_in: data?.sms_opt_in ?? false,
     sms_notify_phone: data?.sms_notify_phone ?? null,
   }
-}
+})
 
 export async function updateSmsSettingsForTenant(
   tenantId: string,
@@ -252,36 +255,36 @@ export async function updateSmsSettingsForTenant(
 
 // ── Experience Settings ────────────────────────────────────────────────────
 
-export async function getExperienceSettingsForTenant(
-  tenantId: string
-): Promise<NotificationExperienceSettings> {
-  const db: any = createServerClient({ admin: true })
+export const getExperienceSettingsForTenant = cache(
+  async (tenantId: string): Promise<NotificationExperienceSettings> => {
+    const db: any = createServerClient({ admin: true })
 
-  const { data } = await db
-    .from('chef_preferences')
-    .select(
-      'notification_quiet_hours_enabled, notification_quiet_hours_start, notification_quiet_hours_end, notification_digest_enabled, notification_digest_interval_minutes'
-    )
-    .eq('tenant_id', tenantId)
-    .single()
+    const { data } = await db
+      .from('chef_preferences')
+      .select(
+        'notification_quiet_hours_enabled, notification_quiet_hours_start, notification_quiet_hours_end, notification_digest_enabled, notification_digest_interval_minutes'
+      )
+      .eq('tenant_id', tenantId)
+      .single()
 
-  return {
-    quiet_hours_enabled: Boolean((data as any)?.notification_quiet_hours_enabled),
-    quiet_hours_start:
-      typeof (data as any)?.notification_quiet_hours_start === 'string'
-        ? ((data as any).notification_quiet_hours_start as string).slice(0, 5)
-        : null,
-    quiet_hours_end:
-      typeof (data as any)?.notification_quiet_hours_end === 'string'
-        ? ((data as any).notification_quiet_hours_end as string).slice(0, 5)
-        : null,
-    digest_enabled: Boolean((data as any)?.notification_digest_enabled),
-    digest_interval_minutes:
-      typeof (data as any)?.notification_digest_interval_minutes === 'number'
-        ? Math.min(120, Math.max(5, (data as any).notification_digest_interval_minutes))
-        : 15,
+    return {
+      quiet_hours_enabled: Boolean((data as any)?.notification_quiet_hours_enabled),
+      quiet_hours_start:
+        typeof (data as any)?.notification_quiet_hours_start === 'string'
+          ? ((data as any).notification_quiet_hours_start as string).slice(0, 5)
+          : null,
+      quiet_hours_end:
+        typeof (data as any)?.notification_quiet_hours_end === 'string'
+          ? ((data as any).notification_quiet_hours_end as string).slice(0, 5)
+          : null,
+      digest_enabled: Boolean((data as any)?.notification_digest_enabled),
+      digest_interval_minutes:
+        typeof (data as any)?.notification_digest_interval_minutes === 'number'
+          ? Math.min(120, Math.max(5, (data as any).notification_digest_interval_minutes))
+          : 15,
+    }
   }
-}
+)
 
 export async function updateExperienceSettingsForTenant(
   tenantId: string,
@@ -324,7 +327,7 @@ export function buildDefaultTierEntries(): TierMapEntry[] {
   )
 }
 
-export async function getTierMapForTenant(tenantId: string): Promise<TierMapEntry[]> {
+export const getTierMapForTenant = cache(async (tenantId: string): Promise<TierMapEntry[]> => {
   const db: any = createServerClient({ admin: true })
 
   const { data: overrides, error } = await db
@@ -358,7 +361,7 @@ export async function getTierMapForTenant(tenantId: string): Promise<TierMapEntr
   }
 
   return entries
-}
+})
 
 export async function updateTierForTenant(
   tenantId: string,

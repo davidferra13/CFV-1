@@ -1,3 +1,4 @@
+import { cache } from 'react'
 import { createAdminClient } from '@/lib/db/admin'
 import {
   canonicalizeCuisineSlug,
@@ -2108,18 +2109,20 @@ export async function rebuildClientProfileVectorForTenant(
   }
 }
 
-export async function getClientProfileVectorForTenant(
-  clientId: string,
-  tenantId: string,
-  options?: { refresh?: boolean; dbClient?: DbClient }
-): Promise<CulinaryProfileVector | null> {
-  const db = options?.dbClient ?? createAdminClient()
-  if (!options?.refresh) {
-    const stored = await loadStoredVector(clientId, tenantId, db)
-    if (stored) return stored
+export const getClientProfileVectorForTenant = cache(
+  async (
+    clientId: string,
+    tenantId: string,
+    options?: { refresh?: boolean; dbClient?: DbClient }
+  ): Promise<CulinaryProfileVector | null> => {
+    const db = options?.dbClient ?? createAdminClient()
+    if (!options?.refresh) {
+      const stored = await loadStoredVector(clientId, tenantId, db)
+      if (stored) return stored
+    }
+    return rebuildClientProfileVectorForTenant(clientId, tenantId, db)
   }
-  return rebuildClientProfileVectorForTenant(clientId, tenantId, db)
-}
+)
 
 function candidateTexts(candidate: RecommendationCandidate): string[] {
   return uniqueStrings([

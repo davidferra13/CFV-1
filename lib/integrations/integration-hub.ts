@@ -1,3 +1,4 @@
+import { cache } from 'react'
 import { requireChef } from '@/lib/auth/get-user'
 import { createServerClient } from '@/lib/db/server'
 import { INTEGRATION_PROVIDER_META } from '@/lib/integrations/core/providers'
@@ -73,7 +74,7 @@ async function persistTenantIntegrationSettings(
   }
 }
 
-export async function listConnectedAccounts(): Promise<ConnectedAccount[]> {
+export const listConnectedAccounts = cache(async (): Promise<ConnectedAccount[]> => {
   const user = await requireChef()
   const db: any = createServerClient()
 
@@ -116,7 +117,7 @@ export async function listConnectedAccounts(): Promise<ConnectedAccount[]> {
       connectedAt: row.connected_at,
     }
   })
-}
+})
 
 export async function connectIntegrationAccount(input: ConnectIntegrationInput) {
   const user = await requireChef()
@@ -237,7 +238,7 @@ export async function disconnectIntegrationAccount(connectionId: string) {
   return { success: true }
 }
 
-export async function getIntegrationHubOverview() {
+export const getIntegrationHubOverview = cache(async () => {
   const accounts = await listConnectedAccounts()
   const totals = {
     connected: 0,
@@ -272,4 +273,4 @@ export async function getIntegrationHubOverview() {
     })),
     accounts,
   }
-}
+})

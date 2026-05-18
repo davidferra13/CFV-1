@@ -7,6 +7,7 @@
  * and the chef_activity_log.
  */
 
+import { cache } from 'react'
 import { requireChef } from '@/lib/auth/get-user'
 import { pgClient } from '@/lib/db'
 
@@ -99,11 +100,7 @@ function formatValue(value: unknown): string | null {
   }
 }
 
-function resolveActorLabel(
-  actorId: string | null,
-  currentUserId: string,
-  source?: string
-): string {
+function resolveActorLabel(actorId: string | null, currentUserId: string, source?: string): string {
   if (source === 'quote_client_acceptance') return 'Client'
   if (!actorId) return 'System'
   if (actorId === currentUserId) return 'You'
@@ -116,130 +113,124 @@ function resolveActorLabel(
  * Get full change history for a specific entity.
  * Combines state transitions and activity log mutations.
  */
-export async function getEntityHistory(
-  entityType: AuditEntityType,
-  entityId: string
-): Promise<AuditHistoryEntry[]> {
-  const chef = await requireChef()
-  const tenantId = chef.tenantId!
-  const entries: AuditHistoryEntry[] = []
+export const getEntityHistory = cache(
+  async (entityType: AuditEntityType, entityId: string): Promise<AuditHistoryEntry[]> => {
+    const chef = await requireChef()
+    const tenantId = chef.tenantId!
+    const entries: AuditHistoryEntry[] = []
 
-  // 1. Fetch state transitions (for entity types that have them)
-  const transitionTable = getTransitionTable(entityType)
-  if (transitionTable) {
-    const transitionRows = await pgClient.unsafe(
-      `SELECT t.id, t.from_status, t.to_status, t.transitioned_at, t.transitioned_by, t.reason, t.metadata,
+    // 1. Fetch state transitions (for entity types that have them)
+    const transitionTable = getTransitionTable(entityType)
+    if (transitionTable) {
+      const transitionRows = await pgClient.unsafe(
+        `SELECT t.id, t.from_status, t.to_status, t.transitioned_at, t.transitioned_by, t.reason, t.metadata,
               ${getEntityLabelSelect(entityType)}
        FROM ${transitionTable.table} t
        ${getEntityLabelJoin(entityType, transitionTable.foreignKey)}
        WHERE t.${transitionTable.foreignKey} = $1 AND t.tenant_id = $2
        ORDER BY t.transitioned_at DESC
        LIMIT 200`,
-      [entityId, tenantId]
-    )
+        [entityId, tenantId]
+      )
 
-    for (const row of transitionRows) {
-      const meta =
-        row.metadata && typeof row.metadata === 'object' ? (row.metadata as any) : {}
-      const fromStatus = row.from_status
-        ? String(row.from_status).replace(/_/g, ' ')
-        : null
-      const toStatus = String(row.to_status ?? '').replace(/_/g, ' ')
+      for (const row of transitionRows) {
+        const meta = row.metadata && typeof row.metadata === 'object' ? (row.metadata as any) : {}
+        const fromStatus = row.from_status ? String(row.from_status).replace(/_/g, ' ') : null
+        const toStatus = String(row.to_status ?? '').replace(/_/g, ' ')
 
-      entries.push({
-        id: `transition-${row.id}`,
-        timestamp: row.transitioned_at,
-        userId: row.transitioned_by ?? null,
-        userName: resolveActorLabel(row.transitioned_by, chef.id, meta.source),
-        action: 'transition',
-        summary: fromStatus
-          ? `Status changed: ${fromStatus} to ${toStatus}`
-          : `Status set to ${toStatus}`,
-        changes: fromStatus
-          ? [{ field: 'Status', oldValue: fromStatus, newValue: toStatus }]
-          : [{ field: 'Status', oldValue: null, newValue: toStatus }],
-        entityType,
-        entityId,
-        entityLabel: (row as any).entity_label ?? null,
-      })
+        entries.push({
+          id: `transition-${row.id}`,
+          timestamp: row.transitioned_at,
+          userId: row.transitioned_by ?? null,
+          userName: resolveActorLabel(row.transitioned_by, chef.id, meta.source),
+          action: 'transition',
+          summary: fromStatus
+            ? `Status changed: ${fromStatus} to ${toStatus}`
+            : `Status set to ${toStatus}`,
+          changes: fromStatus
+            ? [{ field: 'Status', oldValue: fromStatus, newValue: toStatus }]
+            : [{ field: 'Status', oldValue: null, newValue: toStatus }],
+          entityType,
+          entityId,
+          entityLabel: (row as any).entity_label ?? null,
+        })
+      }
     }
-  }
 
-  // 2. Fetch ledger entries (for event-scoped or ledger entity types)
-  if (entityType === 'event' || entityType === 'ledger') {
-    const ledgerCol = entityType === 'event' ? 'event_id' : 'id'
-    const ledgerRows = await pgClient.unsafe(
-      `SELECT le.id, le.entry_type, le.amount_cents, le.description, le.created_at,
+    // 2. Fetch ledger entries (for event-scoped or ledger entity types)
+    if (entityType === 'event' || entityType === 'ledger') {
+      const ledgerCol = entityType === 'event' ? 'event_id' : 'id'
+      const ledgerRows = await pgClient.unsafe(
+        `SELECT le.id, le.entry_type, le.amount_cents, le.description, le.created_at,
               le.created_by, le.transaction_reference
        FROM ledger_entries le
        WHERE le.${ledgerCol} = $1 AND le.tenant_id = $2
        ORDER BY le.created_at DESC
        LIMIT 100`,
-      [entityId, tenantId]
-    )
+        [entityId, tenantId]
+      )
 
-    for (const row of ledgerRows) {
-      const amountDollars = (Number(row.amount_cents) / 100).toFixed(2)
-      entries.push({
-        id: `ledger-${row.id}`,
-        timestamp: row.created_at,
-        userId: row.created_by ?? null,
-        userName: resolveActorLabel(row.created_by, chef.id),
-        action: 'created',
-        summary: `${row.entry_type}: $${amountDollars}${row.description ? ` (${row.description})` : ''}`,
-        changes: [
-          { field: 'Entry Type', oldValue: null, newValue: row.entry_type },
-          { field: 'Amount', oldValue: null, newValue: `$${amountDollars}` },
-        ],
-        entityType: 'ledger',
-        entityId: String(row.id),
-        entityLabel: row.description ?? `Ledger ${String(row.id).slice(0, 8)}`,
-      })
+      for (const row of ledgerRows) {
+        const amountDollars = (Number(row.amount_cents) / 100).toFixed(2)
+        entries.push({
+          id: `ledger-${row.id}`,
+          timestamp: row.created_at,
+          userId: row.created_by ?? null,
+          userName: resolveActorLabel(row.created_by, chef.id),
+          action: 'created',
+          summary: `${row.entry_type}: $${amountDollars}${row.description ? ` (${row.description})` : ''}`,
+          changes: [
+            { field: 'Entry Type', oldValue: null, newValue: row.entry_type },
+            { field: 'Amount', oldValue: null, newValue: `$${amountDollars}` },
+          ],
+          entityType: 'ledger',
+          entityId: String(row.id),
+          entityLabel: row.description ?? `Ledger ${String(row.id).slice(0, 8)}`,
+        })
+      }
     }
-  }
 
-  // 3. Fetch activity log mutations
-  const mutationRows = await pgClient.unsafe(
-    `SELECT id, action, summary, context, created_at, actor_id
+    // 3. Fetch activity log mutations
+    const mutationRows = await pgClient.unsafe(
+      `SELECT id, action, summary, context, created_at, actor_id
      FROM chef_activity_log
      WHERE entity_type = $1 AND entity_id = $2 AND tenant_id = $3
      ORDER BY created_at DESC
      LIMIT 200`,
-    [entityType, entityId, tenantId]
-  )
+      [entityType, entityId, tenantId]
+    )
 
-  for (const row of mutationRows) {
-    const context =
-      row.context && typeof row.context === 'object' && !Array.isArray(row.context)
-        ? (row.context as Record<string, unknown>)
-        : {}
+    for (const row of mutationRows) {
+      const context =
+        row.context && typeof row.context === 'object' && !Array.isArray(row.context)
+          ? (row.context as Record<string, unknown>)
+          : {}
 
-    const actionType = deriveActionType(row.action)
-    entries.push({
-      id: `mutation-${row.id}`,
-      timestamp: row.created_at,
-      userId: row.actor_id ?? null,
-      userName: resolveActorLabel(row.actor_id, chef.id),
-      action: actionType,
-      summary: row.summary,
-      changes: parseFieldDiffs(context),
-      entityType,
-      entityId,
-      entityLabel: null,
-    })
+      const actionType = deriveActionType(row.action)
+      entries.push({
+        id: `mutation-${row.id}`,
+        timestamp: row.created_at,
+        userId: row.actor_id ?? null,
+        userName: resolveActorLabel(row.actor_id, chef.id),
+        action: actionType,
+        summary: row.summary,
+        changes: parseFieldDiffs(context),
+        entityType,
+        entityId,
+        entityLabel: null,
+      })
+    }
+
+    // Sort by timestamp descending
+    entries.sort((a, b) => new Date(b.timestamp).getTime() - new Date(a.timestamp).getTime())
+    return entries.slice(0, 300)
   }
-
-  // Sort by timestamp descending
-  entries.sort((a, b) => new Date(b.timestamp).getTime() - new Date(a.timestamp).getTime())
-  return entries.slice(0, 300)
-}
+)
 
 /**
  * Get most recent changes across all entities for a tenant.
  */
-export async function getRecentChanges(
-  limit: number = 50
-): Promise<RecentChangeEntry[]> {
+export const getRecentChanges = cache(async (limit: number = 50): Promise<RecentChangeEntry[]> => {
   const chef = await requireChef()
   const tenantId = chef.tenantId!
   const entries: RecentChangeEntry[] = []
@@ -325,9 +316,7 @@ export async function getRecentChanges(
       userName: resolveActorLabel(row.created_by, chef.id),
       action: 'created',
       summary: `${row.entry_type}: $${amountDollars}`,
-      changes: [
-        { field: 'Amount', oldValue: null, newValue: `$${amountDollars}` },
-      ],
+      changes: [{ field: 'Amount', oldValue: null, newValue: `$${amountDollars}` }],
       entityType: 'ledger',
       entityId: row.event_id ?? row.id,
       entityLabel: row.entity_label,
@@ -367,7 +356,7 @@ export async function getRecentChanges(
   // Sort by timestamp descending, deduplicate, and limit
   entries.sort((a, b) => new Date(b.timestamp).getTime() - new Date(a.timestamp).getTime())
   return entries.slice(0, limit)
-}
+})
 
 /**
  * Get all audit entries for a specific user.
@@ -486,68 +475,74 @@ export async function getEntityDiff(
 /**
  * Get a summary for an entity: last modified time and who modified it.
  */
-export async function getEntityAuditSummary(
-  entityType: AuditEntityType,
-  entityId: string
-): Promise<{ lastModified: string | null; lastModifiedBy: string | null; changeCount: number }> {
-  const chef = await requireChef()
-  const tenantId = chef.tenantId!
+export const getEntityAuditSummary = cache(
+  async (
+    entityType: AuditEntityType,
+    entityId: string
+  ): Promise<{
+    lastModified: string | null
+    lastModifiedBy: string | null
+    changeCount: number
+  }> => {
+    const chef = await requireChef()
+    const tenantId = chef.tenantId!
 
-  // Check activity log first (most comprehensive)
-  const activityResult = await pgClient.unsafe(
-    `SELECT created_at, actor_id, COUNT(*) OVER () as total_count
+    // Check activity log first (most comprehensive)
+    const activityResult = await pgClient.unsafe(
+      `SELECT created_at, actor_id, COUNT(*) OVER () as total_count
      FROM chef_activity_log
      WHERE entity_type = $1 AND entity_id = $2 AND tenant_id = $3
      ORDER BY created_at DESC
      LIMIT 1`,
-    [entityType, entityId, tenantId]
-  )
+      [entityType, entityId, tenantId]
+    )
 
-  // Also check transitions
-  const transitionTable = getTransitionTable(entityType)
-  let transitionResult: any[] = []
-  if (transitionTable) {
-    transitionResult = await pgClient.unsafe(
-      `SELECT transitioned_at, transitioned_by, COUNT(*) OVER () as total_count
+    // Also check transitions
+    const transitionTable = getTransitionTable(entityType)
+    let transitionResult: any[] = []
+    if (transitionTable) {
+      transitionResult = await pgClient.unsafe(
+        `SELECT transitioned_at, transitioned_by, COUNT(*) OVER () as total_count
        FROM ${transitionTable.table}
        WHERE ${transitionTable.foreignKey} = $1 AND tenant_id = $2
        ORDER BY transitioned_at DESC
        LIMIT 1`,
-      [entityId, tenantId]
-    )
-  }
+        [entityId, tenantId]
+      )
+    }
 
-  const activityRow = activityResult[0]
-  const transitionRow = transitionResult[0]
+    const activityRow = activityResult[0]
+    const transitionRow = transitionResult[0]
 
-  // Pick the most recent
-  let lastModified: string | null = null
-  let lastModifiedBy: string | null = null
-  let changeCount = 0
+    // Pick the most recent
+    let lastModified: string | null = null
+    let lastModifiedBy: string | null = null
+    let changeCount = 0
 
-  if (activityRow && transitionRow) {
-    const aTime = new Date(activityRow.created_at).getTime()
-    const tTime = new Date(transitionRow.transitioned_at).getTime()
-    if (aTime >= tTime) {
+    if (activityRow && transitionRow) {
+      const aTime = new Date(activityRow.created_at).getTime()
+      const tTime = new Date(transitionRow.transitioned_at).getTime()
+      if (aTime >= tTime) {
+        lastModified = activityRow.created_at
+        lastModifiedBy = resolveActorLabel(activityRow.actor_id, chef.id)
+      } else {
+        lastModified = transitionRow.transitioned_at
+        lastModifiedBy = resolveActorLabel(transitionRow.transitioned_by, chef.id)
+      }
+      changeCount = Number(activityRow.total_count ?? 0) + Number(transitionRow.total_count ?? 0)
+    } else if (activityRow) {
       lastModified = activityRow.created_at
       lastModifiedBy = resolveActorLabel(activityRow.actor_id, chef.id)
-    } else {
+      changeCount = Number(activityRow.total_count ?? 0)
+    } else if (transitionRow) {
       lastModified = transitionRow.transitioned_at
       lastModifiedBy = resolveActorLabel(transitionRow.transitioned_by, chef.id)
+      changeCount = Number(transitionRow.total_count ?? 0)
     }
-    changeCount = Number(activityRow.total_count ?? 0) + Number(transitionRow.total_count ?? 0)
-  } else if (activityRow) {
-    lastModified = activityRow.created_at
-    lastModifiedBy = resolveActorLabel(activityRow.actor_id, chef.id)
-    changeCount = Number(activityRow.total_count ?? 0)
-  } else if (transitionRow) {
-    lastModified = transitionRow.transitioned_at
-    lastModifiedBy = resolveActorLabel(transitionRow.transitioned_by, chef.id)
-    changeCount = Number(transitionRow.total_count ?? 0)
-  }
 
-  return { lastModified, lastModifiedBy, changeCount }
-}
+    return { lastModified, lastModifiedBy, changeCount }
+  }
+)
 
 // ── Internal helpers ───────────────────────────────────────────────────────
 

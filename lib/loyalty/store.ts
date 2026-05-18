@@ -2,6 +2,7 @@
 // Accepts tenantId directly instead of calling requireChef().
 // Every function here is safe to call from API-key contexts (no session dependency).
 
+import { cache } from 'react'
 import { createServerClient } from '@/lib/db/server'
 import { z } from 'zod'
 import type {
@@ -201,94 +202,101 @@ export async function updateLoyaltyConfigForTenant(
 // Loyalty Overview (dashboard stats)
 // =====================================================================================
 
-export async function getLoyaltyOverviewForTenant(tenantId: string): Promise<LoyaltyOverview> {
-  const db: any = createServerClient({ admin: true })
-  const config = await getLoyaltyConfigForTenant(tenantId)
+export const getLoyaltyOverviewForTenant = cache(
+  async (tenantId: string): Promise<LoyaltyOverview> => {
+    const db: any = createServerClient({ admin: true })
+    const config = await getLoyaltyConfigForTenant(tenantId)
 
-  const { data: clients } = await db
-    .from('clients')
-    .select(
-      'id, full_name, loyalty_points, loyalty_tier, total_events_completed, total_guests_served'
-    )
-    .eq('tenant_id', tenantId)
-    .order('loyalty_points', { ascending: false })
+    const { data: clients } = await db
+      .from('clients')
+      .select(
+        'id, full_name, loyalty_points, loyalty_tier, total_events_completed, total_guests_served'
+      )
+      .eq('tenant_id', tenantId)
+      .order('loyalty_points', { ascending: false })
 
-  const allClients = clients || []
-  const clientsPerTier: Record<LoyaltyTier, number> = { bronze: 0, silver: 0, gold: 0, platinum: 0 }
-  for (const c of allClients) {
-    const tier = (c.loyalty_tier || 'bronze') as LoyaltyTier
-    clientsPerTier[tier]++
-  }
-
-  const totalPointsOutstanding = allClients.reduce(
-    (sum: number, c: any) => sum + (c.loyalty_points || 0),
-    0
-  )
-
-  const topClients = allClients.slice(0, 10).map((c: any) => ({
-    id: c.id,
-    full_name: c.full_name,
-    loyalty_points: c.loyalty_points || 0,
-    loyalty_tier: (c.loyalty_tier || 'bronze') as LoyaltyTier,
-  }))
-
-  const { data: recentAwards } = await db
-    .from('loyalty_transactions')
-    .select('*')
-    .eq('tenant_id', tenantId)
-    .in('type', ['earned', 'bonus'])
-    .order('created_at', { ascending: false })
-    .limit(10)
-
-  // Fetch lifetime earned per client for accurate tier-approaching calculation
-  const { data: allEarnedTx } = await db
-    .from('loyalty_transactions')
-    .select('client_id, points')
-    .eq('tenant_id', tenantId)
-    .in('type', ['earned', 'bonus'])
-
-  const lifetimeByClient = new Map<string, number>()
-  for (const tx of allEarnedTx || []) {
-    lifetimeByClient.set(tx.client_id, (lifetimeByClient.get(tx.client_id) || 0) + tx.points)
-  }
-
-  const clientsApproachingTierUpgrade = allClients
-    .map((c: any) => {
+    const allClients = clients || []
+    const clientsPerTier: Record<LoyaltyTier, number> = {
+      bronze: 0,
+      silver: 0,
+      gold: 0,
+      platinum: 0,
+    }
+    for (const c of allClients) {
       const tier = (c.loyalty_tier || 'bronze') as LoyaltyTier
-      const nextTier = getNextTier(tier)
-      if (!nextTier) return null
-      const threshold = getTierThreshold(nextTier.key, config)
-      const lifetimeEarned = lifetimeByClient.get(c.id) || 0
-      const pointsNeeded = threshold - lifetimeEarned
-      if (pointsNeeded <= 0 || pointsNeeded > threshold * 0.2) return null
-      return {
-        id: c.id,
-        full_name: c.full_name,
-        loyalty_points: c.loyalty_points || 0,
-        loyalty_tier: tier,
-        pointsToNextTier: pointsNeeded,
-        nextTierName: nextTier.name,
-      }
-    })
-    .filter((c: any): c is NonNullable<typeof c> => c !== null)
+      clientsPerTier[tier]++
+    }
 
-  return {
-    programMode: config.program_mode,
-    earnMode: config.earn_mode,
-    totalClients: allClients.length,
-    clientsPerTier,
-    totalPointsOutstanding,
-    topClients,
-    recentAwards: (recentAwards || []) as LoyaltyTransaction[],
-    clientsApproachingTierUpgrade,
+    const totalPointsOutstanding = allClients.reduce(
+      (sum: number, c: any) => sum + (c.loyalty_points || 0),
+      0
+    )
+
+    const topClients = allClients.slice(0, 10).map((c: any) => ({
+      id: c.id,
+      full_name: c.full_name,
+      loyalty_points: c.loyalty_points || 0,
+      loyalty_tier: (c.loyalty_tier || 'bronze') as LoyaltyTier,
+    }))
+
+    const { data: recentAwards } = await db
+      .from('loyalty_transactions')
+      .select('*')
+      .eq('tenant_id', tenantId)
+      .in('type', ['earned', 'bonus'])
+      .order('created_at', { ascending: false })
+      .limit(10)
+
+    // Fetch lifetime earned per client for accurate tier-approaching calculation
+    const { data: allEarnedTx } = await db
+      .from('loyalty_transactions')
+      .select('client_id, points')
+      .eq('tenant_id', tenantId)
+      .in('type', ['earned', 'bonus'])
+
+    const lifetimeByClient = new Map<string, number>()
+    for (const tx of allEarnedTx || []) {
+      lifetimeByClient.set(tx.client_id, (lifetimeByClient.get(tx.client_id) || 0) + tx.points)
+    }
+
+    const clientsApproachingTierUpgrade = allClients
+      .map((c: any) => {
+        const tier = (c.loyalty_tier || 'bronze') as LoyaltyTier
+        const nextTier = getNextTier(tier)
+        if (!nextTier) return null
+        const threshold = getTierThreshold(nextTier.key, config)
+        const lifetimeEarned = lifetimeByClient.get(c.id) || 0
+        const pointsNeeded = threshold - lifetimeEarned
+        if (pointsNeeded <= 0 || pointsNeeded > threshold * 0.2) return null
+        return {
+          id: c.id,
+          full_name: c.full_name,
+          loyalty_points: c.loyalty_points || 0,
+          loyalty_tier: tier,
+          pointsToNextTier: pointsNeeded,
+          nextTierName: nextTier.name,
+        }
+      })
+      .filter((c: any): c is NonNullable<typeof c> => c !== null)
+
+    return {
+      programMode: config.program_mode,
+      earnMode: config.earn_mode,
+      totalClients: allClients.length,
+      clientsPerTier,
+      totalPointsOutstanding,
+      topClients,
+      recentAwards: (recentAwards || []) as LoyaltyTransaction[],
+      clientsApproachingTierUpgrade,
+    }
   }
-}
+)
 
 // =====================================================================================
 // Rewards CRUD
 // =====================================================================================
 
-export async function getRewardsForTenant(tenantId: string): Promise<LoyaltyReward[]> {
+export const getRewardsForTenant = cache(async (tenantId: string): Promise<LoyaltyReward[]> => {
   const db: any = createServerClient({ admin: true })
   const { data, error } = await db
     .from('loyalty_rewards')
@@ -299,7 +307,7 @@ export async function getRewardsForTenant(tenantId: string): Promise<LoyaltyRewa
 
   if (error) throw new Error('Failed to fetch rewards')
   return data as LoyaltyReward[]
-}
+})
 
 export async function createRewardForTenant(
   tenantId: string,

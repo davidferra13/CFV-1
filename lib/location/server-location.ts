@@ -1,5 +1,6 @@
 import 'server-only'
 
+import { cache } from 'react'
 import { cookies } from 'next/headers'
 import { USER_LOCATION_COOKIE, type SavedLocation } from './user-location'
 
@@ -8,7 +9,7 @@ import { USER_LOCATION_COOKIE, type SavedLocation } from './user-location'
  * Set client-side by useUserLocation hook after first search.
  * Returns null if no location has been saved or cookie is malformed.
  */
-export async function getServerSavedLocation(): Promise<SavedLocation | null> {
+export const getServerSavedLocation = cache(async (): Promise<SavedLocation | null> => {
   try {
     const cookieStore = await cookies()
     const raw = cookieStore.get(USER_LOCATION_COOKIE)?.value
@@ -26,4 +27,4 @@ export async function getServerSavedLocation(): Promise<SavedLocation | null> {
   } catch {
     return null
   }
-}
+})

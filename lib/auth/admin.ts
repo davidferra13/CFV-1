@@ -2,6 +2,7 @@
 // Platform-level gating separate from the chef/client/staff role system.
 // Access is persisted in platform_admins and queried per-session.
 
+import { cache } from 'react'
 import { auth } from '@/lib/auth'
 import { redirect } from 'next/navigation'
 import {
@@ -22,7 +23,7 @@ export type AdminUser = {
  * Returns null for unauthenticated users, non-admins, and VIP users.
  * VIP users have feature access but NOT admin panel access.
  */
-export async function getCurrentAdminUser(): Promise<AdminUser | null> {
+export const getCurrentAdminUser = cache(async (): Promise<AdminUser | null> => {
   const session = await auth()
 
   if (!session?.user?.id || !session.user.email) {
@@ -44,7 +45,7 @@ export async function getCurrentAdminUser(): Promise<AdminUser | null> {
     email: session.user.email.toLowerCase(),
     accessLevel: access.accessLevel,
   }
-}
+})
 
 /**
  * Require admin access. Throws/redirects if not authenticated or not present in platform_admins.
