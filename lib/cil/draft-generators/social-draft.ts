@@ -7,7 +7,7 @@ import {
   calendarTeaseToSocialPrompt,
 } from '@/lib/ai/signal-social-prompts'
 import { z } from 'zod'
-import type { ProactiveSignal } from '@/lib/cil/types'
+import type { ProactiveSignal, SignalDomain } from '@/lib/cil/types'
 import type { SocialPillar } from '@/lib/social/types'
 
 export interface SocialDraftResult {
@@ -32,14 +32,19 @@ const SocialSchema = z.object({
   mediaHint: z.string().optional(),
 })
 
-const DOMAIN_TO_PILLAR: Partial<Record<string, SocialPillar>> = {
+const DOMAIN_TO_PILLAR: Partial<Record<SignalDomain, SocialPillar>> = {
   reputation: 'social_proof',
   event_debrief: 'behind_scenes',
   pipeline: 'offers',
   calendar: 'offers',
 }
 
-const SOCIAL_DOMAINS = new Set(['reputation', 'event_debrief', 'pipeline', 'calendar'])
+const SOCIAL_DOMAINS = new Set<SignalDomain>([
+  'reputation',
+  'event_debrief',
+  'pipeline',
+  'calendar',
+])
 const DEDUP_DAYS = 14
 
 export async function generateSocialDraft(
@@ -102,7 +107,11 @@ export async function generateSocialDraft(
     prompt = calendarTeaseToSocialPrompt(signal, chefName)
   }
 
-  const parsed = await parseWithOllama(prompt, SocialSchema)
+  const parsed = await parseWithOllama(
+    'You are a social media content generator.',
+    prompt,
+    SocialSchema
+  )
   if (!parsed) return null
 
   const pillar = DOMAIN_TO_PILLAR[signal.domain] ?? 'behind_scenes'

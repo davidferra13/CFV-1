@@ -11,6 +11,7 @@ import {
   TrendingUp,
   Leaf,
   ShieldCheck,
+  ClipboardCheck,
   Activity,
   ArrowRight,
   X,
@@ -27,6 +28,7 @@ const domainIcons: Record<SignalDomain, typeof DollarSign> = {
   pipeline: TrendingUp,
   cannabis: Leaf,
   commitment: ShieldCheck,
+  event_debrief: ClipboardCheck,
 }
 
 const urgencyColors: Record<number, string> = {

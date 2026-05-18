@@ -12,6 +12,7 @@ import {
   X,
   Leaf,
   ShieldCheck,
+  ClipboardCheck,
 } from 'lucide-react'
 
 const urgencyColors: Record<number, string> = {
@@ -31,6 +32,7 @@ const domainIcons: Record<SignalDomain, typeof DollarSign> = {
   pipeline: TrendingUp,
   cannabis: Leaf,
   commitment: ShieldCheck,
+  event_debrief: ClipboardCheck,
 }
 
 interface SignalCardProps {

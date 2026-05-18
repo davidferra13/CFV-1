@@ -80,6 +80,7 @@ export type SignalDomain =
   | 'pipeline'
   | 'cannabis'
   | 'commitment'
+  | 'event_debrief'
 
 export interface ProactiveSignal {
   id: string
