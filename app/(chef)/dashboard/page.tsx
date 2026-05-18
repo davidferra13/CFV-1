@@ -34,6 +34,7 @@ import {
 } from './_sections/section-skeletons'
 import { CilSignalSummary } from './_sections/cil-signal-summary'
 import { ActivityFeedSection } from './_sections/activity-feed-section'
+import { HealthNarrativeSection } from './_sections/health-narrative'
 import { getWeeklyRetroSummary } from '@/lib/scheduling/weekly-retro-summary-action'
 import { WeeklyReflectionWidget } from '@/components/dashboard/weekly-reflection-widget'
 

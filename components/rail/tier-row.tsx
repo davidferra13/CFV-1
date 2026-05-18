@@ -1,10 +1,18 @@
 ﻿'use client'
 
+import { useState } from 'react'
 import type { GodModeResolvedItem } from '@/lib/discovery/god-mode-types'
 import type { UnifiedTier } from '@/lib/discovery/rail-tier-assigner'
 import { RailItemRow } from './rail-item-row'
 import { useAutoScroll } from './use-auto-scroll'
 import { cn } from '@/lib/utils'
+
+const DENSITY_CAPS: Record<UnifiedTier, number> = {
+  critical: 3,
+  action: 8,
+  awareness: 12,
+  opportunity: 6,
+}
 
 // ---------------------------------------------------------------------------
 // Visual config per tier
@@ -76,8 +84,14 @@ export function TierRow({
 }) {
   const visual = TIER_VISUAL[tier]
   const { scrollRef } = useAutoScroll({ tier, itemCount: items.length })
+  const [expanded, setExpanded] = useState(false)
 
   if (items.length === 0) return null
+
+  const cap = DENSITY_CAPS[tier]
+  const hasOverflow = items.length > cap
+  const visibleItems = expanded ? items : items.slice(0, cap)
+  const overflowCount = items.length - cap
 
   return (
     <div
@@ -136,13 +150,12 @@ export function TierRow({
           'sm:flex-wrap sm:overflow-x-visible sm:[mask-image:none]'
         )}
       >
-        {items.map((item, index) => (
+        {visibleItems.map((item, index) => (
           <div
             key={`${item.definitionId}-${item.destination}`}
             className={cn(
               'snap-start flex-shrink-0 min-w-[260px] max-w-[340px]',
               'sm:flex-shrink sm:min-w-[260px] sm:max-w-[380px]',
-              // CSS stagger animation
               'opacity-0 animate-[rail-item-enter_200ms_ease-out_forwards]'
             )}
             style={{ animationDelay: `${index * 50}ms` }}
@@ -150,6 +163,23 @@ export function TierRow({
             <RailItemRow item={item} tier={tier} />
           </div>
         ))}
+        {hasOverflow && (
+          <div className="snap-start flex-shrink-0 min-w-[120px]">
+            <button
+              type="button"
+              onClick={() => setExpanded(!expanded)}
+              className={cn(
+                'h-full w-full flex items-center justify-center rounded-lg border px-4 py-3',
+                'text-xs font-medium transition-colors',
+                visual.borderColor,
+                visual.badgeText,
+                'hover:bg-white/5'
+              )}
+            >
+              {expanded ? 'Show less' : `+${overflowCount} more`}
+            </button>
+          </div>
+        )}
       </div>
     </div>
   )

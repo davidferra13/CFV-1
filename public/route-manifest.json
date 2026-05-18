@@ -1,0 +1,5647 @@
+{
+  "generatedAt": "2026-05-18T06:28:14.579Z",
+  "totalRoutes": 938,
+  "byTier": {
+    "admin": 44,
+    "authenticated": 4,
+    "chef": 682,
+    "client": 64,
+    "demo": 1,
+    "mobile": 2,
+    "partner": 6,
+    "public": 120,
+    "staff": 6,
+    "vendor": 6,
+    "kiosk": 3
+  },
+  "routes": [
+    {
+      "path": "/",
+      "tier": "public",
+      "auth": "none",
+      "segment": "root"
+    },
+    {
+      "path": "/aar",
+      "tier": "chef",
+      "auth": "required",
+      "segment": "aar"
+    },
+    {
+      "path": "/about",
+      "tier": "public",
+      "auth": "none",
+      "segment": "about"
+    },
+    {
+      "path": "/acceptable-use",
+      "tier": "public",
+      "auth": "none",
+      "segment": "acceptable-use"
+    },
+    {
+      "path": "/account-security",
+      "tier": "authenticated",
+      "auth": "required",
+      "segment": "account-security"
+    },
+    {
+      "path": "/activity",
+      "tier": "chef",
+      "auth": "required",
+      "segment": "activity"
+    },
+    {
+      "path": "/activity/audit",
+      "tier": "chef",
+      "auth": "required",
+      "segment": "activity"
+    },
+    {
+      "path": "/admin",
+      "tier": "admin",
+      "auth": "required",
+      "segment": "admin"
+    },
+    {
+      "path": "/admin/analytics",
+      "tier": "admin",
+      "auth": "required",
+      "segment": "admin"
+    },
+    {
+      "path": "/admin/audit",
+      "tier": "admin",
+      "auth": "required",
+      "segment": "admin"
+    },
+    {
+      "path": "/admin/beta",
+      "tier": "admin",
+      "auth": "required",
+      "segment": "admin"
+    },
+    {
+      "path": "/admin/beta-surveys",
+      "tier": "admin",
+      "auth": "required",
+      "segment": "admin"
+    },
+    {
+      "path": "/admin/beta-surveys/[id]",
+      "tier": "admin",
+      "auth": "required",
+      "segment": "admin"
+    },
+    {
+      "path": "/admin/beta/onboarding",
+      "tier": "admin",
+      "auth": "required",
+      "segment": "admin"
+    },
+    {
+      "path": "/admin/cannabis",
+      "tier": "admin",
+      "auth": "required",
+      "segment": "admin"
+    },
+    {
+      "path": "/admin/cannabis/access",
+      "tier": "admin",
+      "auth": "required",
+      "segment": "admin"
+    },
+    {
+      "path": "/admin/clients",
+      "tier": "admin",
+      "auth": "required",
+      "segment": "admin"
+    },
+    {
+      "path": "/admin/command-center",
+      "tier": "admin",
+      "auth": "required",
+      "segment": "admin"
+    },
+    {
+      "path": "/admin/communications",
+      "tier": "admin",
+      "auth": "required",
+      "segment": "admin"
+    },
+    {
+      "path": "/admin/conversations",
+      "tier": "admin",
+      "auth": "required",
+      "segment": "admin"
+    },
+    {
+      "path": "/admin/conversations/[conversationId]",
+      "tier": "admin",
+      "auth": "required",
+      "segment": "admin"
+    },
+    {
+      "path": "/admin/directory",
+      "tier": "admin",
+      "auth": "required",
+      "segment": "admin"
+    },
+    {
+      "path": "/admin/directory-listings",
+      "tier": "admin",
+      "auth": "required",
+      "segment": "admin"
+    },
+    {
+      "path": "/admin/events",
+      "tier": "admin",
+      "auth": "required",
+      "segment": "admin"
+    },
+    {
+      "path": "/admin/feedback",
+      "tier": "admin",
+      "auth": "required",
+      "segment": "admin"
+    },
+    {
+      "path": "/admin/financials",
+      "tier": "admin",
+      "auth": "required",
+      "segment": "admin"
+    },
+    {
+      "path": "/admin/flags",
+      "tier": "admin",
+      "auth": "required",
+      "segment": "admin"
+    },
+    {
+      "path": "/admin/hub",
+      "tier": "admin",
+      "auth": "required",
+      "segment": "admin"
+    },
+    {
+      "path": "/admin/hub/groups/[groupId]",
+      "tier": "admin",
+      "auth": "required",
+      "segment": "admin"
+    },
+    {
+      "path": "/admin/inquiries",
+      "tier": "admin",
+      "auth": "required",
+      "segment": "admin"
+    },
+    {
+      "path": "/admin/legal-readiness",
+      "tier": "admin",
+      "auth": "required",
+      "segment": "admin"
+    },
+    {
+      "path": "/admin/notifications",
+      "tier": "admin",
+      "auth": "required",
+      "segment": "admin"
+    },
+    {
+      "path": "/admin/openclaw",
+      "tier": "admin",
+      "auth": "required",
+      "segment": "admin"
+    },
+    {
+      "path": "/admin/openclaw/health",
+      "tier": "admin",
+      "auth": "required",
+      "segment": "admin"
+    },
+    {
+      "path": "/admin/outreach",
+      "tier": "admin",
+      "auth": "required",
+      "segment": "admin"
+    },
+    {
+      "path": "/admin/pie-compliance",
+      "tier": "admin",
+      "auth": "required",
+      "segment": "admin"
+    },
+    {
+      "path": "/admin/presence",
+      "tier": "admin",
+      "auth": "required",
+      "segment": "admin"
+    },
+    {
+      "path": "/admin/price-catalog",
+      "tier": "admin",
+      "auth": "required",
+      "segment": "admin"
+    },
+    {
+      "path": "/admin/pricing-coverage",
+      "tier": "admin",
+      "auth": "required",
+      "segment": "admin"
+    },
+    {
+      "path": "/admin/pricing-health",
+      "tier": "admin",
+      "auth": "required",
+      "segment": "admin"
+    },
+    {
+      "path": "/admin/pulse",
+      "tier": "admin",
+      "auth": "required",
+      "segment": "admin"
+    },
+    {
+      "path": "/admin/reconciliation",
+      "tier": "admin",
+      "auth": "required",
+      "segment": "admin"
+    },
+    {
+      "path": "/admin/referral-partners",
+      "tier": "admin",
+      "auth": "required",
+      "segment": "admin"
+    },
+    {
+      "path": "/admin/services",
+      "tier": "admin",
+      "auth": "required",
+      "segment": "admin"
+    },
+    {
+      "path": "/admin/silent-failures",
+      "tier": "admin",
+      "auth": "required",
+      "segment": "admin"
+    },
+    {
+      "path": "/admin/social",
+      "tier": "admin",
+      "auth": "required",
+      "segment": "admin"
+    },
+    {
+      "path": "/admin/system",
+      "tier": "admin",
+      "auth": "required",
+      "segment": "admin"
+    },
+    {
+      "path": "/admin/system/payments",
+      "tier": "admin",
+      "auth": "required",
+      "segment": "admin"
+    },
+    {
+      "path": "/admin/users",
+      "tier": "admin",
+      "auth": "required",
+      "segment": "admin"
+    },
+    {
+      "path": "/admin/users/[chefId]",
+      "tier": "admin",
+      "auth": "required",
+      "segment": "admin"
+    },
+    {
+      "path": "/admin/web-research",
+      "tier": "admin",
+      "auth": "required",
+      "segment": "admin"
+    },
+    {
+      "path": "/analytics",
+      "tier": "chef",
+      "auth": "required",
+      "segment": "analytics"
+    },
+    {
+      "path": "/analytics/benchmarks",
+      "tier": "chef",
+      "auth": "required",
+      "segment": "analytics"
+    },
+    {
+      "path": "/analytics/client-ltv",
+      "tier": "chef",
+      "auth": "required",
+      "segment": "analytics"
+    },
+    {
+      "path": "/analytics/daily-report",
+      "tier": "chef",
+      "auth": "required",
+      "segment": "analytics"
+    },
+    {
+      "path": "/analytics/demand",
+      "tier": "chef",
+      "auth": "required",
+      "segment": "analytics"
+    },
+    {
+      "path": "/analytics/demand/ingredients",
+      "tier": "chef",
+      "auth": "required",
+      "segment": "analytics"
+    },
+    {
+      "path": "/analytics/forecast",
+      "tier": "chef",
+      "auth": "required",
+      "segment": "analytics"
+    },
+    {
+      "path": "/analytics/funnel",
+      "tier": "chef",
+      "auth": "required",
+      "segment": "analytics"
+    },
+    {
+      "path": "/analytics/goals",
+      "tier": "chef",
+      "auth": "required",
+      "segment": "analytics"
+    },
+    {
+      "path": "/analytics/goals/[id]/history",
+      "tier": "chef",
+      "auth": "required",
+      "segment": "analytics"
+    },
+    {
+      "path": "/analytics/goals/revenue-path",
+      "tier": "chef",
+      "auth": "required",
+      "segment": "analytics"
+    },
+    {
+      "path": "/analytics/goals/setup",
+      "tier": "chef",
+      "auth": "required",
+      "segment": "analytics"
+    },
+    {
+      "path": "/analytics/health",
+      "tier": "chef",
+      "auth": "required",
+      "segment": "analytics"
+    },
+    {
+      "path": "/analytics/intelligence",
+      "tier": "chef",
+      "auth": "required",
+      "segment": "analytics"
+    },
+    {
+      "path": "/analytics/intelligence/client-risk",
+      "tier": "chef",
+      "auth": "required",
+      "segment": "analytics"
+    },
+    {
+      "path": "/analytics/marketing/spend",
+      "tier": "chef",
+      "auth": "required",
+      "segment": "analytics"
+    },
+    {
+      "path": "/analytics/pipeline",
+      "tier": "chef",
+      "auth": "required",
+      "segment": "analytics"
+    },
+    {
+      "path": "/analytics/reconciliation",
+      "tier": "chef",
+      "auth": "required",
+      "segment": "analytics"
+    },
+    {
+      "path": "/analytics/referral-sources",
+      "tier": "chef",
+      "auth": "required",
+      "segment": "analytics"
+    },
+    {
+      "path": "/analytics/reports",
+      "tier": "chef",
+      "auth": "required",
+      "segment": "analytics"
+    },
+    {
+      "path": "/analytics/vendors",
+      "tier": "chef",
+      "auth": "required",
+      "segment": "analytics"
+    },
+    {
+      "path": "/analytics/weekly",
+      "tier": "chef",
+      "auth": "required",
+      "segment": "analytics"
+    },
+    {
+      "path": "/auth/client-signup",
+      "tier": "public",
+      "auth": "none",
+      "segment": "auth"
+    },
+    {
+      "path": "/auth/confirm-email-change",
+      "tier": "public",
+      "auth": "none",
+      "segment": "auth"
+    },
+    {
+      "path": "/auth/forgot-password",
+      "tier": "public",
+      "auth": "none",
+      "segment": "auth"
+    },
+    {
+      "path": "/auth/mfa-verify",
+      "tier": "public",
+      "auth": "none",
+      "segment": "auth"
+    },
+    {
+      "path": "/auth/partner-signup",
+      "tier": "public",
+      "auth": "none",
+      "segment": "auth"
+    },
+    {
+      "path": "/auth/reauth",
+      "tier": "public",
+      "auth": "none",
+      "segment": "auth"
+    },
+    {
+      "path": "/auth/reset-password",
+      "tier": "public",
+      "auth": "none",
+      "segment": "auth"
+    },
+    {
+      "path": "/auth/role-selection",
+      "tier": "public",
+      "auth": "none",
+      "segment": "auth"
+    },
+    {
+      "path": "/auth/signin",
+      "tier": "public",
+      "auth": "none",
+      "segment": "auth"
+    },
+    {
+      "path": "/auth/signup",
+      "tier": "public",
+      "auth": "none",
+      "segment": "auth"
+    },
+    {
+      "path": "/auth/staff-signup",
+      "tier": "public",
+      "auth": "none",
+      "segment": "auth"
+    },
+    {
+      "path": "/auth/vendor-signup",
+      "tier": "public",
+      "auth": "none",
+      "segment": "auth"
+    },
+    {
+      "path": "/auth/verify-email",
+      "tier": "public",
+      "auth": "none",
+      "segment": "auth"
+    },
+    {
+      "path": "/autopilot",
+      "tier": "chef",
+      "auth": "required",
+      "segment": "autopilot"
+    },
+    {
+      "path": "/availability",
+      "tier": "chef",
+      "auth": "required",
+      "segment": "availability"
+    },
+    {
+      "path": "/availability/[token]",
+      "tier": "public",
+      "auth": "none",
+      "segment": "availability"
+    },
+    {
+      "path": "/beta",
+      "tier": "public",
+      "auth": "none",
+      "segment": "beta"
+    },
+    {
+      "path": "/beta-survey",
+      "tier": "public",
+      "auth": "none",
+      "segment": "beta-survey"
+    },
+    {
+      "path": "/beta-survey/[token]",
+      "tier": "public",
+      "auth": "none",
+      "segment": "beta-survey"
+    },
+    {
+      "path": "/beta-survey/public/[slug]",
+      "tier": "public",
+      "auth": "none",
+      "segment": "beta-survey"
+    },
+    {
+      "path": "/beta/thank-you",
+      "tier": "public",
+      "auth": "none",
+      "segment": "beta"
+    },
+    {
+      "path": "/book",
+      "tier": "public",
+      "auth": "none",
+      "segment": "book"
+    },
+    {
+      "path": "/book-now",
+      "tier": "client",
+      "auth": "required",
+      "segment": "book-now"
+    },
+    {
+      "path": "/book/[chefSlug]",
+      "tier": "public",
+      "auth": "none",
+      "segment": "book"
+    },
+    {
+      "path": "/book/[chefSlug]/thank-you",
+      "tier": "public",
+      "auth": "none",
+      "segment": "book"
+    },
+    {
+      "path": "/book/campaign/[token]",
+      "tier": "public",
+      "auth": "none",
+      "segment": "book"
+    },
+    {
+      "path": "/book/status/[bookingToken]",
+      "tier": "public",
+      "auth": "none",
+      "segment": "book"
+    },
+    {
+      "path": "/briefing",
+      "tier": "chef",
+      "auth": "required",
+      "segment": "briefing"
+    },
+    {
+      "path": "/browse-dates",
+      "tier": "client",
+      "auth": "required",
+      "segment": "browse-dates"
+    },
+    {
+      "path": "/calendar",
+      "tier": "chef",
+      "auth": "required",
+      "segment": "calendar"
+    },
+    {
+      "path": "/calendar/day",
+      "tier": "chef",
+      "auth": "required",
+      "segment": "calendar"
+    },
+    {
+      "path": "/calendar/load",
+      "tier": "chef",
+      "auth": "required",
+      "segment": "calendar"
+    },
+    {
+      "path": "/calendar/share",
+      "tier": "chef",
+      "auth": "required",
+      "segment": "calendar"
+    },
+    {
+      "path": "/calendar/travel",
+      "tier": "chef",
+      "auth": "required",
+      "segment": "calendar"
+    },
+    {
+      "path": "/calendar/week",
+      "tier": "chef",
+      "auth": "required",
+      "segment": "calendar"
+    },
+    {
+      "path": "/calendar/year",
+      "tier": "chef",
+      "auth": "required",
+      "segment": "calendar"
+    },
+    {
+      "path": "/calls",
+      "tier": "chef",
+      "auth": "required",
+      "segment": "calls"
+    },
+    {
+      "path": "/calls/[id]",
+      "tier": "chef",
+      "auth": "required",
+      "segment": "calls"
+    },
+    {
+      "path": "/calls/[id]/edit",
+      "tier": "chef",
+      "auth": "required",
+      "segment": "calls"
+    },
+    {
+      "path": "/calls/new",
+      "tier": "chef",
+      "auth": "required",
+      "segment": "calls"
+    },
+    {
+      "path": "/cannabis",
+      "tier": "chef",
+      "auth": "required",
+      "segment": "cannabis"
+    },
+    {
+      "path": "/cannabis-invite/[token]",
+      "tier": "public",
+      "auth": "none",
+      "segment": "cannabis-invite"
+    },
+    {
+      "path": "/cannabis/about",
+      "tier": "chef",
+      "auth": "required",
+      "segment": "cannabis"
+    },
+    {
+      "path": "/cannabis/agreement",
+      "tier": "chef",
+      "auth": "required",
+      "segment": "cannabis"
+    },
+    {
+      "path": "/cannabis/batches",
+      "tier": "chef",
+      "auth": "required",
+      "segment": "cannabis"
+    },
+    {
+      "path": "/cannabis/compliance",
+      "tier": "chef",
+      "auth": "required",
+      "segment": "cannabis"
+    },
+    {
+      "path": "/cannabis/control-packet/template",
+      "tier": "chef",
+      "auth": "required",
+      "segment": "cannabis"
+    },
+    {
+      "path": "/cannabis/events",
+      "tier": "chef",
+      "auth": "required",
+      "segment": "cannabis"
+    },
+    {
+      "path": "/cannabis/events/[id]/control-packet",
+      "tier": "chef",
+      "auth": "required",
+      "segment": "cannabis"
+    },
+    {
+      "path": "/cannabis/handbook",
+      "tier": "chef",
+      "auth": "required",
+      "segment": "cannabis"
+    },
+    {
+      "path": "/cannabis/hub",
+      "tier": "chef",
+      "auth": "required",
+      "segment": "cannabis"
+    },
+    {
+      "path": "/cannabis/invite",
+      "tier": "chef",
+      "auth": "required",
+      "segment": "cannabis"
+    },
+    {
+      "path": "/cannabis/ledger",
+      "tier": "chef",
+      "auth": "required",
+      "segment": "cannabis"
+    },
+    {
+      "path": "/cannabis/public",
+      "tier": "public",
+      "auth": "none",
+      "segment": "cannabis"
+    },
+    {
+      "path": "/cannabis/rsvps",
+      "tier": "chef",
+      "auth": "required",
+      "segment": "cannabis"
+    },
+    {
+      "path": "/cannabis/unlock",
+      "tier": "chef",
+      "auth": "required",
+      "segment": "cannabis"
+    },
+    {
+      "path": "/capture",
+      "tier": "chef",
+      "auth": "required",
+      "segment": "capture"
+    },
+    {
+      "path": "/catalog-pick/[token]",
+      "tier": "public",
+      "auth": "none",
+      "segment": "catalog-pick"
+    },
+    {
+      "path": "/charity",
+      "tier": "chef",
+      "auth": "required",
+      "segment": "charity"
+    },
+    {
+      "path": "/charity/hours",
+      "tier": "chef",
+      "auth": "required",
+      "segment": "charity"
+    },
+    {
+      "path": "/chat",
+      "tier": "chef",
+      "auth": "required",
+      "segment": "chat"
+    },
+    {
+      "path": "/chat/[id]",
+      "tier": "chef",
+      "auth": "required",
+      "segment": "chat"
+    },
+    {
+      "path": "/chef-agreement",
+      "tier": "public",
+      "auth": "none",
+      "segment": "chef-agreement"
+    },
+    {
+      "path": "/chef/[slug]",
+      "tier": "public",
+      "auth": "none",
+      "segment": "chef"
+    },
+    {
+      "path": "/chef/[slug]/cart",
+      "tier": "public",
+      "auth": "none",
+      "segment": "chef"
+    },
+    {
+      "path": "/chef/[slug]/dashboard",
+      "tier": "mobile",
+      "auth": "required",
+      "segment": "chef"
+    },
+    {
+      "path": "/chef/[slug]/gift-cards",
+      "tier": "public",
+      "auth": "none",
+      "segment": "chef"
+    },
+    {
+      "path": "/chef/[slug]/gift-cards/success",
+      "tier": "public",
+      "auth": "none",
+      "segment": "chef"
+    },
+    {
+      "path": "/chef/[slug]/inquire",
+      "tier": "public",
+      "auth": "none",
+      "segment": "chef"
+    },
+    {
+      "path": "/chef/[slug]/locations/[locationId]",
+      "tier": "public",
+      "auth": "none",
+      "segment": "chef"
+    },
+    {
+      "path": "/chef/[slug]/partner-signup",
+      "tier": "public",
+      "auth": "none",
+      "segment": "chef"
+    },
+    {
+      "path": "/chef/[slug]/store",
+      "tier": "public",
+      "auth": "none",
+      "segment": "chef"
+    },
+    {
+      "path": "/chef/[slug]/store/orders/[token]",
+      "tier": "public",
+      "auth": "none",
+      "segment": "chef"
+    },
+    {
+      "path": "/chef/[slug]/store/products/[productId]",
+      "tier": "public",
+      "auth": "none",
+      "segment": "chef"
+    },
+    {
+      "path": "/chef/cannabis/handbook",
+      "tier": "chef",
+      "auth": "required",
+      "segment": "chef"
+    },
+    {
+      "path": "/chef/cannabis/rsvps",
+      "tier": "chef",
+      "auth": "required",
+      "segment": "chef"
+    },
+    {
+      "path": "/chefs",
+      "tier": "public",
+      "auth": "none",
+      "segment": "chefs"
+    },
+    {
+      "path": "/circles",
+      "tier": "chef",
+      "auth": "required",
+      "segment": "circles"
+    },
+    {
+      "path": "/circles/[id]",
+      "tier": "chef",
+      "auth": "required",
+      "segment": "circles"
+    },
+    {
+      "path": "/circles/admin",
+      "tier": "chef",
+      "auth": "required",
+      "segment": "circles"
+    },
+    {
+      "path": "/client-terms",
+      "tier": "public",
+      "auth": "none",
+      "segment": "client-terms"
+    },
+    {
+      "path": "/client/[token]",
+      "tier": "public",
+      "auth": "none",
+      "segment": "client"
+    },
+    {
+      "path": "/client/[token]/events",
+      "tier": "mobile",
+      "auth": "required",
+      "segment": "client"
+    },
+    {
+      "path": "/client/[token]/events/[eventId]/contract",
+      "tier": "public",
+      "auth": "none",
+      "segment": "client"
+    },
+    {
+      "path": "/client/[token]/pay/[eventId]",
+      "tier": "public",
+      "auth": "none",
+      "segment": "client"
+    },
+    {
+      "path": "/client/[token]/quotes/[quoteId]",
+      "tier": "public",
+      "auth": "none",
+      "segment": "client"
+    },
+    {
+      "path": "/clients",
+      "tier": "chef",
+      "auth": "required",
+      "segment": "clients"
+    },
+    {
+      "path": "/clients/[id]",
+      "tier": "chef",
+      "auth": "required",
+      "segment": "clients"
+    },
+    {
+      "path": "/clients/[id]/preferences",
+      "tier": "chef",
+      "auth": "required",
+      "segment": "clients"
+    },
+    {
+      "path": "/clients/[id]/recurring",
+      "tier": "chef",
+      "auth": "required",
+      "segment": "clients"
+    },
+    {
+      "path": "/clients/[id]/relationship",
+      "tier": "chef",
+      "auth": "required",
+      "segment": "clients"
+    },
+    {
+      "path": "/clients/[id]/summary",
+      "tier": "chef",
+      "auth": "required",
+      "segment": "clients"
+    },
+    {
+      "path": "/clients/active",
+      "tier": "chef",
+      "auth": "required",
+      "segment": "clients"
+    },
+    {
+      "path": "/clients/communication",
+      "tier": "chef",
+      "auth": "required",
+      "segment": "clients"
+    },
+    {
+      "path": "/clients/communication/follow-ups",
+      "tier": "chef",
+      "auth": "required",
+      "segment": "clients"
+    },
+    {
+      "path": "/clients/communication/notes",
+      "tier": "chef",
+      "auth": "required",
+      "segment": "clients"
+    },
+    {
+      "path": "/clients/communication/upcoming-touchpoints",
+      "tier": "chef",
+      "auth": "required",
+      "segment": "clients"
+    },
+    {
+      "path": "/clients/duplicates",
+      "tier": "chef",
+      "auth": "required",
+      "segment": "clients"
+    },
+    {
+      "path": "/clients/gift-cards",
+      "tier": "chef",
+      "auth": "required",
+      "segment": "clients"
+    },
+    {
+      "path": "/clients/history",
+      "tier": "chef",
+      "auth": "required",
+      "segment": "clients"
+    },
+    {
+      "path": "/clients/history/event-history",
+      "tier": "chef",
+      "auth": "required",
+      "segment": "clients"
+    },
+    {
+      "path": "/clients/history/past-menus",
+      "tier": "chef",
+      "auth": "required",
+      "segment": "clients"
+    },
+    {
+      "path": "/clients/history/spending-history",
+      "tier": "chef",
+      "auth": "required",
+      "segment": "clients"
+    },
+    {
+      "path": "/clients/inactive",
+      "tier": "chef",
+      "auth": "required",
+      "segment": "clients"
+    },
+    {
+      "path": "/clients/insights",
+      "tier": "chef",
+      "auth": "required",
+      "segment": "clients"
+    },
+    {
+      "path": "/clients/insights/at-risk",
+      "tier": "chef",
+      "auth": "required",
+      "segment": "clients"
+    },
+    {
+      "path": "/clients/insights/dormant-high-value",
+      "tier": "chef",
+      "auth": "required",
+      "segment": "clients"
+    },
+    {
+      "path": "/clients/insights/most-frequent",
+      "tier": "chef",
+      "auth": "required",
+      "segment": "clients"
+    },
+    {
+      "path": "/clients/insights/retention",
+      "tier": "chef",
+      "auth": "required",
+      "segment": "clients"
+    },
+    {
+      "path": "/clients/insights/this-year",
+      "tier": "chef",
+      "auth": "required",
+      "segment": "clients"
+    },
+    {
+      "path": "/clients/insights/top-clients",
+      "tier": "chef",
+      "auth": "required",
+      "segment": "clients"
+    },
+    {
+      "path": "/clients/insights/top-covers",
+      "tier": "chef",
+      "auth": "required",
+      "segment": "clients"
+    },
+    {
+      "path": "/clients/intake",
+      "tier": "chef",
+      "auth": "required",
+      "segment": "clients"
+    },
+    {
+      "path": "/clients/intelligence",
+      "tier": "chef",
+      "auth": "required",
+      "segment": "clients"
+    },
+    {
+      "path": "/clients/loyalty",
+      "tier": "chef",
+      "auth": "required",
+      "segment": "clients"
+    },
+    {
+      "path": "/clients/loyalty/points",
+      "tier": "chef",
+      "auth": "required",
+      "segment": "clients"
+    },
+    {
+      "path": "/clients/loyalty/referrals",
+      "tier": "chef",
+      "auth": "required",
+      "segment": "clients"
+    },
+    {
+      "path": "/clients/loyalty/rewards",
+      "tier": "chef",
+      "auth": "required",
+      "segment": "clients"
+    },
+    {
+      "path": "/clients/new",
+      "tier": "chef",
+      "auth": "required",
+      "segment": "clients"
+    },
+    {
+      "path": "/clients/preferences",
+      "tier": "chef",
+      "auth": "required",
+      "segment": "clients"
+    },
+    {
+      "path": "/clients/preferences/allergies",
+      "tier": "chef",
+      "auth": "required",
+      "segment": "clients"
+    },
+    {
+      "path": "/clients/preferences/dietary-restrictions",
+      "tier": "chef",
+      "auth": "required",
+      "segment": "clients"
+    },
+    {
+      "path": "/clients/preferences/dislikes",
+      "tier": "chef",
+      "auth": "required",
+      "segment": "clients"
+    },
+    {
+      "path": "/clients/preferences/favorite-dishes",
+      "tier": "chef",
+      "auth": "required",
+      "segment": "clients"
+    },
+    {
+      "path": "/clients/presence",
+      "tier": "chef",
+      "auth": "required",
+      "segment": "clients"
+    },
+    {
+      "path": "/clients/recurring",
+      "tier": "chef",
+      "auth": "required",
+      "segment": "clients"
+    },
+    {
+      "path": "/clients/segments",
+      "tier": "chef",
+      "auth": "required",
+      "segment": "clients"
+    },
+    {
+      "path": "/clients/vip",
+      "tier": "chef",
+      "auth": "required",
+      "segment": "clients"
+    },
+    {
+      "path": "/commerce",
+      "tier": "chef",
+      "auth": "required",
+      "segment": "commerce"
+    },
+    {
+      "path": "/commerce/observability",
+      "tier": "chef",
+      "auth": "required",
+      "segment": "commerce"
+    },
+    {
+      "path": "/commerce/orders",
+      "tier": "chef",
+      "auth": "required",
+      "segment": "commerce"
+    },
+    {
+      "path": "/commerce/parity",
+      "tier": "chef",
+      "auth": "required",
+      "segment": "commerce"
+    },
+    {
+      "path": "/commerce/products",
+      "tier": "chef",
+      "auth": "required",
+      "segment": "commerce"
+    },
+    {
+      "path": "/commerce/products/[id]",
+      "tier": "chef",
+      "auth": "required",
+      "segment": "commerce"
+    },
+    {
+      "path": "/commerce/products/new",
+      "tier": "chef",
+      "auth": "required",
+      "segment": "commerce"
+    },
+    {
+      "path": "/commerce/promotions",
+      "tier": "chef",
+      "auth": "required",
+      "segment": "commerce"
+    },
+    {
+      "path": "/commerce/reconciliation",
+      "tier": "chef",
+      "auth": "required",
+      "segment": "commerce"
+    },
+    {
+      "path": "/commerce/reconciliation/[id]",
+      "tier": "chef",
+      "auth": "required",
+      "segment": "commerce"
+    },
+    {
+      "path": "/commerce/register",
+      "tier": "chef",
+      "auth": "required",
+      "segment": "commerce"
+    },
+    {
+      "path": "/commerce/reports",
+      "tier": "chef",
+      "auth": "required",
+      "segment": "commerce"
+    },
+    {
+      "path": "/commerce/reports/shifts",
+      "tier": "chef",
+      "auth": "required",
+      "segment": "commerce"
+    },
+    {
+      "path": "/commerce/sales",
+      "tier": "chef",
+      "auth": "required",
+      "segment": "commerce"
+    },
+    {
+      "path": "/commerce/sales/[id]",
+      "tier": "chef",
+      "auth": "required",
+      "segment": "commerce"
+    },
+    {
+      "path": "/commerce/schedules",
+      "tier": "chef",
+      "auth": "required",
+      "segment": "commerce"
+    },
+    {
+      "path": "/commerce/settlements",
+      "tier": "chef",
+      "auth": "required",
+      "segment": "commerce"
+    },
+    {
+      "path": "/commerce/settlements/[id]",
+      "tier": "chef",
+      "auth": "required",
+      "segment": "commerce"
+    },
+    {
+      "path": "/commerce/storefront",
+      "tier": "chef",
+      "auth": "required",
+      "segment": "commerce"
+    },
+    {
+      "path": "/commerce/table-service",
+      "tier": "chef",
+      "auth": "required",
+      "segment": "commerce"
+    },
+    {
+      "path": "/commerce/virtual-terminal",
+      "tier": "chef",
+      "auth": "required",
+      "segment": "commerce"
+    },
+    {
+      "path": "/community",
+      "tier": "chef",
+      "auth": "required",
+      "segment": "community"
+    },
+    {
+      "path": "/community/benchmarks",
+      "tier": "chef",
+      "auth": "required",
+      "segment": "community"
+    },
+    {
+      "path": "/community/directory",
+      "tier": "chef",
+      "auth": "required",
+      "segment": "community"
+    },
+    {
+      "path": "/community/mentorship",
+      "tier": "chef",
+      "auth": "required",
+      "segment": "community"
+    },
+    {
+      "path": "/community/messaging",
+      "tier": "chef",
+      "auth": "required",
+      "segment": "community"
+    },
+    {
+      "path": "/community/profile",
+      "tier": "chef",
+      "auth": "required",
+      "segment": "community"
+    },
+    {
+      "path": "/community/roadmap",
+      "tier": "chef",
+      "auth": "required",
+      "segment": "community"
+    },
+    {
+      "path": "/community/subcontracts",
+      "tier": "chef",
+      "auth": "required",
+      "segment": "community"
+    },
+    {
+      "path": "/community/templates",
+      "tier": "chef",
+      "auth": "required",
+      "segment": "community"
+    },
+    {
+      "path": "/compare",
+      "tier": "public",
+      "auth": "none",
+      "segment": "compare"
+    },
+    {
+      "path": "/compare/[slug]",
+      "tier": "public",
+      "auth": "none",
+      "segment": "compare"
+    },
+    {
+      "path": "/consulting",
+      "tier": "chef",
+      "auth": "required",
+      "segment": "consulting"
+    },
+    {
+      "path": "/contact",
+      "tier": "public",
+      "auth": "none",
+      "segment": "contact"
+    },
+    {
+      "path": "/content",
+      "tier": "chef",
+      "auth": "required",
+      "segment": "content"
+    },
+    {
+      "path": "/content/vault",
+      "tier": "chef",
+      "auth": "required",
+      "segment": "content"
+    },
+    {
+      "path": "/contracts",
+      "tier": "chef",
+      "auth": "required",
+      "segment": "contracts"
+    },
+    {
+      "path": "/contracts/[id]/history",
+      "tier": "chef",
+      "auth": "required",
+      "segment": "contracts"
+    },
+    {
+      "path": "/contracts/new",
+      "tier": "chef",
+      "auth": "required",
+      "segment": "contracts"
+    },
+    {
+      "path": "/cookie-policy",
+      "tier": "public",
+      "auth": "none",
+      "segment": "cookie-policy"
+    },
+    {
+      "path": "/cuisines/[slug]",
+      "tier": "public",
+      "auth": "none",
+      "segment": "cuisines"
+    },
+    {
+      "path": "/culinary",
+      "tier": "chef",
+      "auth": "required",
+      "segment": "culinary"
+    },
+    {
+      "path": "/culinary-board",
+      "tier": "chef",
+      "auth": "required",
+      "segment": "culinary-board"
+    },
+    {
+      "path": "/culinary/call-sheet",
+      "tier": "chef",
+      "auth": "required",
+      "segment": "culinary"
+    },
+    {
+      "path": "/culinary/chefnotes",
+      "tier": "chef",
+      "auth": "required",
+      "segment": "culinary"
+    },
+    {
+      "path": "/culinary/cheftips",
+      "tier": "chef",
+      "auth": "required",
+      "segment": "culinary"
+    },
+    {
+      "path": "/culinary/components",
+      "tier": "chef",
+      "auth": "required",
+      "segment": "culinary"
+    },
+    {
+      "path": "/culinary/components/ferments",
+      "tier": "chef",
+      "auth": "required",
+      "segment": "culinary"
+    },
+    {
+      "path": "/culinary/components/garnishes",
+      "tier": "chef",
+      "auth": "required",
+      "segment": "culinary"
+    },
+    {
+      "path": "/culinary/components/sauces",
+      "tier": "chef",
+      "auth": "required",
+      "segment": "culinary"
+    },
+    {
+      "path": "/culinary/components/shared-elements",
+      "tier": "chef",
+      "auth": "required",
+      "segment": "culinary"
+    },
+    {
+      "path": "/culinary/components/stocks",
+      "tier": "chef",
+      "auth": "required",
+      "segment": "culinary"
+    },
+    {
+      "path": "/culinary/costing",
+      "tier": "chef",
+      "auth": "required",
+      "segment": "culinary"
+    },
+    {
+      "path": "/culinary/costing/food-cost",
+      "tier": "chef",
+      "auth": "required",
+      "segment": "culinary"
+    },
+    {
+      "path": "/culinary/costing/menu",
+      "tier": "chef",
+      "auth": "required",
+      "segment": "culinary"
+    },
+    {
+      "path": "/culinary/costing/recipe",
+      "tier": "chef",
+      "auth": "required",
+      "segment": "culinary"
+    },
+    {
+      "path": "/culinary/costing/sales",
+      "tier": "chef",
+      "auth": "required",
+      "segment": "culinary"
+    },
+    {
+      "path": "/culinary/dish-index",
+      "tier": "chef",
+      "auth": "required",
+      "segment": "culinary"
+    },
+    {
+      "path": "/culinary/dish-index/[id]",
+      "tier": "chef",
+      "auth": "required",
+      "segment": "culinary"
+    },
+    {
+      "path": "/culinary/dish-index/insights",
+      "tier": "chef",
+      "auth": "required",
+      "segment": "culinary"
+    },
+    {
+      "path": "/culinary/ingredients",
+      "tier": "chef",
+      "auth": "required",
+      "segment": "culinary"
+    },
+    {
+      "path": "/culinary/ingredients/receipt-scan",
+      "tier": "chef",
+      "auth": "required",
+      "segment": "culinary"
+    },
+    {
+      "path": "/culinary/ingredients/seasonal-availability",
+      "tier": "chef",
+      "auth": "required",
+      "segment": "culinary"
+    },
+    {
+      "path": "/culinary/ingredients/vendor-notes",
+      "tier": "chef",
+      "auth": "required",
+      "segment": "culinary"
+    },
+    {
+      "path": "/culinary/menus",
+      "tier": "chef",
+      "auth": "required",
+      "segment": "culinary"
+    },
+    {
+      "path": "/culinary/menus/[id]",
+      "tier": "chef",
+      "auth": "required",
+      "segment": "culinary"
+    },
+    {
+      "path": "/culinary/menus/[id]/nutrition",
+      "tier": "chef",
+      "auth": "required",
+      "segment": "culinary"
+    },
+    {
+      "path": "/culinary/menus/approved",
+      "tier": "chef",
+      "auth": "required",
+      "segment": "culinary"
+    },
+    {
+      "path": "/culinary/menus/drafts",
+      "tier": "chef",
+      "auth": "required",
+      "segment": "culinary"
+    },
+    {
+      "path": "/culinary/menus/engineering",
+      "tier": "chef",
+      "auth": "required",
+      "segment": "culinary"
+    },
+    {
+      "path": "/culinary/menus/scaling",
+      "tier": "chef",
+      "auth": "required",
+      "segment": "culinary"
+    },
+    {
+      "path": "/culinary/menus/substitutions",
+      "tier": "chef",
+      "auth": "required",
+      "segment": "culinary"
+    },
+    {
+      "path": "/culinary/menus/templates",
+      "tier": "chef",
+      "auth": "required",
+      "segment": "culinary"
+    },
+    {
+      "path": "/culinary/my-kitchen",
+      "tier": "chef",
+      "auth": "required",
+      "segment": "culinary"
+    },
+    {
+      "path": "/culinary/prep",
+      "tier": "chef",
+      "auth": "required",
+      "segment": "culinary"
+    },
+    {
+      "path": "/culinary/prep/shopping",
+      "tier": "chef",
+      "auth": "required",
+      "segment": "culinary"
+    },
+    {
+      "path": "/culinary/prep/timeline",
+      "tier": "chef",
+      "auth": "required",
+      "segment": "culinary"
+    },
+    {
+      "path": "/culinary/price-catalog",
+      "tier": "chef",
+      "auth": "required",
+      "segment": "culinary"
+    },
+    {
+      "path": "/culinary/recipes",
+      "tier": "chef",
+      "auth": "required",
+      "segment": "culinary"
+    },
+    {
+      "path": "/culinary/recipes/[id]",
+      "tier": "chef",
+      "auth": "required",
+      "segment": "culinary"
+    },
+    {
+      "path": "/culinary/recipes/dietary-flags",
+      "tier": "chef",
+      "auth": "required",
+      "segment": "culinary"
+    },
+    {
+      "path": "/culinary/recipes/drafts",
+      "tier": "chef",
+      "auth": "required",
+      "segment": "culinary"
+    },
+    {
+      "path": "/culinary/recipes/seasonal-notes",
+      "tier": "chef",
+      "auth": "required",
+      "segment": "culinary"
+    },
+    {
+      "path": "/culinary/recipes/tags",
+      "tier": "chef",
+      "auth": "required",
+      "segment": "culinary"
+    },
+    {
+      "path": "/culinary/seasonal-calendar",
+      "tier": "chef",
+      "auth": "required",
+      "segment": "culinary"
+    },
+    {
+      "path": "/culinary/sourcing",
+      "tier": "chef",
+      "auth": "required",
+      "segment": "culinary"
+    },
+    {
+      "path": "/culinary/substitutions",
+      "tier": "chef",
+      "auth": "required",
+      "segment": "culinary"
+    },
+    {
+      "path": "/culinary/supplier-calls",
+      "tier": "chef",
+      "auth": "required",
+      "segment": "culinary"
+    },
+    {
+      "path": "/culinary/tips",
+      "tier": "chef",
+      "auth": "required",
+      "segment": "culinary"
+    },
+    {
+      "path": "/culinary/vendors",
+      "tier": "chef",
+      "auth": "required",
+      "segment": "culinary"
+    },
+    {
+      "path": "/customers",
+      "tier": "public",
+      "auth": "none",
+      "segment": "customers"
+    },
+    {
+      "path": "/customers/[slug]",
+      "tier": "public",
+      "auth": "none",
+      "segment": "customers"
+    },
+    {
+      "path": "/daily",
+      "tier": "chef",
+      "auth": "required",
+      "segment": "daily"
+    },
+    {
+      "path": "/dashboard",
+      "tier": "chef",
+      "auth": "required",
+      "segment": "dashboard"
+    },
+    {
+      "path": "/data-request",
+      "tier": "public",
+      "auth": "none",
+      "segment": "data-request"
+    },
+    {
+      "path": "/demo",
+      "tier": "demo",
+      "auth": "none",
+      "segment": "demo"
+    },
+    {
+      "path": "/dev/simulate",
+      "tier": "chef",
+      "auth": "required",
+      "segment": "dev"
+    },
+    {
+      "path": "/discover/[[...path]]",
+      "tier": "public",
+      "auth": "none",
+      "segment": "discover"
+    },
+    {
+      "path": "/dmca",
+      "tier": "public",
+      "auth": "none",
+      "segment": "dmca"
+    },
+    {
+      "path": "/documents",
+      "tier": "chef",
+      "auth": "required",
+      "segment": "documents"
+    },
+    {
+      "path": "/e/[shareToken]",
+      "tier": "public",
+      "auth": "none",
+      "segment": "e"
+    },
+    {
+      "path": "/eat",
+      "tier": "public",
+      "auth": "none",
+      "segment": "eat"
+    },
+    {
+      "path": "/embed/inquiry/[chefId]",
+      "tier": "public",
+      "auth": "none",
+      "segment": "embed"
+    },
+    {
+      "path": "/event/[eventId]/guest/[secureToken]",
+      "tier": "public",
+      "auth": "none",
+      "segment": "event"
+    },
+    {
+      "path": "/events",
+      "tier": "chef",
+      "auth": "required",
+      "segment": "events"
+    },
+    {
+      "path": "/events/[id]",
+      "tier": "chef",
+      "auth": "required",
+      "segment": "events"
+    },
+    {
+      "path": "/events/[id]/aar",
+      "tier": "chef",
+      "auth": "required",
+      "segment": "events"
+    },
+    {
+      "path": "/events/[id]/billing",
+      "tier": "chef",
+      "auth": "required",
+      "segment": "events"
+    },
+    {
+      "path": "/events/[id]/briefing",
+      "tier": "chef",
+      "auth": "required",
+      "segment": "events"
+    },
+    {
+      "path": "/events/[id]/cannabis",
+      "tier": "chef",
+      "auth": "required",
+      "segment": "events"
+    },
+    {
+      "path": "/events/[id]/close-out",
+      "tier": "chef",
+      "auth": "required",
+      "segment": "events"
+    },
+    {
+      "path": "/events/[id]/debrief",
+      "tier": "chef",
+      "auth": "required",
+      "segment": "events"
+    },
+    {
+      "path": "/events/[id]/documents",
+      "tier": "chef",
+      "auth": "required",
+      "segment": "events"
+    },
+    {
+      "path": "/events/[id]/dop/mobile",
+      "tier": "chef",
+      "auth": "required",
+      "segment": "events"
+    },
+    {
+      "path": "/events/[id]/edit",
+      "tier": "chef",
+      "auth": "required",
+      "segment": "events"
+    },
+    {
+      "path": "/events/[id]/execution",
+      "tier": "chef",
+      "auth": "required",
+      "segment": "events"
+    },
+    {
+      "path": "/events/[id]/financial",
+      "tier": "chef",
+      "auth": "required",
+      "segment": "events"
+    },
+    {
+      "path": "/events/[id]/follow-up",
+      "tier": "chef",
+      "auth": "required",
+      "segment": "events"
+    },
+    {
+      "path": "/events/[id]/gear",
+      "tier": "chef",
+      "auth": "required",
+      "segment": "events"
+    },
+    {
+      "path": "/events/[id]/god-mode",
+      "tier": "chef",
+      "auth": "required",
+      "segment": "events"
+    },
+    {
+      "path": "/events/[id]/grocery-quote",
+      "tier": "chef",
+      "auth": "required",
+      "segment": "events"
+    },
+    {
+      "path": "/events/[id]/grocery-run",
+      "tier": "chef",
+      "auth": "required",
+      "segment": "events"
+    },
+    {
+      "path": "/events/[id]/guest-card",
+      "tier": "chef",
+      "auth": "required",
+      "segment": "events"
+    },
+    {
+      "path": "/events/[id]/interactive",
+      "tier": "chef",
+      "auth": "required",
+      "segment": "events"
+    },
+    {
+      "path": "/events/[id]/invoice",
+      "tier": "chef",
+      "auth": "required",
+      "segment": "events"
+    },
+    {
+      "path": "/events/[id]/kds",
+      "tier": "chef",
+      "auth": "required",
+      "segment": "events"
+    },
+    {
+      "path": "/events/[id]/menu-approval",
+      "tier": "chef",
+      "auth": "required",
+      "segment": "events"
+    },
+    {
+      "path": "/events/[id]/menu-polling",
+      "tier": "chef",
+      "auth": "required",
+      "segment": "events"
+    },
+    {
+      "path": "/events/[id]/ops",
+      "tier": "chef",
+      "auth": "required",
+      "segment": "events"
+    },
+    {
+      "path": "/events/[id]/outcome",
+      "tier": "chef",
+      "auth": "required",
+      "segment": "events"
+    },
+    {
+      "path": "/events/[id]/pack",
+      "tier": "chef",
+      "auth": "required",
+      "segment": "events"
+    },
+    {
+      "path": "/events/[id]/pack/mobile",
+      "tier": "chef",
+      "auth": "required",
+      "segment": "events"
+    },
+    {
+      "path": "/events/[id]/photos",
+      "tier": "chef",
+      "auth": "required",
+      "segment": "events"
+    },
+    {
+      "path": "/events/[id]/prep-plan",
+      "tier": "chef",
+      "auth": "required",
+      "segment": "events"
+    },
+    {
+      "path": "/events/[id]/procurement",
+      "tier": "chef",
+      "auth": "required",
+      "segment": "events"
+    },
+    {
+      "path": "/events/[id]/receipts",
+      "tier": "chef",
+      "auth": "required",
+      "segment": "events"
+    },
+    {
+      "path": "/events/[id]/replay",
+      "tier": "chef",
+      "auth": "required",
+      "segment": "events"
+    },
+    {
+      "path": "/events/[id]/report",
+      "tier": "chef",
+      "auth": "required",
+      "segment": "events"
+    },
+    {
+      "path": "/events/[id]/reset",
+      "tier": "chef",
+      "auth": "required",
+      "segment": "events"
+    },
+    {
+      "path": "/events/[id]/safety",
+      "tier": "chef",
+      "auth": "required",
+      "segment": "events"
+    },
+    {
+      "path": "/events/[id]/schedule",
+      "tier": "chef",
+      "auth": "required",
+      "segment": "events"
+    },
+    {
+      "path": "/events/[id]/service",
+      "tier": "chef",
+      "auth": "required",
+      "segment": "events"
+    },
+    {
+      "path": "/events/[id]/split-billing",
+      "tier": "chef",
+      "auth": "required",
+      "segment": "events"
+    },
+    {
+      "path": "/events/[id]/staff",
+      "tier": "chef",
+      "auth": "required",
+      "segment": "events"
+    },
+    {
+      "path": "/events/[id]/story",
+      "tier": "chef",
+      "auth": "required",
+      "segment": "events"
+    },
+    {
+      "path": "/events/[id]/travel",
+      "tier": "chef",
+      "auth": "required",
+      "segment": "events"
+    },
+    {
+      "path": "/events/awaiting-deposit",
+      "tier": "chef",
+      "auth": "required",
+      "segment": "events"
+    },
+    {
+      "path": "/events/board",
+      "tier": "chef",
+      "auth": "required",
+      "segment": "events"
+    },
+    {
+      "path": "/events/cancelled",
+      "tier": "chef",
+      "auth": "required",
+      "segment": "events"
+    },
+    {
+      "path": "/events/cannabis",
+      "tier": "chef",
+      "auth": "required",
+      "segment": "events"
+    },
+    {
+      "path": "/events/cannabis/ledger",
+      "tier": "chef",
+      "auth": "required",
+      "segment": "events"
+    },
+    {
+      "path": "/events/charity",
+      "tier": "chef",
+      "auth": "required",
+      "segment": "events"
+    },
+    {
+      "path": "/events/charity/hours",
+      "tier": "chef",
+      "auth": "required",
+      "segment": "events"
+    },
+    {
+      "path": "/events/completed",
+      "tier": "chef",
+      "auth": "required",
+      "segment": "events"
+    },
+    {
+      "path": "/events/confirmed",
+      "tier": "chef",
+      "auth": "required",
+      "segment": "events"
+    },
+    {
+      "path": "/events/equipment-check",
+      "tier": "chef",
+      "auth": "required",
+      "segment": "events"
+    },
+    {
+      "path": "/events/new",
+      "tier": "chef",
+      "auth": "required",
+      "segment": "events"
+    },
+    {
+      "path": "/events/new/from-text",
+      "tier": "chef",
+      "auth": "required",
+      "segment": "events"
+    },
+    {
+      "path": "/events/new/wizard",
+      "tier": "chef",
+      "auth": "required",
+      "segment": "events"
+    },
+    {
+      "path": "/events/timeline",
+      "tier": "chef",
+      "auth": "required",
+      "segment": "events"
+    },
+    {
+      "path": "/events/travel",
+      "tier": "chef",
+      "auth": "required",
+      "segment": "events"
+    },
+    {
+      "path": "/events/upcoming",
+      "tier": "chef",
+      "auth": "required",
+      "segment": "events"
+    },
+    {
+      "path": "/expenses",
+      "tier": "chef",
+      "auth": "required",
+      "segment": "expenses"
+    },
+    {
+      "path": "/expenses/[id]",
+      "tier": "chef",
+      "auth": "required",
+      "segment": "expenses"
+    },
+    {
+      "path": "/expenses/new",
+      "tier": "chef",
+      "auth": "required",
+      "segment": "expenses"
+    },
+    {
+      "path": "/explore",
+      "tier": "chef",
+      "auth": "required",
+      "segment": "explore"
+    },
+    {
+      "path": "/explore/book",
+      "tier": "chef",
+      "auth": "required",
+      "segment": "explore"
+    },
+    {
+      "path": "/explore/discover",
+      "tier": "chef",
+      "auth": "required",
+      "segment": "explore"
+    },
+    {
+      "path": "/explore/events",
+      "tier": "chef",
+      "auth": "required",
+      "segment": "explore"
+    },
+    {
+      "path": "/explore/local",
+      "tier": "chef",
+      "auth": "required",
+      "segment": "explore"
+    },
+    {
+      "path": "/faq",
+      "tier": "public",
+      "auth": "none",
+      "segment": "faq"
+    },
+    {
+      "path": "/features",
+      "tier": "chef",
+      "auth": "required",
+      "segment": "features"
+    },
+    {
+      "path": "/feedback/[token]",
+      "tier": "public",
+      "auth": "none",
+      "segment": "feedback"
+    },
+    {
+      "path": "/finance",
+      "tier": "chef",
+      "auth": "required",
+      "segment": "finance"
+    },
+    {
+      "path": "/finance/bank-feed",
+      "tier": "chef",
+      "auth": "required",
+      "segment": "finance"
+    },
+    {
+      "path": "/finance/cash-flow",
+      "tier": "chef",
+      "auth": "required",
+      "segment": "finance"
+    },
+    {
+      "path": "/finance/contractors",
+      "tier": "chef",
+      "auth": "required",
+      "segment": "finance"
+    },
+    {
+      "path": "/finance/disputes",
+      "tier": "chef",
+      "auth": "required",
+      "segment": "finance"
+    },
+    {
+      "path": "/finance/expenses",
+      "tier": "chef",
+      "auth": "required",
+      "segment": "finance"
+    },
+    {
+      "path": "/finance/expenses/food-ingredients",
+      "tier": "chef",
+      "auth": "required",
+      "segment": "finance"
+    },
+    {
+      "path": "/finance/expenses/labor",
+      "tier": "chef",
+      "auth": "required",
+      "segment": "finance"
+    },
+    {
+      "path": "/finance/expenses/marketing",
+      "tier": "chef",
+      "auth": "required",
+      "segment": "finance"
+    },
+    {
+      "path": "/finance/expenses/miscellaneous",
+      "tier": "chef",
+      "auth": "required",
+      "segment": "finance"
+    },
+    {
+      "path": "/finance/expenses/rentals-equipment",
+      "tier": "chef",
+      "auth": "required",
+      "segment": "finance"
+    },
+    {
+      "path": "/finance/expenses/software",
+      "tier": "chef",
+      "auth": "required",
+      "segment": "finance"
+    },
+    {
+      "path": "/finance/expenses/travel",
+      "tier": "chef",
+      "auth": "required",
+      "segment": "finance"
+    },
+    {
+      "path": "/finance/forecast",
+      "tier": "chef",
+      "auth": "required",
+      "segment": "finance"
+    },
+    {
+      "path": "/finance/goals",
+      "tier": "chef",
+      "auth": "required",
+      "segment": "finance"
+    },
+    {
+      "path": "/finance/invoices",
+      "tier": "chef",
+      "auth": "required",
+      "segment": "finance"
+    },
+    {
+      "path": "/finance/invoices/cancelled",
+      "tier": "chef",
+      "auth": "required",
+      "segment": "finance"
+    },
+    {
+      "path": "/finance/invoices/draft",
+      "tier": "chef",
+      "auth": "required",
+      "segment": "finance"
+    },
+    {
+      "path": "/finance/invoices/overdue",
+      "tier": "chef",
+      "auth": "required",
+      "segment": "finance"
+    },
+    {
+      "path": "/finance/invoices/paid",
+      "tier": "chef",
+      "auth": "required",
+      "segment": "finance"
+    },
+    {
+      "path": "/finance/invoices/refunded",
+      "tier": "chef",
+      "auth": "required",
+      "segment": "finance"
+    },
+    {
+      "path": "/finance/invoices/sent",
+      "tier": "chef",
+      "auth": "required",
+      "segment": "finance"
+    },
+    {
+      "path": "/finance/ledger",
+      "tier": "chef",
+      "auth": "required",
+      "segment": "finance"
+    },
+    {
+      "path": "/finance/ledger/adjustments",
+      "tier": "chef",
+      "auth": "required",
+      "segment": "finance"
+    },
+    {
+      "path": "/finance/ledger/owner-draws",
+      "tier": "chef",
+      "auth": "required",
+      "segment": "finance"
+    },
+    {
+      "path": "/finance/ledger/transaction-log",
+      "tier": "chef",
+      "auth": "required",
+      "segment": "finance"
+    },
+    {
+      "path": "/finance/overview",
+      "tier": "chef",
+      "auth": "required",
+      "segment": "finance"
+    },
+    {
+      "path": "/finance/overview/cash-flow",
+      "tier": "chef",
+      "auth": "required",
+      "segment": "finance"
+    },
+    {
+      "path": "/finance/overview/outstanding-payments",
+      "tier": "chef",
+      "auth": "required",
+      "segment": "finance"
+    },
+    {
+      "path": "/finance/overview/revenue-summary",
+      "tier": "chef",
+      "auth": "required",
+      "segment": "finance"
+    },
+    {
+      "path": "/finance/payments",
+      "tier": "chef",
+      "auth": "required",
+      "segment": "finance"
+    },
+    {
+      "path": "/finance/payments/deposits",
+      "tier": "chef",
+      "auth": "required",
+      "segment": "finance"
+    },
+    {
+      "path": "/finance/payments/failed",
+      "tier": "chef",
+      "auth": "required",
+      "segment": "finance"
+    },
+    {
+      "path": "/finance/payments/installments",
+      "tier": "chef",
+      "auth": "required",
+      "segment": "finance"
+    },
+    {
+      "path": "/finance/payments/refunds",
+      "tier": "chef",
+      "auth": "required",
+      "segment": "finance"
+    },
+    {
+      "path": "/finance/payouts",
+      "tier": "chef",
+      "auth": "required",
+      "segment": "finance"
+    },
+    {
+      "path": "/finance/payouts/manual-payments",
+      "tier": "chef",
+      "auth": "required",
+      "segment": "finance"
+    },
+    {
+      "path": "/finance/payouts/reconciliation",
+      "tier": "chef",
+      "auth": "required",
+      "segment": "finance"
+    },
+    {
+      "path": "/finance/payouts/stripe-payouts",
+      "tier": "chef",
+      "auth": "required",
+      "segment": "finance"
+    },
+    {
+      "path": "/finance/payroll",
+      "tier": "chef",
+      "auth": "required",
+      "segment": "finance"
+    },
+    {
+      "path": "/finance/payroll/941",
+      "tier": "chef",
+      "auth": "required",
+      "segment": "finance"
+    },
+    {
+      "path": "/finance/payroll/employees",
+      "tier": "chef",
+      "auth": "required",
+      "segment": "finance"
+    },
+    {
+      "path": "/finance/payroll/run",
+      "tier": "chef",
+      "auth": "required",
+      "segment": "finance"
+    },
+    {
+      "path": "/finance/payroll/w2",
+      "tier": "chef",
+      "auth": "required",
+      "segment": "finance"
+    },
+    {
+      "path": "/finance/planning/break-even",
+      "tier": "chef",
+      "auth": "required",
+      "segment": "finance"
+    },
+    {
+      "path": "/finance/plate-costs",
+      "tier": "chef",
+      "auth": "required",
+      "segment": "finance"
+    },
+    {
+      "path": "/finance/recurring",
+      "tier": "chef",
+      "auth": "required",
+      "segment": "finance"
+    },
+    {
+      "path": "/finance/reporting",
+      "tier": "chef",
+      "auth": "required",
+      "segment": "finance"
+    },
+    {
+      "path": "/finance/reporting/expense-by-category",
+      "tier": "chef",
+      "auth": "required",
+      "segment": "finance"
+    },
+    {
+      "path": "/finance/reporting/profit-by-event",
+      "tier": "chef",
+      "auth": "required",
+      "segment": "finance"
+    },
+    {
+      "path": "/finance/reporting/profit-loss",
+      "tier": "chef",
+      "auth": "required",
+      "segment": "finance"
+    },
+    {
+      "path": "/finance/reporting/revenue-by-client",
+      "tier": "chef",
+      "auth": "required",
+      "segment": "finance"
+    },
+    {
+      "path": "/finance/reporting/revenue-by-event",
+      "tier": "chef",
+      "auth": "required",
+      "segment": "finance"
+    },
+    {
+      "path": "/finance/reporting/revenue-by-month",
+      "tier": "chef",
+      "auth": "required",
+      "segment": "finance"
+    },
+    {
+      "path": "/finance/reporting/tax-summary",
+      "tier": "chef",
+      "auth": "required",
+      "segment": "finance"
+    },
+    {
+      "path": "/finance/reporting/year-to-date-summary",
+      "tier": "chef",
+      "auth": "required",
+      "segment": "finance"
+    },
+    {
+      "path": "/finance/reporting/yoy-comparison",
+      "tier": "chef",
+      "auth": "required",
+      "segment": "finance"
+    },
+    {
+      "path": "/finance/retainers",
+      "tier": "chef",
+      "auth": "required",
+      "segment": "finance"
+    },
+    {
+      "path": "/finance/retainers/[id]",
+      "tier": "chef",
+      "auth": "required",
+      "segment": "finance"
+    },
+    {
+      "path": "/finance/retainers/new",
+      "tier": "chef",
+      "auth": "required",
+      "segment": "finance"
+    },
+    {
+      "path": "/finance/sales-tax",
+      "tier": "chef",
+      "auth": "required",
+      "segment": "finance"
+    },
+    {
+      "path": "/finance/sales-tax/remittances",
+      "tier": "chef",
+      "auth": "required",
+      "segment": "finance"
+    },
+    {
+      "path": "/finance/sales-tax/settings",
+      "tier": "chef",
+      "auth": "required",
+      "segment": "finance"
+    },
+    {
+      "path": "/finance/tax",
+      "tier": "chef",
+      "auth": "required",
+      "segment": "finance"
+    },
+    {
+      "path": "/finance/tax-prep",
+      "tier": "chef",
+      "auth": "required",
+      "segment": "finance"
+    },
+    {
+      "path": "/finance/tax/1099-nec",
+      "tier": "chef",
+      "auth": "required",
+      "segment": "finance"
+    },
+    {
+      "path": "/finance/tax/depreciation",
+      "tier": "chef",
+      "auth": "required",
+      "segment": "finance"
+    },
+    {
+      "path": "/finance/tax/home-office",
+      "tier": "chef",
+      "auth": "required",
+      "segment": "finance"
+    },
+    {
+      "path": "/finance/tax/quarterly",
+      "tier": "chef",
+      "auth": "required",
+      "segment": "finance"
+    },
+    {
+      "path": "/finance/tax/retirement",
+      "tier": "chef",
+      "auth": "required",
+      "segment": "finance"
+    },
+    {
+      "path": "/finance/tax/year-end",
+      "tier": "chef",
+      "auth": "required",
+      "segment": "finance"
+    },
+    {
+      "path": "/finance/year-end",
+      "tier": "chef",
+      "auth": "required",
+      "segment": "finance"
+    },
+    {
+      "path": "/food-cost",
+      "tier": "chef",
+      "auth": "required",
+      "segment": "food-cost"
+    },
+    {
+      "path": "/food-cost/revenue",
+      "tier": "chef",
+      "auth": "required",
+      "segment": "food-cost"
+    },
+    {
+      "path": "/for-operators",
+      "tier": "public",
+      "auth": "none",
+      "segment": "for-operators"
+    },
+    {
+      "path": "/for-operators/walkthrough",
+      "tier": "public",
+      "auth": "none",
+      "segment": "for-operators"
+    },
+    {
+      "path": "/g/[code]",
+      "tier": "public",
+      "auth": "none",
+      "segment": "g"
+    },
+    {
+      "path": "/gift-cards",
+      "tier": "public",
+      "auth": "none",
+      "segment": "gift-cards"
+    },
+    {
+      "path": "/guest-analytics",
+      "tier": "chef",
+      "auth": "required",
+      "segment": "guest-analytics"
+    },
+    {
+      "path": "/guest-feedback/[token]",
+      "tier": "public",
+      "auth": "none",
+      "segment": "guest-feedback"
+    },
+    {
+      "path": "/guest-leads",
+      "tier": "chef",
+      "auth": "required",
+      "segment": "guest-leads"
+    },
+    {
+      "path": "/guest-terms",
+      "tier": "public",
+      "auth": "none",
+      "segment": "guest-terms"
+    },
+    {
+      "path": "/guests",
+      "tier": "chef",
+      "auth": "required",
+      "segment": "guests"
+    },
+    {
+      "path": "/guests/[id]",
+      "tier": "chef",
+      "auth": "required",
+      "segment": "guests"
+    },
+    {
+      "path": "/guests/reservations",
+      "tier": "chef",
+      "auth": "required",
+      "segment": "guests"
+    },
+    {
+      "path": "/help",
+      "tier": "chef",
+      "auth": "required",
+      "segment": "help"
+    },
+    {
+      "path": "/help/[slug]",
+      "tier": "chef",
+      "auth": "required",
+      "segment": "help"
+    },
+    {
+      "path": "/help/food-costing",
+      "tier": "chef",
+      "auth": "required",
+      "segment": "help"
+    },
+    {
+      "path": "/how-it-works",
+      "tier": "public",
+      "auth": "none",
+      "segment": "how-it-works"
+    },
+    {
+      "path": "/hub",
+      "tier": "public",
+      "auth": "none",
+      "segment": "hub"
+    },
+    {
+      "path": "/hub/circles",
+      "tier": "public",
+      "auth": "none",
+      "segment": "hub"
+    },
+    {
+      "path": "/hub/g/[groupToken]",
+      "tier": "public",
+      "auth": "none",
+      "segment": "hub"
+    },
+    {
+      "path": "/hub/join/[groupToken]",
+      "tier": "public",
+      "auth": "none",
+      "segment": "hub"
+    },
+    {
+      "path": "/hub/me/[profileToken]",
+      "tier": "public",
+      "auth": "none",
+      "segment": "hub"
+    },
+    {
+      "path": "/hub/open-tables",
+      "tier": "public",
+      "auth": "none",
+      "segment": "hub"
+    },
+    {
+      "path": "/import",
+      "tier": "chef",
+      "auth": "required",
+      "segment": "import"
+    },
+    {
+      "path": "/import/csv",
+      "tier": "chef",
+      "auth": "required",
+      "segment": "import"
+    },
+    {
+      "path": "/import/history",
+      "tier": "chef",
+      "auth": "required",
+      "segment": "import"
+    },
+    {
+      "path": "/import/mxp",
+      "tier": "chef",
+      "auth": "required",
+      "segment": "import"
+    },
+    {
+      "path": "/imports/business-history",
+      "tier": "chef",
+      "auth": "required",
+      "segment": "imports"
+    },
+    {
+      "path": "/inbox",
+      "tier": "chef",
+      "auth": "required",
+      "segment": "inbox"
+    },
+    {
+      "path": "/inbox/history-scan",
+      "tier": "chef",
+      "auth": "required",
+      "segment": "inbox"
+    },
+    {
+      "path": "/inbox/triage",
+      "tier": "chef",
+      "auth": "required",
+      "segment": "inbox"
+    },
+    {
+      "path": "/inbox/triage/[threadId]",
+      "tier": "chef",
+      "auth": "required",
+      "segment": "inbox"
+    },
+    {
+      "path": "/ingredient/[id]",
+      "tier": "public",
+      "auth": "none",
+      "segment": "ingredient"
+    },
+    {
+      "path": "/ingredients",
+      "tier": "public",
+      "auth": "none",
+      "segment": "ingredients"
+    },
+    {
+      "path": "/ingredients/[category]",
+      "tier": "public",
+      "auth": "none",
+      "segment": "ingredients"
+    },
+    {
+      "path": "/inquiries",
+      "tier": "chef",
+      "auth": "required",
+      "segment": "inquiries"
+    },
+    {
+      "path": "/inquiries/[id]",
+      "tier": "chef",
+      "auth": "required",
+      "segment": "inquiries"
+    },
+    {
+      "path": "/inquiries/awaiting-client-reply",
+      "tier": "chef",
+      "auth": "required",
+      "segment": "inquiries"
+    },
+    {
+      "path": "/inquiries/awaiting-response",
+      "tier": "chef",
+      "auth": "required",
+      "segment": "inquiries"
+    },
+    {
+      "path": "/inquiries/declined",
+      "tier": "chef",
+      "auth": "required",
+      "segment": "inquiries"
+    },
+    {
+      "path": "/inquiries/menu-drafting",
+      "tier": "chef",
+      "auth": "required",
+      "segment": "inquiries"
+    },
+    {
+      "path": "/inquiries/new",
+      "tier": "chef",
+      "auth": "required",
+      "segment": "inquiries"
+    },
+    {
+      "path": "/inquiries/sent-to-client",
+      "tier": "chef",
+      "auth": "required",
+      "segment": "inquiries"
+    },
+    {
+      "path": "/insights",
+      "tier": "chef",
+      "auth": "required",
+      "segment": "insights"
+    },
+    {
+      "path": "/insights/time-analysis",
+      "tier": "chef",
+      "auth": "required",
+      "segment": "insights"
+    },
+    {
+      "path": "/intake/[token]",
+      "tier": "public",
+      "auth": "none",
+      "segment": "intake"
+    },
+    {
+      "path": "/inventory",
+      "tier": "chef",
+      "auth": "required",
+      "segment": "inventory"
+    },
+    {
+      "path": "/inventory/audits",
+      "tier": "chef",
+      "auth": "required",
+      "segment": "inventory"
+    },
+    {
+      "path": "/inventory/audits/[id]",
+      "tier": "chef",
+      "auth": "required",
+      "segment": "inventory"
+    },
+    {
+      "path": "/inventory/audits/new",
+      "tier": "chef",
+      "auth": "required",
+      "segment": "inventory"
+    },
+    {
+      "path": "/inventory/counts",
+      "tier": "chef",
+      "auth": "required",
+      "segment": "inventory"
+    },
+    {
+      "path": "/inventory/demand",
+      "tier": "chef",
+      "auth": "required",
+      "segment": "inventory"
+    },
+    {
+      "path": "/inventory/expiry",
+      "tier": "chef",
+      "auth": "required",
+      "segment": "inventory"
+    },
+    {
+      "path": "/inventory/food-cost",
+      "tier": "chef",
+      "auth": "required",
+      "segment": "inventory"
+    },
+    {
+      "path": "/inventory/ingredients/[id]",
+      "tier": "chef",
+      "auth": "required",
+      "segment": "inventory"
+    },
+    {
+      "path": "/inventory/locations",
+      "tier": "chef",
+      "auth": "required",
+      "segment": "inventory"
+    },
+    {
+      "path": "/inventory/procurement",
+      "tier": "chef",
+      "auth": "required",
+      "segment": "inventory"
+    },
+    {
+      "path": "/inventory/purchase-orders",
+      "tier": "chef",
+      "auth": "required",
+      "segment": "inventory"
+    },
+    {
+      "path": "/inventory/purchase-orders/[id]",
+      "tier": "chef",
+      "auth": "required",
+      "segment": "inventory"
+    },
+    {
+      "path": "/inventory/purchase-orders/new",
+      "tier": "chef",
+      "auth": "required",
+      "segment": "inventory"
+    },
+    {
+      "path": "/inventory/reorder",
+      "tier": "chef",
+      "auth": "required",
+      "segment": "inventory"
+    },
+    {
+      "path": "/inventory/staff-meals",
+      "tier": "chef",
+      "auth": "required",
+      "segment": "inventory"
+    },
+    {
+      "path": "/inventory/transactions",
+      "tier": "chef",
+      "auth": "required",
+      "segment": "inventory"
+    },
+    {
+      "path": "/inventory/vendor-invoices",
+      "tier": "chef",
+      "auth": "required",
+      "segment": "inventory"
+    },
+    {
+      "path": "/inventory/waste",
+      "tier": "chef",
+      "auth": "required",
+      "segment": "inventory"
+    },
+    {
+      "path": "/join/[token]",
+      "tier": "public",
+      "auth": "none",
+      "segment": "join"
+    },
+    {
+      "path": "/kiosk",
+      "tier": "kiosk",
+      "auth": "required",
+      "segment": "kiosk"
+    },
+    {
+      "path": "/kiosk/disabled",
+      "tier": "kiosk",
+      "auth": "required",
+      "segment": "kiosk"
+    },
+    {
+      "path": "/kiosk/pair",
+      "tier": "kiosk",
+      "auth": "required",
+      "segment": "kiosk"
+    },
+    {
+      "path": "/kitchen",
+      "tier": "chef",
+      "auth": "required",
+      "segment": "kitchen"
+    },
+    {
+      "path": "/leads",
+      "tier": "chef",
+      "auth": "required",
+      "segment": "leads"
+    },
+    {
+      "path": "/leads/archived",
+      "tier": "chef",
+      "auth": "required",
+      "segment": "leads"
+    },
+    {
+      "path": "/leads/contacted",
+      "tier": "chef",
+      "auth": "required",
+      "segment": "leads"
+    },
+    {
+      "path": "/leads/converted",
+      "tier": "chef",
+      "auth": "required",
+      "segment": "leads"
+    },
+    {
+      "path": "/leads/new",
+      "tier": "chef",
+      "auth": "required",
+      "segment": "leads"
+    },
+    {
+      "path": "/leads/qualified",
+      "tier": "chef",
+      "auth": "required",
+      "segment": "leads"
+    },
+    {
+      "path": "/locations",
+      "tier": "chef",
+      "auth": "required",
+      "segment": "locations"
+    },
+    {
+      "path": "/locations/[id]",
+      "tier": "chef",
+      "auth": "required",
+      "segment": "locations"
+    },
+    {
+      "path": "/locations/compliance",
+      "tier": "chef",
+      "auth": "required",
+      "segment": "locations"
+    },
+    {
+      "path": "/locations/purchasing",
+      "tier": "chef",
+      "auth": "required",
+      "segment": "locations"
+    },
+    {
+      "path": "/loyalty",
+      "tier": "chef",
+      "auth": "required",
+      "segment": "loyalty"
+    },
+    {
+      "path": "/loyalty/learn",
+      "tier": "chef",
+      "auth": "required",
+      "segment": "loyalty"
+    },
+    {
+      "path": "/loyalty/raffle",
+      "tier": "chef",
+      "auth": "required",
+      "segment": "loyalty"
+    },
+    {
+      "path": "/loyalty/raffle/[id]",
+      "tier": "chef",
+      "auth": "required",
+      "segment": "loyalty"
+    },
+    {
+      "path": "/loyalty/rewards/new",
+      "tier": "chef",
+      "auth": "required",
+      "segment": "loyalty"
+    },
+    {
+      "path": "/loyalty/settings",
+      "tier": "chef",
+      "auth": "required",
+      "segment": "loyalty"
+    },
+    {
+      "path": "/marketing",
+      "tier": "chef",
+      "auth": "required",
+      "segment": "marketing"
+    },
+    {
+      "path": "/marketing/[id]",
+      "tier": "chef",
+      "auth": "required",
+      "segment": "marketing"
+    },
+    {
+      "path": "/marketing/content-pipeline",
+      "tier": "chef",
+      "auth": "required",
+      "segment": "marketing"
+    },
+    {
+      "path": "/marketing/push-dinners",
+      "tier": "chef",
+      "auth": "required",
+      "segment": "marketing"
+    },
+    {
+      "path": "/marketing/push-dinners/[id]",
+      "tier": "chef",
+      "auth": "required",
+      "segment": "marketing"
+    },
+    {
+      "path": "/marketing/push-dinners/new",
+      "tier": "chef",
+      "auth": "required",
+      "segment": "marketing"
+    },
+    {
+      "path": "/marketing/sequences",
+      "tier": "chef",
+      "auth": "required",
+      "segment": "marketing"
+    },
+    {
+      "path": "/marketing/social",
+      "tier": "chef",
+      "auth": "required",
+      "segment": "marketing"
+    },
+    {
+      "path": "/marketing/social/[month]",
+      "tier": "chef",
+      "auth": "required",
+      "segment": "marketing"
+    },
+    {
+      "path": "/marketing/social/compose/[eventId]",
+      "tier": "chef",
+      "auth": "required",
+      "segment": "marketing"
+    },
+    {
+      "path": "/marketing/social/connections",
+      "tier": "chef",
+      "auth": "required",
+      "segment": "marketing"
+    },
+    {
+      "path": "/marketing/social/posts/[id]",
+      "tier": "chef",
+      "auth": "required",
+      "segment": "marketing"
+    },
+    {
+      "path": "/marketing/social/settings",
+      "tier": "chef",
+      "auth": "required",
+      "segment": "marketing"
+    },
+    {
+      "path": "/marketing/social/templates",
+      "tier": "chef",
+      "auth": "required",
+      "segment": "marketing"
+    },
+    {
+      "path": "/marketing/templates",
+      "tier": "chef",
+      "auth": "required",
+      "segment": "marketing"
+    },
+    {
+      "path": "/marketplace",
+      "tier": "chef",
+      "auth": "required",
+      "segment": "marketplace"
+    },
+    {
+      "path": "/marketplace-chefs",
+      "tier": "public",
+      "auth": "none",
+      "segment": "marketplace-chefs"
+    },
+    {
+      "path": "/marketplace/capture",
+      "tier": "chef",
+      "auth": "required",
+      "segment": "marketplace"
+    },
+    {
+      "path": "/meal-prep",
+      "tier": "chef",
+      "auth": "required",
+      "segment": "meal-prep"
+    },
+    {
+      "path": "/meal-prep/[programId]",
+      "tier": "chef",
+      "auth": "required",
+      "segment": "meal-prep"
+    },
+    {
+      "path": "/meal-prep/batch",
+      "tier": "chef",
+      "auth": "required",
+      "segment": "meal-prep"
+    },
+    {
+      "path": "/meal-prep/retro",
+      "tier": "chef",
+      "auth": "required",
+      "segment": "meal-prep"
+    },
+    {
+      "path": "/menu-pick/[token]",
+      "tier": "public",
+      "auth": "none",
+      "segment": "menu-pick"
+    },
+    {
+      "path": "/menu/[token]",
+      "tier": "public",
+      "auth": "none",
+      "segment": "menu"
+    },
+    {
+      "path": "/menus",
+      "tier": "chef",
+      "auth": "required",
+      "segment": "menus"
+    },
+    {
+      "path": "/menus/[id]",
+      "tier": "chef",
+      "auth": "required",
+      "segment": "menus"
+    },
+    {
+      "path": "/menus/[id]/editor",
+      "tier": "chef",
+      "auth": "required",
+      "segment": "menus"
+    },
+    {
+      "path": "/menus/dishes",
+      "tier": "chef",
+      "auth": "required",
+      "segment": "menus"
+    },
+    {
+      "path": "/menus/estimate",
+      "tier": "chef",
+      "auth": "required",
+      "segment": "menus"
+    },
+    {
+      "path": "/menus/new",
+      "tier": "chef",
+      "auth": "required",
+      "segment": "menus"
+    },
+    {
+      "path": "/menus/seasonal",
+      "tier": "chef",
+      "auth": "required",
+      "segment": "menus"
+    },
+    {
+      "path": "/menus/selections",
+      "tier": "chef",
+      "auth": "required",
+      "segment": "menus"
+    },
+    {
+      "path": "/menus/tasting",
+      "tier": "chef",
+      "auth": "required",
+      "segment": "menus"
+    },
+    {
+      "path": "/menus/upload",
+      "tier": "chef",
+      "auth": "required",
+      "segment": "menus"
+    },
+    {
+      "path": "/my-bookings",
+      "tier": "client",
+      "auth": "required",
+      "segment": "my-bookings"
+    },
+    {
+      "path": "/my-calendar",
+      "tier": "client",
+      "auth": "required",
+      "segment": "my-calendar"
+    },
+    {
+      "path": "/my-cannabis",
+      "tier": "client",
+      "auth": "required",
+      "segment": "my-cannabis"
+    },
+    {
+      "path": "/my-cannabis/age-required",
+      "tier": "client",
+      "auth": "required",
+      "segment": "my-cannabis"
+    },
+    {
+      "path": "/my-chat",
+      "tier": "client",
+      "auth": "required",
+      "segment": "my-chat"
+    },
+    {
+      "path": "/my-chat/[id]",
+      "tier": "client",
+      "auth": "required",
+      "segment": "my-chat"
+    },
+    {
+      "path": "/my-dietary",
+      "tier": "client",
+      "auth": "required",
+      "segment": "my-dietary"
+    },
+    {
+      "path": "/my-documents",
+      "tier": "client",
+      "auth": "required",
+      "segment": "my-documents"
+    },
+    {
+      "path": "/my-events",
+      "tier": "client",
+      "auth": "required",
+      "segment": "my-events"
+    },
+    {
+      "path": "/my-events/[id]",
+      "tier": "client",
+      "auth": "required",
+      "segment": "my-events"
+    },
+    {
+      "path": "/my-events/[id]/approve-menu",
+      "tier": "client",
+      "auth": "required",
+      "segment": "my-events"
+    },
+    {
+      "path": "/my-events/[id]/choose-menu",
+      "tier": "client",
+      "auth": "required",
+      "segment": "my-events"
+    },
+    {
+      "path": "/my-events/[id]/contract",
+      "tier": "client",
+      "auth": "required",
+      "segment": "my-events"
+    },
+    {
+      "path": "/my-events/[id]/countdown",
+      "tier": "client",
+      "auth": "required",
+      "segment": "my-events"
+    },
+    {
+      "path": "/my-events/[id]/event-summary",
+      "tier": "client",
+      "auth": "required",
+      "segment": "my-events"
+    },
+    {
+      "path": "/my-events/[id]/guests",
+      "tier": "client",
+      "auth": "required",
+      "segment": "my-events"
+    },
+    {
+      "path": "/my-events/[id]/invoice",
+      "tier": "client",
+      "auth": "required",
+      "segment": "my-events"
+    },
+    {
+      "path": "/my-events/[id]/live",
+      "tier": "client",
+      "auth": "required",
+      "segment": "my-events"
+    },
+    {
+      "path": "/my-events/[id]/pay",
+      "tier": "client",
+      "auth": "required",
+      "segment": "my-events"
+    },
+    {
+      "path": "/my-events/[id]/payment-plan",
+      "tier": "client",
+      "auth": "required",
+      "segment": "my-events"
+    },
+    {
+      "path": "/my-events/[id]/pre-event-checklist",
+      "tier": "client",
+      "auth": "required",
+      "segment": "my-events"
+    },
+    {
+      "path": "/my-events/[id]/proposal",
+      "tier": "client",
+      "auth": "required",
+      "segment": "my-events"
+    },
+    {
+      "path": "/my-events/[id]/recap",
+      "tier": "client",
+      "auth": "required",
+      "segment": "my-events"
+    },
+    {
+      "path": "/my-events/[id]/split",
+      "tier": "client",
+      "auth": "required",
+      "segment": "my-events"
+    },
+    {
+      "path": "/my-events/history",
+      "tier": "client",
+      "auth": "required",
+      "segment": "my-events"
+    },
+    {
+      "path": "/my-events/settings/dashboard",
+      "tier": "client",
+      "auth": "required",
+      "segment": "my-events"
+    },
+    {
+      "path": "/my-gift-cards",
+      "tier": "client",
+      "auth": "required",
+      "segment": "my-gift-cards"
+    },
+    {
+      "path": "/my-help",
+      "tier": "client",
+      "auth": "required",
+      "segment": "my-help"
+    },
+    {
+      "path": "/my-household",
+      "tier": "client",
+      "auth": "required",
+      "segment": "my-household"
+    },
+    {
+      "path": "/my-hub",
+      "tier": "client",
+      "auth": "required",
+      "segment": "my-hub"
+    },
+    {
+      "path": "/my-hub/create",
+      "tier": "client",
+      "auth": "required",
+      "segment": "my-hub"
+    },
+    {
+      "path": "/my-hub/favorite-operators",
+      "tier": "client",
+      "auth": "required",
+      "segment": "my-hub"
+    },
+    {
+      "path": "/my-hub/friends",
+      "tier": "client",
+      "auth": "required",
+      "segment": "my-hub"
+    },
+    {
+      "path": "/my-hub/friends/invite/[profileToken]",
+      "tier": "client",
+      "auth": "required",
+      "segment": "my-hub"
+    },
+    {
+      "path": "/my-hub/g/[groupToken]",
+      "tier": "client",
+      "auth": "required",
+      "segment": "my-hub"
+    },
+    {
+      "path": "/my-hub/g/[groupToken]/meal-board",
+      "tier": "client",
+      "auth": "required",
+      "segment": "my-hub"
+    },
+    {
+      "path": "/my-hub/notifications",
+      "tier": "client",
+      "auth": "required",
+      "segment": "my-hub"
+    },
+    {
+      "path": "/my-hub/purchases",
+      "tier": "client",
+      "auth": "required",
+      "segment": "my-hub"
+    },
+    {
+      "path": "/my-hub/share-chef",
+      "tier": "client",
+      "auth": "required",
+      "segment": "my-hub"
+    },
+    {
+      "path": "/my-inquiries",
+      "tier": "client",
+      "auth": "required",
+      "segment": "my-inquiries"
+    },
+    {
+      "path": "/my-inquiries/[id]",
+      "tier": "client",
+      "auth": "required",
+      "segment": "my-inquiries"
+    },
+    {
+      "path": "/my-meals",
+      "tier": "client",
+      "auth": "required",
+      "segment": "my-meals"
+    },
+    {
+      "path": "/my-notifications",
+      "tier": "client",
+      "auth": "required",
+      "segment": "my-notifications"
+    },
+    {
+      "path": "/my-passport",
+      "tier": "client",
+      "auth": "required",
+      "segment": "my-passport"
+    },
+    {
+      "path": "/my-preferences",
+      "tier": "client",
+      "auth": "required",
+      "segment": "my-preferences"
+    },
+    {
+      "path": "/my-preferences/discovery",
+      "tier": "client",
+      "auth": "required",
+      "segment": "my-preferences"
+    },
+    {
+      "path": "/my-profile",
+      "tier": "client",
+      "auth": "required",
+      "segment": "my-profile"
+    },
+    {
+      "path": "/my-profile/delete-account",
+      "tier": "client",
+      "auth": "required",
+      "segment": "my-profile"
+    },
+    {
+      "path": "/my-quotes",
+      "tier": "client",
+      "auth": "required",
+      "segment": "my-quotes"
+    },
+    {
+      "path": "/my-quotes/[id]",
+      "tier": "client",
+      "auth": "required",
+      "segment": "my-quotes"
+    },
+    {
+      "path": "/my-quotes/compare",
+      "tier": "client",
+      "auth": "required",
+      "segment": "my-quotes"
+    },
+    {
+      "path": "/my-receipts",
+      "tier": "client",
+      "auth": "required",
+      "segment": "my-receipts"
+    },
+    {
+      "path": "/my-receipts/[eventId]",
+      "tier": "client",
+      "auth": "required",
+      "segment": "my-receipts"
+    },
+    {
+      "path": "/my-recipes",
+      "tier": "client",
+      "auth": "required",
+      "segment": "my-recipes"
+    },
+    {
+      "path": "/my-recurring",
+      "tier": "client",
+      "auth": "required",
+      "segment": "my-recurring"
+    },
+    {
+      "path": "/my-referrals",
+      "tier": "client",
+      "auth": "required",
+      "segment": "my-referrals"
+    },
+    {
+      "path": "/my-reviews",
+      "tier": "client",
+      "auth": "required",
+      "segment": "my-reviews"
+    },
+    {
+      "path": "/my-rewards",
+      "tier": "client",
+      "auth": "required",
+      "segment": "my-rewards"
+    },
+    {
+      "path": "/my-rewards/about",
+      "tier": "client",
+      "auth": "required",
+      "segment": "my-rewards"
+    },
+    {
+      "path": "/my-spending",
+      "tier": "client",
+      "auth": "required",
+      "segment": "my-spending"
+    },
+    {
+      "path": "/my-spending/tax-summary",
+      "tier": "client",
+      "auth": "required",
+      "segment": "my-spending"
+    },
+    {
+      "path": "/my-timeline",
+      "tier": "client",
+      "auth": "required",
+      "segment": "my-timeline"
+    },
+    {
+      "path": "/nearby",
+      "tier": "public",
+      "auth": "none",
+      "segment": "nearby"
+    },
+    {
+      "path": "/nearby/[slug]",
+      "tier": "public",
+      "auth": "none",
+      "segment": "nearby"
+    },
+    {
+      "path": "/nearby/[slug]/enhance",
+      "tier": "public",
+      "auth": "none",
+      "segment": "nearby"
+    },
+    {
+      "path": "/nearby/collections",
+      "tier": "public",
+      "auth": "none",
+      "segment": "nearby"
+    },
+    {
+      "path": "/nearby/collections/[slug]",
+      "tier": "public",
+      "auth": "none",
+      "segment": "nearby"
+    },
+    {
+      "path": "/nearby/join",
+      "tier": "authenticated",
+      "auth": "required",
+      "segment": "nearby"
+    },
+    {
+      "path": "/nearby/submit",
+      "tier": "public",
+      "auth": "none",
+      "segment": "nearby"
+    },
+    {
+      "path": "/nearby/unsubscribe",
+      "tier": "public",
+      "auth": "none",
+      "segment": "nearby"
+    },
+    {
+      "path": "/network",
+      "tier": "chef",
+      "auth": "required",
+      "segment": "network"
+    },
+    {
+      "path": "/network/[chefId]",
+      "tier": "chef",
+      "auth": "required",
+      "segment": "network"
+    },
+    {
+      "path": "/network/bridges/[bridgeId]",
+      "tier": "chef",
+      "auth": "required",
+      "segment": "network"
+    },
+    {
+      "path": "/network/channels/[slug]",
+      "tier": "chef",
+      "auth": "required",
+      "segment": "network"
+    },
+    {
+      "path": "/network/collabs",
+      "tier": "chef",
+      "auth": "required",
+      "segment": "network"
+    },
+    {
+      "path": "/network/collabs/[spaceId]",
+      "tier": "chef",
+      "auth": "required",
+      "segment": "network"
+    },
+    {
+      "path": "/network/notifications",
+      "tier": "chef",
+      "auth": "required",
+      "segment": "network"
+    },
+    {
+      "path": "/network/saved",
+      "tier": "chef",
+      "auth": "required",
+      "segment": "network"
+    },
+    {
+      "path": "/notifications",
+      "tier": "chef",
+      "auth": "required",
+      "segment": "notifications"
+    },
+    {
+      "path": "/nutrition/[menuId]",
+      "tier": "chef",
+      "auth": "required",
+      "segment": "nutrition"
+    },
+    {
+      "path": "/onboarding",
+      "tier": "chef",
+      "auth": "required",
+      "segment": "onboarding"
+    },
+    {
+      "path": "/onboarding/[token]",
+      "tier": "public",
+      "auth": "none",
+      "segment": "onboarding"
+    },
+    {
+      "path": "/onboarding/clients",
+      "tier": "chef",
+      "auth": "required",
+      "segment": "onboarding"
+    },
+    {
+      "path": "/onboarding/features",
+      "tier": "chef",
+      "auth": "required",
+      "segment": "onboarding"
+    },
+    {
+      "path": "/onboarding/help",
+      "tier": "chef",
+      "auth": "required",
+      "segment": "onboarding"
+    },
+    {
+      "path": "/onboarding/loyalty",
+      "tier": "chef",
+      "auth": "required",
+      "segment": "onboarding"
+    },
+    {
+      "path": "/onboarding/recipes",
+      "tier": "chef",
+      "auth": "required",
+      "segment": "onboarding"
+    },
+    {
+      "path": "/onboarding/staff",
+      "tier": "chef",
+      "auth": "required",
+      "segment": "onboarding"
+    },
+    {
+      "path": "/onboarding/welcome",
+      "tier": "chef",
+      "auth": "required",
+      "segment": "onboarding"
+    },
+    {
+      "path": "/ops",
+      "tier": "chef",
+      "auth": "required",
+      "segment": "ops"
+    },
+    {
+      "path": "/ops/equipment",
+      "tier": "chef",
+      "auth": "required",
+      "segment": "ops"
+    },
+    {
+      "path": "/ops/inventory",
+      "tier": "chef",
+      "auth": "required",
+      "segment": "ops"
+    },
+    {
+      "path": "/ops/kitchen-rentals",
+      "tier": "chef",
+      "auth": "required",
+      "segment": "ops"
+    },
+    {
+      "path": "/ops/performance",
+      "tier": "chef",
+      "auth": "required",
+      "segment": "ops"
+    },
+    {
+      "path": "/ops/prep",
+      "tier": "chef",
+      "auth": "required",
+      "segment": "ops"
+    },
+    {
+      "path": "/ops/service",
+      "tier": "chef",
+      "auth": "required",
+      "segment": "ops"
+    },
+    {
+      "path": "/ops/stations",
+      "tier": "chef",
+      "auth": "required",
+      "segment": "ops"
+    },
+    {
+      "path": "/partner-report/[token]",
+      "tier": "public",
+      "auth": "none",
+      "segment": "partner-report"
+    },
+    {
+      "path": "/partner-signup",
+      "tier": "public",
+      "auth": "none",
+      "segment": "partner-signup"
+    },
+    {
+      "path": "/partner-terms",
+      "tier": "public",
+      "auth": "none",
+      "segment": "partner-terms"
+    },
+    {
+      "path": "/partner/dashboard",
+      "tier": "partner",
+      "auth": "required",
+      "segment": "partner"
+    },
+    {
+      "path": "/partner/events",
+      "tier": "partner",
+      "auth": "required",
+      "segment": "partner"
+    },
+    {
+      "path": "/partner/locations",
+      "tier": "partner",
+      "auth": "required",
+      "segment": "partner"
+    },
+    {
+      "path": "/partner/locations/[id]",
+      "tier": "partner",
+      "auth": "required",
+      "segment": "partner"
+    },
+    {
+      "path": "/partner/preview",
+      "tier": "partner",
+      "auth": "required",
+      "segment": "partner"
+    },
+    {
+      "path": "/partner/profile",
+      "tier": "partner",
+      "auth": "required",
+      "segment": "partner"
+    },
+    {
+      "path": "/partners",
+      "tier": "chef",
+      "auth": "required",
+      "segment": "partners"
+    },
+    {
+      "path": "/partners/[id]",
+      "tier": "chef",
+      "auth": "required",
+      "segment": "partners"
+    },
+    {
+      "path": "/partners/[id]/edit",
+      "tier": "chef",
+      "auth": "required",
+      "segment": "partners"
+    },
+    {
+      "path": "/partners/[id]/report",
+      "tier": "chef",
+      "auth": "required",
+      "segment": "partners"
+    },
+    {
+      "path": "/partners/active",
+      "tier": "chef",
+      "auth": "required",
+      "segment": "partners"
+    },
+    {
+      "path": "/partners/events-generated",
+      "tier": "chef",
+      "auth": "required",
+      "segment": "partners"
+    },
+    {
+      "path": "/partners/inactive",
+      "tier": "chef",
+      "auth": "required",
+      "segment": "partners"
+    },
+    {
+      "path": "/partners/new",
+      "tier": "chef",
+      "auth": "required",
+      "segment": "partners"
+    },
+    {
+      "path": "/partners/referral-performance",
+      "tier": "chef",
+      "auth": "required",
+      "segment": "partners"
+    },
+    {
+      "path": "/payments",
+      "tier": "chef",
+      "auth": "required",
+      "segment": "payments"
+    },
+    {
+      "path": "/payments/splitting",
+      "tier": "chef",
+      "auth": "required",
+      "segment": "payments"
+    },
+    {
+      "path": "/pie-cart",
+      "tier": "chef",
+      "auth": "required",
+      "segment": "pie-cart"
+    },
+    {
+      "path": "/pipeline",
+      "tier": "chef",
+      "auth": "required",
+      "segment": "pipeline"
+    },
+    {
+      "path": "/portfolio",
+      "tier": "chef",
+      "auth": "required",
+      "segment": "portfolio"
+    },
+    {
+      "path": "/prep/consolidation",
+      "tier": "chef",
+      "auth": "required",
+      "segment": "prep"
+    },
+    {
+      "path": "/prices",
+      "tier": "chef",
+      "auth": "required",
+      "segment": "prices"
+    },
+    {
+      "path": "/prices/seasonal",
+      "tier": "chef",
+      "auth": "required",
+      "segment": "prices"
+    },
+    {
+      "path": "/prices/store/[storeId]",
+      "tier": "chef",
+      "auth": "required",
+      "segment": "prices"
+    },
+    {
+      "path": "/pricing",
+      "tier": "public",
+      "auth": "none",
+      "segment": "pricing"
+    },
+    {
+      "path": "/print/cannabis-dosing-packet/[eventId]",
+      "tier": "authenticated",
+      "auth": "required",
+      "segment": "print"
+    },
+    {
+      "path": "/print/menu/[id]",
+      "tier": "authenticated",
+      "auth": "required",
+      "segment": "print"
+    },
+    {
+      "path": "/privacy",
+      "tier": "public",
+      "auth": "none",
+      "segment": "privacy"
+    },
+    {
+      "path": "/privacy-policy",
+      "tier": "public",
+      "auth": "none",
+      "segment": "privacy-policy"
+    },
+    {
+      "path": "/production",
+      "tier": "chef",
+      "auth": "required",
+      "segment": "production"
+    },
+    {
+      "path": "/proposal/[token]",
+      "tier": "public",
+      "auth": "none",
+      "segment": "proposal"
+    },
+    {
+      "path": "/proposals",
+      "tier": "chef",
+      "auth": "required",
+      "segment": "proposals"
+    },
+    {
+      "path": "/proposals/addons",
+      "tier": "chef",
+      "auth": "required",
+      "segment": "proposals"
+    },
+    {
+      "path": "/proposals/builder",
+      "tier": "chef",
+      "auth": "required",
+      "segment": "proposals"
+    },
+    {
+      "path": "/proposals/templates",
+      "tier": "chef",
+      "auth": "required",
+      "segment": "proposals"
+    },
+    {
+      "path": "/prospecting",
+      "tier": "chef",
+      "auth": "required",
+      "segment": "prospecting"
+    },
+    {
+      "path": "/prospecting/[id]",
+      "tier": "chef",
+      "auth": "required",
+      "segment": "prospecting"
+    },
+    {
+      "path": "/prospecting/clusters",
+      "tier": "chef",
+      "auth": "required",
+      "segment": "prospecting"
+    },
+    {
+      "path": "/prospecting/import",
+      "tier": "chef",
+      "auth": "required",
+      "segment": "prospecting"
+    },
+    {
+      "path": "/prospecting/openclaw",
+      "tier": "chef",
+      "auth": "required",
+      "segment": "prospecting"
+    },
+    {
+      "path": "/prospecting/pipeline",
+      "tier": "chef",
+      "auth": "required",
+      "segment": "prospecting"
+    },
+    {
+      "path": "/prospecting/queue",
+      "tier": "chef",
+      "auth": "required",
+      "segment": "prospecting"
+    },
+    {
+      "path": "/prospecting/scripts",
+      "tier": "chef",
+      "auth": "required",
+      "segment": "prospecting"
+    },
+    {
+      "path": "/prospecting/scrub",
+      "tier": "chef",
+      "auth": "required",
+      "segment": "prospecting"
+    },
+    {
+      "path": "/pulse",
+      "tier": "chef",
+      "auth": "required",
+      "segment": "pulse"
+    },
+    {
+      "path": "/queue",
+      "tier": "chef",
+      "auth": "required",
+      "segment": "queue"
+    },
+    {
+      "path": "/quick-log",
+      "tier": "chef",
+      "auth": "required",
+      "segment": "quick-log"
+    },
+    {
+      "path": "/quotes",
+      "tier": "chef",
+      "auth": "required",
+      "segment": "quotes"
+    },
+    {
+      "path": "/quotes/[id]",
+      "tier": "chef",
+      "auth": "required",
+      "segment": "quotes"
+    },
+    {
+      "path": "/quotes/[id]/edit",
+      "tier": "chef",
+      "auth": "required",
+      "segment": "quotes"
+    },
+    {
+      "path": "/quotes/accepted",
+      "tier": "chef",
+      "auth": "required",
+      "segment": "quotes"
+    },
+    {
+      "path": "/quotes/calculator",
+      "tier": "chef",
+      "auth": "required",
+      "segment": "quotes"
+    },
+    {
+      "path": "/quotes/draft",
+      "tier": "chef",
+      "auth": "required",
+      "segment": "quotes"
+    },
+    {
+      "path": "/quotes/expired",
+      "tier": "chef",
+      "auth": "required",
+      "segment": "quotes"
+    },
+    {
+      "path": "/quotes/new",
+      "tier": "chef",
+      "auth": "required",
+      "segment": "quotes"
+    },
+    {
+      "path": "/quotes/rejected",
+      "tier": "chef",
+      "auth": "required",
+      "segment": "quotes"
+    },
+    {
+      "path": "/quotes/sent",
+      "tier": "chef",
+      "auth": "required",
+      "segment": "quotes"
+    },
+    {
+      "path": "/quotes/viewed",
+      "tier": "chef",
+      "auth": "required",
+      "segment": "quotes"
+    },
+    {
+      "path": "/rate-card",
+      "tier": "chef",
+      "auth": "required",
+      "segment": "rate-card"
+    },
+    {
+      "path": "/reactivate-account",
+      "tier": "public",
+      "auth": "none",
+      "segment": "reactivate-account"
+    },
+    {
+      "path": "/receipts",
+      "tier": "chef",
+      "auth": "required",
+      "segment": "receipts"
+    },
+    {
+      "path": "/recipes",
+      "tier": "chef",
+      "auth": "required",
+      "segment": "recipes"
+    },
+    {
+      "path": "/recipes/[id]",
+      "tier": "chef",
+      "auth": "required",
+      "segment": "recipes"
+    },
+    {
+      "path": "/recipes/[id]/edit",
+      "tier": "chef",
+      "auth": "required",
+      "segment": "recipes"
+    },
+    {
+      "path": "/recipes/dump",
+      "tier": "chef",
+      "auth": "required",
+      "segment": "recipes"
+    },
+    {
+      "path": "/recipes/import",
+      "tier": "chef",
+      "auth": "required",
+      "segment": "recipes"
+    },
+    {
+      "path": "/recipes/ingredients",
+      "tier": "chef",
+      "auth": "required",
+      "segment": "recipes"
+    },
+    {
+      "path": "/recipes/new",
+      "tier": "chef",
+      "auth": "required",
+      "segment": "recipes"
+    },
+    {
+      "path": "/recipes/photos",
+      "tier": "chef",
+      "auth": "required",
+      "segment": "recipes"
+    },
+    {
+      "path": "/recipes/production-log",
+      "tier": "chef",
+      "auth": "required",
+      "segment": "recipes"
+    },
+    {
+      "path": "/recipes/sprint",
+      "tier": "chef",
+      "auth": "required",
+      "segment": "recipes"
+    },
+    {
+      "path": "/refund-cancellation",
+      "tier": "public",
+      "auth": "none",
+      "segment": "refund-cancellation"
+    },
+    {
+      "path": "/reminders",
+      "tier": "chef",
+      "auth": "required",
+      "segment": "reminders"
+    },
+    {
+      "path": "/remy",
+      "tier": "chef",
+      "auth": "required",
+      "segment": "remy"
+    },
+    {
+      "path": "/remy/history",
+      "tier": "chef",
+      "auth": "required",
+      "segment": "remy"
+    },
+    {
+      "path": "/remy/operating",
+      "tier": "chef",
+      "auth": "required",
+      "segment": "remy"
+    },
+    {
+      "path": "/remy/settings",
+      "tier": "chef",
+      "auth": "required",
+      "segment": "remy"
+    },
+    {
+      "path": "/remy/signals",
+      "tier": "chef",
+      "auth": "required",
+      "segment": "remy"
+    },
+    {
+      "path": "/reputation",
+      "tier": "chef",
+      "auth": "required",
+      "segment": "reputation"
+    },
+    {
+      "path": "/reputation/mentions",
+      "tier": "chef",
+      "auth": "required",
+      "segment": "reputation"
+    },
+    {
+      "path": "/review/[token]",
+      "tier": "public",
+      "auth": "none",
+      "segment": "review"
+    },
+    {
+      "path": "/reviews",
+      "tier": "chef",
+      "auth": "required",
+      "segment": "reviews"
+    },
+    {
+      "path": "/safety/backup-chef",
+      "tier": "chef",
+      "auth": "required",
+      "segment": "safety"
+    },
+    {
+      "path": "/safety/claims",
+      "tier": "chef",
+      "auth": "required",
+      "segment": "safety"
+    },
+    {
+      "path": "/safety/claims/documents",
+      "tier": "chef",
+      "auth": "required",
+      "segment": "safety"
+    },
+    {
+      "path": "/safety/claims/new",
+      "tier": "chef",
+      "auth": "required",
+      "segment": "safety"
+    },
+    {
+      "path": "/safety/incidents",
+      "tier": "chef",
+      "auth": "required",
+      "segment": "safety"
+    },
+    {
+      "path": "/safety/incidents/[id]",
+      "tier": "chef",
+      "auth": "required",
+      "segment": "safety"
+    },
+    {
+      "path": "/safety/incidents/new",
+      "tier": "chef",
+      "auth": "required",
+      "segment": "safety"
+    },
+    {
+      "path": "/services",
+      "tier": "public",
+      "auth": "none",
+      "segment": "services"
+    },
+    {
+      "path": "/services/[slug]",
+      "tier": "public",
+      "auth": "none",
+      "segment": "services"
+    },
+    {
+      "path": "/settings",
+      "tier": "chef",
+      "auth": "required",
+      "segment": "settings"
+    },
+    {
+      "path": "/settings/account",
+      "tier": "chef",
+      "auth": "required",
+      "segment": "settings"
+    },
+    {
+      "path": "/settings/ai",
+      "tier": "chef",
+      "auth": "required",
+      "segment": "settings"
+    },
+    {
+      "path": "/settings/ai-privacy",
+      "tier": "chef",
+      "auth": "required",
+      "segment": "settings"
+    },
+    {
+      "path": "/settings/api-keys",
+      "tier": "chef",
+      "auth": "required",
+      "segment": "settings"
+    },
+    {
+      "path": "/settings/appearance",
+      "tier": "chef",
+      "auth": "required",
+      "segment": "settings"
+    },
+    {
+      "path": "/settings/automations",
+      "tier": "chef",
+      "auth": "required",
+      "segment": "settings"
+    },
+    {
+      "path": "/settings/billing",
+      "tier": "chef",
+      "auth": "required",
+      "segment": "settings"
+    },
+    {
+      "path": "/settings/business",
+      "tier": "chef",
+      "auth": "required",
+      "segment": "settings"
+    },
+    {
+      "path": "/settings/calendar-sync",
+      "tier": "chef",
+      "auth": "required",
+      "segment": "settings"
+    },
+    {
+      "path": "/settings/change-password",
+      "tier": "chef",
+      "auth": "required",
+      "segment": "settings"
+    },
+    {
+      "path": "/settings/client-preview",
+      "tier": "chef",
+      "auth": "required",
+      "segment": "settings"
+    },
+    {
+      "path": "/settings/communication",
+      "tier": "chef",
+      "auth": "required",
+      "segment": "settings"
+    },
+    {
+      "path": "/settings/communications",
+      "tier": "chef",
+      "auth": "required",
+      "segment": "settings"
+    },
+    {
+      "path": "/settings/compliance",
+      "tier": "chef",
+      "auth": "required",
+      "segment": "settings"
+    },
+    {
+      "path": "/settings/compliance/backup",
+      "tier": "chef",
+      "auth": "required",
+      "segment": "settings"
+    },
+    {
+      "path": "/settings/compliance/claims",
+      "tier": "chef",
+      "auth": "required",
+      "segment": "settings"
+    },
+    {
+      "path": "/settings/compliance/claims/documents",
+      "tier": "chef",
+      "auth": "required",
+      "segment": "settings"
+    },
+    {
+      "path": "/settings/compliance/claims/new",
+      "tier": "chef",
+      "auth": "required",
+      "segment": "settings"
+    },
+    {
+      "path": "/settings/compliance/gdpr",
+      "tier": "chef",
+      "auth": "required",
+      "segment": "settings"
+    },
+    {
+      "path": "/settings/compliance/haccp",
+      "tier": "chef",
+      "auth": "required",
+      "segment": "settings"
+    },
+    {
+      "path": "/settings/compliance/incidents",
+      "tier": "chef",
+      "auth": "required",
+      "segment": "settings"
+    },
+    {
+      "path": "/settings/compliance/incidents/[id]",
+      "tier": "chef",
+      "auth": "required",
+      "segment": "settings"
+    },
+    {
+      "path": "/settings/compliance/incidents/new",
+      "tier": "chef",
+      "auth": "required",
+      "segment": "settings"
+    },
+    {
+      "path": "/settings/connections",
+      "tier": "chef",
+      "auth": "required",
+      "segment": "settings"
+    },
+    {
+      "path": "/settings/contracts",
+      "tier": "chef",
+      "auth": "required",
+      "segment": "settings"
+    },
+    {
+      "path": "/settings/credentials",
+      "tier": "chef",
+      "auth": "required",
+      "segment": "settings"
+    },
+    {
+      "path": "/settings/culinary-profile",
+      "tier": "chef",
+      "auth": "required",
+      "segment": "settings"
+    },
+    {
+      "path": "/settings/custom-fields",
+      "tier": "chef",
+      "auth": "required",
+      "segment": "settings"
+    },
+    {
+      "path": "/settings/dashboard",
+      "tier": "chef",
+      "auth": "required",
+      "segment": "settings"
+    },
+    {
+      "path": "/settings/data-export",
+      "tier": "chef",
+      "auth": "required",
+      "segment": "settings"
+    },
+    {
+      "path": "/settings/data-quality",
+      "tier": "chef",
+      "auth": "required",
+      "segment": "settings"
+    },
+    {
+      "path": "/settings/delete-account",
+      "tier": "chef",
+      "auth": "required",
+      "segment": "settings"
+    },
+    {
+      "path": "/settings/developer",
+      "tier": "chef",
+      "auth": "required",
+      "segment": "settings"
+    },
+    {
+      "path": "/settings/devices",
+      "tier": "chef",
+      "auth": "required",
+      "segment": "settings"
+    },
+    {
+      "path": "/settings/embed",
+      "tier": "chef",
+      "auth": "required",
+      "segment": "settings"
+    },
+    {
+      "path": "/settings/emergency",
+      "tier": "chef",
+      "auth": "required",
+      "segment": "settings"
+    },
+    {
+      "path": "/settings/event-types",
+      "tier": "chef",
+      "auth": "required",
+      "segment": "settings"
+    },
+    {
+      "path": "/settings/favorite-chefs",
+      "tier": "chef",
+      "auth": "required",
+      "segment": "settings"
+    },
+    {
+      "path": "/settings/health",
+      "tier": "chef",
+      "auth": "required",
+      "segment": "settings"
+    },
+    {
+      "path": "/settings/highlights",
+      "tier": "chef",
+      "auth": "required",
+      "segment": "settings"
+    },
+    {
+      "path": "/settings/incidents",
+      "tier": "chef",
+      "auth": "required",
+      "segment": "settings"
+    },
+    {
+      "path": "/settings/integrations",
+      "tier": "chef",
+      "auth": "required",
+      "segment": "settings"
+    },
+    {
+      "path": "/settings/invoice",
+      "tier": "chef",
+      "auth": "required",
+      "segment": "settings"
+    },
+    {
+      "path": "/settings/journal",
+      "tier": "chef",
+      "auth": "required",
+      "segment": "settings"
+    },
+    {
+      "path": "/settings/journal/[id]",
+      "tier": "chef",
+      "auth": "required",
+      "segment": "settings"
+    },
+    {
+      "path": "/settings/journey",
+      "tier": "chef",
+      "auth": "required",
+      "segment": "settings"
+    },
+    {
+      "path": "/settings/journey/[id]",
+      "tier": "chef",
+      "auth": "required",
+      "segment": "settings"
+    },
+    {
+      "path": "/settings/legal-protection",
+      "tier": "chef",
+      "auth": "required",
+      "segment": "settings"
+    },
+    {
+      "path": "/settings/legal-readiness",
+      "tier": "chef",
+      "auth": "required",
+      "segment": "settings"
+    },
+    {
+      "path": "/settings/menu-engine",
+      "tier": "chef",
+      "auth": "required",
+      "segment": "settings"
+    },
+    {
+      "path": "/settings/menu-templates",
+      "tier": "chef",
+      "auth": "required",
+      "segment": "settings"
+    },
+    {
+      "path": "/settings/modules",
+      "tier": "chef",
+      "auth": "required",
+      "segment": "settings"
+    },
+    {
+      "path": "/settings/my-profile",
+      "tier": "chef",
+      "auth": "required",
+      "segment": "settings"
+    },
+    {
+      "path": "/settings/my-services",
+      "tier": "chef",
+      "auth": "required",
+      "segment": "settings"
+    },
+    {
+      "path": "/settings/navigation",
+      "tier": "chef",
+      "auth": "required",
+      "segment": "settings"
+    },
+    {
+      "path": "/settings/notifications",
+      "tier": "chef",
+      "auth": "required",
+      "segment": "settings"
+    },
+    {
+      "path": "/settings/payment-methods",
+      "tier": "chef",
+      "auth": "required",
+      "segment": "settings"
+    },
+    {
+      "path": "/settings/payments",
+      "tier": "chef",
+      "auth": "required",
+      "segment": "settings"
+    },
+    {
+      "path": "/settings/platform-connections",
+      "tier": "chef",
+      "auth": "required",
+      "segment": "settings"
+    },
+    {
+      "path": "/settings/portfolio",
+      "tier": "chef",
+      "auth": "required",
+      "segment": "settings"
+    },
+    {
+      "path": "/settings/pricing",
+      "tier": "chef",
+      "auth": "required",
+      "segment": "settings"
+    },
+    {
+      "path": "/settings/print",
+      "tier": "chef",
+      "auth": "required",
+      "segment": "settings"
+    },
+    {
+      "path": "/settings/professional",
+      "tier": "chef",
+      "auth": "required",
+      "segment": "settings"
+    },
+    {
+      "path": "/settings/professional/momentum",
+      "tier": "chef",
+      "auth": "required",
+      "segment": "settings"
+    },
+    {
+      "path": "/settings/professional/skills",
+      "tier": "chef",
+      "auth": "required",
+      "segment": "settings"
+    },
+    {
+      "path": "/settings/profile",
+      "tier": "chef",
+      "auth": "required",
+      "segment": "settings"
+    },
+    {
+      "path": "/settings/profile-branding",
+      "tier": "chef",
+      "auth": "required",
+      "segment": "settings"
+    },
+    {
+      "path": "/settings/protection",
+      "tier": "chef",
+      "auth": "required",
+      "segment": "settings"
+    },
+    {
+      "path": "/settings/protection/business-health",
+      "tier": "chef",
+      "auth": "required",
+      "segment": "settings"
+    },
+    {
+      "path": "/settings/protection/certifications",
+      "tier": "chef",
+      "auth": "required",
+      "segment": "settings"
+    },
+    {
+      "path": "/settings/protection/continuity",
+      "tier": "chef",
+      "auth": "required",
+      "segment": "settings"
+    },
+    {
+      "path": "/settings/protection/crisis",
+      "tier": "chef",
+      "auth": "required",
+      "segment": "settings"
+    },
+    {
+      "path": "/settings/protection/insurance",
+      "tier": "chef",
+      "auth": "required",
+      "segment": "settings"
+    },
+    {
+      "path": "/settings/protection/nda",
+      "tier": "chef",
+      "auth": "required",
+      "segment": "settings"
+    },
+    {
+      "path": "/settings/protection/portfolio-removal",
+      "tier": "chef",
+      "auth": "required",
+      "segment": "settings"
+    },
+    {
+      "path": "/settings/public-profile",
+      "tier": "chef",
+      "auth": "required",
+      "segment": "settings"
+    },
+    {
+      "path": "/settings/remy",
+      "tier": "chef",
+      "auth": "required",
+      "segment": "settings"
+    },
+    {
+      "path": "/settings/repertoire",
+      "tier": "chef",
+      "auth": "required",
+      "segment": "settings"
+    },
+    {
+      "path": "/settings/repertoire/[id]",
+      "tier": "chef",
+      "auth": "required",
+      "segment": "settings"
+    },
+    {
+      "path": "/settings/restaurants",
+      "tier": "chef",
+      "auth": "required",
+      "segment": "settings"
+    },
+    {
+      "path": "/settings/schedule",
+      "tier": "chef",
+      "auth": "required",
+      "segment": "settings"
+    },
+    {
+      "path": "/settings/scheduling",
+      "tier": "chef",
+      "auth": "required",
+      "segment": "settings"
+    },
+    {
+      "path": "/settings/security",
+      "tier": "chef",
+      "auth": "required",
+      "segment": "settings"
+    },
+    {
+      "path": "/settings/security/audit-trail",
+      "tier": "chef",
+      "auth": "required",
+      "segment": "settings"
+    },
+    {
+      "path": "/settings/security/mfa",
+      "tier": "chef",
+      "auth": "required",
+      "segment": "settings"
+    },
+    {
+      "path": "/settings/store-preferences",
+      "tier": "chef",
+      "auth": "required",
+      "segment": "settings"
+    },
+    {
+      "path": "/settings/stripe-connect",
+      "tier": "chef",
+      "auth": "required",
+      "segment": "settings"
+    },
+    {
+      "path": "/settings/support",
+      "tier": "chef",
+      "auth": "required",
+      "segment": "settings"
+    },
+    {
+      "path": "/settings/system",
+      "tier": "chef",
+      "auth": "required",
+      "segment": "settings"
+    },
+    {
+      "path": "/settings/taxonomy",
+      "tier": "chef",
+      "auth": "required",
+      "segment": "settings"
+    },
+    {
+      "path": "/settings/templates",
+      "tier": "chef",
+      "auth": "required",
+      "segment": "settings"
+    },
+    {
+      "path": "/settings/touchpoints",
+      "tier": "chef",
+      "auth": "required",
+      "segment": "settings"
+    },
+    {
+      "path": "/settings/webhooks",
+      "tier": "chef",
+      "auth": "required",
+      "segment": "settings"
+    },
+    {
+      "path": "/settings/yelp",
+      "tier": "chef",
+      "auth": "required",
+      "segment": "settings"
+    },
+    {
+      "path": "/settings/zapier",
+      "tier": "chef",
+      "auth": "required",
+      "segment": "settings"
+    },
+    {
+      "path": "/share/[token]",
+      "tier": "public",
+      "auth": "none",
+      "segment": "share"
+    },
+    {
+      "path": "/share/[token]/recap",
+      "tier": "public",
+      "auth": "none",
+      "segment": "share"
+    },
+    {
+      "path": "/shopping/bulk",
+      "tier": "chef",
+      "auth": "required",
+      "segment": "shopping"
+    },
+    {
+      "path": "/social",
+      "tier": "chef",
+      "auth": "required",
+      "segment": "social"
+    },
+    {
+      "path": "/social/calendar",
+      "tier": "chef",
+      "auth": "required",
+      "segment": "social"
+    },
+    {
+      "path": "/social/compose/[eventId]",
+      "tier": "chef",
+      "auth": "required",
+      "segment": "social"
+    },
+    {
+      "path": "/social/connections",
+      "tier": "chef",
+      "auth": "required",
+      "segment": "social"
+    },
+    {
+      "path": "/social/hub-overview",
+      "tier": "chef",
+      "auth": "required",
+      "segment": "social"
+    },
+    {
+      "path": "/social/planner",
+      "tier": "chef",
+      "auth": "required",
+      "segment": "social"
+    },
+    {
+      "path": "/social/planner/[month]",
+      "tier": "chef",
+      "auth": "required",
+      "segment": "social"
+    },
+    {
+      "path": "/social/posts/[id]",
+      "tier": "chef",
+      "auth": "required",
+      "segment": "social"
+    },
+    {
+      "path": "/social/settings",
+      "tier": "chef",
+      "auth": "required",
+      "segment": "social"
+    },
+    {
+      "path": "/social/templates",
+      "tier": "chef",
+      "auth": "required",
+      "segment": "social"
+    },
+    {
+      "path": "/social/vault",
+      "tier": "chef",
+      "auth": "required",
+      "segment": "social"
+    },
+    {
+      "path": "/split/[token]",
+      "tier": "public",
+      "auth": "none",
+      "segment": "split"
+    },
+    {
+      "path": "/staff",
+      "tier": "chef",
+      "auth": "required",
+      "segment": "staff"
+    },
+    {
+      "path": "/staff-dashboard",
+      "tier": "staff",
+      "auth": "required",
+      "segment": "staff-dashboard"
+    },
+    {
+      "path": "/staff-login",
+      "tier": "public",
+      "auth": "none",
+      "segment": "staff-login"
+    },
+    {
+      "path": "/staff-portal/[id]",
+      "tier": "public",
+      "auth": "none",
+      "segment": "staff-portal"
+    },
+    {
+      "path": "/staff-recipes",
+      "tier": "staff",
+      "auth": "required",
+      "segment": "staff-recipes"
+    },
+    {
+      "path": "/staff-schedule",
+      "tier": "staff",
+      "auth": "required",
+      "segment": "staff-schedule"
+    },
+    {
+      "path": "/staff-station",
+      "tier": "staff",
+      "auth": "required",
+      "segment": "staff-station"
+    },
+    {
+      "path": "/staff-tasks",
+      "tier": "staff",
+      "auth": "required",
+      "segment": "staff-tasks"
+    },
+    {
+      "path": "/staff-terms",
+      "tier": "public",
+      "auth": "none",
+      "segment": "staff-terms"
+    },
+    {
+      "path": "/staff-time",
+      "tier": "staff",
+      "auth": "required",
+      "segment": "staff-time"
+    },
+    {
+      "path": "/staff/[id]",
+      "tier": "chef",
+      "auth": "required",
+      "segment": "staff"
+    },
+    {
+      "path": "/staff/availability",
+      "tier": "chef",
+      "auth": "required",
+      "segment": "staff"
+    },
+    {
+      "path": "/staff/clock",
+      "tier": "chef",
+      "auth": "required",
+      "segment": "staff"
+    },
+    {
+      "path": "/staff/labor",
+      "tier": "chef",
+      "auth": "required",
+      "segment": "staff"
+    },
+    {
+      "path": "/staff/live",
+      "tier": "chef",
+      "auth": "required",
+      "segment": "staff"
+    },
+    {
+      "path": "/staff/optimization",
+      "tier": "chef",
+      "auth": "required",
+      "segment": "staff"
+    },
+    {
+      "path": "/staff/performance",
+      "tier": "chef",
+      "auth": "required",
+      "segment": "staff"
+    },
+    {
+      "path": "/staff/permissions",
+      "tier": "chef",
+      "auth": "required",
+      "segment": "staff"
+    },
+    {
+      "path": "/staff/roster",
+      "tier": "chef",
+      "auth": "required",
+      "segment": "staff"
+    },
+    {
+      "path": "/staff/schedule",
+      "tier": "chef",
+      "auth": "required",
+      "segment": "staff"
+    },
+    {
+      "path": "/stations",
+      "tier": "chef",
+      "auth": "required",
+      "segment": "stations"
+    },
+    {
+      "path": "/stations/[id]",
+      "tier": "chef",
+      "auth": "required",
+      "segment": "stations"
+    },
+    {
+      "path": "/stations/[id]/clipboard",
+      "tier": "chef",
+      "auth": "required",
+      "segment": "stations"
+    },
+    {
+      "path": "/stations/[id]/clipboard/print",
+      "tier": "chef",
+      "auth": "required",
+      "segment": "stations"
+    },
+    {
+      "path": "/stations/[id]/shift-history",
+      "tier": "chef",
+      "auth": "required",
+      "segment": "stations"
+    },
+    {
+      "path": "/stations/daily-ops",
+      "tier": "chef",
+      "auth": "required",
+      "segment": "stations"
+    },
+    {
+      "path": "/stations/knowledge",
+      "tier": "chef",
+      "auth": "required",
+      "segment": "stations"
+    },
+    {
+      "path": "/stations/menu-board",
+      "tier": "chef",
+      "auth": "required",
+      "segment": "stations"
+    },
+    {
+      "path": "/stations/menu-performance",
+      "tier": "chef",
+      "auth": "required",
+      "segment": "stations"
+    },
+    {
+      "path": "/stations/ops-log",
+      "tier": "chef",
+      "auth": "required",
+      "segment": "stations"
+    },
+    {
+      "path": "/stations/orders",
+      "tier": "chef",
+      "auth": "required",
+      "segment": "stations"
+    },
+    {
+      "path": "/stations/orders/print",
+      "tier": "chef",
+      "auth": "required",
+      "segment": "stations"
+    },
+    {
+      "path": "/stations/service-log",
+      "tier": "chef",
+      "auth": "required",
+      "segment": "stations"
+    },
+    {
+      "path": "/stations/service-log/[id]",
+      "tier": "chef",
+      "auth": "required",
+      "segment": "stations"
+    },
+    {
+      "path": "/stations/service-log/[id]/prep",
+      "tier": "chef",
+      "auth": "required",
+      "segment": "stations"
+    },
+    {
+      "path": "/stations/service-log/[id]/sales",
+      "tier": "chef",
+      "auth": "required",
+      "segment": "stations"
+    },
+    {
+      "path": "/stations/service-log/new",
+      "tier": "chef",
+      "auth": "required",
+      "segment": "stations"
+    },
+    {
+      "path": "/stations/waste",
+      "tier": "chef",
+      "auth": "required",
+      "segment": "stations"
+    },
+    {
+      "path": "/stations/waste/patterns",
+      "tier": "chef",
+      "auth": "required",
+      "segment": "stations"
+    },
+    {
+      "path": "/survey/[token]",
+      "tier": "public",
+      "auth": "none",
+      "segment": "survey"
+    },
+    {
+      "path": "/surveys",
+      "tier": "chef",
+      "auth": "required",
+      "segment": "surveys"
+    },
+    {
+      "path": "/tasks",
+      "tier": "chef",
+      "auth": "required",
+      "segment": "tasks"
+    },
+    {
+      "path": "/tasks/gantt",
+      "tier": "chef",
+      "auth": "required",
+      "segment": "tasks"
+    },
+    {
+      "path": "/tasks/templates",
+      "tier": "chef",
+      "auth": "required",
+      "segment": "tasks"
+    },
+    {
+      "path": "/tasks/va",
+      "tier": "chef",
+      "auth": "required",
+      "segment": "tasks"
+    },
+    {
+      "path": "/team",
+      "tier": "chef",
+      "auth": "required",
+      "segment": "team"
+    },
+    {
+      "path": "/terms",
+      "tier": "public",
+      "auth": "none",
+      "segment": "terms"
+    },
+    {
+      "path": "/tip/[token]",
+      "tier": "public",
+      "auth": "none",
+      "segment": "tip"
+    },
+    {
+      "path": "/travel",
+      "tier": "chef",
+      "auth": "required",
+      "segment": "travel"
+    },
+    {
+      "path": "/trust",
+      "tier": "public",
+      "auth": "none",
+      "segment": "trust"
+    },
+    {
+      "path": "/unauthorized",
+      "tier": "public",
+      "auth": "none",
+      "segment": "unauthorized"
+    },
+    {
+      "path": "/unsubscribe",
+      "tier": "public",
+      "auth": "none",
+      "segment": "unsubscribe"
+    },
+    {
+      "path": "/vendor-agreement",
+      "tier": "public",
+      "auth": "none",
+      "segment": "vendor-agreement"
+    },
+    {
+      "path": "/vendor/catalog",
+      "tier": "vendor",
+      "auth": "required",
+      "segment": "vendor"
+    },
+    {
+      "path": "/vendor/dashboard",
+      "tier": "vendor",
+      "auth": "required",
+      "segment": "vendor"
+    },
+    {
+      "path": "/vendor/invoices",
+      "tier": "vendor",
+      "auth": "required",
+      "segment": "vendor"
+    },
+    {
+      "path": "/vendor/orders",
+      "tier": "vendor",
+      "auth": "required",
+      "segment": "vendor"
+    },
+    {
+      "path": "/vendor/orders/[id]",
+      "tier": "vendor",
+      "auth": "required",
+      "segment": "vendor"
+    },
+    {
+      "path": "/vendor/profile",
+      "tier": "vendor",
+      "auth": "required",
+      "segment": "vendor"
+    },
+    {
+      "path": "/vendors",
+      "tier": "chef",
+      "auth": "required",
+      "segment": "vendors"
+    },
+    {
+      "path": "/vendors/[id]",
+      "tier": "chef",
+      "auth": "required",
+      "segment": "vendors"
+    },
+    {
+      "path": "/vendors/invoices",
+      "tier": "chef",
+      "auth": "required",
+      "segment": "vendors"
+    },
+    {
+      "path": "/vendors/price-comparison",
+      "tier": "chef",
+      "auth": "required",
+      "segment": "vendors"
+    },
+    {
+      "path": "/view/[token]",
+      "tier": "public",
+      "auth": "none",
+      "segment": "view"
+    },
+    {
+      "path": "/waitlist",
+      "tier": "chef",
+      "auth": "required",
+      "segment": "waitlist"
+    },
+    {
+      "path": "/web-research-health",
+      "tier": "public",
+      "auth": "none",
+      "segment": "web-research-health"
+    },
+    {
+      "path": "/welcome",
+      "tier": "chef",
+      "auth": "required",
+      "segment": "welcome"
+    },
+    {
+      "path": "/wix-submissions",
+      "tier": "chef",
+      "auth": "required",
+      "segment": "wix-submissions"
+    },
+    {
+      "path": "/wix-submissions/[id]",
+      "tier": "chef",
+      "auth": "required",
+      "segment": "wix-submissions"
+    },
+    {
+      "path": "/worksheet/[token]",
+      "tier": "public",
+      "auth": "none",
+      "segment": "worksheet"
+    }
+  ]
+}

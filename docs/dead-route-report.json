@@ -1,0 +1,5641 @@
+{
+  "generatedAt": "2026-05-18T06:37:48.059Z",
+  "summary": {
+    "total": 938,
+    "navigable": 631,
+    "tokenAccess": 56,
+    "dynamicChild": 145,
+    "apiOnly": 0,
+    "orphan": 106
+  },
+  "routes": [
+    {
+      "path": "/admin/beta/onboarding",
+      "tier": "admin",
+      "classification": "orphan",
+      "reason": "no navigation path found"
+    },
+    {
+      "path": "/admin/cannabis/access",
+      "tier": "admin",
+      "classification": "orphan",
+      "reason": "no navigation path found"
+    },
+    {
+      "path": "/admin/legal-readiness",
+      "tier": "admin",
+      "classification": "orphan",
+      "reason": "no navigation path found"
+    },
+    {
+      "path": "/admin/outreach",
+      "tier": "admin",
+      "classification": "orphan",
+      "reason": "no navigation path found"
+    },
+    {
+      "path": "/admin/price-catalog",
+      "tier": "admin",
+      "classification": "orphan",
+      "reason": "no navigation path found"
+    },
+    {
+      "path": "/admin/pricing-coverage",
+      "tier": "admin",
+      "classification": "orphan",
+      "reason": "no navigation path found"
+    },
+    {
+      "path": "/admin/pricing-health",
+      "tier": "admin",
+      "classification": "orphan",
+      "reason": "no navigation path found"
+    },
+    {
+      "path": "/admin/services",
+      "tier": "admin",
+      "classification": "orphan",
+      "reason": "no navigation path found"
+    },
+    {
+      "path": "/beta",
+      "tier": "public",
+      "classification": "orphan",
+      "reason": "no navigation path found"
+    },
+    {
+      "path": "/beta-survey",
+      "tier": "public",
+      "classification": "orphan",
+      "reason": "no navigation path found"
+    },
+    {
+      "path": "/beta-survey/public/[slug]",
+      "tier": "public",
+      "classification": "orphan",
+      "reason": "no navigation path found"
+    },
+    {
+      "path": "/beta/thank-you",
+      "tier": "public",
+      "classification": "orphan",
+      "reason": "no navigation path found"
+    },
+    {
+      "path": "/browse-dates",
+      "tier": "client",
+      "classification": "orphan",
+      "reason": "no navigation path found"
+    },
+    {
+      "path": "/cannabis/batches",
+      "tier": "chef",
+      "classification": "orphan",
+      "reason": "no navigation path found"
+    },
+    {
+      "path": "/cannabis/unlock",
+      "tier": "chef",
+      "classification": "orphan",
+      "reason": "no navigation path found"
+    },
+    {
+      "path": "/chef/[slug]",
+      "tier": "public",
+      "classification": "orphan",
+      "reason": "no navigation path found"
+    },
+    {
+      "path": "/chef/[slug]/cart",
+      "tier": "public",
+      "classification": "orphan",
+      "reason": "no navigation path found"
+    },
+    {
+      "path": "/chef/[slug]/dashboard",
+      "tier": "mobile",
+      "classification": "orphan",
+      "reason": "no navigation path found"
+    },
+    {
+      "path": "/chef/[slug]/gift-cards",
+      "tier": "public",
+      "classification": "orphan",
+      "reason": "no navigation path found"
+    },
+    {
+      "path": "/chef/[slug]/inquire",
+      "tier": "public",
+      "classification": "orphan",
+      "reason": "no navigation path found"
+    },
+    {
+      "path": "/chef/[slug]/locations/[locationId]",
+      "tier": "public",
+      "classification": "orphan",
+      "reason": "no navigation path found"
+    },
+    {
+      "path": "/chef/[slug]/partner-signup",
+      "tier": "public",
+      "classification": "orphan",
+      "reason": "no navigation path found"
+    },
+    {
+      "path": "/chef/[slug]/store",
+      "tier": "public",
+      "classification": "orphan",
+      "reason": "no navigation path found"
+    },
+    {
+      "path": "/chef/[slug]/store/products/[productId]",
+      "tier": "public",
+      "classification": "orphan",
+      "reason": "no navigation path found"
+    },
+    {
+      "path": "/chef/cannabis/handbook",
+      "tier": "chef",
+      "classification": "orphan",
+      "reason": "no navigation path found"
+    },
+    {
+      "path": "/cookie-policy",
+      "tier": "public",
+      "classification": "orphan",
+      "reason": "no navigation path found"
+    },
+    {
+      "path": "/cuisines/[slug]",
+      "tier": "public",
+      "classification": "orphan",
+      "reason": "no navigation path found"
+    },
+    {
+      "path": "/culinary/tips",
+      "tier": "chef",
+      "classification": "orphan",
+      "reason": "no navigation path found"
+    },
+    {
+      "path": "/demo",
+      "tier": "demo",
+      "classification": "orphan",
+      "reason": "no navigation path found"
+    },
+    {
+      "path": "/dev/simulate",
+      "tier": "chef",
+      "classification": "orphan",
+      "reason": "no navigation path found"
+    },
+    {
+      "path": "/discover/[[...path]]",
+      "tier": "public",
+      "classification": "orphan",
+      "reason": "no navigation path found"
+    },
+    {
+      "path": "/dmca",
+      "tier": "public",
+      "classification": "orphan",
+      "reason": "no navigation path found"
+    },
+    {
+      "path": "/event/[eventId]/guest/[secureToken]",
+      "tier": "public",
+      "classification": "orphan",
+      "reason": "no navigation path found"
+    },
+    {
+      "path": "/explore",
+      "tier": "chef",
+      "classification": "orphan",
+      "reason": "no navigation path found"
+    },
+    {
+      "path": "/for-operators/walkthrough",
+      "tier": "public",
+      "classification": "orphan",
+      "reason": "no navigation path found"
+    },
+    {
+      "path": "/guest-leads",
+      "tier": "chef",
+      "classification": "orphan",
+      "reason": "no navigation path found"
+    },
+    {
+      "path": "/guest-terms",
+      "tier": "public",
+      "classification": "orphan",
+      "reason": "no navigation path found"
+    },
+    {
+      "path": "/ingredient/[id]",
+      "tier": "public",
+      "classification": "orphan",
+      "reason": "no navigation path found"
+    },
+    {
+      "path": "/kiosk",
+      "tier": "kiosk",
+      "classification": "orphan",
+      "reason": "no navigation path found"
+    },
+    {
+      "path": "/kiosk/disabled",
+      "tier": "kiosk",
+      "classification": "orphan",
+      "reason": "no navigation path found"
+    },
+    {
+      "path": "/kiosk/pair",
+      "tier": "kiosk",
+      "classification": "orphan",
+      "reason": "no navigation path found"
+    },
+    {
+      "path": "/my-calendar",
+      "tier": "client",
+      "classification": "orphan",
+      "reason": "no navigation path found"
+    },
+    {
+      "path": "/my-cannabis/age-required",
+      "tier": "client",
+      "classification": "orphan",
+      "reason": "no navigation path found"
+    },
+    {
+      "path": "/my-dietary",
+      "tier": "client",
+      "classification": "orphan",
+      "reason": "no navigation path found"
+    },
+    {
+      "path": "/my-documents",
+      "tier": "client",
+      "classification": "orphan",
+      "reason": "no navigation path found"
+    },
+    {
+      "path": "/my-gift-cards",
+      "tier": "client",
+      "classification": "orphan",
+      "reason": "no navigation path found"
+    },
+    {
+      "path": "/my-help",
+      "tier": "client",
+      "classification": "orphan",
+      "reason": "no navigation path found"
+    },
+    {
+      "path": "/my-meals",
+      "tier": "client",
+      "classification": "orphan",
+      "reason": "no navigation path found"
+    },
+    {
+      "path": "/my-notifications",
+      "tier": "client",
+      "classification": "orphan",
+      "reason": "no navigation path found"
+    },
+    {
+      "path": "/my-passport",
+      "tier": "client",
+      "classification": "orphan",
+      "reason": "no navigation path found"
+    },
+    {
+      "path": "/my-quotes/compare",
+      "tier": "client",
+      "classification": "orphan",
+      "reason": "no navigation path found"
+    },
+    {
+      "path": "/my-recipes",
+      "tier": "client",
+      "classification": "orphan",
+      "reason": "no navigation path found"
+    },
+    {
+      "path": "/my-recurring",
+      "tier": "client",
+      "classification": "orphan",
+      "reason": "no navigation path found"
+    },
+    {
+      "path": "/my-referrals",
+      "tier": "client",
+      "classification": "orphan",
+      "reason": "no navigation path found"
+    },
+    {
+      "path": "/my-reviews",
+      "tier": "client",
+      "classification": "orphan",
+      "reason": "no navigation path found"
+    },
+    {
+      "path": "/my-spending/tax-summary",
+      "tier": "client",
+      "classification": "orphan",
+      "reason": "no navigation path found"
+    },
+    {
+      "path": "/my-timeline",
+      "tier": "client",
+      "classification": "orphan",
+      "reason": "no navigation path found"
+    },
+    {
+      "path": "/nearby/join",
+      "tier": "authenticated",
+      "classification": "orphan",
+      "reason": "no navigation path found"
+    },
+    {
+      "path": "/nutrition/[menuId]",
+      "tier": "chef",
+      "classification": "orphan",
+      "reason": "no navigation path found"
+    },
+    {
+      "path": "/onboarding/welcome",
+      "tier": "chef",
+      "classification": "orphan",
+      "reason": "no navigation path found"
+    },
+    {
+      "path": "/payments",
+      "tier": "chef",
+      "classification": "orphan",
+      "reason": "no navigation path found"
+    },
+    {
+      "path": "/pie-cart",
+      "tier": "chef",
+      "classification": "orphan",
+      "reason": "no navigation path found"
+    },
+    {
+      "path": "/pipeline",
+      "tier": "chef",
+      "classification": "orphan",
+      "reason": "no navigation path found"
+    },
+    {
+      "path": "/prices/seasonal",
+      "tier": "chef",
+      "classification": "orphan",
+      "reason": "no navigation path found"
+    },
+    {
+      "path": "/print/cannabis-dosing-packet/[eventId]",
+      "tier": "authenticated",
+      "classification": "orphan",
+      "reason": "no navigation path found"
+    },
+    {
+      "path": "/print/menu/[id]",
+      "tier": "authenticated",
+      "classification": "orphan",
+      "reason": "no navigation path found"
+    },
+    {
+      "path": "/privacy-policy",
+      "tier": "public",
+      "classification": "orphan",
+      "reason": "no navigation path found"
+    },
+    {
+      "path": "/quotes/draft",
+      "tier": "chef",
+      "classification": "orphan",
+      "reason": "no navigation path found"
+    },
+    {
+      "path": "/quotes/expired",
+      "tier": "chef",
+      "classification": "orphan",
+      "reason": "no navigation path found"
+    },
+    {
+      "path": "/quotes/rejected",
+      "tier": "chef",
+      "classification": "orphan",
+      "reason": "no navigation path found"
+    },
+    {
+      "path": "/quotes/sent",
+      "tier": "chef",
+      "classification": "orphan",
+      "reason": "no navigation path found"
+    },
+    {
+      "path": "/quotes/viewed",
+      "tier": "chef",
+      "classification": "orphan",
+      "reason": "no navigation path found"
+    },
+    {
+      "path": "/reactivate-account",
+      "tier": "public",
+      "classification": "orphan",
+      "reason": "no navigation path found"
+    },
+    {
+      "path": "/refund-cancellation",
+      "tier": "public",
+      "classification": "orphan",
+      "reason": "no navigation path found"
+    },
+    {
+      "path": "/safety/backup-chef",
+      "tier": "chef",
+      "classification": "orphan",
+      "reason": "no navigation path found"
+    },
+    {
+      "path": "/safety/claims",
+      "tier": "chef",
+      "classification": "orphan",
+      "reason": "no navigation path found"
+    },
+    {
+      "path": "/safety/claims/documents",
+      "tier": "chef",
+      "classification": "orphan",
+      "reason": "no navigation path found"
+    },
+    {
+      "path": "/safety/claims/new",
+      "tier": "chef",
+      "classification": "orphan",
+      "reason": "no navigation path found"
+    },
+    {
+      "path": "/safety/incidents",
+      "tier": "chef",
+      "classification": "orphan",
+      "reason": "no navigation path found"
+    },
+    {
+      "path": "/safety/incidents/[id]",
+      "tier": "chef",
+      "classification": "orphan",
+      "reason": "no navigation path found"
+    },
+    {
+      "path": "/safety/incidents/new",
+      "tier": "chef",
+      "classification": "orphan",
+      "reason": "no navigation path found"
+    },
+    {
+      "path": "/settings/communications",
+      "tier": "chef",
+      "classification": "orphan",
+      "reason": "no navigation path found"
+    },
+    {
+      "path": "/settings/data-quality",
+      "tier": "chef",
+      "classification": "orphan",
+      "reason": "no navigation path found"
+    },
+    {
+      "path": "/settings/developer",
+      "tier": "chef",
+      "classification": "orphan",
+      "reason": "no navigation path found"
+    },
+    {
+      "path": "/settings/invoice",
+      "tier": "chef",
+      "classification": "orphan",
+      "reason": "no navigation path found"
+    },
+    {
+      "path": "/settings/journey",
+      "tier": "chef",
+      "classification": "orphan",
+      "reason": "no navigation path found"
+    },
+    {
+      "path": "/settings/legal-protection",
+      "tier": "chef",
+      "classification": "orphan",
+      "reason": "no navigation path found"
+    },
+    {
+      "path": "/settings/schedule",
+      "tier": "chef",
+      "classification": "orphan",
+      "reason": "no navigation path found"
+    },
+    {
+      "path": "/settings/support",
+      "tier": "chef",
+      "classification": "orphan",
+      "reason": "no navigation path found"
+    },
+    {
+      "path": "/shopping/bulk",
+      "tier": "chef",
+      "classification": "orphan",
+      "reason": "no navigation path found"
+    },
+    {
+      "path": "/social",
+      "tier": "chef",
+      "classification": "orphan",
+      "reason": "no navigation path found"
+    },
+    {
+      "path": "/social/calendar",
+      "tier": "chef",
+      "classification": "orphan",
+      "reason": "no navigation path found"
+    },
+    {
+      "path": "/social/compose/[eventId]",
+      "tier": "chef",
+      "classification": "orphan",
+      "reason": "no navigation path found"
+    },
+    {
+      "path": "/social/connections",
+      "tier": "chef",
+      "classification": "orphan",
+      "reason": "no navigation path found"
+    },
+    {
+      "path": "/social/hub-overview",
+      "tier": "chef",
+      "classification": "orphan",
+      "reason": "no navigation path found"
+    },
+    {
+      "path": "/social/planner",
+      "tier": "chef",
+      "classification": "orphan",
+      "reason": "no navigation path found"
+    },
+    {
+      "path": "/social/planner/[month]",
+      "tier": "chef",
+      "classification": "orphan",
+      "reason": "no navigation path found"
+    },
+    {
+      "path": "/social/posts/[id]",
+      "tier": "chef",
+      "classification": "orphan",
+      "reason": "no navigation path found"
+    },
+    {
+      "path": "/social/settings",
+      "tier": "chef",
+      "classification": "orphan",
+      "reason": "no navigation path found"
+    },
+    {
+      "path": "/social/templates",
+      "tier": "chef",
+      "classification": "orphan",
+      "reason": "no navigation path found"
+    },
+    {
+      "path": "/social/vault",
+      "tier": "chef",
+      "classification": "orphan",
+      "reason": "no navigation path found"
+    },
+    {
+      "path": "/staff-login",
+      "tier": "public",
+      "classification": "orphan",
+      "reason": "no navigation path found"
+    },
+    {
+      "path": "/staff-portal/[id]",
+      "tier": "public",
+      "classification": "orphan",
+      "reason": "no navigation path found"
+    },
+    {
+      "path": "/unauthorized",
+      "tier": "public",
+      "classification": "orphan",
+      "reason": "no navigation path found"
+    },
+    {
+      "path": "/web-research-health",
+      "tier": "public",
+      "classification": "orphan",
+      "reason": "no navigation path found"
+    },
+    {
+      "path": "/welcome",
+      "tier": "chef",
+      "classification": "orphan",
+      "reason": "no navigation path found"
+    },
+    {
+      "path": "/acceptable-use",
+      "tier": "public",
+      "classification": "token-access",
+      "reason": "acceptance route"
+    },
+    {
+      "path": "/auth/client-signup",
+      "tier": "public",
+      "classification": "token-access",
+      "reason": "auth flow route"
+    },
+    {
+      "path": "/auth/confirm-email-change",
+      "tier": "public",
+      "classification": "token-access",
+      "reason": "confirmation route"
+    },
+    {
+      "path": "/auth/forgot-password",
+      "tier": "public",
+      "classification": "token-access",
+      "reason": "auth flow route"
+    },
+    {
+      "path": "/auth/mfa-verify",
+      "tier": "public",
+      "classification": "token-access",
+      "reason": "auth flow route"
+    },
+    {
+      "path": "/auth/partner-signup",
+      "tier": "public",
+      "classification": "token-access",
+      "reason": "auth flow route"
+    },
+    {
+      "path": "/auth/reauth",
+      "tier": "public",
+      "classification": "token-access",
+      "reason": "auth flow route"
+    },
+    {
+      "path": "/auth/reset-password",
+      "tier": "public",
+      "classification": "token-access",
+      "reason": "auth flow route"
+    },
+    {
+      "path": "/auth/role-selection",
+      "tier": "public",
+      "classification": "token-access",
+      "reason": "auth flow route"
+    },
+    {
+      "path": "/auth/signin",
+      "tier": "public",
+      "classification": "token-access",
+      "reason": "auth flow route"
+    },
+    {
+      "path": "/auth/signup",
+      "tier": "public",
+      "classification": "token-access",
+      "reason": "auth flow route"
+    },
+    {
+      "path": "/auth/staff-signup",
+      "tier": "public",
+      "classification": "token-access",
+      "reason": "auth flow route"
+    },
+    {
+      "path": "/auth/vendor-signup",
+      "tier": "public",
+      "classification": "token-access",
+      "reason": "auth flow route"
+    },
+    {
+      "path": "/auth/verify-email",
+      "tier": "public",
+      "classification": "token-access",
+      "reason": "verification route"
+    },
+    {
+      "path": "/availability/[token]",
+      "tier": "public",
+      "classification": "token-access",
+      "reason": "token-based access route"
+    },
+    {
+      "path": "/beta-survey/[token]",
+      "tier": "public",
+      "classification": "token-access",
+      "reason": "token-based access route"
+    },
+    {
+      "path": "/book/campaign/[token]",
+      "tier": "public",
+      "classification": "token-access",
+      "reason": "token-based access route"
+    },
+    {
+      "path": "/cannabis-invite/[token]",
+      "tier": "public",
+      "classification": "token-access",
+      "reason": "token-based access route"
+    },
+    {
+      "path": "/cannabis/invite",
+      "tier": "chef",
+      "classification": "token-access",
+      "reason": "invitation route"
+    },
+    {
+      "path": "/cannabis/rsvps",
+      "tier": "chef",
+      "classification": "token-access",
+      "reason": "RSVP deep-link route"
+    },
+    {
+      "path": "/catalog-pick/[token]",
+      "tier": "public",
+      "classification": "token-access",
+      "reason": "token-based access route"
+    },
+    {
+      "path": "/chef/[slug]/gift-cards/success",
+      "tier": "public",
+      "classification": "token-access",
+      "reason": "success/completion page"
+    },
+    {
+      "path": "/chef/[slug]/store/orders/[token]",
+      "tier": "public",
+      "classification": "token-access",
+      "reason": "token-based access route"
+    },
+    {
+      "path": "/chef/cannabis/rsvps",
+      "tier": "chef",
+      "classification": "token-access",
+      "reason": "RSVP deep-link route"
+    },
+    {
+      "path": "/client/[token]",
+      "tier": "public",
+      "classification": "token-access",
+      "reason": "token-based access route"
+    },
+    {
+      "path": "/client/[token]/events",
+      "tier": "mobile",
+      "classification": "token-access",
+      "reason": "token-based access route"
+    },
+    {
+      "path": "/client/[token]/events/[eventId]/contract",
+      "tier": "public",
+      "classification": "token-access",
+      "reason": "token-based access route"
+    },
+    {
+      "path": "/client/[token]/pay/[eventId]",
+      "tier": "public",
+      "classification": "token-access",
+      "reason": "token-based access route"
+    },
+    {
+      "path": "/client/[token]/quotes/[quoteId]",
+      "tier": "public",
+      "classification": "token-access",
+      "reason": "token-based access route"
+    },
+    {
+      "path": "/e/[shareToken]",
+      "tier": "public",
+      "classification": "token-access",
+      "reason": "share token route"
+    },
+    {
+      "path": "/embed/inquiry/[chefId]",
+      "tier": "public",
+      "classification": "token-access",
+      "reason": "embeddable widget route"
+    },
+    {
+      "path": "/events/confirmed",
+      "tier": "chef",
+      "classification": "token-access",
+      "reason": "confirmation route"
+    },
+    {
+      "path": "/feedback/[token]",
+      "tier": "public",
+      "classification": "token-access",
+      "reason": "token-based access route"
+    },
+    {
+      "path": "/g/[code]",
+      "tier": "public",
+      "classification": "token-access",
+      "reason": "code-based access route"
+    },
+    {
+      "path": "/guest-feedback/[token]",
+      "tier": "public",
+      "classification": "token-access",
+      "reason": "token-based access route"
+    },
+    {
+      "path": "/hub/join/[groupToken]",
+      "tier": "public",
+      "classification": "token-access",
+      "reason": "invite join route"
+    },
+    {
+      "path": "/intake/[token]",
+      "tier": "public",
+      "classification": "token-access",
+      "reason": "token-based access route"
+    },
+    {
+      "path": "/join/[token]",
+      "tier": "public",
+      "classification": "token-access",
+      "reason": "token-based access route"
+    },
+    {
+      "path": "/menu-pick/[token]",
+      "tier": "public",
+      "classification": "token-access",
+      "reason": "token-based access route"
+    },
+    {
+      "path": "/menu/[token]",
+      "tier": "public",
+      "classification": "token-access",
+      "reason": "token-based access route"
+    },
+    {
+      "path": "/my-hub/friends/invite/[profileToken]",
+      "tier": "client",
+      "classification": "token-access",
+      "reason": "invitation route"
+    },
+    {
+      "path": "/nearby/unsubscribe",
+      "tier": "public",
+      "classification": "token-access",
+      "reason": "email unsubscribe route"
+    },
+    {
+      "path": "/onboarding/[token]",
+      "tier": "public",
+      "classification": "token-access",
+      "reason": "token-based access route"
+    },
+    {
+      "path": "/partner-report/[token]",
+      "tier": "public",
+      "classification": "token-access",
+      "reason": "token-based access route"
+    },
+    {
+      "path": "/proposal/[token]",
+      "tier": "public",
+      "classification": "token-access",
+      "reason": "token-based access route"
+    },
+    {
+      "path": "/quotes/accepted",
+      "tier": "chef",
+      "classification": "token-access",
+      "reason": "acceptance route"
+    },
+    {
+      "path": "/review/[token]",
+      "tier": "public",
+      "classification": "token-access",
+      "reason": "token-based access route"
+    },
+    {
+      "path": "/settings/embed",
+      "tier": "chef",
+      "classification": "token-access",
+      "reason": "embeddable widget route"
+    },
+    {
+      "path": "/share/[token]",
+      "tier": "public",
+      "classification": "token-access",
+      "reason": "token-based access route"
+    },
+    {
+      "path": "/share/[token]/recap",
+      "tier": "public",
+      "classification": "token-access",
+      "reason": "token-based access route"
+    },
+    {
+      "path": "/split/[token]",
+      "tier": "public",
+      "classification": "token-access",
+      "reason": "token-based access route"
+    },
+    {
+      "path": "/survey/[token]",
+      "tier": "public",
+      "classification": "token-access",
+      "reason": "token-based access route"
+    },
+    {
+      "path": "/tip/[token]",
+      "tier": "public",
+      "classification": "token-access",
+      "reason": "token-based access route"
+    },
+    {
+      "path": "/unsubscribe",
+      "tier": "public",
+      "classification": "token-access",
+      "reason": "email unsubscribe route"
+    },
+    {
+      "path": "/view/[token]",
+      "tier": "public",
+      "classification": "token-access",
+      "reason": "token-based access route"
+    },
+    {
+      "path": "/worksheet/[token]",
+      "tier": "public",
+      "classification": "token-access",
+      "reason": "token-based access route"
+    },
+    {
+      "path": "/admin/beta-surveys/[id]",
+      "tier": "admin",
+      "classification": "dynamic-child",
+      "reason": "child of navigable dynamic route"
+    },
+    {
+      "path": "/admin/conversations/[conversationId]",
+      "tier": "admin",
+      "classification": "dynamic-child",
+      "reason": "child of navigable dynamic route"
+    },
+    {
+      "path": "/admin/hub/groups/[groupId]",
+      "tier": "admin",
+      "classification": "dynamic-child",
+      "reason": "child of navigable dynamic route"
+    },
+    {
+      "path": "/admin/users/[chefId]",
+      "tier": "admin",
+      "classification": "dynamic-child",
+      "reason": "child of navigable dynamic route"
+    },
+    {
+      "path": "/analytics/goals/[id]/history",
+      "tier": "chef",
+      "classification": "dynamic-child",
+      "reason": "child of navigable dynamic route"
+    },
+    {
+      "path": "/book/[chefSlug]",
+      "tier": "public",
+      "classification": "dynamic-child",
+      "reason": "child of navigable dynamic route"
+    },
+    {
+      "path": "/book/[chefSlug]/thank-you",
+      "tier": "public",
+      "classification": "dynamic-child",
+      "reason": "child of navigable dynamic route"
+    },
+    {
+      "path": "/book/status/[bookingToken]",
+      "tier": "public",
+      "classification": "dynamic-child",
+      "reason": "child of navigable dynamic route"
+    },
+    {
+      "path": "/calls/[id]",
+      "tier": "chef",
+      "classification": "dynamic-child",
+      "reason": "child of navigable dynamic route"
+    },
+    {
+      "path": "/calls/[id]/edit",
+      "tier": "chef",
+      "classification": "dynamic-child",
+      "reason": "child of navigable dynamic route"
+    },
+    {
+      "path": "/cannabis/events/[id]/control-packet",
+      "tier": "chef",
+      "classification": "dynamic-child",
+      "reason": "child of navigable dynamic route"
+    },
+    {
+      "path": "/chat/[id]",
+      "tier": "chef",
+      "classification": "dynamic-child",
+      "reason": "child of navigable dynamic route"
+    },
+    {
+      "path": "/circles/[id]",
+      "tier": "chef",
+      "classification": "dynamic-child",
+      "reason": "child of navigable dynamic route"
+    },
+    {
+      "path": "/clients/[id]",
+      "tier": "chef",
+      "classification": "dynamic-child",
+      "reason": "child of navigable dynamic route"
+    },
+    {
+      "path": "/clients/[id]/preferences",
+      "tier": "chef",
+      "classification": "dynamic-child",
+      "reason": "child of navigable dynamic route"
+    },
+    {
+      "path": "/clients/[id]/recurring",
+      "tier": "chef",
+      "classification": "dynamic-child",
+      "reason": "child of navigable dynamic route"
+    },
+    {
+      "path": "/clients/[id]/relationship",
+      "tier": "chef",
+      "classification": "dynamic-child",
+      "reason": "child of navigable dynamic route"
+    },
+    {
+      "path": "/clients/[id]/summary",
+      "tier": "chef",
+      "classification": "dynamic-child",
+      "reason": "child of navigable dynamic route"
+    },
+    {
+      "path": "/commerce/products/[id]",
+      "tier": "chef",
+      "classification": "dynamic-child",
+      "reason": "child of navigable dynamic route"
+    },
+    {
+      "path": "/commerce/reconciliation/[id]",
+      "tier": "chef",
+      "classification": "dynamic-child",
+      "reason": "child of navigable dynamic route"
+    },
+    {
+      "path": "/commerce/sales/[id]",
+      "tier": "chef",
+      "classification": "dynamic-child",
+      "reason": "child of navigable dynamic route"
+    },
+    {
+      "path": "/commerce/settlements/[id]",
+      "tier": "chef",
+      "classification": "dynamic-child",
+      "reason": "child of navigable dynamic route"
+    },
+    {
+      "path": "/compare/[slug]",
+      "tier": "public",
+      "classification": "dynamic-child",
+      "reason": "child of navigable dynamic route"
+    },
+    {
+      "path": "/contracts/[id]/history",
+      "tier": "chef",
+      "classification": "dynamic-child",
+      "reason": "child of navigable dynamic route"
+    },
+    {
+      "path": "/culinary/dish-index/[id]",
+      "tier": "chef",
+      "classification": "dynamic-child",
+      "reason": "child of navigable dynamic route"
+    },
+    {
+      "path": "/culinary/menus/[id]",
+      "tier": "chef",
+      "classification": "dynamic-child",
+      "reason": "child of navigable dynamic route"
+    },
+    {
+      "path": "/culinary/menus/[id]/nutrition",
+      "tier": "chef",
+      "classification": "dynamic-child",
+      "reason": "child of navigable dynamic route"
+    },
+    {
+      "path": "/culinary/recipes/[id]",
+      "tier": "chef",
+      "classification": "dynamic-child",
+      "reason": "child of navigable dynamic route"
+    },
+    {
+      "path": "/customers/[slug]",
+      "tier": "public",
+      "classification": "dynamic-child",
+      "reason": "child of navigable dynamic route"
+    },
+    {
+      "path": "/events/[id]",
+      "tier": "chef",
+      "classification": "dynamic-child",
+      "reason": "child of navigable dynamic route"
+    },
+    {
+      "path": "/events/[id]/aar",
+      "tier": "chef",
+      "classification": "dynamic-child",
+      "reason": "child of navigable dynamic route"
+    },
+    {
+      "path": "/events/[id]/billing",
+      "tier": "chef",
+      "classification": "dynamic-child",
+      "reason": "child of navigable dynamic route"
+    },
+    {
+      "path": "/events/[id]/briefing",
+      "tier": "chef",
+      "classification": "dynamic-child",
+      "reason": "child of navigable dynamic route"
+    },
+    {
+      "path": "/events/[id]/cannabis",
+      "tier": "chef",
+      "classification": "dynamic-child",
+      "reason": "child of navigable dynamic route"
+    },
+    {
+      "path": "/events/[id]/close-out",
+      "tier": "chef",
+      "classification": "dynamic-child",
+      "reason": "child of navigable dynamic route"
+    },
+    {
+      "path": "/events/[id]/debrief",
+      "tier": "chef",
+      "classification": "dynamic-child",
+      "reason": "child of navigable dynamic route"
+    },
+    {
+      "path": "/events/[id]/documents",
+      "tier": "chef",
+      "classification": "dynamic-child",
+      "reason": "child of navigable dynamic route"
+    },
+    {
+      "path": "/events/[id]/dop/mobile",
+      "tier": "chef",
+      "classification": "dynamic-child",
+      "reason": "child of navigable dynamic route"
+    },
+    {
+      "path": "/events/[id]/edit",
+      "tier": "chef",
+      "classification": "dynamic-child",
+      "reason": "child of navigable dynamic route"
+    },
+    {
+      "path": "/events/[id]/execution",
+      "tier": "chef",
+      "classification": "dynamic-child",
+      "reason": "child of navigable dynamic route"
+    },
+    {
+      "path": "/events/[id]/financial",
+      "tier": "chef",
+      "classification": "dynamic-child",
+      "reason": "child of navigable dynamic route"
+    },
+    {
+      "path": "/events/[id]/follow-up",
+      "tier": "chef",
+      "classification": "dynamic-child",
+      "reason": "child of navigable dynamic route"
+    },
+    {
+      "path": "/events/[id]/gear",
+      "tier": "chef",
+      "classification": "dynamic-child",
+      "reason": "child of navigable dynamic route"
+    },
+    {
+      "path": "/events/[id]/god-mode",
+      "tier": "chef",
+      "classification": "dynamic-child",
+      "reason": "child of navigable dynamic route"
+    },
+    {
+      "path": "/events/[id]/grocery-quote",
+      "tier": "chef",
+      "classification": "dynamic-child",
+      "reason": "child of navigable dynamic route"
+    },
+    {
+      "path": "/events/[id]/grocery-run",
+      "tier": "chef",
+      "classification": "dynamic-child",
+      "reason": "child of navigable dynamic route"
+    },
+    {
+      "path": "/events/[id]/guest-card",
+      "tier": "chef",
+      "classification": "dynamic-child",
+      "reason": "child of navigable dynamic route"
+    },
+    {
+      "path": "/events/[id]/interactive",
+      "tier": "chef",
+      "classification": "dynamic-child",
+      "reason": "child of navigable dynamic route"
+    },
+    {
+      "path": "/events/[id]/invoice",
+      "tier": "chef",
+      "classification": "dynamic-child",
+      "reason": "child of navigable dynamic route"
+    },
+    {
+      "path": "/events/[id]/kds",
+      "tier": "chef",
+      "classification": "dynamic-child",
+      "reason": "child of navigable dynamic route"
+    },
+    {
+      "path": "/events/[id]/menu-approval",
+      "tier": "chef",
+      "classification": "dynamic-child",
+      "reason": "child of navigable dynamic route"
+    },
+    {
+      "path": "/events/[id]/menu-polling",
+      "tier": "chef",
+      "classification": "dynamic-child",
+      "reason": "child of navigable dynamic route"
+    },
+    {
+      "path": "/events/[id]/ops",
+      "tier": "chef",
+      "classification": "dynamic-child",
+      "reason": "child of navigable dynamic route"
+    },
+    {
+      "path": "/events/[id]/outcome",
+      "tier": "chef",
+      "classification": "dynamic-child",
+      "reason": "child of navigable dynamic route"
+    },
+    {
+      "path": "/events/[id]/pack",
+      "tier": "chef",
+      "classification": "dynamic-child",
+      "reason": "child of navigable dynamic route"
+    },
+    {
+      "path": "/events/[id]/pack/mobile",
+      "tier": "chef",
+      "classification": "dynamic-child",
+      "reason": "child of navigable dynamic route"
+    },
+    {
+      "path": "/events/[id]/photos",
+      "tier": "chef",
+      "classification": "dynamic-child",
+      "reason": "child of navigable dynamic route"
+    },
+    {
+      "path": "/events/[id]/prep-plan",
+      "tier": "chef",
+      "classification": "dynamic-child",
+      "reason": "child of navigable dynamic route"
+    },
+    {
+      "path": "/events/[id]/procurement",
+      "tier": "chef",
+      "classification": "dynamic-child",
+      "reason": "child of navigable dynamic route"
+    },
+    {
+      "path": "/events/[id]/receipts",
+      "tier": "chef",
+      "classification": "dynamic-child",
+      "reason": "child of navigable dynamic route"
+    },
+    {
+      "path": "/events/[id]/replay",
+      "tier": "chef",
+      "classification": "dynamic-child",
+      "reason": "child of navigable dynamic route"
+    },
+    {
+      "path": "/events/[id]/report",
+      "tier": "chef",
+      "classification": "dynamic-child",
+      "reason": "child of navigable dynamic route"
+    },
+    {
+      "path": "/events/[id]/reset",
+      "tier": "chef",
+      "classification": "dynamic-child",
+      "reason": "child of navigable dynamic route"
+    },
+    {
+      "path": "/events/[id]/safety",
+      "tier": "chef",
+      "classification": "dynamic-child",
+      "reason": "child of navigable dynamic route"
+    },
+    {
+      "path": "/events/[id]/schedule",
+      "tier": "chef",
+      "classification": "dynamic-child",
+      "reason": "child of navigable dynamic route"
+    },
+    {
+      "path": "/events/[id]/service",
+      "tier": "chef",
+      "classification": "dynamic-child",
+      "reason": "child of navigable dynamic route"
+    },
+    {
+      "path": "/events/[id]/split-billing",
+      "tier": "chef",
+      "classification": "dynamic-child",
+      "reason": "child of navigable dynamic route"
+    },
+    {
+      "path": "/events/[id]/staff",
+      "tier": "chef",
+      "classification": "dynamic-child",
+      "reason": "child of navigable dynamic route"
+    },
+    {
+      "path": "/events/[id]/story",
+      "tier": "chef",
+      "classification": "dynamic-child",
+      "reason": "child of navigable dynamic route"
+    },
+    {
+      "path": "/events/[id]/travel",
+      "tier": "chef",
+      "classification": "dynamic-child",
+      "reason": "child of navigable dynamic route"
+    },
+    {
+      "path": "/expenses/[id]",
+      "tier": "chef",
+      "classification": "dynamic-child",
+      "reason": "child of navigable dynamic route"
+    },
+    {
+      "path": "/finance/retainers/[id]",
+      "tier": "chef",
+      "classification": "dynamic-child",
+      "reason": "child of navigable dynamic route"
+    },
+    {
+      "path": "/guests/[id]",
+      "tier": "chef",
+      "classification": "dynamic-child",
+      "reason": "child of navigable dynamic route"
+    },
+    {
+      "path": "/help/[slug]",
+      "tier": "chef",
+      "classification": "dynamic-child",
+      "reason": "child of navigable dynamic route"
+    },
+    {
+      "path": "/hub/g/[groupToken]",
+      "tier": "public",
+      "classification": "dynamic-child",
+      "reason": "child of navigable dynamic route"
+    },
+    {
+      "path": "/hub/me/[profileToken]",
+      "tier": "public",
+      "classification": "dynamic-child",
+      "reason": "child of navigable dynamic route"
+    },
+    {
+      "path": "/inbox/triage/[threadId]",
+      "tier": "chef",
+      "classification": "dynamic-child",
+      "reason": "child of navigable dynamic route"
+    },
+    {
+      "path": "/ingredients/[category]",
+      "tier": "public",
+      "classification": "dynamic-child",
+      "reason": "child of navigable dynamic route"
+    },
+    {
+      "path": "/inquiries/[id]",
+      "tier": "chef",
+      "classification": "dynamic-child",
+      "reason": "child of navigable dynamic route"
+    },
+    {
+      "path": "/inventory/audits/[id]",
+      "tier": "chef",
+      "classification": "dynamic-child",
+      "reason": "child of navigable dynamic route"
+    },
+    {
+      "path": "/inventory/ingredients/[id]",
+      "tier": "chef",
+      "classification": "dynamic-child",
+      "reason": "child of navigable dynamic route"
+    },
+    {
+      "path": "/inventory/purchase-orders/[id]",
+      "tier": "chef",
+      "classification": "dynamic-child",
+      "reason": "child of navigable dynamic route"
+    },
+    {
+      "path": "/locations/[id]",
+      "tier": "chef",
+      "classification": "dynamic-child",
+      "reason": "child of navigable dynamic route"
+    },
+    {
+      "path": "/loyalty/raffle/[id]",
+      "tier": "chef",
+      "classification": "dynamic-child",
+      "reason": "child of navigable dynamic route"
+    },
+    {
+      "path": "/marketing/[id]",
+      "tier": "chef",
+      "classification": "dynamic-child",
+      "reason": "child of navigable dynamic route"
+    },
+    {
+      "path": "/marketing/push-dinners/[id]",
+      "tier": "chef",
+      "classification": "dynamic-child",
+      "reason": "child of navigable dynamic route"
+    },
+    {
+      "path": "/marketing/social/[month]",
+      "tier": "chef",
+      "classification": "dynamic-child",
+      "reason": "child of navigable dynamic route"
+    },
+    {
+      "path": "/marketing/social/compose/[eventId]",
+      "tier": "chef",
+      "classification": "dynamic-child",
+      "reason": "child of navigable dynamic route"
+    },
+    {
+      "path": "/marketing/social/posts/[id]",
+      "tier": "chef",
+      "classification": "dynamic-child",
+      "reason": "child of navigable dynamic route"
+    },
+    {
+      "path": "/meal-prep/[programId]",
+      "tier": "chef",
+      "classification": "dynamic-child",
+      "reason": "child of navigable dynamic route"
+    },
+    {
+      "path": "/menus/[id]",
+      "tier": "chef",
+      "classification": "dynamic-child",
+      "reason": "child of navigable dynamic route"
+    },
+    {
+      "path": "/menus/[id]/editor",
+      "tier": "chef",
+      "classification": "dynamic-child",
+      "reason": "child of navigable dynamic route"
+    },
+    {
+      "path": "/my-chat/[id]",
+      "tier": "client",
+      "classification": "dynamic-child",
+      "reason": "child of navigable dynamic route"
+    },
+    {
+      "path": "/my-events/[id]",
+      "tier": "client",
+      "classification": "dynamic-child",
+      "reason": "child of navigable dynamic route"
+    },
+    {
+      "path": "/my-events/[id]/approve-menu",
+      "tier": "client",
+      "classification": "dynamic-child",
+      "reason": "child of navigable dynamic route"
+    },
+    {
+      "path": "/my-events/[id]/choose-menu",
+      "tier": "client",
+      "classification": "dynamic-child",
+      "reason": "child of navigable dynamic route"
+    },
+    {
+      "path": "/my-events/[id]/contract",
+      "tier": "client",
+      "classification": "dynamic-child",
+      "reason": "child of navigable dynamic route"
+    },
+    {
+      "path": "/my-events/[id]/countdown",
+      "tier": "client",
+      "classification": "dynamic-child",
+      "reason": "child of navigable dynamic route"
+    },
+    {
+      "path": "/my-events/[id]/event-summary",
+      "tier": "client",
+      "classification": "dynamic-child",
+      "reason": "child of navigable dynamic route"
+    },
+    {
+      "path": "/my-events/[id]/guests",
+      "tier": "client",
+      "classification": "dynamic-child",
+      "reason": "child of navigable dynamic route"
+    },
+    {
+      "path": "/my-events/[id]/invoice",
+      "tier": "client",
+      "classification": "dynamic-child",
+      "reason": "child of navigable dynamic route"
+    },
+    {
+      "path": "/my-events/[id]/live",
+      "tier": "client",
+      "classification": "dynamic-child",
+      "reason": "child of navigable dynamic route"
+    },
+    {
+      "path": "/my-events/[id]/pay",
+      "tier": "client",
+      "classification": "dynamic-child",
+      "reason": "child of navigable dynamic route"
+    },
+    {
+      "path": "/my-events/[id]/payment-plan",
+      "tier": "client",
+      "classification": "dynamic-child",
+      "reason": "child of navigable dynamic route"
+    },
+    {
+      "path": "/my-events/[id]/pre-event-checklist",
+      "tier": "client",
+      "classification": "dynamic-child",
+      "reason": "child of navigable dynamic route"
+    },
+    {
+      "path": "/my-events/[id]/proposal",
+      "tier": "client",
+      "classification": "dynamic-child",
+      "reason": "child of navigable dynamic route"
+    },
+    {
+      "path": "/my-events/[id]/recap",
+      "tier": "client",
+      "classification": "dynamic-child",
+      "reason": "child of navigable dynamic route"
+    },
+    {
+      "path": "/my-events/[id]/split",
+      "tier": "client",
+      "classification": "dynamic-child",
+      "reason": "child of navigable dynamic route"
+    },
+    {
+      "path": "/my-hub/g/[groupToken]",
+      "tier": "client",
+      "classification": "dynamic-child",
+      "reason": "child of navigable dynamic route"
+    },
+    {
+      "path": "/my-hub/g/[groupToken]/meal-board",
+      "tier": "client",
+      "classification": "dynamic-child",
+      "reason": "child of navigable dynamic route"
+    },
+    {
+      "path": "/my-inquiries/[id]",
+      "tier": "client",
+      "classification": "dynamic-child",
+      "reason": "child of navigable dynamic route"
+    },
+    {
+      "path": "/my-quotes/[id]",
+      "tier": "client",
+      "classification": "dynamic-child",
+      "reason": "child of navigable dynamic route"
+    },
+    {
+      "path": "/my-receipts/[eventId]",
+      "tier": "client",
+      "classification": "dynamic-child",
+      "reason": "child of navigable dynamic route"
+    },
+    {
+      "path": "/nearby/[slug]",
+      "tier": "public",
+      "classification": "dynamic-child",
+      "reason": "child of navigable dynamic route"
+    },
+    {
+      "path": "/nearby/[slug]/enhance",
+      "tier": "public",
+      "classification": "dynamic-child",
+      "reason": "child of navigable dynamic route"
+    },
+    {
+      "path": "/nearby/collections/[slug]",
+      "tier": "public",
+      "classification": "dynamic-child",
+      "reason": "child of navigable dynamic route"
+    },
+    {
+      "path": "/network/[chefId]",
+      "tier": "chef",
+      "classification": "dynamic-child",
+      "reason": "child of navigable dynamic route"
+    },
+    {
+      "path": "/network/bridges/[bridgeId]",
+      "tier": "chef",
+      "classification": "dynamic-child",
+      "reason": "child of navigable dynamic route"
+    },
+    {
+      "path": "/network/channels/[slug]",
+      "tier": "chef",
+      "classification": "dynamic-child",
+      "reason": "child of navigable dynamic route"
+    },
+    {
+      "path": "/network/collabs/[spaceId]",
+      "tier": "chef",
+      "classification": "dynamic-child",
+      "reason": "child of navigable dynamic route"
+    },
+    {
+      "path": "/partner/locations/[id]",
+      "tier": "partner",
+      "classification": "dynamic-child",
+      "reason": "child of navigable dynamic route"
+    },
+    {
+      "path": "/partners/[id]",
+      "tier": "chef",
+      "classification": "dynamic-child",
+      "reason": "child of navigable dynamic route"
+    },
+    {
+      "path": "/partners/[id]/edit",
+      "tier": "chef",
+      "classification": "dynamic-child",
+      "reason": "child of navigable dynamic route"
+    },
+    {
+      "path": "/partners/[id]/report",
+      "tier": "chef",
+      "classification": "dynamic-child",
+      "reason": "child of navigable dynamic route"
+    },
+    {
+      "path": "/prospecting/[id]",
+      "tier": "chef",
+      "classification": "dynamic-child",
+      "reason": "child of navigable dynamic route"
+    },
+    {
+      "path": "/quotes/[id]",
+      "tier": "chef",
+      "classification": "dynamic-child",
+      "reason": "child of navigable dynamic route"
+    },
+    {
+      "path": "/quotes/[id]/edit",
+      "tier": "chef",
+      "classification": "dynamic-child",
+      "reason": "child of navigable dynamic route"
+    },
+    {
+      "path": "/recipes/[id]",
+      "tier": "chef",
+      "classification": "dynamic-child",
+      "reason": "child of navigable dynamic route"
+    },
+    {
+      "path": "/recipes/[id]/edit",
+      "tier": "chef",
+      "classification": "dynamic-child",
+      "reason": "child of navigable dynamic route"
+    },
+    {
+      "path": "/services/[slug]",
+      "tier": "public",
+      "classification": "dynamic-child",
+      "reason": "child of navigable dynamic route"
+    },
+    {
+      "path": "/settings/compliance/incidents/[id]",
+      "tier": "chef",
+      "classification": "dynamic-child",
+      "reason": "child of navigable dynamic route"
+    },
+    {
+      "path": "/settings/journal/[id]",
+      "tier": "chef",
+      "classification": "dynamic-child",
+      "reason": "child of navigable dynamic route"
+    },
+    {
+      "path": "/settings/journey/[id]",
+      "tier": "chef",
+      "classification": "dynamic-child",
+      "reason": "child of navigable dynamic route"
+    },
+    {
+      "path": "/settings/repertoire/[id]",
+      "tier": "chef",
+      "classification": "dynamic-child",
+      "reason": "child of navigable dynamic route"
+    },
+    {
+      "path": "/staff/[id]",
+      "tier": "chef",
+      "classification": "dynamic-child",
+      "reason": "child of navigable dynamic route"
+    },
+    {
+      "path": "/stations/[id]",
+      "tier": "chef",
+      "classification": "dynamic-child",
+      "reason": "child of navigable dynamic route"
+    },
+    {
+      "path": "/stations/[id]/clipboard",
+      "tier": "chef",
+      "classification": "dynamic-child",
+      "reason": "child of navigable dynamic route"
+    },
+    {
+      "path": "/stations/[id]/clipboard/print",
+      "tier": "chef",
+      "classification": "dynamic-child",
+      "reason": "child of navigable dynamic route"
+    },
+    {
+      "path": "/stations/[id]/shift-history",
+      "tier": "chef",
+      "classification": "dynamic-child",
+      "reason": "child of navigable dynamic route"
+    },
+    {
+      "path": "/stations/service-log/[id]",
+      "tier": "chef",
+      "classification": "dynamic-child",
+      "reason": "child of navigable dynamic route"
+    },
+    {
+      "path": "/stations/service-log/[id]/prep",
+      "tier": "chef",
+      "classification": "dynamic-child",
+      "reason": "child of navigable dynamic route"
+    },
+    {
+      "path": "/stations/service-log/[id]/sales",
+      "tier": "chef",
+      "classification": "dynamic-child",
+      "reason": "child of navigable dynamic route"
+    },
+    {
+      "path": "/vendor/orders/[id]",
+      "tier": "vendor",
+      "classification": "dynamic-child",
+      "reason": "child of navigable dynamic route"
+    },
+    {
+      "path": "/vendors/[id]",
+      "tier": "chef",
+      "classification": "dynamic-child",
+      "reason": "child of navigable dynamic route"
+    },
+    {
+      "path": "/wix-submissions/[id]",
+      "tier": "chef",
+      "classification": "dynamic-child",
+      "reason": "child of navigable dynamic route"
+    },
+    {
+      "path": "/",
+      "tier": "public",
+      "classification": "navigable",
+      "reason": "linked from navigation (matches /)"
+    },
+    {
+      "path": "/aar",
+      "tier": "chef",
+      "classification": "navigable",
+      "reason": "linked from navigation (matches /aar)"
+    },
+    {
+      "path": "/about",
+      "tier": "public",
+      "classification": "navigable",
+      "reason": "linked from navigation (matches /about)"
+    },
+    {
+      "path": "/account-security",
+      "tier": "authenticated",
+      "classification": "navigable",
+      "reason": "linked from navigation (matches /account-security)"
+    },
+    {
+      "path": "/activity",
+      "tier": "chef",
+      "classification": "navigable",
+      "reason": "linked from navigation (matches /activity)"
+    },
+    {
+      "path": "/activity/audit",
+      "tier": "chef",
+      "classification": "navigable",
+      "reason": "linked from navigation (matches /activity/audit)"
+    },
+    {
+      "path": "/admin",
+      "tier": "admin",
+      "classification": "navigable",
+      "reason": "linked from navigation (matches /admin)"
+    },
+    {
+      "path": "/admin/analytics",
+      "tier": "admin",
+      "classification": "navigable",
+      "reason": "linked from navigation (matches /admin/analytics)"
+    },
+    {
+      "path": "/admin/audit",
+      "tier": "admin",
+      "classification": "navigable",
+      "reason": "linked from navigation (matches /admin/audit)"
+    },
+    {
+      "path": "/admin/beta",
+      "tier": "admin",
+      "classification": "navigable",
+      "reason": "linked from navigation (matches /admin/beta)"
+    },
+    {
+      "path": "/admin/beta-surveys",
+      "tier": "admin",
+      "classification": "navigable",
+      "reason": "linked from navigation (matches /admin/beta-surveys)"
+    },
+    {
+      "path": "/admin/cannabis",
+      "tier": "admin",
+      "classification": "navigable",
+      "reason": "linked from navigation (matches /admin/cannabis)"
+    },
+    {
+      "path": "/admin/clients",
+      "tier": "admin",
+      "classification": "navigable",
+      "reason": "linked from navigation (matches /admin/clients)"
+    },
+    {
+      "path": "/admin/command-center",
+      "tier": "admin",
+      "classification": "navigable",
+      "reason": "linked from navigation (matches /admin/command-center)"
+    },
+    {
+      "path": "/admin/communications",
+      "tier": "admin",
+      "classification": "navigable",
+      "reason": "linked from navigation (matches /admin/communications)"
+    },
+    {
+      "path": "/admin/conversations",
+      "tier": "admin",
+      "classification": "navigable",
+      "reason": "linked from navigation (matches /admin/conversations)"
+    },
+    {
+      "path": "/admin/directory",
+      "tier": "admin",
+      "classification": "navigable",
+      "reason": "linked from navigation (matches /admin/directory)"
+    },
+    {
+      "path": "/admin/directory-listings",
+      "tier": "admin",
+      "classification": "navigable",
+      "reason": "linked from navigation (matches /admin/directory-listings)"
+    },
+    {
+      "path": "/admin/events",
+      "tier": "admin",
+      "classification": "navigable",
+      "reason": "linked from navigation (matches /admin/events)"
+    },
+    {
+      "path": "/admin/feedback",
+      "tier": "admin",
+      "classification": "navigable",
+      "reason": "linked from navigation (matches /admin/feedback)"
+    },
+    {
+      "path": "/admin/financials",
+      "tier": "admin",
+      "classification": "navigable",
+      "reason": "linked from navigation (matches /admin/financials)"
+    },
+    {
+      "path": "/admin/flags",
+      "tier": "admin",
+      "classification": "navigable",
+      "reason": "linked from navigation (matches /admin/flags)"
+    },
+    {
+      "path": "/admin/hub",
+      "tier": "admin",
+      "classification": "navigable",
+      "reason": "linked from navigation (matches /admin/hub)"
+    },
+    {
+      "path": "/admin/inquiries",
+      "tier": "admin",
+      "classification": "navigable",
+      "reason": "linked from navigation (matches /admin/inquiries)"
+    },
+    {
+      "path": "/admin/notifications",
+      "tier": "admin",
+      "classification": "navigable",
+      "reason": "linked from navigation (matches /admin/notifications)"
+    },
+    {
+      "path": "/admin/openclaw",
+      "tier": "admin",
+      "classification": "navigable",
+      "reason": "linked from navigation (matches /admin/openclaw)"
+    },
+    {
+      "path": "/admin/openclaw/health",
+      "tier": "admin",
+      "classification": "navigable",
+      "reason": "linked from navigation (matches /admin/openclaw/health)"
+    },
+    {
+      "path": "/admin/pie-compliance",
+      "tier": "admin",
+      "classification": "navigable",
+      "reason": "linked from navigation (matches /admin/pie-compliance)"
+    },
+    {
+      "path": "/admin/presence",
+      "tier": "admin",
+      "classification": "navigable",
+      "reason": "linked from navigation (matches /admin/presence)"
+    },
+    {
+      "path": "/admin/pulse",
+      "tier": "admin",
+      "classification": "navigable",
+      "reason": "linked from navigation (matches /admin/pulse)"
+    },
+    {
+      "path": "/admin/reconciliation",
+      "tier": "admin",
+      "classification": "navigable",
+      "reason": "linked from navigation (matches /admin/reconciliation)"
+    },
+    {
+      "path": "/admin/referral-partners",
+      "tier": "admin",
+      "classification": "navigable",
+      "reason": "linked from navigation (matches /admin/referral-partners)"
+    },
+    {
+      "path": "/admin/silent-failures",
+      "tier": "admin",
+      "classification": "navigable",
+      "reason": "linked from navigation (matches /admin/silent-failures)"
+    },
+    {
+      "path": "/admin/social",
+      "tier": "admin",
+      "classification": "navigable",
+      "reason": "linked from navigation (matches /admin/social)"
+    },
+    {
+      "path": "/admin/system",
+      "tier": "admin",
+      "classification": "navigable",
+      "reason": "linked from navigation (matches /admin/system)"
+    },
+    {
+      "path": "/admin/system/payments",
+      "tier": "admin",
+      "classification": "navigable",
+      "reason": "linked from navigation (matches /admin/system/payments)"
+    },
+    {
+      "path": "/admin/users",
+      "tier": "admin",
+      "classification": "navigable",
+      "reason": "linked from navigation (matches /admin/users)"
+    },
+    {
+      "path": "/admin/web-research",
+      "tier": "admin",
+      "classification": "navigable",
+      "reason": "linked from navigation (matches /admin/web-research)"
+    },
+    {
+      "path": "/analytics",
+      "tier": "chef",
+      "classification": "navigable",
+      "reason": "linked from navigation (matches /analytics)"
+    },
+    {
+      "path": "/analytics/benchmarks",
+      "tier": "chef",
+      "classification": "navigable",
+      "reason": "linked from navigation (matches /analytics/benchmarks)"
+    },
+    {
+      "path": "/analytics/client-ltv",
+      "tier": "chef",
+      "classification": "navigable",
+      "reason": "linked from navigation (matches /analytics/client-ltv)"
+    },
+    {
+      "path": "/analytics/daily-report",
+      "tier": "chef",
+      "classification": "navigable",
+      "reason": "linked from navigation (matches /analytics/daily-report)"
+    },
+    {
+      "path": "/analytics/demand",
+      "tier": "chef",
+      "classification": "navigable",
+      "reason": "linked from navigation (matches /analytics/demand)"
+    },
+    {
+      "path": "/analytics/demand/ingredients",
+      "tier": "chef",
+      "classification": "navigable",
+      "reason": "linked from navigation (matches /analytics/demand/ingredients)"
+    },
+    {
+      "path": "/analytics/forecast",
+      "tier": "chef",
+      "classification": "navigable",
+      "reason": "linked from navigation (matches /analytics/forecast)"
+    },
+    {
+      "path": "/analytics/funnel",
+      "tier": "chef",
+      "classification": "navigable",
+      "reason": "linked from navigation (matches /analytics/funnel)"
+    },
+    {
+      "path": "/analytics/goals",
+      "tier": "chef",
+      "classification": "navigable",
+      "reason": "linked from navigation (matches /analytics/goals)"
+    },
+    {
+      "path": "/analytics/goals/revenue-path",
+      "tier": "chef",
+      "classification": "navigable",
+      "reason": "linked from navigation (matches /analytics/goals/revenue-path)"
+    },
+    {
+      "path": "/analytics/goals/setup",
+      "tier": "chef",
+      "classification": "navigable",
+      "reason": "linked from navigation (matches /analytics/goals/setup)"
+    },
+    {
+      "path": "/analytics/health",
+      "tier": "chef",
+      "classification": "navigable",
+      "reason": "linked from navigation (matches /analytics/health)"
+    },
+    {
+      "path": "/analytics/intelligence",
+      "tier": "chef",
+      "classification": "navigable",
+      "reason": "linked from navigation (matches /analytics/intelligence)"
+    },
+    {
+      "path": "/analytics/intelligence/client-risk",
+      "tier": "chef",
+      "classification": "navigable",
+      "reason": "linked from navigation (matches /analytics/intelligence/client-risk)"
+    },
+    {
+      "path": "/analytics/marketing/spend",
+      "tier": "chef",
+      "classification": "navigable",
+      "reason": "linked from navigation (matches /analytics/marketing/spend)"
+    },
+    {
+      "path": "/analytics/pipeline",
+      "tier": "chef",
+      "classification": "navigable",
+      "reason": "linked from navigation (matches /analytics/pipeline)"
+    },
+    {
+      "path": "/analytics/reconciliation",
+      "tier": "chef",
+      "classification": "navigable",
+      "reason": "linked from navigation (matches /analytics/reconciliation)"
+    },
+    {
+      "path": "/analytics/referral-sources",
+      "tier": "chef",
+      "classification": "navigable",
+      "reason": "linked from navigation (matches /analytics/referral-sources)"
+    },
+    {
+      "path": "/analytics/reports",
+      "tier": "chef",
+      "classification": "navigable",
+      "reason": "linked from navigation (matches /analytics/reports)"
+    },
+    {
+      "path": "/analytics/vendors",
+      "tier": "chef",
+      "classification": "navigable",
+      "reason": "linked from navigation (matches /analytics/vendors)"
+    },
+    {
+      "path": "/analytics/weekly",
+      "tier": "chef",
+      "classification": "navigable",
+      "reason": "linked from navigation (matches /analytics/weekly)"
+    },
+    {
+      "path": "/autopilot",
+      "tier": "chef",
+      "classification": "navigable",
+      "reason": "linked from navigation (matches /autopilot)"
+    },
+    {
+      "path": "/availability",
+      "tier": "chef",
+      "classification": "navigable",
+      "reason": "linked from navigation (matches /availability)"
+    },
+    {
+      "path": "/book",
+      "tier": "public",
+      "classification": "navigable",
+      "reason": "linked from navigation (matches /book)"
+    },
+    {
+      "path": "/book-now",
+      "tier": "client",
+      "classification": "navigable",
+      "reason": "linked from navigation (matches /book-now)"
+    },
+    {
+      "path": "/briefing",
+      "tier": "chef",
+      "classification": "navigable",
+      "reason": "linked from navigation (matches /briefing)"
+    },
+    {
+      "path": "/calendar",
+      "tier": "chef",
+      "classification": "navigable",
+      "reason": "linked from navigation (matches /calendar)"
+    },
+    {
+      "path": "/calendar/day",
+      "tier": "chef",
+      "classification": "navigable",
+      "reason": "linked from navigation (matches /calendar/day)"
+    },
+    {
+      "path": "/calendar/load",
+      "tier": "chef",
+      "classification": "navigable",
+      "reason": "linked from navigation (matches /calendar/load)"
+    },
+    {
+      "path": "/calendar/share",
+      "tier": "chef",
+      "classification": "navigable",
+      "reason": "linked from navigation (matches /calendar/share)"
+    },
+    {
+      "path": "/calendar/travel",
+      "tier": "chef",
+      "classification": "navigable",
+      "reason": "linked from navigation (matches /calendar/travel)"
+    },
+    {
+      "path": "/calendar/week",
+      "tier": "chef",
+      "classification": "navigable",
+      "reason": "linked from navigation (matches /calendar/week)"
+    },
+    {
+      "path": "/calendar/year",
+      "tier": "chef",
+      "classification": "navigable",
+      "reason": "linked from navigation (matches /calendar/year)"
+    },
+    {
+      "path": "/calls",
+      "tier": "chef",
+      "classification": "navigable",
+      "reason": "linked from navigation (matches /calls)"
+    },
+    {
+      "path": "/calls/new",
+      "tier": "chef",
+      "classification": "navigable",
+      "reason": "linked from navigation (matches /calls/new)"
+    },
+    {
+      "path": "/cannabis",
+      "tier": "chef",
+      "classification": "navigable",
+      "reason": "linked from navigation (matches /cannabis)"
+    },
+    {
+      "path": "/cannabis/about",
+      "tier": "chef",
+      "classification": "navigable",
+      "reason": "linked from navigation (matches /cannabis/about)"
+    },
+    {
+      "path": "/cannabis/agreement",
+      "tier": "chef",
+      "classification": "navigable",
+      "reason": "linked from navigation (matches /cannabis/agreement)"
+    },
+    {
+      "path": "/cannabis/compliance",
+      "tier": "chef",
+      "classification": "navigable",
+      "reason": "linked from navigation (matches /cannabis/compliance)"
+    },
+    {
+      "path": "/cannabis/control-packet/template",
+      "tier": "chef",
+      "classification": "navigable",
+      "reason": "linked from navigation (matches /cannabis/control-packet/template)"
+    },
+    {
+      "path": "/cannabis/events",
+      "tier": "chef",
+      "classification": "navigable",
+      "reason": "linked from navigation (matches /cannabis/events)"
+    },
+    {
+      "path": "/cannabis/handbook",
+      "tier": "chef",
+      "classification": "navigable",
+      "reason": "linked from navigation (matches /cannabis/handbook)"
+    },
+    {
+      "path": "/cannabis/hub",
+      "tier": "chef",
+      "classification": "navigable",
+      "reason": "linked from navigation (matches /cannabis/hub)"
+    },
+    {
+      "path": "/cannabis/ledger",
+      "tier": "chef",
+      "classification": "navigable",
+      "reason": "linked from navigation (matches /cannabis/ledger)"
+    },
+    {
+      "path": "/cannabis/public",
+      "tier": "public",
+      "classification": "navigable",
+      "reason": "linked from navigation (matches /cannabis/public)"
+    },
+    {
+      "path": "/capture",
+      "tier": "chef",
+      "classification": "navigable",
+      "reason": "linked from navigation (matches /capture)"
+    },
+    {
+      "path": "/charity",
+      "tier": "chef",
+      "classification": "navigable",
+      "reason": "linked from navigation (matches /charity)"
+    },
+    {
+      "path": "/charity/hours",
+      "tier": "chef",
+      "classification": "navigable",
+      "reason": "linked from navigation (matches /charity/hours)"
+    },
+    {
+      "path": "/chat",
+      "tier": "chef",
+      "classification": "navigable",
+      "reason": "linked from navigation (matches /chat)"
+    },
+    {
+      "path": "/chef-agreement",
+      "tier": "public",
+      "classification": "navigable",
+      "reason": "linked from navigation (matches /chef-agreement)"
+    },
+    {
+      "path": "/chefs",
+      "tier": "public",
+      "classification": "navigable",
+      "reason": "linked from navigation (matches /chefs)"
+    },
+    {
+      "path": "/circles",
+      "tier": "chef",
+      "classification": "navigable",
+      "reason": "linked from navigation (matches /circles)"
+    },
+    {
+      "path": "/circles/admin",
+      "tier": "chef",
+      "classification": "navigable",
+      "reason": "linked from navigation (matches /circles/admin)"
+    },
+    {
+      "path": "/client-terms",
+      "tier": "public",
+      "classification": "navigable",
+      "reason": "linked from navigation (matches /client-terms)"
+    },
+    {
+      "path": "/clients",
+      "tier": "chef",
+      "classification": "navigable",
+      "reason": "linked from navigation (matches /clients)"
+    },
+    {
+      "path": "/clients/active",
+      "tier": "chef",
+      "classification": "navigable",
+      "reason": "linked from navigation (matches /clients/active)"
+    },
+    {
+      "path": "/clients/communication",
+      "tier": "chef",
+      "classification": "navigable",
+      "reason": "linked from navigation (matches /clients/communication)"
+    },
+    {
+      "path": "/clients/communication/follow-ups",
+      "tier": "chef",
+      "classification": "navigable",
+      "reason": "linked from navigation (matches /clients/communication/follow-ups)"
+    },
+    {
+      "path": "/clients/communication/notes",
+      "tier": "chef",
+      "classification": "navigable",
+      "reason": "linked from navigation (matches /clients/communication/notes)"
+    },
+    {
+      "path": "/clients/communication/upcoming-touchpoints",
+      "tier": "chef",
+      "classification": "navigable",
+      "reason": "linked from navigation (matches /clients/communication/upcoming-touchpoints)"
+    },
+    {
+      "path": "/clients/duplicates",
+      "tier": "chef",
+      "classification": "navigable",
+      "reason": "linked from navigation (matches /clients/duplicates)"
+    },
+    {
+      "path": "/clients/gift-cards",
+      "tier": "chef",
+      "classification": "navigable",
+      "reason": "linked from navigation (matches /clients/gift-cards)"
+    },
+    {
+      "path": "/clients/history",
+      "tier": "chef",
+      "classification": "navigable",
+      "reason": "linked from navigation (matches /clients/history)"
+    },
+    {
+      "path": "/clients/history/event-history",
+      "tier": "chef",
+      "classification": "navigable",
+      "reason": "linked from navigation (matches /clients/history/event-history)"
+    },
+    {
+      "path": "/clients/history/past-menus",
+      "tier": "chef",
+      "classification": "navigable",
+      "reason": "linked from navigation (matches /clients/history/past-menus)"
+    },
+    {
+      "path": "/clients/history/spending-history",
+      "tier": "chef",
+      "classification": "navigable",
+      "reason": "linked from navigation (matches /clients/history/spending-history)"
+    },
+    {
+      "path": "/clients/inactive",
+      "tier": "chef",
+      "classification": "navigable",
+      "reason": "linked from navigation (matches /clients/inactive)"
+    },
+    {
+      "path": "/clients/insights",
+      "tier": "chef",
+      "classification": "navigable",
+      "reason": "linked from navigation (matches /clients/insights)"
+    },
+    {
+      "path": "/clients/insights/at-risk",
+      "tier": "chef",
+      "classification": "navigable",
+      "reason": "linked from navigation (matches /clients/insights/at-risk)"
+    },
+    {
+      "path": "/clients/insights/dormant-high-value",
+      "tier": "chef",
+      "classification": "navigable",
+      "reason": "linked from navigation (matches /clients/insights/dormant-high-value)"
+    },
+    {
+      "path": "/clients/insights/most-frequent",
+      "tier": "chef",
+      "classification": "navigable",
+      "reason": "linked from navigation (matches /clients/insights/most-frequent)"
+    },
+    {
+      "path": "/clients/insights/retention",
+      "tier": "chef",
+      "classification": "navigable",
+      "reason": "linked from navigation (matches /clients/insights/retention)"
+    },
+    {
+      "path": "/clients/insights/this-year",
+      "tier": "chef",
+      "classification": "navigable",
+      "reason": "linked from navigation (matches /clients/insights/this-year)"
+    },
+    {
+      "path": "/clients/insights/top-clients",
+      "tier": "chef",
+      "classification": "navigable",
+      "reason": "linked from navigation (matches /clients/insights/top-clients)"
+    },
+    {
+      "path": "/clients/insights/top-covers",
+      "tier": "chef",
+      "classification": "navigable",
+      "reason": "linked from navigation (matches /clients/insights/top-covers)"
+    },
+    {
+      "path": "/clients/intake",
+      "tier": "chef",
+      "classification": "navigable",
+      "reason": "linked from navigation (matches /clients/intake)"
+    },
+    {
+      "path": "/clients/intelligence",
+      "tier": "chef",
+      "classification": "navigable",
+      "reason": "linked from navigation (matches /clients/intelligence)"
+    },
+    {
+      "path": "/clients/loyalty",
+      "tier": "chef",
+      "classification": "navigable",
+      "reason": "linked from navigation (matches /clients/loyalty)"
+    },
+    {
+      "path": "/clients/loyalty/points",
+      "tier": "chef",
+      "classification": "navigable",
+      "reason": "linked from navigation (matches /clients/loyalty/points)"
+    },
+    {
+      "path": "/clients/loyalty/referrals",
+      "tier": "chef",
+      "classification": "navigable",
+      "reason": "linked from navigation (matches /clients/loyalty/referrals)"
+    },
+    {
+      "path": "/clients/loyalty/rewards",
+      "tier": "chef",
+      "classification": "navigable",
+      "reason": "linked from navigation (matches /clients/loyalty/rewards)"
+    },
+    {
+      "path": "/clients/new",
+      "tier": "chef",
+      "classification": "navigable",
+      "reason": "linked from navigation (matches /clients/new)"
+    },
+    {
+      "path": "/clients/preferences",
+      "tier": "chef",
+      "classification": "navigable",
+      "reason": "linked from navigation (matches /clients/preferences)"
+    },
+    {
+      "path": "/clients/preferences/allergies",
+      "tier": "chef",
+      "classification": "navigable",
+      "reason": "linked from navigation (matches /clients/preferences/allergies)"
+    },
+    {
+      "path": "/clients/preferences/dietary-restrictions",
+      "tier": "chef",
+      "classification": "navigable",
+      "reason": "linked from navigation (matches /clients/preferences/dietary-restrictions)"
+    },
+    {
+      "path": "/clients/preferences/dislikes",
+      "tier": "chef",
+      "classification": "navigable",
+      "reason": "linked from navigation (matches /clients/preferences/dislikes)"
+    },
+    {
+      "path": "/clients/preferences/favorite-dishes",
+      "tier": "chef",
+      "classification": "navigable",
+      "reason": "linked from navigation (matches /clients/preferences/favorite-dishes)"
+    },
+    {
+      "path": "/clients/presence",
+      "tier": "chef",
+      "classification": "navigable",
+      "reason": "linked from navigation (matches /clients/presence)"
+    },
+    {
+      "path": "/clients/recurring",
+      "tier": "chef",
+      "classification": "navigable",
+      "reason": "linked from navigation (matches /clients/recurring)"
+    },
+    {
+      "path": "/clients/segments",
+      "tier": "chef",
+      "classification": "navigable",
+      "reason": "linked from navigation (matches /clients/segments)"
+    },
+    {
+      "path": "/clients/vip",
+      "tier": "chef",
+      "classification": "navigable",
+      "reason": "linked from navigation (matches /clients/vip)"
+    },
+    {
+      "path": "/commerce",
+      "tier": "chef",
+      "classification": "navigable",
+      "reason": "linked from navigation (matches /commerce)"
+    },
+    {
+      "path": "/commerce/observability",
+      "tier": "chef",
+      "classification": "navigable",
+      "reason": "linked from navigation (matches /commerce/observability)"
+    },
+    {
+      "path": "/commerce/orders",
+      "tier": "chef",
+      "classification": "navigable",
+      "reason": "linked from navigation (matches /commerce/orders)"
+    },
+    {
+      "path": "/commerce/parity",
+      "tier": "chef",
+      "classification": "navigable",
+      "reason": "linked from navigation (matches /commerce/parity)"
+    },
+    {
+      "path": "/commerce/products",
+      "tier": "chef",
+      "classification": "navigable",
+      "reason": "linked from navigation (matches /commerce/products)"
+    },
+    {
+      "path": "/commerce/products/new",
+      "tier": "chef",
+      "classification": "navigable",
+      "reason": "linked from navigation (matches /commerce/products/new)"
+    },
+    {
+      "path": "/commerce/promotions",
+      "tier": "chef",
+      "classification": "navigable",
+      "reason": "linked from navigation (matches /commerce/promotions)"
+    },
+    {
+      "path": "/commerce/reconciliation",
+      "tier": "chef",
+      "classification": "navigable",
+      "reason": "linked from navigation (matches /commerce/reconciliation)"
+    },
+    {
+      "path": "/commerce/register",
+      "tier": "chef",
+      "classification": "navigable",
+      "reason": "linked from navigation (matches /commerce/register)"
+    },
+    {
+      "path": "/commerce/reports",
+      "tier": "chef",
+      "classification": "navigable",
+      "reason": "linked from navigation (matches /commerce/reports)"
+    },
+    {
+      "path": "/commerce/reports/shifts",
+      "tier": "chef",
+      "classification": "navigable",
+      "reason": "linked from navigation (matches /commerce/reports/shifts)"
+    },
+    {
+      "path": "/commerce/sales",
+      "tier": "chef",
+      "classification": "navigable",
+      "reason": "linked from navigation (matches /commerce/sales)"
+    },
+    {
+      "path": "/commerce/schedules",
+      "tier": "chef",
+      "classification": "navigable",
+      "reason": "linked from navigation (matches /commerce/schedules)"
+    },
+    {
+      "path": "/commerce/settlements",
+      "tier": "chef",
+      "classification": "navigable",
+      "reason": "linked from navigation (matches /commerce/settlements)"
+    },
+    {
+      "path": "/commerce/storefront",
+      "tier": "chef",
+      "classification": "navigable",
+      "reason": "linked from navigation (matches /commerce/storefront)"
+    },
+    {
+      "path": "/commerce/table-service",
+      "tier": "chef",
+      "classification": "navigable",
+      "reason": "linked from navigation (matches /commerce/table-service)"
+    },
+    {
+      "path": "/commerce/virtual-terminal",
+      "tier": "chef",
+      "classification": "navigable",
+      "reason": "linked from navigation (matches /commerce/virtual-terminal)"
+    },
+    {
+      "path": "/community",
+      "tier": "chef",
+      "classification": "navigable",
+      "reason": "linked from navigation (matches /community)"
+    },
+    {
+      "path": "/community/benchmarks",
+      "tier": "chef",
+      "classification": "navigable",
+      "reason": "linked from navigation (matches /community/benchmarks)"
+    },
+    {
+      "path": "/community/directory",
+      "tier": "chef",
+      "classification": "navigable",
+      "reason": "linked from navigation (matches /community/directory)"
+    },
+    {
+      "path": "/community/mentorship",
+      "tier": "chef",
+      "classification": "navigable",
+      "reason": "linked from navigation (matches /community/mentorship)"
+    },
+    {
+      "path": "/community/messaging",
+      "tier": "chef",
+      "classification": "navigable",
+      "reason": "linked from navigation (matches /community/messaging)"
+    },
+    {
+      "path": "/community/profile",
+      "tier": "chef",
+      "classification": "navigable",
+      "reason": "linked from navigation (matches /community/profile)"
+    },
+    {
+      "path": "/community/roadmap",
+      "tier": "chef",
+      "classification": "navigable",
+      "reason": "linked from navigation (matches /community/roadmap)"
+    },
+    {
+      "path": "/community/subcontracts",
+      "tier": "chef",
+      "classification": "navigable",
+      "reason": "linked from navigation (matches /community/subcontracts)"
+    },
+    {
+      "path": "/community/templates",
+      "tier": "chef",
+      "classification": "navigable",
+      "reason": "linked from navigation (matches /community/templates)"
+    },
+    {
+      "path": "/compare",
+      "tier": "public",
+      "classification": "navigable",
+      "reason": "linked from navigation (matches /compare)"
+    },
+    {
+      "path": "/consulting",
+      "tier": "chef",
+      "classification": "navigable",
+      "reason": "linked from navigation (matches /consulting)"
+    },
+    {
+      "path": "/contact",
+      "tier": "public",
+      "classification": "navigable",
+      "reason": "linked from navigation (matches /contact)"
+    },
+    {
+      "path": "/content",
+      "tier": "chef",
+      "classification": "navigable",
+      "reason": "linked from navigation (matches /content)"
+    },
+    {
+      "path": "/content/vault",
+      "tier": "chef",
+      "classification": "navigable",
+      "reason": "linked from navigation (matches /content/vault)"
+    },
+    {
+      "path": "/contracts",
+      "tier": "chef",
+      "classification": "navigable",
+      "reason": "linked from navigation (matches /contracts)"
+    },
+    {
+      "path": "/contracts/new",
+      "tier": "chef",
+      "classification": "navigable",
+      "reason": "linked from navigation (matches /contracts/new)"
+    },
+    {
+      "path": "/culinary",
+      "tier": "chef",
+      "classification": "navigable",
+      "reason": "linked from navigation (matches /culinary)"
+    },
+    {
+      "path": "/culinary-board",
+      "tier": "chef",
+      "classification": "navigable",
+      "reason": "linked from navigation (matches /culinary-board)"
+    },
+    {
+      "path": "/culinary/call-sheet",
+      "tier": "chef",
+      "classification": "navigable",
+      "reason": "linked from navigation (matches /culinary/call-sheet)"
+    },
+    {
+      "path": "/culinary/chefnotes",
+      "tier": "chef",
+      "classification": "navigable",
+      "reason": "linked from navigation (matches /culinary/chefnotes)"
+    },
+    {
+      "path": "/culinary/cheftips",
+      "tier": "chef",
+      "classification": "navigable",
+      "reason": "linked from navigation (matches /culinary/cheftips)"
+    },
+    {
+      "path": "/culinary/components",
+      "tier": "chef",
+      "classification": "navigable",
+      "reason": "linked from navigation (matches /culinary/components)"
+    },
+    {
+      "path": "/culinary/components/ferments",
+      "tier": "chef",
+      "classification": "navigable",
+      "reason": "linked from navigation (matches /culinary/components/ferments)"
+    },
+    {
+      "path": "/culinary/components/garnishes",
+      "tier": "chef",
+      "classification": "navigable",
+      "reason": "linked from navigation (matches /culinary/components/garnishes)"
+    },
+    {
+      "path": "/culinary/components/sauces",
+      "tier": "chef",
+      "classification": "navigable",
+      "reason": "linked from navigation (matches /culinary/components/sauces)"
+    },
+    {
+      "path": "/culinary/components/shared-elements",
+      "tier": "chef",
+      "classification": "navigable",
+      "reason": "linked from navigation (matches /culinary/components/shared-elements)"
+    },
+    {
+      "path": "/culinary/components/stocks",
+      "tier": "chef",
+      "classification": "navigable",
+      "reason": "linked from navigation (matches /culinary/components/stocks)"
+    },
+    {
+      "path": "/culinary/costing",
+      "tier": "chef",
+      "classification": "navigable",
+      "reason": "linked from navigation (matches /culinary/costing)"
+    },
+    {
+      "path": "/culinary/costing/food-cost",
+      "tier": "chef",
+      "classification": "navigable",
+      "reason": "linked from navigation (matches /culinary/costing/food-cost)"
+    },
+    {
+      "path": "/culinary/costing/menu",
+      "tier": "chef",
+      "classification": "navigable",
+      "reason": "linked from navigation (matches /culinary/costing/menu)"
+    },
+    {
+      "path": "/culinary/costing/recipe",
+      "tier": "chef",
+      "classification": "navigable",
+      "reason": "linked from navigation (matches /culinary/costing/recipe)"
+    },
+    {
+      "path": "/culinary/costing/sales",
+      "tier": "chef",
+      "classification": "navigable",
+      "reason": "linked from navigation (matches /culinary/costing/sales)"
+    },
+    {
+      "path": "/culinary/dish-index",
+      "tier": "chef",
+      "classification": "navigable",
+      "reason": "linked from navigation (matches /culinary/dish-index)"
+    },
+    {
+      "path": "/culinary/dish-index/insights",
+      "tier": "chef",
+      "classification": "navigable",
+      "reason": "linked from navigation (matches /culinary/dish-index/insights)"
+    },
+    {
+      "path": "/culinary/ingredients",
+      "tier": "chef",
+      "classification": "navigable",
+      "reason": "linked from navigation (matches /culinary/ingredients)"
+    },
+    {
+      "path": "/culinary/ingredients/receipt-scan",
+      "tier": "chef",
+      "classification": "navigable",
+      "reason": "linked from navigation (matches /culinary/ingredients/receipt-scan)"
+    },
+    {
+      "path": "/culinary/ingredients/seasonal-availability",
+      "tier": "chef",
+      "classification": "navigable",
+      "reason": "linked from navigation (matches /culinary/ingredients/seasonal-availability)"
+    },
+    {
+      "path": "/culinary/ingredients/vendor-notes",
+      "tier": "chef",
+      "classification": "navigable",
+      "reason": "linked from navigation (matches /culinary/ingredients/vendor-notes)"
+    },
+    {
+      "path": "/culinary/menus",
+      "tier": "chef",
+      "classification": "navigable",
+      "reason": "linked from navigation (matches /culinary/menus)"
+    },
+    {
+      "path": "/culinary/menus/approved",
+      "tier": "chef",
+      "classification": "navigable",
+      "reason": "linked from navigation (matches /culinary/menus/approved)"
+    },
+    {
+      "path": "/culinary/menus/drafts",
+      "tier": "chef",
+      "classification": "navigable",
+      "reason": "linked from navigation (matches /culinary/menus/drafts)"
+    },
+    {
+      "path": "/culinary/menus/engineering",
+      "tier": "chef",
+      "classification": "navigable",
+      "reason": "linked from navigation (matches /culinary/menus/engineering)"
+    },
+    {
+      "path": "/culinary/menus/scaling",
+      "tier": "chef",
+      "classification": "navigable",
+      "reason": "linked from navigation (matches /culinary/menus/scaling)"
+    },
+    {
+      "path": "/culinary/menus/substitutions",
+      "tier": "chef",
+      "classification": "navigable",
+      "reason": "linked from navigation (matches /culinary/menus/substitutions)"
+    },
+    {
+      "path": "/culinary/menus/templates",
+      "tier": "chef",
+      "classification": "navigable",
+      "reason": "linked from navigation (matches /culinary/menus/templates)"
+    },
+    {
+      "path": "/culinary/my-kitchen",
+      "tier": "chef",
+      "classification": "navigable",
+      "reason": "linked from navigation (matches /culinary/my-kitchen)"
+    },
+    {
+      "path": "/culinary/prep",
+      "tier": "chef",
+      "classification": "navigable",
+      "reason": "linked from navigation (matches /culinary/prep)"
+    },
+    {
+      "path": "/culinary/prep/shopping",
+      "tier": "chef",
+      "classification": "navigable",
+      "reason": "linked from navigation (matches /culinary/prep/shopping)"
+    },
+    {
+      "path": "/culinary/prep/timeline",
+      "tier": "chef",
+      "classification": "navigable",
+      "reason": "linked from navigation (matches /culinary/prep/timeline)"
+    },
+    {
+      "path": "/culinary/price-catalog",
+      "tier": "chef",
+      "classification": "navigable",
+      "reason": "linked from navigation (matches /culinary/price-catalog)"
+    },
+    {
+      "path": "/culinary/recipes",
+      "tier": "chef",
+      "classification": "navigable",
+      "reason": "linked from navigation (matches /culinary/recipes)"
+    },
+    {
+      "path": "/culinary/recipes/dietary-flags",
+      "tier": "chef",
+      "classification": "navigable",
+      "reason": "linked from navigation (matches /culinary/recipes/dietary-flags)"
+    },
+    {
+      "path": "/culinary/recipes/drafts",
+      "tier": "chef",
+      "classification": "navigable",
+      "reason": "linked from navigation (matches /culinary/recipes/drafts)"
+    },
+    {
+      "path": "/culinary/recipes/seasonal-notes",
+      "tier": "chef",
+      "classification": "navigable",
+      "reason": "linked from navigation (matches /culinary/recipes/seasonal-notes)"
+    },
+    {
+      "path": "/culinary/recipes/tags",
+      "tier": "chef",
+      "classification": "navigable",
+      "reason": "linked from navigation (matches /culinary/recipes/tags)"
+    },
+    {
+      "path": "/culinary/seasonal-calendar",
+      "tier": "chef",
+      "classification": "navigable",
+      "reason": "linked from navigation (matches /culinary/seasonal-calendar)"
+    },
+    {
+      "path": "/culinary/sourcing",
+      "tier": "chef",
+      "classification": "navigable",
+      "reason": "linked from navigation (matches /culinary/sourcing)"
+    },
+    {
+      "path": "/culinary/substitutions",
+      "tier": "chef",
+      "classification": "navigable",
+      "reason": "linked from navigation (matches /culinary/substitutions)"
+    },
+    {
+      "path": "/culinary/supplier-calls",
+      "tier": "chef",
+      "classification": "navigable",
+      "reason": "linked from navigation (matches /culinary/supplier-calls)"
+    },
+    {
+      "path": "/culinary/vendors",
+      "tier": "chef",
+      "classification": "navigable",
+      "reason": "linked from navigation (matches /culinary/vendors)"
+    },
+    {
+      "path": "/customers",
+      "tier": "public",
+      "classification": "navigable",
+      "reason": "linked from navigation (matches /customers)"
+    },
+    {
+      "path": "/daily",
+      "tier": "chef",
+      "classification": "navigable",
+      "reason": "linked from navigation (matches /daily)"
+    },
+    {
+      "path": "/dashboard",
+      "tier": "chef",
+      "classification": "navigable",
+      "reason": "linked from navigation (matches /dashboard)"
+    },
+    {
+      "path": "/data-request",
+      "tier": "public",
+      "classification": "navigable",
+      "reason": "linked from navigation (matches /data-request)"
+    },
+    {
+      "path": "/documents",
+      "tier": "chef",
+      "classification": "navigable",
+      "reason": "linked from navigation (matches /documents)"
+    },
+    {
+      "path": "/eat",
+      "tier": "public",
+      "classification": "navigable",
+      "reason": "linked from navigation (matches /eat)"
+    },
+    {
+      "path": "/events",
+      "tier": "chef",
+      "classification": "navigable",
+      "reason": "linked from navigation (matches /events)"
+    },
+    {
+      "path": "/events/awaiting-deposit",
+      "tier": "chef",
+      "classification": "navigable",
+      "reason": "linked from navigation (matches /events/awaiting-deposit)"
+    },
+    {
+      "path": "/events/board",
+      "tier": "chef",
+      "classification": "navigable",
+      "reason": "linked from navigation (matches /events/board)"
+    },
+    {
+      "path": "/events/cancelled",
+      "tier": "chef",
+      "classification": "navigable",
+      "reason": "linked from navigation (matches /events/cancelled)"
+    },
+    {
+      "path": "/events/cannabis",
+      "tier": "chef",
+      "classification": "navigable",
+      "reason": "linked from navigation (matches /events/cannabis)"
+    },
+    {
+      "path": "/events/cannabis/ledger",
+      "tier": "chef",
+      "classification": "navigable",
+      "reason": "linked from navigation (matches /events/cannabis/ledger)"
+    },
+    {
+      "path": "/events/charity",
+      "tier": "chef",
+      "classification": "navigable",
+      "reason": "linked from navigation (matches /events/charity)"
+    },
+    {
+      "path": "/events/charity/hours",
+      "tier": "chef",
+      "classification": "navigable",
+      "reason": "linked from navigation (matches /events/charity/hours)"
+    },
+    {
+      "path": "/events/completed",
+      "tier": "chef",
+      "classification": "navigable",
+      "reason": "linked from navigation (matches /events/completed)"
+    },
+    {
+      "path": "/events/equipment-check",
+      "tier": "chef",
+      "classification": "navigable",
+      "reason": "linked from navigation (matches /events/equipment-check)"
+    },
+    {
+      "path": "/events/new",
+      "tier": "chef",
+      "classification": "navigable",
+      "reason": "linked from navigation (matches /events/new)"
+    },
+    {
+      "path": "/events/new/from-text",
+      "tier": "chef",
+      "classification": "navigable",
+      "reason": "linked from navigation (matches /events/new/from-text)"
+    },
+    {
+      "path": "/events/new/wizard",
+      "tier": "chef",
+      "classification": "navigable",
+      "reason": "linked from navigation (matches /events/new/wizard)"
+    },
+    {
+      "path": "/events/timeline",
+      "tier": "chef",
+      "classification": "navigable",
+      "reason": "linked from navigation (matches /events/timeline)"
+    },
+    {
+      "path": "/events/travel",
+      "tier": "chef",
+      "classification": "navigable",
+      "reason": "linked from navigation (matches /events/travel)"
+    },
+    {
+      "path": "/events/upcoming",
+      "tier": "chef",
+      "classification": "navigable",
+      "reason": "linked from navigation (matches /events/upcoming)"
+    },
+    {
+      "path": "/expenses",
+      "tier": "chef",
+      "classification": "navigable",
+      "reason": "linked from navigation (matches /expenses)"
+    },
+    {
+      "path": "/expenses/new",
+      "tier": "chef",
+      "classification": "navigable",
+      "reason": "linked from navigation (matches /expenses/new)"
+    },
+    {
+      "path": "/explore/book",
+      "tier": "chef",
+      "classification": "navigable",
+      "reason": "linked from navigation (matches /explore/book)"
+    },
+    {
+      "path": "/explore/discover",
+      "tier": "chef",
+      "classification": "navigable",
+      "reason": "linked from navigation (matches /explore/discover)"
+    },
+    {
+      "path": "/explore/events",
+      "tier": "chef",
+      "classification": "navigable",
+      "reason": "linked from navigation (matches /explore/events)"
+    },
+    {
+      "path": "/explore/local",
+      "tier": "chef",
+      "classification": "navigable",
+      "reason": "linked from navigation (matches /explore/local)"
+    },
+    {
+      "path": "/faq",
+      "tier": "public",
+      "classification": "navigable",
+      "reason": "linked from navigation (matches /faq)"
+    },
+    {
+      "path": "/features",
+      "tier": "chef",
+      "classification": "navigable",
+      "reason": "linked from navigation (matches /features)"
+    },
+    {
+      "path": "/finance",
+      "tier": "chef",
+      "classification": "navigable",
+      "reason": "linked from navigation (matches /finance)"
+    },
+    {
+      "path": "/finance/bank-feed",
+      "tier": "chef",
+      "classification": "navigable",
+      "reason": "linked from navigation (matches /finance/bank-feed)"
+    },
+    {
+      "path": "/finance/cash-flow",
+      "tier": "chef",
+      "classification": "navigable",
+      "reason": "linked from navigation (matches /finance/cash-flow)"
+    },
+    {
+      "path": "/finance/contractors",
+      "tier": "chef",
+      "classification": "navigable",
+      "reason": "linked from navigation (matches /finance/contractors)"
+    },
+    {
+      "path": "/finance/disputes",
+      "tier": "chef",
+      "classification": "navigable",
+      "reason": "linked from navigation (matches /finance/disputes)"
+    },
+    {
+      "path": "/finance/expenses",
+      "tier": "chef",
+      "classification": "navigable",
+      "reason": "linked from navigation (matches /finance/expenses)"
+    },
+    {
+      "path": "/finance/expenses/food-ingredients",
+      "tier": "chef",
+      "classification": "navigable",
+      "reason": "linked from navigation (matches /finance/expenses/food-ingredients)"
+    },
+    {
+      "path": "/finance/expenses/labor",
+      "tier": "chef",
+      "classification": "navigable",
+      "reason": "linked from navigation (matches /finance/expenses/labor)"
+    },
+    {
+      "path": "/finance/expenses/marketing",
+      "tier": "chef",
+      "classification": "navigable",
+      "reason": "linked from navigation (matches /finance/expenses/marketing)"
+    },
+    {
+      "path": "/finance/expenses/miscellaneous",
+      "tier": "chef",
+      "classification": "navigable",
+      "reason": "linked from navigation (matches /finance/expenses/miscellaneous)"
+    },
+    {
+      "path": "/finance/expenses/rentals-equipment",
+      "tier": "chef",
+      "classification": "navigable",
+      "reason": "linked from navigation (matches /finance/expenses/rentals-equipment)"
+    },
+    {
+      "path": "/finance/expenses/software",
+      "tier": "chef",
+      "classification": "navigable",
+      "reason": "linked from navigation (matches /finance/expenses/software)"
+    },
+    {
+      "path": "/finance/expenses/travel",
+      "tier": "chef",
+      "classification": "navigable",
+      "reason": "linked from navigation (matches /finance/expenses/travel)"
+    },
+    {
+      "path": "/finance/forecast",
+      "tier": "chef",
+      "classification": "navigable",
+      "reason": "linked from navigation (matches /finance/forecast)"
+    },
+    {
+      "path": "/finance/goals",
+      "tier": "chef",
+      "classification": "navigable",
+      "reason": "linked from navigation (matches /finance/goals)"
+    },
+    {
+      "path": "/finance/invoices",
+      "tier": "chef",
+      "classification": "navigable",
+      "reason": "linked from navigation (matches /finance/invoices)"
+    },
+    {
+      "path": "/finance/invoices/cancelled",
+      "tier": "chef",
+      "classification": "navigable",
+      "reason": "linked from navigation (matches /finance/invoices/cancelled)"
+    },
+    {
+      "path": "/finance/invoices/draft",
+      "tier": "chef",
+      "classification": "navigable",
+      "reason": "linked from navigation (matches /finance/invoices/draft)"
+    },
+    {
+      "path": "/finance/invoices/overdue",
+      "tier": "chef",
+      "classification": "navigable",
+      "reason": "linked from navigation (matches /finance/invoices/overdue)"
+    },
+    {
+      "path": "/finance/invoices/paid",
+      "tier": "chef",
+      "classification": "navigable",
+      "reason": "linked from navigation (matches /finance/invoices/paid)"
+    },
+    {
+      "path": "/finance/invoices/refunded",
+      "tier": "chef",
+      "classification": "navigable",
+      "reason": "linked from navigation (matches /finance/invoices/refunded)"
+    },
+    {
+      "path": "/finance/invoices/sent",
+      "tier": "chef",
+      "classification": "navigable",
+      "reason": "linked from navigation (matches /finance/invoices/sent)"
+    },
+    {
+      "path": "/finance/ledger",
+      "tier": "chef",
+      "classification": "navigable",
+      "reason": "linked from navigation (matches /finance/ledger)"
+    },
+    {
+      "path": "/finance/ledger/adjustments",
+      "tier": "chef",
+      "classification": "navigable",
+      "reason": "linked from navigation (matches /finance/ledger/adjustments)"
+    },
+    {
+      "path": "/finance/ledger/owner-draws",
+      "tier": "chef",
+      "classification": "navigable",
+      "reason": "linked from navigation (matches /finance/ledger/owner-draws)"
+    },
+    {
+      "path": "/finance/ledger/transaction-log",
+      "tier": "chef",
+      "classification": "navigable",
+      "reason": "linked from navigation (matches /finance/ledger/transaction-log)"
+    },
+    {
+      "path": "/finance/overview",
+      "tier": "chef",
+      "classification": "navigable",
+      "reason": "linked from navigation (matches /finance/overview)"
+    },
+    {
+      "path": "/finance/overview/cash-flow",
+      "tier": "chef",
+      "classification": "navigable",
+      "reason": "linked from navigation (matches /finance/overview/cash-flow)"
+    },
+    {
+      "path": "/finance/overview/outstanding-payments",
+      "tier": "chef",
+      "classification": "navigable",
+      "reason": "linked from navigation (matches /finance/overview/outstanding-payments)"
+    },
+    {
+      "path": "/finance/overview/revenue-summary",
+      "tier": "chef",
+      "classification": "navigable",
+      "reason": "linked from navigation (matches /finance/overview/revenue-summary)"
+    },
+    {
+      "path": "/finance/payments",
+      "tier": "chef",
+      "classification": "navigable",
+      "reason": "linked from navigation (matches /finance/payments)"
+    },
+    {
+      "path": "/finance/payments/deposits",
+      "tier": "chef",
+      "classification": "navigable",
+      "reason": "linked from navigation (matches /finance/payments/deposits)"
+    },
+    {
+      "path": "/finance/payments/failed",
+      "tier": "chef",
+      "classification": "navigable",
+      "reason": "linked from navigation (matches /finance/payments/failed)"
+    },
+    {
+      "path": "/finance/payments/installments",
+      "tier": "chef",
+      "classification": "navigable",
+      "reason": "linked from navigation (matches /finance/payments/installments)"
+    },
+    {
+      "path": "/finance/payments/refunds",
+      "tier": "chef",
+      "classification": "navigable",
+      "reason": "linked from navigation (matches /finance/payments/refunds)"
+    },
+    {
+      "path": "/finance/payouts",
+      "tier": "chef",
+      "classification": "navigable",
+      "reason": "linked from navigation (matches /finance/payouts)"
+    },
+    {
+      "path": "/finance/payouts/manual-payments",
+      "tier": "chef",
+      "classification": "navigable",
+      "reason": "linked from navigation (matches /finance/payouts/manual-payments)"
+    },
+    {
+      "path": "/finance/payouts/reconciliation",
+      "tier": "chef",
+      "classification": "navigable",
+      "reason": "linked from navigation (matches /finance/payouts/reconciliation)"
+    },
+    {
+      "path": "/finance/payouts/stripe-payouts",
+      "tier": "chef",
+      "classification": "navigable",
+      "reason": "linked from navigation (matches /finance/payouts/stripe-payouts)"
+    },
+    {
+      "path": "/finance/payroll",
+      "tier": "chef",
+      "classification": "navigable",
+      "reason": "linked from navigation (matches /finance/payroll)"
+    },
+    {
+      "path": "/finance/payroll/941",
+      "tier": "chef",
+      "classification": "navigable",
+      "reason": "linked from navigation (matches /finance/payroll/941)"
+    },
+    {
+      "path": "/finance/payroll/employees",
+      "tier": "chef",
+      "classification": "navigable",
+      "reason": "linked from navigation (matches /finance/payroll/employees)"
+    },
+    {
+      "path": "/finance/payroll/run",
+      "tier": "chef",
+      "classification": "navigable",
+      "reason": "linked from navigation (matches /finance/payroll/run)"
+    },
+    {
+      "path": "/finance/payroll/w2",
+      "tier": "chef",
+      "classification": "navigable",
+      "reason": "linked from navigation (matches /finance/payroll/w2)"
+    },
+    {
+      "path": "/finance/planning/break-even",
+      "tier": "chef",
+      "classification": "navigable",
+      "reason": "linked from navigation (matches /finance/planning/break-even)"
+    },
+    {
+      "path": "/finance/plate-costs",
+      "tier": "chef",
+      "classification": "navigable",
+      "reason": "linked from navigation (matches /finance/plate-costs)"
+    },
+    {
+      "path": "/finance/recurring",
+      "tier": "chef",
+      "classification": "navigable",
+      "reason": "linked from navigation (matches /finance/recurring)"
+    },
+    {
+      "path": "/finance/reporting",
+      "tier": "chef",
+      "classification": "navigable",
+      "reason": "linked from navigation (matches /finance/reporting)"
+    },
+    {
+      "path": "/finance/reporting/expense-by-category",
+      "tier": "chef",
+      "classification": "navigable",
+      "reason": "linked from navigation (matches /finance/reporting/expense-by-category)"
+    },
+    {
+      "path": "/finance/reporting/profit-by-event",
+      "tier": "chef",
+      "classification": "navigable",
+      "reason": "linked from navigation (matches /finance/reporting/profit-by-event)"
+    },
+    {
+      "path": "/finance/reporting/profit-loss",
+      "tier": "chef",
+      "classification": "navigable",
+      "reason": "linked from navigation (matches /finance/reporting/profit-loss)"
+    },
+    {
+      "path": "/finance/reporting/revenue-by-client",
+      "tier": "chef",
+      "classification": "navigable",
+      "reason": "linked from navigation (matches /finance/reporting/revenue-by-client)"
+    },
+    {
+      "path": "/finance/reporting/revenue-by-event",
+      "tier": "chef",
+      "classification": "navigable",
+      "reason": "linked from navigation (matches /finance/reporting/revenue-by-event)"
+    },
+    {
+      "path": "/finance/reporting/revenue-by-month",
+      "tier": "chef",
+      "classification": "navigable",
+      "reason": "linked from navigation (matches /finance/reporting/revenue-by-month)"
+    },
+    {
+      "path": "/finance/reporting/tax-summary",
+      "tier": "chef",
+      "classification": "navigable",
+      "reason": "linked from navigation (matches /finance/reporting/tax-summary)"
+    },
+    {
+      "path": "/finance/reporting/year-to-date-summary",
+      "tier": "chef",
+      "classification": "navigable",
+      "reason": "linked from navigation (matches /finance/reporting/year-to-date-summary)"
+    },
+    {
+      "path": "/finance/reporting/yoy-comparison",
+      "tier": "chef",
+      "classification": "navigable",
+      "reason": "linked from navigation (matches /finance/reporting/yoy-comparison)"
+    },
+    {
+      "path": "/finance/retainers",
+      "tier": "chef",
+      "classification": "navigable",
+      "reason": "linked from navigation (matches /finance/retainers)"
+    },
+    {
+      "path": "/finance/retainers/new",
+      "tier": "chef",
+      "classification": "navigable",
+      "reason": "linked from navigation (matches /finance/retainers/new)"
+    },
+    {
+      "path": "/finance/sales-tax",
+      "tier": "chef",
+      "classification": "navigable",
+      "reason": "linked from navigation (matches /finance/sales-tax)"
+    },
+    {
+      "path": "/finance/sales-tax/remittances",
+      "tier": "chef",
+      "classification": "navigable",
+      "reason": "linked from navigation (matches /finance/sales-tax/remittances)"
+    },
+    {
+      "path": "/finance/sales-tax/settings",
+      "tier": "chef",
+      "classification": "navigable",
+      "reason": "linked from navigation (matches /finance/sales-tax/settings)"
+    },
+    {
+      "path": "/finance/tax",
+      "tier": "chef",
+      "classification": "navigable",
+      "reason": "linked from navigation (matches /finance/tax)"
+    },
+    {
+      "path": "/finance/tax-prep",
+      "tier": "chef",
+      "classification": "navigable",
+      "reason": "linked from navigation (matches /finance/tax-prep)"
+    },
+    {
+      "path": "/finance/tax/1099-nec",
+      "tier": "chef",
+      "classification": "navigable",
+      "reason": "linked from navigation (matches /finance/tax/1099-nec)"
+    },
+    {
+      "path": "/finance/tax/depreciation",
+      "tier": "chef",
+      "classification": "navigable",
+      "reason": "linked from navigation (matches /finance/tax/depreciation)"
+    },
+    {
+      "path": "/finance/tax/home-office",
+      "tier": "chef",
+      "classification": "navigable",
+      "reason": "linked from navigation (matches /finance/tax/home-office)"
+    },
+    {
+      "path": "/finance/tax/quarterly",
+      "tier": "chef",
+      "classification": "navigable",
+      "reason": "linked from navigation (matches /finance/tax/quarterly)"
+    },
+    {
+      "path": "/finance/tax/retirement",
+      "tier": "chef",
+      "classification": "navigable",
+      "reason": "linked from navigation (matches /finance/tax/retirement)"
+    },
+    {
+      "path": "/finance/tax/year-end",
+      "tier": "chef",
+      "classification": "navigable",
+      "reason": "linked from navigation (matches /finance/tax/year-end)"
+    },
+    {
+      "path": "/finance/year-end",
+      "tier": "chef",
+      "classification": "navigable",
+      "reason": "linked from navigation (matches /finance/year-end)"
+    },
+    {
+      "path": "/food-cost",
+      "tier": "chef",
+      "classification": "navigable",
+      "reason": "linked from navigation (matches /food-cost)"
+    },
+    {
+      "path": "/food-cost/revenue",
+      "tier": "chef",
+      "classification": "navigable",
+      "reason": "linked from navigation (matches /food-cost/revenue)"
+    },
+    {
+      "path": "/for-operators",
+      "tier": "public",
+      "classification": "navigable",
+      "reason": "linked from navigation (matches /for-operators)"
+    },
+    {
+      "path": "/gift-cards",
+      "tier": "public",
+      "classification": "navigable",
+      "reason": "linked from navigation (matches /gift-cards)"
+    },
+    {
+      "path": "/guest-analytics",
+      "tier": "chef",
+      "classification": "navigable",
+      "reason": "linked from navigation (matches /guest-analytics)"
+    },
+    {
+      "path": "/guests",
+      "tier": "chef",
+      "classification": "navigable",
+      "reason": "linked from navigation (matches /guests)"
+    },
+    {
+      "path": "/guests/reservations",
+      "tier": "chef",
+      "classification": "navigable",
+      "reason": "linked from navigation (matches /guests/reservations)"
+    },
+    {
+      "path": "/help",
+      "tier": "chef",
+      "classification": "navigable",
+      "reason": "linked from navigation (matches /help)"
+    },
+    {
+      "path": "/help/food-costing",
+      "tier": "chef",
+      "classification": "navigable",
+      "reason": "linked from navigation (matches /help/food-costing)"
+    },
+    {
+      "path": "/how-it-works",
+      "tier": "public",
+      "classification": "navigable",
+      "reason": "linked from navigation (matches /how-it-works)"
+    },
+    {
+      "path": "/hub",
+      "tier": "public",
+      "classification": "navigable",
+      "reason": "linked from navigation (matches /hub)"
+    },
+    {
+      "path": "/hub/circles",
+      "tier": "public",
+      "classification": "navigable",
+      "reason": "linked from navigation (matches /hub/circles)"
+    },
+    {
+      "path": "/hub/open-tables",
+      "tier": "public",
+      "classification": "navigable",
+      "reason": "linked from navigation (matches /hub/open-tables)"
+    },
+    {
+      "path": "/import",
+      "tier": "chef",
+      "classification": "navigable",
+      "reason": "linked from navigation (matches /import)"
+    },
+    {
+      "path": "/import/csv",
+      "tier": "chef",
+      "classification": "navigable",
+      "reason": "linked from navigation (matches /import/csv)"
+    },
+    {
+      "path": "/import/history",
+      "tier": "chef",
+      "classification": "navigable",
+      "reason": "linked from navigation (matches /import/history)"
+    },
+    {
+      "path": "/import/mxp",
+      "tier": "chef",
+      "classification": "navigable",
+      "reason": "linked from navigation (matches /import/mxp)"
+    },
+    {
+      "path": "/imports/business-history",
+      "tier": "chef",
+      "classification": "navigable",
+      "reason": "linked from navigation (matches /imports/business-history)"
+    },
+    {
+      "path": "/inbox",
+      "tier": "chef",
+      "classification": "navigable",
+      "reason": "linked from navigation (matches /inbox)"
+    },
+    {
+      "path": "/inbox/history-scan",
+      "tier": "chef",
+      "classification": "navigable",
+      "reason": "linked from navigation (matches /inbox/history-scan)"
+    },
+    {
+      "path": "/inbox/triage",
+      "tier": "chef",
+      "classification": "navigable",
+      "reason": "linked from navigation (matches /inbox/triage)"
+    },
+    {
+      "path": "/ingredients",
+      "tier": "public",
+      "classification": "navigable",
+      "reason": "linked from navigation (matches /ingredients)"
+    },
+    {
+      "path": "/inquiries",
+      "tier": "chef",
+      "classification": "navigable",
+      "reason": "linked from navigation (matches /inquiries)"
+    },
+    {
+      "path": "/inquiries/awaiting-client-reply",
+      "tier": "chef",
+      "classification": "navigable",
+      "reason": "linked from navigation (matches /inquiries/awaiting-client-reply)"
+    },
+    {
+      "path": "/inquiries/awaiting-response",
+      "tier": "chef",
+      "classification": "navigable",
+      "reason": "linked from navigation (matches /inquiries/awaiting-response)"
+    },
+    {
+      "path": "/inquiries/declined",
+      "tier": "chef",
+      "classification": "navigable",
+      "reason": "linked from navigation (matches /inquiries/declined)"
+    },
+    {
+      "path": "/inquiries/menu-drafting",
+      "tier": "chef",
+      "classification": "navigable",
+      "reason": "linked from navigation (matches /inquiries/menu-drafting)"
+    },
+    {
+      "path": "/inquiries/new",
+      "tier": "chef",
+      "classification": "navigable",
+      "reason": "linked from navigation (matches /inquiries/new)"
+    },
+    {
+      "path": "/inquiries/sent-to-client",
+      "tier": "chef",
+      "classification": "navigable",
+      "reason": "linked from navigation (matches /inquiries/sent-to-client)"
+    },
+    {
+      "path": "/insights",
+      "tier": "chef",
+      "classification": "navigable",
+      "reason": "linked from navigation (matches /insights)"
+    },
+    {
+      "path": "/insights/time-analysis",
+      "tier": "chef",
+      "classification": "navigable",
+      "reason": "linked from navigation (matches /insights/time-analysis)"
+    },
+    {
+      "path": "/inventory",
+      "tier": "chef",
+      "classification": "navigable",
+      "reason": "linked from navigation (matches /inventory)"
+    },
+    {
+      "path": "/inventory/audits",
+      "tier": "chef",
+      "classification": "navigable",
+      "reason": "linked from navigation (matches /inventory/audits)"
+    },
+    {
+      "path": "/inventory/audits/new",
+      "tier": "chef",
+      "classification": "navigable",
+      "reason": "linked from navigation (matches /inventory/audits/new)"
+    },
+    {
+      "path": "/inventory/counts",
+      "tier": "chef",
+      "classification": "navigable",
+      "reason": "linked from navigation (matches /inventory/counts)"
+    },
+    {
+      "path": "/inventory/demand",
+      "tier": "chef",
+      "classification": "navigable",
+      "reason": "linked from navigation (matches /inventory/demand)"
+    },
+    {
+      "path": "/inventory/expiry",
+      "tier": "chef",
+      "classification": "navigable",
+      "reason": "linked from navigation (matches /inventory/expiry)"
+    },
+    {
+      "path": "/inventory/food-cost",
+      "tier": "chef",
+      "classification": "navigable",
+      "reason": "linked from navigation (matches /inventory/food-cost)"
+    },
+    {
+      "path": "/inventory/locations",
+      "tier": "chef",
+      "classification": "navigable",
+      "reason": "linked from navigation (matches /inventory/locations)"
+    },
+    {
+      "path": "/inventory/procurement",
+      "tier": "chef",
+      "classification": "navigable",
+      "reason": "linked from navigation (matches /inventory/procurement)"
+    },
+    {
+      "path": "/inventory/purchase-orders",
+      "tier": "chef",
+      "classification": "navigable",
+      "reason": "linked from navigation (matches /inventory/purchase-orders)"
+    },
+    {
+      "path": "/inventory/purchase-orders/new",
+      "tier": "chef",
+      "classification": "navigable",
+      "reason": "linked from navigation (matches /inventory/purchase-orders/new)"
+    },
+    {
+      "path": "/inventory/reorder",
+      "tier": "chef",
+      "classification": "navigable",
+      "reason": "linked from navigation (matches /inventory/reorder)"
+    },
+    {
+      "path": "/inventory/staff-meals",
+      "tier": "chef",
+      "classification": "navigable",
+      "reason": "linked from navigation (matches /inventory/staff-meals)"
+    },
+    {
+      "path": "/inventory/transactions",
+      "tier": "chef",
+      "classification": "navigable",
+      "reason": "linked from navigation (matches /inventory/transactions)"
+    },
+    {
+      "path": "/inventory/vendor-invoices",
+      "tier": "chef",
+      "classification": "navigable",
+      "reason": "linked from navigation (matches /inventory/vendor-invoices)"
+    },
+    {
+      "path": "/inventory/waste",
+      "tier": "chef",
+      "classification": "navigable",
+      "reason": "linked from navigation (matches /inventory/waste)"
+    },
+    {
+      "path": "/kitchen",
+      "tier": "chef",
+      "classification": "navigable",
+      "reason": "linked from navigation (matches /kitchen)"
+    },
+    {
+      "path": "/leads",
+      "tier": "chef",
+      "classification": "navigable",
+      "reason": "linked from navigation (matches /leads)"
+    },
+    {
+      "path": "/leads/archived",
+      "tier": "chef",
+      "classification": "navigable",
+      "reason": "linked from navigation (matches /leads/archived)"
+    },
+    {
+      "path": "/leads/contacted",
+      "tier": "chef",
+      "classification": "navigable",
+      "reason": "linked from navigation (matches /leads/contacted)"
+    },
+    {
+      "path": "/leads/converted",
+      "tier": "chef",
+      "classification": "navigable",
+      "reason": "linked from navigation (matches /leads/converted)"
+    },
+    {
+      "path": "/leads/new",
+      "tier": "chef",
+      "classification": "navigable",
+      "reason": "linked from navigation (matches /leads/new)"
+    },
+    {
+      "path": "/leads/qualified",
+      "tier": "chef",
+      "classification": "navigable",
+      "reason": "linked from navigation (matches /leads/qualified)"
+    },
+    {
+      "path": "/locations",
+      "tier": "chef",
+      "classification": "navigable",
+      "reason": "linked from navigation (matches /locations)"
+    },
+    {
+      "path": "/locations/compliance",
+      "tier": "chef",
+      "classification": "navigable",
+      "reason": "linked from navigation (matches /locations/compliance)"
+    },
+    {
+      "path": "/locations/purchasing",
+      "tier": "chef",
+      "classification": "navigable",
+      "reason": "linked from navigation (matches /locations/purchasing)"
+    },
+    {
+      "path": "/loyalty",
+      "tier": "chef",
+      "classification": "navigable",
+      "reason": "linked from navigation (matches /loyalty)"
+    },
+    {
+      "path": "/loyalty/learn",
+      "tier": "chef",
+      "classification": "navigable",
+      "reason": "linked from navigation (matches /loyalty/learn)"
+    },
+    {
+      "path": "/loyalty/raffle",
+      "tier": "chef",
+      "classification": "navigable",
+      "reason": "linked from navigation (matches /loyalty/raffle)"
+    },
+    {
+      "path": "/loyalty/rewards/new",
+      "tier": "chef",
+      "classification": "navigable",
+      "reason": "linked from navigation (matches /loyalty/rewards/new)"
+    },
+    {
+      "path": "/loyalty/settings",
+      "tier": "chef",
+      "classification": "navigable",
+      "reason": "linked from navigation (matches /loyalty/settings)"
+    },
+    {
+      "path": "/marketing",
+      "tier": "chef",
+      "classification": "navigable",
+      "reason": "linked from navigation (matches /marketing)"
+    },
+    {
+      "path": "/marketing/content-pipeline",
+      "tier": "chef",
+      "classification": "navigable",
+      "reason": "linked from navigation (matches /marketing/content-pipeline)"
+    },
+    {
+      "path": "/marketing/push-dinners",
+      "tier": "chef",
+      "classification": "navigable",
+      "reason": "linked from navigation (matches /marketing/push-dinners)"
+    },
+    {
+      "path": "/marketing/push-dinners/new",
+      "tier": "chef",
+      "classification": "navigable",
+      "reason": "linked from navigation (matches /marketing/push-dinners/new)"
+    },
+    {
+      "path": "/marketing/sequences",
+      "tier": "chef",
+      "classification": "navigable",
+      "reason": "linked from navigation (matches /marketing/sequences)"
+    },
+    {
+      "path": "/marketing/social",
+      "tier": "chef",
+      "classification": "navigable",
+      "reason": "linked from navigation (matches /marketing/social)"
+    },
+    {
+      "path": "/marketing/social/connections",
+      "tier": "chef",
+      "classification": "navigable",
+      "reason": "linked from navigation (matches /marketing/social/connections)"
+    },
+    {
+      "path": "/marketing/social/settings",
+      "tier": "chef",
+      "classification": "navigable",
+      "reason": "linked from navigation (matches /marketing/social/settings)"
+    },
+    {
+      "path": "/marketing/social/templates",
+      "tier": "chef",
+      "classification": "navigable",
+      "reason": "linked from navigation (matches /marketing/social/templates)"
+    },
+    {
+      "path": "/marketing/templates",
+      "tier": "chef",
+      "classification": "navigable",
+      "reason": "linked from navigation (matches /marketing/templates)"
+    },
+    {
+      "path": "/marketplace",
+      "tier": "chef",
+      "classification": "navigable",
+      "reason": "linked from navigation (matches /marketplace)"
+    },
+    {
+      "path": "/marketplace-chefs",
+      "tier": "public",
+      "classification": "navigable",
+      "reason": "linked from navigation (matches /marketplace-chefs)"
+    },
+    {
+      "path": "/marketplace/capture",
+      "tier": "chef",
+      "classification": "navigable",
+      "reason": "linked from navigation (matches /marketplace/capture)"
+    },
+    {
+      "path": "/meal-prep",
+      "tier": "chef",
+      "classification": "navigable",
+      "reason": "linked from navigation (matches /meal-prep)"
+    },
+    {
+      "path": "/meal-prep/batch",
+      "tier": "chef",
+      "classification": "navigable",
+      "reason": "linked from navigation (matches /meal-prep/batch)"
+    },
+    {
+      "path": "/meal-prep/retro",
+      "tier": "chef",
+      "classification": "navigable",
+      "reason": "linked from navigation (matches /meal-prep/retro)"
+    },
+    {
+      "path": "/menus",
+      "tier": "chef",
+      "classification": "navigable",
+      "reason": "linked from navigation (matches /menus)"
+    },
+    {
+      "path": "/menus/dishes",
+      "tier": "chef",
+      "classification": "navigable",
+      "reason": "linked from navigation (matches /menus/dishes)"
+    },
+    {
+      "path": "/menus/estimate",
+      "tier": "chef",
+      "classification": "navigable",
+      "reason": "linked from navigation (matches /menus/estimate)"
+    },
+    {
+      "path": "/menus/new",
+      "tier": "chef",
+      "classification": "navigable",
+      "reason": "linked from navigation (matches /menus/new)"
+    },
+    {
+      "path": "/menus/seasonal",
+      "tier": "chef",
+      "classification": "navigable",
+      "reason": "linked from navigation (matches /menus/seasonal)"
+    },
+    {
+      "path": "/menus/selections",
+      "tier": "chef",
+      "classification": "navigable",
+      "reason": "linked from navigation (matches /menus/selections)"
+    },
+    {
+      "path": "/menus/tasting",
+      "tier": "chef",
+      "classification": "navigable",
+      "reason": "linked from navigation (matches /menus/tasting)"
+    },
+    {
+      "path": "/menus/upload",
+      "tier": "chef",
+      "classification": "navigable",
+      "reason": "linked from navigation (matches /menus/upload)"
+    },
+    {
+      "path": "/my-bookings",
+      "tier": "client",
+      "classification": "navigable",
+      "reason": "linked from navigation (matches /my-bookings)"
+    },
+    {
+      "path": "/my-cannabis",
+      "tier": "client",
+      "classification": "navigable",
+      "reason": "linked from navigation (matches /my-cannabis)"
+    },
+    {
+      "path": "/my-chat",
+      "tier": "client",
+      "classification": "navigable",
+      "reason": "linked from navigation (matches /my-chat)"
+    },
+    {
+      "path": "/my-events",
+      "tier": "client",
+      "classification": "navigable",
+      "reason": "linked from navigation (matches /my-events)"
+    },
+    {
+      "path": "/my-events/history",
+      "tier": "client",
+      "classification": "navigable",
+      "reason": "linked from navigation (matches /my-events/history)"
+    },
+    {
+      "path": "/my-events/settings/dashboard",
+      "tier": "client",
+      "classification": "navigable",
+      "reason": "linked from navigation (matches /my-events/settings/dashboard)"
+    },
+    {
+      "path": "/my-household",
+      "tier": "client",
+      "classification": "navigable",
+      "reason": "linked from navigation (matches /my-household)"
+    },
+    {
+      "path": "/my-hub",
+      "tier": "client",
+      "classification": "navigable",
+      "reason": "linked from navigation (matches /my-hub)"
+    },
+    {
+      "path": "/my-hub/create",
+      "tier": "client",
+      "classification": "navigable",
+      "reason": "linked from navigation (matches /my-hub/create)"
+    },
+    {
+      "path": "/my-hub/favorite-operators",
+      "tier": "client",
+      "classification": "navigable",
+      "reason": "linked from navigation (matches /my-hub/favorite-operators)"
+    },
+    {
+      "path": "/my-hub/friends",
+      "tier": "client",
+      "classification": "navigable",
+      "reason": "linked from navigation (matches /my-hub/friends)"
+    },
+    {
+      "path": "/my-hub/notifications",
+      "tier": "client",
+      "classification": "navigable",
+      "reason": "linked from navigation (matches /my-hub/notifications)"
+    },
+    {
+      "path": "/my-hub/purchases",
+      "tier": "client",
+      "classification": "navigable",
+      "reason": "linked from navigation (matches /my-hub/purchases)"
+    },
+    {
+      "path": "/my-hub/share-chef",
+      "tier": "client",
+      "classification": "navigable",
+      "reason": "linked from navigation (matches /my-hub/share-chef)"
+    },
+    {
+      "path": "/my-inquiries",
+      "tier": "client",
+      "classification": "navigable",
+      "reason": "linked from navigation (matches /my-inquiries)"
+    },
+    {
+      "path": "/my-preferences",
+      "tier": "client",
+      "classification": "navigable",
+      "reason": "linked from navigation (matches /my-preferences)"
+    },
+    {
+      "path": "/my-preferences/discovery",
+      "tier": "client",
+      "classification": "navigable",
+      "reason": "linked from navigation (matches /my-preferences/discovery)"
+    },
+    {
+      "path": "/my-profile",
+      "tier": "client",
+      "classification": "navigable",
+      "reason": "linked from navigation (matches /my-profile)"
+    },
+    {
+      "path": "/my-profile/delete-account",
+      "tier": "client",
+      "classification": "navigable",
+      "reason": "linked from navigation (matches /my-profile/delete-account)"
+    },
+    {
+      "path": "/my-quotes",
+      "tier": "client",
+      "classification": "navigable",
+      "reason": "linked from navigation (matches /my-quotes)"
+    },
+    {
+      "path": "/my-receipts",
+      "tier": "client",
+      "classification": "navigable",
+      "reason": "linked from navigation (matches /my-receipts)"
+    },
+    {
+      "path": "/my-rewards",
+      "tier": "client",
+      "classification": "navigable",
+      "reason": "linked from navigation (matches /my-rewards)"
+    },
+    {
+      "path": "/my-rewards/about",
+      "tier": "client",
+      "classification": "navigable",
+      "reason": "linked from navigation (matches /my-rewards/about)"
+    },
+    {
+      "path": "/my-spending",
+      "tier": "client",
+      "classification": "navigable",
+      "reason": "linked from navigation (matches /my-spending)"
+    },
+    {
+      "path": "/nearby",
+      "tier": "public",
+      "classification": "navigable",
+      "reason": "linked from navigation (matches /nearby)"
+    },
+    {
+      "path": "/nearby/collections",
+      "tier": "public",
+      "classification": "navigable",
+      "reason": "linked from navigation (matches /nearby/collections)"
+    },
+    {
+      "path": "/nearby/submit",
+      "tier": "public",
+      "classification": "navigable",
+      "reason": "linked from navigation (matches /nearby/submit)"
+    },
+    {
+      "path": "/network",
+      "tier": "chef",
+      "classification": "navigable",
+      "reason": "linked from navigation (matches /network)"
+    },
+    {
+      "path": "/network/collabs",
+      "tier": "chef",
+      "classification": "navigable",
+      "reason": "linked from navigation (matches /network/collabs)"
+    },
+    {
+      "path": "/network/notifications",
+      "tier": "chef",
+      "classification": "navigable",
+      "reason": "linked from navigation (matches /network/notifications)"
+    },
+    {
+      "path": "/network/saved",
+      "tier": "chef",
+      "classification": "navigable",
+      "reason": "linked from navigation (matches /network/saved)"
+    },
+    {
+      "path": "/notifications",
+      "tier": "chef",
+      "classification": "navigable",
+      "reason": "linked from navigation (matches /notifications)"
+    },
+    {
+      "path": "/onboarding",
+      "tier": "chef",
+      "classification": "navigable",
+      "reason": "linked from navigation (matches /onboarding)"
+    },
+    {
+      "path": "/onboarding/clients",
+      "tier": "chef",
+      "classification": "navigable",
+      "reason": "linked from navigation (matches /onboarding/clients)"
+    },
+    {
+      "path": "/onboarding/features",
+      "tier": "chef",
+      "classification": "navigable",
+      "reason": "linked from navigation (matches /onboarding/features)"
+    },
+    {
+      "path": "/onboarding/help",
+      "tier": "chef",
+      "classification": "navigable",
+      "reason": "linked from navigation (matches /onboarding/help)"
+    },
+    {
+      "path": "/onboarding/loyalty",
+      "tier": "chef",
+      "classification": "navigable",
+      "reason": "linked from navigation (matches /onboarding/loyalty)"
+    },
+    {
+      "path": "/onboarding/recipes",
+      "tier": "chef",
+      "classification": "navigable",
+      "reason": "linked from navigation (matches /onboarding/recipes)"
+    },
+    {
+      "path": "/onboarding/staff",
+      "tier": "chef",
+      "classification": "navigable",
+      "reason": "linked from navigation (matches /onboarding/staff)"
+    },
+    {
+      "path": "/ops",
+      "tier": "chef",
+      "classification": "navigable",
+      "reason": "linked from navigation (matches /ops)"
+    },
+    {
+      "path": "/ops/equipment",
+      "tier": "chef",
+      "classification": "navigable",
+      "reason": "linked from navigation (matches /ops/equipment)"
+    },
+    {
+      "path": "/ops/inventory",
+      "tier": "chef",
+      "classification": "navigable",
+      "reason": "linked from navigation (matches /ops/inventory)"
+    },
+    {
+      "path": "/ops/kitchen-rentals",
+      "tier": "chef",
+      "classification": "navigable",
+      "reason": "linked from navigation (matches /ops/kitchen-rentals)"
+    },
+    {
+      "path": "/ops/performance",
+      "tier": "chef",
+      "classification": "navigable",
+      "reason": "linked from navigation (matches /ops/performance)"
+    },
+    {
+      "path": "/ops/prep",
+      "tier": "chef",
+      "classification": "navigable",
+      "reason": "linked from navigation (matches /ops/prep)"
+    },
+    {
+      "path": "/ops/service",
+      "tier": "chef",
+      "classification": "navigable",
+      "reason": "linked from navigation (matches /ops/service)"
+    },
+    {
+      "path": "/ops/stations",
+      "tier": "chef",
+      "classification": "navigable",
+      "reason": "linked from navigation (matches /ops/stations)"
+    },
+    {
+      "path": "/partner-signup",
+      "tier": "public",
+      "classification": "navigable",
+      "reason": "linked from navigation (matches /partner-signup)"
+    },
+    {
+      "path": "/partner-terms",
+      "tier": "public",
+      "classification": "navigable",
+      "reason": "linked from navigation (matches /partner-terms)"
+    },
+    {
+      "path": "/partner/dashboard",
+      "tier": "partner",
+      "classification": "navigable",
+      "reason": "linked from navigation (matches /partner/dashboard)"
+    },
+    {
+      "path": "/partner/events",
+      "tier": "partner",
+      "classification": "navigable",
+      "reason": "linked from navigation (matches /partner/events)"
+    },
+    {
+      "path": "/partner/locations",
+      "tier": "partner",
+      "classification": "navigable",
+      "reason": "linked from navigation (matches /partner/locations)"
+    },
+    {
+      "path": "/partner/preview",
+      "tier": "partner",
+      "classification": "navigable",
+      "reason": "linked from navigation (matches /partner/preview)"
+    },
+    {
+      "path": "/partner/profile",
+      "tier": "partner",
+      "classification": "navigable",
+      "reason": "linked from navigation (matches /partner/profile)"
+    },
+    {
+      "path": "/partners",
+      "tier": "chef",
+      "classification": "navigable",
+      "reason": "linked from navigation (matches /partners)"
+    },
+    {
+      "path": "/partners/active",
+      "tier": "chef",
+      "classification": "navigable",
+      "reason": "linked from navigation (matches /partners/active)"
+    },
+    {
+      "path": "/partners/events-generated",
+      "tier": "chef",
+      "classification": "navigable",
+      "reason": "linked from navigation (matches /partners/events-generated)"
+    },
+    {
+      "path": "/partners/inactive",
+      "tier": "chef",
+      "classification": "navigable",
+      "reason": "linked from navigation (matches /partners/inactive)"
+    },
+    {
+      "path": "/partners/new",
+      "tier": "chef",
+      "classification": "navigable",
+      "reason": "linked from navigation (matches /partners/new)"
+    },
+    {
+      "path": "/partners/referral-performance",
+      "tier": "chef",
+      "classification": "navigable",
+      "reason": "linked from navigation (matches /partners/referral-performance)"
+    },
+    {
+      "path": "/payments/splitting",
+      "tier": "chef",
+      "classification": "navigable",
+      "reason": "linked from navigation (matches /payments/splitting)"
+    },
+    {
+      "path": "/portfolio",
+      "tier": "chef",
+      "classification": "navigable",
+      "reason": "linked from navigation (matches /portfolio)"
+    },
+    {
+      "path": "/prep/consolidation",
+      "tier": "chef",
+      "classification": "navigable",
+      "reason": "linked from navigation (matches /prep/consolidation)"
+    },
+    {
+      "path": "/prices",
+      "tier": "chef",
+      "classification": "navigable",
+      "reason": "linked from navigation (matches /prices)"
+    },
+    {
+      "path": "/prices/store/[storeId]",
+      "tier": "chef",
+      "classification": "navigable",
+      "reason": "linked from navigation (matches /prices/store/[storeId])"
+    },
+    {
+      "path": "/pricing",
+      "tier": "public",
+      "classification": "navigable",
+      "reason": "linked from navigation (matches /pricing)"
+    },
+    {
+      "path": "/privacy",
+      "tier": "public",
+      "classification": "navigable",
+      "reason": "linked from navigation (matches /privacy)"
+    },
+    {
+      "path": "/production",
+      "tier": "chef",
+      "classification": "navigable",
+      "reason": "linked from navigation (matches /production)"
+    },
+    {
+      "path": "/proposals",
+      "tier": "chef",
+      "classification": "navigable",
+      "reason": "linked from navigation (matches /proposals)"
+    },
+    {
+      "path": "/proposals/addons",
+      "tier": "chef",
+      "classification": "navigable",
+      "reason": "linked from navigation (matches /proposals/addons)"
+    },
+    {
+      "path": "/proposals/builder",
+      "tier": "chef",
+      "classification": "navigable",
+      "reason": "linked from navigation (matches /proposals/builder)"
+    },
+    {
+      "path": "/proposals/templates",
+      "tier": "chef",
+      "classification": "navigable",
+      "reason": "linked from navigation (matches /proposals/templates)"
+    },
+    {
+      "path": "/prospecting",
+      "tier": "chef",
+      "classification": "navigable",
+      "reason": "linked from navigation (matches /prospecting)"
+    },
+    {
+      "path": "/prospecting/clusters",
+      "tier": "chef",
+      "classification": "navigable",
+      "reason": "linked from navigation (matches /prospecting/clusters)"
+    },
+    {
+      "path": "/prospecting/import",
+      "tier": "chef",
+      "classification": "navigable",
+      "reason": "linked from navigation (matches /prospecting/import)"
+    },
+    {
+      "path": "/prospecting/openclaw",
+      "tier": "chef",
+      "classification": "navigable",
+      "reason": "linked from navigation (matches /prospecting/openclaw)"
+    },
+    {
+      "path": "/prospecting/pipeline",
+      "tier": "chef",
+      "classification": "navigable",
+      "reason": "linked from navigation (matches /prospecting/pipeline)"
+    },
+    {
+      "path": "/prospecting/queue",
+      "tier": "chef",
+      "classification": "navigable",
+      "reason": "linked from navigation (matches /prospecting/queue)"
+    },
+    {
+      "path": "/prospecting/scripts",
+      "tier": "chef",
+      "classification": "navigable",
+      "reason": "linked from navigation (matches /prospecting/scripts)"
+    },
+    {
+      "path": "/prospecting/scrub",
+      "tier": "chef",
+      "classification": "navigable",
+      "reason": "linked from navigation (matches /prospecting/scrub)"
+    },
+    {
+      "path": "/pulse",
+      "tier": "chef",
+      "classification": "navigable",
+      "reason": "linked from navigation (matches /pulse)"
+    },
+    {
+      "path": "/queue",
+      "tier": "chef",
+      "classification": "navigable",
+      "reason": "linked from navigation (matches /queue)"
+    },
+    {
+      "path": "/quick-log",
+      "tier": "chef",
+      "classification": "navigable",
+      "reason": "linked from navigation (matches /quick-log)"
+    },
+    {
+      "path": "/quotes",
+      "tier": "chef",
+      "classification": "navigable",
+      "reason": "linked from navigation (matches /quotes)"
+    },
+    {
+      "path": "/quotes/calculator",
+      "tier": "chef",
+      "classification": "navigable",
+      "reason": "linked from navigation (matches /quotes/calculator)"
+    },
+    {
+      "path": "/quotes/new",
+      "tier": "chef",
+      "classification": "navigable",
+      "reason": "linked from navigation (matches /quotes/new)"
+    },
+    {
+      "path": "/rate-card",
+      "tier": "chef",
+      "classification": "navigable",
+      "reason": "linked from navigation (matches /rate-card)"
+    },
+    {
+      "path": "/receipts",
+      "tier": "chef",
+      "classification": "navigable",
+      "reason": "linked from navigation (matches /receipts)"
+    },
+    {
+      "path": "/recipes",
+      "tier": "chef",
+      "classification": "navigable",
+      "reason": "linked from navigation (matches /recipes)"
+    },
+    {
+      "path": "/recipes/dump",
+      "tier": "chef",
+      "classification": "navigable",
+      "reason": "linked from navigation (matches /recipes/dump)"
+    },
+    {
+      "path": "/recipes/import",
+      "tier": "chef",
+      "classification": "navigable",
+      "reason": "linked from navigation (matches /recipes/import)"
+    },
+    {
+      "path": "/recipes/ingredients",
+      "tier": "chef",
+      "classification": "navigable",
+      "reason": "linked from navigation (matches /recipes/ingredients)"
+    },
+    {
+      "path": "/recipes/new",
+      "tier": "chef",
+      "classification": "navigable",
+      "reason": "linked from navigation (matches /recipes/new)"
+    },
+    {
+      "path": "/recipes/photos",
+      "tier": "chef",
+      "classification": "navigable",
+      "reason": "linked from navigation (matches /recipes/photos)"
+    },
+    {
+      "path": "/recipes/production-log",
+      "tier": "chef",
+      "classification": "navigable",
+      "reason": "linked from navigation (matches /recipes/production-log)"
+    },
+    {
+      "path": "/recipes/sprint",
+      "tier": "chef",
+      "classification": "navigable",
+      "reason": "linked from navigation (matches /recipes/sprint)"
+    },
+    {
+      "path": "/reminders",
+      "tier": "chef",
+      "classification": "navigable",
+      "reason": "linked from navigation (matches /reminders)"
+    },
+    {
+      "path": "/remy",
+      "tier": "chef",
+      "classification": "navigable",
+      "reason": "linked from navigation (matches /remy)"
+    },
+    {
+      "path": "/remy/history",
+      "tier": "chef",
+      "classification": "navigable",
+      "reason": "linked from navigation (matches /remy/history)"
+    },
+    {
+      "path": "/remy/operating",
+      "tier": "chef",
+      "classification": "navigable",
+      "reason": "linked from navigation (matches /remy/operating)"
+    },
+    {
+      "path": "/remy/settings",
+      "tier": "chef",
+      "classification": "navigable",
+      "reason": "linked from navigation (matches /remy/settings)"
+    },
+    {
+      "path": "/remy/signals",
+      "tier": "chef",
+      "classification": "navigable",
+      "reason": "linked from navigation (matches /remy/signals)"
+    },
+    {
+      "path": "/reputation",
+      "tier": "chef",
+      "classification": "navigable",
+      "reason": "linked from navigation (matches /reputation)"
+    },
+    {
+      "path": "/reputation/mentions",
+      "tier": "chef",
+      "classification": "navigable",
+      "reason": "linked from navigation (matches /reputation/mentions)"
+    },
+    {
+      "path": "/reviews",
+      "tier": "chef",
+      "classification": "navigable",
+      "reason": "linked from navigation (matches /reviews)"
+    },
+    {
+      "path": "/services",
+      "tier": "public",
+      "classification": "navigable",
+      "reason": "linked from navigation (matches /services)"
+    },
+    {
+      "path": "/settings",
+      "tier": "chef",
+      "classification": "navigable",
+      "reason": "linked from navigation (matches /settings)"
+    },
+    {
+      "path": "/settings/account",
+      "tier": "chef",
+      "classification": "navigable",
+      "reason": "linked from navigation (matches /settings/account)"
+    },
+    {
+      "path": "/settings/ai",
+      "tier": "chef",
+      "classification": "navigable",
+      "reason": "linked from navigation (matches /settings/ai)"
+    },
+    {
+      "path": "/settings/ai-privacy",
+      "tier": "chef",
+      "classification": "navigable",
+      "reason": "linked from navigation (matches /settings/ai-privacy)"
+    },
+    {
+      "path": "/settings/api-keys",
+      "tier": "chef",
+      "classification": "navigable",
+      "reason": "linked from navigation (matches /settings/api-keys)"
+    },
+    {
+      "path": "/settings/appearance",
+      "tier": "chef",
+      "classification": "navigable",
+      "reason": "linked from navigation (matches /settings/appearance)"
+    },
+    {
+      "path": "/settings/automations",
+      "tier": "chef",
+      "classification": "navigable",
+      "reason": "linked from navigation (matches /settings/automations)"
+    },
+    {
+      "path": "/settings/billing",
+      "tier": "chef",
+      "classification": "navigable",
+      "reason": "linked from navigation (matches /settings/billing)"
+    },
+    {
+      "path": "/settings/business",
+      "tier": "chef",
+      "classification": "navigable",
+      "reason": "linked from navigation (matches /settings/business)"
+    },
+    {
+      "path": "/settings/calendar-sync",
+      "tier": "chef",
+      "classification": "navigable",
+      "reason": "linked from navigation (matches /settings/calendar-sync)"
+    },
+    {
+      "path": "/settings/change-password",
+      "tier": "chef",
+      "classification": "navigable",
+      "reason": "linked from navigation (matches /settings/change-password)"
+    },
+    {
+      "path": "/settings/client-preview",
+      "tier": "chef",
+      "classification": "navigable",
+      "reason": "linked from navigation (matches /settings/client-preview)"
+    },
+    {
+      "path": "/settings/communication",
+      "tier": "chef",
+      "classification": "navigable",
+      "reason": "linked from navigation (matches /settings/communication)"
+    },
+    {
+      "path": "/settings/compliance",
+      "tier": "chef",
+      "classification": "navigable",
+      "reason": "linked from navigation (matches /settings/compliance)"
+    },
+    {
+      "path": "/settings/compliance/backup",
+      "tier": "chef",
+      "classification": "navigable",
+      "reason": "linked from navigation (matches /settings/compliance/backup)"
+    },
+    {
+      "path": "/settings/compliance/claims",
+      "tier": "chef",
+      "classification": "navigable",
+      "reason": "linked from navigation (matches /settings/compliance/claims)"
+    },
+    {
+      "path": "/settings/compliance/claims/documents",
+      "tier": "chef",
+      "classification": "navigable",
+      "reason": "linked from navigation (matches /settings/compliance/claims/documents)"
+    },
+    {
+      "path": "/settings/compliance/claims/new",
+      "tier": "chef",
+      "classification": "navigable",
+      "reason": "linked from navigation (matches /settings/compliance/claims/new)"
+    },
+    {
+      "path": "/settings/compliance/gdpr",
+      "tier": "chef",
+      "classification": "navigable",
+      "reason": "linked from navigation (matches /settings/compliance/gdpr)"
+    },
+    {
+      "path": "/settings/compliance/haccp",
+      "tier": "chef",
+      "classification": "navigable",
+      "reason": "linked from navigation (matches /settings/compliance/haccp)"
+    },
+    {
+      "path": "/settings/compliance/incidents",
+      "tier": "chef",
+      "classification": "navigable",
+      "reason": "linked from navigation (matches /settings/compliance/incidents)"
+    },
+    {
+      "path": "/settings/compliance/incidents/new",
+      "tier": "chef",
+      "classification": "navigable",
+      "reason": "linked from navigation (matches /settings/compliance/incidents/new)"
+    },
+    {
+      "path": "/settings/connections",
+      "tier": "chef",
+      "classification": "navigable",
+      "reason": "linked from navigation (matches /settings/connections)"
+    },
+    {
+      "path": "/settings/contracts",
+      "tier": "chef",
+      "classification": "navigable",
+      "reason": "linked from navigation (matches /settings/contracts)"
+    },
+    {
+      "path": "/settings/credentials",
+      "tier": "chef",
+      "classification": "navigable",
+      "reason": "linked from navigation (matches /settings/credentials)"
+    },
+    {
+      "path": "/settings/culinary-profile",
+      "tier": "chef",
+      "classification": "navigable",
+      "reason": "linked from navigation (matches /settings/culinary-profile)"
+    },
+    {
+      "path": "/settings/custom-fields",
+      "tier": "chef",
+      "classification": "navigable",
+      "reason": "linked from navigation (matches /settings/custom-fields)"
+    },
+    {
+      "path": "/settings/dashboard",
+      "tier": "chef",
+      "classification": "navigable",
+      "reason": "linked from navigation (matches /settings/dashboard)"
+    },
+    {
+      "path": "/settings/data-export",
+      "tier": "chef",
+      "classification": "navigable",
+      "reason": "linked from navigation (matches /settings/data-export)"
+    },
+    {
+      "path": "/settings/delete-account",
+      "tier": "chef",
+      "classification": "navigable",
+      "reason": "linked from navigation (matches /settings/delete-account)"
+    },
+    {
+      "path": "/settings/devices",
+      "tier": "chef",
+      "classification": "navigable",
+      "reason": "linked from navigation (matches /settings/devices)"
+    },
+    {
+      "path": "/settings/emergency",
+      "tier": "chef",
+      "classification": "navigable",
+      "reason": "linked from navigation (matches /settings/emergency)"
+    },
+    {
+      "path": "/settings/event-types",
+      "tier": "chef",
+      "classification": "navigable",
+      "reason": "linked from navigation (matches /settings/event-types)"
+    },
+    {
+      "path": "/settings/favorite-chefs",
+      "tier": "chef",
+      "classification": "navigable",
+      "reason": "linked from navigation (matches /settings/favorite-chefs)"
+    },
+    {
+      "path": "/settings/health",
+      "tier": "chef",
+      "classification": "navigable",
+      "reason": "linked from navigation (matches /settings/health)"
+    },
+    {
+      "path": "/settings/highlights",
+      "tier": "chef",
+      "classification": "navigable",
+      "reason": "linked from navigation (matches /settings/highlights)"
+    },
+    {
+      "path": "/settings/incidents",
+      "tier": "chef",
+      "classification": "navigable",
+      "reason": "linked from navigation (matches /settings/incidents)"
+    },
+    {
+      "path": "/settings/integrations",
+      "tier": "chef",
+      "classification": "navigable",
+      "reason": "linked from navigation (matches /settings/integrations)"
+    },
+    {
+      "path": "/settings/journal",
+      "tier": "chef",
+      "classification": "navigable",
+      "reason": "linked from navigation (matches /settings/journal)"
+    },
+    {
+      "path": "/settings/legal-readiness",
+      "tier": "chef",
+      "classification": "navigable",
+      "reason": "linked from navigation (matches /settings/legal-readiness)"
+    },
+    {
+      "path": "/settings/menu-engine",
+      "tier": "chef",
+      "classification": "navigable",
+      "reason": "linked from navigation (matches /settings/menu-engine)"
+    },
+    {
+      "path": "/settings/menu-templates",
+      "tier": "chef",
+      "classification": "navigable",
+      "reason": "linked from navigation (matches /settings/menu-templates)"
+    },
+    {
+      "path": "/settings/modules",
+      "tier": "chef",
+      "classification": "navigable",
+      "reason": "linked from navigation (matches /settings/modules)"
+    },
+    {
+      "path": "/settings/my-profile",
+      "tier": "chef",
+      "classification": "navigable",
+      "reason": "linked from navigation (matches /settings/my-profile)"
+    },
+    {
+      "path": "/settings/my-services",
+      "tier": "chef",
+      "classification": "navigable",
+      "reason": "linked from navigation (matches /settings/my-services)"
+    },
+    {
+      "path": "/settings/navigation",
+      "tier": "chef",
+      "classification": "navigable",
+      "reason": "linked from navigation (matches /settings/navigation)"
+    },
+    {
+      "path": "/settings/notifications",
+      "tier": "chef",
+      "classification": "navigable",
+      "reason": "linked from navigation (matches /settings/notifications)"
+    },
+    {
+      "path": "/settings/payment-methods",
+      "tier": "chef",
+      "classification": "navigable",
+      "reason": "linked from navigation (matches /settings/payment-methods)"
+    },
+    {
+      "path": "/settings/payments",
+      "tier": "chef",
+      "classification": "navigable",
+      "reason": "linked from navigation (matches /settings/payments)"
+    },
+    {
+      "path": "/settings/platform-connections",
+      "tier": "chef",
+      "classification": "navigable",
+      "reason": "linked from navigation (matches /settings/platform-connections)"
+    },
+    {
+      "path": "/settings/portfolio",
+      "tier": "chef",
+      "classification": "navigable",
+      "reason": "linked from navigation (matches /settings/portfolio)"
+    },
+    {
+      "path": "/settings/pricing",
+      "tier": "chef",
+      "classification": "navigable",
+      "reason": "linked from navigation (matches /settings/pricing)"
+    },
+    {
+      "path": "/settings/print",
+      "tier": "chef",
+      "classification": "navigable",
+      "reason": "linked from navigation (matches /settings/print)"
+    },
+    {
+      "path": "/settings/professional",
+      "tier": "chef",
+      "classification": "navigable",
+      "reason": "linked from navigation (matches /settings/professional)"
+    },
+    {
+      "path": "/settings/professional/momentum",
+      "tier": "chef",
+      "classification": "navigable",
+      "reason": "linked from navigation (matches /settings/professional/momentum)"
+    },
+    {
+      "path": "/settings/professional/skills",
+      "tier": "chef",
+      "classification": "navigable",
+      "reason": "linked from navigation (matches /settings/professional/skills)"
+    },
+    {
+      "path": "/settings/profile",
+      "tier": "chef",
+      "classification": "navigable",
+      "reason": "linked from navigation (matches /settings/profile)"
+    },
+    {
+      "path": "/settings/profile-branding",
+      "tier": "chef",
+      "classification": "navigable",
+      "reason": "linked from navigation (matches /settings/profile-branding)"
+    },
+    {
+      "path": "/settings/protection",
+      "tier": "chef",
+      "classification": "navigable",
+      "reason": "linked from navigation (matches /settings/protection)"
+    },
+    {
+      "path": "/settings/protection/business-health",
+      "tier": "chef",
+      "classification": "navigable",
+      "reason": "linked from navigation (matches /settings/protection/business-health)"
+    },
+    {
+      "path": "/settings/protection/certifications",
+      "tier": "chef",
+      "classification": "navigable",
+      "reason": "linked from navigation (matches /settings/protection/certifications)"
+    },
+    {
+      "path": "/settings/protection/continuity",
+      "tier": "chef",
+      "classification": "navigable",
+      "reason": "linked from navigation (matches /settings/protection/continuity)"
+    },
+    {
+      "path": "/settings/protection/crisis",
+      "tier": "chef",
+      "classification": "navigable",
+      "reason": "linked from navigation (matches /settings/protection/crisis)"
+    },
+    {
+      "path": "/settings/protection/insurance",
+      "tier": "chef",
+      "classification": "navigable",
+      "reason": "linked from navigation (matches /settings/protection/insurance)"
+    },
+    {
+      "path": "/settings/protection/nda",
+      "tier": "chef",
+      "classification": "navigable",
+      "reason": "linked from navigation (matches /settings/protection/nda)"
+    },
+    {
+      "path": "/settings/protection/portfolio-removal",
+      "tier": "chef",
+      "classification": "navigable",
+      "reason": "linked from navigation (matches /settings/protection/portfolio-removal)"
+    },
+    {
+      "path": "/settings/public-profile",
+      "tier": "chef",
+      "classification": "navigable",
+      "reason": "linked from navigation (matches /settings/public-profile)"
+    },
+    {
+      "path": "/settings/remy",
+      "tier": "chef",
+      "classification": "navigable",
+      "reason": "linked from navigation (matches /settings/remy)"
+    },
+    {
+      "path": "/settings/repertoire",
+      "tier": "chef",
+      "classification": "navigable",
+      "reason": "linked from navigation (matches /settings/repertoire)"
+    },
+    {
+      "path": "/settings/restaurants",
+      "tier": "chef",
+      "classification": "navigable",
+      "reason": "linked from navigation (matches /settings/restaurants)"
+    },
+    {
+      "path": "/settings/scheduling",
+      "tier": "chef",
+      "classification": "navigable",
+      "reason": "linked from navigation (matches /settings/scheduling)"
+    },
+    {
+      "path": "/settings/security",
+      "tier": "chef",
+      "classification": "navigable",
+      "reason": "linked from navigation (matches /settings/security)"
+    },
+    {
+      "path": "/settings/security/audit-trail",
+      "tier": "chef",
+      "classification": "navigable",
+      "reason": "linked from navigation (matches /settings/security/audit-trail)"
+    },
+    {
+      "path": "/settings/security/mfa",
+      "tier": "chef",
+      "classification": "navigable",
+      "reason": "linked from navigation (matches /settings/security/mfa)"
+    },
+    {
+      "path": "/settings/store-preferences",
+      "tier": "chef",
+      "classification": "navigable",
+      "reason": "linked from navigation (matches /settings/store-preferences)"
+    },
+    {
+      "path": "/settings/stripe-connect",
+      "tier": "chef",
+      "classification": "navigable",
+      "reason": "linked from navigation (matches /settings/stripe-connect)"
+    },
+    {
+      "path": "/settings/system",
+      "tier": "chef",
+      "classification": "navigable",
+      "reason": "linked from navigation (matches /settings/system)"
+    },
+    {
+      "path": "/settings/taxonomy",
+      "tier": "chef",
+      "classification": "navigable",
+      "reason": "linked from navigation (matches /settings/taxonomy)"
+    },
+    {
+      "path": "/settings/templates",
+      "tier": "chef",
+      "classification": "navigable",
+      "reason": "linked from navigation (matches /settings/templates)"
+    },
+    {
+      "path": "/settings/touchpoints",
+      "tier": "chef",
+      "classification": "navigable",
+      "reason": "linked from navigation (matches /settings/touchpoints)"
+    },
+    {
+      "path": "/settings/webhooks",
+      "tier": "chef",
+      "classification": "navigable",
+      "reason": "linked from navigation (matches /settings/webhooks)"
+    },
+    {
+      "path": "/settings/yelp",
+      "tier": "chef",
+      "classification": "navigable",
+      "reason": "linked from navigation (matches /settings/yelp)"
+    },
+    {
+      "path": "/settings/zapier",
+      "tier": "chef",
+      "classification": "navigable",
+      "reason": "linked from navigation (matches /settings/zapier)"
+    },
+    {
+      "path": "/staff",
+      "tier": "chef",
+      "classification": "navigable",
+      "reason": "linked from navigation (matches /staff)"
+    },
+    {
+      "path": "/staff-dashboard",
+      "tier": "staff",
+      "classification": "navigable",
+      "reason": "linked from navigation (matches /staff-dashboard)"
+    },
+    {
+      "path": "/staff-recipes",
+      "tier": "staff",
+      "classification": "navigable",
+      "reason": "linked from navigation (matches /staff-recipes)"
+    },
+    {
+      "path": "/staff-schedule",
+      "tier": "staff",
+      "classification": "navigable",
+      "reason": "linked from navigation (matches /staff-schedule)"
+    },
+    {
+      "path": "/staff-station",
+      "tier": "staff",
+      "classification": "navigable",
+      "reason": "linked from navigation (matches /staff-station)"
+    },
+    {
+      "path": "/staff-tasks",
+      "tier": "staff",
+      "classification": "navigable",
+      "reason": "linked from navigation (matches /staff-tasks)"
+    },
+    {
+      "path": "/staff-terms",
+      "tier": "public",
+      "classification": "navigable",
+      "reason": "linked from navigation (matches /staff-terms)"
+    },
+    {
+      "path": "/staff-time",
+      "tier": "staff",
+      "classification": "navigable",
+      "reason": "linked from navigation (matches /staff-time)"
+    },
+    {
+      "path": "/staff/availability",
+      "tier": "chef",
+      "classification": "navigable",
+      "reason": "linked from navigation (matches /staff/availability)"
+    },
+    {
+      "path": "/staff/clock",
+      "tier": "chef",
+      "classification": "navigable",
+      "reason": "linked from navigation (matches /staff/clock)"
+    },
+    {
+      "path": "/staff/labor",
+      "tier": "chef",
+      "classification": "navigable",
+      "reason": "linked from navigation (matches /staff/labor)"
+    },
+    {
+      "path": "/staff/live",
+      "tier": "chef",
+      "classification": "navigable",
+      "reason": "linked from navigation (matches /staff/live)"
+    },
+    {
+      "path": "/staff/optimization",
+      "tier": "chef",
+      "classification": "navigable",
+      "reason": "linked from navigation (matches /staff/optimization)"
+    },
+    {
+      "path": "/staff/performance",
+      "tier": "chef",
+      "classification": "navigable",
+      "reason": "linked from navigation (matches /staff/performance)"
+    },
+    {
+      "path": "/staff/permissions",
+      "tier": "chef",
+      "classification": "navigable",
+      "reason": "linked from navigation (matches /staff/permissions)"
+    },
+    {
+      "path": "/staff/roster",
+      "tier": "chef",
+      "classification": "navigable",
+      "reason": "linked from navigation (matches /staff/roster)"
+    },
+    {
+      "path": "/staff/schedule",
+      "tier": "chef",
+      "classification": "navigable",
+      "reason": "linked from navigation (matches /staff/schedule)"
+    },
+    {
+      "path": "/stations",
+      "tier": "chef",
+      "classification": "navigable",
+      "reason": "linked from navigation (matches /stations)"
+    },
+    {
+      "path": "/stations/daily-ops",
+      "tier": "chef",
+      "classification": "navigable",
+      "reason": "linked from navigation (matches /stations/daily-ops)"
+    },
+    {
+      "path": "/stations/knowledge",
+      "tier": "chef",
+      "classification": "navigable",
+      "reason": "linked from navigation (matches /stations/knowledge)"
+    },
+    {
+      "path": "/stations/menu-board",
+      "tier": "chef",
+      "classification": "navigable",
+      "reason": "linked from navigation (matches /stations/menu-board)"
+    },
+    {
+      "path": "/stations/menu-performance",
+      "tier": "chef",
+      "classification": "navigable",
+      "reason": "linked from navigation (matches /stations/menu-performance)"
+    },
+    {
+      "path": "/stations/ops-log",
+      "tier": "chef",
+      "classification": "navigable",
+      "reason": "linked from navigation (matches /stations/ops-log)"
+    },
+    {
+      "path": "/stations/orders",
+      "tier": "chef",
+      "classification": "navigable",
+      "reason": "linked from navigation (matches /stations/orders)"
+    },
+    {
+      "path": "/stations/orders/print",
+      "tier": "chef",
+      "classification": "navigable",
+      "reason": "linked from navigation (matches /stations/orders/print)"
+    },
+    {
+      "path": "/stations/service-log",
+      "tier": "chef",
+      "classification": "navigable",
+      "reason": "linked from navigation (matches /stations/service-log)"
+    },
+    {
+      "path": "/stations/service-log/new",
+      "tier": "chef",
+      "classification": "navigable",
+      "reason": "linked from navigation (matches /stations/service-log/new)"
+    },
+    {
+      "path": "/stations/waste",
+      "tier": "chef",
+      "classification": "navigable",
+      "reason": "linked from navigation (matches /stations/waste)"
+    },
+    {
+      "path": "/stations/waste/patterns",
+      "tier": "chef",
+      "classification": "navigable",
+      "reason": "linked from navigation (matches /stations/waste/patterns)"
+    },
+    {
+      "path": "/surveys",
+      "tier": "chef",
+      "classification": "navigable",
+      "reason": "linked from navigation (matches /surveys)"
+    },
+    {
+      "path": "/tasks",
+      "tier": "chef",
+      "classification": "navigable",
+      "reason": "linked from navigation (matches /tasks)"
+    },
+    {
+      "path": "/tasks/gantt",
+      "tier": "chef",
+      "classification": "navigable",
+      "reason": "linked from navigation (matches /tasks/gantt)"
+    },
+    {
+      "path": "/tasks/templates",
+      "tier": "chef",
+      "classification": "navigable",
+      "reason": "linked from navigation (matches /tasks/templates)"
+    },
+    {
+      "path": "/tasks/va",
+      "tier": "chef",
+      "classification": "navigable",
+      "reason": "linked from navigation (matches /tasks/va)"
+    },
+    {
+      "path": "/team",
+      "tier": "chef",
+      "classification": "navigable",
+      "reason": "linked from navigation (matches /team)"
+    },
+    {
+      "path": "/terms",
+      "tier": "public",
+      "classification": "navigable",
+      "reason": "linked from navigation (matches /terms)"
+    },
+    {
+      "path": "/travel",
+      "tier": "chef",
+      "classification": "navigable",
+      "reason": "linked from navigation (matches /travel)"
+    },
+    {
+      "path": "/trust",
+      "tier": "public",
+      "classification": "navigable",
+      "reason": "linked from navigation (matches /trust)"
+    },
+    {
+      "path": "/vendor-agreement",
+      "tier": "public",
+      "classification": "navigable",
+      "reason": "linked from navigation (matches /vendor-agreement)"
+    },
+    {
+      "path": "/vendor/catalog",
+      "tier": "vendor",
+      "classification": "navigable",
+      "reason": "linked from navigation (matches /vendor/catalog)"
+    },
+    {
+      "path": "/vendor/dashboard",
+      "tier": "vendor",
+      "classification": "navigable",
+      "reason": "linked from navigation (matches /vendor/dashboard)"
+    },
+    {
+      "path": "/vendor/invoices",
+      "tier": "vendor",
+      "classification": "navigable",
+      "reason": "linked from navigation (matches /vendor/invoices)"
+    },
+    {
+      "path": "/vendor/orders",
+      "tier": "vendor",
+      "classification": "navigable",
+      "reason": "linked from navigation (matches /vendor/orders)"
+    },
+    {
+      "path": "/vendor/profile",
+      "tier": "vendor",
+      "classification": "navigable",
+      "reason": "linked from navigation (matches /vendor/profile)"
+    },
+    {
+      "path": "/vendors",
+      "tier": "chef",
+      "classification": "navigable",
+      "reason": "linked from navigation (matches /vendors)"
+    },
+    {
+      "path": "/vendors/invoices",
+      "tier": "chef",
+      "classification": "navigable",
+      "reason": "linked from navigation (matches /vendors/invoices)"
+    },
+    {
+      "path": "/vendors/price-comparison",
+      "tier": "chef",
+      "classification": "navigable",
+      "reason": "linked from navigation (matches /vendors/price-comparison)"
+    },
+    {
+      "path": "/waitlist",
+      "tier": "chef",
+      "classification": "navigable",
+      "reason": "linked from navigation (matches /waitlist)"
+    },
+    {
+      "path": "/wix-submissions",
+      "tier": "chef",
+      "classification": "navigable",
+      "reason": "linked from navigation (matches /wix-submissions)"
+    }
+  ]
+}
