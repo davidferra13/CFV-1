@@ -89,6 +89,8 @@ import {
   Utensils,
   Wine,
 } from '@/components/ui/icons'
+import { DiscoveryFallbackPanel } from './discovery-fallback-panel'
+import type { FallbackAlternative } from '@/app/api/discovery/fallback-check/route'
 
 // ── Discovery item types ──
 // Rail items carry a type field so Agent 2 can route them correctly.
@@ -2219,6 +2221,11 @@ export function CuisineMarquee({
   const [selectedFilters, setSelectedFilters] = useState<DiscoveryFilterState>(() =>
     emptyDiscoveryFilterState()
   )
+  const [fallbackStatus, setFallbackStatus] = useState<
+    'idle' | 'checking' | 'has_results' | 'no_results'
+  >('idle')
+  const [fallbackAlternatives, setFallbackAlternatives] = useState<FallbackAlternative[]>([])
+  const [fallbackBroadenedLabel, setFallbackBroadenedLabel] = useState<string | null>(null)
   const [interactionReady, setInteractionReady] = useState(false)
   const autoScrollEnabledRef = useRef(true)
 
@@ -2417,7 +2424,72 @@ export function CuisineMarquee({
 
   const clearSelections = useCallback(() => {
     setSelectedFilters(emptyDiscoveryFilterState())
+    setFallbackStatus('idle')
+    setFallbackAlternatives([])
+    setFallbackBroadenedLabel(null)
   }, [])
+
+  // Debounced zero-results check — fires when filter selections change
+  useEffect(() => {
+    if (isDiscoveryFilterStateEmpty(selectedFilters)) {
+      setFallbackStatus('idle')
+      setFallbackAlternatives([])
+      setFallbackBroadenedLabel(null)
+      return
+    }
+
+    setFallbackStatus('checking')
+    const controller = new AbortController()
+    const timer = setTimeout(async () => {
+      try {
+        const params = new URLSearchParams()
+        const cuisine = selectedFilters.cuisines[0] ?? ''
+        const dietary = selectedFilters.dietary[0] ?? ''
+        const serviceType = selectedFilters.fulfillment ?? ''
+        const occasion = selectedFilters.occasion ?? ''
+        if (cuisine) params.set('cuisine', cuisine)
+        if (dietary) params.set('dietary', dietary)
+        if (serviceType) params.set('serviceType', serviceType)
+        if (occasion) params.set('occasion', occasion)
+
+        const response = await fetch(`/api/discovery/fallback-check?${params.toString()}`, {
+          signal: controller.signal,
+        })
+        if (!response.ok) {
+          setFallbackStatus('idle')
+          return
+        }
+        const data = (await response.json()) as {
+          count: number
+          hasAlternatives: boolean
+          alternatives: FallbackAlternative[]
+          broadenedLabel: string | null
+        }
+        if (data.count > 0) {
+          setFallbackStatus('has_results')
+          setFallbackAlternatives([])
+          setFallbackBroadenedLabel(null)
+        } else if (data.hasAlternatives) {
+          setFallbackStatus('no_results')
+          setFallbackAlternatives(data.alternatives)
+          setFallbackBroadenedLabel(data.broadenedLabel)
+        } else {
+          setFallbackStatus('has_results')
+          setFallbackAlternatives([])
+          setFallbackBroadenedLabel(null)
+        }
+      } catch (err: unknown) {
+        if (err instanceof Error && err.name !== 'AbortError') {
+          setFallbackStatus('idle')
+        }
+      }
+    }, 600)
+
+    return () => {
+      clearTimeout(timer)
+      controller.abort()
+    }
+  }, [selectedFilters])
 
   const pauseRow = useCallback((role: DiscoveryRowRole) => {
     const t = resumeTimers.current[role]
@@ -2801,12 +2873,15 @@ export function CuisineMarquee({
       },
       withDiscoveryDebug
     )
-    // Mark the first 16 cuisine items as visual cards for large rendering
-    const visualMarked = scoredPool.map((item, idx) =>
-      idx < 16 && item.type === 'cuisine' && !item.presentation
+    // Mark the first 16 cuisine items as visual cards for large rendering.
+    // Only promote cuisines that have a flag URL entry — cuisines without flags
+    // fall back to the standard pill layout which looks intentional rather than broken.
+    const visualMarked = scoredPool.map((item, idx) => {
+      const hasFlag = item.type === 'cuisine' && Boolean(CUISINE_FLAG_URLS[item.label])
+      return idx < 16 && hasFlag && !item.presentation
         ? { ...item, presentation: 'visual_card' as const }
         : item
-    )
+    })
     return [...visualMarked, ...visualMarked]
   }, [filterHiddenItems, locationContext, tasteRotationSeed, userSignals])
 
@@ -2994,10 +3069,10 @@ export function CuisineMarquee({
     <>
       <div className="mt-5 flex flex-col gap-3 px-2 sm:mt-8 sm:flex-row sm:items-end sm:justify-between sm:gap-4">
         <div className="min-w-0">
-          <p className="text-[10px] font-bold uppercase tracking-widest text-[#e8a96b]/70">
+          <p className="text-[10px] font-bold uppercase tracking-widest text-[#e8a96b]/90">
             What are you in the mood for?
           </p>
-          <h2 className="mt-1 text-sm font-semibold leading-tight text-white/85 sm:text-base">
+          <h2 className="mt-1 text-sm font-semibold leading-tight text-white sm:text-base">
             Browse by craving, plan, or chef
           </h2>
         </div>
@@ -3026,13 +3101,13 @@ export function CuisineMarquee({
         {rows.map((row, i) => (
           <React.Fragment key={row.role}>
             {i > 0 && (
-              <span className={['text-[11px] text-white/15', row.labelClassName ?? ''].join(' ')}>
+              <span className={['text-[11px] text-white/25', row.labelClassName ?? ''].join(' ')}>
                 &middot;
               </span>
             )}
             <span
               className={[
-                'flex items-center gap-1.5 text-[10px] font-bold uppercase tracking-widest text-white/40',
+                'flex items-center gap-1.5 text-[10px] font-bold uppercase tracking-widest text-white/60',
                 row.labelClassName ?? '',
               ].join(' ')}
             >
@@ -3121,47 +3196,60 @@ export function CuisineMarquee({
         </div>
       </div>
       {hasSelectedFilters && (
-        <div className="mt-3 flex flex-col gap-2 rounded-lg border border-[#e8a96b]/25 bg-[#1b1009]/80 px-3 py-3 shadow-[0_10px_28px_rgba(0,0,0,0.18)] sm:flex-row sm:items-center sm:justify-between">
-          <div className="flex min-w-0 flex-wrap items-center gap-1.5">
-            {selectedFilterTokens.slice(0, 4).map((token) => (
-              <span
-                key={`${token.facet}:${token.key}:${token.label}`}
-                className="inline-flex min-h-7 items-center rounded-full border border-[#e8a96b]/25 bg-[#e8a96b]/10 px-2.5 text-[11px] font-semibold text-[#ffd6a3]"
-              >
-                {token.label}
-              </span>
-            ))}
-            {selectedFilterTokens.length > 4 && (
-              <span className="text-[11px] font-semibold text-white/50">
-                +{selectedFilterTokens.length - 4}
-              </span>
-            )}
-          </div>
-          <div className="flex shrink-0 items-center gap-2">
-            <button
-              type="button"
-              className="inline-flex min-h-8 items-center justify-center rounded-full border border-white/10 px-3 text-[11px] font-semibold text-white/55 transition hover:border-white/20 hover:text-white"
-              onClick={clearSelections}
-            >
-              Clear
-            </button>
-            <Link
-              href={selectedDestinationHref}
-              className="inline-flex min-h-8 items-center justify-center rounded-full border border-[#e8a96b]/50 bg-[#e8a96b]/18 px-3 text-[11px] font-bold text-[#ffe0ad] transition hover:border-[#e8a96b]/75 hover:bg-[#e8a96b]/25"
-              aria-label={`Continue with ${selectedCount} selection${selectedCount === 1 ? '' : 's'}`}
-              onClick={() => {
-                for (const selection of selectedFilters.selectedRailItems) {
-                  trackDiscoveryInteraction('click', selection, {
-                    href: selectedDestinationHref,
-                    rowItemCount: selectedCount,
-                  })
-                }
-              }}
-            >
-              Continue with {selectedCount} selection{selectedCount === 1 ? '' : 's'}
-            </Link>
-          </div>
-        </div>
+        <>
+          {fallbackStatus === 'no_results' ? (
+            <DiscoveryFallbackPanel
+              alternatives={fallbackAlternatives}
+              broadenedLabel={fallbackBroadenedLabel}
+              onClear={clearSelections}
+            />
+          ) : (
+            <div className="mt-3 flex flex-col gap-2 rounded-lg border border-[#e8a96b]/25 bg-[#1b1009]/80 px-3 py-3 shadow-[0_10px_28px_rgba(0,0,0,0.18)] sm:flex-row sm:items-center sm:justify-between">
+              <div className="flex min-w-0 flex-wrap items-center gap-1.5">
+                {selectedFilterTokens.slice(0, 4).map((token) => (
+                  <span
+                    key={`${token.facet}:${token.key}:${token.label}`}
+                    className="inline-flex min-h-7 items-center rounded-full border border-[#e8a96b]/25 bg-[#e8a96b]/10 px-2.5 text-[11px] font-semibold text-[#ffd6a3]"
+                  >
+                    {token.label}
+                  </span>
+                ))}
+                {selectedFilterTokens.length > 4 && (
+                  <span className="text-[11px] font-semibold text-white/50">
+                    +{selectedFilterTokens.length - 4}
+                  </span>
+                )}
+              </div>
+              <div className="flex shrink-0 items-center gap-2">
+                {fallbackStatus === 'checking' && (
+                  <span className="text-[10px] text-white/40">Checking availability…</span>
+                )}
+                <button
+                  type="button"
+                  className="inline-flex min-h-8 items-center justify-center rounded-full border border-white/10 px-3 text-[11px] font-semibold text-white/55 transition hover:border-white/20 hover:text-white"
+                  onClick={clearSelections}
+                >
+                  Clear
+                </button>
+                <Link
+                  href={selectedDestinationHref}
+                  className="inline-flex min-h-8 items-center justify-center rounded-full border border-[#e8a96b]/50 bg-[#e8a96b]/18 px-3 text-[11px] font-bold text-[#ffe0ad] transition hover:border-[#e8a96b]/75 hover:bg-[#e8a96b]/25"
+                  aria-label={`Continue with ${selectedCount} selection${selectedCount === 1 ? '' : 's'}`}
+                  onClick={() => {
+                    for (const selection of selectedFilters.selectedRailItems) {
+                      trackDiscoveryInteraction('click', selection, {
+                        href: selectedDestinationHref,
+                        rowItemCount: selectedCount,
+                      })
+                    }
+                  }}
+                >
+                  Continue with {selectedCount} selection{selectedCount === 1 ? '' : 's'}
+                </Link>
+              </div>
+            </div>
+          )}
+        </>
       )}
     </>
   )
