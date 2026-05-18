@@ -1,12 +1,15 @@
 // Cannabis Dining Hub - Chef Portal
 // The main entry point for the cannabis tier. Only visible to cannabis-tier chefs.
 
+import type { Metadata } from 'next'
 import Link from 'next/link'
 import { getCannabisEvents } from '@/lib/chef/cannabis-actions'
 import {
   CannabisPortalHeader,
   CannabisPageWrapper,
 } from '@/components/cannabis/cannabis-portal-header'
+
+export const metadata: Metadata = { title: 'Cannabis Dining | ChefFlow' }
 
 export default async function CannabisHubPage() {
   const events = await getCannabisEvents()

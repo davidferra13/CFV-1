@@ -1,8 +1,11 @@
+import type { Metadata } from 'next'
 import { buildPieCartPlan } from '@/lib/chef-ops/pie-cart'
 
 function dollars(cents: number) {
   return new Intl.NumberFormat('en-US', { style: 'currency', currency: 'USD' }).format(cents / 100)
 }
+
+export const metadata: Metadata = { title: 'PIE Cart | ChefFlow' }
 
 export default function PieCartPage() {
   const plan = buildPieCartPlan(

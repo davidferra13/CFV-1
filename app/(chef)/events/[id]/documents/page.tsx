@@ -1,3 +1,4 @@
+import type { Metadata } from 'next'
 import { notFound } from 'next/navigation'
 import Link from 'next/link'
 import { format } from 'date-fns'
@@ -170,6 +171,10 @@ function buildDrilldownHref(
 
   const query = params.toString()
   return query ? `/events/${eventId}/documents?${query}` : `/events/${eventId}/documents`
+}
+
+export async function generateMetadata() {
+  return { title: 'Event Documents | ChefFlow' }
 }
 
 export default async function EventDocumentsPage({

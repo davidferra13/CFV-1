@@ -1,3 +1,4 @@
+import type { Metadata } from 'next'
 import Link from 'next/link'
 import { format } from 'date-fns'
 import { notFound } from 'next/navigation'
@@ -24,6 +25,10 @@ function uniqueStrings(values: Array<string | null | undefined>): string[] {
     output.push(value)
   }
   return output
+}
+
+export async function generateMetadata() {
+  return { title: 'Event Safety | ChefFlow' }
 }
 
 export default async function EventSafetyPage({ params }: { params: { id: string } }) {

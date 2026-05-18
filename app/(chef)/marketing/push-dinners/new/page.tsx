@@ -1,3 +1,4 @@
+import type { Metadata } from 'next'
 import dynamic from 'next/dynamic'
 import Link from 'next/link'
 import { ChevronLeft } from '@/components/ui/icons'
@@ -13,6 +14,8 @@ const PushDinnerBuilder = dynamic(
     ),
   }
 )
+
+export const metadata: Metadata = { title: 'New Push Dinner | ChefFlow' }
 
 export default function NewPushDinnerPage() {
   return (

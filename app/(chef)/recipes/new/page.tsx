@@ -1,9 +1,12 @@
 // Create Recipe Page
 // Two modes: Smart Import (AI-parsed) or Manual form entry
 
+import type { Metadata } from 'next'
 import { requireChef } from '@/lib/auth/get-user'
 import { isAIConfigured } from '@/lib/ai/parse'
 import { CreateRecipeClient } from './create-recipe-client'
+
+export const metadata: Metadata = { title: 'New Recipe | ChefFlow' }
 
 export default async function NewRecipePage({
   searchParams,

@@ -2,10 +2,13 @@
 // Chef describes an event in plain text - AI parses it into a pre-filled draft.
 // AI policy compliant: parsed draft is shown for chef review before any data is saved.
 
+import type { Metadata } from 'next'
 import { requireChef } from '@/lib/auth/get-user'
 import { getClients } from '@/lib/clients/actions'
 import { EventNLForm } from '@/components/events/event-nl-form'
 import Link from 'next/link'
+
+export const metadata: Metadata = { title: 'Create Event from Text | ChefFlow' }
 
 export default async function NewEventFromTextPage() {
   await requireChef()

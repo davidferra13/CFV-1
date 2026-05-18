@@ -2,6 +2,7 @@
 // Personal readiness checklist: uniform, tools, grooming, safety.
 // Mirrors the pack page pattern: localStorage primary, server sync in background.
 
+import type { Metadata } from 'next'
 import { notFound } from 'next/navigation'
 import Link from 'next/link'
 import { requireChef } from '@/lib/auth/get-user'
@@ -12,6 +13,10 @@ import { ServiceSimulationReturnBanner } from '@/components/events/service-simul
 import { format, parseISO } from 'date-fns'
 import { dateToDateString } from '@/lib/utils/format'
 import { sanitizeReturnTo } from '@/lib/navigation/return-to'
+
+export async function generateMetadata() {
+  return { title: 'Gear Checklist | ChefFlow' }
+}
 
 export default async function GearPage({
   params,

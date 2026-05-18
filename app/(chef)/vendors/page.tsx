@@ -2,6 +2,7 @@
 // Part of the Vendor & Food Cost System
 
 import type { Metadata } from 'next'
+import Image from 'next/image'
 import Link from 'next/link'
 import { requireChef } from '@/lib/auth/get-user'
 import { listVendors } from '@/lib/vendors/actions'
@@ -101,10 +102,13 @@ export default async function VendorsPage({
                   <div className="flex items-start justify-between">
                     <div className="flex items-start gap-3">
                       {vendor.logo_url ? (
-                        // eslint-disable-next-line @next/next/no-img-element
-                        <img
+                        <Image
                           src={vendor.logo_url}
                           alt=""
+                          width={32}
+                          height={32}
+                          sizes="32px"
+                          unoptimized
                           className="h-8 w-8 rounded object-cover flex-shrink-0 mt-0.5"
                         />
                       ) : (

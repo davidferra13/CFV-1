@@ -1,6 +1,7 @@
 // Receipt Summary Page - per-event receipt digitization review
 // Upload → OCR → review line items → approve → copies to expenses
 
+import type { Metadata } from 'next'
 import { notFound } from 'next/navigation'
 import Link from 'next/link'
 import { requireChef } from '@/lib/auth/get-user'
@@ -12,6 +13,10 @@ import { CostVarianceCard } from '@/components/finance/cost-variance-card'
 import { Button } from '@/components/ui/button'
 import { Card } from '@/components/ui/card'
 import { format } from 'date-fns'
+
+export async function generateMetadata() {
+  return { title: 'Event Receipts | ChefFlow' }
+}
 
 export default async function ReceiptsPage({ params }: { params: { id: string } }) {
   await requireChef()

@@ -1,7 +1,10 @@
+import type { Metadata } from 'next'
 import Link from 'next/link'
 import { requireChef } from '@/lib/auth/get-user'
 import { listFrontOfHouseTemplates } from '@/lib/front-of-house/menuGeneratorService'
 import { MenuTemplateSettings } from '@/components/menus/menu-template-settings'
+
+export const metadata: Metadata = { title: 'Menu Templates | ChefFlow' }
 
 export default async function MenuTemplateSettingsPage() {
   await requireChef()

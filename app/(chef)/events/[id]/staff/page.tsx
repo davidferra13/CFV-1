@@ -1,3 +1,4 @@
+import type { Metadata } from 'next'
 import Link from 'next/link'
 import { format } from 'date-fns'
 import { notFound } from 'next/navigation'
@@ -12,6 +13,10 @@ import { checkAssignmentConflict, getEventStaffRoster, listStaffMembers } from '
 type ConflictSummary = {
   staffName: string
   eventNames: string[]
+}
+
+export async function generateMetadata() {
+  return { title: 'Event Staff | ChefFlow' }
 }
 
 export default async function EventStaffPage({ params }: { params: { id: string } }) {

@@ -1,5 +1,6 @@
 ﻿// Chef Event Detail Page: decomposed into server component sections
 
+import type { Metadata } from 'next'
 import { notFound } from 'next/navigation'
 import { Suspense } from 'react'
 import { SkeletonCard } from '@/components/ui/skeleton'
@@ -38,6 +39,10 @@ async function EventSuggestionsSection({ eventId, event }: { eventId: string; ev
   return <ContextualNextAction suggestions={suggestions} />
 }
 
+export async function generateMetadata() {
+  return { title: 'Event Details | ChefFlow' }
+}
+
 export default async function EventDetailPage({
   params,
   searchParams,
@@ -59,7 +64,7 @@ export default async function EventDetailPage({
       <Suspense fallback={<SkeletonCard />}>
         <EventHeaderSection eventId={params.id} tenantId={tenantId} event={event} />
       </Suspense>
-      <Suspense fallback={null}>
+      <Suspense fallback={<SkeletonCard />}>
         <EventSuggestionsSection eventId={params.id} event={event} />
       </Suspense>
       <Suspense fallback={<SkeletonCard />}>

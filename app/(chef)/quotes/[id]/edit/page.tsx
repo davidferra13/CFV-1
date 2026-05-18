@@ -1,5 +1,6 @@
 // Edit Quote Page - Only for draft quotes
 
+import type { Metadata } from 'next'
 import { notFound, redirect } from 'next/navigation'
 import { requireChef } from '@/lib/auth/get-user'
 import { getQuoteById, getClientPricingHistory } from '@/lib/quotes/actions'
@@ -7,6 +8,10 @@ import { getClients } from '@/lib/clients/actions'
 import { QuoteForm } from '@/components/quotes/quote-form'
 import { PricingInsightsSidebar } from '@/components/quotes/pricing-insights-sidebar'
 import { ClientSpendingBadge } from '@/components/quotes/client-spending-badge'
+
+export async function generateMetadata() {
+  return { title: 'Edit Quote | ChefFlow' }
+}
 
 export default async function EditQuotePage({ params }: { params: { id: string } }) {
   const user = await requireChef()

@@ -1,9 +1,12 @@
+import type { Metadata } from 'next'
 import { requireChef } from '@/lib/auth/get-user'
 import { listDevices, listStaffWithPinStatus } from '@/lib/devices/actions'
 import { DeviceList } from '@/components/devices/device-list'
 import { StaffPinManager } from '@/components/devices/staff-pin-manager'
 import Link from 'next/link'
 import { ArrowLeft } from '@/components/ui/icons'
+
+export const metadata: Metadata = { title: 'Devices | ChefFlow' }
 
 export default async function DevicesSettingsPage() {
   await requireChef()

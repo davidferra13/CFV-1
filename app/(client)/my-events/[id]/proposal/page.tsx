@@ -5,7 +5,6 @@
 import type { Metadata } from 'next'
 import { requireClient } from '@/lib/auth/get-user'
 
-export const metadata: Metadata = { title: 'Proposal' }
 import { getClientEventById } from '@/lib/events/client-actions'
 import { getClientEventContract } from '@/lib/contracts/actions'
 import { getCurrentJourneyAction } from '@/lib/events/journey-steps'
@@ -18,6 +17,8 @@ import { Badge } from '@/components/ui/badge'
 import { Alert } from '@/components/ui/alert'
 import AcceptProposalButton from '../accept-proposal-button'
 import type { Database } from '@/types/database'
+
+export const metadata: Metadata = { title: 'Proposal' }
 
 type EventStatus = Database['public']['Enums']['event_status']
 

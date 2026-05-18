@@ -3,7 +3,6 @@
 import type { Metadata } from 'next'
 import { redirect } from 'next/navigation'
 
-export const metadata: Metadata = { title: 'Quote Details' }
 import Link from 'next/link'
 import { requireClient } from '@/lib/auth/get-user'
 import { getClientQuoteById } from '@/lib/quotes/client-actions'
@@ -17,6 +16,8 @@ import { QuoteExpiryCountdown } from '@/components/quotes/quote-expiry-countdown
 import { MessageChefButton } from '@/components/chat/message-chef-button'
 import { ActivityTracker } from '@/components/activity/activity-tracker'
 import { SessionHeartbeat } from '@/components/activity/session-heartbeat'
+
+export const metadata: Metadata = { title: 'Quote Details' }
 
 export default async function ClientQuoteDetailPage({ params }: { params: { id: string } }) {
   await requireClient()

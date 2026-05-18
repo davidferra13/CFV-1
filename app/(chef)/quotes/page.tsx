@@ -1,12 +1,12 @@
-// Chef Quote Pipeline - List all quotes with URL-synced filters
-// Uses the shared FilterableList pattern instead of status-as-page anti-pattern
+// Chef Quote Pipeline - Server-side FTS search, pagination, and status filtering
+// Replaces client-side-only filtering with proper server queries
 
 import type { Metadata } from 'next'
 import { Suspense } from 'react'
 import { WidgetErrorBoundary } from '@/components/ui/widget-error-boundary'
 import Link from 'next/link'
 import { requireChef } from '@/lib/auth/get-user'
-import { getQuotes } from '@/lib/quotes/actions'
+import { getQuotesPaginated } from '@/lib/quotes/actions'
 import { getQuoteAcceptanceInsights } from '@/lib/analytics/quote-insights'
 import { QuoteAcceptanceInsightsPanel } from '@/components/analytics/quote-acceptance-insights'
 import { QuoteIntelligenceBar } from '@/components/intelligence/quote-intelligence-bar'
@@ -14,22 +14,35 @@ import { PricingIntelligenceBar } from '@/components/intelligence/pricing-intell
 import { Button } from '@/components/ui/button'
 import { Card } from '@/components/ui/card'
 import { QuotesListClient, type QuoteListItem } from '@/components/quotes/quotes-list-client'
+import { safeFetch } from '@/lib/utils/safe-fetch'
+import { ErrorState } from '@/components/ui/error-state'
+import { SkeletonTable } from '@/components/ui/skeleton'
 
 export const metadata: Metadata = { title: 'Quotes' }
 
-async function QuoteListWithFilters({ initialStatus }: { initialStatus: string }) {
+const PAGE_SIZE = 50
+
+const STATUS_OPTIONS = [
+  { value: 'all', label: 'All' },
+  { value: 'draft', label: 'Draft' },
+  { value: 'sent', label: 'Sent' },
+  { value: 'viewed', label: 'Viewed' },
+  { value: 'accepted', label: 'Accepted' },
+  { value: 'rejected', label: 'Rejected' },
+  { value: 'expired', label: 'Expired' },
+]
+
+export default async function QuotesPage({
+  searchParams,
+}: {
+  searchParams: Promise<Record<string, string | string[] | undefined>>
+}) {
   await requireChef()
+  const params = await searchParams
 
-  // Fetch ALL quotes; filtering happens client-side via FilterableList
-  const quotes = (await getQuotes()) as QuoteListItem[]
-
-  return <QuotesListClient quotes={quotes} initialStatus={initialStatus} />
-}
-
-export default async function QuotesPage({ searchParams }: { searchParams: { status?: string } }) {
-  await requireChef()
-
-  const initialStatus = searchParams.status || 'all'
+  const search = typeof params.q === 'string' ? params.q.trim() : ''
+  const status = typeof params.status === 'string' ? params.status : 'all'
+  const page = Math.max(1, parseInt(typeof params.page === 'string' ? params.page : '1', 10) || 1)
 
   // Fetch insights in parallel with page render
   const insights = await getQuoteAcceptanceInsights().catch(() => null)
@@ -89,18 +102,135 @@ export default async function QuotesPage({ searchParams }: { searchParams: { sta
         </div>
       </details>
 
-      {/* Filterable quote list */}
+      {/* Server-filtered quote list */}
       <WidgetErrorBoundary name="Quote List">
         <Suspense
           fallback={
             <Card className="p-8 text-center">
-              <p className="text-stone-500">Loading quotes...</p>
+              <SkeletonTable rows={5} />
             </Card>
           }
         >
-          <QuoteListWithFilters initialStatus={initialStatus} />
+          <QuoteListContent search={search} status={status} page={page} />
         </Suspense>
       </WidgetErrorBoundary>
+    </div>
+  )
+}
+
+async function QuoteListContent({
+  search,
+  status,
+  page,
+}: {
+  search: string
+  status: string
+  page: number
+}) {
+  const result = await safeFetch(() =>
+    getQuotesPaginated({ search: search || undefined, status, page, pageSize: PAGE_SIZE })
+  )
+
+  if (result.error || !result.data) {
+    return (
+      <ErrorState
+        title="Could not load quotes"
+        description={result.error ?? 'Quote data was unavailable.'}
+      />
+    )
+  }
+
+  const { items, total } = result.data
+  const quotes = items as QuoteListItem[]
+  const offset = (page - 1) * PAGE_SIZE
+
+  const buildUrl = (overrides: { page?: number; status?: string; q?: string }) => {
+    const p = new URLSearchParams()
+    const nextQ = overrides.q ?? search
+    const nextStatus = overrides.status ?? status
+    const nextPage = overrides.page ?? page
+    if (nextQ) p.set('q', nextQ)
+    if (nextStatus && nextStatus !== 'all') p.set('status', nextStatus)
+    if (nextPage > 1) p.set('page', String(nextPage))
+    const qs = p.toString()
+    return `/quotes${qs ? `?${qs}` : ''}`
+  }
+
+  return (
+    <div className="space-y-4">
+      {/* Search + Status filter bar */}
+      <Card className="p-4">
+        <form action="/quotes" method="get" className="flex flex-wrap items-center gap-3">
+          <input
+            type="search"
+            name="q"
+            defaultValue={search}
+            placeholder="Search quotes by client, name, occasion..."
+            className="w-full max-w-sm rounded-lg border border-stone-700 bg-stone-900 px-3 py-2 text-sm text-stone-200 placeholder:text-stone-500 focus:border-brand-500 focus:outline-none"
+          />
+          {/* Hidden field preserves status when search form submits */}
+          {status !== 'all' && <input type="hidden" name="status" value={status} />}
+          <button
+            type="submit"
+            className="rounded-lg bg-stone-800 px-3 py-2 text-sm text-stone-200 hover:bg-stone-700"
+          >
+            Search
+          </button>
+          {(search || status !== 'all') && (
+            <Link href="/quotes" className="text-sm text-stone-500 hover:text-stone-300">
+              Clear
+            </Link>
+          )}
+        </form>
+        <div className="flex flex-wrap gap-1.5 mt-3">
+          {STATUS_OPTIONS.map((opt) => {
+            const isActive = status === opt.value
+            return (
+              <Link
+                key={opt.value}
+                href={buildUrl({ status: opt.value, page: 1 })}
+                className={`rounded-full px-3 py-1 text-xs font-medium transition-colors ${
+                  isActive
+                    ? 'bg-brand-600 text-white'
+                    : 'bg-stone-800 text-stone-400 hover:bg-stone-700 hover:text-stone-200'
+                }`}
+              >
+                {opt.label}
+              </Link>
+            )
+          })}
+        </div>
+      </Card>
+
+      {/* Quote list (client component renders rows, no more client-side filtering) */}
+      <QuotesListClient quotes={quotes} initialStatus="all" />
+
+      {/* Pagination */}
+      {total > PAGE_SIZE && (
+        <div className="flex items-center justify-between border-t border-stone-800 pt-3">
+          <p className="text-xs text-stone-500">
+            Showing {offset + 1}-{Math.min(offset + PAGE_SIZE, total)} of {total}
+          </p>
+          <div className="flex gap-2">
+            {page > 1 && (
+              <Link
+                href={buildUrl({ page: page - 1 })}
+                className="rounded-lg bg-stone-800 px-3 py-1.5 text-xs text-stone-300 hover:bg-stone-700"
+              >
+                Previous
+              </Link>
+            )}
+            {offset + PAGE_SIZE < total && (
+              <Link
+                href={buildUrl({ page: page + 1 })}
+                className="rounded-lg bg-stone-800 px-3 py-1.5 text-xs text-stone-300 hover:bg-stone-700"
+              >
+                Next
+              </Link>
+            )}
+          </div>
+        </div>
+      )}
     </div>
   )
 }

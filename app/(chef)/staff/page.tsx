@@ -3,6 +3,7 @@
 // Supports search by name, filter by role, filter by status via URL params.
 
 import type { Metadata } from 'next'
+import Image from 'next/image'
 import Link from 'next/link'
 import { requireChef } from '@/lib/auth/get-user'
 import { requirePro } from '@/lib/billing/require-pro'
@@ -98,10 +99,13 @@ export default async function StaffRosterPage({
                   <Link href={`/staff/${member.id}`} className="group flex-1">
                     <div className="flex items-center gap-2">
                       {member.photo_url ? (
-                        // eslint-disable-next-line @next/next/no-img-element
-                        <img
+                        <Image
                           src={member.photo_url}
                           alt=""
+                          width={32}
+                          height={32}
+                          sizes="32px"
+                          unoptimized
                           className="h-8 w-8 rounded-full object-cover flex-shrink-0"
                         />
                       ) : (

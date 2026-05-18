@@ -1,7 +1,10 @@
+import type { Metadata } from 'next'
 import { requireChef } from '@/lib/auth/get-user'
 import { createServerClient } from '@/lib/db/server'
 import { CreativeProjectCard } from '@/components/professional/creative-project-card'
 import { CreativeProjectForm } from '@/components/professional/creative-project-form'
+
+export const metadata: Metadata = { title: 'My Kitchen | ChefFlow' }
 
 export default async function MyKitchenPage() {
   const chef = await requireChef()

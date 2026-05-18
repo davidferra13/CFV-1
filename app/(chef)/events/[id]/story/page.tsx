@@ -1,6 +1,11 @@
+import type { Metadata } from 'next'
 import { getStoryData } from '@/lib/stories/story-data'
 import { EventStoryPreview } from '@/components/stories/event-story-preview'
 import Link from 'next/link'
+
+export async function generateMetadata() {
+  return { title: 'Event Story | ChefFlow' }
+}
 
 export default async function EventStoryPage({ params }: { params: Promise<{ id: string }> }) {
   const { id } = await params

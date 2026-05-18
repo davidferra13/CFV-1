@@ -132,6 +132,35 @@ async function MonthlyPLSnapshot() {
 
 export const metadata: Metadata = { title: 'Finance' }
 
+function FinanceBarSkeleton() {
+  return (
+    <div className="rounded-xl border border-stone-800 bg-stone-900/70 p-4">
+      <div className="h-4 w-40 animate-pulse rounded bg-stone-800" />
+      <div className="mt-3 grid gap-3 md:grid-cols-3">
+        {[1, 2, 3].map((item) => (
+          <div key={item} className="h-10 animate-pulse rounded bg-stone-800/80" />
+        ))}
+      </div>
+    </div>
+  )
+}
+
+function RecentEventsSkeleton() {
+  return (
+    <Card className="p-4">
+      <div className="mb-3 h-4 w-32 animate-pulse rounded bg-stone-800" />
+      <div className="space-y-2">
+        {[1, 2, 3, 4].map((item) => (
+          <div key={item} className="flex items-center justify-between gap-3 py-1.5">
+            <div className="h-4 w-48 animate-pulse rounded bg-stone-800" />
+            <div className="h-4 w-16 animate-pulse rounded bg-stone-800" />
+          </div>
+        ))}
+      </div>
+    </Card>
+  )
+}
+
 const SECTIONS: Array<{
   href: string
   label: string
@@ -314,14 +343,14 @@ export default async function FinancePage() {
 
       {/* Financial Intelligence */}
       <WidgetErrorBoundary name="Finance Health" compact>
-        <Suspense fallback={null}>
+        <Suspense fallback={<FinanceBarSkeleton />}>
           <FinanceHealthBar />
         </Suspense>
       </WidgetErrorBoundary>
 
       {/* Pricing Intelligence */}
       <WidgetErrorBoundary name="Pricing Intelligence" compact>
-        <Suspense fallback={null}>
+        <Suspense fallback={<FinanceBarSkeleton />}>
           <PricingIntelligenceBar />
         </Suspense>
       </WidgetErrorBoundary>
@@ -357,7 +386,7 @@ export default async function FinancePage() {
 
       {/* Recent Events with Financial Data */}
       <WidgetErrorBoundary name="Recent Events" compact>
-        <Suspense fallback={null}>
+        <Suspense fallback={<RecentEventsSkeleton />}>
           <RecentEventsList />
         </Suspense>
       </WidgetErrorBoundary>

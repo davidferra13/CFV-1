@@ -1,3 +1,4 @@
+import type { Metadata } from 'next'
 import { notFound } from 'next/navigation'
 import { requireChef } from '@/lib/auth/get-user'
 import { getSocialPlannerData } from '@/lib/social/actions'
@@ -20,6 +21,10 @@ const MONTH_NAMES = [
   'November',
   'December',
 ]
+
+export async function generateMetadata() {
+  return { title: 'Social Calendar | ChefFlow' }
+}
 
 export default async function SocialMonthPage({ params }: { params: { month: string } }) {
   await requireChef()

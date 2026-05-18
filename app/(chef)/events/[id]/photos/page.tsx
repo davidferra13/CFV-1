@@ -2,6 +2,7 @@
 // Full-page view for uploading and managing event photos with tagging,
 // visibility controls, and portfolio integration.
 
+import type { Metadata } from 'next'
 import { notFound } from 'next/navigation'
 import Link from 'next/link'
 import { requireChef } from '@/lib/auth/get-user'
@@ -11,6 +12,10 @@ import { createServerClient } from '@/lib/db/server'
 
 type PageProps = {
   params: { id: string }
+}
+
+export async function generateMetadata() {
+  return { title: 'Event Photos | ChefFlow' }
 }
 
 export default async function EventPhotosPage({ params }: PageProps) {

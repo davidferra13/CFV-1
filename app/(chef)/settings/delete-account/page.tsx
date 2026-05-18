@@ -2,11 +2,14 @@
 // Soft-delete with 30-day grace period, pre-deletion checks, data export prompt
 // Shows cancel option when deletion is already pending
 
+import type { Metadata } from 'next'
 import { requireChef } from '@/lib/auth/get-user'
 import { getAccountDeletionStatus } from '@/lib/compliance/account-deletion-actions'
 import { DeleteAccountForm } from '@/components/settings/delete-account-form'
 import { CancelDeletionCard } from '@/components/settings/cancel-deletion-card'
 import { Alert } from '@/components/ui/alert'
+
+export const metadata: Metadata = { title: 'Delete Account | ChefFlow' }
 
 export default async function DeleteAccountPage() {
   const user = await requireChef()

@@ -1,3 +1,4 @@
+import type { Metadata } from 'next'
 import { requireChef } from '@/lib/auth/get-user'
 import { getSocialConnections } from '@/lib/social/oauth-actions'
 import { SocialConnectionsManager } from '@/components/social/social-connections-manager'
@@ -5,6 +6,8 @@ import { SocialConnectionsManager } from '@/components/social/social-connections
 type Props = {
   searchParams: { connected?: string; error?: string; platform?: string }
 }
+
+export const metadata: Metadata = { title: 'Social Connections | ChefFlow' }
 
 export default async function SocialConnectionsPage({ searchParams }: Props) {
   await requireChef()

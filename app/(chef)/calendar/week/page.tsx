@@ -2,6 +2,7 @@
 // Shows all events in the selected week alongside all scheduled prep blocks
 // and chef calendar entries (vacation banners, market blocks, etc.).
 
+import type { Metadata } from 'next'
 import { Suspense } from 'react'
 import { WidgetErrorBoundary } from '@/components/ui/widget-error-boundary'
 import { requireChef } from '@/lib/auth/get-user'
@@ -27,6 +28,8 @@ function getWeekBounds(offset: number): { startDate: string; endDate: string } {
   const sunday = new Date(monday.getFullYear(), monday.getMonth(), monday.getDate() + 6)
   return { startDate: liso(monday), endDate: liso(sunday) }
 }
+
+export const metadata: Metadata = { title: 'Week View | ChefFlow' }
 
 export default async function WeekPlannerPage({
   searchParams,

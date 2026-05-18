@@ -1,3 +1,4 @@
+import type { Metadata } from 'next'
 import { requireChef } from '@/lib/auth/get-user'
 import {
   getRepeatGuests,
@@ -8,6 +9,8 @@ import { dateToDateString } from '@/lib/utils/format'
 import { Card } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
 import Link from 'next/link'
+
+export const metadata: Metadata = { title: 'Client Retention | ChefFlow' }
 
 export default async function GuestRetentionPage() {
   await requireChef()

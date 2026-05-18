@@ -1,3 +1,4 @@
+import type { Metadata } from 'next'
 import Link from 'next/link'
 import { format } from 'date-fns'
 import { notFound } from 'next/navigation'
@@ -12,6 +13,10 @@ import { getMenuApprovalStatus, validateMenuForSend } from '@/lib/events/menu-ap
 import { getDinnerCircleMenuPollingState } from '@/lib/hub/menu-poll-actions'
 import { getDishIndex } from '@/lib/menus/dish-index-actions'
 import { sanitizeReturnTo } from '@/lib/navigation/return-to'
+
+export async function generateMetadata() {
+  return { title: 'Menu Approval | ChefFlow' }
+}
 
 export default async function EventMenuApprovalPage({
   params,

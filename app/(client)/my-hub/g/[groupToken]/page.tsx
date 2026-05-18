@@ -1,9 +1,7 @@
 // Client hub group detail - wraps existing HubGroupView in client layout
 
-import type { Metadata } from 'next'
 import { notFound } from 'next/navigation'
 
-export const metadata: Metadata = { title: 'Group' }
 import { requireClient } from '@/lib/auth/get-user'
 import { createServerClient } from '@/lib/db/server'
 import { getOrCreateClientHubProfile } from '@/lib/hub/client-hub-actions'

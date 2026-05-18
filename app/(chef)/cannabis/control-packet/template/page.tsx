@@ -1,3 +1,4 @@
+import type { Metadata } from 'next'
 import Link from 'next/link'
 import {
   CannabisPageWrapper,
@@ -15,6 +16,8 @@ function readPositiveNumber(value: string | undefined, fallback: number) {
 }
 
 const allowedLayouts: ControlPacketLayoutType[] = ['linear', 'grid_2x5', 'grid_3x4', 'custom']
+
+export const metadata: Metadata = { title: 'Control Packet Template | ChefFlow' }
 
 export default function CannabisControlPacketTemplatePage({
   searchParams,

@@ -2,6 +2,7 @@
 // Monthly overview of all events - shows status, guest count, revenue, and client at a glance.
 // Navigation via ?month=YYYY-MM query param. Defaults to current month.
 
+import type { Metadata } from 'next'
 import Link from 'next/link'
 import { requireChef } from '@/lib/auth/get-user'
 import { getEvents } from '@/lib/events/actions'
@@ -44,6 +45,8 @@ const STATUS_DOT: Record<string, string> = {
   completed: 'bg-stone-8000',
   cancelled: 'bg-red-400',
 }
+
+export const metadata: Metadata = { title: 'Production Calendar | ChefFlow' }
 
 export default async function ProductionCalendarPage({
   searchParams,

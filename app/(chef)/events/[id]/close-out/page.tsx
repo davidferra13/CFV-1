@@ -2,6 +2,7 @@
 // Chef is redirected here automatically after marking an event as completed.
 // Guides through: tip → receipts → mileage → quick AAR → financial close.
 
+import type { Metadata } from 'next'
 import dynamic from 'next/dynamic'
 import { notFound, redirect } from 'next/navigation'
 import { requireChef } from '@/lib/auth/get-user'
@@ -18,6 +19,10 @@ const CloseOutWizard = dynamic(
     ),
   }
 )
+
+export async function generateMetadata() {
+  return { title: 'Event Close Out | ChefFlow' }
+}
 
 export default async function CloseOutPage({ params }: { params: { id: string } }) {
   await requireChef()

@@ -1,6 +1,7 @@
 // Cannabis Invite Page - Chef Portal
 // Submit an invitation request. All invites are routed through admin approval first.
 
+import type { Metadata } from 'next'
 import { getMySentCannabisInvites } from '@/lib/chef/cannabis-actions'
 import {
   CannabisPortalHeader,
@@ -13,6 +14,8 @@ const STATUS_STYLES: Record<string, { label: string; color: string }> = {
   approved: { label: 'Sent', color: '#8bc34a' },
   rejected: { label: 'Declined', color: '#ef9a9a' },
 }
+
+export const metadata: Metadata = { title: 'Cannabis Invite | ChefFlow' }
 
 export default async function CannabisInvitePage() {
   const sentInvites = await getMySentCannabisInvites()

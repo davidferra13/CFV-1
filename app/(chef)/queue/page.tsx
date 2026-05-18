@@ -2,6 +2,7 @@
 // Shows all actionable items with full filtering and summary stats.
 // Protected by layout via requireChef()
 
+import type { Metadata } from 'next'
 import { requireChef } from '@/lib/auth/get-user'
 import { getPriorityQueue } from '@/lib/queue/actions'
 import { QueueList } from '@/components/queue/queue-list'
@@ -9,6 +10,8 @@ import { QueueSummaryBar } from '@/components/queue/queue-summary'
 import { QueueEmpty } from '@/components/queue/queue-empty'
 import Link from 'next/link'
 import { ArrowLeft } from '@/components/ui/icons'
+
+export const metadata: Metadata = { title: 'Priority Queue | ChefFlow' }
 
 export default async function QueuePage() {
   await requireChef()

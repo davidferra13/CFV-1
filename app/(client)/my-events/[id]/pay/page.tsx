@@ -3,7 +3,6 @@
 import type { Metadata } from 'next'
 import { requireClient } from '@/lib/auth/get-user'
 
-export const metadata: Metadata = { title: 'Payment' }
 import { getClientEventContract } from '@/lib/contracts/actions'
 import { getClientEventById } from '@/lib/events/client-actions'
 import { formatCurrency } from '@/lib/utils/currency'
@@ -16,6 +15,8 @@ import { PaymentPageClient } from './payment-page-client'
 import { ActivityTracker } from '@/components/activity/activity-tracker'
 import { SessionHeartbeat } from '@/components/activity/session-heartbeat'
 import { CancellationPolicyDisplay } from '@/components/events/cancellation-policy-display'
+
+export const metadata: Metadata = { title: 'Payment' }
 
 export default async function PaymentPage({ params }: { params: { id: string } }) {
   await requireClient()

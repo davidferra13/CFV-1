@@ -1,6 +1,9 @@
+import type { Metadata } from 'next'
 import { requireChef } from '@/lib/auth/get-user'
 import { createServerClient } from '@/lib/db/server'
 import { MentionFeed } from '@/components/reputation/mention-feed'
+
+export const metadata: Metadata = { title: 'Reputation Mentions | ChefFlow' }
 
 export default async function MentionsPage() {
   const chef = await requireChef()

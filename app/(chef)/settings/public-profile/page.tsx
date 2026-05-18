@@ -1,5 +1,6 @@
 // Public Profile Settings - Set slug, tagline, manage showcase partners
 
+import type { Metadata } from 'next'
 import { requireChef } from '@/lib/auth/get-user'
 import { getMyDiscoveryProfile } from '@/lib/discovery/actions'
 import { getChefSlug } from '@/lib/profile/actions'
@@ -8,6 +9,8 @@ import { DiscoveryProfileSettings } from '@/components/settings/discovery-profil
 import { PublicProfileSettings } from '@/components/settings/public-profile-settings'
 import Link from 'next/link'
 import { Button } from '@/components/ui/button'
+
+export const metadata: Metadata = { title: 'Public Profile | ChefFlow' }
 
 export default async function PublicProfileSettingsPage() {
   await requireChef()

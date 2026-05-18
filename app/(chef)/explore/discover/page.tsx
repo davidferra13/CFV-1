@@ -1,3 +1,5 @@
+import type { Metadata } from 'next'
+import Image from 'next/image'
 import { requireChef } from '@/lib/auth/get-user'
 import { getAccountLocation } from '@/lib/location/account-location'
 import {
@@ -36,11 +38,14 @@ function ListingCard({ listing }: { listing: DirectoryListingSummary }) {
       className="group rounded-xl border border-stone-800 bg-stone-900/50 p-5 hover:border-stone-600 hover:bg-stone-900 transition-colors block"
     >
       {listing.photo_urls?.length > 0 && (
-        <div className="mb-3 overflow-hidden rounded-lg">
-          <img
+        <div className="relative mb-3 h-36 overflow-hidden rounded-lg">
+          <Image
             src={listing.photo_urls[0]}
             alt={listing.name}
-            className="h-36 w-full object-cover group-hover:scale-105 transition-transform"
+            fill
+            sizes="(min-width: 1024px) 33vw, (min-width: 640px) 50vw, 100vw"
+            unoptimized
+            className="object-cover transition-transform group-hover:scale-105"
           />
         </div>
       )}
@@ -89,6 +94,8 @@ function ListingCard({ listing }: { listing: DirectoryListingSummary }) {
     </Link>
   )
 }
+
+export const metadata: Metadata = { title: 'Discover | ChefFlow' }
 
 export default async function ExploreDiscoverPage() {
   const user = await requireChef()

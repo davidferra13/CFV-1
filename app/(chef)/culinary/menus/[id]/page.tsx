@@ -1,3 +1,4 @@
+import type { Metadata } from 'next'
 import { getMenuById } from '@/lib/menus/actions'
 import { getPlaceholderImage } from '@/lib/images/placeholder-actions'
 import { getMenuEngineFeatures } from '@/lib/chef/actions'
@@ -14,6 +15,10 @@ import { MenuShoppingList } from '@/components/culinary/menu-shopping-list'
 import { notFound } from 'next/navigation'
 import Link from 'next/link'
 import { Button } from '@/components/ui/button'
+
+export async function generateMetadata() {
+  return { title: 'Menu Details | ChefFlow' }
+}
 
 export default async function MenuDetailPage({ params }: { params: { id: string } }) {
   const [menu, engineFeatures] = await Promise.all([

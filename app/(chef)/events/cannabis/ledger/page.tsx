@@ -2,6 +2,7 @@
 // Full financial overview for all cannabis events. Ported from /cannabis/ledger.
 // Access gated: requirePro + hasCannabisAccess.
 
+import type { Metadata } from 'next'
 import { redirect } from 'next/navigation'
 import { requirePro } from '@/lib/billing/require-pro'
 import { hasCannabisAccess, getCannabisLedger } from '@/lib/chef/cannabis-actions'
@@ -34,6 +35,8 @@ const ENTRY_TYPE_LABELS: Record<string, string> = {
   add_on: 'Add-On',
   credit: 'Credit',
 }
+
+export const metadata: Metadata = { title: 'Cannabis Event Ledger | ChefFlow' }
 
 export default async function EventsCannabisLedgerPage() {
   const user = await requirePro('cannabis-portal')

@@ -2,6 +2,7 @@
 // Full-page travel planner for a single event.
 // Shows all legs (specialty sourcing → grocery → service → return) in order.
 
+import type { Metadata } from 'next'
 import { notFound } from 'next/navigation'
 import Link from 'next/link'
 import { requireChef } from '@/lib/auth/get-user'
@@ -38,6 +39,10 @@ async function getChefHomeAddress(chefId: string) {
     .single()
   if (!data) return null
   return [data.home_address, data.home_city, data.home_state].filter(Boolean).join(', ')
+}
+
+export async function generateMetadata() {
+  return { title: 'Event Travel | ChefFlow' }
 }
 
 export default async function EventTravelPage({

@@ -1,3 +1,4 @@
+import type { Metadata } from 'next'
 import Link from 'next/link'
 import { notFound } from 'next/navigation'
 import { requireChef } from '@/lib/auth/get-user'
@@ -10,6 +11,10 @@ import {
 } from '@/lib/journey/actions'
 import { getRecipes } from '@/lib/recipes/actions'
 import { JourneyDetail } from '@/components/journey/journey-detail'
+
+export async function generateMetadata() {
+  return { title: 'Journal Entry | ChefFlow' }
+}
 
 export default async function JournalDetailPage({
   params,

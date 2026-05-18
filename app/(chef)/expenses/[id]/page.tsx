@@ -1,6 +1,8 @@
 // Expense Detail Page
 // Shows full expense details, receipt dual view, edit/delete actions
 
+import type { Metadata } from 'next'
+import Image from 'next/image'
 import { notFound } from 'next/navigation'
 import Link from 'next/link'
 import { requireChef } from '@/lib/auth/get-user'
@@ -21,6 +23,10 @@ const PAYMENT_LABELS: Record<string, string> = {
   zelle: 'Zelle',
   check: 'Check',
   other: 'Other',
+}
+
+export async function generateMetadata() {
+  return { title: 'Expense Details | ChefFlow' }
 }
 
 export default async function ExpenseDetailPage({ params }: { params: { id: string } }) {
@@ -141,11 +147,14 @@ export default async function ExpenseDetailPage({ params }: { params: { id: stri
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
             <div>
               <h3 className="text-sm font-medium text-stone-500 mb-2">Original Photo</h3>
-              {/* eslint-disable-next-line @next/next/no-img-element */}
-              <img
+              <Image
                 src={receiptUrl}
                 alt="Receipt"
-                className="w-full rounded border border-stone-700"
+                width={900}
+                height={1200}
+                sizes="(min-width: 1024px) 50vw, 100vw"
+                unoptimized
+                className="h-auto w-full rounded border border-stone-700"
               />
             </div>
             <div>

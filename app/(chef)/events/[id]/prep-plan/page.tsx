@@ -1,3 +1,4 @@
+import type { Metadata } from 'next'
 import { notFound } from 'next/navigation'
 import Link from 'next/link'
 import { format } from 'date-fns'
@@ -10,6 +11,10 @@ import { PrepScheduleExportView } from '@/components/prep-timeline/prep-schedule
 import { ServiceSimulationReturnBanner } from '@/components/events/service-simulation-return-banner'
 import { Button } from '@/components/ui/button'
 import { sanitizeReturnTo } from '@/lib/navigation/return-to'
+
+export async function generateMetadata() {
+  return { title: 'Prep Plan | ChefFlow' }
+}
 
 export default async function EventPrepPlanPage({
   params,

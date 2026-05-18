@@ -1,3 +1,4 @@
+import type { Metadata } from 'next'
 import {
   CannabisPortalHeader,
   CannabisPageWrapper,
@@ -234,6 +235,8 @@ const sections: HandbookSection[] = [
     tip: 'Keep a simple log: event date, guest count, experience level, mg per course, and one sentence about how it went. After 10 events, you will have a personal dosing guide that no textbook can match.',
   },
 ]
+
+export const metadata: Metadata = { title: 'Cannabis Handbook | ChefFlow' }
 
 export default function CannabisHandbookPage() {
   return (

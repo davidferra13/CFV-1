@@ -1,8 +1,13 @@
+import type { Metadata } from 'next'
 import { notFound } from 'next/navigation'
 import { getEventOpsHub } from '@/lib/events/ops-hub-actions'
 import { getEventDayDashboard } from '@/lib/operations/event-day-actions'
 import { OpsHubView } from './ops-hub-view'
 import { EventDayDashboardView } from '@/components/operations/event-day-dashboard'
+
+export async function generateMetadata() {
+  return { title: 'Event Operations | ChefFlow' }
+}
 
 export default async function EventOpsPage({ params }: { params: Promise<{ id: string }> }) {
   const { id } = await params

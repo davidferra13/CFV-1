@@ -1,3 +1,4 @@
+import type { Metadata } from 'next'
 import { listPushDinners } from '@/lib/campaigns/push-dinner-actions'
 import { CAMPAIGN_TYPE_LABELS } from '@/lib/marketing/constants'
 import { Badge } from '@/components/ui/badge'
@@ -22,6 +23,8 @@ function statusVariant(status: string): 'default' | 'success' | 'warning' | 'err
       return 'default'
   }
 }
+
+export const metadata: Metadata = { title: 'Push Dinners | ChefFlow' }
 
 export default async function PushDinnersPage() {
   const campaigns = await listPushDinners()

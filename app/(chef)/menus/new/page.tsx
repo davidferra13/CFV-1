@@ -1,7 +1,10 @@
 // Create Menu - Protected by layout
 
+import type { Metadata } from 'next'
 import { requireChef } from '@/lib/auth/get-user'
 import { CreateMenuForm } from './create-menu-form'
+
+export const metadata: Metadata = { title: 'New Menu | ChefFlow' }
 
 export default async function CreateMenuPage() {
   const user = await requireChef()

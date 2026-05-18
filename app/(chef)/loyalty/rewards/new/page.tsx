@@ -1,10 +1,13 @@
 // Create New Loyalty Reward Page
 
+import type { Metadata } from 'next'
 import { requireChef } from '@/lib/auth/get-user'
 import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import Link from 'next/link'
 import { CreateRewardForm } from './create-reward-form'
+
+export const metadata: Metadata = { title: 'New Reward | ChefFlow' }
 
 export default async function NewRewardPage() {
   const user = await requireChef()

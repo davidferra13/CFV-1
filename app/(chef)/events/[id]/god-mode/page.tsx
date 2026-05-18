@@ -1,3 +1,4 @@
+import type { Metadata } from 'next'
 import { notFound } from 'next/navigation'
 import { buildPieCartPlan } from '@/lib/chef-ops/pie-cart'
 import { requireChef } from '@/lib/auth/get-user'
@@ -10,6 +11,10 @@ import { buildQuoteTruth } from '@/lib/god-mode/quote-truth'
 function dollars(cents: number | null) {
   if (cents === null) return 'Missing'
   return new Intl.NumberFormat('en-US', { style: 'currency', currency: 'USD' }).format(cents / 100)
+}
+
+export async function generateMetadata() {
+  return { title: 'Event God Mode | ChefFlow' }
 }
 
 export default async function EventGodModePage({ params }: { params: { id: string } }) {

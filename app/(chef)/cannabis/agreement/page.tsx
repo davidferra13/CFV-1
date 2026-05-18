@@ -1,3 +1,4 @@
+import type { Metadata } from 'next'
 import {
   CannabisPortalHeader,
   CannabisPageWrapper,
@@ -16,6 +17,8 @@ function formatSignedAt(signedAt: string) {
     minute: '2-digit',
   })
 }
+
+export const metadata: Metadata = { title: 'Cannabis Dining Agreement | ChefFlow' }
 
 export default async function CannabisAgreementPage() {
   const user = await requireCannabisInviteAccess()

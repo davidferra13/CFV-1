@@ -1,11 +1,14 @@
 // Settings > Repertoire - Seasonal Palettes Overview
 // List all seasons, set active, edit, create custom.
 
+import type { Metadata } from 'next'
 import { requireChef } from '@/lib/auth/get-user'
 import { getSeasonalPalettes } from '@/lib/seasonal/actions'
 import { createServerClient } from '@/lib/db/server'
 import { SeasonalPaletteList } from '@/components/settings/seasonal-palette-list'
 import Link from 'next/link'
+
+export const metadata: Metadata = { title: 'Repertoire | ChefFlow' }
 
 export default async function RepertoirePage() {
   const user = await requireChef()

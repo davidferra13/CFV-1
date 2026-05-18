@@ -1,14 +1,15 @@
+import type { Metadata } from 'next'
 import { requireChef } from '@/lib/auth/get-user'
 import { getGroceryRunList } from '@/lib/mobile/grocery-run-actions'
 import { GroceryRunClient } from './grocery-run-client'
 
 export const dynamic = 'force-dynamic'
 
-export default async function GroceryRunPage({
-  params,
-}: {
-  params: Promise<{ id: string }>
-}) {
+export async function generateMetadata() {
+  return { title: 'Grocery Run | ChefFlow' }
+}
+
+export default async function GroceryRunPage({ params }: { params: Promise<{ id: string }> }) {
   await requireChef()
   const { id: eventId } = await params
 

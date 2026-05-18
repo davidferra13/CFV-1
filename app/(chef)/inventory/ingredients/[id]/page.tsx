@@ -3,6 +3,7 @@
 
 import type { Metadata } from 'next'
 import dynamic from 'next/dynamic'
+import Image from 'next/image'
 import Link from 'next/link'
 import { requireChef } from '@/lib/auth/get-user'
 import { createServerClient } from '@/lib/db/server'
@@ -111,10 +112,13 @@ export default async function IngredientPriceDetailPage({
                 className="flex items-center gap-3 rounded-lg px-3 py-2 hover:bg-stone-800 transition-colors group"
               >
                 {recipe.photo_url ? (
-                  // eslint-disable-next-line @next/next/no-img-element
-                  <img
+                  <Image
                     src={recipe.photo_url}
                     alt=""
+                    width={32}
+                    height={32}
+                    sizes="32px"
+                    unoptimized
                     className="h-8 w-8 rounded object-cover flex-shrink-0"
                   />
                 ) : (

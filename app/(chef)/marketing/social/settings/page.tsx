@@ -1,6 +1,9 @@
+import type { Metadata } from 'next'
 import { requireChef } from '@/lib/auth/get-user'
 import { getSocialQueueSettings, getSocialPosts } from '@/lib/social/actions'
 import { SocialQueueSettingsForm } from '@/components/social/social-queue-settings-form'
+
+export const metadata: Metadata = { title: 'Social Settings | ChefFlow' }
 
 export default async function SocialSettingsPage() {
   await requireChef()

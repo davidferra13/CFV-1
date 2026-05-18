@@ -2,11 +2,12 @@
 // Hub page for /events - navigation tiles to all event sub-sections + the events list below.
 
 import type { Metadata } from 'next'
+import Image from 'next/image'
 import { Suspense } from 'react'
 import { WidgetErrorBoundary } from '@/components/ui/widget-error-boundary'
 import Link from 'next/link'
 import { requireChef } from '@/lib/auth/get-user'
-import { getEvents } from '@/lib/events/actions'
+import { getEvents, getEventsPaginated } from '@/lib/events/actions'
 import {
   EventStatusBadge,
   type EventStatus as BadgeEventStatus,
@@ -146,6 +147,25 @@ type EventStatus =
   | 'completed'
   | 'cancelled'
 
+const PAGE_SIZE = 50
+
+function buildEventsUrl({
+  status = 'all',
+  search = '',
+  page = 1,
+}: {
+  status?: EventStatus
+  search?: string
+  page?: number
+}) {
+  const params = new URLSearchParams()
+  if (status !== 'all') params.set('status', status)
+  if (search) params.set('q', search)
+  if (page > 1) params.set('page', String(page))
+  const qs = params.toString()
+  return `/events${qs ? `?${qs}` : ''}`
+}
+
 // --- Event list urgency helpers (deterministic, no DB calls) ---
 
 type NextStepInfo = {
@@ -187,17 +207,31 @@ function getEventStaleness(updatedAt: string | null, status: string): 'ok' | 'wa
 
 // --- End urgency helpers ---
 
-async function EventsList({ status }: { status: EventStatus }) {
+async function EventsList({
+  status,
+  search,
+  page,
+}: {
+  status: EventStatus
+  search: string
+  page: number
+}) {
   const user = await requireChef()
 
-  const [events_raw, regional] = await Promise.all([
-    getEvents(status !== 'all' ? { statusFilter: status } : undefined),
+  const [eventsResult, regional] = await Promise.all([
+    getEventsPaginated({
+      statusFilter: status !== 'all' ? status : undefined,
+      search: search || undefined,
+      page,
+      pageSize: PAGE_SIZE,
+    }),
     getRegionalSettings(),
   ])
 
-  let events = events_raw.sort(
+  let events = eventsResult.items.sort(
     (a: any, b: any) => new Date(b.event_date).getTime() - new Date(a.event_date).getTime()
   )
+  const pagination = eventsResult.pagination
 
   // Fetch first dish photo per event (via menus -> dishes, public bucket)
   let eventPhotoMap: Record<string, string> = {}
@@ -265,178 +299,219 @@ async function EventsList({ status }: { status: EventStatus }) {
       <EmptyState
         remy={status === 'all' ? 'idle' : 'straight-face'}
         title={
-          status === 'all'
-            ? copy.noEventsMessage.split('.')[0]
-            : `No ${status.replace('_', ' ')} ${copy.eventsLabel.toLowerCase()}`
+          search
+            ? `No events matching "${search}"`
+            : status === 'all'
+              ? copy.noEventsMessage.split('.')[0]
+              : `No ${status.replace('_', ' ')} ${copy.eventsLabel.toLowerCase()}`
         }
         description={
-          status === 'all'
-            ? copy.noEventsMessage
-            : `Try a different filter or create a new ${copy.eventSingular}.`
+          search
+            ? 'Try a different search or clear the search filter.'
+            : status === 'all'
+              ? copy.noEventsMessage
+              : `Try a different filter or create a new ${copy.eventSingular}.`
         }
-        action={status === 'all' ? { label: copy.newEventLabel, href: '/events/new' } : undefined}
+        action={
+          status === 'all' && !search
+            ? { label: copy.newEventLabel, href: '/events/new' }
+            : undefined
+        }
       />
     )
   }
 
   return (
-    <Card>
-      <Table>
-        <TableHeader>
-          <TableRow>
-            <TableHead className="w-14"></TableHead>
-            <TableHead>Occasion</TableHead>
-            <TableHead>Date</TableHead>
-            <TableHead>Client</TableHead>
-            <TableHead>Status</TableHead>
-            <TableHead>Next Step</TableHead>
-            <TableHead className="text-right">Quoted</TableHead>
-            <TableHead></TableHead>
-          </TableRow>
-        </TableHeader>
-        <TableBody>
-          {events.map((event: any, idx: number) => {
-            const _td = new Date()
-            const isToday =
-              event.event_date ===
-              `${_td.getFullYear()}-${String(_td.getMonth() + 1).padStart(2, '0')}-${String(_td.getDate()).padStart(2, '0')}`
-            const eventDate = new Date(event.event_date)
-            const rowStripe = idx % 2 === 1 ? 'bg-stone-800/20' : ''
-            return (
-              <TableRow
-                key={event.id}
-                className={`transition-colors hover:bg-stone-800/40 ${
-                  isToday ? 'bg-amber-950/20 border-l-2 border-l-amber-600' : rowStripe
-                }`}
-              >
-                <TableCell className="w-14 p-1">
-                  {eventPhotoMap[event.id] ? (
-                    <Link href={`/events/${event.id}`}>
-                      {/* eslint-disable-next-line @next/next/no-img-element */}
-                      <img
-                        src={eventPhotoMap[event.id]}
-                        alt=""
-                        className="h-12 w-12 rounded-lg object-cover ring-1 ring-stone-700/50"
+    <div className="space-y-3">
+      <Card>
+        <Table>
+          <TableHeader>
+            <TableRow>
+              <TableHead className="w-14"></TableHead>
+              <TableHead>Occasion</TableHead>
+              <TableHead>Date</TableHead>
+              <TableHead>Client</TableHead>
+              <TableHead>Status</TableHead>
+              <TableHead>Next Step</TableHead>
+              <TableHead className="text-right">Quoted</TableHead>
+              <TableHead></TableHead>
+            </TableRow>
+          </TableHeader>
+          <TableBody>
+            {events.map((event: any, idx: number) => {
+              const _td = new Date()
+              const isToday =
+                event.event_date ===
+                `${_td.getFullYear()}-${String(_td.getMonth() + 1).padStart(2, '0')}-${String(_td.getDate()).padStart(2, '0')}`
+              const eventDate = new Date(event.event_date)
+              const rowStripe = idx % 2 === 1 ? 'bg-stone-800/20' : ''
+              return (
+                <TableRow
+                  key={event.id}
+                  className={`transition-colors hover:bg-stone-800/40 ${
+                    isToday ? 'bg-amber-950/20 border-l-2 border-l-amber-600' : rowStripe
+                  }`}
+                >
+                  <TableCell className="w-14 p-1">
+                    {eventPhotoMap[event.id] ? (
+                      <Link href={`/events/${event.id}`}>
+                        <Image
+                          src={eventPhotoMap[event.id]}
+                          alt=""
+                          width={48}
+                          height={48}
+                          sizes="48px"
+                          unoptimized
+                          className="h-12 w-12 rounded-lg object-cover ring-1 ring-stone-700/50"
+                        />
+                      </Link>
+                    ) : (
+                      <div className="h-12 w-12 rounded-lg bg-stone-800/60 flex items-center justify-center text-stone-600 text-lg">
+                        🍽️
+                      </div>
+                    )}
+                  </TableCell>
+                  <TableCell>
+                    <Link
+                      href={`/events/${event.id}`}
+                      className="text-stone-100 font-semibold hover:text-brand-400 transition-colors"
+                    >
+                      {event.occasion || 'Untitled Event'}
+                    </Link>
+                    {isToday && (
+                      <Badge variant="warning" className="ml-2 text-xxs px-1.5 py-0">
+                        Tonight
+                      </Badge>
+                    )}
+                    {isDemoEvent(event) && (
+                      <Badge variant="info" className="ml-2 text-xxs px-1.5 py-0">
+                        Sample
+                      </Badge>
+                    )}
+                    {event.guest_count > 0 && (
+                      <span className="block text-xs text-stone-500 mt-0.5">
+                        {event.guest_count} guest{event.guest_count !== 1 ? 's' : ''}
+                      </span>
+                    )}
+                    {completionMap[event.id] && (
+                      <CompletionBadge
+                        score={completionMap[event.id].score}
+                        status={completionMap[event.id].status}
+                        className="mt-0.5"
                       />
-                    </Link>
-                  ) : (
-                    <div className="h-12 w-12 rounded-lg bg-stone-800/60 flex items-center justify-center text-stone-600 text-lg">
-                      🍽️
+                    )}
+                  </TableCell>
+                  <TableCell>
+                    <div className="flex items-center gap-2">
+                      <span className="inline-flex flex-col items-center justify-center w-10 h-10 rounded-lg bg-stone-800/80 border border-stone-700/50 text-center leading-tight">
+                        <span className="text-[10px] font-semibold uppercase text-stone-500">
+                          {format(eventDate, 'MMM')}
+                        </span>
+                        <span className="text-sm font-bold text-stone-200 -mt-0.5">
+                          {format(eventDate, 'd')}
+                        </span>
+                      </span>
+                      <span className="text-xs text-stone-500">{format(eventDate, 'yyyy')}</span>
                     </div>
-                  )}
-                </TableCell>
-                <TableCell>
-                  <Link
-                    href={`/events/${event.id}`}
-                    className="text-stone-100 font-semibold hover:text-brand-400 transition-colors"
-                  >
-                    {event.occasion || 'Untitled Event'}
-                  </Link>
-                  {isToday && (
-                    <Badge variant="warning" className="ml-2 text-xxs px-1.5 py-0">
-                      Tonight
-                    </Badge>
-                  )}
-                  {isDemoEvent(event) && (
-                    <Badge variant="info" className="ml-2 text-xxs px-1.5 py-0">
-                      Sample
-                    </Badge>
-                  )}
-                  {event.guest_count > 0 && (
-                    <span className="block text-xs text-stone-500 mt-0.5">
-                      {event.guest_count} guest{event.guest_count !== 1 ? 's' : ''}
-                    </span>
-                  )}
-                  {completionMap[event.id] && (
-                    <CompletionBadge
-                      score={completionMap[event.id].score}
-                      status={completionMap[event.id].status}
-                      className="mt-0.5"
-                    />
-                  )}
-                </TableCell>
-                <TableCell>
-                  <div className="flex items-center gap-2">
-                    <span className="inline-flex flex-col items-center justify-center w-10 h-10 rounded-lg bg-stone-800/80 border border-stone-700/50 text-center leading-tight">
-                      <span className="text-[10px] font-semibold uppercase text-stone-500">
-                        {format(eventDate, 'MMM')}
-                      </span>
-                      <span className="text-sm font-bold text-stone-200 -mt-0.5">
-                        {format(eventDate, 'd')}
-                      </span>
-                    </span>
-                    <span className="text-xs text-stone-500">{format(eventDate, 'yyyy')}</span>
-                  </div>
-                </TableCell>
-                <TableCell>
-                  <span className="text-stone-300">{event.client?.full_name || 'Unknown'}</span>
-                </TableCell>
-                <TableCell>
-                  <EventStatusBadge status={event.status} />
-                </TableCell>
-                <TableCell>
-                  {(() => {
-                    const next = getEventNextStep(event.status)
-                    const staleness = getEventStaleness(event.updated_at, event.status)
-                    if (next.owner === 'done') {
-                      return <span className="text-xs text-stone-600 italic">{next.text}</span>
-                    }
-                    const urgencyClasses =
-                      staleness === 'hot'
-                        ? 'bg-red-950/50 text-red-300 border-red-800/50'
-                        : staleness === 'warm'
-                          ? 'bg-amber-950/40 text-amber-300 border-amber-800/40'
-                          : 'bg-stone-800/60 text-stone-300 border-stone-700/40'
-                    return (
-                      <span
-                        className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded-md border text-xs font-medium ${urgencyClasses}`}
-                      >
-                        {staleness === 'hot' && (
-                          <span className="inline-block h-1.5 w-1.5 rounded-full bg-red-400" />
-                        )}
-                        {next.text}
-                        {next.owner === 'client' && (
-                          <span className="text-stone-500 font-normal ml-0.5">(client)</span>
-                        )}
-                      </span>
-                    )
-                  })()}
-                </TableCell>
-                <TableCell className="text-right font-medium text-stone-200 tabular-nums">
-                  {formatCurrency(event.quoted_price_cents ?? 0, {
-                    locale: regional.locale,
-                    currency: regional.currencyCode,
-                  })}
-                </TableCell>
-                <TableCell>
-                  <div className="flex gap-1.5">
-                    <Link href={`/events/${event.id}`}>
-                      <Button size="sm" variant="ghost">
-                        View
-                      </Button>
-                    </Link>
-                    {isToday && !['draft', 'cancelled'].includes(event.status) && (
-                      <Link href={`/events/${event.id}/pack`}>
-                        <Button size="sm" variant="primary">
-                          Pack
+                  </TableCell>
+                  <TableCell>
+                    <span className="text-stone-300">{event.client?.full_name || 'Unknown'}</span>
+                  </TableCell>
+                  <TableCell>
+                    <EventStatusBadge status={event.status} />
+                  </TableCell>
+                  <TableCell>
+                    {(() => {
+                      const next = getEventNextStep(event.status)
+                      const staleness = getEventStaleness(event.updated_at, event.status)
+                      if (next.owner === 'done') {
+                        return <span className="text-xs text-stone-600 italic">{next.text}</span>
+                      }
+                      const urgencyClasses =
+                        staleness === 'hot'
+                          ? 'bg-red-950/50 text-red-300 border-red-800/50'
+                          : staleness === 'warm'
+                            ? 'bg-amber-950/40 text-amber-300 border-amber-800/40'
+                            : 'bg-stone-800/60 text-stone-300 border-stone-700/40'
+                      return (
+                        <span
+                          className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded-md border text-xs font-medium ${urgencyClasses}`}
+                        >
+                          {staleness === 'hot' && (
+                            <span className="inline-block h-1.5 w-1.5 rounded-full bg-red-400" />
+                          )}
+                          {next.text}
+                          {next.owner === 'client' && (
+                            <span className="text-stone-500 font-normal ml-0.5">(client)</span>
+                          )}
+                        </span>
+                      )
+                    })()}
+                  </TableCell>
+                  <TableCell className="text-right font-medium text-stone-200 tabular-nums">
+                    {formatCurrency(event.quoted_price_cents ?? 0, {
+                      locale: regional.locale,
+                      currency: regional.currencyCode,
+                    })}
+                  </TableCell>
+                  <TableCell>
+                    <div className="flex gap-1.5">
+                      <Link href={`/events/${event.id}`}>
+                        <Button size="sm" variant="ghost">
+                          View
                         </Button>
                       </Link>
-                    )}
-                    {event.status === 'draft' && (
-                      <Link href={`/events/${event.id}/edit`}>
-                        <Button size="sm" variant="secondary">
-                          Edit
-                        </Button>
-                      </Link>
-                    )}
-                  </div>
-                </TableCell>
-              </TableRow>
-            )
-          })}
-        </TableBody>
-      </Table>
-    </Card>
+                      {isToday && !['draft', 'cancelled'].includes(event.status) && (
+                        <Link href={`/events/${event.id}/pack`}>
+                          <Button size="sm" variant="primary">
+                            Pack
+                          </Button>
+                        </Link>
+                      )}
+                      {event.status === 'draft' && (
+                        <Link href={`/events/${event.id}/edit`}>
+                          <Button size="sm" variant="secondary">
+                            Edit
+                          </Button>
+                        </Link>
+                      )}
+                    </div>
+                  </TableCell>
+                </TableRow>
+              )
+            })}
+          </TableBody>
+        </Table>
+      </Card>
+
+      {pagination.totalPages > 1 && (
+        <div className="flex items-center justify-between border-t border-stone-800 pt-3">
+          <p className="text-xs text-stone-500">
+            Showing {(pagination.page - 1) * pagination.pageSize + 1}-
+            {Math.min(pagination.page * pagination.pageSize, pagination.total)} of{' '}
+            {pagination.total}
+          </p>
+          <div className="flex gap-2">
+            {pagination.page > 1 && (
+              <Link
+                href={buildEventsUrl({ status, search, page: pagination.page - 1 })}
+                className="rounded-lg bg-stone-800 px-3 py-1.5 text-xs text-stone-300 hover:bg-stone-700"
+              >
+                Previous
+              </Link>
+            )}
+            {pagination.hasMore && (
+              <Link
+                href={buildEventsUrl({ status, search, page: pagination.page + 1 })}
+                className="rounded-lg bg-stone-800 px-3 py-1.5 text-xs text-stone-300 hover:bg-stone-700"
+              >
+                Next
+              </Link>
+            )}
+          </div>
+        </div>
+      )}
+    </div>
   )
 }
 
@@ -513,11 +588,28 @@ async function TodayEventsBanner() {
 export default async function EventsPage({
   searchParams,
 }: {
-  searchParams: { status?: EventStatus }
+  searchParams: Promise<Record<string, string | string[] | undefined>>
 }) {
   await requireChef()
 
-  const status = (searchParams.status || 'all') as EventStatus
+  const params = await searchParams
+  const requestedStatus = typeof params.status === 'string' ? params.status : 'all'
+  const validStatuses: EventStatus[] = [
+    'all',
+    'draft',
+    'proposed',
+    'accepted',
+    'paid',
+    'confirmed',
+    'in_progress',
+    'completed',
+    'cancelled',
+  ]
+  const status = validStatuses.includes(requestedStatus as EventStatus)
+    ? (requestedStatus as EventStatus)
+    : 'all'
+  const search = typeof params.q === 'string' ? params.q.trim() : ''
+  const page = Math.max(1, parseInt(typeof params.page === 'string' ? params.page : '1', 10) || 1)
 
   return (
     <div className="space-y-10">
@@ -576,41 +668,68 @@ export default async function EventsPage({
           All Events
         </h2>
 
-        {/* Status Filter */}
-        <div className="flex gap-2 flex-wrap mb-4 px-1">
-          <Link href="/events?status=all">
-            <Button
-              size="sm"
-              variant={status === 'all' ? 'primary' : 'ghost'}
-              className="rounded-full"
+        {/* Search + Status Filter */}
+        <div className="mb-4 space-y-3 px-1">
+          <form action="/events" method="get" className="flex flex-wrap items-center gap-2">
+            {status !== 'all' && <input type="hidden" name="status" value={status} />}
+            <input
+              type="search"
+              name="q"
+              defaultValue={search}
+              placeholder="Search events by occasion or location..."
+              className="w-full max-w-sm rounded-lg border border-stone-700 bg-stone-900 px-3 py-2 text-sm text-stone-200 placeholder:text-stone-500 focus:border-brand-500 focus:outline-none"
+            />
+            <button
+              type="submit"
+              className="rounded-lg bg-stone-800 px-3 py-2 text-sm text-stone-200 hover:bg-stone-700"
             >
-              All
-            </Button>
-          </Link>
-          {(
-            [
-              'draft',
-              'proposed',
-              'accepted',
-              'paid',
-              'confirmed',
-              'in_progress',
-              'completed',
-              'cancelled',
-            ] as BadgeEventStatus[]
-          ).map((s) => (
-            <Link key={s} href={`/events?status=${s}`}>
-              <span
-                className={`cursor-pointer transition-all duration-150 ${
-                  status === s
-                    ? 'ring-2 ring-brand-500/50 ring-offset-1 ring-offset-stone-900 rounded-full'
-                    : 'opacity-60 hover:opacity-100'
-                }`}
+              Search
+            </button>
+            {search && (
+              <Link
+                href={buildEventsUrl({ status })}
+                className="text-sm text-stone-500 hover:text-stone-300"
               >
-                <EventStatusBadge status={s} size="sm" />
-              </span>
+                Clear
+              </Link>
+            )}
+          </form>
+
+          <div className="flex gap-2 flex-wrap">
+            <Link href={buildEventsUrl({ status: 'all', search })}>
+              <Button
+                size="sm"
+                variant={status === 'all' ? 'primary' : 'ghost'}
+                className="rounded-full"
+              >
+                All
+              </Button>
             </Link>
-          ))}
+            {(
+              [
+                'draft',
+                'proposed',
+                'accepted',
+                'paid',
+                'confirmed',
+                'in_progress',
+                'completed',
+                'cancelled',
+              ] as BadgeEventStatus[]
+            ).map((s) => (
+              <Link key={s} href={buildEventsUrl({ status: s, search })}>
+                <span
+                  className={`cursor-pointer transition-all duration-150 ${
+                    status === s
+                      ? 'ring-2 ring-brand-500/50 ring-offset-1 ring-offset-stone-900 rounded-full'
+                      : 'opacity-60 hover:opacity-100'
+                  }`}
+                >
+                  <EventStatusBadge status={s} size="sm" />
+                </span>
+              </Link>
+            ))}
+          </div>
         </div>
 
         <WidgetErrorBoundary name="Events List">
@@ -621,7 +740,7 @@ export default async function EventsPage({
               </Card>
             }
           >
-            <EventsList status={status} />
+            <EventsList status={status} search={search} page={page} />
           </Suspense>
         </WidgetErrorBoundary>
       </div>

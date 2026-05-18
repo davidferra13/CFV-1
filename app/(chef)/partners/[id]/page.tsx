@@ -1,6 +1,7 @@
 // Partner Detail Page - Profile, stats, locations, service history, attribution tools
 // Shows comprehensive view of a single referral partner
 
+import type { Metadata } from 'next'
 import { requireChef } from '@/lib/auth/get-user'
 import {
   getPartnerById,
@@ -41,6 +42,10 @@ const TYPE_LABELS: Record<string, string> = {
 
 function formatCents(cents: number): string {
   return new Intl.NumberFormat('en-US', { style: 'currency', currency: 'USD' }).format(cents / 100)
+}
+
+export async function generateMetadata() {
+  return { title: 'Partner Details | ChefFlow' }
 }
 
 export default async function PartnerDetailPage({ params }: { params: { id: string } }) {

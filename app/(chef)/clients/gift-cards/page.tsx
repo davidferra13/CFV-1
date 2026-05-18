@@ -1,6 +1,7 @@
 // Chef Gift Cards & Vouchers Management
 // Create, view, send, and deactivate incentive codes for your clients.
 
+import type { Metadata } from 'next'
 import { requireChef } from '@/lib/auth/get-user'
 import { createServerClient } from '@/lib/db/server'
 import {
@@ -14,6 +15,8 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
 import { IncentiveRedemptionHistory } from '@/components/incentives/incentive-redemption-history'
 import { IssueButton, RowActions } from './gift-cards-client-shell'
+
+export const metadata: Metadata = { title: 'Gift Cards | ChefFlow' }
 
 export default async function GiftCardsPage() {
   await requireChef()

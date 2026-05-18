@@ -1,3 +1,4 @@
+import type { Metadata } from 'next'
 import Link from 'next/link'
 import { format } from 'date-fns'
 import { notFound } from 'next/navigation'
@@ -9,6 +10,10 @@ import { requireChef } from '@/lib/auth/get-user'
 import { createServerClient } from '@/lib/db/server'
 import { getPaymentPlan } from '@/lib/finance/payment-plan-actions'
 import { formatCurrency } from '@/lib/utils/currency'
+
+export async function generateMetadata() {
+  return { title: 'Event Billing | ChefFlow' }
+}
 
 export default async function EventBillingPage({ params }: { params: { id: string } }) {
   await requireChef()

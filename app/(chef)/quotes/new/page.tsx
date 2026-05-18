@@ -1,6 +1,7 @@
 // New Quote Page - Create a quote with pricing intelligence
 // Can be navigated to directly or from an inquiry (with pre-filled data)
 
+import type { Metadata } from 'next'
 import Link from 'next/link'
 import { requireChef } from '@/lib/auth/get-user'
 import { getClients } from '@/lib/clients/actions'
@@ -26,6 +27,8 @@ type ClientRecord = {
   recurring_price_cents?: number | null
   recurring_pricing_notes?: string | null
 }
+
+export const metadata: Metadata = { title: 'New Quote | ChefFlow' }
 
 export default async function NewQuotePage({
   searchParams,

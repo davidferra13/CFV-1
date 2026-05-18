@@ -1,3 +1,4 @@
+import type { Metadata } from 'next'
 import { requireChef } from '@/lib/auth/get-user'
 import Link from 'next/link'
 import { Compass, CalendarDays, MapPin, Users } from '@/components/ui/icons'
@@ -32,6 +33,8 @@ async function fetchPreviews(tenantId: string | null) {
 
   return { chefCount, location, upcomingEvents }
 }
+
+export const metadata: Metadata = { title: 'Explore | ChefFlow' }
 
 export default async function ExplorePage() {
   const user = await requireChef()

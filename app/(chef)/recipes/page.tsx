@@ -15,26 +15,38 @@ import { Suspense } from 'react'
 import { WidgetErrorBoundary } from '@/components/ui/widget-error-boundary'
 import { DietaryTrendsBar } from '@/components/intelligence/dietary-trends-bar'
 
+function DietaryTrendsSkeleton() {
+  return (
+    <div className="rounded-xl border border-stone-800 bg-stone-900/70 p-4">
+      <div className="h-4 w-44 animate-pulse rounded bg-stone-800" />
+      <div className="mt-3 grid gap-3 sm:grid-cols-3">
+        {[1, 2, 3].map((item) => (
+          <div key={item} className="h-12 animate-pulse rounded bg-stone-800/80" />
+        ))}
+      </div>
+    </div>
+  )
+}
+
 export default async function RecipesPage({
   searchParams,
 }: {
-  searchParams: {
-    category?: string
-    cuisine?: string
-    meal_type?: string
-    search?: string
-    sort?: string
-  }
+  searchParams: Promise<Record<string, string | string[] | undefined>>
 }) {
   await requireChef()
+  const params = await searchParams
+  const page = Math.max(1, parseInt(typeof params.page === 'string' ? params.page : '1', 10) || 1)
 
   const [recipesResult, palette] = await Promise.all([
     getRecipes({
-      category: searchParams.category,
-      cuisine: searchParams.cuisine,
-      meal_type: searchParams.meal_type,
-      search: searchParams.search,
-      sort: (searchParams.sort as 'name' | 'recent' | 'most_used') || 'name',
+      category: typeof params.category === 'string' ? params.category : undefined,
+      cuisine: typeof params.cuisine === 'string' ? params.cuisine : undefined,
+      meal_type: typeof params.meal_type === 'string' ? params.meal_type : undefined,
+      search: typeof params.search === 'string' ? params.search : undefined,
+      sort:
+        typeof params.sort === 'string' ? (params.sort as 'name' | 'recent' | 'most_used') : 'name',
+      page,
+      pageSize: 25,
     }),
     getActivePalette(),
   ])
@@ -53,12 +65,12 @@ export default async function RecipesPage({
 
       {/* Dietary Intelligence */}
       <WidgetErrorBoundary name="Dietary Trends" compact>
-        <Suspense fallback={null}>
+        <Suspense fallback={<DietaryTrendsSkeleton />}>
           <DietaryTrendsBar />
         </Suspense>
       </WidgetErrorBoundary>
 
-      <RecipeLibraryClient recipes={recipes} />
+      <RecipeLibraryClient recipes={recipes} pagination={recipesResult.pagination} />
     </div>
   )
 }

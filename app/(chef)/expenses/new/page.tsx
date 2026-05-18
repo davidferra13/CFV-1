@@ -1,6 +1,7 @@
 // Add Expense Page
 // Three modes: manual entry, receipt upload with AI extraction, and OCR receipt scan
 
+import type { Metadata } from 'next'
 import { requireChef } from '@/lib/auth/get-user'
 import { createServerClient } from '@/lib/db/server'
 import { ExpenseForm } from '@/components/expenses/expense-form'
@@ -17,6 +18,8 @@ async function getEventsForDropdown() {
 
   return data || []
 }
+
+export const metadata: Metadata = { title: 'New Expense | ChefFlow' }
 
 export default async function NewExpensePage({
   searchParams,

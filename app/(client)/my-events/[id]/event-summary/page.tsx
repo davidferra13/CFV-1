@@ -3,10 +3,11 @@
 import type { Metadata } from 'next'
 import { requireClient } from '@/lib/auth/get-user'
 
-export const metadata: Metadata = { title: 'Event Summary' }
 import { getClientEventById } from '@/lib/events/client-actions'
 import { PostEventSummaryClient } from '@/components/events/post-event-summary-client'
 import { notFound, redirect } from 'next/navigation'
+
+export const metadata: Metadata = { title: 'Event Summary' }
 
 export default async function EventSummaryPage({ params }: { params: { id: string } }) {
   await requireClient()

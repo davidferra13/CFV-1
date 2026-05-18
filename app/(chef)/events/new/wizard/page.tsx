@@ -1,10 +1,13 @@
 // Guided Event Creation Wizard Page (Server Component)
 // Fetches client list + smart defaults and renders the multi-step wizard client component
 
+import type { Metadata } from 'next'
 import { requireChef } from '@/lib/auth/get-user'
 import { getClients } from '@/lib/clients/actions'
 import { EventCreationWizard } from '@/components/events/event-creation-wizard'
 import { getEventSmartDefaults } from '@/lib/intelligence/smart-defaults'
+
+export const metadata: Metadata = { title: 'Event Wizard | ChefFlow' }
 
 export default async function EventWizardPage() {
   await requireChef()

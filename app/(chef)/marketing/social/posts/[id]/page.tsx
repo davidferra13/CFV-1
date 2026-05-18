@@ -1,3 +1,4 @@
+import type { Metadata } from 'next'
 import { notFound } from 'next/navigation'
 import { requireChef } from '@/lib/auth/get-user'
 import { getSocialPosts, getSocialMediaAssets, getSocialPostAssetLinks } from '@/lib/social/actions'
@@ -8,6 +9,10 @@ import { Button } from '@/components/ui/button'
 import Link from 'next/link'
 import { ChevronLeft } from '@/components/ui/icons'
 import { format } from 'date-fns'
+
+export async function generateMetadata() {
+  return { title: 'Social Post | ChefFlow' }
+}
 
 export default async function SocialPostEditPage({ params }: { params: { id: string } }) {
   const user = await requireChef()

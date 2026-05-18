@@ -1,6 +1,7 @@
 ﻿// Inquiry Detail Page
 // Shows everything about a single inquiry and allows the chef to work it through the pipeline
 
+import type { Metadata } from 'next'
 import { notFound } from 'next/navigation'
 import Link from 'next/link'
 import { requireChef } from '@/lib/auth/get-user'
@@ -88,6 +89,19 @@ import {
   readPublicSeasonalMarketPulseIntentFromUnknownFields,
   type PublicSeasonalMarketPulseIntent,
 } from '@/lib/public/public-seasonal-market-pulse'
+
+function InquiryIntelligenceSkeleton() {
+  return (
+    <Card className="p-5">
+      <div className="h-5 w-44 animate-pulse rounded bg-stone-800" />
+      <div className="mt-4 grid gap-3 sm:grid-cols-3">
+        {[1, 2, 3].map((item) => (
+          <div key={item} className="h-16 animate-pulse rounded bg-stone-800/80" />
+        ))}
+      </div>
+    </Card>
+  )
+}
 
 function getDisplayName(inquiry: {
   client: { id: string; full_name: string; email: string; phone: string | null } | null
@@ -213,6 +227,10 @@ function getSeasonalIntentFreshnessLabel(intent: PublicSeasonalMarketPulseIntent
   }
 
   return 'No public snapshot timestamp stored'
+}
+
+export async function generateMetadata() {
+  return { title: 'Inquiry Details | ChefFlow' }
 }
 
 export default async function InquiryDetailPage({ params }: { params: { id: string } }) {
@@ -623,7 +641,7 @@ export default async function InquiryDetailPage({ params }: { params: { id: stri
       <InquirySummary data={summaryData} variant="chef" />
 
       {/* Conversion Intelligence */}
-      <Suspense fallback={null}>
+      <Suspense fallback={<InquiryIntelligenceSkeleton />}>
         <InquiryIntelligencePanel
           inquiryId={inquiry.id}
           guestCount={inquiry.confirmed_guest_count ?? null}

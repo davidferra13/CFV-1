@@ -1,6 +1,7 @@
 // Recipe Detail Page
 // Shows full recipe with ingredients, cost summary, and event history
 
+import type { Metadata } from 'next'
 import { notFound } from 'next/navigation'
 import Link from 'next/link'
 import { requireChef } from '@/lib/auth/get-user'
@@ -11,6 +12,10 @@ import { getRecipeProvenance } from '@/lib/collaboration/actions'
 import { getRecipeLifecycleStatus } from '@/lib/recipes/lifecycle-actions'
 import { getEventsUsingRecipe } from '@/lib/recipes/recipe-events-action'
 import { getRecipeStepPhotos } from '@/lib/recipes/recipe-photo-actions'
+
+export async function generateMetadata() {
+  return { title: 'Recipe Details | ChefFlow' }
+}
 
 export default async function RecipeDetailPage({ params }: { params: { id: string } }) {
   const user = await requireChef()

@@ -2,22 +2,38 @@
 
 import type { Metadata } from 'next'
 import { Suspense } from 'react'
+import Link from 'next/link'
 import { WidgetErrorBoundary } from '@/components/ui/widget-error-boundary'
 import { requireChef } from '@/lib/auth/get-user'
 import { createServerClient } from '@/lib/db/server'
 
 export const metadata: Metadata = { title: 'Menus' }
-import { getMenuCostSummaries, getMenus } from '@/lib/menus/actions'
+import { getMenuCostSummaries, getMenusPaginated } from '@/lib/menus/actions'
 import { MenusClientWrapper } from './menus-client-wrapper'
 import { DietaryTrendsBar } from '@/components/intelligence/dietary-trends-bar'
 import { IngredientConsolidationBar } from '@/components/intelligence/ingredient-consolidation-bar'
 
-export default async function MenusPage() {
-  const user = await requireChef()
+function buildMenusUrl(nextPage: number, search: string) {
+  const p = new URLSearchParams()
+  if (search) p.set('q', search)
+  if (nextPage > 1) p.set('page', String(nextPage))
+  const qs = p.toString()
+  return `/menus${qs ? `?${qs}` : ''}`
+}
 
-  // Critical fetch: menu list. Non-critical: cost summaries (degrade gracefully)
-  const [menus, costSummaries] = await Promise.all([
-    getMenus(),
+export default async function MenusPage({
+  searchParams,
+}: {
+  searchParams: Promise<Record<string, string | string[] | undefined>>
+}) {
+  const user = await requireChef()
+  const params = await searchParams
+  const search = typeof params.q === 'string' ? params.q.trim() : ''
+  const page = Math.max(1, parseInt(typeof params.page === 'string' ? params.page : '1', 10) || 1)
+
+  // Critical fetch: menu list (server-side paginated + FTS). Non-critical: cost summaries
+  const [{ menus, pagination }, costSummaries] = await Promise.all([
+    getMenusPaginated({ search: search || undefined, page, pageSize: 12 }),
     getMenuCostSummaries().catch((err) => {
       console.error('[menus-list] Cost summaries fetch failed (non-blocking):', err.message)
       return [] as Awaited<ReturnType<typeof getMenuCostSummaries>>
@@ -75,8 +91,32 @@ export default async function MenusPage() {
     }
   }
 
+  const offset = (pagination.page - 1) * pagination.pageSize
+
   return (
     <div className="space-y-4">
+      {/* Server-side search form */}
+      <form action="/menus" method="get" className="flex flex-wrap items-center gap-2">
+        <input
+          type="search"
+          name="q"
+          defaultValue={search}
+          placeholder="Search menus by name, cuisine, description..."
+          className="w-full max-w-sm rounded-lg border border-stone-700 bg-stone-900 px-3 py-2 text-sm text-stone-200 placeholder:text-stone-500 focus:border-brand-500 focus:outline-none"
+        />
+        <button
+          type="submit"
+          className="rounded-lg bg-stone-800 px-3 py-2 text-sm text-stone-200 hover:bg-stone-700"
+        >
+          Search
+        </button>
+        {search && (
+          <Link href="/menus" className="text-sm text-stone-500 hover:text-stone-300">
+            Clear
+          </Link>
+        )}
+      </form>
+
       {/* Dietary Intelligence */}
       <WidgetErrorBoundary name="Dietary Trends" compact>
         <Suspense fallback={null}>
@@ -97,6 +137,34 @@ export default async function MenusPage() {
         costByMenuId={costByMenuId}
         dishPhotoByMenuId={dishPhotoByMenuId}
       />
+
+      {/* Server-side pagination */}
+      {pagination.totalPages > 1 && (
+        <div className="flex items-center justify-between border-t border-stone-800 pt-3">
+          <p className="text-xs text-stone-500">
+            Showing {offset + 1}-{Math.min(offset + pagination.pageSize, pagination.total)} of{' '}
+            {pagination.total}
+          </p>
+          <div className="flex gap-2">
+            {pagination.page > 1 && (
+              <Link
+                href={buildMenusUrl(pagination.page - 1, search)}
+                className="rounded-lg bg-stone-800 px-3 py-1.5 text-xs text-stone-300 hover:bg-stone-700"
+              >
+                Previous
+              </Link>
+            )}
+            {pagination.hasMore && (
+              <Link
+                href={buildMenusUrl(pagination.page + 1, search)}
+                className="rounded-lg bg-stone-800 px-3 py-1.5 text-xs text-stone-300 hover:bg-stone-700"
+              >
+                Next
+              </Link>
+            )}
+          </div>
+        </div>
+      )}
     </div>
   )
 }

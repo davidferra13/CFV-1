@@ -1,6 +1,7 @@
 // AAR Entry/Edit Page - Post-service review form
 // Loads event context and existing AAR (if editing)
 
+import type { Metadata } from 'next'
 import { notFound, redirect } from 'next/navigation'
 import Link from 'next/link'
 import { requireChef } from '@/lib/auth/get-user'
@@ -16,6 +17,10 @@ import { Card } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { format } from 'date-fns'
 import { DishVariancePanel } from '@/components/events/dish-variance-panel'
+
+export async function generateMetadata() {
+  return { title: 'After Action Review | ChefFlow' }
+}
 
 export default async function AARPage({ params }: { params: { id: string } }) {
   const user = await requireChef()

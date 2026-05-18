@@ -1,3 +1,4 @@
+import type { Metadata } from 'next'
 import { notFound } from 'next/navigation'
 import Link from 'next/link'
 import { format } from 'date-fns'
@@ -36,6 +37,10 @@ function statusVariant(status: string): 'default' | 'success' | 'warning' | 'err
     default:
       return 'default'
   }
+}
+
+export async function generateMetadata() {
+  return { title: 'Push Dinner Details | ChefFlow' }
 }
 
 export default async function PushDinnerDetailPage({ params }: Props) {

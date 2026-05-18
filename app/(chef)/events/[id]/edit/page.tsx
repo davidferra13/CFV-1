@@ -1,6 +1,7 @@
 // Chef Edit Event Page
 // Allows editing event details (only for draft or proposed status)
 
+import type { Metadata } from 'next'
 import { notFound, redirect } from 'next/navigation'
 import { requireChef } from '@/lib/auth/get-user'
 import { getEventById } from '@/lib/events/actions'
@@ -10,6 +11,10 @@ import { EventForm } from '@/components/events/event-form'
 import { ServiceSimulationReturnBanner } from '@/components/events/service-simulation-return-banner'
 import { Alert } from '@/components/ui/alert'
 import { sanitizeReturnTo } from '@/lib/navigation/return-to'
+
+export async function generateMetadata() {
+  return { title: 'Edit Event | ChefFlow' }
+}
 
 export default async function EditEventPage({
   params,

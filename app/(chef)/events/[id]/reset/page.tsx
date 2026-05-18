@@ -1,3 +1,4 @@
+import type { Metadata } from 'next'
 import Link from 'next/link'
 import { notFound } from 'next/navigation'
 import { requireChef } from '@/lib/auth/get-user'
@@ -8,6 +9,10 @@ import { Card } from '@/components/ui/card'
 import { fetchResetChecklistData } from '@/lib/documents/generate-reset-checklist'
 import { resetChecklistToSpec } from '@/lib/documents/interactive-specs'
 import { getEventById } from '@/lib/events/actions'
+
+export async function generateMetadata() {
+  return { title: 'Reset Event | ChefFlow' }
+}
 
 export default async function ResetPage({ params }: { params: { id: string } }) {
   await requireChef()

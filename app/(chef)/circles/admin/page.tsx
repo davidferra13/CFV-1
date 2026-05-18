@@ -1,8 +1,11 @@
+import type { Metadata } from 'next'
 import { requireChef } from '@/lib/auth/get-user'
 import { isAdmin } from '@/lib/auth/admin'
 import { redirect } from 'next/navigation'
 import { getHubStats, getStubsSeekingChef } from '@/lib/hub/integration-actions'
 import { HubOverviewClient } from './hub-overview-client'
+
+export const metadata: Metadata = { title: 'Circle Admin | ChefFlow' }
 
 export default async function HubOverviewPage() {
   const user = await requireChef()

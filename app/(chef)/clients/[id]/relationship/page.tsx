@@ -1,3 +1,4 @@
+import type { Metadata } from 'next'
 import Link from 'next/link'
 import { notFound } from 'next/navigation'
 import { format } from 'date-fns'
@@ -22,6 +23,10 @@ function getPrimarySignalLabel(signal: NextBestActionPrimarySignal): string {
     default:
       return getClientInteractionSignalShortLabel(signal)
   }
+}
+
+export async function generateMetadata() {
+  return { title: 'Client Relationship | ChefFlow' }
 }
 
 export default async function ClientRelationshipPage({ params }: { params: { id: string } }) {

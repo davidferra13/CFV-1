@@ -1,5 +1,6 @@
 // Quote Detail Page - Full view of a single quote with transitions
 
+import type { Metadata } from 'next'
 import { notFound } from 'next/navigation'
 import Link from 'next/link'
 import { requireChef } from '@/lib/auth/get-user'
@@ -31,6 +32,36 @@ import { getQuoteCostIntelligence } from '@/lib/quotes/quote-cost-intelligence'
 import { QuotePricingConfidence } from '@/components/intelligence/quote-pricing-confidence'
 import { QuoteCostGuardBanner } from '@/components/costing/quote-cost-guard-banner'
 import { Suspense } from 'react'
+
+function InlineBadgeSkeleton() {
+  return <span className="h-6 w-28 animate-pulse rounded-full bg-stone-800" />
+}
+
+function QuoteWarningSkeleton() {
+  return (
+    <div className="rounded-lg border border-stone-800 bg-stone-900 p-4">
+      <div className="h-4 w-48 animate-pulse rounded bg-stone-800" />
+      <div className="mt-2 h-3 w-80 max-w-full animate-pulse rounded bg-stone-800/80" />
+    </div>
+  )
+}
+
+function QuoteSidebarSkeleton() {
+  return (
+    <Card className="p-4">
+      <div className="h-4 w-36 animate-pulse rounded bg-stone-800" />
+      <div className="mt-3 space-y-2">
+        {[1, 2, 3].map((item) => (
+          <div key={item} className="h-8 animate-pulse rounded bg-stone-800/80" />
+        ))}
+      </div>
+    </Card>
+  )
+}
+
+export async function generateMetadata() {
+  return { title: 'Quote Details | ChefFlow' }
+}
 
 export default async function QuoteDetailPage({ params }: { params: { id: string } }) {
   const user = await requireChef()
@@ -84,7 +115,7 @@ export default async function QuoteDetailPage({ params }: { params: { id: string
               clientId={(quote as any).client_id ?? null}
               tenantId={user.tenantId!}
             />
-            <Suspense fallback={null}>
+            <Suspense fallback={<InlineBadgeSkeleton />}>
               <AuditSummaryBadge entityType="quote" entityId={quote.id} />
             </Suspense>
           </div>
@@ -105,14 +136,14 @@ export default async function QuoteDetailPage({ params }: { params: { id: string
 
       {/* Price confidence warning - shown when event's menu has incomplete recipe costs */}
       {(quote as any).event?.id && (
-        <Suspense fallback={null}>
+        <Suspense fallback={<QuoteWarningSkeleton />}>
           <QuotePriceConfidenceWarning eventId={(quote as any).event.id} />
         </Suspense>
       )}
 
       {/* Price freshness warning - shown when ingredient prices are stale or missing */}
       {(quote as any).event?.id && (
-        <Suspense fallback={null}>
+        <Suspense fallback={<QuoteWarningSkeleton />}>
           <QuotePriceFreshnessWarning eventId={(quote as any).event.id} />
         </Suspense>
       )}
@@ -242,7 +273,7 @@ export default async function QuoteDetailPage({ params }: { params: { id: string
 
         {/* Pricing Insights Sidebar (right column) */}
         <div className="lg:col-span-1 space-y-4">
-          <Suspense fallback={null}>
+          <Suspense fallback={<QuoteSidebarSkeleton />}>
             <QuotePricingConfidence quoteId={params.id} />
           </Suspense>
           <PricingInsightsSidebar

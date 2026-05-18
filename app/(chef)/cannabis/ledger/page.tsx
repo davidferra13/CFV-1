@@ -1,6 +1,7 @@
 // Cannabis Ledger - Chef Portal
 // All ledger entries scoped to cannabis events.
 
+import type { Metadata } from 'next'
 import { getCannabisLedger } from '@/lib/chef/cannabis-actions'
 import {
   CannabisPortalHeader,
@@ -31,6 +32,8 @@ const ENTRY_TYPE_LABELS: Record<string, string> = {
   add_on: 'Add-On',
   credit: 'Credit',
 }
+
+export const metadata: Metadata = { title: 'Cannabis Ledger | ChefFlow' }
 
 export default async function CannabisLedgerPage() {
   let ledgerData: Awaited<ReturnType<typeof getCannabisLedger>>

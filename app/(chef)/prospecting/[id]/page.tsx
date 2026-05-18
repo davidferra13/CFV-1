@@ -1,3 +1,4 @@
+import type { Metadata } from 'next'
 import { requireAdmin } from '@/lib/auth/admin'
 import { getProspect, getProspectNotes } from '@/lib/prospecting/actions'
 import { getScriptForCategory } from '@/lib/prospecting/script-actions'
@@ -12,6 +13,10 @@ import { ProspectDossierClient } from './dossier-client'
 
 interface Props {
   params: Promise<{ id: string }>
+}
+
+export async function generateMetadata() {
+  return { title: 'Prospect Details | ChefFlow' }
 }
 
 export default async function ProspectDossierPage({ params }: Props) {

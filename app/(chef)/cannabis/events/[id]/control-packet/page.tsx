@@ -1,3 +1,4 @@
+import type { Metadata } from 'next'
 import Link from 'next/link'
 import {
   CannabisPageWrapper,
@@ -8,6 +9,10 @@ import { getCannabisEventReadiness } from '@/lib/chef/cannabis-readiness'
 import { requireChef } from '@/lib/auth/get-user'
 import { createServerClient } from '@/lib/db/server'
 import { ControlPacketClient } from './control-packet-client'
+
+export async function generateMetadata() {
+  return { title: 'Event Control Packet | ChefFlow' }
+}
 
 export default async function CannabisEventControlPacketPage({
   params,

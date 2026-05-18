@@ -1,6 +1,7 @@
 ﻿// Chef Client Detail Page
 // Shows client information, statistics, and event history
 
+import type { Metadata } from 'next'
 import { Suspense } from 'react'
 import { WidgetErrorBoundary } from '@/components/ui/widget-error-boundary'
 import { requireChef } from '@/lib/auth/get-user'
@@ -137,10 +138,29 @@ const EMPTY_NOTIFICATION_SUMMARY = {
   unread: [],
 }
 
+function ClientPanelSkeleton() {
+  return (
+    <Card>
+      <CardContent className="p-4">
+        <div className="h-4 w-40 animate-pulse rounded bg-stone-800" />
+        <div className="mt-3 grid gap-3 sm:grid-cols-3">
+          {[1, 2, 3].map((item) => (
+            <div key={item} className="h-12 animate-pulse rounded bg-stone-800/80" />
+          ))}
+        </div>
+      </CardContent>
+    </Card>
+  )
+}
+
 interface ClientDetailPageProps {
   params: {
     id: string
   }
+}
+
+export async function generateMetadata() {
+  return { title: 'Client Details | ChefFlow' }
 }
 
 export default async function ClientDetailPage({ params }: ClientDetailPageProps) {
@@ -620,14 +640,14 @@ export default async function ClientDetailPage({ params }: ClientDetailPageProps
 
       {/* Potential Duplicates */}
       <WidgetErrorBoundary name="Duplicates" compact>
-        <Suspense fallback={null}>
+        <Suspense fallback={<ClientPanelSkeleton />}>
           <DuplicatesSection clientId={client.id} clientName={client.full_name} />
         </Suspense>
       </WidgetErrorBoundary>
 
       {/* Relationship Intelligence */}
       <WidgetErrorBoundary name="Intelligence" compact>
-        <Suspense fallback={null}>
+        <Suspense fallback={<ClientPanelSkeleton />}>
           <ClientIntelligencePanel clientId={client.id} />
         </Suspense>
       </WidgetErrorBoundary>

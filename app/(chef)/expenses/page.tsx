@@ -1,10 +1,11 @@
 // Chef Expense Overview Page
-// Shows expense summary and filterable list
+// Shows expense summary and filterable list with search + pagination
 
 import type { Metadata } from 'next'
+import Image from 'next/image'
 import Link from 'next/link'
 import { requireChef } from '@/lib/auth/get-user'
-import { getExpenses } from '@/lib/expenses/actions'
+import { getExpensesPaginated } from '@/lib/expenses/actions'
 
 export const metadata: Metadata = { title: 'Expenses' }
 import { getMonthlyFinancialSummary } from '@/lib/expenses/actions'
@@ -31,50 +32,35 @@ import { getSignedUrl } from '@/lib/storage'
 export default async function ExpensesPage({
   searchParams,
 }: {
-  searchParams: { category?: string; event_id?: string; business?: string }
+  searchParams: Promise<Record<string, string | string[] | undefined>>
 }) {
   await requireChef()
+  const params = await searchParams
+  const search = typeof params.q === 'string' ? params.q.trim() : ''
+  const page = Math.max(1, parseInt(typeof params.page === 'string' ? params.page : '1', 10) || 1)
+  const category = typeof params.category === 'string' ? params.category : undefined
+  const eventId = typeof params.event_id === 'string' ? params.event_id : undefined
+  const businessParam = typeof params.business === 'string' ? params.business : undefined
+
+  const pageSize = 50
 
   const now = new Date()
-  const [expenses, monthlySummary] = await Promise.all([
-    getExpenses({
-      category: searchParams.category,
-      event_id: searchParams.event_id,
-      is_business:
-        searchParams.business === 'true'
-          ? true
-          : searchParams.business === 'false'
-            ? false
-            : undefined,
+  const [expenseResult, monthlySummary] = await Promise.all([
+    getExpensesPaginated({
+      category,
+      event_id: eventId,
+      is_business: businessParam === 'true' ? true : businessParam === 'false' ? false : undefined,
+      search: search || undefined,
+      page,
+      pageSize,
     }),
     getMonthlyFinancialSummary(now.getFullYear(), now.getMonth() + 1),
   ])
 
-  // Group expenses by event
-  const grouped = new Map<
-    string,
-    { occasion: string; eventDate: string; clientName: string; expenses: typeof expenses }
-  >()
-  const ungrouped: typeof expenses = []
+  const { items: expenses, total, pagination } = expenseResult
+  const offset = (page - 1) * pageSize
 
-  for (const exp of expenses) {
-    const event = (exp as any).event
-    if (event && exp.event_id) {
-      if (!grouped.has(exp.event_id)) {
-        grouped.set(exp.event_id, {
-          occasion: event.occasion || 'Untitled',
-          eventDate: event.event_date,
-          clientName: event.client?.full_name || 'Unknown',
-          expenses: [],
-        })
-      }
-      grouped.get(exp.event_id)!.expenses.push(exp)
-    } else {
-      ungrouped.push(exp)
-    }
-  }
-
-  // Compute category totals for this month
+  // Compute category totals for displayed expenses (business only)
   const categoryTotals: Record<string, number> = {}
   let totalThisMonth = 0
   for (const exp of expenses) {
@@ -82,6 +68,22 @@ export default async function ExpensesPage({
       categoryTotals[exp.category] = (categoryTotals[exp.category] || 0) + exp.amount_cents
       totalThisMonth += exp.amount_cents
     }
+  }
+
+  // Build URL helper preserving all filters
+  const buildUrl = (overrides: Record<string, string | undefined>) => {
+    const p = new URLSearchParams()
+    const finalSearch = overrides.q !== undefined ? overrides.q : search
+    const finalPage =
+      overrides.page !== undefined ? overrides.page : page > 1 ? String(page) : undefined
+    const finalCategory = overrides.category !== undefined ? overrides.category : category
+    if (finalSearch) p.set('q', finalSearch)
+    if (finalPage && finalPage !== '1') p.set('page', finalPage)
+    if (finalCategory) p.set('category', finalCategory)
+    if (eventId) p.set('event_id', eventId)
+    if (businessParam) p.set('business', businessParam)
+    const qs = p.toString()
+    return `/expenses${qs ? `?${qs}` : ''}`
   }
 
   return (
@@ -92,14 +94,10 @@ export default async function ExpensesPage({
         <div className="flex gap-2">
           <ExpensesExportButton
             filters={{
-              category: searchParams.category,
-              event_id: searchParams.event_id,
+              category,
+              event_id: eventId,
               is_business:
-                searchParams.business === 'true'
-                  ? true
-                  : searchParams.business === 'false'
-                    ? false
-                    : undefined,
+                businessParam === 'true' ? true : businessParam === 'false' ? false : undefined,
             }}
           />
           <Link href="/expenses/new?mode=scan">
@@ -148,7 +146,7 @@ export default async function ExpensesPage({
           <div className="flex flex-wrap gap-3">
             {Object.entries(categoryTotals)
               .sort(([, a], [, b]) => b - a)
-              .map(([cat, total]) => (
+              .map(([cat, catTotal]) => (
                 <div key={cat} className="flex items-center gap-2">
                   <span
                     className={`inline-flex items-center px-2 py-0.5 rounded text-xs font-medium ${getCategoryColor(cat)}`}
@@ -156,7 +154,7 @@ export default async function ExpensesPage({
                     {getCategoryLabel(cat)}
                   </span>
                   <span className="text-sm font-medium text-stone-300">
-                    {formatCurrency(total)}
+                    {formatCurrency(catTotal)}
                   </span>
                 </div>
               ))}
@@ -164,11 +162,39 @@ export default async function ExpensesPage({
         </Card>
       )}
 
+      {/* Search */}
+      <form action="/expenses" method="get" className="flex flex-wrap items-center gap-2">
+        <input
+          type="search"
+          name="q"
+          defaultValue={search}
+          placeholder="Search expenses by description, vendor..."
+          className="w-full max-w-sm rounded-lg border border-stone-700 bg-stone-900 px-3 py-2 text-sm text-stone-200 placeholder:text-stone-500 focus:border-brand-500 focus:outline-none"
+        />
+        {category && <input type="hidden" name="category" value={category} />}
+        {eventId && <input type="hidden" name="event_id" value={eventId} />}
+        {businessParam && <input type="hidden" name="business" value={businessParam} />}
+        <button
+          type="submit"
+          className="rounded-lg bg-stone-800 px-3 py-2 text-sm text-stone-200 hover:bg-stone-700"
+        >
+          Search
+        </button>
+        {search && (
+          <Link
+            href={buildUrl({ q: undefined, page: undefined })}
+            className="text-sm text-stone-500 hover:text-stone-300"
+          >
+            Clear
+          </Link>
+        )}
+      </form>
+
       {/* Filter Bar - Grouped */}
       <div className="space-y-2">
         <div className="flex flex-wrap gap-2 items-center">
-          <Link href="/expenses">
-            <Button variant={!searchParams.category ? 'primary' : 'secondary'} size="sm">
+          <Link href={buildUrl({ category: undefined, page: undefined })}>
+            <Button variant={!category ? 'primary' : 'secondary'} size="sm">
               All
             </Button>
           </Link>
@@ -183,11 +209,8 @@ export default async function ExpensesPage({
             </span>
             <div className="flex flex-wrap gap-1.5 sm:gap-2">
               {group.categories.map((cat) => (
-                <Link key={cat.value} href={`/expenses?category=${cat.value}`}>
-                  <Button
-                    variant={searchParams.category === cat.value ? 'primary' : 'secondary'}
-                    size="sm"
-                  >
+                <Link key={cat.value} href={buildUrl({ category: cat.value, page: undefined })}>
+                  <Button variant={category === cat.value ? 'primary' : 'secondary'} size="sm">
                     {cat.label}
                   </Button>
                 </Link>
@@ -200,13 +223,19 @@ export default async function ExpensesPage({
       {/* Expense Table */}
       {expenses.length === 0 ? (
         <Card className="p-8 text-center">
-          <p className="text-stone-500">No expenses recorded yet.</p>
-          <Link
-            href="/expenses/new"
-            className="text-brand-600 hover:underline text-sm mt-2 inline-block"
-          >
-            Add your first expense
-          </Link>
+          {search ? (
+            <p className="text-stone-500">No expenses found matching &quot;{search}&quot;.</p>
+          ) : (
+            <>
+              <p className="text-stone-500">No expenses recorded yet.</p>
+              <Link
+                href="/expenses/new"
+                className="text-brand-600 hover:underline text-sm mt-2 inline-block"
+              >
+                Add your first expense
+              </Link>
+            </>
+          )}
         </Card>
       ) : (
         <Card>
@@ -231,10 +260,13 @@ export default async function ExpensesPage({
                     <TableCell className="w-12 p-1">
                       {expense.receipt_photo_url && (
                         <Link href={`/expenses/${expense.id}`}>
-                          {/* eslint-disable-next-line @next/next/no-img-element */}
-                          <img
+                          <Image
                             src={getSignedUrl('receipts', expense.receipt_photo_url, 3600)}
                             alt="Receipt"
+                            width={40}
+                            height={40}
+                            sizes="40px"
+                            unoptimized
                             className="h-10 w-10 rounded object-cover"
                           />
                         </Link>
@@ -292,6 +324,33 @@ export default async function ExpensesPage({
               })}
             </TableBody>
           </Table>
+
+          {/* Pagination */}
+          {total > pageSize && (
+            <div className="flex items-center justify-between border-t border-stone-800 px-4 py-3">
+              <p className="text-xs text-stone-500">
+                Showing {offset + 1}-{Math.min(offset + pageSize, total)} of {total}
+              </p>
+              <div className="flex gap-2">
+                {page > 1 && (
+                  <Link
+                    href={buildUrl({ page: String(page - 1) })}
+                    className="rounded-lg bg-stone-800 px-3 py-1.5 text-xs text-stone-300 hover:bg-stone-700"
+                  >
+                    Previous
+                  </Link>
+                )}
+                {pagination.hasMore && (
+                  <Link
+                    href={buildUrl({ page: String(page + 1) })}
+                    className="rounded-lg bg-stone-800 px-3 py-1.5 text-xs text-stone-300 hover:bg-stone-700"
+                  >
+                    Next
+                  </Link>
+                )}
+              </div>
+            </div>
+          )}
         </Card>
       )}
     </div>

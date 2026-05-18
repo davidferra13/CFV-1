@@ -2,6 +2,7 @@
 // Shows complete P&L picture for one event: revenue, costs, margins, time, mileage, comparison.
 // Separate from the event detail page so it can be bookmarked and shared with an accountant.
 
+import type { Metadata } from 'next'
 import { notFound } from 'next/navigation'
 import Link from 'next/link'
 import { requireChef } from '@/lib/auth/get-user'
@@ -14,6 +15,10 @@ import { CostVarianceCard } from '@/components/finance/cost-variance-card'
 import { EventPricingIntelligencePanel } from '@/components/finance/event-pricing-intelligence-panel'
 import { Button } from '@/components/ui/button'
 import { UpgradePrompt } from '@/components/billing/upgrade-prompt'
+
+export async function generateMetadata() {
+  return { title: 'Event Financial Summary | ChefFlow' }
+}
 
 export default async function EventFinancialPage({ params }: { params: { id: string } }) {
   await requireChef()

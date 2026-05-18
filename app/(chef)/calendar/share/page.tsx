@@ -1,6 +1,9 @@
+import type { Metadata } from 'next'
 import { requireChef } from '@/lib/auth/get-user'
 import { createServerClient } from '@/lib/db/server'
 import { AvailabilityShareSettings } from '@/components/calendar/availability-share-settings'
+
+export const metadata: Metadata = { title: 'Share Availability | ChefFlow' }
 
 export default async function CalendarSharePage() {
   const chef = await requireChef()

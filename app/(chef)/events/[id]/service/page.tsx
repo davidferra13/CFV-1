@@ -1,14 +1,15 @@
+import type { Metadata } from 'next'
 import { requireChef } from '@/lib/auth/get-user'
 import { getServiceTimeline } from '@/lib/mobile/service-ticker-actions'
 import { ServiceTickerClient } from './service-ticker-client'
 
 export const dynamic = 'force-dynamic'
 
-export default async function ServiceTickerPage({
-  params,
-}: {
-  params: Promise<{ id: string }>
-}) {
+export async function generateMetadata() {
+  return { title: 'Service Details | ChefFlow' }
+}
+
+export default async function ServiceTickerPage({ params }: { params: Promise<{ id: string }> }) {
   await requireChef()
   const { id: eventId } = await params
 

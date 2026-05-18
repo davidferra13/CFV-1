@@ -2,6 +2,7 @@
 // Print-optimized page showing chef name + QR code.
 // Chef prints these and places them at the table.
 
+import type { Metadata } from 'next'
 import { notFound } from 'next/navigation'
 import { requireChef } from '@/lib/auth/get-user'
 import { getEventById } from '@/lib/events/actions'
@@ -9,6 +10,10 @@ import { PrintableCard } from '@/components/guest-leads/printable-card'
 import { createServerClient } from '@/lib/db/server'
 
 type Props = { params: { id: string } }
+
+export async function generateMetadata() {
+  return { title: 'Guest Card | ChefFlow' }
+}
 
 export default async function GuestCardPage({ params }: Props) {
   const user = await requireChef()

@@ -1,6 +1,9 @@
+import type { Metadata } from 'next'
 import { requireChef } from '@/lib/auth/get-user'
 import { GanttView } from '@/components/tasks/gantt-view'
 import Link from 'next/link'
+
+export const metadata: Metadata = { title: 'Gantt Chart | ChefFlow' }
 
 export default async function GanttPage() {
   await requireChef()

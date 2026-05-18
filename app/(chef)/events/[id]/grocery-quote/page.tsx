@@ -2,6 +2,7 @@
 // Shows automated ingredient pricing from Spoonacular + Kroger APIs,
 // plus an Instacart cart link pre-filled with all event ingredients.
 
+import type { Metadata } from 'next'
 import { notFound } from 'next/navigation'
 import Link from 'next/link'
 import { requireChef } from '@/lib/auth/get-user'
@@ -12,6 +13,10 @@ import { ServiceSimulationReturnBanner } from '@/components/events/service-simul
 import { Button } from '@/components/ui/button'
 import { format } from 'date-fns'
 import { sanitizeReturnTo } from '@/lib/navigation/return-to'
+
+export async function generateMetadata() {
+  return { title: 'Grocery Quote | ChefFlow' }
+}
 
 export default async function GroceryQuotePage({
   params,

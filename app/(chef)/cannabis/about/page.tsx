@@ -2,6 +2,7 @@
 // The full story: task force, legislation, credentials, and what's coming.
 // Every claim is source-linked. Every fact is verifiable. This is the receipts.
 
+import type { Metadata } from 'next'
 import {
   CannabisPortalHeader,
   CannabisPageWrapper,
@@ -20,6 +21,8 @@ import {
   AboutBullet,
   MeetingCard,
 } from '@/components/cannabis/about-sections'
+
+export const metadata: Metadata = { title: 'Cannabis Dining: About | ChefFlow' }
 
 export default async function CannabisAboutPage() {
   return (

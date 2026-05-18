@@ -1,6 +1,7 @@
 // Chef Surveys Dashboard
 // Displays all post-event surveys with response stats and individual responses.
 
+import type { Metadata } from 'next'
 import Link from 'next/link'
 import { requireChef } from '@/lib/auth/get-user'
 import { getChefSurveys } from '@/lib/surveys/actions'
@@ -26,6 +27,8 @@ function StatCard({ label, value }: { label: string; value: string | number }) {
     </div>
   )
 }
+
+export const metadata: Metadata = { title: 'Surveys | ChefFlow' }
 
 export default async function SurveysPage() {
   await requireChef()

@@ -2,10 +2,13 @@
 // Lists all event contracts for the current chef with status filtering.
 // Contracts are generated from event pages; this page provides the overview.
 
+import type { Metadata } from 'next'
 import { getContracts } from '@/lib/contracts/actions'
 import { ContractList } from '@/components/contracts/contract-list'
 import Link from 'next/link'
 import { Button } from '@/components/ui/button'
+
+export const metadata: Metadata = { title: 'Contracts | ChefFlow' }
 
 export default async function ContractsPage() {
   let contracts: any[]
@@ -26,11 +29,18 @@ export default async function ContractsPage() {
           <h1 className="text-2xl sm:text-3xl font-bold text-stone-100">Contracts</h1>
           <p className="text-stone-400 mt-1">Manage service agreements across all your events.</p>
         </div>
-        <Link href="/settings/contracts">
-          <Button variant="secondary" size="sm">
-            Templates
-          </Button>
-        </Link>
+        <div className="flex gap-2">
+          <Link href="/contracts/clauses">
+            <Button variant="secondary" size="sm">
+              Clause Library
+            </Button>
+          </Link>
+          <Link href="/settings/contracts">
+            <Button variant="secondary" size="sm">
+              Templates
+            </Button>
+          </Link>
+        </div>
       </div>
 
       {fetchError ? (

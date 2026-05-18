@@ -90,7 +90,7 @@ export default async function ChefDashboard() {
       </WidgetErrorBoundary>
 
       <WidgetErrorBoundary name="Weekly Reflection" compact>
-        <Suspense fallback={null}>
+        <Suspense fallback={<WidgetCardSkeleton size="sm" />}>
           <WeeklyReflectionLoader />
         </Suspense>
       </WidgetErrorBoundary>

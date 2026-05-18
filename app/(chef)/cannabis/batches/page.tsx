@@ -1,3 +1,4 @@
+import type { Metadata } from 'next'
 import Link from 'next/link'
 import { FileText, FlaskConical, PackageCheck, ShieldAlert } from 'lucide-react'
 import {
@@ -32,6 +33,8 @@ function numberLabel(value: unknown, suffix = '') {
   if (!Number.isFinite(parsed)) return '-'
   return `${parsed.toFixed(3)}${suffix}`
 }
+
+export const metadata: Metadata = { title: 'Cannabis Batches | ChefFlow' }
 
 export default async function CannabisBatchesPage() {
   const { events, coas, batches } = await getCannabisBatchRecordWorkspace()

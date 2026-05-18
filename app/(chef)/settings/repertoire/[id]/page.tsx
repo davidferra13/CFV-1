@@ -1,12 +1,17 @@
 // Settings > Repertoire > Edit Palette
 // Full edit form for a single seasonal palette.
 
+import type { Metadata } from 'next'
 import { requireChef } from '@/lib/auth/get-user'
 import { getSeasonalPaletteById } from '@/lib/seasonal/actions'
 import { getRecipes } from '@/lib/recipes/actions'
 import { SeasonalPaletteForm } from '@/components/settings/seasonal-palette-form'
 import Link from 'next/link'
 import { notFound } from 'next/navigation'
+
+export async function generateMetadata() {
+  return { title: 'Repertoire Item | ChefFlow' }
+}
 
 export default async function EditPalettePage({ params }: { params: { id: string } }) {
   await requireChef()

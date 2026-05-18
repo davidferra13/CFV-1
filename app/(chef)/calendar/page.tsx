@@ -31,6 +31,19 @@ const UnifiedCalendarView = dynamic(
   }
 )
 
+function CalendarSignalSkeleton() {
+  return (
+    <div className="mb-3 rounded-xl border border-stone-800 bg-stone-900/70 p-3">
+      <div className="h-4 w-40 animate-pulse rounded bg-stone-800" />
+      <div className="mt-3 grid gap-2 sm:grid-cols-3">
+        {[1, 2, 3].map((item) => (
+          <div key={item} className="h-9 animate-pulse rounded bg-stone-800/80" />
+        ))}
+      </div>
+    </div>
+  )
+}
+
 export default async function CalendarPage() {
   const user = await requireChef()
 
@@ -71,21 +84,21 @@ export default async function CalendarPage() {
 
       {/* Calendar Intelligence Signals */}
       <WidgetErrorBoundary name="Calendar Signals" compact>
-        <Suspense fallback={null}>
+        <Suspense fallback={<CalendarSignalSkeleton />}>
           <DomainSignals domain="calendar" limit={3} />
         </Suspense>
       </WidgetErrorBoundary>
 
       {/* Scheduling Intelligence */}
       <WidgetErrorBoundary name="Scheduling Insights" compact>
-        <Suspense fallback={null}>
+        <Suspense fallback={<CalendarSignalSkeleton />}>
           <SchedulingInsightsBar />
         </Suspense>
       </WidgetErrorBoundary>
 
       {/* Capacity & Seasonal Forecast */}
       <WidgetErrorBoundary name="Capacity & Seasonal" compact>
-        <Suspense fallback={null}>
+        <Suspense fallback={<CalendarSignalSkeleton />}>
           <CapacitySeasonalBar />
         </Suspense>
       </WidgetErrorBoundary>

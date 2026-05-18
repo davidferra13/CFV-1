@@ -2,6 +2,7 @@
 // Gallery of all step-by-step photos attached to recipes.
 
 import type { Metadata } from 'next'
+import Image from 'next/image'
 import Link from 'next/link'
 import { requireChef } from '@/lib/auth/get-user'
 import { createServerClient } from '@/lib/db/server'
@@ -59,10 +60,13 @@ export default async function RecipePhotosPage() {
               className="group relative aspect-square rounded-lg overflow-hidden bg-stone-800 border border-stone-700"
             >
               {photo.photo_url ? (
-                <img
+                <Image
                   src={photo.photo_url}
                   alt={photo.caption ?? `Step ${photo.step_number}`}
-                  className="w-full h-full object-cover group-hover:opacity-80 transition-opacity"
+                  fill
+                  sizes="(min-width: 1024px) 25vw, (min-width: 640px) 33vw, 50vw"
+                  unoptimized
+                  className="object-cover transition-opacity group-hover:opacity-80"
                 />
               ) : (
                 <div className="w-full h-full flex items-center justify-center text-stone-600 text-xs">

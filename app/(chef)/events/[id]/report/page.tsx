@@ -1,6 +1,7 @@
 // Event Cost Report Page
 // Printable cost breakdown showing all expenses, actual vs quoted, profit margin.
 
+import type { Metadata } from 'next'
 import { notFound } from 'next/navigation'
 import Link from 'next/link'
 import { requireChef } from '@/lib/auth/get-user'
@@ -13,11 +14,11 @@ import { PerGuestBreakdownSection } from '@/components/reports/per-guest-breakdo
 import { PrintButton } from '@/components/reports/print-button'
 import { Button } from '@/components/ui/button'
 
-export default async function EventCostReportPage({
-  params,
-}: {
-  params: { id: string }
-}) {
+export async function generateMetadata() {
+  return { title: 'Event Report | ChefFlow' }
+}
+
+export default async function EventCostReportPage({ params }: { params: { id: string } }) {
   await requireChef()
   const report = await getEventCostReport(params.id)
 
@@ -68,10 +69,7 @@ export default async function EventCostReportPage({
       />
 
       {/* Section 4: Per-Guest Breakdown */}
-      <PerGuestBreakdownSection
-        data={report.perGuest}
-        guestCount={report.guestCount}
-      />
+      <PerGuestBreakdownSection data={report.perGuest} guestCount={report.guestCount} />
 
       {/* Section 5: Detailed Line Items */}
       <LineItemList items={report.lineItems} />
@@ -79,7 +77,8 @@ export default async function EventCostReportPage({
       {/* Footer with generation timestamp (visible on print) */}
       <div className="text-xs text-stone-500 print:text-stone-400 pt-4 border-t border-stone-800 print:border-stone-300">
         <p>
-          Generated {new Date(report.generatedAt).toLocaleString('en-US', {
+          Generated{' '}
+          {new Date(report.generatedAt).toLocaleString('en-US', {
             dateStyle: 'long',
             timeStyle: 'short',
           })}

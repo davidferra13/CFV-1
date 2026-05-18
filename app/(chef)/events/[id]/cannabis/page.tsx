@@ -3,6 +3,7 @@
 // and cannabis ledger entries for this specific event.
 // Access gated: requirePro + hasCannabisAccess.
 
+import type { Metadata } from 'next'
 import Link from 'next/link'
 import { redirect, notFound } from 'next/navigation'
 import { requirePro } from '@/lib/billing/require-pro'
@@ -44,6 +45,10 @@ const ENTRY_TYPE_LABELS: Record<string, string> = {
   adjustment: 'Adjustment',
   add_on: 'Add-On',
   credit: 'Credit',
+}
+
+export async function generateMetadata() {
+  return { title: 'Event Cannabis | ChefFlow' }
 }
 
 export default async function EventCannabisTabPage({ params }: { params: { id: string } }) {

@@ -1,6 +1,9 @@
+import type { Metadata } from 'next'
 import { requireChef } from '@/lib/auth/get-user'
 import { getCategoryCounts } from '@/lib/exports/data-takeout-actions'
 import { DataExportClient } from './data-export-client'
+
+export const metadata: Metadata = { title: 'Data Export | ChefFlow' }
 
 export default async function DataExportPage() {
   await requireChef()

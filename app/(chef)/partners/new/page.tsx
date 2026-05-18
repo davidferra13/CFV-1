@@ -1,7 +1,10 @@
 // Add New Partner - Form for creating a referral partner
 
+import type { Metadata } from 'next'
 import { requireChef } from '@/lib/auth/get-user'
 import { PartnerForm } from '@/components/partners/partner-form'
+
+export const metadata: Metadata = { title: 'New Partner | ChefFlow' }
 
 export default async function NewPartnerPage() {
   await requireChef()

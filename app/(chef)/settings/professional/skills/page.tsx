@@ -1,6 +1,9 @@
+import type { Metadata } from 'next'
 import { requireChef } from '@/lib/auth/get-user'
 import { createServerClient } from '@/lib/db/server'
 import { CapabilityInventory } from '@/components/professional/capability-inventory'
+
+export const metadata: Metadata = { title: 'Professional Skills | ChefFlow' }
 
 export default async function SkillsPage() {
   const chef = await requireChef()

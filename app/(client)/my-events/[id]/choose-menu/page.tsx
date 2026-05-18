@@ -8,13 +8,14 @@
 import type { Metadata } from 'next'
 import { requireClient } from '@/lib/auth/get-user'
 
-export const metadata: Metadata = { title: 'Choose Menu' }
 import { getClientEventById } from '@/lib/events/client-actions'
 import { getShowcaseMenus } from '@/lib/menus/showcase-actions'
 import { getMenuPreferences } from '@/lib/menus/preference-actions'
 import { notFound, redirect } from 'next/navigation'
 import Link from 'next/link'
 import { ChooseMenuClient } from './choose-menu-client'
+
+export const metadata: Metadata = { title: 'Choose Menu' }
 
 export default async function ChooseMenuPage({ params }: { params: { id: string } }) {
   await requireClient()

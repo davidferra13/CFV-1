@@ -38,7 +38,11 @@ import { CancellationPolicyDisplay } from '@/components/events/cancellation-poli
 import { EventJourneyStepper } from '@/components/events/event-journey-stepper'
 import { CalendarAddButtons } from '@/components/events/calendar-add-buttons'
 
-import { buildJourneySteps, getCurrentJourneyAction } from '@/lib/events/journey-steps'
+import {
+  buildJourneySteps,
+  getCurrentJourneyAction,
+  type JourneyStep,
+} from '@/lib/events/journey-steps'
 import { getFOHMenuDataForClient } from '@/lib/menus/foh-menu-client-actions'
 import { ClientFOHMenuSection } from '@/components/menus/client-foh-menu-section'
 import { getCircleTokenForEvent, getClientProfileToken } from '@/lib/hub/client-hub-actions'
@@ -49,6 +53,12 @@ import { EventOperatingSpineCard } from '@/components/events/event-operating-spi
 import { buildClientEventProgress } from '@/lib/events/operating-spine'
 import type { Database } from '@/types/database'
 import { GuestCountChangeCard } from './guest-count-change-card'
+import { EventCountdown } from '@/components/client-portal/event-countdown'
+import {
+  LifecycleTimeline,
+  type TimelineStage,
+} from '@/components/client-portal/lifecycle-timeline'
+import { createServerClient } from '@/lib/db/server'
 
 type EventStatus = Database['public']['Enums']['event_status']
 
@@ -72,6 +82,33 @@ function getStatusBadge(status: EventStatus) {
   return <Badge variant={config.variant}>{config.label}</Badge>
 }
 
+const UPCOMING_STATUSES: EventStatus[] = [
+  'proposed',
+  'accepted',
+  'paid',
+  'confirmed',
+  'in_progress',
+]
+
+function journeyStepsToTimeline(steps: JourneyStep[]): {
+  stages: TimelineStage[]
+  currentStage: number
+} {
+  let currentStage = 0
+  const stages: TimelineStage[] = steps.map((step, i) => {
+    const status = step.completedAt ? 'completed' : step.isCurrent ? 'current' : 'upcoming'
+    if (step.isCurrent) currentStage = i
+    return {
+      stage: i,
+      label: step.label,
+      status,
+      message: step.description || '',
+      completedAt: step.completedAt ?? null,
+    }
+  })
+  return { stages, currentStage }
+}
+
 export async function generateMetadata({ params }: { params: { id: string } }): Promise<Metadata> {
   const event = await getClientEventById(params.id)
   return { title: event ? event.occasion || 'Event' : 'Event' }
@@ -91,6 +128,15 @@ export default async function EventDetailPage({
   if (!event) {
     notFound()
   }
+
+  const db: any = createServerClient()
+  const { data: chef } = await db
+    .from('chefs')
+    .select('business_name, display_name')
+    .eq('id', event.tenant_id)
+    .single()
+    .catch(() => ({ data: null }))
+  const chefName = chef?.business_name || chef?.display_name || 'your chef'
 
   const financial = event.financial
   const financialAvailable = financial != null
@@ -143,6 +189,31 @@ export default async function EventDetailPage({
   const proposedAcceptDescription = event.hasContract
     ? 'By accepting this proposal, you agree to the event details and pricing. We will take you to the agreement first if a signature is required, then payment.'
     : 'By accepting this proposal, you agree to the event details and pricing. We will take you straight to payment next.'
+  const journeySteps = buildJourneySteps({
+    eventId: event.id,
+    occasion: event.occasion ?? null,
+    eventStatus: event.status,
+    eventTransitions: event.transitions,
+    hasPhotos: event.hasPhotos,
+    menuApprovalStatus: (event as any).menu_approval_status ?? null,
+    menuApprovalUpdatedAt: (event as any).menu_approval_updated_at ?? null,
+    hasContract: event.hasContract,
+    contractStatus,
+    contractSignedAt: event.contractSignedAt ?? null,
+    preEventChecklistConfirmedAt: (event as any).pre_event_checklist_confirmed_at ?? null,
+    hasOutstandingBalance: outstandingBalanceCents > 0,
+    hasReview: event.hasReview,
+  })
+  const lifecycleTimeline = journeyStepsToTimeline(journeySteps)
+  const eventLocation =
+    [event.location_address, event.location_city, event.location_state, event.location_zip]
+      .filter(Boolean)
+      .join(', ') || null
+  const startOfToday = new Date()
+  startOfToday.setHours(0, 0, 0, 0)
+  const shouldShowCountdown =
+    UPCOMING_STATUSES.includes(event.status) &&
+    new Date(event.event_date).getTime() >= startOfToday.getTime()
 
   // Fetch sharing and RSVP data
   const [
@@ -269,6 +340,22 @@ export default async function EventDetailPage({
         </div>
       </div>
 
+      {shouldShowCountdown && (
+        <div className="mb-6">
+          <EventCountdown
+            eventDate={event.event_date}
+            occasion={event.occasion || 'your event'}
+            chefName={chefName}
+            guestCount={event.guest_count}
+            location={eventLocation}
+            arrivalTime={(event as any).arrival_time ?? event.serve_time ?? null}
+            menuName={event.menus?.[0]?.name ?? null}
+            menuLocked={(event as any).menu_approval_status === 'approved'}
+            prepTimeline={null}
+          />
+        </div>
+      )}
+
       {/* Dinner Circle nudge */}
       {circleToken && event.status !== 'cancelled' && (
         <div className="mb-6">
@@ -328,24 +415,11 @@ export default async function EventDetailPage({
           <CardHeader>
             <CardTitle>Your Journey</CardTitle>
           </CardHeader>
-          <CardContent>
-            <EventJourneyStepper
-              steps={buildJourneySteps({
-                eventId: event.id,
-                occasion: event.occasion ?? null,
-                eventStatus: event.status,
-                eventTransitions: event.transitions,
-                hasPhotos: event.hasPhotos,
-                menuApprovalStatus: (event as any).menu_approval_status ?? null,
-                menuApprovalUpdatedAt: (event as any).menu_approval_updated_at ?? null,
-                hasContract: event.hasContract,
-                contractStatus,
-                contractSignedAt: event.contractSignedAt ?? null,
-                preEventChecklistConfirmedAt:
-                  (event as any).pre_event_checklist_confirmed_at ?? null,
-                hasOutstandingBalance: outstandingBalanceCents > 0,
-                hasReview: event.hasReview,
-              })}
+          <CardContent className="space-y-6">
+            <EventJourneyStepper steps={journeySteps} />
+            <LifecycleTimeline
+              stages={lifecycleTimeline.stages}
+              currentStage={lifecycleTimeline.currentStage}
             />
           </CardContent>
         </Card>
@@ -377,16 +451,7 @@ export default async function EventDetailPage({
 
             <div className="sm:col-span-2">
               <div className="text-sm text-stone-400 mb-1">Location</div>
-              <div className="font-medium text-stone-100">
-                {[
-                  event.location_address,
-                  event.location_city,
-                  event.location_state,
-                  event.location_zip,
-                ]
-                  .filter(Boolean)
-                  .join(', ') || 'Not set'}
-              </div>
+              <div className="font-medium text-stone-100">{eventLocation || 'Not set'}</div>
             </div>
 
             {event.special_requests && (

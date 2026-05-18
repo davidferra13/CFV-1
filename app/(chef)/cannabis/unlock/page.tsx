@@ -1,3 +1,4 @@
+import type { Metadata } from 'next'
 import Link from 'next/link'
 import {
   CannabisPortalHeader,
@@ -8,6 +9,8 @@ import {
   getCannabisHostAgreement,
   requireCannabisInviteAccess,
 } from '@/lib/chef/cannabis-access-guards'
+
+export const metadata: Metadata = { title: 'Cannabis Unlock | ChefFlow' }
 
 export default async function CannabisUnlockPage() {
   const user = await requireCannabisInviteAccess()

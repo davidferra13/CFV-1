@@ -2,6 +2,7 @@
 // Replaces the old /cannabis hub as the primary cannabis entry point.
 // Access gated: requirePro + hasCannabisAccess.
 
+import type { Metadata } from 'next'
 import Link from 'next/link'
 import { redirect } from 'next/navigation'
 import { requirePro } from '@/lib/billing/require-pro'
@@ -11,6 +12,8 @@ import {
   CannabisPageWrapper,
 } from '@/components/cannabis/cannabis-portal-header'
 import { CannabisEventCard } from '@/components/cannabis/cannabis-event-card'
+
+export const metadata: Metadata = { title: 'Cannabis Events | ChefFlow' }
 
 export default async function EventsCannabisPage() {
   const user = await requirePro('cannabis-portal')

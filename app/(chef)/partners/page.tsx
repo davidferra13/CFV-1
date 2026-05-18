@@ -2,6 +2,7 @@
 // Shows partner name, type, status, referral count, revenue, and last activity
 
 import type { Metadata } from 'next'
+import Image from 'next/image'
 import Link from 'next/link'
 import { requireChef } from '@/lib/auth/get-user'
 import { getPartners } from '@/lib/partners/actions'
@@ -112,10 +113,13 @@ export default async function PartnersPage({
               <div className="flex justify-between items-start gap-4">
                 <div className="flex-1 min-w-0 flex items-start gap-3">
                   {partner.cover_image_url ? (
-                    // eslint-disable-next-line @next/next/no-img-element
-                    <img
+                    <Image
                       src={partner.cover_image_url}
                       alt=""
+                      width={40}
+                      height={40}
+                      sizes="40px"
+                      unoptimized
                       className="h-10 w-10 rounded object-cover flex-shrink-0 mt-0.5"
                     />
                   ) : (

@@ -1,3 +1,4 @@
+import type { Metadata } from 'next'
 import { notFound } from 'next/navigation'
 import Link from 'next/link'
 import { format } from 'date-fns'
@@ -23,6 +24,10 @@ function getExecutionTargetLabel(status: string): string {
   if (status === 'confirmed') return 'Start Service'
   if (status === 'in_progress') return 'Complete Service'
   return 'Next Step'
+}
+
+export async function generateMetadata() {
+  return { title: 'Execution Plan | ChefFlow' }
 }
 
 export default async function EventExecutionPage({

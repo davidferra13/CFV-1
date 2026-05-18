@@ -1,6 +1,14 @@
 import type { Metadata } from 'next'
 import Link from 'next/link'
 import { Suspense } from 'react'
+
+function buildIngredientsUrl(nextPage: number, search: string) {
+  const p = new URLSearchParams()
+  if (search) p.set('q', search)
+  if (nextPage > 1) p.set('page', String(nextPage))
+  const qs = p.toString()
+  return `/culinary/ingredients${qs ? `?${qs}` : ''}`
+}
 import { requireChef } from '@/lib/auth/get-user'
 import { getIngredients } from '@/lib/recipes/actions'
 import { getFlaggedPrices } from '@/lib/pricing/get-flagged-prices'
@@ -50,9 +58,24 @@ const CATEGORY_STYLES: Record<string, string> = {
   other: 'bg-stone-800 text-stone-400',
 }
 
-export default async function IngredientsPage() {
+export default async function IngredientsPage({
+  searchParams,
+}: {
+  searchParams: Promise<Record<string, string | string[] | undefined>>
+}) {
   await requireChef()
-  const { ingredients } = await getIngredients()
+  const params = await searchParams
+  const search = typeof params.q === 'string' ? params.q.trim() : ''
+  const currentPage = Math.max(
+    1,
+    parseInt(typeof params.page === 'string' ? params.page : '1', 10) || 1
+  )
+
+  const { ingredients, pagination } = await getIngredients({
+    search: search || undefined,
+    page: currentPage,
+    pageSize: 25,
+  })
   const flaggedPrices = await getFlaggedPrices()
 
   // Fetch stock levels for all ingredients
@@ -86,7 +109,7 @@ export default async function IngredientsPage() {
           <div className="flex items-center gap-3">
             <h1 className="text-3xl font-bold text-stone-100">Ingredients</h1>
             <span className="bg-stone-800 text-stone-400 text-sm px-2 py-0.5 rounded-full">
-              {ingredients.length}
+              {pagination.total}
             </span>
           </div>
           <div className="flex gap-2">
@@ -107,6 +130,35 @@ export default async function IngredientsPage() {
           <BridgeHealthDot />
         </div>
       </div>
+
+      {/* Search */}
+      <form
+        action="/culinary/ingredients"
+        method="get"
+        className="flex flex-wrap items-center gap-2"
+      >
+        <input
+          type="search"
+          name="q"
+          defaultValue={search}
+          placeholder="Search ingredients by name..."
+          className="w-full max-w-sm rounded-lg border border-stone-700 bg-stone-900 px-3 py-2 text-sm text-stone-200 placeholder:text-stone-500 focus:border-brand-500 focus:outline-none"
+        />
+        <button
+          type="submit"
+          className="rounded-lg bg-stone-800 px-3 py-2 text-sm text-stone-200 hover:bg-stone-700"
+        >
+          Search
+        </button>
+        {search && (
+          <Link
+            href="/culinary/ingredients"
+            className="text-sm text-stone-500 hover:text-stone-300"
+          >
+            Clear
+          </Link>
+        )}
+      </form>
 
       <PriceFlagBanner flagged={flaggedPrices} />
 
@@ -305,6 +357,35 @@ export default async function IngredientsPage() {
 
       {/* Price Watch List */}
       <PriceWatchList />
+
+      {/* Pagination */}
+      {pagination.totalPages > 1 && (
+        <div className="flex items-center justify-between border-t border-stone-800 pt-3">
+          <p className="text-xs text-stone-500">
+            Showing {(pagination.page - 1) * pagination.pageSize + 1}-
+            {Math.min(pagination.page * pagination.pageSize, pagination.total)} of{' '}
+            {pagination.total}
+          </p>
+          <div className="flex gap-2">
+            {pagination.page > 1 && (
+              <Link
+                href={buildIngredientsUrl(pagination.page - 1, search)}
+                className="rounded-lg bg-stone-800 px-3 py-1.5 text-xs text-stone-300 hover:bg-stone-700"
+              >
+                Previous
+              </Link>
+            )}
+            {pagination.hasMore && (
+              <Link
+                href={buildIngredientsUrl(pagination.page + 1, search)}
+                className="rounded-lg bg-stone-800 px-3 py-1.5 text-xs text-stone-300 hover:bg-stone-700"
+              >
+                Next
+              </Link>
+            )}
+          </div>
+        </div>
+      )}
     </div>
   )
 }

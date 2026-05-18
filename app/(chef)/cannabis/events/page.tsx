@@ -1,6 +1,7 @@
 // Cannabis Events - Chef Portal
 // All events where cannabis_preference = true, with their details.
 
+import type { Metadata } from 'next'
 import { getCannabisEvents } from '@/lib/chef/cannabis-actions'
 import {
   CannabisPortalHeader,
@@ -8,6 +9,8 @@ import {
 } from '@/components/cannabis/cannabis-portal-header'
 import { CannabisEventCard } from '@/components/cannabis/cannabis-event-card'
 import Link from 'next/link'
+
+export const metadata: Metadata = { title: 'Cannabis Events | ChefFlow' }
 
 export default async function CannabisEventsPage() {
   const events = await getCannabisEvents()

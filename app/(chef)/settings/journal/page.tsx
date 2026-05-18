@@ -1,7 +1,10 @@
+import type { Metadata } from 'next'
 import Link from 'next/link'
 import { requireChef } from '@/lib/auth/get-user'
 import { getChefJourneyInsights, getChefJourneys } from '@/lib/journey/actions'
 import { JourneyHub } from '@/components/journey/journey-hub'
+
+export const metadata: Metadata = { title: 'Journal | ChefFlow' }
 
 export default async function JournalPage() {
   await requireChef()

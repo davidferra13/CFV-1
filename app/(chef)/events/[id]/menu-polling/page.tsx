@@ -1,3 +1,4 @@
+import type { Metadata } from 'next'
 import Link from 'next/link'
 import { format } from 'date-fns'
 import { notFound } from 'next/navigation'
@@ -20,6 +21,10 @@ type CanonicalDishSummary = {
   dietary_tags: string[] | null
   allergen_flags: string[] | null
   linked_recipe_id: string | null
+}
+
+export async function generateMetadata() {
+  return { title: 'Menu Polling | ChefFlow' }
 }
 
 export default async function EventMenuPollingPage({ params }: { params: { id: string } }) {

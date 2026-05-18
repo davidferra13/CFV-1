@@ -1,3 +1,4 @@
+import type { Metadata } from 'next'
 import Link from 'next/link'
 import { notFound } from 'next/navigation'
 import { format } from 'date-fns'
@@ -5,6 +6,10 @@ import { requireChef } from '@/lib/auth/get-user'
 import { getEventOutcomeCapture } from '@/lib/events/post-event-learning-actions'
 import { PostEventLearningForm } from '@/components/events/post-event-learning-form'
 import { Button } from '@/components/ui/button'
+
+export async function generateMetadata() {
+  return { title: 'Event Outcome | ChefFlow' }
+}
 
 export default async function EventOutcomePage({ params }: { params: { id: string } }) {
   await requireChef()

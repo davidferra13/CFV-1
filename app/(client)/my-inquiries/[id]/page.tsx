@@ -15,6 +15,7 @@ import { ChevronLeft } from '@/components/ui/icons'
 import { EventJourneyStepper } from '@/components/events/event-journey-stepper'
 import { buildJourneySteps } from '@/lib/events/journey-steps'
 import { formatCurrency } from '@/lib/utils/currency'
+import { InquiryStatusWatcher } from '@/components/inquiries/inquiry-status-watcher'
 
 export const metadata: Metadata = {
   title: 'Inquiry Details',
@@ -120,6 +121,7 @@ export default async function ClientInquiryDetailPage({ params }: { params: { id
           </Link>
         </Card>
       )}
+      <InquiryStatusWatcher inquiryId={params.id} />
     </div>
   )
 }

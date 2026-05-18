@@ -72,23 +72,44 @@ function TierBadge({
   )
 }
 
-export default async function AdminChefListPage() {
+export default async function AdminChefListPage({
+  searchParams,
+}: {
+  searchParams: Promise<Record<string, string | string[] | undefined>>
+}) {
   try {
     await requireAdmin()
   } catch {
     redirect('/unauthorized')
   }
 
+  const params = await searchParams
+  const search = typeof params.q === 'string' ? params.q.trim() : ''
+  const page = Math.max(1, parseInt(typeof params.page === 'string' ? params.page : '1', 10) || 1)
+  const pageSize = 50
+  const offset = (page - 1) * pageSize
+
   let chefs: PlatformChefRow[] = []
+  let total = 0
   let error: string | null = null
   try {
-    chefs = await getPlatformChefList()
+    const result = await getPlatformChefList({ limit: pageSize, offset, search })
+    chefs = result.items
+    total = result.total
   } catch (err) {
     error = 'Failed to load chef list'
     console.error('[Admin] Chef list error:', err)
   }
 
   const totalGMV = chefs.reduce((s, c) => s + c.gmvCents, 0)
+
+  function buildUrl(nextPage: number) {
+    const p = new URLSearchParams()
+    if (search) p.set('q', search)
+    if (nextPage > 1) p.set('page', String(nextPage))
+    const qs = p.toString()
+    return `/admin/users${qs ? `?${qs}` : ''}`
+  }
 
   return (
     <div className="space-y-5">
@@ -99,11 +120,31 @@ export default async function AdminChefListPage() {
         <div>
           <h1 className="text-xl font-bold text-stone-100">Chefs</h1>
           <p className="text-sm text-stone-500">
-            {chefs.length} chef account{chefs.length !== 1 ? 's' : ''} · {formatCents(totalGMV)}{' '}
-            total GMV
+            {total} chef account{total !== 1 ? 's' : ''} · {formatCents(totalGMV)} total GMV
           </p>
         </div>
       </div>
+
+      <form action="/admin/users" method="get" className="flex flex-wrap items-center gap-2">
+        <input
+          type="search"
+          name="q"
+          defaultValue={search}
+          placeholder="Search chefs by name or email..."
+          className="w-full max-w-sm rounded-lg border border-stone-700 bg-stone-900 px-3 py-2 text-sm text-stone-200 placeholder:text-stone-500 focus:border-brand-500 focus:outline-none"
+        />
+        <button
+          type="submit"
+          className="rounded-lg bg-stone-800 px-3 py-2 text-sm text-stone-200 hover:bg-stone-700"
+        >
+          Search
+        </button>
+        {search && (
+          <Link href="/admin/users" className="text-sm text-stone-500 hover:text-stone-300">
+            Clear
+          </Link>
+        )}
+      </form>
 
       {error && (
         <div className="bg-red-950 border border-red-800 rounded-lg px-4 py-3 text-sm text-red-700 flex items-center gap-2">
@@ -114,7 +155,9 @@ export default async function AdminChefListPage() {
 
       <div className="bg-stone-900 rounded-xl border border-stone-700 overflow-hidden">
         {chefs.length === 0 && !error ? (
-          <div className="py-12 text-center text-slate-400 text-sm">No chefs found.</div>
+          <div className="py-12 text-center text-slate-400 text-sm">
+            No chefs found{search ? ` matching "${search}"` : ''}.
+          </div>
         ) : (
           <div className="overflow-x-auto">
             <table className="w-full text-sm">
@@ -150,7 +193,7 @@ export default async function AdminChefListPage() {
                   <th className="px-4 py-3" />
                 </tr>
               </thead>
-              <tbody className="divide-y divide-slate-100">
+              <tbody className="divide-y divide-stone-800">
                 {chefs.map((chef) => (
                   <tr key={chef.id} className="hover:bg-stone-800 transition-colors">
                     <td className="px-4 py-3 font-medium text-stone-100">
@@ -202,6 +245,31 @@ export default async function AdminChefListPage() {
                 ))}
               </tbody>
             </table>
+          </div>
+        )}
+        {total > pageSize && (
+          <div className="flex items-center justify-between border-t border-stone-800 px-4 py-3">
+            <p className="text-xs text-stone-500">
+              Showing {offset + 1}-{Math.min(offset + pageSize, total)} of {total}
+            </p>
+            <div className="flex gap-2">
+              {page > 1 && (
+                <Link
+                  href={buildUrl(page - 1)}
+                  className="rounded-lg bg-stone-800 px-3 py-1.5 text-xs text-stone-300 hover:bg-stone-700"
+                >
+                  Previous
+                </Link>
+              )}
+              {offset + pageSize < total && (
+                <Link
+                  href={buildUrl(page + 1)}
+                  className="rounded-lg bg-stone-800 px-3 py-1.5 text-xs text-stone-300 hover:bg-stone-700"
+                >
+                  Next
+                </Link>
+              )}
+            </div>
           </div>
         )}
       </div>

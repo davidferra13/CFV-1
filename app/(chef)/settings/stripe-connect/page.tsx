@@ -1,9 +1,12 @@
 // Stripe Connect Settings Page
 // Shows current connection status, Connect CTA, and payout history.
 
+import type { Metadata } from 'next'
 import { requireChef } from '@/lib/auth/get-user'
 import { getConnectAccountStatus } from '@/lib/stripe/connect'
 import { StripeConnectClient } from './stripe-connect-client'
+
+export const metadata: Metadata = { title: 'Stripe Connect | ChefFlow' }
 
 export default async function StripeConnectPage() {
   await requireChef()

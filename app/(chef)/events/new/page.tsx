@@ -1,6 +1,7 @@
 // Chef New Event Page
 // Form to create a new event
 
+import type { Metadata } from 'next'
 import { requireChef } from '@/lib/auth/get-user'
 import { getClients } from '@/lib/clients/actions'
 import { getPartnersWithLocations } from '@/lib/partners/actions'
@@ -8,6 +9,8 @@ import { getDepositDefaults } from '@/lib/automations/settings-actions'
 import { EventForm } from '@/components/events/event-form'
 import { getCachedChefArchetype } from '@/lib/chef/layout-data-cache'
 import { getArchetypeCopy } from '@/lib/archetypes/ui-copy'
+
+export const metadata: Metadata = { title: 'New Event | ChefFlow' }
 
 export default async function NewEventPage({
   searchParams,

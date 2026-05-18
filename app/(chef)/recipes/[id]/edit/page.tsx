@@ -1,10 +1,15 @@
 // Edit Recipe Page
 // Pre-populated form for editing an existing recipe
 
+import type { Metadata } from 'next'
 import { notFound } from 'next/navigation'
 import { requireChef } from '@/lib/auth/get-user'
 import { getRecipeById } from '@/lib/recipes/actions'
 import { EditRecipeClient } from './edit-recipe-client'
+
+export async function generateMetadata() {
+  return { title: 'Edit Recipe | ChefFlow' }
+}
 
 export default async function EditRecipePage({ params }: { params: { id: string } }) {
   const user = await requireChef()

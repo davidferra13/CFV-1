@@ -1,6 +1,7 @@
 // Client Events Dashboard - Registry-driven widget surface
 
 import { Suspense } from 'react'
+import dynamic from 'next/dynamic'
 import type { Metadata } from 'next'
 import Link from 'next/link'
 import { format } from 'date-fns'
@@ -21,25 +22,49 @@ import { Card, CardContent } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
 import { MessageChefButton } from '@/components/chat/message-chef-button'
-import { RemyClientChat } from '@/components/ai/remy-client-chat'
 import { ActivityTracker } from '@/components/activity/activity-tracker'
 import { ClientEventsRefresher } from '@/components/client/client-events-refresher'
 import { TrackedActivityLink } from '@/components/activity/tracked-activity-link'
-import { PostEventBanner } from '@/components/client/post-event-banner'
-import { BetaOnboardingChecklist } from '@/components/beta/beta-onboarding-checklist'
 import { getMyBetaChecklist, syncBetaChecklistProgress } from '@/lib/beta/onboarding-actions'
 import {
   ClientUniversalRail,
   ClientUniversalRailSkeleton,
 } from '@/components/client-dashboard/client-universal-rail'
 import { ClientDashboardWidgetShell } from '@/components/client-dashboard/widget-shell'
-import { ClientDashboardWidgetGrid } from '@/components/client-dashboard/widget-grid'
 import { ClientDashboardEmptyState } from '@/components/client-dashboard/empty-state'
 import {
   ClientDashboardCollapseControls,
   ClientDashboardCollapseProvider,
 } from '@/components/client-dashboard/collapse-controls'
 import { ClientCollapsibleWidget } from '@/components/client-dashboard/collapsible-widget'
+
+// -- Heavy widgets: dynamic imports with loading skeletons --
+
+function WidgetSkeleton() {
+  return <div className="h-32 rounded-xl loading-bone loading-bone-muted" />
+}
+
+const RemyClientChat = dynamic(
+  () => import('@/components/ai/remy-client-chat').then((m) => m.RemyClientChat),
+  { loading: () => <WidgetSkeleton />, ssr: false }
+)
+
+const BetaOnboardingChecklist = dynamic(
+  () =>
+    import('@/components/beta/beta-onboarding-checklist').then((m) => m.BetaOnboardingChecklist),
+  { loading: () => <WidgetSkeleton />, ssr: false }
+)
+
+const PostEventBanner = dynamic(
+  () => import('@/components/client/post-event-banner').then((m) => m.PostEventBanner),
+  { loading: () => <WidgetSkeleton />, ssr: false }
+)
+
+const ClientDashboardWidgetGrid = dynamic(
+  () =>
+    import('@/components/client-dashboard/widget-grid').then((m) => m.ClientDashboardWidgetGrid),
+  { loading: () => <WidgetSkeleton /> }
+)
 
 export const metadata: Metadata = { title: 'My Events' }
 
@@ -360,17 +385,15 @@ function ComingSoonWidget({ id }: { id: ClientDashboardWidgetId }) {
 }
 
 export default async function MyEventsPage() {
-  let data: Awaited<ReturnType<typeof getClientDashboardData>>
-  let preferences: Awaited<ReturnType<typeof getClientDashboardPreferences>>
-  let betaData: any
-  try {
-    ;[data, preferences, betaData] = await Promise.all([
-      getClientDashboardData(),
-      getClientDashboardPreferences(),
-      syncBetaChecklistProgress().catch(() => null),
-    ])
-  } catch (err) {
-    console.error('[MyEventsPage] Failed to load dashboard:', err)
+  const [dataResult, preferencesResult, betaDataResult] = await Promise.allSettled([
+    getClientDashboardData(),
+    getClientDashboardPreferences(),
+    syncBetaChecklistProgress(),
+  ])
+
+  // Dashboard data is critical; if it fails, show error state
+  if (dataResult.status !== 'fulfilled') {
+    console.error('[MyEventsPage] Failed to load dashboard data:', dataResult.reason)
     return (
       <div className="space-y-6">
         <div>
@@ -390,6 +413,23 @@ export default async function MyEventsPage() {
         </div>
       </div>
     )
+  }
+
+  const data = dataResult.value
+  const preferences =
+    preferencesResult.status === 'fulfilled'
+      ? preferencesResult.value
+      : { dashboard_widgets: [] as Array<{ id: ClientDashboardWidgetId; enabled: boolean }> }
+  const _betaData = betaDataResult.status === 'fulfilled' ? betaDataResult.value : null
+
+  if (preferencesResult.status !== 'fulfilled') {
+    console.error(
+      '[MyEventsPage] Preferences load failed, using defaults:',
+      preferencesResult.reason
+    )
+  }
+  if (betaDataResult.status !== 'fulfilled') {
+    console.error('[MyEventsPage] Beta sync failed, skipping:', betaDataResult.reason)
   }
 
   // Also fetch full beta checklist info for the component

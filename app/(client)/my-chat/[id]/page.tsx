@@ -3,7 +3,6 @@
 import type { Metadata } from 'next'
 import { requireClient } from '@/lib/auth/get-user'
 
-export const metadata: Metadata = { title: 'Chat' }
 import { redirect } from 'next/navigation'
 import {
   getConversation,
@@ -13,6 +12,8 @@ import {
 } from '@/lib/chat/actions'
 import { ChatView } from '@/components/chat/chat-view'
 import { ActivityTracker } from '@/components/activity/activity-tracker'
+
+export const metadata: Metadata = { title: 'Chat' }
 
 export default async function ClientChatViewPage({ params }: { params: Promise<{ id: string }> }) {
   const user = await requireClient()

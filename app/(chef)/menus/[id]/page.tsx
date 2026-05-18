@@ -1,5 +1,6 @@
 // Menu Detail - Protected by layout
 
+import type { Metadata } from 'next'
 import { requireChef } from '@/lib/auth/get-user'
 import { getMenuById, getMenuCostSummaries, getMenuEvent } from '@/lib/menus/actions'
 import { notFound } from 'next/navigation'
@@ -24,6 +25,14 @@ import Link from 'next/link'
 
 type Props = {
   params: Promise<{ id: string }>
+}
+
+function AuditBadgeSkeleton() {
+  return <div className="h-6 w-36 animate-pulse rounded-full bg-stone-800" />
+}
+
+export async function generateMetadata() {
+  return { title: 'Menu Details | ChefFlow' }
 }
 
 export default async function MenuDetailPage({ params }: Props) {
@@ -153,7 +162,7 @@ export default async function MenuDetailPage({ params }: Props) {
         <MenuPdfButton menuId={id} menuName={menu.name} />
       </div>
       <div className="px-1">
-        <Suspense fallback={null}>
+        <Suspense fallback={<AuditBadgeSkeleton />}>
           <AuditSummaryBadge entityType="menu" entityId={id} />
         </Suspense>
       </div>

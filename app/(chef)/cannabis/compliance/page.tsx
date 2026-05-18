@@ -1,9 +1,12 @@
+import type { Metadata } from 'next'
 import Link from 'next/link'
 import {
   CannabisPortalHeader,
   CannabisPageWrapper,
 } from '@/components/cannabis/cannabis-portal-header'
 import { getCannabisEvents } from '@/lib/chef/cannabis-actions'
+
+export const metadata: Metadata = { title: 'Cannabis Compliance | ChefFlow' }
 
 export default async function CannabisCompliancePage() {
   const events = await getCannabisEvents()

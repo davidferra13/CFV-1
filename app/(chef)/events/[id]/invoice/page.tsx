@@ -3,6 +3,7 @@
 // Invoice is NOT a separate table - it's derived from event + ledger_entries + chefs.
 // Screen-only view (not a PDF). Chef can share the URL or use as a reference.
 
+import type { Metadata } from 'next'
 import { notFound } from 'next/navigation'
 import Link from 'next/link'
 import { requireChef } from '@/lib/auth/get-user'
@@ -12,6 +13,10 @@ import { InvoiceView } from '@/components/events/invoice-view'
 import { InvoiceSendPanel } from '@/components/events/invoice-send-panel'
 import { Button } from '@/components/ui/button'
 import { PrintButton } from '@/components/events/print-button'
+
+export async function generateMetadata() {
+  return { title: 'Event Invoice | ChefFlow' }
+}
 
 export default async function ChefInvoicePage({ params }: { params: { id: string } }) {
   await requireChef()

@@ -1,6 +1,9 @@
+import type { Metadata } from 'next'
 import { getPlatformConnectionStatuses } from '@/lib/integrations/platform-connections'
 import { PlatformConnectionCard } from '@/components/settings/platform-connection-card'
 import { requireChef } from '@/lib/auth/get-user'
+
+export const metadata: Metadata = { title: 'Platform Connections | ChefFlow' }
 
 export default async function PlatformConnectionsPage() {
   await requireChef()

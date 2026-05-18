@@ -1,3 +1,4 @@
+import type { Metadata } from 'next'
 import { requireChef } from '@/lib/auth/get-user'
 import { getAccountLocation } from '@/lib/location/account-location'
 import { getDirectoryListings, type DirectoryListingSummary } from '@/lib/discover/actions'
@@ -109,6 +110,8 @@ function SectionBlock({ section }: { section: SectionData }) {
     </section>
   )
 }
+
+export const metadata: Metadata = { title: 'Local Explore | ChefFlow' }
 
 export default async function ExploreLocalPage() {
   const user = await requireChef()

@@ -1,3 +1,4 @@
+import type { Metadata } from 'next'
 import Link from 'next/link'
 import { format } from 'date-fns'
 import { getEvents } from '@/lib/events/actions'
@@ -210,6 +211,8 @@ function formatSnapshotHint(snapshotCount: number, latestSnapshotAt: string | nu
 function normalizeStatusLabel(status: string): string {
   return status.replace(/_/g, ' ')
 }
+
+export const metadata: Metadata = { title: 'Documents | ChefFlow' }
 
 export default async function DocumentsIndexPage({
   searchParams,

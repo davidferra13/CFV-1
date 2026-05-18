@@ -1,8 +1,11 @@
 // Change Password Page
 // Server component that verifies chef access, renders client form
 
+import type { Metadata } from 'next'
 import { requireChef } from '@/lib/auth/get-user'
 import { ChangePasswordForm } from '@/components/settings/change-password-form'
+
+export const metadata: Metadata = { title: 'Change Password | ChefFlow' }
 
 export default async function ChangePasswordPage() {
   await requireChef()

@@ -1,9 +1,12 @@
+import type { Metadata } from 'next'
 import { requireChef } from '@/lib/auth/get-user'
 import { getSocialPlannerData } from '@/lib/social/actions'
 import { SocialAnnualCalendar } from '@/components/social/social-annual-calendar'
 import { SocialQueueSummaryBar } from '@/components/social/social-queue-summary-bar'
 import { Button } from '@/components/ui/button'
 import Link from 'next/link'
+
+export const metadata: Metadata = { title: 'Social Media | ChefFlow' }
 
 export default async function SocialPlannerPage() {
   await requireChef()

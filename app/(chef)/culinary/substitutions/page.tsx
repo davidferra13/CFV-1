@@ -1,8 +1,11 @@
+import type { Metadata } from 'next'
 import { requireChef } from '@/lib/auth/get-user'
 import { getAllSubstitutions } from '@/lib/ingredients/substitution-actions'
 import { SubstitutionLookup } from '@/components/culinary/substitution-lookup'
 import { SubstitutionManager } from '@/components/culinary/substitution-manager'
 import Link from 'next/link'
+
+export const metadata: Metadata = { title: 'Substitutions | ChefFlow' }
 
 export default async function SubstitutionsPage() {
   await requireChef()

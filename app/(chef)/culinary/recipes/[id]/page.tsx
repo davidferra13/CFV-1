@@ -1,3 +1,4 @@
+import type { Metadata } from 'next'
 import { notFound } from 'next/navigation'
 import Image from 'next/image'
 import { RecipeScalingPanel } from '@/components/ai/recipe-scaling-panel'
@@ -134,6 +135,10 @@ function unitMismatch(
   const pc = unitCategory(priceUnit)
   if (!rc || !pc) return false
   return rc !== pc
+}
+
+export async function generateMetadata() {
+  return { title: 'Recipe Details | ChefFlow' }
 }
 
 export default async function ChefRecipeDetailPage({ params }: { params: { id: string } }) {

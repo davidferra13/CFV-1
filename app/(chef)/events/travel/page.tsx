@@ -1,6 +1,7 @@
 // Events Travel Planning Page
 // Unified view of all travel legs across all events, next 90 days.
 
+import type { Metadata } from 'next'
 import Link from 'next/link'
 import { requireChef } from '@/lib/auth/get-user'
 import { requireFocusAccess } from '@/lib/billing/require-focus-access'
@@ -127,6 +128,8 @@ function LegRow({ leg }: { leg: TravelLegWithIngredients }) {
 }
 
 // ─── Page ─────────────────────────────────────────────────────────────────────
+
+export const metadata: Metadata = { title: 'Event Travel | ChefFlow' }
 
 export default async function EventsTravelPage() {
   await requireChef()

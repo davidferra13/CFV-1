@@ -1,5 +1,8 @@
+import type { Metadata } from 'next'
 import { MenuCostEstimator } from '@/components/menus/menu-cost-estimator'
 import { Calculator } from '@/components/ui/icons'
+
+export const metadata: Metadata = { title: 'Menu Estimate | ChefFlow' }
 
 export default function MenuEstimatePage() {
   return (

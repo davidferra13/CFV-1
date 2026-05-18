@@ -1,10 +1,13 @@
 // New Contract - Server Component
 // Loads clients, templates, and events for the standalone contract creation form.
 
+import type { Metadata } from 'next'
 import { getClients } from '@/lib/clients/actions'
 import { listContractTemplates } from '@/lib/contracts/actions'
 import { getEvents } from '@/lib/events/actions'
 import { NewContractForm } from '@/components/contracts/new-contract-form'
+
+export const metadata: Metadata = { title: 'New Contract | ChefFlow' }
 
 export default async function NewContractPage() {
   let clients: any[] = []

@@ -3,6 +3,7 @@
 // Check-off state is localStorage-only (fast, works offline under time pressure).
 // "Mark Car Packed" button writes back to the server when everything is done.
 
+import type { Metadata } from 'next'
 import { notFound } from 'next/navigation'
 import Link from 'next/link'
 import { requireChef } from '@/lib/auth/get-user'
@@ -39,6 +40,10 @@ async function fetchEventWeather(eventId: string, tenantId: string): Promise<Eve
   } catch {
     return null
   }
+}
+
+export async function generateMetadata() {
+  return { title: 'Pack List | ChefFlow' }
 }
 
 export default async function PackPage({

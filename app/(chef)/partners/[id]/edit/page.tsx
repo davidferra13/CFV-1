@@ -1,9 +1,14 @@
 // Edit Partner Page
 
+import type { Metadata } from 'next'
 import { requireChef } from '@/lib/auth/get-user'
 import { getPartnerById } from '@/lib/partners/actions'
 import { notFound } from 'next/navigation'
 import { PartnerForm } from '@/components/partners/partner-form'
+
+export async function generateMetadata() {
+  return { title: 'Edit Partner | ChefFlow' }
+}
 
 export default async function EditPartnerPage({ params }: { params: { id: string } }) {
   await requireChef()

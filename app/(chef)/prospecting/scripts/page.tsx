@@ -1,6 +1,9 @@
+import type { Metadata } from 'next'
 import { requireAdmin } from '@/lib/auth/admin'
 import { getCallScripts } from '@/lib/prospecting/script-actions'
 import { ScriptsPageClient } from './scripts-client'
+
+export const metadata: Metadata = { title: 'Prospecting Scripts | ChefFlow' }
 
 export default async function ProspectingScriptsPage() {
   await requireAdmin()

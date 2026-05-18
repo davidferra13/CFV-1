@@ -1,6 +1,9 @@
+import type { Metadata } from 'next'
 import { requireChef } from '@/lib/auth/get-user'
 import { getCurrentMomentum } from '@/lib/professional/momentum-actions'
 import { MomentumDashboard } from '@/components/professional/momentum-dashboard'
+
+export const metadata: Metadata = { title: 'Professional Momentum | ChefFlow' }
 
 export default async function MomentumPage() {
   const chef = await requireChef()

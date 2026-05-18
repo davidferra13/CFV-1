@@ -1,6 +1,9 @@
+import type { Metadata } from 'next'
 import { requireChef } from '@/lib/auth/get-user'
 import { getSocialMediaAssets, getSocialPostAssetLinks } from '@/lib/social/actions'
 import { SocialVaultBrowser } from '@/components/social/social-vault-browser'
+
+export const metadata: Metadata = { title: 'Content Vault | ChefFlow' }
 
 export default async function SocialVaultPage() {
   await requireChef()

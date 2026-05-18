@@ -5,7 +5,6 @@
 import type { Metadata } from 'next'
 import { requireClient } from '@/lib/auth/get-user'
 
-export const metadata: Metadata = { title: 'Contract' }
 import { getClientEventContract, recordClientView } from '@/lib/contracts/actions'
 import { getClientEventById } from '@/lib/events/client-actions'
 import { notFound } from 'next/navigation'
@@ -13,6 +12,8 @@ import { ContractSigningClient } from './contract-signing-client'
 import { format } from 'date-fns'
 import { Alert } from '@/components/ui/alert'
 import { redirect } from 'next/navigation'
+
+export const metadata: Metadata = { title: 'Contract' }
 
 export default async function ContractSigningPage({
   params,

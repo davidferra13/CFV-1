@@ -1,4 +1,7 @@
+import type { Metadata } from 'next'
 import ClaimFormClient from './claim-form-client'
+
+export const metadata: Metadata = { title: 'New Compliance Claim | ChefFlow' }
 
 export default function NewInsuranceClaimPage() {
   return (

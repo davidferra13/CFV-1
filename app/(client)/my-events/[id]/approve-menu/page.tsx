@@ -5,10 +5,11 @@
 import type { Metadata } from 'next'
 import { requireClient } from '@/lib/auth/get-user'
 
-export const metadata: Metadata = { title: 'Approve Menu' }
 import { getClientMenuApprovalRequest } from '@/lib/events/menu-approval-actions'
 import { notFound, redirect } from 'next/navigation'
 import { MenuApprovalClient } from './menu-approval-client'
+
+export const metadata: Metadata = { title: 'Approve Menu' }
 
 export default async function MenuApprovalPage({
   params,

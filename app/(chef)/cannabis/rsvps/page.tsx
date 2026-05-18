@@ -1,9 +1,12 @@
+import type { Metadata } from 'next'
 import { CannabisPageWrapper } from '@/components/cannabis/cannabis-portal-header'
 import { getCannabisRSVPDashboardData } from '@/lib/chef/cannabis-actions'
 import { getCannabisGuestIntelligence } from '@/lib/cannabis/client-intelligence'
 import { requireChef } from '@/lib/auth/get-user'
 import { CannabisRsvpsDashboardClient } from './rsvps-dashboard-client'
 import type { CannabisGuestIntelligence } from '@/lib/cannabis/client-intelligence'
+
+export const metadata: Metadata = { title: 'Cannabis RSVPs | ChefFlow' }
 
 export default async function CannabisRsvpsPage({
   searchParams,

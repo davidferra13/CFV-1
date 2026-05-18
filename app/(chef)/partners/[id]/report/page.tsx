@@ -1,6 +1,7 @@
 // Partner Report Page - Print-optimized monthly report
 // Shows referral performance, events, and location breakdown
 
+import type { Metadata } from 'next'
 import { requireChef } from '@/lib/auth/get-user'
 import { getPartnerReportData } from '@/lib/partners/report'
 import { notFound } from 'next/navigation'
@@ -22,6 +23,10 @@ const TYPE_LABELS: Record<string, string> = {
   individual: 'Individual',
   venue: 'Venue',
   other: 'Other',
+}
+
+export async function generateMetadata() {
+  return { title: 'Partner Report | ChefFlow' }
 }
 
 export default async function PartnerReportPage({ params }: { params: { id: string } }) {

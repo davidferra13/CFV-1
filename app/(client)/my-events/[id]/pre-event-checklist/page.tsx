@@ -3,10 +3,11 @@
 import type { Metadata } from 'next'
 import { requireClient } from '@/lib/auth/get-user'
 
-export const metadata: Metadata = { title: 'Pre-Event Checklist' }
 import { getPreEventChecklistData } from '@/lib/events/pre-event-checklist-actions'
 import { PreEventChecklistClient } from '@/components/events/pre-event-checklist-client'
 import { notFound, redirect } from 'next/navigation'
+
+export const metadata: Metadata = { title: 'Pre-Event Checklist' }
 
 export default async function PreEventChecklistPage({
   params,

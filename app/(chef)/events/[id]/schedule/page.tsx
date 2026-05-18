@@ -1,6 +1,7 @@
 // Event Schedule Page
 // Full day-of timeline, DOP status, reverse prep timeline, and route plan for a single event.
 
+import type { Metadata } from 'next'
 import { notFound } from 'next/navigation'
 import Link from 'next/link'
 import { requireChef } from '@/lib/auth/get-user'
@@ -18,6 +19,10 @@ import { ServiceSimulationReturnBanner } from '@/components/events/service-simul
 import { loadEventServiceSimulationPanelState } from '@/lib/service-simulation/state'
 import { sanitizeReturnTo } from '@/lib/navigation/return-to'
 import { format } from 'date-fns'
+
+export async function generateMetadata() {
+  return { title: 'Event Schedule | ChefFlow' }
+}
 
 export default async function EventSchedulePage({
   params,

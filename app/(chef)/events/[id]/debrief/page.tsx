@@ -2,6 +2,7 @@
 // Guided fill-in-the-blanks flow after a service is completed.
 // Only available for events with status === 'completed'.
 
+import type { Metadata } from 'next'
 import { notFound } from 'next/navigation'
 import Link from 'next/link'
 import { requireChef } from '@/lib/auth/get-user'
@@ -10,6 +11,10 @@ import { getEventPhotosForChef } from '@/lib/events/photo-actions'
 import { EventDebriefClient } from '@/components/events/event-debrief-client'
 import { Button } from '@/components/ui/button'
 import { format } from 'date-fns'
+
+export async function generateMetadata() {
+  return { title: 'Event Debrief | ChefFlow' }
+}
 
 export default async function EventDebriefPage({ params }: { params: { id: string } }) {
   await requireChef()

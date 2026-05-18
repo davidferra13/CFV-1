@@ -1,3 +1,4 @@
+import Image from 'next/image'
 import { requireChef } from '@/lib/auth/get-user'
 import { getDiscoverableChefs, type DirectoryChef } from '@/lib/directory/actions'
 import Link from 'next/link'
@@ -92,9 +93,13 @@ export default async function ExploreBookPage() {
                   {/* Header: photo + name */}
                   <div className="flex items-start gap-4 mb-4">
                     {chef.profile_image_url ? (
-                      <img
+                      <Image
                         src={chef.profile_image_url}
                         alt={chef.display_name}
+                        width={56}
+                        height={56}
+                        sizes="56px"
+                        unoptimized
                         className="h-14 w-14 rounded-full object-cover border border-stone-700 shrink-0"
                       />
                     ) : (

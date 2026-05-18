@@ -7,6 +7,8 @@ import { requireClient } from '@/lib/auth/get-user'
 import { getClientHubGroups, getClientProfileToken } from '@/lib/hub/client-hub-actions'
 import { getMyFriends, getPendingFriendRequests } from '@/lib/hub/friend-actions'
 import { getHubTotalUnreadCount } from '@/lib/hub/notification-actions'
+import { getClientDashboardData } from '@/lib/client-dashboard/actions'
+import type { ClientWorkItem } from '@/lib/client-work-graph/types'
 import { HubGroupCard } from '@/components/hub/hub-group-card'
 import { Button } from '@/components/ui/button'
 import { Alert } from '@/components/ui/alert'
@@ -27,17 +29,21 @@ export default async function MyHubPage() {
   await requireClient()
   const profileToken = await getClientProfileToken()
 
-  const [groupsResult, friendsResult, pendingResult, unreadResult] = await Promise.allSettled([
-    getClientHubGroups(),
-    getMyFriends(),
-    getPendingFriendRequests(),
-    getHubTotalUnreadCount(profileToken),
-  ])
+  const [groupsResult, friendsResult, pendingResult, unreadResult, dashboardResult] =
+    await Promise.allSettled([
+      getClientHubGroups(),
+      getMyFriends(),
+      getPendingFriendRequests(),
+      getHubTotalUnreadCount(profileToken),
+      getClientDashboardData(),
+    ])
 
   const groups = groupsResult.status === 'fulfilled' ? groupsResult.value : []
   const friends = friendsResult.status === 'fulfilled' ? friendsResult.value : []
   const pendingRequests = pendingResult.status === 'fulfilled' ? pendingResult.value : []
   const totalUnread = unreadResult.status === 'fulfilled' ? unreadResult.value : 0
+  const dashboardData = dashboardResult.status === 'fulfilled' ? dashboardResult.value : null
+  const actionItems: ClientWorkItem[] = dashboardData?.workGraph?.items ?? []
   const hasLoadError =
     groupsResult.status === 'rejected' ||
     friendsResult.status === 'rejected' ||
@@ -126,6 +132,38 @@ export default async function MyHubPage() {
             <Share2 className="mx-auto h-6 w-6 text-brand-400" />
             <p className="mt-1 text-xs text-stone-400">Share a Chef</p>
           </Link>
+        </div>
+      )}
+
+      {/* Needs Your Attention */}
+      {actionItems.length > 0 && (
+        <div className="mb-6">
+          <h2 className="mb-3 text-lg font-semibold text-stone-200">Needs Your Attention</h2>
+          <div className="space-y-2">
+            {actionItems.slice(0, 3).map((item) => (
+              <Link
+                key={item.id}
+                href={item.href}
+                className="flex items-center justify-between rounded-lg border border-stone-800 bg-stone-900/60 p-3 hover:border-stone-600 transition-colors"
+              >
+                <div className="min-w-0">
+                  <p className="text-sm font-medium text-stone-200 truncate">{item.title}</p>
+                  <p className="text-xs text-stone-500 truncate">{item.detail}</p>
+                </div>
+                <span className="ml-3 shrink-0 rounded-lg bg-brand-600 px-3.5 py-2.5 text-sm font-medium text-white">
+                  {item.ctaLabel}
+                </span>
+              </Link>
+            ))}
+          </div>
+          {actionItems.length > 3 && (
+            <Link
+              href="/my-events"
+              className="mt-2 block text-center text-sm text-brand-400 hover:text-brand-300"
+            >
+              View all {actionItems.length} items
+            </Link>
+          )}
         </div>
       )}
 

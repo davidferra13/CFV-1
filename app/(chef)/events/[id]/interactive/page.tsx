@@ -5,6 +5,7 @@
 // to a normalized InteractiveDocSpec via the converter in lib/documents/interactive-specs.ts.
 // Packing list is intentionally excluded - it has its own specialized page at /events/[id]/pack.
 
+import type { Metadata } from 'next'
 import { notFound } from 'next/navigation'
 import Link from 'next/link'
 import { requireChef } from '@/lib/auth/get-user'
@@ -92,6 +93,10 @@ async function resolveSpec(eventId: string, type: string): Promise<InteractiveDo
 }
 
 // ─── Page ─────────────────────────────────────────────────────────────────────
+
+export async function generateMetadata() {
+  return { title: 'Interactive Menu | ChefFlow' }
+}
 
 export default async function InteractivePage({
   params,

@@ -1,3 +1,4 @@
+import type { Metadata } from 'next'
 import { notFound } from 'next/navigation'
 import Link from 'next/link'
 import { format } from 'date-fns'
@@ -10,6 +11,10 @@ import { GroceryQuotePanel } from '@/components/events/grocery-quote-panel'
 import { GroceryListView } from '@/components/grocery/grocery-list-view'
 import { VendorComparisonPanel } from '@/components/events/vendor-comparison-panel'
 import { Button } from '@/components/ui/button'
+
+export async function generateMetadata() {
+  return { title: 'Procurement | ChefFlow' }
+}
 
 export default async function EventProcurementPage({ params }: { params: { id: string } }) {
   await requireChef()

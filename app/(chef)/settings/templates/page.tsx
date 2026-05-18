@@ -1,11 +1,14 @@
 // Response Templates Management Page
 // Chef can create, edit, delete, and manage response templates for quick communication logging
 
+import type { Metadata } from 'next'
 import { requireChef } from '@/lib/auth/get-user'
 import { getResponseTemplates } from '@/lib/messages/actions'
 import { TemplateManager } from '@/components/messages/template-manager'
 import Link from 'next/link'
 import { Button } from '@/components/ui/button'
+
+export const metadata: Metadata = { title: 'Templates | ChefFlow' }
 
 export default async function TemplatesPage() {
   await requireChef()

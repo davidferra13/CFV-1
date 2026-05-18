@@ -1,6 +1,9 @@
+import type { Metadata } from 'next'
 import { requireChef } from '@/lib/auth/get-user'
 import { createServerClient } from '@/lib/db/server'
 import { RemovalRequestList } from '@/components/protection/removal-request-list'
+
+export const metadata: Metadata = { title: 'Portfolio Removal | ChefFlow' }
 
 export default async function PortfolioRemovalPage() {
   const chef = await requireChef()

@@ -1,5 +1,8 @@
+import type { Metadata } from 'next'
 import { requireChef } from '@/lib/auth/get-user'
 import { BreakEvenCalculator } from '@/components/finance/break-even-calculator'
+
+export const metadata: Metadata = { title: 'Break Even Analysis | ChefFlow' }
 
 export default async function BreakEvenPage() {
   await requireChef()

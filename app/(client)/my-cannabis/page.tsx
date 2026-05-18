@@ -1,11 +1,12 @@
 import type { Metadata } from 'next'
 import { requireClient } from '@/lib/auth/get-user'
 
-export const metadata: Metadata = { title: 'Cannabis Preferences' }
 import { getClientCannabisAccessStatus } from '@/lib/cannabis/client-portal-guards'
 import { getClientCannabisPortalData } from '@/lib/cannabis/client-portal-actions'
 import { CannabisPortalDashboard } from './cannabis-portal-dashboard'
 import { redirect } from 'next/navigation'
+
+export const metadata: Metadata = { title: 'Cannabis Preferences' }
 
 export default async function ClientCannabisPage() {
   const user = await requireClient()

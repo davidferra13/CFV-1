@@ -2,10 +2,13 @@
 // Only channel + client name required. Everything else optional.
 // The chef is logging this between tasks - friction kills adoption.
 
+import type { Metadata } from 'next'
 import { requireChef } from '@/lib/auth/get-user'
 import { getClients } from '@/lib/clients/actions'
 import { getPartners, getPartnerLocations } from '@/lib/partners/actions'
 import { InquiryForm } from '@/components/inquiries/inquiry-form'
+
+export const metadata: Metadata = { title: 'New Inquiry | ChefFlow' }
 
 export default async function NewInquiryPage() {
   const user = await requireChef()
