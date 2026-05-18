@@ -1,4 +1,4 @@
-import type { GodModeResolvedItem, GodModeResolverContext } from './god-mode-types'
+﻿import type { GodModeResolvedItem, GodModeResolverContext } from './god-mode-types'
 
 export interface ResolverEntry {
   name: string
@@ -315,6 +315,45 @@ function warmResolvers(): ResolverEntry[] {
       resolve: async (ctx) => {
         const { resolveCompletionItems } = await import('./resolvers/chef/completion-resolver')
         return resolveCompletionItems(ctx)
+      },
+    },
+    // --- Wave 3: Cross-domain intelligence resolvers ---
+    {
+      name: 'dish-fatigue',
+      resolve: async (ctx) => {
+        const { resolveDishFatigue } = await import('./resolvers/chef/dish-fatigue-resolver')
+        return resolveDishFatigue(ctx)
+      },
+    },
+    {
+      name: 'weather-cooking',
+      resolve: async (ctx) => {
+        const { resolveWeatherCookingAdvisories } =
+          await import('./resolvers/chef/weather-cooking-resolver')
+        return resolveWeatherCookingAdvisories(ctx)
+      },
+    },
+    {
+      name: 'quality-drift',
+      resolve: async (ctx) => {
+        const { resolveQualityDrift } = await import('./resolvers/chef/quality-drift-resolver')
+        return resolveQualityDrift(ctx)
+      },
+    },
+    {
+      name: 'equipment-conflicts',
+      resolve: async (ctx) => {
+        const { resolveEquipmentConflicts } =
+          await import('./resolvers/chef/equipment-conflict-resolver')
+        return resolveEquipmentConflicts(ctx)
+      },
+    },
+    {
+      name: 'revenue-opportunities',
+      resolve: async (ctx) => {
+        const { resolveRevenueOpportunities } =
+          await import('./resolvers/chef/revenue-opportunity-resolver')
+        return resolveRevenueOpportunities(ctx)
       },
     },
   ]

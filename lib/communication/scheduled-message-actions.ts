@@ -222,8 +222,8 @@ export async function rescheduleMessage(
 /**
  * Fetch all pending drafts for the current chef.
  * Drafts are scheduled messages that have not been sent yet
- * (status = 'scheduled', sent_at IS NULL). These include
- * CIL-generated drafts awaiting chef review.
+ * (status IN ('draft', 'scheduled'), sent_at IS NULL). These include
+ * CIL-generated drafts awaiting chef review and manually scheduled messages.
  */
 export async function getDraftMessages(): Promise<{
   data: ScheduledMessage[] | null
@@ -236,7 +236,7 @@ export async function getDraftMessages(): Promise<{
     .from('scheduled_messages')
     .select('*')
     .eq('chef_id', user.entityId)
-    .eq('status', 'scheduled')
+    .in('status', ['draft', 'scheduled'])
     .is('sent_at', null)
     .order('scheduled_for', { ascending: true })
 

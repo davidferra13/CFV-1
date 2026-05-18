@@ -515,6 +515,18 @@ async function dispatchSignalAction(signal: ProactiveSignal, tenantId: string): 
   } catch (err) {
     console.error('[CIL] signal-comm-bridge failed (non-blocking):', err)
   }
+
+  // Non-blocking: generate social post drafts from qualifying signals.
+  // Chef reviews before publishing.
+  try {
+    const { processSocialSignals, persistSocialDrafts } = await import('@/lib/cil/social-bridge')
+    const socialDrafts = await processSocialSignals([signal], tenantId)
+    if (socialDrafts.length > 0) {
+      await persistSocialDrafts(socialDrafts, tenantId, tenantId)
+    }
+  } catch {
+    // Social draft generation failure must never break signal dispatch
+  }
 }
 
 // ─── Churn Re-Engagement Bridge ───────────────────────────────────────────────

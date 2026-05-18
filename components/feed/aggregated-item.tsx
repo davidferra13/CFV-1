@@ -2,7 +2,8 @@
 
 import { useState } from 'react'
 import type { AggregatedFeedItem } from '@/lib/feed/aggregation'
-import type { GodModeResolvedItem, RailTier } from '@/lib/discovery/god-mode-types'
+import type { GodModeResolvedItem } from '@/lib/discovery/god-mode-types'
+import type { UnifiedTier } from '@/lib/discovery/rail-tier-assigner'
 import type { UniversalRailItem } from '@/lib/discovery/universal-rail-types'
 import { RailItemRow } from '@/components/rail/rail-item-row'
 import { cn } from '@/lib/utils'
@@ -22,7 +23,8 @@ function inferTier(score: number): string {
 }
 
 function toResolvedItem(item: UniversalRailItem): GodModeResolvedItem {
-  const tier: RailTier = item.baseUrgency >= 80 ? 'p0' : item.baseUrgency >= 50 ? 'p1' : 'p2'
+  const tier: UnifiedTier =
+    item.baseUrgency >= 80 ? 'critical' : item.baseUrgency >= 50 ? 'action' : 'awareness'
   return {
     definitionId: item.definitionId,
     tier,
@@ -71,7 +73,9 @@ export function AggregatedItemCard({ group }: { group: AggregatedFeedItem }) {
         </span>
 
         {/* Label */}
-        <span className="flex-1 truncate text-sm font-medium text-stone-200">{group.label}</span>
+        <span className="flex-1 truncate text-sm font-medium text-stone-200">
+          {group.representativeItem.label}
+        </span>
 
         {/* Expand/collapse indicator */}
         <span
@@ -102,7 +106,7 @@ export function AggregatedItemCard({ group }: { group: AggregatedFeedItem }) {
             <RailItemRow
               key={`${item.definitionId}-${idx}`}
               item={toResolvedItem(item)}
-              tier={tier as 'critical' | 'action' | 'awareness' | 'opportunity'}
+              tier={tier}
             />
           ))}
         </div>

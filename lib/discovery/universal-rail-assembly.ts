@@ -21,6 +21,9 @@ import {
   loadRailUserPreferences,
 } from './universal-rail-state'
 import type { RailUserState } from './universal-rail-state'
+import { computeSourceAffinity, getAffinityForSource } from '@/lib/feed/affinity-computer'
+import { groupFeedItems } from '@/lib/feed/aggregation'
+import type { FeedItem } from '@/lib/feed/aggregation'
 
 // ---------------------------------------------------------------------------
 // Freshness window parsing
@@ -314,4 +317,19 @@ function findDefinitionTemplate(definitionId: string): string | null {
   }
   const def = findItemDefinition(definitionId)
   return def?.labelTemplate ?? null
+}
+
+/**
+ * Assemble rail and apply feed aggregation (grouping similar items).
+ * Entry point for components that want aggregated feeds.
+ */
+export async function assembleAggregatedRail(
+  role: UniversalRailRole,
+  pageContext: string,
+  userId?: string,
+  tenantId?: string
+): Promise<{ items: FeedItem[]; assembledAt: string }> {
+  const result = await assembleRailForPage(role, pageContext, userId, tenantId)
+  const grouped = groupFeedItems(result.items)
+  return { items: grouped, assembledAt: result.assembledAt }
 }
