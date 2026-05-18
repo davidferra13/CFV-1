@@ -27,6 +27,8 @@ export interface AggregatedFeedItem {
   representativeItem: UniversalRailItem
   /** Whether the group can be expanded in the UI */
   expandable: boolean
+  /** Human-readable summary label for the group */
+  label?: string
 }
 
 export type FeedItem = AggregatedFeedItem | UniversalRailItem

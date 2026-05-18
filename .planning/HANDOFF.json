@@ -1,6 +1,6 @@
 {
   "version": "1.0",
-  "timestamp": "2026-05-18T00:34:52.331Z",
+  "timestamp": "2026-05-18T01:03:18.545Z",
   "source": "auto-postool",
   "partial": false,
   "phase": null,
@@ -17,8 +17,8 @@
   "decisions": [],
   "uncommitted_files": [
     {
-      "status": "D",
-      "path": ".context-loaded"
+      "status": "M",
+      "path": ".claude-session-scope"
     },
     {
       "status": "M",
@@ -26,11 +26,11 @@
     },
     {
       "status": "M",
-      "path": "components/feed/aggregated-item.tsx"
+      "path": "app/(chef)/dashboard/page.tsx"
     },
     {
       "status": "M",
-      "path": "database/migrations/20260517260002_circle_activity_feed.sql"
+      "path": "docs/UNIFIED-BUILD-QUEUE.md"
     },
     {
       "status": "M",
@@ -38,77 +38,61 @@
     },
     {
       "status": "M",
+      "path": "docs/intensify/communication.md"
+    },
+    {
+      "status": "M",
       "path": "docs/uptime-history.json"
     },
     {
       "status": "M",
-      "path": "lib/cil/draft-generators/index.ts"
+      "path": "lib/communication/scheduled-message-actions.ts"
     },
     {
       "status": "M",
-      "path": "lib/feed/affinity-computer.ts"
-    },
-    {
-      "status": "M",
-      "path": "lib/feed/engagement-actions.ts"
-    },
-    {
-      "status": "M",
-      "path": "lib/feed/engagement-tracker.ts"
-    },
-    {
-      "status": "M",
-      "path": "lib/rail/state.ts"
-    },
-    {
-      "status": "M",
-      "path": "lib/rail/types.ts"
+      "path": "lib/feed/aggregation.ts"
     },
     {
       "status": "??",
-      "path": "app/api/social/fb-events/"
+      "path": "app/(chef)/communication/"
     },
     {
       "status": "??",
-      "path": "components/rail/interaction-menu.tsx"
+      "path": "app/(chef)/dashboard/_sections/activity-feed-section.tsx"
     },
     {
       "status": "??",
-      "path": "database/migrations/20260517260001_rail_engagement_log.sql"
+      "path": "components/feed/feed-card.tsx"
     },
     {
       "status": "??",
-      "path": "database/migrations/20260517260003_rail_interaction_palette.sql"
+      "path": "database/migrations/20260517260004_ingredient_source_fields.sql"
     },
     {
       "status": "??",
-      "path": "lib/ai/signal-social-prompts.ts"
+      "path": "lib/feed/composition.ts"
     },
     {
       "status": "??",
-      "path": "lib/cil/draft-generators/social-draft.ts"
+      "path": "lib/feed/feed-actions.ts"
     },
     {
       "status": "??",
-      "path": "lib/cil/social-bridge.ts"
+      "path": "lib/feed/source-registry.ts"
     },
     {
       "status": "??",
-      "path": "lib/dinner-circles/activity-feed-actions.ts"
+      "path": "lib/feed/temporal-resurfacing.ts"
     },
     {
       "status": "??",
-      "path": "lib/dinner-circles/activity-feed-types.ts"
+      "path": "lib/notifications/aggregation.ts"
     },
     {
       "status": "??",
-      "path": "lib/social/facebook-events/adapter.ts"
-    },
-    {
-      "status": "??",
-      "path": "lib/social/facebook-events/index.ts"
+      "path": "lib/notifications/digest-builder.ts"
     }
   ],
   "next_action": null,
-  "context_notes": "Recent commits:\nc63371f51 feat: recipe edit page shell + circle activity feed migration\n47ea41990 feat: Wave 2 intelligence loop + feed/social scaffolding\n147c5ef5e feat: parallel session artifacts - feed engine, circle activity, facebook events, recipe creation\n39a808b95 feat: 20-principles philosophical alignment pass\nc5e3df62a docs: session log for Ulysses Wave 1 commitment engine build"
+  "context_notes": "Recent commits:\n790aa8063 fix: add event_debrief to SignalDomain and fix social-draft tsc errors\nd7e6b7dfe feat: Wave 2 complete - FB events adapter, CIL social bridge, feed engine, rail interactions\nc63371f51 feat: recipe edit page shell + circle activity feed migration\n47ea41990 feat: Wave 2 intelligence loop + feed/social scaffolding\n147c5ef5e feat: parallel session artifacts - feed engine, circle activity, facebook events, recipe creation"
 }

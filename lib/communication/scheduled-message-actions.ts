@@ -214,3 +214,158 @@ export async function rescheduleMessage(
   revalidatePath('/communication')
   return { data: data as ScheduledMessage, error: null }
 }
+
+// ==========================================
+// DRAFT REVIEW QUERIES & MUTATIONS
+// ==========================================
+
+/**
+ * Fetch all pending drafts for the current chef.
+ * Drafts are scheduled messages that have not been sent yet
+ * (status = 'scheduled', sent_at IS NULL). These include
+ * CIL-generated drafts awaiting chef review.
+ */
+export async function getDraftMessages(): Promise<{
+  data: ScheduledMessage[] | null
+  error: string | null
+}> {
+  const user = await requireChef()
+  const db: any = createServerClient()
+
+  const { data, error } = await db
+    .from('scheduled_messages')
+    .select('*')
+    .eq('chef_id', user.entityId)
+    .eq('status', 'scheduled')
+    .is('sent_at', null)
+    .order('scheduled_for', { ascending: true })
+
+  if (error) {
+    console.error('[getDraftMessages] Error:', error)
+    return { data: null, error: 'Failed to fetch draft messages' }
+  }
+
+  return { data: data as ScheduledMessage[], error: null }
+}
+
+/**
+ * Approve a draft: apply optional edits and confirm it for sending.
+ * The message stays as 'scheduled' (the send cron picks it up).
+ * The chef has now reviewed and approved it.
+ */
+export async function approveDraft(
+  id: string,
+  edits?: { subject?: string; body?: string; scheduled_for?: string }
+): Promise<{ data: ScheduledMessage | null; error: string | null }> {
+  const user = await requireChef()
+  const db: any = createServerClient()
+
+  const { data: msg, error: fetchError } = await db
+    .from('scheduled_messages')
+    .select('*')
+    .eq('id', id)
+    .eq('chef_id', user.entityId)
+    .single()
+
+  if (fetchError || !msg) {
+    return { data: null, error: 'Draft not found' }
+  }
+
+  if (msg.status !== 'scheduled') {
+    return { data: null, error: `Cannot approve a message with status "${msg.status}"` }
+  }
+
+  if (msg.sent_at) {
+    return { data: null, error: 'This message has already been sent' }
+  }
+
+  const updatePayload: Record<string, unknown> = {
+    updated_at: new Date().toISOString(),
+  }
+
+  if (edits?.subject !== undefined) {
+    updatePayload.subject = edits.subject
+  }
+  if (edits?.body !== undefined) {
+    if (!edits.body.trim()) {
+      return { data: null, error: 'Message body cannot be empty' }
+    }
+    updatePayload.body = edits.body
+  }
+  if (edits?.scheduled_for !== undefined) {
+    const newDate = new Date(edits.scheduled_for)
+    if (isNaN(newDate.getTime())) {
+      return { data: null, error: 'Invalid scheduled date' }
+    }
+    if (newDate <= new Date()) {
+      return { data: null, error: 'Scheduled date must be in the future' }
+    }
+    updatePayload.scheduled_for = edits.scheduled_for
+  }
+
+  const { data, error } = await db
+    .from('scheduled_messages')
+    .update(updatePayload)
+    .eq('id', id)
+    .eq('chef_id', user.entityId)
+    .select()
+    .single()
+
+  if (error) {
+    console.error('[approveDraft] Error:', error)
+    return { data: null, error: 'Failed to approve draft' }
+  }
+
+  revalidatePath('/communication/drafts')
+  revalidatePath('/communication')
+  return { data: data as ScheduledMessage, error: null }
+}
+
+/**
+ * Reject a draft: cancel the scheduled message so it is never sent.
+ */
+export async function rejectDraft(
+  id: string
+): Promise<{ data: ScheduledMessage | null; error: string | null }> {
+  const user = await requireChef()
+  const db: any = createServerClient()
+
+  const { data: msg, error: fetchError } = await db
+    .from('scheduled_messages')
+    .select('status, sent_at')
+    .eq('id', id)
+    .eq('chef_id', user.entityId)
+    .single()
+
+  if (fetchError || !msg) {
+    return { data: null, error: 'Draft not found' }
+  }
+
+  if (msg.status !== 'scheduled') {
+    return { data: null, error: `Cannot reject a message with status "${msg.status}"` }
+  }
+
+  if (msg.sent_at) {
+    return { data: null, error: 'This message has already been sent' }
+  }
+
+  const { data, error } = await db
+    .from('scheduled_messages')
+    .update({
+      status: 'cancelled',
+      updated_at: new Date().toISOString(),
+    })
+    .eq('id', id)
+    .eq('chef_id', user.entityId)
+    .select()
+    .single()
+
+  if (error) {
+    console.error('[rejectDraft] Error:', error)
+    return { data: null, error: 'Failed to reject draft' }
+  }
+
+  revalidatePath('/communication/drafts')
+  revalidatePath('/communication')
+  return { data: data as ScheduledMessage, error: null }
+}

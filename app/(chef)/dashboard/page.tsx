@@ -33,6 +33,7 @@ import {
   IntelligenceCardsSkeleton,
 } from './_sections/section-skeletons'
 import { CilSignalSummary } from './_sections/cil-signal-summary'
+import { ActivityFeedSection } from './_sections/activity-feed-section'
 import { getWeeklyRetroSummary } from '@/lib/scheduling/weekly-retro-summary-action'
 import { WeeklyReflectionWidget } from '@/components/dashboard/weekly-reflection-widget'
 
@@ -79,6 +80,12 @@ export default async function ChefDashboard() {
       <WidgetErrorBoundary name="System Pulse" compact>
         <Suspense fallback={<IntelligenceCardsSkeleton />}>
           <CilSignalSummary />
+        </Suspense>
+      </WidgetErrorBoundary>
+
+      <WidgetErrorBoundary name="Activity Feed" compact>
+        <Suspense fallback={<IntelligenceCardsSkeleton />}>
+          <ActivityFeedSection />
         </Suspense>
       </WidgetErrorBoundary>
 
