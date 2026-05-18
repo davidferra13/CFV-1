@@ -18,6 +18,8 @@ import { EventTicketsSection } from './_sections/event-tickets-section'
 import { EventOpsSection } from './_sections/event-ops-section'
 import { EventWrapSection } from './_sections/event-wrap-section'
 import { EventBeverageSection } from './_sections/event-beverage-section'
+import { EventDiscoverySection } from './_sections/event-discovery-section'
+import { EventDepartureSection } from './_sections/event-departure-section'
 import { getCompletionForEntity } from '@/lib/completion/actions'
 import { buildEventSuggestions } from '@/lib/suggestions/event-suggestions'
 import { ContextualNextAction } from '@/components/suggestions/contextual-next-action'
@@ -94,6 +96,14 @@ export default async function EventDetailPage({
         />
       </Suspense>
       <Suspense fallback={<SkeletonCard />}>
+        <EventDiscoverySection
+          eventId={params.id}
+          tenantId={tenantId}
+          event={event}
+          activeTab={activeTab}
+        />
+      </Suspense>
+      <Suspense fallback={<SkeletonCard />}>
         <EventMoneySection
           eventId={params.id}
           tenantId={tenantId}
@@ -119,6 +129,14 @@ export default async function EventDetailPage({
       </Suspense>
       <Suspense fallback={<SkeletonCard />}>
         <EventOpsSection
+          eventId={params.id}
+          tenantId={tenantId}
+          event={event}
+          activeTab={activeTab}
+        />
+      </Suspense>
+      <Suspense fallback={<SkeletonCard />}>
+        <EventDepartureSection
           eventId={params.id}
           tenantId={tenantId}
           event={event}

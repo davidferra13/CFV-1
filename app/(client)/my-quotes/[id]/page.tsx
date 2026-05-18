@@ -1,6 +1,9 @@
 // Client Quote Detail - View and respond to a single quote
 
+import type { Metadata } from 'next'
 import { redirect } from 'next/navigation'
+
+export const metadata: Metadata = { title: 'Quote Details' }
 import Link from 'next/link'
 import { requireClient } from '@/lib/auth/get-user'
 import { getClientQuoteById } from '@/lib/quotes/client-actions'

@@ -1,4 +1,7 @@
+import type { Metadata } from 'next'
 import { requireClient } from '@/lib/auth/get-user'
+
+export const metadata: Metadata = { title: 'Split Payment' }
 import { getClientSplitView } from '@/lib/payments/split-share-actions'
 import { notFound } from 'next/navigation'
 import { ClientSplitPageClient } from './client-split-client'

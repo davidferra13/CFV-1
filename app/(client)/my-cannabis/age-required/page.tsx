@@ -1,4 +1,7 @@
+import type { Metadata } from 'next'
 import { requireClient } from '@/lib/auth/get-user'
+
+export const metadata: Metadata = { title: 'Age Verification Required' }
 import { getClientCannabisAccessStatus } from '@/lib/cannabis/client-portal-guards'
 import { redirect } from 'next/navigation'
 import { AgeAttestationForm } from './age-attestation-form'

@@ -1,6 +1,9 @@
 // Post-Event Summary Page - menu recap, expense breakdown, timeline
 
+import type { Metadata } from 'next'
 import { requireClient } from '@/lib/auth/get-user'
+
+export const metadata: Metadata = { title: 'Event Summary' }
 import { getClientEventById } from '@/lib/events/client-actions'
 import { PostEventSummaryClient } from '@/components/events/post-event-summary-client'
 import { notFound, redirect } from 'next/navigation'

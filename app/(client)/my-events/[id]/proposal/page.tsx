@@ -2,7 +2,10 @@
 // Single-scroll page showing event summary, menu, contract, and payment
 // State-machine driven: shows the right sections based on event status
 
+import type { Metadata } from 'next'
 import { requireClient } from '@/lib/auth/get-user'
+
+export const metadata: Metadata = { title: 'Proposal' }
 import { getClientEventById } from '@/lib/events/client-actions'
 import { getClientEventContract } from '@/lib/contracts/actions'
 import { getCurrentJourneyAction } from '@/lib/events/journey-steps'

@@ -1,6 +1,9 @@
 // Client Payment Page - Pay for accepted events
 
+import type { Metadata } from 'next'
 import { requireClient } from '@/lib/auth/get-user'
+
+export const metadata: Metadata = { title: 'Payment' }
 import { getClientEventContract } from '@/lib/contracts/actions'
 import { getClientEventById } from '@/lib/events/client-actions'
 import { formatCurrency } from '@/lib/utils/currency'

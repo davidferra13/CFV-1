@@ -1,6 +1,9 @@
 // Client Chat View - Individual conversation with your chef
 
+import type { Metadata } from 'next'
 import { requireClient } from '@/lib/auth/get-user'
+
+export const metadata: Metadata = { title: 'Chat' }
 import { redirect } from 'next/navigation'
 import {
   getConversation,

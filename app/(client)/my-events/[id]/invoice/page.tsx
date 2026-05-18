@@ -2,9 +2,12 @@
 // Client-facing view of their invoice for a specific event.
 // Scoped to the client's own entity - no cross-client access.
 
+import type { Metadata } from 'next'
 import { notFound } from 'next/navigation'
 import Link from 'next/link'
 import { requireClient } from '@/lib/auth/get-user'
+
+export const metadata: Metadata = { title: 'Invoice' }
 import { getInvoiceDataForClient } from '@/lib/events/invoice-actions'
 import { InvoiceView } from '@/components/events/invoice-view'
 import { Button } from '@/components/ui/button'

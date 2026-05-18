@@ -2,7 +2,10 @@
 // Loaded when client clicks the signing link in the contract email.
 // Records the view, renders the contract body, and captures signature.
 
+import type { Metadata } from 'next'
 import { requireClient } from '@/lib/auth/get-user'
+
+export const metadata: Metadata = { title: 'Contract' }
 import { getClientEventContract, recordClientView } from '@/lib/contracts/actions'
 import { getClientEventById } from '@/lib/events/client-actions'
 import { notFound } from 'next/navigation'

@@ -5,7 +5,10 @@
 // 3. "I know exactly what I want" → free text
 // 4. "Surprise me!" → one-click
 
+import type { Metadata } from 'next'
 import { requireClient } from '@/lib/auth/get-user'
+
+export const metadata: Metadata = { title: 'Choose Menu' }
 import { getClientEventById } from '@/lib/events/client-actions'
 import { getShowcaseMenus } from '@/lib/menus/showcase-actions'
 import { getMenuPreferences } from '@/lib/menus/preference-actions'

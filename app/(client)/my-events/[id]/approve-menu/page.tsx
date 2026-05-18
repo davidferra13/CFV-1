@@ -2,7 +2,10 @@
 // Loaded when client clicks the approval link from the menu email.
 // Shows the rich menu snapshot and lets the client approve or request revisions.
 
+import type { Metadata } from 'next'
 import { requireClient } from '@/lib/auth/get-user'
+
+export const metadata: Metadata = { title: 'Approve Menu' }
 import { getClientMenuApprovalRequest } from '@/lib/events/menu-approval-actions'
 import { notFound, redirect } from 'next/navigation'
 import { MenuApprovalClient } from './menu-approval-client'
