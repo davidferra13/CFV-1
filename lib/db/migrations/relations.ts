@@ -1,5 +1,5 @@
 import { relations } from "drizzle-orm/relations";
-import { chefs, automatedSequences, adminTimeLogs, events, chefTodos, usersInAuth, chefEmergencyContacts, communicationEvents, suggestedLinks, communicationClassificationRules, eventSurveys, followUpTimers, conversationThreads, chefCertifications, copilotActions, copilotRecommendations, copilotRuns, ingredients, ingredientSubstitutes, campaignTemplates, directOutreachLog, clients, integrationConnections, auditLog, clientInvitations, directoryListings, integrationEvents, inquiries, inquiryStateTransitions, eventStateTransitions, dishes, menus, tastingMenuCourses, afterActionReviews, menuStateTransitions, components, recipes, loyaltyTransactions, contractTemplates, eventTips, directoryListingAccountLinkEvents, seasonalPalettes, shoppingSubstitutions, chatInsights, conversations, chatMessages, conversationParticipants, chefConnections, clientNotes, activityEvents, communicationActionLog, clientIntakeResponses, clientIntakeForms, clientIntakeShares, chefJourneys, jobRetryLog, chefJourneyEntries, chefJournalMedia, chefMomentumSnapshots, chefGoals, chefAvailabilityShareTokens, systemIngredients, ingredientShelfLife, dishIndex, dishAppearances, menuUploadJobs, eventStaffAssignments, staffMembers, zapierWebhookSubscriptions, chefSocialChannels, chefChannelMemberships, zapierWebhookDeliveries, eventShares, hubGroups, eventThemes, chefNetworkFeaturePreferences, chefStories, posAlertEvents, posMetricSnapshots, ingredientSeasonality, chefCalendarEntries, availabilitySignalNotificationLog, competitorBenchmarks, clientSatisfactionSurveys, guestDayOfReminders, eventGuests, chefSchedulingRules, clientQuickRequests, guestDietaryConfirmations, eventGuestDocuments, contractorPayments, ingredientWasteFactors, clientProposals, proposalTemplates, benchmarkSnapshots, clientPreferencePatterns, automationExecutionLog, staffEventTokens, deadLetterQueue, equipmentDepreciationSchedules, equipmentItems, mealPrepWeeks, mealPrepPrograms, eventSalesTax, chefServiceTypes, fineTuningExamples, goalCheckIns, cannabisEventDetails, menuNutrition, followUpSends, followupRules, chefBackupContacts, chefBrandMentions, eventOutcomes, chefCreativeProjects, chefAutomationSettings, guestMessages, openTableRequests, hubGuestProfiles, clientPhotos, favoriteChefs, chefCulinaryWords, dailyPlanDismissals, gmailSyncLog, googleMailboxes, messages, aiTaskQueue, platformActionLog, platformRecords, remySupportShares, eventReadinessGates, serviceLifecycleTemplates, featureVotes, featureRequests, devices, deviceEvents, serviceLifecycleProgress, haccpPlans, inventoryAudits, storageLocations, tipRequests, cannabisControlPacketEvidence, cannabisControlPacketReconciliations, cannabisControlPacketSnapshots, mutationIdempotency, qolMetricEvents, eventOutcomeDishes, clientMergeLog, chefActivityLog, chefPreferences, eventCannabisCourseConfig, directoryNominations, commercePaymentSchedules, commercePayments, sales, ledgerEntries, lifecycleDetectionLog, inventoryTransactions, vendorInvoices, wasteLogs, orderQueue, cashDrawerMovements, commerceRefunds, registerSessions, guestFeedback, chefProfiles, dailyReconciliationReports, dailyTaxSummary, settlementRecords, charityHours, communityOrganizations, chefMarketplaceProfiles, eventGuestDietaryItems, eventGuestRsvpAudit, eventJoinRequests, eventShareInvites, chefCollabSpaces, eventStubs, hubGroupEvents, priceWatchList, hubAvailability, hubAvailabilityResponses, emailSenderReputation, aiPreferences, hubChefRecommendations, chefEmailChannels, ingredientAliases, betaSurveyResponses, betaSurveyInvites, betaSurveyDefinitions, chefHandoffs, chefHandoffRecipients, chefHandoffEvents, chefAvailabilitySignals, commerceDiningZones, commerceDiningTables, commerceDiningChecks, clientMealRequests, clientPreferences, chefServiceConfig, eventSeries, hubMessages, hubMessageReads, clientWorksheets, betaOnboardingChecklist, hubShareCards, openTableConsents, productCategoriesInOpenclaw, quotes, quoteLineItems, eventPrepSteps, dietaryConfirmations, eventLiveStatus, clientReferrals, productsInOpenclaw, bookingAvailabilityRules, chainsInOpenclaw, scrapeRunsInOpenclaw, storesInOpenclaw, proposalSections, chefBudgets, clientOutreachLog, eventEquipmentChecklist, eventFloorPlans, clientMealPrepPreferences, containerInventory, containerTransactions, dailySpecials, productProjections, permits, hubMealBoard, bakeryOvens, bakeSchedule, bakeryBatches, bakeryOrders, bakeryParStock, bakeryProductionLog, feedbackRequests, feedbackResponses, hubMealFeedback, giftCards, giftCardTransactions, businessLocations, communicationLog, hubHouseholdMembers, complianceCleaningLogs, complianceTempLogs, eventSiteAssessments, reorderSettings, vendors, documentIntelligenceJobs, documentIntelligenceItems, chefCollabSpaceMembers, hubMealTemplates, entityPhotos, sops, sopCompletions, productPublicMediaLinks, publicMediaAssets, eventTemplates, hubScheduleChanges, tipPoolConfigs, tipDistributions, tipEntries, chefCollabThreads, cancellationPolicies, chefCapacitySettings, chefEquipmentMaster, hubRecurringMeals, chefDepositSettings, cookingClasses, classRegistrations, chefSeasonalAvailability, hubMealAttendance, groceryTrips, groceryTripItems, groceryTripSplits, hubMealComments, aislePreferences, chefEquipment, chefPreferredStores, emailSequenceEnrollments, emailSequences, hubMealRequests, eventFeedback, mealPrepItems, chefDirectoryListings, communityBenchmarks, hubPollOptions, hubPollVotes, hubPolls, expenses, ingredientPriceHistory, giftCertificates, grocerySpendEntries, autoResponseConfig, businessHoursConfig, eventContacts, eventPaymentMilestones, followUpSequences, ingredientPortions, passiveProducts, chefPricingConfig, marketingCampaigns, abTests, automationRules, automationExecutions, bakerySeasonalItems, bakeryTastings, bakeryYieldRecords, bankConnections, bankTransactions, betaSignupTrackers, betaSignups, beverages, bookingDailyCaps, bookingDateOverrides, bookingEventTypes, campaignRecipients, cannabisHostAgreements, cannabisTierInvitations, cannabisTierUsers, chefApiKeys, chefAvailabilityBlocks, chefBusinessHealthItems, chefCapabilityInventory, chefCommentReactions, chefPostComments, chefCrisisPlans, chefCulinaryProfiles, chefDailyBriefings, chefEducationLog, chefEventTypeLabels, chefFolders, chefFollows, chefGrowthCheckins, chefIncidents, chefInsurancePolicies, chefJournalRecipeLinks, chefJourneyIdeas, chefNetworkContactShares, chefNetworkPosts, chefNotificationTierOverrides, chefPortfolioRemovalRequests, chefSocialPosts, chefPostMentions, chefPostReactions, chefPostSaves, chefReminders, chefBreadcrumbs, chefSocialNotifications, chefStoryReactions, chefStoryViews, chefTaxConfig, chefTaxonomyExtensions, chefTaxonomyHidden, chefTeamMembers, clientConnections, clientFollowupRules, clientGiftLog, clientIncentives, clientKitchenInventory, clientNdas, clientReviews, clientSegments, clientTouchpointRules, clipboardEntries, stationComponents, stations, communityMessages, communityProfiles, communityTemplates, contentPerformance, contractorServiceAgreements, customFieldDefinitions, customFieldValues, dailyChecklistCompletions, dailyChecklistCustomItems, dailyPlanDrafts, copilotRunErrors, clientTags, clientAllergyRecords, commercePromotions, chefTrustedCircle, dailyReports, dailyRevenue, demandForecasts, deviceSessions, dietaryChangeLog, dietaryConflictAlerts, dishFeedback, dishVariations, displayCaseItems, documentComments, documentVersions, emailSequenceSteps, employees, entityTemplates, equipmentMaintenanceLog, equipmentRentals, eventAlcoholLogs, eventCannabisSettings, eventCollaborators, eventContentDrafts, eventContingencyNotes, eventContracts, eventContractSigners, eventContractVersions, eventDocumentGenerationJobs, eventEquipmentAssignments, eventEquipmentRentals, eventLeftoverDetails, eventPhotos, eventSafetyChecklists, eventServiceSessions, eventShareInviteEvents, eventStationAssignments, eventPrepBlocks, dopTaskCompletions, directoryOutreachLog, eventDocumentSnapshots, eventTempLogs, eventTravelLegs, eventVendorDeliveries, eventWasteLogs, externalReviewSources, expenseTaxCategories, experiencePackages, fermentationLogs, frontOfHouseMenus, menuTemplates, giftCardPurchaseIntents, goalClientSuggestions, goalSnapshots, googleConnections, groceryPriceEntries, groceryPriceQuoteItems, groceryPriceQuotes, guestCommunicationLogs, guestComps, guests, guestLeads, guestPhotos, guestReservations, guestTags, guestTestimonials, guestVisits, healthInsurancePremiums, householdMembers, households, externalReviews, guestEventProfile, receiptPhotos, hubGuestEventHistory, hubGroupMembers, gmailHistoricalFindings, hubGuestFriends, incentiveDeliveries, incentiveRedemptions, ingredientShelfLifeDefaults, ingredientSubstitutions, inquiryNotes, inquiryRecipeLinks, insuranceClaims, insurancePolicies, inventoryAuditItems, inventoryBatches, inventoryCounts, inventoryLots, kdsTickets, kitchenAssessments, kitchenRentals, learningGoals, loyaltyRewardRedemptions, loyaltyRewards, mealPrepBatchLog, mealPrepContainers, mealPrepDeliveries, mealPrepOrders, mealPrepWindows, mentorshipConnections, mentorshipProfiles, integrationSyncJobs, integrationEntityLinks, integrationFieldMappings, hubMessageReactions, hubMedia, hubPinnedNotes, recurringServices, marketingSpendLog, loyaltyConfig, menuApprovalRequests, menuBeveragePairings, menuDishFeedback, menuRevisions, menuItems, menuModifications, menuPreferences, menuServiceHistory, notifications, notificationDeliveryLog, notificationPreferences, onboardingProgress, opsLog, orderAheadItems, orderAheadOrderItems, orderAheadOrders, orderRequests, outreachCampaigns, packingChecklists, packingChecklistItems, packingTemplates, pantryItems, pantryLocations, partnerLocations, partnerImages, referralPartners, paymentDisputes, paymentMilestoneTemplates, paymentMilestones, payroll941Summaries, payrollRecords, payrollW2Summaries, mileageLogs, platformPayouts, platformApiConnections, packingConfirmations, platingGuides, portfolioItems, postEventSurveys, prepTimeline, productModifierAssignments, productModifierGroups, productModifiers, professionalAchievements, profileHighlights, proposalTokens, proposalAddonSelections, quoteAddons, proposalAddons, proposalViews, prospectCallScripts, prospectNotes, prospects, prospectOutreachLog, prospectScrubSessions, prospectStageHistory, purchaseOrderItems, purchaseOrders, pushSubscriptions, qrCodes, qrScans, quoteStateTransitions, raffleEntries, raffleRounds, platformSnapshots, productTourProgress, rebookTokens, receiptExtractions, recipeIngredients, recipeNutrition, recipeProductionLog, recipeShares, recipeStepPhotos, recipeSubRecipes, saleAppliedPromotions, recurringInvoiceHistory, recurringInvoices, recurringMenuRecommendations, recurringSchedules, referralRequestLog, remyAbuseLog, remyActionAuditLog, remyApprovalPolicies, remyArtifacts, remyConversations, remyFeedback, remyMemories, remyMessages, remyUsageMetrics, responseTemplates, retainers, retainerPeriods, retirementContributions, rsvpReminderLog, saleItems, salesTaxRemittances, salesTaxSettings, scheduledCalls, scheduledMessages, scheduledShifts, shiftTemplates, seasonalAvailabilityPeriods, sequenceEnrollments, sequenceSteps, servedDishHistory, serviceCourses, shiftHandoffNotes, shiftLogs, shiftSwapRequests, shoppingLists, simulationRuns, simulationResults, smartFieldValues, smartGroceryLists, smartGroceryItems, smsMessages, smsSendLog, socialConnectedAccounts, socialHashtagSets, socialMediaAssets, socialPlatformCredentials, socialPostAssets, socialPosts, socialQueueSettings, socialStatsSnapshots, socialTemplates, sourcingEntries, staffAvailability, staffClockEntries, staffMealItems, staffMeals, staffOnboardingItems, staffPerformanceScores, staffSchedules, stationMenuItems, stocktakes, stocktakeItems, storeItemAssignments, stripeTransfers, subcontractAgreements, taskCompletionLog, tasks, taskDependencies, taskTemplates, tastingMenus, vendorItems, vendorCatalogImportRows, taxJurisdictions, taxCollected, taxFilings, taxQuarterlyEstimates, taxSettings, timeBlocks, travelLegIngredients, truckLocations, truckSchedule, truckPreorders, unusedIngredients, userFeedback, vaTasks, varianceAlertSettings, vehicleMaintenance, vendorEventAssignments, vendorInvoiceItems, vendorInvoiceLineItems, vendorPreferredIngredients, vendorPriceEntries, vendorPricePoints, waitlistEntries, wasteLog, webhookEndpoints, webhookDeliveries, websiteStatsSnapshots, wholesaleAccounts, wholesaleOrders, wixConnections, wixSubmissions, tenantSettings, vendorPriceAlertSettings, workflowExecutionLog, workflowExecutions, testimonials, vendorDocumentUploads, aarRecipeFeedback, recipeFamilies, aarIngredientIssues, expenseLineItems, receiptLineItems, workflowTemplates, workflowSteps, ingredientSaleCycles, chefCollabMessages, chefIntroBridges, chefOpportunityPosts, chefOpportunityInterests, passiveProductPurchases, chefDocuments, chefWorkHistoryEntries, guestCountChanges, storeProductsInOpenclaw, priceTrendsInOpenclaw, systemIngredientPricesInOpenclaw, chefQuickNotes, platformObservabilityEvents, aiCalls, supplierCalls, accountingPeriodLocks, ownerDraws, taxExportRuns, userRoles, userPermissionOverrides, permissionAuditLog, ingredientKnowledge, ingredientKnowledgeSlugs, aiCallTranscripts, directoryListingFavorites, aiCallRoutingRules, remyAlerts, remyOnboarding, remyMilestones, planningRuns, planningRunArtifacts, chefLocationLinks, receiptIngredientMappings, clientProfileSubjects, clientProfileEvidence, clientProfileVectors, clientProfileConflicts, clientProfileArbitrationQueries, clientProfileRecommendations, chefTwilioCredentials, chefFeedback, ingredientAccuracyFlags, paymentPlanInstallments, priceSnapshotsInOpenclaw, priceAnomaliesInOpenclaw, clientTasteProfiles, partnerLocationChangeRequests, contactSubmissions, eventServiceSimulationRuns, chefSocialHashtags, chefPostHashtags, conversationThreadReads, chefFeatureFlags, quoteSelectedAddons } from "./schema";
+import { chefs, automatedSequences, adminTimeLogs, events, chefTodos, usersInAuth, chefEmergencyContacts, communicationEvents, suggestedLinks, communicationClassificationRules, eventSurveys, followUpTimers, conversationThreads, chefCertifications, copilotActions, copilotRecommendations, copilotRuns, ingredients, ingredientSubstitutes, campaignTemplates, directOutreachLog, clients, integrationConnections, auditLog, clientInvitations, directoryListings, integrationEvents, inquiries, inquiryStateTransitions, eventStateTransitions, afterActionReviews, menus, menuStateTransitions, loyaltyTransactions, contractTemplates, eventTips, directoryListingAccountLinkEvents, seasonalPalettes, shoppingSubstitutions, chatInsights, conversations, chatMessages, conversationParticipants, chefConnections, activityEvents, communicationActionLog, clientIntakeResponses, clientIntakeForms, clientIntakeShares, chefJourneys, jobRetryLog, chefJourneyEntries, chefJournalMedia, chefMomentumSnapshots, chefGoals, chefAvailabilityShareTokens, systemIngredients, ingredientShelfLife, dishIndex, dishAppearances, menuUploadJobs, eventStaffAssignments, staffMembers, zapierWebhookSubscriptions, chefSocialChannels, chefChannelMemberships, zapierWebhookDeliveries, eventShares, hubGroups, eventThemes, chefNetworkFeaturePreferences, chefStories, posAlertEvents, posMetricSnapshots, ingredientSeasonality, chefCalendarEntries, availabilitySignalNotificationLog, competitorBenchmarks, clientSatisfactionSurveys, guestDayOfReminders, eventGuests, chefSchedulingRules, clientQuickRequests, guestDietaryConfirmations, eventGuestDocuments, contractorPayments, ingredientWasteFactors, clientProposals, proposalTemplates, benchmarkSnapshots, clientPreferencePatterns, automationExecutionLog, staffEventTokens, deadLetterQueue, equipmentDepreciationSchedules, equipmentItems, mealPrepWeeks, mealPrepPrograms, eventSalesTax, chefServiceTypes, fineTuningExamples, goalCheckIns, cannabisEventDetails, menuNutrition, recipes, followUpSends, followupRules, chefBackupContacts, chefBrandMentions, eventOutcomes, chefCreativeProjects, chefAutomationSettings, guestMessages, openTableRequests, hubGuestProfiles, clientPhotos, favoriteChefs, chefCulinaryWords, dailyPlanDismissals, gmailSyncLog, googleMailboxes, messages, aiTaskQueue, platformActionLog, platformRecords, remySupportShares, eventReadinessGates, serviceLifecycleTemplates, featureVotes, featureRequests, devices, deviceEvents, serviceLifecycleProgress, haccpPlans, inventoryAudits, storageLocations, tipRequests, cannabisControlPacketEvidence, cannabisControlPacketReconciliations, cannabisControlPacketSnapshots, mutationIdempotency, qolMetricEvents, eventOutcomeDishes, dishes, clientMergeLog, chefActivityLog, eventCannabisCourseConfig, directoryNominations, commercePaymentSchedules, commercePayments, sales, ledgerEntries, lifecycleDetectionLog, inventoryTransactions, vendorInvoices, wasteLogs, cashDrawerMovements, commerceRefunds, registerSessions, guestFeedback, chefProfiles, dailyReconciliationReports, dailyTaxSummary, settlementRecords, charityHours, communityOrganizations, chefMarketplaceProfiles, eventGuestDietaryItems, eventGuestRsvpAudit, eventJoinRequests, eventShareInvites, chefCollabSpaces, eventStubs, hubGroupEvents, webResearchJobs, webResearchEvidence, priceWatchList, webResearchClaims, webResearchDirectoryCandidates, hubAvailability, hubAvailabilityResponses, emailSenderReputation, webResearchProviderEvents, aiPreferences, hubChefRecommendations, chefEmailChannels, ingredientAliases, betaSurveyResponses, betaSurveyInvites, betaSurveyDefinitions, chefHandoffs, chefHandoffRecipients, chefHandoffEvents, chefAvailabilitySignals, commerceDiningZones, commerceDiningTables, commerceDiningChecks, clientMealRequests, clientPreferences, chefServiceConfig, eventSeries, hubMessages, hubMessageReads, clientWorksheets, betaOnboardingChecklist, hubShareCards, openTableConsents, productCategoriesInOpenclaw, quotes, quoteLineItems, eventPrepSteps, dietaryConfirmations, eventLiveStatus, clientReferrals, productsInOpenclaw, bookingAvailabilityRules, chainsInOpenclaw, scrapeRunsInOpenclaw, storesInOpenclaw, proposalSections, chefBudgets, clientOutreachLog, eventEquipmentChecklist, eventFloorPlans, clientMealPrepPreferences, containerInventory, containerTransactions, dailySpecials, productProjections, permits, hubMealBoard, bakeryOvens, bakeSchedule, bakeryBatches, bakeryOrders, bakeryParStock, bakeryProductionLog, feedbackRequests, feedbackResponses, hubMealFeedback, giftCards, giftCardTransactions, communicationLog, hubHouseholdMembers, complianceCleaningLogs, complianceTempLogs, eventSiteAssessments, reorderSettings, vendors, documentIntelligenceJobs, documentIntelligenceItems, chefCollabSpaceMembers, hubMealTemplates, entityPhotos, sops, sopCompletions, productPublicMediaLinks, publicMediaAssets, eventTemplates, hubScheduleChanges, tipPoolConfigs, tipDistributions, tipEntries, chefCollabThreads, cancellationPolicies, chefCapacitySettings, chefEquipmentMaster, hubRecurringMeals, chefDepositSettings, cookingClasses, classRegistrations, chefSeasonalAvailability, hubMealAttendance, groceryTrips, groceryTripItems, groceryTripSplits, hubMealComments, aislePreferences, chefEquipment, chefPreferredStores, emailSequenceEnrollments, emailSequences, hubMealRequests, eventFeedback, mealPrepItems, communityBenchmarks, hubPollOptions, hubPollVotes, hubPolls, giftCertificates, grocerySpendEntries, autoResponseConfig, businessHoursConfig, eventContacts, eventPaymentMilestones, followUpSequences, ingredientPortions, passiveProducts, chefPricingConfig, marketingCampaigns, abTests, automationRules, automationExecutions, bakerySeasonalItems, bakeryTastings, bakeryYieldRecords, bankConnections, bankTransactions, expenses, betaSignupTrackers, betaSignups, beverages, bookingDailyCaps, bookingDateOverrides, bookingEventTypes, campaignRecipients, cannabisHostAgreements, cannabisTierInvitations, cannabisTierUsers, chefApiKeys, chefAvailabilityBlocks, chefBusinessHealthItems, chefCapabilityInventory, chefCommentReactions, chefPostComments, chefCrisisPlans, chefCulinaryProfiles, chefDailyBriefings, chefEducationLog, chefEventTypeLabels, chefFolders, chefFollows, chefGrowthCheckins, chefIncidents, chefInsurancePolicies, chefJournalRecipeLinks, chefJourneyIdeas, chefNetworkContactShares, chefNetworkPosts, chefNotificationTierOverrides, chefPortfolioRemovalRequests, chefSocialPosts, chefPostMentions, chefPostReactions, chefPostSaves, chefReminders, chefBreadcrumbs, chefSocialNotifications, chefStoryReactions, chefStoryViews, chefTaxConfig, chefTaxonomyExtensions, chefTaxonomyHidden, chefTeamMembers, clientConnections, clientFollowupRules, clientGiftLog, clientIncentives, clientKitchenInventory, clientNdas, clientReviews, clientSegments, clientTouchpointRules, clipboardEntries, stationComponents, stations, communityMessages, communityProfiles, communityTemplates, contentPerformance, contractorServiceAgreements, customFieldDefinitions, customFieldValues, dailyChecklistCompletions, businessLocations, dailyChecklistCustomItems, dailyPlanDrafts, copilotRunErrors, clientTags, clientAllergyRecords, commercePromotions, chefTrustedCircle, dailyReports, demandForecasts, deviceSessions, dietaryChangeLog, dietaryConflictAlerts, smsBridgeConfig, dishFeedback, dishVariations, displayCaseItems, documentComments, documentVersions, emailSequenceSteps, employees, entityTemplates, equipmentMaintenanceLog, equipmentRentals, eventAlcoholLogs, eventCannabisSettings, eventCollaborators, eventContentDrafts, eventContingencyNotes, eventContracts, eventContractSigners, eventContractVersions, eventDocumentGenerationJobs, eventEquipmentAssignments, eventEquipmentRentals, eventLeftoverDetails, components, eventPhotos, eventSafetyChecklists, eventServiceSessions, eventShareInviteEvents, dailyRevenue, eventStationAssignments, eventPrepBlocks, dopTaskCompletions, directoryOutreachLog, eventDocumentSnapshots, eventTempLogs, eventTravelLegs, eventVendorDeliveries, eventWasteLogs, externalReviewSources, expenseTaxCategories, experiencePackages, fermentationLogs, frontOfHouseMenus, menuTemplates, giftCardPurchaseIntents, goalClientSuggestions, goalSnapshots, googleConnections, groceryPriceEntries, groceryPriceQuoteItems, groceryPriceQuotes, guestCommunicationLogs, guestComps, guests, guestEventProfile, guestLeads, guestPhotos, guestReservations, guestTags, guestTestimonials, guestVisits, healthInsurancePremiums, householdMembers, households, externalReviews, hubGroupMembers, hubGuestEventHistory, gmailHistoricalFindings, hubGuestFriends, incentiveDeliveries, incentiveRedemptions, ingredientShelfLifeDefaults, ingredientSubstitutions, inquiryNotes, inquiryRecipeLinks, insuranceClaims, insurancePolicies, kdsTickets, inventoryAuditItems, inventoryBatches, inventoryCounts, inventoryLots, kitchenAssessments, kitchenRentals, learningGoals, loyaltyRewardRedemptions, loyaltyRewards, mealPrepBatchLog, mealPrepContainers, mealPrepDeliveries, mealPrepOrders, mealPrepWindows, mentorshipConnections, mentorshipProfiles, integrationSyncJobs, integrationEntityLinks, integrationFieldMappings, hubMessageReactions, hubMedia, hubPinnedNotes, recurringServices, marketingSpendLog, loyaltyConfig, menuApprovalRequests, menuBeveragePairings, menuDishFeedback, menuRevisions, menuItems, menuModifications, menuServiceHistory, notifications, notificationDeliveryLog, notificationPreferences, onboardingProgress, menuPreferences, menuSelectionTokens, opsLog, orderAheadItems, orderAheadOrderItems, orderAheadOrders, orderRequests, outreachCampaigns, packingChecklists, packingChecklistItems, packingTemplates, pantryItems, pantryLocations, partnerLocations, partnerImages, referralPartners, paymentDisputes, paymentMilestoneTemplates, paymentMilestones, payroll941Summaries, payrollRecords, payrollW2Summaries, mileageLogs, platformPayouts, platformApiConnections, packingConfirmations, platingGuides, portfolioItems, postEventSurveys, prepTimeline, productModifierAssignments, productModifierGroups, productModifiers, professionalAchievements, profileHighlights, proposalTokens, proposalAddonSelections, quoteAddons, proposalAddons, proposalViews, prospectCallScripts, prospectNotes, prospects, prospectOutreachLog, prospectScrubSessions, prospectStageHistory, purchaseOrderItems, purchaseOrders, pushSubscriptions, qrCodes, qrScans, quoteStateTransitions, raffleEntries, raffleRounds, platformSnapshots, productTourProgress, rebookTokens, receiptPhotos, receiptExtractions, recipeIngredients, recipeNutrition, recipeProductionLog, recipeShares, recipeStepPhotos, recipeSubRecipes, saleAppliedPromotions, recurringInvoiceHistory, recurringInvoices, recurringMenuRecommendations, recurringSchedules, referralRequestLog, remyAbuseLog, remyActionAuditLog, remyApprovalPolicies, remyArtifacts, remyFeedback, remyUsageMetrics, responseTemplates, retainers, retainerPeriods, retirementContributions, rsvpReminderLog, saleItems, salesTaxRemittances, salesTaxSettings, scheduledCalls, scheduledMessages, scheduledShifts, shiftTemplates, seasonalAvailabilityPeriods, sequenceEnrollments, sequenceSteps, servedDishHistory, serviceCourses, remyMemories, shiftHandoffNotes, shiftLogs, shiftSwapRequests, shoppingLists, simulationRuns, simulationResults, smartFieldValues, smartGroceryLists, smartGroceryItems, smsMessages, smsSendLog, socialConnectedAccounts, socialHashtagSets, socialMediaAssets, socialPlatformCredentials, socialPostAssets, socialPosts, socialQueueSettings, socialStatsSnapshots, socialTemplates, sourcingEntries, staffAvailability, staffClockEntries, staffMealItems, staffMeals, staffOnboardingItems, staffPerformanceScores, staffSchedules, stationMenuItems, stocktakes, stocktakeItems, storeItemAssignments, stripeTransfers, subcontractAgreements, taskCompletionLog, tasks, taskDependencies, taskTemplates, tastingMenuCourses, tastingMenus, vendorItems, vendorCatalogImportRows, taxJurisdictions, taxCollected, taxFilings, taxQuarterlyEstimates, taxSettings, timeBlocks, travelLegIngredients, truckLocations, truckSchedule, truckPreorders, unusedIngredients, userFeedback, vaTasks, varianceAlertSettings, vehicleMaintenance, vendorEventAssignments, vendorInvoiceItems, vendorInvoiceLineItems, vendorPreferredIngredients, vendorPriceEntries, vendorPricePoints, waitlistEntries, wasteLog, webhookEndpoints, webhookDeliveries, websiteStatsSnapshots, wholesaleAccounts, wholesaleOrders, wixConnections, wixSubmissions, tenantSettings, vendorPriceAlertSettings, workflowExecutionLog, workflowExecutions, vendorDocumentUploads, testimonials, aarRecipeFeedback, recipeFamilies, aarIngredientIssues, expenseLineItems, receiptLineItems, workflowTemplates, workflowSteps, ingredientSaleCycles, chefCollabMessages, chefIntroBridges, chefOpportunityPosts, chefOpportunityInterests, passiveProductPurchases, chefDocuments, pricingRegionsInOpenclaw, zipCentroidsInOpenclaw, chefWorkHistoryEntries, guestCountChanges, commitments, commitmentOverrides, ingredientPriceHistory, storeProductsInOpenclaw, priceTrendsInOpenclaw, systemIngredientPricesInOpenclaw, chefQuickNotes, platformObservabilityEvents, aiCalls, supplierCalls, accountingPeriodLocks, ownerDraws, taxExportRuns, userRoles, userPermissionOverrides, permissionAuditLog, ingredientKnowledge, ingredientKnowledgeSlugs, marginSnapshots, aiCallTranscripts, directoryListingFavorites, aiCallRoutingRules, remyAlerts, remyOnboarding, remyMilestones, eventTicketTypes, eventTickets, eventDistribution, planningRuns, planningRunArtifacts, eventShareSettings, ragChunks, commitmentSuggestions, receiptIngredientMappings, chefPreferences, clientProfileSubjects, clientProfileEvidence, clientProfileVectors, clientProfileConflicts, clientProfileArbitrationQueries, clientProfileRecommendations, productTelemetry, seasonalFactorsInOpenclaw, clientNotes, resolvedPricesInOpenclaw, canonicalIngredientsInOpenclaw, ingredientCensusInOpenclaw, syntheticPricesInOpenclaw, menuMemoryFeedback, menuMemoryRequests, menuMemoryRequestItems, menuMemoryRequestEvents, pricePredictionsInOpenclaw, userLocationDefaults, orderQueue, workflowNotes, workflowNoteMenuLinks, dishIndexComponents, dishIndexNoteLinks, chefTwilioCredentials, chefFeedback, eventReschedules, ingredientAccuracyFlags, menuShareTokens, chefDirectoryListings, legalReadinessItems, legalPolicyVersions, paymentPlanInstallments, locationDailyMetrics, locationAlerts, locationDemandForecasts, locationRecipeCompliance, centralizedPurchaseOrders, centralizedPurchaseOrderItems, chefTips, legalPolicyAcceptances, legalDataRightsCases, legalMarketingSmsConsents, legalPaymentTaxMarketplaceReviews, legalDmcaTakedownCases, legalContentOwnershipAcknowledgments, chefLocationLinks, priceSnapshotsInOpenclaw, priceAnomaliesInOpenclaw, localAiConnectors, remyConversations, remyMessages, contractClauses, eventVendors, eventLeftovers, clientTasteProfiles, cadenceChefSettings, invoiceSends, cadenceSchedule, smsTriageMetadata, portfolioEntries, cancellationFeeSchedule, partnerLocationChangeRequests, contactSubmissions, eventServiceSimulationRuns, dietaryOutreach, chefSocialHashtags, chefPostHashtags, conversationThreadReads, chefFeatureFlags, quoteSelectedAddons } from "./schema";
 
 export const automatedSequencesRelations = relations(automatedSequences, ({one, many}) => ({
 	chef: one(chefs, {
@@ -46,10 +46,8 @@ export const chefsRelations = relations(chefs, ({one, many}) => ({
 	integrationEvents: many(integrationEvents),
 	inquiryStateTransitions: many(inquiryStateTransitions),
 	eventStateTransitions: many(eventStateTransitions),
-	dishes: many(dishes),
 	afterActionReviews: many(afterActionReviews),
 	menuStateTransitions: many(menuStateTransitions),
-	components: many(components),
 	loyaltyTransactions: many(loyaltyTransactions),
 	contractTemplates: many(contractTemplates),
 	eventTips: many(eventTips),
@@ -63,7 +61,6 @@ export const chefsRelations = relations(chefs, ({one, many}) => ({
 	chefConnections_requesterId: many(chefConnections, {
 		relationName: "chefConnections_requesterId_chefs_id"
 	}),
-	clientNotes: many(clientNotes),
 	activityEvents: many(activityEvents),
 	communicationActionLogs: many(communicationActionLog),
 	clientIntakeResponses: many(clientIntakeResponses),
@@ -91,7 +88,6 @@ export const chefsRelations = relations(chefs, ({one, many}) => ({
 	clientQuickRequests: many(clientQuickRequests),
 	guestDietaryConfirmations: many(guestDietaryConfirmations),
 	eventGuestDocuments: many(eventGuestDocuments),
-	eventGuests: many(eventGuests),
 	contractorPayments: many(contractorPayments),
 	clientProposals: many(clientProposals),
 	benchmarkSnapshots: many(benchmarkSnapshots),
@@ -137,18 +133,11 @@ export const chefsRelations = relations(chefs, ({one, many}) => ({
 	eventOutcomeDishes: many(eventOutcomeDishes),
 	clientMergeLogs: many(clientMergeLog),
 	chefActivityLogs: many(chefActivityLog),
-	chefPreferences_chefId: many(chefPreferences, {
-		relationName: "chefPreferences_chefId_chefs_id"
-	}),
-	chefPreferences_tenantId: many(chefPreferences, {
-		relationName: "chefPreferences_tenantId_chefs_id"
-	}),
 	eventCannabisCourseConfigs: many(eventCannabisCourseConfig),
 	commercePaymentSchedules: many(commercePaymentSchedules),
 	commercePayments: many(commercePayments),
 	lifecycleDetectionLogs: many(lifecycleDetectionLog),
 	inventoryTransactions: many(inventoryTransactions),
-	orderQueues: many(orderQueue),
 	cashDrawerMovements: many(cashDrawerMovements),
 	cannabisControlPacketSnapshots: many(cannabisControlPacketSnapshots),
 	guestFeedbacks: many(guestFeedback),
@@ -214,7 +203,6 @@ export const chefsRelations = relations(chefs, ({one, many}) => ({
 	bakeryProductionLogs: many(bakeryProductionLog),
 	feedbackResponses: many(feedbackResponses),
 	giftCardTransactions: many(giftCardTransactions),
-	businessLocations: many(businessLocations),
 	communicationLogs: many(communicationLog),
 	complianceCleaningLogs: many(complianceCleaningLogs),
 	complianceTempLogs: many(complianceTempLogs),
@@ -244,9 +232,7 @@ export const chefsRelations = relations(chefs, ({one, many}) => ({
 	emailSequenceEnrollments: many(emailSequenceEnrollments),
 	eventFeedbacks: many(eventFeedback),
 	mealPrepItems: many(mealPrepItems),
-	chefDirectoryListings: many(chefDirectoryListings),
 	communityBenchmarks: many(communityBenchmarks),
-	ingredientPriceHistories: many(ingredientPriceHistory),
 	giftCertificates: many(giftCertificates),
 	grocerySpendEntries: many(grocerySpendEntries),
 	autoResponseConfigs: many(autoResponseConfig),
@@ -355,7 +341,6 @@ export const chefsRelations = relations(chefs, ({one, many}) => ({
 	communityTemplates: many(communityTemplates),
 	contentPerformances: many(contentPerformance),
 	contractorServiceAgreements: many(contractorServiceAgreements),
-	conversations: many(conversations),
 	cookingClasses: many(cookingClasses),
 	customFieldDefinitions: many(customFieldDefinitions),
 	customFieldValues: many(customFieldValues),
@@ -377,13 +362,12 @@ export const chefsRelations = relations(chefs, ({one, many}) => ({
 	}),
 	chefSocialPosts: many(chefSocialPosts),
 	dailyReports: many(dailyReports),
-	dailyRevenues: many(dailyRevenue),
 	demandForecasts: many(demandForecasts),
 	devices: many(devices),
 	dietaryChangeLogs: many(dietaryChangeLog),
 	dietaryConflictAlerts: many(dietaryConflictAlerts),
+	smsBridgeConfigs: many(smsBridgeConfig),
 	dishFeedbacks: many(dishFeedback),
-	dishIndices: many(dishIndex),
 	dishVariations: many(dishVariations),
 	displayCaseItems: many(displayCaseItems),
 	documentComments: many(documentComments),
@@ -414,6 +398,7 @@ export const chefsRelations = relations(chefs, ({one, many}) => ({
 	eventServiceSessions: many(eventServiceSessions),
 	eventShareInviteEvents: many(eventShareInviteEvents),
 	eventShareInvites: many(eventShareInvites),
+	dailyRevenues: many(dailyRevenue),
 	eventStationAssignments: many(eventStationAssignments),
 	equipmentItems: many(equipmentItems),
 	eventPrepBlocks: many(eventPrepBlocks),
@@ -444,18 +429,17 @@ export const chefsRelations = relations(chefs, ({one, many}) => ({
 	groceryPriceQuotes: many(groceryPriceQuotes),
 	guestCommunicationLogs: many(guestCommunicationLogs),
 	guestComps: many(guestComps),
+	guestEventProfiles: many(guestEventProfile),
 	guestLeads: many(guestLeads),
 	guestPhotos: many(guestPhotos),
 	guestReservations: many(guestReservations),
 	guestTags: many(guestTags),
 	guestTestimonials: many(guestTestimonials),
 	guestVisits: many(guestVisits),
-	guests: many(guests),
 	healthInsurancePremiums: many(healthInsurancePremiums),
 	households: many(households),
 	externalReviews: many(externalReviews),
 	featureRequests: many(featureRequests),
-	expenses: many(expenses),
 	hubGuestEventHistories: many(hubGuestEventHistory),
 	googleMailboxes_chefId: many(googleMailboxes, {
 		relationName: "googleMailboxes_chefId_chefs_id"
@@ -474,15 +458,15 @@ export const chefsRelations = relations(chefs, ({one, many}) => ({
 	incentiveRedemptions: many(incentiveRedemptions),
 	ingredientShelfLifeDefaults: many(ingredientShelfLifeDefaults),
 	ingredientSubstitutions: many(ingredientSubstitutions),
-	ingredients: many(ingredients),
 	inquiryNotes: many(inquiryNotes),
 	inquiryRecipeLinks: many(inquiryRecipeLinks),
 	insuranceClaims: many(insuranceClaims),
 	insurancePolicies: many(insurancePolicies),
+	ledgerEntries: many(ledgerEntries),
+	kdsTickets: many(kdsTickets),
 	inventoryBatches: many(inventoryBatches),
 	inventoryCounts: many(inventoryCounts),
 	inventoryLots: many(inventoryLots),
-	kdsTickets: many(kdsTickets),
 	kitchenAssessments: many(kitchenAssessments),
 	kitchenRentals: many(kitchenRentals),
 	learningGoals: many(learningGoals),
@@ -504,7 +488,7 @@ export const chefsRelations = relations(chefs, ({one, many}) => ({
 	integrationSyncJobs: many(integrationSyncJobs),
 	integrationEntityLinks: many(integrationEntityLinks),
 	integrationFieldMappings: many(integrationFieldMappings),
-	ledgerEntries: many(ledgerEntries),
+	ingredients: many(ingredients),
 	mealPrepPrograms: many(mealPrepPrograms),
 	marketingSpendLogs: many(marketingSpendLog),
 	loyaltyConfigs: many(loyaltyConfig),
@@ -513,7 +497,6 @@ export const chefsRelations = relations(chefs, ({one, many}) => ({
 	menuDishFeedbacks: many(menuDishFeedback),
 	menuItems: many(menuItems),
 	menuModifications: many(menuModifications),
-	menuPreferences: many(menuPreferences),
 	menuRevisions: many(menuRevisions),
 	menuServiceHistories: many(menuServiceHistory),
 	menuTemplates: many(menuTemplates),
@@ -522,6 +505,7 @@ export const chefsRelations = relations(chefs, ({one, many}) => ({
 	notificationPreferences: many(notificationPreferences),
 	notifications: many(notifications),
 	onboardingProgresses: many(onboardingProgress),
+	menuPreferences: many(menuPreferences),
 	opsLogs: many(opsLog),
 	orderAheadItems: many(orderAheadItems),
 	orderAheadOrders: many(orderAheadOrders),
@@ -550,7 +534,6 @@ export const chefsRelations = relations(chefs, ({one, many}) => ({
 	platformApiConnections: many(platformApiConnections),
 	platingGuides: many(platingGuides),
 	portfolioItems: many(portfolioItems),
-	clients: many(clients),
 	postEventSurveys: many(postEventSurveys),
 	prepTimelines: many(prepTimeline),
 	productModifierAssignments: many(productModifierAssignments),
@@ -574,7 +557,6 @@ export const chefsRelations = relations(chefs, ({one, many}) => ({
 	qrScans: many(qrScans),
 	quoteAddons: many(quoteAddons),
 	quoteStateTransitions: many(quoteStateTransitions),
-	quotes: many(quotes),
 	raffleEntries: many(raffleEntries),
 	raffleRounds: many(raffleRounds),
 	platformSnapshots: many(platformSnapshots),
@@ -597,9 +579,7 @@ export const chefsRelations = relations(chefs, ({one, many}) => ({
 	recurringMenuRecommendations: many(recurringMenuRecommendations),
 	recurringSchedules: many(recurringSchedules),
 	recurringServices: many(recurringServices),
-	referralPartners: many(referralPartners),
 	referralRequestLogs: many(referralRequestLog),
-	registerSessions: many(registerSessions),
 	remyAbuseLogs: many(remyAbuseLog),
 	remyActionAuditLogs_chefId: many(remyActionAuditLog, {
 		relationName: "remyActionAuditLog_chefId_chefs_id"
@@ -609,15 +589,12 @@ export const chefsRelations = relations(chefs, ({one, many}) => ({
 	}),
 	remyApprovalPolicies: many(remyApprovalPolicies),
 	remyArtifacts: many(remyArtifacts),
-	remyConversations: many(remyConversations),
 	remyFeedbacks_chefId: many(remyFeedback, {
 		relationName: "remyFeedback_chefId_chefs_id"
 	}),
 	remyFeedbacks_tenantId: many(remyFeedback, {
 		relationName: "remyFeedback_tenantId_chefs_id"
 	}),
-	remyMemories: many(remyMemories),
-	remyMessages: many(remyMessages),
 	remyUsageMetrics: many(remyUsageMetrics),
 	responseTemplates_chefId: many(responseTemplates, {
 		relationName: "responseTemplates_chefId_chefs_id"
@@ -640,6 +617,8 @@ export const chefsRelations = relations(chefs, ({one, many}) => ({
 	sequenceEnrollments: many(sequenceEnrollments),
 	servedDishHistories: many(servedDishHistory),
 	serviceCourses: many(serviceCourses),
+	registerSessions: many(registerSessions),
+	remyMemories: many(remyMemories),
 	shiftHandoffNotes: many(shiftHandoffNotes),
 	shiftLogs: many(shiftLogs),
 	shiftSwapRequests: many(shiftSwapRequests),
@@ -689,7 +668,6 @@ export const chefsRelations = relations(chefs, ({one, many}) => ({
 	taskCompletionLogs: many(taskCompletionLog),
 	taskDependencies: many(taskDependencies),
 	socialPosts: many(socialPosts),
-	staffMembers: many(staffMembers),
 	taskTemplates: many(taskTemplates),
 	tasks: many(tasks),
 	vendorCatalogImportRows: many(vendorCatalogImportRows),
@@ -730,9 +708,8 @@ export const chefsRelations = relations(chefs, ({one, many}) => ({
 	tenantSettings: many(tenantSettings),
 	vendorPriceAlertSettings: many(vendorPriceAlertSettings),
 	workflowExecutionLogs: many(workflowExecutionLog),
-	testimonials: many(testimonials),
 	vendorDocumentUploads: many(vendorDocumentUploads),
-	vendors: many(vendors),
+	testimonials: many(testimonials),
 	tastingMenus: many(tastingMenus),
 	aarRecipeFeedbacks: many(aarRecipeFeedback),
 	recipeFamilies: many(recipeFamilies),
@@ -757,16 +734,10 @@ export const chefsRelations = relations(chefs, ({one, many}) => ({
 	chefDocuments: many(chefDocuments),
 	chefWorkHistoryEntries: many(chefWorkHistoryEntries),
 	communityOrganizations: many(communityOrganizations),
-	usersInAuth: one(usersInAuth, {
-		fields: [chefs.authUserId],
-		references: [usersInAuth.id]
-	}),
-	menu: one(menus, {
-		fields: [chefs.featuredBookingMenuId],
-		references: [menus.id],
-		relationName: "chefs_featuredBookingMenuId_menus_id"
-	}),
 	guestCountChanges: many(guestCountChanges),
+	commitments: many(commitments),
+	commitmentOverrides: many(commitmentOverrides),
+	ingredientPriceHistories: many(ingredientPriceHistory),
 	chefQuickNotes: many(chefQuickNotes),
 	communicationEvents: many(communicationEvents),
 	platformObservabilityEvents: many(platformObservabilityEvents),
@@ -777,43 +748,118 @@ export const chefsRelations = relations(chefs, ({one, many}) => ({
 	taxExportRuns: many(taxExportRuns),
 	userPermissionOverrides: many(userPermissionOverrides),
 	permissionAuditLogs: many(permissionAuditLog),
+	marginSnapshots: many(marginSnapshots),
 	aiCalls: many(aiCalls),
 	aiCallRoutingRules: many(aiCallRoutingRules),
-	inquiries: many(inquiries),
-	messages: many(messages),
 	remyAlerts: many(remyAlerts),
-	eventContracts: many(eventContracts),
 	receiptLineItems: many(receiptLineItems),
 	remyOnboardings: many(remyOnboarding),
 	remyMilestones: many(remyMilestones),
+	eventTicketTypes: many(eventTicketTypes),
+	eventTickets: many(eventTickets),
+	eventDistributions: many(eventDistribution),
 	planningRuns: many(planningRuns),
 	planningRunArtifacts: many(planningRunArtifacts),
-	chefLocationLinks_chefId: many(chefLocationLinks, {
-		relationName: "chefLocationLinks_chefId_chefs_id"
-	}),
-	chefLocationLinks_tenantId: many(chefLocationLinks, {
-		relationName: "chefLocationLinks_tenantId_chefs_id"
-	}),
+	eventShareSettings: many(eventShareSettings),
+	ragChunks: many(ragChunks),
+	commitmentSuggestions: many(commitmentSuggestions),
 	receiptIngredientMappings: many(receiptIngredientMappings),
+	clients: many(clients),
+	chefPreferences_chefId: many(chefPreferences, {
+		relationName: "chefPreferences_chefId_chefs_id"
+	}),
+	chefPreferences_tenantId: many(chefPreferences, {
+		relationName: "chefPreferences_tenantId_chefs_id"
+	}),
+	inquiries: many(inquiries),
+	quotes: many(quotes),
+	menuSelectionTokens: many(menuSelectionTokens),
+	expenses: many(expenses),
 	clientProfileSubjects: many(clientProfileSubjects),
 	clientProfileEvidences: many(clientProfileEvidence),
 	clientProfileVectors: many(clientProfileVectors),
 	clientProfileConflicts: many(clientProfileConflicts),
 	clientProfileArbitrationQueries: many(clientProfileArbitrationQueries),
 	clientProfileRecommendations: many(clientProfileRecommendations),
+	productTelemetries: many(productTelemetry),
+	messages: many(messages),
+	referralPartners: many(referralPartners),
+	staffMembers: many(staffMembers),
+	clientNotes: many(clientNotes),
+	conversations: many(conversations),
+	eventContracts: many(eventContracts),
+	menuMemoryFeedbacks: many(menuMemoryFeedback),
+	menuMemoryRequests: many(menuMemoryRequests),
+	menuMemoryRequestItems: many(menuMemoryRequestItems),
+	menuMemoryRequestEvents: many(menuMemoryRequestEvents),
+	guests: many(guests),
+	businessLocations: many(businessLocations),
+	orderQueues: many(orderQueue),
+	workflowNotes: many(workflowNotes),
+	workflowNoteMenuLinks: many(workflowNoteMenuLinks),
+	dishIndexComponents: many(dishIndexComponents),
+	dishIndexNoteLinks: many(dishIndexNoteLinks),
+	dishIndices: many(dishIndex),
+	dishes: many(dishes),
+	components: many(components),
 	chefTwilioCredentials: many(chefTwilioCredentials),
 	chefFeedbacks: many(chefFeedback),
+	eventReschedules: many(eventReschedules),
 	ingredientAccuracyFlags: many(ingredientAccuracyFlags),
+	menuShareTokens: many(menuShareTokens),
+	vendors: many(vendors),
+	chefDirectoryListings: many(chefDirectoryListings),
+	legalReadinessItems: many(legalReadinessItems),
 	paymentPlanInstallments: many(paymentPlanInstallments),
-	events: many(events),
+	locationDailyMetrics: many(locationDailyMetrics),
+	locationAlerts: many(locationAlerts),
+	locationDemandForecasts: many(locationDemandForecasts),
+	locationRecipeCompliances: many(locationRecipeCompliance),
+	centralizedPurchaseOrders: many(centralizedPurchaseOrders),
+	chefTips: many(chefTips),
+	legalPolicyAcceptances: many(legalPolicyAcceptances),
+	legalDataRightsCases: many(legalDataRightsCases),
+	legalMarketingSmsConsents: many(legalMarketingSmsConsents),
+	legalPaymentTaxMarketplaceReviews: many(legalPaymentTaxMarketplaceReviews),
+	legalDmcaTakedownCases: many(legalDmcaTakedownCases),
+	legalContentOwnershipAcknowledgments: many(legalContentOwnershipAcknowledgments),
 	menus: many(menus, {
 		relationName: "menus_tenantId_chefs_id"
 	}),
+	chefLocationLinks_chefId: many(chefLocationLinks, {
+		relationName: "chefLocationLinks_chefId_chefs_id"
+	}),
+	chefLocationLinks_tenantId: many(chefLocationLinks, {
+		relationName: "chefLocationLinks_tenantId_chefs_id"
+	}),
+	localAiConnectors: many(localAiConnectors),
+	remyConversations: many(remyConversations),
+	remyMessages: many(remyMessages),
 	recipes: many(recipes),
+	contractClauses: many(contractClauses),
+	eventVendors: many(eventVendors),
+	eventLeftovers: many(eventLeftovers),
+	events: many(events),
 	clientTasteProfiles: many(clientTasteProfiles),
+	cadenceChefSettings: many(cadenceChefSettings),
+	usersInAuth: one(usersInAuth, {
+		fields: [chefs.authUserId],
+		references: [usersInAuth.id]
+	}),
+	menu: one(menus, {
+		fields: [chefs.featuredBookingMenuId],
+		references: [menus.id],
+		relationName: "chefs_featuredBookingMenuId_menus_id"
+	}),
+	cadenceSchedules: many(cadenceSchedule),
+	smsTriageMetadata: many(smsTriageMetadata),
+	portfolioEntries: many(portfolioEntries),
+	cancellationFeeSchedules: many(cancellationFeeSchedule),
 	partnerLocationChangeRequests: many(partnerLocationChangeRequests),
+	eventGuests: many(eventGuests),
 	contactSubmissions: many(contactSubmissions),
 	eventServiceSimulationRuns: many(eventServiceSimulationRuns),
+	dietaryOutreaches: many(dietaryOutreach),
 	conversationThreadReads: many(conversationThreadReads),
 	chefFeatureFlags: many(chefFeatureFlags),
 	quoteSelectedAddons: many(quoteSelectedAddons),
@@ -839,7 +885,6 @@ export const eventsRelations = relations(events, ({one, many}) => ({
 	eventTips: many(eventTips),
 	shoppingSubstitutions: many(shoppingSubstitutions),
 	chatMessages: many(chatMessages),
-	clientNotes: many(clientNotes),
 	dishAppearances: many(dishAppearances),
 	eventStaffAssignments: many(eventStaffAssignments),
 	eventShares: many(eventShares),
@@ -848,7 +893,6 @@ export const eventsRelations = relations(events, ({one, many}) => ({
 	clientQuickRequests: many(clientQuickRequests),
 	guestDietaryConfirmations: many(guestDietaryConfirmations),
 	eventGuestDocuments: many(eventGuestDocuments),
-	eventGuests: many(eventGuests),
 	clientProposals: many(clientProposals),
 	staffEventTokens: many(staffEventTokens),
 	eventSalesTaxes: many(eventSalesTax),
@@ -864,7 +908,6 @@ export const eventsRelations = relations(events, ({one, many}) => ({
 	tipRequests: many(tipRequests),
 	cannabisControlPacketEvidences: many(cannabisControlPacketEvidence),
 	eventOutcomeDishes: many(eventOutcomeDishes),
-	chefPreferences: many(chefPreferences),
 	eventCannabisCourseConfigs: many(eventCannabisCourseConfig),
 	commercePaymentSchedules: many(commercePaymentSchedules),
 	commercePayments: many(commercePayments),
@@ -898,7 +941,6 @@ export const eventsRelations = relations(events, ({one, many}) => ({
 	chefReminders: many(chefReminders),
 	cannabisControlPacketReconciliations: many(cannabisControlPacketReconciliations),
 	clientReviews: many(clientReviews),
-	conversations: many(conversations),
 	dietaryConflictAlerts: many(dietaryConflictAlerts),
 	dishFeedbacks: many(dishFeedback),
 	equipmentRentals: many(equipmentRentals),
@@ -935,26 +977,25 @@ export const eventsRelations = relations(events, ({one, many}) => ({
 	goalClientSuggestions: many(goalClientSuggestions),
 	groceryPriceQuotes: many(groceryPriceQuotes),
 	guestCommunicationLogs: many(guestCommunicationLogs),
+	guestEventProfiles: many(guestEventProfile),
 	guestLeads: many(guestLeads),
 	guestPhotos: many(guestPhotos),
 	guestTestimonials: many(guestTestimonials),
-	guestEventProfiles: many(guestEventProfile),
-	expenses: many(expenses),
 	hubGuestEventHistories: many(hubGuestEventHistory),
 	hubGroups: many(hubGroups),
 	incentiveRedemptions: many(incentiveRedemptions),
 	insuranceClaims: many(insuranceClaims),
+	ledgerEntries: many(ledgerEntries),
 	kitchenAssessments: many(kitchenAssessments),
 	kitchenRentals: many(kitchenRentals),
 	loyaltyRewardRedemptions: many(loyaltyRewardRedemptions),
-	ledgerEntries: many(ledgerEntries),
 	hubMedias: many(hubMedia),
 	menuApprovalRequests: many(menuApprovalRequests),
 	menuModifications: many(menuModifications),
-	menuPreferences: many(menuPreferences),
 	menuRevisions: many(menuRevisions),
 	menuServiceHistories: many(menuServiceHistory),
 	notifications: many(notifications),
+	menuPreferences: many(menuPreferences),
 	packingChecklists: many(packingChecklists),
 	paymentDisputes: many(paymentDisputes),
 	paymentMilestones: many(paymentMilestones),
@@ -965,24 +1006,18 @@ export const eventsRelations = relations(events, ({one, many}) => ({
 	postEventSurveys: many(postEventSurveys),
 	prepTimelines: many(prepTimeline),
 	proposalTokens: many(proposalTokens),
-	quotes: many(quotes, {
-		relationName: "quotes_eventId_events_id"
-	}),
 	platformSnapshots: many(platformSnapshots),
 	rebookTokens: many(rebookTokens),
 	receiptPhotos: many(receiptPhotos),
 	recipeProductionLogs: many(recipeProductionLog),
-	referralPartners: many(referralPartners, {
-		relationName: "referralPartners_originEventId_events_id"
-	}),
 	referralRequestLogs: many(referralRequestLog),
 	remyArtifacts: many(remyArtifacts),
-	remyMemories: many(remyMemories),
 	rsvpReminderLogs: many(rsvpReminderLog),
 	sales: many(sales),
 	scheduledCalls: many(scheduledCalls),
 	servedDishHistories: many(servedDishHistory),
 	serviceCourses: many(serviceCourses),
+	remyMemories: many(remyMemories),
 	shoppingLists: many(shoppingLists),
 	smartGroceryLists: many(smartGroceryLists),
 	sourcingEntries: many(sourcingEntries),
@@ -1006,16 +1041,43 @@ export const eventsRelations = relations(events, ({one, many}) => ({
 	tastingMenus: many(tastingMenus),
 	chefDocuments: many(chefDocuments),
 	guestCountChanges: many(guestCountChanges),
+	marginSnapshots: many(marginSnapshots),
 	aiCalls: many(aiCalls),
+	receiptLineItems: many(receiptLineItems),
+	eventTicketTypes: many(eventTicketTypes),
+	eventTickets: many(eventTickets),
+	eventDistributions: many(eventDistribution),
+	eventShareSettings: many(eventShareSettings),
+	chefPreferences: many(chefPreferences),
 	inquiries: many(inquiries, {
 		relationName: "inquiries_convertedToEventId_events_id"
 	}),
+	quotes: many(quotes, {
+		relationName: "quotes_eventId_events_id"
+	}),
+	menuSelectionTokens: many(menuSelectionTokens),
+	expenses: many(expenses),
 	messages: many(messages),
-	eventContracts: many(eventContracts),
-	receiptLineItems: many(receiptLineItems),
+	referralPartners: many(referralPartners, {
+		relationName: "referralPartners_originEventId_events_id"
+	}),
 	hubPolls: many(hubPolls),
+	clientNotes: many(clientNotes),
+	conversations: many(conversations),
+	eventContracts: many(eventContracts),
+	menuMemoryFeedbacks: many(menuMemoryFeedback),
+	menuMemoryRequests: many(menuMemoryRequests),
+	menuMemoryRequestItems: many(menuMemoryRequestItems),
+	workflowNotes: many(workflowNotes),
+	dishIndices: many(dishIndex),
 	chefFeedbacks: many(chefFeedback),
+	eventReschedules: many(eventReschedules),
 	paymentPlanInstallments: many(paymentPlanInstallments),
+	menus: many(menus, {
+		relationName: "menus_eventId_events_id"
+	}),
+	eventVendors: many(eventVendors),
+	eventLeftovers: many(eventLeftovers),
 	chefBackupContact: one(chefBackupContacts, {
 		fields: [events.backupContactId],
 		references: [chefBackupContacts.id]
@@ -1046,6 +1108,10 @@ export const eventsRelations = relations(events, ({one, many}) => ({
 		fields: [events.inquiryId],
 		references: [inquiries.id],
 		relationName: "events_inquiryId_inquiries_id"
+	}),
+	businessLocation: one(businessLocations, {
+		fields: [events.locationId],
+		references: [businessLocations.id]
 	}),
 	menu: one(menus, {
 		fields: [events.menuId],
@@ -1092,10 +1158,12 @@ export const eventsRelations = relations(events, ({one, many}) => ({
 		references: [usersInAuth.id],
 		relationName: "events_updatedBy_usersInAuth_id"
 	}),
-	menus: many(menus, {
-		relationName: "menus_eventId_events_id"
-	}),
+	invoiceSends: many(invoiceSends),
+	cadenceSchedules: many(cadenceSchedule),
+	portfolioEntries: many(portfolioEntries),
+	eventGuests: many(eventGuests),
 	eventServiceSimulationRuns: many(eventServiceSimulationRuns),
+	dietaryOutreaches: many(dietaryOutreach),
 }));
 
 export const chefTodosRelations = relations(chefTodos, ({one}) => ({
@@ -1116,12 +1184,6 @@ export const usersInAuthRelations = relations(usersInAuth, ({many}) => ({
 	clientInvitations: many(clientInvitations),
 	inquiryStateTransitions: many(inquiryStateTransitions),
 	eventStateTransitions: many(eventStateTransitions),
-	dishes_createdBy: many(dishes, {
-		relationName: "dishes_createdBy_usersInAuth_id"
-	}),
-	dishes_updatedBy: many(dishes, {
-		relationName: "dishes_updatedBy_usersInAuth_id"
-	}),
 	afterActionReviews_createdBy: many(afterActionReviews, {
 		relationName: "afterActionReviews_createdBy_usersInAuth_id"
 	}),
@@ -1129,12 +1191,6 @@ export const usersInAuthRelations = relations(usersInAuth, ({many}) => ({
 		relationName: "afterActionReviews_updatedBy_usersInAuth_id"
 	}),
 	menuStateTransitions: many(menuStateTransitions),
-	components_createdBy: many(components, {
-		relationName: "components_createdBy_usersInAuth_id"
-	}),
-	components_updatedBy: many(components, {
-		relationName: "components_updatedBy_usersInAuth_id"
-	}),
 	loyaltyTransactions: many(loyaltyTransactions),
 	seasonalPalettes_createdBy: many(seasonalPalettes, {
 		relationName: "seasonalPalettes_createdBy_usersInAuth_id"
@@ -1150,12 +1206,6 @@ export const usersInAuthRelations = relations(usersInAuth, ({many}) => ({
 	posAlertEvents_resolvedBy: many(posAlertEvents, {
 		relationName: "posAlertEvents_resolvedBy_usersInAuth_id"
 	}),
-	eventGuests_authUserId: many(eventGuests, {
-		relationName: "eventGuests_authUserId_usersInAuth_id"
-	}),
-	eventGuests_reconciledBy: many(eventGuests, {
-		relationName: "eventGuests_reconciledBy_usersInAuth_id"
-	}),
 	deadLetterQueues: many(deadLetterQueue),
 	clientPhotos: many(clientPhotos),
 	eventReadinessGates: many(eventReadinessGates),
@@ -1169,7 +1219,6 @@ export const usersInAuthRelations = relations(usersInAuth, ({many}) => ({
 	qolMetricEvents: many(qolMetricEvents),
 	commercePayments: many(commercePayments),
 	inventoryTransactions: many(inventoryTransactions),
-	orderQueues: many(orderQueue),
 	cashDrawerMovements: many(cashDrawerMovements),
 	cannabisControlPacketSnapshots_finalizedBy: many(cannabisControlPacketSnapshots, {
 		relationName: "cannabisControlPacketSnapshots_finalizedBy_usersInAuth_id"
@@ -1231,28 +1280,21 @@ export const usersInAuthRelations = relations(usersInAuth, ({many}) => ({
 	frontOfHouseMenus: many(frontOfHouseMenus),
 	giftCardPurchaseIntents: many(giftCardPurchaseIntents),
 	guestCommunicationLogs: many(guestCommunicationLogs),
-	expenses_createdBy: many(expenses, {
-		relationName: "expenses_createdBy_usersInAuth_id"
-	}),
-	expenses_updatedBy: many(expenses, {
-		relationName: "expenses_updatedBy_usersInAuth_id"
-	}),
 	incentiveDeliveries: many(incentiveDeliveries),
 	incentiveRedemptions: many(incentiveRedemptions),
-	ingredients_createdBy: many(ingredients, {
-		relationName: "ingredients_createdBy_usersInAuth_id"
-	}),
-	ingredients_updatedBy: many(ingredients, {
-		relationName: "ingredients_updatedBy_usersInAuth_id"
-	}),
+	ledgerEntries: many(ledgerEntries),
 	loyaltyRewards_createdBy: many(loyaltyRewards, {
 		relationName: "loyaltyRewards_createdBy_usersInAuth_id"
 	}),
 	loyaltyRewards_updatedBy: many(loyaltyRewards, {
 		relationName: "loyaltyRewards_updatedBy_usersInAuth_id"
 	}),
-	ledgerEntries: many(ledgerEntries),
-	menuPreferences: many(menuPreferences),
+	ingredients_createdBy: many(ingredients, {
+		relationName: "ingredients_createdBy_usersInAuth_id"
+	}),
+	ingredients_updatedBy: many(ingredients, {
+		relationName: "ingredients_updatedBy_usersInAuth_id"
+	}),
 	menuTemplates_createdBy: many(menuTemplates, {
 		relationName: "menuTemplates_createdBy_usersInAuth_id"
 	}),
@@ -1261,16 +1303,10 @@ export const usersInAuthRelations = relations(usersInAuth, ({many}) => ({
 	}),
 	notificationPreferences: many(notificationPreferences),
 	notifications: many(notifications),
+	menuPreferences: many(menuPreferences),
 	pantryItems: many(pantryItems),
-	clients: many(clients),
 	pushSubscriptions: many(pushSubscriptions),
 	quoteStateTransitions: many(quoteStateTransitions),
-	quotes_createdBy: many(quotes, {
-		relationName: "quotes_createdBy_usersInAuth_id"
-	}),
-	quotes_updatedBy: many(quotes, {
-		relationName: "quotes_updatedBy_usersInAuth_id"
-	}),
 	raffleRounds: many(raffleRounds),
 	productTourProgresses: many(productTourProgress),
 	recurringMenuRecommendations_respondedBy: many(recurringMenuRecommendations, {
@@ -1279,21 +1315,19 @@ export const usersInAuthRelations = relations(usersInAuth, ({many}) => ({
 	recurringMenuRecommendations_sentBy: many(recurringMenuRecommendations, {
 		relationName: "recurringMenuRecommendations_sentBy_usersInAuth_id"
 	}),
-	referralPartners: many(referralPartners),
-	registerSessions_closedBy: many(registerSessions, {
-		relationName: "registerSessions_closedBy_usersInAuth_id"
-	}),
-	registerSessions_openedBy: many(registerSessions, {
-		relationName: "registerSessions_openedBy_usersInAuth_id"
-	}),
 	sales_createdBy: many(sales, {
 		relationName: "sales_createdBy_usersInAuth_id"
 	}),
 	sales_voidedBy: many(sales, {
 		relationName: "sales_voidedBy_usersInAuth_id"
 	}),
+	registerSessions_closedBy: many(registerSessions, {
+		relationName: "registerSessions_closedBy_usersInAuth_id"
+	}),
+	registerSessions_openedBy: many(registerSessions, {
+		relationName: "registerSessions_openedBy_usersInAuth_id"
+	}),
 	staffMeals: many(staffMeals),
-	staffMembers: many(staffMembers),
 	timeBlocks: many(timeBlocks),
 	userFeedbacks: many(userFeedback),
 	chefDocuments_createdBy: many(chefDocuments, {
@@ -1303,7 +1337,6 @@ export const usersInAuthRelations = relations(usersInAuth, ({many}) => ({
 		relationName: "chefDocuments_updatedBy_usersInAuth_id"
 	}),
 	betaSurveyResponses: many(betaSurveyResponses),
-	chefs: many(chefs),
 	guestCountChanges: many(guestCountChanges),
 	accountingPeriodLocks: many(accountingPeriodLocks),
 	ownerDraws_createdBy: many(ownerDraws, {
@@ -1320,6 +1353,20 @@ export const usersInAuthRelations = relations(usersInAuth, ({many}) => ({
 	userPermissionOverrides_grantedBy: many(userPermissionOverrides, {
 		relationName: "userPermissionOverrides_grantedBy_usersInAuth_id"
 	}),
+	clients: many(clients),
+	quotes_createdBy: many(quotes, {
+		relationName: "quotes_createdBy_usersInAuth_id"
+	}),
+	quotes_updatedBy: many(quotes, {
+		relationName: "quotes_updatedBy_usersInAuth_id"
+	}),
+	expenses_createdBy: many(expenses, {
+		relationName: "expenses_createdBy_usersInAuth_id"
+	}),
+	expenses_updatedBy: many(expenses, {
+		relationName: "expenses_updatedBy_usersInAuth_id"
+	}),
+	productTelemetries: many(productTelemetry),
 	messages_approvedBy: many(messages, {
 		relationName: "messages_approvedBy_usersInAuth_id"
 	}),
@@ -1329,16 +1376,50 @@ export const usersInAuthRelations = relations(usersInAuth, ({many}) => ({
 	messages_toUserId: many(messages, {
 		relationName: "messages_toUserId_usersInAuth_id"
 	}),
+	referralPartners: many(referralPartners),
+	staffMembers: many(staffMembers),
+	menuMemoryRequestEvents: many(menuMemoryRequestEvents),
+	userLocationDefaults: many(userLocationDefaults),
+	orderQueues: many(orderQueue),
+	workflowNotes_createdBy: many(workflowNotes, {
+		relationName: "workflowNotes_createdBy_usersInAuth_id"
+	}),
+	workflowNotes_updatedBy: many(workflowNotes, {
+		relationName: "workflowNotes_updatedBy_usersInAuth_id"
+	}),
+	workflowNoteMenuLinks: many(workflowNoteMenuLinks),
+	dishIndexComponents_createdBy: many(dishIndexComponents, {
+		relationName: "dishIndexComponents_createdBy_usersInAuth_id"
+	}),
+	dishIndexComponents_updatedBy: many(dishIndexComponents, {
+		relationName: "dishIndexComponents_updatedBy_usersInAuth_id"
+	}),
+	dishIndexNoteLinks: many(dishIndexNoteLinks),
+	dishes_createdBy: many(dishes, {
+		relationName: "dishes_createdBy_usersInAuth_id"
+	}),
+	dishes_updatedBy: many(dishes, {
+		relationName: "dishes_updatedBy_usersInAuth_id"
+	}),
+	components_createdBy: many(components, {
+		relationName: "components_createdBy_usersInAuth_id"
+	}),
+	components_updatedBy: many(components, {
+		relationName: "components_updatedBy_usersInAuth_id"
+	}),
 	chefFeedbacks: many(chefFeedback),
-	events_createdBy: many(events, {
-		relationName: "events_createdBy_usersInAuth_id"
+	legalReadinessItems_ownerUserId: many(legalReadinessItems, {
+		relationName: "legalReadinessItems_ownerUserId_usersInAuth_id"
 	}),
-	events_preEventChecklistConfirmedBy: many(events, {
-		relationName: "events_preEventChecklistConfirmedBy_usersInAuth_id"
+	legalReadinessItems_reviewedBy: many(legalReadinessItems, {
+		relationName: "legalReadinessItems_reviewedBy_usersInAuth_id"
 	}),
-	events_updatedBy: many(events, {
-		relationName: "events_updatedBy_usersInAuth_id"
-	}),
+	legalPolicyVersions: many(legalPolicyVersions),
+	legalPolicyAcceptances: many(legalPolicyAcceptances),
+	legalDataRightsCases: many(legalDataRightsCases),
+	legalPaymentTaxMarketplaceReviews: many(legalPaymentTaxMarketplaceReviews),
+	legalDmcaTakedownCases: many(legalDmcaTakedownCases),
+	legalContentOwnershipAcknowledgments: many(legalContentOwnershipAcknowledgments),
 	menus_createdBy: many(menus, {
 		relationName: "menus_createdBy_usersInAuth_id"
 	}),
@@ -1351,11 +1432,27 @@ export const usersInAuthRelations = relations(usersInAuth, ({many}) => ({
 	recipes_updatedBy: many(recipes, {
 		relationName: "recipes_updatedBy_usersInAuth_id"
 	}),
+	events_createdBy: many(events, {
+		relationName: "events_createdBy_usersInAuth_id"
+	}),
+	events_preEventChecklistConfirmedBy: many(events, {
+		relationName: "events_preEventChecklistConfirmedBy_usersInAuth_id"
+	}),
+	events_updatedBy: many(events, {
+		relationName: "events_updatedBy_usersInAuth_id"
+	}),
+	chefs: many(chefs),
 	partnerLocationChangeRequests_requestedByAuthUserId: many(partnerLocationChangeRequests, {
 		relationName: "partnerLocationChangeRequests_requestedByAuthUserId_usersInAuth_id"
 	}),
 	partnerLocationChangeRequests_reviewedByAuthUserId: many(partnerLocationChangeRequests, {
 		relationName: "partnerLocationChangeRequests_reviewedByAuthUserId_usersInAuth_id"
+	}),
+	eventGuests_authUserId: many(eventGuests, {
+		relationName: "eventGuests_authUserId_usersInAuth_id"
+	}),
+	eventGuests_reconciledBy: many(eventGuests, {
+		relationName: "eventGuests_reconciledBy_usersInAuth_id"
 	}),
 }));
 
@@ -1381,9 +1478,6 @@ export const suggestedLinksRelations = relations(suggestedLinks, ({one}) => ({
 export const communicationEventsRelations = relations(communicationEvents, ({one, many}) => ({
 	suggestedLinks: many(suggestedLinks),
 	communicationActionLogs: many(communicationActionLog),
-	clients: many(clients, {
-		relationName: "clients_stagedFromSignalId_communicationEvents_id"
-	}),
 	client: one(clients, {
 		fields: [communicationEvents.resolvedClientId],
 		references: [clients.id],
@@ -1400,6 +1494,9 @@ export const communicationEventsRelations = relations(communicationEvents, ({one
 	}),
 	conversationThreads: many(conversationThreads, {
 		relationName: "conversationThreads_latestOutboundEventId_communicationEvents_id"
+	}),
+	clients: many(clients, {
+		relationName: "clients_stagedFromSignalId_communicationEvents_id"
 	}),
 	inquiries: many(inquiries),
 	events: many(events),
@@ -1460,6 +1557,7 @@ export const conversationThreadsRelations = relations(conversationThreads, ({one
 		references: [chefs.id]
 	}),
 	messages: many(messages),
+	smsTriageMetadata: many(smsTriageMetadata),
 	conversationThreadReads: many(conversationThreadReads),
 }));
 
@@ -1543,8 +1641,10 @@ export const ingredientsRelations = relations(ingredients, ({one, many}) => ({
 	}),
 	inventoryTransactions: many(inventoryTransactions),
 	ingredientAliases: many(ingredientAliases),
-	ingredientPriceHistories: many(ingredientPriceHistory),
 	groceryPriceQuoteItems: many(groceryPriceQuoteItems),
+	inventoryAuditItems: many(inventoryAuditItems),
+	inventoryBatches: many(inventoryBatches),
+	inventoryCounts: many(inventoryCounts),
 	usersInAuth_createdBy: one(usersInAuth, {
 		fields: [ingredients.createdBy],
 		references: [usersInAuth.id],
@@ -1563,9 +1663,6 @@ export const ingredientsRelations = relations(ingredients, ({one, many}) => ({
 		references: [usersInAuth.id],
 		relationName: "ingredients_updatedBy_usersInAuth_id"
 	}),
-	inventoryAuditItems: many(inventoryAuditItems),
-	inventoryBatches: many(inventoryBatches),
-	inventoryCounts: many(inventoryCounts),
 	pantryItems: many(pantryItems),
 	recipeIngredients: many(recipeIngredients),
 	staffMealItems: many(staffMealItems),
@@ -1576,7 +1673,11 @@ export const ingredientsRelations = relations(ingredients, ({one, many}) => ({
 	aarIngredientIssues: many(aarIngredientIssues),
 	expenseLineItems: many(expenseLineItems),
 	ingredientSaleCycles: many(ingredientSaleCycles),
+	ingredientPriceHistories: many(ingredientPriceHistory),
 	receiptIngredientMappings: many(receiptIngredientMappings),
+	menuMemoryFeedbacks: many(menuMemoryFeedback),
+	menuMemoryRequestItems: many(menuMemoryRequestItems),
+	centralizedPurchaseOrderItems: many(centralizedPurchaseOrderItems),
 }));
 
 export const campaignTemplatesRelations = relations(campaignTemplates, ({one}) => ({
@@ -1601,7 +1702,6 @@ export const clientsRelations = relations(clients, ({one, many}) => ({
 	directOutreachLogs: many(directOutreachLog),
 	loyaltyTransactions: many(loyaltyTransactions),
 	chatInsights: many(chatInsights),
-	clientNotes: many(clientNotes),
 	activityEvents: many(activityEvents),
 	clientIntakeResponses: many(clientIntakeResponses),
 	clientIntakeShares: many(clientIntakeShares),
@@ -1672,11 +1772,11 @@ export const clientsRelations = relations(clients, ({one, many}) => ({
 	householdMembers: many(householdMembers),
 	households: many(households),
 	incentiveRedemptions: many(incentiveRedemptions),
+	ledgerEntries: many(ledgerEntries),
 	kitchenAssessments: many(kitchenAssessments),
 	loyaltyRewardRedemptions: many(loyaltyRewardRedemptions),
 	mealPrepContainers: many(mealPrepContainers),
 	mealPrepDeliveries: many(mealPrepDeliveries),
-	ledgerEntries: many(ledgerEntries),
 	mealPrepPrograms: many(mealPrepPrograms),
 	menuApprovalRequests: many(menuApprovalRequests),
 	menuDishFeedbacks: many(menuDishFeedback),
@@ -1686,6 +1786,43 @@ export const clientsRelations = relations(clients, ({one, many}) => ({
 	packingChecklists: many(packingChecklists),
 	pantryLocations: many(pantryLocations),
 	platformRecords: many(platformRecords),
+	postEventSurveys: many(postEventSurveys),
+	proposalTokens: many(proposalTokens),
+	raffleEntries: many(raffleEntries),
+	raffleRounds_mostDedicatedClientId: many(raffleRounds, {
+		relationName: "raffleRounds_mostDedicatedClientId_clients_id"
+	}),
+	raffleRounds_topScorerClientId: many(raffleRounds, {
+		relationName: "raffleRounds_topScorerClientId_clients_id"
+	}),
+	raffleRounds_winnerClientId: many(raffleRounds, {
+		relationName: "raffleRounds_winnerClientId_clients_id"
+	}),
+	rebookTokens: many(rebookTokens),
+	receiptPhotos: many(receiptPhotos),
+	recurringInvoiceHistories: many(recurringInvoiceHistory),
+	recurringInvoices: many(recurringInvoices),
+	recurringMenuRecommendations: many(recurringMenuRecommendations),
+	recurringSchedules: many(recurringSchedules),
+	recurringServices: many(recurringServices),
+	referralRequestLogs: many(referralRequestLog),
+	remyArtifacts: many(remyArtifacts),
+	retainers: many(retainers),
+	sales: many(sales),
+	scheduledCalls: many(scheduledCalls),
+	sequenceEnrollments: many(sequenceEnrollments),
+	servedDishHistories: many(servedDishHistory),
+	remyMemories: many(remyMemories),
+	waitlistEntries: many(waitlistEntries),
+	wixSubmissions: many(wixSubmissions),
+	testimonials: many(testimonials),
+	passiveProductPurchases: many(passiveProductPurchases),
+	chefDocuments: many(chefDocuments),
+	communicationEvents: many(communicationEvents, {
+		relationName: "communicationEvents_resolvedClientId_clients_id"
+	}),
+	conversationThreads: many(conversationThreads),
+	directoryListingFavorites: many(directoryListingFavorites),
 	usersInAuth: one(usersInAuth, {
 		fields: [clients.authUserId],
 		references: [usersInAuth.id]
@@ -1717,48 +1854,8 @@ export const clientsRelations = relations(clients, ({one, many}) => ({
 		fields: [clients.tenantId],
 		references: [chefs.id]
 	}),
-	postEventSurveys: many(postEventSurveys),
-	proposalTokens: many(proposalTokens),
-	quotes: many(quotes),
-	raffleEntries: many(raffleEntries),
-	raffleRounds_mostDedicatedClientId: many(raffleRounds, {
-		relationName: "raffleRounds_mostDedicatedClientId_clients_id"
-	}),
-	raffleRounds_topScorerClientId: many(raffleRounds, {
-		relationName: "raffleRounds_topScorerClientId_clients_id"
-	}),
-	raffleRounds_winnerClientId: many(raffleRounds, {
-		relationName: "raffleRounds_winnerClientId_clients_id"
-	}),
-	rebookTokens: many(rebookTokens),
-	receiptPhotos: many(receiptPhotos),
-	recurringInvoiceHistories: many(recurringInvoiceHistory),
-	recurringInvoices: many(recurringInvoices),
-	recurringMenuRecommendations: many(recurringMenuRecommendations),
-	recurringSchedules: many(recurringSchedules),
-	recurringServices: many(recurringServices),
-	referralPartners: many(referralPartners),
-	referralRequestLogs: many(referralRequestLog),
-	remyArtifacts: many(remyArtifacts),
-	remyMemories: many(remyMemories),
-	retainers: many(retainers),
-	sales: many(sales),
-	scheduledCalls: many(scheduledCalls),
-	sequenceEnrollments: many(sequenceEnrollments),
-	servedDishHistories: many(servedDishHistory),
-	waitlistEntries: many(waitlistEntries),
-	wixSubmissions: many(wixSubmissions),
-	testimonials: many(testimonials),
-	passiveProductPurchases: many(passiveProductPurchases),
-	chefDocuments: many(chefDocuments),
-	communicationEvents: many(communicationEvents, {
-		relationName: "communicationEvents_resolvedClientId_clients_id"
-	}),
-	conversationThreads: many(conversationThreads),
-	directoryListingFavorites: many(directoryListingFavorites),
 	inquiries: many(inquiries),
-	messages: many(messages),
-	eventContracts: many(eventContracts),
+	quotes: many(quotes),
 	clientProfileSubjects_linkedClientId: many(clientProfileSubjects, {
 		relationName: "clientProfileSubjects_linkedClientId_clients_id"
 	}),
@@ -1770,9 +1867,18 @@ export const clientsRelations = relations(clients, ({one, many}) => ({
 	clientProfileConflicts: many(clientProfileConflicts),
 	clientProfileArbitrationQueries: many(clientProfileArbitrationQueries),
 	clientProfileRecommendations: many(clientProfileRecommendations),
+	messages: many(messages),
+	referralPartners: many(referralPartners),
+	clientNotes: many(clientNotes),
+	eventContracts: many(eventContracts),
+	menuMemoryFeedbacks: many(menuMemoryFeedback),
+	menuMemoryRequests: many(menuMemoryRequests),
+	menuMemoryRequestEvents: many(menuMemoryRequestEvents),
+	workflowNotes: many(workflowNotes),
+	dishIndices: many(dishIndex),
 	chefFeedbacks: many(chefFeedback),
-	events: many(events),
 	menus: many(menus),
+	events: many(events),
 	clientTasteProfiles: many(clientTasteProfiles),
 }));
 
@@ -1862,7 +1968,6 @@ export const inquiriesRelations = relations(inquiries, ({one, many}) => ({
 	clientReferrals: many(clientReferrals),
 	campaignRecipients: many(campaignRecipients),
 	chefReminders: many(chefReminders),
-	conversations: many(conversations),
 	eventServiceSessions: many(eventServiceSessions),
 	gmailHistoricalFindings: many(gmailHistoricalFindings),
 	hubGroups: many(hubGroups),
@@ -1871,7 +1976,6 @@ export const inquiriesRelations = relations(inquiries, ({one, many}) => ({
 	notifications: many(notifications),
 	platformRecords: many(platformRecords),
 	platformPayouts: many(platformPayouts),
-	quotes: many(quotes),
 	platformSnapshots: many(platformSnapshots),
 	prospects: many(prospects),
 	scheduledCalls: many(scheduledCalls),
@@ -1910,7 +2014,9 @@ export const inquiriesRelations = relations(inquiries, ({one, many}) => ({
 		fields: [inquiries.tenantId],
 		references: [chefs.id]
 	}),
+	quotes: many(quotes),
 	messages: many(messages),
+	conversations: many(conversations),
 	events: many(events, {
 		relationName: "events_inquiryId_inquiries_id"
 	}),
@@ -1929,103 +2035,6 @@ export const eventStateTransitionsRelations = relations(eventStateTransitions, (
 	usersInAuth: one(usersInAuth, {
 		fields: [eventStateTransitions.transitionedBy],
 		references: [usersInAuth.id]
-	}),
-}));
-
-export const dishesRelations = relations(dishes, ({one, many}) => ({
-	usersInAuth_createdBy: one(usersInAuth, {
-		fields: [dishes.createdBy],
-		references: [usersInAuth.id],
-		relationName: "dishes_createdBy_usersInAuth_id"
-	}),
-	menu: one(menus, {
-		fields: [dishes.menuId],
-		references: [menus.id]
-	}),
-	tastingMenuCourse: one(tastingMenuCourses, {
-		fields: [dishes.sourceTastingCourseId],
-		references: [tastingMenuCourses.id]
-	}),
-	chef: one(chefs, {
-		fields: [dishes.tenantId],
-		references: [chefs.id]
-	}),
-	usersInAuth_updatedBy: one(usersInAuth, {
-		fields: [dishes.updatedBy],
-		references: [usersInAuth.id],
-		relationName: "dishes_updatedBy_usersInAuth_id"
-	}),
-	components: many(components),
-	eventOutcomeDishes: many(eventOutcomeDishes),
-	hubMealBoards: many(hubMealBoard),
-	menuDishFeedbacks: many(menuDishFeedback),
-}));
-
-export const menusRelations = relations(menus, ({one, many}) => ({
-	dishes: many(dishes),
-	menuStateTransitions: many(menuStateTransitions),
-	dishAppearances: many(dishAppearances),
-	clientQuickRequests: many(clientQuickRequests),
-	clientProposals: many(clientProposals),
-	mealPrepWeeks: many(mealPrepWeeks),
-	menuNutritions: many(menuNutrition),
-	hubMealBoards: many(hubMealBoard),
-	cookingClasses: many(cookingClasses),
-	experiencePackages: many(experiencePackages),
-	frontOfHouseMenus: many(frontOfHouseMenus),
-	marketingCampaigns: many(marketingCampaigns),
-	menuBeveragePairings: many(menuBeveragePairings),
-	menuItems: many(menuItems),
-	menuPreferences: many(menuPreferences),
-	menuRevisions: many(menuRevisions),
-	productProjections: many(productProjections),
-	proposalTemplates: many(proposalTemplates),
-	recurringSchedules: many(recurringSchedules),
-	tastingMenus: many(tastingMenus),
-	chefs: many(chefs, {
-		relationName: "chefs_featuredBookingMenuId_menus_id"
-	}),
-	inquiries: many(inquiries),
-	hubPolls: many(hubPolls),
-	events: many(events, {
-		relationName: "events_menuId_menus_id"
-	}),
-	client: one(clients, {
-		fields: [menus.clientId],
-		references: [clients.id]
-	}),
-	usersInAuth_createdBy: one(usersInAuth, {
-		fields: [menus.createdBy],
-		references: [usersInAuth.id],
-		relationName: "menus_createdBy_usersInAuth_id"
-	}),
-	event: one(events, {
-		fields: [menus.eventId],
-		references: [events.id],
-		relationName: "menus_eventId_events_id"
-	}),
-	chef: one(chefs, {
-		fields: [menus.tenantId],
-		references: [chefs.id],
-		relationName: "menus_tenantId_chefs_id"
-	}),
-	usersInAuth_updatedBy: one(usersInAuth, {
-		fields: [menus.updatedBy],
-		references: [usersInAuth.id],
-		relationName: "menus_updatedBy_usersInAuth_id"
-	}),
-}));
-
-export const tastingMenuCoursesRelations = relations(tastingMenuCourses, ({one, many}) => ({
-	dishes: many(dishes),
-	components: many(components),
-	recipe: one(recipes, {
-		fields: [tastingMenuCourses.recipeId],
-		references: [recipes.id]
-	}),
-	tastingMenu: one(tastingMenus, {
-		fields: [tastingMenuCourses.tastingMenuId],
-		references: [tastingMenus.id]
 	}),
 }));
 
@@ -2067,88 +2076,68 @@ export const menuStateTransitionsRelations = relations(menuStateTransitions, ({o
 	}),
 }));
 
-export const componentsRelations = relations(components, ({one, many}) => ({
-	usersInAuth_createdBy: one(usersInAuth, {
-		fields: [components.createdBy],
-		references: [usersInAuth.id],
-		relationName: "components_createdBy_usersInAuth_id"
-	}),
-	dish: one(dishes, {
-		fields: [components.dishId],
-		references: [dishes.id]
-	}),
-	recipe: one(recipes, {
-		fields: [components.recipeId],
-		references: [recipes.id]
-	}),
-	tastingMenuCourse: one(tastingMenuCourses, {
-		fields: [components.sourceTastingCourseId],
-		references: [tastingMenuCourses.id]
-	}),
-	chef: one(chefs, {
-		fields: [components.tenantId],
-		references: [chefs.id]
-	}),
-	usersInAuth_updatedBy: one(usersInAuth, {
-		fields: [components.updatedBy],
-		references: [usersInAuth.id],
-		relationName: "components_updatedBy_usersInAuth_id"
-	}),
-	eventLeftoverDetails: many(eventLeftoverDetails),
-	menuModifications: many(menuModifications),
-}));
-
-export const recipesRelations = relations(recipes, ({one, many}) => ({
-	components: many(components),
+export const menusRelations = relations(menus, ({one, many}) => ({
+	menuStateTransitions: many(menuStateTransitions),
+	dishAppearances: many(dishAppearances),
+	clientQuickRequests: many(clientQuickRequests),
+	clientProposals: many(clientProposals),
+	mealPrepWeeks: many(mealPrepWeeks),
 	menuNutritions: many(menuNutrition),
-	eventOutcomeDishes: many(eventOutcomeDishes),
-	dailySpecials: many(dailySpecials),
-	bakeryBatches: many(bakeryBatches),
-	chefJournalRecipeLinks: many(chefJournalRecipeLinks),
-	chefJourneyIdeas: many(chefJourneyIdeas),
-	dishIndices: many(dishIndex),
-	inquiryRecipeLinks: many(inquiryRecipeLinks),
-	mealPrepBatchLogs: many(mealPrepBatchLog),
+	hubMealBoards: many(hubMealBoard),
+	cookingClasses: many(cookingClasses),
+	experiencePackages: many(experiencePackages),
+	frontOfHouseMenus: many(frontOfHouseMenus),
+	marketingCampaigns: many(marketingCampaigns),
+	menuBeveragePairings: many(menuBeveragePairings),
 	menuItems: many(menuItems),
-	platingGuides: many(platingGuides),
+	menuRevisions: many(menuRevisions),
+	menuPreferences: many(menuPreferences),
 	productProjections: many(productProjections),
-	recipeIngredients: many(recipeIngredients),
-	recipeNutritions: many(recipeNutrition),
-	recipeProductionLogs: many(recipeProductionLog),
-	recipeShares_createdRecipeId: many(recipeShares, {
-		relationName: "recipeShares_createdRecipeId_recipes_id"
+	proposalTemplates: many(proposalTemplates),
+	recurringSchedules: many(recurringSchedules),
+	tastingMenus: many(tastingMenus),
+	marginSnapshots: many(marginSnapshots),
+	inquiries: many(inquiries),
+	hubPolls: many(hubPolls),
+	menuMemoryFeedbacks: many(menuMemoryFeedback),
+	menuMemoryRequests: many(menuMemoryRequests),
+	menuMemoryRequestItems: many(menuMemoryRequestItems),
+	workflowNoteMenuLinks: many(workflowNoteMenuLinks),
+	dishes: many(dishes),
+	menuShareTokens: many(menuShareTokens),
+	client: one(clients, {
+		fields: [menus.clientId],
+		references: [clients.id]
 	}),
-	recipeShares_originalRecipeId: many(recipeShares, {
-		relationName: "recipeShares_originalRecipeId_recipes_id"
-	}),
-	recipeStepPhotos: many(recipeStepPhotos),
-	recipeSubRecipes_childRecipeId: many(recipeSubRecipes, {
-		relationName: "recipeSubRecipes_childRecipeId_recipes_id"
-	}),
-	recipeSubRecipes_parentRecipeId: many(recipeSubRecipes, {
-		relationName: "recipeSubRecipes_parentRecipeId_recipes_id"
-	}),
-	servedDishHistories: many(servedDishHistory),
-	staffMeals: many(staffMeals),
-	tastingMenuCourses: many(tastingMenuCourses),
-	aarRecipeFeedbacks: many(aarRecipeFeedback),
 	usersInAuth_createdBy: one(usersInAuth, {
-		fields: [recipes.createdBy],
+		fields: [menus.createdBy],
 		references: [usersInAuth.id],
-		relationName: "recipes_createdBy_usersInAuth_id"
+		relationName: "menus_createdBy_usersInAuth_id"
 	}),
-	recipeFamily: one(recipeFamilies, {
-		fields: [recipes.familyId],
-		references: [recipeFamilies.id]
+	hubGroup: one(hubGroups, {
+		fields: [menus.dinnerCircleGroupId],
+		references: [hubGroups.id]
+	}),
+	event: one(events, {
+		fields: [menus.eventId],
+		references: [events.id],
+		relationName: "menus_eventId_events_id"
 	}),
 	chef: one(chefs, {
-		fields: [recipes.tenantId],
-		references: [chefs.id]
+		fields: [menus.tenantId],
+		references: [chefs.id],
+		relationName: "menus_tenantId_chefs_id"
 	}),
 	usersInAuth_updatedBy: one(usersInAuth, {
-		fields: [recipes.updatedBy],
+		fields: [menus.updatedBy],
 		references: [usersInAuth.id],
-		relationName: "recipes_updatedBy_usersInAuth_id"
+		relationName: "menus_updatedBy_usersInAuth_id"
+	}),
+	events: many(events, {
+		relationName: "events_menuId_menus_id"
+	}),
+	chefs: many(chefs, {
+		relationName: "chefs_featuredBookingMenuId_menus_id"
 	}),
 }));
 
@@ -2305,21 +2294,6 @@ export const chefConnectionsRelations = relations(chefConnections, ({one}) => ({
 		fields: [chefConnections.requesterId],
 		references: [chefs.id],
 		relationName: "chefConnections_requesterId_chefs_id"
-	}),
-}));
-
-export const clientNotesRelations = relations(clientNotes, ({one}) => ({
-	client: one(clients, {
-		fields: [clientNotes.clientId],
-		references: [clients.id]
-	}),
-	event: one(events, {
-		fields: [clientNotes.eventId],
-		references: [events.id]
-	}),
-	chef: one(chefs, {
-		fields: [clientNotes.tenantId],
-		references: [chefs.id]
 	}),
 }));
 
@@ -2518,6 +2492,25 @@ export const dishIndexRelations = relations(dishIndex, ({one, many}) => ({
 	dishAppearances: many(dishAppearances),
 	eventOutcomeDishes: many(eventOutcomeDishes),
 	dishFeedbacks: many(dishFeedback),
+	dishVariations_parentDishId: many(dishVariations, {
+		relationName: "dishVariations_parentDishId_dishIndex_id"
+	}),
+	dishVariations_variantDishId: many(dishVariations, {
+		relationName: "dishVariations_variantDishId_dishIndex_id"
+	}),
+	hubPollOptions: many(hubPollOptions),
+	menuMemoryFeedbacks: many(menuMemoryFeedback),
+	menuMemoryRequestItems: many(menuMemoryRequestItems),
+	dishIndexComponents: many(dishIndexComponents),
+	dishIndexNoteLinks: many(dishIndexNoteLinks),
+	client: one(clients, {
+		fields: [dishIndex.clientId],
+		references: [clients.id]
+	}),
+	event: one(events, {
+		fields: [dishIndex.eventId],
+		references: [events.id]
+	}),
 	recipe: one(recipes, {
 		fields: [dishIndex.linkedRecipeId],
 		references: [recipes.id]
@@ -2526,13 +2519,12 @@ export const dishIndexRelations = relations(dishIndex, ({one, many}) => ({
 		fields: [dishIndex.tenantId],
 		references: [chefs.id]
 	}),
-	dishVariations_parentDishId: many(dishVariations, {
-		relationName: "dishVariations_parentDishId_dishIndex_id"
+	dishes_copiedFromDishIndexId: many(dishes, {
+		relationName: "dishes_copiedFromDishIndexId_dishIndex_id"
 	}),
-	dishVariations_variantDishId: many(dishVariations, {
-		relationName: "dishVariations_variantDishId_dishIndex_id"
+	dishes_dishIndexId: many(dishes, {
+		relationName: "dishes_dishIndexId_dishIndex_id"
 	}),
-	hubPollOptions: many(hubPollOptions),
 }));
 
 export const menuUploadJobsRelations = relations(menuUploadJobs, ({one, many}) => ({
@@ -2593,6 +2585,13 @@ export const staffMembersRelations = relations(staffMembers, ({one, many}) => ({
 	staffPerformanceScores: many(staffPerformanceScores),
 	staffSchedules: many(staffSchedules),
 	taskCompletionLogs: many(taskCompletionLog),
+	tasks_assignedTo: many(tasks, {
+		relationName: "tasks_assignedTo_staffMembers_id"
+	}),
+	tasks_completedBy: many(tasks, {
+		relationName: "tasks_completedBy_staffMembers_id"
+	}),
+	wasteLogs: many(wasteLog),
 	usersInAuth: one(usersInAuth, {
 		fields: [staffMembers.authUserId],
 		references: [usersInAuth.id]
@@ -2603,15 +2602,12 @@ export const staffMembersRelations = relations(staffMembers, ({one, many}) => ({
 	}),
 	businessLocation: one(businessLocations, {
 		fields: [staffMembers.locationId],
-		references: [businessLocations.id]
+		references: [businessLocations.id],
+		relationName: "staffMembers_locationId_businessLocations_id"
 	}),
-	tasks_assignedTo: many(tasks, {
-		relationName: "tasks_assignedTo_staffMembers_id"
+	businessLocations: many(businessLocations, {
+		relationName: "businessLocations_managerStaffId_staffMembers_id"
 	}),
-	tasks_completedBy: many(tasks, {
-		relationName: "tasks_completedBy_staffMembers_id"
-	}),
-	wasteLogs: many(wasteLog),
 }));
 
 export const zapierWebhookSubscriptionsRelations = relations(zapierWebhookSubscriptions, ({one, many}) => ({
@@ -2670,10 +2666,10 @@ export const eventSharesRelations = relations(eventShares, ({one, many}) => ({
 		fields: [eventShares.themeId],
 		references: [eventThemes.id]
 	}),
-	eventGuests: many(eventGuests),
 	eventJoinRequests: many(eventJoinRequests),
 	eventShareInvites: many(eventShareInvites),
 	guestLeads: many(guestLeads),
+	eventGuests: many(eventGuests),
 }));
 
 export const hubGroupsRelations = relations(hubGroups, ({one, many}) => ({
@@ -2726,12 +2722,6 @@ export const hubGroupsRelations = relations(hubGroups, ({one, many}) => ({
 	hubMessages: many(hubMessages),
 	hubMedias: many(hubMedia),
 	hubPinnedNotes: many(hubPinnedNotes),
-	clients_dinnerCircleGroupId: many(clients, {
-		relationName: "clients_dinnerCircleGroupId_hubGroups_id"
-	}),
-	clients_referredFromGroupId: many(clients, {
-		relationName: "clients_referredFromGroupId_hubGroups_id"
-	}),
 	chefIntroBridges_hubGroupId: many(chefIntroBridges, {
 		relationName: "chefIntroBridges_hubGroupId_hubGroups_id"
 	}),
@@ -2741,7 +2731,16 @@ export const hubGroupsRelations = relations(hubGroups, ({one, many}) => ({
 	chefIntroBridges_targetCircleGroupId: many(chefIntroBridges, {
 		relationName: "chefIntroBridges_targetCircleGroupId_hubGroups_id"
 	}),
+	clients_dinnerCircleGroupId: many(clients, {
+		relationName: "clients_dinnerCircleGroupId_hubGroups_id"
+	}),
+	clients_referredFromGroupId: many(clients, {
+		relationName: "clients_referredFromGroupId_hubGroups_id"
+	}),
 	hubPolls: many(hubPolls),
+	menuMemoryFeedbacks: many(menuMemoryFeedback),
+	menuMemoryRequests: many(menuMemoryRequests),
+	menus: many(menus),
 }));
 
 export const eventThemesRelations = relations(eventThemes, ({many}) => ({
@@ -2859,6 +2858,17 @@ export const guestDayOfRemindersRelations = relations(guestDayOfReminders, ({one
 export const eventGuestsRelations = relations(eventGuests, ({one, many}) => ({
 	guestDayOfReminders: many(guestDayOfReminders),
 	guestDietaryConfirmations: many(guestDietaryConfirmations),
+	guestMessages: many(guestMessages),
+	guestFeedbacks: many(guestFeedback),
+	eventGuestDietaryItems: many(eventGuestDietaryItems),
+	eventGuestRsvpAudits: many(eventGuestRsvpAudit),
+	eventJoinRequests: many(eventJoinRequests),
+	eventShareInvites: many(eventShareInvites),
+	guestPhotos: many(guestPhotos),
+	guestTestimonials: many(guestTestimonials),
+	hubGuestEventHistories: many(hubGuestEventHistory),
+	rsvpReminderLogs: many(rsvpReminderLog),
+	eventTickets: many(eventTickets),
 	usersInAuth_authUserId: one(usersInAuth, {
 		fields: [eventGuests.authUserId],
 		references: [usersInAuth.id],
@@ -2881,16 +2891,6 @@ export const eventGuestsRelations = relations(eventGuests, ({one, many}) => ({
 		fields: [eventGuests.tenantId],
 		references: [chefs.id]
 	}),
-	guestMessages: many(guestMessages),
-	guestFeedbacks: many(guestFeedback),
-	eventGuestDietaryItems: many(eventGuestDietaryItems),
-	eventGuestRsvpAudits: many(eventGuestRsvpAudit),
-	eventJoinRequests: many(eventJoinRequests),
-	eventShareInvites: many(eventShareInvites),
-	guestPhotos: many(guestPhotos),
-	guestTestimonials: many(guestTestimonials),
-	hubGuestEventHistories: many(hubGuestEventHistory),
-	rsvpReminderLogs: many(rsvpReminderLog),
 }));
 
 export const chefSchedulingRulesRelations = relations(chefSchedulingRules, ({one}) => ({
@@ -3161,6 +3161,70 @@ export const menuNutritionRelations = relations(menuNutrition, ({one}) => ({
 	}),
 }));
 
+export const recipesRelations = relations(recipes, ({one, many}) => ({
+	menuNutritions: many(menuNutrition),
+	eventOutcomeDishes: many(eventOutcomeDishes),
+	dailySpecials: many(dailySpecials),
+	bakeryBatches: many(bakeryBatches),
+	chefJournalRecipeLinks: many(chefJournalRecipeLinks),
+	chefJourneyIdeas: many(chefJourneyIdeas),
+	inquiryRecipeLinks: many(inquiryRecipeLinks),
+	mealPrepBatchLogs: many(mealPrepBatchLog),
+	menuItems: many(menuItems),
+	platingGuides: many(platingGuides),
+	productProjections: many(productProjections),
+	recipeIngredients: many(recipeIngredients),
+	recipeNutritions: many(recipeNutrition),
+	recipeProductionLogs: many(recipeProductionLog),
+	recipeShares_createdRecipeId: many(recipeShares, {
+		relationName: "recipeShares_createdRecipeId_recipes_id"
+	}),
+	recipeShares_originalRecipeId: many(recipeShares, {
+		relationName: "recipeShares_originalRecipeId_recipes_id"
+	}),
+	recipeStepPhotos: many(recipeStepPhotos),
+	recipeSubRecipes_childRecipeId: many(recipeSubRecipes, {
+		relationName: "recipeSubRecipes_childRecipeId_recipes_id"
+	}),
+	recipeSubRecipes_parentRecipeId: many(recipeSubRecipes, {
+		relationName: "recipeSubRecipes_parentRecipeId_recipes_id"
+	}),
+	servedDishHistories: many(servedDishHistory),
+	staffMeals: many(staffMeals),
+	tastingMenuCourses: many(tastingMenuCourses),
+	aarRecipeFeedbacks: many(aarRecipeFeedback),
+	dishIndexComponents: many(dishIndexComponents),
+	dishIndices: many(dishIndex),
+	components: many(components),
+	locationRecipeCompliances: many(locationRecipeCompliance),
+	usersInAuth_createdBy: one(usersInAuth, {
+		fields: [recipes.createdBy],
+		references: [usersInAuth.id],
+		relationName: "recipes_createdBy_usersInAuth_id"
+	}),
+	recipeFamily: one(recipeFamilies, {
+		fields: [recipes.familyId],
+		references: [recipeFamilies.id]
+	}),
+	recipe: one(recipes, {
+		fields: [recipes.forkedFromId],
+		references: [recipes.id],
+		relationName: "recipes_forkedFromId_recipes_id"
+	}),
+	recipes: many(recipes, {
+		relationName: "recipes_forkedFromId_recipes_id"
+	}),
+	chef: one(chefs, {
+		fields: [recipes.tenantId],
+		references: [chefs.id]
+	}),
+	usersInAuth_updatedBy: one(usersInAuth, {
+		fields: [recipes.updatedBy],
+		references: [usersInAuth.id],
+		relationName: "recipes_updatedBy_usersInAuth_id"
+	}),
+}));
+
 export const followUpSendsRelations = relations(followUpSends, ({one}) => ({
 	client: one(clients, {
 		fields: [followUpSends.clientId],
@@ -3317,8 +3381,8 @@ export const hubGuestProfilesRelations = relations(hubGuestProfiles, ({one, many
 	hubMealComments: many(hubMealComments),
 	hubMealRequests: many(hubMealRequests),
 	hubPollVotes: many(hubPollVotes),
-	hubGuestEventHistories: many(hubGuestEventHistory),
 	hubGroupMembers: many(hubGroupMembers),
+	hubGuestEventHistories: many(hubGuestEventHistory),
 	hubGroups: many(hubGroups, {
 		relationName: "hubGroups_createdByProfileId_hubGuestProfiles_id"
 	}),
@@ -3338,12 +3402,16 @@ export const hubGuestProfilesRelations = relations(hubGuestProfiles, ({one, many
 	hubMedias: many(hubMedia),
 	hubPinnedNotes: many(hubPinnedNotes),
 	chefIntroBridges: many(chefIntroBridges),
+	eventTickets: many(eventTickets),
 	hubPolls_createdByProfileId: many(hubPolls, {
 		relationName: "hubPolls_createdByProfileId_hubGuestProfiles_id"
 	}),
 	hubPolls_lockedByProfileId: many(hubPolls, {
 		relationName: "hubPolls_lockedByProfileId_hubGuestProfiles_id"
 	}),
+	menuMemoryFeedbacks: many(menuMemoryFeedback),
+	menuMemoryRequests: many(menuMemoryRequests),
+	menuMemoryRequestEvents: many(menuMemoryRequestEvents),
 }));
 
 export const clientPhotosRelations = relations(clientPhotos, ({one}) => ({
@@ -3784,6 +3852,46 @@ export const eventOutcomeDishesRelations = relations(eventOutcomeDishes, ({one})
 	}),
 }));
 
+export const dishesRelations = relations(dishes, ({one, many}) => ({
+	eventOutcomeDishes: many(eventOutcomeDishes),
+	hubMealBoards: many(hubMealBoard),
+	menuDishFeedbacks: many(menuDishFeedback),
+	menuMemoryFeedbacks: many(menuMemoryFeedback),
+	dishIndex_copiedFromDishIndexId: one(dishIndex, {
+		fields: [dishes.copiedFromDishIndexId],
+		references: [dishIndex.id],
+		relationName: "dishes_copiedFromDishIndexId_dishIndex_id"
+	}),
+	usersInAuth_createdBy: one(usersInAuth, {
+		fields: [dishes.createdBy],
+		references: [usersInAuth.id],
+		relationName: "dishes_createdBy_usersInAuth_id"
+	}),
+	dishIndex_dishIndexId: one(dishIndex, {
+		fields: [dishes.dishIndexId],
+		references: [dishIndex.id],
+		relationName: "dishes_dishIndexId_dishIndex_id"
+	}),
+	menu: one(menus, {
+		fields: [dishes.menuId],
+		references: [menus.id]
+	}),
+	tastingMenuCourse: one(tastingMenuCourses, {
+		fields: [dishes.sourceTastingCourseId],
+		references: [tastingMenuCourses.id]
+	}),
+	chef: one(chefs, {
+		fields: [dishes.tenantId],
+		references: [chefs.id]
+	}),
+	usersInAuth_updatedBy: one(usersInAuth, {
+		fields: [dishes.updatedBy],
+		references: [usersInAuth.id],
+		relationName: "dishes_updatedBy_usersInAuth_id"
+	}),
+	components: many(components),
+}));
+
 export const clientMergeLogRelations = relations(clientMergeLog, ({one}) => ({
 	chef: one(chefs, {
 		fields: [clientMergeLog.chefId],
@@ -3803,23 +3911,6 @@ export const chefActivityLogRelations = relations(chefActivityLog, ({one}) => ({
 	chef: one(chefs, {
 		fields: [chefActivityLog.tenantId],
 		references: [chefs.id]
-	}),
-}));
-
-export const chefPreferencesRelations = relations(chefPreferences, ({one}) => ({
-	chef_chefId: one(chefs, {
-		fields: [chefPreferences.chefId],
-		references: [chefs.id],
-		relationName: "chefPreferences_chefId_chefs_id"
-	}),
-	event: one(events, {
-		fields: [chefPreferences.lockedEventId],
-		references: [events.id]
-	}),
-	chef_tenantId: one(chefs, {
-		fields: [chefPreferences.tenantId],
-		references: [chefs.id],
-		relationName: "chefPreferences_tenantId_chefs_id"
 	}),
 }));
 
@@ -3894,7 +3985,6 @@ export const salesRelations = relations(sales, ({one, many}) => ({
 	commercePaymentSchedules: many(commercePaymentSchedules),
 	commercePayments: many(commercePayments),
 	inventoryTransactions: many(inventoryTransactions),
-	orderQueues: many(orderQueue),
 	commerceDiningChecks: many(commerceDiningChecks),
 	commerceRefunds: many(commerceRefunds),
 	kdsTickets: many(kdsTickets),
@@ -3926,6 +4016,7 @@ export const salesRelations = relations(sales, ({one, many}) => ({
 		references: [usersInAuth.id],
 		relationName: "sales_voidedBy_usersInAuth_id"
 	}),
+	orderQueues: many(orderQueue),
 }));
 
 export const ledgerEntriesRelations = relations(ledgerEntries, ({one, many}) => ({
@@ -3944,6 +4035,10 @@ export const ledgerEntriesRelations = relations(ledgerEntries, ({one, many}) => 
 	event: one(events, {
 		fields: [ledgerEntries.eventId],
 		references: [events.id]
+	}),
+	businessLocation: one(businessLocations, {
+		fields: [ledgerEntries.locationId],
+		references: [businessLocations.id]
 	}),
 	ledgerEntry: one(ledgerEntries, {
 		fields: [ledgerEntries.refundedEntryId],
@@ -4036,21 +4131,6 @@ export const wasteLogsRelations = relations(wasteLogs, ({one, many}) => ({
 	}),
 }));
 
-export const orderQueueRelations = relations(orderQueue, ({one}) => ({
-	usersInAuth: one(usersInAuth, {
-		fields: [orderQueue.assignedTo],
-		references: [usersInAuth.id]
-	}),
-	sale: one(sales, {
-		fields: [orderQueue.saleId],
-		references: [sales.id]
-	}),
-	chef: one(chefs, {
-		fields: [orderQueue.tenantId],
-		references: [chefs.id]
-	}),
-}));
-
 export const cashDrawerMovementsRelations = relations(cashDrawerMovements, ({one}) => ({
 	commercePayment: one(commercePayments, {
 		fields: [cashDrawerMovements.commercePaymentId],
@@ -4105,6 +4185,10 @@ export const registerSessionsRelations = relations(registerSessions, ({one, many
 		fields: [registerSessions.closedBy],
 		references: [usersInAuth.id],
 		relationName: "registerSessions_closedBy_usersInAuth_id"
+	}),
+	businessLocation: one(businessLocations, {
+		fields: [registerSessions.locationId],
+		references: [businessLocations.id]
 	}),
 	usersInAuth_openedBy: one(usersInAuth, {
 		fields: [registerSessions.openedBy],
@@ -4322,11 +4406,40 @@ export const hubGroupEventsRelations = relations(hubGroupEvents, ({one}) => ({
 	}),
 }));
 
+export const webResearchEvidenceRelations = relations(webResearchEvidence, ({one}) => ({
+	webResearchJob: one(webResearchJobs, {
+		fields: [webResearchEvidence.jobId],
+		references: [webResearchJobs.id]
+	}),
+}));
+
+export const webResearchJobsRelations = relations(webResearchJobs, ({many}) => ({
+	webResearchEvidences: many(webResearchEvidence),
+	webResearchClaims: many(webResearchClaims),
+	webResearchDirectoryCandidates: many(webResearchDirectoryCandidates),
+	webResearchProviderEvents: many(webResearchProviderEvents),
+}));
+
 export const priceWatchListRelations = relations(priceWatchList, ({one}) => ({
 	chef: one(chefs, {
 		fields: [priceWatchList.chefId],
 		references: [chefs.id]
 	}),
+}));
+
+export const webResearchClaimsRelations = relations(webResearchClaims, ({one}) => ({
+	webResearchJob: one(webResearchJobs, {
+		fields: [webResearchClaims.jobId],
+		references: [webResearchJobs.id]
+	}),
+}));
+
+export const webResearchDirectoryCandidatesRelations = relations(webResearchDirectoryCandidates, ({one, many}) => ({
+	webResearchJob: one(webResearchJobs, {
+		fields: [webResearchDirectoryCandidates.jobId],
+		references: [webResearchJobs.id]
+	}),
+	webResearchProviderEvents: many(webResearchProviderEvents),
 }));
 
 export const hubAvailabilityRelations = relations(hubAvailability, ({one, many}) => ({
@@ -4356,6 +4469,17 @@ export const emailSenderReputationRelations = relations(emailSenderReputation, (
 	chef: one(chefs, {
 		fields: [emailSenderReputation.tenantId],
 		references: [chefs.id]
+	}),
+}));
+
+export const webResearchProviderEventsRelations = relations(webResearchProviderEvents, ({one}) => ({
+	webResearchDirectoryCandidate: one(webResearchDirectoryCandidates, {
+		fields: [webResearchProviderEvents.candidateId],
+		references: [webResearchDirectoryCandidates.id]
+	}),
+	webResearchJob: one(webResearchJobs, {
+		fields: [webResearchProviderEvents.jobId],
+		references: [webResearchJobs.id]
 	}),
 }));
 
@@ -5134,18 +5258,6 @@ export const giftCardsRelations = relations(giftCards, ({one, many}) => ({
 	}),
 }));
 
-export const businessLocationsRelations = relations(businessLocations, ({one, many}) => ({
-	chef: one(chefs, {
-		fields: [businessLocations.tenantId],
-		references: [chefs.id]
-	}),
-	dailyChecklistCompletions: many(dailyChecklistCompletions),
-	inventoryCounts: many(inventoryCounts),
-	inventoryLots: many(inventoryLots),
-	sales: many(sales),
-	staffMembers: many(staffMembers),
-}));
-
 export const communicationLogRelations = relations(communicationLog, ({one}) => ({
 	client: one(clients, {
 		fields: [communicationLog.clientId],
@@ -5203,7 +5315,6 @@ export const reorderSettingsRelations = relations(reorderSettings, ({one}) => ({
 
 export const vendorsRelations = relations(vendors, ({one, many}) => ({
 	reorderSettings: many(reorderSettings),
-	ingredientPriceHistories: many(ingredientPriceHistory),
 	eventVendorDeliveries: many(eventVendorDeliveries),
 	inventoryBatches: many(inventoryBatches),
 	inventoryCounts: many(inventoryCounts),
@@ -5217,12 +5328,13 @@ export const vendorsRelations = relations(vendors, ({one, many}) => ({
 	vendorPricePoints: many(vendorPricePoints),
 	vendorPriceAlertSettings: many(vendorPriceAlertSettings),
 	vendorDocumentUploads: many(vendorDocumentUploads),
+	ingredientPriceHistories: many(ingredientPriceHistory),
+	supplierCalls: many(supplierCalls),
+	aiCalls: many(aiCalls),
 	chef: one(chefs, {
 		fields: [vendors.chefId],
 		references: [chefs.id]
 	}),
-	supplierCalls: many(supplierCalls),
-	aiCalls: many(aiCalls),
 }));
 
 export const documentIntelligenceJobsRelations = relations(documentIntelligenceJobs, ({one, many}) => ({
@@ -5596,13 +5708,6 @@ export const mealPrepItemsRelations = relations(mealPrepItems, ({one}) => ({
 	}),
 }));
 
-export const chefDirectoryListingsRelations = relations(chefDirectoryListings, ({one}) => ({
-	chef: one(chefs, {
-		fields: [chefDirectoryListings.chefId],
-		references: [chefs.id]
-	}),
-}));
-
 export const communityBenchmarksRelations = relations(communityBenchmarks, ({one}) => ({
 	chef: one(chefs, {
 		fields: [communityBenchmarks.chefId],
@@ -5681,53 +5786,6 @@ export const hubPollsRelations = relations(hubPolls, ({one, many}) => ({
 	hubPollOptions: many(hubPollOptions, {
 		relationName: "hubPollOptions_pollId_hubPolls_id"
 	}),
-}));
-
-export const ingredientPriceHistoryRelations = relations(ingredientPriceHistory, ({one}) => ({
-	expense: one(expenses, {
-		fields: [ingredientPriceHistory.expenseId],
-		references: [expenses.id]
-	}),
-	ingredient: one(ingredients, {
-		fields: [ingredientPriceHistory.ingredientId],
-		references: [ingredients.id]
-	}),
-	chef: one(chefs, {
-		fields: [ingredientPriceHistory.tenantId],
-		references: [chefs.id]
-	}),
-	vendor: one(vendors, {
-		fields: [ingredientPriceHistory.vendorId],
-		references: [vendors.id]
-	}),
-}));
-
-export const expensesRelations = relations(expenses, ({one, many}) => ({
-	ingredientPriceHistories: many(ingredientPriceHistory),
-	bankTransactions: many(bankTransactions),
-	usersInAuth_createdBy: one(usersInAuth, {
-		fields: [expenses.createdBy],
-		references: [usersInAuth.id],
-		relationName: "expenses_createdBy_usersInAuth_id"
-	}),
-	event: one(events, {
-		fields: [expenses.eventId],
-		references: [events.id]
-	}),
-	receiptPhoto: one(receiptPhotos, {
-		fields: [expenses.receiptPhotoId],
-		references: [receiptPhotos.id]
-	}),
-	chef: one(chefs, {
-		fields: [expenses.tenantId],
-		references: [chefs.id]
-	}),
-	usersInAuth_updatedBy: one(usersInAuth, {
-		fields: [expenses.updatedBy],
-		references: [usersInAuth.id],
-		relationName: "expenses_updatedBy_usersInAuth_id"
-	}),
-	expenseLineItems: many(expenseLineItems),
 }));
 
 export const giftCertificatesRelations = relations(giftCertificates, ({one}) => ({
@@ -5913,6 +5971,38 @@ export const bankTransactionsRelations = relations(bankTransactions, ({one}) => 
 	expense: one(expenses, {
 		fields: [bankTransactions.matchedExpenseId],
 		references: [expenses.id]
+	}),
+}));
+
+export const expensesRelations = relations(expenses, ({one, many}) => ({
+	bankTransactions: many(bankTransactions),
+	expenseLineItems: many(expenseLineItems),
+	ingredientPriceHistories: many(ingredientPriceHistory),
+	usersInAuth_createdBy: one(usersInAuth, {
+		fields: [expenses.createdBy],
+		references: [usersInAuth.id],
+		relationName: "expenses_createdBy_usersInAuth_id"
+	}),
+	event: one(events, {
+		fields: [expenses.eventId],
+		references: [events.id]
+	}),
+	businessLocation: one(businessLocations, {
+		fields: [expenses.locationId],
+		references: [businessLocations.id]
+	}),
+	receiptPhoto: one(receiptPhotos, {
+		fields: [expenses.receiptPhotoId],
+		references: [receiptPhotos.id]
+	}),
+	chef: one(chefs, {
+		fields: [expenses.tenantId],
+		references: [chefs.id]
+	}),
+	usersInAuth_updatedBy: one(usersInAuth, {
+		fields: [expenses.updatedBy],
+		references: [usersInAuth.id],
+		relationName: "expenses_updatedBy_usersInAuth_id"
 	}),
 }));
 
@@ -6641,6 +6731,36 @@ export const dailyChecklistCompletionsRelations = relations(dailyChecklistComple
 	}),
 }));
 
+export const businessLocationsRelations = relations(businessLocations, ({one, many}) => ({
+	dailyChecklistCompletions: many(dailyChecklistCompletions),
+	dailyRevenues: many(dailyRevenue),
+	ledgerEntries: many(ledgerEntries),
+	kdsTickets: many(kdsTickets),
+	inventoryCounts: many(inventoryCounts),
+	inventoryLots: many(inventoryLots),
+	sales: many(sales),
+	registerSessions: many(registerSessions),
+	expenses: many(expenses),
+	staffMembers: many(staffMembers, {
+		relationName: "staffMembers_locationId_businessLocations_id"
+	}),
+	staffMember: one(staffMembers, {
+		fields: [businessLocations.managerStaffId],
+		references: [staffMembers.id],
+		relationName: "businessLocations_managerStaffId_staffMembers_id"
+	}),
+	chef: one(chefs, {
+		fields: [businessLocations.tenantId],
+		references: [chefs.id]
+	}),
+	orderQueues: many(orderQueue),
+	locationDailyMetrics: many(locationDailyMetrics),
+	locationAlerts: many(locationAlerts),
+	locationDemandForecasts: many(locationDemandForecasts),
+	locationRecipeCompliances: many(locationRecipeCompliance),
+	events: many(events),
+}));
+
 export const dailyChecklistCustomItemsRelations = relations(dailyChecklistCustomItems, ({one}) => ({
 	chef: one(chefs, {
 		fields: [dailyChecklistCustomItems.chefId],
@@ -6728,13 +6848,6 @@ export const dailyReportsRelations = relations(dailyReports, ({one}) => ({
 	}),
 }));
 
-export const dailyRevenueRelations = relations(dailyRevenue, ({one}) => ({
-	chef: one(chefs, {
-		fields: [dailyRevenue.chefId],
-		references: [chefs.id]
-	}),
-}));
-
 export const demandForecastsRelations = relations(demandForecasts, ({one}) => ({
 	chef: one(chefs, {
 		fields: [demandForecasts.chefId],
@@ -6772,6 +6885,13 @@ export const dietaryConflictAlertsRelations = relations(dietaryConflictAlerts, (
 	event: one(events, {
 		fields: [dietaryConflictAlerts.eventId],
 		references: [events.id]
+	}),
+}));
+
+export const smsBridgeConfigRelations = relations(smsBridgeConfig, ({one}) => ({
+	chef: one(chefs, {
+		fields: [smsBridgeConfig.tenantId],
+		references: [chefs.id]
 	}),
 }));
 
@@ -7069,6 +7189,41 @@ export const eventLeftoverDetailsRelations = relations(eventLeftoverDetails, ({o
 	}),
 }));
 
+export const componentsRelations = relations(components, ({one, many}) => ({
+	eventLeftoverDetails: many(eventLeftoverDetails),
+	menuModifications: many(menuModifications),
+	usersInAuth_createdBy: one(usersInAuth, {
+		fields: [components.createdBy],
+		references: [usersInAuth.id],
+		relationName: "components_createdBy_usersInAuth_id"
+	}),
+	dish: one(dishes, {
+		fields: [components.dishId],
+		references: [dishes.id]
+	}),
+	dishIndexComponent: one(dishIndexComponents, {
+		fields: [components.dishIndexComponentId],
+		references: [dishIndexComponents.id]
+	}),
+	recipe: one(recipes, {
+		fields: [components.recipeId],
+		references: [recipes.id]
+	}),
+	tastingMenuCourse: one(tastingMenuCourses, {
+		fields: [components.sourceTastingCourseId],
+		references: [tastingMenuCourses.id]
+	}),
+	chef: one(chefs, {
+		fields: [components.tenantId],
+		references: [chefs.id]
+	}),
+	usersInAuth_updatedBy: one(usersInAuth, {
+		fields: [components.updatedBy],
+		references: [usersInAuth.id],
+		relationName: "components_updatedBy_usersInAuth_id"
+	}),
+}));
+
 export const eventPhotosRelations = relations(eventPhotos, ({one}) => ({
 	client: one(clients, {
 		fields: [eventPhotos.clientId],
@@ -7148,6 +7303,17 @@ export const eventShareInviteEventsRelations = relations(eventShareInviteEvents,
 	chef: one(chefs, {
 		fields: [eventShareInviteEvents.tenantId],
 		references: [chefs.id]
+	}),
+}));
+
+export const dailyRevenueRelations = relations(dailyRevenue, ({one}) => ({
+	chef: one(chefs, {
+		fields: [dailyRevenue.chefId],
+		references: [chefs.id]
+	}),
+	businessLocation: one(businessLocations, {
+		fields: [dailyRevenue.locationId],
+		references: [businessLocations.id]
 	}),
 }));
 
@@ -7478,6 +7644,18 @@ export const guestsRelations = relations(guests, ({one, many}) => ({
 		fields: [guests.chefId],
 		references: [chefs.id]
 	}),
+	dietaryOutreaches: many(dietaryOutreach),
+}));
+
+export const guestEventProfileRelations = relations(guestEventProfile, ({one}) => ({
+	event: one(events, {
+		fields: [guestEventProfile.eventId],
+		references: [events.id]
+	}),
+	chef: one(chefs, {
+		fields: [guestEventProfile.tenantId],
+		references: [chefs.id]
+	}),
 }));
 
 export const guestLeadsRelations = relations(guestLeads, ({one}) => ({
@@ -7615,27 +7793,14 @@ export const externalReviewsRelations = relations(externalReviews, ({one}) => ({
 	}),
 }));
 
-export const guestEventProfileRelations = relations(guestEventProfile, ({one}) => ({
-	event: one(events, {
-		fields: [guestEventProfile.eventId],
-		references: [events.id]
+export const hubGroupMembersRelations = relations(hubGroupMembers, ({one}) => ({
+	hubGroup: one(hubGroups, {
+		fields: [hubGroupMembers.groupId],
+		references: [hubGroups.id]
 	}),
-}));
-
-export const receiptPhotosRelations = relations(receiptPhotos, ({one, many}) => ({
-	expenses: many(expenses),
-	receiptExtractions: many(receiptExtractions),
-	client: one(clients, {
-		fields: [receiptPhotos.clientId],
-		references: [clients.id]
-	}),
-	event: one(events, {
-		fields: [receiptPhotos.eventId],
-		references: [events.id]
-	}),
-	chef: one(chefs, {
-		fields: [receiptPhotos.tenantId],
-		references: [chefs.id]
+	hubGuestProfile: one(hubGuestProfiles, {
+		fields: [hubGroupMembers.profileId],
+		references: [hubGuestProfiles.id]
 	}),
 }));
 
@@ -7655,17 +7820,6 @@ export const hubGuestEventHistoryRelations = relations(hubGuestEventHistory, ({o
 	chef: one(chefs, {
 		fields: [hubGuestEventHistory.tenantId],
 		references: [chefs.id]
-	}),
-}));
-
-export const hubGroupMembersRelations = relations(hubGroupMembers, ({one}) => ({
-	hubGroup: one(hubGroups, {
-		fields: [hubGroupMembers.groupId],
-		references: [hubGroups.id]
-	}),
-	hubGuestProfile: one(hubGuestProfiles, {
-		fields: [hubGroupMembers.profileId],
-		references: [hubGuestProfiles.id]
 	}),
 }));
 
@@ -7803,6 +7957,25 @@ export const insurancePoliciesRelations = relations(insurancePolicies, ({one}) =
 	}),
 }));
 
+export const kdsTicketsRelations = relations(kdsTickets, ({one}) => ({
+	chef: one(chefs, {
+		fields: [kdsTickets.chefId],
+		references: [chefs.id]
+	}),
+	businessLocation: one(businessLocations, {
+		fields: [kdsTickets.locationId],
+		references: [businessLocations.id]
+	}),
+	sale: one(sales, {
+		fields: [kdsTickets.saleId],
+		references: [sales.id]
+	}),
+	station: one(stations, {
+		fields: [kdsTickets.stationId],
+		references: [stations.id]
+	}),
+}));
+
 export const inventoryAuditItemsRelations = relations(inventoryAuditItems, ({one}) => ({
 	inventoryAudit: one(inventoryAudits, {
 		fields: [inventoryAuditItems.auditId],
@@ -7868,21 +8041,6 @@ export const inventoryLotsRelations = relations(inventoryLots, ({one}) => ({
 	chef: one(chefs, {
 		fields: [inventoryLots.tenantId],
 		references: [chefs.id]
-	}),
-}));
-
-export const kdsTicketsRelations = relations(kdsTickets, ({one}) => ({
-	chef: one(chefs, {
-		fields: [kdsTickets.chefId],
-		references: [chefs.id]
-	}),
-	sale: one(sales, {
-		fields: [kdsTickets.saleId],
-		references: [sales.id]
-	}),
-	station: one(stations, {
-		fields: [kdsTickets.stationId],
-		references: [stations.id]
 	}),
 }));
 
@@ -8219,25 +8377,6 @@ export const menuModificationsRelations = relations(menuModifications, ({one}) =
 	}),
 }));
 
-export const menuPreferencesRelations = relations(menuPreferences, ({one}) => ({
-	usersInAuth: one(usersInAuth, {
-		fields: [menuPreferences.clientId],
-		references: [usersInAuth.id]
-	}),
-	event: one(events, {
-		fields: [menuPreferences.eventId],
-		references: [events.id]
-	}),
-	menu: one(menus, {
-		fields: [menuPreferences.selectedMenuId],
-		references: [menus.id]
-	}),
-	chef: one(chefs, {
-		fields: [menuPreferences.tenantId],
-		references: [chefs.id]
-	}),
-}));
-
 export const menuServiceHistoryRelations = relations(menuServiceHistory, ({one}) => ({
 	chef: one(chefs, {
 		fields: [menuServiceHistory.chefId],
@@ -8302,6 +8441,41 @@ export const notificationPreferencesRelations = relations(notificationPreference
 export const onboardingProgressRelations = relations(onboardingProgress, ({one}) => ({
 	chef: one(chefs, {
 		fields: [onboardingProgress.chefId],
+		references: [chefs.id]
+	}),
+}));
+
+export const menuPreferencesRelations = relations(menuPreferences, ({one}) => ({
+	usersInAuth: one(usersInAuth, {
+		fields: [menuPreferences.clientId],
+		references: [usersInAuth.id]
+	}),
+	event: one(events, {
+		fields: [menuPreferences.eventId],
+		references: [events.id]
+	}),
+	menuSelectionToken: one(menuSelectionTokens, {
+		fields: [menuPreferences.menuTokenId],
+		references: [menuSelectionTokens.id]
+	}),
+	menu: one(menus, {
+		fields: [menuPreferences.selectedMenuId],
+		references: [menus.id]
+	}),
+	chef: one(chefs, {
+		fields: [menuPreferences.tenantId],
+		references: [chefs.id]
+	}),
+}));
+
+export const menuSelectionTokensRelations = relations(menuSelectionTokens, ({one, many}) => ({
+	menuPreferences: many(menuPreferences),
+	event: one(events, {
+		fields: [menuSelectionTokens.eventId],
+		references: [events.id]
+	}),
+	chef: one(chefs, {
+		fields: [menuSelectionTokens.tenantId],
 		references: [chefs.id]
 	}),
 }));
@@ -8478,6 +8652,7 @@ export const partnerLocationsRelations = relations(partnerLocations, ({one, many
 export const referralPartnersRelations = relations(referralPartners, ({one, many}) => ({
 	partnerImages: many(partnerImages),
 	partnerLocations: many(partnerLocations),
+	inquiries: many(inquiries),
 	usersInAuth: one(usersInAuth, {
 		fields: [referralPartners.authUserId],
 		references: [usersInAuth.id]
@@ -8495,7 +8670,6 @@ export const referralPartnersRelations = relations(referralPartners, ({one, many
 		fields: [referralPartners.tenantId],
 		references: [chefs.id]
 	}),
-	inquiries: many(inquiries),
 	events: many(events, {
 		relationName: "events_referralPartnerId_referralPartners_id"
 	}),
@@ -9039,6 +9213,23 @@ export const receiptExtractionsRelations = relations(receiptExtractions, ({one, 
 	receiptLineItems: many(receiptLineItems),
 }));
 
+export const receiptPhotosRelations = relations(receiptPhotos, ({one, many}) => ({
+	receiptExtractions: many(receiptExtractions),
+	client: one(clients, {
+		fields: [receiptPhotos.clientId],
+		references: [clients.id]
+	}),
+	event: one(events, {
+		fields: [receiptPhotos.eventId],
+		references: [events.id]
+	}),
+	chef: one(chefs, {
+		fields: [receiptPhotos.tenantId],
+		references: [chefs.id]
+	}),
+	expenses: many(expenses),
+}));
+
 export const recipeIngredientsRelations = relations(recipeIngredients, ({one}) => ({
 	ingredient: one(ingredients, {
 		fields: [recipeIngredients.ingredientId],
@@ -9259,14 +9450,6 @@ export const remyArtifactsRelations = relations(remyArtifacts, ({one, many}) => 
 	remyMemories: many(remyMemories),
 }));
 
-export const remyConversationsRelations = relations(remyConversations, ({one, many}) => ({
-	chef: one(chefs, {
-		fields: [remyConversations.tenantId],
-		references: [chefs.id]
-	}),
-	remyMessages: many(remyMessages),
-}));
-
 export const remyFeedbackRelations = relations(remyFeedback, ({one}) => ({
 	chef_chefId: one(chefs, {
 		fields: [remyFeedback.chefId],
@@ -9277,36 +9460,6 @@ export const remyFeedbackRelations = relations(remyFeedback, ({one}) => ({
 		fields: [remyFeedback.tenantId],
 		references: [chefs.id],
 		relationName: "remyFeedback_tenantId_chefs_id"
-	}),
-}));
-
-export const remyMemoriesRelations = relations(remyMemories, ({one}) => ({
-	client: one(clients, {
-		fields: [remyMemories.relatedClientId],
-		references: [clients.id]
-	}),
-	event: one(events, {
-		fields: [remyMemories.relatedEventId],
-		references: [events.id]
-	}),
-	remyArtifact: one(remyArtifacts, {
-		fields: [remyMemories.sourceArtifactId],
-		references: [remyArtifacts.id]
-	}),
-	chef: one(chefs, {
-		fields: [remyMemories.tenantId],
-		references: [chefs.id]
-	}),
-}));
-
-export const remyMessagesRelations = relations(remyMessages, ({one}) => ({
-	remyConversation: one(remyConversations, {
-		fields: [remyMessages.conversationId],
-		references: [remyConversations.id]
-	}),
-	chef: one(chefs, {
-		fields: [remyMessages.tenantId],
-		references: [chefs.id]
 	}),
 }));
 
@@ -9522,6 +9675,25 @@ export const serviceCoursesRelations = relations(serviceCourses, ({one}) => ({
 	event: one(events, {
 		fields: [serviceCourses.eventId],
 		references: [events.id]
+	}),
+}));
+
+export const remyMemoriesRelations = relations(remyMemories, ({one}) => ({
+	client: one(clients, {
+		fields: [remyMemories.relatedClientId],
+		references: [clients.id]
+	}),
+	event: one(events, {
+		fields: [remyMemories.relatedEventId],
+		references: [events.id]
+	}),
+	remyArtifact: one(remyArtifacts, {
+		fields: [remyMemories.sourceArtifactId],
+		references: [remyArtifacts.id]
+	}),
+	chef: one(chefs, {
+		fields: [remyMemories.tenantId],
+		references: [chefs.id]
 	}),
 }));
 
@@ -9968,6 +10140,19 @@ export const taskTemplatesRelations = relations(taskTemplates, ({one, many}) => 
 	tasks: many(tasks),
 }));
 
+export const tastingMenuCoursesRelations = relations(tastingMenuCourses, ({one, many}) => ({
+	recipe: one(recipes, {
+		fields: [tastingMenuCourses.recipeId],
+		references: [recipes.id]
+	}),
+	tastingMenu: one(tastingMenus, {
+		fields: [tastingMenuCourses.tastingMenuId],
+		references: [tastingMenus.id]
+	}),
+	dishes: many(dishes),
+	components: many(components),
+}));
+
 export const tastingMenusRelations = relations(tastingMenus, ({one, many}) => ({
 	tastingMenuCourses: many(tastingMenuCourses),
 	chef: one(chefs, {
@@ -10384,6 +10569,17 @@ export const workflowExecutionsRelations = relations(workflowExecutions, ({one, 
 	}),
 }));
 
+export const vendorDocumentUploadsRelations = relations(vendorDocumentUploads, ({one}) => ({
+	chef: one(chefs, {
+		fields: [vendorDocumentUploads.chefId],
+		references: [chefs.id]
+	}),
+	vendor: one(vendors, {
+		fields: [vendorDocumentUploads.vendorId],
+		references: [vendors.id]
+	}),
+}));
+
 export const testimonialsRelations = relations(testimonials, ({one}) => ({
 	client: one(clients, {
 		fields: [testimonials.clientId],
@@ -10396,17 +10592,6 @@ export const testimonialsRelations = relations(testimonials, ({one}) => ({
 	chef: one(chefs, {
 		fields: [testimonials.tenantId],
 		references: [chefs.id]
-	}),
-}));
-
-export const vendorDocumentUploadsRelations = relations(vendorDocumentUploads, ({one}) => ({
-	chef: one(chefs, {
-		fields: [vendorDocumentUploads.chefId],
-		references: [chefs.id]
-	}),
-	vendor: one(vendors, {
-		fields: [vendorDocumentUploads.vendorId],
-		references: [vendors.id]
 	}),
 }));
 
@@ -10633,6 +10818,21 @@ export const chefDocumentsRelations = relations(chefDocuments, ({one}) => ({
 	}),
 }));
 
+export const zipCentroidsInOpenclawRelations = relations(zipCentroidsInOpenclaw, ({one}) => ({
+	pricingRegionsInOpenclaw: one(pricingRegionsInOpenclaw, {
+		fields: [zipCentroidsInOpenclaw.pricingRegionId],
+		references: [pricingRegionsInOpenclaw.id]
+	}),
+}));
+
+export const pricingRegionsInOpenclawRelations = relations(pricingRegionsInOpenclaw, ({many}) => ({
+	zipCentroidsInOpenclaws: many(zipCentroidsInOpenclaw),
+	seasonalFactorsInOpenclaws: many(seasonalFactorsInOpenclaw),
+	resolvedPricesInOpenclaws: many(resolvedPricesInOpenclaw),
+	syntheticPricesInOpenclaws: many(syntheticPricesInOpenclaw),
+	pricePredictionsInOpenclaws: many(pricePredictionsInOpenclaw),
+}));
+
 export const chefWorkHistoryEntriesRelations = relations(chefWorkHistoryEntries, ({one}) => ({
 	chef: one(chefs, {
 		fields: [chefWorkHistoryEntries.chefId],
@@ -10652,6 +10852,44 @@ export const guestCountChangesRelations = relations(guestCountChanges, ({one}) =
 	chef: one(chefs, {
 		fields: [guestCountChanges.tenantId],
 		references: [chefs.id]
+	}),
+}));
+
+export const commitmentsRelations = relations(commitments, ({one, many}) => ({
+	chef: one(chefs, {
+		fields: [commitments.tenantId],
+		references: [chefs.id]
+	}),
+	commitmentOverrides: many(commitmentOverrides),
+}));
+
+export const commitmentOverridesRelations = relations(commitmentOverrides, ({one}) => ({
+	commitment: one(commitments, {
+		fields: [commitmentOverrides.commitmentId],
+		references: [commitments.id]
+	}),
+	chef: one(chefs, {
+		fields: [commitmentOverrides.tenantId],
+		references: [chefs.id]
+	}),
+}));
+
+export const ingredientPriceHistoryRelations = relations(ingredientPriceHistory, ({one}) => ({
+	expense: one(expenses, {
+		fields: [ingredientPriceHistory.expenseId],
+		references: [expenses.id]
+	}),
+	ingredient: one(ingredients, {
+		fields: [ingredientPriceHistory.ingredientId],
+		references: [ingredients.id]
+	}),
+	chef: one(chefs, {
+		fields: [ingredientPriceHistory.tenantId],
+		references: [chefs.id]
+	}),
+	vendor: one(vendors, {
+		fields: [ingredientPriceHistory.vendorId],
+		references: [vendors.id]
 	}),
 }));
 
@@ -10832,6 +11070,21 @@ export const ingredientKnowledgeSlugsRelations = relations(ingredientKnowledgeSl
 	}),
 }));
 
+export const marginSnapshotsRelations = relations(marginSnapshots, ({one}) => ({
+	event: one(events, {
+		fields: [marginSnapshots.eventId],
+		references: [events.id]
+	}),
+	menu: one(menus, {
+		fields: [marginSnapshots.menuId],
+		references: [menus.id]
+	}),
+	chef: one(chefs, {
+		fields: [marginSnapshots.tenantId],
+		references: [chefs.id]
+	}),
+}));
+
 export const aiCallTranscriptsRelations = relations(aiCallTranscripts, ({one}) => ({
 	aiCall: one(aiCalls, {
 		fields: [aiCallTranscripts.aiCallId],
@@ -10878,6 +11131,52 @@ export const remyMilestonesRelations = relations(remyMilestones, ({one}) => ({
 	}),
 }));
 
+export const eventTicketTypesRelations = relations(eventTicketTypes, ({one, many}) => ({
+	event: one(events, {
+		fields: [eventTicketTypes.eventId],
+		references: [events.id]
+	}),
+	chef: one(chefs, {
+		fields: [eventTicketTypes.tenantId],
+		references: [chefs.id]
+	}),
+	eventTickets: many(eventTickets),
+}));
+
+export const eventTicketsRelations = relations(eventTickets, ({one}) => ({
+	eventGuest: one(eventGuests, {
+		fields: [eventTickets.eventGuestId],
+		references: [eventGuests.id]
+	}),
+	event: one(events, {
+		fields: [eventTickets.eventId],
+		references: [events.id]
+	}),
+	hubGuestProfile: one(hubGuestProfiles, {
+		fields: [eventTickets.hubProfileId],
+		references: [hubGuestProfiles.id]
+	}),
+	chef: one(chefs, {
+		fields: [eventTickets.tenantId],
+		references: [chefs.id]
+	}),
+	eventTicketType: one(eventTicketTypes, {
+		fields: [eventTickets.ticketTypeId],
+		references: [eventTicketTypes.id]
+	}),
+}));
+
+export const eventDistributionRelations = relations(eventDistribution, ({one}) => ({
+	event: one(events, {
+		fields: [eventDistribution.eventId],
+		references: [events.id]
+	}),
+	chef: one(chefs, {
+		fields: [eventDistribution.tenantId],
+		references: [chefs.id]
+	}),
+}));
+
 export const planningRunsRelations = relations(planningRuns, ({one, many}) => ({
 	chef: one(chefs, {
 		fields: [planningRuns.tenantId],
@@ -10897,20 +11196,28 @@ export const planningRunArtifactsRelations = relations(planningRunArtifacts, ({o
 	}),
 }));
 
-export const chefLocationLinksRelations = relations(chefLocationLinks, ({one}) => ({
-	chef_chefId: one(chefs, {
-		fields: [chefLocationLinks.chefId],
-		references: [chefs.id],
-		relationName: "chefLocationLinks_chefId_chefs_id"
+export const eventShareSettingsRelations = relations(eventShareSettings, ({one}) => ({
+	event: one(events, {
+		fields: [eventShareSettings.eventId],
+		references: [events.id]
 	}),
-	partnerLocation: one(partnerLocations, {
-		fields: [chefLocationLinks.locationId],
-		references: [partnerLocations.id]
+	chef: one(chefs, {
+		fields: [eventShareSettings.tenantId],
+		references: [chefs.id]
 	}),
-	chef_tenantId: one(chefs, {
-		fields: [chefLocationLinks.tenantId],
-		references: [chefs.id],
-		relationName: "chefLocationLinks_tenantId_chefs_id"
+}));
+
+export const ragChunksRelations = relations(ragChunks, ({one}) => ({
+	chef: one(chefs, {
+		fields: [ragChunks.tenantId],
+		references: [chefs.id]
+	}),
+}));
+
+export const commitmentSuggestionsRelations = relations(commitmentSuggestions, ({one}) => ({
+	chef: one(chefs, {
+		fields: [commitmentSuggestions.tenantId],
+		references: [chefs.id]
 	}),
 }));
 
@@ -10922,6 +11229,23 @@ export const receiptIngredientMappingsRelations = relations(receiptIngredientMap
 	chef: one(chefs, {
 		fields: [receiptIngredientMappings.tenantId],
 		references: [chefs.id]
+	}),
+}));
+
+export const chefPreferencesRelations = relations(chefPreferences, ({one}) => ({
+	chef_chefId: one(chefs, {
+		fields: [chefPreferences.chefId],
+		references: [chefs.id],
+		relationName: "chefPreferences_chefId_chefs_id"
+	}),
+	event: one(events, {
+		fields: [chefPreferences.lockedEventId],
+		references: [events.id]
+	}),
+	chef_tenantId: one(chefs, {
+		fields: [chefPreferences.tenantId],
+		references: [chefs.id],
+		relationName: "chefPreferences_tenantId_chefs_id"
 	}),
 }));
 
@@ -11034,6 +11358,311 @@ export const clientProfileRecommendationsRelations = relations(clientProfileReco
 	}),
 }));
 
+export const productTelemetryRelations = relations(productTelemetry, ({one}) => ({
+	chef: one(chefs, {
+		fields: [productTelemetry.tenantId],
+		references: [chefs.id]
+	}),
+	usersInAuth: one(usersInAuth, {
+		fields: [productTelemetry.userId],
+		references: [usersInAuth.id]
+	}),
+}));
+
+export const seasonalFactorsInOpenclawRelations = relations(seasonalFactorsInOpenclaw, ({one}) => ({
+	pricingRegionsInOpenclaw: one(pricingRegionsInOpenclaw, {
+		fields: [seasonalFactorsInOpenclaw.pricingRegionId],
+		references: [pricingRegionsInOpenclaw.id]
+	}),
+}));
+
+export const clientNotesRelations = relations(clientNotes, ({one}) => ({
+	client: one(clients, {
+		fields: [clientNotes.clientId],
+		references: [clients.id]
+	}),
+	event: one(events, {
+		fields: [clientNotes.eventId],
+		references: [events.id]
+	}),
+	chef: one(chefs, {
+		fields: [clientNotes.tenantId],
+		references: [chefs.id]
+	}),
+}));
+
+export const resolvedPricesInOpenclawRelations = relations(resolvedPricesInOpenclaw, ({one}) => ({
+	pricingRegionsInOpenclaw: one(pricingRegionsInOpenclaw, {
+		fields: [resolvedPricesInOpenclaw.pricingRegionId],
+		references: [pricingRegionsInOpenclaw.id]
+	}),
+}));
+
+export const ingredientCensusInOpenclawRelations = relations(ingredientCensusInOpenclaw, ({one}) => ({
+	canonicalIngredientsInOpenclaw: one(canonicalIngredientsInOpenclaw, {
+		fields: [ingredientCensusInOpenclaw.ingredientId],
+		references: [canonicalIngredientsInOpenclaw.ingredientId]
+	}),
+}));
+
+export const canonicalIngredientsInOpenclawRelations = relations(canonicalIngredientsInOpenclaw, ({many}) => ({
+	ingredientCensusInOpenclaws: many(ingredientCensusInOpenclaw),
+	syntheticPricesInOpenclaws: many(syntheticPricesInOpenclaw),
+}));
+
+export const syntheticPricesInOpenclawRelations = relations(syntheticPricesInOpenclaw, ({one}) => ({
+	canonicalIngredientsInOpenclaw: one(canonicalIngredientsInOpenclaw, {
+		fields: [syntheticPricesInOpenclaw.canonicalIngredientId],
+		references: [canonicalIngredientsInOpenclaw.ingredientId]
+	}),
+	pricingRegionsInOpenclaw: one(pricingRegionsInOpenclaw, {
+		fields: [syntheticPricesInOpenclaw.pricingRegionId],
+		references: [pricingRegionsInOpenclaw.id]
+	}),
+}));
+
+export const menuMemoryFeedbackRelations = relations(menuMemoryFeedback, ({one}) => ({
+	client: one(clients, {
+		fields: [menuMemoryFeedback.clientId],
+		references: [clients.id]
+	}),
+	dishIndex: one(dishIndex, {
+		fields: [menuMemoryFeedback.dishId],
+		references: [dishIndex.id]
+	}),
+	event: one(events, {
+		fields: [menuMemoryFeedback.eventId],
+		references: [events.id]
+	}),
+	hubGroup: one(hubGroups, {
+		fields: [menuMemoryFeedback.hubGroupId],
+		references: [hubGroups.id]
+	}),
+	ingredient: one(ingredients, {
+		fields: [menuMemoryFeedback.ingredientId],
+		references: [ingredients.id]
+	}),
+	dish: one(dishes, {
+		fields: [menuMemoryFeedback.menuDishId],
+		references: [dishes.id]
+	}),
+	menu: one(menus, {
+		fields: [menuMemoryFeedback.menuId],
+		references: [menus.id]
+	}),
+	hubGuestProfile: one(hubGuestProfiles, {
+		fields: [menuMemoryFeedback.profileId],
+		references: [hubGuestProfiles.id]
+	}),
+	chef: one(chefs, {
+		fields: [menuMemoryFeedback.tenantId],
+		references: [chefs.id]
+	}),
+}));
+
+export const menuMemoryRequestsRelations = relations(menuMemoryRequests, ({one, many}) => ({
+	event: one(events, {
+		fields: [menuMemoryRequests.eventId],
+		references: [events.id]
+	}),
+	client: one(clients, {
+		fields: [menuMemoryRequests.requestedByClientId],
+		references: [clients.id]
+	}),
+	hubGuestProfile: one(hubGuestProfiles, {
+		fields: [menuMemoryRequests.requestedByProfileId],
+		references: [hubGuestProfiles.id]
+	}),
+	hubGroup: one(hubGroups, {
+		fields: [menuMemoryRequests.sourceHubGroupId],
+		references: [hubGroups.id]
+	}),
+	menu: one(menus, {
+		fields: [menuMemoryRequests.sourceMenuId],
+		references: [menus.id]
+	}),
+	chef: one(chefs, {
+		fields: [menuMemoryRequests.tenantId],
+		references: [chefs.id]
+	}),
+	menuMemoryRequestItems: many(menuMemoryRequestItems),
+	menuMemoryRequestEvents: many(menuMemoryRequestEvents),
+}));
+
+export const menuMemoryRequestItemsRelations = relations(menuMemoryRequestItems, ({one}) => ({
+	dishIndex: one(dishIndex, {
+		fields: [menuMemoryRequestItems.dishId],
+		references: [dishIndex.id]
+	}),
+	ingredient: one(ingredients, {
+		fields: [menuMemoryRequestItems.ingredientId],
+		references: [ingredients.id]
+	}),
+	menuMemoryRequest: one(menuMemoryRequests, {
+		fields: [menuMemoryRequestItems.requestId],
+		references: [menuMemoryRequests.id]
+	}),
+	event: one(events, {
+		fields: [menuMemoryRequestItems.sourceEventId],
+		references: [events.id]
+	}),
+	menu: one(menus, {
+		fields: [menuMemoryRequestItems.sourceMenuId],
+		references: [menus.id]
+	}),
+	chef: one(chefs, {
+		fields: [menuMemoryRequestItems.tenantId],
+		references: [chefs.id]
+	}),
+}));
+
+export const menuMemoryRequestEventsRelations = relations(menuMemoryRequestEvents, ({one}) => ({
+	usersInAuth: one(usersInAuth, {
+		fields: [menuMemoryRequestEvents.actorAuthUserId],
+		references: [usersInAuth.id]
+	}),
+	client: one(clients, {
+		fields: [menuMemoryRequestEvents.actorClientId],
+		references: [clients.id]
+	}),
+	hubGuestProfile: one(hubGuestProfiles, {
+		fields: [menuMemoryRequestEvents.actorProfileId],
+		references: [hubGuestProfiles.id]
+	}),
+	menuMemoryRequest: one(menuMemoryRequests, {
+		fields: [menuMemoryRequestEvents.requestId],
+		references: [menuMemoryRequests.id]
+	}),
+	chef: one(chefs, {
+		fields: [menuMemoryRequestEvents.tenantId],
+		references: [chefs.id]
+	}),
+}));
+
+export const pricePredictionsInOpenclawRelations = relations(pricePredictionsInOpenclaw, ({one}) => ({
+	pricingRegionsInOpenclaw: one(pricingRegionsInOpenclaw, {
+		fields: [pricePredictionsInOpenclaw.pricingRegionId],
+		references: [pricingRegionsInOpenclaw.id]
+	}),
+}));
+
+export const userLocationDefaultsRelations = relations(userLocationDefaults, ({one}) => ({
+	usersInAuth: one(usersInAuth, {
+		fields: [userLocationDefaults.authUserId],
+		references: [usersInAuth.id]
+	}),
+}));
+
+export const orderQueueRelations = relations(orderQueue, ({one}) => ({
+	usersInAuth: one(usersInAuth, {
+		fields: [orderQueue.assignedTo],
+		references: [usersInAuth.id]
+	}),
+	businessLocation: one(businessLocations, {
+		fields: [orderQueue.locationId],
+		references: [businessLocations.id]
+	}),
+	sale: one(sales, {
+		fields: [orderQueue.saleId],
+		references: [sales.id]
+	}),
+	chef: one(chefs, {
+		fields: [orderQueue.tenantId],
+		references: [chefs.id]
+	}),
+}));
+
+export const workflowNotesRelations = relations(workflowNotes, ({one, many}) => ({
+	client: one(clients, {
+		fields: [workflowNotes.clientId],
+		references: [clients.id]
+	}),
+	usersInAuth_createdBy: one(usersInAuth, {
+		fields: [workflowNotes.createdBy],
+		references: [usersInAuth.id],
+		relationName: "workflowNotes_createdBy_usersInAuth_id"
+	}),
+	event: one(events, {
+		fields: [workflowNotes.eventId],
+		references: [events.id]
+	}),
+	chef: one(chefs, {
+		fields: [workflowNotes.tenantId],
+		references: [chefs.id]
+	}),
+	usersInAuth_updatedBy: one(usersInAuth, {
+		fields: [workflowNotes.updatedBy],
+		references: [usersInAuth.id],
+		relationName: "workflowNotes_updatedBy_usersInAuth_id"
+	}),
+	workflowNoteMenuLinks: many(workflowNoteMenuLinks),
+	dishIndexNoteLinks: many(dishIndexNoteLinks),
+}));
+
+export const workflowNoteMenuLinksRelations = relations(workflowNoteMenuLinks, ({one}) => ({
+	usersInAuth: one(usersInAuth, {
+		fields: [workflowNoteMenuLinks.linkedBy],
+		references: [usersInAuth.id]
+	}),
+	menu: one(menus, {
+		fields: [workflowNoteMenuLinks.menuId],
+		references: [menus.id]
+	}),
+	workflowNote: one(workflowNotes, {
+		fields: [workflowNoteMenuLinks.noteId],
+		references: [workflowNotes.id]
+	}),
+	chef: one(chefs, {
+		fields: [workflowNoteMenuLinks.tenantId],
+		references: [chefs.id]
+	}),
+}));
+
+export const dishIndexComponentsRelations = relations(dishIndexComponents, ({one, many}) => ({
+	usersInAuth_createdBy: one(usersInAuth, {
+		fields: [dishIndexComponents.createdBy],
+		references: [usersInAuth.id],
+		relationName: "dishIndexComponents_createdBy_usersInAuth_id"
+	}),
+	dishIndex: one(dishIndex, {
+		fields: [dishIndexComponents.dishId],
+		references: [dishIndex.id]
+	}),
+	recipe: one(recipes, {
+		fields: [dishIndexComponents.recipeId],
+		references: [recipes.id]
+	}),
+	chef: one(chefs, {
+		fields: [dishIndexComponents.tenantId],
+		references: [chefs.id]
+	}),
+	usersInAuth_updatedBy: one(usersInAuth, {
+		fields: [dishIndexComponents.updatedBy],
+		references: [usersInAuth.id],
+		relationName: "dishIndexComponents_updatedBy_usersInAuth_id"
+	}),
+	components: many(components),
+}));
+
+export const dishIndexNoteLinksRelations = relations(dishIndexNoteLinks, ({one}) => ({
+	usersInAuth: one(usersInAuth, {
+		fields: [dishIndexNoteLinks.createdBy],
+		references: [usersInAuth.id]
+	}),
+	dishIndex: one(dishIndex, {
+		fields: [dishIndexNoteLinks.dishId],
+		references: [dishIndex.id]
+	}),
+	workflowNote: one(workflowNotes, {
+		fields: [dishIndexNoteLinks.noteId],
+		references: [workflowNotes.id]
+	}),
+	chef: one(chefs, {
+		fields: [dishIndexNoteLinks.tenantId],
+		references: [chefs.id]
+	}),
+}));
+
 export const chefTwilioCredentialsRelations = relations(chefTwilioCredentials, ({one}) => ({
 	chef: one(chefs, {
 		fields: [chefTwilioCredentials.chefId],
@@ -11060,11 +11689,65 @@ export const chefFeedbackRelations = relations(chefFeedback, ({one}) => ({
 	}),
 }));
 
+export const eventReschedulesRelations = relations(eventReschedules, ({one}) => ({
+	event: one(events, {
+		fields: [eventReschedules.eventId],
+		references: [events.id]
+	}),
+	chef: one(chefs, {
+		fields: [eventReschedules.tenantId],
+		references: [chefs.id]
+	}),
+}));
+
 export const ingredientAccuracyFlagsRelations = relations(ingredientAccuracyFlags, ({one}) => ({
 	chef: one(chefs, {
 		fields: [ingredientAccuracyFlags.chefId],
 		references: [chefs.id]
 	}),
+}));
+
+export const menuShareTokensRelations = relations(menuShareTokens, ({one}) => ({
+	chef: one(chefs, {
+		fields: [menuShareTokens.chefId],
+		references: [chefs.id]
+	}),
+	menu: one(menus, {
+		fields: [menuShareTokens.menuId],
+		references: [menus.id]
+	}),
+}));
+
+export const chefDirectoryListingsRelations = relations(chefDirectoryListings, ({one}) => ({
+	chef: one(chefs, {
+		fields: [chefDirectoryListings.chefId],
+		references: [chefs.id]
+	}),
+}));
+
+export const legalReadinessItemsRelations = relations(legalReadinessItems, ({one}) => ({
+	usersInAuth_ownerUserId: one(usersInAuth, {
+		fields: [legalReadinessItems.ownerUserId],
+		references: [usersInAuth.id],
+		relationName: "legalReadinessItems_ownerUserId_usersInAuth_id"
+	}),
+	usersInAuth_reviewedBy: one(usersInAuth, {
+		fields: [legalReadinessItems.reviewedBy],
+		references: [usersInAuth.id],
+		relationName: "legalReadinessItems_reviewedBy_usersInAuth_id"
+	}),
+	chef: one(chefs, {
+		fields: [legalReadinessItems.tenantId],
+		references: [chefs.id]
+	}),
+}));
+
+export const legalPolicyVersionsRelations = relations(legalPolicyVersions, ({one, many}) => ({
+	usersInAuth: one(usersInAuth, {
+		fields: [legalPolicyVersions.approvedBy],
+		references: [usersInAuth.id]
+	}),
+	legalPolicyAcceptances: many(legalPolicyAcceptances),
 }));
 
 export const paymentPlanInstallmentsRelations = relations(paymentPlanInstallments, ({one}) => ({
@@ -11075,6 +11758,163 @@ export const paymentPlanInstallmentsRelations = relations(paymentPlanInstallment
 	chef: one(chefs, {
 		fields: [paymentPlanInstallments.tenantId],
 		references: [chefs.id]
+	}),
+}));
+
+export const locationDailyMetricsRelations = relations(locationDailyMetrics, ({one}) => ({
+	businessLocation: one(businessLocations, {
+		fields: [locationDailyMetrics.locationId],
+		references: [businessLocations.id]
+	}),
+	chef: one(chefs, {
+		fields: [locationDailyMetrics.tenantId],
+		references: [chefs.id]
+	}),
+}));
+
+export const locationAlertsRelations = relations(locationAlerts, ({one}) => ({
+	businessLocation: one(businessLocations, {
+		fields: [locationAlerts.locationId],
+		references: [businessLocations.id]
+	}),
+	chef: one(chefs, {
+		fields: [locationAlerts.tenantId],
+		references: [chefs.id]
+	}),
+}));
+
+export const locationDemandForecastsRelations = relations(locationDemandForecasts, ({one}) => ({
+	businessLocation: one(businessLocations, {
+		fields: [locationDemandForecasts.locationId],
+		references: [businessLocations.id]
+	}),
+	chef: one(chefs, {
+		fields: [locationDemandForecasts.tenantId],
+		references: [chefs.id]
+	}),
+}));
+
+export const locationRecipeComplianceRelations = relations(locationRecipeCompliance, ({one}) => ({
+	businessLocation: one(businessLocations, {
+		fields: [locationRecipeCompliance.locationId],
+		references: [businessLocations.id]
+	}),
+	recipe: one(recipes, {
+		fields: [locationRecipeCompliance.recipeId],
+		references: [recipes.id]
+	}),
+	chef: one(chefs, {
+		fields: [locationRecipeCompliance.tenantId],
+		references: [chefs.id]
+	}),
+}));
+
+export const centralizedPurchaseOrdersRelations = relations(centralizedPurchaseOrders, ({one, many}) => ({
+	chef: one(chefs, {
+		fields: [centralizedPurchaseOrders.tenantId],
+		references: [chefs.id]
+	}),
+	centralizedPurchaseOrderItems: many(centralizedPurchaseOrderItems),
+}));
+
+export const centralizedPurchaseOrderItemsRelations = relations(centralizedPurchaseOrderItems, ({one}) => ({
+	ingredient: one(ingredients, {
+		fields: [centralizedPurchaseOrderItems.ingredientId],
+		references: [ingredients.id]
+	}),
+	centralizedPurchaseOrder: one(centralizedPurchaseOrders, {
+		fields: [centralizedPurchaseOrderItems.orderId],
+		references: [centralizedPurchaseOrders.id]
+	}),
+}));
+
+export const chefTipsRelations = relations(chefTips, ({one}) => ({
+	chef: one(chefs, {
+		fields: [chefTips.chefId],
+		references: [chefs.id]
+	}),
+}));
+
+export const legalPolicyAcceptancesRelations = relations(legalPolicyAcceptances, ({one}) => ({
+	legalPolicyVersion: one(legalPolicyVersions, {
+		fields: [legalPolicyAcceptances.policyVersionId],
+		references: [legalPolicyVersions.id]
+	}),
+	chef: one(chefs, {
+		fields: [legalPolicyAcceptances.tenantId],
+		references: [chefs.id]
+	}),
+	usersInAuth: one(usersInAuth, {
+		fields: [legalPolicyAcceptances.userId],
+		references: [usersInAuth.id]
+	}),
+}));
+
+export const legalDataRightsCasesRelations = relations(legalDataRightsCases, ({one}) => ({
+	usersInAuth: one(usersInAuth, {
+		fields: [legalDataRightsCases.assignedTo],
+		references: [usersInAuth.id]
+	}),
+	chef: one(chefs, {
+		fields: [legalDataRightsCases.tenantId],
+		references: [chefs.id]
+	}),
+}));
+
+export const legalMarketingSmsConsentsRelations = relations(legalMarketingSmsConsents, ({one}) => ({
+	chef: one(chefs, {
+		fields: [legalMarketingSmsConsents.tenantId],
+		references: [chefs.id]
+	}),
+}));
+
+export const legalPaymentTaxMarketplaceReviewsRelations = relations(legalPaymentTaxMarketplaceReviews, ({one}) => ({
+	usersInAuth: one(usersInAuth, {
+		fields: [legalPaymentTaxMarketplaceReviews.reviewedBy],
+		references: [usersInAuth.id]
+	}),
+	chef: one(chefs, {
+		fields: [legalPaymentTaxMarketplaceReviews.tenantId],
+		references: [chefs.id]
+	}),
+}));
+
+export const legalDmcaTakedownCasesRelations = relations(legalDmcaTakedownCases, ({one}) => ({
+	usersInAuth: one(usersInAuth, {
+		fields: [legalDmcaTakedownCases.assignedTo],
+		references: [usersInAuth.id]
+	}),
+	chef: one(chefs, {
+		fields: [legalDmcaTakedownCases.tenantId],
+		references: [chefs.id]
+	}),
+}));
+
+export const legalContentOwnershipAcknowledgmentsRelations = relations(legalContentOwnershipAcknowledgments, ({one}) => ({
+	chef: one(chefs, {
+		fields: [legalContentOwnershipAcknowledgments.tenantId],
+		references: [chefs.id]
+	}),
+	usersInAuth: one(usersInAuth, {
+		fields: [legalContentOwnershipAcknowledgments.userId],
+		references: [usersInAuth.id]
+	}),
+}));
+
+export const chefLocationLinksRelations = relations(chefLocationLinks, ({one}) => ({
+	chef_chefId: one(chefs, {
+		fields: [chefLocationLinks.chefId],
+		references: [chefs.id],
+		relationName: "chefLocationLinks_chefId_chefs_id"
+	}),
+	partnerLocation: one(partnerLocations, {
+		fields: [chefLocationLinks.locationId],
+		references: [partnerLocations.id]
+	}),
+	chef_tenantId: one(chefs, {
+		fields: [chefLocationLinks.tenantId],
+		references: [chefs.id],
+		relationName: "chefLocationLinks_tenantId_chefs_id"
 	}),
 }));
 
@@ -11092,6 +11932,61 @@ export const priceAnomaliesInOpenclawRelations = relations(priceAnomaliesInOpenc
 	}),
 }));
 
+export const localAiConnectorsRelations = relations(localAiConnectors, ({one}) => ({
+	chef: one(chefs, {
+		fields: [localAiConnectors.userId],
+		references: [chefs.id]
+	}),
+}));
+
+export const remyConversationsRelations = relations(remyConversations, ({one, many}) => ({
+	chef: one(chefs, {
+		fields: [remyConversations.tenantId],
+		references: [chefs.id]
+	}),
+	remyMessages: many(remyMessages),
+}));
+
+export const remyMessagesRelations = relations(remyMessages, ({one}) => ({
+	remyConversation: one(remyConversations, {
+		fields: [remyMessages.conversationId],
+		references: [remyConversations.id]
+	}),
+	chef: one(chefs, {
+		fields: [remyMessages.tenantId],
+		references: [chefs.id]
+	}),
+}));
+
+export const contractClausesRelations = relations(contractClauses, ({one}) => ({
+	chef: one(chefs, {
+		fields: [contractClauses.chefId],
+		references: [chefs.id]
+	}),
+}));
+
+export const eventVendorsRelations = relations(eventVendors, ({one}) => ({
+	event: one(events, {
+		fields: [eventVendors.eventId],
+		references: [events.id]
+	}),
+	chef: one(chefs, {
+		fields: [eventVendors.tenantId],
+		references: [chefs.id]
+	}),
+}));
+
+export const eventLeftoversRelations = relations(eventLeftovers, ({one}) => ({
+	event: one(events, {
+		fields: [eventLeftovers.eventId],
+		references: [events.id]
+	}),
+	chef: one(chefs, {
+		fields: [eventLeftovers.tenantId],
+		references: [chefs.id]
+	}),
+}));
+
 export const clientTasteProfilesRelations = relations(clientTasteProfiles, ({one}) => ({
 	client: one(clients, {
 		fields: [clientTasteProfiles.clientId],
@@ -11099,6 +11994,60 @@ export const clientTasteProfilesRelations = relations(clientTasteProfiles, ({one
 	}),
 	chef: one(chefs, {
 		fields: [clientTasteProfiles.tenantId],
+		references: [chefs.id]
+	}),
+}));
+
+export const cadenceChefSettingsRelations = relations(cadenceChefSettings, ({one}) => ({
+	chef: one(chefs, {
+		fields: [cadenceChefSettings.chefId],
+		references: [chefs.id]
+	}),
+}));
+
+export const invoiceSendsRelations = relations(invoiceSends, ({one}) => ({
+	event: one(events, {
+		fields: [invoiceSends.eventId],
+		references: [events.id]
+	}),
+}));
+
+export const cadenceScheduleRelations = relations(cadenceSchedule, ({one}) => ({
+	event: one(events, {
+		fields: [cadenceSchedule.eventId],
+		references: [events.id]
+	}),
+	chef: one(chefs, {
+		fields: [cadenceSchedule.tenantId],
+		references: [chefs.id]
+	}),
+}));
+
+export const smsTriageMetadataRelations = relations(smsTriageMetadata, ({one}) => ({
+	chef: one(chefs, {
+		fields: [smsTriageMetadata.tenantId],
+		references: [chefs.id]
+	}),
+	conversationThread: one(conversationThreads, {
+		fields: [smsTriageMetadata.threadId],
+		references: [conversationThreads.id]
+	}),
+}));
+
+export const portfolioEntriesRelations = relations(portfolioEntries, ({one}) => ({
+	chef: one(chefs, {
+		fields: [portfolioEntries.chefId],
+		references: [chefs.id]
+	}),
+	event: one(events, {
+		fields: [portfolioEntries.eventId],
+		references: [events.id]
+	}),
+}));
+
+export const cancellationFeeScheduleRelations = relations(cancellationFeeSchedule, ({one}) => ({
+	chef: one(chefs, {
+		fields: [cancellationFeeSchedule.chefId],
 		references: [chefs.id]
 	}),
 }));
@@ -11146,6 +12095,21 @@ export const eventServiceSimulationRunsRelations = relations(eventServiceSimulat
 	}),
 	chef: one(chefs, {
 		fields: [eventServiceSimulationRuns.tenantId],
+		references: [chefs.id]
+	}),
+}));
+
+export const dietaryOutreachRelations = relations(dietaryOutreach, ({one}) => ({
+	event: one(events, {
+		fields: [dietaryOutreach.eventId],
+		references: [events.id]
+	}),
+	guest: one(guests, {
+		fields: [dietaryOutreach.guestId],
+		references: [guests.id]
+	}),
+	chef: one(chefs, {
+		fields: [dietaryOutreach.tenantId],
 		references: [chefs.id]
 	}),
 }));

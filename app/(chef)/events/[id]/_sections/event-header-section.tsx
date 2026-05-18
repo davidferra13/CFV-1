@@ -20,6 +20,7 @@ import { EventPacketDrawer } from '@/components/documents/event-packet-drawer'
 import { QuickProposalButton } from '@/components/events/quick-proposal-button'
 import { EventCloneButton } from '@/components/events/event-clone-button'
 import { EventActionsOverflow } from '@/components/events/event-actions-overflow'
+import { EventHeaderActions } from '@/components/events/event-header-actions'
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
 import { ProgressPill } from '@/components/ui/progress-pill'
@@ -276,6 +277,11 @@ export async function EventHeaderSection({ eventId, tenantId, event }: Props) {
             <Button variant="secondary">Source Ingredients</Button>
           </Link>
         )}
+        <EventHeaderActions
+          eventId={event.id}
+          eventStatus={event.status}
+          currentDate={dateToDateString(event.event_date)}
+        />
         <EventActionsOverflow
           actions={[
             ...(!isEventToday(event.event_date) && !['draft', 'cancelled'].includes(event.status)

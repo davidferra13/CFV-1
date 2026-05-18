@@ -9,6 +9,9 @@ import { revalidatePath } from 'next/cache'
 import { z } from 'zod'
 import { EXPENSE_CATEGORY_VALUES } from '@/lib/constants/expense-categories'
 import { getChefPreferences } from '@/lib/chef/actions'
+import { ftsMatchIds, normalizePagination, buildPaginationMeta } from '@/lib/search/search-helpers'
+import type { PaginationMeta } from '@/lib/search/search-types'
+import { escapeLikePattern } from '@/lib/db/escape-like'
 
 // --- Zod Schemas ---
 
@@ -236,7 +239,7 @@ export async function createExpense(input: CreateExpenseInput) {
 }
 
 /**
- * Get expenses with optional filters
+ * Get expenses with optional filters (returns bare array for backward compatibility)
  */
 export async function getExpenses(filters: ExpenseFilters = {}) {
   const user = await requireChef()
@@ -276,6 +279,89 @@ export async function getExpenses(filters: ExpenseFilters = {}) {
   }
 
   return data
+}
+
+/**
+ * Get expenses with FTS search and server-side pagination.
+ * Returns { items, total, pagination } for paginated list views.
+ * Does not break the 20+ callers of getExpenses() which expect a bare array.
+ */
+export async function getExpensesPaginated(
+  filters: ExpenseFilters & {
+    search?: string
+    page?: number
+    pageSize?: number
+  } = {}
+): Promise<{ items: any[]; total: number; pagination: PaginationMeta }> {
+  const user = await requireChef()
+  const db: any = createServerClient()
+  const { page, pageSize, offset } = normalizePagination({
+    page: filters.page,
+    pageSize: filters.pageSize ?? 50,
+  })
+
+  let query = db
+    .from('expenses')
+    .select(
+      `
+      *,
+      event:events(id, occasion, event_date, client:clients(full_name))
+    `,
+      { count: 'exact' }
+    )
+    .eq('tenant_id', user.tenantId!)
+
+  // Apply filters
+  if (filters.event_id) {
+    query = query.eq('event_id', filters.event_id)
+  }
+  if (filters.category && filters.category !== 'all') {
+    query = query.eq('category', filters.category as any)
+  }
+  if (filters.is_business !== undefined) {
+    query = query.eq('is_business', filters.is_business)
+  }
+  if (filters.start_date) {
+    query = query.gte('expense_date', filters.start_date)
+  }
+  if (filters.end_date) {
+    query = query.lte('expense_date', filters.end_date)
+  }
+
+  // FTS search with ILIKE fallback
+  if (filters.search) {
+    const ftsIds = await ftsMatchIds('expenses', user.tenantId!, filters.search)
+    if (ftsIds !== null) {
+      if (ftsIds.length === 0) {
+        return { items: [], total: 0, pagination: buildPaginationMeta(0, page, pageSize) }
+      }
+      query = query.in('id', ftsIds)
+    } else {
+      // Fallback: ILIKE on description and vendor_name
+      query = query.or(
+        `description.ilike.%${escapeLikePattern(filters.search)}%,vendor_name.ilike.%${escapeLikePattern(filters.search)}%`
+      )
+    }
+  }
+
+  // Sort and paginate
+  query = query.order('expense_date', { ascending: false })
+  query = query.range(offset, offset + pageSize - 1)
+
+  const { data, error, count } = await query
+
+  if (error) {
+    console.error('[getExpensesPaginated] Error:', error)
+    throw new Error('Failed to load expenses')
+  }
+
+  const total = count ?? 0
+
+  return {
+    items: data || [],
+    total,
+    pagination: buildPaginationMeta(total, page, pageSize),
+  }
 }
 
 /**

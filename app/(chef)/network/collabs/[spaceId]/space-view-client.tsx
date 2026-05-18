@@ -1,6 +1,7 @@
 'use client'
 
 import { useState, useTransition, useRef, useEffect } from 'react'
+import Image from 'next/image'
 import Link from 'next/link'
 import { useRouter } from 'next/navigation'
 import { toast } from 'sonner'
@@ -166,9 +167,13 @@ export function SpaceViewClient({ detail, currentChefId, spaceId }: Props) {
                 title={m.display_name}
               >
                 {m.profile_image_url ? (
-                  <img
+                  <Image
                     src={m.profile_image_url}
                     alt=""
+                    width={16}
+                    height={16}
+                    sizes="16px"
+                    unoptimized
                     className="h-4 w-4 rounded-full object-cover"
                   />
                 ) : (
@@ -335,7 +340,15 @@ export function SpaceViewClient({ detail, currentChefId, spaceId }: Props) {
                       <div key={msg.id} className="mb-3 flex items-start gap-2.5">
                         <div className="flex-shrink-0 h-7 w-7 rounded-full bg-stone-800 flex items-center justify-center overflow-hidden">
                           {msg.sender_avatar ? (
-                            <img src={msg.sender_avatar} alt="" className="h-7 w-7 object-cover" />
+                            <Image
+                              src={msg.sender_avatar}
+                              alt=""
+                              width={28}
+                              height={28}
+                              sizes="28px"
+                              unoptimized
+                              className="h-7 w-7 object-cover"
+                            />
                           ) : (
                             <span className="text-xs text-stone-400">
                               {msg.sender_name.charAt(0)}

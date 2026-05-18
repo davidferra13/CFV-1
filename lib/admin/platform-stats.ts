@@ -45,6 +45,17 @@ export type PlatformClientRow = {
   ltvCents: number
 }
 
+export type PlatformChefListInput = {
+  limit?: number
+  offset?: number
+  search?: string
+}
+
+export type PlatformChefListResult = {
+  items: PlatformChefRow[]
+  total: number
+}
+
 export type PlatformClientListInput = {
   limit?: number
   offset?: number
@@ -66,6 +77,18 @@ export type PlatformEventRow = {
   created_at: string
   chefId: string
   chefBusinessName: string | null
+}
+
+export type PlatformEventListInput = {
+  limit?: number
+  offset?: number
+  search?: string
+  status?: string
+}
+
+export type PlatformEventListResult = {
+  items: PlatformEventRow[]
+  total: number
 }
 
 export type GrowthDataPoint = {
@@ -202,16 +225,31 @@ export async function getPlatformOverviewStats(): Promise<PlatformOverviewStats>
   }
 }
 
-export async function getPlatformChefList(): Promise<PlatformChefRow[]> {
+export async function getPlatformChefList(
+  input: PlatformChefListInput = {}
+): Promise<PlatformChefListResult> {
   await requireAdmin()
   const db: any = createAdminClient()
+  const limit = Math.min(Math.max(input.limit ?? 50, 1), 200)
+  const offset = Math.max(input.offset ?? 0, 0)
+  const search = input.search?.trim()
 
-  const { data: chefs } = await db
+  let chefsQuery = db
     .from('chefs')
-    .select('id, business_name, email, created_at, subscription_status, account_status')
+    .select('id, business_name, email, created_at, subscription_status, account_status', {
+      count: 'exact',
+    })
     .order('created_at', { ascending: false })
+    .range(offset, offset + limit - 1)
 
-  if (!chefs?.length) return []
+  if (search) {
+    chefsQuery = chefsQuery.or(`business_name.ilike.%${search}%,email.ilike.%${search}%`)
+  }
+
+  const { data: chefs, count, error: chefsError } = await chefsQuery
+  if (chefsError) throw new Error(`Failed to load chefs: ${chefsError.message}`)
+
+  if (!chefs?.length) return { items: [], total: count ?? 0 }
 
   const chefIds = chefs.map((c: any) => c.id)
 
@@ -241,17 +279,20 @@ export async function getPlatformChefList(): Promise<PlatformChefRow[]> {
     if (l.tenant_id) gmvMap[l.tenant_id] = (gmvMap[l.tenant_id] ?? 0) + (l.amount_cents ?? 0)
   })
 
-  return chefs.map((chef: any) => ({
-    id: chef.id,
-    business_name: chef.business_name,
-    email: chef.email,
-    created_at: chef.created_at,
-    eventCount: eventCountMap[chef.id] ?? 0,
-    clientCount: clientCountMap[chef.id] ?? 0,
-    gmvCents: gmvMap[chef.id] ?? 0,
-    subscription_status: chef.subscription_status ?? null,
-    account_status: chef.account_status ?? null,
-  }))
+  return {
+    items: chefs.map((chef: any) => ({
+      id: chef.id,
+      business_name: chef.business_name,
+      email: chef.email,
+      created_at: chef.created_at,
+      eventCount: eventCountMap[chef.id] ?? 0,
+      clientCount: clientCountMap[chef.id] ?? 0,
+      gmvCents: gmvMap[chef.id] ?? 0,
+      subscription_status: chef.subscription_status ?? null,
+      account_status: chef.account_status ?? null,
+    })),
+    total: count ?? chefs.length,
+  }
 }
 
 export async function getPlatformClientList(
@@ -337,36 +378,57 @@ export async function getPlatformClientList(
   }
 }
 
-export async function getAllPlatformEvents(): Promise<PlatformEventRow[]> {
+export async function getAllPlatformEvents(
+  input: PlatformEventListInput = {}
+): Promise<PlatformEventListResult> {
   await requireAdmin()
   const db: any = createAdminClient()
+  const limit = Math.min(Math.max(input.limit ?? 50, 1), 200)
+  const offset = Math.max(input.offset ?? 0, 0)
+  const search = input.search?.trim()
+  const status = input.status?.trim()
 
-  const { data: events } = await db
+  let eventsQuery = db
     .from('events')
     .select(
-      'id, occasion, status, event_date, guest_count, quoted_price_cents, created_at, tenant_id'
+      'id, occasion, status, event_date, guest_count, quoted_price_cents, created_at, tenant_id',
+      { count: 'exact' }
     )
     .order('created_at', { ascending: false })
-    .limit(500)
+    .range(offset, offset + limit - 1)
 
-  if (!events?.length) return []
+  if (status) {
+    eventsQuery = eventsQuery.eq('status', status)
+  }
+
+  if (search) {
+    eventsQuery = eventsQuery.or(`occasion.ilike.%${search}%,location_address.ilike.%${search}%`)
+  }
+
+  const { data: events, count, error: eventsError } = await eventsQuery
+  if (eventsError) throw new Error(`Failed to load events: ${eventsError.message}`)
+
+  if (!events?.length) return { items: [], total: count ?? 0 }
 
   const tenantIds = [...new Set(events.map((e: any) => e.tenant_id).filter(Boolean))] as string[]
   const { data: chefs } = await db.from('chefs').select('id, business_name').in('id', tenantIds)
 
   const chefMap = Object.fromEntries((chefs ?? []).map((c: any) => [c.id, c.business_name]))
 
-  return events.map((e: any) => ({
-    id: e.id,
-    occasion: e.occasion,
-    status: e.status,
-    event_date: e.event_date,
-    guest_count: e.guest_count,
-    quoted_price_cents: e.quoted_price_cents,
-    created_at: e.created_at,
-    chefId: e.tenant_id ?? '',
-    chefBusinessName: e.tenant_id ? (chefMap[e.tenant_id] ?? null) : null,
-  }))
+  return {
+    items: events.map((e: any) => ({
+      id: e.id,
+      occasion: e.occasion,
+      status: e.status,
+      event_date: e.event_date,
+      guest_count: e.guest_count,
+      quoted_price_cents: e.quoted_price_cents,
+      created_at: e.created_at,
+      chefId: e.tenant_id ?? '',
+      chefBusinessName: e.tenant_id ? (chefMap[e.tenant_id] ?? null) : null,
+    })),
+    total: count ?? events.length,
+  }
 }
 
 export async function getPlatformGrowthStats(): Promise<GrowthDataPoint[]> {

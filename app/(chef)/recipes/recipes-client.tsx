@@ -17,6 +17,7 @@ import { RecipeCoverFlow } from '@/components/recipes/recipe-cover-flow'
 import { EmptyState } from '@/components/ui/empty-state'
 import { useSearch } from '@/lib/shared/use-search'
 import { Search, X } from '@/components/ui/icons'
+import type { PaginationMeta } from '@/lib/search/search-types'
 
 const CATEGORY_OPTIONS = [
   { value: '', label: 'All Categories' },
@@ -74,9 +75,10 @@ const CATEGORY_GRADIENTS: Record<string, string> = {
 
 type Props = {
   recipes: RecipeListItem[]
+  pagination: PaginationMeta
 }
 
-export function RecipeLibraryClient({ recipes }: Props) {
+export function RecipeLibraryClient({ recipes, pagination }: Props) {
   const router = useRouter()
   const searchParams = useSearchParams() ?? new URLSearchParams()
 
@@ -125,7 +127,19 @@ export function RecipeLibraryClient({ recipes }: Props) {
     } else {
       params.delete(key)
     }
+    params.delete('page')
     router.push(`/recipes?${params.toString()}`)
+  }
+
+  const buildPageHref = (page: number) => {
+    const params = new URLSearchParams(searchParams.toString())
+    if (page > 1) {
+      params.set('page', String(page))
+    } else {
+      params.delete('page')
+    }
+    const qs = params.toString()
+    return `/recipes${qs ? `?${qs}` : ''}`
   }
 
   return (
@@ -135,7 +149,7 @@ export function RecipeLibraryClient({ recipes }: Props) {
         <div>
           <h1 className="text-3xl font-bold text-stone-100">Recipe Book</h1>
           <p className="text-stone-400 mt-1">
-            {recipes.length} recipe{recipes.length !== 1 ? 's' : ''} in your collection
+            {pagination.total} recipe{pagination.total !== 1 ? 's' : ''} in your collection
           </p>
         </div>
         <div className="space-y-2 md:hidden">
@@ -519,6 +533,34 @@ export function RecipeLibraryClient({ recipes }: Props) {
           })}
         </div>
       ) : null}
+
+      {pagination.totalPages > 1 && (
+        <div className="flex items-center justify-between border-t border-stone-800 pt-3">
+          <p className="text-xs text-stone-500">
+            Showing {(pagination.page - 1) * pagination.pageSize + 1}-
+            {Math.min(pagination.page * pagination.pageSize, pagination.total)} of{' '}
+            {pagination.total}
+          </p>
+          <div className="flex gap-2">
+            {pagination.page > 1 && (
+              <Link
+                href={buildPageHref(pagination.page - 1)}
+                className="rounded-lg bg-stone-800 px-3 py-1.5 text-xs text-stone-300 hover:bg-stone-700"
+              >
+                Previous
+              </Link>
+            )}
+            {pagination.hasMore && (
+              <Link
+                href={buildPageHref(pagination.page + 1)}
+                className="rounded-lg bg-stone-800 px-3 py-1.5 text-xs text-stone-300 hover:bg-stone-700"
+              >
+                Next
+              </Link>
+            )}
+          </div>
+        </div>
+      )}
 
       {/* Recipe Import Dialogs */}
       <RecipeImportDialog open={importOpen} onClose={() => setImportOpen(false)} />

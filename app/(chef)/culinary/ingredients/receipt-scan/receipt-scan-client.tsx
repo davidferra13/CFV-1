@@ -1,6 +1,7 @@
 'use client'
 
 import { useState, useCallback, useTransition, useRef } from 'react'
+import Image from 'next/image'
 import Link from 'next/link'
 import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
@@ -242,10 +243,14 @@ export function ReceiptScanClient() {
             <div className="flex flex-col items-center gap-4">
               {imagePreview ? (
                 <div className="relative max-w-sm">
-                  <img
+                  <Image
                     src={imagePreview}
                     alt="Receipt preview"
-                    className="max-h-96 rounded-lg border border-stone-700"
+                    width={768}
+                    height={1024}
+                    sizes="(min-width: 640px) 384px, 100vw"
+                    unoptimized
+                    className="max-h-96 w-auto rounded-lg border border-stone-700"
                   />
                   <button
                     onClick={() => {

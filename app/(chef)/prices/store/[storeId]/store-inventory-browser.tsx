@@ -1,6 +1,7 @@
 'use client'
 
 import { useState, useTransition } from 'react'
+import Image from 'next/image'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
@@ -170,10 +171,13 @@ export function StoreInventoryBrowser({
                       <td className="py-2 pr-3">
                         <div className="flex items-center gap-2">
                           {p.imageUrl ? (
-                            // eslint-disable-next-line @next/next/no-img-element
-                            <img
+                            <Image
                               src={p.imageUrl}
                               alt=""
+                              width={32}
+                              height={32}
+                              sizes="32px"
+                              unoptimized
                               className="h-8 w-8 rounded object-cover flex-shrink-0 bg-stone-800"
                               onError={(e) => {
                                 ;(e.currentTarget as HTMLImageElement).style.display = 'none'

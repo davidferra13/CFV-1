@@ -3,6 +3,7 @@
 // globally, which would cause any same-origin iframe to be blocked by the browser.
 
 import type { CSSProperties } from 'react'
+import Image from 'next/image'
 import Link from 'next/link'
 import { LocationExperienceShowcase } from '@/components/public/location-experience-showcase'
 import { ChefProofSummary } from '@/components/public/chef-proof-summary'
@@ -192,20 +193,26 @@ export function PublicProfilePreview({
             <div className="max-w-4xl mx-auto px-6 text-center">
               {chef.logo_url && (
                 <div className="flex justify-center mb-6">
-                  {/* eslint-disable-next-line @next/next/no-img-element */}
-                  <img
+                  <Image
                     src={chef.logo_url}
                     alt={`${chef.display_name} logo`}
+                    width={220}
+                    height={64}
+                    sizes="220px"
+                    unoptimized
                     className="max-h-16 max-w-[220px] object-contain"
                   />
                 </div>
               )}
 
               {chef.profile_image_url ? (
-                // eslint-disable-next-line @next/next/no-img-element
-                <img
+                <Image
                   src={chef.profile_image_url}
                   alt={chef.display_name}
+                  width={112}
+                  height={112}
+                  sizes="112px"
+                  unoptimized
                   className="w-28 h-28 rounded-full object-cover mx-auto mb-6 ring-4 ring-white shadow-lg"
                 />
               ) : (

@@ -110,6 +110,28 @@ export async function upsertFeeSchedule(
 }
 
 /**
+ * Delete all fee schedule tiers for the current chef.
+ */
+export async function deleteFeeSchedule(): Promise<{ success: boolean; error?: string }> {
+  try {
+    const user = await requireChef()
+    const tenantId = user.tenantId!
+    const db: any = createServerClient()
+
+    const { error } = await db.from('cancellation_fee_schedule').delete().eq('chef_id', tenantId)
+
+    if (error) {
+      return { success: false, error: error.message }
+    }
+
+    revalidatePath('/settings')
+    return { success: true }
+  } catch (err: any) {
+    return { success: false, error: err.message ?? 'Failed to delete fee schedule' }
+  }
+}
+
+/**
  * Preview the reschedule fee for an event without actually rescheduling.
  * Useful for showing the client the cost before they confirm.
  */

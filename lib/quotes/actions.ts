@@ -318,6 +318,106 @@ export async function getQuotes(filters?: {
 }
 
 // ============================================
+// 2b. GET QUOTES PAGINATED (FTS + server-side filtering)
+// ============================================
+
+export async function getQuotesPaginated(filters?: {
+  status?: string
+  search?: string
+  page?: number
+  pageSize?: number
+}): Promise<{ items: any[]; total: number }> {
+  const user = await requireChef()
+  const db: any = createServerClient()
+
+  const page = Math.max(1, filters?.page ?? 1)
+  const pageSize = Math.min(100, Math.max(1, filters?.pageSize ?? 50))
+  const offset = (page - 1) * pageSize
+
+  let query = db
+    .from('quotes')
+    .select(
+      `
+      *,
+      client:clients(id, full_name, email),
+      inquiry:inquiries(id, confirmed_occasion, status),
+      event:events(id, occasion, event_date, status)
+    `,
+      { count: 'exact' }
+    )
+    .eq('tenant_id', user.tenantId!)
+    .is('deleted_at' as any, null)
+
+  // Status filter (server-side)
+  if (filters?.status && filters.status !== 'all') {
+    if (filters.status === 'viewed') {
+      // "viewed" = sent + has viewed_at
+      query = query.eq('status', 'sent').not('viewed_at', 'is', null)
+    } else {
+      query = query.eq('status', filters.status)
+    }
+  }
+
+  // FTS search with ILIKE fallback
+  if (filters?.search) {
+    const { ftsMatchIds } = await import('@/lib/search/search-helpers')
+    const ftsIds = await ftsMatchIds('quotes', user.tenantId!, filters.search)
+    if (ftsIds !== null) {
+      if (ftsIds.length === 0) {
+        return { items: [], total: 0 }
+      }
+      query = query.in('id', ftsIds)
+    } else {
+      // Fallback: ILIKE on quote_name
+      const { escapeLikePattern } = await import('@/lib/db/escape-like')
+      const pattern = `%${escapeLikePattern(filters.search)}%`
+      query = query.ilike('quote_name', pattern)
+    }
+  }
+
+  query = query.order('created_at', { ascending: false })
+  query = query.range(offset, offset + pageSize - 1)
+
+  const { data: quotes, error, count } = await query
+
+  if (error) {
+    // Retry without soft-delete filter if column missing
+    if (isMissingSoftDeleteColumn(error)) {
+      let fallback = db
+        .from('quotes')
+        .select(
+          `*, client:clients(id, full_name, email), inquiry:inquiries(id, confirmed_occasion, status), event:events(id, occasion, event_date, status)`,
+          { count: 'exact' }
+        )
+        .eq('tenant_id', user.tenantId!)
+
+      if (filters?.status && filters.status !== 'all') {
+        if (filters.status === 'viewed') {
+          fallback = fallback.eq('status', 'sent').not('viewed_at', 'is', null)
+        } else {
+          fallback = fallback.eq('status', filters.status)
+        }
+      }
+
+      fallback = fallback
+        .order('created_at', { ascending: false })
+        .range(offset, offset + pageSize - 1)
+      const fb = await fallback
+      if (fb.error) {
+        console.error('[getQuotesPaginated] Fallback error:', fb.error)
+        throw new UnknownAppError('Failed to fetch quotes')
+      }
+      return { items: fb.data ?? [], total: fb.count ?? 0 }
+    }
+
+    console.error('[getQuotesPaginated] Error:', error)
+    throw new UnknownAppError('Failed to fetch quotes')
+  }
+
+  return { items: quotes ?? [], total: count ?? 0 }
+}
+
+// ============================================
 // 3. GET QUOTE BY ID
 // ============================================
 

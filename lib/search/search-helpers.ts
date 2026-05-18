@@ -90,8 +90,11 @@ export function sanitizeSearchQuery(query: string): string {
  * upgrade search without breaking if the migration hasn't run yet.
  */
 const FTS_MATCH_TABLES = {
+  events: 'tenant_id',
+  expenses: 'tenant_id',
   ingredients: 'tenant_id',
   menus: 'tenant_id',
+  quotes: 'tenant_id',
   recipes: 'tenant_id',
 } as const
 

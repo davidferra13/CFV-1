@@ -12255,6 +12255,12 @@ export const guests = pgTable("guests", {
 	notes: text(),
 	createdAt: timestamp("created_at", { withTimezone: true, mode: 'string' }).defaultNow().notNull(),
 	updatedAt: timestamp("updated_at", { withTimezone: true, mode: 'string' }).defaultNow().notNull(),
+	dietaryRestrictions: text("dietary_restrictions").array().default([]),
+	allergies: text().array().default([]),
+	allergySeverity: text("allergy_severity"),
+	dietaryConfirmedAt: timestamp("dietary_confirmed_at", { withTimezone: true, mode: 'string' }),
+	dietaryConfirmedVia: text("dietary_confirmed_via"),
+	spiceTolerance: text("spice_tolerance"),
 }, (table) => [
 	index("idx_guests_chef").using("btree", table.chefId.asc().nullsLast().op("uuid_ops")),
 	index("idx_guests_name").using("btree", table.chefId.asc().nullsLast().op("text_ops"), table.name.asc().nullsLast().op("text_ops")),
@@ -15554,6 +15560,10 @@ export const eventGuests = pgTable("event_guests", {
 	aboutMe: text("about_me"),
 	dietaryNotes: text("dietary_notes"),
 	phone: text(),
+	allergySeverity: text("allergy_severity"),
+	spiceTolerance: text("spice_tolerance"),
+	dietaryConfirmedAt: timestamp("dietary_confirmed_at", { withTimezone: true, mode: 'string' }),
+	dietaryConfirmedVia: text("dietary_confirmed_via"),
 }, (table) => [
 	index("idx_event_guests_event_id").using("btree", table.eventId.asc().nullsLast().op("uuid_ops")),
 	index("idx_event_guests_event_share_id").using("btree", table.eventShareId.asc().nullsLast().op("uuid_ops")),
@@ -15671,6 +15681,11 @@ export const eventContracts = pgTable("event_contracts", {
 	createdAt: timestamp("created_at", { withTimezone: true, mode: 'string' }).defaultNow().notNull(),
 	updatedAt: timestamp("updated_at", { withTimezone: true, mode: 'string' }).defaultNow().notNull(),
 	proposalTokenId: uuid("proposal_token_id"),
+	chefSignedAt: timestamp("chef_signed_at", { withTimezone: true, mode: 'string' }),
+	chefSignatureDataUrl: text("chef_signature_data_url"),
+	chefSignerIp: text("chef_signer_ip"),
+	insuranceCertUrl: text("insurance_cert_url"),
+	insuranceExpiresAt: date("insurance_expires_at"),
 }, (table): any[] => [
 	index("idx_event_contracts_chef").using("btree", table.chefId.asc().nullsLast().op("uuid_ops"), table.status.asc().nullsLast().op("uuid_ops")),
 	index("idx_event_contracts_client").using("btree", table.clientId.asc().nullsLast().op("uuid_ops")),
@@ -23235,6 +23250,22 @@ export const events = pgTable("events", {
 	billToCompany: text("bill_to_company"),
 	billToAttention: text("bill_to_attention"),
 	billToPoNumber: text("bill_to_po_number"),
+	dressCode: text("dress_code"),
+	tablePresentation: text("table_presentation"),
+	surpriseDetails: jsonb("surprise_details"),
+	socialMediaConsent: text("social_media_consent"),
+	beverageExpectations: text("beverage_expectations"),
+	beverageServiceType: text("beverage_service_type"),
+	vendorCoordinationNotes: text("vendor_coordination_notes"),
+	confidentialityRequired: boolean("confidentiality_required").default(false),
+	vibeAtmosphere: text("vibe_atmosphere"),
+	rescheduleCount: integer("reschedule_count").default(0),
+	originalEventDate: date("original_event_date"),
+	lastRescheduledAt: timestamp("last_rescheduled_at", { withTimezone: true, mode: 'string' }),
+	cancellationFeeCents: integer("cancellation_fee_cents"),
+	cancellationStaffNotified: boolean("cancellation_staff_notified").default(false),
+	cancellationVendorNotified: boolean("cancellation_vendor_notified").default(false),
+	cancellationRefundAmountCents: integer("cancellation_refund_amount_cents"),
 }, (table): any[] => [
 	index("events_inquiry_received_at_idx").using("btree", table.tenantId.asc().nullsLast().op("timestamptz_ops"), table.inquiryReceivedAt.asc().nullsLast().op("timestamptz_ops")).where(sql`(inquiry_received_at IS NOT NULL)`),
 	index("idx_events_active_tenant_created_at").using("btree", table.tenantId.asc().nullsLast().op("timestamptz_ops"), table.createdAt.desc().nullsFirst().op("uuid_ops")).where(sql`(deleted_at IS NULL)`),
@@ -30320,3 +30351,172 @@ export const stickyFooterOverrides = pgTable('sticky_footer_overrides', {
 	pgPolicy('sfo_chef_update', { as: 'permissive', for: 'update', to: ['public'], using: sql`((get_current_user_role() = 'chef'::user_role) AND (tenant_id = get_current_tenant_id()))` }),
 	pgPolicy('sfo_chef_delete', { as: 'permissive', for: 'delete', to: ['public'], using: sql`((get_current_user_role() = 'chef'::user_role) AND (tenant_id = get_current_tenant_id()))` }),
 ])
+
+export const dietaryOutreach = pgTable("dietary_outreach", {
+	id: uuid().defaultRandom().primaryKey().notNull(),
+	eventId: uuid("event_id").notNull(),
+	guestId: uuid("guest_id").notNull(),
+	tenantId: uuid("tenant_id").notNull(),
+	sentAt: timestamp("sent_at", { withTimezone: true, mode: 'string' }).defaultNow().notNull(),
+	respondedAt: timestamp("responded_at", { withTimezone: true, mode: 'string' }),
+	responseData: jsonb("response_data"),
+	token: uuid().defaultRandom().notNull(),
+	expiresAt: timestamp("expires_at", { withTimezone: true, mode: 'string' }).notNull(),
+	status: text().default('sent').notNull(),
+	openedAt: timestamp("opened_at", { withTimezone: true, mode: 'string' }),
+	createdAt: timestamp("created_at", { withTimezone: true, mode: 'string' }).defaultNow().notNull(),
+	updatedAt: timestamp("updated_at", { withTimezone: true, mode: 'string' }).defaultNow().notNull(),
+}, (table) => [
+	index("idx_dietary_outreach_event").using("btree", table.eventId.asc().nullsLast().op("uuid_ops")),
+	uniqueIndex("idx_dietary_outreach_token").using("btree", table.token.asc().nullsLast().op("uuid_ops")),
+	uniqueIndex("idx_dietary_outreach_unique").using("btree", table.eventId.asc().nullsLast().op("uuid_ops"), table.guestId.asc().nullsLast().op("uuid_ops")),
+	uniqueIndex("idx_dietary_outreach_guest_event").using("btree", table.guestId.asc().nullsLast().op("uuid_ops"), table.eventId.asc().nullsLast().op("uuid_ops")),
+	index("idx_dietary_outreach_tenant").using("btree", table.tenantId.asc().nullsLast().op("uuid_ops")),
+	foreignKey({
+		columns: [table.eventId],
+		foreignColumns: [events.id],
+		name: "dietary_outreach_event_id_fkey"
+	}).onDelete("cascade"),
+	foreignKey({
+		columns: [table.guestId],
+		foreignColumns: [guests.id],
+		name: "dietary_outreach_guest_id_fkey"
+	}).onDelete("cascade"),
+	foreignKey({
+		columns: [table.tenantId],
+		foreignColumns: [chefs.id],
+		name: "dietary_outreach_tenant_id_fkey"
+	}).onDelete("cascade"),
+	pgPolicy("dietary_outreach_tenant", { as: "permissive", for: "all", to: ["public"], using: sql`(tenant_id = get_current_tenant_id())` }),
+])
+
+export const eventReschedules = pgTable("event_reschedules", {
+	id: uuid().defaultRandom().primaryKey().notNull(),
+	eventId: uuid("event_id").notNull(),
+	tenantId: uuid("tenant_id").notNull(),
+	originalDate: date("original_date").notNull(),
+	newDate: date("new_date").notNull(),
+	initiatedBy: text("initiated_by").notNull(),
+	reason: text(),
+	feeCents: integer("fee_cents").default(0),
+	feeWaived: boolean("fee_waived").default(false),
+	feeWaiveReason: text("fee_waive_reason"),
+	staffNotified: boolean("staff_notified").default(false),
+	vendorNotified: boolean("vendor_notified").default(false),
+	clientNotified: boolean("client_notified").default(false),
+	createdAt: timestamp("created_at", { withTimezone: true, mode: 'string' }).defaultNow().notNull(),
+}, (table) => [
+	index("idx_event_reschedules_event").using("btree", table.eventId.asc().nullsLast().op("uuid_ops")),
+	foreignKey({
+		columns: [table.eventId],
+		foreignColumns: [events.id],
+		name: "event_reschedules_event_id_fkey"
+	}).onDelete("cascade"),
+	foreignKey({
+		columns: [table.tenantId],
+		foreignColumns: [chefs.id],
+		name: "event_reschedules_tenant_id_fkey"
+	}).onDelete("cascade"),
+	pgPolicy("event_reschedules_tenant", { as: "permissive", for: "all", to: ["public"], using: sql`(tenant_id = get_current_tenant_id())` }),
+])
+
+export const contractClauses = pgTable("contract_clauses", {
+	id: uuid().defaultRandom().primaryKey().notNull(),
+	chefId: uuid("chef_id").notNull(),
+	slug: text().notNull(),
+	title: text().notNull(),
+	body: text().notNull(),
+	category: text().notNull(),
+	isDefault: boolean("is_default").default(false),
+	sortOrder: integer("sort_order").default(0),
+	createdAt: timestamp("created_at", { withTimezone: true, mode: 'string' }).defaultNow().notNull(),
+	updatedAt: timestamp("updated_at", { withTimezone: true, mode: 'string' }).defaultNow().notNull(),
+}, (table) => [
+	uniqueIndex("idx_contract_clauses_slug").using("btree", table.chefId.asc().nullsLast().op("uuid_ops"), table.slug.asc().nullsLast().op("text_ops")),
+	index("idx_contract_clauses_category").using("btree", table.chefId.asc().nullsLast().op("uuid_ops"), table.category.asc().nullsLast().op("text_ops")),
+	foreignKey({
+		columns: [table.chefId],
+		foreignColumns: [chefs.id],
+		name: "contract_clauses_chef_id_fkey"
+	}).onDelete("cascade"),
+	pgPolicy("contract_clauses_tenant", { as: "permissive", for: "all", to: ["public"], using: sql`(chef_id = get_current_tenant_id())` }),
+])
+
+export const eventVendors = pgTable("event_vendors", {
+	id: uuid().defaultRandom().primaryKey().notNull(),
+	eventId: uuid("event_id").notNull(),
+	tenantId: uuid("tenant_id").notNull(),
+	vendorType: text("vendor_type").notNull(),
+	vendorName: text("vendor_name").notNull(),
+	contactName: text("contact_name"),
+	contactPhone: text("contact_phone"),
+	contactEmail: text("contact_email"),
+	arrivalTime: time("arrival_time"),
+	departureTime: time("departure_time"),
+	costCents: integer("cost_cents"),
+	notes: text(),
+	confirmed: boolean().default(false),
+	confirmedAt: timestamp("confirmed_at", { withTimezone: true, mode: 'string' }),
+	createdAt: timestamp("created_at", { withTimezone: true, mode: 'string' }).defaultNow().notNull(),
+	updatedAt: timestamp("updated_at", { withTimezone: true, mode: 'string' }).defaultNow().notNull(),
+}, (table) => [
+	index("idx_event_vendors_event").using("btree", table.eventId.asc().nullsLast().op("uuid_ops")),
+	foreignKey({
+		columns: [table.eventId],
+		foreignColumns: [events.id],
+		name: "event_vendors_event_id_fkey"
+	}).onDelete("cascade"),
+	foreignKey({
+		columns: [table.tenantId],
+		foreignColumns: [chefs.id],
+		name: "event_vendors_tenant_id_fkey"
+	}).onDelete("cascade"),
+	pgPolicy("event_vendors_tenant", { as: "permissive", for: "all", to: ["public"], using: sql`(tenant_id = get_current_tenant_id())` }),
+])
+
+export const eventLeftovers = pgTable("event_leftovers", {
+	id: uuid().defaultRandom().primaryKey().notNull(),
+	eventId: uuid("event_id").notNull(),
+	tenantId: uuid("tenant_id").notNull(),
+	itemDescription: text("item_description").notNull(),
+	quantity: text(),
+	packagingType: text("packaging_type"),
+	labeled: boolean().default(false),
+	labelText: text("label_text"),
+	givenTo: text("given_to"),
+	storageInstructions: text("storage_instructions"),
+	createdAt: timestamp("created_at", { withTimezone: true, mode: 'string' }).defaultNow().notNull(),
+}, (table) => [
+	index("idx_event_leftovers_event").using("btree", table.eventId.asc().nullsLast().op("uuid_ops")),
+	foreignKey({
+		columns: [table.eventId],
+		foreignColumns: [events.id],
+		name: "event_leftovers_event_id_fkey"
+	}).onDelete("cascade"),
+	foreignKey({
+		columns: [table.tenantId],
+		foreignColumns: [chefs.id],
+		name: "event_leftovers_tenant_id_fkey"
+	}).onDelete("cascade"),
+	pgPolicy("event_leftovers_tenant", { as: "permissive", for: "all", to: ["public"], using: sql`(tenant_id = get_current_tenant_id())` }),
+])
+
+export const cancellationFeeSchedule = pgTable("cancellation_fee_schedule", {
+	id: uuid().defaultRandom().primaryKey().notNull(),
+	chefId: uuid("chef_id").notNull(),
+	daysBeforeMin: integer("days_before_min").notNull(),
+	daysBeforeMax: integer("days_before_max").notNull(),
+	feeType: text("fee_type").notNull(),
+	feeValue: integer("fee_value").notNull(),
+	description: text(),
+	createdAt: timestamp("created_at", { withTimezone: true, mode: 'string' }).defaultNow().notNull(),
+}, (table) => [
+	index("idx_cancel_fee_schedule_chef").using("btree", table.chefId.asc().nullsLast().op("uuid_ops")),
+	foreignKey({
+		columns: [table.chefId],
+		foreignColumns: [chefs.id],
+		name: "cancellation_fee_schedule_chef_id_fkey"
+	}).onDelete("cascade"),
+	pgPolicy("cancel_fee_schedule_tenant", { as: "permissive", for: "all", to: ["public"], using: sql`(chef_id = get_current_tenant_id())` }),
+])
+

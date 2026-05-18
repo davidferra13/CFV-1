@@ -1,7 +1,7 @@
-/* eslint-disable @next/next/no-img-element */
 'use client'
 
 import { useEffect, useMemo, useState, useTransition } from 'react'
+import Image from 'next/image'
 import { usePathname, useRouter } from 'next/navigation'
 import { CheckCircle2, XCircle } from 'lucide-react'
 import {
@@ -1090,13 +1090,15 @@ export function ControlPacketClient({
                     rel="noopener noreferrer"
                     className="block rounded overflow-hidden border border-[#27432b]"
                   >
-                    <div className="aspect-square bg-[#0a130a]">
+                    <div className="relative aspect-square bg-[#0a130a]">
                       {item.signedUrl ? (
-                        // eslint-disable-next-line @next/next/no-img-element
-                        <img
+                        <Image
                           src={item.signedUrl}
                           alt="Evidence"
-                          className="w-full h-full object-cover"
+                          fill
+                          sizes="(min-width: 1024px) 20vw, 50vw"
+                          unoptimized
+                          className="object-cover"
                         />
                       ) : (
                         <div className="w-full h-full flex items-center justify-center text-xs text-[#6aaa6e]">

@@ -126,6 +126,16 @@ export const POST = withApiAuth(
       .eq('id', id)
       .eq('tenant_id', ctx.tenantId)
 
+    try {
+      const { linkInquiryCircleToEvent } = await import('@/lib/hub/inquiry-circle-actions')
+      await linkInquiryCircleToEvent({
+        inquiryId: id,
+        eventId: (event as any).id,
+      })
+    } catch (err) {
+      console.error('[api/v2/inquiries/convert] Circle-event link failed (non-blocking):', err)
+    }
+
     // Log inquiry state transition (non-blocking)
     try {
       await ctx.db.from('inquiry_state_transitions').insert({

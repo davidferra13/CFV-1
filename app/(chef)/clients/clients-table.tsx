@@ -1,6 +1,7 @@
 'use client'
 
 import { useState, useMemo, memo } from 'react'
+import Image from 'next/image'
 import {
   Table,
   TableHeader,
@@ -273,10 +274,13 @@ const ClientTableRow = memo(function ClientTableRow({ client }: { client: Client
       <TableCell className="font-medium">
         <div className="flex items-center gap-3">
           {(client as any).avatar_url ? (
-            // eslint-disable-next-line @next/next/no-img-element
-            <img
+            <Image
               src={(client as any).avatar_url}
               alt=""
+              width={36}
+              height={36}
+              sizes="36px"
+              unoptimized
               className="h-9 w-9 rounded-full object-cover flex-shrink-0 ring-2 ring-stone-700/50"
             />
           ) : (

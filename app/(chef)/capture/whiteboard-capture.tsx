@@ -1,7 +1,7 @@
-/* eslint-disable @next/next/no-img-element */
 'use client'
 
 import { useState, useRef, useCallback, useTransition } from 'react'
+import Image from 'next/image'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
@@ -309,10 +309,14 @@ export function WhiteboardCapture({ onCaptureSaved }: { onCaptureSaved?: () => v
 
           {preview ? (
             <div className="space-y-4">
-              <img
+              <Image
                 src={preview}
                 alt="Whiteboard preview"
-                className="max-h-64 mx-auto rounded-lg shadow-md"
+                width={768}
+                height={576}
+                sizes="(min-width: 768px) 384px, 100vw"
+                unoptimized
+                className="max-h-64 w-auto mx-auto rounded-lg shadow-md"
               />
               <p className="text-sm text-stone-500 dark:text-stone-400">{file?.name}</p>
             </div>

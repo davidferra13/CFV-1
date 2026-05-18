@@ -1,6 +1,7 @@
 'use client'
 
 import { useCallback, useEffect, useMemo, useState, useTransition } from 'react'
+import Image from 'next/image'
 import { useRouter } from 'next/navigation'
 import { updateChefFullProfile, type ChefSocialLinks } from '@/lib/chef/profile-actions'
 import { uploadChefProfileImage } from '@/lib/network/actions'
@@ -377,10 +378,13 @@ export function ChefProfileForm({ profile, chefId }: { profile: ChefProfile; che
             {(imagePreviewUrl || profileImageUrl) && (
               <div className="pt-2 border-t border-stone-800">
                 <p className="text-sm text-stone-400 mb-2">Image Preview</p>
-                {/* eslint-disable-next-line @next/next/no-img-element */}
-                <img
+                <Image
                   src={imagePreviewUrl || profileImageUrl}
                   alt="Profile preview"
+                  width={80}
+                  height={80}
+                  sizes="80px"
+                  unoptimized
                   className="h-20 w-20 rounded-full object-cover border border-stone-700"
                 />
               </div>

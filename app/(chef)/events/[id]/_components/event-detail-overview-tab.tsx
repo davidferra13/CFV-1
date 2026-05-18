@@ -1,4 +1,5 @@
 ﻿import Link from 'next/link'
+import Image from 'next/image'
 import { format } from 'date-fns'
 import type { EventDetailTab } from '@/components/events/event-detail-mobile-nav'
 import { EventDetailSection } from '@/components/events/event-detail-mobile-nav'
@@ -42,6 +43,7 @@ import { EventMenuCostHint } from '@/components/pricing/event-menu-cost-hint'
 import { MenuSharePanel } from '@/components/menus/menu-share-panel'
 import { ShareSplitButton } from '@/components/payments/share-split-button'
 import { DietaryCollectionNudge } from '@/components/events/dietary-collection-nudge'
+import { DietaryOutreachPanel } from '@/components/dietary-outreach/dietary-outreach-panel'
 import type {
   DietarySummaryCounts,
   GuestDietaryEntry,
@@ -203,13 +205,16 @@ export function EventDetailOverviewTab(props: EventDetailOverviewTabProps) {
                       rel="noopener noreferrer"
                       className="block"
                     >
-                      {/* eslint-disable-next-line @next/next/no-img-element */}
-                      <img
+                      <Image
                         src={getEventMapUrl(
                           (event as any).location_lng,
                           (event as any).location_lat
                         )}
                         alt="Event location map"
+                        width={900}
+                        height={200}
+                        sizes="(min-width: 1024px) 50vw, 100vw"
+                        unoptimized
                         className="w-full h-[200px] object-cover rounded-lg border border-stone-700"
                       />
                     </a>
@@ -491,12 +496,13 @@ export function EventDetailOverviewTab(props: EventDetailOverviewTabProps) {
             </p>
             <div className="flex items-center gap-5">
               <div className="flex-shrink-0">
-                {/* eslint-disable-next-line @next/next/no-img-element */}
-                <img
+                <Image
                   src={getQrCodeUrl(shortShareUrl, 150)}
                   alt="Event share QR code"
                   width={150}
                   height={150}
+                  sizes="150px"
+                  unoptimized
                   className="rounded-lg border border-stone-700 shadow-sm"
                 />
               </div>
@@ -578,6 +584,11 @@ export function EventDetailOverviewTab(props: EventDetailOverviewTabProps) {
             guests={dietaryNudge.guests}
             shareUrl={dietaryNudge.shareUrl}
           />
+        )}
+
+        {/* Dietary Outreach Panel */}
+        {event.status !== 'draft' && event.status !== 'cancelled' && (
+          <DietaryOutreachPanel eventId={event.id} />
         )}
 
         {/* Share Recap â€” for completed events with an active share link */}

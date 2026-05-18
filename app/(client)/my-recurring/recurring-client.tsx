@@ -1,5 +1,6 @@
 'use client'
 
+import Link from 'next/link'
 import { Repeat, Calendar, Users, DollarSign, ChefHat } from '@/components/ui/icons'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import type { ClientRecurringService } from '@/lib/recurring/client-recurring-actions'
@@ -138,6 +139,17 @@ function ServiceCard({ service: s }: { service: ClientRecurringService }) {
 
         {s.notes && (
           <p className="text-xs text-stone-400 mt-2 p-2 bg-stone-800/50 rounded">{s.notes}</p>
+        )}
+
+        {s.circleToken && (
+          <div className="mt-4 border-t border-stone-800 pt-3">
+            <Link
+              href={`/my-hub/g/${s.circleToken}`}
+              className="inline-flex min-h-[44px] items-center justify-center rounded-lg border border-stone-700 bg-stone-900 px-3.5 text-sm font-medium text-stone-200 transition-colors hover:border-brand-600 hover:text-brand-300"
+            >
+              View Dinner Circle
+            </Link>
+          </div>
         )}
       </CardContent>
     </Card>

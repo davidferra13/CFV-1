@@ -466,7 +466,8 @@ export async function createEvent(input: CreateEventInput) {
 }
 
 /**
- * Get events list (chef-only, tenant-scoped by RLS)
+ * Get events list (chef-only, tenant-scoped by RLS).
+ * Returns a plain array for backward compatibility with 30+ callers.
  */
 export async function getEvents(options?: { statusFilter?: string }) {
   const user = await requireChef()
@@ -505,6 +506,104 @@ export async function getEvents(options?: { statusFilter?: string }) {
   }
 
   return events
+}
+
+/**
+ * Get events with FTS search and server-side pagination.
+ * Used by the events hub page for search + paginated listing.
+ */
+export async function getEventsPaginated(options?: {
+  statusFilter?: string
+  search?: string
+  page?: number
+  pageSize?: number
+}) {
+  const { normalizePagination, buildPaginationMeta, ftsMatchIds } =
+    await import('@/lib/search/search-helpers')
+  const { escapeLikePattern } = await import('@/lib/db/escape-like')
+
+  const user = await requireChef()
+  const db: any = createServerClient()
+  const { page, pageSize, offset } = normalizePagination({
+    page: options?.page,
+    pageSize: options?.pageSize ?? 50,
+  })
+
+  // If search provided, try FTS first
+  let ftsIds: string[] | null = null
+  if (options?.search) {
+    ftsIds = await ftsMatchIds('events', user.tenantId!, options.search)
+  }
+
+  const runQuery = (withSoftDeleteFilter: boolean) => {
+    let query = db
+      .from('events')
+      .select(
+        `
+      *,
+      client:clients(id, full_name, email),
+      referral_partner:referral_partners(id, name),
+      partner_location:partner_locations(id, name, city, state)
+    `,
+        { count: 'exact' }
+      )
+      .eq('tenant_id', user.tenantId!)
+
+    if (options?.statusFilter) {
+      query = query.eq('status', options.statusFilter)
+    }
+    if (withSoftDeleteFilter) {
+      query = query.is('deleted_at' as any, null)
+    }
+
+    // Apply search filter
+    if (options?.search) {
+      if (ftsIds !== null) {
+        if (ftsIds.length === 0) {
+          return null
+        }
+        query = query.in('id', ftsIds)
+      } else {
+        query = query.ilike('occasion', `%${escapeLikePattern(options.search)}%`)
+      }
+    }
+
+    return query.order('event_date', { ascending: false }).range(offset, offset + pageSize - 1)
+  }
+
+  // Short-circuit: FTS returned zero results
+  const maybeQuery = runQuery(true)
+  if (maybeQuery === null) {
+    return {
+      items: [] as any[],
+      pagination: buildPaginationMeta(0, page, pageSize),
+    }
+  }
+
+  let response = await maybeQuery
+  if (isMissingSoftDeleteColumn(response.error)) {
+    const retryQuery = runQuery(false)
+    if (retryQuery === null) {
+      return {
+        items: [] as any[],
+        pagination: buildPaginationMeta(0, page, pageSize),
+      }
+    }
+    response = await retryQuery
+  }
+
+  const { data: events, error, count } = response
+
+  if (error) {
+    console.error('[getEventsPaginated] Error:', error)
+    throw new UnknownAppError('Failed to fetch events')
+  }
+
+  const total = count ?? 0
+  return {
+    items: events || [],
+    pagination: buildPaginationMeta(total, page, pageSize),
+  }
 }
 
 /**

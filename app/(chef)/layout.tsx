@@ -6,16 +6,15 @@ import { auth } from '@/lib/auth'
 import dynamic from 'next/dynamic'
 import { headers } from 'next/headers'
 import { redirect } from 'next/navigation'
-import { ChefSidebar, ChefMobileNav, SidebarProvider } from '@/components/navigation/chef-nav'
+import { ChefSidebar, ChefMobileNav } from '@/components/navigation/chef-nav'
 import { ChefMainContent } from '@/components/navigation/chef-main-content'
 import { ToastProvider } from '@/components/notifications/toast-provider'
-import { NotificationProvider } from '@/components/notifications/notification-provider'
+import { ChefProviders } from '@/components/providers/chef-providers'
 import { getChefLayoutData } from '@/lib/chef/layout-cache'
 import { getCachedChefPreferences } from '@/lib/chef/layout-data-cache'
 import { KeyboardShortcutsWrapper } from '@/components/navigation/keyboard-shortcuts-wrapper'
 import { getCachedAnnouncement } from '@/lib/chef/layout-data-cache'
 import { PlatformAnnouncementBanner } from '@/components/admin/platform-announcement-banner'
-import { OfflineProvider } from '@/components/offline/offline-provider'
 import { EnvironmentBadge } from '@/components/ui/environment-badge'
 import { DeletionPendingBanner } from '@/components/settings/deletion-pending-banner'
 import { DEFAULT_ENABLED_MODULES } from '@/lib/billing/modules'
@@ -35,12 +34,8 @@ const CommandPalette = dynamic(
   () => import('@/components/search/command-palette').then((m) => m.CommandPalette),
   { ssr: false }
 )
-import { NavigationPendingProvider } from '@/components/navigation/navigation-pending-provider'
-import { AppContextProvider } from '@/lib/context/app-context'
-import { FormatProviderWrapper } from '@/components/providers/format-provider-wrapper'
 // getRegionalSettings removed - timezone comes from cached layoutData, rest are constants
 import type { FormatContext } from '@/lib/hooks/use-format-context'
-import { PermissionProvider } from '@/lib/context/permission-context'
 import { resolveCurrentUserPermissions } from '@/lib/auth/permissions'
 import { isAiEnabledForTenant } from '@/lib/ai/privacy-internal'
 import { PATHNAME_HEADER } from '@/lib/auth/request-auth-context'
@@ -202,161 +197,149 @@ export default async function ChefLayout({ children }: { children: React.ReactNo
   const shouldRenderRemy = remyEnabled
 
   return (
-    <AppContextProvider timezone={layoutData.timezone}>
-      <FormatProviderWrapper value={formatContextValue}>
-        <PermissionProvider permissions={permissionSet?.toJSON() ?? {}}>
-          <OfflineProvider>
-            <SidebarProvider>
-              <NavigationPendingProvider>
-                <NotificationProvider userId={user.id}>
-                  <ToastProvider />
-                  <RouteProgress />
-                  <TestAccountBanner email={user.email} />
-                  <KeyboardShortcutsWrapper>
-                    <div
-                      data-cf-portal="chef"
-                      data-cf-surface={shellBudget.mode}
-                      className="min-h-screen bg-[var(--surface-0)] text-stone-100"
-                    >
-                      {/* Skip navigation link for keyboard/screen reader users */}
-                      <a
-                        href="#main-content"
-                        className="sr-only focus:not-sr-only focus:fixed focus:top-2 focus:left-2 focus:z-chrome focus:bg-brand-600 focus:text-white focus:px-4 focus:py-2 focus:rounded-lg focus:shadow-lg"
-                      >
-                        Skip to main content
-                      </a>
-                      {/* Platform announcement banner - shown when admin sets one */}
-                      {announcement && (
-                        <PlatformAnnouncementBanner
-                          text={announcement.text}
-                          type={announcement.type}
-                        />
-                      )}
-                      {(userIsAdmin || process.env.DEMO_MODE_ENABLED === 'true') && (
-                        <EnvironmentBadge />
-                      )}
-                      {/* Account deletion pending banner - shown during 30-day grace period */}
-                      {deletionStatus.isPending &&
-                        deletionStatus.scheduledFor &&
-                        deletionStatus.daysRemaining != null && (
-                          <DeletionPendingBanner
-                            scheduledFor={deletionStatus.scheduledFor}
-                            daysRemaining={deletionStatus.daysRemaining}
-                          />
-                        )}
-                      {/* AI outage banner - shown after 2+ minutes of sustained AI downtime */}
-                      <AiOutageBanner />
-                      {/* Role switcher - only visible when user has multiple roles */}
-                      <div className="fixed top-2 right-4 z-chrome">
-                        <RoleSwitcher currentRole="chef" availableRoleCount={availableRoleCount} />
-                      </div>
-                      {/* Desktop sidebar */}
-                      {shellBudget.showDesktopSidebar ? (
-                        <ChefSidebar
-                          primaryNavHrefs={primaryNavHrefs}
-                          enabledModules={enabledModules}
-                          isAdmin={effectiveAdmin}
-                          isPrivileged={effectivePrivileged}
-                          focusMode={focusMode}
-                          userId={user.id}
-                          tenantId={user.tenantId ?? user.entityId}
-                          archetype={chefArchetype}
-                          tenantPresence={tenantPresence}
-                          hiddenRoutes={hiddenRoutes}
-                          chefName={layoutData.business_name}
-                          chefAvatar={layoutData.profile_image_url}
-                          pinnedSurfaces={pinnedSurfaces}
-                          usageRanking={usageRanking}
-                          railGroupPriorities={railGroupPriorities}
-                        />
-                      ) : null}
-                      {/* Mobile nav (top bar + bottom tabs) */}
-                      {shellBudget.showMobileNav ? (
-                        <ChefMobileNav
-                          primaryNavHrefs={primaryNavHrefs}
-                          mobileTabHrefs={mobileTabHrefs}
-                          enabledModules={enabledModules}
-                          isAdmin={effectiveAdmin}
-                          isPrivileged={effectivePrivileged}
-                          focusMode={focusMode}
-                          userId={user.id}
-                          tenantId={user.tenantId ?? user.entityId}
-                          chefName={layoutData.business_name}
-                          chefAvatar={layoutData.profile_image_url}
-                        />
-                      ) : null}
+    <ChefProviders
+      timezone={layoutData.timezone}
+      formatContext={formatContextValue}
+      permissions={permissionSet?.toJSON() ?? {}}
+      userId={user.id}
+    >
+      <ToastProvider />
+      <RouteProgress />
+      <TestAccountBanner email={user.email} />
+      <KeyboardShortcutsWrapper>
+        <div
+          data-cf-portal="chef"
+          data-cf-surface={shellBudget.mode}
+          className="min-h-screen bg-[var(--surface-0)] text-stone-100"
+        >
+          {/* Skip navigation link for keyboard/screen reader users */}
+          <a
+            href="#main-content"
+            className="sr-only focus:not-sr-only focus:fixed focus:top-2 focus:left-2 focus:z-chrome focus:bg-brand-600 focus:text-white focus:px-4 focus:py-2 focus:rounded-lg focus:shadow-lg"
+          >
+            Skip to main content
+          </a>
+          {/* Platform announcement banner - shown when admin sets one */}
+          {announcement && (
+            <PlatformAnnouncementBanner text={announcement.text} type={announcement.type} />
+          )}
+          {(userIsAdmin || process.env.DEMO_MODE_ENABLED === 'true') && <EnvironmentBadge />}
+          {/* Account deletion pending banner - shown during 30-day grace period */}
+          {deletionStatus.isPending &&
+            deletionStatus.scheduledFor &&
+            deletionStatus.daysRemaining != null && (
+              <DeletionPendingBanner
+                scheduledFor={deletionStatus.scheduledFor}
+                daysRemaining={deletionStatus.daysRemaining}
+              />
+            )}
+          {/* AI outage banner - shown after 2+ minutes of sustained AI downtime */}
+          <AiOutageBanner />
+          {/* Role switcher - only visible when user has multiple roles */}
+          <div className="fixed top-2 right-4 z-chrome">
+            <RoleSwitcher currentRole="chef" availableRoleCount={availableRoleCount} />
+          </div>
+          {/* Desktop sidebar */}
+          {shellBudget.showDesktopSidebar ? (
+            <ChefSidebar
+              primaryNavHrefs={primaryNavHrefs}
+              enabledModules={enabledModules}
+              isAdmin={effectiveAdmin}
+              isPrivileged={effectivePrivileged}
+              focusMode={focusMode}
+              userId={user.id}
+              tenantId={user.tenantId ?? user.entityId}
+              archetype={chefArchetype}
+              tenantPresence={tenantPresence}
+              hiddenRoutes={hiddenRoutes}
+              chefName={layoutData.business_name}
+              chefAvatar={layoutData.profile_image_url}
+              pinnedSurfaces={pinnedSurfaces}
+              usageRanking={usageRanking}
+              railGroupPriorities={railGroupPriorities}
+            />
+          ) : null}
+          {/* Mobile nav (top bar + bottom tabs) */}
+          {shellBudget.showMobileNav ? (
+            <ChefMobileNav
+              primaryNavHrefs={primaryNavHrefs}
+              mobileTabHrefs={mobileTabHrefs}
+              enabledModules={enabledModules}
+              isAdmin={effectiveAdmin}
+              isPrivileged={effectivePrivileged}
+              focusMode={focusMode}
+              userId={user.id}
+              tenantId={user.tenantId ?? user.entityId}
+              chefName={layoutData.business_name}
+              chefAvatar={layoutData.profile_image_url}
+            />
+          ) : null}
 
-                      {/* Main content - offset adjusts dynamically based on sidebar state */}
-                      <ChefMainContent
-                        showDesktopSidebar={shellBudget.showDesktopSidebar}
-                        showMobileNav={shellBudget.showMobileNav}
-                        showBreadcrumbBar={shellBudget.showBreadcrumbBar}
-                        showQuickExpenseTrigger={shellBudget.showQuickExpenseTrigger}
-                        contentWidth={shellBudget.contentWidth}
-                      >
-                        {shellBudget.showMarketResearchBanner && (
-                          <MarketResearchBannerWrapper
-                            surveyType="market_research_operator"
-                            channel="chef_portal"
-                          />
-                        )}
-                        <Suspense fallback={<RailStripSkeleton />}>
-                          <RailStripWrapper />
-                        </Suspense>
-                        {children}
-                      </ChefMainContent>
+          {/* Main content - offset adjusts dynamically based on sidebar state */}
+          <ChefMainContent
+            showDesktopSidebar={shellBudget.showDesktopSidebar}
+            showMobileNav={shellBudget.showMobileNav}
+            showBreadcrumbBar={shellBudget.showBreadcrumbBar}
+            showQuickExpenseTrigger={shellBudget.showQuickExpenseTrigger}
+            contentWidth={shellBudget.contentWidth}
+          >
+            {shellBudget.showMarketResearchBanner && (
+              <MarketResearchBannerWrapper
+                surveyType="market_research_operator"
+                channel="chef_portal"
+              />
+            )}
+            <Suspense fallback={<RailStripSkeleton />}>
+              <RailStripWrapper />
+            </Suspense>
+            {children}
+          </ChefMainContent>
 
-                      {/* Feedback nudge - keep ambient prompts on triage surfaces only */}
-                      {shellBudget.showFeedbackNudge && (
-                        <FeedbackNudgeCard daysSinceCreation={daysSinceCreation} />
-                      )}
+          {/* Feedback nudge - keep ambient prompts on triage surfaces only */}
+          {shellBudget.showFeedbackNudge && (
+            <FeedbackNudgeCard daysSinceCreation={daysSinceCreation} />
+          )}
 
-                      {/* Offline connectivity bar - shows status, queue count, sync progress */}
-                      <OfflineStatusBar />
+          {/* Offline connectivity bar - shows status, queue count, sync progress */}
+          <OfflineStatusBar />
 
-                      {/* Command Palette - Cmd+K universal search and navigation */}
-                      <CommandPalette userId={user.id} tenantId={user.tenantId ?? user.entityId} />
+          {/* Command Palette - Cmd+K universal search and navigation */}
+          <CommandPalette userId={user.id} tenantId={user.tenantId ?? user.entityId} />
 
-                      {/* Remy - AI companion chatbot, available to all chefs */}
-                      {shouldRenderRemy && shellBudget.showRemy ? <RemyWrapper /> : null}
+          {/* Remy - AI companion chatbot, available to all chefs */}
+          {shouldRenderRemy && shellBudget.showRemy ? <RemyWrapper /> : null}
 
-                      {/* Mobile quick capture FAB - mobile-only, hidden on desktop */}
-                      {shellBudget.showQuickCapture ? <QuickCapture /> : null}
+          {/* Mobile quick capture FAB - mobile-only, hidden on desktop */}
+          {shellBudget.showQuickCapture ? <QuickCapture /> : null}
 
-                      {/* Breadcrumb tracker - silent navigation tracking for retrace mode */}
-                      <BreadcrumbTracker />
+          {/* Breadcrumb tracker - silent navigation tracking for retrace mode */}
+          <BreadcrumbTracker />
 
-                      {/* Analytics identity -- associates events with logged-in user */}
-                      <AnalyticsIdentify
-                        userId={user.id}
-                        email={user.email}
-                        role={user.role}
-                        traits={{
-                          entity_id: user.entityId,
-                          tenant_id: user.tenantId ?? user.entityId,
-                          is_admin: userIsAdmin,
-                          is_privileged: userIsPrivileged,
-                        }}
-                      />
+          {/* Analytics identity -- associates events with logged-in user */}
+          <AnalyticsIdentify
+            userId={user.id}
+            email={user.email}
+            role={user.role}
+            traits={{
+              entity_id: user.entityId,
+              tenant_id: user.tenantId ?? user.entityId,
+              is_admin: userIsAdmin,
+              is_privileged: userIsPrivileged,
+            }}
+          />
 
-                      {/* Presence beacon -- authenticated user presence for live admin visibility */}
-                      <PresenceBeacon userId={user.id} email={user.email} />
+          {/* Presence beacon -- authenticated user presence for live admin visibility */}
+          <PresenceBeacon userId={user.id} email={user.email} />
 
-                      {/* Route tracker -- stores last active path for session recovery */}
-                      <RouteTracker />
+          {/* Route tracker -- stores last active path for session recovery */}
+          <RouteTracker />
 
-                      {/* Live alerts - inbound calls, new inquiries, call completions, voicemails */}
-                      {shellBudget.showLiveAlerts ? (
-                        <ChefLiveAlerts tenantId={user.tenantId ?? user.entityId} />
-                      ) : null}
-                    </div>
-                  </KeyboardShortcutsWrapper>
-                </NotificationProvider>
-              </NavigationPendingProvider>
-            </SidebarProvider>
-          </OfflineProvider>
-        </PermissionProvider>
-      </FormatProviderWrapper>
-    </AppContextProvider>
+          {/* Live alerts - inbound calls, new inquiries, call completions, voicemails */}
+          {shellBudget.showLiveAlerts ? (
+            <ChefLiveAlerts tenantId={user.tenantId ?? user.entityId} />
+          ) : null}
+        </div>
+      </KeyboardShortcutsWrapper>
+    </ChefProviders>
   )
 }
