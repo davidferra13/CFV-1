@@ -1,8 +1,8 @@
 # Build State
 
-**Status:** broken
-**Last verified:** 2026-05-17 20:38 EST
-**Commit:** `d7e6b7dfe`
-**Check:** `tsc --noEmit --skipLibCheck` FAILED (7 errors)
+**Status:** green
+**Last verified:** 2026-05-18 02:46 EST
+**Commit:** `6236f16ec`
+**Check:** `tsc --noEmit --skipLibCheck` passed (0 errors)
 
-Fix type errors before starting new work.
+- If you break the build and can't fix it, update this to `broken` with details.

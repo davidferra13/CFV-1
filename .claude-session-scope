@@ -1,10 +1,5 @@
 
-c:\\Users\\david\\Documents\\CFv1\\components\\finance\\food-cost-panel.tsx
-C:\\Users\\david\\Documents\\CFv1\\lib\\communication\\scheduled-message-actions.ts
-c:\\Users\\david\\Documents\\CFv1\\lib\\client-portal\\activity-types.ts
-C:\\Users\\david\\Documents\\CFv1\\lib\\cil\\signal-actions.ts
-c:\\Users\\david\\Documents\\CFv1\\lib\\inquiries\\public-actions.ts
-c:\\Users\\david\\Documents\\CFv1\\components\\rail\\rail-strip.tsx
-c:\\Users\\david\\Documents\\CFv1\\lib\\inquiries\\platform-raw-feed.ts
-c:\\Users\\david\\Documents\\CFv1\\lib\\prep-timeline\\index.ts
-c:\\Users\\david\\Documents\\CFv1\\lib\\intelligence\\prep-consolidation.ts
+c:\\Users\\david\\Documents\\CFv1\\lib\\discovery\\god-mode-types.ts
+c:\\Users\\david\\Documents\\CFv1\\lib\\discovery\\rail-tier-assigner.ts
+c:\\Users\\david\\Documents\\CFv1\\lib\\interface\\surface-governance.ts
+c:\\Users\\david\\Documents\\CFv1\\tests\\unit\\surface-governance.test.ts
