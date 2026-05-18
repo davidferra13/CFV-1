@@ -1,0 +1,31 @@
+import { Card, CardContent, CardHeader } from '@/components/ui/card'
+import { ContextLoader } from '@/components/ui/context-loader'
+
+function Bone({ className }: { className: string }) {
+  return <div className={`loading-bone loading-bone-dark ${className}`} />
+}
+
+export default function AARLoading() {
+  return (
+    <div className="space-y-6">
+      <ContextLoader contextId="nav-event-aar" size="sm" />
+      <div>
+        <Bone className="h-4 w-28" />
+        <Bone className="h-8 w-44 mt-1" />
+        <Bone className="h-4 w-64 mt-1" />
+      </div>
+      {[1, 2, 3].map((i) => (
+        <Card key={i}>
+          <CardHeader>
+            <Bone className="h-5 w-36" />
+          </CardHeader>
+          <CardContent className="space-y-3">
+            <Bone className="h-4 w-full" />
+            <Bone className="h-4 w-3/4" />
+            <Bone className="h-4 w-1/2" />
+          </CardContent>
+        </Card>
+      ))}
+    </div>
+  )
+}

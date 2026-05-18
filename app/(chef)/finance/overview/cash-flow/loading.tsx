@@ -1,0 +1,35 @@
+import { Card, CardContent, CardHeader } from '@/components/ui/card'
+import { ContextLoader } from '@/components/ui/context-loader'
+
+function Bone({ className }: { className: string }) {
+  return <div className={`loading-bone loading-bone-dark ${className}`} />
+}
+
+export default function OverviewCashFlowLoading() {
+  return (
+    <div className="space-y-6">
+      <div>
+        <Bone className="h-3 w-16 mb-1" />
+        <ContextLoader contextId="nav-finance-overview-cash-flow" size="sm" />
+        <Bone className="h-4 w-64 mt-2" />
+      </div>
+
+      <Card>
+        <CardHeader>
+          <Bone className="h-5 w-40" />
+        </CardHeader>
+        <CardContent className="space-y-3">
+          {[1, 2, 3, 4, 5, 6, 7].map((i) => (
+            <div key={i} className="flex items-center justify-between py-2">
+              <div className="flex items-center gap-4">
+                <Bone className="h-4 w-28" />
+                <Bone className="h-4 w-36" />
+              </div>
+              <Bone className="h-4 w-20" />
+            </div>
+          ))}
+        </CardContent>
+      </Card>
+    </div>
+  )
+}

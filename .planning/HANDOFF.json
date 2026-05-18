@@ -1,6 +1,6 @@
 {
   "version": "1.0",
-  "timestamp": "2026-05-18T07:11:09.990Z",
+  "timestamp": "2026-05-18T07:43:52.659Z",
   "source": "auto-postool",
   "partial": false,
   "phase": null,
@@ -26,99 +26,1899 @@
     },
     {
       "status": "M",
-      "path": "app/(chef)/contracts/new/page.tsx"
+      "path": "CONTEXT.md"
+    },
+    {
+      "status": "A",
+      "path": "app/(chef)/activity/activity-components.tsx"
+    },
+    {
+      "status": "A",
+      "path": "app/(chef)/activity/audit/loading.tsx"
+    },
+    {
+      "status": "A",
+      "path": "app/(chef)/autopilot/loading.tsx"
+    },
+    {
+      "status": "A",
+      "path": "app/(chef)/availability/loading.tsx"
+    },
+    {
+      "status": "A",
+      "path": "app/(chef)/calendar/share/loading.tsx"
+    },
+    {
+      "status": "A",
+      "path": "app/(chef)/calendar/travel/loading.tsx"
+    },
+    {
+      "status": "A",
+      "path": "app/(chef)/calls/[id]/edit/loading.tsx"
+    },
+    {
+      "status": "A",
+      "path": "app/(chef)/calls/[id]/loading.tsx"
+    },
+    {
+      "status": "A",
+      "path": "app/(chef)/calls/new/loading.tsx"
+    },
+    {
+      "status": "A",
+      "path": "app/(chef)/cannabis/about/loading.tsx"
+    },
+    {
+      "status": "A",
+      "path": "app/(chef)/cannabis/agreement/loading.tsx"
+    },
+    {
+      "status": "A",
+      "path": "app/(chef)/cannabis/batches/loading.tsx"
+    },
+    {
+      "status": "A",
+      "path": "app/(chef)/cannabis/compliance/loading.tsx"
+    },
+    {
+      "status": "A",
+      "path": "app/(chef)/cannabis/control-packet/template/loading.tsx"
+    },
+    {
+      "status": "A",
+      "path": "app/(chef)/cannabis/events/[id]/control-packet/loading.tsx"
+    },
+    {
+      "status": "A",
+      "path": "app/(chef)/cannabis/events/loading.tsx"
+    },
+    {
+      "status": "A",
+      "path": "app/(chef)/cannabis/handbook/loading.tsx"
+    },
+    {
+      "status": "A",
+      "path": "app/(chef)/cannabis/hub/loading.tsx"
+    },
+    {
+      "status": "A",
+      "path": "app/(chef)/cannabis/invite/loading.tsx"
+    },
+    {
+      "status": "A",
+      "path": "app/(chef)/cannabis/ledger/loading.tsx"
+    },
+    {
+      "status": "A",
+      "path": "app/(chef)/cannabis/rsvps/loading.tsx"
+    },
+    {
+      "status": "A",
+      "path": "app/(chef)/cannabis/unlock/loading.tsx"
+    },
+    {
+      "status": "A",
+      "path": "app/(chef)/capture/loading.tsx"
+    },
+    {
+      "status": "A",
+      "path": "app/(chef)/chef/cannabis/handbook/loading.tsx"
+    },
+    {
+      "status": "A",
+      "path": "app/(chef)/chef/cannabis/rsvps/loading.tsx"
+    },
+    {
+      "status": "A",
+      "path": "app/(chef)/circles/admin/loading.tsx"
+    },
+    {
+      "status": "A",
+      "path": "app/(chef)/clients/[id]/preferences/loading.tsx"
+    },
+    {
+      "status": "A",
+      "path": "app/(chef)/clients/[id]/recurring/loading.tsx"
+    },
+    {
+      "status": "A",
+      "path": "app/(chef)/clients/[id]/relationship/loading.tsx"
+    },
+    {
+      "status": "A",
+      "path": "app/(chef)/clients/[id]/summary/loading.tsx"
+    },
+    {
+      "status": "A",
+      "path": "app/(chef)/clients/insights/at-risk/loading.tsx"
+    },
+    {
+      "status": "A",
+      "path": "app/(chef)/clients/insights/dormant-high-value/loading.tsx"
+    },
+    {
+      "status": "A",
+      "path": "app/(chef)/clients/insights/loading.tsx"
+    },
+    {
+      "status": "A",
+      "path": "app/(chef)/clients/insights/most-frequent/loading.tsx"
+    },
+    {
+      "status": "A",
+      "path": "app/(chef)/clients/insights/retention/loading.tsx"
+    },
+    {
+      "status": "A",
+      "path": "app/(chef)/clients/insights/this-year/loading.tsx"
+    },
+    {
+      "status": "A",
+      "path": "app/(chef)/clients/insights/top-clients/loading.tsx"
+    },
+    {
+      "status": "A",
+      "path": "app/(chef)/clients/insights/top-covers/loading.tsx"
+    },
+    {
+      "status": "A",
+      "path": "app/(chef)/clients/preferences/allergies/loading.tsx"
+    },
+    {
+      "status": "A",
+      "path": "app/(chef)/clients/preferences/dietary-restrictions/loading.tsx"
+    },
+    {
+      "status": "A",
+      "path": "app/(chef)/clients/preferences/dislikes/loading.tsx"
+    },
+    {
+      "status": "A",
+      "path": "app/(chef)/clients/preferences/favorite-dishes/loading.tsx"
+    },
+    {
+      "status": "A",
+      "path": "app/(chef)/clients/recurring/loading.tsx"
+    },
+    {
+      "status": "A",
+      "path": "app/(chef)/commerce/observability/loading.tsx"
+    },
+    {
+      "status": "A",
+      "path": "app/(chef)/commerce/orders/loading.tsx"
+    },
+    {
+      "status": "A",
+      "path": "app/(chef)/commerce/parity/loading.tsx"
+    },
+    {
+      "status": "A",
+      "path": "app/(chef)/commerce/products/[id]/loading.tsx"
+    },
+    {
+      "status": "A",
+      "path": "app/(chef)/commerce/products/loading.tsx"
+    },
+    {
+      "status": "A",
+      "path": "app/(chef)/commerce/products/new/loading.tsx"
+    },
+    {
+      "status": "A",
+      "path": "app/(chef)/commerce/promotions/loading.tsx"
+    },
+    {
+      "status": "A",
+      "path": "app/(chef)/commerce/reconciliation/[id]/loading.tsx"
+    },
+    {
+      "status": "A",
+      "path": "app/(chef)/commerce/reconciliation/loading.tsx"
+    },
+    {
+      "status": "A",
+      "path": "app/(chef)/commerce/register/loading.tsx"
+    },
+    {
+      "status": "A",
+      "path": "app/(chef)/commerce/reports/loading.tsx"
+    },
+    {
+      "status": "A",
+      "path": "app/(chef)/commerce/reports/shifts/loading.tsx"
+    },
+    {
+      "status": "A",
+      "path": "app/(chef)/commerce/sales/[id]/loading.tsx"
+    },
+    {
+      "status": "A",
+      "path": "app/(chef)/commerce/schedules/loading.tsx"
+    },
+    {
+      "status": "A",
+      "path": "app/(chef)/commerce/settlements/[id]/loading.tsx"
+    },
+    {
+      "status": "A",
+      "path": "app/(chef)/commerce/settlements/loading.tsx"
+    },
+    {
+      "status": "A",
+      "path": "app/(chef)/commerce/storefront/loading.tsx"
+    },
+    {
+      "status": "A",
+      "path": "app/(chef)/commerce/table-service/loading.tsx"
+    },
+    {
+      "status": "A",
+      "path": "app/(chef)/commerce/virtual-terminal/loading.tsx"
+    },
+    {
+      "status": "A",
+      "path": "app/(chef)/communication/drafts/loading.tsx"
+    },
+    {
+      "status": "A",
+      "path": "app/(chef)/communication/loading.tsx"
+    },
+    {
+      "status": "A",
+      "path": "app/(chef)/community/benchmarks/loading.tsx"
+    },
+    {
+      "status": "A",
+      "path": "app/(chef)/community/directory/loading.tsx"
+    },
+    {
+      "status": "A",
+      "path": "app/(chef)/community/mentorship/loading.tsx"
+    },
+    {
+      "status": "A",
+      "path": "app/(chef)/community/messaging/loading.tsx"
+    },
+    {
+      "status": "A",
+      "path": "app/(chef)/community/profile/loading.tsx"
+    },
+    {
+      "status": "A",
+      "path": "app/(chef)/community/roadmap/loading.tsx"
+    },
+    {
+      "status": "A",
+      "path": "app/(chef)/community/subcontracts/loading.tsx"
+    },
+    {
+      "status": "A",
+      "path": "app/(chef)/community/templates/loading.tsx"
+    },
+    {
+      "status": "A",
+      "path": "app/(chef)/content/loading.tsx"
+    },
+    {
+      "status": "A",
+      "path": "app/(chef)/content/vault/loading.tsx"
+    },
+    {
+      "status": "A",
+      "path": "app/(chef)/contracts/[id]/history/loading.tsx"
+    },
+    {
+      "status": "A",
+      "path": "app/(chef)/contracts/clauses/loading.tsx"
+    },
+    {
+      "status": "A",
+      "path": "app/(chef)/contracts/clauses/page.tsx"
+    },
+    {
+      "status": "A",
+      "path": "app/(chef)/contracts/compose/loading.tsx"
+    },
+    {
+      "status": "A",
+      "path": "app/(chef)/contracts/compose/page.tsx"
+    },
+    {
+      "status": "A",
+      "path": "app/(chef)/contracts/new/loading.tsx"
+    },
+    {
+      "status": "A",
+      "path": "app/(chef)/culinary/call-sheet/loading.tsx"
+    },
+    {
+      "status": "A",
+      "path": "app/(chef)/culinary/chefnotes/loading.tsx"
+    },
+    {
+      "status": "A",
+      "path": "app/(chef)/culinary/components/ferments/loading.tsx"
+    },
+    {
+      "status": "A",
+      "path": "app/(chef)/culinary/components/garnishes/loading.tsx"
+    },
+    {
+      "status": "A",
+      "path": "app/(chef)/culinary/components/loading.tsx"
+    },
+    {
+      "status": "A",
+      "path": "app/(chef)/culinary/components/sauces/loading.tsx"
+    },
+    {
+      "status": "A",
+      "path": "app/(chef)/culinary/components/shared-elements/loading.tsx"
+    },
+    {
+      "status": "A",
+      "path": "app/(chef)/culinary/components/stocks/loading.tsx"
+    },
+    {
+      "status": "A",
+      "path": "app/(chef)/culinary/costing/food-cost/loading.tsx"
+    },
+    {
+      "status": "A",
+      "path": "app/(chef)/culinary/costing/loading.tsx"
+    },
+    {
+      "status": "A",
+      "path": "app/(chef)/culinary/costing/menu/loading.tsx"
+    },
+    {
+      "status": "A",
+      "path": "app/(chef)/culinary/costing/recipe/loading.tsx"
+    },
+    {
+      "status": "A",
+      "path": "app/(chef)/culinary/costing/sales/loading.tsx"
+    },
+    {
+      "status": "A",
+      "path": "app/(chef)/culinary/dish-index/[id]/loading.tsx"
+    },
+    {
+      "status": "A",
+      "path": "app/(chef)/culinary/dish-index/insights/loading.tsx"
+    },
+    {
+      "status": "A",
+      "path": "app/(chef)/culinary/dish-index/loading.tsx"
+    },
+    {
+      "status": "A",
+      "path": "app/(chef)/culinary/ingredients/loading.tsx"
+    },
+    {
+      "status": "A",
+      "path": "app/(chef)/culinary/ingredients/receipt-scan/loading.tsx"
+    },
+    {
+      "status": "A",
+      "path": "app/(chef)/culinary/ingredients/seasonal-availability/loading.tsx"
+    },
+    {
+      "status": "A",
+      "path": "app/(chef)/culinary/ingredients/vendor-notes/loading.tsx"
+    },
+    {
+      "status": "A",
+      "path": "app/(chef)/culinary/menus/[id]/loading.tsx"
+    },
+    {
+      "status": "A",
+      "path": "app/(chef)/culinary/menus/approved/loading.tsx"
+    },
+    {
+      "status": "A",
+      "path": "app/(chef)/culinary/menus/drafts/loading.tsx"
+    },
+    {
+      "status": "A",
+      "path": "app/(chef)/culinary/menus/loading.tsx"
+    },
+    {
+      "status": "A",
+      "path": "app/(chef)/culinary/menus/scaling/loading.tsx"
+    },
+    {
+      "status": "A",
+      "path": "app/(chef)/culinary/menus/substitutions/loading.tsx"
+    },
+    {
+      "status": "A",
+      "path": "app/(chef)/culinary/menus/templates/loading.tsx"
+    },
+    {
+      "status": "A",
+      "path": "app/(chef)/culinary/my-kitchen/loading.tsx"
+    },
+    {
+      "status": "A",
+      "path": "app/(chef)/culinary/prep/loading.tsx"
+    },
+    {
+      "status": "A",
+      "path": "app/(chef)/culinary/prep/shopping/loading.tsx"
+    },
+    {
+      "status": "A",
+      "path": "app/(chef)/culinary/prep/timeline/loading.tsx"
+    },
+    {
+      "status": "A",
+      "path": "app/(chef)/culinary/price-catalog/loading.tsx"
+    },
+    {
+      "status": "A",
+      "path": "app/(chef)/culinary/recipes/[id]/edit/loading.tsx"
+    },
+    {
+      "status": "A",
+      "path": "app/(chef)/culinary/recipes/[id]/loading.tsx"
+    },
+    {
+      "status": "A",
+      "path": "app/(chef)/culinary/recipes/dietary-flags/loading.tsx"
+    },
+    {
+      "status": "A",
+      "path": "app/(chef)/culinary/recipes/drafts/loading.tsx"
+    },
+    {
+      "status": "A",
+      "path": "app/(chef)/culinary/recipes/loading.tsx"
+    },
+    {
+      "status": "A",
+      "path": "app/(chef)/culinary/recipes/new/loading.tsx"
+    },
+    {
+      "status": "A",
+      "path": "app/(chef)/culinary/recipes/seasonal-notes/loading.tsx"
+    },
+    {
+      "status": "A",
+      "path": "app/(chef)/culinary/recipes/tags/loading.tsx"
+    },
+    {
+      "status": "A",
+      "path": "app/(chef)/culinary/seasonal-calendar/loading.tsx"
+    },
+    {
+      "status": "A",
+      "path": "app/(chef)/culinary/sourcing/loading.tsx"
+    },
+    {
+      "status": "A",
+      "path": "app/(chef)/culinary/substitutions/loading.tsx"
+    },
+    {
+      "status": "A",
+      "path": "app/(chef)/culinary/supplier-calls/loading.tsx"
+    },
+    {
+      "status": "A",
+      "path": "app/(chef)/culinary/tips/loading.tsx"
+    },
+    {
+      "status": "A",
+      "path": "app/(chef)/culinary/vendors/loading.tsx"
+    },
+    {
+      "status": "A",
+      "path": "app/(chef)/dev/simulate/loading.tsx"
+    },
+    {
+      "status": "A",
+      "path": "app/(chef)/events/[id]/_sections/event-departure-section.tsx"
+    },
+    {
+      "status": "A",
+      "path": "app/(chef)/events/[id]/_sections/event-discovery-section.tsx"
+    },
+    {
+      "status": "A",
+      "path": "app/(chef)/events/[id]/aar/loading.tsx"
+    },
+    {
+      "status": "A",
+      "path": "app/(chef)/events/[id]/billing/loading.tsx"
+    },
+    {
+      "status": "A",
+      "path": "app/(chef)/events/[id]/briefing/loading.tsx"
+    },
+    {
+      "status": "A",
+      "path": "app/(chef)/events/[id]/cannabis/loading.tsx"
+    },
+    {
+      "status": "A",
+      "path": "app/(chef)/events/[id]/close-out/loading.tsx"
+    },
+    {
+      "status": "A",
+      "path": "app/(chef)/events/[id]/debrief/loading.tsx"
+    },
+    {
+      "status": "A",
+      "path": "app/(chef)/events/[id]/documents/loading.tsx"
+    },
+    {
+      "status": "A",
+      "path": "app/(chef)/events/[id]/dop/mobile/loading.tsx"
+    },
+    {
+      "status": "A",
+      "path": "app/(chef)/events/[id]/edit/loading.tsx"
+    },
+    {
+      "status": "A",
+      "path": "app/(chef)/events/[id]/execution/loading.tsx"
+    },
+    {
+      "status": "A",
+      "path": "app/(chef)/events/[id]/financial/loading.tsx"
+    },
+    {
+      "status": "A",
+      "path": "app/(chef)/events/[id]/follow-up/loading.tsx"
+    },
+    {
+      "status": "A",
+      "path": "app/(chef)/events/[id]/gear/loading.tsx"
+    },
+    {
+      "status": "A",
+      "path": "app/(chef)/events/[id]/god-mode/loading.tsx"
+    },
+    {
+      "status": "A",
+      "path": "app/(chef)/events/[id]/grocery-quote/loading.tsx"
+    },
+    {
+      "status": "A",
+      "path": "app/(chef)/events/[id]/grocery-run/loading.tsx"
+    },
+    {
+      "status": "A",
+      "path": "app/(chef)/events/[id]/guest-card/loading.tsx"
+    },
+    {
+      "status": "A",
+      "path": "app/(chef)/events/[id]/interactive/loading.tsx"
+    },
+    {
+      "status": "A",
+      "path": "app/(chef)/events/[id]/invoice/loading.tsx"
+    },
+    {
+      "status": "A",
+      "path": "app/(chef)/events/[id]/kds/loading.tsx"
+    },
+    {
+      "status": "A",
+      "path": "app/(chef)/events/[id]/menu-polling/loading.tsx"
+    },
+    {
+      "status": "A",
+      "path": "app/(chef)/events/[id]/ops/loading.tsx"
+    },
+    {
+      "status": "A",
+      "path": "app/(chef)/events/[id]/outcome/loading.tsx"
+    },
+    {
+      "status": "A",
+      "path": "app/(chef)/events/[id]/pack/loading.tsx"
+    },
+    {
+      "status": "A",
+      "path": "app/(chef)/events/[id]/pack/mobile/loading.tsx"
+    },
+    {
+      "status": "A",
+      "path": "app/(chef)/events/[id]/photos/loading.tsx"
+    },
+    {
+      "status": "A",
+      "path": "app/(chef)/events/[id]/prep-plan/loading.tsx"
+    },
+    {
+      "status": "A",
+      "path": "app/(chef)/events/[id]/procurement/loading.tsx"
+    },
+    {
+      "status": "A",
+      "path": "app/(chef)/events/[id]/receipts/loading.tsx"
+    },
+    {
+      "status": "A",
+      "path": "app/(chef)/events/[id]/replay/loading.tsx"
+    },
+    {
+      "status": "A",
+      "path": "app/(chef)/events/[id]/report/loading.tsx"
+    },
+    {
+      "status": "A",
+      "path": "app/(chef)/events/[id]/reset/loading.tsx"
+    },
+    {
+      "status": "A",
+      "path": "app/(chef)/events/[id]/safety/loading.tsx"
+    },
+    {
+      "status": "A",
+      "path": "app/(chef)/events/[id]/schedule/loading.tsx"
+    },
+    {
+      "status": "A",
+      "path": "app/(chef)/events/[id]/service/loading.tsx"
+    },
+    {
+      "status": "A",
+      "path": "app/(chef)/events/[id]/split-billing/loading.tsx"
+    },
+    {
+      "status": "A",
+      "path": "app/(chef)/events/[id]/staff/loading.tsx"
+    },
+    {
+      "status": "A",
+      "path": "app/(chef)/events/[id]/story/loading.tsx"
+    },
+    {
+      "status": "A",
+      "path": "app/(chef)/events/[id]/travel/loading.tsx"
+    },
+    {
+      "status": "A",
+      "path": "app/(chef)/events/new/from-text/loading.tsx"
+    },
+    {
+      "status": "A",
+      "path": "app/(chef)/events/new/wizard/loading.tsx"
+    },
+    {
+      "status": "A",
+      "path": "app/(chef)/expenses/[id]/loading.tsx"
+    },
+    {
+      "status": "A",
+      "path": "app/(chef)/expenses/new/loading.tsx"
+    },
+    {
+      "status": "A",
+      "path": "app/(chef)/explore/book/loading.tsx"
+    },
+    {
+      "status": "A",
+      "path": "app/(chef)/explore/discover/loading.tsx"
+    },
+    {
+      "status": "A",
+      "path": "app/(chef)/explore/events/loading.tsx"
+    },
+    {
+      "status": "A",
+      "path": "app/(chef)/explore/loading.tsx"
+    },
+    {
+      "status": "A",
+      "path": "app/(chef)/explore/local/loading.tsx"
+    },
+    {
+      "status": "A",
+      "path": "app/(chef)/features/loading.tsx"
+    },
+    {
+      "status": "A",
+      "path": "app/(chef)/finance/bank-feed/loading.tsx"
+    },
+    {
+      "status": "A",
+      "path": "app/(chef)/finance/cash-flow/loading.tsx"
+    },
+    {
+      "status": "A",
+      "path": "app/(chef)/finance/contractors/loading.tsx"
+    },
+    {
+      "status": "A",
+      "path": "app/(chef)/finance/disputes/loading.tsx"
+    },
+    {
+      "status": "A",
+      "path": "app/(chef)/finance/expenses/food-ingredients/loading.tsx"
+    },
+    {
+      "status": "A",
+      "path": "app/(chef)/finance/expenses/labor/loading.tsx"
+    },
+    {
+      "status": "A",
+      "path": "app/(chef)/finance/expenses/loading.tsx"
+    },
+    {
+      "status": "A",
+      "path": "app/(chef)/finance/expenses/marketing/loading.tsx"
+    },
+    {
+      "status": "A",
+      "path": "app/(chef)/finance/expenses/miscellaneous/loading.tsx"
+    },
+    {
+      "status": "A",
+      "path": "app/(chef)/finance/expenses/rentals-equipment/loading.tsx"
+    },
+    {
+      "status": "A",
+      "path": "app/(chef)/finance/expenses/software/loading.tsx"
+    },
+    {
+      "status": "A",
+      "path": "app/(chef)/finance/expenses/travel/loading.tsx"
+    },
+    {
+      "status": "A",
+      "path": "app/(chef)/finance/forecast/loading.tsx"
+    },
+    {
+      "status": "A",
+      "path": "app/(chef)/finance/goals/loading.tsx"
+    },
+    {
+      "status": "A",
+      "path": "app/(chef)/finance/invoices/cancelled/loading.tsx"
+    },
+    {
+      "status": "A",
+      "path": "app/(chef)/finance/invoices/draft/loading.tsx"
+    },
+    {
+      "status": "A",
+      "path": "app/(chef)/finance/invoices/loading.tsx"
+    },
+    {
+      "status": "A",
+      "path": "app/(chef)/finance/invoices/overdue/loading.tsx"
+    },
+    {
+      "status": "A",
+      "path": "app/(chef)/finance/invoices/paid/loading.tsx"
+    },
+    {
+      "status": "A",
+      "path": "app/(chef)/finance/invoices/refunded/loading.tsx"
+    },
+    {
+      "status": "A",
+      "path": "app/(chef)/finance/invoices/sent/loading.tsx"
+    },
+    {
+      "status": "A",
+      "path": "app/(chef)/finance/ledger/adjustments/loading.tsx"
+    },
+    {
+      "status": "A",
+      "path": "app/(chef)/finance/ledger/loading.tsx"
+    },
+    {
+      "status": "A",
+      "path": "app/(chef)/finance/ledger/owner-draws/loading.tsx"
+    },
+    {
+      "status": "A",
+      "path": "app/(chef)/finance/ledger/transaction-log/loading.tsx"
+    },
+    {
+      "status": "A",
+      "path": "app/(chef)/finance/overview/cash-flow/loading.tsx"
+    },
+    {
+      "status": "A",
+      "path": "app/(chef)/finance/overview/loading.tsx"
+    },
+    {
+      "status": "A",
+      "path": "app/(chef)/finance/overview/outstanding-payments/loading.tsx"
+    },
+    {
+      "status": "A",
+      "path": "app/(chef)/finance/overview/revenue-summary/loading.tsx"
+    },
+    {
+      "status": "A",
+      "path": "app/(chef)/finance/payments/deposits/loading.tsx"
+    },
+    {
+      "status": "A",
+      "path": "app/(chef)/finance/payments/failed/loading.tsx"
+    },
+    {
+      "status": "A",
+      "path": "app/(chef)/finance/payments/installments/loading.tsx"
+    },
+    {
+      "status": "A",
+      "path": "app/(chef)/finance/payments/loading.tsx"
+    },
+    {
+      "status": "A",
+      "path": "app/(chef)/finance/payments/refunds/loading.tsx"
+    },
+    {
+      "status": "A",
+      "path": "app/(chef)/finance/payouts/loading.tsx"
+    },
+    {
+      "status": "A",
+      "path": "app/(chef)/finance/payouts/manual-payments/loading.tsx"
+    },
+    {
+      "status": "A",
+      "path": "app/(chef)/finance/payouts/reconciliation/loading.tsx"
+    },
+    {
+      "status": "A",
+      "path": "app/(chef)/finance/payouts/stripe-payouts/loading.tsx"
+    },
+    {
+      "status": "A",
+      "path": "app/(chef)/finance/payroll/941/loading.tsx"
+    },
+    {
+      "status": "A",
+      "path": "app/(chef)/finance/payroll/employees/layout.tsx"
+    },
+    {
+      "status": "A",
+      "path": "app/(chef)/finance/payroll/employees/loading.tsx"
+    },
+    {
+      "status": "A",
+      "path": "app/(chef)/finance/payroll/loading.tsx"
+    },
+    {
+      "status": "A",
+      "path": "app/(chef)/finance/payroll/run/loading.tsx"
+    },
+    {
+      "status": "A",
+      "path": "app/(chef)/finance/payroll/w2/loading.tsx"
+    },
+    {
+      "status": "A",
+      "path": "app/(chef)/finance/planning/break-even/loading.tsx"
+    },
+    {
+      "status": "A",
+      "path": "app/(chef)/finance/plate-costs/loading.tsx"
+    },
+    {
+      "status": "A",
+      "path": "app/(chef)/finance/recurring/loading.tsx"
+    },
+    {
+      "status": "A",
+      "path": "app/(chef)/finance/reporting/expense-by-category/loading.tsx"
+    },
+    {
+      "status": "A",
+      "path": "app/(chef)/finance/reporting/loading.tsx"
+    },
+    {
+      "status": "A",
+      "path": "app/(chef)/finance/reporting/profit-by-event/loading.tsx"
+    },
+    {
+      "status": "A",
+      "path": "app/(chef)/finance/reporting/profit-loss/loading.tsx"
+    },
+    {
+      "status": "A",
+      "path": "app/(chef)/finance/reporting/revenue-by-client/loading.tsx"
+    },
+    {
+      "status": "A",
+      "path": "app/(chef)/finance/reporting/revenue-by-event/loading.tsx"
+    },
+    {
+      "status": "A",
+      "path": "app/(chef)/finance/reporting/revenue-by-month/loading.tsx"
+    },
+    {
+      "status": "A",
+      "path": "app/(chef)/finance/reporting/tax-summary/loading.tsx"
+    },
+    {
+      "status": "A",
+      "path": "app/(chef)/finance/reporting/year-to-date-summary/loading.tsx"
+    },
+    {
+      "status": "A",
+      "path": "app/(chef)/finance/reporting/yoy-comparison/loading.tsx"
+    },
+    {
+      "status": "A",
+      "path": "app/(chef)/finance/retainers/[id]/loading.tsx"
+    },
+    {
+      "status": "A",
+      "path": "app/(chef)/finance/retainers/loading.tsx"
+    },
+    {
+      "status": "A",
+      "path": "app/(chef)/finance/retainers/new/loading.tsx"
+    },
+    {
+      "status": "A",
+      "path": "app/(chef)/finance/sales-tax/loading.tsx"
+    },
+    {
+      "status": "A",
+      "path": "app/(chef)/finance/sales-tax/remittances/loading.tsx"
+    },
+    {
+      "status": "A",
+      "path": "app/(chef)/finance/sales-tax/settings/layout.tsx"
+    },
+    {
+      "status": "A",
+      "path": "app/(chef)/finance/sales-tax/settings/loading.tsx"
+    },
+    {
+      "status": "A",
+      "path": "app/(chef)/finance/tax-prep/loading.tsx"
+    },
+    {
+      "status": "A",
+      "path": "app/(chef)/finance/tax/1099-nec/loading.tsx"
+    },
+    {
+      "status": "A",
+      "path": "app/(chef)/finance/tax/depreciation/loading.tsx"
+    },
+    {
+      "status": "A",
+      "path": "app/(chef)/finance/tax/home-office/loading.tsx"
+    },
+    {
+      "status": "A",
+      "path": "app/(chef)/finance/tax/loading.tsx"
+    },
+    {
+      "status": "A",
+      "path": "app/(chef)/finance/tax/quarterly/loading.tsx"
+    },
+    {
+      "status": "A",
+      "path": "app/(chef)/finance/tax/retirement/loading.tsx"
+    },
+    {
+      "status": "A",
+      "path": "app/(chef)/finance/tax/year-end/loading.tsx"
+    },
+    {
+      "status": "A",
+      "path": "app/(chef)/finance/year-end/loading.tsx"
+    },
+    {
+      "status": "A",
+      "path": "app/(chef)/food-cost/revenue/loading.tsx"
+    },
+    {
+      "status": "A",
+      "path": "app/(chef)/guests/[id]/loading.tsx"
+    },
+    {
+      "status": "A",
+      "path": "app/(chef)/guests/reservations/loading.tsx"
+    },
+    {
+      "status": "A",
+      "path": "app/(chef)/help/[slug]/loading.tsx"
+    },
+    {
+      "status": "A",
+      "path": "app/(chef)/help/food-costing/loading.tsx"
+    },
+    {
+      "status": "A",
+      "path": "app/(chef)/import/csv/loading.tsx"
+    },
+    {
+      "status": "A",
+      "path": "app/(chef)/import/history/loading.tsx"
+    },
+    {
+      "status": "A",
+      "path": "app/(chef)/import/mxp/loading.tsx"
+    },
+    {
+      "status": "A",
+      "path": "app/(chef)/imports/business-history/loading.tsx"
+    },
+    {
+      "status": "A",
+      "path": "app/(chef)/inbox/history-scan/loading.tsx"
+    },
+    {
+      "status": "A",
+      "path": "app/(chef)/inbox/triage/[threadId]/loading.tsx"
+    },
+    {
+      "status": "A",
+      "path": "app/(chef)/inbox/triage/loading.tsx"
+    },
+    {
+      "status": "A",
+      "path": "app/(chef)/inquiries/awaiting-client-reply/loading.tsx"
+    },
+    {
+      "status": "A",
+      "path": "app/(chef)/inquiries/awaiting-response/loading.tsx"
+    },
+    {
+      "status": "A",
+      "path": "app/(chef)/inquiries/declined/loading.tsx"
+    },
+    {
+      "status": "A",
+      "path": "app/(chef)/inquiries/menu-drafting/loading.tsx"
+    },
+    {
+      "status": "A",
+      "path": "app/(chef)/inquiries/new/loading.tsx"
+    },
+    {
+      "status": "A",
+      "path": "app/(chef)/inquiries/sent-to-client/loading.tsx"
+    },
+    {
+      "status": "A",
+      "path": "app/(chef)/insights/time-analysis/loading.tsx"
+    },
+    {
+      "status": "A",
+      "path": "app/(chef)/journey/loading.tsx"
+    },
+    {
+      "status": "A",
+      "path": "app/(chef)/kitchen/loading.tsx"
     },
     {
       "status": "M",
-      "path": "app/(chef)/contracts/page.tsx"
+      "path": "app/(chef)/layout.tsx"
+    },
+    {
+      "status": "A",
+      "path": "app/(chef)/leads/archived/loading.tsx"
+    },
+    {
+      "status": "A",
+      "path": "app/(chef)/leads/contacted/loading.tsx"
+    },
+    {
+      "status": "A",
+      "path": "app/(chef)/leads/converted/loading.tsx"
+    },
+    {
+      "status": "A",
+      "path": "app/(chef)/leads/new/loading.tsx"
+    },
+    {
+      "status": "A",
+      "path": "app/(chef)/leads/qualified/loading.tsx"
+    },
+    {
+      "status": "A",
+      "path": "app/(chef)/locations/[id]/loading.tsx"
+    },
+    {
+      "status": "A",
+      "path": "app/(chef)/locations/compliance/loading.tsx"
+    },
+    {
+      "status": "A",
+      "path": "app/(chef)/locations/loading.tsx"
+    },
+    {
+      "status": "A",
+      "path": "app/(chef)/locations/purchasing/loading.tsx"
+    },
+    {
+      "status": "A",
+      "path": "app/(chef)/loyalty/learn/loading.tsx"
+    },
+    {
+      "status": "A",
+      "path": "app/(chef)/loyalty/raffle/[id]/loading.tsx"
+    },
+    {
+      "status": "A",
+      "path": "app/(chef)/loyalty/raffle/loading.tsx"
+    },
+    {
+      "status": "A",
+      "path": "app/(chef)/loyalty/rewards/new/loading.tsx"
+    },
+    {
+      "status": "A",
+      "path": "app/(chef)/loyalty/settings/loading.tsx"
+    },
+    {
+      "status": "A",
+      "path": "app/(chef)/marketing/[id]/loading.tsx"
+    },
+    {
+      "status": "A",
+      "path": "app/(chef)/marketing/content-pipeline/loading.tsx"
+    },
+    {
+      "status": "A",
+      "path": "app/(chef)/marketing/push-dinners/[id]/loading.tsx"
+    },
+    {
+      "status": "A",
+      "path": "app/(chef)/marketing/push-dinners/loading.tsx"
+    },
+    {
+      "status": "A",
+      "path": "app/(chef)/marketing/push-dinners/new/loading.tsx"
+    },
+    {
+      "status": "A",
+      "path": "app/(chef)/marketing/sequences/loading.tsx"
+    },
+    {
+      "status": "A",
+      "path": "app/(chef)/marketing/social/[month]/loading.tsx"
+    },
+    {
+      "status": "A",
+      "path": "app/(chef)/marketing/social/compose/[eventId]/loading.tsx"
+    },
+    {
+      "status": "A",
+      "path": "app/(chef)/marketing/social/connections/loading.tsx"
+    },
+    {
+      "status": "A",
+      "path": "app/(chef)/marketing/social/posts/[id]/loading.tsx"
+    },
+    {
+      "status": "A",
+      "path": "app/(chef)/marketing/social/settings/loading.tsx"
+    },
+    {
+      "status": "A",
+      "path": "app/(chef)/marketing/social/templates/loading.tsx"
+    },
+    {
+      "status": "A",
+      "path": "app/(chef)/marketing/templates/loading.tsx"
+    },
+    {
+      "status": "A",
+      "path": "app/(chef)/marketplace/capture/loading.tsx"
+    },
+    {
+      "status": "A",
+      "path": "app/(chef)/meal-prep/[programId]/loading.tsx"
+    },
+    {
+      "status": "A",
+      "path": "app/(chef)/meal-prep/batch/loading.tsx"
+    },
+    {
+      "status": "A",
+      "path": "app/(chef)/meal-prep/retro/loading.tsx"
+    },
+    {
+      "status": "A",
+      "path": "app/(chef)/menus/[id]/editor/loading.tsx"
+    },
+    {
+      "status": "A",
+      "path": "app/(chef)/menus/dishes/loading.tsx"
+    },
+    {
+      "status": "A",
+      "path": "app/(chef)/menus/estimate/loading.tsx"
+    },
+    {
+      "status": "A",
+      "path": "app/(chef)/menus/menus-components.tsx"
+    },
+    {
+      "status": "A",
+      "path": "app/(chef)/menus/seasonal/loading.tsx"
+    },
+    {
+      "status": "A",
+      "path": "app/(chef)/menus/selections/loading.tsx"
+    },
+    {
+      "status": "A",
+      "path": "app/(chef)/menus/tasting/loading.tsx"
+    },
+    {
+      "status": "A",
+      "path": "app/(chef)/menus/upload/loading.tsx"
+    },
+    {
+      "status": "A",
+      "path": "app/(chef)/network/[chefId]/loading.tsx"
+    },
+    {
+      "status": "A",
+      "path": "app/(chef)/network/bridges/[bridgeId]/loading.tsx"
+    },
+    {
+      "status": "A",
+      "path": "app/(chef)/network/channels/[slug]/loading.tsx"
+    },
+    {
+      "status": "A",
+      "path": "app/(chef)/network/collabs/[spaceId]/loading.tsx"
+    },
+    {
+      "status": "A",
+      "path": "app/(chef)/network/collabs/loading.tsx"
+    },
+    {
+      "status": "A",
+      "path": "app/(chef)/network/notifications/loading.tsx"
+    },
+    {
+      "status": "A",
+      "path": "app/(chef)/network/saved/loading.tsx"
+    },
+    {
+      "status": "A",
+      "path": "app/(chef)/notifications/notification-list-components.tsx"
+    },
+    {
+      "status": "A",
+      "path": "app/(chef)/nutrition/[menuId]/loading.tsx"
+    },
+    {
+      "status": "A",
+      "path": "app/(chef)/onboarding/clients/loading.tsx"
+    },
+    {
+      "status": "A",
+      "path": "app/(chef)/onboarding/features/loading.tsx"
+    },
+    {
+      "status": "A",
+      "path": "app/(chef)/onboarding/help/loading.tsx"
+    },
+    {
+      "status": "A",
+      "path": "app/(chef)/onboarding/loyalty/loading.tsx"
+    },
+    {
+      "status": "A",
+      "path": "app/(chef)/onboarding/recipes/loading.tsx"
+    },
+    {
+      "status": "A",
+      "path": "app/(chef)/onboarding/staff/loading.tsx"
+    },
+    {
+      "status": "A",
+      "path": "app/(chef)/onboarding/welcome/loading.tsx"
+    },
+    {
+      "status": "A",
+      "path": "app/(chef)/ops/equipment/loading.tsx"
+    },
+    {
+      "status": "A",
+      "path": "app/(chef)/ops/inventory/loading.tsx"
+    },
+    {
+      "status": "A",
+      "path": "app/(chef)/ops/kitchen-rentals/loading.tsx"
+    },
+    {
+      "status": "A",
+      "path": "app/(chef)/ops/loading.tsx"
+    },
+    {
+      "status": "A",
+      "path": "app/(chef)/ops/performance/loading.tsx"
+    },
+    {
+      "status": "A",
+      "path": "app/(chef)/ops/prep/loading.tsx"
+    },
+    {
+      "status": "A",
+      "path": "app/(chef)/ops/service/loading.tsx"
+    },
+    {
+      "status": "A",
+      "path": "app/(chef)/ops/stations/loading.tsx"
+    },
+    {
+      "status": "A",
+      "path": "app/(chef)/partners/[id]/edit/loading.tsx"
+    },
+    {
+      "status": "A",
+      "path": "app/(chef)/partners/[id]/loading.tsx"
+    },
+    {
+      "status": "A",
+      "path": "app/(chef)/partners/[id]/report/loading.tsx"
+    },
+    {
+      "status": "A",
+      "path": "app/(chef)/partners/active/loading.tsx"
+    },
+    {
+      "status": "A",
+      "path": "app/(chef)/partners/events-generated/loading.tsx"
+    },
+    {
+      "status": "A",
+      "path": "app/(chef)/partners/inactive/loading.tsx"
+    },
+    {
+      "status": "A",
+      "path": "app/(chef)/partners/new/loading.tsx"
+    },
+    {
+      "status": "A",
+      "path": "app/(chef)/partners/referral-performance/loading.tsx"
+    },
+    {
+      "status": "A",
+      "path": "app/(chef)/payments/splitting/loading.tsx"
+    },
+    {
+      "status": "A",
+      "path": "app/(chef)/pie-cart/loading.tsx"
+    },
+    {
+      "status": "A",
+      "path": "app/(chef)/prep/consolidation/loading.tsx"
+    },
+    {
+      "status": "A",
+      "path": "app/(chef)/prices/loading.tsx"
+    },
+    {
+      "status": "A",
+      "path": "app/(chef)/prices/seasonal/loading.tsx"
+    },
+    {
+      "status": "A",
+      "path": "app/(chef)/prices/store/[storeId]/loading.tsx"
+    },
+    {
+      "status": "A",
+      "path": "app/(chef)/proposals/addons/loading.tsx"
+    },
+    {
+      "status": "A",
+      "path": "app/(chef)/proposals/builder/loading.tsx"
+    },
+    {
+      "status": "A",
+      "path": "app/(chef)/proposals/templates/loading.tsx"
+    },
+    {
+      "status": "A",
+      "path": "app/(chef)/prospecting/[id]/loading.tsx"
+    },
+    {
+      "status": "A",
+      "path": "app/(chef)/prospecting/clusters/loading.tsx"
+    },
+    {
+      "status": "A",
+      "path": "app/(chef)/prospecting/import/loading.tsx"
+    },
+    {
+      "status": "A",
+      "path": "app/(chef)/prospecting/openclaw/loading.tsx"
+    },
+    {
+      "status": "A",
+      "path": "app/(chef)/prospecting/pipeline/loading.tsx"
+    },
+    {
+      "status": "A",
+      "path": "app/(chef)/prospecting/queue/loading.tsx"
+    },
+    {
+      "status": "A",
+      "path": "app/(chef)/prospecting/scripts/loading.tsx"
+    },
+    {
+      "status": "A",
+      "path": "app/(chef)/prospecting/scrub/loading.tsx"
+    },
+    {
+      "status": "A",
+      "path": "app/(chef)/pulse/loading.tsx"
+    },
+    {
+      "status": "A",
+      "path": "app/(chef)/quick-log/loading.tsx"
+    },
+    {
+      "status": "A",
+      "path": "app/(chef)/quotes/[id]/edit/loading.tsx"
+    },
+    {
+      "status": "A",
+      "path": "app/(chef)/quotes/accepted/loading.tsx"
+    },
+    {
+      "status": "A",
+      "path": "app/(chef)/quotes/draft/loading.tsx"
+    },
+    {
+      "status": "A",
+      "path": "app/(chef)/quotes/expired/loading.tsx"
+    },
+    {
+      "status": "A",
+      "path": "app/(chef)/quotes/new/loading.tsx"
+    },
+    {
+      "status": "A",
+      "path": "app/(chef)/quotes/rejected/loading.tsx"
+    },
+    {
+      "status": "A",
+      "path": "app/(chef)/quotes/sent/loading.tsx"
+    },
+    {
+      "status": "A",
+      "path": "app/(chef)/quotes/viewed/loading.tsx"
+    },
+    {
+      "status": "A",
+      "path": "app/(chef)/recipes/[id]/edit/loading.tsx"
+    },
+    {
+      "status": "A",
+      "path": "app/(chef)/recipes/dump/loading.tsx"
+    },
+    {
+      "status": "A",
+      "path": "app/(chef)/recipes/import/loading.tsx"
+    },
+    {
+      "status": "A",
+      "path": "app/(chef)/recipes/ingredients/loading.tsx"
+    },
+    {
+      "status": "A",
+      "path": "app/(chef)/recipes/photos/loading.tsx"
+    },
+    {
+      "status": "A",
+      "path": "app/(chef)/recipes/production-log/loading.tsx"
+    },
+    {
+      "status": "A",
+      "path": "app/(chef)/recipes/sprint/loading.tsx"
+    },
+    {
+      "status": "A",
+      "path": "app/(chef)/reminders/loading.tsx"
+    },
+    {
+      "status": "A",
+      "path": "app/(chef)/reminders/reminders-components.tsx"
+    },
+    {
+      "status": "A",
+      "path": "app/(chef)/remy/operating/loading.tsx"
+    },
+    {
+      "status": "A",
+      "path": "app/(chef)/remy/remy-chat-components.tsx"
+    },
+    {
+      "status": "A",
+      "path": "app/(chef)/remy/signals/loading.tsx"
+    },
+    {
+      "status": "A",
+      "path": "app/(chef)/reputation/mentions/loading.tsx"
+    },
+    {
+      "status": "A",
+      "path": "app/(chef)/safety/backup-chef/loading.tsx"
+    },
+    {
+      "status": "A",
+      "path": "app/(chef)/safety/claims/documents/loading.tsx"
+    },
+    {
+      "status": "A",
+      "path": "app/(chef)/safety/claims/loading.tsx"
+    },
+    {
+      "status": "A",
+      "path": "app/(chef)/safety/claims/new/loading.tsx"
+    },
+    {
+      "status": "A",
+      "path": "app/(chef)/safety/incidents/[id]/loading.tsx"
+    },
+    {
+      "status": "A",
+      "path": "app/(chef)/safety/incidents/loading.tsx"
+    },
+    {
+      "status": "A",
+      "path": "app/(chef)/safety/incidents/new/loading.tsx"
+    },
+    {
+      "status": "A",
+      "path": "app/(chef)/settings/account/loading.tsx"
+    },
+    {
+      "status": "A",
+      "path": "app/(chef)/settings/ai-privacy/layout.tsx"
+    },
+    {
+      "status": "A",
+      "path": "app/(chef)/settings/ai-privacy/loading.tsx"
+    },
+    {
+      "status": "A",
+      "path": "app/(chef)/settings/ai/loading.tsx"
+    },
+    {
+      "status": "A",
+      "path": "app/(chef)/settings/api-keys/loading.tsx"
+    },
+    {
+      "status": "A",
+      "path": "app/(chef)/settings/appearance/loading.tsx"
+    },
+    {
+      "status": "A",
+      "path": "app/(chef)/settings/automations/loading.tsx"
+    },
+    {
+      "status": "A",
+      "path": "app/(chef)/settings/billing/loading.tsx"
+    },
+    {
+      "status": "A",
+      "path": "app/(chef)/settings/business/loading.tsx"
+    },
+    {
+      "status": "A",
+      "path": "app/(chef)/settings/calendar-sync/loading.tsx"
+    },
+    {
+      "status": "A",
+      "path": "app/(chef)/settings/change-password/loading.tsx"
+    },
+    {
+      "status": "A",
+      "path": "app/(chef)/settings/client-preview/loading.tsx"
+    },
+    {
+      "status": "A",
+      "path": "app/(chef)/settings/communication/loading.tsx"
+    },
+    {
+      "status": "A",
+      "path": "app/(chef)/settings/communications/loading.tsx"
+    },
+    {
+      "status": "A",
+      "path": "app/(chef)/settings/compliance/backup/loading.tsx"
+    },
+    {
+      "status": "A",
+      "path": "app/(chef)/settings/compliance/claims/documents/loading.tsx"
+    },
+    {
+      "status": "A",
+      "path": "app/(chef)/settings/compliance/claims/loading.tsx"
+    },
+    {
+      "status": "A",
+      "path": "app/(chef)/settings/compliance/claims/new/loading.tsx"
+    },
+    {
+      "status": "A",
+      "path": "app/(chef)/settings/compliance/gdpr/loading.tsx"
+    },
+    {
+      "status": "A",
+      "path": "app/(chef)/settings/compliance/haccp/loading.tsx"
+    },
+    {
+      "status": "A",
+      "path": "app/(chef)/settings/compliance/incidents/[id]/loading.tsx"
+    },
+    {
+      "status": "A",
+      "path": "app/(chef)/settings/compliance/incidents/loading.tsx"
+    },
+    {
+      "status": "A",
+      "path": "app/(chef)/settings/compliance/incidents/new/loading.tsx"
+    },
+    {
+      "status": "A",
+      "path": "app/(chef)/settings/compliance/loading.tsx"
+    },
+    {
+      "status": "A",
+      "path": "app/(chef)/settings/connections/loading.tsx"
+    },
+    {
+      "status": "A",
+      "path": "app/(chef)/settings/contracts/loading.tsx"
+    },
+    {
+      "status": "A",
+      "path": "app/(chef)/settings/credentials/loading.tsx"
+    },
+    {
+      "status": "A",
+      "path": "app/(chef)/settings/culinary-profile/layout.tsx"
+    },
+    {
+      "status": "A",
+      "path": "app/(chef)/settings/culinary-profile/loading.tsx"
+    },
+    {
+      "status": "A",
+      "path": "app/(chef)/settings/custom-fields/loading.tsx"
+    },
+    {
+      "status": "A",
+      "path": "app/(chef)/settings/data-export/loading.tsx"
+    },
+    {
+      "status": "A",
+      "path": "app/(chef)/settings/data-quality/loading.tsx"
+    },
+    {
+      "status": "A",
+      "path": "app/(chef)/settings/delete-account/loading.tsx"
+    },
+    {
+      "status": "A",
+      "path": "app/(chef)/settings/developer/loading.tsx"
+    },
+    {
+      "status": "A",
+      "path": "app/(chef)/settings/devices/loading.tsx"
+    },
+    {
+      "status": "A",
+      "path": "app/(chef)/settings/embed/loading.tsx"
+    },
+    {
+      "status": "A",
+      "path": "app/(chef)/settings/emergency/loading.tsx"
+    },
+    {
+      "status": "A",
+      "path": "app/(chef)/settings/event-types/loading.tsx"
+    },
+    {
+      "status": "A",
+      "path": "app/(chef)/settings/favorite-chefs/loading.tsx"
+    },
+    {
+      "status": "A",
+      "path": "app/(chef)/settings/fee-schedule/loading.tsx"
+    },
+    {
+      "status": "A",
+      "path": "app/(chef)/settings/fee-schedule/page.tsx"
+    },
+    {
+      "status": "A",
+      "path": "app/(chef)/settings/health/loading.tsx"
+    },
+    {
+      "status": "A",
+      "path": "app/(chef)/settings/highlights/loading.tsx"
+    },
+    {
+      "status": "A",
+      "path": "app/(chef)/settings/incidents/loading.tsx"
+    },
+    {
+      "status": "A",
+      "path": "app/(chef)/settings/integrations/loading.tsx"
+    },
+    {
+      "status": "A",
+      "path": "app/(chef)/settings/invoice/loading.tsx"
+    },
+    {
+      "status": "A",
+      "path": "app/(chef)/settings/journal/[id]/loading.tsx"
+    },
+    {
+      "status": "A",
+      "path": "app/(chef)/settings/journal/loading.tsx"
+    },
+    {
+      "status": "A",
+      "path": "app/(chef)/settings/journey/[id]/loading.tsx"
+    },
+    {
+      "status": "A",
+      "path": "app/(chef)/settings/journey/loading.tsx"
+    },
+    {
+      "status": "A",
+      "path": "app/(chef)/settings/legal-protection/loading.tsx"
+    },
+    {
+      "status": "A",
+      "path": "app/(chef)/settings/legal-readiness/loading.tsx"
+    },
+    {
+      "status": "A",
+      "path": "app/(chef)/settings/menu-engine/loading.tsx"
+    },
+    {
+      "status": "A",
+      "path": "app/(chef)/settings/menu-templates/loading.tsx"
+    },
+    {
+      "status": "A",
+      "path": "app/(chef)/settings/modules/loading.tsx"
+    },
+    {
+      "status": "A",
+      "path": "app/(chef)/settings/my-profile/loading.tsx"
+    },
+    {
+      "status": "A",
+      "path": "app/(chef)/settings/my-services/layout.tsx"
+    },
+    {
+      "status": "A",
+      "path": "app/(chef)/settings/my-services/loading.tsx"
+    },
+    {
+      "status": "A",
+      "path": "app/(chef)/settings/navigation/loading.tsx"
+    },
+    {
+      "status": "A",
+      "path": "app/(chef)/settings/notifications/loading.tsx"
+    },
+    {
+      "status": "A",
+      "path": "app/(chef)/settings/payment-methods/loading.tsx"
+    },
+    {
+      "status": "A",
+      "path": "app/(chef)/settings/payments/loading.tsx"
+    },
+    {
+      "status": "A",
+      "path": "app/(chef)/settings/platform-connections/loading.tsx"
+    },
+    {
+      "status": "A",
+      "path": "app/(chef)/settings/portfolio/loading.tsx"
+    },
+    {
+      "status": "A",
+      "path": "app/(chef)/settings/pricing/loading.tsx"
+    },
+    {
+      "status": "A",
+      "path": "app/(chef)/settings/print/loading.tsx"
+    },
+    {
+      "status": "A",
+      "path": "app/(chef)/settings/professional/loading.tsx"
+    },
+    {
+      "status": "A",
+      "path": "app/(chef)/settings/professional/momentum/loading.tsx"
+    },
+    {
+      "status": "A",
+      "path": "app/(chef)/settings/professional/skills/loading.tsx"
+    },
+    {
+      "status": "A",
+      "path": "app/(chef)/settings/profile-branding/loading.tsx"
+    },
+    {
+      "status": "A",
+      "path": "app/(chef)/settings/profile/loading.tsx"
+    },
+    {
+      "status": "A",
+      "path": "app/(chef)/settings/protection/business-health/loading.tsx"
+    },
+    {
+      "status": "A",
+      "path": "app/(chef)/settings/protection/certifications/loading.tsx"
+    },
+    {
+      "status": "A",
+      "path": "app/(chef)/settings/protection/continuity/loading.tsx"
+    },
+    {
+      "status": "A",
+      "path": "app/(chef)/settings/protection/crisis/loading.tsx"
     },
     {
       "status": "M",
-      "path": "app/(chef)/events/[id]/_sections/event-header-section.tsx"
-    },
-    {
-      "status": "M",
-      "path": "app/(chef)/notifications/page.tsx"
-    },
-    {
-      "status": "M",
-      "path": "app/(chef)/stations/knowledge/page.tsx"
-    },
-    {
-      "status": "M",
-      "path": "app/api/e2e/auth/route.ts"
-    },
-    {
-      "status": "M",
-      "path": "components/contracts/new-contract-form.tsx"
-    },
-    {
-      "status": "M",
-      "path": "components/events/beverage-discovery-section.tsx"
-    },
-    {
-      "status": "M",
-      "path": "components/events/close-out-wizard.tsx"
-    },
-    {
-      "status": "M",
-      "path": "components/events/leftover-tracking.tsx"
-    },
-    {
-      "status": "M",
-      "path": "components/rail/rail-strip.tsx"
-    },
-    {
-      "status": "M",
-      "path": "components/rail/tier-row.tsx"
-    },
-    {
-      "status": "M",
-      "path": "components/search/command-palette.tsx"
-    },
-    {
-      "status": "M",
-      "path": "docs/UNIFIED-BUILD-QUEUE.md"
+      "path": "docker-compose.yml"
     },
     {
       "status": "M",
       "path": "docs/build-state.md"
     },
     {
-      "status": "M",
-      "path": "docs/sync-status.json"
+      "status": "A",
+      "path": "docs/swarm-prompts/2026-05-18-cil-notification-closeout-swarm.md"
     },
     {
       "status": "M",
       "path": "docs/uptime-history.json"
     },
     {
-      "status": "M",
-      "path": "lib/auth/admin-access.ts"
+      "status": "A",
+      "path": "lib/cil/scanner-dispatch.ts"
     },
     {
       "status": "M",
-      "path": "lib/contracts/actions.ts"
+      "path": "lib/cil/scanner-handler.ts"
     },
     {
       "status": "M",
-      "path": "lib/discovery/god-mode-types.ts"
-    },
-    {
-      "status": "M",
-      "path": "lib/discovery/rail-tier-assigner.ts"
-    },
-    {
-      "status": "M",
-      "path": "lib/interface/surface-governance.ts"
-    },
-    {
-      "status": "M",
-      "path": "lib/recurring/client-recurring-actions.ts"
-    },
-    {
-      "status": "M",
-      "path": "tests/unit/surface-governance.test.ts"
+      "path": "lib/discovery/god-mode-dispatcher.ts"
     },
     {
       "status": "??",
@@ -134,599 +1934,7 @@
     },
     {
       "status": "??",
-      "path": "app/(chef)/activity/activity-components.tsx"
-    },
-    {
-      "status": "??",
-      "path": "app/(chef)/activity/audit/loading.tsx"
-    },
-    {
-      "status": "??",
-      "path": "app/(chef)/autopilot/loading.tsx"
-    },
-    {
-      "status": "??",
-      "path": "app/(chef)/availability/loading.tsx"
-    },
-    {
-      "status": "??",
-      "path": "app/(chef)/calendar/share/loading.tsx"
-    },
-    {
-      "status": "??",
-      "path": "app/(chef)/calendar/travel/loading.tsx"
-    },
-    {
-      "status": "??",
-      "path": "app/(chef)/calls/[id]/edit/loading.tsx"
-    },
-    {
-      "status": "??",
-      "path": "app/(chef)/calls/[id]/loading.tsx"
-    },
-    {
-      "status": "??",
-      "path": "app/(chef)/calls/new/loading.tsx"
-    },
-    {
-      "status": "??",
-      "path": "app/(chef)/cannabis/about/loading.tsx"
-    },
-    {
-      "status": "??",
-      "path": "app/(chef)/cannabis/agreement/loading.tsx"
-    },
-    {
-      "status": "??",
-      "path": "app/(chef)/cannabis/batches/loading.tsx"
-    },
-    {
-      "status": "??",
-      "path": "app/(chef)/cannabis/compliance/loading.tsx"
-    },
-    {
-      "status": "??",
-      "path": "app/(chef)/cannabis/control-packet/template/loading.tsx"
-    },
-    {
-      "status": "??",
-      "path": "app/(chef)/cannabis/events/[id]/control-packet/loading.tsx"
-    },
-    {
-      "status": "??",
-      "path": "app/(chef)/cannabis/events/loading.tsx"
-    },
-    {
-      "status": "??",
-      "path": "app/(chef)/cannabis/handbook/loading.tsx"
-    },
-    {
-      "status": "??",
-      "path": "app/(chef)/cannabis/hub/loading.tsx"
-    },
-    {
-      "status": "??",
-      "path": "app/(chef)/cannabis/invite/loading.tsx"
-    },
-    {
-      "status": "??",
-      "path": "app/(chef)/cannabis/ledger/loading.tsx"
-    },
-    {
-      "status": "??",
-      "path": "app/(chef)/cannabis/rsvps/loading.tsx"
-    },
-    {
-      "status": "??",
-      "path": "app/(chef)/cannabis/unlock/loading.tsx"
-    },
-    {
-      "status": "??",
-      "path": "app/(chef)/capture/loading.tsx"
-    },
-    {
-      "status": "??",
-      "path": "app/(chef)/chef/cannabis/handbook/loading.tsx"
-    },
-    {
-      "status": "??",
-      "path": "app/(chef)/chef/cannabis/rsvps/loading.tsx"
-    },
-    {
-      "status": "??",
-      "path": "app/(chef)/circles/admin/loading.tsx"
-    },
-    {
-      "status": "??",
-      "path": "app/(chef)/clients/[id]/preferences/loading.tsx"
-    },
-    {
-      "status": "??",
-      "path": "app/(chef)/clients/[id]/recurring/loading.tsx"
-    },
-    {
-      "status": "??",
-      "path": "app/(chef)/clients/[id]/relationship/loading.tsx"
-    },
-    {
-      "status": "??",
-      "path": "app/(chef)/clients/[id]/summary/loading.tsx"
-    },
-    {
-      "status": "??",
-      "path": "app/(chef)/clients/insights/at-risk/loading.tsx"
-    },
-    {
-      "status": "??",
-      "path": "app/(chef)/clients/insights/dormant-high-value/loading.tsx"
-    },
-    {
-      "status": "??",
-      "path": "app/(chef)/clients/insights/loading.tsx"
-    },
-    {
-      "status": "??",
-      "path": "app/(chef)/clients/insights/most-frequent/loading.tsx"
-    },
-    {
-      "status": "??",
-      "path": "app/(chef)/clients/insights/retention/loading.tsx"
-    },
-    {
-      "status": "??",
-      "path": "app/(chef)/clients/insights/this-year/loading.tsx"
-    },
-    {
-      "status": "??",
-      "path": "app/(chef)/clients/insights/top-clients/loading.tsx"
-    },
-    {
-      "status": "??",
-      "path": "app/(chef)/clients/insights/top-covers/loading.tsx"
-    },
-    {
-      "status": "??",
-      "path": "app/(chef)/clients/preferences/allergies/loading.tsx"
-    },
-    {
-      "status": "??",
-      "path": "app/(chef)/clients/preferences/dietary-restrictions/loading.tsx"
-    },
-    {
-      "status": "??",
-      "path": "app/(chef)/clients/preferences/dislikes/loading.tsx"
-    },
-    {
-      "status": "??",
-      "path": "app/(chef)/clients/preferences/favorite-dishes/loading.tsx"
-    },
-    {
-      "status": "??",
-      "path": "app/(chef)/clients/recurring/loading.tsx"
-    },
-    {
-      "status": "??",
-      "path": "app/(chef)/commerce/observability/loading.tsx"
-    },
-    {
-      "status": "??",
-      "path": "app/(chef)/commerce/orders/loading.tsx"
-    },
-    {
-      "status": "??",
-      "path": "app/(chef)/commerce/parity/loading.tsx"
-    },
-    {
-      "status": "??",
-      "path": "app/(chef)/commerce/products/[id]/loading.tsx"
-    },
-    {
-      "status": "??",
-      "path": "app/(chef)/commerce/products/loading.tsx"
-    },
-    {
-      "status": "??",
-      "path": "app/(chef)/commerce/products/new/loading.tsx"
-    },
-    {
-      "status": "??",
-      "path": "app/(chef)/commerce/promotions/loading.tsx"
-    },
-    {
-      "status": "??",
-      "path": "app/(chef)/commerce/reconciliation/[id]/loading.tsx"
-    },
-    {
-      "status": "??",
-      "path": "app/(chef)/commerce/reconciliation/loading.tsx"
-    },
-    {
-      "status": "??",
-      "path": "app/(chef)/commerce/register/loading.tsx"
-    },
-    {
-      "status": "??",
-      "path": "app/(chef)/commerce/reports/loading.tsx"
-    },
-    {
-      "status": "??",
-      "path": "app/(chef)/commerce/reports/shifts/loading.tsx"
-    },
-    {
-      "status": "??",
-      "path": "app/(chef)/commerce/sales/[id]/loading.tsx"
-    },
-    {
-      "status": "??",
       "path": "app/(chef)/commerce/sales/loading.tsx"
-    },
-    {
-      "status": "??",
-      "path": "app/(chef)/commerce/schedules/loading.tsx"
-    },
-    {
-      "status": "??",
-      "path": "app/(chef)/commerce/settlements/[id]/loading.tsx"
-    },
-    {
-      "status": "??",
-      "path": "app/(chef)/commerce/settlements/loading.tsx"
-    },
-    {
-      "status": "??",
-      "path": "app/(chef)/commerce/storefront/loading.tsx"
-    },
-    {
-      "status": "??",
-      "path": "app/(chef)/commerce/table-service/loading.tsx"
-    },
-    {
-      "status": "??",
-      "path": "app/(chef)/commerce/virtual-terminal/loading.tsx"
-    },
-    {
-      "status": "??",
-      "path": "app/(chef)/communication/drafts/loading.tsx"
-    },
-    {
-      "status": "??",
-      "path": "app/(chef)/communication/loading.tsx"
-    },
-    {
-      "status": "??",
-      "path": "app/(chef)/community/benchmarks/loading.tsx"
-    },
-    {
-      "status": "??",
-      "path": "app/(chef)/community/directory/loading.tsx"
-    },
-    {
-      "status": "??",
-      "path": "app/(chef)/community/mentorship/loading.tsx"
-    },
-    {
-      "status": "??",
-      "path": "app/(chef)/community/messaging/loading.tsx"
-    },
-    {
-      "status": "??",
-      "path": "app/(chef)/community/profile/loading.tsx"
-    },
-    {
-      "status": "??",
-      "path": "app/(chef)/community/roadmap/loading.tsx"
-    },
-    {
-      "status": "??",
-      "path": "app/(chef)/community/subcontracts/loading.tsx"
-    },
-    {
-      "status": "??",
-      "path": "app/(chef)/community/templates/loading.tsx"
-    },
-    {
-      "status": "??",
-      "path": "app/(chef)/content/loading.tsx"
-    },
-    {
-      "status": "??",
-      "path": "app/(chef)/content/vault/loading.tsx"
-    },
-    {
-      "status": "??",
-      "path": "app/(chef)/contracts/[id]/history/loading.tsx"
-    },
-    {
-      "status": "??",
-      "path": "app/(chef)/contracts/clauses/"
-    },
-    {
-      "status": "??",
-      "path": "app/(chef)/contracts/compose/"
-    },
-    {
-      "status": "??",
-      "path": "app/(chef)/contracts/new/loading.tsx"
-    },
-    {
-      "status": "??",
-      "path": "app/(chef)/culinary/call-sheet/loading.tsx"
-    },
-    {
-      "status": "??",
-      "path": "app/(chef)/culinary/chefnotes/loading.tsx"
-    },
-    {
-      "status": "??",
-      "path": "app/(chef)/culinary/components/ferments/loading.tsx"
-    },
-    {
-      "status": "??",
-      "path": "app/(chef)/culinary/components/garnishes/loading.tsx"
-    },
-    {
-      "status": "??",
-      "path": "app/(chef)/culinary/components/loading.tsx"
-    },
-    {
-      "status": "??",
-      "path": "app/(chef)/culinary/components/sauces/loading.tsx"
-    },
-    {
-      "status": "??",
-      "path": "app/(chef)/culinary/components/shared-elements/loading.tsx"
-    },
-    {
-      "status": "??",
-      "path": "app/(chef)/culinary/components/stocks/loading.tsx"
-    },
-    {
-      "status": "??",
-      "path": "app/(chef)/culinary/costing/food-cost/loading.tsx"
-    },
-    {
-      "status": "??",
-      "path": "app/(chef)/culinary/costing/loading.tsx"
-    },
-    {
-      "status": "??",
-      "path": "app/(chef)/culinary/costing/menu/loading.tsx"
-    },
-    {
-      "status": "??",
-      "path": "app/(chef)/culinary/costing/recipe/loading.tsx"
-    },
-    {
-      "status": "??",
-      "path": "app/(chef)/culinary/costing/sales/loading.tsx"
-    },
-    {
-      "status": "??",
-      "path": "app/(chef)/culinary/dish-index/[id]/loading.tsx"
-    },
-    {
-      "status": "??",
-      "path": "app/(chef)/culinary/dish-index/insights/loading.tsx"
-    },
-    {
-      "status": "??",
-      "path": "app/(chef)/culinary/dish-index/loading.tsx"
-    },
-    {
-      "status": "??",
-      "path": "app/(chef)/culinary/ingredients/loading.tsx"
-    },
-    {
-      "status": "??",
-      "path": "app/(chef)/culinary/ingredients/receipt-scan/loading.tsx"
-    },
-    {
-      "status": "??",
-      "path": "app/(chef)/culinary/ingredients/seasonal-availability/loading.tsx"
-    },
-    {
-      "status": "??",
-      "path": "app/(chef)/culinary/ingredients/vendor-notes/loading.tsx"
-    },
-    {
-      "status": "??",
-      "path": "app/(chef)/culinary/menus/[id]/loading.tsx"
-    },
-    {
-      "status": "??",
-      "path": "app/(chef)/culinary/menus/approved/loading.tsx"
-    },
-    {
-      "status": "??",
-      "path": "app/(chef)/culinary/menus/drafts/loading.tsx"
-    },
-    {
-      "status": "??",
-      "path": "app/(chef)/culinary/menus/loading.tsx"
-    },
-    {
-      "status": "??",
-      "path": "app/(chef)/culinary/menus/scaling/loading.tsx"
-    },
-    {
-      "status": "??",
-      "path": "app/(chef)/culinary/menus/substitutions/loading.tsx"
-    },
-    {
-      "status": "??",
-      "path": "app/(chef)/culinary/menus/templates/loading.tsx"
-    },
-    {
-      "status": "??",
-      "path": "app/(chef)/culinary/my-kitchen/loading.tsx"
-    },
-    {
-      "status": "??",
-      "path": "app/(chef)/culinary/prep/loading.tsx"
-    },
-    {
-      "status": "??",
-      "path": "app/(chef)/culinary/prep/shopping/loading.tsx"
-    },
-    {
-      "status": "??",
-      "path": "app/(chef)/culinary/prep/timeline/loading.tsx"
-    },
-    {
-      "status": "??",
-      "path": "app/(chef)/culinary/price-catalog/loading.tsx"
-    },
-    {
-      "status": "??",
-      "path": "app/(chef)/culinary/recipes/[id]/edit/loading.tsx"
-    },
-    {
-      "status": "??",
-      "path": "app/(chef)/culinary/recipes/[id]/loading.tsx"
-    },
-    {
-      "status": "??",
-      "path": "app/(chef)/culinary/recipes/dietary-flags/loading.tsx"
-    },
-    {
-      "status": "??",
-      "path": "app/(chef)/culinary/recipes/drafts/loading.tsx"
-    },
-    {
-      "status": "??",
-      "path": "app/(chef)/culinary/recipes/loading.tsx"
-    },
-    {
-      "status": "??",
-      "path": "app/(chef)/culinary/recipes/new/loading.tsx"
-    },
-    {
-      "status": "??",
-      "path": "app/(chef)/culinary/recipes/seasonal-notes/loading.tsx"
-    },
-    {
-      "status": "??",
-      "path": "app/(chef)/culinary/recipes/tags/loading.tsx"
-    },
-    {
-      "status": "??",
-      "path": "app/(chef)/culinary/seasonal-calendar/loading.tsx"
-    },
-    {
-      "status": "??",
-      "path": "app/(chef)/culinary/sourcing/loading.tsx"
-    },
-    {
-      "status": "??",
-      "path": "app/(chef)/culinary/substitutions/loading.tsx"
-    },
-    {
-      "status": "??",
-      "path": "app/(chef)/culinary/supplier-calls/loading.tsx"
-    },
-    {
-      "status": "??",
-      "path": "app/(chef)/culinary/tips/loading.tsx"
-    },
-    {
-      "status": "??",
-      "path": "app/(chef)/culinary/vendors/loading.tsx"
-    },
-    {
-      "status": "??",
-      "path": "app/(chef)/dev/simulate/loading.tsx"
-    },
-    {
-      "status": "??",
-      "path": "app/(chef)/events/[id]/_sections/event-departure-section.tsx"
-    },
-    {
-      "status": "??",
-      "path": "app/(chef)/events/[id]/_sections/event-discovery-section.tsx"
-    },
-    {
-      "status": "??",
-      "path": "app/(chef)/events/[id]/aar/loading.tsx"
-    },
-    {
-      "status": "??",
-      "path": "app/(chef)/events/[id]/billing/loading.tsx"
-    },
-    {
-      "status": "??",
-      "path": "app/(chef)/events/[id]/briefing/loading.tsx"
-    },
-    {
-      "status": "??",
-      "path": "app/(chef)/events/[id]/cannabis/loading.tsx"
-    },
-    {
-      "status": "??",
-      "path": "app/(chef)/events/[id]/close-out/loading.tsx"
-    },
-    {
-      "status": "??",
-      "path": "app/(chef)/events/[id]/debrief/loading.tsx"
-    },
-    {
-      "status": "??",
-      "path": "app/(chef)/events/[id]/documents/loading.tsx"
-    },
-    {
-      "status": "??",
-      "path": "app/(chef)/events/[id]/dop/mobile/loading.tsx"
-    },
-    {
-      "status": "??",
-      "path": "app/(chef)/events/[id]/edit/loading.tsx"
-    },
-    {
-      "status": "??",
-      "path": "app/(chef)/events/[id]/execution/loading.tsx"
-    },
-    {
-      "status": "??",
-      "path": "app/(chef)/events/[id]/financial/loading.tsx"
-    },
-    {
-      "status": "??",
-      "path": "app/(chef)/events/[id]/follow-up/loading.tsx"
-    },
-    {
-      "status": "??",
-      "path": "app/(chef)/events/[id]/gear/loading.tsx"
-    },
-    {
-      "status": "??",
-      "path": "app/(chef)/events/[id]/god-mode/loading.tsx"
-    },
-    {
-      "status": "??",
-      "path": "app/(chef)/events/[id]/grocery-quote/loading.tsx"
-    },
-    {
-      "status": "??",
-      "path": "app/(chef)/events/[id]/grocery-run/loading.tsx"
-    },
-    {
-      "status": "??",
-      "path": "app/(chef)/events/[id]/guest-card/loading.tsx"
-    },
-    {
-      "status": "??",
-      "path": "app/(chef)/events/[id]/interactive/loading.tsx"
-    },
-    {
-      "status": "??",
-      "path": "app/(chef)/events/[id]/invoice/loading.tsx"
-    },
-    {
-      "status": "??",
-      "path": "app/(chef)/events/[id]/kds/loading.tsx"
-    },
-    {
-      "status": "??",
-      "path": "app/(chef)/events/[id]/lifecycle-action-panels.tsx"
     },
     {
       "status": "??",
@@ -734,1271 +1942,7 @@
     },
     {
       "status": "??",
-      "path": "app/(chef)/events/[id]/menu-polling/loading.tsx"
-    },
-    {
-      "status": "??",
-      "path": "app/(chef)/events/[id]/ops/loading.tsx"
-    },
-    {
-      "status": "??",
-      "path": "app/(chef)/events/[id]/outcome/loading.tsx"
-    },
-    {
-      "status": "??",
-      "path": "app/(chef)/events/[id]/pack/loading.tsx"
-    },
-    {
-      "status": "??",
-      "path": "app/(chef)/events/[id]/pack/mobile/loading.tsx"
-    },
-    {
-      "status": "??",
-      "path": "app/(chef)/events/[id]/photos/loading.tsx"
-    },
-    {
-      "status": "??",
-      "path": "app/(chef)/events/[id]/prep-plan/loading.tsx"
-    },
-    {
-      "status": "??",
-      "path": "app/(chef)/events/[id]/procurement/loading.tsx"
-    },
-    {
-      "status": "??",
-      "path": "app/(chef)/events/[id]/receipts/loading.tsx"
-    },
-    {
-      "status": "??",
-      "path": "app/(chef)/events/[id]/replay/loading.tsx"
-    },
-    {
-      "status": "??",
-      "path": "app/(chef)/events/[id]/report/loading.tsx"
-    },
-    {
-      "status": "??",
-      "path": "app/(chef)/events/[id]/reset/loading.tsx"
-    },
-    {
-      "status": "??",
-      "path": "app/(chef)/events/[id]/safety/loading.tsx"
-    },
-    {
-      "status": "??",
-      "path": "app/(chef)/events/[id]/schedule/loading.tsx"
-    },
-    {
-      "status": "??",
-      "path": "app/(chef)/events/[id]/service/loading.tsx"
-    },
-    {
-      "status": "??",
-      "path": "app/(chef)/events/[id]/split-billing/loading.tsx"
-    },
-    {
-      "status": "??",
-      "path": "app/(chef)/events/[id]/staff/loading.tsx"
-    },
-    {
-      "status": "??",
-      "path": "app/(chef)/events/[id]/story/loading.tsx"
-    },
-    {
-      "status": "??",
-      "path": "app/(chef)/events/[id]/travel/loading.tsx"
-    },
-    {
-      "status": "??",
-      "path": "app/(chef)/events/new/from-text/loading.tsx"
-    },
-    {
-      "status": "??",
-      "path": "app/(chef)/events/new/wizard/loading.tsx"
-    },
-    {
-      "status": "??",
-      "path": "app/(chef)/expenses/[id]/loading.tsx"
-    },
-    {
-      "status": "??",
-      "path": "app/(chef)/expenses/new/loading.tsx"
-    },
-    {
-      "status": "??",
-      "path": "app/(chef)/explore/book/loading.tsx"
-    },
-    {
-      "status": "??",
-      "path": "app/(chef)/explore/discover/loading.tsx"
-    },
-    {
-      "status": "??",
-      "path": "app/(chef)/explore/events/loading.tsx"
-    },
-    {
-      "status": "??",
-      "path": "app/(chef)/explore/loading.tsx"
-    },
-    {
-      "status": "??",
-      "path": "app/(chef)/explore/local/loading.tsx"
-    },
-    {
-      "status": "??",
-      "path": "app/(chef)/features/loading.tsx"
-    },
-    {
-      "status": "??",
-      "path": "app/(chef)/finance/bank-feed/loading.tsx"
-    },
-    {
-      "status": "??",
-      "path": "app/(chef)/finance/cash-flow/loading.tsx"
-    },
-    {
-      "status": "??",
-      "path": "app/(chef)/finance/contractors/loading.tsx"
-    },
-    {
-      "status": "??",
-      "path": "app/(chef)/finance/disputes/loading.tsx"
-    },
-    {
-      "status": "??",
-      "path": "app/(chef)/finance/expenses/food-ingredients/loading.tsx"
-    },
-    {
-      "status": "??",
-      "path": "app/(chef)/finance/expenses/labor/loading.tsx"
-    },
-    {
-      "status": "??",
-      "path": "app/(chef)/finance/expenses/loading.tsx"
-    },
-    {
-      "status": "??",
-      "path": "app/(chef)/finance/expenses/marketing/loading.tsx"
-    },
-    {
-      "status": "??",
-      "path": "app/(chef)/finance/expenses/miscellaneous/loading.tsx"
-    },
-    {
-      "status": "??",
-      "path": "app/(chef)/finance/expenses/rentals-equipment/loading.tsx"
-    },
-    {
-      "status": "??",
-      "path": "app/(chef)/finance/expenses/software/loading.tsx"
-    },
-    {
-      "status": "??",
-      "path": "app/(chef)/finance/expenses/travel/loading.tsx"
-    },
-    {
-      "status": "??",
-      "path": "app/(chef)/finance/forecast/loading.tsx"
-    },
-    {
-      "status": "??",
-      "path": "app/(chef)/finance/goals/loading.tsx"
-    },
-    {
-      "status": "??",
-      "path": "app/(chef)/finance/invoices/cancelled/loading.tsx"
-    },
-    {
-      "status": "??",
-      "path": "app/(chef)/finance/invoices/draft/loading.tsx"
-    },
-    {
-      "status": "??",
-      "path": "app/(chef)/finance/invoices/loading.tsx"
-    },
-    {
-      "status": "??",
-      "path": "app/(chef)/finance/invoices/overdue/loading.tsx"
-    },
-    {
-      "status": "??",
-      "path": "app/(chef)/finance/invoices/paid/loading.tsx"
-    },
-    {
-      "status": "??",
-      "path": "app/(chef)/finance/invoices/refunded/loading.tsx"
-    },
-    {
-      "status": "??",
-      "path": "app/(chef)/finance/invoices/sent/loading.tsx"
-    },
-    {
-      "status": "??",
-      "path": "app/(chef)/finance/ledger/adjustments/loading.tsx"
-    },
-    {
-      "status": "??",
-      "path": "app/(chef)/finance/ledger/loading.tsx"
-    },
-    {
-      "status": "??",
-      "path": "app/(chef)/finance/ledger/owner-draws/loading.tsx"
-    },
-    {
-      "status": "??",
-      "path": "app/(chef)/finance/ledger/transaction-log/loading.tsx"
-    },
-    {
-      "status": "??",
-      "path": "app/(chef)/finance/overview/cash-flow/loading.tsx"
-    },
-    {
-      "status": "??",
-      "path": "app/(chef)/finance/overview/loading.tsx"
-    },
-    {
-      "status": "??",
-      "path": "app/(chef)/finance/overview/outstanding-payments/loading.tsx"
-    },
-    {
-      "status": "??",
-      "path": "app/(chef)/finance/overview/revenue-summary/loading.tsx"
-    },
-    {
-      "status": "??",
-      "path": "app/(chef)/finance/payments/deposits/loading.tsx"
-    },
-    {
-      "status": "??",
-      "path": "app/(chef)/finance/payments/failed/loading.tsx"
-    },
-    {
-      "status": "??",
-      "path": "app/(chef)/finance/payments/installments/loading.tsx"
-    },
-    {
-      "status": "??",
-      "path": "app/(chef)/finance/payments/loading.tsx"
-    },
-    {
-      "status": "??",
-      "path": "app/(chef)/finance/payments/refunds/loading.tsx"
-    },
-    {
-      "status": "??",
-      "path": "app/(chef)/finance/payouts/loading.tsx"
-    },
-    {
-      "status": "??",
-      "path": "app/(chef)/finance/payouts/manual-payments/loading.tsx"
-    },
-    {
-      "status": "??",
-      "path": "app/(chef)/finance/payouts/reconciliation/loading.tsx"
-    },
-    {
-      "status": "??",
-      "path": "app/(chef)/finance/payouts/stripe-payouts/loading.tsx"
-    },
-    {
-      "status": "??",
-      "path": "app/(chef)/finance/payroll/941/loading.tsx"
-    },
-    {
-      "status": "??",
-      "path": "app/(chef)/finance/payroll/employees/layout.tsx"
-    },
-    {
-      "status": "??",
-      "path": "app/(chef)/finance/payroll/employees/loading.tsx"
-    },
-    {
-      "status": "??",
-      "path": "app/(chef)/finance/payroll/loading.tsx"
-    },
-    {
-      "status": "??",
-      "path": "app/(chef)/finance/payroll/run/loading.tsx"
-    },
-    {
-      "status": "??",
-      "path": "app/(chef)/finance/payroll/w2/loading.tsx"
-    },
-    {
-      "status": "??",
-      "path": "app/(chef)/finance/planning/break-even/loading.tsx"
-    },
-    {
-      "status": "??",
-      "path": "app/(chef)/finance/plate-costs/loading.tsx"
-    },
-    {
-      "status": "??",
-      "path": "app/(chef)/finance/recurring/loading.tsx"
-    },
-    {
-      "status": "??",
-      "path": "app/(chef)/finance/reporting/expense-by-category/loading.tsx"
-    },
-    {
-      "status": "??",
-      "path": "app/(chef)/finance/reporting/loading.tsx"
-    },
-    {
-      "status": "??",
-      "path": "app/(chef)/finance/reporting/profit-by-event/loading.tsx"
-    },
-    {
-      "status": "??",
-      "path": "app/(chef)/finance/reporting/profit-loss/loading.tsx"
-    },
-    {
-      "status": "??",
-      "path": "app/(chef)/finance/reporting/revenue-by-client/loading.tsx"
-    },
-    {
-      "status": "??",
-      "path": "app/(chef)/finance/reporting/revenue-by-event/loading.tsx"
-    },
-    {
-      "status": "??",
-      "path": "app/(chef)/finance/reporting/revenue-by-month/loading.tsx"
-    },
-    {
-      "status": "??",
-      "path": "app/(chef)/finance/reporting/tax-summary/loading.tsx"
-    },
-    {
-      "status": "??",
-      "path": "app/(chef)/finance/reporting/year-to-date-summary/loading.tsx"
-    },
-    {
-      "status": "??",
-      "path": "app/(chef)/finance/reporting/yoy-comparison/loading.tsx"
-    },
-    {
-      "status": "??",
-      "path": "app/(chef)/finance/retainers/[id]/loading.tsx"
-    },
-    {
-      "status": "??",
-      "path": "app/(chef)/finance/retainers/loading.tsx"
-    },
-    {
-      "status": "??",
-      "path": "app/(chef)/finance/retainers/new/loading.tsx"
-    },
-    {
-      "status": "??",
-      "path": "app/(chef)/finance/sales-tax/loading.tsx"
-    },
-    {
-      "status": "??",
-      "path": "app/(chef)/finance/sales-tax/remittances/loading.tsx"
-    },
-    {
-      "status": "??",
-      "path": "app/(chef)/finance/sales-tax/settings/layout.tsx"
-    },
-    {
-      "status": "??",
-      "path": "app/(chef)/finance/sales-tax/settings/loading.tsx"
-    },
-    {
-      "status": "??",
-      "path": "app/(chef)/finance/tax-prep/loading.tsx"
-    },
-    {
-      "status": "??",
-      "path": "app/(chef)/finance/tax/1099-nec/loading.tsx"
-    },
-    {
-      "status": "??",
-      "path": "app/(chef)/finance/tax/depreciation/loading.tsx"
-    },
-    {
-      "status": "??",
-      "path": "app/(chef)/finance/tax/home-office/loading.tsx"
-    },
-    {
-      "status": "??",
-      "path": "app/(chef)/finance/tax/loading.tsx"
-    },
-    {
-      "status": "??",
-      "path": "app/(chef)/finance/tax/quarterly/loading.tsx"
-    },
-    {
-      "status": "??",
-      "path": "app/(chef)/finance/tax/retirement/loading.tsx"
-    },
-    {
-      "status": "??",
-      "path": "app/(chef)/finance/tax/year-end/loading.tsx"
-    },
-    {
-      "status": "??",
-      "path": "app/(chef)/finance/year-end/loading.tsx"
-    },
-    {
-      "status": "??",
-      "path": "app/(chef)/food-cost/revenue/loading.tsx"
-    },
-    {
-      "status": "??",
-      "path": "app/(chef)/guests/[id]/loading.tsx"
-    },
-    {
-      "status": "??",
-      "path": "app/(chef)/guests/reservations/loading.tsx"
-    },
-    {
-      "status": "??",
-      "path": "app/(chef)/help/[slug]/loading.tsx"
-    },
-    {
-      "status": "??",
-      "path": "app/(chef)/help/food-costing/loading.tsx"
-    },
-    {
-      "status": "??",
-      "path": "app/(chef)/import/csv/loading.tsx"
-    },
-    {
-      "status": "??",
-      "path": "app/(chef)/import/history/loading.tsx"
-    },
-    {
-      "status": "??",
-      "path": "app/(chef)/import/mxp/loading.tsx"
-    },
-    {
-      "status": "??",
-      "path": "app/(chef)/imports/business-history/loading.tsx"
-    },
-    {
-      "status": "??",
-      "path": "app/(chef)/inbox/history-scan/loading.tsx"
-    },
-    {
-      "status": "??",
-      "path": "app/(chef)/inbox/triage/[threadId]/loading.tsx"
-    },
-    {
-      "status": "??",
-      "path": "app/(chef)/inbox/triage/loading.tsx"
-    },
-    {
-      "status": "??",
-      "path": "app/(chef)/inquiries/awaiting-client-reply/loading.tsx"
-    },
-    {
-      "status": "??",
-      "path": "app/(chef)/inquiries/awaiting-response/loading.tsx"
-    },
-    {
-      "status": "??",
-      "path": "app/(chef)/inquiries/declined/loading.tsx"
-    },
-    {
-      "status": "??",
-      "path": "app/(chef)/inquiries/menu-drafting/loading.tsx"
-    },
-    {
-      "status": "??",
-      "path": "app/(chef)/inquiries/new/loading.tsx"
-    },
-    {
-      "status": "??",
-      "path": "app/(chef)/inquiries/sent-to-client/loading.tsx"
-    },
-    {
-      "status": "??",
-      "path": "app/(chef)/insights/time-analysis/loading.tsx"
-    },
-    {
-      "status": "??",
-      "path": "app/(chef)/journey/loading.tsx"
-    },
-    {
-      "status": "??",
-      "path": "app/(chef)/kitchen/loading.tsx"
-    },
-    {
-      "status": "??",
-      "path": "app/(chef)/leads/archived/loading.tsx"
-    },
-    {
-      "status": "??",
-      "path": "app/(chef)/leads/contacted/loading.tsx"
-    },
-    {
-      "status": "??",
-      "path": "app/(chef)/leads/converted/loading.tsx"
-    },
-    {
-      "status": "??",
-      "path": "app/(chef)/leads/new/loading.tsx"
-    },
-    {
-      "status": "??",
-      "path": "app/(chef)/leads/qualified/loading.tsx"
-    },
-    {
-      "status": "??",
-      "path": "app/(chef)/locations/[id]/loading.tsx"
-    },
-    {
-      "status": "??",
-      "path": "app/(chef)/locations/compliance/loading.tsx"
-    },
-    {
-      "status": "??",
-      "path": "app/(chef)/locations/loading.tsx"
-    },
-    {
-      "status": "??",
-      "path": "app/(chef)/locations/purchasing/loading.tsx"
-    },
-    {
-      "status": "??",
-      "path": "app/(chef)/loyalty/learn/loading.tsx"
-    },
-    {
-      "status": "??",
-      "path": "app/(chef)/loyalty/raffle/[id]/loading.tsx"
-    },
-    {
-      "status": "??",
-      "path": "app/(chef)/loyalty/raffle/loading.tsx"
-    },
-    {
-      "status": "??",
-      "path": "app/(chef)/loyalty/rewards/new/loading.tsx"
-    },
-    {
-      "status": "??",
-      "path": "app/(chef)/loyalty/settings/loading.tsx"
-    },
-    {
-      "status": "??",
-      "path": "app/(chef)/marketing/[id]/loading.tsx"
-    },
-    {
-      "status": "??",
-      "path": "app/(chef)/marketing/content-pipeline/loading.tsx"
-    },
-    {
-      "status": "??",
-      "path": "app/(chef)/marketing/push-dinners/[id]/loading.tsx"
-    },
-    {
-      "status": "??",
-      "path": "app/(chef)/marketing/push-dinners/loading.tsx"
-    },
-    {
-      "status": "??",
-      "path": "app/(chef)/marketing/push-dinners/new/loading.tsx"
-    },
-    {
-      "status": "??",
-      "path": "app/(chef)/marketing/sequences/loading.tsx"
-    },
-    {
-      "status": "??",
-      "path": "app/(chef)/marketing/social/[month]/loading.tsx"
-    },
-    {
-      "status": "??",
-      "path": "app/(chef)/marketing/social/compose/[eventId]/loading.tsx"
-    },
-    {
-      "status": "??",
-      "path": "app/(chef)/marketing/social/connections/loading.tsx"
-    },
-    {
-      "status": "??",
-      "path": "app/(chef)/marketing/social/posts/[id]/loading.tsx"
-    },
-    {
-      "status": "??",
-      "path": "app/(chef)/marketing/social/settings/loading.tsx"
-    },
-    {
-      "status": "??",
-      "path": "app/(chef)/marketing/social/templates/loading.tsx"
-    },
-    {
-      "status": "??",
-      "path": "app/(chef)/marketing/templates/loading.tsx"
-    },
-    {
-      "status": "??",
-      "path": "app/(chef)/marketplace/capture/loading.tsx"
-    },
-    {
-      "status": "??",
-      "path": "app/(chef)/meal-prep/[programId]/loading.tsx"
-    },
-    {
-      "status": "??",
-      "path": "app/(chef)/meal-prep/batch/loading.tsx"
-    },
-    {
-      "status": "??",
-      "path": "app/(chef)/meal-prep/retro/loading.tsx"
-    },
-    {
-      "status": "??",
-      "path": "app/(chef)/menus/[id]/editor/loading.tsx"
-    },
-    {
-      "status": "??",
-      "path": "app/(chef)/menus/dishes/loading.tsx"
-    },
-    {
-      "status": "??",
-      "path": "app/(chef)/menus/estimate/loading.tsx"
-    },
-    {
-      "status": "??",
-      "path": "app/(chef)/menus/menus-components.tsx"
-    },
-    {
-      "status": "??",
-      "path": "app/(chef)/menus/seasonal/loading.tsx"
-    },
-    {
-      "status": "??",
-      "path": "app/(chef)/menus/selections/loading.tsx"
-    },
-    {
-      "status": "??",
-      "path": "app/(chef)/menus/tasting/loading.tsx"
-    },
-    {
-      "status": "??",
-      "path": "app/(chef)/menus/upload/loading.tsx"
-    },
-    {
-      "status": "??",
-      "path": "app/(chef)/network/[chefId]/loading.tsx"
-    },
-    {
-      "status": "??",
-      "path": "app/(chef)/network/bridges/[bridgeId]/loading.tsx"
-    },
-    {
-      "status": "??",
-      "path": "app/(chef)/network/channels/[slug]/loading.tsx"
-    },
-    {
-      "status": "??",
-      "path": "app/(chef)/network/collabs/[spaceId]/loading.tsx"
-    },
-    {
-      "status": "??",
-      "path": "app/(chef)/network/collabs/loading.tsx"
-    },
-    {
-      "status": "??",
-      "path": "app/(chef)/network/notifications/loading.tsx"
-    },
-    {
-      "status": "??",
-      "path": "app/(chef)/network/saved/loading.tsx"
-    },
-    {
-      "status": "??",
-      "path": "app/(chef)/notifications/notification-list-components.tsx"
-    },
-    {
-      "status": "??",
-      "path": "app/(chef)/notifications/triage-inbox.tsx"
-    },
-    {
-      "status": "??",
-      "path": "app/(chef)/nutrition/[menuId]/loading.tsx"
-    },
-    {
-      "status": "??",
-      "path": "app/(chef)/onboarding/clients/loading.tsx"
-    },
-    {
-      "status": "??",
-      "path": "app/(chef)/onboarding/features/loading.tsx"
-    },
-    {
-      "status": "??",
-      "path": "app/(chef)/onboarding/help/loading.tsx"
-    },
-    {
-      "status": "??",
-      "path": "app/(chef)/onboarding/loyalty/loading.tsx"
-    },
-    {
-      "status": "??",
-      "path": "app/(chef)/onboarding/recipes/loading.tsx"
-    },
-    {
-      "status": "??",
-      "path": "app/(chef)/onboarding/staff/loading.tsx"
-    },
-    {
-      "status": "??",
-      "path": "app/(chef)/onboarding/welcome/loading.tsx"
-    },
-    {
-      "status": "??",
-      "path": "app/(chef)/ops/equipment/loading.tsx"
-    },
-    {
-      "status": "??",
-      "path": "app/(chef)/ops/inventory/loading.tsx"
-    },
-    {
-      "status": "??",
-      "path": "app/(chef)/ops/kitchen-rentals/loading.tsx"
-    },
-    {
-      "status": "??",
-      "path": "app/(chef)/ops/loading.tsx"
-    },
-    {
-      "status": "??",
-      "path": "app/(chef)/ops/performance/loading.tsx"
-    },
-    {
-      "status": "??",
-      "path": "app/(chef)/ops/prep/loading.tsx"
-    },
-    {
-      "status": "??",
-      "path": "app/(chef)/ops/service/loading.tsx"
-    },
-    {
-      "status": "??",
-      "path": "app/(chef)/ops/stations/loading.tsx"
-    },
-    {
-      "status": "??",
-      "path": "app/(chef)/partners/[id]/edit/loading.tsx"
-    },
-    {
-      "status": "??",
-      "path": "app/(chef)/partners/[id]/loading.tsx"
-    },
-    {
-      "status": "??",
-      "path": "app/(chef)/partners/[id]/report/loading.tsx"
-    },
-    {
-      "status": "??",
-      "path": "app/(chef)/partners/active/loading.tsx"
-    },
-    {
-      "status": "??",
-      "path": "app/(chef)/partners/events-generated/loading.tsx"
-    },
-    {
-      "status": "??",
-      "path": "app/(chef)/partners/inactive/loading.tsx"
-    },
-    {
-      "status": "??",
-      "path": "app/(chef)/partners/new/loading.tsx"
-    },
-    {
-      "status": "??",
-      "path": "app/(chef)/partners/referral-performance/loading.tsx"
-    },
-    {
-      "status": "??",
-      "path": "app/(chef)/payments/splitting/loading.tsx"
-    },
-    {
-      "status": "??",
-      "path": "app/(chef)/pie-cart/loading.tsx"
-    },
-    {
-      "status": "??",
-      "path": "app/(chef)/prep/consolidation/loading.tsx"
-    },
-    {
-      "status": "??",
-      "path": "app/(chef)/prices/loading.tsx"
-    },
-    {
-      "status": "??",
-      "path": "app/(chef)/prices/seasonal/loading.tsx"
-    },
-    {
-      "status": "??",
-      "path": "app/(chef)/prices/store/[storeId]/loading.tsx"
-    },
-    {
-      "status": "??",
-      "path": "app/(chef)/proposals/addons/loading.tsx"
-    },
-    {
-      "status": "??",
-      "path": "app/(chef)/proposals/builder/loading.tsx"
-    },
-    {
-      "status": "??",
-      "path": "app/(chef)/proposals/templates/loading.tsx"
-    },
-    {
-      "status": "??",
-      "path": "app/(chef)/prospecting/[id]/loading.tsx"
-    },
-    {
-      "status": "??",
-      "path": "app/(chef)/prospecting/clusters/loading.tsx"
-    },
-    {
-      "status": "??",
-      "path": "app/(chef)/prospecting/import/loading.tsx"
-    },
-    {
-      "status": "??",
-      "path": "app/(chef)/prospecting/openclaw/loading.tsx"
-    },
-    {
-      "status": "??",
-      "path": "app/(chef)/prospecting/pipeline/loading.tsx"
-    },
-    {
-      "status": "??",
-      "path": "app/(chef)/prospecting/queue/loading.tsx"
-    },
-    {
-      "status": "??",
-      "path": "app/(chef)/prospecting/scripts/loading.tsx"
-    },
-    {
-      "status": "??",
-      "path": "app/(chef)/prospecting/scrub/loading.tsx"
-    },
-    {
-      "status": "??",
-      "path": "app/(chef)/pulse/loading.tsx"
-    },
-    {
-      "status": "??",
-      "path": "app/(chef)/quick-log/loading.tsx"
-    },
-    {
-      "status": "??",
-      "path": "app/(chef)/quotes/[id]/edit/loading.tsx"
-    },
-    {
-      "status": "??",
-      "path": "app/(chef)/quotes/accepted/loading.tsx"
-    },
-    {
-      "status": "??",
-      "path": "app/(chef)/quotes/draft/loading.tsx"
-    },
-    {
-      "status": "??",
-      "path": "app/(chef)/quotes/expired/loading.tsx"
-    },
-    {
-      "status": "??",
-      "path": "app/(chef)/quotes/new/loading.tsx"
-    },
-    {
-      "status": "??",
-      "path": "app/(chef)/quotes/rejected/loading.tsx"
-    },
-    {
-      "status": "??",
-      "path": "app/(chef)/quotes/sent/loading.tsx"
-    },
-    {
-      "status": "??",
-      "path": "app/(chef)/quotes/viewed/loading.tsx"
-    },
-    {
-      "status": "??",
-      "path": "app/(chef)/recipes/[id]/edit/loading.tsx"
-    },
-    {
-      "status": "??",
-      "path": "app/(chef)/recipes/dump/loading.tsx"
-    },
-    {
-      "status": "??",
-      "path": "app/(chef)/recipes/import/loading.tsx"
-    },
-    {
-      "status": "??",
-      "path": "app/(chef)/recipes/ingredients/loading.tsx"
-    },
-    {
-      "status": "??",
-      "path": "app/(chef)/recipes/photos/loading.tsx"
-    },
-    {
-      "status": "??",
-      "path": "app/(chef)/recipes/production-log/loading.tsx"
-    },
-    {
-      "status": "??",
-      "path": "app/(chef)/recipes/sprint/loading.tsx"
-    },
-    {
-      "status": "??",
-      "path": "app/(chef)/reminders/loading.tsx"
-    },
-    {
-      "status": "??",
-      "path": "app/(chef)/reminders/reminders-components.tsx"
-    },
-    {
-      "status": "??",
-      "path": "app/(chef)/remy/operating/loading.tsx"
-    },
-    {
-      "status": "??",
-      "path": "app/(chef)/remy/remy-chat-components.tsx"
-    },
-    {
-      "status": "??",
-      "path": "app/(chef)/remy/signals/loading.tsx"
-    },
-    {
-      "status": "??",
-      "path": "app/(chef)/reputation/mentions/loading.tsx"
-    },
-    {
-      "status": "??",
-      "path": "app/(chef)/safety/backup-chef/loading.tsx"
-    },
-    {
-      "status": "??",
-      "path": "app/(chef)/safety/claims/documents/loading.tsx"
-    },
-    {
-      "status": "??",
-      "path": "app/(chef)/safety/claims/loading.tsx"
-    },
-    {
-      "status": "??",
-      "path": "app/(chef)/safety/claims/new/loading.tsx"
-    },
-    {
-      "status": "??",
-      "path": "app/(chef)/safety/incidents/[id]/loading.tsx"
-    },
-    {
-      "status": "??",
-      "path": "app/(chef)/safety/incidents/loading.tsx"
-    },
-    {
-      "status": "??",
-      "path": "app/(chef)/safety/incidents/new/loading.tsx"
-    },
-    {
-      "status": "??",
-      "path": "app/(chef)/settings/account/loading.tsx"
-    },
-    {
-      "status": "??",
-      "path": "app/(chef)/settings/ai-privacy/layout.tsx"
-    },
-    {
-      "status": "??",
-      "path": "app/(chef)/settings/ai-privacy/loading.tsx"
-    },
-    {
-      "status": "??",
-      "path": "app/(chef)/settings/ai/loading.tsx"
-    },
-    {
-      "status": "??",
-      "path": "app/(chef)/settings/api-keys/loading.tsx"
-    },
-    {
-      "status": "??",
-      "path": "app/(chef)/settings/appearance/loading.tsx"
-    },
-    {
-      "status": "??",
-      "path": "app/(chef)/settings/automations/loading.tsx"
-    },
-    {
-      "status": "??",
-      "path": "app/(chef)/settings/billing/loading.tsx"
-    },
-    {
-      "status": "??",
-      "path": "app/(chef)/settings/business/loading.tsx"
-    },
-    {
-      "status": "??",
-      "path": "app/(chef)/settings/calendar-sync/loading.tsx"
-    },
-    {
-      "status": "??",
-      "path": "app/(chef)/settings/change-password/loading.tsx"
-    },
-    {
-      "status": "??",
-      "path": "app/(chef)/settings/client-preview/loading.tsx"
-    },
-    {
-      "status": "??",
-      "path": "app/(chef)/settings/communication/loading.tsx"
-    },
-    {
-      "status": "??",
-      "path": "app/(chef)/settings/communications/loading.tsx"
-    },
-    {
-      "status": "??",
-      "path": "app/(chef)/settings/compliance/backup/loading.tsx"
-    },
-    {
-      "status": "??",
-      "path": "app/(chef)/settings/compliance/claims/documents/loading.tsx"
-    },
-    {
-      "status": "??",
-      "path": "app/(chef)/settings/compliance/claims/loading.tsx"
-    },
-    {
-      "status": "??",
-      "path": "app/(chef)/settings/compliance/claims/new/loading.tsx"
-    },
-    {
-      "status": "??",
-      "path": "app/(chef)/settings/compliance/gdpr/loading.tsx"
-    },
-    {
-      "status": "??",
-      "path": "app/(chef)/settings/compliance/haccp/loading.tsx"
-    },
-    {
-      "status": "??",
-      "path": "app/(chef)/settings/compliance/incidents/[id]/loading.tsx"
-    },
-    {
-      "status": "??",
-      "path": "app/(chef)/settings/compliance/incidents/loading.tsx"
-    },
-    {
-      "status": "??",
-      "path": "app/(chef)/settings/compliance/incidents/new/loading.tsx"
-    },
-    {
-      "status": "??",
-      "path": "app/(chef)/settings/compliance/loading.tsx"
-    },
-    {
-      "status": "??",
-      "path": "app/(chef)/settings/connections/loading.tsx"
-    },
-    {
-      "status": "??",
-      "path": "app/(chef)/settings/contracts/loading.tsx"
-    },
-    {
-      "status": "??",
-      "path": "app/(chef)/settings/credentials/loading.tsx"
-    },
-    {
-      "status": "??",
-      "path": "app/(chef)/settings/culinary-profile/layout.tsx"
-    },
-    {
-      "status": "??",
-      "path": "app/(chef)/settings/culinary-profile/loading.tsx"
-    },
-    {
-      "status": "??",
-      "path": "app/(chef)/settings/custom-fields/loading.tsx"
-    },
-    {
-      "status": "??",
       "path": "app/(chef)/settings/dashboard/loading.tsx"
-    },
-    {
-      "status": "??",
-      "path": "app/(chef)/settings/data-export/loading.tsx"
-    },
-    {
-      "status": "??",
-      "path": "app/(chef)/settings/data-quality/loading.tsx"
-    },
-    {
-      "status": "??",
-      "path": "app/(chef)/settings/delete-account/loading.tsx"
-    },
-    {
-      "status": "??",
-      "path": "app/(chef)/settings/developer/loading.tsx"
-    },
-    {
-      "status": "??",
-      "path": "app/(chef)/settings/devices/loading.tsx"
-    },
-    {
-      "status": "??",
-      "path": "app/(chef)/settings/embed/loading.tsx"
-    },
-    {
-      "status": "??",
-      "path": "app/(chef)/settings/emergency/loading.tsx"
-    },
-    {
-      "status": "??",
-      "path": "app/(chef)/settings/event-types/loading.tsx"
-    },
-    {
-      "status": "??",
-      "path": "app/(chef)/settings/favorite-chefs/loading.tsx"
-    },
-    {
-      "status": "??",
-      "path": "app/(chef)/settings/fee-schedule/"
-    },
-    {
-      "status": "??",
-      "path": "app/(chef)/settings/health/loading.tsx"
-    },
-    {
-      "status": "??",
-      "path": "app/(chef)/settings/highlights/loading.tsx"
-    },
-    {
-      "status": "??",
-      "path": "app/(chef)/settings/incidents/loading.tsx"
-    },
-    {
-      "status": "??",
-      "path": "app/(chef)/settings/integrations/loading.tsx"
-    },
-    {
-      "status": "??",
-      "path": "app/(chef)/settings/invoice/loading.tsx"
-    },
-    {
-      "status": "??",
-      "path": "app/(chef)/settings/journal/[id]/loading.tsx"
-    },
-    {
-      "status": "??",
-      "path": "app/(chef)/settings/journal/loading.tsx"
-    },
-    {
-      "status": "??",
-      "path": "app/(chef)/settings/journey/[id]/loading.tsx"
-    },
-    {
-      "status": "??",
-      "path": "app/(chef)/settings/journey/loading.tsx"
-    },
-    {
-      "status": "??",
-      "path": "app/(chef)/settings/legal-protection/loading.tsx"
-    },
-    {
-      "status": "??",
-      "path": "app/(chef)/settings/legal-readiness/loading.tsx"
-    },
-    {
-      "status": "??",
-      "path": "app/(chef)/settings/menu-engine/loading.tsx"
-    },
-    {
-      "status": "??",
-      "path": "app/(chef)/settings/menu-templates/loading.tsx"
-    },
-    {
-      "status": "??",
-      "path": "app/(chef)/settings/modules/loading.tsx"
-    },
-    {
-      "status": "??",
-      "path": "app/(chef)/settings/my-profile/loading.tsx"
-    },
-    {
-      "status": "??",
-      "path": "app/(chef)/settings/my-services/layout.tsx"
-    },
-    {
-      "status": "??",
-      "path": "app/(chef)/settings/my-services/loading.tsx"
-    },
-    {
-      "status": "??",
-      "path": "app/(chef)/settings/navigation/loading.tsx"
-    },
-    {
-      "status": "??",
-      "path": "app/(chef)/settings/notifications/loading.tsx"
-    },
-    {
-      "status": "??",
-      "path": "app/(chef)/settings/payment-methods/loading.tsx"
-    },
-    {
-      "status": "??",
-      "path": "app/(chef)/settings/payments/loading.tsx"
-    },
-    {
-      "status": "??",
-      "path": "app/(chef)/settings/platform-connections/loading.tsx"
-    },
-    {
-      "status": "??",
-      "path": "app/(chef)/settings/portfolio/loading.tsx"
-    },
-    {
-      "status": "??",
-      "path": "app/(chef)/settings/pricing/loading.tsx"
-    },
-    {
-      "status": "??",
-      "path": "app/(chef)/settings/print/loading.tsx"
-    },
-    {
-      "status": "??",
-      "path": "app/(chef)/settings/professional/loading.tsx"
-    },
-    {
-      "status": "??",
-      "path": "app/(chef)/settings/professional/momentum/loading.tsx"
-    },
-    {
-      "status": "??",
-      "path": "app/(chef)/settings/professional/skills/loading.tsx"
-    },
-    {
-      "status": "??",
-      "path": "app/(chef)/settings/profile-branding/loading.tsx"
-    },
-    {
-      "status": "??",
-      "path": "app/(chef)/settings/profile/loading.tsx"
-    },
-    {
-      "status": "??",
-      "path": "app/(chef)/settings/protection/business-health/loading.tsx"
-    },
-    {
-      "status": "??",
-      "path": "app/(chef)/settings/protection/certifications/loading.tsx"
-    },
-    {
-      "status": "??",
-      "path": "app/(chef)/settings/protection/continuity/loading.tsx"
-    },
-    {
-      "status": "??",
-      "path": "app/(chef)/settings/protection/crisis/loading.tsx"
     },
     {
       "status": "??",
@@ -2370,15 +2314,15 @@
     },
     {
       "status": "??",
+      "path": "components/rail/contextual-rail-server.tsx"
+    },
+    {
+      "status": "??",
       "path": "components/rail/expanded-panel.tsx"
     },
     {
       "status": "??",
       "path": "components/rail/rail-intel-card.tsx"
-    },
-    {
-      "status": "??",
-      "path": "components/rail/use-auto-scroll.ts"
     },
     {
       "status": "??",
@@ -2398,15 +2342,7 @@
     },
     {
       "status": "??",
-      "path": "database/migrations/20260518000005_recovery_menus.sql"
-    },
-    {
-      "status": "??",
-      "path": "database/migrations/20260518000010_notification_triage.sql"
-    },
-    {
-      "status": "??",
-      "path": "database/migrations/20260518000015_command_palette.sql"
+      "path": "docs/action-surface-audit.json"
     },
     {
       "status": "??",
@@ -2414,7 +2350,7 @@
     },
     {
       "status": "??",
-      "path": "docs/dead-route-report.json"
+      "path": "docs/audits/rail-foundation-assessment.md"
     },
     {
       "status": "??",
@@ -2431,6 +2367,10 @@
     {
       "status": "??",
       "path": "docs/specs/failure-rubric.md"
+    },
+    {
+      "status": "??",
+      "path": "docs/specs/rail-portal-prominence-specs.md"
     },
     {
       "status": "??",
@@ -2494,19 +2434,19 @@
     },
     {
       "status": "??",
-      "path": "lib/discovery/contextual-rail-types.ts"
+      "path": "lib/discovery/contextual-rail-assembly.ts"
     },
     {
       "status": "??",
-      "path": "lib/discovery/rail-profiles.ts"
+      "path": "lib/discovery/resolvers/chef/churn-resolver.ts"
     },
     {
       "status": "??",
-      "path": "lib/events/recovery-menu-actions.ts"
+      "path": "lib/discovery/resolvers/chef/client-risk-resolver.ts"
     },
     {
       "status": "??",
-      "path": "lib/events/recovery-menu-types.ts"
+      "path": "lib/discovery/resolvers/chef/price-anomaly-resolver.ts"
     },
     {
       "status": "??",
@@ -2514,35 +2454,11 @@
     },
     {
       "status": "??",
-      "path": "lib/intelligence/health-narrative-actions.ts"
-    },
-    {
-      "status": "??",
-      "path": "lib/intelligence/health-narrative-types.ts"
-    },
-    {
-      "status": "??",
       "path": "lib/network/collab/"
     },
     {
       "status": "??",
-      "path": "lib/notifications/triage-actions.ts"
-    },
-    {
-      "status": "??",
-      "path": "lib/notifications/triage-types.ts"
-    },
-    {
-      "status": "??",
       "path": "lib/prospecting/scrub/"
-    },
-    {
-      "status": "??",
-      "path": "lib/search/command-palette-actions.ts"
-    },
-    {
-      "status": "??",
-      "path": "lib/search/command-palette-types.ts"
     },
     {
       "status": "??",
@@ -2570,19 +2486,15 @@
     },
     {
       "status": "??",
-      "path": "public/route-manifest.json"
+      "path": "scripts/action-surface-audit.ts"
     },
     {
       "status": "??",
-      "path": "scripts/detect-dead-routes.ts"
+      "path": "scripts/backup-postgres.sh"
     },
     {
       "status": "??",
       "path": "scripts/gen-loading-skeletons.cjs"
-    },
-    {
-      "status": "??",
-      "path": "scripts/generate-route-manifest.ts"
     },
     {
       "status": "??",
@@ -2594,5 +2506,5 @@
     }
   ],
   "next_action": null,
-  "context_notes": "Recent commits:\n6236f16ec docs: contextual rail research + swarm handoff\n90b5b4188 docs: lifecycle UI wiring swarm prompt\ne8f78e2f1 chore: prior session UI polish, layout cleanup, action file updates\n801f2832b perf: remove 608 lines of dead CSS from globals.css\nfdcef3ffd perf: page metadata across 207 pages + provider consolidation"
+  "context_notes": "Recent commits:\n9b4e23e20 feat: 10-agent swarm build - 3 waves, 10 queue items completed\nf5f7b69f2 feat(rail): add rail profile registry with 10 profiles and URL matcher\n78fb5b29f feat(rail): add contextual rail types and category mapping\n047e1f365 docs: update build queue, state, and session config after lifecycle wiring\n1fd69e2fd feat: lifecycle UI wiring - contracts, leftovers, beverages, rail, notifications"
 }

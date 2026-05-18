@@ -325,6 +325,28 @@ function warmResolvers(): ResolverEntry[] {
         return resolveCompletionItems(ctx)
       },
     },
+    // --- Intelligence analyzer resolvers ---
+    {
+      name: 'client-risk',
+      resolve: async (ctx) => {
+        const { resolveClientRisks } = await import('./resolvers/chef/client-risk-resolver')
+        return resolveClientRisks(ctx)
+      },
+    },
+    {
+      name: 'churn-signals',
+      resolve: async (ctx) => {
+        const { resolveChurnSignals } = await import('./resolvers/chef/churn-resolver')
+        return resolveChurnSignals(ctx)
+      },
+    },
+    {
+      name: 'price-anomalies',
+      resolve: async (ctx) => {
+        const { resolvePriceAnomalies } = await import('./resolvers/chef/price-anomaly-resolver')
+        return resolvePriceAnomalies(ctx)
+      },
+    },
     // --- Wave 3: Cross-domain intelligence resolvers ---
     {
       name: 'dish-fatigue',

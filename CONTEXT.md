@@ -177,6 +177,18 @@ Infrastructure ships first, complete. Expansion ships second, complete. Never ha
 
 ---
 
+## System Dynamics
+
+| Term          | Definition                                                                                                                                                                                                                                                                           | NOT this                                                                                                                     |
+| ------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ | ---------------------------------------------------------------------------------------------------------------------------- |
+| **Home**      | The canonical location where an entity, action, or piece of data lives at rest. Every entity has exactly one home (its primary page, table, or module). An entity can be accessed from many surfaces but returns to one home.                                                        | Not the only place it can be used. Not a restriction on access.                                                              |
+| **Displaced** | An entity being accessed or acted on outside its home surface. A recipe viewed from an event page is displaced. An action triggered from the Rail instead of its home page is displaced. Displacement is healthy, expected, and by design.                                           | Not "lost" or "orphaned." Displaced entities have a known home.                                                              |
+| **Standby**   | A capability intentionally duplicated across multiple surfaces so the user can access it in context without navigating to its home. The same action in the Rail AND on the detail page = one is active duty, one is standby. Both are correct.                                       | Not redundancy from poor design. Not copy-paste. Intentional multi-surface access.                                           |
+| **Lingering** | An entity or workflow that has stalled mid-lifecycle. The interaction is paused, not completed, not returned to home state. An inquiry with no response for 72h is lingering. A draft event with no menu for 2 weeks is lingering. CIL detects lingering entities.                   | Not "abandoned" (which implies intent). Not "stale" (which implies time only). Lingering implies an incomplete relationship. |
+| **Return**    | The act of an entity completing its current interaction and resolving back to its home state. An event completing its lifecycle returns to the archive. A displaced action, once executed, returns focus to the entity's home. Every displaced entity must have a clear return path. | Not navigation. Return is a lifecycle transition, not a back button.                                                         |
+
+---
+
 ## Prep and Operations
 
 | Term                  | Definition                                                                                                                                                                |

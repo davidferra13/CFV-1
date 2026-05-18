@@ -1,6 +1,7 @@
 # Local PostgreSQL for ChefFlow development
 # Usage: docker compose up -d
 # Connection: postgresql://postgres:CHEF.jdgyuegf9924092.FLOW@127.0.0.1:54322/postgres
+# Backup: bash scripts/backup-postgres.sh
 
 services:
   postgres:
@@ -15,11 +16,52 @@ services:
       POSTGRES_DB: postgres
     volumes:
       - chefflow_pgdata:/var/lib/postgresql/data
+    shm_size: 256m
+    mem_limit: 1g
+    memswap_limit: 1g
+    cpus: 1.0
+    command:
+      - "postgres"
+      - "-c"
+      - "shared_buffers=256MB"
+      - "-c"
+      - "work_mem=64MB"
+      - "-c"
+      - "effective_cache_size=512MB"
+      - "-c"
+      - "maintenance_work_mem=128MB"
+      - "-c"
+      - "max_connections=20"
+      - "-c"
+      - "random_page_cost=1.1"
+      - "-c"
+      - "checkpoint_completion_target=0.9"
+      - "-c"
+      - "wal_buffers=16MB"
+      - "-c"
+      - "log_min_duration_statement=1000"
+      - "-c"
+      - "log_statement=ddl"
     healthcheck:
       test: ["CMD-SHELL", "pg_isready -U postgres"]
       interval: 10s
       timeout: 5s
       retries: 5
+    logging:
+      driver: json-file
+      options:
+        max-size: "10m"
+        max-file: "3"
+    security_opt:
+      - no-new-privileges:true
+    cap_drop:
+      - ALL
+    cap_add:
+      - CHOWN
+      - FOWNER
+      - SETGID
+      - SETUID
+      - DAC_OVERRIDE
 
 volumes:
   chefflow_pgdata:

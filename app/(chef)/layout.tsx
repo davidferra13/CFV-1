@@ -1,4 +1,4 @@
-// Chef Portal Layout - Layer 2 of Defense in Depth
+﻿// Chef Portal Layout - Layer 2 of Defense in Depth
 // Server Component checks role before rendering any child components
 
 import { requireChef } from '@/lib/auth/get-user'
@@ -89,6 +89,10 @@ const ChefLiveAlerts = dynamic(
 import { RouteProgress } from '@/components/ui/route-progress'
 import { Suspense } from 'react'
 import { RailStripWrapper, RailStripSkeleton } from '@/components/rail/rail-strip-wrapper'
+import {
+  ContextualRailServer,
+  ContextualRailSkeleton,
+} from '@/components/rail/contextual-rail-server'
 import {
   getRailGroupPriorities,
   type RailGroupPriority,
@@ -292,6 +296,11 @@ export default async function ChefLayout({ children }: { children: React.ReactNo
             <Suspense fallback={<RailStripSkeleton />}>
               <RailStripWrapper />
             </Suspense>
+            {shellBudget.showContextualRail && (
+              <Suspense fallback={<ContextualRailSkeleton />}>
+                <ContextualRailServer />
+              </Suspense>
+            )}
             {children}
           </ChefMainContent>
 
