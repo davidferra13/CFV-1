@@ -1,6 +1,6 @@
 {
   "version": "1.0",
-  "timestamp": "2026-05-17T20:02:02.178Z",
+  "timestamp": "2026-05-18T00:27:13.717Z",
   "source": "auto-postool",
   "partial": false,
   "phase": null,
@@ -18,15 +18,7 @@
   "uncommitted_files": [
     {
       "status": "M",
-      "path": ".claude/settings.json"
-    },
-    {
-      "status": "M",
-      "path": ".claude/skills/omninet/SKILL.md"
-    },
-    {
-      "status": "M",
-      "path": ".claude/skills/omninet/scripts/skill-inventory.mjs"
+      "path": ".claude-session-scope"
     },
     {
       "status": "M",
@@ -34,397 +26,37 @@
     },
     {
       "status": "M",
-      "path": "app/(chef)/analytics/benchmarks/page.tsx"
+      "path": "database/migrations/20260517230000_commitment_engine.sql"
     },
     {
       "status": "M",
-      "path": "app/(chef)/analytics/intelligence/client-risk/page.tsx"
-    },
-    {
-      "status": "M",
-      "path": "app/(chef)/analytics/page.tsx"
-    },
-    {
-      "status": "M",
-      "path": "app/(chef)/clients/[id]/relationship/page.tsx"
-    },
-    {
-      "status": "M",
-      "path": "app/(chef)/dashboard/_sections/business-cards.tsx"
-    },
-    {
-      "status": "M",
-      "path": "app/(chef)/dashboard/_sections/business-section-mobile-content.tsx"
-    },
-    {
-      "status": "M",
-      "path": "app/(chef)/dashboard/_sections/cil-signal-summary.tsx"
-    },
-    {
-      "status": "M",
-      "path": "app/(chef)/dashboard/_sections/pipeline-snapshot.tsx"
-    },
-    {
-      "status": "M",
-      "path": "app/(chef)/dashboard/page.tsx"
-    },
-    {
-      "status": "M",
-      "path": "app/(chef)/events/[id]/page.tsx"
-    },
-    {
-      "status": "M",
-      "path": "app/(chef)/finance/goals/page.tsx"
-    },
-    {
-      "status": "M",
-      "path": "app/(chef)/inquiries/page.tsx"
-    },
-    {
-      "status": "M",
-      "path": "app/(chef)/leads/archived/page.tsx"
-    },
-    {
-      "status": "M",
-      "path": "app/(chef)/leads/contacted/page.tsx"
-    },
-    {
-      "status": "M",
-      "path": "app/(chef)/leads/page.tsx"
-    },
-    {
-      "status": "M",
-      "path": "app/(chef)/leads/qualified/page.tsx"
-    },
-    {
-      "status": "M",
-      "path": "app/(chef)/loyalty/learn/loyalty-guide-content.tsx"
-    },
-    {
-      "status": "M",
-      "path": "app/(chef)/marketplace/page.tsx"
-    },
-    {
-      "status": "M",
-      "path": "app/(chef)/ops/page.tsx"
-    },
-    {
-      "status": "M",
-      "path": "app/(public)/layout.tsx"
-    },
-    {
-      "status": "M",
-      "path": "app/feed.xml/route.ts"
-    },
-    {
-      "status": "M",
-      "path": "app/kiosk/page.tsx"
-    },
-    {
-      "status": "M",
-      "path": "components/ai/lead-score-badge.tsx"
-    },
-    {
-      "status": "M",
-      "path": "components/analytics/analytics-hub-client.tsx"
-    },
-    {
-      "status": "M",
-      "path": "components/analytics/benchmark-dashboard.tsx"
-    },
-    {
-      "status": "M",
-      "path": "components/analytics/channel-comparison.tsx"
-    },
-    {
-      "status": "M",
-      "path": "components/analytics/conversion-dashboard.tsx"
-    },
-    {
-      "status": "M",
-      "path": "components/analytics/conversion-funnel.tsx"
-    },
-    {
-      "status": "M",
-      "path": "components/analytics/pipeline-forecast.tsx"
-    },
-    {
-      "status": "M",
-      "path": "components/analytics/referral-dashboard.tsx"
-    },
-    {
-      "status": "M",
-      "path": "components/analytics/source-charts.tsx"
-    },
-    {
-      "status": "M",
-      "path": "components/analytics/yoy-cards.tsx"
-    },
-    {
-      "status": "M",
-      "path": "components/calendar/calendar-filter-panel.tsx"
-    },
-    {
-      "status": "M",
-      "path": "components/cil/signal-card.tsx"
-    },
-    {
-      "status": "M",
-      "path": "components/cil/signal-feed.tsx"
-    },
-    {
-      "status": "M",
-      "path": "components/clients/event-countdown.tsx"
-    },
-    {
-      "status": "M",
-      "path": "components/communication/cadence-settings.tsx"
-    },
-    {
-      "status": "M",
-      "path": "components/dashboard/food-cost-trend-widget.tsx"
-    },
-    {
-      "status": "M",
-      "path": "components/dashboard/forecast-widget.tsx"
-    },
-    {
-      "status": "M",
-      "path": "components/dashboard/payout-summary-widget.tsx"
-    },
-    {
-      "status": "M",
-      "path": "components/dashboard/pipeline-forecast-widget.tsx"
-    },
-    {
-      "status": "M",
-      "path": "components/dashboard/retention-widget.tsx"
-    },
-    {
-      "status": "M",
-      "path": "components/dashboard/revenue-comparison-widget.tsx"
-    },
-    {
-      "status": "M",
-      "path": "components/dashboard/revenue-projection-widget.tsx"
-    },
-    {
-      "status": "M",
-      "path": "components/dashboard/top-events-profit-widget.tsx"
-    },
-    {
-      "status": "M",
-      "path": "components/events/close-out-wizard.tsx"
-    },
-    {
-      "status": "M",
-      "path": "components/events/event-creation-wizard.tsx"
-    },
-    {
-      "status": "M",
-      "path": "components/events/readiness-gate-panel.tsx"
-    },
-    {
-      "status": "M",
-      "path": "components/events/travel-plan-client.tsx"
-    },
-    {
-      "status": "M",
-      "path": "components/events/weather-forecast-card.tsx"
-    },
-    {
-      "status": "M",
-      "path": "components/finance/cost-variance-card.tsx"
-    },
-    {
-      "status": "M",
-      "path": "components/finance/event-pricing-intelligence-panel.tsx"
-    },
-    {
-      "status": "M",
-      "path": "components/hub/circles-pipeline-header.tsx"
-    },
-    {
-      "status": "M",
-      "path": "components/hub/hub-notification-card.tsx"
-    },
-    {
-      "status": "M",
-      "path": "components/hub/ingredient-availability-board.tsx"
-    },
-    {
-      "status": "M",
-      "path": "components/intelligence/intelligence-hub.tsx"
-    },
-    {
-      "status": "M",
-      "path": "components/intelligence/prep-time-estimate-hint.tsx"
-    },
-    {
-      "status": "M",
-      "path": "components/intelligence/smart-pricing-hint.tsx"
-    },
-    {
-      "status": "M",
-      "path": "components/navigation/nav-config.tsx"
-    },
-    {
-      "status": "M",
-      "path": "components/pipeline/pipeline-alerts.tsx"
-    },
-    {
-      "status": "M",
-      "path": "components/quotes/client-spending-badge.tsx"
-    },
-    {
-      "status": "M",
-      "path": "components/seo/json-ld.tsx"
-    },
-    {
-      "status": "M",
-      "path": "components/shared/step-wizard.tsx"
-    },
-    {
-      "status": "M",
-      "path": "components/social/social-post-card.tsx"
-    },
-    {
-      "status": "M",
-      "path": "docs/UNIFIED-BUILD-QUEUE.md"
+      "path": "docs/sync-status.json"
     },
     {
       "status": "M",
       "path": "docs/uptime-history.json"
     },
     {
-      "status": "M",
-      "path": "lib/cil/analyzers/commitment.ts"
-    },
-    {
-      "status": "M",
-      "path": "lib/cil/signal-actions.ts"
-    },
-    {
-      "status": "M",
-      "path": "lib/db/schema/schema.ts"
-    },
-    {
-      "status": "M",
-      "path": "lib/events/readiness.ts"
-    },
-    {
-      "status": "M",
-      "path": "lib/shared/use-step-wizard.ts"
-    },
-    {
-      "status": "M",
-      "path": "lib/site/public-site.ts"
+      "status": "??",
+      "path": "database/migrations/20260517240000_circle_activity.sql"
     },
     {
       "status": "??",
-      "path": ".claude-session-scope"
+      "path": "database/migrations/20260517240001_rail_interaction_palette.sql"
     },
     {
       "status": "??",
-      "path": ".tsc-baseline-errors"
+      "path": "database/migrations/20260517250000_rail_engagement_log.sql"
     },
     {
       "status": "??",
-      "path": "app/api/tracking/"
+      "path": "lib/feed/"
     },
     {
       "status": "??",
-      "path": "components/commitment/"
-    },
-    {
-      "status": "??",
-      "path": "components/events/override-dialog.tsx"
-    },
-    {
-      "status": "??",
-      "path": "components/intelligence/commitment-insights-card.tsx"
-    },
-    {
-      "status": "??",
-      "path": "components/tracking/"
-    },
-    {
-      "status": "??",
-      "path": "database/migrations/20260517220000_override_category_column.sql"
-    },
-    {
-      "status": "??",
-      "path": "database/migrations/20260517230000_commitment_engine.sql"
-    },
-    {
-      "status": "??",
-      "path": "docs/intensify/feed-architecture.md"
-    },
-    {
-      "status": "??",
-      "path": "docs/intensify/omninet.md"
-    },
-    {
-      "status": "??",
-      "path": "docs/intensify/social-media-feeds.md"
-    },
-    {
-      "status": "??",
-      "path": "docs/superpowers/specs/2026-05-17-ulysses-universe-design.md"
-    },
-    {
-      "status": "??",
-      "path": "lib/ai/signal-draft-prompts.ts"
-    },
-    {
-      "status": "??",
-      "path": "lib/cil/auto-dispatch.ts"
-    },
-    {
-      "status": "??",
-      "path": "lib/cil/draft-generators/"
-    },
-    {
-      "status": "??",
-      "path": "lib/commitment/"
-    },
-    {
-      "status": "??",
-      "path": "lib/email/entity-extraction-bridge.ts"
-    },
-    {
-      "status": "??",
-      "path": "lib/email/entity-extraction.ts"
-    },
-    {
-      "status": "??",
-      "path": "lib/events/override-history.ts"
-    },
-    {
-      "status": "??",
-      "path": "lib/events/override-taxonomy.ts"
-    },
-    {
-      "status": "??",
-      "path": "lib/intelligence/lifecycle-cil-bridge.ts"
-    },
-    {
-      "status": "??",
-      "path": "lib/intelligence/lifecycle-stage-actions.ts"
-    },
-    {
-      "status": "??",
-      "path": "lib/intelligence/lifecycle-stage-detector.ts"
-    },
-    {
-      "status": "??",
-      "path": "lib/tracking/"
-    },
-    {
-      "status": "??",
-      "path": "scripts/_fix1.js"
+      "path": "lib/social/facebook-events/"
     }
   ],
   "next_action": null,
-  "context_notes": "Recent commits:\nba4b42d3d feat(realtime): wire Phase 1 bloodstream fixes - RailStrip SSE, inquiry comms, broadcast parity\n3d3d7b478 style: prettier formatting from lint-staged\n57e569886 feat: deep-pass swarm accumulation - 590+ files across 20+ domains\n50e6b1707 fix: resolve 28 TypeScript errors from deep-pass swarm accumulation\naae0fe3fe docs: 20 philosophical principles swarm prompt"
+  "context_notes": "Recent commits:\n39a808b95 feat: 20-principles philosophical alignment pass\nc5e3df62a docs: session log for Ulysses Wave 1 commitment engine build\nc607b9c90 feat(commitment): Ulysses Universe Wave 1 commitment engine + swarm accumulation\n98b681332 feat: Ulysses commitment layer swarm - override taxonomy, commitment engine, lifecycle intelligence\nba4b42d3d feat(realtime): wire Phase 1 bloodstream fixes - RailStrip SSE, inquiry comms, broadcast parity"
 }

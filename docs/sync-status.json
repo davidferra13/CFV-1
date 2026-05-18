@@ -1,40 +1,41 @@
 {
-  "last_sync": "2026-05-17T18:56:07.970Z",
+  "last_sync": "2026-05-18T00:20:07.990Z",
   "status": "failed",
-  "next_sync": "2026-05-17T19:04:07.970Z",
+  "next_sync": "2026-05-18T00:50:07.990Z",
   "interval_hours": 2,
-  "consecutive_failures": 4,
+  "consecutive_failures": 7,
   "last_error": "timed out after 5400.0s",
   "last_sync_type": "full",
   "last_success_at": null,
-  "last_failure_at": "2026-05-17T18:56:07.970Z",
-  "completed_at": "2026-05-17T18:56:07.970Z",
+  "last_failure_at": "2026-05-18T00:20:07.990Z",
+  "completed_at": "2026-05-18T00:20:07.990Z",
   "error_kind": "timeout",
   "exit_code": null,
   "last_elapsed_s": 5400,
-  "run_id": "openclaw-full-1779038767967",
-  "started_at": "2026-05-17T17:26:07.967Z",
+  "run_id": "openclaw-full-1779058207987",
+  "started_at": "2026-05-17T22:50:07.987Z",
   "summary": {
-    "runId": "openclaw-full-1779038768029",
+    "runId": "openclaw-full-1779058208046",
     "syncType": "full",
     "status": "running",
     "partialSuccess": true,
-    "startedAt": "2026-05-17T17:26:08.029Z",
+    "startedAt": "2026-05-17T22:50:08.046Z",
     "completedAt": null,
     "durationSeconds": null,
     "failedStepNames": [
       "Pull catalog from Pi",
       "Push stores to Pi",
       "Sync normalization + aliases",
-      "Promote canonical foods to system ingredients"
+      "Promote canonical foods to system ingredients",
+      "Refresh system ingredient market prices"
     ],
     "steps": [
       {
         "name": "Pull catalog from Pi",
         "status": "failed",
-        "startedAt": "2026-05-17T17:26:08.032Z",
-        "completedAt": "2026-05-17T18:00:36.197Z",
-        "durationSeconds": 2068.2,
+        "startedAt": "2026-05-17T22:50:08.049Z",
+        "completedAt": "2026-05-17T22:50:41.200Z",
+        "durationSeconds": 33.2,
         "error": "Command failed: node C:\\Users\\david\\Documents\\CFv1\\scripts\\openclaw-pull\\pull.mjs",
         "details": {
           "exitCode": 1,
@@ -44,8 +45,8 @@
       {
         "name": "Push stores to Pi",
         "status": "failed",
-        "startedAt": "2026-05-17T18:00:36.198Z",
-        "completedAt": "2026-05-17T18:00:36.473Z",
+        "startedAt": "2026-05-17T22:50:41.200Z",
+        "completedAt": "2026-05-17T22:50:41.489Z",
         "durationSeconds": 0.3,
         "error": "Command failed: node C:\\Users\\david\\Documents\\CFv1\\scripts\\push-stores-to-pi.mjs",
         "details": {
@@ -56,9 +57,9 @@
       {
         "name": "Sync normalization + aliases",
         "status": "failed",
-        "startedAt": "2026-05-17T18:00:36.474Z",
-        "completedAt": "2026-05-17T18:00:36.582Z",
-        "durationSeconds": 0.1,
+        "startedAt": "2026-05-17T22:50:41.490Z",
+        "completedAt": "2026-05-17T22:50:41.762Z",
+        "durationSeconds": 0.3,
         "error": "Command failed: node C:\\Users\\david\\Documents\\CFv1\\scripts\\openclaw-pull\\sync-normalization.mjs",
         "details": {
           "exitCode": 1,
@@ -68,12 +69,24 @@
       {
         "name": "Promote canonical foods to system ingredients",
         "status": "failed",
-        "startedAt": "2026-05-17T18:00:36.582Z",
-        "completedAt": "2026-05-17T18:00:36.631Z",
+        "startedAt": "2026-05-17T22:50:41.763Z",
+        "completedAt": "2026-05-17T22:50:41.809Z",
         "durationSeconds": 0,
         "error": "Command failed: node C:\\Users\\david\\Documents\\CFv1\\scripts\\openclaw-promote-foods.mts",
         "details": {
           "exitCode": 1,
+          "timeoutMs": 3600000
+        }
+      },
+      {
+        "name": "Refresh system ingredient market prices",
+        "status": "failed",
+        "startedAt": "2026-05-17T22:50:41.809Z",
+        "completedAt": "2026-05-17T23:50:41.816Z",
+        "durationSeconds": 3600,
+        "error": "spawnSync node ETIMEDOUT",
+        "details": {
+          "exitCode": null,
           "timeoutMs": 3600000
         }
       }
