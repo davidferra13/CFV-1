@@ -638,6 +638,23 @@ export async function createInquiry(input: CreateInquiryInput) {
     console.error('[createInquiry] Notification failed (non-blocking):', err)
   }
 
+  // Communication bridge: log inquiry creation as outreach signal (non-blocking)
+  try {
+    const { onInquiryCreated: onInquiryCreatedComm } =
+      await import('@/lib/communication/inquiry-comm-bridge')
+    await onInquiryCreatedComm({
+      tenantId: user.tenantId!,
+      inquiryId: inquiry.id,
+      clientId: clientId,
+      clientName: validated.client_name,
+      channel: validated.channel,
+      occasion: validated.confirmed_occasion || null,
+      sourceMessage: validated.source_message || null,
+    })
+  } catch (err) {
+    console.error('[createInquiry] Communication bridge failed (non-blocking):', err)
+  }
+
   // Zapier/Make webhook dispatch (non-blocking)
   try {
     const { dispatchWebhookEvent } = await import('@/lib/integrations/zapier/zapier-webhooks')
@@ -1312,6 +1329,20 @@ export async function transitionInquiry(id: string, newStatus: InquiryStatus) {
     await orchestrateJourney(user.tenantId!, id, eventId)
   } catch (err) {
     console.error('[transitionInquiry] Journey orchestration failed (non-blocking):', err)
+  }
+
+  // Communication bridge: log inquiry transition as outreach action (non-blocking)
+  try {
+    const { onInquiryTransitioned } = await import('@/lib/communication/inquiry-comm-bridge')
+    await onInquiryTransitioned({
+      tenantId: user.tenantId!,
+      inquiryId: id,
+      clientId: inquiry.client_id || null,
+      fromStatus: currentStatus,
+      toStatus: newStatus,
+    })
+  } catch (err) {
+    console.error('[transitionInquiry] Communication bridge failed (non-blocking):', err)
   }
 
   return { success: true, inquiry: updated }
@@ -3017,6 +3048,19 @@ export async function declineInquiry(id: string, reason?: string) {
     }
   } catch (err) {
     console.error('[declineInquiry] Decline email failed (non-blocking):', err)
+  }
+
+  // Communication bridge: log decline as closing outreach (non-blocking)
+  try {
+    const { onInquiryDeclined } = await import('@/lib/communication/inquiry-comm-bridge')
+    await onInquiryDeclined({
+      tenantId: user.tenantId!,
+      inquiryId: id,
+      clientId: inquiry.client_id || null,
+      reason: reason ?? null,
+    })
+  } catch (err) {
+    console.error('[declineInquiry] Communication bridge failed (non-blocking):', err)
   }
 
   revalidatePath('/my-inquiries')

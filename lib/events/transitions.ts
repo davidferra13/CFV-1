@@ -1874,6 +1874,23 @@ export async function transitionEvent({
     // CIL failure is non-fatal
   }
 
+  // Communication bridge: instant outreach dispatch on event transition (non-blocking)
+  // Replaces the 60min CIL scan delay with instant notification dispatch.
+  try {
+    const { onEventTransitioned } = await import('@/lib/communication/event-comm-bridge')
+    await onEventTransitioned({
+      tenantId: event.tenant_id,
+      eventId,
+      clientId: event.client_id || null,
+      fromStatus,
+      toStatus,
+      occasion: event.occasion || null,
+      inquiryId: event.inquiry_id || null,
+    })
+  } catch (err) {
+    log.events.warn('Event communication bridge failed (non-blocking)', { error: err })
+  }
+
   // Lifecycle journey orchestration: evaluate trigger rules and execute actions (non-blocking)
   try {
     const { orchestrateJourney } = await import('@/lib/lifecycle/journey-orchestrator')

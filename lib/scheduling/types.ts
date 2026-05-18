@@ -119,6 +119,7 @@ export const DASHBOARD_WIDGET_IDS = [
   'quick_create',
   'cheftips',
   'seasonal_calendar',
+  'commitment_insights',
 ] as const
 
 export type DashboardWidgetId = (typeof DASHBOARD_WIDGET_IDS)[number]
@@ -253,6 +254,7 @@ export const DASHBOARD_WIDGET_META: Record<DashboardWidgetId, WidgetMeta> = {
   survey_testimonial_feed: { category: 'analytics', size: 'sm', defaultEnabled: false },
   intelligence_hub: { category: 'analytics', size: 'sm', defaultEnabled: false },
   wellbeing: { category: 'analytics', size: 'sm', defaultEnabled: false },
+  commitment_insights: { category: 'analytics', size: 'lg', defaultEnabled: false },
 
   // Collaboration & Growth
   collaboration_invites: { category: 'collaboration', size: 'sm', defaultEnabled: false },
@@ -468,6 +470,7 @@ export const WIDGET_ICONS: Partial<Record<DashboardWidgetId, string>> = {
   active_clients_now: '\u{1F7E2}',
   cheftips: '\u{1F4A1}',
   seasonal_calendar: '\u{1F33F}',
+  commitment_insights: '\u{1F9E9}',
 }
 
 /** Get icon for a specific widget (falls back to category icon) */
@@ -637,6 +640,7 @@ export const DASHBOARD_WIDGET_LABELS: Record<DashboardWidgetId, string> = {
   quick_create: 'Quick Create',
   cheftips: 'ChefTips',
   seasonal_calendar: 'Seasonal Calendar',
+  commitment_insights: 'Commitment Insights',
 }
 
 // Legacy alias kept for compatibility with older code paths.

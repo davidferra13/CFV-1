@@ -29,6 +29,8 @@ import { loadEventServiceSimulationPanelState } from '@/lib/service-simulation/s
 import { getCourseProgress } from '@/lib/service-execution/actions'
 import { getEventStationPlan } from '@/lib/stations/event-station-actions'
 import { getEventPricingIntelligence } from '@/lib/finance/event-pricing-intelligence-actions'
+import { getServiceTrackerState } from '@/lib/lifecycle/service-tracker-actions'
+import { getServiceTimeline } from '@/lib/lifecycle/timeline-generator-actions'
 import { createServerClient } from '@/lib/db/server'
 import { EventDetailOpsTab } from '../_components/event-detail-ops-tab'
 
@@ -149,6 +151,16 @@ export async function EventOpsSection({ eventId, tenantId, event, activeTab }: P
     hasAllergyData(eventId).catch(() => false),
   ])
 
+  // Day-of service tracker state and timeline (only for in_progress events)
+  const [serviceTrackerState, serviceTimeline] = await Promise.all([
+    event.status === 'in_progress'
+      ? getServiceTrackerState(eventId).catch(() => null)
+      : Promise.resolve(null),
+    event.status === 'in_progress'
+      ? getServiceTimeline(eventId).catch(() => null)
+      : Promise.resolve(null),
+  ])
+
   // Financial summary for eventTotalCents
   const { totalPaid } = await getEventFinancialSummary(eventId).catch(() => ({
     totalPaid: 0,
@@ -193,6 +205,8 @@ export async function EventOpsSection({ eventId, tenantId, event, activeTab }: P
       serviceSimulationState={serviceSimulationState}
       courseProgress={courseProgress}
       stationPlan={stationPlan}
+      serviceTrackerState={serviceTrackerState}
+      serviceTimeline={serviceTimeline}
     />
   )
 }

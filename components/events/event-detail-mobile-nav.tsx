@@ -10,6 +10,10 @@ import {
   Store,
 } from '@/components/ui/icons'
 import { useTabNav, type TabDefinition } from '@/lib/shared/use-tab-nav'
+import {
+  STAGE_TAB_MAPPING,
+  type LifecycleWorkspaceStage,
+} from '@/lib/lifecycle/event-lifecycle-stage'
 
 export type EventDetailTab = 'overview' | 'popup' | 'money' | 'prep' | 'tickets' | 'ops' | 'wrap'
 
@@ -23,12 +27,33 @@ const EVENT_TABS: TabDefinition<EventDetailTab>[] = [
   { key: 'wrap', label: 'Wrap-up', icon: CheckSquare },
 ]
 
+/** Color for the lifecycle stage dot on each mobile tab */
+const STAGE_DOT_COLORS: Record<LifecycleWorkspaceStage, string> = {
+  planning: 'bg-blue-400',
+  confirmed: 'bg-amber-400',
+  active: 'bg-emerald-400',
+  closeout: 'bg-purple-400',
+}
+
+/** Resolve which lifecycle stage a tab belongs to */
+function getTabStage(tabKey: string): LifecycleWorkspaceStage {
+  for (const [stage, tabs] of Object.entries(STAGE_TAB_MAPPING)) {
+    if (tabs.includes(tabKey)) return stage as LifecycleWorkspaceStage
+  }
+  return 'planning'
+}
+
 /**
  * Sticky in-page tab bar for event detail on mobile.
- * Hidden on md+ (desktop shows all sections as a full scroll).
+ * Hidden on md+ (desktop uses LifecycleWorkspacePanel instead).
  * Uses shared useTabNav hook for URL-synced tab state.
+ * Each tab shows a colored lifecycle stage dot for orientation.
  */
-export function EventDetailMobileNav() {
+export function EventDetailMobileNav({
+  lifecycleStage,
+}: {
+  lifecycleStage?: LifecycleWorkspaceStage
+}) {
   const { activeTab, setTab, tabs, isActive } = useTabNav<EventDetailTab>({
     tabs: EVENT_TABS,
     defaultTab: 'overview',
@@ -41,6 +66,8 @@ export function EventDetailMobileNav() {
         {tabs.map((tab) => {
           const active = isActive(tab.key)
           const Icon = tab.icon
+          const tabStage = getTabStage(tab.key)
+          const isCurrentLifecycleStage = lifecycleStage === tabStage
           return (
             <button
               key={tab.key}
@@ -55,7 +82,14 @@ export function EventDetailMobileNav() {
                   : 'border-transparent text-stone-500 hover:text-stone-300'
               }`}
             >
-              {Icon && <Icon className="h-4 w-4" />}
+              <div className="relative">
+                {Icon && <Icon className="h-4 w-4" />}
+                {isCurrentLifecycleStage && (
+                  <span
+                    className={`absolute -top-0.5 -right-1 w-1.5 h-1.5 rounded-full ${STAGE_DOT_COLORS[tabStage]}`}
+                  />
+                )}
+              </div>
               {tab.label}
             </button>
           )

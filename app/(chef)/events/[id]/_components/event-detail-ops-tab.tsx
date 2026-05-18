@@ -1,4 +1,4 @@
-﻿import Link from 'next/link'
+import Link from 'next/link'
 import type { EventDetailTab } from '@/components/events/event-detail-mobile-nav'
 import { EventDetailSection } from '@/components/events/event-detail-mobile-nav'
 import { TimeTracking } from '@/components/events/time-tracking'
@@ -26,6 +26,7 @@ import { ComplianceGatePanel } from '@/components/protection/compliance-gate-pan
 import { PrepPlanPanel } from '@/components/events/prep-plan-panel'
 import { ServiceSimulationPanel } from '@/components/events/service-simulation-panel'
 import { LiveServiceTracker } from '@/components/events/live-service-tracker'
+import { DayOfServicePanel } from '@/components/events/day-of-service-panel'
 import { EventTransitions } from '@/components/events/event-transitions'
 import { EventClosureActions } from '@/components/events/event-closure-actions'
 import { EventPhotoGallery } from '@/components/events/event-photo-gallery'
@@ -40,6 +41,8 @@ import { Card } from '@/components/ui/card'
 import type { ReadinessResult } from '@/lib/events/readiness'
 import type { ServiceSimulationPanelState } from '@/lib/service-simulation/types'
 import type { CourseProgress } from '@/lib/service-execution/actions'
+import type { ServiceTrackerState } from '@/lib/lifecycle/service-tracker-actions'
+import type { ServiceTimeline } from '@/lib/lifecycle/timeline-generator-actions'
 
 type EventDetailOpsTabProps = {
   activeTab: EventDetailTab
@@ -79,6 +82,8 @@ type EventDetailOpsTabProps = {
     unassigned: { id: string; name: string; course_number: number }[]
     stations: { id: string; name: string }[]
   } | null
+  serviceTrackerState: ServiceTrackerState | null
+  serviceTimeline: ServiceTimeline | null
 }
 
 export function EventDetailOpsTab(props: EventDetailOpsTabProps) {
@@ -116,10 +121,20 @@ export function EventDetailOpsTab(props: EventDetailOpsTabProps) {
     serviceSimulationState,
     courseProgress,
     stationPlan,
+    serviceTrackerState,
+    serviceTimeline,
   } = props
 
   return (
     <EventDetailSection tab="ops" activeTab={activeTab}>
+      {event.status === 'in_progress' && (
+        <DayOfServicePanel
+          eventId={event.id}
+          trackerState={serviceTrackerState}
+          timeline={serviceTimeline}
+        />
+      )}
+
       {event.status === 'in_progress' && (
         <LiveServiceTracker eventId={event.id} initialCourses={courseProgress} />
       )}

@@ -32,6 +32,8 @@ import {
 import { LiveMenuCostPanel } from '@/components/costing/live-menu-cost-panel'
 import { PieCoverageHint } from '@/components/pricing/pie-coverage-hint'
 import type { EventPricingIntelligencePayload } from '@/lib/finance/event-pricing-intelligence-actions'
+import { ProfitabilityCockpit } from '@/components/finance/profitability-cockpit'
+import type { ProfitabilityCockpitData } from '@/lib/finance/profitability-cockpit-actions'
 import { EventDetailGuestCountRequests } from './event-detail-guest-count-requests'
 import type { GuestCountChange } from '@/lib/guests/count-changes'
 import type { EventReadinessAssistantResult } from '@/lib/events/event-readiness-assistant'
@@ -72,6 +74,7 @@ type EventDetailMoneyTabProps = {
   }>
   guestCountChanges: GuestCountChange[]
   regionalSettings?: { currencyCode: string; locale: string }
+  profitabilityCockpit?: ProfitabilityCockpitData | null
 }
 
 export function EventDetailMoneyTab(props: EventDetailMoneyTabProps) {
@@ -102,6 +105,7 @@ export function EventDetailMoneyTab(props: EventDetailMoneyTabProps) {
     ledgerEntries,
     guestCountChanges,
     regionalSettings,
+    profitabilityCockpit,
   } = props
 
   const currOpts = regionalSettings
@@ -169,6 +173,9 @@ export function EventDetailMoneyTab(props: EventDetailMoneyTabProps) {
 
       {/* Labor Cost (per-event staff hours + pay, rolls into P&L) */}
       <EventLaborCostCard eventId={event.id} quotedPriceCents={event.quoted_price_cents} />
+
+      {/* Profitability Cockpit: unified cost breakdown, margin, per-guest, food cost %, labor */}
+      {profitabilityCockpit && <ProfitabilityCockpit data={profitabilityCockpit} />}
 
       <EventPricingIntelligencePanel data={pricingIntelligence ?? null} />
 

@@ -19,6 +19,7 @@ import { getTakeAChefEventFinance } from '@/lib/integrations/take-a-chef-finance
 import { forecastMenuCost, type CostForecast } from '@/lib/openclaw/cost-forecast-actions'
 import { saveMarginSnapshot } from '@/lib/pricing/margin-snapshot-actions'
 import { refreshIngredientCostsForTenant } from '@/lib/pricing/cost-refresh-actions'
+import { getEventProfitabilityCockpit } from '@/lib/finance/profitability-cockpit-actions'
 import { createServerClient } from '@/lib/db/server'
 import { EventDetailMoneyTab } from '../_components/event-detail-money-tab'
 
@@ -94,6 +95,7 @@ export async function EventMoneySection({ eventId, tenantId, event, activeTab }:
     regionalSettings,
     menuLibraryData,
     takeAChefFinance,
+    profitabilityCockpit,
   ] = await Promise.all([
     getEventFinancialSummary(eventId).catch(() => ({
       totalPaid: 0,
@@ -127,6 +129,7 @@ export async function EventMoneySection({ eventId, tenantId, event, activeTab }:
       ? getMenuLibraryForEvent(eventId).catch(() => ({ menus: [], preferences: null }))
       : Promise.resolve({ menus: [], preferences: null }),
     getTakeAChefEventFinance(eventId).catch(() => null),
+    getEventProfitabilityCockpit(eventId).catch(() => null),
   ])
 
   // Loyalty
@@ -220,6 +223,7 @@ export async function EventMoneySection({ eventId, tenantId, event, activeTab }:
       ledgerEntries={ledgerEntries as any[]}
       guestCountChanges={guestCountChanges}
       regionalSettings={regionalSettings}
+      profitabilityCockpit={profitabilityCockpit}
     />
   )
 }
