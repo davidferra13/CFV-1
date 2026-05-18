@@ -25057,6 +25057,9 @@ export type Database = {
           notes: string | null
           purchase_date: string
           receipt_url: string | null
+          source_name: string | null
+          source_notes: string | null
+          source_type: string | null
           store_name: string
           tenant_id: string
           updated_at: string
@@ -25070,6 +25073,9 @@ export type Database = {
           notes?: string | null
           purchase_date?: string
           receipt_url?: string | null
+          source_name?: string | null
+          source_notes?: string | null
+          source_type?: string | null
           store_name: string
           tenant_id: string
           updated_at?: string
@@ -25083,6 +25089,9 @@ export type Database = {
           notes?: string | null
           purchase_date?: string
           receipt_url?: string | null
+          source_name?: string | null
+          source_notes?: string | null
+          source_type?: string | null
           store_name?: string
           tenant_id?: string
           updated_at?: string

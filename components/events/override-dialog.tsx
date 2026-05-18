@@ -12,6 +12,9 @@ import { getOverrideCountLast90Days } from '@/lib/events/override-history'
 import { OVERRIDE_CATEGORIES } from '@/lib/events/override-taxonomy'
 import type { OverrideCategory } from '@/lib/events/override-taxonomy'
 import type { GateResult, ReadinessGate } from '@/lib/events/readiness'
+import { FrictionBanner } from '@/components/commitment/friction-banner'
+import { getActiveCommitmentForDomain } from '@/lib/events/override-history'
+import type { CommitmentDomain } from '@/lib/commitment/types'
 
 interface OverrideDialogProps {
   open: boolean
@@ -22,12 +25,29 @@ interface OverrideDialogProps {
   eventDate?: string | null
 }
 
+const GATE_TO_DOMAIN: Partial<Record<string, CommitmentDomain>> = {
+  menu_locked: 'menu',
+  dietary_verified: 'dietary',
+  quote_accepted: 'pricing',
+  contract_signed: 'pricing',
+  deposit_received: 'pricing',
+  invoice_sent: 'closeout',
+  payment_received: 'closeout',
+  schedule_confirmed: 'scheduling',
+  capacity_check: 'capacity',
+  travel_confirmed: 'travel',
+}
+
 export function OverrideDialog({ open, onClose, eventId, gate, eventDate }: OverrideDialogProps) {
   const router = useRouter()
   const [isPending, startTransition] = useTransition()
   const [category, setCategory] = useState<OverrideCategory | ''>('')
   const [reason, setReason] = useState('')
   const [overrideCount, setOverrideCount] = useState<number | null>(null)
+  const [frictionCommitment, setFrictionCommitment] = useState<{
+    ruleDescription: string
+    domain: CommitmentDomain
+  } | null>(null)
 
   const isUnderTimePressure = (() => {
     if (!eventDate) return false
@@ -48,11 +68,30 @@ export function OverrideDialog({ open, onClose, eventId, gate, eventDate }: Over
       })
   }, [open, gate.gate])
 
+  // Check for active commitments in this gate's domain
+  useEffect(() => {
+    if (!open) return
+    setFrictionCommitment(null)
+    const domain = GATE_TO_DOMAIN[gate.gate]
+    if (!domain) return
+    getActiveCommitmentForDomain(domain)
+      .then((result) => {
+        if (result) {
+          setFrictionCommitment({
+            ruleDescription: `Active ${domain} commitment: ${result.description || result.domain}`,
+            domain: result.domain,
+          })
+        }
+      })
+      .catch(() => {})
+  }, [open, gate.gate])
+
   // Reset form state when dialog opens
   useEffect(() => {
     if (open) {
       setCategory('')
       setReason('')
+      setFrictionCommitment(null)
     }
   }, [open])
 
@@ -110,6 +149,18 @@ export function OverrideDialog({ open, onClose, eventId, gate, eventDate }: Over
       }
     >
       <div className="space-y-4">
+        {/* Commitment friction warning */}
+        {frictionCommitment && (
+          <FrictionBanner
+            ruleDescription={frictionCommitment.ruleDescription}
+            commitmentDomain={frictionCommitment.domain}
+            onDismiss={() => setFrictionCommitment(null)}
+            onViewDetails={() => {
+              window.open('/intelligence', '_blank')
+            }}
+          />
+        )}
+
         {/* Time pressure warning */}
         {isUnderTimePressure && (
           <Alert variant="warning" title="Time pressure">

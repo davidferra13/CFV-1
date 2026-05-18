@@ -22383,6 +22383,9 @@ export const grocerySpendEntries = pgTable("grocery_spend_entries", {
 	createdAt: timestamp("created_at", { withTimezone: true, mode: 'string' }).defaultNow().notNull(),
 	updatedAt: timestamp("updated_at", { withTimezone: true, mode: 'string' }).defaultNow().notNull(),
 	createdBy: uuid("created_by"),
+	sourceName: text("source_name"),
+	sourceType: text("source_type"),
+	sourceNotes: text("source_notes"),
 }, (table) => [
 	index("idx_grocery_spend_event").using("btree", table.eventId.asc().nullsLast().op("uuid_ops")),
 	index("idx_grocery_spend_tenant_event").using("btree", table.tenantId.asc().nullsLast().op("uuid_ops"), table.eventId.asc().nullsLast().op("uuid_ops")),

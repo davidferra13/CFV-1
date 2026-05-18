@@ -41,6 +41,9 @@ export interface GroceryEntry {
   date: string
   notes: string | null
   receiptUrl: string | null
+  sourceName: string | null
+  sourceType: string | null
+  sourceNotes: string | null
 }
 
 export interface EventFoodCost {
@@ -99,6 +102,9 @@ export async function getEventFoodCost(eventId: string): Promise<EventFoodCost> 
     date: r.purchase_date,
     notes: r.notes,
     receiptUrl: r.receipt_url,
+    sourceName: r.source_name,
+    sourceType: r.source_type,
+    sourceNotes: r.source_notes,
   }))
 
   const actualSpendCents = groceryEntries.reduce((sum, e) => sum + e.amountCents, 0)
@@ -291,6 +297,9 @@ export async function addGrocerySpend(data: {
   amountCents: number
   date: string
   notes?: string
+  sourceName?: string
+  sourceType?: string
+  sourceNotes?: string
 }): Promise<{ success: boolean; error?: string }> {
   const user = await requireChef()
   const db: any = createServerClient()
@@ -303,6 +312,9 @@ export async function addGrocerySpend(data: {
     purchase_date: data.date,
     notes: data.notes || null,
     created_by: user.authUserId,
+    source_name: data.sourceName || null,
+    source_type: data.sourceType || null,
+    source_notes: data.sourceNotes || null,
   })
 
   if (error) {
@@ -321,6 +333,9 @@ export async function updateGrocerySpend(
     amountCents?: number
     date?: string
     notes?: string
+    sourceName?: string
+    sourceType?: string
+    sourceNotes?: string
   }
 ): Promise<{ success: boolean; error?: string }> {
   const user = await requireChef()
@@ -331,6 +346,9 @@ export async function updateGrocerySpend(
   if (data.amountCents !== undefined) updatePayload.amount_cents = data.amountCents
   if (data.date !== undefined) updatePayload.purchase_date = data.date
   if (data.notes !== undefined) updatePayload.notes = data.notes || null
+  if (data.sourceName !== undefined) updatePayload.source_name = data.sourceName || null
+  if (data.sourceType !== undefined) updatePayload.source_type = data.sourceType || null
+  if (data.sourceNotes !== undefined) updatePayload.source_notes = data.sourceNotes || null
 
   const { error } = await db
     .from('grocery_spend_entries' as any)

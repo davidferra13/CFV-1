@@ -70,6 +70,9 @@ export function FoodCostPanel({ eventId, initialData }: Props) {
       date,
       notes: notes || null,
       receiptUrl: null,
+      sourceName: null,
+      sourceType: null,
+      sourceNotes: null,
     }
 
     setData((prev) => ({

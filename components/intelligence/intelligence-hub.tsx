@@ -1522,7 +1522,12 @@ export async function IntelligenceHubContent() {
         </CardContent>
       </Card>
 
-      {/* 25. Commitment Insights */}
+      {/* 25. Commitment Cockpit (full-width) */}
+      <div className="md:col-span-2">
+        <CommitmentCockpit />
+      </div>
+
+      {/* 26. Commitment Insights */}
       <CommitmentInsightsCard />
     </div>
   )

@@ -3,6 +3,7 @@
 import { requireChef } from '@/lib/auth/get-user'
 import { createServerClient } from '@/lib/db/server'
 import type { ReadinessGate } from './readiness'
+import type { CommitmentDomain } from '@/lib/commitment/types'
 
 /**
  * Count how many times a specific gate has been overridden
@@ -29,4 +30,22 @@ export async function getOverrideCountLast90Days(gate: ReadinessGate): Promise<n
   }
 
   return count ?? 0
+}
+
+export async function getActiveCommitmentForDomain(
+  domain: CommitmentDomain
+): Promise<{ description: string; domain: CommitmentDomain } | null> {
+  const user = await requireChef()
+  const db: any = createServerClient()
+
+  const { data, error } = await db
+    .from('commitments')
+    .select('description, domain')
+    .eq('tenant_id', user.tenantId!)
+    .eq('domain', domain)
+    .eq('status', 'active')
+    .limit(1)
+
+  if (error || !data?.length) return null
+  return { description: data[0].description, domain: data[0].domain }
 }
