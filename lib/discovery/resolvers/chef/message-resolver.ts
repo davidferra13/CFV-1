@@ -1,4 +1,5 @@
-import type { GodModeResolvedItem, GodModeResolverContext, RailTier } from '../../god-mode-types'
+﻿import type { GodModeResolvedItem, GodModeResolverContext, RailTier } from '../../god-mode-types'
+import type { ConversationWithDetails } from '@/lib/chat/types'
 
 const MS_DAY = 86_400_000
 
@@ -40,7 +41,82 @@ export function buildMessageLabel(row: ConversationRow): string {
   return parts.join(' ')
 }
 
+async function resolveClientMessages(
+  ctx: GodModeResolverContext,
+  clientId: string
+): Promise<GodModeResolvedItem[]> {
+  const { getConversationInbox } = await import('@/lib/chat/actions')
+  const { createServerClient } = await import('@/lib/db/server')
+
+  try {
+    // Look up the client's auth_user_id from the client entity ID
+    const db: any = createServerClient()
+    const { data: client } = await db
+      .from('clients')
+      .select('auth_user_id')
+      .eq('id', clientId)
+      .single()
+
+    if (!client?.auth_user_id) return []
+
+    const result = await getConversationInbox()
+    const conversations = (result ?? []) as ConversationWithDetails[]
+
+    // Filter to conversations where this client is a participant
+    const clientConvos = conversations.filter((c) =>
+      c.participants?.some((p) => p.auth_user_id === client.auth_user_id)
+    )
+
+    const items: GodModeResolvedItem[] = []
+
+    for (const convo of clientConvos.slice(0, 5)) {
+      const row: ConversationRow = {
+        id: convo.id,
+        unread_count: convo.unread_count ?? 0,
+        other_participant_name: convo.other_participant_name ?? null,
+        context_type: convo.context_type ?? null,
+        event_id: convo.event_id ?? null,
+        event_date: null,
+        last_message_at: convo.last_message_at ?? null,
+        last_message_preview: convo.last_message_preview ?? null,
+      }
+
+      const tier = assignMessageTier(row, ctx.now)
+      if (!tier) continue
+
+      items.push({
+        definitionId: 'chef.message_new',
+        tier,
+        label: buildMessageLabel(row),
+        context: row.last_message_preview ?? 'New message',
+        destination: `/chef/messages/${convo.id}`,
+        icon: 'chat',
+        loopState: 'active',
+        sourceKind: 'message',
+        evidenceLabel: 'confirmed',
+        confidence: 1,
+        proofHref: `/chef/messages/${convo.id}`,
+        nextAction: 'Read and reply',
+        data: {
+          conversationId: convo.id,
+          eventId: convo.event_id,
+          unreadCount: convo.unread_count,
+        },
+      })
+    }
+
+    return items
+  } catch (err) {
+    console.error('[message-resolver] Client-scoped query failed:', err)
+    return []
+  }
+}
+
 export async function resolveMessages(ctx: GodModeResolverContext): Promise<GodModeResolvedItem[]> {
+  if (ctx.entityContext?.type === 'client') {
+    return resolveClientMessages(ctx, ctx.entityContext.id)
+  }
+
   const { getConversationInbox } = await import('@/lib/chat/actions')
 
   let conversations: ConversationRow[]

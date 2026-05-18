@@ -1,7 +1,9 @@
 import type { GodModeResolvedItem, GodModeResolverContext, RailTier } from '../../god-mode-types'
-import type { CompletionResult, CompletionStatus } from '@/lib/completion/types'
+import type { CompletionResult, CompletionStatus, EntityType } from '@/lib/completion/types'
+import type { SourceKind } from '@/lib/operating-loop/types'
 
 const MAX_ITEMS = 4
+const MAX_ENTITY_BLOCKERS = 4
 
 const STATUS_TIER: Record<CompletionStatus, RailTier> = {
   incomplete: 'p2',
@@ -9,9 +11,116 @@ const STATUS_TIER: Record<CompletionStatus, RailTier> = {
   complete: 'p4',
 }
 
+const ENTITY_SOURCE_KIND: Partial<Record<EntityType, SourceKind>> = {
+  event: 'event',
+  menu: 'menu',
+}
+
+const ENTITY_ICON: Partial<Record<EntityType, string>> = {
+  event: 'calendar',
+  menu: 'utensils',
+}
+
+const ENTITY_PATH_PREFIX: Partial<Record<EntityType, string>> = {
+  event: '/chef/events',
+  menu: '/chef/menus',
+}
+
+// ---------------------------------------------------------------------------
+// Entity-scoped completion (contextual rail)
+// ---------------------------------------------------------------------------
+
+async function resolveEntityCompletion(
+  ctx: GodModeResolverContext,
+  entityType: EntityType,
+  entityId: string
+): Promise<GodModeResolvedItem[]> {
+  try {
+    const { evaluateCompletion } = await import('@/lib/completion/engine')
+    const result = await evaluateCompletion(entityType, entityId, ctx.tenantId)
+    if (!result || result.status === 'complete') return []
+
+    const items: GodModeResolvedItem[] = []
+    const sourceKind = ENTITY_SOURCE_KIND[entityType] ?? 'system'
+    const icon = ENTITY_ICON[entityType] ?? 'check-circle'
+    const pathPrefix = ENTITY_PATH_PREFIX[entityType] ?? '/chef'
+    const entityLabel = result.entityLabel ?? entityType
+
+    // Summary item: overall completion percentage and blocking count
+    const blockingCount = result.blockingRequirements.length
+    const tier: RailTier = blockingCount > 0 ? 'p1' : STATUS_TIER[result.status]
+
+    items.push({
+      definitionId: `chef.entity_completion-${entityType}-${entityId}`,
+      tier,
+      label: `${entityLabel}: ${result.score}% ready`,
+      context:
+        blockingCount > 0
+          ? `${blockingCount} blocking requirement${blockingCount === 1 ? '' : 's'}`
+          : result.missingRequirements.length > 0
+            ? `${result.missingRequirements.length} items remaining`
+            : '',
+      destination: result.nextAction?.url ?? `${pathPrefix}/${entityId}`,
+      icon,
+      score: Math.max(10, 100 - result.score),
+      sourceKind,
+      evidenceLabel: 'computed',
+      confidence: 0.95,
+      nextAction: result.nextAction?.label ?? null,
+      data: {
+        entityType,
+        entityId,
+        completionScore: result.score,
+        completionStatus: result.status,
+        blockingCount,
+        missingCount: result.missingRequirements.length,
+      },
+    })
+
+    // Individual blocking requirement items (up to MAX_ENTITY_BLOCKERS)
+    for (const blocker of result.blockingRequirements.slice(0, MAX_ENTITY_BLOCKERS)) {
+      items.push({
+        definitionId: `chef.entity_blocker-${entityType}-${entityId}-${blocker.key}`,
+        tier: 'p1',
+        label: blocker.label,
+        context: `Blocks ${entityLabel} (${blocker.category})`,
+        destination: blocker.actionUrl ?? `${pathPrefix}/${entityId}`,
+        icon: 'alert-triangle',
+        score: 70,
+        sourceKind,
+        evidenceLabel: 'computed',
+        confidence: 0.95,
+        nextAction: blocker.actionLabel ?? 'Resolve',
+        data: {
+          entityType,
+          entityId,
+          blockingKey: blocker.key,
+          blockingCategory: blocker.category,
+        },
+      })
+    }
+
+    return items
+  } catch {
+    return []
+  }
+}
+
+// ---------------------------------------------------------------------------
+// Main resolver (existing logic, unchanged)
+// ---------------------------------------------------------------------------
+
 export async function resolveCompletionItems(
   ctx: GodModeResolverContext
 ): Promise<GodModeResolvedItem[]> {
+  // Entity-scoped early returns for contextual rail
+  if (ctx.entityContext?.type === 'event') {
+    return resolveEntityCompletion(ctx, 'event', ctx.entityContext.id)
+  }
+  if (ctx.entityContext?.type === 'menu') {
+    return resolveEntityCompletion(ctx, 'menu', ctx.entityContext.id)
+  }
+
   try {
     const { evaluateCompletion } = await import('@/lib/completion/engine')
     const { pgClient } = await import('@/lib/db/index')

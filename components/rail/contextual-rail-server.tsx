@@ -21,7 +21,8 @@ export async function ContextualRailServer() {
     if (data.totalItems === 0) return null
 
     return <ContextualRailClient data={data} />
-  } catch {
+  } catch (err) {
+    console.error('[ContextualRailServer] render failed:', err)
     return null
   }
 }
