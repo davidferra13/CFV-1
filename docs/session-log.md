@@ -1,5 +1,20 @@
 # Session Log
 
+## 2026-05-18 ~evening EDT
+
+- Agent: Claude Opus 4.6 (main session)
+- Task: Fixed catastrophic nav sidebar regression + added regression guard
+- Status: completed
+- Files touched:
+  - `components/navigation/nav-config.tsx` (added Dashboard + Autopilot to actionBarItems, unhid /network and /community)
+  - `components/navigation/chef-nav.tsx` (render standaloneBottom items in expanded sidebar mode)
+  - `tests/unit/nav-regression.test.ts` (NEW - 7-test regression guard)
+  - `tests/unit/surface-governance.test.ts` (updated surface governance tests)
+  - Plus rail/discovery/xray/skill files from prior agent work bundled in same commit
+- Commits: `6d40968ca`
+- Build state on departure: green (tsc OOM on full check but all tests pass, dev server healthy on :3100)
+- Notes: Nav has 6 stacking filter layers (modules, focus mode, progressive disclosure, surface graph, hidden flags, permissions). Regression test now guards critical routes, action bar items, nav group IDs, empty groups. Playwright browser was locked so visual verification was code-analysis only.
+
 ## 2026-05-18 ~afternoon EDT
 
 - Agent: Claude Opus 4.6 (main session + Explore agent for domain mapping)
