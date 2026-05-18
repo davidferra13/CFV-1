@@ -47,6 +47,7 @@ Required closeout:
 - Hard refresh the affected route or page.
 - Check browser console, network, server logs, and runtime errors relevant to the changed surface.
 - Run focused verification commands, tests, type checks, or smoke checks that match the changed files.
+- Run `/wiring-audit` as the post-build integration gate. It must cover Page X-Ray, Dinner Circles, Universal Rail Intelligence, Priority Queue, Commitment UI, Menu Intelligence, PIE, Client Intelligence, communications, lifecycle, ledger, navigation, Remy, automation, and CIL where relevant.
 - For UI work, capture visible proof with a screenshot, recording, or explicit manual route check.
 - Generate or update the proof pack with acceptance evidence, wiring proof, runtime proof, verification output, and partial-work notes.
 - Run `build-queue.mjs finish-check` for the selected queue item IDs.

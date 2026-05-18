@@ -23,6 +23,7 @@
 | Build fails or type errors appear    | `/health`                        | Diagnose before guessing                    |
 | Hard bug or performance regression   | `/diagnose`                      | 6-phase disciplined diagnosis (Pocock)      |
 | After significant code changes       | `/review` then `/ship`           | Ship clean code                             |
+| After any build, before done         | `/wiring-audit`                  | Page X-Ray plus domain wiring matrix        |
 | Feature work complete                | `/feature-closeout`              | tsc + build + commit + push                 |
 | Stress testing or persona simulation | `/persona-stress-test`           | Deterministic audit                         |
 | Need to start dev environment        | `/warmup`                        | Server + auth + browser ready               |
@@ -47,7 +48,7 @@
 | "How are we doing" / queue status    | `/progress`                      | Build queue dashboard + burndown            |
 | After a swarm produces PARTIAL items | `/sweep`                         | Batch Playwright verification               |
 | Dirty tree from parallel agents      | `/untangle`                      | Sort into logical atomic commits            |
-| "What's disconnected" / post-build   | `/wiring-audit`                  | Diagnostic orphan scan                      |
+| "What's disconnected" / post-build   | `/wiring-audit`                  | Post-build integration gate and orphan scan |
 | After wiring-audit finds orphans     | `/wire`                          | Connect orphaned code to consumers          |
 | "Apply migrations" / blocked items   | `/migrate`                       | Safe migration with backup + verify         |
 | "Run tests" / pre-ship               | `/qa`                            | Unified QA pass (dev/pass/full levels)      |
@@ -63,6 +64,7 @@
 | **Check services on start**  | First message of session                                         | `bash scripts/services.sh status`, kill garbage silently                               |
 | **TDD-first (default)**      | When building any new feature, fix, or significant change        | Write test first (RED), implement minimum to pass (GREEN), refactor. Small steps only  |
 | **Run tsc after TS edits**   | After completing a logical unit of work (not every edit)         | `npx tsc --noEmit --skipLibCheck`, fix errors before moving on                         |
+| **Run wire audit**           | After every build before marking done                            | `/wiring-audit`, including Page X-Ray and the post-build domain matrix                 |
 | **Rebuild if stale**         | Before any UI verification if last build >24h old                | `npm run build -- --no-lint`                                                           |
 | **Commit at milestones**     | After completing a feature, fixing a bug, or meaningful progress | Stage + commit with conventional message. Do not batch 20 files                        |
 | **Update build-state.md**    | After any successful tsc + build                                 | Write green status, date, commit hash                                                  |
@@ -114,7 +116,7 @@
 - **`/sweep`** - Batch-verify PARTIAL items via Playwright. Run after swarm sessions.
 - **`/untangle`** - Sort dirty git tree into logical atomic commits.
 - **`/wire`** - Connect orphaned code (exports with no consumers, actions with no triggers).
-- **`/wiring-audit`** - Read-only diagnostic: find disconnected code. Feeds into `/wire`.
+- **`/wiring-audit`** - Post-build integration gate: Page X-Ray, route reachability, orphan scan, and domain wiring matrix. Feeds into `/wire`.
 - **`/migrate`** - Safely apply pending migrations with backup and verification.
 - **`/qa`** - Unified QA pass (dev/pass/full levels) using existing qa-\* scripts.
 - **`/test-scan`** - Reconcile routes vs tests, update test-coverage-blueprint.md.

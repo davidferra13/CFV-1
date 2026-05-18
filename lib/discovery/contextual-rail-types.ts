@@ -23,6 +23,8 @@ export const RAIL_CATEGORIES = [
 
 export type EntityType = 'event' | 'client' | 'menu' | 'recipe' | 'inquiry' | 'page'
 
+export type RailScope = 'chef' | 'public' | 'client' | 'admin' | 'staff' | 'vendor' | 'partner'
+
 export interface EntityContext {
   type: EntityType
   id: string
@@ -44,6 +46,7 @@ export interface CollapsedMetric {
 
 export interface RailProfile {
   id: string
+  scope: RailScope
   pattern: RegExp
   entityExtract?: (match: RegExpMatchArray) => EntityContext | null
   categories: RailCategory[]
@@ -76,7 +79,7 @@ export interface ResolvedCollapsedMetric extends CollapsedMetric {
 
 export interface ContextualRailData {
   profile: RailProfile
-  categories: Record<RailCategory, ContextualRailCategoryData>
+  categories: Partial<Record<RailCategory, ContextualRailCategoryData>>
   collapsedMetrics: ResolvedCollapsedMetric[]
   criticalCount: number
   totalItems: number
@@ -92,6 +95,11 @@ export const CATEGORY_COLORS: Record<RailCategory, { bg: string; text: string; i
   intelligence: { bg: 'bg-cyan-500/10', text: 'text-cyan-400', icon: 'brain' },
   communication: { bg: 'bg-indigo-500/10', text: 'text-indigo-400', icon: 'message-circle' },
   actions: { bg: 'bg-stone-500/10', text: 'text-stone-300', icon: 'check-square' },
+}
+
+export function categoryClass(category: RailCategory): string {
+  const color = CATEGORY_COLORS[category]
+  return `${color.bg} ${color.text}`
 }
 
 // ---------------------------------------------------------------------------

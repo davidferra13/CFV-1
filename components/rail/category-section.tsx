@@ -1,23 +1,33 @@
 'use client'
 
 import type {
-  RailCategory,
   ContextualRailCategoryData,
+  RailCategory,
 } from '@/lib/discovery/contextual-rail-types'
-import { CATEGORY_ICONS } from '@/lib/discovery/contextual-rail-types'
 import type { GodModeResolvedItem } from '@/lib/discovery/god-mode-types'
 import { RailIntelCard } from '@/components/rail/rail-intel-card'
 import { cn } from '@/lib/utils'
+import {
+  Brain,
+  CheckCircle,
+  CheckSquare,
+  Clock,
+  DollarSign,
+  MessageCircle,
+  Shield,
+  Users,
+  type LucideIcon,
+} from '@/components/ui/icons'
 
-const CATEGORY_ICON_TEXT: Record<string, string> = {
-  'check-circle': '✓',
-  'dollar-sign': '$',
-  users: '👥',
-  clock: '⏰',
-  'alert-triangle': '⚠',
-  brain: '🧠',
-  'message-circle': '💬',
-  zap: '⚡',
+const CATEGORY_ICON: Record<RailCategory, LucideIcon> = {
+  readiness: CheckCircle,
+  money: DollarSign,
+  people: Users,
+  time: Clock,
+  risk: Shield,
+  intelligence: Brain,
+  communication: MessageCircle,
+  actions: CheckSquare,
 }
 
 type CategorySectionProps =
@@ -41,8 +51,7 @@ export function CategorySection(props: CategorySectionProps) {
   const items = props.data?.items ?? props.items!
   const colorClass = props.data?.colorClass ?? props.colorClass!
   const label = props.data?.label ?? props.label!
-  const iconName = CATEGORY_ICONS[category]
-  const iconText = CATEGORY_ICON_TEXT[iconName] ?? '•'
+  const Icon = CATEGORY_ICON[category]
   const visible = items.slice(0, 8)
 
   return (
@@ -53,13 +62,13 @@ export function CategorySection(props: CategorySectionProps) {
           colorClass
         )}
       >
-        <span aria-hidden>{iconText}</span>
+        <Icon className="h-3 w-3" aria-hidden />
         <span>{label}</span>
       </div>
 
       {visible.length === 0 ? (
         <div className="flex items-center gap-1 px-2 text-xs text-stone-600">
-          <span className="text-green-600">✓</span>
+          <CheckCircle className="h-3 w-3 text-green-600" aria-hidden />
           <span>All clear</span>
         </div>
       ) : (

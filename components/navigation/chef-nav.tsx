@@ -1164,6 +1164,33 @@ export function ChefSidebar({
 
             <PinnedSurfacesSection pinnedSurfaces={pinnedSurfaces ?? []} />
             <RecentPagesSection />
+
+            {/* Bottom standalone links */}
+            {visibleBottomItems.length > 0 && (
+              <div className="mt-2 pt-2 border-t border-stone-800/40 space-y-0.5">
+                {visibleBottomItems
+                  .filter((item) => item.href !== '/settings')
+                  .map((item) => {
+                    const Icon = item.icon
+                    const active = isItemActive(pathname, item.href, searchParams)
+                    return (
+                      <PendingNavLink
+                        key={item.href}
+                        href={item.href}
+                        className="nav-item-hover flex items-center gap-3 px-3 py-1.5 rounded-lg text-sm font-medium text-stone-400 hover:text-stone-200"
+                        activeClassName="bg-brand-950/80 text-brand-400"
+                        pendingClassName="bg-brand-950/50 text-brand-400/70"
+                        isActive={active}
+                      >
+                        <Icon
+                          className={`w-4 h-4 flex-shrink-0 ${active ? 'text-brand-600' : 'text-stone-500'}`}
+                        />
+                        {item.label}
+                      </PendingNavLink>
+                    )
+                  })}
+              </div>
+            )}
           </div>
         )}
       </nav>

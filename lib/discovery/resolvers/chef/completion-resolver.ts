@@ -13,17 +13,23 @@ const STATUS_TIER: Record<CompletionStatus, RailTier> = {
 
 const ENTITY_SOURCE_KIND: Partial<Record<EntityType, SourceKind>> = {
   event: 'event',
+  client: 'client_profile',
   menu: 'menu',
+  recipe: 'recipe',
 }
 
 const ENTITY_ICON: Partial<Record<EntityType, string>> = {
   event: 'calendar',
+  client: 'user',
   menu: 'utensils',
+  recipe: 'utensils',
 }
 
 const ENTITY_PATH_PREFIX: Partial<Record<EntityType, string>> = {
   event: '/chef/events',
+  client: '/chef/clients',
   menu: '/chef/menus',
+  recipe: '/chef/recipes',
 }
 
 // ---------------------------------------------------------------------------
@@ -117,8 +123,14 @@ export async function resolveCompletionItems(
   if (ctx.entityContext?.type === 'event') {
     return resolveEntityCompletion(ctx, 'event', ctx.entityContext.id)
   }
+  if (ctx.entityContext?.type === 'client') {
+    return resolveEntityCompletion(ctx, 'client', ctx.entityContext.id)
+  }
   if (ctx.entityContext?.type === 'menu') {
     return resolveEntityCompletion(ctx, 'menu', ctx.entityContext.id)
+  }
+  if (ctx.entityContext?.type === 'recipe') {
+    return resolveEntityCompletion(ctx, 'recipe', ctx.entityContext.id)
   }
 
   try {

@@ -36,6 +36,7 @@ import { ConflictBadge } from '@/components/events/conflict-badge'
 import { evaluateCompletion } from '@/lib/completion/engine'
 import { CompletionBadge } from '@/components/completion/completion-badge'
 import type { CompletionStatus } from '@/lib/completion/types'
+import { getEventIndexPaymentState } from '@/lib/events/payment-state'
 
 export const metadata: Metadata = { title: 'Events' }
 
@@ -235,10 +236,59 @@ async function EventsList({
 
   // Fetch first dish photo per event (via menus -> dishes, public bucket)
   let eventPhotoMap: Record<string, string> = {}
+  const eventPaymentMap: Record<
+    string,
+    {
+      payment_status: string | null
+      quoted_price_cents: number | null
+      total_paid_cents: number | null
+      outstanding_balance_cents: number | null
+    }
+  > = {}
   const eventIds = events.map((e: any) => e.id)
+  for (const event of events) {
+    eventPaymentMap[event.id] = {
+      payment_status: event.payment_status ?? null,
+      quoted_price_cents: event.quoted_price_cents ?? null,
+      total_paid_cents: null,
+      outstanding_balance_cents: null,
+    }
+  }
   if (eventIds.length > 0) {
     try {
       const db: any = createServerClient()
+      const { data: ledgerRows, error: ledgerError } = await db
+        .from('ledger_entries')
+        .select('event_id, entry_type, amount_cents, is_refund')
+        .eq('tenant_id', user.tenantId!)
+        .in('event_id', eventIds)
+        .limit(5000)
+
+      if (ledgerError) {
+        console.error('[events-list] Ledger payment fetch failed:', ledgerError.message)
+      } else {
+        const totals: Record<string, { paid: number; refunded: number }> = {}
+        for (const row of ledgerRows ?? []) {
+          if (!row.event_id) continue
+          totals[row.event_id] = totals[row.event_id] ?? { paid: 0, refunded: 0 }
+          if (row.is_refund || row.entry_type === 'refund') {
+            totals[row.event_id].refunded += Math.abs(Number(row.amount_cents ?? 0))
+          } else if (row.entry_type !== 'tip') {
+            totals[row.event_id].paid += Number(row.amount_cents ?? 0)
+          }
+        }
+        for (const event of events) {
+          const total = totals[event.id] ?? { paid: 0, refunded: 0 }
+          const quoted = Number(event.quoted_price_cents ?? 0)
+          eventPaymentMap[event.id] = {
+            payment_status: event.payment_status ?? null,
+            quoted_price_cents: event.quoted_price_cents ?? null,
+            total_paid_cents: total.paid,
+            outstanding_balance_cents: Math.max(0, quoted - total.paid + total.refunded),
+          }
+        }
+      }
+
       const { data: menus } = await db
         .from('menus')
         .select('id, event_id')
@@ -333,7 +383,7 @@ async function EventsList({
               <TableHead>Client</TableHead>
               <TableHead>Status</TableHead>
               <TableHead>Next Step</TableHead>
-              <TableHead className="text-right">Quoted</TableHead>
+              <TableHead>Payment</TableHead>
               <TableHead></TableHead>
             </TableRow>
           </TableHeader>
@@ -345,6 +395,14 @@ async function EventsList({
                 `${_td.getFullYear()}-${String(_td.getMonth() + 1).padStart(2, '0')}-${String(_td.getDate()).padStart(2, '0')}`
               const eventDate = new Date(event.event_date)
               const rowStripe = idx % 2 === 1 ? 'bg-stone-800/20' : ''
+              const financial = eventPaymentMap[event.id]
+              const paymentState = getEventIndexPaymentState({
+                eventDate: event.event_date,
+                paymentStatus: financial?.payment_status ?? null,
+                quotedPriceCents: financial?.quoted_price_cents ?? null,
+                totalPaidCents: financial?.total_paid_cents ?? null,
+                outstandingBalanceCents: financial?.outstanding_balance_cents ?? null,
+              })
               return (
                 <TableRow
                   key={event.id}
@@ -448,11 +506,36 @@ async function EventsList({
                       )
                     })()}
                   </TableCell>
-                  <TableCell className="text-right font-medium text-stone-200 tabular-nums">
-                    {formatCurrency(event.quoted_price_cents ?? 0, {
-                      locale: regional.locale,
-                      currency: regional.currencyCode,
-                    })}
+                  <TableCell>
+                    <Link
+                      href={`/events/${event.id}/billing`}
+                      className="inline-flex min-w-[8rem] flex-col items-start gap-1 rounded-md px-1 py-1 transition-colors hover:bg-stone-800/60"
+                    >
+                      <Badge
+                        variant={paymentState.badgeVariant}
+                        className="whitespace-nowrap px-2 py-0.5 text-[11px]"
+                      >
+                        {paymentState.label}
+                      </Badge>
+                      {paymentState.showOutstanding ? (
+                        <span className="text-xs font-medium tabular-nums text-stone-300">
+                          {formatCurrency(paymentState.outstandingBalanceCents, {
+                            locale: regional.locale,
+                            currency: regional.currencyCode,
+                          })}{' '}
+                          due
+                        </span>
+                      ) : (
+                        <span className="text-xs tabular-nums text-stone-500">
+                          {paymentState.quotedPriceCents !== null
+                            ? formatCurrency(paymentState.quotedPriceCents, {
+                                locale: regional.locale,
+                                currency: regional.currencyCode,
+                              })
+                            : 'No price set'}
+                        </span>
+                      )}
+                    </Link>
                   </TableCell>
                   <TableCell>
                     <div className="flex gap-1.5">

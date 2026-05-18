@@ -92,5 +92,12 @@ test('every profile has valid configuration', () => {
     if (profile.id !== 'fallback') {
       assert.ok(profile.resolverFilter.length > 0, `${profile.id} has no resolverFilter`)
     }
+    for (const metric of profile.collapsedMetrics) {
+      assert.ok(
+        metric.resolverKey === '_critical_count' ||
+          profile.resolverFilter.includes(metric.resolverKey),
+        `${profile.id} metric ${metric.label} references resolver ${metric.resolverKey} outside resolverFilter`
+      )
+    }
   }
 })

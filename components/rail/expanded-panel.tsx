@@ -7,31 +7,7 @@ import type {
 } from '@/lib/discovery/contextual-rail-types'
 import { cn } from '@/lib/utils'
 import { CategorySection } from './category-section'
-
-// ---------------------------------------------------------------------------
-// Chevron Up SVG
-// ---------------------------------------------------------------------------
-
-function ChevronUpIcon() {
-  return (
-    <svg
-      width="16"
-      height="16"
-      viewBox="0 0 16 16"
-      fill="none"
-      xmlns="http://www.w3.org/2000/svg"
-      className="text-stone-500"
-    >
-      <path
-        d="M4 10L8 6L12 10"
-        stroke="currentColor"
-        strokeWidth="1.5"
-        strokeLinecap="round"
-        strokeLinejoin="round"
-      />
-    </svg>
-  )
-}
+import { ChevronUp } from '@/components/ui/icons'
 
 // ---------------------------------------------------------------------------
 // Column assignment: spread categories evenly, primary in column 1
@@ -102,7 +78,8 @@ export function ExpandedPanel({
     ? assignColumns(data.profile.categories, data.profile.primaryCategory, columnCount)
     : [data.profile.categories.filter((c) => c !== 'actions')]
 
-  const hasActions = data.categories.actions && data.categories.actions.items.length > 0
+  const actionsData = data.categories.actions
+  const hasActions = Boolean(actionsData && actionsData.items.length > 0)
 
   const gridColsClass =
     columnCount === 2
@@ -133,7 +110,7 @@ export function ExpandedPanel({
           className="flex items-center justify-center w-8 h-8 rounded hover:bg-stone-800/60 transition-colors cursor-pointer"
           aria-label="Collapse rail"
         >
-          <ChevronUpIcon />
+          <ChevronUp className="h-4 w-4 text-stone-500" aria-hidden />
         </button>
       </div>
 
@@ -164,7 +141,7 @@ export function ExpandedPanel({
       </div>
 
       {/* Bottom actions */}
-      {hasActions && <ActionsRow categoryData={data.categories.actions} />}
+      {hasActions && actionsData && <ActionsRow categoryData={actionsData} />}
     </div>
   )
 }

@@ -426,3 +426,45 @@ export async function dispatchAllResolvers(
 ): Promise<GodModeResolvedItem[]> {
   return dispatchResolvers([...hotResolvers(), ...warmResolvers()], ctx)
 }
+
+/**
+ * Named resolver subset for contextual surfaces.
+ * Keeps the resolver name on each returned item so downstream rails can group
+ * and summarize by the profile's resolverFilter without guessing from IDs.
+ */
+export async function dispatchFilteredResolvers(
+  ctx: GodModeResolverContext,
+  nameFilter: readonly string[]
+): Promise<GodModeResolvedItem[]> {
+  const allowed = new Set(nameFilter)
+  if (allowed.size === 0) return dispatchHotResolvers(ctx)
+
+  const resolvers = [...hotResolvers(), ...warmResolvers()].filter((entry) =>
+    allowed.has(entry.name)
+  )
+
+  const results = await Promise.allSettled(
+    resolvers.map(async (entry) => {
+      try {
+        const items = await withTimeout(entry.resolve(ctx), RESOLVER_TIMEOUT_MS, entry.name)
+        return items.map((item) => ({
+          ...item,
+          data: {
+            ...item.data,
+            resolverName: entry.name,
+          },
+        }))
+      } catch (err) {
+        console.error(`[god-mode-dispatcher] ${entry.name} failed:`, err)
+        return []
+      }
+    })
+  )
+
+  const items: GodModeResolvedItem[] = []
+  for (const result of results) {
+    if (result.status === 'fulfilled') items.push(...result.value)
+  }
+
+  return items
+}

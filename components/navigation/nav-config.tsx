@@ -989,7 +989,6 @@ export const navGroups: NavGroup[] = [
         href: '/network',
         label: 'Chef Network',
         icon: Users,
-        hidden: true,
         children: [
           { href: '/network/collabs', label: 'Collaborations' },
           { href: '/network/notifications', label: 'Notifications' },
@@ -1000,7 +999,6 @@ export const navGroups: NavGroup[] = [
         href: '/community',
         label: 'Community',
         icon: FileText,
-        hidden: true,
         children: [
           { href: '/community/directory', label: 'Chef Directory' },
           { href: '/community/mentorship', label: 'Mentorship' },
@@ -1981,11 +1979,11 @@ export function getPrimaryShortcutOptions() {
   return PRIMARY_SHORTCUT_OPTIONS.map(({ href, label, context }) => ({ href, label, context }))
 }
 
-// Action Bar: 8 daily-driver shortcuts from the Navigation Action Bar spec.
-// Logo click = Dashboard (handled by the logo link, not an Action Bar item).
-// All other surfaces reachable via the All Features collapse, command palette, or direct routes.
+// Action Bar: daily-driver shortcuts always visible in the sidebar.
 export const actionBarItems: NavItem[] = [
+  { href: '/dashboard', label: 'Today', icon: LayoutDashboard },
   { href: '/inbox', label: 'Inbox', icon: Inbox },
+  { href: '/autopilot', label: 'Autopilot', icon: Zap },
   { href: '/notifications', label: 'Notifications', icon: BellRing },
   { href: '/calendar', label: 'Calendar', icon: Calendar },
   { href: '/events', label: 'Events', icon: CalendarDays },

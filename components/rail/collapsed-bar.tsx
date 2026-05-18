@@ -2,9 +2,11 @@
 
 import type {
   ContextualRailData,
+  RailCategory,
   ResolvedCollapsedMetric,
 } from '@/lib/discovery/contextual-rail-types'
-import { CATEGORY_COLORS } from '@/lib/discovery/contextual-rail-types'
+import { CATEGORY_COLORS, RESOLVER_CATEGORY_MAP } from '@/lib/discovery/contextual-rail-types'
+import { ChevronDown } from '@/components/ui/icons'
 import { cn } from '@/lib/utils'
 
 // ---------------------------------------------------------------------------
@@ -91,8 +93,9 @@ function ReadinessBar({ metrics }: { metrics: ResolvedCollapsedMetric[] }) {
 // ---------------------------------------------------------------------------
 
 function MetricChip({ metric }: { metric: ResolvedCollapsedMetric }) {
-  const categoryKey = metric.resolverKey.split('.')[0] as keyof typeof CATEGORY_COLORS
-  const colorClass = CATEGORY_COLORS[categoryKey] ?? 'bg-stone-500/10 text-stone-300'
+  const categoryKey = RESOLVER_CATEGORY_MAP[metric.resolverKey] as RailCategory | undefined
+  const color = categoryKey ? CATEGORY_COLORS[categoryKey] : null
+  const colorClass = color ? `${color.bg} ${color.text}` : 'bg-stone-500/10 text-stone-300'
 
   return (
     <span
@@ -114,31 +117,6 @@ function MetricChip({ metric }: { metric: ResolvedCollapsedMetric }) {
 
 function Divider() {
   return <span className="text-stone-700 text-[10px] select-none mx-0.5">|</span>
-}
-
-// ---------------------------------------------------------------------------
-// Chevron Down SVG
-// ---------------------------------------------------------------------------
-
-function ChevronDownIcon() {
-  return (
-    <svg
-      width="16"
-      height="16"
-      viewBox="0 0 16 16"
-      fill="none"
-      xmlns="http://www.w3.org/2000/svg"
-      className="text-stone-500"
-    >
-      <path
-        d="M4 6L8 10L12 6"
-        stroke="currentColor"
-        strokeWidth="1.5"
-        strokeLinecap="round"
-        strokeLinejoin="round"
-      />
-    </svg>
-  )
 }
 
 // ---------------------------------------------------------------------------
@@ -190,7 +168,7 @@ export function CollapsedBar({
 
       {/* Expand chevron */}
       <span className="flex-shrink-0 ml-1">
-        <ChevronDownIcon />
+        <ChevronDown className="h-4 w-4 text-stone-500" aria-hidden />
       </span>
     </button>
   )

@@ -166,5 +166,19 @@ describe('surface governance', () => {
       showContextualRail: false,
       contentWidth: 'full',
     })
+    assert.deepEqual(resolveChefShellBudget('/welcome'), {
+      mode: 'triage',
+      showMarketResearchBanner: false,
+      showFeedbackNudge: false,
+      showDesktopSidebar: false,
+      showMobileNav: false,
+      showBreadcrumbBar: false,
+      showQuickExpenseTrigger: false,
+      showRemy: false,
+      showQuickCapture: false,
+      showLiveAlerts: false,
+      showContextualRail: false,
+      contentWidth: 'full',
+    })
   })
 })

@@ -121,11 +121,12 @@ Never create `@ts-nocheck` files. Existing ones must not export callable functio
 
 ## SKILLS ARE REFLEXES (HOOK-ASSISTED)
 
-Skills auto-fire on context triggers. Three are now hook-enforced (can't be skipped):
+Skills auto-fire on context triggers. Four are now hook-enforced (can't be skipped):
 
 - **Context-load** on session start (`context-load-guard.sh`)
 - **Compliance check** after every Edit/Write (`compliance-guard.sh`)
 - **Review reminder** before git commit (`commit-guard.sh`)
+- **Wire-audit** after every build (`/wire-audit`): checks 30 integration domains with relevance scoring. No build is done until wire-audit runs. Include "Run /wire-audit before marking done" in every agent dispatch prompt.
 
 All other skill triggers, autonomous behaviors, and the full skill catalog: `@docs/CLAUDE-SKILLS-REFERENCE.md`
 
@@ -200,6 +201,22 @@ Run `/close-session`. Commit + push. Work must be on GitHub before signing off.
 - **`docs/USER_MANUAL.md`** - update when UI/workflow/behavior changes
 - **`docs/app-complete-audit.md`** - update when adding/removing/renaming UI elements
 - **`docs/test-coverage-blueprint.md`** - update when adding routes/features/tests
+
+### Page X-Ray Pre-Read (MANDATORY)
+
+**Before modifying any route's `page.tsx`, check `docs/xrays/pages/{route-slug}.md` for developer notes and open findings.** If a scan exists, respect its guidance. If no scan exists, note the gap. X-Ray data compounds; ignoring it wastes prior intelligence.
+
+### Post-Build Wire Audit (MANDATORY)
+
+**After every build, run `/wiring-audit` before calling the work done.** This is the umbrella closeout gate for Page X-Ray, Dinner Circles, Universal Rail Intelligence, Priority Queue, Commitment UI, Menu Intelligence, PIE, Client Intelligence, communications, lifecycle, ledger, navigation, Remy, automation, and CIL wiring.
+
+Required closeout:
+
+1. Run `node scripts/wiring-audit.mjs`.
+2. Use `post_build_domain_matrix` to identify the most relevant integration domains for the files that changed.
+3. Run `/page-xray` on every affected route from the matrix, using `--delta` for existing pages and `--quick` for new pages.
+4. For every high or medium relevance domain, either wire it, prove it is already wired, queue a follow-up, or record a clear N/A reason.
+5. Do not mark a build done while a live route, server action, component, Rail profile, Circle hook, Priority Queue action, commitment state, menu/PIE/client intelligence path, notification, lifecycle transition, ledger path, or command/nav entry is obviously missing.
 
 ### Test Coverage Blueprint Contract
 

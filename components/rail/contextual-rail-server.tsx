@@ -15,7 +15,8 @@ export async function ContextualRailServer() {
       profile,
       entityContext,
       user.id,
-      user.tenantId ?? user.entityId
+      user.tenantId ?? user.entityId,
+      pathname
     )
 
     if (data.totalItems === 0) return null

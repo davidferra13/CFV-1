@@ -9,6 +9,7 @@ import type {
 import { DEFAULT_SLOT_POLICY } from './universal-rail-types'
 import {
   computeUniversalRailScore,
+  applySlotPolicy,
   filterSuppressedItems,
   rankUniversalRailItems,
   ROLE_WEIGHT_PROFILES,
@@ -247,8 +248,17 @@ export async function assembleUniversalRail(
   // 6. Rank
   const ranked = rankUniversalRailItems(unsuppressed)
 
-  // 7. Limit
-  const limited = ranked.slice(0, limit)
+  // 7. Apply slot mix policy so practical operational cards keep enough space.
+  const slotted = applySlotPolicy(ranked, DEFAULT_SLOT_POLICY, (item) => {
+    if (item.clickAction === 'quick_action' || item.presentation === 'alert') return 'practical'
+    if (item.category.includes('promo') || item.category.includes('marketing')) return 'promotional'
+    if (item.presentation === 'story' || item.presentation === 'visual_card') return 'editorial'
+    if (item.presentation === 'countdown' || item.presentation === 'progress') return 'planned'
+    return 'ambient'
+  })
+
+  // 8. Limit
+  const limited = slotted.slice(0, limit)
 
   return {
     items: limited,

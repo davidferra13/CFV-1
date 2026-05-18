@@ -1,6 +1,7 @@
 'use client'
 
 import { useCallback, useEffect, useState } from 'react'
+import { useRouter } from 'next/navigation'
 import type { ContextualRailData } from '@/lib/discovery/contextual-rail-types'
 import { useSSE } from '@/lib/realtime/sse-client'
 import { cn } from '@/lib/utils'
@@ -31,6 +32,7 @@ function writeExpanded(profileId: string, value: boolean) {
 }
 
 export function ContextualRailClient({ data }: { data: ContextualRailData }) {
+  const router = useRouter()
   const [expanded, setExpanded] = useState(() =>
     readExpanded(data.profile.id, data.profile.defaultExpanded)
   )
@@ -43,9 +45,8 @@ export function ContextualRailClient({ data }: { data: ContextualRailData }) {
   // SSE subscription: re-render on rail messages
   useSSE('rail', {
     onMessage: useCallback(() => {
-      // Phase 1: SSE triggers acknowledged; server action refetch will be wired later.
-      // For now, the component re-renders with current data.
-    }, []),
+      router.refresh()
+    }, [router]),
   })
 
   // Keyboard shortcut: 'r' toggles expand/collapse
@@ -66,6 +67,8 @@ export function ContextualRailClient({ data }: { data: ContextualRailData }) {
 
   return (
     <div
+      data-cf-contextual-rail={data.profile.id}
+      data-cf-contextual-rail-state={expanded ? 'expanded' : 'collapsed'}
       className={cn(
         'overflow-hidden transition-all duration-200 ease-out',
         expanded ? 'max-h-[320px]' : 'max-h-9'

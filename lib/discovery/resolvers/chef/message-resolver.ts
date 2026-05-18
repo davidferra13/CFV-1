@@ -55,6 +55,7 @@ async function resolveClientMessages(
       .from('clients')
       .select('auth_user_id')
       .eq('id', clientId)
+      .eq('tenant_id', ctx.tenantId)
       .single()
 
     if (!client?.auth_user_id) return []
@@ -63,56 +64,43 @@ async function resolveClientMessages(
     const conversations = (result ?? []) as ConversationWithDetails[]
 
     // Filter to conversations where this client is a participant
-    const clientConvos = conversations.filter((c) =>
-      c.participants?.some((p) => p.auth_user_id === client.auth_user_id)
+    const clientConvos = conversations.filter(
+      (c) =>
+        c.tenant_id === ctx.tenantId &&
+        c.participants?.some((p) => p.auth_user_id === client.auth_user_id)
     )
 
-    const items: GodModeResolvedItem[] = []
-
-    for (const convo of clientConvos.slice(0, 5)) {
-      const row: ConversationRow = {
-        id: convo.id,
-        unread_count: convo.unread_count ?? 0,
-        other_participant_name: convo.other_participant_name ?? null,
-        context_type: convo.context_type ?? null,
-        event_id: convo.event_id ?? null,
-        event_date: null,
-        last_message_at: convo.last_message_at ?? null,
-        last_message_preview: convo.last_message_preview ?? null,
-      }
-
-      const tier = assignMessageTier(row, ctx.now)
-      if (!tier) continue
-
-      items.push({
-        definitionId: 'chef.message_new',
-        tier,
-        label: buildMessageLabel(row),
-        context: row.last_message_preview ?? 'New message',
-        destination: `/chef/messages/${convo.id}`,
-        icon: 'chat',
-        loopState: 'active',
-        sourceKind: 'message',
-        evidenceLabel: 'confirmed',
-        confidence: 1,
-        proofHref: `/chef/messages/${convo.id}`,
-        nextAction: 'Read and reply',
-        data: {
-          conversationId: convo.id,
-          eventId: convo.event_id,
-          unreadCount: convo.unread_count,
-        },
-      })
-    }
-
-    return items
+    return conversationsToRailItems(clientConvos.slice(0, 5), ctx)
   } catch (err) {
     console.error('[message-resolver] Client-scoped query failed:', err)
     return []
   }
 }
 
+async function resolveEventMessages(
+  ctx: GodModeResolverContext,
+  eventId: string
+): Promise<GodModeResolvedItem[]> {
+  const { getConversationInbox } = await import('@/lib/chat/actions')
+
+  try {
+    const result = await getConversationInbox()
+    const conversations = (result ?? []) as ConversationWithDetails[]
+    const eventConvos = conversations.filter(
+      (c) => c.tenant_id === ctx.tenantId && c.context_type === 'event' && c.event_id === eventId
+    )
+
+    return conversationsToRailItems(eventConvos.slice(0, 5), ctx)
+  } catch (err) {
+    console.error('[message-resolver] Event-scoped query failed:', err)
+    return []
+  }
+}
+
 export async function resolveMessages(ctx: GodModeResolverContext): Promise<GodModeResolvedItem[]> {
+  if (ctx.entityContext?.type === 'event') {
+    return resolveEventMessages(ctx, ctx.entityContext.id)
+  }
   if (ctx.entityContext?.type === 'client') {
     return resolveClientMessages(ctx, ctx.entityContext.id)
   }
@@ -128,29 +116,46 @@ export async function resolveMessages(ctx: GodModeResolverContext): Promise<GodM
     return []
   }
 
+  return conversationsToRailItems(conversations, ctx)
+}
+
+function conversationsToRailItems(
+  conversations: Array<ConversationRow | ConversationWithDetails>,
+  ctx: GodModeResolverContext
+): GodModeResolvedItem[] {
   const items: GodModeResolvedItem[] = []
 
   for (const convo of conversations) {
-    const tier = assignMessageTier(convo, ctx.now)
+    const row: ConversationRow = {
+      id: convo.id,
+      unread_count: convo.unread_count ?? 0,
+      other_participant_name: convo.other_participant_name ?? null,
+      context_type: convo.context_type ?? null,
+      event_id: convo.event_id ?? null,
+      event_date: 'event_date' in convo ? convo.event_date : null,
+      last_message_at: convo.last_message_at ?? null,
+      last_message_preview: convo.last_message_preview ?? null,
+    }
+    const tier = assignMessageTier(row, ctx.now)
     if (!tier) continue
 
     items.push({
       definitionId: 'chef.message_new',
       tier,
-      label: buildMessageLabel(convo),
-      context: convo.last_message_preview ?? 'New message',
-      destination: `/chef/messages/${convo.id}`,
+      label: buildMessageLabel(row),
+      context: row.last_message_preview ?? 'New message',
+      destination: `/chef/messages/${row.id}`,
       icon: 'chat',
       loopState: 'active',
       sourceKind: 'message',
       evidenceLabel: 'confirmed',
       confidence: 1,
-      proofHref: `/chef/messages/${convo.id}`,
+      proofHref: `/chef/messages/${row.id}`,
       nextAction: 'Read and reply',
       data: {
-        conversationId: convo.id,
-        eventId: convo.event_id,
-        unreadCount: convo.unread_count,
+        conversationId: row.id,
+        eventId: row.event_id,
+        unreadCount: row.unread_count,
       },
     })
   }

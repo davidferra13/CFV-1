@@ -1,5 +1,18 @@
 # Session Log
 
+## 2026-05-18 ~afternoon EDT
+
+- Agent: Claude Opus 4.6 (main session + Explore agent for domain mapping)
+- Task: Created /wire-audit skill (post-build integration audit with 30-domain relevance matrix)
+- Status: completed
+- Files touched:
+  - `.claude/skills/wire-audit/SKILL.md` (NEW - the skill)
+  - `CLAUDE.md` (updated Skills section: 4 hook-enforced skills now)
+  - Memory: `feedback_build_completion_triad.md` (updated), `MEMORY.md` (updated index)
+- Commits: see below
+- Build state on departure: not verified (no code changes, skill/docs only)
+- Notes: Wire-audit is instruction-enforced (CLAUDE.md rule), not shell-hook enforced. If agents skip it, next step is building a real hook. Also: large dirty git tree from prior agent sessions was committed together.
+
 ## 2026-05-17 ~20:00 EDT
 
 - Agent: Claude Opus 4.6 (main session + 3 parallel Sonnet agents)

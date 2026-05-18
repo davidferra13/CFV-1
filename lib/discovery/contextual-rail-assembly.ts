@@ -1,66 +1,15 @@
 ﻿import type { GodModeResolvedItem, GodModeResolverContext } from './god-mode-types'
 import type {
-  RailProfile,
   RailCategory,
   EntityContext,
   ContextualRailData,
   ContextualRailCategoryData,
   ResolvedCollapsedMetric,
   CollapsedMetric,
+  RailProfile,
 } from './contextual-rail-types'
-import { CATEGORY_COLORS, CATEGORY_LABELS } from './contextual-rail-types'
-
-const RESOLVER_CATEGORY_MAP: Record<string, RailCategory> = {
-  completion: 'readiness',
-  prep: 'readiness',
-  packing: 'readiness',
-  'shopping-list': 'readiness',
-  'menu-approval': 'readiness',
-  onboarding: 'readiness',
-
-  payment: 'money',
-  'revenue-goal': 'money',
-  'recurring-invoice': 'money',
-  'vendor-invoice': 'money',
-  receipt: 'money',
-  'revenue-opportunity': 'money',
-  quote: 'money',
-
-  'dormant-client': 'people',
-  'client-birthday': 'people',
-  followup: 'people',
-  staff: 'people',
-  network: 'people',
-  'review-request': 'people',
-
-  event: 'time',
-  contract: 'time',
-  'cadence-due': 'time',
-  'scheduled-message': 'time',
-  hours: 'time',
-
-  weather: 'risk',
-  'equipment-conflict': 'risk',
-  'quality-drift': 'risk',
-  insurance: 'risk',
-  certification: 'risk',
-
-  'cil-signal': 'intelligence',
-  intelligence: 'intelligence',
-  'dish-fatigue': 'intelligence',
-  'weather-cooking': 'intelligence',
-  'lifecycle-stage': 'intelligence',
-
-  message: 'communication',
-  inquiry: 'communication',
-  'communication-feed': 'communication',
-  'proposal-activity': 'communication',
-  waiting: 'communication',
-
-  automation: 'actions',
-  handoff: 'actions',
-  resume: 'actions',
-}
+import { CATEGORY_LABELS, RESOLVER_CATEGORY_MAP, categoryClass } from './contextual-rail-types'
+import { applyEscalation, dedupeOperatingLoopItems } from './god-mode-assembly'
 
 function extractResolverDomain(definitionId: string): string {
   const withoutPrefix = definitionId.startsWith('chef.')
@@ -74,6 +23,11 @@ function extractResolverDomain(definitionId: string): string {
   return underscoreIdx > 0 ? withoutPrefix.slice(0, underscoreIdx) : withoutPrefix.split('.')[0]
 }
 
+function getResolverName(item: GodModeResolvedItem): string | null {
+  const resolverName = item.data?.resolverName
+  return typeof resolverName === 'string' ? resolverName : null
+}
+
 function resolveItemCategory(item: GodModeResolvedItem, profile: RailProfile): RailCategory {
   if (item.sourceKind) {
     const sourceMap: Record<string, RailCategory> = {
@@ -84,14 +38,46 @@ function resolveItemCategory(item: GodModeResolvedItem, profile: RailProfile): R
       message: 'communication',
     }
     const mapped = sourceMap[item.sourceKind]
-    if (mapped && profile.categories.includes(mapped)) return mapped
+    if (mapped && mapped !== 'actions' && profile.categories.includes(mapped)) return mapped
+  }
+
+  const resolverName = getResolverName(item)
+  if (resolverName) {
+    const resolverCategory = RESOLVER_CATEGORY_MAP[resolverName]
+    if (
+      resolverCategory &&
+      resolverCategory !== 'actions' &&
+      profile.categories.includes(resolverCategory)
+    ) {
+      return resolverCategory
+    }
   }
 
   const domain = extractResolverDomain(item.definitionId)
   const category = RESOLVER_CATEGORY_MAP[domain]
-  if (category && profile.categories.includes(category)) return category
+  if (category && category !== 'actions' && profile.categories.includes(category)) return category
 
   return profile.primaryCategory
+}
+
+function numericField(data: Record<string, unknown>, fields: string[]): number | null {
+  for (const field of fields) {
+    const value = data[field]
+    if (typeof value === 'number' && Number.isFinite(value)) return value
+    if (typeof value === 'string') {
+      const parsed = Number.parseFloat(value)
+      if (Number.isFinite(parsed)) return parsed
+    }
+  }
+  return null
+}
+
+function dateField(data: Record<string, unknown>, fields: string[]): string | null {
+  for (const field of fields) {
+    const value = data[field]
+    if (typeof value === 'string' && value.length > 0) return value
+  }
+  return null
 }
 
 function extractMetricValue(
@@ -99,6 +85,8 @@ function extractMetricValue(
   items: GodModeResolvedItem[]
 ): string | number | null {
   const matchingItems = items.filter((item) => {
+    const resolverName = getResolverName(item)
+    if (resolverName === metric.resolverKey) return true
     const domain = extractResolverDomain(item.definitionId)
     return domain === metric.resolverKey
   })
@@ -111,26 +99,62 @@ function extractMetricValue(
   if (!first.data) return null
 
   if (metric.format === 'currency') {
-    const amount = first.data.amount ?? first.data.total ?? first.data.outstanding
-    return typeof amount === 'number' ? amount : null
+    const cents = numericField(first.data, [
+      'outstandingCents',
+      'paidCents',
+      'quotedCents',
+      'outstandingBalanceCents',
+      'totalPaidCents',
+      'quotedPriceCents',
+    ])
+    if (cents !== null) return Math.round(cents / 100)
+    return numericField(first.data, ['amount', 'total', 'outstanding'])
   }
   if (metric.format === 'percent') {
-    const pct = first.data.percentage ?? first.data.completion ?? first.data.margin
-    return typeof pct === 'number' ? pct : null
+    return numericField(first.data, ['percentage', 'completion', 'completionScore', 'margin'])
   }
   if (metric.format === 'countdown') {
-    const days = first.data.daysUntil ?? first.data.daysOut ?? first.data.daysRemaining
-    return typeof days === 'number' ? days : null
+    return numericField(first.data, ['daysUntil', 'daysOut', 'daysRemaining'])
+  }
+  if (metric.format === 'date') {
+    return dateField(first.data, ['lastContactAt', 'lastMessageAt', 'eventDate', 'createdAt'])
   }
 
   return null
+}
+
+function buildDerivedActions(
+  items: GodModeResolvedItem[],
+  maxItems: number
+): GodModeResolvedItem[] {
+  return items
+    .filter((item) => item.nextAction || (item.inlineActions && item.inlineActions.length > 0))
+    .sort((a, b) => (b.score ?? 0) - (a.score ?? 0))
+    .slice(0, Math.min(4, maxItems))
+    .map((item) => {
+      const inlineAction = item.inlineActions?.[0]
+      const actionDestination =
+        inlineAction?.action === 'navigate' && typeof inlineAction.params.href === 'string'
+          ? inlineAction.params.href
+          : item.destination
+
+      return {
+        ...item,
+        definitionId: `${item.definitionId}.action`,
+        label: item.nextAction ?? inlineAction?.label ?? item.label,
+        context: item.label,
+        destination: actionDestination,
+        sourceKind: 'task',
+      }
+    })
 }
 
 export async function assembleContextualRail(
   profile: RailProfile,
   entityContext: EntityContext | null,
   userId: string,
-  tenantId: string
+  tenantId: string,
+  pathname: string
 ): Promise<ContextualRailData> {
   const now = new Date()
 
@@ -139,33 +163,32 @@ export async function assembleContextualRail(
     tenantId,
     role: 'chef',
     now,
-    currentPage: `/${profile.id.replace(/-detail$/, 's')}`,
+    currentPage: pathname,
     ...(entityContext ? { entityContext } : {}),
   }
 
-  const { dispatchAllResolvers, dispatchHotResolvers } = await import('./god-mode-dispatcher')
+  const { dispatchFilteredResolvers, dispatchHotResolvers } = await import('./god-mode-dispatcher')
 
-  const allItems =
+  const resolvedItems =
     profile.resolverFilter.length === 0
       ? await dispatchHotResolvers(ctx)
-      : await dispatchAllResolvers(ctx)
+      : await dispatchFilteredResolvers(ctx, profile.resolverFilter)
 
-  const allowedDomains = new Set(profile.resolverFilter)
-  const filtered =
-    profile.resolverFilter.length === 0
-      ? allItems
-      : allItems.filter((item) => {
-          const domain = extractResolverDomain(item.definitionId)
-          return allowedDomains.has(domain)
-        })
+  const filtered = dedupeOperatingLoopItems(
+    resolvedItems.map((item) => applyEscalation(item, now)),
+    now
+  ).filter((item) => {
+    if (!item.expiresAt) return true
+    return item.expiresAt.getTime() > now.getTime()
+  })
 
-  const categories = {} as Record<RailCategory, ContextualRailCategoryData>
+  const categories: Partial<Record<RailCategory, ContextualRailCategoryData>> = {}
   for (const cat of profile.categories) {
     categories[cat] = {
       category: cat,
       items: [],
       label: CATEGORY_LABELS[cat],
-      colorClass: CATEGORY_COLORS[cat].text,
+      colorClass: categoryClass(cat),
     }
   }
 
@@ -175,20 +198,33 @@ export async function assembleContextualRail(
       criticalCount++
     }
     const category = resolveItemCategory(item, profile)
-    if (categories[category]) {
-      categories[category].items.push(item)
+    const categoryData = categories[category]
+    if (categoryData) {
+      categoryData.items.push(item)
     }
   }
 
-  for (const cat of profile.categories) {
-    categories[cat].items.sort((a, b) => (b.score ?? 0) - (a.score ?? 0))
+  if (profile.categories.includes('actions')) {
+    categories.actions = categories.actions ?? {
+      category: 'actions',
+      items: [],
+      label: CATEGORY_LABELS.actions,
+      colorClass: categoryClass('actions'),
+    }
+    categories.actions.items = buildDerivedActions(filtered, profile.maxItems)
   }
 
-  const itemBudget = Math.ceil(profile.maxItems / profile.categories.length)
+  for (const categoryData of Object.values(categories)) {
+    categoryData.items.sort((a, b) => (b.score ?? 0) - (a.score ?? 0))
+  }
+
+  const itemBudget = Math.ceil(profile.maxItems / Math.max(1, profile.categories.length))
   let totalItems = 0
   for (const cat of profile.categories) {
-    categories[cat].items = categories[cat].items.slice(0, itemBudget)
-    totalItems += categories[cat].items.length
+    const categoryData = categories[cat]
+    if (!categoryData) continue
+    categoryData.items = categoryData.items.slice(0, itemBudget)
+    totalItems += categoryData.items.length
   }
 
   const collapsedMetrics: ResolvedCollapsedMetric[] = profile.collapsedMetrics.map((metric) => {

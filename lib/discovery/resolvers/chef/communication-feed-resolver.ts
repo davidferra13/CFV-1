@@ -29,9 +29,12 @@ async function resolveClientCommunicationFeed(
         sm.context_type AS "contextType",
         c.full_name AS "recipientName"
       FROM scheduled_messages sm
-      LEFT JOIN clients c ON c.id = sm.recipient_id
+      LEFT JOIN clients c ON c.id = sm.recipient_id AND c.tenant_id = sm.chef_id
       WHERE sm.chef_id = ${ctx.tenantId}
-        AND sm.recipient_id = ${clientId}
+        AND (
+          sm.recipient_id = ${clientId}
+          OR (sm.context_type = 'client' AND sm.context_id = ${clientId})
+        )
         AND (
           (sm.status = 'draft' AND sm.sent_at IS NULL)
           OR (sm.status = 'failed')
@@ -55,13 +58,6 @@ async function resolveEventCommunicationFeed(
   const cutoff = new Date(ctx.now.getTime() - LOOKBACK_DAYS * MS_DAY).toISOString()
 
   try {
-    // Look up the event's client, then filter messages to that client
-    const eventRows = await pgClient`
-      SELECT client_id FROM events WHERE id = ${eventId} AND chef_id = ${ctx.tenantId} LIMIT 1
-    `
-    const eventClientId = (eventRows as unknown as { client_id: string | null }[])[0]?.client_id
-    if (!eventClientId) return []
-
     const rows = await pgClient`
       SELECT
         sm.id,
@@ -73,9 +69,11 @@ async function resolveEventCommunicationFeed(
         sm.context_type AS "contextType",
         c.full_name AS "recipientName"
       FROM scheduled_messages sm
-      LEFT JOIN clients c ON c.id = sm.recipient_id
+      JOIN events e ON e.id = sm.context_id AND e.tenant_id = sm.chef_id
+      LEFT JOIN clients c ON c.id = sm.recipient_id AND c.tenant_id = sm.chef_id
       WHERE sm.chef_id = ${ctx.tenantId}
-        AND sm.recipient_id = ${eventClientId}
+        AND sm.context_type = 'event'
+        AND sm.context_id = ${eventId}
         AND (
           (sm.status = 'draft' AND sm.sent_at IS NULL)
           OR (sm.status = 'failed')
@@ -193,7 +191,7 @@ export async function resolveCommunicationFeed(
         sm.context_type AS "contextType",
         c.full_name AS "recipientName"
       FROM scheduled_messages sm
-      LEFT JOIN clients c ON c.id = sm.recipient_id
+      LEFT JOIN clients c ON c.id = sm.recipient_id AND c.tenant_id = sm.chef_id
       WHERE sm.chef_id = ${ctx.tenantId}
         AND (
           (sm.status = 'draft' AND sm.sent_at IS NULL)

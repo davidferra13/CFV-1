@@ -86,10 +86,11 @@ Run `npx tsc --noEmit --skipLibCheck`. If it fails, fix it NOW before the next c
 
 1. **Type check:** `npx tsc --noEmit --skipLibCheck`. Paste output. Must exit 0.
 2. **Build check:** `npx next build --no-lint`. Paste output. Must exit 0. Skip if `.multi-agent-lock` exists.
-3. **Playwright verification:** Sign in with agent credentials (`.auth/agent.json`). Navigate to the feature. Execute the full user flow. Take screenshots. Paste screenshots. If Playwright literally cannot test this (rare), explain exactly why.
-4. **Edge cases tested:** List each edge case from the spec. For each: what you did, what happened (not what "would" happen).
-5. **Regression check:** List every page/component that imports or shares code with your changes. Verify at least one still works. If the feature touches auth/layout/navigation, run `npm run test:experiential`.
-6. **Before vs after:** Show what changed. Screenshots, data output, or behavioral comparison.
+3. **Wire audit:** Run `/wiring-audit`. It must run Page X-Ray for affected routes and check Dinner Circles, Universal Rail, Priority Queue, Commitment UI, Menu Intelligence, PIE, Client Intelligence, communications, lifecycle, ledger, navigation, Remy, automation, and CIL where relevant.
+4. **Playwright verification:** Sign in with agent credentials (`.auth/agent.json`). Navigate to the feature. Execute the full user flow. Take screenshots. Paste screenshots. If Playwright literally cannot test this (rare), explain exactly why.
+5. **Edge cases tested:** List each edge case from the spec. For each: what you did, what happened (not what "would" happen).
+6. **Regression check:** List every page/component that imports or shares code with your changes. Verify at least one still works. If the feature touches auth/layout/navigation, run `npm run test:experiential`.
+7. **Before vs after:** Show what changed. Screenshots, data output, or behavioral comparison.
 
 ## Final Check (Must Answer Explicitly)
 

@@ -55,7 +55,7 @@ DEAD_TUPLES=${DEAD_TUPLES:-0}
 LONG_QUERIES=${LONG_QUERIES:-0}
 
 # Alert on high connections
-if [ "$TOTAL_CONNECTIONS" -gt 80 ]; then
+if [ "$TOTAL_CONNECTIONS" -gt 16 ]; then
   echo "- **$TS** [WARN] PostgreSQL connections high: $TOTAL_CONNECTIONS" >> "$ALERTS"
 fi
 

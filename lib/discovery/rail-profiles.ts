@@ -48,6 +48,7 @@ export const RAIL_PROFILES: RailProfile[] = [
     categories: ['people', 'money', 'communication', 'risk', 'intelligence'],
     primaryCategory: 'people',
     resolverFilter: [
+      'events',
       'payments',
       'dormant-clients',
       'client-birthdays',
@@ -276,10 +277,17 @@ export function matchRailProfile(pathname: string): RailProfileMatch {
   for (const profile of RAIL_PROFILES) {
     const match = pathname.match(profile.pattern)
     if (match) {
-      const entityContext = profile.entityExtract ? profile.entityExtract(match) : null
+      const entityContext = extractEntityContext(profile, match)
       return { profile, entityContext }
     }
   }
   const fallback = RAIL_PROFILES[RAIL_PROFILES.length - 1]
   return { profile: fallback, entityContext: null }
+}
+
+export function extractEntityContext(
+  profile: RailProfile,
+  match: RegExpMatchArray
+): RailProfileMatch['entityContext'] {
+  return profile.entityExtract ? profile.entityExtract(match) : null
 }
