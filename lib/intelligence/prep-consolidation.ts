@@ -1,6 +1,7 @@
 'use server'
 
 // Prep Consolidation Engine
+// Cross-event batching layer. Canonical prep computation lives in lib/prep-timeline/.
 // Finds cross-event prep opportunities: same ingredient/component across multiple events
 // in a date range. Groups them into batch prep plans with time savings estimates.
 
@@ -73,7 +74,8 @@ function classifyTechnique(category: string | null, name: string): string {
   if (lowerName.includes('marinade')) return 'marinade'
   if (lowerCat === 'protein') return 'protein prep'
   if (lowerCat === 'produce') return 'produce prep'
-  if (lowerCat === 'spice' || lowerCat === 'fresh_herb' || lowerCat === 'dry_herb') return 'spice blend'
+  if (lowerCat === 'spice' || lowerCat === 'fresh_herb' || lowerCat === 'dry_herb')
+    return 'spice blend'
   if (lowerCat === 'dairy') return 'dairy prep'
   if (lowerCat === 'baking') return 'baking prep'
   return 'general prep'
@@ -84,10 +86,10 @@ function classifyTechnique(category: string | null, name: string): string {
 function estimatePrepMinutes(quantity: number, technique: string): number {
   // Base prep time estimates by technique (minutes per standard unit)
   const BASE_MINUTES: Record<string, number> = {
-    'stock': 45,
-    'sauce': 30,
-    'dough': 40,
-    'marinade': 15,
+    stock: 45,
+    sauce: 30,
+    dough: 40,
+    marinade: 15,
     'protein prep': 20,
     'produce prep': 15,
     'spice blend': 10,
@@ -103,9 +105,10 @@ function estimatePrepMinutes(quantity: number, technique: string): number {
 
 // ── Main: Find consolidation opportunities ──────────────────────────────────
 
-export async function findConsolidationOpportunities(
-  dateRange: { start: string; end: string }
-): Promise<ConsolidationOpportunity[]> {
+export async function findConsolidationOpportunities(dateRange: {
+  start: string
+  end: string
+}): Promise<ConsolidationOpportunity[]> {
   const user = await requireChef()
   const tenantId = user.tenantId!
   const db: any = createServerClient()
@@ -148,10 +151,7 @@ export async function findConsolidationOpportunities(
   const allMenuIds = menus.map((m: any) => m.id)
 
   // 3. Get dishes for these menus
-  const { data: dishes } = await db
-    .from('dishes')
-    .select('id, menu_id')
-    .in('menu_id', allMenuIds)
+  const { data: dishes } = await db.from('dishes').select('id, menu_id').in('menu_id', allMenuIds)
 
   if (!dishes || dishes.length === 0) return []
 
@@ -199,7 +199,9 @@ export async function findConsolidationOpportunities(
   if (!recipeIngredients || recipeIngredients.length === 0) return []
 
   // 6. Get ingredient info
-  const ingredientIds = [...new Set((recipeIngredients as any[]).map((ri: any) => ri.ingredient_id))]
+  const ingredientIds = [
+    ...new Set((recipeIngredients as any[]).map((ri: any) => ri.ingredient_id)),
+  ]
 
   const { data: ingredients } = await db
     .from('ingredients')
@@ -225,12 +227,15 @@ export async function findConsolidationOpportunities(
   }
 
   // 8. Aggregate: ingredient_id -> per-event quantities
-  const aggregation = new Map<string, {
-    ingredientId: string
-    ingredientName: string
-    category: string
-    perEvent: Map<string, { quantity: number; unit: string; recipeName: string }>
-  }>()
+  const aggregation = new Map<
+    string,
+    {
+      ingredientId: string
+      ingredientName: string
+      category: string
+      perEvent: Map<string, { quantity: number; unit: string; recipeName: string }>
+    }
+  >()
 
   for (const ri of recipeIngredients as any[]) {
     const eventIds = recipeEventMap.get(ri.recipe_id)
@@ -298,7 +303,8 @@ export async function findConsolidationOpportunities(
     }
 
     // Time savings: individual prep for each event vs one batch
-    const individualTime = eventEntries.length * estimatePrepMinutes(batchQuantity / eventEntries.length, technique)
+    const individualTime =
+      eventEntries.length * estimatePrepMinutes(batchQuantity / eventEntries.length, technique)
     const batchTime = estimatePrepMinutes(batchQuantity, technique)
     const timeSaved = Math.max(0, individualTime - batchTime)
 
@@ -325,9 +331,7 @@ export async function findConsolidationOpportunities(
 
 // ── Weekly Prep Plan ────────────────────────────────────────────────────────
 
-export async function getWeeklyPrepPlan(
-  weekStart: string
-): Promise<WeeklyPrepPlan> {
+export async function getWeeklyPrepPlan(weekStart: string): Promise<WeeklyPrepPlan> {
   const weekEnd = toDateStr(new Date(new Date(weekStart).getTime() + 6 * 24 * 60 * 60 * 1000))
   const opportunities = await findConsolidationOpportunities({ start: weekStart, end: weekEnd })
 
@@ -345,8 +349,10 @@ export async function getWeeklyPrepPlan(
 
   for (const opp of opportunities) {
     // Find earliest event date for this ingredient
-    const earliestDate = opp.events.reduce((min, e) =>
-      e.eventDate < min ? e.eventDate : min, opp.events[0].eventDate)
+    const earliestDate = opp.events.reduce(
+      (min, e) => (e.eventDate < min ? e.eventDate : min),
+      opp.events[0].eventDate
+    )
 
     // Prep 1 day before earliest event (or same day if start of range)
     const earliestMs = new Date(earliestDate).getTime()
@@ -362,7 +368,7 @@ export async function getWeeklyPrepPlan(
       batchQuantity: opp.batchQuantity,
       unit: opp.unit,
       technique: opp.technique,
-      events: opp.events.map(e => e.eventName),
+      events: opp.events.map((e) => e.eventName),
       prepMinutes: batchPrepMinutes,
     })
 

@@ -156,7 +156,10 @@ SURFACED:
 
 ACTED ON:
 
-- (pending user selection)
+- DONE: getDraftMessages status fix (.eq -> .in for draft+scheduled). Commit 68422a998.
+- DONE: processSocialSignals wired into signal-actions.ts after bridgeSignalToComm. Commit 68422a998.
+- DONE: communication-feed-resolver.ts created + registered in god-mode-dispatcher. Commit ce88463b7.
+- DONE: /communication hub page built (pending drafts, sent count, quick links, activity). Commit ce88463b7.
 
 SKIPPED:
 
@@ -171,4 +174,5 @@ CROSS_REFS:
 - [[inquiries]]: zero cross-domain edge to communication
 - [[events]]: zero cross-domain edge to communication
 
-NEXT TRIGGER: Ranks 1-2 fixed + rank 3 design decision made -> partially-mined
+STATUS: partially-mined
+NEXT TRIGGER: inquiry->communication wiring + event->communication wiring -> near-saturated

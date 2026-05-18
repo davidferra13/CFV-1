@@ -104,3 +104,68 @@ export async function getPlatformRawFeed(limit = 50): Promise<RawFeedItem[]> {
     return []
   }
 }
+
+/**
+ * Create an inquiry record from a platform email in the raw feed.
+ * Links the gmail_sync_log entry to the new inquiry. Extracts what it can
+ * from the email subject/classification; chef fills in the rest.
+ */
+export async function createInquiryFromPlatformEmail(
+  emailId: string
+): Promise<{ success: boolean; inquiryId?: string; error?: string }> {
+  try {
+    const user = await requireChef()
+    const db: any = createServerClient()
+
+    // Load the email record
+    const { data: email, error: emailError } = await db
+      .from('gmail_sync_log')
+      .select('id, from_address, subject, body_preview, classification, synced_at, inquiry_id')
+      .eq('id', emailId)
+      .eq('tenant_id', user.tenantId!)
+      .single()
+
+    if (emailError || !email) {
+      return { success: false, error: 'Email not found' }
+    }
+
+    if (email.inquiry_id) {
+      return { success: false, error: 'Already linked to an inquiry' }
+    }
+
+    // Detect platform for source attribution
+    const platform = detectPlatform(email.from_address ?? '')
+
+    // Create inquiry with what we know
+    const { data: inquiry, error: inquiryError } = await db
+      .from('inquiries')
+      .insert({
+        tenant_id: user.tenantId!,
+        channel: platform ? platform.toLowerCase().replace(/\s+/g, '_') : 'email',
+        status: 'new',
+        first_contact_at: email.synced_at || new Date().toISOString(),
+        source_message: email.subject || null,
+        source_type: 'platform_email',
+        unknown_fields: {
+          platform_source: platform,
+          original_email_id: emailId,
+          from_address: email.from_address,
+          body_preview: email.body_preview || null,
+        },
+      })
+      .select('id')
+      .single()
+
+    if (inquiryError || !inquiry) {
+      return { success: false, error: 'Failed to create inquiry' }
+    }
+
+    // Link the email back to the inquiry
+    await db.from('gmail_sync_log').update({ inquiry_id: inquiry.id }).eq('id', emailId)
+
+    return { success: true, inquiryId: inquiry.id }
+  } catch (err) {
+    console.error('[platform-raw-feed] createInquiryFromPlatformEmail error:', err)
+    return { success: false, error: 'Unexpected error' }
+  }
+}

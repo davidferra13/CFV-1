@@ -730,3 +730,148 @@ function getChurnSubjectLine(signalSource: string, chefName: string): string {
       return `${chefName} would love to cook for you again`
   }
 }
+
+// ─── Pre-Deposit Inquiry Escalation ─────────────────────────────────────────
+
+/**
+ * Process open (pre-deposit) inquiries for response escalation.
+ * Wires computeEscalation thresholds to scheduled_messages:
+ *   - remy_draft (24h+): creates holding-message draft for chef review
+ *   - auto_send (72h+): sends holding message if chef has auto-response on
+ *
+ * Spam prevention: skips if draft exists, or chef communicated in last 24h.
+ * Called by cron ticker.
+ */
+export async function processPreDepositEscalation(): Promise<{
+  drafted: number
+  sent: number
+  skipped: number
+}> {
+  const db = createServerClient()
+  let drafted = 0
+  let sent = 0
+  let skipped = 0
+
+  const { computeEscalation } = await import('@/lib/inquiries/response-escalation')
+
+  const { data: openInquiries } = await db
+    .from('inquiries')
+    .select('id, tenant_id, client_id, created_at, last_outbound_at')
+    .eq('status', 'new')
+    .limit(200)
+
+  if (!openInquiries || openInquiries.length === 0) {
+    return { drafted: 0, sent: 0, skipped: 0 }
+  }
+
+  for (const inquiry of openInquiries) {
+    try {
+      const state = computeEscalation(inquiry.last_outbound_at, inquiry.created_at, false)
+
+      if (!state.shouldDraftHoldingMessage) {
+        skipped++
+        continue
+      }
+
+      const { data: existingDraft } = await db
+        .from('scheduled_messages')
+        .select('id')
+        .eq('tenant_id', inquiry.tenant_id)
+        .eq('context_type', 'inquiry')
+        .eq('context_id', inquiry.id)
+        .in('status', ['draft', 'scheduled'])
+        .limit(1)
+
+      if (existingDraft && existingDraft.length > 0) {
+        skipped++
+        continue
+      }
+
+      const oneDayAgo = new Date(Date.now() - 24 * 60 * 60 * 1000).toISOString()
+      const { data: recentComm } = await db
+        .from('communication_events')
+        .select('id')
+        .eq('tenant_id', inquiry.tenant_id)
+        .eq('direction', 'outbound')
+        .gte('event_timestamp', oneDayAgo)
+        .limit(1)
+
+      if (recentComm && recentComm.length > 0) {
+        skipped++
+        continue
+      }
+
+      if (!inquiry.client_id) {
+        skipped++
+        continue
+      }
+
+      const { data: client } = await db
+        .from('clients')
+        .select('full_name, email')
+        .eq('id', inquiry.client_id)
+        .single()
+
+      if (!client?.email) {
+        skipped++
+        continue
+      }
+
+      const { data: chef } = await db
+        .from('chefs')
+        .select('display_name, business_name')
+        .eq('id', inquiry.tenant_id)
+        .single()
+
+      const chefName = chef?.display_name || chef?.business_name || 'Your chef'
+      const clientFirst = (client.full_name || '').split(' ')[0] || 'there'
+
+      const { data: arConfig } = await db
+        .from('auto_response_config')
+        .select('enabled')
+        .eq('chef_id', inquiry.tenant_id)
+        .eq('enabled', true)
+        .maybeSingle()
+
+      const autoSendEnabled = !!arConfig && state.shouldAutoSend
+
+      const holdingBody = `Hi ${clientFirst},\n\nJust wanted to let you know ${chefName} received your inquiry and is reviewing the details. You will hear back soon with next steps.\n\nThank you for your patience!`
+
+      if (autoSendEnabled) {
+        await db.from('scheduled_messages').insert({
+          tenant_id: inquiry.tenant_id,
+          client_id: inquiry.client_id,
+          channel: 'email',
+          status: 'scheduled',
+          subject: `Update from ${chefName}`,
+          body: holdingBody,
+          recipient_email: client.email,
+          scheduled_for: new Date().toISOString(),
+          context_type: 'inquiry',
+          context_id: inquiry.id,
+          metadata: { type: 'escalation_holding', level: state.level, auto: true },
+        })
+        sent++
+      } else {
+        await db.from('scheduled_messages').insert({
+          tenant_id: inquiry.tenant_id,
+          client_id: inquiry.client_id,
+          channel: 'email',
+          status: 'draft',
+          subject: `Update from ${chefName}`,
+          body: holdingBody,
+          recipient_email: client.email,
+          context_type: 'inquiry',
+          context_id: inquiry.id,
+          metadata: { type: 'escalation_holding', level: state.level, auto: false },
+        })
+        drafted++
+      }
+    } catch (err) {
+      console.error('[CIL] Pre-deposit escalation error for inquiry', inquiry.id, err)
+      skipped++
+    }
+  }
+
+  return { drafted, sent, skipped }
+}

@@ -1,6 +1,6 @@
 {
   "version": "1.0",
-  "timestamp": "2026-05-18T01:44:31.114Z",
+  "timestamp": "2026-05-18T01:49:22.004Z",
   "source": "auto-postool",
   "partial": false,
   "phase": null,
@@ -18,19 +18,7 @@
   "uncommitted_files": [
     {
       "status": "M",
-      "path": ".claude-session-scope"
-    },
-    {
-      "status": "M",
       "path": ".planning/HANDOFF.json"
-    },
-    {
-      "status": "M",
-      "path": "components/feed/aggregated-item.tsx"
-    },
-    {
-      "status": "M",
-      "path": "components/rail/rail-strip.tsx"
     },
     {
       "status": "M",
@@ -38,33 +26,21 @@
     },
     {
       "status": "M",
-      "path": "lib/discovery/god-mode-dispatcher.ts"
+      "path": "lib/cil/signal-actions.ts"
     },
     {
       "status": "M",
-      "path": "lib/discovery/universal-rail-assembly.ts"
+      "path": "lib/inquiries/platform-raw-feed.ts"
     },
     {
       "status": "M",
-      "path": "lib/inquiries/public-actions.ts"
+      "path": "lib/intelligence/prep-consolidation.ts"
     },
     {
       "status": "??",
-      "path": "app/(chef)/communication/page.tsx"
-    },
-    {
-      "status": "??",
-      "path": "app/(client)/my-hub/activity/"
-    },
-    {
-      "status": "??",
-      "path": "lib/client-portal/activity-actions.ts"
-    },
-    {
-      "status": "??",
-      "path": "lib/discovery/resolvers/chef/communication-feed-resolver.ts"
+      "path": "lib/prep-timeline/index.ts"
     }
   ],
   "next_action": null,
-  "context_notes": "Recent commits:\n68422a998 fix: CIL social bridge, draft status filter, feed/rail type alignment\n5c8178318 feat: CIL resolvers, commitment friction, feed engine, ingredient source fields\n910b46bea feat: Phase 3 Circle Integrity - Take-a-Chef circles, grocery population, sourcing auto-seed\ne6a3203b1 chore: commit leftover formatting and doc updates from prior session\n5d0dd767f feat: Wave 2 artifacts - communication drafts, feed cards, CIL social, rail assembly"
+  "context_notes": "Recent commits:\nce88463b7 fix: Phase 4 breaks 1.5 + 3.2 plus prior session artifacts\n68422a998 fix: CIL social bridge, draft status filter, feed/rail type alignment\n5c8178318 feat: CIL resolvers, commitment friction, feed engine, ingredient source fields\n910b46bea feat: Phase 3 Circle Integrity - Take-a-Chef circles, grocery population, sourcing auto-seed\ne6a3203b1 chore: commit leftover formatting and doc updates from prior session"
 }
