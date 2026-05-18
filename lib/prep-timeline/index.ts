@@ -15,7 +15,7 @@
 
 export { computePrepTimeline, formatPrepTime, formatHoursAsReadable } from './compute-timeline'
 export { getWeekPrepPressure } from './week-pressure-actions'
-export { exportPrepTimelineIcal } from './ical-export'
+export { generatePrepTimelineICal } from './ical-export'
 export {
   getEventPrepTimeline,
   updateRecipePeakWindow,
