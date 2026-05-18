@@ -1,7 +1,7 @@
 # UNIFIED BUILD QUEUE - ChefFlow V1
 
 > Merged 2026-05-16 from Claude (specs/memory/code gaps) + Codex (GSD queue).
-> 237 tracked rows after deduplication and Codex state sync.
+> 239 tracked rows after deduplication and 2026-05-18 session additions.
 
 ---
 
@@ -262,17 +262,17 @@
 
 ## NAVIGATION & INFORMATION ARCHITECTURE (8 items)
 
-| #   | Item                                           | Status  | Depends On | Notes                                                                                                                                                                                                            |
-| --- | ---------------------------------------------- | ------- | ---------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| 1   | Chef Navigation And Page Header Unification    | DONE    | None       | BUILT 2026-05-17 (Wave 21). nav-config-actions.ts (7 actions), types, nav_preferences + nav_audit_entries tables. Pinned items, recent pages, header auditing. Migration 20260517200137. tsc clean.              |
-| 2   | Portal Rail System Foundation                  | BLOCKED | #8         | Verified 2026-05-16: rail worktree implementation remains partial; authenticated runtime screenshots/console/network proof and finish-check are missing, and support edits/local artifacts require lead cleanup. |
-| 3   | Admin Portal Rail Prominence                   | BLOCKED | #2         | Verified 2026-05-16: blocked by partial rail foundation and missing authenticated runtime proof/finish-check.                                                                                                    |
-| 4   | Chef and Client Portal Rail Prominence         | BLOCKED | #2         | Verified 2026-05-16: blocked by partial rail foundation and missing authenticated runtime proof/finish-check.                                                                                                    |
-| 5   | Staff Portal Rail Conversion                   | BLOCKED | #2         | Verified 2026-05-16: blocked by partial rail foundation and missing authenticated runtime proof/finish-check.                                                                                                    |
-| 6   | Partner and Vendor Portal Rail Standardization | BLOCKED | #2         | Verified 2026-05-16: blocked by partial rail foundation and missing authenticated runtime proof/finish-check.                                                                                                    |
-| 7   | First Next Handoff Bar Mounts                  | BLOCKED | None       | Verified 2026-05-16: shared rail improvements exist, but menu/recipe contextual mounts and authenticated route screenshots remain unproven; related route proof is still blocked by dirty/runtime instability.   |
-| 8   | Rail Item Lifecycle And Scoring Engine         | DONE    | None       | BUILT 2026-05-16. CODE-VERIFIED: 9 files in lib/rail/, scoring, state, aggregator, 5 source adapters. No UI consumer. Logic-complete, no route to verify.                                                        |
-| 9   | Domain Wiring And Orphan Elimination Pass      | DONE    | #1         | VERIFIED 2026-05-17. 589 routes in nav-config, 28 redirects. ~60 status-as-page conversions remain (UX refinement, not broken wiring).                                                                           |
+| #   | Item                                           | Status      | Depends On | Notes                                                                                                                                                                                                          |
+| --- | ---------------------------------------------- | ----------- | ---------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| 1   | Chef Navigation And Page Header Unification    | DONE        | None       | BUILT 2026-05-17 (Wave 21). nav-config-actions.ts (7 actions), types, nav_preferences + nav_audit_entries tables. Pinned items, recent pages, header auditing. Migration 20260517200137. tsc clean.            |
+| 2   | Portal Rail System Foundation                  | VERIFY-ONLY | #8         | Assessed 2026-05-18: code-complete (13 components, 9 lib files, 42 resolvers, 7 role registries, 3 layout mounts). Needs Playwright runtime verification. See docs/audits/rail-foundation-assessment.md.       |
+| 3   | Admin Portal Rail Prominence                   | SPEC-READY  | #2         | Mini-spec written 2026-05-18. See docs/specs/rail-portal-prominence-specs.md. Unblocked pending NAV #2 verification.                                                                                           |
+| 4   | Chef and Client Portal Rail Prominence         | SPEC-READY  | #2         | Mini-spec written 2026-05-18. See docs/specs/rail-portal-prominence-specs.md. Unblocked pending NAV #2 verification.                                                                                           |
+| 5   | Staff Portal Rail Conversion                   | SPEC-READY  | #2         | Mini-spec written 2026-05-18. See docs/specs/rail-portal-prominence-specs.md. Unblocked pending NAV #2 verification.                                                                                           |
+| 6   | Partner and Vendor Portal Rail Standardization | SPEC-READY  | #2         | Mini-spec written 2026-05-18. See docs/specs/rail-portal-prominence-specs.md. Unblocked pending NAV #2 verification.                                                                                           |
+| 7   | First Next Handoff Bar Mounts                  | BLOCKED     | None       | Verified 2026-05-16: shared rail improvements exist, but menu/recipe contextual mounts and authenticated route screenshots remain unproven; related route proof is still blocked by dirty/runtime instability. |
+| 8   | Rail Item Lifecycle And Scoring Engine         | DONE        | None       | BUILT 2026-05-16. CODE-VERIFIED: 9 files in lib/rail/, scoring, state, aggregator, 5 source adapters. No UI consumer. Logic-complete, no route to verify.                                                      |
+| 9   | Domain Wiring And Orphan Elimination Pass      | DONE        | #1         | VERIFIED 2026-05-17. 589 routes in nav-config, 28 redirects. ~60 status-as-page conversions remain (UX refinement, not broken wiring).                                                                         |
 
 ---
 
@@ -698,6 +698,24 @@
 
 > Updated 2026-05-17: +54 DRAFT items from Ulysses Universe brainstorm. Full commitment engine + 10 domains + 35 dream systems across 7 build waves.
 > Updated 2026-05-16: +28 items DONE from Waves 5-9 build swarm (Saturation, Loyalty, Fixed Offerings, Circle Approval, Prep Scheduling, Allergy Severity, Handoff, Collaborator Bridge, Pop-Up OS, Corporate Procurement, Consumer Discovery, Ingredient Sourcing, Timeline Auto-Gen, Delegate Access, Shell Clarity, Menu Performance, Featured Chef, Mission Control, Live Client Status, Cost CSV, Cost Propagation, Closeout, Batch View, Client Passport, Chef-as-Consumer, Day-Of Timeline, Menu Variant Accommodations, Equipment Packing).
+
+---
+
+## PHILOSOPHY & LANGUAGE (1 item)
+
+| #   | Item                                               | Status | Depends On | Notes                                                                                                      |
+| --- | -------------------------------------------------- | ------ | ---------- | ---------------------------------------------------------------------------------------------------------- |
+| 1   | System Dynamics Vocabulary (5 terms in CONTEXT.md) | DONE   | None       | BUILT 2026-05-18. Added Home, Displaced, Standby, Lingering, Return to CONTEXT.md System Dynamics section. |
+
+---
+
+## DEV INFRASTRUCTURE (1 item)
+
+| #   | Item                                 | Status | Depends On | Notes                                                                                                                                               |
+| --- | ------------------------------------ | ------ | ---------- | --------------------------------------------------------------------------------------------------------------------------------------------------- |
+| 1   | Action Surface Coverage Audit Script | DONE   | None       | BUILT 2026-05-18. scripts/action-surface-audit.ts. 5,287 actions inventoried, 32.6% multi-surface coverage. Output: docs/action-surface-audit.json. |
+
+---
 
 ### Cross-Category Dependencies
 
