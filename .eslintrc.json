@@ -7,9 +7,15 @@
   },
   "overrides": [
     {
-      "files": ["lib/remotion/**/*.{ts,tsx}"],
+      "files": [
+        "lib/remotion/**/*.{ts,tsx}",
+        "app/**/remotion/**/*.{ts,tsx}",
+        "components/remotion/**/*.{ts,tsx}",
+        "remotion/**/*.{ts,tsx}"
+      ],
       "rules": {
-        "react-hooks/rules-of-hooks": "off"
+        "react-hooks/rules-of-hooks": "off",
+        "react/forbid-dom-props": "off"
       }
     }
   ]

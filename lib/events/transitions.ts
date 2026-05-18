@@ -62,6 +62,16 @@ async function runCompletedEventPostProcessing(eventId: string, tenantId: string
   } catch (err) {
     log.events.warn('Hub event snapshot failed (non-blocking)', { error: err })
   }
+
+  try {
+    const { queueRecapVideoRender } = await import('@/lib/remotion/render-event-recap')
+    // Fire-and-forget: does not block event completion
+    queueRecapVideoRender(eventId, tenantId).catch((err) => {
+      log.events.warn('Recap video queue failed (non-blocking)', { error: err })
+    })
+  } catch (err) {
+    log.events.warn('Recap video render failed (non-blocking)', { error: err })
+  }
 }
 
 /**

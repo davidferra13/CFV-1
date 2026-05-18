@@ -23,6 +23,7 @@ import {
 import { logActualGroceryCost } from '@/lib/grocery/pricing-actions'
 import { createAAR } from '@/lib/aar/actions'
 import { markFollowUpSent } from '@/lib/events/actions'
+import { RecapVideoSection } from '@/components/events/recap-video-section'
 import {
   addWasteEntry,
   type WasteCategory,
@@ -981,6 +982,8 @@ function CelebrationAndFollowUp({
           </div>
         )}
       </div>
+
+      <RecapVideoSection eventId={event.id} mode="chef" className="mb-6" />
 
       <div className="flex flex-col sm:flex-row gap-3">
         <Button onClick={() => router.push('/dashboard')}>Go to Dashboard</Button>

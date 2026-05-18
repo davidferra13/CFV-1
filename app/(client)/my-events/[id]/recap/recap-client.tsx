@@ -6,6 +6,7 @@ import { ArrowLeft, Calendar, MapPin, Users, Camera, UtensilsCrossed } from '@/c
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
 import type { EventRecap } from '@/lib/events/client-recap-actions'
+import { RecapVideoSection } from '@/components/events/recap-video-section'
 
 const COURSE_ORDER = ['appetizer', 'starter', 'soup', 'salad', 'main', 'dessert', 'other']
 
@@ -155,6 +156,9 @@ export function RecapClient({ recap }: { recap: EventRecap }) {
           </CardContent>
         </Card>
       )}
+
+      {/* Recap video download */}
+      {event.status === 'completed' && <RecapVideoSection eventId={event.id} mode="client" />}
 
       {/* Rebook CTA */}
       {event.status === 'completed' && (
