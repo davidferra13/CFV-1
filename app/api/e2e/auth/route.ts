@@ -73,7 +73,7 @@ export async function POST(req: NextRequest) {
     }
 
     // Create Auth.js session token directly for E2E testing
-    const secret = process.env.NEXTAUTH_SECRET || process.env.AUTH_SECRET
+    const secret = process.env.AUTH_SECRET || process.env.NEXTAUTH_SECRET
     if (!secret) {
       return NextResponse.json({ error: 'Auth secret not configured' }, { status: 500 })
     }
@@ -115,6 +115,7 @@ export async function POST(req: NextRequest) {
 
     const token = await encode({
       token: {
+        sub: user.id,
         userId: user.id,
         email: user.email ?? email,
         role,

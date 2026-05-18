@@ -22,6 +22,7 @@ export type ChefShellBudget = {
   showRemy: boolean
   showQuickCapture: boolean
   showLiveAlerts: boolean
+  showContextualRail: boolean
   contentWidth: 'constrained' | 'full'
 }
 
@@ -294,6 +295,7 @@ export function resolveChefShellBudget(pathname: string): ChefShellBudget {
       showRemy: false,
       showQuickCapture: false,
       showLiveAlerts: false,
+      showContextualRail: false,
       contentWidth: 'full',
     }
   }
@@ -309,6 +311,7 @@ export function resolveChefShellBudget(pathname: string): ChefShellBudget {
     showRemy: true,
     showQuickCapture: true,
     showLiveAlerts: true,
+    showContextualRail: true,
     contentWidth: 'constrained',
   }
 }
@@ -342,6 +345,7 @@ export function resolveChefShellBudgetWithDensity(
       showRemy: false,
       showQuickCapture: false,
       showLiveAlerts: false,
+      showContextualRail: false,
       showMarketResearchBanner: false,
       showFeedbackNudge: false,
       contentWidth: 'full',

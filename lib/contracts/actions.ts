@@ -736,6 +736,7 @@ export type ContractListItem = {
   created_at: string
   sent_at: string | null
   signed_at: string | null
+  chef_signed_at: string | null
   voided_at: string | null
   event_occasion: string | null
   event_date: string | null
@@ -754,7 +755,7 @@ export async function getContracts(statusFilter?: ContractStatus): Promise<Contr
     .from('event_contracts')
     .select(
       `
-      id, event_id, client_id, status, created_at, sent_at, signed_at, voided_at,
+      id, event_id, client_id, status, created_at, sent_at, signed_at, chef_signed_at, voided_at,
       events (occasion, event_date),
       clients (full_name)
     `
@@ -781,6 +782,7 @@ export async function getContracts(statusFilter?: ContractStatus): Promise<Contr
     created_at: row.created_at,
     sent_at: row.sent_at,
     signed_at: row.signed_at,
+    chef_signed_at: row.chef_signed_at ?? null,
     voided_at: row.voided_at,
     event_occasion: row.events?.occasion ?? null,
     event_date: row.events?.event_date ?? null,
@@ -991,37 +993,110 @@ export async function sendContractViaDocuSign(contractId: string) {
 
 export async function createStandaloneContract(params: {
   client_id: string
-  template_id: string
+  template_id?: string
   event_id?: string
+  body_markdown?: string
 }): Promise<{ success: boolean; contractId?: string; error?: string }> {
   try {
     const user = await requireChef()
     const db: any = createServerClient()
 
-    // Load template
-    const { data: template } = await db
-      .from('contract_templates')
-      .select('id, body_markdown')
-      .eq('id', params.template_id)
-      .eq('chef_id', user.tenantId!)
-      .single()
-
-    if (!template) return { success: false, error: 'Template not found' }
-
     // Load client for merge fields
     const { data: client } = await db
       .from('clients')
-      .select('id, name, email')
+      .select('id, name, full_name, email')
       .eq('id', params.client_id)
       .eq('chef_id', user.tenantId!)
       .single()
 
     if (!client) return { success: false, error: 'Client not found' }
 
-    const bodyMarkdown = (template.body_markdown as string).replace(
-      /{{client_name}}/g,
-      client.name || 'Client'
-    )
+    let templateId: string | null = null
+    let bodyMarkdown = params.body_markdown?.trim() ?? ''
+
+    if (params.template_id) {
+      const { data: template } = await db
+        .from('contract_templates')
+        .select('id, body_markdown')
+        .eq('id', params.template_id)
+        .eq('chef_id', user.tenantId!)
+        .single()
+
+      if (!template) return { success: false, error: 'Template not found' }
+      templateId = template.id
+      if (!bodyMarkdown) {
+        bodyMarkdown = template.body_markdown as string
+      }
+    }
+
+    if (!bodyMarkdown) {
+      return { success: false, error: 'Contract body required' }
+    }
+
+    let eventFields = {
+      event_date: 'TBD',
+      quoted_price: '$0.00',
+      deposit_amount: '$0.00',
+      cancellation_policy: 'See cancellation policy section.',
+      occasion: 'Private Dining Event',
+      guest_count: '0',
+      event_location: '',
+    }
+
+    if (params.event_id) {
+      const { data: event, error: eventError } = await db
+        .from('events')
+        .select(
+          `
+          id, status, event_date, quoted_price_cents, deposit_amount_cents,
+          occasion, guest_count, location_address, location_city, location_state
+        `
+        )
+        .eq('id', params.event_id)
+        .eq('tenant_id', user.tenantId!)
+        .eq('client_id', params.client_id)
+        .single()
+
+      if (eventError || !event) {
+        return { success: false, error: 'Event not found for this client' }
+      }
+
+      if (event.status === 'cancelled') {
+        return { success: false, error: 'Cannot create a contract for a cancelled event' }
+      }
+
+      try {
+        const { data: chefPolicyConfig } = await db
+          .from('chefs')
+          .select('cancellation_cutoff_days, deposit_refundable')
+          .eq('id', user.tenantId!)
+          .single()
+        const { getCancellationPolicySummary } = await import('@/lib/cancellation/policy')
+        eventFields.cancellation_policy = getCancellationPolicySummary({
+          cancellationCutoffDays: chefPolicyConfig?.cancellation_cutoff_days ?? 15,
+          depositRefundable: chefPolicyConfig?.deposit_refundable ?? false,
+        })
+      } catch {
+        eventFields.cancellation_policy = 'See cancellation policy section.'
+      }
+
+      eventFields = {
+        ...eventFields,
+        event_date: event.event_date ? format(new Date(event.event_date), 'MMMM d, yyyy') : 'TBD',
+        quoted_price: formatCents(event.quoted_price_cents),
+        deposit_amount: formatCents(event.deposit_amount_cents),
+        occasion: event.occasion ?? 'Private Dining Event',
+        guest_count: String(event.guest_count ?? 0),
+        event_location: [event.location_address, event.location_city, event.location_state]
+          .filter(Boolean)
+          .join(', '),
+      }
+    }
+
+    const bodySnapshot = renderMergeFields(bodyMarkdown, {
+      client_name: client.full_name || client.name || 'Client',
+      ...eventFields,
+    })
 
     const { data: inserted, error: insertErr } = await db
       .from('event_contracts')
@@ -1029,8 +1104,8 @@ export async function createStandaloneContract(params: {
         chef_id: user.tenantId!,
         client_id: params.client_id,
         event_id: params.event_id ?? null,
-        template_id: params.template_id,
-        body_markdown: bodyMarkdown,
+        template_id: templateId,
+        body_snapshot: bodySnapshot,
         status: 'draft',
       })
       .select('id')
@@ -1039,6 +1114,7 @@ export async function createStandaloneContract(params: {
     if (insertErr || !inserted) return { success: false, error: 'Failed to create contract' }
 
     revalidatePath('/contracts')
+    if (params.event_id) revalidatePath(`/events/${params.event_id}`)
     return { success: true, contractId: inserted.id }
   } catch (err) {
     console.error('[createStandaloneContract]', err)

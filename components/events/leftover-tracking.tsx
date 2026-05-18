@@ -20,8 +20,42 @@ const PACKAGING_OPTIONS = [
   { value: 'other', label: 'Other' },
 ] as const
 
+const DEFAULT_LEFTOVER_ITEMS = [
+  'Proteins',
+  'Prepared mains',
+  'Sides',
+  'Sauces and dressings',
+  'Salads',
+  'Desserts',
+  'Garnishes',
+  'Beverages',
+] as const
+
+const DISPOSAL_METHODS = [
+  'Guest take-home',
+  'Staff meal',
+  'Chef carry-forward',
+  'Compost',
+  'Discarded',
+  'Other',
+] as const
+
 type Props = {
   eventId: string
+}
+
+type PackagingType = NonNullable<LeftoverInput['packaging_type']>
+
+function blankForm(): LeftoverInput {
+  return {
+    item_description: '',
+    quantity: '',
+    packaging_type: undefined,
+    labeled: false,
+    label_text: '',
+    given_to: '',
+    storage_instructions: '',
+  }
 }
 
 export function LeftoverTracking({ eventId }: Props) {
@@ -30,17 +64,11 @@ export function LeftoverTracking({ eventId }: Props) {
   const [error, setError] = useState<string | null>(null)
   const [showForm, setShowForm] = useState(false)
   const [loaded, setLoaded] = useState(false)
+  const [editingId, setEditingId] = useState<string | null>(null)
+  const [disposalMethod, setDisposalMethod] = useState('')
 
   // Form state
-  const [form, setForm] = useState<LeftoverInput>({
-    item_description: '',
-    quantity: '',
-    packaging_type: undefined,
-    labeled: false,
-    label_text: '',
-    given_to: '',
-    storage_instructions: '',
-  })
+  const [form, setForm] = useState<LeftoverInput>(() => blankForm())
 
   useEffect(() => {
     getLeftovers(eventId)
@@ -52,25 +80,56 @@ export function LeftoverTracking({ eventId }: Props) {
   }, [eventId])
 
   function resetForm() {
-    setForm({
-      item_description: '',
-      quantity: '',
-      packaging_type: undefined,
-      labeled: false,
-      label_text: '',
-      given_to: '',
-      storage_instructions: '',
-    })
+    setForm(blankForm())
+    setEditingId(null)
+    setDisposalMethod('')
   }
 
-  function handleAdd() {
+  function getStorageInstructions() {
+    const instructions = form.storage_instructions?.trim()
+    const disposal = disposalMethod.trim()
+
+    if (instructions && disposal) return `${instructions} Disposal: ${disposal}.`
+    if (disposal) return `Disposal: ${disposal}.`
+    return instructions || undefined
+  }
+
+  function openAddForm(itemDescription?: string) {
+    resetForm()
+    setForm({ ...blankForm(), item_description: itemDescription || '' })
+    setShowForm(true)
+  }
+
+  function openEditForm(item: EventLeftover) {
+    setError(null)
+    setEditingId(item.id)
+    setDisposalMethod('')
+    setForm({
+      item_description: item.item_description,
+      quantity: item.quantity || '',
+      packaging_type: item.packaging_type || undefined,
+      labeled: item.labeled,
+      label_text: item.label_text || '',
+      given_to: item.given_to || '',
+      storage_instructions: item.storage_instructions || '',
+    })
+    setShowForm(true)
+  }
+
+  function handleSave() {
     if (!form.item_description.trim()) return
     setError(null)
     startTransition(async () => {
       try {
-        const result = await addLeftover(eventId, form)
+        const payload: LeftoverInput = {
+          ...form,
+          storage_instructions: getStorageInstructions(),
+        }
+        const result = editingId
+          ? await updateLeftover(editingId, eventId, payload)
+          : await addLeftover(eventId, payload)
         if (!result.success) {
-          setError(result.error || 'Failed to add leftover')
+          setError(result.error || 'Failed to save leftover')
           return
         }
         const updated = await getLeftovers(eventId)
@@ -137,7 +196,7 @@ export function LeftoverTracking({ eventId }: Props) {
         <h3 className="font-semibold text-white">Leftover Tracking</h3>
         <Button
           variant="ghost"
-          onClick={() => setShowForm(true)}
+          onClick={() => openAddForm()}
           disabled={isPending}
           className="text-xs"
         >
@@ -157,8 +216,44 @@ export function LeftoverTracking({ eventId }: Props) {
         </div>
       )}
 
+      <div className="mb-4">
+        <p className="mb-2 text-xs font-medium uppercase tracking-wide text-stone-500">
+          Default categories
+        </p>
+        <div className="grid grid-cols-2 gap-2 sm:grid-cols-4">
+          {DEFAULT_LEFTOVER_ITEMS.map((item) => {
+            const alreadyTracked = items.some(
+              (tracked) => tracked.item_description.toLowerCase() === item.toLowerCase()
+            )
+            return (
+              <button
+                key={item}
+                type="button"
+                onClick={() => openAddForm(item)}
+                disabled={isPending}
+                className={`rounded-lg border px-2 py-2 text-left text-xs transition-colors ${
+                  alreadyTracked
+                    ? 'border-emerald-800 bg-emerald-950/50 text-emerald-200'
+                    : 'border-stone-700 bg-stone-900 text-stone-300 hover:border-stone-500'
+                }`}
+              >
+                <span className="block font-medium">{item}</span>
+                <span className="text-[11px] text-stone-500">
+                  {alreadyTracked ? 'Tracked' : 'Mark leftover'}
+                </span>
+              </button>
+            )
+          })}
+        </div>
+      </div>
+
       {showForm && (
         <div className="mb-4 space-y-3 rounded-lg border border-stone-700 bg-stone-800/50 p-3">
+          <div className="flex items-center justify-between">
+            <p className="text-sm font-medium text-stone-200">
+              {editingId ? 'Edit leftover' : 'Track leftover'}
+            </p>
+          </div>
           <input
             type="text"
             value={form.item_description}
@@ -177,7 +272,10 @@ export function LeftoverTracking({ eventId }: Props) {
             <select
               value={form.packaging_type || ''}
               onChange={(e) =>
-                setForm({ ...form, packaging_type: (e.target.value || undefined) as any })
+                setForm({
+                  ...form,
+                  packaging_type: (e.target.value || undefined) as PackagingType | undefined,
+                })
               }
               className="rounded-lg border border-stone-600 bg-stone-900 px-3 py-2 text-sm text-white"
             >
@@ -193,16 +291,28 @@ export function LeftoverTracking({ eventId }: Props) {
             type="text"
             value={form.given_to || ''}
             onChange={(e) => setForm({ ...form, given_to: e.target.value })}
-            placeholder="Given to (who took the leftovers?)"
+            placeholder="Guest name or who took the leftovers"
             className="w-full rounded-lg border border-stone-600 bg-stone-900 px-3 py-2 text-sm text-white placeholder:text-stone-600"
           />
           <input
             type="text"
             value={form.storage_instructions || ''}
             onChange={(e) => setForm({ ...form, storage_instructions: e.target.value })}
-            placeholder="Storage instructions (e.g. refrigerate within 2 hours)"
+            placeholder="Take-home instructions (e.g. refrigerate within 2 hours)"
             className="w-full rounded-lg border border-stone-600 bg-stone-900 px-3 py-2 text-sm text-white placeholder:text-stone-600"
           />
+          <select
+            value={disposalMethod}
+            onChange={(e) => setDisposalMethod(e.target.value)}
+            className="w-full rounded-lg border border-stone-600 bg-stone-900 px-3 py-2 text-sm text-white"
+          >
+            <option value="">Disposal method...</option>
+            {DISPOSAL_METHODS.map((method) => (
+              <option key={method} value={method}>
+                {method}
+              </option>
+            ))}
+          </select>
           <div className="flex items-center gap-2">
             <label className="flex items-center gap-2 text-sm text-stone-300 cursor-pointer">
               <input
@@ -218,7 +328,7 @@ export function LeftoverTracking({ eventId }: Props) {
                 type="text"
                 value={form.label_text || ''}
                 onChange={(e) => setForm({ ...form, label_text: e.target.value })}
-                placeholder="Label text..."
+                placeholder="Label text or guest name..."
                 className="flex-1 rounded-lg border border-stone-600 bg-stone-900 px-3 py-1.5 text-sm text-white placeholder:text-stone-600"
               />
             )}
@@ -226,10 +336,10 @@ export function LeftoverTracking({ eventId }: Props) {
           <div className="flex gap-2">
             <Button
               variant="primary"
-              onClick={handleAdd}
+              onClick={handleSave}
               disabled={isPending || !form.item_description.trim()}
             >
-              Save Leftover
+              {editingId ? 'Update Leftover' : 'Save Leftover'}
             </Button>
             <Button
               variant="ghost"
@@ -246,7 +356,7 @@ export function LeftoverTracking({ eventId }: Props) {
 
       {items.length === 0 && !showForm && (
         <p className="text-sm text-stone-500">
-          Track leftover food, packaging, and who takes it home.
+          Mark any of the default categories above, or add a custom leftover.
         </p>
       )}
 
@@ -284,6 +394,14 @@ export function LeftoverTracking({ eventId }: Props) {
                   )}
                 </div>
                 <div className="flex items-center gap-1 shrink-0 ml-2">
+                  <button
+                    type="button"
+                    onClick={() => openEditForm(item)}
+                    disabled={isPending}
+                    className="text-xs px-2 py-1 rounded hover:bg-stone-700 text-stone-400 hover:text-stone-200 transition-colors"
+                  >
+                    Edit
+                  </button>
                   <button
                     type="button"
                     onClick={() => handleToggleLabeled(item)}

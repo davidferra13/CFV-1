@@ -27,6 +27,7 @@ import {
   isNightSuppressed,
   shouldForcePromoteToCritical,
 } from './rail-item-scoring'
+import { PATHNAME_HEADER } from '@/lib/auth/request-auth-context'
 
 // ---------------------------------------------------------------------------
 // Public types
@@ -84,7 +85,11 @@ const EVIDENCE_RELEVANCE: Record<string, number> = {
   disputed: 5,
 }
 
-function scoreGodModeItem(item: GodModeResolvedItem, now: Date): number {
+function scoreGodModeItem(
+  item: GodModeResolvedItem,
+  now: Date,
+  currentPage: string | null = null
+): number {
   const baseUrgency = LOOP_STATE_URGENCY[item.loopState ?? ''] ?? 50
   const relevance = EVIDENCE_RELEVANCE[item.evidenceLabel ?? ''] ?? 30
   const confidence = typeof item.confidence === 'number' ? item.confidence * 100 : 50
@@ -141,7 +146,7 @@ function scoreGodModeItem(item: GodModeResolvedItem, now: Date): number {
     userAffinityScore: confidence,
     impressionCount: 0,
     lastSeenAt: null,
-    currentPage: null,
+    currentPage,
     boostValue,
   })
 
@@ -291,11 +296,15 @@ export async function assembleTieredRail(
   const user = await requireChef()
   const now = new Date()
 
+  const { headers } = await import('next/headers')
+  const currentPage = headers().get(PATHNAME_HEADER) ?? null
+
   const ctx: GodModeResolverContext = {
     userId: user.id,
     tenantId: user.tenantId ?? '',
     role: 'chef',
     now,
+    ...(currentPage ? { currentPage } : {}),
   }
 
   // 1. Fetch God Mode items (all resolvers)
@@ -350,7 +359,7 @@ export async function assembleTieredRail(
   const scoredItems: Array<{ item: GodModeResolvedItem; score: number; tier: UnifiedTier }> = []
 
   for (const item of deduped) {
-    let score = scoreGodModeItem(item, now)
+    let score = scoreGodModeItem(item, now, currentPage)
 
     // Apply time-of-day multiplier based on preliminary tier
     const prelimTier = mapGodModeTierToUnified(item, score)

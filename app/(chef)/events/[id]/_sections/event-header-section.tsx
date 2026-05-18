@@ -25,6 +25,7 @@ import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
 import { ProgressPill } from '@/components/ui/progress-pill'
 import { getCompletionForEntity } from '@/lib/completion/actions'
+import { getRescheduleHistory } from '@/lib/events/reschedule-history-actions'
 
 function isEventToday(eventDate: Date | string): boolean {
   const today = new Date()
@@ -73,6 +74,7 @@ export async function EventHeaderSection({ eventId, tenantId, event }: Props) {
     { totalPaid, outstandingBalance },
     inquiryReferralSource,
     completion,
+    rescheduleHistoryResult,
   ] = await Promise.all([
     getEventGuests(eventId).catch(() => []),
     getEventCollaborators(eventId).catch(() => []),
@@ -119,6 +121,7 @@ export async function EventHeaderSection({ eventId, tenantId, event }: Props) {
         })()
       : Promise.resolve(null),
     getCompletionForEntity('event', eventId).catch(() => null),
+    getRescheduleHistory(eventId).catch(() => ({ data: [], error: null })),
   ])
 
   // Supplier calling feature flag
@@ -281,6 +284,7 @@ export async function EventHeaderSection({ eventId, tenantId, event }: Props) {
           eventId={event.id}
           eventStatus={event.status}
           currentDate={dateToDateString(event.event_date)}
+          rescheduleHistory={rescheduleHistoryResult.data}
         />
         <EventActionsOverflow
           actions={[

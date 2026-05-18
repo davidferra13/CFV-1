@@ -3,9 +3,8 @@
 import { useState, useTransition, useCallback, useRef, useEffect } from 'react'
 import { toast } from 'sonner'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
-import { Wine, ChevronDown, ChevronUp } from '@/components/ui/icons'
+import { Wine, ChevronDown, ChevronUp, CheckCircle } from '@/components/ui/icons'
 import { updateBeverageDiscovery } from '@/lib/events/beverage-discovery-actions'
-import Link from 'next/link'
 
 type BeverageServiceType =
   | 'chef_provides'
@@ -41,6 +40,7 @@ export function BeverageDiscoverySection({ eventId, initialData }: Props) {
   )
   const [alcoholServed, setAlcoholServed] = useState(initialData.alcohol_being_served)
   const [expectations, setExpectations] = useState(initialData.beverage_expectations ?? '')
+  const [lastSavedAt, setLastSavedAt] = useState<Date | null>(null)
   const [isPending, startTransition] = useTransition()
   const debounceRef = useRef<ReturnType<typeof setTimeout> | null>(null)
 
@@ -61,7 +61,9 @@ export function BeverageDiscoverySection({ eventId, initialData }: Props) {
           const result = await updateBeverageDiscovery(eventId, data)
           if (!result.success) {
             toast.error(result.error || 'Failed to save')
+            return
           }
+          setLastSavedAt(new Date())
         } catch {
           toast.error('Failed to save beverage discovery')
         }
@@ -127,7 +129,14 @@ export function BeverageDiscoverySection({ eventId, initialData }: Props) {
             )}
           </div>
           <div className="flex items-center gap-2">
-            {isPending && <span className="text-xs text-stone-500">Saving...</span>}
+            {isPending ? (
+              <span className="text-xs text-stone-500">Saving...</span>
+            ) : lastSavedAt ? (
+              <span className="inline-flex items-center gap-1 text-xs text-emerald-400">
+                <CheckCircle size={14} />
+                Saved
+              </span>
+            ) : null}
             {expanded ? (
               <ChevronUp size={16} className="text-stone-400" />
             ) : (
@@ -194,16 +203,11 @@ export function BeverageDiscoverySection({ eventId, initialData }: Props) {
             />
           </div>
 
-          {/* Link to beverage library when chef_provides */}
           {serviceType === 'chef_provides' && (
-            <div className="pt-1">
-              <Link
-                href="/beverages"
-                className="text-sm text-brand-400 hover:text-brand-300 underline underline-offset-2"
-              >
-                Open beverage library for pairing
-              </Link>
-            </div>
+            <p className="text-xs text-stone-500">
+              Chef-provided beverage service selected. Capture pairings, quantities, and bar setup
+              details in the notes above.
+            </p>
           )}
         </CardContent>
       )}

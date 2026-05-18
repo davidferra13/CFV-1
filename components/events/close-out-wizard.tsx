@@ -10,6 +10,8 @@ import Link from 'next/link'
 import { Button } from '@/components/ui/button'
 import { Alert } from '@/components/ui/alert'
 import { Input } from '@/components/ui/input'
+import { DepartureChecklist } from '@/components/events/departure-checklist'
+import { LeftoverTracking } from '@/components/events/leftover-tracking'
 import { formatCurrency } from '@/lib/utils/currency'
 import { format } from 'date-fns'
 import {
@@ -845,6 +847,26 @@ function WasteStep({ data, onNext }: { data: CloseOutData; onNext: () => void })
   )
 }
 
+function LeftoversAndDepartureStep({ data, onNext }: { data: CloseOutData; onNext: () => void }) {
+  return (
+    <div className="space-y-5">
+      <div>
+        <h2 className="text-xl font-semibold text-stone-100 mb-2">Leftovers and departure</h2>
+        <p className="text-stone-500 text-sm">
+          Track take-home food, disposal notes, and the final room check before leaving.
+        </p>
+      </div>
+
+      <LeftoverTracking eventId={data.event.id} />
+      <DepartureChecklist eventId={data.event.id} />
+
+      <div className="rounded-lg border border-stone-700 bg-stone-900 p-4">
+        <WasteStep data={data} onNext={onNext} />
+      </div>
+    </div>
+  )
+}
+
 // ─── Celebration Screen ────────────────────────────────────────────────────────
 // Shown after financial close is confirmed. CSS-only confetti, auto-advances to
 // dashboard after 3 seconds or chef clicks Done.
@@ -1177,7 +1199,7 @@ export function CloseOutWizard({ data }: { data: CloseOutData }) {
         {step === 1 && <ReceiptsStep data={data} onNext={next} />}
         {step === 2 && <MileageStep data={data} onNext={next} />}
         {step === 3 && <AARStep data={data} onNext={next} />}
-        {step === 4 && <WasteStep data={data} onNext={next} />}
+        {step === 4 && <LeftoversAndDepartureStep data={data} onNext={next} />}
         {step === 5 && <CloseStep data={data} />}
       </div>
 

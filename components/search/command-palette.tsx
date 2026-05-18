@@ -10,6 +10,8 @@ import {
   writeRecentSearch,
   type SearchHistoryEntry,
 } from '@/lib/search/search-recents'
+import { logSearch } from '@/lib/search/command-palette-actions'
+import type { EntityType } from '@/lib/search/command-palette-types'
 
 // ── Types ──────────────────────────────────────────────────────────
 
@@ -96,6 +98,37 @@ const QUICK_ACTIONS: PaletteItem[] = [
   },
 ]
 
+const ENTITY_ICON: Record<string, { abbr: string; color: string }> = {
+  event: { abbr: 'EV', color: 'bg-blue-500/20 text-blue-400' },
+  client: { abbr: 'CL', color: 'bg-emerald-500/20 text-emerald-400' },
+  menu: { abbr: 'MN', color: 'bg-orange-500/20 text-orange-400' },
+  recipe: { abbr: 'RC', color: 'bg-pink-500/20 text-pink-400' },
+  ingredient: { abbr: 'IG', color: 'bg-lime-500/20 text-lime-400' },
+  inquiry: { abbr: 'IQ', color: 'bg-cyan-500/20 text-cyan-400' },
+  quote: { abbr: 'QT', color: 'bg-violet-500/20 text-violet-400' },
+  expense: { abbr: 'EX', color: 'bg-red-500/20 text-red-400' },
+}
+
+const QUICK_ACTION_SHORTCUTS: Record<string, string> = {
+  'action:new-event': 'N E',
+  'action:new-menu': 'N M',
+  'action:new-client': 'N C',
+  'action:new-recipe': 'N R',
+}
+
+function HighlightMatch({ text, query }: { text: string; query: string }) {
+  if (!query || query.length < 2) return <>{text}</>
+  const idx = text.toLowerCase().indexOf(query.toLowerCase())
+  if (idx === -1) return <>{text}</>
+  return (
+    <>
+      {text.slice(0, idx)}
+      <span className="bg-brand-500/30 rounded-sm">{text.slice(idx, idx + query.length)}</span>
+      {text.slice(idx + query.length)}
+    </>
+  )
+}
+
 // ── Fuzzy match ───────────────────────────────────────────────────
 
 function fuzzyMatch(text: string, query: string): boolean {
@@ -138,7 +171,7 @@ export function CommandPalette({ userId, tenantId }: { userId: string; tenantId:
   const listRef = useRef<HTMLDivElement>(null)
   const router = useRouter()
   const pathname = usePathname()
-  const debouncedQuery = useDebounce(query, 250)
+  const debouncedQuery = useDebounce(query, 300)
 
   // Load recents from localStorage when opening
   useEffect(() => {
@@ -276,6 +309,8 @@ export function CommandPalette({ userId, tenantId }: { userId: string; tenantId:
   const selectItem = useCallback(
     (item: PaletteItem) => {
       setOpen(false)
+      if (query)
+        logSearch(query, { type: item.section, id: item.id, label: item.label }).catch(() => {})
       setQuery('')
       // Record selection to recents (skip quick actions and nav-only items)
       if (item.href && !item.id.startsWith('action:') && !item.id.startsWith('nav:')) {
@@ -424,21 +459,24 @@ export function CommandPalette({ userId, tenantId }: { userId: string; tenantId:
                   >
                     <span
                       className={`w-6 h-6 flex items-center justify-center rounded-md text-xs font-bold shrink-0 ${
-                        item.icon === '+'
+                        ENTITY_ICON[item.section.toLowerCase().replace(/s$/, '')]?.color ??
+                        (item.icon === '+'
                           ? 'bg-brand-500/20 text-brand-400'
                           : item.icon === '✦'
                             ? 'bg-purple-500/20 text-purple-400'
-                            : item.icon === '◆'
-                              ? 'bg-amber-500/20 text-amber-400'
-                              : item.icon === '↻'
-                                ? 'bg-brand-500/20 text-brand-400'
-                                : 'bg-stone-800 text-stone-400'
+                            : item.icon === '↻'
+                              ? 'bg-brand-500/20 text-brand-400'
+                              : 'bg-stone-800 text-stone-400')
                       }`}
                     >
-                      {item.icon || '→'}
+                      {ENTITY_ICON[item.section.toLowerCase().replace(/s$/, '')]?.abbr ??
+                        item.icon ??
+                        '→'}
                     </span>
                     <div className="flex-1 min-w-0">
-                      <div className="text-sm font-medium truncate">{item.label}</div>
+                      <div className="text-sm font-medium truncate">
+                        <HighlightMatch text={item.label} query={query} />
+                      </div>
                       {item.sublabel && (
                         <div className="text-xs text-stone-500 truncate">{item.sublabel}</div>
                       )}
@@ -448,13 +486,23 @@ export function CommandPalette({ userId, tenantId }: { userId: string; tenantId:
                         ↵
                       </kbd>
                     )}
+                    {QUICK_ACTION_SHORTCUTS[item.id] && (
+                      <kbd className="hidden sm:inline-flex items-center px-1.5 py-0.5 rounded text-xxs font-mono text-stone-600 bg-stone-800/50 border border-stone-700/50">
+                        {QUICK_ACTION_SHORTCUTS[item.id]}
+                      </kbd>
+                    )}
                   </div>
                 )
               })}
             </div>
           ))}
 
-          {loading && <div className="px-4 py-3 text-sm text-stone-500">Searching...</div>}
+          {loading && (
+            <div className="flex items-center gap-2 px-4 py-3 text-sm text-stone-500">
+              <span className="w-4 h-4 border-2 border-stone-600 border-t-brand-400 rounded-full animate-spin" />
+              Searching...
+            </div>
+          )}
 
           {!loading && query.length >= 2 && items.length === 0 && (
             <div className="px-4 py-8 text-center text-sm text-stone-500">
@@ -482,6 +530,12 @@ export function CommandPalette({ userId, tenantId }: { userId: string; tenantId:
               esc
             </kbd>
             close
+          </span>
+          <span className="flex items-center gap-1">
+            <kbd className="px-1 py-0.5 rounded bg-stone-800 border border-stone-700 font-mono">
+              tab
+            </kbd>
+            filter
           </span>
         </div>
       </div>

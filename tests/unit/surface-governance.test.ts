@@ -121,6 +121,7 @@ describe('surface governance', () => {
       showRemy: true,
       showQuickCapture: true,
       showLiveAlerts: true,
+      showContextualRail: true,
       contentWidth: 'constrained',
     })
     assert.deepEqual(resolveChefShellBudget('/settings/modules'), {
@@ -134,6 +135,7 @@ describe('surface governance', () => {
       showRemy: true,
       showQuickCapture: true,
       showLiveAlerts: true,
+      showContextualRail: true,
       contentWidth: 'constrained',
     })
     assert.deepEqual(resolveChefShellBudget('/events/new'), {
@@ -147,6 +149,7 @@ describe('surface governance', () => {
       showRemy: true,
       showQuickCapture: true,
       showLiveAlerts: true,
+      showContextualRail: true,
       contentWidth: 'constrained',
     })
     assert.deepEqual(resolveChefShellBudget('/menus/abc/editor'), {
@@ -160,6 +163,7 @@ describe('surface governance', () => {
       showRemy: false,
       showQuickCapture: false,
       showLiveAlerts: false,
+      showContextualRail: false,
       contentWidth: 'full',
     })
   })

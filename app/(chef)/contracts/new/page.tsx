@@ -2,8 +2,11 @@
 // Loads clients, templates, and events for the standalone contract creation form.
 
 import type { Metadata } from 'next'
+import { requireChef } from '@/lib/auth/get-user'
 import { getClients } from '@/lib/clients/actions'
 import { listContractTemplates } from '@/lib/contracts/actions'
+import { getClauses } from '@/lib/contracts/clause-actions'
+import { seedDefaultClauses } from '@/lib/contracts/default-clauses'
 import { getEvents } from '@/lib/events/actions'
 import { NewContractForm } from '@/components/contracts/new-contract-form'
 
@@ -13,14 +16,23 @@ export default async function NewContractPage() {
   let clients: any[] = []
   let templates: any[] = []
   let events: any[] = []
+  let clauses: any[] = []
   let loadError: string | null = null
 
   try {
+    const user = await requireChef()
     ;[clients, templates, events] = await Promise.all([
       getClients(),
       listContractTemplates(),
       getEvents(),
     ])
+
+    let clauseResult = await getClauses()
+    if (clauseResult.success && clauseResult.data.length === 0 && user.tenantId) {
+      await seedDefaultClauses(user.tenantId)
+      clauseResult = await getClauses()
+    }
+    clauses = clauseResult.success ? clauseResult.data : []
   } catch (err) {
     console.error('[NewContractPage] Load error:', err)
     loadError = 'Failed to load required data. Please try refreshing.'
@@ -56,9 +68,23 @@ export default async function NewContractPage() {
       label: `${e.occasion || 'Untitled'} - ${e.client?.full_name || 'No client'}${e.event_date ? ` (${new Date(e.event_date).toLocaleDateString()})` : ''}`,
     }))
 
+  const clauseOptions = clauses.map((clause: any) => ({
+    id: clause.id,
+    title: clause.title,
+    body: clause.body,
+    category: clause.category,
+    isDefault: Boolean(clause.is_default),
+    sortOrder: clause.sort_order ?? 0,
+  }))
+
   return (
     <div className="max-w-5xl mx-auto">
-      <NewContractForm clients={clientOptions} templates={templateOptions} events={eventOptions} />
+      <NewContractForm
+        clients={clientOptions}
+        templates={templateOptions}
+        events={eventOptions}
+        clauses={clauseOptions}
+      />
     </div>
   )
 }

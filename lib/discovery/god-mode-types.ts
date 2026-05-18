@@ -89,6 +89,8 @@ export interface GodModeResolverContext {
   tenantId: string
   role: UniversalRailRole
   now: Date
+  currentPage?: string
+  entityContext?: { type: string; id: string; parentIds?: Record<string, string> }
 }
 
 export type GodModeResolver = (ctx: GodModeResolverContext) => Promise<GodModeResolvedItem[]>

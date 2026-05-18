@@ -5,6 +5,7 @@
 import type { Metadata } from 'next'
 import { getContracts } from '@/lib/contracts/actions'
 import { ContractList } from '@/components/contracts/contract-list'
+import { CountersignPanel } from '@/components/contracts/countersign-panel'
 import Link from 'next/link'
 import { Button } from '@/components/ui/button'
 
@@ -22,6 +23,10 @@ export default async function ContractsPage() {
     contracts = []
   }
 
+  const awaitingCountersign = contracts.filter(
+    (contract) => contract.status === 'signed' && !contract.chef_signed_at
+  )
+
   return (
     <div className="max-w-5xl mx-auto space-y-6">
       <div className="flex items-center justify-between">
@@ -30,6 +35,11 @@ export default async function ContractsPage() {
           <p className="text-stone-400 mt-1">Manage service agreements across all your events.</p>
         </div>
         <div className="flex gap-2">
+          <Link href="/contracts/new">
+            <Button variant="primary" size="sm">
+              New Contract
+            </Button>
+          </Link>
           <Link href="/contracts/clauses">
             <Button variant="secondary" size="sm">
               Clause Library
@@ -51,7 +61,53 @@ export default async function ContractsPage() {
           </p>
         </div>
       ) : (
-        <ContractList contracts={contracts} />
+        <>
+          {awaitingCountersign.length > 0 && (
+            <section className="space-y-3 rounded-lg border border-amber-800/70 bg-amber-950/10 p-4">
+              <div>
+                <h2 className="text-base font-semibold text-amber-200">
+                  Ready for Countersignature
+                </h2>
+                <p className="mt-1 text-sm text-stone-400">
+                  Client-signed contracts that need your final signature.
+                </p>
+              </div>
+              <div className="space-y-3">
+                {awaitingCountersign.map((contract) => (
+                  <div
+                    key={contract.id}
+                    className="rounded-lg border border-stone-700 bg-stone-900/60 p-4"
+                  >
+                    <div className="mb-3 flex flex-col gap-1 sm:flex-row sm:items-center sm:justify-between">
+                      <div>
+                        <p className="font-medium text-stone-100">
+                          {contract.event_occasion || 'Untitled Event'}
+                        </p>
+                        <p className="text-sm text-stone-400">
+                          {contract.client_name || 'No client'}
+                        </p>
+                      </div>
+                      <a
+                        href={`/api/documents/contract/${contract.id}`}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="text-sm text-stone-400 underline hover:text-stone-100"
+                      >
+                        Review PDF
+                      </a>
+                    </div>
+                    <CountersignPanel
+                      contractId={contract.id}
+                      contractStatus={contract.status}
+                      chefSignedAt={contract.chef_signed_at}
+                    />
+                  </div>
+                ))}
+              </div>
+            </section>
+          )}
+          <ContractList contracts={contracts} />
+        </>
       )}
     </div>
   )

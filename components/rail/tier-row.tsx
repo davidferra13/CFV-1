@@ -1,8 +1,9 @@
-'use client'
+﻿'use client'
 
 import type { GodModeResolvedItem } from '@/lib/discovery/god-mode-types'
 import type { UnifiedTier } from '@/lib/discovery/rail-tier-assigner'
 import { RailItemRow } from './rail-item-row'
+import { useAutoScroll } from './use-auto-scroll'
 import { cn } from '@/lib/utils'
 
 // ---------------------------------------------------------------------------
@@ -74,6 +75,7 @@ export function TierRow({
   className?: string
 }) {
   const visual = TIER_VISUAL[tier]
+  const { scrollRef } = useAutoScroll({ tier, itemCount: items.length })
 
   if (items.length === 0) return null
 
@@ -124,10 +126,11 @@ export function TierRow({
 
       {/* Items container: horizontal scroll on mobile, flex-wrap on desktop */}
       <div
+        ref={scrollRef}
         className={cn(
           // Mobile: horizontal scroll
           'flex gap-2 overflow-x-auto pb-3 px-3',
-          'scrollbar-hide scroll-smooth snap-x snap-mandatory',
+          'scrollbar-hide snap-x snap-mandatory',
           '[mask-image:linear-gradient(to_right,transparent,black_12px,black_calc(100%-12px),transparent)]',
           // Desktop: flex-wrap grid
           'sm:flex-wrap sm:overflow-x-visible sm:[mask-image:none]'
