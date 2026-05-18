@@ -851,6 +851,33 @@ export async function attachMenuToEvent(eventId: string, menuId: string) {
   try {
     const { createSmartListDraftForEvent } = await import('@/lib/grocery/smart-list-actions')
     await createSmartListDraftForEvent(eventId)
+
+    const shoppingList = await getMenuShoppingList(menuId)
+    if (shoppingList.items.length > 0) {
+      const { data: smartList } = await db
+        .from('smart_grocery_lists')
+        .select('id')
+        .eq('event_id', eventId)
+        .eq('chef_id', user.tenantId!)
+        .eq('status', 'active')
+        .order('created_at', { ascending: false })
+        .limit(1)
+        .single()
+
+      if (smartList) {
+        const items = shoppingList.items.map((item, idx) => ({
+          id: crypto.randomUUID(),
+          list_id: smartList.id,
+          name: item.ingredientName,
+          quantity: item.totalQuantity || null,
+          unit: item.unit || null,
+          price_estimate_cents: item.estimatedCostCents || null,
+          sort_order: idx,
+          is_checked: false,
+        }))
+        await db.from('smart_grocery_items').insert(items)
+      }
+    }
   } catch (draftErr) {
     console.error('[attachMenuToEvent] Grocery draft generation failed (non-blocking):', draftErr)
   }

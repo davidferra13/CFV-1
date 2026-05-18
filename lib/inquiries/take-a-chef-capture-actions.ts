@@ -212,7 +212,53 @@ export async function captureTakeAChefBooking(
     // 7. Link inquiry to event
     await db.from('inquiries').update({ converted_to_event_id: event.id }).eq('id', inquiry.id)
 
-    // 8. Log commission as expense
+    // 8. Create Dinner Circle + link to event + client email
+    try {
+      const { createInquiryCircle, linkInquiryCircleToEvent } =
+        await import('@/lib/hub/inquiry-circle-actions')
+      const circle = await createInquiryCircle({
+        inquiryId: inquiry.id,
+        clientName: validated.full_name.trim(),
+        clientEmail: validated.email?.toLowerCase().trim() || null,
+        occasion: validated.occasion.trim(),
+      })
+      await linkInquiryCircleToEvent({
+        inquiryId: inquiry.id,
+        eventId: event.id,
+      })
+
+      if (validated.email) {
+        try {
+          const { data: chef } = await db
+            .from('chefs')
+            .select('business_name, display_name')
+            .eq('id', tenantId)
+            .single()
+          const chefName = chef?.business_name || chef?.display_name || 'Your Chef'
+          const appUrl = process.env.NEXT_PUBLIC_APP_URL || 'https://app.cheflowhq.com'
+          const circleUrl = `${appUrl}/circle/${circle.groupToken}`
+
+          const { sendInquiryReceivedEmail } = await import('@/lib/email/notifications')
+          await sendInquiryReceivedEmail({
+            clientEmail: validated.email.toLowerCase().trim(),
+            clientName: validated.full_name.trim(),
+            chefName,
+            occasion: validated.occasion.trim(),
+            eventDate: validated.event_date,
+            guestCount: validated.guest_count,
+            location: validated.location.trim(),
+            serveTime: validated.serve_time,
+            circleUrl,
+          })
+        } catch (emailErr) {
+          console.error('[captureTakeAChefBooking] Client email failed (non-fatal):', emailErr)
+        }
+      }
+    } catch (circleErr) {
+      console.error('[captureTakeAChefBooking] Circle creation failed (non-fatal):', circleErr)
+    }
+
+    // 9. Log commission as expense
     let commissionExpenseId: string | undefined
     if (
       validated.log_commission &&

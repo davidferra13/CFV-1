@@ -287,9 +287,79 @@ export async function getAdaptiveSourcingStatus(eventId: string): Promise<{
 }> {
   const user = await requireChef()
   const db: any = createServerClient()
-  await assertEventOwner(db, eventId, user.tenantId!)
+  const tenantId = user.tenantId!
+  await assertEventOwner(db, eventId, tenantId)
 
   const config = await getDinnerCircleConfig(eventId)
+
+  if ((config.adaptive?.availabilityItems ?? []).length === 0) {
+    try {
+      const { data: menu } = await db
+        .from('menus')
+        .select('id')
+        .eq('event_id', eventId)
+        .eq('tenant_id', tenantId)
+        .limit(1)
+        .maybeSingle()
+
+      if (menu) {
+        const { data: dishes } = await db
+          .from('dishes')
+          .select('id')
+          .eq('menu_id', menu.id)
+          .eq('tenant_id', tenantId)
+
+        const dishIds = (dishes ?? []).map((d: any) => d.id)
+        if (dishIds.length > 0) {
+          const { data: components } = await db
+            .from('components')
+            .select('recipe_id')
+            .in('dish_id', dishIds)
+            .not('recipe_id', 'is', null)
+
+          const recipeIds = [...new Set((components ?? []).map((c: any) => c.recipe_id))]
+          if (recipeIds.length > 0) {
+            const { data: recipeIngredients } = await db
+              .from('recipe_ingredients')
+              .select('ingredient:ingredients(name)')
+              .in('recipe_id', recipeIds)
+
+            const names = new Set<string>()
+            for (const ri of recipeIngredients ?? []) {
+              const name = (ri as any).ingredient?.name
+              if (name) names.add(name)
+            }
+
+            if (names.size > 0) {
+              const adaptive = config.adaptive ?? {
+                availabilityItems: [],
+                clientExpectationNote: '',
+                changeWindowNote: '',
+                pricingAdjustmentPolicy: '',
+                substitutionValidationNotes: '',
+                finalValidationLocked: false,
+                finalValidationNotes: '',
+              }
+              adaptive.availabilityItems = Array.from(names)
+                .sort()
+                .map((name) => ({
+                  ingredient: name,
+                  status: 'pending' as DinnerCircleIngredientStatus,
+                }))
+              config.adaptive = adaptive
+              await upsertCircleConfig(db, eventId, tenantId, config)
+            }
+          }
+        }
+      }
+    } catch (seedErr) {
+      console.error(
+        '[getAdaptiveSourcingStatus] Auto-seed from menu failed (non-blocking):',
+        seedErr
+      )
+    }
+  }
+
   return {
     availabilityItems: config.adaptive?.availabilityItems ?? [],
     sourcingLog: config.adaptive?.sourcingLog ?? [],
