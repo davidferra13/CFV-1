@@ -1,17 +1,22 @@
 ﻿import { requireChef } from '@/lib/auth/get-user'
 import { headers } from 'next/headers'
 import { PATHNAME_HEADER } from '@/lib/auth/request-auth-context'
-import { matchRailProfile, extractEntityContext } from '@/lib/discovery/rail-profiles'
+import { matchRailProfile } from '@/lib/discovery/rail-profiles'
 import { assembleContextualRail } from '@/lib/discovery/contextual-rail-assembly'
 import { ContextualRailClient } from './contextual-rail-client'
 
 export async function ContextualRailServer() {
   try {
-    const pathname = headers().get(PATHNAME_HEADER) ?? '/dashboard'
-    const profile = matchRailProfile(pathname)
-    const entityContext = extractEntityContext(profile, pathname)
+    const headersList = await headers()
+    const pathname = headersList.get(PATHNAME_HEADER) ?? '/dashboard'
+    const { profile, entityContext } = matchRailProfile(pathname)
     const user = await requireChef()
-    const data = await assembleContextualRail(profile, entityContext, user.id, user.tenantId ?? '')
+    const data = await assembleContextualRail(
+      profile,
+      entityContext,
+      user.id,
+      user.tenantId ?? user.entityId
+    )
 
     if (data.totalItems === 0) return null
 

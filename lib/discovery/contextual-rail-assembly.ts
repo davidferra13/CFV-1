@@ -165,7 +165,7 @@ export async function assembleContextualRail(
       category: cat,
       items: [],
       label: CATEGORY_LABELS[cat],
-      colorClass: CATEGORY_COLORS[cat],
+      colorClass: CATEGORY_COLORS[cat].text,
     }
   }
 
