@@ -1,8 +1,26 @@
-﻿import type { GodModeResolvedItem, GodModeResolverContext } from './god-mode-types'
+import type { GodModeResolvedItem, GodModeResolverContext } from './god-mode-types'
 
 export interface ResolverEntry {
   name: string
   resolve: (ctx: GodModeResolverContext) => Promise<GodModeResolvedItem[]>
+}
+
+const RESOLVER_TIMEOUT_MS = 8_000
+
+function withTimeout<T>(promise: Promise<T>, ms: number, label: string): Promise<T> {
+  return new Promise((resolve, reject) => {
+    const timer = setTimeout(() => reject(new Error(`${label} timed out after ${ms}ms`)), ms)
+    promise.then(
+      (v) => {
+        clearTimeout(timer)
+        resolve(v)
+      },
+      (e) => {
+        clearTimeout(timer)
+        reject(e)
+      }
+    )
+  })
 }
 
 /**
@@ -16,7 +34,7 @@ export async function dispatchResolvers(
   const results = await Promise.allSettled(
     resolvers.map(async (entry) => {
       try {
-        return await entry.resolve(ctx)
+        return await withTimeout(entry.resolve(ctx), RESOLVER_TIMEOUT_MS, entry.name)
       } catch (err) {
         console.error(`[god-mode-dispatcher] ${entry.name} failed:`, err)
         return []
