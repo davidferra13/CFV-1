@@ -27,6 +27,11 @@ function StripItem({ item }: { item: GodModeResolvedItem }) {
           TIER_DOT_CLASSES[item.tier] ?? 'bg-stone-500'
         )}
       />
+      {item.sourceKind && (
+        <span className="text-[9px] uppercase tracking-wider text-stone-600 font-medium">
+          {item.sourceKind}
+        </span>
+      )}
       <span className="text-xs text-stone-300 truncate max-w-[200px]">{item.label}</span>
     </Link>
   )

@@ -2,7 +2,7 @@
 
 import { useState } from 'react'
 import type { AggregatedFeedItem } from '@/lib/feed/aggregation'
-import type { GodModeResolvedItem } from '@/lib/discovery/god-mode-types'
+import type { GodModeResolvedItem, RailTier } from '@/lib/discovery/god-mode-types'
 import type { UnifiedTier } from '@/lib/discovery/rail-tier-assigner'
 import type { UniversalRailItem } from '@/lib/discovery/universal-rail-types'
 import { RailItemRow } from '@/components/rail/rail-item-row'
@@ -15,7 +15,7 @@ const TIER_ACCENT: Record<string, string> = {
   opportunity: 'bg-green-500',
 }
 
-function inferTier(score: number): string {
+function inferTier(score: number): UnifiedTier {
   if (score >= 80) return 'critical'
   if (score >= 50) return 'action'
   if (score >= 20) return 'awareness'
@@ -23,8 +23,7 @@ function inferTier(score: number): string {
 }
 
 function toResolvedItem(item: UniversalRailItem): GodModeResolvedItem {
-  const tier: UnifiedTier =
-    item.baseUrgency >= 80 ? 'critical' : item.baseUrgency >= 50 ? 'action' : 'awareness'
+  const tier: RailTier = item.baseUrgency >= 80 ? 'p0' : item.baseUrgency >= 50 ? 'p1' : 'p2'
   return {
     definitionId: item.definitionId,
     tier,

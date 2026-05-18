@@ -1,6 +1,6 @@
 {
   "version": "1.0",
-  "timestamp": "2026-05-18T01:03:18.545Z",
+  "timestamp": "2026-05-18T01:44:31.114Z",
   "source": "auto-postool",
   "partial": false,
   "phase": null,
@@ -26,19 +26,11 @@
     },
     {
       "status": "M",
-      "path": "app/(chef)/dashboard/page.tsx"
+      "path": "components/feed/aggregated-item.tsx"
     },
     {
       "status": "M",
-      "path": "docs/UNIFIED-BUILD-QUEUE.md"
-    },
-    {
-      "status": "M",
-      "path": "docs/build-state.md"
-    },
-    {
-      "status": "M",
-      "path": "docs/intensify/communication.md"
+      "path": "components/rail/rail-strip.tsx"
     },
     {
       "status": "M",
@@ -46,53 +38,33 @@
     },
     {
       "status": "M",
-      "path": "lib/communication/scheduled-message-actions.ts"
+      "path": "lib/discovery/god-mode-dispatcher.ts"
     },
     {
       "status": "M",
-      "path": "lib/feed/aggregation.ts"
+      "path": "lib/discovery/universal-rail-assembly.ts"
+    },
+    {
+      "status": "M",
+      "path": "lib/inquiries/public-actions.ts"
     },
     {
       "status": "??",
-      "path": "app/(chef)/communication/"
+      "path": "app/(chef)/communication/page.tsx"
     },
     {
       "status": "??",
-      "path": "app/(chef)/dashboard/_sections/activity-feed-section.tsx"
+      "path": "app/(client)/my-hub/activity/"
     },
     {
       "status": "??",
-      "path": "components/feed/feed-card.tsx"
+      "path": "lib/client-portal/activity-actions.ts"
     },
     {
       "status": "??",
-      "path": "database/migrations/20260517260004_ingredient_source_fields.sql"
-    },
-    {
-      "status": "??",
-      "path": "lib/feed/composition.ts"
-    },
-    {
-      "status": "??",
-      "path": "lib/feed/feed-actions.ts"
-    },
-    {
-      "status": "??",
-      "path": "lib/feed/source-registry.ts"
-    },
-    {
-      "status": "??",
-      "path": "lib/feed/temporal-resurfacing.ts"
-    },
-    {
-      "status": "??",
-      "path": "lib/notifications/aggregation.ts"
-    },
-    {
-      "status": "??",
-      "path": "lib/notifications/digest-builder.ts"
+      "path": "lib/discovery/resolvers/chef/communication-feed-resolver.ts"
     }
   ],
   "next_action": null,
-  "context_notes": "Recent commits:\n790aa8063 fix: add event_debrief to SignalDomain and fix social-draft tsc errors\nd7e6b7dfe feat: Wave 2 complete - FB events adapter, CIL social bridge, feed engine, rail interactions\nc63371f51 feat: recipe edit page shell + circle activity feed migration\n47ea41990 feat: Wave 2 intelligence loop + feed/social scaffolding\n147c5ef5e feat: parallel session artifacts - feed engine, circle activity, facebook events, recipe creation"
+  "context_notes": "Recent commits:\n68422a998 fix: CIL social bridge, draft status filter, feed/rail type alignment\n5c8178318 feat: CIL resolvers, commitment friction, feed engine, ingredient source fields\n910b46bea feat: Phase 3 Circle Integrity - Take-a-Chef circles, grocery population, sourcing auto-seed\ne6a3203b1 chore: commit leftover formatting and doc updates from prior session\n5d0dd767f feat: Wave 2 artifacts - communication drafts, feed cards, CIL social, rail assembly"
 }

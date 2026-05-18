@@ -21,7 +21,7 @@ import {
   loadRailUserPreferences,
 } from './universal-rail-state'
 import type { RailUserState } from './universal-rail-state'
-import { computeSourceAffinity, getAffinityForSource } from '@/lib/feed/affinity-computer'
+import { computeSourceAffinity } from '@/lib/feed/affinity-computer'
 import { groupFeedItems } from '@/lib/feed/aggregation'
 import type { FeedItem } from '@/lib/feed/aggregation'
 

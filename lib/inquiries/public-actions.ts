@@ -498,24 +498,41 @@ export async function submitPublicInquiry(input: PublicInquiryInput) {
     console.error('[submitPublicInquiry] Circle creation failed (non-blocking):', circleErr)
   }
 
-  // Send acknowledgment email to client (non-blocking - never fails the submission)
+  // Send acknowledgment email ONLY when auto-response is disabled.
+  // When enabled, triggerAutoResponse (below) sends a richer acknowledgment;
+  // firing both = double-email to client.
+  let autoResponseWillFire = false
   try {
-    const { sendInquiryReceivedEmail } = await import('@/lib/email/notifications')
-    await sendInquiryReceivedEmail({
-      clientEmail: validated.email.toLowerCase().trim(),
-      clientName: validated.full_name.trim(),
-      chefName,
-      occasion: validated.occasion.trim(),
-      eventDate: validated.event_date || null,
-      guestCount: validated.guest_count,
-      location: validated.address.trim() || null,
-      serveTime: validated.serve_time.trim() || null,
-      circleUrl: circleGroupToken
-        ? `https://app.cheflowhq.com/hub/g/${circleGroupToken}`
-        : undefined,
-    })
-  } catch (emailErr) {
-    console.error('[submitPublicInquiry] Acknowledgment email failed (non-blocking):', emailErr)
+    const { data: arConfig } = await db
+      .from('auto_response_config')
+      .select('enabled')
+      .eq('chef_id', tenantId)
+      .eq('enabled', true)
+      .maybeSingle()
+    autoResponseWillFire = !!arConfig
+  } catch {
+    // Non-fatal: default to sending basic acknowledgment
+  }
+
+  if (!autoResponseWillFire) {
+    try {
+      const { sendInquiryReceivedEmail } = await import('@/lib/email/notifications')
+      await sendInquiryReceivedEmail({
+        clientEmail: validated.email.toLowerCase().trim(),
+        clientName: validated.full_name.trim(),
+        chefName,
+        occasion: validated.occasion.trim(),
+        eventDate: validated.event_date || null,
+        guestCount: validated.guest_count,
+        location: validated.address.trim() || null,
+        serveTime: validated.serve_time.trim() || null,
+        circleUrl: circleGroupToken
+          ? `https://app.cheflowhq.com/hub/g/${circleGroupToken}`
+          : undefined,
+      })
+    } catch (emailErr) {
+      console.error('[submitPublicInquiry] Acknowledgment email failed (non-blocking):', emailErr)
+    }
   }
 
   // Notify chef of new inquiry via email (non-blocking)

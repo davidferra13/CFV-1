@@ -269,6 +269,14 @@ function warmResolvers(): ResolverEntry[] {
         return resolveScheduledMessages(ctx)
       },
     },
+    {
+      name: 'communication-feed',
+      resolve: async (ctx) => {
+        const { resolveCommunicationFeed } =
+          await import('./resolvers/chef/communication-feed-resolver')
+        return resolveCommunicationFeed(ctx)
+      },
+    },
     // --- Wave 2: Config/Onboarding resolvers ---
     {
       name: 'onboarding',
