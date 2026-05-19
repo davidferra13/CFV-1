@@ -20,6 +20,10 @@ export async function GET(_req: NextRequest, { params }: { params: { id: string 
     const db: any = createServerClient()
     const eventId = params.id
 
+    if (!user.tenantId) {
+      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
+    }
+
     // Fetch event - must belong to this client
     const { data: event } = await db
       .from('events')
@@ -28,6 +32,7 @@ export async function GET(_req: NextRequest, { params }: { params: { id: string 
       )
       .eq('id', eventId)
       .eq('client_id', user.entityId)
+      .eq('tenant_id', user.tenantId)
       .single()
 
     if (!event) {

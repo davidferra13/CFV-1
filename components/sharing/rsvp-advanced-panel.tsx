@@ -320,6 +320,7 @@ export function RSVPAdvancedPanel({
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 text-xs">
           <label className="flex items-center gap-2 text-stone-300">
             <input
+              suppressHydrationWarning
               type="checkbox"
               checked={settings.requireJoinApproval}
               onChange={(e) =>
@@ -330,6 +331,7 @@ export function RSVPAdvancedPanel({
           </label>
           <label className="flex items-center gap-2 text-stone-300">
             <input
+              suppressHydrationWarning
               type="checkbox"
               checked={settings.enforceCapacity}
               onChange={(e) =>
@@ -340,6 +342,7 @@ export function RSVPAdvancedPanel({
           </label>
           <label className="flex items-center gap-2 text-stone-300">
             <input
+              suppressHydrationWarning
               type="checkbox"
               checked={settings.waitlistEnabled}
               onChange={(e) =>
@@ -349,6 +352,7 @@ export function RSVPAdvancedPanel({
             Enable waitlist when full
           </label>
           <input
+            suppressHydrationWarning
             type="number"
             min={1}
             value={settings.maxCapacity}
@@ -357,6 +361,7 @@ export function RSVPAdvancedPanel({
             className="rounded-md border border-stone-700 bg-stone-950 px-2 py-1 text-stone-100"
           />
           <input
+            suppressHydrationWarning
             type="datetime-local"
             value={settings.rsvpDeadlineAt}
             onChange={(e) => setSettings((prev) => ({ ...prev, rsvpDeadlineAt: e.target.value }))}
@@ -446,6 +451,7 @@ export function RSVPAdvancedPanel({
                 <div className="flex flex-wrap gap-3 text-stone-300">
                   <label className="flex items-center gap-1">
                     <input
+                      suppressHydrationWarning
                       type="checkbox"
                       checked={invite.single_use}
                       onChange={(e) => onToggleSingleUse(invite.id, e.target.checked)}
@@ -455,6 +461,7 @@ export function RSVPAdvancedPanel({
                   </label>
                   <label className="flex items-center gap-1">
                     <input
+                      suppressHydrationWarning
                       type="checkbox"
                       checked={invite.allow_join_request}
                       onChange={(e) => onToggleJoin(invite.id, e.target.checked)}
@@ -464,6 +471,7 @@ export function RSVPAdvancedPanel({
                   </label>
                   <label className="flex items-center gap-1">
                     <input
+                      suppressHydrationWarning
                       type="checkbox"
                       checked={invite.allow_book_own}
                       onChange={(e) => onToggleBookOwn(invite.id, e.target.checked)}
