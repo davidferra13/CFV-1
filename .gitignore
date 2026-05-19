@@ -67,8 +67,11 @@ docs/hermes/alerts-archive-*.md
 docs/hermes/watchdog.log
 docs/hermes/error-scan.md
 docs/hermes/build-state-check.md
+docs/uptime-history.json
 docs/hermes/persona-pairing-*.pid
 docs/hermes/persona-pairing-*.lock/
+docs/hermes/persona-pairing-*
+docs/persona-pairing-run-log.jsonl
 docs/persona-pairing-reports/
 
 # Local file storage
