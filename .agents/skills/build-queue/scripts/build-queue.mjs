@@ -18,9 +18,12 @@ const RUNS_DIR = join(QUEUE_ROOT, 'runs')
 const PROOF_DIR = join(QUEUE_ROOT, 'proof-packs')
 const EVENT_LOG = join(QUEUE_ROOT, 'events.jsonl')
 const LOCK_DIR = join(QUEUE_ROOT, '.lifecycle.lock')
+const TAXONOMY_PATH = join(QUEUE_ROOT, 'codebase-category-taxonomy-a-z.md')
 const LOCK_STALE_MS = 5 * 60 * 1000
 const LOCK_WAIT_MS = 30 * 1000
 const execFileAsync = promisify(execFile)
+const AMBIGUOUS_CATEGORY = 'Ambiguous Intake / Needs Classification'
+const AMBIGUOUS_HOME = 'Queue Governance / Run Control'
 
 function nowStamp() {
   return new Date().toISOString().replace(/[-:]/g, '').replace(/\..+$/, 'Z')
@@ -139,6 +142,138 @@ function contentHash(value) {
   return createHash('sha256').update(value).digest('hex')
 }
 
+function normalizeText(value) {
+  return String(value || '')
+    .toLowerCase()
+    .replace(/[`*_()[\]{}]/g, ' ')
+    .replace(/[^a-z0-9/+-]+/g, ' ')
+    .replace(/\s+/g, ' ')
+    .trim()
+}
+
+function aliasMatches(haystack, alias) {
+  const normalizedAlias = normalizeText(alias)
+  if (!normalizedAlias) return false
+  if (normalizedAlias.length <= 3) {
+    return new RegExp(`(^|\\s)${normalizedAlias.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')}(\\s|$)`).test(haystack)
+  }
+  return haystack.includes(normalizedAlias)
+}
+
+function parseTaxonomy(text) {
+  const categories = []
+  const blocks = text.split(/\n(?=### )/g)
+  for (const block of blocks) {
+    const heading = block.match(/^### (.+)$/m)?.[1]?.trim()
+    if (!heading) continue
+    const home = block.match(/^- Home:\s*(.+)$/m)?.[1]?.trim() || AMBIGUOUS_HOME
+    const aliasesLine = block.match(/^- Aliases:\s*(.+)$/m)?.[1]?.trim() || ''
+    const aliases = aliasesLine
+      .split(',')
+      .map((value) => value.replace(/`/g, '').trim())
+      .filter(Boolean)
+    categories.push({ category: heading, home, aliases })
+  }
+  categories.push({
+    category: AMBIGUOUS_CATEGORY,
+    home: AMBIGUOUS_HOME,
+    aliases: ['ambiguous', 'needs classification', 'uncategorized'],
+  })
+  return categories
+}
+
+async function loadTaxonomy() {
+  if (!existsSync(TAXONOMY_PATH)) {
+    return [
+      {
+        category: AMBIGUOUS_CATEGORY,
+        home: AMBIGUOUS_HOME,
+        aliases: ['ambiguous', 'needs classification', 'uncategorized'],
+      },
+    ]
+  }
+  return parseTaxonomy(await readFile(TAXONOMY_PATH, 'utf8'))
+}
+
+function findCategory(taxonomy, value) {
+  const normalized = normalizeText(value)
+  return taxonomy.find((entry) => normalizeText(entry.category) === normalized)
+}
+
+async function classifyQueueItem(args) {
+  const taxonomy = await loadTaxonomy()
+  const explicitCategory = args.category
+  const explicitHome = args.home
+  if (explicitCategory) {
+    const match = findCategory(taxonomy, explicitCategory)
+    if (!match) {
+      const examples = taxonomy.slice(0, 12).map((entry) => entry.category).join('; ')
+      throw new Error(
+        `Unknown queue category: ${explicitCategory}. Use a category from ${TAXONOMY_PATH}. Examples: ${examples}`
+      )
+    }
+    return {
+      category: match.category,
+      home: explicitHome || match.home,
+      secondaryCategories: [],
+      confidence: explicitHome ? 'explicit' : 'explicit-category',
+      reason: explicitHome
+        ? 'Explicit category and home provided at intake.'
+        : `Explicit category provided at intake; home derived from taxonomy: ${match.home}.`,
+      readiness: 4,
+    }
+  }
+
+  const haystack = normalizeText([args.title, args.raw, args.goal, args.scope, args.acceptance, args.domain].filter(Boolean).join(' '))
+  const scored = taxonomy
+    .filter((entry) => entry.category !== AMBIGUOUS_CATEGORY)
+    .map((entry) => {
+      let score = aliasMatches(haystack, entry.category) ? 3 : 0
+      const matchedAliases = []
+      for (const alias of entry.aliases) {
+        if (!aliasMatches(haystack, alias)) continue
+        matchedAliases.push(alias)
+        score += normalizeText(alias).length > 10 ? 3 : 2
+      }
+      return { ...entry, score, matchedAliases }
+    })
+    .filter((entry) => entry.score > 0)
+    .sort((a, b) => b.score - a.score || b.matchedAliases.length - a.matchedAliases.length)
+
+  if (scored.length === 0) {
+    return {
+      category: AMBIGUOUS_CATEGORY,
+      home: explicitHome || AMBIGUOUS_HOME,
+      secondaryCategories: [],
+      confidence: 'needs-review',
+      reason: 'No taxonomy alias matched the intake text; requires explicit category/home before firing.',
+      readiness: 2,
+    }
+  }
+
+  const best = scored[0]
+  const tied = scored.filter((entry) => entry.score === best.score)
+  if (tied.length > 1) {
+    return {
+      category: AMBIGUOUS_CATEGORY,
+      home: explicitHome || AMBIGUOUS_HOME,
+      secondaryCategories: tied.map((entry) => entry.category),
+      confidence: 'needs-review',
+      reason: `Multiple taxonomy categories tied: ${tied.map((entry) => entry.category).join('; ')}.`,
+      readiness: 2,
+    }
+  }
+
+  return {
+    category: best.category,
+    home: explicitHome || best.home,
+    secondaryCategories: scored.slice(1, 4).map((entry) => entry.category),
+    confidence: 'inferred',
+    reason: `Matched taxonomy aliases: ${best.matchedAliases.join(', ') || best.category}.`,
+    readiness: 4,
+  }
+}
+
 async function listItems(status = 'active') {
   const statuses = status === 'all' ? STATUS_DIRS : [status]
   const items = []
@@ -157,6 +292,8 @@ async function listItems(status = 'active') {
         text,
         title: readField(text, 'Title') || basename(file, '.md'),
         domain: readField(text, 'Product Domain / Module') || 'Unassigned',
+        category: readField(text, 'Category') || '',
+        home: readField(text, 'Home') || '',
         priority: readField(text, 'Priority') || 'P2',
         readiness: Number(readField(text, 'Readiness Score') || 0),
         dependencies: readField(text, 'Dependencies') || '',
@@ -176,6 +313,11 @@ function readField(text, label) {
     Status: 'status',
     Priority: 'priority',
     'Product Domain / Module': 'domain',
+    Category: 'category',
+    Home: 'home',
+    'Secondary Categories': 'secondary_categories',
+    'Classification Confidence': 'classification_confidence',
+    'Classification Reason': 'classification_reason',
     'Readiness Score': 'readiness',
     Dependencies: 'depends_on',
     Related: 'related',
@@ -203,6 +345,11 @@ function replaceField(text, label, value) {
     Status: 'status',
     Priority: 'priority',
     'Product Domain / Module': 'domain',
+    Category: 'category',
+    Home: 'home',
+    'Secondary Categories': 'secondary_categories',
+    'Classification Confidence': 'classification_confidence',
+    'Classification Reason': 'classification_reason',
     'Readiness Score': 'readiness',
     Dependencies: 'depends_on',
     Related: 'related',
@@ -272,10 +419,26 @@ function appendLog(text, entry) {
   return text.replace(marker, `${marker}\n- ${entry}`)
 }
 
-function renderItem({ id, title, raw, goal, domain, priority, scope, acceptance, risks, dependencies, verification }) {
+function renderItem({
+  id,
+  title,
+  raw,
+  goal,
+  domain,
+  priority,
+  scope,
+  acceptance,
+  risks,
+  dependencies,
+  verification,
+  classification,
+  readiness,
+}) {
   const created = new Date().toISOString()
+  const resolvedDomain = domain || classification?.home || 'Platform / Build Queue'
+  const resolvedReadiness = readiness || classification?.readiness || 4
   const deps = dependencies && dependencies !== 'None' ? String(dependencies).split(',').map((v) => v.trim()).filter(Boolean) : []
-  const criteria = isUiQueueItem({ title, domain, scope, acceptance })
+  const criteria = isUiQueueItem({ title, domain: resolvedDomain, scope, acceptance })
     ? appendMobileQueueCriteria({ acceptance, verification })
     : { acceptance, verification }
   return `---
@@ -286,8 +449,13 @@ priority: ${priority || 'P1'}
 created: ${created}
 updated: ${created}
 source: ${raw ? 'research' : 'user'}
-domain: ${yamlValue(domain || 'Platform / Build Queue')}
-readiness: 4
+domain: ${yamlValue(resolvedDomain)}
+category: ${yamlValue(classification?.category || AMBIGUOUS_CATEGORY)}
+home: ${yamlValue(classification?.home || resolvedDomain)}
+secondary_categories: ${yamlValue(classification?.secondaryCategories || [])}
+classification_confidence: ${yamlValue(classification?.confidence || 'needs-review')}
+classification_reason: ${yamlValue(classification?.reason || 'No classification reason recorded.')}
+readiness: ${resolvedReadiness}
 depends_on: ${yamlValue(deps)}
 unlocks: []
 related: []
@@ -311,9 +479,18 @@ ${goal || 'Not provided.'}
 
 ## Product Domain / Module
 
-- Owning domain/module: ${domain || 'Platform / Build Queue'}
+- Owning domain/module: ${resolvedDomain}
 - New domain/module needed: No by default; explain only if yes.
 - Related domain language: body-system improvement, growth organ, queue governance.
+
+## Queue Classification
+
+- Category: ${classification?.category || AMBIGUOUS_CATEGORY}
+- Home: ${classification?.home || resolvedDomain}
+- Secondary categories: ${(classification?.secondaryCategories || []).join(', ') || 'None'}
+- Classification confidence: ${classification?.confidence || 'needs-review'}
+- Classification reason: ${classification?.reason || 'No classification reason recorded.'}
+- Taxonomy source: .agents/build-queue/codebase-category-taxonomy-a-z.md
 
 ## Queue Reconciliation
 
@@ -353,9 +530,9 @@ ${bulletize(criteria.acceptance || 'Acceptance criteria must be filled before fi
 
 ## Implementation Readiness
 
-- Score: 4/5
+- Score: ${resolvedReadiness}/5
 - Missing: live code inspection at fire time.
-- Ready to fire: Yes, unless dependencies are listed.
+- Ready to fire: ${resolvedReadiness >= 4 ? 'Yes, unless dependencies are listed.' : 'No; classify category/home explicitly before firing.'}
 
 ## Risks
 
@@ -482,21 +659,30 @@ async function findItemPath(id, statuses = STATUS_DIRS) {
 
 async function cmdAdd(args) {
   if (args.help || !args.title) {
-    console.log(`Usage: build-queue.mjs add --title "Title" [--domain "..."] [--raw "..."] [--goal "..."] [--scope "..."] [--acceptance "..."] [--risks "..."] [--dependencies "..."] [--verification "..."]`)
+    console.log(`Usage: build-queue.mjs add --title "Title" [--category "..."] [--home "..."] [--domain "..."] [--raw "..."] [--goal "..."] [--scope "..."] [--acceptance "..."] [--risks "..."] [--dependencies "..."] [--verification "..."] [--dry-run]`)
     return
   }
+  const classification = await classifyQueueItem(args)
   const id = args.id || `BQ-${nowStamp()}-${slugify(args.title)}`
   const path = join(QUEUE_ROOT, 'active', `${id}.md`)
   if (existsSync(path)) throw new Error(`Queue item already exists: ${id}`)
-  await writeFile(path, renderItem({ ...args, id }), 'utf8')
+  const text = renderItem({ ...args, id, classification })
+  if (args['dry-run']) {
+    console.log(text)
+    return
+  }
+  await writeFile(path, text, 'utf8')
   await appendEvent({
     command: 'add',
     id,
     toStatus: 'active',
-    domain: args.domain || 'Platform / Build Queue',
+    domain: args.domain || classification.home || 'Platform / Build Queue',
+    category: classification.category,
+    home: classification.home,
+    classificationConfidence: classification.confidence,
     path,
   })
-  console.log(`Added ${id} -> ${path}`)
+  console.log(`Added ${id} [${classification.category} -> ${classification.home}] -> ${path}`)
 }
 
 async function cmdStatus() {
@@ -510,7 +696,7 @@ async function cmdStatus() {
 async function cmdIndex(args) {
   const items = await listItems(args.status || 'active')
   for (const item of items) {
-    console.log(`${item.id}\t${item.status}\t${item.priority}\t${item.domain}\t${item.title}`)
+    console.log(`${item.id}\t${item.status}\t${item.priority}\t${item.domain}\t${item.category || 'Unclassified'}\t${item.home || 'No home'}\t${item.title}`)
   }
 }
 

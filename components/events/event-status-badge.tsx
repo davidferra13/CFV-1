@@ -2,6 +2,7 @@
 'use client'
 
 import type { ReactNode } from 'react'
+import { STATUS_BADGE_CONTRAST_CLASSES } from '@/lib/ui/contrast-contract'
 
 export type EventStatus =
   | 'draft'
@@ -90,31 +91,31 @@ const STATUS_CONFIG: Record<EventStatus, StatusConfig> = {
   draft: {
     label: 'Draft',
     icon: <Icon d="M11.5 1.5l3 3L5 14H2v-3L11.5 1.5z" />,
-    classes: 'bg-stone-800/60 text-stone-400 border border-dashed border-stone-600',
+    classes: `${STATUS_BADGE_CONTRAST_CLASSES.muted} border border-dashed`,
   },
   proposed: {
     label: 'Proposed',
     icon: <Icon d="M8 1l1.5 4.5L14 7l-4.5 1.5L8 13l-1.5-4.5L2 7l4.5-1.5L8 1z" fill />,
-    classes: 'bg-brand-950/50 text-brand-300 border border-brand-800/50',
+    classes: `${STATUS_BADGE_CONTRAST_CLASSES.info} border`,
   },
   accepted: {
     label: 'Accepted',
     icon: (
       <Icon d="M5 14H3a1 1 0 01-1-1V8a1 1 0 011-1h2m0 7V7m0 7h6.5a1.5 1.5 0 001.45-1.12l1-4A1.5 1.5 0 0012.5 7H10V3.5A1.5 1.5 0 008.5 2L5 7" />
     ),
-    classes: 'bg-brand-950/50 text-brand-300 border border-brand-800/50',
+    classes: `${STATUS_BADGE_CONTRAST_CLASSES.info} border`,
   },
   paid: {
     label: 'Paid',
     icon: (
       <Icon d="M8 1v14M11.5 4c0-1.1-1.6-2-3.5-2S4.5 2.9 4.5 4s1.6 2 3.5 2 3.5.9 3.5 2-1.6 2-3.5 2-3.5-.9-3.5-2" />
     ),
-    classes: 'bg-brand-950/50 text-brand-300 border border-brand-800/50',
+    classes: `${STATUS_BADGE_CONTRAST_CLASSES.info} border`,
   },
   confirmed: {
     label: 'Confirmed',
     icon: <CheckCircleIcon />,
-    classes: 'bg-brand-950/50 text-brand-300 border border-brand-800/50',
+    classes: `${STATUS_BADGE_CONTRAST_CLASSES.success} border`,
   },
   in_progress: {
     label: 'Live',
@@ -124,17 +125,17 @@ const STATUS_CONFIG: Record<EventStatus, StatusConfig> = {
         fill
       />
     ),
-    classes: 'bg-brand-950/50 text-brand-300 border border-brand-700/60',
+    classes: `${STATUS_BADGE_CONTRAST_CLASSES.warning} border`,
   },
   completed: {
     label: 'Completed',
     icon: <TrophyIcon />,
-    classes: 'bg-stone-800/60 text-stone-400 border border-stone-600',
+    classes: `${STATUS_BADGE_CONTRAST_CLASSES.success} border`,
   },
   cancelled: {
     label: 'Cancelled',
     icon: <XCircleIcon />,
-    classes: 'bg-red-950/40 text-red-400/70 border border-red-800/40 line-through',
+    classes: `${STATUS_BADGE_CONTRAST_CLASSES.danger} border line-through`,
   },
 }
 

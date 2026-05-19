@@ -16,6 +16,21 @@ import {
   unsaveRailItemAction,
 } from '@/lib/discovery/universal-rail-actions'
 import { cn } from '@/lib/utils'
+import {
+  AlertTriangle,
+  Calendar,
+  CheckCircle,
+  Clock,
+  DollarSign,
+  FileText,
+  Globe,
+  Inbox,
+  MessageCircle,
+  ShoppingCart,
+  StickyNote,
+  Zap,
+  type LucideIcon,
+} from '@/components/ui/icons'
 
 // ---------------------------------------------------------------------------
 // Types
@@ -65,6 +80,28 @@ const URGENCY_INDICATOR_CLASSES: Record<string, string> = {
   high: 'ring-1 ring-warning/30',
   normal: '',
   low: 'opacity-90',
+}
+
+const ICON_MAP: Record<string, LucideIcon> = {
+  alert: AlertTriangle,
+  calendar: Calendar,
+  cart: ShoppingCart,
+  chat: MessageCircle,
+  check: CheckCircle,
+  clock: Clock,
+  document: FileText,
+  dollar: DollarSign,
+  inbox: Inbox,
+  lightning: Zap,
+  message: MessageCircle,
+  network: Globe,
+  task: CheckCircle,
+  zap: Zap,
+}
+
+function RailIcon({ icon, className }: { icon?: string | null; className?: string }) {
+  const Icon = icon ? (ICON_MAP[icon] ?? StickyNote) : StickyNote
+  return <Icon className={cn('shrink-0', className)} aria-hidden />
 }
 
 function getUrgencyLevel(urgency: number): string {
@@ -163,11 +200,7 @@ function UniversalRailItemCard({
       tabIndex={0}
       aria-label={item.label}
     >
-      {item.icon && (
-        <span className="text-base" aria-hidden>
-          {item.icon}
-        </span>
-      )}
+      <RailIcon icon={item.icon} className="h-4 w-4" />
       <span className="truncate">{item.label}</span>
       {item.sublabel && (
         <span className="text-xs text-muted-foreground truncate">{item.sublabel}</span>
@@ -340,7 +373,7 @@ export function UniversalRailCompact({
           key={item.definitionId}
           className="flex items-center gap-2 px-2 py-1.5 rounded-md hover:bg-surface-secondary transition-colors"
         >
-          {item.icon && <span className="text-sm">{item.icon}</span>}
+          <RailIcon icon={item.icon} className="h-4 w-4" />
           <span className="text-sm truncate flex-1">{item.label}</span>
           {item.baseUrgency >= 70 && (
             <span className="w-1.5 h-1.5 rounded-full bg-warning flex-shrink-0" />

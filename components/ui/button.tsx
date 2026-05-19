@@ -5,6 +5,7 @@
 import { AnchorHTMLAttributes, ButtonHTMLAttributes, forwardRef } from 'react'
 import { clampTooltipText } from '@/lib/ui/tooltip'
 import { LoadingSpinner } from '@/components/ui/loading-state'
+import { CTA_CONTRAST_CLASSES } from '@/lib/ui/contrast-contract'
 
 type ButtonBaseProps = {
   variant?: 'primary' | 'secondary' | 'danger' | 'ghost'
@@ -46,16 +47,7 @@ export const Button = forwardRef<any, ButtonProps>(
     const baseStyles =
       'inline-flex items-center justify-center font-medium transition-all duration-200 ease-out active:scale-[0.97] active:duration-75 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:ring-offset-stone-900 disabled:pointer-events-none disabled:opacity-50'
 
-    const variants = {
-      primary:
-        'bg-brand-600 text-white hover:bg-brand-700 active:bg-brand-800 active:ring-2 active:ring-brand-500/20 focus-visible:ring-brand-500 shadow-sm hover:shadow-md',
-      secondary:
-        'bg-stone-800/80 text-stone-300 border border-stone-600/80 hover:bg-stone-700/80 hover:text-stone-100 hover:border-stone-500 active:bg-stone-600 focus-visible:ring-stone-400 shadow-sm hover:shadow-md',
-      danger:
-        'bg-red-600 text-white hover:bg-red-700 active:bg-red-800 focus-visible:ring-red-500 shadow-sm hover:shadow-md',
-      ghost:
-        'bg-transparent hover:bg-stone-800/80 hover:text-stone-100 active:bg-stone-700 text-stone-300 focus-visible:ring-stone-400',
-    }
+    const variants = CTA_CONTRAST_CLASSES
 
     const sizes = {
       sm: 'min-h-[44px] px-3.5 text-sm rounded-lg gap-1.5 touch-manipulation',

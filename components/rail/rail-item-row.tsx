@@ -10,15 +10,44 @@ import { EvidencePill } from '@/components/evidence/evidence-pill'
 import { useRouter } from 'next/navigation'
 import { cn } from '@/lib/utils'
 import { formatRailMemoryLine } from '@/lib/operating-loop/rail-memory'
+import {
+  AlertTriangle,
+  Calendar,
+  Check,
+  CheckCircle,
+  Clock,
+  DollarSign,
+  FileText,
+  Globe,
+  Inbox,
+  MessageCircle,
+  ShoppingCart,
+  StickyNote,
+  Zap,
+  type LucideIcon,
+} from '@/components/ui/icons'
 
-const ICON_MAP: Record<string, string> = {
-  lightning: '⚡',
-  chat: '💬',
-  dollar: '💰',
-  calendar: '📅',
-  document: '📄',
-  network: '🤝',
+const ICON_MAP: Record<string, LucideIcon> = {
+  alert: AlertTriangle,
+  'alert-triangle': AlertTriangle,
+  calendar: Calendar,
+  cart: ShoppingCart,
+  chat: MessageCircle,
+  check: Check,
+  'check-circle': CheckCircle,
+  clock: Clock,
+  document: FileText,
+  dollar: DollarSign,
+  inbox: Inbox,
+  lightning: Zap,
+  message: MessageCircle,
+  network: Globe,
+  note: StickyNote,
+  task: CheckCircle,
+  zap: Zap,
 }
+
+const FALLBACK_ICON = StickyNote
 
 const ACTION_VARIANT_CLASSES: Record<string, string> = {
   default:
@@ -92,7 +121,7 @@ export function RailItemRow({
   className?: string
 }) {
   const router = useRouter()
-  const icon = item.icon ? (ICON_MAP[item.icon] ?? item.icon) : null
+  const Icon = item.icon ? (ICON_MAP[item.icon] ?? FALLBACK_ICON) : FALLBACK_ICON
   const hasDestination = !!item.destination
   const memoryLine = formatRailMemoryLine(item)
   const tierKey = tier ?? 'awareness'
@@ -104,7 +133,6 @@ export function RailItemRow({
   const content = (
     <div
       className={cn(
-        // Mini glass card
         'relative flex items-center gap-2.5 px-3 py-2 rounded-lg transition-all duration-150',
         'bg-[var(--glass-subtle-bg)] border border-stone-800/40',
         'hover:shadow-[var(--shadow-card-hover)] hover:-translate-y-[1px]',
@@ -114,7 +142,6 @@ export function RailItemRow({
         className
       )}
     >
-      {/* Left accent line */}
       <span
         className={cn(
           'absolute left-0 top-2 bottom-2 w-[2px] rounded-full opacity-60',
@@ -122,20 +149,16 @@ export function RailItemRow({
         )}
       />
 
-      {/* Icon with colored background circle */}
-      {icon && (
-        <span
-          className={cn(
-            'flex items-center justify-center w-7 h-7 rounded-full flex-shrink-0 text-sm',
-            TIER_ICON_BG[tierKey]
-          )}
-          aria-hidden
-        >
-          {icon}
-        </span>
-      )}
+      <span
+        className={cn(
+          'flex items-center justify-center w-7 h-7 rounded-full flex-shrink-0 text-sm',
+          TIER_ICON_BG[tierKey]
+        )}
+        aria-hidden
+      >
+        <Icon className="h-4 w-4" />
+      </span>
 
-      {/* Label and sublabel */}
       <span className="flex min-w-0 flex-1 flex-col gap-0.5">
         <span className="flex min-w-0 items-center gap-2">
           <span className="truncate text-sm font-medium text-stone-200">{item.label}</span>
@@ -154,7 +177,6 @@ export function RailItemRow({
         {memoryLine && <span className="truncate text-xs text-stone-400">{memoryLine}</span>}
       </span>
 
-      {/* Inline action buttons (glass pill style) */}
       {item.inlineActions && item.inlineActions.length > 0 && (
         <span className="flex gap-1.5 flex-shrink-0">
           {item.inlineActions.map((action) => (
@@ -167,7 +189,6 @@ export function RailItemRow({
         </span>
       )}
 
-      {/* Chevron that slides right on hover */}
       {hasDestination && (
         <span
           className={cn(

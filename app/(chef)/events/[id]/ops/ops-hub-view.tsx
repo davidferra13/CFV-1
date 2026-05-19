@@ -21,7 +21,7 @@ function Section({ title, children }: { title: string; children: ReactNode }) {
   const [open, setOpen] = useState(true)
 
   return (
-    <section className="rounded-lg border border-stone-700 bg-white p-6 shadow-sm">
+    <section className="rounded-lg border border-stone-700 bg-[var(--surface-2)] p-6 shadow-sm">
       <button
         type="button"
         onClick={() => setOpen((value) => !value)}

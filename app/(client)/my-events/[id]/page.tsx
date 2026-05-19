@@ -54,10 +54,14 @@ import { buildClientEventProgress } from '@/lib/events/operating-spine'
 import type { Database } from '@/types/database'
 import { GuestCountChangeCard } from './guest-count-change-card'
 import { EventCountdown } from '@/components/client-portal/event-countdown'
+import { DinnerStewardshipFoundation } from '@/components/client-portal/dinner-stewardship-foundation'
+import { DinnerCircleExperienceModulesPanel } from '@/components/client-portal/dinner-circle-experience-modules'
 import {
   LifecycleTimeline,
   type TimelineStage,
 } from '@/components/client-portal/lifecycle-timeline'
+import { buildStewardshipSnapshot } from '@/lib/dinner-circles/stewardship'
+import { buildDinnerCircleExperienceModules } from '@/lib/dinner-circles/experience-modules'
 import { createServerClient } from '@/lib/db/server'
 
 type EventStatus = Database['public']['Enums']['event_status']
@@ -135,7 +139,6 @@ export default async function EventDetailPage({
     .select('business_name, display_name')
     .eq('id', event.tenant_id)
     .single()
-    .catch(() => ({ data: null }))
   const chefName = chef?.business_name || chef?.display_name || 'your chef'
 
   const financial = event.financial
@@ -262,6 +265,20 @@ export default async function EventDetailPage({
   // Dinner Circle is the canonical guest coordination surface once the event is live.
   const circleToken =
     event.status !== 'cancelled' ? await getCircleTokenForEvent(params.id).catch(() => null) : null
+  const stewardshipSnapshot = buildStewardshipSnapshot({
+    event: event as any,
+    guests: guests as any[],
+    menuCount: event.menus?.length ?? 0,
+    totalPaidCents,
+    outstandingBalanceCents,
+    hasCircle: Boolean(circleToken),
+  })
+  const dinnerCircleExperienceModules = buildDinnerCircleExperienceModules({
+    event: event as any,
+    guests: guests as any[],
+    rsvpSummary: rsvpSummary as any,
+    activeShare: activeShare as any,
+  })
 
   // Fetch review data and photos for completed events
   let existingReview = null
@@ -369,6 +386,13 @@ export default async function EventDetailPage({
             description="Send one polished link to your guests and keep the host side, chef, and table aligned in the same thread."
           />
         </div>
+      )}
+
+      {['paid', 'confirmed', 'in_progress'].includes(event.status) && (
+        <>
+          <DinnerStewardshipFoundation eventId={event.id} snapshot={stewardshipSnapshot} />
+          <DinnerCircleExperienceModulesPanel modules={dinnerCircleExperienceModules} />
+        </>
       )}
 
       <div className="mb-6">
@@ -564,7 +588,7 @@ export default async function EventDetailPage({
 
       {/* Payment History */}
       {event.ledgerEntries && event.ledgerEntries.length > 0 && (
-        <Card className="mb-6">
+        <Card id="dinner-circle-rsvp-ops" className="mb-6">
           <CardHeader className="flex flex-row items-center justify-between">
             <CardTitle>Payment History</CardTitle>
             <TrackedDownloadLink

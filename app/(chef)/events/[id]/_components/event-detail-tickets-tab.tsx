@@ -376,7 +376,7 @@ export function EventDetailTicketsTab({
         {/* Summary Header */}
         <Card className="p-5">
           <div className="flex items-center justify-between mb-4">
-            <h2 className="text-lg font-semibold text-white">Ticket Sales</h2>
+            <h2 className="text-lg font-semibold text-stone-100">Ticket Sales</h2>
             <div className="flex items-center gap-2">
               {publicUrl && (
                 <Button
@@ -402,7 +402,7 @@ export function EventDetailTicketsTab({
           <div className="grid grid-cols-3 gap-4">
             <div>
               <p className="text-xs text-stone-400">Sold</p>
-              <p className="text-2xl font-bold text-white">
+              <p className="text-2xl font-bold text-stone-100">
                 {totalSold}
                 {totalCapacity > 0 && (
                   <span className="text-sm font-normal text-stone-500">/{totalCapacity}</span>
@@ -415,7 +415,7 @@ export function EventDetailTicketsTab({
             </div>
             <div>
               <p className="text-xs text-stone-400">Avg Price</p>
-              <p className="text-2xl font-bold text-white">
+              <p className="text-2xl font-bold text-stone-100">
                 {totalSold > 0 ? formatCurrency(Math.round(totalRevenue / totalSold)) : '-'}
               </p>
             </div>
@@ -447,7 +447,7 @@ export function EventDetailTicketsTab({
         <Card className="p-5">
           <div className="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
             <div>
-              <h3 className="font-semibold text-white">Arrival Check-In</h3>
+              <h3 className="font-semibold text-stone-100">Arrival Check-In</h3>
               <p className="mt-1 text-sm text-stone-400">
                 Name-list check-in updates attendance for wrap-up and no-show analysis.
               </p>
@@ -459,7 +459,7 @@ export function EventDetailTicketsTab({
               </div>
               <div>
                 <p className="text-xs text-stone-500">Expected</p>
-                <p className="text-xl font-semibold text-white">{expectedArrivals}</p>
+                <p className="text-xl font-semibold text-stone-100">{expectedArrivals}</p>
               </div>
               <div>
                 <p className="text-xs text-stone-500">Missing</p>
@@ -486,7 +486,7 @@ export function EventDetailTicketsTab({
             if (dietaryMap.size === 0 && allergyMap.size === 0) return null
             return (
               <Card className="p-5">
-                <h3 className="font-semibold text-white mb-3">Guest Dietary Needs</h3>
+                <h3 className="font-semibold text-stone-100 mb-3">Guest Dietary Needs</h3>
                 <div className="grid grid-cols-2 gap-6">
                   {dietaryMap.size > 0 && (
                     <div>
@@ -582,7 +582,7 @@ export function EventDetailTicketsTab({
         {/* Ticket Types */}
         <Card className="p-5">
           <div className="flex items-center justify-between mb-4">
-            <h3 className="font-semibold text-white">Ticket Types</h3>
+            <h3 className="font-semibold text-stone-100">Ticket Types</h3>
             <Button variant="primary" onClick={() => setShowCreateType(true)} disabled={isPending}>
               Add Type
             </Button>
@@ -606,7 +606,7 @@ export function EventDetailTicketsTab({
               >
                 <div className="flex-1 min-w-0">
                   <div className="flex items-center gap-2">
-                    <span className="font-medium text-white">{tt.name}</span>
+                    <span className="font-medium text-stone-100">{tt.name}</span>
                     {!tt.is_active && (
                       <span className="text-xs px-1.5 py-0.5 rounded bg-stone-700 text-stone-400">
                         Inactive
@@ -653,7 +653,7 @@ export function EventDetailTicketsTab({
           {/* Create Type Form */}
           {showCreateType && (
             <div className="mt-4 rounded-lg border border-stone-600 bg-stone-800/50 p-4 space-y-3">
-              <h4 className="text-sm font-medium text-white">New Ticket Type</h4>
+              <h4 className="text-sm font-medium text-stone-100">New Ticket Type</h4>
               <div className="grid grid-cols-2 gap-3">
                 <div>
                   <label className="block text-xs text-stone-400 mb-1">Name *</label>
@@ -662,7 +662,7 @@ export function EventDetailTicketsTab({
                     value={typeName}
                     onChange={(e) => setTypeName(e.target.value)}
                     placeholder="General Admission"
-                    className="w-full rounded-lg border border-stone-600 bg-stone-900 px-3 py-2 text-sm text-white placeholder:text-stone-600"
+                    className="w-full rounded-lg border border-stone-600 bg-stone-900 px-3 py-2 text-sm text-stone-100 placeholder:text-stone-600"
                   />
                 </div>
                 <div>
@@ -674,7 +674,7 @@ export function EventDetailTicketsTab({
                     placeholder="75.00"
                     min="0"
                     step="0.01"
-                    className="w-full rounded-lg border border-stone-600 bg-stone-900 px-3 py-2 text-sm text-white placeholder:text-stone-600"
+                    className="w-full rounded-lg border border-stone-600 bg-stone-900 px-3 py-2 text-sm text-stone-100 placeholder:text-stone-600"
                   />
                 </div>
               </div>
@@ -687,7 +687,7 @@ export function EventDetailTicketsTab({
                     onChange={(e) => setTypeCapacity(e.target.value)}
                     placeholder="50"
                     min="1"
-                    className="w-full rounded-lg border border-stone-600 bg-stone-900 px-3 py-2 text-sm text-white placeholder:text-stone-600"
+                    className="w-full rounded-lg border border-stone-600 bg-stone-900 px-3 py-2 text-sm text-stone-100 placeholder:text-stone-600"
                   />
                 </div>
                 <div>
@@ -697,7 +697,7 @@ export function EventDetailTicketsTab({
                     value={typeDescription}
                     onChange={(e) => setTypeDescription(e.target.value)}
                     placeholder="Includes dinner and drinks"
-                    className="w-full rounded-lg border border-stone-600 bg-stone-900 px-3 py-2 text-sm text-white placeholder:text-stone-600"
+                    className="w-full rounded-lg border border-stone-600 bg-stone-900 px-3 py-2 text-sm text-stone-100 placeholder:text-stone-600"
                   />
                 </div>
               </div>
@@ -720,7 +720,7 @@ export function EventDetailTicketsTab({
         {/* Guest List / Ticket Holders */}
         <Card className="p-5">
           <div className="flex items-center justify-between mb-4">
-            <h3 className="font-semibold text-white">Ticket Holders ({tickets.length})</h3>
+            <h3 className="font-semibold text-stone-100">Ticket Holders ({tickets.length})</h3>
             <div className="flex items-center gap-2">
               {tickets.length > 0 && (
                 <Button
@@ -754,7 +754,7 @@ export function EventDetailTicketsTab({
           {/* Add guest form */}
           {showAddGuest && (
             <div className="mb-4 rounded-lg border border-stone-600 bg-stone-800/50 p-4 space-y-3">
-              <h4 className="text-sm font-medium text-white">
+              <h4 className="text-sm font-medium text-stone-100">
                 {showAddGuest === 'comp' ? 'Add Comp Ticket' : 'Add Walk-in'}
               </h4>
               <div className="grid grid-cols-2 gap-3">
@@ -765,7 +765,7 @@ export function EventDetailTicketsTab({
                     value={guestName}
                     onChange={(e) => setGuestName(e.target.value)}
                     placeholder="Guest name"
-                    className="w-full rounded-lg border border-stone-600 bg-stone-900 px-3 py-2 text-sm text-white placeholder:text-stone-600"
+                    className="w-full rounded-lg border border-stone-600 bg-stone-900 px-3 py-2 text-sm text-stone-100 placeholder:text-stone-600"
                   />
                 </div>
                 <div>
@@ -775,7 +775,7 @@ export function EventDetailTicketsTab({
                     value={guestEmail}
                     onChange={(e) => setGuestEmail(e.target.value)}
                     placeholder="guest@email.com"
-                    className="w-full rounded-lg border border-stone-600 bg-stone-900 px-3 py-2 text-sm text-white placeholder:text-stone-600"
+                    className="w-full rounded-lg border border-stone-600 bg-stone-900 px-3 py-2 text-sm text-stone-100 placeholder:text-stone-600"
                   />
                 </div>
               </div>
@@ -790,7 +790,7 @@ export function EventDetailTicketsTab({
                     max="20"
                     placeholder="1"
                     title="Quantity"
-                    className="w-full rounded-lg border border-stone-600 bg-stone-900 px-3 py-2 text-sm text-white placeholder:text-stone-600"
+                    className="w-full rounded-lg border border-stone-600 bg-stone-900 px-3 py-2 text-sm text-stone-100 placeholder:text-stone-600"
                   />
                 </div>
                 {showAddGuest === 'walkin' && (
@@ -803,7 +803,7 @@ export function EventDetailTicketsTab({
                       placeholder="75.00"
                       min="0"
                       step="0.01"
-                      className="w-full rounded-lg border border-stone-600 bg-stone-900 px-3 py-2 text-sm text-white placeholder:text-stone-600"
+                      className="w-full rounded-lg border border-stone-600 bg-stone-900 px-3 py-2 text-sm text-stone-100 placeholder:text-stone-600"
                     />
                   </div>
                 )}
@@ -815,7 +815,7 @@ export function EventDetailTicketsTab({
                   value={guestNotes}
                   onChange={(e) => setGuestNotes(e.target.value)}
                   placeholder="VIP, dietary needs, etc."
-                  className="w-full rounded-lg border border-stone-600 bg-stone-900 px-3 py-2 text-sm text-white placeholder:text-stone-600"
+                  className="w-full rounded-lg border border-stone-600 bg-stone-900 px-3 py-2 text-sm text-stone-100 placeholder:text-stone-600"
                 />
               </div>
               <div className="flex justify-end gap-2">
@@ -844,7 +844,7 @@ export function EventDetailTicketsTab({
                 >
                   <div className="flex-1 min-w-0">
                     <div className="flex items-center gap-2">
-                      <span className="font-medium text-white text-sm">{t.buyer_name}</span>
+                      <span className="font-medium text-stone-100 text-sm">{t.buyer_name}</span>
                       <span className="text-xs text-stone-500">{t.buyer_email}</span>
                       {t.source === 'comp' && (
                         <span className="text-xs px-1.5 py-0.5 rounded bg-purple-900/50 text-purple-300">
@@ -922,7 +922,7 @@ export function EventDetailTicketsTab({
           <Card className="p-4">
             <div className="flex items-center justify-between">
               <div>
-                <p className="text-sm font-medium text-white">Public Ticket Page</p>
+                <p className="text-sm font-medium text-stone-100">Public Ticket Page</p>
                 <p className="text-xs text-stone-400 mt-0.5 break-all">{publicUrl}</p>
               </div>
               <Button
@@ -942,7 +942,7 @@ export function EventDetailTicketsTab({
           <Card className="p-4">
             <div className="flex items-center justify-between">
               <div>
-                <p className="text-sm font-medium text-white">Message All Guests</p>
+                <p className="text-sm font-medium text-stone-100">Message All Guests</p>
                 <p className="text-xs text-stone-400 mt-0.5">
                   {broadcastSent !== null
                     ? `Sent to ${broadcastSent} guest${broadcastSent !== 1 ? 's' : ''}`
@@ -967,7 +967,7 @@ export function EventDetailTicketsTab({
                     value={broadcastSubject}
                     onChange={(e) => setBroadcastSubject(e.target.value)}
                     placeholder="Menu update for Saturday"
-                    className="w-full rounded-lg border border-stone-600 bg-stone-900 px-3 py-2 text-sm text-white placeholder:text-stone-600"
+                    className="w-full rounded-lg border border-stone-600 bg-stone-900 px-3 py-2 text-sm text-stone-100 placeholder:text-stone-600"
                   />
                 </div>
                 <div>
@@ -977,7 +977,7 @@ export function EventDetailTicketsTab({
                     onChange={(e) => setBroadcastMessage(e.target.value)}
                     placeholder="Quick update for our guests..."
                     rows={3}
-                    className="w-full rounded-lg border border-stone-600 bg-stone-900 px-3 py-2 text-sm text-white placeholder:text-stone-600 resize-none"
+                    className="w-full rounded-lg border border-stone-600 bg-stone-900 px-3 py-2 text-sm text-stone-100 placeholder:text-stone-600 resize-none"
                   />
                 </div>
                 <div className="flex justify-end gap-2">
@@ -1002,7 +1002,7 @@ export function EventDetailTicketsTab({
           <Card className="p-4">
             <div className="flex items-center justify-between">
               <div>
-                <p className="text-sm font-medium text-white">Notify Past Guests</p>
+                <p className="text-sm font-medium text-stone-100">Notify Past Guests</p>
                 <p className="text-xs text-stone-400 mt-0.5">
                   {notifySent !== null
                     ? `Sent to ${notifySent} guest${notifySent !== 1 ? 's' : ''}`
@@ -1035,7 +1035,7 @@ export function EventDetailTicketsTab({
           <Card className="p-4">
             <div className="flex items-center justify-between">
               <div>
-                <p className="text-sm font-medium text-white">Send Arrival Info</p>
+                <p className="text-sm font-medium text-stone-100">Send Arrival Info</p>
                 <p className="text-xs text-stone-400 mt-0.5">
                   {arrivalSent !== null
                     ? `Sent directions and gate code to ${arrivalSent} guest${arrivalSent !== 1 ? 's' : ''}`

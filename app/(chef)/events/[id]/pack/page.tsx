@@ -81,11 +81,11 @@ export default async function PackPage({
       <div className="flex items-center justify-between">
         <div>
           <Link href={backHref} className="text-sm text-stone-500 hover:text-stone-300 mb-1 block">
-            ← Back to event
+            &lt;- Back to event
           </Link>
           <h1 className="text-2xl font-bold text-stone-100">Packing Checklist</h1>
           <p className="text-stone-500 text-sm mt-0.5">
-            {clientName} · {dateStr}
+            {clientName} - {dateStr}
           </p>
         </div>
         <Button
@@ -101,18 +101,20 @@ export default async function PackPage({
 
       {/* Departure callout - most urgent info, immediately visible */}
       {(event.departure_time_display || event.access_instructions) && (
-        <Card className="p-4 bg-amber-950 border-amber-200">
+        <Card className="p-4 bg-amber-100 text-amber-950 border-amber-300 dark:bg-amber-950/70 dark:text-amber-100 dark:border-amber-800">
           {event.departure_time_display && (
-            <p className="text-lg font-bold text-amber-900">
+            <p className="text-lg font-bold text-amber-950 dark:text-amber-100">
               Depart by {event.departure_time_display}
             </p>
           )}
           {event.access_instructions && (
-            <p className="text-sm text-amber-800 mt-1">Access: {event.access_instructions}</p>
+            <p className="text-sm text-amber-900 dark:text-amber-200 mt-1">
+              Access: {event.access_instructions}
+            </p>
           )}
           {[event.location_address, event.location_city, event.location_state].filter(Boolean)
             .length > 0 && (
-            <p className="text-sm text-amber-700 mt-1">
+            <p className="text-sm text-amber-900 dark:text-amber-200 mt-1">
               {[event.location_address, event.location_city, event.location_state]
                 .filter(Boolean)
                 .join(', ')}
@@ -123,14 +125,14 @@ export default async function PackPage({
 
       {/* Already packed confirmation */}
       {packingStatus.carPacked && (
-        <Card className="p-4 bg-green-950 border-green-200">
-          <p className="text-green-800 font-medium">
+        <Card className="p-4 bg-emerald-100 text-emerald-950 border-emerald-300 dark:bg-emerald-950/70 dark:text-emerald-100 dark:border-emerald-800">
+          <p className="text-emerald-950 dark:text-emerald-100 font-medium">
             Car packed{' '}
             {packingStatus.carPackedAt
               ? `at ${format(new Date(packingStatus.carPackedAt), 'h:mm a')}`
               : ''}
           </p>
-          <p className="text-emerald-600 text-sm mt-1">
+          <p className="text-emerald-900 dark:text-emerald-200 text-sm mt-1">
             You marked the car as packed. Have a great service!
           </p>
         </Card>

@@ -41,3 +41,33 @@ SKIPPED:
 - Discount/last-minute rails, relationship graph, circle rules, "what to eat now": new features (violates intensification)
 
 NEXT TRIGGER: Rail Item Lifecycle Engine (P0) ships. Scoring decay, TTL, tier promotion create new wiring surfaces.
+
+---
+
+## Run 2026-05-19 (sub-zone: consumer-eat)
+
+STATUS: partially-mined
+DEPTH: deep (first run on consumer-eat sub-zone; rail layer previously mined)
+
+SURFACED:
+
+- PlanningBrief built and passed to shell but NOT merged into getConsumerDiscoveryFeed filter chain (partySize/dietary/budget/occasion sit in separate object, never boost scoring)
+- spotlightToCard() hardcodes ctaHref = /chef/{slug} for ALL spotlight types including menus — menu spotlights should link to /culinary/menus/{id}
+- consumer-eat has no entry in public-rail-registry.ts or chef-rail-registry.ts (occasion-led ranking can't be tuned)
+- Visual mode toggle rendered and passed as prop but card UI state (density, text sizing) is not driven by it
+- planning brief not persisted across route changes (user context drops on /eat filter navigation)
+- Three parallel relevance scoring paths: chefToCard() inline boosts, discovery-rail-scoring, god-mode-assembly — all disconnected from each other
+- matchesText() and buildChefMatchReasons() both do text matching on same data (duplicate pass)
+- dietary filter applied twice: inline substring in getConsumerDiscoveryFeed AND in filterTasteAwareCandidates
+
+ACTED ON: (filled when user picks moves)
+
+SKIPPED:
+
+- UserScrollSignals + rankedPreferences: premature (no scroll tracking infrastructure)
+- filterTasteAwareCandidates() on public /eat: premature (requires auth on public page)
+- Spotlight editorial approval UI: low-yield for now
+- "Why this?" debug tooltips: low-yield (scoring pipeline not proven live)
+- going_out UX tuning: covered by data quality fix already queued
+
+NEXT TRIGGER: Data quality fix (BQ-20260519T183825Z) ships + rail profile validated + shortlist snapshot test passes
