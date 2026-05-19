@@ -37,7 +37,7 @@ export async function queueRecapVideoRender(eventId: string, tenantId: string): 
   ])
 
   if (!event) {
-    log.events.warn('[render-recap] Event not found, skipping', { eventId })
+    log.events.warn('[render-recap] Event not found, skipping', { context: { eventId } })
     return
   }
 
@@ -70,7 +70,7 @@ export async function queueRecapVideoRender(eventId: string, tenantId: string): 
 
   // Fire-and-forget render
   spawnRenderProcess(eventId, tenantId, inputProps).catch((err) => {
-    log.events.warn('[render-recap] Spawn failed', { error: err, eventId })
+    log.events.warn('[render-recap] Spawn failed', { error: err, context: { eventId } })
   })
 }
 
@@ -124,10 +124,10 @@ async function spawnRenderProcess(
     })
 
     child.stdout.on('data', (d: Buffer) =>
-      log.events.info('[render-recap]', { msg: d.toString().trim(), eventId })
+      log.events.info('[render-recap]', { context: { msg: d.toString().trim(), eventId } })
     )
     child.stderr.on('data', (d: Buffer) =>
-      log.events.warn('[render-recap] stderr', { msg: d.toString().trim(), eventId })
+      log.events.warn('[render-recap] stderr', { context: { msg: d.toString().trim(), eventId } })
     )
 
     child.on('close', async (code) => {
@@ -140,7 +140,7 @@ async function spawnRenderProcess(
             updated_at: new Date().toISOString(),
           })
           .eq('event_id', eventId)
-        log.events.info('[render-recap] Render complete', { eventId, tenantId })
+        log.events.info('[render-recap] Render complete', { context: { eventId, tenantId } })
       } else {
         await db
           .from('event_recaps')
@@ -150,7 +150,7 @@ async function spawnRenderProcess(
             updated_at: new Date().toISOString(),
           })
           .eq('event_id', eventId)
-        log.events.warn('[render-recap] Render failed', { eventId, code })
+        log.events.warn('[render-recap] Render failed', { context: { eventId, code } })
       }
       resolve()
     })
@@ -164,7 +164,10 @@ async function spawnRenderProcess(
           updated_at: new Date().toISOString(),
         })
         .eq('event_id', eventId)
-      log.events.warn('[render-recap] Spawn error', { error: err.message, eventId })
+      log.events.warn('[render-recap] Spawn error', {
+        error: err,
+        context: { eventId },
+      })
       resolve()
     })
   })

@@ -3,6 +3,7 @@ import type { RailProfile, RailProfileMatch } from './contextual-rail-types'
 export const RAIL_PROFILES: RailProfile[] = [
   {
     id: 'event-detail',
+    scope: 'chef',
     pattern: /^\/events\/([^/]+)$/,
     entityExtract: (m) => ({ type: 'event', id: m[1] }),
     categories: ['readiness', 'money', 'people', 'time', 'risk', 'intelligence', 'actions'],
@@ -43,6 +44,7 @@ export const RAIL_PROFILES: RailProfile[] = [
   },
   {
     id: 'client-detail',
+    scope: 'chef',
     pattern: /^\/clients\/([^/]+)$/,
     entityExtract: (m) => ({ type: 'client', id: m[1] }),
     categories: ['people', 'money', 'communication', 'risk', 'intelligence'],
@@ -78,6 +80,7 @@ export const RAIL_PROFILES: RailProfile[] = [
   },
   {
     id: 'menu-detail',
+    scope: 'chef',
     pattern: /^\/menus\/([^/]+)$/,
     entityExtract: (m) => ({ type: 'menu', id: m[1] }),
     categories: ['readiness', 'money', 'people', 'intelligence', 'actions'],
@@ -109,6 +112,7 @@ export const RAIL_PROFILES: RailProfile[] = [
   },
   {
     id: 'calendar',
+    scope: 'chef',
     pattern: /^\/calendar$/,
     categories: ['time', 'risk', 'intelligence'],
     primaryCategory: 'time',
@@ -142,6 +146,7 @@ export const RAIL_PROFILES: RailProfile[] = [
   },
   {
     id: 'inquiries',
+    scope: 'chef',
     pattern: /^\/inquiries/,
     categories: ['communication', 'time', 'people', 'money', 'actions'],
     primaryCategory: 'communication',
@@ -169,6 +174,7 @@ export const RAIL_PROFILES: RailProfile[] = [
   },
   {
     id: 'recipe-detail',
+    scope: 'chef',
     pattern: /^\/recipes\/([^/]+)$/,
     entityExtract: (m) => ({ type: 'recipe', id: m[1] }),
     categories: ['readiness', 'intelligence', 'actions'],
@@ -188,6 +194,7 @@ export const RAIL_PROFILES: RailProfile[] = [
   },
   {
     id: 'finance',
+    scope: 'chef',
     pattern: /^\/finance/,
     categories: ['money', 'risk', 'time'],
     primaryCategory: 'money',
@@ -214,6 +221,7 @@ export const RAIL_PROFILES: RailProfile[] = [
   },
   {
     id: 'prep-shopping',
+    scope: 'chef',
     pattern: /^\/(prep|shopping)/,
     categories: ['readiness', 'time', 'actions'],
     primaryCategory: 'readiness',
@@ -233,6 +241,7 @@ export const RAIL_PROFILES: RailProfile[] = [
   },
   {
     id: 'analytics',
+    scope: 'chef',
     pattern: /^\/analytics/,
     categories: ['money', 'intelligence'],
     primaryCategory: 'intelligence',
@@ -257,6 +266,7 @@ export const RAIL_PROFILES: RailProfile[] = [
   },
   {
     id: 'fallback',
+    scope: 'chef',
     pattern: /.*/,
     categories: ['actions', 'risk'],
     primaryCategory: 'actions',

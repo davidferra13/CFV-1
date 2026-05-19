@@ -9,7 +9,7 @@ import {
 
 function Root() {
   return (
-    <Composition<EventRecapProps>
+    <Composition
       id="EventRecap"
       component={EventRecapComposition}
       durationInFrames={450}

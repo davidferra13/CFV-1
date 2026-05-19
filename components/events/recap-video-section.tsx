@@ -111,7 +111,7 @@ export function RecapVideoSection({ eventId, mode = 'chef', className }: RecapVi
       {status === 'not_started' && (
         <Button
           size="sm"
-          variant="outline"
+          variant="secondary"
           onClick={handleGenerate}
           disabled={loading}
           className="gap-2"
@@ -129,18 +129,16 @@ export function RecapVideoSection({ eventId, mode = 'chef', className }: RecapVi
       )}
 
       {status === 'done' && (
-        <Button size="sm" variant="default" asChild className="gap-2">
-          <a href={downloadUrl} download>
-            <Download className="h-4 w-4" />
-            Download Recap Video
-          </a>
+        <Button size="sm" variant="primary" href={downloadUrl} download className="gap-2">
+          <Download className="h-4 w-4" />
+          Download Recap Video
         </Button>
       )}
 
       {status === 'failed' && (
         <Button
           size="sm"
-          variant="outline"
+          variant="secondary"
           onClick={handleRetry}
           disabled={loading}
           className="gap-2 border-red-200 text-red-600 hover:bg-red-50"
