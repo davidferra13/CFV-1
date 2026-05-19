@@ -1,2 +1,3 @@
 #!/bin/sh
+node scripts/repo-hygiene-guard.mjs --allow-dirty
 node node_modules/lint-staged/bin/lint-staged.js
