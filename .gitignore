@@ -67,6 +67,9 @@ docs/hermes/alerts-archive-*.md
 docs/hermes/watchdog.log
 docs/hermes/error-scan.md
 docs/hermes/build-state-check.md
+docs/hermes/persona-pairing-*.pid
+docs/hermes/persona-pairing-*.lock/
+docs/persona-pairing-reports/
 
 # Local file storage
 /storage/
@@ -337,8 +340,15 @@ system/
 # Runtime logs (guardian, ops)
 logs/
 
-# IDE skill copies (not canonical — .claude/skills/ is the source)
-.agents/
+# IDE skill copies are local by default, but the ChefFlow build-queue
+# control script is a repo safety gate and must remain trackable.
+.agents/*
+!.agents/skills/
+.agents/skills/*
+!.agents/skills/build-queue/
+.agents/skills/build-queue/*
+!.agents/skills/build-queue/scripts/
+!.agents/skills/build-queue/scripts/build-queue.mjs
 .continue/
 .windsurf/
 
