@@ -4,6 +4,8 @@
   "private": true,
   "scripts": {
     "codex:brief": "node scripts/codex-readiness.mjs",
+    "repo:hygiene": "node scripts/repo-hygiene-guard.mjs",
+    "repo:hygiene:fix": "node scripts/repo-hygiene-guard.mjs --fix",
     "prompt:lint": "node scripts/prompt-lint.mjs",
     "prompt:context-pack": "node scripts/context-pack.mjs",
     "prompt:archive": "node scripts/prompt-archive.mjs",
