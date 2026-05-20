@@ -4,6 +4,7 @@ import fs from 'node:fs'
 import path from 'node:path'
 import {
   buildStewardshipSnapshot,
+  getDinnerCircleParticipantParity,
   getDinnerCircleNotificationPreferences,
   getDinnerCircleActionContract,
   getDinnerStewardshipLifecycleState,
@@ -79,6 +80,8 @@ test('stewardship snapshot exposes lifecycle, gates, participants, logistics, an
     'easy'
   )
   assert.equal(snapshot.notificationPreferences.length > 0, true)
+  assert.equal(snapshot.participantParity.activeDinnerHome, true)
+  assert.equal(snapshot.participantParity.qualityLayer.countdown, true)
   assert.equal(
     snapshot.addOnPrompts.some((prompt) => prompt.id === 'printed_menus'),
     true
@@ -88,6 +91,59 @@ test('stewardship snapshot exposes lifecycle, gates, participants, logistics, an
     snapshot.memoryFeed.some((item) => item.source === 'event_guests'),
     true
   )
+})
+
+test('participant parity keeps guests useful without granting host authority', () => {
+  const guest = getDinnerCircleParticipantParity({ role: 'guest' })
+  const host = getDinnerCircleParticipantParity({ role: 'host' })
+  const planner = getDinnerCircleParticipantParity({ role: 'planner' })
+
+  for (const parity of [guest, host, planner]) {
+    assert.equal(parity.activeDinnerHome, true)
+    assert.equal(parity.qualityLayer.countdown, true)
+    assert.equal(parity.qualityLayer.eventStatus, true)
+    assert.equal(parity.qualityLayer.dietaryAllergyPrompt, true)
+    assert.equal(parity.qualityLayer.notificationSettings, true)
+    assert.equal(parity.qualityLayer.communicateNeeds, true)
+  }
+
+  assert.equal(guest.actionIds.includes('update_guest_status'), true)
+  assert.equal(guest.actionIds.includes('cancel_or_reschedule'), false)
+  assert.equal(guest.notificationTopics.includes('addons_payments'), false)
+  assert.equal(
+    guest.authorityBoundaries.some((boundary) => /payment|billing/i.test(boundary)),
+    true
+  )
+  assert.equal(planner.actionIds.includes('tell_us_anything_changed'), true)
+})
+
+test('participant parity handles invited muted limited and revoked access states', () => {
+  const invited = getDinnerCircleParticipantParity({
+    role: 'guest',
+    accessState: 'invited_not_joined',
+  })
+  const muted = getDinnerCircleParticipantParity({ role: 'guest', accessState: 'muted' })
+  const limited = getDinnerCircleParticipantParity({
+    role: 'guest',
+    accessState: 'permission_limited',
+  })
+  const revoked = getDinnerCircleParticipantParity({ role: 'guest', accessState: 'revoked' })
+
+  assert.equal(invited.activeDinnerHome, true)
+  assert.equal(invited.qualityLayer.communicateNeeds, false)
+  assert.match(invited.emptyState, /Join the Dinner Circle/)
+
+  assert.equal(muted.activeDinnerHome, true)
+  assert.deepEqual(muted.notificationTopics, [])
+  assert.equal(muted.qualityLayer.notificationSettings, true)
+
+  assert.equal(limited.activeDinnerHome, true)
+  assert.equal(limited.qualityLayer.menuContext, false)
+  assert.equal(limited.qualityLayer.eventStatus, true)
+
+  assert.equal(revoked.activeDinnerHome, false)
+  assert.equal(revoked.actionIds.length, 0)
+  assert.match(revoked.emptyState, /removed/)
 })
 
 test('change windows become review and prep aware as service approaches', () => {

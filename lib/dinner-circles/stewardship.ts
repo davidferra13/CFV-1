@@ -15,6 +15,13 @@ export type DinnerCircleParticipantRole =
   | 'chef'
   | 'partner'
 
+export type DinnerCircleParticipantAccessState =
+  | 'active'
+  | 'invited_not_joined'
+  | 'muted'
+  | 'permission_limited'
+  | 'revoked'
+
 export type DinnerCircleActionTier = 'primary' | 'secondary' | 'advanced' | 'destructive'
 
 export type StewardshipChangeType =
@@ -39,6 +46,28 @@ export type DinnerCircleAction = {
   visibility: 'circle' | 'host_chef' | 'chef_only' | 'self'
   requiresReview: boolean
   clientSafeStatus: string
+}
+
+export type DinnerCircleParticipantParity = {
+  role: DinnerCircleParticipantRole
+  accessState: DinnerCircleParticipantAccessState
+  activeDinnerHome: boolean
+  qualityLayer: {
+    countdown: boolean
+    eventStatus: boolean
+    menuContext: boolean
+    ownTasks: boolean
+    dietaryAllergyPrompt: boolean
+    notificationSettings: boolean
+    checkInContext: boolean
+    logistics: boolean
+    accessibleUpdates: boolean
+    communicateNeeds: boolean
+  }
+  notificationTopics: StewardshipNotificationTopic[]
+  actionIds: string[]
+  authorityBoundaries: string[]
+  emptyState: string
 }
 
 export type StewardshipGate = {
@@ -157,6 +186,8 @@ export type StewardshipSnapshotInput = {
   totalPaidCents: number
   outstandingBalanceCents: number
   hasCircle: boolean
+  viewerRole?: DinnerCircleParticipantRole
+  participantAccessState?: DinnerCircleParticipantAccessState
   now?: Date
 }
 
@@ -171,6 +202,7 @@ export type StewardshipSnapshot = {
   addOnPrompts: StewardshipAddOnPrompt[]
   participantProgress: ParticipantProgress
   actions: DinnerCircleAction[]
+  participantParity: DinnerCircleParticipantParity
   memoryFeed: StewardshipMemoryItem[]
   privacyControls: StewardshipPrivacyControl[]
   logistics: StewardshipLogistics
@@ -286,6 +318,73 @@ export function getDinnerCircleActionContract(): DinnerCircleAction[] {
       clientSafeStatus: 'Requires chef follow-up',
     },
   ]
+}
+
+const AUTHORITY_BOUNDARIES = [
+  'payment, invoice, deposit, and private billing details',
+  'cancellation and reschedule authority',
+  'guest management for other people',
+  'chef-only notes, tenant data, vendor notes, and internal risk labels',
+  'private surprises unless the viewer is host-authorized',
+]
+
+const ROLE_AUTHORITY_BOUNDARY_OVERRIDES: Partial<Record<DinnerCircleParticipantRole, string[]>> = {
+  host: [
+    'chef-only notes, tenant data, vendor notes, and internal risk labels',
+    'guest private dietary details unless explicitly shared or host-managed',
+  ],
+  client: [
+    'chef-only notes, tenant data, vendor notes, and internal risk labels',
+    'guest private dietary details unless explicitly shared or host-managed',
+  ],
+  chef: ['guest portal impersonation and client-only preference controls'],
+  partner: ['guest portal impersonation, private billing authority, and chef-only admin actions'],
+}
+
+export function getDinnerCircleParticipantParity(input: {
+  role: DinnerCircleParticipantRole
+  accessState?: DinnerCircleParticipantAccessState
+}): DinnerCircleParticipantParity {
+  const accessState = input.accessState ?? 'active'
+  const isRevoked = accessState === 'revoked'
+  const isInvited = accessState === 'invited_not_joined'
+  const isPermissionLimited = accessState === 'permission_limited'
+  const isMuted = accessState === 'muted'
+  const actionIds = getDinnerCircleActionContract()
+    .filter((action) => action.allowedRoles.includes(input.role))
+    .filter((action) => !isRevoked && !isInvited && (!isPermissionLimited || action.tier === 'primary'))
+    .map((action) => action.id)
+  const topics = isRevoked || isInvited ? [] : getStewardshipNotificationTopicsForRole(input.role)
+
+  return {
+    role: input.role,
+    accessState,
+    activeDinnerHome: !isRevoked,
+    qualityLayer: {
+      countdown: !isRevoked,
+      eventStatus: !isRevoked,
+      menuContext: !isRevoked && !isPermissionLimited,
+      ownTasks: !isRevoked && !isInvited,
+      dietaryAllergyPrompt: !isRevoked && !isInvited,
+      notificationSettings: !isRevoked && !isInvited,
+      checkInContext: !isRevoked,
+      logistics: !isRevoked && !isPermissionLimited,
+      accessibleUpdates: !isRevoked,
+      communicateNeeds: !isRevoked && !isInvited,
+    },
+    notificationTopics: isMuted ? [] : topics,
+    actionIds,
+    authorityBoundaries: ROLE_AUTHORITY_BOUNDARY_OVERRIDES[input.role] ?? AUTHORITY_BOUNDARIES,
+    emptyState: isRevoked
+      ? 'Access to this Dinner Circle has been removed.'
+      : isInvited
+        ? 'Join the Dinner Circle to unlock your dinner home, preferences, and updates.'
+        : isMuted
+          ? 'Updates are muted. The dinner home, countdown, preferences, and needs intake remain available.'
+          : isPermissionLimited
+            ? 'Some details are hidden, but the dinner home still shows client-safe status and next steps.'
+            : 'Your Dinner Circle home is active.',
+  }
 }
 
 export function getDinnerCirclePrivacyControls(): StewardshipPrivacyControl[] {
@@ -744,6 +843,10 @@ export function buildStewardshipSnapshot(input: StewardshipSnapshotInput): Stewa
       pending: Math.max(0, totalKnown - dietaryComplete),
     },
     actions: getDinnerCircleActionContract(),
+    participantParity: getDinnerCircleParticipantParity({
+      role: input.viewerRole ?? 'client',
+      accessState: input.participantAccessState,
+    }),
     memoryFeed,
     privacyControls: getDinnerCirclePrivacyControls(),
     logistics,
