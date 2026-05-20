@@ -44,7 +44,7 @@ export async function buildPriorityQueue(
     seenWorkIds.add(wi.id)
     return true
   })
-  const eventItems = convertWorkItemsToQueueItems(uniqueWorkItems)
+  const eventItems = convertWorkItemsToQueueItems(uniqueWorkItems, workSurface.byEvent)
 
   // Fetch all other domain items in parallel
   const [
