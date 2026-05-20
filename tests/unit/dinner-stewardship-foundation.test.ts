@@ -4,8 +4,13 @@ import fs from 'node:fs'
 import path from 'node:path'
 import {
   buildStewardshipSnapshot,
+  getDinnerCircleNotificationPreferences,
   getDinnerCircleActionContract,
   getDinnerStewardshipLifecycleState,
+  getStewardshipAddOnPrompts,
+  getStewardshipChangeWindows,
+  getStewardshipNotificationTopicsForRole,
+  getStewardshipTimelineGates,
 } from '../../lib/dinner-circles/stewardship'
 
 test('confirmed paid future dinner enters Confirmed Dinner Stewardship', () => {
@@ -65,9 +70,84 @@ test('stewardship snapshot exposes lifecycle, gates, participants, logistics, an
     snapshot.gates.some((gate) => gate.id === 'participant_readiness'),
     true
   )
+  assert.equal(
+    snapshot.timelineGates.some((gate) => gate.id === 't120_confirmation_complete'),
+    true
+  )
+  assert.equal(
+    snapshot.changeWindows.find((window) => window.changeType === 'menu_request')?.status,
+    'easy'
+  )
+  assert.equal(snapshot.notificationPreferences.length > 0, true)
+  assert.equal(
+    snapshot.addOnPrompts.some((prompt) => prompt.id === 'printed_menus'),
+    true
+  )
   assert.equal(snapshot.logistics.chefBrings.length > 0, true)
   assert.equal(
     snapshot.memoryFeed.some((item) => item.source === 'event_guests'),
+    true
+  )
+})
+
+test('change windows become review and prep aware as service approaches', () => {
+  const t90 = getStewardshipChangeWindows(90)
+  const t14 = getStewardshipChangeWindows(14)
+  const t3 = getStewardshipChangeWindows(3)
+
+  assert.equal(t90.find((window) => window.changeType === 'headcount')?.status, 'easy')
+  assert.equal(t14.find((window) => window.changeType === 'headcount')?.status, 'chef_review')
+  assert.equal(t3.find((window) => window.changeType === 'menu_request')?.status, 'locked')
+  assert.equal(t3.find((window) => window.changeType === 'dietary')?.status, 'prep_impact')
+  assert.equal(
+    t14.find((window) => window.changeType === 'cancellation_reschedule')?.paymentScope,
+    'policy_review'
+  )
+})
+
+test('notification preferences are role-aware and keep sensitive topics gated', () => {
+  const preferences = getDinnerCircleNotificationPreferences()
+  const guestTopics = getStewardshipNotificationTopicsForRole('guest')
+  const chefTopics = getStewardshipNotificationTopicsForRole('chef')
+  const paymentPreference = preferences.find((preference) => preference.id === 'addons_payments')
+  const riskPreference = preferences.find((preference) => preference.id === 'chef_only_risk')
+
+  assert.equal(guestTopics.includes('major_updates'), true)
+  assert.equal(guestTopics.includes('addons_payments'), false)
+  assert.equal(chefTopics.includes('chef_only_risk'), true)
+  assert.equal(paymentPreference?.sensitive, true)
+  assert.equal(riskPreference?.allowedRoles.includes('guest'), false)
+})
+
+test('timeline gates and add-on prompts honor timing and ledger safety', () => {
+  const gates = getStewardshipTimelineGates(20)
+  const prompts = getStewardshipAddOnPrompts({
+    daysUntil: 20,
+    guestCount: 10,
+    outstandingBalanceCents: 0,
+    menuApproved: true,
+    occasion: 'Birthday dinner',
+  })
+  const lockedPrompts = getStewardshipAddOnPrompts({
+    daysUntil: 2,
+    guestCount: 10,
+    outstandingBalanceCents: 0,
+    menuApproved: true,
+    occasion: 'Birthday dinner',
+  })
+
+  assert.equal(gates.find((gate) => gate.id === 't30_experience_finalization')?.status, 'current')
+  assert.equal(
+    gates.find((gate) => gate.id === 't14_prep_impact_warning')?.notificationTopic,
+    'major_updates'
+  )
+  assert.equal(prompts.find((prompt) => prompt.id === 'printed_menus')?.eligible, true)
+  assert.equal(
+    prompts.find((prompt) => prompt.id === 'staffing_service_extension')?.createsTask,
+    'invoice_or_ledger'
+  )
+  assert.equal(
+    lockedPrompts.find((prompt) => prompt.id === 'printed_menus')?.suppressedByWindow,
     true
   )
 })
@@ -99,4 +179,8 @@ test('client intake action keeps auth and tenant filters in the server action', 
   assert.match(source, /\.eq\('tenant_id', user\.tenantId\)/)
   assert.match(source, /privateToHostChef/)
   assert.match(source, /Host\/Chef only/)
+  assert.match(source, /submitDinnerNotificationPreferences/)
+  assert.match(source, /submitStewardshipAddOnRequest/)
+  assert.match(source, /addons_payments/)
+  assert.match(source, /dinner_stewardship_add_on/)
 })

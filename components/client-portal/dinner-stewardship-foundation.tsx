@@ -4,6 +4,8 @@ import { useState, useTransition } from 'react'
 import type { StewardshipSnapshot } from '@/lib/dinner-circles/stewardship'
 import {
   submitDinnerChangeIntake,
+  submitDinnerNotificationPreferences,
+  submitStewardshipAddOnRequest,
   type DinnerChangeIntakeState,
 } from '@/lib/dinner-circles/stewardship-actions'
 
@@ -29,11 +31,33 @@ export function DinnerStewardshipFoundation({
   snapshot,
 }: DinnerStewardshipFoundationProps) {
   const [state, setState] = useState<DinnerChangeIntakeState>({ ok: false, message: '' })
+  const [preferenceState, setPreferenceState] = useState<DinnerChangeIntakeState>({
+    ok: false,
+    message: '',
+  })
+  const [addOnState, setAddOnState] = useState<DinnerChangeIntakeState>({
+    ok: false,
+    message: '',
+  })
   const [isPending, startTransition] = useTransition()
+  const [isPreferencePending, startPreferenceTransition] = useTransition()
+  const [isAddOnPending, startAddOnTransition] = useTransition()
 
   function onSubmit(formData: FormData) {
     startTransition(async () => {
       setState(await submitDinnerChangeIntake(state, formData))
+    })
+  }
+
+  function onPreferenceSubmit(formData: FormData) {
+    startPreferenceTransition(async () => {
+      setPreferenceState(await submitDinnerNotificationPreferences(preferenceState, formData))
+    })
+  }
+
+  function onAddOnSubmit(formData: FormData) {
+    startAddOnTransition(async () => {
+      setAddOnState(await submitStewardshipAddOnRequest(addOnState, formData))
     })
   }
 
@@ -78,6 +102,27 @@ export function DinnerStewardshipFoundation({
               <p className="mt-2 text-xs leading-5 text-stone-400">{gate.description}</p>
             </div>
           ))}
+        </div>
+
+        <div className="mt-5 grid gap-3 md:grid-cols-3">
+          {snapshot.timelineGates
+            .filter((gate) => gate.status === 'current' || gate.status === 'upcoming')
+            .slice(0, 3)
+            .map((gate) => (
+              <div
+                key={gate.id}
+                className="rounded-lg border border-emerald-800/40 bg-stone-950/70 p-3"
+              >
+                <div className="flex items-start justify-between gap-3">
+                  <p className="text-sm font-medium text-stone-100">{gate.label}</p>
+                  <span className="rounded-full bg-stone-800 px-2 py-0.5 text-[11px] text-stone-300">
+                    T-{gate.daysBefore}
+                  </span>
+                </div>
+                <p className="mt-2 text-xs leading-5 text-stone-400">{gate.purpose}</p>
+                <p className="mt-2 text-xs leading-5 text-emerald-300">{gate.clientAction}</p>
+              </div>
+            ))}
         </div>
       </div>
 
@@ -167,6 +212,141 @@ export function DinnerStewardshipFoundation({
             ))}
           </div>
         </div>
+      </div>
+
+      <div className="grid gap-4 lg:grid-cols-[0.95fr_1.05fr]">
+        <div className="rounded-xl border border-stone-800 bg-stone-900 p-5">
+          <h3 className="text-base font-semibold text-stone-100">Change windows</h3>
+          <div className="mt-4 space-y-2">
+            {snapshot.changeWindows.slice(0, 6).map((window) => (
+              <div
+                key={window.changeType}
+                className="rounded-lg border border-stone-700 bg-stone-950 p-3"
+              >
+                <div className="flex items-start justify-between gap-3">
+                  <div>
+                    <p className="text-sm font-medium text-stone-100">{window.label}</p>
+                    <p className="mt-1 text-xs leading-5 text-stone-400">{window.clientCopy}</p>
+                  </div>
+                  <span className="shrink-0 rounded-full bg-stone-800 px-2 py-0.5 text-[11px] text-stone-300">
+                    {window.status.replace('_', ' ')}
+                  </span>
+                </div>
+                <p className="mt-2 text-xs leading-5 text-amber-300">
+                  {window.chefImpact.join(', ')}
+                </p>
+              </div>
+            ))}
+          </div>
+        </div>
+
+        <div className="rounded-xl border border-stone-800 bg-stone-900 p-5">
+          <h3 className="text-base font-semibold text-stone-100">Stewardship notifications</h3>
+          <form
+            onSubmit={(event) => {
+              event.preventDefault()
+              onPreferenceSubmit(new FormData(event.currentTarget))
+            }}
+            className="mt-4 space-y-3"
+          >
+            <input suppressHydrationWarning type="hidden" name="eventId" value={eventId} />
+            <div className="grid gap-2 sm:grid-cols-2">
+              {snapshot.notificationPreferences
+                .filter((preference) => preference.id !== 'chef_only_risk')
+                .map((preference) => (
+                  <label
+                    key={preference.id}
+                    className="flex min-h-[44px] items-start gap-3 rounded-lg border border-stone-700 bg-stone-950 p-3 text-sm text-stone-300"
+                  >
+                    <input
+                      suppressHydrationWarning
+                      type="checkbox"
+                      name={preference.id}
+                      defaultChecked={preference.defaultEnabled}
+                      className="mt-1 h-4 w-4 rounded border-stone-600 bg-stone-950"
+                    />
+                    <span>
+                      <span className="block font-medium text-stone-100">{preference.label}</span>
+                      <span className="mt-1 block text-xs leading-5 text-stone-500">
+                        {preference.sensitive ? 'Role-gated' : 'Client-safe'}
+                      </span>
+                    </span>
+                  </label>
+                ))}
+            </div>
+
+            <label className="flex min-h-[44px] items-center gap-3 text-sm text-stone-300">
+              <input
+                suppressHydrationWarning
+                type="checkbox"
+                name="muted"
+                className="h-4 w-4 rounded border-stone-600 bg-stone-950"
+              />
+              Silent portal access only
+            </label>
+
+            <div className="flex flex-col gap-2 sm:flex-row sm:items-center">
+              <button
+                type="submit"
+                disabled={isPreferencePending}
+                className="min-h-[44px] rounded-lg bg-stone-100 px-4 py-2 text-sm font-semibold text-stone-950 transition hover:bg-white disabled:opacity-60"
+              >
+                {isPreferencePending ? 'Saving...' : 'Save preferences'}
+              </button>
+              {preferenceState.message ? (
+                <p
+                  className={
+                    preferenceState.ok ? 'text-sm text-emerald-300' : 'text-sm text-red-300'
+                  }
+                >
+                  {preferenceState.message}
+                </p>
+              ) : null}
+            </div>
+          </form>
+        </div>
+      </div>
+
+      <div className="rounded-xl border border-stone-800 bg-stone-900 p-5">
+        <h3 className="text-base font-semibold text-stone-100">Optional additions</h3>
+        <div className="mt-4 grid gap-3 md:grid-cols-2 xl:grid-cols-3">
+          {snapshot.addOnPrompts.map((prompt) => (
+            <form
+              key={prompt.id}
+              onSubmit={(event) => {
+                event.preventDefault()
+                onAddOnSubmit(new FormData(event.currentTarget))
+              }}
+              className="rounded-lg border border-stone-700 bg-stone-950 p-3"
+            >
+              <input suppressHydrationWarning type="hidden" name="eventId" value={eventId} />
+              <input suppressHydrationWarning type="hidden" name="addOnId" value={prompt.id} />
+              <div className="flex items-start justify-between gap-3">
+                <p className="text-sm font-medium text-stone-100">{prompt.label}</p>
+                <span className="rounded-full bg-stone-800 px-2 py-0.5 text-[11px] text-stone-300">
+                  {prompt.priceStatus.replace('_', ' ')}
+                </span>
+              </div>
+              <p className="mt-2 min-h-[40px] text-xs leading-5 text-stone-400">{prompt.reason}</p>
+              <button
+                type="submit"
+                disabled={!prompt.eligible || prompt.suppressedByWindow || isAddOnPending}
+                className="mt-3 min-h-[44px] w-full rounded-lg border border-stone-600 px-3 py-2 text-sm font-semibold text-stone-100 transition hover:border-emerald-500 disabled:cursor-not-allowed disabled:opacity-50"
+              >
+                {prompt.suppressedByWindow ? 'Review with chef' : 'Ask chef'}
+              </button>
+            </form>
+          ))}
+        </div>
+        {addOnState.message ? (
+          <p
+            className={
+              addOnState.ok ? 'mt-3 text-sm text-emerald-300' : 'mt-3 text-sm text-red-300'
+            }
+          >
+            {addOnState.message}
+          </p>
+        ) : null}
       </div>
 
       <div className="grid gap-4 lg:grid-cols-3">
