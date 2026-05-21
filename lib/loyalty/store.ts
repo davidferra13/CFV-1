@@ -207,8 +207,11 @@ export async function updateLoyaltyConfigForTenant(
   try {
     const { broadcastUpdate } = await import('@/lib/realtime/broadcast')
     broadcastUpdate('loyalty', tenantId, { type: 'config_updated' })
-  } catch {
-    /* non-blocking */
+  } catch (sseErr) {
+    console.error(
+      '[store.updateLoyaltyConfigForTenant] SSE broadcast failed (non-blocking):',
+      sseErr
+    )
   }
 
   return { success: true, config: castConfig(config) }
@@ -381,8 +384,8 @@ export async function createRewardForTenant(
   try {
     const { broadcastUpdate } = await import('@/lib/realtime/broadcast')
     broadcastUpdate('loyalty', tenantId, { type: 'reward_created', rewardId: reward.id })
-  } catch {
-    /* non-blocking */
+  } catch (sseErr) {
+    console.error('[store.createRewardForTenant] SSE broadcast failed (non-blocking):', sseErr)
   }
 
   return { success: true, reward }
@@ -430,8 +433,8 @@ export async function updateRewardForTenant(
   try {
     const { broadcastUpdate } = await import('@/lib/realtime/broadcast')
     broadcastUpdate('loyalty', tenantId, { type: 'reward_updated', rewardId: reward.id })
-  } catch {
-    /* non-blocking */
+  } catch (sseErr) {
+    console.error('[store.updateRewardForTenant] SSE broadcast failed (non-blocking):', sseErr)
   }
 
   return { success: true, reward }
@@ -454,8 +457,8 @@ export async function deactivateRewardForTenant(
   try {
     const { broadcastUpdate } = await import('@/lib/realtime/broadcast')
     broadcastUpdate('loyalty', tenantId, { type: 'reward_deactivated', rewardId })
-  } catch {
-    /* non-blocking */
+  } catch (sseErr) {
+    console.error('[store.deactivateRewardForTenant] SSE broadcast failed (non-blocking):', sseErr)
   }
 
   return { success: true }
@@ -491,7 +494,7 @@ export async function awardEventPointsForTenant(
     .update({ loyalty_points_awarded: true })
     .eq('id', eventId)
     .eq('tenant_id', tenantId)
-    .eq('loyalty_points_awarded', false)
+    .or('loyalty_points_awarded.is.null,loyalty_points_awarded.eq.false')
     .select('id')
 
   if (!claimed || claimed.length === 0)
@@ -671,8 +674,8 @@ export async function awardEventPointsForTenant(
       newTier,
       tierChanged: newTier !== oldTier,
     })
-  } catch {
-    // non-blocking
+  } catch (sseErr) {
+    console.error('[store.awardEventPoints] SSE broadcast failed (non-blocking):', sseErr)
   }
 
   return {
@@ -704,7 +707,7 @@ export async function awardLiteVisitForTenant(tenantId: string, eventId: string,
     .update({ loyalty_points_awarded: true })
     .eq('id', eventId)
     .eq('tenant_id', tenantId)
-    .eq('loyalty_points_awarded', false)
+    .or('loyalty_points_awarded.is.null,loyalty_points_awarded.eq.false')
     .select('id')
     .maybeSingle()
 
@@ -747,8 +750,8 @@ export async function awardLiteVisitForTenant(tenantId: string, eventId: string,
       newTier,
       tierChanged: newTier !== client?.loyalty_tier,
     })
-  } catch {
-    // non-blocking
+  } catch (sseErr) {
+    console.error('[store.awardLiteVisitForTenant] SSE broadcast failed (non-blocking):', sseErr)
   }
 
   return {
@@ -893,6 +896,12 @@ export async function getEventLoyaltyImpactForTenant(input: {
   ) {
     estimatedPoints += config.bonus_large_party_points || 0
     parts.push(`+${config.bonus_large_party_points} large-party bonus`)
+  }
+
+  const basePerEvent = config.base_points_per_event || 0
+  if (basePerEvent > 0) {
+    estimatedPoints += basePerEvent
+    parts.push(`+${basePerEvent} base event bonus`)
   }
 
   return {
@@ -1140,8 +1149,8 @@ export async function redeemRewardForTenant(
       pointsSpent: reward.points_required,
       newBalance,
     })
-  } catch {
-    // non-blocking
+  } catch (sseErr) {
+    console.error('[store.redeemRewardForTenant] SSE broadcast failed (non-blocking):', sseErr)
   }
 
   return { success: true, reward, newBalance, tier: client.loyalty_tier }
@@ -1279,8 +1288,11 @@ export async function adjustClientLoyaltyForTenant(
       newBalance: updates.loyalty_points,
       newTier: updates.loyalty_tier,
     })
-  } catch {
-    /* non-blocking */
+  } catch (sseErr) {
+    console.error(
+      '[store.adjustClientLoyaltyForTenant] SSE broadcast failed (non-blocking):',
+      sseErr
+    )
   }
 
   return { success: true, actions, updates }

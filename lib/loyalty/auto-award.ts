@@ -107,6 +107,17 @@ export async function autoAwardWelcomePoints(
     `[autoAwardWelcomePoints] Awarded ${welcomePoints} welcome points to client ${clientId} (tenant: ${tenantId})`
   )
 
+  try {
+    const { broadcastUpdate } = await import('@/lib/realtime/broadcast')
+    broadcastUpdate('loyalty', tenantId, {
+      clientId,
+      type: 'welcome_points_awarded',
+      points: welcomePoints,
+    })
+  } catch (sseErr) {
+    console.error('[autoAwardWelcomePoints] SSE broadcast failed (non-blocking):', sseErr)
+  }
+
   revalidatePath(`/clients/${clientId}`)
   revalidatePath('/loyalty')
 

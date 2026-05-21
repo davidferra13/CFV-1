@@ -23,8 +23,11 @@ export const POST = withApiAuth(
     if (!parsed.success) return apiValidationError(parsed.error)
 
     try {
-      await awardEventPointsForTenant(ctx.tenantId, parsed.data.eventId)
-      return apiSuccess({ awarded: true })
+      const result = await awardEventPointsForTenant(ctx.tenantId, parsed.data.eventId, ctx.keyId)
+      return apiSuccess({
+        awarded: !result.alreadyAwarded && !result.programInactive,
+        ...result,
+      })
     } catch (err: any) {
       return apiError('award_failed', err.message ?? 'Failed to award event points', 500)
     }

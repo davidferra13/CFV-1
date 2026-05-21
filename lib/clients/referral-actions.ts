@@ -169,31 +169,7 @@ export async function updateReferralStatus(
         const isActive = (loyaltyConfig as any)?.is_active ?? false
 
         if (isActive && programMode !== 'off' && referralPoints > 0) {
-          // Get referred client name for the description
-          let referredName = 'a friend'
-          if (referral.referred_client_id) {
-            const { data: referredClient } = await db
-              .from('clients' as any)
-              .select('full_name')
-              .eq('id', referral.referred_client_id)
-              .single()
-            if (referredClient) {
-              referredName = (referredClient as any).full_name || 'a friend'
-            }
-          }
-
-          // Award points via internal helper
-          const { awardBonusPointsInternal } = await import('@/lib/loyalty/award-internal')
-          await awardBonusPointsInternal(
-            user.tenantId!,
-            referral.referrer_client_id,
-            referralPoints,
-            `Referral bonus: ${referredName} completed their first event`,
-            user.id
-          )
-
-          // Mark referral as rewarded (CAS guard: only if still 0)
-          await db
+          const { data: claimedReferral } = await db
             .from('client_referrals' as any)
             .update({
               reward_points_awarded: referralPoints,
@@ -201,7 +177,48 @@ export async function updateReferralStatus(
             })
             .eq('id', id)
             .eq('tenant_id', user.tenantId!)
-            .eq('reward_points_awarded', 0)
+            .or('reward_points_awarded.is.null,reward_points_awarded.eq.0')
+            .select('id, referrer_client_id, referred_client_id')
+            .maybeSingle()
+
+          if (claimedReferral) {
+            // Get referred client name for the description
+            let referredName = 'a friend'
+            if (claimedReferral.referred_client_id) {
+              const { data: referredClient } = await db
+                .from('clients' as any)
+                .select('full_name')
+                .eq('id', claimedReferral.referred_client_id)
+                .eq('tenant_id', user.tenantId!)
+                .single()
+              if (referredClient) {
+                referredName = (referredClient as any).full_name || 'a friend'
+              }
+            }
+
+            try {
+              // Award points via internal helper after the atomic referral reward claim.
+              const { awardBonusPointsInternal } = await import('@/lib/loyalty/award-internal')
+              await awardBonusPointsInternal(
+                user.tenantId!,
+                claimedReferral.referrer_client_id,
+                referralPoints,
+                `Referral bonus: ${referredName} completed their first event`,
+                user.id
+              )
+            } catch (awardErr) {
+              await db
+                .from('client_referrals' as any)
+                .update({
+                  reward_points_awarded: 0,
+                  reward_awarded_at: null,
+                })
+                .eq('id', id)
+                .eq('tenant_id', user.tenantId!)
+                .eq('reward_points_awarded', referralPoints)
+              throw awardErr
+            }
+          }
         }
       }
     } catch (err) {

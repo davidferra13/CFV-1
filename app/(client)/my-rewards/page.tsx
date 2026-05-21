@@ -1,8 +1,6 @@
 import type { Metadata } from 'next'
 import Link from 'next/link'
 import { format } from 'date-fns'
-import { requireClient } from '@/lib/auth/get-user'
-import { createServerClient } from '@/lib/db/server'
 import { getMyLoyaltyStatus, type LoyaltyReward } from '@/lib/loyalty/actions'
 import { getVoucherAndGiftCards } from '@/lib/loyalty/voucher-actions'
 import { getMyPendingRedemptions } from '@/lib/loyalty/auto-award'
@@ -77,9 +75,6 @@ function getTierProgress(
 }
 
 export default async function MyRewardsPage() {
-  const user = await requireClient()
-  const db: any = createServerClient()
-
   const status = await getMyLoyaltyStatus()
   if (!status) {
     return (
@@ -102,12 +97,6 @@ export default async function MyRewardsPage() {
     )
   }
 
-  const { data: client } = await db
-    .from('clients')
-    .select('tenant_id')
-    .eq('id', user.entityId)
-    .single()
-
   const [
     incentivesSettled,
     rewardsSettled,
@@ -117,26 +106,15 @@ export default async function MyRewardsPage() {
     triggersSettled,
   ] = await Promise.allSettled([
     getVoucherAndGiftCards(),
-    db
-      .from('loyalty_rewards')
-      .select('*')
-      .eq('tenant_id', client?.tenant_id || '')
-      .eq('is_active', true)
-      .order('points_required', { ascending: true }),
-    db
-      .from('loyalty_config')
-      .select(
-        'tier_silver_min, tier_gold_min, tier_platinum_min, points_per_guest, bonus_large_party_threshold, bonus_large_party_points, milestone_bonuses, guest_milestones, referral_points, earn_mode, points_per_dollar, points_per_event, welcome_points, base_points_per_event'
-      )
-      .eq('tenant_id', client?.tenant_id || '')
-      .maybeSingle(),
+    Promise.resolve({ data: status.allRewards }),
+    Promise.resolve({ data: status.config }),
     getMyPendingRedemptions(),
     getActiveRaffle().catch((err) => {
       console.error('[my-rewards] Failed to load active raffle:', err)
       return null
     }),
-    client?.tenant_id
-      ? getActiveTriggers(client.tenant_id).catch((err) => {
+    status.tenantId
+      ? getActiveTriggers(status.tenantId).catch((err) => {
           console.error('[my-rewards] Failed to load active triggers:', err)
           return []
         })
@@ -221,8 +199,8 @@ export default async function MyRewardsPage() {
                 {status.programMode === 'full' && (
                   <LoyaltyLiveBalance
                     initialBalance={status.pointsBalance}
-                    tenantId={client?.tenant_id || ''}
-                    clientId={user.entityId}
+                    tenantId={status.tenantId}
+                    clientId={status.clientId}
                   />
                 )}
               </div>
@@ -506,8 +484,8 @@ export default async function MyRewardsPage() {
         }}
       />
 
-      {status.programMode === 'full' && client?.tenant_id && (
-        <LoyaltyCelebrationToast tenantId={client.tenant_id} clientId={user.entityId} />
+      {status.programMode === 'full' && status.tenantId && (
+        <LoyaltyCelebrationToast tenantId={status.tenantId} clientId={status.clientId} />
       )}
     </div>
   )

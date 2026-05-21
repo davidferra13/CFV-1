@@ -692,7 +692,7 @@ export async function awardEventPoints(eventId: string) {
     .update({ loyalty_points_awarded: true })
     .eq('id', eventId)
     .eq('tenant_id', user.tenantId!)
-    .eq('loyalty_points_awarded', false)
+    .or('loyalty_points_awarded.is.null,loyalty_points_awarded.eq.false')
     .select('id')
 
   if (!claimed || claimed.length === 0) {
@@ -983,7 +983,7 @@ export async function awardLiteVisit(eventId: string) {
     .update({ loyalty_points_awarded: true })
     .eq('id', eventId)
     .eq('tenant_id', user.tenantId!)
-    .eq('loyalty_points_awarded', false)
+    .or('loyalty_points_awarded.is.null,loyalty_points_awarded.eq.false')
     .select('id')
     .maybeSingle()
 
@@ -1055,6 +1055,18 @@ export async function awardLiteVisit(eventId: string) {
   }
 
   // Event already claimed atomically at the top of this function
+
+  try {
+    const { broadcastUpdate } = await import('@/lib/realtime/broadcast')
+    broadcastUpdate('loyalty', user.tenantId!, {
+      clientId: event.client_id,
+      type: 'lite_visit_awarded',
+      newTier,
+      tierChanged: newTier !== oldTier,
+    })
+  } catch (sseErr) {
+    console.error('[awardLiteVisit] SSE broadcast failed (non-blocking):', sseErr)
+  }
 
   revalidatePath(`/events/${eventId}`)
   revalidatePath(`/clients/${event.client_id}`)
@@ -1901,7 +1913,7 @@ export async function backfillLoyaltyForHistoricalImports(): Promise<BackfillLoy
           .update({ loyalty_points_awarded: true })
           .eq('id', event.id)
           .eq('tenant_id', user.tenantId!)
-          .eq('loyalty_points_awarded', false)
+          .or('loyalty_points_awarded.is.null,loyalty_points_awarded.eq.false')
           .select('id')
           .maybeSingle()
 
@@ -2087,6 +2099,22 @@ export async function backfillLoyaltyForHistoricalImports(): Promise<BackfillLoy
   revalidatePath('/clients')
   revalidatePath('/dashboard')
 
+  try {
+    const { broadcastUpdate } = await import('@/lib/realtime/broadcast')
+    broadcastUpdate('loyalty', user.tenantId!, {
+      type: 'historical_backfill_completed',
+      eventsProcessed: totalEventsProcessed,
+      totalPointsAwarded,
+      tierChanges: tierChanges.length,
+      errors: errors.length,
+    })
+  } catch (sseErr) {
+    console.error(
+      '[backfillLoyaltyForHistoricalImports] SSE broadcast failed (non-blocking):',
+      sseErr
+    )
+  }
+
   return {
     success: errors.length === 0,
     clientsProcessed: byClient.size,
@@ -2103,6 +2131,9 @@ export async function backfillLoyaltyForHistoricalImports(): Promise<BackfillLoy
 
 export async function getMyLoyaltyStatus() {
   const user = await requireClient()
+  if (!user.tenantId) {
+    return null
+  }
   const db: any = createServerClient()
 
   // Get client record
@@ -2112,6 +2143,7 @@ export async function getMyLoyaltyStatus() {
       'id, loyalty_points, loyalty_tier, total_events_completed, total_guests_served, tenant_id'
     )
     .eq('id', user.entityId)
+    .eq('tenant_id', user.tenantId!)
     .single()
 
   if (!client) {
@@ -2122,9 +2154,9 @@ export async function getMyLoyaltyStatus() {
   const { data: configRow } = await db
     .from('loyalty_config')
     .select(
-      'program_mode, earn_mode, tier_perks, guest_milestones, milestone_bonuses, referral_points, base_points_per_event, tier_silver_min, tier_gold_min, tier_platinum_min'
+      'program_mode, earn_mode, tier_perks, guest_milestones, milestone_bonuses, referral_points, base_points_per_event, tier_bronze_min, tier_silver_min, tier_gold_min, tier_platinum_min, points_per_guest, bonus_large_party_threshold, bonus_large_party_points, points_per_dollar, points_per_event, welcome_points'
     )
-    .eq('tenant_id', client.tenant_id)
+    .eq('tenant_id', user.tenantId!)
     .single()
 
   const programMode = ((configRow as any)?.program_mode || 'full') as ProgramMode
@@ -2145,7 +2177,7 @@ export async function getMyLoyaltyStatus() {
   const { data: rewards } = await db
     .from('loyalty_rewards')
     .select('*')
-    .eq('tenant_id', client.tenant_id)
+    .eq('tenant_id', user.tenantId!)
     .eq('is_active', true)
     .order('points_required', { ascending: true })
 
@@ -2154,7 +2186,7 @@ export async function getMyLoyaltyStatus() {
     .from('loyalty_transactions')
     .select('*')
     .eq('client_id', user.entityId)
-    .eq('tenant_id', client.tenant_id)
+    .eq('tenant_id', user.tenantId!)
     .order('created_at', { ascending: false })
     .limit(10)
 
@@ -2196,6 +2228,8 @@ export async function getMyLoyaltyStatus() {
       : null
 
   return {
+    clientId: client.id,
+    tenantId: client.tenant_id,
     programMode,
     earnMode,
     tier: (client.loyalty_tier || 'bronze') as LoyaltyTier,
@@ -2203,6 +2237,7 @@ export async function getMyLoyaltyStatus() {
     totalEventsCompleted: eventsCompleted,
     totalGuestsServed: guestsServed,
     availableRewards: availableRewards as LoyaltyReward[],
+    allRewards: allRewards as LoyaltyReward[],
     nextReward: nextReward
       ? {
           name: nextReward.name,
@@ -2212,6 +2247,7 @@ export async function getMyLoyaltyStatus() {
       : null,
     recentTransactions: (transactions || []) as LoyaltyTransaction[],
     tierPerks,
+    config: configRow || null,
     guestMilestones,
     referralPoints,
     basePointsPerEvent,
@@ -2238,6 +2274,7 @@ export type TriggerCompletionStatus = {
 
 export async function getClientTriggerCompletionStatus(): Promise<TriggerCompletionStatus[]> {
   const user = await requireClient()
+  if (!user.tenantId) return []
   const db: any = createServerClient()
 
   // Get client's tenant
@@ -2245,6 +2282,7 @@ export async function getClientTriggerCompletionStatus(): Promise<TriggerComplet
     .from('clients')
     .select('id, tenant_id, loyalty_profile_complete_awarded, loyalty_fun_qa_awarded')
     .eq('id', user.entityId)
+    .eq('tenant_id', user.tenantId!)
     .single()
 
   if (!client?.tenant_id) return []
@@ -2253,7 +2291,7 @@ export async function getClientTriggerCompletionStatus(): Promise<TriggerComplet
   const { data: config } = await db
     .from('loyalty_config')
     .select('trigger_config, program_mode')
-    .eq('tenant_id', client.tenant_id)
+    .eq('tenant_id', user.tenantId!)
     .maybeSingle()
 
   if (!config || config.program_mode !== 'full') return []
@@ -2271,6 +2309,7 @@ export async function getClientTriggerCompletionStatus(): Promise<TriggerComplet
       'id, loyalty_review_awarded, loyalty_quote_accepted_awarded, loyalty_menu_approved_awarded, loyalty_ontime_payment_awarded, loyalty_tip_awarded, loyalty_google_review_awarded, loyalty_public_consent_awarded, loyalty_chat_engagement_awarded'
     )
     .eq('client_id', client.id)
+    .eq('tenant_id', user.tenantId!)
     .eq('status', 'completed')
     .order('updated_at', { ascending: false })
     .limit(1)
@@ -2281,6 +2320,7 @@ export async function getClientTriggerCompletionStatus(): Promise<TriggerComplet
     .from('loyalty_transactions')
     .select('description')
     .eq('client_id', client.id)
+    .eq('tenant_id', user.tenantId!)
     .eq('type', 'earned')
 
   const txDescriptions = (transactions || []).map((t: any) => (t.description || '').toLowerCase())
