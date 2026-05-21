@@ -145,7 +145,7 @@ export async function BusinessCards() {
           subtitle="collection rate this month"
           trend={`${fmt(invoicePulse.monthlyStats.totalPaidCents)} collected`}
           trendDirection={collectionRate >= 80 ? 'up' : collectionRate >= 50 ? 'flat' : 'down'}
-          href="/invoices"
+          href="/finance/invoices"
         />
       )}
 

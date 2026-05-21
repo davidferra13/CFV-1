@@ -23,7 +23,7 @@ function alertActionHref(alert: RemyAlert): string | null {
     case 'payment_received':
       return `/events/${alert.entity_id}`
     case 'overdue_invoice':
-      return `/invoices`
+      return `/finance/invoices`
     case 'stale_inquiry':
       return `/inquiries`
     case 'client_birthday':

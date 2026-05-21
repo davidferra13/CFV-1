@@ -501,82 +501,17 @@ function getTierThreshold(tier: LoyaltyTier, config: LoyaltyConfig): number {
   }
 }
 
-function estimatePointsFromConfig(
-  config: LoyaltyConfig,
-  guestCount: number,
-  eventTotalCents: number
-): { points: number; breakdown: string } {
-  switch (config.earn_mode) {
-    case 'per_dollar': {
-      const dollars = Math.max(0, eventTotalCents) / 100
-      const points = Math.round(dollars * config.points_per_dollar)
-      return {
-        points,
-        breakdown: `$${dollars.toFixed(2)} x ${config.points_per_dollar} pts/$`,
-      }
-    }
-    case 'per_event': {
-      return {
-        points: config.points_per_event,
-        breakdown: `Flat ${config.points_per_event} pts per event`,
-      }
-    }
-    case 'per_guest':
-    default: {
-      const safeGuestCount = Math.max(1, guestCount || 1)
-      return {
-        points: safeGuestCount * config.points_per_guest,
-        breakdown: `${safeGuestCount} guests x ${config.points_per_guest} pts/guest`,
-      }
-    }
-  }
-}
-
 export async function getClientLoyaltySnapshotByTenant(
   tenantId: string,
   clientId: string
 ): Promise<ClientLoyaltySnapshot | null> {
-  const db: any = createServerClient()
-
-  const { data: client } = await db
-    .from('clients')
-    .select('id, loyalty_tier, loyalty_points, total_events_completed, total_guests_served')
-    .eq('tenant_id', tenantId)
-    .eq('id', clientId)
-    .single()
-
-  if (!client) return null
-
-  const config = await getLoyaltyConfigByTenant(tenantId)
-  if (!config) return null
-
-  const { data: earnedRows } = await db
-    .from('loyalty_transactions')
-    .select('points')
-    .eq('tenant_id', tenantId)
-    .eq('client_id', clientId)
-    .in('type', ['earned', 'bonus'])
-
-  const lifetimePointsEarned = (earnedRows || []).reduce(
-    (sum: number, row: { points: number }) => sum + row.points,
-    0
-  )
-
-  const tier = ((client.loyalty_tier || 'bronze') as LoyaltyTier) || 'bronze'
-  const nextTier = getNextTier(tier)
-  const pointsToNextTier = nextTier
-    ? Math.max(0, getTierThreshold(nextTier.key, config) - lifetimePointsEarned)
-    : 0
-
-  return {
-    tier,
-    pointsBalance: client.loyalty_points || 0,
-    lifetimePointsEarned,
-    totalEventsCompleted: client.total_events_completed || 0,
-    totalGuestsServed: client.total_guests_served || 0,
-    nextTierName: nextTier?.name ?? null,
-    pointsToNextTier,
+  const user = await requireChef()
+  if (user.tenantId !== tenantId) {
+    throw new Error('Unauthorized: tenant mismatch')
   }
+
+  const { getClientLoyaltySnapshotForTenant } = await import('@/lib/loyalty/store')
+  return getClientLoyaltySnapshotForTenant(tenantId, clientId)
 }
 
 export async function getEventLoyaltyImpactByTenant(input: {
@@ -585,67 +520,13 @@ export async function getEventLoyaltyImpactByTenant(input: {
   guestCount: number
   eventTotalCents: number
 }): Promise<EventLoyaltyImpact | null> {
-  const config = await getLoyaltyConfigByTenant(input.tenantId)
-  if (!config) return null
-
-  const snapshot = await getClientLoyaltySnapshotByTenant(input.tenantId, input.clientId)
-  if (!snapshot) return null
-
-  if (!config.is_active || config.program_mode === 'off') {
-    return {
-      isActive: false,
-      programMode: config.program_mode,
-      earnMode: config.earn_mode,
-      currentTier: snapshot.tier,
-      pointsBalance: snapshot.pointsBalance,
-      lifetimePointsEarned: snapshot.lifetimePointsEarned,
-      nextTierName: snapshot.nextTierName,
-      pointsToNextTier: snapshot.pointsToNextTier,
-      estimatedPoints: 0,
-      estimatedBreakdown: 'Program inactive',
-    }
+  const user = await requireChef()
+  if (user.tenantId !== input.tenantId) {
+    throw new Error('Unauthorized: tenant mismatch')
   }
 
-  if (config.program_mode === 'lite') {
-    return {
-      isActive: true,
-      programMode: config.program_mode,
-      earnMode: config.earn_mode,
-      currentTier: snapshot.tier,
-      pointsBalance: snapshot.pointsBalance,
-      lifetimePointsEarned: snapshot.lifetimePointsEarned,
-      nextTierName: snapshot.nextTierName,
-      pointsToNextTier: snapshot.pointsToNextTier,
-      estimatedPoints: 0,
-      estimatedBreakdown: 'Lite mode: visit-based recognition',
-    }
-  }
-
-  const baseEstimate = estimatePointsFromConfig(config, input.guestCount, input.eventTotalCents)
-  let estimatedPoints = baseEstimate.points
-  const parts: string[] = [baseEstimate.breakdown]
-
-  if (
-    config.bonus_large_party_threshold &&
-    input.guestCount >= config.bonus_large_party_threshold &&
-    (config.bonus_large_party_points || 0) > 0
-  ) {
-    estimatedPoints += config.bonus_large_party_points || 0
-    parts.push(`+${config.bonus_large_party_points} large-party bonus`)
-  }
-
-  return {
-    isActive: true,
-    programMode: config.program_mode,
-    earnMode: config.earn_mode,
-    currentTier: snapshot.tier,
-    pointsBalance: snapshot.pointsBalance,
-    lifetimePointsEarned: snapshot.lifetimePointsEarned,
-    nextTierName: snapshot.nextTierName,
-    pointsToNextTier: snapshot.pointsToNextTier,
-    estimatedPoints,
-    estimatedBreakdown: parts.join(' | '),
-  }
+  const { getEventLoyaltyImpactForTenant } = await import('@/lib/loyalty/store')
+  return getEventLoyaltyImpactForTenant(input)
 }
 
 // =====================================================================================
@@ -1063,26 +944,17 @@ export async function awardEventPoints(eventId: string) {
 }
 
 // =====================================================================================
-// 3b. getLoyaltyConfigByTenant - Get config without requireChef() (for internal use)
+// 3b. getLoyaltyConfigByTenant - Chef-gated wrapper for tenant-explicit config reads
 // =====================================================================================
 
 export async function getLoyaltyConfigByTenant(tenantId: string): Promise<LoyaltyConfig | null> {
-  const db: any = createServerClient()
-
-  const { data: config } = await db
-    .from('loyalty_config')
-    .select('*')
-    .eq('tenant_id', tenantId)
-    .single()
-
-  if (!config) return null
-
-  return {
-    ...(config as any),
-    milestone_bonuses: (config as any).milestone_bonuses as { events: number; bonus: number }[],
-    welcome_points: (config as any).welcome_points ?? 0,
-    referral_points: (config as any).referral_points ?? 0,
+  const user = await requireChef()
+  if (user.tenantId !== tenantId) {
+    throw new Error('Unauthorized: tenant mismatch')
   }
+
+  const { getExistingLoyaltyConfigForTenant } = await import('@/lib/loyalty/store')
+  return getExistingLoyaltyConfigForTenant(tenantId)
 }
 
 // =====================================================================================

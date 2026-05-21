@@ -11,7 +11,7 @@ import { createServerClient } from '@/lib/db/server'
 import { revalidatePath } from 'next/cache'
 import { format } from 'date-fns'
 import { calculateSalesTax } from '@/lib/tax/api-ninjas'
-import { getClientLoyaltySnapshotByTenant } from '@/lib/loyalty/actions'
+import { getClientLoyaltySnapshotForTenant } from '@/lib/loyalty/store'
 import {
   computeLoyaltyInvoiceAdjustments,
   type LoyaltyInvoiceAdjustmentSummary,
@@ -250,7 +250,7 @@ export async function getInvoiceData(eventId: string): Promise<InvoiceData | nul
   const baseServiceCents = event.quoted_price_cents ?? 0
   const [loyalty, loyaltyAdjustments] = await Promise.all([
     clientData?.id && user.tenantId
-      ? getClientLoyaltySnapshotByTenant(user.tenantId, clientData.id).catch(() => null)
+      ? getClientLoyaltySnapshotForTenant(user.tenantId, clientData.id).catch(() => null)
       : Promise.resolve(null),
     getEventLoyaltyAdjustmentSummary({
       db,
@@ -349,7 +349,7 @@ export async function getInvoiceDataByTenant(
   const baseServiceCents = event.quoted_price_cents ?? 0
   const [loyalty, loyaltyAdjustments] = await Promise.all([
     clientData?.id
-      ? getClientLoyaltySnapshotByTenant(tenantId, clientData.id).catch(() => null)
+      ? getClientLoyaltySnapshotForTenant(tenantId, clientData.id).catch(() => null)
       : Promise.resolve(null),
     getEventLoyaltyAdjustmentSummary({
       db,
@@ -444,7 +444,7 @@ export async function getInvoiceDataForClient(eventId: string): Promise<InvoiceD
   const baseServiceCents = event.quoted_price_cents ?? 0
   const [loyalty, loyaltyAdjustments] = await Promise.all([
     clientData?.id && tenantId
-      ? getClientLoyaltySnapshotByTenant(tenantId, clientData.id).catch(() => null)
+      ? getClientLoyaltySnapshotForTenant(tenantId, clientData.id).catch(() => null)
       : Promise.resolve(null),
     getEventLoyaltyAdjustmentSummary({
       db,
@@ -727,7 +727,7 @@ function buildInvoiceData(
   chef: RawChef,
   entries: RawLedgerEntry[],
   salesTax: SalesTaxInfo | null = null,
-  loyaltySnapshot: Awaited<ReturnType<typeof getClientLoyaltySnapshotByTenant>> | null = null,
+  loyaltySnapshot: Awaited<ReturnType<typeof getClientLoyaltySnapshotForTenant>> | null = null,
   loyaltyAdjustmentSummary: LoyaltyInvoiceAdjustmentSummary | null = null,
   betaDiscount: BetaDiscountResult | null = null
 ): InvoiceData {

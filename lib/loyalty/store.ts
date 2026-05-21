@@ -6,6 +6,8 @@ import { cache } from 'react'
 import { createServerClient } from '@/lib/db/server'
 import { z } from 'zod'
 import type {
+  ClientLoyaltySnapshot,
+  EventLoyaltyImpact,
   LoyaltyConfig,
   LoyaltyTier,
   LoyaltyTransaction,
@@ -101,6 +103,20 @@ function castConfig(raw: any): LoyaltyConfig {
       { enabled: boolean; points: number }
     >,
   }
+}
+
+export async function getExistingLoyaltyConfigForTenant(
+  tenantId: string
+): Promise<LoyaltyConfig | null> {
+  const db: any = createServerClient({ admin: true })
+
+  const { data: config } = await db
+    .from('loyalty_config')
+    .select('*')
+    .eq('tenant_id', tenantId)
+    .single()
+
+  return config ? castConfig(config) : null
 }
 
 /**
@@ -666,6 +682,230 @@ export async function awardEventPointsForTenant(
     newTier,
     tierChanged: newTier !== oldTier,
     transactions,
+  }
+}
+
+export async function awardLiteVisitForTenant(tenantId: string, eventId: string, actorId?: string) {
+  const db: any = createServerClient({ admin: true })
+
+  const { data: event, error: eventError } = await db
+    .from('events')
+    .select('id, client_id, tenant_id, guest_count, loyalty_points_awarded, status')
+    .eq('id', eventId)
+    .eq('tenant_id', tenantId)
+    .single()
+
+  if (eventError || !event) throw new Error('Event not found')
+  if (event.loyalty_points_awarded) return { success: true, alreadyAwarded: true }
+  if (event.status !== 'completed') throw new Error('Only completed events qualify')
+
+  const { data: claimed, error: claimError } = await db
+    .from('events')
+    .update({ loyalty_points_awarded: true })
+    .eq('id', eventId)
+    .eq('tenant_id', tenantId)
+    .eq('loyalty_points_awarded', false)
+    .select('id')
+    .maybeSingle()
+
+  if (claimError || !claimed) {
+    return { success: true, alreadyAwarded: true }
+  }
+
+  const config = await getExistingLoyaltyConfigForTenant(tenantId)
+  if (!config) return { success: true, programInactive: true, visitsAwarded: 0 }
+  const { data: client } = await db
+    .from('clients')
+    .select('full_name, total_events_completed, total_guests_served, loyalty_tier')
+    .eq('id', event.client_id)
+    .eq('tenant_id', tenantId)
+    .single()
+
+  const totalEvents = (client?.total_events_completed || 0) + 1
+  const totalGuests = (client?.total_guests_served || 0) + (event.guest_count || 1)
+
+  let newTier: LoyaltyTier = 'bronze'
+  if (totalEvents >= config.tier_platinum_min) newTier = 'platinum'
+  else if (totalEvents >= config.tier_gold_min) newTier = 'gold'
+  else if (totalEvents >= config.tier_silver_min) newTier = 'silver'
+
+  await db
+    .from('clients')
+    .update({
+      total_events_completed: totalEvents,
+      total_guests_served: totalGuests,
+      loyalty_tier: newTier,
+    })
+    .eq('id', event.client_id)
+    .eq('tenant_id', tenantId)
+
+  try {
+    const { broadcastUpdate } = await import('@/lib/realtime/broadcast')
+    broadcastUpdate('loyalty', tenantId, {
+      clientId: event.client_id,
+      type: 'lite_visit_awarded',
+      newTier,
+      tierChanged: newTier !== client?.loyalty_tier,
+    })
+  } catch {
+    // non-blocking
+  }
+
+  return {
+    success: true,
+    visitsAwarded: 1,
+    totalEventsCompleted: totalEvents,
+    totalGuestsServed: totalGuests,
+    newTier,
+    tierChanged: newTier !== client?.loyalty_tier,
+    actorId: actorId ?? tenantId,
+  }
+}
+
+export async function getClientLoyaltySnapshotForTenant(
+  tenantId: string,
+  clientId: string
+): Promise<ClientLoyaltySnapshot | null> {
+  const db: any = createServerClient({ admin: true })
+
+  const { data: client } = await db
+    .from('clients')
+    .select('id, loyalty_tier, loyalty_points, total_events_completed, total_guests_served')
+    .eq('tenant_id', tenantId)
+    .eq('id', clientId)
+    .single()
+
+  if (!client) return null
+
+  const config = await getExistingLoyaltyConfigForTenant(tenantId)
+  if (!config) return null
+
+  const { data: earnedRows } = await db
+    .from('loyalty_transactions')
+    .select('points')
+    .eq('tenant_id', tenantId)
+    .eq('client_id', clientId)
+    .in('type', ['earned', 'bonus'])
+
+  const lifetimePointsEarned = (earnedRows || []).reduce(
+    (sum: number, row: { points: number }) => sum + row.points,
+    0
+  )
+
+  const tier = ((client.loyalty_tier || 'bronze') as LoyaltyTier) || 'bronze'
+  const nextTier = getNextTier(tier)
+  const pointsToNextTier = nextTier
+    ? Math.max(0, getTierThreshold(nextTier.key, config) - lifetimePointsEarned)
+    : 0
+
+  return {
+    tier,
+    pointsBalance: client.loyalty_points || 0,
+    lifetimePointsEarned,
+    totalEventsCompleted: client.total_events_completed || 0,
+    totalGuestsServed: client.total_guests_served || 0,
+    nextTierName: nextTier?.name ?? null,
+    pointsToNextTier,
+  }
+}
+
+function estimatePointsFromConfig(
+  config: LoyaltyConfig,
+  guestCount: number,
+  eventTotalCents: number
+): { points: number; breakdown: string } {
+  switch (config.earn_mode) {
+    case 'per_dollar': {
+      const dollars = Math.max(0, eventTotalCents) / 100
+      const points = Math.round(dollars * config.points_per_dollar)
+      return {
+        points,
+        breakdown: `$${dollars.toFixed(2)} x ${config.points_per_dollar} pts/$`,
+      }
+    }
+    case 'per_event': {
+      return {
+        points: config.points_per_event,
+        breakdown: `Flat ${config.points_per_event} pts per event`,
+      }
+    }
+    case 'per_guest':
+    default: {
+      const safeGuestCount = Math.max(1, guestCount || 1)
+      return {
+        points: safeGuestCount * config.points_per_guest,
+        breakdown: `${safeGuestCount} guests x ${config.points_per_guest} pts/guest`,
+      }
+    }
+  }
+}
+
+export async function getEventLoyaltyImpactForTenant(input: {
+  tenantId: string
+  clientId: string
+  guestCount: number
+  eventTotalCents: number
+}): Promise<EventLoyaltyImpact | null> {
+  const config = await getExistingLoyaltyConfigForTenant(input.tenantId)
+  if (!config) return null
+
+  const snapshot = await getClientLoyaltySnapshotForTenant(input.tenantId, input.clientId)
+  if (!snapshot) return null
+
+  if (!config.is_active || config.program_mode === 'off') {
+    return {
+      isActive: false,
+      programMode: config.program_mode,
+      earnMode: config.earn_mode,
+      currentTier: snapshot.tier,
+      pointsBalance: snapshot.pointsBalance,
+      lifetimePointsEarned: snapshot.lifetimePointsEarned,
+      nextTierName: snapshot.nextTierName,
+      pointsToNextTier: snapshot.pointsToNextTier,
+      estimatedPoints: 0,
+      estimatedBreakdown: 'Program inactive',
+    }
+  }
+
+  if (config.program_mode === 'lite') {
+    return {
+      isActive: true,
+      programMode: config.program_mode,
+      earnMode: config.earn_mode,
+      currentTier: snapshot.tier,
+      pointsBalance: snapshot.pointsBalance,
+      lifetimePointsEarned: snapshot.lifetimePointsEarned,
+      nextTierName: snapshot.nextTierName,
+      pointsToNextTier: snapshot.pointsToNextTier,
+      estimatedPoints: 0,
+      estimatedBreakdown: 'Lite mode: visit-based recognition',
+    }
+  }
+
+  const baseEstimate = estimatePointsFromConfig(config, input.guestCount, input.eventTotalCents)
+  let estimatedPoints = baseEstimate.points
+  const parts: string[] = [baseEstimate.breakdown]
+
+  if (
+    config.bonus_large_party_threshold &&
+    input.guestCount >= config.bonus_large_party_threshold &&
+    (config.bonus_large_party_points || 0) > 0
+  ) {
+    estimatedPoints += config.bonus_large_party_points || 0
+    parts.push(`+${config.bonus_large_party_points} large-party bonus`)
+  }
+
+  return {
+    isActive: true,
+    programMode: config.program_mode,
+    earnMode: config.earn_mode,
+    currentTier: snapshot.tier,
+    pointsBalance: snapshot.pointsBalance,
+    lifetimePointsEarned: snapshot.lifetimePointsEarned,
+    nextTierName: snapshot.nextTierName,
+    pointsToNextTier: snapshot.pointsToNextTier,
+    estimatedPoints,
+    estimatedBreakdown: parts.join(' | '),
   }
 }
 

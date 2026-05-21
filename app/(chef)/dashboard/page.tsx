@@ -34,7 +34,6 @@ import {
 } from './_sections/section-skeletons'
 import { CilSignalSummary } from './_sections/cil-signal-summary'
 import { ActivityFeedSection } from './_sections/activity-feed-section'
-import { HealthNarrativeSection } from './_sections/health-narrative'
 import { getWeeklyRetroSummary } from '@/lib/scheduling/weekly-retro-summary-action'
 import { WeeklyReflectionWidget } from '@/components/dashboard/weekly-reflection-widget'
 
@@ -43,10 +42,8 @@ export const metadata: Metadata = { title: 'Dashboard' }
 export default async function ChefDashboard() {
   const user = await requireChef()
   const queuePromise = getPriorityQueue().catch(() => EMPTY_PRIORITY_QUEUE)
-  const dailyPlanStats = await getDailyPlanStats().catch(() => null)
-
   return (
-    <div className="space-y-10">
+    <div className="dashboard-page min-h-screen space-y-8 sm:space-y-10">
       <Suspense fallback={<AlertsSkeleton />}>
         <OpenClawLiveAlertsSection />
       </Suspense>
@@ -60,15 +57,33 @@ export default async function ChefDashboard() {
         />
       </Suspense>
 
+      <div className="grid grid-cols-1 gap-3 xl:grid-cols-2">
+        <WidgetErrorBoundary name="Quick Notes" compact>
+          <Suspense fallback={<WidgetCardSkeleton size="sm" />}>
+            <QuickNotesLoader />
+          </Suspense>
+        </WidgetErrorBoundary>
+
+        <WidgetErrorBoundary name="ChefTips" compact>
+          <Suspense fallback={<WidgetCardSkeleton size="sm" />}>
+            <ChefTipsSection />
+          </Suspense>
+        </WidgetErrorBoundary>
+      </div>
+
       <WidgetErrorBoundary name="Tiered Rail" compact>
         <Suspense fallback={<TieredRailSkeleton />}>
           <TieredRailSection queuePromise={queuePromise} />
         </Suspense>
       </WidgetErrorBoundary>
 
-      {dailyPlanStats && dailyPlanStats.totalItems > 0 && (
-        <DailyPlanBanner stats={dailyPlanStats} />
-      )}
+      <Suspense fallback={null}>
+        <DailyPlanBannerLoader />
+      </Suspense>
+
+      <Suspense fallback={<ScheduleSkeleton />}>
+        <ThisWeekSection queuePromise={queuePromise} />
+      </Suspense>
 
       <Suspense fallback={<ActivitySkeleton />}>
         <OnboardingZone />
@@ -96,25 +111,9 @@ export default async function ChefDashboard() {
         </Suspense>
       </WidgetErrorBoundary>
 
-      <Suspense fallback={<ScheduleSkeleton />}>
-        <ThisWeekSection queuePromise={queuePromise} />
-      </Suspense>
-
-      <WidgetErrorBoundary name="Quick Notes" compact>
-        <Suspense fallback={<WidgetCardSkeleton size="md" />}>
-          <QuickNotesLoader />
-        </Suspense>
-      </WidgetErrorBoundary>
-
       <WidgetErrorBoundary name="Revenue Goal" compact>
         <Suspense fallback={<WidgetCardSkeleton size="sm" />}>
           <RevenueGoalSection />
-        </Suspense>
-      </WidgetErrorBoundary>
-
-      <WidgetErrorBoundary name="ChefTips" compact>
-        <Suspense fallback={<IntelligenceCardsSkeleton />}>
-          <ChefTipsSection />
         </Suspense>
       </WidgetErrorBoundary>
 
@@ -125,7 +124,12 @@ export default async function ChefDashboard() {
   )
 }
 
-/** Async server component that fetches retro summary and passes to client widget. */
+async function DailyPlanBannerLoader() {
+  const stats = await getDailyPlanStats().catch(() => null)
+  if (!stats || stats.totalItems <= 0) return null
+  return <DailyPlanBanner stats={stats} />
+}
+
 async function WeeklyReflectionLoader() {
   const summary = await getWeeklyRetroSummary().catch(() => null)
   if (!summary || !summary.hasActivity) return null

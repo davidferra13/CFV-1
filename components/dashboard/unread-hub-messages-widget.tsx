@@ -27,7 +27,7 @@ export function UnreadHubMessagesWidget({ groups }: Props) {
         {groups.map((g) => (
           <Link
             key={g.groupId}
-            href={`/hub/g/${g.groupId}`}
+            href={`/hub/g/${g.groupToken}`}
             className="flex items-center justify-between hover:bg-stone-800 rounded-md px-1 py-1.5 transition-colors"
           >
             <div className="min-w-0 flex-1">

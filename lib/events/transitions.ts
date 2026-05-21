@@ -41,15 +41,18 @@ type TransitionPermission = TransitionActor
 
 async function runCompletedEventPostProcessing(eventId: string, tenantId: string) {
   try {
-    const { getLoyaltyConfigByTenant, awardEventPoints, awardLiteVisit } =
-      await import('@/lib/loyalty/actions')
-    const config = await getLoyaltyConfigByTenant(tenantId)
+    const {
+      getExistingLoyaltyConfigForTenant,
+      awardEventPointsForTenant,
+      awardLiteVisitForTenant,
+    } = await import('@/lib/loyalty/store')
+    const config = await getExistingLoyaltyConfigForTenant(tenantId)
 
     if (config && config.is_active && config.program_mode !== 'off') {
       if (config.program_mode === 'lite') {
-        await awardLiteVisit(eventId)
+        await awardLiteVisitForTenant(tenantId, eventId)
       } else {
-        await awardEventPoints(eventId)
+        await awardEventPointsForTenant(tenantId, eventId)
       }
     }
   } catch (err) {

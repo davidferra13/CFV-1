@@ -22,7 +22,12 @@ export async function getMyGiftCards(): Promise<ClientGiftCard[]> {
   const db: any = createServerClient()
 
   // Find gift cards where recipient email matches client email
-  const { data: client } = await db.from('clients').select('email').eq('id', user.entityId).single()
+  const { data: client } = await db
+    .from('clients')
+    .select('email, tenant_id')
+    .eq('id', user.entityId)
+    .eq('tenant_id', user.tenantId!)
+    .single()
 
   if (!client?.email) return []
 
@@ -31,6 +36,7 @@ export async function getMyGiftCards(): Promise<ClientGiftCard[]> {
     .select(
       'id, code, initial_value_cents, current_balance_cents, status, message, purchaser_name, expires_at, issued_at'
     )
+    .eq('tenant_id', client.tenant_id)
     .eq('recipient_email', client.email)
     .order('issued_at', { ascending: false })
 

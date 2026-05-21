@@ -555,6 +555,7 @@ export async function getUpcomingEventsForExpense(): Promise<
 
 export interface UnreadHubGroup {
   groupId: string
+  groupToken: string
   groupName: string
   unreadCount: number
   lastMessageAt: string
@@ -753,7 +754,7 @@ export async function getUnreadHubMessages(limit = 5): Promise<UnreadHubGroup[]>
   // Get groups this user is a member of with their last_read_at
   const { data: memberships } = await db
     .from('hub_group_members')
-    .select('group_id, last_read_at, group:hub_groups(id, name)')
+    .select('group_id, last_read_at, group:hub_groups(id, name, group_token)')
     .eq('profile_id', profile.id)
 
   if (!memberships || memberships.length === 0) return []
@@ -784,6 +785,7 @@ export async function getUnreadHubMessages(limit = 5): Promise<UnreadHubGroup[]>
       const latest = messages?.[0]
       results.push({
         groupId: m.group_id,
+        groupToken: group.group_token ?? m.group_id,
         groupName: group.name ?? 'Unnamed Group',
         unreadCount: count,
         lastMessageAt: latest?.created_at ?? '',

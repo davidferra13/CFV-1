@@ -50,7 +50,7 @@ export async function getBusinessHealthSnapshot(
 ): Promise<HealthActionResult<BusinessHealthSnapshot>> {
   try {
     const user = await requireChef()
-    const tenantId = user.tenantId!
+    const tenantId = user.entityId
     const db: any = createServerClient()
     const { start, end, prevStart } = periodBounds(periodDays)
 
@@ -317,7 +317,7 @@ export async function getHealthTrends(
 ): Promise<HealthActionResult<HealthTrends>> {
   try {
     const user = await requireChef()
-    const tenantId = user.tenantId!
+    const tenantId = user.entityId
     const db: any = createServerClient()
 
     const periodDays = period === 'week' ? 7 : period === 'month' ? 30 : 90
@@ -742,7 +742,7 @@ async function persistSnapshot(
   narrativeText: string
 ): Promise<void> {
   const user = await requireChef()
-  const tenantId = user.tenantId!
+  const tenantId = user.entityId
   const db: any = createServerClient()
 
   await db.from('health_snapshots').insert({

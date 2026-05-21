@@ -37,6 +37,7 @@ export async function getMyReferrals(): Promise<ClientReferral[]> {
     `
     )
     .eq('referrer_client_id', user.entityId)
+    .eq('tenant_id', user.tenantId!)
     .order('created_at', { ascending: false })
 
   if (error) {
@@ -80,8 +81,14 @@ export async function getReferralStats(): Promise<ReferralStats> {
     db
       .from('client_referrals')
       .select('id, referred_client_id, reward_points_awarded, converted_event_id')
-      .eq('referrer_client_id', user.entityId),
-    db.from('clients').select('referral_code').eq('id', user.entityId).single(),
+      .eq('referrer_client_id', user.entityId)
+      .eq('tenant_id', user.tenantId!),
+    db
+      .from('clients')
+      .select('referral_code')
+      .eq('id', user.entityId)
+      .eq('tenant_id', user.tenantId!)
+      .single(),
   ])
 
   const referrals = referralsResult.status === 'fulfilled' ? (referralsResult.value.data ?? []) : []

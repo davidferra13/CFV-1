@@ -16,6 +16,7 @@ import { HeroMetrics } from './hero-metrics'
 import { CommandCenterSection } from './command-center-data'
 import { AlertCards } from './alerts-cards'
 import { BusinessCards } from './business-cards'
+import { HealthNarrativeSection } from './health-narrative'
 import { IntelligenceCards } from './intelligence-cards'
 import { CilSignalSummary } from './cil-signal-summary'
 import { ReputationScoreCard, ReputationScoreSkeleton } from './reputation-score'
@@ -84,6 +85,12 @@ export async function BusinessHealthFullSection() {
         <WidgetErrorBoundary name="Portfolio Summary" compact>
           <Suspense fallback={<WidgetCardSkeleton size="sm" />}>
             <PortfolioSummarySection />
+          </Suspense>
+        </WidgetErrorBoundary>
+
+        <WidgetErrorBoundary name="Health Narrative" compact>
+          <Suspense fallback={<WidgetCardSkeleton size="lg" />}>
+            <HealthNarrativeSection />
           </Suspense>
         </WidgetErrorBoundary>
 

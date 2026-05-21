@@ -66,16 +66,16 @@ export async function FinancialPulse() {
         </div>
 
         {/* Row 2: Outstanding */}
-        <div className="flex items-center justify-between border-t border-stone-800 pt-2">
-          <div>
+        <div className="flex items-center justify-between gap-3 border-t border-stone-800 pt-2">
+          <div className="min-w-0">
             <p className="text-xs text-stone-500">Outstanding</p>
-            <p className="text-sm font-semibold text-stone-200">
+            <p className="truncate text-sm font-semibold text-stone-200">
               {formatCurrency(outstandingCents)}
             </p>
           </div>
           <Link
-            href="/invoices"
-            className={`text-xs font-medium ${
+            href="/finance/invoices"
+            className={`shrink-0 text-xs font-medium ${
               invoiceCount > 0 ? 'text-amber-400 hover:text-amber-300' : 'text-stone-500'
             } transition-colors`}
           >
