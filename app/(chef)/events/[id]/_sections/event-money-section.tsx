@@ -2,7 +2,7 @@
 import { requireChef } from '@/lib/auth/get-user'
 import { getRegionalSettings } from '@/lib/chef/actions'
 import { getEventExpenses, getEventProfitSummary, getBudgetGuardrail } from '@/lib/expenses/actions'
-import { getEventLoyaltyImpactByTenant, getLoyaltyTransactions } from '@/lib/loyalty/actions'
+import { getLoyaltyTransactions } from '@/lib/loyalty/actions'
 import { getMenuLibraryForEvent } from '@/lib/menus/showcase-actions'
 import { getMenuApprovalStatus } from '@/lib/events/menu-approval-actions'
 import { getPaymentPlan } from '@/lib/finance/payment-plan-actions'

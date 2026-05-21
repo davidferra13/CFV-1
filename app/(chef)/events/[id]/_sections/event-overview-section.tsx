@@ -2,7 +2,8 @@
 import { requireChef } from '@/lib/auth/get-user'
 import { getEventById } from '@/lib/events/actions'
 import { getEventDOPProgress } from '@/lib/scheduling/actions'
-import { getEventLoyaltyImpactByTenant, getLoyaltyTransactions } from '@/lib/loyalty/actions'
+import { getLoyaltyTransactions } from '@/lib/loyalty/actions'
+import { getEventLoyaltyImpactForTenant } from '@/lib/loyalty/store'
 import { getMessageThread, getResponseTemplates } from '@/lib/messages/actions'
 import { getEventShares, getEventGuests, getEventRSVPSummary } from '@/lib/sharing/actions'
 import {
@@ -118,7 +119,7 @@ export async function EventOverviewSection({ eventId, tenantId, event, activeTab
           .catch(() => [])
       : Promise.resolve([]),
     event.client_id
-      ? getEventLoyaltyImpactByTenant({
+      ? getEventLoyaltyImpactForTenant({
           tenantId,
           clientId: event.client_id,
           guestCount: event.guest_count || 0,
