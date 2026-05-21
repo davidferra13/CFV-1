@@ -25,6 +25,7 @@ import {
   getClientsNotInCircle,
 } from '@/lib/hub/circle-detail-actions'
 import { CircleStatsBar } from '@/components/circles/circle-stats-bar'
+import { ChangeHistoryDrawer } from '@/components/dinner-circles/change-history-drawer'
 
 type Tab =
   | 'overview'
@@ -35,12 +36,14 @@ type Tab =
   | 'messages'
   | 'private'
   | 'controls'
+  | 'history'
 
 export function CircleDetailClient({ circle }: { circle: CircleDetail }) {
   const [tab, setTab] = useState<Tab>('overview')
   const [showSlotForm, setShowSlotForm] = useState(false)
   const [showBroadcast, setShowBroadcast] = useState(false)
   const [showRemyDrawer, setShowRemyDrawer] = useState(false)
+  const [showHistoryDrawer, setShowHistoryDrawer] = useState(false)
 
   const tabs: { key: Tab; label: string; count?: number }[] = [
     { key: 'overview', label: 'Overview' },
@@ -51,6 +54,7 @@ export function CircleDetailClient({ circle }: { circle: CircleDetail }) {
     { key: 'messages', label: 'Messages', count: circle.message_count },
     { key: 'private', label: 'Private' },
     { key: 'controls', label: 'Controls' },
+    { key: 'history', label: 'History' },
   ]
 
   return (
@@ -162,6 +166,23 @@ export function CircleDetailClient({ circle }: { circle: CircleDetail }) {
       {tab === 'messages' && <MessagesTab circle={circle} />}
       {tab === 'private' && <PrivateMessagesTabWrapper circle={circle} />}
       {tab === 'controls' && <ControlsTab circle={circle} />}
+      {tab === 'history' && (
+        <div className="py-4">
+          <button
+            type="button"
+            onClick={() => setShowHistoryDrawer(true)}
+            className="rounded-lg bg-stone-700 px-4 py-2 text-sm font-medium text-stone-300 hover:bg-stone-600"
+          >
+            Open change history
+          </button>
+        </div>
+      )}
+
+      <ChangeHistoryDrawer
+        circleId={circle.id}
+        isOpen={showHistoryDrawer}
+        onClose={() => setShowHistoryDrawer(false)}
+      />
     </div>
   )
 }

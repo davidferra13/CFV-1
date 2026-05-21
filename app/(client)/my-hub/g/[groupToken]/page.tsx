@@ -18,6 +18,11 @@ import { getGroupAvailability } from '@/lib/hub/availability-actions'
 import { getMealBoard } from '@/lib/hub/meal-board-actions'
 import { HubGroupView } from '@/app/(public)/hub/g/[groupToken]/hub-group-view'
 import { HubBridgeView } from '@/components/hub/hub-bridge-view'
+import { DinnerCirclePanels } from '@/components/dinner-circles/circle-panels'
+import { getBringList } from '@/lib/dinner-circles/bring-lists'
+import { getCirclePolls } from '@/lib/dinner-circles/polls'
+import { getBroadcastHistory } from '@/lib/dinner-circles/broadcasts'
+import { getThemeBoard } from '@/lib/dinner-circles/theme-board'
 
 interface Props {
   params: Promise<{ groupToken: string }>
@@ -100,6 +105,25 @@ export default async function ClientHubGroupPage({ params }: Props) {
   ])
   const sanitizedMembers = sanitizeMembersForClientRoute(members, profile.profile_token)
 
+  // Dinner circle panels data (bring list, polls, broadcasts, theme board)
+  const [bringResult, pollsResult, broadcastsResult, themeBoardResult] = await Promise.allSettled([
+    getBringList({ circleId: group.id }),
+    getCirclePolls({ circleId: group.id }),
+    getBroadcastHistory({ circleId: group.id }),
+    getThemeBoard({ circleId: group.id }),
+  ])
+
+  const bringItems = bringResult.status === 'fulfilled' ? bringResult.value.items : []
+  const polls = pollsResult.status === 'fulfilled' ? pollsResult.value.polls : []
+  const broadcasts =
+    broadcastsResult.status === 'fulfilled' ? broadcastsResult.value.broadcasts : []
+  const themeBoard = themeBoardResult.status === 'fulfilled' ? themeBoardResult.value.board : null
+
+  // Determine if caller is host in this group
+  const callerMember = members.find((m) => m.profile_id === profile.id)
+  const callerIsHost =
+    ['owner', 'host', 'co_host'].includes(callerMember?.role ?? '') || !!callerMember?.is_co_host
+
   // Bridge groups get the slim intro view
   if (group.group_type === 'bridge') {
     return (
@@ -133,6 +157,15 @@ export default async function ClientHubGroupPage({ params }: Props) {
         groupEvents={groupEvents}
         mealBoardEntries={mealBoardEntries}
         profileToken={profile.profile_token}
+      />
+      <DinnerCirclePanels
+        circleId={group.id}
+        callerProfileId={profile.id}
+        isHost={callerIsHost}
+        initialBringItems={bringItems as any[]}
+        initialPolls={polls as any[]}
+        initialBroadcasts={broadcasts as any[]}
+        initialThemeBoard={themeBoard as any}
       />
     </div>
   )
