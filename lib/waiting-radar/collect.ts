@@ -1,433 +1,332 @@
-import type { UnifiedActionItem } from '@/lib/action-center/types'
-import type { OperatingLoopItem } from '@/lib/operating-loop/types'
-import { dedupeWaitingRadarItems, rankWaitingRadarItems } from './rank'
-import {
-  mapOperatingWaitingKind,
-  type PaymentWaitingSource,
-  type SystemWaitingSource,
-  type VendorWaitingSource,
-  type WaitingRadarItem,
-  type WaitingRadarOptions,
-  type WaitingRadarOwner,
-  type WaitingRadarResult,
-  type WaitingRadarRiskLevel,
-  type WaitingRadarSources,
-  type WaitingRadarSummary,
-} from './types'
+﻿'use server'
 
-const WAITING_STATUSES = new Set([
-  'awaiting',
-  'awaiting_reply',
-  'awaiting_client',
-  'awaiting_payment',
-  'backordered',
-  'delayed',
-  'failed',
-  'pending',
-  'pending_quote',
-  'processing',
-  'queued',
-  'running',
-  'snoozed',
-  'stalled',
-  'waiting',
-])
+// Waiting State Radar - Collectors
+// Derives waiting items from existing domain tables.
+// Each collector is isolated: failures log and skip, never crash the radar.
 
-export function collectWaitingRadar(
-  sources: WaitingRadarSources,
-  options?: WaitingRadarOptions
-): WaitingRadarResult {
-  const now = options?.now ?? new Date()
-  const items = rankWaitingRadarItems(
-    dedupeWaitingRadarItems([
-      ...collectActionCenterWaitingItems(sources.actionCenterItems ?? [], options),
-      ...collectOperatingLoopWaitingItems(sources.operatingLoopItems ?? []),
-      ...collectPaymentWaitingItems(sources.payments ?? [], options),
-      ...collectVendorWaitingItems(sources.vendors ?? [], options),
-      ...collectSystemWaitingItems(sources.systems ?? [], options),
-    ]),
-    { now }
-  )
+import { requireChef } from '@/lib/auth/get-user'
+import { pgClient } from '@/lib/db/index'
+import type { WaitingItem, WaitingRiskLevel } from './types'
 
-  return {
-    items,
-    summary: summarizeWaitingRadar(items, {
-      now,
-      dueSoonHours: options?.dueSoonHours,
-      hasAnySourceData: hasAnySourceData(sources),
-    }),
+// ---- Helpers ----
+
+function riskFromAge(createdAt: string, thresholdDays: number): WaitingRiskLevel {
+  const ageMs = Date.now() - new Date(createdAt).getTime()
+  const ageDays = ageMs / (1000 * 60 * 60 * 24)
+  if (ageDays > thresholdDays * 2) return 'critical'
+  if (ageDays > thresholdDays) return 'high'
+  if (ageDays > thresholdDays / 2) return 'medium'
+  return 'low'
+}
+
+// ---- Inquiry Collector ----
+
+async function collectInquiries(tenantId: string): Promise<WaitingItem[]> {
+  try {
+    const rows = await pgClient`
+      SELECT i.id, i.status, i.created_at, i.updated_at,
+             i.client_name, i.event_type, i.follow_up_date,
+             i.quoted_price_cents
+      FROM inquiries i
+      WHERE i.tenant_id = ${tenantId}
+        AND i.status IN ('new', 'contacted', 'follow_up')
+        AND i.archived_at IS NULL
+      ORDER BY i.created_at ASC
+      LIMIT 50
+    `
+    return rows.map((r: any) => {
+      const isNew = r.status === 'new'
+      return {
+        id: `inquiry:${r.id}`,
+        sourceKind: 'inquiry' as const,
+        waitingOn: isNew ? ('chef' as const) : ('client' as const),
+        title: `Inquiry: ${r.client_name || 'unknown'}`,
+        waitingReason: isNew
+          ? `New inquiry from ${r.client_name || 'unknown'} needs response`
+          : `Waiting for ${r.client_name || 'client'} to reply`,
+        followUpAt: r.follow_up_date || null,
+        proofHref: `/inquiries?highlight=${r.id}`,
+        riskLevel: riskFromAge(r.created_at, 3),
+        waitingSince: r.created_at,
+        revenueCents: r.quoted_price_cents || null,
+        clientName: r.client_name || null,
+        eventName: r.event_type || null,
+      }
+    })
+  } catch (err) {
+    console.error('[WaitingRadar] Inquiry collector failed:', err)
+    return []
   }
 }
 
-export function collectActionCenterWaitingItems(
-  items: UnifiedActionItem[],
-  options?: WaitingRadarOptions
-): WaitingRadarItem[] {
-  const now = options?.now ?? new Date()
-  const dueSoonHours = options?.dueSoonHours ?? 24
+// ---- Quote Collector ----
 
-  return items.flatMap((item) => {
-    const metadata = item.metadata ?? {}
-    const explicitWaitingOn = readString(metadata.waitingOn)
-    const explicitReason = readString(metadata.waitingReason)
-    const explicitFollowUpAt = readString(metadata.followUpAt)
-    const waitingOn = normalizeWaitingOn(explicitWaitingOn) ?? inferActionWaitingOn(item)
-    const isSnoozed = item.status === 'snoozed'
-
-    if (!waitingOn && !isSnoozed) return []
-    if (item.status === 'completed' || item.status === 'dismissed') return []
-
-    const followUpAt = explicitFollowUpAt ?? item.snoozedUntil ?? item.dueAt
-    if (isSnoozed && shouldSuppressSnoozed(followUpAt, now, dueSoonHours)) return []
-
-    const missingFollowUp = !followUpAt
-    const waitingReason =
-      explicitReason ??
-      (isSnoozed ? `Snoozed until ${formatIsoDate(item.snoozedUntil)}` : item.description) ??
-      item.title
-
-    return [
-      {
-        id: `action-center:${item.source}:${item.sourceId}`,
-        sourceId: item.sourceId,
-        sourceKind: item.source,
-        title: item.title,
-        description: item.description,
-        waitingOn: isSnoozed ? 'time' : (waitingOn ?? 'unknown'),
-        waitingReason: missingFollowUp ? `Set follow-up: ${waitingReason}` : waitingReason,
-        followUpAt,
-        proofHref: item.actionUrl ?? fallbackActionHref(item),
-        riskLevel: missingFollowUp
-          ? bumpMinimumRisk(deriveActionRisk(item.priority, followUpAt, now), 'medium')
-          : deriveActionRisk(item.priority, followUpAt, now),
-        createdAt: item.createdAt,
-        waitingSince: item.createdAt,
-        metadata: {
-          ...metadata,
-          operatingLoopContract: missingFollowUp ? 'missing_follow_up' : 'waiting_with_follow_up',
-        },
-      },
-    ]
-  })
+async function collectQuotes(tenantId: string): Promise<WaitingItem[]> {
+  try {
+    const rows = await pgClient`
+      SELECT q.id, q.status, q.created_at, q.sent_at,
+             q.total_cents, q.expires_at,
+             c.full_name AS client_name,
+             e.occasion AS event_name
+      FROM quotes q
+      LEFT JOIN clients c ON c.id = q.client_id
+      LEFT JOIN events e ON e.id = q.event_id
+      WHERE q.tenant_id = ${tenantId}
+        AND q.status IN ('sent', 'viewed')
+      ORDER BY q.sent_at ASC NULLS LAST
+      LIMIT 50
+    `
+    return rows.map((r: any) => {
+      const isExpired = r.expires_at && new Date(r.expires_at) < new Date()
+      return {
+        id: `quote:${r.id}`,
+        sourceKind: 'quote' as const,
+        waitingOn: 'client' as const,
+        title: `Quote: ${r.client_name || 'client'}`,
+        waitingReason: isExpired
+          ? `Quote expired, awaiting ${r.client_name || 'client'} decision`
+          : `Quote sent to ${r.client_name || 'client'}, awaiting acceptance`,
+        followUpAt: r.expires_at || null,
+        proofHref: `/quotes?highlight=${r.id}`,
+        riskLevel: isExpired ? 'high' as const : riskFromAge(r.sent_at || r.created_at, 7),
+        waitingSince: r.sent_at || r.created_at,
+        revenueCents: r.total_cents || null,
+        clientName: r.client_name || null,
+        eventName: r.event_name || null,
+      }
+    })
+  } catch (err) {
+    console.error('[WaitingRadar] Quote collector failed:', err)
+    return []
+  }
 }
 
-export function collectOperatingLoopWaitingItems(
-  items: OperatingLoopItem[],
-  options?: WaitingRadarOptions
-): WaitingRadarItem[] {
-  const now = options?.now ?? new Date()
-  const dueSoonHours = options?.dueSoonHours ?? 24
+// ---- Contract Collector ----
 
-  return items.flatMap((item) => {
-    if (!['waiting', 'blocked', 'snoozed'].includes(item.loopState)) return []
-    const proofHref = item.proofHref ?? item.sourceRoute
-    if (!proofHref) return []
+async function collectContracts(tenantId: string): Promise<WaitingItem[]> {
+  try {
+    const rows = await pgClient`
+      SELECT ct.id, ct.status, ct.created_at, ct.sent_at,
+             c.full_name AS client_name,
+             e.occasion AS event_name
+      FROM contracts ct
+      LEFT JOIN clients c ON c.id = ct.client_id
+      LEFT JOIN events e ON e.id = ct.event_id
+      WHERE ct.tenant_id = ${tenantId}
+        AND ct.status = 'sent'
+      ORDER BY ct.sent_at ASC NULLS LAST
+      LIMIT 50
+    `
+    return rows.map((r: any) => ({
+      id: `contract:${r.id}`,
+      sourceKind: 'contract' as const,
+      waitingOn: 'client' as const,
+      title: `Contract: ${r.client_name || 'client'}`,
+      waitingReason: `Contract sent to ${r.client_name || 'client'}, awaiting signature`,
+      followUpAt: null,
+      proofHref: `/contracts?highlight=${r.id}`,
+      riskLevel: riskFromAge(r.sent_at || r.created_at, 5),
+      waitingSince: r.sent_at || r.created_at,
+      revenueCents: null,
+      clientName: r.client_name || null,
+      eventName: r.event_name || null,
+    }))
+  } catch (err) {
+    console.error('[WaitingRadar] Contract collector failed:', err)
+    return []
+  }
+}
 
-    const followUpAt = item.waitingOn?.followUpAt ?? item.dueAt
-    if (item.loopState === 'snoozed' && shouldSuppressSnoozed(followUpAt, now, dueSoonHours)) {
-      return []
+// ---- Payment Collector ----
+
+async function collectPayments(tenantId: string): Promise<WaitingItem[]> {
+  try {
+    const rows = await pgClient`
+      SELECT e.id, e.status, e.created_at, e.event_date,
+             e.occasion, e.quoted_price_cents,
+             c.full_name AS client_name,
+             COALESCE(
+               (SELECT SUM(amount_cents) FROM ledger_entries le
+                WHERE le.event_id = e.id AND le.entry_type = 'payment'),
+               0
+             ) AS paid_cents
+      FROM events e
+      LEFT JOIN clients c ON c.id = e.client_id
+      WHERE e.tenant_id = ${tenantId}
+        AND e.status IN ('accepted', 'confirmed')
+        AND e.deleted_at IS NULL
+        AND e.quoted_price_cents > 0
+      ORDER BY e.event_date ASC NULLS LAST
+      LIMIT 50
+    `
+    return rows
+      .filter((r: any) => (r.quoted_price_cents || 0) > (r.paid_cents || 0))
+      .map((r: any) => {
+        const outstanding = (r.quoted_price_cents || 0) - (r.paid_cents || 0)
+        return {
+          id: `payment:${r.id}`,
+          sourceKind: 'payment' as const,
+          waitingOn: 'payment' as const,
+          title: `Payment: ${r.occasion || 'event'}`,
+          waitingReason: `$${(outstanding / 100).toFixed(0)} outstanding for ${r.occasion || 'event'}`,
+          followUpAt: r.event_date || null,
+          proofHref: `/events/${r.id}`,
+          riskLevel: (r.event_date && new Date(r.event_date) < new Date(Date.now() + 7 * 86400000)
+            ? 'high'
+            : 'medium') as WaitingRiskLevel,
+          waitingSince: r.created_at,
+          revenueCents: outstanding,
+          clientName: r.client_name || null,
+          eventName: r.occasion || null,
+        }
+      })
+  } catch (err) {
+    console.error('[WaitingRadar] Payment collector failed:', err)
+    return []
+  }
+}
+
+// ---- Task/Reminder Collector ----
+
+async function collectTasksAndReminders(tenantId: string): Promise<WaitingItem[]> {
+  try {
+    const items: WaitingItem[] = []
+
+    const tasks = await pgClient`
+      SELECT t.id, t.title, t.due_date, t.created_at, t.status, t.priority
+      FROM tasks t
+      WHERE t.chef_id = ${tenantId}
+        AND t.status IN ('pending', 'in_progress')
+      ORDER BY t.due_date ASC NULLS LAST
+      LIMIT 30
+    `
+    for (const t of tasks) {
+      const ta = t as any
+      items.push({
+        id: `task:${ta.id}`,
+        sourceKind: 'task' as const,
+        waitingOn: 'chef' as const,
+        title: ta.title || 'Pending task',
+        waitingReason: ta.title || 'Pending task',
+        followUpAt: ta.due_date || null,
+        proofHref: '/tasks',
+        riskLevel: ta.priority === 'urgent' ? 'critical' : ta.priority === 'high' ? 'high' : 'medium',
+        waitingSince: ta.created_at,
+        revenueCents: null,
+        clientName: null,
+        eventName: null,
+      })
     }
 
-    const missingFollowUp = !followUpAt
-    const waitingReason = item.waitingOn?.label ?? item.nextAction ?? item.description ?? item.title
+    const reminders = await pgClient`
+      SELECT r.id, r.text, r.due_date, r.created_at, r.priority
+      FROM chef_todos r
+      WHERE r.chef_id = ${tenantId}
+        AND r.completed = false
+      ORDER BY r.due_date ASC NULLS LAST
+      LIMIT 30
+    `
+    for (const r of reminders) {
+      const ra = r as any
+      items.push({
+        id: `reminder:${ra.id}`,
+        sourceKind: 'reminder' as const,
+        waitingOn: 'chef' as const,
+        title: ra.text || 'Pending reminder',
+        waitingReason: ra.text || 'Pending reminder',
+        followUpAt: ra.due_date || null,
+        proofHref: '/reminders',
+        riskLevel: ra.priority === 'urgent' ? 'high' : 'medium',
+        waitingSince: ra.created_at,
+        revenueCents: null,
+        clientName: null,
+        eventName: null,
+      })
+    }
 
-    return [
-      {
-        id: `operating-loop:${item.sourceKind}:${item.sourceId}`,
-        sourceId: item.sourceId,
-        sourceKind: item.sourceKind,
-        title: item.title,
-        description: item.description,
-        waitingOn:
-          item.loopState === 'snoozed'
-            ? 'time'
-            : mapOperatingWaitingKind(item.waitingOn?.kind ?? null),
-        waitingReason: missingFollowUp ? `Set follow-up: ${waitingReason}` : waitingReason,
-        followUpAt,
-        proofHref,
-        riskLevel: missingFollowUp
-          ? bumpMinimumRisk(deriveOperatingRisk(item), 'medium')
-          : deriveOperatingRisk(item),
-        createdAt: item.createdAt,
-        waitingSince: item.resumeContext?.timestamp ?? item.createdAt,
-        metadata: {
-          evidenceLabel: item.evidenceLabel,
-          confidence: item.confidence,
-          loopState: item.loopState,
-          operatingLoopContract: missingFollowUp ? 'missing_follow_up' : 'waiting_with_follow_up',
-        },
-      },
-    ]
-  })
-}
-
-export function collectPaymentWaitingItems(
-  payments: PaymentWaitingSource[],
-  options?: WaitingRadarOptions
-): WaitingRadarItem[] {
-  const now = options?.now ?? new Date()
-
-  return payments.flatMap((payment) => {
-    if (!isWaitingStatus(payment.status)) return []
-    const followUpAt = payment.followUpAt ?? payment.dueAt ?? null
-
-    return [
-      {
-        id: `payment:${payment.id}`,
-        sourceId: payment.id,
-        sourceKind: 'payment',
-        title: payment.title ?? payment.clientName ?? 'Payment waiting',
-        description:
-          payment.outstandingCents == null
-            ? null
-            : `Outstanding balance: ${formatCurrencyCents(payment.outstandingCents)}`,
-        waitingOn: 'payment',
-        waitingReason: payment.status ? humanizeStatus(payment.status) : 'Payment is pending',
-        followUpAt,
-        proofHref: requiredHref(
-          payment.proofHref ?? payment.href ?? payment.route,
-          payment.id,
-          'payments'
-        ),
-        riskLevel: deriveDatedRisk(
-          followUpAt,
-          now,
-          payment.status === 'failed' ? 'critical' : 'high'
-        ),
-        createdAt: payment.createdAt ?? null,
-        waitingSince: payment.waitingSince ?? payment.createdAt ?? null,
-        metadata: payment.metadata ?? {},
-      },
-    ]
-  })
-}
-
-export function collectVendorWaitingItems(
-  vendors: VendorWaitingSource[],
-  options?: WaitingRadarOptions
-): WaitingRadarItem[] {
-  const now = options?.now ?? new Date()
-
-  return vendors.flatMap((vendor) => {
-    if (!isWaitingStatus(vendor.status)) return []
-    const followUpAt = vendor.followUpAt ?? vendor.neededBy ?? null
-
-    return [
-      {
-        id: `vendor:${vendor.id}`,
-        sourceId: vendor.id,
-        sourceKind: 'vendor',
-        title: vendor.title ?? vendor.vendorName ?? 'Vendor waiting',
-        description: vendor.neededBy ? `Needed by ${formatIsoDate(vendor.neededBy)}` : null,
-        waitingOn: 'vendor',
-        waitingReason: vendor.status ? humanizeStatus(vendor.status) : 'Vendor response is pending',
-        followUpAt,
-        proofHref: requiredHref(
-          vendor.proofHref ?? vendor.href ?? vendor.route,
-          vendor.id,
-          'vendors'
-        ),
-        riskLevel: deriveDatedRisk(followUpAt, now, 'medium'),
-        createdAt: vendor.createdAt ?? null,
-        waitingSince: vendor.waitingSince ?? vendor.createdAt ?? null,
-        metadata: vendor.metadata ?? {},
-      },
-    ]
-  })
-}
-
-export function collectSystemWaitingItems(
-  systems: SystemWaitingSource[],
-  options?: WaitingRadarOptions
-): WaitingRadarItem[] {
-  const now = options?.now ?? new Date()
-
-  return systems.flatMap((system) => {
-    if (!isWaitingStatus(system.status)) return []
-    const followUpAt = system.followUpAt ?? null
-
-    return [
-      {
-        id: `system:${system.id}`,
-        sourceId: system.id,
-        sourceKind: 'system',
-        title: system.title ?? system.jobName ?? 'System job waiting',
-        description: system.status ? humanizeStatus(system.status) : null,
-        waitingOn: 'system',
-        waitingReason: system.status ? humanizeStatus(system.status) : 'System work is pending',
-        followUpAt,
-        proofHref: requiredHref(
-          system.proofHref ?? system.href ?? system.route,
-          system.id,
-          'system'
-        ),
-        riskLevel: deriveDatedRisk(followUpAt, now, system.status === 'failed' ? 'high' : 'low'),
-        createdAt: system.createdAt ?? system.startedAt ?? null,
-        waitingSince: system.waitingSince ?? system.startedAt ?? system.createdAt ?? null,
-        metadata: system.metadata ?? {},
-      },
-    ]
-  })
-}
-
-export function summarizeWaitingRadar(
-  items: WaitingRadarItem[],
-  options?: { now?: Date; dueSoonHours?: number; hasAnySourceData?: boolean }
-): WaitingRadarSummary {
-  const now = options?.now ?? new Date()
-  const dueSoonMs = (options?.dueSoonHours ?? 24) * 60 * 60 * 1000
-  const dueSoonCutoff = now.getTime() + dueSoonMs
-
-  return {
-    total: items.length,
-    overdue: items.filter((item) => isBeforeOrAt(item.followUpAt, now)).length,
-    dueSoon: items.filter((item) => {
-      if (!item.followUpAt) return false
-      const time = new Date(item.followUpAt).getTime()
-      return time > now.getTime() && time <= dueSoonCutoff
-    }).length,
-    noFollowUp: items.filter((item) => !item.followUpAt).length,
-    waitingOnClient: items.filter((item) => item.waitingOn === 'client').length,
-    waitingOnVendor: items.filter((item) => item.waitingOn === 'vendor').length,
-    waitingOnPayment: items.filter((item) => item.waitingOn === 'payment').length,
-    waitingOnSystem: items.filter((item) => item.waitingOn === 'system').length,
-    emptyReason:
-      items.length > 0
-        ? null
-        : options?.hasAnySourceData === false
-          ? 'no_source_data'
-          : 'no_waiting_items',
+    return items
+  } catch (err) {
+    console.error('[WaitingRadar] Task/reminder collector failed:', err)
+    return []
   }
 }
 
-function inferActionWaitingOn(item: UnifiedActionItem): WaitingRadarOwner | null {
-  const action = readString(item.metadata?.action) ?? item.metadata?.category
-  const text = `${item.title} ${item.description ?? ''} ${String(action ?? '')}`.toLowerCase()
+// ---- Event Collector ----
 
-  if (item.status === 'snoozed') return 'time'
-  if (text.includes('payment') || text.includes('deposit') || text.includes('balance'))
-    return 'payment'
-  if (text.includes('vendor')) return 'vendor'
-  if (text.includes('system') || text.includes('import') || text.includes('sync')) return 'system'
-  if (text.includes('reply') || text.includes('inquiry') || text.includes('follow-up'))
-    return 'client'
-  return null
+async function collectEvents(tenantId: string): Promise<WaitingItem[]> {
+  try {
+    const rows = await pgClient`
+      SELECT e.id, e.status, e.created_at, e.event_date,
+             e.occasion, e.quoted_price_cents,
+             c.full_name AS client_name
+      FROM events e
+      LEFT JOIN clients c ON c.id = e.client_id
+      WHERE e.tenant_id = ${tenantId}
+        AND e.status IN ('proposed', 'draft')
+        AND e.deleted_at IS NULL
+      ORDER BY e.event_date ASC NULLS LAST
+      LIMIT 30
+    `
+    return rows.map((r: any) => ({
+      id: `event:${r.id}`,
+      sourceKind: 'event' as const,
+      waitingOn: r.status === 'proposed' ? ('client' as const) : ('chef' as const),
+      title: r.occasion || 'Event',
+      waitingReason:
+        r.status === 'proposed'
+          ? `Proposal sent to ${r.client_name || 'client'}, awaiting response`
+          : `Draft event needs attention`,
+      followUpAt: r.event_date || null,
+      proofHref: `/events/${r.id}`,
+      riskLevel: riskFromAge(r.created_at, 7),
+      waitingSince: r.created_at,
+      revenueCents: r.quoted_price_cents || null,
+      clientName: r.client_name || null,
+      eventName: r.occasion || null,
+    }))
+  } catch (err) {
+    console.error('[WaitingRadar] Event collector failed:', err)
+    return []
+  }
 }
 
-function normalizeWaitingOn(value: string | null): WaitingRadarOwner | null {
-  if (!value) return null
-  const normalized = value.toLowerCase().replace(/[^a-z]/g, '')
-  if (['client', 'reply', 'person'].includes(normalized)) return 'client'
-  if (['chef'].includes(normalized)) return 'chef'
-  if (['vendor'].includes(normalized)) return 'vendor'
-  if (['staff', 'team'].includes(normalized)) return 'staff'
-  if (['system', 'import', 'job'].includes(normalized)) return 'system'
-  if (['time', 'date'].includes(normalized)) return 'time'
-  if (['decision', 'approval'].includes(normalized)) return 'decision'
-  if (['payment', 'deposit', 'balance'].includes(normalized)) return 'payment'
-  if (['unknown'].includes(normalized)) return 'unknown'
-  return null
-}
+// ---- Public API ----
 
-function deriveActionRisk(
-  priority: UnifiedActionItem['priority'],
-  followUpAt: string | null,
-  now: Date
-): WaitingRadarRiskLevel {
-  if (followUpAt && new Date(followUpAt).getTime() <= now.getTime()) return 'high'
-  if (priority === 'urgent') return 'critical'
-  if (priority === 'high') return 'high'
-  if (priority === 'medium') return 'medium'
-  return 'low'
-}
+export async function collectWaitingItems(): Promise<WaitingItem[]> {
+  const user = await requireChef()
+  const tenantId = user.tenantId!
 
-function deriveOperatingRisk(item: OperatingLoopItem): WaitingRadarRiskLevel {
-  if (item.loopState === 'blocked') return 'high'
-  if (item.sourceKind === 'payment') return 'high'
-  if (item.sourceKind === 'quote' || item.sourceKind === 'event') return 'medium'
-  return 'low'
-}
+  const [inquiries, quotes, contracts, payments, tasksAndReminders, events] =
+    await Promise.allSettled([
+      collectInquiries(tenantId),
+      collectQuotes(tenantId),
+      collectContracts(tenantId),
+      collectPayments(tenantId),
+      collectTasksAndReminders(tenantId),
+      collectEvents(tenantId),
+    ])
 
-function deriveDatedRisk(
-  followUpAt: string | null,
-  now: Date,
-  defaultRisk: WaitingRadarRiskLevel
-): WaitingRadarRiskLevel {
-  if (!followUpAt) return defaultRisk
-  return new Date(followUpAt).getTime() <= now.getTime() ? 'critical' : defaultRisk
-}
+  const items: WaitingItem[] = []
+  const results = [inquiries, quotes, contracts, payments, tasksAndReminders, events]
+  const labels = ['inquiries', 'quotes', 'contracts', 'payments', 'tasks', 'events']
 
-function bumpMinimumRisk(
-  risk: WaitingRadarRiskLevel,
-  minimum: Exclude<WaitingRadarRiskLevel, 'low'>
-): WaitingRadarRiskLevel {
-  const order: Record<WaitingRadarRiskLevel, number> = {
-    low: 0,
-    medium: 1,
-    high: 2,
-    critical: 3,
+  for (let i = 0; i < results.length; i++) {
+    const r = results[i]
+    if (r.status === 'fulfilled') {
+      items.push(...r.value)
+    } else {
+      console.error(`[WaitingRadar] ${labels[i]} collector rejected:`, r.reason)
+    }
   }
 
-  return order[risk] >= order[minimum] ? risk : minimum
+  // Dedup by id
+  const seen = new Set<string>()
+  return items.filter((item) => {
+    if (seen.has(item.id)) return false
+    seen.add(item.id)
+    return true
+  })
 }
 
-function shouldSuppressSnoozed(
-  followUpAt: string | null,
-  now: Date,
-  dueSoonHours: number
-): boolean {
-  if (!followUpAt) return false
-  const time = new Date(followUpAt).getTime()
-  if (!Number.isFinite(time)) return false
-  return time - now.getTime() > dueSoonHours * 60 * 60 * 1000
-}
-
-function isWaitingStatus(status: string | null | undefined): boolean {
-  if (!status) return true
-  return WAITING_STATUSES.has(status.toLowerCase())
-}
-
-function isBeforeOrAt(value: string | null, now: Date): boolean {
-  return value ? new Date(value).getTime() <= now.getTime() : false
-}
-
-function hasAnySourceData(sources: WaitingRadarSources): boolean {
-  return [
-    sources.actionCenterItems,
-    sources.operatingLoopItems,
-    sources.payments,
-    sources.vendors,
-    sources.systems,
-  ].some((items) => (items?.length ?? 0) > 0)
-}
-
-function readString(value: unknown): string | null {
-  return typeof value === 'string' && value.trim() ? value : null
-}
-
-function requiredHref(value: string | null | undefined, id: string, routeBase: string): string {
-  return value && value.trim() ? value : `/${routeBase}/${id}`
-}
-
-function fallbackActionHref(item: UnifiedActionItem): string {
-  if (item.eventId) return `/events/${item.eventId}`
-  if (item.clientId) return `/clients/${item.clientId}`
-  if (item.inquiryId) return `/inquiries/${item.inquiryId}`
-  return `/${item.source}s`
-}
-
-function formatIsoDate(value: string | null): string {
-  if (!value) return 'follow-up'
-  return value.slice(0, 10)
-}
-
-function humanizeStatus(value: string): string {
-  return value.replace(/_/g, ' ').replace(/\b\w/g, (char) => char.toUpperCase())
-}
-
-function formatCurrencyCents(value: number): string {
-  return new Intl.NumberFormat('en-US', {
-    style: 'currency',
-    currency: 'USD',
-  }).format(value / 100)
-}
+/** Compatibility alias used by existing rail resolver */
+export { collectWaitingItems as collectWaitingRadar }
