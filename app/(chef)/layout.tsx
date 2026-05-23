@@ -27,7 +27,6 @@ import { differenceInDays } from 'date-fns'
 import { AnalyticsIdentify } from '@/components/analytics/analytics-identify'
 import { MarketResearchBannerWrapper } from '@/components/beta-survey/market-research-banner-wrapper'
 import {
-  getCachedCannabisAccess,
   getCachedChefArchetype,
   getCachedDeletionStatus,
   getCachedIsAdmin,
@@ -111,6 +110,38 @@ import {
 import { getTenantDataPresence } from '@/lib/progressive-disclosure/tenant-data-presence'
 import type { TenantDataPresence } from '@/lib/progressive-disclosure/types'
 
+// Suspense-wrapped loaders for conditional data that should not block first paint.
+// Each fetches its own data and renders nothing when the condition is not met.
+
+async function AnnouncementBannerLoader() {
+  const announcement = await getCachedAnnouncement().catch(() => null)
+  if (!announcement) return null
+  return <PlatformAnnouncementBanner text={announcement.text} type={announcement.type} />
+}
+
+async function DeletionBannerLoader({ chefId }: { chefId: string }) {
+  const deletionStatus = await getCachedDeletionStatus(chefId).catch(() => ({
+    isPending: false,
+    scheduledFor: null,
+    daysRemaining: null,
+    requestedAt: null,
+    reason: null,
+  }))
+  if (
+    !deletionStatus.isPending ||
+    !deletionStatus.scheduledFor ||
+    deletionStatus.daysRemaining == null
+  ) {
+    return null
+  }
+  return (
+    <DeletionPendingBanner
+      scheduledFor={deletionStatus.scheduledFor}
+      daysRemaining={deletionStatus.daysRemaining}
+    />
+  )
+}
+
 export default async function ChefLayout({ children }: { children: React.ReactNode }) {
   const pathname = headers().get(PATHNAME_HEADER) ?? '/dashboard'
 
@@ -130,15 +161,13 @@ export default async function ChefLayout({ children }: { children: React.ReactNo
   const density = (prefData?.workspace_density as WorkspaceDensity) ?? 'standard'
   const shellBudget = resolveChefShellBudgetWithDensity(pathname, density)
 
-  // Parallelized - all calls are independent. All 5 use unstable_cache (60s TTL)
-  // so navigating between pages costs ~0ms for these after the first load.
+  // All independent calls parallelized, including auth() (was sequential after Promise.all).
+  // Conditional-only data (announcement, deletion status, cannabis access) moved to
+  // Suspense boundaries below so they stream in without blocking first paint for 704 pages.
   const [
     layoutData,
-    announcement,
-    _unusedCannabisTier,
     userIsAdmin,
     userIsPrivileged,
-    deletionStatus,
     permissionSet,
     remyEnabled,
     chefArchetype,
@@ -146,25 +175,14 @@ export default async function ChefLayout({ children }: { children: React.ReactNo
     pinnedSurfaces,
     usageRanking,
     railGroupPriorities,
+    session,
   ] = await Promise.all([
     // Cached for 60s - slug and nav prefs change rarely, keyed per chef
     getChefLayoutData(user.entityId),
-    // Platform announcement - cached 300s, admin-set, changes rarely
-    getCachedAnnouncement().catch(() => null),
-    // Cannabis tier check - kept in Promise.all to avoid reindexing, but unused (cannabis is admin-only now)
-    getCachedCannabisAccess(user.id).catch(() => false),
     // Admin check (admin + owner only, NOT vip) - cached 60s
     getCachedIsAdmin(user.id).catch(() => false),
     // Privileged check (vip + admin + owner) - cached 60s, controls focus mode bypass + all modules
     getCachedIsPrivileged(user.id).catch(() => false),
-    // Deletion status - cached 60s, non-fatal, fail closed (no banner)
-    getCachedDeletionStatus(user.entityId).catch(() => ({
-      isPending: false,
-      scheduledFor: null,
-      daysRemaining: null,
-      requestedAt: null,
-      reason: null,
-    })),
     // RBAC permissions - resolved from role_permissions + user_permission_overrides
     resolveCurrentUserPermissions(user.id, user.tenantId).catch(() => null),
     // AI/Remy enabled check - controls whether Remy UI renders
@@ -176,8 +194,9 @@ export default async function ChefLayout({ children }: { children: React.ReactNo
     getPinnedSurfaces().catch(() => []),
     getCachedUsageRanking(user.entityId).catch(() => ({}) as Record<string, number>),
     getRailGroupPriorities().catch(() => [] as RailGroupPriority[]),
+    // Auth session (was sequential after Promise.all, now parallel)
+    auth(),
   ])
-  const session = await auth()
   const availableRoleCount =
     ((session?.user as Record<string, unknown>)?.availableRoles as number) ?? 1
 
@@ -234,20 +253,15 @@ export default async function ChefLayout({ children }: { children: React.ReactNo
           >
             Skip to main content
           </a>
-          {/* Platform announcement banner - shown when admin sets one */}
-          {announcement && (
-            <PlatformAnnouncementBanner text={announcement.text} type={announcement.type} />
-          )}
+          {/* Platform announcement banner - streams in via Suspense, does not block first paint */}
+          <Suspense fallback={null}>
+            <AnnouncementBannerLoader />
+          </Suspense>
           {(userIsAdmin || process.env.DEMO_MODE_ENABLED === 'true') && <EnvironmentBadge />}
-          {/* Account deletion pending banner - shown during 30-day grace period */}
-          {deletionStatus.isPending &&
-            deletionStatus.scheduledFor &&
-            deletionStatus.daysRemaining != null && (
-              <DeletionPendingBanner
-                scheduledFor={deletionStatus.scheduledFor}
-                daysRemaining={deletionStatus.daysRemaining}
-              />
-            )}
+          {/* Account deletion banner - streams in via Suspense, does not block first paint */}
+          <Suspense fallback={null}>
+            <DeletionBannerLoader chefId={user.entityId} />
+          </Suspense>
           {/* AI outage banner - shown after 2+ minutes of sustained AI downtime */}
           <AiOutageBanner />
           {/* Role switcher - only visible when user has multiple roles */}
