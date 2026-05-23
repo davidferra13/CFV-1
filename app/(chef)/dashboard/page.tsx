@@ -32,6 +32,7 @@ import {
   ScheduleSkeleton,
   IntelligenceCardsSkeleton,
 } from './_sections/section-skeletons'
+import { FeatureSuggestionSection } from './_sections/feature-suggestion-section'
 import { CilSignalSummary } from './_sections/cil-signal-summary'
 import { ActivityFeedSection } from './_sections/activity-feed-section'
 import { getWeeklyRetroSummary } from '@/lib/scheduling/weekly-retro-summary-action'
@@ -62,6 +63,10 @@ export default async function ChefDashboard() {
           entityId={user.entityId}
           email={user.email ?? ''}
         />
+      </Suspense>
+
+      <Suspense fallback={null}>
+        <FeatureSuggestionSection />
       </Suspense>
 
       <div className="grid grid-cols-1 gap-3 xl:grid-cols-2">
