@@ -1,0 +1,70 @@
+{
+  "evidenceDir": ".evidence\\live-browser\\2026-05-20-18-37-31-perf-runtime-dashboard-verification",
+  "status": 200,
+  "finalUrl": "http://localhost:3100/dashboard",
+  "title": "Dashboard | ChefFlow",
+  "domContentLoadedMs": 102701,
+  "networkSettleWaitMs": 20003,
+  "sidebarVisible": true,
+  "paletteVisibleAfterHotkey": false,
+  "beforePaletteChunkCount": 0,
+  "beforePaletteChunks": [],
+  "afterPaletteChunkCount": 0,
+  "afterPaletteChunks": [],
+  "chunkResponseCount": 12,
+  "chunkResponses": [
+    {
+      "status": 200,
+      "url": "/_next/static/chunks/webpack.js?v=1779302383165"
+    },
+    {
+      "status": 200,
+      "url": "/_next/static/chunks/app-pages-internals.js"
+    },
+    {
+      "status": 200,
+      "url": "/_next/static/chunks/app/(chef)/dashboard/error.js"
+    },
+    {
+      "status": 200,
+      "url": "/_next/static/chunks/app/(chef)/dashboard/loading.js"
+    },
+    {
+      "status": 200,
+      "url": "/_next/static/chunks/app/error.js"
+    },
+    {
+      "status": 200,
+      "url": "/_next/static/chunks/app/layout.js"
+    },
+    {
+      "status": 200,
+      "url": "/_next/static/chunks/app/global-error.js"
+    },
+    {
+      "status": 200,
+      "url": "/_next/static/chunks/app/(chef)/not-found.js"
+    },
+    {
+      "status": 200,
+      "url": "/_next/static/chunks/app/(chef)/error.js"
+    },
+    {
+      "status": 200,
+      "url": "/_next/static/chunks/main-app.js?v=1779302383165"
+    },
+    {
+      "status": 200,
+      "url": "/_next/static/chunks/app/(chef)/dashboard/page.js"
+    },
+    {
+      "status": 200,
+      "url": "/_next/static/chunks/app/(chef)/layout.js"
+    }
+  ],
+  "consoleMessages": [],
+  "pageErrors": [],
+  "failedRequests": [],
+  "badResponses": [],
+  "bodyExcerpt": "Skip to main content\nCHEF — e2e.chef.canonical@chefflow.test\nSkip to main content\nChefFlow\nCHEF WORKSPACE\nCreate\nToday\nInbox\nAutopilot\nNotifications\nCalendar\nEvents\nInquiries\nClients\nMenus\nRecipes\nMoney\nPrep\nTasks\nCommunity\nPhone\nALL FEATURES\nPipeline\nCalls & Meetings\nCompleted\nSchedule Call\nUpcoming\nInquiries\nAwaiting Response\nClient Reply\nDeclined\nMenu Drafting\nNew Inquiry\nSent to Client\nMarketplace\nAvailability Broadcaster\nCapture Live Page\nCommand Center\nProposals\nAdd-Ons\nProposal Builder\nTemplates\nQuotes\nAccepted\nDraft\nExpired\nNew Quote\nRejected\nSent\nViewed\nRate Card\nReviews\nEvents\nCalendar\nDay View\nLoad View\nShare Calendar\nTravel Calendar\nWaitlist\nWeek Planner\nYear View\nClient Feedback\nEquipment Check\nEvent Calendar\nEvent Reviews\nReviews\nSmart Import\nEvent Status\nAwaiting Deposit\nCancelled\nCompleted\nConfirmed\nCreate Event\nCreate from Text\nEvent Wizard\nKanban Board\nTimeline\nClients\nClient Contribution\nClient Directory\nActive\nAdd Client\nClient Contribution\nDuplicates\nGift Cards\nInactive\nSegments\nVIP\nClient History\nEvent History\nPast Menus\nPayment History\nClient Insights\nAt Risk\nMost Frequent\nTop Clients\nClient Intake\nClient Presence\nCommunication\nClient Notes\nFollow-Ups\nUpcoming Touchpoints\nLoyalty & Rewards\nCreate Reward\nLearn About Loyalty\nLoyalty Overview\nPoints\nProgram Settings\nReferrals\nRewards\nPartners & Referrals\nActive\nAdd Partner\nEvents Generated\nInactive\nReferral Performance\nPreferences & Dietary\nAllergies\nDietary Restrictions\nDislikes\nFavorite Dishes\nRecurring Clients\nWho's Waiting\nCulinary\nChefNotes\nChefTips\nComponents\nFerments\nGarnishes\nSauces\nShared Elements\nStocks\nCosting\nFood Cost Analysis\nMenu Costs\nOn Sale This Week\nRecipe Costs\nCulinary Board\nCulinary Hub\nCulinary Vendors\nFood Catalog\nIngredients\nIngredients Database\nReceipt Scanner\nSeasonal Availability\nVendor Notes\nMenu Engine Settings\nMenus\nAll Menus\nApproved\nDish Index\nDish Insights\nDishes\nDrafts\nEstimate\nMenu Engineering\nMenu Upload\nNew Menu\nScaling\nSeasonal Menus\nSelections\nSubstitutions\nTasting Menus\nTemplates\nMy Kitchen\nPrep Workspace\nConsolidation\nPrep Timeline\nShopping Lists\nRecipe Import Hub\nRecipe Sprint\nRecipes\nBrain Dump\nBy Dietary Flags\nDrafts\nNew Recipe\nProduction Log\nRecipe Library\nSeasonal Notes\nStep Photos\nTags\nSeasonal Calendar\nSeasonal Palettes\nSubstitutions\nVoice Hub\nCall Sheet\nSource Ingredients\nSupplier Calls\nFinance\n1099 Contractors\nBreak-Even Analysis\nExpenses\nAdd Expense\nBy Category\nFood & Ingredients\nLabor\nMarketing\nMiscellaneous\nPlate Costs\nReceipt Librar"
+}

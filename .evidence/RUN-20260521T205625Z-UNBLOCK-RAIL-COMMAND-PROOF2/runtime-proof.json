@@ -1,0 +1,116 @@
+[
+  {
+    "name": "chef-dashboard",
+    "role": "chef",
+    "viewport": "desktop",
+    "state": ".auth/demo.json",
+    "url": "http://localhost:3100/dashboard",
+    "status": 200,
+    "finalUrl": "http://localhost:3100/dashboard",
+    "title": "Dashboard | ChefFlow",
+    "error": null,
+    "consoleErrors": [
+      "Failed to load resource: the server responded with a status of 403 (Forbidden)",
+      "Failed to load resource: the server responded with a status of 403 (Forbidden)",
+      "Failed to load resource: the server responded with a status of 403 (Forbidden)",
+      "Failed to load resource: the server responded with a status of 403 (Forbidden)"
+    ],
+    "failedRequests": []
+  },
+  {
+    "name": "chef-dashboard",
+    "role": "chef",
+    "viewport": "mobile-390",
+    "state": ".auth/demo.json",
+    "url": "http://localhost:3100/dashboard",
+    "status": 200,
+    "finalUrl": "http://localhost:3100/dashboard",
+    "title": "Dashboard | ChefFlow",
+    "error": null,
+    "consoleErrors": [
+      "Failed to load resource: the server responded with a status of 403 (Forbidden)",
+      "Failed to load resource: the server responded with a status of 403 (Forbidden)",
+      "Failed to load resource: the server responded with a status of 403 (Forbidden)",
+      "Failed to load resource: the server responded with a status of 403 (Forbidden)"
+    ],
+    "failedRequests": []
+  },
+  {
+    "name": "client-my-events",
+    "role": "client",
+    "viewport": "desktop",
+    "state": ".auth/client.json",
+    "url": "http://localhost:3100/my-events",
+    "status": null,
+    "finalUrl": "about:blank",
+    "title": "",
+    "error": "page.goto: Timeout 60000ms exceeded.\nCall log:\n\u001b[2m  - navigating to \"http://localhost:3100/my-events\", waiting until \"commit\"\u001b[22m\n",
+    "consoleErrors": [],
+    "failedRequests": ["GET http://localhost:3100/my-events net::ERR_ABORTED"]
+  },
+  {
+    "name": "client-my-events",
+    "role": "client",
+    "viewport": "mobile-390",
+    "state": ".auth/client.json",
+    "url": "http://localhost:3100/my-events",
+    "status": 200,
+    "finalUrl": "http://localhost:3100/my-events",
+    "title": "My Events | ChefFlow",
+    "error": null,
+    "consoleErrors": [],
+    "failedRequests": []
+  },
+  {
+    "name": "staff-dashboard",
+    "role": "staff",
+    "viewport": "desktop",
+    "state": ".auth/staff.json",
+    "url": "http://localhost:3100/staff-dashboard",
+    "status": 200,
+    "finalUrl": "http://localhost:3100/staff-dashboard",
+    "title": "Dashboard - Staff Portal",
+    "error": null,
+    "consoleErrors": [],
+    "failedRequests": []
+  },
+  {
+    "name": "staff-dashboard",
+    "role": "staff",
+    "viewport": "mobile-390",
+    "state": ".auth/staff.json",
+    "url": "http://localhost:3100/staff-dashboard",
+    "status": 200,
+    "finalUrl": "http://localhost:3100/staff-dashboard",
+    "title": "Dashboard - Staff Portal",
+    "error": null,
+    "consoleErrors": [],
+    "failedRequests": []
+  },
+  {
+    "name": "partner-dashboard",
+    "role": "partner",
+    "viewport": "desktop",
+    "state": ".auth/partner.json",
+    "url": "http://localhost:3100/partner/dashboard",
+    "status": 200,
+    "finalUrl": "http://localhost:3100/partner/dashboard",
+    "title": "ChefFlow - Food & Chef Marketplace",
+    "error": null,
+    "consoleErrors": [],
+    "failedRequests": []
+  },
+  {
+    "name": "partner-dashboard",
+    "role": "partner",
+    "viewport": "mobile-390",
+    "state": ".auth/partner.json",
+    "url": "http://localhost:3100/partner/dashboard",
+    "status": 200,
+    "finalUrl": "http://localhost:3100/partner/dashboard",
+    "title": "ChefFlow - Food & Chef Marketplace",
+    "error": null,
+    "consoleErrors": [],
+    "failedRequests": []
+  }
+]

@@ -1,0 +1,750 @@
+- generic [active] [ref=e1]:
+  - generic:
+    - log
+    - log
+  - generic [ref=e2]:
+    - img
+    - img
+    - generic [ref=e11]:
+      - generic [ref=e12]:
+        - generic [ref=e14]:
+          - generic [ref=e16]: H:CF
+          - generic [ref=e17]: "Hermes : Chef Flow"
+        - generic [ref=e18]:
+          - button "Inbox" [ref=e9641] [cursor=pointer]:
+            - img [ref=e21]:
+              - img [ref=e23]
+          - link "Help" [ref=e9642] [cursor=pointer]:
+            - /url: https://support.discord.com
+            - button "Help" [ref=e9643]:
+              - img [ref=e28]
+      - generic [ref=e31]:
+        - generic [ref=e32]:
+          - heading "[NEW] Xbox Game Pass, gear discounts, and Orbs perks, now included with Nitro. Terms apply." [level=2] [ref=e9644]
+          - button "Jump In" [ref=e9645] [cursor=pointer]:
+            - generic [ref=e36]:
+              - img [ref=e37]
+              - generic [ref=e39]: Jump In
+        - button "Dismiss" [ref=e9646]:
+          - img [ref=e41]
+      - generic [ref=e43]:
+        - generic [ref=e44]:
+          - navigation "Servers sidebar" [ref=e9647]:
+            - tree [ref=e46]:
+              - generic [ref=e48]:
+                - treeitem "Direct Messages" [level=1] [ref=e9648] [cursor=pointer]:
+                  - generic [ref=e57]: Direct Messages
+                  - img [ref=e59]
+                - group "Servers" [ref=e9649]:
+                  - generic [ref=e64]:
+                    - treeitem "Kabutops's server" [level=1] [ref=e9650] [cursor=pointer]:
+                      - generic [ref=e74]: Kabutops's server
+                      - generic [ref=e75]: Ks
+                    - generic [ref=e76]:
+                      - generic:
+                        - generic:
+                          - generic: Kabutops's server
+                  - generic [ref=e77]:
+                    - 'treeitem "Hermes : Chef Flow" [level=1] [selected] [ref=e9651] [cursor=pointer]':
+                      - generic [ref=e88]: "Hermes : Chef Flow"
+                      - generic [ref=e89]: H:CF
+                    - generic [ref=e90]:
+                      - generic:
+                        - generic:
+                          - generic: "Hermes : Chef Flow"
+                  - generic [ref=e91]:
+                    - treeitem "Kabutops's server" [level=1] [ref=e9652] [cursor=pointer]:
+                      - generic [ref=e101]: Kabutops's server
+                      - generic [ref=e102]: Ks
+                    - generic [ref=e103]:
+                      - generic:
+                        - generic:
+                          - generic: Kabutops's server
+                  - generic [ref=e104]:
+                    - treeitem "Kabutops's server" [level=1] [ref=e9653] [cursor=pointer]:
+                      - generic [ref=e114]: Kabutops's server
+                      - generic [ref=e115]: Ks
+                    - generic [ref=e116]:
+                      - generic:
+                        - generic:
+                          - generic: Kabutops's server
+                  - generic [ref=e117]:
+                    - treeitem "Kabutops's server" [level=1] [ref=e9654] [cursor=pointer]:
+                      - generic [ref=e127]: Kabutops's server
+                      - generic [ref=e128]: Ks
+                    - generic [ref=e129]:
+                      - generic:
+                        - generic:
+                          - generic: Kabutops's server
+                  - generic [ref=e130]:
+                    - treeitem "marvel rivals" [level=1] [ref=e9655] [cursor=pointer]:
+                      - generic [ref=e140]: marvel rivals
+                      - img
+                    - generic [ref=e141]:
+                      - generic:
+                        - generic:
+                          - generic: marvel rivals
+                  - generic [ref=e142]:
+                    - treeitem "Scott is Special ED" [level=1] [ref=e9656] [cursor=pointer]:
+                      - generic [ref=e152]: Scott is Special ED
+                      - img
+                    - generic [ref=e153]:
+                      - generic:
+                        - generic:
+                          - generic: Scott is Special ED
+                  - generic [ref=e154]:
+                    - generic [ref=e158]:
+                      - treeitem "237 mentions, Marvel Rivals" [level=1] [ref=e9657] [cursor=pointer]:
+                        - generic [ref=e164]: 237 mentions, Marvel Rivals
+                        - img
+                      - generic:
+                        - generic: "237"
+                    - generic [ref=e165]:
+                      - generic:
+                        - generic:
+                          - button "Verified":
+                            - generic:
+                              - img
+                              - generic:
+                                - img
+                          - generic: Marvel Rivals
+                        - generic:
+                          - img
+                          - generic:
+                            - img:
+                              - generic:
+                                - generic
+                            - img:
+                              - generic:
+                                - generic
+                            - img:
+                              - generic:
+                                - generic
+                            - img:
+                              - generic:
+                                - generic
+                            - img:
+                              - generic:
+                                - generic
+                            - generic: "+91"
+                        - generic: Muted
+                  - generic [ref=e166]:
+                    - treeitem "Unread messages, Foony.com" [level=1] [ref=e9658] [cursor=pointer]:
+                      - generic [ref=e177]: Unread messages, Foony.com
+                      - img
+                    - generic [ref=e178]:
+                      - generic:
+                        - generic:
+                          - button "Community Server":
+                            - generic:
+                              - img
+                              - generic:
+                                - img
+                          - generic: Foony.com
+                  - generic [ref=e179]:
+                    - generic [ref=e184]:
+                      - treeitem "27 mentions, Stevo Fan Club" [level=1] [ref=e9659] [cursor=pointer]:
+                        - generic [ref=e190]: 27 mentions, Stevo Fan Club
+                        - img
+                      - generic:
+                        - generic: "27"
+                    - generic [ref=e191]:
+                      - generic:
+                        - generic:
+                          - button "Community Server":
+                            - generic:
+                              - img
+                              - generic:
+                                - img
+                          - generic: Stevo Fan Club
+                  - generic [ref=e192]:
+                    - treeitem "cOOL DUDES" [level=1] [ref=e9660] [cursor=pointer]:
+                      - generic [ref=e202]: cOOL DUDES
+                      - generic [ref=e203]: cD
+                    - generic [ref=e204]:
+                      - generic:
+                        - generic:
+                          - generic: cOOL DUDES
+                  - generic [ref=e205]:
+                    - treeitem "Symm is Bae" [level=1] [ref=e9661] [cursor=pointer]:
+                      - generic [ref=e215]: Symm is Bae
+                      - generic [ref=e216]: SiB
+                    - generic [ref=e217]:
+                      - generic:
+                        - generic:
+                          - generic: Symm is Bae
+                  - generic [ref=e218]:
+                    - generic [ref=e223]:
+                      - treeitem "14 mentions, The Boro" [level=1] [ref=e9662] [cursor=pointer]:
+                        - generic [ref=e229]: 14 mentions, The Boro
+                        - img
+                      - generic:
+                        - generic: "14"
+                    - generic [ref=e230]:
+                      - generic:
+                        - generic:
+                          - generic: The Boro
+                  - generic [ref=e231]:
+                    - treeitem "youre trash" [level=1] [ref=e9663] [cursor=pointer]:
+                      - generic [ref=e241]: youre trash
+                      - generic [ref=e242]: yt
+                    - generic [ref=e243]:
+                      - generic:
+                        - generic:
+                          - generic: youre trash
+                - treeitem "Add a Server" [level=1] [ref=e9664] [cursor=pointer]:
+                  - img [ref=e251]
+                - treeitem "Discover" [level=1] [ref=e9665] [cursor=pointer]:
+                  - img [ref=e261]
+                - treeitem "Download Apps" [level=1] [ref=e9666] [cursor=pointer]:
+                  - img [ref=e271]
+          - 'navigation "Hermes : Chef Flow (server)" [ref=e9667]':
+            - generic [ref=e277]:
+              - 'button "Hermes : Chef Flow, server actions" [ref=e9668] [cursor=pointer]':
+                - 'heading "Hermes : Chef Flow" [level=2] [ref=e9669]'
+                - img [ref=e1397]
+              - button [ref=e285] [cursor=pointer]:
+                - img [ref=e286]
+              - generic [ref=e289]: Invite to Server
+            - heading "Channels" [level=2] [ref=e9670]
+            - list "Channels" [ref=e9671]:
+              - listitem [ref=e295]:
+                - generic [ref=e296]:
+                  - button "Events"
+                  - generic [ref=e298] [cursor=pointer]:
+                    - img [ref=e300]
+                    - generic [ref=e303]: Events
+              - listitem [ref=e304]:
+                - generic [ref=e305]:
+                  - button "Server Boosts"
+                  - generic [ref=e307] [cursor=pointer]:
+                    - img [ref=e309]
+                    - generic [ref=e312]: Server Boosts
+              - listitem [ref=e314]:
+                - generic [ref=e315] [cursor=pointer]:
+                  - button "Text Channels (category)" [expanded] [ref=e9672]:
+                    - heading "Text Channels" [level=3] [ref=e9673]:
+                      - generic [ref=e318]: Text Channels
+                    - img [ref=e319]
+                  - generic [ref=e321]:
+                    - button "Create Channel" [ref=e9674]:
+                      - img [ref=e323]
+                    - generic [ref=e325]: Create Channel
+              - listitem [ref=e326]:
+                - link "chef-flow-updates (text channel)" [ref=e9675] [cursor=pointer]:
+                  - /url: /channels/1388148643533557831/1481750094028996768
+                  - generic [ref=e330]:
+                    - img "Text icon" [ref=e9676]:
+                      - img [ref=e332]
+                    - generic [ref=e334]: Text
+                    - generic [ref=e335]: chef-flow-updates
+                    - generic:
+                      - generic [ref=e342]: Invite to Channel
+                      - generic [ref=e347]: Edit Channel
+              - listitem [ref=e348]:
+                - generic [ref=e349] [cursor=pointer]:
+                  - button "Voice Channels (category)" [expanded] [ref=e9677]:
+                    - heading "Voice Channels" [level=3] [ref=e9678]:
+                      - generic [ref=e352]: Voice Channels
+                    - img [ref=e353]
+                  - generic [ref=e355]:
+                    - button "Create Channel" [ref=e9679]:
+                      - img [ref=e357]
+                    - generic [ref=e359]: Create Channel
+              - listitem [ref=e360]:
+                - button "General (voice channel)" [ref=e9680] [cursor=pointer]:
+                  - generic [ref=e365]:
+                    - img "Voice icon" [ref=e9681]:
+                      - img [ref=e367]
+                    - generic [ref=e370]: Voice
+                    - generic [ref=e371]: General
+                    - generic:
+                      - generic [ref=e372]: Open Chat
+                      - generic [ref=e373]: Invite to Voice
+                      - generic [ref=e374]: Edit Channel
+              - listitem [ref=e715]:
+                - generic [ref=e716] [cursor=pointer]:
+                  - button "00-HERMES-COMMAND (category)" [expanded] [ref=e9682]:
+                    - heading "00-HERMES-COMMAND" [level=3] [ref=e9683]:
+                      - generic [ref=e719]: 00-HERMES-COMMAND
+                    - img [ref=e720]
+                  - generic [ref=e722]:
+                    - button "Create Channel" [ref=e9684]:
+                      - img [ref=e724]
+                    - generic [ref=e726]: Create Channel
+              - listitem [ref=e1574]:
+                - link "hermes-command (text channel)" [ref=e9685] [cursor=pointer]:
+                  - /url: /channels/1388148643533557831/1506727557939073204
+                  - generic [ref=e1578]:
+                    - img "Text icon" [ref=e9686]:
+                      - img [ref=e1580]
+                    - generic [ref=e1582]: Text
+                    - generic [ref=e1583]: hermes-command
+                    - generic:
+                      - generic [ref=e1590]: Invite to Channel
+                      - generic [ref=e1595]: Edit Channel
+              - listitem [ref=e1844]:
+                - link "daily-brief (text channel)" [ref=e9687] [cursor=pointer]:
+                  - /url: /channels/1388148643533557831/1506727818665398292
+                  - generic [ref=e1848]:
+                    - img "Text icon" [ref=e9688]:
+                      - img [ref=e1850]
+                    - generic [ref=e1852]: Text
+                    - generic [ref=e1853]: daily-brief
+                    - generic:
+                      - generic [ref=e1854]: Invite to Channel
+                      - generic [ref=e1855]: Edit Channel
+              - listitem [ref=e2099]:
+                - link "alerts (text channel)" [ref=e9689] [cursor=pointer]:
+                  - /url: /channels/1388148643533557831/1506728078519570643
+                  - generic [ref=e2103]:
+                    - img "Text icon" [ref=e9690]:
+                      - img [ref=e2105]
+                    - generic [ref=e2107]: Text
+                    - generic [ref=e2108]: alerts
+                    - generic:
+                      - generic [ref=e2115]: Invite to Channel
+                      - generic [ref=e2120]: Edit Channel
+              - listitem [ref=e2365]:
+                - link "decision-log (text channel)" [ref=e9691] [cursor=pointer]:
+                  - /url: /channels/1388148643533557831/1506728249097457796
+                  - generic [ref=e2369]:
+                    - img "Text icon" [ref=e9692]:
+                      - img [ref=e2371]
+                    - generic [ref=e2373]: Text
+                    - generic [ref=e2374]: decision-log
+                    - generic:
+                      - generic [ref=e2381]: Invite to Channel
+                      - generic [ref=e2386]: Edit Channel
+              - listitem [ref=e863]:
+                - generic [ref=e864] [cursor=pointer]:
+                  - button "01-BUILDS (category)" [expanded] [ref=e9693]:
+                    - heading "01-BUILDS" [level=3] [ref=e9694]:
+                      - generic [ref=e867]: 01-BUILDS
+                    - img [ref=e868]
+                  - generic [ref=e870]:
+                    - button "Create Channel" [ref=e9695]:
+                      - img [ref=e872]
+                    - generic [ref=e874]: Create Channel
+              - listitem [ref=e2628]:
+                - link "build-intake (text channel)" [ref=e9696] [cursor=pointer]:
+                  - /url: /channels/1388148643533557831/1506728415108268032
+                  - generic [ref=e2632]:
+                    - img "Text icon" [ref=e9697]:
+                      - img [ref=e2634]
+                    - generic [ref=e2636]: Text
+                    - generic [ref=e2637]: build-intake
+                    - generic:
+                      - generic [ref=e2644]: Invite to Channel
+                      - generic [ref=e2649]: Edit Channel
+              - listitem [ref=e2894]:
+                - link "queue-ready (text channel)" [ref=e9698] [cursor=pointer]:
+                  - /url: /channels/1388148643533557831/1506728532561367260
+                  - generic [ref=e2898]:
+                    - img "Text icon" [ref=e9699]:
+                      - img [ref=e2900]
+                    - generic [ref=e2902]: Text
+                    - generic [ref=e2903]: queue-ready
+                    - generic:
+                      - generic [ref=e2910]: Invite to Channel
+                      - generic [ref=e2915]: Edit Channel
+              - listitem [ref=e3160]:
+                - link "in-flight (text channel)" [ref=e9700] [cursor=pointer]:
+                  - /url: /channels/1388148643533557831/1506728612118921266
+                  - generic [ref=e3164]:
+                    - img "Text icon" [ref=e9701]:
+                      - img [ref=e3166]
+                    - generic [ref=e3168]: Text
+                    - generic [ref=e3169]: in-flight
+                    - generic:
+                      - generic [ref=e3176]: Invite to Channel
+                      - generic [ref=e3181]: Edit Channel
+              - listitem [ref=e3426]:
+                - link "proof-packs (text channel)" [ref=e9702] [cursor=pointer]:
+                  - /url: /channels/1388148643533557831/1506728714942025879
+                  - generic [ref=e3430]:
+                    - img "Text icon" [ref=e9703]:
+                      - img [ref=e3432]
+                    - generic [ref=e3434]: Text
+                    - generic [ref=e3435]: proof-packs
+                    - generic:
+                      - generic [ref=e3442]: Invite to Channel
+                      - generic [ref=e3447]: Edit Channel
+              - listitem [ref=e3692]:
+                - link "blocked (text channel)" [ref=e9704] [cursor=pointer]:
+                  - /url: /channels/1388148643533557831/1506728802359709796
+                  - generic [ref=e3696]:
+                    - img "Text icon" [ref=e9705]:
+                      - img [ref=e3698]
+                    - generic [ref=e3700]: Text
+                    - generic [ref=e3701]: blocked
+                    - generic:
+                      - generic [ref=e3702]: Invite to Channel
+                      - generic [ref=e3703]: Edit Channel
+              - listitem [ref=e1011]:
+                - generic [ref=e1012] [cursor=pointer]:
+                  - button "02-PRODUCT-DOGFOOD (category)" [expanded] [ref=e9706]:
+                    - heading "02-PRODUCT-DOGFOOD" [level=3] [ref=e9707]:
+                      - generic [ref=e1015]: 02-PRODUCT-DOGFOOD
+                    - img [ref=e1016]
+                  - generic [ref=e1018]:
+                    - button "Create Channel" [ref=e9708]:
+                      - img [ref=e1020]
+                    - generic [ref=e1022]: Create Channel
+              - listitem [ref=e3943]:
+                - link "dogfood-observations (text channel)" [ref=e9709] [cursor=pointer]:
+                  - /url: /channels/1388148643533557831/1506728979183309032
+                  - generic [ref=e3947]:
+                    - img "Text icon" [ref=e9710]:
+                      - img [ref=e3949]
+                    - generic [ref=e3951]: Text
+                    - generic [ref=e3952]: dogfood-observations
+                    - generic:
+                      - generic [ref=e3959]: Invite to Channel
+                      - generic [ref=e3964]: Edit Channel
+              - listitem [ref=e4209]:
+                - link "feature-ideas (text channel)" [ref=e9711] [cursor=pointer]:
+                  - /url: /channels/1388148643533557831/1506729186461618216
+                  - generic [ref=e4213]:
+                    - img "Text icon" [ref=e9712]:
+                      - img [ref=e4215]
+                    - generic [ref=e4217]: Text
+                    - generic [ref=e4218]: feature-ideas
+                    - generic:
+                      - generic [ref=e4225]: Invite to Channel
+                      - generic [ref=e4230]: Edit Channel
+              - listitem [ref=e4472]:
+                - link "bugs-regressions (text channel)" [ref=e9713] [cursor=pointer]:
+                  - /url: /channels/1388148643533557831/1506729279495471185
+                  - generic [ref=e4476]:
+                    - img "Text icon" [ref=e9714]:
+                      - img [ref=e4478]
+                    - generic [ref=e4480]: Text
+                    - generic [ref=e4481]: bugs-regressions
+                    - generic:
+                      - generic [ref=e4488]: Invite to Channel
+                      - generic [ref=e4493]: Edit Channel
+              - listitem [ref=e4738]:
+                - link "ux-friction (text channel)" [ref=e9715] [cursor=pointer]:
+                  - /url: /channels/1388148643533557831/1506729367500357782
+                  - generic [ref=e4742]:
+                    - img "Text icon" [ref=e9716]:
+                      - img [ref=e4744]
+                    - generic [ref=e4746]: Text
+                    - generic [ref=e4747]: ux-friction
+                    - generic:
+                      - generic [ref=e4754]: Invite to Channel
+                      - generic [ref=e4759]: Edit Channel
+              - listitem [ref=e5004]:
+                - link "customer-simulation (text channel)" [ref=e9717] [cursor=pointer]:
+                  - /url: /channels/1388148643533557831/1506729456361013348
+                  - generic [ref=e5008]:
+                    - img "Text icon" [ref=e9718]:
+                      - img [ref=e5010]
+                    - generic [ref=e5012]: Text
+                    - generic [ref=e5013]: customer-simulation
+                    - generic:
+                      - generic [ref=e5020]: Invite to Channel
+                      - generic [ref=e5025]: Edit Channel
+              - listitem [ref=e1159]:
+                - generic [ref=e1160] [cursor=pointer]:
+                  - button "03-CHEFFLOW-SYSTEMS (category)" [expanded] [ref=e9719]:
+                    - heading "03-CHEFFLOW-SYSTEMS" [level=3] [ref=e9720]:
+                      - generic [ref=e1163]: 03-CHEFFLOW-SYSTEMS
+                    - img [ref=e1164]
+                  - generic [ref=e1166]:
+                    - button "Create Channel" [ref=e9721]:
+                      - img [ref=e1168]
+                    - generic [ref=e1170]: Create Channel
+              - listitem [ref=e5267]:
+                - link "page-xray (text channel)" [ref=e9722] [cursor=pointer]:
+                  - /url: /channels/1388148643533557831/1506729578821976154
+                  - generic [ref=e5271]:
+                    - img "Text icon" [ref=e9723]:
+                      - img [ref=e5273]
+                    - generic [ref=e5275]: Text
+                    - generic [ref=e5276]: page-xray
+                    - generic:
+                      - generic [ref=e5283]: Invite to Channel
+                      - generic [ref=e5288]: Edit Channel
+              - listitem [ref=e5533]:
+                - link "wiring-audit (text channel)" [ref=e9724] [cursor=pointer]:
+                  - /url: /channels/1388148643533557831/1506729663307841547
+                  - generic [ref=e5537]:
+                    - img "Text icon" [ref=e9725]:
+                      - img [ref=e5539]
+                    - generic [ref=e5541]: Text
+                    - generic [ref=e5542]: wiring-audit
+                    - generic:
+                      - generic [ref=e5549]: Invite to Channel
+                      - generic [ref=e5554]: Edit Channel
+              - listitem [ref=e5799]:
+                - link "universal-rail (text channel)" [ref=e9726] [cursor=pointer]:
+                  - /url: /channels/1388148643533557831/1506729752944443493
+                  - generic [ref=e5803]:
+                    - img "Text icon" [ref=e9727]:
+                      - img [ref=e5805]
+                    - generic [ref=e5807]: Text
+                    - generic [ref=e5808]: universal-rail
+                    - generic:
+                      - generic [ref=e5809]: Invite to Channel
+                      - generic [ref=e5810]: Edit Channel
+              - listitem [ref=e6050]:
+                - link "client-intelligence (text channel)" [ref=e9728] [cursor=pointer]:
+                  - /url: /channels/1388148643533557831/1506729837346295958
+                  - generic [ref=e6054]:
+                    - img "Text icon" [ref=e9729]:
+                      - img [ref=e6056]
+                    - generic [ref=e6058]: Text
+                    - generic [ref=e6059]: client-intelligence
+                    - generic:
+                      - generic [ref=e6066]: Invite to Channel
+                      - generic [ref=e6071]: Edit Channel
+              - listitem [ref=e6316]:
+                - link "menu-intelligence (text channel)" [ref=e9730] [cursor=pointer]:
+                  - /url: /channels/1388148643533557831/1506729917063237693
+                  - generic [ref=e6320]:
+                    - img "Text icon" [ref=e9731]:
+                      - img [ref=e6322]
+                    - generic [ref=e6324]: Text
+                    - generic [ref=e6325]: menu-intelligence
+                    - generic:
+                      - generic [ref=e6332]: Invite to Channel
+                      - generic [ref=e6337]: Edit Channel
+              - listitem [ref=e6586]:
+                - link "pie-pricing (text channel)" [ref=e9732] [cursor=pointer]:
+                  - /url: /channels/1388148643533557831/1506730171699564750
+                  - generic [ref=e6590]:
+                    - img "Text icon" [ref=e9733]:
+                      - img [ref=e6592]
+                    - generic [ref=e6594]: Text
+                    - generic [ref=e6595]: pie-pricing
+                    - generic:
+                      - generic [ref=e6602]: Invite to Channel
+                      - generic [ref=e6607]: Edit Channel
+              - listitem [ref=e6852]:
+                - link "remy-automation (text channel)" [ref=e9734] [cursor=pointer]:
+                  - /url: /channels/1388148643533557831/1506730263068282921
+                  - generic [ref=e6856]:
+                    - img "Text icon" [ref=e9735]:
+                      - img [ref=e6858]
+                    - generic [ref=e6860]: Text
+                    - generic [ref=e6861]: remy-automation
+                    - generic:
+                      - generic [ref=e6868]: Invite to Channel
+                      - generic [ref=e6873]: Edit Channel
+              - listitem [ref=e7118]:
+                - link "cil-signals (text channel)" [ref=e9736] [cursor=pointer]:
+                  - /url: /channels/1388148643533557831/1506730356575834135
+                  - generic [ref=e7122]:
+                    - img "Text icon" [ref=e9737]:
+                      - img [ref=e7124]
+                    - generic [ref=e7126]: Text
+                    - generic [ref=e7127]: cil-signals
+                    - generic:
+                      - generic [ref=e7134]: Invite to Channel
+                      - generic [ref=e7139]: Edit Channel
+              - listitem [ref=e1307]:
+                - generic [ref=e1308] [cursor=pointer]:
+                  - button "04-OPERATIONS (category)" [expanded] [ref=e9738]:
+                    - heading "04-OPERATIONS" [level=3] [ref=e9739]:
+                      - generic [ref=e1311]: 04-OPERATIONS
+                    - img [ref=e1312]
+                  - generic [ref=e1314]:
+                    - button "Create Channel" [ref=e9740]:
+                      - img [ref=e1316]
+                    - generic [ref=e1318]: Create Channel
+              - listitem [ref=e7381]:
+                - link "dev-server (text channel)" [ref=e9741] [cursor=pointer]:
+                  - /url: /channels/1388148643533557831/1506730436557275196
+                  - generic [ref=e7385]:
+                    - img "Text icon" [ref=e9742]:
+                      - img [ref=e7387]
+                    - generic [ref=e7389]: Text
+                    - generic [ref=e7390]: dev-server
+                    - generic:
+                      - generic [ref=e7397]: Invite to Channel
+                      - generic [ref=e7402]: Edit Channel
+              - listitem [ref=e7647]:
+                - link "hermes-night-shift (text channel)" [ref=e9743] [cursor=pointer]:
+                  - /url: /channels/1388148643533557831/1506730524838723728
+                  - generic [ref=e7651]:
+                    - img "Text icon" [ref=e9744]:
+                      - img [ref=e7653]
+                    - generic [ref=e7655]: Text
+                    - generic [ref=e7656]: hermes-night-shift
+                    - generic:
+                      - generic [ref=e7657]: Invite to Channel
+                      - generic [ref=e7658]: Edit Channel
+              - listitem [ref=e7898]:
+                - link "openclaw (text channel)" [ref=e9745] [cursor=pointer]:
+                  - /url: /channels/1388148643533557831/1506730637879672852
+                  - generic [ref=e7902]:
+                    - img "Text icon" [ref=e9746]:
+                      - img [ref=e7904]
+                    - generic [ref=e7906]: Text
+                    - generic [ref=e7907]: openclaw
+                    - generic:
+                      - generic [ref=e7914]: Invite to Channel
+                      - generic [ref=e7919]: Edit Channel
+              - listitem [ref=e8164]:
+                - link "database-health (text channel)" [ref=e9747] [cursor=pointer]:
+                  - /url: /channels/1388148643533557831/1506730777881088161
+                  - generic [ref=e8168]:
+                    - img "Text icon" [ref=e9748]:
+                      - img [ref=e8170]
+                    - generic [ref=e8172]: Text
+                    - generic [ref=e8173]: database-health
+                    - generic:
+                      - generic [ref=e8180]: Invite to Channel
+                      - generic [ref=e8185]: Edit Channel
+              - listitem [ref=e8430]:
+                - link "deploys-incidents (text channel)" [ref=e9749] [cursor=pointer]:
+                  - /url: /channels/1388148643533557831/1506730896600989836
+                  - generic [ref=e8434]:
+                    - img "Text icon" [ref=e9750]:
+                      - img [ref=e8436]
+                    - generic [ref=e8438]: Text
+                    - generic [ref=e8439]: deploys-incidents
+                    - generic:
+                      - generic [ref=e8446]: Invite to Channel
+                      - generic [ref=e8451]: Edit Channel
+              - listitem [ref=e1455]:
+                - generic [ref=e1456] [cursor=pointer]:
+                  - button "05-ARCHIVE (category)" [expanded] [ref=e9751]:
+                    - heading "05-ARCHIVE" [level=3] [ref=e9752]:
+                      - generic [ref=e1459]: 05-ARCHIVE
+                    - img [ref=e1460]
+                  - generic [ref=e1462]:
+                    - button "Create Channel" [ref=e9753]:
+                      - img [ref=e1464]
+                    - generic [ref=e1466]: Create Channel
+              - listitem [ref=e8696]:
+                - link "closed-decisions (text channel)" [ref=e9754] [cursor=pointer]:
+                  - /url: /channels/1388148643533557831/1506730992587636877
+                  - generic [ref=e8700]:
+                    - img "Text icon" [ref=e9755]:
+                      - img [ref=e8702]
+                    - generic [ref=e8704]: Text
+                    - generic [ref=e8705]: closed-decisions
+                    - generic:
+                      - generic [ref=e8712]: Invite to Channel
+                      - generic [ref=e8717]: Edit Channel
+              - listitem [ref=e8962]:
+                - link "completed-builds (text channel)" [ref=e9756] [cursor=pointer]:
+                  - /url: /channels/1388148643533557831/1506731166609445014
+                  - generic [ref=e8966]:
+                    - img "Text icon" [ref=e9757]:
+                      - img [ref=e8968]
+                    - generic [ref=e8970]: Text
+                    - generic [ref=e8971]: completed-builds
+                    - generic:
+                      - generic [ref=e8978]: Invite to Channel
+                      - generic [ref=e8983]: Edit Channel
+              - listitem [ref=e9228]:
+                - link "old-dogfood (text channel)" [ref=e9758] [cursor=pointer]:
+                  - /url: /channels/1388148643533557831/1506731299883319569
+                  - generic [ref=e9232]:
+                    - img "Text icon" [ref=e9759]:
+                      - img [ref=e9234]
+                    - generic [ref=e9236]: Text
+                    - generic [ref=e9237]: old-dogfood
+                    - generic [ref=e9238]:
+                      - button "Invite to Channel" [ref=e9760]:
+                        - img [ref=e9241]
+                      - generic [ref=e9244]: Invite to Channel
+                      - button "Edit Channel" [ref=e9761]:
+                        - img [ref=e9247]
+                      - generic [ref=e9249]: Edit Channel
+          - button "Resize Sidebar" [ref=e9762]
+          - region "User status and settings" [ref=e9763]:
+            - generic [ref=e377]:
+              - generic [ref=e378] [cursor=pointer]:
+                - button "Manage profile and status"
+                - img [ref=e379]:
+                  - img:
+                    - generic:
+                      - generic:
+                        - img
+                - generic [ref=e381]:
+                  - generic [ref=e383]: Kabutops
+                  - generic [ref=e386]:
+                    - generic: kabutops7342
+                    - generic:
+                      - generic: Online
+                      - generic:
+                        - generic:
+                          - img
+                          - generic: Visual Studio Code
+              - generic [ref=e387]:
+                - generic [ref=e388]:
+                  - switch "Mute" [checked] [ref=e9764] [cursor=pointer]:
+                    - img [ref=e392]
+                  - generic [ref=e410]: Unmute
+                  - button "Input Options" [ref=e9765] [cursor=pointer]:
+                    - img [ref=e413]
+                - generic [ref=e415]:
+                  - switch "Deafen" [ref=e9766] [cursor=pointer]:
+                    - img [ref=e419]
+                  - button "Output Options" [ref=e9767] [cursor=pointer]:
+                    - img [ref=e430]
+                - button "User Settings" [ref=e9768] [cursor=pointer]:
+                  - img [ref=e435]
+        - generic [ref=e9250]:
+          - region "Channel header" [ref=e9769]:
+            - generic [ref=e9253]:
+              - generic [ref=e9254]:
+                - img [ref=e9256]
+                - generic [ref=e9258]: Text Channel
+                - 'heading "Hermes : Chef Flow: old-dogfood" [level=1] [ref=e9770]':
+                  - generic [ref=e9261]: "Hermes : Chef Flow:"
+                  - text: old-dogfood
+              - generic [ref=e9262]:
+                - button "Threads" [ref=e9771] [cursor=pointer]:
+                  - img [ref=e9264]
+                - button "Notification Settings" [ref=e9772] [cursor=pointer]:
+                  - img [ref=e9267]
+                - button "Pinned Messages" [ref=e9773] [cursor=pointer]:
+                  - img [ref=e9270]
+                - button "Show Member List" [ref=e9774] [cursor=pointer]:
+                  - img [ref=e9273]
+                - generic [ref=e9277]:
+                  - generic [ref=e9278]:
+                    - generic [ref=e9280]: "Search Hermes : Chef Flow"
+                    - combobox "Search" [ref=e9775]
+                  - button [ref=e9286]:
+                    - generic [ref=e9287]:
+                      - img [ref=e9288]
+                      - img [ref=e9290]
+          - main "old-dogfood (channel)" [ref=e9776]:
+            - heading "old-dogfood chat" [level=2] [ref=e9777]
+            - group [ref=e9297]:
+              - list "Messages in old-dogfood" [ref=e9778]:
+                - generic [ref=e9300]:
+                  - img [ref=e9302]
+                  - heading [level=3] [ref=e9304]: "Welcome to #old-dogfood!"
+                  - generic [ref=e9305]: "This is the start of the #old-dogfood channel."
+                  - button "Edit Channel" [ref=e9779] [cursor=pointer]:
+                    - generic [ref=e9309]:
+                      - img [ref=e9310]
+                      - generic [ref=e9312]: Edit Channel
+            - generic [ref=e9318]:
+              - button "More message options" [ref=e9780] [cursor=pointer]:
+                - img [ref=e9322]
+              - generic [ref=e9325]:
+                - generic: "Message #old-dogfood"
+                - 'textbox "Message #old-dogfood" [ref=e9781]'
+              - generic [ref=e9328]:
+                - button "Send a gift" [ref=e9782] [cursor=pointer]:
+                  - img [ref=e9332]
+                - generic [ref=e9345]: Upgrade your friends! Gift them awesome chat perks with Nitro.
+                - button "Open GIF picker" [ref=e9783] [cursor=pointer]:
+                  - img [ref=e9350]
+                - generic [ref=e9357]: Send GIF
+                - button "Open sticker picker" [ref=e9784] [cursor=pointer]:
+                  - img [ref=e9362]
+                - button "Add Emoji" [ref=e9785] [cursor=pointer]
+                - button "Apps" [ref=e9786] [cursor=pointer]:
+                  - img [ref=e9376]
+  - generic:
+    - img
