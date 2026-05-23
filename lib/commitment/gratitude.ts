@@ -1,4 +1,4 @@
-﻿import { createServerClient } from '@/lib/db/server'
+import { createServerClient } from '@/lib/db/server'
 
 // -- Types --------------------------------------------------------------------
 
@@ -206,7 +206,7 @@ export async function getGratitudeStatus(
 
   const requiredCount = Object.keys(GRATITUDE_DEADLINES).length
   const fullyCompliant = eventIds.filter(
-    (eid) => (eventCompletions[eid]?.size ?? 0) >= requiredCount
+    (eid: string) => (eventCompletions[eid]?.size ?? 0) >= requiredCount
   ).length
 
   const overdue: GratitudeViolation[] = []

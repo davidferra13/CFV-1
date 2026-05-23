@@ -29,6 +29,8 @@ export const DEFAULT_COOLING_OFF: Record<CommitmentDomain, CoolingOffConfig> = {
   contingency: { domain: 'contingency', delayHours: 4, label: '4 hours (safety adjacent)' },
   travel: { domain: 'travel', delayHours: 1, label: '1 hour' },
   business_health: { domain: 'business_health', delayHours: 2, label: '2 hours' },
+  quality: { domain: 'quality', delayHours: 4, label: '4 hours (quality critical)' },
+  financial: { domain: 'financial', delayHours: 4, label: '4 hours (financial impact)' },
 }
 
 export type CoolingOffStatus = 'not_started' | 'cooling' | 'ready' | 'expired'
@@ -73,16 +75,14 @@ export async function startCoolingOff(
   const expiresAt = now + config.delayHours * 60 * 60 * 1000
 
   // Store pending override with cooling-off metadata
-  const { error } = await client
-    .from('commitment_cooling_off' as any)
-    .upsert({
-      commitment_id: commitmentId,
-      tenant_id: tenantId,
-      reason,
-      started_at: new Date(now).toISOString(),
-      expires_at: new Date(expiresAt).toISOString(),
-      status: 'cooling',
-    })
+  const { error } = await client.from('commitment_cooling_off' as any).upsert({
+    commitment_id: commitmentId,
+    tenant_id: tenantId,
+    reason,
+    started_at: new Date(now).toISOString(),
+    expires_at: new Date(expiresAt).toISOString(),
+    status: 'cooling',
+  })
 
   if (error) {
     // Table may not exist yet; fall back to immediate override
@@ -200,10 +200,7 @@ export async function checkCoolingOff(
  * Cancel a pending cooling-off period.
  * The chef decided not to override after all.
  */
-export async function cancelCoolingOff(
-  commitmentId: string,
-  tenantId: string
-): Promise<void> {
+export async function cancelCoolingOff(commitmentId: string, tenantId: string): Promise<void> {
   const client = createServerClient()
 
   await client

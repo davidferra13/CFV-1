@@ -61,9 +61,15 @@ export async function createEventContract(
   if (!options?.tier) {
     const value = options?.eventValue ?? 0
     const guests = options?.guestCount ?? 0
-    if (value >= TIER_THRESHOLDS.signature.minValue || guests >= TIER_THRESHOLDS.signature.minGuests) {
+    if (
+      value >= TIER_THRESHOLDS.signature.minValue ||
+      guests >= TIER_THRESHOLDS.signature.minGuests
+    ) {
       tier = 'signature'
-    } else if (value >= TIER_THRESHOLDS.premium.minValue || guests >= TIER_THRESHOLDS.premium.minGuests) {
+    } else if (
+      value >= TIER_THRESHOLDS.premium.minValue ||
+      guests >= TIER_THRESHOLDS.premium.minGuests
+    ) {
       tier = 'premium'
     }
   }
@@ -178,7 +184,7 @@ export async function scoreContractAdherence(
       commitmentId,
       domain: commitment.domain as CommitmentDomain,
       honored: !overridden,
-      overrideReason: overridden ? (eventOverrides[0] as any).reason as string : null,
+      overrideReason: overridden ? ((eventOverrides[0] as any).reason as string) : null,
     })
   }
 
@@ -231,21 +237,22 @@ export async function getRunningIntegrityAverage(
 
   const scores = (rows ?? [])
     .map((r: any) => r.adherence_score as number)
-    .filter((s): s is number => s != null)
+    .filter((s: number | null): s is number => s != null)
 
   if (scores.length === 0) {
     return { average: 100, contractCount: 0, trend: 'stable', scores: [] }
   }
 
-  const average = Math.round(scores.reduce((a, b) => a + b, 0) / scores.length)
+  const average = Math.round(scores.reduce((a: number, b: number) => a + b, 0) / scores.length)
 
   // Trend: compare first half vs second half
   let trend: 'improving' | 'stable' | 'declining' = 'stable'
   if (scores.length >= 4) {
     const mid = Math.floor(scores.length / 2)
     // Scores are newest-first, so "recent" is the first half
-    const recentAvg = scores.slice(0, mid).reduce((a, b) => a + b, 0) / mid
-    const olderAvg = scores.slice(mid).reduce((a, b) => a + b, 0) / (scores.length - mid)
+    const recentAvg = scores.slice(0, mid).reduce((a: number, b: number) => a + b, 0) / mid
+    const olderAvg =
+      scores.slice(mid).reduce((a: number, b: number) => a + b, 0) / (scores.length - mid)
     const diff = recentAvg - olderAvg
     if (diff > 5) trend = 'improving'
     else if (diff < -5) trend = 'declining'

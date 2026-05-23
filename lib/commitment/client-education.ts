@@ -1,4 +1,4 @@
-﻿import { createServerClient } from '@/lib/db/server'
+import { createServerClient } from '@/lib/db/server'
 
 // -- Types --------------------------------------------------------------------
 
@@ -94,7 +94,7 @@ export async function checkEducationCompliance(
 
   for (const ruleType of activeEducationRules) {
     if (!completedRules.has(ruleType)) {
-      const desc = RULE_DESCRIPTIONS[ruleType]
+      const desc = RULE_DESCRIPTIONS[ruleType as EducationRuleType]
       violations.push({
         ruleType,
         eventId,
@@ -191,7 +191,7 @@ export async function getEducationStatus(tenantId: string): Promise<EducationSta
     let allMet = true
     for (const rule of activeRules) {
       if (!completed.has(rule)) {
-        gapsByRule[rule]++
+        gapsByRule[rule as EducationRuleType]++
         allMet = false
       }
     }
@@ -257,7 +257,7 @@ export async function getEducationGaps(tenantId: string): Promise<EducationGap[]
   const gaps: EducationGap[] = []
   for (const event of events) {
     const completed = completionMap[(event as any).id] ?? new Set()
-    const missingRules = activeRules.filter((r) => !completed.has(r))
+    const missingRules = activeRules.filter((r: string) => !completed.has(r))
 
     if (missingRules.length > 0) {
       const eventDate = new Date((event as any).created_at)
