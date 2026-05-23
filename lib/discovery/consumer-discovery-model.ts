@@ -352,9 +352,15 @@ export function normalizeCompareCandidates(
   filters: ConsumerDiscoveryFilters = {},
   brief?: ConsumerDiscoveryBrief | PlanningBrief | null
 ): ConsumerCompareCandidate[] {
-  const selected = new Set(selectedIds.slice(0, 4))
+  const boundedSelectedIds = selectedIds.slice(0, 4)
+  const selected = new Set(boundedSelectedIds)
+  const cardsById = new Map(cards.map((card) => [card.id, card]))
+  const selectedType = boundedSelectedIds
+    .map((id) => cardsById.get(id)?.type)
+    .find((type): type is ConsumerResultCard['type'] => Boolean(type))
+
   return cards
-    .filter((card) => selected.has(card.id))
+    .filter((card) => selected.has(card.id) && (!selectedType || card.type === selectedType))
     .slice(0, 4)
     .map((card) => ({
       id: card.id,

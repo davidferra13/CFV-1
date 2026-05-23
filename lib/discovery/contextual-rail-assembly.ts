@@ -2,14 +2,17 @@
 import type {
   RailCategory,
   EntityContext,
+  ClientRailProfile,
   ContextualRailData,
   ContextualRailCategoryData,
+  ContextualRailItem,
   ResolvedCollapsedMetric,
   CollapsedMetric,
   RailProfile,
 } from './contextual-rail-types'
 import { CATEGORY_LABELS, RESOLVER_CATEGORY_MAP, categoryClass } from './contextual-rail-types'
 import { applyEscalation, dedupeOperatingLoopItems } from './god-mode-assembly'
+import { hasUnresolvedRailTemplate } from './rail-tier-assigner'
 
 function extractResolverDomain(definitionId: string): string {
   const withoutPrefix = definitionId.startsWith('chef.')
@@ -149,6 +152,37 @@ function buildDerivedActions(
     })
 }
 
+function toClientRailProfile(profile: RailProfile): ClientRailProfile {
+  const { pattern: _pattern, entityExtract: _entityExtract, ...clientProfile } = profile
+  return clientProfile
+}
+
+function toSerializableValue(value: unknown): unknown {
+  if (value instanceof Date) return value.toISOString()
+  if (Array.isArray(value)) return value.map(toSerializableValue)
+  if (!value || typeof value !== 'object') return value
+
+  const result: Record<string, unknown> = {}
+  for (const [key, nestedValue] of Object.entries(value as Record<string, unknown>)) {
+    if (typeof nestedValue === 'function' || typeof nestedValue === 'undefined') continue
+    result[key] = toSerializableValue(nestedValue)
+  }
+  return result
+}
+
+function toContextualRailItem(item: GodModeResolvedItem): ContextualRailItem {
+  return {
+    ...item,
+    data: item.data ? (toSerializableValue(item.data) as Record<string, unknown>) : undefined,
+    expiresAt: item.expiresAt?.toISOString(),
+    escalatesAt: item.escalatesAt?.toISOString(),
+    inlineActions: item.inlineActions?.map((inlineAction) => ({
+      ...inlineAction,
+      params: toSerializableValue(inlineAction.params) as Record<string, unknown>,
+    })),
+  }
+}
+
 export async function assembleContextualRail(
   profile: RailProfile,
   entityContext: EntityContext | null,
@@ -178,6 +212,7 @@ export async function assembleContextualRail(
     resolvedItems.map((item) => applyEscalation(item, now)),
     now
   ).filter((item) => {
+    if (hasUnresolvedRailTemplate(item)) return false
     if (!item.expiresAt) return true
     return item.expiresAt.getTime() > now.getTime()
   })
@@ -200,7 +235,7 @@ export async function assembleContextualRail(
     const category = resolveItemCategory(item, profile)
     const categoryData = categories[category]
     if (categoryData) {
-      categoryData.items.push(item)
+      categoryData.items.push(toContextualRailItem(item))
     }
   }
 
@@ -211,7 +246,9 @@ export async function assembleContextualRail(
       label: CATEGORY_LABELS.actions,
       colorClass: categoryClass('actions'),
     }
-    categories.actions.items = buildDerivedActions(filtered, profile.maxItems)
+    categories.actions.items = buildDerivedActions(filtered, profile.maxItems).map(
+      toContextualRailItem
+    )
   }
 
   for (const categoryData of Object.values(categories)) {
@@ -235,7 +272,7 @@ export async function assembleContextualRail(
   })
 
   return {
-    profile,
+    profile: toClientRailProfile(profile),
     categories,
     collapsedMetrics,
     criticalCount,

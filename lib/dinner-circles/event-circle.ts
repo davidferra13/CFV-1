@@ -1,6 +1,14 @@
 import type { EventTicket, EventTicketSummary, EventTicketType } from '@/lib/tickets/types'
 import { createServerClient } from '@/lib/db/server'
 import { buildEventDefaultLayer } from '@/lib/events/default-behaviors'
+import {
+  buildDinnerCircleAccommodationReadiness,
+  normalizeDinnerCircleAccommodationIntake,
+} from './accommodation-intake'
+import {
+  buildDinnerCircleArrivalGuideReadiness,
+  normalizeDinnerCircleArrivalGuide,
+} from './arrival-guide'
 import type {
   DinnerCircleAdaptiveSnapshot,
   DinnerCircleConfig,
@@ -313,6 +321,8 @@ export function normalizeDinnerCircleConfig(value: unknown): DinnerCircleConfig 
       ...(input.theme ?? {}),
     },
     vendorInquiries: input.vendorInquiries ?? [],
+    accommodations: normalizeDinnerCircleAccommodationIntake(input.accommodations),
+    arrivalGuide: normalizeDinnerCircleArrivalGuide(input.arrivalGuide),
   }
 }
 
@@ -450,14 +460,20 @@ export function buildDinnerCircleSnapshot(input: {
     supplierIngredientLines: input.config.supplier?.ingredientLines ?? [],
     sourceLinksCount: input.config.supplier?.sourceLinks?.length ?? 0,
     layoutZoneKinds: input.config.layout?.zones?.map((zone) => zone.kind) ?? [],
-    accessibilityNotes: input.config.layout?.chefNotes?.toLowerCase().includes('accessible')
-      ? input.config.layout.chefNotes
-      : null,
+    accessibilityNotes:
+      buildDinnerCircleAccommodationReadiness(input.config.accommodations).summary ??
+      (input.config.layout?.chefNotes?.toLowerCase().includes('accessible')
+        ? input.config.layout.chefNotes
+        : null),
     seatingStyle: input.config.layout?.chefNotes?.toLowerCase().includes('seating')
       ? input.config.layout.chefNotes
       : null,
   })
   const adaptive = buildDinnerCircleAdaptiveSnapshot(input.config)
+  const accommodationReadiness = buildDinnerCircleAccommodationReadiness(
+    input.config.accommodations
+  )
+  const arrivalReadiness = buildDinnerCircleArrivalGuideReadiness(input.config.arrivalGuide)
 
   const checks: DinnerCircleSnapshot['checks'] = [
     {
@@ -483,6 +499,29 @@ export function buildDinnerCircleSnapshot(input: {
       key: 'layout',
       label: input.config.layout?.zones?.length ? 'Layout ready' : 'Map layout missing',
       status: input.config.layout?.zones?.length ? 'ready' : 'warning',
+    },
+    {
+      key: 'accommodations',
+      label:
+        accommodationReadiness.totalNotes > 0
+          ? `${accommodationReadiness.actionableCount} chef-relevant accommodation ${
+              accommodationReadiness.actionableCount === 1 ? 'note' : 'notes'
+            }`
+          : 'Accommodation intake not started',
+      status: accommodationReadiness.totalNotes > 0 ? 'ready' : 'warning',
+    },
+    {
+      key: 'arrival',
+      label:
+        arrivalReadiness.published && arrivalReadiness.attendeeSectionCount > 0
+          ? 'Arrival guide published'
+          : arrivalReadiness.attendeeSectionCount > 0
+            ? 'Arrival guide drafted'
+            : 'Arrival guide missing',
+      status:
+        arrivalReadiness.published && arrivalReadiness.attendeeSectionCount > 0
+          ? 'ready'
+          : 'warning',
     },
     {
       key: 'menu',

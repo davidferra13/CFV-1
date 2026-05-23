@@ -221,6 +221,108 @@ export type CorporateConfig = {
   requiredDocs: CorporateRequiredDoc[]
 }
 
+export type DinnerCircleAccommodationCategory =
+  | 'mobility'
+  | 'seating_access'
+  | 'sensory'
+  | 'language'
+  | 'service_preference'
+  | 'health_food'
+
+export type DinnerCircleAccommodationVisibility =
+  | 'chef_only'
+  | 'host_only'
+  | 'host_and_chef'
+  | 'attendee_visible'
+
+export type DinnerCircleAccommodationNote = {
+  id: string
+  category: DinnerCircleAccommodationCategory
+  note: string
+  visibility: DinnerCircleAccommodationVisibility
+  chefRelevant: boolean
+  submittedByProfileId: string
+  submittedByName?: string | null
+  createdAt: string
+  updatedAt: string
+}
+
+export type DinnerCircleAccommodationIntake = {
+  requestedAt?: string | null
+  requestedByProfileId?: string | null
+  requestedByName?: string | null
+  notes: DinnerCircleAccommodationNote[]
+}
+
+export type DinnerCircleAccommodationReadinessItem = {
+  id: string
+  category: DinnerCircleAccommodationCategory
+  label: string
+  note: string
+  submittedByName: string
+  visibility: DinnerCircleAccommodationVisibility
+}
+
+export type DinnerCircleAccommodationReadiness = {
+  totalNotes: number
+  actionableCount: number
+  privateHostOnlyCount: number
+  categoryCounts: Partial<Record<DinnerCircleAccommodationCategory, number>>
+  items: DinnerCircleAccommodationReadinessItem[]
+  summary: string | null
+}
+
+export type DinnerCircleArrivalGuideVisibility =
+  | 'attendee_visible'
+  | 'host_and_chef'
+  | 'chef_only'
+  | 'host_only'
+
+export type DinnerCircleArrivalGuideSectionKey =
+  | 'address'
+  | 'parking'
+  | 'building_gate_access'
+  | 'entry_instructions'
+  | 'elevator_loading_notes'
+  | 'arrival_contact'
+  | 'arrival_window'
+  | 'late_arrival_handling'
+  | 'accessibility_entrance'
+  | 'rideshare_dropoff'
+  | 'coat_bag_placement'
+  | 'house_rules'
+
+export type DinnerCircleArrivalGuideStatus = 'draft' | 'published'
+
+export type DinnerCircleArrivalGuideSection = {
+  key: DinnerCircleArrivalGuideSectionKey
+  label: string
+  body: string
+  visibility: DinnerCircleArrivalGuideVisibility
+  chefRelevant: boolean
+  sensitive: boolean
+  expiresAt?: string | null
+  updatedAt: string
+  updatedByName?: string | null
+}
+
+export type DinnerCircleArrivalGuide = {
+  status: DinnerCircleArrivalGuideStatus
+  publishedAt?: string | null
+  updatedAt?: string | null
+  notifyAttendeesAt?: string | null
+  sections: Partial<Record<DinnerCircleArrivalGuideSectionKey, DinnerCircleArrivalGuideSection>>
+}
+
+export type DinnerCircleArrivalGuideReadiness = {
+  published: boolean
+  attendeeSectionCount: number
+  chefRelevantCount: number
+  sensitiveHiddenCount: number
+  missingSectionKeys: DinnerCircleArrivalGuideSectionKey[]
+  chefAccessSummary: string | null
+}
+
 export type DinnerCircleConfig = {
   money?: {
     paySplit: string
@@ -281,6 +383,8 @@ export type DinnerCircleConfig = {
   theme?: DinnerCircleTheme
   vendorInquiries?: DinnerCircleVendorInquiry[]
   corporate?: CorporateConfig
+  accommodations?: DinnerCircleAccommodationIntake
+  arrivalGuide?: DinnerCircleArrivalGuide
 }
 
 export type DinnerCircleAdaptiveSnapshot = {

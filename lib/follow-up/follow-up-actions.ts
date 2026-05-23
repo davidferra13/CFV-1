@@ -1,5 +1,6 @@
 'use server'
 
+// Auth-gated server actions wrapping the follow-up sequence engine
 // Post-Event Follow-Up Server Actions
 // CRUD + trigger actions for the follow-up sequence system.
 

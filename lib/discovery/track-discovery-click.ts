@@ -186,14 +186,18 @@ export function trackDiscoverySearchSubmit(input: {
   })
 }
 
-export function trackDiscoveryChefSave(input: { chefId: string; saved: boolean }): void {
+export function trackDiscoveryChefSave(input: {
+  chefId: string
+  saved: boolean
+  source?: string
+}): void {
   trackDiscoveryEvent({
     action: input.saved ? 'save' : 'hide',
     itemType: 'featured_chef',
     itemValue: input.chefId,
     itemLabel: input.saved ? 'Saved chef' : 'Unsaved chef',
     eventContext: {
-      source: 'save_chef_button',
+      source: input.source ?? 'save_chef_button',
     },
   })
 }

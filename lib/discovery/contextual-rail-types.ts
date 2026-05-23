@@ -63,6 +63,8 @@ export interface RailProfile {
   stickyOnScroll: boolean
 }
 
+export type ClientRailProfile = Omit<RailProfile, 'pattern' | 'entityExtract'>
+
 export interface RailProfileMatch {
   profile: RailProfile
   entityContext: EntityContext | null
@@ -77,8 +79,14 @@ export interface ResolvedCollapsedMetric extends CollapsedMetric {
   value: string | number | null
 }
 
+export type ContextualRailItem = Omit<GodModeResolvedItem, 'expiresAt' | 'escalatesAt' | 'data'> & {
+  data?: Record<string, unknown>
+  expiresAt?: string
+  escalatesAt?: string
+}
+
 export interface ContextualRailData {
-  profile: RailProfile
+  profile: ClientRailProfile
   categories: Partial<Record<RailCategory, ContextualRailCategoryData>>
   collapsedMetrics: ResolvedCollapsedMetric[]
   criticalCount: number
@@ -108,7 +116,7 @@ export function categoryClass(category: RailCategory): string {
 
 export interface ContextualRailCategoryData {
   category: RailCategory
-  items: GodModeResolvedItem[]
+  items: ContextualRailItem[]
   label: string
   colorClass: string
 }

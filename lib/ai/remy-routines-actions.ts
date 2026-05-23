@@ -65,18 +65,55 @@ const actionSchema = z.object({
   approvalRequired: z.boolean().optional(),
 })
 
-const createRoutineSchema = z.object({
-  name: z.string().min(1).max(160),
-  description: z.string().max(1000).nullable().optional(),
-  status: z.enum(['active', 'paused', 'archived']).optional(),
-  triggerType: z.enum(['signal', 'event', 'schedule', 'manual', 'webhook']),
-  triggerConfig: z.record(z.string(), z.unknown()).optional(),
-  conditionGroup: conditionGroupSchema.optional(),
-  actions: z.array(actionSchema).min(1).max(25),
-  priority: z.number().int().min(-1000).max(1000).optional(),
-  approvalRequired: z.boolean().optional(),
-  idempotencyWindowSeconds: z.number().int().min(60).max(2592000).optional(),
-})
+const FORBIDDEN_ROUTINE_PAYLOAD_PATTERNS = [
+  /\b(?:rm|del|erase|curl|wget|powershell|bash|sh|cmd\.exe|node|python)\b/i,
+  /\b(?:exec|spawn|eval|Function|child_process|fs\.|writeFile|readFile)\b/i,
+  /(?:https?:\/\/|ftp:\/\/|file:\/\/|s3:\/\/)/i,
+  /(?:\.\.[\\/]|[A-Za-z]:[\\/]|\/(?:etc|var|usr|tmp|home)\b|~[\\/])/i,
+]
+
+function payloadContainsForbiddenAuthority(value: unknown): boolean {
+  if (typeof value === 'string') {
+    return FORBIDDEN_ROUTINE_PAYLOAD_PATTERNS.some((pattern) => pattern.test(value))
+  }
+  if (Array.isArray(value)) {
+    return value.some((item) => payloadContainsForbiddenAuthority(item))
+  }
+  if (value && typeof value === 'object') {
+    return Object.entries(value as Record<string, unknown>).some(
+      ([key, nested]) =>
+        FORBIDDEN_ROUTINE_PAYLOAD_PATTERNS.some((pattern) => pattern.test(key)) ||
+        payloadContainsForbiddenAuthority(nested)
+    )
+  }
+  return false
+}
+
+const createRoutineSchema = z
+  .object({
+    name: z.string().min(1).max(160),
+    description: z.string().max(1000).nullable().optional(),
+    status: z.enum(['active', 'paused', 'archived']).optional(),
+    triggerType: z.enum(['signal', 'event', 'schedule', 'manual', 'webhook']),
+    triggerConfig: z.record(z.string(), z.unknown()).optional(),
+    conditionGroup: conditionGroupSchema.optional(),
+    actions: z.array(actionSchema).min(1).max(25),
+    priority: z.number().int().min(-1000).max(1000).optional(),
+    approvalRequired: z.boolean().optional(),
+    idempotencyWindowSeconds: z.number().int().min(60).max(2592000).optional(),
+  })
+  .superRefine((input, ctx) => {
+    for (const [index, action] of input.actions.entries()) {
+      if (payloadContainsForbiddenAuthority(action.payload)) {
+        ctx.addIssue({
+          code: z.ZodIssueCode.custom,
+          path: ['actions', index, 'payload'],
+          message:
+            'Routine payloads cannot contain shell commands, executable code, arbitrary URLs, or filesystem paths.',
+        })
+      }
+    }
+  })
 
 const updateRoutineSchema = createRoutineSchema.partial()
 
@@ -174,6 +211,37 @@ function toRoutinePayload(
 const routineSelect =
   'id, tenant_id, name, description, status, trigger_type, trigger_config, condition_group, actions, priority, approval_required, idempotency_window_seconds, created_by_auth_user_id, updated_by_auth_user_id, created_at, updated_at'
 
+async function logRoutineChangeAudit(input: {
+  tenantId: string
+  authUserId: string
+  routineId: string
+  event: 'routine_created' | 'routine_updated'
+  payload: Record<string, unknown>
+}) {
+  const db: any = createServerClient()
+  const now = new Date().toISOString()
+  const { error } = await db.from('remy_routine_execution_audit').insert({
+    tenant_id: input.tenantId,
+    routine_id: input.routineId,
+    execution_id: null,
+    auth_user_id: input.authUserId,
+    status: 'success',
+    request_payload: toSafeJsonb({
+      event: input.event,
+      routineId: input.routineId,
+      payload: input.payload,
+    }),
+    result_payload: toSafeJsonb({ recorded: true }),
+    started_at: now,
+    finished_at: now,
+    duration_ms: 0,
+  })
+
+  if (error) {
+    throw new Error(`Failed to audit Remy routine change: ${error.message}`)
+  }
+}
+
 export async function listRemyRoutines(input?: {
   status?: RemyRoutineStatus
   triggerType?: RemyRoutine['triggerType']
@@ -205,6 +273,7 @@ export async function listRemyRoutines(input?: {
 }
 
 export async function getRoutines(_chefId?: string): Promise<RemyRoutine[]> {
+  await requireChef()
   return listRemyRoutines()
 }
 
@@ -237,7 +306,7 @@ export async function createRemyRoutine(input: RemyRoutineCreateInput): Promise<
     created_by_auth_user_id: user.id,
     ...toRoutinePayload(tenantId, user.id, {
       ...parsed,
-      status: parsed.status ?? 'active',
+      status: parsed.status ?? 'paused',
       triggerConfig: parsed.triggerConfig ?? {},
       conditionGroup: parsed.conditionGroup ?? { mode: 'all', conditions: [] },
       priority: parsed.priority ?? 0,
@@ -256,6 +325,14 @@ export async function createRemyRoutine(input: RemyRoutineCreateInput): Promise<
     throw new Error(`Failed to create Remy routine: ${error?.message ?? 'Unknown error'}`)
   }
 
+  await logRoutineChangeAudit({
+    tenantId,
+    authUserId: user.id,
+    routineId: data.id as string,
+    event: 'routine_created',
+    payload,
+  })
+
   return routineFromRow(data as RawRoutineRow)
 }
 
@@ -263,6 +340,7 @@ export async function createRoutine(
   _chefId: string | undefined,
   input: RemyRoutineCreateInput
 ): Promise<RemyRoutine> {
+  await requireChef()
   return createRemyRoutine(input)
 }
 
@@ -286,6 +364,14 @@ export async function updateRemyRoutine(
     throw new Error(`Failed to update Remy routine: ${error?.message ?? 'Unknown error'}`)
   }
 
+  await logRoutineChangeAudit({
+    tenantId,
+    authUserId: user.id,
+    routineId,
+    event: 'routine_updated',
+    payload: parsed as Record<string, unknown>,
+  })
+
   return routineFromRow(data as RawRoutineRow)
 }
 
@@ -294,6 +380,7 @@ export async function updateRoutine(
   routineId: string,
   input: RemyRoutineUpdateInput
 ): Promise<RemyRoutine> {
+  await requireChef()
   return updateRemyRoutine(routineId, input)
 }
 
@@ -302,10 +389,12 @@ export async function toggleRoutine(
   routineId: string,
   enabled: boolean
 ): Promise<RemyRoutine> {
+  await requireChef()
   return updateRemyRoutine(routineId, { status: enabled ? 'active' : 'paused' })
 }
 
 export async function archiveRemyRoutine(routineId: string): Promise<RemyRoutine> {
+  await requireChef()
   return updateRemyRoutine(routineId, { status: 'archived' })
 }
 
@@ -313,6 +402,7 @@ export async function deleteRoutine(
   _chefId: string | undefined,
   routineId: string
 ): Promise<RemyRoutine> {
+  await requireChef()
   return archiveRemyRoutine(routineId)
 }
 
@@ -451,5 +541,6 @@ export async function getRoutineExecutionHistory(
   _chefId?: string,
   routineId?: string
 ): Promise<RemyRoutineExecutionAuditEntry[]> {
+  await requireChef()
   return listRemyRoutineExecutionAudit({ routineId })
 }

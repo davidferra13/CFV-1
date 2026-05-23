@@ -116,7 +116,7 @@ export async function getCertifications(): Promise<Certification[]> {
   const { data, error } = await db
     .from('chef_certifications')
     .select('*')
-    .or(`chef_id.eq.${tenantId},tenant_id.eq.${tenantId}`)
+    .eq('tenant_id', tenantId)
     .order('expires_at', { ascending: true, nullsFirst: false })
 
   if (error) throw new Error(error.message)
@@ -189,7 +189,7 @@ export async function updateCertification(
       status: computeStatus(parsed.expires_at ?? null),
     })
     .eq('id', certId)
-    .or(`chef_id.eq.${tenantId},tenant_id.eq.${tenantId}`)
+    .eq('tenant_id', tenantId)
 
   if (error) throw new Error(error.message)
   revalidatePath('/settings/protection')
@@ -206,7 +206,7 @@ export async function deleteCertification(certId: string): Promise<void> {
     .from('chef_certifications')
     .delete()
     .eq('id', certId)
-    .or(`chef_id.eq.${tenantId},tenant_id.eq.${tenantId}`)
+    .eq('tenant_id', tenantId)
 
   if (error) throw new Error(error.message)
   revalidatePath('/settings/protection')

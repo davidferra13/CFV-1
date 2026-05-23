@@ -72,6 +72,18 @@ const TIER_ICON_BG: Record<string, string> = {
   opportunity: 'bg-green-950/60 ring-1 ring-green-500/30',
 }
 
+const UNRESOLVED_TEMPLATE_TOKEN = /\{[a-zA-Z0-9_]+\}/
+
+function hasUnresolvedVisibleText(item: GodModeResolvedItem): boolean {
+  const visibleValues = [
+    item.label,
+    item.context,
+    item.nextAction ?? '',
+    ...(item.inlineActions?.map((action) => action.label) ?? []),
+  ]
+  return visibleValues.some((value) => UNRESOLVED_TEMPLATE_TOKEN.test(value))
+}
+
 function InlineActionButton({
   action,
   onComplete,
@@ -121,6 +133,8 @@ export function RailItemRow({
   className?: string
 }) {
   const router = useRouter()
+  if (hasUnresolvedVisibleText(item)) return null
+
   const Icon = item.icon ? (ICON_MAP[item.icon] ?? FALLBACK_ICON) : FALLBACK_ICON
   const hasDestination = !!item.destination
   const memoryLine = formatRailMemoryLine(item)

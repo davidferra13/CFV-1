@@ -97,8 +97,8 @@ export function buildHomepageTasteRailItems(
   )
   const anchor = getCuisineEntry(ANCHOR_CUISINE_SLUG)
   const ordered = dedupeCuisineEntries([
-    ...(lead ? [lead] : []),
     ...(anchor ? [anchor] : []),
+    ...(lead ? [lead] : []),
     ...boosted,
     ...interleaveCuisineBuckets([
       popular,

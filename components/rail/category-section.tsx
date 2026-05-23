@@ -2,9 +2,9 @@
 
 import type {
   ContextualRailCategoryData,
+  ContextualRailItem,
   RailCategory,
 } from '@/lib/discovery/contextual-rail-types'
-import type { GodModeResolvedItem } from '@/lib/discovery/god-mode-types'
 import { RailIntelCard } from '@/components/rail/rail-intel-card'
 import { cn } from '@/lib/utils'
 import {
@@ -33,7 +33,7 @@ const CATEGORY_ICON: Record<RailCategory, LucideIcon> = {
 type CategorySectionProps =
   | {
       category: RailCategory
-      items: GodModeResolvedItem[]
+      items: ContextualRailItem[]
       colorClass: string
       label: string
       data?: never

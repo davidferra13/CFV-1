@@ -2,7 +2,8 @@
 
 import Link from 'next/link'
 import { useTransition, type MouseEvent } from 'react'
-import type { GodModeResolvedItem, InlineAction } from '@/lib/discovery/god-mode-types'
+import type { InlineAction } from '@/lib/discovery/god-mode-types'
+import type { ContextualRailItem } from '@/lib/discovery/contextual-rail-types'
 import { executeInlineAction } from '@/lib/discovery/inline-action-registry'
 import { cn } from '@/lib/utils'
 import {
@@ -13,6 +14,7 @@ import {
   DollarSign,
   FileText,
   Globe,
+  StickyNote,
   MessageCircle,
   User,
   Utensils,
@@ -37,6 +39,8 @@ const ICON_MAP: Record<string, LucideIcon> = {
   user: User,
   utensils: Utensils,
 }
+
+const FALLBACK_ICON = StickyNote
 
 function IntelActionButton({ action }: { action: InlineAction }) {
   const [isPending, startTransition] = useTransition()
@@ -73,10 +77,10 @@ export function RailIntelCard({
   item,
   categoryColor,
 }: {
-  item: GodModeResolvedItem
+  item: ContextualRailItem
   categoryColor: string
 }) {
-  const Icon = item.icon ? ICON_MAP[item.icon] : null
+  const Icon = item.icon ? (ICON_MAP[item.icon] ?? FALLBACK_ICON) : FALLBACK_ICON
   const isCritical = item.score != null && item.score >= 80
   const hasDestination = !!item.destination
 

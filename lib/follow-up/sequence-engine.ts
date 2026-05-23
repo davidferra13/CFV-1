@@ -1,3 +1,4 @@
+// Execution layer: scheduling, cancelling, processing follow-up sends
 // Post-Event Follow-Up Sequence Engine
 // Core logic for scheduling, cancelling, and processing follow-up email sends.
 // NOT a server action file. Called from server actions and event transitions.

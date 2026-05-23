@@ -150,7 +150,10 @@ export function CollapsedBar({
         {isReadinessBar && <ReadinessBar metrics={data.collapsedMetrics} />}
 
         {data.collapsedMetrics.map((metric, i) => (
-          <span key={metric.resolverKey} className="flex items-center gap-1">
+          <span
+            key={`${metric.resolverKey}:${metric.label}:${i}`}
+            className="flex items-center gap-1"
+          >
             {(i > 0 || isReadinessBar) && <Divider />}
             <MetricChip metric={metric} />
           </span>

@@ -99,7 +99,60 @@ export interface DiscoveryRailItem {
   presentation?: 'pill' | 'story' | 'visual_card' | 'badge'
   eyebrow?: string
   sublabel?: string
+  reason?: string
+  source?: string
+  freshness?: string
+  actionLabel?: string
   debugScore?: DiscoveryRailDebugScore
+}
+
+export type HomepageDiscoveryRailReconciliation = {
+  route: '/'
+  ownerComponent: 'HomepageDiscovery'
+  rendererComponent: 'CuisineMarquee'
+  contractModule: 'lib/discovery/homepage-discovery-rail.ts'
+  status: 'canonical_public_homepage_rail'
+  staleRenderers: Array<{
+    component: string
+    status: 'library_primitive_only' | 'unmounted_for_homepage' | 'different_surface'
+    reason: string
+  }>
+  destinationFamilies: readonly ['/eat', '/chefs', '/nearby', '/ingredients', '/chef/[slug]']
+}
+
+export const HOMEPAGE_DISCOVERY_RAIL_RECONCILIATION: HomepageDiscoveryRailReconciliation = {
+  route: '/',
+  ownerComponent: 'HomepageDiscovery',
+  rendererComponent: 'CuisineMarquee',
+  contractModule: 'lib/discovery/homepage-discovery-rail.ts',
+  status: 'canonical_public_homepage_rail',
+  staleRenderers: [
+    {
+      component: 'components/discovery/discovery-row.tsx',
+      status: 'library_primitive_only',
+      reason: 'Reusable card row primitive, not mounted directly on the public homepage.',
+    },
+    {
+      component: 'components/discovery/universal-rail.tsx',
+      status: 'different_surface',
+      reason:
+        'Operational universal rail for authenticated surfaces, not the public homepage rail.',
+    },
+    {
+      component: 'components/rail/url-capability-rail.tsx',
+      status: 'different_surface',
+      reason: 'Chef URL capability rail, not the consumer-facing homepage discovery rail.',
+    },
+  ],
+  destinationFamilies: ['/eat', '/chefs', '/nearby', '/ingredients', '/chef/[slug]'],
+}
+
+export type DiscoveryRailItemDisplayMeta = {
+  lane: HomepageDiscoveryLane
+  reason: string
+  source: string
+  freshness: string
+  actionLabel: string
 }
 
 export interface HomepageDiscoveryLaneCta {
@@ -274,6 +327,10 @@ export function getHomepageDiscoveryLaneForRole(role: DiscoveryRowRole): Homepag
   return DISCOVERY_ROW_ROLE_LANE_MAP[role]
 }
 
+export function getHomepageDiscoveryRailReconciliation(): HomepageDiscoveryRailReconciliation {
+  return HOMEPAGE_DISCOVERY_RAIL_RECONCILIATION
+}
+
 export function getDiscoveryItemLane(
   item: Pick<DiscoveryRailItem, 'type' | 'href'> & { lane?: HomepageDiscoveryLane | null }
 ): HomepageDiscoveryLane {
@@ -291,6 +348,23 @@ export function withDiscoveryItemLane<T extends DiscoveryRailItem>(
   return {
     ...item,
     lane: getDiscoveryItemLane(item),
+  }
+}
+
+export function getDiscoveryRailItemDisplayMeta(
+  item: DiscoveryRailItem,
+  locationContext: HomepageLocationContext | null = null
+): DiscoveryRailItemDisplayMeta {
+  const lane = getDiscoveryItemLane(item)
+  const locationLabel = locationContext?.location.trim()
+  const defaults = getDefaultDiscoveryRailItemMeta(item, lane, locationLabel)
+
+  return {
+    lane,
+    reason: item.reason ?? defaults.reason,
+    source: item.source ?? defaults.source,
+    freshness: item.freshness ?? defaults.freshness,
+    actionLabel: item.actionLabel ?? defaults.actionLabel,
   }
 }
 
@@ -387,6 +461,93 @@ export function buildInterleavedDiscoveryRow(
 }
 
 export const buildRow2 = buildInterleavedDiscoveryRow
+
+function getDefaultDiscoveryRailItemMeta(
+  item: DiscoveryRailItem,
+  lane: HomepageDiscoveryLane,
+  locationLabel: string | undefined
+): Omit<DiscoveryRailItemDisplayMeta, 'lane'> {
+  if (item.type === 'featured_chef') {
+    return {
+      reason: 'Featured from public chef profile completeness and availability signals.',
+      source: 'Public chef profile',
+      freshness: 'Refreshed with homepage chef directory data',
+      actionLabel: 'Open chef profile',
+    }
+  }
+
+  if (item.type === 'culinary_signal' || item.type === 'seasonal' || item.type === 'ingredient') {
+    return {
+      reason: 'Market-aware ingredient signal for what is strong or time-sensitive right now.',
+      source: 'Public seasonal market pulse',
+      freshness: 'Current seasonal calendar',
+      actionLabel: 'Explore ingredients',
+    }
+  }
+
+  if (item.type === 'location') {
+    return {
+      reason: locationLabel
+        ? `Matched to your saved or searched location: ${locationLabel}.`
+        : 'Location-aware discovery shortcut.',
+      source: 'Homepage location context',
+      freshness: 'Current session',
+      actionLabel: item.href.startsWith('/nearby') ? 'Browse nearby' : 'Find local chefs',
+    }
+  }
+
+  if (item.type === 'service' || item.type === 'occasion' || item.type === 'special_dining') {
+    return {
+      reason: 'Planning shortcut based on common private dining and event intents.',
+      source: 'Public discovery contract',
+      freshness: 'Stable route contract',
+      actionLabel: item.href.startsWith('/eat') ? 'Plan this' : 'Find matching chefs',
+    }
+  }
+
+  if (item.type === 'craving' || item.type === 'food_type' || item.type === 'cuisine') {
+    return {
+      reason:
+        lane === 'taste'
+          ? 'Taste lane item from the homepage cuisine and appetite catalog.'
+          : 'Food discovery shortcut from the public catalog.',
+      source: 'Public discovery catalog',
+      freshness: 'Rotated per visit',
+      actionLabel: item.type === 'cuisine' ? 'Browse cuisine' : 'Explore this taste',
+    }
+  }
+
+  if (item.type === 'saved') {
+    return {
+      reason: 'Shortcut from saved or recently viewed discovery behavior.',
+      source: 'Your browser or signed-in discovery profile',
+      freshness: 'Current profile state',
+      actionLabel: 'Reopen shortcut',
+    }
+  }
+
+  if (item.type === 'circle') {
+    return {
+      reason: 'Shared dining route for group planning and guest coordination.',
+      source: 'Public Dinner Circles surface',
+      freshness: 'Stable route contract',
+      actionLabel: 'Open circles',
+    }
+  }
+
+  return {
+    reason: 'Curated public discovery prompt for browsing chefs, food, or planning paths.',
+    source: 'ChefFlow public discovery rail',
+    freshness: 'Current homepage rail',
+    actionLabel: item.href.startsWith('/nearby')
+      ? 'Browse nearby'
+      : item.href.startsWith('/ingredients')
+        ? 'Explore ingredients'
+        : item.href.startsWith('/chefs') || item.href.startsWith('/chef/')
+          ? 'Find chef'
+          : 'Open discovery',
+  }
+}
 
 function getDiscoveryHrefLane(href: string): HomepageDiscoveryLane | null {
   try {

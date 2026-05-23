@@ -43,11 +43,13 @@ export type CertificationInput = z.infer<typeof CertificationSchema>
 export async function createCertification(input: CertificationInput) {
   const chef = await requireChef()
   const db: any = createServerClient()
+  const tenantId = chef.tenantId ?? chef.entityId
   const data = CertificationSchema.parse(input)
 
   const { error } = await db.from('chef_certifications').insert({
     ...data,
-    chef_id: chef.id,
+    chef_id: tenantId,
+    tenant_id: tenantId,
     document_url: data.document_url || null,
     issued_date: data.issued_date || null,
     expiry_date: data.expiry_date || null,
@@ -60,6 +62,7 @@ export async function createCertification(input: CertificationInput) {
 export async function updateCertification(id: string, input: CertificationInput) {
   const chef = await requireChef()
   const db: any = createServerClient()
+  const tenantId = chef.tenantId ?? chef.entityId
   const data = CertificationSchema.parse(input)
 
   const { error } = await db
@@ -71,7 +74,7 @@ export async function updateCertification(id: string, input: CertificationInput)
       expiry_date: data.expiry_date || null,
     })
     .eq('id', id)
-    .eq('chef_id', chef.id)
+    .eq('tenant_id', tenantId)
 
   if (error) throw new Error(error.message)
   revalidatePath('/settings/compliance')
@@ -80,12 +83,13 @@ export async function updateCertification(id: string, input: CertificationInput)
 export async function deleteCertification(id: string) {
   const chef = await requireChef()
   const db: any = createServerClient()
+  const tenantId = chef.tenantId ?? chef.entityId
 
   const { error } = await db
     .from('chef_certifications')
     .delete()
     .eq('id', id)
-    .eq('chef_id', chef.id)
+    .eq('tenant_id', tenantId)
 
   if (error) throw new Error(error.message)
   revalidatePath('/settings/compliance')
@@ -94,11 +98,12 @@ export async function deleteCertification(id: string) {
 export async function listCertifications() {
   const chef = await requireChef()
   const db: any = createServerClient()
+  const tenantId = chef.tenantId ?? chef.entityId
 
   const { data, error } = await db
     .from('chef_certifications')
     .select('*')
-    .eq('chef_id', chef.id)
+    .eq('tenant_id', tenantId)
     .order('expiry_date', { ascending: true, nullsFirst: false })
 
   if (error) throw new Error(error.message)
@@ -108,6 +113,7 @@ export async function listCertifications() {
 export async function getExpiringCertifications(daysAhead = 60) {
   const chef = await requireChef()
   const db: any = createServerClient()
+  const tenantId = chef.tenantId ?? chef.entityId
 
   const today = new Date()
   const _liso = (d: Date) =>
@@ -120,7 +126,7 @@ export async function getExpiringCertifications(daysAhead = 60) {
   const { data, error } = await db
     .from('chef_certifications')
     .select('*')
-    .eq('chef_id', chef.id)
+    .eq('tenant_id', tenantId)
     .eq('status', 'active')
     .not('expiry_date', 'is', null)
     .lte('expiry_date', threshold)
@@ -151,6 +157,7 @@ export type TempLogInput = z.infer<typeof TempLogSchema>
 export async function logTemperature(input: TempLogInput) {
   const chef = await requireChef()
   const db: any = createServerClient()
+  const tenantId = chef.tenantId ?? chef.entityId
   const data = TempLogSchema.parse(input)
 
   // Auto-determine safety using FDA Food Code reference data if not explicitly set
@@ -178,7 +185,7 @@ export async function logTemperature(input: TempLogInput) {
   const { error } = await db.from('event_temp_logs').insert({
     ...data,
     is_safe: isSafe,
-    chef_id: chef.id,
+    chef_id: tenantId,
   })
 
   if (error) throw new Error(error.message)
@@ -188,8 +195,9 @@ export async function logTemperature(input: TempLogInput) {
 export async function deleteTempLog(id: string) {
   const chef = await requireChef()
   const db: any = createServerClient()
+  const tenantId = chef.tenantId ?? chef.entityId
 
-  const { error } = await db.from('event_temp_logs').delete().eq('id', id).eq('chef_id', chef.id)
+  const { error } = await db.from('event_temp_logs').delete().eq('id', id).eq('chef_id', tenantId)
 
   if (error) throw new Error(error.message)
 }
@@ -197,12 +205,13 @@ export async function deleteTempLog(id: string) {
 export async function getEventTempLog(eventId: string) {
   const chef = await requireChef()
   const db: any = createServerClient()
+  const tenantId = chef.tenantId ?? chef.entityId
 
   const { data, error } = await db
     .from('event_temp_logs')
     .select('*')
     .eq('event_id', eventId)
-    .eq('chef_id', chef.id)
+    .eq('chef_id', tenantId)
     .order('logged_at', { ascending: true })
 
   if (error) throw new Error(error.message)
@@ -216,13 +225,14 @@ export async function getEventTempLog(eventId: string) {
 export async function getAllergenRiskSummary(eventId: string) {
   const chef = await requireChef()
   const db: any = createServerClient()
+  const tenantId = chef.tenantId ?? chef.entityId
 
   // Get event + linked client
   const { data: event, error: evErr } = await db
     .from('events')
     .select('id, client_id, menu_id')
     .eq('id', eventId)
-    .eq('tenant_id', chef.tenantId!)
+    .eq('tenant_id', tenantId)
     .single()
 
   if (evErr || !event) throw new Error('Event not found')
@@ -232,6 +242,7 @@ export async function getAllergenRiskSummary(eventId: string) {
     .from('clients')
     .select('full_name, dietary_restrictions, allergies')
     .eq('id', event.client_id)
+    .eq('tenant_id', tenantId)
     .single()
 
   // Get menu dishes if menu is linked (dishes table has allergen_flags)
@@ -241,6 +252,7 @@ export async function getAllergenRiskSummary(eventId: string) {
       .from('dishes' as any)
       .select('name, allergen_flags')
       .eq('menu_id', event.menu_id)
+      .eq('tenant_id', tenantId)
       .not('name', 'is', null)
 
     dishes = (menuDishes ?? []).map((d: any) => ({

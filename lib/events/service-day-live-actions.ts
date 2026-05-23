@@ -37,6 +37,9 @@ export async function getServiceDayStatus(eventId: string): Promise<ServiceDaySt
   }
 
   const user = await requireClient()
+  if (!user.tenantId) {
+    throw new Error('Client account is missing tenant context. Please contact support.')
+  }
   const db: any = createServerClient()
 
   const { data: event, error } = await db
@@ -47,6 +50,7 @@ export async function getServiceDayStatus(eventId: string): Promise<ServiceDaySt
     )
     .eq('id', parsed.data)
     .eq('client_id', user.entityId)
+    .eq('tenant_id', user.tenantId)
     .single()
 
   if (error || !event) {

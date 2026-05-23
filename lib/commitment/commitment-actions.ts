@@ -17,6 +17,16 @@ import {
   getPricingSuggestions,
   type PricingContext,
 } from '@/lib/commitment/domains/pricing'
+import {
+  evaluateDietaryCommitments,
+  getDietarySuggestions,
+  type DietaryContext,
+} from '@/lib/commitment/domains/dietary'
+import {
+  evaluateBusinessHealthCommitments,
+  getBusinessHealthSuggestions,
+  type BusinessHealthContext,
+} from '@/lib/commitment/domains/business-health'
 import type {
   Commitment,
   CommitmentDomain,

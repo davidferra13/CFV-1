@@ -14,6 +14,18 @@ const DENSITY_CAPS: Record<UnifiedTier, number> = {
   opportunity: 6,
 }
 
+const UNRESOLVED_TEMPLATE_TOKEN = /\{[a-zA-Z0-9_]+\}/
+
+function hasUnresolvedVisibleText(item: GodModeResolvedItem): boolean {
+  const visibleValues = [
+    item.label,
+    item.context,
+    item.nextAction ?? '',
+    ...(item.inlineActions?.map((action) => action.label) ?? []),
+  ]
+  return visibleValues.some((value) => UNRESOLVED_TEMPLATE_TOKEN.test(value))
+}
+
 // ---------------------------------------------------------------------------
 // Visual config per tier
 // ---------------------------------------------------------------------------
@@ -83,15 +95,16 @@ export function TierRow({
   className?: string
 }) {
   const visual = TIER_VISUAL[tier]
-  const { scrollRef } = useAutoScroll({ tier, itemCount: items.length })
+  const safeItems = items.filter((item) => !hasUnresolvedVisibleText(item))
+  const { scrollRef } = useAutoScroll({ tier, itemCount: safeItems.length })
   const [expanded, setExpanded] = useState(false)
 
-  if (items.length === 0) return null
+  if (safeItems.length === 0) return null
 
   const cap = DENSITY_CAPS[tier]
-  const hasOverflow = items.length > cap
-  const visibleItems = expanded ? items : items.slice(0, cap)
-  const overflowCount = items.length - cap
+  const hasOverflow = safeItems.length > cap
+  const visibleItems = expanded ? safeItems : safeItems.slice(0, cap)
+  const overflowCount = safeItems.length - cap
 
   return (
     <div
@@ -134,7 +147,7 @@ export function TierRow({
           )}
         >
           {visual.label}
-          <span className="opacity-70">{items.length}</span>
+          <span className="opacity-70">{safeItems.length}</span>
         </span>
       </div>
 
@@ -154,7 +167,7 @@ export function TierRow({
           <div
             key={`${item.definitionId}-${item.destination}`}
             className={cn(
-              'snap-start flex-shrink-0 min-w-[260px] max-w-[340px]',
+              'snap-start w-[min(340px,calc(100vw-4rem))] min-w-[240px] max-w-[340px] flex-shrink-0',
               'sm:flex-shrink sm:min-w-[260px] sm:max-w-[380px]',
               'opacity-0 animate-[rail-item-enter_200ms_ease-out_forwards]'
             )}

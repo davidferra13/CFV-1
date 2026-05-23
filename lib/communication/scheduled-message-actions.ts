@@ -17,7 +17,7 @@ export type ScheduledMessage = {
   body: string
   scheduled_for: string
   sent_at: string | null
-  status: 'scheduled' | 'sent' | 'failed' | 'cancelled'
+  status: 'draft' | 'scheduled' | 'sent' | 'failed' | 'cancelled'
   template_id: string | null
   context_type: 'inquiry' | 'event' | 'client' | null
   context_id: string | null
@@ -31,7 +31,7 @@ export type ScheduledMessage = {
 // ==========================================
 
 export async function getScheduledMessages(options?: {
-  status?: 'scheduled' | 'sent' | 'failed' | 'cancelled'
+  status?: 'draft' | 'scheduled' | 'sent' | 'failed' | 'cancelled'
   contextType?: 'inquiry' | 'event' | 'client'
   contextId?: string
 }): Promise<{
@@ -39,12 +39,13 @@ export async function getScheduledMessages(options?: {
   error: string | null
 }> {
   const user = await requireChef()
+  const tenantId = user.tenantId!
   const db: any = createServerClient()
 
   let query = db
     .from('scheduled_messages')
     .select('*')
-    .eq('chef_id', user.entityId)
+    .eq('chef_id', tenantId)
     .order('scheduled_for', { ascending: true })
 
   if (options?.status) {
@@ -84,6 +85,7 @@ export async function scheduleMessage(input: {
   context_id?: string
 }): Promise<{ data: ScheduledMessage | null; error: string | null }> {
   const user = await requireChef()
+  const tenantId = user.tenantId!
   const db: any = createServerClient()
 
   const scheduledDate = new Date(input.scheduled_for)
@@ -98,7 +100,7 @@ export async function scheduleMessage(input: {
   const { data, error } = await db
     .from('scheduled_messages')
     .insert({
-      chef_id: user.entityId,
+      chef_id: tenantId,
       recipient_id: input.recipient_id || null,
       channel: input.channel || 'email',
       subject: input.subject || null,
@@ -125,6 +127,7 @@ export async function cancelMessage(id: string): Promise<{
   error: string | null
 }> {
   const user = await requireChef()
+  const tenantId = user.tenantId!
   const db: any = createServerClient()
 
   // Verify the message is still cancellable
@@ -132,7 +135,7 @@ export async function cancelMessage(id: string): Promise<{
     .from('scheduled_messages')
     .select('status')
     .eq('id', id)
-    .eq('chef_id', user.entityId)
+    .eq('chef_id', tenantId)
     .single()
 
   if (fetchError || !msg) {
@@ -150,7 +153,7 @@ export async function cancelMessage(id: string): Promise<{
       updated_at: new Date().toISOString(),
     })
     .eq('id', id)
-    .eq('chef_id', user.entityId)
+    .eq('chef_id', tenantId)
     .select()
     .single()
 
@@ -168,6 +171,7 @@ export async function rescheduleMessage(
   newScheduledFor: string
 ): Promise<{ data: ScheduledMessage | null; error: string | null }> {
   const user = await requireChef()
+  const tenantId = user.tenantId!
   const db: any = createServerClient()
 
   const scheduledDate = new Date(newScheduledFor)
@@ -184,7 +188,7 @@ export async function rescheduleMessage(
     .from('scheduled_messages')
     .select('status')
     .eq('id', id)
-    .eq('chef_id', user.entityId)
+    .eq('chef_id', tenantId)
     .single()
 
   if (fetchError || !msg) {
@@ -202,7 +206,7 @@ export async function rescheduleMessage(
       updated_at: new Date().toISOString(),
     })
     .eq('id', id)
-    .eq('chef_id', user.entityId)
+    .eq('chef_id', tenantId)
     .select()
     .single()
 
@@ -222,21 +226,23 @@ export async function rescheduleMessage(
 /**
  * Fetch all pending drafts for the current chef.
  * Drafts are scheduled messages that have not been sent yet
- * (status IN ('draft', 'scheduled'), sent_at IS NULL). These include
- * CIL-generated drafts awaiting chef review and manually scheduled messages.
+ * (status IN ('draft', 'scheduled', 'failed'), sent_at IS NULL). These include
+ * CIL-generated drafts awaiting chef review, manually scheduled messages, and
+ * failed sends that need recovery.
  */
 export async function getDraftMessages(): Promise<{
   data: ScheduledMessage[] | null
   error: string | null
 }> {
   const user = await requireChef()
+  const tenantId = user.tenantId!
   const db: any = createServerClient()
 
   const { data, error } = await db
     .from('scheduled_messages')
     .select('*')
-    .eq('chef_id', user.entityId)
-    .in('status', ['draft', 'scheduled'])
+    .eq('chef_id', tenantId)
+    .in('status', ['draft', 'scheduled', 'failed'])
     .is('sent_at', null)
     .order('scheduled_for', { ascending: true })
 
@@ -258,20 +264,21 @@ export async function approveDraft(
   edits?: { subject?: string; body?: string; scheduled_for?: string }
 ): Promise<{ data: ScheduledMessage | null; error: string | null }> {
   const user = await requireChef()
+  const tenantId = user.tenantId!
   const db: any = createServerClient()
 
   const { data: msg, error: fetchError } = await db
     .from('scheduled_messages')
     .select('*')
     .eq('id', id)
-    .eq('chef_id', user.entityId)
+    .eq('chef_id', tenantId)
     .single()
 
   if (fetchError || !msg) {
     return { data: null, error: 'Draft not found' }
   }
 
-  if (msg.status !== 'scheduled') {
+  if (msg.status !== 'scheduled' && msg.status !== 'draft') {
     return { data: null, error: `Cannot approve a message with status "${msg.status}"` }
   }
 
@@ -280,6 +287,7 @@ export async function approveDraft(
   }
 
   const updatePayload: Record<string, unknown> = {
+    status: 'scheduled',
     updated_at: new Date().toISOString(),
   }
 
@@ -307,7 +315,7 @@ export async function approveDraft(
     .from('scheduled_messages')
     .update(updatePayload)
     .eq('id', id)
-    .eq('chef_id', user.entityId)
+    .eq('chef_id', tenantId)
     .select()
     .single()
 
@@ -328,20 +336,21 @@ export async function rejectDraft(
   id: string
 ): Promise<{ data: ScheduledMessage | null; error: string | null }> {
   const user = await requireChef()
+  const tenantId = user.tenantId!
   const db: any = createServerClient()
 
   const { data: msg, error: fetchError } = await db
     .from('scheduled_messages')
     .select('status, sent_at')
     .eq('id', id)
-    .eq('chef_id', user.entityId)
+    .eq('chef_id', tenantId)
     .single()
 
   if (fetchError || !msg) {
     return { data: null, error: 'Draft not found' }
   }
 
-  if (msg.status !== 'scheduled') {
+  if (msg.status !== 'scheduled' && msg.status !== 'draft' && msg.status !== 'failed') {
     return { data: null, error: `Cannot reject a message with status "${msg.status}"` }
   }
 
@@ -356,13 +365,79 @@ export async function rejectDraft(
       updated_at: new Date().toISOString(),
     })
     .eq('id', id)
-    .eq('chef_id', user.entityId)
+    .eq('chef_id', tenantId)
     .select()
     .single()
 
   if (error) {
     console.error('[rejectDraft] Error:', error)
     return { data: null, error: 'Failed to reject draft' }
+  }
+
+  revalidatePath('/communication/drafts')
+  revalidatePath('/communication')
+  return { data: data as ScheduledMessage, error: null }
+}
+
+export async function retryFailedMessage(
+  id: string,
+  edits?: { subject?: string; body?: string; scheduled_for?: string }
+): Promise<{ data: ScheduledMessage | null; error: string | null }> {
+  const user = await requireChef()
+  const tenantId = user.tenantId!
+  const db: any = createServerClient()
+
+  const { data: msg, error: fetchError } = await db
+    .from('scheduled_messages')
+    .select('status, sent_at')
+    .eq('id', id)
+    .eq('chef_id', tenantId)
+    .single()
+
+  if (fetchError || !msg) {
+    return { data: null, error: 'Failed message not found' }
+  }
+
+  if (msg.status !== 'failed') {
+    return { data: null, error: `Cannot retry a message with status "${msg.status}"` }
+  }
+
+  const updatePayload: Record<string, unknown> = {
+    status: 'scheduled',
+    sent_at: null,
+    error_message: null,
+    scheduled_for: new Date().toISOString(),
+    updated_at: new Date().toISOString(),
+  }
+
+  if (edits?.subject !== undefined) {
+    updatePayload.subject = edits.subject
+  }
+  if (edits?.body !== undefined) {
+    if (!edits.body.trim()) {
+      return { data: null, error: 'Message body cannot be empty' }
+    }
+    updatePayload.body = edits.body
+  }
+  if (edits?.scheduled_for !== undefined) {
+    const retryDate = new Date(edits.scheduled_for)
+    if (isNaN(retryDate.getTime())) {
+      return { data: null, error: 'Invalid scheduled date' }
+    }
+    updatePayload.scheduled_for = edits.scheduled_for
+  }
+
+  const { data, error } = await db
+    .from('scheduled_messages')
+    .update(updatePayload)
+    .eq('id', id)
+    .eq('chef_id', tenantId)
+    .select()
+    .single()
+
+  if (error) {
+    console.error('[retryFailedMessage] Error:', error)
+    return { data: null, error: 'Failed to retry message' }
   }
 
   revalidatePath('/communication/drafts')

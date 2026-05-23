@@ -36,19 +36,19 @@ export async function generateChefBioDraft(): Promise<ChefBioDraft> {
     db
       .from('chefs')
       .select('display_name, business_name, tagline, bio')
-      .eq('id', user.tenantId!)
+      .eq('id', user.entityId)
       .single(),
     db
       .from('events')
       .select('occasion, guest_count, event_date, status')
-      .eq('tenant_id', user.tenantId!)
+      .eq('tenant_id', user.entityId)
       .in('status', ['completed', 'in_progress'])
       .order('event_date', { ascending: false })
       .limit(20),
     db
       .from('recipes')
       .select('name, category, dietary_tags')
-      .eq('tenant_id', user.tenantId!)
+      .eq('tenant_id', user.entityId)
       .limit(20),
   ])
 
@@ -72,8 +72,11 @@ Write fresh bio copy and a tagline for a chef.
 Write in third person for long bio, first person for short bio.
 Focus on what makes this chef distinctive - their cuisine style, client experience, event types.
 Be specific, warm, and confidence-inspiring. Avoid cliches like "passionate" and "farm-to-table".
+Use only public-safe professional/service-fit details in this prompt. Do not invent credentials,
+named private clients, medical/dietary claims, cannabis claims, legal/compliance claims, or third
+party stories. Keep the default public bio concise and avoid life-story or tell-all copy.
 
-Return JSON with keys: shortBio (2-3 sentence first-person bio for social profiles), longBio (4-6 sentence third-person bio for website), tagline (primary tagline under 10 words), linkedInHeadline (LinkedIn-style professional headline), alternativeTaglines (array of 2 alternative taglines).`
+Return JSON with keys: shortBio (2-3 sentence first-person bio for social profiles, under 600 characters), longBio (4-6 sentence third-person bio for external website use only), tagline (primary tagline under 10 words), linkedInHeadline (LinkedIn-style professional headline), alternativeTaglines (array of 2 alternative taglines).`
 
   const userContent = `Chef Details:
   Name: ${chef?.display_name ?? 'Chef'}

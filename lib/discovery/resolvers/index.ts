@@ -23,8 +23,18 @@ export async function resolveRailData(
         const { resolveClientRailData } = await import('./client-resolver')
         return resolveClientRailData(userId, tenantId)
       }
-      // Staff, partner, admin: resolvers not yet built.
-      // Items render with static labels until resolvers are added.
+      case 'admin': {
+        const { resolveAdminRailData } = await import('./admin-resolver')
+        return resolveAdminRailData(userId, tenantId)
+      }
+      case 'staff': {
+        const { resolveStaffRailData } = await import('./staff-resolver')
+        return resolveStaffRailData(userId, tenantId)
+      }
+      case 'partner': {
+        const { resolvePartnerRailData } = await import('./partner-resolver')
+        return resolvePartnerRailData(userId, tenantId)
+      }
       default:
         return {}
     }

@@ -1,3 +1,4 @@
+// Deterministic email templates consumed by the follow-up engine
 // Post-Event Follow-Up Email Templates
 // Returns { subject, react } for each step in the follow-up sequence.
 // Templates are deterministic (no AI). Warm, personal, human tone.

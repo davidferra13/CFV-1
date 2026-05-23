@@ -59,6 +59,18 @@ function mapGodModeTierToUnified(item: GodModeResolvedItem, score: number): Unif
   return 'opportunity'
 }
 
+const UNRESOLVED_TEMPLATE_TOKEN = /\{[a-zA-Z0-9_]+\}/
+
+export function hasUnresolvedRailTemplate(item: GodModeResolvedItem): boolean {
+  const visibleValues = [
+    item.label,
+    item.context,
+    item.nextAction ?? '',
+    ...(item.inlineActions?.map((action) => action.label) ?? []),
+  ]
+  return visibleValues.some((value) => UNRESOLVED_TEMPLATE_TOKEN.test(value))
+}
+
 // ---------------------------------------------------------------------------
 // Spec-aligned multiplicative scoring adapter for GodModeResolvedItem
 // ---------------------------------------------------------------------------
@@ -351,7 +363,9 @@ export async function assembleTieredRail(
   // 7b. Apply persistent rail item state filter to all sources
   // (God Mode items were pre-filtered in step 3, but operator + universal
   // items need this filter applied here after adaptation.)
-  const deduped = dedupedRaw.filter((item) => !suppressedKeys.has(item.definitionId))
+  const deduped = dedupedRaw.filter(
+    (item) => !suppressedKeys.has(item.definitionId) && !hasUnresolvedRailTemplate(item)
+  )
 
   // 8. Score items and apply time-of-day multiplier
   const timeWindow = getCurrentTimeWindow(now)
