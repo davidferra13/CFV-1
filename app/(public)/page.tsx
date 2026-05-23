@@ -11,6 +11,10 @@ import { HomepageSeasonalSpotlight } from './_components/homepage-seasonal-spotl
 import { FeaturedChefSpotlight } from './_components/featured-chef-spotlight'
 import { HeroTrustBar } from './_components/hero-trust-bar'
 import LandingBelowFold from './_components/landing-below-fold'
+import { TrustBadges } from '@/components/marketing/trust-badges'
+import { BuiltByChefSection } from '@/components/marketing/built-by-chef-section'
+import { PlatformShowcase } from '@/components/marketing/platform-showcase'
+import { DataPromise } from '@/components/marketing/data-promise'
 import { getPublicPlatformStats } from '@/lib/directory/public-stats'
 import { getDiscoverableChefs } from '@/lib/directory/actions'
 import { getPublicSeasonalMarketPulse } from '@/lib/public/public-seasonal-market-pulse'
@@ -320,6 +324,9 @@ export default async function Home() {
         </div>
       </section>
 
+      {/* ── Trust Badges ── */}
+      <TrustBadges />
+
       {/* ── Seasonal Band ── */}
       <div className="zone-seasonal zone-transition">
         <HomepageSeasonalSpotlight pulse={seasonalPulse} />
@@ -330,10 +337,19 @@ export default async function Home() {
         <FeaturedChefSpotlight chefs={featuredChefsWithImages} />
       </div>
 
+      {/* ── Built by a Chef ── */}
+      <BuiltByChefSection />
+
+      {/* ── Platform Showcase ── */}
+      <PlatformShowcase />
+
       {/* ── Below Fold Content ── */}
       <div className="zone-howit">
         <LandingBelowFold />
       </div>
+
+      {/* ── Data Promise ── */}
+      <DataPromise />
     </main>
   )
 }
