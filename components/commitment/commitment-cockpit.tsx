@@ -11,6 +11,10 @@ import {
   type CommitmentOverride,
   type OverrideCategory,
 } from '@/lib/commitment/types'
+import {
+  MILESTONE_DETAILS,
+  getNextMilestone,
+} from '@/lib/commitment/streak'
 
 function mapCommitmentRow(row: any): Commitment {
   return {
@@ -259,17 +263,34 @@ export async function CommitmentCockpit() {
             })}
           </div>
 
-          {/* Streaks */}
+          {/* Streaks with Milestone Tracking */}
           {topStreaks.length > 0 && (
             <div>
               <h3 className="text-sm font-medium mb-2">Active Streaks</h3>
-              <div className="space-y-1">
-                {topStreaks.map((c: Commitment) => (
-                  <div key={c.id} className="flex items-center justify-between text-sm">
-                    <Badge variant="default">{DOMAIN_LABELS[c.domain]}</Badge>
-                    <span className="font-medium">{c.currentStreak} days</span>
-                  </div>
-                ))}
+              <div className="space-y-2">
+                {topStreaks.map((c: Commitment) => {
+                  const next = getNextMilestone(c.currentStreak)
+                  const daysToNext = next !== null ? next - c.currentStreak : null
+                  const milestone = next !== null ? MILESTONE_DETAILS[next] : null
+                  const atMilestone = (c.currentStreak === 30 || c.currentStreak === 60 || c.currentStreak === 90 || c.currentStreak === 180 || c.currentStreak === 365)
+                  return (
+                    <div key={c.id} className="rounded-lg border p-2 space-y-1">
+                      <div className="flex items-center justify-between text-sm">
+                        <Badge variant="default">{DOMAIN_LABELS[c.domain]}</Badge>
+                        <div className="flex items-center gap-2">
+                          {atMilestone && <span className="text-xs text-amber-500 font-medium">MILESTONE</span>}
+                          <span className="font-medium">{c.currentStreak} days</span>
+                        </div>
+                      </div>
+                      {milestone && daysToNext !== null && daysToNext > 0 && (
+                        <div className="flex items-center justify-between text-xs text-muted-foreground">
+                          <span>Next: {milestone.label}</span>
+                          <span>{daysToNext}d away</span>
+                        </div>
+                      )}
+                    </div>
+                  )
+                })}
               </div>
             </div>
           )}
