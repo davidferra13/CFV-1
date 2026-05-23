@@ -20,6 +20,7 @@ import {
   getPublicAlternatives,
 } from '@/lib/openclaw/public-ingredient-queries'
 import {
+  getEnrichedIngredientSlugs,
   getIngredientKnowledgeByName,
   getIngredientKnowledgeBySlug,
   getRelatedIngredients,
@@ -37,6 +38,14 @@ import { getCurrentUser } from '@/lib/auth/get-user'
 import type { CatalogDetailResult } from '@/lib/openclaw/catalog-types'
 
 const BASE_URL = process.env.NEXT_PUBLIC_APP_URL || 'https://cheflowhq.com'
+
+export const revalidate = 3600
+export const dynamicParams = true
+
+export async function generateStaticParams() {
+  const slugs = await getEnrichedIngredientSlugs()
+  return slugs.map((entry) => ({ id: entry.slug }))
+}
 
 // ---------------------------------------------------------------------------
 // JSON-LD structured data helpers

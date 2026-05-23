@@ -101,6 +101,7 @@ export async function listGuests(search?: string) {
     .select('*, guest_tags(tag, color), guest_comps(id, description, redeemed_at)')
     .eq('chef_id', user.tenantId!)
     .order('name', { ascending: true })
+    .limit(500)
 
   if (search && search.trim()) {
     const safeSearch = search.trim().replace(/[%_,.()"'\\]/g, '')

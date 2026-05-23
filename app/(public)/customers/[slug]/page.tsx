@@ -6,6 +6,9 @@ import { JsonLd } from '@/components/seo/json-ld'
 import { LAUNCH_MODE, PRIMARY_SIGNUP_LABEL } from '@/lib/marketing/launch-mode'
 import { buildMarketingSignupHref } from '@/lib/marketing/signup-links'
 
+export const revalidate = 3600
+export const dynamicParams = true
+
 const BASE_URL = process.env.NEXT_PUBLIC_APP_URL || 'https://cheflowhq.com'
 
 type Props = {

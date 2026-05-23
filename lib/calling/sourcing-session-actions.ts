@@ -771,26 +771,34 @@ export async function getRecentSessions(limit?: number): Promise<ActionResult> {
       return { success: false, error: 'Failed to fetch sessions' }
     }
 
-    // Attach candidate summaries per session
-    const sessionsWithSummary = await Promise.all(
-      (sessions || []).map(async (s: any) => {
-        const { data: candidates } = await db
-          .from('sourcing_session_candidates')
-          .select('status, result')
-          .eq('session_id', s.id)
+    // Batch-fetch all candidates in one query (avoids N+1 per-session queries)
+    const sessionIds = (sessions || []).map((s: any) => s.id)
+    const { data: allCandidates } = await db
+      .from('sourcing_session_candidates')
+      .select('session_id, status, result')
+      .in('session_id', sessionIds)
 
-        return {
-          ...s,
-          candidateSummary: {
-            total: candidates?.length ?? 0,
-            confirmed: candidates?.filter((c: any) => c.result === 'confirmed').length ?? 0,
-            unavailable: candidates?.filter((c: any) => c.result === 'unavailable').length ?? 0,
-            noAnswer: candidates?.filter((c: any) => c.result === 'no_answer').length ?? 0,
-            pending: candidates?.filter((c: any) => c.status === 'pending').length ?? 0,
-          },
-        }
-      })
-    )
+    // Group candidates by session_id
+    const candidatesBySession = new Map<string, any[]>()
+    for (const c of allCandidates ?? []) {
+      const list = candidatesBySession.get(c.session_id)
+      if (list) list.push(c)
+      else candidatesBySession.set(c.session_id, [c])
+    }
+
+    const sessionsWithSummary = (sessions || []).map((s: any) => {
+      const candidates = candidatesBySession.get(s.id) ?? []
+      return {
+        ...s,
+        candidateSummary: {
+          total: candidates.length,
+          confirmed: candidates.filter((c: any) => c.result === 'confirmed').length,
+          unavailable: candidates.filter((c: any) => c.result === 'unavailable').length,
+          noAnswer: candidates.filter((c: any) => c.result === 'no_answer').length,
+          pending: candidates.filter((c: any) => c.status === 'pending').length,
+        },
+      }
+    })
 
     return { success: true, data: sessionsWithSummary }
   } catch (err) {

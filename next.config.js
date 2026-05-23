@@ -431,6 +431,241 @@ const nextConfig = {
         destination: '/events/travel',
         permanent: true,
       },
+      // Social consolidation
+      {
+        source: '/social',
+        destination: '/marketing/social',
+        permanent: true,
+      },
+      {
+        source: '/social/calendar',
+        destination: '/marketing/social',
+        permanent: true,
+      },
+      {
+        source: '/social/compose/:eventId',
+        destination: '/marketing/social',
+        permanent: true,
+      },
+      {
+        source: '/social/connections',
+        destination: '/marketing/social/connections',
+        permanent: true,
+      },
+      {
+        source: '/social/hub-overview',
+        destination: '/marketing/social',
+        permanent: true,
+      },
+      {
+        source: '/social/planner',
+        destination: '/marketing/social',
+        permanent: true,
+      },
+      {
+        source: '/social/planner/:month',
+        destination: '/marketing/social',
+        permanent: true,
+      },
+      {
+        source: '/social/posts/:id',
+        destination: '/marketing/social',
+        permanent: true,
+      },
+      {
+        source: '/social/settings',
+        destination: '/marketing/social/settings',
+        permanent: true,
+      },
+      {
+        source: '/social/templates',
+        destination: '/marketing/social/templates',
+        permanent: true,
+      },
+      {
+        source: '/social/vault',
+        destination: '/content/vault',
+        permanent: true,
+      },
+      // Safety to compliance
+      {
+        source: '/safety/backup-chef',
+        destination: '/settings/compliance/backup',
+        permanent: true,
+      },
+      {
+        source: '/safety/claims',
+        destination: '/settings/compliance/claims',
+        permanent: true,
+      },
+      {
+        source: '/safety/claims/documents',
+        destination: '/settings/compliance/claims/documents',
+        permanent: true,
+      },
+      {
+        source: '/safety/claims/new',
+        destination: '/settings/compliance/claims/new',
+        permanent: true,
+      },
+      {
+        source: '/safety/incidents',
+        destination: '/settings/compliance/incidents',
+        permanent: true,
+      },
+      {
+        source: '/safety/incidents/new',
+        destination: '/settings/compliance/incidents/new',
+        permanent: true,
+      },
+      {
+        source: '/safety/incidents/:id',
+        destination: '/settings/compliance/incidents/:id',
+        permanent: true,
+      },
+      // Quote status filters
+      {
+        source: '/quotes/accepted',
+        destination: '/quotes?status=accepted',
+        permanent: false,
+      },
+      {
+        source: '/quotes/draft',
+        destination: '/quotes?status=draft',
+        permanent: false,
+      },
+      {
+        source: '/quotes/expired',
+        destination: '/quotes?status=expired',
+        permanent: false,
+      },
+      {
+        source: '/quotes/rejected',
+        destination: '/quotes?status=rejected',
+        permanent: false,
+      },
+      {
+        source: '/quotes/sent',
+        destination: '/quotes?status=sent',
+        permanent: false,
+      },
+      {
+        source: '/quotes/viewed',
+        destination: '/quotes?status=viewed',
+        permanent: false,
+      },
+      // Settings renames
+      {
+        source: '/settings/journey',
+        destination: '/settings/journal',
+        permanent: true,
+      },
+      {
+        source: '/settings/journey/:id',
+        destination: '/settings/journal/:id',
+        permanent: true,
+      },
+      {
+        source: '/settings/support',
+        destination: '/settings/billing',
+        permanent: true,
+      },
+      // Misc route consolidation
+      {
+        source: '/consulting',
+        destination: '/quotes/calculator',
+        permanent: true,
+      },
+      {
+        source: '/culinary/menus',
+        destination: '/menus',
+        permanent: true,
+      },
+      {
+        source: '/culinary/supplier-calls',
+        destination: '/culinary/call-sheet',
+        permanent: true,
+      },
+      {
+        source: '/culinary/vendors',
+        destination: '/culinary/call-sheet?tab=vendors',
+        permanent: true,
+      },
+      {
+        source: '/guest-analytics',
+        destination: '/clients/insights',
+        permanent: true,
+      },
+      {
+        source: '/guest-leads',
+        destination: '/leads',
+        permanent: true,
+      },
+      {
+        source: '/import/csv',
+        destination: '/import?mode=csv',
+        permanent: false,
+      },
+      {
+        source: '/import/mxp',
+        destination: '/import?mode=file-upload',
+        permanent: false,
+      },
+      {
+        source: '/inbox/triage',
+        destination: '/inbox',
+        permanent: true,
+      },
+      {
+        source: '/leads/new',
+        destination: '/leads',
+        permanent: true,
+      },
+      {
+        source: '/menus/dishes',
+        destination: '/culinary/dish-index',
+        permanent: true,
+      },
+      {
+        source: '/nutrition/:menuId',
+        destination: '/culinary/menus/:menuId/nutrition',
+        permanent: true,
+      },
+      {
+        source: '/payments',
+        destination: '/finance/payments',
+        permanent: true,
+      },
+      {
+        source: '/pipeline',
+        destination: '/quotes',
+        permanent: true,
+      },
+      {
+        source: '/prospecting/openclaw',
+        destination: '/prospecting',
+        permanent: true,
+      },
+      {
+        source: '/cannabis/hub',
+        destination: '/cannabis',
+        permanent: true,
+      },
+      {
+        source: '/chef/cannabis/rsvps',
+        destination: '/cannabis/rsvps',
+        permanent: true,
+      },
+      {
+        source: '/survey/:token',
+        destination: '/feedback/:token',
+        permanent: true,
+      },
+      {
+        source: '/cannabis-invite/:token',
+        destination: '/',
+        permanent: false,
+      },
     ]
   },
 }

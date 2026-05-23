@@ -992,7 +992,7 @@ export async function getClientsWithStats() {
   // Use the client_financial_summary view for stats
   const { data: financialSummaries } = await db
     .from('client_financial_summary')
-    .select('*')
+    .select('client_id, total_events_count, lifetime_value_cents, last_event_date')
     .eq('tenant_id', user.tenantId!)
 
   // Build stats map from the view
@@ -1729,45 +1729,55 @@ export async function searchClientsQuick(query: string): Promise<ClientQuickResu
     return []
   }
 
-  // Enrich with event data and revenue in parallel
-  const enriched = await Promise.all(
-    clients.map(async (client: any) => {
-      // Get event count + last event date
-      const { data: eventData } = await db
-        .from('events')
-        .select('id, event_date')
-        .eq('tenant_id', user.tenantId!)
-        .eq('client_id', client.id)
-        .is('deleted_at' as any, null)
-        .order('event_date', { ascending: false })
+  // Batch-fetch event data and revenue for all clients (avoids N+1 per-client queries)
+  const clientIds = clients.map((c: any) => c.id)
 
-      const events = eventData ?? []
+  const [{ data: allEvents }, { data: allRevenue }] = await Promise.all([
+    db
+      .from('events')
+      .select('id, event_date, client_id')
+      .eq('tenant_id', user.tenantId!)
+      .in('client_id', clientIds)
+      .is('deleted_at' as any, null)
+      .order('event_date', { ascending: false }),
+    db
+      .from('ledger_entries')
+      .select('amount_cents, client_id')
+      .eq('tenant_id', user.tenantId!)
+      .in('client_id', clientIds)
+      .eq('entry_type', 'payment'),
+  ])
 
-      // Get lifetime revenue from ledger
-      const { data: revenueData } = await db
-        .from('ledger_entries')
-        .select('amount_cents')
-        .eq('tenant_id', user.tenantId!)
-        .eq('client_id', client.id)
-        .eq('entry_type', 'payment')
+  // Index events by client_id
+  const eventsByClient = new Map<string, any[]>()
+  for (const ev of allEvents ?? []) {
+    const list = eventsByClient.get(ev.client_id)
+    if (list) list.push(ev)
+    else eventsByClient.set(ev.client_id, [ev])
+  }
 
-      const lifetimeRevenue = (revenueData ?? []).reduce(
-        (sum: number, e: any) => sum + (e.amount_cents ?? 0),
-        0
-      )
+  // Sum revenue by client_id
+  const revenueByClient = new Map<string, number>()
+  for (const le of allRevenue ?? []) {
+    revenueByClient.set(
+      le.client_id,
+      (revenueByClient.get(le.client_id) ?? 0) + (le.amount_cents ?? 0)
+    )
+  }
 
-      return {
-        id: client.id,
-        full_name: client.full_name ?? 'Unknown',
-        loyalty_tier: client.loyalty_tier ?? null,
-        dietary_restrictions: client.dietary_restrictions ?? null,
-        allergies: client.allergies ?? null,
-        event_count: events.length,
-        last_event_date: events[0]?.event_date ?? null,
-        lifetime_revenue_cents: lifetimeRevenue,
-      } satisfies ClientQuickResult
-    })
-  )
+  const enriched: ClientQuickResult[] = clients.map((client: any) => {
+    const clientEvents = eventsByClient.get(client.id) ?? []
+    return {
+      id: client.id,
+      full_name: client.full_name ?? 'Unknown',
+      loyalty_tier: client.loyalty_tier ?? null,
+      dietary_restrictions: client.dietary_restrictions ?? null,
+      allergies: client.allergies ?? null,
+      event_count: clientEvents.length,
+      last_event_date: clientEvents[0]?.event_date ?? null,
+      lifetime_revenue_cents: revenueByClient.get(client.id) ?? 0,
+    } satisfies ClientQuickResult
+  })
 
   return enriched
 }

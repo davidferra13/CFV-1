@@ -9,6 +9,9 @@ import {
 } from '@/lib/discovery/cuisine-pages'
 import { buildMarketingMetadata } from '@/lib/site/public-site'
 
+export const revalidate = 3600
+export const dynamicParams = true
+
 const APP_URL = process.env.NEXT_PUBLIC_APP_URL || 'https://cheflowhq.com'
 
 type PageProps = {

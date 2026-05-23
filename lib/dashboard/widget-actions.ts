@@ -340,11 +340,12 @@ export async function getShoppingWindowItems(daysAhead = 3): Promise<ShoppingWin
     .in('event_id', allEventIds)
   const eventsWithLists = new Set((groceryLists || []).map((g: any) => g.event_id))
 
-  // Compute prep timelines for far events to check grocery deadlines
+  // Batch all timeline lookups into a single Promise.all (avoids sequential N+1)
   // Import dynamically to avoid circular deps (getEventPrepTimeline is a server action)
   const { getEventPrepTimeline } = await import('@/lib/prep-timeline/actions')
-  const farTimelines = await Promise.all(
-    farEvents.map(async (e: any) => {
+  const allTimelineEvents = [...directEvents, ...farEvents]
+  const allTimelines = await Promise.all(
+    allTimelineEvents.map(async (e: any) => {
       try {
         const result = await getEventPrepTimeline(e.id)
         return { eventId: e.id, groceryDeadline: result.timeline?.groceryDeadline ?? null }
@@ -353,20 +354,9 @@ export async function getShoppingWindowItems(daysAhead = 3): Promise<ShoppingWin
       }
     })
   )
-  const farDeadlineMap = new Map(farTimelines.map((t) => [t.eventId, t.groceryDeadline]))
-
-  // Also compute timelines for direct events (to show grocery deadline info)
-  const directTimelines = await Promise.all(
-    directEvents.map(async (e: any) => {
-      try {
-        const result = await getEventPrepTimeline(e.id)
-        return { eventId: e.id, groceryDeadline: result.timeline?.groceryDeadline ?? null }
-      } catch {
-        return { eventId: e.id, groceryDeadline: null }
-      }
-    })
-  )
-  const directDeadlineMap = new Map(directTimelines.map((t) => [t.eventId, t.groceryDeadline]))
+  const deadlineMap = new Map(allTimelines.map((t) => [t.eventId, t.groceryDeadline]))
+  const directDeadlineMap = deadlineMap
+  const farDeadlineMap = deadlineMap
 
   // Build result: direct events always included, far events only if groceryDeadline is within window
   const items: ShoppingWindowItem[] = []

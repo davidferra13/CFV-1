@@ -10,6 +10,7 @@ import { TrackedLink } from '@/components/analytics/tracked-link'
 import { LocationExperienceShowcase } from '@/components/public/location-experience-showcase'
 import { ReviewShowcase } from '@/components/public/review-showcase'
 import { CloudinaryFetchImage } from '@/components/ui/cloudinary-fetch-image'
+import { getDiscoverableChefs } from '@/lib/directory/actions'
 import {
   getDiscoveryCuisineLabel,
   getDiscoveryPriceRangeLabel,
@@ -56,6 +57,14 @@ import { JsonLd } from '@/components/seo/json-ld'
 import { absoluteUrl } from '@/lib/site/public-site'
 
 type Props = { params: { slug: string } }
+
+export const revalidate = 3600
+export const dynamicParams = true
+
+export async function generateStaticParams() {
+  const chefs = await getDiscoverableChefs()
+  return chefs.map((chef) => ({ slug: chef.slug }))
+}
 
 function hasMinimumPublicProfileContent(input: {
   displayName: string
