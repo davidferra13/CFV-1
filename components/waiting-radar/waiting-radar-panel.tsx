@@ -1,104 +1,244 @@
+﻿'use client'
+
 import Link from 'next/link'
-import type { WaitingRadarItem, WaitingRadarSummary } from '@/lib/waiting-radar/types'
+import type { WaitingItem, WaitingRadarSummary } from '@/lib/waiting-radar/types'
+import { Badge } from '@/components/ui/badge'
+import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/card'
 
-interface WaitingRadarPanelProps {
-  items: WaitingRadarItem[]
+function riskColor(level: string): string {
+  switch (level) {
+    case 'critical':
+      return 'bg-red-500/20 text-red-400 border-red-500/30'
+    case 'high':
+      return 'bg-orange-500/20 text-orange-400 border-orange-500/30'
+    case 'medium':
+      return 'bg-yellow-500/20 text-yellow-400 border-yellow-500/30'
+    default:
+      return 'bg-stone-500/20 text-stone-400 border-stone-500/30'
+  }
+}
+
+function waitingOnLabel(on: string): string {
+  switch (on) {
+    case 'client': return 'Client'
+    case 'chef': return 'You'
+    case 'vendor': return 'Vendor'
+    case 'payment': return 'Payment'
+    case 'system': return 'System'
+    case 'staff': return 'Staff'
+    case 'time': return 'Time'
+    case 'decision': return 'Decision'
+    default: return 'Unknown'
+  }
+}
+
+function waitingOnColor(on: string): string {
+  switch (on) {
+    case 'chef': return 'bg-blue-500/20 text-blue-400'
+    case 'client': return 'bg-purple-500/20 text-purple-400'
+    case 'payment': return 'bg-green-500/20 text-green-400'
+    case 'vendor': return 'bg-amber-500/20 text-amber-400'
+    default: return 'bg-stone-500/20 text-stone-400'
+  }
+}
+
+function formatAge(since: string): string {
+  const hours = (Date.now() - new Date(since).getTime()) / (1000 * 60 * 60)
+  if (hours < 1) return 'just now'
+  if (hours < 24) return `${Math.floor(hours)}h`
+  const days = Math.floor(hours / 24)
+  if (days === 1) return '1 day'
+  if (days < 7) return `${days} days`
+  const weeks = Math.floor(days / 7)
+  return weeks === 1 ? '1 week' : `${weeks} weeks`
+}
+
+export function WaitingRadarPanel({
+  items,
+  summary,
+}: {
+  items: WaitingItem[]
   summary: WaitingRadarSummary
-  limit?: number
-}
+}) {
+  const top5 = items.slice(0, 5)
 
-const RISK_LABELS: Record<WaitingRadarItem['riskLevel'], string> = {
-  critical: 'Critical',
-  high: 'High',
-  medium: 'Medium',
-  low: 'Low',
-}
-
-export function WaitingRadarPanel({ items, summary, limit = 5 }: WaitingRadarPanelProps) {
-  const visibleItems = items.slice(0, limit)
+  if (summary.total === 0) {
+    return (
+      <Card className="border-stone-700 bg-stone-800/50">
+        <CardHeader className="pb-2">
+          <CardTitle className="text-sm font-medium text-stone-300">Waiting Radar</CardTitle>
+        </CardHeader>
+        <CardContent>
+          <p className="text-sm text-stone-500">Nothing is waiting. All clear.</p>
+        </CardContent>
+      </Card>
+    )
+  }
 
   return (
-    <section className="space-y-4" aria-labelledby="waiting-radar-title">
-      <div className="flex items-start justify-between gap-4">
-        <div>
-          <h2 id="waiting-radar-title" className="text-lg font-semibold text-slate-950">
-            Waiting Radar
-          </h2>
-          <p className="text-sm text-slate-600">{emptyCopy(summary) ?? summaryCopy(summary)}</p>
-        </div>
-        {summary.total > 0 ? (
+    <Card className="border-stone-700 bg-stone-800/50">
+      <CardHeader className="pb-2">
+        <div className="flex items-center justify-between">
+          <CardTitle className="text-sm font-medium text-stone-300">Waiting Radar</CardTitle>
           <Link
-            className="text-sm font-medium text-slate-900 underline-offset-4 hover:underline"
             href="/waiting"
+            className="text-xs text-amber-500 hover:text-amber-400 transition-colors"
           >
-            View all
+            View all ({summary.total})
           </Link>
-        ) : null}
-      </div>
-
-      {summary.total > 0 ? (
-        <div className="grid grid-cols-4 gap-2 text-sm">
-          <Stat label="Overdue" value={summary.overdue} />
-          <Stat label="Due soon" value={summary.dueSoon} />
-          <Stat label="Client" value={summary.waitingOnClient} />
-          <Stat label="System" value={summary.waitingOnSystem} />
         </div>
-      ) : null}
+      </CardHeader>
+      <CardContent className="space-y-3">
+        <div className="flex flex-wrap gap-2 text-xs">
+          {summary.overdue > 0 && (
+            <span className="rounded-full bg-red-500/20 px-2 py-0.5 text-red-400">
+              {summary.overdue} overdue
+            </span>
+          )}
+          {summary.dueSoon > 0 && (
+            <span className="rounded-full bg-yellow-500/20 px-2 py-0.5 text-yellow-400">
+              {summary.dueSoon} due soon
+            </span>
+          )}
+          {summary.waitingOnClient > 0 && (
+            <span className="rounded-full bg-purple-500/20 px-2 py-0.5 text-purple-400">
+              {summary.waitingOnClient} on client
+            </span>
+          )}
+          {summary.waitingOnChef > 0 && (
+            <span className="rounded-full bg-blue-500/20 px-2 py-0.5 text-blue-400">
+              {summary.waitingOnChef} on you
+            </span>
+          )}
+        </div>
 
-      {visibleItems.length > 0 ? (
-        <ul className="divide-y divide-slate-200">
-          {visibleItems.map((item) => (
-            <li key={item.id} className="py-3">
-              <Link
-                className="block rounded-md focus:outline-none focus:ring-2 focus:ring-slate-500"
-                href={item.proofHref}
-              >
-                <div className="flex items-start justify-between gap-3">
-                  <div className="min-w-0">
-                    <p className="truncate text-sm font-medium text-slate-950">{item.title}</p>
-                    <p className="mt-1 text-sm text-slate-600">
-                      Waiting on {item.waitingOn}: {item.waitingReason}
-                    </p>
-                  </div>
-                  <span className="shrink-0 rounded border border-slate-200 px-2 py-1 text-xs text-slate-700">
-                    {RISK_LABELS[item.riskLevel]}
-                  </span>
-                </div>
-                <p className="mt-2 text-xs text-slate-500">
-                  {item.followUpAt
-                    ? `Follow up ${item.followUpAt.slice(0, 10)}`
-                    : 'No follow-up set'}
+        <div className="space-y-2">
+          {top5.map((item) => (
+            <Link
+              key={item.id}
+              href={item.proofHref}
+              className="group flex items-start gap-2 rounded-lg p-2 hover:bg-stone-700/50 transition-colors"
+            >
+              <Badge className={`shrink-0 text-[10px] ${waitingOnColor(item.waitingOn)}`}>
+                {waitingOnLabel(item.waitingOn)}
+              </Badge>
+              <div className="min-w-0 flex-1">
+                <p className="text-xs text-stone-300 truncate group-hover:text-stone-100">
+                  {item.waitingReason}
                 </p>
-              </Link>
-            </li>
+                <div className="flex items-center gap-2 mt-0.5">
+                  <span className="text-[10px] text-stone-500">{formatAge(item.waitingSince)}</span>
+                  {item.followUpAt && (
+                    <span
+                      className={`text-[10px] ${
+                        new Date(item.followUpAt) < new Date() ? 'text-red-400' : 'text-stone-500'
+                      }`}
+                    >
+                      {new Date(item.followUpAt) < new Date() ? 'Overdue' : 'Follow up ' + new Date(item.followUpAt).toLocaleDateString()}
+                    </span>
+                  )}
+                </div>
+              </div>
+              <Badge className={`shrink-0 text-[10px] ${riskColor(item.riskLevel)}`}>
+                {item.riskLevel}
+              </Badge>
+            </Link>
           ))}
-        </ul>
-      ) : null}
-    </section>
+        </div>
+      </CardContent>
+    </Card>
   )
 }
 
-function Stat({ label, value }: { label: string; value: number }) {
+export function WaitingRadarFullView({
+  items,
+  summary,
+}: {
+  items: WaitingItem[]
+  summary: WaitingRadarSummary
+}) {
+  if (summary.total === 0) {
+    return (
+      <div className="text-center py-16">
+        <p className="text-lg text-stone-400">Nothing is waiting right now.</p>
+        <p className="text-sm text-stone-500 mt-1">
+          When inquiries, quotes, contracts, or payments need attention, they will appear here.
+        </p>
+      </div>
+    )
+  }
+
   return (
-    <div className="rounded-md border border-slate-200 p-2">
-      <div className="text-base font-semibold text-slate-950">{value}</div>
-      <div className="text-xs text-slate-500">{label}</div>
+    <div className="space-y-6">
+      <div className="grid grid-cols-2 gap-3 sm:grid-cols-4 lg:grid-cols-6">
+        <SummaryCard label="Total" value={summary.total} color="text-stone-300" />
+        <SummaryCard label="Overdue" value={summary.overdue} color="text-red-400" />
+        <SummaryCard label="Due Soon" value={summary.dueSoon} color="text-yellow-400" />
+        <SummaryCard label="On Client" value={summary.waitingOnClient} color="text-purple-400" />
+        <SummaryCard label="On You" value={summary.waitingOnChef} color="text-blue-400" />
+        <SummaryCard label="Payment" value={summary.waitingOnPayment} color="text-green-400" />
+      </div>
+
+      <div className="space-y-2">
+        {items.map((item) => (
+          <Link
+            key={item.id}
+            href={item.proofHref}
+            className="group flex items-center gap-3 rounded-lg border border-stone-700 bg-stone-800/50 p-3 hover:border-stone-600 hover:bg-stone-800 transition-colors"
+          >
+            <Badge className={`shrink-0 text-xs ${waitingOnColor(item.waitingOn)}`}>
+              {waitingOnLabel(item.waitingOn)}
+            </Badge>
+            <div className="min-w-0 flex-1">
+              <p className="text-sm text-stone-200 truncate group-hover:text-white">
+                {item.waitingReason}
+              </p>
+              <div className="flex flex-wrap items-center gap-x-3 gap-y-1 mt-1 text-xs text-stone-500">
+                <span>{item.sourceKind}</span>
+                <span>waiting {formatAge(item.waitingSince)}</span>
+                {item.clientName && <span>{item.clientName}</span>}
+                {item.eventName && <span>{item.eventName}</span>}
+                {item.followUpAt && (
+                  <span
+                    className={
+                      new Date(item.followUpAt) < new Date() ? 'text-red-400 font-medium' : ''
+                    }
+                  >
+                    {new Date(item.followUpAt) < new Date()
+                      ? 'OVERDUE'
+                      : `Follow up ${new Date(item.followUpAt).toLocaleDateString()}`}
+                  </span>
+                )}
+              </div>
+            </div>
+            {item.revenueCents != null && item.revenueCents > 0 && (
+              <span className="shrink-0 text-xs text-green-400 font-medium">
+                ${(item.revenueCents / 100).toLocaleString()}
+              </span>
+            )}
+            <Badge className={`shrink-0 text-xs ${riskColor(item.riskLevel)}`}>
+              {item.riskLevel}
+            </Badge>
+          </Link>
+        ))}
+      </div>
     </div>
   )
 }
 
-function summaryCopy(summary: WaitingRadarSummary): string {
-  return `${summary.total} waiting item${summary.total === 1 ? '' : 's'} with explicit follow-up paths.`
-}
-
-function emptyCopy(summary: WaitingRadarSummary): string | null {
-  if (summary.emptyReason === 'no_source_data') {
-    return 'No source data is connected to the waiting radar yet.'
-  }
-
-  if (summary.emptyReason === 'no_waiting_items') {
-    return 'Nothing is waiting right now.'
-  }
-
-  return null
+function SummaryCard({
+  label,
+  value,
+  color,
+}: {
+  label: string
+  value: number
+  color: string
+}) {
+  return (
+    <div className="rounded-lg border border-stone-700 bg-stone-800/50 p-3 text-center">
+      <p className={`text-2xl font-semibold ${color}`}>{value}</p>
+      <p className="text-xs text-stone-500 mt-0.5">{label}</p>
+    </div>
+  )
 }

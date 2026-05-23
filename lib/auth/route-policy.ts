@@ -116,6 +116,7 @@ export const CHEF_PROTECTED_PATHS = [
   // '/testimonials', -- merged into /reviews
   '/travel',
   '/vendors',
+  '/waiting',
   '/waitlist',
   '/welcome',
   '/wix-submissions',
