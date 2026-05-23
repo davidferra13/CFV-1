@@ -12,7 +12,10 @@ import { PublicInquiryForm } from '@/components/public/public-inquiry-form'
 import { ReviewShowcase } from '@/components/public/review-showcase'
 import { DietaryTrustStrip } from '@/components/public/dietary-trust-strip'
 import { ExternalLink } from '@/components/ui/icons'
+import { cache } from 'react'
 import { getPublicChefProfile } from '@/lib/profile/actions'
+
+const getCachedChefProfile = cache(getPublicChefProfile)
 import { getPublicChefReviewFeed } from '@/lib/reviews/public-actions'
 import { getPublicAvailabilitySignals } from '@/lib/calendar/entry-actions'
 import { getOptimizedAvatar } from '@/lib/images/cloudinary'
@@ -40,7 +43,7 @@ type Props = {
 }
 
 export async function generateMetadata({ params }: Props): Promise<Metadata> {
-  const data = await getPublicChefProfile(params.slug)
+  const data = await getCachedChefProfile(params.slug)
   if (!data) return { title: 'Chef Not Found' }
 
   const baseUrl = process.env.NEXT_PUBLIC_APP_URL || 'https://cheflowhq.com'
@@ -71,7 +74,7 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
 }
 
 export default async function InquirePage({ params, searchParams }: Props) {
-  const data = await getPublicChefProfile(params.slug)
+  const data = await getCachedChefProfile(params.slug)
   if (!data) notFound()
 
   const publicSlug = data.chef.public_slug || params.slug

@@ -1,3 +1,4 @@
+import { cache } from 'react'
 import type { Metadata } from 'next'
 import Link from 'next/link'
 import { notFound } from 'next/navigation'
@@ -19,6 +20,8 @@ import {
   DirectoryFavoriteButton,
   type DirectoryFavoriteMode,
 } from '../_components/directory-favorite-button'
+
+const getCachedDirectoryListing = cache(getDirectoryListingBySlug)
 
 const APP_URL = process.env.NEXT_PUBLIC_APP_URL || 'https://cheflowhq.com'
 
@@ -140,7 +143,7 @@ function FieldHeader({ title, trust }: { title: string; trust: DirectoryFieldTru
 }
 
 export async function generateMetadata({ params }: Props): Promise<Metadata> {
-  const listing = await getDirectoryListingBySlug(params.slug)
+  const listing = await getCachedDirectoryListing(params.slug)
   if (!listing) return { title: 'Listing Not Found' }
 
   const location = [listing.city, listing.state].filter(Boolean).join(', ')

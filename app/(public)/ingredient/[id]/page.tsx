@@ -10,6 +10,7 @@
  * maps them to store prices.
  */
 
+import { cache } from 'react'
 import { notFound } from 'next/navigation'
 import { Metadata } from 'next'
 import Link from 'next/link'
@@ -36,6 +37,9 @@ import { CopyLinkButton } from './_components/copy-link-button'
 import { IngredientSearch } from './_components/ingredient-search'
 import { getCurrentUser } from '@/lib/auth/get-user'
 import type { CatalogDetailResult } from '@/lib/openclaw/catalog-types'
+
+const getCachedPublicIngredientDetail = cache(getPublicIngredientDetail)
+const getCachedIngredientKnowledgeBySlug = cache(getIngredientKnowledgeBySlug)
 
 const BASE_URL = process.env.NEXT_PUBLIC_APP_URL || 'https://cheflowhq.com'
 
@@ -155,7 +159,7 @@ export async function generateMetadata({ params }: Params): Promise<Metadata> {
   }
 
   // Try full mode first
-  const detail = await getPublicIngredientDetail(id).catch(() => null)
+  const detail = await getCachedPublicIngredientDetail(id).catch(() => null)
   if (detail) {
     const know = await getIngredientKnowledgeByName(detail.ingredient.name).catch(() => null)
     const sourceability = classifyFromCatalogDetail(detail)
@@ -187,7 +191,7 @@ export async function generateMetadata({ params }: Params): Promise<Metadata> {
   }
 
   // Fall back to knowledge slug
-  const slugResult = await getIngredientKnowledgeBySlug(id).catch(() => null)
+  const slugResult = await getCachedIngredientKnowledgeBySlug(id).catch(() => null)
   if (!slugResult) {
     return {
       title: 'Ingredient not found',
@@ -233,14 +237,14 @@ async function IngredientPageContent({ id }: { id: string }) {
   const isChef = user?.role === 'chef'
 
   // --- Full mode: canonical ingredient with price data ---
-  const detail = await getPublicIngredientDetail(id).catch(() => null)
+  const detail = await getCachedPublicIngredientDetail(id).catch(() => null)
 
   if (detail) {
     return <FullIngredientPage id={id} detail={detail} isChef={isChef} />
   }
 
   // --- Knowledge-only mode: system_ingredient slug ---
-  const slugResult = await getIngredientKnowledgeBySlug(id).catch(() => null)
+  const slugResult = await getCachedIngredientKnowledgeBySlug(id).catch(() => null)
   if (!slugResult) notFound()
 
   const related = slugResult.category

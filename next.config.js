@@ -1,3 +1,7 @@
+const withBundleAnalyzer = require('@next/bundle-analyzer')({
+  enabled: process.env.ANALYZE === 'true',
+})
+
 /** @type {import('next').NextConfig} */
 // PWA: @ducanh2912/next-pwa's dual webpack compilation pass corrupts
 // build-manifest.json / pages-manifest.json on Windows. Bypass the wrapper
@@ -695,6 +699,6 @@ const sentryConfig = {
   disableClientWebpackPlugin: true,
 }
 
-module.exports = withSentryConfig
-  ? withSentryConfig(withPWA(nextConfig), sentryConfig)
-  : withPWA(nextConfig)
+module.exports = withBundleAnalyzer(
+  withSentryConfig ? withSentryConfig(withPWA(nextConfig), sentryConfig) : withPWA(nextConfig)
+)

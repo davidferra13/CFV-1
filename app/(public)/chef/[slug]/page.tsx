@@ -24,7 +24,10 @@ import {
 } from '@/lib/discovery/profile'
 import { getOptimizedAvatar, getOptimizedImageUrl } from '@/lib/images/cloudinary'
 import { getPublicAvailabilitySignals } from '@/lib/calendar/entry-actions'
+import { cache } from 'react'
 import { getPublicChefProfile } from '@/lib/profile/actions'
+
+const getCachedChefProfile = cache(getPublicChefProfile)
 import { formatCurrency } from '@/lib/utils/currency'
 import { getPublicChefReviewFeed } from '@/lib/reviews/public-actions'
 import { ChefProofSummary } from '@/components/public/chef-proof-summary'
@@ -141,7 +144,7 @@ function formatLongDate(dateValue: string | null): string | null {
 }
 
 export async function generateMetadata({ params }: Props): Promise<Metadata> {
-  const data = await getPublicChefProfile(params.slug)
+  const data = await getCachedChefProfile(params.slug)
   if (!data) return { title: 'Chef Not Found' }
 
   const publicSlug = data.chef.public_slug || params.slug
@@ -467,7 +470,7 @@ function formatMenuGuestRange(values: Array<number | null | undefined>): string 
 }
 
 export default async function ChefProfilePage({ params }: Props) {
-  const data = await getPublicChefProfile(params.slug)
+  const data = await getCachedChefProfile(params.slug)
   if (!data) notFound()
 
   const { chef, locationExperiences, ownedRestaurants } = data

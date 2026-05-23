@@ -1,5 +1,6 @@
 // Client Event Detail - View event details and accept proposals
 
+import { cache } from 'react'
 import type { Metadata } from 'next'
 import { requireClient } from '@/lib/auth/get-user'
 import { getClientEventById } from '@/lib/events/client-actions'
@@ -64,6 +65,8 @@ import { buildStewardshipSnapshot } from '@/lib/dinner-circles/stewardship'
 import { buildDinnerCircleExperienceModules } from '@/lib/dinner-circles/experience-modules'
 import { createServerClient } from '@/lib/db/server'
 
+const getCachedClientEvent = cache(getClientEventById)
+
 type EventStatus = Database['public']['Enums']['event_status']
 
 // Status badge mapping
@@ -114,7 +117,7 @@ function journeyStepsToTimeline(steps: JourneyStep[]): {
 }
 
 export async function generateMetadata({ params }: { params: { id: string } }): Promise<Metadata> {
-  const event = await getClientEventById(params.id)
+  const event = await getCachedClientEvent(params.id)
   return { title: event ? event.occasion || 'Event' : 'Event' }
 }
 
@@ -127,7 +130,7 @@ export default async function EventDetailPage({
 }) {
   await requireClient()
 
-  const event = await getClientEventById(params.id)
+  const event = await getCachedClientEvent(params.id)
 
   if (!event) {
     notFound()
