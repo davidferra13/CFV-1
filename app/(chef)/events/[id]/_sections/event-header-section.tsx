@@ -240,6 +240,9 @@ export async function EventHeaderSection({ eventId, tenantId, event }: Props) {
         )}
         {isEventToday(event.event_date) && !['draft', 'cancelled'].includes(event.status) && (
           <>
+            <Link href={`/events/${event.id}/kitchen-mode`}>
+              <Button variant="primary">Start Service</Button>
+            </Link>
             <Link href={`/events/${event.id}/pack`}>
               <Button variant="primary">Pack List</Button>
             </Link>
@@ -249,6 +252,11 @@ export async function EventHeaderSection({ eventId, tenantId, event }: Props) {
               </Link>
             )}
           </>
+        )}
+        {event.status === 'in_progress' && !isEventToday(event.event_date) && (
+          <Link href={`/events/${event.id}/kitchen-mode`}>
+            <Button variant="primary">Start Service</Button>
+          </Link>
         )}
         <Link href={`/events/${event.id}/schedule`}>
           <Button variant="secondary">Schedule</Button>
