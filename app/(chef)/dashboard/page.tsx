@@ -44,6 +44,7 @@ import {
 import { getChefLifeDashboardSynthesis } from '@/lib/dashboard/chef-life-synthesis-actions'
 import { ProfitAtAGlance, ProfitAtAGlanceSkeleton } from '@/components/finance/profit-at-a-glance'
 import { getProfitAtAGlance } from '@/lib/finance/profit-actions'
+import { IntelligenceDigestSection } from './_sections/intelligence-digest-section'
 
 export const metadata: Metadata = { title: 'Dashboard' }
 
@@ -111,6 +112,12 @@ export default async function ChefDashboard() {
         <AmbientLayer />
       </Suspense>
 
+      <WidgetErrorBoundary name="Intelligence Digest" compact>
+        <Suspense fallback={<IntelligenceCardsSkeleton />}>
+          <IntelligenceDigestSection />
+        </Suspense>
+      </WidgetErrorBoundary>
+
       <WidgetErrorBoundary name="System Pulse" compact>
         <Suspense fallback={<IntelligenceCardsSkeleton />}>
           <CilSignalSummary />
@@ -167,7 +174,12 @@ async function ProfitAtAGlanceLoader() {
     monthlyCostCents: 0,
     eventCount: 0,
     avgProfitPerEventCents: 0,
-    trend: { currentMonthProfitCents: 0, lastMonthProfitCents: 0, changePercent: null, direction: 'flat' as const },
+    trend: {
+      currentMonthProfitCents: 0,
+      lastMonthProfitCents: 0,
+      changePercent: null,
+      direction: 'flat' as const,
+    },
     ytdProfitCents: 0,
     ytdRevenueCents: 0,
     ytdCostCents: 0,
