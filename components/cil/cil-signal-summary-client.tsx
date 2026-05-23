@@ -18,6 +18,8 @@ import {
 } from 'lucide-react'
 import type { ProactiveSignal, SignalDomain } from '@/lib/cil/types'
 import { dismissSignalAction, actOnSignal } from '@/lib/cil/signal-actions'
+import { EvidencePill } from '@/components/evidence/evidence-pill'
+import { selectEvidenceLabel } from '@/lib/operating-loop/evidence-labels'
 
 const domainIcons: Record<SignalDomain, typeof DollarSign> = {
   finance: DollarSign,
@@ -142,6 +144,7 @@ export function CilSignalSummaryClient({ totalCount, recentCount, breakdown, top
             const urgencyColor = urgencyColors[signal.urgency] || urgencyColors[3]
             const barColor = urgencyBarColors[signal.urgency] || urgencyBarColors[3]
             const confidencePct = Math.round(signal.confidence * 100)
+            const evidenceLabel = selectEvidenceLabel({ confidence: signal.confidence })
 
             return (
               <div
@@ -168,6 +171,7 @@ export function CilSignalSummaryClient({ totalCount, recentCount, breakdown, top
 
                     {/* Dismiss button */}
                     <button
+                      type="button"
                       onClick={() => handleDismiss(signal.id)}
                       disabled={isPending}
                       className="shrink-0 rounded p-1 text-stone-600 hover:bg-stone-700 hover:text-stone-400 transition-colors"
@@ -177,8 +181,16 @@ export function CilSignalSummaryClient({ totalCount, recentCount, breakdown, top
                     </button>
                   </div>
 
-                  {/* Confidence bar + action row */}
+                  {/* Evidence label + confidence bar + action row */}
                   <div className="mt-2 flex items-center gap-3">
+                    {/* Evidence pill from shared taxonomy */}
+                    <EvidencePill
+                      label={evidenceLabel}
+                      source={signal.source}
+                      confidence={signal.confidence}
+                      compact
+                    />
+
                     {/* Confidence bar */}
                     <div className="flex items-center gap-2 min-w-0">
                       <div
@@ -202,6 +214,7 @@ export function CilSignalSummaryClient({ totalCount, recentCount, breakdown, top
                     {/* Suggested action */}
                     {signal.suggestedAction && signal.actionType !== 'dismiss' && (
                       <button
+                        type="button"
                         onClick={() => handleAct(signal)}
                         disabled={isPending}
                         className="ml-auto shrink-0 rounded bg-stone-700/80 px-2.5 py-1 text-[11px] font-medium text-stone-200 hover:bg-stone-600 transition-colors truncate max-w-[180px]"
