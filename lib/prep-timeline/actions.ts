@@ -296,3 +296,79 @@ export async function getEventPrepTimeline(eventId: string): Promise<{
     return { timeline: null, error: 'Failed to compute prep timeline.' }
   }
 }
+
+// --- Bulk set peak windows for multiple recipes ---
+
+export async function bulkSetPeakWindows(
+  updates: Array<{
+    recipeId: string
+    peakHoursMin: number | null
+    peakHoursMax: number | null
+    safetyHoursMax?: number | null
+    storageMethod?: string | null
+    freezable?: boolean
+    frozenExtendsHours?: number | null
+  }>
+): Promise<{ success: boolean; updated: number; error?: string }> {
+  const user = await requireChef()
+
+  if (!updates || updates.length === 0) {
+    return { success: true, updated: 0 }
+  }
+
+  if (updates.length > 100) {
+    return { success: false, updated: 0, error: 'Maximum 100 recipes per bulk update.' }
+  }
+
+  // Validate each entry
+  for (const u of updates) {
+    if (u.peakHoursMin != null && u.peakHoursMax != null && u.peakHoursMin > u.peakHoursMax) {
+      return {
+        success: false,
+        updated: 0,
+        error: `Recipe ${u.recipeId}: earliest prep must be before latest prep.`,
+      }
+    }
+    if (u.peakHoursMin != null && u.peakHoursMin < 0) {
+      return {
+        success: false,
+        updated: 0,
+        error: `Recipe ${u.recipeId}: peak hours cannot be negative.`,
+      }
+    }
+  }
+
+  const db: any = createServerClient()
+  let updated = 0
+
+  try {
+    for (const u of updates) {
+      const updateData: Record<string, unknown> = {
+        peak_hours_min: u.peakHoursMin,
+        peak_hours_max: u.peakHoursMax,
+        updated_at: new Date().toISOString(),
+      }
+
+      if (u.safetyHoursMax !== undefined) updateData.safety_hours_max = u.safetyHoursMax
+      if (u.storageMethod !== undefined) updateData.storage_method = u.storageMethod ?? 'fridge'
+      if (u.freezable !== undefined) updateData.freezable = u.freezable
+      if (u.frozenExtendsHours !== undefined) updateData.frozen_extends_hours = u.frozenExtendsHours
+
+      const { error } = await db
+        .from('recipes')
+        .update(updateData)
+        .eq('id', u.recipeId)
+        .eq('tenant_id', user.tenantId!)
+
+      if (!error) updated++
+    }
+
+    revalidatePath('/recipes')
+    revalidatePath('/events', 'layout')
+    revalidateTag(`prep-timeline-${user.tenantId}`)
+    return { success: true, updated }
+  } catch (err: any) {
+    console.error('[bulkSetPeakWindows]', err)
+    return { success: false, updated, error: 'Bulk update partially failed.' }
+  }
+}

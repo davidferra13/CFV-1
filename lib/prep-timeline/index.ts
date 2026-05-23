@@ -19,6 +19,7 @@ export { generatePrepTimelineICal } from './ical-export'
 export {
   getEventPrepTimeline,
   updateRecipePeakWindow,
+  bulkSetPeakWindows,
   togglePrepCompletion,
   getPrepCompletions,
 } from './actions'

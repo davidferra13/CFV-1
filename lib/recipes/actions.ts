@@ -312,6 +312,7 @@ export async function getRecipes(filters?: {
   cuisine?: string
   meal_type?: string
   search?: string
+  status?: 'stub' | 'draft' | 'active' | 'archived' | 'all'
   is_template?: boolean
   sort?: 'name' | 'recent' | 'most_used'
   page?: number
@@ -322,11 +323,14 @@ export async function getRecipes(filters?: {
   const { page, pageSize, offset } = normalizePagination(filters)
 
   // Get recipes with exact count
-  let query = db
-    .from('recipes')
-    .select('*', { count: 'exact' })
-    .eq('tenant_id', user.tenantId!)
-    .eq('archived', false)
+  let query = db.from('recipes').select('*', { count: 'exact' }).eq('tenant_id', user.tenantId!)
+
+  // Status filter: specific lifecycle status, 'all' for everything, or default (non-archived)
+  if (filters?.status && filters.status !== 'all') {
+    query = query.eq('status', filters.status)
+  } else if (!filters?.status) {
+    query = query.eq('archived', false)
+  }
 
   if (filters?.category) {
     query = query.eq('category', filters.category as RecipeCategory)
