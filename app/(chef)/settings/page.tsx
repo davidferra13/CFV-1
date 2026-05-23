@@ -16,6 +16,8 @@ import { SettingsFixActions } from '@/components/settings/settings-fix-actions'
 import { SettingsGuidedOverview } from '@/components/settings/settings-guided-overview'
 import { SettingsMobileNav } from '@/components/settings/settings-mobile-nav'
 import { FeedbackForm } from '@/components/feedback/feedback-form'
+import { ComplexitySelector } from '@/components/progressive-disclosure/complexity-selector'
+import { getComplexityLevel } from '@/lib/progressive-disclosure/disclosure-actions'
 
 export const metadata: Metadata = { title: 'Settings' }
 
@@ -31,6 +33,7 @@ export default async function SettingsPage() {
     wixConnection,
     profileReadiness,
     developerToolsEnabled,
+    complexityLevel,
   ] = await Promise.all([
     getGoogleConnection().catch((err) => {
       console.error('[Settings] getGoogleConnection failed:', err)
@@ -75,6 +78,7 @@ export default async function SettingsPage() {
         publicProfileHidden: false,
       })),
     hasChefFeatureFlag(CHEF_FEATURE_FLAGS.developerTools).catch(() => false),
+    getComplexityLevel().catch(() => 'pro' as const),
   ])
 
   const fixTasks = resolveSettingsFixTasks({
@@ -98,6 +102,11 @@ export default async function SettingsPage() {
 
       {/* Fix actions */}
       <SettingsFixActions tasks={fixTasks} />
+
+      {/* Feature level selector */}
+      <div className="mt-8">
+        <ComplexitySelector currentLevel={complexityLevel} />
+      </div>
 
       {/* Guided overview cards - desktop */}
       <div className="mt-8 hidden md:block">
