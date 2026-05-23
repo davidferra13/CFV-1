@@ -2761,3 +2761,63 @@ select:focus {
     padding: 1.25rem;
   }
 }
+
+/* ============================================
+   CLIENT PORTAL LUXURY STYLES
+   Scoped to [data-cf-portal="client"] surfaces.
+   Warm palette: cream (#faf9f7), gold (#c4a35a), charcoal (#2d2d2d)
+   ============================================ */
+
+/* Luxury card entrance animation */
+.luxury-portal-card {
+  transition:
+    opacity 0.5s ease,
+    transform 0.5s ease,
+    box-shadow 0.3s ease;
+}
+
+.luxury-portal-card:hover {
+  box-shadow:
+    0 8px 30px rgb(196 163 90 / 0.08),
+    0 2px 8px rgb(0 0 0 / 0.04);
+}
+
+/* Portal header subtle glow */
+.luxury-portal-header {
+  transition: box-shadow 0.3s ease;
+}
+
+.luxury-portal-header:hover {
+  box-shadow:
+    0 4px 20px rgb(196 163 90 / 0.06),
+    0 1px 4px rgb(0 0 0 / 0.08);
+}
+
+/* Client portal typography: serif headings via Playfair Display */
+[data-cf-portal='client'] .font-display-serif {
+  font-family: var(--font-playfair), Georgia, 'Times New Roman', serif;
+  font-feature-settings:
+    'liga' 1,
+    'kern' 1;
+  -webkit-font-smoothing: antialiased;
+}
+
+/* Smooth transitions for interactive elements in client portal */
+[data-cf-portal='client'] a,
+[data-cf-portal='client'] button {
+  transition:
+    color 0.2s ease,
+    background-color 0.2s ease,
+    border-color 0.2s ease,
+    box-shadow 0.2s ease,
+    transform 0.15s ease;
+}
+
+/* Gold focus ring for client portal inputs */
+[data-cf-portal='client'] input:focus,
+[data-cf-portal='client'] textarea:focus,
+[data-cf-portal='client'] select:focus {
+  border-color: #c4a35a;
+  box-shadow: 0 0 0 3px rgb(196 163 90 / 0.15);
+  outline: none;
+}
