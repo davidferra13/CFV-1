@@ -12,6 +12,13 @@ import {
   getLoyaltyConfig,
 } from '@/lib/loyalty/actions'
 import { getPendingRewardDeliveries } from '@/lib/loyalty/auto-award'
+import { getVoucherAndGiftCards, getIncentiveStats } from '@/lib/loyalty/voucher-actions'
+import { getActiveTriggers } from '@/lib/loyalty/triggers'
+import {
+  LOYALTY_MAX_FIXED_DISCOUNT_CENTS,
+  LOYALTY_MAX_PERCENT_DISCOUNT,
+  LOYALTY_REWARD_GUARDRAIL_SUMMARY,
+} from '@/lib/loyalty/reward-guardrails'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
@@ -38,14 +45,41 @@ const TIER_LABELS: Record<string, string> = {
 }
 
 export default async function LoyaltyDashboardPage() {
-  await requireChef()
+  const user = await requireChef()
 
-  const [overview, rewards, approachingRewards, config, pendingDeliveries] = await Promise.all([
+  const [
+    overview,
+    rewards,
+    approachingRewards,
+    config,
+    pendingDeliveries,
+    incentives,
+    incentiveStats,
+    activeTriggers,
+  ] = await Promise.all([
     getLoyaltyOverview(),
     getRewards(),
     getClientsApproachingRewards(),
     getLoyaltyConfig(),
     getPendingRewardDeliveries(),
+    getVoucherAndGiftCards().catch((err) => {
+      console.error('[loyalty-dashboard] Incentives failed:', err)
+      return []
+    }),
+    getIncentiveStats().catch((err) => {
+      console.error('[loyalty-dashboard] Incentive stats failed:', err)
+      return {
+        totalIssued: 0,
+        totalRedeemed: 0,
+        totalValueAppliedCents: 0,
+        giftCardCount: 0,
+        voucherCount: 0,
+      }
+    }),
+    getActiveTriggers(user.tenantId!).catch((err) => {
+      console.error('[loyalty-dashboard] Active triggers failed:', err)
+      return []
+    }),
   ])
 
   const isOff = overview.programMode === 'off'
@@ -58,6 +92,20 @@ export default async function LoyaltyDashboardPage() {
     : isLite
       ? `Recognition tiers · ${overview.totalClients} clients enrolled`
       : `${config.points_per_guest} points per guest served · ${overview.totalClients} clients enrolled`
+
+  const now = Date.now()
+  const activeIncentives = (incentives as any[]).filter((incentive) => {
+    if (!incentive.is_active) return false
+    if (incentive.expires_at && new Date(incentive.expires_at).getTime() < now) return false
+    return incentive.redemptions_used < incentive.max_redemptions
+  })
+  const expiringIncentives = activeIncentives.filter((incentive) => {
+    if (!incentive.expires_at) return false
+    const days = (new Date(incentive.expires_at).getTime() - now) / (1000 * 60 * 60 * 24)
+    return days >= 0 && days <= 14
+  })
+  const activeVouchers = activeIncentives.filter((incentive) => incentive.type === 'voucher')
+  const activeGiftCards = activeIncentives.filter((incentive) => incentive.type === 'gift_card')
 
   return (
     <div className="space-y-8">
@@ -142,6 +190,130 @@ export default async function LoyaltyDashboardPage() {
             </Card>
           )}
         </div>
+      )}
+
+      {!isOff && (
+        <div className="grid grid-cols-1 xl:grid-cols-3 gap-6">
+          <Card className="xl:col-span-2">
+            <CardHeader>
+              <CardTitle>Retention Command Center</CardTitle>
+            </CardHeader>
+            <CardContent className="space-y-4">
+              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3">
+                <Link href="/loyalty/rewards/new">
+                  <Button variant="secondary" className="w-full">
+                    Create Reward
+                  </Button>
+                </Link>
+                <Link href="/clients/gift-cards">
+                  <Button variant="secondary" className="w-full">
+                    Send Voucher
+                  </Button>
+                </Link>
+                <Link href="/commerce/promotions">
+                  <Button variant="secondary" className="w-full">
+                    Promotions
+                  </Button>
+                </Link>
+                <Link href="/loyalty/settings">
+                  <Button variant="secondary" className="w-full">
+                    Configure
+                  </Button>
+                </Link>
+              </div>
+              <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
+                <div className="rounded-lg border border-stone-800 bg-stone-900 p-4">
+                  <p className="text-xs font-medium text-stone-500">Active Vouchers</p>
+                  <p className="mt-2 text-2xl font-bold text-stone-100">{activeVouchers.length}</p>
+                </div>
+                <div className="rounded-lg border border-stone-800 bg-stone-900 p-4">
+                  <p className="text-xs font-medium text-stone-500">Active Gift Cards</p>
+                  <p className="mt-2 text-2xl font-bold text-stone-100">{activeGiftCards.length}</p>
+                </div>
+                <div className="rounded-lg border border-stone-800 bg-stone-900 p-4">
+                  <p className="text-xs font-medium text-stone-500">Expiring in 14 Days</p>
+                  <p className="mt-2 text-2xl font-bold text-stone-100">
+                    {expiringIncentives.length}
+                  </p>
+                </div>
+              </div>
+              <p className="text-xs text-stone-500">
+                {incentiveStats.totalRedeemed} voucher or gift-card redemption
+                {incentiveStats.totalRedeemed === 1 ? '' : 's'} recorded from{' '}
+                {incentiveStats.totalIssued} issued incentive
+                {incentiveStats.totalIssued === 1 ? '' : 's'}.
+              </p>
+            </CardContent>
+          </Card>
+
+          <Card>
+            <CardHeader>
+              <CardTitle>Automation Health</CardTitle>
+            </CardHeader>
+            <CardContent className="space-y-3">
+              <div className="flex items-center justify-between gap-3">
+                <span className="text-sm text-stone-400">Enabled triggers</span>
+                <Badge variant={activeTriggers.length > 0 ? 'success' : 'default'}>
+                  {activeTriggers.length}
+                </Badge>
+              </div>
+              <div className="flex items-center justify-between gap-3">
+                <span className="text-sm text-stone-400">Base event bonus</span>
+                <span className="text-sm font-semibold text-stone-100">
+                  {config.base_points_per_event || 0} pts
+                </span>
+              </div>
+              <div className="flex items-center justify-between gap-3">
+                <span className="text-sm text-stone-400">Referral award</span>
+                <span className="text-sm font-semibold text-stone-100">
+                  {config.referral_points || 0} pts
+                </span>
+              </div>
+              <div className="flex items-center justify-between gap-3">
+                <span className="text-sm text-stone-400">Pending deliveries</span>
+                <Badge variant={pendingDeliveries.length > 0 ? 'warning' : 'success'}>
+                  {pendingDeliveries.length}
+                </Badge>
+              </div>
+            </CardContent>
+          </Card>
+        </div>
+      )}
+
+      {isFull && (
+        <Card>
+          <CardHeader>
+            <CardTitle>Reward and Discount Guardrails</CardTitle>
+          </CardHeader>
+          <CardContent className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <div className="space-y-2">
+              {LOYALTY_REWARD_GUARDRAIL_SUMMARY.map((item) => (
+                <p key={item} className="text-sm text-stone-400">
+                  {item}
+                </p>
+              ))}
+            </div>
+            <div className="rounded-lg border border-stone-800 bg-stone-900 p-4">
+              <p className="text-sm font-semibold text-stone-100">Current cash limits</p>
+              <dl className="mt-3 space-y-2 text-sm">
+                <div className="flex items-center justify-between gap-4">
+                  <dt className="text-stone-500">Fixed reward cap</dt>
+                  <dd className="font-semibold text-stone-100">
+                    ${LOYALTY_MAX_FIXED_DISCOUNT_CENTS / 100}
+                  </dd>
+                </div>
+                <div className="flex items-center justify-between gap-4">
+                  <dt className="text-stone-500">Percent reward cap</dt>
+                  <dd className="font-semibold text-stone-100">{LOYALTY_MAX_PERCENT_DISCOUNT}%</dd>
+                </div>
+                <div className="flex items-center justify-between gap-4">
+                  <dt className="text-stone-500">Voucher redemption limit</dt>
+                  <dd className="font-semibold text-stone-100">Per voucher setting</dd>
+                </div>
+              </dl>
+            </div>
+          </CardContent>
+        </Card>
       )}
 
       {/* Tier Breakdown - shown for full + lite */}

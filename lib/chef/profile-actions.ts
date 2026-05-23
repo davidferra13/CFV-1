@@ -6,6 +6,16 @@ import { revalidatePath, revalidateTag } from 'next/cache'
 import { z } from 'zod'
 import { optimizeLogo } from '@/lib/images/optimize'
 import { getOnboardingCompletionState } from '@/lib/onboarding/completion-state'
+import {
+  CANNABIS_DISCLOSURE_MODES,
+  PUBLIC_BIO_LIMITS,
+  extractPrivateFactsFromRawMemory,
+  normalizeChefBirthdate,
+  normalizeChefProfileFacts,
+  normalizePublicBioSettings,
+  type ChefProfileFact,
+  type PublicBioSettings,
+} from '@/lib/profile/fact-guardrails'
 
 const CHEF_LOGOS_BUCKET = 'chef-logos'
 const MAX_LOGO_SIZE = 5 * 1024 * 1024 // 5MB
@@ -56,6 +66,32 @@ const SocialLinksSchema = z
     facebook: z.string().url('Facebook URL must be valid').optional().or(z.literal('')),
     youtube: z.string().url('YouTube URL must be valid').optional().or(z.literal('')),
     linktree: z.string().url('Linktree URL must be valid').optional().or(z.literal('')),
+  })
+  .optional()
+
+const ChefProfileFactSchema = z.object({
+  id: z.string().min(1),
+  category: z.string(),
+  label: z.string(),
+  value: z.string(),
+  visibility: z.string(),
+  sensitivity: z.string(),
+  confidence: z.string(),
+  source: z.string(),
+  intendedUse: z.string(),
+  freshness: z.string(),
+  publishability: z.string(),
+  evidenceUrl: z.string().url().nullable().optional(),
+  permissionRecordedAt: z.string().nullable().optional(),
+})
+
+const PublicBioSettingsSchema = z
+  .object({
+    maxChars: z.number().int().min(180).max(PUBLIC_BIO_LIMITS.bioMaxChars).optional(),
+    proofChipMaxChars: z.number().int().min(24).max(PUBLIC_BIO_LIMITS.proofChipMaxChars).optional(),
+    maxProofChips: z.number().int().min(3).max(PUBLIC_BIO_LIMITS.maxProofChips).optional(),
+    cannabisDisclosureMode: z.enum(CANNABIS_DISCLOSURE_MODES).optional(),
+    externalLongFormLinks: z.array(z.string().url()).max(5).optional(),
   })
   .optional()
 
@@ -112,6 +148,16 @@ const UpdateChefFullProfileSchema = z.object({
   show_website_on_public_profile: z.boolean().optional(),
   preferred_inquiry_destination: z.enum(['website_only', 'chefflow_only', 'both']).optional(),
   social_links: SocialLinksSchema,
+  private_profile_memory: z.string().max(4000).nullable().optional(),
+  date_of_birth: z
+    .string()
+    .regex(/^\d{4}-\d{2}-\d{2}$/)
+    .nullable()
+    .optional(),
+  birth_month: z.number().int().min(1).max(12).nullable().optional(),
+  birth_day: z.number().int().min(1).max(31).nullable().optional(),
+  profile_facts: z.array(ChefProfileFactSchema).optional(),
+  public_bio_settings: PublicBioSettingsSchema,
 })
 
 export type UpdateChefFullProfileInput = z.infer<typeof UpdateChefFullProfileSchema>
@@ -129,6 +175,43 @@ export type ChefFullProfile = {
   show_website_on_public_profile: boolean
   preferred_inquiry_destination: 'website_only' | 'chefflow_only' | 'both'
   social_links: ChefSocialLinks
+  private_profile_memory: string | null
+  date_of_birth: string | null
+  birth_month: number | null
+  birth_day: number | null
+  birthdate_purpose: ReturnType<typeof normalizeChefBirthdate>['purpose']
+  profile_facts: ChefProfileFact[]
+  public_bio_settings: PublicBioSettings
+}
+
+async function getChefProfileFactExtension(db: any, chefId: string) {
+  const { data, error } = await db
+    .from('chef_profiles')
+    .select(
+      `
+      private_profile_memory,
+      profile_facts,
+      birth_date,
+      birth_month,
+      birth_day,
+      birthdate_purpose,
+      public_bio_settings
+    `
+    )
+    .eq('chef_id', chefId)
+    .eq('tenant_id', chefId)
+    .maybeSingle()
+
+  if (error?.code === '42P01' || error?.code === '42703') {
+    return null
+  }
+
+  if (error) {
+    console.error('[getChefProfileFactExtension] Error:', error)
+    return null
+  }
+
+  return data ?? null
 }
 
 export async function getChefFullProfile(): Promise<ChefFullProfile> {
@@ -174,6 +257,13 @@ export async function getChefFullProfile(): Promise<ChefFullProfile> {
     throw new Error('Failed to fetch profile')
   }
 
+  const extension = await getChefProfileFactExtension(db, user.entityId)
+  const birthdate = normalizeChefBirthdate({
+    dateOfBirth: extension?.birth_date ?? null,
+    birthMonth: extension?.birth_month ?? null,
+    birthDay: extension?.birth_day ?? null,
+  })
+
   return {
     business_name: data.business_name,
     display_name: data.display_name ?? null,
@@ -187,6 +277,13 @@ export async function getChefFullProfile(): Promise<ChefFullProfile> {
     show_website_on_public_profile: data.show_website_on_public_profile ?? true,
     preferred_inquiry_destination: data.preferred_inquiry_destination ?? 'both',
     social_links: (data.social_links as ChefSocialLinks) ?? {},
+    private_profile_memory: extension?.private_profile_memory ?? null,
+    date_of_birth: birthdate.dateOfBirth,
+    birth_month: birthdate.birthMonth,
+    birth_day: birthdate.birthDay,
+    birthdate_purpose: birthdate.purpose,
+    profile_facts: normalizeChefProfileFacts(extension?.profile_facts),
+    public_bio_settings: normalizePublicBioSettings(extension?.public_bio_settings),
   }
 }
 
@@ -224,6 +321,67 @@ export async function updateChefFullProfile(input: UpdateChefFullProfileInput) {
   const trimmedBusinessName = validated.business_name?.trim()
   if (trimmedBusinessName) {
     payload.business_name = trimmedBusinessName
+  }
+
+  const hasFactExtensionUpdate =
+    Object.prototype.hasOwnProperty.call(validated, 'private_profile_memory') ||
+    Object.prototype.hasOwnProperty.call(validated, 'date_of_birth') ||
+    Object.prototype.hasOwnProperty.call(validated, 'birth_month') ||
+    Object.prototype.hasOwnProperty.call(validated, 'birth_day') ||
+    Object.prototype.hasOwnProperty.call(validated, 'profile_facts') ||
+    Object.prototype.hasOwnProperty.call(validated, 'public_bio_settings')
+
+  if (hasFactExtensionUpdate) {
+    const currentExtension = await getChefProfileFactExtension(db, user.entityId)
+    const privateMemory = Object.prototype.hasOwnProperty.call(validated, 'private_profile_memory')
+      ? validated.private_profile_memory?.trim() || null
+      : (currentExtension?.private_profile_memory ?? null)
+    const birthdate = normalizeChefBirthdate({
+      dateOfBirth: Object.prototype.hasOwnProperty.call(validated, 'date_of_birth')
+        ? (validated.date_of_birth ?? null)
+        : (currentExtension?.birth_date ?? null),
+      birthMonth: Object.prototype.hasOwnProperty.call(validated, 'birth_month')
+        ? (validated.birth_month ?? null)
+        : (currentExtension?.birth_month ?? null),
+      birthDay: Object.prototype.hasOwnProperty.call(validated, 'birth_day')
+        ? (validated.birth_day ?? null)
+        : (currentExtension?.birth_day ?? null),
+    })
+    const providedFacts = validated.profile_facts
+      ? normalizeChefProfileFacts(validated.profile_facts)
+      : normalizeChefProfileFacts(currentExtension?.profile_facts)
+    const nonRawFacts = providedFacts.filter((fact) => fact.source !== 'raw_memory')
+    const rawMemoryFacts = privateMemory ? extractPrivateFactsFromRawMemory(privateMemory) : []
+    const publicBioSettings = normalizePublicBioSettings({
+      ...(currentExtension?.public_bio_settings ?? {}),
+      ...(validated.public_bio_settings ?? {}),
+      externalLongFormLinks:
+        validated.public_bio_settings?.externalLongFormLinks ??
+        [validated.website_url ?? payload.website_url, normalizedSocialLinks.linktree].filter(
+          Boolean
+        ),
+    })
+
+    const { error: extensionError } = await db.from('chef_profiles').upsert(
+      {
+        chef_id: user.entityId,
+        tenant_id: user.entityId,
+        private_profile_memory: privateMemory,
+        profile_facts: [...nonRawFacts, ...rawMemoryFacts],
+        birth_date: birthdate.dateOfBirth,
+        birth_month: birthdate.birthMonth,
+        birth_day: birthdate.birthDay,
+        birthdate_purpose: birthdate.purpose,
+        public_bio_settings: publicBioSettings,
+        updated_at: new Date().toISOString(),
+      },
+      { onConflict: 'chef_id' }
+    )
+
+    if (extensionError) {
+      console.error('[updateChefFullProfile] profile facts error:', extensionError)
+      throw new Error('Failed to update private profile facts')
+    }
   }
 
   let { error } = await db.from('chefs').update(payload).eq('id', user.entityId)

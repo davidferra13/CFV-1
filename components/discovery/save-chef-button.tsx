@@ -8,9 +8,19 @@ interface SaveChefButtonProps {
   chefId: string
   initialSaved: boolean
   className?: string
+  label?: string
+  savedLabel?: string
+  source?: string
 }
 
-export function SaveChefButton({ chefId, initialSaved, className }: SaveChefButtonProps) {
+export function SaveChefButton({
+  chefId,
+  initialSaved,
+  className,
+  label,
+  savedLabel,
+  source = 'save_chef_button',
+}: SaveChefButtonProps) {
   const [saved, setSaved] = useState(initialSaved)
   const [isPending, startTransition] = useTransition()
 
@@ -22,7 +32,7 @@ export function SaveChefButton({ chefId, initialSaved, className }: SaveChefButt
       try {
         const result = await toggleSaveChef(chefId)
         setSaved(result.saved)
-        trackDiscoveryChefSave({ chefId, saved: result.saved })
+        trackDiscoveryChefSave({ chefId, saved: result.saved, source })
       } catch {
         // Revert on error
         setSaved(saved)
@@ -36,7 +46,7 @@ export function SaveChefButton({ chefId, initialSaved, className }: SaveChefButt
       disabled={isPending}
       aria-label={saved ? 'Remove saved chef' : 'Save chef'}
       className={[
-        'bg-transparent border-0 p-1 leading-none',
+        'inline-flex items-center justify-center gap-2 bg-transparent border-0 p-1 leading-none',
         isPending ? 'cursor-wait' : 'cursor-pointer',
         className ?? '',
       ].join(' ')}
@@ -58,6 +68,7 @@ export function SaveChefButton({ chefId, initialSaved, className }: SaveChefButt
       >
         <path d="M19 21l-7-5-7 5V5a2 2 0 0 1 2-2h10a2 2 0 0 1 2 2z" />
       </svg>
+      {(label || savedLabel) && <span>{saved ? savedLabel || label : label || savedLabel}</span>}
     </button>
   )
 }

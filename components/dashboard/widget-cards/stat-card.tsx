@@ -56,11 +56,11 @@ export function StatCard({
           <p className="metric-display-sm truncate">{value}</p>
 
           {/* Subtitle */}
-          {subtitle && <p className="text-xs text-stone-500 mt-0.5 truncate">{subtitle}</p>}
+          {subtitle && <p className="text-xs text-stone-500 truncate">{subtitle}</p>}
 
           {/* Trend */}
           {trend && (
-            <p className={`text-xs font-medium mt-1 ${trendColor}`}>
+            <p className={`text-xs font-medium mt-0.5 ${trendColor}`}>
               {trendArrow && <span className="mr-0.5">{trendArrow}</span>}
               {trend}
             </p>

@@ -14,6 +14,7 @@ import {
 
 const tabs = [
   { label: 'Directory', href: '/clients', icon: Contact },
+  { label: 'Contribution', href: '/clients/contribution', icon: ChartLineUp },
   { label: 'Communication', href: '/clients/communication', icon: MessageSquareDashed },
   { label: 'Insights', href: '/clients/insights', icon: ChartLineUp },
   { label: 'Intelligence', href: '/clients/intelligence', icon: Brain },
@@ -30,6 +31,7 @@ const hubPrefixes = [
   '/clients/history',
   '/clients/active',
   '/clients/inactive',
+  '/clients/contribution',
   '/clients/intelligence',
   '/clients/csv-export',
   '/clients/duplicates',
@@ -102,8 +104,8 @@ export function ClientsHubNav() {
   if (isDetailPage(pathname)) return null
 
   return (
-    <div className="mb-6">
-      <div className="flex items-center justify-between gap-4">
+    <div className="mb-6 max-w-full overflow-hidden">
+      <div className="flex min-w-0 items-center justify-between gap-4">
         {/* Tab bar with scroll */}
         <div className="relative flex-1 min-w-0">
           {showLeftFade && (
@@ -113,7 +115,7 @@ export function ClientsHubNav() {
             <div className="pointer-events-none absolute right-0 top-0 bottom-0 w-6 bg-gradient-to-l from-stone-900 to-transparent z-10" />
           )}
 
-          <div ref={scrollRef} className="overflow-x-auto scrollbar-hide">
+          <div ref={scrollRef} className="max-w-full overflow-x-auto scrollbar-hide">
             <nav className="flex gap-0 border-b border-stone-700 min-w-max">
               {tabs.map((tab) => {
                 const active = isTabActive(tab.href, pathname)

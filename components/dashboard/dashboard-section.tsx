@@ -54,7 +54,7 @@ export function DashboardSection({
 
   if (!mounted) {
     return (
-      <section className="space-y-4">
+      <section className="dashboard-section-group space-y-4">
         <div className="h-5 w-36 bg-stone-800 rounded animate-pulse" />
         <div className="h-32 bg-stone-900/30 rounded-xl animate-pulse" />
       </section>
@@ -62,7 +62,7 @@ export function DashboardSection({
   }
 
   return (
-    <section>
+    <section className="dashboard-section-group">
       <button
         type="button"
         onClick={toggle}

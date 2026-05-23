@@ -22,6 +22,11 @@ import { revalidatePath, revalidateTag } from 'next/cache'
 import { z } from 'zod'
 import { derivePublicTrustSummary } from '@/lib/dietary/public-trust'
 import {
+  composePublicProfile,
+  normalizeChefProfileFacts,
+  normalizePublicBioSettings,
+} from '@/lib/profile/fact-guardrails'
+import {
   buildPublicLocationExperiences,
   fetchShowcasePartnersByChefIds,
   normalizeLocationOptionValues,
@@ -178,6 +183,8 @@ export async function getPublicChefProfile(slug: string) {
     marketplaceResult,
     listingResult,
     serviceConfigResult,
+    profileFactsResult,
+    complianceProofResult,
   ] = await Promise.all([
     fetchShowcasePartnersByChefIds(db, [chef.id]),
     (db as any)
@@ -233,6 +240,18 @@ export async function getPublicChefProfile(slug: string) {
       .eq('chef_id', chef.id)
       .maybeSingle(),
     (db as any).from('chef_service_config').select('*').eq('chef_id', chef.id).maybeSingle(),
+    (db as any)
+      .from('chef_profiles')
+      .select('profile_facts, public_bio_settings')
+      .eq('chef_id', chef.id)
+      .eq('tenant_id', chef.id)
+      .maybeSingle(),
+    (db as any)
+      .from('compliance_proof_vault')
+      .select('public_label, status')
+      .eq('tenant_id', chef.id)
+      .eq('visibility', 'public_profile')
+      .in('status', ['active', 'expiring_soon']),
   ])
 
   let serviceConfig: any = null
@@ -259,6 +278,15 @@ export async function getPublicChefProfile(slug: string) {
   if (listingResult.error && !isRelationMissingError(listingResult.error)) {
     console.error('[getPublicChefProfile] directory listing fetch error:', listingResult.error)
   }
+  if (profileFactsResult.error && !isRelationMissingError(profileFactsResult.error)) {
+    console.error('[getPublicChefProfile] profile facts fetch error:', profileFactsResult.error)
+  }
+  if (complianceProofResult.error && !isRelationMissingError(complianceProofResult.error)) {
+    console.error(
+      '[getPublicChefProfile] compliance public proof fetch error:',
+      complianceProofResult.error
+    )
+  }
 
   const discovery = mergeDiscoveryProfile(
     legacyChefToDiscoveryProfile(chef),
@@ -267,6 +295,15 @@ export async function getPublicChefProfile(slug: string) {
   )
   const publicSlug = getPublicChefPathSlug(chef)
   const inquirySlug = getPublicInquirySlug(chef)
+  const publicProfileComposition = composePublicProfile({
+    tagline: chef.tagline ?? discovery.highlight_text,
+    bio: chef.bio,
+    facts: normalizeChefProfileFacts(profileFactsResult.data?.profile_facts),
+    settings: normalizePublicBioSettings(profileFactsResult.data?.public_bio_settings),
+  })
+  const complianceProofChips = ((complianceProofResult.data ?? []) as any[])
+    .map((row) => String(row.public_label || '').trim())
+    .filter(Boolean)
 
   const dietaryTrust = derivePublicTrustSummary(serviceConfig, discovery.dietary_specialties)
   const allLocationExperiences = buildPublicLocationExperiences(
@@ -288,10 +325,9 @@ export async function getPublicChefProfile(slug: string) {
       booking_enabled: chef.booking_enabled ?? false,
       display_name: chef.display_name || chef.business_name,
       business_name: chef.business_name,
-      bio: chef.bio,
       profile_image_url: chef.profile_image_url ?? discovery.hero_image_url,
       logo_url: chef.logo_url ?? null,
-      tagline: chef.tagline ?? discovery.highlight_text,
+      tagline: publicProfileComposition.tagline ?? discovery.highlight_text,
       website_url: chef.website_url,
       show_website_on_public_profile: chef.show_website_on_public_profile ?? true,
       preferred_inquiry_destination: chef.preferred_inquiry_destination ?? 'both',
@@ -310,6 +346,12 @@ export async function getPublicChefProfile(slug: string) {
       booking_min_notice_days: chef.booking_min_notice_days ?? null,
       archetype: chef.archetype ?? null,
       restaurant_group_name: chef.restaurant_group_name ?? null,
+      bio: publicProfileComposition.bio,
+      public_profile_facts: publicProfileComposition.facts,
+      public_proof_chips: Array.from(
+        new Set([...publicProfileComposition.proofChips, ...complianceProofChips])
+      ),
+      external_long_form_links: publicProfileComposition.externalLongFormLinks,
       discovery,
       dietaryTrust,
       service_config: serviceConfig,
@@ -326,29 +368,38 @@ export async function getPublicChefProfile(slug: string) {
 
 export async function updateChefSlug(slug: string) {
   const user = await requireChef()
-  const validated = SlugSchema.parse(slug)
+  const validated = SlugSchema.parse(slug.trim().toLowerCase())
   const db: any = createServerClient()
 
-  // Check uniqueness
-  const { data: existing } = await db
+  const { data: currentChef } = await db
     .from('chefs')
-    .select('id')
-    .eq('slug', validated)
-    .neq('id', user.entityId)
+    .select('slug, booking_slug')
+    .eq('id', user.entityId)
     .single()
-
-  if (existing) {
-    throw new Error('This URL is already taken. Please choose a different one.')
-  }
 
   const { error } = await db.from('chefs').update({ slug: validated }).eq('id', user.entityId)
 
   if (error) {
+    if (error.code === '23505') {
+      throw new Error('This URL is already taken. Please choose a different one.')
+    }
     console.error('[updateChefSlug] Error:', error)
     throw new Error('Failed to update profile URL')
   }
 
-  revalidatePath('/settings/profile')
+  revalidatePath('/settings')
+  revalidatePath('/settings/public-profile')
+  revalidatePath('/settings/client-preview')
+  if (currentChef?.slug) {
+    revalidatePath(`/chef/${currentChef.slug}`)
+    revalidatePath(`/chef/${currentChef.slug}/inquire`)
+  }
+  if (currentChef?.booking_slug && currentChef.booking_slug !== currentChef?.slug) {
+    revalidatePath(`/chef/${currentChef.booking_slug}`)
+    revalidatePath(`/chef/${currentChef.booking_slug}/inquire`)
+  }
+  revalidatePath(`/chef/${validated}`)
+  revalidatePath(`/chef/${validated}/inquire`)
   revalidateTag(`chef-layout-${user.entityId}`)
   return { success: true, slug: validated }
 }

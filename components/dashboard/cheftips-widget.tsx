@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useTransition } from 'react'
+import { useEffect, useState, useTransition } from 'react'
 import Link from 'next/link'
 import { ArrowRight, BookOpen, Bookmark, Lightbulb, Plus, X, Clock } from '@/components/ui/icons'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
@@ -48,9 +48,14 @@ export function ChefTipsWidget({
   const [tips, setTips] = useState(todaysTips)
   const [content, setContent] = useState('')
   const [selectedTags, setSelectedTags] = useState<string[]>([])
-  const [showInput, setShowInput] = useState(false)
+  const [showInput, setShowInput] = useState(true)
+  const [placeholder, setPlaceholder] = useState(PLACEHOLDERS[0])
   const [isPending, startTransition] = useTransition()
   const [dismissedPastTip, setDismissedPastTip] = useState(false)
+
+  useEffect(() => {
+    setPlaceholder(getPlaceholder())
+  }, [])
 
   function toggleTag(tag: string) {
     setSelectedTags((prev) =>
@@ -99,7 +104,7 @@ export function ChefTipsWidget({
 
   return (
     <Card className="border-amber-900/40 bg-stone-900/60">
-      <CardHeader className="pb-2">
+      <CardHeader className="pb-2 pt-3">
         <div className="flex items-center justify-between gap-3">
           <CardTitle className="text-amber-200 flex items-center gap-2 text-sm font-medium">
             <Lightbulb className="h-4 w-4 text-amber-400" />
@@ -130,7 +135,7 @@ export function ChefTipsWidget({
         </div>
       </CardHeader>
 
-      <CardContent className="space-y-3">
+      <CardContent className="space-y-2 pb-3">
         {/* Random past tip as daily inspiration */}
         {pastTip && !dismissedPastTip && tips.length === 0 && (
           <div className="rounded-md border border-amber-900/20 bg-amber-950/20 px-3 py-2">
@@ -187,7 +192,7 @@ export function ChefTipsWidget({
               <textarea
                 value={content}
                 onChange={(e) => setContent(e.target.value)}
-                placeholder={getPlaceholder()}
+                placeholder={placeholder}
                 className="w-full rounded-md border border-stone-700 bg-stone-800 px-3 py-2 text-sm text-stone-200 placeholder:text-stone-600 focus:border-amber-700 focus:outline-none focus:ring-1 focus:ring-amber-700 resize-none"
                 rows={2}
                 maxLength={2000}

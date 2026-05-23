@@ -36,6 +36,11 @@ import { CilSignalSummary } from './_sections/cil-signal-summary'
 import { ActivityFeedSection } from './_sections/activity-feed-section'
 import { getWeeklyRetroSummary } from '@/lib/scheduling/weekly-retro-summary-action'
 import { WeeklyReflectionWidget } from '@/components/dashboard/weekly-reflection-widget'
+import {
+  ChefLifeSynthesisRail,
+  ChefLifeSynthesisRailSkeleton,
+} from '@/components/dashboard/chef-life-synthesis-rail'
+import { getChefLifeDashboardSynthesis } from '@/lib/dashboard/chef-life-synthesis-actions'
 
 export const metadata: Metadata = { title: 'Dashboard' }
 
@@ -74,6 +79,12 @@ export default async function ChefDashboard() {
       <WidgetErrorBoundary name="Tiered Rail" compact>
         <Suspense fallback={<TieredRailSkeleton />}>
           <TieredRailSection queuePromise={queuePromise} />
+        </Suspense>
+      </WidgetErrorBoundary>
+
+      <WidgetErrorBoundary name="Chef Life Synthesis" compact>
+        <Suspense fallback={<ChefLifeSynthesisRailSkeleton />}>
+          <ChefLifeSynthesisLoader />
         </Suspense>
       </WidgetErrorBoundary>
 
@@ -134,4 +145,9 @@ async function WeeklyReflectionLoader() {
   const summary = await getWeeklyRetroSummary().catch(() => null)
   if (!summary || !summary.hasActivity) return null
   return <WeeklyReflectionWidget summary={summary} />
+}
+
+async function ChefLifeSynthesisLoader() {
+  const data = await getChefLifeDashboardSynthesis()
+  return <ChefLifeSynthesisRail data={data} />
 }

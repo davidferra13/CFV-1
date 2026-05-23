@@ -13,6 +13,7 @@ import { Alert } from '@/components/ui/alert'
 import { Select } from '@/components/ui/select'
 import { useProtectedForm } from '@/lib/qol/use-protected-form'
 import { FormShield } from '@/components/forms/form-shield'
+import { PUBLIC_BIO_LIMITS } from '@/lib/profile/fact-guardrails'
 
 type ChefProfile = {
   business_name: string
@@ -27,6 +28,17 @@ type ChefProfile = {
   show_website_on_public_profile: boolean
   preferred_inquiry_destination: 'website_only' | 'chefflow_only' | 'both'
   social_links: ChefSocialLinks
+  private_profile_memory: string | null
+  date_of_birth: string | null
+  birth_month: number | null
+  birth_day: number | null
+  public_bio_settings: {
+    maxChars: number
+    proofChipMaxChars: number
+    maxProofChips: number
+    cannabisDisclosureMode: 'hidden' | 'soft_mentioned' | 'credentialed_public' | 'full_public'
+    externalLongFormLinks: string[]
+  }
 }
 
 export function ChefProfileForm({ profile, chefId }: { profile: ChefProfile; chefId: string }) {
@@ -49,6 +61,17 @@ export function ChefProfileForm({ profile, chefId }: { profile: ChefProfile; che
   const [preferredInquiryDestination, setPreferredInquiryDestination] = useState<
     'website_only' | 'chefflow_only' | 'both'
   >(profile.preferred_inquiry_destination || 'both')
+  const [privateProfileMemory, setPrivateProfileMemory] = useState(
+    profile.private_profile_memory || ''
+  )
+  const [dateOfBirth, setDateOfBirth] = useState(profile.date_of_birth || '')
+  const [birthMonth, setBirthMonth] = useState(
+    profile.birth_month ? String(profile.birth_month) : ''
+  )
+  const [birthDay, setBirthDay] = useState(profile.birth_day ? String(profile.birth_day) : '')
+  const [cannabisDisclosureMode, setCannabisDisclosureMode] = useState<
+    'hidden' | 'soft_mentioned' | 'credentialed_public' | 'full_public'
+  >(profile.public_bio_settings?.cannabisDisclosureMode || 'hidden')
   const [socialInstagram, setSocialInstagram] = useState(profile.social_links?.instagram || '')
   const [socialTiktok, setSocialTiktok] = useState(profile.social_links?.tiktok || '')
   const [socialFacebook, setSocialFacebook] = useState(profile.social_links?.facebook || '')
@@ -69,6 +92,11 @@ export function ChefProfileForm({ profile, chefId }: { profile: ChefProfile; che
       websiteUrl: profile.website_url || '',
       showWebsiteOnPublicProfile: profile.show_website_on_public_profile ?? true,
       preferredInquiryDestination: (profile.preferred_inquiry_destination || 'both') as string,
+      privateProfileMemory: profile.private_profile_memory || '',
+      dateOfBirth: profile.date_of_birth || '',
+      birthMonth: profile.birth_month ? String(profile.birth_month) : '',
+      birthDay: profile.birth_day ? String(profile.birth_day) : '',
+      cannabisDisclosureMode: profile.public_bio_settings?.cannabisDisclosureMode || 'hidden',
       socialInstagram: profile.social_links?.instagram || '',
       socialTiktok: profile.social_links?.tiktok || '',
       socialFacebook: profile.social_links?.facebook || '',
@@ -89,6 +117,11 @@ export function ChefProfileForm({ profile, chefId }: { profile: ChefProfile; che
       websiteUrl,
       showWebsiteOnPublicProfile,
       preferredInquiryDestination: preferredInquiryDestination as string,
+      privateProfileMemory,
+      dateOfBirth,
+      birthMonth,
+      birthDay,
+      cannabisDisclosureMode,
       socialInstagram,
       socialTiktok,
       socialFacebook,
@@ -105,6 +138,11 @@ export function ChefProfileForm({ profile, chefId }: { profile: ChefProfile; che
       websiteUrl,
       showWebsiteOnPublicProfile,
       preferredInquiryDestination,
+      privateProfileMemory,
+      dateOfBirth,
+      birthMonth,
+      birthDay,
+      cannabisDisclosureMode,
       socialInstagram,
       socialTiktok,
       socialFacebook,
@@ -133,6 +171,17 @@ export function ChefProfileForm({ profile, chefId }: { profile: ChefProfile; che
     setShowWebsiteOnPublicProfile(d.showWebsiteOnPublicProfile)
     setPreferredInquiryDestination(
       d.preferredInquiryDestination as 'website_only' | 'chefflow_only' | 'both'
+    )
+    setPrivateProfileMemory(d.privateProfileMemory)
+    setDateOfBirth(d.dateOfBirth)
+    setBirthMonth(d.birthMonth)
+    setBirthDay(d.birthDay)
+    setCannabisDisclosureMode(
+      d.cannabisDisclosureMode as
+        | 'hidden'
+        | 'soft_mentioned'
+        | 'credentialed_public'
+        | 'full_public'
     )
     setSocialInstagram(d.socialInstagram)
     setSocialTiktok(d.socialTiktok)
@@ -182,6 +231,17 @@ export function ChefProfileForm({ profile, chefId }: { profile: ChefProfile; che
           website_url: websiteUrl || null,
           show_website_on_public_profile: showWebsiteOnPublicProfile,
           preferred_inquiry_destination: preferredInquiryDestination,
+          private_profile_memory: privateProfileMemory || null,
+          date_of_birth: dateOfBirth || null,
+          birth_month: birthMonth ? Number(birthMonth) : null,
+          birth_day: birthDay ? Number(birthDay) : null,
+          public_bio_settings: {
+            maxChars: PUBLIC_BIO_LIMITS.bioMaxChars,
+            proofChipMaxChars: PUBLIC_BIO_LIMITS.proofChipMaxChars,
+            maxProofChips: PUBLIC_BIO_LIMITS.maxProofChips,
+            cannabisDisclosureMode,
+            externalLongFormLinks: [websiteUrl, socialLinktree].filter(Boolean),
+          },
           social_links: {
             instagram: socialInstagram || undefined,
             tiktok: socialTiktok || undefined,
@@ -217,7 +277,7 @@ export function ChefProfileForm({ profile, chefId }: { profile: ChefProfile; che
 
         <Card>
           <CardHeader>
-            <CardTitle>Chef Profile</CardTitle>
+            <CardTitle>Public Client Profile Identity</CardTitle>
           </CardHeader>
           <CardContent className="space-y-4">
             <Input
@@ -230,7 +290,7 @@ export function ChefProfileForm({ profile, chefId }: { profile: ChefProfile; che
               label="Display Name"
               value={displayName}
               onChange={(e) => setDisplayName(e.target.value)}
-              helperText="Optional public-facing name. If blank, business name is used."
+              helperText="Optional name for public/client profile surfaces. If blank, business name is used."
             />
             <Input
               label="Phone"
@@ -249,7 +309,70 @@ export function ChefProfileForm({ profile, chefId }: { profile: ChefProfile; che
               value={bio}
               onChange={(e) => setBio(e.target.value)}
               rows={4}
-              helperText={`${bio.length}/1200 characters`}
+              maxLength={PUBLIC_BIO_LIMITS.bioMaxChars}
+              helperText={`${bio.length}/${PUBLIC_BIO_LIMITS.bioMaxChars} characters. Use external links for long-form stories.`}
+            />
+          </CardContent>
+        </Card>
+
+        <Card>
+          <CardHeader>
+            <CardTitle>Private Facts & Disclosure Guardrails</CardTitle>
+          </CardHeader>
+          <CardContent className="space-y-4">
+            <Textarea
+              label="Private Chef Memory"
+              value={privateProfileMemory}
+              onChange={(e) => setPrivateProfileMemory(e.target.value)}
+              rows={5}
+              maxLength={4000}
+              helperText={`${privateProfileMemory.length}/4000 characters. Stored privately for profile optimization, not copied to public bio.`}
+            />
+            <div className="grid grid-cols-1 gap-4 sm:grid-cols-3">
+              <Input
+                label="Date of Birth"
+                type="date"
+                value={dateOfBirth}
+                onChange={(e) => setDateOfBirth(e.target.value)}
+                helperText="Full DOB stays private."
+              />
+              <Input
+                label="Birth Month"
+                type="number"
+                min="1"
+                max="12"
+                value={birthMonth}
+                onChange={(e) => setBirthMonth(e.target.value)}
+                helperText="Internal reminders."
+              />
+              <Input
+                label="Birth Day"
+                type="number"
+                min="1"
+                max="31"
+                value={birthDay}
+                onChange={(e) => setBirthDay(e.target.value)}
+                helperText="Internal reminders."
+              />
+            </div>
+            <Select
+              label="Cannabis Disclosure"
+              value={cannabisDisclosureMode}
+              onChange={(e) => {
+                const value = e.target.value as
+                  | 'hidden'
+                  | 'soft_mentioned'
+                  | 'credentialed_public'
+                  | 'full_public'
+                setCannabisDisclosureMode(value)
+              }}
+              options={[
+                { value: 'hidden', label: 'Hidden' },
+                { value: 'soft_mentioned', label: 'Soft mention allowed' },
+                { value: 'credentialed_public', label: 'Credentialed public' },
+                { value: 'full_public', label: 'Full public' },
+              ]}
+              helperText="Controls whether approved cannabis facts can appear in public profile composition."
             />
           </CardContent>
         </Card>
@@ -302,7 +425,7 @@ export function ChefProfileForm({ profile, chefId }: { profile: ChefProfile; che
 
         <Card>
           <CardHeader>
-            <CardTitle>Public Profile Settings</CardTitle>
+            <CardTitle>Public Contact & Inquiry Settings</CardTitle>
           </CardHeader>
           <CardContent className="space-y-4">
             <Input

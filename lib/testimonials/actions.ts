@@ -163,7 +163,7 @@ export async function getTestimonials(filters?: { approved?: boolean; eventId?: 
     .select(
       'id, event_id, guest_name, testimonial, rating, food_rating, chef_rating, food_highlight, would_recommend, is_approved, is_featured, created_at'
     )
-    .eq('tenant_id', user.tenantId!)
+    .eq('tenant_id', user.entityId!)
     .order('created_at', { ascending: false })
 
   if (filters?.approved !== undefined) {
@@ -195,7 +195,7 @@ export async function setTestimonialApproval(testimonialId: string, approved: bo
     .from('guest_testimonials')
     .update({ is_approved: approved })
     .eq('id', testimonialId)
-    .eq('tenant_id', user.tenantId!)
+    .eq('tenant_id', user.entityId!)
 
   if (error) {
     console.error('[setTestimonialApproval] Error:', error)
@@ -214,7 +214,7 @@ export async function setTestimonialFeatured(testimonialId: string, featured: bo
     .from('guest_testimonials')
     .update({ is_featured: featured })
     .eq('id', testimonialId)
-    .eq('tenant_id', user.tenantId!)
+    .eq('tenant_id', user.entityId!)
 
   if (error) {
     console.error('[setTestimonialFeatured] Error:', error)

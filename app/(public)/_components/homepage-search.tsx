@@ -154,10 +154,10 @@ export function HomepageSearch({ onContextChange }: HomepageSearchProps = {}) {
   }
 
   return (
-    <form action="/chefs" method="get" onSubmit={handleSearch} className="flex flex-col gap-4">
-      <div className="search-premium flex flex-1 flex-col overflow-hidden rounded-2xl border border-white/15 bg-white/5 shadow-[0_24px_48px_rgba(0,0,0,0.35),inset_0_1px_0_rgba(255,255,255,0.12)] backdrop-blur-2xl sm:flex-row sm:rounded-[1.5rem]">
+    <form action="/chefs" method="get" onSubmit={handleSearch} className="flex flex-col gap-2.5">
+      <div className="search-premium flex flex-1 flex-col overflow-hidden rounded-2xl border border-white/15 bg-white/5 shadow-[0_18px_40px_rgba(0,0,0,0.3),inset_0_1px_0_rgba(255,255,255,0.12)] backdrop-blur-2xl sm:flex-row sm:items-stretch sm:rounded-[1.25rem]">
         {/* Location input */}
-        <div className="flex min-h-[56px] flex-1 items-center border-b border-stone-700/40 sm:min-h-[60px] sm:border-b-0 sm:border-r">
+        <div className="flex min-h-[54px] flex-1 items-center border-b border-stone-700/40 sm:min-h-[56px] sm:border-b-0 sm:border-r">
           <label htmlFor="homepage-location" className="sr-only">
             Location
           </label>
@@ -191,13 +191,13 @@ export function HomepageSearch({ onContextChange }: HomepageSearchProps = {}) {
               onContextChange?.({ location: text, lat: null, lng: null })
             }}
             placeholder={typingPlaceholder}
-            className="w-full bg-transparent px-3 py-4 text-base text-stone-100 placeholder:text-stone-500 focus:outline-none sm:py-5 sm:text-[15px]"
+            className="w-full bg-transparent px-3 py-3.5 text-base text-stone-100 placeholder:text-stone-500 focus:outline-none sm:py-4 sm:text-[15px]"
             googlePlacesEnabled={false}
           />
         </div>
 
         {/* Service type select */}
-        <div className="flex min-h-[56px] flex-1 items-center sm:min-h-[60px]">
+        <div className="flex min-h-[54px] flex-1 items-center sm:min-h-[56px]">
           <label htmlFor="homepage-service" className="sr-only">
             Service type
           </label>
@@ -226,7 +226,7 @@ export function HomepageSearch({ onContextChange }: HomepageSearchProps = {}) {
             aria-label="Service type"
             value={serviceType}
             onChange={(e) => setServiceType(e.target.value)}
-            className="w-full cursor-pointer appearance-none bg-transparent px-3 py-4 text-base text-stone-100 focus:outline-none sm:py-5 sm:text-[15px]"
+            className="w-full cursor-pointer appearance-none bg-transparent px-3 py-3.5 text-base text-stone-100 focus:outline-none sm:py-4 sm:text-[15px]"
           >
             {SERVICE_OPTIONS.map((opt) => (
               <option key={opt.value} value={opt.value} className="bg-stone-900 text-stone-100">
@@ -243,10 +243,24 @@ export function HomepageSearch({ onContextChange }: HomepageSearchProps = {}) {
             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
           </svg>
         </div>
+        <button
+          type="submit"
+          className="hidden min-h-[56px] items-center justify-center gradient-accent px-7 text-sm font-semibold text-white shadow-lg transition-all hover:shadow-xl active:scale-[0.98] sm:inline-flex"
+        >
+          <svg className="mr-2 h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path
+              strokeLinecap="round"
+              strokeLinejoin="round"
+              strokeWidth={2}
+              d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"
+            />
+          </svg>
+          Browse chefs
+        </button>
       </div>
 
       {/* Search button - full width on mobile, aligned right on desktop */}
-      <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+      <div className="flex flex-col gap-2 sm:items-center">
         {savedLocation && location === savedLocation.displayLabel && (
           <p className="text-xs text-stone-500">
             Browsing near {savedLocation.displayLabel} &middot;{' '}
@@ -268,7 +282,7 @@ export function HomepageSearch({ onContextChange }: HomepageSearchProps = {}) {
         </p>
         <button
           type="submit"
-          className="inline-flex h-14 items-center justify-center rounded-2xl gradient-accent px-8 text-base font-semibold text-white shadow-lg transition-all hover:-translate-y-0.5 hover:shadow-xl active:scale-[0.97] touch-manipulation sm:min-w-[200px]"
+          className="inline-flex min-h-[52px] items-center justify-center rounded-2xl gradient-accent px-8 text-base font-semibold text-white shadow-lg transition-all hover:-translate-y-0.5 hover:shadow-xl active:scale-[0.97] touch-manipulation sm:hidden"
         >
           <svg className="mr-2.5 h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
             <path

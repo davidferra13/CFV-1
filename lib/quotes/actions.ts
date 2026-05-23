@@ -128,6 +128,7 @@ export async function createQuote(input: CreateQuoteInput) {
     .from('clients')
     .select('tenant_id')
     .eq('id', validated.client_id)
+    .eq('tenant_id', user.tenantId!)
     .single()
 
   if (!client || client.tenant_id !== user.tenantId) {
@@ -140,10 +141,24 @@ export async function createQuote(input: CreateQuoteInput) {
       .from('inquiries')
       .select('tenant_id')
       .eq('id', validated.inquiry_id)
+      .eq('tenant_id', user.tenantId!)
       .single()
 
     if (!inquiry || inquiry.tenant_id !== user.tenantId) {
       throw new AuthError('Inquiry not found or does not belong to your tenant')
+    }
+  }
+
+  if (validated.event_id) {
+    const { data: event } = await db
+      .from('events')
+      .select('tenant_id')
+      .eq('id', validated.event_id)
+      .eq('tenant_id', user.tenantId!)
+      .single()
+
+    if (!event || event.tenant_id !== user.tenantId) {
+      throw new AuthError('Event not found or does not belong to your tenant')
     }
   }
 
@@ -640,7 +655,7 @@ export async function transitionQuote(id: string, newStatus: QuoteStatus) {
     let query = db
       .from('quotes')
       .select(
-        'status, total_quoted_cents, price_per_person_cents, guest_count_estimated, pricing_model, deposit_amount_cents, deposit_percentage, deposit_required, valid_until'
+        'status, event_id, total_quoted_cents, price_per_person_cents, guest_count_estimated, pricing_model, deposit_amount_cents, deposit_percentage, deposit_required, valid_until'
       )
       .eq('id', id)
       .eq('tenant_id', user.tenantId!)
@@ -706,6 +721,20 @@ export async function transitionQuote(id: string, newStatus: QuoteStatus) {
     } catch (guardErr) {
       // Non-blocking: cost guard failure should never prevent sending
       console.error('[transitionQuote] Cost guard check failed (non-blocking):', guardErr)
+    }
+  }
+
+  if (newStatus === 'sent' && quote.event_id) {
+    const { getQuoteComplianceGateForChef } =
+      await import('@/lib/compliance/compliance-concierge-actions')
+    const complianceGate = await getQuoteComplianceGateForChef(id)
+    if (!complianceGate.canSend) {
+      throw new ValidationError(complianceGate.message)
+    }
+    for (const warning of complianceGate.warnings) {
+      if (warning.severity === 'critical' || warning.severity === 'warning') {
+        warnings.push(warning.recommendation)
+      }
     }
   }
 
@@ -776,6 +805,7 @@ export async function transitionQuote(id: string, newStatus: QuoteStatus) {
         .from('clients')
         .select('email, full_name')
         .eq('id', updated.client_id)
+        .eq('tenant_id', user.tenantId!)
         .single()
 
       const { data: chef } = await db
@@ -791,6 +821,7 @@ export async function transitionQuote(id: string, newStatus: QuoteStatus) {
           .from('inquiries')
           .select('confirmed_occasion')
           .eq('id', updated.inquiry_id)
+          .eq('tenant_id', user.tenantId!)
           .single()
         occasion = inquiry?.confirmed_occasion || null
       }
@@ -799,6 +830,7 @@ export async function transitionQuote(id: string, newStatus: QuoteStatus) {
           .from('events')
           .select('occasion')
           .eq('id', updated.event_id)
+          .eq('tenant_id', user.tenantId!)
           .single()
         occasion = evt?.occasion || null
       }

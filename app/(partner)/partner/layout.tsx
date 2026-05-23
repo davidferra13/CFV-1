@@ -14,6 +14,8 @@ import { RoleSwitcher } from '@/components/shared/role-switcher'
 import { auth } from '@/lib/auth'
 import { PATHNAME_HEADER } from '@/lib/auth/request-auth-context'
 import { resolvePartnerSurfaceMode } from '@/lib/interface/surface-governance'
+import { Suspense } from 'react'
+import { PartnerRailStrip, PartnerRailStripSkeleton } from '@/components/rail/partner-rail-strip'
 
 export default async function PartnerLayout({ children }: { children: React.ReactNode }) {
   const pathname = headers().get(PATHNAME_HEADER) ?? '/partner/dashboard'
@@ -54,7 +56,9 @@ export default async function PartnerLayout({ children }: { children: React.Reac
         <header className="flex h-14 items-center justify-end border-b border-stone-700 px-6">
           <RoleSwitcher currentRole="partner" availableRoleCount={availableRoleCount} />
         </header>
-
+        <Suspense fallback={<PartnerRailStripSkeleton />}>
+          <PartnerRailStrip userId={user.id} tenantId={user.tenantId ?? undefined} />
+        </Suspense>
         <main className="flex-1 pt-14 lg:pt-0">
           <div className="mx-auto max-w-4xl px-4 py-8 sm:px-6 lg:px-8">{children}</div>
         </main>

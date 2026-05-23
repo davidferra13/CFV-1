@@ -4,7 +4,13 @@ import dynamic from 'next/dynamic'
 import { auth } from '@/lib/auth'
 import { PublicHeader } from '@/components/navigation/public-header'
 import { PublicFooter } from '@/components/navigation/public-footer'
-import { DiscoveryOutcomeTracker } from '@/components/discovery/discovery-outcome-tracker'
+const DiscoveryOutcomeTracker = dynamic(
+  () =>
+    import('@/components/discovery/discovery-outcome-tracker').then(
+      (m) => m.DiscoveryOutcomeTracker
+    ),
+  { ssr: false }
+)
 
 const PresenceBeacon = dynamic(
   () => import('@/components/admin/presence-beacon').then((m) => m.PresenceBeacon),

@@ -33,6 +33,10 @@ import { useNavigationPending } from '@/components/navigation/navigation-pending
 import { AppLogo } from '@/components/branding/app-logo'
 import { RecentPagesSection } from '@/components/navigation/recent-pages-section'
 import { PinnedSurfacesSection } from '@/components/navigation/pinned-surfaces-section'
+import {
+  PORTAL_RAIL_STANDARD,
+  getPortalRailWidthClass,
+} from '@/components/navigation/portal-rail-standard'
 import type { PinnedSurface } from '@/lib/surfaces/analytics/usage-tracking'
 import { InboxUnreadBadge } from '@/components/communication/inbox-unread-badge'
 import { AutopilotBadge } from '@/components/autopilot/autopilot-badge'
@@ -930,9 +934,7 @@ export function ChefSidebar({
   }
   return (
     <aside
-      className={`hidden md:flex md:flex-col md:fixed md:inset-y-0 glass-subtle sidebar-gradient border-r border-stone-800/40 transition-all duration-200 z-subnav md:w-16 ${
-        collapsed ? 'lg:w-16' : 'lg:w-60'
-      }`}
+      className={`hidden md:flex md:flex-col md:fixed md:inset-y-0 glass-subtle sidebar-gradient border-r border-stone-800/40 transition-all duration-200 z-subnav ${PORTAL_RAIL_STANDARD.mdCollapsedWidth} ${PORTAL_RAIL_STANDARD.desktopRailProminence} ${getPortalRailWidthClass(collapsed)}`}
     >
       {/* Logo + notification bell + collapse toggle */}
       <div

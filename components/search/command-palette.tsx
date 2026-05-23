@@ -12,6 +12,7 @@ import {
 } from '@/lib/search/search-recents'
 import { logSearch } from '@/lib/search/command-palette-actions'
 import type { EntityType } from '@/lib/search/command-palette-types'
+import { getUrlCapabilityPaletteItems } from '@/lib/navigation/url-capability-registry'
 
 // ── Types ──────────────────────────────────────────────────────────
 
@@ -160,8 +161,16 @@ function fuzzyScore(text: string, query: string): number {
 
 // ── Component ─────────────────────────────────────────────────────
 
-export function CommandPalette({ userId, tenantId }: { userId: string; tenantId: string }) {
-  const [open, setOpen] = useState(false)
+export function CommandPalette({
+  userId,
+  tenantId,
+  defaultOpen = false,
+}: {
+  userId: string
+  tenantId: string
+  defaultOpen?: boolean
+}) {
+  const [open, setOpen] = useState(defaultOpen)
   const [query, setQuery] = useState('')
   const [activeIndex, setActiveIndex] = useState(0)
   const [dataResults, setDataResults] = useState<SearchResult[]>([])
@@ -231,6 +240,18 @@ export function CommandPalette({ userId, tenantId }: { userId: string; tenantId:
 
   // Build the visible items list
   const items = useMemo<PaletteItem[]>(() => {
+    const urlActions: PaletteItem[] = getUrlCapabilityPaletteItems(
+      pathname ?? '/dashboard',
+      'chef'
+    ).map((action) => ({
+      id: `url:${action.id}`,
+      label: action.label,
+      sublabel: action.description,
+      href: action.href,
+      section: 'URL Actions',
+      icon: action.requiresApproval ? '!' : '>',
+    }))
+
     if (!query) {
       // No query: show recents (if any), then quick actions, then top nav items
       const recentItems: PaletteItem[] = recents.slice(0, 5).map((r) => ({
@@ -243,12 +264,22 @@ export function CommandPalette({ userId, tenantId }: { userId: string; tenantId:
       }))
       return [
         ...recentItems,
+        ...urlActions,
         ...QUICK_ACTIONS,
         ...NAV_ITEMS.slice(0, recentItems.length > 0 ? 10 : 15),
       ]
     }
 
     const matched: PaletteItem[] = []
+
+    const matchedUrlActions = urlActions
+      .filter((item) => fuzzyMatch(item.label, query) || fuzzyMatch(item.sublabel || '', query))
+      .sort((a, b) => {
+        const aScore = Math.max(fuzzyScore(a.label, query), fuzzyScore(a.sublabel || '', query))
+        const bScore = Math.max(fuzzyScore(b.label, query), fuzzyScore(b.sublabel || '', query))
+        return bScore - aScore
+      })
+    matched.push(...matchedUrlActions)
 
     // Filter quick actions
     const matchedActions = QUICK_ACTIONS.filter((item) => fuzzyMatch(item.label, query)).sort(
@@ -281,7 +312,7 @@ export function CommandPalette({ userId, tenantId }: { userId: string; tenantId:
     }
 
     return matched
-  }, [query, dataResults, recents])
+  }, [query, dataResults, recents, pathname])
 
   // Group items by section
   const grouped = useMemo(() => {

@@ -45,13 +45,13 @@ export function WidgetCardShell({
   return (
     <div
       data-widget-id={widgetId}
-      className={`${sizeClass} rounded-2xl overflow-hidden transition-all duration-200 hover:shadow-[var(--shadow-card-hover)] border-l-2 border-l-stone-600 bg-[var(--surface-1)] ${className ?? ''}`}
+      className={`${sizeClass} dashboard-widget-card rounded-2xl overflow-hidden transition-all duration-200 hover:shadow-[var(--shadow-card-hover)] border-l-2 border-l-stone-600 bg-[var(--surface-1)] ${className ?? ''}`}
       style={{
         border: '1px solid rgba(255,255,255,0.06)',
       }}
     >
       {/* Header */}
-      <div className="flex items-center justify-between px-4 pt-3.5 pb-1">
+      <div className="flex items-center justify-between px-3.5 pt-3 pb-1">
         <div className="flex items-center gap-2 min-w-0">
           <span className="text-sm leading-none shrink-0 opacity-80">{icon}</span>
           <span className="text-xxs font-bold text-stone-500 uppercase tracking-wider truncate">
@@ -70,7 +70,7 @@ export function WidgetCardShell({
       </div>
 
       {/* Content */}
-      <div className="px-4 pb-4 pt-1">{children}</div>
+      <div className="px-3.5 pb-3 pt-1">{children}</div>
     </div>
   )
 }

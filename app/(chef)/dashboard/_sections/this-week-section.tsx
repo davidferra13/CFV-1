@@ -29,6 +29,7 @@ import {
   QuickAvailabilitySection,
   QuickExpenseSection,
   PriorityQueueSection,
+  ClientContributionDecisionsSection,
   TouchpointsSection,
 } from './widget-sections'
 import { PriceGlanceSection } from './pricing-sections'
@@ -66,8 +67,8 @@ export async function ThisWeekSection({ queuePromise }: ThisWeekSectionProps) {
 
   return (
     <DashboardSection id="this-week" title="This Week">
-      <div className="space-y-6">
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+      <div className="space-y-4">
+        <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-4">
           <WidgetErrorBoundary name="Schedule" compact>
             <Suspense fallback={<ScheduleCardsSkeleton />}>
               <ScheduleCards />
@@ -93,7 +94,7 @@ export async function ThisWeekSection({ queuePromise }: ThisWeekSectionProps) {
         </div>
 
         {/* Pipeline + Financial Pulse */}
-        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+        <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
           <WidgetErrorBoundary name="Pipeline Snapshot" compact>
             <Suspense fallback={<PipelineSnapshotSkeleton />}>
               <PipelineSnapshot />
@@ -122,7 +123,7 @@ export async function ThisWeekSection({ queuePromise }: ThisWeekSectionProps) {
               </Suspense>
             </WidgetErrorBoundary>
 
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+            <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-4">
               <WidgetErrorBoundary name="Dormant Clients" compact>
                 <Suspense fallback={<WidgetCardSkeleton size="sm" />}>
                   <DormantClientsSection />
@@ -153,7 +154,12 @@ export async function ThisWeekSection({ queuePromise }: ThisWeekSectionProps) {
             </WidgetErrorBoundary>
 
             {/* Priority Queue + Touchpoints */}
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+            <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-4">
+              <WidgetErrorBoundary name="Contribution Decisions" compact>
+                <Suspense fallback={<WidgetCardSkeleton size="sm" />}>
+                  <ClientContributionDecisionsSection />
+                </Suspense>
+              </WidgetErrorBoundary>
               <WidgetErrorBoundary name="Priority Queue" compact>
                 <Suspense fallback={<PriorityQueueSkeleton />}>
                   <PriorityQueueSection queuePromise={queuePromise} />

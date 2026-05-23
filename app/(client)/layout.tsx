@@ -22,6 +22,8 @@ import { GlobalReportButton } from '@/components/feedback/global-report-button'
 import { PATHNAME_HEADER } from '@/lib/auth/request-auth-context'
 import { resolveClientSurfaceMode } from '@/lib/interface/surface-governance'
 import { getClientCannabisAccessStatus } from '@/lib/cannabis/client-portal-guards'
+import { Suspense } from 'react'
+import { ClientRailStrip, ClientRailStripSkeleton } from '@/components/rail/client-rail-strip'
 
 export default async function ClientLayout({ children }: { children: React.ReactNode }) {
   const pathname = headers().get(PATHNAME_HEADER) ?? '/my-events'
@@ -62,6 +64,9 @@ export default async function ClientLayout({ children }: { children: React.React
           <ClientMobileNav userEmail={user.email} cannabisAccess={cannabisAccess} />
           <ActivityTracker eventType="portal_login" />
           <ClientMainContent>
+            <Suspense fallback={<ClientRailStripSkeleton />}>
+              <ClientRailStrip />
+            </Suspense>
             <MarketResearchBannerWrapper
               surveyType="market_research_client"
               channel="client_portal"

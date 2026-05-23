@@ -13,6 +13,9 @@ import { OpsPulseCard } from '@/components/events/ops-pulse-card'
 import { EventPricingVertical } from '@/components/pricing/event-pricing-vertical'
 import { CostStaleBanner } from '@/components/pricing/cost-stale-banner'
 import { EventStatusRealtimeSync } from '@/components/events/event-status-realtime-sync'
+import { EventCompliancePacketCard } from '@/components/compliance/event-compliance-packet-card'
+import { EventReadinessBusCard } from '@/components/events/event-readiness-bus-card'
+import { getEventReadinessBus } from '@/lib/events/event-readiness-bus-actions'
 
 async function EventCompletionInner({ eventId }: { eventId: string }) {
   const result = await getCompletionForEntity('event', eventId)
@@ -27,13 +30,19 @@ type Props = {
 }
 
 export async function EventIntelligenceSection({ eventId, tenantId, event }: Props) {
-  const [pricingIntelligence, lifecycleProgress, completionResult, { timeline: prepTimeline }] =
-    await Promise.all([
-      getEventPricingIntelligence(eventId).catch(() => null),
-      getLifecycleProgress(event.inquiry_id ?? undefined, eventId).catch(() => null),
-      getCompletionForEntity('event', eventId).catch(() => null),
-      getEventPrepTimeline(eventId).catch(() => ({ timeline: null })),
-    ])
+  const [
+    pricingIntelligence,
+    readinessBus,
+    lifecycleProgress,
+    completionResult,
+    { timeline: prepTimeline },
+  ] = await Promise.all([
+    getEventPricingIntelligence(eventId).catch(() => null),
+    getEventReadinessBus(eventId).catch(() => null),
+    getLifecycleProgress(event.inquiry_id ?? undefined, eventId).catch(() => null),
+    getCompletionForEntity('event', eventId).catch(() => null),
+    getEventPrepTimeline(eventId).catch(() => ({ timeline: null })),
+  ])
 
   const completionScore = completionResult?.score ?? null
 
@@ -51,6 +60,12 @@ export async function EventIntelligenceSection({ eventId, tenantId, event }: Pro
       {/* Pricing Pulse */}
       {pricingIntelligence && <EventPricingVertical data={pricingIntelligence} />}
 
+      <WidgetErrorBoundary name="Event Readiness Bus" compact>
+        <Suspense fallback={null}>
+          <EventReadinessBusCard bus={readinessBus} />
+        </Suspense>
+      </WidgetErrorBoundary>
+
       {/* Event Intelligence */}
       <WidgetErrorBoundary name="Event Intelligence" compact>
         <Suspense fallback={null}>
@@ -62,6 +77,12 @@ export async function EventIntelligenceSection({ eventId, tenantId, event }: Pro
             status={event.status}
             eventDate={event.event_date ?? null}
           />
+        </Suspense>
+      </WidgetErrorBoundary>
+
+      <WidgetErrorBoundary name="Compliance Packet" compact>
+        <Suspense fallback={null}>
+          <EventCompliancePacketCard eventId={eventId} compact />
         </Suspense>
       </WidgetErrorBoundary>
 

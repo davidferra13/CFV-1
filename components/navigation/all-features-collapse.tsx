@@ -5,8 +5,10 @@ import { usePathname } from 'next/navigation'
 import { ChevronDown } from '@/components/ui/icons'
 import { actionBarItems } from './nav-config'
 import type { NavGroup } from './nav-config'
-
-const STORAGE_KEY = 'chef-all-features-collapsed'
+import {
+  CHEF_ALL_FEATURES_COLLAPSED_STORAGE_KEY,
+  DEFAULT_CHEF_ALL_FEATURES_COLLAPSED,
+} from '@/lib/chef/shell-state'
 
 type AllFeaturesCollapseProps = {
   children: React.ReactNode
@@ -44,16 +46,16 @@ export function AllFeaturesCollapse({
 }: AllFeaturesCollapseProps) {
   const pathname = usePathname()
 
-  const [collapsed, setCollapsed] = useState(() => {
-    if (typeof window === 'undefined') return false
+  const [collapsed, setCollapsed] = useState(DEFAULT_CHEF_ALL_FEATURES_COLLAPSED)
+
+  useEffect(() => {
     try {
-      const stored = localStorage.getItem(STORAGE_KEY)
-      // Default to expanded on first load; user can collapse manually
-      return stored === null ? false : stored === 'true'
+      const stored = localStorage.getItem(CHEF_ALL_FEATURES_COLLAPSED_STORAGE_KEY)
+      if (stored !== null) setCollapsed(stored === 'true')
     } catch {
-      return false
+      setCollapsed(DEFAULT_CHEF_ALL_FEATURES_COLLAPSED)
     }
-  })
+  }, [])
 
   // Auto-expand when the active page is inside All Features but not in the Action Bar
   useEffect(() => {
@@ -67,7 +69,7 @@ export function AllFeaturesCollapse({
     setCollapsed((prev) => {
       const next = !prev
       try {
-        localStorage.setItem(STORAGE_KEY, String(next))
+        localStorage.setItem(CHEF_ALL_FEATURES_COLLAPSED_STORAGE_KEY, String(next))
       } catch (err) {
         console.warn('[AllFeaturesCollapse] localStorage write failed:', err)
       }
@@ -90,6 +92,7 @@ export function AllFeaturesCollapse({
       <button
         type="button"
         onClick={toggle}
+        aria-expanded={isOpen}
         className="flex w-full items-center justify-between px-4 py-2 text-xs font-semibold uppercase tracking-wider text-stone-500 hover:text-stone-400 transition-colors"
       >
         <span>All Features</span>

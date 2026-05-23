@@ -25,6 +25,12 @@ import { AppLogo } from '@/components/branding/app-logo'
 import { NotificationBell } from '@/components/notifications/notification-bell'
 import { ClientHubUnreadBadge } from '@/components/hub/client-hub-unread-badge'
 import { ClientChatUnreadBadge } from '@/components/chat/client-chat-unread-badge'
+import {
+  PORTAL_RAIL_STANDARD,
+  getPortalRailOffsetClass,
+  getPortalRailWidthClass,
+  isPortalRouteActive,
+} from './portal-rail-standard'
 
 interface ClientNavProps {
   userEmail: string
@@ -38,8 +44,10 @@ const navItems = [
   { href: '/my-bookings', label: 'Bookings', icon: Calendar, mobileTab: true, dividerBefore: true },
   { href: '/my-chat', label: 'Messages', icon: MessageCircle, badge: 'chat', mobileTab: true },
   { href: '/my-hub', label: 'Friends & Groups', icon: Users, badge: 'hub', mobileTab: true },
+  { href: '/my-hub/activity', label: 'Activity', icon: Users },
   { href: '/my-profile', label: 'Profile', icon: User, dividerBefore: true, mobileTab: true },
   { href: '/my-spending', label: 'Payments', icon: DollarSign },
+  { href: '/my-spending/tax-summary', label: 'Tax Summary', icon: DollarSign },
   { href: '/my-rewards', label: 'Rewards', icon: Gift, mobileTab: true },
 ]
 
@@ -54,7 +62,7 @@ const ClientSidebarContext = createContext<ClientSidebarContextType>({
 })
 
 function isItemActive(pathname: string, href: string) {
-  return pathname === href || pathname.startsWith(href + '/')
+  return isPortalRouteActive(pathname, href)
 }
 
 export function useClientSidebar() {
@@ -110,9 +118,7 @@ export function ClientSidebar({ userEmail, cannabisAccess }: ClientNavProps) {
 
   return (
     <aside
-      className={`hidden lg:flex lg:flex-col lg:fixed lg:inset-y-0 bg-stone-900 border-r border-stone-700 transition-all duration-200 z-subnav ${
-        collapsed ? 'lg:w-16' : 'lg:w-60'
-      }`}
+      className={`${PORTAL_RAIL_STANDARD.desktopRailBase} ${PORTAL_RAIL_STANDARD.desktopRailProminence} ${getPortalRailWidthClass(collapsed)}`}
     >
       <div
         className={`flex items-center h-16 border-b border-stone-800 ${collapsed ? 'px-3 justify-center' : 'px-4 justify-between'}`}
@@ -154,7 +160,7 @@ export function ClientSidebar({ userEmail, cannabisAccess }: ClientNavProps) {
             <Link
               href={BOOK_NOW_HREF}
               title="Book Now"
-              className={`flex items-center justify-center w-10 h-10 rounded-lg transition-colors ${
+              className={`${PORTAL_RAIL_STANDARD.collapsedIconButton} ${
                 isItemActive(pathname, BOOK_NOW_HREF)
                   ? 'bg-brand-600 text-white'
                   : 'bg-brand-950 text-brand-400 hover:bg-brand-900'
@@ -172,7 +178,7 @@ export function ClientSidebar({ userEmail, cannabisAccess }: ClientNavProps) {
                   <Link
                     href={item.href}
                     title={item.label}
-                    className={`relative flex items-center justify-center w-10 h-10 rounded-lg transition-colors ${
+                    className={`relative ${PORTAL_RAIL_STANDARD.collapsedIconButton} ${
                       active
                         ? 'bg-brand-950 text-brand-600'
                         : 'text-stone-400 hover:bg-stone-800 hover:text-stone-400'
@@ -190,7 +196,7 @@ export function ClientSidebar({ userEmail, cannabisAccess }: ClientNavProps) {
           <div className="px-3 space-y-1">
             <Link
               href={BOOK_NOW_HREF}
-              className={`flex items-center gap-3 px-3 py-2 rounded-lg text-sm font-semibold transition-colors ${
+              className={`${PORTAL_RAIL_STANDARD.primaryAction} ${
                 isItemActive(pathname, BOOK_NOW_HREF)
                   ? 'bg-brand-700 text-white'
                   : 'bg-brand-600 text-white hover:bg-brand-700'
@@ -207,7 +213,7 @@ export function ClientSidebar({ userEmail, cannabisAccess }: ClientNavProps) {
                   {item.dividerBefore && <div className="border-t border-stone-800 my-2 mx-1" />}
                   <Link
                     href={item.href}
-                    className={`flex items-center gap-3 px-3 py-2 rounded-lg text-sm font-medium transition-colors ${
+                    className={`${PORTAL_RAIL_STANDARD.expandedLink} ${
                       active
                         ? 'bg-brand-950 text-brand-400'
                         : 'text-stone-400 hover:bg-stone-800 hover:text-stone-100'
@@ -432,9 +438,9 @@ export function ClientMainContent({ children }: { children: React.ReactNode }) {
   return (
     <main
       id="main-content"
-      className={`pt-mobile-header pb-mobile-nav lg:pt-0 lg:pb-0 transition-all duration-200 ${
-        collapsed ? 'lg:pl-16' : 'lg:pl-60'
-      }`}
+      className={`pt-mobile-header pb-mobile-nav lg:pt-0 lg:pb-0 transition-all duration-200 ${getPortalRailOffsetClass(
+        collapsed
+      )}`}
     >
       <div
         key={pathname}

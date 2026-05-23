@@ -7,6 +7,7 @@ import { getChefSlug } from '@/lib/profile/actions'
 import { getPartners } from '@/lib/partners/actions'
 import { DiscoveryProfileSettings } from '@/components/settings/discovery-profile-settings'
 import { PublicProfileSettings } from '@/components/settings/public-profile-settings'
+import { ShowcaseStudioOverview } from '@/components/public/showcase-studio-overview'
 import Link from 'next/link'
 import { Button } from '@/components/ui/button'
 
@@ -23,22 +24,33 @@ export default async function PublicProfileSettingsPage() {
 
   return (
     <div className="max-w-4xl mx-auto space-y-6">
-      <div className="flex justify-between items-center">
+      <div className="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
         <div>
           <h1 className="text-3xl font-bold text-stone-100">Public Profile</h1>
           <p className="text-stone-400 mt-1">
-            See what clients will see when they view your profile, then update your details and
+            Set the public URL clients can open, then tune the live page, SEO-facing headline, and
             partner showcase.
           </p>
         </div>
         {profile.slug && (
           <Link href={`/chef/${profile.slug}`} target="_blank" rel="noopener noreferrer">
-            <Button variant="secondary">Client&apos;s View</Button>
+            <Button variant="secondary">Open Live Profile</Button>
           </Link>
         )}
       </div>
 
+      <ShowcaseStudioOverview
+        publicSlug={profile.slug}
+        hasTagline={Boolean(profile.tagline)}
+        hasHeroImage={Boolean(
+          profile.portal_background_image_url || discoveryProfile?.hero_image_url
+        )}
+        visiblePartnerCount={partners.filter((p: any) => p.is_showcase_visible).length}
+        acceptingInquiries={Boolean(discoveryProfile?.accepting_inquiries)}
+      />
+
       <PublicProfileSettings
+        currentSlug={profile.slug}
         currentTagline={profile.tagline}
         currentPrimaryColor={profile.portal_primary_color}
         currentBackgroundColor={profile.portal_background_color}

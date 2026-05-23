@@ -81,7 +81,7 @@ export function ListCard({
     <WidgetCardShell widgetId={widgetId} title={title} size="md" href={href}>
       {/* Hero count */}
       {count != null && (
-        <p className="text-2xl font-bold text-stone-100 leading-tight mb-2">
+        <p className="text-xl font-bold text-stone-100 leading-tight mb-1.5">
           {count}
           <span className="text-sm font-normal text-stone-500 ml-1.5">
             {count === 1 ? 'item' : 'items'}
@@ -90,11 +90,11 @@ export function ListCard({
       )}
 
       {/* Item list */}
-      <div className="space-y-1">
+      <div className="space-y-0.5">
         {visible.map((item) => {
           const dotColor = STATUS_COLORS[item.status ?? 'stone']
           const content = (
-            <div className="flex items-start gap-2.5 py-1.5 group">
+            <div className="flex items-start gap-2.5 py-1 group">
               <span
                 className={`w-2 h-2 rounded-full shrink-0 mt-1.5 ${dotColor}`}
                 aria-hidden="true"

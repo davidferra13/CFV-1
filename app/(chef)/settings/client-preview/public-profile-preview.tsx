@@ -134,10 +134,10 @@ export function PublicProfilePreview({
           Set up your profile URL to preview your public page.
         </p>
         <Link
-          href="/settings/my-profile"
+          href="/settings/public-profile"
           className="mt-4 inline-block text-sm font-medium text-brand-600 hover:underline"
         >
-          Go to My Profile
+          Set public profile URL
         </Link>
       </div>
     )

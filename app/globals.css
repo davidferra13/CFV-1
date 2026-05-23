@@ -87,6 +87,19 @@
      (Saffron brand-500 is yellow #F59E0B which fails WCAG on white) */
   --focus-ring-color: rgb(var(--brand-600));
 
+  --contrast-active-surface: rgb(var(--brand-100));
+  --contrast-active-foreground: rgb(var(--brand-900));
+  --contrast-status-info-bg: rgb(var(--brand-100));
+  --contrast-status-info-fg: rgb(var(--brand-900));
+  --contrast-status-warning-bg: rgb(254 243 199);
+  --contrast-status-warning-fg: rgb(120 53 15);
+  --contrast-status-success-bg: rgb(220 252 231);
+  --contrast-status-success-fg: rgb(20 83 45);
+  --contrast-status-danger-bg: rgb(254 226 226);
+  --contrast-status-danger-fg: rgb(127 29 29);
+  --contrast-muted-functional: rgb(var(--stone-300));
+  --contrast-disabled-functional: rgb(var(--stone-400));
+
   --ease-spring: cubic-bezier(0.16, 1, 0.3, 1);
   --ease-bounce: cubic-bezier(0.34, 1.56, 0.64, 1);
   --duration-fast: 100ms;
@@ -149,6 +162,19 @@
 
   /* Dark backgrounds provide enough contrast for brand-500 focus rings */
   --focus-ring-color: rgb(var(--brand-500));
+
+  --contrast-active-surface: rgb(var(--brand-950) / 0.72);
+  --contrast-active-foreground: rgb(var(--brand-100));
+  --contrast-status-info-bg: rgb(var(--brand-950) / 0.72);
+  --contrast-status-info-fg: rgb(var(--brand-100));
+  --contrast-status-warning-bg: rgb(69 26 3 / 0.72);
+  --contrast-status-warning-fg: rgb(254 243 199);
+  --contrast-status-success-bg: rgb(2 44 34 / 0.72);
+  --contrast-status-success-fg: rgb(220 252 231);
+  --contrast-status-danger-bg: rgb(69 10 10 / 0.72);
+  --contrast-status-danger-fg: rgb(254 226 226);
+  --contrast-muted-functional: rgb(var(--stone-300));
+  --contrast-disabled-functional: rgb(var(--stone-400));
 }
 
 /* ============================================
@@ -251,6 +277,39 @@ html {
    SAFE AREA UTILITIES (iOS notch / home bar)
    ============================================ */
 @layer utilities {
+  .cf-active-surface {
+    background-color: var(--contrast-active-surface);
+    color: var(--contrast-active-foreground);
+  }
+
+  .cf-muted-functional {
+    color: var(--contrast-muted-functional);
+  }
+
+  .cf-disabled-functional {
+    color: var(--contrast-disabled-functional);
+  }
+
+  .cf-status-info {
+    background-color: var(--contrast-status-info-bg);
+    color: var(--contrast-status-info-fg);
+  }
+
+  .cf-status-warning {
+    background-color: var(--contrast-status-warning-bg);
+    color: var(--contrast-status-warning-fg);
+  }
+
+  .cf-status-success {
+    background-color: var(--contrast-status-success-bg);
+    color: var(--contrast-status-success-fg);
+  }
+
+  .cf-status-danger {
+    background-color: var(--contrast-status-danger-bg);
+    color: var(--contrast-status-danger-fg);
+  }
+
   .pb-safe {
     padding-bottom: env(safe-area-inset-bottom, 0px);
   }
@@ -2357,4 +2416,234 @@ select:focus {
       0 0 0 1px rgb(245 158 11 / 0.18),
       0 0 14px 1px rgb(245 158 11 / 0.07);
   }
+}
+
+/* ============================================
+   DASHBOARD READABILITY CONTRACT
+   ============================================ */
+.dashboard-page {
+  --dashboard-font-heading:
+    -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+  --dashboard-bg: #dee8de;
+  --dashboard-bg-band: #d3dfd3;
+  --dashboard-surface: #fffefa;
+  --dashboard-surface-raised: #ffffff;
+  --dashboard-surface-muted: #edf3ee;
+  --dashboard-border: #aebbaf;
+  --dashboard-border-strong: #718b7e;
+  --dashboard-shadow: 0 18px 42px rgb(49 63 54 / 0.12), 0 1px 0 rgb(255 255 255 / 0.75) inset;
+  --dashboard-shadow-soft: 0 10px 28px rgb(49 63 54 / 0.08);
+  --dashboard-text: #20231f;
+  --dashboard-text-secondary: #3c453e;
+  --dashboard-text-muted: #667267;
+  --dashboard-accent: #008c7a;
+  --dashboard-accent-strong: #006d60;
+  --dashboard-action: #9a5125;
+  --dashboard-widget-bg: #fbfaf6;
+
+  background:
+    linear-gradient(180deg, rgb(211 223 211 / 0.92), rgb(222 232 222 / 0.72) 18rem),
+    var(--dashboard-bg);
+  color: var(--dashboard-text);
+  font-family:
+    -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+}
+
+.dashboard-page .font-display,
+.dashboard-page h1,
+.dashboard-page h2,
+.dashboard-page h3 {
+  font-family: var(--dashboard-font-heading);
+  letter-spacing: 0;
+}
+
+.dashboard-page .dashboard-section-group {
+  border-top: 1px solid var(--dashboard-border);
+  padding-top: 1.25rem;
+}
+
+.dashboard-page .dashboard-section-group:first-child {
+  border-top: 0;
+  padding-top: 0;
+}
+
+.dashboard-page .section-label {
+  border-left: 4px solid var(--dashboard-accent);
+  border-radius: 8px;
+  background: linear-gradient(90deg, rgb(0 140 122 / 0.11), rgb(255 255 255 / 0));
+  color: var(--dashboard-text-secondary);
+  font-size: 0.8125rem;
+  letter-spacing: 0.055em;
+  padding: 0.45rem 0.75rem;
+}
+
+.dashboard-page .section-label::after {
+  background: linear-gradient(90deg, var(--dashboard-border-strong), transparent 82%);
+}
+
+.dashboard-page .dashboard-hero-card,
+.dashboard-page .dashboard-section-card,
+.dashboard-page .dashboard-widget-card {
+  background: var(--dashboard-surface) !important;
+  border-color: var(--dashboard-border) !important;
+  box-shadow: var(--dashboard-shadow-soft) !important;
+}
+
+.dashboard-page .dashboard-hero-card {
+  border-color: var(--dashboard-border-strong) !important;
+  box-shadow: var(--dashboard-shadow) !important;
+}
+
+.dashboard-page .dashboard-onboarding-card {
+  background: linear-gradient(180deg, #f7fbf6 0%, #edf5ee 100%) !important;
+  border-color: #84aca0 !important;
+  box-shadow: 0 18px 34px rgb(0 109 96 / 0.15) !important;
+}
+
+.dashboard-page .dashboard-metric-tile {
+  background: var(--dashboard-surface-raised) !important;
+  border-color: var(--dashboard-border) !important;
+  box-shadow: 0 8px 20px rgb(49 63 54 / 0.08);
+}
+
+.dashboard-page .dashboard-metric-tile:hover,
+.dashboard-page .dashboard-section-card:hover,
+.dashboard-page .dashboard-widget-card:hover {
+  border-color: var(--dashboard-border-strong) !important;
+  box-shadow: var(--dashboard-shadow) !important;
+}
+
+.dashboard-page [data-widget-id] {
+  background: var(--dashboard-widget-bg) !important;
+  border-top-color: var(--dashboard-border) !important;
+  border-right-color: var(--dashboard-border) !important;
+  border-bottom-color: var(--dashboard-border) !important;
+}
+
+.dashboard-page [class*='bg-stone-950'],
+.dashboard-page [class*='bg-stone-900'] {
+  background-color: var(--dashboard-surface) !important;
+}
+
+.dashboard-page [class*='bg-stone-800'] {
+  background-color: var(--dashboard-surface-muted) !important;
+}
+
+.dashboard-page [class*='border-stone-800'],
+.dashboard-page [class*='border-stone-700'],
+.dashboard-page [class*='border-stone-600'] {
+  border-color: var(--dashboard-border) !important;
+}
+
+.dashboard-page .text-stone-50,
+.dashboard-page .text-stone-100,
+.dashboard-page .text-stone-200 {
+  color: var(--dashboard-text) !important;
+}
+
+.dashboard-page .text-stone-300,
+.dashboard-page .text-stone-400 {
+  color: var(--dashboard-text-secondary) !important;
+}
+
+.dashboard-page .text-stone-500,
+.dashboard-page .text-stone-600 {
+  color: var(--dashboard-text-muted) !important;
+}
+
+.dashboard-page .text-brand-400,
+.dashboard-page .text-brand-500,
+.dashboard-page .text-brand-600 {
+  color: var(--dashboard-accent) !important;
+}
+
+.dashboard-page .bg-brand-950,
+.dashboard-page [class*='bg-brand-950'] {
+  background-color: rgb(0 140 122 / 0.12) !important;
+}
+
+.dashboard-page .border-brand-700,
+.dashboard-page .border-brand-800,
+.dashboard-page [class*='border-brand'] {
+  border-color: rgb(0 140 122 / 0.32) !important;
+}
+
+.dashboard-page input,
+.dashboard-page textarea,
+.dashboard-page select {
+  background-color: #fffefa !important;
+  border-color: #b6c3b9 !important;
+  color: var(--dashboard-text) !important;
+  box-shadow: 0 1px 0 rgb(255 255 255 / 0.8) inset;
+}
+
+.dashboard-page input::placeholder,
+.dashboard-page textarea::placeholder {
+  color: var(--dashboard-text-muted) !important;
+}
+
+.dashboard-page input:focus,
+.dashboard-page textarea:focus,
+.dashboard-page select:focus {
+  border-color: var(--dashboard-accent) !important;
+  box-shadow:
+    0 0 0 3px rgb(0 140 122 / 0.15),
+    0 1px 0 rgb(255 255 255 / 0.8) inset !important;
+}
+
+.dashboard-page a[class*='border-stone'],
+.dashboard-page button[class*='border-stone'] {
+  background-color: var(--dashboard-surface-raised) !important;
+  border-color: var(--dashboard-border) !important;
+  color: var(--dashboard-text-secondary) !important;
+}
+
+.dashboard-page a[class*='border-stone']:hover,
+.dashboard-page button[class*='border-stone']:hover {
+  border-color: var(--dashboard-accent) !important;
+  color: var(--dashboard-text) !important;
+}
+
+.dashboard-page .gradient-accent,
+.dashboard-page button[type='submit'].bg-brand-600,
+.dashboard-page .bg-brand-600 {
+  background: var(--dashboard-accent) !important;
+  color: #ffffff !important;
+}
+
+.dark .dashboard-page {
+  --dashboard-bg: #12100e;
+  --dashboard-bg-band: #1c1917;
+  --dashboard-surface: #211d1a;
+  --dashboard-surface-raised: #292421;
+  --dashboard-surface-muted: #332d28;
+  --dashboard-border: #57504a;
+  --dashboard-border-strong: #8a8076;
+  --dashboard-shadow: 0 18px 42px rgb(0 0 0 / 0.38), 0 1px 0 rgb(255 255 255 / 0.04) inset;
+  --dashboard-shadow-soft: 0 10px 28px rgb(0 0 0 / 0.28);
+  --dashboard-text: #f7f3ee;
+  --dashboard-text-secondary: #ddd6ce;
+  --dashboard-text-muted: #c2b9ae;
+  --dashboard-accent: #4bc0ad;
+  --dashboard-accent-strong: #7bd8c9;
+  --dashboard-action: #f2a163;
+  --dashboard-widget-bg: #24201d;
+
+  background:
+    linear-gradient(180deg, rgb(28 25 23 / 0.96), rgb(18 16 14 / 0.9) 18rem), var(--dashboard-bg);
+}
+
+.dark .dashboard-page .dashboard-onboarding-card {
+  background: linear-gradient(180deg, #20342f 0%, #1a2825 100%) !important;
+  border-color: #4bc0ad !important;
+  box-shadow: 0 18px 34px rgb(0 0 0 / 0.34) !important;
+}
+
+.dark .dashboard-page input,
+.dark .dashboard-page textarea,
+.dark .dashboard-page select {
+  background-color: #211d1a !important;
+  border-color: #57504a !important;
+  color: var(--dashboard-text) !important;
+  box-shadow: 0 1px 0 rgb(255 255 255 / 0.04) inset;
 }

@@ -13,20 +13,7 @@ describe('Navigation regression guard', () => {
   const allHrefs = new Set([...actionBarHrefs, ...allNavGroupHrefs, ...bottomHrefs])
 
   it('Action Bar contains critical daily-driver items', () => {
-    const required = [
-      '/dashboard',
-      '/inbox',
-      '/autopilot',
-      '/events',
-      '/inquiries',
-      '/clients',
-      '/calendar',
-      '/menus',
-      '/recipes',
-      '/finance',
-      '/tasks',
-      '/circles',
-    ]
+    const required = ['/dashboard', '/inbox', '/inquiries', '/events', '/culinary', '/finance']
     for (const href of required) {
       assert.ok(actionBarHrefs.has(href), `Action Bar missing: ${href}`)
     }
@@ -57,6 +44,7 @@ describe('Navigation regression guard', () => {
       '/dashboard',
       '/inbox',
       '/autopilot',
+      '/circles',
       '/events',
       '/events/upcoming',
       '/calendar',
@@ -70,7 +58,6 @@ describe('Navigation regression guard', () => {
       '/contracts',
       '/tasks',
       '/settings',
-      '/circles',
       '/chat',
       '/notifications',
       '/expenses',

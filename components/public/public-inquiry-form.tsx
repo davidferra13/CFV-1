@@ -38,6 +38,10 @@ interface Props {
   referrerName?: string | null
   sourceType?: string | null
   sourceEventId?: string | null
+  selectedPackage?: {
+    id: string
+    label: string
+  } | null
   defaultValues?: {
     full_name?: string
     email?: string
@@ -191,6 +195,7 @@ export function PublicInquiryForm({
   selectedLocation,
   sourceType,
   sourceEventId,
+  selectedPackage,
   circleId,
   defaultValues,
 }: Props) {
@@ -208,7 +213,7 @@ export function PublicInquiryForm({
     occasion: '',
     budget: '',
     favorite_ingredients_dislikes: '',
-    additional_notes: '',
+    additional_notes: selectedPackage ? `Interested in: ${selectedPackage.label}.` : '',
     referral_source: '',
     website_url: '',
   })
@@ -389,6 +394,8 @@ export function PublicInquiryForm({
         href: `/chef/${chefSlug}`,
         eventContext: {
           source: 'public_inquiry_form',
+          package_id: selectedPackage?.id ?? null,
+          package_label: selectedPackage?.label ?? null,
           guest_count: guestCount,
           occasion: formData.occasion.trim(),
           budget_mode: budgetMode,
@@ -427,6 +434,8 @@ export function PublicInquiryForm({
 
       trackEvent(ANALYTICS_EVENTS.INQUIRY_SUBMITTED, {
         source: 'public_profile',
+        package_id: selectedPackage?.id ?? null,
+        package_label: selectedPackage?.label ?? null,
         budget_mode: budgetMode,
         budget_range: budgetText || null,
         budget_exact_entered: budgetCents != null,
@@ -441,6 +450,8 @@ export function PublicInquiryForm({
         href: `/chef/${chefSlug}`,
         eventContext: {
           source: 'public_inquiry_form',
+          package_id: selectedPackage?.id ?? null,
+          package_label: selectedPackage?.label ?? null,
           guest_count: guestCount,
           occasion: formData.occasion.trim(),
           budget_mode: budgetMode,
@@ -611,6 +622,19 @@ export function PublicInquiryForm({
               Share the basics so {chefName} can review fit, timing, and pricing.
             </p>
           </div>
+
+          {selectedPackage && (
+            <div className="rounded-2xl border border-brand-700/40 bg-brand-500/10 px-4 py-4">
+              <p className="text-xs font-semibold uppercase tracking-[0.18em] text-brand-200">
+                Package context
+              </p>
+              <p className="mt-2 text-sm font-semibold text-stone-100">{selectedPackage.label}</p>
+              <p className="mt-1 text-xs leading-relaxed text-stone-400">
+                This package is attached as inquiry context. Final scope, date fit, and terms are
+                still confirmed by the chef.
+              </p>
+            </div>
+          )}
 
           {selectedLocation && (
             <div className="rounded-2xl border border-amber-700/40 bg-amber-500/10 px-4 py-4">

@@ -430,6 +430,41 @@ export type { PricingInsightsParams, PricingInsights } from './pricing-insights'
 export { getProfitAndLossReport, getDefaultProfitLossWindow } from './profit-loss-report-actions'
 export type { ProfitAndLossReportData } from './profit-loss-report-actions'
 
+// private-chef-financial-cockpit-actions ('use server')
+export { getPrivateChefFinancialCockpit } from './private-chef-financial-cockpit-actions'
+
+// private-chef-financial-cockpit
+export { buildPrivateChefFinancialCockpit } from './private-chef-financial-cockpit'
+export type { PrivateChefFinancialCockpitInput } from './private-chef-financial-cockpit'
+
+// private-chef-financial-cockpit-contract
+export {
+  buildClientSafeQuoteFinancialSummary,
+  deriveMostRestrictiveFinancialState,
+  getRequiredFinancialSourceSystems,
+  isPrivateFinancialVisibility,
+  summarizePrivateFinancialCockpitState,
+} from './private-chef-financial-cockpit-contract'
+export type {
+  CashRunwayContract,
+  ClientConcentrationFinancialRiskContract,
+  ClientSafeQuoteFinancialSummary,
+  FinancialCockpitConfidence,
+  FinancialCockpitMissingInput,
+  FinancialCockpitRiskState,
+  FinancialCockpitSignalKind,
+  FinancialCockpitSourceRef,
+  FinancialCockpitSourceSystem,
+  FinancialCockpitVisibilityLevel,
+  MarginRiskContract,
+  MarginRiskSubjectType,
+  PrivateChefFinancialCockpitContract,
+  QuoteFinancialImplicationContract,
+  QuoteFinancialRecommendation,
+  ReceivablesRiskContract,
+  TaxSetAsideEstimateContract,
+} from './private-chef-financial-cockpit-contract'
+
 // recurring-invoice-actions ('use server')
 export {
   createRecurringInvoice,

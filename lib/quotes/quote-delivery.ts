@@ -19,13 +19,14 @@ type QuoteDeliveryRecord = {
 
 async function getQuoteOccasion(
   db: any,
-  input: { inquiryId: string | null; eventId: string | null }
+  input: { tenantId: string; inquiryId: string | null; eventId: string | null }
 ): Promise<string | null> {
   if (input.inquiryId) {
     const { data: inquiry } = await db
       .from('inquiries')
       .select('confirmed_occasion')
       .eq('id', input.inquiryId)
+      .eq('tenant_id', input.tenantId)
       .maybeSingle()
 
     if (inquiry?.confirmed_occasion) {
@@ -38,6 +39,7 @@ async function getQuoteOccasion(
       .from('events')
       .select('occasion')
       .eq('id', input.eventId)
+      .eq('tenant_id', input.tenantId)
       .maybeSingle()
 
     if (event?.occasion) {
@@ -87,6 +89,7 @@ export async function redeliverQuoteSentDelivery(input: {
   }
 
   const occasion = await getQuoteOccasion(db, {
+    tenantId: input.tenantId,
     inquiryId: quoteRecord.inquiry_id,
     eventId: quoteRecord.event_id,
   })

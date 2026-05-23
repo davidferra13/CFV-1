@@ -2,7 +2,7 @@
 // No authentication required. Shows consented reviews from all platforms.
 'use client'
 
-import { useState, useId } from 'react'
+import { useMemo, useState, useId } from 'react'
 import { Star, ChevronDown, ExternalLink } from '@/components/ui/icons'
 import type { PublicReviewItem, PublicReviewStats } from '@/lib/reviews/public-actions'
 
@@ -102,6 +102,14 @@ function ReviewStatsHeader({ stats }: { stats: PublicReviewStats }) {
 
 function ReviewCard({ review }: { review: PublicReviewItem }) {
   const dateLabel = formatReviewDate(review.reviewDate)
+  const trustLabel =
+    review.trustTier === 'verified_external_platform'
+      ? 'Verified Platform'
+      : review.trustTier === 'verified_chef_flow_event'
+        ? 'Verified Event'
+        : review.trustTier === 'chef_entered'
+          ? 'Chef Entered'
+          : 'Unverified Import'
 
   return (
     <div
@@ -127,6 +135,9 @@ function ReviewCard({ review }: { review: PublicReviewItem }) {
                 Verified Event
               </span>
             )}
+            <span className="flex-shrink-0 inline-flex items-center gap-1 text-xxs font-semibold uppercase tracking-wider text-stone-400">
+              {trustLabel}
+            </span>
             {review.isFeatured && (
               <span className="flex-shrink-0 inline-flex items-center gap-1 text-xxs font-semibold uppercase tracking-wider text-amber-400">
                 <Star className="w-3 h-3 fill-amber-400" />
@@ -182,6 +193,45 @@ function formatReviewDate(dateStr: string): string | null {
 // Main component
 
 const INITIAL_SHOW_COUNT = 6
+type DisplayMode = 'best' | 'recent' | 'platform' | 'verified' | 'featured'
+
+const DISPLAY_MODES: { key: DisplayMode; label: string }[] = [
+  { key: 'best', label: 'Best' },
+  { key: 'recent', label: 'Recent' },
+  { key: 'platform', label: 'Platform' },
+  { key: 'verified', label: 'Verified' },
+  { key: 'featured', label: 'Featured' },
+]
+
+function sortForDisplayMode(reviews: PublicReviewItem[], mode: DisplayMode) {
+  const copy = [...reviews]
+  if (mode === 'recent') {
+    return copy.sort((a, b) => Date.parse(b.reviewDate) - Date.parse(a.reviewDate))
+  }
+  if (mode === 'platform') {
+    return copy.sort((a, b) => a.sourceLabel.localeCompare(b.sourceLabel))
+  }
+  if (mode === 'verified') {
+    return copy
+      .filter(
+        (review) =>
+          review.isVerifiedEvent ||
+          review.trustTier === 'verified_external_platform' ||
+          review.trustTier === 'verified_chef_flow_event'
+      )
+      .sort((a, b) => (b.rating ?? 0) - (a.rating ?? 0))
+  }
+  if (mode === 'featured') {
+    return copy
+      .filter((review) => review.isFeatured)
+      .sort((a, b) => Date.parse(b.reviewDate) - Date.parse(a.reviewDate))
+  }
+  return copy.sort((a, b) => {
+    if (a.isFeatured && !b.isFeatured) return -1
+    if (!a.isFeatured && b.isFeatured) return 1
+    return (b.rating ?? 0) - (a.rating ?? 0)
+  })
+}
 
 export function ReviewShowcase({
   reviews,
@@ -197,6 +247,13 @@ export function ReviewShowcase({
   maxCompact?: number
 }) {
   const [showAll, setShowAll] = useState(false)
+  const [displayMode, setDisplayMode] = useState<DisplayMode>('best')
+  const displayReviews = useMemo(
+    () => sortForDisplayMode(reviews, displayMode),
+    [displayMode, reviews]
+  )
+  const fallbackReviews =
+    displayReviews.length > 0 ? displayReviews : sortForDisplayMode(reviews, 'best')
 
   if (reviews.length === 0) return null
 
@@ -211,12 +268,32 @@ export function ReviewShowcase({
     )
   }
 
-  const visibleReviews = showAll ? reviews : reviews.slice(0, INITIAL_SHOW_COUNT)
-  const hasMore = reviews.length > INITIAL_SHOW_COUNT
+  const visibleReviews = showAll ? fallbackReviews : fallbackReviews.slice(0, INITIAL_SHOW_COUNT)
+  const hasMore = fallbackReviews.length > INITIAL_SHOW_COUNT
 
   return (
     <div>
       <ReviewStatsHeader stats={stats} />
+
+      <div className="mb-5 flex flex-wrap justify-center gap-2">
+        {DISPLAY_MODES.map((mode) => (
+          <button
+            key={mode.key}
+            type="button"
+            onClick={() => {
+              setDisplayMode(mode.key)
+              setShowAll(false)
+            }}
+            className={`min-h-[44px] rounded-lg border px-3 text-sm font-medium transition-colors ${
+              displayMode === mode.key
+                ? 'border-brand-500 bg-brand-500/15 text-brand-200'
+                : 'border-stone-700 bg-stone-800 text-stone-300 hover:bg-stone-700'
+            }`}
+          >
+            {mode.label}
+          </button>
+        ))}
+      </div>
 
       <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
         {visibleReviews.map((review) => (

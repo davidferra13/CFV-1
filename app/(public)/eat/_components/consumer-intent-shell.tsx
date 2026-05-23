@@ -20,6 +20,7 @@ import type { PlanningBrief } from '@/lib/hub/types'
 import type {
   ConsumerDiscoveryFeed,
   ConsumerDiscoveryFilters,
+  ConsumerResultCard as ConsumerResultCardData,
 } from '@/lib/public-consumer/discovery-actions'
 import {
   buildDiscoveryRecoveryActions,
@@ -129,6 +130,7 @@ export function ConsumerIntentShell({
 }) {
   const visualMode = Boolean(filters.visualMode)
   const [compareIds, setCompareIds] = useState<string[]>([])
+  const [compareWarning, setCompareWarning] = useState<string | null>(null)
   const discoveryBrief = useMemo(
     () => discoveryBriefFromFilters(filters, planningBrief),
     [filters, planningBrief]
@@ -150,9 +152,17 @@ export function ConsumerIntentShell({
     () => buildDiscoveryRecoveryActions(filters, feed.total),
     [feed.total, filters]
   )
+  const compareSourceCards = useMemo(() => {
+    const seen = new Set<string>()
+    return [...feed.chefs, ...feed.listings, ...feed.spotlights, ...feed.results].filter((card) => {
+      if (seen.has(card.id)) return false
+      seen.add(card.id)
+      return true
+    })
+  }, [feed.chefs, feed.listings, feed.results, feed.spotlights])
   const compareCandidates = useMemo(
-    () => normalizeCompareCandidates(feed.results, compareIds, filters, discoveryBrief),
-    [compareIds, discoveryBrief, feed.results, filters]
+    () => normalizeCompareCandidates(compareSourceCards, compareIds, filters, discoveryBrief),
+    [compareIds, compareSourceCards, discoveryBrief, filters]
   )
   const activeTokens = useMemo(
     () =>
@@ -182,12 +192,90 @@ export function ConsumerIntentShell({
   const gridClass = visualMode
     ? 'grid gap-5 sm:grid-cols-2 xl:grid-cols-3'
     : 'grid gap-4 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4'
+  const compareTypeLabel = (type: ConsumerResultCardData['type']) => {
+    if (type === 'chef') return 'chefs'
+    if (type === 'listing') return 'nearby places'
+    return type.replace(/_/g, ' ')
+  }
+  const resultSections = [
+    {
+      id: 'chefs',
+      title: 'Private Chefs',
+      description: 'Chef-led services matched to the occasion, timing, and location.',
+      cards: feed.chefs,
+    },
+    {
+      id: 'listings',
+      title: 'Nearby Places',
+      description: 'Local restaurants, food businesses, and operators near the search.',
+      cards: feed.listings,
+    },
+    {
+      id: 'spotlights',
+      title: 'Menus & Spotlights',
+      description: 'Sample menus, packages, and meal prep items from discoverable chefs.',
+      cards: feed.spotlights,
+    },
+  ].filter((section) => section.cards.length > 0)
+  const hasSectionedResults = resultSections.length > 0
 
-  function toggleCompare(id: string) {
+  function toggleCompare(card: ConsumerResultCardData) {
     setCompareIds((current) => {
-      if (current.includes(id)) return current.filter((candidateId) => candidateId !== id)
-      return [...current, id].slice(-4)
+      if (current.includes(card.id)) return current.filter((candidateId) => candidateId !== card.id)
+
+      const currentType = current
+        .map((candidateId) => compareSourceCards.find((candidate) => candidate.id === candidateId))
+        .find((candidate): candidate is ConsumerResultCardData => Boolean(candidate))?.type
+
+      if (currentType && currentType !== card.type) {
+        setCompareWarning(
+          `Compare ${compareTypeLabel(currentType)} with ${compareTypeLabel(currentType)}.`
+        )
+        return current
+      }
+
+      setCompareWarning(null)
+      return [...current, card.id].slice(-4)
     })
+  }
+
+  function renderResultCard(card: ConsumerResultCardData) {
+    const selected = compareIds.includes(card.id)
+    const proofSignals = buildPublicProofSignals(card).slice(0, 3)
+
+    return (
+      <div key={card.id} className="space-y-2">
+        <ConsumerResultCard card={card} visualMode={visualMode} planningBrief={planningBrief} />
+        <div className="rounded-xl border border-stone-800 bg-stone-950 p-3">
+          {proofSignals.length > 0 && (
+            <div className="mb-3 flex flex-wrap gap-1.5">
+              {proofSignals.map((signal) => (
+                <span
+                  key={`${card.id}-${signal.label}`}
+                  className="inline-flex items-center gap-1 rounded-full border border-stone-700 px-2 py-1 text-[10px] text-stone-400"
+                >
+                  <ShieldCheck className="h-3 w-3 text-brand-300" />
+                  {signal.value}
+                </span>
+              ))}
+            </div>
+          )}
+          <button
+            type="button"
+            onClick={() => toggleCompare(card)}
+            className={[
+              'inline-flex min-h-9 w-full items-center justify-center gap-2 rounded-lg border px-3 text-sm font-medium transition-colors',
+              selected
+                ? 'border-brand-500 bg-brand-600/15 text-brand-200'
+                : 'border-stone-700 text-stone-300 hover:border-stone-600 hover:bg-stone-900',
+            ].join(' ')}
+          >
+            <GitCompare className="h-4 w-4" />
+            {selected ? 'In compare' : 'Compare'}
+          </button>
+        </div>
+      </div>
+    )
   }
 
   return (
@@ -313,49 +401,22 @@ export function ConsumerIntentShell({
           </Link>
         </div>
 
-        {feed.results.length > 0 ? (
-          <div className={gridClass}>
-            {feed.results.map((card) => {
-              const selected = compareIds.includes(card.id)
-              const proofSignals = buildPublicProofSignals(card).slice(0, 3)
-              return (
-                <div key={card.id} className="space-y-2">
-                  <ConsumerResultCard
-                    card={card}
-                    visualMode={visualMode}
-                    planningBrief={planningBrief}
-                  />
-                  <div className="rounded-xl border border-stone-800 bg-stone-950 p-3">
-                    {proofSignals.length > 0 && (
-                      <div className="mb-3 flex flex-wrap gap-1.5">
-                        {proofSignals.map((signal) => (
-                          <span
-                            key={`${card.id}-${signal.label}`}
-                            className="inline-flex items-center gap-1 rounded-full border border-stone-700 px-2 py-1 text-[10px] text-stone-400"
-                          >
-                            <ShieldCheck className="h-3 w-3 text-brand-300" />
-                            {signal.value}
-                          </span>
-                        ))}
-                      </div>
-                    )}
-                    <button
-                      type="button"
-                      onClick={() => toggleCompare(card.id)}
-                      className={[
-                        'inline-flex min-h-9 w-full items-center justify-center gap-2 rounded-lg border px-3 text-sm font-medium transition-colors',
-                        selected
-                          ? 'border-brand-500 bg-brand-600/15 text-brand-200'
-                          : 'border-stone-700 text-stone-300 hover:border-stone-600 hover:bg-stone-900',
-                      ].join(' ')}
-                    >
-                      <GitCompare className="h-4 w-4" />
-                      {selected ? 'In compare' : 'Compare'}
-                    </button>
-                  </div>
+        {hasSectionedResults ? (
+          <div className="space-y-10">
+            {resultSections.map((section) => (
+              <section key={section.id} aria-labelledby={`${section.id}-results-heading`}>
+                <div className="mb-4">
+                  <h3
+                    id={`${section.id}-results-heading`}
+                    className="text-lg font-semibold text-stone-100"
+                  >
+                    {section.title}
+                  </h3>
+                  <p className="mt-1 text-sm text-stone-500">{section.description}</p>
                 </div>
-              )
-            })}
+                <div className={gridClass}>{section.cards.map(renderResultCard)}</div>
+              </section>
+            ))}
           </div>
         ) : (
           <div className="rounded-2xl border border-stone-800 bg-stone-900/70 p-8 text-center">
@@ -397,9 +458,21 @@ export function ConsumerIntentShell({
         )}
       </section>
 
-      {(compareCandidates.length > 0 || collections.length > 0 || recoveryActions.length > 0) && (
+      {(compareWarning ||
+        compareCandidates.length > 0 ||
+        collections.length > 0 ||
+        recoveryActions.length > 0) && (
         <section className="mx-auto grid w-full max-w-6xl gap-4 px-4 pb-8 sm:px-6 lg:grid-cols-3 lg:px-8">
-          {compareCandidates.length > 0 && (
+          {compareWarning && (
+            <div
+              role="status"
+              className="rounded-2xl border border-amber-700/50 bg-amber-950/30 p-4 text-sm font-medium text-amber-100 lg:col-span-3"
+            >
+              {compareWarning}
+            </div>
+          )}
+
+          {compareCandidates.length >= 2 && (
             <div className="rounded-2xl border border-stone-800 bg-stone-900/70 p-5 lg:col-span-2">
               <div className="flex items-center justify-between gap-3">
                 <h3 className="text-base font-semibold text-stone-100">Compare</h3>

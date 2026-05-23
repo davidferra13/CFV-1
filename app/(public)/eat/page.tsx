@@ -96,6 +96,21 @@ export default async function EatPage({ searchParams }: PageProps) {
   })
   const feed = await getConsumerDiscoveryFeed(filters)
 
+  const sanitizeJsonLdDescription = (subtitle: string | null): string | undefined => {
+    if (!subtitle?.trim()) return undefined
+
+    if (
+      subtitle.includes('data completeness') ||
+      subtitle.includes('High data') ||
+      subtitle.endsWith('boosts...') ||
+      (subtitle.length < 20 && !subtitle.includes(' '))
+    ) {
+      return undefined
+    }
+
+    return subtitle
+  }
+
   const structuredData = {
     '@context': 'https://schema.org',
     '@type': 'CollectionPage',
@@ -103,13 +118,16 @@ export default async function EatPage({ searchParams }: PageProps) {
     url: `${APP_URL}/eat`,
     description:
       'Browse private chefs, sample menus, meal prep options, and local food listings by occasion and craving.',
-    hasPart: feed.results.slice(0, 12).map((result) => ({
-      '@type': result.type === 'listing' ? 'LocalBusiness' : 'FoodService',
-      name: result.title,
-      url: `${APP_URL}${result.ctaHref}`,
-      ...(result.subtitle ? { description: result.subtitle } : {}),
-      ...(result.imageUrl ? { image: result.imageUrl } : {}),
-    })),
+    hasPart: feed.results.slice(0, 12).map((result) => {
+      const description = sanitizeJsonLdDescription(result.subtitle)
+      return {
+        '@type': result.type === 'listing' ? 'LocalBusiness' : 'FoodService',
+        name: result.title,
+        url: `${APP_URL}${result.ctaHref}`,
+        ...(description ? { description } : {}),
+        ...(result.imageUrl ? { image: result.imageUrl } : {}),
+      }
+    }),
   }
 
   return (

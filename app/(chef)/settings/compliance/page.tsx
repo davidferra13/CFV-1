@@ -5,8 +5,10 @@
 import type { Metadata } from 'next'
 import Link from 'next/link'
 import { PermitChecklistPanel } from '@/components/ai/permit-checklist-panel'
+import { ComplianceConciergePanel } from '@/components/compliance/compliance-concierge-panel'
 import { requireChef } from '@/lib/auth/get-user'
 import { listCertifications, getExpiringCertifications } from '@/lib/compliance/actions'
+import { getComplianceCenterState } from '@/lib/compliance/compliance-concierge-actions'
 import { getChefArchetype } from '@/lib/archetypes/actions'
 
 // Pure utility - keeps compliance/actions.ts free of sync exports under 'use server'
@@ -65,12 +67,13 @@ function ExpiryBadge({ expiryDate }: { expiryDate: string | null }) {
 export default async function CompliancePage() {
   await requireChef()
 
-  const [certs, expiring, archetype, permits, expiringPermits] = await Promise.all([
+  const [certs, expiring, archetype, permits, expiringPermits, conciergeState] = await Promise.all([
     listCertifications(),
     getExpiringCertifications(60),
     getChefArchetype(),
     listPermits(),
     getExpiringPermits(60),
+    getComplianceCenterState(),
   ])
 
   const activeCerts = certs.filter((c: any) => c.status === 'active')
@@ -92,6 +95,8 @@ export default async function CompliancePage() {
           can disappear even if the topic still appears in your service copy.
         </p>
       </div>
+
+      <ComplianceConciergePanel state={conciergeState} />
 
       {/* HACCP Plan */}
       <Card>

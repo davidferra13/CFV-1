@@ -228,7 +228,7 @@ describe('action layer', () => {
     })
 
     assert.equal(tasks[0]?.id, 'profile-url')
-    assert.equal(tasks[0]?.href, '/settings/my-profile')
+    assert.equal(tasks[0]?.href, '/settings/public-profile')
     assert.ok(tasks.some((task) => task.id === 'gmail-connect'))
     assert.ok(tasks.some((task) => task.id === 'availability-rules'))
     assert.ok(tasks.some((task) => task.id === 'booking-page'))

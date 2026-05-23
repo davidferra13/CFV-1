@@ -9,7 +9,11 @@ import { Button } from '@/components/ui/button'
 import { Card } from '@/components/ui/card'
 import { Alert } from '@/components/ui/alert'
 import { Badge } from '@/components/ui/badge'
-import { updateChefPortalTheme, uploadChefPortalBackgroundImage } from '@/lib/profile/actions'
+import {
+  updateChefPortalTheme,
+  updateChefSlug,
+  uploadChefPortalBackgroundImage,
+} from '@/lib/profile/actions'
 import { updatePartner } from '@/lib/partners/actions'
 
 type PartnerInfo = {
@@ -30,12 +34,14 @@ const TYPE_LABELS: Record<string, string> = {
 }
 
 export function PublicProfileSettings({
+  currentSlug,
   currentTagline,
   currentPrimaryColor,
   currentBackgroundColor,
   currentBackgroundImageUrl,
   partners,
 }: {
+  currentSlug: string | null
   currentTagline: string | null
   currentPrimaryColor: string | null
   currentBackgroundColor: string | null
@@ -43,6 +49,8 @@ export function PublicProfileSettings({
   partners: PartnerInfo[]
 }) {
   const router = useRouter()
+  const [savedSlug, setSavedSlug] = useState(currentSlug || '')
+  const [slug, setSlug] = useState(currentSlug || '')
   const [tagline, setTagline] = useState(currentTagline || '')
   const [primaryColor, setPrimaryColor] = useState(currentPrimaryColor || '#1c1917')
   const [backgroundColor, setBackgroundColor] = useState(currentBackgroundColor || '#fafaf9')
@@ -50,8 +58,12 @@ export function PublicProfileSettings({
   const [selectedBackgroundFile, setSelectedBackgroundFile] = useState<File | null>(null)
   const [backgroundPreviewUrl, setBackgroundPreviewUrl] = useState<string | null>(null)
   const [saving, setSaving] = useState(false)
+  const [savingSlug, setSavingSlug] = useState(false)
   const [error, setError] = useState<string | null>(null)
   const [success, setSuccess] = useState<string | null>(null)
+
+  const normalizedSlug = slug.trim().toLowerCase()
+  const liveProfileHref = savedSlug ? `/chef/${savedSlug}` : null
 
   useEffect(() => {
     if (!selectedBackgroundFile) {
@@ -97,6 +109,24 @@ export function PublicProfileSettings({
     }
   }
 
+  async function handleSaveSlug() {
+    setSavingSlug(true)
+    setError(null)
+    setSuccess(null)
+
+    try {
+      const result = await updateChefSlug(normalizedSlug)
+      setSlug(result.slug)
+      setSavedSlug(result.slug)
+      setSuccess('Public profile URL saved.')
+      router.refresh()
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'Failed to save public profile URL')
+    } finally {
+      setSavingSlug(false)
+    }
+  }
+
   async function handleToggleShowcase(partnerId: string, visible: boolean) {
     try {
       await updatePartner(partnerId, { is_showcase_visible: visible })
@@ -113,7 +143,53 @@ export function PublicProfileSettings({
 
       {/* Profile */}
       <Card className="p-6 space-y-4">
-        <h2 className="text-lg font-semibold text-stone-100">Public Profile</h2>
+        <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
+          <div>
+            <h2 className="text-lg font-semibold text-stone-100">Public Profile URL</h2>
+            <p className="mt-1 text-sm text-stone-400">
+              This slug controls the live client-facing page and the Client Preview public profile.
+            </p>
+          </div>
+          {liveProfileHref && (
+            <a
+              href={liveProfileHref}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="inline-flex w-fit items-center rounded-lg border border-stone-700 bg-stone-900 px-3 py-2 text-sm font-medium text-stone-300 transition-colors hover:bg-stone-800"
+            >
+              Open Live Profile
+            </a>
+          )}
+        </div>
+
+        <div>
+          <label className="block text-sm font-medium text-stone-300 mb-1">Public URL slug</label>
+          <div className="flex flex-col gap-3 sm:flex-row">
+            <div className="flex min-w-0 flex-1 items-center overflow-hidden rounded-lg border border-stone-600 bg-stone-900">
+              <span className="shrink-0 border-r border-stone-700 px-3 py-2 text-sm text-stone-500">
+                /chef/
+              </span>
+              <input
+                value={slug}
+                onChange={(e) => setSlug(e.target.value.toLowerCase())}
+                placeholder="your-public-name"
+                inputMode="url"
+                pattern="[a-z0-9-]{3,50}"
+                className="min-w-0 flex-1 bg-transparent px-3 py-2 text-sm text-stone-100 outline-none placeholder:text-stone-600"
+              />
+            </div>
+            <Button onClick={handleSaveSlug} disabled={savingSlug || !normalizedSlug}>
+              {savingSlug ? 'Saving...' : 'Save URL'}
+            </Button>
+          </div>
+          <p className="mt-1 text-xs text-stone-400">
+            Use 3-50 lowercase letters, numbers, and hyphens. This is the URL clients share.
+          </p>
+        </div>
+      </Card>
+
+      <Card className="p-6 space-y-4">
+        <h2 className="text-lg font-semibold text-stone-100">Public Page Appearance</h2>
 
         <div>
           <label className="block text-sm font-medium text-stone-300 mb-1">Tagline</label>
@@ -123,7 +199,9 @@ export function PublicProfileSettings({
             placeholder="Private chef creating unforgettable dining experiences in the mountains..."
             rows={2}
           />
-          <p className="text-xs text-stone-400 mt-1">Shown below your name on the public profile</p>
+          <p className="text-xs text-stone-400 mt-1">
+            Shown below your name on the live public profile and Client Preview.
+          </p>
         </div>
 
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">

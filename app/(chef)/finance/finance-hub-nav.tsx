@@ -5,6 +5,7 @@ import { usePathname } from 'next/navigation'
 
 const PRIMARY_TABS = [
   { label: 'Overview', href: '/finance' },
+  { label: 'Cockpit', href: '/finance/cockpit' },
   { label: 'Invoices', href: '/finance/invoices' },
   { label: 'Expenses', href: '/finance/expenses' },
   { label: 'Ledger', href: '/finance/ledger' },

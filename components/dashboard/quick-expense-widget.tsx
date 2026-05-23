@@ -108,7 +108,7 @@ export function QuickExpenseWidget({
 
   return (
     <Card className="border-stone-700 bg-stone-800/50">
-      <CardContent className="py-4 space-y-4">
+      <CardContent className="space-y-3 py-4">
         {/* Header */}
         <div className="flex items-center gap-2">
           <Receipt className="h-4 w-4 text-stone-400" />
@@ -123,9 +123,9 @@ export function QuickExpenseWidget({
         {/* Compact form */}
         <form onSubmit={handleSubmit} className="space-y-3">
           {/* Amount + Description row */}
-          <div className="flex gap-2">
-            <div className="relative w-28 shrink-0">
-              <DollarSign className="absolute left-2 top-1/2 -translate-y-1/2 h-3.5 w-3.5 text-stone-500" />
+          <div className="grid grid-cols-1 gap-2 sm:grid-cols-[minmax(8rem,10rem),minmax(0,1fr)]">
+            <div className="relative min-w-0">
+              <DollarSign className="absolute left-2.5 top-1/2 h-3.5 w-3.5 -translate-y-1/2 text-stone-500" />
               <input
                 type="number"
                 step="0.01"
@@ -133,7 +133,7 @@ export function QuickExpenseWidget({
                 placeholder="0.00"
                 value={amount}
                 onChange={(e) => setAmount(e.target.value)}
-                className="w-full pl-7 pr-2 py-1.5 text-sm bg-stone-900 border border-stone-700 rounded-md text-stone-200 placeholder:text-stone-500 focus:outline-none focus:ring-1 focus:ring-brand-500"
+                className="min-h-10 w-full rounded-md border border-stone-700 bg-stone-900 py-1.5 pl-8 pr-3 text-sm tabular-nums text-stone-200 placeholder:text-stone-500 focus:outline-none focus:ring-1 focus:ring-brand-500"
                 required
               />
             </div>
@@ -142,17 +142,17 @@ export function QuickExpenseWidget({
               placeholder="Description"
               value={description}
               onChange={(e) => setDescription(e.target.value)}
-              className="flex-1 px-3 py-1.5 text-sm bg-stone-900 border border-stone-700 rounded-md text-stone-200 placeholder:text-stone-500 focus:outline-none focus:ring-1 focus:ring-brand-500"
+              className="min-h-10 min-w-0 rounded-md border border-stone-700 bg-stone-900 px-3 py-1.5 text-sm text-stone-200 placeholder:text-stone-500 focus:outline-none focus:ring-1 focus:ring-brand-500"
               required
             />
           </div>
 
           {/* Category + Event row */}
-          <div className="flex gap-2">
+          <div className="grid grid-cols-1 gap-2 sm:grid-cols-2">
             <select
               value={category}
               onChange={(e) => setCategory(e.target.value)}
-              className="flex-1 px-2 py-1.5 text-sm bg-stone-900 border border-stone-700 rounded-md text-stone-200 focus:outline-none focus:ring-1 focus:ring-brand-500"
+              className="min-h-10 min-w-0 rounded-md border border-stone-700 bg-stone-900 px-2 py-1.5 text-sm text-stone-200 focus:outline-none focus:ring-1 focus:ring-brand-500"
             >
               {EXPENSE_CATEGORIES.map((c) => (
                 <option key={c.value} value={c.value}>
@@ -163,7 +163,7 @@ export function QuickExpenseWidget({
             <select
               value={eventId}
               onChange={(e) => setEventId(e.target.value)}
-              className="flex-1 px-2 py-1.5 text-sm bg-stone-900 border border-stone-700 rounded-md text-stone-200 focus:outline-none focus:ring-1 focus:ring-brand-500"
+              className="min-h-10 min-w-0 rounded-md border border-stone-700 bg-stone-900 px-2 py-1.5 text-sm text-stone-200 focus:outline-none focus:ring-1 focus:ring-brand-500"
             >
               <option value="">No event</option>
               {upcomingEvents.map((ev) => (

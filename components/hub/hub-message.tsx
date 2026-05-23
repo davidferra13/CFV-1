@@ -5,11 +5,22 @@ import { useState, useEffect, useCallback, memo } from 'react'
 import type { HubMessage, HubGuestProfile, HubPoll } from '@/lib/hub/types'
 import { addReaction, removeReaction, getMessageReaders } from '@/lib/hub/message-actions'
 import { getPoll } from '@/lib/hub/poll-actions'
+import { extractHubLinkPreviews, splitHubTextBySafeLinks } from '@/lib/hub/link-preview'
 import { HubPollCard } from './hub-poll-card'
 import { HubNotificationCard } from './hub-notification-card'
 import { RemyCircleFeedMessage } from './remy-circle-feed-message'
 
 const QUICK_REACTIONS = ['🔥', '❤️', '😂', '🍽️', '👏', '🎉']
+
+const LINK_TYPE_LABELS: Record<string, string> = {
+  document: 'Document',
+  image: 'Image',
+  invitation: 'Invitation',
+  link: 'Link',
+  map: 'Map',
+  playlist: 'Playlist',
+  venue: 'Venue',
+}
 
 interface HubMessageBubbleProps {
   message: HubMessage
@@ -111,6 +122,7 @@ export const HubMessageBubble = memo(function HubMessageBubble({
     hour: 'numeric',
     minute: '2-digit',
   })
+  const linkPreviews = extractHubLinkPreviews(message.body)
 
   return (
     <div
@@ -152,7 +164,30 @@ export const HubMessageBubble = memo(function HubMessageBubble({
             </div>
           )}
 
-          {message.body}
+          <MessageBody body={message.body} isOwn={isOwn} />
+
+          {linkPreviews.length > 0 && (
+            <div className="mt-2 space-y-1.5">
+              {linkPreviews.map((preview) => (
+                <a
+                  key={preview.href}
+                  href={preview.href}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className={`block rounded-lg border px-3 py-2 text-xs transition-colors ${
+                    isOwn
+                      ? 'border-white/25 bg-white/10 text-white hover:bg-white/15'
+                      : 'border-stone-700 bg-stone-900/70 text-stone-200 hover:bg-stone-900'
+                  }`}
+                >
+                  <span className="block font-medium">{preview.title}</span>
+                  <span className={isOwn ? 'text-white/70' : 'text-stone-400'}>
+                    {LINK_TYPE_LABELS[preview.resourceType]} - {preview.sourceLabel}
+                  </span>
+                </a>
+              ))}
+            </div>
+          )}
 
           {/* Inline images */}
           {message.media_urls && message.media_urls.length > 0 && (
@@ -291,6 +326,35 @@ export const HubMessageBubble = memo(function HubMessageBubble({
     </div>
   )
 })
+
+function MessageBody({ body, isOwn }: { body: string | null; isOwn: boolean }) {
+  const parts = splitHubTextBySafeLinks(body)
+  if (parts.length === 0) return null
+
+  return (
+    <>
+      {parts.map((part, index) =>
+        part.type === 'link' && part.href ? (
+          <a
+            key={`${part.href}-${index}`}
+            href={part.href}
+            target="_blank"
+            rel="noopener noreferrer"
+            className={`break-words underline underline-offset-2 ${
+              isOwn ? 'text-white' : 'text-[var(--hub-primary,#e88f47)]'
+            }`}
+          >
+            {part.text}
+          </a>
+        ) : (
+          <span key={`${part.text}-${index}`} className="break-words">
+            {part.text}
+          </span>
+        )
+      )}
+    </>
+  )
+}
 
 // "Seen by" indicator for own messages - lazy-loads readers on hover/click
 function SeenByIndicator({ messageId }: { messageId: string }) {

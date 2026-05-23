@@ -31,6 +31,16 @@ const TAG_LABELS: Record<CaptureTag, string> = {
   shopping: 'Shopping',
   'menu-idea': 'Menu Idea',
   business: 'Business',
+  'field-capture': 'Field Capture',
+  incident: 'Incident',
+  vendor: 'Vendor',
+  loadout: 'Loadout',
+  household: 'Household',
+  waste: 'Waste',
+  staff: 'Staff',
+  craft: 'Craft',
+  private_only: 'Private',
+  chef_internal: 'Internal',
 }
 
 const TAG_COLORS: Record<CaptureTag, 'default' | 'success' | 'warning' | 'error' | 'info'> = {
@@ -42,6 +52,16 @@ const TAG_COLORS: Record<CaptureTag, 'default' | 'success' | 'warning' | 'error'
   shopping: 'default',
   'menu-idea': 'info',
   business: 'default',
+  'field-capture': 'info',
+  incident: 'error',
+  vendor: 'warning',
+  loadout: 'info',
+  household: 'warning',
+  waste: 'success',
+  staff: 'warning',
+  craft: 'success',
+  private_only: 'warning',
+  chef_internal: 'info',
 }
 
 function truncate(text: string, max: number): string {

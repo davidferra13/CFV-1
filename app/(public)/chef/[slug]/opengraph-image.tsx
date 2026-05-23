@@ -1,5 +1,5 @@
 import { ImageResponse } from 'next/og'
-import { createAdminClient } from '@/lib/db/admin'
+import { getPublicChefProfile } from '@/lib/profile/actions'
 
 export const runtime = 'nodejs'
 export const alt = 'Chef Profile'
@@ -7,13 +7,8 @@ export const size = { width: 1200, height: 630 }
 export const contentType = 'image/png'
 
 export default async function Image({ params }: { params: { slug: string } }) {
-  const db: any = createAdminClient()
-  const { data: chef } = await db
-    .from('chefs')
-    .select('display_name, tagline, bio, profile_image_url, cuisine_types')
-    .eq('slug', params.slug)
-    .eq('profile_public', true)
-    .single()
+  const data = await getPublicChefProfile(params.slug)
+  const chef = data?.chef
 
   if (!chef) {
     // Fallback to generic ChefFlow OG image
@@ -164,9 +159,9 @@ export default async function Image({ params }: { params: { slug: string } }) {
         </p>
 
         {/* Cuisine tags */}
-        {chef.cuisine_types && chef.cuisine_types.length > 0 && (
+        {chef.discovery.cuisine_types && chef.discovery.cuisine_types.length > 0 && (
           <div style={{ display: 'flex', flexWrap: 'wrap', gap: '8px', marginTop: '24px' }}>
-            {chef.cuisine_types.slice(0, 4).map((cuisine: string) => (
+            {chef.discovery.cuisine_types.slice(0, 4).map((cuisine: string) => (
               <span
                 key={cuisine}
                 style={{

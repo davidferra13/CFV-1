@@ -13,7 +13,7 @@ export function OnboardingChecklistWidget({ progress }: Props) {
   const pct = Math.round((progress.completedSteps / progress.totalSteps) * 100)
 
   return (
-    <Card className="border-brand-700 bg-brand-950/30">
+    <Card className="dashboard-onboarding-card border-brand-700 bg-brand-950/30">
       <CardHeader className="pb-2">
         <div className="flex items-center justify-between">
           <CardTitle className="text-sm">First Booking Loop</CardTitle>

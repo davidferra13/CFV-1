@@ -8,12 +8,16 @@
 
 import { useState, useEffect, useRef } from 'react'
 
+const ENABLE_CLIENT_AI_HEALTH_POLLING = process.env.NEXT_PUBLIC_AI_HEALTH_POLLING === 'true'
+
 export function AiOutageBanner() {
   const [visible, setVisible] = useState(false)
   const [dismissed, setDismissed] = useState(false)
   const offlineSince = useRef<number | null>(null)
 
   useEffect(() => {
+    if (!ENABLE_CLIENT_AI_HEALTH_POLLING) return
+
     let mounted = true
 
     async function check() {

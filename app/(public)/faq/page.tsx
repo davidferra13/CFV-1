@@ -31,6 +31,11 @@ const FAQ_CATEGORIES: FaqCategory[] = [
           'The more detail, the better. Include your event date, guest count, any dietary restrictions or allergies, your budget range, and the occasion (birthday dinner, weekly meal prep, wedding, etc.). Mention the service style you prefer (plated, buffet, family-style) and whether you need the chef to handle grocery shopping. A detailed inquiry helps the chef send an accurate proposal faster.',
       },
       {
+        question: 'How does ChefFlow discovery work?',
+        answer:
+          'Start by searching for a city, ZIP code, or service type. ChefFlow then helps you compare public chef profiles, real menus, visible service tags, prices, and availability details. When you find the right fit, you can book or inquire directly with the chef instead of going through a generic lead form.',
+      },
+      {
         question: 'What is included in a private chef service?',
         answer:
           "Most private chef services include menu planning, grocery shopping, cooking, plating, and kitchen cleanup. Some chefs also offer wine pairing suggestions, table styling, or coordination with servers. Travel fees may apply for events outside the chef's local area. The proposal your chef sends will break down exactly what is included so there are no surprises.",

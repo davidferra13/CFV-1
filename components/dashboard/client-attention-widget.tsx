@@ -6,11 +6,8 @@ import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
 import { Mail, ArrowRight, Send } from '@/components/ui/icons'
 import type { AttentionItem } from '@/app/(chef)/dashboard/_sections/client-attention-data'
-import {
-  sendQuickReply,
-  sendBatchQuickReply,
-  QUICK_REPLY_TEMPLATES,
-} from '@/lib/communication/quick-reply-actions'
+import { sendQuickReply, sendBatchQuickReply } from '@/lib/communication/quick-reply-actions'
+import { QUICK_REPLY_TEMPLATES } from '@/lib/communication/quick-reply-templates'
 import { toast } from 'sonner'
 
 // ── Helpers ──────────────────────────────────────────────────────────────────

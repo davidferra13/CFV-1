@@ -2,6 +2,7 @@
 
 import { useEffect, useMemo, useState, useTransition } from 'react'
 import Image from 'next/image'
+import Link from 'next/link'
 import { usePathname, useRouter } from 'next/navigation'
 import { CheckCircle2, XCircle } from 'lucide-react'
 import {
@@ -274,6 +275,9 @@ export function ControlPacketClient({
   const activeSnapshot = initialData.activeSnapshot
   const courseCount = Number(activeSnapshot?.course_count ?? initialData.event.courseCount ?? 1)
   const isFinalized = !!activeSnapshot?.finalization_locked
+  const dosingPacketHref = activeSnapshot?.id
+    ? `/print/cannabis-dosing-packet/${eventId}?snapshot=${activeSnapshot.id}`
+    : `/print/cannabis-dosing-packet/${eventId}`
   const snapshotPlan = initialData.menuPlan.snapshot
   const displayCourses =
     snapshotPlan.courses.length > 0
@@ -681,6 +685,14 @@ export function ControlPacketClient({
           >
             Generate Control Packet
           </button>
+          <Link
+            href={dosingPacketHref}
+            target="_blank"
+            className="rounded px-3 py-2 text-sm font-semibold"
+            style={{ background: '#163f26', color: '#d2e8d4', border: '1px solid #2f6a37' }}
+          >
+            Print Dosing Packet
+          </Link>
         </div>
 
         {initialData.snapshots.length > 0 && (

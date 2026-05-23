@@ -110,27 +110,27 @@ export const PIE_CATEGORY_COMPLETION_MATRIX: PieCanonicalCategoryMatrixEntry[] =
     }
   })
 
-export const PIE_SUBCATEGORY_COMPLETION_MATRIX: PieCanonicalSubcategoryMatrixEntry[] = Object.keys(
-  SUBCATEGORY_FLOOR_CENTS
-)
-  .sort()
-  .map((existingSubcategory) => {
-    const parentIds = parentIdsForSubcategory(existingSubcategory)
-    const family = priceFamilyForSubcategory(existingSubcategory)
+function buildPieSubcategoryCompletionMatrix(): PieCanonicalSubcategoryMatrixEntry[] {
+  return Object.keys(SUBCATEGORY_FLOOR_CENTS)
+    .sort()
+    .map((existingSubcategory) => {
+      const parentIds = parentIdsForSubcategory(existingSubcategory)
+      const family = priceFamilyForSubcategory(existingSubcategory)
 
-    return {
-      existingSubcategory,
-      canonicalId: canonicalSubcategoryId(existingSubcategory),
-      canonicalName: titleize(existingSubcategory),
-      parentIds,
-      priceFamily: family,
-      priceIdentityKind: priceIdentityKindForSubcategory(existingSubcategory),
-      unitBasis: unitBasisForSubcategory(existingSubcategory),
-      yieldBasis: yieldBasisForSubcategory(existingSubcategory),
-      proofRequirements: proofForSubcategory(existingSubcategory),
-      coverageStatus: parentIds.length > 0 ? 'covered' : 'gap',
-    }
-  })
+      return {
+        existingSubcategory,
+        canonicalId: canonicalSubcategoryId(existingSubcategory),
+        canonicalName: titleize(existingSubcategory),
+        parentIds,
+        priceFamily: family,
+        priceIdentityKind: priceIdentityKindForSubcategory(existingSubcategory),
+        unitBasis: unitBasisForSubcategory(existingSubcategory),
+        yieldBasis: yieldBasisForSubcategory(existingSubcategory),
+        proofRequirements: proofForSubcategory(existingSubcategory),
+        coverageStatus: parentIds.length > 0 ? 'covered' : 'gap',
+      }
+    })
+}
 
 export const PIE_HIGH_RISK_PRICE_IDENTITY_MATRIX: PieHighRiskFamilyMatrixEntry[] = [
   {
@@ -860,23 +860,27 @@ export const PIE_ONTOLOGY_CONSUMING_SURFACES = [
   },
 ]
 
-export const PIE_CANONICAL_ONTOLOGY_COMPLETION_MATRIX = {
-  scopeFamilies: PIE_CANONICAL_ONTOLOGY_SCOPE_FAMILIES,
-  existingCategories: PIE_CATEGORY_COMPLETION_MATRIX,
-  existingSubcategories: PIE_SUBCATEGORY_COMPLETION_MATRIX,
-  highRiskFamilies: PIE_HIGH_RISK_PRICE_IDENTITY_MATRIX,
-  consumingSurfaces: PIE_ONTOLOGY_CONSUMING_SURFACES,
-  proofSummary: {
-    categoryCount: PIE_CATEGORY_COMPLETION_MATRIX.length,
-    subcategoryCount: PIE_SUBCATEGORY_COMPLETION_MATRIX.length,
-    highRiskFamilyCount: PIE_HIGH_RISK_PRICE_IDENTITY_MATRIX.length,
-    categoryGaps: PIE_CATEGORY_COMPLETION_MATRIX.filter((entry) => entry.coverageStatus === 'gap'),
-    subcategoryGaps: PIE_SUBCATEGORY_COMPLETION_MATRIX.filter(
-      (entry) => entry.coverageStatus === 'gap'
-    ),
-    requiredHighRiskFamilies: PIE_REQUIRED_HIGH_RISK_FAMILIES,
-  },
-} as const
+function buildPieCanonicalOntologyCompletionMatrix() {
+  return {
+    scopeFamilies: PIE_CANONICAL_ONTOLOGY_SCOPE_FAMILIES,
+    existingCategories: PIE_CATEGORY_COMPLETION_MATRIX,
+    existingSubcategories: PIE_SUBCATEGORY_COMPLETION_MATRIX,
+    highRiskFamilies: PIE_HIGH_RISK_PRICE_IDENTITY_MATRIX,
+    consumingSurfaces: PIE_ONTOLOGY_CONSUMING_SURFACES,
+    proofSummary: {
+      categoryCount: PIE_CATEGORY_COMPLETION_MATRIX.length,
+      subcategoryCount: PIE_SUBCATEGORY_COMPLETION_MATRIX.length,
+      highRiskFamilyCount: PIE_HIGH_RISK_PRICE_IDENTITY_MATRIX.length,
+      categoryGaps: PIE_CATEGORY_COMPLETION_MATRIX.filter(
+        (entry) => entry.coverageStatus === 'gap'
+      ),
+      subcategoryGaps: PIE_SUBCATEGORY_COMPLETION_MATRIX.filter(
+        (entry) => entry.coverageStatus === 'gap'
+      ),
+      requiredHighRiskFamilies: PIE_REQUIRED_HIGH_RISK_FAMILIES,
+    },
+  } as const
+}
 
 function canonicalFamiliesForCategory(normalizedCategory: string): string[] {
   if (normalizedCategory.includes('produce')) return ['produce']
@@ -1213,3 +1217,7 @@ const produceEachSubcategories = new Set([
   'artichoke',
   'cucumber',
 ])
+
+export const PIE_SUBCATEGORY_COMPLETION_MATRIX = buildPieSubcategoryCompletionMatrix()
+
+export const PIE_CANONICAL_ONTOLOGY_COMPLETION_MATRIX = buildPieCanonicalOntologyCompletionMatrix()

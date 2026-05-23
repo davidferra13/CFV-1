@@ -26,7 +26,8 @@ export default async function ProfileSettingsPage() {
         </Link>
         <h1 className="text-3xl font-bold text-stone-100">Network Profile</h1>
         <p className="text-stone-400 mt-1">
-          This information is visible to other chefs who find you in the network directory.
+          This information is visible to other chefs in the network directory. Public client profile
+          URL and page appearance are managed in Public Profile settings.
         </p>
       </div>
 

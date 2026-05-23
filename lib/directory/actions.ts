@@ -9,6 +9,7 @@
 // Other chefs must be approved by the admin to appear in the public listing.
 
 import { unstable_cache } from 'next/cache'
+import { normalizeUsStateCode } from '@/lib/discover/constants'
 import {
   computeDiscoveryCompleteness,
   directoryListingToDiscoveryProfile,
@@ -26,6 +27,11 @@ import {
 import { isFounderEmail } from '@/lib/platform/owner-account'
 import { createServerClient } from '@/lib/db/server'
 import type { ChefSocialLinks } from '@/lib/chef/profile-actions'
+import {
+  composePublicProfile,
+  normalizeChefProfileFacts,
+  normalizePublicBioSettings,
+} from '@/lib/profile/fact-guardrails'
 
 export type DirectoryPartnerLocation = {
   id: string
@@ -86,6 +92,11 @@ export type DirectoryChef = {
   }
 }
 
+export type DiscoverableChefFilters = {
+  state?: string | null
+  city?: string | null
+}
+
 function isRelationMissingError(error: any) {
   return error?.code === '42P01' || error?.code === '42703'
 }
@@ -132,8 +143,18 @@ async function getDirectorySearchChefIdsUncached(query: string): Promise<string[
   return Array.from(new Set((data ?? []).map((row: any) => row.chef_id).filter(Boolean)))
 }
 
-async function getDiscoverableChefsUncached(): Promise<DirectoryChef[]> {
+async function getDiscoverableChefsUncached(
+  filters: DiscoverableChefFilters = {}
+): Promise<DirectoryChef[]> {
   const db = createServerClient({ admin: true })
+  const hasStateFilter = typeof filters.state === 'string' && filters.state.trim().length > 0
+  const normalizedStateFilter = hasStateFilter ? normalizeUsStateCode(filters.state) : null
+  const cityFilter =
+    !hasStateFilter && typeof filters.city === 'string' && filters.city.trim().length > 0
+      ? filters.city.trim()
+      : null
+
+  if (hasStateFilter && !normalizedStateFilter) return []
 
   // Query all chefs who have a slug and are network-discoverable.
   // Then filter in-app by directory_approved OR founder email.
@@ -189,62 +210,87 @@ async function getDiscoverableChefsUncached(): Promise<DirectoryChef[]> {
   let locationLinksMap: Record<string, any[]> = {}
   let marketplaceProfilesMap: Record<string, any> = {}
   let listingProfilesMap: Record<string, any> = {}
+  let profileFactsMap: Record<string, any> = {}
 
   if (chefIds.length > 0) {
-    const [showcasePartnersByChefId, locationLinksResult, marketplaceResult, listingResult] =
-      await Promise.all([
-        fetchShowcasePartnersByChefIds(db, chefIds),
-        (db as any)
-          .from('chef_location_links')
-          .select('chef_id, location_id, relationship_type, is_public, is_featured, sort_order')
-          .in('chef_id', chefIds),
-        (db as any)
-          .from('chef_marketplace_profiles')
-          .select(
-            [
-              'chef_id',
-              'cuisine_types',
-              'service_types',
-              'price_range',
-              'min_guest_count',
-              'max_guest_count',
-              'service_area_city',
-              'service_area_state',
-              'service_area_zip',
-              'service_area_lat',
-              'service_area_lng',
-              'service_area_radius_miles',
-              'avg_rating',
-              'review_count',
-              'accepting_inquiries',
-              'next_available_date',
-              'lead_time_days',
-              'hero_image_url',
-              'highlight_text',
-            ].join(', ')
-          )
-          .in('chef_id', chefIds),
-        (db as any)
-          .from('chef_directory_listings')
-          .select(
-            [
-              'chef_id',
-              'cuisines',
-              'service_types',
-              'dietary_specialties',
-              'city',
-              'state',
-              'zip_code',
-              'service_radius_miles',
-              'min_price_cents',
-              'max_price_cents',
-              'profile_photo_url',
-              'rating_avg',
-              'review_count',
-            ].join(', ')
-          )
-          .in('chef_id', chefIds),
-      ])
+    let marketplaceProfilesQuery = (db as any)
+      .from('chef_marketplace_profiles')
+      .select(
+        [
+          'chef_id',
+          'cuisine_types',
+          'service_types',
+          'price_range',
+          'min_guest_count',
+          'max_guest_count',
+          'service_area_city',
+          'service_area_state',
+          'service_area_zip',
+          'service_area_lat',
+          'service_area_lng',
+          'service_area_radius_miles',
+          'avg_rating',
+          'review_count',
+          'accepting_inquiries',
+          'next_available_date',
+          'lead_time_days',
+          'hero_image_url',
+          'highlight_text',
+        ].join(', ')
+      )
+      .in('chef_id', chefIds)
+
+    if (normalizedStateFilter) {
+      marketplaceProfilesQuery = marketplaceProfilesQuery.eq(
+        'service_area_state',
+        normalizedStateFilter
+      )
+    } else if (cityFilter) {
+      marketplaceProfilesQuery = marketplaceProfilesQuery.ilike(
+        'service_area_city',
+        `%${cityFilter}%`
+      )
+    }
+
+    const [
+      showcasePartnersByChefId,
+      locationLinksResult,
+      marketplaceResult,
+      listingResult,
+      profileFactsResult,
+    ] = await Promise.all([
+      fetchShowcasePartnersByChefIds(db, chefIds),
+      (db as any)
+        .from('chef_location_links')
+        .select('chef_id, location_id, relationship_type, is_public, is_featured, sort_order')
+        .in('chef_id', chefIds),
+      marketplaceProfilesQuery,
+      (db as any)
+        .from('chef_directory_listings')
+        .select(
+          [
+            'chef_id',
+            'cuisines',
+            'service_types',
+            'dietary_specialties',
+            'city',
+            'state',
+            'zip_code',
+            'service_radius_miles',
+            'min_price_cents',
+            'max_price_cents',
+            'profile_photo_url',
+            'rating_avg',
+            'review_count',
+          ].join(', ')
+        )
+        .in('chef_id', chefIds),
+      (db as any)
+        .from('chef_profiles')
+        .select('chef_id, tenant_id, profile_facts, public_bio_settings')
+        .in('chef_id', chefIds)
+        .in('tenant_id', chefIds),
+    ])
 
     for (const chefId of Object.keys(showcasePartnersByChefId)) {
       partnersMap[chefId] = (showcasePartnersByChefId[chefId] || []).map((partner: any) => ({
@@ -305,22 +351,59 @@ async function getDiscoverableChefsUncached(): Promise<DirectoryChef[]> {
     } else if (listingResult.error && !isRelationMissingError(listingResult.error)) {
       console.error('[getDiscoverableChefs] directory listing fetch error:', listingResult.error)
     }
+
+    if (!profileFactsResult.error && profileFactsResult.data) {
+      profileFactsMap = Object.fromEntries(
+        (profileFactsResult.data as any[])
+          .filter((profile) => profile.chef_id === profile.tenant_id)
+          .map((profile) => [profile.chef_id, profile])
+      )
+    } else if (profileFactsResult.error && !isRelationMissingError(profileFactsResult.error)) {
+      console.error('[getDiscoverableChefs] profile facts fetch error:', profileFactsResult.error)
+    }
   }
 
-  return approved.map((chef: any) => {
+  const matchesListingLocation = (profile: any) => {
+    if (!profile) return false
+    if (normalizedStateFilter) return normalizeUsStateCode(profile.state) === normalizedStateFilter
+    if (cityFilter)
+      return String(profile.city || '')
+        .toLowerCase()
+        .includes(cityFilter.toLowerCase())
+    return false
+  }
+
+  const hasLocationFilter = Boolean(normalizedStateFilter || cityFilter)
+  const locationMatchedApproved = hasLocationFilter
+    ? approved.filter((chef: any) =>
+        Boolean(
+          marketplaceProfilesMap[chef.id] || matchesListingLocation(listingProfilesMap[chef.id])
+        )
+      )
+    : []
+  const locationFilteredApproved =
+    hasLocationFilter && locationMatchedApproved.length > 0 ? locationMatchedApproved : approved
+
+  return locationFilteredApproved.map((chef: any) => {
     const partners = partnersMap[chef.id] || []
     const discovery = mergeDiscoveryProfile(
       legacyChefToDiscoveryProfile(chef),
       directoryListingToDiscoveryProfile(listingProfilesMap[chef.id]),
       marketplaceRowToDiscoveryProfile(marketplaceProfilesMap[chef.id])
     )
+    const publicProfileComposition = composePublicProfile({
+      tagline: chef.tagline ?? discovery.highlight_text,
+      bio: chef.bio,
+      facts: normalizeChefProfileFacts(profileFactsMap[chef.id]?.profile_facts),
+      settings: normalizePublicBioSettings(profileFactsMap[chef.id]?.public_bio_settings),
+    })
 
     return {
       id: chef.id,
       slug: chef.slug,
       display_name: chef.display_name || chef.business_name || 'Private Chef',
-      tagline: chef.tagline ?? discovery.highlight_text ?? null,
-      bio: chef.bio ?? null,
+      tagline: publicProfileComposition.tagline ?? discovery.highlight_text ?? null,
+      bio: publicProfileComposition.bio,
       profile_image_url: chef.profile_image_url ?? discovery.hero_image_url ?? null,
       website_url: chef.website_url ?? null,
       google_review_url: chef.google_review_url ?? null,

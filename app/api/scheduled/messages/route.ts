@@ -10,7 +10,10 @@ import { runMonitoredCronJob } from '@/lib/cron/monitor'
 import { recordSideEffectFailure } from '@/lib/monitoring/non-blocking'
 import { createServerClient } from '@/lib/db/server'
 import { sendEmail } from '@/lib/email/send'
+import { sendSms } from '@/lib/sms/send'
 import { NotificationGenericEmail } from '@/lib/email/templates/notification-generic'
+import { sanitizeSmsContent } from '@/lib/phone/sms-content-policy'
+import { evaluateScheduledSmsPolicy } from '@/lib/communication/sms-policy'
 
 async function handleScheduledMessages(req: NextRequest): Promise<NextResponse> {
   const authError = verifyCronAuth(req.headers.get('authorization'))
@@ -60,6 +63,7 @@ async function handleScheduledMessages(req: NextRequest): Promise<NextResponse> 
                 .from('clients')
                 .select('email, full_name')
                 .eq('id', msg.recipient_id)
+                .eq('tenant_id', msg.chef_id)
                 .single()
 
               if (client) {
@@ -80,6 +84,7 @@ async function handleScheduledMessages(req: NextRequest): Promise<NextResponse> 
                   updated_at: new Date().toISOString(),
                 })
                 .eq('id', msg.id)
+                .eq('chef_id', msg.chef_id)
               failed++
               continue
             }
@@ -93,8 +98,103 @@ async function handleScheduledMessages(req: NextRequest): Promise<NextResponse> 
                 body: msg.body,
               }),
             })
+          } else if (msg.channel === 'sms') {
+            if (!msg.recipient_id) {
+              await db
+                .from('scheduled_messages')
+                .update({
+                  status: 'failed',
+                  error_message: 'SMS blocked: no recipient client is linked',
+                  updated_at: new Date().toISOString(),
+                })
+                .eq('id', msg.id)
+                .eq('chef_id', msg.chef_id)
+              failed++
+              continue
+            }
+
+            const [{ data: client }, { data: preferences }, { count: recentSmsCount }] =
+              await Promise.all([
+                db
+                  .from('clients')
+                  .select('id, phone, preferred_contact_method, communication_preference')
+                  .eq('id', msg.recipient_id)
+                  .eq('tenant_id', msg.chef_id)
+                  .maybeSingle(),
+                db
+                  .from('chef_preferences')
+                  .select(
+                    'notification_quiet_hours_enabled, notification_quiet_hours_start, notification_quiet_hours_end'
+                  )
+                  .eq('tenant_id', msg.chef_id)
+                  .maybeSingle(),
+                db
+                  .from('scheduled_messages')
+                  .select('id', { count: 'exact', head: true })
+                  .eq('chef_id', msg.chef_id)
+                  .eq('recipient_id', msg.recipient_id)
+                  .eq('channel', 'sms')
+                  .eq('status', 'sent')
+                  .gte('sent_at', new Date(Date.now() - 24 * 60 * 60 * 1000).toISOString()),
+              ])
+
+            const policy = evaluateScheduledSmsPolicy({
+              client,
+              quietHours: {
+                enabled: !!preferences?.notification_quiet_hours_enabled,
+                startTime: preferences?.notification_quiet_hours_start ?? null,
+                endTime: preferences?.notification_quiet_hours_end ?? null,
+                timezone: 'America/New_York',
+              },
+              recentSmsCount24h: recentSmsCount ?? 0,
+            })
+
+            if (policy.status === 'blocked') {
+              await db
+                .from('scheduled_messages')
+                .update({
+                  status: 'failed',
+                  error_message: `SMS blocked: ${policy.reasons.join('; ')}`,
+                  updated_at: new Date().toISOString(),
+                })
+                .eq('id', msg.id)
+                .eq('chef_id', msg.chef_id)
+              failed++
+              continue
+            }
+
+            if (policy.status === 'delayed') {
+              await db
+                .from('scheduled_messages')
+                .update({
+                  scheduled_for: new Date(Date.now() + 60 * 60 * 1000).toISOString(),
+                  error_message: `SMS delayed: ${policy.reasons.join('; ')}`,
+                  updated_at: new Date().toISOString(),
+                })
+                .eq('id', msg.id)
+                .eq('chef_id', msg.chef_id)
+              continue
+            }
+
+            const body = sanitizeSmsContent(msg.body, 'reminder')
+            const smsResult = await sendSms(client.phone, body)
+            success = smsResult === 'sent'
+
+            if (!success) {
+              await db
+                .from('scheduled_messages')
+                .update({
+                  status: 'failed',
+                  error_message: `SMS ${smsResult}`,
+                  updated_at: new Date().toISOString(),
+                })
+                .eq('id', msg.id)
+                .eq('chef_id', msg.chef_id)
+              failed++
+              continue
+            }
           } else {
-            // SMS and app channels: not yet implemented, leave as pending
+            // App channel: not yet implemented, leave as pending
             console.log(
               `[scheduled-messages] Channel "${msg.channel}" not yet implemented for message ${msg.id} - leaving pending`
             )
@@ -111,6 +211,7 @@ async function handleScheduledMessages(req: NextRequest): Promise<NextResponse> 
               updated_at: new Date().toISOString(),
             })
             .eq('id', msg.id)
+            .eq('chef_id', msg.chef_id)
 
           if (success) sent++
           else failed++
@@ -133,6 +234,7 @@ async function handleScheduledMessages(req: NextRequest): Promise<NextResponse> 
               updated_at: new Date().toISOString(),
             })
             .eq('id', msg.id)
+            .eq('chef_id', msg.chef_id)
           failed++
         }
       }

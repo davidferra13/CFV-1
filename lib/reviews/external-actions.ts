@@ -82,7 +82,7 @@ export async function getExternalReviewSources(): Promise<ExternalReviewSourceSu
     .select(
       'id, provider, label, active, sync_interval_minutes, config, last_synced_at, last_error, created_at'
     )
-    .eq('tenant_id', user.tenantId)
+    .eq('tenant_id', user.entityId)
     .order('created_at', { ascending: false })
 
   if (error) {
@@ -116,7 +116,7 @@ export async function createExternalReviewSource(input: CreateExternalReviewSour
   }
 
   const { error } = await db.from('external_review_sources').insert({
-    tenant_id: user.tenantId,
+    tenant_id: user.entityId,
     provider: validated.provider,
     label: validated.label,
     config,
@@ -145,7 +145,7 @@ export async function toggleExternalReviewSource(sourceId: string, active: boole
     .from('external_review_sources')
     .update({ active })
     .eq('id', sourceId)
-    .eq('tenant_id', user.tenantId)
+    .eq('tenant_id', user.entityId)
 
   if (error) {
     console.error('[toggleExternalReviewSource] Error:', error)
@@ -164,7 +164,7 @@ export async function deleteExternalReviewSource(sourceId: string) {
     .from('external_review_sources')
     .delete()
     .eq('id', sourceId)
-    .eq('tenant_id', user.tenantId)
+    .eq('tenant_id', user.entityId)
 
   if (error) {
     console.error('[deleteExternalReviewSource] Error:', error)
@@ -183,7 +183,7 @@ export async function syncExternalReviewSourceNow(sourceId: string) {
     .from('external_review_sources')
     .select('id')
     .eq('id', sourceId)
-    .eq('tenant_id', user.tenantId)
+    .eq('tenant_id', user.entityId)
     .single()
 
   if (sourceError || !source) {
@@ -206,7 +206,7 @@ export async function syncAllExternalReviewSourcesForChef() {
   const { data, error } = await db
     .from('external_review_sources')
     .select('id')
-    .eq('tenant_id', user.tenantId)
+    .eq('tenant_id', user.entityId)
     .eq('active', true)
 
   if (error) {

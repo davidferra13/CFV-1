@@ -65,6 +65,36 @@ test('dinner circle snapshot keeps the full event flow on one event object', () 
     },
     farm: { enabled: true, animals: [{ name: 'Mabel', species: 'cow' }] },
     social: { enabled: true, posts: [{ source: 'manual', label: 'Harvest update' }] },
+    accommodations: {
+      notes: [
+        {
+          id: 'access-note-1',
+          category: 'seating_access',
+          note: 'One guest needs an aisle seat with step-free restroom access.',
+          visibility: 'host_and_chef',
+          chefRelevant: true,
+          submittedByProfileId: 'profile-1',
+          submittedByName: 'Avery Host',
+          createdAt: '2026-05-19T12:00:00.000Z',
+          updatedAt: '2026-05-19T12:00:00.000Z',
+        },
+      ],
+    },
+    arrivalGuide: {
+      status: 'published',
+      publishedAt: '2026-05-19T12:00:00.000Z',
+      sections: {
+        address: {
+          key: 'address',
+          label: 'Address',
+          body: 'Farm table, west gate.',
+          visibility: 'attendee_visible',
+          chefRelevant: true,
+          sensitive: false,
+          updatedAt: '2026-05-19T12:00:00.000Z',
+        },
+      },
+    },
   })
 
   const snapshot = buildDinnerCircleSnapshot({

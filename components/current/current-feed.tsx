@@ -14,7 +14,7 @@ export async function CurrentFeed() {
 
   if (feed.units.length === 0) {
     return (
-      <div className="rounded-lg border border-stone-700/50 bg-stone-800/50 p-4">
+      <div className="dashboard-section-card rounded-lg border border-stone-700/50 bg-stone-800/50 p-4">
         <h3 className="text-sm font-medium text-stone-300">The Current</h3>
         <p className="text-xs text-stone-500 mt-1">Nothing needs your attention right now.</p>
       </div>
@@ -22,7 +22,7 @@ export async function CurrentFeed() {
   }
 
   return (
-    <div className="rounded-lg border border-stone-700/50 bg-stone-900/50 overflow-hidden">
+    <div className="dashboard-section-card rounded-lg border border-stone-700/50 bg-stone-900/50 overflow-hidden">
       {/* Header */}
       <div className="flex items-center justify-between px-4 py-2.5 border-b border-stone-700/30">
         <div className="flex items-center gap-2">

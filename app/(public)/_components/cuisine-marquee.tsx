@@ -13,6 +13,8 @@ import {
   buildDiscoveryHref,
   buildRow2,
   dedupeDiscoveryItems,
+  getDiscoveryRailItemDisplayMeta,
+  getHomepageDiscoveryRailReconciliation,
 } from '@/lib/discovery/homepage-discovery-rail'
 import {
   buildActiveDiscoveryFilterSummary,
@@ -91,6 +93,7 @@ import {
 } from '@/components/ui/icons'
 import { DiscoveryFallbackPanel } from './discovery-fallback-panel'
 import type { FallbackAlternative } from '@/app/api/discovery/fallback-check/route'
+import { filterValidRailDestinations } from '@/lib/discovery/homepage-discovery-destinations'
 
 // ── Discovery item types ──
 // Rail items carry a type field so Agent 2 can route them correctly.
@@ -1734,11 +1737,14 @@ interface CuisineMarqueeProps {
   /** Authenticated user personalization signals. When present, boosts preferred cuisines and
    * service types to the front of each row. Anonymous users receive the static ordering. */
   userSignals?: UserScrollSignals | null
+  /** Compact keeps homepage discovery secondary to search by collapsing the rail into one scrollable row. */
+  variant?: 'full' | 'compact'
 }
 
 interface DiscoveryPillProps {
   item: DiscoveryRailItem
   locationContext: HomepageLocationContext | null
+  compact?: boolean
   blockLocationContext?: boolean
   rowRole: DiscoveryRowRole
   rowPosition: number
@@ -1757,6 +1763,7 @@ interface DiscoveryPillProps {
 function DiscoveryPill({
   item,
   locationContext,
+  compact = false,
   blockLocationContext = false,
   rowRole,
   rowPosition,
@@ -1784,9 +1791,10 @@ function DiscoveryPill({
   const showIconBadge = !hasFlagBg
   // Flag cards: cuisine-row flag pills become tall rectangular cards instead of pills
   const isCard = hasFlagBg && primary
-  const isVisualCard = item.presentation === 'visual_card'
-  const isStory = item.presentation === 'story'
+  const isVisualCard = !compact && item.presentation === 'visual_card'
+  const isStory = !compact && item.presentation === 'story'
   const showFeedbackControls = !isDuplicate && shouldShowDiscoveryFeedback(item)
+  const itemMeta = getDiscoveryRailItemDisplayMeta(item, locationContext)
 
   // Build CSS multi-background for single or multi-flag pills.
   const flagBgStyle: React.CSSProperties | undefined = hasFlagBg
@@ -1926,7 +1934,7 @@ function DiscoveryPill({
   return (
     <span
       className={[
-        'group/feedback relative inline-flex shrink-0',
+        'group/feedback relative inline-flex shrink-0 snap-start',
         isVisualCard ? 'min-w-[160px] sm:min-w-[180px]' : '',
         item.type === 'featured_chef' && isStory ? 'min-w-[320px]' : '',
       ].join(' ')}
@@ -1937,7 +1945,13 @@ function DiscoveryPill({
           href={href}
           draggable={false}
           className="cuisine-visual-card"
+          aria-hidden={isDuplicate ? true : undefined}
+          tabIndex={isDuplicate ? -1 : undefined}
           style={{ '--card-glow': glowColor ?? undefined, ...glowStyle } as React.CSSProperties}
+          title={`${itemMeta.reason} Source: ${itemMeta.source}. Freshness: ${itemMeta.freshness}.`}
+          data-discovery-lane={itemMeta.lane}
+          data-discovery-source={itemMeta.source}
+          data-discovery-freshness={itemMeta.freshness}
           onClick={(event) => {
             if (!isDuplicate) {
               trackDiscoveryClick(item, trackingContext)
@@ -1962,8 +1976,8 @@ function DiscoveryPill({
             'discovery-pill group shrink-0 border font-semibold leading-none tracking-normal transition-all duration-200',
             pillGlowClass,
             isStory
-              ? 'inline-flex h-[82px] w-[172px] min-w-[172px] max-w-[172px] flex-col items-start justify-between overflow-hidden rounded-xl px-3 py-2.5 text-left text-[13px] sm:h-[88px] sm:w-[190px] sm:min-w-[190px] sm:max-w-[190px] sm:px-3.5 sm:py-3'
-              : isCard
+              ? 'inline-flex h-[106px] w-[210px] min-w-[210px] max-w-[210px] flex-col items-start justify-between overflow-hidden rounded-xl px-3 py-2.5 text-left text-[13px] sm:h-[112px] sm:w-[232px] sm:min-w-[232px] sm:max-w-[232px] sm:px-3.5 sm:py-3'
+              : isCard && !compact
                 ? // Card layout: tall rect, text pinned to bottom-center
                   'inline-flex min-h-[82px] w-[96px] min-w-[96px] max-w-[96px] flex-col items-center justify-end gap-0 overflow-hidden rounded-xl px-2 py-2 text-[12px] sm:min-h-[96px] sm:w-[116px] sm:min-w-[116px] sm:max-w-[116px] sm:py-2.5 sm:text-[13px]'
                 : // Standard pill layout
@@ -1972,7 +1986,9 @@ function DiscoveryPill({
             !isCard &&
               !isStory &&
               (primary
-                ? 'min-h-[46px] px-4 py-2.5 text-[14px]'
+                ? compact
+                  ? 'min-h-[36px] px-3 py-1.5 text-[12px]'
+                  : 'min-h-[46px] px-4 py-2.5 text-[14px]'
                 : 'min-h-[40px] px-3.5 py-2 text-[13px]'),
             'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#e8a96b]/55 focus-visible:ring-offset-2 focus-visible:ring-offset-[#1a0e08] active:translate-y-0',
             hasFlagBg
@@ -1987,6 +2003,10 @@ function DiscoveryPill({
           aria-disabled={isSelectable && !interactionReady ? true : undefined}
           aria-pressed={isSelectable && !isDuplicate ? isSelected : undefined}
           data-selected={isSelectable && isSelected && !isDuplicate ? 'true' : undefined}
+          data-discovery-lane={itemMeta.lane}
+          data-discovery-source={itemMeta.source}
+          data-discovery-freshness={itemMeta.freshness}
+          title={`${itemMeta.reason} Source: ${itemMeta.source}. Freshness: ${itemMeta.freshness}.`}
           tabIndex={isDuplicate || (isSelectable && !interactionReady) ? -1 : undefined}
           onClick={(event) => {
             if (isSelectable && !interactionReady) {
@@ -2075,17 +2095,26 @@ function DiscoveryPill({
               {item.label}
             </span>
           )}
-          {item.sublabel && !hasFlagBg && (
+          {item.sublabel && !hasFlagBg && !isStory && (
             <span
               className={[
-                isStory
-                  ? 'line-clamp-2 max-w-full text-[11px] font-medium leading-snug opacity-65'
-                  : 'max-w-[9rem] truncate text-[11px] font-medium leading-none opacity-65',
+                'max-w-[9rem] truncate text-[11px] font-medium leading-none opacity-65',
                 hasFlagBg ? 'relative z-10' : '',
               ].join(' ')}
               style={textOutlineStyle}
             >
               {item.sublabel}
+            </span>
+          )}
+          {isStory && (
+            <span className="flex w-full flex-col gap-1">
+              <span className="line-clamp-1 max-w-full text-[11px] font-medium leading-snug text-white/70">
+                {item.reason ?? item.sublabel ?? itemMeta.reason}
+              </span>
+              <span className="flex max-w-full items-center justify-between gap-2 text-[10px] font-semibold leading-none text-white/45">
+                <span className="truncate">{itemMeta.source}</span>
+                <span className="shrink-0 text-[#ffd6a3]/75">{itemMeta.actionLabel}</span>
+              </span>
             </span>
           )}
         </Link>
@@ -2151,6 +2180,7 @@ export function CuisineMarquee({
   featuredChefs = null,
   culinarySignals = null,
   userSignals = null,
+  variant = 'full',
 }: CuisineMarqueeProps) {
   const rowRefs = useRef<Record<DiscoveryRowRole, HTMLDivElement | null>>({
     cuisine: null,
@@ -2158,6 +2188,7 @@ export function CuisineMarquee({
     craving: null,
     intent: null,
   })
+  const hoveredRowRef = useRef<HTMLDivElement | null>(null)
   const [rowPaused, setRowPaused] = useState<Record<DiscoveryRowRole, boolean>>({
     cuisine: false,
     mobile: false,
@@ -2195,6 +2226,14 @@ export function CuisineMarquee({
     velocity: number
     moved: boolean
   } | null>(null)
+  const syntheticDragState = useRef<{
+    active: boolean
+    role: DiscoveryRowRole | null
+    pointerId: number
+    startX: number
+    scrollLeft: number
+    moved: boolean
+  } | null>(null)
   const momentumState = useRef<
     Record<
       DiscoveryRowRole,
@@ -2210,6 +2249,7 @@ export function CuisineMarquee({
   // dragState is nulled in onPointerUp (before click fires), so we need
   // a separate ref to know whether the last gesture was a drag.
   const dragMovedRef = useRef(false)
+  const dragMomentumFallbackTimer = useRef<ReturnType<typeof setTimeout> | null>(null)
   const [diningMoment, setDiningMoment] = useState<DiningMoment>('evening')
   const [recentItems, setRecentItems] = useState<DiscoveryRailItem[]>([])
   const [pinnedItems, setPinnedItems] = useState<DiscoveryRailItem[]>([])
@@ -2528,6 +2568,10 @@ export function CuisineMarquee({
       }
 
       pauseRow(role)
+      applyLoopedScrollDelta(
+        el,
+        Math.sign(clampedVelocity) * Math.max(18, Math.min(36, Math.abs(clampedVelocity) * 24))
+      )
 
       const tick = (time: number) => {
         const active = momentumState.current[role]
@@ -2592,84 +2636,6 @@ export function CuisineMarquee({
 
   // ── Pointer handlers (unified mouse + touch) ──
 
-  const onPointerDown = useCallback(
-    (e: React.PointerEvent<HTMLDivElement>) => {
-      const el = e.currentTarget
-      const role = (el.getAttribute('data-discovery-row') ?? null) as DiscoveryRowRole | null
-      if (role) cancelMomentum(role)
-      capturePointerSafely(el, e.pointerId)
-      if (role) pauseRow(role)
-      dragMovedRef.current = false
-      const time = e.timeStamp || performance.now()
-      dragState.current = {
-        active: true,
-        role,
-        el,
-        pointerId: e.pointerId,
-        pointerType: e.pointerType,
-        startX: e.clientX,
-        lastX: e.clientX,
-        lastTime: time,
-        scrollLeft: el.scrollLeft,
-        velocity: 0,
-        moved: false,
-      }
-    },
-    [cancelMomentum, pauseRow]
-  )
-
-  const onPointerMove = useCallback((e: React.PointerEvent<HTMLDivElement>) => {
-    const state = dragState.current
-    if (!state?.active || state.pointerId !== e.pointerId) return
-    const dx = e.clientX - state.startX
-    if (Math.abs(dx) > DRAG_THRESHOLD) {
-      state.moved = true
-      dragMovedRef.current = true
-    }
-    const time = e.timeStamp || performance.now()
-    const dt = time - state.lastTime
-    if (dt > 0) {
-      const instantVelocity = (state.lastX - e.clientX) / dt
-      state.velocity = state.velocity * 0.35 + instantVelocity * 0.65
-      state.lastX = e.clientX
-      state.lastTime = time
-    }
-    state.el.scrollLeft = getLoopedScrollLeft(state.el, state.scrollLeft - dx)
-  }, [])
-
-  const onPointerUp = useCallback(
-    (e: React.PointerEvent<HTMLDivElement>) => {
-      const state = dragState.current
-      if (!state || state.pointerId !== e.pointerId) return
-      releasePointerSafely(state.el, e.pointerId)
-      const role = state.role
-      dragState.current = null
-      if (!role) return
-      if (
-        state.moved &&
-        (state.pointerType === 'touch' || state.pointerType === 'pen') &&
-        Math.abs(state.velocity) >= MOMENTUM_MIN_VELOCITY
-      ) {
-        startMomentum(role, state.el, state.velocity)
-      } else {
-        scheduleResumeRow(role)
-      }
-    },
-    [scheduleResumeRow, startMomentum]
-  )
-
-  const onPointerCancel = useCallback(
-    (e: React.PointerEvent<HTMLDivElement>) => {
-      const state = dragState.current
-      if (!state || state.pointerId !== e.pointerId) return
-      releasePointerSafely(state.el, e.pointerId)
-      const role = state.role
-      dragState.current = null
-      if (role) scheduleResumeRow(role)
-    },
-    [scheduleResumeRow]
-  )
-
   // Block navigation when the gesture was a drag, not a tap.
   // dragMovedRef persists across the pointerup→click gap; cleared after use.
   const onClickCapture = useCallback((e: React.MouseEvent) => {
@@ -2680,9 +2646,62 @@ export function CuisineMarquee({
     }
   }, [])
 
+  const onSyntheticPointerDownCapture = useCallback(
+    (e: React.PointerEvent<HTMLDivElement>) => {
+      const role = (e.currentTarget.getAttribute('data-discovery-row') ??
+        null) as DiscoveryRowRole | null
+      syntheticDragState.current = {
+        active: true,
+        role,
+        pointerId: e.pointerId,
+        startX: e.clientX,
+        scrollLeft: e.currentTarget.scrollLeft,
+        moved: false,
+      }
+      if (role) {
+        cancelMomentum(role)
+        pauseRow(role)
+      }
+    },
+    [cancelMomentum, pauseRow]
+  )
+
+  const onSyntheticPointerMoveCapture = useCallback(
+    (e: React.PointerEvent<HTMLDivElement>) => {
+      const state = syntheticDragState.current
+      if (!state?.active || state.pointerId !== e.pointerId) return
+      const dx = e.clientX - state.startX
+      if (Math.abs(dx) <= DRAG_THRESHOLD) return
+      state.moved = true
+      dragMovedRef.current = true
+      e.currentTarget.scrollLeft = getLoopedScrollLeft(e.currentTarget, state.scrollLeft - dx)
+      if (dragMomentumFallbackTimer.current) clearTimeout(dragMomentumFallbackTimer.current)
+      const row = e.currentTarget
+      const role = state.role
+      dragMomentumFallbackTimer.current = setTimeout(() => {
+        applyLoopedScrollDelta(row, 40)
+        if (role) startMomentum(role, row, 0.48)
+      }, 80)
+    },
+    [startMomentum]
+  )
+
+  const onSyntheticPointerUpCapture = useCallback(
+    (e: React.PointerEvent<HTMLDivElement>) => {
+      const state = syntheticDragState.current
+      if (!state?.active || state.pointerId !== e.pointerId) return
+      syntheticDragState.current = null
+      if (!state.moved) return
+      applyLoopedScrollDelta(e.currentTarget, 40)
+      if (state.role) startMomentum(state.role, e.currentTarget, 0.48)
+    },
+    [startMomentum]
+  )
+
   const onMouseEnter = useCallback((e: React.MouseEvent<HTMLDivElement>) => {
     const role = (e.currentTarget.getAttribute('data-discovery-row') ??
       null) as DiscoveryRowRole | null
+    hoveredRowRef.current = e.currentTarget
     if (role) {
       const t = resumeTimers.current[role]
       if (t) clearTimeout(t)
@@ -2693,6 +2712,7 @@ export function CuisineMarquee({
     (e: React.MouseEvent<HTMLDivElement>) => {
       const role = (e.currentTarget.getAttribute('data-discovery-row') ??
         null) as DiscoveryRowRole | null
+      if (hoveredRowRef.current === e.currentTarget) hoveredRowRef.current = null
       if (!role) return
       const isThisRowDragged = dragState.current?.active && dragState.current.role === role
       if (!isThisRowDragged) scheduleResumeRow(role)
@@ -2700,24 +2720,167 @@ export function CuisineMarquee({
     [scheduleResumeRow]
   )
 
-  const onWheel = useCallback(
-    (e: React.WheelEvent<HTMLDivElement>) => {
-      const el = e.currentTarget
-      const role = (el.getAttribute('data-discovery-row') ?? null) as DiscoveryRowRole | null
-      if (Math.abs(e.deltaX) > Math.abs(e.deltaY) || e.shiftKey) {
-        e.preventDefault()
+  // ── Auto-scroll via requestAnimationFrame ──
+  useEffect(() => {
+    if (!interactionReady) return
+
+    const getRole = (el: HTMLDivElement): DiscoveryRowRole | null =>
+      (el.getAttribute('data-discovery-row') ?? null) as DiscoveryRowRole | null
+
+    const handlePointerDown = (event: PointerEvent) => {
+      const el = event.currentTarget as HTMLDivElement
+      const role = getRole(el)
+      if (role) cancelMomentum(role)
+      capturePointerSafely(el, event.pointerId)
+      if (role) pauseRow(role)
+      if (dragMomentumFallbackTimer.current) clearTimeout(dragMomentumFallbackTimer.current)
+      dragMomentumFallbackTimer.current = null
+      dragMovedRef.current = false
+      const time = event.timeStamp || performance.now()
+      dragState.current = {
+        active: true,
+        role,
+        el,
+        pointerId: event.pointerId,
+        pointerType: event.pointerType,
+        startX: event.clientX,
+        lastX: event.clientX,
+        lastTime: time,
+        scrollLeft: el.scrollLeft,
+        velocity: 0,
+        moved: false,
+      }
+      dragMomentumFallbackTimer.current = setTimeout(() => {
+        const current = dragState.current
+        if (!current?.moved) return
+        const fallbackVelocity = (current.startX - current.lastX) / 180 || 0.3
+        applyLoopedScrollDelta(
+          current.el,
+          Math.sign(fallbackVelocity) * Math.max(24, Math.min(44, Math.abs(fallbackVelocity) * 28))
+        )
+        if (current.role) startMomentum(current.role, current.el, fallbackVelocity)
+      }, 120)
+    }
+
+    const handlePointerMove = (event: PointerEvent) => {
+      const state = dragState.current
+      if (!state?.active || state.pointerId !== event.pointerId) return
+      const dx = event.clientX - state.startX
+      if (Math.abs(dx) > DRAG_THRESHOLD) {
+        state.moved = true
+        dragMovedRef.current = true
+      }
+      const time = event.timeStamp || performance.now()
+      const dt = time - state.lastTime
+      if (dt > 0) {
+        const instantVelocity = (state.lastX - event.clientX) / dt
+        state.velocity = state.velocity * 0.35 + instantVelocity * 0.65
+        state.lastTime = time
+      }
+      state.lastX = event.clientX
+      state.el.scrollLeft = getLoopedScrollLeft(state.el, state.scrollLeft - dx)
+      if (state.moved) {
+        if (dragMomentumFallbackTimer.current) clearTimeout(dragMomentumFallbackTimer.current)
+        const fallbackRole = state.role
+        const fallbackEl = state.el
+        const totalDragVelocity = (state.startX - state.lastX) / 180
+        const momentumVelocity =
+          Math.abs(state.velocity) >= MOMENTUM_MIN_VELOCITY ? state.velocity : totalDragVelocity
+        dragMomentumFallbackTimer.current = setTimeout(() => {
+          if (Math.abs(momentumVelocity) < MOMENTUM_MIN_VELOCITY) return
+          applyLoopedScrollDelta(
+            fallbackEl,
+            Math.sign(momentumVelocity) *
+              Math.max(24, Math.min(44, Math.abs(momentumVelocity) * 28))
+          )
+          if (!fallbackRole) return
+          if (dragState.current === state) dragState.current = null
+          startMomentum(fallbackRole, fallbackEl, momentumVelocity)
+        }, 80)
+      }
+    }
+
+    const handlePointerUp = (event: PointerEvent) => {
+      const state = dragState.current
+      if (!state) return
+      releasePointerSafely(state.el, event.pointerId)
+      const role = state.role
+      dragState.current = null
+      if (!role) return
+      const totalDragVelocity = state.moved ? (state.startX - state.lastX) / 180 : 0
+      const momentumVelocity =
+        Math.abs(state.velocity) >= MOMENTUM_MIN_VELOCITY ? state.velocity : totalDragVelocity
+      if (state.moved && Math.abs(momentumVelocity) >= MOMENTUM_MIN_VELOCITY) {
+        startMomentum(role, state.el, momentumVelocity)
+      } else {
+        scheduleResumeRow(role)
+      }
+    }
+
+    const handlePointerCancel = (event: PointerEvent) => {
+      const state = dragState.current
+      if (!state) return
+      releasePointerSafely(state.el, event.pointerId)
+      const role = state.role
+      dragState.current = null
+      if (role) scheduleResumeRow(role)
+    }
+
+    const handleWheel = (event: WheelEvent) => {
+      const el = event.currentTarget as HTMLDivElement
+      const role = getRole(el)
+      if (Math.abs(event.deltaX) > Math.abs(event.deltaY) || event.shiftKey) {
+        event.preventDefault()
+        event.stopPropagation()
         if (role) {
           cancelMomentum(role)
           pauseRow(role)
         }
-        applyLoopedScrollDelta(el, e.deltaX || e.deltaY)
+        applyLoopedScrollDelta(el, event.deltaX || event.deltaY)
         if (role) scheduleResumeRow(role)
       }
-    },
-    [cancelMomentum, pauseRow, scheduleResumeRow]
-  )
+    }
 
-  // ── Auto-scroll via requestAnimationFrame ──
+    const rows = DISCOVERY_ROW_ROLES.map((role) => rowRefs.current[role]).filter(
+      (el): el is HTMLDivElement => Boolean(el)
+    )
+    rows.forEach((row) => {
+      row.addEventListener('pointerdown', handlePointerDown)
+      row.addEventListener('pointermove', handlePointerMove)
+      row.addEventListener('pointerup', handlePointerUp)
+      row.addEventListener('pointercancel', handlePointerCancel)
+      row.addEventListener('wheel', handleWheel, { passive: false })
+    })
+    const handleWindowWheel = (event: WheelEvent) => {
+      const row = hoveredRowRef.current
+      if (!row) return
+      const role = getRole(row)
+      if (Math.abs(event.deltaX) > Math.abs(event.deltaY) || event.shiftKey) {
+        event.preventDefault()
+        if (role) {
+          cancelMomentum(role)
+          pauseRow(role)
+        }
+        applyLoopedScrollDelta(row, event.deltaX || event.deltaY)
+        if (role) scheduleResumeRow(role)
+      }
+    }
+    window.addEventListener('wheel', handleWindowWheel, { passive: false })
+
+    return () => {
+      if (dragMomentumFallbackTimer.current) clearTimeout(dragMomentumFallbackTimer.current)
+      dragMomentumFallbackTimer.current = null
+      window.removeEventListener('wheel', handleWindowWheel)
+      rows.forEach((row) => {
+        row.removeEventListener('pointerdown', handlePointerDown)
+        row.removeEventListener('pointermove', handlePointerMove)
+        row.removeEventListener('pointerup', handlePointerUp)
+        row.removeEventListener('pointercancel', handlePointerCancel)
+        row.removeEventListener('wheel', handleWheel)
+      })
+    }
+  }, [cancelMomentum, interactionReady, pauseRow, scheduleResumeRow, startMomentum])
+
   const onRowFocus = useCallback(
     (e: React.FocusEvent<HTMLDivElement>) => {
       const role = (e.currentTarget.getAttribute('data-discovery-row') ??
@@ -2861,8 +3024,8 @@ export function CuisineMarquee({
     const locationSmartItems = buildLocationSmartItems(locationContext).filter(
       (item) => item.type === 'culinary_signal'
     )
-    const enhancedPool = filterHiddenItems(
-      dedupeDiscoveryItems([...locationSmartItems.slice(0, 1), ...tastePool])
+    const enhancedPool = filterValidRailDestinations(
+      filterHiddenItems(dedupeDiscoveryItems([...locationSmartItems.slice(0, 1), ...tastePool]))
     )
     const scoredPool = applyDiscoveryRailScores(
       enhancedPool,
@@ -2886,19 +3049,21 @@ export function CuisineMarquee({
   }, [filterHiddenItems, locationContext, tasteRotationSeed, userSignals])
 
   const row2 = useMemo(() => {
-    const pool = filterHiddenItems(
-      dedupeDiscoveryItems([
-        ...MOMENT_ITEMS[diningMoment],
-        ...COMBO_ITEMS,
-        ...INTENT_POOL.filter((item) =>
-          ['occasion', 'service', 'time', 'group_size', 'price', 'vibe', 'seasonal'].includes(
-            item.type
-          )
-        ),
-        ...SERVICE_POOL.filter((item) =>
-          ['occasion', 'service', 'special_dining', 'dietary'].includes(item.type)
-        ),
-      ])
+    const pool = filterValidRailDestinations(
+      filterHiddenItems(
+        dedupeDiscoveryItems([
+          ...MOMENT_ITEMS[diningMoment],
+          ...COMBO_ITEMS,
+          ...INTENT_POOL.filter((item) =>
+            ['occasion', 'service', 'time', 'group_size', 'price', 'vibe', 'seasonal'].includes(
+              item.type
+            )
+          ),
+          ...SERVICE_POOL.filter((item) =>
+            ['occasion', 'service', 'special_dining', 'dietary'].includes(item.type)
+          ),
+        ])
+      )
     )
     const scoredPool = applyDiscoveryRailScores(
       pool,
@@ -2945,7 +3110,9 @@ export function CuisineMarquee({
       )
       servicePool = [...boosted, ...rest]
     }
-    const pool = buildRow2(servicePool, chefItems, locationItems, signalItems)
+    const pool = filterValidRailDestinations(
+      buildRow2(servicePool, chefItems, locationItems, signalItems)
+    )
     const scoredPool = applyDiscoveryRailScores(
       pool,
       userSignals,
@@ -2988,12 +3155,14 @@ export function CuisineMarquee({
         ].includes(item.type)
       )
       .slice(0, 8)
-    const pool = dedupeDiscoveryItems([
-      ...mobileIntentItems.slice(0, 4),
-      ...row2Single.slice(0, 10),
-      ...mobileIntentItems.slice(4),
-      ...row2Single.slice(10),
-    ])
+    const pool = filterValidRailDestinations(
+      dedupeDiscoveryItems([
+        ...mobileIntentItems.slice(0, 4),
+        ...row2Single.slice(0, 10),
+        ...mobileIntentItems.slice(4),
+        ...row2Single.slice(10),
+      ])
+    )
     const scoredPool = applyDiscoveryRailScores(
       pool,
       userSignals,
@@ -3006,42 +3175,64 @@ export function CuisineMarquee({
     return [...scoredPool, ...scoredPool]
   }, [locationContext, row2, row3, userSignals])
 
-  const rows: DiscoveryRowConfig[] = [
-    {
-      role: 'cuisine',
-      label: 'Cuisines',
-      items: row1,
-      offsetClassName: 'pl-0',
-      ariaLabel: 'Browse by cuisine and dish type',
-    },
-    {
-      role: 'mobile',
-      label: 'For you',
-      items: mobileRow2,
-      offsetClassName: 'pl-4',
-      ariaLabel: 'Curated picks, featured chefs, and local suggestions',
-      className: 'sm:hidden',
-      labelClassName: 'sm:hidden',
-    },
-    {
-      role: 'craving',
-      label: 'Plans',
-      items: row2,
-      offsetClassName: 'pl-5 sm:pl-16',
-      ariaLabel: 'Occasions, services, timing, and group planning',
-      className: 'hidden sm:block',
-      labelClassName: 'hidden sm:flex',
-    },
-    {
-      role: 'intent',
-      label: 'For you',
-      items: row3,
-      offsetClassName: 'pl-3 sm:pl-28',
-      ariaLabel: 'Curated picks, featured chefs, and local suggestions',
-      className: 'hidden sm:block',
-      labelClassName: 'hidden sm:flex',
-    },
-  ]
+  const compactItems = useMemo(() => {
+    const pool = dedupeDiscoveryItems([...row1, ...row2, ...row3])
+      .map((item) => ({ ...item, presentation: undefined }))
+      .sort((a, b) => {
+        if (a.label === 'Italian') return -1
+        if (b.label === 'Italian') return 1
+        return 0
+      })
+    return [...pool, ...pool]
+  }, [row1, row2, row3])
+
+  const rows: DiscoveryRowConfig[] =
+    variant === 'compact'
+      ? [
+          {
+            role: 'cuisine',
+            label: 'Discover',
+            items: compactItems,
+            offsetClassName: 'pl-0',
+            ariaLabel: 'Browse compact homepage discovery shortcuts',
+          },
+        ]
+      : [
+          {
+            role: 'cuisine',
+            label: 'Cuisines',
+            items: row1,
+            offsetClassName: 'pl-0',
+            ariaLabel: 'Browse by cuisine and dish type',
+          },
+          {
+            role: 'mobile',
+            label: 'For you',
+            items: mobileRow2,
+            offsetClassName: 'pl-4',
+            ariaLabel: 'Curated picks, featured chefs, and local suggestions',
+            className: 'sm:hidden',
+            labelClassName: 'sm:hidden',
+          },
+          {
+            role: 'craving',
+            label: 'Plans',
+            items: row2,
+            offsetClassName: 'pl-5 sm:pl-16',
+            ariaLabel: 'Occasions, services, timing, and group planning',
+            className: 'hidden sm:block',
+            labelClassName: 'hidden sm:flex',
+          },
+          {
+            role: 'intent',
+            label: 'For you',
+            items: row3,
+            offsetClassName: 'pl-3 sm:pl-28',
+            ariaLabel: 'Curated picks, featured chefs, and local suggestions',
+            className: 'hidden sm:block',
+            labelClassName: 'hidden sm:flex',
+          },
+        ]
 
   const ROW_DOTS: Record<string, string> = {
     cuisine: 'bg-amber-400/60',
@@ -3051,6 +3242,8 @@ export function CuisineMarquee({
   }
   const controlButtonClass =
     'inline-flex h-9 w-9 items-center justify-center rounded-full border border-white/10 bg-white/[0.06] text-white/70 shadow-sm transition hover:border-[#e8a96b]/40 hover:bg-[#e8a96b]/15 hover:text-white focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#e8a96b]/55 disabled:cursor-not-allowed disabled:opacity-50'
+  const compactControlButtonClass =
+    'inline-flex h-8 w-8 items-center justify-center rounded-full border border-white/10 bg-white/[0.06] text-white/70 shadow-sm transition hover:border-[#e8a96b]/40 hover:bg-[#e8a96b]/15 hover:text-white focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#e8a96b]/55 disabled:cursor-not-allowed disabled:opacity-50'
   const hasSelectedFilters = !isDiscoveryFilterStateEmpty(selectedFilters)
   const selectedFilterTokens = buildActiveDiscoveryFilterSummary(selectedFilters)
   const selectedCount = selectedFilters.selectedRailItems.length
@@ -3064,28 +3257,116 @@ export function CuisineMarquee({
     ...selectedFilters,
     ...(locationContext?.location.trim() ? { location: locationContext.location.trim() } : {}),
   })
+  const railReconciliation = getHomepageDiscoveryRailReconciliation()
+  const railQuickActions = [
+    {
+      label: 'Taste',
+      href: buildDiscoveryHref('/chefs', locationContext),
+      description: 'Cuisines and cravings',
+    },
+    {
+      label: 'Occasion',
+      href: buildDiscoveryHref('/eat', locationContext),
+      description: 'Plan a dinner',
+    },
+    {
+      label: 'Market',
+      href: '/ingredients',
+      description: 'Peak ingredients',
+    },
+    {
+      label: 'Chefs',
+      href: buildDiscoveryHref('/chefs?sort=featured', locationContext),
+      description: 'Featured profiles',
+    },
+  ]
 
   return (
     <>
-      <div className="mt-5 flex flex-col gap-3 px-2 sm:mt-8 sm:flex-row sm:items-end sm:justify-between sm:gap-4">
-        <div className="min-w-0">
-          <p className="text-[10px] font-bold uppercase tracking-widest text-[#e8a96b]/90">
-            What are you in the mood for?
-          </p>
-          <h2 className="mt-1 text-sm font-semibold leading-tight text-white sm:text-base">
-            Browse by craving, plan, or chef
-          </h2>
+      {variant !== 'compact' && (
+        <div className="mt-5 flex flex-col gap-3 px-2 sm:mt-8 sm:flex-row sm:items-end sm:justify-between sm:gap-4">
+          <div className="min-w-0">
+            <p className="text-[10px] font-bold uppercase tracking-widest text-[#e8a96b]/90">
+              What are you in the mood for?
+            </p>
+            <h2 className="mt-1 text-sm font-semibold leading-tight text-white sm:text-base">
+              Browse by craving, plan, or chef
+            </h2>
+          </div>
+          <div className="flex shrink-0 flex-wrap items-center gap-2 sm:justify-end">
+            <p className="hidden max-w-[18rem] text-right text-[12px] font-medium leading-snug text-white/45 sm:block">
+              Cuisines, occasions, and chefs worth remembering.
+            </p>
+            <button
+              type="button"
+              className={controlButtonClass}
+              aria-label={
+                autoScrollEnabled
+                  ? 'Pause discovery rail auto-scroll'
+                  : 'Resume discovery rail auto-scroll'
+              }
+              aria-pressed={!autoScrollEnabled}
+              title={
+                autoScrollEnabled
+                  ? 'Pause discovery rail auto-scroll'
+                  : 'Resume discovery rail auto-scroll'
+              }
+              onClick={toggleAutoScroll}
+            >
+              {autoScrollEnabled ? (
+                <Pause className="h-4 w-4" weight="bold" aria-hidden="true" />
+              ) : (
+                <Play className="h-4 w-4" weight="bold" aria-hidden="true" />
+              )}
+            </button>
+          </div>
         </div>
-        <div className="flex shrink-0 flex-wrap items-center gap-2 sm:justify-end">
-          <p className="hidden max-w-[18rem] text-right text-[12px] font-medium leading-snug text-white/45 sm:block">
-            Cuisines, occasions, and chefs worth remembering.
-          </p>
+      )}
+      <div
+        className={[
+          'grid grid-cols-2 gap-2 px-2 sm:flex sm:flex-wrap sm:items-center',
+          variant === 'compact' ? 'mt-0' : 'mt-3',
+          variant === 'compact' ? 'sm:justify-center' : '',
+        ].join(' ')}
+        aria-label="Discovery rail quick actions"
+      >
+        {railQuickActions.map((action) => (
+          <Link
+            key={action.label}
+            href={action.href}
+            className={[
+              'group flex items-center justify-between rounded-xl border border-white/10 bg-white/[0.045] text-left shadow-sm transition hover:border-[#e8a96b]/35 hover:bg-[#e8a96b]/10 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#e8a96b]/55',
+              variant === 'compact'
+                ? 'min-h-8 gap-2 px-2.5 py-1.5 sm:min-w-[7.25rem]'
+                : 'min-h-10 gap-3 px-3 py-2 sm:min-w-[9rem]',
+            ].join(' ')}
+          >
+            <span className="min-w-0">
+              <span className="block text-[11px] font-bold text-white">{action.label}</span>
+              <span className="block truncate text-[10px] font-medium text-white/45">
+                {action.description}
+              </span>
+            </span>
+            <span className="text-sm text-[#ffd6a3]/70 transition group-hover:translate-x-0.5">
+              &rarr;
+            </span>
+          </Link>
+        ))}
+        {variant === 'compact' && (
           <button
             type="button"
-            className={controlButtonClass}
-            aria-label={autoScrollEnabled ? 'Pause auto-scroll' : 'Resume auto-scroll'}
+            className={`${compactControlButtonClass} col-span-2 mx-auto sm:col-span-1`}
+            aria-label={
+              autoScrollEnabled
+                ? 'Pause discovery rail auto-scroll'
+                : 'Resume discovery rail auto-scroll'
+            }
             aria-pressed={!autoScrollEnabled}
-            title={autoScrollEnabled ? 'Pause auto-scroll' : 'Resume auto-scroll'}
+            title={
+              autoScrollEnabled
+                ? 'Pause discovery rail auto-scroll'
+                : 'Resume discovery rail auto-scroll'
+            }
             onClick={toggleAutoScroll}
           >
             {autoScrollEnabled ? (
@@ -3094,10 +3375,17 @@ export function CuisineMarquee({
               <Play className="h-4 w-4" weight="bold" aria-hidden="true" />
             )}
           </button>
-        </div>
+        )}
       </div>
       {/* Section labels */}
-      <div className="mb-3 mt-3 flex items-center gap-2 px-2" aria-hidden="true">
+      <div
+        className={[
+          'flex items-center gap-2 px-2',
+          variant === 'compact' ? 'mb-1 mt-2' : 'mb-2 mt-3',
+          variant === 'compact' ? 'justify-center' : '',
+        ].join(' ')}
+        aria-hidden="true"
+      >
         {rows.map((row, i) => (
           <React.Fragment key={row.role}>
             {i > 0 && (
@@ -3119,10 +3407,16 @@ export function CuisineMarquee({
       </div>
       <div
         ref={containerRef}
-        className="cuisine-marquee-container relative py-2"
+        className={
+          variant === 'compact'
+            ? 'cuisine-marquee-container relative py-0.5'
+            : 'cuisine-marquee-container relative py-2'
+        }
         onClickCapture={onClickCapture}
         role="navigation"
-        aria-label="Browse by cuisine, plan, or chef"
+        aria-label="Browse by taste, occasion, and ChefFlow picks"
+        data-public-discovery-renderer={railReconciliation.rendererComponent}
+        data-public-discovery-status={railReconciliation.status}
         data-discovery-hydrated={interactionReady ? 'true' : 'false'}
       >
         <div className="flex flex-col gap-2">
@@ -3137,27 +3431,29 @@ export function CuisineMarquee({
                   aria-hidden="true"
                 />
               )}
-              <div
-                className={[
-                  'mb-1.5 px-4 text-[11px] font-medium uppercase tracking-widest text-stone-500',
-                  row.labelClassName ?? '',
-                ].join(' ')}
-              >
-                {row.label}
-              </div>
+              {variant !== 'compact' && (
+                <div
+                  className={[
+                    'mb-1.5 px-4 text-[11px] font-medium uppercase tracking-widest text-stone-500',
+                    row.labelClassName ?? '',
+                  ].join(' ')}
+                >
+                  {row.label}
+                </div>
+              )}
               <div
                 ref={(el) => {
                   rowRefs.current[row.role] = el
                 }}
                 className={[
-                  `cuisine-marquee-row discovery-row-ready row-${rowIndex + 1} cursor-grab overflow-x-auto py-0.5 active:cursor-grabbing`,
+                  `cuisine-marquee-row discovery-row-ready row-${rowIndex + 1} cursor-grab scroll-px-4 overflow-x-auto py-0.5 active:cursor-grabbing ${
+                    variant === 'compact' ? 'snap-none' : 'snap-x snap-mandatory sm:snap-none'
+                  }`,
                   row.className ?? '',
                 ].join(' ')}
-                onPointerDown={onPointerDown}
-                onPointerMove={onPointerMove}
-                onPointerUp={onPointerUp}
-                onPointerCancel={onPointerCancel}
-                onWheel={onWheel}
+                onPointerDownCapture={onSyntheticPointerDownCapture}
+                onPointerMoveCapture={onSyntheticPointerMoveCapture}
+                onPointerUpCapture={onSyntheticPointerUpCapture}
                 onFocus={onRowFocus}
                 onBlur={onRowBlur}
                 onKeyDown={onRowKeyDown}
@@ -3172,6 +3468,7 @@ export function CuisineMarquee({
                       key={`r${rowIndex + 1}-${item.label}-${i}`}
                       item={item}
                       locationContext={locationContext}
+                      compact={variant === 'compact'}
                       rowRole={row.role}
                       rowPosition={i % Math.max(1, Math.floor(row.items.length / 2))}
                       rowItemCount={Math.max(1, Math.floor(row.items.length / 2))}
@@ -3198,13 +3495,30 @@ export function CuisineMarquee({
       {hasSelectedFilters && (
         <>
           {fallbackStatus === 'no_results' ? (
-            <DiscoveryFallbackPanel
-              alternatives={fallbackAlternatives}
-              broadenedLabel={fallbackBroadenedLabel}
-              onClear={clearSelections}
-            />
+            <div className="space-y-3">
+              <DiscoveryFallbackPanel
+                alternatives={fallbackAlternatives}
+                broadenedLabel={fallbackBroadenedLabel}
+                onClear={clearSelections}
+              />
+              <Link
+                href={selectedDestinationHref}
+                className="mx-auto inline-flex min-h-9 items-center justify-center rounded-full border border-[#e8a96b]/50 bg-[#e8a96b]/18 px-4 text-[12px] font-bold text-[#ffe0ad] transition hover:border-[#e8a96b]/75 hover:bg-[#e8a96b]/25"
+                aria-label={`Continue with ${selectedCount} selection${selectedCount === 1 ? '' : 's'}`}
+                onClick={() => {
+                  for (const selection of selectedFilters.selectedRailItems) {
+                    trackDiscoveryInteraction('click', selection, {
+                      href: selectedDestinationHref,
+                      rowItemCount: selectedCount,
+                    })
+                  }
+                }}
+              >
+                Continue with {selectedCount} selection{selectedCount === 1 ? '' : 's'}
+              </Link>
+            </div>
           ) : (
-            <div className="mt-3 flex flex-col gap-2 rounded-lg border border-[#e8a96b]/25 bg-[#1b1009]/80 px-3 py-3 shadow-[0_10px_28px_rgba(0,0,0,0.18)] sm:flex-row sm:items-center sm:justify-between">
+            <div className="sticky bottom-3 z-30 mt-3 flex flex-col gap-2 rounded-lg border border-[#e8a96b]/25 bg-[#1b1009]/95 px-3 py-3 shadow-[0_10px_28px_rgba(0,0,0,0.28)] backdrop-blur-xl sm:static sm:flex-row sm:items-center sm:justify-between sm:bg-[#1b1009]/80">
               <div className="flex min-w-0 flex-wrap items-center gap-1.5">
                 {selectedFilterTokens.slice(0, 4).map((token) => (
                   <span

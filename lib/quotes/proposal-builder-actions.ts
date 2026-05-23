@@ -218,7 +218,12 @@ export async function getProposalDraft(eventId: string): Promise<ProposalDraft |
   const db: any = createServerClient()
 
   // Verify event belongs to tenant
-  const { data: event } = await db.from('events').select('tenant_id').eq('id', eventId).single()
+  const { data: event } = await db
+    .from('events')
+    .select('tenant_id')
+    .eq('id', eventId)
+    .eq('tenant_id', user.tenantId)
+    .single()
 
   if (!event || event.tenant_id !== user.tenantId) {
     throw new Error('Event not found or does not belong to your tenant')
@@ -253,7 +258,12 @@ export async function saveProposalDraft(
   const db: any = createServerClient()
 
   // Verify event belongs to tenant
-  const { data: event } = await db.from('events').select('tenant_id').eq('id', eventId).single()
+  const { data: event } = await db
+    .from('events')
+    .select('tenant_id')
+    .eq('id', eventId)
+    .eq('tenant_id', user.tenantId)
+    .single()
 
   if (!event || event.tenant_id !== user.tenantId) {
     throw new Error('Event not found or does not belong to your tenant')
@@ -306,7 +316,12 @@ export async function publishProposal(eventId: string): Promise<{ success: boole
   const db: any = createServerClient()
 
   // Verify event belongs to tenant
-  const { data: event } = await db.from('events').select('tenant_id').eq('id', eventId).single()
+  const { data: event } = await db
+    .from('events')
+    .select('tenant_id')
+    .eq('id', eventId)
+    .eq('tenant_id', user.tenantId)
+    .single()
 
   if (!event || event.tenant_id !== user.tenantId) {
     throw new Error('Event not found or does not belong to your tenant')

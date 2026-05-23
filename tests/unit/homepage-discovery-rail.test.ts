@@ -1,11 +1,15 @@
 import test from 'node:test'
 import assert from 'node:assert/strict'
+import { readFileSync } from 'node:fs'
+import path from 'node:path'
 
 import {
   buildDiscoveryHref,
   buildRow2,
   dedupeDiscoveryItems,
+  getDiscoveryRailItemDisplayMeta,
   getDiscoveryItemLane,
+  getHomepageDiscoveryRailReconciliation,
   type DiscoveryRailItem,
   type HomepageLocationContext,
 } from '../../lib/discovery/homepage-discovery-rail'
@@ -237,4 +241,92 @@ test('homepage taste rail routes every generated item to an allowed public desti
       `${item.label} routed to unsupported path ${item.href}`
     )
   }
+})
+
+test('homepage discovery rail declares CuisineMarquee as the canonical public homepage renderer', () => {
+  const reconciliation = getHomepageDiscoveryRailReconciliation()
+
+  assert.equal(reconciliation.route, '/')
+  assert.equal(reconciliation.ownerComponent, 'HomepageDiscovery')
+  assert.equal(reconciliation.rendererComponent, 'CuisineMarquee')
+  assert.equal(reconciliation.status, 'canonical_public_homepage_rail')
+  assert.ok(
+    reconciliation.staleRenderers.some(
+      (renderer) =>
+        renderer.component === 'components/discovery/discovery-row.tsx' &&
+        renderer.status === 'library_primitive_only'
+    )
+  )
+})
+
+test('homepage page mounts the canonical rail without parallel rail renderers', () => {
+  const pageSource = readFileSync(path.join(process.cwd(), 'app/(public)/page.tsx'), 'utf8')
+
+  assert.match(pageSource, /<HomepageDiscovery[\s>]/)
+  assert.doesNotMatch(pageSource, /<CuisineMarquee[\s>]/)
+  assert.doesNotMatch(pageSource, /<DiscoveryRow[\s>]/)
+  assert.doesNotMatch(pageSource, /<UniversalRail[\s>]/)
+  assert.doesNotMatch(pageSource, /<UrlCapabilityRail[\s>]/)
+})
+
+test('homepage discovery help lives in quick-view links instead of a full below-fold section', () => {
+  const discoverySource = readFileSync(
+    path.join(process.cwd(), 'app/(public)/_components/homepage-discovery.tsx'),
+    'utf8'
+  )
+  const belowFoldSource = readFileSync(
+    path.join(process.cwd(), 'app/(public)/_components/landing-below-fold.tsx'),
+    'utf8'
+  )
+
+  assert.match(discoverySource, /Discovery details/)
+  assert.match(discoverySource, /\/how-it-works/)
+  assert.match(discoverySource, /\/faq/)
+  assert.match(discoverySource, /\/chefs/)
+  assert.match(discoverySource, /\/book/)
+  assert.doesNotMatch(belowFoldSource, /From search to table\./)
+})
+
+test('public FAQ includes discovery ground truth for clients', () => {
+  const faqSource = readFileSync(path.join(process.cwd(), 'app/(public)/faq/page.tsx'), 'utf8')
+
+  assert.match(faqSource, /question: 'How does ChefFlow discovery work\?'/)
+  assert.match(faqSource, /compare public chef profiles, real menus/)
+  assert.match(faqSource, /FAQPageJsonLd faqs=\{ALL_FAQ_ITEMS\}/)
+})
+
+test('rail item display metadata exposes reason, source, freshness, and action labels', () => {
+  const marketItem: DiscoveryRailItem = {
+    type: 'culinary_signal',
+    label: 'Asparagus',
+    href: '/ingredients?market_context=seasonal_market_pulse',
+    reason: 'Clean, grassy spears that make the menu read spring.',
+    source: 'Seasonal calendar plus public ingredient snapshots.',
+    freshness: 'Freshness: public ingredient snapshots were last confirmed 2h ago.',
+    actionLabel: 'See ingredient guide',
+  }
+
+  const meta = getDiscoveryRailItemDisplayMeta(marketItem)
+
+  assert.equal(meta.lane, 'taste')
+  assert.equal(meta.reason, marketItem.reason)
+  assert.equal(meta.source, marketItem.source)
+  assert.equal(meta.freshness, marketItem.freshness)
+  assert.equal(meta.actionLabel, 'See ingredient guide')
+})
+
+test('location display metadata reflects saved homepage location context', () => {
+  const item: DiscoveryRailItem = {
+    type: 'location',
+    label: 'Chefs in Miami',
+    href: '/chefs?location=Miami%2C%20FL',
+    icon: 'location',
+  }
+
+  const meta = getDiscoveryRailItemDisplayMeta(item, miami)
+
+  assert.equal(meta.lane, 'occasion')
+  assert.match(meta.reason, /Miami, FL/)
+  assert.equal(meta.source, 'Homepage location context')
+  assert.equal(meta.freshness, 'Current session')
 })

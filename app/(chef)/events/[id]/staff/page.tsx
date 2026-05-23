@@ -7,6 +7,10 @@ import { StaffBriefingPanel } from '@/components/events/staff-briefing-panel'
 import { Card } from '@/components/ui/card'
 import { requireChef } from '@/lib/auth/get-user'
 import { createServerClient } from '@/lib/db/server'
+import {
+  buildStaffTrustDecisionForEvent,
+  getStaffTrustDelegationReadModel,
+} from '@/lib/intelligence/staff-trust-delegation'
 import { eventsOverlapInTime } from '@/lib/staff/time-overlap'
 import { checkAssignmentConflict, getEventStaffRoster, listStaffMembers } from '@/lib/staff/actions'
 
@@ -20,7 +24,7 @@ export async function generateMetadata() {
 }
 
 export default async function EventStaffPage({ params }: { params: { id: string } }) {
-  await requireChef()
+  const user = await requireChef()
   const db: any = createServerClient()
 
   const { data: event } = await db
@@ -32,6 +36,7 @@ export default async function EventStaffPage({ params }: { params: { id: string 
     `
     )
     .eq('id', params.id)
+    .eq('tenant_id', user.tenantId!)
     .single()
 
   if (!event) notFound()
@@ -51,6 +56,7 @@ export default async function EventStaffPage({ params }: { params: { id: string 
           .from('tasks')
           .select('id', { count: 'exact', head: true })
           .eq('event_id', params.id)
+          .eq('chef_id', user.tenantId!)
           .in('assigned_to', assignedStaffIds)
       : Promise.resolve({ count: 0 }),
     Promise.all(
@@ -78,6 +84,8 @@ export default async function EventStaffPage({ params }: { params: { id: string 
     Boolean(value)
   )
   const staffTaskCount = Number((taskCountResponse as any)?.count ?? 0)
+  const staffTrustModel = await getStaffTrustDelegationReadModel()
+  const trustDecision = buildStaffTrustDecisionForEvent(staffTrustModel, params.id)
 
   return (
     <div className="mx-auto max-w-5xl space-y-6">
@@ -99,6 +107,31 @@ export default async function EventStaffPage({ params }: { params: { id: string 
           briefing. It keeps those execution moves out of the broader ops tab.
         </p>
       </Card>
+
+      {trustDecision ? (
+        <Card
+          className={
+            trustDecision.level === 'warning'
+              ? 'border-amber-800/60 bg-amber-950/30 p-6'
+              : trustDecision.level === 'info'
+                ? 'border-sky-800/60 bg-sky-950/30 p-6'
+                : 'border-emerald-800/60 bg-emerald-950/30 p-6'
+          }
+        >
+          <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
+            <div>
+              <h2 className="text-lg font-semibold text-stone-100">{trustDecision.headline}</h2>
+              <p className="mt-2 text-sm text-stone-300">{trustDecision.detail}</p>
+            </div>
+            <Link
+              href={trustDecision.nextActionHref}
+              className="shrink-0 text-sm font-medium text-amber-300 hover:text-amber-200"
+            >
+              {trustDecision.nextAction}
+            </Link>
+          </div>
+        </Card>
+      ) : null}
 
       {activeConflictSummaries.length > 0 ? (
         <Card className="border-rose-800/60 bg-rose-950/30 p-6">

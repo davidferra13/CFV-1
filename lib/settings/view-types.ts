@@ -69,7 +69,7 @@ export function resolveSettingsFixTasks(input: {
         'Set the public profile basics so clients have a real surface to land on and share.',
       currentState: 'Current state: no public profile URL is saved yet.',
       impact: 'Without it, your public surface cannot act like a dependable front door.',
-      href: '/settings/my-profile',
+      href: '/settings/public-profile',
       ctaLabel: 'Fix This Setting',
       tone: 'rose',
     })

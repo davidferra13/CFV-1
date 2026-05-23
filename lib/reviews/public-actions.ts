@@ -3,9 +3,16 @@
 // external reviews, and approved guest testimonials into a
 // single feed with unified statistics for the public chef profile.
 
-'use server'
-
 import { createServerClient } from '@/lib/db/server'
+import {
+  assessReviewSourceUrl,
+  deriveReviewTrustTier,
+  getReviewSourceLabel,
+  isPublicSafeReview,
+  normalizeReviewSourceKey,
+  type ReviewLinkHealth,
+  type ReviewTrustTier,
+} from '@/lib/reviews/command-center'
 
 // ============================================
 // TYPES
@@ -14,6 +21,7 @@ import { createServerClient } from '@/lib/db/server'
 export type PublicReviewItem = {
   id: string
   kind: 'client_review' | 'logged_feedback' | 'external_review' | 'guest_testimonial'
+  sourceKey?: string
   sourceLabel: string
   sourceUrl: string | null
   reviewerName: string
@@ -22,6 +30,8 @@ export type PublicReviewItem = {
   reviewDate: string
   isFeatured: boolean
   isVerifiedEvent: boolean
+  linkHealth?: ReviewLinkHealth
+  trustTier?: ReviewTrustTier
 }
 
 export type PublicReviewStats = {
@@ -33,6 +43,7 @@ export type PublicReviewStats = {
 export type PublicReviewFeedResult = {
   reviews: PublicReviewItem[]
   stats: PublicReviewStats
+  structuredData?: Record<string, unknown> | null
 }
 
 // ============================================
@@ -65,12 +76,64 @@ const FEEDBACK_SOURCE_LABELS: Record<string, string> = {
   angi: 'Angi',
   nextdoor: 'Nextdoor',
   instagram: 'Instagram',
+  take_a_chef: 'TakeAChef',
 }
 
 function providerLabel(provider: string): string {
   if (provider === 'google_places') return 'Google'
   if (provider === 'website_jsonld') return 'Website'
   return provider
+}
+
+function withPublicReviewMetadata(
+  item: Omit<PublicReviewItem, 'sourceKey' | 'linkHealth' | 'trustTier'> & {
+    sourceKey: string
+  }
+): PublicReviewItem {
+  const sourceKey = normalizeReviewSourceKey(item.sourceKey)
+  const linkHealth = assessReviewSourceUrl(sourceKey, item.sourceUrl)
+
+  return {
+    ...item,
+    sourceKey,
+    sourceLabel: getReviewSourceLabel(sourceKey, item.sourceLabel),
+    sourceUrl: isPublicSafeReview({ publicDisplay: 'public', sourceKey, linkHealth })
+      ? item.sourceUrl
+      : null,
+    linkHealth,
+    trustTier: deriveReviewTrustTier({
+      kind: item.kind,
+      sourceKey,
+      hasVerifiedEvent: item.isVerifiedEvent,
+      importState: 'confirmed',
+      linkHealth,
+    }),
+  }
+}
+
+function buildPublicReviewStructuredData(reviews: PublicReviewItem[]) {
+  const safeReviews = reviews.filter((review) => review.rating !== null && review.reviewText)
+  if (safeReviews.length === 0) return null
+
+  return {
+    '@context': 'https://schema.org',
+    '@type': 'ItemList',
+    name: 'Public chef reviews',
+    itemListElement: safeReviews.slice(0, 20).map((review, index) => ({
+      '@type': 'ListItem',
+      position: index + 1,
+      item: {
+        '@type': 'Review',
+        author: review.reviewerName,
+        reviewBody: review.reviewText,
+        reviewRating: {
+          '@type': 'Rating',
+          ratingValue: review.rating,
+          bestRating: 5,
+        },
+      },
+    })),
+  }
 }
 
 // ============================================
@@ -155,74 +218,86 @@ export async function getPublicChefReviewFeed(tenantId: string): Promise<PublicR
 
   // ── Transform to unified items ──
 
-  const clientItems: PublicReviewItem[] = clientReviews.map((r: any) => {
-    const fragments = [
-      typeof r.feedback_text === 'string' ? r.feedback_text.trim() : '',
-      typeof r.what_they_loved === 'string' && r.what_they_loved.trim()
-        ? `Loved: ${r.what_they_loved.trim()}`
-        : '',
-    ].filter(Boolean)
+  const clientItems: PublicReviewItem[] = clientReviews
+    .map((r: any) => {
+      const fragments = [
+        typeof r.feedback_text === 'string' ? r.feedback_text.trim() : '',
+        typeof r.what_they_loved === 'string' && r.what_they_loved.trim()
+          ? `Loved: ${r.what_they_loved.trim()}`
+          : '',
+      ].filter(Boolean)
 
-    return {
-      id: `client_${r.id}`,
-      kind: 'client_review' as const,
-      sourceLabel: 'ChefFlow',
-      sourceUrl: null,
-      reviewerName: r.client?.full_name || 'Client',
-      rating: safeRating(r.rating),
-      reviewText: fragments.join(' ') || 'Great experience!',
-      reviewDate: r.created_at,
+      return {
+        id: `client_${r.id}`,
+        kind: 'client_review' as const,
+        sourceLabel: 'ChefFlow',
+        sourceKey: 'chef_flow',
+        sourceUrl: null,
+        reviewerName: r.client?.full_name || 'Client',
+        rating: safeRating(r.rating),
+        reviewText: fragments.join(' ') || 'Great experience!',
+        reviewDate: r.created_at,
+        isFeatured: false,
+        isVerifiedEvent: true,
+      }
+    })
+    .map(withPublicReviewMetadata)
+
+  const feedbackItems: PublicReviewItem[] = feedbackEntries
+    .map((f: any) => ({
+      id: `feedback_${f.id}`,
+      kind: 'logged_feedback' as const,
+      sourceLabel: FEEDBACK_SOURCE_LABELS[f.source] || f.source,
+      sourceKey: f.source,
+      sourceUrl: f.source_url || null,
+      reviewerName: f.reviewer_name || 'Guest',
+      rating: safeRating(f.rating),
+      reviewText: typeof f.feedback_text === 'string' ? f.feedback_text.trim() : '',
+      reviewDate: f.feedback_date || f.created_at,
       isFeatured: false,
-      isVerifiedEvent: true,
-    }
-  })
+      isVerifiedEvent: false,
+    }))
+    .map(withPublicReviewMetadata)
 
-  const feedbackItems: PublicReviewItem[] = feedbackEntries.map((f: any) => ({
-    id: `feedback_${f.id}`,
-    kind: 'logged_feedback' as const,
-    sourceLabel: FEEDBACK_SOURCE_LABELS[f.source] || f.source,
-    sourceUrl: f.source_url || null,
-    reviewerName: f.reviewer_name || 'Guest',
-    rating: safeRating(f.rating),
-    reviewText: typeof f.feedback_text === 'string' ? f.feedback_text.trim() : '',
-    reviewDate: f.feedback_date || f.created_at,
-    isFeatured: false,
-    isVerifiedEvent: false,
-  }))
+  const externalItems: PublicReviewItem[] = externalReviews
+    .map((r: any) => ({
+      id: `external_${r.id}`,
+      kind: 'external_review' as const,
+      sourceLabel: providerLabel(r.provider),
+      sourceKey: r.provider,
+      sourceUrl: r.source_url || null,
+      reviewerName: r.author_name || 'Guest',
+      rating: safeRating(r.rating),
+      reviewText: typeof r.review_text === 'string' ? r.review_text.trim() : '',
+      reviewDate: r.review_date || r.created_at,
+      isFeatured: false,
+      isVerifiedEvent: false,
+    }))
+    .map(withPublicReviewMetadata)
 
-  const externalItems: PublicReviewItem[] = externalReviews.map((r: any) => ({
-    id: `external_${r.id}`,
-    kind: 'external_review' as const,
-    sourceLabel: providerLabel(r.provider),
-    sourceUrl: r.source_url || null,
-    reviewerName: r.author_name || 'Guest',
-    rating: safeRating(r.rating),
-    reviewText: typeof r.review_text === 'string' ? r.review_text.trim() : '',
-    reviewDate: r.review_date || r.created_at,
-    isFeatured: false,
-    isVerifiedEvent: false,
-  }))
+  const testimonialItems: PublicReviewItem[] = testimonials
+    .map((t: any) => {
+      // Compute overall from dual ratings if available
+      const foodR = safeRating(t.food_rating)
+      const chefR = safeRating(t.chef_rating)
+      const overallR = safeRating(t.rating)
+      const computedRating = overallR ?? (foodR && chefR ? (foodR + chefR) / 2 : (foodR ?? chefR))
 
-  const testimonialItems: PublicReviewItem[] = testimonials.map((t: any) => {
-    // Compute overall from dual ratings if available
-    const foodR = safeRating(t.food_rating)
-    const chefR = safeRating(t.chef_rating)
-    const overallR = safeRating(t.rating)
-    const computedRating = overallR ?? (foodR && chefR ? (foodR + chefR) / 2 : (foodR ?? chefR))
-
-    return {
-      id: `testimonial_${t.id}`,
-      kind: 'guest_testimonial' as const,
-      sourceLabel: 'Guest',
-      sourceUrl: null,
-      reviewerName: t.guest_name || 'Guest',
-      rating: computedRating,
-      reviewText: typeof t.testimonial === 'string' ? t.testimonial.trim() : '',
-      reviewDate: t.created_at,
-      isFeatured: Boolean(t.is_featured),
-      isVerifiedEvent: true,
-    }
-  })
+      return {
+        id: `testimonial_${t.id}`,
+        kind: 'guest_testimonial' as const,
+        sourceLabel: 'Guest',
+        sourceKey: 'guest_testimonial',
+        sourceUrl: null,
+        reviewerName: t.guest_name || 'Guest',
+        rating: computedRating,
+        reviewText: typeof t.testimonial === 'string' ? t.testimonial.trim() : '',
+        reviewDate: t.created_at,
+        isFeatured: Boolean(t.is_featured),
+        isVerifiedEvent: true,
+      }
+    })
+    .map(withPublicReviewMetadata)
 
   // ── Merge and sort (featured first, then by date) ──
 
@@ -272,5 +347,6 @@ export async function getPublicChefReviewFeed(tenantId: string): Promise<PublicR
       averageRating: Number(averageRating.toFixed(2)),
       platformBreakdown,
     },
+    structuredData: buildPublicReviewStructuredData(allReviews),
   }
 }

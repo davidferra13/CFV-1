@@ -15,10 +15,15 @@ test('live service execution migration keeps the progress table contract', () =>
   assert.match(migration, /idx_course_progress_event_order/)
 })
 
-test('event detail page only loads course progress for in-progress events', () => {
+test('event detail page only loads live service mode for in-progress events', () => {
   const page = read('app/(chef)/events/[id]/page.tsx')
 
-  assert.match(page, /event\.status === 'in_progress'\s*\?\s*getCourseProgress\(params\.id\)/)
+  assert.match(
+    page,
+    /event\.status === 'in_progress' && \(\s*<Suspense fallback=\{<SkeletonCard \/>\}>\s*<DayOfServiceSection eventId=\{params\.id\} \/>/
+  )
+  assert.match(page, /getServiceTrackerState\(eventId\)\.catch\(\(\) => null\)/)
+  assert.match(page, /getServiceTimeline\(eventId\)\.catch\(\(\) => null\)/)
 })
 
 test('ops tab only renders the live service tracker for in-progress events', () => {

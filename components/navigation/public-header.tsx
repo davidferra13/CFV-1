@@ -65,7 +65,7 @@ function NavDropdown({ group, pathname }: { group: PublicNavGroup; pathname: str
         <ChevronDown className={`h-3.5 w-3.5 transition-transform ${open ? 'rotate-180' : ''}`} />
       </button>
       {open && (
-        <div className="absolute left-0 top-full z-float mt-1 min-w-[180px] rounded-xl border border-[#4a3020]/40 bg-[#1a110c]/95 py-1.5 shadow-[0_12px_40px_rgba(0,0,0,0.5)] backdrop-blur-2xl">
+        <div className="absolute left-0 top-full z-[120] mt-1 min-w-[180px] rounded-xl border border-[#4a3020]/40 bg-[#1a110c]/95 py-1.5 shadow-[0_12px_40px_rgba(0,0,0,0.5)] backdrop-blur-2xl">
           {group.items.map((item) => {
             const active = isPublicNavActive(pathname, item.href)
             return (
@@ -165,7 +165,7 @@ function AuthUserDropdown({ user }: { user: PublicHeaderUser }) {
         {initials}
       </button>
       {open && (
-        <div className="absolute right-0 top-full z-float mt-2 min-w-[200px] rounded-xl border border-[#4a3020]/40 bg-[#1a110c]/95 py-1.5 shadow-[0_12px_40px_rgba(0,0,0,0.5)] backdrop-blur-2xl">
+        <div className="absolute right-0 top-full z-[120] mt-2 min-w-[200px] rounded-xl border border-[#4a3020]/40 bg-[#1a110c]/95 py-1.5 shadow-[0_12px_40px_rgba(0,0,0,0.5)] backdrop-blur-2xl">
           <div className="border-b border-[#4a3020]/30 px-4 py-2.5">
             <p className="text-sm font-medium text-stone-100 truncate">{displayName}</p>
             {user.email && user.name && (
@@ -218,7 +218,7 @@ export function PublicHeader({ user }: { user?: PublicHeaderUser | null }) {
 
   return (
     <header
-      className={`sticky top-0 z-chrome border-b transition-all duration-300 ${
+      className={`sticky top-0 z-[100] border-b transition-all duration-300 ${
         solidChrome
           ? 'border-stone-700/70 bg-stone-950/88 shadow-[0_4px_24px_rgba(0,0,0,0.12)] backdrop-blur-2xl dark:border-[#4a3020]/40 dark:bg-[#1a110c]/85 dark:shadow-[0_4px_24px_rgba(0,0,0,0.3)]'
           : 'border-transparent bg-transparent'

@@ -64,12 +64,17 @@ export default async function StaffRosterPage({
 
   return (
     <div className="max-w-3xl mx-auto px-4 py-8 space-y-6">
-      <div>
-        <h1 className="text-2xl font-bold text-stone-100">Staff Roster</h1>
-        <p className="mt-1 text-sm text-stone-500">
-          Manage your sous chefs, kitchen assistants, and service staff. Click any name to see their
-          full profile, assignment history, and performance.
-        </p>
+      <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
+        <div>
+          <h1 className="text-2xl font-bold text-stone-100">Staff Roster</h1>
+          <p className="mt-1 text-sm text-stone-500">
+            Manage your sous chefs, kitchen assistants, and service staff. Click any name to see
+            their full profile, assignment history, and performance.
+          </p>
+        </div>
+        <Button href="/staff/trust" variant="secondary" size="sm" className="shrink-0">
+          Trust & Delegation
+        </Button>
       </div>
 
       {/* Search & Filter */}

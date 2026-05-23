@@ -4,6 +4,7 @@ import { useState } from 'react'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
 import type { ClientHouseholdSummary, HouseholdMember } from '@/lib/hub/household-actions'
+import type { ClientHouseholdOperatingMemory } from '@/lib/intelligence/client-household-operating-memory'
 
 const RELATIONSHIPS = [
   { value: 'partner', label: 'Partner' },
@@ -78,6 +79,7 @@ type HouseholdRemoveResult = {
 interface ClientHouseholdPanelProps {
   clientId: string
   household: ClientHouseholdSummary
+  operatingMemory: ClientHouseholdOperatingMemory
 }
 
 function emptyDraft(): HouseholdDraft {
@@ -170,7 +172,39 @@ function summarize(members: HouseholdMember[]) {
   }
 }
 
-export function ClientHouseholdPanel({ clientId, household }: ClientHouseholdPanelProps) {
+function FactList({
+  title,
+  items,
+  empty,
+}: {
+  title: string
+  items: { id: string | null; label: string; value: string }[]
+  empty: string
+}) {
+  return (
+    <div className="min-w-0 rounded-lg border border-stone-700 bg-stone-800/40 p-3">
+      <p className="text-xs font-semibold uppercase tracking-wide text-stone-500">{title}</p>
+      {items.length > 0 ? (
+        <div className="mt-2 space-y-2">
+          {items.map((item) => (
+            <div key={item.id ?? item.label} className="min-w-0">
+              <p className="text-xs font-medium text-stone-300">{item.label}</p>
+              <p className="break-words text-sm text-stone-100">{item.value}</p>
+            </div>
+          ))}
+        </div>
+      ) : (
+        <p className="mt-2 text-sm text-stone-500">{empty}</p>
+      )}
+    </div>
+  )
+}
+
+export function ClientHouseholdPanel({
+  clientId,
+  household,
+  operatingMemory,
+}: ClientHouseholdPanelProps) {
   const [members, setMembers] = useState<HouseholdMember[]>(household.members)
   const [draft, setDraft] = useState<HouseholdDraft>(emptyDraft())
   const [editingId, setEditingId] = useState<string | null>(null)
@@ -193,6 +227,19 @@ export function ClientHouseholdPanel({ clientId, household }: ClientHouseholdPan
       .map((member) => member.display_name)
     return whoHas.length > 0 ? `${allergy} (${whoHas.join(', ')})` : allergy
   })
+  const facts = operatingMemory.profile.facts
+  const accessFacts = facts.filter((fact) =>
+    ['access_instruction', 'parking_instruction', 'service_route', 'pet'].includes(fact.kind)
+  )
+  const propertyFacts = facts.filter((fact) => ['kitchen_quirk', 'equipment'].includes(fact.kind))
+  const staffFacts = facts.filter((fact) => fact.kind === 'household_staff')
+  const staffBriefingFacts = operatingMemory.staffBriefingPreview.facts
+  const clientSafeCorrectionFacts = operatingMemory.clientSafeCorrections.map((correction) => ({
+    id: correction.factId,
+    label: correction.label,
+    value: correction.currentClientSafeValue,
+  }))
+  const unknowns = operatingMemory.profile.openUnknowns
 
   const startAdd = () => {
     setDraft(emptyDraft())
@@ -331,6 +378,74 @@ export function ClientHouseholdPanel({ clientId, household }: ClientHouseholdPan
         </div>
       </CardHeader>
       <CardContent className="space-y-4">
+        <div className="grid gap-3 lg:grid-cols-2">
+          <FactList
+            title="Access"
+            items={accessFacts}
+            empty="No parking, access, service route, or pet operating facts yet."
+          />
+          <FactList
+            title="Property"
+            items={propertyFacts}
+            empty="No kitchen quirks or equipment facts yet."
+          />
+          <FactList
+            title="Household Staff"
+            items={staffFacts}
+            empty="No assistant, house manager, nanny, or other household operator recorded."
+          />
+          <FactList
+            title="Staff-Safe Briefing"
+            items={staffBriefingFacts}
+            empty="No approved staff-safe instructions are available yet."
+          />
+        </div>
+
+        <div className="grid gap-3 lg:grid-cols-3">
+          <div className="rounded-lg border border-stone-700 bg-stone-900/50 p-3">
+            <p className="text-xs font-semibold uppercase tracking-wide text-stone-500">
+              Authority Map
+            </p>
+            <div className="mt-2 space-y-2">
+              {operatingMemory.profile.authorityMap.map((record) => (
+                <div key={`${record.role}:${record.displayName}`} className="min-w-0">
+                  <p className="break-words text-sm font-medium text-stone-100">
+                    {record.displayName}
+                  </p>
+                  <p className="break-words text-xs text-stone-500">
+                    {record.role.replace(/_/g, ' ')} - {record.scopes.join(', ')}
+                  </p>
+                </div>
+              ))}
+            </div>
+          </div>
+
+          <FactList
+            title="Client-Safe Corrections"
+            items={clientSafeCorrectionFacts}
+            empty="No client-safe correction prompts are ready."
+          />
+
+          <div className="rounded-lg border border-stone-700 bg-stone-900/50 p-3">
+            <p className="text-xs font-semibold uppercase tracking-wide text-stone-500">
+              Event Reuse
+            </p>
+            <p className="mt-2 text-2xl font-bold text-stone-100">
+              {operatingMemory.eventReusePreview.reusedFactIds.length}
+            </p>
+            <p className="text-xs text-stone-500">confirmed facts reusable for planning</p>
+            {unknowns.length > 0 && (
+              <div className="mt-3 space-y-1">
+                {unknowns.slice(0, 3).map((unknown) => (
+                  <p key={unknown.kind} className="break-words text-xs text-amber-300">
+                    {unknown.label}
+                  </p>
+                ))}
+              </div>
+            )}
+          </div>
+        </div>
+
         {error && (
           <div className="rounded-lg border border-red-800 bg-red-900/30 px-3 py-2 text-xs text-red-300">
             {error}

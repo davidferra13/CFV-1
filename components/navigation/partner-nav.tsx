@@ -17,6 +17,10 @@ import {
   X,
 } from '@/components/ui/icons'
 import { signOut } from '@/lib/auth/actions'
+import {
+  PORTAL_RAIL_STANDARD,
+  isPortalRouteActive,
+} from '@/components/navigation/portal-rail-standard'
 
 const NAV_ITEMS = [
   { href: '/partner/dashboard', label: 'Dashboard', icon: LayoutDashboard },
@@ -37,12 +41,12 @@ function NavLink({
 }) {
   const rawPathname = usePathname()
   const pathname = rawPathname ?? ''
-  const isActive = pathname === href || pathname.startsWith(href + '/')
+  const isActive = isPortalRouteActive(pathname, href)
 
   return (
     <Link
       href={href}
-      className={`flex items-center gap-3 px-3 py-2 rounded-lg text-sm font-medium transition-colors ${
+      className={`${PORTAL_RAIL_STANDARD.expandedLink} ${
         isActive
           ? 'bg-stone-900 text-white'
           : 'text-stone-400 hover:bg-stone-700 hover:text-stone-100'
@@ -65,7 +69,9 @@ export function PartnerSidebar({ partnerName }: { partnerName: string }) {
   }
 
   return (
-    <aside className="hidden lg:flex flex-col w-56 shrink-0 border-r border-stone-700 bg-stone-900 min-h-screen">
+    <aside
+      className={`hidden lg:flex min-h-screen shrink-0 flex-col border-r border-stone-800 bg-stone-900 ${PORTAL_RAIL_STANDARD.expandedWidth} ${PORTAL_RAIL_STANDARD.desktopRailProminence}`}
+    >
       {/* Brand */}
       <div className="px-4 py-5 border-b border-stone-800">
         <p className="text-xs font-semibold uppercase tracking-widest text-stone-400 mb-0.5">
@@ -76,6 +82,13 @@ export function PartnerSidebar({ partnerName }: { partnerName: string }) {
 
       {/* Nav links */}
       <nav className="flex-1 px-3 py-4 space-y-0.5">
+        <Link
+          href="/partner/preview"
+          className={`${PORTAL_RAIL_STANDARD.primaryAction} mb-3 bg-brand-600 text-white hover:bg-brand-700`}
+        >
+          <Eye size={16} className="shrink-0" />
+          Preview Page
+        </Link>
         {NAV_ITEMS.map((item) => (
           <NavLink key={item.href} {...item} />
         ))}
@@ -121,7 +134,7 @@ export function PartnerMobileNav() {
     <>
       <nav className="lg:hidden fixed top-0 left-0 right-0 bg-stone-900 border-b border-stone-700 z-mobile-header flex pt-safe">
         {NAV_ITEMS.slice(0, 4).map(({ href, label, icon: Icon }) => {
-          const isActive = pathname === href || pathname.startsWith(href + '/')
+          const isActive = isPortalRouteActive(pathname, href)
           return (
             <Link
               key={href}
@@ -167,7 +180,7 @@ export function PartnerMobileNav() {
 
             <nav className="flex-1 overflow-y-auto px-3 py-4 space-y-0.5">
               {NAV_ITEMS.map(({ href, label, icon: Icon }) => {
-                const isActive = pathname === href || pathname.startsWith(href + '/')
+                const isActive = isPortalRouteActive(pathname, href)
                 return (
                   <Link
                     key={href}

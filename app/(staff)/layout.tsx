@@ -15,6 +15,8 @@ import { resolveStaffSurfaceMode } from '@/lib/interface/surface-governance'
 import { GlobalReportButton } from '@/components/feedback/global-report-button'
 import { RoleSwitcher } from '@/components/shared/role-switcher'
 import { auth } from '@/lib/auth'
+import { Suspense } from 'react'
+import { StaffRailStrip, StaffRailStripSkeleton } from '@/components/rail/staff-rail-strip'
 
 export const metadata = {
   title: {
@@ -58,6 +60,9 @@ export default async function StaffLayout({ children }: { children: React.ReactN
       <div className="flex items-center justify-end px-6 py-2">
         <RoleSwitcher currentRole="staff" availableRoleCount={availableRoleCount} />
       </div>
+      <Suspense fallback={<StaffRailStripSkeleton />}>
+        <StaffRailStrip />
+      </Suspense>
       <main id="main-content" className="mx-auto max-w-7xl px-4 py-6 sm:px-6 lg:px-8">
         <StaffTourWrapper>{children}</StaffTourWrapper>
       </main>

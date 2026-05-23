@@ -24,7 +24,8 @@ export default async function ChefMyProfilePage() {
         </Link>
         <h1 className="text-3xl font-bold text-stone-100">My Profile</h1>
         <p className="text-stone-400 mt-1">
-          Manage the core profile details used across your client portal and public page.
+          Manage the name, bio, contact, social links, and profile image used on your public client
+          profile. Public URL, page theme, and partner showcase live in Public Profile settings.
         </p>
         <p className="mt-3 text-sm text-stone-500">
           Need to upload a resume or manage career history?{' '}

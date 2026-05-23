@@ -12,6 +12,7 @@ import { getRecipeProvenance } from '@/lib/collaboration/actions'
 import { getRecipeLifecycleStatus } from '@/lib/recipes/lifecycle-actions'
 import { getEventsUsingRecipe } from '@/lib/recipes/recipe-events-action'
 import { getRecipeStepPhotos } from '@/lib/recipes/recipe-photo-actions'
+import { HandoffBar } from '@/components/rail/handoff-bar'
 
 export async function generateMetadata() {
   return { title: 'Recipe Details | ChefFlow' }
@@ -48,13 +49,16 @@ export default async function RecipeDetailPage({ params }: { params: { id: strin
     : null
 
   return (
-    <RecipeDetailClient
-      recipe={recipe}
-      initialCompletion={completionData}
-      provenance={provenance}
-      lifecycle={lifecycleProps}
-      recipeEvents={recipeEvents}
-      stepPhotos={stepPhotos}
-    />
+    <>
+      <HandoffBar entityType="recipe" entityId={params.id} />
+      <RecipeDetailClient
+        recipe={recipe}
+        initialCompletion={completionData}
+        provenance={provenance}
+        lifecycle={lifecycleProps}
+        recipeEvents={recipeEvents}
+        stepPhotos={stepPhotos}
+      />
+    </>
   )
 }

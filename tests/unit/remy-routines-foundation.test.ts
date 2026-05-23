@@ -422,17 +422,18 @@ test('migration enforces tenant_id FK on all routine tables', () => {
       `${table} must have RLS enabled`
     )
 
-    // Every table must have tenant-scoped SELECT policy
+    // Every table must have tenant-scoped SELECT policy. The root routine table uses the
+    // historical `_tenant_*` names; append-only audit tables use shorter names.
     assert.match(
       sql,
-      new RegExp(`CREATE POLICY ${table}_tenant_select`),
+      new RegExp(`CREATE POLICY ${table}(?:_tenant)?_select`),
       `${table} must have tenant_select policy`
     )
 
-    // Every table must have tenant-scoped INSERT policy
+    // Every table must have tenant-scoped INSERT policy.
     assert.match(
       sql,
-      new RegExp(`CREATE POLICY ${table}_tenant_insert`),
+      new RegExp(`CREATE POLICY ${table}(?:_tenant)?_insert`),
       `${table} must have tenant_insert policy`
     )
   }
@@ -500,6 +501,32 @@ test('actions file uses zod validation for user input', () => {
   assert.match(source, /createRoutineSchema/, 'Must have create routine schema')
   assert.match(source, /triggerContextSchema/, 'Must have trigger context schema')
   assert.match(source, /actionSchema/, 'Must have action schema')
+})
+
+test('routine actions reject executable payload authority', () => {
+  const actionsPath = resolve(currentDir, '../../lib/ai/remy-routines-actions.ts')
+  const source = readFileSync(actionsPath, 'utf8')
+
+  assert.match(source, /FORBIDDEN_ROUTINE_PAYLOAD_PATTERNS/)
+  assert.match(source, /shell commands, executable code, arbitrary URLs, or filesystem paths/)
+  assert.match(source, /payloadContainsForbiddenAuthority/)
+})
+
+test('new routine proposals default to draft-paused status before chef activation', () => {
+  const actionsPath = resolve(currentDir, '../../lib/ai/remy-routines-actions.ts')
+  const source = readFileSync(actionsPath, 'utf8')
+
+  assert.match(source, /status:\s*parsed\.status\s*\?\?\s*'paused'/)
+})
+
+test('routine create and update changes are written to audit history', () => {
+  const actionsPath = resolve(currentDir, '../../lib/ai/remy-routines-actions.ts')
+  const source = readFileSync(actionsPath, 'utf8')
+
+  assert.match(source, /logRoutineChangeAudit/)
+  assert.match(source, /routine_created/)
+  assert.match(source, /routine_updated/)
+  assert.match(source, /remy_routine_execution_audit/)
 })
 
 // ===========================================================================

@@ -19,6 +19,21 @@ const UploadMediaSchema = z.object({
   eventId: z.string().uuid().optional().nullable(),
 })
 
+const HUB_MEDIA_MAX_FILE_SIZE_BYTES = 10 * 1024 * 1024
+const HUB_MEDIA_ALLOWED_CONTENT_TYPES = new Set([
+  'image/jpeg',
+  'image/png',
+  'image/gif',
+  'image/webp',
+  'application/pdf',
+  'application/msword',
+  'application/vnd.openxmlformats-officedocument.wordprocessingml.document',
+  'application/vnd.ms-excel',
+  'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
+  'text/plain',
+  'text/csv',
+])
+
 /**
  * Upload a file to hub-media storage and record it in the database.
  * Accepts FormData with a 'file' field. Returns the created HubMedia record.
@@ -31,6 +46,12 @@ export async function uploadHubMediaFile(
   const file = formData.get('file') as File | null
   if (!file || !(file instanceof File)) {
     throw new Error('No file provided')
+  }
+  if (file.size > HUB_MEDIA_MAX_FILE_SIZE_BYTES) {
+    throw new Error('File too large (max 10MB)')
+  }
+  if (!HUB_MEDIA_ALLOWED_CONTENT_TYPES.has(file.type)) {
+    throw new Error('File type not supported')
   }
 
   const db = createServerClient({ admin: true })

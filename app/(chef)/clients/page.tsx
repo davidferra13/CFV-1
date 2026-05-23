@@ -28,6 +28,13 @@ import { ChartLineUp, Gift, Bell, Leaf, Repeat, Handshake } from '@/components/u
 
 const hubTiles = [
   {
+    href: '/clients/contribution',
+    label: 'Client Contribution',
+    description: 'Revenue, profit, risk, and review decisions',
+    icon: ChartLineUp,
+    accent: 'emerald',
+  },
+  {
     href: '/clients/insights/top-clients',
     label: 'Client Insights',
     description: 'Top clients, at-risk, frequent bookers',

@@ -30,9 +30,10 @@ const CLIENT_QUOTE_DETAIL_SELECT = `
 type QuoteResponseContext = {
   clientId: string
   actorId: string | null
+  tenantId: string
 }
 
-async function loadQuoteMenus(db: any, eventId: string | null) {
+async function loadQuoteMenus(db: any, eventId: string | null, tenantId: string) {
   if (!eventId) return []
 
   const { data: menuData } = await db
@@ -42,16 +43,23 @@ async function loadQuoteMenus(db: any, eventId: string | null) {
       dishes (id, course_name, course_number, description, dietary_tags, allergen_flags, sort_order)`
     )
     .eq('event_id', eventId)
+    .eq('tenant_id', tenantId)
 
   return menuData || []
 }
 
-async function getQuoteDetailForClient(db: any, quoteId: string, clientId: string) {
+async function getQuoteDetailForClient(
+  db: any,
+  quoteId: string,
+  clientId: string,
+  tenantId: string
+) {
   const { data: quote, error } = await db
     .from('quotes')
     .select(CLIENT_QUOTE_DETAIL_SELECT)
     .eq('id', quoteId)
     .eq('client_id', clientId)
+    .eq('tenant_id', tenantId)
     .single()
 
   if (error || !quote) {
@@ -61,7 +69,7 @@ async function getQuoteDetailForClient(db: any, quoteId: string, clientId: strin
     return null
   }
 
-  const menus = await loadQuoteMenus(db, quote.event_id ?? null)
+  const menus = await loadQuoteMenus(db, quote.event_id ?? null, tenantId)
   return { ...quote, menus }
 }
 
@@ -83,6 +91,7 @@ export async function getClientQuotes() {
     `
     )
     .eq('client_id', user.entityId)
+    .eq('tenant_id', user.tenantId!)
     .in('status', ['sent', 'accepted', 'rejected'])
     .order('created_at', { ascending: false })
 
@@ -101,7 +110,7 @@ export async function getClientQuotes() {
 export async function getClientQuoteById(quoteId: string) {
   const user = await requireClient()
   const db: any = createServerClient()
-  return getQuoteDetailForClient(db, quoteId, user.entityId)
+  return getQuoteDetailForClient(db, quoteId, user.entityId, user.tenantId!)
 }
 
 export async function getClientPortalQuoteById(token: string, quoteId: string) {
@@ -109,7 +118,7 @@ export async function getClientPortalQuoteById(token: string, quoteId: string) {
   if (!access) return null
 
   const db: any = createServerClient({ admin: true })
-  return getQuoteDetailForClient(db, quoteId, access.clientId)
+  return getQuoteDetailForClient(db, quoteId, access.clientId, access.tenantId)
 }
 
 // ============================================
@@ -133,6 +142,7 @@ async function acceptQuoteForContext(quoteId: string, context: QuoteResponseCont
     )
     .eq('id', quoteId)
     .eq('client_id', context.clientId)
+    .eq('tenant_id', context.tenantId)
     .single()
 
   if (!preCheck) {
@@ -347,6 +357,7 @@ export async function acceptQuote(quoteId: string) {
   return acceptQuoteForContext(quoteId, {
     clientId: user.entityId,
     actorId: user.id,
+    tenantId: user.tenantId!,
   })
 }
 
@@ -359,6 +370,7 @@ export async function acceptQuoteByPortalToken(token: string, quoteId: string) {
   return acceptQuoteForContext(quoteId, {
     clientId: access.clientId,
     actorId: null,
+    tenantId: access.tenantId,
   })
 }
 
@@ -372,6 +384,18 @@ async function rejectQuoteForContext(
   context: QuoteResponseContext
 ) {
   const db: any = createServerClient({ admin: true })
+
+  const { data: preCheck } = await db
+    .from('quotes')
+    .select('id')
+    .eq('id', quoteId)
+    .eq('client_id', context.clientId)
+    .eq('tenant_id', context.tenantId)
+    .single()
+
+  if (!preCheck) {
+    throw new Error('Quote not found')
+  }
 
   const { data: response, error: responseError } = await db.rpc('respond_to_quote_atomic', {
     p_quote_id: quoteId,
@@ -406,12 +430,14 @@ async function rejectQuoteForContext(
         .from('inquiries')
         .select('status')
         .eq('id', quote.inquiry_id)
+        .eq('tenant_id', quote.tenant_id)
         .single()
       if (inq && (inq as any).status === 'quoted') {
         await db
           .from('inquiries')
           .update({ status: 'awaiting_chef', updated_at: new Date().toISOString() })
           .eq('id', quote.inquiry_id)
+          .eq('tenant_id', quote.tenant_id)
         await db.from('inquiry_state_transitions').insert({
           tenant_id: quote.tenant_id,
           inquiry_id: quote.inquiry_id,
@@ -488,6 +514,7 @@ export async function rejectQuote(quoteId: string, reason?: string) {
   return rejectQuoteForContext(quoteId, reason, {
     clientId: user.entityId,
     actorId: user.id,
+    tenantId: user.tenantId!,
   })
 }
 
@@ -500,6 +527,7 @@ export async function rejectQuoteByPortalToken(token: string, quoteId: string, r
   return rejectQuoteForContext(quoteId, reason, {
     clientId: access.clientId,
     actorId: null,
+    tenantId: access.tenantId,
   })
 }
 

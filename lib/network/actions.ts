@@ -272,19 +272,6 @@ function fromChefNetworkContactShares(db: any): any {
   return db.from('chef_network_contact_shares')
 }
 
-function extractChefProfileImagePath(url: string | null | undefined): string | null {
-  if (!url) return null
-  const marker = `/storage/v1/object/public/${CHEF_PROFILE_IMAGES_BUCKET}/`
-  const markerIndex = url.indexOf(marker)
-  if (markerIndex === -1) return null
-  const encodedPath = url
-    .slice(markerIndex + marker.length)
-    .split('?')[0]
-    .split('#')[0]
-  if (!encodedPath) return null
-  return decodeURIComponent(encodedPath)
-}
-
 async function ensureChefProfileImagesBucket(db: any) {
   const { error: createError } = await db.storage.createBucket(CHEF_PROFILE_IMAGES_BUCKET, {
     public: true,
@@ -1095,7 +1082,9 @@ export async function updateChefProfile(input: UpdateProfileInput) {
 }
 
 /**
- * Upload a chef profile image file and save the resulting public URL on the profile.
+ * Upload a chef profile image file and return the resulting public URL.
+ * The calling profile save action owns the DB update so text validation failures cannot silently
+ * change the saved profile image.
  */
 export async function uploadChefProfileImage(
   formData: FormData
@@ -1117,14 +1106,6 @@ export async function uploadChefProfileImage(
       `File too large. Maximum ${(MAX_PROFILE_IMAGE_SIZE / 1024 / 1024).toFixed(0)}MB`
     )
   }
-
-  const { data: currentChef } = await db
-    .from('chefs')
-    .select('profile_image_url')
-    .eq('id', user.entityId)
-    .maybeSingle()
-
-  const previousPath = extractChefProfileImagePath((currentChef as any)?.profile_image_url ?? null)
 
   // Optimize: resize to max 512px wide, convert to WebP (same infra as logo upload)
   const rawBuffer = Buffer.from(await file.arrayBuffer())
@@ -1161,28 +1142,6 @@ export async function uploadChefProfileImage(
     .getPublicUrl(storagePath)
 
   const publicUrl = publicUrlData.publicUrl
-  const { error: updateError } = await db
-    .from('chefs')
-    .update({ profile_image_url: publicUrl })
-    .eq('id', user.entityId)
-
-  if (updateError) {
-    console.error('[uploadChefProfileImage] update profile error:', updateError)
-    await db.storage.from(CHEF_PROFILE_IMAGES_BUCKET).remove([storagePath])
-    throw new Error('Image uploaded but failed to save profile')
-  }
-
-  if (previousPath && previousPath !== storagePath) {
-    await db.storage.from(CHEF_PROFILE_IMAGES_BUCKET).remove([previousPath])
-  }
-
-  revalidatePath('/network')
-  revalidatePath('/settings')
-  revalidatePath('/settings/profile')
-  revalidatePath('/settings/my-profile')
-  revalidatePath('/settings/account')
-  revalidateTag(`chef-layout-${user.entityId}`)
-
   return { success: true, url: publicUrl }
 }
 

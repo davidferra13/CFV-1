@@ -6,8 +6,24 @@ import { PollList } from './poll-card'
 import { BroadcastComposer } from './broadcast-composer'
 import { ThemeBoard } from './theme-board'
 import { ChangeHistoryDrawer } from './change-history-drawer'
+import { DinnerCircleActionDrawer } from './action-drawer'
+import { DinnerCircleAccommodationIntake } from './accommodation-intake'
+import { DinnerCircleArrivalGuide } from './arrival-guide'
+import { DinnerCircleEventWorkspacePanel } from './event-workspace-panel'
+import type {
+  DinnerCircleActionRole,
+  DinnerCircleResolvedAction,
+} from '@/lib/dinner-circles/action-surface'
 
-type PanelTab = 'bring' | 'polls' | 'broadcast' | 'theme' | 'history'
+type PanelTab =
+  | 'workspace'
+  | 'arrival'
+  | 'bring'
+  | 'polls'
+  | 'accommodations'
+  | 'broadcast'
+  | 'theme'
+  | 'history'
 
 interface BringItem {
   id: string
@@ -76,6 +92,7 @@ interface DinnerCirclePanelsProps {
   circleId: string
   callerProfileId: string
   isHost: boolean
+  viewerRole?: DinnerCircleActionRole
   initialBringItems: BringItem[]
   initialPolls: Poll[]
   initialBroadcasts: Broadcast[]
@@ -83,8 +100,11 @@ interface DinnerCirclePanelsProps {
 }
 
 const TABS: { key: PanelTab; label: string }[] = [
+  { key: 'workspace', label: 'Event Plan' },
+  { key: 'arrival', label: 'Arrival' },
   { key: 'bring', label: 'Bring List' },
   { key: 'polls', label: 'Polls' },
+  { key: 'accommodations', label: 'Access Needs' },
   { key: 'broadcast', label: 'Broadcasts' },
   { key: 'theme', label: 'Theme Board' },
   { key: 'history', label: 'History' },
@@ -94,21 +114,66 @@ export function DinnerCirclePanels({
   circleId,
   callerProfileId,
   isHost,
+  viewerRole,
   initialBringItems,
   initialPolls,
   initialBroadcasts,
   initialThemeBoard,
 }: DinnerCirclePanelsProps) {
-  const [tab, setTab] = useState<PanelTab>('bring')
+  const [tab, setTab] = useState<PanelTab>('arrival')
   const [historyOpen, setHistoryOpen] = useState(false)
 
   // Non-host members only see bring/polls/theme (no broadcast, no history)
   const visibleTabs = isHost
     ? TABS
     : TABS.filter((t) => t.key !== 'broadcast' && t.key !== 'history')
+  const actionRole = viewerRole ?? (isHost ? 'host' : 'member')
+
+  function handleAction(action: DinnerCircleResolvedAction) {
+    if (action.id === 'bring_list') setTab('bring')
+    if (action.id === 'view_guide') setTab('arrival')
+    if (
+      action.id === 'attendee_profiles' ||
+      action.id === 'seating_plan' ||
+      action.id === 'concierge_qa' ||
+      action.id === 'celebration_board' ||
+      action.id === 'menu_reveal' ||
+      action.id === 'itinerary' ||
+      action.id === 'weather_backup' ||
+      action.id === 'live_status' ||
+      action.id === 'digest_controls' ||
+      action.id === 'event_packet' ||
+      action.id === 'collaborator_access' ||
+      action.id === 'memory_album' ||
+      action.id === 'growth_actions' ||
+      action.id === 'visual_intake' ||
+      action.id === 'print_share'
+    ) {
+      setTab('workspace')
+    }
+    if (action.id === 'vote_poll') setTab('polls')
+    if (action.id === 'accommodation_update') setTab('accommodations')
+    if (action.id === 'broadcast' && isHost) setTab('broadcast')
+    if (action.id === 'set_theme') setTab('theme')
+  }
 
   return (
     <div className="mt-6 space-y-4 rounded-xl border bg-card">
+      <div className="border-b px-4 py-3">
+        <DinnerCircleActionDrawer
+          circleId={circleId}
+          viewerRole={actionRole}
+          permissions={{
+            canPost: true,
+            canInvite: isHost,
+            canBroadcast: isHost,
+            canManageTheme: isHost,
+            canManagePrivacy: isHost,
+          }}
+          onAction={handleAction}
+        />
+      </div>
+
       {/* Tab bar */}
       <div className="flex gap-1 overflow-x-auto border-b px-4 pt-3 pb-0">
         {visibleTabs.map((t) => (
@@ -135,6 +200,10 @@ export function DinnerCirclePanels({
 
       {/* Panel content */}
       <div className="px-6 pb-6">
+        {tab === 'workspace' && (
+          <DinnerCircleEventWorkspacePanel viewerRole={actionRole} isHost={isHost} />
+        )}
+        {tab === 'arrival' && <DinnerCircleArrivalGuide circleId={circleId} isHost={isHost} />}
         {tab === 'bring' && (
           <BringList
             circleId={circleId}
@@ -146,6 +215,13 @@ export function DinnerCirclePanels({
         {tab === 'polls' && (
           <PollList
             polls={initialPolls}
+            circleId={circleId}
+            callerProfileId={callerProfileId}
+            isHost={isHost}
+          />
+        )}
+        {tab === 'accommodations' && (
+          <DinnerCircleAccommodationIntake
             circleId={circleId}
             callerProfileId={callerProfileId}
             isHost={isHost}

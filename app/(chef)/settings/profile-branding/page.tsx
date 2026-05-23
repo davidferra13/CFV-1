@@ -75,7 +75,7 @@ export default async function ProfileBrandingSettingsPage() {
             >
               <p className="font-semibold text-brand-200">My Profile</p>
               <p className="text-sm text-brand-400 mt-1">
-                Edit your business profile, image, and review link in one place.
+                Edit the name, bio, image, website, and review links clients see.
               </p>
             </Link>
           </div>
@@ -96,9 +96,9 @@ export default async function ProfileBrandingSettingsPage() {
               href="/settings/public-profile"
               className="block border rounded-lg p-4 hover:bg-stone-800 transition-colors"
             >
-              <p className="font-medium text-stone-100">Profile &amp; Partner Showcase</p>
+              <p className="font-medium text-stone-100">Public Profile</p>
               <p className="text-sm text-stone-500 mt-1">
-                Manage your public profile and partner listings.
+                Set your public URL, page theme, and partner listings.
               </p>
             </Link>
 

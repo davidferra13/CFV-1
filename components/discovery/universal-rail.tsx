@@ -194,16 +194,18 @@ function UniversalRailItemCard({
 
   const content = (
     <div
-      className={cn(baseClass, urgencyClass, isPending && 'opacity-60')}
+      className={cn(baseClass, 'max-w-full min-w-0', urgencyClass, isPending && 'opacity-60')}
       onClick={item.clickAction === 'navigate' ? undefined : handleClick}
       role="button"
       tabIndex={0}
       aria-label={item.label}
     >
       <RailIcon icon={item.icon} className="h-4 w-4" />
-      <span className="truncate">{item.label}</span>
+      <span className="min-w-0 max-w-full truncate">{item.label}</span>
       {item.sublabel && (
-        <span className="text-xs text-muted-foreground truncate">{item.sublabel}</span>
+        <span className="min-w-0 max-w-full truncate text-xs text-muted-foreground">
+          {item.sublabel}
+        </span>
       )}
       {item.dismissable && (
         <button
@@ -224,7 +226,7 @@ function UniversalRailItemCard({
 
   if (item.clickAction === 'navigate' && item.href) {
     return (
-      <Link href={item.href} onClick={handleClick} className="no-underline">
+      <Link href={item.href} onClick={handleClick} className="max-w-full min-w-0 no-underline">
         {content}
       </Link>
     )

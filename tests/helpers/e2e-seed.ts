@@ -542,6 +542,20 @@ async function upsertChef(admin, authUserId: string, suffix: string): Promise<st
     return existing.id as string
   }
 
+  const { data: existingBySlug } = await admin
+    .from('chefs')
+    .select('id')
+    .eq('slug', slug)
+    .maybeSingle()
+
+  if (existingBySlug?.id) {
+    await admin
+      .from('chefs')
+      .update({ auth_user_id: authUserId, ...fields })
+      .eq('id', existingBySlug.id)
+    return existingBySlug.id as string
+  }
+
   const { data: inserted, error } = await admin
     .from('chefs')
     .insert({ auth_user_id: authUserId, ...fields })
@@ -576,6 +590,20 @@ async function upsertChefB(admin, authUserId: string, suffix: string): Promise<s
   if (existing?.id) {
     await admin.from('chefs').update(fields).eq('id', existing.id)
     return existing.id as string
+  }
+
+  const { data: existingBySlug } = await admin
+    .from('chefs')
+    .select('id')
+    .eq('slug', slug)
+    .maybeSingle()
+
+  if (existingBySlug?.id) {
+    await admin
+      .from('chefs')
+      .update({ auth_user_id: authUserId, ...fields })
+      .eq('id', existingBySlug.id)
+    return existingBySlug.id as string
   }
 
   const { data: inserted, error } = await admin
@@ -646,7 +674,7 @@ async function ensureChefRole(admin, authUserId: string, chefId: string) {
     .from('user_roles')
     .upsert(
       { auth_user_id: authUserId, role: 'chef', entity_id: chefId },
-      { onConflict: 'auth_user_id' }
+      { onConflict: 'auth_user_id,role,entity_id' }
     )
   if (error) throw new Error(`[e2e-seed] Failed to upsert chef role: ${error.message}`)
 }
@@ -864,7 +892,7 @@ async function ensureClientRole(admin, authUserId: string, clientId: string) {
     .from('user_roles')
     .upsert(
       { auth_user_id: authUserId, role: 'client', entity_id: clientId },
-      { onConflict: 'auth_user_id' }
+      { onConflict: 'auth_user_id,role,entity_id' }
     )
   if (error) throw new Error(`[e2e-seed] Failed to upsert client role: ${error.message}`)
 }
@@ -1828,12 +1856,12 @@ async function upsertStaffMember(admin, chefId: string, suffix: string): Promise
 }
 
 async function ensureStaffRole(admin, authUserId: string, staffId: string) {
-  // user_roles has unique constraint on auth_user_id — use upsert
+  // user_roles is unique per auth user, role, and entity.
   const { error } = await admin
     .from('user_roles')
     .upsert(
       { auth_user_id: authUserId, role: 'staff', entity_id: staffId },
-      { onConflict: 'auth_user_id' }
+      { onConflict: 'auth_user_id,role,entity_id' }
     )
   if (error) throw new Error(`[e2e-seed] Failed to upsert staff role: ${error.message}`)
 }
@@ -1938,7 +1966,7 @@ async function ensurePartnerRole(admin, authUserId: string, partnerId: string) {
     .from('user_roles')
     .upsert(
       { auth_user_id: authUserId, role: 'partner', entity_id: partnerId },
-      { onConflict: 'auth_user_id' }
+      { onConflict: 'auth_user_id,role,entity_id' }
     )
   if (error) throw new Error(`[e2e-seed] Failed to upsert partner role: ${error.message}`)
 }

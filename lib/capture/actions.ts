@@ -22,6 +22,16 @@ export type CaptureTag =
   | 'shopping'
   | 'menu-idea'
   | 'business'
+  | 'field-capture'
+  | 'incident'
+  | 'vendor'
+  | 'loadout'
+  | 'household'
+  | 'waste'
+  | 'staff'
+  | 'craft'
+  | 'private_only'
+  | 'chef_internal'
 
 export type Capture = {
   id: string

@@ -10,6 +10,12 @@ import { useState, createContext, useContext, useCallback, memo } from 'react'
 import { signOut } from '@/lib/auth/actions'
 import { adminPrimaryLinks, adminNavGroups, adminBottomLinks } from './admin-nav-config'
 import type { AdminNavItem, AdminNavGroup } from './admin-nav-config'
+import {
+  PORTAL_RAIL_STANDARD,
+  getPortalRailOffsetClass,
+  getPortalRailWidthClass,
+  isPortalRouteActive,
+} from './portal-rail-standard'
 import { NotificationBell } from '@/components/notifications/notification-bell'
 import { OllamaStatusBadge } from '@/components/dashboard/ollama-status-badge'
 import { AppLogo } from '@/components/branding/app-logo'
@@ -56,7 +62,7 @@ function AdminNavLink({
   return (
     <Link
       href={item.href}
-      className={`flex items-center gap-3 rounded-lg px-3 py-2 text-sm transition-colors ${
+      className={`${PORTAL_RAIL_STANDARD.expandedLink} ${
         isActive
           ? 'bg-white/10 text-white font-medium'
           : 'text-stone-400 hover:bg-white/5 hover:text-stone-200'
@@ -143,9 +149,7 @@ export function AdminSidebar({ userId }: { userId: string }) {
 
   return (
     <aside
-      className={`fixed inset-y-0 left-0 z-subnav hidden lg:flex flex-col border-r border-stone-800 bg-stone-900 transition-all duration-200 ${
-        collapsed ? 'w-16' : 'w-60'
-      }`}
+      className={`${PORTAL_RAIL_STANDARD.desktopRailBase} ${PORTAL_RAIL_STANDARD.desktopRailProminence} ${getPortalRailWidthClass(collapsed)}`}
     >
       {/* Header */}
       <div className="flex h-14 items-center justify-between px-3 border-b border-stone-800">
@@ -179,7 +183,9 @@ export function AdminSidebar({ userId }: { userId: string }) {
             item={item}
             collapsed={collapsed}
             isActive={
-              item.href === '/admin' ? pathname === '/admin' : pathname.startsWith(item.href)
+              item.href === '/admin'
+                ? pathname === '/admin'
+                : isPortalRouteActive(pathname, item.href)
             }
           />
         ))}
@@ -282,13 +288,15 @@ export function AdminMobileNav({ userId }: { userId: string }) {
               {adminPrimaryLinks.map((item) => {
                 const Icon = item.icon
                 const isActive =
-                  item.href === '/admin' ? pathname === '/admin' : pathname.startsWith(item.href)
+                  item.href === '/admin'
+                    ? pathname === '/admin'
+                    : isPortalRouteActive(pathname, item.href)
                 return (
                   <Link
                     key={item.href}
                     href={item.href}
                     onClick={() => setOpen(false)}
-                    className={`flex items-center gap-3 rounded-lg px-3 py-2.5 text-sm ${
+                    className={`${PORTAL_RAIL_STANDARD.expandedLink} ${
                       isActive
                         ? 'bg-white/10 text-white font-medium'
                         : 'text-stone-400 hover:bg-white/5 hover:text-stone-200'
@@ -307,13 +315,13 @@ export function AdminMobileNav({ userId }: { userId: string }) {
                   </div>
                   {group.items.map((item) => {
                     const Icon = item.icon
-                    const isActive = pathname === item.href || pathname.startsWith(item.href + '/')
+                    const isActive = isPortalRouteActive(pathname, item.href)
                     return (
                       <Link
                         key={item.href}
                         href={item.href}
                         onClick={() => setOpen(false)}
-                        className={`flex items-center gap-3 rounded-lg px-3 py-2 text-sm ${
+                        className={`${PORTAL_RAIL_STANDARD.expandedLink} ${
                           isActive
                             ? 'bg-white/10 text-white font-medium'
                             : 'text-stone-400 hover:bg-white/5 hover:text-stone-200'
@@ -334,7 +342,7 @@ export function AdminMobileNav({ userId }: { userId: string }) {
                     key={item.href}
                     href={item.href}
                     onClick={() => setOpen(false)}
-                    className="flex items-center gap-3 rounded-lg px-3 py-2 text-sm text-stone-400 hover:bg-white/5 hover:text-stone-200"
+                    className={`${PORTAL_RAIL_STANDARD.expandedLink} text-stone-400 hover:bg-white/5 hover:text-stone-200`}
                   >
                     <Icon className="h-4 w-4" />
                     <span>{item.label}</span>
@@ -370,7 +378,7 @@ export function AdminMainContent({ children }: { children: React.ReactNode }) {
     <main
       id="main-content"
       tabIndex={-1}
-      className={`pt-14 lg:pt-0 transition-all duration-200 ${collapsed ? 'lg:pl-16' : 'lg:pl-60'}`}
+      className={`pt-14 lg:pt-0 transition-all duration-200 ${getPortalRailOffsetClass(collapsed)}`}
     >
       <BreadcrumbBar />
       <div

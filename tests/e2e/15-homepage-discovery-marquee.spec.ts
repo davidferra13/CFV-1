@@ -25,6 +25,9 @@ async function openHomepageWithDiscovery(page: Page) {
     await page.reload({ waitUntil: 'domcontentloaded', timeout: 60_000 })
     await expect(discoveryNav).toBeVisible({ timeout: 15_000 })
   }
+  await expect(discoveryNav).toHaveAttribute('data-discovery-hydrated', 'true', {
+    timeout: 15_000,
+  })
 
   return discoveryNav
 }
@@ -34,34 +37,69 @@ test.describe('Homepage discovery marquee', () => {
 
   test('loads the discovery navigation rows on the homepage', async ({ page }) => {
     const discoveryNav = await openHomepageWithDiscovery(page)
-    await expect(page.getByRole('heading', { name: 'Find food near you' })).toBeVisible()
+    await expect(page.getByRole('heading', { name: /book a private chef near you/i })).toBeVisible()
     await expect(
-      page.getByText(
-        'Search by place and service, or browse live Discovery Rail ideas for chefs, restaurants, occasions, and cravings.'
-      )
+      page.getByText('Search by place and service, then compare live profiles in the directory.')
     ).toBeVisible()
-    await expect(page.getByRole('link', { name: /browse restaurants/i })).toBeVisible()
+    await expect(page.getByRole('link', { name: /^taste cuisines and cravings/i })).toBeVisible()
+    await expect(page.getByRole('link', { name: /^market peak ingredients/i })).toBeVisible()
     await expect(page.getByRole('link', { name: /browse chefs near you/i })).toBeVisible()
+    await expect(page.getByRole('button', { name: /discovery details/i })).toBeVisible()
+    await expect(page.getByRole('heading', { name: /from search to table/i })).toHaveCount(0)
+    await expect(discoveryNav).toHaveAttribute('data-public-discovery-renderer', 'CuisineMarquee')
+    await expect(discoveryNav).toHaveAttribute(
+      'data-public-discovery-status',
+      'canonical_public_homepage_rail'
+    )
     await expect(discoveryNav.locator('[data-discovery-row="cuisine"]')).toBeVisible()
-    await expect(discoveryNav.locator('[data-discovery-row="craving"]')).toBeVisible()
-    await expect(discoveryNav.locator('[data-discovery-row="intent"]')).toBeVisible()
+    await expect(discoveryNav.locator('[data-discovery-row="craving"]')).toHaveCount(0)
+    await expect(discoveryNav.locator('[data-discovery-row="intent"]')).toHaveCount(0)
     await expect(discoveryNav.getByRole('link', { name: /italian/i }).first()).toBeVisible()
     await expect(discoveryNav.getByRole('link', { name: /private dinner/i }).first()).toBeVisible()
+    await expect(discoveryNav.locator('[data-discovery-source]').first()).toBeVisible()
+
+    const seasonalTop = await page.locator('.zone-seasonal').evaluate((el) => {
+      return Math.round(el.getBoundingClientRect().top)
+    })
+    const viewportHeight = await page.evaluate(() => window.innerHeight)
+    expect(seasonalTop).toBeLessThan(viewportHeight)
+  })
+
+  test('discovery info quick-view preserves help and booking destinations', async ({ page }) => {
+    await openHomepageWithDiscovery(page)
+
+    await page.getByRole('button', { name: /discovery details/i }).click()
+    const quickView = page.locator('#homepage-discovery-info')
+    await expect(quickView.getByText('How ChefFlow discovery works')).toBeVisible()
+    await expect(quickView.getByRole('link', { name: /^How it works/i })).toHaveAttribute(
+      'href',
+      '/how-it-works'
+    )
+    await expect(quickView.getByRole('link', { name: /^FAQ/i })).toHaveAttribute('href', '/faq')
+    await expect(quickView.getByRole('link', { name: /^Browse chefs/i })).toHaveAttribute(
+      'href',
+      '/chefs'
+    )
+    await expect(quickView.getByRole('link', { name: /^Book/i })).toHaveAttribute('href', '/book')
+
+    await page.getByText('Hide discovery details').click()
+    await expect(quickView).toBeHidden()
   })
 
   test('mobile viewport exposes the Discover row with services and occasions', async ({ page }) => {
     await page.setViewportSize({ width: 390, height: 844 })
 
     const discoveryNav = await openHomepageWithDiscovery(page)
-    const mobileRow = discoveryNav.locator('[data-discovery-row="mobile"]')
+    const compactRow = discoveryNav.locator('[data-discovery-row="cuisine"]')
 
-    await expect(mobileRow).toBeVisible()
+    await expect(compactRow).toBeVisible()
+    await expect(discoveryNav.locator('[data-discovery-row="mobile"]')).toHaveCount(0)
     await expect(discoveryNav.locator('[data-discovery-row="craving"]')).toBeHidden()
     await expect(discoveryNav.locator('[data-discovery-row="intent"]')).toBeHidden()
 
-    await expect(mobileRow).toContainText(/private dinner|catering|meal prep/i)
+    await expect(compactRow).toContainText(/private dinner|catering|meal prep/i)
     await expect(
-      mobileRow.getByRole('link', { name: /date night|birthday dinner|dinner party/i }).first()
+      compactRow.getByRole('link', { name: /date night|birthday dinner|dinner party/i }).first()
     ).toBeAttached()
   })
 

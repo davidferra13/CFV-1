@@ -139,8 +139,8 @@ export function QuickNotesSection({ initialNotes }: { initialNotes: QuickNote[] 
   const inputRef = useRef<HTMLInputElement>(null)
 
   const rawNotes = notes.filter((n) => n.status === 'raw')
-  const visibleNotes = showAll ? rawNotes : rawNotes.slice(0, 5)
-  const hasMore = rawNotes.length > 5
+  const visibleNotes = showAll ? rawNotes : rawNotes.slice(0, 3)
+  const hasMore = rawNotes.length > 3
 
   function handleSubmit(e: React.FormEvent) {
     e.preventDefault()
@@ -234,16 +234,16 @@ export function QuickNotesSection({ initialNotes }: { initialNotes: QuickNote[] 
 
   return (
     <section>
-      <div className="flex items-center justify-between mb-3">
+      <div className="mb-2 flex items-center justify-between">
         <div className="section-label">Quick Notes</div>
         {rawNotes.length > 0 && (
           <span className="text-xs text-stone-500">{rawNotes.length} notes</span>
         )}
       </div>
 
-      <div className="rounded-2xl border border-stone-800 bg-stone-900/50 p-4">
+      <div className="dashboard-section-card rounded-2xl border border-stone-800 bg-stone-900/50 p-3">
         {/* Input */}
-        <form onSubmit={handleSubmit} className="flex items-center gap-2 mb-3">
+        <form onSubmit={handleSubmit} className="mb-2 flex items-center gap-2">
           <div className="relative flex-1">
             <input
               ref={inputRef}
@@ -251,15 +251,16 @@ export function QuickNotesSection({ initialNotes }: { initialNotes: QuickNote[] 
               value={input}
               onChange={(e) => setInput(e.target.value)}
               placeholder="Type a quick note..."
-              className="w-full bg-stone-800/50 border border-stone-700 rounded-xl px-3 py-2 text-sm text-stone-200 placeholder:text-stone-500 focus:outline-none focus:border-brand-600 focus:ring-1 focus:ring-brand-600/30 transition-all"
+              className="min-h-10 w-full rounded-xl border border-stone-700 bg-stone-800/50 px-3 py-2 text-sm text-stone-200 transition-all placeholder:text-stone-500 focus:border-brand-600 focus:outline-none focus:ring-1 focus:ring-brand-600/30"
               disabled={isPending}
+              suppressHydrationWarning
             />
           </div>
           <button
             type="submit"
             disabled={!input.trim() || isPending}
             title="Add note"
-            className="shrink-0 p-2 rounded-xl bg-brand-600 text-white hover:bg-brand-500 disabled:opacity-40 disabled:cursor-not-allowed transition-all"
+            className="min-h-10 shrink-0 rounded-xl bg-brand-600 p-2 text-white transition-all hover:bg-brand-500 disabled:cursor-not-allowed disabled:opacity-40"
           >
             <Plus className="h-4 w-4" />
           </button>
@@ -267,7 +268,7 @@ export function QuickNotesSection({ initialNotes }: { initialNotes: QuickNote[] 
 
         {/* Notes list */}
         {rawNotes.length === 0 ? (
-          <p className="text-sm text-stone-500 text-center py-3">
+          <p className="py-2 text-center text-sm text-stone-500">
             No notes yet. Jot something down.
           </p>
         ) : (

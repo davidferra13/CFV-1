@@ -12,10 +12,14 @@ import { useState, useEffect } from 'react'
 
 type AiState = 'ready' | 'degraded' | 'offline'
 
+const ENABLE_CLIENT_AI_HEALTH_POLLING = process.env.NEXT_PUBLIC_AI_HEALTH_POLLING === 'true'
+
 export function AiStatusDot() {
   const [state, setState] = useState<AiState>('ready')
 
   useEffect(() => {
+    if (!ENABLE_CLIENT_AI_HEALTH_POLLING) return
+
     let mounted = true
 
     async function check() {

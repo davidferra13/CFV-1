@@ -36,6 +36,7 @@ const LogFeedbackSchema = z.object({
     'nextdoor',
     'instagram',
     'yelp_guest',
+    'take_a_chef',
   ]),
   reviewer_name: z.string().max(200).nullable().optional(),
   rating: z.number().int().min(1).max(5).nullable().optional(),
@@ -60,10 +61,30 @@ export async function logChefFeedback(input: LogFeedbackInput) {
   const validated = LogFeedbackSchema.parse(input)
   const db: any = createServerClient()
 
+  if (validated.client_id) {
+    const { data: client } = await db
+      .from('clients')
+      .select('id')
+      .eq('id', validated.client_id)
+      .eq('tenant_id', user.entityId)
+      .single()
+    if (!client) throw new Error('Client not found')
+  }
+
+  if (validated.event_id) {
+    const { data: event } = await db
+      .from('events')
+      .select('id')
+      .eq('id', validated.event_id)
+      .eq('tenant_id', user.entityId)
+      .single()
+    if (!event) throw new Error('Event not found')
+  }
+
   const { data: feedback, error } = await db
     .from('chef_feedback')
     .insert({
-      tenant_id: user.tenantId!,
+      tenant_id: user.entityId!,
       client_id: validated.client_id ?? null,
       event_id: validated.event_id ?? null,
       source: validated.source,
@@ -109,7 +130,7 @@ export async function getChefFeedback() {
       event:events(id, occasion, event_date)
     `
     )
-    .eq('tenant_id', user.tenantId!)
+    .eq('tenant_id', user.entityId!)
     .order('created_at', { ascending: false })
 
   if (error) {

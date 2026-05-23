@@ -53,7 +53,7 @@ export async function requestTestimonial(eventId: string): Promise<{
 }> {
   const user = await requireChef()
   const db: any = createServerClient()
-  const tenantId = user.tenantId!
+  const tenantId = user.entityId!
 
   // Look up event + client info
   const { data: event, error: eventError } = await db
@@ -104,7 +104,7 @@ export async function getTestimonials(filters?: TestimonialFilters): Promise<Tes
   let query = db
     .from('testimonials' as any)
     .select('*')
-    .eq('tenant_id', user.tenantId!)
+    .eq('tenant_id', user.entityId!)
     .order('created_at', { ascending: false })
 
   if (filters?.approved !== undefined) {
@@ -140,7 +140,7 @@ export async function approveTestimonial(id: string): Promise<void> {
     .from('testimonials' as any)
     .update({ is_approved: true })
     .eq('id', id)
-    .eq('tenant_id', user.tenantId!)
+    .eq('tenant_id', user.entityId!)
 
   if (error) {
     console.error('[approveTestimonial] Error:', error)
@@ -162,7 +162,7 @@ export async function featureTestimonial(id: string): Promise<void> {
     .from('testimonials' as any)
     .select('is_featured')
     .eq('id', id)
-    .eq('tenant_id', user.tenantId!)
+    .eq('tenant_id', user.entityId!)
     .single()
 
   if (fetchError || !current) {
@@ -173,7 +173,7 @@ export async function featureTestimonial(id: string): Promise<void> {
     .from('testimonials' as any)
     .update({ is_featured: !(current as any).is_featured })
     .eq('id', id)
-    .eq('tenant_id', user.tenantId!)
+    .eq('tenant_id', user.entityId!)
 
   if (error) {
     console.error('[featureTestimonial] Error:', error)
@@ -194,7 +194,7 @@ export async function deleteTestimonial(id: string): Promise<void> {
     .from('testimonials' as any)
     .delete()
     .eq('id', id)
-    .eq('tenant_id', user.tenantId!)
+    .eq('tenant_id', user.entityId!)
 
   if (error) {
     console.error('[deleteTestimonial] Error:', error)
@@ -250,7 +250,7 @@ export async function getTestimonialStats(): Promise<TestimonialStats> {
   const { data, error } = await db
     .from('testimonials' as any)
     .select('id, rating, is_approved, is_featured, submitted_at')
-    .eq('tenant_id', user.tenantId!)
+    .eq('tenant_id', user.entityId!)
 
   if (error) {
     console.error('[getTestimonialStats] Error:', error)

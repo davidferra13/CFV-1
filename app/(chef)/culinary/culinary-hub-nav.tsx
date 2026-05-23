@@ -9,6 +9,7 @@ const PRIMARY_TABS = [
   { label: 'Menus', href: '/culinary/menus' },
   { label: 'Prep', href: '/culinary/prep' },
   { label: 'Ingredients', href: '/culinary/ingredients' },
+  { label: 'Sustainability', href: '/culinary/sustainability' },
 ] as const
 
 /**

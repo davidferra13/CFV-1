@@ -37,10 +37,37 @@ function writeStoredPlanningContext(value: StoredPlanningContext) {
   }
 }
 
+function isMetadataArtifactSubtitle(value: string) {
+  const normalized = value.toLowerCase()
+  return (
+    normalized.includes('data completeness') ||
+    normalized.includes('high data') ||
+    normalized.includes('boosts') ||
+    normalized.includes('skilled culinary team')
+  )
+}
+
+function sanitizeSnapshotSubtitle(card: ConsumerResultCard) {
+  const subtitle = card.subtitle?.trim()
+  if (subtitle && !isMetadataArtifactSubtitle(subtitle)) {
+    return subtitle
+  }
+
+  const fallbackParts = [card.locationLabel?.trim(), card.priceLabel?.trim()].filter(
+    (part): part is string => Boolean(part)
+  )
+
+  if (fallbackParts.length > 0) {
+    return fallbackParts.join(' · ')
+  }
+
+  return card.eyebrow?.trim() || null
+}
+
 function snapshotFromCard(card: ConsumerResultCard) {
   return {
     title: card.title,
-    subtitle: card.subtitle ?? undefined,
+    subtitle: sanitizeSnapshotSubtitle(card) ?? undefined,
     imageUrl: card.imageUrl ?? undefined,
     eyebrow: card.eyebrow,
     locationLabel: card.locationLabel ?? undefined,

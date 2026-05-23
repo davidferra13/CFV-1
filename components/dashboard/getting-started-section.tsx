@@ -52,7 +52,7 @@ export function GettingStartedSection({ presence }: { presence: TenantDataPresen
   if (allDone) return null
 
   return (
-    <section className="rounded-2xl border border-stone-800 bg-stone-900/40 p-5 sm:p-6">
+    <section className="dashboard-section-card rounded-2xl border border-stone-800 bg-stone-900/40 p-5 sm:p-6">
       <div className="flex items-center justify-between mb-4">
         <div>
           <h2 className="text-lg font-semibold text-stone-100">Get Started</h2>

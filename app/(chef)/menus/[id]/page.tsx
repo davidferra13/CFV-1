@@ -20,6 +20,7 @@ import { CloneMenuButton } from '@/components/menus/clone-menu-button'
 import { MenuHealthScore } from '@/components/menus/menu-health-score'
 import { MenuPdfButton } from '@/components/menus/menu-pdf-button'
 import MenuHistoryTimeline from '@/components/menus/menu-history-timeline'
+import { HandoffBar } from '@/components/rail/handoff-bar'
 import { Suspense } from 'react'
 import Link from 'next/link'
 
@@ -127,6 +128,7 @@ export default async function MenuDetailPage({ params }: Props) {
 
   return (
     <div className="space-y-6">
+      <HandoffBar entityType="menu" entityId={id} />
       {inquiryLink && (
         <div className="flex items-center gap-2 px-1">
           <Link

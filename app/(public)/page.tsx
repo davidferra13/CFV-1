@@ -182,8 +182,14 @@ export default async function Home() {
             type: 'culinary_signal',
             label: ingredient.name,
             sublabel: `In season · ${seasonalPulse.season.name}`,
-            href: '/ingredients',
+            href: seasonalPulse.ingredients.href,
             icon: 'market' as const,
+            presentation: 'story',
+            eyebrow: 'Market rail',
+            reason: ingredient.note,
+            source: seasonalPulse.source.note,
+            freshness: seasonalPulse.copy.freshnessLine ?? seasonalPulse.copy.scopeLine,
+            actionLabel: 'See ingredient guide',
           })
         ),
         ...(seasonalPulse.endingSoon
@@ -192,8 +198,14 @@ export default async function Home() {
                 type: 'culinary_signal' as const,
                 label: seasonalPulse.endingSoon.name,
                 sublabel: 'Ending soon',
-                href: '/ingredients',
+                href: seasonalPulse.ingredients.href,
                 icon: 'market' as const,
+                presentation: 'story' as const,
+                eyebrow: 'Ending soon',
+                reason: seasonalPulse.endingSoon.note,
+                source: seasonalPulse.source.note,
+                freshness: seasonalPulse.copy.urgencyNote ?? seasonalPulse.copy.scopeLine,
+                actionLabel: 'Catch the window',
               },
             ]
           : []),
@@ -239,11 +251,11 @@ export default async function Home() {
 
         <HeroBackgroundImage />
 
-        <div className="relative mx-auto w-full max-w-4xl px-4 pb-16 pt-20 sm:px-6 sm:pb-24 sm:pt-28 lg:px-8 lg:pb-28 lg:pt-32">
+        <div className="relative mx-auto w-full max-w-4xl px-4 pb-5 pt-12 sm:px-6 sm:pb-7 sm:pt-14 lg:px-8 lg:pb-8 lg:pt-16">
           <div className="text-center">
             {/* Trust badge shown only when real stats exist */}
             {platformStats.verifiedChefCount != null && (
-              <div className="mb-6 trust-badge-ring inline-flex items-center gap-2 rounded-full border border-amber-500/30 bg-amber-500/10 px-4 py-1.5 text-sm font-medium text-amber-200/90 backdrop-blur-sm">
+              <div className="mb-4 trust-badge-ring inline-flex items-center gap-2 rounded-full border border-amber-500/30 bg-amber-500/10 px-4 py-1.5 text-sm font-medium text-amber-200/90 backdrop-blur-sm">
                 {platformStats.avgRating != null && (
                   <>
                     <span className="text-amber-400 text-xs">★★★★★</span>
@@ -259,12 +271,12 @@ export default async function Home() {
                 </span>
               </div>
             )}
-            <h1 className="font-display-serif mx-auto max-w-4xl text-5xl font-extrabold tracking-[-0.02em] sm:text-6xl lg:text-7xl lg:tracking-[-0.03em]">
+            <h1 className="font-display-serif mx-auto max-w-4xl text-4xl font-extrabold tracking-[-0.02em] sm:text-5xl lg:text-5xl lg:tracking-[-0.02em]">
               <span className="homepage-hero-shimmer hero-line hero-line-1">
                 Book a private chef near you
               </span>
             </h1>
-            <p className="mx-auto mt-5 max-w-xl text-base font-light leading-relaxed text-stone-300 sm:text-lg">
+            <p className="mx-auto mt-2.5 max-w-2xl text-sm font-light leading-relaxed text-stone-300 sm:text-base">
               Find chefs for dinner parties, catering, weekly meal prep, weddings, corporate meals,
               and private events. Browse live profiles or send one request for matched chef review.
             </p>
@@ -276,7 +288,7 @@ export default async function Home() {
             userSignals={null}
             initialLocationContext={initialLocationContext}
           />
-          <div className="mt-8 flex flex-col items-center justify-center gap-3 sm:flex-row">
+          <div className="mt-4 flex flex-col items-center justify-center gap-3 sm:flex-row">
             <TrackedLink
               href="/book"
               analyticsName="home_consumer_hero_book_private_chef"
@@ -284,7 +296,7 @@ export default async function Home() {
                 section: 'consumer_hero',
                 destination: '/book',
               }}
-              className="inline-flex min-h-14 items-center justify-center rounded-2xl gradient-accent px-10 text-base font-semibold text-white shadow-lg shadow-[#8b4513]/30 transition-all hover:-translate-y-0.5 hover:shadow-xl hover:shadow-[#8b4513]/40 active:scale-[0.98] cta-shimmer"
+              className="inline-flex min-h-12 items-center justify-center rounded-xl gradient-accent px-8 text-sm font-semibold text-white shadow-lg shadow-[#8b4513]/30 transition-all hover:-translate-y-0.5 hover:shadow-xl hover:shadow-[#8b4513]/40 active:scale-[0.98] cta-shimmer"
             >
               Book a private chef
             </TrackedLink>
@@ -295,7 +307,7 @@ export default async function Home() {
                 section: 'consumer_hero',
                 destination: '/chefs',
               }}
-              className="inline-flex min-h-14 items-center justify-center rounded-2xl border border-[#4a3020]/55 bg-[#1a110c]/60 px-10 text-base font-semibold text-stone-100 backdrop-blur-sm transition-all hover:-translate-y-0.5 hover:border-[#e8a96b]/45 hover:bg-[#2a1a10]/70 active:scale-[0.98]"
+              className="inline-flex min-h-12 items-center justify-center rounded-xl border border-[#4a3020]/55 bg-[#1a110c]/60 px-8 text-sm font-semibold text-stone-100 backdrop-blur-sm transition-all hover:-translate-y-0.5 hover:border-[#e8a96b]/45 hover:bg-[#2a1a10]/70 active:scale-[0.98]"
             >
               Browse chefs near you
             </TrackedLink>

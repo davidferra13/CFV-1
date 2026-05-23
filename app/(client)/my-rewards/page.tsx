@@ -125,9 +125,7 @@ export default async function MyRewardsPage() {
       ? incentivesSettled.value
       : (() => {
           console.error('[my-rewards] Incentives failed:', incentivesSettled.reason)
-          return { vouchers: [], giftCards: [] } as unknown as Awaited<
-            ReturnType<typeof getVoucherAndGiftCards>
-          >
+          return [] as Awaited<ReturnType<typeof getVoucherAndGiftCards>>
         })()
   const rewardsResult =
     rewardsSettled.status === 'fulfilled'
@@ -168,6 +166,14 @@ export default async function MyRewardsPage() {
   const allRewards = ((rewardsResult as any)?.data || []) as LoyaltyReward[]
   const configData = (configResult as any)?.data ?? null
   const progress = getTierProgress(status.tier as TierKey, status.pointsBalance, configData)
+  const now = Date.now()
+  const activeIncentives = (incentives as any[]).filter((incentive) => {
+    if (!incentive.is_active) return false
+    if (incentive.expires_at && new Date(incentive.expires_at).getTime() < now) return false
+    return incentive.redemptions_used < incentive.max_redemptions
+  })
+  const activeVouchers = activeIncentives.filter((incentive) => incentive.type === 'voucher')
+  const activeGiftCards = activeIncentives.filter((incentive) => incentive.type === 'gift_card')
 
   return (
     <div className="max-w-5xl mx-auto space-y-6">
@@ -224,6 +230,63 @@ export default async function MyRewardsPage() {
           </div>
         </CardContent>
       </Card>
+
+      <Card>
+        <CardHeader>
+          <CardTitle>Use or Earn Next</CardTitle>
+        </CardHeader>
+        <CardContent className="grid grid-cols-1 sm:grid-cols-3 gap-3">
+          <Link
+            href="/book-now"
+            className="rounded-lg border border-stone-700 bg-stone-900 px-4 py-3 hover:bg-stone-800"
+          >
+            <p className="text-sm font-semibold text-stone-100">Book next event</p>
+            <p className="mt-1 text-xs text-stone-500">Earn points and move toward milestones.</p>
+          </Link>
+          <Link
+            href="/my-referrals"
+            className="rounded-lg border border-stone-700 bg-stone-900 px-4 py-3 hover:bg-stone-800"
+          >
+            <p className="text-sm font-semibold text-stone-100">Refer someone</p>
+            <p className="mt-1 text-xs text-stone-500">
+              {status.referralPoints > 0
+                ? `Potential bonus: ${status.referralPoints} pts.`
+                : 'Share your chef with friends.'}
+            </p>
+          </Link>
+          <Link
+            href="/my-gift-cards"
+            className="rounded-lg border border-stone-700 bg-stone-900 px-4 py-3 hover:bg-stone-800"
+          >
+            <p className="text-sm font-semibold text-stone-100">Gift cards</p>
+            <p className="mt-1 text-xs text-stone-500">
+              {activeGiftCards.length} active gift card
+              {activeGiftCards.length === 1 ? '' : 's'} available.
+            </p>
+          </Link>
+        </CardContent>
+      </Card>
+
+      {activeIncentives.length > 0 && (
+        <Card>
+          <CardHeader>
+            <CardTitle>Active Offers</CardTitle>
+            <p className="text-sm text-stone-500 mt-1">
+              Vouchers and gift cards that can be used on eligible event payments.
+            </p>
+          </CardHeader>
+          <CardContent className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+            <div className="rounded-lg border border-stone-800 bg-stone-900 p-4">
+              <p className="text-xs font-medium text-stone-500">Vouchers</p>
+              <p className="mt-2 text-2xl font-bold text-stone-100">{activeVouchers.length}</p>
+            </div>
+            <div className="rounded-lg border border-stone-800 bg-stone-900 p-4">
+              <p className="text-xs font-medium text-stone-500">Gift Cards</p>
+              <p className="mt-2 text-2xl font-bold text-stone-100">{activeGiftCards.length}</p>
+            </div>
+          </CardContent>
+        </Card>
+      )}
 
       {/* Next Reward progress - motivates the next booking */}
       {status.programMode === 'full' && status.nextReward && (

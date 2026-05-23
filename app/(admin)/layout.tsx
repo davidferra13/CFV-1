@@ -23,6 +23,8 @@ import { isFounderEmail } from '@/lib/platform/owner-account'
 import { AnalyticsIdentify } from '@/components/analytics/analytics-identify'
 import { PATHNAME_HEADER } from '@/lib/auth/request-auth-context'
 import { resolveAdminSurfaceMode } from '@/lib/interface/surface-governance'
+import { Suspense } from 'react'
+import { AdminRailStrip, AdminRailStripSkeleton } from '@/components/rail/admin-rail-strip'
 
 export const metadata = {
   title: 'Admin',
@@ -57,7 +59,12 @@ export default async function AdminLayout({ children }: { children: React.ReactN
           >
             <AdminSidebar userId={admin.id} />
             <AdminMobileNav userId={admin.id} />
-            <AdminMainContent>{children}</AdminMainContent>
+            <AdminMainContent>
+              <Suspense fallback={<AdminRailStripSkeleton />}>
+                <AdminRailStrip />
+              </Suspense>
+              {children}
+            </AdminMainContent>
             {isFounderEmail(admin.email) && <RemyWrapper />}
             <AnalyticsIdentify userId={admin.id} email={admin.email} role="admin" />
             <PresenceBeacon userId={admin.id} email={admin.email} />

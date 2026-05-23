@@ -44,7 +44,7 @@ export function DashboardHero({ data }: { data: HeroData }) {
   } = data
 
   return (
-    <Card variant="glass" className="relative overflow-hidden">
+    <Card variant="glass" className="dashboard-hero-card relative overflow-hidden">
       {/* Subtle gradient overlay for depth */}
       <div className="absolute inset-0 bg-gradient-to-br from-brand-950/20 via-transparent to-stone-950/40 pointer-events-none" />
 
@@ -90,7 +90,7 @@ export function DashboardHero({ data }: { data: HeroData }) {
           />
           {nextEvent ? (
             <Link href={nextEvent.href} className="group">
-              <div className="flex items-start gap-3 rounded-xl bg-stone-800/40 border border-stone-700/40 px-4 py-3.5 transition-all group-hover:border-brand-700/40 group-hover:bg-stone-800/60">
+              <div className="dashboard-metric-tile flex items-start gap-3 rounded-xl bg-stone-800/40 border border-stone-700/40 px-4 py-3.5 transition-all group-hover:border-brand-700/40 group-hover:bg-stone-800/60">
                 <div className="rounded-lg bg-brand-950/80 p-2 mt-0.5 shrink-0">
                   <Clock className="h-4 w-4 text-brand-400" />
                 </div>
@@ -135,7 +135,7 @@ function HeroMetricTile({
 }) {
   return (
     <Link href={href} className="group">
-      <div className="flex items-start gap-3 rounded-xl bg-stone-800/40 border border-stone-700/40 px-4 py-3.5 transition-all group-hover:border-brand-700/40 group-hover:bg-stone-800/60">
+      <div className="dashboard-metric-tile flex items-start gap-3 rounded-xl bg-stone-800/40 border border-stone-700/40 px-4 py-3.5 transition-all group-hover:border-brand-700/40 group-hover:bg-stone-800/60">
         <div className="rounded-lg bg-brand-950/80 p-2 mt-0.5 shrink-0">
           <Icon className="h-4 w-4 text-brand-400" />
         </div>

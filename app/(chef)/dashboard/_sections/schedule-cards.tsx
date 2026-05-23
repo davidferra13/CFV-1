@@ -3,17 +3,19 @@
 
 import { getTodaysScheduleEnriched, getWeekSchedule } from '@/lib/scheduling/actions'
 import { getNextUpcomingEvent } from '@/lib/dashboard/actions'
+import { getUnifiedCalendar } from '@/lib/calendar/actions'
 import { getDOPTaskDigest, type DOPTaskDigest } from '@/lib/scheduling/task-digest'
 import { loadEventServiceSimulationPanelState } from '@/lib/service-simulation/state'
 import { getWeatherForEvents, type InlineWeather } from '@/lib/weather/open-meteo'
 import { createServerClient } from '@/lib/db/server'
+import type { UnifiedCalendarItem } from '@/lib/calendar/types'
 import { StatCard } from '@/components/dashboard/widget-cards/stat-card'
 import { ListCard, type ListCardItem } from '@/components/dashboard/widget-cards/list-card'
 import { WidgetCardShell } from '@/components/dashboard/widget-cards/widget-card-shell'
 import { WeekStrip } from '@/components/dashboard/week-strip'
 import { Card } from '@/components/ui/card'
 import Link from 'next/link'
-import { format } from 'date-fns'
+import { format, getDay, getDaysInMonth, startOfMonth } from 'date-fns'
 
 async function safe<T>(label: string, fn: () => Promise<T>, fallback: T): Promise<T> {
   try {
@@ -38,12 +40,68 @@ const emptyDOPDigest: DOPTaskDigest = {
   totalIncomplete: 0,
 }
 
+const MONTH_LABELS = [
+  'January',
+  'February',
+  'March',
+  'April',
+  'May',
+  'June',
+  'July',
+  'August',
+  'September',
+  'October',
+  'November',
+  'December',
+]
+
+const emptyMonthCalendar: UnifiedCalendarItem[] = []
+
+function localISO(date: Date): string {
+  return `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}-${String(
+    date.getDate()
+  ).padStart(2, '0')}`
+}
+
+function classifyMonthDay(items: UnifiedCalendarItem[]): {
+  label: 'busy' | 'blocked' | 'tentative' | 'prep' | 'free'
+  className: string
+} {
+  if (items.some((item) => item.category === 'events')) {
+    return { label: 'busy', className: 'bg-amber-500' }
+  }
+  if (items.some((item) => item.isBlocking || item.category === 'blocked')) {
+    return { label: 'blocked', className: 'bg-red-500' }
+  }
+  if (items.some((item) => item.category === 'draft' || item.category === 'leads')) {
+    return { label: 'tentative', className: 'bg-sky-500' }
+  }
+  if (items.some((item) => item.category === 'prep')) {
+    return { label: 'prep', className: 'bg-emerald-500' }
+  }
+  return { label: 'free', className: 'bg-stone-300' }
+}
+
+function itemsForDate(items: UnifiedCalendarItem[], date: string): UnifiedCalendarItem[] {
+  return items.filter((item) => item.startDate <= date && item.endDate >= date)
+}
+
 export async function ScheduleCards() {
+  const now = new Date()
+  const monthStart = new Date(now.getFullYear(), now.getMonth(), 1)
+  const monthEnd = new Date(now.getFullYear(), now.getMonth() + 1, 0)
+  const monthHref = `/calendar?year=${now.getFullYear()}&month=${now.getMonth() + 1}`
+
   const [weekSchedule, nextEvent, dopTaskDigest] = await Promise.all([
     safe('weekSchedule', () => getWeekSchedule(0), emptyWeekSchedule),
     safe('nextEvent', getNextUpcomingEvent, null),
     safe('dopTaskDigest', getDOPTaskDigest, emptyDOPDigest),
   ])
+  const monthItems = await safe(
+    'monthCalendar',
+    () => getUnifiedCalendar(localISO(monthStart), localISO(monthEnd)),
+    emptyMonthCalendar
+  )
 
   // Weather fetch
   const weatherByEventId = await safe<Record<string, InlineWeather>>(
@@ -164,15 +222,12 @@ export async function ScheduleCards() {
         </div>
       )}
 
-      {/* Calendar link */}
-      <div className="col-span-full flex items-center justify-end -mb-2">
-        <Link
-          href="/calendar"
-          className="text-xs text-stone-500 hover:text-amber-500 transition-colors"
-        >
-          View Calendar
-        </Link>
-      </div>
+      <MonthCalendarPreview
+        year={now.getFullYear()}
+        month={now.getMonth() + 1}
+        items={monthItems}
+        href={monthHref}
+      />
 
       {/* Today's Schedule - list card */}
       <ListCard
@@ -231,5 +286,107 @@ export async function ScheduleCards() {
         />
       )}
     </>
+  )
+}
+
+function MonthCalendarPreview({
+  year,
+  month,
+  items,
+  href,
+}: {
+  year: number
+  month: number
+  items: UnifiedCalendarItem[]
+  href: string
+}) {
+  const daysInMonth = getDaysInMonth(new Date(year, month - 1))
+  const firstDayOfWeek = getDay(startOfMonth(new Date(year, month - 1)))
+  const today = localISO(new Date())
+  const eventCount = items.filter((item) => item.category === 'events').length
+  const tentativeCount = items.filter(
+    (item) => item.category === 'draft' || item.category === 'leads'
+  ).length
+  const blockedCount = items.filter((item) => item.isBlocking || item.category === 'blocked').length
+
+  return (
+    <WidgetCardShell
+      widgetId="week_strip"
+      title={`${MONTH_LABELS[month - 1]} Calendar`}
+      size="lg"
+      href={href}
+    >
+      <div className="space-y-2.5">
+        <div className="flex flex-wrap items-center justify-between gap-2">
+          <div className="flex flex-wrap items-center gap-1.5 text-[11px] text-stone-500">
+            <span>{eventCount} busy</span>
+            <span aria-hidden="true">/</span>
+            <span>{tentativeCount} tentative</span>
+            <span aria-hidden="true">/</span>
+            <span>{blockedCount} blocked</span>
+          </div>
+          <div className="flex items-center gap-2 text-xs">
+            <Link href="/calendar/week" className="font-medium text-brand-500 hover:text-brand-400">
+              Week
+            </Link>
+            <Link href="/calendar" className="font-medium text-brand-500 hover:text-brand-400">
+              Full schedule
+            </Link>
+          </div>
+        </div>
+
+        <div className="grid grid-cols-7 gap-1 text-center text-[10px] font-medium uppercase text-stone-500">
+          {['S', 'M', 'T', 'W', 'T', 'F', 'S'].map((day, index) => (
+            <div key={`${day}-${index}`}>{day}</div>
+          ))}
+        </div>
+
+        <div className="grid grid-cols-7 gap-1">
+          {Array.from({ length: firstDayOfWeek }).map((_, index) => (
+            <div key={`empty-${index}`} className="aspect-square" />
+          ))}
+          {Array.from({ length: daysInMonth }, (_, index) => {
+            const day = index + 1
+            const date = `${year}-${String(month).padStart(2, '0')}-${String(day).padStart(2, '0')}`
+            const dayItems = itemsForDate(items, date)
+            const status = classifyMonthDay(dayItems)
+            const isToday = date === today
+
+            return (
+              <Link
+                key={date}
+                href={`${href}&date=${date}`}
+                className={`aspect-square rounded-md border text-[11px] transition-colors hover:border-brand-500 hover:bg-brand-950/20 ${
+                  isToday ? 'border-brand-500 bg-brand-950/20' : 'border-stone-800 bg-stone-900/40'
+                }`}
+                aria-label={`${format(new Date(date + 'T12:00:00'), 'MMMM d')}: ${status.label}`}
+              >
+                <span className="flex h-full flex-col items-center justify-center gap-1">
+                  <span className={isToday ? 'font-bold text-brand-500' : 'text-stone-300'}>
+                    {day}
+                  </span>
+                  <span className={`h-1.5 w-1.5 rounded-full ${status.className}`} />
+                </span>
+              </Link>
+            )
+          })}
+        </div>
+
+        <div className="flex flex-wrap items-center gap-3 text-[10px] text-stone-500">
+          {[
+            ['bg-amber-500', 'Busy'],
+            ['bg-sky-500', 'Tentative'],
+            ['bg-red-500', 'Blocked'],
+            ['bg-emerald-500', 'Prep'],
+            ['bg-stone-300', 'Free'],
+          ].map(([className, label]) => (
+            <span key={label} className="inline-flex items-center gap-1">
+              <span className={`h-1.5 w-1.5 rounded-full ${className}`} />
+              {label}
+            </span>
+          ))}
+        </div>
+      </div>
+    </WidgetCardShell>
   )
 }

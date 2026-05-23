@@ -170,6 +170,12 @@ const SECTIONS: Array<{
   secondaryLabel?: string
 }> = [
   {
+    href: '/finance/cockpit',
+    label: 'Financial Cockpit',
+    description: 'Runway, receivables, tax set-aside, concentration, margin, and quote pressure',
+    icon: '$',
+  },
+  {
     href: '/finance/overview',
     label: 'Overview',
     description: 'Revenue summary, outstanding payments, and cash flow',

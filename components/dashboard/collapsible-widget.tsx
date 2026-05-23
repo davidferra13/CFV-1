@@ -30,7 +30,7 @@ export function CollapsibleWidget({
   return (
     <div
       data-widget-id={widgetId}
-      className={`rounded-2xl overflow-hidden transition-all duration-200 ${className ?? ''}`}
+      className={`dashboard-widget-card rounded-2xl overflow-hidden transition-all duration-200 ${className ?? ''}`}
       style={{
         border: '1px solid rgba(255,255,255,0.07)',
         borderLeft: `4px solid ${catStyle.border}`,

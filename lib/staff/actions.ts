@@ -289,6 +289,18 @@ export async function assignStaffToEvent(input: AssignStaffInput) {
   const validated = AssignStaffSchema.parse(input)
   const db: any = createServerClient()
 
+  // Verify the event belongs to this tenant before trusting the route/body event id
+  const { data: event } = await db
+    .from('events')
+    .select('id')
+    .eq('id', validated.event_id)
+    .eq('tenant_id', user.tenantId!)
+    .single()
+
+  if (!event) {
+    throw new Error('Event not found or does not belong to your account')
+  }
+
   // Verify the staff member belongs to this tenant before assigning
   const { data: staffMember } = await db
     .from('staff_members')
@@ -485,8 +497,17 @@ const CreateStaffLoginSchema = z.object({
  * Chef-only. Uses admin client to query user_roles without RLS restrictions.
  */
 export async function checkStaffHasLogin(staffMemberId: string): Promise<boolean> {
-  await requireChef()
+  const user = await requireChef()
   const adminClient: any = createServerClient({ admin: true })
+
+  const { data: member } = await adminClient
+    .from('staff_members')
+    .select('id')
+    .eq('id', staffMemberId)
+    .eq('chef_id', user.tenantId!)
+    .maybeSingle()
+
+  if (!member) return false
 
   const { data } = await adminClient
     .from('user_roles')

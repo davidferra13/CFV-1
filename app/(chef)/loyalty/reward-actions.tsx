@@ -13,6 +13,10 @@ import {
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { ConfirmModal } from '@/components/ui/confirm-modal'
+import {
+  LOYALTY_MAX_FIXED_DISCOUNT_CENTS,
+  LOYALTY_MAX_PERCENT_DISCOUNT,
+} from '@/lib/loyalty/reward-guardrails'
 
 const REWARD_TYPES = [
   { value: 'free_course', label: 'Free Course' },
@@ -69,8 +73,24 @@ export function RewardActions({ reward }: { reward: LoyaltyReward }) {
       setError('Enter a discount amount')
       return
     }
+    if (
+      rewardType === 'discount_fixed' &&
+      (Number(valueDollars) <= 0 || Number(valueDollars) > LOYALTY_MAX_FIXED_DISCOUNT_CENTS / 100)
+    ) {
+      setError(
+        `Fixed discounts must be between $0.01 and $${LOYALTY_MAX_FIXED_DISCOUNT_CENTS / 100}`
+      )
+      return
+    }
     if (rewardType === 'discount_percent' && !valuePercent) {
       setError('Enter a discount percentage')
+      return
+    }
+    if (
+      rewardType === 'discount_percent' &&
+      (Number(valuePercent) <= 0 || Number(valuePercent) > LOYALTY_MAX_PERCENT_DISCOUNT)
+    ) {
+      setError(`Percent discounts must be between 1 and ${LOYALTY_MAX_PERCENT_DISCOUNT}`)
       return
     }
 
@@ -202,6 +222,7 @@ export function RewardActions({ reward }: { reward: LoyaltyReward }) {
             type="number"
             step="0.01"
             min="0.01"
+            max={LOYALTY_MAX_FIXED_DISCOUNT_CENTS / 100}
             value={valueDollars}
             onChange={(e) => setValueDollars(e.target.value)}
             placeholder="e.g., 25.00"
@@ -218,7 +239,7 @@ export function RewardActions({ reward }: { reward: LoyaltyReward }) {
             <Input
               type="number"
               min="1"
-              max="100"
+              max={LOYALTY_MAX_PERCENT_DISCOUNT}
               value={valuePercent}
               onChange={(e) => setValuePercent(e.target.value)}
               placeholder="e.g., 15"

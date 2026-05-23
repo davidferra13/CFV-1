@@ -1,7 +1,12 @@
 'use server'
 
 import { getDirectoryListings, type DirectoryListingSummary } from '@/lib/discover/actions'
-import { getDiscoverableChefs, type DirectoryChef } from '@/lib/directory/actions'
+import { normalizeUsStateCode } from '@/lib/discover/constants'
+import {
+  getDirectorySearchChefIds,
+  getDiscoverableChefs,
+  type DirectoryChef,
+} from '@/lib/directory/actions'
 import { pgClient } from '@/lib/db'
 
 export type ConsumerIntent =
@@ -132,6 +137,49 @@ function locationLabel(city: string | null | undefined, state: string | null | u
   return state || city || null
 }
 
+function isArtifactDescription(s: string | null | undefined): boolean {
+  const value = s?.trim()
+  if (!value) return true
+
+  const normalized = value.toLowerCase()
+  return (
+    value.length < 25 ||
+    normalized.includes('data completeness') ||
+    normalized.includes('boosts...') ||
+    normalized.includes('skilled culinary team')
+  )
+}
+
+function buildListingFallbackSubtitle(listing: DirectoryListingSummary): string | null {
+  const cuisine = listing.cuisine_types?.[0]?.trim()
+  const businessType = listing.business_type ? titleCase(listing.business_type) : null
+  const city = listing.city?.trim()
+  const descriptor = [cuisine, businessType].filter(Boolean).join(' ')
+
+  if (descriptor && city) return `${descriptor} in ${city}`
+  return descriptor || city || null
+}
+
+function locationFiltersFromSearch(location: string | null | undefined): {
+  state?: string | null
+  city?: string | null
+} {
+  const raw = location?.trim()
+  if (!raw) return {}
+
+  const directState = normalizeUsStateCode(raw)
+  if (directState) return { state: directState }
+
+  const parts = raw
+    .split(',')
+    .map((part) => part.trim())
+    .filter(Boolean)
+  const trailingState = normalizeUsStateCode(parts[parts.length - 1])
+  if (trailingState) return { state: trailingState, city: parts[0] ?? null }
+
+  return { city: raw }
+}
+
 function withDiscoveryTimeout<T>(promise: Promise<T>, fallback: T, timeoutMs = 4500): Promise<T> {
   return new Promise((resolve) => {
     const timer = setTimeout(() => resolve(fallback), timeoutMs)
@@ -209,7 +257,9 @@ function listingToCard(listing: DirectoryListingSummary): ConsumerResultCard {
     id: `listing-${listing.id}`,
     type: 'listing',
     title: listing.name,
-    subtitle: listing.description?.slice(0, 140) || null,
+    subtitle: isArtifactDescription(listing.description)
+      ? buildListingFallbackSubtitle(listing)
+      : listing.description!.slice(0, 140),
     imageUrl: photo,
     eyebrow: listing.business_type ? titleCase(listing.business_type) : 'Food Place',
     locationLabel: locationLabel(listing.city, listing.state),
@@ -354,9 +404,13 @@ export async function getConsumerDiscoveryFeed(
   const showChefs = fulfillment !== 'restaurant'
   const showListings = fulfillment !== 'private_chef' && fulfillment !== 'meal_prep'
   const showSpotlights = fulfillment !== 'restaurant'
+  const chefLocationFilters = locationFiltersFromSearch(filters.location)
+  const craving = filters.craving?.trim()
 
-  const [chefs, listingResult, spotlightRows] = await Promise.all([
-    showChefs ? withDiscoveryTimeout(getDiscoverableChefs(), []) : Promise.resolve([]),
+  const [chefs, listingResult, spotlightRows, cravingChefIds] = await Promise.all([
+    showChefs
+      ? withDiscoveryTimeout(getDiscoverableChefs(chefLocationFilters), [])
+      : Promise.resolve([]),
     showListings
       ? withDiscoveryTimeout(
           getDirectoryListings({
@@ -368,10 +422,27 @@ export async function getConsumerDiscoveryFeed(
         )
       : Promise.resolve([]),
     showSpotlights ? withDiscoveryTimeout(getSpotlightRows(filters), []) : Promise.resolve([]),
+    showChefs && craving
+      ? withDiscoveryTimeout(getDirectorySearchChefIds(craving), [])
+      : Promise.resolve([]),
   ])
 
-  let chefCards = chefs.map((chef) => chefToCard(chef, filters.intent))
-  let listingCards = listingResult.map(listingToCard)
+  const cravingChefIdSet = new Set(cravingChefIds)
+  let chefCards = chefs.map((chef) => {
+    const card = chefToCard(chef, filters.intent)
+    return cravingChefIdSet.has(chef.id)
+      ? {
+          ...card,
+          relevanceScore: card.relevanceScore + 60,
+        }
+      : card
+  })
+  let listingCards = listingResult
+    .map((listing) => ({ listing, card: listingToCard(listing) }))
+    .filter(
+      ({ listing, card }) => card.imageUrl !== null || !isArtifactDescription(listing.description)
+    )
+    .map(({ card }) => card)
   let spotlightCards = spotlightRows.map(spotlightToCard)
 
   if (filters.dietary) {
@@ -383,10 +454,13 @@ export async function getConsumerDiscoveryFeed(
     spotlightCards = spotlightCards.filter((card) => matchesDiet(card) || card.type === 'package')
   }
 
-  if (filters.craving) {
-    chefCards = chefCards.filter((card) => matchesText(card, filters.craving))
-    listingCards = listingCards.filter((card) => matchesText(card, filters.craving))
-    spotlightCards = spotlightCards.filter((card) => matchesText(card, filters.craving))
+  if (craving) {
+    const cravingMatchedChefCards = chefCards.filter(
+      (card) => cravingChefIdSet.has(card.sourceId) || matchesText(card, craving)
+    )
+    chefCards = cravingMatchedChefCards.length > 0 ? cravingMatchedChefCards : chefCards
+    listingCards = listingCards.filter((card) => matchesText(card, craving))
+    spotlightCards = spotlightCards.filter((card) => matchesText(card, craving))
   }
 
   if (filters.partySize) {

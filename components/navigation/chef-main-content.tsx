@@ -5,6 +5,10 @@ import { useSidebar } from '@/components/navigation/chef-nav'
 import { BreadcrumbBar } from '@/components/navigation/breadcrumb-bar'
 import { QuickExpenseTrigger } from '@/components/expenses/quick-expense-trigger'
 import { usePathname } from 'next/navigation'
+import {
+  PORTAL_RAIL_STANDARD,
+  getPortalRailOffsetClass,
+} from '@/components/navigation/portal-rail-standard'
 
 export function ChefMainContent({
   children,
@@ -30,7 +34,11 @@ export function ChefMainContent({
       tabIndex={-1}
       className={`transition-all duration-200 ${
         showMobileNav ? 'pt-mobile-header pb-mobile-nav md:pt-0 md:pb-0' : 'pt-0 pb-0'
-      } ${showDesktopSidebar ? `md:pl-16 ${collapsed ? 'lg:pl-16' : 'lg:pl-60'}` : 'lg:pl-0'}`}
+      } ${
+        showDesktopSidebar
+          ? `${PORTAL_RAIL_STANDARD.mdCollapsedOffset} ${getPortalRailOffsetClass(collapsed)}`
+          : 'lg:pl-0'
+      }`}
     >
       {showBreadcrumbBar ? <BreadcrumbBar /> : null}
       {showQuickExpenseTrigger ? <QuickExpenseTrigger /> : null}

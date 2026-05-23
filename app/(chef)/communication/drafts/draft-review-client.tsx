@@ -10,6 +10,7 @@ import { Badge } from '@/components/ui/badge'
 import {
   approveDraft,
   rejectDraft,
+  retryFailedMessage,
   type ScheduledMessage,
 } from '@/lib/communication/scheduled-message-actions'
 
@@ -49,6 +50,19 @@ function channelColor(channel: string): string {
       return 'bg-purple-900/50 text-purple-300 border-purple-700/50'
     default:
       return 'bg-stone-800 text-stone-300 border-stone-600'
+  }
+}
+
+function statusColor(status: string): string {
+  switch (status) {
+    case 'failed':
+      return 'border-rose-700/50 bg-rose-900/40 text-rose-300'
+    case 'draft':
+      return 'border-amber-700/50 bg-amber-900/30 text-amber-300'
+    case 'scheduled':
+      return 'border-emerald-700/50 bg-emerald-900/30 text-emerald-300'
+    default:
+      return 'border-stone-600 bg-stone-800 text-stone-300'
   }
 }
 
@@ -178,6 +192,51 @@ export function DraftReviewClient({ initialDrafts, initialError }: DraftReviewCl
     })
   }
 
+  function messageEdits(id: string) {
+    const edits: {
+      subject?: string
+      body?: string
+      scheduled_for?: string
+    } = {}
+
+    const draft = drafts.find((d) => d.id === id)
+    if (!draft) return null
+
+    if (editSubject !== (draft.subject ?? '')) {
+      edits.subject = editSubject
+    }
+    if (editBody !== draft.body) {
+      edits.body = editBody
+    }
+    if (editTime) {
+      const newIso = new Date(editTime).toISOString()
+      if (newIso !== draft.scheduled_for) {
+        edits.scheduled_for = newIso
+      }
+    }
+
+    return Object.keys(edits).length > 0 ? edits : undefined
+  }
+
+  function handleRetry(id: string) {
+    startTransition(async () => {
+      try {
+        const result = await retryFailedMessage(id, messageEdits(id) ?? undefined)
+
+        if (result.error) {
+          toast.error(result.error)
+          return
+        }
+
+        toast.success('Message returned to the scheduled send queue')
+        setDrafts((prev) => prev.filter((d) => d.id !== id))
+        setExpandedId(null)
+      } catch {
+        toast.error('Something went wrong while retrying')
+      }
+    })
+  }
+
   function handleReject(id: string) {
     startTransition(async () => {
       try {
@@ -227,8 +286,8 @@ export function DraftReviewClient({ initialDrafts, initialError }: DraftReviewCl
                       {contextLabel(draft.context_type)}
                     </Badge>
                   )}
-                  <Badge className="border-amber-700/50 bg-amber-900/30 text-amber-300">
-                    AI Generated
+                  <Badge className={statusColor(draft.status)}>
+                    {draft.status === 'failed' ? 'Recovery' : 'AI Generated'}
                   </Badge>
                 </div>
 
@@ -285,13 +344,23 @@ export function DraftReviewClient({ initialDrafts, initialError }: DraftReviewCl
                   </div>
 
                   <div className="flex items-center gap-3 pt-2">
-                    <Button
-                      onClick={() => handleApprove(draft.id)}
-                      disabled={isPending}
-                      className="bg-emerald-700 text-white hover:bg-emerald-600"
-                    >
-                      {isPending ? 'Saving...' : 'Approve & Schedule'}
-                    </Button>
+                    {draft.status === 'failed' ? (
+                      <Button
+                        onClick={() => handleRetry(draft.id)}
+                        disabled={isPending}
+                        className="bg-emerald-700 text-white hover:bg-emerald-600"
+                      >
+                        {isPending ? 'Saving...' : 'Retry Send'}
+                      </Button>
+                    ) : (
+                      <Button
+                        onClick={() => handleApprove(draft.id)}
+                        disabled={isPending}
+                        className="bg-emerald-700 text-white hover:bg-emerald-600"
+                      >
+                        {isPending ? 'Saving...' : 'Approve & Schedule'}
+                      </Button>
+                    )}
                     <Button
                       variant="ghost"
                       onClick={() => handleReject(draft.id)}

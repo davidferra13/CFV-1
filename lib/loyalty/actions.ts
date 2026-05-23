@@ -9,6 +9,12 @@ import { requireChef, requireClient } from '@/lib/auth/get-user'
 import { createServerClient } from '@/lib/db/server'
 import { revalidatePath } from 'next/cache'
 import { z } from 'zod'
+import {
+  LOYALTY_MAX_FIXED_DISCOUNT_CENTS,
+  LOYALTY_MAX_PERCENT_DISCOUNT,
+  assertValidLoyaltyRewardShape,
+  validateLoyaltyRewardShape,
+} from './reward-guardrails'
 
 // =====================================================================================
 // TYPES
@@ -174,32 +180,63 @@ const UpdateLoyaltyConfigSchema = z.object({
     .optional(),
 })
 
-const CreateRewardSchema = z.object({
-  name: z.string().min(1, 'Name required'),
-  description: z.string().optional(),
-  points_required: z.number().int().positive('Points must be positive'),
-  reward_type: z.enum([
-    'discount_fixed',
-    'discount_percent',
-    'free_course',
-    'free_dinner',
-    'upgrade',
-  ]),
-  reward_value_cents: z.number().int().positive().optional(),
-  reward_percent: z.number().int().min(1).max(100).optional(),
-})
+const CreateRewardSchema = z
+  .object({
+    name: z.string().min(1, 'Name required'),
+    description: z.string().optional(),
+    points_required: z.number().int().positive('Points must be positive'),
+    reward_type: z.enum([
+      'discount_fixed',
+      'discount_percent',
+      'free_course',
+      'free_dinner',
+      'upgrade',
+    ]),
+    reward_value_cents: z
+      .number()
+      .int()
+      .positive()
+      .max(LOYALTY_MAX_FIXED_DISCOUNT_CENTS)
+      .optional(),
+    reward_percent: z.number().int().min(1).max(LOYALTY_MAX_PERCENT_DISCOUNT).optional(),
+  })
+  .superRefine((value, ctx) => {
+    for (const issue of validateLoyaltyRewardShape(value)) {
+      ctx.addIssue({
+        code: z.ZodIssueCode.custom,
+        message: issue.message,
+        path: [issue.path],
+      })
+    }
+  })
 
-const UpdateRewardSchema = z.object({
-  name: z.string().min(1).optional(),
-  description: z.string().optional(),
-  points_required: z.number().int().positive().optional(),
-  reward_type: z
-    .enum(['discount_fixed', 'discount_percent', 'free_course', 'free_dinner', 'upgrade'])
-    .optional(),
-  reward_value_cents: z.number().int().positive().nullable().optional(),
-  reward_percent: z.number().int().min(1).max(100).nullable().optional(),
-  sort_order: z.number().int().optional(),
-})
+const UpdateRewardSchema = z
+  .object({
+    name: z.string().min(1).optional(),
+    description: z.string().optional(),
+    points_required: z.number().int().positive().optional(),
+    reward_type: z
+      .enum(['discount_fixed', 'discount_percent', 'free_course', 'free_dinner', 'upgrade'])
+      .optional(),
+    reward_value_cents: z
+      .number()
+      .int()
+      .positive()
+      .max(LOYALTY_MAX_FIXED_DISCOUNT_CENTS)
+      .nullable()
+      .optional(),
+    reward_percent: z.number().int().min(1).max(LOYALTY_MAX_PERCENT_DISCOUNT).nullable().optional(),
+    sort_order: z.number().int().optional(),
+  })
+  .superRefine((value, ctx) => {
+    for (const issue of validateLoyaltyRewardShape(value, { partial: true })) {
+      ctx.addIssue({
+        code: z.ZodIssueCode.custom,
+        message: issue.message,
+        path: [issue.path],
+      })
+    }
+  })
 
 export type CreateRewardInput = z.infer<typeof CreateRewardSchema>
 export type UpdateRewardInput = z.infer<typeof UpdateRewardSchema>
@@ -1376,6 +1413,7 @@ export async function getLoyaltyTransactions(clientId: string) {
 export async function createReward(input: CreateRewardInput) {
   const user = await requireChef()
   const validated = CreateRewardSchema.parse(input)
+  assertValidLoyaltyRewardShape(validated)
   const db: any = createServerClient()
 
   const { data: reward, error } = await db
@@ -1433,6 +1471,7 @@ export async function getRewards() {
 export async function updateReward(rewardId: string, input: UpdateRewardInput) {
   const user = await requireChef()
   const validated = UpdateRewardSchema.parse(input)
+  assertValidLoyaltyRewardShape(validated, { partial: true })
   const db: any = createServerClient()
 
   const { data: reward, error } = await db

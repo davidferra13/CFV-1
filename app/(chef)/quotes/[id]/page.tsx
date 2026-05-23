@@ -31,6 +31,7 @@ import { QuoteCostBreakdownPanel } from '@/components/quotes/quote-cost-breakdow
 import { getQuoteCostIntelligence } from '@/lib/quotes/quote-cost-intelligence'
 import { QuotePricingConfidence } from '@/components/intelligence/quote-pricing-confidence'
 import { QuoteCostGuardBanner } from '@/components/costing/quote-cost-guard-banner'
+import { QuoteComplianceGateCard } from '@/components/compliance/quote-compliance-gate-card'
 import { Suspense } from 'react'
 
 function InlineBadgeSkeleton() {
@@ -155,6 +156,12 @@ export default async function QuoteDetailPage({ params }: { params: { id: string
           eventId={(quote as any).event.id}
           status={quote.status as string}
         />
+      )}
+
+      {quote.status === 'draft' && (
+        <Suspense fallback={<QuoteWarningSkeleton />}>
+          <QuoteComplianceGateCard quoteId={params.id} eventId={(quote as any).event?.id ?? null} />
+        </Suspense>
       )}
 
       {/* Version History */}

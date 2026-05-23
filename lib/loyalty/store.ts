@@ -18,6 +18,11 @@ import type {
   AdjustLoyaltyInput,
 } from './actions'
 import { computeTier, getNextTier, getTierThreshold } from './loyalty-core'
+import {
+  LOYALTY_MAX_FIXED_DISCOUNT_CENTS,
+  LOYALTY_MAX_PERCENT_DISCOUNT,
+  assertValidLoyaltyRewardShape,
+} from './reward-guardrails'
 
 // Default rewards seeded on first config creation
 const DEFAULT_REWARDS = [
@@ -361,6 +366,11 @@ export async function createRewardForTenant(
   if (!VALID_TYPES.includes(input.reward_type)) {
     throw new Error(`Invalid reward_type. Must be one of: ${VALID_TYPES.join(', ')}`)
   }
+  assertValidLoyaltyRewardShape({
+    reward_type: input.reward_type,
+    reward_value_cents: input.reward_value_cents ?? null,
+    reward_percent: input.reward_percent ?? null,
+  })
 
   const db: any = createServerClient({ admin: true })
   const { data: reward, error } = await db
@@ -418,6 +428,34 @@ export async function updateRewardForTenant(
   ) {
     throw new Error('points_required must be a positive number')
   }
+  if (
+    sanitized.reward_value_cents !== undefined &&
+    sanitized.reward_value_cents !== null &&
+    (typeof sanitized.reward_value_cents !== 'number' ||
+      sanitized.reward_value_cents <= 0 ||
+      sanitized.reward_value_cents > LOYALTY_MAX_FIXED_DISCOUNT_CENTS)
+  ) {
+    throw new Error(
+      `Fixed discounts must be between $0.01 and $${LOYALTY_MAX_FIXED_DISCOUNT_CENTS / 100}`
+    )
+  }
+  if (
+    sanitized.reward_percent !== undefined &&
+    sanitized.reward_percent !== null &&
+    (typeof sanitized.reward_percent !== 'number' ||
+      sanitized.reward_percent <= 0 ||
+      sanitized.reward_percent > LOYALTY_MAX_PERCENT_DISCOUNT)
+  ) {
+    throw new Error(`Percent discounts must be between 1 and ${LOYALTY_MAX_PERCENT_DISCOUNT}`)
+  }
+  assertValidLoyaltyRewardShape(
+    {
+      reward_type: sanitized.reward_type as string | undefined,
+      reward_value_cents: sanitized.reward_value_cents as number | null | undefined,
+      reward_percent: sanitized.reward_percent as number | null | undefined,
+    },
+    { partial: true }
+  )
 
   const db: any = createServerClient({ admin: true })
   const { data: reward, error } = await db

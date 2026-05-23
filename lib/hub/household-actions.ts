@@ -573,28 +573,6 @@ async function getClientProfileIdsForChef(
 
   if (profilesByClient?.length) return profilesByClient.map((profile: any) => profile.id)
 
-  if (client.email) {
-    const { data: profileByEmail, error: profileByEmailError } = await db
-      .from('hub_guest_profiles')
-      .select('id, client_id')
-      .eq('email_normalized', String(client.email).toLowerCase().trim())
-      .maybeSingle()
-
-    if (profileByEmailError) {
-      throw new Error(`Failed to load email household profile: ${profileByEmailError.message}`)
-    }
-
-    if (profileByEmail?.id) {
-      if (!profileByEmail.client_id) {
-        await db
-          .from('hub_guest_profiles')
-          .update({ client_id: clientId, updated_at: new Date().toISOString() })
-          .eq('id', profileByEmail.id)
-      }
-      return [profileByEmail.id]
-    }
-  }
-
   if (!options?.createIfMissing) return []
 
   const { data: created, error } = await db
@@ -752,6 +730,7 @@ export async function updateClientHouseholdMember(
         updated_at: new Date().toISOString(),
       })
       .eq('id', validated.memberId)
+      .in('profile_id', profileIds)
       .select('*')
       .single()
 

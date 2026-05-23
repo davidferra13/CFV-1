@@ -6,7 +6,12 @@ import { auth } from '@/lib/auth'
 import dynamic from 'next/dynamic'
 import { headers } from 'next/headers'
 import { redirect } from 'next/navigation'
-import { ChefSidebar, ChefMobileNav } from '@/components/navigation/chef-nav'
+const ChefSidebar = dynamic(() =>
+  import('@/components/navigation/chef-nav').then((m) => m.ChefSidebar)
+)
+const ChefMobileNav = dynamic(() =>
+  import('@/components/navigation/chef-mobile-nav').then((m) => m.ChefMobileNav)
+)
 import { ChefMainContent } from '@/components/navigation/chef-main-content'
 import { ToastProvider } from '@/components/notifications/toast-provider'
 import { ChefProviders } from '@/components/providers/chef-providers'
@@ -30,8 +35,9 @@ import {
   getCachedUsageRanking,
 } from '@/lib/chef/layout-data-cache'
 import { TestAccountBanner } from '@/components/dev/test-account-banner'
-const CommandPalette = dynamic(
-  () => import('@/components/search/command-palette').then((m) => m.CommandPalette),
+const CommandPaletteLauncher = dynamic(
+  () =>
+    import('@/components/search/command-palette-launcher').then((m) => m.CommandPaletteLauncher),
   { ssr: false }
 )
 // getRegionalSettings removed - timezone comes from cached layoutData, rest are constants
@@ -65,6 +71,10 @@ const QuickCapture = dynamic(
   () => import('@/components/mobile/quick-capture').then((m) => m.QuickCapture),
   { ssr: false }
 )
+const TriageDock = dynamic(
+  () => import('@/components/capture/triage-dock').then((m) => m.TriageDock),
+  { ssr: false }
+)
 const BreadcrumbTracker = dynamic(
   () => import('@/components/activity/breadcrumb-tracker').then((m) => m.BreadcrumbTracker),
   { ssr: false }
@@ -93,6 +103,7 @@ import {
   ContextualRailServer,
   ContextualRailSkeleton,
 } from '@/components/rail/contextual-rail-server'
+import { UrlCapabilityRail } from '@/components/rail/url-capability-rail'
 import {
   getRailGroupPriorities,
   type RailGroupPriority,
@@ -301,6 +312,7 @@ export default async function ChefLayout({ children }: { children: React.ReactNo
                 <ContextualRailServer />
               </Suspense>
             )}
+            {shellBudget.showContextualRail && <UrlCapabilityRail />}
             {children}
           </ChefMainContent>
 
@@ -313,7 +325,7 @@ export default async function ChefLayout({ children }: { children: React.ReactNo
           <OfflineStatusBar />
 
           {/* Command Palette - Cmd+K universal search and navigation */}
-          <CommandPalette userId={user.id} tenantId={user.tenantId ?? user.entityId} />
+          <CommandPaletteLauncher userId={user.id} tenantId={user.tenantId ?? user.entityId} />
 
           {/* Remy - AI companion chatbot, available to all chefs */}
           {shouldRenderRemy && shellBudget.showRemy ? <RemyWrapper /> : null}

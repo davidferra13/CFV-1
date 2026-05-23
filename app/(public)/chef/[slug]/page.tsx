@@ -40,6 +40,8 @@ import { getPublicPortfolioEntries } from '@/lib/profile/portfolio-actions'
 import { PortfolioGallery } from '@/components/profile/portfolio-gallery'
 import { getUpcomingPublicEvents } from '@/lib/tickets/purchase-actions'
 import { PublicSecondaryEntryCluster } from '@/components/public/public-secondary-entry-cluster'
+import { PublicFollowHandoff } from '@/components/public/public-follow-handoff'
+import { PublicShowcasePackageCards } from '@/components/public/public-showcase-package-cards'
 import { PUBLIC_SECONDARY_ENTRY_CONFIG } from '@/lib/public/public-secondary-entry-config'
 import { getCurrentUser } from '@/lib/auth/get-user'
 import { auth } from '@/lib/auth'
@@ -48,6 +50,8 @@ import {
   getPublicChefBuyerSignals,
   getPublicShowcaseMenus,
 } from '@/lib/public/chef-profile-readiness'
+import { getSavedChefIds } from '@/lib/discovery/saved-chefs'
+import { buildPublicChefShowcase } from '@/lib/showcase/public-read-model'
 import { JsonLd } from '@/components/seo/json-ld'
 import { absoluteUrl } from '@/lib/site/public-site'
 
@@ -511,6 +515,7 @@ export default async function ChefProfilePage({ params }: Props) {
     buyerSignals,
     showcaseMenus,
     portfolioEntries,
+    savedChefIds,
   ] = await Promise.all([
     auth().catch(() => null),
     getPublicChefReviewFeed(chef.id),
@@ -604,6 +609,7 @@ export default async function ChefProfilePage({ params }: Props) {
     })),
     getPublicShowcaseMenus(chef.id).catch(() => []),
     getPublicPortfolioEntries(chef.id).catch(() => []),
+    getSavedChefIds().catch(() => []),
   ])
 
   const primaryColor = chef.portal_primary_color || '#1c1917'
@@ -759,6 +765,7 @@ export default async function ChefProfilePage({ params }: Props) {
   const publishedLinks = [
     hasWebsiteLink ? chef.website_url : null,
     ...(chef.social_links ? Object.values(chef.social_links) : []),
+    ...(chef.external_long_form_links ?? []),
   ].filter((value): value is string => typeof value === 'string' && value.trim().length > 0)
   const heroSummaryLine = [
     locationLabel ? `Serves ${locationLabel}` : null,
@@ -896,6 +903,16 @@ export default async function ChefProfilePage({ params }: Props) {
     buyerSignals.operations.responseTime != null
       ? `Starting an inquiry does not charge your card or confirm the event. ${chef.display_name} publishes a response window of ${buyerSignals.operations.responseTime}.`
       : 'Starting an inquiry does not charge your card or confirm the event. The chef reviews fit, timing, and scope before sending next steps.'
+  const publicShowcase = buildPublicChefShowcase({
+    chef,
+    buyerSignals,
+    reviewFeed,
+    showcaseMenus,
+    portfolioEntries,
+    workHistory,
+    achievements,
+  })
+  const savedChefIdSet = new Set<string>((savedChefIds as string[]).map(String))
 
   return (
     <div className="min-h-screen" style={pageBackgroundStyle}>
@@ -919,6 +936,7 @@ export default async function ChefProfilePage({ params }: Props) {
         totalReviews={reviewFeed.stats.totalReviews}
       />
       <ChefBreadcrumbJsonLd chefName={chef.display_name} profileUrl={profileUrl} />
+      {reviewFeed.structuredData && <JsonLd data={reviewFeed.structuredData} />}
 
       <section className="py-16 md:py-24 bg-stone-900/70 backdrop-blur-[1px]">
         <div className="max-w-5xl mx-auto px-6 text-center">
@@ -1097,6 +1115,32 @@ export default async function ChefProfilePage({ params }: Props) {
 
           {chef.bio && (
             <p className="text-stone-300 mt-6 max-w-2xl mx-auto leading-relaxed">{chef.bio}</p>
+          )}
+
+          {chef.public_proof_chips && chef.public_proof_chips.length > 0 && (
+            <div className="mt-5 flex flex-wrap justify-center gap-2">
+              {chef.public_proof_chips.map((label: string) => (
+                <DetailChip key={`proof-${label}`} label={label} />
+              ))}
+            </div>
+          )}
+
+          {chef.external_long_form_links && chef.external_long_form_links.length > 0 && (
+            <div className="mt-5 flex flex-wrap justify-center gap-2">
+              {chef.external_long_form_links.map((href: string, index: number) => (
+                <TrackedLink
+                  key={href}
+                  href={href}
+                  analyticsName="public_profile_long_form_link"
+                  analyticsProps={{ chef_slug: publicSlug, index }}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="rounded-full border border-stone-700 bg-stone-900/80 px-3 py-1.5 text-xs font-medium text-stone-200 transition-colors hover:border-stone-500 hover:bg-stone-800"
+                >
+                  {index === 0 ? 'Website story' : `Story link ${index + 1}`}
+                </TrackedLink>
+              ))}
+            </div>
           )}
 
           {heroSummaryLine && (
@@ -1286,6 +1330,13 @@ export default async function ChefProfilePage({ params }: Props) {
                       </TrackedLink>
                     </div>
                   )}
+
+                  <PublicFollowHandoff
+                    chefId={chef.id}
+                    chefName={chef.display_name}
+                    publicSlug={publicSlug}
+                    initialSaved={savedChefIdSet.has(String(chef.id))}
+                  />
                 </div>
               </div>
 
@@ -1327,6 +1378,12 @@ export default async function ChefProfilePage({ params }: Props) {
           </div>
         </section>
       )}
+
+      <PublicShowcasePackageCards
+        packages={publicShowcase.packages}
+        publicSlug={publicSlug}
+        primaryColor={primaryColor}
+      />
 
       {showProofHighlights && (
         <section className="px-6 pt-2">

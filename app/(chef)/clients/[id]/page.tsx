@@ -67,6 +67,8 @@ import { getClientTags, getAllUsedTags } from '@/lib/clients/tag-actions'
 import { ClientTags } from '@/components/clients/client-tags'
 import { getClientNextBestAction } from '@/lib/clients/next-best-action'
 import { NextBestActionCard } from '@/components/clients/next-best-action-card'
+import { getClientContributionProfileContext } from '@/lib/client-contribution/actions'
+import { ClientContributionPanel } from '@/components/clients/client-contribution-panel'
 import { RelationshipStrengthBadge } from '@/components/clients/relationship-strength-badge'
 import { getClientPortalToken } from '@/lib/client-portal/actions'
 import { PortalLinkManager } from '@/components/clients/portal-link-manager'
@@ -102,6 +104,7 @@ import {
 } from '@/lib/client-work-graph/shared-snapshot'
 import { getHouseholdForClient } from '@/lib/hub/household-actions'
 import { ClientHouseholdPanel } from '@/components/clients/client-household-panel'
+import { buildClientHouseholdOperatingMemory } from '@/lib/intelligence/client-household-operating-memory'
 import { getRecurringSchedules } from '@/lib/scheduling/recurring-actions'
 import { RecurringBookingPanel } from '@/components/clients/recurring-booking-panel'
 import { getMenus } from '@/lib/menus/actions'
@@ -189,6 +192,7 @@ export default async function ClientDetailPage({ params }: ClientDetailPageProps
     clientTags,
     allUsedTags,
     clientNBA,
+    contributionContext,
     portalTokenData,
     clientPhotos,
     tasteProfile,
@@ -220,6 +224,7 @@ export default async function ClientDetailPage({ params }: ClientDetailPageProps
     getClientTags(params.id).catch(() => []),
     getAllUsedTags().catch(() => []),
     getClientNextBestAction(params.id).catch(() => null),
+    getClientContributionProfileContext(params.id).catch(() => null),
     getClientPortalToken(params.id).catch(() => ({
       token: null,
       createdAt: null,
@@ -294,6 +299,12 @@ export default async function ClientDetailPage({ params }: ClientDetailPageProps
           (event) => String(event.id) === clientOpsSnapshot.rsvpSummary?.eventId
         ) ?? null)
       : null
+  const householdOperatingMemory = buildClientHouseholdOperatingMemory({
+    tenantId: chefUser.tenantId!,
+    client: client as any,
+    household: householdData,
+    eventId: activeRsvpEvent?.id ? String(activeRsvpEvent.id) : null,
+  })
 
   return (
     <div className="space-y-8">
@@ -401,6 +412,16 @@ export default async function ClientDetailPage({ params }: ClientDetailPageProps
 
       {/* Next Best Action */}
       {clientNBA ? <NextBestActionCard action={clientNBA} /> : null}
+
+      {/* Client Contribution */}
+      {contributionContext ? (
+        <WidgetErrorBoundary name="Client Contribution" compact>
+          <ClientContributionPanel
+            snapshot={contributionContext.snapshot}
+            dependencySimulation={contributionContext.dependencySimulation}
+          />
+        </WidgetErrorBoundary>
+      ) : null}
 
       {/* Contextual Suggestions */}
       <ContextualNextAction
@@ -1303,7 +1324,13 @@ export default async function ClientDetailPage({ params }: ClientDetailPageProps
       <AllergyRecordsPanel clientId={client.id} initialRecords={allergyRecords as any} />
 
       {/* Household Members */}
-      {householdData && <ClientHouseholdPanel clientId={client.id} household={householdData} />}
+      {householdData && (
+        <ClientHouseholdPanel
+          clientId={client.id}
+          household={householdData}
+          operatingMemory={householdOperatingMemory}
+        />
+      )}
 
       {/* Taste Profile */}
       <WidgetErrorBoundary name="Taste Profile" compact>

@@ -54,6 +54,8 @@ import {
 } from '@/lib/chef/knowledge/tip-actions'
 import { getReviewQueueCount } from '@/lib/knowledge/review-actions'
 import { requireChef } from '@/lib/auth/get-user'
+import { getClientContributionPortfolio } from '@/lib/client-contribution/actions'
+import { buildContributionOpportunityPlan } from '@/lib/client-contribution/strategy'
 import { HealthDashboardWidget } from '@/components/intelligence/health-dashboard-widget'
 import { fetchBusinessHealthSummaryOnly } from '@/lib/intelligence/business-health-actions'
 import { getPortfolioLTVSummary } from '@/lib/analytics/client-ltv-actions'
@@ -67,6 +69,12 @@ async function safe<T>(label: string, fn: () => Promise<T>, fallback: T): Promis
     console.error(`[Dashboard/Widgets] ${label} failed:`, err)
     return fallback
   }
+}
+
+const UNRESOLVED_TEMPLATE_TOKEN = /\{[a-zA-Z0-9_]+\}/
+
+function hasUnresolvedTemplateText(value: string | null | undefined): boolean {
+  return typeof value === 'string' && UNRESOLVED_TEMPLATE_TOKEN.test(value)
 }
 
 export async function QuickNotesLoader() {
@@ -228,6 +236,33 @@ export async function PriorityQueueSection({
   )
 }
 
+export async function ClientContributionDecisionsSection() {
+  const portfolio = await safe('clientContributionPortfolio', getClientContributionPortfolio, null)
+  if (!portfolio) return null
+
+  const opportunities = buildContributionOpportunityPlan(portfolio, { limit: 4 })
+  if (opportunities.length === 0) return null
+
+  const items: ListCardItem[] = opportunities.map((item) => ({
+    id: item.id,
+    label: `${item.actionLabel}: ${item.clientName}`,
+    sublabel: `${item.window}-day plan - ${item.reason}`,
+    href: item.href,
+    status: item.urgency === 'high' ? ('amber' as const) : ('brand' as const),
+  }))
+
+  return (
+    <ListCard
+      widgetId="client_contribution_decisions"
+      title="Contribution Decisions"
+      count={opportunities.length}
+      items={items}
+      href="/clients/contribution"
+      emptyMessage="No contribution decisions need attention."
+    />
+  )
+}
+
 export async function PriorityActionsSection({
   queuePromise,
 }: {
@@ -343,7 +378,12 @@ export async function TieredRailSection({
       user.id,
       user.tenantId ?? undefined
     )
-    universalItems = universalResult.items
+    universalItems = universalResult.items.filter(
+      (item) =>
+        !hasUnresolvedTemplateText(item.label) &&
+        !hasUnresolvedTemplateText(item.sublabel) &&
+        !hasUnresolvedTemplateText(item.href)
+    )
   } catch {
     // Universal rail data is non-critical; proceed without it
   }
@@ -354,6 +394,12 @@ export async function TieredRailSection({
       'chef',
       user.id,
       user.tenantId ?? undefined
+    )
+    universalItems = universalItems.filter(
+      (item) =>
+        !hasUnresolvedTemplateText(item.label) &&
+        !hasUnresolvedTemplateText(item.sublabel) &&
+        !hasUnresolvedTemplateText(item.href)
     )
   } catch {
     // Lifecycle bridge is non-critical

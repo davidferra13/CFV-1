@@ -28,6 +28,11 @@ const PLATFORM_META: Record<string, PlatformMeta> = {
     urlPlaceholder: 'https://www.airbnb.com/users/show/...',
     needsName: true,
   },
+  take_a_chef: {
+    label: 'TakeAChef',
+    urlPlaceholder: 'https://www.takeachef.com/...',
+    needsName: true,
+  },
   thumbtack: {
     label: 'Thumbtack',
     urlPlaceholder: 'https://www.thumbtack.com/...',
@@ -76,6 +81,7 @@ const SOURCE_SELECT_GROUPS: SelectOptionGroup[] = [
     label: 'Booking Platforms',
     options: [
       { label: 'Airbnb', value: 'airbnb' },
+      { label: 'TakeAChef', value: 'take_a_chef' },
       { label: 'Thumbtack', value: 'thumbtack' },
       { label: 'GigSalad', value: 'gigsalad' },
       { label: 'TaskRabbit', value: 'taskrabbit' },
@@ -139,6 +145,7 @@ export function ImportPlatformReview() {
 
   const platformMeta = source ? PLATFORM_META[source] : null
   const needsName = platformMeta?.needsName ?? false
+  const shouldWarnForMissingUrl = Boolean(platformMeta?.needsName && !sourceUrl.trim())
 
   const resetForm = () => {
     setSource('')
@@ -316,7 +323,8 @@ export function ImportPlatformReview() {
               {platformMeta && (
                 <div>
                   <label className="block text-sm font-medium text-stone-300 mb-1">
-                    Review Link (optional)
+                    Review Link{' '}
+                    {platformMeta.needsName && <span className="text-amber-400">*</span>}
                   </label>
                   <Input
                     type="url"
@@ -325,8 +333,15 @@ export function ImportPlatformReview() {
                     onChange={(e) => setSourceUrl(e.target.value)}
                   />
                   <p className="text-xs text-stone-300 mt-1">
-                    Direct link to the review if available
+                    Direct platform links create public source proof. Saving without one will land
+                    in the import inbox as missing-source work.
                   </p>
+                  {shouldWarnForMissingUrl && (
+                    <p className="text-xs text-amber-400 mt-1">
+                      Missing direct URL: this import will be flagged until the source link is
+                      fixed.
+                    </p>
+                  )}
                 </div>
               )}
 
