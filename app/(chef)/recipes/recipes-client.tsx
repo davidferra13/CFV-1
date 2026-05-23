@@ -154,7 +154,10 @@ export function RecipeLibraryClient({ recipes, pagination }: Props) {
         </div>
         <div className="space-y-2 md:hidden">
           <div className="flex gap-2">
-            <Button href="/recipes/new" data-tour="add-recipe" className="w-full flex-1">
+            <Button href="/recipes/quick-capture" variant="secondary" className="flex-1">
+              Quick Capture
+            </Button>
+            <Button href="/recipes/new" data-tour="add-recipe" className="flex-1">
               New Recipe
             </Button>
             <Button
@@ -236,6 +239,9 @@ export function RecipeLibraryClient({ recipes, pagination }: Props) {
           >
             Export CSV
           </a>
+          <Link href="/recipes/quick-capture">
+            <Button variant="secondary">Quick Capture</Button>
+          </Link>
           <Link href="/recipes/new" data-tour="add-recipe">
             <Button>New Recipe</Button>
           </Link>
