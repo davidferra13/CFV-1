@@ -41,6 +41,8 @@ import {
   ChefLifeSynthesisRailSkeleton,
 } from '@/components/dashboard/chef-life-synthesis-rail'
 import { getChefLifeDashboardSynthesis } from '@/lib/dashboard/chef-life-synthesis-actions'
+import { ProfitAtAGlance, ProfitAtAGlanceSkeleton } from '@/components/finance/profit-at-a-glance'
+import { getProfitAtAGlance } from '@/lib/finance/profit-actions'
 
 export const metadata: Metadata = { title: 'Dashboard' }
 
@@ -122,6 +124,12 @@ export default async function ChefDashboard() {
         </Suspense>
       </WidgetErrorBoundary>
 
+      <WidgetErrorBoundary name="Profit at a Glance" compact>
+        <Suspense fallback={<ProfitAtAGlanceSkeleton />}>
+          <ProfitAtAGlanceLoader />
+        </Suspense>
+      </WidgetErrorBoundary>
+
       <WidgetErrorBoundary name="Revenue Goal" compact>
         <Suspense fallback={<WidgetCardSkeleton size="sm" />}>
           <RevenueGoalSection />
@@ -145,6 +153,23 @@ async function WeeklyReflectionLoader() {
   const summary = await getWeeklyRetroSummary().catch(() => null)
   if (!summary || !summary.hasActivity) return null
   return <WeeklyReflectionWidget summary={summary} />
+}
+
+async function ProfitAtAGlanceLoader() {
+  const data = await getProfitAtAGlance().catch(() => ({
+    monthlyProfitCents: 0,
+    monthlyRevenueCents: 0,
+    monthlyCostCents: 0,
+    eventCount: 0,
+    avgProfitPerEventCents: 0,
+    trend: { currentMonthProfitCents: 0, lastMonthProfitCents: 0, changePercent: null, direction: 'flat' as const },
+    ytdProfitCents: 0,
+    ytdRevenueCents: 0,
+    ytdCostCents: 0,
+    ytdEventCount: 0,
+    hasData: false,
+  }))
+  return <ProfitAtAGlance data={data} />
 }
 
 async function ChefLifeSynthesisLoader() {

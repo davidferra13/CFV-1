@@ -430,6 +430,26 @@ export type { PricingInsightsParams, PricingInsights } from './pricing-insights'
 export { getProfitAndLossReport, getDefaultProfitLossWindow } from './profit-loss-report-actions'
 export type { ProfitAndLossReportData } from './profit-loss-report-actions'
 
+// profit-calculator ('use server')
+export {
+  calculateEventProfit,
+  calculateMonthlyProfit,
+  calculateProfitTrend,
+} from './profit-calculator'
+export type {
+  EventProfit,
+  MonthlyProfitSummary,
+  ProfitTrend,
+  ProfitAtAGlanceData,
+} from './profit-calculator'
+
+// profit-actions ('use server')
+export {
+  getProfitAtAGlance,
+  getEventPnL,
+  getFinancialClarityData,
+} from './profit-actions'
+
 // private-chef-financial-cockpit-actions ('use server')
 export { getPrivateChefFinancialCockpit } from './private-chef-financial-cockpit-actions'
 
