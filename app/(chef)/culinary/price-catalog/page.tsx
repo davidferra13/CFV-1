@@ -5,7 +5,10 @@ import { getStoreCatalogStats } from '@/lib/openclaw/store-catalog-actions'
 import { getOpenClawRefreshStatus } from '@/lib/openclaw/refresh-status-actions'
 import { OpenClawRefreshStatus } from '@/components/pricing/openclaw-refresh-status'
 import { OpenClawCountdownCard } from '@/components/openclaw/countdown-card'
-import { CatalogBrowser } from './catalog-browser'
+import dynamic from 'next/dynamic'
+const CatalogBrowser = dynamic(() => import('./catalog-browser').then((m) => m.CatalogBrowser), {
+  ssr: false,
+})
 
 export const metadata = { title: 'Food Catalog' }
 

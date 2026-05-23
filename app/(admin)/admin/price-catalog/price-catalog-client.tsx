@@ -11,7 +11,11 @@ import {
   type OpenClawStats,
   type SyncResult,
 } from '@/lib/openclaw/sync'
-import { CatalogBrowser } from '@/app/(chef)/culinary/price-catalog/catalog-browser'
+import dynamic from 'next/dynamic'
+const CatalogBrowser = dynamic(
+  () => import('@/app/(chef)/culinary/price-catalog/catalog-browser').then((m) => m.CatalogBrowser),
+  { ssr: false }
+)
 import { OpenClawCountdownCard } from '@/components/openclaw/countdown-card'
 import { ScheduleBoard } from '@/components/openclaw/schedule-board'
 import { VendorImportTab } from './vendor-import-tab'

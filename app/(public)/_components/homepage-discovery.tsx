@@ -3,7 +3,10 @@
 import { useCallback, useEffect, useState } from 'react'
 import Link from 'next/link'
 import { HomepageSearch } from './homepage-search'
-import { CuisineMarquee } from './cuisine-marquee'
+import dynamic from 'next/dynamic'
+const CuisineMarquee = dynamic(() => import('./cuisine-marquee').then((m) => m.CuisineMarquee), {
+  ssr: false,
+})
 import { Info, X } from '@/components/ui/icons'
 import type {
   DiscoveryRailItem,
