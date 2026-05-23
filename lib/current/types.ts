@@ -45,6 +45,8 @@ export interface CurrentUnit {
   entityType: string
   /** Supporting context lines */
   contextLines: string[]
+  /** Evidence label from Truth-Net taxonomy (optional) */
+  evidenceLabel?: import('@/lib/operating-loop/types').EvidenceLabel | null
   /** Effort estimate in minutes (null = unknown) */
   estimatedMinutes: number | null
   /** Deadline ISO string (null = no deadline). String for RSC serialization. */

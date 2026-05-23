@@ -7,13 +7,24 @@ export type TakeoutCategoryId =
   | 'clients'
   | 'events'
   | 'financials'
+  | 'quotes'
   | 'commerce'
   | 'menus'
   | 'documents'
   | 'conversations'
   | 'photos'
   | 'ingredients'
+  | 'vendors'
+  | 'staff'
   | 'profile'
+
+export type TakeoutSectionId = 'core' | 'business' | 'other'
+
+export type TakeoutSection = {
+  id: TakeoutSectionId
+  label: string
+  categories: TakeoutCategoryId[]
+}
 
 export type TakeoutCategory = {
   id: TakeoutCategoryId
@@ -79,15 +90,25 @@ export const TAKEOUT_CATEGORIES: TakeoutCategory[] = [
   {
     id: 'financials',
     label: 'Financials',
-    description: 'Ledger entries, expenses, quotes, and payment records',
-    tables: [
-      { name: 'ledger_entries' },
-      { name: 'expenses' },
-      { name: 'quotes' },
-      { name: 'commerce_payments' },
-    ],
+    description: 'Ledger entries, expenses, and payment records',
+    tables: [{ name: 'ledger_entries' }, { name: 'expenses' }, { name: 'commerce_payments' }],
     formats: ['json', 'csv'],
     folder: 'financials',
+  },
+  {
+    id: 'quotes',
+    label: 'Quotes & Proposals',
+    description: 'Quotes with line items, transitions, and client proposals',
+    tables: [
+      { name: 'quotes' },
+      { name: 'quote_line_items', parentTable: 'quotes', parentFkColumn: 'quote_id' },
+      { name: 'quote_state_transitions', parentTable: 'quotes', parentFkColumn: 'quote_id' },
+      { name: 'quote_addons', parentTable: 'quotes', parentFkColumn: 'quote_id' },
+      { name: 'client_proposals' },
+      { name: 'proposal_sections', parentTable: 'client_proposals', parentFkColumn: 'proposal_id' },
+    ],
+    formats: ['json'],
+    folder: 'quotes',
   },
   {
     id: 'menus',
@@ -162,6 +183,32 @@ export const TAKEOUT_CATEGORIES: TakeoutCategory[] = [
     folder: 'ingredients',
   },
   {
+    id: 'vendors',
+    label: 'Vendors',
+    description: 'Vendor directory, items, invoices, and purchase orders',
+    tables: [
+      { name: 'vendors' },
+      { name: 'vendor_items', parentTable: 'vendors', parentFkColumn: 'vendor_id' },
+      { name: 'vendor_invoices', parentTable: 'vendors', parentFkColumn: 'vendor_id' },
+      { name: 'purchase_orders' },
+    ],
+    formats: ['json', 'csv'],
+    folder: 'vendors',
+  },
+  {
+    id: 'staff',
+    label: 'Staff',
+    description: 'Team roster, availability, time tracking, and payroll',
+    tables: [
+      { name: 'staff_members' },
+      { name: 'employees' },
+      { name: 'payroll_records' },
+      { name: 'contractor_payments' },
+    ],
+    formats: ['json', 'csv'],
+    folder: 'staff',
+  },
+  {
     id: 'profile',
     label: 'Profile & Settings',
     description: 'Business profile, preferences, service config, and pricing rules',
@@ -177,3 +224,22 @@ export const TAKEOUT_CATEGORIES: TakeoutCategory[] = [
 ]
 
 export const TAKEOUT_CATEGORY_MAP = new Map(TAKEOUT_CATEGORIES.map((c) => [c.id, c]))
+
+/** Categories grouped into sections per spec UI layout */
+export const TAKEOUT_SECTIONS: TakeoutSection[] = [
+  {
+    id: 'core',
+    label: 'Core Data',
+    categories: ['recipes', 'clients', 'events', 'quotes', 'menus', 'ingredients'],
+  },
+  {
+    id: 'business',
+    label: 'Business',
+    categories: ['financials', 'commerce', 'vendors', 'staff', 'documents'],
+  },
+  {
+    id: 'other',
+    label: 'Other',
+    categories: ['conversations', 'photos', 'profile'],
+  },
+]
