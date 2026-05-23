@@ -367,6 +367,11 @@ async function EventsList({
             ? { label: copy.newEventLabel, href: '/events/new' }
             : undefined
         }
+        secondaryAction={
+          status === 'all' && !search
+            ? { label: 'Try the setup wizard', href: '/onboarding/first-event' }
+            : undefined
+        }
       />
     )
   }
