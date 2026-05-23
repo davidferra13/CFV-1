@@ -1,6 +1,9 @@
 // AI Follow-Up Draft Generator
-// Generates contextual follow-up suggestions for overdue inquiries.
+// Lightweight suggestion generator for overdue inquiry follow-ups.
 // Used by the follow-ups cron to enhance notifications with actionable context.
+//
+// Complementary to followup-draft.ts which generates richer, client-specific
+// drafts using DB lookups. This one takes pre-fetched context (no DB calls).
 
 import { parseWithOllama } from './parse-ollama'
 import { z } from 'zod'
@@ -41,3 +44,6 @@ export async function generateFollowUpSuggestion(ctx: FollowUpContext): Promise<
     return null
   }
 }
+
+// Re-export the richer draft generator for consumers that need both
+export { generateFollowUpDraft } from './followup-draft'

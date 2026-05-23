@@ -368,3 +368,54 @@ export function evidencePriority(label: EvidenceLabel): number {
       return 0
   }
 }
+
+// ---------------------------------------------------------------------------
+// Capture Entry Adapter
+// Maps inbox capture entries into operating loop items so they appear
+// in the chef's operating loop feed alongside tasks, notifications, etc.
+// ---------------------------------------------------------------------------
+
+export type CaptureEntryLikeSource = {
+  id: string
+  content: string
+  category: string
+  status: string
+  priority: string
+  captured_at: string
+  linked_event_id?: string | null
+  linked_client_id?: string | null
+}
+
+export function mapCaptureToOperatingLoopItem(capture: CaptureEntryLikeSource): OperatingLoopItem {
+  const createdAt = normalizeIso(capture.captured_at)
+  const dismissed = capture.status === 'dismissed' || capture.status === 'archived'
+  const triaged = capture.status === 'triaged' || capture.status === 'actioned'
+  const loopState: LoopState = dismissed ? 'dismissed' : triaged ? 'done' : 'active'
+
+  const route = '/dashboard'
+
+  const confidence =
+    capture.priority === 'urgent'
+      ? 0.95
+      : capture.priority === 'high'
+        ? 0.8
+        : capture.priority === 'normal'
+          ? 0.6
+          : 0.4
+
+  return baseItem({
+    id: `capture:${capture.id}`,
+    sourceId: capture.id,
+    sourceKind: 'system',
+    loopState,
+    evidenceLabel: 'user_entered',
+    confidence,
+    title: capture.content.length > 80 ? capture.content.slice(0, 77) + '...' : capture.content,
+    description: `Captured ${capture.category.replace(/_/g, ' ')}`,
+    nextAction: loopState === 'active' ? 'Triage this capture' : null,
+    waitingOn: null,
+    route,
+    createdAt,
+    dueAt: null,
+  })
+}

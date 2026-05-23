@@ -4,11 +4,20 @@ import { Button } from '@/components/ui/button'
 import { Send, X, ChevronDown } from '@/components/ui/icons'
 import { toast } from 'sonner'
 
+interface SnapshotData {
+  /** Pre-formatted plain text snapshot footer */
+  formatted: string
+  /** 'a' = full inline, 'b' = portal tease */
+  version: 'a' | 'b'
+}
+
 interface EmailComposerProps {
   toEmail: string
   toName: string
   defaultSubject?: string
   defaultBody?: string
+  /** Pre-loaded snapshot data for "At a Glance" footer */
+  snapshot?: SnapshotData | null
   onClose?: () => void
   onSent?: () => void
 }
@@ -36,12 +45,14 @@ export function EmailComposer({
   toName,
   defaultSubject = '',
   defaultBody = '',
+  snapshot,
   onClose,
   onSent,
 }: EmailComposerProps) {
   const [subject, setSubject] = useState(defaultSubject)
   const [body, setBody] = useState(defaultBody)
   const [showTemplates, setShowTemplates] = useState(false)
+  const [includeSnapshot, setIncludeSnapshot] = useState(!!snapshot)
   const [isPending, startTransition] = useTransition()
 
   function applyTemplate(template: (typeof EMAIL_TEMPLATES)[0]) {
@@ -56,9 +67,12 @@ export function EmailComposer({
 
     startTransition(async () => {
       try {
+        // Append snapshot footer if enabled
+        const fullBody = includeSnapshot && snapshot ? `${body}\n\n${snapshot.formatted}` : body
+
         // In production, this would call a server action to send via Resend
         // For now, open the default email client as a fallback
-        const mailto = `mailto:${toEmail}?subject=${encodeURIComponent(subject)}&body=${encodeURIComponent(body)}`
+        const mailto = `mailto:${toEmail}?subject=${encodeURIComponent(subject)}&body=${encodeURIComponent(fullBody)}`
         window.open(mailto, '_blank')
         toast.success('Opening your email client...')
         onSent?.()
@@ -129,6 +143,24 @@ export function EmailComposer({
         placeholder="Write your message..."
         className="w-full px-4 py-3 text-sm text-stone-200 focus:outline-none resize-none min-h-[160px]"
       />
+
+      {/* Snapshot toggle */}
+      {snapshot && (
+        <div className="px-4 py-2 border-t border-stone-800 flex items-center gap-2">
+          <label className="flex items-center gap-2 cursor-pointer">
+            <input
+              type="checkbox"
+              checked={includeSnapshot}
+              onChange={(e) => setIncludeSnapshot(e.target.checked)}
+              className="rounded border-stone-600 bg-stone-800 text-brand-500 focus:ring-brand-500 h-3.5 w-3.5"
+            />
+            <span className="text-xs text-stone-400">
+              Include &quot;At a Glance&quot; footer
+              {snapshot.version === 'b' ? ' (with portal link)' : ''}
+            </span>
+          </label>
+        </div>
+      )}
 
       {/* Footer */}
       <div className="flex items-center justify-between px-4 py-3 bg-stone-800 border-t border-stone-700">
