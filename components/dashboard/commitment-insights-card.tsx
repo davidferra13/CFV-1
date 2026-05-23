@@ -133,8 +133,12 @@ export async function CommitmentInsightsCard() {
 
   for (const [domain, ids] of commitmentsByDomain) {
     const idSet = new Set(ids)
-    const domainOverrides = allOverrides.filter((o) => idSet.has(o.commitmentId))
-    const uniqueDays = new Set(domainOverrides.map((o) => o.createdAt.toISOString().slice(0, 10)))
+    const domainOverrides = allOverrides.filter((o: CommitmentOverride) =>
+      idSet.has(o.commitmentId)
+    )
+    const uniqueDays = new Set(
+      domainOverrides.map((o: CommitmentOverride) => o.createdAt.toISOString().slice(0, 10))
+    )
     const score = Math.max(0, Math.round((1 - uniqueDays.size / 90) * 100))
     const weight = DOMAIN_WEIGHTS[domain] ?? 1
     weightedSum += score * weight
@@ -146,10 +150,10 @@ export async function CommitmentInsightsCard() {
 
   // Trend: last 30 vs previous 30
   const recentOverrides = allOverrides.filter(
-    (o) => o.createdAt.getTime() > new Date(thirtyDaysAgo).getTime()
+    (o: CommitmentOverride) => o.createdAt.getTime() > new Date(thirtyDaysAgo).getTime()
   ).length
   const priorOverrides = allOverrides.filter(
-    (o) =>
+    (o: CommitmentOverride) =>
       o.createdAt.getTime() > new Date(sixtyDaysAgo).getTime() &&
       o.createdAt.getTime() <= new Date(thirtyDaysAgo).getTime()
   ).length

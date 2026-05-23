@@ -1,5 +1,4 @@
-import { collectWaitingRadar } from '@/lib/waiting-radar/collect'
-import type { UnifiedActionItem } from '@/lib/action-center/types'
+import { collectWaitingItems } from '@/lib/waiting-radar/collect'
 import type { WaitingRadarItem } from '@/lib/waiting-radar/types'
 import type { SourceKind, WaitingOnKind } from '@/lib/operating-loop/types'
 import type { GodModeResolvedItem, GodModeResolverContext, RailTier } from '../../god-mode-types'
@@ -38,13 +37,14 @@ function iconForWaiting(item: WaitingRadarItem): string {
   return 'document'
 }
 
+const WAITING_SOURCE_TO_SOURCE_KIND: Record<string, SourceKind> = {
+  import: 'system',
+  client: 'client_profile',
+  contract: 'event',
+}
+
 function sourceKindForWaiting(item: WaitingRadarItem): SourceKind {
-  switch (item.sourceKind) {
-    case 'import':
-      return 'system'
-    default:
-      return item.sourceKind
-  }
+  return WAITING_SOURCE_TO_SOURCE_KIND[item.sourceKind] ?? (item.sourceKind as SourceKind)
 }
 
 function waitingItemToRailItem(item: WaitingRadarItem, now: Date): GodModeResolvedItem {
@@ -75,24 +75,18 @@ function waitingItemToRailItem(item: WaitingRadarItem, now: Date): GodModeResolv
 }
 
 export function resolveWaitingRadarItems(
-  actionCenterItems: UnifiedActionItem[],
+  items: WaitingRadarItem[],
   now: Date
 ): GodModeResolvedItem[] {
-  const radar = collectWaitingRadar({ actionCenterItems }, { now })
-  return radar.items.slice(0, 6).map((item) => waitingItemToRailItem(item, now))
+  return items.slice(0, 6).map((item: WaitingRadarItem) => waitingItemToRailItem(item, now))
 }
 
 export async function resolveWaitingItems(
   ctx: GodModeResolverContext
 ): Promise<GodModeResolvedItem[]> {
-  const { getActionFeed } = await import('@/lib/action-center/feed')
-
   try {
-    const actionCenterItems = await getActionFeed({
-      limit: 100,
-      sources: ['notification', 'task'],
-    })
-    return resolveWaitingRadarItems(actionCenterItems, ctx.now)
+    const items = await collectWaitingItems()
+    return resolveWaitingRadarItems(items, ctx.now)
   } catch (err) {
     console.error('[waiting-resolver] Query failed:', err)
     return []
