@@ -1,0 +1,1201 @@
+{
+  "meta": {
+    "id": "global-culinary-ingredient-ontology",
+    "status": "canonical proposed ontology",
+    "created": "2026-05-20",
+    "description": "Graph ontology for edible raw biological materials, edible parts, derivatives, processed forms, preserved forms, fermented forms, extracts, additives, staples, seasonings, liquids, fats, sweeteners, and culturally named variants.",
+    "nodeContract": {
+      "id": "stable string",
+      "canonicalName": "human readable name",
+      "aliases": "array of alternate, regional, market, spelling, and culinary names",
+      "parentIds": "category or ingredient parents",
+      "typeTags": "classification tags",
+      "origin": "kingdom, species, or source when relevant",
+      "ediblePart": "culinary part when relevant",
+      "derivedFrom": "material lineage",
+      "processes": "culinary transformations",
+      "cultureTags": "cultural or regional identity tags",
+      "notes": "optional boundary note"
+    }
+  },
+  "typeTags": [
+    "raw_biological_material",
+    "edible_part",
+    "culinary_derivative",
+    "processed_form",
+    "preserved_form",
+    "fermented_form",
+    "extract",
+    "additive",
+    "staple",
+    "seasoning",
+    "liquid",
+    "fat",
+    "sweetener",
+    "culturally_named_variant"
+  ],
+  "nodes": [
+    {
+      "id": "ingredient",
+      "canonicalName": "Ingredient",
+      "aliases": ["culinary ingredient", "food ingredient"],
+      "parentIds": [],
+      "typeTags": []
+    },
+    {
+      "id": "ingredient.raw",
+      "canonicalName": "Raw biological material",
+      "aliases": ["raw ingredient", "primary food material"],
+      "parentIds": ["ingredient"],
+      "typeTags": ["raw_biological_material"]
+    },
+    {
+      "id": "ingredient.raw.plant",
+      "canonicalName": "Plant material",
+      "aliases": ["botanical ingredient", "plant ingredient"],
+      "parentIds": ["ingredient.raw"],
+      "typeTags": ["raw_biological_material"],
+      "origin": { "kingdom": "plant" }
+    },
+    {
+      "id": "ingredient.raw.plant.fruit",
+      "canonicalName": "Plant fruit",
+      "aliases": ["fruit", "culinary fruit", "fruiting vegetable"],
+      "parentIds": ["ingredient.raw.plant"],
+      "typeTags": ["raw_biological_material", "edible_part"],
+      "ediblePart": "fruit"
+    },
+    {
+      "id": "ingredient.raw.plant.fruit.orchard.apple",
+      "canonicalName": "Apple",
+      "aliases": ["malus", "cooking apple", "eating apple"],
+      "parentIds": ["ingredient.raw.plant.fruit"],
+      "typeTags": ["raw_biological_material"],
+      "origin": { "kingdom": "plant", "species": "Malus domestica" },
+      "ediblePart": "fruit"
+    },
+    {
+      "id": "ingredient.raw.plant.fruit.orchard.pear",
+      "canonicalName": "Pear",
+      "aliases": ["asian pear", "nashi", "conference pear"],
+      "parentIds": ["ingredient.raw.plant.fruit"],
+      "typeTags": ["raw_biological_material"],
+      "ediblePart": "fruit"
+    },
+    {
+      "id": "ingredient.raw.plant.fruit.stone_fruit",
+      "canonicalName": "Stone fruit",
+      "aliases": ["drupe"],
+      "parentIds": ["ingredient.raw.plant.fruit"],
+      "typeTags": ["raw_biological_material"],
+      "ediblePart": "fruit"
+    },
+    {
+      "id": "ingredient.raw.plant.fruit.stone_fruit.peach",
+      "canonicalName": "Peach",
+      "aliases": ["yellow peach", "white peach"],
+      "parentIds": ["ingredient.raw.plant.fruit.stone_fruit"],
+      "typeTags": ["raw_biological_material"],
+      "ediblePart": "fruit"
+    },
+    {
+      "id": "ingredient.raw.plant.fruit.stone_fruit.plum",
+      "canonicalName": "Plum",
+      "aliases": ["ume", "greengage", "damson"],
+      "parentIds": ["ingredient.raw.plant.fruit.stone_fruit"],
+      "typeTags": ["raw_biological_material"],
+      "ediblePart": "fruit"
+    },
+    {
+      "id": "ingredient.raw.plant.fruit.berry",
+      "canonicalName": "Culinary berry",
+      "aliases": ["berry", "soft fruit"],
+      "parentIds": ["ingredient.raw.plant.fruit"],
+      "typeTags": ["raw_biological_material"],
+      "ediblePart": "fruit"
+    },
+    {
+      "id": "ingredient.raw.plant.fruit.berry.strawberry",
+      "canonicalName": "Strawberry",
+      "aliases": ["garden strawberry"],
+      "parentIds": ["ingredient.raw.plant.fruit.berry"],
+      "typeTags": ["raw_biological_material"],
+      "ediblePart": "fruit"
+    },
+    {
+      "id": "ingredient.raw.plant.fruit.berry.blueberry",
+      "canonicalName": "Blueberry",
+      "aliases": ["bilberry"],
+      "parentIds": ["ingredient.raw.plant.fruit.berry"],
+      "typeTags": ["raw_biological_material"],
+      "ediblePart": "fruit"
+    },
+    {
+      "id": "ingredient.raw.plant.fruit.citrus",
+      "canonicalName": "Citrus fruit",
+      "aliases": ["citrus"],
+      "parentIds": ["ingredient.raw.plant.fruit"],
+      "typeTags": ["raw_biological_material"],
+      "ediblePart": "fruit"
+    },
+    {
+      "id": "ingredient.raw.plant.fruit.citrus.lemon",
+      "canonicalName": "Lemon",
+      "aliases": ["citron jaune"],
+      "parentIds": ["ingredient.raw.plant.fruit.citrus", "ingredient.seasoning.acid.citrus"],
+      "typeTags": ["raw_biological_material", "seasoning"],
+      "ediblePart": "fruit"
+    },
+    {
+      "id": "ingredient.raw.plant.fruit.citrus.lime",
+      "canonicalName": "Lime",
+      "aliases": ["key lime", "persian lime"],
+      "parentIds": ["ingredient.raw.plant.fruit.citrus", "ingredient.seasoning.acid.citrus"],
+      "typeTags": ["raw_biological_material", "seasoning"],
+      "ediblePart": "fruit"
+    },
+    {
+      "id": "ingredient.raw.plant.fruit.citrus.yuzu",
+      "canonicalName": "Yuzu",
+      "aliases": ["yuja"],
+      "parentIds": ["ingredient.raw.plant.fruit.citrus", "ingredient.seasoning.acid.citrus"],
+      "typeTags": ["raw_biological_material", "seasoning", "culturally_named_variant"],
+      "ediblePart": "fruit",
+      "cultureTags": ["japanese", "korean"]
+    },
+    {
+      "id": "ingredient.raw.plant.fruit.tropical",
+      "canonicalName": "Tropical fruit",
+      "aliases": ["tropical produce"],
+      "parentIds": ["ingredient.raw.plant.fruit"],
+      "typeTags": ["raw_biological_material"],
+      "ediblePart": "fruit"
+    },
+    {
+      "id": "ingredient.raw.plant.fruit.tropical.banana",
+      "canonicalName": "Banana",
+      "aliases": ["dessert banana"],
+      "parentIds": ["ingredient.raw.plant.fruit.tropical"],
+      "typeTags": ["raw_biological_material"],
+      "ediblePart": "fruit"
+    },
+    {
+      "id": "ingredient.raw.plant.fruit.tropical.plantain",
+      "canonicalName": "Plantain",
+      "aliases": ["cooking banana", "platanos"],
+      "parentIds": ["ingredient.raw.plant.fruit.tropical"],
+      "typeTags": ["raw_biological_material", "staple", "culturally_named_variant"],
+      "ediblePart": "fruit",
+      "cultureTags": ["caribbean", "latin_american", "west_african"]
+    },
+    {
+      "id": "ingredient.raw.plant.fruit.vegetable_fruit",
+      "canonicalName": "Culinary vegetable fruit",
+      "aliases": ["fruiting vegetable"],
+      "parentIds": ["ingredient.raw.plant.fruit"],
+      "typeTags": ["raw_biological_material"],
+      "ediblePart": "fruit"
+    },
+    {
+      "id": "ingredient.raw.plant.fruit.vegetable_fruit.tomato",
+      "canonicalName": "Tomato",
+      "aliases": ["jitomate", "tomate"],
+      "parentIds": ["ingredient.raw.plant.fruit.vegetable_fruit"],
+      "typeTags": ["raw_biological_material"],
+      "ediblePart": "fruit"
+    },
+    {
+      "id": "ingredient.raw.plant.fruit.vegetable_fruit.chile",
+      "canonicalName": "Chile pepper",
+      "aliases": ["chili", "chilli", "hot pepper", "capsicum"],
+      "parentIds": [
+        "ingredient.raw.plant.fruit.vegetable_fruit",
+        "ingredient.seasoning.spice.chile"
+      ],
+      "typeTags": ["raw_biological_material", "seasoning"],
+      "ediblePart": "fruit"
+    },
+    {
+      "id": "ingredient.raw.plant.seed",
+      "canonicalName": "Plant seed",
+      "aliases": ["seed"],
+      "parentIds": ["ingredient.raw.plant"],
+      "typeTags": ["raw_biological_material", "edible_part"],
+      "ediblePart": "seed"
+    },
+    {
+      "id": "ingredient.raw.plant.seed.cereal",
+      "canonicalName": "Cereal grain",
+      "aliases": ["grain", "cereal"],
+      "parentIds": ["ingredient.raw.plant.seed", "ingredient.staple.grain"],
+      "typeTags": ["raw_biological_material", "staple"],
+      "ediblePart": "seed"
+    },
+    {
+      "id": "ingredient.raw.plant.seed.cereal.wheat",
+      "canonicalName": "Wheat",
+      "aliases": ["bread wheat", "durum", "farro", "einkorn", "spelt"],
+      "parentIds": ["ingredient.raw.plant.seed.cereal"],
+      "typeTags": ["raw_biological_material", "staple"],
+      "origin": { "kingdom": "plant", "species": "Triticum" },
+      "ediblePart": "seed"
+    },
+    {
+      "id": "ingredient.raw.plant.seed.cereal.rice",
+      "canonicalName": "Rice",
+      "aliases": ["japonica rice", "indica rice", "sticky rice", "glutinous rice"],
+      "parentIds": ["ingredient.raw.plant.seed.cereal", "ingredient.staple.grain.rice"],
+      "typeTags": ["raw_biological_material", "staple"],
+      "origin": { "kingdom": "plant", "species": "Oryza sativa" },
+      "ediblePart": "seed"
+    },
+    {
+      "id": "ingredient.raw.plant.seed.cereal.maize",
+      "canonicalName": "Maize",
+      "aliases": ["corn", "sweetcorn", "field corn"],
+      "parentIds": ["ingredient.raw.plant.seed.cereal"],
+      "typeTags": ["raw_biological_material", "staple"],
+      "origin": { "kingdom": "plant", "species": "Zea mays" },
+      "ediblePart": "seed"
+    },
+    {
+      "id": "ingredient.raw.plant.seed.pseudocereal",
+      "canonicalName": "Pseudocereal",
+      "aliases": ["pseudo-grain"],
+      "parentIds": ["ingredient.raw.plant.seed", "ingredient.staple.grain"],
+      "typeTags": ["raw_biological_material", "staple"],
+      "ediblePart": "seed"
+    },
+    {
+      "id": "ingredient.raw.plant.seed.pseudocereal.quinoa",
+      "canonicalName": "Quinoa",
+      "aliases": ["quinua"],
+      "parentIds": ["ingredient.raw.plant.seed.pseudocereal"],
+      "typeTags": ["raw_biological_material", "staple"],
+      "ediblePart": "seed",
+      "cultureTags": ["andean"]
+    },
+    {
+      "id": "ingredient.raw.plant.seed.legume",
+      "canonicalName": "Pulse and legume",
+      "aliases": ["pulse", "legume", "bean"],
+      "parentIds": ["ingredient.raw.plant.seed", "ingredient.staple.legume"],
+      "typeTags": ["raw_biological_material", "staple"],
+      "ediblePart": "seed"
+    },
+    {
+      "id": "ingredient.raw.plant.seed.legume.soybean",
+      "canonicalName": "Soybean",
+      "aliases": ["soya bean", "edamame"],
+      "parentIds": ["ingredient.raw.plant.seed.legume"],
+      "typeTags": ["raw_biological_material", "staple"],
+      "origin": { "kingdom": "plant", "species": "Glycine max" },
+      "ediblePart": "seed"
+    },
+    {
+      "id": "ingredient.raw.plant.seed.legume.chickpea",
+      "canonicalName": "Chickpea",
+      "aliases": ["garbanzo", "chana", "ceci"],
+      "parentIds": ["ingredient.raw.plant.seed.legume"],
+      "typeTags": ["raw_biological_material", "staple"],
+      "ediblePart": "seed"
+    },
+    {
+      "id": "ingredient.raw.plant.seed.legume.lentil",
+      "canonicalName": "Lentil",
+      "aliases": ["masoor", "dal", "dahl"],
+      "parentIds": ["ingredient.raw.plant.seed.legume"],
+      "typeTags": ["raw_biological_material", "staple"],
+      "ediblePart": "seed"
+    },
+    {
+      "id": "ingredient.raw.plant.seed.legume.common_bean",
+      "canonicalName": "Common bean",
+      "aliases": ["kidney bean", "black bean", "pinto bean", "navy bean", "cannellini bean"],
+      "parentIds": ["ingredient.raw.plant.seed.legume"],
+      "typeTags": ["raw_biological_material", "staple"],
+      "ediblePart": "seed"
+    },
+    {
+      "id": "ingredient.raw.plant.seed.oilseed",
+      "canonicalName": "Oilseed",
+      "aliases": ["oil seed"],
+      "parentIds": ["ingredient.raw.plant.seed"],
+      "typeTags": ["raw_biological_material"],
+      "ediblePart": "seed"
+    },
+    {
+      "id": "ingredient.raw.plant.seed.oilseed.sesame",
+      "canonicalName": "Sesame seed",
+      "aliases": ["sesame", "benne"],
+      "parentIds": ["ingredient.raw.plant.seed.oilseed"],
+      "typeTags": ["raw_biological_material", "seasoning"],
+      "ediblePart": "seed"
+    },
+    {
+      "id": "ingredient.raw.plant.seed.nut",
+      "canonicalName": "Culinary nut",
+      "aliases": ["tree nut", "nut"],
+      "parentIds": ["ingredient.raw.plant.seed"],
+      "typeTags": ["raw_biological_material"],
+      "ediblePart": "seed"
+    },
+    {
+      "id": "ingredient.raw.plant.seed.nut.almond",
+      "canonicalName": "Almond",
+      "aliases": ["sweet almond"],
+      "parentIds": ["ingredient.raw.plant.seed.nut"],
+      "typeTags": ["raw_biological_material"],
+      "ediblePart": "seed"
+    },
+    {
+      "id": "ingredient.raw.plant.root_tuber_rhizome",
+      "canonicalName": "Root, tuber, rhizome, and corm",
+      "aliases": ["root vegetable", "tuber", "rhizome", "corm"],
+      "parentIds": ["ingredient.raw.plant"],
+      "typeTags": ["raw_biological_material", "edible_part"],
+      "ediblePart": "root_tuber_rhizome_corm"
+    },
+    {
+      "id": "ingredient.raw.plant.root_tuber_rhizome.potato",
+      "canonicalName": "Potato",
+      "aliases": ["white potato"],
+      "parentIds": ["ingredient.raw.plant.root_tuber_rhizome", "ingredient.staple.tuber"],
+      "typeTags": ["raw_biological_material", "staple"],
+      "ediblePart": "tuber"
+    },
+    {
+      "id": "ingredient.raw.plant.root_tuber_rhizome.cassava",
+      "canonicalName": "Cassava",
+      "aliases": ["manioc", "yuca"],
+      "parentIds": ["ingredient.raw.plant.root_tuber_rhizome", "ingredient.staple.tuber"],
+      "typeTags": ["raw_biological_material", "staple"],
+      "ediblePart": "root",
+      "cultureTags": ["west_african", "latin_american", "caribbean"]
+    },
+    {
+      "id": "ingredient.raw.plant.root_tuber_rhizome.ginger",
+      "canonicalName": "Ginger",
+      "aliases": ["fresh ginger"],
+      "parentIds": ["ingredient.raw.plant.root_tuber_rhizome", "ingredient.seasoning.spice"],
+      "typeTags": ["raw_biological_material", "seasoning"],
+      "ediblePart": "rhizome"
+    },
+    {
+      "id": "ingredient.raw.plant.bulb_allium",
+      "canonicalName": "Bulb and allium",
+      "aliases": ["allium", "bulb vegetable"],
+      "parentIds": ["ingredient.raw.plant"],
+      "typeTags": ["raw_biological_material", "edible_part", "seasoning"],
+      "ediblePart": "bulb"
+    },
+    {
+      "id": "ingredient.raw.plant.bulb_allium.onion",
+      "canonicalName": "Onion",
+      "aliases": ["yellow onion", "white onion", "red onion"],
+      "parentIds": ["ingredient.raw.plant.bulb_allium"],
+      "typeTags": ["raw_biological_material", "seasoning"],
+      "ediblePart": "bulb"
+    },
+    {
+      "id": "ingredient.raw.plant.bulb_allium.garlic",
+      "canonicalName": "Garlic",
+      "aliases": ["garlic clove"],
+      "parentIds": ["ingredient.raw.plant.bulb_allium"],
+      "typeTags": ["raw_biological_material", "seasoning"],
+      "ediblePart": "bulb"
+    },
+    {
+      "id": "ingredient.raw.plant.leaf",
+      "canonicalName": "Leaf and herb",
+      "aliases": ["leaf vegetable", "greens", "herb"],
+      "parentIds": ["ingredient.raw.plant"],
+      "typeTags": ["raw_biological_material", "edible_part"],
+      "ediblePart": "leaf"
+    },
+    {
+      "id": "ingredient.raw.plant.leaf.spinach",
+      "canonicalName": "Spinach",
+      "aliases": ["baby spinach"],
+      "parentIds": ["ingredient.raw.plant.leaf"],
+      "typeTags": ["raw_biological_material"],
+      "ediblePart": "leaf"
+    },
+    {
+      "id": "ingredient.raw.plant.leaf.cilantro",
+      "canonicalName": "Cilantro",
+      "aliases": ["coriander leaf", "fresh coriander"],
+      "parentIds": ["ingredient.raw.plant.leaf", "ingredient.seasoning.herb"],
+      "typeTags": ["raw_biological_material", "seasoning"],
+      "ediblePart": "leaf"
+    },
+    {
+      "id": "ingredient.raw.plant.stem_shoot",
+      "canonicalName": "Stem and shoot",
+      "aliases": ["stem vegetable", "shoot"],
+      "parentIds": ["ingredient.raw.plant"],
+      "typeTags": ["raw_biological_material", "edible_part"],
+      "ediblePart": "stem_shoot"
+    },
+    {
+      "id": "ingredient.raw.plant.stem_shoot.asparagus",
+      "canonicalName": "Asparagus",
+      "aliases": ["asparagus spear"],
+      "parentIds": ["ingredient.raw.plant.stem_shoot"],
+      "typeTags": ["raw_biological_material"],
+      "ediblePart": "shoot"
+    },
+    {
+      "id": "ingredient.raw.plant.flower",
+      "canonicalName": "Flower, bud, and stigma",
+      "aliases": ["flower", "bud", "stigma"],
+      "parentIds": ["ingredient.raw.plant"],
+      "typeTags": ["raw_biological_material", "edible_part"],
+      "ediblePart": "flower_bud_stigma"
+    },
+    {
+      "id": "ingredient.raw.plant.flower.saffron",
+      "canonicalName": "Saffron",
+      "aliases": ["saffron thread"],
+      "parentIds": ["ingredient.raw.plant.flower", "ingredient.seasoning.spice"],
+      "typeTags": ["raw_biological_material", "seasoning"],
+      "ediblePart": "stigma"
+    },
+    {
+      "id": "ingredient.raw.fungi",
+      "canonicalName": "Fungi",
+      "aliases": ["fungal ingredient"],
+      "parentIds": ["ingredient.raw"],
+      "typeTags": ["raw_biological_material"],
+      "origin": { "kingdom": "fungi" }
+    },
+    {
+      "id": "ingredient.raw.fungi.mushroom",
+      "canonicalName": "Mushroom",
+      "aliases": ["culinary mushroom"],
+      "parentIds": ["ingredient.raw.fungi", "ingredient.seasoning.umami"],
+      "typeTags": ["raw_biological_material", "seasoning"],
+      "ediblePart": "fruiting_body"
+    },
+    {
+      "id": "ingredient.raw.fungi.mushroom.shiitake",
+      "canonicalName": "Shiitake mushroom",
+      "aliases": ["shiitake"],
+      "parentIds": ["ingredient.raw.fungi.mushroom"],
+      "typeTags": ["raw_biological_material", "seasoning"],
+      "ediblePart": "fruiting_body",
+      "cultureTags": ["japanese", "chinese", "korean"]
+    },
+    {
+      "id": "ingredient.raw.fungi.yeast",
+      "canonicalName": "Yeast",
+      "aliases": ["culinary yeast"],
+      "parentIds": ["ingredient.raw.fungi", "ingredient.additive.leavener"],
+      "typeTags": ["raw_biological_material", "additive"],
+      "origin": { "kingdom": "fungi" }
+    },
+    {
+      "id": "ingredient.raw.algae",
+      "canonicalName": "Algae",
+      "aliases": ["sea vegetable", "seaweed"],
+      "parentIds": ["ingredient.raw"],
+      "typeTags": ["raw_biological_material"],
+      "origin": { "kingdom": "algae" }
+    },
+    {
+      "id": "ingredient.raw.algae.kombu",
+      "canonicalName": "Kombu",
+      "aliases": ["kelp"],
+      "parentIds": ["ingredient.raw.algae", "ingredient.seasoning.umami"],
+      "typeTags": ["raw_biological_material", "seasoning", "culturally_named_variant"],
+      "cultureTags": ["japanese"]
+    },
+    {
+      "id": "ingredient.raw.animal",
+      "canonicalName": "Animal material",
+      "aliases": ["animal ingredient"],
+      "parentIds": ["ingredient.raw"],
+      "typeTags": ["raw_biological_material"],
+      "origin": { "kingdom": "animal" }
+    },
+    {
+      "id": "ingredient.raw.animal.mammal.muscle_meat",
+      "canonicalName": "Mammal muscle meat",
+      "aliases": ["red meat", "mammal meat"],
+      "parentIds": ["ingredient.raw.animal"],
+      "typeTags": ["raw_biological_material"],
+      "ediblePart": "muscle"
+    },
+    {
+      "id": "ingredient.raw.animal.mammal.muscle_meat.beef",
+      "canonicalName": "Beef",
+      "aliases": ["cattle meat"],
+      "parentIds": ["ingredient.raw.animal.mammal.muscle_meat"],
+      "typeTags": ["raw_biological_material"],
+      "origin": { "kingdom": "animal", "species": "Bos taurus" },
+      "ediblePart": "muscle"
+    },
+    {
+      "id": "ingredient.raw.animal.mammal.offal",
+      "canonicalName": "Offal",
+      "aliases": ["variety meat", "organ meat"],
+      "parentIds": ["ingredient.raw.animal"],
+      "typeTags": ["raw_biological_material"],
+      "ediblePart": "organ"
+    },
+    {
+      "id": "ingredient.raw.animal.mammal.milk",
+      "canonicalName": "Mammal milk",
+      "aliases": ["milk"],
+      "parentIds": ["ingredient.raw.animal", "ingredient.liquid.dairy"],
+      "typeTags": ["raw_biological_material", "liquid"],
+      "ediblePart": "milk"
+    },
+    {
+      "id": "ingredient.raw.animal.bird.meat",
+      "canonicalName": "Poultry meat",
+      "aliases": ["bird meat", "poultry"],
+      "parentIds": ["ingredient.raw.animal"],
+      "typeTags": ["raw_biological_material"],
+      "ediblePart": "muscle"
+    },
+    {
+      "id": "ingredient.raw.animal.bird.meat.chicken",
+      "canonicalName": "Chicken",
+      "aliases": ["chicken meat"],
+      "parentIds": ["ingredient.raw.animal.bird.meat"],
+      "typeTags": ["raw_biological_material"],
+      "ediblePart": "muscle"
+    },
+    {
+      "id": "ingredient.raw.animal.bird.egg",
+      "canonicalName": "Bird egg",
+      "aliases": ["egg"],
+      "parentIds": ["ingredient.raw.animal"],
+      "typeTags": ["raw_biological_material"],
+      "ediblePart": "egg"
+    },
+    {
+      "id": "ingredient.raw.animal.bird.egg.chicken_egg",
+      "canonicalName": "Chicken egg",
+      "aliases": ["egg", "hen egg"],
+      "parentIds": ["ingredient.raw.animal.bird.egg", "ingredient.additive.emulsifier"],
+      "typeTags": ["raw_biological_material", "additive"],
+      "ediblePart": "egg"
+    },
+    {
+      "id": "ingredient.raw.animal.aquatic.finfish",
+      "canonicalName": "Finfish",
+      "aliases": ["fish"],
+      "parentIds": ["ingredient.raw.animal"],
+      "typeTags": ["raw_biological_material"],
+      "ediblePart": "muscle"
+    },
+    {
+      "id": "ingredient.raw.animal.aquatic.finfish.salmon",
+      "canonicalName": "Salmon",
+      "aliases": ["salmon fish"],
+      "parentIds": ["ingredient.raw.animal.aquatic.finfish"],
+      "typeTags": ["raw_biological_material"],
+      "ediblePart": "muscle"
+    },
+    {
+      "id": "ingredient.raw.animal.aquatic.crustacean",
+      "canonicalName": "Crustacean",
+      "aliases": ["shellfish crustacean"],
+      "parentIds": ["ingredient.raw.animal"],
+      "typeTags": ["raw_biological_material"]
+    },
+    {
+      "id": "ingredient.raw.animal.aquatic.crustacean.shrimp",
+      "canonicalName": "Shrimp",
+      "aliases": ["prawn"],
+      "parentIds": ["ingredient.raw.animal.aquatic.crustacean"],
+      "typeTags": ["raw_biological_material"]
+    },
+    {
+      "id": "ingredient.raw.animal.aquatic.mollusk",
+      "canonicalName": "Mollusk",
+      "aliases": ["mollusc", "shellfish mollusk"],
+      "parentIds": ["ingredient.raw.animal"],
+      "typeTags": ["raw_biological_material"]
+    },
+    {
+      "id": "ingredient.raw.animal.aquatic.roe",
+      "canonicalName": "Roe",
+      "aliases": ["fish eggs"],
+      "parentIds": ["ingredient.raw.animal"],
+      "typeTags": ["raw_biological_material"],
+      "ediblePart": "roe"
+    },
+    {
+      "id": "ingredient.derivative",
+      "canonicalName": "Culinary derivative",
+      "aliases": ["derived ingredient", "ingredient product"],
+      "parentIds": ["ingredient"],
+      "typeTags": ["culinary_derivative"]
+    },
+    {
+      "id": "ingredient.derivative.milled",
+      "canonicalName": "Milled and ground form",
+      "aliases": ["milled form", "ground form", "powder"],
+      "parentIds": ["ingredient.derivative"],
+      "typeTags": ["culinary_derivative", "processed_form"]
+    },
+    {
+      "id": "ingredient.derivative.milled.wheat_flour",
+      "canonicalName": "Wheat flour",
+      "aliases": ["flour", "bread flour", "cake flour", "all-purpose flour", "plain flour"],
+      "parentIds": ["ingredient.derivative.milled"],
+      "typeTags": ["culinary_derivative", "processed_form", "staple"],
+      "derivedFrom": ["ingredient.raw.plant.seed.cereal.wheat"],
+      "processes": ["milled"]
+    },
+    {
+      "id": "ingredient.derivative.milled.masa_harina",
+      "canonicalName": "Masa harina",
+      "aliases": ["nixtamalized corn flour", "masa flour"],
+      "parentIds": ["ingredient.derivative.milled", "ingredient.staple.grain"],
+      "typeTags": ["culinary_derivative", "processed_form", "staple", "culturally_named_variant"],
+      "derivedFrom": ["ingredient.raw.plant.seed.cereal.maize"],
+      "processes": ["nixtamalized", "dried", "milled"],
+      "cultureTags": ["mexican", "central_american"]
+    },
+    {
+      "id": "ingredient.derivative.extracted",
+      "canonicalName": "Extracted and separated form",
+      "aliases": ["extract", "separated ingredient"],
+      "parentIds": ["ingredient.derivative"],
+      "typeTags": ["culinary_derivative", "extract"]
+    },
+    {
+      "id": "ingredient.derivative.extracted.starch.cornstarch",
+      "canonicalName": "Cornstarch",
+      "aliases": ["corn starch", "maize starch"],
+      "parentIds": ["ingredient.derivative.extracted", "ingredient.additive.thickener"],
+      "typeTags": ["culinary_derivative", "extract", "additive"],
+      "derivedFrom": ["ingredient.raw.plant.seed.cereal.maize"],
+      "processes": ["extracted", "refined"]
+    },
+    {
+      "id": "ingredient.derivative.extracted.oil.olive_oil",
+      "canonicalName": "Olive oil",
+      "aliases": ["extra virgin olive oil", "EVOO"],
+      "parentIds": ["ingredient.derivative.extracted", "ingredient.fat.plant"],
+      "typeTags": ["culinary_derivative", "extract", "fat"],
+      "processes": ["pressed", "extracted"]
+    },
+    {
+      "id": "ingredient.derivative.rendered",
+      "canonicalName": "Rendered and clarified fat",
+      "aliases": ["rendered fat", "clarified fat"],
+      "parentIds": ["ingredient.derivative", "ingredient.fat"],
+      "typeTags": ["culinary_derivative", "fat", "processed_form"]
+    },
+    {
+      "id": "ingredient.derivative.rendered.ghee",
+      "canonicalName": "Ghee",
+      "aliases": ["clarified butter"],
+      "parentIds": ["ingredient.derivative.rendered", "ingredient.fat.dairy"],
+      "typeTags": ["culinary_derivative", "fat", "culturally_named_variant"],
+      "derivedFrom": ["ingredient.raw.animal.mammal.milk"],
+      "processes": ["clarified", "heated", "separated"],
+      "cultureTags": ["south_asian", "middle_eastern"]
+    },
+    {
+      "id": "ingredient.derivative.dairy",
+      "canonicalName": "Dairy derivative",
+      "aliases": ["milk derivative"],
+      "parentIds": ["ingredient.derivative"],
+      "typeTags": ["culinary_derivative"],
+      "derivedFrom": ["ingredient.raw.animal.mammal.milk"]
+    },
+    {
+      "id": "ingredient.derivative.dairy.cheese",
+      "canonicalName": "Cheese",
+      "aliases": ["curd cheese"],
+      "parentIds": ["ingredient.derivative.dairy", "ingredient.fermented.dairy"],
+      "typeTags": ["culinary_derivative", "fermented_form"],
+      "derivedFrom": ["ingredient.raw.animal.mammal.milk"],
+      "processes": ["curdled", "drained", "aged"]
+    },
+    {
+      "id": "ingredient.derivative.soy",
+      "canonicalName": "Soy derivative",
+      "aliases": ["soy product", "soya product"],
+      "parentIds": ["ingredient.derivative"],
+      "typeTags": ["culinary_derivative"],
+      "derivedFrom": ["ingredient.raw.plant.seed.legume.soybean"]
+    },
+    {
+      "id": "ingredient.derivative.soy.tofu",
+      "canonicalName": "Tofu",
+      "aliases": ["bean curd", "doufu"],
+      "parentIds": ["ingredient.derivative.soy"],
+      "typeTags": ["culinary_derivative", "staple", "culturally_named_variant"],
+      "derivedFrom": ["ingredient.raw.plant.seed.legume.soybean"],
+      "processes": ["soaked", "ground", "coagulated", "pressed"],
+      "cultureTags": ["chinese", "japanese", "korean", "southeast_asian"]
+    },
+    {
+      "id": "ingredient.preserved",
+      "canonicalName": "Preserved form",
+      "aliases": ["preserved ingredient"],
+      "parentIds": ["ingredient"],
+      "typeTags": ["preserved_form"]
+    },
+    {
+      "id": "ingredient.preserved.dried",
+      "canonicalName": "Dried form",
+      "aliases": ["dehydrated form", "desiccated form"],
+      "parentIds": ["ingredient.preserved"],
+      "typeTags": ["preserved_form", "processed_form"],
+      "processes": ["dried"]
+    },
+    {
+      "id": "ingredient.preserved.dried.raisin",
+      "canonicalName": "Raisin",
+      "aliases": ["dried grape", "sultana", "currant"],
+      "parentIds": ["ingredient.preserved.dried", "ingredient.sweetener.fruit"],
+      "typeTags": ["preserved_form", "sweetener"],
+      "processes": ["dried"]
+    },
+    {
+      "id": "ingredient.preserved.salted_cured",
+      "canonicalName": "Salted and cured form",
+      "aliases": ["cured form", "salted form"],
+      "parentIds": ["ingredient.preserved"],
+      "typeTags": ["preserved_form"],
+      "processes": ["salted", "cured"]
+    },
+    {
+      "id": "ingredient.preserved.salted_cured.bacon",
+      "canonicalName": "Bacon",
+      "aliases": ["cured pork belly"],
+      "parentIds": ["ingredient.preserved.salted_cured"],
+      "typeTags": ["preserved_form", "culturally_named_variant"],
+      "processes": ["cured", "smoked"]
+    },
+    {
+      "id": "ingredient.preserved.pickled",
+      "canonicalName": "Pickled form",
+      "aliases": ["pickle", "brined form"],
+      "parentIds": ["ingredient.preserved", "ingredient.seasoning.acid"],
+      "typeTags": ["preserved_form", "seasoning"],
+      "processes": ["pickled", "brined"]
+    },
+    {
+      "id": "ingredient.fermented",
+      "canonicalName": "Fermented form",
+      "aliases": ["ferment", "cultured food"],
+      "parentIds": ["ingredient"],
+      "typeTags": ["fermented_form"],
+      "processes": ["fermented"]
+    },
+    {
+      "id": "ingredient.fermented.dairy",
+      "canonicalName": "Fermented dairy",
+      "aliases": ["cultured dairy"],
+      "parentIds": ["ingredient.fermented", "ingredient.derivative.dairy"],
+      "typeTags": ["fermented_form", "culinary_derivative"],
+      "derivedFrom": ["ingredient.raw.animal.mammal.milk"],
+      "processes": ["cultured", "fermented"]
+    },
+    {
+      "id": "ingredient.fermented.legume.miso",
+      "canonicalName": "Miso",
+      "aliases": ["soybean paste", "miso paste"],
+      "parentIds": [
+        "ingredient.fermented",
+        "ingredient.derivative.soy",
+        "ingredient.seasoning.umami"
+      ],
+      "typeTags": [
+        "fermented_form",
+        "culinary_derivative",
+        "seasoning",
+        "culturally_named_variant"
+      ],
+      "derivedFrom": ["ingredient.raw.plant.seed.legume.soybean"],
+      "processes": ["fermented"],
+      "cultureTags": ["japanese"]
+    },
+    {
+      "id": "ingredient.fermented.legume.soy_sauce",
+      "canonicalName": "Soy sauce",
+      "aliases": ["shoyu", "jiangyou", "soya sauce"],
+      "parentIds": [
+        "ingredient.fermented",
+        "ingredient.derivative.soy",
+        "ingredient.seasoning.umami",
+        "ingredient.liquid.sauce"
+      ],
+      "typeTags": [
+        "fermented_form",
+        "culinary_derivative",
+        "seasoning",
+        "liquid",
+        "culturally_named_variant"
+      ],
+      "derivedFrom": [
+        "ingredient.raw.plant.seed.legume.soybean",
+        "ingredient.raw.plant.seed.cereal.wheat"
+      ],
+      "processes": ["fermented", "brewed", "extracted"],
+      "cultureTags": ["chinese", "japanese", "korean", "southeast_asian"]
+    },
+    {
+      "id": "ingredient.fermented.vegetable.kimchi",
+      "canonicalName": "Kimchi",
+      "aliases": ["gimchi"],
+      "parentIds": [
+        "ingredient.fermented",
+        "ingredient.preserved.pickled",
+        "ingredient.seasoning.condiment"
+      ],
+      "typeTags": ["fermented_form", "preserved_form", "seasoning", "culturally_named_variant"],
+      "processes": ["salted", "lacto-fermented"],
+      "cultureTags": ["korean"]
+    },
+    {
+      "id": "ingredient.fermented.dairy.yogurt",
+      "canonicalName": "Yogurt",
+      "aliases": ["yoghurt", "curd", "dahi"],
+      "parentIds": [
+        "ingredient.fermented",
+        "ingredient.derivative.dairy",
+        "ingredient.liquid.dairy"
+      ],
+      "typeTags": ["fermented_form", "culinary_derivative", "liquid", "culturally_named_variant"],
+      "derivedFrom": ["ingredient.raw.animal.mammal.milk"],
+      "processes": ["cultured", "fermented"]
+    },
+    {
+      "id": "ingredient.fermented.fish_sauce",
+      "canonicalName": "Fish sauce",
+      "aliases": ["nam pla", "nuoc mam", "garum"],
+      "parentIds": [
+        "ingredient.fermented",
+        "ingredient.seasoning.umami",
+        "ingredient.liquid.sauce"
+      ],
+      "typeTags": ["fermented_form", "seasoning", "liquid", "culturally_named_variant"],
+      "processes": ["salted", "fermented", "extracted"],
+      "cultureTags": ["thai", "vietnamese", "roman", "southeast_asian"]
+    },
+    {
+      "id": "ingredient.additive",
+      "canonicalName": "Additive and functional ingredient",
+      "aliases": ["culinary additive", "functional ingredient"],
+      "parentIds": ["ingredient"],
+      "typeTags": ["additive"]
+    },
+    {
+      "id": "ingredient.additive.leavener",
+      "canonicalName": "Leavener",
+      "aliases": ["raising agent"],
+      "parentIds": ["ingredient.additive"],
+      "typeTags": ["additive"]
+    },
+    {
+      "id": "ingredient.additive.leavener.baking_soda",
+      "canonicalName": "Baking soda",
+      "aliases": ["sodium bicarbonate", "bicarbonate of soda"],
+      "parentIds": ["ingredient.additive.leavener"],
+      "typeTags": ["additive"],
+      "processes": ["chemical_leavening"]
+    },
+    {
+      "id": "ingredient.additive.thickener",
+      "canonicalName": "Thickener and gelling agent",
+      "aliases": ["thickener", "gelling agent", "stabilizer"],
+      "parentIds": ["ingredient.additive"],
+      "typeTags": ["additive"]
+    },
+    {
+      "id": "ingredient.additive.emulsifier",
+      "canonicalName": "Emulsifier",
+      "aliases": ["emulsifying agent"],
+      "parentIds": ["ingredient.additive"],
+      "typeTags": ["additive"]
+    },
+    {
+      "id": "ingredient.additive.flavor_enhancer.msg",
+      "canonicalName": "MSG",
+      "aliases": ["monosodium glutamate"],
+      "parentIds": ["ingredient.additive", "ingredient.seasoning.umami"],
+      "typeTags": ["additive", "seasoning"],
+      "processes": ["refined"]
+    },
+    {
+      "id": "ingredient.seasoning",
+      "canonicalName": "Seasoning",
+      "aliases": ["flavoring", "flavouring"],
+      "parentIds": ["ingredient"],
+      "typeTags": ["seasoning"]
+    },
+    {
+      "id": "ingredient.seasoning.salt",
+      "canonicalName": "Salt",
+      "aliases": ["sodium chloride", "table salt", "sea salt", "rock salt", "kosher salt"],
+      "parentIds": ["ingredient.seasoning"],
+      "typeTags": ["seasoning"]
+    },
+    {
+      "id": "ingredient.seasoning.acid",
+      "canonicalName": "Acid seasoning",
+      "aliases": ["acid", "souring agent"],
+      "parentIds": ["ingredient.seasoning"],
+      "typeTags": ["seasoning"]
+    },
+    {
+      "id": "ingredient.seasoning.acid.citrus",
+      "canonicalName": "Citrus acid",
+      "aliases": ["citrus juice", "sour citrus"],
+      "parentIds": ["ingredient.seasoning.acid"],
+      "typeTags": ["seasoning"]
+    },
+    {
+      "id": "ingredient.seasoning.spice",
+      "canonicalName": "Spice",
+      "aliases": ["dry spice"],
+      "parentIds": ["ingredient.seasoning"],
+      "typeTags": ["seasoning"]
+    },
+    {
+      "id": "ingredient.seasoning.spice.chile",
+      "canonicalName": "Chile spice",
+      "aliases": ["chili powder", "chilli powder", "dried chile"],
+      "parentIds": ["ingredient.seasoning.spice"],
+      "typeTags": ["seasoning"]
+    },
+    {
+      "id": "ingredient.seasoning.herb",
+      "canonicalName": "Herb",
+      "aliases": ["culinary herb"],
+      "parentIds": ["ingredient.seasoning"],
+      "typeTags": ["seasoning"]
+    },
+    {
+      "id": "ingredient.seasoning.umami",
+      "canonicalName": "Umami seasoning",
+      "aliases": ["savory seasoning", "glutamate-rich seasoning"],
+      "parentIds": ["ingredient.seasoning"],
+      "typeTags": ["seasoning"]
+    },
+    {
+      "id": "ingredient.seasoning.condiment",
+      "canonicalName": "Prepared condiment",
+      "aliases": ["condiment", "sauce", "paste", "relish"],
+      "parentIds": ["ingredient.seasoning"],
+      "typeTags": ["seasoning"]
+    },
+    {
+      "id": "ingredient.seasoning.condiment.gochujang",
+      "canonicalName": "Gochujang",
+      "aliases": ["Korean chile paste", "red pepper paste"],
+      "parentIds": ["ingredient.seasoning.condiment", "ingredient.fermented"],
+      "typeTags": ["seasoning", "fermented_form", "culturally_named_variant"],
+      "processes": ["fermented"],
+      "cultureTags": ["korean"]
+    },
+    {
+      "id": "ingredient.liquid",
+      "canonicalName": "Liquid",
+      "aliases": ["culinary liquid"],
+      "parentIds": ["ingredient"],
+      "typeTags": ["liquid"]
+    },
+    {
+      "id": "ingredient.liquid.water",
+      "canonicalName": "Water",
+      "aliases": ["potable water"],
+      "parentIds": ["ingredient.liquid"],
+      "typeTags": ["liquid"]
+    },
+    {
+      "id": "ingredient.liquid.stock_broth",
+      "canonicalName": "Stock and broth",
+      "aliases": ["stock", "broth"],
+      "parentIds": ["ingredient.liquid"],
+      "typeTags": ["liquid", "culinary_derivative"],
+      "processes": ["simmered", "extracted"]
+    },
+    {
+      "id": "ingredient.liquid.stock_broth.dashi",
+      "canonicalName": "Dashi",
+      "aliases": ["Japanese stock"],
+      "parentIds": ["ingredient.liquid.stock_broth", "ingredient.seasoning.umami"],
+      "typeTags": ["liquid", "seasoning", "culturally_named_variant"],
+      "derivedFrom": ["ingredient.raw.algae.kombu"],
+      "processes": ["infused", "extracted"],
+      "cultureTags": ["japanese"]
+    },
+    {
+      "id": "ingredient.liquid.dairy",
+      "canonicalName": "Dairy liquid",
+      "aliases": ["milk liquid", "cream liquid"],
+      "parentIds": ["ingredient.liquid"],
+      "typeTags": ["liquid"]
+    },
+    {
+      "id": "ingredient.liquid.plant_milk.coconut_milk",
+      "canonicalName": "Coconut milk",
+      "aliases": ["coconut cream"],
+      "parentIds": ["ingredient.liquid"],
+      "typeTags": ["liquid", "culinary_derivative"],
+      "processes": ["pressed", "extracted"]
+    },
+    {
+      "id": "ingredient.liquid.sauce",
+      "canonicalName": "Sauce liquid",
+      "aliases": ["liquid sauce"],
+      "parentIds": ["ingredient.liquid", "ingredient.seasoning.condiment"],
+      "typeTags": ["liquid", "seasoning"]
+    },
+    {
+      "id": "ingredient.fat",
+      "canonicalName": "Fat",
+      "aliases": ["cooking fat", "culinary fat"],
+      "parentIds": ["ingredient"],
+      "typeTags": ["fat"]
+    },
+    {
+      "id": "ingredient.fat.plant",
+      "canonicalName": "Plant fat and oil",
+      "aliases": ["plant oil", "vegetable oil"],
+      "parentIds": ["ingredient.fat"],
+      "typeTags": ["fat"]
+    },
+    {
+      "id": "ingredient.fat.animal",
+      "canonicalName": "Animal fat",
+      "aliases": ["rendered animal fat"],
+      "parentIds": ["ingredient.fat"],
+      "typeTags": ["fat"]
+    },
+    {
+      "id": "ingredient.fat.dairy",
+      "canonicalName": "Dairy fat",
+      "aliases": ["milk fat", "butterfat"],
+      "parentIds": ["ingredient.fat"],
+      "typeTags": ["fat"]
+    },
+    {
+      "id": "ingredient.sweetener",
+      "canonicalName": "Sweetener",
+      "aliases": ["sweetening ingredient"],
+      "parentIds": ["ingredient"],
+      "typeTags": ["sweetener"]
+    },
+    {
+      "id": "ingredient.sweetener.plant_sugar.cane_sugar",
+      "canonicalName": "Cane sugar",
+      "aliases": ["sugar", "white sugar", "brown sugar"],
+      "parentIds": ["ingredient.sweetener"],
+      "typeTags": ["sweetener"],
+      "processes": ["extracted", "refined"]
+    },
+    {
+      "id": "ingredient.sweetener.plant_sugar.jaggery",
+      "canonicalName": "Jaggery",
+      "aliases": ["gur", "panela", "piloncillo"],
+      "parentIds": ["ingredient.sweetener"],
+      "typeTags": ["sweetener", "culturally_named_variant"],
+      "processes": ["boiled", "concentrated"],
+      "cultureTags": ["south_asian", "latin_american"]
+    },
+    {
+      "id": "ingredient.sweetener.bee.honey",
+      "canonicalName": "Honey",
+      "aliases": ["bee honey"],
+      "parentIds": ["ingredient.sweetener"],
+      "typeTags": ["sweetener"],
+      "origin": { "kingdom": "animal" }
+    },
+    {
+      "id": "ingredient.sweetener.fruit",
+      "canonicalName": "Fruit sweetener",
+      "aliases": ["fruit-derived sweetener"],
+      "parentIds": ["ingredient.sweetener"],
+      "typeTags": ["sweetener"]
+    },
+    {
+      "id": "ingredient.staple",
+      "canonicalName": "Staple",
+      "aliases": ["staple food", "base food"],
+      "parentIds": ["ingredient"],
+      "typeTags": ["staple"]
+    },
+    {
+      "id": "ingredient.staple.grain",
+      "canonicalName": "Grain staple",
+      "aliases": ["grain base"],
+      "parentIds": ["ingredient.staple"],
+      "typeTags": ["staple"]
+    },
+    {
+      "id": "ingredient.staple.grain.rice",
+      "canonicalName": "Rice staple",
+      "aliases": ["cooked rice", "plain rice", "sticky rice"],
+      "parentIds": ["ingredient.staple.grain"],
+      "typeTags": ["staple"],
+      "derivedFrom": ["ingredient.raw.plant.seed.cereal.rice"],
+      "processes": ["cooked"]
+    },
+    {
+      "id": "ingredient.staple.grain.bread",
+      "canonicalName": "Bread",
+      "aliases": ["loaf", "flatbread", "roti", "naan", "pita", "lavash"],
+      "parentIds": ["ingredient.staple.grain", "ingredient.fermented"],
+      "typeTags": ["staple", "fermented_form", "culturally_named_variant"],
+      "derivedFrom": ["ingredient.raw.plant.seed.cereal.wheat"],
+      "processes": ["mixed", "fermented", "baked"]
+    },
+    {
+      "id": "ingredient.staple.grain.noodle",
+      "canonicalName": "Noodle and pasta",
+      "aliases": ["noodle", "pasta", "ramen", "soba", "udon", "rice noodle"],
+      "parentIds": ["ingredient.staple.grain"],
+      "typeTags": ["staple", "culturally_named_variant"],
+      "processes": ["mixed", "extruded", "cut", "dried"]
+    },
+    {
+      "id": "ingredient.staple.legume",
+      "canonicalName": "Legume staple",
+      "aliases": ["bean base", "pulse base"],
+      "parentIds": ["ingredient.staple"],
+      "typeTags": ["staple"]
+    },
+    {
+      "id": "ingredient.staple.legume.hummus",
+      "canonicalName": "Hummus",
+      "aliases": ["houmous", "chickpea dip"],
+      "parentIds": ["ingredient.staple.legume", "ingredient.seasoning.condiment"],
+      "typeTags": ["staple", "seasoning", "culturally_named_variant"],
+      "derivedFrom": ["ingredient.raw.plant.seed.legume.chickpea"],
+      "processes": ["cooked", "pureed"],
+      "cultureTags": ["middle_eastern", "levantine"]
+    },
+    {
+      "id": "ingredient.staple.tuber",
+      "canonicalName": "Tuber staple",
+      "aliases": ["root staple"],
+      "parentIds": ["ingredient.staple"],
+      "typeTags": ["staple"]
+    }
+  ],
+  "aliasPromotionRules": [
+    "Keep aliases on the canonical node when they are spelling, regional, market, or translation variants of the same culinary object.",
+    "Promote an alias into a separate node when it has distinct process, legal identity, allergen behavior, procurement behavior, price behavior, menu meaning, or cultural meaning.",
+    "Use derivedFrom for material lineage and parentIds for category membership.",
+    "Do not collapse culturally meaningful display names away from guest-facing surfaces."
+  ],
+  "consumptionRules": [
+    "Recipe parsing resolves text through aliases and stores the canonical ingredient ID.",
+    "Menu intelligence preserves the canonical ID and the cultural display name when both matter.",
+    "Procurement groups by biological material when substitution is acceptable, but prices the purchasable form.",
+    "Allergy and dietary logic traverses derivedFrom and parentIds, not just display names.",
+    "Inventory tracks state and process form: raw, cut, cooked, dried, frozen, fermented, preserved, rendered, extracted, or prepared."
+  ]
+}

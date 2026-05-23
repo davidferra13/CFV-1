@@ -41,6 +41,14 @@ When firing queued work:
 
 After a building agent finishes code changes for any fired queue item, the lead orchestrator must prove the app is running the new work before moving the item to `done`.
 
+Native regression firewall:
+
+- Run `npm run regression:firewall` before claiming any code build, route change, navigation change, UI workflow change, server action change, or queue item is done.
+- This command is the native fast gate for Codex work. It runs chef nav audit, wiring audit with a zero weak/orphan route contract, app typecheck, canonical runtime verification, and affected-route probes from `scripts/wiring-audit-results.json`. It restarts only the canonical ChefFlow dev server when runtime verification fails.
+- Affected-route probes skip dynamic routes such as `/events/[id]` unless a concrete URL is provided elsewhere, and they fail on timeouts or 5xx responses. Auth redirects, 401, and 403 count as reachable for protected routes.
+- Use `npm run regression:firewall:full` when slow Sentinel regression proof is explicitly required. If Sentinel times out or fails, do not mark the item done.
+- `build-queue.mjs finish-check` runs the native regression firewall by default. Do not pass `--skip-regression-firewall` unless the proof pack explains why the work has no code/runtime/product-surface impact.
+
 Required closeout:
 
 - Restart or reload the owned dev server when needed. Do not kill unrelated live servers.
@@ -86,6 +94,18 @@ Direct edits in the main workspace are acceptable for:
 - Maintaining the queue system itself.
 - Read-only diagnosis and planning.
 - Tiny direct hotfixes only when the user explicitly says not to queue them.
+
+## Evidence-First Live Browser Research
+
+When the user asks an agent to try, inspect, browse, screenshot, research, compare, study, or describe a real web/app/search experience, treat it as evidence-first live browser work by default.
+
+- Use `live-browser-experience-audit` when available for third-party sites, Google/search/local discovery, logged-in/session-personalized flows, and ChefFlow's own running app.
+- Do not answer from memory when the request depends on what the live page does now.
+- Build a user-intent model first: goal, persona/audience, evaluation lens, success criteria, run depth, browser context, and privacy boundaries.
+- Ask concise questions when missing context would change what to click, screenshot, compare, or evaluate.
+- Capture screenshots and notes along the way, then produce Markdown research grounded in visible evidence.
+- For ChefFlow app work, use the canonical server policy and prefer `http://localhost:3100` unless a separate approved test context exists.
+- Keep live browser research read-only unless the user explicitly authorizes queue firing, a direct hotfix, or an exact final action.
 
 ## Skill Routing Contract
 

@@ -1,47 +1,45 @@
-# Hermes Morning Report: 2026-05-04
+# Hermes Morning Report: 2026-05-21
 
-**Compiled:** 2026-05-04 05:30
+**Compiled:** 2026-05-21 05:30
 
 ## Health Pulse (last 24h)
 
-41 checks in last 24h, 0 OK, 41 failures, 41 server-down
+134 checks in last 24h, 0 OK, 134 failures, 134 server-down
 
 ## OpenClaw
 
-Pi alive: true | Prices: 0 | Last sync: 0h ago | Stale: unknown
+Pi alive: true | Prices: 0 | Last sync: 66h ago | Stale: true
 
 ## Git Activity (last 24h)
 
-Branch: `main` | Commits (24h): 15 | Uncommitted: 4754 | Unpushed: 1
+Branch: `main` | Commits (24h): 8 | Uncommitted: 4901 | Unpushed: 18
 
 ```
-62224f677 refactor: move stray files into proper module directories
-1f0115664 feat(farm-dinner): collaborator access, settlement, guest broadcast
-47d267b91 feat(farm-dinner): collaborator access, notifications, and prep assignment
-4f04e370e feat(farm-dinner): wire co-host dashboard into tickets tab
-6db052d94 feat(farm-dinner): add prep timeline, checklist, weather, revenue split panels
-17e57c974 feat(ticketing): complete farm dinner co-hosting system
-65c80858e fix(safety): close 3 final build queue gaps (loyalty, invite, LTV)
-c45c34244 fix(safety): NDA system reconciliation + Remy action sync guard
-d80cde116 feat(dashboard): surface dietary change alerts on chef dashboard
-7c8d6ed16 fix(safety): close 6 security, monitoring, and moderation gaps
+562c16148 RUN-20260521T085210Z: loyalty core awards hardening, referral idempotency, PIE fallback contract
+4ee6a20ef RUN-20260521T082803Z: fix event section loyalty imports to use store helpers
+15d8f6eeb RUN-20260521T082803Z: loyalty Wave 1 security foundation, dashboard wiring fixes, PIE canonical ontology
+af0f994b9 feat(dinner-circles): recovery/history, polls, bring-lists, broadcasts, theme-board [RUN-20260521T053352Z]
+0222c8b91 Add Dinner Circle chat hype contract
+fb559e2dc Add Dinner Circle participant parity contract
+dab83b391 Build long-horizon dinner readiness queue signals
+069c3a26e Build dinner stewardship controls
 ```
 
 ## Build State
 
-Result: FAIL | Errors: 0 | Checked: 2026-05-04 00:00
+Result: FAIL | Errors: 0 | Checked: 2026-05-21 00:00
 
 ## Backups
 
-Latest: backup-20260503-030002.sql (20h ago) | Count: 9 | Status: healthy
+Latest: backup-20260520.sql (21h ago) | Count: 12 | Status: healthy
 
 ## Database
 
-PG alive: true | Size: 51GB | Tables: 777 | Events: 88 | Users: 0 | Recipes: 28 | Messages: 19 | Connections: 10 | Dead tuples: 17171076
+PG alive: true | Size: 131GB | Tables: 834 | Events: 100 | Users: 0 | Recipes: 51 | Messages: 19 | Connections: 6 | Dead tuples: 0
 
 ## Disk & Resources
 
-C: drive 90% used | TS/TSX files: 5566 | Uncommitted: 4749
+C: drive 98% used | TS/TSX files: 8184 | Uncommitted: 4907
 
 ## Error Scan
 
@@ -49,16 +47,16 @@ C: drive 90% used | TS/TSX files: 5566 | Uncommitted: 4749
 
 ## Alerts (last 24h)
 
-- **2026-05-04T08:30:01Z** [CRITICAL] ChefFlow server not responding on port 3100
-- **2026-05-04T08:30:01Z** [WARN] 1 long-running queries (>30s)
-- **2026-05-04T08:30:01Z** [WARN] 17171076 dead tuples across tables (consider VACUUM)
-- **2026-05-04T08:30:01Z** [WARN] C: drive 90% full (195GB free)
-- **2026-05-04T08:30:01Z** [WARN] Backups directory is 137GB
-- **2026-05-04T08:45:02Z** [CRITICAL] ChefFlow server not responding on port 3100
-- **2026-05-04T09:00:01Z** [CRITICAL] ChefFlow server not responding on port 3100
-- **2026-05-04T09:15:01Z** [CRITICAL] ChefFlow server not responding on port 3100
-- **2026-05-04 05:15** [WARN] 3 files with @ts-nocheck found
-- **2026-05-04T09:30:01Z** [CRITICAL] ChefFlow server not responding on port 3100
+- **2026-05-21T08:15:01Z** [CRITICAL] ChefFlow server not responding on port 3100
+- **2026-05-21 04:15** [WARN] 3 files with @ts-nocheck found
+- **2026-05-21T08:30:01Z** [CRITICAL] ChefFlow server not responding on port 3100
+- **2026-05-21T08:30:01Z** [CRITICAL] C: drive 98% full (55GB free)
+- **2026-05-21T08:30:01Z** [WARN] Backups directory is 292GB
+- **2026-05-21T08:45:01Z** [CRITICAL] ChefFlow server not responding on port 3100
+- **2026-05-21T09:00:01Z** [CRITICAL] ChefFlow server not responding on port 3100
+- **2026-05-21T09:15:01Z** [CRITICAL] ChefFlow server not responding on port 3100
+- **2026-05-21 05:15** [WARN] 3 files with @ts-nocheck found
+- **2026-05-21T09:30:01Z** [CRITICAL] ChefFlow server not responding on port 3100
 
 ---
 

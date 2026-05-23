@@ -1,0 +1,984 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Chromatic Flavor Atlas Prototype</title>
+  <style>
+    :root {
+      color-scheme: light;
+      --bg: #f7f8f4;
+      --ink: #1f261d;
+      --muted: #677064;
+      --line: #d9dfd1;
+      --panel: #ffffff;
+      --soft: #edf2e7;
+      --green: #4f7d3f;
+      --lime: #9bbf3a;
+      --yellow: #d6a63a;
+      --olive: #717834;
+      --blue: #426f8f;
+      --red: #a6423a;
+      --shadow: 0 18px 40px rgba(35, 46, 28, 0.11);
+      font-family: Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+    }
+
+    * { box-sizing: border-box; }
+
+    body {
+      margin: 0;
+      background:
+        linear-gradient(180deg, rgba(237, 242, 231, 0.9), rgba(247, 248, 244, 0.96)),
+        radial-gradient(circle at 20% 0%, rgba(155, 191, 58, 0.18), transparent 32%),
+        radial-gradient(circle at 80% 8%, rgba(66, 111, 143, 0.14), transparent 34%);
+      color: var(--ink);
+    }
+
+    button, input, select, textarea {
+      font: inherit;
+    }
+
+    button {
+      border: 1px solid var(--line);
+      background: var(--panel);
+      color: var(--ink);
+      border-radius: 7px;
+      min-height: 36px;
+      padding: 8px 11px;
+      cursor: pointer;
+    }
+
+    button:hover, button:focus-visible {
+      border-color: #93a57e;
+      outline: 2px solid rgba(79, 125, 63, 0.2);
+      outline-offset: 1px;
+    }
+
+    .shell {
+      min-height: 100vh;
+      display: grid;
+      grid-template-columns: 280px minmax(0, 1fr);
+    }
+
+    .sidebar {
+      position: sticky;
+      top: 0;
+      height: 100vh;
+      overflow: auto;
+      padding: 22px 18px;
+      border-right: 1px solid var(--line);
+      background: rgba(255, 255, 255, 0.75);
+      backdrop-filter: blur(12px);
+    }
+
+    .brand {
+      display: grid;
+      gap: 8px;
+      margin-bottom: 22px;
+    }
+
+    .brand h1 {
+      margin: 0;
+      font-size: 23px;
+      line-height: 1.05;
+      letter-spacing: 0;
+    }
+
+    .brand p {
+      margin: 0;
+      color: var(--muted);
+      font-size: 13px;
+      line-height: 1.45;
+    }
+
+    .nav {
+      display: grid;
+      gap: 7px;
+      margin: 18px 0 22px;
+    }
+
+    .nav button {
+      text-align: left;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      width: 100%;
+    }
+
+    .nav button.active {
+      background: #24341f;
+      color: #fff;
+      border-color: #24341f;
+    }
+
+    .sidebar-section {
+      border-top: 1px solid var(--line);
+      padding-top: 16px;
+      margin-top: 16px;
+    }
+
+    .label {
+      display: block;
+      color: var(--muted);
+      font-size: 11px;
+      font-weight: 700;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+      margin-bottom: 8px;
+    }
+
+    .mode-grid {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 6px;
+    }
+
+    .mode-grid button.active {
+      background: var(--green);
+      border-color: var(--green);
+      color: #fff;
+    }
+
+    .filter-stack {
+      display: grid;
+      gap: 8px;
+    }
+
+    select, input[type="search"], textarea {
+      width: 100%;
+      border: 1px solid var(--line);
+      border-radius: 7px;
+      background: #fff;
+      color: var(--ink);
+      padding: 9px 10px;
+    }
+
+    .toggle-line {
+      display: flex;
+      align-items: center;
+      gap: 9px;
+      color: var(--muted);
+      font-size: 13px;
+      margin-top: 10px;
+    }
+
+    .main {
+      padding: 24px;
+      display: grid;
+      gap: 18px;
+    }
+
+    .topbar {
+      display: grid;
+      grid-template-columns: minmax(0, 1fr) auto;
+      gap: 18px;
+      align-items: start;
+    }
+
+    .hero {
+      min-height: 178px;
+      border: 1px solid var(--line);
+      background:
+        linear-gradient(105deg, rgba(31, 38, 29, 0.9), rgba(58, 80, 48, 0.8)),
+        linear-gradient(135deg, #89a648, #325c3a 45%, #e1c94e);
+      color: #fff;
+      border-radius: 8px;
+      padding: 24px;
+      display: grid;
+      align-content: end;
+      box-shadow: var(--shadow);
+      overflow: hidden;
+      position: relative;
+    }
+
+    .hero::after {
+      content: "";
+      position: absolute;
+      right: 24px;
+      top: 20px;
+      width: 210px;
+      height: 130px;
+      background:
+        linear-gradient(90deg, rgba(255,255,255,.06) 1px, transparent 1px),
+        linear-gradient(0deg, rgba(255,255,255,.06) 1px, transparent 1px);
+      background-size: 22px 22px;
+      border: 1px solid rgba(255,255,255,.2);
+      border-radius: 8px;
+      transform: rotate(-3deg);
+    }
+
+    .hero h2 {
+      margin: 0 0 8px;
+      font-size: clamp(28px, 5vw, 54px);
+      line-height: 0.95;
+      letter-spacing: 0;
+      max-width: 760px;
+      position: relative;
+      z-index: 1;
+    }
+
+    .hero p {
+      margin: 0;
+      max-width: 700px;
+      line-height: 1.45;
+      color: rgba(255,255,255,.86);
+      position: relative;
+      z-index: 1;
+    }
+
+    .status-card {
+      width: 280px;
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      background: var(--panel);
+      padding: 16px;
+      box-shadow: var(--shadow);
+    }
+
+    .status-card strong {
+      display: block;
+      font-size: 24px;
+      margin-bottom: 4px;
+    }
+
+    .status-card span {
+      color: var(--muted);
+      font-size: 13px;
+    }
+
+    .view { display: none; }
+    .view.active { display: grid; gap: 18px; }
+
+    .layout {
+      display: grid;
+      grid-template-columns: minmax(320px, 0.9fr) minmax(420px, 1.25fr);
+      gap: 18px;
+      align-items: start;
+    }
+
+    .panel {
+      border: 1px solid var(--line);
+      background: rgba(255,255,255,.92);
+      border-radius: 8px;
+      box-shadow: var(--shadow);
+      overflow: hidden;
+    }
+
+    .panel-head {
+      padding: 16px 18px;
+      border-bottom: 1px solid var(--line);
+      display: flex;
+      justify-content: space-between;
+      gap: 12px;
+      align-items: center;
+    }
+
+    .panel-head h3, .section-title {
+      margin: 0;
+      font-size: 17px;
+      letter-spacing: 0;
+    }
+
+    .panel-body { padding: 16px 18px; }
+
+    .ingredient-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(190px, 1fr));
+      gap: 10px;
+    }
+
+    .ingredient-card {
+      padding: 12px;
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      background: #fff;
+      display: grid;
+      grid-template-columns: 42px minmax(0, 1fr);
+      gap: 10px;
+      text-align: left;
+      min-height: 86px;
+    }
+
+    .ingredient-card.active {
+      border-color: var(--green);
+      box-shadow: 0 0 0 2px rgba(79,125,63,.15);
+    }
+
+    .swatch {
+      width: 42px;
+      height: 42px;
+      border-radius: 50%;
+      border: 1px solid rgba(0,0,0,.12);
+      box-shadow: inset 0 0 16px rgba(255,255,255,.35);
+    }
+
+    .ingredient-card strong {
+      display: block;
+      font-size: 14px;
+      margin-bottom: 3px;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+
+    .ingredient-card span {
+      color: var(--muted);
+      font-size: 12px;
+      line-height: 1.35;
+    }
+
+    .chips {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 7px;
+    }
+
+    .chip {
+      border: 1px solid var(--line);
+      background: var(--soft);
+      border-radius: 999px;
+      padding: 5px 8px;
+      font-size: 12px;
+      color: #33402f;
+    }
+
+    .chip.warn {
+      background: #fff4d7;
+      border-color: #dfc472;
+      color: #604a0d;
+    }
+
+    .chip.danger {
+      background: #fde9e7;
+      border-color: #dda19b;
+      color: #732b24;
+    }
+
+    .detail-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 12px;
+    }
+
+    .mini {
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      padding: 12px;
+      background: #fff;
+    }
+
+    .mini b {
+      display: block;
+      font-size: 12px;
+      color: var(--muted);
+      text-transform: uppercase;
+      letter-spacing: .06em;
+      margin-bottom: 6px;
+    }
+
+    .mini p {
+      margin: 0;
+      font-size: 14px;
+      line-height: 1.42;
+    }
+
+    .radar-wrap {
+      display: grid;
+      grid-template-columns: minmax(280px, 430px) minmax(260px, 1fr);
+      gap: 16px;
+      align-items: center;
+    }
+
+    svg {
+      width: 100%;
+      height: auto;
+      display: block;
+    }
+
+    .data-table {
+      width: 100%;
+      border-collapse: collapse;
+      font-size: 13px;
+    }
+
+    .data-table th, .data-table td {
+      border-bottom: 1px solid var(--line);
+      padding: 9px 7px;
+      text-align: left;
+      vertical-align: top;
+    }
+
+    .data-table th {
+      color: var(--muted);
+      font-size: 11px;
+      text-transform: uppercase;
+      letter-spacing: .06em;
+      background: #f9faf7;
+    }
+
+    .claim-result {
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      padding: 14px;
+      background: #fff;
+      min-height: 110px;
+      line-height: 1.45;
+    }
+
+    .claim-result.blocked {
+      border-color: #d89086;
+      background: #fff7f5;
+    }
+
+    .claim-result.safe {
+      border-color: #91b172;
+      background: #f5fbef;
+    }
+
+    .source-grid, .benchmark-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
+      gap: 12px;
+    }
+
+    .source-card {
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      background: #fff;
+      padding: 14px;
+      display: grid;
+      gap: 8px;
+    }
+
+    .source-card h4 {
+      margin: 0;
+      font-size: 15px;
+    }
+
+    .source-card p {
+      margin: 0;
+      color: var(--muted);
+      font-size: 13px;
+      line-height: 1.4;
+    }
+
+    .bar {
+      height: 8px;
+      background: #e8eddf;
+      border-radius: 999px;
+      overflow: hidden;
+    }
+
+    .bar span {
+      display: block;
+      height: 100%;
+      background: linear-gradient(90deg, var(--green), var(--lime));
+    }
+
+    .compare-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 12px;
+    }
+
+    .footer-note {
+      color: var(--muted);
+      font-size: 12px;
+      line-height: 1.45;
+    }
+
+    .sr-only {
+      position: absolute;
+      width: 1px;
+      height: 1px;
+      padding: 0;
+      margin: -1px;
+      overflow: hidden;
+      clip: rect(0,0,0,0);
+      white-space: nowrap;
+      border: 0;
+    }
+
+    @media (max-width: 1060px) {
+      .shell { grid-template-columns: 1fr; }
+      .sidebar {
+        position: static;
+        height: auto;
+        border-right: 0;
+        border-bottom: 1px solid var(--line);
+      }
+      .nav { grid-template-columns: repeat(4, 1fr); }
+      .topbar, .layout, .radar-wrap { grid-template-columns: 1fr; }
+      .status-card { width: auto; }
+    }
+
+    @media (max-width: 640px) {
+      .main { padding: 14px; }
+      .sidebar { padding: 16px 14px; }
+      .nav { grid-template-columns: 1fr 1fr; }
+      .hero { min-height: 210px; padding: 18px; }
+      .hero::after { display: none; }
+      .detail-grid, .compare-grid { grid-template-columns: 1fr; }
+      .ingredient-grid { grid-template-columns: 1fr; }
+      .panel-head { align-items: start; flex-direction: column; }
+    }
+  </style>
+</head>
+<body>
+  <div class="shell">
+    <aside class="sidebar">
+      <div class="brand">
+        <h1>Chromatic Flavor Atlas</h1>
+        <p>Interactive research prototype. Color is a sensory index, not proof of flavor.</p>
+      </div>
+
+      <span class="label">Mode</span>
+      <div class="mode-grid" role="group" aria-label="Display mode">
+        <button data-mode="teen" class="active">Teen</button>
+        <button data-mode="chef">Chef</button>
+        <button data-mode="expert">Expert</button>
+      </div>
+
+      <nav class="nav" aria-label="Prototype views">
+        <button data-view="atlas" class="active">Atlas <span>24</span></button>
+        <button data-view="compare">Compare <span>2</span></button>
+        <button data-view="claims">Claims <span>Gate</span></button>
+        <button data-view="sources">Sources <span>Map</span></button>
+      </nav>
+
+      <div class="sidebar-section">
+        <span class="label">Find Ingredients</span>
+        <div class="filter-stack">
+          <input id="search" type="search" placeholder="Search apple, pepper, olive...">
+          <select id="clusterFilter" aria-label="Cluster filter">
+            <option value="all">All clusters</option>
+            <option value="Acid/Fruit">Green Acid / Fruit</option>
+            <option value="Water/Crunch">Green Water / Crunch</option>
+            <option value="Heat/Aromatic">Green Heat / Aromatic</option>
+            <option value="Fat/Bitter/Preserved">Green Fat / Bitter / Preserved</option>
+          </select>
+        </div>
+        <label class="toggle-line">
+          <input id="showSources" type="checkbox" checked>
+          Show source badges
+        </label>
+        <label class="toggle-line">
+          <input id="showMissing" type="checkbox" checked>
+          Show missing data
+        </label>
+      </div>
+
+      <div class="sidebar-section">
+        <span class="label">Honesty Contract</span>
+        <p class="footer-note">Same color never means same flavor. Unknown fields remain Not enough evidence, not zero.</p>
+      </div>
+    </aside>
+
+    <main class="main">
+      <section class="topbar">
+        <div class="hero">
+          <h2>Green is not one flavor.</h2>
+          <p id="modeIntro">Plain-language mode shows how green ingredients can be sour, crunchy, spicy, creamy, bitter, or preserved without pretending color proves taste.</p>
+        </div>
+        <div class="status-card">
+          <strong id="readinessScore">8/24</strong>
+          <span>recommended first-proof records are interactive. All 24 pilot ingredients are visible with unknowns preserved.</span>
+        </div>
+      </section>
+
+      <section id="atlas" class="view active">
+        <div class="layout">
+          <div class="panel">
+            <div class="panel-head">
+              <h3>Green Pilot Ingredients</h3>
+              <span class="chip" id="visibleCount">24 visible</span>
+            </div>
+            <div class="panel-body">
+              <div id="ingredientGrid" class="ingredient-grid"></div>
+            </div>
+          </div>
+
+          <div class="panel">
+            <div class="panel-head">
+              <h3 id="detailTitle">Ingredient Detail</h3>
+              <div id="detailBadges" class="chips"></div>
+            </div>
+            <div class="panel-body">
+              <div class="radar-wrap">
+                <div>
+                  <div id="radarSummary" class="sr-only"></div>
+                  <svg id="radar" viewBox="0 0 420 420" role="img" aria-labelledby="detailTitle radarSummary"></svg>
+                </div>
+                <div>
+                  <div id="detailGrid" class="detail-grid"></div>
+                </div>
+              </div>
+              <div style="margin-top:16px; overflow:auto;">
+                <table class="data-table" id="axisTable"></table>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <section id="compare" class="view">
+        <div class="panel">
+          <div class="panel-head">
+            <h3>Role-Safe Comparison</h3>
+            <div class="chips">
+              <span class="chip warn">No color-only substitution</span>
+              <span class="chip">Unknowns stay visible</span>
+            </div>
+          </div>
+          <div class="panel-body">
+            <div class="compare-grid">
+              <select id="compareA" aria-label="First ingredient"></select>
+              <select id="compareB" aria-label="Second ingredient"></select>
+            </div>
+            <div class="radar-wrap" style="margin-top:16px;">
+              <svg id="compareRadar" viewBox="0 0 420 420" role="img" aria-label="Comparison role chart"></svg>
+              <div id="compareNarrative" class="source-card"></div>
+            </div>
+            <div style="margin-top:16px; overflow:auto;">
+              <table class="data-table" id="compareTable"></table>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <section id="claims" class="view">
+        <div class="layout">
+          <div class="panel">
+            <div class="panel-head">
+              <h3>Claim Gate</h3>
+              <span class="chip danger">AI output is not evidence</span>
+            </div>
+            <div class="panel-body">
+              <label class="label" for="claimInput">Type or try a claim</label>
+              <textarea id="claimInput" rows="5">Same color ingredients are interchangeable.</textarea>
+              <div class="chips" style="margin-top:10px;">
+                <button class="claimPreset" data-claim="Cucumber can replace celery when the dish needs cold crunch, but only after allergen and dietary checks.">Good role substitution</button>
+                <button class="claimPreset" data-claim="Pigment proves flavor.">Forbidden pigment claim</button>
+                <button class="claimPreset" data-claim="USDA FDC reports nutrient values for cucumber raw.">Valid sourced claim</button>
+              </div>
+            </div>
+          </div>
+          <div class="panel">
+            <div class="panel-head">
+              <h3>Decision</h3>
+              <button id="checkClaim">Check Claim</button>
+            </div>
+            <div class="panel-body">
+              <div id="claimResult" class="claim-result blocked"></div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <section id="sources" class="view">
+        <div class="panel">
+          <div class="panel-head">
+            <h3>Source Governance</h3>
+            <span class="chip">License first</span>
+          </div>
+          <div class="panel-body">
+            <div class="source-grid" id="sourceGrid"></div>
+          </div>
+        </div>
+        <div class="panel">
+          <div class="panel-head">
+            <h3>Benchmark Gates</h3>
+            <span class="chip warn">Build blockers visible</span>
+          </div>
+          <div class="panel-body">
+            <div id="benchmarkGrid" class="benchmark-grid"></div>
+          </div>
+        </div>
+      </section>
+    </main>
+  </div>
+
+  <script>
+    const modes = {
+      teen: {
+        intro: "Plain-language mode shows how green ingredients can be sour, crunchy, spicy, creamy, bitter, or preserved without pretending color proves taste.",
+        axes: ["Bright", "Crunchy", "Aromatic", "Hot", "Creamy", "Bitter"],
+        proof: "plain labels"
+      },
+      chef: {
+        intro: "Chef mode frames ingredients by the job they do in a dish: acid lift, water crunch, aromatic top note, heat, body, bitterness, and preservation.",
+        axes: ["Acid lift", "Water crunch", "Aromatic top", "Heat", "Fat/body", "Bitter/leafy"],
+        proof: "role labels"
+      },
+      expert: {
+        intro: "Expert mode exposes evidence labels, missing data, and source limits. Role values are mixed evidence unless measured units and citations are attached.",
+        axes: ["Acidity evidence", "Texture evidence", "Volatile evidence", "Pungency evidence", "Lipid/body evidence", "Bitter evidence"],
+        proof: "evidence labels"
+      }
+    };
+
+    const ingredients = [
+      item("green-apple","Green apple","Acid/Fruit","#9fbd45","Malus domestica candidate","Cultivar dominates acid, sugar, color, texture.","Strong FDC; cultivar records noted.","Approximate extension pH only; FDC acid/pH mostly missing.","Crisp acid fruit, fresh crunch, bright garnish.","Cultivar-specific aroma, acid, texture, measured color.",[5,4,2,0,1,1],true),
+      item("lime","Lime","Acid/Fruit","#7aa832","Citrus hybrid candidates","Key/Persian/Tahiti identities can diverge.","Strong for raw/juice.","Approximate extension pH; organic acids need literature.","Sharp acid, citrus top note.","Market type, cultivar, juice vs zest chemistry.",[5,1,5,0,0,1],true),
+      item("kiwi","Kiwi","Acid/Fruit","#88a83d","Actinidia candidates","Green/gold cultivars differ.","Strong SR raw.","Not enough evidence from checked FDC.","Sweet-acid fruit, seed crunch, soft flesh.","Cultivar-specific aroma/acidity.",[4,2,3,0,1,1],false),
+      item("green-grape","Green grape","Acid/Fruit","#b8c95a","Vitis vinifera candidate","Table/wine/muscat/raisin types differ.","Strong green seedless raw.","Approximate pH; cultivar-specific acidity unknown.","Juicy sweet-acid pop.","Cultivar and maturity.",[3,3,2,0,0,1],false),
+      item("tomatillo","Tomatillo","Acid/Fruit","#8eaa4b","Physalis philadelphica candidate","Maturity and husk tomato naming vary.","Strong Foundation raw.","Approximate pH; cultivar gaps remain.","Tart vegetal sauce base, pectin/body.","Cooked salsa behavior and cultivar variance.",[4,2,3,0,1,1],false),
+      item("sorrel","Sorrel","Acid/Fruit","#5c8b3c","Rumex candidates","Common-name ambiguity; Oxalis confusion risk.","Weak exact FDC match.","Extension pH only if identity verified.","Sour leafy accent.","Identity, nutrients, pH, safety notes.",[5,1,2,0,0,3],false),
+      item("zucchini","Zucchini","Water/Crunch","#6c9144","Cucurbita pepo candidate","Cultivar and maturity matter.","Strong Foundation raw.","Cooked pH approximate; raw pH not enough evidence.","Mild watery body; softens with heat.","Measured color, cooked texture metrics.",[1,3,1,0,1,1],false),
+      item("cucumber","Cucumber","Water/Crunch","#7fa35a","Cucumis sativus candidate","Slicing/pickling cultivars and peel state vary.","Strong raw; pickled states separate.","Approximate raw/pickled pH.","Watery crunch, cooling role.","Cultivar bitterness and peel chemistry.",[1,5,2,0,0,1],true),
+      item("celery","Celery","Water/Crunch","#8dad68","Apium graveolens candidate","Stalk, leaf, and celeriac must separate.","Strong Foundation raw.","Approximate pH available.","Aromatic crunch, mirepoix structure.","State-specific volatile change.",[1,5,3,0,0,2],true),
+      item("green-bean","Green bean","Water/Crunch","#6f9b43","Phaseolus vulgaris candidate","Snap bean cultivar and maturity matter.","Strong Foundation/SR raw.","Approximate pH; cooked/preserved varies.","Green snap, mild vegetable body.","Cooked color/texture thresholds.",[1,4,1,0,0,1],false),
+      item("asparagus","Asparagus","Water/Crunch","#5e8f44","Asparagus officinalis candidate","Spear age/thickness changes texture/flavor.","Strong Foundation raw.","Approximate pH available.","Green sulfurous vegetal spear.","Odor compounds by cooking state.",[1,3,4,0,0,2],false),
+      item("jalapeno","Jalapeno","Heat/Aromatic","#3f7a3f","Capsicum annuum group","Cultivar, maturity, and pungency vary.","Strong Foundation raw seeded.","Not enough evidence except broad pepper ranges.","Green heat, fresh pepper aroma.","Cultivar pungency and aroma thresholds.",[1,4,4,5,0,2],true),
+      item("green-bell-pepper","Green bell pepper","Heat/Aromatic","#4d8b3c","Capsicum annuum group","Same species as many chiles; non-pungent group.","Strong Foundation raw.","Approximate pH available.","Green pyrazine aroma, crunch.","Cultivar/maturity/state variance.",[1,5,5,0,0,2],true),
+      item("cilantro","Cilantro","Heat/Aromatic","#3f8b48","Coriandrum sativum leaves","Leaf vs seed are different products.","Medium SR raw.","Not enough evidence.","Fresh herbal/citrus accent; soapy for some.","Genetic perception evidence and volatiles.",[1,1,5,0,0,2],false),
+      item("basil","Basil","Heat/Aromatic","#4e9a4a","Ocimum basilicum candidate","Sweet, Thai, holy, lemon basil differ.","Medium SR fresh.","Not enough evidence.","Sweet herb; anise/clove depending type.","Basil type and cultivar.",[0,1,5,0,0,1],false),
+      item("mint","Mint","Heat/Aromatic","#4d9c63","Mentha species candidates","Peppermint/spearmint/hybrids differ.","Medium SR peppermint/spearmint fresh.","Not enough evidence.","Cooling aromatic herb.","Species, fresh/dried state, thresholds.",[0,1,5,0,0,1],false),
+      item("dill","Dill","Heat/Aromatic","#6a984a","Anethum graveolens candidate","Leaf vs seed vs pickle context differ.","Medium SR fresh; pickles separate.","Herb pH not enough evidence.","Feathery herbal, pickle association.","Leaf vs seed volatile differences.",[1,1,4,0,0,1],false),
+      item("parsley","Parsley","Heat/Aromatic","#4f8a3d","Petroselinum crispum candidate","Flat vs curly differs in use and texture.","Medium SR fresh.","Approximate extension pH.","Fresh green herb, garnish/body.","Cultivar/type.",[1,2,3,0,0,2],false),
+      item("avocado","Avocado","Fat/Bitter/Preserved","#7c9b48","Persea americana candidate","Hass vs green-skin cultivars differ.","Strong Foundation Hass raw.","Approximate pH available.","Fatty/creamy green role.","Non-Hass cultivar behavior.",[0,1,1,0,5,1],true),
+      item("pistachio","Pistachio","Fat/Bitter/Preserved","#a1b85a","Pistacia vera candidate","Raw/roasted/salted and cultivar affect color/flavor.","Strong Foundation raw.","Not enough evidence.","Nutty fat, green visual accent.","Roast-state chemistry.",[0,2,3,0,4,2],false),
+      item("green-olive","Green olive","Fat/Bitter/Preserved","#6f7738","Olea europaea candidate","Raw vs cured/fermented table olive must separate.","Medium preserved/stuffed; raw weak.","Fermented olive pH approximate.","Briny fat/bitter preserved role.","Cultivar, cure process, sodium/acid variability.",[2,2,3,0,3,4],true),
+      item("kale","Kale","Fat/Bitter/Preserved","#3f743d","Brassica oleracea group","Curly/lacinato/baby kale vary.","Strong Foundation/SR raw.","Cooked pH approximate; raw pH not enough evidence.","Bitter leafy structure.","Cultivar and cooked state.",[0,3,2,0,0,4],false),
+      item("spinach","Spinach","Fat/Bitter/Preserved","#477a3f","Spinacia oleracea candidate","Baby/mature and raw/cooked differ.","Strong SR raw/cooked variants.","Approximate raw/cooked pH.","Tender leafy green; wilts quickly.","Cultivar and cooking claims.",[0,2,1,0,0,2],false),
+      item("arugula","Arugula","Fat/Bitter/Preserved","#4b8341","Eruca vesicaria candidate","Baby arugula vs wild rocket differ.","Strong Foundation baby raw.","Not enough evidence.","Peppery bitter leafy accent.","Species/market label and pungency.",[1,2,3,1,0,4],false),
+      item("broccoli-rabe","Broccoli rabe","Fat/Bitter/Preserved","#567d3f","Brassica rapa group","Not broccoli; identity confusion is high.","Medium SR raw/cooked.","Not enough evidence; broccoli ranges not proof.","Bitter brassica leafy stem.","Identity, pH, cooked bitterness.",[0,3,2,0,0,5],false)
+    ];
+
+    const sourceCards = [
+      ["USDA FoodData Central","Approved","Nutrients and named food states. pH and organic acids are usually Not enough evidence.","92"],
+      ["GRIN / GBIF / POWO / WFO","Approved","Botanical identity and synonyms. Cultivar and flavor remain separate.","86"],
+      ["Sensory literature","Scoped","Color can bias expectation and identification, not determine flavor.","78"],
+      ["Pigment literature","Scoped","Explains color behavior under heat, pH, oxidation, and light. Not flavor proof.","74"],
+      ["FlavorDB / FooDB / BitterDB","Restricted","Useful compound databases, but noncommercial/no-derivatives/threshold gaps limit product use.","48"],
+      ["ChemTastesDB / ChEBI / LOTUS","Conditional","Open chemistry vocabulary and occurrence discovery. Not perception by itself.","64"],
+      ["Culinary precedent","Heuristic","Supports workflow language and hypotheses only, never science claims.","58"],
+      ["AI output","Rejected","Never evidence. May generate questions, not claims.","0"]
+    ];
+
+    const benchmarks = [
+      ["Science claim", "Must cite DOI/PMID/URL and keep scope narrow."],
+      ["Same-color substitution", "Pass only when role, state, allergen, and dietary checks pass."],
+      ["Missing data", "Must render as Not enough evidence, not zero."],
+      ["Radar chart", "Must expose evidence class, source, unit, confidence, and table fallback."],
+      ["Expert disagreement", "Must preserve split opinions instead of fake consensus."],
+      ["Cultural context", "Must name culture, region, time, and source; no universal wording."]
+    ];
+
+    let state = {
+      selected: ingredients[0].id,
+      mode: "teen",
+      view: "atlas",
+      cluster: "all",
+      search: "",
+      showSources: true,
+      showMissing: true
+    };
+
+    function item(id, name, cluster, color, identity, issue, fdc, ph, role, missing, scores, recommended) {
+      return { id, name, cluster, color, identity, issue, fdc, ph, role, missing, scores, recommended };
+    }
+
+    function qs(id) { return document.getElementById(id); }
+
+    function filteredIngredients() {
+      const q = state.search.trim().toLowerCase();
+      return ingredients.filter(i =>
+        (state.cluster === "all" || i.cluster === state.cluster) &&
+        (!q || [i.name, i.cluster, i.identity, i.role].join(" ").toLowerCase().includes(q))
+      );
+    }
+
+    function render() {
+      document.querySelectorAll("[data-mode]").forEach(b => b.classList.toggle("active", b.dataset.mode === state.mode));
+      document.querySelectorAll("[data-view]").forEach(b => b.classList.toggle("active", b.dataset.view === state.view));
+      document.querySelectorAll(".view").forEach(v => v.classList.toggle("active", v.id === state.view));
+      qs("modeIntro").textContent = modes[state.mode].intro;
+      renderIngredients();
+      renderDetail();
+      renderCompare();
+      renderSources();
+      checkClaim();
+    }
+
+    function renderIngredients() {
+      const list = filteredIngredients();
+      qs("visibleCount").textContent = `${list.length} visible`;
+      qs("ingredientGrid").innerHTML = list.map(i => `
+        <button class="ingredient-card ${i.id === state.selected ? "active" : ""}" data-ingredient="${i.id}">
+          <span class="swatch" style="background:${i.color}"></span>
+          <span>
+            <strong>${i.name}</strong>
+            <span>${i.cluster}<br>${i.recommended ? "first-proof candidate" : "pilot candidate"}</span>
+          </span>
+        </button>
+      `).join("");
+      document.querySelectorAll("[data-ingredient]").forEach(b => {
+        b.addEventListener("click", () => { state.selected = b.dataset.ingredient; render(); });
+      });
+    }
+
+    function selectedIngredient() {
+      return ingredients.find(i => i.id === state.selected) || ingredients[0];
+    }
+
+    function renderDetail() {
+      const i = selectedIngredient();
+      qs("detailTitle").textContent = i.name;
+      qs("detailBadges").innerHTML = `
+        <span class="chip">${i.cluster}</span>
+        <span class="chip ${i.recommended ? "" : "warn"}">${i.recommended ? "First proof" : "Needs follow-up"}</span>
+        ${state.showSources ? '<span class="chip">chef-heuristic role</span>' : ""}
+      `;
+      qs("detailGrid").innerHTML = [
+        ["Identity", i.identity],
+        ["Cultivar issue", i.issue],
+        ["FDC coverage", i.fdc],
+        ["pH / acidity", i.ph],
+        ["Culinary role", i.role],
+        ["Not enough evidence", i.missing]
+      ].map(([k, v]) => `<div class="mini"><b>${k}</b><p>${v}</p></div>`).join("");
+      drawRadar(qs("radar"), [i], modes[state.mode].axes);
+      renderAxisTable(i);
+      qs("radarSummary").textContent = `${i.name} role profile. Known roles are shown as ${modes[state.mode].proof}. Missing data is preserved and not plotted as zero.`;
+    }
+
+    function drawRadar(svg, items, axes) {
+      const cx = 210, cy = 210, maxR = 138;
+      const n = axes.length;
+      const rings = [1,2,3,4,5].map(r => {
+        const pts = axes.map((_, idx) => point(cx, cy, maxR * r / 5, idx, n)).join(" ");
+        return `<polygon points="${pts}" fill="none" stroke="#d8dfd0" stroke-width="1"></polygon>`;
+      }).join("");
+      const spokes = axes.map((a, idx) => {
+        const p = pointObj(cx, cy, maxR, idx, n);
+        const lp = pointObj(cx, cy, maxR + 36, idx, n);
+        return `<line x1="${cx}" y1="${cy}" x2="${p.x}" y2="${p.y}" stroke="#d8dfd0"></line>
+          <text x="${lp.x}" y="${lp.y}" text-anchor="middle" dominant-baseline="middle" font-size="12" fill="#44503e">${a}</text>`;
+      }).join("");
+      const colors = ["#4f7d3f", "#426f8f"];
+      const polys = items.map((item, idx) => {
+        const known = item.scores.map((v, axis) => ({ v, axis })).filter(d => d.v !== null && d.v !== undefined);
+        const pts = known.map(d => point(cx, cy, maxR * d.v / 5, d.axis, n)).join(" ");
+        const circles = item.scores.map((v, axis) => {
+          const p = pointObj(cx, cy, maxR * ((v || 0) / 5), axis, n);
+          if (v === null || v === undefined) return "";
+          return `<circle cx="${p.x}" cy="${p.y}" r="4" fill="${colors[idx]}" stroke="#fff" stroke-width="2"></circle>`;
+        }).join("");
+        return `<polygon points="${pts}" fill="${hexToRgba(colors[idx], idx === 0 ? 0.18 : 0.10)}" stroke="${colors[idx]}" stroke-width="3"></polygon>${circles}`;
+      }).join("");
+      svg.innerHTML = `<rect x="0" y="0" width="420" height="420" fill="#fff" rx="8"></rect>${rings}${spokes}${polys}
+        <text x="210" y="390" text-anchor="middle" font-size="12" fill="#6b7565">Role shape only. Unknown values are not zero.</text>`;
+    }
+
+    function point(cx, cy, r, idx, n) {
+      const p = pointObj(cx, cy, r, idx, n);
+      return `${p.x},${p.y}`;
+    }
+
+    function pointObj(cx, cy, r, idx, n) {
+      const angle = (-Math.PI / 2) + idx * (Math.PI * 2 / n);
+      return { x: Math.round((cx + Math.cos(angle) * r) * 10) / 10, y: Math.round((cy + Math.sin(angle) * r) * 10) / 10 };
+    }
+
+    function hexToRgba(hex, alpha) {
+      const x = hex.replace("#", "");
+      const r = parseInt(x.slice(0,2), 16), g = parseInt(x.slice(2,4), 16), b = parseInt(x.slice(4,6), 16);
+      return `rgba(${r},${g},${b},${alpha})`;
+    }
+
+    function renderAxisTable(i) {
+      const axes = modes[state.mode].axes;
+      qs("axisTable").innerHTML = `<thead><tr><th>Axis</th><th>Value</th><th>Evidence</th><th>Source status</th></tr></thead><tbody>` +
+        axes.map((axis, idx) => {
+          const value = i.scores[idx];
+          const missing = value === null || value === undefined;
+          if (missing && !state.showMissing) return "";
+          return `<tr>
+            <td>${axis}</td>
+            <td>${missing ? "Not enough evidence" : `${value}/5 role signal`}</td>
+            <td>${idx === 0 && i.ph.includes("Not enough") ? "not enough evidence" : "chef-heuristic / database-derived mix"}</td>
+            <td>${state.showSources ? "Needs field-level citation before product claim" : "Hidden"}</td>
+          </tr>`;
+        }).join("") + `</tbody>`;
+    }
+
+    function renderCompare() {
+      const options = ingredients.map(i => `<option value="${i.id}">${i.name}</option>`).join("");
+      if (!qs("compareA").innerHTML) {
+        qs("compareA").innerHTML = options;
+        qs("compareB").innerHTML = options;
+        qs("compareA").value = "green-apple";
+        qs("compareB").value = "avocado";
+      }
+      const a = ingredients.find(i => i.id === qs("compareA").value) || ingredients[0];
+      const b = ingredients.find(i => i.id === qs("compareB").value) || ingredients[18];
+      drawRadar(qs("compareRadar"), [a,b], modes[state.mode].axes);
+      qs("compareNarrative").innerHTML = `
+        <h4>${a.name} vs ${b.name}</h4>
+        <p><b>Safe read:</b> compare role shape, not color. ${a.name} is ${a.role.toLowerCase()} ${b.name} is ${b.role.toLowerCase()}</p>
+        <p><b>Substitution gate:</b> role, state, allergen, dietary, culture, and source checks are required before any recommendation.</p>
+      `;
+      qs("compareTable").innerHTML = `<thead><tr><th>Axis</th><th>${a.name}</th><th>${b.name}</th><th>Honesty rule</th></tr></thead><tbody>` +
+        modes[state.mode].axes.map((axis, idx) => `<tr><td>${axis}</td><td>${a.scores[idx]}/5</td><td>${b.scores[idx]}/5</td><td>Role signal, not scientific proof</td></tr>`).join("") + `</tbody>`;
+    }
+
+    function renderSources() {
+      qs("sourceGrid").innerHTML = sourceCards.map(([name, status, text, score]) => `
+        <article class="source-card">
+          <div class="chips"><span class="chip ${status === "Restricted" || status === "Rejected" ? "warn" : ""}">${status}</span></div>
+          <h4>${name}</h4>
+          <p>${text}</p>
+          <div class="bar" aria-label="Readiness ${score} percent"><span style="width:${score}%"></span></div>
+        </article>
+      `).join("");
+      qs("benchmarkGrid").innerHTML = benchmarks.map(([name, text]) => `
+        <article class="source-card">
+          <h4>${name}</h4>
+          <p>${text}</p>
+        </article>
+      `).join("");
+    }
+
+    function checkClaim() {
+      const text = qs("claimInput").value.toLowerCase();
+      const banned = [
+        "same color", "interchangeable", "pigment proves", "presence proves",
+        "ai discovered", "radar proves", "tastes like green", "green flavor family",
+        "chemically proven", "unknown means none"
+      ];
+      const allowed = ["usda fdc reports", "controlled studies", "chef", "role", "allergen", "dietary"];
+      const hit = banned.find(b => text.includes(b));
+      const result = qs("claimResult");
+      if (hit) {
+        result.className = "claim-result blocked";
+        result.innerHTML = `<b>Blocked: unsupported or forbidden wording.</b><br><br>
+          Trigger: <code>${hit}</code><br>
+          Safer wording: color may be a discovery cue only. Role, state, source, confidence, allergen, and dietary checks are required.`;
+      } else if (allowed.some(a => text.includes(a))) {
+        result.className = "claim-result safe";
+        result.innerHTML = `<b>Conditionally allowed.</b><br><br>
+          Keep the evidence label visible, cite the source, and avoid expanding the claim beyond the cited context.`;
+      } else {
+        result.className = "claim-result";
+        result.innerHTML = `<b>Needs evidence classification.</b><br><br>
+          Assign measured, peer-reviewed, database-derived, inferred, culinary-precedent, chef-heuristic, personal-thesis, speculative, or rejected/unsupported before display.`;
+      }
+    }
+
+    document.querySelectorAll("[data-mode]").forEach(b => b.addEventListener("click", () => { state.mode = b.dataset.mode; render(); }));
+    document.querySelectorAll("[data-view]").forEach(b => b.addEventListener("click", () => { state.view = b.dataset.view; render(); }));
+    qs("search").addEventListener("input", e => { state.search = e.target.value; renderIngredients(); });
+    qs("clusterFilter").addEventListener("change", e => { state.cluster = e.target.value; renderIngredients(); });
+    qs("showSources").addEventListener("change", e => { state.showSources = e.target.checked; renderDetail(); renderCompare(); });
+    qs("showMissing").addEventListener("change", e => { state.showMissing = e.target.checked; renderDetail(); renderCompare(); });
+    qs("compareA").addEventListener("change", renderCompare);
+    qs("compareB").addEventListener("change", renderCompare);
+    qs("checkClaim").addEventListener("click", checkClaim);
+    qs("claimInput").addEventListener("input", checkClaim);
+    document.querySelectorAll(".claimPreset").forEach(b => b.addEventListener("click", () => { qs("claimInput").value = b.dataset.claim; checkClaim(); }));
+
+    render();
+  </script>
+</body>
+</html>

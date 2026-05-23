@@ -1,6 +1,6 @@
 {
   "version": "1.0",
-  "timestamp": "2026-05-18T15:20:42.923Z",
+  "timestamp": "2026-05-23T14:54:36.364Z",
   "source": "auto-postool",
   "partial": false,
   "phase": null,
@@ -18,15 +18,23 @@
   "uncommitted_files": [
     {
       "status": "M",
+      "path": ".agents/skills/build-queue/scripts/build-queue.mjs"
+    },
+    {
+      "status": "M",
       "path": ".claude-session-scope"
     },
     {
       "status": "M",
-      "path": ".claude/skills/builder/SKILL.md"
+      "path": ".claude/skills/omninet/SKILL.md"
     },
     {
       "status": "M",
-      "path": ".claude/skills/wiring-audit/SKILL.md"
+      "path": ".gitignore"
+    },
+    {
+      "status": "M",
+      "path": ".openclaw-deploy/captured-responses.json"
     },
     {
       "status": "M",
@@ -46,7 +54,319 @@
     },
     {
       "status": "M",
-      "path": "app/(chef)/events/page.tsx"
+      "path": "app/(admin)/layout.tsx"
+    },
+    {
+      "status": "M",
+      "path": "app/(chef)/cannabis/events/[id]/control-packet/control-packet-client.tsx"
+    },
+    {
+      "status": "M",
+      "path": "app/(chef)/capture/capture-inbox.tsx"
+    },
+    {
+      "status": "M",
+      "path": "app/(chef)/capture/capture-page-client.tsx"
+    },
+    {
+      "status": "M",
+      "path": "app/(chef)/clients/[id]/page.tsx"
+    },
+    {
+      "status": "M",
+      "path": "app/(chef)/clients/clients-hub-nav.tsx"
+    },
+    {
+      "status": "M",
+      "path": "app/(chef)/clients/layout.tsx"
+    },
+    {
+      "status": "M",
+      "path": "app/(chef)/clients/page.tsx"
+    },
+    {
+      "status": "M",
+      "path": "app/(chef)/communication/drafts/draft-review-client.tsx"
+    },
+    {
+      "status": "M",
+      "path": "app/(chef)/communication/page.tsx"
+    },
+    {
+      "status": "M",
+      "path": "app/(chef)/culinary/culinary-hub-nav.tsx"
+    },
+    {
+      "status": "M",
+      "path": "app/(chef)/dashboard/_sections/schedule-cards.tsx"
+    },
+    {
+      "status": "M",
+      "path": "app/(chef)/dashboard/_sections/this-week-section.tsx"
+    },
+    {
+      "status": "M",
+      "path": "app/(chef)/dashboard/_sections/widget-sections.tsx"
+    },
+    {
+      "status": "M",
+      "path": "app/(chef)/dashboard/page.tsx"
+    },
+    {
+      "status": "M",
+      "path": "app/(chef)/events/[id]/_sections/event-intelligence-section.tsx"
+    },
+    {
+      "status": "M",
+      "path": "app/(chef)/events/[id]/staff/page.tsx"
+    },
+    {
+      "status": "M",
+      "path": "app/(chef)/finance/finance-hub-nav.tsx"
+    },
+    {
+      "status": "M",
+      "path": "app/(chef)/finance/page.tsx"
+    },
+    {
+      "status": "M",
+      "path": "app/(chef)/layout.tsx"
+    },
+    {
+      "status": "M",
+      "path": "app/(chef)/loyalty/page.tsx"
+    },
+    {
+      "status": "M",
+      "path": "app/(chef)/loyalty/reward-actions.tsx"
+    },
+    {
+      "status": "M",
+      "path": "app/(chef)/loyalty/rewards/new/create-reward-form.tsx"
+    },
+    {
+      "status": "M",
+      "path": "app/(chef)/menus/[id]/page.tsx"
+    },
+    {
+      "status": "M",
+      "path": "app/(chef)/quotes/[id]/page.tsx"
+    },
+    {
+      "status": "M",
+      "path": "app/(chef)/recipes/[id]/page.tsx"
+    },
+    {
+      "status": "M",
+      "path": "app/(chef)/remy/settings/page.tsx"
+    },
+    {
+      "status": "M",
+      "path": "app/(chef)/settings/client-preview/public-profile-preview.tsx"
+    },
+    {
+      "status": "M",
+      "path": "app/(chef)/settings/compliance/page.tsx"
+    },
+    {
+      "status": "M",
+      "path": "app/(chef)/settings/my-profile/chef-profile-form.tsx"
+    },
+    {
+      "status": "M",
+      "path": "app/(chef)/settings/my-profile/page.tsx"
+    },
+    {
+      "status": "M",
+      "path": "app/(chef)/settings/profile-branding/page.tsx"
+    },
+    {
+      "status": "M",
+      "path": "app/(chef)/settings/profile/page.tsx"
+    },
+    {
+      "status": "M",
+      "path": "app/(chef)/settings/public-profile/page.tsx"
+    },
+    {
+      "status": "M",
+      "path": "app/(chef)/staff/page.tsx"
+    },
+    {
+      "status": "M",
+      "path": "app/(client)/layout.tsx"
+    },
+    {
+      "status": "M",
+      "path": "app/(client)/my-rewards/page.tsx"
+    },
+    {
+      "status": "M",
+      "path": "app/(partner)/partner/layout.tsx"
+    },
+    {
+      "status": "M",
+      "path": "app/(public)/_components/cuisine-marquee.tsx"
+    },
+    {
+      "status": "M",
+      "path": "app/(public)/_components/hero-trust-bar.tsx"
+    },
+    {
+      "status": "M",
+      "path": "app/(public)/_components/homepage-discovery.tsx"
+    },
+    {
+      "status": "M",
+      "path": "app/(public)/_components/homepage-search.tsx"
+    },
+    {
+      "status": "M",
+      "path": "app/(public)/_components/landing-below-fold.tsx"
+    },
+    {
+      "status": "M",
+      "path": "app/(public)/chef/[slug]/inquire/page.tsx"
+    },
+    {
+      "status": "M",
+      "path": "app/(public)/chef/[slug]/opengraph-image.tsx"
+    },
+    {
+      "status": "M",
+      "path": "app/(public)/chef/[slug]/page.tsx"
+    },
+    {
+      "status": "M",
+      "path": "app/(public)/eat/_components/consumer-intent-shell.tsx"
+    },
+    {
+      "status": "M",
+      "path": "app/(public)/eat/_components/shortlist-button.tsx"
+    },
+    {
+      "status": "M",
+      "path": "app/(public)/eat/page.tsx"
+    },
+    {
+      "status": "M",
+      "path": "app/(public)/faq/page.tsx"
+    },
+    {
+      "status": "M",
+      "path": "app/(public)/layout.tsx"
+    },
+    {
+      "status": "M",
+      "path": "app/(public)/page.tsx"
+    },
+    {
+      "status": "M",
+      "path": "app/(staff)/layout.tsx"
+    },
+    {
+      "status": "M",
+      "path": "app/api/scheduled/messages/route.ts"
+    },
+    {
+      "status": "M",
+      "path": "app/globals.css"
+    },
+    {
+      "status": "M",
+      "path": "components/clients/client-household-panel.tsx"
+    },
+    {
+      "status": "M",
+      "path": "components/current/current-feed.tsx"
+    },
+    {
+      "status": "M",
+      "path": "components/dashboard/ai-outage-banner.tsx"
+    },
+    {
+      "status": "M",
+      "path": "components/dashboard/ai-status-dot.tsx"
+    },
+    {
+      "status": "M",
+      "path": "components/dashboard/cheftips-widget.tsx"
+    },
+    {
+      "status": "M",
+      "path": "components/dashboard/client-attention-widget.tsx"
+    },
+    {
+      "status": "M",
+      "path": "components/dashboard/collapsible-widget.tsx"
+    },
+    {
+      "status": "M",
+      "path": "components/dashboard/dashboard-hero.tsx"
+    },
+    {
+      "status": "M",
+      "path": "components/dashboard/dashboard-section.tsx"
+    },
+    {
+      "status": "M",
+      "path": "components/dashboard/getting-started-section.tsx"
+    },
+    {
+      "status": "M",
+      "path": "components/dashboard/onboarding-checklist-widget.tsx"
+    },
+    {
+      "status": "M",
+      "path": "components/dashboard/quick-expense-widget.tsx"
+    },
+    {
+      "status": "M",
+      "path": "components/dashboard/quick-notes-section.tsx"
+    },
+    {
+      "status": "M",
+      "path": "components/dashboard/widget-cards/list-card.tsx"
+    },
+    {
+      "status": "M",
+      "path": "components/dashboard/widget-cards/stat-card.tsx"
+    },
+    {
+      "status": "M",
+      "path": "components/dashboard/widget-cards/widget-card-shell.tsx"
+    },
+    {
+      "status": "M",
+      "path": "components/dinner-circles/circle-panels.tsx"
+    },
+    {
+      "status": "M",
+      "path": "components/discovery/save-chef-button.tsx"
+    },
+    {
+      "status": "M",
+      "path": "components/discovery/universal-rail.tsx"
+    },
+    {
+      "status": "M",
+      "path": "components/feed/feed-card.tsx"
+    },
+    {
+      "status": "M",
+      "path": "components/hub/hub-message.tsx"
+    },
+    {
+      "status": "M",
+      "path": "components/navigation/admin-shell.tsx"
+    },
+    {
+      "status": "M",
+      "path": "components/navigation/all-features-collapse.tsx"
+    },
+    {
+      "status": "M",
+      "path": "components/navigation/chef-main-content.tsx"
     },
     {
       "status": "M",
@@ -54,35 +374,55 @@
     },
     {
       "status": "M",
+      "path": "components/navigation/client-nav.tsx"
+    },
+    {
+      "status": "M",
       "path": "components/navigation/nav-config.tsx"
     },
     {
       "status": "M",
-      "path": "components/rail/category-section.tsx"
+      "path": "components/navigation/partner-nav.tsx"
     },
     {
       "status": "M",
-      "path": "components/rail/collapsed-bar.tsx"
+      "path": "components/navigation/public-header.tsx"
     },
     {
       "status": "M",
-      "path": "components/rail/contextual-rail-client.tsx"
+      "path": "components/public/public-inquiry-form.tsx"
     },
     {
       "status": "M",
-      "path": "components/rail/contextual-rail-server.tsx"
+      "path": "components/public/review-showcase.tsx"
     },
     {
       "status": "M",
-      "path": "components/rail/expanded-panel.tsx"
+      "path": "components/reviews/chef-reviews-list.tsx"
     },
     {
       "status": "M",
-      "path": "components/rail/rail-intel-card.tsx"
+      "path": "components/reviews/import-platform-review.tsx"
     },
     {
       "status": "M",
-      "path": "docs/CLAUDE-SKILLS-REFERENCE.md"
+      "path": "components/reviews/log-feedback-button.tsx"
+    },
+    {
+      "status": "M",
+      "path": "components/search/command-palette.tsx"
+    },
+    {
+      "status": "M",
+      "path": "components/settings/public-profile-settings.tsx"
+    },
+    {
+      "status": "M",
+      "path": "docs/.codex-workspace-brief.md"
+    },
+    {
+      "status": "M",
+      "path": "docs/app-complete-audit.md"
     },
     {
       "status": "M",
@@ -90,105 +430,1337 @@
     },
     {
       "status": "M",
+      "path": "docs/hermes/git-changelog.md"
+    },
+    {
+      "status": "M",
+      "path": "docs/hermes/morning-report.md"
+    },
+    {
+      "status": "M",
+      "path": "docs/session-log.md"
+    },
+    {
+      "status": "M",
       "path": "docs/sync-status.json"
     },
     {
       "status": "M",
-      "path": "docs/uptime-history.json"
+      "path": "lib/auth/route-policy.ts"
     },
     {
       "status": "M",
-      "path": "lib/discovery/contextual-rail-assembly.ts"
+      "path": "lib/capture/actions.ts"
     },
     {
       "status": "M",
-      "path": "lib/discovery/contextual-rail-types.ts"
+      "path": "lib/chef/profile-actions.ts"
     },
     {
       "status": "M",
-      "path": "lib/discovery/god-mode-dispatcher.ts"
+      "path": "lib/directory/actions.ts"
     },
     {
       "status": "M",
-      "path": "lib/discovery/rail-profiles.ts"
+      "path": "lib/finance/index.ts"
     },
     {
       "status": "M",
-      "path": "lib/discovery/resolvers/chef/communication-feed-resolver.ts"
+      "path": "lib/household/client-household-actions.ts"
     },
     {
       "status": "M",
-      "path": "lib/discovery/resolvers/chef/completion-resolver.ts"
+      "path": "lib/hub/household-actions.ts"
     },
     {
       "status": "M",
-      "path": "lib/discovery/resolvers/chef/event-resolver.ts"
+      "path": "lib/hub/media-actions.ts"
     },
     {
       "status": "M",
-      "path": "lib/discovery/resolvers/chef/message-resolver.ts"
+      "path": "lib/loyalty/actions.ts"
     },
     {
       "status": "M",
-      "path": "lib/discovery/universal-rail-assembly.ts"
+      "path": "lib/loyalty/store.ts"
     },
     {
       "status": "M",
-      "path": "scripts/hermes/db-health.sh"
+      "path": "lib/network/actions.ts"
     },
     {
       "status": "M",
-      "path": "scripts/wiring-audit.mjs"
+      "path": "lib/pricing/pie-canonical-pricing-ontology.ts"
     },
     {
       "status": "M",
-      "path": "tests/unit/contextual-rail-profiles.test.ts"
+      "path": "lib/profile/actions.ts"
     },
     {
       "status": "M",
-      "path": "tests/unit/surface-governance.test.ts"
+      "path": "lib/public-consumer/discovery-actions.ts"
     },
     {
-      "status": "??",
-      "path": ".agents-tsc-output.txt"
+      "status": "M",
+      "path": "lib/queue/providers/client.ts"
     },
     {
-      "status": "??",
-      "path": ".claude/projects/"
+      "status": "M",
+      "path": "lib/quotes/actions.ts"
     },
     {
-      "status": "??",
-      "path": ".claude/skills/page-xray/"
+      "status": "M",
+      "path": "lib/quotes/client-actions.ts"
     },
     {
-      "status": "??",
-      "path": ".claude/skills/wire-audit/"
+      "status": "M",
+      "path": "lib/quotes/proposal-builder-actions.ts"
     },
     {
-      "status": "??",
-      "path": "docs/specs/void-island-facade-qa-rubric.md"
+      "status": "M",
+      "path": "lib/quotes/quote-delivery.ts"
     },
     {
-      "status": "??",
-      "path": "docs/xrays/"
+      "status": "M",
+      "path": "lib/reviews/actions.ts"
     },
     {
-      "status": "??",
-      "path": "lib/events/payment-state.ts"
+      "status": "M",
+      "path": "lib/reviews/chef-feedback-actions.ts"
     },
     {
-      "status": "??",
-      "path": "scripts/xray-auto-queue.ts"
+      "status": "M",
+      "path": "lib/reviews/external-actions.ts"
     },
     {
-      "status": "??",
-      "path": "tests/unit/event-index-payment-state.test.ts"
+      "status": "M",
+      "path": "lib/reviews/public-actions.ts"
     },
     {
-      "status": "??",
+      "status": "M",
+      "path": "lib/settings/view-types.ts"
+    },
+    {
+      "status": "M",
+      "path": "lib/staff/actions.ts"
+    },
+    {
+      "status": "M",
+      "path": "lib/testimonials/actions.ts"
+    },
+    {
+      "status": "M",
+      "path": "lib/testimonials/testimonial-actions.ts"
+    },
+    {
+      "status": "M",
+      "path": "package.json"
+    },
+    {
+      "status": "M",
+      "path": "scripts/audit-chef-nav.ts"
+    },
+    {
+      "status": "M",
+      "path": "tailwind.config.ts"
+    },
+    {
+      "status": "M",
+      "path": "tests/e2e/15-homepage-discovery-marquee.spec.ts"
+    },
+    {
+      "status": "M",
+      "path": "tests/helpers/e2e-seed.ts"
+    },
+    {
+      "status": "M",
+      "path": "tests/unit/action-layer.test.ts"
+    },
+    {
+      "status": "M",
+      "path": "tests/unit/dinner-circle-event-layer.test.ts"
+    },
+    {
+      "status": "M",
+      "path": "tests/unit/homepage-discovery-rail.test.ts"
+    },
+    {
+      "status": "M",
+      "path": "tests/unit/live-service-tracker-source-guard.test.ts"
+    },
+    {
+      "status": "M",
       "path": "tests/unit/nav-regression.test.ts"
+    },
+    {
+      "status": "M",
+      "path": "tests/unit/remy-routines-foundation.test.ts"
+    },
+    {
+      "status": "??",
+      "path": ".agents/skills/chef-lifetime-ontology/"
+    },
+    {
+      "status": "??",
+      "path": ".agents/skills/live-browser-experience-audit/"
+    },
+    {
+      "status": "??",
+      "path": ".claude/skills/chef-lifetime-ontology/"
+    },
+    {
+      "status": "??",
+      "path": ".claude/skills/cohesion-closure-audit/"
+    },
+    {
+      "status": "??",
+      "path": ".claude/skills/cohesion-control-loop/"
+    },
+    {
+      "status": "??",
+      "path": ".claude/skills/completion-gate/"
+    },
+    {
+      "status": "??",
+      "path": ".claude/skills/culinary-ontology-builder/"
+    },
+    {
+      "status": "??",
+      "path": ".claude/skills/live-browser-experience-audit/"
+    },
+    {
+      "status": "??",
+      "path": ".claude/skills/next-action-strategist/"
+    },
+    {
+      "status": "??",
+      "path": ".claude/skills/perfect-world-root-cause/"
+    },
+    {
+      "status": "??",
+      "path": ".claude/skills/practical-question-dreamer/"
+    },
+    {
+      "status": "??",
+      "path": ".claude/skills/product-hacking-loop/"
+    },
+    {
+      "status": "??",
+      "path": ".evidence/"
+    },
+    {
+      "status": "??",
+      "path": "after-fifth-category.md"
+    },
+    {
+      "status": "??",
+      "path": "after-first-category.md"
+    },
+    {
+      "status": "??",
+      "path": "after-fourth-category.md"
+    },
+    {
+      "status": "??",
+      "path": "after-second-category.md"
+    },
+    {
+      "status": "??",
+      "path": "after-third-category.md"
+    },
+    {
+      "status": "??",
+      "path": "alerts-dialog-target.md"
+    },
+    {
+      "status": "??",
+      "path": "alerts-dialog.md"
+    },
+    {
+      "status": "??",
+      "path": "alerts-filled.md"
+    },
+    {
+      "status": "??",
+      "path": "app/(chef)/capture/mobile-field-capture-shell.tsx"
+    },
+    {
+      "status": "??",
+      "path": "app/(chef)/clients/contribution/"
+    },
+    {
+      "status": "??",
+      "path": "app/(chef)/communication/remy-approvals/"
+    },
+    {
+      "status": "??",
+      "path": "app/(chef)/communication/vendor-actions/"
+    },
+    {
+      "status": "??",
+      "path": "app/(chef)/culinary/chromatic-atlas/"
+    },
+    {
+      "status": "??",
+      "path": "app/(chef)/culinary/sustainability/"
+    },
+    {
+      "status": "??",
+      "path": "app/(chef)/events/[id]/compliance/"
+    },
+    {
+      "status": "??",
+      "path": "app/(chef)/finance/cockpit/"
+    },
+    {
+      "status": "??",
+      "path": "app/(chef)/remy/routines/"
+    },
+    {
+      "status": "??",
+      "path": "app/(chef)/staff/trust/"
+    },
+    {
+      "status": "??",
+      "path": "channels-after-alerts.md"
+    },
+    {
+      "status": "??",
+      "path": "channels-after-all-categories.md"
+    },
+    {
+      "status": "??",
+      "path": "channels-after-bugs-regressions.md"
+    },
+    {
+      "status": "??",
+      "path": "channels-after-build-intake.md"
+    },
+    {
+      "status": "??",
+      "path": "channels-after-builds-complete.md"
+    },
+    {
+      "status": "??",
+      "path": "channels-after-client-intelligence.md"
+    },
+    {
+      "status": "??",
+      "path": "channels-after-closed-decisions.md"
+    },
+    {
+      "status": "??",
+      "path": "channels-after-completed-builds.md"
+    },
+    {
+      "status": "??",
+      "path": "channels-after-daily-brief.md"
+    },
+    {
+      "status": "??",
+      "path": "channels-after-database-health.md"
+    },
+    {
+      "status": "??",
+      "path": "channels-after-decision-log-fast.md"
+    },
+    {
+      "status": "??",
+      "path": "channels-after-dev-server.md"
+    },
+    {
+      "status": "??",
+      "path": "channels-after-dogfood-observations.md"
+    },
+    {
+      "status": "??",
+      "path": "channels-after-feature-ideas.md"
+    },
+    {
+      "status": "??",
+      "path": "channels-after-first-category.md"
+    },
+    {
+      "status": "??",
+      "path": "channels-after-hermes-command.md"
+    },
+    {
+      "status": "??",
+      "path": "channels-after-hermes-night-shift.md"
+    },
+    {
+      "status": "??",
+      "path": "channels-after-in-flight.md"
+    },
+    {
+      "status": "??",
+      "path": "channels-after-menu-intelligence.md"
+    },
+    {
+      "status": "??",
+      "path": "channels-after-openclaw.md"
+    },
+    {
+      "status": "??",
+      "path": "channels-after-operations-complete.md"
+    },
+    {
+      "status": "??",
+      "path": "channels-after-page-xray.md"
+    },
+    {
+      "status": "??",
+      "path": "channels-after-pie-pricing-created.md"
+    },
+    {
+      "status": "??",
+      "path": "channels-after-pie-pricing.md"
+    },
+    {
+      "status": "??",
+      "path": "channels-after-product-dogfood-complete.md"
+    },
+    {
+      "status": "??",
+      "path": "channels-after-proof-packs.md"
+    },
+    {
+      "status": "??",
+      "path": "channels-after-queue-ready.md"
+    },
+    {
+      "status": "??",
+      "path": "channels-after-remy-automation.md"
+    },
+    {
+      "status": "??",
+      "path": "channels-after-systems-complete.md"
+    },
+    {
+      "status": "??",
+      "path": "channels-after-universal-rail.md"
+    },
+    {
+      "status": "??",
+      "path": "channels-after-ux-friction.md"
+    },
+    {
+      "status": "??",
+      "path": "channels-after-wiring-audit.md"
+    },
+    {
+      "status": "??",
+      "path": "channels-final-architecture-after-rename.md"
+    },
+    {
+      "status": "??",
+      "path": "channels-final-architecture.md"
+    },
+    {
+      "status": "??",
+      "path": "chef-leads-after-hermes-added.md"
+    },
+    {
+      "status": "??",
+      "path": "chef-leads-channels.md"
+    },
+    {
+      "status": "??",
+      "path": "chef-leads-name-after-paste.md"
+    },
+    {
+      "status": "??",
+      "path": "chef-leads-profile-fields.md"
+    },
+    {
+      "status": "??",
+      "path": "chef-leads-rename-start.md"
+    },
+    {
+      "status": "??",
+      "path": "chef-leads-server-actions-menu.md"
+    },
+    {
+      "status": "??",
+      "path": "chef-leads-server-nav.md"
+    },
+    {
+      "status": "??",
+      "path": "chef-leads-server-settings.md"
+    },
+    {
+      "status": "??",
+      "path": "components/capture/"
+    },
+    {
+      "status": "??",
+      "path": "components/clients/client-contribution-panel.tsx"
+    },
+    {
+      "status": "??",
+      "path": "components/compliance/"
+    },
+    {
+      "status": "??",
+      "path": "components/dashboard/chef-life-synthesis-rail.tsx"
+    },
+    {
+      "status": "??",
+      "path": "components/dinner-circles/accommodation-intake.tsx"
+    },
+    {
+      "status": "??",
+      "path": "components/dinner-circles/action-drawer.tsx"
+    },
+    {
+      "status": "??",
+      "path": "components/dinner-circles/arrival-guide.tsx"
+    },
+    {
+      "status": "??",
+      "path": "components/dinner-circles/event-workspace-panel.tsx"
+    },
+    {
+      "status": "??",
+      "path": "components/events/event-readiness-bus-card.tsx"
+    },
+    {
+      "status": "??",
+      "path": "components/forms/chef-life-constraint-capture-form.tsx"
+    },
+    {
+      "status": "??",
+      "path": "components/navigation/portal-rail-standard.ts"
+    },
+    {
+      "status": "??",
+      "path": "components/public/public-follow-handoff.tsx"
+    },
+    {
+      "status": "??",
+      "path": "components/public/public-showcase-package-cards.tsx"
+    },
+    {
+      "status": "??",
+      "path": "components/public/showcase-studio-overview.tsx"
+    },
+    {
+      "status": "??",
+      "path": "components/search/command-palette-launcher.tsx"
+    },
+    {
+      "status": "??",
+      "path": "create-category-after-keyboard-test.md"
+    },
+    {
+      "status": "??",
+      "path": "create-category-dialog-deep.md"
+    },
+    {
+      "status": "??",
+      "path": "create-category-dialog.md"
+    },
+    {
+      "status": "??",
+      "path": "create-channel-dialog-target.md"
+    },
+    {
+      "status": "??",
+      "path": "create-channel-dialog.md"
+    },
+    {
+      "status": "??",
+      "path": "create-channel-hermes-command-filled.md"
+    },
+    {
+      "status": "??",
+      "path": "daily-brief-dialog-target.md"
+    },
+    {
+      "status": "??",
+      "path": "daily-brief-dialog.md"
+    },
+    {
+      "status": "??",
+      "path": "daily-brief-filled.md"
+    },
+    {
+      "status": "??",
+      "path": "discord-after-brain-category.md"
+    },
+    {
+      "status": "??",
+      "path": "discord-after-context-index.md"
+    },
+    {
+      "status": "??",
+      "path": "discord-after-hermes-added.md"
+    },
+    {
+      "status": "??",
+      "path": "discord-archive-context-menu.md"
+    },
+    {
+      "status": "??",
+      "path": "discord-archive-edit-category.md"
+    },
+    {
+      "status": "??",
+      "path": "discord-archive-rename-snapshot.md"
+    },
+    {
+      "status": "??",
+      "path": "discord-archive-save-changes.md"
+    },
+    {
+      "status": "??",
+      "path": "discord-build-intake-ready.md"
+    },
+    {
+      "status": "??",
+      "path": "discord-claude-ledger-posted.md"
+    },
+    {
+      "status": "??",
+      "path": "discord-claude-ledger-start.md"
+    },
+    {
+      "status": "??",
+      "path": "discord-context-index-after-native-enter.md"
+    },
+    {
+      "status": "??",
+      "path": "discord-context-index-conversation-update-ready.md"
+    },
+    {
+      "status": "??",
+      "path": "discord-context-index-ready.md"
+    },
+    {
+      "status": "??",
+      "path": "discord-conversation-history-final.md"
+    },
+    {
+      "status": "??",
+      "path": "discord-conversation-history-posted-final.md"
+    },
+    {
+      "status": "??",
+      "path": "discord-conversation-history-ready.md"
+    },
+    {
+      "status": "??",
+      "path": "discord-conversation-history-start.md"
+    },
+    {
+      "status": "??",
+      "path": "discord-create-brain-category-filled.md"
+    },
+    {
+      "status": "??",
+      "path": "discord-create-brain-category-focused.md"
+    },
+    {
+      "status": "??",
+      "path": "discord-create-brain-category.md"
+    },
+    {
+      "status": "??",
+      "path": "discord-create-brain-channel-dialog.md"
+    },
+    {
+      "status": "??",
+      "path": "discord-create-context-index-filled-deep.md"
+    },
+    {
+      "status": "??",
+      "path": "discord-create-context-index-filled.md"
+    },
+    {
+      "status": "??",
+      "path": "discord-create-conversation-history-filled.md"
+    },
+    {
+      "status": "??",
+      "path": "discord-create-repo-ledger-filled.md"
+    },
+    {
+      "status": "??",
+      "path": "discord-create-rules-guardrails-filled.md"
+    },
+    {
+      "status": "??",
+      "path": "discord-create-working-memory-filled.md"
+    },
+    {
+      "status": "??",
+      "path": "discord-daily-brief-ready.md"
+    },
+    {
+      "status": "??",
+      "path": "discord-friends-state.md"
+    },
+    {
+      "status": "??",
+      "path": "discord-hermes-command-ready.md"
+    },
+    {
+      "status": "??",
+      "path": "discord-renamed-new-tab.md"
+    },
+    {
+      "status": "??",
+      "path": "discord-repo-ledger-ready.md"
+    },
+    {
+      "status": "??",
+      "path": "discord-rules-guardrails-ready.md"
+    },
+    {
+      "status": "??",
+      "path": "discord-second-brain-final-visible.md"
+    },
+    {
+      "status": "??",
+      "path": "discord-second-brain-start.md"
+    },
+    {
+      "status": "??",
+      "path": "discord-server-menu-second-brain.md"
+    },
+    {
+      "status": "??",
+      "path": "discord-servers-group.md"
+    },
+    {
+      "status": "??",
+      "path": "discord-working-memory-ready.md"
+    },
+    {
+      "status": "??",
+      "path": "docs/CODEX-ZERO-OUT-HANDOFF.md"
+    },
+    {
+      "status": "??",
+      "path": "docs/CODEX-ZERO-OUT-MANIFEST.md"
+    },
+    {
+      "status": "??",
+      "path": "docs/domain/global-culinary-ingredient-ontology.json"
+    },
+    {
+      "status": "??",
+      "path": "docs/domain/global-culinary-ingredient-ontology.md"
+    },
+    {
+      "status": "??",
+      "path": "docs/domain/rail-umbrella-access-registry.json"
+    },
+    {
+      "status": "??",
+      "path": "docs/domain/rail-umbrella-access-registry.md"
+    },
+    {
+      "status": "??",
+      "path": "docs/hermes/discord-bot-setup.md"
+    },
+    {
+      "status": "??",
+      "path": "docs/intensify/chef-showcase-public-identity-studio.md"
+    },
+    {
+      "status": "??",
+      "path": "docs/prototypes/"
+    },
+    {
+      "status": "??",
+      "path": "docs/specs/automated-calling-texting-gap-spec-packet.md"
+    },
+    {
+      "status": "??",
+      "path": "docs/specs/automated-communications-control-plane-spec-pack.md"
+    },
+    {
+      "status": "??",
+      "path": "docs/specs/chef-capacity-twin-foundation-domain-contract.md"
+    },
+    {
+      "status": "??",
+      "path": "docs/specs/chef-life-expansion-swarm-spec-pack.md"
+    },
+    {
+      "status": "??",
+      "path": "docs/specs/chef-life-physical-operations-primitive-registry.md"
+    },
+    {
+      "status": "??",
+      "path": "docs/specs/chef-life-strategy-map-foundation-domain-contract.md"
+    },
+    {
+      "status": "??",
+      "path": "docs/specs/chef-obligation-rail-prominence-spec.md"
+    },
+    {
+      "status": "??",
+      "path": "docs/specs/chef-showcase-public-identity-studio.md"
+    },
+    {
+      "status": "??",
+      "path": "docs/specs/chromatic-atlas-benchmark-evaluation.md"
+    },
+    {
+      "status": "??",
+      "path": "docs/specs/chromatic-atlas-claim-audit.md"
+    },
+    {
+      "status": "??",
+      "path": "docs/specs/chromatic-atlas-field-source-matrix.md"
+    },
+    {
+      "status": "??",
+      "path": "docs/specs/chromatic-atlas-green-pilot-research.md"
+    },
+    {
+      "status": "??",
+      "path": "docs/specs/chromatic-atlas-radar-chart-research.md"
+    },
+    {
+      "status": "??",
+      "path": "docs/specs/chromatic-atlas-research-and-source-map.md"
+    },
+    {
+      "status": "??",
+      "path": "docs/specs/chromatic-atlas-research-crawl-report.md"
+    },
+    {
+      "status": "??",
+      "path": "docs/specs/chromatic-atlas-source-registry.md"
+    },
+    {
+      "status": "??",
+      "path": "docs/specs/chromatic-flavor-atlas-dream-app.md"
+    },
+    {
+      "status": "??",
+      "path": "docs/specs/client-consumer-next-action-lifecycle-operating-system.md"
+    },
+    {
+      "status": "??",
+      "path": "docs/specs/client-household-operating-memory-foundation-domain-contract.md"
+    },
+    {
+      "status": "??",
+      "path": "docs/specs/consumer-experience-continuity-confidence-memory-recovery-swarm-spec.md"
+    },
+    {
+      "status": "??",
+      "path": "docs/specs/craft-evolution-lab-foundation-domain-contract.md"
+    },
+    {
+      "status": "??",
+      "path": "docs/specs/crisis-and-recovery-studio-foundation-domain-contract.md"
+    },
+    {
+      "status": "??",
+      "path": "docs/specs/global-culinary-ingredient-ontology.md"
+    },
+    {
+      "status": "??",
+      "path": "docs/specs/new-revenue-engine-foundation-domain-contract.md"
+    },
+    {
+      "status": "??",
+      "path": "docs/specs/physical-event-loadout-brain-foundation-domain-contract.md"
+    },
+    {
+      "status": "??",
+      "path": "docs/specs/private-chef-financial-cockpit-foundation-domain-contract.md"
+    },
+    {
+      "status": "??",
+      "path": "docs/specs/staff-trust-and-delegation-system-foundation-domain-contract.md"
+    },
+    {
+      "status": "??",
+      "path": "docs/specs/sustainability-waste-and-ethics-ledger-foundation-domain-contract.md"
+    },
+    {
+      "status": "??",
+      "path": "docs/specs/vendor-trust-ledger-foundation-domain-contract.md"
+    },
+    {
+      "status": "??",
+      "path": "fifth-category-dialog.md"
+    },
+    {
+      "status": "??",
+      "path": "fifth-dialog-filled.md"
+    },
+    {
+      "status": "??",
+      "path": "fifth-dialog-target.md"
+    },
+    {
+      "status": "??",
+      "path": "fourth-category-dialog.md"
+    },
+    {
+      "status": "??",
+      "path": "fourth-dialog-filled.md"
+    },
+    {
+      "status": "??",
+      "path": "fourth-dialog-target.md"
+    },
+    {
+      "status": "??",
+      "path": "hermes-after-create.md"
+    },
+    {
+      "status": "??",
+      "path": "hermes-app-information-deep.md"
+    },
+    {
+      "status": "??",
+      "path": "hermes-bot-page-pre-token.md"
+    },
+    {
+      "status": "??",
+      "path": "hermes-bot-page.md"
+    },
+    {
+      "status": "??",
+      "path": "hermes-current-for-next-category.md"
+    },
+    {
+      "status": "??",
+      "path": "hermes-discord-auth-state-after-wait.md"
+    },
+    {
+      "status": "??",
+      "path": "hermes-discord-auth-state.md"
+    },
+    {
+      "status": "??",
+      "path": "hermes-discord-before-architecture.md"
+    },
+    {
+      "status": "??",
+      "path": "hermes-discord-developer-portal-after-dismiss.md"
+    },
+    {
+      "status": "??",
+      "path": "hermes-discord-developer-portal.md"
+    },
+    {
+      "status": "??",
+      "path": "hermes-invite-after-wait.md"
+    },
+    {
+      "status": "??",
+      "path": "hermes-invite-page.md"
+    },
+    {
+      "status": "??",
+      "path": "hermes-invite-second-attempt.md"
+    },
+    {
+      "status": "??",
+      "path": "hermes-new-application-modal.md"
+    },
+    {
+      "status": "??",
+      "path": "hermes-reset-token-modal.md"
+    },
+    {
+      "status": "??",
+      "path": "hermes-server-actions-menu.md"
+    },
+    {
+      "status": "??",
+      "path": "lib/calling/vendor-action-extraction-actions.ts"
+    },
+    {
+      "status": "??",
+      "path": "lib/calling/vendor-action-extraction.ts"
+    },
+    {
+      "status": "??",
+      "path": "lib/client-contribution/"
+    },
+    {
+      "status": "??",
+      "path": "lib/commerce/new-revenue-engine-contract.ts"
+    },
+    {
+      "status": "??",
+      "path": "lib/dashboard/chef-life-synthesis-actions.ts"
+    },
+    {
+      "status": "??",
+      "path": "lib/dashboard/chef-life-synthesis.ts"
+    },
+    {
+      "status": "??",
+      "path": "lib/finance/private-chef-financial-cockpit-actions.ts"
+    },
+    {
+      "status": "??",
+      "path": "lib/finance/private-chef-financial-cockpit-contract.ts"
+    },
+    {
+      "status": "??",
+      "path": "lib/finance/private-chef-financial-cockpit.ts"
+    },
+    {
+      "status": "??",
+      "path": "lib/hub/link-preview.ts"
+    },
+    {
+      "status": "??",
+      "path": "lib/intelligence/chef-capacity-twin-actions.ts"
+    },
+    {
+      "status": "??",
+      "path": "lib/intelligence/chef-capacity-twin-contract.ts"
+    },
+    {
+      "status": "??",
+      "path": "lib/intelligence/chef-capacity-twin.ts"
+    },
+    {
+      "status": "??",
+      "path": "lib/intelligence/chef-life-constraint-capture-actions.ts"
+    },
+    {
+      "status": "??",
+      "path": "lib/intelligence/chef-life-constraint-capture-contract.ts"
+    },
+    {
+      "status": "??",
+      "path": "lib/intelligence/chef-life-strategy-map-contract.ts"
+    },
+    {
+      "status": "??",
+      "path": "lib/intelligence/chef-life-strategy-map.ts"
+    },
+    {
+      "status": "??",
+      "path": "lib/intelligence/client-household-operating-memory-contract.ts"
+    },
+    {
+      "status": "??",
+      "path": "lib/intelligence/client-household-operating-memory.ts"
+    },
+    {
+      "status": "??",
+      "path": "lib/intelligence/craft-evolution-lab-contract.ts"
+    },
+    {
+      "status": "??",
+      "path": "lib/intelligence/crisis-and-recovery-studio-contract.ts"
+    },
+    {
+      "status": "??",
+      "path": "lib/intelligence/physical-event-loadout-brain-contract.ts"
+    },
+    {
+      "status": "??",
+      "path": "lib/intelligence/private-memory-visibility-contract.ts"
+    },
+    {
+      "status": "??",
+      "path": "lib/intelligence/staff-trust-delegation-contract.ts"
+    },
+    {
+      "status": "??",
+      "path": "lib/intelligence/staff-trust-delegation.ts"
+    },
+    {
+      "status": "??",
+      "path": "lib/loyalty/reward-guardrails.ts"
+    },
+    {
+      "status": "??",
+      "path": "lib/navigation/url-capability-registry.ts"
+    },
+    {
+      "status": "??",
+      "path": "lib/observability/server-timing.ts"
+    },
+    {
+      "status": "??",
+      "path": "lib/operations/physical-operations-primitive-registry.ts"
+    },
+    {
+      "status": "??",
+      "path": "lib/pricing/pie-national-price-oracle-contract.ts"
+    },
+    {
+      "status": "??",
+      "path": "lib/profile/fact-guardrails.ts"
+    },
+    {
+      "status": "??",
+      "path": "lib/reviews/command-center.ts"
+    },
+    {
+      "status": "??",
+      "path": "lib/showcase/"
+    },
+    {
+      "status": "??",
+      "path": "lib/sustainability/sustainability-waste-ethics-ledger-contract.ts"
+    },
+    {
+      "status": "??",
+      "path": "lib/sustainability/sustainability-waste-ethics-ledger.ts"
+    },
+    {
+      "status": "??",
+      "path": "lib/sustainability/waste-ethics-ledger-actions.ts"
+    },
+    {
+      "status": "??",
+      "path": "lib/vendors/vendor-trust-ledger-contract.ts"
+    },
+    {
+      "status": "??",
+      "path": "maybe-pie-dialog-open.md"
+    },
+    {
+      "status": "??",
+      "path": "menu-fifth-category.md"
+    },
+    {
+      "status": "??",
+      "path": "menu-for-second-category.md"
+    },
+    {
+      "status": "??",
+      "path": "menu-for-third-category.md"
+    },
+    {
+      "status": "??",
+      "path": "menu-fourth-category.md"
+    },
+    {
+      "status": "??",
+      "path": "menu-sixth-category.md"
+    },
+    {
+      "status": "??",
+      "path": "pie-dialog-target.md"
+    },
+    {
+      "status": "??",
+      "path": "prompts/handoff-openclaw-to-hermes-migration.md"
+    },
+    {
+      "status": "??",
+      "path": "scripts/generate-matrix-closure-and-queue-specs.mjs"
+    },
+    {
+      "status": "??",
+      "path": "scripts/hermes/discord-bot.mjs"
+    },
+    {
+      "status": "??",
+      "path": "scripts/regression-firewall.mjs"
+    },
+    {
+      "status": "??",
+      "path": "scripts/wiring-audit-results.json"
+    },
+    {
+      "status": "??",
+      "path": "second-category-after-click-and-paste-deep.md"
+    },
+    {
+      "status": "??",
+      "path": "second-category-after-click-and-paste.md"
+    },
+    {
+      "status": "??",
+      "path": "second-category-dialog-filled-deep.md"
+    },
+    {
+      "status": "??",
+      "path": "second-category-dialog-filled.md"
+    },
+    {
+      "status": "??",
+      "path": "sixth-category-dialog.md"
+    },
+    {
+      "status": "??",
+      "path": "sixth-dialog-filled.md"
+    },
+    {
+      "status": "??",
+      "path": "sixth-dialog-replaced.md"
+    },
+    {
+      "status": "??",
+      "path": "sixth-dialog-target.md"
+    },
+    {
+      "status": "??",
+      "path": "tests/e2e/nav-02-rail-foundation.spec.ts"
+    },
+    {
+      "status": "??",
+      "path": "tests/unit/chef-capacity-twin-contract.test.ts"
+    },
+    {
+      "status": "??",
+      "path": "tests/unit/chef-life-constraint-capture-contract.test.ts"
+    },
+    {
+      "status": "??",
+      "path": "tests/unit/chef-life-dashboard-synthesis.test.ts"
+    },
+    {
+      "status": "??",
+      "path": "tests/unit/chef-life-strategy-map-contract.test.ts"
+    },
+    {
+      "status": "??",
+      "path": "tests/unit/chef-profile-fact-guardrails.test.ts"
+    },
+    {
+      "status": "??",
+      "path": "tests/unit/client-contribution-scoring.test.ts"
+    },
+    {
+      "status": "??",
+      "path": "tests/unit/client-household-operating-memory-contract.test.ts"
+    },
+    {
+      "status": "??",
+      "path": "tests/unit/communication.sms-policy.test.ts"
+    },
+    {
+      "status": "??",
+      "path": "tests/unit/compliance-concierge-contract.test.ts"
+    },
+    {
+      "status": "??",
+      "path": "tests/unit/craft-evolution-lab-contract.test.ts"
+    },
+    {
+      "status": "??",
+      "path": "tests/unit/crisis-and-recovery-studio-contract.test.ts"
+    },
+    {
+      "status": "??",
+      "path": "tests/unit/dinner-circle-event-workspace.test.ts"
+    },
+    {
+      "status": "??",
+      "path": "tests/unit/event-ops-tenant-boundaries.test.ts"
+    },
+    {
+      "status": "??",
+      "path": "tests/unit/event-readiness-bus.test.ts"
+    },
+    {
+      "status": "??",
+      "path": "tests/unit/hub-link-preview.test.ts"
+    },
+    {
+      "status": "??",
+      "path": "tests/unit/loyalty.reward-guardrails.test.ts"
+    },
+    {
+      "status": "??",
+      "path": "tests/unit/mobile-field-capture-shell.test.ts"
+    },
+    {
+      "status": "??",
+      "path": "tests/unit/new-revenue-engine-contract.test.ts"
+    },
+    {
+      "status": "??",
+      "path": "tests/unit/physical-event-loadout-brain-contract.test.ts"
+    },
+    {
+      "status": "??",
+      "path": "tests/unit/physical-operations-primitive-registry.test.ts"
+    },
+    {
+      "status": "??",
+      "path": "tests/unit/pie.national-price-oracle-contract.test.ts"
+    },
+    {
+      "status": "??",
+      "path": "tests/unit/portal-rail-standard.test.ts"
+    },
+    {
+      "status": "??",
+      "path": "tests/unit/private-chef-financial-cockpit-contract.test.ts"
+    },
+    {
+      "status": "??",
+      "path": "tests/unit/private-memory-visibility-contract.test.ts"
+    },
+    {
+      "status": "??",
+      "path": "tests/unit/public-showcase-read-model.test.ts"
+    },
+    {
+      "status": "??",
+      "path": "tests/unit/remy-communication-approval-guardrails.test.ts"
+    },
+    {
+      "status": "??",
+      "path": "tests/unit/remy-sensitive-boundary-broker.test.ts"
+    },
+    {
+      "status": "??",
+      "path": "tests/unit/reviews-command-center.test.ts"
+    },
+    {
+      "status": "??",
+      "path": "tests/unit/staff-trust-delegation-contract.test.ts"
+    },
+    {
+      "status": "??",
+      "path": "tests/unit/staff-trust-delegation-read-model.test.ts"
+    },
+    {
+      "status": "??",
+      "path": "tests/unit/sustainability-waste-ethics-ledger-contract.test.ts"
+    },
+    {
+      "status": "??",
+      "path": "tests/unit/url-capability-registry.test.ts"
+    },
+    {
+      "status": "??",
+      "path": "tests/unit/vendor-action-extraction.test.ts"
+    },
+    {
+      "status": "??",
+      "path": "tests/unit/vendor-trust-ledger-contract.test.ts"
+    },
+    {
+      "status": "??",
+      "path": "third-category-dialog-deep.md"
+    },
+    {
+      "status": "??",
+      "path": "third-category-dialog.md"
+    },
+    {
+      "status": "??",
+      "path": "third-dialog-filled.md"
+    },
+    {
+      "status": "??",
+      "path": "third-dialog-target.md"
     }
   ],
   "next_action": null,
-  "context_notes": "Recent commits:\na89c9e15a fix(rail): add 8s per-resolver timeout to prevent page hangs\n6e764488d feat: 9-agent swarm build - lifecycle workspace, finance cockpit, Remy routines, cross-domain wiring\n47f95223f docs: reconcile build queue - rail VERIFY-ONLY, NAV #3-6 SPEC-READY, 2 new categories\n519b104a9 feat(rail): entity-scoped resolver branches for 5 high-value pages\nc851f5682 fix(rail): fix server component imports and assembly colorClass type"
+  "context_notes": "Recent commits:\ndb5a1357c feat: swarm waves 0-5 lib/component builds (commitment, rail, QA, remy, circles, communication)\n54ed325c0 Add PIE native serving index contract\n562c16148 RUN-20260521T085210Z: loyalty core awards hardening, referral idempotency, PIE fallback contract\n4ee6a20ef RUN-20260521T082803Z: fix event section loyalty imports to use store helpers\n15d8f6eeb RUN-20260521T082803Z: loyalty Wave 1 security foundation, dashboard wiring fixes, PIE canonical ontology"
 }

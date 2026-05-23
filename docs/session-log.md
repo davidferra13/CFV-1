@@ -261,3 +261,13 @@
 - Commits: f1dbfe2ba (docs), e2896a0e6 (migrations WIP), b101d5307 (tests), 8f854d4e0 (source)
 - Build state on departure: typecheck clean, full build not verified (that is Codex Agent 3's job)
 - Notes: Found project in "Codex hangover" state: 753 uncommitted files from multiple parallel Codex sessions. Triaged and committed in 4 logical chunks. Identified 2 remaining ticketing bugs (toggle heuristic, missing ledger entry), 2 duplicate migration pairs, and no build verification. Wrote 3 stabilization specs for Codex: migration audit (research), ticketing wiring fix (surgical), build verification (QA). All code pushed to main. Remaining 129 dirty files are Codex temp artifacts (now gitignored) and stashed. Senior engineer recommendation: no new features until stabilization agents complete.
+
+## Session 2026-05-19 19:45 � /eat page repair swarm-handoff
+
+**Swarm ready.** 7 queue items dispatched across 3 waves (5 agents).
+
+- Wave 1 (parallel): Agent A (JSON-LD SEO), Agent B (data quality + location filter), Agent C (shortlist sanitize)
+- Wave 2: Agent D (sectioned grid + compare type lock)
+- Wave 3: Agent E (server-side craving search)
+- All items in .agents/build-queue/active/ under BQ-20260519T183825Z through BQ-20260519T184244Z
+- Intensify findings persisted to docs/intensify/discovery.md (5 additional moves pending user pick)

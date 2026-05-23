@@ -352,6 +352,15 @@ logs/
 .agents/skills/build-queue/*
 !.agents/skills/build-queue/scripts/
 !.agents/skills/build-queue/scripts/build-queue.mjs
+!.agents/skills/chef-lifetime-ontology/
+!.agents/skills/chef-lifetime-ontology/SKILL.md
+!.agents/skills/live-browser-experience-audit/
+!.agents/skills/live-browser-experience-audit/REFERENCE.md
+!.agents/skills/live-browser-experience-audit/SKILL.md
+!.agents/skills/live-browser-experience-audit/scripts/
+!.agents/skills/live-browser-experience-audit/scripts/create-evidence-pack.mjs
+!.agents/skills/live-browser-experience-audit/templates/
+!.agents/skills/live-browser-experience-audit/templates/live-browser-report.md
 .continue/
 .windsurf/
 

@@ -601,6 +601,240 @@ function intersect(a, b) {
   return [...a].filter((value) => b.has(value))
 }
 
+const PRIORITY_RANK = new Map([
+  ['P0', 0],
+  ['P1', 1],
+  ['P2', 2],
+  ['P3', 3],
+])
+
+const SHARED_FILE_PATTERNS = [
+  'middleware.ts',
+  'lib/auth/route-policy.ts',
+  'lib/auth/get-user.ts',
+  'lib/auth/admin.ts',
+  'lib/auth/permissions.ts',
+  'lib/db/compat.ts',
+  'components/navigation/nav-config.tsx',
+  'components/search/command-palette.tsx',
+  'tailwind.config.ts',
+  'app/globals.css',
+]
+
+function priorityRank(priority) {
+  return PRIORITY_RANK.has(priority) ? PRIORITY_RANK.get(priority) : 4
+}
+
+function itemPaths(item) {
+  return [...extractLikelyPaths(item.text)].sort()
+}
+
+function itemSharedFiles(item) {
+  const paths = itemPaths(item)
+  return paths.filter((path) => SHARED_FILE_PATTERNS.some((pattern) => path === pattern || path.endsWith(`/${pattern}`)))
+}
+
+function itemDependencyIds(item, selectedIds = null) {
+  const ids = [...tokenSet(item.dependencies)].filter((token) => token.startsWith('BQ-'))
+  return selectedIds ? ids.filter((id) => selectedIds.has(id)) : ids
+}
+
+function itemComplexity(item) {
+  const paths = itemPaths(item)
+  const sharedFiles = itemSharedFiles(item)
+  const text = normalizeText(`${item.title} ${item.domain} ${item.category} ${item.text}`)
+  let score = 1
+  if (paths.length >= 4) score += 1
+  if (paths.length >= 8) score += 1
+  if (sharedFiles.length > 0) score += 2
+  if (text.includes('route') || text.includes('server action') || text.includes('api')) score += 1
+  if (text.includes('auth') || text.includes('tenant') || text.includes('permission')) score += 2
+  if (text.includes('migration') || text.includes('schema') || text.includes('database')) score += 2
+  if (text.includes('ui') || text.includes('page') || text.includes('component')) score += 1
+  if (Number(item.readiness || 0) < 4) score += 2
+  return score
+}
+
+function itemConflictsWith(a, b) {
+  const pathOverlap = intersect(new Set(itemPaths(a)), new Set(itemPaths(b)))
+  if (pathOverlap.length > 0) return `likely file overlap: ${pathOverlap.slice(0, 3).join(', ')}`
+  const aShared = itemSharedFiles(a)
+  const bShared = itemSharedFiles(b)
+  if (aShared.length > 0 && bShared.length > 0) {
+    return `shared-file ownership: ${[...new Set([...aShared, ...bShared])].slice(0, 4).join(', ')}`
+  }
+  return ''
+}
+
+function sortForFirePlan(items) {
+  return [...items].sort((a, b) => {
+    return (
+      priorityRank(a.priority) - priorityRank(b.priority) ||
+      Number(b.readiness || 0) - Number(a.readiness || 0) ||
+      itemDependencyIds(a).length - itemDependencyIds(b).length ||
+      itemComplexity(a) - itemComplexity(b) ||
+      a.id.localeCompare(b.id)
+    )
+  })
+}
+
+function buildSwarmExecutionPlan(items, args = {}) {
+  const runId = args.run || args['run-id'] || `RUN-${nowStamp()}`
+  const maxItems = Math.max(1, Number(args['max-items'] || args['maxItems'] || 5))
+  const maxWaves = Math.max(1, Number(args['max-waves'] || args['maxWaves'] || 4))
+  const sorted = sortForFirePlan(items)
+  const currentThreadItems = sorted.slice(0, maxItems)
+  const continuationItems = sorted.slice(maxItems)
+  const currentIds = new Set(currentThreadItems.map((item) => item.id))
+  const remaining = [...currentThreadItems]
+  const waves = []
+  let completed = new Set()
+
+  while (remaining.length > 0 && waves.length < maxWaves) {
+    const wave = []
+    for (const item of [...remaining]) {
+      const deps = itemDependencyIds(item, currentIds)
+      if (deps.some((id) => !completed.has(id))) continue
+      const conflict = wave.map((existing) => itemConflictsWith(item, existing)).find(Boolean)
+      if (conflict) continue
+      wave.push(item)
+      remaining.splice(remaining.indexOf(item), 1)
+    }
+    if (wave.length === 0) {
+      wave.push(remaining.shift())
+    }
+    waves.push(wave)
+    completed = new Set([...completed, ...wave.map((item) => item.id)])
+  }
+
+  const overflow = [...remaining, ...continuationItems]
+  const itemsById = new Map(items.map((item) => [item.id, item]))
+  const waveById = new Map()
+  waves.forEach((wave, index) => {
+    for (const item of wave) waveById.set(item.id, index + 1)
+  })
+
+  const lanes = waves.map((wave, index) => ({
+    wave: index + 1,
+    items: wave.map((item) => ({
+      id: item.id,
+      title: item.title,
+      priority: item.priority,
+      readiness: item.readiness,
+      domain: item.domain,
+      category: item.category,
+      home: item.home,
+      dependencies: itemDependencyIds(item, new Set(items.map((candidate) => candidate.id))),
+      likelyPaths: itemPaths(item),
+      sharedFiles: itemSharedFiles(item),
+      complexity: itemComplexity(item),
+      lane: `${item.domain || item.home || 'Unassigned'} lane`,
+    })),
+  }))
+
+  const relationships = currentThreadItems.map((item) => {
+    const deps = itemDependencyIds(item, new Set(items.map((candidate) => candidate.id)))
+    const blockers = [...itemsById.values()].filter((candidate) => itemDependencyIds(candidate).includes(item.id))
+    const sameWave = currentThreadItems
+      .filter((candidate) => candidate.id !== item.id && waveById.get(candidate.id) === waveById.get(item.id))
+      .filter((candidate) => !itemConflictsWith(item, candidate))
+      .map((candidate) => candidate.id)
+    return {
+      id: item.id,
+      mustRunAfter: deps,
+      blocks: blockers.map((candidate) => candidate.id),
+      canParallelWith: sameWave,
+    }
+  })
+
+  return {
+    runId,
+    maxItems,
+    maxWaves,
+    selectedCount: items.length,
+    currentThreadCount: currentThreadItems.length,
+    continuationCount: overflow.length,
+    lanes,
+    relationships,
+    overflow: overflow.map((item) => ({
+      id: item.id,
+      title: item.title,
+      priority: item.priority,
+      readiness: item.readiness,
+      domain: item.domain,
+    })),
+  }
+}
+
+function renderSwarmExecutionPlan(plan) {
+  const lines = []
+  lines.push(`## Native Swarm Orchestration Packet`)
+  lines.push('')
+  lines.push(`- Run ID: ${plan.runId}`)
+  lines.push(`- Selected items: ${plan.selectedCount}`)
+  lines.push(`- Current-thread execution budget: ${plan.currentThreadCount}/${plan.selectedCount} items, ${plan.lanes.length}/${plan.maxWaves} waves`)
+  lines.push(`- Continuation items: ${plan.continuationCount}`)
+  lines.push(`- Stop-before-compact rule: do not start another wave unless this thread can finish that wave, proof packs, finish-check, and handoff without context pressure.`)
+  lines.push(`- Lead rule: one lead orchestrator owns lifecycle moves, shared-file merges, verification, and proof-pack closeout.`)
+  lines.push(`- Worker rule: workers may run only inside the lane and likely-file scope listed below; shared files merge serially through the lead.`)
+  lines.push('')
+  lines.push(`### Priority And Capacity Decision`)
+  lines.push('')
+  lines.push(`- Sort order: priority, readiness, dependency lightness, estimated complexity, then ID.`)
+  lines.push(`- This thread may execute at most ${plan.maxItems} items across ${plan.maxWaves} waves unless a human explicitly raises the budget.`)
+  lines.push(`- If continuation items remain, stop after the planned waves and start a fresh executing build agent with this run packet and the continuation list.`)
+  lines.push('')
+  lines.push(`### Waves`)
+  lines.push('')
+  lines.push(`#### Wave 0 - Lead Preflight`)
+  lines.push('')
+  lines.push(`- Confirm canonical checkout and run ID.`)
+  lines.push(`- Classify dirty files as owned-by-run, preexisting, generated artifact, queue-system, or unknown.`)
+  lines.push(`- Read every fired item and preserve Product Domain / Module, Queue Reconciliation, role/privacy, and verification notes.`)
+  lines.push(`- Do not spawn or assign workers to overlapping files in the same wave.`)
+  lines.push('')
+  for (const lane of plan.lanes) {
+    lines.push(`#### Wave ${lane.wave} - Parallel Build Lanes`)
+    lines.push('')
+    for (const item of lane.items) {
+      lines.push(`- ${item.id} [${item.priority}, readiness ${item.readiness}, complexity ${item.complexity}] ${item.title}`)
+      lines.push(`  - Lane: ${item.lane}`)
+      lines.push(`  - Domain: ${item.domain}`)
+      lines.push(`  - Must run after: ${item.dependencies.length > 0 ? item.dependencies.join(', ') : 'none inside this run'}`)
+      lines.push(`  - Likely files: ${item.likelyPaths.length > 0 ? item.likelyPaths.slice(0, 8).join(', ') : 'inspect live before editing'}`)
+      lines.push(`  - Shared-file gate: ${item.sharedFiles.length > 0 ? item.sharedFiles.join(', ') : 'none detected'}`)
+    }
+    lines.push('')
+    lines.push(`Wave ${lane.wave} gate: merge through lead, run focused verification for changed surfaces, update progress/proof notes, then decide whether the next wave still fits this thread.`)
+    lines.push('')
+  }
+  lines.push(`### Dependency And Parallelism Matrix`)
+  lines.push('')
+  for (const relationship of plan.relationships) {
+    lines.push(`- ${relationship.id}: after ${relationship.mustRunAfter.length > 0 ? relationship.mustRunAfter.join(', ') : 'none'}; blocks ${relationship.blocks.length > 0 ? relationship.blocks.join(', ') : 'none'}; can parallel with ${relationship.canParallelWith.length > 0 ? relationship.canParallelWith.join(', ') : 'none'}`)
+  }
+  lines.push('')
+  lines.push(`### Continuation / Fresh-Agent Handoff`)
+  lines.push('')
+  if (plan.overflow.length === 0) {
+    lines.push(`- No continuation items in this plan.`)
+  } else {
+    lines.push(`- Do not start these in this thread unless a human explicitly raises the budget:`)
+    for (const item of plan.overflow) {
+      lines.push(`  - ${item.id} [${item.priority}, readiness ${item.readiness}] ${item.domain} / ${item.title}`)
+    }
+    lines.push(`- Handoff prompt: "Continue ${plan.runId} from the Native Swarm Orchestration Packet. Start with the continuation items, refresh git status and queue status, then plan the next bounded waves before editing."`)
+  }
+  lines.push('')
+  lines.push(`### Final Verification Gate`)
+  lines.push('')
+  lines.push(`- Verify the exact canonical URL when app behavior changes: http://localhost:3100.`)
+  lines.push(`- Check relevant browser console, network, server logs, runtime errors, focused tests/type checks, and wiring audit coverage.`)
+  lines.push(`- Create or refresh proof packs with Acceptance Evidence, Wiring Proof, Runtime Proof, Verification Output, and partial-work notes.`)
+  lines.push(`- Run finish-check before moving any item to done.`)
+  return lines.join('\n')
+}
+
 async function warnActiveInFlightOverlaps(contextIds = []) {
   const activeItems = await listItems('active')
   const inFlightItems = await listItems('in-flight')
@@ -736,9 +970,17 @@ async function cmdFire(args) {
       toStatus: 'in-flight',
       sourcePath: found.path,
       destinationPath: destination,
+      status: 'in-flight',
+      text,
+      title: readField(text, 'Title') || id,
       domain: readField(text, 'Product Domain / Module') || 'Unassigned',
+      category: readField(text, 'Category') || '',
+      home: readField(text, 'Home') || '',
+      priority: readField(text, 'Priority') || 'P2',
+      readiness: Number(readField(text, 'Readiness Score') || 0),
       dependencies: readField(text, 'Dependencies') || '',
       related: readField(text, 'Related') || '',
+      runId,
       hash: contentHash(text),
     })
     await appendEvent({
@@ -783,6 +1025,12 @@ async function cmdFire(args) {
     ),
     'utf8'
   )
+  const swarmPlan = buildSwarmExecutionPlan(firedItems, args)
+  await writeFile(
+    join(runDir, 'swarm-orchestration.json'),
+    JSON.stringify(swarmPlan, null, 2),
+    'utf8'
+  )
   await writeFile(
     join(runDir, 'ownership-manifest.md'),
     `# ${runId} Ownership Manifest
@@ -808,6 +1056,8 @@ ${firedItems.map((item) => `- ${item.id}: ${item.destinationPath}`).join('\n') |
 
 - Fired At: ${fireStartedAt}
 - Items: ${fired.join(', ')}
+
+${renderSwarmExecutionPlan(swarmPlan)}
 
 ## Verification Contract
 
@@ -910,11 +1160,23 @@ async function cmdFinishCheck(args) {
   const autoMobile = Boolean(args['auto-mobile'])
   const backendOnly = Boolean(args['backend-only'])
   const runtimeRequired = !args['skip-runtime']
+  const regressionFirewallRequired = !args['skip-regression-firewall']
   let failed = false
   const workspaceResult = await checkWorkspaceCloseout(ids)
   if (!workspaceResult.passed) {
     failed = true
     for (const error of workspaceResult.errors) console.error(error)
+  }
+  if (regressionFirewallRequired) {
+    try {
+      const firewallArgs = ['scripts/regression-firewall.mjs']
+      if (!runtimeRequired) firewallArgs.push('--skip-runtime')
+      await execFileAsync(process.execPath, firewallArgs, { cwd: ROOT, maxBuffer: 20 * 1024 * 1024 })
+    } catch (error) {
+      failed = true
+      const output = [error.stdout, error.stderr].filter(Boolean).join('\n').trim()
+      console.error(`regression-firewall: FAIL ${output || error.message}`)
+    }
   }
   if (runtimeRequired) {
     try {
@@ -948,6 +1210,10 @@ async function cmdFinishCheck(args) {
     const mobileSection = proofText.match(/## Mobile Pass[\s\S]*?(?=\n## |\s*$)/)?.[0] || ''
     const runtimeSection = proofText.match(/## Runtime Proof[\s\S]*?(?=\n## |\s*$)/)?.[0] || ''
     const hasTbd = /\bTBD\b/i.test(proofText)
+    const hasPartialProof =
+      /^-\s*Status:\s*(partial|blocked|incomplete)\b/im.test(proofText) ||
+      /(keep|remain|remains|should remain).{0,80}\bin-flight\b/i.test(proofText) ||
+      /runtime proof (?:is )?incomplete|proof remains incomplete|acceptance evidence (?:is )?incomplete/i.test(proofText)
     const hasCanonicalRuntime = /https?:\/\/(?:localhost|127\.0\.0\.1):3100\b/i.test(runtimeSection)
     const noRuntimeImpact = /no runtime impact|not runtime-impacting|docs-only/i.test(runtimeSection)
     const approvedIsolatedRuntime =
@@ -967,6 +1233,9 @@ async function cmdFinishCheck(args) {
     } else if (hasTbd) {
       failed = true
       console.error(`${id}: FAIL proof pack still contains TBD`)
+    } else if (hasPartialProof) {
+      failed = true
+      console.error(`${id}: FAIL proof pack declares partial or incomplete work`)
     } else if (!hasCanonicalRuntime && !noRuntimeImpact && !approvedIsolatedRuntime) {
       failed = true
       console.error(`${id}: FAIL runtime proof must cite http://localhost:3100, declare no runtime impact, or document an approved isolated runtime with reason and cleanup`)
@@ -1232,8 +1501,13 @@ async function cmdDomainPlan(args) {
 async function cmdRecommendFire(args) {
   const limit = Number(args.limit || 5)
   const items = await listItems(args.status || 'active')
-  for (const item of items.sort((a, b) => b.readiness - a.readiness).slice(0, limit)) {
+  const recommended = sortForFirePlan(items).slice(0, limit)
+  for (const item of recommended) {
     console.log(`${item.id}\t${item.priority}\t${item.readiness}\t${item.domain}\t${item.title}`)
+  }
+  if (recommended.length > 0 && !args.compact) {
+    console.log('')
+    console.log(renderSwarmExecutionPlan(buildSwarmExecutionPlan(recommended, args)))
   }
 }
 
@@ -1241,13 +1515,18 @@ async function cmdPlanFire(args) {
   const ids = idsFromArgs(args)
   if (ids.length === 0) throw new Error('plan-fire requires --ids BQ-...')
   const items = await listItems('active')
-  const selected = items.filter((item) => ids.includes(item.id))
-  console.log(`# Fire Plan ${args.run || args['run-id'] || `RUN-${nowStamp()}`}`)
-  for (const item of selected) {
-    console.log(`- ${item.id}: ${item.domain} / ${item.title}`)
+  const itemById = new Map(items.map((item) => [item.id, item]))
+  const selected = ids.map((id) => itemById.get(id)).filter(Boolean)
+  const plan = buildSwarmExecutionPlan(selected, args)
+  console.log(`# Fire Plan ${plan.runId}`)
+  console.log('')
+  for (const item of sortForFirePlan(selected)) {
+    console.log(`- ${item.id}: ${item.priority}, readiness ${item.readiness}, ${item.domain} / ${item.title}`)
   }
   const missing = ids.filter((id) => !selected.some((item) => item.id === id))
   if (missing.length > 0) console.log(`Missing from active: ${missing.join(', ')}`)
+  console.log('')
+  console.log(renderSwarmExecutionPlan(plan))
 }
 
 async function main() {

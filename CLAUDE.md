@@ -22,7 +22,7 @@ This file is read by Claude Code at the start of every conversation. These rules
 | ------------ | ------------- | ----------------- | --------- | ---------------------------------------------------- |
 | **Local**    | Gemma 4 (e4b) | `ollama-delegate` | $0        | Mechanical bulk work. Drafts, boilerplate, summaries |
 | **Codex**    | Codex CLI     | `codex exec`      | Flat-rate | Spec-following builds, tests, UI, single-concern     |
-| **Worker**   | Haiku 4.5     | `haiku-worker`    | Cheap     | Judgment-light Claude agent tasks                    |
+| **Worker**   | Haiku 4. to 5 | `haiku-worker`    | Cheap     | Judgment-light Claude agent tasks                    |
 | **Executor** | Opus 4.6      | (main session)    | Standard  | All normal work. Default                             |
 | **Advisor**  | Opus 4.6      | `opus-advisor`    | Expensive | Hard decisions only                                  |
 
@@ -210,9 +210,11 @@ Run `/close-session`. Commit + push. Work must be on GitHub before signing off.
 
 **After every build, run `/wiring-audit` before calling the work done.** This is the umbrella closeout gate for Page X-Ray, Dinner Circles, Universal Rail Intelligence, Priority Queue, Commitment UI, Menu Intelligence, PIE, Client Intelligence, communications, lifecycle, ledger, navigation, Remy, automation, and CIL wiring.
 
+**Native closeout command:** run `npm run regression:firewall` before claiming any code build is done. It runs chef nav audit, wiring audit with a zero weak/orphan route contract, app typecheck, canonical runtime verification, and affected-route probes from `scripts/wiring-audit-results.json`. Use `npm run regression:firewall:full` when slow Sentinel regression proof is required. `build-queue.mjs finish-check` runs this firewall by default.
+
 Required closeout:
 
-1. Run `node scripts/wiring-audit.mjs`.
+1. Run `npm run regression:firewall`.
 2. Use `post_build_domain_matrix` to identify the most relevant integration domains for the files that changed.
 3. Run `/page-xray` on every affected route from the matrix, using `--delta` for existing pages and `--quick` for new pages.
 4. For every high or medium relevance domain, either wire it, prove it is already wired, queue a follow-up, or record a clear N/A reason.

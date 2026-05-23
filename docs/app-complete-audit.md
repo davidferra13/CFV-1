@@ -1388,16 +1388,16 @@ Intelligence feature configuration for the menu editor's context sidebar. Contro
 | "Enable all" button  | One-click toggle to enable all 11 features at once                                                                                                                                                                                           |
 | "Disable all" button | Opens a confirmation modal (danger variant) warning that disabling all features will turn off allergen validation and other safety checks. Requires explicit confirmation before proceeding                                                  |
 
-### 15.5 My Profile (`/settings/profile`)
+### 15.5 My Profile (`/settings/my-profile`)
 
-Chef profile editor. Three cards in sequence: Chef Profile, Social & External Links, Public Profile Settings.
+Chef profile editor. Three cards in sequence: Public Client Profile Identity, Social & External Links, Public Contact & Inquiry Settings.
 
-| Element                          | Description                                                                                                                                         |
-| -------------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------- |
-| **Chef Profile card**            | Avatar upload, display name, business name, tagline, highlight text, bio (textarea), cuisine tags, service types                                    |
-| **Social & External Links card** | 5 URL inputs for external profiles: Instagram, TikTok, Facebook, YouTube, Linktree/Link Hub. Stored in `social_links` JSONB column on `chefs` table |
-| **Public Profile Settings card** | Public profile slug, SEO preview, discoverability toggle, availability signal                                                                       |
-| "Save Profile" button            | Saves all three cards (Chef Profile + Social & External Links + Public Profile Settings) in a single server action. Toast on success/failure        |
+| Element                                    | Description                                                                                                                                                                                 |
+| ------------------------------------------ | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| **Public Client Profile Identity card**    | Avatar upload, display name, business name, tagline, bio (textarea), and contact identity used by public/client profile surfaces                                                            |
+| **Social & External Links card**           | 5 URL inputs for external profiles: Instagram, TikTok, Facebook, YouTube, Linktree/Link Hub. Stored in `social_links` JSONB column on `chefs` table                                         |
+| **Public Contact & Inquiry Settings card** | Google review URL, official website URL, website visibility, preferred inquiry destination, and profile photo                                                                               |
+| "Save Profile" button                      | Saves the My Profile cards in a guarded profile server action. Public URL/theme/showcase controls live on `/settings/public-profile`; network discoverability lives on `/settings/profile`. |
 
 ### 20.1 Delete Account (`/settings/delete-account`)
 

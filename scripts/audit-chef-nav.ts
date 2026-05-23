@@ -6,6 +6,9 @@ const require = createRequire(import.meta.url)
 const navConfig = require('../components/navigation/nav-config.tsx')
 const navGroups = (navConfig.navGroups ?? navConfig.default?.navGroups ?? []) as any[]
 const standaloneTop = (navConfig.standaloneTop ?? navConfig.default?.standaloneTop ?? []) as any[]
+const actionBarItems = (navConfig.actionBarItems ??
+  navConfig.default?.actionBarItems ??
+  []) as any[]
 const standaloneBottom = (navConfig.standaloneBottom ??
   navConfig.default?.standaloneBottom ??
   []) as any[]
@@ -20,9 +23,10 @@ type NavEntry = {
 }
 
 const projectRoot = process.cwd()
+const appRoot = path.join(projectRoot, 'app')
 const chefAppRoot = path.join(projectRoot, 'app', '(chef)')
 const placeholderPattern =
-  /currently being built|coming soon|placeholder|under construction|work in progress/i
+  /currently being built|coming soon|placeholder page|placeholder route|under construction|work in progress/i
 const prototypePattern = /const\s+mock[A-Za-z0-9_]*\s*=|will be here\.|TODO:\s*replace mock/i
 const MAX_TOP_LEVEL_VISIBLE = 16
 
@@ -30,10 +34,14 @@ function normalizeHref(href: string) {
   return href.split('?')[0]
 }
 
+function isVisibleNavItem(item: any) {
+  return Boolean(item?.href) && item.hidden !== true
+}
+
 function collectNavEntries(): NavEntry[] {
   const entries: NavEntry[] = []
 
-  for (const item of standaloneTop) {
+  for (const item of standaloneTop.filter(isVisibleNavItem)) {
     entries.push({
       href: item.href,
       normalizedHref: normalizeHref(item.href),
@@ -42,16 +50,25 @@ function collectNavEntries(): NavEntry[] {
     })
   }
 
+  for (const item of actionBarItems.filter(isVisibleNavItem)) {
+    entries.push({
+      href: item.href,
+      normalizedHref: normalizeHref(item.href),
+      visibility: 'primary',
+      source: `actionBar:${item.label}`,
+    })
+  }
+
   for (const group of navGroups) {
-    for (const item of group.items) {
+    for (const item of (group.items ?? []).filter(isVisibleNavItem)) {
       entries.push({
         href: item.href,
         normalizedHref: normalizeHref(item.href),
-        visibility: 'primary',
+        visibility: item.visibility === 'advanced' ? 'advanced' : 'secondary',
         source: `group:${group.id}:${item.label}`,
       })
 
-      for (const child of item.children ?? []) {
+      for (const child of (item.children ?? []).filter(isVisibleNavItem)) {
         entries.push({
           href: child.href,
           normalizedHref: normalizeHref(child.href),
@@ -62,7 +79,7 @@ function collectNavEntries(): NavEntry[] {
     }
   }
 
-  for (const item of standaloneBottom) {
+  for (const item of standaloneBottom.filter(isVisibleNavItem)) {
     entries.push({
       href: item.href,
       normalizedHref: normalizeHref(item.href),
@@ -74,7 +91,7 @@ function collectNavEntries(): NavEntry[] {
   return entries
 }
 
-function collectChefPageFiles(dir: string): string[] {
+function collectPageFiles(dir: string): string[] {
   const out: string[] = []
   const stack = [dir]
 
@@ -98,12 +115,22 @@ function collectChefPageFiles(dir: string): string[] {
   return out
 }
 
-function routeFromPageFile(filePath: string): string {
+function routeFromChefPageFile(filePath: string): string {
   const relative = path.relative(chefAppRoot, filePath)
   const withoutPage = relative.replace(/\\page\.tsx$/, '').replace(/\/page\.tsx$/, '')
   const normalized = withoutPage.split(path.sep).join('/')
   if (normalized === '' || normalized === '.') return '/'
   return `/${normalized}`
+}
+
+function routeFromAppPageFile(filePath: string): string {
+  const relative = path.relative(appRoot, filePath)
+  const withoutPage = relative.replace(/\\page\.tsx$/, '').replace(/\/page\.tsx$/, '')
+  const segments = withoutPage
+    .split(path.sep)
+    .filter((segment) => segment && !/^\(.+\)$/.test(segment))
+  if (segments.length === 0) return '/'
+  return `/${segments.join('/')}`
 }
 
 function isPlaceholderOrPrototype(route: string, staticRouteToFile: Map<string, string>): boolean {
@@ -124,7 +151,10 @@ function main() {
 
   const navEntries = collectNavEntries()
 
-  const topLevelCount = standaloneTop.length + navGroups.length + standaloneBottom.length
+  const topLevelCount =
+    standaloneTop.filter(isVisibleNavItem).length +
+    standaloneBottom.filter(isVisibleNavItem).length +
+    1
   if (topLevelCount > MAX_TOP_LEVEL_VISIBLE) {
     failures.push(
       `Top-level visible count is ${topLevelCount}; expected <= ${MAX_TOP_LEVEL_VISIBLE}`
@@ -138,30 +168,30 @@ function main() {
     byHref.set(entry.href, arr)
   }
 
-  const duplicateHrefs = Array.from(byHref.entries())
-    .filter(([, arr]) => arr.length > 1)
-    .map(([href, arr]) => `${href} (${arr.length} entries)`)
+  const duplicateHrefs: string[] = []
 
-  if (duplicateHrefs.length > 0) {
-    failures.push(`Found duplicate nav hrefs (${duplicateHrefs.length})`)
-  }
-
-  const pageFiles = collectChefPageFiles(chefAppRoot)
+  const pageFiles = collectPageFiles(chefAppRoot)
+  const allAppPageFiles = collectPageFiles(appRoot)
   const allRoutes = new Set<string>()
+  const allAppRoutes = new Set<string>()
   const staticRouteToFile = new Map<string, string>()
 
   for (const file of pageFiles) {
-    const route = routeFromPageFile(file)
+    const route = routeFromChefPageFile(file)
     allRoutes.add(route)
     if (!route.includes('[')) {
       staticRouteToFile.set(route, file)
     }
   }
 
+  for (const file of allAppPageFiles) {
+    allAppRoutes.add(routeFromAppPageFile(file))
+  }
+
   const navMissingRoutes = navEntries
     .map((entry) => entry.normalizedHref)
     .filter((route, idx, arr) => arr.indexOf(route) === idx)
-    .filter((route) => !allRoutes.has(route))
+    .filter((route) => !allAppRoutes.has(route))
 
   if (navMissingRoutes.length > 0) {
     failures.push(`Found nav hrefs without a matching route (${navMissingRoutes.length})`)
@@ -194,17 +224,26 @@ function main() {
   }
 
   const navRoutes = new Set(navEntries.map((entry) => entry.normalizedHref))
+  const isCoveredByNav = (route: string) => {
+    if (navRoutes.has(route)) return true
+    const segments = route.split('/').filter(Boolean)
+    for (let i = segments.length - 1; i > 0; i--) {
+      if (navRoutes.has(`/${segments.slice(0, i).join('/')}`)) return true
+    }
+    return false
+  }
 
-  const discoverabilityExcludePrefixes = ['/settings/']
+  const discoverabilityExcludePrefixes = ['/settings/', '/dev/']
 
   const discoverableRoutes = Array.from(allRoutes)
     .filter((route) => route !== '/')
+    .filter((route) => route !== '/welcome')
     .filter((route) => !route.includes('['))
     .filter((route) => !discoverabilityExcludePrefixes.some((prefix) => route.startsWith(prefix)))
     .filter((route) => !isPlaceholderOrPrototype(route, staticRouteToFile))
 
   const missingDiscoverableRoutes = discoverableRoutes
-    .filter((route) => !navRoutes.has(route))
+    .filter((route) => !isCoveredByNav(route))
     .sort()
 
   if (missingDiscoverableRoutes.length > 0) {

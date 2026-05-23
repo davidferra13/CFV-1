@@ -73,6 +73,15 @@ const config: Config = {
           '"Apple Color Emoji"',
           '"Segoe UI Emoji"',
         ],
+        display: [
+          '-apple-system',
+          'BlinkMacSystemFont',
+          '"Segoe UI"',
+          'Roboto',
+          '"Helvetica Neue"',
+          'Arial',
+          'sans-serif',
+        ],
       },
       spacing: {
         section: '3rem',

@@ -1,0 +1,2586 @@
+{
+  "schemaVersion": "rail-umbrella-access-registry.v1",
+  "createdAt": "2026-05-19",
+  "status": "canonical-proposed",
+  "purpose": "Canonical umbrella and subcategory registry for rail organization, access-surface routing, rail filtering, stagnant-vs-scrolling behavior, and future customization controls.",
+  "rules": [
+    "Every rail item must map to exactly one primary umbrella.",
+    "Every rail item may map to one or more secondary umbrellas only when it genuinely crosses access paths.",
+    "Every subcategory must declare at least one access path.",
+    "Access paths may be plural lists, singular entity pages, workflow pages, public/client/staff/admin variants, API/data routes, rail surfaces, or proof routes.",
+    "UI color, motion, pinning, visibility, and customization should read this registry instead of inferring category meaning from labels.",
+    "Role-specific access paths are not security boundaries. Server-side route policy, server actions, API auth, and tenant scoping still own enforcement."
+  ],
+  "accessPathKinds": [
+    "plural",
+    "singular",
+    "workflow",
+    "public",
+    "client",
+    "staff",
+    "partner",
+    "vendor",
+    "admin",
+    "api",
+    "proof",
+    "rail"
+  ],
+  "railSurfaces": [
+    "global-strip",
+    "dashboard-tiered-rail",
+    "contextual-rail",
+    "access-surface-rail",
+    "public-discovery-rail",
+    "priority-queue",
+    "page-xray",
+    "admin-rail-health"
+  ],
+  "umbrellas": [
+    {
+      "id": "today-now-priority",
+      "label": "Today, Now, and Priority",
+      "colorFamily": "signal-amber",
+      "railIntent": "What matters first, what is blocked, what must stay visible, and what can safely rotate.",
+      "subcategories": [
+        {
+          "id": "dashboard-peace-of-mind",
+          "label": "Dashboard Peace of Mind",
+          "sourceCategoryAliases": [
+            "Dashboard / Peace Of Mind",
+            "dashboard",
+            "widget-cards",
+            "waiting board",
+            "client attention",
+            "getting started"
+          ],
+          "accessPaths": [
+            { "kind": "plural", "role": "chef", "routePattern": "/dashboard" },
+            { "kind": "rail", "role": "chef", "routePattern": "dashboard-tiered-rail" }
+          ]
+        },
+        {
+          "id": "priority-queue",
+          "label": "Priority Queue and Next Actions",
+          "sourceCategoryAliases": [
+            "Action Center / Priority Queue",
+            "action-center",
+            "action-graph",
+            "decision-queue",
+            "suggestions"
+          ],
+          "accessPaths": [
+            { "kind": "plural", "role": "chef", "routePattern": "/queue" },
+            { "kind": "api", "role": "chef", "routePattern": "/api/v2/queue" },
+            { "kind": "rail", "role": "chef", "routePattern": "priority-queue" }
+          ]
+        },
+        {
+          "id": "briefing-current-feed",
+          "label": "Briefing and Current Feed",
+          "sourceCategoryAliases": [
+            "briefing",
+            "current",
+            "activity feed",
+            "today feed",
+            "daily ops"
+          ],
+          "accessPaths": [
+            { "kind": "plural", "role": "chef", "routePattern": "/briefing" },
+            { "kind": "plural", "role": "chef", "routePattern": "/daily" },
+            { "kind": "plural", "role": "chef", "routePattern": "/activity" },
+            { "kind": "api", "role": "chef", "routePattern": "/api/activity/feed" }
+          ]
+        },
+        {
+          "id": "waiting-radar",
+          "label": "Waiting Radar",
+          "sourceCategoryAliases": [
+            "Waiting Radar / Unknown Waiting Work",
+            "waiting-radar",
+            "waiting",
+            "blocked waiting",
+            "waiting board"
+          ],
+          "accessPaths": [
+            { "kind": "plural", "role": "chef", "routePattern": "/dashboard" },
+            { "kind": "rail", "role": "chef", "routePattern": "contextual-rail" }
+          ]
+        },
+        {
+          "id": "work-continuity",
+          "label": "Work Continuity and Resume State",
+          "sourceCategoryAliases": [
+            "Work Continuity / Resume State",
+            "resume-trails",
+            "save-state",
+            "view-state",
+            "session"
+          ],
+          "accessPaths": [
+            { "kind": "workflow", "role": "chef", "routePattern": "/activity" },
+            { "kind": "rail", "role": "chef", "routePattern": "global-strip" }
+          ]
+        },
+        {
+          "id": "notifications-reminders",
+          "label": "Notifications, Alerts, and Reminders",
+          "sourceCategoryAliases": [
+            "Notifications / Alerts / Reminders / Push",
+            "notifications",
+            "alerts",
+            "reminders",
+            "push",
+            "notification center"
+          ],
+          "accessPaths": [
+            { "kind": "plural", "role": "chef", "routePattern": "/notifications" },
+            { "kind": "plural", "role": "chef", "routePattern": "/reminders" },
+            { "kind": "api", "role": "chef", "routePattern": "/api/v2/notifications" },
+            { "kind": "api", "role": "chef", "routePattern": "/api/push/*" }
+          ]
+        },
+        {
+          "id": "tasks-checklists",
+          "label": "Tasks, Checklists, and Assignable Work",
+          "sourceCategoryAliases": [
+            "tasks",
+            "todos",
+            "checklist",
+            "gantt",
+            "templates",
+            "VA tasks"
+          ],
+          "accessPaths": [
+            { "kind": "plural", "role": "chef", "routePattern": "/tasks" },
+            { "kind": "workflow", "role": "chef", "routePattern": "/tasks/gantt" },
+            { "kind": "workflow", "role": "chef", "routePattern": "/tasks/templates" }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "events-service-execution",
+      "label": "Events and Service Execution",
+      "colorFamily": "service-blue",
+      "railIntent": "Everything tied to booked service, prep, day-of execution, closeout, and post-service learning.",
+      "subcategories": [
+        {
+          "id": "event-list-lifecycle",
+          "label": "Event Lists and Lifecycle",
+          "sourceCategoryAliases": [
+            "Events / Service Execution / Prep",
+            "events",
+            "event transitions",
+            "upcoming",
+            "confirmed",
+            "completed",
+            "cancelled"
+          ],
+          "accessPaths": [
+            { "kind": "plural", "role": "chef", "routePattern": "/events" },
+            { "kind": "workflow", "role": "chef", "routePattern": "/events/upcoming" },
+            { "kind": "workflow", "role": "chef", "routePattern": "/events/confirmed" },
+            { "kind": "workflow", "role": "chef", "routePattern": "/events/completed" },
+            { "kind": "api", "role": "chef", "routePattern": "/api/v2/events" }
+          ]
+        },
+        {
+          "id": "event-detail",
+          "label": "Event Detail",
+          "sourceCategoryAliases": [
+            "event detail",
+            "event workspace",
+            "service workspace",
+            "event intelligence"
+          ],
+          "accessPaths": [
+            { "kind": "singular", "role": "chef", "routePattern": "/events/[id]" },
+            { "kind": "api", "role": "chef", "routePattern": "/api/v2/events/[id]" },
+            { "kind": "rail", "role": "chef", "routePattern": "contextual-rail:/events/[id]" }
+          ]
+        },
+        {
+          "id": "event-creation-intake",
+          "label": "Event Creation and Intake Conversion",
+          "sourceCategoryAliases": ["events new", "from text", "wizard", "convert inquiry"],
+          "accessPaths": [
+            { "kind": "workflow", "role": "chef", "routePattern": "/events/new" },
+            { "kind": "workflow", "role": "chef", "routePattern": "/events/new/from-text" },
+            { "kind": "workflow", "role": "chef", "routePattern": "/events/new/wizard" },
+            { "kind": "api", "role": "chef", "routePattern": "/api/v2/inquiries/[id]/convert" }
+          ]
+        },
+        {
+          "id": "prep-plan",
+          "label": "Prep Plan and Timeline",
+          "sourceCategoryAliases": [
+            "prep",
+            "prep timeline",
+            "prep-status",
+            "service readiness",
+            "timeline"
+          ],
+          "accessPaths": [
+            { "kind": "workflow", "role": "chef", "routePattern": "/events/[id]/prep-plan" },
+            { "kind": "workflow", "role": "chef", "routePattern": "/culinary/prep" },
+            { "kind": "workflow", "role": "chef", "routePattern": "/culinary/prep/timeline" },
+            { "kind": "api", "role": "chef", "routePattern": "/api/prep-timeline/ical" }
+          ]
+        },
+        {
+          "id": "service-day",
+          "label": "Service Day Execution",
+          "sourceCategoryAliases": [
+            "service",
+            "execution",
+            "dop mobile",
+            "KDS",
+            "stations",
+            "ops log",
+            "day-of"
+          ],
+          "accessPaths": [
+            { "kind": "workflow", "role": "chef", "routePattern": "/events/[id]/service" },
+            { "kind": "workflow", "role": "chef", "routePattern": "/events/[id]/execution" },
+            { "kind": "workflow", "role": "chef", "routePattern": "/events/[id]/dop/mobile" },
+            { "kind": "workflow", "role": "chef", "routePattern": "/events/[id]/kds" }
+          ]
+        },
+        {
+          "id": "event-financials",
+          "label": "Event Financials",
+          "sourceCategoryAliases": [
+            "event billing",
+            "event financial",
+            "event invoice",
+            "split billing",
+            "grocery quote"
+          ],
+          "accessPaths": [
+            { "kind": "workflow", "role": "chef", "routePattern": "/events/[id]/billing" },
+            { "kind": "workflow", "role": "chef", "routePattern": "/events/[id]/financial" },
+            { "kind": "workflow", "role": "chef", "routePattern": "/events/[id]/invoice" },
+            { "kind": "workflow", "role": "chef", "routePattern": "/events/[id]/split-billing" }
+          ]
+        },
+        {
+          "id": "event-documents-proof",
+          "label": "Event Documents and Proof",
+          "sourceCategoryAliases": [
+            "event documents",
+            "photos",
+            "report",
+            "recap",
+            "story",
+            "guest card"
+          ],
+          "accessPaths": [
+            { "kind": "workflow", "role": "chef", "routePattern": "/events/[id]/documents" },
+            { "kind": "workflow", "role": "chef", "routePattern": "/events/[id]/photos" },
+            { "kind": "proof", "role": "chef", "routePattern": "/events/[id]/report" },
+            {
+              "kind": "public",
+              "role": "public",
+              "routePattern": "/event/[eventId]/guest/[secureToken]"
+            }
+          ]
+        },
+        {
+          "id": "closeout-aar",
+          "label": "Closeout, AAR, and Learning",
+          "sourceCategoryAliases": [
+            "AAR / Post-Service Learning",
+            "aar",
+            "post-event",
+            "lessons",
+            "closeout",
+            "debrief",
+            "outcome"
+          ],
+          "accessPaths": [
+            { "kind": "plural", "role": "chef", "routePattern": "/aar" },
+            { "kind": "workflow", "role": "chef", "routePattern": "/events/[id]/close-out" },
+            { "kind": "workflow", "role": "chef", "routePattern": "/events/[id]/debrief" },
+            { "kind": "workflow", "role": "chef", "routePattern": "/events/[id]/outcome" }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "clients-relationships",
+      "label": "Clients and Relationships",
+      "colorFamily": "relationship-violet",
+      "railIntent": "Who the chef serves, what matters to them, what relationship state needs attention, and what should never leak.",
+      "subcategories": [
+        {
+          "id": "client-list",
+          "label": "Client Lists and Segments",
+          "sourceCategoryAliases": [
+            "Client Dashboard / Client Portal",
+            "clients",
+            "active clients",
+            "inactive clients",
+            "VIP",
+            "segments",
+            "duplicates"
+          ],
+          "accessPaths": [
+            { "kind": "plural", "role": "chef", "routePattern": "/clients" },
+            { "kind": "workflow", "role": "chef", "routePattern": "/clients/active" },
+            { "kind": "workflow", "role": "chef", "routePattern": "/clients/inactive" },
+            { "kind": "workflow", "role": "chef", "routePattern": "/clients/vip" },
+            { "kind": "api", "role": "chef", "routePattern": "/api/v2/clients" }
+          ]
+        },
+        {
+          "id": "client-detail",
+          "label": "Client Detail and Summary",
+          "sourceCategoryAliases": [
+            "client detail",
+            "summary",
+            "relationship",
+            "recurring",
+            "client profile"
+          ],
+          "accessPaths": [
+            { "kind": "singular", "role": "chef", "routePattern": "/clients/[id]" },
+            { "kind": "workflow", "role": "chef", "routePattern": "/clients/[id]/summary" },
+            { "kind": "workflow", "role": "chef", "routePattern": "/clients/[id]/relationship" },
+            { "kind": "api", "role": "chef", "routePattern": "/api/v2/clients/[id]" }
+          ]
+        },
+        {
+          "id": "client-intelligence",
+          "label": "Client Intelligence and CIL",
+          "sourceCategoryAliases": [
+            "Client Intelligence / CIL / Relationship Memory",
+            "client-intelligence",
+            "cil",
+            "client-work-graph",
+            "interactions",
+            "relationship memory"
+          ],
+          "accessPaths": [
+            { "kind": "plural", "role": "chef", "routePattern": "/clients/intelligence" },
+            { "kind": "plural", "role": "chef", "routePattern": "/clients/insights" },
+            {
+              "kind": "workflow",
+              "role": "chef",
+              "routePattern": "/analytics/intelligence/client-risk"
+            },
+            { "kind": "api", "role": "chef", "routePattern": "/api/v2/clients/[id]/profile-vector" }
+          ]
+        },
+        {
+          "id": "preferences-household",
+          "label": "Preferences, Household, and Guests",
+          "sourceCategoryAliases": [
+            "Guests / Household / Preferences",
+            "preferences",
+            "household",
+            "guest-feedback",
+            "allergies",
+            "favorite dishes",
+            "dislikes"
+          ],
+          "accessPaths": [
+            { "kind": "plural", "role": "chef", "routePattern": "/clients/preferences" },
+            {
+              "kind": "workflow",
+              "role": "chef",
+              "routePattern": "/clients/preferences/allergies"
+            },
+            {
+              "kind": "workflow",
+              "role": "chef",
+              "routePattern": "/clients/preferences/dietary-restrictions"
+            },
+            { "kind": "workflow", "role": "chef", "routePattern": "/guests" },
+            { "kind": "api", "role": "chef", "routePattern": "/api/clients/[clientId]/household" }
+          ]
+        },
+        {
+          "id": "client-portal",
+          "label": "Client Portal and Client-Safe Views",
+          "sourceCategoryAliases": [
+            "client portal",
+            "client token",
+            "my hub",
+            "my events",
+            "my bookings",
+            "quote response"
+          ],
+          "accessPaths": [
+            { "kind": "client", "role": "client", "routePattern": "/client/[token]" },
+            {
+              "kind": "client",
+              "role": "client",
+              "routePattern": "/client/[token]/events/[eventId]/contract"
+            },
+            { "kind": "client", "role": "client", "routePattern": "/client/[token]/pay/[eventId]" },
+            {
+              "kind": "client",
+              "role": "client",
+              "routePattern": "/client/[token]/quotes/[quoteId]"
+            },
+            { "kind": "api", "role": "client", "routePattern": "/api/client-portal/*" }
+          ]
+        },
+        {
+          "id": "loyal-client-value",
+          "label": "Client Value, Loyalty, and Retention",
+          "sourceCategoryAliases": [
+            "client LTV",
+            "retention",
+            "top clients",
+            "most frequent",
+            "loyalty",
+            "rewards",
+            "referrals"
+          ],
+          "accessPaths": [
+            { "kind": "workflow", "role": "chef", "routePattern": "/clients/insights/retention" },
+            { "kind": "workflow", "role": "chef", "routePattern": "/clients/loyalty" },
+            { "kind": "workflow", "role": "chef", "routePattern": "/analytics/client-ltv" },
+            { "kind": "api", "role": "chef", "routePattern": "/api/v2/loyalty/*" }
+          ]
+        },
+        {
+          "id": "client-contribution",
+          "label": "Client Contribution and Portfolio Impact",
+          "sourceCategoryAliases": [
+            "client contribution",
+            "portfolio contribution",
+            "risk view",
+            "missing data repair path"
+          ],
+          "accessPaths": [
+            { "kind": "workflow", "role": "chef", "routePattern": "/clients/contribution" },
+            { "kind": "api", "role": "chef", "routePattern": "/clients/contribution/export" }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "communication-inbox",
+      "label": "Communication and Inbox",
+      "colorFamily": "communication-indigo",
+      "railIntent": "Messages, calls, follow-ups, drafts, and communication proof across chef, client, and public flows.",
+      "subcategories": [
+        {
+          "id": "inbox-triage",
+          "label": "Inbox and Triage",
+          "sourceCategoryAliases": [
+            "Communications / Inbox / Messages / Email",
+            "inbox",
+            "email",
+            "gmail",
+            "triage",
+            "history scan"
+          ],
+          "accessPaths": [
+            { "kind": "plural", "role": "chef", "routePattern": "/inbox" },
+            { "kind": "workflow", "role": "chef", "routePattern": "/inbox/triage" },
+            { "kind": "workflow", "role": "chef", "routePattern": "/inbox/history-scan" },
+            { "kind": "api", "role": "chef", "routePattern": "/api/gmail/sync" }
+          ]
+        },
+        {
+          "id": "client-communication",
+          "label": "Client Communication",
+          "sourceCategoryAliases": [
+            "client communication",
+            "follow-ups",
+            "upcoming touchpoints",
+            "notes"
+          ],
+          "accessPaths": [
+            { "kind": "workflow", "role": "chef", "routePattern": "/clients/communication" },
+            {
+              "kind": "workflow",
+              "role": "chef",
+              "routePattern": "/clients/communication/follow-ups"
+            },
+            {
+              "kind": "workflow",
+              "role": "chef",
+              "routePattern": "/clients/communication/upcoming-touchpoints"
+            },
+            { "kind": "workflow", "role": "chef", "routePattern": "/clients/communication/notes" }
+          ]
+        },
+        {
+          "id": "calls-phone-sms",
+          "label": "Calls, Phone, SMS, and Voice",
+          "sourceCategoryAliases": [
+            "Calls / Phone / SMS / Voice",
+            "calling",
+            "calls",
+            "phone",
+            "sms",
+            "sms-bridge",
+            "voice",
+            "voicemail",
+            "twilio"
+          ],
+          "accessPaths": [
+            { "kind": "plural", "role": "chef", "routePattern": "/calls" },
+            { "kind": "workflow", "role": "chef", "routePattern": "/calls/new" },
+            { "kind": "singular", "role": "chef", "routePattern": "/calls/[id]" },
+            { "kind": "api", "role": "chef", "routePattern": "/api/calling/*" },
+            { "kind": "api", "role": "chef", "routePattern": "/api/sms-bridge/ingest" }
+          ]
+        },
+        {
+          "id": "chat-conversations",
+          "label": "Chat and Conversations",
+          "sourceCategoryAliases": ["chat", "messages", "conversation", "communication drafts"],
+          "accessPaths": [
+            { "kind": "plural", "role": "chef", "routePattern": "/chat" },
+            { "kind": "singular", "role": "chef", "routePattern": "/chat/[id]" },
+            { "kind": "workflow", "role": "chef", "routePattern": "/communication/drafts" }
+          ]
+        },
+        {
+          "id": "templates-sequences",
+          "label": "Message Templates and Sequences",
+          "sourceCategoryAliases": [
+            "templates",
+            "communication templates",
+            "sequences",
+            "scheduled messages"
+          ],
+          "accessPaths": [
+            { "kind": "workflow", "role": "chef", "routePattern": "/marketing/sequences" },
+            { "kind": "workflow", "role": "chef", "routePattern": "/marketing/templates" },
+            { "kind": "workflow", "role": "chef", "routePattern": "/settings/templates" },
+            { "kind": "api", "role": "chef", "routePattern": "/api/scheduled/messages" }
+          ]
+        },
+        {
+          "id": "public-contact-feedback",
+          "label": "Public Contact and Feedback",
+          "sourceCategoryAliases": [
+            "contact",
+            "feedback",
+            "survey",
+            "guest feedback",
+            "public message"
+          ],
+          "accessPaths": [
+            { "kind": "public", "role": "public", "routePattern": "/contact" },
+            { "kind": "public", "role": "public", "routePattern": "/feedback/[token]" },
+            { "kind": "public", "role": "public", "routePattern": "/guest-feedback/[token]" },
+            { "kind": "public", "role": "public", "routePattern": "/survey/[token]" }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "leads-booking-sales",
+      "label": "Leads, Booking, and Sales",
+      "colorFamily": "demand-coral",
+      "railIntent": "Demand capture, lead qualification, public booking, sales pipeline, and conversion urgency.",
+      "subcategories": [
+        {
+          "id": "booking-intake",
+          "label": "Booking, Intake, and Inquiries",
+          "sourceCategoryAliases": [
+            "Booking / Intake / Inquiries / Leads",
+            "booking",
+            "book",
+            "intake",
+            "inquiries",
+            "guest leads",
+            "waitlist",
+            "public-booking"
+          ],
+          "accessPaths": [
+            { "kind": "plural", "role": "chef", "routePattern": "/inquiries" },
+            { "kind": "workflow", "role": "chef", "routePattern": "/inquiries/new" },
+            { "kind": "public", "role": "public", "routePattern": "/book/[chefSlug]" },
+            { "kind": "public", "role": "public", "routePattern": "/book" },
+            { "kind": "api", "role": "public", "routePattern": "/api/book" }
+          ]
+        },
+        {
+          "id": "inquiry-status",
+          "label": "Inquiry Status and Response Flow",
+          "sourceCategoryAliases": [
+            "awaiting response",
+            "awaiting client reply",
+            "menu drafting",
+            "sent to client",
+            "declined"
+          ],
+          "accessPaths": [
+            { "kind": "workflow", "role": "chef", "routePattern": "/inquiries/awaiting-response" },
+            {
+              "kind": "workflow",
+              "role": "chef",
+              "routePattern": "/inquiries/awaiting-client-reply"
+            },
+            { "kind": "workflow", "role": "chef", "routePattern": "/inquiries/menu-drafting" },
+            { "kind": "workflow", "role": "chef", "routePattern": "/inquiries/sent-to-client" },
+            { "kind": "singular", "role": "chef", "routePattern": "/inquiries/[id]" }
+          ]
+        },
+        {
+          "id": "lead-pipeline",
+          "label": "Lead Pipeline",
+          "sourceCategoryAliases": [
+            "leads",
+            "qualified",
+            "contacted",
+            "converted",
+            "archived",
+            "pipeline"
+          ],
+          "accessPaths": [
+            { "kind": "plural", "role": "chef", "routePattern": "/leads" },
+            { "kind": "workflow", "role": "chef", "routePattern": "/leads/qualified" },
+            { "kind": "workflow", "role": "chef", "routePattern": "/leads/contacted" },
+            { "kind": "workflow", "role": "chef", "routePattern": "/leads/converted" }
+          ]
+        },
+        {
+          "id": "prospecting",
+          "label": "Prospecting and Outreach",
+          "sourceCategoryAliases": [
+            "prospecting",
+            "clusters",
+            "openclaw",
+            "scrub",
+            "scripts",
+            "outreach queue"
+          ],
+          "accessPaths": [
+            { "kind": "plural", "role": "chef", "routePattern": "/prospecting" },
+            { "kind": "workflow", "role": "chef", "routePattern": "/prospecting/clusters" },
+            { "kind": "workflow", "role": "chef", "routePattern": "/prospecting/openclaw" },
+            { "kind": "workflow", "role": "chef", "routePattern": "/prospecting/queue" },
+            { "kind": "api", "role": "chef", "routePattern": "/api/prospecting/*" }
+          ]
+        },
+        {
+          "id": "waitlist",
+          "label": "Waitlist and Demand Backlog",
+          "sourceCategoryAliases": [
+            "waitlist",
+            "waitlist sweep",
+            "directory sweep",
+            "booking backlog"
+          ],
+          "accessPaths": [
+            { "kind": "plural", "role": "chef", "routePattern": "/waitlist" },
+            { "kind": "api", "role": "chef", "routePattern": "/api/scheduled/waitlist-sweep" },
+            {
+              "kind": "api",
+              "role": "chef",
+              "routePattern": "/api/scheduled/waitlist-directory-sweep"
+            }
+          ]
+        },
+        {
+          "id": "conversion-analytics",
+          "label": "Conversion Analytics",
+          "sourceCategoryAliases": [
+            "conversion funnel",
+            "pipeline forecast",
+            "demand heatmap",
+            "referral sources"
+          ],
+          "accessPaths": [
+            { "kind": "workflow", "role": "chef", "routePattern": "/analytics/funnel" },
+            { "kind": "workflow", "role": "chef", "routePattern": "/analytics/pipeline" },
+            { "kind": "workflow", "role": "chef", "routePattern": "/analytics/demand" },
+            { "kind": "workflow", "role": "chef", "routePattern": "/analytics/referral-sources" }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "proposals-contracts-commitments",
+      "label": "Proposals, Contracts, and Commitments",
+      "colorFamily": "contract-slate",
+      "railIntent": "Scope, commitments, approvals, signatures, and commercial promises that must not drift.",
+      "subcategories": [
+        {
+          "id": "quotes",
+          "label": "Quotes",
+          "sourceCategoryAliases": [
+            "Pricing / Quotes / Proposals",
+            "quotes",
+            "quote response",
+            "accepted",
+            "draft",
+            "expired",
+            "rejected",
+            "viewed"
+          ],
+          "accessPaths": [
+            { "kind": "plural", "role": "chef", "routePattern": "/quotes" },
+            { "kind": "workflow", "role": "chef", "routePattern": "/quotes/new" },
+            { "kind": "workflow", "role": "chef", "routePattern": "/quotes/calculator" },
+            { "kind": "api", "role": "chef", "routePattern": "/api/v2/quotes" }
+          ]
+        },
+        {
+          "id": "proposals",
+          "label": "Proposals",
+          "sourceCategoryAliases": [
+            "proposals",
+            "proposal builder",
+            "addons",
+            "templates",
+            "client proposal"
+          ],
+          "accessPaths": [
+            { "kind": "plural", "role": "chef", "routePattern": "/proposals" },
+            { "kind": "workflow", "role": "chef", "routePattern": "/proposals/builder" },
+            { "kind": "workflow", "role": "chef", "routePattern": "/proposals/templates" },
+            { "kind": "public", "role": "public", "routePattern": "/proposal/[token]" }
+          ]
+        },
+        {
+          "id": "contracts",
+          "label": "Contracts",
+          "sourceCategoryAliases": [
+            "Commitment / Contracts / Retainers",
+            "contracts",
+            "agreement",
+            "docusign",
+            "clauses",
+            "contract history"
+          ],
+          "accessPaths": [
+            { "kind": "plural", "role": "chef", "routePattern": "/contracts" },
+            { "kind": "workflow", "role": "chef", "routePattern": "/contracts/new" },
+            { "kind": "workflow", "role": "chef", "routePattern": "/contracts/compose" },
+            { "kind": "proof", "role": "chef", "routePattern": "/contracts/[id]/history" },
+            {
+              "kind": "api",
+              "role": "chef",
+              "routePattern": "/api/documents/contract/[contractId]"
+            }
+          ]
+        },
+        {
+          "id": "retainers",
+          "label": "Retainers",
+          "sourceCategoryAliases": ["retainers", "recurring commitments", "agreement lifecycle"],
+          "accessPaths": [
+            { "kind": "plural", "role": "chef", "routePattern": "/finance/retainers" },
+            { "kind": "workflow", "role": "chef", "routePattern": "/finance/retainers/new" },
+            { "kind": "singular", "role": "chef", "routePattern": "/finance/retainers/[id]" }
+          ]
+        },
+        {
+          "id": "scope-approval",
+          "label": "Scope and Client Approval",
+          "sourceCategoryAliases": [
+            "scope",
+            "approval",
+            "menu approval",
+            "client approval",
+            "proposal acceptance"
+          ],
+          "accessPaths": [
+            { "kind": "workflow", "role": "chef", "routePattern": "/events/[id]/menu-approval" },
+            {
+              "kind": "client",
+              "role": "client",
+              "routePattern": "/client/[token]/quotes/[quoteId]"
+            },
+            { "kind": "public", "role": "public", "routePattern": "/menu/[token]" }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "money-finance-tax",
+      "label": "Money, Finance, and Tax",
+      "colorFamily": "finance-emerald",
+      "railIntent": "Cash, invoices, payments, receipts, accounting, tax, payroll, and financial proof.",
+      "subcategories": [
+        {
+          "id": "finance-overview",
+          "label": "Finance Overview",
+          "sourceCategoryAliases": [
+            "Payments / Invoices / Receipts",
+            "finance",
+            "cash-flow",
+            "revenue summary",
+            "outstanding payments"
+          ],
+          "accessPaths": [
+            { "kind": "plural", "role": "chef", "routePattern": "/finance" },
+            { "kind": "workflow", "role": "chef", "routePattern": "/finance/overview" },
+            { "kind": "workflow", "role": "chef", "routePattern": "/finance/cash-flow" },
+            { "kind": "api", "role": "chef", "routePattern": "/api/v2/financials/summary" }
+          ]
+        },
+        {
+          "id": "invoices",
+          "label": "Invoices",
+          "sourceCategoryAliases": [
+            "invoices",
+            "draft",
+            "sent",
+            "paid",
+            "overdue",
+            "refunded",
+            "cancelled"
+          ],
+          "accessPaths": [
+            { "kind": "plural", "role": "chef", "routePattern": "/finance/invoices" },
+            { "kind": "workflow", "role": "chef", "routePattern": "/finance/invoices/overdue" },
+            { "kind": "workflow", "role": "chef", "routePattern": "/finance/invoices/paid" },
+            { "kind": "api", "role": "chef", "routePattern": "/api/v2/invoices" }
+          ]
+        },
+        {
+          "id": "payments-payouts",
+          "label": "Payments and Payouts",
+          "sourceCategoryAliases": [
+            "payments",
+            "stripe",
+            "payouts",
+            "deposits",
+            "failed payments",
+            "installments",
+            "refunds",
+            "manual payments"
+          ],
+          "accessPaths": [
+            { "kind": "plural", "role": "chef", "routePattern": "/finance/payments" },
+            { "kind": "workflow", "role": "chef", "routePattern": "/finance/payouts" },
+            { "kind": "workflow", "role": "chef", "routePattern": "/payments/splitting" },
+            { "kind": "api", "role": "chef", "routePattern": "/api/v2/payments" },
+            { "kind": "api", "role": "chef", "routePattern": "/api/stripe/*" }
+          ]
+        },
+        {
+          "id": "expenses-receipts",
+          "label": "Expenses and Receipts",
+          "sourceCategoryAliases": [
+            "Expenses / Finance / Tax",
+            "expenses",
+            "receipts",
+            "food ingredients",
+            "labor",
+            "marketing",
+            "travel",
+            "software",
+            "rentals equipment"
+          ],
+          "accessPaths": [
+            { "kind": "plural", "role": "chef", "routePattern": "/expenses" },
+            { "kind": "workflow", "role": "chef", "routePattern": "/expenses/new" },
+            { "kind": "plural", "role": "chef", "routePattern": "/receipts" },
+            { "kind": "workflow", "role": "chef", "routePattern": "/finance/expenses" },
+            { "kind": "api", "role": "chef", "routePattern": "/api/v2/expenses" }
+          ]
+        },
+        {
+          "id": "ledger-bookkeeping",
+          "label": "Ledger and Bookkeeping",
+          "sourceCategoryAliases": [
+            "ledger",
+            "transaction log",
+            "adjustments",
+            "owner draws",
+            "bank feed",
+            "reconciliation"
+          ],
+          "accessPaths": [
+            { "kind": "plural", "role": "chef", "routePattern": "/finance/ledger" },
+            { "kind": "workflow", "role": "chef", "routePattern": "/finance/bank-feed" },
+            { "kind": "workflow", "role": "chef", "routePattern": "/finance/reconciliation" },
+            { "kind": "api", "role": "chef", "routePattern": "/api/v2/ledger" }
+          ]
+        },
+        {
+          "id": "tax-sales-tax",
+          "label": "Tax and Sales Tax",
+          "sourceCategoryAliases": [
+            "tax",
+            "tax prep",
+            "sales tax",
+            "1099",
+            "quarterly",
+            "year-end",
+            "home office",
+            "depreciation"
+          ],
+          "accessPaths": [
+            { "kind": "plural", "role": "chef", "routePattern": "/finance/tax" },
+            { "kind": "workflow", "role": "chef", "routePattern": "/finance/tax-prep" },
+            { "kind": "workflow", "role": "chef", "routePattern": "/finance/sales-tax" },
+            { "kind": "workflow", "role": "chef", "routePattern": "/finance/year-end" }
+          ]
+        },
+        {
+          "id": "payroll-contractors",
+          "label": "Payroll and Contractors",
+          "sourceCategoryAliases": ["payroll", "contractors", "employees", "941", "W2", "1099-NEC"],
+          "accessPaths": [
+            { "kind": "plural", "role": "chef", "routePattern": "/finance/payroll" },
+            { "kind": "workflow", "role": "chef", "routePattern": "/finance/contractors" },
+            { "kind": "workflow", "role": "chef", "routePattern": "/finance/payroll/employees" },
+            { "kind": "workflow", "role": "chef", "routePattern": "/finance/tax/1099-nec" }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "pricing-pie-costing",
+      "label": "Pricing, PIE, and Costing",
+      "colorFamily": "pricing-gold",
+      "railIntent": "Food cost, pricing accuracy, margin, price freshness, and commercial decision support.",
+      "subcategories": [
+        {
+          "id": "food-cost",
+          "label": "Food Cost",
+          "sourceCategoryAliases": [
+            "Costing / PIE / Pricing Intelligence",
+            "food-cost",
+            "plate cost",
+            "menu economics",
+            "formulas"
+          ],
+          "accessPaths": [
+            { "kind": "plural", "role": "chef", "routePattern": "/food-cost" },
+            { "kind": "workflow", "role": "chef", "routePattern": "/food-cost/revenue" },
+            { "kind": "workflow", "role": "chef", "routePattern": "/finance/plate-costs" }
+          ]
+        },
+        {
+          "id": "culinary-costing",
+          "label": "Culinary Costing",
+          "sourceCategoryAliases": [
+            "recipe costing",
+            "menu costing",
+            "sales costing",
+            "auto-costing"
+          ],
+          "accessPaths": [
+            { "kind": "workflow", "role": "chef", "routePattern": "/culinary/costing" },
+            { "kind": "workflow", "role": "chef", "routePattern": "/culinary/costing/food-cost" },
+            { "kind": "workflow", "role": "chef", "routePattern": "/culinary/costing/menu" },
+            { "kind": "workflow", "role": "chef", "routePattern": "/culinary/costing/recipe" }
+          ]
+        },
+        {
+          "id": "price-catalog",
+          "label": "Price Catalog and Price Freshness",
+          "sourceCategoryAliases": [
+            "prices",
+            "price catalog",
+            "price freshness",
+            "store prices",
+            "price comparison"
+          ],
+          "accessPaths": [
+            { "kind": "plural", "role": "chef", "routePattern": "/prices" },
+            { "kind": "singular", "role": "chef", "routePattern": "/prices/store/[storeId]" },
+            { "kind": "workflow", "role": "chef", "routePattern": "/culinary/price-catalog" },
+            { "kind": "api", "role": "chef", "routePattern": "/api/pricing/*" }
+          ]
+        },
+        {
+          "id": "pie-intelligence",
+          "label": "PIE Intelligence",
+          "sourceCategoryAliases": [
+            "pie",
+            "pie-cart",
+            "PIE API",
+            "price resolution",
+            "ingredient cost refresh",
+            "coverage gaps"
+          ],
+          "accessPaths": [
+            { "kind": "workflow", "role": "chef", "routePattern": "/pie-cart" },
+            { "kind": "api", "role": "chef", "routePattern": "/api/pie/v1/*" },
+            { "kind": "api", "role": "chef", "routePattern": "/api/cron/pie-*" }
+          ]
+        },
+        {
+          "id": "rate-card",
+          "label": "Rate Cards and Pricing Settings",
+          "sourceCategoryAliases": [
+            "rate-card",
+            "pricing settings",
+            "price tiers",
+            "pricing rules"
+          ],
+          "accessPaths": [
+            { "kind": "workflow", "role": "chef", "routePattern": "/rate-card" },
+            { "kind": "workflow", "role": "chef", "routePattern": "/settings/pricing" },
+            { "kind": "api", "role": "chef", "routePattern": "/api/v2/settings/pricing" }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "culinary-menus-recipes",
+      "label": "Culinary, Menus, and Recipes",
+      "colorFamily": "culinary-tomato",
+      "railIntent": "Creative culinary work, recipes, menus, dishes, production, nutrition, and culinary memory.",
+      "subcategories": [
+        {
+          "id": "culinary-hub",
+          "label": "Culinary Hub",
+          "sourceCategoryAliases": [
+            "Culinary / Recipes / Menus / Dishes",
+            "culinary",
+            "culinary-board",
+            "chefnotes",
+            "cheftips"
+          ],
+          "accessPaths": [
+            { "kind": "plural", "role": "chef", "routePattern": "/culinary" },
+            { "kind": "plural", "role": "chef", "routePattern": "/culinary-board" },
+            { "kind": "workflow", "role": "chef", "routePattern": "/culinary/chefnotes" },
+            { "kind": "workflow", "role": "chef", "routePattern": "/culinary/cheftips" }
+          ]
+        },
+        {
+          "id": "menus",
+          "label": "Menus",
+          "sourceCategoryAliases": [
+            "menus",
+            "approved",
+            "drafts",
+            "engineering",
+            "scaling",
+            "substitutions",
+            "templates",
+            "tasting"
+          ],
+          "accessPaths": [
+            { "kind": "plural", "role": "chef", "routePattern": "/menus" },
+            { "kind": "singular", "role": "chef", "routePattern": "/menus/[id]" },
+            { "kind": "workflow", "role": "chef", "routePattern": "/culinary/menus" },
+            { "kind": "api", "role": "chef", "routePattern": "/api/v2/menus" }
+          ]
+        },
+        {
+          "id": "recipes",
+          "label": "Recipes",
+          "sourceCategoryAliases": [
+            "recipes",
+            "recipe",
+            "drafts",
+            "tags",
+            "seasonal notes",
+            "dietary flags",
+            "production log"
+          ],
+          "accessPaths": [
+            { "kind": "plural", "role": "chef", "routePattern": "/recipes" },
+            { "kind": "singular", "role": "chef", "routePattern": "/recipes/[id]" },
+            { "kind": "workflow", "role": "chef", "routePattern": "/culinary/recipes" },
+            { "kind": "api", "role": "chef", "routePattern": "/api/v2/recipes" }
+          ]
+        },
+        {
+          "id": "dish-index",
+          "label": "Dish Index and Menu Performance",
+          "sourceCategoryAliases": ["dish-index", "dishes", "menu-performance", "dish insights"],
+          "accessPaths": [
+            { "kind": "plural", "role": "chef", "routePattern": "/culinary/dish-index" },
+            { "kind": "singular", "role": "chef", "routePattern": "/culinary/dish-index/[id]" },
+            { "kind": "workflow", "role": "chef", "routePattern": "/culinary/dish-index/insights" },
+            { "kind": "workflow", "role": "chef", "routePattern": "/menus/dishes" }
+          ]
+        },
+        {
+          "id": "components-sauces-stocks",
+          "label": "Components, Sauces, Stocks, Ferments, and Garnishes",
+          "sourceCategoryAliases": [
+            "components",
+            "sauces",
+            "stocks",
+            "ferments",
+            "garnishes",
+            "shared elements"
+          ],
+          "accessPaths": [
+            { "kind": "plural", "role": "chef", "routePattern": "/culinary/components" },
+            { "kind": "workflow", "role": "chef", "routePattern": "/culinary/components/sauces" },
+            { "kind": "workflow", "role": "chef", "routePattern": "/culinary/components/stocks" },
+            { "kind": "workflow", "role": "chef", "routePattern": "/culinary/components/ferments" },
+            { "kind": "workflow", "role": "chef", "routePattern": "/culinary/components/garnishes" }
+          ]
+        },
+        {
+          "id": "nutrition-dietary-flags",
+          "label": "Nutrition and Dietary Flags",
+          "sourceCategoryAliases": [
+            "Dietary / Nutrition / Allergens",
+            "nutrition",
+            "dietary flags",
+            "allergens",
+            "menu nutrition"
+          ],
+          "accessPaths": [
+            { "kind": "workflow", "role": "chef", "routePattern": "/nutrition/[menuId]" },
+            {
+              "kind": "workflow",
+              "role": "chef",
+              "routePattern": "/culinary/menus/[id]/nutrition"
+            },
+            {
+              "kind": "workflow",
+              "role": "chef",
+              "routePattern": "/culinary/recipes/dietary-flags"
+            }
+          ]
+        },
+        {
+          "id": "seasonal-calendar",
+          "label": "Seasonal Calendar and Substitutions",
+          "sourceCategoryAliases": [
+            "seasonal calendar",
+            "seasonal notes",
+            "seasonal menus",
+            "substitutions"
+          ],
+          "accessPaths": [
+            { "kind": "workflow", "role": "chef", "routePattern": "/culinary/seasonal-calendar" },
+            { "kind": "workflow", "role": "chef", "routePattern": "/menus/seasonal" },
+            { "kind": "workflow", "role": "chef", "routePattern": "/culinary/substitutions" }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "ingredients-markets-procurement",
+      "label": "Ingredients, Markets, and Procurement",
+      "colorFamily": "ingredient-green-gold",
+      "railIntent": "Ingredient availability, market signals, sourcing, supplier calls, procurement, and peak ingredient moments.",
+      "subcategories": [
+        {
+          "id": "ingredients-food-data",
+          "label": "Ingredients and Food Data",
+          "sourceCategoryAliases": [
+            "Ingredients / OpenClaw / Food Data",
+            "ingredients",
+            "ingredient",
+            "food",
+            "canonical ingredient",
+            "normalization"
+          ],
+          "accessPaths": [
+            { "kind": "plural", "role": "chef", "routePattern": "/culinary/ingredients" },
+            { "kind": "public", "role": "public", "routePattern": "/ingredients" },
+            { "kind": "public", "role": "public", "routePattern": "/ingredient/[id]" },
+            { "kind": "api", "role": "chef", "routePattern": "/api/ingredients/*" }
+          ]
+        },
+        {
+          "id": "openclaw-market-intelligence",
+          "label": "OpenClaw and Market Intelligence",
+          "sourceCategoryAliases": [
+            "openclaw",
+            "market reliance",
+            "price sync",
+            "source health",
+            "webhook"
+          ],
+          "accessPaths": [
+            { "kind": "workflow", "role": "admin", "routePattern": "/admin/openclaw" },
+            { "kind": "workflow", "role": "admin", "routePattern": "/admin/openclaw/health" },
+            { "kind": "api", "role": "system", "routePattern": "/api/openclaw/*" },
+            { "kind": "api", "role": "system", "routePattern": "/api/cron/openclaw-sync" }
+          ]
+        },
+        {
+          "id": "sourcing",
+          "label": "Sourcing",
+          "sourceCategoryAliases": [
+            "Grocery / Procurement / Shopping",
+            "sourcing",
+            "shopping",
+            "supplier calls",
+            "ingredient-resolution"
+          ],
+          "accessPaths": [
+            { "kind": "workflow", "role": "chef", "routePattern": "/culinary/sourcing" },
+            { "kind": "workflow", "role": "chef", "routePattern": "/culinary/supplier-calls" },
+            { "kind": "workflow", "role": "chef", "routePattern": "/culinary/prep/shopping" },
+            { "kind": "workflow", "role": "chef", "routePattern": "/prep/consolidation" }
+          ]
+        },
+        {
+          "id": "vendor-notes",
+          "label": "Vendor Notes and Supplier Intelligence",
+          "sourceCategoryAliases": [
+            "vendor notes",
+            "vendor intelligence",
+            "supplier notes",
+            "store normalization"
+          ],
+          "accessPaths": [
+            {
+              "kind": "workflow",
+              "role": "chef",
+              "routePattern": "/culinary/ingredients/vendor-notes"
+            },
+            { "kind": "workflow", "role": "chef", "routePattern": "/vendors" },
+            { "kind": "workflow", "role": "vendor", "routePattern": "/vendor/dashboard" }
+          ]
+        },
+        {
+          "id": "seasonal-availability",
+          "label": "Seasonal Availability and Peak Ingredients",
+          "sourceCategoryAliases": [
+            "seasonal availability",
+            "peak ingredients",
+            "ingredient demand",
+            "seasonal prices"
+          ],
+          "accessPaths": [
+            {
+              "kind": "workflow",
+              "role": "chef",
+              "routePattern": "/culinary/ingredients/seasonal-availability"
+            },
+            { "kind": "workflow", "role": "chef", "routePattern": "/analytics/demand/ingredients" },
+            { "kind": "workflow", "role": "chef", "routePattern": "/prices/seasonal" }
+          ]
+        },
+        {
+          "id": "receipt-scan-ingredient-capture",
+          "label": "Receipt Scan and Ingredient Capture",
+          "sourceCategoryAliases": [
+            "receipt scan",
+            "ingredient OCR",
+            "receipt capture",
+            "price extraction"
+          ],
+          "accessPaths": [
+            {
+              "kind": "workflow",
+              "role": "chef",
+              "routePattern": "/culinary/ingredients/receipt-scan"
+            },
+            { "kind": "workflow", "role": "chef", "routePattern": "/receipts" }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "inventory-waste-supply-chain",
+      "label": "Inventory, Waste, and Supply Chain",
+      "colorFamily": "supply-teal",
+      "railIntent": "Physical stock, depletion, reorders, expiry, waste, purchase orders, and vendor invoices.",
+      "subcategories": [
+        {
+          "id": "inventory-core",
+          "label": "Inventory Core",
+          "sourceCategoryAliases": [
+            "Inventory / Supply Chain",
+            "inventory",
+            "stock",
+            "counts",
+            "locations",
+            "transactions"
+          ],
+          "accessPaths": [
+            { "kind": "plural", "role": "chef", "routePattern": "/inventory" },
+            { "kind": "workflow", "role": "chef", "routePattern": "/inventory/counts" },
+            { "kind": "workflow", "role": "chef", "routePattern": "/inventory/transactions" },
+            { "kind": "api", "role": "chef", "routePattern": "/api/v2/inventory" }
+          ]
+        },
+        {
+          "id": "procurement-purchase-orders",
+          "label": "Procurement and Purchase Orders",
+          "sourceCategoryAliases": ["procurement", "purchase orders", "vendor invoices", "reorder"],
+          "accessPaths": [
+            { "kind": "workflow", "role": "chef", "routePattern": "/inventory/procurement" },
+            { "kind": "plural", "role": "chef", "routePattern": "/inventory/purchase-orders" },
+            { "kind": "workflow", "role": "chef", "routePattern": "/inventory/reorder" },
+            { "kind": "workflow", "role": "chef", "routePattern": "/inventory/vendor-invoices" }
+          ]
+        },
+        {
+          "id": "expiry-depletion",
+          "label": "Expiry, Depletion, and Demand",
+          "sourceCategoryAliases": [
+            "expiry",
+            "depletion",
+            "demand",
+            "inventory demand",
+            "staff meals"
+          ],
+          "accessPaths": [
+            { "kind": "workflow", "role": "chef", "routePattern": "/inventory/expiry" },
+            { "kind": "workflow", "role": "chef", "routePattern": "/inventory/demand" },
+            { "kind": "workflow", "role": "chef", "routePattern": "/inventory/staff-meals" },
+            { "kind": "api", "role": "system", "routePattern": "/api/cron/inventory-depletion" }
+          ]
+        },
+        {
+          "id": "waste-sustainability",
+          "label": "Waste and Sustainability",
+          "sourceCategoryAliases": [
+            "Waste / Sustainability",
+            "waste",
+            "sustainability",
+            "leftovers",
+            "waste-capture"
+          ],
+          "accessPaths": [
+            { "kind": "workflow", "role": "chef", "routePattern": "/inventory/waste" },
+            { "kind": "workflow", "role": "chef", "routePattern": "/stations/waste" },
+            { "kind": "workflow", "role": "chef", "routePattern": "/stations/waste/patterns" }
+          ]
+        },
+        {
+          "id": "inventory-audits",
+          "label": "Inventory Audits",
+          "sourceCategoryAliases": ["inventory audits", "counts audit", "audit trail"],
+          "accessPaths": [
+            { "kind": "plural", "role": "chef", "routePattern": "/inventory/audits" },
+            { "kind": "workflow", "role": "chef", "routePattern": "/inventory/audits/new" },
+            { "kind": "singular", "role": "chef", "routePattern": "/inventory/audits/[id]" }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "kitchen-ops-logistics",
+      "label": "Kitchen, Ops, and Logistics",
+      "colorFamily": "ops-steel",
+      "railIntent": "The physical and operational machinery behind successful service.",
+      "subcategories": [
+        {
+          "id": "operations-pipeline",
+          "label": "Operations and Pipeline",
+          "sourceCategoryAliases": [
+            "Operations / Pipeline / Planning",
+            "operations",
+            "ops",
+            "pipeline",
+            "planning",
+            "operating-loop"
+          ],
+          "accessPaths": [
+            { "kind": "plural", "role": "chef", "routePattern": "/ops" },
+            { "kind": "plural", "role": "chef", "routePattern": "/pipeline" },
+            { "kind": "workflow", "role": "chef", "routePattern": "/ops/performance" }
+          ]
+        },
+        {
+          "id": "kitchen-stations",
+          "label": "Kitchen and Stations",
+          "sourceCategoryAliases": [
+            "Kitchen / Stations / Packing",
+            "kitchen",
+            "stations",
+            "prep station",
+            "station knowledge",
+            "station service log"
+          ],
+          "accessPaths": [
+            { "kind": "plural", "role": "chef", "routePattern": "/kitchen" },
+            { "kind": "plural", "role": "chef", "routePattern": "/stations" },
+            { "kind": "workflow", "role": "chef", "routePattern": "/stations/daily-ops" },
+            { "kind": "workflow", "role": "chef", "routePattern": "/stations/service-log" }
+          ]
+        },
+        {
+          "id": "equipment-gear",
+          "label": "Equipment, Gear, and Packing",
+          "sourceCategoryAliases": [
+            "Equipment, Tools, and Facilities",
+            "equipment",
+            "gear",
+            "packing",
+            "equipment check",
+            "maintenance"
+          ],
+          "accessPaths": [
+            { "kind": "workflow", "role": "chef", "routePattern": "/ops/equipment" },
+            { "kind": "workflow", "role": "chef", "routePattern": "/events/equipment-check" },
+            { "kind": "workflow", "role": "chef", "routePattern": "/events/[id]/gear" },
+            { "kind": "workflow", "role": "chef", "routePattern": "/events/[id]/pack" }
+          ]
+        },
+        {
+          "id": "locations-travel",
+          "label": "Locations, Travel, and Geography",
+          "sourceCategoryAliases": [
+            "Location / Geo / Travel / Weather",
+            "location",
+            "locations",
+            "geo",
+            "maps",
+            "travel",
+            "venues"
+          ],
+          "accessPaths": [
+            { "kind": "plural", "role": "chef", "routePattern": "/locations" },
+            { "kind": "singular", "role": "chef", "routePattern": "/locations/[id]" },
+            { "kind": "workflow", "role": "chef", "routePattern": "/calendar/travel" },
+            { "kind": "workflow", "role": "chef", "routePattern": "/events/[id]/travel" }
+          ]
+        },
+        {
+          "id": "calendar-scheduling",
+          "label": "Calendar, Availability, and Scheduling",
+          "sourceCategoryAliases": [
+            "Availability / Calendar / Scheduling",
+            "availability",
+            "calendar",
+            "scheduling",
+            "time",
+            "ical",
+            "service days"
+          ],
+          "accessPaths": [
+            { "kind": "plural", "role": "chef", "routePattern": "/calendar" },
+            { "kind": "workflow", "role": "chef", "routePattern": "/calendar/day" },
+            { "kind": "workflow", "role": "chef", "routePattern": "/calendar/week" },
+            { "kind": "workflow", "role": "chef", "routePattern": "/availability" },
+            { "kind": "api", "role": "public", "routePattern": "/api/availability/ical" }
+          ]
+        },
+        {
+          "id": "kiosk-devices-mobile",
+          "label": "Kiosk, Devices, Mobile, and Offline",
+          "sourceCategoryAliases": [
+            "Devices / Kiosk / Mobile / PWA / Offline",
+            "devices",
+            "kiosk",
+            "mobile",
+            "pwa",
+            "offline",
+            "pair"
+          ],
+          "accessPaths": [
+            { "kind": "workflow", "role": "public", "routePattern": "/kiosk" },
+            { "kind": "workflow", "role": "public", "routePattern": "/kiosk/pair" },
+            { "kind": "workflow", "role": "chef", "routePattern": "/settings/devices" },
+            { "kind": "api", "role": "public", "routePattern": "/api/kiosk/*" }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "staff-team-labor",
+      "label": "Staff, Team, and Labor",
+      "colorFamily": "team-purple",
+      "railIntent": "Staffing, permissions, labor, schedules, team execution, and delegation.",
+      "subcategories": [
+        {
+          "id": "staff-core",
+          "label": "Staff Core",
+          "sourceCategoryAliases": [
+            "Collaboration / Team / Staff",
+            "staff",
+            "team",
+            "crew",
+            "delegation",
+            "staff dashboard"
+          ],
+          "accessPaths": [
+            { "kind": "plural", "role": "chef", "routePattern": "/staff" },
+            { "kind": "plural", "role": "chef", "routePattern": "/team" },
+            { "kind": "staff", "role": "staff", "routePattern": "/staff-dashboard" },
+            { "kind": "api", "role": "chef", "routePattern": "/api/v2/staff" }
+          ]
+        },
+        {
+          "id": "staff-schedule-time",
+          "label": "Staff Schedule and Time",
+          "sourceCategoryAliases": [
+            "staff schedule",
+            "staff time",
+            "clock",
+            "availability",
+            "labor"
+          ],
+          "accessPaths": [
+            { "kind": "workflow", "role": "chef", "routePattern": "/staff/schedule" },
+            { "kind": "workflow", "role": "chef", "routePattern": "/staff/clock" },
+            { "kind": "workflow", "role": "chef", "routePattern": "/staff/labor" },
+            { "kind": "staff", "role": "staff", "routePattern": "/staff-time" },
+            { "kind": "staff", "role": "staff", "routePattern": "/staff-schedule" }
+          ]
+        },
+        {
+          "id": "staff-permissions",
+          "label": "Staff Permissions",
+          "sourceCategoryAliases": [
+            "permissions",
+            "staff permissions",
+            "RBAC",
+            "permission matrix"
+          ],
+          "accessPaths": [
+            { "kind": "workflow", "role": "chef", "routePattern": "/staff/permissions" },
+            { "kind": "api", "role": "chef", "routePattern": "/api/v2/staff/[id]" }
+          ]
+        },
+        {
+          "id": "staff-performance",
+          "label": "Staff Performance and Optimization",
+          "sourceCategoryAliases": [
+            "staff performance",
+            "optimization",
+            "live",
+            "training",
+            "team culture"
+          ],
+          "accessPaths": [
+            { "kind": "workflow", "role": "chef", "routePattern": "/staff/performance" },
+            { "kind": "workflow", "role": "chef", "routePattern": "/staff/optimization" },
+            { "kind": "workflow", "role": "chef", "routePattern": "/staff/live" }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "safety-compliance-protection",
+      "label": "Safety, Compliance, and Protection",
+      "colorFamily": "safety-red",
+      "railIntent": "Hard-stop risk, legal exposure, privacy, protected data, food safety, and recovery paths.",
+      "subcategories": [
+        {
+          "id": "food-safety-haccp",
+          "label": "Food Safety and HACCP",
+          "sourceCategoryAliases": [
+            "Compliance / Safety / Legal",
+            "food safety",
+            "haccp",
+            "sanitation",
+            "recalls",
+            "corrective actions"
+          ],
+          "accessPaths": [
+            { "kind": "workflow", "role": "chef", "routePattern": "/settings/compliance/haccp" },
+            { "kind": "workflow", "role": "chef", "routePattern": "/events/[id]/safety" },
+            { "kind": "api", "role": "chef", "routePattern": "/api/v2/safety/recalls" }
+          ]
+        },
+        {
+          "id": "legal-compliance",
+          "label": "Legal, Compliance, and Policy",
+          "sourceCategoryAliases": [
+            "legal",
+            "terms",
+            "privacy",
+            "acceptable-use",
+            "refund-cancellation",
+            "legal readiness"
+          ],
+          "accessPaths": [
+            { "kind": "workflow", "role": "chef", "routePattern": "/settings/compliance" },
+            { "kind": "public", "role": "public", "routePattern": "/privacy" },
+            { "kind": "public", "role": "public", "routePattern": "/terms" },
+            { "kind": "public", "role": "public", "routePattern": "/acceptable-use" }
+          ]
+        },
+        {
+          "id": "incidents-crisis",
+          "label": "Incidents, Crisis, and Recovery",
+          "sourceCategoryAliases": [
+            "Incidents / Protection / Moderation",
+            "incidents",
+            "crisis",
+            "emergency",
+            "recovery",
+            "claims"
+          ],
+          "accessPaths": [
+            { "kind": "workflow", "role": "chef", "routePattern": "/settings/incidents" },
+            {
+              "kind": "workflow",
+              "role": "chef",
+              "routePattern": "/settings/compliance/incidents"
+            },
+            { "kind": "workflow", "role": "chef", "routePattern": "/settings/emergency" },
+            { "kind": "api", "role": "chef", "routePattern": "/api/v2/safety/incidents" }
+          ]
+        },
+        {
+          "id": "privacy-permissions-protection",
+          "label": "Privacy, Permissions, and Protection",
+          "sourceCategoryAliases": [
+            "Permissions / Privacy / Protection",
+            "privacy",
+            "protection",
+            "permissions",
+            "sharing",
+            "client-safe",
+            "AI privacy"
+          ],
+          "accessPaths": [
+            { "kind": "workflow", "role": "chef", "routePattern": "/settings/protection" },
+            { "kind": "workflow", "role": "chef", "routePattern": "/settings/ai-privacy" },
+            {
+              "kind": "workflow",
+              "role": "chef",
+              "routePattern": "/settings/security/audit-trail"
+            },
+            { "kind": "public", "role": "public", "routePattern": "/data-request" }
+          ]
+        },
+        {
+          "id": "insurance-certifications-continuity",
+          "label": "Insurance, Certifications, and Continuity",
+          "sourceCategoryAliases": [
+            "insurance",
+            "certifications",
+            "continuity",
+            "business health",
+            "backup contacts",
+            "NDA"
+          ],
+          "accessPaths": [
+            {
+              "kind": "workflow",
+              "role": "chef",
+              "routePattern": "/settings/protection/insurance"
+            },
+            {
+              "kind": "workflow",
+              "role": "chef",
+              "routePattern": "/settings/protection/certifications"
+            },
+            {
+              "kind": "workflow",
+              "role": "chef",
+              "routePattern": "/settings/protection/continuity"
+            },
+            { "kind": "workflow", "role": "chef", "routePattern": "/settings/protection/nda" }
+          ]
+        },
+        {
+          "id": "auth-rbac-tenant-isolation",
+          "label": "Auth, RBAC, and Tenant Isolation",
+          "sourceCategoryAliases": [
+            "Auth / MFA / RBAC / Tenant Isolation",
+            "auth",
+            "mfa",
+            "signin",
+            "signup",
+            "reauth",
+            "role-selection",
+            "tenant",
+            "permissions"
+          ],
+          "accessPaths": [
+            { "kind": "public", "role": "public", "routePattern": "/auth/signin" },
+            { "kind": "public", "role": "public", "routePattern": "/auth/signup" },
+            { "kind": "public", "role": "public", "routePattern": "/auth/mfa-verify" },
+            { "kind": "api", "role": "public", "routePattern": "/api/auth/[...nextauth]" }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "public-discovery-marketplace",
+      "label": "Public Discovery and Marketplace",
+      "colorFamily": "discovery-sky",
+      "railIntent": "Public-facing discovery, trust, booking, marketplace, nearby pages, and conversion paths.",
+      "subcategories": [
+        {
+          "id": "public-home-discovery",
+          "label": "Public Home and Discovery",
+          "sourceCategoryAliases": [
+            "Content / Public Site / Embeds",
+            "public",
+            "discovery",
+            "homepage",
+            "discover",
+            "nearby",
+            "eat"
+          ],
+          "accessPaths": [
+            { "kind": "public", "role": "public", "routePattern": "/" },
+            { "kind": "public", "role": "public", "routePattern": "/discover/[[...path]]" },
+            { "kind": "public", "role": "public", "routePattern": "/nearby" },
+            { "kind": "public", "role": "public", "routePattern": "/eat" },
+            { "kind": "rail", "role": "public", "routePattern": "public-discovery-rail" }
+          ]
+        },
+        {
+          "id": "public-chef-profile",
+          "label": "Public Chef Profile and Booking",
+          "sourceCategoryAliases": [
+            "chef profile",
+            "public profile",
+            "inquire",
+            "book",
+            "locations"
+          ],
+          "accessPaths": [
+            { "kind": "public", "role": "public", "routePattern": "/chef/[slug]" },
+            { "kind": "public", "role": "public", "routePattern": "/chef/[slug]/inquire" },
+            {
+              "kind": "public",
+              "role": "public",
+              "routePattern": "/chef/[slug]/locations/[locationId]"
+            },
+            {
+              "kind": "api",
+              "role": "public",
+              "routePattern": "/chef/[slug]/locations/[locationId]/book"
+            }
+          ]
+        },
+        {
+          "id": "marketplace-directory",
+          "label": "Marketplace and Directory",
+          "sourceCategoryAliases": [
+            "Marketplace / Portfolio / Network",
+            "marketplace",
+            "portfolio",
+            "network",
+            "favorite chefs",
+            "nearby chefs",
+            "directory"
+          ],
+          "accessPaths": [
+            { "kind": "plural", "role": "chef", "routePattern": "/marketplace" },
+            { "kind": "plural", "role": "chef", "routePattern": "/portfolio" },
+            { "kind": "public", "role": "public", "routePattern": "/chefs" },
+            { "kind": "public", "role": "public", "routePattern": "/marketplace-chefs" }
+          ]
+        },
+        {
+          "id": "public-services-cuisines",
+          "label": "Public Services, Cuisines, and Customers",
+          "sourceCategoryAliases": ["services", "cuisines", "customers", "compare", "public trust"],
+          "accessPaths": [
+            { "kind": "public", "role": "public", "routePattern": "/services" },
+            { "kind": "public", "role": "public", "routePattern": "/services/[slug]" },
+            { "kind": "public", "role": "public", "routePattern": "/cuisines/[slug]" },
+            { "kind": "public", "role": "public", "routePattern": "/customers" },
+            { "kind": "public", "role": "public", "routePattern": "/compare" }
+          ]
+        },
+        {
+          "id": "embeds-public-intake",
+          "label": "Embeds and Public Intake",
+          "sourceCategoryAliases": ["embed", "embed inquiry", "public intake", "campaign booking"],
+          "accessPaths": [
+            { "kind": "public", "role": "public", "routePattern": "/embed/inquiry/[chefId]" },
+            { "kind": "api", "role": "public", "routePattern": "/api/embed/inquiry" },
+            { "kind": "public", "role": "public", "routePattern": "/book/campaign/[token]" }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "marketing-reputation-social",
+      "label": "Marketing, Reputation, and Social",
+      "colorFamily": "brand-pink",
+      "railIntent": "Demand generation, public proof, reputation, referrals, campaigns, and social publishing.",
+      "subcategories": [
+        {
+          "id": "campaigns-marketing",
+          "label": "Campaigns and Marketing",
+          "sourceCategoryAliases": [
+            "Campaigns / Marketing / SEO",
+            "campaigns",
+            "marketing",
+            "seo",
+            "targeting",
+            "content pipeline"
+          ],
+          "accessPaths": [
+            { "kind": "plural", "role": "chef", "routePattern": "/marketing" },
+            { "kind": "workflow", "role": "chef", "routePattern": "/marketing/content-pipeline" },
+            { "kind": "workflow", "role": "chef", "routePattern": "/marketing/push-dinners" },
+            { "kind": "api", "role": "chef", "routePattern": "/api/v2/marketing/campaigns" }
+          ]
+        },
+        {
+          "id": "social-publishing",
+          "label": "Social and Network Publishing",
+          "sourceCategoryAliases": [
+            "Social / Network Publishing",
+            "social",
+            "facebook-events",
+            "oauth",
+            "sharing",
+            "stories",
+            "publishing"
+          ],
+          "accessPaths": [
+            { "kind": "workflow", "role": "chef", "routePattern": "/marketing/social" },
+            { "kind": "workflow", "role": "chef", "routePattern": "/marketing/social/templates" },
+            { "kind": "workflow", "role": "chef", "routePattern": "/marketing/social/connections" },
+            { "kind": "api", "role": "chef", "routePattern": "/api/social/*" }
+          ]
+        },
+        {
+          "id": "reviews-reputation",
+          "label": "Reviews, Reputation, and Public Trust",
+          "sourceCategoryAliases": [
+            "Public Trust / Reviews / Reputation / Referrals",
+            "reviews",
+            "reputation",
+            "testimonials",
+            "trust",
+            "review"
+          ],
+          "accessPaths": [
+            { "kind": "plural", "role": "chef", "routePattern": "/reviews" },
+            { "kind": "plural", "role": "chef", "routePattern": "/reputation" },
+            { "kind": "workflow", "role": "chef", "routePattern": "/reputation/mentions" },
+            { "kind": "public", "role": "public", "routePattern": "/review/[token]" },
+            { "kind": "public", "role": "public", "routePattern": "/trust" }
+          ]
+        },
+        {
+          "id": "referrals-partnership-demand",
+          "label": "Referrals and Partnership Demand",
+          "sourceCategoryAliases": [
+            "referrals",
+            "partner referrals",
+            "referral performance",
+            "partner report"
+          ],
+          "accessPaths": [
+            { "kind": "workflow", "role": "chef", "routePattern": "/clients/loyalty/referrals" },
+            {
+              "kind": "workflow",
+              "role": "chef",
+              "routePattern": "/partners/referral-performance"
+            },
+            { "kind": "public", "role": "public", "routePattern": "/partner-report/[token]" }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "commerce-products-orders",
+      "label": "Commerce, Products, and Orders",
+      "colorFamily": "commerce-orange",
+      "railIntent": "Direct sales, products, store checkout, hardware commerce, register, settlements, and order proof.",
+      "subcategories": [
+        {
+          "id": "commerce-core",
+          "label": "Commerce Core",
+          "sourceCategoryAliases": [
+            "Commerce / Orders / Direct Sales",
+            "commerce",
+            "direct-orders",
+            "checkout",
+            "terminal",
+            "hardware",
+            "store"
+          ],
+          "accessPaths": [
+            { "kind": "plural", "role": "chef", "routePattern": "/commerce" },
+            { "kind": "api", "role": "chef", "routePattern": "/api/v2/commerce/*" }
+          ]
+        },
+        {
+          "id": "products-storefront",
+          "label": "Products and Storefront",
+          "sourceCategoryAliases": ["products", "storefront", "store", "catalog", "product pages"],
+          "accessPaths": [
+            { "kind": "plural", "role": "chef", "routePattern": "/commerce/products" },
+            { "kind": "workflow", "role": "chef", "routePattern": "/commerce/products/new" },
+            { "kind": "workflow", "role": "chef", "routePattern": "/commerce/storefront" },
+            { "kind": "public", "role": "public", "routePattern": "/chef/[slug]/store" }
+          ]
+        },
+        {
+          "id": "orders-sales",
+          "label": "Orders and Sales",
+          "sourceCategoryAliases": [
+            "orders",
+            "sales",
+            "table service",
+            "register",
+            "virtual terminal"
+          ],
+          "accessPaths": [
+            { "kind": "plural", "role": "chef", "routePattern": "/commerce/orders" },
+            { "kind": "plural", "role": "chef", "routePattern": "/commerce/sales" },
+            { "kind": "workflow", "role": "chef", "routePattern": "/commerce/register" },
+            { "kind": "workflow", "role": "chef", "routePattern": "/commerce/virtual-terminal" }
+          ]
+        },
+        {
+          "id": "settlements-reconciliation",
+          "label": "Commerce Settlements and Reconciliation",
+          "sourceCategoryAliases": [
+            "settlements",
+            "reconciliation",
+            "parity",
+            "commerce reports",
+            "shifts"
+          ],
+          "accessPaths": [
+            { "kind": "plural", "role": "chef", "routePattern": "/commerce/settlements" },
+            { "kind": "workflow", "role": "chef", "routePattern": "/commerce/reconciliation" },
+            { "kind": "workflow", "role": "chef", "routePattern": "/commerce/reports" },
+            { "kind": "workflow", "role": "chef", "routePattern": "/commerce/parity" }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "loyalty-gifts-incentives",
+      "label": "Loyalty, Gifts, and Incentives",
+      "colorFamily": "gift-rose",
+      "railIntent": "Client incentives, gift cards, rewards, raffles, and loyalty economics.",
+      "subcategories": [
+        {
+          "id": "gift-cards",
+          "label": "Gift Cards",
+          "sourceCategoryAliases": [
+            "Gift Cards / Loyalty / Incentives",
+            "gift-cards",
+            "gifts",
+            "my gift cards"
+          ],
+          "accessPaths": [
+            { "kind": "workflow", "role": "chef", "routePattern": "/clients/gift-cards" },
+            { "kind": "public", "role": "public", "routePattern": "/gift-cards" },
+            { "kind": "public", "role": "public", "routePattern": "/chef/[slug]/gift-cards" }
+          ]
+        },
+        {
+          "id": "loyalty-program",
+          "label": "Loyalty Program",
+          "sourceCategoryAliases": ["loyalty", "points", "programs", "members"],
+          "accessPaths": [
+            { "kind": "plural", "role": "chef", "routePattern": "/loyalty" },
+            { "kind": "workflow", "role": "chef", "routePattern": "/loyalty/settings" },
+            { "kind": "workflow", "role": "chef", "routePattern": "/clients/loyalty/points" },
+            { "kind": "api", "role": "chef", "routePattern": "/api/v2/loyalty/*" }
+          ]
+        },
+        {
+          "id": "rewards-raffles",
+          "label": "Rewards and Raffles",
+          "sourceCategoryAliases": ["rewards", "raffle", "incentives", "vouchers"],
+          "accessPaths": [
+            { "kind": "workflow", "role": "chef", "routePattern": "/loyalty/rewards/new" },
+            { "kind": "workflow", "role": "chef", "routePattern": "/loyalty/raffle" },
+            { "kind": "workflow", "role": "chef", "routePattern": "/clients/loyalty/rewards" }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "community-circles-network",
+      "label": "Community, Circles, and Network",
+      "colorFamily": "community-lime",
+      "railIntent": "Dinner circles, professional network, partner/vendor relationships, community programs, and collaboration.",
+      "subcategories": [
+        {
+          "id": "dinner-circles",
+          "label": "Dinner Circles",
+          "sourceCategoryAliases": ["circles", "dinner circles", "hub", "groups", "open tables"],
+          "accessPaths": [
+            { "kind": "plural", "role": "chef", "routePattern": "/circles" },
+            { "kind": "singular", "role": "chef", "routePattern": "/circles/[id]" },
+            { "kind": "workflow", "role": "chef", "routePattern": "/circles/admin" },
+            { "kind": "public", "role": "public", "routePattern": "/hub/circles" },
+            { "kind": "public", "role": "public", "routePattern": "/hub/g/[groupToken]" }
+          ]
+        },
+        {
+          "id": "community",
+          "label": "Community",
+          "sourceCategoryAliases": [
+            "Charity / Community Programs",
+            "community",
+            "benchmarks",
+            "mentorship",
+            "subcontracts",
+            "templates"
+          ],
+          "accessPaths": [
+            { "kind": "plural", "role": "chef", "routePattern": "/community" },
+            { "kind": "workflow", "role": "chef", "routePattern": "/community/benchmarks" },
+            { "kind": "workflow", "role": "chef", "routePattern": "/community/mentorship" },
+            { "kind": "workflow", "role": "chef", "routePattern": "/community/subcontracts" }
+          ]
+        },
+        {
+          "id": "network",
+          "label": "Network",
+          "sourceCategoryAliases": ["network", "collabs", "saved", "bridges", "channels"],
+          "accessPaths": [
+            { "kind": "plural", "role": "chef", "routePattern": "/network" },
+            { "kind": "workflow", "role": "chef", "routePattern": "/network/collabs" },
+            { "kind": "workflow", "role": "chef", "routePattern": "/network/saved" },
+            { "kind": "singular", "role": "chef", "routePattern": "/network/[chefId]" }
+          ]
+        },
+        {
+          "id": "partners-vendors",
+          "label": "Partners and Vendors",
+          "sourceCategoryAliases": [
+            "Partners / Vendors / Sourcing",
+            "partners",
+            "partner",
+            "vendors",
+            "vendor",
+            "sourcing",
+            "partner reports"
+          ],
+          "accessPaths": [
+            { "kind": "plural", "role": "chef", "routePattern": "/partners" },
+            { "kind": "singular", "role": "chef", "routePattern": "/partners/[id]" },
+            { "kind": "plural", "role": "chef", "routePattern": "/vendors" },
+            { "kind": "partner", "role": "partner", "routePattern": "/partner/dashboard" },
+            { "kind": "vendor", "role": "vendor", "routePattern": "/vendor/dashboard" }
+          ]
+        },
+        {
+          "id": "charity-programs",
+          "label": "Charity Programs",
+          "sourceCategoryAliases": [
+            "charity",
+            "community programs",
+            "public good",
+            "charity hours"
+          ],
+          "accessPaths": [
+            { "kind": "workflow", "role": "chef", "routePattern": "/events/charity" },
+            { "kind": "workflow", "role": "chef", "routePattern": "/events/charity/hours" },
+            { "kind": "workflow", "role": "chef", "routePattern": "/charity" }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "intelligence-analytics-reports",
+      "label": "Intelligence, Analytics, and Reports",
+      "colorFamily": "intelligence-cyan",
+      "railIntent": "Analytical truth, predictions, reports, source proof, and decision intelligence.",
+      "subcategories": [
+        {
+          "id": "analytics-core",
+          "label": "Analytics Core",
+          "sourceCategoryAliases": [
+            "Analytics / Insights / Reports",
+            "analytics",
+            "insights",
+            "statistics",
+            "weekly ops"
+          ],
+          "accessPaths": [
+            { "kind": "plural", "role": "chef", "routePattern": "/analytics" },
+            { "kind": "plural", "role": "chef", "routePattern": "/insights" },
+            { "kind": "workflow", "role": "chef", "routePattern": "/analytics/weekly" }
+          ]
+        },
+        {
+          "id": "intelligence-hub",
+          "label": "Intelligence Hub",
+          "sourceCategoryAliases": [
+            "intelligence",
+            "CIL signals",
+            "risk radar",
+            "source analytics"
+          ],
+          "accessPaths": [
+            { "kind": "workflow", "role": "chef", "routePattern": "/analytics/intelligence" },
+            {
+              "kind": "workflow",
+              "role": "chef",
+              "routePattern": "/analytics/intelligence/client-risk"
+            },
+            { "kind": "rail", "role": "chef", "routePattern": "contextual-rail:intelligence" }
+          ]
+        },
+        {
+          "id": "reports",
+          "label": "Reports",
+          "sourceCategoryAliases": [
+            "reports",
+            "custom reports",
+            "daily report",
+            "financial report",
+            "source reports"
+          ],
+          "accessPaths": [
+            { "kind": "workflow", "role": "chef", "routePattern": "/analytics/reports" },
+            { "kind": "workflow", "role": "chef", "routePattern": "/analytics/daily-report" },
+            { "kind": "api", "role": "chef", "routePattern": "/api/reports/financial" }
+          ]
+        },
+        {
+          "id": "goals-forecasting",
+          "label": "Goals and Forecasting",
+          "sourceCategoryAliases": [
+            "goals",
+            "forecast",
+            "revenue path",
+            "goal setup",
+            "forecasting"
+          ],
+          "accessPaths": [
+            { "kind": "workflow", "role": "chef", "routePattern": "/analytics/goals" },
+            { "kind": "workflow", "role": "chef", "routePattern": "/analytics/forecast" },
+            { "kind": "workflow", "role": "chef", "routePattern": "/finance/forecast" },
+            { "kind": "api", "role": "chef", "routePattern": "/api/v2/goals/*" }
+          ]
+        },
+        {
+          "id": "audit-trail-source-proof",
+          "label": "Evidence, Audit Trail, and Source Proof",
+          "sourceCategoryAliases": [
+            "Evidence / Audit Trail / Source Proof",
+            "audit",
+            "source proof",
+            "change history",
+            "freshness",
+            "confidence"
+          ],
+          "accessPaths": [
+            { "kind": "proof", "role": "chef", "routePattern": "/activity/audit" },
+            { "kind": "proof", "role": "chef", "routePattern": "/contracts/[id]/history" },
+            { "kind": "rail", "role": "chef", "routePattern": "page-xray" }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "automation-remy-ai",
+      "label": "Automation, Remy, and AI",
+      "colorFamily": "ai-violet",
+      "railIntent": "Automated assistance, Remy, AI policies, scheduled workflows, and deterministic automation control.",
+      "subcategories": [
+        {
+          "id": "automation-autopilot",
+          "label": "Automation and Autopilot",
+          "sourceCategoryAliases": [
+            "Automation / Autopilot / Workflows",
+            "automation",
+            "autopilot",
+            "workflow",
+            "jobs",
+            "dispatch",
+            "scheduled"
+          ],
+          "accessPaths": [
+            { "kind": "plural", "role": "chef", "routePattern": "/autopilot" },
+            { "kind": "workflow", "role": "chef", "routePattern": "/settings/automations" },
+            { "kind": "api", "role": "chef", "routePattern": "/api/v2/settings/automations" },
+            { "kind": "api", "role": "system", "routePattern": "/api/scheduled/automations" }
+          ]
+        },
+        {
+          "id": "remy",
+          "label": "Remy",
+          "sourceCategoryAliases": [
+            "AI / Remy / Copilot",
+            "remy",
+            "copilot",
+            "assistant",
+            "signals",
+            "history",
+            "settings"
+          ],
+          "accessPaths": [
+            { "kind": "plural", "role": "chef", "routePattern": "/remy" },
+            { "kind": "workflow", "role": "chef", "routePattern": "/remy/signals" },
+            { "kind": "workflow", "role": "chef", "routePattern": "/remy/history" },
+            { "kind": "workflow", "role": "chef", "routePattern": "/remy/settings" },
+            { "kind": "api", "role": "chef", "routePattern": "/api/remy/*" }
+          ]
+        },
+        {
+          "id": "ai-health-models",
+          "label": "AI Health and Model Gateways",
+          "sourceCategoryAliases": [
+            "ollama",
+            "local AI",
+            "AI health",
+            "model gateway",
+            "Gemma",
+            "LLM"
+          ],
+          "accessPaths": [
+            { "kind": "api", "role": "system", "routePattern": "/api/ai/health" },
+            { "kind": "api", "role": "system", "routePattern": "/api/ollama-status" },
+            { "kind": "api", "role": "system", "routePattern": "/api/ollama-proxy/[...path]" },
+            { "kind": "workflow", "role": "chef", "routePattern": "/settings/ai-privacy" }
+          ]
+        },
+        {
+          "id": "scheduled-intelligence",
+          "label": "Scheduled Intelligence",
+          "sourceCategoryAliases": [
+            "scheduled jobs",
+            "cron",
+            "morning briefing",
+            "proactive alerts",
+            "lifecycle scheduler"
+          ],
+          "accessPaths": [
+            { "kind": "api", "role": "system", "routePattern": "/api/scheduled/*" },
+            { "kind": "api", "role": "system", "routePattern": "/api/cron/*" },
+            { "kind": "workflow", "role": "chef", "routePattern": "/briefing" }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "documents-media-proof",
+      "label": "Documents, Media, and Proof",
+      "colorFamily": "document-stone",
+      "railIntent": "Generated artifacts, files, print views, images, exports, and proof packages.",
+      "subcategories": [
+        {
+          "id": "documents",
+          "label": "Documents",
+          "sourceCategoryAliases": [
+            "Documents / Media / Images / Print",
+            "documents",
+            "contracts",
+            "invoice PDF",
+            "quote PDF",
+            "snapshots"
+          ],
+          "accessPaths": [
+            { "kind": "plural", "role": "chef", "routePattern": "/documents" },
+            { "kind": "api", "role": "chef", "routePattern": "/api/documents/*" },
+            { "kind": "api", "role": "chef", "routePattern": "/api/v2/documents/*" }
+          ]
+        },
+        {
+          "id": "media-images",
+          "label": "Media and Images",
+          "sourceCategoryAliases": ["media", "images", "photos", "menu image", "recap video"],
+          "accessPaths": [
+            { "kind": "workflow", "role": "chef", "routePattern": "/recipes/photos" },
+            { "kind": "workflow", "role": "chef", "routePattern": "/events/[id]/photos" },
+            { "kind": "api", "role": "chef", "routePattern": "/api/menu-image/[menuId]" },
+            { "kind": "api", "role": "chef", "routePattern": "/api/events/[id]/recap-video" }
+          ]
+        },
+        {
+          "id": "print-views",
+          "label": "Print Views",
+          "sourceCategoryAliases": ["print", "FOH menu", "cannabis packet", "menu print"],
+          "accessPaths": [
+            { "kind": "proof", "role": "chef", "routePattern": "/print/menu/[id]" },
+            {
+              "kind": "proof",
+              "role": "chef",
+              "routePattern": "/print/cannabis-dosing-packet/[eventId]"
+            }
+          ]
+        },
+        {
+          "id": "imports-exports",
+          "label": "Imports and Exports",
+          "sourceCategoryAliases": [
+            "Data Quality / Imports / Exports",
+            "import",
+            "exports",
+            "csv",
+            "business history import",
+            "takeout"
+          ],
+          "accessPaths": [
+            { "kind": "workflow", "role": "chef", "routePattern": "/import" },
+            { "kind": "workflow", "role": "chef", "routePattern": "/import/csv" },
+            { "kind": "workflow", "role": "chef", "routePattern": "/settings/data-export" },
+            { "kind": "api", "role": "chef", "routePattern": "/*/csv-export" }
+          ]
+        },
+        {
+          "id": "proof-packs",
+          "label": "Build Proof Packs",
+          "sourceCategoryAliases": [
+            "Build Queue / Run Control / Proof Packs",
+            "proof-packs",
+            "finish-check",
+            "wiring audit",
+            "runtime proof"
+          ],
+          "accessPaths": [
+            {
+              "kind": "proof",
+              "role": "developer",
+              "routePattern": ".agents/build-queue/proof-packs/*"
+            },
+            {
+              "kind": "proof",
+              "role": "developer",
+              "routePattern": "scripts/wiring-audit-results.json"
+            },
+            { "kind": "rail", "role": "admin", "routePattern": "admin-rail-health" }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "settings-identity-customization",
+      "label": "Settings, Identity, and Customization",
+      "colorFamily": "settings-neutral",
+      "railIntent": "Workspace identity, customization, modules, themes, notification preferences, and future rail controls.",
+      "subcategories": [
+        {
+          "id": "profile-branding",
+          "label": "Profile, Branding, and Themes",
+          "sourceCategoryAliases": [
+            "Profile / Settings / Branding / Themes",
+            "settings",
+            "profile",
+            "branding",
+            "brand",
+            "themes",
+            "my-profile",
+            "app-theme",
+            "color-palette"
+          ],
+          "accessPaths": [
+            { "kind": "plural", "role": "chef", "routePattern": "/settings" },
+            { "kind": "workflow", "role": "chef", "routePattern": "/settings/profile" },
+            { "kind": "workflow", "role": "chef", "routePattern": "/settings/my-profile" },
+            { "kind": "workflow", "role": "chef", "routePattern": "/settings/appearance" },
+            { "kind": "workflow", "role": "chef", "routePattern": "/settings/public-profile" }
+          ]
+        },
+        {
+          "id": "settings-taxonomy",
+          "label": "Settings Taxonomy and Rail Customization",
+          "sourceCategoryAliases": [
+            "taxonomy",
+            "rail customization",
+            "modules",
+            "navigation",
+            "dashboard settings"
+          ],
+          "accessPaths": [
+            { "kind": "workflow", "role": "chef", "routePattern": "/settings/taxonomy" },
+            { "kind": "workflow", "role": "chef", "routePattern": "/settings/modules" },
+            { "kind": "workflow", "role": "chef", "routePattern": "/settings/navigation" },
+            { "kind": "workflow", "role": "chef", "routePattern": "/settings/dashboard" },
+            { "kind": "api", "role": "chef", "routePattern": "/api/v2/settings/taxonomy" }
+          ]
+        },
+        {
+          "id": "account-security",
+          "label": "Account and Security Settings",
+          "sourceCategoryAliases": [
+            "account security",
+            "change password",
+            "delete account",
+            "API keys",
+            "webhooks"
+          ],
+          "accessPaths": [
+            { "kind": "workflow", "role": "chef", "routePattern": "/settings/change-password" },
+            { "kind": "workflow", "role": "chef", "routePattern": "/settings/delete-account" },
+            { "kind": "workflow", "role": "chef", "routePattern": "/settings/api-keys" },
+            { "kind": "workflow", "role": "chef", "routePattern": "/settings/webhooks" }
+          ]
+        },
+        {
+          "id": "integrations-providers",
+          "label": "Integrations and Providers",
+          "sourceCategoryAliases": [
+            "Integrations / Providers",
+            "integrations",
+            "providers",
+            "connector",
+            "google",
+            "stripe",
+            "square",
+            "quickbooks",
+            "yelp",
+            "zapier",
+            "docusign",
+            "wix"
+          ],
+          "accessPaths": [
+            { "kind": "workflow", "role": "chef", "routePattern": "/settings/integrations" },
+            {
+              "kind": "workflow",
+              "role": "chef",
+              "routePattern": "/settings/platform-connections"
+            },
+            { "kind": "workflow", "role": "chef", "routePattern": "/settings/stripe-connect" },
+            { "kind": "workflow", "role": "chef", "routePattern": "/wix-submissions" },
+            { "kind": "api", "role": "chef", "routePattern": "/api/integrations/*" }
+          ]
+        },
+        {
+          "id": "professional-credentials",
+          "label": "Professional Profile and Credentials",
+          "sourceCategoryAliases": [
+            "Credentials / Professional Profile",
+            "credentials",
+            "professional",
+            "certifications",
+            "skills",
+            "momentum"
+          ],
+          "accessPaths": [
+            { "kind": "workflow", "role": "chef", "routePattern": "/settings/credentials" },
+            { "kind": "workflow", "role": "chef", "routePattern": "/settings/professional" },
+            { "kind": "workflow", "role": "chef", "routePattern": "/settings/professional/skills" },
+            {
+              "kind": "workflow",
+              "role": "chef",
+              "routePattern": "/settings/professional/momentum"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "platform-admin-system-health",
+      "label": "Platform, Admin, and System Health",
+      "colorFamily": "platform-gray",
+      "railIntent": "Admin control, route/access health, build queue, observability, errors, and platform internals.",
+      "subcategories": [
+        {
+          "id": "admin-mission-control",
+          "label": "Admin and Mission Control",
+          "sourceCategoryAliases": [
+            "Admin / Mission Control",
+            "admin",
+            "admin-time",
+            "god-mode",
+            "mission control",
+            "support console"
+          ],
+          "accessPaths": [
+            { "kind": "admin", "role": "admin", "routePattern": "/admin" },
+            { "kind": "admin", "role": "admin", "routePattern": "/admin/command-center" },
+            { "kind": "admin", "role": "admin", "routePattern": "/admin/system" },
+            { "kind": "admin", "role": "admin", "routePattern": "/admin/users" }
+          ]
+        },
+        {
+          "id": "monitoring-observability",
+          "label": "Monitoring, Observability, and Health",
+          "sourceCategoryAliases": [
+            "Monitoring / Observability / Health",
+            "health",
+            "runtime",
+            "sentinel",
+            "platform-observability",
+            "web-research-health"
+          ],
+          "accessPaths": [
+            { "kind": "workflow", "role": "chef", "routePattern": "/analytics/health" },
+            { "kind": "admin", "role": "admin", "routePattern": "/admin/pulse" },
+            { "kind": "public", "role": "public", "routePattern": "/web-research-health" },
+            { "kind": "api", "role": "public", "routePattern": "/api/health/*" },
+            { "kind": "api", "role": "system", "routePattern": "/api/sentinel/*" }
+          ]
+        },
+        {
+          "id": "api-webhooks-cron",
+          "label": "API, Webhooks, and Cron",
+          "sourceCategoryAliases": [
+            "API / Webhooks / Cron",
+            "api",
+            "v2",
+            "webhooks",
+            "cron",
+            "scheduled",
+            "inngest",
+            "connector"
+          ],
+          "accessPaths": [
+            { "kind": "api", "role": "system", "routePattern": "/api/v2/*" },
+            { "kind": "api", "role": "system", "routePattern": "/api/webhooks/*" },
+            { "kind": "api", "role": "system", "routePattern": "/api/cron/*" },
+            { "kind": "api", "role": "system", "routePattern": "/api/inngest" }
+          ]
+        },
+        {
+          "id": "architecture-inventory-file-maps",
+          "label": "Architecture, Inventory, and File Maps",
+          "sourceCategoryAliases": [
+            "Architecture / Inventory / File Maps",
+            "architecture",
+            "inventory",
+            "taxonomy",
+            "surfaces",
+            "interface",
+            "context",
+            "domain-map",
+            "xrays"
+          ],
+          "accessPaths": [
+            { "kind": "proof", "role": "developer", "routePattern": "docs/architecture/*" },
+            { "kind": "proof", "role": "developer", "routePattern": "docs/domain/*" },
+            {
+              "kind": "proof",
+              "role": "developer",
+              "routePattern": ".agents/build-queue/domain-map.md"
+            },
+            { "kind": "rail", "role": "admin", "routePattern": "page-xray" }
+          ]
+        },
+        {
+          "id": "qa-tests-audits",
+          "label": "QA, Tests, Audits, and Verification",
+          "sourceCategoryAliases": [
+            "QA / Tests / Audits / Verification",
+            "qa",
+            "tests",
+            "audit",
+            "verification",
+            "visual",
+            "load",
+            "walkthrough",
+            "ops-readiness"
+          ],
+          "accessPaths": [
+            { "kind": "proof", "role": "developer", "routePattern": "tests/*" },
+            { "kind": "proof", "role": "developer", "routePattern": "docs/audits/*" },
+            { "kind": "proof", "role": "developer", "routePattern": "docs/wiring-audit.md" }
+          ]
+        },
+        {
+          "id": "errors-resilience-loading",
+          "label": "Errors, Resilience, and Loading States",
+          "sourceCategoryAliases": [
+            "Errors / Resilience / Loading States",
+            "error boundary",
+            "fallback",
+            "loading",
+            "empty state",
+            "recovery"
+          ],
+          "accessPaths": [
+            { "kind": "rail", "role": "chef", "routePattern": "access-surface-rail" },
+            { "kind": "api", "role": "system", "routePattern": "/api/monitoring/report-error" }
+          ]
+        },
+        {
+          "id": "build-queue-governance",
+          "label": "Build Queue and Run Control",
+          "sourceCategoryAliases": [
+            "Build Queue / Run Control / Proof Packs",
+            "build-queue",
+            "run-control",
+            "finish-check",
+            "fire",
+            "grooming",
+            "queue governance"
+          ],
+          "accessPaths": [
+            { "kind": "proof", "role": "developer", "routePattern": ".agents/build-queue/*" },
+            { "kind": "proof", "role": "developer", "routePattern": ".agents/skills/build-queue/*" }
+          ]
+        }
+      ]
+    }
+  ]
+}

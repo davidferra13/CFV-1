@@ -37,6 +37,7 @@ Omninet is a lightweight routing loop. It does not run every skill. It decides w
 - Ship, commit, push, close out: use `ship` or `close-session`.
 - Skill drift, missed rule, recurring behavior: use `heal-skill` for one failed skill or `write-a-skill` for a new skill.
 - Broad research: use `research`.
+- Live web/app/search inspection, screenshots, logged-in/session-personalized flows, ChefFlow route studies, or evidence-backed UX/SERP/local research: use `live-browser-experience-audit`.
 - Architecture/refactor: use `improve-codebase-architecture`.
 - Price, cost, ingredient cost, PIE, pricing: use the matching `pie-*` skill (`pie-measure`, `pie-forecast`, `pie-simulate`, `pie-census`, `pie-ratchet`, `pie-accuracy`, `pie-alert`, `pie-fix`).
 - Session start, resume, status, context: use `morning` (fresh), `pick-up` (resume), `status` (quick check), or `warmup` (pre-work).
