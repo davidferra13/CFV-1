@@ -6,14 +6,14 @@ import type {
   FrictionTier,
 } from '@/lib/commitment/types'
 
-export type ContingencyContext = {
+export type MenuIntegrityContext = {
   eventId: string
-  emergencyContactsSet: boolean
-  backupVendorListReady: boolean
-  equipmentFailurePlanReady: boolean
-  weatherContingencyReady: boolean
-  isOutdoorEvent: boolean
-  eventValue?: number
+  hoursSinceLastLock?: number
+  revisionCount: number
+  daysBeforeEvent?: number
+  hasNewDishes: boolean
+  allRecipesLinked: boolean
+  menuCosted: boolean
 }
 
 function generateId(): string {
@@ -77,18 +77,15 @@ function countOverridesInWindow(overrides: any[]): {
 }
 
 const RULE_DESCRIPTIONS: Record<string, string> = {
-  emergency_contacts_before_confirm: 'Event confirmed without emergency contacts set',
-  backup_plan_for_high_value: 'High-value event confirmed without a backup plan',
-  backup_vendor_list: 'Event confirmed without backup vendor list',
-  equipment_failure_plan: 'Event confirmed without equipment failure plan',
-  weather_contingency_outdoor: 'Outdoor event confirmed without weather contingency',
-  insurance_current_required: 'Operating without current insurance',
-  equipment_checklist_before_service: 'Service started without equipment checklist',
+  menu_lock_cooldown: 'Menu unlocked before cooldown period elapsed',
+  max_menu_revisions: 'Menu revision count exceeds your committed cap',
+  no_new_dishes_within: 'New dish added too close to event date',
+  recipe_required_before_lock: 'Menu locked without all recipes linked',
 }
 
-export async function evaluateContingencyCommitments(
+export async function evaluateMenuIntegrityCommitments(
   tenantId: string,
-  context: ContingencyContext
+  context: MenuIntegrityContext
 ): Promise<FrictionCheckResult[]> {
   const client = createServerClient()
   const results: FrictionCheckResult[] = []
@@ -97,7 +94,7 @@ export async function evaluateContingencyCommitments(
     .from('commitments' as any)
     .select('*')
     .eq('tenant_id', tenantId)
-    .eq('domain', 'contingency')
+    .eq('domain', 'menu')
     .eq('status', 'active')
 
   if (!rows || rows.length === 0) return results
@@ -107,21 +104,18 @@ export async function evaluateContingencyCommitments(
     const rule = commitment.rule as Record<string, any>
     let violated = false
 
-    if (rule.type === 'emergency_contacts_before_confirm') {
-      violated = !context.emergencyContactsSet
-    } else if (rule.type === 'backup_plan_for_high_value') {
-      if (context.eventValue != null) {
-        violated = context.eventValue >= (rule.minEventValue ?? 2000)
+    if (rule.type === 'menu_lock_cooldown') {
+      if (context.hoursSinceLastLock != null) {
+        violated = context.hoursSinceLastLock < (rule.hours ?? 24)
       }
-    } else if (rule.type === 'backup_vendor_list') {
-      violated = !context.backupVendorListReady
-    } else if (rule.type === 'equipment_failure_plan') {
-      violated = !context.equipmentFailurePlanReady
-    } else if (rule.type === 'weather_contingency_outdoor') {
-      violated = context.isOutdoorEvent && !context.weatherContingencyReady
-    } else if (rule.type === 'equipment_checklist_before_service') {
-      // Evaluated at service time, always flagged if no checklist
-      violated = false
+    } else if (rule.type === 'max_menu_revisions') {
+      violated = context.revisionCount > (rule.limit ?? 5)
+    } else if (rule.type === 'no_new_dishes_within') {
+      if (context.hasNewDishes && context.daysBeforeEvent != null) {
+        violated = context.daysBeforeEvent <= (rule.days ?? 3)
+      }
+    } else if (rule.type === 'recipe_required_before_lock') {
+      violated = !context.allRecipesLinked
     }
 
     if (!violated) continue
@@ -142,65 +136,53 @@ export async function evaluateContingencyCommitments(
       streakAtRisk: commitment.currentStreak > 0 ? commitment.currentStreak : null,
       overridesInWindow: countOverridesInWindow(overrides),
       hasConsequenceCorrelation: false,
-      ruleDescription: RULE_DESCRIPTIONS[rule.type] || 'Contingency commitment violated',
+      ruleDescription: RULE_DESCRIPTIONS[rule.type] || 'Menu integrity commitment violated',
     })
   }
 
   return results
 }
 
-export async function getContingencySuggestions(tenantId: string): Promise<CommitmentSuggestion[]> {
+export async function getMenuIntegritySuggestions(
+  tenantId: string
+): Promise<CommitmentSuggestion[]> {
+  const client = createServerClient()
   const suggestions: CommitmentSuggestion[] = []
+  const ninetyDaysAgo = new Date(Date.now() - 90 * 24 * 60 * 60 * 1000)
+
+  // Check for events with high revision counts
+  const { data: events } = await client
+    .from('events' as any)
+    .select('id, menu_revision_count')
+    .eq('tenant_id', tenantId)
+    .gte('created_at', ninetyDaysAgo.toISOString())
+
+  if (events && events.length > 0) {
+    const highRevisionEvents = events.filter((e: any) => (e.menu_revision_count ?? 0) > 5)
+
+    if (highRevisionEvents.length >= 2) {
+      suggestions.push({
+        id: generateId(),
+        tenantId,
+        domain: 'menu',
+        suggestedRule: { type: 'max_menu_revisions', limit: 5 },
+        rationale: `${highRevisionEvents.length} events had more than 5 menu revisions. A cap prevents scope creep and protects prep time.`,
+        evidence: { highRevisionCount: highRevisionEvents.length },
+        status: 'pending',
+        respondedAt: null,
+        dismissedReason: null,
+        createdAt: new Date(),
+      })
+    }
+  }
 
   suggestions.push({
     id: generateId(),
     tenantId,
-    domain: 'contingency',
-    suggestedRule: { type: 'emergency_contacts_before_confirm', required: true },
+    domain: 'menu',
+    suggestedRule: { type: 'menu_lock_cooldown', hours: 24 },
     rationale:
-      'Having emergency contacts on file before confirming ensures you can reach someone if plans change suddenly.',
-    evidence: null,
-    status: 'pending',
-    respondedAt: null,
-    dismissedReason: null,
-    createdAt: new Date(),
-  })
-
-  suggestions.push({
-    id: generateId(),
-    tenantId,
-    domain: 'contingency',
-    suggestedRule: { type: 'backup_vendor_list', required: true },
-    rationale:
-      'A backup vendor list prevents scrambling when your primary supplier is unavailable.',
-    evidence: null,
-    status: 'pending',
-    respondedAt: null,
-    dismissedReason: null,
-    createdAt: new Date(),
-  })
-
-  suggestions.push({
-    id: generateId(),
-    tenantId,
-    domain: 'contingency',
-    suggestedRule: { type: 'equipment_failure_plan', required: true },
-    rationale:
-      'Equipment fails at the worst times. A pre-made plan (backup oven, portable burner, rental contacts) saves the day.',
-    evidence: null,
-    status: 'pending',
-    respondedAt: null,
-    dismissedReason: null,
-    createdAt: new Date(),
-  })
-
-  suggestions.push({
-    id: generateId(),
-    tenantId,
-    domain: 'contingency',
-    suggestedRule: { type: 'weather_contingency_outdoor', required: true },
-    rationale:
-      'Outdoor events need a weather plan: rain backup, wind protection, temperature management. No surprises.',
+      'A 24-hour cooldown after locking a menu prevents impulsive last-minute changes that disrupt prep.',
     evidence: null,
     status: 'pending',
     respondedAt: null,

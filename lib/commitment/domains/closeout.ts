@@ -6,14 +6,14 @@ import type {
   FrictionTier,
 } from '@/lib/commitment/types'
 
-export type ContingencyContext = {
+export type CloseoutContext = {
   eventId: string
-  emergencyContactsSet: boolean
-  backupVendorListReady: boolean
-  equipmentFailurePlanReady: boolean
-  weatherContingencyReady: boolean
-  isOutdoorEvent: boolean
-  eventValue?: number
+  daysSinceEvent: number
+  invoiceSent: boolean
+  paymentFollowedUp: boolean
+  costReconciled: boolean
+  unclosedEventCount: number
+  feedbackRequested?: boolean
 }
 
 function generateId(): string {
@@ -77,18 +77,16 @@ function countOverridesInWindow(overrides: any[]): {
 }
 
 const RULE_DESCRIPTIONS: Record<string, string> = {
-  emergency_contacts_before_confirm: 'Event confirmed without emergency contacts set',
-  backup_plan_for_high_value: 'High-value event confirmed without a backup plan',
-  backup_vendor_list: 'Event confirmed without backup vendor list',
-  equipment_failure_plan: 'Event confirmed without equipment failure plan',
-  weather_contingency_outdoor: 'Outdoor event confirmed without weather contingency',
-  insurance_current_required: 'Operating without current insurance',
-  equipment_checklist_before_service: 'Service started without equipment checklist',
+  invoice_within_days: 'Invoice not sent within committed timeframe after event',
+  payment_followup_within_days: 'Payment follow-up not sent within committed timeframe',
+  cost_reconciliation_required: 'Event closed without cost reconciliation',
+  no_new_events_until_closeout: 'Accepting new events while too many await closeout',
+  post_event_followup_within: 'Post-event follow-up not sent within committed timeframe',
 }
 
-export async function evaluateContingencyCommitments(
+export async function evaluateCloseoutCommitments(
   tenantId: string,
-  context: ContingencyContext
+  context: CloseoutContext
 ): Promise<FrictionCheckResult[]> {
   const client = createServerClient()
   const results: FrictionCheckResult[] = []
@@ -97,7 +95,7 @@ export async function evaluateContingencyCommitments(
     .from('commitments' as any)
     .select('*')
     .eq('tenant_id', tenantId)
-    .eq('domain', 'contingency')
+    .eq('domain', 'closeout')
     .eq('status', 'active')
 
   if (!rows || rows.length === 0) return results
@@ -107,21 +105,17 @@ export async function evaluateContingencyCommitments(
     const rule = commitment.rule as Record<string, any>
     let violated = false
 
-    if (rule.type === 'emergency_contacts_before_confirm') {
-      violated = !context.emergencyContactsSet
-    } else if (rule.type === 'backup_plan_for_high_value') {
-      if (context.eventValue != null) {
-        violated = context.eventValue >= (rule.minEventValue ?? 2000)
-      }
-    } else if (rule.type === 'backup_vendor_list') {
-      violated = !context.backupVendorListReady
-    } else if (rule.type === 'equipment_failure_plan') {
-      violated = !context.equipmentFailurePlanReady
-    } else if (rule.type === 'weather_contingency_outdoor') {
-      violated = context.isOutdoorEvent && !context.weatherContingencyReady
-    } else if (rule.type === 'equipment_checklist_before_service') {
-      // Evaluated at service time, always flagged if no checklist
-      violated = false
+    if (rule.type === 'invoice_within_days') {
+      violated = !context.invoiceSent && context.daysSinceEvent > (rule.days ?? 2)
+    } else if (rule.type === 'payment_followup_within_days') {
+      violated = !context.paymentFollowedUp && context.daysSinceEvent > (rule.days ?? 7)
+    } else if (rule.type === 'cost_reconciliation_required') {
+      violated = !context.costReconciled
+    } else if (rule.type === 'no_new_events_until_closeout') {
+      violated = context.unclosedEventCount >= (rule.maxUnclosed ?? 3)
+    } else if (rule.type === 'post_event_followup_within') {
+      const daysCutoff = (rule.hours ?? 48) / 24
+      violated = context.feedbackRequested === false && context.daysSinceEvent > daysCutoff
     }
 
     if (!violated) continue
@@ -142,23 +136,48 @@ export async function evaluateContingencyCommitments(
       streakAtRisk: commitment.currentStreak > 0 ? commitment.currentStreak : null,
       overridesInWindow: countOverridesInWindow(overrides),
       hasConsequenceCorrelation: false,
-      ruleDescription: RULE_DESCRIPTIONS[rule.type] || 'Contingency commitment violated',
+      ruleDescription: RULE_DESCRIPTIONS[rule.type] || 'Closeout commitment violated',
     })
   }
 
   return results
 }
 
-export async function getContingencySuggestions(tenantId: string): Promise<CommitmentSuggestion[]> {
+export async function getCloseoutSuggestions(tenantId: string): Promise<CommitmentSuggestion[]> {
+  const client = createServerClient()
   const suggestions: CommitmentSuggestion[] = []
 
+  // Check for completed events without invoices
+  const { data: unclosed } = await client
+    .from('events' as any)
+    .select('id, event_date')
+    .eq('tenant_id', tenantId)
+    .eq('status', 'completed')
+
+  const unclosedCount = unclosed?.length ?? 0
+
+  if (unclosedCount >= 3) {
+    suggestions.push({
+      id: generateId(),
+      tenantId,
+      domain: 'closeout',
+      suggestedRule: { type: 'no_new_events_until_closeout', maxUnclosed: 3 },
+      rationale: `You have ${unclosedCount} completed events awaiting closeout. Capping at 3 unclosed events prevents a backlog that bleeds cash flow.`,
+      evidence: { unclosedCount },
+      status: 'pending',
+      respondedAt: null,
+      dismissedReason: null,
+      createdAt: new Date(),
+    })
+  }
+
   suggestions.push({
     id: generateId(),
     tenantId,
-    domain: 'contingency',
-    suggestedRule: { type: 'emergency_contacts_before_confirm', required: true },
+    domain: 'closeout',
+    suggestedRule: { type: 'invoice_within_days', days: 2 },
     rationale:
-      'Having emergency contacts on file before confirming ensures you can reach someone if plans change suddenly.',
+      'Invoicing within 48 hours of an event while details are fresh maximizes collection rate.',
     evidence: null,
     status: 'pending',
     respondedAt: null,
@@ -169,38 +188,10 @@ export async function getContingencySuggestions(tenantId: string): Promise<Commi
   suggestions.push({
     id: generateId(),
     tenantId,
-    domain: 'contingency',
-    suggestedRule: { type: 'backup_vendor_list', required: true },
+    domain: 'closeout',
+    suggestedRule: { type: 'cost_reconciliation_required', required: true },
     rationale:
-      'A backup vendor list prevents scrambling when your primary supplier is unavailable.',
-    evidence: null,
-    status: 'pending',
-    respondedAt: null,
-    dismissedReason: null,
-    createdAt: new Date(),
-  })
-
-  suggestions.push({
-    id: generateId(),
-    tenantId,
-    domain: 'contingency',
-    suggestedRule: { type: 'equipment_failure_plan', required: true },
-    rationale:
-      'Equipment fails at the worst times. A pre-made plan (backup oven, portable burner, rental contacts) saves the day.',
-    evidence: null,
-    status: 'pending',
-    respondedAt: null,
-    dismissedReason: null,
-    createdAt: new Date(),
-  })
-
-  suggestions.push({
-    id: generateId(),
-    tenantId,
-    domain: 'contingency',
-    suggestedRule: { type: 'weather_contingency_outdoor', required: true },
-    rationale:
-      'Outdoor events need a weather plan: rain backup, wind protection, temperature management. No surprises.',
+      'Reconciling actual costs against estimates after every event reveals true margins and pricing accuracy.',
     evidence: null,
     status: 'pending',
     respondedAt: null,

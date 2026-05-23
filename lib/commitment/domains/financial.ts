@@ -6,14 +6,14 @@ import type {
   FrictionTier,
 } from '@/lib/commitment/types'
 
-export type ContingencyContext = {
-  eventId: string
-  emergencyContactsSet: boolean
-  backupVendorListReady: boolean
-  equipmentFailurePlanReady: boolean
-  weatherContingencyReady: boolean
-  isOutdoorEvent: boolean
-  eventValue?: number
+export type FinancialContext = {
+  eventId?: string
+  daysSinceEvent?: number
+  invoiceSent: boolean
+  paymentFollowedUp: boolean
+  costTracked: boolean
+  savingsReservePercent?: number
+  lastTaxPrepDate?: string
 }
 
 function generateId(): string {
@@ -77,18 +77,17 @@ function countOverridesInWindow(overrides: any[]): {
 }
 
 const RULE_DESCRIPTIONS: Record<string, string> = {
-  emergency_contacts_before_confirm: 'Event confirmed without emergency contacts set',
-  backup_plan_for_high_value: 'High-value event confirmed without a backup plan',
-  backup_vendor_list: 'Event confirmed without backup vendor list',
-  equipment_failure_plan: 'Event confirmed without equipment failure plan',
-  weather_contingency_outdoor: 'Outdoor event confirmed without weather contingency',
-  insurance_current_required: 'Operating without current insurance',
-  equipment_checklist_before_service: 'Service started without equipment checklist',
+  invoice_within_days: 'Invoice not sent within committed timeframe',
+  payment_followup_within_days: 'Payment follow-up not sent within committed timeframe',
+  cost_tracking_per_event: 'Event costs not tracked',
+  savings_reserve_percent: 'Savings reserve below committed percentage',
+  tax_prep_quarterly: 'Quarterly tax prep not completed on schedule',
+  weekly_financial_review: 'Weekly financial review not completed',
 }
 
-export async function evaluateContingencyCommitments(
+export async function evaluateFinancialCommitments(
   tenantId: string,
-  context: ContingencyContext
+  context: FinancialContext
 ): Promise<FrictionCheckResult[]> {
   const client = createServerClient()
   const results: FrictionCheckResult[] = []
@@ -97,7 +96,7 @@ export async function evaluateContingencyCommitments(
     .from('commitments' as any)
     .select('*')
     .eq('tenant_id', tenantId)
-    .eq('domain', 'contingency')
+    .eq('domain', 'financial')
     .eq('status', 'active')
 
   if (!rows || rows.length === 0) return results
@@ -107,20 +106,28 @@ export async function evaluateContingencyCommitments(
     const rule = commitment.rule as Record<string, any>
     let violated = false
 
-    if (rule.type === 'emergency_contacts_before_confirm') {
-      violated = !context.emergencyContactsSet
-    } else if (rule.type === 'backup_plan_for_high_value') {
-      if (context.eventValue != null) {
-        violated = context.eventValue >= (rule.minEventValue ?? 2000)
+    if (rule.type === 'invoice_within_days') {
+      if (context.daysSinceEvent != null) {
+        violated = !context.invoiceSent && context.daysSinceEvent > (rule.days ?? 2)
       }
-    } else if (rule.type === 'backup_vendor_list') {
-      violated = !context.backupVendorListReady
-    } else if (rule.type === 'equipment_failure_plan') {
-      violated = !context.equipmentFailurePlanReady
-    } else if (rule.type === 'weather_contingency_outdoor') {
-      violated = context.isOutdoorEvent && !context.weatherContingencyReady
-    } else if (rule.type === 'equipment_checklist_before_service') {
-      // Evaluated at service time, always flagged if no checklist
+    } else if (rule.type === 'payment_followup_within_days') {
+      if (context.daysSinceEvent != null) {
+        violated = !context.paymentFollowedUp && context.daysSinceEvent > (rule.days ?? 7)
+      }
+    } else if (rule.type === 'cost_tracking_per_event') {
+      violated = !context.costTracked
+    } else if (rule.type === 'savings_reserve_percent') {
+      if (context.savingsReservePercent != null) {
+        violated = context.savingsReservePercent < (rule.percent ?? 10)
+      }
+    } else if (rule.type === 'tax_prep_quarterly') {
+      if (context.lastTaxPrepDate) {
+        const lastPrep = new Date(context.lastTaxPrepDate)
+        const daysSincePrep = (Date.now() - lastPrep.getTime()) / (24 * 60 * 60 * 1000)
+        violated = daysSincePrep > 90
+      }
+    } else if (rule.type === 'weekly_financial_review') {
+      // Evaluated externally; context would include last review date
       violated = false
     }
 
@@ -142,65 +149,63 @@ export async function evaluateContingencyCommitments(
       streakAtRisk: commitment.currentStreak > 0 ? commitment.currentStreak : null,
       overridesInWindow: countOverridesInWindow(overrides),
       hasConsequenceCorrelation: false,
-      ruleDescription: RULE_DESCRIPTIONS[rule.type] || 'Contingency commitment violated',
+      ruleDescription: RULE_DESCRIPTIONS[rule.type] || 'Financial commitment violated',
     })
   }
 
   return results
 }
 
-export async function getContingencySuggestions(tenantId: string): Promise<CommitmentSuggestion[]> {
+export async function getFinancialSuggestions(tenantId: string): Promise<CommitmentSuggestion[]> {
+  const client = createServerClient()
   const suggestions: CommitmentSuggestion[] = []
+  const ninetyDaysAgo = new Date(Date.now() - 90 * 24 * 60 * 60 * 1000)
+
+  // Check for events without invoices
+  const { data: events } = await client
+    .from('events' as any)
+    .select('id, event_date, status')
+    .eq('tenant_id', tenantId)
+    .eq('status', 'completed')
+    .gte('event_date', ninetyDaysAgo.toISOString())
+
+  if (events && events.length >= 3) {
+    suggestions.push({
+      id: generateId(),
+      tenantId,
+      domain: 'financial',
+      suggestedRule: { type: 'invoice_within_days', days: 2 },
+      rationale:
+        'Invoicing within 48 hours of an event keeps cash flow healthy and signals professionalism.',
+      evidence: { completedEvents: events.length },
+      status: 'pending',
+      respondedAt: null,
+      dismissedReason: null,
+      createdAt: new Date(),
+    })
+
+    suggestions.push({
+      id: generateId(),
+      tenantId,
+      domain: 'financial',
+      suggestedRule: { type: 'cost_tracking_per_event', required: true },
+      rationale:
+        'Tracking costs per event reveals true profitability and prevents margin erosion over time.',
+      evidence: { completedEvents: events.length },
+      status: 'pending',
+      respondedAt: null,
+      dismissedReason: null,
+      createdAt: new Date(),
+    })
+  }
 
   suggestions.push({
     id: generateId(),
     tenantId,
-    domain: 'contingency',
-    suggestedRule: { type: 'emergency_contacts_before_confirm', required: true },
+    domain: 'financial',
+    suggestedRule: { type: 'savings_reserve_percent', percent: 15 },
     rationale:
-      'Having emergency contacts on file before confirming ensures you can reach someone if plans change suddenly.',
-    evidence: null,
-    status: 'pending',
-    respondedAt: null,
-    dismissedReason: null,
-    createdAt: new Date(),
-  })
-
-  suggestions.push({
-    id: generateId(),
-    tenantId,
-    domain: 'contingency',
-    suggestedRule: { type: 'backup_vendor_list', required: true },
-    rationale:
-      'A backup vendor list prevents scrambling when your primary supplier is unavailable.',
-    evidence: null,
-    status: 'pending',
-    respondedAt: null,
-    dismissedReason: null,
-    createdAt: new Date(),
-  })
-
-  suggestions.push({
-    id: generateId(),
-    tenantId,
-    domain: 'contingency',
-    suggestedRule: { type: 'equipment_failure_plan', required: true },
-    rationale:
-      'Equipment fails at the worst times. A pre-made plan (backup oven, portable burner, rental contacts) saves the day.',
-    evidence: null,
-    status: 'pending',
-    respondedAt: null,
-    dismissedReason: null,
-    createdAt: new Date(),
-  })
-
-  suggestions.push({
-    id: generateId(),
-    tenantId,
-    domain: 'contingency',
-    suggestedRule: { type: 'weather_contingency_outdoor', required: true },
-    rationale:
-      'Outdoor events need a weather plan: rain backup, wind protection, temperature management. No surprises.',
+      'Setting aside 15% of revenue as a reserve protects against slow seasons and unexpected expenses.',
     evidence: null,
     status: 'pending',
     respondedAt: null,

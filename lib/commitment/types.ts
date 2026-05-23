@@ -1,5 +1,7 @@
 export type CommitmentDomain =
   | 'pricing'
+  | 'quality'
+  | 'financial'
   | 'scheduling'
   | 'dietary'
   | 'menu'
@@ -76,6 +78,17 @@ export type CommitmentRule =
   | { type: 'time_of_day_no_responses_after'; hour: number }
   | { type: 'time_of_day_no_quotes_after'; hour: number }
   | { type: 'time_of_day_no_accepts_between'; startHour: number; endHour: number }
+  | { type: 'recipe_tested_before_serve'; required: true }
+  | { type: 'plating_standards_documented'; required: true }
+  | { type: 'ingredient_quality_floor'; minGrade: string }
+  | { type: 'no_shortcuts_under_pressure'; required: true }
+  | { type: 'cost_tracking_per_event'; required: true }
+  | { type: 'tax_prep_quarterly'; required: true }
+  | { type: 'seasonal_booking_limit'; season: string; maxEvents: number }
+  | { type: 'weather_contingency_outdoor'; required: true }
+  | { type: 'backup_vendor_list'; required: true }
+  | { type: 'equipment_failure_plan'; required: true }
+  | { type: 'inquiry_acknowledgment_within'; hours: number }
   | { type: 'custom'; description: string; validatorId: string }
 
 export interface Commitment {
@@ -123,6 +136,8 @@ export interface CommitmentSuggestion {
 
 export const DOMAIN_DEFAULT_TIERS: Record<CommitmentDomain, FrictionTier> = {
   pricing: 1,
+  quality: 2,
+  financial: 1,
   scheduling: 1,
   dietary: 3,
   menu: 1,
@@ -136,6 +151,8 @@ export const DOMAIN_DEFAULT_TIERS: Record<CommitmentDomain, FrictionTier> = {
 
 export const DOMAIN_LABELS: Record<CommitmentDomain, string> = {
   pricing: 'Pricing',
+  quality: 'Quality Standards',
+  financial: 'Financial Discipline',
   scheduling: 'Scheduling',
   dietary: 'Dietary Safety',
   menu: 'Menu Integrity',
@@ -161,8 +178,10 @@ export const OVERRIDE_CATEGORY_LABELS: Record<OverrideCategory, string> = {
 
 export const DOMAIN_SEVERITY_ORDER: CommitmentDomain[] = [
   'dietary',
+  'quality',
   'contingency',
   'pricing',
+  'financial',
   'scheduling',
   'capacity',
   'closeout',

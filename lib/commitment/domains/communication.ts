@@ -7,12 +7,12 @@ import type {
 } from '@/lib/commitment/types'
 
 export type CommunicationContext = {
-  clientId: string
-  hoursSinceLastResponse: number | null
-  missedCadenceTouchpoints: number
-  daysSinceLastContact: number
-  hoursAfterLastEvent: number | null
-  followUpSent: boolean
+  eventId?: string
+  hoursSinceLastClientMessage?: number
+  daysSinceLastContact?: number
+  skippedCadenceEmail: boolean
+  inquiryAcknowledged: boolean
+  hoursSinceInquiry?: number
 }
 
 function generateId(): string {
@@ -76,10 +76,10 @@ function countOverridesInWindow(overrides: any[]): {
 }
 
 const RULE_DESCRIPTIONS: Record<string, string> = {
-  response_time_sla: 'Client message unanswered beyond your committed SLA',
-  cadence_integrity: 'Scheduled cadence touchpoint was skipped',
-  no_radio_silence: 'No contact with client beyond your committed maximum',
-  post_event_followup_within: 'Post-event follow-up not sent within committed window',
+  response_time_sla: 'Client message not responded to within committed timeframe',
+  cadence_integrity: 'Scheduled cadence email skipped',
+  no_radio_silence: 'No contact with client beyond committed maximum days',
+  inquiry_acknowledgment_within: 'Inquiry not acknowledged within committed timeframe',
 }
 
 export async function evaluateCommunicationCommitments(
@@ -104,16 +104,18 @@ export async function evaluateCommunicationCommitments(
     let violated = false
 
     if (rule.type === 'response_time_sla') {
-      if (context.hoursSinceLastResponse != null) {
-        violated = context.hoursSinceLastResponse > (rule.hours ?? 24)
+      if (context.hoursSinceLastClientMessage != null) {
+        violated = context.hoursSinceLastClientMessage > (rule.hours ?? 24)
       }
     } else if (rule.type === 'cadence_integrity') {
-      violated = context.missedCadenceTouchpoints > 0
+      violated = context.skippedCadenceEmail
     } else if (rule.type === 'no_radio_silence') {
-      violated = context.daysSinceLastContact > (rule.maxDays ?? 14)
-    } else if (rule.type === 'post_event_followup_within') {
-      if (context.hoursAfterLastEvent != null) {
-        violated = context.hoursAfterLastEvent <= (rule.hours ?? 48) && !context.followUpSent
+      if (context.daysSinceLastContact != null) {
+        violated = context.daysSinceLastContact > (rule.maxDays ?? 7)
+      }
+    } else if (rule.type === 'inquiry_acknowledgment_within') {
+      if (!context.inquiryAcknowledged && context.hoursSinceInquiry != null) {
+        violated = context.hoursSinceInquiry > (rule.hours ?? 4)
       }
     }
 
@@ -145,61 +147,49 @@ export async function evaluateCommunicationCommitments(
 export async function getCommunicationSuggestions(
   tenantId: string
 ): Promise<CommitmentSuggestion[]> {
-  const client = createServerClient()
   const suggestions: CommitmentSuggestion[] = []
-  const ninetyDaysAgo = new Date(Date.now() - 90 * 24 * 60 * 60 * 1000)
 
-  // Look for follow-up patterns from completed events
-  const { data: events } = await client
-    .from('events' as any)
-    .select('id, event_date, status, client_id')
-    .eq('tenant_id', tenantId)
-    .neq('status', 'cancelled')
-    .gte('event_date', ninetyDaysAgo.toISOString())
-    .order('event_date', { ascending: false })
+  suggestions.push({
+    id: generateId(),
+    tenantId,
+    domain: 'communication',
+    suggestedRule: { type: 'response_time_sla', hours: 24 },
+    rationale:
+      'Responding to every client message within 24 hours builds trust and prevents lost bookings.',
+    evidence: null,
+    status: 'pending',
+    respondedAt: null,
+    dismissedReason: null,
+    createdAt: new Date(),
+  })
 
-  if (!events || events.length === 0) return suggestions
+  suggestions.push({
+    id: generateId(),
+    tenantId,
+    domain: 'communication',
+    suggestedRule: { type: 'inquiry_acknowledgment_within', hours: 4 },
+    rationale:
+      'Acknowledging new inquiries within 4 hours dramatically increases conversion rates.',
+    evidence: null,
+    status: 'pending',
+    respondedAt: null,
+    dismissedReason: null,
+    createdAt: new Date(),
+  })
 
-  // Suggest 48h post-event follow-up if chef has 5+ completed events
-  const completedEvents = events.filter(
-    (e: any) => e.status === 'completed' || e.status === 'closed'
-  )
-
-  if (completedEvents.length >= 5) {
-    suggestions.push({
-      id: generateId(),
-      tenantId,
-      domain: 'communication',
-      suggestedRule: { type: 'post_event_followup_within', hours: 48 },
-      rationale:
-        `${completedEvents.length} completed events in the last 90 days. ` +
-        'A 48-hour follow-up commitment keeps client relationships warm and drives repeat bookings.',
-      evidence: { completedEventCount: completedEvents.length },
-      status: 'pending',
-      respondedAt: null,
-      dismissedReason: null,
-      createdAt: new Date(),
-    })
-  }
-
-  // Suggest radio silence guard if chef has many clients
-  const uniqueClients = new Set(events.map((e: any) => e.client_id).filter(Boolean))
-  if (uniqueClients.size >= 3) {
-    suggestions.push({
-      id: generateId(),
-      tenantId,
-      domain: 'communication',
-      suggestedRule: { type: 'no_radio_silence', maxDays: 14 },
-      rationale:
-        `${uniqueClients.size} active clients in the last 90 days. ` +
-        'A 14-day radio silence cap prevents client relationships from going cold.',
-      evidence: { activeClientCount: uniqueClients.size },
-      status: 'pending',
-      respondedAt: null,
-      dismissedReason: null,
-      createdAt: new Date(),
-    })
-  }
+  suggestions.push({
+    id: generateId(),
+    tenantId,
+    domain: 'communication',
+    suggestedRule: { type: 'no_radio_silence', maxDays: 7 },
+    rationale:
+      'Never going more than 7 days without client contact keeps relationships warm and prevents ghosting.',
+    evidence: null,
+    status: 'pending',
+    respondedAt: null,
+    dismissedReason: null,
+    createdAt: new Date(),
+  })
 
   return suggestions
 }

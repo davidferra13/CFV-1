@@ -7,11 +7,12 @@ import type {
 } from '@/lib/commitment/types'
 
 export type CapacityContext = {
+  eventId?: string
   guestCount: number
   hasSousChef: boolean
-  clientRevenuePercent: number | null
-  prepTimeHours: number | null
-  minutesSincePreviousEvent: number | null
+  clientRevenuePercent?: number
+  seasonalEventCount?: number
+  currentSeason?: string
 }
 
 function generateId(): string {
@@ -74,19 +75,10 @@ function countOverridesInWindow(overrides: any[]): {
   }
 }
 
-function getGuestTierKey(guestCount: number): string {
-  if (guestCount <= 10) return '1-10'
-  if (guestCount <= 20) return '11-20'
-  if (guestCount <= 40) return '21-40'
-  if (guestCount <= 60) return '41-60'
-  return '60+'
-}
-
 const RULE_DESCRIPTIONS: Record<string, string> = {
   max_guests_without_sous: 'Guest count exceeds your solo capacity limit',
-  revenue_concentration_cap: 'Single client revenue share exceeds your diversification cap',
-  min_prep_time_per_tier: 'Prep time is below your minimum for this guest count tier',
-  min_gap_between_events: 'Gap between same-day events is below your committed minimum',
+  revenue_concentration_cap: 'Single client revenue share exceeds your committed cap',
+  seasonal_booking_limit: 'Seasonal booking count exceeds your committed limit',
 }
 
 export async function evaluateCapacityCommitments(
@@ -111,23 +103,18 @@ export async function evaluateCapacityCommitments(
     let violated = false
 
     if (rule.type === 'max_guests_without_sous') {
-      violated = !context.hasSousChef && context.guestCount > (rule.limit ?? Infinity)
+      violated = !context.hasSousChef && context.guestCount > (rule.limit ?? 20)
     } else if (rule.type === 'revenue_concentration_cap') {
       if (context.clientRevenuePercent != null) {
-        violated = context.clientRevenuePercent > (rule.maxPercent ?? 100)
+        violated = context.clientRevenuePercent > (rule.maxPercent ?? 40)
       }
-    } else if (rule.type === 'min_prep_time_per_tier') {
-      if (context.prepTimeHours != null) {
-        const tierKey = getGuestTierKey(context.guestCount)
-        const hoursPerTier = (rule.hoursPerGuestTier ?? {}) as Record<string, number>
-        const requiredHours = hoursPerTier[tierKey]
-        if (requiredHours != null) {
-          violated = context.prepTimeHours < requiredHours
-        }
-      }
-    } else if (rule.type === 'min_gap_between_events') {
-      if (context.minutesSincePreviousEvent != null) {
-        violated = context.minutesSincePreviousEvent < (rule.minutes ?? 0)
+    } else if (rule.type === 'seasonal_booking_limit') {
+      if (
+        context.currentSeason &&
+        context.seasonalEventCount != null &&
+        context.currentSeason === rule.season
+      ) {
+        violated = context.seasonalEventCount >= (rule.maxEvents ?? 20)
       }
     }
 
@@ -161,71 +148,26 @@ export async function getCapacitySuggestions(tenantId: string): Promise<Commitme
   const suggestions: CommitmentSuggestion[] = []
   const ninetyDaysAgo = new Date(Date.now() - 90 * 24 * 60 * 60 * 1000)
 
+  // Look at recent events to see if any had high guest counts solo
   const { data: events } = await client
     .from('events' as any)
-    .select('id, event_date, guest_count, client_id, per_head_price, status')
+    .select('id, guest_count')
     .eq('tenant_id', tenantId)
     .neq('status', 'cancelled')
     .gte('event_date', ninetyDaysAgo.toISOString())
 
-  if (!events || events.length === 0) return suggestions
+  if (events && events.length > 0) {
+    const highGuestEvents = events.filter((e: any) => (e.guest_count ?? 0) > 20)
 
-  // Suggest solo guest cap if chef regularly does large events
-  const largeSoloEvents = events.filter(
-    (e: any) => typeof e.guest_count === 'number' && e.guest_count > 20
-  )
-  if (largeSoloEvents.length >= 2) {
-    const maxGuests = Math.max(...largeSoloEvents.map((e: any) => e.guest_count as number))
-    suggestions.push({
-      id: generateId(),
-      tenantId,
-      domain: 'capacity',
-      suggestedRule: { type: 'max_guests_without_sous', limit: 20 },
-      rationale:
-        `${largeSoloEvents.length} events with 20+ guests in the last 90 days (max: ${maxGuests}). ` +
-        'A solo cap at 20 guests protects food quality and prevents burnout.',
-      evidence: { largeEventCount: largeSoloEvents.length, maxGuestCount: maxGuests },
-      status: 'pending',
-      respondedAt: null,
-      dismissedReason: null,
-      createdAt: new Date(),
-    })
-  }
-
-  // Suggest revenue concentration cap via Herfindahl-style analysis
-  const clientRevenue = new Map<string, number>()
-  let totalRevenue = 0
-  for (const event of events) {
-    if (!event.client_id || !event.per_head_price || !event.guest_count) continue
-    const revenue = (event.per_head_price as number) * (event.guest_count as number)
-    clientRevenue.set(
-      event.client_id as string,
-      (clientRevenue.get(event.client_id as string) || 0) + revenue
-    )
-    totalRevenue += revenue
-  }
-
-  if (totalRevenue > 0 && clientRevenue.size >= 3) {
-    let maxPercent = 0
-    for (const rev of clientRevenue.values()) {
-      const pct = (rev / totalRevenue) * 100
-      if (pct > maxPercent) maxPercent = pct
-    }
-
-    if (maxPercent > 40) {
+    if (highGuestEvents.length >= 1) {
       suggestions.push({
         id: generateId(),
         tenantId,
         domain: 'capacity',
-        suggestedRule: { type: 'revenue_concentration_cap', maxPercent: 40 },
+        suggestedRule: { type: 'max_guests_without_sous', limit: 20 },
         rationale:
-          `One client accounts for ${Math.round(maxPercent)}% of your revenue. ` +
-          'Capping at 40% reduces business risk if that client leaves.',
-        evidence: {
-          topClientPercent: Math.round(maxPercent),
-          clientCount: clientRevenue.size,
-          totalRevenue: Math.round(totalRevenue),
-        },
+          'Events over 20 guests solo strain quality and timing. Requiring a sous chef protects your standards.',
+        evidence: { highGuestEventCount: highGuestEvents.length },
         status: 'pending',
         respondedAt: null,
         dismissedReason: null,
@@ -234,30 +176,19 @@ export async function getCapacitySuggestions(tenantId: string): Promise<Commitme
     }
   }
 
-  // Suggest same-day gap if chef had overlapping event days
-  const eventsByDate = new Map<string, number>()
-  for (const event of events) {
-    if (!event.event_date) continue
-    const dateKey = new Date(event.event_date as string).toISOString().slice(0, 10)
-    eventsByDate.set(dateKey, (eventsByDate.get(dateKey) || 0) + 1)
-  }
-  const doubleDays = [...eventsByDate.values()].filter((c) => c >= 2).length
-  if (doubleDays >= 2) {
-    suggestions.push({
-      id: generateId(),
-      tenantId,
-      domain: 'capacity',
-      suggestedRule: { type: 'min_gap_between_events', minutes: 180 },
-      rationale:
-        `${doubleDays} days with 2+ events in the last 90 days. ` +
-        'A 3-hour minimum gap between events protects transit, setup, and food quality.',
-      evidence: { doubleDayCount: doubleDays },
-      status: 'pending',
-      respondedAt: null,
-      dismissedReason: null,
-      createdAt: new Date(),
-    })
-  }
+  suggestions.push({
+    id: generateId(),
+    tenantId,
+    domain: 'capacity',
+    suggestedRule: { type: 'revenue_concentration_cap', maxPercent: 40 },
+    rationale:
+      'Capping any single client at 40% of revenue prevents catastrophic income loss if one client leaves.',
+    evidence: null,
+    status: 'pending',
+    respondedAt: null,
+    dismissedReason: null,
+    createdAt: new Date(),
+  })
 
   return suggestions
 }

@@ -6,14 +6,12 @@ import type {
   FrictionTier,
 } from '@/lib/commitment/types'
 
-export type ContingencyContext = {
+export type QualityContext = {
   eventId: string
-  emergencyContactsSet: boolean
-  backupVendorListReady: boolean
-  equipmentFailurePlanReady: boolean
-  weatherContingencyReady: boolean
-  isOutdoorEvent: boolean
-  eventValue?: number
+  recipeTested: boolean
+  platingStandardsDocumented: boolean
+  ingredientGrade: string | null
+  isUnderTimePressure: boolean
 }
 
 function generateId(): string {
@@ -76,19 +74,18 @@ function countOverridesInWindow(overrides: any[]): {
   }
 }
 
+const GRADE_ORDER = ['A', 'B', 'C', 'D', 'F']
+
 const RULE_DESCRIPTIONS: Record<string, string> = {
-  emergency_contacts_before_confirm: 'Event confirmed without emergency contacts set',
-  backup_plan_for_high_value: 'High-value event confirmed without a backup plan',
-  backup_vendor_list: 'Event confirmed without backup vendor list',
-  equipment_failure_plan: 'Event confirmed without equipment failure plan',
-  weather_contingency_outdoor: 'Outdoor event confirmed without weather contingency',
-  insurance_current_required: 'Operating without current insurance',
-  equipment_checklist_before_service: 'Service started without equipment checklist',
+  recipe_tested_before_serve: 'Recipe served to clients without prior testing',
+  plating_standards_documented: 'Plating standards not documented for this dish',
+  ingredient_quality_floor: 'Ingredient grade below your committed minimum',
+  no_shortcuts_under_pressure: 'Quality shortcut taken under time pressure',
 }
 
-export async function evaluateContingencyCommitments(
+export async function evaluateQualityCommitments(
   tenantId: string,
-  context: ContingencyContext
+  context: QualityContext
 ): Promise<FrictionCheckResult[]> {
   const client = createServerClient()
   const results: FrictionCheckResult[] = []
@@ -97,7 +94,7 @@ export async function evaluateContingencyCommitments(
     .from('commitments' as any)
     .select('*')
     .eq('tenant_id', tenantId)
-    .eq('domain', 'contingency')
+    .eq('domain', 'quality')
     .eq('status', 'active')
 
   if (!rows || rows.length === 0) return results
@@ -107,21 +104,18 @@ export async function evaluateContingencyCommitments(
     const rule = commitment.rule as Record<string, any>
     let violated = false
 
-    if (rule.type === 'emergency_contacts_before_confirm') {
-      violated = !context.emergencyContactsSet
-    } else if (rule.type === 'backup_plan_for_high_value') {
-      if (context.eventValue != null) {
-        violated = context.eventValue >= (rule.minEventValue ?? 2000)
+    if (rule.type === 'recipe_tested_before_serve') {
+      violated = !context.recipeTested
+    } else if (rule.type === 'plating_standards_documented') {
+      violated = !context.platingStandardsDocumented
+    } else if (rule.type === 'ingredient_quality_floor') {
+      if (context.ingredientGrade) {
+        const minIdx = GRADE_ORDER.indexOf(rule.minGrade ?? 'C')
+        const actualIdx = GRADE_ORDER.indexOf(context.ingredientGrade)
+        violated = actualIdx > minIdx
       }
-    } else if (rule.type === 'backup_vendor_list') {
-      violated = !context.backupVendorListReady
-    } else if (rule.type === 'equipment_failure_plan') {
-      violated = !context.equipmentFailurePlanReady
-    } else if (rule.type === 'weather_contingency_outdoor') {
-      violated = context.isOutdoorEvent && !context.weatherContingencyReady
-    } else if (rule.type === 'equipment_checklist_before_service') {
-      // Evaluated at service time, always flagged if no checklist
-      violated = false
+    } else if (rule.type === 'no_shortcuts_under_pressure') {
+      violated = context.isUnderTimePressure
     }
 
     if (!violated) continue
@@ -142,23 +136,24 @@ export async function evaluateContingencyCommitments(
       streakAtRisk: commitment.currentStreak > 0 ? commitment.currentStreak : null,
       overridesInWindow: countOverridesInWindow(overrides),
       hasConsequenceCorrelation: false,
-      ruleDescription: RULE_DESCRIPTIONS[rule.type] || 'Contingency commitment violated',
+      ruleDescription: RULE_DESCRIPTIONS[rule.type] || 'Quality commitment violated',
     })
   }
 
   return results
 }
 
-export async function getContingencySuggestions(tenantId: string): Promise<CommitmentSuggestion[]> {
+export async function getQualitySuggestions(tenantId: string): Promise<CommitmentSuggestion[]> {
   const suggestions: CommitmentSuggestion[] = []
 
+  // Quality domain suggests baseline standards for all chefs
   suggestions.push({
     id: generateId(),
     tenantId,
-    domain: 'contingency',
-    suggestedRule: { type: 'emergency_contacts_before_confirm', required: true },
+    domain: 'quality',
+    suggestedRule: { type: 'recipe_tested_before_serve', required: true },
     rationale:
-      'Having emergency contacts on file before confirming ensures you can reach someone if plans change suddenly.',
+      'Testing every recipe before serving to clients prevents surprises and protects your reputation.',
     evidence: null,
     status: 'pending',
     respondedAt: null,
@@ -169,38 +164,10 @@ export async function getContingencySuggestions(tenantId: string): Promise<Commi
   suggestions.push({
     id: generateId(),
     tenantId,
-    domain: 'contingency',
-    suggestedRule: { type: 'backup_vendor_list', required: true },
+    domain: 'quality',
+    suggestedRule: { type: 'ingredient_quality_floor', minGrade: 'B' },
     rationale:
-      'A backup vendor list prevents scrambling when your primary supplier is unavailable.',
-    evidence: null,
-    status: 'pending',
-    respondedAt: null,
-    dismissedReason: null,
-    createdAt: new Date(),
-  })
-
-  suggestions.push({
-    id: generateId(),
-    tenantId,
-    domain: 'contingency',
-    suggestedRule: { type: 'equipment_failure_plan', required: true },
-    rationale:
-      'Equipment fails at the worst times. A pre-made plan (backup oven, portable burner, rental contacts) saves the day.',
-    evidence: null,
-    status: 'pending',
-    respondedAt: null,
-    dismissedReason: null,
-    createdAt: new Date(),
-  })
-
-  suggestions.push({
-    id: generateId(),
-    tenantId,
-    domain: 'contingency',
-    suggestedRule: { type: 'weather_contingency_outdoor', required: true },
-    rationale:
-      'Outdoor events need a weather plan: rain backup, wind protection, temperature management. No surprises.',
+      'Setting a minimum ingredient grade of B ensures consistent quality across all events.',
     evidence: null,
     status: 'pending',
     respondedAt: null,
