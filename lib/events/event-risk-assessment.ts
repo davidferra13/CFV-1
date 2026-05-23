@@ -110,10 +110,10 @@ export async function getEventRiskAssessment(
     const venueContext = await getVenueContext(db, event.venue_name, tenantId)
 
     // 8.5 Load venue equipment from venue_profiles
-    const venueEquipment = await getVenueEquipment(db, event.venue_name, tenantId)
+    const venueEquipment = await getVenueEquipment(db, event.venue_name, tenantId, eventId)
 
     // 8.6 Fetch weather risk (3-second timeout, non-blocking)
-    const weatherRiskInput = await fetchWeatherRiskInput(eventId)
+    const weatherRiskInput = await fetchWeatherRiskInput(db, eventId, tenantId)
 
     // 9. Load dietary restriction count for this event
     const dietaryCount = await getDietaryRestrictionCount(db, eventId, tenantId)
@@ -203,7 +203,7 @@ export async function getDishRiskPreview(
     const productionCounts = await getProductionCounts(db, [recipeId], tenantId)
     const clientContext = await getClientContext(db, event.client_id, tenantId)
     const venueContext = await getVenueContext(db, event.venue_name, tenantId)
-    const venueEquipment = await getVenueEquipment(db, event.venue_name, tenantId)
+    const venueEquipment = await getVenueEquipment(db, event.venue_name, tenantId, eventId)
 
     // Fetch PIE data for the single recipe
     const eventMonth = new Date().getMonth() + 1
@@ -413,30 +413,61 @@ const NULL_VENUE_EQUIPMENT: VenueEquipment = {
 async function getVenueEquipment(
   db: any,
   venueName: string | null,
-  tenantId: string
+  tenantId: string,
+  eventId?: string
 ): Promise<VenueEquipment> {
-  if (!venueName) return NULL_VENUE_EQUIPMENT
+  // Try venue_profiles first (general venue data)
+  if (venueName) {
+    try {
+      const { data } = await db
+        .from('venue_profiles')
+        .select('has_full_kitchen, oven_count, burner_count, has_refrigeration')
+        .eq('tenant_id', tenantId)
+        .eq('venue_name', venueName)
+        .single()
 
-  try {
-    const { data } = await db
-      .from('venue_profiles')
-      .select('has_full_kitchen, oven_count, burner_count, has_refrigeration')
-      .eq('tenant_id', tenantId)
-      .eq('venue_name', venueName)
-      .single()
-
-    if (!data) return NULL_VENUE_EQUIPMENT
-
-    return {
-      venueHasFullKitchen: data.has_full_kitchen ?? null,
-      venueOvenCount: data.oven_count ?? null,
-      venueBurnerCount: data.burner_count ?? null,
-      hasRefrigeration: data.has_refrigeration ?? null,
+      if (data) {
+        return {
+          venueHasFullKitchen: data.has_full_kitchen ?? null,
+          venueOvenCount: data.oven_count ?? null,
+          venueBurnerCount: data.burner_count ?? null,
+          hasRefrigeration: data.has_refrigeration ?? null,
+        }
+      }
+    } catch {
+      // Table may not exist or query failed; try fallback
     }
-  } catch {
-    // Table may not exist or query failed; degrade gracefully
-    return NULL_VENUE_EQUIPMENT
   }
+
+  // Fallback: read from event_site_assessments (per-event site survey)
+  if (eventId) {
+    try {
+      const { data: site } = await db
+        .from('event_site_assessments')
+        .select('has_oven, has_stovetop, has_refrigeration, kitchen_size')
+        .eq('event_id', eventId)
+        .eq('tenant_id', tenantId)
+        .maybeSingle()
+
+      if (site) {
+        return {
+          venueHasFullKitchen:
+            site.kitchen_size === 'commercial' || site.kitchen_size === 'large'
+              ? true
+              : site.kitchen_size === 'none'
+                ? false
+                : null,
+          venueOvenCount: site.has_oven ? 1 : 0,
+          venueBurnerCount: site.has_stovetop ? 1 : 0,
+          hasRefrigeration: site.has_refrigeration ?? null,
+        }
+      }
+    } catch {
+      // Degrade gracefully
+    }
+  }
+
+  return NULL_VENUE_EQUIPMENT
 }
 
 async function getDietaryRestrictionCount(
@@ -651,7 +682,11 @@ function inferTemperatureStages(method: string | null): boolean | null {
  * Uses Promise.race with 3-second timeout. Returns null on timeout, error,
  * or if weather data is unavailable (no coords, event too far out, etc.).
  */
-async function fetchWeatherRiskInput(eventId: string): Promise<WeatherRiskInput | null> {
+async function fetchWeatherRiskInput(
+  db: any,
+  eventId: string,
+  tenantId: string
+): Promise<WeatherRiskInput | null> {
   try {
     const TIMEOUT_MS = 3000
     const timeoutPromise = new Promise<null>((resolve) =>
@@ -659,13 +694,31 @@ async function fetchWeatherRiskInput(eventId: string): Promise<WeatherRiskInput 
     )
     const weatherPromise = getEventWeatherForecast(eventId)
 
-    const result = await Promise.race([weatherPromise, timeoutPromise])
+    // Fetch site assessment for weather_exposure in parallel with weather forecast
+    const siteAssessmentPromise = db
+      .from('event_site_assessments')
+      .select('weather_exposure, outdoor_space')
+      .eq('event_id', eventId)
+      .eq('tenant_id', tenantId)
+      .maybeSingle()
+      .then((r: any) => r?.data ?? null)
+      .catch(() => null)
+
+    const [result, siteAssessment] = await Promise.all([
+      Promise.race([weatherPromise, timeoutPromise]),
+      siteAssessmentPromise,
+    ])
+
     if (!result) return null
+
+    // Use actual weather_exposure from site assessment; fall back to outdoor_space;
+    // default to true (conservative) if no assessment exists
+    const isOutdoor = siteAssessment?.weather_exposure ?? siteAssessment?.outdoor_space ?? true
 
     return {
       weatherRiskScore: result.risk.score,
       weatherWarnings: result.risk.warnings.length > 0 ? result.risk.warnings : null,
-      isOutdoor: true, // If we got here, event has weather_exposure/outdoor context
+      isOutdoor,
     }
   } catch {
     return null
