@@ -41,6 +41,7 @@ import {
   ChefLifeSynthesisRailSkeleton,
 } from '@/components/dashboard/chef-life-synthesis-rail'
 import { getChefLifeDashboardSynthesis } from '@/lib/dashboard/chef-life-synthesis-actions'
+import { IntelligenceDigestSection } from './_sections/intelligence-digest-section'
 
 export const metadata: Metadata = { title: 'Dashboard' }
 
@@ -103,6 +104,12 @@ export default async function ChefDashboard() {
       <Suspense fallback={<IntelligenceCardsSkeleton />}>
         <AmbientLayer />
       </Suspense>
+
+      <WidgetErrorBoundary name="Intelligence Digest" compact>
+        <Suspense fallback={<IntelligenceCardsSkeleton />}>
+          <IntelligenceDigestSection />
+        </Suspense>
+      </WidgetErrorBoundary>
 
       <WidgetErrorBoundary name="System Pulse" compact>
         <Suspense fallback={<IntelligenceCardsSkeleton />}>
