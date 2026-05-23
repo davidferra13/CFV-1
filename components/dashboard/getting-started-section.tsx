@@ -32,8 +32,8 @@ export function GettingStartedSection({ presence }: { presence: TenantDataPresen
     },
     {
       label: 'Create an event',
-      description: 'Plan your next service',
-      href: '/events/new',
+      description: presence.hasClients ? 'Plan your next service' : 'Guided setup in 5 minutes',
+      href: presence.hasClients ? '/events/new' : '/onboarding/first-event',
       icon: CalendarDays,
       done: presence.hasEvents,
     },
