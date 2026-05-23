@@ -1,6 +1,6 @@
-// Chef Dashboard - Layout Compositor
-// Each section is a self-contained async server component with its own data fetching.
-// This file handles auth, tenant resolution, and Suspense boundaries only.
+// Chef Dashboard - Unified Daily Command Center
+// The command center is the primary morning screen. Existing sections are preserved
+// below it as secondary context. Auth + Suspense boundaries managed here.
 
 import { Suspense } from 'react'
 import type { Metadata } from 'next'
@@ -12,7 +12,8 @@ import { WidgetCardSkeleton } from '@/components/dashboard/widget-cards/widget-c
 import { TieredRailSkeleton } from '@/components/rail/tiered-rail'
 import { getDailyPlanStats } from '@/lib/daily-ops/actions'
 import { DailyPlanBanner } from '@/components/daily-ops/daily-plan-banner'
-import { HeroZone } from './_sections/hero-zone'
+import { getCommandCenterData } from '@/lib/command-center/attention-actions'
+import { CommandCenterLayout } from '@/components/command-center/command-center-layout'
 import { OnboardingZone } from './_sections/onboarding-zone'
 import { AmbientLayer } from './_sections/ambient-layer'
 import { ThisWeekSection } from './_sections/this-week-section'
@@ -26,7 +27,6 @@ import {
 } from './_sections/widget-sections'
 import {
   AlertsSkeleton,
-  HeroMetricsSkeleton,
   BusinessSkeleton,
   ActivitySkeleton,
   ScheduleSkeleton,
@@ -48,11 +48,47 @@ import { IntelligenceDigestSection } from './_sections/intelligence-digest-secti
 
 export const metadata: Metadata = { title: 'Dashboard' }
 
+// ---- Command Center loader (primary morning screen) ----
+
+function CommandCenterSkeleton() {
+  return (
+    <div className="space-y-6 animate-pulse">
+      <div className="h-8 w-64 bg-stone-800 rounded" />
+      <div className="flex gap-2">
+        <div className="h-8 w-32 bg-stone-800 rounded-full" />
+        <div className="h-8 w-32 bg-stone-800 rounded-full" />
+      </div>
+      <div className="grid grid-cols-1 lg:grid-cols-5 gap-6">
+        <div className="lg:col-span-3 space-y-3">
+          <div className="h-32 bg-stone-900/50 rounded-xl" />
+          <div className="h-24 bg-stone-900/50 rounded-xl" />
+        </div>
+        <div className="lg:col-span-2 space-y-4">
+          <div className="h-40 bg-stone-900/50 rounded-xl" />
+          <div className="h-28 bg-stone-900/50 rounded-xl" />
+        </div>
+      </div>
+    </div>
+  )
+}
+
+async function CommandCenterLoader() {
+  const data = await getCommandCenterData()
+  return <CommandCenterLayout data={data} onRefresh={getCommandCenterData} />
+}
+
 export default async function ChefDashboard() {
   const user = await requireChef()
   const queuePromise = getPriorityQueue().catch(() => EMPTY_PRIORITY_QUEUE)
   return (
     <div className="dashboard-page min-h-screen space-y-8 sm:space-y-10">
+      {/* Command Center: the unified daily morning screen */}
+      <WidgetErrorBoundary name="Command Center" compact>
+        <Suspense fallback={<CommandCenterSkeleton />}>
+          <CommandCenterLoader />
+        </Suspense>
+      </WidgetErrorBoundary>
+
       <Suspense fallback={<AlertsSkeleton />}>
         <OpenClawLiveAlertsSection />
       </Suspense>
