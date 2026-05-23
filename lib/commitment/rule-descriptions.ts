@@ -100,6 +100,28 @@ export function describeRule(rule: CommitmentRule): string {
       return `No quotes sent after ${rule.hour}:00`
     case 'time_of_day_no_accepts_between':
       return `No event accepts between ${rule.startHour}:00 and ${rule.endHour}:00`
+    case 'recipe_tested_before_serve':
+      return `Every recipe must be tested before serving to clients`
+    case 'plating_standards_documented':
+      return `Plating standards must be documented for each dish`
+    case 'ingredient_quality_floor':
+      return `Minimum ingredient grade: ${rule.minGrade}`
+    case 'no_shortcuts_under_pressure':
+      return `No quality shortcuts allowed under time pressure`
+    case 'cost_tracking_per_event':
+      return `Cost tracking required for every event`
+    case 'tax_prep_quarterly':
+      return `Tax preparation review required quarterly`
+    case 'seasonal_booking_limit':
+      return `Maximum ${rule.maxEvents} events during ${rule.season} season`
+    case 'weather_contingency_outdoor':
+      return `Weather contingency plan required for outdoor events`
+    case 'backup_vendor_list':
+      return `Backup vendor list required before confirming`
+    case 'equipment_failure_plan':
+      return `Equipment failure plan required before service`
+    case 'inquiry_acknowledgment_within':
+      return `Acknowledge inquiries within ${rule.hours} hours`
     case 'custom':
       return `Custom: ${rule.description}`
     default:
