@@ -93,6 +93,9 @@ import { findPotentialClientMatches } from '@/lib/clients/cross-platform-matchin
 import { PotentialDuplicatesCard } from '@/components/clients/potential-duplicates-card'
 import { EntityPhotoUpload } from '@/components/entities/entity-photo-upload'
 import { ScheduleMessageDialog } from '@/components/communication/schedule-message-dialog'
+import { QuickReply } from '@/components/communication/quick-reply'
+import { LastContactBadge } from '@/components/communication/last-contact-badge'
+import { getClientLastContact } from '@/lib/communication/unified-actions'
 import { CompletionCard, CompletionCardSkeleton } from '@/components/completion/completion-card'
 import { getCompletionForEntity } from '@/lib/completion/actions'
 import { buildClientWorkGraph } from '@/lib/client-work-graph/build'
@@ -201,6 +204,7 @@ export default async function ClientDetailPage({ params }: ClientDetailPageProps
     householdData,
     recurringSchedules,
     allMenus,
+    lastContactData,
   ] = await Promise.all([
     getClientWithStats(params.id).catch(() => null),
     getResponseTemplates().catch(() => []),
@@ -252,6 +256,7 @@ export default async function ClientDetailPage({ params }: ClientDetailPageProps
     getHouseholdForClient(params.id).catch(() => null),
     getRecurringSchedules(params.id).catch(() => []),
     getMenus().catch(() => []),
+    getClientLastContact(params.id).catch(() => null),
   ])
 
   const engagementScore = computeEngagementScore(clientPortalActivity as any[])
@@ -339,6 +344,13 @@ export default async function ClientDetailPage({ params }: ClientDetailPageProps
               />
             )}
             <EngagementBadge level={engagementScore.level} signals={engagementScore.signals} />
+            {lastContactData && (
+              <LastContactBadge
+                lastContactAt={lastContactData.lastContactAt}
+                daysSinceContact={lastContactData.daysSinceContact}
+                compact
+              />
+            )}
           </div>
           <p className="text-stone-300 mt-1">{client.email}</p>
           {loyaltyProfile && (
@@ -373,6 +385,9 @@ export default async function ClientDetailPage({ params }: ClientDetailPageProps
           </div>
         </div>
         <div className="flex flex-wrap gap-2">
+          <Link href={`/clients/${client.id}/conversation`}>
+            <Button variant="secondary">Conversation</Button>
+          </Link>
           <ScheduleMessageDialog clientId={client.id} clientName={client.full_name} />
           <Link href={`/clients/${client.id}/recurring`}>
             <Button variant="secondary">Recurring Planning</Button>
@@ -1384,12 +1399,20 @@ export default async function ClientDetailPage({ params }: ClientDetailPageProps
         <CardHeader>
           <div className="flex items-center justify-between">
             <CardTitle>Communication History</CardTitle>
-            <Link
-              href={`/inbox?clientId=${client.id}`}
-              className="text-xs text-brand-400 hover:text-brand-300"
-            >
-              View all emails →
-            </Link>
+            <div className="flex items-center gap-3">
+              <Link
+                href={`/clients/${client.id}/conversation`}
+                className="text-xs text-brand-400 hover:text-brand-300"
+              >
+                Full conversation →
+              </Link>
+              <Link
+                href={`/inbox?clientId=${client.id}`}
+                className="text-xs text-brand-400 hover:text-brand-300"
+              >
+                Inbox view →
+              </Link>
+            </div>
           </div>
           <p className="text-sm text-stone-400">
             Every interaction with this client: emails, messages, outreach, portal visits,
@@ -1403,6 +1426,15 @@ export default async function ClientDetailPage({ params }: ClientDetailPageProps
           </div>
           <div className="mt-4 pt-4 border-t border-stone-700">
             <MessageLogForm clientId={client.id} templates={templates} />
+          </div>
+          <div className="mt-4 pt-4 border-t border-stone-700">
+            <p className="text-xs font-medium text-stone-400 mb-2">Quick Reply</p>
+            <QuickReply
+              clientId={client.id}
+              clientEmail={client.email ?? null}
+              clientPhone={(client as any).phone ?? null}
+              compact
+            />
           </div>
         </CardContent>
       </Card>

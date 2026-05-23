@@ -339,10 +339,10 @@ const ClientTableRow = memo(function ClientTableRow({ client }: { client: Client
             <CalendarPlus className="h-4 w-4" />
           </Link>
           <Link
-            href={`/clients/${client.id}#communication`}
+            href={`/clients/${client.id}/conversation`}
             onClick={(e) => e.stopPropagation()}
             className="p-1.5 rounded hover:bg-stone-700 text-stone-500 hover:text-stone-200 transition-colors"
-            title="Send message"
+            title="Conversation"
           >
             <MessageCircle className="h-4 w-4" />
           </Link>
