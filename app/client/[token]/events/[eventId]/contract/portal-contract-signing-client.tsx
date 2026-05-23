@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from 'react'
 import { useRouter } from 'next/navigation'
-import ReactMarkdown from 'react-markdown'
+import { LazyMarkdown } from '@/components/ui/lazy-markdown'
 import remarkGfm from 'remark-gfm'
 import { SignaturePad } from '@/components/contracts/signature-pad'
 import { ContractStatusBadge } from '@/components/contracts/contract-status-badge'
@@ -98,7 +98,7 @@ export function PortalContractSigningClient({
   return (
     <div className="space-y-6">
       <div className="prose prose-invert max-w-none rounded-xl border border-stone-700 bg-stone-900 p-6 prose-headings:text-stone-100 prose-li:text-stone-200 prose-p:text-stone-200 prose-strong:text-stone-100">
-        <ReactMarkdown remarkPlugins={[remarkGfm]}>{bodyMarkdown}</ReactMarkdown>
+        <LazyMarkdown remarkPlugins={[remarkGfm]}>{bodyMarkdown}</LazyMarkdown>
       </div>
 
       <div className="space-y-4 rounded-xl border border-stone-700 bg-stone-900 p-6">

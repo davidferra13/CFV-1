@@ -3,7 +3,7 @@
 import { useState, useRef, useEffect, useCallback, useMemo } from 'react'
 import { usePathname } from 'next/navigation'
 import Link from 'next/link'
-import ReactMarkdown from 'react-markdown'
+import { LazyMarkdown } from '@/components/ui/lazy-markdown'
 import remarkGfm from 'remark-gfm'
 import { RemyAvatar } from '@/components/ai/remy-avatar'
 import { useRemyContext } from '@/components/ai/remy-context'
@@ -1189,12 +1189,12 @@ export function RemyDrawer() {
                           <p className="whitespace-pre-wrap">{msg.content}</p>
                         ) : (
                           <div className="prose prose-sm prose-stone dark:prose-invert max-w-none [&>*:first-child]:mt-0 [&>*:last-child]:mb-0">
-                            <ReactMarkdown
+                            <LazyMarkdown
                               remarkPlugins={[remarkGfm]}
                               components={markdownComponents as any}
                             >
                               {msg.content}
-                            </ReactMarkdown>
+                            </LazyMarkdown>
                           </div>
                         )}
                       </div>
@@ -1412,12 +1412,12 @@ export function RemyDrawer() {
                     <div className="max-w-[80%] space-y-1">
                       <div className="bg-stone-800 dark:bg-stone-800 rounded-xl px-4 py-2.5 text-sm text-stone-100 dark:text-stone-100">
                         <div className="prose prose-sm prose-stone dark:prose-invert max-w-none [&>*:first-child]:mt-0 [&>*:last-child]:mb-0">
-                          <ReactMarkdown
+                          <LazyMarkdown
                             remarkPlugins={[remarkGfm]}
                             components={markdownComponents as any}
                           >
                             {streamingContent}
-                          </ReactMarkdown>
+                          </LazyMarkdown>
                         </div>
                         <span className="inline-block w-1.5 h-4 bg-brand-600 animate-pulse ml-0.5 align-text-bottom" />
                       </div>

@@ -1,7 +1,7 @@
 'use client'
 
 import Link from 'next/link'
-import { useTransition } from 'react'
+import { memo, useTransition } from 'react'
 import type { GodModeResolvedItem } from '@/lib/discovery/god-mode-types'
 import type { InlineAction } from '@/lib/discovery/god-mode-types'
 import type { UnifiedTier } from '@/lib/discovery/rail-tier-assigner'
@@ -123,7 +123,7 @@ function InlineActionButton({
   )
 }
 
-export function RailItemRow({
+export const RailItemRow = memo(function RailItemRow({
   item,
   tier,
   className,
@@ -236,4 +236,4 @@ export function RailItemRow({
   }
 
   return content
-}
+})

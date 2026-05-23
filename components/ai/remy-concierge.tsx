@@ -3,7 +3,7 @@
 import { useState, useRef, useEffect, useCallback, useMemo, useTransition } from 'react'
 import { usePathname } from 'next/navigation'
 import Link from 'next/link'
-import ReactMarkdown from 'react-markdown'
+import { LazyMarkdown } from '@/components/ui/lazy-markdown'
 import remarkGfm from 'remark-gfm'
 import { RemyAvatar } from '@/components/ai/remy-avatar'
 import { RemyTaskCard } from '@/components/ai/remy-task-card'
@@ -428,12 +428,12 @@ export function RemyConcierge() {
                 <div className="flex-1 max-w-[85%] space-y-1">
                   <div className="bg-stone-800/50 rounded-2xl px-4 py-3 text-sm text-stone-100">
                     <div className="prose prose-sm prose-stone prose-invert max-w-none [&>*:first-child]:mt-0 [&>*:last-child]:mb-0">
-                      <ReactMarkdown
+                      <LazyMarkdown
                         remarkPlugins={[remarkGfm]}
                         components={markdownComponents as any}
                       >
                         {streamingContent}
-                      </ReactMarkdown>
+                      </LazyMarkdown>
                     </div>
                     <span className="inline-block w-1.5 h-4 bg-brand-500 animate-pulse ml-0.5 align-text-bottom" />
                   </div>
@@ -588,9 +588,9 @@ function MessageBubble({
         {/* Message content */}
         <div className="bg-stone-800/50 rounded-2xl px-4 py-3 text-sm text-stone-100 relative">
           <div className="prose prose-sm prose-stone prose-invert max-w-none [&>*:first-child]:mt-0 [&>*:last-child]:mb-0">
-            <ReactMarkdown remarkPlugins={[remarkGfm]} components={markdownComponents as any}>
+            <LazyMarkdown remarkPlugins={[remarkGfm]} components={markdownComponents as any}>
               {msg.content}
-            </ReactMarkdown>
+            </LazyMarkdown>
           </div>
 
           {/* Hover actions */}

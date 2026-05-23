@@ -1,5 +1,6 @@
 'use client'
 
+import { memo } from 'react'
 import { toast } from 'sonner'
 import {
   Bell,
@@ -301,7 +302,7 @@ function InlineActionButtonComponent({
 
 // ─── Component ───────────────────────────────────────────────────────────
 
-export function NotificationCard({
+export const NotificationCard = memo(function NotificationCard({
   notification,
   onNavigate,
   onArchive,
@@ -403,4 +404,4 @@ export function NotificationCard({
       </div>
     </div>
   )
-}
+})

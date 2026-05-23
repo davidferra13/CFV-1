@@ -1,6 +1,6 @@
 'use client'
 
-import { useState } from 'react'
+import { memo, useState } from 'react'
 import Link from 'next/link'
 import type { FeedItem } from '@/lib/feed/aggregation'
 import { isAggregated } from '@/lib/feed/aggregation'
@@ -213,7 +213,7 @@ export function FeedCard({
   )
 }
 
-function SignalGroupCard({ group }: { group: SignalGroup }) {
+const SignalGroupCard = memo(function SignalGroupCard({ group }: { group: SignalGroup }) {
   const [expanded, setExpanded] = useState(group.urgency === 'critical')
   const firstHref = group.representative.href
 
@@ -268,4 +268,4 @@ function SignalGroupCard({ group }: { group: SignalGroup }) {
       )}
     </div>
   )
-}
+})

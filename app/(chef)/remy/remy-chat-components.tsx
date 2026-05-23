@@ -1,7 +1,7 @@
 'use client'
 
 import type { Dispatch, Ref, SetStateAction } from 'react'
-import ReactMarkdown from 'react-markdown'
+import { LazyMarkdown } from '@/components/ui/lazy-markdown'
 import remarkGfm from 'remark-gfm'
 import { RemyAvatar } from '@/components/ai/remy-avatar'
 import { RemyTaskCard } from '@/components/ai/remy-task-card'
@@ -151,9 +151,7 @@ export function RemyChatView({
                   <div className="max-w-[85%] rounded-2xl rounded-tl-sm bg-stone-800 px-4 py-3 text-sm text-stone-200">
                     {streamingContent ? (
                       <div className="prose prose-sm prose-invert max-w-none">
-                        <ReactMarkdown remarkPlugins={[remarkGfm]}>
-                          {streamingContent}
-                        </ReactMarkdown>
+                        <LazyMarkdown remarkPlugins={[remarkGfm]}>{streamingContent}</LazyMarkdown>
                       </div>
                     ) : (
                       <div className="flex items-center gap-2 text-stone-400">
@@ -334,7 +332,7 @@ function MessageBubble({
       <div className="max-w-[85%] space-y-2">
         <div className="rounded-2xl rounded-tl-sm bg-stone-800 px-4 py-3 text-sm text-stone-200">
           <div className="prose prose-sm prose-invert max-w-none [&>*:first-child]:mt-0 [&>*:last-child]:mb-0">
-            <ReactMarkdown remarkPlugins={[remarkGfm]}>{message.content}</ReactMarkdown>
+            <LazyMarkdown remarkPlugins={[remarkGfm]}>{message.content}</LazyMarkdown>
           </div>
         </div>
 

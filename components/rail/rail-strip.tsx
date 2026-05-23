@@ -1,6 +1,6 @@
-﻿'use client'
+'use client'
 
-import { useCallback, useState } from 'react'
+import { memo, useCallback, useState } from 'react'
 import Link from 'next/link'
 import type { GodModeResolvedItem, GodModeStripResult } from '@/lib/discovery/god-mode-types'
 import { useSSE } from '@/lib/realtime/sse-client'
@@ -13,7 +13,7 @@ const TIER_DOT_CLASSES: Record<string, string> = {
   p1: 'bg-amber-500',
 }
 
-function StripItem({ item }: { item: GodModeResolvedItem }) {
+const StripItem = memo(function StripItem({ item }: { item: GodModeResolvedItem }) {
   return (
     <Link
       href={item.destination}
@@ -33,7 +33,7 @@ function StripItem({ item }: { item: GodModeResolvedItem }) {
       <span className="text-xs text-stone-300 truncate max-w-[200px]">{item.label}</span>
     </Link>
   )
-}
+})
 
 export function RailStrip({ initialData }: { initialData: GodModeStripResult }) {
   const [data, setData] = useState(initialData)
