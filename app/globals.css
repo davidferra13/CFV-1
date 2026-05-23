@@ -2647,3 +2647,117 @@ select:focus {
   color: var(--dashboard-text) !important;
   box-shadow: 0 1px 0 rgb(255 255 255 / 0.04) inset;
 }
+
+/* ============================================
+   MOBILE-FIRST TOUCH TARGETS & RESPONSIVE
+   44px minimum touch targets (WCAG 2.5.5),
+   safe area support, text sizing, overflow
+   prevention for mobile chef workflows.
+   ============================================ */
+
+/* Touch target utility class */
+.touch-target {
+  min-height: 44px;
+  min-width: 44px;
+}
+
+/* Enforce 44px minimum on interactive elements at mobile widths */
+@media (max-width: 767px) {
+  button:not(.touch-exempt),
+  a[role='button']:not(.touch-exempt),
+  [role='button']:not(.touch-exempt),
+  [role='menuitem']:not(.touch-exempt),
+  [role='tab']:not(.touch-exempt) {
+    min-height: 44px;
+    min-width: 44px;
+  }
+
+  /* Links in nav/list contexts need touch-friendly sizing */
+  nav a,
+  li > a,
+  [role='listitem'] a {
+    min-height: 44px;
+    display: inline-flex;
+    align-items: center;
+  }
+
+  /* Prevent text from being too small on mobile */
+  body {
+    font-size: max(16px, 1rem);
+    -webkit-text-size-adjust: 100%;
+    text-size-adjust: 100%;
+  }
+
+  /* Prevent horizontal scroll overflow (common mobile bug) */
+  html,
+  body {
+    overflow-x: hidden;
+  }
+
+  /* Tables and pre blocks that can overflow */
+  table,
+  pre,
+  code {
+    max-width: 100%;
+    overflow-x: auto;
+  }
+
+  /* Images should never blow out the viewport */
+  img,
+  video,
+  canvas,
+  svg {
+    max-width: 100%;
+    height: auto;
+  }
+}
+
+/* Safe area insets for notched phones (iPhone X+, etc.) */
+@supports (padding: env(safe-area-inset-top)) {
+  .safe-area-inset {
+    padding-top: env(safe-area-inset-top, 0px);
+    padding-right: env(safe-area-inset-right, 0px);
+    padding-bottom: env(safe-area-inset-bottom, 0px);
+    padding-left: env(safe-area-inset-left, 0px);
+  }
+
+  .safe-top {
+    padding-top: env(safe-area-inset-top, 0px);
+  }
+
+  .safe-bottom {
+    padding-bottom: env(safe-area-inset-bottom, 0px);
+  }
+
+  .safe-left {
+    padding-left: env(safe-area-inset-left, 0px);
+  }
+
+  .safe-right {
+    padding-right: env(safe-area-inset-right, 0px);
+  }
+}
+
+/* Fixed bottom bars (FABs, tab bars) need safe area clearance */
+.fixed-bottom-bar {
+  position: fixed;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  padding-bottom: env(safe-area-inset-bottom, 0px);
+}
+
+/* Mobile card spacing: tighter on small screens */
+@media (max-width: 639px) {
+  .card-responsive {
+    border-radius: 12px;
+    padding: 0.75rem;
+  }
+}
+
+@media (min-width: 640px) {
+  .card-responsive {
+    border-radius: 16px;
+    padding: 1.25rem;
+  }
+}
