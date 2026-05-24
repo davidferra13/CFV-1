@@ -3176,7 +3176,24 @@ export function CuisineMarquee({
   }, [locationContext, row2, row3, userSignals])
 
   const compactItems = useMemo(() => {
-    const pool = dedupeDiscoveryItems([...row1, ...row2, ...row3])
+    const half = (items: DiscoveryRailItem[]) => items.slice(0, Math.floor(items.length / 2))
+    const cuisines = half(row1)
+    const plans = half(row2)
+    const picks = half(row3)
+    const interleaved: DiscoveryRailItem[] = []
+    const mixPool = [...plans, ...picks]
+    const spacing = Math.max(2, Math.floor(cuisines.length / Math.max(1, mixPool.length)))
+    let mixIdx = 0
+    for (let i = 0; i < cuisines.length; i++) {
+      interleaved.push(cuisines[i])
+      if ((i + 1) % spacing === 0 && mixIdx < mixPool.length) {
+        interleaved.push(mixPool[mixIdx++])
+      }
+    }
+    while (mixIdx < mixPool.length) {
+      interleaved.push(mixPool[mixIdx++])
+    }
+    const pool = dedupeDiscoveryItems(interleaved)
       .map((item) => ({ ...item, presentation: undefined }))
       .sort((a, b) => {
         if (a.label === 'Italian') return -1
