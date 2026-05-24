@@ -1,11 +1,8 @@
 # Build State
 
-**Status:** green (pre-existing tsc errors in rail-profiles.ts, remotion)
+**Status:** GREEN (zero tsc errors, regression firewall passing)
 **Last verified:** 2026-05-23
-**Commit:** pending (Wave 4 merge)
-**Check:** `tsc --noEmit --skipLibCheck` - pre-existing errors only (rail-profiles.ts scope, remotion module)
+**Commit:** e1ad87d8e (stabilization swarm)
+**Check:** `tsc --noEmit --skipLibCheck` exits 0, `npm run regression:firewall` exits 0
 
-Wave 4 Ulysses complete. 33 new files built across 4 parallel agents. All 60 Ulysses items now DONE.
-Queue reconciliation done: 55 DRAFT items flipped to DONE (21 already-built + 33 newly-built + 1 foundation).
-Total queue: 100 DONE, 19 DRAFT, 24 PARTIAL, 15 BLOCKED, 2 IN-FLIGHT.
-Remaining: non-Ulysses DRAFTs, BLOCKED items, UNSPECCED, regression:firewall.
+Stabilization swarm complete. Auth fixed, 14 migrations applied, QueryBuilder.catch() added (fixed P0 event pages + P1 command center). Regression firewall 6/6 green. Golden path 8/8 verified via Playwright. Launch readiness report at docs/launch-readiness-report.md (95.1% queue complete).
