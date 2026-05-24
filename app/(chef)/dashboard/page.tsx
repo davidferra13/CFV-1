@@ -81,7 +81,10 @@ async function CommandCenterLoader() {
 
 export default async function ChefDashboard() {
   const user = await requireChef()
-  const queuePromise = getPriorityQueue().catch(() => EMPTY_PRIORITY_QUEUE)
+  const queuePromise = getPriorityQueue().catch((err) => {
+    console.error('[Dashboard] getPriorityQueue failed:', err)
+    return EMPTY_PRIORITY_QUEUE
+  })
   return (
     <div className="dashboard-page min-h-screen space-y-8 sm:space-y-10">
       {/* Command Center: the unified daily morning screen */}
@@ -91,22 +94,28 @@ export default async function ChefDashboard() {
         </Suspense>
       </WidgetErrorBoundary>
 
-      <Suspense fallback={<AlertsSkeleton />}>
-        <OpenClawLiveAlertsSection />
-      </Suspense>
+      <WidgetErrorBoundary name="Pricing Alerts" compact>
+        <Suspense fallback={<AlertsSkeleton />}>
+          <OpenClawLiveAlertsSection />
+        </Suspense>
+      </WidgetErrorBoundary>
 
-      <Suspense fallback={<HeroMetricsSkeleton />}>
-        <HeroZone
-          tenantId={user.tenantId!}
-          userId={user.id}
-          entityId={user.entityId}
-          email={user.email ?? ''}
-        />
-      </Suspense>
+      <WidgetErrorBoundary name="Hero Zone" compact>
+        <Suspense fallback={<HeroMetricsSkeleton />}>
+          <HeroZone
+            tenantId={user.tenantId!}
+            userId={user.id}
+            entityId={user.entityId}
+            email={user.email ?? ''}
+          />
+        </Suspense>
+      </WidgetErrorBoundary>
 
-      <Suspense fallback={null}>
-        <FeatureSuggestionSection />
-      </Suspense>
+      <WidgetErrorBoundary name="Feature Suggestions" compact>
+        <Suspense fallback={null}>
+          <FeatureSuggestionSection />
+        </Suspense>
+      </WidgetErrorBoundary>
 
       <div className="grid grid-cols-1 gap-3 xl:grid-cols-2">
         <WidgetErrorBoundary name="Quick Notes" compact>
@@ -134,21 +143,29 @@ export default async function ChefDashboard() {
         </Suspense>
       </WidgetErrorBoundary>
 
-      <Suspense fallback={null}>
-        <DailyPlanBannerLoader />
-      </Suspense>
+      <WidgetErrorBoundary name="Daily Plan" compact>
+        <Suspense fallback={null}>
+          <DailyPlanBannerLoader />
+        </Suspense>
+      </WidgetErrorBoundary>
 
-      <Suspense fallback={<ScheduleSkeleton />}>
-        <ThisWeekSection queuePromise={queuePromise} />
-      </Suspense>
+      <WidgetErrorBoundary name="This Week" compact>
+        <Suspense fallback={<ScheduleSkeleton />}>
+          <ThisWeekSection queuePromise={queuePromise} />
+        </Suspense>
+      </WidgetErrorBoundary>
 
-      <Suspense fallback={<ActivitySkeleton />}>
-        <OnboardingZone />
-      </Suspense>
+      <WidgetErrorBoundary name="Onboarding" compact>
+        <Suspense fallback={<ActivitySkeleton />}>
+          <OnboardingZone />
+        </Suspense>
+      </WidgetErrorBoundary>
 
-      <Suspense fallback={<IntelligenceCardsSkeleton />}>
-        <AmbientLayer />
-      </Suspense>
+      <WidgetErrorBoundary name="Ambient Layer" compact>
+        <Suspense fallback={<IntelligenceCardsSkeleton />}>
+          <AmbientLayer />
+        </Suspense>
+      </WidgetErrorBoundary>
 
       <WidgetErrorBoundary name="Intelligence Digest" compact>
         <Suspense fallback={<IntelligenceCardsSkeleton />}>
@@ -186,21 +203,29 @@ export default async function ChefDashboard() {
         </Suspense>
       </WidgetErrorBoundary>
 
-      <Suspense fallback={<BusinessSkeleton />}>
-        <BusinessHealthFullSection />
-      </Suspense>
+      <WidgetErrorBoundary name="Business Health" compact>
+        <Suspense fallback={<BusinessSkeleton />}>
+          <BusinessHealthFullSection />
+        </Suspense>
+      </WidgetErrorBoundary>
     </div>
   )
 }
 
 async function DailyPlanBannerLoader() {
-  const stats = await getDailyPlanStats().catch(() => null)
+  const stats = await getDailyPlanStats().catch((err) => {
+    console.error('[Dashboard] getDailyPlanStats failed:', err)
+    return null
+  })
   if (!stats || stats.totalItems <= 0) return null
   return <DailyPlanBanner stats={stats} />
 }
 
 async function WeeklyReflectionLoader() {
-  const summary = await getWeeklyRetroSummary().catch(() => null)
+  const summary = await getWeeklyRetroSummary().catch((err) => {
+    console.error('[Dashboard] getWeeklyRetroSummary failed:', err)
+    return null
+  })
   if (!summary || !summary.hasActivity) return null
   return <WeeklyReflectionWidget summary={summary} />
 }

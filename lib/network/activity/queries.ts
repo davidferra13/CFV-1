@@ -128,6 +128,17 @@ export async function getOwnSnapshot(chefId: string): Promise<OwnActivitySnapsho
   }
 }
 
+export async function getChefConnectionCount(chefId: string): Promise<number> {
+  const db: any = createServerClient({ admin: true })
+  const { count, error } = await db
+    .from('chef_connections')
+    .select('*', { count: 'exact', head: true })
+    .or(`requester_id.eq.${chefId},addressee_id.eq.${chefId}`)
+    .eq('status', 'accepted')
+  if (error) return 0
+  return count ?? 0
+}
+
 export async function purgeStaleSnapshots(): Promise<number> {
   const db: any = createServerClient({ admin: true })
   const thirtyDaysAgo = new Date(Date.now() - 30 * 24 * 60 * 60 * 1000).toISOString()

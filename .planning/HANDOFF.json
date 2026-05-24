@@ -1,6 +1,6 @@
 {
   "version": "1.0",
-  "timestamp": "2026-05-24T05:33:23.783Z",
+  "timestamp": "2026-05-24T19:53:34.831Z",
   "source": "auto-postool",
   "partial": false,
   "phase": null,
@@ -26,23 +26,59 @@
     },
     {
       "status": "M",
-      "path": "app/(chef)/circles/[id]/page.tsx"
+      "path": "app/(chef)/dashboard/page.tsx"
     },
     {
       "status": "M",
-      "path": "app/(chef)/culinary/page.tsx"
+      "path": "app/(chef)/events/current/page.tsx"
     },
     {
       "status": "M",
-      "path": "app/(chef)/dashboard/_sections/section-skeletons.tsx"
+      "path": "app/(chef)/events/events-hub-nav.tsx"
     },
     {
       "status": "M",
-      "path": "app/(public)/_components/homepage-discovery.tsx"
+      "path": "app/(chef)/events/page.tsx"
     },
     {
       "status": "M",
-      "path": "docs/build-state.md"
+      "path": "app/(chef)/settings/ai/page.tsx"
+    },
+    {
+      "status": "M",
+      "path": "app/(chef)/settings/business/page.tsx"
+    },
+    {
+      "status": "M",
+      "path": "app/(chef)/settings/communications/page.tsx"
+    },
+    {
+      "status": "M",
+      "path": "app/(chef)/settings/connections/page.tsx"
+    },
+    {
+      "status": "M",
+      "path": "app/(chef)/settings/payments/page.tsx"
+    },
+    {
+      "status": "M",
+      "path": "app/(chef)/settings/profile-branding/page.tsx"
+    },
+    {
+      "status": "M",
+      "path": "app/(chef)/settings/system/page.tsx"
+    },
+    {
+      "status": "M",
+      "path": "components/events/current-event-card.tsx"
+    },
+    {
+      "status": "M",
+      "path": "components/settings/settings-guided-overview.tsx"
+    },
+    {
+      "status": "M",
+      "path": "components/settings/settings-mobile-nav.tsx"
     },
     {
       "status": "M",
@@ -50,25 +86,49 @@
     },
     {
       "status": "M",
-      "path": "next.config.js"
+      "path": "lib/network/activity/queries.ts"
+    },
+    {
+      "status": "M",
+      "path": "lib/settings/settings-nav.ts"
     },
     {
       "status": "??",
-      "path": "app/(chef)/circles/[id]/circle-redesign-shell.tsx"
+      "path": "app/(chef)/events/list/"
     },
     {
       "status": "??",
-      "path": "app/(chef)/culinary/_components/"
+      "path": "app/(chef)/events/pulse-content.tsx"
     },
     {
       "status": "??",
-      "path": "components/circles/redesign/"
+      "path": "app/(chef)/settings/my-craft/"
     },
     {
       "status": "??",
-      "path": "docs/specs/dinner-circle-ux-redesign-progress.md"
+      "path": "components/events/readiness-dot-link.tsx"
+    },
+    {
+      "status": "??",
+      "path": "components/events/urgency-readiness-badge.tsx"
+    },
+    {
+      "status": "??",
+      "path": "docs/chef-portal-dashboard-command-center-audit.md"
+    },
+    {
+      "status": "??",
+      "path": "docs/specs/event-pulse.md"
+    },
+    {
+      "status": "??",
+      "path": "docs/specs/network-pulse.md"
+    },
+    {
+      "status": "??",
+      "path": "docs/superpowers/plans/2026-05-24-network-pulse.md"
     }
   ],
   "next_action": null,
-  "context_notes": "Recent commits:\n55ce816c1 fix(discovery): interleave compact rail items so non-cuisine content is visible\n8dceb2068 docs: dinner circles UX redesign design spec\n9c237101d docs: update build-state after stabilization swarm\ne1ad87d8e fix: stabilization swarm - auth, migrations, firewall, QueryBuilder.catch()\ncfcdf2999 docs: session log for 2026-05-23 swarm handoff session"
+  "context_notes": "Recent commits:\na73b8d7cd feat(network): self-view preview, action buttons, aging indicators, empty states\n48f9d1c41 feat(cil): add network pulse analyzer with 5 signal types\ncfdd7c57d feat(network): add network_pulse CIL types and avg_weekly_events computation\n447939a28 feat(feed): anomaly-based scoring and freshness filter for network adapter\ne5b1d239a feat(rail): anomaly-based network_friend_busy trigger, add network_heating item"
 }
