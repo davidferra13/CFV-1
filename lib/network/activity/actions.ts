@@ -50,3 +50,9 @@ export async function toggleActivitySharing(enabled: boolean) {
 
   revalidatePath('/settings/profile-branding')
 }
+
+export async function getOwnActivitySnapshot() {
+  const user = await requireChef()
+  const { getOwnSnapshot } = await import('./queries')
+  return getOwnSnapshot(user.entityId)
+}

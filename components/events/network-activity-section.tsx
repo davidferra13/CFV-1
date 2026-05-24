@@ -1,10 +1,6 @@
-import { getConnectedChefsActivity } from '@/lib/network/activity/queries'
+import { getConnectedChefsActivity, getOwnSnapshot } from '@/lib/network/activity/queries'
 import type { ConnectedChefActivity } from '@/lib/network/activity/queries'
-
-// ---------------------------------------------------------------------------
-// Network Activity: horizontal scroll of connected chefs with upcoming events.
-// Server component. Returns null when no connected chefs have activity.
-// ---------------------------------------------------------------------------
+import Link from 'next/link'
 
 function ChefInitials({ name }: { name: string }) {
   const parts = name.trim().split(/\s+/)
@@ -31,7 +27,62 @@ function ChefAvatar({ chef }: { chef: ConnectedChefActivity }) {
   return <ChefInitials name={name} />
 }
 
-function ActivityCard({ chef }: { chef: ConnectedChefActivity }) {
+function AgingIndicator({ updatedAt }: { updatedAt: string }) {
+  const ageMs = Date.now() - new Date(updatedAt).getTime()
+  const ageHours = ageMs / (1000 * 60 * 60)
+
+  if (ageHours < 24) return null
+
+  const ageDays = Math.floor(ageHours / 24)
+  return (
+    <p className="text-[10px] text-stone-600">
+      Updated {ageDays === 1 ? '1 day' : `${ageDays} days`} ago
+    </p>
+  )
+}
+
+interface ActionButtonsProps {
+  chef: ConnectedChefActivity
+  viewerUpcoming: number
+  viewerAvg: number
+}
+
+function ActionButtons({ chef, viewerUpcoming, viewerAvg }: ActionButtonsProps) {
+  const connAvg = chef.avgWeeklyEvents
+  const viewerBusy = viewerAvg > 0 && viewerUpcoming > viewerAvg * 1.5
+  const connHasCapacity = connAvg > 0 && chef.upcomingEventCount < connAvg * 0.5
+
+  const showRefer = viewerBusy && connHasCapacity
+
+  return (
+    <div className="flex items-center gap-1.5 pt-1">
+      <Link
+        href={`/network/messages/${chef.chefId}`}
+        className="text-[10px] px-2 py-0.5 rounded border border-stone-700 text-stone-400 hover:text-stone-200 hover:border-stone-500 transition-colors"
+      >
+        Message
+      </Link>
+      {showRefer && (
+        <Link
+          href={`/network/messages/${chef.chefId}?template=referral`}
+          className="text-[10px] px-2 py-0.5 rounded border border-amber-700/50 text-amber-400 hover:text-amber-300 hover:border-amber-600 transition-colors"
+        >
+          Refer a client
+        </Link>
+      )}
+    </div>
+  )
+}
+
+function ActivityCard({
+  chef,
+  viewerUpcoming,
+  viewerAvg,
+}: {
+  chef: ConnectedChefActivity
+  viewerUpcoming: number
+  viewerAvg: number
+}) {
   const name = chef.displayName || chef.businessName
   const dinnerLabel =
     chef.upcomingEventCount === 1
@@ -54,26 +105,65 @@ function ActivityCard({ chef }: { chef: ConnectedChefActivity }) {
       )}
 
       {chef.busiestDay && <p className="text-[11px] text-stone-500">Busiest: {chef.busiestDay}</p>}
+
+      <AgingIndicator updatedAt={chef.updatedAt} />
+
+      <ActionButtons chef={chef} viewerUpcoming={viewerUpcoming} viewerAvg={viewerAvg} />
     </div>
+  )
+}
+
+function EmptyState({ connectionCount }: { connectionCount: number }) {
+  if (connectionCount === 0) {
+    return (
+      <p className="text-sm text-stone-500">
+        Your network is quiet. When connections share their activity, you&apos;ll see it here.
+      </p>
+    )
+  }
+  return (
+    <p className="text-sm text-stone-500">
+      No connections are sharing activity right now. When they do, you&apos;ll see it here.
+    </p>
   )
 }
 
 export async function NetworkActivitySection({ chefId }: { chefId: string }) {
   let activity: ConnectedChefActivity[]
+  let ownSnap: { upcomingEventCount: number; avgWeeklyEvents: number } | null = null
+
   try {
-    activity = await getConnectedChefsActivity(chefId)
+    ;[activity, ownSnap] = await Promise.all([
+      getConnectedChefsActivity(chefId),
+      getOwnSnapshot(chefId),
+    ])
   } catch {
     return null
   }
 
-  if (!activity || activity.length === 0) return null
+  const viewerUpcoming = ownSnap?.upcomingEventCount ?? 0
+  const viewerAvg = ownSnap?.avgWeeklyEvents ?? 0
+
+  if (!activity || activity.length === 0) {
+    return (
+      <section>
+        <h2 className="text-sm font-medium text-stone-400 mb-3">Network Activity</h2>
+        <EmptyState connectionCount={0} />
+      </section>
+    )
+  }
 
   return (
     <section>
       <h2 className="text-sm font-medium text-stone-400 mb-3">Network Activity</h2>
       <div className="flex gap-3 overflow-x-auto pb-2 scrollbar-thin scrollbar-track-stone-900 scrollbar-thumb-stone-700">
         {activity.map((chef) => (
-          <ActivityCard key={chef.chefId} chef={chef} />
+          <ActivityCard
+            key={chef.chefId}
+            chef={chef}
+            viewerUpcoming={viewerUpcoming}
+            viewerAvg={viewerAvg}
+          />
         ))}
       </div>
     </section>

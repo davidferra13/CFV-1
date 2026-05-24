@@ -1,4 +1,4 @@
-import type { Metadata } from 'next'
+﻿import type { Metadata } from 'next'
 import Link from 'next/link'
 import { ArrowLeft } from '@/components/ui/icons'
 import { requireChef } from '@/lib/auth/get-user'
@@ -11,16 +11,26 @@ import { BrandingCard } from '@/components/settings/branding-card'
 import { ChefBackgroundSettings } from '@/components/settings/chef-background-settings'
 import { AvailabilitySignalToggle } from '@/components/calendar/availability-signal-toggle'
 import { DiscoverabilityToggle } from '@/components/network/discoverability-toggle'
+import { ActivitySharingToggle } from '@/components/network/activity-sharing-toggle'
+import { getActivitySharingStatus, getOwnActivitySnapshot } from '@/lib/network/activity/actions'
 
 export const metadata: Metadata = { title: 'Settings - Profile & Identity' }
 
 export default async function ProfileBrandingSettingsPage() {
   const user = await requireChef()
   const db: any = createServerClient()
-  const [profile, networkDiscoverable, availabilitySignalEnabled] = await Promise.all([
+  const [
+    profile,
+    networkDiscoverable,
+    availabilitySignalEnabled,
+    activitySharingEnabled,
+    ownSnapshot,
+  ] = await Promise.all([
     getChefSlug(),
     getNetworkDiscoverable().catch(() => false),
     getAvailabilitySignalSetting().catch(() => false),
+    getActivitySharingStatus().catch(() => false),
+    getOwnActivitySnapshot().catch(() => null),
   ])
 
   const profileData = await db
@@ -231,6 +241,13 @@ export default async function ProfileBrandingSettingsPage() {
           defaultOpen={true}
         >
           <DiscoverabilityToggle currentValue={networkDiscoverable} />
+
+          <div className="mt-3">
+            <ActivitySharingToggle
+              currentValue={activitySharingEnabled}
+              ownSnapshot={ownSnapshot}
+            />
+          </div>
 
           <div className="mt-4">
             <Link
