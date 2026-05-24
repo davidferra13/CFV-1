@@ -1,5 +1,18 @@
 # Session Log
 
+## 2026-05-23 ~21:00 EDT
+
+- Agent: Claude Opus 4.6 (main session)
+- Task: Swarm handoff generation + git cleanup + infra triage
+- Status: completed
+- Files touched:
+  - 65 files committed (Human Body Build Waves, perf fixes, docker-compose, migrations, tests, docs)
+  - 142 stale screenshot `.md` files deleted from project root
+  - 2 temp debug scripts deleted
+- Commits: `5fa527fa5`
+- Build state on departure: green (pre-existing tsc errors in rail-profiles.ts, remotion). DB auth broken (password mismatch). Docker max_connections bumped 20->100.
+- Notes: Build queue 332/349 DONE (99.7%). Generated stabilization swarm handoff prompt (3 waves: cleanup/tsc/auth, migrations/regression firewall, Playwright/launch readiness). DB was in recovery mode during session, connection pool exhausted (max_connections=20 too low). Auth sign-in returns "Invalid email or password" for both stored passwords. Swarm Agent 3 tasked with fixing.
+
 ## 2026-05-18 ~evening EDT
 
 - Agent: Claude Opus 4.6 (main session)
