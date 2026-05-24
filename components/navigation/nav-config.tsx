@@ -693,6 +693,11 @@ export const navGroups: NavGroup[] = [
         ],
       },
       {
+        href: '/events/current',
+        label: 'Current Events',
+        icon: Compass,
+      },
+      {
         href: '/surveys',
         label: 'Client Feedback',
         icon: Star,

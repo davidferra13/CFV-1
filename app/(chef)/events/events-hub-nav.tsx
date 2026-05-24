@@ -7,6 +7,7 @@ const tabs = [
   { label: 'All Events', href: '/events' },
   { label: 'Board', href: '/events/board' },
   { label: 'Calendar', href: '/calendar' },
+  { label: 'Current', href: '/events/current' },
 ] as const
 
 export function EventsHubNav() {
