@@ -1,6 +1,6 @@
 {
   "version": "1.0",
-  "timestamp": "2026-05-23T14:55:51.234Z",
+  "timestamp": "2026-05-24T05:33:23.783Z",
   "source": "auto-postool",
   "partial": false,
   "phase": null,
@@ -17,566 +17,58 @@
   "decisions": [],
   "uncommitted_files": [
     {
-      "status": "??",
-      "path": ".evidence/"
-    },
-    {
-      "status": "??",
-      "path": "after-fifth-category.md"
-    },
-    {
-      "status": "??",
-      "path": "after-first-category.md"
-    },
-    {
-      "status": "??",
-      "path": "after-fourth-category.md"
-    },
-    {
-      "status": "??",
-      "path": "after-second-category.md"
-    },
-    {
-      "status": "??",
-      "path": "after-third-category.md"
-    },
-    {
-      "status": "??",
-      "path": "alerts-dialog-target.md"
-    },
-    {
-      "status": "??",
-      "path": "alerts-dialog.md"
-    },
-    {
-      "status": "??",
-      "path": "alerts-filled.md"
-    },
-    {
-      "status": "??",
-      "path": "channels-after-alerts.md"
-    },
-    {
-      "status": "??",
-      "path": "channels-after-all-categories.md"
-    },
-    {
-      "status": "??",
-      "path": "channels-after-bugs-regressions.md"
-    },
-    {
-      "status": "??",
-      "path": "channels-after-build-intake.md"
-    },
-    {
-      "status": "??",
-      "path": "channels-after-builds-complete.md"
-    },
-    {
-      "status": "??",
-      "path": "channels-after-client-intelligence.md"
-    },
-    {
-      "status": "??",
-      "path": "channels-after-closed-decisions.md"
-    },
-    {
-      "status": "??",
-      "path": "channels-after-completed-builds.md"
-    },
-    {
-      "status": "??",
-      "path": "channels-after-daily-brief.md"
-    },
-    {
-      "status": "??",
-      "path": "channels-after-database-health.md"
-    },
-    {
-      "status": "??",
-      "path": "channels-after-decision-log-fast.md"
-    },
-    {
-      "status": "??",
-      "path": "channels-after-dev-server.md"
-    },
-    {
-      "status": "??",
-      "path": "channels-after-dogfood-observations.md"
-    },
-    {
-      "status": "??",
-      "path": "channels-after-feature-ideas.md"
-    },
-    {
-      "status": "??",
-      "path": "channels-after-first-category.md"
-    },
-    {
-      "status": "??",
-      "path": "channels-after-hermes-command.md"
-    },
-    {
-      "status": "??",
-      "path": "channels-after-hermes-night-shift.md"
-    },
-    {
-      "status": "??",
-      "path": "channels-after-in-flight.md"
-    },
-    {
-      "status": "??",
-      "path": "channels-after-menu-intelligence.md"
-    },
-    {
-      "status": "??",
-      "path": "channels-after-openclaw.md"
-    },
-    {
-      "status": "??",
-      "path": "channels-after-operations-complete.md"
-    },
-    {
-      "status": "??",
-      "path": "channels-after-page-xray.md"
-    },
-    {
-      "status": "??",
-      "path": "channels-after-pie-pricing-created.md"
-    },
-    {
-      "status": "??",
-      "path": "channels-after-pie-pricing.md"
-    },
-    {
-      "status": "??",
-      "path": "channels-after-product-dogfood-complete.md"
-    },
-    {
-      "status": "??",
-      "path": "channels-after-proof-packs.md"
-    },
-    {
-      "status": "??",
-      "path": "channels-after-queue-ready.md"
-    },
-    {
-      "status": "??",
-      "path": "channels-after-remy-automation.md"
-    },
-    {
-      "status": "??",
-      "path": "channels-after-systems-complete.md"
-    },
-    {
-      "status": "??",
-      "path": "channels-after-universal-rail.md"
-    },
-    {
-      "status": "??",
-      "path": "channels-after-ux-friction.md"
-    },
-    {
-      "status": "??",
-      "path": "channels-after-wiring-audit.md"
-    },
-    {
-      "status": "??",
-      "path": "channels-final-architecture-after-rename.md"
-    },
-    {
-      "status": "??",
-      "path": "channels-final-architecture.md"
-    },
-    {
-      "status": "??",
-      "path": "chef-leads-after-hermes-added.md"
-    },
-    {
-      "status": "??",
-      "path": "chef-leads-channels.md"
-    },
-    {
-      "status": "??",
-      "path": "chef-leads-name-after-paste.md"
-    },
-    {
-      "status": "??",
-      "path": "chef-leads-profile-fields.md"
-    },
-    {
-      "status": "??",
-      "path": "chef-leads-rename-start.md"
-    },
-    {
-      "status": "??",
-      "path": "chef-leads-server-actions-menu.md"
-    },
-    {
-      "status": "??",
-      "path": "chef-leads-server-nav.md"
-    },
-    {
-      "status": "??",
-      "path": "chef-leads-server-settings.md"
-    },
-    {
-      "status": "??",
-      "path": "create-category-after-keyboard-test.md"
-    },
-    {
-      "status": "??",
-      "path": "create-category-dialog-deep.md"
-    },
-    {
-      "status": "??",
-      "path": "create-category-dialog.md"
-    },
-    {
-      "status": "??",
-      "path": "create-channel-dialog-target.md"
-    },
-    {
-      "status": "??",
-      "path": "create-channel-dialog.md"
-    },
-    {
-      "status": "??",
-      "path": "create-channel-hermes-command-filled.md"
-    },
-    {
-      "status": "??",
-      "path": "daily-brief-dialog-target.md"
-    },
-    {
-      "status": "??",
-      "path": "daily-brief-dialog.md"
-    },
-    {
-      "status": "??",
-      "path": "daily-brief-filled.md"
-    },
-    {
-      "status": "??",
-      "path": "discord-after-brain-category.md"
-    },
-    {
-      "status": "??",
-      "path": "discord-after-context-index.md"
-    },
-    {
-      "status": "??",
-      "path": "discord-after-hermes-added.md"
-    },
-    {
-      "status": "??",
-      "path": "discord-archive-context-menu.md"
-    },
-    {
-      "status": "??",
-      "path": "discord-archive-edit-category.md"
-    },
-    {
-      "status": "??",
-      "path": "discord-archive-rename-snapshot.md"
-    },
-    {
-      "status": "??",
-      "path": "discord-archive-save-changes.md"
-    },
-    {
-      "status": "??",
-      "path": "discord-build-intake-ready.md"
-    },
-    {
-      "status": "??",
-      "path": "discord-claude-ledger-posted.md"
-    },
-    {
-      "status": "??",
-      "path": "discord-claude-ledger-start.md"
-    },
-    {
-      "status": "??",
-      "path": "discord-context-index-after-native-enter.md"
-    },
-    {
-      "status": "??",
-      "path": "discord-context-index-conversation-update-ready.md"
-    },
-    {
-      "status": "??",
-      "path": "discord-context-index-ready.md"
-    },
-    {
-      "status": "??",
-      "path": "discord-conversation-history-final.md"
-    },
-    {
-      "status": "??",
-      "path": "discord-conversation-history-posted-final.md"
-    },
-    {
-      "status": "??",
-      "path": "discord-conversation-history-ready.md"
-    },
-    {
-      "status": "??",
-      "path": "discord-conversation-history-start.md"
-    },
-    {
-      "status": "??",
-      "path": "discord-create-brain-category-filled.md"
-    },
-    {
-      "status": "??",
-      "path": "discord-create-brain-category-focused.md"
-    },
-    {
-      "status": "??",
-      "path": "discord-create-brain-category.md"
-    },
-    {
-      "status": "??",
-      "path": "discord-create-brain-channel-dialog.md"
-    },
-    {
-      "status": "??",
-      "path": "discord-create-context-index-filled-deep.md"
-    },
-    {
-      "status": "??",
-      "path": "discord-create-context-index-filled.md"
-    },
-    {
-      "status": "??",
-      "path": "discord-create-conversation-history-filled.md"
-    },
-    {
-      "status": "??",
-      "path": "discord-create-repo-ledger-filled.md"
-    },
-    {
-      "status": "??",
-      "path": "discord-create-rules-guardrails-filled.md"
-    },
-    {
-      "status": "??",
-      "path": "discord-create-working-memory-filled.md"
-    },
-    {
-      "status": "??",
-      "path": "discord-daily-brief-ready.md"
-    },
-    {
-      "status": "??",
-      "path": "discord-friends-state.md"
-    },
-    {
-      "status": "??",
-      "path": "discord-hermes-command-ready.md"
-    },
-    {
-      "status": "??",
-      "path": "discord-renamed-new-tab.md"
-    },
-    {
-      "status": "??",
-      "path": "discord-repo-ledger-ready.md"
-    },
-    {
-      "status": "??",
-      "path": "discord-rules-guardrails-ready.md"
-    },
-    {
-      "status": "??",
-      "path": "discord-second-brain-final-visible.md"
-    },
-    {
-      "status": "??",
-      "path": "discord-second-brain-start.md"
-    },
-    {
-      "status": "??",
-      "path": "discord-server-menu-second-brain.md"
-    },
-    {
-      "status": "??",
-      "path": "discord-servers-group.md"
-    },
-    {
-      "status": "??",
-      "path": "discord-working-memory-ready.md"
+      "status": "M",
+      "path": ".claude-session-scope"
     },
     {
-      "status": "??",
-      "path": "fifth-category-dialog.md"
-    },
-    {
-      "status": "??",
-      "path": "fifth-dialog-filled.md"
-    },
-    {
-      "status": "??",
-      "path": "fifth-dialog-target.md"
-    },
-    {
-      "status": "??",
-      "path": "fourth-category-dialog.md"
-    },
-    {
-      "status": "??",
-      "path": "fourth-dialog-filled.md"
-    },
-    {
-      "status": "??",
-      "path": "fourth-dialog-target.md"
-    },
-    {
-      "status": "??",
-      "path": "hermes-after-create.md"
-    },
-    {
-      "status": "??",
-      "path": "hermes-app-information-deep.md"
-    },
-    {
-      "status": "??",
-      "path": "hermes-bot-page-pre-token.md"
-    },
-    {
-      "status": "??",
-      "path": "hermes-bot-page.md"
-    },
-    {
-      "status": "??",
-      "path": "hermes-current-for-next-category.md"
-    },
-    {
-      "status": "??",
-      "path": "hermes-discord-auth-state-after-wait.md"
-    },
-    {
-      "status": "??",
-      "path": "hermes-discord-auth-state.md"
-    },
-    {
-      "status": "??",
-      "path": "hermes-discord-before-architecture.md"
-    },
-    {
-      "status": "??",
-      "path": "hermes-discord-developer-portal-after-dismiss.md"
-    },
-    {
-      "status": "??",
-      "path": "hermes-discord-developer-portal.md"
-    },
-    {
-      "status": "??",
-      "path": "hermes-invite-after-wait.md"
+      "status": "M",
+      "path": ".planning/HANDOFF.json"
     },
     {
-      "status": "??",
-      "path": "hermes-invite-page.md"
-    },
-    {
-      "status": "??",
-      "path": "hermes-invite-second-attempt.md"
-    },
-    {
-      "status": "??",
-      "path": "hermes-new-application-modal.md"
-    },
-    {
-      "status": "??",
-      "path": "hermes-reset-token-modal.md"
-    },
-    {
-      "status": "??",
-      "path": "hermes-server-actions-menu.md"
-    },
-    {
-      "status": "??",
-      "path": "maybe-pie-dialog-open.md"
-    },
-    {
-      "status": "??",
-      "path": "menu-fifth-category.md"
-    },
-    {
-      "status": "??",
-      "path": "menu-for-second-category.md"
-    },
-    {
-      "status": "??",
-      "path": "menu-for-third-category.md"
-    },
-    {
-      "status": "??",
-      "path": "menu-fourth-category.md"
-    },
-    {
-      "status": "??",
-      "path": "menu-sixth-category.md"
-    },
-    {
-      "status": "??",
-      "path": "pie-dialog-target.md"
-    },
-    {
-      "status": "??",
-      "path": "prompts/handoff-openclaw-to-hermes-migration.md"
-    },
-    {
-      "status": "??",
-      "path": "second-category-after-click-and-paste-deep.md"
-    },
-    {
-      "status": "??",
-      "path": "second-category-after-click-and-paste.md"
+      "status": "M",
+      "path": "app/(chef)/circles/[id]/page.tsx"
     },
     {
-      "status": "??",
-      "path": "second-category-dialog-filled-deep.md"
+      "status": "M",
+      "path": "app/(chef)/culinary/page.tsx"
     },
     {
-      "status": "??",
-      "path": "second-category-dialog-filled.md"
+      "status": "M",
+      "path": "app/(chef)/dashboard/_sections/section-skeletons.tsx"
     },
     {
-      "status": "??",
-      "path": "sixth-category-dialog.md"
+      "status": "M",
+      "path": "app/(public)/_components/homepage-discovery.tsx"
     },
     {
-      "status": "??",
-      "path": "sixth-dialog-filled.md"
+      "status": "M",
+      "path": "docs/build-state.md"
     },
     {
-      "status": "??",
-      "path": "sixth-dialog-replaced.md"
+      "status": "M",
+      "path": "docs/sync-status.json"
     },
     {
-      "status": "??",
-      "path": "sixth-dialog-target.md"
+      "status": "M",
+      "path": "next.config.js"
     },
     {
       "status": "??",
-      "path": "third-category-dialog-deep.md"
+      "path": "app/(chef)/circles/[id]/circle-redesign-shell.tsx"
     },
     {
       "status": "??",
-      "path": "third-category-dialog.md"
+      "path": "app/(chef)/culinary/_components/"
     },
     {
       "status": "??",
-      "path": "third-dialog-filled.md"
+      "path": "components/circles/redesign/"
     },
     {
       "status": "??",
-      "path": "third-dialog-target.md"
+      "path": "docs/specs/dinner-circle-ux-redesign-progress.md"
     }
   ],
   "next_action": null,
-  "context_notes": "Recent commits:\n5825b3d0c chore: docs, specs, skills, config updates from swarm waves\n190bba924 feat: swarm waves 5-10 app routes, intelligence domains, unit tests\ndb5a1357c feat: swarm waves 0-5 lib/component builds (commitment, rail, QA, remy, circles, communication)\n54ed325c0 Add PIE native serving index contract\n562c16148 RUN-20260521T085210Z: loyalty core awards hardening, referral idempotency, PIE fallback contract"
+  "context_notes": "Recent commits:\n55ce816c1 fix(discovery): interleave compact rail items so non-cuisine content is visible\n8dceb2068 docs: dinner circles UX redesign design spec\n9c237101d docs: update build-state after stabilization swarm\ne1ad87d8e fix: stabilization swarm - auth, migrations, firewall, QueryBuilder.catch()\ncfcdf2999 docs: session log for 2026-05-23 swarm handoff session"
 }

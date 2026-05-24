@@ -1,4 +1,4 @@
-// Culinary Hub Page
+﻿// Culinary Hub Page
 // Feature cards with culinary gradients and integrated stats.
 // Stats stream in via Suspense. Tiles render immediately.
 
@@ -13,6 +13,13 @@ import { listVendors } from '@/lib/vendors/actions'
 import { Card, CardContent } from '@/components/ui/card'
 import { AnimatedCounter } from '@/components/ui/animated-counter'
 import { PriceAlertsWidget } from '@/components/culinary/price-alerts-widget'
+import { CulinaryDiscoveryRail } from './_components/culinary-discovery-rail'
+import { getDiscoverableChefs } from '@/lib/directory/actions'
+import { getPublicSeasonalMarketPulse } from '@/lib/public/public-seasonal-market-pulse'
+import type {
+  DiscoveryRailItem,
+  FeaturedChefRailData,
+} from '@/lib/discovery/homepage-discovery-rail'
 import { BatchOpportunitiesCard } from '@/components/grocery/batch-opportunities-card'
 import { getRecentCulinaryActivity, type CulinaryActivity } from '@/lib/culinary/recent-activity'
 
@@ -288,6 +295,52 @@ async function RecentActivityFeed() {
 // Page
 // ---------------------------------------------------------------------------
 
+async function DiscoveryRailLoader() {
+  const [allChefs, seasonalPulse] = await Promise.all([
+    getDiscoverableChefs().catch(() => []),
+    getPublicSeasonalMarketPulse().catch(() => null),
+  ])
+
+  const featuredChefs: FeaturedChefRailData[] = allChefs
+    .filter((c) => c.slug && c.display_name && c.discovery.cuisine_types.length > 0)
+    .sort((a, b) => {
+      const scoreA = (a.profile_image_url ? 2 : 0) + (a.discovery.service_area_city ? 1 : 0)
+      const scoreB = (b.profile_image_url ? 2 : 0) + (b.discovery.service_area_city ? 1 : 0)
+      return scoreB - scoreA
+    })
+    .slice(0, 5)
+    .map((c) => ({
+      slug: c.slug!,
+      displayName: c.display_name,
+      primaryCuisine: c.discovery.cuisine_types[0] ?? null,
+      city: c.discovery.service_area_city ?? null,
+      state: c.discovery.service_area_state ?? null,
+      specialty: c.tagline ?? null,
+      acceptingInquiries: c.discovery.accepting_inquiries ?? null,
+      priceTier: (c.discovery.price_range as 'budget' | 'mid' | 'premium' | 'luxury') ?? null,
+      dietaryStrengths:
+        c.discovery.dietary_specialties.length > 0 ? c.discovery.dietary_specialties : null,
+    }))
+
+  const culinarySignals: DiscoveryRailItem[] = seasonalPulse
+    ? seasonalPulse.peakNow.slice(0, 2).map((ingredient) => ({
+        type: 'culinary_signal' as const,
+        label: ingredient.name,
+        sublabel: `In season`,
+        href: '/ingredients',
+        icon: 'market' as const,
+        presentation: 'story' as const,
+        eyebrow: 'Market rail',
+        reason: ingredient.note,
+        source: seasonalPulse.source.note,
+        freshness: seasonalPulse.copy.freshnessLine ?? seasonalPulse.copy.scopeLine,
+        actionLabel: 'See ingredient guide',
+      }))
+    : []
+
+  return <CulinaryDiscoveryRail featuredChefs={featuredChefs} culinarySignals={culinarySignals} />
+}
+
 export default async function CulinaryHubPage() {
   await requireChef()
 
@@ -319,6 +372,11 @@ export default async function CulinaryHubPage() {
           </Link>
         ))}
       </div>
+
+      {/* Discovery rail */}
+      <Suspense fallback={<div className="h-24 animate-pulse rounded-xl bg-stone-900/50" />}>
+        <DiscoveryRailLoader />
+      </Suspense>
 
       {/* Primary features - 2 column */}
       <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">

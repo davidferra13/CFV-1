@@ -54,6 +54,7 @@ const nextConfig = {
     // Next 14 still uses the experimental flag for keeping server-only SDKs out of the
     // RSC/route-handler bundle graph. These packages are only instantiated on Node.
     serverComponentsExternalPackages: ['resend', 'stripe', 'svix', '@resvg/resvg-js'],
+    cpus: 2,
   },
   // Allow LAN access in development so internal /_next assets are not
   // rejected as cross-origin. Extra hosts can be added via NEXT_ALLOWED_DEV_ORIGINS=host1,host2
