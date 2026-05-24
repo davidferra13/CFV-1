@@ -4,10 +4,10 @@ import Link from 'next/link'
 import { usePathname } from 'next/navigation'
 
 const tabs = [
-  { label: 'All Events', href: '/events' },
+  { label: 'Pulse', href: '/events' },
+  { label: 'List', href: '/events/list' },
   { label: 'Board', href: '/events/board' },
   { label: 'Calendar', href: '/calendar' },
-  { label: 'Current', href: '/events/current' },
 ] as const
 
 export function EventsHubNav() {
@@ -23,7 +23,9 @@ export function EventsHubNav() {
           const isActive =
             tab.href === '/events'
               ? pathname === '/events' || pathname === '/events/'
-              : pathname.startsWith(tab.href)
+              : tab.href === '/events/list'
+                ? pathname === '/events/list'
+                : pathname.startsWith(tab.href)
 
           return (
             <Link

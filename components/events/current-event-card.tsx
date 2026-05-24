@@ -5,6 +5,8 @@ import { CalendarDays, MapPin, User, ExternalLink } from 'lucide-react'
 import { format, parseISO, isToday, isTomorrow, differenceInCalendarDays } from 'date-fns'
 import type { ChefPortalEvent } from '@/lib/events/current-events'
 import type { EventReadiness } from '@/lib/events/event-readiness'
+import { ReadinessDotLink } from '@/components/events/readiness-dot-link'
+import { UrgencyReadinessBadge } from '@/components/events/urgency-readiness-badge'
 
 const sourceBadgeColors: Record<string, string> = {
   chef_event: 'bg-amber-500/20 text-amber-400 border-amber-500/30',
@@ -30,7 +32,7 @@ function getUrgencyBorder(dateStr: string): string {
 
 /** Readiness dot row: menu, contract, deposit */
 function ReadinessDots({ readiness }: { readiness: EventReadiness }) {
-  const items = [
+  const items: Array<{ label: 'Menu' | 'Contract' | 'Deposit'; done: boolean }> = [
     { label: 'Menu', done: readiness.hasMenu },
     { label: 'Contract', done: readiness.hasContract },
     { label: 'Deposit', done: readiness.hasDeposit },
@@ -38,10 +40,11 @@ function ReadinessDots({ readiness }: { readiness: EventReadiness }) {
   return (
     <div className="flex items-center gap-2 pt-1">
       {items.map((item) => (
-        <span
+        <ReadinessDotLink
           key={item.label}
-          title={item.label}
-          className={`h-2 w-2 rounded-full ${item.done ? 'bg-emerald-500' : 'bg-stone-700'}`}
+          label={item.label}
+          done={item.done}
+          eventId={readiness.eventId}
         />
       ))}
     </div>
@@ -115,7 +118,15 @@ export function CurrentEventCard({
           </div>
         )}
 
-        {readiness && event.sourceType === 'chef_event' && <ReadinessDots readiness={readiness} />}
+        {readiness && event.sourceType === 'chef_event' && (
+          <>
+            <ReadinessDots readiness={readiness} />
+            <UrgencyReadinessBadge
+              daysAway={differenceInCalendarDays(parseISO(event.startsAt), new Date())}
+              readinessScore={readiness.readinessScore}
+            />
+          </>
+        )}
       </CardContent>
     </Card>
   )
