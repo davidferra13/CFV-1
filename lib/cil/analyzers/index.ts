@@ -1,5 +1,5 @@
-// CIL Domain Analyzers - Orchestrator
-// Runs all 8 domain analyzers in parallel, collects ProactiveSignal results.
+﻿// CIL Domain Analyzers - Orchestrator
+// Runs all 9 domain analyzers in parallel, collects ProactiveSignal results.
 // Each analyzer queries Postgres for the tenant's business data.
 
 import type { ProactiveSignal } from '../types'
@@ -18,6 +18,7 @@ export async function runAllAnalyzers(tenantId: string): Promise<ProactiveSignal
     import('./pipeline').then((m) => m.analyzePipeline(tenantId)),
     import('./cannabis').then((m) => m.analyzeCannabis(tenantId)),
     import('./commitment').then((m) => m.analyzeCommitment(tenantId)),
+    import('./network').then((m) => m.analyzeNetwork(tenantId)),
   ])
 
   const signals: ProactiveSignal[] = []
