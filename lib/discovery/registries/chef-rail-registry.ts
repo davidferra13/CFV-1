@@ -3095,7 +3095,7 @@ export const CHEF_RAIL_REGISTRY: readonly UniversalRailItemDefinition[] = [
     cooldownMinutes: 480,
     renderHints: { presentation: 'card', icon: 'users', animate: false, priority: 'low' },
     scoringNotes:
-      'Fires when connected chef has upcoming_event_count >= 3. Max 3 impressions per week per connected chef. 8hr cooldown.',
+      'Fires when connected chef upcoming_event_count > avg_weekly_events * 2 (anomaly-based). Max 3 impressions per week per connected chef. 8hr cooldown.',
   },
 
   // --- CULINARY INTELLIGENCE ---
@@ -5781,6 +5781,32 @@ export const CHEF_RAIL_REGISTRY: readonly UniversalRailItemDefinition[] = [
     cooldownMinutes: 480,
     renderHints: { presentation: 'card', icon: 'users', animate: false, priority: 'low' },
     scoringNotes:
-      'Fires when connected chef has upcoming_event_count >= 3. Max 3 impressions per week per connected chef. 8hr cooldown.',
+      'Fires when connected chef upcoming_event_count > avg_weekly_events * 2 (anomaly-based). Max 3 impressions per week per connected chef. 8hr cooldown.',
+  },
+  {
+    id: 'chef.network_heating',
+    role: 'chef',
+    label: 'Network heating up',
+    labelTemplate: 'Your network is busier than usual this week',
+    category: 'social_network',
+    baseUrgency: 40,
+    urgencyDecayFn: 'linear',
+    relevanceSignals: ['network_trend_ratio', 'connections_sharing_count'],
+    freshnessWindow: '1d',
+    pageAffinity: '/network',
+    pageAffinityBoost: 20,
+    href: '/network',
+    hrefTemplate: '/network',
+    dataSources: ['chef_activity_snapshots', 'chef_connections'],
+    privacy: 'tenant_scoped',
+    dismissable: true,
+    expandable: false,
+    hoverAction: 'preview',
+    clickAction: 'navigate',
+    maxImpressions: 2,
+    cooldownMinutes: 1440,
+    renderHints: { presentation: 'card', icon: 'trending-up', animate: false, priority: 'normal' },
+    scoringNotes:
+      'Fires when CIL network_heating signal is active (aggregate upcoming > 30% above combined rolling averages). Max 2 impressions per week. 24hr cooldown.',
   },
 ] as const
