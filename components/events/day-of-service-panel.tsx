@@ -8,7 +8,7 @@ import {
   SERVICE_STAGES,
   type ServiceStage,
   type ServiceTrackerState,
-} from '@/lib/lifecycle/service-tracker-actions'
+} from '@/lib/lifecycle/service-tracker-constants'
 import type { ServiceTimeline, TimelineEntry } from '@/lib/lifecycle/timeline-generator-actions'
 
 type Props = {

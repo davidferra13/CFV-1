@@ -89,33 +89,33 @@ function payloadContainsForbiddenAuthority(value: unknown): boolean {
   return false
 }
 
-const createRoutineSchema = z
-  .object({
-    name: z.string().min(1).max(160),
-    description: z.string().max(1000).nullable().optional(),
-    status: z.enum(['active', 'paused', 'archived']).optional(),
-    triggerType: z.enum(['signal', 'event', 'schedule', 'manual', 'webhook']),
-    triggerConfig: z.record(z.string(), z.unknown()).optional(),
-    conditionGroup: conditionGroupSchema.optional(),
-    actions: z.array(actionSchema).min(1).max(25),
-    priority: z.number().int().min(-1000).max(1000).optional(),
-    approvalRequired: z.boolean().optional(),
-    idempotencyWindowSeconds: z.number().int().min(60).max(2592000).optional(),
-  })
-  .superRefine((input, ctx) => {
-    for (const [index, action] of input.actions.entries()) {
-      if (payloadContainsForbiddenAuthority(action.payload)) {
-        ctx.addIssue({
-          code: z.ZodIssueCode.custom,
-          path: ['actions', index, 'payload'],
-          message:
-            'Routine payloads cannot contain shell commands, executable code, arbitrary URLs, or filesystem paths.',
-        })
-      }
-    }
-  })
+const routineBaseSchema = z.object({
+  name: z.string().min(1).max(160),
+  description: z.string().max(1000).nullable().optional(),
+  status: z.enum(['active', 'paused', 'archived']).optional(),
+  triggerType: z.enum(['signal', 'event', 'schedule', 'manual', 'webhook']),
+  triggerConfig: z.record(z.string(), z.unknown()).optional(),
+  conditionGroup: conditionGroupSchema.optional(),
+  actions: z.array(actionSchema).min(1).max(25),
+  priority: z.number().int().min(-1000).max(1000).optional(),
+  approvalRequired: z.boolean().optional(),
+  idempotencyWindowSeconds: z.number().int().min(60).max(2592000).optional(),
+})
 
-const updateRoutineSchema = createRoutineSchema.partial()
+const createRoutineSchema = routineBaseSchema.superRefine((input, ctx) => {
+  for (const [index, action] of input.actions.entries()) {
+    if (payloadContainsForbiddenAuthority(action.payload)) {
+      ctx.addIssue({
+        code: z.ZodIssueCode.custom,
+        path: ['actions', index, 'payload'],
+        message:
+          'Routine payloads cannot contain shell commands, executable code, arbitrary URLs, or filesystem paths.',
+      })
+    }
+  }
+})
+
+const updateRoutineSchema = routineBaseSchema.partial()
 
 const triggerContextSchema = z.object({
   triggerType: z.enum(['signal', 'event', 'schedule', 'manual', 'webhook']),

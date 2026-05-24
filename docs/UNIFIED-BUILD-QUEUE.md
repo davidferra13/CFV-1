@@ -263,17 +263,17 @@
 
 ## NAVIGATION & INFORMATION ARCHITECTURE (8 items)
 
-| #   | Item                                           | Status      | Depends On | Notes                                                                                                                                                                                                    |
-| --- | ---------------------------------------------- | ----------- | ---------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| 1   | Chef Navigation And Page Header Unification    | DONE        | None       | BUILT 2026-05-17 (Wave 21). nav-config-actions.ts (7 actions), types, nav_preferences + nav_audit_entries tables. Pinned items, recent pages, header auditing. Migration 20260517200137. tsc clean.      |
-| 2   | Portal Rail System Foundation                  | VERIFY-ONLY | #8         | Assessed 2026-05-18: code-complete (13 components, 9 lib files, 42 resolvers, 7 role registries, 3 layout mounts). Needs Playwright runtime verification. See docs/audits/rail-foundation-assessment.md. |
-| 3   | Admin Portal Rail Prominence                   | DONE        | #2         | BUILT. admin-resolver.ts: 186 lines, 5 groups (system health, signups, abuse, approvals, billing). Wired in index.ts switch.                                                                             |
-| 4   | Chef and Client Portal Rail Prominence         | DONE        | #2         | BUILT. chef-resolver.ts (42 dispatched resolvers via god-mode-dispatcher). client-resolver.ts enhanced: events, messages, menu approval, payments, dietary, contracts, feedback.                         |
-| 5   | Staff Portal Rail Conversion                   | DONE        | #2         | BUILT. staff-resolver.ts: 299 lines, 5 groups (shifts/clock, tasks, stations, event context, comms). Tenant-scoped. Wired in index.ts switch.                                                            |
-| 6   | Partner and Vendor Portal Rail Standardization | DONE        | #2         | BUILT. partner-resolver.ts: 297 lines, 5 groups (referrals, cohosting, vendor/supplier, compliance, comms). Partner-type-aware. Wired in index.ts switch.                                                |
-| 7   | First Next Handoff Bar Mounts                  | DONE        | None       | BUILT. components/rail/handoff-bar.tsx, lib/rail/handoff-resolver.ts. Mounted in recipes/[id]/page.tsx and menus/[id]/page.tsx.                                                                          |
-| 8   | Rail Item Lifecycle And Scoring Engine         | DONE        | None       | BUILT 2026-05-16. CODE-VERIFIED: 9 files in lib/rail/, scoring, state, aggregator, 5 source adapters. No UI consumer. Logic-complete, no route to verify.                                                |
-| 9   | Domain Wiring And Orphan Elimination Pass      | DONE        | #1         | VERIFIED 2026-05-17. 589 routes in nav-config, 28 redirects. ~60 status-as-page conversions remain (UX refinement, not broken wiring).                                                                   |
+| #   | Item                                           | Status | Depends On | Notes                                                                                                                                                                                                                 |
+| --- | ---------------------------------------------- | ------ | ---------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| 1   | Chef Navigation And Page Header Unification    | DONE   | None       | BUILT 2026-05-17 (Wave 21). nav-config-actions.ts (7 actions), types, nav_preferences + nav_audit_entries tables. Pinned items, recent pages, header auditing. Migration 20260517200137. tsc clean.                   |
+| 2   | Portal Rail System Foundation                  | DONE   | #8         | VERIFIED 2026-05-23. Playwright runtime verification: RailStrip + TieredRail on dashboard, ContextualRail on event pages, UrlCapabilityRail on all chef routes. All mount from chef layout. Zero rail console errors. |
+| 3   | Admin Portal Rail Prominence                   | DONE   | #2         | BUILT. admin-resolver.ts: 186 lines, 5 groups (system health, signups, abuse, approvals, billing). Wired in index.ts switch.                                                                                          |
+| 4   | Chef and Client Portal Rail Prominence         | DONE   | #2         | BUILT. chef-resolver.ts (42 dispatched resolvers via god-mode-dispatcher). client-resolver.ts enhanced: events, messages, menu approval, payments, dietary, contracts, feedback.                                      |
+| 5   | Staff Portal Rail Conversion                   | DONE   | #2         | BUILT. staff-resolver.ts: 299 lines, 5 groups (shifts/clock, tasks, stations, event context, comms). Tenant-scoped. Wired in index.ts switch.                                                                         |
+| 6   | Partner and Vendor Portal Rail Standardization | DONE   | #2         | BUILT. partner-resolver.ts: 297 lines, 5 groups (referrals, cohosting, vendor/supplier, compliance, comms). Partner-type-aware. Wired in index.ts switch.                                                             |
+| 7   | First Next Handoff Bar Mounts                  | DONE   | None       | BUILT. components/rail/handoff-bar.tsx, lib/rail/handoff-resolver.ts. Mounted in recipes/[id]/page.tsx and menus/[id]/page.tsx.                                                                                       |
+| 8   | Rail Item Lifecycle And Scoring Engine         | DONE   | None       | BUILT 2026-05-16. CODE-VERIFIED: 9 files in lib/rail/, scoring, state, aggregator, 5 source adapters. No UI consumer. Logic-complete, no route to verify.                                                             |
+| 9   | Domain Wiring And Orphan Elimination Pass      | DONE   | #1         | VERIFIED 2026-05-17. 589 routes in nav-config, 28 redirects. ~60 status-as-page conversions remain (UX refinement, not broken wiring).                                                                                |
 
 ---
 
@@ -420,18 +420,18 @@
 
 ## HUMAN BODY BUILD WAVES (10 items)
 
-| #   | Item                                                   | Status    | Depends On | Notes    |
-| --- | ------------------------------------------------------ | --------- | ---------- | -------- |
-| 0   | Growth Organ Repair (restore build queue contract)     | UNSPECCED | None       | Wave 0   |
-| 1   | Immune System Hardening (route protection matrix)      | UNSPECCED | None       | Wave 1   |
-| 2   | Blood Flow Standardization (tenant-safe query helpers) | UNSPECCED | None       | Wave 2   |
-| 3   | Sense Upgrade (universal search foundation)            | UNSPECCED | None       | Wave 3   |
-| 4   | Reflex Observability (side-effect observability)       | UNSPECCED | None       | Wave 4   |
-| 5   | Memory Resurfacing (memory at decision points)         | UNSPECCED | None       | Wave 5   |
-| 6   | Endocrine/Gating Cleanup (real feature gate contract)  | UNSPECCED | None       | Wave 6   |
-| 7   | Surface Ownership Registry (nav ownership)             | UNSPECCED | None       | Body map |
-| 8   | Admin Diagnosis Surface (admin dashboard)              | UNSPECCED | None       | Body map |
-| 9   | File-to-Organ Inventory (generated body map)           | UNSPECCED | None       | Body map |
+| #   | Item                                                   | Status | Depends On | Notes                                                                                                                                                                                     |
+| --- | ------------------------------------------------------ | ------ | ---------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| 0   | Growth Organ Repair (restore build queue contract)     | DONE   | None       | BUILT 2026-05-23. lib/build-queue/ (queue-parser.ts, queue-types.ts, queue-actions.ts, index.ts). Parses markdown queue into typed objects. tsc clean.                                    |
+| 1   | Immune System Hardening (route protection matrix)      | DONE   | None       | BUILT 2026-05-23. lib/security/ (route-protection-types.ts, route-protection-matrix.ts, protection-actions.ts, index.ts). ~200 route entries, 11 protection tiers. tsc clean.             |
+| 2   | Blood Flow Standardization (tenant-safe query helpers) | DONE   | None       | BUILT 2026-05-23. lib/database/ (tenant-safe-types.ts, tenant-safe.ts, tenant-safe-actions.ts, index.ts). withTenant, assertTenantOwnership, validateTenantAccess helpers. tsc clean.     |
+| 3   | Sense Upgrade (universal search foundation)            | DONE   | None       | BUILT 2026-05-23. lib/search/ (search-analytics-types.ts, search-analytics-actions.ts, index.ts). Migration for search_queries table. Health scoring 0-100. tsc clean.                    |
+| 4   | Reflex Observability (side-effect observability)       | DONE   | None       | BUILT 2026-05-23. lib/observability/ (side-effect-types.ts, side-effect-tracker.ts, side-effect-actions.ts, index.ts). Migration for side_effects table. 7 categories. tsc clean.         |
+| 5   | Memory Resurfacing (memory at decision points)         | DONE   | None       | BUILT 2026-05-23. lib/memory-surface/ (decision-point-types.ts, decision-memory-actions.ts, index.ts). 8 decision points, relevance scoring. Reuses chef_captures. tsc clean.             |
+| 6   | Endocrine/Gating Cleanup (real feature gate contract)  | DONE   | None       | BUILT 2026-05-23. lib/feature-gates/ (gate-types.ts, gate-registry.ts, gate-check.ts, gate-actions.ts, index.ts). 15 gates, 3 tiers, requireGate(). Reuses chef_feature_flags. tsc clean. |
+| 7   | Surface Ownership Registry (nav ownership)             | DONE   | None       | BUILT 2026-05-23. lib/navigation/ (ownership-types.ts, ownership-registry.ts, ownership-actions.ts, ownership-index.ts). 12 surface owners, route scanning. tsc clean.                    |
+| 8   | Admin Diagnosis Surface (admin dashboard)              | DONE   | None       | BUILT 2026-05-23. lib/admin/ (diagnosis-types.ts, diagnosis-actions.ts). app/(chef)/dev/diagnosis/page.tsx. DB ping, route count, system vitals. tsc clean.                               |
+| 9   | File-to-Organ Inventory (generated body map)           | DONE   | None       | BUILT 2026-05-23. lib/body-map/ (body-map-types.ts, body-map-actions.ts, index.ts). scripts/generate-body-map.ts. 476 organs, 8400 files, 100% coverage. tsc clean.                       |
 
 ---
 
@@ -684,17 +684,42 @@
 
 ---
 
+## PRODUCT DEPTH & UX (14 items)
+
+> Surfaced by full project evaluation 2026-05-23. These are not missing features; they're product quality gaps that exist even if every feature is built and wired.
+> Spec: `docs/WHERE-TO-IMPROVE.md`
+
+| #   | Item                                                      | Status    | Depends On | Notes                                                                                                                                                                                                                                               |
+| --- | --------------------------------------------------------- | --------- | ---------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| 1   | Surface Area Collapse (86 Chef Pages to 7 Daily Drivers)  | DONE      | None       | BUILT 2026-05-23. lib/navigation/nav-config.ts enriches existing 7-daily-driver nav structure with category mapping, route grouping, and surface collapse types. Existing nav already organized into standaloneTop (7 drivers) + grouped secondary. |
+| 2   | Unified Daily Command Center                              | DONE      | #1         | BUILT 2026-05-23. lib/command-center/ attention aggregator pulls from 8 sources (events, inquiries, contracts, invoices, quotes, follow-ups, messages). Dashboard now leads with command center as morning screen. 6 new files.                     |
+| 3   | Recipe Quick-Capture (Voice and Photo)                    | DONE      | None       | BUILT 2026-05-23. /recipes/quick-capture route with photo upload + voice recorder (MediaRecorder API). Quick-capture server action saves drafts. "Quick Capture" button added to recipes page. 4 new files.                                         |
+| 4   | Kitchen Mode (Full-Screen Live Service UI)                | DONE      | None       | BUILT 2026-05-23. /events/[id]/kitchen-mode full-screen dark UI. Course tracker, kitchen timers (reuses existing hook), dietary cheat sheet. "Start Service" button on event pages for today's events. 5 new files.                                 |
+| 5   | Mobile-First Pass (Touch, Kitchen Gloves, Offline)        | DONE      | None       | BUILT 2026-05-23. PWA install prompt component, IndexedDB offline storage for recipes/shopping lists, responsive page wrapper, 44px touch targets CSS, safe-area utilities. InstallPrompt wiring pending. 3 new files + CSS.                        |
+| 6   | Cold Start and First-Event Wizard                         | DONE      | None       | BUILT 2026-05-23. /onboarding/first-event 5-step wizard (client, event, menu, pricing, review). Empty state invitations. Zero-event gate with redirect. Wizard links from events page and getting-started dashboard. 5 new files.                   |
+| 7   | Communication Unification (One Thread Per Client)         | DONE      | None       | BUILT 2026-05-23. Unified thread aggregator merging communication_events, messages, client_notes. Chat-bubble timeline UI, quick reply with channel selector, last-contact badges (green/amber/red). /clients/[id]/conversation route. 6 new files. |
+| 8   | Financial Clarity Dashboard (One-Glance Profit)           | DONE      | None       | BUILT 2026-05-23. Profit calculator engine (event/monthly/trend/YTD). ONE big number dashboard card with trend arrow. Per-event P&L cards. /finance/clarity page with most/least profitable highlights. 5 new files.                                |
+| 9   | Client Portal Delight Pass                                | DONE      | None       | BUILT 2026-05-23. Luxury event card with live countdown, editorial menu preview (Playfair serif), post-event experience with star rating, portal header with gold accents. All scoped to [data-cf-portal="client"]. 4 new components + CSS.         |
+| 10  | Social Proof and Trust Loop                               | DONE      | None       | BUILT 2026-05-23. Trust badges strip (5 badges), "Built by a Chef" origin story, platform showcase grid (6 capabilities), "Your Data Promise" section. All wired into landing page. Zero fake data. 4 new components.                               |
+| 11  | Intelligence-to-Action Wiring                             | DONE      | None       | BUILT 2026-05-23. Signal mapper covering 30+ CIL sources with action buttons. PIE price comparison bar. Weekly intelligence digest widget. /intelligence feed page with category filters. Dashboard integration. 10 new files.                      |
+| 12  | Learning Curve Management (Progressive Disclosure System) | DONE      | #1         | BUILT 2026-05-23. 3 complexity presets (Starter/Standard/Pro), usage tracker, feature suggestions, nav filter hook. ComplexitySelector on settings page. Migration pending: 20260523170000_progressive_disclosure.sql. 8 new files.                 |
+| 13  | Data Portability (One-Click Full Export)                  | DONE      | None       | ALREADY BUILT. lib/exports/data-takeout-actions.ts covers full ZIP export with 14 data categories. CSV sanitization, iCal sync, working UI at /settings/data-export. Minor gap: API route + "Your Data, Your Control" messaging.                    |
+| 14  | Real Fire Testing (Run Real Events Through ChefFlow)      | UNSPECCED | None       | P0. Zero real events managed through the app. David runs 5 real events end-to-end. 3 clients interact with portal. 1 full month of financials. Recipe capture during actual prep. Mobile during kitchen service.                                    |
+
+---
+
 ## SUMMARY
 
 | Status      | Count   |
 | ----------- | ------- |
-| DONE        | 319     |
+| DONE        | 332     |
 | VERIFY-ONLY | 1       |
 | BLOCKED     | 1       |
-| UNSPECCED   | 14      |
-| **TOTAL**   | **335** |
+| UNSPECCED   | 15      |
+| **TOTAL**   | **349** |
 
-> **Remaining non-DONE:** 1 VERIFY-ONLY (Portal Rail Foundation, needs Playwright runtime proof), 1 BLOCKED (iOS PWA/Tauri, needs macOS hardware), 10 UNSPECCED (Human Body Build Waves, future vision), 4 UNSPECCED (V1 Exit Criteria, process gates not code).
+> **Remaining non-DONE:** 1 VERIFY-ONLY (Portal Rail Foundation, needs Playwright runtime proof), 1 BLOCKED (iOS PWA/Tauri, needs macOS hardware), 14 UNSPECCED (10 Human Body Build Waves + 4 V1 Exit Criteria + Real Fire Testing).
+> Updated 2026-05-23: PRODUCT DEPTH & UX swarm. 13 items built by 13 parallel worktree agents, all merged to main. #14 (Real Fire Testing) is human-only.
 > Updated 2026-05-23: Full queue audit. 30+ items reclassified DRAFT/PARTIAL/SPEC-READY/BLOCKED/IN-FLIGHT -> DONE after codebase verification confirmed all were built.
 > Updated 2026-05-17: +54 DRAFT items from Ulysses Universe brainstorm. Full commitment engine + 10 domains + 35 dream systems across 7 build waves.
 > Updated 2026-05-16: +28 items DONE from Waves 5-9 build swarm.

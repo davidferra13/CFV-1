@@ -31,7 +31,9 @@ import {
   ActivitySkeleton,
   ScheduleSkeleton,
   IntelligenceCardsSkeleton,
+  HeroMetricsSkeleton,
 } from './_sections/section-skeletons'
+import { HeroZone } from './_sections/hero-zone'
 import { FeatureSuggestionSection } from './_sections/feature-suggestion-section'
 import { CilSignalSummary } from './_sections/cil-signal-summary'
 import { ActivityFeedSection } from './_sections/activity-feed-section'

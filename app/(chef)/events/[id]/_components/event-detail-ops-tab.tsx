@@ -41,7 +41,7 @@ import { Card } from '@/components/ui/card'
 import type { ReadinessResult } from '@/lib/events/readiness'
 import type { ServiceSimulationPanelState } from '@/lib/service-simulation/types'
 import type { CourseProgress } from '@/lib/service-execution/actions'
-import type { ServiceTrackerState } from '@/lib/lifecycle/service-tracker-actions'
+import type { ServiceTrackerState } from '@/lib/lifecycle/service-tracker-constants'
 import type { ServiceTimeline } from '@/lib/lifecycle/timeline-generator-actions'
 
 type EventDetailOpsTabProps = {

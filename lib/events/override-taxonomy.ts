@@ -1,11 +1,9 @@
-/**
+﻿/**
  * Override Reason Taxonomy
  *
  * Classifies free-text override reasons into structured categories
  * for analytics, audit trails, and pattern detection.
  */
-
-import { createServerClient } from '@/lib/db/server'
 
 export type OverrideCategory =
   | 'time_constraint'
@@ -176,51 +174,4 @@ export function classifyOverrideReason(reason: string): OverrideCategory {
   }
 
   return bestCategory
-}
-
-/**
- * Reads all existing override_reason values for a tenant and writes
- * the computed override_category back to rows that lack one.
- */
-export async function classifyExistingOverrides(tenantId: string): Promise<{
-  classified: number
-  skipped: number
-}> {
-  const db: any = createServerClient({ admin: true })
-
-  // Fetch rows with an override_reason but no category
-  const { data: rows, error } = await db
-    .from('event_readiness_gates')
-    .select('id, override_reason')
-    .eq('tenant_id', tenantId)
-    .eq('status', 'overridden')
-    .is('override_category', null)
-    .not('override_reason', 'is', null)
-
-  if (error) {
-    throw new Error(`Failed to fetch overrides: ${error.message}`)
-  }
-
-  if (!rows || rows.length === 0) {
-    return { classified: 0, skipped: 0 }
-  }
-
-  let classified = 0
-  let skipped = 0
-
-  for (const row of rows as { id: string; override_reason: string }[]) {
-    const category = classifyOverrideReason(row.override_reason)
-    const { error: updateError } = await db
-      .from('event_readiness_gates')
-      .update({ override_category: category })
-      .eq('id', row.id)
-
-    if (updateError) {
-      skipped++
-    } else {
-      classified++
-    }
-  }
-
-  return { classified, skipped }
 }

@@ -53,7 +53,7 @@ export async function createQuickRecipe(
 
   const parsed = QuickCaptureSchema.safeParse(input)
   if (!parsed.success) {
-    return { success: false, error: parsed.error.errors[0]?.message ?? 'Invalid input' }
+    return { success: false, error: parsed.error.issues[0]?.message ?? 'Invalid input' }
   }
   const { name, notes, captureSource, transcript, category } = parsed.data
 

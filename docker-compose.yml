@@ -31,7 +31,7 @@ services:
       - "-c"
       - "maintenance_work_mem=128MB"
       - "-c"
-      - "max_connections=20"
+      - "max_connections=100"
       - "-c"
       - "random_page_cost=1.1"
       - "-c"

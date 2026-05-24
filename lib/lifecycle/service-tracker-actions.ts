@@ -3,57 +3,7 @@
 import { requireChef } from '@/lib/auth/get-user'
 import { createServerClient } from '@/lib/db/server'
 
-/**
- * Service execution stages within the "active" lifecycle phase.
- * These represent the physical progression of a service day.
- */
-export type ServiceStage = 'prep' | 'cooking' | 'plating' | 'serving' | 'cleanup'
-
-export type ServiceStageInfo = {
-  key: ServiceStage
-  label: string
-  description: string
-}
-
-export const SERVICE_STAGES: ServiceStageInfo[] = [
-  { key: 'prep', label: 'Prep', description: 'Mise en place, station setup' },
-  { key: 'cooking', label: 'Cooking', description: 'Active cooking, sauces, proteins' },
-  { key: 'plating', label: 'Plating', description: 'Assembling plates, garnish' },
-  { key: 'serving', label: 'Serving', description: 'Courses going out to guests' },
-  { key: 'cleanup', label: 'Cleanup', description: 'Breakdown, packing, reset' },
-]
-
-export type GuestInfo = {
-  id: string
-  name: string | null
-  rsvp_status: string | null
-  dietary_restrictions: string[] | null
-  allergies: string[] | null
-}
-
-export type ServiceTrackerState = {
-  /** Current execution stage inferred from event timestamps and course progress */
-  currentStage: ServiceStage
-  /** Event-level timestamps */
-  serviceStartedAt: string | null
-  serviceCompletedAt: string | null
-  /** Guest tracking */
-  guestCount: number
-  guests: GuestInfo[]
-  guestsAttending: number
-  guestsDeclined: number
-  /** Dietary accommodations active for this event */
-  activeDietaryRestrictions: string[]
-  activeAllergies: string[]
-  /** Prep readiness flags */
-  carPacked: boolean
-  groceryListReady: boolean
-  prepListReady: boolean
-  executionSheetReady: boolean
-  /** Reset status */
-  resetComplete: boolean
-  resetCompletedAt: string | null
-}
+import type { ServiceStage, GuestInfo, ServiceTrackerState } from './service-tracker-constants'
 
 /**
  * Infers the current service stage from event state and course progress.
