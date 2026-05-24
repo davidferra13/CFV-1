@@ -1,0 +1,70 @@
+﻿// Activity Sharing Toggle - Settings control for sharing booking activity with connections
+'use client'
+
+import { useState, useTransition } from 'react'
+import { toggleActivitySharing } from '@/lib/network/activity/actions'
+
+interface ActivitySharingToggleProps {
+  currentValue: boolean
+}
+
+export function ActivitySharingToggle({ currentValue }: ActivitySharingToggleProps) {
+  const [enabled, setEnabled] = useState(currentValue)
+  const [isPending, startTransition] = useTransition()
+  const [error, setError] = useState<string | null>(null)
+
+  function handleToggle() {
+    const newValue = !enabled
+    setEnabled(newValue)
+    setError(null)
+
+    startTransition(async () => {
+      try {
+        await toggleActivitySharing(newValue)
+      } catch (err: any) {
+        setEnabled(!newValue) // revert on failure
+        setError(err.message || 'Failed to update')
+      }
+    })
+  }
+
+  return (
+    <div className="border rounded-lg p-4">
+      <div className="flex items-center justify-between">
+        <div className="flex-1">
+          <p className="font-medium text-stone-100">Share Activity with Connections</p>
+          <p className="text-sm text-stone-500 mt-1">
+            {enabled
+              ? 'Connected chefs can see how busy you are. Only dinner counts are shared, never client names or details.'
+              : 'Your activity is private. Connected chefs cannot see your booking activity.'}
+          </p>
+        </div>
+
+        {/* Toggle switch */}
+        <button
+          type="button"
+          role="switch"
+          aria-checked={enabled}
+          disabled={isPending}
+          onClick={handleToggle}
+          className={`
+            relative inline-flex h-6 w-11 flex-shrink-0 cursor-pointer rounded-full border-2 border-transparent
+            transition-colors duration-200 ease-in-out focus-visible:outline-none focus-visible:ring-2
+            focus-visible:ring-brand-500 focus-visible:ring-offset-2 disabled:opacity-50
+            ${enabled ? 'bg-brand-600' : 'bg-stone-700'}
+          `}
+        >
+          <span
+            className={`
+              pointer-events-none inline-block h-5 w-5 transform rounded-full bg-stone-900 shadow ring-0
+              transition duration-200 ease-in-out
+              ${enabled ? 'translate-x-5' : 'translate-x-0'}
+            `}
+          />
+        </button>
+      </div>
+
+      {error && <p className="mt-2 text-sm text-red-600">{error}</p>}
+    </div>
+  )
+}
