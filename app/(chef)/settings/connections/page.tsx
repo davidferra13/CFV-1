@@ -131,6 +131,15 @@ export default async function ConnectionsSettingsPage() {
                     Outlook, or Google Calendar.
                   </p>
                 </Link>
+                <Link
+                  href="/settings/platform-connections"
+                  className="block border rounded-lg p-4 hover:bg-stone-800 transition-colors"
+                >
+                  <p className="font-medium text-stone-100">Platform Connections</p>
+                  <p className="text-sm text-stone-500 mt-1">
+                    Connect marketplace accounts to track inquiries from external chef platforms.
+                  </p>
+                </Link>
                 {developerToolsEnabled && (
                   <Link
                     href="/settings/zapier"

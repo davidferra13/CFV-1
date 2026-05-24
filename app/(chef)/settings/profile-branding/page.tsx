@@ -131,6 +131,17 @@ export default async function ProfileBrandingSettingsPage() {
                 See what your clients see when they visit your portal.
               </p>
             </Link>
+
+            <Link
+              href="/settings/embed"
+              className="block border rounded-lg p-4 hover:bg-stone-800 transition-colors"
+            >
+              <p className="font-medium text-stone-100">Website Widget</p>
+              <p className="text-sm text-stone-500 mt-1">
+                Add a booking form to your existing website. Works with Wix, Squarespace, WordPress,
+                and any site.
+              </p>
+            </Link>
           </div>
 
           {profileData.slug && (
@@ -161,76 +172,6 @@ export default async function ProfileBrandingSettingsPage() {
             <p className="font-medium text-stone-100">Theme</p>
             <p className="text-sm text-stone-500 mt-1">Switch between light and dark mode.</p>
           </Link>
-        </SettingsCategory>
-
-        <SettingsCategory
-          title="Professional Growth"
-          description="Skills, credentials, and career development."
-          icon="TrendingUp"
-          tone="neutral"
-          defaultOpen={true}
-        >
-          <div className="space-y-3">
-            <Link
-              href="/settings/professional"
-              className="block border rounded-lg p-4 hover:bg-stone-800 transition-colors"
-            >
-              <p className="font-medium text-stone-100">Professional Development</p>
-              <p className="text-sm text-stone-500 mt-1">
-                Track your growth and learning milestones.
-              </p>
-            </Link>
-
-            <Link
-              href="/settings/professional/skills"
-              className="block border rounded-lg p-4 hover:bg-stone-800 transition-colors"
-            >
-              <p className="font-medium text-stone-100">Capability Inventory</p>
-              <p className="text-sm text-stone-500 mt-1">
-                Document your culinary skills and specializations.
-              </p>
-            </Link>
-
-            <Link
-              href="/settings/professional/momentum"
-              className="block border rounded-lg p-4 hover:bg-stone-800 transition-colors"
-            >
-              <p className="font-medium text-stone-100">Professional Momentum</p>
-              <p className="text-sm text-stone-500 mt-1">
-                Visualize your professional trajectory and achievements.
-              </p>
-            </Link>
-
-            <Link
-              href="/settings/highlights"
-              className="block border rounded-lg p-4 hover:bg-stone-800 transition-colors"
-            >
-              <p className="font-medium text-stone-100">Profile Highlights</p>
-              <p className="text-sm text-stone-500 mt-1">
-                Curate standout moments for your public profile.
-              </p>
-            </Link>
-
-            <Link
-              href="/settings/portfolio"
-              className="block border rounded-lg p-4 hover:bg-stone-800 transition-colors"
-            >
-              <p className="font-medium text-stone-100">Portfolio</p>
-              <p className="text-sm text-stone-500 mt-1">
-                Showcase your best work with photos and descriptions.
-              </p>
-            </Link>
-
-            <Link
-              href="/settings/credentials"
-              className="block border rounded-lg p-4 hover:bg-stone-800 transition-colors"
-            >
-              <p className="font-medium text-stone-100">Credentials</p>
-              <p className="text-sm text-stone-500 mt-1">
-                Certifications, licenses, and training records.
-              </p>
-            </Link>
-          </div>
         </SettingsCategory>
 
         <SettingsCategory

@@ -25,14 +25,14 @@ export default async function PaymentsSettingsPage() {
       <div className="mb-8">
         <h1 className="text-2xl font-bold text-stone-100 sm:text-3xl">Payments &amp; Support</h1>
         <p className="mt-2 max-w-2xl text-sm text-stone-300">
-          Stripe payouts, voluntary support, workspace modules, and digital wallets.
+          Stripe payouts, pricing, invoicing, fees, and digital wallets.
         </p>
       </div>
 
       <div className="space-y-6">
         <SettingsCategory
-          title="Payments & Support"
-          description="Payment processing and workspace configuration."
+          title="Payments & Payouts"
+          description="Payment processing and voluntary support."
           icon="CreditCard"
           primary
           tone="neutral"
@@ -51,6 +51,16 @@ export default async function PaymentsSettingsPage() {
             </Link>
 
             <Link
+              href="/settings/payment-methods"
+              className="block border rounded-lg p-4 hover:bg-stone-800 transition-colors"
+            >
+              <p className="font-medium text-stone-100">Digital Wallets</p>
+              <p className="text-sm text-stone-500 mt-1">
+                Enable or disable Apple Pay and Google Pay for your client checkout sessions.
+              </p>
+            </Link>
+
+            <Link
               href="/settings/billing"
               className="block border rounded-lg p-4 hover:bg-stone-800 transition-colors"
             >
@@ -60,25 +70,44 @@ export default async function PaymentsSettingsPage() {
                 contribution.
               </p>
             </Link>
+          </div>
+        </SettingsCategory>
 
+        <SettingsCategory
+          title="Pricing & Invoicing"
+          description="Rates, fees, and invoice configuration."
+          icon="Receipt"
+          tone="neutral"
+          defaultOpen={true}
+        >
+          <div className="space-y-3">
             <Link
-              href="/settings/modules"
-              className="block border rounded-lg p-4 hover:bg-stone-800 transition-colors"
+              href="/settings/pricing"
+              className="block border border-brand-700 rounded-lg p-4 bg-brand-950/40 hover:bg-brand-950 transition-colors"
             >
-              <p className="font-medium text-stone-100">Modules</p>
-              <p className="text-sm text-stone-500 mt-1">
-                Choose which features appear in your sidebar. Toggle modules on or off to keep your
-                workspace focused.
+              <p className="font-semibold text-brand-200">Pricing Setup</p>
+              <p className="text-sm text-brand-400 mt-1">
+                Configure per-person and per-course rates with a guided setup wizard.
               </p>
             </Link>
 
             <Link
-              href="/settings/payment-methods"
+              href="/settings/fee-schedule"
               className="block border rounded-lg p-4 hover:bg-stone-800 transition-colors"
             >
-              <p className="font-medium text-stone-100">Digital Wallets</p>
+              <p className="font-medium text-stone-100">Fee Schedule</p>
               <p className="text-sm text-stone-500 mt-1">
-                Enable or disable Apple Pay and Google Pay for your client checkout sessions.
+                Set cancellation and rescheduling fee tiers based on how far out the change happens.
+              </p>
+            </Link>
+
+            <Link
+              href="/settings/invoice"
+              className="block border rounded-lg p-4 hover:bg-stone-800 transition-colors"
+            >
+              <p className="font-medium text-stone-100">Invoice Defaults</p>
+              <p className="text-sm text-stone-500 mt-1">
+                Payment terms, tax ID, and footer text for PDF invoices.
               </p>
             </Link>
           </div>

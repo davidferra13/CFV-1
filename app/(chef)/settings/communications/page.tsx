@@ -34,14 +34,35 @@ export default async function CommunicationsSettingsPage() {
 
       <div className="space-y-6">
         <SettingsCategory
-          title="Communication & Workflow"
-          description="Manage messaging templates, automations, and your creative planning systems."
+          title="Messages & Automation"
+          description="Auto-response, touchpoints, templates, and automation rules."
           icon="MessageSquare"
           primary
           tone="neutral"
           defaultOpen={true}
         >
           <div className="space-y-3">
+            <Link
+              href="/settings/communication"
+              className="block border border-brand-700 rounded-lg p-4 bg-brand-950/40 hover:bg-brand-950 transition-colors"
+            >
+              <p className="font-semibold text-brand-200">Communication Settings</p>
+              <p className="text-sm text-brand-400 mt-1">
+                Auto-response rules, business hours, message cadence, and default reply behavior.
+              </p>
+            </Link>
+
+            <Link
+              href="/settings/touchpoints"
+              className="block border rounded-lg p-4 hover:bg-stone-800 transition-colors"
+            >
+              <p className="font-medium text-stone-100">Touchpoints</p>
+              <p className="text-sm text-stone-500 mt-1">
+                Automated client follow-ups for birthdays, post-event check-ins, and periodic
+                outreach.
+              </p>
+            </Link>
+
             <Link
               href="/settings/templates"
               className="block border rounded-lg p-4 hover:bg-stone-800 transition-colors"
@@ -53,16 +74,6 @@ export default async function CommunicationsSettingsPage() {
             </Link>
 
             <Link
-              href="/settings/menu-templates"
-              className="block border rounded-lg p-4 hover:bg-stone-800 transition-colors"
-            >
-              <p className="font-medium text-stone-100">Front-of-House Menu Templates</p>
-              <p className="text-sm text-stone-500 mt-1">
-                Customize default, holiday, and special-event templates used by FOH menu generation.
-              </p>
-            </Link>
-
-            <Link
               href="/settings/automations"
               className="block border rounded-lg p-4 hover:bg-stone-800 transition-colors"
             >
@@ -70,28 +81,6 @@ export default async function CommunicationsSettingsPage() {
               <p className="text-sm text-stone-500 mt-1">
                 Set up rules to auto-create follow-ups, notifications, and draft messages when
                 events happen.
-              </p>
-            </Link>
-
-            <Link
-              href="/settings/repertoire"
-              className="block border rounded-lg p-4 hover:bg-stone-800 transition-colors"
-            >
-              <p className="font-medium text-stone-100">Seasonal Palettes</p>
-              <p className="text-sm text-stone-500 mt-1">
-                Define your creative thesis, micro-windows, context profiles, and proven wins for
-                each season.
-              </p>
-            </Link>
-
-            <Link
-              href="/settings/journal"
-              className="block border rounded-lg p-4 hover:bg-stone-800 transition-colors"
-            >
-              <p className="font-medium text-stone-100">Chef Journal</p>
-              <p className="text-sm text-stone-500 mt-1">
-                Track travel inspiration, service notes, favorite meals, and ideas worth bringing
-                back into your operation.
               </p>
             </Link>
           </div>

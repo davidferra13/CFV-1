@@ -1,6 +1,14 @@
 import Link from 'next/link'
 import type { ElementType } from 'react'
-import { ArrowRight, CalendarDays, ChefHat, Globe, Plug, Sparkles } from '@/components/ui/icons'
+import {
+  ArrowRight,
+  Brain,
+  CalendarDays,
+  ChefHat,
+  Globe,
+  Plug,
+  Sparkles,
+} from '@/components/ui/icons'
 import { SETTINGS_TONE_STYLES, type SettingsTone } from '@/components/settings/settings-tone'
 
 type GuideCard = {
@@ -34,7 +42,7 @@ const guideCards: GuideCard[] = [
     href: '/settings/business',
     icon: ChefHat,
     tone: 'brand',
-    highlights: ['Business defaults', 'My services', 'Payments & billing'],
+    highlights: ['Business defaults', 'My services', 'Payments'],
   },
   {
     label: 'Client-facing',
@@ -45,7 +53,17 @@ const guideCards: GuideCard[] = [
     href: '/settings/profile-branding',
     icon: Globe,
     tone: 'neutral',
-    highlights: ['Profile & branding', 'Booking page', 'Client reviews'],
+    highlights: ['Profile & branding', 'Client preview', 'Network'],
+  },
+  {
+    label: 'My Craft',
+    description: 'Your culinary identity, professional growth, journal, and seasonal planning.',
+    eyebrow: 'Growth',
+    cta: 'Open craft settings',
+    href: '/settings/my-craft',
+    icon: Sparkles,
+    tone: 'brand',
+    highlights: ['Culinary profile', 'Skills & credentials', 'Journal'],
   },
   {
     label: 'Integrations',
@@ -56,15 +74,15 @@ const guideCards: GuideCard[] = [
     href: '/settings/connections',
     icon: Plug,
     tone: 'neutral',
-    highlights: ['Connected accounts', 'Calendar sync', 'Business tools'],
+    highlights: ['Connected accounts', 'Calendar sync', 'Platforms'],
   },
   {
     label: 'AI and system',
     description: 'Remy controls, privacy expectations, health checks, and account-level controls.',
     eyebrow: 'Control plane',
     cta: 'Open AI + system settings',
-    href: '/settings/system',
-    icon: Sparkles,
+    href: '/settings/ai',
+    icon: Brain,
     tone: 'neutral',
     highlights: ['AI & privacy', 'Account & security', 'System health'],
   },

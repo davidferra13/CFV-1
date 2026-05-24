@@ -61,32 +61,12 @@ export default async function BusinessSettingsPage() {
             </Link>
 
             <Link
-              href="/settings/navigation"
-              className="block border rounded-lg p-4 hover:bg-stone-800 transition-colors"
-            >
-              <p className="font-medium text-stone-100">Navigation Preferences</p>
-              <p className="text-sm text-stone-500 mt-1">
-                Review shell behavior and customize mobile bottom tabs.
-              </p>
-            </Link>
-
-            <Link
               href="/settings/store-preferences"
               className="block border rounded-lg p-4 hover:bg-stone-800 transition-colors"
             >
               <p className="font-medium text-stone-100">Store Preferences</p>
               <p className="text-sm text-stone-500 mt-1">
                 Select your preferred stores for personalized pricing throughout ChefFlow.
-              </p>
-            </Link>
-
-            <Link
-              href="/settings/menu-engine"
-              className="block border rounded-lg p-4 hover:bg-stone-800 transition-colors"
-            >
-              <p className="font-medium text-stone-100">Menu Intelligence</p>
-              <p className="text-sm text-stone-500 mt-1">
-                Enable or disable intelligence features in the menu editor sidebar.
               </p>
             </Link>
 
@@ -153,6 +133,46 @@ export default async function BusinessSettingsPage() {
               <p className="text-sm text-stone-500 mt-1">
                 Add extra fields to events, clients, and recipes to capture information specific to
                 your business.
+              </p>
+            </Link>
+
+            <Link
+              href="/settings/taxonomy"
+              className="block border rounded-lg p-4 hover:bg-stone-800 transition-colors"
+            >
+              <p className="font-medium text-stone-100">Custom Taxonomy</p>
+              <p className="text-sm text-stone-500 mt-1">
+                Define custom cuisines, occasions, seasons, and course types beyond the defaults.
+              </p>
+            </Link>
+          </div>
+        </SettingsCategory>
+
+        <SettingsCategory
+          title="Menus & Restaurants"
+          description="Menu templates and restaurant management."
+          icon="UtensilsCrossed"
+          tone="neutral"
+          defaultOpen={true}
+        >
+          <div className="space-y-3">
+            <Link
+              href="/settings/menu-templates"
+              className="block border rounded-lg p-4 hover:bg-stone-800 transition-colors"
+            >
+              <p className="font-medium text-stone-100">Menu Templates</p>
+              <p className="text-sm text-stone-500 mt-1">
+                Customize default, holiday, and special event templates for front-of-house menus.
+              </p>
+            </Link>
+
+            <Link
+              href="/settings/restaurants"
+              className="block border rounded-lg p-4 hover:bg-stone-800 transition-colors"
+            >
+              <p className="font-medium text-stone-100">Restaurants</p>
+              <p className="text-sm text-stone-500 mt-1">
+                Manage owned or operated restaurants linked to your public profile.
               </p>
             </Link>
           </div>

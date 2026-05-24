@@ -32,7 +32,7 @@ export default async function SystemSettingsPage() {
       <div className="mb-8">
         <h1 className="text-2xl font-bold text-stone-100 sm:text-3xl">System &amp; Account</h1>
         <p className="mt-2 max-w-2xl text-sm text-stone-300">
-          Sample data, desktop app, feedback, and account security.
+          Security, devices, data management, modules, and account controls.
         </p>
       </div>
 
@@ -127,6 +127,71 @@ export default async function SystemSettingsPage() {
                 </p>
               </Link>
             )}
+            <Link
+              href="/settings/navigation"
+              className="block border rounded-lg p-4 hover:bg-stone-800 transition-colors"
+            >
+              <p className="font-medium text-stone-100">Navigation Preferences</p>
+              <p className="text-sm text-stone-500 mt-1">
+                Customize mobile bottom tabs and review shell behavior.
+              </p>
+            </Link>
+            <Link
+              href="/settings/devices"
+              className="block border rounded-lg p-4 hover:bg-stone-800 transition-colors"
+            >
+              <p className="font-medium text-stone-100">Devices</p>
+              <p className="text-sm text-stone-500 mt-1">
+                Manage kiosk devices and staff PIN access.
+              </p>
+            </Link>
+            <Link
+              href="/settings/modules"
+              className="block border rounded-lg p-4 hover:bg-stone-800 transition-colors"
+            >
+              <p className="font-medium text-stone-100">Modules</p>
+              <p className="text-sm text-stone-500 mt-1">
+                Choose which features appear in your sidebar. Toggle modules on or off.
+              </p>
+            </Link>
+          </div>
+        </SettingsCategory>
+
+        <SettingsCategory
+          title="Data & Privacy"
+          description="Data quality, exports, and account deletion."
+          icon="Database"
+          tone="neutral"
+          defaultOpen={true}
+        >
+          <div className="space-y-3">
+            <Link
+              href="/settings/data-quality"
+              className="block border rounded-lg p-4 hover:bg-stone-800 transition-colors"
+            >
+              <p className="font-medium text-stone-100">Data Quality</p>
+              <p className="text-sm text-stone-500 mt-1">
+                Detect and resolve duplicate clients, ingredients, and recipes.
+              </p>
+            </Link>
+            <Link
+              href="/settings/data-export"
+              className="block border rounded-lg p-4 hover:bg-stone-800 transition-colors"
+            >
+              <p className="font-medium text-stone-100">Data Export</p>
+              <p className="text-sm text-stone-500 mt-1">
+                Download a copy of all your ChefFlow data. Non-destructive.
+              </p>
+            </Link>
+            <Link
+              href="/settings/delete-account"
+              className="block border border-red-800 rounded-lg p-4 hover:bg-red-950/30 transition-colors"
+            >
+              <p className="font-medium text-red-300">Delete Account</p>
+              <p className="text-sm text-red-400/70 mt-1">
+                Permanently remove your account and data with a 30-day grace period.
+              </p>
+            </Link>
           </div>
         </SettingsCategory>
       </div>
