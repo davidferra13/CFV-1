@@ -33,7 +33,7 @@ const QUICK_ACTIONS = [
   },
   {
     label: 'Todo',
-    href: '/tasks',
+    href: '/tasks/new',
     icon: ListChecks,
     color: 'bg-brand-600 hover:bg-brand-700',
   },

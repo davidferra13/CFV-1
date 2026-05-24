@@ -65,6 +65,24 @@ export default async function SchedulingSettingsPage() {
         </SettingsCategory>
 
         <SettingsCategory
+          title="Schedule Blocks"
+          description="Manage shifts, personal time, and recurring commitments."
+          icon="Clock"
+          tone="neutral"
+          defaultOpen={true}
+        >
+          <Link
+            href="/settings/schedule"
+            className="block border border-brand-700 rounded-lg p-4 bg-brand-950/40 hover:bg-brand-950 transition-colors"
+          >
+            <p className="font-semibold text-brand-200">Manage Schedule Blocks</p>
+            <p className="text-sm text-brand-400 mt-1">
+              Add restaurant shifts, personal time, recurring commitments, and other calendar blocks.
+            </p>
+          </Link>
+        </SettingsCategory>
+
+        <SettingsCategory
           title="Booking Page"
           description="Configure your public booking page and pricing."
           icon="CalendarCheck"

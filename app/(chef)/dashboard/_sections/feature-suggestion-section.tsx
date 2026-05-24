@@ -5,7 +5,10 @@ import { getFeatureSuggestions } from '@/lib/progressive-disclosure/disclosure-a
 import { FeatureSuggestionSlot } from '@/components/progressive-disclosure/feature-suggestion'
 
 export async function FeatureSuggestionSection() {
-  const suggestions = await getFeatureSuggestions().catch(() => [])
+  const suggestions = await getFeatureSuggestions().catch((err) => {
+    console.error('[Dashboard/FeatureSuggestions] failed:', err)
+    return []
+  })
   if (!suggestions.length) return null
   return <FeatureSuggestionSlot suggestions={suggestions.slice(0, 3)} />
 }

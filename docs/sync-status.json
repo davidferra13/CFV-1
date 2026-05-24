@@ -1,27 +1,27 @@
 {
-  "last_sync": "2026-05-24T19:04:11.100Z",
+  "last_sync": "2026-05-24T22:35:07.998Z",
   "status": "failed",
-  "next_sync": "2026-05-24T19:08:11.101Z",
+  "next_sync": "2026-05-24T23:05:07.999Z",
   "interval_hours": 2,
-  "consecutive_failures": 3,
+  "consecutive_failures": 6,
   "last_error": "Command failed: node \"C:\\Users\\david\\Documents\\CFv1\\scripts\\openclaw-pull\\sync-all.mjs\"",
   "last_sync_type": "full",
   "last_success_at": null,
-  "last_failure_at": "2026-05-24T19:04:11.100Z",
-  "completed_at": "2026-05-24T19:04:11.100Z",
+  "last_failure_at": "2026-05-24T22:35:07.998Z",
+  "completed_at": "2026-05-24T22:35:07.998Z",
   "error_kind": "exit_code",
   "exit_code": 1,
-  "last_elapsed_s": 3665.8,
-  "run_id": "openclaw-full-1779645785278",
-  "started_at": "2026-05-24T18:03:05.278Z",
+  "last_elapsed_s": 3646.1,
+  "run_id": "openclaw-full-1779658461900",
+  "started_at": "2026-05-24T21:34:21.900Z",
   "summary": {
-    "runId": "openclaw-full-1779645785332",
+    "runId": "openclaw-full-1779658461961",
     "syncType": "full",
     "status": "failed",
     "partialSuccess": false,
-    "startedAt": "2026-05-24T18:03:05.332Z",
-    "completedAt": "2026-05-24T19:04:11.088Z",
-    "durationSeconds": 3665.8,
+    "startedAt": "2026-05-24T21:34:21.961Z",
+    "completedAt": "2026-05-24T22:35:07.981Z",
+    "durationSeconds": 3646,
     "failedStepNames": [
       "Pull catalog from Pi",
       "Push stores to Pi",
@@ -35,8 +35,8 @@
       {
         "name": "Pull catalog from Pi",
         "status": "failed",
-        "startedAt": "2026-05-24T18:03:05.334Z",
-        "completedAt": "2026-05-24T18:03:09.611Z",
+        "startedAt": "2026-05-24T21:34:21.964Z",
+        "completedAt": "2026-05-24T21:34:26.224Z",
         "durationSeconds": 4.3,
         "error": "Command failed: node C:\\Users\\david\\Documents\\CFv1\\scripts\\openclaw-pull\\pull.mjs",
         "details": {
@@ -47,8 +47,8 @@
       {
         "name": "Push stores to Pi",
         "status": "failed",
-        "startedAt": "2026-05-24T18:03:09.611Z",
-        "completedAt": "2026-05-24T18:03:11.707Z",
+        "startedAt": "2026-05-24T21:34:26.225Z",
+        "completedAt": "2026-05-24T21:34:28.337Z",
         "durationSeconds": 2.1,
         "error": "Command failed: node C:\\Users\\david\\Documents\\CFv1\\scripts\\push-stores-to-pi.mjs",
         "details": {
@@ -59,15 +59,15 @@
       {
         "name": "Sync normalization + aliases",
         "status": "success",
-        "startedAt": "2026-05-24T18:03:11.707Z",
-        "completedAt": "2026-05-24T18:04:05.531Z",
-        "durationSeconds": 53.8
+        "startedAt": "2026-05-24T21:34:28.337Z",
+        "completedAt": "2026-05-24T21:35:04.309Z",
+        "durationSeconds": 36
       },
       {
         "name": "Promote canonical foods to system ingredients",
         "status": "failed",
-        "startedAt": "2026-05-24T18:04:05.532Z",
-        "completedAt": "2026-05-24T18:04:05.568Z",
+        "startedAt": "2026-05-24T21:35:04.309Z",
+        "completedAt": "2026-05-24T21:35:04.353Z",
         "durationSeconds": 0,
         "error": "Command failed: node C:\\Users\\david\\Documents\\CFv1\\scripts\\openclaw-promote-foods.mts",
         "details": {
@@ -78,9 +78,9 @@
       {
         "name": "Refresh system ingredient market prices",
         "status": "failed",
-        "startedAt": "2026-05-24T18:04:05.569Z",
-        "completedAt": "2026-05-24T19:04:05.576Z",
-        "durationSeconds": 3600,
+        "startedAt": "2026-05-24T21:35:04.354Z",
+        "completedAt": "2026-05-24T22:35:02.210Z",
+        "durationSeconds": 3597.9,
         "error": "spawnSync node ETIMEDOUT",
         "details": {
           "exitCode": null,
@@ -90,9 +90,9 @@
       {
         "name": "Sync prices from Pi API",
         "status": "failed",
-        "startedAt": "2026-05-24T19:04:05.576Z",
-        "completedAt": "2026-05-24T19:04:08.847Z",
-        "durationSeconds": 3.3,
+        "startedAt": "2026-05-24T22:35:02.211Z",
+        "completedAt": "2026-05-24T22:35:05.677Z",
+        "durationSeconds": 3.5,
         "error": "Command failed: node C:\\Users\\david\\Documents\\CFv1\\scripts\\run-openclaw-sync.mjs",
         "details": {
           "exitCode": 1,
@@ -102,23 +102,23 @@
       {
         "name": "Incremental ingredient knowledge enrichment",
         "status": "success",
-        "startedAt": "2026-05-24T19:04:08.848Z",
-        "completedAt": "2026-05-24T19:04:08.992Z",
-        "durationSeconds": 0.1
+        "startedAt": "2026-05-24T22:35:05.677Z",
+        "completedAt": "2026-05-24T22:35:05.860Z",
+        "durationSeconds": 0.2
       },
       {
         "name": "Pull docket output documents",
         "status": "failed",
-        "startedAt": "2026-05-24T19:04:08.993Z",
-        "completedAt": "2026-05-24T19:04:11.030Z",
-        "durationSeconds": 2,
+        "startedAt": "2026-05-24T22:35:05.861Z",
+        "completedAt": "2026-05-24T22:35:07.913Z",
+        "durationSeconds": 2.1,
         "error": "Command failed: ssh davidferra@10.0.0.177 \"ls /home/davidferra/openclaw-docket/output/ 2>/dev/null\"\nssh: connect to host 10.0.0.177 port 22: Connection refused\r\n"
       },
       {
         "name": "Snapshot current prices",
         "status": "success",
-        "startedAt": "2026-05-24T19:04:11.030Z",
-        "completedAt": "2026-05-24T19:04:11.059Z",
+        "startedAt": "2026-05-24T22:35:07.914Z",
+        "completedAt": "2026-05-24T22:35:07.948Z",
         "durationSeconds": 0,
         "details": {
           "snapshotCount": 0
@@ -127,8 +127,8 @@
       {
         "name": "Refresh materialized views",
         "status": "failed",
-        "startedAt": "2026-05-24T19:04:11.064Z",
-        "completedAt": "2026-05-24T19:04:11.084Z",
+        "startedAt": "2026-05-24T22:35:07.954Z",
+        "completedAt": "2026-05-24T22:35:07.977Z",
         "durationSeconds": 0,
         "error": "cannot refresh materialized view \"public.regional_price_averages\" concurrently"
       }

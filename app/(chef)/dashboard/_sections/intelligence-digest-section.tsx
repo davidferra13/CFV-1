@@ -8,7 +8,8 @@ export async function IntelligenceDigestSection() {
   try {
     const digest = await getWeeklyDigest()
     return <IntelligenceDigestClient digest={digest} />
-  } catch {
+  } catch (err) {
+    console.error('[Dashboard/IntelligenceDigest] getWeeklyDigest failed:', err)
     return null
   }
 }

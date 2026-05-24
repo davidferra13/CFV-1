@@ -16,7 +16,7 @@ const SHORTCUTS = [
   { label: 'Events', href: '/events', icon: Calendar, color: '#3b82f6' },
   { label: 'Inquiries', href: '/inquiries', icon: ChatTeardropText, color: '#f59e0b' },
   { label: 'Clients', href: '/clients', icon: Users, color: '#a855f7' },
-  { label: 'Remy', href: '#remy', icon: Bot, color: '#e88f47' },
+  { label: 'Remy', href: '/remy', icon: Bot, color: '#e88f47' },
   { label: 'Recipes', href: '/recipes', icon: Utensils, color: '#10b981' },
   { label: 'Analytics', href: '/analytics', icon: BarChart2, color: '#06b6d4' },
   { label: 'Finance', href: '/finance/reporting', icon: Wallet, color: '#22c55e' },

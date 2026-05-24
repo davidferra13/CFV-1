@@ -1,45 +1,46 @@
 {
-  "generated": "2026-05-24T02:48:02.329Z",
+  "generated": "2026-05-24T20:39:33.128Z",
   "summary": {
-    "total": 968,
-    "wired": 965,
+    "total": 971,
+    "wired": 968,
     "weak": 0,
     "orphans": 0,
     "skipped": 3
   },
   "post_build_domain_matrix": {
     "changed_files": [
+      "app/(chef)/dashboard/_sections/business-health-section.tsx",
+      "app/(chef)/dashboard/_sections/feature-suggestion-section.tsx",
+      "app/(chef)/dashboard/_sections/intelligence-cards.tsx",
+      "app/(chef)/dashboard/_sections/intelligence-digest-section.tsx",
       "app/(chef)/dashboard/_sections/widget-sections.tsx",
-      "components/navigation/admin-nav-config.ts",
-      "components/navigation/nav-config.tsx",
-      "components/rail/interaction-menu.tsx",
-      "components/rail/rail-item-row.tsx",
-      "components/rail/tier-row.tsx",
-      "components/rail/tiered-rail.tsx",
-      "database/migrations/20260523100000_remy_skill_proposals.sql",
-      "database/migrations/20260523111000_tenant_configurations.sql",
-      "database/migrations/20260523120000_commitment_future_self_letters.sql",
-      "database/migrations/20260523161000_side_effects.sql",
-      "lib/discovery/universal-rail-assembly.ts",
-      "lib/rail/aggregator.ts",
-      "scripts/wiring-audit-results.json"
+      "app/(chef)/dashboard/page.tsx",
+      "app/(chef)/settings/scheduling/page.tsx",
+      "components/dashboard/dashboard-section.tsx",
+      "components/dashboard/quick-create-strip.tsx",
+      "components/dashboard/shortcut-strip.tsx",
+      "docs/sync-status.json",
+      "app/(chef)/dashboard/_sections/lazy-business-health.tsx"
     ],
-    "affected_routes": [],
+    "affected_routes": [
+      "/dashboard",
+      "/settings/scheduling"
+    ],
     "domains": [
       {
         "id": "page_xray",
         "label": "Page X-Ray",
         "relevance": "high",
-        "score": 41,
+        "score": 59,
         "evidence": [
+          "app/(chef)/dashboard/_sections/business-health-section.tsx",
+          "app/(chef)/dashboard/_sections/feature-suggestion-section.tsx",
+          "app/(chef)/dashboard/_sections/intelligence-cards.tsx",
+          "app/(chef)/dashboard/_sections/intelligence-digest-section.tsx",
           "app/(chef)/dashboard/_sections/widget-sections.tsx",
-          "components/navigation/admin-nav-config.ts",
-          "components/navigation/nav-config.tsx",
-          "components/rail/interaction-menu.tsx",
-          "components/rail/rail-item-row.tsx",
-          "components/rail/tier-row.tsx",
-          "components/rail/tiered-rail.tsx",
-          "database/migrations/20260523161000_side_effects.sql"
+          "app/(chef)/dashboard/page.tsx",
+          "app/(chef)/settings/scheduling/page.tsx",
+          "components/dashboard/dashboard-section.tsx"
         ],
         "checks": [
           "Run /page-xray --delta for every affected route, or --quick for a newly created route.",
@@ -50,16 +51,16 @@
         "id": "universal_rail",
         "label": "Universal Rail Intelligence",
         "relevance": "high",
-        "score": 41,
+        "score": 29,
         "evidence": [
+          "app/(chef)/dashboard/_sections/business-health-section.tsx",
+          "app/(chef)/dashboard/_sections/feature-suggestion-section.tsx",
+          "app/(chef)/dashboard/_sections/intelligence-cards.tsx",
+          "app/(chef)/dashboard/_sections/intelligence-digest-section.tsx",
           "app/(chef)/dashboard/_sections/widget-sections.tsx",
-          "components/navigation/admin-nav-config.ts",
-          "components/navigation/nav-config.tsx",
-          "components/rail/interaction-menu.tsx",
-          "components/rail/rail-item-row.tsx",
-          "components/rail/tier-row.tsx",
-          "components/rail/tiered-rail.tsx",
-          "lib/discovery/universal-rail-assembly.ts"
+          "app/(chef)/dashboard/page.tsx",
+          "app/(chef)/settings/scheduling/page.tsx",
+          "components/dashboard/dashboard-section.tsx"
         ],
         "checks": [
           "Verify lib/discovery/rail-profiles.ts has a matching surface profile.",
@@ -70,15 +71,16 @@
         "id": "remy_command_surface",
         "label": "Remy, Navigation, Command Surface",
         "relevance": "high",
-        "score": 23,
+        "score": 12,
         "evidence": [
+          "app/(chef)/dashboard/_sections/business-health-section.tsx",
+          "app/(chef)/dashboard/_sections/intelligence-cards.tsx",
           "app/(chef)/dashboard/_sections/widget-sections.tsx",
-          "components/navigation/admin-nav-config.ts",
-          "components/navigation/nav-config.tsx",
-          "components/rail/rail-item-row.tsx",
-          "components/rail/tiered-rail.tsx",
-          "database/migrations/20260523100000_remy_skill_proposals.sql",
-          "scripts/wiring-audit-results.json"
+          "app/(chef)/dashboard/page.tsx",
+          "app/(chef)/settings/scheduling/page.tsx",
+          "components/dashboard/quick-create-strip.tsx",
+          "components/dashboard/shortcut-strip.tsx",
+          "docs/sync-status.json"
         ],
         "checks": [
           "Verify new pages/actions are discoverable through nav, command surface, Remy, or a justified local entry point.",
@@ -86,118 +88,15 @@
         ]
       },
       {
-        "id": "communications",
-        "label": "Communications and Notifications",
-        "relevance": "high",
-        "score": 16,
-        "evidence": [
-          "app/(chef)/dashboard/_sections/widget-sections.tsx",
-          "components/navigation/admin-nav-config.ts",
-          "components/navigation/nav-config.tsx",
-          "components/rail/rail-item-row.tsx",
-          "components/rail/tiered-rail.tsx",
-          "database/migrations/20260523161000_side_effects.sql",
-          "scripts/wiring-audit-results.json"
-        ],
-        "checks": [
-          "Verify user-visible state changes notify the right party or appear in the correct inbox/feed.",
-          "Verify communications are threaded, tenant-scoped, and do not duplicate notifications."
-        ]
-      },
-      {
-        "id": "menu_intelligence",
-        "label": "Menu Intelligence",
-        "relevance": "high",
-        "score": 14,
-        "evidence": [
-          "app/(chef)/dashboard/_sections/widget-sections.tsx",
-          "components/navigation/nav-config.tsx",
-          "components/rail/interaction-menu.tsx",
-          "components/rail/rail-item-row.tsx",
-          "scripts/wiring-audit-results.json"
-        ],
-        "checks": [
-          "Verify menu, recipe, dish, dietary, and approval changes feed menu intelligence surfaces.",
-          "Verify menu intelligence cards or panels appear where chefs make menu decisions."
-        ]
-      },
-      {
-        "id": "commitment",
-        "label": "Commitment UI and Completion",
-        "relevance": "high",
-        "score": 12,
-        "evidence": [
-          "app/(chef)/dashboard/_sections/widget-sections.tsx",
-          "components/navigation/nav-config.tsx",
-          "database/migrations/20260523120000_commitment_future_self_letters.sql",
-          "scripts/wiring-audit-results.json"
-        ],
-        "checks": [
-          "Verify the feature updates readiness, commitment, or completion state when it changes booking confidence.",
-          "Verify the UI distinguishes draft, proposed, committed, paid, confirmed, and complete states."
-        ]
-      },
-      {
-        "id": "ledger_finance",
-        "label": "Ledger, Finance, Payments",
-        "relevance": "high",
-        "score": 11,
-        "evidence": [
-          "app/(chef)/dashboard/_sections/widget-sections.tsx",
-          "components/navigation/admin-nav-config.ts",
-          "components/navigation/nav-config.tsx",
-          "scripts/wiring-audit-results.json"
-        ],
-        "checks": [
-          "Verify money movement creates immutable ledger/payment records and avoids destructive changes.",
-          "Verify finance and rail summaries reflect payment, invoice, and revenue changes."
-        ]
-      },
-      {
-        "id": "pie",
-        "label": "PIE and Pricing Intelligence",
-        "relevance": "high",
-        "score": 11,
-        "evidence": [
-          "app/(chef)/dashboard/_sections/widget-sections.tsx",
-          "components/navigation/admin-nav-config.ts",
-          "components/navigation/nav-config.tsx",
-          "components/rail/tiered-rail.tsx",
-          "scripts/wiring-audit-results.json"
-        ],
-        "checks": [
-          "Verify pricing, ingredient, recipe, quote, and procurement work uses PIE or records why PIE is not applicable.",
-          "Verify pricing outputs do not hide failures as zeros or stale certainty."
-        ]
-      },
-      {
-        "id": "priority_queue",
-        "label": "Priority Queue and Action Graph",
-        "relevance": "high",
-        "score": 9,
-        "evidence": [
-          "app/(chef)/dashboard/_sections/widget-sections.tsx",
-          "components/navigation/nav-config.tsx",
-          "components/rail/interaction-menu.tsx",
-          "components/rail/tiered-rail.tsx",
-          "lib/discovery/universal-rail-assembly.ts",
-          "lib/rail/aggregator.ts",
-          "scripts/wiring-audit-results.json"
-        ],
-        "checks": [
-          "Verify new waiting work, blockers, overdue work, or next actions appear in Priority Queue or Action Graph.",
-          "Verify actions have source, urgency, due state, and deep links."
-        ]
-      },
-      {
         "id": "automation_cil",
         "label": "Automation and CIL",
         "relevance": "high",
-        "score": 8,
+        "score": 11,
         "evidence": [
-          "components/navigation/nav-config.tsx",
-          "lib/discovery/universal-rail-assembly.ts",
-          "scripts/wiring-audit-results.json"
+          "app/(chef)/dashboard/_sections/business-health-section.tsx",
+          "app/(chef)/dashboard/_sections/intelligence-cards.tsx",
+          "app/(chef)/dashboard/_sections/intelligence-digest-section.tsx",
+          "app/(chef)/dashboard/page.tsx"
         ],
         "checks": [
           "Verify durable signals, automation hooks, and intelligence outputs are emitted where the feature creates new evidence.",
@@ -205,17 +104,36 @@
         ]
       },
       {
-        "id": "event_lifecycle",
-        "label": "Event Lifecycle and FSM",
+        "id": "pie",
+        "label": "PIE and Pricing Intelligence",
         "relevance": "high",
         "score": 8,
         "evidence": [
+          "app/(chef)/dashboard/_sections/business-health-section.tsx",
           "app/(chef)/dashboard/_sections/widget-sections.tsx",
-          "components/rail/interaction-menu.tsx",
-          "components/rail/rail-item-row.tsx",
-          "components/rail/tier-row.tsx",
-          "lib/rail/aggregator.ts",
-          "scripts/wiring-audit-results.json"
+          "app/(chef)/dashboard/page.tsx",
+          "app/(chef)/settings/scheduling/page.tsx",
+          "docs/sync-status.json",
+          "app/(chef)/dashboard/_sections/lazy-business-health.tsx"
+        ],
+        "checks": [
+          "Verify pricing, ingredient, recipe, quote, and procurement work uses PIE or records why PIE is not applicable.",
+          "Verify pricing outputs do not hide failures as zeros or stale certainty."
+        ]
+      },
+      {
+        "id": "event_lifecycle",
+        "label": "Event Lifecycle and FSM",
+        "relevance": "medium",
+        "score": 7,
+        "evidence": [
+          "app/(chef)/dashboard/_sections/intelligence-cards.tsx",
+          "app/(chef)/dashboard/_sections/widget-sections.tsx",
+          "app/(chef)/settings/scheduling/page.tsx",
+          "components/dashboard/dashboard-section.tsx",
+          "components/dashboard/quick-create-strip.tsx",
+          "components/dashboard/shortcut-strip.tsx",
+          "app/(chef)/dashboard/_sections/lazy-business-health.tsx"
         ],
         "checks": [
           "Verify event mutations use the canonical transition path where lifecycle state changes.",
@@ -223,14 +141,72 @@
         ]
       },
       {
+        "id": "menu_intelligence",
+        "label": "Menu Intelligence",
+        "relevance": "medium",
+        "score": 5,
+        "evidence": [
+          "app/(chef)/dashboard/_sections/business-health-section.tsx",
+          "app/(chef)/dashboard/_sections/widget-sections.tsx",
+          "components/dashboard/quick-create-strip.tsx",
+          "components/dashboard/shortcut-strip.tsx",
+          "docs/sync-status.json"
+        ],
+        "checks": [
+          "Verify menu, recipe, dish, dietary, and approval changes feed menu intelligence surfaces.",
+          "Verify menu intelligence cards or panels appear where chefs make menu decisions."
+        ]
+      },
+      {
+        "id": "ledger_finance",
+        "label": "Ledger, Finance, Payments",
+        "relevance": "medium",
+        "score": 4,
+        "evidence": [
+          "app/(chef)/dashboard/_sections/intelligence-cards.tsx",
+          "app/(chef)/dashboard/_sections/widget-sections.tsx",
+          "app/(chef)/dashboard/page.tsx"
+        ],
+        "checks": [
+          "Verify money movement creates immutable ledger/payment records and avoids destructive changes.",
+          "Verify finance and rail summaries reflect payment, invoice, and revenue changes."
+        ]
+      },
+      {
+        "id": "commitment",
+        "label": "Commitment UI and Completion",
+        "relevance": "low",
+        "score": 3,
+        "evidence": [
+          "app/(chef)/dashboard/_sections/widget-sections.tsx",
+          "app/(chef)/settings/scheduling/page.tsx"
+        ],
+        "checks": [
+          "Verify the feature updates readiness, commitment, or completion state when it changes booking confidence.",
+          "Verify the UI distinguishes draft, proposed, committed, paid, confirmed, and complete states."
+        ]
+      },
+      {
+        "id": "communications",
+        "label": "Communications and Notifications",
+        "relevance": "low",
+        "score": 2,
+        "evidence": [
+          "app/(chef)/dashboard/_sections/widget-sections.tsx",
+          "app/(chef)/dashboard/page.tsx"
+        ],
+        "checks": [
+          "Verify user-visible state changes notify the right party or appear in the correct inbox/feed.",
+          "Verify communications are threaded, tenant-scoped, and do not duplicate notifications."
+        ]
+      },
+      {
         "id": "client_intelligence",
         "label": "Client Intelligence",
-        "relevance": "medium",
-        "score": 7,
+        "relevance": "low",
+        "score": 1,
         "evidence": [
-          "components/navigation/nav-config.tsx",
-          "lib/discovery/universal-rail-assembly.ts",
-          "scripts/wiring-audit-results.json"
+          "app/(chef)/dashboard/_sections/business-health-section.tsx"
         ],
         "checks": [
           "Verify client-facing or client-derived facts feed the client intelligence ledger or summary.",
@@ -238,18 +214,16 @@
         ]
       },
       {
-        "id": "dinner_circles",
-        "label": "Dinner Circles",
-        "relevance": "medium",
-        "score": 5,
+        "id": "priority_queue",
+        "label": "Priority Queue and Action Graph",
+        "relevance": "low",
+        "score": 1,
         "evidence": [
-          "components/navigation/admin-nav-config.ts",
-          "components/navigation/nav-config.tsx",
-          "scripts/wiring-audit-results.json"
+          "app/(chef)/dashboard/_sections/widget-sections.tsx"
         ],
         "checks": [
-          "If two parties interact around an event, inquiry, recurring client, staff assignment, or community group, verify an ensure*Circle or create*Circle path.",
-          "Verify important lifecycle updates post to the relevant Circle feed when user-visible."
+          "Verify new waiting work, blockers, overdue work, or next actions appear in Priority Queue or Action Graph.",
+          "Verify actions have source, urgency, due state, and deep links."
         ]
       }
     ]
@@ -344,7 +318,10 @@
       "refs": 2,
       "nav_refs": 0,
       "status": "WIRED",
-      "ref_files": ["lib/admin/cannabis-request-actions.ts", "lib/security/route-policy.ts"]
+      "ref_files": [
+        "lib/admin/cannabis-request-actions.ts",
+        "lib/security/route-policy.ts"
+      ]
     },
     {
       "route": "/admin/cannabis",
@@ -876,15 +853,15 @@
     {
       "route": "/aar",
       "dynamic": false,
-      "refs": 44,
+      "refs": 43,
       "nav_refs": 1,
       "status": "WIRED",
       "ref_files": [
         "app/(chef)/dashboard/_sections/business-section-loader.ts",
         "app/(chef)/dashboard/_sections/business-section-mobile-content.tsx",
-        "app/(chef)/events/page.tsx",
         "app/(chef)/events/[id]/aar/page.tsx",
-        "app/(chef)/events/[id]/ops/ops-hub-view.tsx"
+        "app/(chef)/events/[id]/ops/ops-hub-view.tsx",
+        "app/(chef)/events/[id]/_components/event-detail-ops-tab.tsx"
       ]
     },
     {
@@ -902,7 +879,7 @@
     {
       "route": "/activity",
       "dynamic": false,
-      "refs": 150,
+      "refs": 153,
       "nav_refs": 4,
       "status": "WIRED",
       "ref_files": [
@@ -985,7 +962,10 @@
       "refs": 2,
       "nav_refs": 1,
       "status": "WIRED",
-      "ref_files": ["components/navigation/nav-config.tsx", "lib/security/route-policy.ts"]
+      "ref_files": [
+        "components/navigation/nav-config.tsx",
+        "lib/security/route-policy.ts"
+      ]
     },
     {
       "route": "/analytics/funnel",
@@ -1180,7 +1160,10 @@
       "refs": 2,
       "nav_refs": 1,
       "status": "WIRED",
-      "ref_files": ["components/navigation/nav-config.tsx", "lib/security/route-policy.ts"]
+      "ref_files": [
+        "components/navigation/nav-config.tsx",
+        "lib/security/route-policy.ts"
+      ]
     },
     {
       "route": "/analytics/weekly",
@@ -1188,7 +1171,10 @@
       "refs": 2,
       "nav_refs": 1,
       "status": "WIRED",
-      "ref_files": ["components/navigation/nav-config.tsx", "lib/security/route-policy.ts"]
+      "ref_files": [
+        "components/navigation/nav-config.tsx",
+        "lib/security/route-policy.ts"
+      ]
     },
     {
       "route": "/autopilot",
@@ -1263,7 +1249,7 @@
     {
       "route": "/calendar",
       "dynamic": false,
-      "refs": 148,
+      "refs": 147,
       "nav_refs": 1,
       "status": "WIRED",
       "ref_files": [
@@ -1294,7 +1280,10 @@
       "refs": 2,
       "nav_refs": 1,
       "status": "WIRED",
-      "ref_files": ["components/navigation/nav-config.tsx", "lib/security/route-policy.ts"]
+      "ref_files": [
+        "components/navigation/nav-config.tsx",
+        "lib/security/route-policy.ts"
+      ]
     },
     {
       "route": "/calendar/week",
@@ -1531,7 +1520,7 @@
     {
       "route": "/cannabis",
       "dynamic": false,
-      "refs": 93,
+      "refs": 92,
       "nav_refs": 2,
       "status": "WIRED",
       "ref_files": [
@@ -1601,7 +1590,7 @@
     {
       "route": "/charity",
       "dynamic": false,
-      "refs": 23,
+      "refs": 22,
       "nav_refs": 1,
       "status": "WIRED",
       "ref_files": [
@@ -1615,7 +1604,7 @@
     {
       "route": "/chat",
       "dynamic": false,
-      "refs": 50,
+      "refs": 51,
       "nav_refs": 3,
       "status": "WIRED",
       "ref_files": [
@@ -1629,7 +1618,7 @@
     {
       "route": "/chat/[id]",
       "dynamic": true,
-      "refs": 50,
+      "refs": 51,
       "nav_refs": 3,
       "status": "WIRED",
       "ref_files": [
@@ -1646,7 +1635,10 @@
       "refs": 2,
       "nav_refs": 1,
       "status": "WIRED",
-      "ref_files": ["components/navigation/nav-config.tsx", "lib/security/route-policy.ts"]
+      "ref_files": [
+        "components/navigation/nav-config.tsx",
+        "lib/security/route-policy.ts"
+      ]
     },
     {
       "route": "/chef/cannabis/rsvps",
@@ -1654,7 +1646,10 @@
       "refs": 2,
       "nav_refs": 1,
       "status": "WIRED",
-      "ref_files": ["components/navigation/nav-config.tsx", "lib/security/route-policy.ts"]
+      "ref_files": [
+        "components/navigation/nav-config.tsx",
+        "lib/security/route-policy.ts"
+      ]
     },
     {
       "route": "/circles/admin",
@@ -1662,34 +1657,37 @@
       "refs": 2,
       "nav_refs": 1,
       "status": "WIRED",
-      "ref_files": ["components/navigation/nav-config.tsx", "lib/security/route-policy.ts"]
+      "ref_files": [
+        "components/navigation/nav-config.tsx",
+        "lib/security/route-policy.ts"
+      ]
     },
     {
       "route": "/circles",
       "dynamic": false,
-      "refs": 51,
+      "refs": 53,
       "nav_refs": 3,
       "status": "WIRED",
       "ref_files": [
         "app/(chef)/circles/admin/page.tsx",
         "app/(chef)/circles/[id]/circle-detail-client.tsx",
-        "app/(chef)/dashboard/_sections/dinner-circles-cards.tsx",
-        "app/(chef)/onboarding/features/feature-discovery-client.tsx",
-        "app/(client)/my-hub/page.tsx"
+        "app/(chef)/circles/[id]/circle-redesign-shell.tsx",
+        "app/(chef)/circles/[id]/page.tsx",
+        "app/(chef)/dashboard/_sections/dinner-circles-cards.tsx"
       ]
     },
     {
       "route": "/circles/[id]",
       "dynamic": true,
-      "refs": 52,
+      "refs": 53,
       "nav_refs": 3,
       "status": "WIRED",
       "ref_files": [
         "app/(chef)/circles/admin/page.tsx",
         "app/(chef)/circles/page.tsx",
         "app/(chef)/circles/[id]/circle-detail-client.tsx",
-        "app/(chef)/dashboard/_sections/dinner-circles-cards.tsx",
-        "app/(chef)/onboarding/features/feature-discovery-client.tsx"
+        "app/(chef)/circles/[id]/circle-redesign-shell.tsx",
+        "app/(chef)/dashboard/_sections/dinner-circles-cards.tsx"
       ]
     },
     {
@@ -1887,7 +1885,10 @@
       "refs": 2,
       "nav_refs": 0,
       "status": "WIRED",
-      "ref_files": ["app/(chef)/clients/insights/page.tsx", "lib/security/route-policy.ts"]
+      "ref_files": [
+        "app/(chef)/clients/insights/page.tsx",
+        "lib/security/route-policy.ts"
+      ]
     },
     {
       "route": "/clients/insights/most-frequent",
@@ -1936,7 +1937,10 @@
       "refs": 2,
       "nav_refs": 0,
       "status": "WIRED",
-      "ref_files": ["app/(chef)/clients/insights/page.tsx", "lib/security/route-policy.ts"]
+      "ref_files": [
+        "app/(chef)/clients/insights/page.tsx",
+        "lib/security/route-policy.ts"
+      ]
     },
     {
       "route": "/clients/insights/top-clients",
@@ -1958,7 +1962,10 @@
       "refs": 2,
       "nav_refs": 0,
       "status": "WIRED",
-      "ref_files": ["app/(chef)/clients/insights/page.tsx", "lib/security/route-policy.ts"]
+      "ref_files": [
+        "app/(chef)/clients/insights/page.tsx",
+        "lib/security/route-policy.ts"
+      ]
     },
     {
       "route": "/clients/intake",
@@ -2500,7 +2507,10 @@
       "refs": 2,
       "nav_refs": 1,
       "status": "WIRED",
-      "ref_files": ["components/navigation/nav-config.tsx", "lib/security/route-policy.ts"]
+      "ref_files": [
+        "components/navigation/nav-config.tsx",
+        "lib/security/route-policy.ts"
+      ]
     },
     {
       "route": "/commerce/settlements",
@@ -2588,7 +2598,7 @@
     {
       "route": "/communication",
       "dynamic": false,
-      "refs": 117,
+      "refs": 118,
       "nav_refs": 4,
       "status": "WIRED",
       "ref_files": [
@@ -2698,7 +2708,10 @@
       "refs": 2,
       "nav_refs": 1,
       "status": "WIRED",
-      "ref_files": ["components/navigation/nav-config.tsx", "lib/security/route-policy.ts"]
+      "ref_files": [
+        "components/navigation/nav-config.tsx",
+        "lib/security/route-policy.ts"
+      ]
     },
     {
       "route": "/community/roadmap",
@@ -2788,7 +2801,10 @@
       "refs": 2,
       "nav_refs": 1,
       "status": "WIRED",
-      "ref_files": ["app/(chef)/contracts/page.tsx", "components/navigation/nav-config.tsx"]
+      "ref_files": [
+        "app/(chef)/contracts/page.tsx",
+        "components/navigation/nav-config.tsx"
+      ]
     },
     {
       "route": "/contracts/compose",
@@ -2889,7 +2905,10 @@
       "refs": 2,
       "nav_refs": 1,
       "status": "WIRED",
-      "ref_files": ["components/navigation/nav-config.tsx", "lib/auth/route-policy.ts"]
+      "ref_files": [
+        "components/navigation/nav-config.tsx",
+        "lib/auth/route-policy.ts"
+      ]
     },
     {
       "route": "/culinary/components/ferments",
@@ -3024,7 +3043,10 @@
       "refs": 2,
       "nav_refs": 1,
       "status": "WIRED",
-      "ref_files": ["components/navigation/nav-config.tsx", "lib/security/route-policy.ts"]
+      "ref_files": [
+        "components/navigation/nav-config.tsx",
+        "lib/security/route-policy.ts"
+      ]
     },
     {
       "route": "/culinary/dish-index/insights",
@@ -3467,7 +3489,10 @@
       "refs": 2,
       "nav_refs": 1,
       "status": "WIRED",
-      "ref_files": ["components/navigation/nav-config.tsx", "lib/security/route-policy.ts"]
+      "ref_files": [
+        "components/navigation/nav-config.tsx",
+        "lib/security/route-policy.ts"
+      ]
     },
     {
       "route": "/culinary/sustainability",
@@ -3486,7 +3511,10 @@
       "refs": 2,
       "nav_refs": 1,
       "status": "WIRED",
-      "ref_files": ["components/navigation/nav-config.tsx", "lib/security/route-policy.ts"]
+      "ref_files": [
+        "components/navigation/nav-config.tsx",
+        "lib/security/route-policy.ts"
+      ]
     },
     {
       "route": "/culinary/vendors",
@@ -3562,7 +3590,9 @@
       "refs": 1,
       "nav_refs": 1,
       "status": "WIRED",
-      "ref_files": ["components/navigation/admin-nav-config.ts"]
+      "ref_files": [
+        "components/navigation/admin-nav-config.ts"
+      ]
     },
     {
       "route": "/dev/integrity",
@@ -3570,7 +3600,9 @@
       "refs": 1,
       "nav_refs": 1,
       "status": "WIRED",
-      "ref_files": ["components/navigation/admin-nav-config.ts"]
+      "ref_files": [
+        "components/navigation/admin-nav-config.ts"
+      ]
     },
     {
       "route": "/dev/simulate",
@@ -3588,7 +3620,7 @@
     {
       "route": "/documents",
       "dynamic": false,
-      "refs": 101,
+      "refs": 102,
       "nav_refs": 1,
       "status": "WIRED",
       "ref_files": [
@@ -3614,15 +3646,15 @@
     {
       "route": "/events/board",
       "dynamic": false,
-      "refs": 12,
+      "refs": 11,
       "nav_refs": 1,
       "status": "WIRED",
       "ref_files": [
         "app/(chef)/events/events-hub-nav.tsx",
-        "app/(chef)/events/page.tsx",
         "app/(chef)/events/timeline/page.tsx",
         "app/api/remy/stream/route-prompt-utils.ts",
-        "components/navigation/nav-config.tsx"
+        "components/navigation/nav-config.tsx",
+        "lib/ai/remy-actions.ts"
       ]
     },
     {
@@ -3652,12 +3684,11 @@
     {
       "route": "/events/cannabis",
       "dynamic": false,
-      "refs": 4,
+      "refs": 3,
       "nav_refs": 0,
       "status": "WIRED",
       "ref_files": [
         "app/(chef)/events/cannabis/ledger/page.tsx",
-        "app/(chef)/events/page.tsx",
         "app/(chef)/events/[id]/cannabis/page.tsx",
         "lib/security/route-policy.ts"
       ]
@@ -3678,15 +3709,15 @@
     {
       "route": "/events/charity",
       "dynamic": false,
-      "refs": 6,
+      "refs": 5,
       "nav_refs": 1,
       "status": "WIRED",
       "ref_files": [
         "app/(chef)/charity/hours/page.tsx",
         "app/(chef)/charity/page.tsx",
         "app/(chef)/events/charity/hours/page.tsx",
-        "app/(chef)/events/page.tsx",
-        "components/navigation/nav-config.tsx"
+        "components/navigation/nav-config.tsx",
+        "lib/security/route-policy.ts"
       ]
     },
     {
@@ -3714,6 +3745,18 @@
       ]
     },
     {
+      "route": "/events/current",
+      "dynamic": false,
+      "refs": 3,
+      "nav_refs": 1,
+      "status": "WIRED",
+      "ref_files": [
+        "app/(chef)/events/pulse-content.tsx",
+        "components/events/current-event-card.tsx",
+        "components/navigation/nav-config.tsx"
+      ]
+    },
+    {
       "route": "/events/equipment-check",
       "dynamic": false,
       "refs": 4,
@@ -3724,6 +3767,17 @@
         "components/navigation/nav-config.tsx",
         "lib/ai/agent-actions/event-ops-actions.ts",
         "lib/security/route-policy.ts"
+      ]
+    },
+    {
+      "route": "/events/list",
+      "dynamic": false,
+      "refs": 2,
+      "nav_refs": 0,
+      "status": "WIRED",
+      "ref_files": [
+        "app/(chef)/events/events-hub-nav.tsx",
+        "app/(chef)/events/pulse-content.tsx"
       ]
     },
     {
@@ -3743,7 +3797,7 @@
     {
       "route": "/events/new",
       "dynamic": false,
-      "refs": 55,
+      "refs": 57,
       "nav_refs": 3,
       "status": "WIRED",
       "ref_files": [
@@ -3770,7 +3824,7 @@
     {
       "route": "/events",
       "dynamic": false,
-      "refs": 870,
+      "refs": 876,
       "nav_refs": 6,
       "status": "WIRED",
       "ref_files": [
@@ -3784,10 +3838,11 @@
     {
       "route": "/events/timeline",
       "dynamic": false,
-      "refs": 3,
+      "refs": 4,
       "nav_refs": 1,
       "status": "WIRED",
       "ref_files": [
+        "app/(chef)/events/pulse-content.tsx",
         "components/navigation/nav-config.tsx",
         "lib/exports/ical-actions.ts",
         "lib/security/route-policy.ts"
@@ -3796,15 +3851,15 @@
     {
       "route": "/events/travel",
       "dynamic": false,
-      "refs": 7,
+      "refs": 6,
       "nav_refs": 1,
       "status": "WIRED",
       "ref_files": [
-        "app/(chef)/events/page.tsx",
         "app/(chef)/events/[id]/travel/page.tsx",
         "app/(chef)/events/[id]/_components/event-detail-ops-tab.tsx",
         "app/(chef)/travel/page.tsx",
-        "components/events/travel-ingredients-panel.tsx"
+        "components/events/travel-ingredients-panel.tsx",
+        "components/navigation/nav-config.tsx"
       ]
     },
     {
@@ -3824,7 +3879,7 @@
     {
       "route": "/events/[id]/aar",
       "dynamic": true,
-      "refs": 870,
+      "refs": 876,
       "nav_refs": 6,
       "status": "WIRED",
       "ref_files": [
@@ -3838,7 +3893,7 @@
     {
       "route": "/events/[id]/billing",
       "dynamic": true,
-      "refs": 870,
+      "refs": 876,
       "nav_refs": 6,
       "status": "WIRED",
       "ref_files": [
@@ -3852,7 +3907,7 @@
     {
       "route": "/events/[id]/briefing",
       "dynamic": true,
-      "refs": 870,
+      "refs": 876,
       "nav_refs": 6,
       "status": "WIRED",
       "ref_files": [
@@ -3866,7 +3921,7 @@
     {
       "route": "/events/[id]/cannabis",
       "dynamic": true,
-      "refs": 870,
+      "refs": 876,
       "nav_refs": 6,
       "status": "WIRED",
       "ref_files": [
@@ -3880,7 +3935,7 @@
     {
       "route": "/events/[id]/close-out",
       "dynamic": true,
-      "refs": 870,
+      "refs": 876,
       "nav_refs": 6,
       "status": "WIRED",
       "ref_files": [
@@ -3894,7 +3949,7 @@
     {
       "route": "/events/[id]/compliance",
       "dynamic": true,
-      "refs": 870,
+      "refs": 876,
       "nav_refs": 6,
       "status": "WIRED",
       "ref_files": [
@@ -3908,7 +3963,7 @@
     {
       "route": "/events/[id]/debrief",
       "dynamic": true,
-      "refs": 870,
+      "refs": 876,
       "nav_refs": 6,
       "status": "WIRED",
       "ref_files": [
@@ -3922,7 +3977,7 @@
     {
       "route": "/events/[id]/documents",
       "dynamic": true,
-      "refs": 870,
+      "refs": 876,
       "nav_refs": 6,
       "status": "WIRED",
       "ref_files": [
@@ -3936,7 +3991,7 @@
     {
       "route": "/events/[id]/dop/mobile",
       "dynamic": true,
-      "refs": 871,
+      "refs": 877,
       "nav_refs": 6,
       "status": "WIRED",
       "ref_files": [
@@ -3950,7 +4005,7 @@
     {
       "route": "/events/[id]/edit",
       "dynamic": true,
-      "refs": 870,
+      "refs": 876,
       "nav_refs": 6,
       "status": "WIRED",
       "ref_files": [
@@ -3964,7 +4019,7 @@
     {
       "route": "/events/[id]/execution",
       "dynamic": true,
-      "refs": 870,
+      "refs": 876,
       "nav_refs": 6,
       "status": "WIRED",
       "ref_files": [
@@ -3978,7 +4033,7 @@
     {
       "route": "/events/[id]/financial",
       "dynamic": true,
-      "refs": 870,
+      "refs": 876,
       "nav_refs": 6,
       "status": "WIRED",
       "ref_files": [
@@ -3992,7 +4047,7 @@
     {
       "route": "/events/[id]/follow-up",
       "dynamic": true,
-      "refs": 870,
+      "refs": 876,
       "nav_refs": 6,
       "status": "WIRED",
       "ref_files": [
@@ -4006,7 +4061,7 @@
     {
       "route": "/events/[id]/gear",
       "dynamic": true,
-      "refs": 870,
+      "refs": 876,
       "nav_refs": 6,
       "status": "WIRED",
       "ref_files": [
@@ -4020,7 +4075,7 @@
     {
       "route": "/events/[id]/god-mode",
       "dynamic": true,
-      "refs": 870,
+      "refs": 876,
       "nav_refs": 6,
       "status": "WIRED",
       "ref_files": [
@@ -4034,7 +4089,7 @@
     {
       "route": "/events/[id]/grocery-quote",
       "dynamic": true,
-      "refs": 870,
+      "refs": 876,
       "nav_refs": 6,
       "status": "WIRED",
       "ref_files": [
@@ -4048,7 +4103,7 @@
     {
       "route": "/events/[id]/grocery-run",
       "dynamic": true,
-      "refs": 870,
+      "refs": 876,
       "nav_refs": 6,
       "status": "WIRED",
       "ref_files": [
@@ -4062,7 +4117,7 @@
     {
       "route": "/events/[id]/guest-card",
       "dynamic": true,
-      "refs": 870,
+      "refs": 876,
       "nav_refs": 6,
       "status": "WIRED",
       "ref_files": [
@@ -4076,7 +4131,7 @@
     {
       "route": "/events/[id]/interactive",
       "dynamic": true,
-      "refs": 870,
+      "refs": 876,
       "nav_refs": 6,
       "status": "WIRED",
       "ref_files": [
@@ -4090,7 +4145,7 @@
     {
       "route": "/events/[id]/invoice",
       "dynamic": true,
-      "refs": 870,
+      "refs": 876,
       "nav_refs": 6,
       "status": "WIRED",
       "ref_files": [
@@ -4104,7 +4159,7 @@
     {
       "route": "/events/[id]/kds",
       "dynamic": true,
-      "refs": 870,
+      "refs": 876,
       "nav_refs": 6,
       "status": "WIRED",
       "ref_files": [
@@ -4118,7 +4173,7 @@
     {
       "route": "/events/[id]/kitchen-mode",
       "dynamic": true,
-      "refs": 871,
+      "refs": 877,
       "nav_refs": 6,
       "status": "WIRED",
       "ref_files": [
@@ -4132,7 +4187,7 @@
     {
       "route": "/events/[id]/menu-approval",
       "dynamic": true,
-      "refs": 870,
+      "refs": 876,
       "nav_refs": 6,
       "status": "WIRED",
       "ref_files": [
@@ -4146,7 +4201,7 @@
     {
       "route": "/events/[id]/menu-polling",
       "dynamic": true,
-      "refs": 870,
+      "refs": 876,
       "nav_refs": 6,
       "status": "WIRED",
       "ref_files": [
@@ -4160,7 +4215,7 @@
     {
       "route": "/events/[id]/ops",
       "dynamic": true,
-      "refs": 870,
+      "refs": 876,
       "nav_refs": 6,
       "status": "WIRED",
       "ref_files": [
@@ -4174,7 +4229,7 @@
     {
       "route": "/events/[id]/outcome",
       "dynamic": true,
-      "refs": 870,
+      "refs": 876,
       "nav_refs": 6,
       "status": "WIRED",
       "ref_files": [
@@ -4188,7 +4243,7 @@
     {
       "route": "/events/[id]/pack/mobile",
       "dynamic": true,
-      "refs": 870,
+      "refs": 876,
       "nav_refs": 6,
       "status": "WIRED",
       "ref_files": [
@@ -4202,7 +4257,7 @@
     {
       "route": "/events/[id]/pack",
       "dynamic": true,
-      "refs": 870,
+      "refs": 876,
       "nav_refs": 6,
       "status": "WIRED",
       "ref_files": [
@@ -4216,7 +4271,7 @@
     {
       "route": "/events/[id]",
       "dynamic": true,
-      "refs": 870,
+      "refs": 876,
       "nav_refs": 6,
       "status": "WIRED",
       "ref_files": [
@@ -4230,7 +4285,7 @@
     {
       "route": "/events/[id]/photos",
       "dynamic": true,
-      "refs": 870,
+      "refs": 876,
       "nav_refs": 6,
       "status": "WIRED",
       "ref_files": [
@@ -4244,7 +4299,7 @@
     {
       "route": "/events/[id]/prep-plan",
       "dynamic": true,
-      "refs": 870,
+      "refs": 876,
       "nav_refs": 6,
       "status": "WIRED",
       "ref_files": [
@@ -4258,7 +4313,7 @@
     {
       "route": "/events/[id]/procurement",
       "dynamic": true,
-      "refs": 870,
+      "refs": 876,
       "nav_refs": 6,
       "status": "WIRED",
       "ref_files": [
@@ -4272,7 +4327,7 @@
     {
       "route": "/events/[id]/receipts",
       "dynamic": true,
-      "refs": 870,
+      "refs": 876,
       "nav_refs": 6,
       "status": "WIRED",
       "ref_files": [
@@ -4286,7 +4341,7 @@
     {
       "route": "/events/[id]/replay",
       "dynamic": true,
-      "refs": 870,
+      "refs": 876,
       "nav_refs": 6,
       "status": "WIRED",
       "ref_files": [
@@ -4300,7 +4355,7 @@
     {
       "route": "/events/[id]/report",
       "dynamic": true,
-      "refs": 870,
+      "refs": 876,
       "nav_refs": 6,
       "status": "WIRED",
       "ref_files": [
@@ -4314,7 +4369,7 @@
     {
       "route": "/events/[id]/reset",
       "dynamic": true,
-      "refs": 870,
+      "refs": 876,
       "nav_refs": 6,
       "status": "WIRED",
       "ref_files": [
@@ -4328,7 +4383,7 @@
     {
       "route": "/events/[id]/safety",
       "dynamic": true,
-      "refs": 870,
+      "refs": 876,
       "nav_refs": 6,
       "status": "WIRED",
       "ref_files": [
@@ -4342,7 +4397,7 @@
     {
       "route": "/events/[id]/schedule",
       "dynamic": true,
-      "refs": 870,
+      "refs": 876,
       "nav_refs": 6,
       "status": "WIRED",
       "ref_files": [
@@ -4356,7 +4411,7 @@
     {
       "route": "/events/[id]/service",
       "dynamic": true,
-      "refs": 870,
+      "refs": 876,
       "nav_refs": 6,
       "status": "WIRED",
       "ref_files": [
@@ -4370,7 +4425,7 @@
     {
       "route": "/events/[id]/split-billing",
       "dynamic": true,
-      "refs": 870,
+      "refs": 876,
       "nav_refs": 6,
       "status": "WIRED",
       "ref_files": [
@@ -4384,7 +4439,7 @@
     {
       "route": "/events/[id]/staff",
       "dynamic": true,
-      "refs": 870,
+      "refs": 876,
       "nav_refs": 6,
       "status": "WIRED",
       "ref_files": [
@@ -4398,7 +4453,7 @@
     {
       "route": "/events/[id]/story",
       "dynamic": true,
-      "refs": 870,
+      "refs": 876,
       "nav_refs": 6,
       "status": "WIRED",
       "ref_files": [
@@ -4412,7 +4467,7 @@
     {
       "route": "/events/[id]/travel",
       "dynamic": true,
-      "refs": 870,
+      "refs": 876,
       "nav_refs": 6,
       "status": "WIRED",
       "ref_files": [
@@ -5557,7 +5612,10 @@
       "refs": 2,
       "nav_refs": 1,
       "status": "WIRED",
-      "ref_files": ["components/navigation/nav-config.tsx", "lib/security/route-policy.ts"]
+      "ref_files": [
+        "components/navigation/nav-config.tsx",
+        "lib/security/route-policy.ts"
+      ]
     },
     {
       "route": "/guest-analytics",
@@ -5607,7 +5665,10 @@
       "refs": 2,
       "nav_refs": 1,
       "status": "WIRED",
-      "ref_files": ["components/navigation/nav-config.tsx", "lib/security/route-policy.ts"]
+      "ref_files": [
+        "components/navigation/nav-config.tsx",
+        "lib/security/route-policy.ts"
+      ]
     },
     {
       "route": "/guests/[id]",
@@ -5671,7 +5732,10 @@
       "refs": 2,
       "nav_refs": 1,
       "status": "WIRED",
-      "ref_files": ["components/navigation/nav-config.tsx", "lib/security/route-policy.ts"]
+      "ref_files": [
+        "components/navigation/nav-config.tsx",
+        "lib/security/route-policy.ts"
+      ]
     },
     {
       "route": "/import/history",
@@ -5691,7 +5755,10 @@
       "refs": 2,
       "nav_refs": 1,
       "status": "WIRED",
-      "ref_files": ["components/navigation/nav-config.tsx", "lib/security/route-policy.ts"]
+      "ref_files": [
+        "components/navigation/nav-config.tsx",
+        "lib/security/route-policy.ts"
+      ]
     },
     {
       "route": "/import",
@@ -5783,7 +5850,10 @@
       "refs": 2,
       "nav_refs": 1,
       "status": "WIRED",
-      "ref_files": ["components/navigation/nav-config.tsx", "lib/security/route-policy.ts"]
+      "ref_files": [
+        "components/navigation/nav-config.tsx",
+        "lib/security/route-policy.ts"
+      ]
     },
     {
       "route": "/inquiries/awaiting-response",
@@ -5839,7 +5909,7 @@
     {
       "route": "/inquiries",
       "dynamic": false,
-      "refs": 235,
+      "refs": 234,
       "nav_refs": 5,
       "status": "WIRED",
       "ref_files": [
@@ -5865,7 +5935,7 @@
     {
       "route": "/inquiries/[id]",
       "dynamic": true,
-      "refs": 235,
+      "refs": 234,
       "nav_refs": 5,
       "status": "WIRED",
       "ref_files": [
@@ -6415,7 +6485,10 @@
       "refs": 2,
       "nav_refs": 1,
       "status": "WIRED",
-      "ref_files": ["components/navigation/nav-config.tsx", "lib/security/route-policy.ts"]
+      "ref_files": [
+        "components/navigation/nav-config.tsx",
+        "lib/security/route-policy.ts"
+      ]
     },
     {
       "route": "/marketing",
@@ -6492,7 +6565,10 @@
       "refs": 2,
       "nav_refs": 0,
       "status": "WIRED",
-      "ref_files": ["lib/security/route-policy.ts", "lib/social/event-social-actions.ts"]
+      "ref_files": [
+        "lib/security/route-policy.ts",
+        "lib/social/event-social-actions.ts"
+      ]
     },
     {
       "route": "/marketing/social/connections",
@@ -6635,7 +6711,10 @@
       "refs": 2,
       "nav_refs": 1,
       "status": "WIRED",
-      "ref_files": ["components/navigation/nav-config.tsx", "lib/security/route-policy.ts"]
+      "ref_files": [
+        "components/navigation/nav-config.tsx",
+        "lib/security/route-policy.ts"
+      ]
     },
     {
       "route": "/meal-prep",
@@ -6721,7 +6800,7 @@
     {
       "route": "/menus",
       "dynamic": false,
-      "refs": 257,
+      "refs": 258,
       "nav_refs": 3,
       "status": "WIRED",
       "ref_files": [
@@ -6738,7 +6817,10 @@
       "refs": 2,
       "nav_refs": 1,
       "status": "WIRED",
-      "ref_files": ["components/navigation/nav-config.tsx", "lib/security/route-policy.ts"]
+      "ref_files": [
+        "components/navigation/nav-config.tsx",
+        "lib/security/route-policy.ts"
+      ]
     },
     {
       "route": "/menus/selections",
@@ -6784,7 +6866,7 @@
     {
       "route": "/menus/[id]/editor",
       "dynamic": true,
-      "refs": 257,
+      "refs": 258,
       "nav_refs": 3,
       "status": "WIRED",
       "ref_files": [
@@ -6798,7 +6880,7 @@
     {
       "route": "/menus/[id]",
       "dynamic": true,
-      "refs": 257,
+      "refs": 258,
       "nav_refs": 3,
       "status": "WIRED",
       "ref_files": [
@@ -6881,7 +6963,7 @@
     {
       "route": "/network",
       "dynamic": false,
-      "refs": 85,
+      "refs": 94,
       "nav_refs": 3,
       "status": "WIRED",
       "ref_files": [
@@ -6889,7 +6971,7 @@
         "app/(chef)/dashboard/_sections/business-section-loader.ts",
         "app/(chef)/dashboard/_sections/business-section-mobile-content.tsx",
         "app/(chef)/dashboard/_sections/network-activity.tsx",
-        "app/(chef)/inquiries/[id]/page.tsx"
+        "app/(chef)/events/pulse-content.tsx"
       ]
     },
     {
@@ -6909,7 +6991,7 @@
     {
       "route": "/network/[chefId]",
       "dynamic": true,
-      "refs": 85,
+      "refs": 94,
       "nav_refs": 3,
       "status": "WIRED",
       "ref_files": [
@@ -6917,7 +6999,7 @@
         "app/(chef)/dashboard/_sections/business-section-loader.ts",
         "app/(chef)/dashboard/_sections/business-section-mobile-content.tsx",
         "app/(chef)/dashboard/_sections/network-activity.tsx",
-        "app/(chef)/inquiries/[id]/page.tsx"
+        "app/(chef)/events/pulse-content.tsx"
       ]
     },
     {
@@ -6982,7 +7064,7 @@
       "nav_refs": 0,
       "status": "WIRED",
       "ref_files": [
-        "app/(chef)/events/page.tsx",
+        "app/(chef)/events/list/page.tsx",
         "components/dashboard/getting-started-section.tsx",
         "components/onboarding/first-event-wizard.tsx"
       ]
@@ -7063,7 +7145,10 @@
       "refs": 2,
       "nav_refs": 0,
       "status": "WIRED",
-      "ref_files": ["app/(chef)/welcome/page.tsx", "lib/security/route-policy.ts"]
+      "ref_files": [
+        "app/(chef)/welcome/page.tsx",
+        "lib/security/route-policy.ts"
+      ]
     },
     {
       "route": "/ops/equipment",
@@ -7150,7 +7235,10 @@
       "refs": 2,
       "nav_refs": 1,
       "status": "WIRED",
-      "ref_files": ["components/navigation/nav-config.tsx", "lib/security/route-policy.ts"]
+      "ref_files": [
+        "components/navigation/nav-config.tsx",
+        "lib/security/route-policy.ts"
+      ]
     },
     {
       "route": "/ops/stations",
@@ -7304,7 +7392,10 @@
       "refs": 2,
       "nav_refs": 1,
       "status": "WIRED",
-      "ref_files": ["components/navigation/nav-config.tsx", "lib/security/route-policy.ts"]
+      "ref_files": [
+        "components/navigation/nav-config.tsx",
+        "lib/security/route-policy.ts"
+      ]
     },
     {
       "route": "/pie-cart",
@@ -7344,8 +7435,8 @@
         "app/(chef)/onboarding/features/feature-discovery-client.tsx",
         "app/(chef)/portfolio/portfolio-page-client.tsx",
         "app/(chef)/settings/highlights/page.tsx",
-        "app/(chef)/settings/portfolio/page.tsx",
-        "app/(chef)/settings/profile-branding/page.tsx"
+        "app/(chef)/settings/my-craft/page.tsx",
+        "app/(chef)/settings/portfolio/page.tsx"
       ]
     },
     {
@@ -7382,7 +7473,10 @@
       "refs": 2,
       "nav_refs": 1,
       "status": "WIRED",
-      "ref_files": ["components/navigation/nav-config.tsx", "lib/security/route-policy.ts"]
+      "ref_files": [
+        "components/navigation/nav-config.tsx",
+        "lib/security/route-policy.ts"
+      ]
     },
     {
       "route": "/prices/store/[storeId]",
@@ -7430,20 +7524,23 @@
       "refs": 2,
       "nav_refs": 1,
       "status": "WIRED",
-      "ref_files": ["components/navigation/nav-config.tsx", "lib/security/route-policy.ts"]
+      "ref_files": [
+        "components/navigation/nav-config.tsx",
+        "lib/security/route-policy.ts"
+      ]
     },
     {
       "route": "/proposals",
       "dynamic": false,
-      "refs": 33,
+      "refs": 32,
       "nav_refs": 1,
       "status": "WIRED",
       "ref_files": [
         "app/(chef)/community/templates/page.tsx",
         "app/(chef)/dashboard/_sections/business-section-loader.ts",
-        "app/(chef)/events/page.tsx",
         "app/(chef)/onboarding/features/feature-discovery-client.tsx",
-        "app/(chef)/proposals/addons/page.tsx"
+        "app/(chef)/proposals/addons/page.tsx",
+        "app/(chef)/proposals/builder/page.tsx"
       ]
     },
     {
@@ -7584,7 +7681,7 @@
     {
       "route": "/pulse",
       "dynamic": false,
-      "refs": 19,
+      "refs": 20,
       "nav_refs": 2,
       "status": "WIRED",
       "ref_files": [
@@ -7687,7 +7784,7 @@
     {
       "route": "/quotes",
       "dynamic": false,
-      "refs": 127,
+      "refs": 126,
       "nav_refs": 3,
       "status": "WIRED",
       "ref_files": [
@@ -7734,7 +7831,7 @@
     {
       "route": "/quotes/[id]/edit",
       "dynamic": true,
-      "refs": 127,
+      "refs": 126,
       "nav_refs": 3,
       "status": "WIRED",
       "ref_files": [
@@ -7748,7 +7845,7 @@
     {
       "route": "/quotes/[id]",
       "dynamic": true,
-      "refs": 127,
+      "refs": 126,
       "nav_refs": 3,
       "status": "WIRED",
       "ref_files": [
@@ -7862,7 +7959,10 @@
       "refs": 2,
       "nav_refs": 1,
       "status": "WIRED",
-      "ref_files": ["components/navigation/nav-config.tsx", "lib/security/route-policy.ts"]
+      "ref_files": [
+        "components/navigation/nav-config.tsx",
+        "lib/security/route-policy.ts"
+      ]
     },
     {
       "route": "/recipes/production-log",
@@ -7977,7 +8077,7 @@
     {
       "route": "/remy",
       "dynamic": false,
-      "refs": 200,
+      "refs": 201,
       "nav_refs": 1,
       "status": "WIRED",
       "ref_files": [
@@ -8088,7 +8188,10 @@
       "refs": 2,
       "nav_refs": 1,
       "status": "WIRED",
-      "ref_files": ["components/navigation/nav-config.tsx", "lib/security/route-policy.ts"]
+      "ref_files": [
+        "components/navigation/nav-config.tsx",
+        "lib/security/route-policy.ts"
+      ]
     },
     {
       "route": "/safety/claims/new",
@@ -8096,7 +8199,10 @@
       "refs": 2,
       "nav_refs": 1,
       "status": "WIRED",
-      "ref_files": ["components/navigation/nav-config.tsx", "lib/security/route-policy.ts"]
+      "ref_files": [
+        "components/navigation/nav-config.tsx",
+        "lib/security/route-policy.ts"
+      ]
     },
     {
       "route": "/safety/claims",
@@ -8104,7 +8210,10 @@
       "refs": 2,
       "nav_refs": 1,
       "status": "WIRED",
-      "ref_files": ["components/navigation/nav-config.tsx", "lib/security/route-policy.ts"]
+      "ref_files": [
+        "components/navigation/nav-config.tsx",
+        "lib/security/route-policy.ts"
+      ]
     },
     {
       "route": "/safety/incidents/new",
@@ -8112,7 +8221,10 @@
       "refs": 2,
       "nav_refs": 1,
       "status": "WIRED",
-      "ref_files": ["components/navigation/nav-config.tsx", "lib/security/route-policy.ts"]
+      "ref_files": [
+        "components/navigation/nav-config.tsx",
+        "lib/security/route-policy.ts"
+      ]
     },
     {
       "route": "/safety/incidents",
@@ -8159,7 +8271,7 @@
     {
       "route": "/settings/ai",
       "dynamic": false,
-      "refs": 9,
+      "refs": 10,
       "nav_refs": 1,
       "status": "WIRED",
       "ref_files": [
@@ -8167,7 +8279,7 @@
         "app/api/remy/stream/route-prompt-utils.ts",
         "components/ai-privacy/remy-gate.tsx",
         "components/navigation/nav-config.tsx",
-        "components/settings/settings-search.tsx"
+        "components/settings/settings-guided-overview.tsx"
       ]
     },
     {
@@ -8297,15 +8409,15 @@
     {
       "route": "/settings/communication",
       "dynamic": false,
-      "refs": 9,
+      "refs": 10,
       "nav_refs": 1,
       "status": "WIRED",
       "ref_files": [
         "app/(chef)/communication/page.tsx",
+        "app/(chef)/settings/communications/page.tsx",
         "components/navigation/nav-config.tsx",
         "lib/communication/auto-response.ts",
-        "lib/communication/business-hours.ts",
-        "lib/communication/control-plane.ts"
+        "lib/communication/business-hours.ts"
       ]
     },
     {
@@ -8493,8 +8605,8 @@
       "status": "WIRED",
       "ref_files": [
         "app/(chef)/events/charity/page.tsx",
+        "app/(chef)/settings/my-craft/page.tsx",
         "app/(chef)/settings/my-profile/page.tsx",
-        "app/(chef)/settings/profile-branding/page.tsx",
         "components/navigation/nav-config.tsx",
         "components/public/showcase-studio-overview.tsx"
       ]
@@ -8506,7 +8618,7 @@
       "nav_refs": 1,
       "status": "WIRED",
       "ref_files": [
-        "app/(chef)/settings/ai/page.tsx",
+        "app/(chef)/settings/my-craft/page.tsx",
         "app/api/remy/stream/route-prompt-utils.ts",
         "components/navigation/nav-config.tsx",
         "lib/ai/chef-profile-actions.ts",
@@ -8544,31 +8656,39 @@
     {
       "route": "/settings/data-export",
       "dynamic": false,
-      "refs": 2,
+      "refs": 3,
       "nav_refs": 1,
       "status": "WIRED",
-      "ref_files": ["components/navigation/nav-config.tsx", "lib/security/route-policy.ts"]
+      "ref_files": [
+        "app/(chef)/settings/system/page.tsx",
+        "components/navigation/nav-config.tsx",
+        "lib/security/route-policy.ts"
+      ]
     },
     {
       "route": "/settings/data-quality",
       "dynamic": false,
-      "refs": 2,
+      "refs": 3,
       "nav_refs": 0,
       "status": "WIRED",
-      "ref_files": ["lib/data-quality/merge-actions.ts", "lib/security/route-policy.ts"]
+      "ref_files": [
+        "app/(chef)/settings/system/page.tsx",
+        "lib/data-quality/merge-actions.ts",
+        "lib/security/route-policy.ts"
+      ]
     },
     {
       "route": "/settings/delete-account",
       "dynamic": false,
-      "refs": 7,
+      "refs": 8,
       "nav_refs": 1,
       "status": "WIRED",
       "ref_files": [
         "app/(chef)/settings/account/page.tsx",
+        "app/(chef)/settings/system/page.tsx",
         "components/navigation/nav-config.tsx",
         "components/settings/deletion-pending-banner.tsx",
-        "components/settings/gdpr-tools.tsx",
-        "components/settings/settings-search.tsx"
+        "components/settings/gdpr-tools.tsx"
       ]
     },
     {
@@ -8588,29 +8708,29 @@
     {
       "route": "/settings/devices",
       "dynamic": false,
-      "refs": 6,
+      "refs": 7,
       "nav_refs": 1,
       "status": "WIRED",
       "ref_files": [
         "app/(chef)/settings/account/page.tsx",
+        "app/(chef)/settings/system/page.tsx",
         "components/navigation/nav-config.tsx",
         "lib/devices/actions.ts",
-        "lib/navigation/url-capability-registry.ts",
-        "lib/security/route-policy.ts"
+        "lib/navigation/url-capability-registry.ts"
       ]
     },
     {
       "route": "/settings/embed",
       "dynamic": false,
-      "refs": 5,
+      "refs": 6,
       "nav_refs": 1,
       "status": "WIRED",
       "ref_files": [
         "app/(chef)/dashboard/_sections/hero-metrics-client.tsx",
         "app/(chef)/settings/connections/page.tsx",
+        "app/(chef)/settings/profile-branding/page.tsx",
         "components/navigation/nav-config.tsx",
-        "lib/ai/remy-actions.ts",
-        "lib/security/route-policy.ts"
+        "lib/ai/remy-actions.ts"
       ]
     },
     {
@@ -8658,10 +8778,13 @@
     {
       "route": "/settings/fee-schedule",
       "dynamic": false,
-      "refs": 1,
+      "refs": 2,
       "nav_refs": 1,
       "status": "WIRED",
-      "ref_files": ["components/navigation/nav-config.tsx"]
+      "ref_files": [
+        "app/(chef)/settings/payments/page.tsx",
+        "components/navigation/nav-config.tsx"
+      ]
     },
     {
       "route": "/settings/health",
@@ -8684,7 +8807,7 @@
       "nav_refs": 1,
       "status": "WIRED",
       "ref_files": [
-        "app/(chef)/settings/profile-branding/page.tsx",
+        "app/(chef)/settings/my-craft/page.tsx",
         "components/navigation/nav-config.tsx",
         "lib/help/page-info-sections/19-chef-portal-settings.ts",
         "lib/security/route-policy.ts"
@@ -8720,10 +8843,14 @@
     {
       "route": "/settings/invoice",
       "dynamic": false,
-      "refs": 2,
+      "refs": 3,
       "nav_refs": 0,
       "status": "WIRED",
-      "ref_files": ["lib/invoices/corporate-billing-actions.ts", "lib/security/route-policy.ts"]
+      "ref_files": [
+        "app/(chef)/settings/payments/page.tsx",
+        "lib/invoices/corporate-billing-actions.ts",
+        "lib/security/route-policy.ts"
+      ]
     },
     {
       "route": "/settings/journal",
@@ -8732,10 +8859,10 @@
       "nav_refs": 1,
       "status": "WIRED",
       "ref_files": [
-        "app/(chef)/settings/communications/page.tsx",
         "app/(chef)/settings/journal/[id]/page.tsx",
         "app/(chef)/settings/journey/page.tsx",
         "app/(chef)/settings/journey/[id]/page.tsx",
+        "app/(chef)/settings/my-craft/page.tsx",
         "components/dashboard/chef-journal-widget.tsx"
       ]
     },
@@ -8746,9 +8873,9 @@
       "nav_refs": 1,
       "status": "WIRED",
       "ref_files": [
-        "app/(chef)/settings/communications/page.tsx",
         "app/(chef)/settings/journey/page.tsx",
         "app/(chef)/settings/journey/[id]/page.tsx",
+        "app/(chef)/settings/my-craft/page.tsx",
         "components/dashboard/chef-journal-widget.tsx",
         "components/journey/journey-hub.tsx"
       ]
@@ -8783,7 +8910,10 @@
       "refs": 2,
       "nav_refs": 0,
       "status": "WIRED",
-      "ref_files": ["lib/security/route-policy.ts", "lib/settings/settings-nav.ts"]
+      "ref_files": [
+        "lib/security/route-policy.ts",
+        "lib/settings/settings-nav.ts"
+      ]
     },
     {
       "route": "/settings/legal-readiness",
@@ -8806,7 +8936,7 @@
       "status": "WIRED",
       "ref_files": [
         "app/(chef)/culinary/menus/[id]/page.tsx",
-        "app/(chef)/settings/business/page.tsx",
+        "app/(chef)/settings/ai/page.tsx",
         "app/api/v2/settings/menu-engine/route.ts",
         "components/culinary/menu-context-sidebar.tsx",
         "components/navigation/nav-config.tsx"
@@ -8819,7 +8949,7 @@
       "nav_refs": 1,
       "status": "WIRED",
       "ref_files": [
-        "app/(chef)/settings/communications/page.tsx",
+        "app/(chef)/settings/business/page.tsx",
         "components/navigation/nav-config.tsx",
         "lib/security/route-policy.ts"
       ]
@@ -8831,11 +8961,22 @@
       "nav_refs": 1,
       "status": "WIRED",
       "ref_files": [
-        "app/(chef)/settings/payments/page.tsx",
+        "app/(chef)/settings/system/page.tsx",
         "app/api/v2/settings/modules/route.ts",
         "components/navigation/nav-config.tsx",
         "lib/features/registry.ts",
         "lib/help/page-info-sections/19-chef-portal-settings.ts"
+      ]
+    },
+    {
+      "route": "/settings/my-craft",
+      "dynamic": false,
+      "refs": 2,
+      "nav_refs": 0,
+      "status": "WIRED",
+      "ref_files": [
+        "components/settings/settings-guided-overview.tsx",
+        "lib/settings/settings-nav.ts"
       ]
     },
     {
@@ -8872,8 +9013,8 @@
       "nav_refs": 1,
       "status": "WIRED",
       "ref_files": [
-        "app/(chef)/settings/business/page.tsx",
         "app/(chef)/settings/compliance/haccp/page.tsx",
+        "app/(chef)/settings/system/page.tsx",
         "components/navigation/nav-config.tsx",
         "lib/archetypes/actions.ts",
         "lib/chef/actions.ts"
@@ -8896,7 +9037,7 @@
     {
       "route": "/settings",
       "dynamic": false,
-      "refs": 357,
+      "refs": 360,
       "nav_refs": 4,
       "status": "WIRED",
       "ref_files": [
@@ -8936,10 +9077,11 @@
     {
       "route": "/settings/platform-connections",
       "dynamic": false,
-      "refs": 3,
+      "refs": 4,
       "nav_refs": 1,
       "status": "WIRED",
       "ref_files": [
+        "app/(chef)/settings/connections/page.tsx",
         "components/navigation/nav-config.tsx",
         "lib/integrations/platform-connections.ts",
         "lib/security/route-policy.ts"
@@ -8952,7 +9094,7 @@
       "nav_refs": 1,
       "status": "WIRED",
       "ref_files": [
-        "app/(chef)/settings/profile-branding/page.tsx",
+        "app/(chef)/settings/my-craft/page.tsx",
         "components/navigation/nav-config.tsx",
         "lib/help/page-info-sections/19-chef-portal-settings.ts",
         "lib/portfolio/permission-actions.ts",
@@ -8962,15 +9104,15 @@
     {
       "route": "/settings/pricing",
       "dynamic": false,
-      "refs": 11,
+      "refs": 12,
       "nav_refs": 1,
       "status": "WIRED",
       "ref_files": [
         "app/(chef)/quotes/new/page.tsx",
+        "app/(chef)/settings/payments/page.tsx",
         "app/api/remy/stream/route-instant-answers.ts",
         "app/api/v2/settings/pricing/route.ts",
-        "components/navigation/nav-config.tsx",
-        "components/onboarding/onboarding-steps/pricing-step-wizard.tsx"
+        "components/navigation/nav-config.tsx"
       ]
     },
     {
@@ -8992,7 +9134,7 @@
       "nav_refs": 1,
       "status": "WIRED",
       "ref_files": [
-        "app/(chef)/settings/profile-branding/page.tsx",
+        "app/(chef)/settings/my-craft/page.tsx",
         "components/navigation/nav-config.tsx",
         "lib/help/page-info-sections/19-chef-portal-settings.ts",
         "lib/security/route-policy.ts"
@@ -9006,7 +9148,7 @@
       "status": "WIRED",
       "ref_files": [
         "app/(chef)/settings/credentials/page.tsx",
-        "app/(chef)/settings/profile-branding/page.tsx",
+        "app/(chef)/settings/my-craft/page.tsx",
         "app/api/scheduled/wellbeing-signals/route.ts",
         "components/navigation/nav-config.tsx",
         "lib/help/page-info-sections/19-chef-portal-settings.ts"
@@ -9019,7 +9161,7 @@
       "nav_refs": 1,
       "status": "WIRED",
       "ref_files": [
-        "app/(chef)/settings/profile-branding/page.tsx",
+        "app/(chef)/settings/my-craft/page.tsx",
         "components/navigation/nav-config.tsx",
         "lib/help/page-info-sections/19-chef-portal-settings.ts",
         "lib/professional/capability-actions.ts",
@@ -9029,29 +9171,29 @@
     {
       "route": "/settings/profile",
       "dynamic": false,
-      "refs": 15,
+      "refs": 17,
       "nav_refs": 1,
       "status": "WIRED",
       "ref_files": [
+        "app/(chef)/events/pulse-content.tsx",
         "app/(chef)/network/page.tsx",
         "app/(chef)/network/[chefId]/page.tsx",
         "app/(chef)/settings/profile-branding/page.tsx",
-        "components/navigation/nav-config.tsx",
-        "components/settings/settings-guided-overview.tsx"
+        "components/navigation/nav-config.tsx"
       ]
     },
     {
       "route": "/settings/profile-branding",
       "dynamic": false,
-      "refs": 5,
+      "refs": 7,
       "nav_refs": 0,
       "status": "WIRED",
       "ref_files": [
+        "app/(chef)/events/pulse-content.tsx",
         "components/settings/settings-guided-overview.tsx",
         "components/settings/settings-search.tsx",
-        "lib/security/route-policy.ts",
-        "lib/settings/guided-settings-actions.ts",
-        "lib/settings/settings-nav.ts"
+        "lib/network/activity/actions.ts",
+        "lib/security/route-policy.ts"
       ]
     },
     {
@@ -9198,7 +9340,7 @@
       "nav_refs": 1,
       "status": "WIRED",
       "ref_files": [
-        "app/(chef)/settings/communications/page.tsx",
+        "app/(chef)/settings/my-craft/page.tsx",
         "app/(chef)/settings/repertoire/[id]/page.tsx",
         "components/navigation/nav-config.tsx",
         "components/seasonal/seasonal-sidebar.tsx",
@@ -9212,7 +9354,7 @@
       "nav_refs": 1,
       "status": "WIRED",
       "ref_files": [
-        "app/(chef)/settings/communications/page.tsx",
+        "app/(chef)/settings/my-craft/page.tsx",
         "components/navigation/nav-config.tsx",
         "components/seasonal/seasonal-sidebar.tsx",
         "components/settings/seasonal-palette-form.tsx",
@@ -9222,24 +9364,28 @@
     {
       "route": "/settings/restaurants",
       "dynamic": false,
-      "refs": 5,
+      "refs": 6,
       "nav_refs": 1,
       "status": "WIRED",
       "ref_files": [
         "app/(chef)/locations/page.tsx",
+        "app/(chef)/settings/business/page.tsx",
         "components/navigation/nav-config.tsx",
         "lib/chef/profile-actions.ts",
-        "lib/restaurants/actions.ts",
-        "lib/security/route-policy.ts"
+        "lib/restaurants/actions.ts"
       ]
     },
     {
       "route": "/settings/schedule",
       "dynamic": false,
-      "refs": 2,
+      "refs": 3,
       "nav_refs": 0,
       "status": "WIRED",
-      "ref_files": ["lib/scheduling/schedule-block-actions.ts", "lib/security/route-policy.ts"]
+      "ref_files": [
+        "app/(chef)/settings/scheduling/page.tsx",
+        "lib/scheduling/schedule-block-actions.ts",
+        "lib/security/route-policy.ts"
+      ]
     },
     {
       "route": "/settings/scheduling",
@@ -9261,7 +9407,10 @@
       "refs": 2,
       "nav_refs": 1,
       "status": "WIRED",
-      "ref_files": ["components/navigation/nav-config.tsx", "lib/security/route-policy.ts"]
+      "ref_files": [
+        "components/navigation/nav-config.tsx",
+        "lib/security/route-policy.ts"
+      ]
     },
     {
       "route": "/settings/security/mfa",
@@ -9269,7 +9418,10 @@
       "refs": 2,
       "nav_refs": 0,
       "status": "WIRED",
-      "ref_files": ["app/(chef)/settings/security/page.tsx", "lib/security/route-policy.ts"]
+      "ref_files": [
+        "app/(chef)/settings/security/page.tsx",
+        "lib/security/route-policy.ts"
+      ]
     },
     {
       "route": "/settings/security",
@@ -9318,16 +9470,18 @@
       "refs": 2,
       "nav_refs": 1,
       "status": "WIRED",
-      "ref_files": ["components/navigation/nav-config.tsx", "lib/security/route-policy.ts"]
+      "ref_files": [
+        "components/navigation/nav-config.tsx",
+        "lib/security/route-policy.ts"
+      ]
     },
     {
       "route": "/settings/system",
       "dynamic": false,
-      "refs": 3,
+      "refs": 2,
       "nav_refs": 0,
       "status": "WIRED",
       "ref_files": [
-        "components/settings/settings-guided-overview.tsx",
         "lib/security/route-policy.ts",
         "lib/settings/settings-nav.ts"
       ]
@@ -9335,15 +9489,15 @@
     {
       "route": "/settings/taxonomy",
       "dynamic": false,
-      "refs": 5,
+      "refs": 6,
       "nav_refs": 1,
       "status": "WIRED",
       "ref_files": [
+        "app/(chef)/settings/business/page.tsx",
         "app/api/v2/settings/taxonomy/route.ts",
         "app/api/v2/settings/taxonomy/[id]/route.ts",
         "components/navigation/nav-config.tsx",
-        "lib/security/route-policy.ts",
-        "lib/taxonomy/actions.ts"
+        "lib/security/route-policy.ts"
       ]
     },
     {
@@ -9363,10 +9517,14 @@
     {
       "route": "/settings/touchpoints",
       "dynamic": false,
-      "refs": 2,
+      "refs": 3,
       "nav_refs": 1,
       "status": "WIRED",
-      "ref_files": ["components/navigation/nav-config.tsx", "lib/security/route-policy.ts"]
+      "ref_files": [
+        "app/(chef)/settings/communications/page.tsx",
+        "components/navigation/nav-config.tsx",
+        "lib/security/route-policy.ts"
+      ]
     },
     {
       "route": "/settings/webhooks",
@@ -9425,7 +9583,10 @@
       "refs": 2,
       "nav_refs": 0,
       "status": "WIRED",
-      "ref_files": ["lib/auth/route-policy.ts", "lib/security/route-policy.ts"]
+      "ref_files": [
+        "lib/auth/route-policy.ts",
+        "lib/security/route-policy.ts"
+      ]
     },
     {
       "route": "/social/compose/[eventId]",
@@ -9459,7 +9620,10 @@
       "refs": 2,
       "nav_refs": 0,
       "status": "WIRED",
-      "ref_files": ["lib/auth/route-policy.ts", "lib/security/route-policy.ts"]
+      "ref_files": [
+        "lib/auth/route-policy.ts",
+        "lib/security/route-policy.ts"
+      ]
     },
     {
       "route": "/social",
@@ -9544,7 +9708,10 @@
       "refs": 2,
       "nav_refs": 0,
       "status": "WIRED",
-      "ref_files": ["lib/auth/route-policy.ts", "lib/security/route-policy.ts"]
+      "ref_files": [
+        "lib/auth/route-policy.ts",
+        "lib/security/route-policy.ts"
+      ]
     },
     {
       "route": "/staff/availability",
@@ -9607,7 +9774,10 @@
       "refs": 2,
       "nav_refs": 1,
       "status": "WIRED",
-      "ref_files": ["components/navigation/nav-config.tsx", "lib/security/route-policy.ts"]
+      "ref_files": [
+        "components/navigation/nav-config.tsx",
+        "lib/security/route-policy.ts"
+      ]
     },
     {
       "route": "/staff",
@@ -9642,7 +9812,10 @@
       "refs": 2,
       "nav_refs": 1,
       "status": "WIRED",
-      "ref_files": ["components/navigation/nav-config.tsx", "lib/security/route-policy.ts"]
+      "ref_files": [
+        "components/navigation/nav-config.tsx",
+        "lib/security/route-policy.ts"
+      ]
     },
     {
       "route": "/staff/roster",
@@ -9650,7 +9823,10 @@
       "refs": 2,
       "nav_refs": 1,
       "status": "WIRED",
-      "ref_files": ["components/navigation/nav-config.tsx", "lib/security/route-policy.ts"]
+      "ref_files": [
+        "components/navigation/nav-config.tsx",
+        "lib/security/route-policy.ts"
+      ]
     },
     {
       "route": "/staff/schedule",
@@ -9672,7 +9848,10 @@
       "refs": 2,
       "nav_refs": 1,
       "status": "WIRED",
-      "ref_files": ["app/(chef)/staff/page.tsx", "components/navigation/nav-config.tsx"]
+      "ref_files": [
+        "app/(chef)/staff/page.tsx",
+        "components/navigation/nav-config.tsx"
+      ]
     },
     {
       "route": "/staff/[id]",
@@ -9774,7 +9953,10 @@
       "refs": 2,
       "nav_refs": 1,
       "status": "WIRED",
-      "ref_files": ["components/navigation/nav-config.tsx", "lib/security/route-policy.ts"]
+      "ref_files": [
+        "components/navigation/nav-config.tsx",
+        "lib/security/route-policy.ts"
+      ]
     },
     {
       "route": "/stations",
@@ -9943,15 +10125,15 @@
     {
       "route": "/surveys",
       "dynamic": false,
-      "refs": 17,
+      "refs": 16,
       "nav_refs": 1,
       "status": "WIRED",
       "ref_files": [
         "app/(chef)/dashboard/_sections/business-section-loader.ts",
         "app/(chef)/dashboard/_sections/business-section-mobile-content.tsx",
-        "app/(chef)/events/page.tsx",
         "app/(chef)/onboarding/features/feature-discovery-client.tsx",
-        "app/(public)/feedback/[token]/page.tsx"
+        "app/(public)/feedback/[token]/page.tsx",
+        "components/dashboard/feedback-widget.tsx"
       ]
     },
     {
@@ -10000,7 +10182,10 @@
       "refs": 2,
       "nav_refs": 1,
       "status": "WIRED",
-      "ref_files": ["components/navigation/nav-config.tsx", "lib/security/route-policy.ts"]
+      "ref_files": [
+        "components/navigation/nav-config.tsx",
+        "lib/security/route-policy.ts"
+      ]
     },
     {
       "route": "/team",
@@ -10019,7 +10204,7 @@
     {
       "route": "/travel",
       "dynamic": false,
-      "refs": 49,
+      "refs": 48,
       "nav_refs": 1,
       "status": "WIRED",
       "ref_files": [
@@ -10027,7 +10212,7 @@
         "app/(chef)/calendar/travel/travel-optimization-client.tsx",
         "app/(chef)/dashboard/_sections/business-section-loader.ts",
         "app/(chef)/dashboard/_sections/business-section-mobile-content.tsx",
-        "app/(chef)/events/page.tsx"
+        "app/(chef)/events/travel/page.tsx"
       ]
     },
     {
@@ -10036,7 +10221,10 @@
       "refs": 2,
       "nav_refs": 1,
       "status": "WIRED",
-      "ref_files": ["components/navigation/nav-config.tsx", "lib/security/route-policy.ts"]
+      "ref_files": [
+        "components/navigation/nav-config.tsx",
+        "lib/security/route-policy.ts"
+      ]
     },
     {
       "route": "/vendors",
@@ -10579,7 +10767,9 @@
       "refs": 1,
       "nav_refs": 1,
       "status": "WIRED",
-      "ref_files": ["components/navigation/client-nav.tsx"]
+      "ref_files": [
+        "components/navigation/client-nav.tsx"
+      ]
     },
     {
       "route": "/my-hub/create",
@@ -10708,7 +10898,10 @@
       "refs": 2,
       "nav_refs": 0,
       "status": "WIRED",
-      "ref_files": ["app/(client)/my-hub/page.tsx", "lib/security/route-policy.ts"]
+      "ref_files": [
+        "app/(client)/my-hub/page.tsx",
+        "lib/security/route-policy.ts"
+      ]
     },
     {
       "route": "/my-inquiries",
@@ -10812,7 +11005,10 @@
       "refs": 2,
       "nav_refs": 0,
       "status": "WIRED",
-      "ref_files": ["app/(client)/my-profile/page.tsx", "lib/security/route-policy.ts"]
+      "ref_files": [
+        "app/(client)/my-profile/page.tsx",
+        "lib/security/route-policy.ts"
+      ]
     },
     {
       "route": "/my-profile",
@@ -10834,7 +11030,10 @@
       "refs": 2,
       "nav_refs": 0,
       "status": "WIRED",
-      "ref_files": ["components/quotes/quote-compare-selector.tsx", "lib/security/route-policy.ts"]
+      "ref_files": [
+        "components/quotes/quote-compare-selector.tsx",
+        "lib/security/route-policy.ts"
+      ]
     },
     {
       "route": "/my-quotes",
@@ -10989,7 +11188,10 @@
       "refs": 2,
       "nav_refs": 1,
       "status": "WIRED",
-      "ref_files": ["components/navigation/client-nav.tsx", "lib/security/route-policy.ts"]
+      "ref_files": [
+        "components/navigation/client-nav.tsx",
+        "lib/security/route-policy.ts"
+      ]
     },
     {
       "route": "/my-timeline",
@@ -11012,7 +11214,7 @@
       "ref_files": [
         "app/(chef)/clients/clients-table.tsx",
         "app/(chef)/clients/[id]/page.tsx",
-        "app/(chef)/events/page.tsx",
+        "app/(chef)/events/list/page.tsx",
         "app/(chef)/inquiries/page.tsx",
         "app/(chef)/settings/system/page.tsx"
       ]
@@ -11020,7 +11222,7 @@
     {
       "route": "/chef/[slug]/dashboard",
       "dynamic": true,
-      "refs": 513,
+      "refs": 515,
       "nav_refs": 8,
       "status": "WIRED",
       "ref_files": [
@@ -11189,7 +11391,10 @@
       "refs": 2,
       "nav_refs": 0,
       "status": "WIRED",
-      "ref_files": ["components/beta/beta-signup-form.tsx", "lib/security/route-policy.ts"]
+      "ref_files": [
+        "components/beta/beta-signup-form.tsx",
+        "lib/security/route-policy.ts"
+      ]
     },
     {
       "route": "/book",
@@ -11263,7 +11468,7 @@
     {
       "route": "/chef/[slug]/cart",
       "dynamic": true,
-      "refs": 514,
+      "refs": 516,
       "nav_refs": 8,
       "status": "WIRED",
       "ref_files": [
@@ -11277,7 +11482,7 @@
     {
       "route": "/chef/[slug]/gift-cards",
       "dynamic": true,
-      "refs": 513,
+      "refs": 515,
       "nav_refs": 8,
       "status": "WIRED",
       "ref_files": [
@@ -11291,7 +11496,7 @@
     {
       "route": "/chef/[slug]/gift-cards/success",
       "dynamic": true,
-      "refs": 513,
+      "refs": 515,
       "nav_refs": 8,
       "status": "WIRED",
       "ref_files": [
@@ -11305,7 +11510,7 @@
     {
       "route": "/chef/[slug]/inquire",
       "dynamic": true,
-      "refs": 513,
+      "refs": 515,
       "nav_refs": 8,
       "status": "WIRED",
       "ref_files": [
@@ -11319,7 +11524,7 @@
     {
       "route": "/chef/[slug]/locations/[locationId]",
       "dynamic": true,
-      "refs": 513,
+      "refs": 515,
       "nav_refs": 8,
       "status": "WIRED",
       "ref_files": [
@@ -11333,7 +11538,7 @@
     {
       "route": "/chef/[slug]",
       "dynamic": true,
-      "refs": 513,
+      "refs": 515,
       "nav_refs": 8,
       "status": "WIRED",
       "ref_files": [
@@ -11347,7 +11552,7 @@
     {
       "route": "/chef/[slug]/partner-signup",
       "dynamic": true,
-      "refs": 514,
+      "refs": 516,
       "nav_refs": 8,
       "status": "WIRED",
       "ref_files": [
@@ -11361,7 +11566,7 @@
     {
       "route": "/chef/[slug]/store/orders/[token]",
       "dynamic": true,
-      "refs": 513,
+      "refs": 515,
       "nav_refs": 8,
       "status": "WIRED",
       "ref_files": [
@@ -11375,7 +11580,7 @@
     {
       "route": "/chef/[slug]/store",
       "dynamic": true,
-      "refs": 513,
+      "refs": 515,
       "nav_refs": 8,
       "status": "WIRED",
       "ref_files": [
@@ -11389,7 +11594,7 @@
     {
       "route": "/chef/[slug]/store/products/[productId]",
       "dynamic": true,
-      "refs": 513,
+      "refs": 515,
       "nav_refs": 8,
       "status": "WIRED",
       "ref_files": [
@@ -11567,7 +11772,7 @@
     {
       "route": "/discover/[[...path]]",
       "dynamic": true,
-      "refs": 199,
+      "refs": 201,
       "nav_refs": 1,
       "status": "WIRED",
       "ref_files": [
@@ -11616,7 +11821,7 @@
     {
       "route": "/event/[eventId]/guest/[secureToken]",
       "dynamic": true,
-      "refs": 984,
+      "refs": 990,
       "nav_refs": 6,
       "status": "WIRED",
       "ref_files": [
@@ -11817,7 +12022,7 @@
     {
       "route": "/hub",
       "dynamic": false,
-      "refs": 244,
+      "refs": 256,
       "nav_refs": 4,
       "status": "WIRED",
       "ref_files": [
@@ -11901,7 +12106,7 @@
     {
       "route": "/menu/[token]",
       "dynamic": true,
-      "refs": 344,
+      "refs": 346,
       "nav_refs": 3,
       "status": "WIRED",
       "ref_files": [
@@ -12089,7 +12294,7 @@
     {
       "route": "/pricing",
       "dynamic": false,
-      "refs": 206,
+      "refs": 207,
       "nav_refs": 2,
       "status": "WIRED",
       "ref_files": [
@@ -12131,15 +12336,15 @@
     {
       "route": "/proposal/[token]",
       "dynamic": true,
-      "refs": 52,
+      "refs": 51,
       "nav_refs": 1,
       "status": "WIRED",
       "ref_files": [
         "app/(chef)/community/templates/page.tsx",
         "app/(chef)/dashboard/_sections/business-section-loader.ts",
-        "app/(chef)/events/page.tsx",
         "app/(chef)/onboarding/features/feature-discovery-client.tsx",
-        "app/(chef)/proposals/addons/page.tsx"
+        "app/(chef)/proposals/addons/page.tsx",
+        "app/(chef)/proposals/builder/page.tsx"
       ]
     },
     {
@@ -12281,7 +12486,7 @@
     {
       "route": "/survey/[token]",
       "dynamic": true,
-      "refs": 35,
+      "refs": 34,
       "nav_refs": 1,
       "status": "WIRED",
       "ref_files": [
@@ -12584,7 +12789,10 @@
       "refs": 2,
       "nav_refs": 0,
       "status": "WIRED",
-      "ref_files": ["lib/auth/actions.ts", "lib/security/route-policy.ts"]
+      "ref_files": [
+        "lib/auth/actions.ts",
+        "lib/security/route-policy.ts"
+      ]
     },
     {
       "route": "/auth/forgot-password",
@@ -12604,7 +12812,10 @@
       "refs": 2,
       "nav_refs": 0,
       "status": "WIRED",
-      "ref_files": ["lib/mfa/verify-login.ts", "lib/security/route-policy.ts"]
+      "ref_files": [
+        "lib/mfa/verify-login.ts",
+        "lib/security/route-policy.ts"
+      ]
     },
     {
       "route": "/auth/partner-signup",
@@ -12625,7 +12836,10 @@
       "refs": 2,
       "nav_refs": 0,
       "status": "WIRED",
-      "ref_files": ["lib/security/reauth.ts", "lib/security/route-policy.ts"]
+      "ref_files": [
+        "lib/security/reauth.ts",
+        "lib/security/route-policy.ts"
+      ]
     },
     {
       "route": "/auth/reset-password",
@@ -12686,7 +12900,10 @@
       "refs": 2,
       "nav_refs": 0,
       "status": "WIRED",
-      "ref_files": ["lib/security/route-policy.ts", "lib/team/staff-invite-actions.ts"]
+      "ref_files": [
+        "lib/security/route-policy.ts",
+        "lib/team/staff-invite-actions.ts"
+      ]
     },
     {
       "route": "/auth/vendor-signup",
@@ -12694,7 +12911,10 @@
       "refs": 2,
       "nav_refs": 0,
       "status": "WIRED",
-      "ref_files": ["lib/security/route-policy.ts", "lib/vendors/invite-actions.ts"]
+      "ref_files": [
+        "lib/security/route-policy.ts",
+        "lib/vendors/invite-actions.ts"
+      ]
     },
     {
       "route": "/auth/verify-email",
@@ -12702,7 +12922,10 @@
       "refs": 2,
       "nav_refs": 0,
       "status": "WIRED",
-      "ref_files": ["lib/help/page-info-sections/25-auth-pages.ts", "lib/security/route-policy.ts"]
+      "ref_files": [
+        "lib/help/page-info-sections/25-auth-pages.ts",
+        "lib/security/route-policy.ts"
+      ]
     },
     {
       "route": "/beta-survey",
@@ -12875,7 +13098,10 @@
       "refs": 2,
       "nav_refs": 0,
       "status": "WIRED",
-      "ref_files": ["app/kiosk/page.tsx", "lib/security/route-policy.ts"]
+      "ref_files": [
+        "app/kiosk/page.tsx",
+        "lib/security/route-policy.ts"
+      ]
     },
     {
       "route": "/kiosk",

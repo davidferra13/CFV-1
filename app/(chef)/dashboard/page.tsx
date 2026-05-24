@@ -4,6 +4,7 @@
 
 import { Suspense } from 'react'
 import type { Metadata } from 'next'
+import { cookies } from 'next/headers'
 import { requireChef } from '@/lib/auth/get-user'
 import { getPriorityQueue } from '@/lib/queue/actions'
 import { EMPTY_PRIORITY_QUEUE } from '@/lib/queue/types'
@@ -47,6 +48,7 @@ import { getChefLifeDashboardSynthesis } from '@/lib/dashboard/chef-life-synthes
 import { ProfitAtAGlance, ProfitAtAGlanceSkeleton } from '@/components/finance/profit-at-a-glance'
 import { getProfitAtAGlance } from '@/lib/finance/profit-actions'
 import { IntelligenceDigestSection } from './_sections/intelligence-digest-section'
+import { LazyBusinessHealthTrigger } from './_sections/lazy-business-health'
 
 export const metadata: Metadata = { title: 'Dashboard' }
 
@@ -81,6 +83,7 @@ async function CommandCenterLoader() {
 
 export default async function ChefDashboard() {
   const user = await requireChef()
+  const businessHealthLoaded = cookies().get('cf-dash-bh-loaded')?.value === '1'
   const queuePromise = getPriorityQueue().catch((err) => {
     console.error('[Dashboard] getPriorityQueue failed:', err)
     return EMPTY_PRIORITY_QUEUE
@@ -203,11 +206,15 @@ export default async function ChefDashboard() {
         </Suspense>
       </WidgetErrorBoundary>
 
-      <WidgetErrorBoundary name="Business Health" compact>
-        <Suspense fallback={<BusinessSkeleton />}>
-          <BusinessHealthFullSection />
-        </Suspense>
-      </WidgetErrorBoundary>
+      {businessHealthLoaded ? (
+        <WidgetErrorBoundary name="Business Health" compact>
+          <Suspense fallback={<BusinessSkeleton />}>
+            <BusinessHealthFullSection />
+          </Suspense>
+        </WidgetErrorBoundary>
+      ) : (
+        <LazyBusinessHealthTrigger />
+      )}
     </div>
   )
 }
@@ -231,24 +238,27 @@ async function WeeklyReflectionLoader() {
 }
 
 async function ProfitAtAGlanceLoader() {
-  const data = await getProfitAtAGlance().catch(() => ({
-    monthlyProfitCents: 0,
-    monthlyRevenueCents: 0,
-    monthlyCostCents: 0,
-    eventCount: 0,
-    avgProfitPerEventCents: 0,
-    trend: {
-      currentMonthProfitCents: 0,
-      lastMonthProfitCents: 0,
-      changePercent: null,
-      direction: 'flat' as const,
-    },
-    ytdProfitCents: 0,
-    ytdRevenueCents: 0,
-    ytdCostCents: 0,
-    ytdEventCount: 0,
-    hasData: false,
-  }))
+  const data = await getProfitAtAGlance().catch((err) => {
+    console.error('[Dashboard] getProfitAtAGlance failed:', err)
+    return {
+      monthlyProfitCents: 0,
+      monthlyRevenueCents: 0,
+      monthlyCostCents: 0,
+      eventCount: 0,
+      avgProfitPerEventCents: 0,
+      trend: {
+        currentMonthProfitCents: 0,
+        lastMonthProfitCents: 0,
+        changePercent: null,
+        direction: 'flat' as const,
+      },
+      ytdProfitCents: 0,
+      ytdRevenueCents: 0,
+      ytdCostCents: 0,
+      ytdEventCount: 0,
+      hasData: false,
+    }
+  })
   return <ProfitAtAGlance data={data} />
 }
 

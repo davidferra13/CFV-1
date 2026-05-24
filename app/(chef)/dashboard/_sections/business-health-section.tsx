@@ -18,7 +18,6 @@ import { AlertCards } from './alerts-cards'
 import { BusinessCards } from './business-cards'
 import { HealthNarrativeSection } from './health-narrative'
 import { IntelligenceCards } from './intelligence-cards'
-import { CilSignalSummary } from './cil-signal-summary'
 import { ReputationScoreCard, ReputationScoreSkeleton } from './reputation-score'
 import { ClientRiskRadarWidget } from './client-risk-radar'
 import { AutomationFeedCard } from './automation-feed'
@@ -159,11 +158,6 @@ export async function BusinessHealthFullSection() {
           <WidgetErrorBoundary name="Intelligence" compact>
             <Suspense fallback={<IntelligenceCardsSkeleton />}>
               <IntelligenceCards />
-            </Suspense>
-          </WidgetErrorBoundary>
-          <WidgetErrorBoundary name="CIL Signals" compact>
-            <Suspense fallback={<WidgetCardSkeleton size="md" />}>
-              <CilSignalSummary />
             </Suspense>
           </WidgetErrorBoundary>
           <WidgetErrorBoundary name="Client Risk Radar" compact>

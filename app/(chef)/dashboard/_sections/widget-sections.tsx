@@ -384,8 +384,8 @@ export async function TieredRailSection({
         !hasUnresolvedTemplateText(item.sublabel) &&
         !hasUnresolvedTemplateText(item.href)
     )
-  } catch {
-    // Universal rail data is non-critical; proceed without it
+  } catch (err) {
+    console.error('[Dashboard/TieredRail] assembleRailForPage failed:', err)
   }
   try {
     const { injectRailLifecycleItems } = await import('@/lib/discovery/rail-lifecycle-bridge')
@@ -401,8 +401,8 @@ export async function TieredRailSection({
         !hasUnresolvedTemplateText(item.sublabel) &&
         !hasUnresolvedTemplateText(item.href)
     )
-  } catch {
-    // Lifecycle bridge is non-critical
+  } catch (err) {
+    console.error('[Dashboard/TieredRail] injectRailLifecycleItems failed:', err)
   }
   return (
     <TieredRail

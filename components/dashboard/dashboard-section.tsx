@@ -1,4 +1,4 @@
-'use client'
+﻿'use client'
 
 import { useState, useEffect } from 'react'
 import { ChevronDown } from '@/components/ui/icons'
@@ -26,6 +26,7 @@ export function DashboardSection({
   subtitle,
 }: DashboardSectionProps) {
   const [collapsed, setCollapsed] = useState(defaultCollapsed)
+  const [hasBeenExpanded, setHasBeenExpanded] = useState(!defaultCollapsed)
   const [mounted, setMounted] = useState(false)
 
   useEffect(() => {
@@ -33,6 +34,11 @@ export function DashboardSection({
       const stored = localStorage.getItem(`${STORAGE_PREFIX}${id}`)
       if (stored !== null) {
         setCollapsed(stored === 'true')
+        if (stored === 'false') {
+          setHasBeenExpanded(true)
+        }
+      } else if (!defaultCollapsed) {
+        setHasBeenExpanded(true)
       }
     } catch {
       // ignore
@@ -43,6 +49,9 @@ export function DashboardSection({
   function toggle() {
     setCollapsed((prev) => {
       const next = !prev
+      if (!next) {
+        setHasBeenExpanded(true)
+      }
       try {
         localStorage.setItem(`${STORAGE_PREFIX}${id}`, String(next))
       } catch {
@@ -93,7 +102,7 @@ export function DashboardSection({
           collapsed ? 'max-h-0 opacity-0 overflow-hidden' : 'max-h-[5000px] opacity-100'
         }`}
       >
-        {children}
+        {hasBeenExpanded ? children : null}
       </div>
     </section>
   )
