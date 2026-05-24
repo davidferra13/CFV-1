@@ -1,10 +1,10 @@
-import type { UniversalRailItem } from '@/lib/discovery/universal-rail-types'
+﻿import type { UniversalRailItem } from '@/lib/discovery/universal-rail-types'
 import type { ProactiveSignal } from '@/lib/cil/types'
 import type { CircleActivityItem } from '@/lib/dinner-circles/activity-feed-types'
 
 export interface ComposedFeedEntry {
   id: string
-  source: string // 'rail' | 'cil' | 'circle' | 'notification'
+  source: string // 'rail' | 'cil' | 'circle' | 'notification' | 'network_activity'
   score: number // normalized 0-100
   timestamp: number // epoch ms
   label: string
@@ -23,7 +23,7 @@ export interface FeedSourceAdapter {
   adapt(items: unknown[]): ComposedFeedEntry[]
 }
 
-// ── Rail adapter ──────────────────────────────────────────────────────────
+// â”€â”€ Rail adapter â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
 const railAdapter: FeedSourceAdapter = {
   name: 'rail',
@@ -46,7 +46,7 @@ const railAdapter: FeedSourceAdapter = {
   },
 }
 
-// ── CIL adapter ───────────────────────────────────────────────────────────
+// â”€â”€ CIL adapter â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
 const URGENCY_SCORE: Record<number, number> = { 1: 20, 2: 40, 3: 60, 4: 80, 5: 100 }
 
@@ -70,7 +70,7 @@ const cilAdapter: FeedSourceAdapter = {
   },
 }
 
-// ── Circle adapter ────────────────────────────────────────────────────────
+// â”€â”€ Circle adapter â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
 const circleAdapter: FeedSourceAdapter = {
   name: 'circle',
@@ -91,7 +91,7 @@ const circleAdapter: FeedSourceAdapter = {
   },
 }
 
-// ── Notification adapter ──────────────────────────────────────────────────
+// â”€â”€ Notification adapter â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
 interface NotificationItem {
   id: string
@@ -122,11 +122,51 @@ const notificationAdapter: FeedSourceAdapter = {
   },
 }
 
-// ── Registry ──────────────────────────────────────────────────────────────
+// ── Network activity adapter ──────────────────────────────────────────────
+
+interface NetworkActivityItem {
+  chefId: string
+  displayName: string | null
+  businessName: string
+  upcomingEventCount: number
+  currentWeekCount: number
+  busiestDay: string | null
+  streakWeeks: number
+  updatedAt: string
+}
+
+const networkActivityAdapter: FeedSourceAdapter = {
+  name: 'network_activity',
+  weight: 0.4,
+  adapt(items: unknown[]): ComposedFeedEntry[] {
+    return (items as NetworkActivityItem[]).map((chef) => ({
+      id: `network-activity-${chef.chefId}`,
+      source: 'network_activity',
+      score: Math.min(chef.upcomingEventCount * 10, 60),
+      timestamp: new Date(chef.updatedAt).getTime(),
+      label: `${chef.displayName ?? chef.businessName} has ${chef.upcomingEventCount} dinner${chef.upcomingEventCount === 1 ? '' : 's'} coming up`,
+      sublabel:
+        chef.streakWeeks > 2
+          ? `${chef.streakWeeks}-week streak`
+          : chef.busiestDay
+            ? `Busiest on ${chef.busiestDay}s`
+            : undefined,
+      href: '/network',
+      icon: 'users',
+      category: 'social_network',
+      presentation: 'card' as const,
+      expandable: false,
+      originalData: chef,
+    }))
+  },
+}
+
+// â”€â”€ Registry â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
 export const SOURCE_REGISTRY: FeedSourceAdapter[] = [
   railAdapter,
   cilAdapter,
   circleAdapter,
   notificationAdapter,
+  networkActivityAdapter,
 ]

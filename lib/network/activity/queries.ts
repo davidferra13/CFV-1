@@ -49,7 +49,7 @@ export async function getConnectedChefsActivity(chefId: string): Promise<Connect
     .select('id, display_name, business_name, profile_image_url')
     .in('id', snapshotChefIds)
 
-  const chefMap = new Map((chefs ?? []).map((c: any) => [c.id, c]))
+  const chefMap = new Map<string, any>((chefs ?? []).map((c: any) => [c.id, c]))
 
   return snapshots.map((s: any) => {
     const chef = chefMap.get(s.chef_id)

@@ -28,6 +28,7 @@ import {
   getEventActivityLabel,
   safeDurationMinutes,
 } from './time-tracking'
+import { refreshActivitySnapshot } from '@/lib/network/activity/snapshot-job'
 
 // Validation schemas aligned with new events table
 const CreateEventSchema = z.object({
@@ -347,6 +348,8 @@ export async function createEvent(input: CreateEventInput) {
       revalidatePath('/my-events')
       revalidatePath('/calendar')
       invalidateRemyContextCache(user.tenantId!)
+      // Refresh activity snapshot for network visibility
+      refreshActivitySnapshot(user.entityId).catch(() => {})
       return { success: true, event }
     },
   })
@@ -1040,6 +1043,8 @@ export async function updateEvent(eventId: string, input: UpdateEventInput) {
         console.error('[updateEvent] Activity log failed (non-blocking):', err)
       }
 
+      // Refresh activity snapshot for network visibility
+      refreshActivitySnapshot(user.entityId).catch(() => {})
       return { success: true, event }
     },
   })
@@ -1113,6 +1118,8 @@ export async function deleteEvent(eventId: string) {
 
   revalidatePath('/events')
   invalidateRemyContextCache(user.tenantId!)
+  // Refresh activity snapshot for network visibility
+  refreshActivitySnapshot(user.entityId).catch(() => {})
 
   // Activity log (non-blocking)
   try {

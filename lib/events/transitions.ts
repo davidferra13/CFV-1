@@ -18,6 +18,7 @@ import {
 } from './fsm'
 import { executeInteraction } from '@/lib/interactions'
 import { recordSideEffectFailure } from '@/lib/monitoring/non-blocking'
+import { refreshActivitySnapshot } from '@/lib/network/activity/snapshot-job'
 
 // Helper: log AND persist side effect failures in transitions
 function logTransitionFailure(operation: string, eventId: string, tenantId: string, err: unknown) {
@@ -1934,6 +1935,12 @@ export async function transitionEvent({
         error: err,
       })
     }
+  }
+
+  // Refresh activity snapshot for network visibility
+  const tenantId = event.tenant_id
+  if (tenantId) {
+    refreshActivitySnapshot(tenantId).catch(() => {})
   }
 
   return {
