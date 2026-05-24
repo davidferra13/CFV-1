@@ -19,6 +19,7 @@ const DOMAIN_ICONS: Record<SignalDomain, string> = {
   cannabis: 'leaf',
   commitment: 'shield-check',
   event_debrief: 'clipboard-check',
+  network: 'network',
 }
 
 function signalToItem(signal: ProactiveSignal): GodModeResolvedItem {

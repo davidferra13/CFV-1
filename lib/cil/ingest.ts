@@ -410,6 +410,7 @@ const INGESTORS: Record<
   inventory_analysis() {},
   reputation() {},
   pipeline() {},
+  network_pulse() {},
 }
 
 export function ingestSignal(db: Database.Database, signal: RawSignal): void {

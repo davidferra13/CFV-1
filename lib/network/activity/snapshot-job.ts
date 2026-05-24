@@ -1,4 +1,4 @@
-﻿import { createServerClient } from '@/lib/db/server'
+import { createServerClient } from '@/lib/db/server'
 
 const ACTIVE_STATUSES = ['accepted', 'paid', 'confirmed', 'in_progress']
 const DAY_NAMES = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday']
@@ -114,6 +114,17 @@ export async function refreshActivitySnapshot(chefId: string) {
     }
   }
 
+  // Rolling 4-week average: completed events in past 28 days / 4
+  const twentyEightDaysAgo = new Date()
+  twentyEightDaysAgo.setDate(twentyEightDaysAgo.getDate() - 28)
+  const twentyEightDaysAgoStr = twentyEightDaysAgo.toISOString().split('T')[0]
+
+  const recentCompletedCount = (pastEvents ?? []).filter(
+    (e: any) => e.event_date >= twentyEightDaysAgoStr
+  ).length
+
+  const avgWeeklyEvents = Math.round((recentCompletedCount / 4) * 100) / 100
+
   // Upsert snapshot
   await db.from('chef_activity_snapshots').upsert(
     {
@@ -124,6 +135,7 @@ export async function refreshActivitySnapshot(chefId: string) {
       last_event_date: lastEventDate,
       busiest_day: busiestDay,
       streak_weeks: streakWeeks,
+      avg_weekly_events: avgWeeklyEvents,
       updated_at: new Date().toISOString(),
     },
     { onConflict: 'chef_id' }

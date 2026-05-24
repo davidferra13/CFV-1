@@ -15,6 +15,7 @@ const DOMAIN_LABELS: Record<SignalDomain, string> = {
   cannabis: 'Cannabis',
   commitment: 'Commitment',
   event_debrief: 'Event Debrief',
+  network: 'Network',
 }
 
 export async function CilSignalSummary() {

@@ -30,6 +30,7 @@ export type SignalSource =
   | 'pipeline' // stale leads, expiring proposals, unsigned contracts
   | 'weather' // weather risk for upcoming events
   | 'event_debrief' // post-event learning outcomes, success scores, guest satisfaction
+  | 'network_pulse' // cross-tenant activity snapshots for connections
 
 export type ConfidenceLabel = 'EXTRACTED' | 'INFERRED' | 'AMBIGUOUS'
 
@@ -69,7 +70,7 @@ export interface CILSignal {
   created_at: number
 }
 
-// ── Proactive Intelligence (Phase 3) ──────────────────────────────────────
+// â”€â”€ Proactive Intelligence (Phase 3) â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
 export type SignalDomain =
   | 'finance'
@@ -81,6 +82,7 @@ export type SignalDomain =
   | 'cannabis'
   | 'commitment'
   | 'event_debrief'
+  | 'network'
 
 export interface ProactiveSignal {
   id: string

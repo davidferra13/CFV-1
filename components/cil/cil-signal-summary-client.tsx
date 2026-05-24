@@ -12,6 +12,7 @@ import {
   Leaf,
   ShieldCheck,
   ClipboardCheck,
+  Network,
   Activity,
   ArrowRight,
   X,
@@ -31,6 +32,7 @@ const domainIcons: Record<SignalDomain, typeof DollarSign> = {
   cannabis: Leaf,
   commitment: ShieldCheck,
   event_debrief: ClipboardCheck,
+  network: Network,
 }
 
 const urgencyColors: Record<number, string> = {
