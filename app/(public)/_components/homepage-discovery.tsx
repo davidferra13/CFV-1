@@ -126,7 +126,7 @@ export function HomepageDiscovery({
             featuredChefs={featuredChefs}
             culinarySignals={culinarySignals}
             userSignals={userSignals}
-            variant="compact"
+            variant="full"
           />
         </div>
       </div>
