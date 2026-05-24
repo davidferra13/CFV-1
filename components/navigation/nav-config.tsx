@@ -239,6 +239,7 @@ export const navGroups: NavGroup[] = [
         children: [
           { href: '/analytics/intelligence', label: 'Full Dashboard' },
           { href: '/analytics/intelligence/client-risk', label: 'Client Risk Radar' },
+          { href: '/intelligence', label: 'Intelligence Feed' },
         ],
       },
       {
@@ -335,6 +336,7 @@ export const navGroups: NavGroup[] = [
         href: '/pulse',
         label: "Who's Waiting",
         icon: Activity,
+        children: [{ href: '/waiting', label: 'Waiting Radar' }],
       },
       {
         href: '/clients/communication',
@@ -777,6 +779,7 @@ export const navGroups: NavGroup[] = [
         icon: DollarSign,
         children: [
           { href: '/finance/overview/cash-flow', label: 'Cash Flow', hidden: true },
+          { href: '/finance/clarity', label: 'Financial Clarity' },
           { href: '/finance/cockpit', label: 'Financial Cockpit' },
           { href: '/finance', label: 'Finance Home' },
           { href: '/finance/overview/outstanding-payments', label: 'Outstanding Payments' },

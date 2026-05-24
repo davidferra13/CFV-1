@@ -10,6 +10,7 @@ import { EvidencePill } from '@/components/evidence/evidence-pill'
 import { useRouter } from 'next/navigation'
 import { cn } from '@/lib/utils'
 import { formatRailMemoryLine } from '@/lib/operating-loop/rail-memory'
+import { InteractionMenu } from './interaction-menu'
 import {
   AlertTriangle,
   Calendar,
@@ -127,10 +128,16 @@ export const RailItemRow = memo(function RailItemRow({
   item,
   tier,
   className,
+  userId,
+  tenantId,
+  role,
 }: {
   item: GodModeResolvedItem
   tier?: UnifiedTier
   className?: string
+  userId?: string
+  tenantId?: string
+  role?: string
 }) {
   const router = useRouter()
   if (hasUnresolvedVisibleText(item)) return null
@@ -201,6 +208,16 @@ export const RailItemRow = memo(function RailItemRow({
             />
           ))}
         </span>
+      )}
+
+      {userId && tenantId && role && (
+        <InteractionMenu
+          itemKey={item.definitionId}
+          userId={userId}
+          tenantId={tenantId}
+          role={role}
+          className="opacity-0 group-hover:opacity-100 transition-opacity"
+        />
       )}
 
       {hasDestination && (

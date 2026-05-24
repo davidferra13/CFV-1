@@ -45,23 +45,23 @@ export function WidgetCardShell({
   return (
     <div
       data-widget-id={widgetId}
-      className={`${sizeClass} dashboard-widget-card rounded-2xl overflow-hidden transition-all duration-200 hover:shadow-[var(--shadow-card-hover)] border-l-2 border-l-stone-600 bg-[var(--surface-1)] ${className ?? ''}`}
-      style={{
-        border: '1px solid rgba(255,255,255,0.06)',
-      }}
+      className={`${sizeClass} dashboard-widget-card aurora-border rounded-2xl overflow-hidden transition-all duration-200 hover:shadow-[var(--shadow-card-hover)] border border-stone-800/40 bg-[var(--surface-1)] hover:bg-[var(--surface-2)] ${className ?? ''}`}
     >
+      {/* Top gradient accent line */}
+      <div className="h-px bg-gradient-to-r from-transparent via-stone-600/30 to-transparent" />
+
       {/* Header */}
       <div className="flex items-center justify-between px-3.5 pt-3 pb-1">
         <div className="flex items-center gap-2 min-w-0">
-          <span className="text-sm leading-none shrink-0 opacity-80">{icon}</span>
-          <span className="text-xxs font-bold text-stone-500 uppercase tracking-wider truncate">
+          <span className="text-base leading-none shrink-0 opacity-90">{icon}</span>
+          <span className="text-xxs font-semibold text-stone-500 uppercase tracking-wider truncate">
             {title}
           </span>
         </div>
         {href && (
           <Link
             href={href}
-            className="text-xs font-medium shrink-0 ml-3 transition-colors hover:brightness-125"
+            className="text-xs font-medium shrink-0 ml-3 transition-colors hover:brightness-110"
             style={{ color: catStyle.border }}
           >
             View &rarr;
@@ -85,11 +85,7 @@ export function WidgetCardSkeleton({ size = 'sm' }: { size?: WidgetSize }) {
 
   return (
     <div
-      className={`${sizeClass} rounded-2xl overflow-hidden animate-pulse`}
-      style={{
-        border: '1px solid rgba(255,255,255,0.05)',
-        background: 'rgba(120,113,108,0.06)',
-      }}
+      className={`${sizeClass} rounded-2xl overflow-hidden animate-pulse border border-stone-800/30 bg-stone-900/40`}
     >
       <div className="px-4 pt-3.5 pb-1 flex items-center gap-2.5">
         <div className="w-4 h-4 skeleton" />
@@ -156,11 +152,11 @@ export function WidgetCardEmpty({
 }) {
   return (
     <div className="py-3 text-center">
-      <p className="text-xs text-stone-500">{message}</p>
+      <p className="text-xs text-stone-400">{message}</p>
       {actionLabel && actionHref && (
         <Link
           href={actionHref}
-          className="text-xs text-brand-500 hover:text-brand-400 font-medium mt-1.5 inline-block"
+          className="text-xs text-brand-400 hover:text-brand-300 font-medium mt-1.5 inline-block"
         >
           {actionLabel} &rarr;
         </Link>

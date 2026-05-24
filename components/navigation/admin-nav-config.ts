@@ -105,6 +105,8 @@ export const adminNavGroups: AdminNavGroup[] = [
       { href: '/admin/silent-failures', label: 'Silent Failures', icon: AlertTriangle },
       { href: '/admin/beta-surveys', label: 'Surveys', icon: ClipboardCheck },
       { href: '/admin/system', label: 'System Health', icon: ShieldCheck },
+      { href: '/dev/diagnosis', label: 'System Diagnosis', icon: Activity },
+      { href: '/dev/integrity', label: 'System Integrity', icon: ClipboardCheck },
     ],
   },
 ]

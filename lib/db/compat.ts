@@ -475,6 +475,12 @@ class QueryBuilder<T = any> {
     return this.execute().then(resolve, reject)
   }
 
+  catch<TResult = never>(
+    onRejected?: ((reason: unknown) => TResult | PromiseLike<TResult>) | null
+  ): Promise<PostgrestResponse<any> | TResult> {
+    return this.execute().catch(onRejected)
+  }
+
   private async execute(): Promise<PostgrestResponse<any>> {
     try {
       if (this._insertData) return await this.executeInsert()

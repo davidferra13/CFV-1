@@ -2,7 +2,6 @@ import type {
   UniversalRailAssemblyOptions,
   UniversalRailAssemblyResult,
   UniversalRailItem,
-  UniversalRailItemDefinition,
   UniversalRailRole,
   UniversalRailWeightProfile,
 } from './universal-rail-types'
@@ -14,7 +13,7 @@ import {
   rankUniversalRailItems,
   ROLE_WEIGHT_PROFILES,
 } from './universal-rail-scoring'
-import { loadRoleRegistry } from './registries'
+import { loadRoleRegistry, findItemDefinition } from './registries'
 import {
   isItemDismissed,
   isItemSuppressed,
@@ -38,6 +37,7 @@ const FRESHNESS_MULTIPLIERS: Record<string, number> = {
 }
 
 function parseFreshnessWindow(window: string): number {
+  if (window === 'evergreen') return Number.MAX_SAFE_INTEGER
   const match = window.match(/^(\d+)([mhdw])$/)
   if (!match) return 86_400_000 // default 1 day
   const value = parseInt(match[1], 10)
@@ -50,10 +50,13 @@ function parseFreshnessWindow(window: string): number {
 // ---------------------------------------------------------------------------
 
 function resolveTemplate(template: string, metadata: Record<string, unknown>): string {
-  return template.replace(/\{(\w+)\}/g, (_, key) => {
-    const value = metadata[key]
-    return value != null ? String(value) : `{${key}}`
-  })
+  return template
+    .replace(/\{(\w+)\}/g, (_, key) => {
+      const value = metadata[key]
+      return value != null ? String(value) : ''
+    })
+    .replace(/\s{2,}/g, ' ')
+    .trim()
 }
 
 // ---------------------------------------------------------------------------
@@ -321,10 +324,6 @@ export async function assembleRailForPage(
 
 // Helper to find original template from cached registry
 function findDefinitionTemplate(definitionId: string): string | null {
-  // Import inline to access cache without circular dep
-  const { findItemDefinition } = require('./registries') as {
-    findItemDefinition: (id: string) => UniversalRailItemDefinition | null
-  }
   const def = findItemDefinition(definitionId)
   return def?.labelTemplate ?? null
 }

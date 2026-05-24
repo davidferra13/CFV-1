@@ -404,5 +404,13 @@ export async function TieredRailSection({
   } catch {
     // Lifecycle bridge is non-critical
   }
-  return <TieredRail queuePromise={queuePromise} universalItems={universalItems} />
+  return (
+    <TieredRail
+      queuePromise={queuePromise}
+      universalItems={universalItems}
+      userId={user.id}
+      tenantId={user.tenantId ?? undefined}
+      role="chef"
+    />
+  )
 }

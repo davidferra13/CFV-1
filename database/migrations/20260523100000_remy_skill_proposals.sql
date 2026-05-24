@@ -4,13 +4,13 @@
 
 CREATE TABLE IF NOT EXISTS remy_skill_proposals (
   id              uuid PRIMARY KEY DEFAULT gen_random_uuid(),
-  routine_id      uuid NOT NULL REFERENCES remy_routines(id) ON DELETE CASCADE,
+  routine_id      uuid NOT NULL,
   skill_template  jsonb NOT NULL,
   usage_count     integer NOT NULL DEFAULT 0,
   status          text NOT NULL DEFAULT 'pending'
                     CHECK (status IN ('pending', 'approved', 'rejected')),
   reviewed_at     timestamptz,
-  reviewed_by     uuid REFERENCES auth_users(id) ON DELETE SET NULL,
+  reviewed_by     uuid REFERENCES auth.users(id) ON DELETE SET NULL,
   tenant_id       uuid NOT NULL REFERENCES chefs(id) ON DELETE CASCADE,
   created_at      timestamptz NOT NULL DEFAULT now()
 );

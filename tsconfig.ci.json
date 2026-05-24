@@ -50,6 +50,8 @@
     "types/database.generated.d.ts",
     "types/types",
     "lib/db/migrations",
+    "lib/remotion",
+    "components/remotion",
     "worker"
   ]
 }

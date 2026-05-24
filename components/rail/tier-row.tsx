@@ -89,10 +89,16 @@ export function TierRow({
   tier,
   items,
   className,
+  userId,
+  tenantId,
+  role,
 }: {
   tier: UnifiedTier
   items: GodModeResolvedItem[]
   className?: string
+  userId?: string
+  tenantId?: string
+  role?: string
 }) {
   const visual = TIER_VISUAL[tier]
   const safeItems = items.filter((item) => !hasUnresolvedVisibleText(item))
@@ -173,7 +179,7 @@ export function TierRow({
             )}
             style={{ animationDelay: `${index * 50}ms` }}
           >
-            <RailItemRow item={item} tier={tier} />
+            <RailItemRow item={item} tier={tier} userId={userId} tenantId={tenantId} role={role} />
           </div>
         ))}
         {hasOverflow && (

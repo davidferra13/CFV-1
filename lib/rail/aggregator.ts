@@ -15,6 +15,20 @@ import { getIntelligenceRailItems } from './sources/intelligence'
 import { getCommunicationRailItems } from './sources/communication'
 import { getEventRailItems } from './sources/events'
 import { getFinanceRailItems } from './sources/finance'
+import { getStaffRailItems } from './sources/staff'
+
+// ---------------------------------------------------------------------------
+// Source relevance weights (0-1 multiplier for scoring)
+// ---------------------------------------------------------------------------
+
+const SOURCE_RELEVANCE: Record<string, number> = {
+  communication: 1.0,
+  finance: 0.95,
+  events: 0.9,
+  intelligence: 0.85,
+  cil: 0.85,
+  staff: 0.8,
+}
 
 // ---------------------------------------------------------------------------
 // Result type
@@ -97,12 +111,13 @@ export async function aggregateRailItems(
   const now = new Date()
 
   // 1. Collect from all sources in parallel
-  const [cil, intel, comm, events, finance] = await Promise.allSettled([
+  const [cil, intel, comm, events, finance, staff] = await Promise.allSettled([
     getCILRailItems(tenantId),
     getIntelligenceRailItems(tenantId),
     getCommunicationRailItems(tenantId),
     getEventRailItems(tenantId),
     getFinanceRailItems(tenantId),
+    getStaffRailItems(tenantId),
   ])
 
   // 2. Flatten
@@ -112,6 +127,7 @@ export async function aggregateRailItems(
     ...extractFulfilled(comm),
     ...extractFulfilled(events),
     ...extractFulfilled(finance),
+    ...extractFulfilled(staff),
   ]
 
   // 3. Re-score each item through the scoring pipeline
@@ -122,7 +138,7 @@ export async function aggregateRailItems(
       baseScore: item.score,
       urgencyMultiplier,
       freshnessDecay,
-      userRelevance: 1.0,
+      userRelevance: SOURCE_RELEVANCE[item.source] ?? 0.75,
     })
     const dampenedScore = applyTimeOfDayDampening(finalScore, now)
     item.score = dampenedScore

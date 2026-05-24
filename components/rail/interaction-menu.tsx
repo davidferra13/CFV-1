@@ -5,104 +5,86 @@ import { cn } from '@/lib/utils'
 
 interface InteractionMenuProps {
   itemKey: string
-  tenantId: string
   userId: string
-  href?: string
+  tenantId: string
+  role: string
+  className?: string
   onAction?: (action: string) => void
 }
 
+const ACTIONS = [
+  { key: 'snooze_1h', label: 'Snooze 1h', type: 'snooze' as const },
+  { key: 'snooze_24h', label: 'Snooze 24h', type: 'snooze' as const },
+  { key: 'until_resolved', label: 'Until resolved', type: 'snooze' as const },
+  { key: 'save', label: 'Save', type: 'save' as const },
+  { key: 'permanent', label: 'Dismiss', type: 'dismiss' as const },
+] as const
+
 export function InteractionMenu({
   itemKey,
-  tenantId,
   userId,
-  href,
+  tenantId,
+  role,
+  className,
   onAction,
 }: InteractionMenuProps) {
-  const [showOverflow, setShowOverflow] = useState(false)
+  const [open, setOpen] = useState(false)
   const [isPending, startTransition] = useTransition()
   const menuRef = useRef<HTMLDivElement>(null)
 
   useEffect(() => {
+    if (!open) return
     function handleClickOutside(e: MouseEvent) {
       if (menuRef.current && !menuRef.current.contains(e.target as Node)) {
-        setShowOverflow(false)
+        setOpen(false)
       }
     }
-    if (showOverflow) {
-      document.addEventListener('mousedown', handleClickOutside)
-      return () => document.removeEventListener('mousedown', handleClickOutside)
-    }
-  }, [showOverflow])
+    document.addEventListener('mousedown', handleClickOutside)
+    return () => document.removeEventListener('mousedown', handleClickOutside)
+  }, [open])
 
-  const handleAction = (action: string) => {
+  const handleAction = (action: (typeof ACTIONS)[number]) => {
     startTransition(async () => {
       try {
-        switch (action) {
-          case 'act':
-            if (href) window.location.href = href
-            break
-          case 'snooze': {
-            const { snoozeItem } = await import('@/lib/rail/state')
-            await snoozeItem(tenantId, userId, itemKey, 60)
-            break
-          }
-          case 'delegate': {
-            const { delegateItem } = await import('@/lib/rail/state')
-            await delegateItem(tenantId, userId, itemKey, userId)
-            break
-          }
-          case 'save': {
-            const { saveItem } = await import('@/lib/rail/state')
-            await saveItem(tenantId, userId, itemKey)
-            break
-          }
-          case 'note': {
-            const { addNote } = await import('@/lib/rail/state')
-            await addNote(tenantId, userId, itemKey, '')
-            break
-          }
-          case 'follow_up': {
-            const { scheduleFollowUp } = await import('@/lib/rail/state')
-            const tomorrow = new Date()
-            tomorrow.setDate(tomorrow.getDate() + 1)
-            tomorrow.setHours(9, 0, 0, 0)
-            await scheduleFollowUp(tenantId, userId, itemKey, tomorrow)
-            break
-          }
+        const { dismissRailItemAction, saveRailItemAction } =
+          await import('@/lib/discovery/universal-rail-actions')
+
+        if (action.type === 'save') {
+          await saveRailItemAction(userId, tenantId, itemKey, role)
+        } else {
+          const dismissType = action.key as
+            | 'snooze_1h'
+            | 'snooze_24h'
+            | 'until_resolved'
+            | 'permanent'
+          await dismissRailItemAction(userId, tenantId, itemKey, role, dismissType)
         }
-        onAction?.(action)
-        setShowOverflow(false)
+
+        onAction?.(action.key)
+        setOpen(false)
       } catch {
-        // Non-critical action failure
+        // TODO: rollback toast when toast system is wired
       }
     })
   }
 
-  const btnClass = cn(
-    'px-2.5 py-1 text-xs font-medium rounded-md transition-all',
-    'bg-stone-800/60 hover:bg-stone-700/80 text-stone-200',
-    'border border-stone-700/50',
-    isPending && 'opacity-50 pointer-events-none'
-  )
-
   return (
-    <div ref={menuRef} className="relative flex items-center gap-1">
-      {/* Primary actions (3 visible) */}
-      <button onClick={() => handleAction('act')} className={btnClass}>
-        Act
-      </button>
-      <button onClick={() => handleAction('snooze')} className={btnClass}>
-        Snooze
-      </button>
-      <button onClick={() => handleAction('delegate')} className={btnClass}>
-        Delegate
-      </button>
-
-      {/* Overflow toggle */}
+    <div ref={menuRef} className={cn('relative flex-shrink-0', className)}>
       <button
-        onClick={() => setShowOverflow(!showOverflow)}
-        className={cn(btnClass, 'px-1.5')}
-        aria-label="More actions"
+        type="button"
+        onClick={(e) => {
+          e.stopPropagation()
+          e.preventDefault()
+          setOpen(!open)
+        }}
+        disabled={isPending}
+        className={cn(
+          'flex items-center justify-center w-6 h-6 rounded-md transition-all',
+          'bg-stone-800/60 hover:bg-stone-700/80 text-stone-400 hover:text-stone-200',
+          'border border-stone-700/50',
+          isPending && 'opacity-50 pointer-events-none'
+        )}
+        aria-label="Rail item actions"
       >
         <svg width="14" height="14" viewBox="0 0 14 14" fill="currentColor">
           <circle cx="3" cy="7" r="1.2" />
@@ -111,33 +93,35 @@ export function InteractionMenu({
         </svg>
       </button>
 
-      {/* Overflow dropdown */}
-      {showOverflow && (
+      {open && (
         <div
           className={cn(
-            'absolute right-0 top-full mt-1 z-50 min-w-[120px]',
+            'absolute right-0 top-full mt-1 z-50 min-w-[140px]',
             'bg-stone-900 border border-stone-700/60 rounded-lg shadow-xl',
             'py-1'
           )}
         >
-          <button
-            onClick={() => handleAction('save')}
-            className="w-full px-3 py-1.5 text-left text-xs text-stone-300 hover:bg-stone-800 transition-colors"
-          >
-            Save
-          </button>
-          <button
-            onClick={() => handleAction('note')}
-            className="w-full px-3 py-1.5 text-left text-xs text-stone-300 hover:bg-stone-800 transition-colors"
-          >
-            Add Note
-          </button>
-          <button
-            onClick={() => handleAction('follow_up')}
-            className="w-full px-3 py-1.5 text-left text-xs text-stone-300 hover:bg-stone-800 transition-colors"
-          >
-            Follow Up
-          </button>
+          {ACTIONS.map((action) => (
+            <button
+              key={action.key}
+              type="button"
+              onClick={(e) => {
+                e.stopPropagation()
+                e.preventDefault()
+                handleAction(action)
+              }}
+              disabled={isPending}
+              className={cn(
+                'w-full px-3 py-1.5 text-left text-xs transition-colors',
+                action.key === 'permanent'
+                  ? 'text-red-400 hover:bg-red-950/40'
+                  : 'text-stone-300 hover:bg-stone-800',
+                isPending && 'opacity-50'
+              )}
+            >
+              {action.label}
+            </button>
+          ))}
         </div>
       )}
     </div>

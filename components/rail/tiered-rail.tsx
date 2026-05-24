@@ -17,10 +17,16 @@ export async function TieredRail({
   queuePromise,
   universalItems = [],
   className,
+  userId,
+  tenantId,
+  role,
 }: {
   queuePromise: Promise<PriorityQueue>
   universalItems?: UniversalRailItem[]
   className?: string
+  userId?: string
+  tenantId?: string
+  role?: string
 }) {
   let queue: PriorityQueue
   try {
@@ -75,7 +81,14 @@ export async function TieredRail({
   return (
     <div className={cn('space-y-1', className)}>
       {nonEmptyTiers.map((tier) => (
-        <TierRow key={tier} tier={tier} items={result[tier]} />
+        <TierRow
+          key={tier}
+          tier={tier}
+          items={result[tier]}
+          userId={userId}
+          tenantId={tenantId}
+          role={role}
+        />
       ))}
     </div>
   )
