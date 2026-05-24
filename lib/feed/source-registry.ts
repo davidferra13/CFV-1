@@ -1,4 +1,4 @@
-﻿import type { UniversalRailItem } from '@/lib/discovery/universal-rail-types'
+import type { UniversalRailItem } from '@/lib/discovery/universal-rail-types'
 import type { ProactiveSignal } from '@/lib/cil/types'
 import type { CircleActivityItem } from '@/lib/dinner-circles/activity-feed-types'
 
@@ -23,7 +23,7 @@ export interface FeedSourceAdapter {
   adapt(items: unknown[]): ComposedFeedEntry[]
 }
 
-// â”€â”€ Rail adapter â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+// ── Rail adapter ──────────────────────────────────────────────────────────
 
 const railAdapter: FeedSourceAdapter = {
   name: 'rail',
@@ -46,7 +46,7 @@ const railAdapter: FeedSourceAdapter = {
   },
 }
 
-// â”€â”€ CIL adapter â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+// ── CIL adapter ───────────────────────────────────────────────────────────
 
 const URGENCY_SCORE: Record<number, number> = { 1: 20, 2: 40, 3: 60, 4: 80, 5: 100 }
 
@@ -70,7 +70,7 @@ const cilAdapter: FeedSourceAdapter = {
   },
 }
 
-// â”€â”€ Circle adapter â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+// ── Circle adapter ────────────────────────────────────────────────────────
 
 const circleAdapter: FeedSourceAdapter = {
   name: 'circle',
@@ -91,7 +91,7 @@ const circleAdapter: FeedSourceAdapter = {
   },
 }
 
-// â”€â”€ Notification adapter â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+// ── Notification adapter ──────────────────────────────────────────────────
 
 interface NotificationItem {
   id: string
@@ -132,6 +132,7 @@ interface NetworkActivityItem {
   currentWeekCount: number
   busiestDay: string | null
   streakWeeks: number
+  avgWeeklyEvents: number
   updatedAt: string
 }
 
@@ -139,29 +140,39 @@ const networkActivityAdapter: FeedSourceAdapter = {
   name: 'network_activity',
   weight: 0.4,
   adapt(items: unknown[]): ComposedFeedEntry[] {
-    return (items as NetworkActivityItem[]).map((chef) => ({
-      id: `network-activity-${chef.chefId}`,
-      source: 'network_activity',
-      score: Math.min(chef.upcomingEventCount * 10, 60),
-      timestamp: new Date(chef.updatedAt).getTime(),
-      label: `${chef.displayName ?? chef.businessName} has ${chef.upcomingEventCount} dinner${chef.upcomingEventCount === 1 ? '' : 's'} coming up`,
-      sublabel:
-        chef.streakWeeks > 2
-          ? `${chef.streakWeeks}-week streak`
-          : chef.busiestDay
-            ? `Busiest on ${chef.busiestDay}s`
-            : undefined,
-      href: '/network',
-      icon: 'users',
-      category: 'social_network',
-      presentation: 'card' as const,
-      expandable: false,
-      originalData: chef,
-    }))
+    const now = Date.now()
+    const sevenDays = 7 * 24 * 60 * 60 * 1000
+
+    return (items as NetworkActivityItem[])
+      .filter((chef) => now - new Date(chef.updatedAt).getTime() < sevenDays)
+      .map((chef) => {
+        const avg = Math.max(chef.avgWeeklyEvents, 1)
+        const anomalyScore = Math.min((chef.upcomingEventCount / avg) * 20, 60)
+
+        return {
+          id: `network-activity-${chef.chefId}`,
+          source: 'network_activity',
+          score: anomalyScore,
+          timestamp: new Date(chef.updatedAt).getTime(),
+          label: `${chef.displayName ?? chef.businessName} has ${chef.upcomingEventCount} dinner${chef.upcomingEventCount === 1 ? '' : 's'} coming up`,
+          sublabel:
+            chef.streakWeeks > 2
+              ? `${chef.streakWeeks}-week streak`
+              : chef.busiestDay
+                ? `Busiest on ${chef.busiestDay}s`
+                : undefined,
+          href: '/network',
+          icon: 'users',
+          category: 'social_network',
+          presentation: 'card' as const,
+          expandable: false,
+          originalData: chef,
+        }
+      })
   },
 }
 
-// â”€â”€ Registry â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+// ── Registry ──────────────────────────────────────────────────────────────
 
 export const SOURCE_REGISTRY: FeedSourceAdapter[] = [
   railAdapter,
