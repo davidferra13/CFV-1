@@ -15,6 +15,7 @@ import { sql } from 'drizzle-orm'
 
 export type PriceSource =
   | 'chef_override'
+  | 'pinned_price'
   | 'receipt'
   | 'api_quote'
   | 'wholesale'
@@ -421,6 +422,8 @@ export function sourceDisplayStore(source: PriceSource, storeName: string | null
   switch (source) {
     case 'chef_override':
       return 'Your price'
+    case 'pinned_price':
+      return storeName ? `Pinned (${storeName})` : 'Pinned price'
     case 'receipt':
       return storeName || 'Your receipt'
     case 'api_quote':

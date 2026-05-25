@@ -64,7 +64,7 @@ export {
   coverageLevelForTier,
 } from './resolve-price-helpers'
 
-import type { ResolvedPrice, PriceFreshness } from './resolve-price-helpers'
+import type { ResolvedPrice, PriceFreshness, PriceSource } from './resolve-price-helpers'
 import {
   withDecay,
   computeFreshness,
@@ -82,9 +82,11 @@ import type { PriceRow, QuoteRow, AvgRow } from './resolve-price-helpers'
 // --- Tier resolvers (single-ingredient path) ---
 import type { TierResolver, TierContext } from './tier-resolver'
 import { chefOverrideResolver } from './tiers/chef-override'
+import { pinnedPriceResolver } from './tiers/pinned-price'
 import { receiptPriceResolver } from './tiers/receipt-price'
 import { apiQuoteResolver } from './tiers/api-quote'
 import { wholesaleResolver } from './tiers/wholesale'
+import { ingredientDenormalizedResolver } from './tiers/ingredient-denormalized'
 import { directScrapeResolver } from './tiers/direct-scrape'
 import { flyerPriceResolver } from './tiers/flyer-price'
 import { instacartProxyResolver } from './tiers/instacart-proxy'
@@ -154,9 +156,11 @@ export function invalidatePriceCache(tenantId?: string): void {
 
 const tierResolvers: TierResolver[] = [
   chefOverrideResolver, // 0
+  pinnedPriceResolver, // 0.5
   receiptPriceResolver, // 1
   apiQuoteResolver, // 2
   wholesaleResolver, // 2.5
+  ingredientDenormalizedResolver, // 2.75
   directScrapeResolver, // 3
   flyerPriceResolver, // 4
   instacartProxyResolver, // 5
@@ -273,6 +277,31 @@ export async function resolvePricesBatch(
     overrideByIngredient.set(row.ingredient_id, row)
   }
 
+  // Query 0.5: Pinned prices (Tier 0.5)
+  const pinnedRows = (await db.execute(sql`
+    SELECT id AS ingredient_id, pinned_price_cents, pinned_price_unit,
+           pinned_price_source, pinned_price_vendor,
+           pinned_price_set_at::text AS set_at
+    FROM ingredients
+    WHERE id = ANY(${ingredientIds})
+      AND tenant_id = ${tenantId}
+      AND pinned_price_cents IS NOT NULL
+      AND pinned_price_cents > 0
+      AND (pinned_price_expires_at IS NULL OR pinned_price_expires_at > NOW())
+  `)) as unknown as Array<{
+    ingredient_id: string
+    pinned_price_cents: number
+    pinned_price_unit: string | null
+    pinned_price_source: string | null
+    pinned_price_vendor: string | null
+    set_at: string | null
+  }>
+
+  const pinnedPriceByIngredient = new Map<string, (typeof pinnedRows)[0]>()
+  for (const row of pinnedRows) {
+    pinnedPriceByIngredient.set(row.ingredient_id, row)
+  }
+
   // Query 1: All receipt history rows for these ingredients
   const receiptRows = (await db.execute(sql`
     SELECT ingredient_id, price_per_unit_cents, unit, store_name, purchase_date, source
@@ -343,15 +372,45 @@ export async function resolvePricesBatch(
   // Query 4: Regional averages for all ingredients (batch)
   const regionalAverages = await getRegionalAveragesBatch(ingredientIds, preferredState)
 
-  // Query 5: Get names and categories for all ingredients
+  // Query 5: Get names, categories, and denormalized prices for all ingredients
   const categoryRows = (await db.execute(sql`
-    SELECT id, name, category FROM ingredients WHERE id = ANY(${ingredientIds})
-  `)) as unknown as Array<{ id: string; name: string; category: string | null }>
+    SELECT id, name, category, last_price_cents, last_price_source, last_price_store,
+           last_price_confidence, last_price_date::text AS last_price_date
+    FROM ingredients WHERE id = ANY(${ingredientIds})
+  `)) as unknown as Array<{
+    id: string
+    name: string
+    category: string | null
+    last_price_cents: number | null
+    last_price_source: string | null
+    last_price_store: string | null
+    last_price_confidence: string | null
+    last_price_date: string | null
+  }>
   const categoryById = new Map<string, string | null>()
   const nameById = new Map<string, string>()
+  const denormPriceById = new Map<
+    string,
+    {
+      cents: number
+      source: string | null
+      store: string | null
+      confidence: string | null
+      date: string | null
+    }
+  >()
   for (const row of categoryRows) {
     categoryById.set(row.id, row.category)
     nameById.set(row.id, row.name)
+    if (row.last_price_cents && row.last_price_cents > 0) {
+      denormPriceById.set(row.id, {
+        cents: row.last_price_cents,
+        source: row.last_price_source,
+        store: row.last_price_store,
+        confidence: row.last_price_confidence,
+        date: row.last_price_date,
+      })
+    }
   }
 
   // Query 6: Category baselines for all unique categories
@@ -490,6 +549,30 @@ export async function resolvePricesBatch(
       continue
     }
 
+    // Tier 0.5: Pinned price (chef manually set, non-expired)
+    const pinned = pinnedPriceByIngredient.get(id)
+    if (pinned) {
+      const pinStore = pinned.pinned_price_vendor
+        ? `Pinned (${pinned.pinned_price_vendor})`
+        : 'Pinned price'
+      result.set(
+        id,
+        withDecay({
+          cents: pinned.pinned_price_cents,
+          unit: pinned.pinned_price_unit || 'each',
+          source: 'pinned_price',
+          sourceTier: pinned.pinned_price_source || 'manual_pin',
+          resolutionTier: 'chef_receipt',
+          store: pinStore,
+          confidence: 0.95,
+          freshness: computeFreshness(pinned.set_at),
+          confirmedAt: pinned.set_at,
+          reason: pinned.pinned_price_source ? `Pinned from: ${pinned.pinned_price_source}` : null,
+        })
+      )
+      continue
+    }
+
     const receipts = receiptByIngredient.get(id) || []
     const quote = quoteByIngredient.get(id)
     const openclaw = openclawByIngredient.get(id) || []
@@ -531,6 +614,42 @@ export async function resolvePricesBatch(
           confidence: 0.75,
           freshness: computeFreshness(quote.created_at),
           confirmedAt: quote.created_at,
+          reason: null,
+        })
+      )
+      continue
+    }
+
+    // Tier 2.75: Denormalized ingredient price (273K+ ingredients have fresh prices here)
+    const denorm = denormPriceById.get(id)
+    if (denorm) {
+      const DENORM_SRC: Record<string, PriceSource> = {
+        openclaw_market: 'direct_scrape',
+        openclaw_flyer: 'flyer',
+        openclaw_instacart: 'instacart',
+      }
+      const DENORM_CONF: Record<string, number> = {
+        openclaw_market: 0.85,
+        openclaw_flyer: 0.7,
+        openclaw_instacart: 0.6,
+      }
+      const rawSrc = denorm.source || 'openclaw_market'
+      const priceSrc: PriceSource = DENORM_SRC[rawSrc] || 'direct_scrape'
+      const storedConf = denorm.confidence ? parseFloat(denorm.confidence) : null
+      const conf =
+        storedConf && storedConf > 0 ? Math.min(storedConf, 0.9) : DENORM_CONF[rawSrc] || 0.6
+      result.set(
+        id,
+        withDecay({
+          cents: denorm.cents,
+          unit: 'each',
+          source: priceSrc,
+          sourceTier: rawSrc,
+          resolutionTier: denorm.store ? 'regional' : 'market_national',
+          store: sourceDisplayStore(priceSrc, denorm.store),
+          confidence: conf,
+          freshness: computeFreshness(denorm.date),
+          confirmedAt: denorm.date,
           reason: null,
         })
       )
