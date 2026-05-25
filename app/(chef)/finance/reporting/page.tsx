@@ -1,4 +1,4 @@
-import type { Metadata } from 'next'
+﻿import type { Metadata } from 'next'
 import Link from 'next/link'
 import { requireChef } from '@/lib/auth/get-user'
 import { getTenantFinancialSummary } from '@/lib/ledger/compute'
@@ -7,6 +7,7 @@ import { getStageConversionData } from '@/lib/analytics/stage-conversion'
 import { StageConversionFunnel } from '@/components/analytics/stage-conversion-funnel'
 import { Card } from '@/components/ui/card'
 import { formatCurrency } from '@/lib/utils/currency'
+import { EmailAccountantExitLink } from '@/components/finance/finance-exit-links'
 
 export const metadata: Metadata = { title: 'Reporting' }
 
@@ -100,12 +101,15 @@ export default async function ReportingPage() {
             View in Analytics &rarr;
           </Link>
         </div>
-        <a
-          href={`/finance/year-end/export?year=${new Date().getFullYear()}`}
-          className="inline-flex items-center justify-center px-3 py-2 border border-stone-600 text-stone-300 rounded-lg hover:bg-stone-800 transition-colors font-medium text-sm shrink-0"
-        >
-          Download CPA Export
-        </a>
+        <div className="flex items-center gap-3 shrink-0">
+          <EmailAccountantExitLink accountantEmail="" />
+          <a
+            href={`/finance/year-end/export?year=${new Date().getFullYear()}`}
+            className="inline-flex items-center justify-center px-3 py-2 border border-stone-600 text-stone-300 rounded-lg hover:bg-stone-800 transition-colors font-medium text-sm"
+          >
+            Download CPA Export
+          </a>
+        </div>
       </div>
 
       {/* YTD KPI snapshot */}

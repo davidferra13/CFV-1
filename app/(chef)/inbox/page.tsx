@@ -1,4 +1,4 @@
-import type { Metadata } from 'next'
+﻿import type { Metadata } from 'next'
 import { requireChef } from '@/lib/auth/get-user'
 import { isCommTriageEnabled } from '@/lib/features'
 import { getUnifiedInbox, getInboxStats } from '@/lib/inbox/actions'
@@ -22,6 +22,7 @@ import { getGoogleConnection } from '@/lib/google/auth'
 import type { GoogleConnectionStatus } from '@/lib/google/types'
 import type { InboxStats } from '@/lib/inbox/types'
 import Link from 'next/link'
+import { ExitLinkButton } from '@/components/exit-links/ExitLinkButton'
 
 export const metadata: Metadata = { title: 'Inbox' }
 
@@ -138,6 +139,12 @@ export default async function InboxPage({
             </p>
           </div>
           <InboxCalendarPeek events={calendarEvents} />
+        </div>
+
+        {/* External platform quick actions */}
+        <div className="flex flex-wrap items-center gap-2">
+          <ExitLinkButton exitId={33} context={{}} />
+          <ExitLinkButton exitId={34} context={{}} />
         </div>
 
         {searchParams?.clientId && (

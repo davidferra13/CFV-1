@@ -28,6 +28,9 @@ import { ScaleForEventButton } from '@/components/recipes/scale-for-event-button
 import { RecipeSlideshow } from '@/components/recipes/recipe-slideshow'
 import { StepPhotoGallery } from '@/components/recipes/step-photo-gallery'
 import { getRecipeStepPhotos } from '@/lib/recipes/recipe-photo-actions'
+import { ExitLinkButton } from '@/components/exit-links/ExitLinkButton'
+import { QuickExitLink } from '@/components/exit-links/QuickExitLink'
+import { getRecipeContext, getIngredientContext } from '@/lib/exit-links/context-helpers'
 
 const VOLUME_UNITS = new Set([
   'cup',
@@ -218,6 +221,9 @@ export default async function ChefRecipeDetailPage({ params }: { params: { id: s
     new Set(stepPhotos.map((photo) => photo.step_number))
   ).sort((a, b) => a - b)
 
+  // Exit link context for technique/cuisine
+  const recipeContext = getRecipeContext(r)
+
   return (
     <div className="space-y-6">
       {/* Hero image - own photo or stock placeholder */}
@@ -268,6 +274,12 @@ export default async function ChefRecipeDetailPage({ params }: { params: { id: s
                 {tag}
               </Badge>
             ))}
+          </div>
+          {/* Exit links: technique + cuisine research */}
+          <div className="flex flex-wrap items-center gap-2 mt-2">
+            <ExitLinkButton exitId={72} context={recipeContext} />
+            <ExitLinkButton exitId={74} context={recipeContext} />
+            <ExitLinkButton exitId={8} context={{}} />
           </div>
         </div>
         <div className="flex gap-2">
@@ -583,6 +595,13 @@ export default async function ChefRecipeDetailPage({ params }: { params: { id: s
                             {know.flavorProfile}
                           </span>
                         )}
+                      </div>
+                    )}
+                    {/* Exit links: nutrition lookup + substitution */}
+                    {iName && (
+                      <div className="mt-1 flex flex-wrap items-center gap-2">
+                        <QuickExitLink exitId={7} context={getIngredientContext({ name: iName })} />
+                        <QuickExitLink exitId={9} context={getIngredientContext({ name: iName })} />
                       </div>
                     )}
                   </li>

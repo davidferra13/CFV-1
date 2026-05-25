@@ -1,4 +1,4 @@
-'use client'
+﻿'use client'
 
 // Event Staff Panel
 // Shown on the chef event detail page.
@@ -16,6 +16,8 @@ import {
 import { createTaskFromEvent } from '@/lib/tasks/actions'
 import { todayLocalDateString } from '@/lib/utils/format'
 import { formatCurrency } from '@/lib/utils/currency'
+import { ExitLinkButton } from '@/components/exit-links/ExitLinkButton'
+import { getStaffContext, mergeContext } from '@/lib/exit-links/context-helpers'
 
 const ROLE_LABELS: Record<string, string> = {
   sous_chef: 'Sous Chef',
@@ -48,6 +50,7 @@ type Assignment = {
 
 type Props = {
   eventId: string
+  eventName?: string
   roster: StaffMember[] // available staff from chef's roster
   assignments: Assignment[] // current event assignments
 }
@@ -72,7 +75,7 @@ const DEFAULT_TASK_DRAFT: TaskDraft = {
   notes: '',
 }
 
-export function EventStaffPanel({ eventId, roster, assignments }: Props) {
+export function EventStaffPanel({ eventId, eventName, roster, assignments }: Props) {
   const router = useRouter()
   const [showAddForm, setShowAddForm] = useState(false)
   const [selectedStaffId, setSelectedStaffId] = useState('')
@@ -104,6 +107,16 @@ export function EventStaffPanel({ eventId, roster, assignments }: Props) {
   const laborIsEstimated = assignments.some(
     (a) => a.pay_amount_cents == null && (a.scheduled_hours ?? 0) > 0
   )
+
+  // Build context for Exit 38 (Text crew): collect all assigned staff phones
+  const crewPhones = assignments
+    .map((a) => a.staff_members?.phone)
+    .filter(Boolean)
+    .join(',')
+  const textCrewContext: Record<string, string> = {
+    crewPhones,
+    dayOfBrief: eventName ? `Heads up for ${eventName}` : 'Heads up for today',
+  }
 
   async function handleAssign() {
     if (!selectedStaffId) return
@@ -203,6 +216,13 @@ export function EventStaffPanel({ eventId, roster, assignments }: Props) {
 
   return (
     <div className="space-y-3">
+      {/* Exit 38: Text crew (visible when 2+ staff assigned with phones) */}
+      {assignments.length >= 2 && crewPhones && (
+        <div className="flex items-center gap-2">
+          <ExitLinkButton exitId={38} context={textCrewContext} variant="outline" size="sm" />
+        </div>
+      )}
+
       {assignments.length === 0 ? (
         <p className="text-sm text-stone-500">No staff assigned to this event yet.</p>
       ) : (
@@ -212,6 +232,19 @@ export function EventStaffPanel({ eventId, roster, assignments }: Props) {
             const role = ROLE_LABELS[a.role_override ?? member?.role ?? 'other'] ?? 'Other'
             const isExpanded = expandedTasksFor === a.staff_member_id
             const isAddingTask = addingTaskFor === a.staff_member_id
+
+            // Build per-assignment context for Exit 23 (Pay via Venmo)
+            const payCtx = member
+              ? mergeContext(getStaffContext(member as unknown as Record<string, unknown>), {
+                  eventName: eventName ?? '',
+                  amount: a.pay_amount_cents
+                    ? String(a.pay_amount_cents / 100)
+                    : a.scheduled_hours && member.hourly_rate_cents
+                      ? String(Math.round(a.scheduled_hours * member.hourly_rate_cents) / 100)
+                      : '',
+                })
+              : {}
+
             return (
               <div
                 key={a.id}
@@ -227,6 +260,12 @@ export function EventStaffPanel({ eventId, roster, assignments }: Props) {
                       {a.actual_hours ? ` · ${a.actual_hours}h worked` : ''}
                       {a.pay_amount_cents ? ` · ${formatCurrency(a.pay_amount_cents)}` : ''}
                     </p>
+                    {/* Exit 23: Pay via Venmo (per staff member) */}
+                    {member?.phone && (
+                      <div className="mt-1">
+                        <ExitLinkButton exitId={23} context={payCtx} variant="compact" size="sm" />
+                      </div>
+                    )}
                   </div>
                   <div className="flex items-center gap-1">
                     <Button
@@ -234,7 +273,7 @@ export function EventStaffPanel({ eventId, roster, assignments }: Props) {
                       variant="ghost"
                       onClick={() => setExpandedTasksFor(isExpanded ? null : a.staff_member_id)}
                     >
-                      Tasks {isExpanded ? '\u25b2' : '\u25bc'}
+                      Tasks {isExpanded ? '▲' : '▼'}
                     </Button>
                     {a.status !== 'completed' && (
                       <Button

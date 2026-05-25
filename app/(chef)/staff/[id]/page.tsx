@@ -1,4 +1,4 @@
-// Staff Detail Page - Full profile for a single staff member
+﻿// Staff Detail Page - Full profile for a single staff member
 // Shows: contact info, assignment history, onboarding, agreements, performance
 
 import type { Metadata } from 'next'
@@ -16,6 +16,7 @@ import { CreateStaffLoginForm } from '@/components/staff/create-staff-login-form
 import { OnboardingChecklist } from '@/components/staff/onboarding-checklist'
 import { EntityPhotoUpload } from '@/components/entities/entity-photo-upload'
 import { formatCurrency } from '@/lib/utils/currency'
+import { StaffContactExitLinks } from '@/components/staff/staff-exit-links'
 
 export const metadata: Metadata = { title: 'Staff Profile' }
 
@@ -84,6 +85,10 @@ export default async function StaffDetailPage({ params }: { params: { id: string
   const onboardingComplete = member.onboarding.filter((i: any) => i.status === 'complete').length
   const onboardingTotal = member.onboarding.length
 
+  // Derive latest event name for exit link context (pay via Venmo)
+  const latestAssignment = member.assignments?.[0]
+  const latestEventName = latestAssignment?.events?.occasion ?? ''
+
   return (
     <div className="max-w-4xl mx-auto px-4 py-8 space-y-6">
       {/* Back link */}
@@ -144,6 +149,17 @@ export default async function StaffDetailPage({ params }: { params: { id: string
           )}
           {!member.phone && !member.email && !member.notes && (
             <p className="text-stone-500">No contact information on file.</p>
+          )}
+          {/* Exit links: Contact/Text assistant (87), Pay via Venmo (23) */}
+          {member.phone && (
+            <StaffContactExitLinks
+              staff={{
+                name: member.name,
+                phone: member.phone,
+                rate: member.hourly_rate_cents ? member.hourly_rate_cents / 100 : undefined,
+              }}
+              latestEventName={latestEventName}
+            />
           )}
         </CardContent>
       </Card>

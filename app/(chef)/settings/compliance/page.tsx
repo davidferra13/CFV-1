@@ -1,4 +1,4 @@
-// Food Safety & Compliance Page
+﻿// Food Safety & Compliance Page
 // Chef manages certifications (ServSafe, food handler cards, licenses)
 // with expiry tracking and color-coded urgency indicators.
 
@@ -6,6 +6,10 @@ import type { Metadata } from 'next'
 import Link from 'next/link'
 import { PermitChecklistPanel } from '@/components/ai/permit-checklist-panel'
 import { ComplianceConciergePanel } from '@/components/compliance/compliance-concierge-panel'
+import {
+  GovernmentExitLinks,
+  ProfessionalGrowthExitLinks,
+} from '@/components/exit-links/ComplianceExitLinks'
 import { requireChef } from '@/lib/auth/get-user'
 import { listCertifications, getExpiringCertifications } from '@/lib/compliance/actions'
 import { getComplianceCenterState } from '@/lib/compliance/compliance-concierge-actions'
@@ -290,6 +294,10 @@ export default async function CompliancePage() {
 
       {/* AI Permit Renewal Checklist */}
       <PermitChecklistPanel />
+
+      {/* External Resources: Government & Legal, Professional Growth */}
+      <GovernmentExitLinks />
+      <ProfessionalGrowthExitLinks />
 
       {/* Safety & Protection Sub-pages */}
       <div className="space-y-3">

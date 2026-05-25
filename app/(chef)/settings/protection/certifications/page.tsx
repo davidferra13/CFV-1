@@ -1,4 +1,4 @@
-// Protection Certifications Page
+﻿// Protection Certifications Page
 // Displays professional certifications tracked under the protection hub
 // (distinct from compliance/food-safety certs tracked in /settings/compliance).
 
@@ -6,6 +6,7 @@ import type { Metadata } from 'next'
 import Link from 'next/link'
 import { requireChef } from '@/lib/auth/get-user'
 import { createServerClient } from '@/lib/db/server'
+import { ProfessionalGrowthExitLinks } from '@/components/exit-links/ComplianceExitLinks'
 import { CertificationList } from '@/components/protection/certification-list'
 
 export const metadata: Metadata = { title: 'Certifications' }
@@ -43,6 +44,9 @@ export default async function ProtectionCertificationsPage() {
       </div>
 
       <CertificationList certs={certs ?? []} />
+
+      {/* External Resources: ServSafe renewal, find courses */}
+      <ProfessionalGrowthExitLinks />
     </div>
   )
 }

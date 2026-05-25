@@ -1,4 +1,4 @@
-﻿// Chef Client Detail Page
+// Chef Client Detail Page
 // Shows client information, statistics, and event history
 
 import type { Metadata } from 'next'
@@ -116,6 +116,7 @@ import { getMenus } from '@/lib/menus/actions'
 import { QuickCaptureTrigger } from '@/components/communication/quick-capture-trigger'
 import { CommunicationTimeline } from '@/components/clients/communication-timeline'
 import { getUnifiedThread } from '@/lib/communication/unified-thread'
+import { ClientExitLinks } from '@/components/clients/client-exit-links'
 
 async function ClientCompletionSection({ clientId }: { clientId: string }) {
   const result = await getCompletionForEntity('client', clientId)
@@ -364,6 +365,19 @@ export default async function ClientDetailPage({ params }: ClientDetailPageProps
             )}
           </div>
           <p className="text-stone-300 mt-1">{client.email}</p>
+          <div className="mt-2">
+            <ClientExitLinks
+              client={{
+                full_name: client.full_name,
+                email: client.email,
+                phone: (client as any).phone ?? null,
+                instagram_handle: (client as any).instagram_handle ?? null,
+                company_name: (client as any).company_name ?? null,
+                company_url: (client as any).company_url ?? null,
+                zip: (client as any).zip ?? null,
+              }}
+            />
+          </div>
           {loyaltyProfile && (
             <div className="mt-2 flex flex-wrap items-center gap-2">
               <span

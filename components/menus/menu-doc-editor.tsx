@@ -48,6 +48,10 @@ import {
   getCuisineDisplayName,
   getCuisineOptions,
 } from '@/lib/constants/cuisines'
+import { ExitLinkButton } from '@/components/exit-links/ExitLinkButton'
+import { ExitLinkPanel } from '@/components/exit-links/ExitLinkPanel'
+import { QuickExitLink } from '@/components/exit-links/QuickExitLink'
+import { getMenuContext } from '@/lib/exit-links/context-helpers'
 
 // ─── Constants ────────────────────────────────────────────────────────────────
 
@@ -422,6 +426,13 @@ function CourseBlock({
           onPhotoChange={setPhotoUrl}
         />
       </div>
+
+      {/* Exit link: wine pairing for this dish */}
+      {dishName && (
+        <div className="mt-1.5">
+          <QuickExitLink exitId={59} context={{ dishName }} />
+        </div>
+      )}
 
       {/* Dietary tags row - Accommodates */}
       <div className="flex flex-wrap items-center gap-1.5 mt-2">
@@ -1325,6 +1336,8 @@ function ContextSidebar({
   directClient,
   linkedRecipeIds,
   costTickerKey,
+  menuCuisine,
+  menuEventType,
 }: {
   menuId: string
   event: EditorEvent | null
@@ -1352,6 +1365,8 @@ function ContextSidebar({
   directClient: DirectClient | null
   linkedRecipeIds: string[]
   costTickerKey: number
+  menuCuisine: string
+  menuEventType: string
 }) {
   // Derive season from: 1) explicit menu season, 2) event date, 3) target date
   const derivedSeason = season ? getSeasonData(season) : event ? getSeason(event.event_date) : null
@@ -1540,6 +1555,14 @@ function ContextSidebar({
 
       {/* Cocktail Browser panel */}
       {!locked && <CocktailBrowserPanel onSelectCocktail={onCocktailSelect} />}
+
+      {/* Exit links: inspiration, layout, market rates */}
+      <div className="bg-stone-900 rounded-xl border border-stone-700 p-4 shadow-sm space-y-2">
+        <p className="text-xs font-bold uppercase tracking-widest text-stone-400 mb-2">Research</p>
+        <ExitLinkButton exitId={73} context={{ cuisine: menuCuisine, eventType: menuEventType }} />
+        <ExitLinkButton exitId={75} context={{ eventType: menuEventType }} />
+        <ExitLinkButton exitId={10} context={{}} />
+      </div>
 
       {/* Pricing panel */}
       <div className="bg-stone-900 rounded-xl border border-stone-700 p-4 shadow-sm">
@@ -2184,6 +2207,8 @@ export function MenuDocEditor({
               directClient={currentDirectClient}
               linkedRecipeIds={linkedRecipeIds}
               costTickerKey={costTickerKey}
+              menuCuisine={cuisineType}
+              menuEventType={event?.occasion ?? 'dinner'}
             />
           </div>
         </div>

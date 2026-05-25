@@ -1,4 +1,4 @@
-import type { Metadata } from 'next'
+﻿import type { Metadata } from 'next'
 import Link from 'next/link'
 import { requireChef } from '@/lib/auth/get-user'
 import { getTaxPrepReport } from '@/lib/reports/tax-prep-actions'
@@ -18,14 +18,11 @@ import { ExpenseCategoryTable } from '@/components/reports/tax-prep/expense-cate
 import { ContractorList } from '@/components/reports/tax-prep/contractor-list'
 import { ReceiptIndex } from '@/components/reports/tax-prep/receipt-index'
 import { PrintButton } from './tax-prep-client'
+import { EmailTaxPackageExitLink } from '@/components/finance/finance-exit-links'
 
 export const metadata: Metadata = { title: 'Tax Prep Package' }
 
-export default async function TaxPrepPage({
-  searchParams,
-}: {
-  searchParams: { year?: string }
-}) {
+export default async function TaxPrepPage({ searchParams }: { searchParams: { year?: string } }) {
   await requireChef()
 
   const currentYear = new Date().getFullYear()
@@ -51,14 +48,13 @@ export default async function TaxPrepPage({
       </div>
       <div className="flex items-center justify-between">
         <div>
-          <h1 className="text-3xl font-bold text-stone-100 print:text-black">
-            Tax Prep Package
-          </h1>
+          <h1 className="text-3xl font-bold text-stone-100 print:text-black">Tax Prep Package</h1>
           <p className="text-stone-500 mt-1 print:text-gray-600">
             Year-end tax preparation summary for {year}
           </p>
         </div>
         <div className="flex items-center gap-3 print:hidden">
+          <EmailTaxPackageExitLink accountantEmail="" year={year} />
           <TaxYearSelector currentYear={year} />
           <PrintButton />
         </div>
@@ -75,8 +71,8 @@ export default async function TaxPrepPage({
           {/* Disclaimer */}
           <Card className="p-4 border-l-4 border-l-amber-400 print:border-l-amber-600">
             <p className="text-xs text-amber-400 print:text-amber-700">
-              This report is for reference only. All figures should be verified by a licensed
-              tax professional before filing. Generated{' '}
+              This report is for reference only. All figures should be verified by a licensed tax
+              professional before filing. Generated{' '}
               {new Date(report.generatedAt).toLocaleDateString('en-US', {
                 year: 'numeric',
                 month: 'long',
@@ -121,14 +117,17 @@ export default async function TaxPrepPage({
             {/* Deductions breakdown */}
             <div className="mt-5 pt-4 border-t border-stone-800 print:border-gray-300 space-y-2 max-w-md">
               <div className="flex justify-between text-sm">
-                <span className="text-stone-400 print:text-gray-600">Business expenses (deductible)</span>
+                <span className="text-stone-400 print:text-gray-600">
+                  Business expenses (deductible)
+                </span>
                 <span className="text-stone-200 print:text-black font-medium">
                   {formatCurrency(report.deductions.totalDeductibleCents)}
                 </span>
               </div>
               <div className="flex justify-between text-sm">
                 <span className="text-stone-400 print:text-gray-600">
-                  Mileage deduction ({report.totalMiles.toFixed(1)} mi x ${(report.irsRateCentsPerMile / 100).toFixed(3)})
+                  Mileage deduction ({report.totalMiles.toFixed(1)} mi x $
+                  {(report.irsRateCentsPerMile / 100).toFixed(3)})
                 </span>
                 <span className="text-stone-200 print:text-black font-medium">
                   {formatCurrency(report.mileageDeductionCents)}
@@ -262,4 +261,3 @@ export default async function TaxPrepPage({
     </div>
   )
 }
-

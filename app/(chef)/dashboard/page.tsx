@@ -1,4 +1,4 @@
-// Chef Dashboard - Unified Daily Command Center
+﻿// Chef Dashboard - Unified Daily Command Center
 // The command center is the primary morning screen. Existing sections are preserved
 // below it as secondary context. Auth + Suspense boundaries managed here.
 
@@ -59,6 +59,7 @@ import { ProfitAtAGlance, ProfitAtAGlanceSkeleton } from '@/components/finance/p
 import { getProfitAtAGlance } from '@/lib/finance/profit-actions'
 import { IntelligenceDigestSection } from './_sections/intelligence-digest-section'
 import { LazyBusinessHealthTrigger } from './_sections/lazy-business-health'
+import { IndustryLinksSection } from './_sections/industry-links-section'
 
 export const metadata: Metadata = { title: 'Dashboard' }
 
@@ -454,7 +455,12 @@ export default async function ChefDashboard() {
         </div>
       </SectionShell>
 
-      {/* 19. Feature Suggestions */}
+      {/* 19. Industry & Research */}
+      <SectionShell sectionId="industry-links" mode="expanded" label="Industry & Research">
+        <IndustryLinksSection />
+      </SectionShell>
+
+      {/* 20. Feature Suggestions */}
       <SectionShell sectionId="feature-suggestions" mode="expanded" label="Feature Suggestions">
         <WidgetErrorBoundary name="Feature Suggestions" compact>
           <Suspense fallback={null}>

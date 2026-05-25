@@ -1,4 +1,4 @@
-import type { Metadata } from 'next'
+﻿import type { Metadata } from 'next'
 import Link from 'next/link'
 import { requireChef } from '@/lib/auth/get-user'
 import { getTenantFinancialSummary } from '@/lib/ledger/compute'
@@ -8,6 +8,7 @@ import { Card } from '@/components/ui/card'
 import { formatCurrency } from '@/lib/utils/currency'
 import { ErrorState } from '@/components/ui/error-state'
 import { FadeIn } from '@/components/ui/fade-in'
+import { BankPortalExitLink } from '@/components/finance/finance-exit-links'
 
 export const metadata: Metadata = { title: 'Finance Overview' }
 
@@ -74,12 +75,15 @@ export default async function FinanceOverviewPage() {
 
   return (
     <FadeIn as="div" className="space-y-6">
-      <div>
-        <Link href="/finance" className="text-sm text-stone-500 hover:text-stone-300">
-          ← Finance
-        </Link>
-        <h1 className="text-3xl font-bold text-stone-100 mt-1">Overview</h1>
-        <p className="text-stone-500 mt-1">High-level financial health at a glance</p>
+      <div className="flex items-center justify-between">
+        <div>
+          <Link href="/finance" className="text-sm text-stone-500 hover:text-stone-300">
+            ← Finance
+          </Link>
+          <h1 className="text-3xl font-bold text-stone-100 mt-1">Overview</h1>
+          <p className="text-stone-500 mt-1">High-level financial health at a glance</p>
+        </div>
+        <BankPortalExitLink bankUrl="" />
       </div>
 
       <div className="grid grid-cols-2 gap-4">

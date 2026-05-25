@@ -1,4 +1,4 @@
-import Link from 'next/link'
+﻿import Link from 'next/link'
 import type { EventDetailTab } from '@/components/events/event-detail-mobile-nav'
 import { EventDetailSection } from '@/components/events/event-detail-mobile-nav'
 import { TimeTracking } from '@/components/events/time-tracking'
@@ -209,6 +209,7 @@ export function EventDetailOpsTab(props: EventDetailOpsTabProps) {
           <h2 className="text-xl font-semibold mb-4">Event Staff</h2>
           <EventStaffPanel
             eventId={event.id}
+            eventName={event.occasion ?? event.title ?? ''}
             roster={staffMembers as any}
             assignments={staffAssignments as any}
           />

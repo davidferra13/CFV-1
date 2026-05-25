@@ -18,6 +18,9 @@ import { WebSourcingPanel } from '@/components/pricing/web-sourcing-panel'
 import { ExportToolbar } from '@/components/shopping/export-toolbar'
 import { VendorSublist } from '@/components/shopping/vendor-sublist'
 import { ShoppingHistory } from '@/components/shopping/shopping-history'
+import { QuickExitLink } from '@/components/exit-links/QuickExitLink'
+import { ExitLinkButton } from '@/components/exit-links/ExitLinkButton'
+import { getIngredientContext } from '@/lib/exit-links/context-helpers'
 
 function formatCurrency(cents: number) {
   return `$${(cents / 100).toFixed(2)}`
@@ -49,6 +52,8 @@ function ShoppingListRow({
   const [showSourcing, setShowSourcing] = useState(false)
   const [editingOnHand, setEditingOnHand] = useState(false)
 
+  const ingredientCtx = getIngredientContext({ name: item.ingredientName })
+
   return (
     <>
       <tr className={`border-b border-stone-800 ${isHaveThis ? 'opacity-40 line-through' : ''}`}>
@@ -63,6 +68,19 @@ function ShoppingListRow({
               >
                 {showSourcing ? 'Hide' : 'Find it'}
               </button>
+            )}
+            {item.toBuy > 0 && (
+              <span className="inline-flex items-center gap-1.5 shrink-0">
+                <QuickExitLink exitId={1} context={ingredientCtx}>
+                  Buy
+                </QuickExitLink>
+                <QuickExitLink exitId={4} context={ingredientCtx}>
+                  Wholesale
+                </QuickExitLink>
+                <QuickExitLink exitId={2} context={ingredientCtx}>
+                  Price
+                </QuickExitLink>
+              </span>
             )}
           </div>
           <p className="text-xs text-stone-500">
@@ -634,6 +652,22 @@ export function ShoppingListGenerator({ initialResult, initialEventIds, initialE
 
         {/* Export toolbar */}
         <ExportToolbar result={{ ...result, items: adjustedItems }} />
+
+        {/* Exit links: shop entire list externally */}
+        {filteredItems.length > 0 && (
+          <div className="flex flex-wrap items-center gap-3">
+            <ExitLinkButton
+              exitId={40}
+              context={{ firstItem: filteredItems[0]?.ingredientName ?? '' }}
+              variant="outline"
+            />
+            <ExitLinkButton
+              exitId={3}
+              context={{ ingredient: filteredItems[0]?.ingredientName ?? '', zip: '' }}
+              variant="compact"
+            />
+          </div>
+        )}
 
         {/* Tabs */}
         <div className="flex gap-1 border-b border-stone-700">

@@ -1,4 +1,4 @@
-import type { Metadata } from 'next'
+﻿import type { Metadata } from 'next'
 import Link from 'next/link'
 import { Suspense } from 'react'
 import { WidgetErrorBoundary } from '@/components/ui/widget-error-boundary'
@@ -13,6 +13,10 @@ import { PricingIntelligenceBar } from '@/components/intelligence/pricing-intell
 import { getProfitAndLossReport } from '@/lib/finance/profit-loss-report-actions'
 import { getFinanceSurfaceAvailability } from '@/lib/finance/surface-availability'
 import { FinanceAlertBanner } from '@/components/finance/finance-alerts'
+import {
+  BankPortalExitLink,
+  EmailAccountantExitLink,
+} from '@/components/finance/finance-exit-links'
 import { format, startOfMonth, endOfMonth } from 'date-fns'
 
 /** Recent events with financial data, linking to billing */
@@ -319,7 +323,13 @@ export default async function FinancePage() {
   return (
     <div className="space-y-6">
       <div>
-        <h1 className="text-3xl font-bold text-stone-100">Finance</h1>
+        <div className="flex items-center justify-between">
+          <h1 className="text-3xl font-bold text-stone-100">Finance</h1>
+          <div className="flex items-center gap-3">
+            <BankPortalExitLink bankUrl={(regional as any).bankUrl ?? ''} />
+            <EmailAccountantExitLink accountantEmail={(regional as any).accountantEmail ?? ''} />
+          </div>
+        </div>
         <p className="text-stone-500 mt-1">
           Complete financial management - invoices, expenses, ledger, and reporting
         </p>

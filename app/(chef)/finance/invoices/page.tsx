@@ -1,4 +1,4 @@
-import type { Metadata } from 'next'
+﻿import type { Metadata } from 'next'
 import Link from 'next/link'
 import { requireChef } from '@/lib/auth/get-user'
 import { getAllInvoices } from '@/lib/shared/cross-cutting-queries'
@@ -6,6 +6,7 @@ import { Card } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
 import { formatCurrency } from '@/lib/utils/currency'
+import { StripeExitLink, VenmoRequestExitLink } from '@/components/finance/finance-exit-links'
 
 export const metadata: Metadata = { title: 'Invoices' }
 
@@ -214,12 +215,22 @@ export default async function InvoicesPage() {
                     </td>
                     <td className="px-4 py-3 text-center">{paymentBadge(inv.paymentStatus)}</td>
                     <td className="px-4 py-3 text-right">
-                      <Link
-                        href={`/events/${inv.eventId}/invoice`}
-                        className="text-xs text-brand-600 hover:text-brand-400"
-                      >
-                        View
-                      </Link>
+                      <div className="flex items-center justify-end gap-2">
+                        <StripeExitLink paymentId={(inv as any).stripePaymentId ?? ''} />
+                        {inv.balanceDueCents > 0 && (
+                          <VenmoRequestExitLink
+                            clientPhone={(inv as any).clientPhone ?? ''}
+                            amount={String((inv.balanceDueCents / 100).toFixed(2))}
+                            eventName={inv.occasion || 'Event'}
+                          />
+                        )}
+                        <Link
+                          href={`/events/${inv.eventId}/invoice`}
+                          className="text-xs text-brand-600 hover:text-brand-400"
+                        >
+                          View
+                        </Link>
+                      </div>
                     </td>
                   </tr>
                 ))}

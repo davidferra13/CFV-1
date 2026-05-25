@@ -60,6 +60,9 @@ import {
   CONFIDENCE_LABELS,
   type RecipeCostProvenance,
 } from '@/lib/costing/recipe-cost-provenance'
+import { ExitLinkButton } from '@/components/exit-links/ExitLinkButton'
+import { QuickExitLink } from '@/components/exit-links/QuickExitLink'
+import { getRecipeContext, getIngredientContext } from '@/lib/exit-links/context-helpers'
 
 const CATEGORY_COLORS: Record<string, 'default' | 'success' | 'warning' | 'info' | 'error'> = {
   sauce: 'warning',
@@ -456,6 +459,9 @@ export function RecipeDetailClient({
     new Set(stepPhotos.map((photo) => photo.step_number))
   ).sort((a, b) => a - b)
 
+  // Exit link context for technique/cuisine
+  const recipeContext = getRecipeContext(recipe as any)
+
   return (
     <div className="max-w-4xl mx-auto space-y-6">
       {/* Header */}
@@ -477,6 +483,12 @@ export function RecipeDetailClient({
             />
           )}
           {recipe.description && <p className="text-stone-400 mt-1">{recipe.description}</p>}
+          {/* Exit links: technique + cuisine research */}
+          <div className="flex flex-wrap items-center gap-2 mt-2">
+            <ExitLinkButton exitId={72} context={recipeContext} />
+            <ExitLinkButton exitId={74} context={recipeContext} />
+            <ExitLinkButton exitId={8} context={{}} />
+          </div>
         </div>
         <div className="flex gap-2">
           <Link href={`/recipes/${recipe.id}/edit`}>
@@ -699,6 +711,19 @@ export function RecipeDetailClient({
                       ingredientName={ri.ingredient.name}
                       className="ml-6 mt-0.5"
                     />
+                  )}
+                  {/* Exit links: nutrition lookup + substitution */}
+                  {ri.ingredient?.name && (
+                    <div className="ml-6 mt-0.5 flex flex-wrap items-center gap-2">
+                      <QuickExitLink
+                        exitId={7}
+                        context={getIngredientContext({ name: ri.ingredient.name })}
+                      />
+                      <QuickExitLink
+                        exitId={9}
+                        context={getIngredientContext({ name: ri.ingredient.name })}
+                      />
+                    </div>
                   )}
                 </div>
               ))}

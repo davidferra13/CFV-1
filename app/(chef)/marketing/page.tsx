@@ -11,6 +11,7 @@ import { Button } from '@/components/ui/button'
 import { format } from 'date-fns'
 import { CampaignBuilderClient } from './campaign-builder-client'
 import { TestimonialPanel } from '@/components/ai/testimonial-panel'
+import { ExitLinkPanel } from '@/components/exit-links/ExitLinkPanel'
 
 export const metadata: Metadata = { title: 'Marketing' }
 
@@ -138,6 +139,9 @@ export default async function MarketingPage() {
           </CardContent>
         </Card>
       </div>
+
+      {/* External Marketing Tools */}
+      <ExitLinkPanel category="marketing" context={{}} title="External Marketing Tools" />
 
       {/* AI Testimonial Request */}
       <TestimonialPanel />

@@ -1,4 +1,4 @@
-// Chef Event Detail Page: lifecycle-aware section organization
+﻿// Chef Event Detail Page: lifecycle-aware section organization
 // Sections grouped by lifecycle stage with progressive disclosure on desktop.
 // Mobile retains tab nav; desktop uses collapsible lifecycle panels.
 
@@ -26,6 +26,7 @@ import { EventWrapSection } from './_sections/event-wrap-section'
 import { EventBeverageSection } from './_sections/event-beverage-section'
 import { EventDiscoverySection } from './_sections/event-discovery-section'
 import { EventDepartureSection } from './_sections/event-departure-section'
+import { EventExitLinksSection } from './_sections/event-exit-links-section'
 import { getServiceTrackerState } from '@/lib/lifecycle/service-tracker-actions'
 import { LinkedTodosServer } from '@/components/todos/linked-todos-server'
 import { getServiceTimeline } from '@/lib/lifecycle/timeline-generator-actions'
@@ -105,6 +106,13 @@ export default async function EventDetailPage({
       {/* Vendor Coordination Log + Quick Capture */}
       <VendorCoordinationLog eventId={params.id} />
       <QuickCaptureTrigger prefillEventId={params.id} />
+
+      {/* Exit Links: venue, weather, nearby, calendar, payment, contact, travel */}
+      <EventExitLinksSection
+        event={event as Record<string, unknown>}
+        client={(event as any).client ?? null}
+        user={user as Record<string, unknown>}
+      />
 
       {/* Mobile: tab nav with lifecycle stage dots */}
       <EventDetailMobileNav lifecycleStage={lifecycleStage} />

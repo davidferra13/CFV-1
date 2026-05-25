@@ -1,10 +1,11 @@
-// Insurance Policies Page
+﻿// Insurance Policies Page
 // Displays all insurance policies for the tenant with status and expiry details.
 
 import type { Metadata } from 'next'
 import Link from 'next/link'
 import { requireChef } from '@/lib/auth/get-user'
 import { createServerClient } from '@/lib/db/server'
+import { GovernmentExitLinks } from '@/components/exit-links/ComplianceExitLinks'
 import { InsuranceList } from '@/components/protection/insurance-list'
 
 export const metadata: Metadata = { title: 'Insurance Policies' }
@@ -49,6 +50,9 @@ export default async function InsurancePoliciesPage() {
       </div>
 
       <InsuranceList policies={policies ?? []} />
+
+      {/* External Resources: Government & Legal (insurance quote, manage policy, etc.) */}
+      <GovernmentExitLinks />
     </div>
   )
 }
