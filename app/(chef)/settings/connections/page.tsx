@@ -1,4 +1,4 @@
-import type { Metadata } from 'next'
+﻿import type { Metadata } from 'next'
 import Link from 'next/link'
 import { ArrowLeft } from '@/components/ui/icons'
 import { requireChef } from '@/lib/auth/get-user'
@@ -72,7 +72,7 @@ export default async function ConnectionsSettingsPage() {
       <div className="mb-8">
         <h1 className="text-2xl font-bold text-stone-100 sm:text-3xl">Integrations</h1>
         <p className="mt-2 max-w-2xl text-sm text-stone-300">
-          Connected accounts, integrations, client reviews, and local AI.
+          Connect your email, website, and other services to ChefFlow.
         </p>
       </div>
 
@@ -189,7 +189,7 @@ export default async function ConnectionsSettingsPage() {
 
         <SettingsCategory
           title="Local AI Connector"
-          description="Connect your local Ollama instance. AI tasks run on your machine without exposing port 11434 to the internet."
+          description="Connect your local AI assistant. Smart features like recipe parsing and email drafting run privately on your computer."
           icon="Cpu"
           tone="neutral"
           defaultOpen={true}

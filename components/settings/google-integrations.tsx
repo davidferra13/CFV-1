@@ -1,4 +1,4 @@
-// components/settings/google-integrations.tsx
+﻿// components/settings/google-integrations.tsx
 'use client'
 
 import { useState, useEffect, type ReactNode } from 'react'
@@ -271,16 +271,10 @@ export function GoogleIntegrations({
 
       {!configured && (
         <Alert variant="warning">
-          Google OAuth is not configured. Set <code>GOOGLE_CLIENT_ID</code> and{' '}
-          <code>GOOGLE_CLIENT_SECRET</code> in your environment variables to enable Gmail and
-          Calendar integration.
+          Email connection is not available yet. Contact your system administrator to finish setting
+          up Gmail and Calendar integration.
         </Alert>
       )}
-
-      <OAuthDiagnostics
-        redirectUri={error || !configured ? diagnosticUri : null}
-        errorMessage={null}
-      />
 
       <ServiceCard
         title="Gmail"
