@@ -1,6 +1,12 @@
 // Chef Breadcrumb Types - Navigation tracking for "Retrace" mode
 
-export type BreadcrumbType = 'page_view' | 'click' | 'form_open' | 'tab_switch' | 'search'
+export type BreadcrumbType =
+  | 'page_view'
+  | 'click'
+  | 'form_open'
+  | 'tab_switch'
+  | 'search'
+  | 'link_out'
 
 export type BreadcrumbEntry = {
   id: string
@@ -101,4 +107,5 @@ export const BREADCRUMB_TYPE_CONFIG: Record<BreadcrumbType, { label: string; ico
   form_open: { label: 'Opened', icon: '✎' },
   tab_switch: { label: 'Switched to', icon: '⇥' },
   search: { label: 'Searched', icon: '⌕' },
+  link_out: { label: 'Left app', icon: '↗' },
 }

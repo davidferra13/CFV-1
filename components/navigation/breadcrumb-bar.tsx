@@ -2,8 +2,16 @@
 
 import Link from 'next/link'
 import { usePathname, useRouter } from 'next/navigation'
-import { useCallback, useState } from 'react'
-import { RefreshCw } from '@/components/ui/icons'
+import { useCallback, useEffect, useRef, useState } from 'react'
+import { ArrowLeft, RefreshCw } from '@/components/ui/icons'
+import {
+  extractDomain,
+  getStack,
+  pushSnapBack,
+  popSnapBack,
+  clearDomainFromStack,
+} from '@/lib/navigation/snap-back-stack'
+import type { SnapBackEntry } from '@/lib/navigation/snap-back-stack'
 
 /**
  * Route label mapping for known paths.
@@ -50,16 +58,16 @@ const SEGMENT_LABELS: Record<string, string> = {
   'bank-feed': 'Bank Feed',
   expenses: 'Expenses',
   invoices: 'Invoices',
-  ledger: 'Ledger',
+  ledger: 'Money',
   overview: 'Overview',
   analytics: 'Analytics',
   equipment: 'Equipment',
 
   // Grocery / event sub-paths
   'grocery-quote': 'Grocery Quote',
-  procurement: 'Procurement',
+  procurement: 'Purchasing',
   'prep-plan': 'Prep Flow',
-  execution: 'Execution',
+  execution: 'Service',
   'prep-timeline': 'Prep Timeline',
   'staff-briefing': 'Staff Briefing',
 }
@@ -133,6 +141,38 @@ export function BreadcrumbBar() {
   const pathname = usePathname()
   const router = useRouter()
   const [refreshing, setRefreshing] = useState(false)
+  const [snapBack, setSnapBack] = useState<SnapBackEntry | null>(null)
+  const prevDomainRef = useRef<string | null>(null)
+  const prevPathRef = useRef<string | null>(null)
+
+  useEffect(() => {
+    if (!pathname) return
+    const currentDomain = extractDomain(pathname)
+    const prevDomain = prevDomainRef.current
+    const prevPath = prevPathRef.current
+
+    if (prevDomain && currentDomain && prevDomain !== currentDomain && prevPath) {
+      const crumbsForLabel = buildCrumbs(prevPath)
+      const entityLabel = crumbsForLabel[crumbsForLabel.length - 1]?.label || prevDomain
+      pushSnapBack({ path: prevPath, label: entityLabel, domain: prevDomain })
+    }
+
+    if (currentDomain) {
+      clearDomainFromStack(currentDomain)
+    }
+
+    prevDomainRef.current = currentDomain
+    prevPathRef.current = pathname
+
+    const stack = getStack()
+    setSnapBack(stack.length > 0 ? stack[stack.length - 1] : null)
+  }, [pathname])
+
+  const handleSnapBack = useCallback(() => {
+    const entry = popSnapBack()
+    if (entry) router.push(entry.path)
+    setSnapBack(null)
+  }, [router])
 
   const handleRefresh = useCallback(() => {
     setRefreshing(true)
@@ -151,82 +191,94 @@ export function BreadcrumbBar() {
       aria-label="Breadcrumb"
       className="py-2 px-4 sm:px-6 lg:px-8 flex items-center justify-between"
     >
-      {/* Crumbs */}
-      <div className="min-w-0 flex-1">
-        {/* Desktop: show all crumbs */}
-        <ol className="hidden sm:flex items-center gap-1.5 text-sm">
-          {crumbs.map((crumb, i) => {
-            const isLast = i === crumbs.length - 1
-            return (
-              <li key={crumb.href} className="flex items-center gap-1.5">
-                {i > 0 && (
-                  <svg
-                    className="w-3 h-3 text-stone-600 flex-shrink-0"
-                    fill="none"
-                    viewBox="0 0 24 24"
-                    stroke="currentColor"
-                    strokeWidth={2}
-                    aria-hidden="true"
-                  >
-                    <path strokeLinecap="round" strokeLinejoin="round" d="M9 5l7 7-7 7" />
-                  </svg>
-                )}
-                {isLast ? (
-                  <span className="text-stone-100 font-medium" aria-current="page">
-                    {crumb.label}
-                  </span>
-                ) : (
-                  <Link
-                    href={crumb.href}
-                    className="text-stone-400 hover:text-stone-200 transition-colors duration-150"
-                  >
-                    {crumb.label}
-                  </Link>
-                )}
-              </li>
-            )
-          })}
-        </ol>
+      {/* Snap-back + Crumbs */}
+      <div className="min-w-0 flex-1 flex items-center">
+        {snapBack && (
+          <button
+            type="button"
+            onClick={handleSnapBack}
+            className="flex items-center gap-1 px-2 py-1 mr-2 text-xs bg-stone-800 border border-stone-700 rounded hover:bg-stone-700 text-stone-300 hover:text-stone-100 transition-colors flex-shrink-0"
+          >
+            <ArrowLeft className="w-3 h-3" />
+            <span className="truncate max-w-[140px]">Back to {snapBack.label}</span>
+          </button>
+        )}
+        <div className="min-w-0 flex-1">
+          {/* Desktop: show all crumbs */}
+          <ol className="hidden sm:flex items-center gap-1.5 text-sm">
+            {crumbs.map((crumb, i) => {
+              const isLast = i === crumbs.length - 1
+              return (
+                <li key={crumb.href} className="flex items-center gap-1.5">
+                  {i > 0 && (
+                    <svg
+                      className="w-3 h-3 text-stone-600 flex-shrink-0"
+                      fill="none"
+                      viewBox="0 0 24 24"
+                      stroke="currentColor"
+                      strokeWidth={2}
+                      aria-hidden="true"
+                    >
+                      <path strokeLinecap="round" strokeLinejoin="round" d="M9 5l7 7-7 7" />
+                    </svg>
+                  )}
+                  {isLast ? (
+                    <span className="text-stone-100 font-medium" aria-current="page">
+                      {crumb.label}
+                    </span>
+                  ) : (
+                    <Link
+                      href={crumb.href}
+                      className="text-stone-400 hover:text-stone-200 transition-colors duration-150"
+                    >
+                      {crumb.label}
+                    </Link>
+                  )}
+                </li>
+              )
+            })}
+          </ol>
 
-        {/* Mobile: show ellipsis + last 2 segments */}
-        <ol className="flex sm:hidden items-center gap-1 text-sm min-h-[44px]">
-          {crumbs.length > 2 && (
-            <li className="text-stone-500 select-none" aria-hidden="true">
-              ...
-            </li>
-          )}
-          {crumbs.slice(-2).map((crumb, i, arr) => {
-            const isLast = i === arr.length - 1
-            return (
-              <li key={crumb.href} className="flex items-center gap-1.5">
-                {(i > 0 || crumbs.length > 2) && (
-                  <svg
-                    className="w-3 h-3 text-stone-600 flex-shrink-0"
-                    fill="none"
-                    viewBox="0 0 24 24"
-                    stroke="currentColor"
-                    strokeWidth={2}
-                    aria-hidden="true"
-                  >
-                    <path strokeLinecap="round" strokeLinejoin="round" d="M9 5l7 7-7 7" />
-                  </svg>
-                )}
-                {isLast ? (
-                  <span className="text-stone-100 font-medium" aria-current="page">
-                    {crumb.label}
-                  </span>
-                ) : (
-                  <Link
-                    href={crumb.href}
-                    className="text-stone-400 hover:text-stone-200 transition-colors duration-150 inline-flex items-center min-h-[44px] touch-manipulation"
-                  >
-                    {crumb.label}
-                  </Link>
-                )}
+          {/* Mobile: show ellipsis + last 2 segments */}
+          <ol className="flex sm:hidden items-center gap-1 text-sm min-h-[44px]">
+            {crumbs.length > 2 && (
+              <li className="text-stone-500 select-none" aria-hidden="true">
+                ...
               </li>
-            )
-          })}
-        </ol>
+            )}
+            {crumbs.slice(-2).map((crumb, i, arr) => {
+              const isLast = i === arr.length - 1
+              return (
+                <li key={crumb.href} className="flex items-center gap-1.5">
+                  {(i > 0 || crumbs.length > 2) && (
+                    <svg
+                      className="w-3 h-3 text-stone-600 flex-shrink-0"
+                      fill="none"
+                      viewBox="0 0 24 24"
+                      stroke="currentColor"
+                      strokeWidth={2}
+                      aria-hidden="true"
+                    >
+                      <path strokeLinecap="round" strokeLinejoin="round" d="M9 5l7 7-7 7" />
+                    </svg>
+                  )}
+                  {isLast ? (
+                    <span className="text-stone-100 font-medium" aria-current="page">
+                      {crumb.label}
+                    </span>
+                  ) : (
+                    <Link
+                      href={crumb.href}
+                      className="text-stone-400 hover:text-stone-200 transition-colors duration-150 inline-flex items-center min-h-[44px] touch-manipulation"
+                    >
+                      {crumb.label}
+                    </Link>
+                  )}
+                </li>
+              )
+            })}
+          </ol>
+        </div>
       </div>
 
       {/* Right side: Cmd+K hint + refresh */}
