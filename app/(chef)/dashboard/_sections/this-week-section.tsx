@@ -10,7 +10,7 @@ import { isBrandNewChef } from '@/lib/progressive-disclosure/nav-visibility'
 import { getWorkspaceDensity } from '@/lib/chef/preferences-actions'
 import { WidgetErrorBoundary } from '@/components/ui/widget-error-boundary'
 import { WidgetCardSkeleton } from '@/components/dashboard/widget-cards/widget-card-shell'
-import { DashboardSection } from '@/components/dashboard/dashboard-section'
+import { SectionShell } from '@/components/dashboard/section-shell'
 import { CompletionSummaryWidgetServer } from '@/components/completion/completion-summary-server'
 import { RecipeGapCard } from '@/components/dashboard/recipe-gap-card'
 import { SeasonalCalendarWidget } from '@/components/dashboard/seasonal-calendar-widget'
@@ -65,8 +65,13 @@ export async function ThisWeekSection({ queuePromise }: ThisWeekSectionProps) {
   const isMinimalDensity = workspaceDensity === 'minimal'
   const bypassProgressiveDisclosure = userIsPrivileged || process.env.DEMO_MODE_ENABLED === 'true'
 
+  // Smart mode: whisper when chef has no events and no clients (empty week)
+  const hasContent = !presence || presence.hasEvents || presence.hasClients
+  const mode = hasContent ? ('expanded' as const) : ('whisper' as const)
+  const whisperText = !hasContent ? 'This Week: clear schedule' : null
+
   return (
-    <DashboardSection id="this-week" title="This Week">
+    <SectionShell sectionId="this-week" mode={mode} label="This Week" whisperText={whisperText}>
       <div className="space-y-4">
         <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-4">
           <WidgetErrorBoundary name="Schedule" compact>
@@ -199,6 +204,6 @@ export async function ThisWeekSection({ queuePromise }: ThisWeekSectionProps) {
           </WidgetErrorBoundary>
         )}
       </div>
-    </DashboardSection>
+    </SectionShell>
   )
 }
