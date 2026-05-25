@@ -50,6 +50,9 @@ function localDateISO(d: Date): string {
 // Types that use dashed/dotted border styling in the calendar
 const DASHED_TYPES = new Set(Object.keys(CALENDAR_BORDER_STYLES))
 
+// Categories representing soft/unconfirmed items (leads, drafts, intentions)
+const SOFT_CATEGORIES = new Set(['leads', 'draft', 'intentions'])
+
 type Props = {
   initialItems: UnifiedCalendarItem[]
   chefId: string
@@ -107,6 +110,7 @@ export function UnifiedCalendarView({
   const [filters, setFilters] = useState<CalendarFilters>(DEFAULT_CALENDAR_FILTERS)
   const [showNewEntryModal, setShowNewEntryModal] = useState(false)
   const [newEntryDefaultDate, setNewEntryDefaultDate] = useState<string | undefined>()
+  const [visibleRange, setVisibleRange] = useState<{ start: string; end: string } | null>(null)
 
   // Selected date detail panel
   const [selectedDate, setSelectedDate] = useState<string | null>(null)
@@ -153,9 +157,10 @@ export function UnifiedCalendarView({
   const handleDatesSet = useCallback(async (arg: DatesSetArg) => {
     setTitle(arg.view.title)
     setIsLoading(true)
+    const start = arg.startStr.split('T')[0]
+    const end = arg.endStr.split('T')[0]
+    setVisibleRange({ start, end })
     try {
-      const start = arg.startStr.split('T')[0]
-      const end = arg.endStr.split('T')[0]
       const [fetched, holidays] = await Promise.all([
         getUnifiedCalendar(start, end),
         Promise.resolve(getUSHolidaysInRange(start, end)),
@@ -400,9 +405,19 @@ export function UnifiedCalendarView({
     }
 
     if (arg.view.type === 'dayGridMonth') {
+      const isSoft = SOFT_CATEGORIES.has(props.category as string)
       return (
-        <div className="flex items-center gap-1 px-1 py-0.5 min-w-0 overflow-hidden">
-          <span className="w-2 h-2 rounded-full flex-shrink-0" style={{ backgroundColor: color }} />
+        <div
+          className={`flex items-center gap-1 px-1 py-0.5 min-w-0 overflow-hidden${isSoft ? ' opacity-60' : ''}`}
+        >
+          <span
+            className={`w-2 h-2 rounded-full flex-shrink-0${isSoft ? ' border border-current' : ''}`}
+            style={
+              isSoft
+                ? { borderColor: color, backgroundColor: 'transparent' }
+                : { backgroundColor: color }
+            }
+          />
           {!arg.event.allDay && arg.timeText && (
             <span className="text-xxs font-medium flex-shrink-0 opacity-75">{arg.timeText}</span>
           )}
@@ -591,6 +606,7 @@ export function UnifiedCalendarView({
         <div className="flex-1 min-w-0">
           {isCalendarView ? (
             <div className="bg-stone-900 rounded-xl border border-stone-700 shadow-sm overflow-hidden">
+              <CalendarMonthSummaryBar items={filteredItems} visibleRange={visibleRange} />
               <FullCalendar
                 ref={calendarRef}
                 plugins={[dayGridPlugin, timeGridPlugin, interactionPlugin, listPlugin]}
@@ -773,6 +789,56 @@ export function UnifiedCalendarView({
           }}
         />
       )}
+    </div>
+  )
+}
+
+// ── Month Summary Bar ────────────────────────────────────────────────
+
+const CATEGORY_CONFIG: Record<string, { label: string; color: string }> = {
+  events: { label: 'confirmed', color: '#F59E0B' },
+  draft: { label: 'drafts', color: '#FDE68A' },
+  leads: { label: 'leads', color: '#CA8A04' },
+  prep: { label: 'prep blocks', color: '#16A34A' },
+  calls: { label: 'calls', color: '#3B82F6' },
+  personal: { label: 'personal', color: '#A78BFA' },
+  business: { label: 'business', color: '#0D9488' },
+}
+
+function CalendarMonthSummaryBar({
+  items,
+  visibleRange,
+}: {
+  items: UnifiedCalendarItem[]
+  visibleRange: { start: string; end: string } | null
+}) {
+  const counts = useMemo(() => {
+    if (!visibleRange) return {}
+    const result: Record<string, number> = {}
+    for (const item of items) {
+      if (item.endDate < visibleRange.start || item.startDate > visibleRange.end) continue
+      result[item.category] = (result[item.category] || 0) + 1
+    }
+    return result
+  }, [items, visibleRange])
+
+  const entries = Object.entries(CATEGORY_CONFIG).filter(([cat]) => (counts[cat] ?? 0) > 0)
+  if (entries.length === 0) return null
+
+  return (
+    <div className="flex flex-wrap items-center gap-2 px-4 py-2 border-b border-stone-800 bg-stone-900/70">
+      {entries.map(([cat, cfg]) => (
+        <span
+          key={cat}
+          className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-stone-800/60 text-xs text-stone-300"
+        >
+          <span
+            className="w-2 h-2 rounded-full flex-shrink-0"
+            style={{ backgroundColor: cfg.color }}
+          />
+          {counts[cat]} {cfg.label}
+        </span>
+      ))}
     </div>
   )
 }

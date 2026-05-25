@@ -15,6 +15,9 @@ import { SchedulingInsightsBar } from '@/components/intelligence/scheduling-insi
 import { CapacitySeasonalBar } from '@/components/intelligence/capacity-seasonal-bar'
 import { DomainSignals } from '@/components/cil/domain-signals'
 import Link from 'next/link'
+import { db } from '@/lib/db'
+import { inquiries } from '@/lib/db/schema/schema'
+import { and, isNull, inArray, eq, sql } from 'drizzle-orm'
 
 export const metadata: Metadata = { title: 'Calendar' }
 
@@ -60,10 +63,22 @@ export default async function CalendarPage() {
   const startDate = toLocalISO(startExt)
   const endDate = toLocalISO(endExt)
 
-  const [initialItems, rules] = await Promise.all([
+  const [initialItems, rules, undatedResult] = await Promise.all([
     getUnifiedCalendar(startDate, endDate),
     getSchedulingRules(),
+    db
+      .select({ count: sql<number>`count(*)::int` })
+      .from(inquiries)
+      .where(
+        and(
+          eq(inquiries.tenantId, user.tenantId!),
+          isNull(inquiries.confirmedDate),
+          inArray(inquiries.status, ['new', 'awaiting_client', 'awaiting_chef', 'quoted'])
+        )
+      ),
   ])
+
+  const undatedCount = undatedResult[0]?.count ?? 0
 
   return (
     <div className="max-w-7xl mx-auto px-4 py-6">
@@ -74,12 +89,23 @@ export default async function CalendarPage() {
             Your complete schedule: events, prep, calls, personal commitments, and goals.
           </p>
         </div>
-        <Link
-          href="/calendar/load"
-          className="shrink-0 rounded-lg border border-stone-700 px-3 py-1.5 text-xs font-medium text-stone-400 hover:text-stone-200 hover:bg-stone-800 transition-colors"
-        >
-          Operational Load
-        </Link>
+        <div className="flex items-center gap-2">
+          {undatedCount > 0 && (
+            <Link
+              href="/inquiries"
+              className="shrink-0 rounded-lg bg-amber-900/30 border border-amber-800/50 px-3 py-1.5 text-xs font-medium text-amber-400 hover:bg-amber-900/50 transition-colors"
+            >
+              <span className="inline-block h-1.5 w-1.5 rounded-full bg-amber-400 mr-1.5 align-middle" />
+              {undatedCount} undated
+            </Link>
+          )}
+          <Link
+            href="/calendar/load"
+            className="shrink-0 rounded-lg border border-stone-700 px-3 py-1.5 text-xs font-medium text-stone-400 hover:text-stone-200 hover:bg-stone-800 transition-colors"
+          >
+            Operational Load
+          </Link>
+        </div>
       </div>
 
       {/* Calendar Intelligence Signals */}
