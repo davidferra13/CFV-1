@@ -6,7 +6,7 @@ import { PricingConfigForm } from '@/components/settings/pricing-config-form'
 import { getChefArchetype } from '@/lib/archetypes/actions'
 import { GuidedPricingSetup } from '@/components/settings/guided-pricing-setup'
 
-export const metadata: Metadata = { title: 'Pricing Configuration' }
+export const metadata: Metadata = { title: 'Pricing Setup' }
 
 function hasAnyRatesConfigured(config: Record<string, unknown>): boolean {
   const rateKeys = [
@@ -64,7 +64,7 @@ export default async function PricingSettingsPage() {
     <div className="mx-auto max-w-4xl space-y-6">
       <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
         <div>
-          <h1 className="text-3xl font-bold text-stone-100">Pricing Configuration</h1>
+          <h1 className="text-3xl font-bold text-stone-100">Pricing Setup</h1>
           <p className="mt-1 text-stone-400">
             Customize your rates, premiums, and booking policies. Changes apply to all future quotes
             and pricing calculations.

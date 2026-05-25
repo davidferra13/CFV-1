@@ -450,7 +450,7 @@ function CardList({
   compact?: boolean
   showSources?: boolean
 }) {
-  if (cards.length === 0) return <EmptyLine text="No records match this filter." />
+  if (cards.length === 0) return <EmptyLine text="Nothing matches this filter." />
   return (
     <div className={compact ? 'grid gap-3' : 'grid gap-3 md:grid-cols-2'}>
       {cards.map((card) => (

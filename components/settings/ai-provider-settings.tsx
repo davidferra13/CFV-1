@@ -112,7 +112,7 @@ export function AiProviderSettings() {
     <div className="space-y-6">
       <Card>
         <CardHeader>
-          <CardTitle>Browser AI Capabilities</CardTitle>
+          <CardTitle>Your Device</CardTitle>
         </CardHeader>
         <CardContent>
           {isDetecting && !capability ? (
@@ -120,21 +120,21 @@ export function AiProviderSettings() {
           ) : (
             <div className="divide-y divide-stone-800">
               <CapabilityRow
-                label="Chrome AI"
+                label="Built-in AI"
                 value={formatAvailability(capability?.chromeAi.available ?? false)}
               />
               <CapabilityRow
-                label="WebGPU"
+                label="Graphics Processing"
                 value={formatAvailability(webGpuAvailable)}
                 detail={capability?.webGpu.adapterName}
               />
               <CapabilityRow
-                label="Device tier"
+                label="Device power"
                 value={capability?.deviceTier ?? 'low'}
                 detail={
                   capability?.webGpu.canRunWebLlm
-                    ? 'This device can run WebLLM models.'
-                    : 'WebLLM is not available on this device.'
+                    ? 'Your device can run AI locally.'
+                    : 'Local AI is not available on this device.'
                 }
               />
             </div>
@@ -144,7 +144,7 @@ export function AiProviderSettings() {
 
       <Card>
         <CardHeader>
-          <CardTitle>Provider Preference</CardTitle>
+          <CardTitle>AI Location</CardTitle>
         </CardHeader>
         <CardContent>
           <RadioGroup
@@ -158,7 +158,7 @@ export function AiProviderSettings() {
 
       <Card>
         <CardHeader>
-          <CardTitle>Model Download</CardTitle>
+          <CardTitle>Download AI</CardTitle>
         </CardHeader>
         <CardContent>
           <label
@@ -177,10 +177,10 @@ export function AiProviderSettings() {
             />
             <span className="min-w-0 flex-1">
               <span className="block text-sm font-medium text-stone-100">
-                Allow WebLLM model download (~2-4GB)
+                Download AI to this device (~2-4GB)
               </span>
               <span className="mt-0.5 block text-xs text-stone-400">
-                Only relevant when WebGPU is available.
+                Only available on supported devices.
               </span>
             </span>
           </label>
@@ -189,12 +189,14 @@ export function AiProviderSettings() {
 
       <Card>
         <CardHeader>
-          <CardTitle>Local Ollama</CardTitle>
+          <CardTitle>Local AI Server</CardTitle>
         </CardHeader>
         <CardContent>
           <div className="space-y-3">
             <div>
-              <label className="block text-sm font-medium text-stone-300 mb-1">Ollama URL</label>
+              <label className="block text-sm font-medium text-stone-300 mb-1">
+                Server address
+              </label>
               <div className="flex gap-2">
                 <input
                   type="text"
@@ -229,9 +231,7 @@ export function AiProviderSettings() {
                 placeholder="gemma4"
                 className="w-full rounded-md border border-stone-600 bg-stone-800 px-3 py-2 text-sm text-stone-200 placeholder-stone-500 outline-none focus:border-brand-400 focus:ring-1 focus:ring-brand-400"
               />
-              <p className="mt-1 text-xs text-stone-500">
-                The model name as shown by <code className="text-stone-400">ollama list</code>.
-              </p>
+              <p className="mt-1 text-xs text-stone-500">The AI model name from your server.</p>
             </div>
           </div>
         </CardContent>
@@ -239,25 +239,25 @@ export function AiProviderSettings() {
 
       <Card>
         <CardHeader>
-          <CardTitle>Inference Stats</CardTitle>
+          <CardTitle>AI Usage</CardTitle>
         </CardHeader>
         <CardContent>
           <div className="grid gap-3 sm:grid-cols-3">
             <div className="rounded-lg border border-stone-700 bg-stone-900/60 p-4">
               <p className="text-xs font-medium uppercase tracking-[0.16em] text-stone-500">
-                Total inferences
+                Times used
               </p>
               <p className="mt-2 text-2xl font-semibold text-stone-100">{stats.totalInferences}</p>
             </div>
             <div className="rounded-lg border border-stone-700 bg-stone-900/60 p-4">
               <p className="text-xs font-medium uppercase tracking-[0.16em] text-stone-500">
-                Total tokens
+                Words processed
               </p>
               <p className="mt-2 text-2xl font-semibold text-stone-100">{stats.totalTokens}</p>
             </div>
             <div className="rounded-lg border border-stone-700 bg-stone-900/60 p-4">
               <p className="text-xs font-medium uppercase tracking-[0.16em] text-stone-500">
-                Avg latency
+                Speed
               </p>
               <p className="mt-2 text-2xl font-semibold text-stone-100">{stats.avgLatencyMs}ms</p>
             </div>

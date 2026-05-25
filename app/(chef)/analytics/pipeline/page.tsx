@@ -20,7 +20,7 @@ const PipelineForecast = dynamic(
   }
 )
 
-export const metadata: Metadata = { title: 'Pipeline Forecast' }
+export const metadata: Metadata = { title: 'Booking Forecast' }
 
 export default async function PipelineForecastPage() {
   const user = await requireChef()
@@ -39,7 +39,7 @@ export default async function PipelineForecastPage() {
           <Link href="/analytics" className="text-sm text-stone-500 hover:text-stone-300">
             &larr; Analytics
           </Link>
-          <h1 className="text-3xl font-bold text-stone-100 mt-1">Pipeline Forecast</h1>
+          <h1 className="text-3xl font-bold text-stone-100 mt-1">Booking Forecast</h1>
           <p className="text-stone-400 mt-1">
             Projected revenue from your active inquiries, pending quotes, and confirmed bookings.
           </p>

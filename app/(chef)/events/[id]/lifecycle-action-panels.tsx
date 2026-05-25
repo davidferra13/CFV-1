@@ -855,10 +855,10 @@ function DepartureLeftoverPanel({ eventId }: { eventId: string }) {
           if (result.success) {
             loadData()
           } else {
-            toast.error(result.error || 'Failed to toggle item')
+            toast.error(result.error || "Couldn't update that item")
           }
         } catch (err: any) {
-          toast.error(err.message || 'Toggle failed')
+          toast.error(err.message || "Couldn't change that")
         }
       })
     },

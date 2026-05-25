@@ -16,8 +16,8 @@ export default async function AuditTrailPage() {
         <div>
           <h1 className="text-2xl font-bold text-stone-100">Audit Trail</h1>
           <p className="mt-1 text-sm text-stone-500">
-            Immutable record of all event transitions, quote state changes, and financial ledger
-            entries. These records cannot be altered or deleted.
+            A permanent record of every important change in your account. These records can&apos;t
+            be changed or deleted.
           </p>
         </div>
         <Link

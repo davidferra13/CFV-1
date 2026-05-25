@@ -137,21 +137,21 @@ export default function SystemNerveCenter() {
         const fixed = data.fixes.filter((f) => f.success).length
         const failed = data.fixes.filter((f) => !f.success).length
         if (fixed > 0 && failed === 0) {
-          toast.success(`Sweep complete: ${fixed} fix${fixed > 1 ? 'es' : ''} applied`)
+          toast.success(`Cleanup done: ${fixed} issue${fixed > 1 ? 's' : ''} fixed`)
         } else if (fixed > 0 && failed > 0) {
-          toast.warning(`Sweep: ${fixed} fixed, ${failed} need attention`)
+          toast.warning(`Cleanup: ${fixed} fixed, ${failed} still need attention`)
         } else {
-          toast.error(`Sweep: ${failed} fix${failed > 1 ? 'es' : ''} failed`)
+          toast.error(`Cleanup: ${failed} issue${failed > 1 ? 's' : ''} couldn't be fixed`)
         }
       } else if (data.errorCount > 0 || data.degradedCount > 0) {
         toast.warning(
-          `${data.healthyCount} healthy, ${data.errorCount + data.degradedCount} need attention`
+          `${data.healthyCount} working, ${data.errorCount + data.degradedCount} need attention`
         )
       } else {
-        toast.success(`All ${data.healthyCount} services healthy`)
+        toast.success('Everything is working')
       }
     } catch {
-      toast.error('Sweep failed - check console')
+      toast.error('Cleanup failed. Try again later.')
     } finally {
       setSweeping(false)
     }

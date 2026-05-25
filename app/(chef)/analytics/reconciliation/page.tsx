@@ -11,7 +11,7 @@ import { ReconciliationCard } from '@/components/data-quality/reconciliation-car
 import { DataHealthScore } from '@/components/data-quality/data-health-score'
 import { FreshnessReportCard } from '@/components/data-quality/freshness-report-card'
 
-export const metadata: Metadata = { title: 'Data Reconciliation' }
+export const metadata: Metadata = { title: 'Data Review' }
 
 export default async function ReconciliationPage() {
   await requireChef()
@@ -26,10 +26,7 @@ export default async function ReconciliationPage() {
       ? reconciliation.value
       : { categories: [], totalGaps: 0, healthScore: 0 }
 
-  const freshnessData =
-    freshness.status === 'fulfilled'
-      ? freshness.value
-      : null
+  const freshnessData = freshness.status === 'fulfilled' ? freshness.value : null
 
   return (
     <div className="space-y-6">
@@ -37,7 +34,7 @@ export default async function ReconciliationPage() {
         <Link href="/analytics" className="text-sm text-stone-500 hover:text-stone-300">
           &larr; Analytics
         </Link>
-        <h1 className="text-3xl font-bold text-stone-100 mt-1">Data Reconciliation</h1>
+        <h1 className="text-3xl font-bold text-stone-100 mt-1">Data Review</h1>
         <p className="text-stone-400 mt-1">
           Actionable gaps in your business data. Each item links to where you can fix it.
         </p>
@@ -54,7 +51,7 @@ export default async function ReconciliationPage() {
 
       {/* Gap Categories */}
       <div className="space-y-3">
-        <h2 className="text-lg font-semibold text-stone-200">Gap Analysis</h2>
+        <h2 className="text-lg font-semibold text-stone-200">What's Missing</h2>
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
           {reconData.categories.map((cat) => (
             <ReconciliationCard key={cat.key} category={cat} />

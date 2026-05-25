@@ -52,7 +52,7 @@ export function FlagTogglePanel({ chefs, flagsByChef, knownFlags }: Props) {
             ...prev,
             [chefId]: { ...(prev[chefId] ?? {}), [flagName]: current },
           }))
-          setFeedback(`Failed to toggle ${flagName}: ${result.error}`)
+          setFeedback(`Couldn't change ${flagName}: ${result.error}`)
         } else {
           setFeedback(`Updated ${flagName} for chef.`)
           setTimeout(() => setFeedback(null), 2000)
@@ -62,7 +62,7 @@ export function FlagTogglePanel({ chefs, flagsByChef, knownFlags }: Props) {
           ...prev,
           [chefId]: { ...(prev[chefId] ?? {}), [flagName]: current },
         }))
-        toast.error(`Failed to toggle ${flagName}`)
+        toast.error(`Couldn't change ${flagName}`)
       }
     })
   }

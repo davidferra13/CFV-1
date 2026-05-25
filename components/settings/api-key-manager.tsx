@@ -182,12 +182,12 @@ export function ApiKeyManager({ apiKeys }: { apiKeys: ApiKey[] }) {
 
   function handleCreate() {
     if (!keyName.trim()) return toast.error('Name is required')
-    if (selectedScopes.length === 0) return toast.error('Select at least one scope')
+    if (selectedScopes.length === 0) return toast.error('Select at least one permission')
     startTransition(async () => {
       try {
         const result = await createApiKey(keyName, selectedScopes)
         setNewKey(result.key)
-        toast.success('API key created')
+        toast.success('Access key created')
         setKeyName('')
         setSelectedScopes([...LEGACY_DEFAULT_SCOPES])
         setShowForm(false)
@@ -209,7 +209,7 @@ export function ApiKeyManager({ apiKeys }: { apiKeys: ApiKey[] }) {
     startTransition(async () => {
       try {
         await revokeApiKey(id)
-        toast.success('Key revoked')
+        toast.success('Access key removed')
       } catch (err: any) {
         toast.error(err.message)
       }

@@ -45,7 +45,7 @@ export function ICalFeedSettings({
   function handleCopy() {
     if (feedUrl) {
       navigator.clipboard.writeText(feedUrl)
-      toast.success('Feed URL copied to clipboard')
+      toast.success('Calendar link copied!')
     }
   }
 
@@ -54,9 +54,9 @@ export function ICalFeedSettings({
       try {
         const result = await regenerateICalFeedToken()
         setFeedUrl(result.feedUrl)
-        toast.success('Feed token regenerated - update your calendar subscriptions')
+        toast.success("Calendar link refreshed. You'll need to update it in your calendar app.")
       } catch {
-        toast.error('Failed to regenerate feed token')
+        toast.error("Couldn't refresh the calendar link")
       }
     })
   }

@@ -21,7 +21,7 @@ export function CannabisInviteApprovedEmail({
   const greeting = inviteeName ? `Hi ${inviteeName}` : 'Hi there'
 
   return (
-    <BaseLayout preview="Your cannabis dining invitation has been approved">
+    <BaseLayout preview="Your cannabis dining invitation is confirmed!">
       <Text style={heading}>Your Invitation Has Been Approved</Text>
       <Text style={paragraph}>{greeting},</Text>
       <Text style={paragraph}>

@@ -7,7 +7,7 @@ import { requireChef } from '@/lib/auth/get-user'
 import TouchpointRulesManager from '@/components/clients/touchpoint-rules-manager'
 import { getTouchpointRules } from '@/lib/clients/touchpoint-actions'
 
-export const metadata: Metadata = { title: 'Touchpoint Rules' }
+export const metadata: Metadata = { title: 'Automated Messages' }
 
 function TouchpointLoading() {
   return (
@@ -30,7 +30,7 @@ export default async function TouchpointRulesPage() {
   return (
     <div className="max-w-3xl mx-auto space-y-6">
       <div>
-        <h1 className="text-3xl font-bold text-stone-100">Touchpoint Rules</h1>
+        <h1 className="text-3xl font-bold text-stone-100">Automated Messages</h1>
         <p className="text-stone-400 mt-1">
           Set up automated reminders for client follow-ups, birthdays, post-event check-ins, and
           other relationship touchpoints.

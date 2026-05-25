@@ -109,7 +109,7 @@ export function PrepBoardClient({
         setSelectedIds(new Set())
         router.refresh()
       } catch {
-        toast.error('Batch update failed')
+        toast.error("Couldn't update all items")
       }
     })
   }
@@ -124,7 +124,7 @@ export function PrepBoardClient({
         }
         router.refresh()
       } catch {
-        toast.error('Assignment failed')
+        toast.error("Couldn't assign that")
       }
     })
   }
@@ -140,7 +140,7 @@ export function PrepBoardClient({
         toast.success(`Regenerated ${result.generated} prep items`)
         router.refresh()
       } catch {
-        toast.error('Regeneration failed')
+        toast.error("Couldn't regenerate")
       }
     })
   }

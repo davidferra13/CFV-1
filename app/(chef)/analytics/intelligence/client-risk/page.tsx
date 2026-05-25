@@ -9,7 +9,7 @@ import { getClientRiskRadar } from '@/lib/intelligence/client-risk-actions'
 import { RiskRadarOverview } from '@/components/intelligence/risk-radar-overview'
 import { ClientRiskRadarList } from './_client'
 
-export const metadata: Metadata = { title: 'Client Risk Radar' }
+export const metadata: Metadata = { title: 'Client Health' }
 
 export default async function ClientRiskRadarPage() {
   await requireChef()
@@ -24,7 +24,7 @@ export default async function ClientRiskRadarPage() {
           <Link href="/analytics" className="text-sm text-stone-500 hover:text-stone-300">
             &larr; Analytics
           </Link>
-          <h1 className="text-3xl font-bold text-stone-100 mt-1">Client Risk Radar</h1>
+          <h1 className="text-3xl font-bold text-stone-100 mt-1">Client Health</h1>
           <p className="text-stone-400 mt-1">
             Spot clients going quiet. Clients ranked by risk of disengagement based on contact
             recency, booking patterns, and revenue trends.

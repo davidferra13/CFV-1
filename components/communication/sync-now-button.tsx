@@ -25,7 +25,7 @@ export function SyncNowButton() {
         router.refresh()
       } catch {
         setLastResult('Sync failed')
-        toast.error('Gmail sync failed')
+        toast.error("Couldn't check Gmail")
       }
     })
   }

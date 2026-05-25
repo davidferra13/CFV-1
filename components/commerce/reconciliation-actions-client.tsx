@@ -50,7 +50,7 @@ export function ReconciliationActions({ reportId, reviewed, flags }: Props) {
         toast.success(`Flag ${resolution}`)
         router.refresh()
       } catch (err) {
-        toast.error(err instanceof Error ? err.message : 'Failed to resolve flag')
+        toast.error(err instanceof Error ? err.message : "Couldn't resolve that item")
       }
     })
   }

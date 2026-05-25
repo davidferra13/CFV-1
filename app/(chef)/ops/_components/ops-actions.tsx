@@ -56,7 +56,7 @@ export function OpsActions({
         )
         router.refresh()
       } catch (err) {
-        toast.error('Transition failed')
+        toast.error("Couldn't update the status")
       }
     })
   }

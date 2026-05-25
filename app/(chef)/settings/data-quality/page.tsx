@@ -17,7 +17,7 @@ import {
   RecipeDuplicateList,
 } from '@/components/data-quality/duplicate-lists'
 
-export const metadata: Metadata = { title: 'Data Quality' }
+export const metadata: Metadata = { title: 'Data Health' }
 
 export default async function DataQualityPage() {
   await requireChef()
@@ -42,13 +42,13 @@ export default async function DataQualityPage() {
             Settings
           </Link>
           <span>/</span>
-          <span className="text-stone-300">Data Quality</span>
+          <span className="text-stone-300">Data Health</span>
         </div>
         <div className="space-y-2">
-          <h1 className="text-3xl font-bold text-stone-100">Data Quality</h1>
+          <h1 className="text-3xl font-bold text-stone-100">Data Health</h1>
           <p className="text-sm text-stone-300">
-            Find and merge duplicate clients, ingredients, and recipes. Similar names, shared emails,
-            and overlapping ingredient lists are all checked.
+            Find and merge duplicate clients, ingredients, and recipes. Similar names, shared
+            emails, and overlapping ingredient lists are all checked.
           </p>
         </div>
       </div>

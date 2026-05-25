@@ -60,9 +60,7 @@ export function FollowUpDueChefEmail({
         </Link>
       </div>
 
-      <Text style={muted}>
-        Manage follow-up preferences and intervals in Settings → Preferences.
-      </Text>
+      <Text style={muted}>Change how often you get these reminders in Settings.</Text>
     </BaseLayout>
   )
 }

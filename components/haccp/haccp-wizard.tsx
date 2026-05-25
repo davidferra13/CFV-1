@@ -95,7 +95,7 @@ export function HACCPWizard({ planData }: Props) {
       try {
         await toggleHACCPSection(sectionId, enabled)
       } catch (err) {
-        toast.error('Failed to toggle HACCP section')
+        toast.error("Couldn't update that section")
       }
     })
   }

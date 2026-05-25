@@ -62,7 +62,7 @@ function NoteCard({ note, showDate = false }: { note: ShiftNote; showDate?: bool
         await togglePinNote(note.id)
         router.refresh()
       } catch (err) {
-        toast.error('Failed to toggle pin')
+        toast.error("Couldn't pin that")
       }
     })
   }

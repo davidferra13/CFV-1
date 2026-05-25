@@ -110,7 +110,7 @@ export function FreshnessReportCard({ report }: FreshnessReportCardProps) {
   return (
     <Card>
       <CardHeader>
-        <CardTitle as="h3">Data Freshness</CardTitle>
+        <CardTitle as="h3">Data Last Updated</CardTitle>
       </CardHeader>
       <CardContent className="space-y-5">
         <div className="flex items-center gap-6">
@@ -148,10 +148,11 @@ export function FreshnessReportCard({ report }: FreshnessReportCardProps) {
             <p className="text-xs text-stone-400 font-medium">Needs attention</p>
             <div className="space-y-1 max-h-40 overflow-y-auto">
               {report.staleItems.slice(0, 10).map((item) => (
-                <div key={`${item.entity}-${item.id}`} className="flex items-center justify-between text-xs">
-                  <span className="text-stone-300 truncate max-w-[200px]">
-                    {item.name}
-                  </span>
+                <div
+                  key={`${item.entity}-${item.id}`}
+                  className="flex items-center justify-between text-xs"
+                >
+                  <span className="text-stone-300 truncate max-w-[200px]">{item.name}</span>
                   <FreshnessBadge status={item.status} ageDays={item.ageDays} />
                 </div>
               ))}

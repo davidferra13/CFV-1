@@ -271,7 +271,7 @@ function InlineActionButtonComponent({
           onArchive(notification.id)
           break
         case 'create_task':
-          toast.info(`Task creation from notification: "${notification.title}"`)
+          toast.info(`New task from: "${notification.title}"`)
           break
         case 'dismiss':
           onArchive(notification.id)

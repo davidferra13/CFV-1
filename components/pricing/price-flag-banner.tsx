@@ -33,7 +33,7 @@ export function PriceFlagBanner({ flagged }: { flagged: FlaggedIngredient[] }) {
           toast.error(result.error || 'Failed to resolve')
         }
       } catch {
-        toast.error('Failed to resolve price flag')
+        toast.error("Couldn't update the price flag")
       }
     })
   }

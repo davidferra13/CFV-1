@@ -42,7 +42,7 @@ function FailureRow({ failure }: { failure: SideEffectFailure }) {
         router.refresh()
       } catch {
         setDismissed(previous)
-        toast.error('Failed to dismiss failure')
+        toast.error("Couldn't dismiss that issue")
       }
     })
   }
@@ -59,7 +59,7 @@ function FailureRow({ failure }: { failure: SideEffectFailure }) {
         router.refresh()
       } catch (err) {
         setDismissed(previous)
-        toast.error(err instanceof Error ? err.message : 'Failed to repair failure')
+        toast.error(err instanceof Error ? err.message : "Couldn't fix that issue")
       }
     })
   }

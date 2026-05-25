@@ -10,7 +10,7 @@ import { getDOPTaskDigest } from '@/lib/scheduling/task-digest'
 import { Card } from '@/components/ui/card'
 import { formatDistanceToNow } from 'date-fns'
 
-export const metadata: Metadata = { title: 'System Health' }
+export const metadata: Metadata = { title: 'Connection Status' }
 
 type StatusLevel = 'ok' | 'warning' | 'error' | 'unknown'
 
@@ -200,13 +200,13 @@ export default async function SystemHealthPage() {
   // DOP Tasks
   if (!dopDigest) {
     checks.push({
-      label: 'DOP Task Engine',
+      label: 'Daily Tasks',
       status: 'unknown',
       detail: 'Could not load task digest',
     })
   } else if (dopDigest.overdueCount > 0) {
     checks.push({
-      label: 'DOP Tasks',
+      label: 'Tasks',
       status: 'error',
       detail: `${dopDigest.overdueCount} overdue task${dopDigest.overdueCount === 1 ? '' : 's'} - action required`,
       actionHref: '/dashboard',
@@ -214,7 +214,7 @@ export default async function SystemHealthPage() {
     })
   } else if (dopDigest.dueTodayCount > 0) {
     checks.push({
-      label: 'DOP Tasks',
+      label: 'Tasks',
       status: 'warning',
       detail: `${dopDigest.dueTodayCount} task${dopDigest.dueTodayCount === 1 ? '' : 's'} due today`,
       actionHref: '/dashboard',
@@ -222,7 +222,7 @@ export default async function SystemHealthPage() {
     })
   } else {
     checks.push({
-      label: 'DOP Tasks',
+      label: 'Tasks',
       status: 'ok',
       detail:
         dopDigest.totalIncomplete === 0
@@ -248,10 +248,8 @@ export default async function SystemHealthPage() {
         <Link href="/settings" className="text-sm text-stone-500 hover:text-stone-300">
           ← Settings
         </Link>
-        <h1 className="text-3xl font-bold text-stone-100 mt-1">System Health</h1>
-        <p className="text-stone-500 mt-1">
-          Connection and service status for your ChefFlow account
-        </p>
+        <h1 className="text-3xl font-bold text-stone-100 mt-1">Connection Status</h1>
+        <p className="text-stone-500 mt-1">Check that everything is connected and working</p>
       </div>
 
       {/* Overall status banner */}

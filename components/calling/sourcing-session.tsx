@@ -195,7 +195,7 @@ export function SourcingSession({ tenantId, initialQuery, eventId }: Props) {
           setCandidates(mapped)
         }
       } catch (err) {
-        toast.error('Failed to resolve ingredient availability')
+        toast.error("Couldn't check ingredient availability")
       } finally {
         setResolving(false)
       }
@@ -297,7 +297,7 @@ export function SourcingSession({ tenantId, initialQuery, eventId }: Props) {
       })
 
       if (!res.success) {
-        toast.error(res.error || 'Failed to create session')
+        toast.error(res.error || "Couldn't start")
         setStarting(false)
         return
       }
@@ -307,7 +307,7 @@ export function SourcingSession({ tenantId, initialQuery, eventId }: Props) {
       // Start the session
       const startRes = await startSourcingSession(res.data.sessionId)
       if (!startRes.success) {
-        toast.error(startRes.error || 'Failed to start session')
+        toast.error(startRes.error || "Couldn't start")
         setStarting(false)
         return
       }
@@ -338,7 +338,7 @@ export function SourcingSession({ tenantId, initialQuery, eventId }: Props) {
       // Begin placing calls sequentially
       placeCalls(res.data.sessionId, startRes.data?.candidates || [])
     } catch (err) {
-      toast.error('Failed to start sourcing session')
+      toast.error("Couldn't start the sourcing session")
       setStarting(false)
     }
   }
@@ -437,7 +437,7 @@ export function SourcingSession({ tenantId, initialQuery, eventId }: Props) {
     const res = await pauseSourcingSession(sessionIdRef.current)
     if (res.success) {
       setSessionPaused(true)
-      toast.success('Session paused')
+      toast.success('Paused')
     } else {
       toast.error(res.error || 'Failed to pause')
     }
@@ -449,7 +449,7 @@ export function SourcingSession({ tenantId, initialQuery, eventId }: Props) {
     if (res.success) {
       loadSummary(sessionIdRef.current)
     } else {
-      toast.error(res.error || 'Failed to stop session')
+      toast.error(res.error || "Couldn't stop the session")
     }
   }
 

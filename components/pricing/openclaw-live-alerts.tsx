@@ -33,15 +33,15 @@ export function OpenClawLiveAlerts() {
           .map((r: any) => r.table || r.name)
           .join(', ') || `${d.totalTablesRegressed} tables`
 
-      toast.error('Data regression detected', {
-        description: `${d.totalRowsLost} rows lost across ${tables}`,
+      toast.error('Pricing data issue detected', {
+        description: 'Some pricing information may be outdated',
         duration: 12000,
       })
     }
 
     if (msg.event === 'sync_stale') {
       const d = msg.data
-      toast.error('Price sync pipeline stale', {
+      toast.error("Pricing data hasn't updated recently", {
         description: d.reason || 'No successful sync in 24+ hours. Check prod server.',
         duration: 15000,
       })

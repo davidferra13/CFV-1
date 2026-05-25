@@ -155,9 +155,9 @@ export default function AiPrivacyPage() {
             <>
               <p>
                 You have local AI enabled. When you talk to Remy, your message context is assembled
-                by ChefFlow&apos;s server, then inference runs on the direct AI endpoint you
-                configured, including this computer or a Raspberry Pi you control. ChefFlow&apos;s
-                servers do not run inference for those messages.
+                by ChefFlow&apos;s server, then AI runs on the server you set up, including this
+                computer or a Raspberry Pi you control. ChefFlow&apos;s servers do not run inference
+                for those messages.
               </p>
               <p>
                 If your local AI is unavailable, you will be asked before any message is sent to
@@ -169,9 +169,9 @@ export default function AiPrivacyPage() {
             <>
               <p>
                 Remy runs on ChefFlow&apos;s own private AI infrastructure to process your requests
-                and generate responses. When you talk to Remy, your message is processed by
-                ChefFlow&apos;s AI runtime, not by third-party services like OpenAI or Google. The
-                response is returned directly to you.
+                and generate responses. When you talk to Remy, your message is handled by
+                ChefFlow&apos;s AI, not by third-party services like OpenAI or Google. The response
+                is returned directly to you.
               </p>
             </>
           )}

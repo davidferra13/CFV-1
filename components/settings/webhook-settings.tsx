@@ -74,7 +74,7 @@ export function WebhookSettings({ initialEndpoints }: Props) {
         setNewSecret(result.secret)
         setSecretVisible(true)
         toast.success(
-          'Webhook endpoint created. Copy the signing secret now - it will not be shown again.'
+          'Connection created. Copy your secret key now, as it will not be shown again.'
         )
         setUrl('')
         setDescription('')
@@ -96,7 +96,7 @@ export function WebhookSettings({ initialEndpoints }: Props) {
     startTransition(async () => {
       try {
         await deleteWebhookEndpoint(id)
-        toast.success('Endpoint deleted')
+        toast.success('Connection removed')
       } catch (err: any) {
         toast.error(err.message)
       }
@@ -107,7 +107,7 @@ export function WebhookSettings({ initialEndpoints }: Props) {
     startTransition(async () => {
       try {
         await updateWebhookEndpoint(id, { is_active: !currentlyActive })
-        toast.success(currentlyActive ? 'Endpoint paused' : 'Endpoint activated')
+        toast.success(currentlyActive ? 'Connection paused' : 'Connection active')
       } catch (err: any) {
         toast.error(err.message)
       }
@@ -121,9 +121,9 @@ export function WebhookSettings({ initialEndpoints }: Props) {
         const result = await testWebhookEndpoint(id)
         setTestResults((prev) => ({ ...prev, [id]: result }))
         if (result.success) {
-          toast.success(`Test successful (${result.durationMs}ms)`)
+          toast.success('Test successful!')
         } else {
-          toast.error(`Test failed: ${result.error || `HTTP ${result.status}`}`)
+          toast.error(`Test failed: ${result.error || 'Connection error'}`)
         }
       } catch (err: any) {
         toast.error(err.message)
@@ -143,7 +143,7 @@ export function WebhookSettings({ initialEndpoints }: Props) {
           const logs = await getWebhookDeliveryLog(subscriptionId, 20)
           setDeliveryLogs((prev) => ({ ...prev, [subscriptionId]: logs }))
         } catch (err: any) {
-          toast.error('Failed to load delivery log')
+          toast.error("Couldn't load the activity log")
         }
       })
     },
@@ -152,7 +152,7 @@ export function WebhookSettings({ initialEndpoints }: Props) {
 
   function copySecret(secret: string) {
     navigator.clipboard.writeText(secret)
-    toast.success('Secret copied to clipboard')
+    toast.success('Secret key copied!')
   }
 
   return (

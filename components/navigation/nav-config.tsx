@@ -201,13 +201,13 @@ export const navGroups: NavGroup[] = [
           { href: '/analytics/demand', label: 'Demand Heatmap' },
           { href: '/analytics/demand/ingredients', label: 'Ingredient Demand' },
           { href: '/analytics/pipeline', label: 'Pipeline Forecast' },
-          { href: '/analytics/reconciliation', label: 'Reconciliation' },
+          { href: '/analytics/reconciliation', label: 'Payment Matching' },
           { href: '/analytics/referral-sources', label: 'Referral Sources' },
         ],
       },
       {
         href: '/analytics/funnel',
-        label: 'Conversion Funnel',
+        label: 'Booking Progress',
         icon: Funnel,
       },
       {
@@ -232,12 +232,12 @@ export const navGroups: NavGroup[] = [
       },
       {
         href: '/analytics/intelligence',
-        label: 'Intelligence Hub',
+        label: 'Insights',
         icon: Compass,
         children: [
           { href: '/analytics/intelligence', label: 'Full Dashboard' },
-          { href: '/analytics/intelligence/client-risk', label: 'Client Risk Radar' },
-          { href: '/intelligence', label: 'Intelligence Feed' },
+          { href: '/analytics/intelligence/client-risk', label: 'Client Health' },
+          { href: '/intelligence', label: 'Business Feed' },
         ],
       },
       {
@@ -258,7 +258,7 @@ export const navGroups: NavGroup[] = [
       },
       {
         href: '/analytics/health',
-        label: 'System Health',
+        label: 'Connection Status',
         icon: Activity,
       },
       {
@@ -404,18 +404,18 @@ export const navGroups: NavGroup[] = [
     items: [
       {
         href: '/commerce/parity',
-        label: 'Clover Parity',
+        label: 'POS Comparison',
         icon: BarChart3,
         adminOnly: true,
       },
       {
         href: '/commerce',
-        label: 'Commerce Hub',
+        label: 'Sales',
         icon: Store,
       },
       {
         href: '/commerce/observability',
-        label: 'Observability',
+        label: 'Sales Insights',
         icon: AlertTriangle,
         adminOnly: true,
       },
@@ -452,7 +452,7 @@ export const navGroups: NavGroup[] = [
       },
       {
         href: '/commerce/reconciliation',
-        label: 'Reconciliation',
+        label: 'Payment Matching',
         icon: Scales,
       },
       {
@@ -468,7 +468,7 @@ export const navGroups: NavGroup[] = [
       },
       {
         href: '/commerce/settlements',
-        label: 'Settlements',
+        label: 'Payouts',
         icon: Landmark,
       },
       {
@@ -491,7 +491,7 @@ export const navGroups: NavGroup[] = [
     items: [
       {
         href: '/culinary/components',
-        label: 'Components',
+        label: 'Sub-Recipes',
         icon: Package,
         children: [
           { href: '/culinary/components/ferments', label: 'Ferments' },
@@ -548,7 +548,7 @@ export const navGroups: NavGroup[] = [
         label: 'Ingredients',
         icon: Package,
         children: [
-          { href: '/culinary/ingredients', label: 'Ingredients Database' },
+          { href: '/culinary/ingredients', label: 'All Ingredients' },
           { href: '/culinary/ingredients/receipt-scan', label: 'Receipt Scanner' },
           { href: '/culinary/ingredients/seasonal-availability', label: 'Seasonal Availability' },
           { href: '/culinary/ingredients/vendor-notes', label: 'Vendor Notes' },
@@ -566,7 +566,7 @@ export const navGroups: NavGroup[] = [
           { href: '/menus/dishes', label: 'Dishes' },
           { href: '/culinary/menus/drafts', label: 'Drafts' },
           { href: '/menus/estimate', label: 'Estimate', icon: Calculator },
-          { href: '/culinary/menus/engineering', label: 'Menu Engineering' },
+          { href: '/culinary/menus/engineering', label: 'Menu Analysis' },
           { href: '/menus/upload', label: 'Menu Upload', icon: Upload },
           { href: '/menus/new', label: 'New Menu' },
           { href: '/culinary/menus/scaling', label: 'Scaling' },
@@ -640,7 +640,7 @@ export const navGroups: NavGroup[] = [
       },
       {
         href: '/culinary/sustainability',
-        label: 'Sustainability Ledger',
+        label: 'Sustainability Tracker',
         icon: Flower,
       },
       {
@@ -785,12 +785,12 @@ export const navGroups: NavGroup[] = [
       },
       {
         href: '/finance/ledger',
-        label: 'Ledger',
+        label: 'Money',
         icon: NotebookIcon,
         children: [
           { href: '/finance/ledger/adjustments', label: 'Adjustments' },
           { href: '/finance/ledger/owner-draws', label: 'Owner Draws' },
-          { href: '/finance/ledger/transaction-log', label: 'Transaction Log' },
+          { href: '/finance/ledger/transaction-log', label: 'Money Trail' },
         ],
       },
       {
@@ -814,7 +814,7 @@ export const navGroups: NavGroup[] = [
         icon: Landmark,
         children: [
           { href: '/finance/payouts/manual-payments', label: 'Manual Payments' },
-          { href: '/finance/payouts/reconciliation', label: 'Reconciliation' },
+          { href: '/finance/payouts/reconciliation', label: 'Payment Matching' },
           { href: '/finance/payouts/stripe-payouts', label: 'Stripe Payouts' },
         ],
       },
@@ -1237,7 +1237,7 @@ export const navGroups: NavGroup[] = [
           { href: '/prospecting/scripts', label: 'Call Scripts' },
           { href: '/prospecting/clusters', label: 'Clusters' },
           { href: '/prospecting/import', label: 'Import Leads' },
-          { href: '/prospecting/openclaw', label: 'Engine Prospects' },
+          { href: '/prospecting/openclaw', label: 'Auto-Found Leads' },
           { href: '/prospecting/pipeline', label: 'Pipeline' },
         ],
       },
@@ -1369,7 +1369,7 @@ export const navGroups: NavGroup[] = [
       },
       {
         href: '/inventory/procurement',
-        label: 'Procurement Hub',
+        label: 'Purchasing',
         icon: HandArrowDown,
       },
       {
@@ -1404,7 +1404,7 @@ export const navGroups: NavGroup[] = [
       },
       {
         href: '/inventory/transactions',
-        label: 'Transaction Ledger',
+        label: 'Inventory History',
         icon: Receipt,
       },
       {
@@ -1447,7 +1447,7 @@ export const navGroups: NavGroup[] = [
       },
       {
         href: '/import',
-        label: 'Data Import',
+        label: 'Import',
         icon: Upload,
         children: [
           { href: '/import/csv', label: 'CSV Import' },

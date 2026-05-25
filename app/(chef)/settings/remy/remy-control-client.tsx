@@ -509,7 +509,7 @@ export function RemyControlClient({
     <div className="space-y-6">
       <section className="grid gap-3 md:grid-cols-4">
         <div className="rounded-xl border border-stone-800 bg-stone-900 p-4">
-          <p className="text-xs uppercase tracking-wide text-stone-400">Remy Runtime</p>
+          <p className="text-xs uppercase tracking-wide text-stone-400">Remy Activity</p>
           <p className="mt-2 text-sm font-semibold text-stone-100">
             {runtimeEnabled ? 'Enabled' : 'Disabled'}
           </p>
@@ -534,25 +534,25 @@ export function RemyControlClient({
 
       <section className="grid gap-3 md:grid-cols-4">
         <div className="rounded-xl border border-stone-800 bg-stone-900 p-4">
-          <p className="text-xs uppercase tracking-wide text-stone-400">Approve Rate</p>
+          <p className="text-xs uppercase tracking-wide text-stone-400">Approved</p>
           <p className="mt-2 text-sm font-semibold text-stone-100">
             {formatPercent(qualityMetrics.approveRate)}
           </p>
         </div>
         <div className="rounded-xl border border-stone-800 bg-stone-900 p-4">
-          <p className="text-xs uppercase tracking-wide text-stone-400">Block Rate</p>
+          <p className="text-xs uppercase tracking-wide text-stone-400">Blocked</p>
           <p className="mt-2 text-sm font-semibold text-stone-100">
             {formatPercent(qualityMetrics.blockRate)}
           </p>
         </div>
         <div className="rounded-xl border border-stone-800 bg-stone-900 p-4">
-          <p className="text-xs uppercase tracking-wide text-stone-400">Error Rate</p>
+          <p className="text-xs uppercase tracking-wide text-stone-400">Errors</p>
           <p className="mt-2 text-sm font-semibold text-stone-100">
             {formatPercent(qualityMetrics.errorRate)}
           </p>
         </div>
         <div className="rounded-xl border border-stone-800 bg-stone-900 p-4">
-          <p className="text-xs uppercase tracking-wide text-stone-400">P95 Duration</p>
+          <p className="text-xs uppercase tracking-wide text-stone-400">Response Time</p>
           <p className="mt-2 text-sm font-semibold text-stone-100">
             {formatDuration(qualityMetrics.p95Duration)}
           </p>
@@ -560,9 +560,9 @@ export function RemyControlClient({
       </section>
 
       <section className="rounded-xl border border-stone-800 bg-stone-900 p-4">
-        <h2 className="text-base font-semibold text-stone-100">Runtime Control</h2>
+        <h2 className="text-base font-semibold text-stone-100">On/Off</h2>
         <p className="mt-1 text-sm text-stone-400">
-          Control whether Remy appears in the chef portal. Disabled means no Remy UI is rendered.
+          Turn Remy on or off. When off, Remy won&apos;t appear anywhere in your workspace.
         </p>
         <div className="mt-4 flex flex-wrap items-center gap-2">
           <button
@@ -593,16 +593,16 @@ export function RemyControlClient({
       </section>
 
       <section className="rounded-xl border border-stone-800 bg-stone-900 p-4">
-        <h2 className="text-base font-semibold text-stone-100">Approval Policy Matrix</h2>
+        <h2 className="text-base font-semibold text-stone-100">What Remy Can Do</h2>
         <p className="mt-1 text-sm text-stone-400">
-          Override action-level policy. Restricted actions are always blocked by system safety.
+          Control what Remy can do on your behalf, and review everything Remy has done.
         </p>
 
         <div className="mt-4 flex flex-wrap gap-2">
           <input
             value={targetQuery}
             onChange={(event) => setTargetQuery(event.target.value)}
-            placeholder="Filter by action name or task type"
+            placeholder="Search actions..."
             className="min-w-[260px] flex-1 rounded-md border border-stone-700 bg-stone-950 px-3 py-2 text-sm text-stone-100 placeholder:text-stone-500"
           />
           <select

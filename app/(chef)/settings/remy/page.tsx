@@ -57,8 +57,7 @@ export default async function RemySettingsPage() {
         <div>
           <h1 className="text-3xl font-bold text-stone-100">Remy Control Center</h1>
           <p className="mt-1 text-sm text-stone-400">
-            Control exactly what Remy can execute and verify every physical action with server-side
-            audit logs.
+            Control what Remy can do on your behalf, and review everything Remy has done.
           </p>
         </div>
       </div>

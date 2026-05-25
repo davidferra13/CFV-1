@@ -1,4 +1,4 @@
-'use client'
+﻿'use client'
 
 import { useState, useTransition } from 'react'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
@@ -16,7 +16,7 @@ import type {
   CustomFieldType,
 } from '@/lib/custom-fields/actions'
 
-// ─── Constants ────────────────────────────────────────────────────────────────
+// â”€â”€â”€ Constants â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
 const ENTITY_LABELS: Record<CustomFieldEntityType, string> = {
   event: 'Events',
@@ -43,13 +43,13 @@ const FIELD_TYPES: CustomFieldType[] = [
   'toggle',
 ]
 
-// ─── Props ────────────────────────────────────────────────────────────────────
+// â”€â”€â”€ Props â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
 interface Props {
   initialGrouped: Record<CustomFieldEntityType, CustomFieldDefinition[]>
 }
 
-// ─── Component ────────────────────────────────────────────────────────────────
+// â”€â”€â”€ Component â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
 export function CustomFieldBuilder({ initialGrouped }: Props) {
   const [grouped, setGrouped] = useState(initialGrouped)
@@ -73,7 +73,7 @@ export function CustomFieldBuilder({ initialGrouped }: Props) {
 
   function handleCreate() {
     if (!fieldName.trim()) {
-      toast.error('Field name is required')
+      toast.error('Give this field a name')
       return
     }
 
@@ -86,7 +86,7 @@ export function CustomFieldBuilder({ initialGrouped }: Props) {
       : null
 
     if (needsOptions && !options?.length) {
-      toast.error('Select fields require at least one option')
+      toast.error('Add at least one choice')
       return
     }
 
@@ -109,7 +109,7 @@ export function CustomFieldBuilder({ initialGrouped }: Props) {
         toast.success('Custom field created')
         resetForm()
       } catch (err: any) {
-        toast.error(err.message ?? 'Failed to create field')
+        toast.error(err.message ?? "Couldn't create that field")
       }
     })
   }
@@ -124,7 +124,7 @@ export function CustomFieldBuilder({ initialGrouped }: Props) {
         }))
         toast.success('Field deleted')
       } catch (err: any) {
-        toast.error(err.message ?? 'Failed to delete field')
+        toast.error(err.message ?? "Couldn't delete that field")
       }
     })
   }
@@ -240,7 +240,7 @@ export function CustomFieldBuilder({ initialGrouped }: Props) {
             {/* Actions */}
             <div className="flex gap-2 pt-2">
               <Button variant="primary" onClick={handleCreate} disabled={isPending}>
-                {isPending ? 'Creating…' : 'Create Field'}
+                {isPending ? 'Creatingâ€¦' : 'Create Field'}
               </Button>
               <Button variant="secondary" onClick={resetForm} disabled={isPending}>
                 Cancel

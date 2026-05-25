@@ -90,7 +90,7 @@ export function NewInquiryChefEmail({
         </Link>
       </div>
 
-      <Text style={muted}>Reply within 24 hours to maximize booking conversion.</Text>
+      <Text style={muted}>Reply soon while they're still excited!</Text>
     </BaseLayout>
   )
 }

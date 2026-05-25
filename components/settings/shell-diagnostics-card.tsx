@@ -69,10 +69,10 @@ export function ShellDiagnosticsCard({
   return (
     <Card className="border-stone-700 bg-stone-900/50">
       <CardHeader>
-        <CardTitle>Shell Diagnostics</CardTitle>
+        <CardTitle>Display Settings</CardTitle>
         <p className="text-sm text-stone-400">
-          Inspect the current chef shell inputs and clear local presentation state without changing
-          auth, access, billing, or saved module settings.
+          View and reset your display preferences without affecting your account, billing, or
+          feature settings.
         </p>
       </CardHeader>
       <CardContent className="space-y-5">
@@ -97,18 +97,18 @@ export function ShellDiagnosticsCard({
         <div className="rounded-lg border border-stone-800 bg-stone-950/40 px-4 py-4">
           <div className="flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
             <div className="space-y-2">
-              <h3 className="text-sm font-semibold text-stone-100">Reset Shell State</h3>
+              <h3 className="text-sm font-semibold text-stone-100">Reset Display</h3>
               <p className="text-sm text-stone-400">
-                Clears client-only shell presentation keys and restores default shell chrome. Mobile
-                tab preferences, Focus Mode, permissions, and route access stay unchanged.
+                Resets your layout and display to the default look. Mobile tab preferences, Focus
+                Mode, permissions, and route access stay unchanged.
               </p>
               <p className="text-xs text-stone-500">
-                Clears: {CHEF_SHELL_LOCAL_STORAGE_KEYS.join(', ')}
+                This resets your sidebar, theme, and layout preferences.
               </p>
             </div>
 
             <Button type="button" variant="secondary" onClick={handleReset}>
-              Reset Shell State
+              Reset Display
             </Button>
           </div>
 

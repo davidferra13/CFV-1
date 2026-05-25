@@ -36,7 +36,7 @@ export function BookingConfirmationEmail({
     : `${guestCount}`
   const preview = hasMatches
     ? `Your request was sent to ${matchedChefCount} chef${matchedChefCount !== 1 ? 's' : ''}.`
-    : 'We received your request and saved it for coverage follow-up.'
+    : 'We received your request and will reach out when a chef becomes available.'
 
   return (
     <BaseLayout preview={preview}>

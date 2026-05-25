@@ -122,7 +122,7 @@ export function OfflineProvider({ children }: { children: ReactNode }) {
           if (count > 0 && !hasSyncedRef.current) {
             hasSyncedRef.current = true
             toast.info('Back online', {
-              description: `Syncing ${count} pending action${count === 1 ? '' : 's'}...`,
+              description: `Saving ${count} offline change${count === 1 ? '' : 's'}...`,
               duration: 4000,
               id: 'online-toast',
             })
@@ -131,13 +131,13 @@ export function OfflineProvider({ children }: { children: ReactNode }) {
             replayPendingActions().then((result) => {
               refreshPendingCount()
               if (result.failed > 0) {
-                toast.error('Some actions failed to sync', {
-                  description: `${result.completed} synced, ${result.failed} failed. Check your data.`,
+                toast.error("Some changes couldn't be saved. We'll try again.", {
+                  description: `${result.completed} saved, ${result.failed} pending.`,
                   duration: 8000,
                 })
               } else if (result.completed > 0) {
                 toast.success('All caught up', {
-                  description: `${result.completed} action${result.completed === 1 ? '' : 's'} synced successfully.`,
+                  description: `${result.completed} change${result.completed === 1 ? '' : 's'} saved.`,
                   duration: 4000,
                 })
               }

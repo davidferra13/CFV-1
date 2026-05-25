@@ -26,7 +26,7 @@ export function SmsBridgePanel({ initial }: { initial: BridgeState }) {
         setToken(result.token)
         const updated = await getSmsBridgeStatus()
         setState(updated)
-        toast.success('SMS Bridge activated')
+        toast.success('Text messaging turned on')
       } else {
         toast.error(result.error || 'Setup failed')
       }
@@ -38,9 +38,9 @@ export function SmsBridgePanel({ initial }: { initial: BridgeState }) {
       const result = await regenerateSmsBridgeToken()
       if (result.success && result.token) {
         setToken(result.token)
-        toast.success('New token generated')
+        toast.success('New access code created')
       } else {
-        toast.error(result.error || 'Failed to regenerate')
+        toast.error(result.error || "Couldn't create a new code")
       }
     })
   }
@@ -55,9 +55,9 @@ export function SmsBridgePanel({ initial }: { initial: BridgeState }) {
           ...prev,
           config: prev.config ? { ...prev.config, enabled: next } : null,
         }))
-        toast.success(next ? 'Bridge enabled' : 'Bridge paused')
+        toast.success(next ? 'Text messaging on' : 'Text messaging paused')
       } else {
-        toast.error(result.error || 'Toggle failed')
+        toast.error(result.error || "Couldn't change that setting")
       }
     })
   }

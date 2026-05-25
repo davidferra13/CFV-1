@@ -2,7 +2,7 @@
 
 // Module toggle grid - lets chefs choose which feature areas appear in their sidebar.
 // Each module card shows name, description, and a toggle switch.
-// Focus Mode toggle at top - when ON, standard chef accounts see the reduced shell.
+// Focus Mode toggle at top - when ON, standard chef accounts see the simplified layout.
 
 import { useState, useTransition } from 'react'
 import { useRouter } from 'next/navigation'
@@ -45,7 +45,7 @@ export function ModulesClient({
         router.refresh()
       } catch (err) {
         setFocusMode(previous)
-        toast.error('Failed to toggle Focus Mode')
+        toast.error("Couldn't switch Focus Mode")
       }
     })
   }
@@ -113,9 +113,9 @@ export function ModulesClient({
               <p className="text-sm text-stone-400 mt-0.5">
                 {focusMode
                   ? isPrivileged
-                    ? 'Focus Mode is on, but privileged accounts keep the full shell. Standard chef accounts are reduced to the core dashboard, inbox, inquiries, events, and clients areas.'
+                    ? 'Focus Mode is on, but privileged accounts keep the full layout. Standard chef accounts are reduced to the core dashboard, inbox, inquiries, events, and clients areas.'
                     : 'Focus Mode is on. The shell keeps only dashboard, inbox, inquiries, events, clients, and the Events and Clients sections.'
-                  : 'The full workspace is visible. Turn on Focus Mode to reduce shell noise and keep only the core dashboard, inbox, inquiries, events, and clients areas in view for standard chef accounts.'}
+                  : 'The full workspace is visible. Turn on Focus Mode to reduce visual clutter and keep only the core dashboard, inbox, inquiries, events, and clients areas in view for standard chef accounts.'}
               </p>
             </div>
           </div>
@@ -167,8 +167,8 @@ export function ModulesClient({
         {/* Privileged users: Focus Mode is bypassed in nav */}
         {isPrivileged && focusMode && (
           <p className="text-xs text-stone-500 mt-3 italic">
-            Focus Mode is on, but privileged accounts bypass the reduced shell. You still see the
-            full workspace.
+            Focus Mode is on, but privileged accounts bypass the simplified layout. You still see
+            the full workspace.
           </p>
         )}
       </div>

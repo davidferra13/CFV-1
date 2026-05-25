@@ -140,11 +140,11 @@ export function EventKanbanBoard({ events: initialEvents }: EventKanbanBoardProp
         ACTIVE_COLUMNS.indexOf(fromStatus as (typeof ACTIVE_COLUMNS)[number])
 
       if (isBackwards) {
-        toast.error('Cannot move events backwards in the pipeline.')
+        toast.error('Events can only move forward in the workflow.')
       } else if (targetStatus === 'in_progress' && fromStatus !== 'confirmed') {
         toast.error('Event must be confirmed before it can be started.')
       } else if (!ACTIVE_COLUMNS.includes(targetStatus as (typeof ACTIVE_COLUMNS)[number])) {
-        toast.error('Cannot drop events into terminal columns from the board.')
+        toast.error("Completed events can't be moved from here.")
       } else {
         toast.error(
           `Transition from ${STATUS_LABELS[fromStatus] ?? fromStatus} to ${STATUS_LABELS[targetStatus] ?? targetStatus} is not allowed. Events must move one step at a time.`

@@ -56,7 +56,7 @@ export function ZapierSettings({ initialSubscriptions }: { initialSubscriptions:
 
   function handleAdd() {
     if (!newUrl.trim()) {
-      toast.error('Enter a webhook URL')
+      toast.error('Enter a connection URL')
       return
     }
 
@@ -81,7 +81,7 @@ export function ZapierSettings({ initialSubscriptions }: { initialSubscriptions:
         setNewUrl('')
         setSelectedEvents(new Set(['inquiry.created']))
         setShowAdd(false)
-        toast.success('Webhook subscription created')
+        toast.success('Connection created')
       } catch (err) {
         toast.error(err instanceof Error ? err.message : 'Failed to create subscription')
       }
@@ -97,7 +97,7 @@ export function ZapierSettings({ initialSubscriptions }: { initialSubscriptions:
         const { deleteWebhookSubscription } =
           await import('@/lib/integrations/zapier/zapier-webhooks')
         await deleteWebhookSubscription(id)
-        toast.success('Subscription removed')
+        toast.success('Connection removed')
       } catch {
         setSubscriptions(prev)
         toast.error('Failed to remove subscription')
@@ -112,9 +112,9 @@ export function ZapierSettings({ initialSubscriptions }: { initialSubscriptions:
           await import('@/lib/integrations/zapier/zapier-webhooks')
         const result = await testWebhookSubscription(id)
         if (result.success) {
-          toast.success(`Test ping sent - HTTP ${result.status}`)
+          toast.success('Test sent successfully!')
         } else {
-          toast.error(`Test ping failed - HTTP ${result.status}`)
+          toast.error('Test failed. Check the URL and try again.')
         }
       } catch (err) {
         toast.error(err instanceof Error ? err.message : 'Test failed')
@@ -134,7 +134,7 @@ export function ZapierSettings({ initialSubscriptions }: { initialSubscriptions:
         const result = await getRecentDeliveries(id, 10)
         setDeliveries((prev) => ({ ...prev, [id]: result }))
       } catch {
-        toast.error('Failed to load delivery log')
+        toast.error("Couldn't load the activity log")
       }
     }
   }

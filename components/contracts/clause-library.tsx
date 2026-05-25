@@ -120,7 +120,7 @@ export function ClauseLibrary({ clauses }: { clauses: Clause[] }) {
     }
 
     if (!payload.title || !payload.body || !payload.slug) {
-      toast.error('Add a title, slug, and body before saving')
+      toast.error('Add a title and content before saving')
       return
     }
 

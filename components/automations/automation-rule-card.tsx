@@ -30,7 +30,7 @@ export function AutomationRuleCard({ rule }: AutomationRuleCardProps) {
         await togglePresetRule(rule.type, !rule.enabled)
         router.refresh()
       } catch (err) {
-        toast.error('Failed to toggle rule')
+        toast.error("Couldn't change that rule")
         console.error(err)
       }
     })

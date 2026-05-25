@@ -127,12 +127,12 @@ export function TriageDock({ feed }: TriageDockProps) {
         const result = await routeCaptureToTarget(captureId, target)
         if (result.success) {
           setItems((prev) => prev.filter((i) => i.capture.id !== captureId))
-          toast.success(target.type === 'dismiss' ? 'Dismissed' : `Routed to ${target.type}`)
+          toast.success(target.type === 'dismiss' ? 'Dismissed' : `Sent to ${target.type}`)
         } else {
-          toast.error(result.error ?? 'Failed to route')
+          toast.error(result.error ?? "Couldn't send this")
         }
       } catch (err: any) {
-        toast.error(err.message ?? 'Failed to route capture')
+        toast.error(err.message ?? "Couldn't send this item")
       }
     })
   }

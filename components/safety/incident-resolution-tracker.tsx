@@ -37,7 +37,7 @@ export function IncidentResolutionTracker({ incident }: { incident: IncidentData
       try {
         await toggleFollowUpStep(incident.id, stepId)
       } catch (err) {
-        toast.error('Failed to toggle follow-up step')
+        toast.error("Couldn't update that step")
       }
     })
   }

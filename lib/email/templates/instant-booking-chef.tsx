@@ -89,7 +89,7 @@ export function InstantBookingChefEmail({
       </div>
 
       <Text style={muted}>
-        The event is in paid status. Review the details and confirm when ready. The remaining
+        The deposit has been received. Review the details and confirm when ready. The remaining
         balance of {totalFormatted} minus {depositFormatted} will be collected before the event.
       </Text>
     </BaseLayout>

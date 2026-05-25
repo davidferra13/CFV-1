@@ -7,7 +7,7 @@ import { createServerClient } from '@/lib/db/server'
 import { UpgradeGate } from '@/components/billing/upgrade-gate'
 import { CHEF_FEATURE_FLAGS, hasChefFeatureFlagWithDb } from '@/lib/features/chef-feature-flags'
 
-export const metadata: Metadata = { title: 'Zapier & Webhooks' }
+export const metadata: Metadata = { title: 'Zapier & Connections' }
 
 async function ZapierSettingsContent() {
   const [{ listWebhookSubscriptions }, { ZapierSettings }] = await Promise.all([
@@ -26,7 +26,7 @@ async function ZapierSettingsContent() {
           <ArrowLeft className="h-3.5 w-3.5" />
           Back to Settings
         </Link>
-        <h1 className="text-3xl font-bold text-stone-100">Zapier & Webhooks</h1>
+        <h1 className="text-3xl font-bold text-stone-100">Zapier & Connections</h1>
         <p className="text-stone-400 mt-1">
           Connect ChefFlow events to Zapier, Make, or any webhook-based automation platform. Events
           are signed with HMAC-SHA256 for security.

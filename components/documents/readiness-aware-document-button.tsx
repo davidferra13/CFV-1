@@ -74,7 +74,7 @@ export function ReadinessAwareDocumentButton({
       }
       setOpen(false)
     } catch (error) {
-      toast.error(error instanceof Error ? error.message : 'Failed to override readiness blockers')
+      toast.error(error instanceof Error ? error.message : "Couldn't skip the missing requirements")
     } finally {
       setLoading(false)
     }

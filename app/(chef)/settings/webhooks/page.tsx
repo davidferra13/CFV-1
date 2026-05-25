@@ -4,7 +4,7 @@ import { requireChef } from '@/lib/auth/get-user'
 import { createServerClient } from '@/lib/db/server'
 import { CHEF_FEATURE_FLAGS, hasChefFeatureFlagWithDb } from '@/lib/features/chef-feature-flags'
 
-export const metadata: Metadata = { title: 'Webhooks' }
+export const metadata: Metadata = { title: 'External Connections' }
 
 export default async function WebhooksPage() {
   const user = await requireChef()
@@ -21,7 +21,7 @@ export default async function WebhooksPage() {
   return (
     <div className="space-y-6">
       <div>
-        <h1 className="text-3xl font-bold text-stone-100">Webhooks</h1>
+        <h1 className="text-3xl font-bold text-stone-100">External Connections</h1>
         <p className="text-stone-400 mt-1">
           Send real-time data to external services when events occur in ChefFlow
         </p>

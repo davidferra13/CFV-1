@@ -26,7 +26,7 @@ export function AdminPreviewToggle({ initialPreview }: Props) {
         await toggleAdminPreview(next)
       } catch {
         setPreview(previous)
-        toast.error('Failed to toggle preview mode')
+        toast.error("Couldn't switch preview mode")
       }
     })
   }

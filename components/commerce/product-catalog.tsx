@@ -52,7 +52,7 @@ export function ProductCatalog({ products }: Props) {
         toast.success(currentlyActive ? 'Product deactivated' : 'Product activated')
         router.refresh()
       } catch (err) {
-        toast.error(err instanceof Error ? err.message : 'Failed to toggle product')
+        toast.error(err instanceof Error ? err.message : "Couldn't update that product")
       } finally {
         setTogglingId(null)
       }
@@ -67,7 +67,7 @@ export function ProductCatalog({ products }: Props) {
         toast.success(currentlyEightySixed ? 'Item restored' : "Item 86'd")
         router.refresh()
       } catch (err) {
-        toast.error(err instanceof Error ? err.message : "Failed to toggle 86'd status")
+        toast.error(err instanceof Error ? err.message : "Couldn't update 86'd status")
       } finally {
         setEightySixingId(null)
       }

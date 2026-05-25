@@ -64,7 +64,7 @@ export function CustomReportBuilder() {
     <div className="space-y-6">
       <Card>
         <CardHeader>
-          <CardTitle>Report Configuration</CardTitle>
+          <CardTitle>Build Your Report</CardTitle>
         </CardHeader>
         <CardContent>
           <div className="grid grid-cols-2 md:grid-cols-5 gap-4">

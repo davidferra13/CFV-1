@@ -61,7 +61,7 @@ export function DiscoveryFieldsSection({ eventId, initialFields }: Props) {
               toast.error(result.error ?? 'Failed to save')
             }
           } catch {
-            toast.error('Failed to save discovery fields')
+            toast.error("Couldn't save those details")
           }
         })
       }, 500)

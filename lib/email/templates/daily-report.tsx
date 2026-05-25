@@ -80,7 +80,7 @@ export function DailyReportEmail({ chefName, reportDate, content, reportUrl }: P
         </div>
         <div style={metricCard}>
           <Text style={metricValue}>{formatCents(content.monthRevenueToDateCents)}</Text>
-          <Text style={metricLabel}>MTD Revenue</Text>
+          <Text style={metricLabel}>This Month</Text>
         </div>
         <div style={metricCard}>
           <Text style={metricValue}>
@@ -129,7 +129,7 @@ export function DailyReportEmail({ chefName, reportDate, content, reportUrl }: P
       {/* ─── Operations ───────────────────────────────────── */}
       <Text style={sectionTitle}>Operations</Text>
       <Text style={paragraph}>
-        Response time: <strong>{content.avgResponseTimeHours ?? '-'}h avg</strong>
+        Response time: <strong>{content.avgResponseTimeHours ?? '-'} hours on average</strong>
         {content.overdueResponses > 0 && (
           <span style={{ color: '#dc2626' }}> · {content.overdueResponses} overdue (&gt;24h)</span>
         )}
@@ -146,13 +146,13 @@ export function DailyReportEmail({ chefName, reportDate, content, reportUrl }: P
         </Text>
       )}
       <Text style={paragraph}>
-        Closure streak: <strong>{content.closureStreak}</strong> events
+        Events completed in a row: <strong>{content.closureStreak}</strong>
         {content.longestStreak > content.closureStreak && ` (best: ${content.longestStreak})`}
       </Text>
       {content.openClosureTasks > 0 && (
         <Text style={warningText}>
-          {content.openClosureTasks} event{content.openClosureTasks !== 1 ? 's' : ''} with open
-          closure tasks
+          {content.openClosureTasks} event{content.openClosureTasks !== 1 ? 's' : ''} still need
+          wrap-up
         </Text>
       )}
 
@@ -167,7 +167,7 @@ export function DailyReportEmail({ chefName, reportDate, content, reportUrl }: P
           </Text>
           {hasHighIntent && (
             <>
-              <Text style={warningText}>High-intent signals:</Text>
+              <Text style={warningText}>Clients who look ready to book:</Text>
               {content.highIntentVisits.map((v, i) => (
                 <Text key={i} style={listItem}>
                   • <strong>{v.clientName}</strong> -{' '}
@@ -255,8 +255,7 @@ export function DailyReportEmail({ chefName, reportDate, content, reportUrl }: P
       </div>
 
       <Text style={muted}>
-        This is your daily business snapshot. View or regenerate reports in Analytics → Daily
-        Report.
+        This is your daily business snapshot. See the full report in your Analytics section.
       </Text>
     </BaseLayout>
   )

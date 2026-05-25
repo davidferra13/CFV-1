@@ -2,7 +2,7 @@ import { runDiagnosis, getSystemVitals } from '@/lib/admin/diagnosis-actions'
 import type { Metadata } from 'next'
 
 export const metadata: Metadata = {
-  title: 'System Diagnosis',
+  title: 'Troubleshooting',
 }
 
 function statusColor(status: string): string {
@@ -44,7 +44,7 @@ export default async function DiagnosisPage() {
   return (
     <div className="mx-auto max-w-3xl space-y-8 p-6">
       <div>
-        <h1 className="text-2xl font-bold">System Diagnosis</h1>
+        <h1 className="text-2xl font-bold">Troubleshooting</h1>
         <p className="mt-1 text-sm text-muted-foreground">{diagnosis.summary}</p>
       </div>
 

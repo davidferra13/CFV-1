@@ -127,7 +127,7 @@ export function InquiryNotes({ inquiryId, initialNotes }: InquiryNotesProps) {
         const result = await toggleInquiryNotePinned(noteId)
         setNotes((prev) => prev.map((n) => (n.id === noteId ? { ...n, pinned: result.pinned } : n)))
       } catch (err) {
-        toast.error('Failed to toggle pin')
+        toast.error("Couldn't pin that")
       }
     })
   }

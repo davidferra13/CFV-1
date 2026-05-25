@@ -20,8 +20,8 @@ export default async function ModulesPage() {
       <div>
         <h1 className="text-3xl font-bold text-stone-100 dark:text-stone-100">Modules</h1>
         <p className="text-stone-400 dark:text-stone-400 mt-1">
-          Choose which areas stay visible in your workspace. Focus Mode trims shell clutter to core
-          work, and module changes affect navigation visibility, not your data.
+          Choose which areas stay visible in your workspace. Focus Mode shows only what you need
+          day-to-day. Turning modules on or off changes what you see, not your data.
         </p>
       </div>
       <ModulesClient

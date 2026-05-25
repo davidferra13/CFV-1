@@ -28,10 +28,7 @@ export default async function NavigationSettingsPage() {
       <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
         <div>
           <h1 className="text-3xl font-bold text-stone-100">Navigation Settings</h1>
-          <p className="mt-1 text-stone-400">
-            Review chef shell behavior and customize mobile bottom tabs without changing access,
-            billing, or enabled modules.
-          </p>
+          <p className="mt-1 text-stone-400">Customize your mobile navigation tabs.</p>
         </div>
         <Link
           href="/settings"
@@ -49,9 +46,7 @@ export default async function NavigationSettingsPage() {
       <div className="rounded-xl border border-stone-700 bg-stone-900/50 p-6">
         <h2 className="text-lg font-semibold text-stone-100">Desktop Sidebar</h2>
         <p className="mt-2 text-sm text-stone-400">
-          Desktop quick actions, grouped sections, and ordering stay fixed so the outer chef shell
-          feels stable across routes. Focus Mode, permissions, billing, and enabled modules still
-          control what appears.
+          Your desktop navigation stays the same so things are always where you expect them.
         </p>
       </div>
 

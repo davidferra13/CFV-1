@@ -74,7 +74,7 @@ export default async function AdminFlagsPage() {
           <ToggleLeft size={18} className="text-violet-600" />
         </div>
         <div>
-          <h1 className="text-xl font-bold text-stone-100">Feature Flags</h1>
+          <h1 className="text-xl font-bold text-stone-100">Feature Switches</h1>
           <p className="text-sm text-stone-500">Control which features are enabled per chef</p>
         </div>
       </div>

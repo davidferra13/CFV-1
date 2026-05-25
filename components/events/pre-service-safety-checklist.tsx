@@ -48,7 +48,7 @@ export function PreServiceSafetyChecklist({ eventId, checklist }: Props) {
       try {
         await toggleSafetyItem(checklist!.id, itemKey)
       } catch (err) {
-        toast.error('Failed to toggle safety item')
+        toast.error("Couldn't update that safety item")
       }
     })
   }

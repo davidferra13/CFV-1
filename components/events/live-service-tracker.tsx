@@ -199,7 +199,7 @@ export function LiveServiceTracker({ eventId, initialCourses }: Props) {
       setCourses(sortCourses(initialized))
       setShowInitButton(false)
     } catch (error) {
-      toast.error(error instanceof Error ? error.message : 'Failed to initialize service tracker')
+      toast.error(error instanceof Error ? error.message : "Couldn't start the service tracker")
     } finally {
       setInitializing(false)
     }

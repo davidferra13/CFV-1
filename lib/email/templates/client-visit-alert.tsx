@@ -40,7 +40,7 @@ export function ClientVisitAlertEmail({ chefName, clientName, eventType, clientU
 
       {isHighIntent && (
         <div style={intentBox}>
-          <Text style={intentLabel}>High-intent signal</Text>
+          <Text style={intentLabel}>They look ready to book</Text>
           <Text style={intentText}>
             This client is actively looking at{' '}
             {eventType === 'payment_page_visited' ? 'payment options' : 'your proposal'}. A quick
@@ -67,10 +67,7 @@ export function ClientVisitAlertEmail({ chefName, clientName, eventType, clientU
         </Link>
       </div>
 
-      <Text style={muted}>
-        You&apos;re receiving this because visitor alerts are enabled. Manage in Settings →
-        Notifications.
-      </Text>
+      <Text style={muted}>You asked to be notified when clients visit your pages.</Text>
     </BaseLayout>
   )
 }

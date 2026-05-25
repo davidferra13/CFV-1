@@ -58,7 +58,7 @@ export function AdminCreditForm({ chefId, eventOptions }: Props) {
           setFeedback({ ok: false, msg: result.error ?? 'Failed.' })
         }
       } catch (err) {
-        toast.error('Failed to issue ledger adjustment')
+        toast.error("Couldn't apply the credit")
       }
     })
   }

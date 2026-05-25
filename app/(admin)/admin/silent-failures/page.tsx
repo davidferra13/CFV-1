@@ -42,7 +42,7 @@ export default async function AdminSilentFailuresPage() {
           />
         </div>
         <div>
-          <h1 className="text-xl font-bold text-stone-100">Silent Failures</h1>
+          <h1 className="text-xl font-bold text-stone-100">Hidden Issues</h1>
           <p className="text-sm text-stone-500">
             Non-blocking operations that failed without user visibility
           </p>

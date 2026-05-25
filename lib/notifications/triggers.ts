@@ -35,7 +35,7 @@ export async function notifyStaffAssignment(
       recipientId,
       type: 'staff_assignment',
       title: `${staffMemberName} assigned to ${eventTitle}`,
-      message: `Staff member has been assigned to the event on ${eventDate}.`,
+      message: `${staffMemberName} has been added to the event on ${eventDate}.`,
       link: `/events/${eventId}`,
       eventId,
       metadata: {
@@ -112,7 +112,7 @@ export async function notifyStaffScheduleChange(
       recipientId,
       type: 'staff_assignment',
       title: `${staffMemberName} ${action} ${eventTitle}`,
-      message: `Staff roster updated for this event.`,
+      message: `The team for this event has been updated.`,
       link: `/events/${eventId}`,
       eventId,
       metadata: {

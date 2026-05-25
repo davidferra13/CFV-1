@@ -17,7 +17,7 @@ export function NotificationGenericEmail({
   title,
   body,
   actionUrl,
-  actionLabel = 'View in ChefFlow',
+  actionLabel = 'View Details',
 }: NotificationGenericEmailProps) {
   return (
     <BaseLayout preview={title}>

@@ -16,7 +16,7 @@ import { POS_SLO_DEFINITIONS } from '@/lib/commerce/slo-definitions'
 import { requireChef } from '@/lib/auth/get-user'
 import { requirePro } from '@/lib/billing/require-pro'
 
-export const metadata: Metadata = { title: 'POS Observability' }
+export const metadata: Metadata = { title: 'Sales Monitor' }
 
 function formatCurrency(cents: number | null | undefined) {
   const value = Number(cents ?? 0)
@@ -105,7 +105,7 @@ export default async function PosObservabilityPage() {
     <div className="max-w-6xl mx-auto space-y-6">
       <div className="flex flex-wrap items-start justify-between gap-3">
         <div>
-          <h1 className="text-3xl font-bold text-stone-100">POS Observability</h1>
+          <h1 className="text-3xl font-bold text-stone-100">Sales Monitor</h1>
           <p className="text-sm text-stone-400 mt-1">
             Live incident feed and daily register health metrics.
           </p>

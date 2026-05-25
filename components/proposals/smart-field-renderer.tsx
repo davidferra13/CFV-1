@@ -60,7 +60,7 @@ export function SmartFieldRenderer({ fields, previewTemplate, context }: Props) 
         setNewValue('')
         setEditValue('')
       } catch (err) {
-        toast.error('Failed to save smart field')
+        toast.error("Couldn't save that field")
       }
     })
   }

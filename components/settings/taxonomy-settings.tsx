@@ -45,7 +45,7 @@ export default function TaxonomySettings({ categories }: { categories: CategoryI
         if (!cancelled) {
           setEntries([])
           setIsLoading(false)
-          toast.error('Failed to load entries')
+          toast.error("Couldn't load the list")
         }
       })
     return () => {
@@ -75,7 +75,7 @@ export default function TaxonomySettings({ categories }: { categories: CategoryI
 
         if (!result.success) {
           setEntries(previous)
-          toast.error(result.error || 'Failed to update visibility')
+          toast.error(result.error || "Couldn't update that")
           return
         }
         // Refresh from server
@@ -83,7 +83,7 @@ export default function TaxonomySettings({ categories }: { categories: CategoryI
         setEntries(fresh)
       } catch {
         setEntries(previous)
-        toast.error('Failed to update visibility')
+        toast.error("Couldn't update that")
       }
     })
   }
@@ -98,7 +98,7 @@ export default function TaxonomySettings({ categories }: { categories: CategoryI
         const result = await removeTaxonomyEntry(entry.id!)
         if (!result.success) {
           setEntries(previous)
-          toast.error(result.error || 'Failed to remove entry')
+          toast.error(result.error || "Couldn't remove that")
           return
         }
         const fresh = await getTaxonomy(selectedCategory)
@@ -106,7 +106,7 @@ export default function TaxonomySettings({ categories }: { categories: CategoryI
         toast.success(`Removed "${entry.displayLabel}"`)
       } catch {
         setEntries(previous)
-        toast.error('Failed to remove entry')
+        toast.error("Couldn't remove that")
       }
     })
   }
@@ -134,14 +134,14 @@ export default function TaxonomySettings({ categories }: { categories: CategoryI
       try {
         const result = await addTaxonomyEntry(selectedCategory, label, label)
         if (!result.success) {
-          toast.error(result.error || 'Failed to add entry')
+          toast.error(result.error || "Couldn't add that")
           return
         }
         const fresh = await getTaxonomy(selectedCategory)
         setEntries(fresh)
         toast.success(`Added "${label}"`)
       } catch {
-        toast.error('Failed to add entry')
+        toast.error("Couldn't add that")
       }
     })
   }

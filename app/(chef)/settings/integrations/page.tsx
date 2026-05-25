@@ -111,35 +111,32 @@ export default async function IntegrationsSettingsPage() {
 
       <section className="rounded-lg border border-stone-700 bg-stone-900 p-5 space-y-4">
         <div>
-          <h2 className="text-sm font-semibold text-stone-100">Managed communication channels</h2>
+          <h2 className="text-sm font-semibold text-stone-100">Your communication setup</h2>
           <p className="mt-1 text-xs text-stone-400">
-            Existing ownership tables are the control plane for inbound alias routing, Gmail mailbox
-            ownership, outbound identity, and Twilio delivery callbacks.
+            Here&apos;s how your email and messaging connections are set up.
           </p>
         </div>
 
         <div className="grid gap-4 md:grid-cols-2">
           <div className="rounded-md border border-stone-800 bg-stone-950/60 p-4 space-y-2">
-            <div className="text-xs uppercase tracking-[0.18em] text-stone-500">Inbound alias</div>
+            <div className="text-xs uppercase tracking-[0.18em] text-stone-500">
+              Receiving address
+            </div>
             <div className="font-mono text-sm text-stone-100">
               {commsControlPlane.inboundEmailAlias.address}
             </div>
-            <div className="text-xs text-stone-400">
-              ChefFlow-managed alias for direct managed email ingress.
-            </div>
+            <div className="text-xs text-stone-400">Email address where clients can reach you.</div>
           </div>
 
           <div className="rounded-md border border-stone-800 bg-stone-950/60 p-4 space-y-2">
-            <div className="text-xs uppercase tracking-[0.18em] text-stone-500">
-              Outbound email owner
-            </div>
+            <div className="text-xs uppercase tracking-[0.18em] text-stone-500">Sending email</div>
             {commsControlPlane.email.outboundOwner ? (
               <>
                 <div className="font-mono text-sm text-stone-100">
                   {commsControlPlane.email.outboundOwner.address}
                 </div>
                 <div className="text-xs text-stone-400">
-                  Provider: {commsControlPlane.email.outboundOwner.provider}
+                  Service: {commsControlPlane.email.outboundOwner.provider}
                 </div>
               </>
             ) : (
@@ -151,9 +148,7 @@ export default async function IntegrationsSettingsPage() {
         </div>
 
         <div className="space-y-3">
-          <div className="text-xs uppercase tracking-[0.18em] text-stone-500">
-            Gmail mailbox health
-          </div>
+          <div className="text-xs uppercase tracking-[0.18em] text-stone-500">Gmail connection</div>
           {commsControlPlane.email.mailboxes.length > 0 ? (
             <div className="space-y-2">
               {commsControlPlane.email.mailboxes.map((mailbox) => (
@@ -180,28 +175,27 @@ export default async function IntegrationsSettingsPage() {
                     )}
                   </div>
                   <div className="mt-2 text-xs text-stone-400">
-                    Last sync:{' '}
+                    Last checked:{' '}
                     {mailbox.lastSyncAt
                       ? new Date(mailbox.lastSyncAt).toLocaleString()
-                      : 'Never synced'}
-                    {' · '}Sync errors: {mailbox.syncErrors}
-                    {' · '}Historical scan:{' '}
-                    {mailbox.historicalScanEnabled ? mailbox.historicalScanStatus : 'disabled'}
+                      : 'Never checked'}
+                    {' · '}Issues: {mailbox.syncErrors}
+                    {' · '}Email import:{' '}
+                    {mailbox.historicalScanEnabled ? mailbox.historicalScanStatus : 'off'}
                   </div>
                 </div>
               ))}
             </div>
           ) : (
             <div className="rounded-md border border-dashed border-stone-700 px-4 py-3 text-sm text-stone-400">
-              No `google_mailboxes` records are active for this chef. Gmail auth may still exist in
-              the legacy connection row, but mailbox ownership is not fully surfaced until a mailbox
-              record is present.
+              Gmail is connected but may need to be refreshed. Check your Google connection in the
+              section above.
             </div>
           )}
 
           {commsControlPlane.email.legacyConnection && (
             <div className="rounded-md border border-stone-800 bg-stone-950/40 px-4 py-3 text-xs text-stone-400">
-              Legacy Gmail connection:{' '}
+              Previous Gmail setup:{' '}
               <span className="font-mono text-stone-200">
                 {commsControlPlane.email.legacyConnection.address || 'unknown'}
               </span>

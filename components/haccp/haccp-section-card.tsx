@@ -36,7 +36,7 @@ export function HACCPSectionCard({
       try {
         await toggleHACCPSection(sectionId, checked)
       } catch (err) {
-        toast.error('Failed to toggle HACCP section')
+        toast.error("Couldn't update that section")
       }
     })
   }

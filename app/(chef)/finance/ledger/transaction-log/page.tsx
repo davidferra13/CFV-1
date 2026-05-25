@@ -16,7 +16,7 @@ import {
 import { formatCurrency } from '@/lib/utils/currency'
 import { format } from 'date-fns'
 
-export const metadata: Metadata = { title: 'Transaction Log' }
+export const metadata: Metadata = { title: 'Money Trail' }
 
 const ENTRY_TYPE_STYLES: Record<string, string> = {
   payment: 'bg-green-900 text-green-700',
@@ -63,7 +63,7 @@ export default async function TransactionLogPage({
         <div className="flex items-start justify-between mt-1">
           <div>
             <div className="flex items-center gap-3">
-              <h1 className="text-3xl font-bold text-stone-100">Transaction Log</h1>
+              <h1 className="text-3xl font-bold text-stone-100">Money Trail</h1>
               <span className="bg-stone-800 text-stone-400 text-sm px-2 py-0.5 rounded-full">
                 {entries.length}
               </span>

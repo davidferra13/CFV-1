@@ -27,7 +27,7 @@ export function RemovalTaskTracker({ request }: { request: RemovalRequest }) {
       try {
         await toggleRemovalTask(request.id, taskId)
       } catch (err) {
-        toast.error('Failed to toggle removal task')
+        toast.error("Couldn't update that task")
       }
     })
   }

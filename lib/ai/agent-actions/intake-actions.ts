@@ -300,7 +300,7 @@ export const intakeAgentActions: AgentActionDefinition[] = [
 
       return {
         success: true,
-        message: messages.length > 0 ? messages.join('. ') + '.' : 'No records to create.',
+        message: messages.length > 0 ? messages.join('. ') + '.' : 'Nothing new to add.',
         redirectUrl:
           clients.length > 0 ? '/clients' : inquiries.length > 0 ? '/inquiries' : undefined,
       }

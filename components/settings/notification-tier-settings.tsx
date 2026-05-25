@@ -205,11 +205,11 @@ export function NotificationTierSettings({ initialTierMap }: Props) {
         const result = await updateNotificationTier(action, newTier)
         if (result.error) {
           setTierMap(previous)
-          toast.error(`Failed to update tier: ${result.error}`)
+          toast.error(`Couldn't update that setting: ${result.error}`)
         }
       } catch {
         setTierMap(previous)
-        toast.error('Failed to update notification tier')
+        toast.error("Couldn't update that setting")
       }
     })
   }
@@ -231,11 +231,11 @@ export function NotificationTierSettings({ initialTierMap }: Props) {
         const result = await resetNotificationTier(action)
         if (result.error) {
           setTierMap(previous)
-          toast.error(`Failed to reset tier: ${result.error}`)
+          toast.error(`Couldn't reset that setting: ${result.error}`)
         }
       } catch {
         setTierMap(previous)
-        toast.error('Failed to reset notification tier')
+        toast.error("Couldn't reset that setting")
       }
     })
   }
@@ -255,13 +255,13 @@ export function NotificationTierSettings({ initialTierMap }: Props) {
         const result = await resetAllNotificationTiers()
         if (result.error) {
           setTierMap(previous)
-          toast.error(`Failed to reset all tiers: ${result.error}`)
+          toast.error(`Couldn't reset settings: ${result.error}`)
         } else {
-          toast.success('All notification tiers reset to defaults')
+          toast.success('Notification settings reset to defaults')
         }
       } catch {
         setTierMap(previous)
-        toast.error('Failed to reset notification tiers')
+        toast.error("Couldn't reset settings")
       }
     })
   }

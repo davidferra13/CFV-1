@@ -132,7 +132,7 @@ export function BulkGenerateRunner({
             ? (payload as { error?: string }).error
             : null
         const errorMessage =
-          payloadError && payloadError.trim() ? payloadError : 'Bulk generation failed'
+          payloadError && payloadError.trim() ? payloadError : "Couldn't generate the documents"
         throw new Error(errorMessage)
       }
 
@@ -150,7 +150,7 @@ export function BulkGenerateRunner({
       }
       router.refresh()
     } catch (error) {
-      toast.error(error instanceof Error ? error.message : 'Bulk generation failed')
+      toast.error(error instanceof Error ? error.message : "Couldn't generate the documents")
     } finally {
       setIsRunning(false)
     }
@@ -168,7 +168,7 @@ export function BulkGenerateRunner({
       }
       await runBulk(nextTypes, hasBlockers)
     } catch (error) {
-      toast.error(error instanceof Error ? error.message : 'Failed to override readiness blockers')
+      toast.error(error instanceof Error ? error.message : "Couldn't skip the missing requirements")
     }
   }
 
