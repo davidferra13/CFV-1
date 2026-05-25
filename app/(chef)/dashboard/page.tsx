@@ -115,14 +115,12 @@ export default async function ChefDashboard() {
         <CommandCenterWithWeight />
       </Suspense>
 
-      {/* 2. Daily Plan Banner */}
-      <SectionShell sectionId="daily-plan" mode="expanded" label="Daily Plan">
-        <WidgetErrorBoundary name="Daily Plan" compact>
-          <Suspense fallback={null}>
-            <DailyPlanBannerLoader />
-          </Suspense>
-        </WidgetErrorBoundary>
-      </SectionShell>
+      {/* 2. Daily Plan Banner (smart mode: whisper when empty, compact when done, expanded when tasks remain) */}
+      <WidgetErrorBoundary name="Daily Plan" compact>
+        <Suspense fallback={null}>
+          <DailyPlanWithWeight />
+        </Suspense>
+      </WidgetErrorBoundary>
 
       {/* 3. This Week */}
       <SectionShell sectionId="this-week" mode="expanded" label="This Week">
@@ -288,13 +286,40 @@ export default async function ChefDashboard() {
   )
 }
 
-async function DailyPlanBannerLoader() {
+async function DailyPlanWithWeight() {
   const stats = await getDailyPlanStats().catch((err) => {
     console.error('[Dashboard] getDailyPlanStats failed:', err)
     return null
   })
-  if (!stats || stats.totalItems <= 0) return null
-  return <DailyPlanBanner stats={stats} />
+
+  if (!stats || stats.totalItems <= 0) {
+    return (
+      <SectionShell
+        sectionId="daily-plan"
+        mode="whisper"
+        label="Daily Plan"
+        whisperText="Daily Plan: nothing scheduled"
+      >
+        <span />
+      </SectionShell>
+    )
+  }
+
+  const completed = stats.completedItems ?? 0
+  const total = stats.totalItems
+  const mode = total - completed > 0 ? 'expanded' : 'compact'
+  const compactSummary = `${completed}/${total} complete`
+
+  return (
+    <SectionShell
+      sectionId="daily-plan"
+      mode={mode}
+      label="Daily Plan"
+      compactSummary={compactSummary}
+    >
+      <DailyPlanBanner stats={stats} />
+    </SectionShell>
+  )
 }
 
 async function WeeklyReflectionLoader() {
