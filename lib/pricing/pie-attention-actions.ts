@@ -4,7 +4,7 @@
  * PIE Attention Items - Server action producing price intelligence alerts
  * relevant to a chef's upcoming events and menus.
  *
- * Queries the Pi bridge for current prices, cross-references with
+ * Queries the pricing waterfall for current prices, cross-references with
  * upcoming event menus, and surfaces actionable pricing intelligence.
  */
 
@@ -12,7 +12,7 @@ import { requireChef } from '@/lib/auth/get-user'
 import { db } from '@/lib/db'
 import { pgClient } from '@/lib/db'
 import { sql } from 'drizzle-orm'
-import { lookupPricesBatch } from './pi-bridge'
+import { resolvePricesBatch } from './resolve-price'
 import { unstable_cache } from 'next/cache'
 
 // ---------------------------------------------------------------------------
@@ -189,12 +189,17 @@ async function assembleAttentionItems(tenantId: string): Promise<PieAttentionIte
 
   const items: PieAttentionItem[] = []
 
-  // 1. Fetch trends (spikes, drops)
-  const [trends, seasonal, piPrices] = await Promise.all([
+  // 1. Fetch trends (spikes, drops) and resolve current prices
+  const [trends, seasonal] = await Promise.all([
     getRelevantTrends(canonicalIds),
     getSeasonalOpportunities(canonicalIds),
-    lookupPricesBatch(ingredientNames.slice(0, 100), 'MA'),
   ])
+
+  // Resolve current market prices for cost overrun detection
+  const resolvedPrices =
+    canonicalIds.length > 0
+      ? await resolvePricesBatch(canonicalIds.slice(0, 100), tenantId)
+      : new Map<string, { cents: number }>()
 
   // Map canonical ID to ingredient name
   const idToName = new Map<string, string>()
@@ -274,15 +279,16 @@ async function assembleAttentionItems(tenantId: string): Promise<PieAttentionIte
     })
   }
 
-  // 4. Cost overrun detection (compare Pi bridge prices vs quoted costs)
-  if (piPrices) {
+  // 4. Cost overrun detection (compare resolved prices vs quoted costs)
+  if (resolvedPrices.size > 0) {
     for (const ing of ingredients) {
       if (!ing.quoted_cost_cents || ing.quoted_cost_cents <= 0) continue
+      if (!ing.canonical_ingredient_id) continue
       const key = ing.ingredient_name.toLowerCase()
-      const piResult = piPrices.results[key] ?? piPrices.results[ing.ingredient_name]
-      if (!piResult || !piResult.avg_cents) continue
+      const resolved = resolvedPrices.get(ing.canonical_ingredient_id)
+      if (!resolved || !resolved.cents) continue
 
-      const currentAvg = piResult.avg_cents
+      const currentAvg = resolved.cents
       const quoted = ing.quoted_cost_cents
       const overrunPct = ((currentAvg - quoted) / quoted) * 100
 

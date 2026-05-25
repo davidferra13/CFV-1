@@ -273,10 +273,10 @@ export function buildRemyTools(tenantId: string) {
       }),
       execute: async ({ ingredient }) => {
         try {
-          const { lookupPrice: priceLookup } = await import('@/lib/pricing/pi-bridge')
-          const result = await priceLookup(ingredient)
+          const { lookupPrice: priceLookup } = await import('@/lib/pricing/universal-price-lookup')
+          const result = await priceLookup({ ingredient })
 
-          if (!result) {
+          if (!result || !result.matched) {
             return {
               found: false,
               message: `No price data found for "${ingredient}". The ingredient may not be in the pricing database yet.`,
@@ -291,7 +291,7 @@ export function buildRemyTools(tenantId: string) {
         } catch {
           return {
             found: false,
-            message: `Price lookup is currently unavailable. The Pi bridge may be offline.`,
+            message: `Price lookup is currently unavailable.`,
           }
         }
       },

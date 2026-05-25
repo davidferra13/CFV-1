@@ -287,15 +287,3 @@ describe('Non-Food Filter', () => {
     })
   })
 })
-
-// --- Circuit Breaker Tests ---
-
-import { getCircuitState } from '../../lib/pricing/pi-bridge.js'
-
-describe('Pi Bridge Circuit Breaker', () => {
-  it('starts in closed state', () => {
-    const state = getCircuitState()
-    assert.equal(state.state, 'closed')
-    assert.equal(state.failures, 0)
-  })
-})

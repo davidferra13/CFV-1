@@ -33,7 +33,6 @@ import { EnrichImagesButton } from '@/components/culinary/enrich-images-button'
 import { WidgetErrorBoundary } from '@/components/ui/widget-error-boundary'
 import { PricingIntelligenceBar } from '@/components/intelligence/pricing-intelligence-bar'
 import { CoverageScorecard } from '@/components/pricing/coverage-scorecard'
-import { BridgeHealthDot } from '@/components/pricing/bridge-health-dot'
 import { getStockForIngredients } from '@/lib/inventory/stock-lookup-actions'
 import { StockDot } from '@/components/inventory/stock-status-badge'
 
@@ -127,7 +126,6 @@ export default async function IngredientsPage({
           <Suspense fallback={null}>
             <CoverageScorecard />
           </Suspense>
-          <BridgeHealthDot />
         </div>
       </div>
 

@@ -17,8 +17,38 @@
  */
 
 import { normalizeIngredientName } from './ingredient-matching-utils'
-import { searchIngredients } from './pi-bridge'
+import { db } from '@/lib/db'
+import { sql } from 'drizzle-orm'
 import { getCanonicalName } from './name-normalizer'
+
+// ---------------------------------------------------------------------------
+// PostgreSQL ingredient search (replaces Pi Bridge /search endpoint)
+// ---------------------------------------------------------------------------
+
+interface SearchIngredientRow {
+  id: string
+  name: string
+  category: string | null
+  standard_unit: string | null
+}
+
+async function searchIngredientsDb(
+  query: string,
+  limit = 20
+): Promise<SearchIngredientRow[] | null> {
+  try {
+    const rows = (await db.execute(sql`
+      SELECT id, name, category, standard_unit
+      FROM system_ingredients
+      WHERE name % ${query}
+      ORDER BY similarity(name, ${query}) DESC
+      LIMIT ${limit}
+    `)) as unknown as SearchIngredientRow[]
+    return rows.length > 0 ? rows : null
+  } catch {
+    return null
+  }
+}
 
 // ---------------------------------------------------------------------------
 // Types
@@ -194,8 +224,8 @@ function scoreCandidate(
 // ---------------------------------------------------------------------------
 
 /**
- * Fuzzy match a single ingredient name against Pi's product database.
- * Uses Pi bridge /search endpoint for candidates, then scores locally.
+ * Fuzzy match a single ingredient name against the system ingredients database.
+ * Uses PostgreSQL trigram similarity for candidates, then scores locally.
  */
 export async function fuzzyMatchIngredient(
   ingredientName: string,
@@ -206,13 +236,13 @@ export async function fuzzyMatchIngredient(
   const alsoNormalized = getCanonicalName(ingredientName)
   const queryTokens = normalized.split(' ').filter(Boolean)
 
-  // Get candidates from Pi bridge search
-  const candidates = await searchIngredients(normalized, 30)
+  // Get candidates from PostgreSQL trigram search
+  const candidates = await searchIngredientsDb(normalized, 30)
 
   // Also search the alternate normalization if different
   let extraCandidates: typeof candidates = null
   if (alsoNormalized !== normalized) {
-    extraCandidates = await searchIngredients(alsoNormalized, 20)
+    extraCandidates = await searchIngredientsDb(alsoNormalized, 20)
   }
 
   // Merge and deduplicate candidates
@@ -308,7 +338,7 @@ export async function fuzzyMatchBatch(
  * Run fuzzy matching on all naked ingredients in the census.
  * This is the main entry point for /pie-ratchet when coverage gap is the priority.
  *
- * Queries PostgreSQL for naked food ingredients, runs fuzzy match against Pi,
+ * Queries PostgreSQL for naked food ingredients, runs fuzzy match against system_ingredients,
  * and returns matches above threshold for chef approval (PIE Law: chef approves matches).
  */
 export async function matchNakedIngredients(opts?: {

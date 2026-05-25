@@ -11,7 +11,6 @@
  *   1. RECEIPT            - Chef's own purchase (manual, grocery_entry, po_receipt, vendor_invoice)
  *   2. API QUOTE          - Live API price from Kroger/Spoonacular/MealMe
  *  2.5 WHOLESALE          - Wholesale distributor pricing (openclaw_wholesale)
- *  2.7 PI BRIDGE (LIVE)   - Real-time query to Pi's 1.1M prices over direct ethernet
  *   3. DIRECT SCRAPE      - Real store website price (openclaw_scrape) [PostgreSQL fallback]
  *   4. FLYER              - Weekly circular (openclaw_flyer)
  *   5. INSTACART          - Markup-adjusted proxy (openclaw_instacart)
@@ -29,7 +28,6 @@ import { db } from '@/lib/db'
 import { sql } from 'drizzle-orm'
 import { getRegionalAveragesBatch } from './cross-store-average'
 import { getCategoryBaselinesBatch } from './category-baseline'
-import { lookupPricesBatch } from './pi-bridge'
 import { normalizeIngredientName } from './name-normalizer'
 import {
   getMarketSeasonStatus,
@@ -87,7 +85,6 @@ import { chefOverrideResolver } from './tiers/chef-override'
 import { receiptPriceResolver } from './tiers/receipt-price'
 import { apiQuoteResolver } from './tiers/api-quote'
 import { wholesaleResolver } from './tiers/wholesale'
-import { piBridgeResolver } from './tiers/pi-bridge'
 import { directScrapeResolver } from './tiers/direct-scrape'
 import { flyerPriceResolver } from './tiers/flyer-price'
 import { instacartProxyResolver } from './tiers/instacart-proxy'
@@ -160,7 +157,6 @@ const tierResolvers: TierResolver[] = [
   receiptPriceResolver, // 1
   apiQuoteResolver, // 2
   wholesaleResolver, // 2.5
-  piBridgeResolver, // 2.7
   directScrapeResolver, // 3
   flyerPriceResolver, // 4
   instacartProxyResolver, // 5
@@ -356,41 +352,6 @@ export async function resolvePricesBatch(
   for (const row of categoryRows) {
     categoryById.set(row.id, row.category)
     nameById.set(row.id, row.name)
-  }
-
-  // Query 5.5: Pi Bridge batch lookup (real-time, 1.1M prices over direct ethernet)
-  // Fires in parallel with other queries; gracefully returns empty on failure
-  // Normalize names before sending to Pi for better match rates
-  const piNameMap = new Map<string, string>() // normalized -> original
-  for (const id of ingredientIds) {
-    const raw = nameById.get(id)
-    if (raw) {
-      const normalized = normalizeIngredientName(raw)
-      piNameMap.set(normalized, raw)
-    }
-  }
-  const piNames = [...piNameMap.keys()]
-  const piBridgeResults = await lookupPricesBatch(piNames, preferredState || undefined)
-  // Build reverse map: normalized name -> pi result (for matching back to ingredient IDs)
-  const piBridgeByName = new Map<
-    string,
-    { avg_cents: number; unit: string; freshest: string | null; observation_count: number }
-  >()
-  if (piBridgeResults?.results) {
-    for (const [name, data] of Object.entries(piBridgeResults.results)) {
-      if (data && (data.median_cents || data.avg_cents)) {
-        // Prefer median (robust to outliers from mixed units)
-        const cents = data.median_cents ?? data.avg_cents
-        if (cents && cents > 0) {
-          piBridgeByName.set(name.toLowerCase(), {
-            avg_cents: cents,
-            unit: data.unit,
-            freshest: data.freshest,
-            observation_count: data.observation_count,
-          })
-        }
-      }
-    }
   }
 
   // Query 6: Category baselines for all unique categories
@@ -735,38 +696,6 @@ export async function resolvePricesBatch(
         )
         continue
       }
-    }
-
-    // Tier 6.1: Pi Bridge batch aggregate.
-    // Batch Pi responses do not expose product names or per-row geography, so
-    // they must never outrank product-inspectable or explicitly regional prices.
-    const rawNameForPi = nameById.get(id)
-    const normalizedNameForPi = rawNameForPi
-      ? normalizeIngredientName(rawNameForPi).toLowerCase()
-      : undefined
-    const piData = normalizedNameForPi ? piBridgeByName.get(normalizedNameForPi) : undefined
-    if (piData) {
-      const piNormalized = normalizeToStandardUnit(piData.avg_cents, piData.unit || 'each')
-      const piCents = piNormalized ? piNormalized.cents : piData.avg_cents
-      const piUnit = piNormalized ? piNormalized.unit : piData.unit || 'each'
-      result.set(
-        id,
-        withDecay({
-          cents: piCents,
-          unit: piUnit,
-          source: 'direct_scrape',
-          sourceTier: 'pi_bridge_live_batch',
-          resolutionTier: 'market_national',
-          store: `Live national price (${piData.observation_count} observations)`,
-          confidence: 0.55,
-          freshness: computeFreshness(piData.freshest),
-          confirmedAt: piData.freshest,
-          reason: preferredState
-            ? `Pi batch aggregate is not product/geography inspectable; using as national fallback for ${preferredState}.`
-            : 'Pi batch aggregate is not product/geography inspectable; using as national fallback.',
-        })
-      )
-      continue
     }
 
     // Tier 6.25: Resolved national (pre-computed per-region price via alias bridge)

@@ -53,7 +53,7 @@ export function VendorComparisonPanel({ eventId }: Props) {
         }
         if (result.vendors.length === 0) {
           setError(
-            'No vendor pricing data available. The Pi Bridge may be offline, or no stores carry these ingredients.'
+            'No vendor pricing data available. No stores carry these ingredients in recent price history.'
           )
           return
         }
@@ -305,8 +305,8 @@ function ComparisonTable({ data }: { data: VendorComparisonResult }) {
             this store has pricing for
           </span>
           <span>
-            Prices from Pi Bridge (live store data). Totals only include ingredients where the store
-            has data.
+            Prices from store price history. Totals only include ingredients where the store has
+            data.
           </span>
         </div>
       </Card>

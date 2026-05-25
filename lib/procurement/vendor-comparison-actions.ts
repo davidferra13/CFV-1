@@ -3,18 +3,17 @@
 /**
  * Vendor Price Comparison for Event Procurement
  *
- * Takes an event's ingredient list, queries the Pi Bridge for multi-vendor
+ * Takes an event's ingredient list, queries PostgreSQL for multi-vendor
  * prices per ingredient, and returns a structured comparison table:
  * rows = ingredients, columns = top vendors/stores.
  *
- * Data flow: event -> menu -> recipes -> ingredients -> Pi Bridge (1.1M prices)
+ * Data flow: event -> menu -> recipes -> ingredients -> PostgreSQL price history
  */
 
 import { requireChef } from '@/lib/auth/get-user'
 import { generateGroceryList } from '@/lib/grocery/generate-grocery-list'
-import { normalizeIngredientName } from '@/lib/pricing/name-normalizer'
-import { isProductRelevantToIngredient } from '@/lib/pricing/product-relevance'
-import { lookupPrice, type PiBridgePrice } from '@/lib/pricing/pi-bridge'
+import { db } from '@/lib/db'
+import { sql } from 'drizzle-orm'
 
 // ── Types ────────────────────────────────────────────────────────────────────
 
@@ -67,48 +66,37 @@ export interface VendorComparisonResult {
 
 // ── Helpers ──────────────────────────────────────────────────────────────────
 
-/** Group Pi Bridge prices by store name, keeping only relevant/in-stock results */
-function groupPricesByStore(
-  prices: PiBridgePrice[],
-  normalizedName: string,
-  preferredState: string | null
-): Map<string, PiBridgePrice> {
-  const byStore = new Map<string, PiBridgePrice>()
-
-  for (const p of prices) {
-    if (!p.in_stock || !p.store) continue
-    if (!isProductRelevantToIngredient(p.product_name || '', normalizedName)) continue
-    // Prefer same-state prices when available
-    if (preferredState && p.state && p.state !== preferredState.toUpperCase()) continue
-
-    const storeName = p.store.trim()
-    // Keep the freshest price per store
-    const existing = byStore.get(storeName)
-    if (!existing) {
-      byStore.set(storeName, p)
-    } else {
-      const existingDate = existing.last_confirmed_at
-        ? new Date(existing.last_confirmed_at).getTime()
-        : 0
-      const newDate = p.last_confirmed_at ? new Date(p.last_confirmed_at).getTime() : 0
-      if (newDate > existingDate) {
-        byStore.set(storeName, p)
-      }
-    }
-  }
-
-  return byStore
+interface StorePriceRow {
+  ingredient_id: string
+  store_name: string
+  price_per_unit_cents: number
+  purchase_date: string
 }
 
-/** Get the best price in cents for a PiBridgePrice entry */
-function extractCents(p: PiBridgePrice): number | null {
-  if (p.price_per_standard_unit_cents && p.price_per_standard_unit_cents > 0) {
-    return p.price_per_standard_unit_cents
-  }
-  if (p.price_cents && p.price_cents > 0) {
-    return p.price_cents
-  }
-  return null
+/** Query PostgreSQL for store-level prices for all ingredients */
+async function getMultiStorePrices(
+  ingredientIds: string[],
+  tenantId: string,
+  _preferredState: string | null
+): Promise<StorePriceRow[]> {
+  if (ingredientIds.length === 0) return []
+
+  const rows = (await db.execute(sql`
+    SELECT
+      ingredient_id,
+      store_name,
+      price_per_unit_cents,
+      purchase_date::text AS purchase_date
+    FROM ingredient_price_history
+    WHERE ingredient_id = ANY(${ingredientIds})
+      AND (tenant_id = ${tenantId} OR tenant_id IS NULL)
+      AND store_name IS NOT NULL
+      AND price_per_unit_cents > 0
+      AND purchase_date > NOW() - INTERVAL '60 days'
+    ORDER BY ingredient_id, store_name, purchase_date DESC
+  `)) as unknown as StorePriceRow[]
+
+  return rows
 }
 
 // ── Main Action ──────────────────────────────────────────────────────────────
@@ -125,14 +113,34 @@ export async function getVendorComparison(eventId: string): Promise<VendorCompar
   if (allItems.length === 0) return null
 
   // Determine chef's state for regional filtering
-  const { db } = await import('@/lib/db')
-  const { sql } = await import('drizzle-orm')
   const stateRows = (await db.execute(
     sql`SELECT home_state FROM chefs WHERE id = ${user.tenantId} LIMIT 1`
   )) as unknown as Array<{ home_state: string | null }>
   const preferredState = stateRows[0]?.home_state || null
 
-  // 2. Query Pi Bridge for each ingredient (with multi-store prices)
+  // 2. Query PostgreSQL for multi-store prices
+  const ingredientIds = allItems.map((item) => item.ingredientId).filter(Boolean)
+  const storePrices = await getMultiStorePrices(ingredientIds, user.tenantId!, preferredState)
+
+  // Group by ingredient -> store (keep freshest per store)
+  const byIngredientStore = new Map<
+    string,
+    Map<string, { priceCents: number; confirmedAt: string | null }>
+  >()
+  for (const row of storePrices) {
+    if (!byIngredientStore.has(row.ingredient_id)) {
+      byIngredientStore.set(row.ingredient_id, new Map())
+    }
+    const storeMap = byIngredientStore.get(row.ingredient_id)!
+    // Only keep first (freshest due to ORDER BY)
+    if (!storeMap.has(row.store_name)) {
+      storeMap.set(row.store_name, {
+        priceCents: row.price_per_unit_cents,
+        confirmedAt: row.purchase_date,
+      })
+    }
+  }
+
   // Store accumulator: storeName -> { ingredientId -> price }
   const storeAccumulator = new Map<
     string,
@@ -141,65 +149,51 @@ export async function getVendorComparison(eventId: string): Promise<VendorCompar
 
   const ingredientRows: VendorComparisonResult['ingredients'] = []
 
-  // Process in parallel batches of 10 to avoid overwhelming Pi
-  const BATCH_SIZE = 10
-  for (let i = 0; i < allItems.length; i += BATCH_SIZE) {
-    const batch = allItems.slice(i, i + BATCH_SIZE)
-    const results = await Promise.all(
-      batch.map(async (item) => {
-        const normalized = normalizeIngredientName(item.ingredientName)
-        const piResult = await lookupPrice(normalized, preferredState || undefined)
-        return { item, piResult, normalized }
-      })
-    )
+  for (const item of allItems) {
+    const storeMap = byIngredientStore.get(item.ingredientId)
 
-    for (const { item, piResult, normalized } of results) {
-      if (!piResult || piResult.prices.length === 0) {
-        ingredientRows.push({
-          ingredientId: item.ingredientId,
-          ingredientName: item.ingredientName,
-          quantity: item.totalQuantity,
-          unit: item.unit,
-          cheapestVendor: null,
-          cheapestCents: null,
-        })
-        continue
-      }
-
-      // Group prices by store
-      const byStore = groupPricesByStore(piResult.prices, normalized, preferredState)
-
-      let cheapestVendor: string | null = null
-      let cheapestCents: number | null = null
-
-      for (const [storeName, price] of byStore) {
-        const cents = extractCents(price)
-        if (cents === null) continue
-
-        // Track per-store prices
-        if (!storeAccumulator.has(storeName)) {
-          storeAccumulator.set(storeName, new Map())
-        }
-        storeAccumulator.get(storeName)!.set(item.ingredientId, {
-          priceCents: cents,
-          confirmedAt: price.last_confirmed_at,
-        })
-
-        if (cheapestCents === null || cents < cheapestCents) {
-          cheapestCents = cents
-          cheapestVendor = storeName
-        }
-      }
-
+    if (!storeMap || storeMap.size === 0) {
       ingredientRows.push({
         ingredientId: item.ingredientId,
         ingredientName: item.ingredientName,
         quantity: item.totalQuantity,
         unit: item.unit,
-        cheapestVendor,
-        cheapestCents,
+        cheapestVendor: null,
+        cheapestCents: null,
       })
+      continue
     }
+
+    let cheapestVendor: string | null = null
+    let cheapestCents: number | null = null
+
+    for (const [storeName, priceData] of storeMap) {
+      const cents = priceData.priceCents
+      if (!cents || cents <= 0) continue
+
+      // Track per-store prices
+      if (!storeAccumulator.has(storeName)) {
+        storeAccumulator.set(storeName, new Map())
+      }
+      storeAccumulator.get(storeName)!.set(item.ingredientId, {
+        priceCents: cents,
+        confirmedAt: priceData.confirmedAt,
+      })
+
+      if (cheapestCents === null || cents < cheapestCents) {
+        cheapestCents = cents
+        cheapestVendor = storeName
+      }
+    }
+
+    ingredientRows.push({
+      ingredientId: item.ingredientId,
+      ingredientName: item.ingredientName,
+      quantity: item.totalQuantity,
+      unit: item.unit,
+      cheapestVendor,
+      cheapestCents,
+    })
   }
 
   // 3. Rank stores by coverage, then pick top 5

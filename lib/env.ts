@@ -20,10 +20,6 @@ const envSchema = z.object({
   // Email
   RESEND_API_KEY: z.string().optional(),
 
-  // Pi Bridge
-  PI_BRIDGE_URL: z.string().url().optional().default('http://10.0.0.177:7700'),
-  PI_BRIDGE_SECRET: z.string().optional(),
-
   // Security
   OUTREACH_ENCRYPTION_KEY: z.string().min(16).optional(),
   COOKIE_SIGNING_SECRET: z.string().min(16).optional(),

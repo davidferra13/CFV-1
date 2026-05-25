@@ -76,7 +76,6 @@ export const API_NO_STANDARD_AUTH_ALLOWLIST_EXTRAS = [
   'ingredients/search',
   'llm-txt',
   'openclaw',
-  'pricing/bridge-health',
   'prospecting',
   'public',
   'push',
