@@ -150,6 +150,7 @@ export const CLIENT_PROTECTED_PATHS = [
   '/my-referrals',
   '/my-rewards',
   '/my-reviews',
+  '/my-reviews/notes',
   '/my-spending',
   '/my-timeline',
 ] as const

@@ -1,5 +1,7 @@
 import type { Sql } from 'postgres'
 
+type PricingSql = Sql<any>
+
 export const US_STATE_CODES = [
   'AL',
   'AK',
@@ -380,7 +382,7 @@ export function scoreStateReliability(
   }
 }
 
-export async function getStateFromZip(sql: Sql, zipCode: string): Promise<string | null> {
+export async function getStateFromZip(sql: PricingSql, zipCode: string): Promise<string | null> {
   const normalizedZip = zipCode.trim().match(/\d{5}/)?.[0]
   if (!normalizedZip) return null
 
@@ -411,7 +413,7 @@ export async function getStateFromZip(sql: Sql, zipCode: string): Promise<string
 }
 
 export async function getStateReliabilityForState(
-  sql: Sql,
+  sql: PricingSql,
   state: string,
   targets: StateReliabilityTargets = STATE_RELIABILITY_TARGETS
 ): Promise<StateReliabilityResult | null> {
@@ -536,7 +538,7 @@ export async function getStateReliabilityForState(
 }
 
 export async function getStateReliabilityForZip(
-  sql: Sql,
+  sql: PricingSql,
   zipCode: string,
   targets: StateReliabilityTargets = STATE_RELIABILITY_TARGETS
 ): Promise<StateReliabilityResult | null> {
@@ -545,7 +547,7 @@ export async function getStateReliabilityForZip(
 }
 
 export async function getStateReliabilityReport(
-  sql: Sql,
+  sql: PricingSql,
   targets: StateReliabilityTargets = STATE_RELIABILITY_TARGETS
 ): Promise<StateReliabilityReport> {
   const storeRows = (await sql`

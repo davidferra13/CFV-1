@@ -590,12 +590,22 @@ export const navGroups: NavGroup[] = [
           { href: '/prep/consolidation', label: 'Consolidation' },
           { href: '/culinary/prep/timeline', label: 'Prep Timeline' },
           { href: '/culinary/prep/shopping', label: 'Shopping Lists' },
+          { href: '/culinary/prep/shopping/print', label: 'Shopping Print View' },
         ],
       },
       {
         href: '/recipes/import',
         label: 'Recipe Import Hub',
         icon: Upload,
+      },
+      {
+        href: '/reference/dietary-conditions',
+        label: 'Reference',
+        icon: BookOpen,
+        children: [
+          { href: '/reference/dietary-conditions', label: 'Dietary Conditions' },
+          { href: '/reference/food-safety', label: 'Food Safety' },
+        ],
       },
       {
         href: '/recipes/sprint',
@@ -627,6 +637,7 @@ export const navGroups: NavGroup[] = [
         href: '/culinary/substitutions',
         label: 'Substitutions',
         icon: RefreshCw,
+        children: [{ href: '/culinary/tips', label: 'Culinary Tips' }],
       },
       {
         href: '/culinary/call-sheet',
@@ -805,6 +816,7 @@ export const navGroups: NavGroup[] = [
           { href: '/finance/retainers/new', label: 'New Retainer' },
           { href: '/finance/payments/refunds', label: 'Refunds' },
           { href: '/finance/retainers', label: 'Retainers' },
+          { href: '/payments', label: 'Payments Home' },
           { href: '/payments/splitting', label: 'Splitting' },
         ],
       },
@@ -925,6 +937,7 @@ export const navGroups: NavGroup[] = [
         children: [
           { href: '/content', label: 'Content Pipeline' },
           { href: '/content/vault', label: 'Media Vault' },
+          { href: '/marketing/content-pipeline', label: 'Marketing Pipeline' },
           { href: '/marketing/social', label: 'Post Planner' },
           { href: '/marketing/social/connections', label: 'Platform Connections' },
           { href: '/marketing/social/settings', label: 'Queue Settings' },
@@ -969,6 +982,7 @@ export const navGroups: NavGroup[] = [
         href: '/circles',
         label: 'Circles',
         icon: MessagesSquare,
+        children: [{ href: '/circles/admin', label: 'Circle Admin' }],
       },
       {
         href: '/charity',
@@ -1029,6 +1043,7 @@ export const navGroups: NavGroup[] = [
         label: 'Ops Hub',
         icon: Activity,
         children: [
+          { href: '/business/ops', label: 'Business Ops' },
           { href: '/ops/inventory', label: 'Inventory Status' },
           { href: '/ops/performance', label: 'Menu Performance' },
           { href: '/ops/prep', label: 'Prep Board' },

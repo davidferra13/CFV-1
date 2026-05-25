@@ -833,6 +833,7 @@ export const routePolicy: Record<string, RoutePolicyTier> = {
   '/my-recipes': 'client',
   '/my-recurring': 'client',
   '/my-referrals': 'client',
+  '/my-reviews/notes': 'client',
   '/my-reviews': 'client',
   '/my-rewards/about': 'client',
   '/my-rewards': 'client',
