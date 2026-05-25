@@ -12,8 +12,16 @@ import {
   deleteFavoriteChef,
   generateSocialText,
 } from '@/lib/favorite-chefs/actions'
+import { ExitLinkButton } from '@/components/exit-links/ExitLinkButton'
 import type { FavoriteChef } from '@/lib/favorite-chefs/types'
 import { toast } from 'sonner'
+
+/** Try to extract an Instagram handle from a URL like https://instagram.com/chefhandle */
+function extractInstagramHandle(url: string | null): string | null {
+  if (!url) return null
+  const match = url.match(/instagram\.com\/([A-Za-z0-9_.]+)/)
+  return match ? match[1] : null
+}
 
 interface FavoriteChefEditorProps {
   chefs: FavoriteChef[]
@@ -250,6 +258,18 @@ export function FavoriteChefEditor({ chefs: initialChefs }: FavoriteChefEditorPr
                 </div>
                 {chef.reason && (
                   <p className="text-xs text-stone-500 mt-0.5 line-clamp-2">{chef.reason}</p>
+                )}
+                {extractInstagramHandle(chef.websiteUrl) && (
+                  <div className="mt-1">
+                    <ExitLinkButton
+                      exitId={86}
+                      context={{
+                        chefName: chef.chefName,
+                        chefHandle: extractInstagramHandle(chef.websiteUrl)!,
+                      }}
+                      variant="compact"
+                    />
+                  </div>
                 )}
               </div>
 

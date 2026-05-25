@@ -2,6 +2,7 @@ import type { Metadata } from 'next'
 import Link from 'next/link'
 import { requireChef } from '@/lib/auth/get-user'
 import { ShoppingListGenerator } from '@/components/culinary/ShoppingListGenerator'
+import { ExitLinkButton } from '@/components/exit-links/ExitLinkButton'
 import {
   generateShoppingList,
   getUpcomingEventsForShopping,
@@ -62,6 +63,12 @@ export default async function ConsolidatedShoppingPage({ searchParams }: PagePro
         initialEventIds={eventIds}
         initialEvents={initialEvents}
       />
+
+      {/* Shopping exit links */}
+      <div className="flex flex-wrap items-center gap-2">
+        <ExitLinkButton exitId={5} context={{}} variant="compact" />
+        <ExitLinkButton exitId={6} context={{}} variant="compact" />
+      </div>
     </div>
   )
 }

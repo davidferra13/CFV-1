@@ -11,6 +11,7 @@ import { Button } from '@/components/ui/button'
 import { format } from 'date-fns'
 import { CampaignBuilderClient } from './campaign-builder-client'
 import { TestimonialPanel } from '@/components/ai/testimonial-panel'
+import { ExitLinkButton } from '@/components/exit-links/ExitLinkButton'
 import { ExitLinkPanel } from '@/components/exit-links/ExitLinkPanel'
 
 export const metadata: Metadata = { title: 'Marketing' }
@@ -142,6 +143,11 @@ export default async function MarketingPage() {
 
       {/* External Marketing Tools */}
       <ExitLinkPanel category="marketing" context={{}} title="External Marketing Tools" />
+
+      {/* Competitive research */}
+      <div className="flex flex-wrap items-center gap-2">
+        <ExitLinkButton exitId={53} context={{}} />
+      </div>
 
       {/* AI Testimonial Request */}
       <TestimonialPanel />

@@ -10,6 +10,7 @@ import { Button } from '@/components/ui/button'
 import { togglePackingConfirmation } from '@/lib/packing/actions'
 import { markGearChecked, resetGearCheck, addGearDefault } from '@/lib/gear/actions'
 import { GEAR_CATEGORY_ORDER, GEAR_CATEGORY_LABELS } from '@/lib/gear/defaults'
+import { ExitLinkButton } from '@/components/exit-links/ExitLinkButton'
 import type { GearDefault } from '@/lib/gear/actions'
 import type { GearCategory } from '@/lib/gear/defaults'
 
@@ -85,6 +86,10 @@ function ItemRow({
           {label}
         </span>
         {notes && <span className="block text-xs text-stone-300 mt-0.5">{notes}</span>}
+        {/* eslint-disable-next-line jsx-a11y/click-events-have-key-events, jsx-a11y/no-static-element-interactions */}
+        <div className="mt-1" onClick={(e) => e.stopPropagation()}>
+          <ExitLinkButton exitId={41} context={{ equipmentItem: label }} variant="compact" />
+        </div>
       </div>
     </button>
   )

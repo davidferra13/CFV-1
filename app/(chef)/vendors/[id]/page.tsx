@@ -25,6 +25,7 @@ import { VendorScorecardCard } from '@/components/vendors/vendor-scorecard'
 import { VendorVettingChecklist } from '@/components/vendors/vendor-vetting-checklist'
 import { getVendorScorecard } from '@/lib/vendors/scorecard-actions'
 import { getVendorVetting } from '@/lib/vendors/vetting-actions'
+import { VendorExitLinks } from '@/components/vendors/vendor-exit-links'
 import Link from 'next/link'
 
 export const metadata: Metadata = { title: 'Vendor Detail' }
@@ -153,6 +154,17 @@ export default async function VendorDetailPage({ params }: { params: Promise<{ i
               </div>
             )}
           </div>
+          {/* Exit links: email, order portal, catalog, tracking */}
+          <VendorExitLinks
+            vendor={{
+              name: vendor.name,
+              email: vendor.email ?? undefined,
+              website: (vendor as any).website ?? undefined,
+              portalUrl: (vendor as any).portal_url ?? undefined,
+              trackingNumber: (vendor as any).tracking_number ?? undefined,
+            }}
+          />
+
           {vendor.notes && (
             <div>
               <span className="text-stone-500 text-sm">Notes</span>

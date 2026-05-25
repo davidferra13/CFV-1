@@ -660,6 +660,7 @@ export const routePolicy: Record<string, RoutePolicyTier> = {
   '/settings/highlights': 'chef',
   '/settings/incidents': 'chef',
   '/settings/integrations': 'chef',
+  '/settings/external-contacts': 'chef',
   '/settings/invoice': 'chef',
   '/settings/journal/[id]': 'chef',
   '/settings/journal': 'chef',

@@ -1,108 +1,211 @@
 {
-  "generated": "2026-05-25T01:29:21.858Z",
+  "generated": "2026-05-25T23:06:29.846Z",
   "summary": {
-    "total": 971,
-    "wired": 965,
-    "weak": 3,
+    "total": 978,
+    "wired": 975,
+    "weak": 0,
     "orphans": 0,
     "skipped": 3
   },
   "post_build_domain_matrix": {
     "changed_files": [
-      "app/(staff)/staff-tasks/page.tsx",
-      "components/dashboard/chef-todo-widget.tsx",
+      "app/(chef)/calendar/page.tsx",
+      "app/(chef)/culinary/prep/shopping/page.tsx",
+      "app/(chef)/dashboard/_sections/industry-links-section.tsx",
+      "app/(chef)/events/[id]/_sections/event-exit-links-section.tsx",
+      "app/(chef)/events/[id]/execution/page.tsx",
+      "app/(chef)/leads/page.tsx",
+      "app/(chef)/marketing/page.tsx",
+      "app/(chef)/settings/integrations/page.tsx",
+      "app/(chef)/shopping/bulk/bulk-buy-client.tsx",
+      "app/(chef)/vendors/[id]/page.tsx",
+      "app/(public)/g/[code]/page.tsx",
+      "app/api/pie/v1/cron/route.ts",
+      "components/calendar/unified-calendar-view.tsx",
+      "components/events/gear-check-client.tsx",
+      "components/favorite-chefs/favorite-chef-editor.tsx",
+      "components/guest-leads/guest-lead-form.tsx",
+      "components/inquiries/gmail-sync-strip.tsx",
+      "components/navigation/nav-config.tsx",
       "docs/build-state.md",
       "docs/sync-status.json",
-      "lib/remy/routines/engine.ts",
-      "lib/staff/staff-portal-actions.ts",
-      "lib/todos/actions.ts",
-      "components/staff/staff-task-status-board.tsx",
-      "docs/superpowers/plans/2026-05-24-pie-hermes-intelligence-layer.md",
-      "docs/superpowers/specs/2026-05-24-pie-hermes-intelligence-layer-design.md",
-      "tests/unit/pie.hermes-heartbeat.test.ts"
+      "lib/db/schema/schema.ts",
+      "lib/email/notifications.ts",
+      "lib/exit-links/registry.ts",
+      "lib/gmail/sync.ts",
+      "lib/google/auth.ts",
+      "lib/guests/lead-actions.ts",
+      "lib/navigation/url-capability-registry.ts",
+      "lib/pricing/hermes-queue.ts",
+      "lib/pricing/product-relevance.ts",
+      "lib/pricing/universal-price-lookup.ts",
+      "lib/security/route-policy.ts",
+      "scripts/wiring-audit-results.json",
+      ".claude/skills/exit-eval/SKILL.md",
+      "app/(chef)/settings/external-contacts/actions.ts",
+      "app/(chef)/settings/external-contacts/external-contacts-form.tsx",
+      "app/(chef)/settings/external-contacts/page.tsx",
+      "components/events/quick-create-from-template.tsx",
+      "components/events/save-as-template-button.tsx",
+      "components/guest-leads/batch-email-button.tsx",
+      "components/vendors/vendor-exit-links.tsx",
+      "database/migrations/20260526000006_hermes_queue_hardening.sql",
+      "database/migrations/20260526000007_bridge_guest_leads_to_event_guests.sql",
+      "database/migrations/20260526000008_event_templates.sql",
+      "database/migrations/20260526000009_external_contacts.sql",
+      "docs/.exit-eval-batches.json",
+      "docs/audits/product-quality-scorecard-2026-05-25.md",
+      "docs/audits/shakedown-pass1-results-2026-05-25.md",
+      "docs/audits/shakedown-pass5-lifecycle-2026-05-25.md",
+      "docs/exit-eval-codex-manifest.md",
+      "docs/exit-evals/RUNNER.md",
+      "docs/exit-evals/admin/pricing-openclaw-market-data.md",
+      "docs/exit-evals/admin/web-research-directory-outreach.md",
+      "docs/exit-evals/chef/client-research-relationship.md",
+      "docs/exit-evals/chef/costing-pricing-highest-frequency-exit.md",
+      "docs/exit-evals/chef/during-service-the-kitchen-boundary.md",
+      "docs/exit-evals/chef/event-specific-research.md",
+      "docs/exit-evals/chef/hardware-equipment.md",
+      "docs/exit-evals/chef/legal-compliance.md",
+      "docs/exit-evals/chef/logistics-travel.md",
+      "docs/exit-evals/chef/market-competitive-intelligence.md",
+      "docs/exit-evals/chef/marketing-social-presence.md",
+      "docs/exit-evals/chef/money-payments.md",
+      "docs/exit-evals/chef/operational-tools-calculations-part1.md",
+      "docs/exit-evals/chef/operational-tools-calculations-part2.md",
+      "docs/exit-evals/chef/professional-development.md",
+      "docs/exit-evals/chef/recipe-culinary-research.md",
+      "docs/exit-evals/chef/time-location-logistics.md",
+      "docs/exit-evals/chef/vendor-supplier-interaction.md",
+      "docs/exit-evals/client/discovery-chef-research.md",
+      "docs/exit-evals/prompts/01-chef-costing-pricing-highest-frequency-exit.md",
+      "docs/exit-evals/prompts/02-chef-vendor-supplier-interaction.md",
+      "docs/exit-evals/prompts/03-chef-client-research-relationship.md",
+      "docs/exit-evals/prompts/04-chef-recipe-culinary-research.md",
+      "docs/exit-evals/prompts/05-chef-communication-the-messy-reality.md",
+      "docs/exit-evals/prompts/06-chef-marketing-social-presence.md",
+      "docs/exit-evals/prompts/07-chef-money-payments.md",
+      "docs/exit-evals/prompts/08-chef-logistics-travel.md",
+      "docs/exit-evals/prompts/09-chef-legal-compliance.md",
+      "docs/exit-evals/prompts/10-chef-professional-development.md",
+      "docs/exit-evals/prompts/11-chef-event-specific-research.md",
+      "docs/exit-evals/prompts/12-chef-hardware-equipment.md",
+      "docs/exit-evals/prompts/13-chef-people-delegation.md",
+      "docs/exit-evals/prompts/14-chef-operational-tools-calculations-part1.md",
+      "docs/exit-evals/prompts/15-chef-operational-tools-calculations-part2.md",
+      "docs/exit-evals/prompts/16-chef-time-location-logistics.md",
+      "docs/exit-evals/prompts/17-chef-market-competitive-intelligence.md",
+      "docs/exit-evals/prompts/18-chef-during-service-the-kitchen-boundary.md",
+      "docs/exit-evals/prompts/19-client-discovery-chef-research.md",
+      "docs/exit-evals/prompts/20-client-trust-reviews-validation.md",
+      "docs/exit-evals/prompts/21-client-booking-comparison-budgeting.md",
+      "docs/exit-evals/prompts/22-client-calendar-scheduling.md",
+      "docs/exit-evals/prompts/23-client-communication.md",
+      "docs/exit-evals/prompts/24-client-payments-money-receipts.md",
+      "docs/exit-evals/prompts/25-client-event-planning-vendor-coordination.md",
+      "docs/exit-evals/prompts/26-client-guest-coordination.md",
+      "docs/exit-evals/prompts/27-client-menu-dietary-beverage-research.md",
+      "docs/exit-evals/prompts/28-client-venue-home-logistics.md",
+      "docs/exit-evals/prompts/29-client-travel-directions-day-of-movement.md",
+      "docs/exit-evals/prompts/30-client-legal-privacy-compliance.md",
+      "docs/exit-evals/prompts/31-client-post-event-social-memory.md",
+      "docs/exit-evals/prompts/32-admin-authentication-admin-access-role-control.md",
+      "docs/exit-evals/prompts/33-admin-infrastructure-deployment-local-services.md",
+      "docs/exit-evals/prompts/34-admin-database-migrations-cross-tenant-data-re.md",
+      "docs/exit-evals/prompts/35-admin-payments-finance-accounting.md",
+      "docs/exit-evals/prompts/36-admin-communication-support-user-relationships.md",
+      "docs/exit-evals/prompts/37-admin-web-research-directory-outreach.md",
+      "docs/exit-evals/prompts/38-admin-pricing-openclaw-market-data.md",
+      "docs/exit-evals/prompts/39-admin-legal-policy-privacy-regulated-flows.md",
+      "docs/exit-evals/prompts/40-admin-qa-security-system-integrity.md",
+      "docs/exit-evals/prompts/41-guest-public-discovery-trust-validation.md",
+      "docs/exit-evals/prompts/42-guest-event-invite-rsvp-coordination.md",
+      "docs/exit-evals/prompts/43-guest-calendar-maps-arrival-logistics.md",
+      "docs/exit-evals/prompts/44-guest-payments-tickets-money.md",
+      "docs/exit-evals/prompts/45-guest-dietary-allergy-health-context.md",
+      "docs/exit-evals/prompts/46-guest-menu-food-experience-research.md",
+      "docs/exit-evals/prompts/47-guest-dinner-circle-no-login-profile-access.md",
+      "docs/exit-evals/prompts/48-guest-photos-social-memory.md",
+      "docs/exit-evals/prompts/49-guest-proposal-booking-future-event-handoffs.md",
+      "docs/exit-evals/prompts/50-guest-support-privacy-legal.md",
+      "docs/exit-evals/prompts/51-partner-account-claiming-access.md",
+      "docs/exit-evals/prompts/52-partner-partner-intake-chef-relationship-setup.md",
+      "docs/exit-evals/prompts/53-partner-profile-content-public-showcase.md",
+      "docs/exit-evals/prompts/54-partner-location-details-venue-operations.md",
+      "docs/exit-evals/prompts/55-partner-event-history-attribution-reporting.md",
+      "docs/exit-evals/prompts/56-partner-commission-payouts-money.md",
+      "docs/exit-evals/prompts/57-partner-communication-relationship-management.md",
+      "docs/exit-evals/prompts/58-partner-referral-generation-external-discovery.md",
+      "docs/exit-evals/prompts/59-partner-legal-privacy-compliance.md",
+      "docs/exit-evals/prompts/60-partner-day-of-operations.md",
+      "docs/exit-evals/prompts/61-vendor-invite-account-access-boundaries.md",
+      "docs/exit-evals/prompts/62-vendor-catalog-price-sheets-product-data.md",
+      "docs/exit-evals/prompts/63-vendor-purchase-order-fulfillment.md",
+      "docs/exit-evals/prompts/64-vendor-delivery-logistics-physical-fulfillment.md",
+      "docs/exit-evals/prompts/65-vendor-invoices-payments-accounting.md",
+      "docs/exit-evals/prompts/66-vendor-communication-disputes-relationship-memo.md",
+      "docs/exit-evals/prompts/67-vendor-compliance-business-ops-supplier-systems.md",
+      "docs/exit-evals/prompts/68-staff-day-of-communication-escalation.md",
+      "docs/exit-evals/prompts/69-staff-maps-travel-arrival.md",
+      "docs/exit-evals/prompts/70-staff-clock-pay-banking-tax.md",
+      "docs/exit-evals/prompts/71-staff-schedule-availability-swaps.md",
+      "docs/exit-evals/prompts/72-staff-kitchen-execution-hardware.md",
+      "docs/exit-evals/prompts/73-staff-recipe-sop-training-reference.md",
+      "docs/exit-evals/prompts/74-staff-supplies-inventory-emergency-purchasing.md",
+      "docs/exit-evals/prompts/75-staff-account-access-support.md",
+      "docs/exit-evals/prompts/76-staff-offline-low-signal-device-boundaries.md",
+      "docs/exit-evals/vendor/delivery-logistics-physical-fulfillment.md",
+      "docs/exit-system-roadmap.md",
+      "docs/research/admin-exit-points-analysis.md",
+      "docs/research/admin-never-leaves-analysis.md",
+      "docs/research/chef-never-leaves-analysis.md",
+      "docs/research/chef-never-leaves-verification.md",
+      "docs/research/client-exit-points-analysis.md",
+      "docs/research/client-never-leaves-analysis.md",
+      "docs/research/exit-point-closure-index.md",
+      "docs/research/guest-exit-points-analysis.md",
+      "docs/research/guest-never-leaves-analysis.md",
+      "docs/research/partner-exit-points-analysis.md",
+      "docs/research/partner-never-leaves-analysis.md",
+      "docs/research/staff-exit-points-analysis.md",
+      "docs/research/staff-never-leaves-analysis.md",
+      "docs/research/vendor-exit-points-analysis.md",
+      "docs/research/vendor-never-leaves-analysis.md",
+      "docs/specs/exit-scenario-stress-test-prompt.md",
+      "docs/specs/exit-stay-evaluation-matrix.md",
+      "lib/email/templates/guest-outreach.tsx",
+      "lib/events/template-actions.ts",
+      "lib/pricing/hermes-dead-man-switch.ts",
+      "lib/pricing/hermes-queue-sweep.ts",
+      "scripts/_shakedown-pass0.mjs",
+      "scripts/generate-exit-eval-prompts.cjs"
     ],
-    "affected_routes": ["/staff-tasks"],
+    "affected_routes": [
+      "/calendar",
+      "/culinary/prep/shopping",
+      "/events/[id]/execution",
+      "/leads",
+      "/marketing",
+      "/settings/integrations",
+      "/vendors/[id]",
+      "/g/[code]",
+      "/settings/external-contacts"
+    ],
     "domains": [
-      {
-        "id": "page_xray",
-        "label": "Page X-Ray",
-        "relevance": "high",
-        "score": 20,
-        "evidence": [
-          "app/(staff)/staff-tasks/page.tsx",
-          "components/dashboard/chef-todo-widget.tsx",
-          "lib/todos/actions.ts",
-          "components/staff/staff-task-status-board.tsx",
-          "docs/superpowers/plans/2026-05-24-pie-hermes-intelligence-layer.md",
-          "docs/superpowers/specs/2026-05-24-pie-hermes-intelligence-layer-design.md"
-        ],
-        "checks": [
-          "Run /page-xray --delta for every affected route, or --quick for a newly created route.",
-          "Update docs/xrays findings and developer notes when the page shape changed."
-        ]
-      },
-      {
-        "id": "remy_command_surface",
-        "label": "Remy, Navigation, Command Surface",
-        "relevance": "high",
-        "score": 11,
-        "evidence": [
-          "components/dashboard/chef-todo-widget.tsx",
-          "docs/sync-status.json",
-          "lib/remy/routines/engine.ts",
-          "lib/staff/staff-portal-actions.ts",
-          "components/staff/staff-task-status-board.tsx",
-          "docs/superpowers/plans/2026-05-24-pie-hermes-intelligence-layer.md",
-          "docs/superpowers/specs/2026-05-24-pie-hermes-intelligence-layer-design.md"
-        ],
-        "checks": [
-          "Verify new pages/actions are discoverable through nav, command surface, Remy, or a justified local entry point.",
-          "Verify no functional route is stranded without an inbound path."
-        ]
-      },
-      {
-        "id": "pie",
-        "label": "PIE and Pricing Intelligence",
-        "relevance": "high",
-        "score": 10,
-        "evidence": [
-          "docs/sync-status.json",
-          "docs/superpowers/plans/2026-05-24-pie-hermes-intelligence-layer.md",
-          "docs/superpowers/specs/2026-05-24-pie-hermes-intelligence-layer-design.md",
-          "tests/unit/pie.hermes-heartbeat.test.ts"
-        ],
-        "checks": [
-          "Verify pricing, ingredient, recipe, quote, and procurement work uses PIE or records why PIE is not applicable.",
-          "Verify pricing outputs do not hide failures as zeros or stale certainty."
-        ]
-      },
-      {
-        "id": "universal_rail",
-        "label": "Universal Rail Intelligence",
-        "relevance": "high",
-        "score": 10,
-        "evidence": [
-          "app/(staff)/staff-tasks/page.tsx",
-          "components/dashboard/chef-todo-widget.tsx",
-          "components/staff/staff-task-status-board.tsx",
-          "docs/superpowers/plans/2026-05-24-pie-hermes-intelligence-layer.md",
-          "docs/superpowers/specs/2026-05-24-pie-hermes-intelligence-layer-design.md"
-        ],
-        "checks": [
-          "Verify lib/discovery/rail-profiles.ts has a matching surface profile.",
-          "Verify relevant resolvers exist in lib/discovery/resolvers and produce contextual cards."
-        ]
-      },
       {
         "id": "menu_intelligence",
         "label": "Menu Intelligence",
         "relevance": "high",
-        "score": 9,
+        "score": 423,
         "evidence": [
+          "app/(chef)/culinary/prep/shopping/page.tsx",
+          "app/(chef)/shopping/bulk/bulk-buy-client.tsx",
+          "app/(chef)/vendors/[id]/page.tsx",
+          "app/api/pie/v1/cron/route.ts",
+          "components/navigation/nav-config.tsx",
           "docs/sync-status.json",
-          "lib/staff/staff-portal-actions.ts",
-          "docs/superpowers/plans/2026-05-24-pie-hermes-intelligence-layer.md",
-          "docs/superpowers/specs/2026-05-24-pie-hermes-intelligence-layer-design.md"
+          "lib/db/schema/schema.ts",
+          "lib/email/notifications.ts"
         ],
         "checks": [
           "Verify menu, recipe, dish, dietary, and approval changes feed menu intelligence surfaces.",
@@ -110,91 +213,39 @@
         ]
       },
       {
-        "id": "automation_cil",
-        "label": "Automation and CIL",
+        "id": "pie",
+        "label": "PIE and Pricing Intelligence",
         "relevance": "high",
-        "score": 8,
+        "score": 264,
         "evidence": [
-          "docs/superpowers/plans/2026-05-24-pie-hermes-intelligence-layer.md",
-          "docs/superpowers/specs/2026-05-24-pie-hermes-intelligence-layer-design.md"
+          "app/(chef)/calendar/page.tsx",
+          "app/(chef)/culinary/prep/shopping/page.tsx",
+          "app/(chef)/shopping/bulk/bulk-buy-client.tsx",
+          "app/(chef)/vendors/[id]/page.tsx",
+          "app/api/pie/v1/cron/route.ts",
+          "components/navigation/nav-config.tsx",
+          "docs/sync-status.json",
+          "lib/db/schema/schema.ts"
         ],
         "checks": [
-          "Verify durable signals, automation hooks, and intelligence outputs are emitted where the feature creates new evidence.",
-          "Verify signal freshness and suppression rules are respected."
-        ]
-      },
-      {
-        "id": "communications",
-        "label": "Communications and Notifications",
-        "relevance": "medium",
-        "score": 6,
-        "evidence": [
-          "lib/remy/routines/engine.ts",
-          "lib/staff/staff-portal-actions.ts",
-          "lib/todos/actions.ts",
-          "docs/superpowers/plans/2026-05-24-pie-hermes-intelligence-layer.md"
-        ],
-        "checks": [
-          "Verify user-visible state changes notify the right party or appear in the correct inbox/feed.",
-          "Verify communications are threaded, tenant-scoped, and do not duplicate notifications."
-        ]
-      },
-      {
-        "id": "event_lifecycle",
-        "label": "Event Lifecycle and FSM",
-        "relevance": "medium",
-        "score": 6,
-        "evidence": [
-          "components/dashboard/chef-todo-widget.tsx",
-          "lib/remy/routines/engine.ts",
-          "lib/staff/staff-portal-actions.ts",
-          "lib/todos/actions.ts",
-          "components/staff/staff-task-status-board.tsx"
-        ],
-        "checks": [
-          "Verify event mutations use the canonical transition path where lifecycle state changes.",
-          "Verify dependent surfaces update after lifecycle transitions."
-        ]
-      },
-      {
-        "id": "client_intelligence",
-        "label": "Client Intelligence",
-        "relevance": "medium",
-        "score": 5,
-        "evidence": [
-          "components/dashboard/chef-todo-widget.tsx",
-          "lib/remy/routines/engine.ts",
-          "lib/staff/staff-portal-actions.ts",
-          "lib/todos/actions.ts",
-          "docs/superpowers/plans/2026-05-24-pie-hermes-intelligence-layer.md"
-        ],
-        "checks": [
-          "Verify client-facing or client-derived facts feed the client intelligence ledger or summary.",
-          "Verify sensitive client intelligence is role-gated and tenant-scoped."
-        ]
-      },
-      {
-        "id": "commitment",
-        "label": "Commitment UI and Completion",
-        "relevance": "low",
-        "score": 3,
-        "evidence": [
-          "lib/staff/staff-portal-actions.ts",
-          "docs/superpowers/plans/2026-05-24-pie-hermes-intelligence-layer.md"
-        ],
-        "checks": [
-          "Verify the feature updates readiness, commitment, or completion state when it changes booking confidence.",
-          "Verify the UI distinguishes draft, proposed, committed, paid, confirmed, and complete states."
+          "Verify pricing, ingredient, recipe, quote, and procurement work uses PIE or records why PIE is not applicable.",
+          "Verify pricing outputs do not hide failures as zeros or stale certainty."
         ]
       },
       {
         "id": "dinner_circles",
         "label": "Dinner Circles",
-        "relevance": "low",
-        "score": 2,
+        "relevance": "high",
+        "score": 250,
         "evidence": [
-          "lib/staff/staff-portal-actions.ts",
-          "components/staff/staff-task-status-board.tsx"
+          "app/(chef)/leads/page.tsx",
+          "app/(public)/g/[code]/page.tsx",
+          "components/guest-leads/guest-lead-form.tsx",
+          "components/navigation/nav-config.tsx",
+          "lib/db/schema/schema.ts",
+          "lib/email/notifications.ts",
+          "lib/gmail/sync.ts",
+          "lib/guests/lead-actions.ts"
         ],
         "checks": [
           "If two parties interact around an event, inquiry, recurring client, staff assignment, or community group, verify an ensure*Circle or create*Circle path.",
@@ -202,11 +253,200 @@
         ]
       },
       {
+        "id": "remy_command_surface",
+        "label": "Remy, Navigation, Command Surface",
+        "relevance": "high",
+        "score": 191,
+        "evidence": [
+          "app/(chef)/calendar/page.tsx",
+          "app/(chef)/culinary/prep/shopping/page.tsx",
+          "app/(chef)/events/[id]/_sections/event-exit-links-section.tsx",
+          "app/(chef)/events/[id]/execution/page.tsx",
+          "app/(chef)/leads/page.tsx",
+          "app/(chef)/marketing/page.tsx",
+          "app/(chef)/settings/integrations/page.tsx",
+          "app/(chef)/vendors/[id]/page.tsx"
+        ],
+        "checks": [
+          "Verify new pages/actions are discoverable through nav, command surface, Remy, or a justified local entry point.",
+          "Verify no functional route is stranded without an inbound path."
+        ]
+      },
+      {
+        "id": "page_xray",
+        "label": "Page X-Ray",
+        "relevance": "high",
+        "score": 188,
+        "evidence": [
+          "app/(chef)/calendar/page.tsx",
+          "app/(chef)/culinary/prep/shopping/page.tsx",
+          "app/(chef)/dashboard/_sections/industry-links-section.tsx",
+          "app/(chef)/events/[id]/_sections/event-exit-links-section.tsx",
+          "app/(chef)/events/[id]/execution/page.tsx",
+          "app/(chef)/leads/page.tsx",
+          "app/(chef)/marketing/page.tsx",
+          "app/(chef)/settings/integrations/page.tsx"
+        ],
+        "checks": [
+          "Run /page-xray --delta for every affected route, or --quick for a newly created route.",
+          "Update docs/xrays findings and developer notes when the page shape changed."
+        ]
+      },
+      {
+        "id": "communications",
+        "label": "Communications and Notifications",
+        "relevance": "high",
+        "score": 185,
+        "evidence": [
+          "app/(chef)/events/[id]/_sections/event-exit-links-section.tsx",
+          "app/(chef)/leads/page.tsx",
+          "app/(chef)/marketing/page.tsx",
+          "app/(chef)/settings/integrations/page.tsx",
+          "app/(chef)/vendors/[id]/page.tsx",
+          "components/calendar/unified-calendar-view.tsx",
+          "components/favorite-chefs/favorite-chef-editor.tsx",
+          "components/guest-leads/guest-lead-form.tsx"
+        ],
+        "checks": [
+          "Verify user-visible state changes notify the right party or appear in the correct inbox/feed.",
+          "Verify communications are threaded, tenant-scoped, and do not duplicate notifications."
+        ]
+      },
+      {
+        "id": "client_intelligence",
+        "label": "Client Intelligence",
+        "relevance": "high",
+        "score": 172,
+        "evidence": [
+          "components/navigation/nav-config.tsx",
+          "lib/db/schema/schema.ts",
+          "lib/exit-links/registry.ts",
+          "lib/gmail/sync.ts",
+          "lib/google/auth.ts",
+          "lib/guests/lead-actions.ts",
+          "lib/navigation/url-capability-registry.ts",
+          "lib/pricing/universal-price-lookup.ts"
+        ],
+        "checks": [
+          "Verify client-facing or client-derived facts feed the client intelligence ledger or summary.",
+          "Verify sensitive client intelligence is role-gated and tenant-scoped."
+        ]
+      },
+      {
+        "id": "ledger_finance",
+        "label": "Ledger, Finance, Payments",
+        "relevance": "high",
+        "score": 146,
+        "evidence": [
+          "app/(chef)/events/[id]/_sections/event-exit-links-section.tsx",
+          "app/(chef)/settings/integrations/page.tsx",
+          "app/(chef)/vendors/[id]/page.tsx",
+          "components/navigation/nav-config.tsx",
+          "lib/db/schema/schema.ts",
+          "lib/email/notifications.ts",
+          "lib/exit-links/registry.ts",
+          "lib/gmail/sync.ts"
+        ],
+        "checks": [
+          "Verify money movement creates immutable ledger/payment records and avoids destructive changes.",
+          "Verify finance and rail summaries reflect payment, invoice, and revenue changes."
+        ]
+      },
+      {
+        "id": "automation_cil",
+        "label": "Automation and CIL",
+        "relevance": "high",
+        "score": 138,
+        "evidence": [
+          "app/(chef)/calendar/page.tsx",
+          "app/(chef)/events/[id]/execution/page.tsx",
+          "app/(chef)/vendors/[id]/page.tsx",
+          "components/navigation/nav-config.tsx",
+          "lib/db/schema/schema.ts",
+          "lib/email/notifications.ts",
+          "lib/gmail/sync.ts",
+          "lib/navigation/url-capability-registry.ts"
+        ],
+        "checks": [
+          "Verify durable signals, automation hooks, and intelligence outputs are emitted where the feature creates new evidence.",
+          "Verify signal freshness and suppression rules are respected."
+        ]
+      },
+      {
+        "id": "universal_rail",
+        "label": "Universal Rail Intelligence",
+        "relevance": "high",
+        "score": 89,
+        "evidence": [
+          "app/(chef)/calendar/page.tsx",
+          "app/(chef)/culinary/prep/shopping/page.tsx",
+          "app/(chef)/dashboard/_sections/industry-links-section.tsx",
+          "app/(chef)/events/[id]/_sections/event-exit-links-section.tsx",
+          "app/(chef)/events/[id]/execution/page.tsx",
+          "app/(chef)/leads/page.tsx",
+          "app/(chef)/marketing/page.tsx",
+          "app/(chef)/settings/integrations/page.tsx"
+        ],
+        "checks": [
+          "Verify lib/discovery/rail-profiles.ts has a matching surface profile.",
+          "Verify relevant resolvers exist in lib/discovery/resolvers and produce contextual cards."
+        ]
+      },
+      {
+        "id": "commitment",
+        "label": "Commitment UI and Completion",
+        "relevance": "high",
+        "score": 83,
+        "evidence": [
+          "app/(chef)/calendar/page.tsx",
+          "app/(chef)/events/[id]/execution/page.tsx",
+          "app/(chef)/settings/integrations/page.tsx",
+          "components/calendar/unified-calendar-view.tsx",
+          "components/events/gear-check-client.tsx",
+          "components/navigation/nav-config.tsx",
+          "lib/db/schema/schema.ts",
+          "lib/email/notifications.ts"
+        ],
+        "checks": [
+          "Verify the feature updates readiness, commitment, or completion state when it changes booking confidence.",
+          "Verify the UI distinguishes draft, proposed, committed, paid, confirmed, and complete states."
+        ]
+      },
+      {
+        "id": "event_lifecycle",
+        "label": "Event Lifecycle and FSM",
+        "relevance": "high",
+        "score": 61,
+        "evidence": [
+          "app/(chef)/calendar/page.tsx",
+          "app/(chef)/events/[id]/_sections/event-exit-links-section.tsx",
+          "app/(chef)/events/[id]/execution/page.tsx",
+          "app/(chef)/marketing/page.tsx",
+          "app/(chef)/settings/integrations/page.tsx",
+          "app/(chef)/shopping/bulk/bulk-buy-client.tsx",
+          "app/(public)/g/[code]/page.tsx",
+          "components/calendar/unified-calendar-view.tsx"
+        ],
+        "checks": [
+          "Verify event mutations use the canonical transition path where lifecycle state changes.",
+          "Verify dependent surfaces update after lifecycle transitions."
+        ]
+      },
+      {
         "id": "priority_queue",
         "label": "Priority Queue and Action Graph",
-        "relevance": "low",
-        "score": 1,
-        "evidence": ["docs/superpowers/specs/2026-05-24-pie-hermes-intelligence-layer-design.md"],
+        "relevance": "high",
+        "score": 22,
+        "evidence": [
+          "components/navigation/nav-config.tsx",
+          "lib/db/schema/schema.ts",
+          "lib/gmail/sync.ts",
+          "lib/pricing/hermes-queue.ts",
+          "scripts/wiring-audit-results.json",
+          "database/migrations/20260526000006_hermes_queue_hardening.sql",
+          "docs/exit-evals/chef/during-service-the-kitchen-boundary.md",
+          "docs/exit-evals/chef/legal-compliance.md"
+        ],
         "checks": [
           "Verify new waiting work, blockers, overdue work, or next actions appear in Priority Queue or Action Graph.",
           "Verify actions have source, urgency, due state, and deep links."
@@ -215,26 +455,7 @@
     ]
   },
   "orphans": [],
-  "weak": [
-    {
-      "route": "/circles/admin",
-      "dynamic": false,
-      "refs": 1,
-      "ref_files": ["lib/security/route-policy.ts"]
-    },
-    {
-      "route": "/culinary/tips",
-      "dynamic": false,
-      "refs": 1,
-      "ref_files": ["lib/security/route-policy.ts"]
-    },
-    {
-      "route": "/marketing/content-pipeline",
-      "dynamic": false,
-      "refs": 1,
-      "ref_files": ["lib/security/route-policy.ts"]
-    }
-  ],
+  "weak": [],
   "all_routes": [
     {
       "route": "/admin/analytics",
@@ -562,14 +783,13 @@
     {
       "route": "/admin/openclaw/health",
       "dynamic": false,
-      "refs": 5,
+      "refs": 4,
       "nav_refs": 1,
       "status": "WIRED",
       "ref_files": [
         "app/(admin)/admin/analytics/page.tsx",
         "components/navigation/admin-nav-config.ts",
         "lib/admin/openclaw-health-actions.ts",
-        "lib/discovery/registries/admin-rail-registry.ts",
         "lib/security/route-policy.ts"
       ]
     },
@@ -603,7 +823,7 @@
     {
       "route": "/admin",
       "dynamic": false,
-      "refs": 346,
+      "refs": 347,
       "nav_refs": 3,
       "status": "WIRED",
       "ref_files": [
@@ -881,7 +1101,7 @@
     {
       "route": "/activity",
       "dynamic": false,
-      "refs": 153,
+      "refs": 154,
       "nav_refs": 4,
       "status": "WIRED",
       "ref_files": [
@@ -1212,6 +1432,20 @@
       ]
     },
     {
+      "route": "/business/ops",
+      "dynamic": false,
+      "refs": 5,
+      "nav_refs": 1,
+      "status": "WIRED",
+      "ref_files": [
+        "components/navigation/nav-config.tsx",
+        "lib/business-ops/credential-actions.ts",
+        "lib/business-ops/equipment-actions.ts",
+        "lib/business-ops/insurance-actions.ts",
+        "lib/business-ops/staff-roster-actions.ts"
+      ]
+    },
+    {
       "route": "/calendar/day",
       "dynamic": false,
       "refs": 5,
@@ -1242,7 +1476,7 @@
     {
       "route": "/calendar",
       "dynamic": false,
-      "refs": 147,
+      "refs": 148,
       "nav_refs": 1,
       "status": "WIRED",
       "ref_files": [
@@ -1638,10 +1872,10 @@
     {
       "route": "/circles/admin",
       "dynamic": false,
-      "refs": 1,
-      "nav_refs": 0,
-      "status": "WEAK",
-      "ref_files": ["lib/security/route-policy.ts"]
+      "refs": 2,
+      "nav_refs": 1,
+      "status": "WIRED",
+      "ref_files": ["components/navigation/nav-config.tsx", "lib/security/route-policy.ts"]
     },
     {
       "route": "/circles",
@@ -1714,7 +1948,7 @@
     {
       "route": "/clients/communication",
       "dynamic": false,
-      "refs": 17,
+      "refs": 18,
       "nav_refs": 1,
       "status": "WIRED",
       "ref_files": [
@@ -1795,7 +2029,7 @@
     {
       "route": "/clients/history",
       "dynamic": false,
-      "refs": 7,
+      "refs": 8,
       "nav_refs": 1,
       "status": "WIRED",
       "ref_files": [
@@ -1803,7 +2037,7 @@
         "app/(chef)/clients/history/event-history/page.tsx",
         "app/(chef)/clients/history/past-menus/page.tsx",
         "app/(chef)/clients/history/spending-history/page.tsx",
-        "components/navigation/nav-config.tsx"
+        "components/clients/client-patterns-card.tsx"
       ]
     },
     {
@@ -2036,7 +2270,7 @@
     {
       "route": "/clients",
       "dynamic": false,
-      "refs": 452,
+      "refs": 454,
       "nav_refs": 4,
       "status": "WIRED",
       "ref_files": [
@@ -2174,7 +2408,7 @@
     {
       "route": "/clients/[id]/conversation",
       "dynamic": true,
-      "refs": 452,
+      "refs": 454,
       "nav_refs": 4,
       "status": "WIRED",
       "ref_files": [
@@ -2188,7 +2422,7 @@
     {
       "route": "/clients/[id]",
       "dynamic": true,
-      "refs": 452,
+      "refs": 454,
       "nav_refs": 4,
       "status": "WIRED",
       "ref_files": [
@@ -2202,7 +2436,7 @@
     {
       "route": "/clients/[id]/preferences",
       "dynamic": true,
-      "refs": 452,
+      "refs": 454,
       "nav_refs": 4,
       "status": "WIRED",
       "ref_files": [
@@ -2216,7 +2450,7 @@
     {
       "route": "/clients/[id]/recurring",
       "dynamic": true,
-      "refs": 452,
+      "refs": 454,
       "nav_refs": 4,
       "status": "WIRED",
       "ref_files": [
@@ -2230,7 +2464,7 @@
     {
       "route": "/clients/[id]/relationship",
       "dynamic": true,
-      "refs": 452,
+      "refs": 454,
       "nav_refs": 4,
       "status": "WIRED",
       "ref_files": [
@@ -2244,7 +2478,7 @@
     {
       "route": "/clients/[id]/summary",
       "dynamic": true,
-      "refs": 452,
+      "refs": 454,
       "nav_refs": 4,
       "status": "WIRED",
       "ref_files": [
@@ -2258,7 +2492,7 @@
     {
       "route": "/clients/[id]/support",
       "dynamic": true,
-      "refs": 452,
+      "refs": 454,
       "nav_refs": 4,
       "status": "WIRED",
       "ref_files": [
@@ -2567,7 +2801,7 @@
     {
       "route": "/communication",
       "dynamic": false,
-      "refs": 118,
+      "refs": 125,
       "nav_refs": 4,
       "status": "WIRED",
       "ref_files": [
@@ -2972,7 +3206,7 @@
     {
       "route": "/culinary/costing",
       "dynamic": false,
-      "refs": 27,
+      "refs": 28,
       "nav_refs": 1,
       "status": "WIRED",
       "ref_files": [
@@ -3229,7 +3463,7 @@
     {
       "route": "/culinary",
       "dynamic": false,
-      "refs": 198,
+      "refs": 204,
       "nav_refs": 2,
       "status": "WIRED",
       "ref_files": [
@@ -3243,7 +3477,7 @@
     {
       "route": "/culinary/prep",
       "dynamic": false,
-      "refs": 24,
+      "refs": 26,
       "nav_refs": 1,
       "status": "WIRED",
       "ref_files": [
@@ -3257,7 +3491,7 @@
     {
       "route": "/culinary/prep/shopping",
       "dynamic": false,
-      "refs": 14,
+      "refs": 16,
       "nav_refs": 1,
       "status": "WIRED",
       "ref_files": [
@@ -3266,6 +3500,17 @@
         "app/(chef)/events/[id]/procurement/page.tsx",
         "app/(chef)/menus/[id]/menu-detail-client.tsx",
         "components/navigation/nav-config.tsx"
+      ]
+    },
+    {
+      "route": "/culinary/prep/shopping/print",
+      "dynamic": false,
+      "refs": 2,
+      "nav_refs": 1,
+      "status": "WIRED",
+      "ref_files": [
+        "components/navigation/nav-config.tsx",
+        "components/shopping/export-toolbar.tsx"
       ]
     },
     {
@@ -3462,10 +3707,10 @@
     {
       "route": "/culinary/tips",
       "dynamic": false,
-      "refs": 1,
-      "nav_refs": 0,
-      "status": "WEAK",
-      "ref_files": ["lib/security/route-policy.ts"]
+      "refs": 2,
+      "nav_refs": 1,
+      "status": "WIRED",
+      "ref_files": ["components/navigation/nav-config.tsx", "lib/security/route-policy.ts"]
     },
     {
       "route": "/culinary/vendors",
@@ -3524,7 +3769,7 @@
     {
       "route": "/dashboard",
       "dynamic": false,
-      "refs": 262,
+      "refs": 263,
       "nav_refs": 8,
       "status": "WIRED",
       "ref_files": [
@@ -3766,7 +4011,7 @@
     {
       "route": "/events",
       "dynamic": false,
-      "refs": 877,
+      "refs": 889,
       "nav_refs": 6,
       "status": "WIRED",
       "ref_files": [
@@ -3793,15 +4038,15 @@
     {
       "route": "/events/travel",
       "dynamic": false,
-      "refs": 5,
+      "refs": 6,
       "nav_refs": 0,
       "status": "WIRED",
       "ref_files": [
         "app/(chef)/events/[id]/travel/page.tsx",
         "app/(chef)/events/[id]/_components/event-detail-ops-tab.tsx",
         "app/(chef)/travel/page.tsx",
-        "components/events/travel-ingredients-panel.tsx",
-        "lib/security/route-policy.ts"
+        "components/events/travel-equipment-section.tsx",
+        "components/events/travel-ingredients-panel.tsx"
       ]
     },
     {
@@ -3821,7 +4066,7 @@
     {
       "route": "/events/[id]/aar",
       "dynamic": true,
-      "refs": 877,
+      "refs": 889,
       "nav_refs": 6,
       "status": "WIRED",
       "ref_files": [
@@ -3835,7 +4080,7 @@
     {
       "route": "/events/[id]/billing",
       "dynamic": true,
-      "refs": 877,
+      "refs": 889,
       "nav_refs": 6,
       "status": "WIRED",
       "ref_files": [
@@ -3849,7 +4094,7 @@
     {
       "route": "/events/[id]/briefing",
       "dynamic": true,
-      "refs": 877,
+      "refs": 889,
       "nav_refs": 6,
       "status": "WIRED",
       "ref_files": [
@@ -3863,7 +4108,7 @@
     {
       "route": "/events/[id]/cannabis",
       "dynamic": true,
-      "refs": 877,
+      "refs": 889,
       "nav_refs": 6,
       "status": "WIRED",
       "ref_files": [
@@ -3877,7 +4122,7 @@
     {
       "route": "/events/[id]/close-out",
       "dynamic": true,
-      "refs": 877,
+      "refs": 889,
       "nav_refs": 6,
       "status": "WIRED",
       "ref_files": [
@@ -3891,7 +4136,7 @@
     {
       "route": "/events/[id]/compliance",
       "dynamic": true,
-      "refs": 877,
+      "refs": 889,
       "nav_refs": 6,
       "status": "WIRED",
       "ref_files": [
@@ -3905,7 +4150,7 @@
     {
       "route": "/events/[id]/debrief",
       "dynamic": true,
-      "refs": 877,
+      "refs": 889,
       "nav_refs": 6,
       "status": "WIRED",
       "ref_files": [
@@ -3919,7 +4164,7 @@
     {
       "route": "/events/[id]/documents",
       "dynamic": true,
-      "refs": 877,
+      "refs": 889,
       "nav_refs": 6,
       "status": "WIRED",
       "ref_files": [
@@ -3933,7 +4178,7 @@
     {
       "route": "/events/[id]/dop/mobile",
       "dynamic": true,
-      "refs": 878,
+      "refs": 890,
       "nav_refs": 6,
       "status": "WIRED",
       "ref_files": [
@@ -3947,7 +4192,7 @@
     {
       "route": "/events/[id]/edit",
       "dynamic": true,
-      "refs": 877,
+      "refs": 889,
       "nav_refs": 6,
       "status": "WIRED",
       "ref_files": [
@@ -3961,7 +4206,7 @@
     {
       "route": "/events/[id]/execution",
       "dynamic": true,
-      "refs": 877,
+      "refs": 889,
       "nav_refs": 6,
       "status": "WIRED",
       "ref_files": [
@@ -3975,7 +4220,7 @@
     {
       "route": "/events/[id]/financial",
       "dynamic": true,
-      "refs": 877,
+      "refs": 889,
       "nav_refs": 6,
       "status": "WIRED",
       "ref_files": [
@@ -3989,7 +4234,7 @@
     {
       "route": "/events/[id]/follow-up",
       "dynamic": true,
-      "refs": 877,
+      "refs": 889,
       "nav_refs": 6,
       "status": "WIRED",
       "ref_files": [
@@ -4003,7 +4248,7 @@
     {
       "route": "/events/[id]/gear",
       "dynamic": true,
-      "refs": 877,
+      "refs": 889,
       "nav_refs": 6,
       "status": "WIRED",
       "ref_files": [
@@ -4017,7 +4262,7 @@
     {
       "route": "/events/[id]/god-mode",
       "dynamic": true,
-      "refs": 877,
+      "refs": 889,
       "nav_refs": 6,
       "status": "WIRED",
       "ref_files": [
@@ -4031,7 +4276,7 @@
     {
       "route": "/events/[id]/grocery-quote",
       "dynamic": true,
-      "refs": 877,
+      "refs": 889,
       "nav_refs": 6,
       "status": "WIRED",
       "ref_files": [
@@ -4045,7 +4290,7 @@
     {
       "route": "/events/[id]/grocery-run",
       "dynamic": true,
-      "refs": 877,
+      "refs": 889,
       "nav_refs": 6,
       "status": "WIRED",
       "ref_files": [
@@ -4059,7 +4304,7 @@
     {
       "route": "/events/[id]/guest-card",
       "dynamic": true,
-      "refs": 877,
+      "refs": 889,
       "nav_refs": 6,
       "status": "WIRED",
       "ref_files": [
@@ -4073,7 +4318,7 @@
     {
       "route": "/events/[id]/interactive",
       "dynamic": true,
-      "refs": 877,
+      "refs": 889,
       "nav_refs": 6,
       "status": "WIRED",
       "ref_files": [
@@ -4087,7 +4332,7 @@
     {
       "route": "/events/[id]/invoice",
       "dynamic": true,
-      "refs": 877,
+      "refs": 889,
       "nav_refs": 6,
       "status": "WIRED",
       "ref_files": [
@@ -4101,7 +4346,7 @@
     {
       "route": "/events/[id]/kds",
       "dynamic": true,
-      "refs": 877,
+      "refs": 889,
       "nav_refs": 6,
       "status": "WIRED",
       "ref_files": [
@@ -4115,7 +4360,7 @@
     {
       "route": "/events/[id]/kitchen-mode",
       "dynamic": true,
-      "refs": 878,
+      "refs": 890,
       "nav_refs": 6,
       "status": "WIRED",
       "ref_files": [
@@ -4129,7 +4374,7 @@
     {
       "route": "/events/[id]/menu-approval",
       "dynamic": true,
-      "refs": 877,
+      "refs": 889,
       "nav_refs": 6,
       "status": "WIRED",
       "ref_files": [
@@ -4143,7 +4388,7 @@
     {
       "route": "/events/[id]/menu-polling",
       "dynamic": true,
-      "refs": 877,
+      "refs": 889,
       "nav_refs": 6,
       "status": "WIRED",
       "ref_files": [
@@ -4157,7 +4402,7 @@
     {
       "route": "/events/[id]/ops",
       "dynamic": true,
-      "refs": 877,
+      "refs": 889,
       "nav_refs": 6,
       "status": "WIRED",
       "ref_files": [
@@ -4171,7 +4416,7 @@
     {
       "route": "/events/[id]/outcome",
       "dynamic": true,
-      "refs": 877,
+      "refs": 889,
       "nav_refs": 6,
       "status": "WIRED",
       "ref_files": [
@@ -4185,7 +4430,7 @@
     {
       "route": "/events/[id]/pack/mobile",
       "dynamic": true,
-      "refs": 877,
+      "refs": 889,
       "nav_refs": 6,
       "status": "WIRED",
       "ref_files": [
@@ -4199,7 +4444,7 @@
     {
       "route": "/events/[id]/pack",
       "dynamic": true,
-      "refs": 877,
+      "refs": 889,
       "nav_refs": 6,
       "status": "WIRED",
       "ref_files": [
@@ -4213,7 +4458,7 @@
     {
       "route": "/events/[id]",
       "dynamic": true,
-      "refs": 877,
+      "refs": 889,
       "nav_refs": 6,
       "status": "WIRED",
       "ref_files": [
@@ -4227,7 +4472,7 @@
     {
       "route": "/events/[id]/photos",
       "dynamic": true,
-      "refs": 877,
+      "refs": 889,
       "nav_refs": 6,
       "status": "WIRED",
       "ref_files": [
@@ -4241,7 +4486,7 @@
     {
       "route": "/events/[id]/prep-plan",
       "dynamic": true,
-      "refs": 877,
+      "refs": 889,
       "nav_refs": 6,
       "status": "WIRED",
       "ref_files": [
@@ -4255,7 +4500,7 @@
     {
       "route": "/events/[id]/procurement",
       "dynamic": true,
-      "refs": 877,
+      "refs": 889,
       "nav_refs": 6,
       "status": "WIRED",
       "ref_files": [
@@ -4269,7 +4514,7 @@
     {
       "route": "/events/[id]/receipts",
       "dynamic": true,
-      "refs": 877,
+      "refs": 889,
       "nav_refs": 6,
       "status": "WIRED",
       "ref_files": [
@@ -4283,7 +4528,7 @@
     {
       "route": "/events/[id]/replay",
       "dynamic": true,
-      "refs": 877,
+      "refs": 889,
       "nav_refs": 6,
       "status": "WIRED",
       "ref_files": [
@@ -4297,7 +4542,7 @@
     {
       "route": "/events/[id]/report",
       "dynamic": true,
-      "refs": 877,
+      "refs": 889,
       "nav_refs": 6,
       "status": "WIRED",
       "ref_files": [
@@ -4311,7 +4556,7 @@
     {
       "route": "/events/[id]/reset",
       "dynamic": true,
-      "refs": 877,
+      "refs": 889,
       "nav_refs": 6,
       "status": "WIRED",
       "ref_files": [
@@ -4325,7 +4570,7 @@
     {
       "route": "/events/[id]/safety",
       "dynamic": true,
-      "refs": 877,
+      "refs": 889,
       "nav_refs": 6,
       "status": "WIRED",
       "ref_files": [
@@ -4339,7 +4584,7 @@
     {
       "route": "/events/[id]/schedule",
       "dynamic": true,
-      "refs": 877,
+      "refs": 889,
       "nav_refs": 6,
       "status": "WIRED",
       "ref_files": [
@@ -4353,7 +4598,7 @@
     {
       "route": "/events/[id]/service",
       "dynamic": true,
-      "refs": 877,
+      "refs": 889,
       "nav_refs": 6,
       "status": "WIRED",
       "ref_files": [
@@ -4367,7 +4612,7 @@
     {
       "route": "/events/[id]/split-billing",
       "dynamic": true,
-      "refs": 877,
+      "refs": 889,
       "nav_refs": 6,
       "status": "WIRED",
       "ref_files": [
@@ -4381,7 +4626,7 @@
     {
       "route": "/events/[id]/staff",
       "dynamic": true,
-      "refs": 877,
+      "refs": 889,
       "nav_refs": 6,
       "status": "WIRED",
       "ref_files": [
@@ -4395,7 +4640,7 @@
     {
       "route": "/events/[id]/story",
       "dynamic": true,
-      "refs": 877,
+      "refs": 889,
       "nav_refs": 6,
       "status": "WIRED",
       "ref_files": [
@@ -4409,7 +4654,7 @@
     {
       "route": "/events/[id]/travel",
       "dynamic": true,
-      "refs": 877,
+      "refs": 889,
       "nav_refs": 6,
       "status": "WIRED",
       "ref_files": [
@@ -4962,7 +5207,7 @@
     {
       "route": "/finance",
       "dynamic": false,
-      "refs": 316,
+      "refs": 317,
       "nav_refs": 1,
       "status": "WIRED",
       "ref_files": [
@@ -5522,7 +5767,7 @@
     {
       "route": "/finance/year-end",
       "dynamic": false,
-      "refs": 10,
+      "refs": 11,
       "nav_refs": 1,
       "status": "WIRED",
       "ref_files": [
@@ -5586,7 +5831,7 @@
     {
       "route": "/guests",
       "dynamic": false,
-      "refs": 46,
+      "refs": 47,
       "nav_refs": 1,
       "status": "WIRED",
       "ref_files": [
@@ -5608,7 +5853,7 @@
     {
       "route": "/guests/[id]",
       "dynamic": true,
-      "refs": 46,
+      "refs": 47,
       "nav_refs": 1,
       "status": "WIRED",
       "ref_files": [
@@ -5835,7 +6080,7 @@
     {
       "route": "/inquiries",
       "dynamic": false,
-      "refs": 235,
+      "refs": 238,
       "nav_refs": 5,
       "status": "WIRED",
       "ref_files": [
@@ -5861,7 +6106,7 @@
     {
       "route": "/inquiries/[id]",
       "dynamic": true,
-      "refs": 235,
+      "refs": 238,
       "nav_refs": 5,
       "status": "WIRED",
       "ref_files": [
@@ -6408,10 +6653,10 @@
     {
       "route": "/marketing/content-pipeline",
       "dynamic": false,
-      "refs": 1,
-      "nav_refs": 0,
-      "status": "WEAK",
-      "ref_files": ["lib/security/route-policy.ts"]
+      "refs": 2,
+      "nav_refs": 1,
+      "status": "WIRED",
+      "ref_files": ["components/navigation/nav-config.tsx", "lib/security/route-policy.ts"]
     },
     {
       "route": "/marketing",
@@ -6919,7 +7164,7 @@
     {
       "route": "/notifications",
       "dynamic": false,
-      "refs": 196,
+      "refs": 198,
       "nav_refs": 8,
       "status": "WIRED",
       "ref_files": [
@@ -6933,7 +7178,7 @@
     {
       "route": "/nutrition/[menuId]",
       "dynamic": true,
-      "refs": 27,
+      "refs": 28,
       "nav_refs": 0,
       "status": "WIRED",
       "ref_files": [
@@ -7104,7 +7349,7 @@
     {
       "route": "/ops",
       "dynamic": false,
-      "refs": 40,
+      "refs": 44,
       "nav_refs": 1,
       "status": "WIRED",
       "ref_files": [
@@ -7283,7 +7528,7 @@
     {
       "route": "/payments",
       "dynamic": false,
-      "refs": 43,
+      "refs": 44,
       "nav_refs": 2,
       "status": "WIRED",
       "ref_files": [
@@ -7319,7 +7564,7 @@
     {
       "route": "/pipeline",
       "dynamic": false,
-      "refs": 89,
+      "refs": 91,
       "nav_refs": 1,
       "status": "WIRED",
       "ref_files": [
@@ -7361,7 +7606,7 @@
     {
       "route": "/prices",
       "dynamic": false,
-      "refs": 16,
+      "refs": 15,
       "nav_refs": 1,
       "status": "WIRED",
       "ref_files": [
@@ -7929,6 +8174,28 @@
       ]
     },
     {
+      "route": "/reference/dietary-conditions",
+      "dynamic": false,
+      "refs": 2,
+      "nav_refs": 1,
+      "status": "WIRED",
+      "ref_files": [
+        "components/navigation/nav-config.tsx",
+        "components/reference/condition-card.tsx"
+      ]
+    },
+    {
+      "route": "/reference/food-safety",
+      "dynamic": false,
+      "refs": 2,
+      "nav_refs": 1,
+      "status": "WIRED",
+      "ref_files": [
+        "components/navigation/nav-config.tsx",
+        "components/reference/food-safety-table.tsx"
+      ]
+    },
+    {
       "route": "/reminders",
       "dynamic": false,
       "refs": 19,
@@ -7973,7 +8240,7 @@
     {
       "route": "/remy",
       "dynamic": false,
-      "refs": 201,
+      "refs": 203,
       "nav_refs": 1,
       "status": "WIRED",
       "ref_files": [
@@ -8053,7 +8320,7 @@
     {
       "route": "/reviews",
       "dynamic": false,
-      "refs": 60,
+      "refs": 61,
       "nav_refs": 1,
       "status": "WIRED",
       "ref_files": [
@@ -8141,7 +8408,7 @@
     {
       "route": "/settings/account",
       "dynamic": false,
-      "refs": 10,
+      "refs": 12,
       "nav_refs": 0,
       "status": "WIRED",
       "ref_files": [
@@ -8641,6 +8908,18 @@
       ]
     },
     {
+      "route": "/settings/external-contacts",
+      "dynamic": false,
+      "refs": 3,
+      "nav_refs": 1,
+      "status": "WIRED",
+      "ref_files": [
+        "components/navigation/nav-config.tsx",
+        "lib/navigation/url-capability-registry.ts",
+        "lib/security/route-policy.ts"
+      ]
+    },
+    {
       "route": "/settings/favorite-chefs",
       "dynamic": false,
       "refs": 9,
@@ -8910,7 +9189,7 @@
     {
       "route": "/settings",
       "dynamic": false,
-      "refs": 360,
+      "refs": 362,
       "nav_refs": 4,
       "status": "WIRED",
       "ref_files": [
@@ -9627,15 +9906,15 @@
     {
       "route": "/staff",
       "dynamic": false,
-      "refs": 162,
+      "refs": 164,
       "nav_refs": 1,
       "status": "WIRED",
       "ref_files": [
         "app/(bare)/account-security/page.tsx",
+        "app/(chef)/business/ops/page.tsx",
         "app/(chef)/dashboard/_sections/business-section-loader.ts",
         "app/(chef)/dashboard/_sections/business-section-mobile-content.tsx",
-        "app/(chef)/dashboard/_sections/hero-metrics.tsx",
-        "app/(chef)/dashboard/_sections/lifecycle-actions.tsx"
+        "app/(chef)/dashboard/_sections/hero-metrics.tsx"
       ]
     },
     {
@@ -9692,15 +9971,15 @@
     {
       "route": "/staff/[id]",
       "dynamic": true,
-      "refs": 162,
+      "refs": 164,
       "nav_refs": 1,
       "status": "WIRED",
       "ref_files": [
         "app/(bare)/account-security/page.tsx",
+        "app/(chef)/business/ops/page.tsx",
         "app/(chef)/dashboard/_sections/business-section-loader.ts",
         "app/(chef)/dashboard/_sections/business-section-mobile-content.tsx",
-        "app/(chef)/dashboard/_sections/hero-metrics.tsx",
-        "app/(chef)/dashboard/_sections/lifecycle-actions.tsx"
+        "app/(chef)/dashboard/_sections/hero-metrics.tsx"
       ]
     },
     {
@@ -10034,7 +10313,7 @@
     {
       "route": "/travel",
       "dynamic": false,
-      "refs": 48,
+      "refs": 50,
       "nav_refs": 1,
       "status": "WIRED",
       "ref_files": [
@@ -10056,7 +10335,7 @@
     {
       "route": "/vendors",
       "dynamic": false,
-      "refs": 77,
+      "refs": 79,
       "nav_refs": 1,
       "status": "WIRED",
       "ref_files": [
@@ -10084,7 +10363,7 @@
     {
       "route": "/vendors/[id]",
       "dynamic": true,
-      "refs": 77,
+      "refs": 79,
       "nav_refs": 1,
       "status": "WIRED",
       "ref_files": [
@@ -10945,6 +11224,18 @@
       ]
     },
     {
+      "route": "/my-reviews/notes",
+      "dynamic": false,
+      "refs": 3,
+      "nav_refs": 0,
+      "status": "WIRED",
+      "ref_files": [
+        "app/(client)/my-reviews/page.tsx",
+        "lib/auth/route-policy.ts",
+        "lib/security/route-policy.ts"
+      ]
+    },
+    {
       "route": "/my-reviews",
       "dynamic": false,
       "refs": 5,
@@ -11033,9 +11324,23 @@
       ]
     },
     {
+      "route": "/hermes",
+      "dynamic": false,
+      "refs": 9,
+      "nav_refs": 0,
+      "status": "WIRED",
+      "ref_files": [
+        "app/(dev)/hermes/actions.ts",
+        "app/api/pie/v1/cron/route.ts",
+        "lib/menus/actions.ts",
+        "lib/openclaw/sync.ts",
+        "lib/pricing/chef-price-actions.ts"
+      ]
+    },
+    {
       "route": "/chef/[slug]/dashboard",
       "dynamic": true,
-      "refs": 515,
+      "refs": 517,
       "nav_refs": 8,
       "status": "WIRED",
       "ref_files": [
@@ -11049,7 +11354,7 @@
     {
       "route": "/client/[token]/events",
       "dynamic": true,
-      "refs": 682,
+      "refs": 687,
       "nav_refs": 5,
       "status": "WIRED",
       "ref_files": [
@@ -11278,7 +11583,7 @@
     {
       "route": "/chef/[slug]/cart",
       "dynamic": true,
-      "refs": 516,
+      "refs": 518,
       "nav_refs": 8,
       "status": "WIRED",
       "ref_files": [
@@ -11292,7 +11597,7 @@
     {
       "route": "/chef/[slug]/gift-cards",
       "dynamic": true,
-      "refs": 515,
+      "refs": 517,
       "nav_refs": 8,
       "status": "WIRED",
       "ref_files": [
@@ -11306,7 +11611,7 @@
     {
       "route": "/chef/[slug]/gift-cards/success",
       "dynamic": true,
-      "refs": 515,
+      "refs": 517,
       "nav_refs": 8,
       "status": "WIRED",
       "ref_files": [
@@ -11320,7 +11625,7 @@
     {
       "route": "/chef/[slug]/inquire",
       "dynamic": true,
-      "refs": 515,
+      "refs": 517,
       "nav_refs": 8,
       "status": "WIRED",
       "ref_files": [
@@ -11334,7 +11639,7 @@
     {
       "route": "/chef/[slug]/locations/[locationId]",
       "dynamic": true,
-      "refs": 515,
+      "refs": 517,
       "nav_refs": 8,
       "status": "WIRED",
       "ref_files": [
@@ -11348,7 +11653,7 @@
     {
       "route": "/chef/[slug]",
       "dynamic": true,
-      "refs": 515,
+      "refs": 517,
       "nav_refs": 8,
       "status": "WIRED",
       "ref_files": [
@@ -11362,7 +11667,7 @@
     {
       "route": "/chef/[slug]/partner-signup",
       "dynamic": true,
-      "refs": 516,
+      "refs": 518,
       "nav_refs": 8,
       "status": "WIRED",
       "ref_files": [
@@ -11376,7 +11681,7 @@
     {
       "route": "/chef/[slug]/store/orders/[token]",
       "dynamic": true,
-      "refs": 515,
+      "refs": 517,
       "nav_refs": 8,
       "status": "WIRED",
       "ref_files": [
@@ -11390,7 +11695,7 @@
     {
       "route": "/chef/[slug]/store",
       "dynamic": true,
-      "refs": 515,
+      "refs": 517,
       "nav_refs": 8,
       "status": "WIRED",
       "ref_files": [
@@ -11404,7 +11709,7 @@
     {
       "route": "/chef/[slug]/store/products/[productId]",
       "dynamic": true,
-      "refs": 515,
+      "refs": 517,
       "nav_refs": 8,
       "status": "WIRED",
       "ref_files": [
@@ -11631,7 +11936,7 @@
     {
       "route": "/event/[eventId]/guest/[secureToken]",
       "dynamic": true,
-      "refs": 991,
+      "refs": 1003,
       "nav_refs": 6,
       "status": "WIRED",
       "ref_files": [
@@ -11846,7 +12151,7 @@
     {
       "route": "/ingredient/[id]",
       "dynamic": true,
-      "refs": 111,
+      "refs": 113,
       "nav_refs": 1,
       "status": "WIRED",
       "ref_files": [
@@ -11860,7 +12165,7 @@
     {
       "route": "/ingredients",
       "dynamic": false,
-      "refs": 69,
+      "refs": 70,
       "nav_refs": 1,
       "status": "WIRED",
       "ref_files": [
@@ -11874,7 +12179,7 @@
     {
       "route": "/ingredients/[category]",
       "dynamic": true,
-      "refs": 69,
+      "refs": 70,
       "nav_refs": 1,
       "status": "WIRED",
       "ref_files": [
@@ -11972,7 +12277,7 @@
     {
       "route": "/nearby",
       "dynamic": false,
-      "refs": 66,
+      "refs": 68,
       "nav_refs": 0,
       "status": "WIRED",
       "ref_files": [
@@ -12013,7 +12318,7 @@
     {
       "route": "/nearby/[slug]/enhance",
       "dynamic": true,
-      "refs": 66,
+      "refs": 68,
       "nav_refs": 0,
       "status": "WIRED",
       "ref_files": [
@@ -12027,7 +12332,7 @@
     {
       "route": "/nearby/[slug]",
       "dynamic": true,
-      "refs": 66,
+      "refs": 68,
       "nav_refs": 0,
       "status": "WIRED",
       "ref_files": [
@@ -12185,7 +12490,7 @@
     {
       "route": "/review/[token]",
       "dynamic": true,
-      "refs": 74,
+      "refs": 75,
       "nav_refs": 1,
       "status": "WIRED",
       "ref_files": [
@@ -12324,8 +12629,8 @@
     {
       "route": "/tip/[token]",
       "dynamic": true,
-      "refs": 35,
-      "nav_refs": 0,
+      "refs": 36,
+      "nav_refs": 1,
       "status": "WIRED",
       "ref_files": [
         "app/(chef)/culinary/chefnotes/chefnotes-archive.tsx",
@@ -12338,15 +12643,15 @@
     {
       "route": "/trust",
       "dynamic": false,
-      "refs": 37,
+      "refs": 38,
       "nav_refs": 2,
       "status": "WIRED",
       "ref_files": [
+        "app/(chef)/business/ops/page.tsx",
         "app/(chef)/network/page.tsx",
         "app/(chef)/settings/protection/certifications/page.tsx",
         "app/(chef)/settings/protection/insurance/page.tsx",
-        "app/(chef)/staff/page.tsx",
-        "app/(public)/book/page.tsx"
+        "app/(chef)/staff/page.tsx"
       ]
     },
     {
@@ -12804,7 +13109,7 @@
     {
       "route": "/client/[token]/events/[eventId]/contract",
       "dynamic": true,
-      "refs": 682,
+      "refs": 687,
       "nav_refs": 5,
       "status": "WIRED",
       "ref_files": [
@@ -12818,7 +13123,7 @@
     {
       "route": "/client/[token]",
       "dynamic": true,
-      "refs": 682,
+      "refs": 687,
       "nav_refs": 5,
       "status": "WIRED",
       "ref_files": [
@@ -12832,7 +13137,7 @@
     {
       "route": "/client/[token]/pay/[eventId]",
       "dynamic": true,
-      "refs": 682,
+      "refs": 687,
       "nav_refs": 5,
       "status": "WIRED",
       "ref_files": [
@@ -12846,7 +13151,7 @@
     {
       "route": "/client/[token]/quotes/[quoteId]",
       "dynamic": true,
-      "refs": 682,
+      "refs": 687,
       "nav_refs": 5,
       "status": "WIRED",
       "ref_files": [

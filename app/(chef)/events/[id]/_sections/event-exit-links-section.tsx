@@ -7,7 +7,17 @@ import {
   getChefContext,
   mergeContext,
 } from '@/lib/exit-links/context-helpers'
-import { MapPin, Cloud, ShoppingCart, Calendar, CreditCard, Phone, Plane } from 'lucide-react'
+import {
+  MapPin,
+  Cloud,
+  ShoppingCart,
+  Calendar,
+  CreditCard,
+  Phone,
+  Plane,
+  Truck,
+  Wrench,
+} from 'lucide-react'
 
 interface EventExitLinksSectionProps {
   event: Record<string, unknown>
@@ -135,9 +145,36 @@ export function EventExitLinksSection({ event, client, user }: EventExitLinksSec
               <ExitLinkButton exitId={30} context={ctx} variant="compact" />
               <ExitLinkButton exitId={31} context={ctx} variant="compact" />
               <ExitLinkButton exitId={32} context={ctx} variant="compact" />
+              <ExitLinkButton exitId={37} context={ctx} variant="compact" />
             </div>
           </div>
         )}
+
+        {/* Vendor */}
+        <div className="space-y-1">
+          <div className="flex items-center gap-1.5 text-xs font-medium text-muted-foreground uppercase tracking-wider mb-1.5">
+            <Truck className={GROUP_ICON_CLASS} />
+            Vendor
+          </div>
+          <div className="flex flex-col gap-0.5">
+            <ExitLinkButton exitId={35} context={ctx} variant="compact" />
+            <ExitLinkButton exitId={36} context={ctx} variant="compact" />
+            <ExitLinkButton exitId={39} context={ctx} variant="compact" />
+          </div>
+        </div>
+
+        {/* Services */}
+        <div className="space-y-1">
+          <div className="flex items-center gap-1.5 text-xs font-medium text-muted-foreground uppercase tracking-wider mb-1.5">
+            <Wrench className={GROUP_ICON_CLASS} />
+            Services
+          </div>
+          <div className="flex flex-col gap-0.5">
+            <ExitLinkButton exitId={42} context={ctx} variant="compact" />
+            <ExitLinkButton exitId={46} context={ctx} variant="compact" />
+            <ExitLinkButton exitId={50} context={ctx} variant="compact" />
+          </div>
+        </div>
 
         {/* Travel (only for destination events) */}
         {isDestination && (

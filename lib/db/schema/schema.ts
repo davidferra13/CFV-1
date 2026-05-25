@@ -7820,7 +7820,7 @@ export const eventShareInvites = pgTable("event_share_invites", {
 	note: text(),
 	expiresAt: timestamp("expires_at", { withTimezone: true, mode: 'string' }),
 	consumedAt: timestamp("consumed_at", { withTimezone: true, mode: 'string' }),
-	consumedByGuestId: uuid("consumed_by_guest_id"),
+	consumedByGuestId: uuid("consumed_by_guest_id").references((): AnyPgColumn => eventGuests.id, { onDelete: "set null" }),
 	createdAt: timestamp("created_at", { withTimezone: true, mode: 'string' }).defaultNow().notNull(),
 	updatedAt: timestamp("updated_at", { withTimezone: true, mode: 'string' }).defaultNow().notNull(),
 	singleUse: boolean("single_use").default(false).notNull(),
@@ -7836,11 +7836,6 @@ export const eventShareInvites = pgTable("event_share_invites", {
 	index("idx_event_share_invites_tenant").using("btree", table.tenantId.asc().nullsLast().op("uuid_ops")),
 	index("idx_event_share_invites_token").using("btree", table.token.asc().nullsLast().op("text_ops")),
 	uniqueIndex("idx_event_share_invites_token_unique").using("btree", table.token.asc().nullsLast().op("text_ops")),
-	foreignKey({
-			columns: [table.consumedByGuestId],
-			foreignColumns: [eventGuests.id],
-			name: "event_share_invites_consumed_by_guest_id_fkey"
-		}).onDelete("set null"),
 	foreignKey({
 			columns: [table.createdByClientId],
 			foreignColumns: [clients.id],
@@ -8788,11 +8783,6 @@ export const eventJoinRequests = pgTable("event_join_requests", {
 			foreignColumns: [eventShares.id],
 			name: "event_join_requests_event_share_id_fkey"
 		}).onDelete("cascade"),
-	foreignKey({
-			columns: [table.guestId],
-			foreignColumns: [eventGuests.id],
-			name: "event_join_requests_guest_id_fkey"
-		}).onDelete("set null"),
 	foreignKey({
 			columns: [table.inviteId],
 			foreignColumns: [eventShareInvites.id],
@@ -15532,7 +15522,7 @@ export const eventGuests = pgTable("event_guests", {
 	id: uuid().defaultRandom().primaryKey().notNull(),
 	tenantId: uuid("tenant_id").notNull(),
 	eventId: uuid("event_id").notNull(),
-	eventShareId: uuid("event_share_id").notNull(),
+	eventShareId: uuid("event_share_id"),
 	guestToken: text("guest_token").notNull(),
 	fullName: text("full_name").notNull(),
 	email: text(),
@@ -15564,6 +15554,8 @@ export const eventGuests = pgTable("event_guests", {
 	spiceTolerance: text("spice_tolerance"),
 	dietaryConfirmedAt: timestamp("dietary_confirmed_at", { withTimezone: true, mode: 'string' }),
 	dietaryConfirmedVia: text("dietary_confirmed_via"),
+	source: text().default('share_link'),
+	guestLeadId: uuid("guest_lead_id"),
 }, (table) => [
 	index("idx_event_guests_event_id").using("btree", table.eventId.asc().nullsLast().op("uuid_ops")),
 	index("idx_event_guests_event_share_id").using("btree", table.eventShareId.asc().nullsLast().op("uuid_ops")),
@@ -15596,6 +15588,8 @@ export const eventGuests = pgTable("event_guests", {
 			foreignColumns: [chefs.id],
 			name: "event_guests_tenant_id_fkey"
 		}).onDelete("cascade"),
+	index("idx_event_guests_guest_lead_id").using("btree", table.guestLeadId.asc().nullsLast().op("uuid_ops")),
+	index("idx_event_guests_source").using("btree", table.source.asc().nullsLast().op("text_ops")),
 	unique("event_guests_guest_token_key").on(table.guestToken),
 	pgPolicy("event_guests_anon_insert_with_valid_share", { as: "permissive", for: "insert", to: ["anon"], withCheck: sql`(event_share_id IN ( SELECT event_shares.id
    FROM event_shares
@@ -20136,6 +20130,13 @@ export const chefs = pgTable("chefs", {
 	invoicePaymentTerms: text("invoice_payment_terms"),
 	invoiceTaxId: text("invoice_tax_id"),
 	invoiceFooterNote: text("invoice_footer_note"),
+	bankUrl: text("bank_url"),
+	accountantEmail: text("accountant_email"),
+	lawyerPhone: text("lawyer_phone"),
+	lawyerEmail: text("lawyer_email"),
+	insurancePortalUrl: text("insurance_portal_url"),
+	websiteAdminUrl: text("website_admin_url"),
+	commissaryUrl: text("commissary_url"),
 }, (table): any[] => [
 	index("idx_chefs_account_status").using("btree", table.accountStatus.asc().nullsLast().op("text_ops")),
 	index("idx_chefs_auth_user").using("btree", table.authUserId.asc().nullsLast().op("uuid_ops")),

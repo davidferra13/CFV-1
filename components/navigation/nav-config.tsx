@@ -1505,6 +1505,7 @@ export const navGroups: NavGroup[] = [
           { href: '/settings/platform-connections', label: 'Platform Connections' },
           { href: '/settings/stripe-connect', label: 'Stripe Connect' },
           { href: '/settings/yelp', label: 'Yelp' },
+          { href: '/settings/external-contacts', label: 'External Contacts' },
         ],
       },
       {
@@ -1652,6 +1653,12 @@ const settingsShortcutOptions: PrimaryShortcutOption[] = [
     context: 'Settings',
   },
   { href: '/settings/integrations', label: 'Integrations', icon: Settings, context: 'Settings' },
+  {
+    href: '/settings/external-contacts',
+    label: 'External Contacts',
+    icon: Settings,
+    context: 'Settings',
+  },
   {
     href: '/settings/templates',
     label: 'Response Templates',

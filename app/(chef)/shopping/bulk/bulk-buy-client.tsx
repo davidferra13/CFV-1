@@ -2,10 +2,14 @@
 
 import { useState, useTransition } from 'react'
 import type { BulkBuyOpportunity, ShoppingConsolidation } from '@/lib/intelligence/bulk-buy'
-import { getBulkBuyOpportunities, fetchShoppingConsolidation } from '@/lib/intelligence/bulk-buy-actions'
+import {
+  getBulkBuyOpportunities,
+  fetchShoppingConsolidation,
+} from '@/lib/intelligence/bulk-buy-actions'
 import { BulkBuyCard } from '@/components/intelligence/bulk-buy-card'
 import { ConsolidatedShoppingList } from '@/components/intelligence/consolidated-shopping-list'
 import { SavingsSummary } from '@/components/intelligence/savings-summary'
+import { ExitLinkButton } from '@/components/exit-links/ExitLinkButton'
 
 interface Props {
   initialOpportunities: BulkBuyOpportunity[]
@@ -56,9 +60,9 @@ export function BulkBuyClient({
   }
 
   const totalSavings = opportunities.reduce((sum, o) => sum + o.savingsCents, 0)
-  const recommendedCount = opportunities.filter(o => o.recommendation === 'recommended').length
-  const cautionCount = opportunities.filter(o => o.recommendation === 'caution').length
-  const skipCount = opportunities.filter(o => o.recommendation === 'skip').length
+  const recommendedCount = opportunities.filter((o) => o.recommendation === 'recommended').length
+  const cautionCount = opportunities.filter((o) => o.recommendation === 'caution').length
+  const skipCount = opportunities.filter((o) => o.recommendation === 'skip').length
   const eventsCovered = consolidation.eventsCovered
 
   return (
@@ -194,11 +198,10 @@ export function BulkBuyClient({
             <div>
               {opportunities.length === 0 ? (
                 <div className="rounded-lg border border-stone-700/40 bg-stone-900/40 p-8 text-center">
-                  <p className="text-stone-400 text-sm">
-                    No bulk buy opportunities found.
-                  </p>
+                  <p className="text-stone-400 text-sm">No bulk buy opportunities found.</p>
                   <p className="text-stone-500 text-xs mt-1">
-                    Bulk opportunities appear when 2 or more events share ingredients. Ensure events have menus with linked recipes.
+                    Bulk opportunities appear when 2 or more events share ingredients. Ensure events
+                    have menus with linked recipes.
                   </p>
                 </div>
               ) : (
@@ -214,6 +217,12 @@ export function BulkBuyClient({
           {activeTab === 'shopping-list' && (
             <ConsolidatedShoppingList consolidation={consolidation} />
           )}
+
+          {/* Shopping exit links */}
+          <div className="flex flex-wrap items-center gap-2 pt-2">
+            <ExitLinkButton exitId={5} context={{}} variant="compact" />
+            <ExitLinkButton exitId={6} context={{}} variant="compact" />
+          </div>
         </>
       )}
     </div>

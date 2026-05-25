@@ -921,6 +921,13 @@ const CONTRACTS: UrlCapabilityContract[] = [
         'secondary'
       ),
       action(
+        'settings.externalContacts',
+        'External Contacts',
+        '/settings/external-contacts',
+        'Bank, lawyer, accountant, commissary links.',
+        'secondary'
+      ),
+      action(
         'settings.dashboard',
         'Dashboard layout',
         '/settings/dashboard',

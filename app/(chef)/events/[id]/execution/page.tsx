@@ -18,6 +18,7 @@ import { Button } from '@/components/ui/button'
 import { ServiceSimulationRollupCard } from '@/components/events/service-simulation-rollup-card'
 import { loadEventServiceSimulationPanelState } from '@/lib/service-simulation/state'
 import { sanitizeReturnTo } from '@/lib/navigation/return-to'
+import { ExitLinkButton } from '@/components/exit-links/ExitLinkButton'
 
 function getExecutionTargetLabel(status: string): string {
   if (status === 'paid') return 'Confirm Event'
@@ -118,6 +119,21 @@ export default async function EventExecutionPage({
           onStop={stopEventActivity}
         />
       ) : null}
+
+      {/* Quick Tools */}
+      <div className="rounded-lg border border-stone-700 bg-stone-900/70 px-4 py-3">
+        <p className="text-xs font-medium text-stone-500 uppercase tracking-wide mb-2">
+          Quick Tools
+        </p>
+        <div className="flex flex-wrap gap-2">
+          <ExitLinkButton exitId={88} context={{ minutes: '15' }} variant="outline" />
+          <ExitLinkButton
+            exitId={90}
+            context={{ ambianceNote: 'dinner ambiance' }}
+            variant="outline"
+          />
+        </div>
+      </div>
     </div>
   )
 }
