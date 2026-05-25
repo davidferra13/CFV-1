@@ -219,6 +219,7 @@ Required closeout:
 3. Run `/page-xray` on every affected route from the matrix, using `--delta` for existing pages and `--quick` for new pages.
 4. For every high or medium relevance domain, either wire it, prove it is already wired, queue a follow-up, or record a clear N/A reason.
 5. Do not mark a build done while a live route, server action, component, Rail profile, Circle hook, Priority Queue action, commitment state, menu/PIE/client intelligence path, notification, lifecycle transition, ledger path, or command/nav entry is obviously missing.
+6. Run `/crucible`. Grade B required to mark done. If below B after Crucible's fix pass, address remaining gaps before closeout.
 
 ### Test Coverage Blueprint Contract
 
