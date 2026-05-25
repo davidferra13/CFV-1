@@ -78,9 +78,25 @@ function CommandCenterSkeleton() {
   )
 }
 
-async function CommandCenterLoader() {
+async function CommandCenterWithWeight() {
   const data = await getCommandCenterData()
-  return <CommandCenterLayout data={data} onRefresh={getCommandCenterData} />
+  const totalItems =
+    data.attentionItems.length + data.todayEvents.length + data.metrics.openInquiries
+  const mode = totalItems > 0 ? 'expanded' : 'whisper'
+  const whisperText = totalItems === 0 ? 'Command Center: all clear' : undefined
+
+  return (
+    <SectionShell
+      sectionId="command-center"
+      mode={mode}
+      label="Command Center"
+      whisperText={whisperText}
+    >
+      <WidgetErrorBoundary name="Command Center" compact>
+        <CommandCenterLayout data={data} onRefresh={getCommandCenterData} />
+      </WidgetErrorBoundary>
+    </SectionShell>
+  )
 }
 
 export default async function ChefDashboard() {
@@ -94,14 +110,10 @@ export default async function ChefDashboard() {
     <div className="dashboard-page min-h-screen space-y-8 sm:space-y-10">
       <AttentionRail chips={[]} />
 
-      {/* 1. Command Center */}
-      <SectionShell sectionId="command-center" mode="expanded" label="Command Center">
-        <WidgetErrorBoundary name="Command Center" compact>
-          <Suspense fallback={<CommandCenterSkeleton />}>
-            <CommandCenterLoader />
-          </Suspense>
-        </WidgetErrorBoundary>
-      </SectionShell>
+      {/* 1. Command Center (smart mode: expands when items need attention, whispers when clear) */}
+      <Suspense fallback={<CommandCenterSkeleton />}>
+        <CommandCenterWithWeight />
+      </Suspense>
 
       {/* 2. Daily Plan Banner */}
       <SectionShell sectionId="daily-plan" mode="expanded" label="Daily Plan">
