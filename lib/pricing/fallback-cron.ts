@@ -1,5 +1,4 @@
-import { db } from '@/lib/db'
-import { sql } from 'drizzle-orm'
+﻿import { pgClient } from '@/lib/db'
 import { isHermesAlive } from './hermes-heartbeat'
 import { logHermesAction } from './hermes-actions'
 import { runAutoExpansion } from './auto-expansion-engine'
@@ -25,12 +24,12 @@ export async function runFallbackTask(task: FallbackTask): Promise<FallbackResul
 
   switch (task) {
     case 'freshness': {
-      const staleItems = (await db.execute(sql`
-        SELECT id FROM ingredient_price_history
+      const staleItems = (await pgClient`
+        SELECT id FROM public.ingredient_price_history
         WHERE purchase_date < NOW() - INTERVAL '7 days'
         ORDER BY purchase_date ASC NULLS FIRST
         LIMIT 100
-      `)) as unknown as Array<{ id: string }>
+      `) as unknown as Array<{ id: string }>
 
       await logHermesAction({
         skill: 'pie-acquire',
@@ -91,14 +90,17 @@ export async function runFallbackTask(task: FallbackTask): Promise<FallbackResul
     }
 
     case 'measure': {
-      const coverage = (await db.execute(sql`
-        SELECT
-          (SELECT COUNT(*) FROM ingredient_census) AS total_census,
-          (SELECT COUNT(DISTINCT canonical_ingredient_id) FROM ingredient_price_history) AS with_price
-      `)) as unknown as Array<{ total_census: number; with_price: number }>
+      const [censusResult, priceResult] = (await Promise.all([
+        pgClient`SELECT reltuples::bigint AS total_census FROM pg_class WHERE relname = 'ingredient_census'`.catch(
+          () => [{ total_census: 0 }]
+        ),
+        pgClient`SELECT reltuples::bigint AS with_price FROM pg_class WHERE relname = 'ingredient_price_history'`,
+      ])) as unknown as [Array<{ total_census: number }>, Array<{ with_price: number }>]
 
-      const row = coverage[0]
-      const pct = row ? Math.round((row.with_price / Math.max(row.total_census, 1)) * 100) : 0
+      const totalCensus = Number(censusResult[0]?.total_census ?? 0)
+      const withPrice = Number(priceResult[0]?.with_price ?? 0)
+      const pct = totalCensus > 0 ? Math.round((withPrice / totalCensus) * 100) : 0
+      const row = { total_census: totalCensus, with_price: withPrice }
 
       await logHermesAction({
         skill: 'pie-measure',

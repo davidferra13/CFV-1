@@ -46,7 +46,11 @@ export async function POST(request: NextRequest) {
 
       const fallbackTasks: FallbackTask[] = ['freshness', 'alert', 'ratchet', 'measure']
       for (const ft of fallbackTasks) {
-        results[ft] = await runFallbackTask(ft)
+        try {
+          results[ft] = await runFallbackTask(ft)
+        } catch (e) {
+          results[ft] = { skipped: false, task: ft, error: String(e) }
+        }
       }
 
       return NextResponse.json({
