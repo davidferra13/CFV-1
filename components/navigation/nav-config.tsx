@@ -35,7 +35,6 @@ import {
   Exam,
   FileText,
   Flame,
-  FlagBanner,
   Flower,
   Funnel,
   Gift,
@@ -81,7 +80,6 @@ import {
   Target,
   Timer,
   Toolbox,
-  TreeStructure,
   TrendingUp,
   Truck,
   Upload,
@@ -254,14 +252,14 @@ export const navGroups: NavGroup[] = [
         icon: ChartLineUp,
       },
       {
+        href: '/surveys',
+        label: 'Surveys & Feedback',
+        icon: ClipboardCheck,
+      },
+      {
         href: '/analytics/health',
         label: 'System Health',
         icon: Activity,
-      },
-      {
-        href: '/surveys',
-        label: 'Surveys',
-        icon: ClipboardCheck,
       },
       {
         href: '/analytics/vendors',
@@ -297,11 +295,6 @@ export const navGroups: NavGroup[] = [
         ],
       },
       {
-        href: '/clients/contribution',
-        label: 'Client Contribution',
-        icon: ChartLineUp,
-      },
-      {
         href: '/clients/history',
         label: 'Client History',
         icon: Clock,
@@ -334,7 +327,7 @@ export const navGroups: NavGroup[] = [
       },
       {
         href: '/pulse',
-        label: "Who's Waiting",
+        label: 'Client Pulse',
         icon: Activity,
         children: [{ href: '/waiting', label: 'Waiting Radar' }],
       },
@@ -449,7 +442,7 @@ export const navGroups: NavGroup[] = [
       },
       {
         href: '/commerce/storefront',
-        label: 'Passive Storefront',
+        label: 'Online Store',
         icon: Store,
       },
       {
@@ -545,11 +538,6 @@ export const navGroups: NavGroup[] = [
         icon: Lightbulb,
       },
       {
-        href: '/culinary/tips',
-        label: 'Culinary Tips',
-        icon: Lightbulb,
-      },
-      {
         href: '/culinary/price-catalog',
         label: 'Food Catalog',
         icon: Store,
@@ -565,11 +553,6 @@ export const navGroups: NavGroup[] = [
           { href: '/culinary/ingredients/seasonal-availability', label: 'Seasonal Availability' },
           { href: '/culinary/ingredients/vendor-notes', label: 'Vendor Notes' },
         ],
-      },
-      {
-        href: '/settings/menu-engine',
-        label: 'Menu Engine Settings',
-        icon: Sliders,
       },
       {
         href: '/menus',
@@ -641,34 +624,29 @@ export const navGroups: NavGroup[] = [
         icon: CalendarDays,
       },
       {
-        href: '/culinary/sustainability',
-        label: 'Sustainability Ledger',
-        icon: Flower,
-      },
-      {
-        href: '/settings/repertoire',
-        label: 'Seasonal Palettes',
-        icon: Flower,
-      },
-      {
         href: '/culinary/substitutions',
         label: 'Substitutions',
         icon: RefreshCw,
       },
       {
-        href: '/culinary/vendors',
-        label: 'Culinary Vendors',
-        icon: Store,
-      },
-      {
         href: '/culinary/call-sheet',
-        label: 'Voice Hub',
+        label: 'Supplier Calls',
         icon: Phone,
         children: [
           { href: '/culinary/call-sheet', label: 'Call Sheet' },
           { href: '/culinary/sourcing', label: 'Source Ingredients' },
           { href: '/culinary/supplier-calls', label: 'Supplier Calls' },
         ],
+      },
+      {
+        href: '/culinary/sustainability',
+        label: 'Sustainability Ledger',
+        icon: Flower,
+      },
+      {
+        href: '/culinary/vendors',
+        label: 'Vendors',
+        icon: Store,
       },
     ],
   },
@@ -696,11 +674,6 @@ export const navGroups: NavGroup[] = [
         href: '/events/current',
         label: 'Current Events',
         icon: Compass,
-      },
-      {
-        href: '/surveys',
-        label: 'Client Feedback',
-        icon: Star,
       },
       {
         href: '/events/equipment-check',
@@ -783,7 +756,6 @@ export const navGroups: NavGroup[] = [
         label: 'Financial Hub',
         icon: DollarSign,
         children: [
-          { href: '/finance/overview/cash-flow', label: 'Cash Flow', hidden: true },
           { href: '/finance/clarity', label: 'Financial Clarity' },
           { href: '/finance/cockpit', label: 'Financial Cockpit' },
           { href: '/finance', label: 'Finance Home' },
@@ -796,7 +768,6 @@ export const navGroups: NavGroup[] = [
         href: '/finance/forecast',
         label: 'Forecasting',
         icon: TrendingUp,
-        children: [{ href: '/finance/cash-flow', label: 'Cash Flow Forecast', hidden: true }],
       },
       {
         href: '/finance/invoices',
@@ -823,21 +794,6 @@ export const navGroups: NavGroup[] = [
         ],
       },
       {
-        href: '/payments/splitting',
-        label: 'Payment Splitting',
-        icon: CurrencyCircleDollar,
-      },
-      {
-        href: '/payments',
-        label: 'Payments',
-        icon: CreditCard,
-      },
-      {
-        href: '/pie-cart',
-        label: 'PIE Cart',
-        icon: PieChart,
-      },
-      {
         href: '/finance/payments',
         label: 'Payments',
         icon: CurrencyCircleDollar,
@@ -849,6 +805,7 @@ export const navGroups: NavGroup[] = [
           { href: '/finance/retainers/new', label: 'New Retainer' },
           { href: '/finance/payments/refunds', label: 'Refunds' },
           { href: '/finance/retainers', label: 'Retainers' },
+          { href: '/payments/splitting', label: 'Splitting' },
         ],
       },
       {
@@ -856,7 +813,6 @@ export const navGroups: NavGroup[] = [
         label: 'Payouts',
         icon: Landmark,
         children: [
-          { href: '/finance/bank-feed', label: 'Bank Feed', hidden: true },
           { href: '/finance/payouts/manual-payments', label: 'Manual Payments' },
           { href: '/finance/payouts/reconciliation', label: 'Reconciliation' },
           { href: '/finance/payouts/stripe-payouts', label: 'Stripe Payouts' },
@@ -872,6 +828,11 @@ export const navGroups: NavGroup[] = [
           { href: '/finance/payroll/run', label: 'Run Payroll' },
           { href: '/finance/payroll/w2', label: 'W-2 Forms' },
         ],
+      },
+      {
+        href: '/pie-cart',
+        label: 'Price Check',
+        icon: PieChart,
       },
       {
         href: '/finance/reporting',
@@ -958,22 +919,13 @@ export const navGroups: NavGroup[] = [
         icon: ShieldAlert,
       },
       {
-        href: '/marketing/content-pipeline',
-        label: 'Campaign Content',
-        icon: PenNib,
-      },
-      {
-        href: '/content',
-        label: 'Content Pipeline',
-        icon: Kanban,
-      },
-      {
         href: '/marketing/social',
-        label: 'Content Planner',
+        label: 'Content & Social',
         icon: PenNib,
         children: [
-          { href: '/marketing/social', label: 'Content Calendar' },
+          { href: '/content', label: 'Content Pipeline' },
           { href: '/content/vault', label: 'Media Vault' },
+          { href: '/marketing/social', label: 'Post Planner' },
           { href: '/marketing/social/connections', label: 'Platform Connections' },
           { href: '/marketing/social/settings', label: 'Queue Settings' },
           { href: '/marketing/social/templates', label: 'Social Templates' },
@@ -1001,15 +953,6 @@ export const navGroups: NavGroup[] = [
         icon: Star,
       },
       {
-        href: '/marketing/social',
-        label: 'Social Media',
-        icon: MessagesSquare,
-        children: [
-          { href: '/circles/admin', label: 'Dinner Circle Overview' },
-          { href: '/marketing/social', label: 'Post Planner' },
-        ],
-      },
-      {
         href: '/social',
         label: 'Social Hub',
         icon: Broadcast,
@@ -1026,13 +969,6 @@ export const navGroups: NavGroup[] = [
         href: '/circles',
         label: 'Circles',
         icon: MessagesSquare,
-      },
-      {
-        href: '/events/charity',
-        label: 'Community Impact',
-        icon: HeartHandshake,
-        hidden: true,
-        children: [{ href: '/events/charity/hours', label: 'Volunteer Hours' }],
       },
       {
         href: '/charity',
@@ -1054,21 +990,31 @@ export const navGroups: NavGroup[] = [
         label: 'Community',
         icon: FileText,
         children: [
+          { href: '/community/benchmarks', label: 'Benchmarks' },
           { href: '/community/directory', label: 'Chef Directory' },
           { href: '/community/mentorship', label: 'Mentorship' },
-          { href: '/community/subcontracts', label: 'Subcontracts' },
           { href: '/community/messaging', label: 'Messaging' },
-          { href: '/community/benchmarks', label: 'Benchmarks' },
-          { href: '/community/templates', label: 'Templates' },
-          { href: '/community/roadmap', label: 'Feature Board' },
           { href: '/community/profile', label: 'My Profile' },
+          { href: '/community/roadmap', label: 'Feature Board' },
+          { href: '/community/subcontracts', label: 'Subcontracts' },
+          { href: '/community/templates', label: 'Templates' },
         ],
       },
       {
-        href: '/wix-submissions',
-        label: 'Wix Submissions',
-        icon: Inbox,
-        hidden: true,
+        href: '/explore',
+        label: 'Discover',
+        icon: Compass,
+        children: [
+          { href: '/explore/book', label: 'Book a Chef' },
+          { href: '/explore/discover', label: 'Browse' },
+          { href: '/explore/events', label: 'Events' },
+          { href: '/explore/local', label: 'Local Food' },
+        ],
+      },
+      {
+        href: '/chat',
+        label: 'Messaging',
+        icon: MessageCircle,
       },
     ],
   },
@@ -1137,11 +1083,6 @@ export const navGroups: NavGroup[] = [
         icon: Zap,
       },
       {
-        href: '/calendar',
-        label: 'Calendar',
-        icon: CalendarCheck,
-      },
-      {
         href: '/staff',
         label: 'Staff',
         icon: IdentificationBadge,
@@ -1196,11 +1137,6 @@ export const navGroups: NavGroup[] = [
         icon: Users,
       },
       {
-        href: '/events/travel',
-        label: 'Travel Planning',
-        icon: MapPin,
-      },
-      {
         href: '/travel',
         label: 'Travel',
         icon: MapPin,
@@ -1224,14 +1160,10 @@ export const navGroups: NavGroup[] = [
         ],
       },
       {
-        href: '/quotes/calculator',
-        label: 'Consulting Hub',
-        icon: Compass,
-      },
-      {
         href: '/consulting',
         label: 'Consulting',
         icon: Compass,
+        children: [{ href: '/quotes/calculator', label: 'Quote Calculator' }],
       },
       {
         href: '/contracts',
@@ -1241,7 +1173,6 @@ export const navGroups: NavGroup[] = [
           { href: '/contracts/clauses', label: 'Clause Library' },
           { href: '/contracts/compose', label: 'Compose Contract' },
           { href: '/contracts/new', label: 'New Contract' },
-          { href: '/settings/contracts', label: 'Templates' },
         ],
       },
       {
@@ -1258,15 +1189,11 @@ export const navGroups: NavGroup[] = [
         ],
       },
       {
-        href: '/guest-leads',
-        label: 'Guest Leads',
-        icon: Contact,
-      },
-      {
         href: '/leads',
-        label: 'Inquiries',
+        label: 'Lead Funnel',
         icon: Target,
         children: [
+          { href: '/guest-leads', label: 'Guest Leads' },
           { href: '/leads/archived', label: 'Archived' },
           { href: '/leads/contacted', label: 'Contacted' },
           { href: '/leads/converted', label: 'Converted' },
@@ -1286,7 +1213,7 @@ export const navGroups: NavGroup[] = [
       },
       {
         href: '/pipeline',
-        label: 'Pipeline',
+        label: 'Pipeline Board',
         icon: Kanban,
       },
       {
@@ -1334,11 +1261,6 @@ export const navGroups: NavGroup[] = [
         icon: Coins,
       },
       {
-        href: '/reviews',
-        label: 'Reviews',
-        icon: Star,
-      },
-      {
         href: '/wix-submissions',
         label: 'Wix Forms',
         icon: Inbox,
@@ -1382,16 +1304,6 @@ export const navGroups: NavGroup[] = [
         children: [{ href: '/settings/compliance/incidents/new', label: 'Report Incident' }],
       },
       {
-        href: '/settings/compliance/claims',
-        label: 'Insurance Claims',
-        icon: ShieldAlert,
-        hidden: true,
-        children: [
-          { href: '/settings/compliance/claims/documents', label: 'Claim Documents' },
-          { href: '/settings/compliance/claims/new', label: 'New Claim' },
-        ],
-      },
-      {
         href: '/cannabis',
         label: 'Cannabis Compliance',
         icon: Flower,
@@ -1405,11 +1317,11 @@ export const navGroups: NavGroup[] = [
         label: 'Backup Chef',
         icon: ShieldCheck,
         children: [
+          { href: '/safety/claims', label: 'Claims' },
           { href: '/safety/claims/documents', label: 'Claim Documents' },
           { href: '/safety/claims/new', label: 'New Claim' },
-          { href: '/safety/claims', label: 'Claims' },
-          { href: '/safety/incidents/new', label: 'New Incident' },
           { href: '/safety/incidents', label: 'Incidents' },
+          { href: '/safety/incidents/new', label: 'New Incident' },
         ],
       },
     ],
@@ -1434,12 +1346,10 @@ export const navGroups: NavGroup[] = [
         href: '/food-cost',
         label: 'Food Cost',
         icon: Calculator,
-        children: [{ href: '/food-cost/revenue', label: 'Daily Revenue' }],
-      },
-      {
-        href: '/inventory/food-cost',
-        label: 'Food Cost Analysis',
-        icon: Calculator,
+        children: [
+          { href: '/food-cost/revenue', label: 'Daily Revenue' },
+          { href: '/inventory/food-cost', label: 'Detailed Analysis' },
+        ],
       },
       {
         href: '/inventory/counts',
@@ -1475,7 +1385,7 @@ export const navGroups: NavGroup[] = [
       },
       {
         href: '/vendors',
-        label: 'Purveyors',
+        label: 'Suppliers',
         icon: Truck,
         children: [
           { href: '/vendors/invoices', label: 'Invoices' },
@@ -1532,7 +1442,7 @@ export const navGroups: NavGroup[] = [
       },
       {
         href: '/communication',
-        label: 'Communication',
+        label: 'Drafts & Outbound',
         icon: ChatDots,
       },
       {
@@ -1543,12 +1453,8 @@ export const navGroups: NavGroup[] = [
           { href: '/import/csv', label: 'CSV Import' },
           { href: '/import/history', label: 'Import History' },
           { href: '/import/mxp', label: 'MasterCook Import' },
+          { href: '/imports/business-history', label: 'Business History' },
         ],
-      },
-      {
-        href: '/imports/business-history',
-        label: 'Business History Import',
-        icon: Upload,
       },
       {
         href: '/help',
@@ -1577,22 +1483,14 @@ export const navGroups: NavGroup[] = [
         label: 'Integrations',
         icon: Settings,
         children: [
-          { href: '/settings/api-keys', label: 'API Keys', hidden: true },
           { href: '/settings/automations', label: 'Automations' },
           { href: '/settings/calendar-sync', label: 'Calendar Sync' },
           { href: '/settings/custom-fields', label: 'Custom Fields' },
           { href: '/settings/embed', label: 'Embed Widget' },
           { href: '/settings/platform-connections', label: 'Platform Connections' },
           { href: '/settings/stripe-connect', label: 'Stripe Connect' },
-          { href: '/settings/webhooks', label: 'Webhooks', hidden: true },
           { href: '/settings/yelp', label: 'Yelp' },
-          { href: '/settings/zapier', label: 'Zapier', hidden: true },
         ],
-      },
-      {
-        href: '/chat',
-        label: 'Messaging',
-        icon: MessageCircle,
       },
       {
         href: '/briefing',
@@ -1641,39 +1539,6 @@ export const navGroups: NavGroup[] = [
           { href: '/reputation/mentions', label: 'Mentions' },
           { href: '/reputation/studio', label: 'Reputation Studio' },
         ],
-      },
-    ],
-  },
-  {
-    id: 'explore',
-    label: 'Explore',
-    icon: Compass,
-    module: 'more',
-    items: [
-      {
-        href: '/explore',
-        label: 'Explore Hub',
-        icon: Compass,
-      },
-      {
-        href: '/explore/discover',
-        label: 'Discover',
-        icon: Compass,
-      },
-      {
-        href: '/explore/book',
-        label: 'Book a Chef',
-        icon: Users,
-      },
-      {
-        href: '/explore/events',
-        label: 'Events',
-        icon: CalendarDays,
-      },
-      {
-        href: '/explore/local',
-        label: 'Local Food',
-        icon: MapPin,
       },
     ],
   },
@@ -1844,20 +1709,6 @@ const settingsShortcutOptions: PrimaryShortcutOption[] = [
   },
   { href: '/settings/ai-privacy', label: 'AI & Privacy', icon: ShieldCheck, context: 'Settings' },
   {
-    href: '/settings/api-keys',
-    label: 'API Keys',
-    icon: Settings,
-    context: 'Settings',
-    hidden: true,
-  },
-  {
-    href: '/settings/webhooks',
-    label: 'Webhooks',
-    icon: Settings,
-    context: 'Settings',
-    hidden: true,
-  },
-  {
     href: '/settings/compliance/gdpr',
     label: 'GDPR & Data Privacy',
     icon: Settings,
@@ -1951,13 +1802,6 @@ const settingsShortcutOptions: PrimaryShortcutOption[] = [
     label: 'Digital Wallets',
     icon: Settings,
     context: 'Settings',
-  },
-  {
-    href: '/settings/zapier',
-    label: 'Zapier & Webhooks',
-    icon: Settings,
-    context: 'Settings',
-    hidden: true,
   },
   {
     href: '/settings/yelp',
