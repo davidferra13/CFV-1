@@ -20,7 +20,7 @@ export const DEFAULT_CALENDAR_FILTERS: CalendarFilters = {
   showPersonal: true,
   showBusiness: true,
   showIntentions: true,
-  showLeads: false,
+  showLeads: true,
 }
 
 // ── Calendar Saved Views (Calendar Sets) ────────────────────────────────────

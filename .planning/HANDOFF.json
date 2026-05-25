@@ -1,126 +1,33 @@
 {
   "version": "1.0",
-  "timestamp": "2026-05-25T04:01:02.016Z",
-  "source": "auto-postool",
+  "timestamp": "2026-05-25T22:00:00.000Z",
+  "source": "calendar-command-center-session",
   "partial": false,
   "phase": null,
-  "phase_name": null,
+  "phase_name": "Calendar Command Center Assessment",
   "phase_dir": null,
   "plan": null,
   "task": null,
   "total_tasks": null,
-  "status": "auto-checkpoint",
-  "completed_tasks": [],
+  "status": "session-complete",
+  "completed_tasks": [
+    "Full calendar infrastructure audit (7 data sources, 25+ colors, 4 views, filtering, drag-to-reschedule)",
+    "Fixed leads hidden by default: showLeads false->true in lib/calendar/constants.ts",
+    "Practical-question-dreamer deep-mine on calendar (12 questions, all answered via code inspection)",
+    "Queued 3 SPEC-READY calendar items in UNIFIED-BUILD-QUEUE.md (#6-8 under ADMIN & OPERATIONS)"
+  ],
   "remaining_tasks": [],
   "blockers": [],
   "human_actions_pending": [],
-  "decisions": [],
-  "uncommitted_files": [
-    {
-      "status": "M",
-      "path": ".claude-session-scope"
-    },
-    {
-      "status": "M",
-      "path": ".planning/HANDOFF.json"
-    },
-    {
-      "status": "M",
-      "path": "app/(chef)/clients/[id]/page.tsx"
-    },
-    {
-      "status": "M",
-      "path": "app/(chef)/events/[id]/page.tsx"
-    },
-    {
-      "status": "M",
-      "path": "app/(staff)/staff-tasks/page.tsx"
-    },
-    {
-      "status": "M",
-      "path": "components/dashboard/attention-rail.tsx"
-    },
-    {
-      "status": "M",
-      "path": "components/dashboard/chef-todo-widget.tsx"
-    },
-    {
-      "status": "M",
-      "path": "components/queue/snooze-popover.tsx"
-    },
-    {
-      "status": "M",
-      "path": "docs/build-state.md"
-    },
-    {
-      "status": "M",
-      "path": "docs/sync-status.json"
-    },
-    {
-      "status": "M",
-      "path": "lib/ai/reactive/handlers.ts"
-    },
-    {
-      "status": "M",
-      "path": "lib/dashboard/snooze.ts"
-    },
-    {
-      "status": "M",
-      "path": "lib/hooks/use-queue-snooze.ts"
-    },
-    {
-      "status": "M",
-      "path": "lib/remy/routines/engine.ts"
-    },
-    {
-      "status": "M",
-      "path": "lib/staff/staff-portal-actions.ts"
-    },
-    {
-      "status": "M",
-      "path": "lib/todos/actions.ts"
-    },
-    {
-      "status": "M",
-      "path": "package-lock.json"
-    },
-    {
-      "status": "M",
-      "path": "package.json"
-    },
-    {
-      "status": "M",
-      "path": "scripts/wiring-audit-results.json"
-    },
-    {
-      "status": "??",
-      "path": "components/staff/staff-task-status-board.tsx"
-    },
-    {
-      "status": "??",
-      "path": "components/todos/"
-    },
-    {
-      "status": "??",
-      "path": "docs/specs/remy-snooze-escalation.md"
-    },
-    {
-      "status": "??",
-      "path": "docs/superpowers/plans/2026-05-24-pie-hermes-intelligence-layer.md"
-    },
-    {
-      "status": "??",
-      "path": "docs/superpowers/specs/2026-05-24-pie-hermes-intelligence-layer-design.md"
-    },
-    {
-      "status": "??",
-      "path": "lib/remy/snooze-escalation.ts"
-    },
-    {
-      "status": "??",
-      "path": "tests/unit/snooze-escalation.test.ts"
-    }
+  "decisions": [
+    "Leads ON by default in calendar (was OFF). Full View now shows everything.",
+    "3 calendar UX items queued: Month Summary Bar, Undated Inquiry Indicator, Mini-Calendar Dot Differentiation"
   ],
-  "next_action": null,
-  "context_notes": "Recent commits:\nfd773f6c8 feat(pie): wire chef actions to Hermes event queue (menu, price, ingredient)\n2deeca820 feat(pie): add /dev/hermes monitoring dashboard (dev-only)\n8783b4bbd feat(nav): expand Action Bar with full chef daily-driver set\n502b307a0 feat(pie): add heartbeat-gated fallback mode to PIE cron route\naaa7ef884 feat(pie): add deterministic fallback cron (activates when Hermes down)"
+  "uncommitted_files": [
+    { "status": "M", "path": "lib/calendar/constants.ts" },
+    { "status": "M", "path": "docs/UNIFIED-BUILD-QUEUE.md" },
+    { "status": "M", "path": ".planning/HANDOFF.json" }
+  ],
+  "next_action": "Commit calendar fixes (constants.ts + build queue). Then pick up next priority from queue or start speccing calendar items #6-8.",
+  "context_notes": "Calendar infrastructure is 90% complete. Core fix: showLeads was false, now true. Three UX gaps identified and queued: (1) Month Summary Bar for at-a-glance counts when flipping months, (2) Undated Inquiry Indicator so dateless leads aren't invisible, (3) Mini-Calendar Dot Differentiation so leads-only days don't look fully booked. Known but unqueued: /calendar/entry/${id} route likely 404s, no drag conflict detection, waitlist deep-links generic, agenda capped at 30 items, mobile not optimized. All calendar files: lib/calendar/ (actions.ts, constants.ts, colors.ts, types.ts, entry-actions.ts, reschedule-action.ts), components/calendar/ (unified-calendar-view.tsx, calendar-filter-panel.tsx, calendar-legend.tsx, calendar-entry-modal.tsx), app/(chef)/calendar/ (page.tsx + 6 sub-routes)."
 }
