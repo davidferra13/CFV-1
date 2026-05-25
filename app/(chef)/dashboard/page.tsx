@@ -7,13 +7,21 @@ import type { Metadata } from 'next'
 import { cookies } from 'next/headers'
 import { requireChef } from '@/lib/auth/get-user'
 import { getPriorityQueue } from '@/lib/queue/actions'
-import { EMPTY_PRIORITY_QUEUE } from '@/lib/queue/types'
+import { EMPTY_PRIORITY_QUEUE, type PriorityQueue } from '@/lib/queue/types'
+import { mergeChips, filterActiveChips } from '@/lib/dashboard/chip-providers'
+import type { AttentionChip } from '@/lib/dashboard/section-types'
 import { WidgetErrorBoundary } from '@/components/ui/widget-error-boundary'
 import { WidgetCardSkeleton } from '@/components/dashboard/widget-cards/widget-card-shell'
 import { TieredRailSkeleton } from '@/components/rail/tiered-rail'
 import { getDailyPlanStats } from '@/lib/daily-ops/actions'
 import { DailyPlanBanner } from '@/components/daily-ops/daily-plan-banner'
-import { getCommandCenterData } from '@/lib/command-center/attention-actions'
+import {
+  getCommandCenterData,
+  type CommandCenterPayload,
+} from '@/lib/command-center/attention-actions'
+import { getSignalsForDisplay } from '@/lib/cil/signal-actions'
+import type { ProactiveSignal } from '@/lib/cil/types'
+import type { AttentionUrgency } from '@/lib/command-center/attention-aggregator'
 import { CommandCenterLayout } from '@/components/command-center/command-center-layout'
 import { AttentionRail } from '@/components/dashboard/attention-rail'
 import { SectionShell } from '@/components/dashboard/section-shell'
@@ -54,32 +62,188 @@ import { LazyBusinessHealthTrigger } from './_sections/lazy-business-health'
 
 export const metadata: Metadata = { title: 'Dashboard' }
 
-// ---- Command Center loader (primary morning screen) ----
+// ---- Chip extraction (module-level, not exported) ----
 
-function CommandCenterSkeleton() {
-  return (
-    <div className="space-y-6 animate-pulse">
-      <div className="h-8 w-64 bg-stone-800 rounded" />
-      <div className="flex gap-2">
-        <div className="h-8 w-32 bg-stone-800 rounded-full" />
-        <div className="h-8 w-32 bg-stone-800 rounded-full" />
-      </div>
-      <div className="grid grid-cols-1 lg:grid-cols-5 gap-6">
-        <div className="lg:col-span-3 space-y-3">
-          <div className="h-32 bg-stone-900/50 rounded-xl" />
-          <div className="h-24 bg-stone-900/50 rounded-xl" />
-        </div>
-        <div className="lg:col-span-2 space-y-4">
-          <div className="h-40 bg-stone-900/50 rounded-xl" />
-          <div className="h-28 bg-stone-900/50 rounded-xl" />
-        </div>
-      </div>
-    </div>
-  )
+const URGENCY_SCORE_MAP: Record<AttentionUrgency, number> = {
+  critical: 95,
+  high: 80,
+  medium: 60,
+  low: 40,
 }
 
-async function CommandCenterWithWeight() {
-  const data = await getCommandCenterData()
+const EMPTY_CC_DATA: CommandCenterPayload = {
+  attentionItems: [],
+  todayEvents: [],
+  todayRevenueCents: 0,
+  weekDays: [],
+  metrics: { activeEvents: 0, openInquiries: 0, outstandingCents: 0 },
+  chefFirstName: '',
+  greeting: '',
+}
+
+function commandCenterChips(data: CommandCenterPayload): AttentionChip[] {
+  const chips: AttentionChip[] = []
+
+  // Group attention items by type for aggregation
+  const byType = new Map<string, typeof data.attentionItems>()
+  for (const item of data.attentionItems) {
+    const list = byType.get(item.type) ?? []
+    list.push(item)
+    byType.set(item.type, list)
+  }
+
+  // Unanswered inquiries
+  const inquiries = byType.get('unanswered_inquiry') ?? []
+  if (inquiries.length > 0) {
+    const topUrgency = inquiries[0].urgency
+    chips.push({
+      id: 'cc-unanswered-inquiries',
+      icon: 'mail-question',
+      label: `${inquiries.length} unanswered inquir${inquiries.length > 1 ? 'ies' : 'y'}`,
+      urgencyScore: URGENCY_SCORE_MAP[topUrgency],
+      action: { label: 'View', href: '/inquiries' },
+      sectionId: 'command-center',
+      dismissable: true,
+    })
+  }
+
+  // Unread messages
+  const messages = byType.get('unread_message') ?? []
+  if (messages.length > 0) {
+    chips.push({
+      id: 'cc-unread-messages',
+      icon: 'mail',
+      label: `${messages.length} unread message${messages.length > 1 ? 's' : ''}`,
+      urgencyScore: Math.min(50 + messages.length * 10, 90),
+      action: { label: 'View', href: '/inbox' },
+      sectionId: 'command-center',
+      dismissable: true,
+    })
+  }
+
+  // Events today
+  const todayEvents = byType.get('event_today') ?? []
+  if (todayEvents.length > 0) {
+    chips.push({
+      id: 'cc-events-today',
+      icon: 'calendar',
+      label: `${todayEvents.length} event${todayEvents.length > 1 ? 's' : ''} today`,
+      urgencyScore: 95,
+      action: { label: 'View', href: '/events' },
+      sectionId: 'command-center',
+      dismissable: false,
+    })
+  }
+
+  // Unsigned contracts
+  const contracts = byType.get('unsigned_contract') ?? []
+  if (contracts.length > 0) {
+    chips.push({
+      id: 'cc-unsigned-contracts',
+      icon: 'file-signature',
+      label: `${contracts.length} unsigned contract${contracts.length > 1 ? 's' : ''}`,
+      urgencyScore: URGENCY_SCORE_MAP[contracts[0].urgency],
+      action: { label: 'View', href: contracts[0].action },
+      sectionId: 'command-center',
+      dismissable: true,
+    })
+  }
+
+  // Unpaid invoices
+  const invoices = byType.get('unpaid_invoice') ?? []
+  if (invoices.length > 0) {
+    chips.push({
+      id: 'cc-unpaid-invoices',
+      icon: 'dollar-sign',
+      label: `${invoices.length} unpaid invoice${invoices.length > 1 ? 's' : ''}`,
+      urgencyScore: URGENCY_SCORE_MAP[invoices[0].urgency],
+      action: { label: 'View', href: invoices[0].action },
+      sectionId: 'command-center',
+      dismissable: true,
+    })
+  }
+
+  // Expiring quotes
+  const quotes = byType.get('expiring_quote') ?? []
+  if (quotes.length > 0) {
+    chips.push({
+      id: 'cc-expiring-quotes',
+      icon: 'clock',
+      label: `${quotes.length} expiring quote${quotes.length > 1 ? 's' : ''}`,
+      urgencyScore: 80,
+      action: { label: 'View', href: quotes[0].action },
+      sectionId: 'command-center',
+      dismissable: true,
+    })
+  }
+
+  // Open inquiries from metrics (if no attention items cover them)
+  if (inquiries.length === 0 && data.metrics.openInquiries > 0) {
+    chips.push({
+      id: 'cc-open-inquiries',
+      icon: 'inbox',
+      label: `${data.metrics.openInquiries} open inquir${data.metrics.openInquiries > 1 ? 'ies' : 'y'}`,
+      urgencyScore: 55,
+      action: { label: 'View', href: '/inquiries' },
+      sectionId: 'command-center',
+      dismissable: true,
+    })
+  }
+
+  return chips
+}
+
+function queueChips(queue: PriorityQueue): AttentionChip[] {
+  if (!queue.nextAction) return []
+  const item = queue.nextAction
+  const scoreMap = { critical: 95, high: 80, normal: 60, low: 40 } as const
+  const score = scoreMap[item.urgency as keyof typeof scoreMap] ?? 50
+  if (score < 50) return []
+  return [
+    {
+      id: `queue-${item.id}`,
+      icon: item.icon || 'alert-triangle',
+      label: item.title,
+      urgencyScore: score,
+      action: { label: 'Resolve', href: item.href },
+      sectionId: 'tiered-rail',
+      dismissable: true,
+    },
+  ]
+}
+
+const CIL_DOMAIN_ICON: Record<string, string> = {
+  finance: 'dollar-sign',
+  clients: 'users',
+  calendar: 'calendar',
+  inventory: 'package',
+  reputation: 'star',
+  pipeline: 'git-branch',
+  commitment: 'shield-check',
+  network: 'globe',
+}
+
+function cilChips(signals: ProactiveSignal[]): AttentionChip[] {
+  return signals
+    .filter((s) => s.urgency >= 3 && !s.dismissedAt)
+    .slice(0, 3)
+    .map((s) => ({
+      id: `cil-${s.id}`,
+      icon: CIL_DOMAIN_ICON[s.domain] || 'brain',
+      label: s.title,
+      urgencyScore: Math.min(s.urgency * 20 + Math.round(s.confidence * 10), 100),
+      action: {
+        label: 'Review',
+        href: '/dashboard#cil-signal-summary',
+      },
+      sectionId: 'cil-signal-summary',
+      dismissable: true,
+    }))
+}
+
+// ---- Command Center (receives data from page-level fetch) ----
+
+function CommandCenterWithWeight({ data }: { data: CommandCenterPayload }) {
   const totalItems =
     data.attentionItems.length + data.todayEvents.length + data.metrics.openInquiries
   const mode = totalItems > 0 ? 'expanded' : 'whisper'
@@ -102,18 +266,34 @@ async function CommandCenterWithWeight() {
 export default async function ChefDashboard() {
   const user = await requireChef()
   const businessHealthLoaded = cookies().get('cf-dash-bh-loaded')?.value === '1'
-  const queuePromise = getPriorityQueue().catch((err) => {
-    console.error('[Dashboard] getPriorityQueue failed:', err)
-    return EMPTY_PRIORITY_QUEUE
-  })
+
+  const [queueResult, ccData, cilSignals] = await Promise.all([
+    getPriorityQueue().catch((err) => {
+      console.error('[Dashboard] getPriorityQueue failed:', err)
+      return EMPTY_PRIORITY_QUEUE
+    }),
+    getCommandCenterData().catch((err) => {
+      console.error('[Dashboard] getCommandCenterData failed:', err)
+      return EMPTY_CC_DATA
+    }),
+    getSignalsForDisplay().catch((err) => {
+      console.error('[Dashboard] getSignalsForDisplay failed:', err)
+      return [] as ProactiveSignal[]
+    }),
+  ])
+
+  const queuePromise = Promise.resolve(queueResult)
+
+  const allChips = filterActiveChips(
+    mergeChips(commandCenterChips(ccData), queueChips(queueResult), cilChips(cilSignals))
+  )
+
   return (
     <div className="dashboard-page min-h-screen space-y-8 sm:space-y-10">
-      <AttentionRail chips={[]} />
+      <AttentionRail chips={allChips} />
 
       {/* 1. Command Center (smart mode: expands when items need attention, whispers when clear) */}
-      <Suspense fallback={<CommandCenterSkeleton />}>
-        <CommandCenterWithWeight />
-      </Suspense>
+      <CommandCenterWithWeight data={ccData} />
 
       {/* 2. Daily Plan Banner (smart mode: whisper when empty, compact when done, expanded when tasks remain) */}
       <WidgetErrorBoundary name="Daily Plan" compact>
