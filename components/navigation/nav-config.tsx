@@ -1969,10 +1969,11 @@ export function getPrimaryShortcutOptions() {
 export const actionBarItems: NavItem[] = [
   { href: '/dashboard', label: 'Today', icon: LayoutDashboard },
   { href: '/inbox', label: 'Inbox', icon: Inbox },
-  { href: '/inquiries', label: 'Inquiries', icon: ChatTeardropText },
   { href: '/events', label: 'Events', icon: CalendarDays },
-  { href: '/culinary', label: 'Culinary', icon: ChefHat },
-  { href: '/finance', label: 'Money', icon: DollarSign },
+  { href: '/menus', label: 'Menus', icon: UtensilsCrossed },
+  { href: '/recipes', label: 'Recipes', icon: BookOpen },
+  { href: '/recipes/ingredients', label: 'Pantry', icon: Package },
+  { href: '/culinary/prep/shopping', label: 'Shopping', icon: ShoppingCart },
 ]
 
 // ─── + Create dropdown: 15 direct navigation links ───
