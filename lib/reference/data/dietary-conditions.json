@@ -1,0 +1,1074 @@
+[
+  {
+    "id": "dc-milk-allergy",
+    "slug": "milk-allergy",
+    "name": "Milk/Dairy Allergy",
+    "category": "allergy",
+    "severity": "life_threatening",
+    "summary": "An immune reaction to proteins in cow's milk (casein and/or whey). Distinct from lactose intolerance, which is a digestive issue. Can cause anaphylaxis.",
+    "avoidList": [
+      "milk",
+      "cream",
+      "butter",
+      "cheese",
+      "yogurt",
+      "ice cream",
+      "whey",
+      "casein",
+      "ghee (may contain trace milk proteins)",
+      "lactose-free dairy (still contains milk proteins)"
+    ],
+    "avoidDetails": "Watch for hidden dairy in: baked goods, chocolate, processed meats (casein as binder), non-dairy creamers (may contain casein), medications, and wine/beer (casein fining). 'Lactose-free' does NOT mean dairy-free.",
+    "safeAlternatives": [
+      "oat milk",
+      "soy milk",
+      "almond milk",
+      "coconut milk",
+      "vegan butter",
+      "coconut cream",
+      "nutritional yeast",
+      "cashew cream"
+    ],
+    "crossContactRisk": true,
+    "crossContactNotes": "Separate utensils, cutting boards, and cooking surfaces. Clean shared equipment thoroughly. Butter residue on pans can trigger a reaction. Shared fryer oil is a risk if dairy-battered items were fried.",
+    "commonMistakes": [
+      "Confusing dairy allergy with lactose intolerance",
+      "Using ghee assuming it's safe (trace proteins may remain)",
+      "Using 'lactose-free' products (still contain milk protein)",
+      "Missing casein in non-dairy cheese",
+      "Using shared butter knives"
+    ],
+    "clientQuestions": [
+      "Is this an allergy or lactose intolerance? (Different protocols.)",
+      "Do you carry an EpiPen?",
+      "Can you tolerate any baked milk products? (Some milk-allergic children outgrow reactivity to baked milk.)",
+      "Is ghee safe for you or do you react to all traces?"
+    ],
+    "sources": [
+      "FARE (Food Allergy Research & Education)",
+      "FDA Big 9 Allergens",
+      "American Academy of Allergy, Asthma & Immunology"
+    ],
+    "linkedAllergenTags": ["dairy", "milk", "casein", "whey"],
+    "linkedDietFlags": ["dairy-free"]
+  },
+  {
+    "id": "dc-egg-allergy",
+    "slug": "egg-allergy",
+    "name": "Egg Allergy",
+    "category": "allergy",
+    "severity": "life_threatening",
+    "summary": "An immune reaction to proteins in eggs, most commonly in the white (albumin) but can include yolk proteins. One of the most common childhood allergies; many outgrow it.",
+    "avoidList": [
+      "eggs",
+      "mayonnaise",
+      "meringue",
+      "some pasta (fresh/egg pasta)",
+      "some baked goods",
+      "custard",
+      "hollandaise",
+      "aioli",
+      "egg wash on pastry",
+      "albumin",
+      "lysozyme"
+    ],
+    "avoidDetails": "Eggs hide in: baked goods, pasta, breading, meatballs/meatloaf (binder), some marshmallows, nougat, some wines (egg white fining). Check labels for albumin, globulin, lysozyme, ovalbumin, ovomucin.",
+    "safeAlternatives": [
+      "flax egg",
+      "chia egg",
+      "aquafaba",
+      "commercial egg replacer (JUST Egg, Bob's Red Mill)",
+      "banana (baking)",
+      "applesauce (baking)"
+    ],
+    "crossContactRisk": true,
+    "crossContactNotes": "Egg residue on shared cooking surfaces, pans, and utensils can trigger reactions. Wash equipment thoroughly. Separate whisks and bowls for egg-free prep.",
+    "commonMistakes": [
+      "Missing egg wash on bread/pastry",
+      "Overlooking egg in fresh pasta",
+      "Assuming 'vegan' baked goods are automatically egg-free (verify)",
+      "Using shared fryer oil where egg-battered items were fried"
+    ],
+    "clientQuestions": [
+      "Do you react to both egg whites and yolks?",
+      "Can you tolerate baked egg (in cakes, cookies)?",
+      "Do you carry an EpiPen?",
+      "Any other allergies we should know about?"
+    ],
+    "sources": ["FARE (Food Allergy Research & Education)", "FDA Big 9 Allergens"],
+    "linkedAllergenTags": ["egg", "albumin"],
+    "linkedDietFlags": ["egg-free"]
+  },
+  {
+    "id": "dc-peanut-allergy",
+    "slug": "peanut-allergy",
+    "name": "Peanut Allergy",
+    "category": "allergy",
+    "severity": "life_threatening",
+    "summary": "One of the most common and severe food allergies. Peanuts are legumes (not tree nuts), but cross-reactivity with tree nuts occurs in some individuals. Can cause anaphylaxis with trace exposure.",
+    "avoidList": [
+      "peanuts",
+      "peanut butter",
+      "peanut oil (cold-pressed or unrefined)",
+      "peanut flour",
+      "mixed nuts",
+      "many Asian dishes (satay, pad thai, kung pao)",
+      "some candies and baked goods"
+    ],
+    "avoidDetails": "Peanut protein can be in: Asian sauces (hoisin, some chili pastes), baked goods, candy, ice cream, marzipan (sometimes mixed), chili (some recipes). Highly refined peanut oil (like in restaurants) may be tolerated, but ask client. Arachis oil = peanut oil.",
+    "safeAlternatives": [
+      "sunflower seed butter",
+      "soy nut butter",
+      "tahini",
+      "almond butter (if tree nuts are safe)",
+      "wow butter (soy-based)"
+    ],
+    "crossContactRisk": true,
+    "crossContactNotes": "Extremely sensitive. Trace amounts can trigger anaphylaxis. Dedicated prep surfaces, utensils, and cookware. Shared fryers, grills, and counters are high risk. Wash hands thoroughly after handling peanuts.",
+    "commonMistakes": [
+      "Assuming refined peanut oil is always safe (varies by individual)",
+      "Not checking Asian sauces for peanut content",
+      "Using shared knives that cut peanut butter sandwiches",
+      "Confusing peanuts with tree nuts (different allergy, but co-occurrence is 25-40%)"
+    ],
+    "clientQuestions": [
+      "How sensitive are you? (Trace contact vs. ingestion only)",
+      "Do you carry an EpiPen?",
+      "Are tree nuts also an issue?",
+      "Is refined peanut oil safe for you?",
+      "Any other allergies?"
+    ],
+    "sources": ["FARE (Food Allergy Research & Education)", "FDA Big 9 Allergens"],
+    "linkedAllergenTags": ["peanut"],
+    "linkedDietFlags": ["peanut-free"]
+  },
+  {
+    "id": "dc-tree-nut-allergy",
+    "slug": "tree-nut-allergy",
+    "name": "Tree Nut Allergy",
+    "category": "allergy",
+    "severity": "life_threatening",
+    "summary": "An immune reaction to one or more tree nuts. Some individuals react to all tree nuts; others only to specific ones. Includes almonds, cashews, walnuts, pecans, pistachios, macadamias, brazil nuts, hazelnuts, and pine nuts.",
+    "avoidList": [
+      "almonds",
+      "cashews",
+      "walnuts",
+      "pecans",
+      "pistachios",
+      "macadamia nuts",
+      "brazil nuts",
+      "hazelnuts",
+      "pine nuts",
+      "nut flours",
+      "nut butters",
+      "nut milks",
+      "praline",
+      "nougat",
+      "marzipan",
+      "pesto (pine nuts)"
+    ],
+    "avoidDetails": "Tree nuts hide in: baked goods, cereals, granola, salad dressings, pesto, ice cream, candy, trail mix, nut-based cheeses, and some plant-based milks. Coconut is classified as a tree nut by FDA for labeling, but most tree nut allergic individuals tolerate coconut (confirm with client).",
+    "safeAlternatives": [
+      "sunflower seeds",
+      "pumpkin seeds (pepitas)",
+      "hemp seeds",
+      "sesame seeds (if safe)",
+      "coconut (usually safe, but FDA lists as tree nut)",
+      "seed-based flours",
+      "soy nuts (if soy is safe)"
+    ],
+    "crossContactRisk": true,
+    "crossContactNotes": "Shared equipment, grinders, and prep surfaces. Bakeries are high-risk environments. Nut oils on surfaces persist after cleaning. Buffets with mixed nuts contaminate serving utensils.",
+    "commonMistakes": [
+      "Assuming all tree nuts trigger the same person (some tolerate specific nuts)",
+      "Using coconut without asking (FDA classifies as tree nut)",
+      "Missing pine nuts in pesto",
+      "Missing almond flour in macarons",
+      "Not checking granola/trail mix ingredients"
+    ],
+    "clientQuestions": [
+      "Which specific tree nuts are you allergic to, or is it all tree nuts?",
+      "Is coconut safe for you?",
+      "Do you also have a peanut allergy?",
+      "Do you carry an EpiPen?",
+      "Are nut oils (like walnut oil) a problem?"
+    ],
+    "sources": ["FARE (Food Allergy Research & Education)", "FDA Big 9 Allergens"],
+    "linkedAllergenTags": ["tree_nut", "almond", "cashew", "walnut", "pecan", "pistachio"],
+    "linkedDietFlags": ["nut-free"]
+  },
+  {
+    "id": "dc-wheat-allergy",
+    "slug": "wheat-allergy",
+    "name": "Wheat Allergy",
+    "category": "allergy",
+    "severity": "life_threatening",
+    "summary": "An immune reaction to proteins in wheat (not limited to gluten). Distinct from celiac disease and gluten sensitivity. Some wheat-allergic individuals can tolerate other gluten grains (barley, rye).",
+    "avoidList": [
+      "wheat flour",
+      "bread",
+      "pasta",
+      "couscous",
+      "bulgur",
+      "farina",
+      "semolina",
+      "durum",
+      "spelt",
+      "kamut",
+      "einkorn",
+      "seitan"
+    ],
+    "avoidDetails": "Wheat hides in: soy sauce (most brands), modified food starch, hydrolyzed vegetable protein, some ice creams, processed meats, beer, some condiments. Wheat allergy is different from celiac: barley and rye may be tolerated. Confirm with client.",
+    "safeAlternatives": [
+      "rice flour",
+      "corn flour",
+      "oat flour (if tolerated)",
+      "almond flour",
+      "coconut flour",
+      "GF all-purpose blends",
+      "rice",
+      "potatoes",
+      "corn tortillas"
+    ],
+    "crossContactRisk": true,
+    "crossContactNotes": "Flour can remain airborne for hours in a kitchen. Shared toasters, pasta water, and fryer oil are high risk. Clean surfaces thoroughly.",
+    "commonMistakes": [
+      "Confusing wheat allergy with celiac disease (different mechanisms)",
+      "Assuming gluten-free = wheat-free (usually true, but verify)",
+      "Missing wheat in soy sauce",
+      "Using shared pasta water"
+    ],
+    "clientQuestions": [
+      "Is this a wheat allergy or celiac disease? (Different dietary needs.)",
+      "Can you tolerate barley and rye?",
+      "Do you carry an EpiPen?",
+      "Is gluten-free soy sauce (tamari) acceptable?"
+    ],
+    "sources": ["FARE (Food Allergy Research & Education)", "FDA Big 9 Allergens"],
+    "linkedAllergenTags": ["wheat"],
+    "linkedDietFlags": ["wheat-free"]
+  },
+  {
+    "id": "dc-soy-allergy",
+    "slug": "soy-allergy",
+    "name": "Soy Allergy",
+    "category": "allergy",
+    "severity": "life_threatening",
+    "summary": "An immune reaction to soy protein. Very common in children; many outgrow it. Soy is ubiquitous in processed foods. Highly refined soy oil and soy lecithin are often tolerated but must be confirmed.",
+    "avoidList": [
+      "soy sauce",
+      "tofu",
+      "tempeh",
+      "edamame",
+      "miso",
+      "soy milk",
+      "soy protein isolate",
+      "textured vegetable protein (TVP)"
+    ],
+    "avoidDetails": "Soy hides in: baked goods, canned tuna, cereals, infant formula, margarine, processed meats, sauces, and soups. Soy lecithin (emulsifier) is in many chocolate and baked goods but is often tolerated. Highly refined soybean oil may be safe. Always confirm with client.",
+    "safeAlternatives": [
+      "coconut aminos (for soy sauce)",
+      "chickpea miso",
+      "coconut milk (for soy milk)",
+      "oat milk",
+      "almond milk"
+    ],
+    "crossContactRisk": true,
+    "crossContactNotes": "Shared woks and fryer oil in Asian restaurants. Tofu residue on cutting boards. Soy sauce splatter on prep surfaces.",
+    "commonMistakes": [
+      "Missing soy in Worcestershire sauce",
+      "Assuming soy lecithin triggers everyone (often tolerated)",
+      "Not checking vegetable oil ingredients (may be soybean oil)",
+      "Missing soy in bread and baked goods"
+    ],
+    "clientQuestions": [
+      "How sensitive are you to soy?",
+      "Can you tolerate soy lecithin?",
+      "Is highly refined soybean oil safe for you?",
+      "Do you carry an EpiPen?"
+    ],
+    "sources": ["FARE (Food Allergy Research & Education)", "FDA Big 9 Allergens"],
+    "linkedAllergenTags": ["soy"],
+    "linkedDietFlags": ["soy-free"]
+  },
+  {
+    "id": "dc-fish-allergy",
+    "slug": "fish-allergy",
+    "name": "Fish Allergy (Fin Fish)",
+    "category": "allergy",
+    "severity": "life_threatening",
+    "summary": "An immune reaction to proteins in fin fish. Usually lifelong (not commonly outgrown). Some individuals react to all fish; others only to specific species. Fish allergy and shellfish allergy are separate conditions.",
+    "avoidList": [
+      "all fin fish (salmon, tuna, cod, halibut, bass, etc.)",
+      "fish sauce",
+      "Worcestershire sauce (contains anchovies)",
+      "Caesar dressing (traditional uses anchovies)",
+      "some Asian sauces"
+    ],
+    "avoidDetails": "Fish protein can be in: Worcestershire sauce, Caesar dressing, bouillabaisse, some BBQ sauces, Asian fish sauces, gelatin (some from fish), omega-3 supplements. Cross-contact in restaurants serving both fish and non-fish dishes is common.",
+    "safeAlternatives": [
+      "shellfish (if tolerated, confirm)",
+      "chicken",
+      "mushroom-based umami sauces",
+      "vegan fish sauce alternatives",
+      "white miso paste (for anchovy replacement)"
+    ],
+    "crossContactRisk": true,
+    "crossContactNotes": "Shared grills, pans, fryer oil, and prep surfaces. Fish protein is volatile (can become airborne during cooking). Some individuals react to cooking vapors.",
+    "commonMistakes": [
+      "Assuming fish allergy includes shellfish (they are separate)",
+      "Missing anchovies in Caesar dressing and Worcestershire",
+      "Not asking which fish species trigger reactions",
+      "Using shared cooking oil from fish frying"
+    ],
+    "clientQuestions": [
+      "Which fish species are you allergic to, or is it all fin fish?",
+      "Can you tolerate shellfish?",
+      "Do you react to fish cooking vapors?",
+      "Do you carry an EpiPen?"
+    ],
+    "sources": ["FARE (Food Allergy Research & Education)", "FDA Big 9 Allergens"],
+    "linkedAllergenTags": ["fish"],
+    "linkedDietFlags": ["fish-free"]
+  },
+  {
+    "id": "dc-shellfish-allergy",
+    "slug": "shellfish-allergy",
+    "name": "Shellfish Allergy",
+    "category": "allergy",
+    "severity": "life_threatening",
+    "summary": "An immune reaction to proteins in crustaceans (shrimp, crab, lobster) and/or mollusks (clams, mussels, oysters, scallops). The most common adult-onset food allergy. Usually lifelong.",
+    "avoidList": [
+      "shrimp",
+      "crab",
+      "lobster",
+      "crawfish",
+      "scallops",
+      "clams",
+      "mussels",
+      "oysters",
+      "squid/calamari",
+      "octopus",
+      "oyster sauce",
+      "fish sauce (some contain shellfish)"
+    ],
+    "avoidDetails": "Shellfish protein can be in: oyster sauce, some fish sauces, bouillabaisse, paella, gumbo, surimi (imitation crab), glucosamine supplements. Crustacean and mollusk allergies can be separate (some tolerate one group but not the other). Iodine allergy is NOT related to shellfish allergy (common myth).",
+    "safeAlternatives": [
+      "fin fish (if tolerated)",
+      "chicken",
+      "mushroom dashi (for shellfish stock)",
+      "vegetarian oyster sauce"
+    ],
+    "crossContactRisk": true,
+    "crossContactNotes": "Shared fryer oil, grills, and prep surfaces. Shellfish protein is heat-stable and persists on surfaces. Steam from cooking shellfish can trigger reactions in highly sensitive individuals.",
+    "commonMistakes": [
+      "Confusing shellfish allergy with iodine allergy (no connection)",
+      "Missing shellfish in oyster sauce",
+      "Not separating crustacean vs mollusk allergy (client may tolerate one)",
+      "Using shared cooking water (pasta/seafood boils)"
+    ],
+    "clientQuestions": [
+      "Are you allergic to crustaceans (shrimp, crab, lobster), mollusks (clams, oysters, mussels), or both?",
+      "Can you tolerate fin fish?",
+      "Do you react to shellfish cooking vapors?",
+      "Do you carry an EpiPen?"
+    ],
+    "sources": ["FARE (Food Allergy Research & Education)", "FDA Big 9 Allergens"],
+    "linkedAllergenTags": ["shellfish", "crustacean", "mollusk"],
+    "linkedDietFlags": ["shellfish-free"]
+  },
+  {
+    "id": "dc-sesame-allergy",
+    "slug": "sesame-allergy",
+    "name": "Sesame Allergy",
+    "category": "allergy",
+    "severity": "life_threatening",
+    "summary": "An immune reaction to sesame proteins. Added to the FDA Big 9 allergen list in 2023 (FASTER Act). Growing in prevalence. Found in many cuisines worldwide.",
+    "avoidList": [
+      "sesame seeds",
+      "tahini",
+      "sesame oil",
+      "halvah",
+      "hummus (contains tahini)",
+      "some breads (sesame seed buns, bagels)",
+      "falafel (often contains sesame)",
+      "baba ganoush"
+    ],
+    "avoidDetails": "Sesame hides in: bread and bagel toppings, Asian sauces, Middle Eastern cuisine, spice blends (za'atar, dukkah, shichimi togarashi), some granola bars, and energy balls. Cross-contact in bakeries is common (sesame seeds on shared equipment).",
+    "safeAlternatives": [
+      "sunflower seed butter (for tahini)",
+      "hemp seeds",
+      "poppy seeds",
+      "pumpkin seeds",
+      "flax seeds"
+    ],
+    "crossContactRisk": true,
+    "crossContactNotes": "Bakeries are high-risk (sesame seeds on shared equipment, in shared flour). Sesame oil on shared cooking surfaces. Middle Eastern and Asian restaurants have high cross-contact risk.",
+    "commonMistakes": [
+      "Missing sesame in hummus (tahini)",
+      "Overlooking sesame in bread toppings",
+      "Not checking spice blends (za'atar contains sesame)",
+      "Assuming all bagels without visible seeds are safe (shared equipment)"
+    ],
+    "clientQuestions": [
+      "How sensitive are you to sesame?",
+      "Is sesame oil (refined) safe for you?",
+      "Do you carry an EpiPen?",
+      "Any other seed or nut allergies?"
+    ],
+    "sources": [
+      "FARE (Food Allergy Research & Education)",
+      "FDA FASTER Act 2021",
+      "FDA Big 9 Allergens"
+    ],
+    "linkedAllergenTags": ["sesame"],
+    "linkedDietFlags": ["sesame-free"]
+  },
+  {
+    "id": "dc-lactose-intolerance",
+    "slug": "lactose-intolerance",
+    "name": "Lactose Intolerance",
+    "category": "intolerance",
+    "severity": "medical",
+    "summary": "Inability to digest lactose (milk sugar) due to insufficient lactase enzyme. Causes GI symptoms (bloating, gas, diarrhea) but is NOT an immune response and is NOT life-threatening. Severity varies widely.",
+    "avoidList": [
+      "milk",
+      "soft cheeses (ricotta, cottage cheese)",
+      "ice cream",
+      "cream-based sauces",
+      "some yogurts"
+    ],
+    "avoidDetails": "Lactose content varies by dairy product. Aged/hard cheeses (cheddar, parmesan, Swiss) have very little lactose and are often tolerated. Butter has minimal lactose. Yogurt with live cultures is often tolerated (bacteria pre-digest lactose). Ghee is virtually lactose-free. Severity is dose-dependent.",
+    "safeAlternatives": [
+      "lactose-free dairy products (Lactaid)",
+      "aged hard cheeses",
+      "butter (minimal lactose)",
+      "ghee (lactose-free)",
+      "plant-based milks",
+      "yogurt with live active cultures"
+    ],
+    "crossContactRisk": false,
+    "crossContactNotes": null,
+    "commonMistakes": [
+      "Treating lactose intolerance like a dairy allergy (much less restrictive)",
+      "Eliminating all dairy unnecessarily (many dairy products are low-lactose)",
+      "Not knowing that aged cheeses are usually safe",
+      "Confusing with milk protein allergy"
+    ],
+    "clientQuestions": [
+      "How sensitive are you? (Small amounts vs. no dairy at all)",
+      "Can you tolerate aged cheeses like parmesan and cheddar?",
+      "Do you use Lactaid pills?",
+      "Is butter OK for you?"
+    ],
+    "sources": ["National Institute of Diabetes and Digestive and Kidney Diseases (NIDDK)", "FDA"],
+    "linkedAllergenTags": ["lactose"],
+    "linkedDietFlags": ["lactose-free"]
+  },
+  {
+    "id": "dc-celiac",
+    "slug": "celiac",
+    "name": "Celiac Disease",
+    "category": "autoimmune",
+    "severity": "medical",
+    "summary": "An autoimmune condition where gluten (a protein in wheat, barley, and rye) triggers damage to the small intestine lining. Requires strict lifelong gluten avoidance. Even trace amounts cause damage, with or without symptoms.",
+    "avoidList": [
+      "wheat (all forms: flour, bread, pasta, couscous, bulgur, farina, semolina, spelt, kamut)",
+      "barley (including malt, malt vinegar, beer)",
+      "rye (rye bread, rye flour, some whiskeys)",
+      "triticale",
+      "regular oats (cross-contaminated)"
+    ],
+    "avoidDetails": "Gluten hides in: soy sauce (use tamari), beer, malt flavoring, some medications, communion wafers, imitation meat, seasoning mixes, salad dressings, marinades, and processed foods. Cross-contact is critical: shared toasters, pasta water, cutting boards, colanders, and fryer oil used for breaded items.",
+    "safeAlternatives": [
+      "rice",
+      "corn",
+      "potatoes",
+      "quinoa",
+      "buckwheat (despite the name, it's gluten-free)",
+      "certified gluten-free oats",
+      "GF flour blends",
+      "GF pasta (rice, legume-based)",
+      "corn tortillas",
+      "tamari (GF soy sauce)"
+    ],
+    "crossContactRisk": true,
+    "crossContactNotes": "Dedicated gluten-free prep area, cutting boards, colanders, toasters, and cookware. Shared pasta water contaminates all items. Flour can remain airborne for hours. Shared fryer oil with breaded items is unsafe. Wooden cutting boards absorb gluten and cannot be fully cleaned.",
+    "commonMistakes": [
+      "Using regular soy sauce (contains wheat)",
+      "Sharing pasta water",
+      "Using the same colander for GF and regular pasta",
+      "Assuming 'wheat-free' means 'gluten-free' (barley and rye also contain gluten)",
+      "Using regular oats (must be certified GF)",
+      "Thickening with regular flour instead of cornstarch"
+    ],
+    "clientQuestions": [
+      "Have you been formally diagnosed with celiac disease?",
+      "How sensitive are you to trace cross-contact?",
+      "Can you tolerate certified gluten-free oats?",
+      "Do you also avoid malt and malt vinegar?"
+    ],
+    "sources": [
+      "Celiac Disease Foundation",
+      "FDA Gluten-Free Labeling Rule",
+      "National Celiac Association"
+    ],
+    "linkedAllergenTags": ["gluten", "wheat", "barley", "rye"],
+    "linkedDietFlags": ["gluten-free"]
+  },
+  {
+    "id": "dc-ncgs",
+    "slug": "gluten-sensitivity",
+    "name": "Non-Celiac Gluten Sensitivity",
+    "category": "intolerance",
+    "severity": "medical",
+    "summary": "Gluten causes symptoms (bloating, brain fog, joint pain, fatigue) without the autoimmune intestinal damage of celiac disease. Less strict than celiac; trace cross-contact is usually tolerated.",
+    "avoidList": ["wheat", "barley", "rye", "most beer", "standard bread and pasta"],
+    "avoidDetails": "Similar avoidances to celiac but with more flexibility on cross-contact. Some individuals are more sensitive than others. Diagnosis is by exclusion (no blood test). Some may actually be reacting to FODMAPs in wheat rather than gluten itself.",
+    "safeAlternatives": [
+      "all celiac-safe alternatives",
+      "may tolerate regular oats",
+      "may tolerate small amounts of barley malt"
+    ],
+    "crossContactRisk": false,
+    "crossContactNotes": "Generally more tolerant of trace cross-contact than celiac, but severity varies by individual. Ask about their comfort level.",
+    "commonMistakes": [
+      "Treating it identically to celiac (usually less strict)",
+      "Dismissing it as not real (it is a recognized condition)",
+      "Not asking about individual sensitivity level"
+    ],
+    "clientQuestions": [
+      "How sensitive are you? (Strict avoidance vs. just avoiding obvious gluten?)",
+      "Have you been tested for celiac disease?",
+      "Are small amounts of cross-contact OK?",
+      "Do you also react to oats?"
+    ],
+    "sources": [
+      "Celiac Disease Foundation",
+      "National Institute of Diabetes and Digestive and Kidney Diseases"
+    ],
+    "linkedAllergenTags": ["gluten"],
+    "linkedDietFlags": ["gluten-free"]
+  },
+  {
+    "id": "dc-histamine",
+    "slug": "histamine-intolerance",
+    "name": "Histamine Intolerance",
+    "category": "intolerance",
+    "severity": "medical",
+    "summary": "Reduced ability to break down histamine, leading to symptoms when consuming histamine-rich foods. Symptoms include headaches, flushing, hives, nasal congestion, and GI distress. Freshness of food is critical.",
+    "avoidList": [
+      "aged cheeses",
+      "cured meats (salami, prosciutto, bacon)",
+      "fermented foods (sauerkraut, kimchi, kombucha, miso)",
+      "wine (especially red)",
+      "beer",
+      "vinegar (except apple cider)",
+      "canned/smoked fish",
+      "tomatoes",
+      "spinach",
+      "eggplant",
+      "avocado",
+      "citrus fruits",
+      "strawberries",
+      "chocolate"
+    ],
+    "avoidDetails": "Histamine accumulates with time and temperature. The fresher the food, the safer it is. Leftovers are problematic (histamine increases during storage). Cooking does not destroy histamine. Some foods are histamine 'liberators' (trigger the body to release its own histamine): citrus, strawberries, tomatoes, chocolate.",
+    "safeAlternatives": [
+      "fresh (not canned) meats and fish",
+      "fresh vegetables (except high-histamine ones)",
+      "rice",
+      "gluten-free grains",
+      "fresh fruits (apple, pear, mango, melon)",
+      "butter",
+      "cream cheese (fresh, not aged)",
+      "herb teas"
+    ],
+    "crossContactRisk": false,
+    "crossContactNotes": null,
+    "commonMistakes": [
+      "Serving leftovers (histamine increases during storage)",
+      "Using canned or smoked fish instead of fresh",
+      "Adding vinegar or citrus to dishes",
+      "Using aged cheeses",
+      "Pairing wine with dinner"
+    ],
+    "clientQuestions": [
+      "How severe are your reactions?",
+      "Which specific foods trigger you most?",
+      "Can you tolerate any fermented foods?",
+      "Do you take DAO enzyme supplements?",
+      "How do you handle leftovers?"
+    ],
+    "sources": ["International Society of DAO Deficiency", "Journal of Clinical Gastroenterology"],
+    "linkedAllergenTags": ["histamine"],
+    "linkedDietFlags": ["low-histamine"]
+  },
+  {
+    "id": "dc-fodmap",
+    "slug": "fodmap-sensitivity",
+    "name": "FODMAP Sensitivity",
+    "category": "intolerance",
+    "severity": "medical",
+    "summary": "Sensitivity to certain fermentable carbohydrates (FODMAPs: Fermentable Oligosaccharides, Disaccharides, Monosaccharides, and Polyols) that cause IBS symptoms. Managed through elimination and reintroduction.",
+    "avoidList": [
+      "onion",
+      "garlic",
+      "wheat (in large amounts)",
+      "apples",
+      "pears",
+      "watermelon",
+      "honey",
+      "high-fructose corn syrup",
+      "milk",
+      "soft cheeses",
+      "cauliflower",
+      "mushrooms",
+      "beans/legumes",
+      "sugar alcohols (sorbitol, mannitol, xylitol)"
+    ],
+    "avoidDetails": "FODMAP sensitivity is dose-dependent and varies by individual. The low-FODMAP diet has 3 phases: elimination, reintroduction, and personalization. During elimination, avoid all high-FODMAP foods. After reintroduction, many foods can return in limited amounts. Onion and garlic are the most common triggers.",
+    "safeAlternatives": [
+      "green onion tops (green parts only)",
+      "garlic-infused oil (FODMAPs are water-soluble, not fat-soluble)",
+      "asafoetida (hing) for onion-like flavor",
+      "firm tofu",
+      "tempeh",
+      "rice",
+      "potatoes",
+      "most meats and fish",
+      "hard cheeses",
+      "lactose-free dairy"
+    ],
+    "crossContactRisk": false,
+    "crossContactNotes": null,
+    "commonMistakes": [
+      "Using onion or garlic powder (concentrated FODMAPs)",
+      "Assuming all fruits are problematic (many are low-FODMAP in small portions)",
+      "Not distinguishing between low-FODMAP and gluten-free",
+      "Using garlic cloves instead of garlic-infused oil"
+    ],
+    "clientQuestions": [
+      "Are you in the elimination phase or have you completed reintroduction?",
+      "Which specific FODMAPs trigger you? (Fructans, lactose, fructose, polyols, or GOS?)",
+      "Can you tolerate garlic-infused oil?",
+      "What portion sizes work for you?"
+    ],
+    "sources": ["Monash University FODMAP Research", "Stanford Health Care Low FODMAP Diet"],
+    "linkedAllergenTags": [],
+    "linkedDietFlags": ["low-fodmap"]
+  },
+  {
+    "id": "dc-alpha-gal",
+    "slug": "alpha-gal-syndrome",
+    "name": "Alpha-Gal Syndrome",
+    "category": "allergy",
+    "severity": "life_threatening",
+    "summary": "An allergy to alpha-gal, a sugar molecule found in most mammalian meat, triggered by Lone Star tick bites. Causes delayed reactions (3-6 hours after eating). Can cause anaphylaxis. Poultry and fish are safe.",
+    "avoidList": [
+      "beef",
+      "pork",
+      "lamb",
+      "venison",
+      "bison",
+      "goat",
+      "some dairy products (variable)",
+      "gelatin (from mammalian sources)",
+      "some medications with mammalian-derived ingredients"
+    ],
+    "avoidDetails": "Reactions are delayed (3-6 hours), making diagnosis difficult. Some patients also react to dairy and gelatin. Mammalian-derived ingredients hide in: gelatin capsules, gummy vitamins, marshmallows, some cheeses (rennet), and medications. Severity varies; some tolerate dairy but not red meat.",
+    "safeAlternatives": [
+      "chicken",
+      "turkey",
+      "duck",
+      "fish",
+      "shellfish",
+      "eggs",
+      "plant-based proteins",
+      "agar agar (for gelatin)",
+      "vegetable rennet cheeses"
+    ],
+    "crossContactRisk": false,
+    "crossContactNotes": "Cross-contact is generally not an issue since reactions are protein/carbohydrate-mediated, not trace-level. However, shared grills with significant mammalian meat residue should be cleaned.",
+    "commonMistakes": [
+      "Not knowing about delayed reactions (3-6 hours after eating)",
+      "Missing gelatin in desserts and gummy products",
+      "Assuming all dairy is problematic (varies by patient)",
+      "Not checking for mammalian-derived ingredients in medications"
+    ],
+    "clientQuestions": [
+      "Do you also react to dairy products?",
+      "Is gelatin a trigger for you?",
+      "How long after eating do your reactions typically occur?",
+      "Do you carry an EpiPen?",
+      "Are you still getting tick bites? (Can worsen over time)"
+    ],
+    "sources": [
+      "FARE (Food Allergy Research & Education)",
+      "CDC Alpha-gal Syndrome",
+      "American Academy of Allergy, Asthma & Immunology"
+    ],
+    "linkedAllergenTags": ["alpha-gal", "mammalian-meat"],
+    "linkedDietFlags": ["mammalian-meat-free"]
+  },
+  {
+    "id": "dc-oas",
+    "slug": "oral-allergy-syndrome",
+    "name": "Oral Allergy Syndrome (Pollen-Food Syndrome)",
+    "category": "allergy",
+    "severity": "medical",
+    "summary": "A cross-reaction between pollen allergens and similar proteins in certain raw fruits, vegetables, and nuts. Symptoms are usually mild (itchy mouth, throat tingling) and limited to the mouth/throat area. Cooking typically destroys the trigger proteins.",
+    "avoidList": [
+      "varies by pollen allergy: birch pollen cross-reacts with apple, cherry, peach, pear, kiwi, hazelnut, carrot, celery",
+      "ragweed cross-reacts with banana, melon, cucumber, zucchini",
+      "grass pollen cross-reacts with tomato, potato, peach"
+    ],
+    "avoidDetails": "Only affects RAW forms of trigger foods. Cooking, canning, microwaving, or baking denatures the proteins and usually eliminates the reaction. Peeling may help (proteins concentrate in skin). Reactions are almost always mild and localized to the mouth. Rarely progresses to systemic anaphylaxis.",
+    "safeAlternatives": [
+      "cooked versions of the same foods (cooking destroys the trigger protein)",
+      "peeled versions (sometimes sufficient)",
+      "canned or processed versions",
+      "different varieties of the same fruit (some trigger more than others)"
+    ],
+    "crossContactRisk": false,
+    "crossContactNotes": null,
+    "commonMistakes": [
+      "Eliminating cooked versions unnecessarily (cooking destroys the trigger)",
+      "Treating OAS like a severe food allergy (it's usually mild)",
+      "Not connecting seasonal pollen allergies to food reactions"
+    ],
+    "clientQuestions": [
+      "Which raw foods trigger symptoms for you?",
+      "Can you tolerate the same foods when cooked?",
+      "Do you have seasonal pollen allergies? (Helps identify cross-reactive foods)",
+      "Have you ever had a severe (systemic) reaction to a food?"
+    ],
+    "sources": [
+      "American Academy of Allergy, Asthma & Immunology",
+      "FARE (Food Allergy Research & Education)"
+    ],
+    "linkedAllergenTags": [],
+    "linkedDietFlags": []
+  },
+  {
+    "id": "dc-kosher",
+    "slug": "kosher",
+    "name": "Kosher",
+    "category": "religious",
+    "severity": "strict_observance",
+    "summary": "Jewish dietary laws (kashrut) governing what foods may be eaten and how they must be prepared. Key rules: no pork, no shellfish, no mixing meat and dairy, only animals slaughtered according to kosher law, and separate utensils for meat and dairy.",
+    "avoidList": [
+      "pork and pork products",
+      "shellfish (shrimp, crab, lobster, clams, oysters)",
+      "fish without fins and scales (catfish, shark, swordfish, eel)",
+      "mixing meat and dairy in the same meal",
+      "meat not slaughtered by kosher method (shechita)",
+      "blood (meat must be salted/soaked to remove blood)"
+    ],
+    "avoidDetails": "The separation of meat and dairy is fundamental: different cookware, dishes, and utensils are required. Wait time between meat and dairy varies by tradition (1-6 hours). Pareve (neutral) foods like fish, eggs, fruits, and vegetables can be eaten with either meat or dairy. Fish is not considered 'meat' but some traditions prohibit cooking fish and meat together. Wine must be kosher-certified.",
+    "safeAlternatives": [
+      "kosher-certified meat",
+      "fish with fins and scales",
+      "pareve (neutral) foods",
+      "plant-based alternatives",
+      "kosher-certified dairy consumed separately from meat"
+    ],
+    "crossContactRisk": true,
+    "crossContactNotes": "Strict observance requires separate sets of cookware, dishes, and utensils for meat and dairy. Cross-contact between meat and dairy makes both items non-kosher. Kitchen must be kashered (ritually cleaned) if previously used for non-kosher cooking.",
+    "commonMistakes": [
+      "Serving cheese with meat (even as a garnish)",
+      "Using butter to cook meat (dairy + meat)",
+      "Adding cream to a soup containing chicken stock",
+      "Using the same pan for meat and dairy without proper cleaning",
+      "Assuming all fish is kosher (must have fins AND scales)"
+    ],
+    "clientQuestions": [
+      "How strictly do you observe kashrut?",
+      "Do you require kosher-certified meat, or is avoiding pork/shellfish sufficient?",
+      "How long do you wait between meat and dairy?",
+      "Do you require separate cookware for meat and dairy?",
+      "Is kosher wine required?"
+    ],
+    "sources": ["Orthodox Union (OU) Kosher", "Star-K Kosher Certification"],
+    "linkedAllergenTags": [],
+    "linkedDietFlags": ["kosher"]
+  },
+  {
+    "id": "dc-halal",
+    "slug": "halal",
+    "name": "Halal",
+    "category": "religious",
+    "severity": "strict_observance",
+    "summary": "Islamic dietary laws governing permissible (halal) and forbidden (haram) foods. Key rules: no pork, no alcohol, meat must be slaughtered according to Islamic law (zabiha), and no blood consumption.",
+    "avoidList": [
+      "pork and pork products (bacon, ham, lard, gelatin from pork)",
+      "alcohol (including cooking wine, beer, spirits)",
+      "meat not slaughtered by halal method (zabiha)",
+      "blood and blood products",
+      "animals that died of natural causes",
+      "carnivorous animals and birds of prey"
+    ],
+    "avoidDetails": "Alcohol is forbidden in all forms, including as a cooking ingredient (unlike some other dietary restrictions where cooking burns off alcohol). Gelatin must be from halal-slaughtered animals or plant-based alternatives. Vanilla extract contains alcohol; use vanilla bean or halal-certified extract. Vinegar (including wine vinegar) is generally considered halal as fermentation completes. Fish and seafood are generally halal without special slaughter.",
+    "safeAlternatives": [
+      "halal-certified meat",
+      "fish and seafood (no special slaughter needed)",
+      "plant-based proteins",
+      "agar agar (for gelatin)",
+      "non-alcoholic vanilla flavoring",
+      "vegetable broth (for wine in cooking)"
+    ],
+    "crossContactRisk": true,
+    "crossContactNotes": "Cookware and utensils that have been used to prepare pork or non-halal meat should be thoroughly cleaned. Shared grills and fryers with pork products are problematic. Some observant Muslims require dedicated halal cookware.",
+    "commonMistakes": [
+      "Using cooking wine or beer in recipes ('cooking burns off alcohol' does not satisfy halal requirements)",
+      "Using vanilla extract with alcohol",
+      "Using pork-derived gelatin in desserts",
+      "Using lard or pork fat in cooking",
+      "Not verifying halal certification of meat"
+    ],
+    "clientQuestions": [
+      "How strictly do you observe halal?",
+      "Do you require zabiha-certified meat, or is avoiding pork sufficient?",
+      "Is fish and seafood acceptable?",
+      "Are you comfortable with cooking equipment that has been used for non-halal food after thorough cleaning?",
+      "Is vanilla extract with trace alcohol acceptable?"
+    ],
+    "sources": [
+      "Islamic Food and Nutrition Council of America (IFANCA)",
+      "Islamic Services of America (ISA)"
+    ],
+    "linkedAllergenTags": [],
+    "linkedDietFlags": ["halal"]
+  },
+  {
+    "id": "dc-vegan",
+    "slug": "vegan",
+    "name": "Vegan",
+    "category": "lifestyle",
+    "severity": "preference",
+    "summary": "Excludes all animal products and byproducts. No meat, fish, dairy, eggs, honey (debated), gelatin, or any ingredient derived from animals. Strictness varies by individual.",
+    "avoidList": [
+      "meat",
+      "fish",
+      "shellfish",
+      "dairy",
+      "eggs",
+      "honey (debated)",
+      "gelatin",
+      "lard",
+      "tallow",
+      "whey",
+      "casein",
+      "carmine (red food coloring from insects)",
+      "shellac",
+      "bone char (some sugar processing)"
+    ],
+    "avoidDetails": "Animal products hide in: wine/beer (some use animal-derived fining agents), sugar (bone char filtering in some brands), bread (some contain L-cysteine from feathers), Worcestershire sauce (anchovies), candy (gelatin, beeswax, shellac, carmine). Honey is debated among vegans; always ask.",
+    "safeAlternatives": [
+      "plant-based milks",
+      "tofu",
+      "tempeh",
+      "legumes",
+      "nuts and seeds",
+      "nutritional yeast",
+      "plant-based meat alternatives",
+      "vegan butter",
+      "aquafaba",
+      "agar agar",
+      "flax/chia eggs"
+    ],
+    "crossContactRisk": false,
+    "crossContactNotes": "Cross-contact is generally not a safety concern for ethical vegans (no immune reaction), but some strict vegans prefer dedicated cookware. Always ask about their comfort level with shared equipment.",
+    "commonMistakes": [
+      "Using butter or ghee",
+      "Using chicken/beef stock",
+      "Using honey without asking",
+      "Missing dairy in bread or pasta",
+      "Using Worcestershire sauce (anchovies)",
+      "Using regular sugar (may use bone char)"
+    ],
+    "clientQuestions": [
+      "How strict is your veganism? (Cross-contact concern? Honey? Wine fining?)",
+      "Any additional allergies or intolerances? (Vegan does not mean allergen-free.)",
+      "Is honey acceptable?",
+      "Are you OK with shared cooking equipment that has been cleaned?"
+    ],
+    "sources": ["The Vegan Society", "Physicians Committee for Responsible Medicine"],
+    "linkedAllergenTags": [],
+    "linkedDietFlags": ["vegan"]
+  },
+  {
+    "id": "dc-vegetarian",
+    "slug": "vegetarian",
+    "name": "Vegetarian",
+    "category": "lifestyle",
+    "severity": "preference",
+    "summary": "Excludes meat and fish but typically includes dairy and eggs (lacto-ovo vegetarian). Variations exist: lacto-vegetarian (dairy but no eggs), ovo-vegetarian (eggs but no dairy).",
+    "avoidList": [
+      "meat (beef, pork, lamb, poultry)",
+      "fish and seafood",
+      "gelatin",
+      "animal rennet (in some cheeses)",
+      "lard",
+      "tallow",
+      "anchovies"
+    ],
+    "avoidDetails": "Animal products hide in: gelatin (gummy candies, marshmallows, Jell-O), Parmesan cheese (traditionally uses animal rennet), Caesar dressing (anchovies), Worcestershire sauce, some tortillas (lard), refried beans (lard), French onion soup (beef broth), many soups (chicken/beef stock).",
+    "safeAlternatives": [
+      "eggs",
+      "dairy",
+      "legumes",
+      "tofu",
+      "tempeh",
+      "nuts",
+      "seeds",
+      "plant-based meat alternatives",
+      "vegetable rennet cheeses"
+    ],
+    "crossContactRisk": false,
+    "crossContactNotes": null,
+    "commonMistakes": [
+      "Using chicken or beef stock",
+      "Missing animal rennet in cheese",
+      "Using gelatin in desserts",
+      "Using lard in tortillas or refried beans",
+      "Forgetting anchovies in Caesar dressing"
+    ],
+    "clientQuestions": [
+      "Are you lacto-ovo vegetarian (dairy and eggs OK)?",
+      "Do you avoid gelatin?",
+      "Do you care about animal rennet in cheeses?",
+      "Any additional allergies?"
+    ],
+    "sources": ["Vegetarian Society", "Academy of Nutrition and Dietetics"],
+    "linkedAllergenTags": [],
+    "linkedDietFlags": ["vegetarian"]
+  },
+  {
+    "id": "dc-pescatarian",
+    "slug": "pescatarian",
+    "name": "Pescatarian",
+    "category": "lifestyle",
+    "severity": "preference",
+    "summary": "Excludes meat (beef, pork, poultry) but includes fish, seafood, dairy, and eggs. A common dietary pattern that provides omega-3 fatty acids from fish while avoiding land animal meat.",
+    "avoidList": ["beef", "pork", "lamb", "poultry (chicken, turkey, duck)", "game meats"],
+    "avoidDetails": "Watch for hidden meat in: stocks and broths (chicken/beef), gelatin, lard, tallow, rennet, and processed foods with meat byproducts. Bacon bits, pepperoni on pizza, and meat-based sauces are common oversights.",
+    "safeAlternatives": ["all fish and seafood", "eggs", "dairy", "plant-based proteins"],
+    "crossContactRisk": false,
+    "crossContactNotes": null,
+    "commonMistakes": [
+      "Using chicken/beef stock",
+      "Adding bacon or pancetta as garnish",
+      "Using lard in cooking"
+    ],
+    "clientQuestions": [
+      "Are all fish and seafood OK?",
+      "Do you also avoid meat-based broths?",
+      "Any allergies or intolerances in addition to the pescatarian preference?"
+    ],
+    "sources": ["Academy of Nutrition and Dietetics"],
+    "linkedAllergenTags": [],
+    "linkedDietFlags": ["pescatarian"]
+  },
+  {
+    "id": "dc-keto",
+    "slug": "keto",
+    "name": "Keto (Ketogenic Diet)",
+    "category": "lifestyle",
+    "severity": "preference",
+    "summary": "A very low-carbohydrate, high-fat diet that puts the body into ketosis. Typically limits carbs to 20-50 grams per day. Emphasizes fats, proteins, and low-carb vegetables.",
+    "avoidList": [
+      "grains (rice, wheat, oats, corn)",
+      "sugar and sweeteners (except stevia, erythritol, monk fruit)",
+      "most fruits (except small portions of berries)",
+      "starchy vegetables (potatoes, sweet potatoes, corn)",
+      "beans and legumes",
+      "bread, pasta, cereal",
+      "juice, soda, beer"
+    ],
+    "avoidDetails": "Even small amounts of hidden carbs matter on keto. Watch for: sugar in sauces and dressings, breading on proteins, flour in roux-based sauces, starchy thickeners, root vegetables in soups, and added sugars in marinades. Alcohol: dry wine and spirits (neat) are lower carb than beer or cocktails.",
+    "safeAlternatives": [
+      "cauliflower rice/mash",
+      "zucchini noodles",
+      "almond flour",
+      "coconut flour",
+      "avocado",
+      "olive oil",
+      "butter",
+      "cheese",
+      "heavy cream",
+      "nuts (in moderation)",
+      "berries (in moderation)",
+      "stevia/erythritol for sweetening"
+    ],
+    "crossContactRisk": false,
+    "crossContactNotes": null,
+    "commonMistakes": [
+      "Using flour to thicken sauces (use xanthan gum or cream reduction)",
+      "Adding sugar to marinades or dressings",
+      "Serving too many high-carb vegetables",
+      "Breading proteins",
+      "Not accounting for carbs in sauces"
+    ],
+    "clientQuestions": [
+      "What is your daily carb target?",
+      "Do you count total carbs or net carbs (total minus fiber)?",
+      "Any specific foods you avoid within keto?",
+      "Is this medically prescribed (epilepsy) or lifestyle choice?"
+    ],
+    "sources": ["Harvard T.H. Chan School of Public Health", "Academy of Nutrition and Dietetics"],
+    "linkedAllergenTags": [],
+    "linkedDietFlags": ["keto", "low-carb"]
+  },
+  {
+    "id": "dc-paleo",
+    "slug": "paleo",
+    "name": "Paleo (Paleolithic Diet)",
+    "category": "lifestyle",
+    "severity": "preference",
+    "summary": "Based on foods presumed to have been available to Paleolithic humans. Excludes grains, legumes, dairy, refined sugar, and processed foods. Emphasizes meat, fish, vegetables, fruits, nuts, and seeds.",
+    "avoidList": [
+      "grains (wheat, rice, oats, corn)",
+      "legumes (beans, lentils, peanuts, soy)",
+      "dairy",
+      "refined sugar",
+      "processed foods",
+      "vegetable/seed oils (canola, soybean, corn oil)",
+      "artificial sweeteners"
+    ],
+    "avoidDetails": "Paleo excludes foods that became common after agriculture (grains, legumes, dairy). Some paleo followers are flexible about certain items (white rice, grass-fed butter/ghee). Always ask about individual strictness. Peanuts are legumes, not nuts, and are excluded.",
+    "safeAlternatives": [
+      "grass-fed meats",
+      "wild-caught fish",
+      "eggs",
+      "vegetables",
+      "fruits",
+      "nuts (except peanuts)",
+      "seeds",
+      "avocado oil",
+      "olive oil",
+      "coconut oil",
+      "sweet potatoes (debated but generally accepted)",
+      "honey and maple syrup (in moderation)"
+    ],
+    "crossContactRisk": false,
+    "crossContactNotes": null,
+    "commonMistakes": [
+      "Using canola or vegetable oil (paleo prefers olive, avocado, coconut)",
+      "Using soy sauce (soy is a legume)",
+      "Serving peanuts (legume, not a nut)",
+      "Adding cheese or cream to dishes",
+      "Using grain-based thickeners"
+    ],
+    "clientQuestions": [
+      "How strictly do you follow paleo?",
+      "Do you include any dairy (like grass-fed butter or ghee)?",
+      "Are white rice or potatoes acceptable for you?",
+      "Do you eat peanuts? (Technically a legume.)",
+      "Any allergies in addition to paleo preferences?"
+    ],
+    "sources": ["Harvard T.H. Chan School of Public Health"],
+    "linkedAllergenTags": [],
+    "linkedDietFlags": ["paleo"]
+  }
+]

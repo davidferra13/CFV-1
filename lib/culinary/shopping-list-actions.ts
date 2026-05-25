@@ -16,6 +16,20 @@ const ShoppingListInputSchema = z.object({
   eventIds: z.array(z.string().uuid()).optional(),
 })
 
+export type EventBreakdownEntry = {
+  eventId: string
+  eventDate: string
+  eventLabel: string
+  quantityForEvent: number
+}
+
+export type IncompleteRecipeWarning = {
+  recipeId: string
+  recipeName: string
+  ingredientName: string
+  reason: 'missing_quantity' | 'missing_unit' | 'missing_ingredient_record'
+}
+
 export type ShoppingListItem = {
   ingredientId: string
   ingredientName: string
@@ -33,6 +47,7 @@ export type ShoppingListItem = {
   eventCount: number
   allergenFlags: string[] // EC-G8: allergen flags from ingredient for safety cross-reference
   dietaryWarnings: { clientName: string; allergen: string; severity: string; eventLabel?: string }[] // Q11: cross-ref with client allergies
+  eventBreakdown: EventBreakdownEntry[]
 }
 
 export type ShoppingListResult = {
@@ -41,6 +56,7 @@ export type ShoppingListResult = {
   items: ShoppingListItem[]
   totalEstimatedCostCents: number
   shortageCount: number
+  incompleteRecipes: IncompleteRecipeWarning[]
 }
 
 function round2(value: number) {
@@ -180,6 +196,7 @@ export async function generateShoppingList(input: {
       items: [],
       totalEstimatedCostCents: 0,
       shortageCount: 0,
+      incompleteRecipes: [],
     }
   }
 
@@ -205,8 +222,20 @@ export async function generateShoppingList(input: {
       items: [],
       totalEstimatedCostCents: 0,
       shortageCount: 0,
+      incompleteRecipes: [],
     }
   }
+
+  // Build event info map for breakdown attribution
+  const eventInfoMap = new Map<string, { date: string; label: string }>(
+    (events as any[]).map((e: any) => [
+      e.id,
+      {
+        date: e.event_date ?? '',
+        label: `${e.occasion || 'Event'} ${e.event_date ?? ''}`.trim(),
+      },
+    ])
+  )
 
   const { data: recipeIngredients, error: recipeIngredientsError } = await db
     .from('recipe_ingredients')
@@ -228,6 +257,7 @@ export async function generateShoppingList(input: {
       items: [],
       totalEstimatedCostCents: 0,
       shortageCount: 0,
+      incompleteRecipes: [],
     }
   }
 
@@ -392,6 +422,7 @@ export async function generateShoppingList(input: {
           severity: string
           eventLabel?: string
         }[],
+        eventBreakdown: [] as EventBreakdownEntry[],
         _recipeAccum: [{ qty: recipeQty, unit: normUnit }],
         _buyAccum: [{ qty: buyQty, unit: normUnit }],
       })
@@ -481,12 +512,64 @@ export async function generateShoppingList(input: {
 
   items.sort((a, b) => b.toBuy - a.toBuy)
 
+  // Flag incomplete recipes (missing quantity, unit, or ingredient record)
+  const incompleteRecipes: IncompleteRecipeWarning[] = []
+  const recipeNameCache = new Map<string, string>()
+  for (const ri of recipeIngredients ?? []) {
+    if (!ri.ingredient_id) {
+      if (!recipeNameCache.has(ri.recipe_id)) recipeNameCache.set(ri.recipe_id, ri.recipe_id)
+      incompleteRecipes.push({
+        recipeId: ri.recipe_id,
+        recipeName: recipeNameCache.get(ri.recipe_id) ?? ri.recipe_id,
+        ingredientName: 'Unknown ingredient',
+        reason: 'missing_ingredient_record',
+      })
+      continue
+    }
+    const ing = ingredientMap.get(ri.ingredient_id)
+    const ingName = ing?.name ?? 'Unknown'
+    if (!ri.quantity || Number(ri.quantity) === 0) {
+      if (!recipeNameCache.has(ri.recipe_id)) recipeNameCache.set(ri.recipe_id, ri.recipe_id)
+      incompleteRecipes.push({
+        recipeId: ri.recipe_id,
+        recipeName: recipeNameCache.get(ri.recipe_id) ?? ri.recipe_id,
+        ingredientName: ingName,
+        reason: 'missing_quantity',
+      })
+    } else if (!ri.unit) {
+      if (!recipeNameCache.has(ri.recipe_id)) recipeNameCache.set(ri.recipe_id, ri.recipe_id)
+      incompleteRecipes.push({
+        recipeId: ri.recipe_id,
+        recipeName: recipeNameCache.get(ri.recipe_id) ?? ri.recipe_id,
+        ingredientName: ingName,
+        reason: 'missing_unit',
+      })
+    }
+  }
+  // Resolve recipe names for warnings
+  if (incompleteRecipes.length > 0) {
+    const warnRecipeIds = [...new Set(incompleteRecipes.map((w) => w.recipeId))]
+    const missingNames = warnRecipeIds.filter(
+      (id) => !recipeNameCache.has(id) || recipeNameCache.get(id) === id
+    )
+    if (missingNames.length > 0) {
+      const { data: nameRows } = await db.from('recipes').select('id, name').in('id', missingNames)
+      for (const r of (nameRows ?? []) as any[]) {
+        recipeNameCache.set(r.id, r.name)
+      }
+      for (const w of incompleteRecipes) {
+        w.recipeName = recipeNameCache.get(w.recipeId) ?? w.recipeId
+      }
+    }
+  }
+
   return {
     startDate: parsed.startDate,
     endDate: parsed.endDate,
     totalEstimatedCostCents: items.reduce((sum, item) => sum + item.estimatedCostCents, 0),
     shortageCount: items.filter((item) => item.toBuy > 0).length,
     items,
+    incompleteRecipes,
   }
 }
 
@@ -580,4 +663,187 @@ export async function getUpcomingEventsForShopping(input: {
       : (e.client?.full_name ?? null),
     status: e.status,
   }))
+}
+
+// ── Single-Event Shortcut ────────────────────────────────────────────────
+
+export async function generateEventShoppingList(eventId: string): Promise<ShoppingListResult> {
+  const user = await requireChef()
+  const db: any = createServerClient()
+
+  const { data: event, error } = await db
+    .from('events')
+    .select('event_date')
+    .eq('id', eventId)
+    .eq('tenant_id', user.tenantId!)
+    .single()
+
+  if (error || !event) throw new Error('Event not found')
+
+  return generateShoppingList({
+    startDate: event.event_date,
+    endDate: event.event_date,
+    eventIds: [eventId],
+  })
+}
+
+// ── Week-View Shortcut ───────────────────────────────────────────────────
+
+export async function generateWeekShoppingList(): Promise<ShoppingListResult> {
+  const now = new Date()
+  const day = now.getDay()
+  const monday = new Date(now)
+  monday.setDate(now.getDate() - ((day + 6) % 7))
+  const sunday = new Date(monday)
+  sunday.setDate(monday.getDate() + 6)
+
+  function toIso(d: Date) {
+    return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`
+  }
+
+  return generateShoppingList({
+    startDate: toIso(monday),
+    endDate: toIso(sunday),
+  })
+}
+
+// ── Category Grouping ────────────────────────────────────────────────────
+
+const CATEGORY_SORT_ORDER: string[] = [
+  'produce',
+  'meat_seafood',
+  'dairy_eggs',
+  'bakery',
+  'deli',
+  'frozen',
+  'pantry_dry',
+  'canned',
+  'condiments_sauces',
+  'spices',
+  'baking',
+  'beverages',
+  'bulk',
+  'international',
+  'household',
+  'other',
+]
+
+export function groupByCategory(items: ShoppingListItem[]): Map<string, ShoppingListItem[]> {
+  const map = new Map<string, ShoppingListItem[]>()
+  for (const item of items) {
+    const cat = item.category || 'other'
+    const list = map.get(cat) ?? []
+    list.push(item)
+    map.set(cat, list)
+  }
+  // Sort categories by grocery-store walk order
+  const sorted = new Map<string, ShoppingListItem[]>()
+  for (const cat of CATEGORY_SORT_ORDER) {
+    const items = map.get(cat)
+    if (items) {
+      items.sort((a, b) => a.ingredientName.localeCompare(b.ingredientName))
+      sorted.set(cat, items)
+    }
+  }
+  // Any categories not in the predefined order
+  for (const [cat, items] of map) {
+    if (!sorted.has(cat)) {
+      items.sort((a, b) => a.ingredientName.localeCompare(b.ingredientName))
+      sorted.set(cat, items)
+    }
+  }
+  return sorted
+}
+
+// ── Vendor Sublist Splitter ──────────────────────────────────────────────
+
+export function splitByVendor(items: ShoppingListItem[]): Map<string, ShoppingListItem[]> {
+  const map = new Map<string, ShoppingListItem[]>()
+  for (const item of items) {
+    const vendor = item.supplier || 'Unassigned'
+    const list = map.get(vendor) ?? []
+    list.push(item)
+    map.set(vendor, list)
+  }
+  // Sort: alphabetical vendors, Unassigned last
+  const sorted = new Map<string, ShoppingListItem[]>()
+  const keys = [...map.keys()].sort((a, b) => {
+    if (a === 'Unassigned') return 1
+    if (b === 'Unassigned') return -1
+    return a.localeCompare(b)
+  })
+  for (const key of keys) {
+    sorted.set(key, map.get(key)!)
+  }
+  return sorted
+}
+
+// ── Vendor Assignment (persist to vendor_preferred_ingredients) ──────────
+
+export async function assignVendorToIngredient(
+  ingredientId: string,
+  vendorId: string
+): Promise<void> {
+  const user = await requireChef()
+  const db: any = createServerClient()
+
+  // Upsert preferred vendor on the ingredient record
+  const { data: vendor } = await db
+    .from('vendors')
+    .select('name')
+    .eq('id', vendorId)
+    .eq('chef_id', user.tenantId!)
+    .single()
+
+  if (!vendor) throw new Error('Vendor not found')
+
+  await db
+    .from('ingredients')
+    .update({ preferred_vendor: vendor.name })
+    .eq('id', ingredientId)
+    .eq('tenant_id', user.tenantId!)
+
+  // Also upsert into vendor_preferred_ingredients
+  const { data: existing } = await db
+    .from('vendor_preferred_ingredients')
+    .select('id')
+    .eq('ingredient_id', ingredientId)
+    .eq('vendor_id', vendorId)
+    .maybeSingle()
+
+  if (!existing) {
+    await db.from('vendor_preferred_ingredients').insert({
+      ingredient_id: ingredientId,
+      vendor_id: vendorId,
+      is_preferred: true,
+    })
+  } else {
+    await db
+      .from('vendor_preferred_ingredients')
+      .update({ is_preferred: true })
+      .eq('id', existing.id)
+  }
+
+  // Un-prefer other vendors for this ingredient
+  await db
+    .from('vendor_preferred_ingredients')
+    .update({ is_preferred: false })
+    .eq('ingredient_id', ingredientId)
+    .neq('vendor_id', vendorId)
+}
+
+// ── Get Chef's Vendors ───────────────────────────────────────────────────
+
+export async function getChefVendors(): Promise<{ id: string; name: string }[]> {
+  const user = await requireChef()
+  const db: any = createServerClient()
+
+  const { data, error } = await db
+    .from('vendors')
+    .select('id, name')
+    .eq('chef_id', user.tenantId!)
+    .order('name')
+
+  if (error) throw new Error(`Failed to load vendors: ${error.message}`)
+  return (data ?? []) as { id: string; name: string }[]
 }
