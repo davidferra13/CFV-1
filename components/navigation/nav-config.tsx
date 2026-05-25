@@ -1970,10 +1970,15 @@ export const actionBarItems: NavItem[] = [
   { href: '/dashboard', label: 'Today', icon: LayoutDashboard },
   { href: '/inbox', label: 'Inbox', icon: Inbox },
   { href: '/events', label: 'Events', icon: CalendarDays },
+  { href: '/clients', label: 'Clients', icon: Users },
   { href: '/menus', label: 'Menus', icon: UtensilsCrossed },
   { href: '/recipes', label: 'Recipes', icon: BookOpen },
   { href: '/recipes/ingredients', label: 'Pantry', icon: Package },
   { href: '/culinary/prep/shopping', label: 'Shopping', icon: ShoppingCart },
+  { href: '/culinary/prep', label: 'Prep', icon: Timer },
+  { href: '/calendar', label: 'Calendar', icon: Calendar },
+  { href: '/inquiries', label: 'Inquiries', icon: Funnel },
+  { href: '/finance/invoices', label: 'Invoices', icon: Receipt },
 ]
 
 // ─── + Create dropdown: 15 direct navigation links ───
