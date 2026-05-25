@@ -1,4 +1,4 @@
-// Email Notification Dispatchers
+﻿// Email Notification Dispatchers
 // Centralized email-sending functions called from transitions, webhooks, and crons.
 // Each function is non-blocking (fire-and-forget) - errors logged, never thrown.
 
@@ -177,6 +177,7 @@ export async function sendInquiryReceivedEmail(params: {
   clientEmail: string
   clientName: string
   chefName: string
+  chefEmail?: string | null
   occasion: string
   eventDate: string | null
   guestCount?: number | null
@@ -187,6 +188,7 @@ export async function sendInquiryReceivedEmail(params: {
   await sendEmail({
     to: params.clientEmail,
     subject: `${params.chefName} received your inquiry`,
+    replyTo: params.chefEmail ?? undefined,
     react: createElement(InquiryReceivedEmail, {
       clientName: params.clientName,
       chefName: params.chefName,

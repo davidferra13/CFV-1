@@ -1,4 +1,4 @@
-// Brain Dump Parser
+﻿// Brain Dump Parser
 // The most flexible import - chef dumps information and the system
 // figures out what it is and where it goes
 
@@ -98,7 +98,6 @@ export async function parseBrainDump(rawText: string): Promise<ParseResult<Brain
     log.ai.info('parseBrainDump completed', { durationMs: Date.now() - startTime })
     return result
   } catch (error) {
-    if (error instanceof OllamaOfflineError) throw error
     log.ai.warn('parseBrainDump fell back to heuristic parser', {
       durationMs: Date.now() - startTime,
       error,

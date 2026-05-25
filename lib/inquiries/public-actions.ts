@@ -1,4 +1,4 @@
-// Public Inquiry Submission Server Action
+﻿// Public Inquiry Submission Server Action
 // No auth required - uses admin client for public form submissions
 // Auto-creates: client record and inquiry record. Event creation happens later.
 
@@ -521,6 +521,7 @@ export async function submitPublicInquiry(input: PublicInquiryInput) {
         clientEmail: validated.email.toLowerCase().trim(),
         clientName: validated.full_name.trim(),
         chefName,
+        chefEmail,
         occasion: validated.occasion.trim(),
         eventDate: validated.event_date || null,
         guestCount: validated.guest_count,
