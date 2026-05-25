@@ -9,6 +9,7 @@ import { createAdminClient } from '@/lib/db/admin'
 import { parseWithOllama } from '@/lib/ai/parse-ollama'
 import { OllamaOfflineError } from '@/lib/ai/ollama-errors'
 import { insertDraftMessageInternal } from '@/lib/messages/internal'
+import { createNotification } from '@/lib/notifications/actions'
 import { z } from 'zod'
 
 function localDateISO(d: Date): string {
@@ -685,6 +686,56 @@ Outstanding balance: $${(balanceDueCents / 100).toFixed(2)}`,
       { modelTier: 'standard', maxTokens: 600 }
     )
 
+    let draftId: string | null = null
+    try {
+      const { data: existing } = await db
+        .from('messages')
+        .select('id')
+        .eq('tenant_id', tenantId)
+        .eq('event_id', eventId)
+        .eq('status', 'draft')
+        .eq('direction', 'outbound')
+        .maybeSingle()
+
+      if (existing?.id) {
+        draftId = existing.id
+      } else {
+        const { data: inserted } = await db
+          .from('messages')
+          .insert({
+            tenant_id: tenantId,
+            event_id: eventId,
+            client_id: payload.clientId ?? (event as any).client_id ?? null,
+            channel: 'email',
+            direction: 'outbound',
+            status: 'draft',
+            subject: result.subject,
+            body: result.body,
+          })
+          .select('id')
+          .single()
+
+        draftId = inserted?.id ?? null
+      }
+
+      if (draftId) {
+        const amount = `$${(balanceDueCents / 100).toFixed(2)}`
+        await createNotification({
+          tenantId,
+          recipientId: tenantId,
+          category: 'ops',
+          action: 'system_alert' as any,
+          title: `Payment reminder drafted for ${clientName} (${amount})`,
+          body: `Remy drafted a payment reminder for ${(event as any).occasion ?? 'event'}. Review it in your messages.`,
+          actionUrl: '/messages?filter=drafts',
+          eventId,
+          metadata: { origin: 'remy_reactive', draftType: 'payment_reminder' },
+        })
+      }
+    } catch (_draftErr) {
+      // Non-blocking: draft save failure must not break the handler
+    }
+
     return {
       eventId,
       clientName,
@@ -692,6 +743,7 @@ Outstanding balance: $${(balanceDueCents / 100).toFixed(2)}`,
       balanceFormatted: `$${(balanceDueCents / 100).toFixed(2)}`,
       subject: result.subject,
       draftText: `Subject: ${result.subject}\n\n${result.body}`,
+      draftId,
       summary: `Payment reminder drafted for ${clientName} - $${(balanceDueCents / 100).toFixed(2)} outstanding for ${(event as any).occasion ?? 'event'}.`,
     }
   } catch (err) {
@@ -714,7 +766,7 @@ export async function handleInquiryStale(
 
   const { data: inquiry } = await (db
     .from('inquiries')
-    .select('id, created_at, confirmed_occasion, client:clients(full_name)')
+    .select('id, client_id, created_at, confirmed_occasion, client:clients(full_name)')
     .eq('id', inquiryId)
     .eq('tenant_id', tenantId)
     .single() as any)
@@ -739,11 +791,39 @@ Inquiry: ${(inquiry as any).confirmed_occasion ?? 'event inquiry'} - received ${
       { modelTier: 'standard', maxTokens: 600 }
     )
 
+    let draftId: string | null = null
+    try {
+      draftId = await insertDraftMessageInternal({
+        tenantId,
+        inquiryId,
+        clientId: (inquiry as any).client_id ?? null,
+        subject: result.subject,
+        body: result.body,
+      })
+
+      if (draftId) {
+        await createNotification({
+          tenantId,
+          recipientId: tenantId,
+          category: 'ops',
+          action: 'system_alert' as any,
+          title: `Remy drafted a follow-up for ${clientName}`,
+          body: `A stale inquiry (${hoursStale}h) has a draft follow-up ready for review.`,
+          actionUrl: '/messages?filter=drafts',
+          inquiryId,
+          metadata: { origin: 'remy_reactive', draftType: 'inquiry_follow_up' },
+        })
+      }
+    } catch (_draftErr) {
+      // Non-blocking: draft save failure must not break the handler
+    }
+
     return {
       inquiryId,
       clientName,
       subject: result.subject,
       draftText: `Subject: ${result.subject}\n\n${result.body}`,
+      draftId,
       hoursStale,
       summary: `Stale inquiry follow-up drafted for ${clientName} (${hoursStale}h waiting).`,
     }

@@ -1,22 +1,30 @@
 'use client'
 
 import { useState, useRef, useEffect } from 'react'
-import { Clock } from '@/components/ui/icons'
+import { Clock, Sparkles } from '@/components/ui/icons'
 import { SNOOZE_OPTIONS, type SnoozeDuration } from '@/lib/hooks/use-queue-snooze'
+import { REPEAT_SNOOZE_THRESHOLD, getSnoozeEscalation } from '@/lib/remy/snooze-escalation'
 
 interface SnoozePopoverProps {
   onSnooze: (duration: SnoozeDuration) => void
+  snoozeCount?: number
+  onRemyEscalation?: () => void
+  itemType?: 'inquiry' | 'payment' | 'follow-up' | 'thread' | 'reminder' | 'generic'
 }
 
-/**
- * Small popover with snooze duration options.
- * Triggered by a clock icon button on queue item rows.
- */
-export function SnoozePopover({ onSnooze }: SnoozePopoverProps) {
+export function SnoozePopover({
+  onSnooze,
+  snoozeCount,
+  onRemyEscalation,
+  itemType = 'generic',
+}: SnoozePopoverProps) {
   const [open, setOpen] = useState(false)
   const ref = useRef<HTMLDivElement>(null)
 
-  // Close on outside click
+  const showRemyOption = snoozeCount != null && snoozeCount >= REPEAT_SNOOZE_THRESHOLD
+
+  const escalation = showRemyOption ? getSnoozeEscalation(itemType, { snoozeCount }) : null
+
   useEffect(() => {
     if (!open) return
     const handler = (e: MouseEvent) => {
@@ -69,6 +77,27 @@ export function SnoozePopover({ onSnooze }: SnoozePopoverProps) {
               {option.label}
             </button>
           ))}
+
+          {showRemyOption && escalation && (
+            <>
+              <div className="mx-2 my-1 border-t border-white/[0.06]" />
+              <div className="px-3 pt-1 pb-0.5 text-[11px] text-amber-500/70">
+                {escalation.message}
+              </div>
+              <button
+                type="button"
+                onClick={(e) => {
+                  e.stopPropagation()
+                  onRemyEscalation?.()
+                  setOpen(false)
+                }}
+                className="w-full text-left px-3 py-2 text-sm font-medium text-amber-400 hover:bg-amber-500/10 hover:text-amber-300 transition-all duration-150 flex items-center gap-1.5"
+              >
+                <Sparkles className="w-3.5 h-3.5 shrink-0" />
+                {escalation.actionLabel}
+              </button>
+            </>
+          )}
         </div>
       )}
     </div>

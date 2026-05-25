@@ -3,14 +3,26 @@
 import { useState, useCallback, useEffect } from 'react'
 
 const STORAGE_KEY = 'cf:queue-snoozed'
+const EXPIRED_RETENTION_MS = 7 * 24 * 60 * 60 * 1000
 
-type SnoozedMap = Record<string, string> // itemId → ISO date string
+type SnoozedEntry = { until: string; count: number }
+type SnoozedMap = Record<string, SnoozedEntry>
 
 function readSnoozed(): SnoozedMap {
   if (typeof window === 'undefined') return {}
   try {
     const raw = localStorage.getItem(STORAGE_KEY)
-    return raw ? JSON.parse(raw) : {}
+    if (!raw) return {}
+    const parsed = JSON.parse(raw)
+    const result: SnoozedMap = {}
+    for (const [id, value] of Object.entries(parsed)) {
+      if (typeof value === 'string') {
+        result[id] = { until: value, count: 1 }
+      } else {
+        result[id] = value as SnoozedEntry
+      }
+    }
+    return result
   } catch {
     return {}
   }
@@ -23,9 +35,12 @@ function writeSnoozed(map: SnoozedMap) {
 function cleanExpiredEntries(map: SnoozedMap): SnoozedMap {
   const now = Date.now()
   const cleaned: SnoozedMap = {}
-  for (const [id, until] of Object.entries(map)) {
-    if (new Date(until).getTime() > now) {
-      cleaned[id] = until
+  for (const [id, entry] of Object.entries(map)) {
+    const untilMs = new Date(entry.until).getTime()
+    if (untilMs > now) {
+      cleaned[id] = entry
+    } else if (now - untilMs < EXPIRED_RETENTION_MS) {
+      cleaned[id] = entry
     }
   }
   return cleaned
@@ -79,7 +94,8 @@ export function useQueueSnooze() {
   const snoozeItem = useCallback((itemId: string, duration: SnoozeDuration) => {
     const until = computeSnoozeUntil(duration)
     setSnoozedMap((prev) => {
-      const next = { ...prev, [itemId]: until }
+      const prevCount = prev[itemId]?.count ?? 0
+      const next = { ...prev, [itemId]: { until, count: prevCount + 1 } }
       writeSnoozed(next)
       return next
     })
@@ -88,7 +104,8 @@ export function useQueueSnooze() {
 
   const snoozeItemCustom = useCallback((itemId: string, until: string) => {
     setSnoozedMap((prev) => {
-      const next = { ...prev, [itemId]: until }
+      const prevCount = prev[itemId]?.count ?? 0
+      const next = { ...prev, [itemId]: { until, count: prevCount + 1 } }
       writeSnoozed(next)
       return next
     })
@@ -105,19 +122,29 @@ export function useQueueSnooze() {
 
   const isSnoozed = useCallback(
     (itemId: string): boolean => {
-      const until = snoozedMap[itemId]
-      if (!until) return false
-      return new Date(until).getTime() > Date.now()
+      const entry = snoozedMap[itemId]
+      if (!entry) return false
+      return new Date(entry.until).getTime() > Date.now()
     },
     [snoozedMap]
   )
 
   const snoozedCount = Object.values(snoozedMap).filter(
-    (until) => new Date(until).getTime() > Date.now()
+    (entry) => new Date(entry.until).getTime() > Date.now()
   ).length
 
   const snoozedUntil = useCallback(
-    (itemId: string): string | null => snoozedMap[itemId] ?? null,
+    (itemId: string): string | null => snoozedMap[itemId]?.until ?? null,
+    [snoozedMap]
+  )
+
+  const getSnoozeCount = useCallback(
+    (itemId: string): number => snoozedMap[itemId]?.count ?? 0,
+    [snoozedMap]
+  )
+
+  const isRepeatSnoozed = useCallback(
+    (itemId: string): boolean => (snoozedMap[itemId]?.count ?? 0) >= 2,
     [snoozedMap]
   )
 
@@ -128,5 +155,7 @@ export function useQueueSnooze() {
     isSnoozed,
     snoozedCount,
     snoozedUntil,
+    getSnoozeCount,
+    isRepeatSnoozed,
   }
 }

@@ -1,10 +1,12 @@
 const STORAGE_KEY = 'cf:dash-snooze'
 export const SNOOZE_TTL_MS = 4 * 60 * 60 * 1000 // 4 hours
 const URGENCY_BUMP_THRESHOLD = 10
+export const REPEAT_SNOOZE_THRESHOLD = 2
 
 type SnoozeEntry = {
   snoozedAt: number
   urgencyAtSnooze: number
+  count: number
 }
 
 type SnoozeMap = Record<string, SnoozeEntry>
@@ -29,8 +31,15 @@ function writeStore(store: SnoozeMap): void {
 
 export function snoozeChip(chipId: string, currentUrgency: number): void {
   const store = readStore()
-  store[chipId] = { snoozedAt: Date.now(), urgencyAtSnooze: currentUrgency }
+  const existing = store[chipId]
+  const prevCount = existing?.count ?? 0
+  store[chipId] = { snoozedAt: Date.now(), urgencyAtSnooze: currentUrgency, count: prevCount + 1 }
   writeStore(store)
+}
+
+export function getSnoozeCount(chipId: string): number {
+  const store = readStore()
+  return store[chipId]?.count ?? 0
 }
 
 export function isSnoozed(chipId: string, currentUrgency: number): boolean {
