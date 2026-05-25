@@ -202,17 +202,12 @@ export async function createTodo(
 
   const nextOrder = (last?.sort_order ?? -1) + 1
 
-  // Core columns that exist in chef_todos table
   const insertData: Record<string, unknown> = {
     chef_id: user.entityId,
     text: trimmed,
     completed: false,
     sort_order: nextOrder,
     created_by: user.id,
-  }
-
-  // Extended columns (added via migration, may not exist in all environments)
-  const extendedFields: Record<string, unknown> = {
     due_date: params.due_date || null,
     due_time: params.due_time || null,
     priority: params.priority || 'medium',
@@ -223,25 +218,11 @@ export async function createTodo(
     client_id: params.client_id || null,
   }
 
-  // Try with extended fields first, fall back to core-only
-  let created: any = null
-  let error: any = null
-
-  const fullResult = await db
+  const { data: created, error } = await db
     .from('chef_todos')
-    .insert({ ...insertData, ...extendedFields })
+    .insert(insertData)
     .select('id')
     .single()
-
-  if (fullResult.error) {
-    // Extended columns may not exist yet; retry with core columns only
-    const coreResult = await db.from('chef_todos').insert(insertData).select('id').single()
-    created = coreResult.data
-    error = coreResult.error
-  } else {
-    created = fullResult.data
-    error = fullResult.error
-  }
 
   if (error || !created) {
     console.error('[Todos] createTodo failed:', error)
@@ -372,6 +353,70 @@ export async function deleteTodo(id: string): Promise<{ success: boolean; error?
 
   revalidateReminders()
   return { success: true }
+}
+
+export async function clearCompletedTodos(): Promise<{
+  success: boolean
+  cleared: number
+  error?: string
+}> {
+  const user = await requireChef()
+  const db: any = createServerClient()
+
+  const { data, error } = await db
+    .from('chef_todos')
+    .delete()
+    .eq('chef_id', user.entityId)
+    .eq('completed', true)
+    .select('id')
+
+  if (error) {
+    console.error('[Todos] clearCompletedTodos failed:', error)
+    return { success: false, cleared: 0, error: 'Failed to clear completed todos' }
+  }
+
+  revalidateReminders()
+  return { success: true, cleared: data?.length ?? 0 }
+}
+
+// ─── QUERY HELPERS ─────────────────────────────────────
+
+export async function getTodosForEvent(eventId: string): Promise<ChefTodo[]> {
+  const user = await requireChef()
+  const db: any = createServerClient()
+
+  const { data, error } = await db
+    .from('chef_todos')
+    .select(TODO_FIELDS)
+    .eq('chef_id', user.entityId)
+    .eq('event_id', eventId)
+    .order('completed', { ascending: true })
+    .order('sort_order', { ascending: true })
+
+  if (error) {
+    console.error('[Todos] getTodosForEvent failed:', error)
+    return []
+  }
+  return data ?? []
+}
+
+export async function getTodosForClient(clientId: string): Promise<ChefTodo[]> {
+  const user = await requireChef()
+  const db: any = createServerClient()
+
+  const { data, error } = await db
+    .from('chef_todos')
+    .select(TODO_FIELDS)
+    .eq('chef_id', user.entityId)
+    .eq('client_id', clientId)
+    .order('completed', { ascending: true })
+    .order('sort_order', { ascending: true })
+
+  if (error) {
+    console.error('[Todos] getTodosForClient failed:', error)
+    return []
+  }
+  return data ?? []
 }
 
 // ─── REMINDER FIRING ────────────────────────────────────

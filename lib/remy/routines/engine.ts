@@ -188,7 +188,7 @@ async function executeRoutineActions(
 
   for (const action of routine.actions) {
     try {
-      await executeAction(tenantId, routine.id, execution.id, action, event.context)
+      await executeAction(tenantId, routine.id, execution.id, action, event.context, authUserId)
       actionResults.push({
         action_id: action.id,
         kind: action.kind,
@@ -280,11 +280,12 @@ async function executeRoutineActions(
 // Remy NEVER auto-sends anything; all outputs are drafts for chef review.
 
 async function executeAction(
-  _tenantId: string,
+  tenantId: string,
   _routineId: string,
   _executionId: string,
   action: RoutineActionDef,
-  _triggerContext: Record<string, unknown>
+  _triggerContext: Record<string, unknown>,
+  authUserId?: string | null
 ): Promise<void> {
   switch (action.kind) {
     case 'record_routine_event':
@@ -301,10 +302,45 @@ async function executeAction(
       // Future: write to a notifications_draft table.
       break
 
-    case 'create_task_draft':
-      // Create a draft task for chef review.
-      // Future: write to chef_todos with draft status.
+    case 'create_task_draft': {
+      const p = action.payload ?? {}
+      const text = (p.text as string) || (p.title as string) || 'Untitled task'
+      const createdBy = authUserId || tenantId
+
+      const db: ReturnType<typeof createServerClient> = createServerClient()
+
+      // Append after last incomplete item
+      const { data: last } = await (db as any)
+        .from('chef_todos')
+        .select('sort_order')
+        .eq('chef_id', tenantId)
+        .eq('completed', false)
+        .order('sort_order', { ascending: false })
+        .limit(1)
+        .maybeSingle()
+
+      const nextOrder = (last?.sort_order ?? -1) + 1
+
+      const { error } = await (db as any).from('chef_todos').insert({
+        chef_id: tenantId,
+        text,
+        completed: false,
+        sort_order: nextOrder,
+        created_by: createdBy,
+        priority: (p.priority as string) || 'medium',
+        category: (p.category as string) || 'general',
+        due_date: (p.due_date as string) || null,
+        notes: (p.notes as string) || null,
+        event_id: (p.event_id as string) || null,
+        client_id: (p.client_id as string) || null,
+      })
+
+      if (error) {
+        console.error('[Remy] create_task_draft insert failed:', error)
+        throw new Error(`create_task_draft failed: ${error.message}`)
+      }
       break
+    }
 
     default: {
       const _exhaustive: never = action.kind

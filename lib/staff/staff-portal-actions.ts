@@ -308,6 +308,142 @@ export async function uncompleteMyTask(taskId: string): Promise<{ success: boole
 }
 
 // ============================================
+// UPDATE MY TASK STATUS (staff can move tasks between statuses)
+// ============================================
+
+export async function updateMyTaskStatus(
+  taskId: string,
+  newStatus: 'pending' | 'in_progress' | 'done'
+): Promise<{ success: boolean }> {
+  const user = await requireStaff()
+  const db: any = createServerClient({ admin: true })
+
+  const validStatuses = ['pending', 'in_progress', 'done']
+  if (!validStatuses.includes(newStatus)) {
+    throw new Error(`Invalid status: ${newStatus}`)
+  }
+
+  // Verify the task is assigned to this staff member and belongs to the tenant
+  const { data: task, error: fetchError } = await db
+    .from('tasks')
+    .select('id, assigned_to, status')
+    .eq('id', taskId)
+    .eq('chef_id', user.tenantId)
+    .eq('assigned_to', user.staffMemberId)
+    .single()
+
+  if (fetchError || !task) {
+    throw new Error('Task not found or not assigned to you')
+  }
+
+  if (task.status === newStatus) {
+    return { success: true }
+  }
+
+  const now = new Date().toISOString()
+  const updatePayload: Record<string, unknown> = { status: newStatus }
+
+  if (newStatus === 'done') {
+    updatePayload.completed_at = now
+    updatePayload.completed_by = user.staffMemberId
+  } else {
+    updatePayload.completed_at = null
+    updatePayload.completed_by = null
+  }
+
+  const { error: updateError } = await db
+    .from('tasks')
+    .update(updatePayload)
+    .eq('id', taskId)
+    .eq('chef_id', user.tenantId)
+
+  if (updateError) {
+    console.error('[updateMyTaskStatus] Error:', updateError)
+    throw new Error('Failed to update task status')
+  }
+
+  // Log completion if marking done
+  if (newStatus === 'done') {
+    try {
+      await db.from('task_completion_log').insert({
+        chef_id: user.tenantId,
+        task_id: taskId,
+        staff_member_id: user.staffMemberId,
+        completed_at: now,
+      })
+    } catch (err) {
+      console.error('[updateMyTaskStatus] Completion log failed (non-blocking):', err)
+    }
+  }
+
+  revalidatePath('/staff-tasks')
+  revalidatePath('/staff-dashboard')
+  return { success: true }
+}
+
+// ============================================
+// GET MY TASKS BY STATUS (for status-grouped view)
+// ============================================
+
+export async function getMyTasksByStatus(): Promise<{
+  pending: StaffTask[]
+  in_progress: StaffTask[]
+  done: StaffTask[]
+}> {
+  const user = await requireStaff()
+
+  // Include recent done tasks (last 7 days) to avoid infinite scroll
+  const _waN = new Date()
+  const _waD = new Date(_waN.getFullYear(), _waN.getMonth(), _waN.getDate() - 7)
+  const weekAgo = `${_waD.getFullYear()}-${String(_waD.getMonth() + 1).padStart(2, '0')}-${String(_waD.getDate()).padStart(2, '0')}`
+
+  try {
+    const rows = await pgClient`
+      SELECT
+        t.id, t.chef_id, t.title, t.description, t.assigned_to,
+        t.station_id, t.event_id, t.due_date, t.due_time,
+        t.priority, t.status, t.notes, t.completed_at, t.created_at,
+        e.title AS event_name,
+        e.date  AS event_date,
+        e.guest_count AS event_guest_count,
+        c.name AS client_name
+      FROM tasks t
+      LEFT JOIN events e ON e.id = t.event_id
+      LEFT JOIN clients c ON c.id = e.client_id
+      WHERE t.chef_id = ${user.tenantId}
+        AND t.assigned_to = ${user.staffMemberId}
+        AND (
+          t.status IN ('pending', 'in_progress')
+          OR (t.status = 'done' AND t.completed_at >= ${weekAgo})
+        )
+      ORDER BY t.due_date ASC, t.due_time ASC NULLS LAST, t.priority DESC
+    `
+
+    const tasks = rows as unknown as StaffTask[]
+    const result = {
+      pending: [] as StaffTask[],
+      in_progress: [] as StaffTask[],
+      done: [] as StaffTask[],
+    }
+
+    for (const task of tasks) {
+      if (task.status === 'in_progress') {
+        result.in_progress.push(task)
+      } else if (task.status === 'done') {
+        result.done.push(task)
+      } else {
+        result.pending.push(task)
+      }
+    }
+
+    return result
+  } catch (err) {
+    console.error('[getMyTasksByStatus] Error:', err)
+    return { pending: [], in_progress: [], done: [] }
+  }
+}
+
+// ============================================
 // GET MY ASSIGNMENTS (upcoming event assignments)
 // ============================================
 

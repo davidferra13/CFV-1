@@ -25,6 +25,7 @@ import { formatCurrency } from '@/lib/utils/currency'
 import { format } from 'date-fns'
 import Link from 'next/link'
 import { notFound } from 'next/navigation'
+import { LinkedTodosServer } from '@/components/todos/linked-todos-server'
 import { ClientEventsTable } from './client-events-table'
 import { MilestoneManager } from '@/components/clients/milestone-manager'
 import { AddressManager } from '@/components/clients/address-manager'
@@ -1502,6 +1503,11 @@ export default async function ClientDetailPage({ params }: ClientDetailPageProps
           </WidgetErrorBoundary>
         </CardContent>
       </Card>
+
+      {/* Linked Todos */}
+      <Suspense fallback={null}>
+        <LinkedTodosServer clientId={client.id} />
+      </Suspense>
 
       {/* Menu History */}
       <Card>

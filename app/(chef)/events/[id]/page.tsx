@@ -27,6 +27,7 @@ import { EventBeverageSection } from './_sections/event-beverage-section'
 import { EventDiscoverySection } from './_sections/event-discovery-section'
 import { EventDepartureSection } from './_sections/event-departure-section'
 import { getServiceTrackerState } from '@/lib/lifecycle/service-tracker-actions'
+import { LinkedTodosServer } from '@/components/todos/linked-todos-server'
 import { getServiceTimeline } from '@/lib/lifecycle/timeline-generator-actions'
 import { DayOfServicePanel } from '@/components/events/day-of-service-panel'
 import { getCompletionForEntity } from '@/lib/completion/actions'
@@ -91,6 +92,9 @@ export default async function EventDetailPage({
       </Suspense>
       <Suspense fallback={<SkeletonCard />}>
         <EventSpineSection {...sectionProps} />
+      </Suspense>
+      <Suspense fallback={null}>
+        <LinkedTodosServer eventId={params.id} />
       </Suspense>
       <Suspense fallback={<SkeletonCard />}>
         <EventScheduleSection {...sectionProps} />

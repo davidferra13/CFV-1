@@ -13,7 +13,14 @@ import {
   AlertTriangle,
   ArrowRight,
 } from '@/components/ui/icons'
-import { createTodo, toggleTodo, deleteTodo, type ChefTodo } from '@/lib/todos/actions'
+import {
+  createTodo,
+  toggleTodo,
+  deleteTodo,
+  clearCompletedTodos,
+  type ChefTodo,
+  type TodoPriority,
+} from '@/lib/todos/actions'
 
 // ─── HELPERS ────────────────────────────────────────────
 
@@ -127,59 +134,114 @@ const TodoRow = memo(function TodoRow({
   )
 })
 
+// ─── PRIORITY PILL CONFIG ────────────────────────────────
+
+const PRIORITY_OPTIONS: { value: TodoPriority; label: string; activeClass: string }[] = [
+  { value: 'low', label: 'L', activeClass: 'bg-stone-600 text-stone-200' },
+  { value: 'medium', label: 'M', activeClass: 'bg-yellow-600 text-yellow-100' },
+  { value: 'high', label: 'H', activeClass: 'bg-orange-600 text-orange-100' },
+  { value: 'urgent', label: 'U', activeClass: 'bg-red-600 text-red-100' },
+]
+
 // ─── ADD TODO FORM ──────────────────────────────────────
 
 function AddTodoForm({
   onAdd,
   disabled,
 }: {
-  onAdd: (text: string) => Promise<void>
+  onAdd: (input: { text: string; due_date?: string; priority?: TodoPriority }) => Promise<void>
   disabled: boolean
 }) {
   const [value, setValue] = useState('')
+  const [dueDate, setDueDate] = useState('')
+  const [priority, setPriority] = useState<TodoPriority>('medium')
   const [pending, startTransition] = useTransition()
   const inputRef = useRef<HTMLInputElement>(null)
+
+  const hasText = value.trim().length > 0
 
   function handleSubmit(e: React.FormEvent) {
     e.preventDefault()
     const text = value.trim()
     if (!text) return
 
+    const savedValue = value
+    const savedDate = dueDate
+    const savedPriority = priority
+
     setValue('')
+    setDueDate('')
+    setPriority('medium')
+
     startTransition(async () => {
       try {
-        await onAdd(text)
+        await onAdd({
+          text,
+          due_date: savedDate || undefined,
+          priority: savedPriority,
+        })
         inputRef.current?.focus()
       } catch (err) {
-        setValue(text)
+        setValue(savedValue)
+        setDueDate(savedDate)
+        setPriority(savedPriority)
         toast.error('Failed to add task')
       }
     })
   }
 
   return (
-    <form
-      onSubmit={handleSubmit}
-      className="flex items-center gap-2 mt-3 pt-3 border-t border-stone-800"
-    >
-      <input
-        ref={inputRef}
-        type="text"
-        value={value}
-        onChange={(e) => setValue(e.target.value)}
-        placeholder="Add a task..."
-        maxLength={500}
-        disabled={disabled || pending}
-        className="flex-1 text-sm bg-transparent border-none outline-none placeholder:text-stone-400 text-stone-200 disabled:cursor-not-allowed"
-      />
-      <button
-        type="submit"
-        disabled={disabled || pending || !value.trim()}
-        className="flex-shrink-0 p-1.5 rounded-md bg-brand-600 text-white hover:bg-brand-700 transition-colors disabled:opacity-40 disabled:cursor-not-allowed"
-        aria-label="Add task"
-      >
-        <Plus className="h-4 w-4" />
-      </button>
+    <form onSubmit={handleSubmit} className="mt-3 pt-3 border-t border-stone-800">
+      <div className="flex items-center gap-2">
+        <input
+          ref={inputRef}
+          type="text"
+          value={value}
+          onChange={(e) => setValue(e.target.value)}
+          placeholder="Add a task..."
+          maxLength={500}
+          disabled={disabled || pending}
+          className="flex-1 text-sm bg-transparent border-none outline-none placeholder:text-stone-400 text-stone-200 disabled:cursor-not-allowed"
+        />
+        <button
+          type="submit"
+          disabled={disabled || pending || !hasText}
+          className="flex-shrink-0 p-1.5 rounded-md bg-brand-600 text-white hover:bg-brand-700 transition-colors disabled:opacity-40 disabled:cursor-not-allowed"
+          aria-label="Add task"
+        >
+          <Plus className="h-4 w-4" />
+        </button>
+      </div>
+
+      {hasText && (
+        <div className="flex items-center gap-2 mt-2 ml-0.5">
+          <input
+            type="date"
+            value={dueDate}
+            onChange={(e) => setDueDate(e.target.value)}
+            disabled={disabled || pending}
+            aria-label="Due date"
+            className="bg-stone-900 border border-stone-600 rounded text-xs text-stone-300 px-2 py-1 disabled:cursor-not-allowed"
+          />
+          <div className="flex items-center gap-1">
+            {PRIORITY_OPTIONS.map((opt) => (
+              <button
+                key={opt.value}
+                type="button"
+                onClick={() => setPriority(opt.value)}
+                disabled={disabled || pending}
+                className={`text-[10px] font-medium px-1.5 py-0.5 rounded transition-colors disabled:cursor-not-allowed ${
+                  priority === opt.value
+                    ? opt.activeClass
+                    : 'bg-stone-800 text-stone-500 hover:text-stone-400'
+                }`}
+              >
+                {opt.label}
+              </button>
+            ))}
+          </div>
+        </div>
+      )}
     </form>
   )
 }
@@ -195,18 +257,18 @@ export function ChefTodoWidget({ initialTodos }: { initialTodos: ChefTodo[] }) {
   const sortedTodos = [...incomplete, ...completed]
   const overdueCount = todos.filter(isOverdue).length
 
-  async function handleAdd(text: string) {
+  async function handleAdd(input: { text: string; due_date?: string; priority?: TodoPriority }) {
     const tempId = `temp-${Date.now()}`
     const optimisticTodo: ChefTodo = {
       id: tempId,
-      text,
+      text: input.text,
       completed: false,
       completed_at: null,
       sort_order: incomplete.length,
       created_at: new Date().toISOString(),
-      due_date: null,
+      due_date: input.due_date || null,
       due_time: null,
-      priority: 'medium',
+      priority: input.priority || 'medium',
       category: 'general',
       reminder_at: null,
       reminder_sent: false,
@@ -217,13 +279,42 @@ export function ChefTodoWidget({ initialTodos }: { initialTodos: ChefTodo[] }) {
 
     setTodos((prev) => [...prev, optimisticTodo])
 
-    const result = await createTodo(text)
+    const result = await createTodo({
+      text: input.text,
+      due_date: input.due_date || null,
+      priority: input.priority,
+    })
 
     if (result.success && result.id) {
       setTodos((prev) => prev.map((t) => (t.id === tempId ? { ...t, id: result.id! } : t)))
     } else {
       setTodos((prev) => prev.filter((t) => t.id !== tempId))
     }
+  }
+
+  function handleClearCompleted() {
+    const completedItems = todos.filter((t) => t.completed)
+    if (completedItems.length === 0) return
+
+    const count = completedItems.length
+    const snapshot = [...todos]
+
+    setTodos((prev) => prev.filter((t) => !t.completed))
+
+    startTransition(async () => {
+      try {
+        const result = await clearCompletedTodos()
+        if (!result.success) {
+          setTodos(snapshot)
+          toast.error('Failed to clear completed tasks')
+        } else {
+          toast.success(`Cleared ${count} completed task${count === 1 ? '' : 's'}`)
+        }
+      } catch (err) {
+        setTodos(snapshot)
+        toast.error('Failed to clear completed tasks')
+      }
+    })
   }
 
   function handleToggle(id: string) {
@@ -305,6 +396,16 @@ export function ChefTodoWidget({ initialTodos }: { initialTodos: ChefTodo[] }) {
               <span className="text-xs text-stone-400 tabular-nums">
                 {completedCount}/{totalCount} done
               </span>
+            )}
+            {completedCount > 0 && (
+              <button
+                type="button"
+                onClick={handleClearCompleted}
+                disabled={isPending}
+                className="text-xs text-stone-500 hover:text-red-400 transition-colors disabled:cursor-not-allowed"
+              >
+                Clear done
+              </button>
             )}
           </div>
         </div>

@@ -1,6 +1,6 @@
 {
   "version": "1.0",
-  "timestamp": "2026-05-24T19:53:34.831Z",
+  "timestamp": "2026-05-25T04:01:02.016Z",
   "source": "auto-postool",
   "partial": false,
   "phase": null,
@@ -26,59 +26,31 @@
     },
     {
       "status": "M",
-      "path": "app/(chef)/dashboard/page.tsx"
+      "path": "app/(chef)/clients/[id]/page.tsx"
     },
     {
       "status": "M",
-      "path": "app/(chef)/events/current/page.tsx"
+      "path": "app/(chef)/events/[id]/page.tsx"
     },
     {
       "status": "M",
-      "path": "app/(chef)/events/events-hub-nav.tsx"
+      "path": "app/(staff)/staff-tasks/page.tsx"
     },
     {
       "status": "M",
-      "path": "app/(chef)/events/page.tsx"
+      "path": "components/dashboard/attention-rail.tsx"
     },
     {
       "status": "M",
-      "path": "app/(chef)/settings/ai/page.tsx"
+      "path": "components/dashboard/chef-todo-widget.tsx"
     },
     {
       "status": "M",
-      "path": "app/(chef)/settings/business/page.tsx"
+      "path": "components/queue/snooze-popover.tsx"
     },
     {
       "status": "M",
-      "path": "app/(chef)/settings/communications/page.tsx"
-    },
-    {
-      "status": "M",
-      "path": "app/(chef)/settings/connections/page.tsx"
-    },
-    {
-      "status": "M",
-      "path": "app/(chef)/settings/payments/page.tsx"
-    },
-    {
-      "status": "M",
-      "path": "app/(chef)/settings/profile-branding/page.tsx"
-    },
-    {
-      "status": "M",
-      "path": "app/(chef)/settings/system/page.tsx"
-    },
-    {
-      "status": "M",
-      "path": "components/events/current-event-card.tsx"
-    },
-    {
-      "status": "M",
-      "path": "components/settings/settings-guided-overview.tsx"
-    },
-    {
-      "status": "M",
-      "path": "components/settings/settings-mobile-nav.tsx"
+      "path": "docs/build-state.md"
     },
     {
       "status": "M",
@@ -86,49 +58,69 @@
     },
     {
       "status": "M",
-      "path": "lib/network/activity/queries.ts"
+      "path": "lib/ai/reactive/handlers.ts"
     },
     {
       "status": "M",
-      "path": "lib/settings/settings-nav.ts"
+      "path": "lib/dashboard/snooze.ts"
+    },
+    {
+      "status": "M",
+      "path": "lib/hooks/use-queue-snooze.ts"
+    },
+    {
+      "status": "M",
+      "path": "lib/remy/routines/engine.ts"
+    },
+    {
+      "status": "M",
+      "path": "lib/staff/staff-portal-actions.ts"
+    },
+    {
+      "status": "M",
+      "path": "lib/todos/actions.ts"
+    },
+    {
+      "status": "M",
+      "path": "package-lock.json"
+    },
+    {
+      "status": "M",
+      "path": "package.json"
+    },
+    {
+      "status": "M",
+      "path": "scripts/wiring-audit-results.json"
     },
     {
       "status": "??",
-      "path": "app/(chef)/events/list/"
+      "path": "components/staff/staff-task-status-board.tsx"
     },
     {
       "status": "??",
-      "path": "app/(chef)/events/pulse-content.tsx"
+      "path": "components/todos/"
     },
     {
       "status": "??",
-      "path": "app/(chef)/settings/my-craft/"
+      "path": "docs/specs/remy-snooze-escalation.md"
     },
     {
       "status": "??",
-      "path": "components/events/readiness-dot-link.tsx"
+      "path": "docs/superpowers/plans/2026-05-24-pie-hermes-intelligence-layer.md"
     },
     {
       "status": "??",
-      "path": "components/events/urgency-readiness-badge.tsx"
+      "path": "docs/superpowers/specs/2026-05-24-pie-hermes-intelligence-layer-design.md"
     },
     {
       "status": "??",
-      "path": "docs/chef-portal-dashboard-command-center-audit.md"
+      "path": "lib/remy/snooze-escalation.ts"
     },
     {
       "status": "??",
-      "path": "docs/specs/event-pulse.md"
-    },
-    {
-      "status": "??",
-      "path": "docs/specs/network-pulse.md"
-    },
-    {
-      "status": "??",
-      "path": "docs/superpowers/plans/2026-05-24-network-pulse.md"
+      "path": "tests/unit/snooze-escalation.test.ts"
     }
   ],
   "next_action": null,
-  "context_notes": "Recent commits:\na73b8d7cd feat(network): self-view preview, action buttons, aging indicators, empty states\n48f9d1c41 feat(cil): add network pulse analyzer with 5 signal types\ncfdd7c57d feat(network): add network_pulse CIL types and avg_weekly_events computation\n447939a28 feat(feed): anomaly-based scoring and freshness filter for network adapter\ne5b1d239a feat(rail): anomaly-based network_friend_busy trigger, add network_heating item"
+  "context_notes": "Recent commits:\nfd773f6c8 feat(pie): wire chef actions to Hermes event queue (menu, price, ingredient)\n2deeca820 feat(pie): add /dev/hermes monitoring dashboard (dev-only)\n8783b4bbd feat(nav): expand Action Bar with full chef daily-driver set\n502b307a0 feat(pie): add heartbeat-gated fallback mode to PIE cron route\naaa7ef884 feat(pie): add deterministic fallback cron (activates when Hermes down)"
 }
