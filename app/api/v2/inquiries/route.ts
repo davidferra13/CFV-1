@@ -136,6 +136,7 @@ export const POST = withApiAuth(
         contact_email: input.client_email,
         contact_phone: input.client_phone,
         channel: input.channel,
+        first_contact_at: new Date().toISOString(),
         confirmed_date: input.confirmed_date,
         confirmed_guest_count: input.confirmed_guest_count,
         confirmed_occasion: input.confirmed_occasion,

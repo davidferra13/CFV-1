@@ -1,15 +1,19 @@
 'use client'
 
-import { useState, useTransition } from 'react'
+import { useState, useTransition, useEffect, useRef, useCallback } from 'react'
 import Link from 'next/link'
 import { useRouter } from 'next/navigation'
-import { BookOpen, Plus, ArrowRight, X } from '@/components/ui/icons'
+import { Plus, ArrowRight, X, Search } from '@/components/ui/icons'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { Badge } from '@/components/ui/badge'
-import { createRecipe, type RecipeListItem } from '@/lib/recipes/actions'
+import {
+  createRecipe,
+  createRecipeWithIngredients,
+  type RecipeListItem,
+} from '@/lib/recipes/actions'
 
 const CATEGORIES = [
   'sauce',
@@ -59,6 +63,30 @@ const EMPTY_FORM = {
   notes: '',
 }
 
+type IngredientSearchHit = {
+  id: string
+  name: string
+  category: string
+  standardUnit: string
+  hasPrice: boolean
+  bestPriceCents: number | null
+  bestPriceUnit: string | null
+}
+
+type SelectedIngredient = {
+  name: string
+  category: string
+  defaultUnit: string
+  quantity: number
+  priceCents: number | null
+  priceUnit: string | null
+}
+
+function formatCents(cents: number | null): string {
+  if (cents === null) return ''
+  return `$${(cents / 100).toFixed(2)}`
+}
+
 export function RecipeEntryForm({ initialRecipes }: { initialRecipes: RecipeListItem[] }) {
   const router = useRouter()
   const [isPending, startTransition] = useTransition()
@@ -66,6 +94,14 @@ export function RecipeEntryForm({ initialRecipes }: { initialRecipes: RecipeList
   const [recipes, setRecipes] = useState<RecipeListItem[]>(initialRecipes)
   const [error, setError] = useState<string | null>(null)
   const [tagInput, setTagInput] = useState('')
+
+  const [ingredientQuery, setIngredientQuery] = useState('')
+  const [searchResults, setSearchResults] = useState<IngredientSearchHit[]>([])
+  const [isSearching, setIsSearching] = useState(false)
+  const [showDropdown, setShowDropdown] = useState(false)
+  const [selectedIngredients, setSelectedIngredients] = useState<SelectedIngredient[]>([])
+  const dropdownRef = useRef<HTMLDivElement>(null)
+  const searchInputRef = useRef<HTMLInputElement>(null)
 
   function set<K extends keyof typeof EMPTY_FORM>(field: K, value: (typeof EMPTY_FORM)[K]) {
     setForm((prev) => ({ ...prev, [field]: value }))
@@ -87,6 +123,79 @@ export function RecipeEntryForm({ initialRecipes }: { initialRecipes: RecipeList
     setForm((prev) => ({ ...prev, dietary_tags: prev.dietary_tags.filter((t) => t !== tag) }))
   }
 
+  useEffect(() => {
+    if (ingredientQuery.length < 2) {
+      setSearchResults([])
+      setShowDropdown(false)
+      return
+    }
+    const timer = setTimeout(async () => {
+      setIsSearching(true)
+      try {
+        const res = await fetch(
+          `/api/ingredients/search?q=${encodeURIComponent(ingredientQuery)}&limit=6`
+        )
+        if (res.ok) {
+          const data = await res.json()
+          setSearchResults(data.results ?? [])
+          setShowDropdown(true)
+        }
+      } catch {
+        setSearchResults([])
+      }
+      setIsSearching(false)
+    }, 300)
+    return () => clearTimeout(timer)
+  }, [ingredientQuery])
+
+  useEffect(() => {
+    function handleClick(e: MouseEvent) {
+      if (dropdownRef.current && !dropdownRef.current.contains(e.target as Node)) {
+        setShowDropdown(false)
+      }
+    }
+    document.addEventListener('mousedown', handleClick)
+    return () => document.removeEventListener('mousedown', handleClick)
+  }, [])
+
+  const selectIngredient = useCallback((hit: IngredientSearchHit) => {
+    setSelectedIngredients((prev) => {
+      if (prev.some((i) => i.name.toLowerCase() === hit.name.toLowerCase())) return prev
+      return [
+        ...prev,
+        {
+          name: hit.name,
+          category: hit.category || 'other',
+          defaultUnit: hit.standardUnit || 'unit',
+          quantity: 1,
+          priceCents: hit.bestPriceCents,
+          priceUnit: hit.bestPriceUnit,
+        },
+      ]
+    })
+    setIngredientQuery('')
+    setSearchResults([])
+    setShowDropdown(false)
+    searchInputRef.current?.focus()
+  }, [])
+
+  function removeIngredient(name: string) {
+    setSelectedIngredients((prev) => prev.filter((i) => i.name !== name))
+  }
+
+  function updateIngredientQty(name: string, qty: number) {
+    if (qty < 0.1) return
+    setSelectedIngredients((prev) =>
+      prev.map((i) => (i.name === name ? { ...i, quantity: qty } : i))
+    )
+  }
+
+  const estimatedCostCents = selectedIngredients.reduce(
+    (sum, i) => sum + (i.priceCents ?? 0) * i.quantity,
+    0
+  )
+  const pricedCount = selectedIngredients.filter((i) => i.priceCents !== null).length
+
   function handleSave() {
     if (!form.name.trim()) {
       setError('Recipe name is required')
@@ -96,7 +205,7 @@ export function RecipeEntryForm({ initialRecipes }: { initialRecipes: RecipeList
 
     startTransition(async () => {
       try {
-        const result = await createRecipe({
+        const recipeInput = {
           name: form.name.trim(),
           category: form.category,
           description: form.description.trim() || undefined,
@@ -108,28 +217,53 @@ export function RecipeEntryForm({ initialRecipes }: { initialRecipes: RecipeList
           yield_unit: form.yield_unit.trim() || undefined,
           dietary_tags: form.dietary_tags,
           notes: form.notes.trim() || undefined,
-        })
+        }
 
-        // Add a simplified entry to the local list
+        let recipeId: string
+        let recipeName: string = form.name.trim()
+        const ingredientCount = selectedIngredients.length
+        const clientEstimateCents = estimatedCostCents
+
+        if (ingredientCount > 0) {
+          const ingredientInputs = selectedIngredients.map((ing, idx) => ({
+            ingredient_name: ing.name,
+            ingredient_category: ing.category,
+            ingredient_default_unit: ing.defaultUnit,
+            quantity: ing.quantity,
+            unit: ing.defaultUnit,
+            sort_order: idx,
+          }))
+          const result = await createRecipeWithIngredients(recipeInput, ingredientInputs)
+          if (!result.success) {
+            setError(result.message)
+            return
+          }
+          recipeId = result.recipeId
+        } else {
+          const result = await createRecipe(recipeInput)
+          recipeId = result.recipe.id
+          recipeName = result.recipe.name
+        }
+
         const newEntry: RecipeListItem = {
-          id: result.recipe.id,
-          name: result.recipe.name,
-          category: result.recipe.category,
-          status: result.recipe.status ?? 'draft',
-          method: result.recipe.method,
+          id: recipeId,
+          name: recipeName,
+          category: form.category,
+          status: 'draft',
+          method: form.method.trim(),
           photo_url: null,
-          dietary_tags: result.recipe.dietary_tags ?? [],
-          prep_time_minutes: result.recipe.prep_time_minutes,
-          cook_time_minutes: result.recipe.cook_time_minutes,
-          yield_quantity: result.recipe.yield_quantity,
-          yield_unit: result.recipe.yield_unit,
+          dietary_tags: form.dietary_tags,
+          prep_time_minutes: parseInt(form.prep_time_minutes, 10) || null,
+          cook_time_minutes: parseInt(form.cook_time_minutes, 10) || null,
+          yield_quantity: parseFloat(form.yield_quantity) || null,
+          yield_unit: form.yield_unit.trim() || null,
           times_cooked: 0,
           last_cooked_at: null,
           created_at: new Date().toISOString(),
-          ingredient_count: null,
-          total_cost_cents: null,
-          has_all_prices: null,
-          last_price_updated_at: null,
+          ingredient_count: ingredientCount || null,
+          total_cost_cents: ingredientCount > 0 ? clientEstimateCents : null,
+          has_all_prices: ingredientCount > 0 ? pricedCount === ingredientCount : null,
+          last_price_updated_at: ingredientCount > 0 ? new Date().toISOString() : null,
           servings: null,
           calories_per_serving: null,
           cuisine: null,
@@ -145,6 +279,7 @@ export function RecipeEntryForm({ initialRecipes }: { initialRecipes: RecipeList
         }
         setRecipes((prev) => [newEntry, ...prev])
         setForm(EMPTY_FORM)
+        setSelectedIngredients([])
         setTagInput('')
         router.refresh()
       } catch (e) {
@@ -220,7 +355,7 @@ export function RecipeEntryForm({ initialRecipes }: { initialRecipes: RecipeList
               <textarea
                 value={form.method_detailed}
                 onChange={(e) => set('method_detailed', e.target.value)}
-                placeholder="Step-by-step instructions…"
+                placeholder="Step-by-step instructions..."
                 rows={4}
                 className="flex w-full rounded-md border border-stone-600 bg-stone-900 px-3 py-2 text-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-stone-400 resize-y"
               />
@@ -280,7 +415,7 @@ export function RecipeEntryForm({ initialRecipes }: { initialRecipes: RecipeList
                       addTag()
                     }
                   }}
-                  placeholder="Gluten-free, vegan… press Enter"
+                  placeholder="Gluten-free, vegan... press Enter"
                 />
                 <Button type="button" variant="secondary" onClick={addTag}>
                   Add
@@ -312,8 +447,111 @@ export function RecipeEntryForm({ initialRecipes }: { initialRecipes: RecipeList
               <Input
                 value={form.notes}
                 onChange={(e) => set('notes', e.target.value)}
-                placeholder="Make ahead tips, sourcing notes, variations…"
+                placeholder="Make ahead tips, sourcing notes, variations..."
               />
+            </div>
+
+            {/* Ingredient search with live pricing */}
+            <div className="space-y-3 pt-2 border-t border-stone-800">
+              <div>
+                <Label className="text-sm font-medium">Ingredients</Label>
+                <p className="text-xs text-stone-500 mt-0.5">
+                  Type any ingredient to see live market pricing
+                </p>
+              </div>
+
+              <div className="relative" ref={dropdownRef}>
+                <div className="relative">
+                  <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-stone-500" />
+                  <Input
+                    ref={searchInputRef}
+                    value={ingredientQuery}
+                    onChange={(e) => setIngredientQuery(e.target.value)}
+                    onFocus={() => searchResults.length > 0 && setShowDropdown(true)}
+                    placeholder="Search: butter, salmon, olive oil..."
+                    className="pl-8"
+                  />
+                  {isSearching && (
+                    <span className="absolute right-2.5 top-2.5 text-xs text-stone-500">
+                      searching...
+                    </span>
+                  )}
+                </div>
+
+                {showDropdown && searchResults.length > 0 && (
+                  <div className="absolute z-10 mt-1 w-full rounded-md border border-stone-700 bg-stone-900 shadow-lg max-h-60 overflow-y-auto">
+                    {searchResults.map((hit) => (
+                      <button
+                        key={hit.id}
+                        type="button"
+                        onClick={() => selectIngredient(hit)}
+                        className="w-full text-left px-3 py-2 hover:bg-stone-800 flex items-center justify-between gap-2 text-sm border-b border-stone-800 last:border-b-0"
+                      >
+                        <span className="text-stone-200 capitalize truncate">{hit.name}</span>
+                        {hit.hasPrice && hit.bestPriceCents !== null ? (
+                          <span className="text-emerald-400 font-mono text-xs whitespace-nowrap">
+                            {formatCents(hit.bestPriceCents)}/{hit.bestPriceUnit}
+                          </span>
+                        ) : (
+                          <span className="text-stone-600 text-xs">no price yet</span>
+                        )}
+                      </button>
+                    ))}
+                  </div>
+                )}
+              </div>
+
+              {selectedIngredients.length > 0 && (
+                <div className="space-y-1.5">
+                  {selectedIngredients.map((ing) => (
+                    <div
+                      key={ing.name}
+                      className="flex items-center gap-2 rounded-md bg-stone-800/50 px-3 py-1.5"
+                    >
+                      <span className="text-sm text-stone-200 capitalize flex-1 truncate">
+                        {ing.name}
+                      </span>
+                      <input
+                        type="number"
+                        min="0.1"
+                        step="0.5"
+                        value={ing.quantity}
+                        onChange={(e) =>
+                          updateIngredientQty(ing.name, parseFloat(e.target.value) || 1)
+                        }
+                        className="w-14 h-7 rounded border border-stone-700 bg-stone-900 px-1.5 text-xs text-center"
+                      />
+                      <span className="text-xs text-stone-500 w-8">{ing.defaultUnit}</span>
+                      {ing.priceCents !== null ? (
+                        <span className="text-xs font-mono text-emerald-400 w-16 text-right">
+                          {formatCents(ing.priceCents * ing.quantity)}
+                        </span>
+                      ) : (
+                        <span className="text-xs text-stone-600 w-16 text-right">pending</span>
+                      )}
+                      <button
+                        type="button"
+                        onClick={() => removeIngredient(ing.name)}
+                        className="text-stone-600 hover:text-stone-400"
+                        aria-label={`Remove ${ing.name}`}
+                      >
+                        <X className="h-3.5 w-3.5" />
+                      </button>
+                    </div>
+                  ))}
+
+                  {estimatedCostCents > 0 && (
+                    <div className="flex items-center justify-between pt-2 border-t border-stone-700">
+                      <span className="text-xs text-stone-400">
+                        Estimated recipe cost ({pricedCount}/{selectedIngredients.length} priced)
+                      </span>
+                      <span className="text-sm font-semibold text-emerald-400 font-mono">
+                        {formatCents(estimatedCostCents)}
+                      </span>
+                    </div>
+                  )}
+                </div>
+              )}
             </div>
 
             <Button
@@ -323,7 +561,7 @@ export function RecipeEntryForm({ initialRecipes }: { initialRecipes: RecipeList
               className="w-full"
             >
               <Plus className="h-4 w-4 mr-2" />
-              {isPending ? 'Saving…' : 'Save & Add Another'}
+              {isPending ? 'Saving...' : 'Save & Add Another'}
             </Button>
           </CardContent>
         </Card>
@@ -347,7 +585,21 @@ export function RecipeEntryForm({ initialRecipes }: { initialRecipes: RecipeList
               <ul className="divide-y divide-stone-800 max-h-96 overflow-y-auto">
                 {recipes.map((r) => (
                   <li key={r.id} className="py-2.5 flex items-center justify-between gap-2">
-                    <span className="text-sm font-medium text-stone-200 truncate">{r.name}</span>
+                    <div className="flex-1 min-w-0">
+                      <span className="text-sm font-medium text-stone-200 truncate block">
+                        {r.name}
+                      </span>
+                      {r.ingredient_count != null && r.ingredient_count > 0 && (
+                        <span className="text-xs text-stone-500">
+                          {r.ingredient_count} ingredients
+                          {r.total_cost_cents != null && r.total_cost_cents > 0 && (
+                            <span className="text-emerald-500 ml-1.5 font-mono">
+                              {formatCents(r.total_cost_cents)}
+                            </span>
+                          )}
+                        </span>
+                      )}
+                    </div>
                     <span
                       className={`text-xs px-2 py-0.5 rounded-full flex-shrink-0 capitalize ${CATEGORY_COLORS[r.category] ?? 'bg-stone-800 text-stone-300'}`}
                     >
@@ -371,7 +623,7 @@ export function RecipeEntryForm({ initialRecipes }: { initialRecipes: RecipeList
 
         <Link href="/onboarding" className="block">
           <Button variant="ghost" className="w-full text-stone-500">
-            ← Back to Setup Overview
+            Back to Setup Overview
           </Button>
         </Link>
       </div>

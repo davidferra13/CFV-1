@@ -361,3 +361,9 @@ export { Note } from '@phosphor-icons/react/dist/ssr/Note'
 // Prep timeline icons (not in SSR barrel export, imported directly)
 export { Snowflake } from '@phosphor-icons/react/dist/ssr/Snowflake'
 export { Key } from '@phosphor-icons/react/dist/ssr/Key'
+
+// Event Intelligence Panel icons
+export { CloudSun } from '@phosphor-icons/react/dist/ssr/CloudSun'
+export { Train } from '@phosphor-icons/react/dist/ssr/Train'
+export { Wind } from '@phosphor-icons/react/dist/ssr/Wind'
+export { Bed } from '@phosphor-icons/react/dist/ssr/Bed'

@@ -33,6 +33,8 @@ import { DayOfServicePanel } from '@/components/events/day-of-service-panel'
 import { getCompletionForEntity } from '@/lib/completion/actions'
 import { buildEventSuggestions } from '@/lib/suggestions/event-suggestions'
 import { ContextualNextAction } from '@/components/suggestions/contextual-next-action'
+import { VendorCoordinationLog } from '@/components/events/vendor-coordination-log'
+import { QuickCaptureTrigger } from '@/components/communication/quick-capture-trigger'
 
 async function DayOfServiceSection({ eventId }: { eventId: string }) {
   const [trackerState, timeline] = await Promise.all([
@@ -99,6 +101,10 @@ export default async function EventDetailPage({
       <Suspense fallback={<SkeletonCard />}>
         <EventScheduleSection {...sectionProps} />
       </Suspense>
+
+      {/* Vendor Coordination Log + Quick Capture */}
+      <VendorCoordinationLog eventId={params.id} />
+      <QuickCaptureTrigger prefillEventId={params.id} />
 
       {/* Mobile: tab nav with lifecycle stage dots */}
       <EventDetailMobileNav lifecycleStage={lifecycleStage} />

@@ -26,8 +26,9 @@ const CreateClientBody = z.object({
   city: z.string().optional(),
   state: z.string().optional(),
   zip: z.string().optional(),
-  source: z.string().optional(),
-  tags: z.array(z.string()).optional(),
+  referral_source: z
+    .enum(['take_a_chef', 'instagram', 'referral', 'website', 'phone', 'email', 'other'])
+    .optional(),
 })
 
 export const GET = withApiAuth(
@@ -77,6 +78,12 @@ export const POST = withApiAuth(
 
     const input = parsed.data
 
+    // Combine city/state/zip into the single address column if no address provided
+    let resolvedAddress = input.address
+    if (!resolvedAddress && (input.city || input.state || input.zip)) {
+      resolvedAddress = [input.city, input.state, input.zip].filter(Boolean).join(', ')
+    }
+
     const { data: client, error } = await ctx.db
       .from('clients')
       .insert({
@@ -87,16 +94,11 @@ export const POST = withApiAuth(
         status: input.status ?? 'active',
         dietary_restrictions: input.dietary_restrictions,
         allergies: input.allergies,
-        notes: input.notes,
-        address: input.address,
-        city: input.city,
-        state: input.state,
-        zip: input.zip,
-        source: input.source ?? 'api',
-        tags: input.tags,
+        address: resolvedAddress,
+        referral_source: input.referral_source ?? 'other',
       } as any)
       .select(
-        'id, tenant_id, full_name, email, phone, status, dietary_restrictions, allergies, notes, address, city, state, zip, source, tags, created_at, updated_at'
+        'id, tenant_id, full_name, email, phone, status, dietary_restrictions, allergies, address, referral_source, created_at, updated_at'
       )
       .single()
 

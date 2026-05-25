@@ -1,4 +1,4 @@
-﻿// Recipe Book Server Actions
+// Recipe Book Server Actions
 // Chef-only: Manage recipes, ingredients, and recipe-component linking
 // Enforces tenant scoping
 
@@ -15,6 +15,8 @@ import { z } from 'zod'
 import type { Database } from '@/types/database'
 import { invalidateRemyContextCache } from '@/lib/ai/remy-context'
 import { enqueueHermesEvent } from '@/lib/pricing/hermes-queue'
+import { autoCostRecipeIngredients } from '@/lib/pricing/auto-cost-bridge'
+import { propagatePriceChange } from '@/lib/pricing/cost-refresh-actions'
 
 type RecipeCategory = Database['public']['Enums']['recipe_category']
 type RecipeCuisine = Database['public']['Enums']['recipe_cuisine']
@@ -1224,6 +1226,15 @@ export async function updateIngredient(ingredientId: string, input: UpdateIngred
     }
   }
 
+  // Propagate cost change when price-relevant fields were updated (non-blocking)
+  if (validated.average_price_cents !== undefined) {
+    try {
+      await propagatePriceChange([ingredientId], { tenantId: user.tenantId! })
+    } catch (err) {
+      console.error('[updateIngredient] Cost propagation failed (non-blocking):', err)
+    }
+  }
+
   revalidatePath('/recipes/ingredients')
   return { success: true, ingredient }
 }
@@ -1269,6 +1280,13 @@ export async function linkRecipeToComponent(recipeId: string, componentId: strin
   if (error) {
     console.error('[linkRecipeToComponent] Error:', error)
     throw new Error('Failed to link recipe')
+  }
+
+  // Auto-resolve ingredient prices for the linked recipe (non-blocking)
+  try {
+    await autoCostRecipeIngredients(recipeId, user.tenantId!)
+  } catch (err) {
+    console.error('[linkRecipeToComponent] Auto-cost failed (non-blocking):', err)
   }
 
   revalidatePath('/menus')
@@ -1747,6 +1765,13 @@ export async function addSubRecipe(parentRecipeId: string, input: AddSubRecipeIn
     throw new Error('Failed to add sub-recipe')
   }
 
+  // Refresh parent recipe total cost to include new sub-recipe (non-blocking)
+  try {
+    await refreshRecipeTotalCost(db, user.tenantId!, parentRecipeId)
+  } catch (err) {
+    console.error('[addSubRecipe] Cost refresh failed (non-blocking):', err)
+  }
+
   revalidatePath(`/recipes/${parentRecipeId}`)
   return { success: true, subRecipe: data }
 }
@@ -1790,6 +1815,13 @@ export async function updateSubRecipe(subRecipeId: string, input: UpdateSubRecip
     throw new Error('Failed to update sub-recipe')
   }
 
+  // Refresh parent recipe total cost after sub-recipe change (non-blocking)
+  try {
+    await refreshRecipeTotalCost(db, user.tenantId!, link.parent_recipe_id)
+  } catch (err) {
+    console.error('[updateSubRecipe] Cost refresh failed (non-blocking):', err)
+  }
+
   revalidatePath(`/recipes/${link.parent_recipe_id}`)
   return { success: true }
 }
@@ -1824,6 +1856,13 @@ export async function removeSubRecipe(subRecipeId: string) {
   if (error) {
     console.error('[removeSubRecipe] Error:', error)
     throw new Error('Failed to remove sub-recipe')
+  }
+
+  // Refresh parent recipe total cost after sub-recipe removal (non-blocking)
+  try {
+    await refreshRecipeTotalCost(db, user.tenantId!, link.parent_recipe_id)
+  } catch (err) {
+    console.error('[removeSubRecipe] Cost refresh failed (non-blocking):', err)
   }
 
   revalidatePath(`/recipes/${link.parent_recipe_id}`)

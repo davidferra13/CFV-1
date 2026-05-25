@@ -113,6 +113,9 @@ import { buildClientHouseholdOperatingMemory } from '@/lib/intelligence/client-h
 import { getRecurringSchedules } from '@/lib/scheduling/recurring-actions'
 import { RecurringBookingPanel } from '@/components/clients/recurring-booking-panel'
 import { getMenus } from '@/lib/menus/actions'
+import { QuickCaptureTrigger } from '@/components/communication/quick-capture-trigger'
+import { CommunicationTimeline } from '@/components/clients/communication-timeline'
+import { getUnifiedThread } from '@/lib/communication/unified-thread'
 
 async function ClientCompletionSection({ clientId }: { clientId: string }) {
   const result = await getCompletionForEntity('client', clientId)
@@ -207,6 +210,7 @@ export default async function ClientDetailPage({ params }: ClientDetailPageProps
     recurringSchedules,
     allMenus,
     lastContactData,
+    commThreadData,
   ] = await Promise.all([
     getClientWithStats(params.id).catch(() => null),
     getResponseTemplates().catch(() => []),
@@ -259,6 +263,11 @@ export default async function ClientDetailPage({ params }: ClientDetailPageProps
     getRecurringSchedules(params.id).catch(() => []),
     getMenus().catch(() => []),
     getClientLastContact(params.id).catch(() => null),
+    getUnifiedThread(params.id, chefUser.tenantId!, { limit: 100 }).catch(() => ({
+      items: [],
+      total: 0,
+      hasMore: false,
+    })),
   ])
 
   const engagementScore = computeEngagementScore(clientPortalActivity as any[])
@@ -387,6 +396,7 @@ export default async function ClientDetailPage({ params }: ClientDetailPageProps
           </div>
         </div>
         <div className="flex flex-wrap gap-2">
+          <QuickCaptureTrigger prefillClientId={client.id} prefillClientName={client.full_name} />
           <Link href={`/clients/${client.id}/conversation`}>
             <Button variant="secondary">Conversation</Button>
           </Link>
@@ -1441,6 +1451,11 @@ export default async function ClientDetailPage({ params }: ClientDetailPageProps
           </div>
         </CardContent>
       </Card>
+
+      {/* Communication Timeline (capture loop: searchable, filterable, all channels) */}
+      <WidgetErrorBoundary name="Communication Timeline" compact>
+        <CommunicationTimeline clientId={params.id} initialItems={commThreadData.items} />
+      </WidgetErrorBoundary>
 
       {/* AI Client Preference Panel */}
       <ClientPreferencePanel clientId={params.id} />

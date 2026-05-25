@@ -3,11 +3,8 @@
 import { useState, useTransition } from 'react'
 import { Button } from '@/components/ui/button'
 import type { ShoppingListResult } from '@/lib/culinary/shopping-list-actions'
-import {
-  formatPlainText,
-  formatPerVendorText,
-  emailShoppingList,
-} from '@/lib/culinary/shopping-list-export'
+import { formatPlainText, formatPerVendorText } from '@/lib/culinary/shopping-list-utils'
+import { emailShoppingList } from '@/lib/culinary/shopping-list-export'
 
 type Props = {
   result: ShoppingListResult

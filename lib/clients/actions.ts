@@ -81,6 +81,17 @@ const CreateClientSchema = z.object({
   kitchen_refrigeration_notes: z.string().optional(),
   kitchen_plating_notes: z.string().optional(),
   kitchen_sink_notes: z.string().optional(),
+  // Intelligence
+  household_size: z.number().int().optional(),
+  children_ages: z.string().optional(),
+  lifestyle_tags: z.array(z.string()).optional(),
+  lifestyle_notes: z.string().optional(),
+  company_role: z.string().optional(),
+  company_industry: z.string().optional(),
+  company_notes: z.string().optional(),
+  kitchen_quality: z.enum(['basic', 'decent', 'well_equipped', 'professional']).optional(),
+  neighborhood_notes: z.string().optional(),
+  map_link: z.string().optional(),
   // Service Defaults
   preferred_service_style: z.string().optional(),
   typical_guest_count: z.string().optional(),
@@ -168,6 +179,20 @@ const UpdateClientSchema = z.object({
   kitchen_plating_notes: z.string().optional(),
   kitchen_sink_notes: z.string().optional(),
   kitchen_profile_updated_at: z.string().optional(),
+  // Intelligence
+  household_size: z.number().int().nullable().optional(),
+  children_ages: z.string().nullable().optional(),
+  lifestyle_tags: z.array(z.string()).optional(),
+  lifestyle_notes: z.string().nullable().optional(),
+  company_role: z.string().nullable().optional(),
+  company_industry: z.string().nullable().optional(),
+  company_notes: z.string().nullable().optional(),
+  kitchen_quality: z
+    .enum(['basic', 'decent', 'well_equipped', 'professional'])
+    .nullable()
+    .optional(),
+  neighborhood_notes: z.string().nullable().optional(),
+  map_link: z.string().nullable().optional(),
   // Service Defaults
   preferred_service_style: z.string().optional(),
   typical_guest_count: z.string().optional(),

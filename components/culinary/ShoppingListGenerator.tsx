@@ -9,11 +9,15 @@ import {
   generateShoppingList,
   createPurchaseOrderFromShoppingList,
   getUpcomingEventsForShopping,
+  getChefVendors,
   type ShoppingListResult,
   type ShoppingEventOption,
 } from '@/lib/culinary/shopping-list-actions'
 import { splitListByStore, type StoreSplit } from '@/lib/grocery/store-shopping-actions'
 import { WebSourcingPanel } from '@/components/pricing/web-sourcing-panel'
+import { ExportToolbar } from '@/components/shopping/export-toolbar'
+import { VendorSublist } from '@/components/shopping/vendor-sublist'
+import { ShoppingHistory } from '@/components/shopping/shopping-history'
 
 function formatCurrency(cents: number) {
   return `$${(cents / 100).toFixed(2)}`
@@ -28,13 +32,26 @@ function formatCurrency(cents: number) {
 
 type ShoppingItem = ShoppingListResult['items'][number]
 
-function ShoppingListRow({ item }: { item: ShoppingItem }) {
+function ShoppingListRow({
+  item,
+  isHaveThis,
+  onHaveThis,
+  onHandOverride,
+  onOnHandChange,
+}: {
+  item: ShoppingItem
+  isHaveThis?: boolean
+  onHaveThis?: () => void
+  onHandOverride?: number
+  onOnHandChange?: (value: number) => void
+}) {
   const needsSourcing = item.supplier === 'Unassigned' && item.estimatedCostCents === 0
   const [showSourcing, setShowSourcing] = useState(false)
+  const [editingOnHand, setEditingOnHand] = useState(false)
 
   return (
     <>
-      <tr className="border-b border-stone-800">
+      <tr className={`border-b border-stone-800 ${isHaveThis ? 'opacity-40 line-through' : ''}`}>
         <td className="px-2 py-2 text-stone-100">
           <div className="flex items-center gap-2">
             {item.ingredientName}
@@ -56,6 +73,15 @@ function ShoppingListRow({ item }: { item: ShoppingItem }) {
               </span>
             )}
           </p>
+          {item.eventBreakdown && item.eventBreakdown.length > 1 && (
+            <div className="flex flex-wrap gap-1 mt-1">
+              {item.eventBreakdown.map((b) => (
+                <span key={b.eventId} className="text-[10px] text-stone-600">
+                  {b.eventLabel}: {b.quantityForEvent.toFixed(1)} {item.unit}
+                </span>
+              ))}
+            </div>
+          )}
           {item.dietaryWarnings && item.dietaryWarnings.length > 0 && (
             <div className="flex flex-wrap gap-1 mt-1">
               {item.dietaryWarnings.map((w, i) => (
@@ -79,7 +105,35 @@ function ShoppingListRow({ item }: { item: ShoppingItem }) {
           {item.totalRequired.toFixed(2)} {item.unit}
         </td>
         <td className="px-2 py-2 text-right text-stone-300">
-          {item.onHand.toFixed(2)} {item.unit}
+          {editingOnHand ? (
+            <input
+              type="number"
+              step="0.1"
+              title="Override on-hand quantity"
+              defaultValue={onHandOverride ?? item.onHand}
+              onBlur={(e) => {
+                onOnHandChange?.(Number(e.target.value) || 0)
+                setEditingOnHand(false)
+              }}
+              onKeyDown={(e) => {
+                if (e.key === 'Enter') {
+                  onOnHandChange?.(Number((e.target as HTMLInputElement).value) || 0)
+                  setEditingOnHand(false)
+                }
+              }}
+              autoFocus
+              className="w-16 rounded border border-stone-600 bg-stone-900 px-1 py-0.5 text-right text-xs"
+            />
+          ) : (
+            <button
+              type="button"
+              onClick={() => setEditingOnHand(true)}
+              className="hover:text-brand-400 cursor-pointer"
+              title="Click to override on-hand quantity"
+            >
+              {item.onHand.toFixed(2)} {item.unit}
+            </button>
+          )}
         </td>
         <td
           className={`px-2 py-2 text-right font-medium ${
@@ -91,10 +145,24 @@ function ShoppingListRow({ item }: { item: ShoppingItem }) {
         <td className="px-2 py-2 text-right text-stone-300">
           {formatCurrency(item.estimatedCostCents)}
         </td>
+        <td className="px-2 py-2 text-right">
+          <button
+            type="button"
+            onClick={onHaveThis}
+            className={`text-xs px-2 py-0.5 rounded ${
+              isHaveThis
+                ? 'bg-green-900/50 text-green-300'
+                : 'bg-stone-800 text-stone-400 hover:text-stone-200'
+            }`}
+            title={isHaveThis ? 'Undo: I need this' : 'I have this (skip buying)'}
+          >
+            {isHaveThis ? 'Have it' : 'I have this'}
+          </button>
+        </td>
       </tr>
       {showSourcing && (
         <tr className="border-b border-stone-800 bg-stone-950">
-          <td colSpan={5} className="px-3 py-3">
+          <td colSpan={6} className="px-3 py-3">
             <WebSourcingPanel query={item.ingredientName} label="Where to buy" />
           </td>
         </tr>
@@ -126,16 +194,35 @@ export function ShoppingListGenerator({ initialResult, initialEventIds, initialE
     splits: StoreSplit[]
     unassigned: { name: string; quantity: number | string; unit: string }[]
   } | null>(null)
+  const [activeTab, setActiveTab] = useState<'list' | 'vendors' | 'history'>('list')
+  const [vendors, setVendors] = useState<{ id: string; name: string }[]>([])
+  const [vendorsLoaded, setVendorsLoaded] = useState(false)
+  const [onHandOverrides, setOnHandOverrides] = useState<Map<string, number>>(new Map())
+  const [haveThisSet, setHaveThisSet] = useState<Set<string>>(new Set())
   const [error, setError] = useState<string | null>(null)
   const [isPending, startTransition] = useTransition()
 
+  const adjustedItems = useMemo(() => {
+    return result.items.map((item) => {
+      if (haveThisSet.has(item.ingredientId)) {
+        return { ...item, toBuy: 0, onHand: item.totalRequired }
+      }
+      const override = onHandOverrides.get(item.ingredientId)
+      if (override !== undefined) {
+        const newToBuy = Math.max(0, item.totalRequired - override)
+        return { ...item, onHand: override, toBuy: newToBuy }
+      }
+      return item
+    })
+  }, [result.items, onHandOverrides, haveThisSet])
+
   const filteredItems = useMemo(() => {
-    return result.items.filter((item) => {
+    return adjustedItems.filter((item) => {
       if (showShortagesOnly && item.toBuy <= 0) return false
       if (selectedSupplier && item.supplier !== selectedSupplier) return false
       return true
     })
-  }, [result.items, selectedSupplier, showShortagesOnly])
+  }, [adjustedItems, selectedSupplier, showShortagesOnly])
 
   const grouped = useMemo(() => {
     if (groupBy === 'store' && storeSplits) {
@@ -314,6 +401,53 @@ export function ShoppingListGenerator({ initialResult, initialEventIds, initialE
     })
   }
 
+  function loadVendors() {
+    if (vendorsLoaded) return
+    startTransition(async () => {
+      try {
+        const v = await getChefVendors()
+        setVendors(v)
+        setVendorsLoaded(true)
+      } catch {
+        /* non-blocking */
+      }
+    })
+  }
+
+  function handleTabChange(tab: 'list' | 'vendors' | 'history') {
+    setActiveTab(tab)
+    if (tab === 'vendors') loadVendors()
+  }
+
+  function markAsHaveThis(ingredientId: string) {
+    setHaveThisSet((prev) => {
+      const next = new Set(prev)
+      if (next.has(ingredientId)) {
+        next.delete(ingredientId)
+      } else {
+        next.add(ingredientId)
+      }
+      return next
+    })
+  }
+
+  function handleOnHandOverride(ingredientId: string, value: number) {
+    setOnHandOverrides((prev) => {
+      const next = new Map(prev)
+      next.set(ingredientId, value)
+      return next
+    })
+  }
+
+  function handleVendorChanged(ingredientId: string, newVendor: string) {
+    setResult((prev) => ({
+      ...prev,
+      items: prev.items.map((item) =>
+        item.ingredientId === ingredientId ? { ...item, supplier: newVendor } : item
+      ),
+    }))
+  }
+
   return (
     <Card>
       <CardHeader>
@@ -475,38 +609,111 @@ export function ShoppingListGenerator({ initialResult, initialEventIds, initialE
           </div>
         </div>
 
-        {grouped.length === 0 ? (
-          <p className="text-sm text-stone-500">No matching items for this range.</p>
-        ) : (
-          grouped.map(([groupName, items]) => (
-            <div key={groupName} className="rounded-lg border border-stone-700">
-              <div className="border-b border-stone-700 px-3 py-2">
-                <p className="text-sm font-semibold text-stone-200">
-                  {groupName || 'Uncategorized'}
-                  <span className="ml-2 text-stone-500">({items.length})</span>
-                </p>
-              </div>
-              <div className="overflow-x-auto">
-                <table className="w-full text-sm">
-                  <thead>
-                    <tr className="border-b border-stone-800 text-stone-500">
-                      <th className="px-2 py-2 text-left font-medium">Ingredient</th>
-                      <th className="px-2 py-2 text-right font-medium">Required</th>
-                      <th className="px-2 py-2 text-right font-medium">On Hand</th>
-                      <th className="px-2 py-2 text-right font-medium">To Buy</th>
-                      <th className="px-2 py-2 text-right font-medium">Estimated</th>
-                    </tr>
-                  </thead>
-                  <tbody>
-                    {items.map((item) => (
-                      <ShoppingListRow key={`${item.ingredientId}:${item.unit}`} item={item} />
-                    ))}
-                  </tbody>
-                </table>
-              </div>
+        {/* Incomplete recipe warnings */}
+        {result.incompleteRecipes && result.incompleteRecipes.length > 0 && (
+          <div className="rounded-lg border border-amber-800/50 bg-amber-950/30 px-4 py-3">
+            <p className="text-sm font-medium text-amber-200">
+              {result.incompleteRecipes.length} recipe ingredient
+              {result.incompleteRecipes.length === 1 ? '' : 's'} with missing quantities
+            </p>
+            <p className="text-xs text-amber-400/70 mt-1">
+              Shopping list may be incomplete. Fix these recipes for accurate quantities.
+            </p>
+            <div className="flex flex-wrap gap-2 mt-2">
+              {[...new Set(result.incompleteRecipes.map((w) => w.recipeName))].map((name) => (
+                <span
+                  key={name}
+                  className="text-xs bg-amber-900/40 text-amber-300 px-2 py-0.5 rounded"
+                >
+                  {name}
+                </span>
+              ))}
             </div>
-          ))
+          </div>
         )}
+
+        {/* Export toolbar */}
+        <ExportToolbar result={{ ...result, items: adjustedItems }} />
+
+        {/* Tabs */}
+        <div className="flex gap-1 border-b border-stone-700">
+          {(['list', 'vendors', 'history'] as const).map((tab) => (
+            <button
+              key={tab}
+              type="button"
+              onClick={() => handleTabChange(tab)}
+              className={`px-4 py-2 text-sm font-medium border-b-2 transition-colors ${
+                activeTab === tab
+                  ? 'border-brand-500 text-stone-100'
+                  : 'border-transparent text-stone-500 hover:text-stone-300'
+              }`}
+            >
+              {tab === 'list'
+                ? 'Current List'
+                : tab === 'vendors'
+                  ? 'By Vendor'
+                  : 'Shopping History'}
+            </button>
+          ))}
+        </div>
+
+        {/* Tab: Current List */}
+        {activeTab === 'list' && (
+          <>
+            {grouped.length === 0 ? (
+              <p className="text-sm text-stone-500">No matching items for this range.</p>
+            ) : (
+              grouped.map(([groupName, items]) => (
+                <div key={groupName} className="rounded-lg border border-stone-700">
+                  <div className="border-b border-stone-700 px-3 py-2">
+                    <p className="text-sm font-semibold text-stone-200">
+                      {groupName || 'Uncategorized'}
+                      <span className="ml-2 text-stone-500">({items.length})</span>
+                    </p>
+                  </div>
+                  <div className="overflow-x-auto">
+                    <table className="w-full text-sm">
+                      <thead>
+                        <tr className="border-b border-stone-800 text-stone-500">
+                          <th className="px-2 py-2 text-left font-medium">Ingredient</th>
+                          <th className="px-2 py-2 text-right font-medium">Required</th>
+                          <th className="px-2 py-2 text-right font-medium">On Hand</th>
+                          <th className="px-2 py-2 text-right font-medium">To Buy</th>
+                          <th className="px-2 py-2 text-right font-medium">Estimated</th>
+                          <th className="px-2 py-2 text-right font-medium w-24">Actions</th>
+                        </tr>
+                      </thead>
+                      <tbody>
+                        {items.map((item) => (
+                          <ShoppingListRow
+                            key={`${item.ingredientId}:${item.unit}`}
+                            item={item}
+                            isHaveThis={haveThisSet.has(item.ingredientId)}
+                            onHaveThis={() => markAsHaveThis(item.ingredientId)}
+                            onHandOverride={onHandOverrides.get(item.ingredientId)}
+                            onOnHandChange={(v) => handleOnHandOverride(item.ingredientId, v)}
+                          />
+                        ))}
+                      </tbody>
+                    </table>
+                  </div>
+                </div>
+              ))
+            )}
+          </>
+        )}
+
+        {/* Tab: Vendor Sublists */}
+        {activeTab === 'vendors' && (
+          <VendorSublist
+            items={filteredItems}
+            vendors={vendors}
+            onItemVendorChanged={handleVendorChanged}
+          />
+        )}
+
+        {/* Tab: Shopping History */}
+        {activeTab === 'history' && <ShoppingHistory />}
       </CardContent>
     </Card>
   )
