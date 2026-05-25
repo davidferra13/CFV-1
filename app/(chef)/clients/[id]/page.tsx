@@ -31,6 +31,7 @@ import { MilestoneManager } from '@/components/clients/milestone-manager'
 import { AddressManager } from '@/components/clients/address-manager'
 import { PersonalInfoEditor } from '@/components/clients/personal-info-editor'
 import { QuickNotes } from '@/components/clients/quick-notes'
+import { SharedClientNotes } from '@/components/clients/shared-client-notes'
 import { getClientNotes } from '@/lib/notes/actions'
 import { getClientConnections } from '@/lib/connections/actions'
 import { getClients } from '@/lib/clients/actions'
@@ -1382,6 +1383,7 @@ export default async function ClientDetailPage({ params }: ClientDetailPageProps
 
       {/* Quick Notes */}
       <QuickNotes clientId={client.id} initialNotes={clientNotes} />
+      <SharedClientNotes clientId={client.id} />
 
       {/* Milestones */}
       <MilestoneManager
