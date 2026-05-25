@@ -1,4 +1,4 @@
-// Menu CRUD Server Actions
+﻿// Menu CRUD Server Actions
 // Chef-only: Manage menus, dishes, and components (relational model)
 // Enforces tenant scoping
 
@@ -26,6 +26,7 @@ import { normalizeUnit } from '@/lib/units/conversion-engine'
 import { transitionMenuWithContext } from './menu-lifecycle'
 import type { MenuOriginType, MenuOriginMetadata } from './provenance-types'
 import { getForkGeneration } from './provenance-types'
+import { enqueueHermesEvent } from '@/lib/pricing/hermes-queue'
 
 type MenuStatus = Database['public']['Enums']['menu_status']
 // 'draft' | 'shared' | 'locked' | 'archived'
@@ -312,10 +313,18 @@ export async function createMenu(input: CreateMenuInput) {
     console.error('[createMenu] Webhook emit failed (non-blocking):', err)
   }
 
+  // Notify Hermes of new menu (fire-and-forget)
+  try {
+    await enqueueHermesEvent('menu.created', {
+      menuId: menu.id,
+      tenantId: user.tenantId!,
+    })
+  } catch {}
+
   return result
 }
 
-// ─── Course input type for createMenuWithCourses ──────────────────────────────
+// â”€â”€â”€ Course input type for createMenuWithCourses â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
 export type CourseInput = {
   course_label: string
@@ -1481,7 +1490,7 @@ export async function getMenuCostSummaries(): Promise<MenuCostSummary[]> {
 
 /**
  * Duplicate menu with full hierarchy (chef-only)
- * Copies: menu → dishes → components
+ * Copies: menu â†’ dishes â†’ components
  * New menu is always 'draft' with no event attachment
  */
 export async function duplicateMenu(menuId: string, forkReason?: string) {
@@ -1612,7 +1621,7 @@ export async function duplicateMenu(menuId: string, forkReason?: string) {
 
 /**
  * Clone a menu - creates a draft copy with "(Copy)" suffix.
- * Copies the full hierarchy: menu → dishes → components.
+ * Copies the full hierarchy: menu â†’ dishes â†’ components.
  * The clone is never attached to an event and is never a template.
  */
 export async function cloneMenu(menuId: string) {

@@ -1,10 +1,11 @@
-'use server'
+﻿'use server'
 
 import { revalidatePath, revalidateTag } from 'next/cache'
 import { z } from 'zod'
 import { requireChef } from '@/lib/auth/get-user'
 import { db } from '@/lib/db'
 import { sql } from 'drizzle-orm'
+import { enqueueHermesEvent } from '@/lib/pricing/hermes-queue'
 
 // ======================================================================
 // CHEF INGREDIENT PRICES (standing overrides, Tier 0)
@@ -74,6 +75,15 @@ export async function setChefIngredientPrice(input: SetChefPriceInput) {
     parsed.priceUnit,
     'override'
   )
+
+  // Notify Hermes of price override (fire-and-forget)
+  try {
+    await enqueueHermesEvent('price.overridden', {
+      ingredientId: parsed.ingredientId,
+      tenantId: chefId,
+      source: 'chef_override',
+    })
+  } catch {}
 
   revalidateTag('pricing')
   revalidatePath('/menus', 'layout')

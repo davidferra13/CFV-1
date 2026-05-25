@@ -1,4 +1,4 @@
-// Recipe Book Server Actions
+﻿// Recipe Book Server Actions
 // Chef-only: Manage recipes, ingredients, and recipe-component linking
 // Enforces tenant scoping
 
@@ -14,6 +14,7 @@ import { revalidatePath, revalidateTag } from 'next/cache'
 import { z } from 'zod'
 import type { Database } from '@/types/database'
 import { invalidateRemyContextCache } from '@/lib/ai/remy-context'
+import { enqueueHermesEvent } from '@/lib/pricing/hermes-queue'
 
 type RecipeCategory = Database['public']['Enums']['recipe_category']
 type RecipeCuisine = Database['public']['Enums']['recipe_cuisine']
@@ -487,7 +488,7 @@ export async function getRecipeById(recipeId: string) {
     .eq('recipe_id', recipeId)
     .single()
 
-  // Get event history: recipe → components → dishes → menus → events
+  // Get event history: recipe â†’ components â†’ dishes â†’ menus â†’ events
   const { data: linkedComponents } = await db
     .from('components')
     .select(
@@ -894,6 +895,16 @@ export async function addIngredientToRecipe(recipeId: string, input: AddIngredie
   revalidatePath(`/recipes/${recipeId}`)
   revalidatePath('/culinary') // EC-G4: bust shopping list cache
   revalidateTag('recipe-costs')
+
+  // Notify Hermes of ingredient addition (fire-and-forget)
+  try {
+    await enqueueHermesEvent('ingredient.added', {
+      ingredientId,
+      name: validated.ingredient_name,
+      tenantId: user.tenantId!,
+    })
+  } catch {}
+
   return {
     success: true,
     recipeIngredient,
@@ -1297,7 +1308,7 @@ export async function getRecipesForEvent(eventId: string) {
   const user = await requireChef()
   const db: any = createServerClient()
 
-  // Event → menus → dishes → components → recipes
+  // Event â†’ menus â†’ dishes â†’ components â†’ recipes
   const { data: menus } = await db
     .from('menus')
     .select('id')
@@ -1348,7 +1359,7 @@ export async function getUnrecordedComponentsForEvent(eventId: string) {
   const user = await requireChef()
   const db: any = createServerClient()
 
-  // Event → menus → dishes → components where recipe_id IS NULL
+  // Event â†’ menus â†’ dishes â†’ components where recipe_id IS NULL
   const { data: menus } = await db
     .from('menus')
     .select('id')
