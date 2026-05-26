@@ -353,6 +353,7 @@ export default async function ChefDashboard() {
             </Suspense>
           </WidgetErrorBoundary>
         </SectionShell>
+        <LayerDivider layer="strategic" />
 
         {/* 8. Hero Zone */}
         <SectionShell sectionId="hero-zone" mode="expanded" label="Hero Zone">
@@ -407,6 +408,7 @@ export default async function ChefDashboard() {
             </Suspense>
           </WidgetErrorBoundary>
         </SectionShell>
+        <LayerDivider layer="intelligence" />
 
         {/* 13. Intelligence Digest */}
         <SectionShell sectionId="intelligence-digest" mode="expanded" label="Intelligence Digest">
@@ -434,6 +436,7 @@ export default async function ChefDashboard() {
             </Suspense>
           </WidgetErrorBoundary>
         </SectionShell>
+        <LayerDivider layer="activity" />
 
         {/* 16. Activity Feed */}
         <SectionShell sectionId="activity-feed" mode="expanded" label="Activity Feed">
@@ -452,6 +455,7 @@ export default async function ChefDashboard() {
             </Suspense>
           </WidgetErrorBoundary>
         </SectionShell>
+        <LayerDivider layer="utility" />
 
         {/* 18. Quick Notes + Chef Tips */}
         <SectionShell sectionId="quick-notes-tips" mode="expanded" label="Quick Notes & Tips">
