@@ -1,29 +1,30 @@
 # Exit Eval Swarm Recovery State
 
-> **Updated:** 2026-05-25 (end of session)
-> **Status:** 86% complete (65/76). 11 remaining.
+> **Updated:** 2026-05-26
+> **Status:** COMPLETE (76/76). Final 11 lanes were dispatched, written, verified, and synthesized into `docs/exit-system-roadmap.md`.
 
-## Disk Reality (verified post-Wave-D commit f6dde85e6)
+## Disk Reality
 
-| Role      | On Disk | Expected | Missing                                   |
-| --------- | ------- | -------- | ----------------------------------------- |
-| Chef      | 18      | 18       | NONE                                      |
-| Client    | 13      | 13       | NONE                                      |
-| Admin     | 9       | 9        | NONE                                      |
-| Guest     | 10      | 10       | NONE                                      |
-| Partner   | 9       | 10       | #51 (account-claiming-access)             |
-| Vendor    | 6       | 7        | #66 (communication-disputes-relationship) |
-| Staff     | 0       | 9        | #68-76 (all 9)                            |
-| **Total** | **65**  | **76**   | **11 missing**                            |
+| Role      | On Disk | Expected | Missing  |
+| --------- | ------- | -------- | -------- |
+| Chef      | 18      | 18       | NONE     |
+| Client    | 13      | 13       | NONE     |
+| Admin     | 9       | 9        | NONE     |
+| Guest     | 10      | 10       | NONE     |
+| Partner   | 10      | 10       | NONE     |
+| Vendor    | 7       | 7        | NONE     |
+| Staff     | 9       | 9        | NONE     |
+| **Total** | **76**  | **76**   | **NONE** |
 
-## To Resume
+## Completion Verification
 
-1. Glob each role dir under `docs/exit-evals/` to get actual file count
-2. Cross-reference against 76 prompts in `docs/exit-evals/prompts/`
-3. Dispatch missing evals in batches of 10-12 (100% success rate at this size)
-4. Use template below
+- Role file counts: Chef 18, Client 13, Admin 9, Guest 10, Partner 10, Vendor 7, Staff 9.
+- Prompt/output cross-check: 76/76 prompts have output files.
+- Scenario cross-check: 489/489 scenario sections present.
+- `docs/exit-evals/RUNNER.md` marks all 76 prompt rows `DONE`.
+- `docs/exit-system-roadmap.md` contains the full-corpus synthesis and build-roadmap seeds.
 
-## Agent Dispatch Template
+## Historical Dispatch Template
 
 ```
 You are running an exit-eval for ChefFlow. Read and execute this prompt file exactly: `docs/exit-evals/prompts/[FILE]`
@@ -41,11 +42,11 @@ Steps:
 Write thorough, evidence-based evaluations. Reference specific files/functions.
 ```
 
-## After All 76 Complete
+## Completed Actions
 
-1. Update `docs/exit-evals/RUNNER.md` status for all prompts
-2. Run synthesis to produce exit-eval roadmap
-3. Aggregate reducibility scores across all 489 scenarios
+1. Updated `docs/exit-evals/RUNNER.md` status for all prompts.
+2. Synthesized all role outputs into `docs/exit-system-roadmap.md`.
+3. Aggregated reclassification scores across all 489 scenarios.
 
 ## Key Learnings
 
