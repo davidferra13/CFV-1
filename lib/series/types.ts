@@ -331,5 +331,63 @@ export type SeriesOperationResult = {
   success: boolean
   seriesId?: string
   hostId?: string
+  postId?: string
   error?: string
+}
+
+export type SeriesPostType =
+  | 'update'
+  | 'sourcing'
+  | 'menu_preview'
+  | 'behind_scenes'
+  | 'announcement'
+  | 'recap'
+  | 'transparency'
+  | 'milestone'
+
+export type SeriesPostVisibility = 'members' | 'public'
+
+export type SeriesPost = {
+  id: string
+  seriesId: string
+  authorHostId: string
+  postType: SeriesPostType
+  title: string | null
+  body: string
+  imageUrls: string[]
+  linkUrl: string | null
+  linkLabel: string | null
+  eventId: string | null
+  visibility: SeriesPostVisibility
+  pinned: boolean
+  publishedAt: string
+  archivedAt: string | null
+  createdAt: string
+  updatedAt: string
+  authorName?: string
+  authorRole?: string
+  authorAvatarUrl?: string | null
+}
+
+export type SeriesPostCreateInput = {
+  seriesId: string
+  postType: SeriesPostType
+  title?: string | null
+  body: string
+  imageUrls?: string[]
+  linkUrl?: string | null
+  linkLabel?: string | null
+  eventId?: string | null
+  visibility?: SeriesPostVisibility
+  pinned?: boolean
+}
+
+export type SeriesPostUpdateInput = {
+  title?: string | null
+  body?: string
+  imageUrls?: string[]
+  linkUrl?: string | null
+  linkLabel?: string | null
+  visibility?: SeriesPostVisibility
+  pinned?: boolean
 }

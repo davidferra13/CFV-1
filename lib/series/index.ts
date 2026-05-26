@@ -16,6 +16,11 @@
   SeriesCreateInput,
   SeriesHostInviteInput,
   SeriesOperationResult,
+  SeriesPostType,
+  SeriesPostVisibility,
+  SeriesPost,
+  SeriesPostCreateInput,
+  SeriesPostUpdateInput,
 } from './types'
 
 export { createDefaultSeriesConfig } from './defaults'
@@ -36,3 +41,12 @@ export {
   listSeriesHosts,
   updateSeriesHostProfile,
 } from './host-actions'
+
+export {
+  createSeriesPost,
+  listSeriesPosts,
+  getSeriesPost,
+  updateSeriesPost,
+  pinSeriesPost,
+  archiveSeriesPost,
+} from './post-actions'
