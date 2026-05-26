@@ -1,4 +1,4 @@
-'use server'
+﻿'use server'
 
 import { requireChef } from '@/lib/auth/get-user'
 import { createServerClient } from '@/lib/db/server'
@@ -59,6 +59,7 @@ export async function markSocialNotificationsRead(notifIds?: string[]) {
 
   await query
   revalidatePath('/network')
+  revalidatePath('/tables')
   return { success: true }
 }
 
