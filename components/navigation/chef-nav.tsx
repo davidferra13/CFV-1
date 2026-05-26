@@ -59,7 +59,7 @@ import {
   ChevronDown,
   Leaf,
   Bot,
-  Rss,
+  Armchair,
   Search,
   Plus,
   Lock,
@@ -874,12 +874,12 @@ export function ChefSidebar({
     () => (isAdmin ? standaloneBottom : standaloneBottom.filter((item) => !item.adminOnly)),
     [isAdmin]
   )
-  const networkRailActive = pathname.startsWith('/network')
-  const showCommunityRailLink =
+  const tablesRailActive = pathname.startsWith('/tables')
+  const showTablesRailLink =
     isAdmin ||
     isPrivileged ||
     showAllNav ||
-    networkRailActive ||
+    tablesRailActive ||
     !tenantPresence ||
     tenantPresence.hasNetwork ||
     tenantPresence.hasCircles
@@ -1046,21 +1046,27 @@ export function ChefSidebar({
 
             <div className="w-6 border-t border-stone-800 my-1.5" />
 
-            {/* Community - rail icon */}
-            {showCommunityRailLink && (
-              <Link
-                href="/network"
-                title="Community"
-                aria-label="Community"
-                className={`flex items-center justify-center w-10 h-10 rounded-lg transition-colors ${
-                  networkRailActive
-                    ? 'text-brand-400'
-                    : 'text-stone-400 hover:bg-stone-800 hover:text-stone-400'
-                }`}
-                style={networkRailActive ? { background: 'rgba(79, 70, 229, 0.08)' } : undefined}
-              >
-                <Rss className="w-[18px] h-[18px]" />
-              </Link>
+            {showTablesRailLink && (
+              <div className="flex flex-col items-center mb-3">
+                <Link
+                  href="/tables"
+                  title="Tables"
+                  aria-label="Tables"
+                  className={`relative flex items-center justify-center w-11 h-11 rounded-xl transition-all duration-200 ${
+                    tablesRailActive
+                      ? 'shadow-[0_0_24px_rgba(237,168,107,0.35)]'
+                      : 'hover:scale-105 hover:shadow-[0_0_16px_rgba(237,168,107,0.2)]'
+                  }`}
+                  style={{
+                    background: 'linear-gradient(135deg, #B15C26, #EDA86B)',
+                  }}
+                >
+                  <Armchair className="w-[18px] h-[18px] text-white" />
+                </Link>
+                <span className="text-[9px] font-semibold uppercase tracking-[0.5px] text-brand-400 mt-1">
+                  Tables
+                </span>
+              </div>
             )}
 
             <div className="w-6 border-t border-stone-800 my-1.5" />

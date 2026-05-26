@@ -14,6 +14,7 @@ export { WarningOctagon as AlertOctagon } from '@phosphor-icons/react/dist/ssr/W
 export { Warning as AlertTriangle } from '@phosphor-icons/react/dist/ssr/Warning'
 export { AppleLogo as Apple } from '@phosphor-icons/react/dist/ssr/AppleLogo'
 export { Archive } from '@phosphor-icons/react/dist/ssr/Archive'
+export { Armchair } from '@phosphor-icons/react/dist/ssr/Armchair'
 export { ArrowDown } from '@phosphor-icons/react/dist/ssr/ArrowDown'
 export { ArrowDownRight } from '@phosphor-icons/react/dist/ssr/ArrowDownRight'
 export { ArrowLeft } from '@phosphor-icons/react/dist/ssr/ArrowLeft'
