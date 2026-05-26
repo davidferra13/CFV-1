@@ -189,3 +189,40 @@ export async function importReceiptPrices(params: {
 
   return { success: true, imported, skipped }
 }
+
+export async function importReceiptPricesForEvent(
+  params: Parameters<typeof importReceiptPrices>[0] & { eventId: string }
+): Promise<ReceiptImportResult> {
+  const result = await importReceiptPrices(params)
+
+  if (result.success && result.imported > 0 && params.eventId) {
+    try {
+      const { logReceipt } = await import('@/lib/shopping/receipt-actions')
+      const totalCents = params.items.reduce((sum, item) => sum + (item.priceCents || 0), 0)
+      await logReceipt(
+        params.storeName,
+        params.purchaseDate,
+        totalCents,
+        params.items.map((item) => ({
+          name: item.productName,
+          price_cents: item.priceCents,
+          quantity: item.quantity,
+          unit: item.unit,
+          category: 'grocery',
+        })),
+        params.eventId
+      )
+    } catch (err) {
+      console.error('[importReceiptPricesForEvent] Receipt log failed (non-blocking):', err)
+    }
+
+    try {
+      const { reconcileEventFoodCost } = await import('@/lib/costing/event-cost-reconciliation')
+      await reconcileEventFoodCost(params.eventId)
+    } catch (err) {
+      console.error('[importReceiptPricesForEvent] Reconciliation failed (non-blocking):', err)
+    }
+  }
+
+  return result
+}

@@ -208,6 +208,14 @@ export async function linkReceiptToEvent(
     throw new Error('Failed to link receipt to event')
   }
 
+  // Non-blocking: reconcile event food cost with new receipt
+  try {
+    const { reconcileEventFoodCost } = await import('@/lib/costing/event-cost-reconciliation')
+    await reconcileEventFoodCost(eventId)
+  } catch (err) {
+    console.error('[linkReceiptToEvent] Reconciliation failed (non-blocking):', err)
+  }
+
   revalidatePath('/dashboard')
   return data
 }

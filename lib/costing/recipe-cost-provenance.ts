@@ -19,7 +19,7 @@ export type ProvenanceIssue = {
 export type IngredientProvenance = {
   name: string
   costCents: number | null
-  costStatus: 'accurate' | 'estimated' | 'stale' | 'no_price'
+  costStatus: 'reconciled' | 'accurate' | 'estimated' | 'stale' | 'no_price'
   priceSource: string | null
   priceConfidence: number | null
   priceFreshnessDays: number | null
@@ -76,7 +76,7 @@ export type RecipeProvenanceInput = {
     quantity: number
     unit: string
     computedCostCents: number | null
-    costStatus: 'accurate' | 'estimated' | 'stale' | 'no_price'
+    costStatus: 'reconciled' | 'accurate' | 'estimated' | 'stale' | 'no_price'
   }>
   costSummary: {
     ingredientCount: number
@@ -190,6 +190,12 @@ export function computeRecipeCostProvenance(input: RecipeProvenanceInput): Recip
   if (total > 0) {
     const cleanPct = Math.max(0, 1 - costIssues.unitMismatches / total)
     score += Math.round(cleanPct * 10)
+  }
+
+  // Bonus for reconciled (receipt-confirmed) ingredients: +5 max
+  const reconciledCount = ingredients.filter((i) => i.costStatus === 'reconciled').length
+  if (reconciledCount > 0 && total > 0) {
+    score += Math.round((reconciledCount / total) * 5)
   }
 
   // Penalty for low confidence ingredients
