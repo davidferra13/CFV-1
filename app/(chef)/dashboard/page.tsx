@@ -61,6 +61,7 @@ import { IntelligenceDigestSection } from './_sections/intelligence-digest-secti
 import { LazyBusinessHealthTrigger } from './_sections/lazy-business-health'
 import { IndustryLinksSection } from './_sections/industry-links-section'
 import { TakeAChefRailSection, TakeAChefRailSkeleton } from './_sections/take-a-chef-rail-section'
+import { DashboardSectionWrapper } from '@/components/dashboard/dashboard-section-wrapper'
 
 export const metadata: Metadata = { title: 'Dashboard' }
 
@@ -291,194 +292,196 @@ export default async function ChefDashboard() {
   )
 
   return (
-    <div className="dashboard-page min-h-screen space-y-8 sm:space-y-10">
-      <AttentionRail chips={allChips} />
+    <DashboardSectionWrapper>
+      <div className="dashboard-page min-h-screen space-y-8 sm:space-y-10">
+        <AttentionRail chips={allChips} />
 
-      {/* 1. Command Center (smart mode: expands when items need attention, whispers when clear) */}
-      <CommandCenterWithWeight data={ccData} />
+        {/* 1. Command Center (smart mode: expands when items need attention, whispers when clear) */}
+        <CommandCenterWithWeight data={ccData} />
 
-      {/* 1.5. Take a Chef Rail */}
-      <SectionShell sectionId="take-a-chef-rail" mode="expanded" label="Take a Chef">
-        <WidgetErrorBoundary name="Take a Chef" compact>
-          <Suspense fallback={<TakeAChefRailSkeleton />}>
-            <TakeAChefRailSection />
-          </Suspense>
-        </WidgetErrorBoundary>
-      </SectionShell>
-
-      {/* 2. Daily Plan Banner (smart mode: whisper when empty, compact when done, expanded when tasks remain) */}
-      <WidgetErrorBoundary name="Daily Plan" compact>
-        <Suspense fallback={null}>
-          <DailyPlanWithWeight />
-        </Suspense>
-      </WidgetErrorBoundary>
-
-      {/* 3. This Week */}
-      <SectionShell sectionId="this-week" mode="expanded" label="This Week">
-        <WidgetErrorBoundary name="This Week" compact>
-          <Suspense fallback={<ScheduleSkeleton />}>
-            <ThisWeekSection queuePromise={queuePromise} />
-          </Suspense>
-        </WidgetErrorBoundary>
-      </SectionShell>
-
-      {/* 5. Tiered Rail */}
-      <SectionShell sectionId="tiered-rail" mode="expanded" label="Tiered Rail">
-        <WidgetErrorBoundary name="Tiered Rail" compact>
-          <Suspense fallback={<TieredRailSkeleton />}>
-            <TieredRailSection queuePromise={queuePromise} />
-          </Suspense>
-        </WidgetErrorBoundary>
-      </SectionShell>
-
-      {/* 6. Pricing Alerts */}
-      <SectionShell sectionId="pricing-alerts" mode="expanded" label="Pricing Alerts">
-        <WidgetErrorBoundary name="Pricing Alerts" compact>
-          <Suspense fallback={<AlertsSkeleton />}>
-            <OpenClawLiveAlertsSection />
-          </Suspense>
-        </WidgetErrorBoundary>
-      </SectionShell>
-
-      {/* 7. Onboarding */}
-      <SectionShell sectionId="onboarding" mode="expanded" label="Onboarding">
-        <WidgetErrorBoundary name="Onboarding" compact>
-          <Suspense fallback={<ActivitySkeleton />}>
-            <OnboardingZone />
-          </Suspense>
-        </WidgetErrorBoundary>
-      </SectionShell>
-
-      {/* 8. Hero Zone */}
-      <SectionShell sectionId="hero-zone" mode="expanded" label="Hero Zone">
-        <WidgetErrorBoundary name="Hero Zone" compact>
-          <Suspense fallback={<HeroMetricsSkeleton />}>
-            <HeroZone
-              tenantId={user.tenantId!}
-              userId={user.id}
-              entityId={user.entityId}
-              email={user.email ?? ''}
-            />
-          </Suspense>
-        </WidgetErrorBoundary>
-      </SectionShell>
-
-      {/* 9. Profit at a Glance */}
-      <SectionShell sectionId="profit-at-a-glance" mode="expanded" label="Profit at a Glance">
-        <WidgetErrorBoundary name="Profit at a Glance" compact>
-          <Suspense fallback={<ProfitAtAGlanceSkeleton />}>
-            <ProfitAtAGlanceLoader />
-          </Suspense>
-        </WidgetErrorBoundary>
-      </SectionShell>
-
-      {/* 10. Revenue Goal */}
-      <SectionShell sectionId="revenue-goal" mode="expanded" label="Revenue Goal">
-        <WidgetErrorBoundary name="Revenue Goal" compact>
-          <Suspense fallback={<WidgetCardSkeleton size="sm" />}>
-            <RevenueGoalSection />
-          </Suspense>
-        </WidgetErrorBoundary>
-      </SectionShell>
-
-      {/* 11. Business Health */}
-      <SectionShell sectionId="business-health" mode="expanded" label="Business Health">
-        {businessHealthLoaded ? (
-          <WidgetErrorBoundary name="Business Health" compact>
-            <Suspense fallback={<BusinessSkeleton />}>
-              <BusinessHealthFullSection />
+        {/* 1.5. Take a Chef Rail */}
+        <SectionShell sectionId="take-a-chef-rail" mode="expanded" label="Take a Chef">
+          <WidgetErrorBoundary name="Take a Chef" compact>
+            <Suspense fallback={<TakeAChefRailSkeleton />}>
+              <TakeAChefRailSection />
             </Suspense>
           </WidgetErrorBoundary>
-        ) : (
-          <LazyBusinessHealthTrigger />
-        )}
-      </SectionShell>
+        </SectionShell>
 
-      {/* 12. Chef Life Synthesis */}
-      <SectionShell sectionId="chef-life-synthesis" mode="expanded" label="Chef Life Synthesis">
-        <WidgetErrorBoundary name="Chef Life Synthesis" compact>
-          <Suspense fallback={<ChefLifeSynthesisRailSkeleton />}>
-            <ChefLifeSynthesisLoader />
-          </Suspense>
-        </WidgetErrorBoundary>
-      </SectionShell>
-
-      {/* 13. Intelligence Digest */}
-      <SectionShell sectionId="intelligence-digest" mode="expanded" label="Intelligence Digest">
-        <WidgetErrorBoundary name="Intelligence Digest" compact>
-          <Suspense fallback={<IntelligenceCardsSkeleton />}>
-            <IntelligenceDigestSection />
-          </Suspense>
-        </WidgetErrorBoundary>
-      </SectionShell>
-
-      {/* 14. CIL Signal Summary (System Pulse) */}
-      <SectionShell sectionId="cil-signal-summary" mode="expanded" label="System Pulse">
-        <WidgetErrorBoundary name="System Pulse" compact>
-          <Suspense fallback={<IntelligenceCardsSkeleton />}>
-            <CilSignalSummary />
-          </Suspense>
-        </WidgetErrorBoundary>
-      </SectionShell>
-
-      {/* 15. Ambient Layer */}
-      <SectionShell sectionId="ambient-layer" mode="expanded" label="Ambient Layer">
-        <WidgetErrorBoundary name="Ambient Layer" compact>
-          <Suspense fallback={<IntelligenceCardsSkeleton />}>
-            <AmbientLayer />
-          </Suspense>
-        </WidgetErrorBoundary>
-      </SectionShell>
-
-      {/* 16. Activity Feed */}
-      <SectionShell sectionId="activity-feed" mode="expanded" label="Activity Feed">
-        <WidgetErrorBoundary name="Activity Feed" compact>
-          <Suspense fallback={<IntelligenceCardsSkeleton />}>
-            <ActivityFeedSection />
-          </Suspense>
-        </WidgetErrorBoundary>
-      </SectionShell>
-
-      {/* 17. Weekly Reflection */}
-      <SectionShell sectionId="weekly-reflection" mode="expanded" label="Weekly Reflection">
-        <WidgetErrorBoundary name="Weekly Reflection" compact>
-          <Suspense fallback={<WidgetCardSkeleton size="sm" />}>
-            <WeeklyReflectionLoader />
-          </Suspense>
-        </WidgetErrorBoundary>
-      </SectionShell>
-
-      {/* 18. Quick Notes + Chef Tips */}
-      <SectionShell sectionId="quick-notes-tips" mode="expanded" label="Quick Notes & Tips">
-        <div className="grid grid-cols-1 gap-3 xl:grid-cols-2">
-          <WidgetErrorBoundary name="Quick Notes" compact>
-            <Suspense fallback={<WidgetCardSkeleton size="sm" />}>
-              <QuickNotesLoader />
-            </Suspense>
-          </WidgetErrorBoundary>
-
-          <WidgetErrorBoundary name="ChefTips" compact>
-            <Suspense fallback={<WidgetCardSkeleton size="sm" />}>
-              <ChefTipsSection />
-            </Suspense>
-          </WidgetErrorBoundary>
-        </div>
-      </SectionShell>
-
-      {/* 19. Industry & Research */}
-      <SectionShell sectionId="industry-links" mode="expanded" label="Industry & Research">
-        <IndustryLinksSection />
-      </SectionShell>
-
-      {/* 20. Feature Suggestions */}
-      <SectionShell sectionId="feature-suggestions" mode="expanded" label="Feature Suggestions">
-        <WidgetErrorBoundary name="Feature Suggestions" compact>
+        {/* 2. Daily Plan Banner (smart mode: whisper when empty, compact when done, expanded when tasks remain) */}
+        <WidgetErrorBoundary name="Daily Plan" compact>
           <Suspense fallback={null}>
-            <FeatureSuggestionSection />
+            <DailyPlanWithWeight />
           </Suspense>
         </WidgetErrorBoundary>
-      </SectionShell>
-    </div>
+
+        {/* 3. This Week */}
+        <SectionShell sectionId="this-week" mode="expanded" label="This Week">
+          <WidgetErrorBoundary name="This Week" compact>
+            <Suspense fallback={<ScheduleSkeleton />}>
+              <ThisWeekSection queuePromise={queuePromise} />
+            </Suspense>
+          </WidgetErrorBoundary>
+        </SectionShell>
+
+        {/* 5. Tiered Rail */}
+        <SectionShell sectionId="tiered-rail" mode="expanded" label="Tiered Rail">
+          <WidgetErrorBoundary name="Tiered Rail" compact>
+            <Suspense fallback={<TieredRailSkeleton />}>
+              <TieredRailSection queuePromise={queuePromise} />
+            </Suspense>
+          </WidgetErrorBoundary>
+        </SectionShell>
+
+        {/* 6. Pricing Alerts */}
+        <SectionShell sectionId="pricing-alerts" mode="expanded" label="Pricing Alerts">
+          <WidgetErrorBoundary name="Pricing Alerts" compact>
+            <Suspense fallback={<AlertsSkeleton />}>
+              <OpenClawLiveAlertsSection />
+            </Suspense>
+          </WidgetErrorBoundary>
+        </SectionShell>
+
+        {/* 7. Onboarding */}
+        <SectionShell sectionId="onboarding" mode="expanded" label="Onboarding">
+          <WidgetErrorBoundary name="Onboarding" compact>
+            <Suspense fallback={<ActivitySkeleton />}>
+              <OnboardingZone />
+            </Suspense>
+          </WidgetErrorBoundary>
+        </SectionShell>
+
+        {/* 8. Hero Zone */}
+        <SectionShell sectionId="hero-zone" mode="expanded" label="Hero Zone">
+          <WidgetErrorBoundary name="Hero Zone" compact>
+            <Suspense fallback={<HeroMetricsSkeleton />}>
+              <HeroZone
+                tenantId={user.tenantId!}
+                userId={user.id}
+                entityId={user.entityId}
+                email={user.email ?? ''}
+              />
+            </Suspense>
+          </WidgetErrorBoundary>
+        </SectionShell>
+
+        {/* 9. Profit at a Glance */}
+        <SectionShell sectionId="profit-at-a-glance" mode="expanded" label="Profit at a Glance">
+          <WidgetErrorBoundary name="Profit at a Glance" compact>
+            <Suspense fallback={<ProfitAtAGlanceSkeleton />}>
+              <ProfitAtAGlanceLoader />
+            </Suspense>
+          </WidgetErrorBoundary>
+        </SectionShell>
+
+        {/* 10. Revenue Goal */}
+        <SectionShell sectionId="revenue-goal" mode="expanded" label="Revenue Goal">
+          <WidgetErrorBoundary name="Revenue Goal" compact>
+            <Suspense fallback={<WidgetCardSkeleton size="sm" />}>
+              <RevenueGoalSection />
+            </Suspense>
+          </WidgetErrorBoundary>
+        </SectionShell>
+
+        {/* 11. Business Health */}
+        <SectionShell sectionId="business-health" mode="expanded" label="Business Health">
+          {businessHealthLoaded ? (
+            <WidgetErrorBoundary name="Business Health" compact>
+              <Suspense fallback={<BusinessSkeleton />}>
+                <BusinessHealthFullSection />
+              </Suspense>
+            </WidgetErrorBoundary>
+          ) : (
+            <LazyBusinessHealthTrigger />
+          )}
+        </SectionShell>
+
+        {/* 12. Chef Life Synthesis */}
+        <SectionShell sectionId="chef-life-synthesis" mode="expanded" label="Chef Life Synthesis">
+          <WidgetErrorBoundary name="Chef Life Synthesis" compact>
+            <Suspense fallback={<ChefLifeSynthesisRailSkeleton />}>
+              <ChefLifeSynthesisLoader />
+            </Suspense>
+          </WidgetErrorBoundary>
+        </SectionShell>
+
+        {/* 13. Intelligence Digest */}
+        <SectionShell sectionId="intelligence-digest" mode="expanded" label="Intelligence Digest">
+          <WidgetErrorBoundary name="Intelligence Digest" compact>
+            <Suspense fallback={<IntelligenceCardsSkeleton />}>
+              <IntelligenceDigestSection />
+            </Suspense>
+          </WidgetErrorBoundary>
+        </SectionShell>
+
+        {/* 14. CIL Signal Summary (System Pulse) */}
+        <SectionShell sectionId="cil-signal-summary" mode="expanded" label="System Pulse">
+          <WidgetErrorBoundary name="System Pulse" compact>
+            <Suspense fallback={<IntelligenceCardsSkeleton />}>
+              <CilSignalSummary />
+            </Suspense>
+          </WidgetErrorBoundary>
+        </SectionShell>
+
+        {/* 15. Ambient Layer */}
+        <SectionShell sectionId="ambient-layer" mode="expanded" label="Ambient Layer">
+          <WidgetErrorBoundary name="Ambient Layer" compact>
+            <Suspense fallback={<IntelligenceCardsSkeleton />}>
+              <AmbientLayer />
+            </Suspense>
+          </WidgetErrorBoundary>
+        </SectionShell>
+
+        {/* 16. Activity Feed */}
+        <SectionShell sectionId="activity-feed" mode="expanded" label="Activity Feed">
+          <WidgetErrorBoundary name="Activity Feed" compact>
+            <Suspense fallback={<IntelligenceCardsSkeleton />}>
+              <ActivityFeedSection />
+            </Suspense>
+          </WidgetErrorBoundary>
+        </SectionShell>
+
+        {/* 17. Weekly Reflection */}
+        <SectionShell sectionId="weekly-reflection" mode="expanded" label="Weekly Reflection">
+          <WidgetErrorBoundary name="Weekly Reflection" compact>
+            <Suspense fallback={<WidgetCardSkeleton size="sm" />}>
+              <WeeklyReflectionLoader />
+            </Suspense>
+          </WidgetErrorBoundary>
+        </SectionShell>
+
+        {/* 18. Quick Notes + Chef Tips */}
+        <SectionShell sectionId="quick-notes-tips" mode="expanded" label="Quick Notes & Tips">
+          <div className="grid grid-cols-1 gap-3 xl:grid-cols-2">
+            <WidgetErrorBoundary name="Quick Notes" compact>
+              <Suspense fallback={<WidgetCardSkeleton size="sm" />}>
+                <QuickNotesLoader />
+              </Suspense>
+            </WidgetErrorBoundary>
+
+            <WidgetErrorBoundary name="ChefTips" compact>
+              <Suspense fallback={<WidgetCardSkeleton size="sm" />}>
+                <ChefTipsSection />
+              </Suspense>
+            </WidgetErrorBoundary>
+          </div>
+        </SectionShell>
+
+        {/* 19. Industry & Research */}
+        <SectionShell sectionId="industry-links" mode="expanded" label="Industry & Research">
+          <IndustryLinksSection />
+        </SectionShell>
+
+        {/* 20. Feature Suggestions */}
+        <SectionShell sectionId="feature-suggestions" mode="expanded" label="Feature Suggestions">
+          <WidgetErrorBoundary name="Feature Suggestions" compact>
+            <Suspense fallback={null}>
+              <FeatureSuggestionSection />
+            </Suspense>
+          </WidgetErrorBoundary>
+        </SectionShell>
+      </div>
+    </DashboardSectionWrapper>
   )
 }
 
