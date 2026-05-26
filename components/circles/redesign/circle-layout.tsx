@@ -79,6 +79,7 @@ export function CircleLayout({ circles, activeCircleId, circle, onSelectCircle, 
           }}
           circleName={circle.name}
           circleEmoji={circle.emoji}
+          hasCoHosts={circle.has_co_hosts}
         />
       </div>
 

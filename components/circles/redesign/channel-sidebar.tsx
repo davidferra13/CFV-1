@@ -9,6 +9,7 @@ type Props = {
   onSelectChannel: (key: ChannelKey) => void
   circleName: string
   circleEmoji: string | null
+  hasCoHosts?: boolean
   unreadMap?: Partial<Record<ChannelKey, number>>
 }
 
@@ -17,8 +18,14 @@ export function ChannelSidebar({
   onSelectChannel,
   circleName,
   circleEmoji,
+  hasCoHosts = false,
   unreadMap = {},
 }: Props) {
+  // Hide co-hosting category when circle has no co-hosts
+  const visibleCategories = hasCoHosts
+    ? CHANNEL_CATEGORIES
+    : CHANNEL_CATEGORIES.filter((cat) => cat.id !== 'co-hosting')
+
   return (
     <div className="flex h-full w-60 flex-col border-r border-stone-800 bg-[#2b2d31]">
       {/* Circle header */}
@@ -44,7 +51,7 @@ export function ChannelSidebar({
         </button>
 
         {/* Category groups */}
-        {CHANNEL_CATEGORIES.map((cat) => (
+        {visibleCategories.map((cat) => (
           <CategoryGroup
             key={cat.id}
             category={cat}

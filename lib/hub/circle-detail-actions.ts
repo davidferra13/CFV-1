@@ -75,6 +75,7 @@ export interface CircleDetail {
   recent_messages: CircleMessage[]
   chef_profile_token: string | null
   chef_show_remy: boolean
+  has_co_hosts: boolean
 }
 
 export interface CircleEventPickerItem {
@@ -302,6 +303,12 @@ export async function getCircleDetail(circleId: string): Promise<CircleDetail | 
     }
   })
 
+  // 5. Check for co-hosts
+  const { count: coHostCount } = await db
+    .from('circle_co_hosts')
+    .select('id', { count: 'exact', head: true })
+    .eq('circle_id', circleId)
+
   // Find the chef member to expose their profile token and show_remy preference.
   const ownerMembership = (memberships ?? []).find((m: any) => ['owner', 'chef'].includes(m.role))
   const ownerProfile = ownerMembership ? profileMap[ownerMembership.profile_id] : null
@@ -328,6 +335,7 @@ export async function getCircleDetail(circleId: string): Promise<CircleDetail | 
     recent_messages,
     chef_profile_token: ownerProfile?.profile_token ?? null,
     chef_show_remy: ownerMembership?.show_remy ?? true,
+    has_co_hosts: (coHostCount ?? 0) > 0,
   }
 }
 

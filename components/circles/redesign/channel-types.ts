@@ -24,6 +24,8 @@ export type ChannelKey =
   // Memories
   | 'photos'
   | 'past-dinners'
+  // Co-hosting
+  | 'agreement'
   // Chef Only
   | 'chef-notes'
   | 'chef-money'
@@ -93,6 +95,11 @@ export const CHANNEL_CATEGORIES: ChannelCategory[] = [
       { key: 'photos', label: 'Photos', icon: '📸' },
       { key: 'past-dinners', label: 'Past Dinners', icon: '🍷' },
     ],
+  },
+  {
+    id: 'co-hosting',
+    label: 'Co-hosting',
+    channels: [{ key: 'agreement', label: 'Agreement', icon: '🤝', chefOnly: true }],
   },
   {
     id: 'chef-only',

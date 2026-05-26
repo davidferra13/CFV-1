@@ -12,6 +12,7 @@ import { GroupDecisionsChannel } from './channels/group-decisions'
 import { ThemeVibeChannel } from './channels/theme-vibe'
 import { ChatChannel } from './channels/chat-channel'
 import { ChefMoneyChannel } from './channels/chef-money'
+import { AgreementChannel } from './channels/agreement-channel'
 
 type Props = {
   activeChannel: ChannelKey
@@ -44,6 +45,8 @@ export function ChannelContent({ activeChannel, circle }: Props) {
       return <ChatChannel circle={circle} />
     case 'chef-money':
       return <ChefMoneyChannel circle={circle} />
+    case 'agreement':
+      return <AgreementChannel circle={circle} />
     default:
       return (
         <ChannelPlaceholder
