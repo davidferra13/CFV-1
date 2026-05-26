@@ -11,7 +11,7 @@ import { getChefByGuestCode } from '@/lib/guests/lead-actions'
 import { GuestLeadForm } from '@/components/guest-leads/guest-lead-form'
 import { checkRateLimit } from '@/lib/rateLimit'
 
-type Props = { params: { code: string } }
+type Props = { params: { code: string }; searchParams: { kiosk?: string } }
 
 export async function generateMetadata({ params }: Props): Promise<Metadata> {
   const data = await getChefByGuestCode(params.code)
@@ -28,7 +28,7 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
   }
 }
 
-export default async function GuestLandingPage({ params }: Props) {
+export default async function GuestLandingPage({ params, searchParams }: Props) {
   // Rate limit guest code lookups to prevent enumeration (short codes are brute-forceable)
   const headersList = await headers()
   const ip = headersList.get('x-forwarded-for')?.split(',')[0] || 'unknown'
@@ -50,6 +50,11 @@ export default async function GuestLandingPage({ params }: Props) {
 
   return (
     <div className="min-h-screen flex flex-col" style={{ backgroundColor }}>
+      {searchParams.kiosk === 'true' && (
+        <div className="bg-stone-800 text-stone-400 text-xs text-center py-1.5 px-4">
+          Kiosk Mode: pass device to next guest after submitting
+        </div>
+      )}
       {/* Hero */}
       <section className="pt-12 pb-8 px-6 bg-stone-900/70">
         <div className="max-w-lg mx-auto text-center">
@@ -96,6 +101,7 @@ export default async function GuestLandingPage({ params }: Props) {
             chefName={data.chefName}
             primaryColor={primaryColor}
             chefSlug={data.chefSlug}
+            kioskMode={searchParams.kiosk === 'true'}
           />
         </div>
       </section>

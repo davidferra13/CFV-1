@@ -6,10 +6,11 @@ import type { Metadata } from 'next'
 import Link from 'next/link'
 import { requireChef } from '@/lib/auth/get-user'
 import { getOperatorEvaluationInbox, getUnclaimedSubmissions } from '@/lib/contact/claim'
-import { getGuestLeads, getGuestLeadStats } from '@/lib/guests/lead-actions'
+import { getGuestLeads, getGuestLeadStats, getLeadsByEvent } from '@/lib/guests/lead-actions'
 import { LeadsList } from '@/components/leads/leads-list'
 import { OperatorEvaluationInbox } from '@/components/leads/operator-evaluation-inbox'
 import { GuestLeadsList } from '@/components/guest-leads/guest-leads-list'
+import { BatchEmailButton } from '@/components/guest-leads/batch-email-button'
 import { Button } from '@/components/ui/button'
 import { Card } from '@/components/ui/card'
 
@@ -17,12 +18,14 @@ export const metadata: Metadata = { title: 'Leads' }
 
 export default async function LeadsPage() {
   await requireChef()
-  const [submissions, operatorEvaluationInbox, guestLeads, guestLeadStats] = await Promise.all([
-    getUnclaimedSubmissions(),
-    getOperatorEvaluationInbox(),
-    getGuestLeads(),
-    getGuestLeadStats(),
-  ])
+  const [submissions, operatorEvaluationInbox, guestLeads, guestLeadStats, leadsByEvent] =
+    await Promise.all([
+      getUnclaimedSubmissions(),
+      getOperatorEvaluationInbox(),
+      getGuestLeads(),
+      getGuestLeadStats(),
+      getLeadsByEvent(),
+    ])
 
   return (
     <div className="space-y-8">
@@ -99,7 +102,34 @@ export default async function LeadsPage() {
             </div>
           </Card>
         ) : (
-          <GuestLeadsList leads={guestLeads} />
+          <div className="space-y-6">
+            {leadsByEvent.map((group: any) => {
+              const newCount = group.leads.filter((l: any) => l.status === 'new').length
+              const eventDateStr = group.eventDate
+                ? new Date(group.eventDate).toLocaleDateString('en-US', {
+                    month: 'short',
+                    day: 'numeric',
+                    year: 'numeric',
+                  })
+                : ''
+              return (
+                <div key={group.eventId} className="space-y-3">
+                  <div className="flex items-center justify-between">
+                    <div>
+                      <h3 className="text-lg font-medium text-stone-100">{group.occasion}</h3>
+                      {eventDateStr && <p className="text-sm text-stone-500">{eventDateStr}</p>}
+                    </div>
+                    <BatchEmailButton
+                      eventId={group.eventId}
+                      eventName={group.occasion}
+                      newLeadCount={newCount}
+                    />
+                  </div>
+                  <GuestLeadsList leads={group.leads} />
+                </div>
+              )
+            })}
+          </div>
         )}
       </section>
     </div>

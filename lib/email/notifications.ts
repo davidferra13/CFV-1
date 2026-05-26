@@ -52,6 +52,7 @@ import { PostEventReviewRequestEmail } from './templates/post-event-review-reque
 import { PostEventReferralAskEmail } from './templates/post-event-referral-ask'
 import { PostEventTipPromptEmail } from './templates/post-event-tip-prompt'
 import { GuestConversionEmail } from './templates/guest-conversion'
+import { GuestOutreachEmail } from './templates/guest-outreach'
 import { ContractSignedChefEmail } from './templates/contract-signed-chef'
 import { ContractSignedClientEmail } from './templates/contract-signed-client'
 import { MenuApprovedChefEmail } from './templates/menu-approved-chef'
@@ -1793,6 +1794,25 @@ export async function sendCannabisCadenceChefEmail(params: {
       message: params.message,
       actionUrl: params.actionUrl,
       pendingItems: params.pendingItems,
+    }),
+  })
+}
+
+export async function sendGuestOutreachEmail(args: {
+  to: string
+  guestName: string
+  chefName: string
+  occasion: string
+  inquiryUrl: string
+}) {
+  await sendEmail({
+    to: args.to,
+    subject: `${args.chefName} would love to cook for you`,
+    react: createElement(GuestOutreachEmail, {
+      guestName: args.guestName,
+      chefName: args.chefName,
+      occasion: args.occasion,
+      inquiryUrl: args.inquiryUrl,
     }),
   })
 }

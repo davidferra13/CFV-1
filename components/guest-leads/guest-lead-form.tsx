@@ -1,6 +1,6 @@
 'use client'
 
-import { useState } from 'react'
+import { useState, useRef, useCallback } from 'react'
 import { submitGuestLead } from '@/lib/guests/lead-actions'
 
 type Props = {
@@ -8,18 +8,38 @@ type Props = {
   chefName: string
   primaryColor: string
   chefSlug?: string | null
+  kioskMode?: boolean
 }
 
-export function GuestLeadForm({ guestCode, chefName, primaryColor, chefSlug }: Props) {
+export function GuestLeadForm({
+  guestCode,
+  chefName,
+  primaryColor,
+  chefSlug,
+  kioskMode = false,
+}: Props) {
   const [submitted, setSubmitted] = useState(false)
   const [submitting, setSubmitting] = useState(false)
   const [error, setError] = useState<string | null>(null)
+  const [captureCount, setCaptureCount] = useState(0)
+  const [lastSubmittedName, setLastSubmittedName] = useState('')
   const [form, setForm] = useState({
     name: '',
     email: '',
     phone: '',
     message: '',
   })
+  const resetTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null)
+
+  const resetForm = useCallback(() => {
+    if (resetTimerRef.current) {
+      clearTimeout(resetTimerRef.current)
+      resetTimerRef.current = null
+    }
+    setForm({ name: '', email: '', phone: '', message: '' })
+    setSubmitted(false)
+    setError(null)
+  }, [])
 
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault()
@@ -34,7 +54,15 @@ export function GuestLeadForm({ guestCode, chefName, primaryColor, chefSlug }: P
         phone: form.phone || undefined,
         message: form.message || undefined,
       })
-      setSubmitted(true)
+
+      if (kioskMode) {
+        setCaptureCount((prev) => prev + 1)
+        setLastSubmittedName(form.name)
+        setSubmitted(true)
+        resetTimerRef.current = setTimeout(() => resetForm(), 3000)
+      } else {
+        setSubmitted(true)
+      }
     } catch (err: any) {
       setError(err.message || 'Something went wrong. Please try again.')
     } finally {
@@ -42,6 +70,44 @@ export function GuestLeadForm({ guestCode, chefName, primaryColor, chefSlug }: P
     }
   }
 
+  // Kiosk success screen (brief, auto-dismissing)
+  if (submitted && kioskMode) {
+    const firstName = lastSubmittedName.split(' ')[0]
+    return (
+      <div className="text-center py-12">
+        <div
+          className="w-16 h-16 rounded-full mx-auto mb-6 flex items-center justify-center"
+          style={{ backgroundColor: primaryColor + '15' }}
+        >
+          <svg
+            className="w-8 h-8"
+            fill="none"
+            viewBox="0 0 24 24"
+            stroke={primaryColor}
+            strokeWidth={2}
+          >
+            <path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7" />
+          </svg>
+        </div>
+        <h2 className="text-2xl font-bold text-stone-100 mb-2">Thank you, {firstName}!</h2>
+        <p className="text-stone-400 mb-6">{chefName} will be in touch.</p>
+        <button
+          onClick={resetForm}
+          className="px-6 py-3 rounded-lg font-medium text-white transition-opacity hover:opacity-90"
+          style={{ backgroundColor: primaryColor }}
+        >
+          Next Guest
+        </button>
+        {captureCount > 0 && (
+          <p className="text-xs text-stone-500 mt-4">
+            {captureCount} {captureCount === 1 ? 'guest' : 'guests'} captured this session
+          </p>
+        )}
+      </div>
+    )
+  }
+
+  // Standard success screen (non-kiosk)
   if (submitted) {
     return (
       <div className="text-center py-12">
@@ -100,6 +166,16 @@ export function GuestLeadForm({ guestCode, chefName, primaryColor, chefSlug }: P
 
   return (
     <form onSubmit={handleSubmit} className="space-y-4">
+      {kioskMode && captureCount > 0 && (
+        <div className="text-center">
+          <span
+            className="inline-flex items-center gap-1.5 rounded-full px-3 py-1 text-xs font-medium text-stone-300"
+            style={{ backgroundColor: primaryColor + '20', color: primaryColor }}
+          >
+            {captureCount} {captureCount === 1 ? 'guest' : 'guests'} captured
+          </span>
+        </div>
+      )}
       <div className="bg-stone-900 rounded-2xl shadow-sm border border-stone-700 p-6 space-y-4">
         <h2 className="text-lg font-semibold text-stone-100">I'd love to host my own event</h2>
 

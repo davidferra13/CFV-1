@@ -385,3 +385,126 @@ export async function draftGuestOutreachEmail(eventId: string) {
 
   return { draft, chefName, occasion, eventDate }
 }
+
+/**
+ * Get guest leads grouped by event (for the leads page event-grouped view).
+ */
+export async function getLeadsByEvent() {
+  const user = await requireChef()
+  const db: any = createServerClient()
+
+  // Get all leads with their event info
+  const { data: leads, error } = await db
+    .from('guest_leads')
+    .select(
+      `
+      id, tenant_id, event_id, name, email, phone, message,
+      status, converted_client_id, created_at, updated_at
+    `
+    )
+    .eq('tenant_id', user.tenantId!)
+    .order('created_at', { ascending: false })
+
+  if (error || !leads || leads.length === 0) return []
+
+  // Get unique event IDs
+  const eventIds = [...new Set(leads.map((l: any) => l.event_id).filter(Boolean))]
+
+  // Fetch event details
+  const { data: events } = await db
+    .from('events')
+    .select('id, occasion, event_date')
+    .in('id', eventIds)
+
+  const eventMap = new Map((events ?? []).map((e: any) => [e.id, e]))
+
+  // Group leads by event
+  const groups = new Map<
+    string,
+    { eventId: string; occasion: string; eventDate: string | null; leads: any[] }
+  >()
+
+  for (const lead of leads as any[]) {
+    const eid = lead.event_id || 'unlinked'
+    if (!groups.has(eid)) {
+      const ev = eventMap.get(eid) as any
+      groups.set(eid, {
+        eventId: eid,
+        occasion: ev?.occasion || 'Unknown Event',
+        eventDate: ev?.event_date || null,
+        leads: [],
+      })
+    }
+    groups.get(eid)!.leads.push(lead)
+  }
+
+  // Sort groups by event date descending
+  return [...groups.values()].sort((a, b) => {
+    if (!a.eventDate) return 1
+    if (!b.eventDate) return -1
+    return new Date(b.eventDate).getTime() - new Date(a.eventDate).getTime()
+  })
+}
+
+/**
+ * Batch email all new leads from a specific event.
+ * Sends guest-outreach email to each lead with status 'new', then marks them 'contacted'.
+ */
+export async function batchEmailEventLeads(eventId: string) {
+  const user = await requireChef()
+  const db = createServerClient({ admin: true })
+
+  const { data: leads } = await db
+    .from('guest_leads')
+    .select('id, name, email, status')
+    .eq('event_id', eventId)
+    .eq('tenant_id', user.tenantId!)
+    .eq('status', 'new')
+
+  if (!leads || leads.length === 0) {
+    return { sent: 0, total: 0 }
+  }
+
+  const { data: event } = await db
+    .from('events')
+    .select('occasion, event_date')
+    .eq('id', eventId)
+    .eq('tenant_id', user.tenantId!)
+    .single()
+
+  const { data: chef } = await db
+    .from('chefs')
+    .select('display_name, business_name, slug')
+    .eq('id', user.tenantId!)
+    .single()
+
+  if (!event || !chef) throw new Error('Event or chef not found')
+
+  const chefName = (chef.display_name || chef.business_name) as string
+  const appUrl = process.env.NEXT_PUBLIC_APP_URL || 'https://cheflowhq.com'
+  const inquiryUrl = chef.slug ? `${appUrl}/chef/${chef.slug}` : appUrl
+  const occasion = (event.occasion as string) || 'your event'
+
+  const { sendGuestOutreachEmail } = await import('@/lib/email/notifications')
+  let sentCount = 0
+
+  for (const lead of leads as any[]) {
+    try {
+      await sendGuestOutreachEmail({
+        to: lead.email,
+        guestName: lead.name,
+        chefName,
+        occasion,
+        inquiryUrl,
+      })
+
+      await db.from('guest_leads').update({ status: 'contacted' }).eq('id', lead.id)
+
+      sentCount++
+    } catch (err) {
+      console.error(`[batchEmailEventLeads] Failed for ${lead.email}:`, err)
+    }
+  }
+
+  return { sent: sentCount, total: leads.length }
+}
