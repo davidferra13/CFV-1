@@ -1044,6 +1044,568 @@ Consolidated external links from all hosts and the series itself.
 
 Hosts configure each module's public visibility. Default: most modules public to drive discovery and membership conversion. Transparency and financial data always members-only or hosts-only.
 
+## Host Collaboration Layer (The Operational Backbone)
+
+Everything above is consumer-facing. This section is where the actual work happens: the chef and farmer coordinating the dinner. This replaces Google Docs, group texts, phone calls, and scattered notes.
+
+### The Real Problem (From Experience)
+
+A farm-to-table dinner coordination currently looks like this:
+
+1. Farmer sits down and writes a massive inventory list in a Google Doc (fresh meat, freezer stock, garden produce, herbs, pantry, canned goods, dairy, dishware)
+2. Chef reads the list and tries to build a menu from it
+3. They go back and forth in Google Doc comments and texts: "Honey sea salt butter with our honey?" "Yes"
+4. Chef needs butchery details by a deadline: "I need to know the cuts by the 20th"
+5. They text about prep scheduling: "When can I start prepping?" "Can you unlock the door?"
+6. They coordinate equipment: "I have appetizer plates but need your white entree plates"
+7. Menu evolves through multiple rounds, starred favorites, crossed-out rejects
+8. None of this ever reaches the consumer. The Google Doc dies after the event.
+
+ChefFlow replaces ALL of this. The farmer's inventory becomes live data. The menu builds FROM that data. The coordination happens in the circle. And the inventory data flows directly to the consumer page as transparency content.
+
+### Host Workspace
+
+The Host Workspace is a private area within the Series Circle, visible only to hosts. It has its own tabs, separate from the consumer-facing page.
+
+#### Host Workspace Tabs
+
+| Tab                      | Purpose                                                        |
+| ------------------------ | -------------------------------------------------------------- |
+| **Inventory**            | Farmer manages what's available. Chef sees it live.            |
+| **Menu Builder**         | Chef builds menu from inventory. Farmer comments and suggests. |
+| **Planning Thread**      | Threaded discussion replacing texts and Google Docs.           |
+| **Prep Schedule**        | When, where, what. Property access, prep blocks, equipment.    |
+| **Equipment & Supplies** | Who's bringing what. Dishware, linens, tools, tables.          |
+| **Checklist**            | Shared pre-event checklist with owner assignment.              |
+| **Financials**           | Cost tracking, ticket revenue, split (hosts-only).             |
+
+---
+
+### Farm Inventory Management (Host-Side)
+
+The farmer enters their inventory once. It stays live. Updates propagate to both the chef's menu builder AND the consumer-facing farm inventory module.
+
+#### Inventory Categories
+
+Mapped directly from how farmers actually organize (from real farm-to-table coordination docs):
+
+| Category               | Examples                                                                                                              |
+| ---------------------- | --------------------------------------------------------------------------------------------------------------------- |
+| **Fresh Meat**         | Whole animals (Mangalitsa pig, Pekin ducks), specific cuts available. Includes butchery notes and deadlines.          |
+| **Freezer Stock**      | Frozen proteins: whole chickens, lamb cuts, rabbit legs, venison, offal (hearts, livers, tongue, kidney), bone marrow |
+| **Garden (Current)**   | What's growing NOW. Updated week-of. Produce with availability status.                                                |
+| **Herbs**              | Fresh herbs currently harvestable                                                                                     |
+| **Dairy & Eggs**       | Own production + local farm partnerships. Cow milk, goat milk, cream, butter, eggs (chicken, quail, turkey)           |
+| **Pantry**             | Rendered fats (lard, tallow), honey, dried goods                                                                      |
+| **Canned & Preserved** | Jams, sauces, broths, pickled goods, salsas, canned fruits                                                            |
+| **Freeze Dried**       | Shelf-stable dehydrated items                                                                                         |
+| **Supplemental**       | Available from partner farms or markets to fill gaps                                                                  |
+
+#### Inventory Item Schema (Host-Side, Richer Than Consumer View)
+
+```typescript
+type HostInventoryItem = {
+  id: string
+  category: InventoryCategory
+  name: string
+
+  // Quantity and availability
+  quantity: string | null // "at least 36 legs", "multiple!!", "whole pig"
+  availabilityStatus: 'available_now' | 'available_week_of' | 'frozen' | 'limited' | 'supplemental'
+  availabilityNotes: string | null // "Will update week of with availability"
+
+  // Source
+  source: 'own_farm' | 'partner_farm' | 'market' | 'pantry' | 'freezer'
+  sourceName: string | null // "Local dairy partnership", farm name
+  sourceNotes: string | null // "Could be from my goat, depending on how she does that week"
+
+  // Farmer's notes (personality, urgency, suggestions)
+  farmerNotes: string | null // "PLEASE USE THESE I GET TOO MANY" (quail eggs)
+  suggestedUse: string | null // "pate for a cheese board?", "maybe soup in these? Or dessert"
+
+  // Butchery / processing (for whole animals)
+  butchery: {
+    isWholeAnimal: boolean
+    cutDeadline: string | null // "I need to know the cuts by the 20th"
+    availableCuts: string[] // ["chops", "shoulder", "ground", "leg", "stew meat", "rack x4"]
+    butcherContact: string | null // "Butcher wants to chat with you directly"
+    processingNotes: string | null // "Butchered two days prior to event, can be cut however you'd like"
+  } | null
+
+  // Photos
+  photoUrl: string | null
+
+  // Menu linkage (auto-populated when chef uses in menu)
+  usedInMenuItems: string[] // Menu item IDs where this ingredient appears
+  allocatedQuantity: string | null // How much the chef plans to use
+
+  // Timestamps
+  addedAt: string
+  updatedAt: string
+  addedBy: string // Host ID who added this item
+}
+
+type InventoryCategory =
+  | 'fresh_meat'
+  | 'freezer'
+  | 'garden'
+  | 'herbs'
+  | 'dairy_eggs'
+  | 'pantry'
+  | 'canned_preserved'
+  | 'freeze_dried'
+  | 'supplemental'
+  | 'dishware_equipment'
+```
+
+#### Inventory Flow
+
+```
+Farmer adds/updates inventory
+  |
+  ├── Chef sees it instantly in Menu Builder
+  |     (items available to drag onto courses)
+  |
+  ├── Consumer-facing Farm Inventory auto-updates
+  |     (filtered view: no butchery details, no quantities, no farmer notes)
+  |
+  └── "What's New" notification to chef
+        ("Hannah added 12 items to garden inventory")
+```
+
+#### Dual-Purpose Data
+
+This is the key insight: **the farmer's inventory list IS the transparency content**. When the farmer enters "Heirloom cherry and roma tomatoes" in the garden inventory, that same data powers:
+
+1. **Chef's menu builder** (operational): chef sees what's available to cook with
+2. **Consumer farm inventory** (transparency): members see what the farm grows
+3. **Menu sourcing callouts** (storytelling): "Tomatoes from the garden, picked this morning"
+4. **Sourcing posts** (content): auto-draft post "Here's what's available from the farm this week"
+
+One input, four outputs. Farmer never writes the same thing twice.
+
+---
+
+### Menu Builder (Collaborative)
+
+The chef builds the menu inside the Series Circle, working from the farm inventory. The farmer sees it, comments, suggests. Replaces the Google Docs back-and-forth.
+
+#### Menu Builder Features
+
+- **Inventory sidebar**: all farm inventory items, grouped by category, searchable
+- **Drag to course**: chef drags ingredients onto courses to build dishes
+- **Dish proposal cards**: each dish is a card with name, description, ingredients used (linked to inventory), chef notes
+- **Star rating**: hosts mark favorites (like the real Google Doc with \*\*\*\* ratings)
+- **Status per dish**: `considering` | `testing` | `confirmed` | `cut`
+- **Threaded comments per dish**: farmer and chef discuss inline ("Honey sea salt butter with our honey?" "Yes")
+- **Ingredient allocation**: when chef uses an ingredient, it shows allocated quantity vs. available
+- **Gap detection**: if a dish needs something not in farm inventory, flags it for supplemental sourcing
+- **Supplemental sourcing notes**: "Need white entree plates" or "Need X from another farm"
+
+#### Menu States
+
+```
+brainstorming -> draft -> review -> locked -> published
+```
+
+- **Brainstorming**: free-form, anything goes, lots of ideas
+- **Draft**: chef is shaping it, dishes have status
+- **Review**: farmer and chef sign off together
+- **Locked**: menu finalized, no more changes without explicit unlock
+- **Published**: pushed to consumer page, event dinner circle, and notifications
+
+#### Menu Builder Schema
+
+```typescript
+type SeriesMenuDraft = {
+  id: string
+  seriesId: string
+  eventId: string | null // Null during brainstorming before event exists
+  status: 'brainstorming' | 'draft' | 'review' | 'locked' | 'published'
+
+  courses: Array<{
+    id: string
+    name: string // "First Course", "Intermezzo", "Main", "Dessert"
+    sortOrder: number
+    dishes: Array<{
+      id: string
+      name: string // "Garden focaccia with chopped herbs, garlic + whipped fresh salted butter"
+      description: string | null
+      hostRating: number | null // 1-4 stars (from the real **** system)
+      status: 'considering' | 'testing' | 'confirmed' | 'cut'
+
+      // Linked farm inventory items
+      ingredients: Array<{
+        inventoryItemId: string // FK to HostInventoryItem
+        inventoryItemName: string // Denormalized for display
+        quantity: string | null // "2 lbs", "whole", "as needed"
+        fromFarm: boolean // Auto-set based on inventory source
+        sourcingNote: string | null // "From the garden, picked morning of"
+      }>
+
+      // Collaboration
+      chefNotes: string | null // "Trying to mimic horseradish flavor"
+      farmerSuggestions: string | null // "Honey sea salt butter with our honey?"
+
+      // Photos
+      photoUrl: string | null // Test cook photo, plating reference
+    }>
+  }>
+
+  // Supplemental needs (stuff not from farm)
+  supplementalNeeds: Array<{
+    item: string
+    reason: string
+    source: string | null // Where to get it
+    assignedTo: string | null // Which host handles this
+    resolved: boolean
+  }>
+
+  // Beverage pairings
+  beverages: Array<{
+    name: string
+    pairedWithCourseId: string | null
+    notes: string | null
+    source: string | null
+  }>
+
+  createdAt: string
+  updatedAt: string
+  lockedAt: string | null
+  lockedBy: string | null
+  publishedAt: string | null
+}
+```
+
+#### From Menu Builder to Consumer Menu
+
+When menu status hits `published`:
+
+1. Dishes with `status: 'confirmed'` become the mastered menu on the consumer page
+2. Ingredient sourcing notes become the "from Willow Creek Farm" callouts
+3. Farm inventory items used get "on the menu" badges
+4. A "Menu is live" post auto-drafts for host review before publishing to the feed
+
+---
+
+### Planning Thread (Replaces Texts + Google Docs)
+
+A private, threaded discussion space for hosts. This is where the "Hey, when can I start prepping?" and "Can you unlock the door?" conversations happen, organized instead of scattered across texts.
+
+#### Thread Types
+
+| Type          | Examples                                                                 |
+| ------------- | ------------------------------------------------------------------------ |
+| **General**   | Free-form discussion between hosts                                       |
+| **Menu**      | Discussion about menu decisions (auto-linked from menu builder comments) |
+| **Logistics** | Prep access, timing, parking, setup                                      |
+| **Sourcing**  | "Where can we get X?", "My supplier has Y this week"                     |
+| **Equipment** | "Do you have enough plates?", "I'll bring the linens"                    |
+| **Budget**    | Cost discussions, pricing, splits                                        |
+| **Day-of**    | Real-time coordination on event day                                      |
+
+#### Thread Schema
+
+```typescript
+type HostThread = {
+  id: string
+  seriesId: string
+  eventId: string | null // Null for series-level threads
+  threadType: 'general' | 'menu' | 'logistics' | 'sourcing' | 'equipment' | 'budget' | 'day_of'
+  subject: string
+
+  messages: Array<{
+    id: string
+    authorHostId: string
+    body: string
+    photoUrls: string[]
+    replyToId: string | null // Threaded replies
+    createdAt: string
+  }>
+
+  // Linked artifacts
+  linkedMenuItemId: string | null
+  linkedInventoryItemId: string | null
+  linkedChecklistItemId: string | null
+
+  pinned: boolean
+  resolved: boolean
+  resolvedAt: string | null
+
+  createdAt: string
+  lastMessageAt: string
+}
+```
+
+The Planning Thread also serves as history. Next time they plan a dinner, they can reference "what did we discuss last time?" without digging through old texts.
+
+---
+
+### Prep Schedule & Property Access
+
+Structured coordination for who's where, when, doing what. Replaces the "I'm gonna be here at this time, prep from here to here, come back tomorrow" chaos.
+
+#### Prep Block Schema
+
+```typescript
+type PrepBlock = {
+  id: string
+  seriesId: string
+  eventId: string
+
+  // Who and when
+  assignedHostId: string
+  date: string // ISO date
+  startTime: string // "06:00"
+  endTime: string // "14:00"
+
+  // What
+  title: string // "Butchery prep", "Sauce production", "Final plating setup"
+  tasks: string[] // ["Break down pig", "Render lard", "Make stock"]
+
+  // Where
+  location: string // "Farm kitchen", "My home kitchen", "On-site"
+
+  // Property access
+  accessNeeded: boolean // Does this host need property access?
+  accessNotes: string | null // "Need door code" or "Hannah will unlock at 6am"
+  accessConfirmed: boolean
+
+  // Equipment needed for this block
+  equipmentNeeded: string[] // ["Large stockpot", "Butcher block", "Vacuum sealer"]
+
+  // Status
+  status: 'planned' | 'confirmed' | 'in_progress' | 'completed'
+  notes: string | null
+}
+```
+
+#### Property Access Profile
+
+Per-series (stored in `series_config`):
+
+```typescript
+type PropertyAccessProfile = {
+  // Location
+  address: string
+  accessInstructions: string // "Gate code: 1234, kitchen is through the side door"
+
+  // Access windows
+  defaultAccessWindows: Array<{
+    label: string // "Kitchen access"
+    days: string[] // ["monday", "wednesday", "friday"]
+    startTime: string
+    endTime: string
+    notes: string | null
+  }>
+
+  // Facilities
+  facilities: Array<{
+    name: string // "Farm kitchen", "Outdoor prep station", "Walk-in cooler"
+    description: string | null
+    photoUrl: string | null
+    equipment: string[] // What's already there
+    constraints: string | null // "No deep fryer", "Shared with farm hands until noon"
+  }>
+
+  // Contact for access issues
+  accessContactName: string
+  accessContactPhone: string | null
+}
+```
+
+#### Prep Calendar View
+
+Visual calendar showing:
+
+- All prep blocks for all hosts, color-coded by host
+- Property access windows
+- Event date highlighted
+- Deadlines (butchery cut deadline, menu lock date, etc.)
+- Conflicts flagged (two hosts need kitchen at same time)
+
+---
+
+### Equipment & Supplies Sharing
+
+Who's bringing what. Structured to prevent the "I thought you were bringing plates" disaster.
+
+```typescript
+type EquipmentItem = {
+  id: string
+  seriesId: string
+  eventId: string | null // Null = series-level default equipment
+
+  category:
+    | 'dishware'
+    | 'linens'
+    | 'cooking_equipment'
+    | 'serving'
+    | 'furniture'
+    | 'decor'
+    | 'other'
+  name: string // "White entree plates"
+  quantity: number | null // 24
+  quantityNeeded: number | null // 30 (gap = need 6 more)
+
+  providedBy: string | null // Host ID
+  providerNotes: string | null // "I have small glass chickens, super fun for scoops of butters and sorbets"
+
+  photoUrl: string | null // Photo of the actual item
+
+  status: 'needed' | 'claimed' | 'confirmed' | 'on_site'
+
+  // Reusable across events
+  isSeriesDefault: boolean // "Farmer always provides table & linens"
+}
+```
+
+#### Equipment View
+
+Split into:
+
+- **Farmer provides** (what's at the venue already)
+- **Chef provides** (what the chef brings)
+- **Still needed** (gaps to fill)
+- **Series defaults** (carried forward between events; farmer always has linens, etc.)
+
+---
+
+### Shared Checklist
+
+Pre-event checklist with ownership. Replaces mental "did we remember everything?" anxiety.
+
+```typescript
+type ChecklistItem = {
+  id: string
+  seriesId: string
+  eventId: string
+
+  task: string // "Confirm pig cuts with butcher"
+  assignedTo: string | null // Host ID
+  dueDate: string | null
+
+  category:
+    | 'prep'
+    | 'sourcing'
+    | 'equipment'
+    | 'logistics'
+    | 'communication'
+    | 'day_of'
+    | 'post_event'
+  priority: 'critical' | 'important' | 'nice_to_have'
+
+  completed: boolean
+  completedAt: string | null
+  completedBy: string | null
+  notes: string | null
+
+  // Auto-generated items from other systems
+  autoSource: string | null // "menu_builder" (supplemental need), "prep_schedule" (access confirm), etc.
+}
+```
+
+Auto-generated checklist items:
+
+- From **menu builder**: "Source X (not available on farm)" for each supplemental need
+- From **prep schedule**: "Confirm property access for [date]" for each prep block needing access
+- From **equipment**: "Bring [item]" for each claimed-but-not-confirmed item
+- From **butchery**: "Confirm cuts with butcher by [deadline]"
+- From **event expectations**: "Publish guest expectations" before tickets open
+
+---
+
+### Host Financials
+
+Private financial coordination between hosts. Not the consumer-facing ticket revenue; the cost and split tracking.
+
+```typescript
+type HostFinancials = {
+  seriesId: string
+  eventId: string
+
+  // Costs (who spent what)
+  expenses: Array<{
+    id: string
+    hostId: string
+    category: 'ingredients' | 'equipment' | 'venue' | 'labor' | 'marketing' | 'other'
+    description: string
+    amountCents: number
+    receiptPhotoUrl: string | null
+    date: string
+    reimbursable: boolean
+  }>
+
+  // Revenue
+  ticketRevenueCents: number // From ticket sales
+  additionalRevenueCents: number // Tips, add-ons, etc.
+
+  // Split
+  splitModel: 'equal' | 'custom' | 'manual'
+  customSplit: Record<string, number> | null // hostId -> percentage
+
+  // Summary (auto-calculated)
+  totalCostsCents: number
+  totalRevenueCents: number
+  profitCents: number
+  perHostSummary: Array<{
+    hostId: string
+    expensesCents: number
+    shareCents: number
+    netCents: number // What they're owed or owe
+  }>
+}
+```
+
+---
+
+### Data Flow: One Input, Many Outputs
+
+The architectural principle: **hosts enter data once. It serves operational, consumer, and historical purposes simultaneously.**
+
+```
+FARMER ENTERS INVENTORY
+  ├─► Chef's Menu Builder (operational)
+  ├─► Consumer Farm Inventory page (transparency)
+  ├─► Menu sourcing callouts (storytelling)
+  └─► Auto-draft "What's available" post (content)
+
+CHEF BUILDS MENU
+  ├─► Consumer mastered menu (front and center)
+  ├─► Farm inventory "on the menu" badges (connection)
+  ├─► Ingredient allocation tracking (operational)
+  └─► "Menu is live" notification (engagement)
+
+HOSTS COORDINATE PREP
+  ├─► Prep calendar (operational)
+  ├─► Event timeline on consumer page (transparency)
+  └─► "Behind the scenes" post material (content)
+
+HOSTS TRACK COSTS
+  ├─► Split calculations (operational)
+  ├─► Cost transparency post data (if opted in)
+  └─► Series-level financial history (business intelligence)
+```
+
+---
+
+### Host Workspace Visibility Rules
+
+| Content                                           | Farmer         | Chef           | Members | Public       |
+| ------------------------------------------------- | -------------- | -------------- | ------- | ------------ |
+| Full inventory (with quantities, notes, butchery) | Edit           | View           | Never   | Never        |
+| Consumer inventory (filtered)                     | Auto-generated | Auto-generated | View    | Configurable |
+| Menu builder (brainstorming/draft)                | View + comment | Edit           | Never   | Never        |
+| Menu (published)                                  | View           | Edit           | View    | Configurable |
+| Planning threads                                  | Full           | Full           | Never   | Never        |
+| Prep schedule                                     | Full           | Full           | Never   | Never        |
+| Equipment list                                    | Full           | Full           | Never   | Never        |
+| Shared checklist                                  | Full           | Full           | Never   | Never        |
+| Host financials                                   | Configurable   | Full           | Never   | Never        |
+| Dish comments ("Honey butter?")                   | Full           | Full           | Never   | Never        |
+
+The host workspace is a complete operational layer that is invisible to members and public. The consumer page shows only the curated output.
+
 ## Notification Flow
 
 ### Series-Level Notifications
@@ -1190,21 +1752,43 @@ This is not a refactor of existing code. It is additive: new functions for the n
 | Links & Resources    | CSA, farm store, booking page, social media, press, service packages             |
 | Module Manager       | Drag-and-drop ordering, per-module visibility toggle (public/members)            |
 
+#### Host Collaboration (Operational Backbone)
+
+| Feature                       | What's Needed                                                                                                                                                              |
+| ----------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Host Workspace                | Private host-only area with tabs: Inventory, Menu Builder, Planning, Prep, Equipment, Checklist, Financials                                                                |
+| Farm Inventory Management     | Farmer CRUD for inventory by category (fresh, freezer, garden, herbs, dairy, pantry, canned, freeze-dried). Butchery sub-system for whole animals.                         |
+| Menu Builder                  | Collaborative menu creation from farm inventory. Drag ingredients to courses, star ratings, dish status, threaded comments per dish, gap detection, supplemental sourcing. |
+| Planning Thread               | Private threaded discussion by type (general, menu, logistics, sourcing, equipment, budget, day-of). Replaces texts and Google Docs.                                       |
+| Prep Schedule                 | Prep block calendar with property access coordination, facility booking, equipment needs, conflict detection.                                                              |
+| Property Access Profile       | Access instructions, default windows, facility descriptions with photos and equipment lists, contact info.                                                                 |
+| Equipment & Supplies          | Structured who-brings-what tracking with gap detection. Series defaults carried forward between events.                                                                    |
+| Shared Checklist              | Pre-event checklist with owner assignment, auto-generated items from other systems (menu gaps, access confirms, equipment claims).                                         |
+| Host Financials               | Expense tracking per host, receipt photos, revenue split calculation (equal/custom/manual), per-host net summary.                                                          |
+| Inventory-to-Content Pipeline | Auto-flow: farmer inventory -> consumer farm page + menu sourcing callouts + auto-draft posts. One input, four outputs.                                                    |
+| Dual-Purpose Data Engine      | Ensure all host-entered data serves both operational (chef planning) and consumer (transparency/content) purposes.                                                         |
+
 #### Server Actions + Logic
 
-| Capability                         | What's Needed                                                 |
-| ---------------------------------- | ------------------------------------------------------------- |
-| Series creation flow               | Create series, set config, invite co-hosts                    |
-| Series host management             | Equal co-host CRUD with per-permission control                |
-| Series post CRUD                   | Create, edit, pin, archive posts with photos                  |
-| Event-drop flow                    | Create event inside series, notify members, open early access |
-| Early access ticket gating         | Membership check in purchase flow                             |
-| Post-event history auto-population | Transition hook on event completion                           |
-| Weather API integration            | Fetch forecast for event date + venue coordinates             |
-| Farm inventory management          | CRUD for farm produce/meat catalog                            |
-| Menu feedback collection           | Polling, ratings, suggestions per event                       |
-| Series-level stats                 | Aggregated across all series events                           |
-| Photo management                   | Upload, reorder, caption, promote to timeline                 |
+| Capability                         | What's Needed                                                            |
+| ---------------------------------- | ------------------------------------------------------------------------ |
+| Series creation flow               | Create series, set config, invite co-hosts                               |
+| Series host management             | Equal co-host CRUD with per-permission control                           |
+| Series post CRUD                   | Create, edit, pin, archive posts with photos                             |
+| Event-drop flow                    | Create event inside series, notify members, open early access            |
+| Early access ticket gating         | Membership check in purchase flow                                        |
+| Post-event history auto-population | Transition hook on event completion                                      |
+| Weather API integration            | Fetch forecast for event date + venue coordinates                        |
+| Host inventory CRUD                | Full farm inventory management by category with butchery sub-system      |
+| Menu builder engine                | Collaborative menu creation with inventory linkage, status FSM, comments |
+| Host thread system                 | Private threaded discussions by type with artifact linking               |
+| Prep schedule engine               | Prep block CRUD with calendar view, access confirmation flow             |
+| Equipment tracker                  | Shared equipment list with gap detection and series defaults             |
+| Checklist engine                   | Auto-generated + manual items with assignment and completion tracking    |
+| Host financial tracker             | Expense entry, receipt upload, split calculation                         |
+| Menu feedback collection           | Polling, ratings, suggestions per event                                  |
+| Series-level stats                 | Aggregated across all series events                                      |
+| Photo management                   | Upload, reorder, caption, promote to timeline                            |
 
 ### Modify (Extend Existing)
 
@@ -1247,7 +1831,125 @@ CREATE TABLE series_posts ( ... );  -- Full DDL in Content section
 -- 5. Series event history (timeline snapshots)
 CREATE TABLE series_event_history ( ... );  -- Full DDL in History section
 
--- 6. Event parent link
+-- 6. Host menu drafts (collaborative menu builder)
+CREATE TABLE series_menu_drafts (
+  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  series_id UUID NOT NULL REFERENCES hub_groups(id) ON DELETE CASCADE,
+  event_id UUID REFERENCES events(id),
+  status TEXT NOT NULL DEFAULT 'brainstorming'
+    CHECK (status IN ('brainstorming', 'draft', 'review', 'locked', 'published')),
+  menu_data JSONB NOT NULL DEFAULT '{}',  -- SeriesMenuDraft structure
+  locked_at TIMESTAMPTZ,
+  locked_by UUID REFERENCES series_hosts(id),
+  published_at TIMESTAMPTZ,
+  created_at TIMESTAMPTZ NOT NULL DEFAULT now(),
+  updated_at TIMESTAMPTZ NOT NULL DEFAULT now()
+);
+
+-- 7. Host planning threads (replaces texts + Google Docs)
+CREATE TABLE series_host_threads (
+  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  series_id UUID NOT NULL REFERENCES hub_groups(id) ON DELETE CASCADE,
+  event_id UUID REFERENCES events(id),
+  thread_type TEXT NOT NULL DEFAULT 'general'
+    CHECK (thread_type IN ('general','menu','logistics','sourcing','equipment','budget','day_of')),
+  subject TEXT NOT NULL,
+  pinned BOOLEAN NOT NULL DEFAULT false,
+  resolved BOOLEAN NOT NULL DEFAULT false,
+  resolved_at TIMESTAMPTZ,
+  created_at TIMESTAMPTZ NOT NULL DEFAULT now(),
+  last_message_at TIMESTAMPTZ NOT NULL DEFAULT now()
+);
+
+CREATE TABLE series_host_thread_messages (
+  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  thread_id UUID NOT NULL REFERENCES series_host_threads(id) ON DELETE CASCADE,
+  author_host_id UUID NOT NULL REFERENCES series_hosts(id),
+  body TEXT NOT NULL,
+  photo_urls TEXT[] DEFAULT '{}',
+  reply_to_id UUID REFERENCES series_host_thread_messages(id),
+  created_at TIMESTAMPTZ NOT NULL DEFAULT now()
+);
+
+-- 8. Prep schedule blocks
+CREATE TABLE series_prep_blocks (
+  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  series_id UUID NOT NULL REFERENCES hub_groups(id) ON DELETE CASCADE,
+  event_id UUID NOT NULL REFERENCES events(id),
+  assigned_host_id UUID NOT NULL REFERENCES series_hosts(id),
+  title TEXT NOT NULL,
+  tasks TEXT[] DEFAULT '{}',
+  block_date DATE NOT NULL,
+  start_time TIME NOT NULL,
+  end_time TIME NOT NULL,
+  location TEXT,
+  access_needed BOOLEAN NOT NULL DEFAULT false,
+  access_notes TEXT,
+  access_confirmed BOOLEAN NOT NULL DEFAULT false,
+  equipment_needed TEXT[] DEFAULT '{}',
+  status TEXT NOT NULL DEFAULT 'planned'
+    CHECK (status IN ('planned','confirmed','in_progress','completed')),
+  notes TEXT,
+  created_at TIMESTAMPTZ NOT NULL DEFAULT now(),
+  updated_at TIMESTAMPTZ NOT NULL DEFAULT now()
+);
+
+-- 9. Equipment & supplies tracking
+CREATE TABLE series_equipment (
+  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  series_id UUID NOT NULL REFERENCES hub_groups(id) ON DELETE CASCADE,
+  event_id UUID REFERENCES events(id),  -- null = series default
+  category TEXT NOT NULL
+    CHECK (category IN ('dishware','linens','cooking_equipment','serving','furniture','decor','other')),
+  name TEXT NOT NULL,
+  quantity INTEGER,
+  quantity_needed INTEGER,
+  provided_by UUID REFERENCES series_hosts(id),
+  provider_notes TEXT,
+  photo_url TEXT,
+  status TEXT NOT NULL DEFAULT 'needed'
+    CHECK (status IN ('needed','claimed','confirmed','on_site')),
+  is_series_default BOOLEAN NOT NULL DEFAULT false,
+  created_at TIMESTAMPTZ NOT NULL DEFAULT now()
+);
+
+-- 10. Shared pre-event checklist
+CREATE TABLE series_checklist_items (
+  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  series_id UUID NOT NULL REFERENCES hub_groups(id) ON DELETE CASCADE,
+  event_id UUID NOT NULL REFERENCES events(id),
+  task TEXT NOT NULL,
+  assigned_to UUID REFERENCES series_hosts(id),
+  due_date DATE,
+  category TEXT NOT NULL DEFAULT 'logistics'
+    CHECK (category IN ('prep','sourcing','equipment','logistics','communication','day_of','post_event')),
+  priority TEXT NOT NULL DEFAULT 'important'
+    CHECK (priority IN ('critical','important','nice_to_have')),
+  completed BOOLEAN NOT NULL DEFAULT false,
+  completed_at TIMESTAMPTZ,
+  completed_by UUID REFERENCES series_hosts(id),
+  notes TEXT,
+  auto_source TEXT,  -- 'menu_builder', 'prep_schedule', 'equipment', etc.
+  created_at TIMESTAMPTZ NOT NULL DEFAULT now()
+);
+
+-- 11. Host expense tracking
+CREATE TABLE series_expenses (
+  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  series_id UUID NOT NULL REFERENCES hub_groups(id) ON DELETE CASCADE,
+  event_id UUID NOT NULL REFERENCES events(id),
+  host_id UUID NOT NULL REFERENCES series_hosts(id),
+  category TEXT NOT NULL
+    CHECK (category IN ('ingredients','equipment','venue','labor','marketing','other')),
+  description TEXT NOT NULL,
+  amount_cents INTEGER NOT NULL,
+  receipt_photo_url TEXT,
+  expense_date DATE NOT NULL,
+  reimbursable BOOLEAN NOT NULL DEFAULT true,
+  created_at TIMESTAMPTZ NOT NULL DEFAULT now()
+);
+
+-- 12. Event parent link
 ALTER TABLE events ADD COLUMN series_circle_id UUID REFERENCES hub_groups(id);
 
 -- 7. Early access timing
@@ -1275,7 +1977,18 @@ Farm profile, venue profile, farm inventory, host profiles, event expectations, 
 3. **Schema evolves fast.** Adding a new field to farm profile is a code change, not a migration.
 4. **Volume is low.** One config blob per series. Not millions of rows.
 
-Exception: `series_posts` and `series_event_history` are separate tables because they grow unboundedly over time and need indexing, pagination, and independent queries.
+Exceptions (separate tables, because they grow unboundedly and need indexing/pagination/independent queries):
+
+- `series_posts` (content feed)
+- `series_event_history` (event timeline)
+- `series_menu_drafts` (collaborative menus with FSM status)
+- `series_host_threads` + `series_host_thread_messages` (planning discussions)
+- `series_prep_blocks` (prep calendar)
+- `series_equipment` (who-brings-what tracking with series defaults)
+- `series_checklist_items` (per-event checklists with auto-generation)
+- `series_expenses` (financial tracking with receipt photos)
+
+Farm inventory lives in JSONB because it's one list per series (<200 items), edited through one UI, and read in bulk for the consumer page.
 
 ## Photo Storage Note
 
