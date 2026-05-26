@@ -1,5 +1,28 @@
 # Session Log
 
+## 2026-05-27 ~02:00 EDT
+
+- Agent: Claude Opus 4.6 (main session)
+- Task: Commit WIP from prior session, fix series migration FK, apply both series migrations to live DB
+- Status: completed
+- Files touched:
+  - `database/migrations/20260527000001_series_circles.sql` (FK fix: users -> auth.users)
+  - `database/migrations/20260527000002_series_posts.sql` (committed)
+  - `lib/series/types.ts`, `lib/series/index.ts`, `lib/series/post-actions.ts` (committed)
+  - `components/circles/redesign/channels/agreement-channel.tsx` (committed)
+  - `components/hub/agreement-tab.tsx` (committed)
+  - `components/dashboard/section-shell.tsx`, `section-collapse-controls.tsx`, `dashboard-section-wrapper.tsx` (committed)
+  - `components/dashboard/layer-divider.tsx` (committed + wired into dashboard page)
+  - `app/(chef)/dashboard/page.tsx` (LayerDivider wiring)
+  - Agreement engine components auto-committed via lint-staged stash cycle
+- Commits: 713967a70, aa50b39f7, 945048d77, b680b4196, 89f3a72c9, 21815f06c, 61c6b2f69, d89095d8c
+- Build state on departure: green (no build run this session, prior session confirmed green)
+- Notes:
+  - Both series migrations (0001 + 0002) applied to live DB. 10 series tables + all indexes confirmed.
+  - Migration 0001 had `REFERENCES users(id)` bug; fixed to `auth.users(id)` before applying.
+  - Lint-staged stash/restore cycle created bonus commits (b19f1256e, 89f3a72c9, 21815f06c) pulling in agreement engine files.
+  - Next: Series Phase 2 UI (feed components), or continue agreement engine integration.
+
 ## 2026-05-27 ~00:30 EDT
 
 - Agent: Claude Opus 4.6 (main session)
