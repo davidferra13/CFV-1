@@ -1,19 +1,18 @@
 'use client'
 
-/**
- * AgreementTab placeholder.
- *
- * This stub will be replaced by the full cohosting agreement UI
- * (setup wizard, active agreement view, signature block) once the
- * agreement engine build agent completes its work.
- *
- * Props contract (from the plan):
- *   groupId: string          - the circle/group ID
- *   eventId?: string         - optional specific event
- *   hosts: { profileId: string; label: string }[]
- *   currentProfileId: string - the viewing user's profile ID
- *   isHost: boolean          - whether the viewer is a host
- */
+import { useState, useEffect, useTransition } from 'react'
+import type { AgreementWithItems, ItemCategory, ItemAssignment } from '@/lib/hub/agreement-types'
+import { CATEGORY_LABELS } from '@/lib/hub/agreement-types'
+import { AgreementCompensationCard } from './agreement-compensation-card'
+import { AgreementChecklistSection } from './agreement-checklist-section'
+import { AgreementSignatureBlock } from './agreement-signature-block'
+import { AgreementSetupWizard } from './agreement-setup-wizard'
+import {
+  getAgreement,
+  updateAgreementItem,
+  completeAgreementItem,
+  addCustomItem,
+} from '@/lib/hub/agreement-actions'
 
 interface AgreementTabProps {
   groupId: string
@@ -23,28 +22,178 @@ interface AgreementTabProps {
   isHost: boolean
 }
 
-export function AgreementTab({ groupId }: AgreementTabProps) {
+export function AgreementTab({
+  groupId,
+  eventId,
+  hosts,
+  currentProfileId,
+  isHost,
+}: AgreementTabProps) {
+  const [agreement, setAgreement] = useState<AgreementWithItems | null>(null)
+  const [loading, setLoading] = useState(true)
+  const [showWizard, setShowWizard] = useState(false)
+  const [isPending, startTransition] = useTransition()
+
+  useEffect(() => {
+    loadAgreement()
+  }, [groupId, eventId])
+
+  const loadAgreement = async () => {
+    setLoading(true)
+    const data = await getAgreement(groupId, eventId)
+    setAgreement(data)
+    setLoading(false)
+    if (!data && isHost) setShowWizard(true)
+  }
+
+  if (loading) {
+    return (
+      <div className="animate-pulse space-y-3 p-4">
+        <div className="h-6 w-48 rounded bg-stone-800" />
+        <div className="h-32 rounded bg-stone-800/50" />
+        <div className="h-32 rounded bg-stone-800/50" />
+      </div>
+    )
+  }
+
+  if (showWizard || !agreement) {
+    if (!isHost) {
+      return (
+        <div className="p-4 text-center text-sm text-stone-400">
+          No collaboration agreement has been created yet.
+        </div>
+      )
+    }
+    return (
+      <AgreementSetupWizard
+        groupId={groupId}
+        eventId={eventId}
+        hosts={hosts}
+        currentProfileId={currentProfileId}
+        onComplete={() => {
+          setShowWizard(false)
+          loadAgreement()
+        }}
+      />
+    )
+  }
+
+  const categories = [...new Set(agreement.items.map((i) => i.category))] as ItemCategory[]
+  const completedCount = agreement.items.filter((i) => i.status === 'done').length
+  const totalCount = agreement.items.length
+  const progressPct = totalCount > 0 ? Math.round((completedCount / totalCount) * 100) : 0
+
+  const handleAssignmentChange = (itemId: string, assignment: ItemAssignment) => {
+    setAgreement((prev) =>
+      prev
+        ? {
+            ...prev,
+            items: prev.items.map((i) => (i.id === itemId ? { ...i, assignment } : i)),
+          }
+        : null
+    )
+    startTransition(async () => {
+      await updateAgreementItem({ itemId, assignment })
+    })
+  }
+
+  const handleNotesChange = (itemId: string, notes: string) => {
+    setAgreement((prev) =>
+      prev
+        ? { ...prev, items: prev.items.map((i) => (i.id === itemId ? { ...i, notes } : i)) }
+        : null
+    )
+    startTransition(async () => {
+      await updateAgreementItem({ itemId, notes })
+    })
+  }
+
+  const handleStatusChange = (itemId: string, status: 'not_started' | 'in_progress' | 'done') => {
+    setAgreement((prev) =>
+      prev
+        ? { ...prev, items: prev.items.map((i) => (i.id === itemId ? { ...i, status } : i)) }
+        : null
+    )
+    startTransition(async () => {
+      if (status === 'done') {
+        await completeAgreementItem(itemId)
+      } else {
+        await updateAgreementItem({ itemId, status })
+      }
+    })
+  }
+
+  const isReadOnly = !isHost
+  const isActive = agreement.status === 'active'
+
+  const statusBadge: Record<string, { label: string; color: string }> = {
+    draft: { label: 'Draft', color: 'text-stone-400 bg-stone-700/50' },
+    pending_signatures: { label: 'Pending Signatures', color: 'text-amber-400 bg-amber-900/30' },
+    active: { label: 'Active', color: 'text-green-400 bg-green-900/30' },
+    amended: { label: 'Amended (re-sign needed)', color: 'text-red-400 bg-red-900/30' },
+    voided: { label: 'Voided', color: 'text-red-400 bg-red-900/30' },
+  }
+
+  const badge = statusBadge[agreement.status] || statusBadge.draft
+
   return (
-    <div className="flex flex-col gap-4">
-      <div className="flex items-center gap-2">
-        <span className="text-lg">🤝</span>
-        <h2 className="text-base font-semibold text-stone-100">Cohosting Agreement</h2>
-        <span className="rounded-full bg-amber-500/10 px-2 py-0.5 text-[10px] font-medium text-amber-400">
-          🔒 Chef Only
+    <div className="space-y-6 p-4">
+      {/* Header */}
+      <div className="flex items-center justify-between">
+        <h2 className="text-lg font-semibold text-stone-100">Collaboration Agreement</h2>
+        <span className={`rounded-full px-2.5 py-0.5 text-xs font-medium ${badge.color}`}>
+          {badge.label}
         </span>
       </div>
 
-      <div className="flex h-64 items-center justify-center">
-        <div className="flex flex-col items-center gap-4 rounded-2xl border border-stone-700/50 bg-[#313338] px-12 py-10 text-center shadow-lg">
-          <span className="text-5xl">🤝</span>
-          <h2 className="text-2xl font-bold text-stone-100">Agreement Engine</h2>
-          <p className="max-w-xs text-sm text-stone-500">
-            Structured responsibility checklists, compensation mapping, and e-signatures for
-            co-hosted events. Being wired up now.
-          </p>
-          <p className="text-xs text-stone-600">Circle: {groupId}</p>
+      {/* Progress bar (active agreements) */}
+      {isActive && (
+        <div className="space-y-1">
+          <div className="flex justify-between text-xs text-stone-400">
+            <span>Progress</span>
+            <span>
+              {completedCount}/{totalCount} ({progressPct}%)
+            </span>
+          </div>
+          <div className="h-1.5 rounded-full bg-stone-800">
+            <div
+              className="h-full rounded-full bg-amber-500 transition-all"
+              style={{ width: `${progressPct}%` }}
+            />
+          </div>
         </div>
-      </div>
+      )}
+
+      {/* Compensation summary */}
+      <AgreementCompensationCard
+        model={agreement.compensationModel}
+        details={agreement.compensationDetails}
+        hosts={hosts}
+        onChange={() => {}}
+        readOnly={isActive || isReadOnly}
+      />
+
+      {/* Checklist by category */}
+      {categories.map((cat) => (
+        <AgreementChecklistSection
+          key={cat}
+          category={cat}
+          items={agreement.items.filter((i) => i.category === cat)}
+          onAssignmentChange={handleAssignmentChange}
+          onNotesChange={handleNotesChange}
+          onStatusChange={isActive ? handleStatusChange : undefined}
+          readOnly={isReadOnly}
+          showStatus={isActive}
+        />
+      ))}
+
+      {/* Signature block */}
+      <AgreementSignatureBlock
+        agreementId={agreement.id}
+        hosts={agreement.hosts}
+        currentProfileId={currentProfileId}
+        allItemsAssigned={agreement.items.every((i) => i.assignment !== 'unassigned')}
+      />
     </div>
   )
 }
