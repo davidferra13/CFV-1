@@ -1,6 +1,6 @@
 {
   "version": "1.0",
-  "timestamp": "2026-05-26T16:58:53.334Z",
+  "timestamp": "2026-05-26T17:07:07.263Z",
   "source": "auto-postool",
   "partial": false,
   "phase": null,
@@ -18,41 +18,13 @@
   "uncommitted_files": [
     {
       "status": "M",
-      "path": ".claude-session-scope"
-    },
-    {
-      "status": "M",
       "path": ".planning/HANDOFF.json"
     },
     {
-      "status": "M",
-      "path": "docs/sync-status.json"
-    },
-    {
-      "status": "M",
-      "path": "lib/costing/recipe-cost-provenance.ts"
-    },
-    {
-      "status": "M",
-      "path": "lib/ingredients/receipt-scan-actions.ts"
-    },
-    {
-      "status": "M",
-      "path": "lib/shopping/receipt-actions.ts"
-    },
-    {
       "status": "??",
-      "path": "database/migrations/20260527000001_series_circles.sql"
-    },
-    {
-      "status": "??",
-      "path": "docs/exit-evals/CODEX-DISPATCH-PROMPT.md"
-    },
-    {
-      "status": "??",
-      "path": "lib/series/"
+      "path": "docs/superpowers/plans/2026-05-26-cohosting-agreement-engine.md"
     }
   ],
   "next_action": null,
-  "context_notes": "Recent commits:\n250d934e9 feat(skills): add answer-for-me skill, close dreamer loop\n8e3c234bc fix(spec): patch 3 issues in Series Circles spec\n1b05a2436 docs: add Cohosting Agreement Engine to multi-host collaboration spec\nfff6fdc6e docs: add Series Circles Phase 1 implementation plan\n5c1cba34e docs: add Host Collaboration Layer to Series Circles spec"
+  "context_notes": "Recent commits:\nc8aaf7266 feat(circles): add 'series' to CircleType union and resolvers\n00f2fc9e0 feat(series): add barrel exports for lib/series\nda7068799 feat(series): add host management server actions\n1f7e6ab50 feat: food cost reconciliation, series circles migration, exit-eval Codex dispatch\n250d934e9 feat(skills): add answer-for-me skill, close dreamer loop"
 }
