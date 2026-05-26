@@ -62,6 +62,7 @@ import { LazyBusinessHealthTrigger } from './_sections/lazy-business-health'
 import { IndustryLinksSection } from './_sections/industry-links-section'
 import { TakeAChefRailSection, TakeAChefRailSkeleton } from './_sections/take-a-chef-rail-section'
 import { DashboardSectionWrapper } from '@/components/dashboard/dashboard-section-wrapper'
+import { LayerDivider } from '@/components/dashboard/layer-divider'
 
 export const metadata: Metadata = { title: 'Dashboard' }
 
@@ -308,6 +309,7 @@ export default async function ChefDashboard() {
           </WidgetErrorBoundary>
         </SectionShell>
 
+        <LayerDivider layer="tactical" />
         {/* 2. Daily Plan Banner (smart mode: whisper when empty, compact when done, expanded when tasks remain) */}
         <WidgetErrorBoundary name="Daily Plan" compact>
           <Suspense fallback={null}>
@@ -325,6 +327,7 @@ export default async function ChefDashboard() {
         </SectionShell>
 
         {/* 5. Tiered Rail */}
+        <LayerDivider layer="safety" />
         <SectionShell sectionId="tiered-rail" mode="expanded" label="Tiered Rail">
           <WidgetErrorBoundary name="Tiered Rail" compact>
             <Suspense fallback={<TieredRailSkeleton />}>
