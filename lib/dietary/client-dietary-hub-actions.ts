@@ -11,6 +11,10 @@ export interface ConsolidatedDietaryProfile {
     favorites: string[]
     spice_tolerance: string | null
     cuisine_preferences: string[]
+    texture_aversions: string[]
+    portion_preference: string | null
+    alcohol_preference: string | null
+    cooking_style_preference: string | null
   }
   household_members_dietary: {
     id: string
@@ -42,7 +46,7 @@ export async function getConsolidatedDietaryProfile(): Promise<ConsolidatedDieta
   const { data: profile } = await db
     .from('hub_guest_profiles')
     .select(
-      'id, known_dietary, known_allergies, dislikes, favorites, spice_tolerance, cuisine_preferences'
+      'id, known_dietary, known_allergies, dislikes, favorites, spice_tolerance, cuisine_preferences, texture_aversions, portion_preference, alcohol_preference, cooking_style_preference'
     )
     .eq('client_id', user.entityId)
     .maybeSingle()
@@ -54,6 +58,10 @@ export async function getConsolidatedDietaryProfile(): Promise<ConsolidatedDieta
     favorites: profile?.favorites || [],
     spice_tolerance: profile?.spice_tolerance || null,
     cuisine_preferences: profile?.cuisine_preferences || [],
+    texture_aversions: profile?.texture_aversions || [],
+    portion_preference: profile?.portion_preference || null,
+    alcohol_preference: profile?.alcohol_preference || null,
+    cooking_style_preference: profile?.cooking_style_preference || null,
   }
 
   // Household members

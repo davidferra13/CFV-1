@@ -38,7 +38,11 @@ export default async function MyDietaryPage() {
     data.personal_dietary.dislikes.length > 0 ||
     data.personal_dietary.favorites.length > 0 ||
     data.personal_dietary.spice_tolerance ||
-    data.personal_dietary.cuisine_preferences.length > 0
+    data.personal_dietary.cuisine_preferences.length > 0 ||
+    data.personal_dietary.texture_aversions.length > 0 ||
+    data.personal_dietary.portion_preference ||
+    data.personal_dietary.alcohol_preference ||
+    data.personal_dietary.cooking_style_preference
 
   return (
     <div className="max-w-5xl mx-auto space-y-6">
@@ -128,6 +132,48 @@ export default async function MyDietaryPage() {
                   </p>
                   <p className="text-sm text-stone-200 capitalize">
                     {data.personal_dietary.spice_tolerance.replace('_', ' ')}
+                  </p>
+                </div>
+              )}
+              {data.personal_dietary.texture_aversions.length > 0 && (
+                <div>
+                  <p className="text-xs font-medium text-stone-400 uppercase tracking-wide mb-1.5">
+                    Texture Aversions
+                  </p>
+                  <div className="flex flex-wrap gap-1.5">
+                    {data.personal_dietary.texture_aversions.map((t) => (
+                      <DietaryBadge key={t} label={t} variant="dislike" />
+                    ))}
+                  </div>
+                </div>
+              )}
+              {data.personal_dietary.portion_preference && (
+                <div>
+                  <p className="text-xs font-medium text-stone-400 uppercase tracking-wide mb-1">
+                    Portion Size
+                  </p>
+                  <p className="text-sm text-stone-200 capitalize">
+                    {data.personal_dietary.portion_preference}
+                  </p>
+                </div>
+              )}
+              {data.personal_dietary.alcohol_preference && (
+                <div>
+                  <p className="text-xs font-medium text-stone-400 uppercase tracking-wide mb-1">
+                    Alcohol Preference
+                  </p>
+                  <p className="text-sm text-stone-200 capitalize">
+                    {data.personal_dietary.alcohol_preference.replace(/_/g, ' ')}
+                  </p>
+                </div>
+              )}
+              {data.personal_dietary.cooking_style_preference && (
+                <div>
+                  <p className="text-xs font-medium text-stone-400 uppercase tracking-wide mb-1">
+                    Cooking Style
+                  </p>
+                  <p className="text-sm text-stone-200 capitalize">
+                    {data.personal_dietary.cooking_style_preference.replace(/_/g, ' ')}
                   </p>
                 </div>
               )}

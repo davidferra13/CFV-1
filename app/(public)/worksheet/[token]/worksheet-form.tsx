@@ -4,6 +4,14 @@ import { useState } from 'react'
 import { submitClientWorksheet } from '@/lib/marketplace/worksheet-actions'
 import { AddressAutocomplete } from '@/components/ui/address-autocomplete'
 
+const SPICE_LEVELS = [
+  { value: '', label: 'No preference' },
+  { value: 'mild', label: 'Mild' },
+  { value: 'medium', label: 'Medium' },
+  { value: 'hot', label: 'Hot' },
+  { value: 'extra_hot', label: 'Extra Hot' },
+]
+
 type Props = {
   token: string
   prefillName: string | null
@@ -25,6 +33,7 @@ export function ClientWorksheetForm({ token, prefillName, prefillEmail, prefillP
   const [allergies, setAllergies] = useState('')
   const [preferences, setPreferences] = useState('')
   const [specialRequests, setSpecialRequests] = useState('')
+  const [spiceTolerance, setSpiceTolerance] = useState('')
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
@@ -56,6 +65,7 @@ export function ClientWorksheetForm({ token, prefillName, prefillEmail, prefillP
               .map((s) => s.trim())
               .filter(Boolean)
           : undefined,
+        spiceTolerance: spiceTolerance || undefined,
         preferences: preferences.trim() || undefined,
         specialRequests: specialRequests.trim() || undefined,
       })
@@ -192,6 +202,26 @@ export function ClientWorksheetForm({ token, prefillName, prefillEmail, prefillP
           <p className="mt-1 text-xs text-stone-400">
             Comma-separated. This is critical for your safety.
           </p>
+        </div>
+
+        <div>
+          <label className="block text-sm font-medium text-stone-700 mb-1">Spice Tolerance</label>
+          <div className="flex flex-wrap gap-2">
+            {SPICE_LEVELS.map((level) => (
+              <button
+                key={level.value}
+                type="button"
+                onClick={() => setSpiceTolerance(level.value)}
+                className={`px-3 py-1.5 rounded-full text-sm font-medium transition-colors ${
+                  spiceTolerance === level.value
+                    ? 'bg-stone-900 text-white'
+                    : 'border border-stone-300 bg-white text-stone-600 hover:border-stone-400'
+                }`}
+              >
+                {level.label}
+              </button>
+            ))}
+          </div>
         </div>
 
         <div>

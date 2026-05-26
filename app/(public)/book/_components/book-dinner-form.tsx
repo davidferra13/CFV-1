@@ -37,12 +37,12 @@ function hasMeaningfulDraftValue(value: unknown) {
 
 function mergeDraftIntoForm(form: FormState, draft: Partial<FormState>): FormState {
   const next = { ...form }
-  const mutableNext = next as Record<keyof FormState, string | number>
+  const mutableNext = next as Record<keyof FormState, string | number | boolean>
 
   for (const [field, value] of Object.entries(draft) as Array<[keyof FormState, unknown]>) {
     if (field === 'website_url') continue
     if (!hasMeaningfulDraftValue(value)) continue
-    mutableNext[field] = value as string | number
+    mutableNext[field] = value as string | number | boolean
   }
 
   return next
@@ -97,6 +97,14 @@ const GUEST_OPTIONS = [
   { value: 75, label: '50+ (large event)' },
 ]
 
+const SPICE_LEVELS = [
+  { value: '', label: 'No preference' },
+  { value: 'mild', label: 'Mild' },
+  { value: 'medium', label: 'Medium' },
+  { value: 'hot', label: 'Hot' },
+  { value: 'extra_hot', label: 'Extra Hot' },
+]
+
 const BUDGET_OPTIONS = [
   { value: '', label: 'What experience level?', hint: '' },
   { value: 'not-sure', label: 'Not sure yet (help me figure it out)', hint: '' },
@@ -122,6 +130,8 @@ type FormState = {
   service_type: string
   budget_range: string
   dietary_restrictions: string
+  spice_tolerance: string
+  kids_present: boolean
   additional_notes: string
   website_url: string // honeypot
 }
@@ -156,6 +166,8 @@ const DEFAULT_FORM: FormState = {
   service_type: '',
   budget_range: '',
   dietary_restrictions: '',
+  spice_tolerance: '',
+  kids_present: false,
   additional_notes: '',
   website_url: '',
 }
@@ -233,7 +245,7 @@ export function BookDinnerForm({
     }
   }, [])
 
-  function updateField(field: keyof FormState, value: string | number) {
+  function updateField(field: keyof FormState, value: string | number | boolean) {
     if (!hasStarted && field !== 'website_url' && String(value).trim().length > 0) {
       setHasStarted(true)
       trackEvent(ANALYTICS_EVENTS.BOOKING_FORM_STARTED, {
@@ -273,6 +285,8 @@ export function BookDinnerForm({
         if (fields.budget_range) next.budget_range = fields.budget_range
         if (fields.dietary_restrictions) next.dietary_restrictions = fields.dietary_restrictions
         if (fields.additional_notes) next.additional_notes = fields.additional_notes
+        if (fields.spice_tolerance) next.spice_tolerance = fields.spice_tolerance
+        if (fields.kids_present != null) next.kids_present = fields.kids_present
         saveDraft(next)
         return next
       })
@@ -712,6 +726,56 @@ export function BookDinnerForm({
             onChange={(e) => updateField('dietary_restrictions', e.target.value)}
             className={inputClass}
           />
+        </div>
+
+        <div>
+          <label className={labelClass}>Spice tolerance</label>
+          <div className="flex flex-wrap gap-2 mt-1">
+            {SPICE_LEVELS.map((level) => (
+              <button
+                key={level.value}
+                type="button"
+                onClick={() => updateField('spice_tolerance', level.value)}
+                className={`px-3 py-1.5 rounded-full text-sm font-medium transition-colors ${
+                  form.spice_tolerance === level.value
+                    ? 'bg-brand-600 text-white'
+                    : 'border border-stone-600/80 bg-stone-900/80 text-stone-400 hover:border-stone-500'
+                }`}
+              >
+                {level.label}
+              </button>
+            ))}
+          </div>
+        </div>
+
+        <div className="flex items-center gap-3">
+          <button
+            type="button"
+            onClick={() => updateField('kids_present', !form.kids_present)}
+            className={`w-5 h-5 rounded border transition-colors flex items-center justify-center ${
+              form.kids_present
+                ? 'bg-brand-600 border-brand-600'
+                : 'border-stone-600 bg-stone-900/80'
+            }`}
+          >
+            {form.kids_present && (
+              <svg
+                className="w-3 h-3 text-white"
+                fill="none"
+                viewBox="0 0 24 24"
+                stroke="currentColor"
+                strokeWidth={3}
+              >
+                <path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7" />
+              </svg>
+            )}
+          </button>
+          <div>
+            <p className="text-sm font-medium text-stone-200">Children at this event</p>
+            <p className="text-xs text-stone-500">
+              Helps your chef plan portions, plating, and kid-friendly options
+            </p>
+          </div>
         </div>
 
         <div>

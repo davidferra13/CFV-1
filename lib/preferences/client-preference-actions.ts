@@ -14,6 +14,10 @@ export type ClientPreferences = {
   favorites: string[]
   spice_tolerance: string | null
   cuisine_preferences: string[]
+  texture_aversions: string[]
+  portion_preference: string | null
+  alcohol_preference: string | null
+  cooking_style_preference: string | null
 }
 
 /**
@@ -23,7 +27,7 @@ async function resolveProfile(db: any, clientId: string) {
   const { data: profile } = await db
     .from('hub_guest_profiles')
     .select(
-      'id, known_dietary, known_allergies, dislikes, favorites, spice_tolerance, cuisine_preferences'
+      'id, known_dietary, known_allergies, dislikes, favorites, spice_tolerance, cuisine_preferences, texture_aversions, portion_preference, alcohol_preference, cooking_style_preference'
     )
     .eq('client_id', clientId)
     .maybeSingle()
@@ -49,7 +53,7 @@ async function resolveProfile(db: any, clientId: string) {
       profile_token: crypto.randomUUID(),
     })
     .select(
-      'id, known_dietary, known_allergies, dislikes, favorites, spice_tolerance, cuisine_preferences'
+      'id, known_dietary, known_allergies, dislikes, favorites, spice_tolerance, cuisine_preferences, texture_aversions, portion_preference, alcohol_preference, cooking_style_preference'
     )
     .single()
 
@@ -69,6 +73,10 @@ export async function getMyPreferences(): Promise<ClientPreferences> {
     favorites: profile.favorites || [],
     spice_tolerance: profile.spice_tolerance || null,
     cuisine_preferences: profile.cuisine_preferences || [],
+    texture_aversions: profile.texture_aversions || [],
+    portion_preference: profile.portion_preference || null,
+    alcohol_preference: profile.alcohol_preference || null,
+    cooking_style_preference: profile.cooking_style_preference || null,
   }
 }
 
@@ -86,6 +94,10 @@ export async function updateMyPreferences(prefs: ClientPreferences) {
       favorites: prefs.favorites,
       spice_tolerance: prefs.spice_tolerance || null,
       cuisine_preferences: prefs.cuisine_preferences,
+      texture_aversions: prefs.texture_aversions,
+      portion_preference: prefs.portion_preference || null,
+      alcohol_preference: prefs.alcohol_preference || null,
+      cooking_style_preference: prefs.cooking_style_preference || null,
       updated_at: new Date().toISOString(),
     })
     .eq('id', profile.id)

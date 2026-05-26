@@ -162,6 +162,7 @@ export type SubmitWorksheetInput = {
   locationAddress?: string
   dietaryRestrictions?: string[]
   allergies?: string[]
+  spiceTolerance?: string
   preferences?: string
   specialRequests?: string
 }
@@ -197,6 +198,7 @@ export async function submitClientWorksheet(
       location_address: input.locationAddress?.trim() || null,
       dietary_restrictions: input.dietaryRestrictions?.filter(Boolean) || [],
       allergies: input.allergies?.filter(Boolean) || [],
+      spice_tolerance: input.spiceTolerance || null,
       preferences: input.preferences?.trim() || null,
       special_requests: input.specialRequests?.trim() || null,
       status: 'completed',

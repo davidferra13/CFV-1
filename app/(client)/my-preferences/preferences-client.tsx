@@ -49,6 +49,41 @@ const SPICE_LEVELS = [
   { value: 'extra_hot', label: 'Extra Hot' },
 ]
 
+const TEXTURE_OPTIONS = [
+  'Mushy',
+  'Slimy',
+  'Rubbery',
+  'Gritty',
+  'Chewy',
+  'Crunchy (avoid)',
+  'Gelatinous',
+]
+
+const PORTION_LEVELS = [
+  { value: '', label: 'No preference' },
+  { value: 'light', label: 'Light' },
+  { value: 'moderate', label: 'Moderate' },
+  { value: 'hearty', label: 'Hearty' },
+]
+
+const ALCOHOL_OPTIONS = [
+  { value: '', label: 'No preference' },
+  { value: 'none', label: 'No alcohol' },
+  { value: 'wine_pairing', label: 'Wine pairing' },
+  { value: 'cocktails', label: 'Cocktails' },
+  { value: 'beer', label: 'Beer' },
+  { value: 'open_bar', label: 'Open bar' },
+  { value: 'byob', label: 'BYOB' },
+]
+
+const COOKING_STYLE_OPTIONS = [
+  { value: '', label: 'No preference' },
+  { value: 'rare_ok', label: 'Rare OK' },
+  { value: 'medium_preferred', label: 'Medium preferred' },
+  { value: 'well_done', label: 'Well done' },
+  { value: 'no_raw', label: 'No raw foods' },
+]
+
 export function PreferencesClient({
   initialPreferences,
 }: {
@@ -61,7 +96,10 @@ export function PreferencesClient({
   const [isPending, startTransition] = useTransition()
   const router = useRouter()
 
-  function toggleItem(field: 'dietary_restrictions' | 'cuisine_preferences', item: string) {
+  function toggleItem(
+    field: 'dietary_restrictions' | 'cuisine_preferences' | 'texture_aversions',
+    item: string
+  ) {
     setPrefs((p) => ({
       ...p,
       [field]: p[field].includes(item) ? p[field].filter((i) => i !== item) : [...p[field], item],
@@ -194,6 +232,113 @@ export function PreferencesClient({
                 onClick={() => setPrefs((p) => ({ ...p, spice_tolerance: level.value || null }))}
                 className={`px-4 py-2 rounded-lg text-sm font-medium transition-colors ${
                   (prefs.spice_tolerance || '') === level.value
+                    ? 'bg-brand-600 text-white'
+                    : 'bg-stone-800 text-stone-400 hover:bg-stone-700'
+                }`}
+              >
+                {level.label}
+              </button>
+            ))}
+          </div>
+        </CardContent>
+      </Card>
+
+      {/* Texture Aversions */}
+      <Card>
+        <CardHeader>
+          <CardTitle>Texture Aversions</CardTitle>
+          <p className="text-xs text-stone-500 mt-1">Textures you prefer to avoid</p>
+        </CardHeader>
+        <CardContent>
+          <div className="flex flex-wrap gap-2">
+            {TEXTURE_OPTIONS.map((opt) => {
+              const active = prefs.texture_aversions.includes(opt)
+              return (
+                <button
+                  key={opt}
+                  type="button"
+                  onClick={() => toggleItem('texture_aversions', opt)}
+                  className={`px-3 py-1.5 rounded-full text-sm font-medium transition-colors ${
+                    active
+                      ? 'bg-brand-600 text-white'
+                      : 'bg-stone-800 text-stone-400 hover:bg-stone-700'
+                  }`}
+                >
+                  {opt}
+                </button>
+              )
+            })}
+          </div>
+        </CardContent>
+      </Card>
+
+      {/* Portion Size */}
+      <Card>
+        <CardHeader>
+          <CardTitle>Portion Size</CardTitle>
+        </CardHeader>
+        <CardContent>
+          <div className="flex flex-wrap gap-2">
+            {PORTION_LEVELS.map((level) => (
+              <button
+                key={level.value}
+                type="button"
+                onClick={() => setPrefs((p) => ({ ...p, portion_preference: level.value || null }))}
+                className={`px-4 py-2 rounded-lg text-sm font-medium transition-colors ${
+                  (prefs.portion_preference || '') === level.value
+                    ? 'bg-brand-600 text-white'
+                    : 'bg-stone-800 text-stone-400 hover:bg-stone-700'
+                }`}
+              >
+                {level.label}
+              </button>
+            ))}
+          </div>
+        </CardContent>
+      </Card>
+
+      {/* Alcohol Preference */}
+      <Card>
+        <CardHeader>
+          <CardTitle>Alcohol Preference</CardTitle>
+        </CardHeader>
+        <CardContent>
+          <div className="flex flex-wrap gap-2">
+            {ALCOHOL_OPTIONS.map((level) => (
+              <button
+                key={level.value}
+                type="button"
+                onClick={() => setPrefs((p) => ({ ...p, alcohol_preference: level.value || null }))}
+                className={`px-4 py-2 rounded-lg text-sm font-medium transition-colors ${
+                  (prefs.alcohol_preference || '') === level.value
+                    ? 'bg-brand-600 text-white'
+                    : 'bg-stone-800 text-stone-400 hover:bg-stone-700'
+                }`}
+              >
+                {level.label}
+              </button>
+            ))}
+          </div>
+        </CardContent>
+      </Card>
+
+      {/* Cooking Style */}
+      <Card>
+        <CardHeader>
+          <CardTitle>Cooking Style</CardTitle>
+          <p className="text-xs text-stone-500 mt-1">How do you prefer your proteins cooked?</p>
+        </CardHeader>
+        <CardContent>
+          <div className="flex flex-wrap gap-2">
+            {COOKING_STYLE_OPTIONS.map((level) => (
+              <button
+                key={level.value}
+                type="button"
+                onClick={() =>
+                  setPrefs((p) => ({ ...p, cooking_style_preference: level.value || null }))
+                }
+                className={`px-4 py-2 rounded-lg text-sm font-medium transition-colors ${
+                  (prefs.cooking_style_preference || '') === level.value
                     ? 'bg-brand-600 text-white'
                     : 'bg-stone-800 text-stone-400 hover:bg-stone-700'
                 }`}
