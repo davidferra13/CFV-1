@@ -1155,6 +1155,19 @@ export const EXIT_LINK_REGISTRY: ExitLinkDefinition[] = [
     newTab: false,
     inApp: true,
   },
+
+  // ──────────────────────────────────────────────
+  // 92  PLATFORM ACCESS
+  // ──────────────────────────────────────────────
+  {
+    id: 92,
+    category: 'external-platform',
+    label: 'Open Take a Chef',
+    urlTemplate: 'https://www.takeachef.com',
+    contextKeys: [],
+    icon: 'ChefHat',
+    newTab: true,
+  },
 ]
 
 /** Quick lookup by id (O(1) after init). */

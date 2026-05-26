@@ -1,0 +1,1171 @@
+[
+  {
+    "id": 1,
+    "role": "chef",
+    "category": "COSTING & PRICING (Highest Frequency Exit)",
+    "part": 0,
+    "scenarios": [1, 2, 3, 4, 5, 6, 7],
+    "titles": [
+      "Cost out a menu using real retail prices",
+      "Check current price of a specific ingredient",
+      "Compare prices across multiple stores",
+      "Check specialty ingredient availability",
+      "Verify seasonal availability",
+      "Look up bulk/wholesale pricing",
+      "Calculate food cost % against a target"
+    ]
+  },
+  {
+    "id": 2,
+    "role": "chef",
+    "category": "VENDOR & SUPPLIER INTERACTION",
+    "part": 0,
+    "scenarios": [8, 9, 10, 11, 12, 13],
+    "titles": [
+      "Browse vendor's full product catalog",
+      "Place an order with a vendor",
+      "Check order status / delivery tracking",
+      "Contact a vendor (call, email, chat)",
+      "Research new vendors/suppliers",
+      "Compare vendor quality/reliability"
+    ]
+  },
+  {
+    "id": 3,
+    "role": "chef",
+    "category": "CLIENT RESEARCH & RELATIONSHIP",
+    "part": 0,
+    "scenarios": [14, 15, 16, 17, 18],
+    "titles": [
+      "Research a new client before first meeting",
+      "Check client's social media for event context",
+      "Look up client's company for corporate event",
+      "Check a client's dietary/allergy info from external source",
+      "View client's venue/home on map"
+    ]
+  },
+  {
+    "id": 4,
+    "role": "chef",
+    "category": "RECIPE & CULINARY RESEARCH",
+    "part": 0,
+    "scenarios": [19, 20, 21, 22, 23, 24],
+    "titles": [
+      "Look up a technique or method",
+      "Find recipe inspiration for a menu",
+      "Research a cuisine they're less familiar with",
+      "Check nutritional info for a dish",
+      "Verify food safety temps/times",
+      "Find a substitute ingredient"
+    ]
+  },
+  {
+    "id": 5,
+    "role": "chef",
+    "category": "COMMUNICATION (The Messy Reality)",
+    "part": 0,
+    "scenarios": [25, 26, 27, 28, 29, 30, 31],
+    "titles": [
+      "Text/iMessage a client",
+      "WhatsApp with a client",
+      "Call a client",
+      "Check personal email for client replies",
+      "Respond to inquiry on a 3rd-party platform",
+      "Send food photos to client",
+      "Coordinate with other vendors (florist, event planner, venue)"
+    ]
+  },
+  {
+    "id": 6,
+    "role": "chef",
+    "category": "MARKETING & SOCIAL PRESENCE",
+    "part": 0,
+    "scenarios": [32, 33, 34, 35, 36, 37],
+    "titles": [
+      "Post food photos to Instagram/TikTok",
+      "Update Google Business Profile",
+      "Respond to Yelp/Google reviews",
+      "Update personal website/portfolio",
+      "Create marketing materials",
+      "Manage ads"
+    ]
+  },
+  {
+    "id": 7,
+    "role": "chef",
+    "category": "MONEY & PAYMENTS",
+    "part": 0,
+    "scenarios": [38, 39, 40, 41, 42],
+    "titles": [
+      "Check if a client payment cleared",
+      "Send a payment request via Venmo/Zelle",
+      "Reconcile bank statements",
+      "Handle taxes / quarterly estimates",
+      "Manage business insurance"
+    ]
+  },
+  {
+    "id": 8,
+    "role": "chef",
+    "category": "LOGISTICS & TRAVEL",
+    "part": 0,
+    "scenarios": [43, 44, 45, 46, 47],
+    "titles": [
+      "Route planning for the day",
+      "Check traffic before leaving",
+      "Find a grocery store near an event venue",
+      "Book travel for destination events",
+      "Rent equipment for large events"
+    ]
+  },
+  {
+    "id": 9,
+    "role": "chef",
+    "category": "LEGAL & COMPLIANCE",
+    "part": 0,
+    "scenarios": [48, 49, 50, 51, 52],
+    "titles": [
+      "Renew food handler's license",
+      "Check local cottage food / home kitchen laws",
+      "Get business license / permits",
+      "Review/sign a venue's liability waiver",
+      "Consult with a lawyer"
+    ]
+  },
+  {
+    "id": 10,
+    "role": "chef",
+    "category": "PROFESSIONAL DEVELOPMENT",
+    "part": 0,
+    "scenarios": [53, 54, 55, 56],
+    "titles": [
+      "Take an online course or certification",
+      "Read industry news",
+      "Network with other chefs",
+      "Find a sous chef / assistant for a large event"
+    ]
+  },
+  {
+    "id": 11,
+    "role": "chef",
+    "category": "EVENT-SPECIFIC RESEARCH",
+    "part": 0,
+    "scenarios": [57, 58, 59, 60, 61],
+    "titles": [
+      "Research a venue's kitchen capabilities",
+      "Check weather for outdoor event",
+      "Find local farm for farm-to-table sourcing",
+      "Research wine/beverage pairings",
+      "Get table/seating layout ideas"
+    ]
+  },
+  {
+    "id": 12,
+    "role": "chef",
+    "category": "HARDWARE & EQUIPMENT",
+    "part": 0,
+    "scenarios": [62, 63, 64],
+    "titles": ["Buy kitchen equipment", "Get equipment serviced/repaired", "Research new equipment"]
+  },
+  {
+    "id": 13,
+    "role": "chef",
+    "category": "PEOPLE & DELEGATION",
+    "part": 0,
+    "scenarios": [65, 66, 67, 68, 69, 70, 71],
+    "titles": [
+      "Coordinate with client's household staff (house manager, nanny, PA)",
+      "Hire/coordinate photographer for events",
+      "Communicate with commissary kitchen landlord",
+      "Manage cleaning crew / dishwashers for large events",
+      "Coordinate with delivery drivers (meal prep clients)",
+      "Talk to accountant/bookkeeper (non-tax)",
+      "Deal with health inspector"
+    ]
+  },
+  {
+    "id": 14,
+    "role": "chef",
+    "category": "OPERATIONAL TOOLS & CALCULATIONS",
+    "part": 1,
+    "scenarios": [72, 73, 74, 75, 76, 77, 78, 79],
+    "titles": [
+      "Sync events to personal calendar",
+      "Track mileage for tax deductions",
+      "Scale a recipe from 4 to 40 servings",
+      "Convert units (metric/imperial, volume/weight)",
+      "Edit food photos before posting",
+      "Print allergen/nutrition labels",
+      "Create contracts/proposals beyond ChefFlow templates",
+      "Check competitor pricing/offerings"
+    ]
+  },
+  {
+    "id": 15,
+    "role": "chef",
+    "category": "OPERATIONAL TOOLS & CALCULATIONS",
+    "part": 2,
+    "scenarios": [80, 81, 82, 83, 84, 85, 86],
+    "titles": [
+      "Manage a waitlist during busy season",
+      "Calculate tip/gratuity split for hired staff",
+      "Create/manage gift certificates",
+      "Send thank-you / follow-up gifts to clients",
+      "Manage recurring meal prep schedule",
+      "Schedule social media posts",
+      "Track personal pantry / dry stock inventory"
+    ]
+  },
+  {
+    "id": 16,
+    "role": "chef",
+    "category": "TIME & LOCATION LOGISTICS",
+    "part": 0,
+    "scenarios": [87, 88, 89, 90],
+    "titles": [
+      "Set prep timing reminders/alarms",
+      "Time zone math for destination events",
+      "Find a commissary/commercial kitchen to rent",
+      "Check parking/loading dock logistics at venue"
+    ]
+  },
+  {
+    "id": 17,
+    "role": "chef",
+    "category": "MARKET & COMPETITIVE INTELLIGENCE",
+    "part": 0,
+    "scenarios": [91, 92],
+    "titles": [
+      "Research trending cuisines/food trends in area",
+      "Validate own pricing against market rates"
+    ]
+  },
+  {
+    "id": 18,
+    "role": "chef",
+    "category": "DURING-SERVICE (The Kitchen Boundary)",
+    "part": 0,
+    "scenarios": [93, 94, 95],
+    "titles": [
+      "Multiple concurrent kitchen timers",
+      "Quick recipe glance mid-cook (hands dirty)",
+      "Music/ambiance control"
+    ]
+  },
+  {
+    "id": 19,
+    "role": "client",
+    "category": "DISCOVERY & CHEF RESEARCH",
+    "part": 0,
+    "scenarios": [1, 2, 3, 4, 5, 6, 7],
+    "titles": [
+      "Search for a private chef from scratch",
+      "Ask friends for chef recommendations",
+      "Browse food inspiration before choosing a chef",
+      "Search for local restaurant alternatives",
+      "Compare chefs on marketplace platforms",
+      "Check a chef's social presence",
+      "Validate whether ChefFlow serves their area"
+    ]
+  },
+  {
+    "id": 20,
+    "role": "client",
+    "category": "TRUST, REVIEWS & VALIDATION",
+    "part": 0,
+    "scenarios": [8, 9, 10, 11, 12, 13],
+    "titles": [
+      "Read third-party reviews",
+      "Verify chef identity and background",
+      "Check food safety or license claims",
+      "Look for past event photos",
+      "Check references manually",
+      "Validate refund/cancellation policies"
+    ]
+  },
+  {
+    "id": 21,
+    "role": "client",
+    "category": "BOOKING COMPARISON & BUDGETING",
+    "part": 0,
+    "scenarios": [14, 15, 16, 17, 18, 19, 20],
+    "titles": [
+      "Compare price ranges across options",
+      "Track multiple chef quotes",
+      "Estimate total event budget",
+      "Compare private chef vs catering vs restaurant",
+      "Ask another household decision-maker to approve",
+      "Save a chef for later",
+      "Calculate split costs among guests"
+    ]
+  },
+  {
+    "id": 22,
+    "role": "client",
+    "category": "CALENDAR & SCHEDULING",
+    "part": 0,
+    "scenarios": [21, 22, 23, 24, 25, 26],
+    "titles": [
+      "Check personal availability",
+      "Coordinate date with spouse/family/team",
+      "Add event to personal calendar",
+      "Track payment/menu/guest deadlines",
+      "Find a date that fits venue availability",
+      "Reschedule with multiple stakeholders"
+    ]
+  },
+  {
+    "id": 23,
+    "role": "client",
+    "category": "COMMUNICATION",
+    "part": 0,
+    "scenarios": [27, 28, 29, 30, 31, 32, 33, 34],
+    "titles": [
+      "Text the chef directly",
+      "WhatsApp the chef",
+      "Call the chef",
+      "Email outside the portal",
+      "Coordinate through an assistant or planner",
+      "Share files or inspiration",
+      "Ask guests questions manually",
+      "Escalate a support issue"
+    ]
+  },
+  {
+    "id": 24,
+    "role": "client",
+    "category": "PAYMENTS, MONEY & RECEIPTS",
+    "part": 0,
+    "scenarios": [35, 36, 37, 38, 39, 40, 41, 42],
+    "titles": [
+      "Check credit card or bank balance before paying",
+      "Pay by Venmo, Zelle, PayPal, or check",
+      "Complete secure card checkout",
+      "Download receipts for reimbursement",
+      "Split payment with guests",
+      "Dispute or reverse a charge",
+      "Track spending for taxes or business hosting",
+      "Tip after the event"
+    ]
+  },
+  {
+    "id": 25,
+    "role": "client",
+    "category": "EVENT PLANNING & VENDOR COORDINATION",
+    "part": 0,
+    "scenarios": [43, 44, 45, 46, 47, 48, 49, 50, 51],
+    "titles": [
+      "Book a venue",
+      "Coordinate with event planner",
+      "Book rentals",
+      "Hire florist/decorator",
+      "Hire entertainment",
+      "Send invitations",
+      "Build seating chart",
+      "Coordinate alcohol or bar service",
+      "Order cake, favors, or non-chef food"
+    ]
+  },
+  {
+    "id": 26,
+    "role": "client",
+    "category": "GUEST COORDINATION",
+    "part": 0,
+    "scenarios": [52, 53, 54, 55, 56, 57, 58, 59],
+    "titles": [
+      "Collect guest names",
+      "Collect RSVPs",
+      "Collect dietary restrictions",
+      "Chase missing guest responses",
+      "Share event details with guests",
+      "Ask guests to pay their share",
+      "Handle guest changes day-of",
+      "Share parking/directions to guests"
+    ]
+  },
+  {
+    "id": 27,
+    "role": "client",
+    "category": "MENU, DIETARY & BEVERAGE RESEARCH",
+    "part": 0,
+    "scenarios": [60, 61, 62, 63, 64, 65, 66, 67],
+    "titles": [
+      "Find menu inspiration",
+      "Research a cuisine or dish",
+      "Check allergy seriousness",
+      "Look up nutrition/macros",
+      "Research wine pairings",
+      "Buy wine/spirits",
+      "Ask household members what they want",
+      "Request substitutions or revisions"
+    ]
+  },
+  {
+    "id": 28,
+    "role": "client",
+    "category": "VENUE, HOME & LOGISTICS",
+    "part": 0,
+    "scenarios": [68, 69, 70, 71, 72, 73, 74, 75],
+    "titles": [
+      "Share home access details",
+      "Check venue rules",
+      "Confirm parking/loading",
+      "Share kitchen photos",
+      "Confirm equipment availability",
+      "Coordinate building security",
+      "Book cleaning service",
+      "Check weather for outdoor event"
+    ]
+  },
+  {
+    "id": 29,
+    "role": "client",
+    "category": "TRAVEL, DIRECTIONS & DAY-OF MOVEMENT",
+    "part": 0,
+    "scenarios": [76, 77, 78, 79, 80],
+    "titles": [
+      "Navigate to event",
+      "Order rideshare",
+      "Book lodging for destination event",
+      "Track traffic or parking",
+      "Coordinate pickup/drop-off timing"
+    ]
+  },
+  {
+    "id": 30,
+    "role": "client",
+    "category": "LEGAL, PRIVACY & COMPLIANCE",
+    "part": 0,
+    "scenarios": [81, 82, 83, 84],
+    "titles": [
+      "Review legal terms with lawyer or company procurement",
+      "Get corporate approval",
+      "Verify cannabis legality or age requirements",
+      "Request privacy/data deletion help"
+    ]
+  },
+  {
+    "id": 31,
+    "role": "client",
+    "category": "POST-EVENT, SOCIAL & MEMORY",
+    "part": 0,
+    "scenarios": [85, 86, 87, 88, 89, 90, 91],
+    "titles": [
+      "Post event photos",
+      "Store photos in personal album",
+      "Leave a public review",
+      "Send thank-you notes to guests",
+      "Recommend the chef to friends",
+      "Recreate a dish at home",
+      "Remember what was served months later"
+    ]
+  },
+  {
+    "id": 32,
+    "role": "admin",
+    "category": "AUTHENTICATION, ADMIN ACCESS & ROLE CONTROL",
+    "part": 0,
+    "scenarios": [1, 2, 3, 4, 5, 6, 7, 8],
+    "titles": [
+      "Sign in after session expiry",
+      "Retrieve admin password or MFA code",
+      "Bootstrap the first owner/admin row",
+      "Investigate why an expected admin cannot enter `/admin`",
+      "Promote a trusted operator to admin",
+      "Remove or demote an admin",
+      "Confirm VIP is not admin",
+      "Audit an access anomaly"
+    ]
+  },
+  {
+    "id": 33,
+    "role": "admin",
+    "category": "INFRASTRUCTURE, DEPLOYMENT & LOCAL SERVICES",
+    "part": 0,
+    "scenarios": [9, 10, 11, 12, 13, 14, 15, 16],
+    "titles": [
+      "Restart or inspect the canonical dev server",
+      "Inspect Docker containers",
+      "Check hosting deployment status",
+      "Inspect server logs during a 500",
+      "Check environment variables",
+      "Restart Ollama or local AI",
+      "Restart OpenClaw worker/container",
+      "Verify database connectivity outage"
+    ]
+  },
+  {
+    "id": 34,
+    "role": "admin",
+    "category": "DATABASE, MIGRATIONS & CROSS-TENANT DATA REPAIR",
+    "part": 0,
+    "scenarios": [17, 18, 19, 20, 21, 22, 23, 24],
+    "titles": [
+      "Apply a migration",
+      "Inspect raw cross-tenant records",
+      "Repair malformed tenant data",
+      "Investigate RLS/service-role behavior",
+      "Restore from backup",
+      "Run one-off data export for legal/support",
+      "Debug missing public directory records",
+      "Investigate audit-log write failure"
+    ]
+  },
+  {
+    "id": 35,
+    "role": "admin",
+    "category": "PAYMENTS, FINANCE & ACCOUNTING",
+    "part": 0,
+    "scenarios": [25, 26, 27, 28, 29, 30, 31, 32],
+    "titles": [
+      "Verify a charge, transfer, or refund in Stripe",
+      "Cancel or inspect a paid subscription after comping",
+      "Reconcile platform fees against payouts",
+      "Confirm bank deposits",
+      "Handle chargebacks or disputes",
+      "Prepare taxes or monthly books",
+      "Investigate Stripe key mode mismatch",
+      "Issue non-ChefFlow refund or goodwill payment"
+    ]
+  },
+  {
+    "id": 36,
+    "role": "admin",
+    "category": "COMMUNICATION, SUPPORT & USER RELATIONSHIPS",
+    "part": 0,
+    "scenarios": [33, 34, 35, 36, 37, 38, 39, 40],
+    "titles": [
+      "Read replies to admin emails",
+      "Resolve sensitive support issue by phone",
+      "Help a chef through account recovery",
+      "Handle urgent outage communications",
+      "Coordinate with a trusted admin/operator",
+      "Verify email delivery failure",
+      "Answer support ticket from outside channel",
+      "Send legal/privacy response"
+    ]
+  },
+  {
+    "id": 37,
+    "role": "admin",
+    "category": "WEB RESEARCH, DIRECTORY & OUTREACH",
+    "part": 0,
+    "scenarios": [41, 42, 43, 44, 45, 46, 47, 48],
+    "titles": [
+      "Verify a web research candidate",
+      "Search for new directory leads",
+      "Validate a chef's public identity",
+      "Review external directory listing quality",
+      "Send outreach campaign beyond current preview commands",
+      "Verify opt-out or unsubscribe behavior",
+      "Check search indexing or SEO state",
+      "Update external listing or social profile"
+    ]
+  },
+  {
+    "id": 38,
+    "role": "admin",
+    "category": "PRICING, OPENCLAW & MARKET DATA",
+    "part": 0,
+    "scenarios": [49, 50, 51, 52, 53, 54, 55, 56],
+    "titles": [
+      "Verify a quarantined price",
+      "Investigate OpenClaw sync failure",
+      "Import vendor pricing from external file",
+      "Resolve price coverage gaps",
+      "Export catalog for offline review",
+      "Tune scraper/API credentials",
+      "Check regional store availability",
+      "Compare ChefFlow price against real receipt"
+    ]
+  },
+  {
+    "id": 39,
+    "role": "admin",
+    "category": "LEGAL, POLICY, PRIVACY & REGULATED FLOWS",
+    "part": 0,
+    "scenarios": [57, 58, 59, 60, 61, 62, 63, 64],
+    "titles": [
+      "Review terms or policies with counsel",
+      "Publish or revise legal documents",
+      "Process privacy/data request",
+      "Verify cannabis compliance",
+      "Review cannabis invite or age edge case",
+      "Respond to DMCA or acceptable-use issue",
+      "Document security incident",
+      "Verify professional licensing or certificates"
+    ]
+  },
+  {
+    "id": 40,
+    "role": "admin",
+    "category": "QA, SECURITY & SYSTEM INTEGRITY",
+    "part": 0,
+    "scenarios": [65, 66, 67, 68, 69, 70, 71, 72],
+    "titles": [
+      "Run admin route coverage tests",
+      "Run security integrity tests",
+      "Debug client-side JS error",
+      "Inspect network failures",
+      "Compare admin nav against route inventory",
+      "Validate API route auth inventory",
+      "Investigate Remy/admin boundary",
+      "Prepare a handoff or queue item for admin gaps"
+    ]
+  },
+  {
+    "id": 41,
+    "role": "guest",
+    "category": "PUBLIC DISCOVERY & TRUST VALIDATION",
+    "part": 0,
+    "scenarios": [1, 2, 3, 4, 5, 6, 7],
+    "titles": [
+      "Search for private chefs before landing on ChefFlow",
+      "Validate a chef's reputation",
+      "Check a chef's social presence",
+      "Compare private chef against restaurants",
+      "Research food operators in local directory results",
+      "Ask friends whether a chef is worth booking",
+      "Verify service area manually"
+    ]
+  },
+  {
+    "id": 42,
+    "role": "guest",
+    "category": "EVENT INVITE & RSVP COORDINATION",
+    "part": 0,
+    "scenarios": [8, 9, 10, 11, 12, 13, 14],
+    "titles": [
+      "Find the invitation link again",
+      "Ask the host whether they should attend",
+      "Coordinate plus-one permission",
+      "Share the event with someone else",
+      "Chase another guest's RSVP",
+      "Recover an expired, revoked, or missing guest token",
+      "Resolve duplicate RSVP by email"
+    ]
+  },
+  {
+    "id": 43,
+    "role": "guest",
+    "category": "CALENDAR, MAPS & ARRIVAL LOGISTICS",
+    "part": 0,
+    "scenarios": [15, 16, 17, 18, 19, 20, 21],
+    "titles": [
+      "Add event to personal calendar",
+      "Navigate to the event",
+      "Check traffic before leaving",
+      "Coordinate parking or building access",
+      "Order rideshare",
+      "Check weather for outdoor dinner",
+      "Look up venue/farm details"
+    ]
+  },
+  {
+    "id": 44,
+    "role": "guest",
+    "category": "PAYMENTS, TICKETS & MONEY",
+    "part": 0,
+    "scenarios": [22, 23, 24, 25, 26, 27, 28],
+    "titles": [
+      "Complete public ticket checkout",
+      "Retry failed or cancelled checkout",
+      "Check bank or card balance before buying",
+      "Split ticket or event cost with friends",
+      "Tip via informal method",
+      "Resolve card dispute or refund",
+      "Expense ticket or dinner cost"
+    ]
+  },
+  {
+    "id": 45,
+    "role": "guest",
+    "category": "DIETARY, ALLERGY & HEALTH CONTEXT",
+    "part": 0,
+    "scenarios": [29, 30, 31, 32, 33, 34],
+    "titles": [
+      "Ask a doctor about allergy seriousness",
+      "Look up whether an ingredient is safe",
+      "Check medication, pregnancy, or cannabis interaction",
+      "Ask household member what they can eat",
+      "Photograph ingredient labels for chef",
+      "Clarify dietary ambiguity verbally"
+    ]
+  },
+  {
+    "id": 46,
+    "role": "guest",
+    "category": "MENU, FOOD & EXPERIENCE RESEARCH",
+    "part": 0,
+    "scenarios": [35, 36, 37, 38, 39, 40],
+    "titles": [
+      "Research unfamiliar dishes before picking",
+      "Ask friends which menu option to choose",
+      "Browse wine, cocktail, or beverage pairings",
+      "Buy wine or host-provided items",
+      "Save a dish idea for later home cooking",
+      "Translate or explain menu language"
+    ]
+  },
+  {
+    "id": 47,
+    "role": "guest",
+    "category": "DINNER CIRCLE & NO-LOGIN PROFILE ACCESS",
+    "part": 0,
+    "scenarios": [41, 42, 43, 44, 45, 46, 47],
+    "titles": [
+      "Recover lost Circle profile token",
+      "Receive Circle updates",
+      "Continue a Circle conversation from email",
+      "Create a community circle as anonymous visitor",
+      "Invite someone by SMS",
+      "Discuss sensitive guest detail privately",
+      "Download or save a QR code"
+    ]
+  },
+  {
+    "id": 48,
+    "role": "guest",
+    "category": "PHOTOS, SOCIAL & MEMORY",
+    "part": 0,
+    "scenarios": [48, 49, 50, 51, 52, 53],
+    "titles": [
+      "Take event photos",
+      "Edit photos before sharing",
+      "Post dinner photos socially",
+      "Store photos long term",
+      "Share recap with friends",
+      "Leave a public third-party review"
+    ]
+  },
+  {
+    "id": 49,
+    "role": "guest",
+    "category": "PROPOSAL, BOOKING & FUTURE EVENT HANDOFFS",
+    "part": 0,
+    "scenarios": [54, 55, 56, 57, 58, 59],
+    "titles": [
+      "Discuss proposal with spouse/team",
+      "Negotiate proposal terms verbally",
+      "Sign a separate venue or company document",
+      "Book again from post-action footer",
+      "Compare multiple chefs after attending dinner",
+      "Ask chef directly before submitting lead form"
+    ]
+  },
+  {
+    "id": 50,
+    "role": "guest",
+    "category": "SUPPORT, PRIVACY & LEGAL",
+    "part": 0,
+    "scenarios": [60, 61, 62, 63, 64, 65],
+    "titles": [
+      "Contact support or privacy inbox",
+      "Request data deletion or privacy help",
+      "Read Stripe or processor terms",
+      "Read guest or client legal terms",
+      "Escalate safety concern",
+      "Unsubscribe or recover notification preferences"
+    ]
+  },
+  {
+    "id": 51,
+    "role": "partner",
+    "category": "ACCOUNT CLAIMING & ACCESS",
+    "part": 0,
+    "scenarios": [1, 2, 3, 4, 5],
+    "titles": [
+      "Receive the partner invite link",
+      "Ask the chef for a new invite",
+      "Retrieve password from a password manager",
+      "Check email for account or chef context",
+      "Review partner terms with counsel"
+    ]
+  },
+  {
+    "id": 52,
+    "role": "partner",
+    "category": "PARTNER INTAKE & CHEF RELATIONSHIP SETUP",
+    "part": 0,
+    "scenarios": [6, 7, 8, 9, 10],
+    "titles": [
+      "Find the chef-specific partner form",
+      "Confirm this is the right chef",
+      "Send extra setup context to the chef",
+      "Coordinate partnership terms before being added",
+      "Share business documents with the chef"
+    ]
+  },
+  {
+    "id": 53,
+    "role": "partner",
+    "category": "PROFILE CONTENT & PUBLIC SHOWCASE",
+    "part": 0,
+    "scenarios": [11, 12, 13, 14, 15, 16, 17],
+    "titles": [
+      "Find a cover image URL",
+      "Edit or crop venue photos",
+      "Update the partner's own website",
+      "Update external booking page copy",
+      "Check how public listing looks outside ChefFlow",
+      "Ask chef to make profile public",
+      "Ask chef to reorder or feature partner"
+    ]
+  },
+  {
+    "id": 54,
+    "role": "partner",
+    "category": "LOCATION DETAILS & VENUE OPERATIONS",
+    "part": 0,
+    "scenarios": [18, 19, 20, 21, 22, 23, 24],
+    "titles": [
+      "Verify address or map pin",
+      "Check parking/loading/access instructions",
+      "Confirm venue capacity with official docs",
+      "Update room availability or blackout dates",
+      "Coordinate location change approval",
+      "Provide new location photos",
+      "Handle venue maintenance or closures"
+    ]
+  },
+  {
+    "id": 55,
+    "role": "partner",
+    "category": "EVENT HISTORY, ATTRIBUTION & REPORTING",
+    "part": 0,
+    "scenarios": [25, 26, 27, 28, 29, 30],
+    "titles": [
+      "Verify missing or misattributed events",
+      "Export contribution report for internal use",
+      "Compare ChefFlow event count with venue bookings",
+      "Share impact results with a manager or owner",
+      "Investigate event revenue details",
+      "Track referral source beyond linked events"
+    ]
+  },
+  {
+    "id": 56,
+    "role": "partner",
+    "category": "COMMISSION, PAYOUTS & MONEY",
+    "part": 0,
+    "scenarios": [31, 32, 33, 34, 35, 36],
+    "titles": [
+      "Check whether a commission was paid",
+      "Receive actual payout",
+      "Resolve payout discrepancy",
+      "Reconcile tax income",
+      "Confirm commission terms",
+      "Send invoice to chef"
+    ]
+  },
+  {
+    "id": 57,
+    "role": "partner",
+    "category": "COMMUNICATION & RELATIONSHIP MANAGEMENT",
+    "part": 0,
+    "scenarios": [37, 38, 39, 40, 41],
+    "titles": [
+      "Message chef about a new referral",
+      "Call chef about urgent venue issue",
+      "Coordinate with venue staff",
+      "Forward client/guest context",
+      "Ask support for account help"
+    ]
+  },
+  {
+    "id": 58,
+    "role": "partner",
+    "category": "REFERRAL GENERATION & EXTERNAL DISCOVERY",
+    "part": 0,
+    "scenarios": [42, 43, 44, 45, 46],
+    "titles": [
+      "Share chef referral link with a guest",
+      "Promote chef on partner website",
+      "Mention chef in host guidebook",
+      "Track lead before it becomes inquiry",
+      "Compare chef with other vendors"
+    ]
+  },
+  {
+    "id": 59,
+    "role": "partner",
+    "category": "LEGAL, PRIVACY & COMPLIANCE",
+    "part": 0,
+    "scenarios": [47, 48, 49, 50, 51],
+    "titles": [
+      "Review privacy or partner terms outside portal",
+      "Request data deletion or profile removal",
+      "Verify insurance/licensing requirements",
+      "Handle incident or liability issue",
+      "Approve public use of venue photos"
+    ]
+  },
+  {
+    "id": 60,
+    "role": "partner",
+    "category": "DAY-OF OPERATIONS",
+    "part": 0,
+    "scenarios": [52, 53, 54, 55, 56],
+    "titles": [
+      "Coordinate arrival/loading day-of",
+      "Check real-time traffic or directions",
+      "Alert chef to last-minute venue issue",
+      "Update guest-facing signage or printed materials",
+      "Coordinate cleanup or house rules"
+    ]
+  },
+  {
+    "id": 61,
+    "role": "vendor",
+    "category": "INVITE, ACCOUNT & ACCESS BOUNDARIES",
+    "part": 0,
+    "scenarios": [1, 2, 3, 4, 5, 6, 7],
+    "titles": [
+      "Receive the vendor invite",
+      "Find a lost invite",
+      "Confirm which email was invited",
+      "Store or retrieve password",
+      "Resolve sign-in trouble",
+      "Change business user access",
+      "Switch between multiple chef accounts"
+    ]
+  },
+  {
+    "id": 62,
+    "role": "vendor",
+    "category": "CATALOG, PRICE SHEETS & PRODUCT DATA",
+    "part": 0,
+    "scenarios": [8, 9, 10, 11, 12, 13, 14, 15, 16],
+    "titles": [
+      "Update a price sheet",
+      "Add new catalog items",
+      "Remove discontinued items",
+      "Attach spec sheets or product docs",
+      "Share seasonal availability",
+      "Share substitutions",
+      "Confirm pack size changes",
+      "Publish bulk discounts or minimums",
+      "Sync full ERP catalog"
+    ]
+  },
+  {
+    "id": 63,
+    "role": "vendor",
+    "category": "PURCHASE ORDER FULFILLMENT",
+    "part": 0,
+    "scenarios": [17, 18, 19, 20, 21, 22, 23, 24, 25],
+    "titles": [
+      "Receive purchase orders in the normal sales workflow",
+      "Accept an order with changes",
+      "Reject an order",
+      "Confirm partial line fulfillment",
+      "Confirm delivery date changes",
+      "Print or pick the order for warehouse work",
+      "Assign the order to an internal driver or picker",
+      "Merge multiple chef orders",
+      "Handle emergency short stock"
+    ]
+  },
+  {
+    "id": 64,
+    "role": "vendor",
+    "category": "DELIVERY, LOGISTICS & PHYSICAL FULFILLMENT",
+    "part": 0,
+    "scenarios": [26, 27, 28, 29, 30, 31, 32, 33],
+    "titles": [
+      "Route delivery",
+      "Track truck status",
+      "Document proof of delivery",
+      "Report delivery issue",
+      "Coordinate loading dock or access",
+      "Handle same-day route changes",
+      "Confirm cold-chain or handling details",
+      "Collect signature or receiving name"
+    ]
+  },
+  {
+    "id": 65,
+    "role": "vendor",
+    "category": "INVOICES, PAYMENTS & ACCOUNTING",
+    "part": 0,
+    "scenarios": [34, 35, 36, 37, 38, 39, 40, 41],
+    "titles": [
+      "Submit an invoice",
+      "Correct an invoice",
+      "Send credit memo",
+      "Check payment clearing",
+      "Reconcile open AR",
+      "Update payment terms",
+      "Collect tax forms or W-9s",
+      "Handle collections/escalation"
+    ]
+  },
+  {
+    "id": 66,
+    "role": "vendor",
+    "category": "COMMUNICATION, DISPUTES & RELATIONSHIP MEMORY",
+    "part": 0,
+    "scenarios": [42, 43, 44, 45, 46, 47, 48, 49],
+    "titles": [
+      "Message the chef from the portal",
+      "Respond to AI or chef supplier calls",
+      "Clarify ambiguous PO notes",
+      "Dispute missing/late/quality issue",
+      "Negotiate pricing relationship",
+      "Send marketing/new product updates",
+      "Coordinate with non-chef event parties",
+      "Ask for technical support"
+    ]
+  },
+  {
+    "id": 67,
+    "role": "vendor",
+    "category": "COMPLIANCE, BUSINESS OPS & SUPPLIER SYSTEMS",
+    "part": 0,
+    "scenarios": [50, 51, 52, 53, 54, 55, 56],
+    "titles": [
+      "Review supplier legal agreement later",
+      "Provide insurance/licensing certificates",
+      "Maintain food safety or HACCP records",
+      "Manage wholesale account setup",
+      "Manage internal inventory",
+      "Manage staff, routes, payroll, procurement",
+      "Export relationship history for internal CRM"
+    ]
+  },
+  {
+    "id": 68,
+    "role": "staff",
+    "category": "DAY-OF COMMUNICATION & ESCALATION",
+    "part": 0,
+    "scenarios": [1, 2, 3, 4, 5, 6, 7, 8],
+    "titles": [
+      "Call the chef from an event briefing",
+      "Text the chef about a blocked task",
+      "Send a photo of a station issue",
+      "Ask another staffer for help",
+      "Escalate a safety incident",
+      "Resolve an access or building issue",
+      "Ask for clarification on chef notes",
+      "Report being late or unavailable"
+    ]
+  },
+  {
+    "id": 69,
+    "role": "staff",
+    "category": "MAPS, TRAVEL & ARRIVAL",
+    "part": 0,
+    "scenarios": [9, 10, 11, 12, 13, 14],
+    "titles": [
+      "Navigate to the event",
+      "Check live traffic before leaving",
+      "Find parking or loading access",
+      "Coordinate rideshare or transit",
+      "Get directions between prep site and event",
+      "Locate a nearby store for emergency supplies"
+    ]
+  },
+  {
+    "id": 70,
+    "role": "staff",
+    "category": "CLOCK, PAY, BANKING & TAX",
+    "part": 0,
+    "scenarios": [15, 16, 17, 18, 19, 20, 21],
+    "titles": [
+      "Confirm money was deposited",
+      "Receive informal tip or reimbursement",
+      "Correct a disputed time entry",
+      "Submit tax forms or contractor paperwork",
+      "Download pay stubs or year-end tax docs",
+      "Track mileage for work",
+      "Check minimum wage/overtime rules"
+    ]
+  },
+  {
+    "id": 71,
+    "role": "staff",
+    "category": "SCHEDULE, AVAILABILITY & SWAPS",
+    "part": 0,
+    "scenarios": [22, 23, 24, 25, 26, 27],
+    "titles": [
+      "Compare ChefFlow schedule to personal calendar",
+      "Request a shift change",
+      "Find someone to cover a shift",
+      "Tell chef weekly availability",
+      "Track personal reminders for arrival time",
+      "Ask whether assignment was confirmed"
+    ]
+  },
+  {
+    "id": 72,
+    "role": "staff",
+    "category": "KITCHEN EXECUTION & HARDWARE",
+    "part": 0,
+    "scenarios": [28, 29, 30, 31, 32, 33],
+    "titles": [
+      "Run active cooking timers",
+      "Use a thermometer or probe app",
+      "Weigh ingredients during prep",
+      "Scan or print labels",
+      "Check equipment instructions",
+      "Play music or ambiance during service"
+    ]
+  },
+  {
+    "id": 73,
+    "role": "staff",
+    "category": "RECIPE, SOP & TRAINING REFERENCE",
+    "part": 0,
+    "scenarios": [34, 35, 36, 37, 38, 39],
+    "titles": [
+      "Watch a technique video",
+      "Translate recipe or instruction text",
+      "Ask about a vague prep step",
+      "Find allergen training or safety policy",
+      "Look up substitution guidance mid-prep",
+      "Check company code of conduct or terms"
+    ]
+  },
+  {
+    "id": 74,
+    "role": "staff",
+    "category": "SUPPLIES, INVENTORY & EMERGENCY PURCHASING",
+    "part": 0,
+    "scenarios": [40, 41, 42, 43, 44],
+    "titles": [
+      "Buy missing ingredient or disposable",
+      "Check store availability",
+      "Photograph a receipt for reimbursement",
+      "Report waste with more context",
+      "Replace broken smallware or equipment"
+    ]
+  },
+  {
+    "id": 75,
+    "role": "staff",
+    "category": "ACCOUNT, ACCESS & SUPPORT",
+    "part": 0,
+    "scenarios": [45, 46, 47, 48, 49],
+    "titles": [
+      "Recover a forgotten staff password",
+      "Handle revoked or expired token link",
+      "Report portal bug or issue",
+      "Switch to another role/account",
+      "Read full legal/privacy policies"
+    ]
+  },
+  {
+    "id": 76,
+    "role": "staff",
+    "category": "OFFLINE, LOW-SIGNAL & DEVICE BOUNDARIES",
+    "part": 0,
+    "scenarios": [50, 51, 52, 53, 54],
+    "titles": [
+      "Work in a kitchen with bad signal",
+      "Keep a copy of briefing on phone",
+      "Use shared kiosk or kitchen device",
+      "Enter data while hands are dirty",
+      "Continue after app error"
+    ]
+  }
+]
