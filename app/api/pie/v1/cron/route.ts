@@ -5,12 +5,14 @@ import { runAutoExpansion } from '@/lib/pricing/auto-expansion-engine'
 import { pullBlsPrices } from '@/lib/pricing/government-feed'
 import { matchNakedIngredients } from '@/lib/pricing/fuzzy-match-engine'
 import { runTrendAnalysis } from '@/lib/pricing/trend-intelligence'
+import { checkHermesDeadManSwitch } from '@/lib/pricing/hermes-dead-man-switch'
+import { sweepStaleQueueEvents } from '@/lib/pricing/hermes-queue-sweep'
 
 export const dynamic = 'force-dynamic'
 export const maxDuration = 300
 
 /**
- * POST /api/pie/v1/cron?task=expand|government|fuzzy|trends|fallback|all
+ * POST /api/pie/v1/cron?task=expand|government|fuzzy|trends|fallback|sweep|all
  *
  * When Hermes is alive: runs requested task directly (Hermes calls these).
  * When Hermes is down: fallback mode activates automatically.
@@ -53,10 +55,32 @@ export async function POST(request: NextRequest) {
         }
       }
 
+      try {
+        results.deadManSwitch = await checkHermesDeadManSwitch()
+      } catch (e) {
+        results.deadManSwitch = { error: String(e) }
+      }
+
+      try {
+        results.queueSweep = await sweepStaleQueueEvents()
+      } catch (e) {
+        results.queueSweep = { error: String(e) }
+      }
+
       return NextResponse.json({
         success: true,
         task: 'fallback',
         mode: 'fallback',
+        durationMs: Date.now() - start,
+        results,
+      })
+    }
+
+    if (task === 'sweep') {
+      results.queueSweep = await sweepStaleQueueEvents()
+      return NextResponse.json({
+        success: true,
+        task: 'sweep',
         durationMs: Date.now() - start,
         results,
       })

@@ -20,10 +20,11 @@ export async function enqueueHermesEvent(
   payload: Record<string, unknown>
 ): Promise<void> {
   const priority = priorityForEvent(type)
+  const tenantId = (payload.tenantId as string) ?? null
 
   await db.execute(sql`
-    INSERT INTO hermes_queue (event_type, payload, priority, status)
-    VALUES (${type}, ${JSON.stringify(payload)}::jsonb, ${priority}, 'pending')
+    INSERT INTO hermes_queue (event_type, payload, priority, status, tenant_id)
+    VALUES (${type}, ${JSON.stringify(payload)}::jsonb, ${priority}, 'pending', ${tenantId})
   `)
 }
 

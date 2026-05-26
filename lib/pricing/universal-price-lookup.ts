@@ -33,6 +33,7 @@ import {
   DEFAULT_FLOOR_CENTS,
 } from './subcategory-floors'
 import { isProductRelevantToIngredient } from './product-relevance'
+import { normalizeIngredientName } from './name-normalizer'
 
 /** Best-effort category inference from raw ingredient text for synthetic floor. */
 function inferCategoryFromText(text: string): string {
@@ -284,6 +285,7 @@ interface IngredientMatch {
 
 async function matchIngredient(text: string): Promise<IngredientMatch | null> {
   const normalized = text.trim().toLowerCase()
+  const foodNormalized = normalizeIngredientName(text)
 
   // 1. Exact match in chef ingredients
   const exact = (await db.execute(sql`
@@ -306,21 +308,25 @@ async function matchIngredient(text: string): Promise<IngredientMatch | null> {
   // 2. Full-text search on ingredients
   const ftsIngredient = (await db.execute(sql`
     SELECT id, name, category,
-      ts_rank(to_tsvector('english', name), plainto_tsquery('english', ${text})) as rank
+      ts_rank(to_tsvector('english', name), plainto_tsquery('english', ${foodNormalized})) as rank
     FROM ingredients
-    WHERE to_tsvector('english', name) @@ plainto_tsquery('english', ${text})
+    WHERE to_tsvector('english', name) @@ plainto_tsquery('english', ${foodNormalized})
     ORDER BY rank DESC
     LIMIT 1
   `)) as unknown as Array<{ id: string; name: string; category: string | null; rank: number }>
 
   if (ftsIngredient.length > 0 && ftsIngredient[0].rank > 0.05) {
+    const ftsNameTokens = ftsIngredient[0].name.toLowerCase().split(/\s+/).length
+    const queryTokens = foodNormalized.split(/\s+/).length
+    const lengthPenalty =
+      queryTokens >= ftsNameTokens ? 0 : Math.max(0, (ftsNameTokens - queryTokens) * 0.05)
     return {
       id: ftsIngredient[0].id,
       name: ftsIngredient[0].name,
       source_table: 'ingredients',
       category: ftsIngredient[0].category,
       method: 'fulltext',
-      confidence: Math.min(0.95, 0.7 + ftsIngredient[0].rank),
+      confidence: Math.min(0.95, 0.7 + ftsIngredient[0].rank - lengthPenalty),
     }
   }
 
@@ -345,21 +351,25 @@ async function matchIngredient(text: string): Promise<IngredientMatch | null> {
   // 4. Full-text search on system_ingredients
   const ftsSys = (await db.execute(sql`
     SELECT id, name, category,
-      ts_rank(to_tsvector('english', name), plainto_tsquery('english', ${text})) as rank
+      ts_rank(to_tsvector('english', name), plainto_tsquery('english', ${foodNormalized})) as rank
     FROM system_ingredients
-    WHERE to_tsvector('english', name) @@ plainto_tsquery('english', ${text})
+    WHERE to_tsvector('english', name) @@ plainto_tsquery('english', ${foodNormalized})
     ORDER BY rank DESC
     LIMIT 1
   `)) as unknown as Array<{ id: string; name: string; category: string | null; rank: number }>
 
   if (ftsSys.length > 0 && ftsSys[0].rank > 0.05) {
+    const ftsNameTokens = ftsSys[0].name.toLowerCase().split(/\s+/).length
+    const queryTokens = foodNormalized.split(/\s+/).length
+    const lengthPenalty =
+      queryTokens >= ftsNameTokens ? 0 : Math.max(0, (ftsNameTokens - queryTokens) * 0.05)
     return {
       id: ftsSys[0].id,
       name: ftsSys[0].name,
       source_table: 'system_ingredients',
       category: ftsSys[0].category,
       method: 'fulltext',
-      confidence: Math.min(0.9, 0.65 + ftsSys[0].rank),
+      confidence: Math.min(0.9, 0.65 + ftsSys[0].rank - lengthPenalty),
     }
   }
 
@@ -405,21 +415,25 @@ async function matchIngredient(text: string): Promise<IngredientMatch | null> {
   // 7. FTS on canonical_ingredients (uses GIN index)
   const canonFts = (await db.execute(sql`
     SELECT ingredient_id as id, name, category,
-      ts_rank(to_tsvector('english', name), plainto_tsquery('english', ${text})) as rank
+      ts_rank(to_tsvector('english', name), plainto_tsquery('english', ${foodNormalized})) as rank
     FROM openclaw.canonical_ingredients
-    WHERE to_tsvector('english', name) @@ plainto_tsquery('english', ${text})
+    WHERE to_tsvector('english', name) @@ plainto_tsquery('english', ${foodNormalized})
     ORDER BY rank DESC
     LIMIT 1
   `)) as unknown as Array<{ id: string; name: string; category: string | null; rank: number }>
 
   if (canonFts.length > 0 && canonFts[0].rank > 0.05) {
+    const ftsNameTokens = canonFts[0].name.toLowerCase().split(/\s+/).length
+    const queryTokens = foodNormalized.split(/\s+/).length
+    const lengthPenalty =
+      queryTokens >= ftsNameTokens ? 0 : Math.max(0, (ftsNameTokens - queryTokens) * 0.05)
     return {
       id: canonFts[0].id,
       name: canonFts[0].name,
       source_table: 'canonical_ingredients',
       category: canonFts[0].category,
       method: 'fulltext',
-      confidence: Math.min(0.85, 0.6 + canonFts[0].rank),
+      confidence: Math.min(0.85, 0.6 + canonFts[0].rank - lengthPenalty),
     }
   }
 
