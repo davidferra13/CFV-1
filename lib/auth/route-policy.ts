@@ -111,6 +111,7 @@ export const CHEF_PROTECTED_PATHS = [
   '/staff',
   '/stations',
   '/surveys',
+  '/tables',
   '/tasks',
   '/team',
   // '/testimonials', -- merged into /reviews

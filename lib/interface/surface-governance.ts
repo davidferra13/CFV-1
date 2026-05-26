@@ -110,6 +110,7 @@ export function resolveChefSurfaceMode(pathname: string): ProductSurfaceMode {
   ) {
     return 'reviewing'
   }
+  if (pathname.startsWith('/tables')) return 'browsing'
   return 'triage'
 }
 
@@ -293,6 +294,24 @@ export function resolveChefShellBudget(pathname: string): ChefShellBudget {
       showBreadcrumbBar: false,
       showQuickExpenseTrigger: false,
       showRemy: false,
+      showQuickCapture: false,
+      showLiveAlerts: false,
+      showContextualRail: false,
+      contentWidth: 'full',
+    }
+  }
+
+  const isTables = pathname.startsWith('/tables')
+  if (isTables) {
+    return {
+      mode,
+      showMarketResearchBanner: false,
+      showFeedbackNudge: false,
+      showDesktopSidebar: true,
+      showMobileNav: true,
+      showBreadcrumbBar: false,
+      showQuickExpenseTrigger: false,
+      showRemy: true,
       showQuickCapture: false,
       showLiveAlerts: false,
       showContextualRail: false,
