@@ -222,6 +222,28 @@ export async function getGoogleAccessToken(
         .eq('id', (mailbox as any).id)
     }
 
+    if (service !== 'calendar') {
+      try {
+        const { createNotification, getChefAuthUserId } =
+          await import('@/lib/notifications/actions')
+        const notifTenantId = (mailbox as any)?.tenant_id || legacyConnection?.tenantId || chefId
+        const chefUserId = await getChefAuthUserId(notifTenantId)
+        if (chefUserId) {
+          await createNotification({
+            tenantId: notifTenantId,
+            recipientId: chefUserId,
+            category: 'system',
+            action: 'system_alert',
+            title: 'Gmail sync disconnected',
+            body: 'Your Gmail connection expired. New inquiries are not being captured. Please reconnect in Settings.',
+            actionUrl: '/settings/account',
+          })
+        }
+      } catch {
+        /* notification failure must not block the auth flow */
+      }
+    }
+
     throw new Error(
       `${
         service === 'calendar' ? 'Google Calendar' : 'Gmail'

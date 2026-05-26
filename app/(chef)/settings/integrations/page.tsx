@@ -1,6 +1,6 @@
 import type { Metadata } from 'next'
 import Link from 'next/link'
-import { ArrowLeft } from '@/components/ui/icons'
+import { ArrowLeft, ExternalLink } from '@/components/ui/icons'
 import { requireChef } from '@/lib/auth/get-user'
 import {
   getIntegrationProviderOverview,
@@ -209,6 +209,23 @@ export default async function IntegrationsSettingsPage() {
           )}
         </div>
       </section>
+
+      {/* Quick access to Take a Chef platform */}
+      <div className="flex items-center justify-between rounded-lg border border-amber-500/20 bg-amber-500/5 px-4 py-3">
+        <div>
+          <p className="text-sm font-medium text-stone-200">Take a Chef</p>
+          <p className="text-xs text-stone-400">Opens in a new tab (sign-in required)</p>
+        </div>
+        <a
+          href="https://www.takeachef.com"
+          target="_blank"
+          rel="noopener noreferrer"
+          className="inline-flex items-center gap-1.5 rounded-md bg-amber-500/15 px-3 py-1.5 text-sm font-medium text-amber-300 hover:bg-amber-500/25 transition-colors"
+        >
+          <ExternalLink className="h-3.5 w-3.5" />
+          Open Take a Chef
+        </a>
+      </div>
 
       {/* Email lead capture - guided setup for booking platform notifications via Gmail */}
       <TakeAChefSetup

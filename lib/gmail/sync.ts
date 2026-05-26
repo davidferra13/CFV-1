@@ -411,6 +411,24 @@ export async function syncGmailInbox(
   } catch (err) {
     const error = err as Error
     result.errors.push(`Token error: ${error.message}`)
+
+    try {
+      const chefUserId = await getChefAuthUserId(tenantId)
+      if (chefUserId) {
+        await createNotification({
+          tenantId,
+          recipientId: chefUserId,
+          category: 'system',
+          action: 'system_alert',
+          title: 'Gmail sync disconnected',
+          body: 'Your Gmail connection expired. New inquiries are not being captured. Please reconnect in Settings.',
+          actionUrl: '/settings/account',
+        })
+      }
+    } catch {
+      /* notification failure must not mask the real error */
+    }
+
     return result
   }
 
@@ -463,11 +481,28 @@ export async function syncGmailInbox(
     }
   } catch (err) {
     if (err instanceof GmailScopeError) {
-      // Mark connection as needing reauth so the UI shows a reconnect prompt
       await updateSyncState({ gmail_sync_errors: 99 })
       result.errors.push(
         'Gmail permissions are insufficient. Please disconnect and reconnect your Gmail in Settings.'
       )
+
+      try {
+        const chefUserId = await getChefAuthUserId(tenantId)
+        if (chefUserId) {
+          await createNotification({
+            tenantId,
+            recipientId: chefUserId,
+            category: 'system',
+            action: 'system_alert',
+            title: 'Gmail permissions need updating',
+            body: 'ChefFlow can no longer read your inbox. New inquiries are not being captured. Please reconnect Gmail in Settings.',
+            actionUrl: '/settings/account',
+          })
+        }
+      } catch {
+        /* notification failure must not mask the real error */
+      }
+
       return result
     }
     throw err
