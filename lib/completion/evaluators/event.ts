@@ -4,6 +4,7 @@
 // 21 requirements across safety, financial, culinary, logistics, profile, communication.
 
 import { pgClient } from '@/lib/db/index'
+import { createServerClient } from '@/lib/db/server'
 import { getClientProfileCompleteness } from '@/lib/clients/completeness'
 import { checkCannabisReadinessForTransition } from '@/lib/cannabis/readiness-integration'
 import { evaluateMenu } from './menu'
@@ -414,6 +415,52 @@ export async function evaluateEvent(
         category: 'cannabis',
       })
     }
+  }
+
+  // Co-hosting agreement gate
+  let hasCoHosts = false
+  let agreementActive = false
+  const adminDb = createServerClient({ admin: true })
+
+  // Find circle linked to this event via hub_group_events
+  const { data: groupLink } = await adminDb
+    .from('hub_group_events')
+    .select('group_id')
+    .eq('event_id', eventId)
+    .limit(1)
+    .single()
+
+  if (groupLink) {
+    const { data: coHostCheck } = await adminDb
+      .from('circle_co_hosts')
+      .select('id')
+      .eq('circle_id', groupLink.group_id)
+      .not('accepted_at', 'is', null)
+      .limit(1)
+
+    if (coHostCheck && coHostCheck.length > 0) {
+      hasCoHosts = true
+      const { data: agreementCheck } = await adminDb
+        .from('hub_cohost_agreements')
+        .select('status')
+        .eq('group_id', groupLink.group_id)
+        .eq('status', 'active')
+        .limit(1)
+      agreementActive = (agreementCheck && agreementCheck.length > 0) || false
+    }
+  }
+
+  if (hasCoHosts) {
+    reqs.push({
+      key: 'cohost_agreement',
+      label: 'Collaboration agreement signed',
+      met: agreementActive,
+      blocking: true,
+      weight: 8,
+      category: 'collaboration',
+      actionUrl: eventUrl,
+      actionLabel: 'Complete agreement',
+    })
   }
 
   const children: CompletionResult[] = []
