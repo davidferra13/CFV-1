@@ -314,12 +314,341 @@ When an `event_collaborator` is added/accepted on an event that has a linked cir
 
 ## Out of Scope
 
-- **Financial splits between co-hosts** - separate spec. Ledger is event-scoped and immutable; splitting requires its own design
 - **Chef Collab Spaces integration** - the private chef-only workspace system is a separate P1 spec. This spec uses host-only messages as the lightweight back-channel
 - **Notification preferences per-host** - existing member notification preferences (mute, digest mode, quiet hours) apply uniformly. Host-specific notification routing is future work
 - **Cross-tenant event ownership transfer** - events remain single-tenant (one chef owns). Collaborators gain access via `event_collaborators`. Ownership transfer is a separate concern
 - **Video/voice calls within circles** - external tool territory for now
-- **Contract/legal agreements between co-hosts** - out of scope. This is operational coordination, not legal
+
+---
+
+---
+
+## Cohosting Agreement Engine
+
+> **Status:** IN SCOPE (promoted from out-of-scope 2026-05-26)
+> **Source:** Real-world case study (Honey & Stem Farm dinner, Sep 2025) + chef industry conversations
+> **Memory refs:** `project_cohosting_circle_case_study.md`, `project_cohosting_agreement_engine.md`
+
+### Why This Exists
+
+The biggest pain point in chef-venue collaborations is that compensation and responsibility division never gets formally discussed. It happens through word of mouth, assumptions, and one party deferring to whoever seems more experienced. From a real cohosted dinner (chef + farmer, 5-course, $155/ticket, 60/40 split), the revenue split was never formally agreed; it just happened because the farmer deferred to the chef's experience. Conversations with multiple chefs confirmed: "that's the first thing you should always discuss internally."
+
+Without formal documentation there is zero credibility, zero fallback if someone is unhappy. "You signed this" is the foundation of professional collaboration. ChefFlow must formalize what currently lives in text threads and handshakes.
+
+### The Cohosting Agreement
+
+When a cohosting Dinner Circle creates an event where money is involved (ticket sales or any party receives compensation), ChefFlow presents a structured **Responsibility & Compensation Agreement** that all co-hosts must walk through and e-sign before tickets go live.
+
+The agreement is:
+
+1. A **Responsibility Checklist** covering the entire event lifecycle (before, during, after)
+2. A **Compensation Structure** defining how money flows
+3. A **Legal-grade document** with e-signatures from all parties
+
+### Compensation Models
+
+Four industry-standard models, configured FIRST when creating a cohosting event:
+
+| Model                  | Description                                                                       | When Used                                    |
+| ---------------------- | --------------------------------------------------------------------------------- | -------------------------------------------- |
+| **Venue sells 100%**   | Venue handles all ticket sales. Chef receives flat fee or percentage split.       | Most common when chef has no local following |
+| **Both sell**          | Both parties sell tickets. Revenue pooled and split by agreed ratio (e.g., 60/40) | The default collaborative model              |
+| **Chef sells 100%**    | Chef handles all sales. Venue receives flat venue fee.                            | Rare for farm dinners                        |
+| **Fixed compensation** | Chef gets flat rate regardless of sales.                                          | Simplest; least aligned incentives           |
+
+### Responsibility Checklist
+
+The checklist IS the event roadmap. Not just pre-event planning; covers before, during, and after.
+
+**Every checklist item has:**
+
+- **Assignment:** Chef / Venue / Shared / N/A
+- **Notes field:** Free-text where each party adds specifics (every venue is different, every chef has particular needs)
+- **Status:** Not started / In progress / Done (tracked during event execution)
+
+Default items work for ANY cohosting dinner circle. Users customize with notes, add custom items, remove irrelevant ones.
+
+#### Category 1: Tickets & Revenue
+
+- Ticket pricing
+- Who sells tickets (venue / chef / both / platform)
+- Revenue split model (percentage / fixed / per-ticket)
+- Revenue split ratio and exact amounts
+- Payment method and timing
+- Refund policy ownership
+
+#### Category 2: Ingredients & Sourcing
+
+- Farm-sourced ingredients (farmer harvests/provides)
+- Market-bought ingredients (who shops, who pays)
+- Specialty items (butcher, fishmonger, forager)
+- Ingredient list exchange (chef sends quantities, farmer confirms)
+- Substitution authority (who decides alternatives)
+- Harvest timing coordination
+
+#### Category 3: Equipment & Serviceware
+
+- Plates, bowls, serving platters
+- Glasses (water, wine, cocktail)
+- Silverware, napkins
+- Cooking equipment (grills, burners, ovens)
+- Prep equipment (cutting boards, blenders, processors)
+- Serving equipment (chafing dishes, tea pots, boards)
+- Tables, chairs, seating
+- Linens, table cloths
+- Rentals needed (who arranges, who pays)
+
+#### Category 4: Venue & Setup
+
+- Property preparation (mowing, cleaning, pathways)
+- Table setup and decor
+- Lighting (string lights, candles, lanterns)
+- Weather contingency (tents, indoor backup)
+- Parking arrangement
+- Signage and wayfinding
+- Heating/cooling (outdoor heaters, fans)
+- Restroom access
+- Power (extension cords, generators)
+
+#### Category 5: Culinary Execution
+
+- Menu design and finalization
+- Prep (by course)
+- Cooking (by course)
+- Plating (by course)
+- Service/running food (by course)
+- Appetizers/nibbles/pre-dinner
+- Dessert
+- Staff/helpers needed
+
+#### Category 6: Beverages
+
+- Wine/beer sourcing
+- Cocktail/mocktail creation
+- Non-alcoholic beverages
+- Who pays for beverages
+- Included in ticket vs upcharge
+- Bar setup and service
+
+#### Category 7: Hospitality & Guest Experience
+
+- Guest greeting and welcome
+- Farm tour / venue tour
+- Course introductions / storytelling
+- Guest comfort (blankets, heaters, bug spray)
+- Music/ambiance
+- Post-dinner experience (fire pit, lounge)
+
+#### Category 8: Marketing & Promotion
+
+- Event flyer/graphic design
+- Social media promotion
+- Website listing
+- Cross-promotion (tag each other)
+- Photography during event
+- Post-event content sharing
+
+#### Category 9: Guest Management
+
+- Guest communication (pre-event email, logistics)
+- Dietary restrictions and allergies collection
+- Headcount tracking and confirmation
+- Special occasions (birthdays, etc.)
+- Day-of guest questions
+
+#### Category 10: Wrap-Up & Post-Event
+
+- Clear table (dishes, glasses, decor)
+- Wash dishes and serviceware
+- Clean cooking area / outdoor kitchen
+- Pack chef's personal equipment (knives, kit)
+- Store or return venue equipment
+- Dispose of trash and compost
+- Clean restroom areas
+- Break down tent / temporary structures
+- Store tables and chairs
+- Handle leftover food (who keeps what, plates for hosts)
+- Secure venue (lock sheds, turn off lights, close gates)
+- Return borrowed or rented items
+- Thank-you messages to guests
+- Share event photos between co-hosts
+- Post-event social media (tagging, sharing)
+- Collect reviews / feedback from guests
+- Revenue reconciliation and payout
+- Debrief between co-hosts (what worked, what to change)
+
+### Agreement Document Structure
+
+The completed checklist generates a formal document containing:
+
+1. **Party identification:** Full names, contact info, roles (Chef / Venue / Farmer / etc.)
+2. **Event details:** Date, location, expected headcount, ticket price
+3. **Compensation structure:** Model, exact amounts or percentages, payment method, payment timeline
+4. **Complete responsibility matrix:** Every checklist item with assignments and notes
+5. **E-signatures from all parties**
+6. **Date signed**
+7. **Amendment history** (changes after signing require all parties to re-acknowledge)
+
+### When Required vs Optional
+
+| Scenario                                    | Agreement Level                                                                         |
+| ------------------------------------------- | --------------------------------------------------------------------------------------- |
+| Tickets sold or compensation exchanged      | **MANDATORY.** Full agreement with e-signatures. Cannot launch ticket sales without it. |
+| Friends hosting together, no money involved | **Optional.** Checklist available for planning but no legal gate.                       |
+
+The trigger is simple: if the event has tickets or any party receives compensation, the agreement is mandatory.
+
+### Default Templates
+
+Pre-configured for common scenarios (pre-fill reasonable defaults, fully customizable):
+
+| Template                 | Description                                                                                                |
+| ------------------------ | ---------------------------------------------------------------------------------------------------------- |
+| **Chef + Farm/Venue**    | The primary model. Farmer provides venue + ingredients, chef cooks. Based on real Honey & Stem case study. |
+| **Chef + Private Host**  | Someone hiring a chef for their home dinner party.                                                         |
+| **Chef + Chef**          | Two chefs collaborating on a multi-course event.                                                           |
+| **Chef + Restaurant**    | Pop-up dinner at an existing restaurant venue.                                                             |
+| **Chef + Event Planner** | Planner handles logistics/tickets, chef handles food.                                                      |
+
+### Circle-Level vs Event-Level
+
+The cohosting agreement lives INSIDE the Dinner Circle, not just the event. When the circle creates a new event, it inherits the circle's default agreement but can be customized per event. Recurring collaborations (e.g., monthly farm dinners) don't re-negotiate everything each time; they just adjust what changed.
+
+- **First event in a circle:** Full walkthrough required
+- **Subsequent events:** Previous agreement carries forward, only changes need acknowledgment
+
+### Database Changes (Agreement)
+
+```sql
+-- Cohosting agreement per circle (or per event within circle)
+CREATE TABLE hub_cohost_agreements (
+  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  group_id UUID NOT NULL REFERENCES hub_groups(id) ON DELETE CASCADE,
+  event_id UUID REFERENCES events(id),
+  template_type TEXT NOT NULL DEFAULT 'chef_farm',
+    -- 'chef_farm', 'chef_private_host', 'chef_chef', 'chef_restaurant', 'chef_planner', 'custom'
+  compensation_model TEXT NOT NULL DEFAULT 'both_sell',
+    -- 'venue_sells_all', 'both_sell', 'chef_sells_all', 'fixed_fee'
+  compensation_details JSONB NOT NULL DEFAULT '{}',
+    -- { splitRatio: { chef: 40, venue: 60 }, fixedFee: null, paymentMethod: 'venmo', paymentTiming: 'within_48h' }
+  status TEXT NOT NULL DEFAULT 'draft',
+    -- 'draft', 'pending_signatures', 'active', 'amended', 'voided'
+  created_by UUID NOT NULL REFERENCES auth_users(id),
+  created_at TIMESTAMPTZ NOT NULL DEFAULT now(),
+  updated_at TIMESTAMPTZ NOT NULL DEFAULT now()
+);
+
+-- Individual checklist items within an agreement
+CREATE TABLE hub_agreement_items (
+  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  agreement_id UUID NOT NULL REFERENCES hub_cohost_agreements(id) ON DELETE CASCADE,
+  category TEXT NOT NULL,
+    -- 'tickets_revenue', 'ingredients', 'equipment', 'venue_setup', 'culinary',
+    -- 'beverages', 'hospitality', 'marketing', 'guest_management', 'wrap_up'
+  title TEXT NOT NULL,
+  assignment TEXT NOT NULL DEFAULT 'unassigned',
+    -- 'chef', 'venue', 'shared', 'na', 'unassigned'
+  notes TEXT,
+  status TEXT NOT NULL DEFAULT 'not_started',
+    -- 'not_started', 'in_progress', 'done'
+  sort_order INTEGER NOT NULL DEFAULT 0,
+  is_default BOOLEAN NOT NULL DEFAULT true,
+    -- true = came from template, false = user-added custom item
+  completed_at TIMESTAMPTZ,
+  completed_by UUID REFERENCES auth_users(id),
+  created_at TIMESTAMPTZ NOT NULL DEFAULT now(),
+  updated_at TIMESTAMPTZ NOT NULL DEFAULT now()
+);
+
+CREATE INDEX idx_hub_agreement_items_agreement ON hub_agreement_items(agreement_id);
+CREATE INDEX idx_hub_agreement_items_category ON hub_agreement_items(category);
+
+-- E-signatures on agreements
+CREATE TABLE hub_agreement_signatures (
+  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  agreement_id UUID NOT NULL REFERENCES hub_cohost_agreements(id) ON DELETE CASCADE,
+  signer_profile_id UUID NOT NULL REFERENCES hub_guest_profiles(id),
+  signer_name TEXT NOT NULL,
+  signer_role TEXT NOT NULL,
+    -- 'chef', 'venue', 'farm_partner', 'brand', etc.
+  signed_at TIMESTAMPTZ NOT NULL DEFAULT now(),
+  ip_address TEXT,
+  version INTEGER NOT NULL DEFAULT 1,
+    -- incremented on amendment; re-signature required when version changes
+  UNIQUE(agreement_id, signer_profile_id, version)
+);
+
+CREATE INDEX idx_hub_agreement_signatures_agreement ON hub_agreement_signatures(agreement_id);
+```
+
+### Server Actions (Agreement)
+
+| Action                                             | Auth                         | Input               | Output                                | Side Effects                                                             |
+| -------------------------------------------------- | ---------------------------- | ------------------- | ------------------------------------- | ------------------------------------------------------------------------ |
+| `createAgreement(groupId, eventId?, templateType)` | Circle host                  | template type       | `{ success, agreementId }`            | Creates agreement + default items from template                          |
+| `updateAgreementItem(itemId, assignment, notes?)`  | Circle host                  | item updates        | `{ success }`                         | Revalidates. If agreement was signed, bumps version and voids signatures |
+| `addCustomItem(agreementId, category, title)`      | Circle host                  | item fields         | `{ success, itemId }`                 | Adds with `is_default = false`                                           |
+| `removeCustomItem(itemId)`                         | Item creator or circle owner | item ID             | `{ success }`                         | Only non-default items. Default items can only be set to N/A             |
+| `updateCompensation(agreementId, model, details)`  | Circle host                  | compensation config | `{ success }`                         | Voids existing signatures if changed                                     |
+| `signAgreement(agreementId)`                       | Circle host                  | none (uses session) | `{ success }`                         | Records signature with timestamp and IP                                  |
+| `getAgreement(groupId, eventId?)`                  | Circle member                | IDs                 | `Agreement` with items and signatures | None                                                                     |
+| `getAgreementDocument(agreementId)`                | Circle host                  | ID                  | Formatted PDF/HTML of full agreement  | None                                                                     |
+| `completeAgreementItem(itemId)`                    | Assigned party               | item ID             | `{ success }`                         | Marks done with timestamp                                                |
+| `voidAgreement(agreementId)`                       | Circle owner                 | ID                  | `{ success }`                         | Sets status 'voided', blocks ticket sales                                |
+
+### UI Components (Agreement)
+
+#### Agreement Setup Flow (New)
+
+**File:** `components/hub/cohost-agreement-setup.tsx`
+
+Wizard-style flow triggered when first co-host is added to a circle with an event:
+
+1. **Step 1: Template** - Choose collaboration type (Chef+Farm, Chef+Chef, etc.)
+2. **Step 2: Compensation** - Select model (venue sells / both sell / etc.), set split ratio, payment method, timing
+3. **Step 3: Responsibility Walkthrough** - Category by category, assign each item. Each item shows assignment toggle (Chef / Venue / Shared / N/A) and expandable notes field
+4. **Step 4: Review & Sign** - Full agreement summary. Both parties review and e-sign.
+
+#### Agreement Tab in Circle View
+
+**File:** `components/hub/circle-agreement-tab.tsx`
+
+New tab alongside Chat, Tasks, Menu, Members:
+
+- Shows current agreement status (draft / pending signatures / active)
+- Compensation summary card at top
+- Checklist grouped by category with assignment badges and status
+- Notes expandable per item
+- Progress bar showing completion during event execution
+- "View Agreement Document" button generates formatted PDF/HTML
+
+#### Ticket Gate
+
+When a co-hosted event attempts to publish tickets for sale:
+
+- Check if agreement exists and has status 'active' (all signatures collected)
+- If not: block with message "All co-hosts must sign the collaboration agreement before tickets go live"
+- Link to the agreement setup flow
+
+### Real-World Case Study (Validation Data)
+
+All of the above is validated against the Honey & Stem Farm dinner (Sep 26, 2025):
+
+**Event:** 5-course farm-to-table dinner, Fryeburg ME
+**Co-hosts:** Chef (David) + Farmer (Hannah, Honey and Stem Farm)
+**Tickets:** $155/person, 13 heads, $2,015 gross
+**Split:** 60% farm / 40% chef ($806), paid via Venmo in chunks
+**Pain points this feature solves:**
+
+1. Revenue split discussed informally, never documented
+2. Headcount confusion (11 at table vs 13 eating)
+3. Ingredient list coordination happened over text for weeks
+4. Equipment inventory tracked in nobody's head
+5. Last-minute allergy notification (morning of event)
+6. Partner double-booked, no staffing visibility
+7. No post-event documentation of what was agreed
+
+The relationship continued: pork sourcing Oct 2025, planning 2 dinners for summer/fall 2026, with higher pricing and expanded ingredients (goat milk, cheese, ice cream). The agreement template would carry forward across events.
 
 ---
 

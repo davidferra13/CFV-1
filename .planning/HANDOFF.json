@@ -1,238 +1,68 @@
 {
   "version": "1.0",
-  "timestamp": "2026-05-26T15:31:47.841Z",
-  "source": "auto-postool",
+  "timestamp": "2026-05-26T17:45:00.000Z",
+  "source": "manual-handoff",
   "partial": false,
   "phase": null,
-  "phase_name": null,
+  "phase_name": "cohosting-agreement-engine",
   "phase_dir": null,
   "plan": null,
   "task": null,
   "total_tasks": null,
-  "status": "auto-checkpoint",
-  "completed_tasks": [],
-  "remaining_tasks": [],
+  "status": "handoff-to-new-session",
+  "completed_tasks": [
+    "Read 52 screenshots from C:\\Users\\david\\Pictures\\Hannah (full text conversation Sep 2025 - May 2026)",
+    "Extracted complete case study: chef+farmer cohosting dinner at Honey & Stem Farm, Fryeburg ME",
+    "Saved case study to memory: project_cohosting_circle_case_study.md",
+    "Saved agreement engine spec to memory: project_cohosting_agreement_engine.md",
+    "Updated MEMORY.md index with both new entries",
+    "Added full Cohosting Agreement Engine section to docs/specs/dinner-circle-multi-host-collaboration.md",
+    "Removed 'financial splits' and 'contract/legal agreements' from out-of-scope list",
+    "Added: 3 new DB tables (hub_cohost_agreements, hub_agreement_items, hub_agreement_signatures)",
+    "Added: 10 server actions for agreement CRUD, signing, and document generation",
+    "Added: 3 new UI components (agreement setup wizard, agreement tab, ticket gate)",
+    "Added: 10 responsibility checklist categories with default items",
+    "Added: 4 compensation models, 5 default templates",
+    "Added: real-world validation data from Honey & Stem case study"
+  ],
+  "remaining_tasks": [
+    "Continue discussion about cohosting agreement details (user has more to say)",
+    "Possibly refine checklist categories and default items further",
+    "Discuss e-signature implementation approach",
+    "Consider how agreement interacts with existing event lifecycle hooks",
+    "Consider how agreement PDF/document generation works",
+    "Wire agreement tab into existing circle view tabs structure",
+    "Consider notification flow when agreement items are completed during event"
+  ],
   "blockers": [],
   "human_actions_pending": [],
-  "decisions": [],
+  "decisions": [
+    "Cohosting Agreement is now IN SCOPE for dinner-circle-multi-host-collaboration spec",
+    "Agreement is MANDATORY when money is involved (tickets or compensation), optional otherwise",
+    "Agreement lives at Circle level, inherited by events, customizable per event",
+    "4 compensation models: venue sells all, both sell, chef sells all, fixed fee",
+    "5 default templates: chef+farm, chef+private host, chef+chef, chef+restaurant, chef+planner",
+    "Every checklist item has: assignment (Chef/Venue/Shared/NA), notes field, status tracking",
+    "E-signatures required before tickets can go live"
+  ],
   "uncommitted_files": [
     {
       "status": "M",
-      "path": ".claude-session-scope"
+      "path": "docs/specs/dinner-circle-multi-host-collaboration.md"
+    },
+    {
+      "status": "A",
+      "path": "memory/project_cohosting_circle_case_study.md"
+    },
+    {
+      "status": "A",
+      "path": "memory/project_cohosting_agreement_engine.md"
     },
     {
       "status": "M",
-      "path": ".planning/HANDOFF.json"
-    },
-    {
-      "status": "M",
-      "path": "app/api/pie/v1/cron/route.ts"
-    },
-    {
-      "status": "M",
-      "path": "docs/build-state.md"
-    },
-    {
-      "status": "M",
-      "path": "docs/exit-evals/RUNNER.md"
-    },
-    {
-      "status": "M",
-      "path": "docs/sync-status.json"
-    },
-    {
-      "status": "M",
-      "path": "lib/exit-links/registry.ts"
-    },
-    {
-      "status": "M",
-      "path": "lib/pricing/hermes-queue.ts"
-    },
-    {
-      "status": "M",
-      "path": "lib/pricing/product-relevance.ts"
-    },
-    {
-      "status": "M",
-      "path": "lib/pricing/universal-price-lookup.ts"
-    },
-    {
-      "status": "M",
-      "path": "scripts/wiring-audit-results.json"
-    },
-    {
-      "status": "??",
-      "path": ".claude/skills/exit-eval/"
-    },
-    {
-      "status": "??",
-      "path": ".planning/exit-links-handoff.md"
-    },
-    {
-      "status": "??",
-      "path": ".planning/hermes-investigation-handoff.md"
-    },
-    {
-      "status": "??",
-      "path": "_write-refs.mjs"
-    },
-    {
-      "status": "??",
-      "path": "components/events/quick-create-from-template.tsx"
-    },
-    {
-      "status": "??",
-      "path": "components/events/save-as-template-button.tsx"
-    },
-    {
-      "status": "??",
-      "path": "database/migrations/20260526000006_hermes_queue_hardening.sql"
-    },
-    {
-      "status": "??",
-      "path": "database/migrations/20260526000007_bridge_guest_leads_to_event_guests.sql"
-    },
-    {
-      "status": "??",
-      "path": "database/migrations/20260526000008_event_templates.sql"
-    },
-    {
-      "status": "??",
-      "path": "database/migrations/20260526000011_event_food_cost_reconciliation.sql"
-    },
-    {
-      "status": "??",
-      "path": "docs/.exit-eval-batches.json"
-    },
-    {
-      "status": "??",
-      "path": "docs/audits/product-quality-scorecard-2026-05-25.md"
-    },
-    {
-      "status": "??",
-      "path": "docs/audits/shakedown-pass1-results-2026-05-25.md"
-    },
-    {
-      "status": "??",
-      "path": "docs/audits/shakedown-pass5-lifecycle-2026-05-25.md"
-    },
-    {
-      "status": "??",
-      "path": "docs/exit-eval-codex-manifest.md"
-    },
-    {
-      "status": "??",
-      "path": "docs/exit-system-roadmap.md"
-    },
-    {
-      "status": "??",
-      "path": "docs/research/admin-exit-points-analysis.md"
-    },
-    {
-      "status": "??",
-      "path": "docs/research/admin-never-leaves-analysis.md"
-    },
-    {
-      "status": "??",
-      "path": "docs/research/chef-never-leaves-analysis.md"
-    },
-    {
-      "status": "??",
-      "path": "docs/research/chef-never-leaves-verification.md"
-    },
-    {
-      "status": "??",
-      "path": "docs/research/client-exit-points-analysis.md"
-    },
-    {
-      "status": "??",
-      "path": "docs/research/client-never-leaves-analysis.md"
-    },
-    {
-      "status": "??",
-      "path": "docs/research/exit-point-closure-index.md"
-    },
-    {
-      "status": "??",
-      "path": "docs/research/guest-exit-points-analysis.md"
-    },
-    {
-      "status": "??",
-      "path": "docs/research/guest-never-leaves-analysis.md"
-    },
-    {
-      "status": "??",
-      "path": "docs/research/partner-exit-points-analysis.md"
-    },
-    {
-      "status": "??",
-      "path": "docs/research/partner-never-leaves-analysis.md"
-    },
-    {
-      "status": "??",
-      "path": "docs/research/staff-exit-points-analysis.md"
-    },
-    {
-      "status": "??",
-      "path": "docs/research/staff-never-leaves-analysis.md"
-    },
-    {
-      "status": "??",
-      "path": "docs/research/vendor-exit-points-analysis.md"
-    },
-    {
-      "status": "??",
-      "path": "docs/research/vendor-never-leaves-analysis.md"
-    },
-    {
-      "status": "??",
-      "path": "docs/specs/exit-scenario-stress-test-prompt.md"
-    },
-    {
-      "status": "??",
-      "path": "docs/specs/exit-stay-evaluation-matrix.md"
-    },
-    {
-      "status": "??",
-      "path": "docs/specs/tables-social-hub-plan.md"
-    },
-    {
-      "status": "??",
-      "path": "docs/specs/tables-social-hub.md"
-    },
-    {
-      "status": "??",
-      "path": "docs/superpowers/plans/2026-05-25-native-widgets-phase1-2.md"
-    },
-    {
-      "status": "??",
-      "path": "docs/superpowers/specs/2026-05-25-native-widgets-design.md"
-    },
-    {
-      "status": "??",
-      "path": "lib/costing/event-cost-reconciliation.ts"
-    },
-    {
-      "status": "??",
-      "path": "lib/events/template-actions.ts"
-    },
-    {
-      "status": "??",
-      "path": "lib/pricing/hermes-dead-man-switch.ts"
-    },
-    {
-      "status": "??",
-      "path": "lib/pricing/hermes-queue-sweep.ts"
-    },
-    {
-      "status": "??",
-      "path": "scripts/_shakedown-pass0.mjs"
-    },
-    {
-      "status": "??",
-      "path": "scripts/generate-exit-eval-prompts.cjs"
+      "path": "memory/MEMORY.md"
     }
   ],
-  "next_action": null,
-  "context_notes": "Recent commits:\nc10951942 feat(gmail): sync health indicators, disconnect notifications\nbbc995b71 feat(guest-leads): kiosk mode, batch outreach email, event-grouped view\nda173ce18 fix(tables): revalidate /tables on social notification read\nfbb3b4d8d feat(tables): replace community rail link with Tables button, remove network nav group\nddd54fdd6 feat(tables): add Tables hub page with unified feed, stats, and sidebar"
+  "next_action": "Continue cohosting agreement discussion. User was mid-thought about responsibility checklists, compensation mapping, and e-signatures. Read the two memory files and the updated spec section to resume context. User may want to refine categories, add more default items, discuss the UI flow, or talk about how this integrates with the broader Dinner Circles product.",
+  "context_notes": "SESSION SUMMARY: User shared 52 text message screenshots documenting a real chef-farmer cohosted dinner (Sep 2025). This became the definitive case study for the Dinner Circles cohosting model. Key data: $155/ticket, 13 heads, 60/40 split, 5-course menu with farm-sourced Mangalitsa pork, 12 specific pain points identified. User then described the 'elephant in the room': compensation and responsibility mapping that never got formally discussed. From industry conversations with other chefs, identified 4 compensation models and the need for a structured responsibility checklist with e-signatures. All added to the multi-host collaboration spec. FILES TO READ ON RESUME: (1) memory/project_cohosting_circle_case_study.md (2) memory/project_cohosting_agreement_engine.md (3) docs/specs/dinner-circle-multi-host-collaboration.md (the Cohosting Agreement Engine section near the bottom)"
 }
