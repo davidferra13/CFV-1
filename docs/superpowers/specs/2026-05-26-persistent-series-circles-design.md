@@ -317,6 +317,9 @@ type SeriesConfig = {
   // ── Default event expectations ────────────────
   defaultExpectations: SeriesEventExpectations // Template for new events (Module 7)
 
+  // ── Property access ──────────────────────────
+  propertyAccess: PropertyAccessProfile | null // Prep scheduling, access instructions (Host Workspace)
+
   // ── Live data widgets ─────────────────────────
   liveWidgets: {
     showCountdown: boolean
@@ -367,7 +370,7 @@ type SeriesModuleKey =
   | 'links'
 ```
 
-The `SeriesConfig` JSONB is the master control surface. All module types referenced above (`SeriesHostProfile`, `SeriesFarmProfile`, `FarmInventoryItem`, `SeriesVenueProfile`, `SeriesMenuConfig`, `SeriesEventExpectations`) are defined in their respective Module sections in the Series Page Anatomy.
+The `SeriesConfig` JSONB is the master control surface. All module types referenced above (`SeriesHostProfile`, `SeriesFarmProfile`, `FarmInventoryItem`, `SeriesVenueProfile`, `SeriesMenuConfig`, `SeriesEventExpectations`, `PropertyAccessProfile`) are defined in their respective sections (Modules and Host Collaboration Layer).
 
 ### Early Access Flow
 
@@ -1952,15 +1955,18 @@ CREATE TABLE series_expenses (
 -- 12. Event parent link
 ALTER TABLE events ADD COLUMN series_circle_id UUID REFERENCES hub_groups(id);
 
--- 7. Early access timing
+-- 13. Early access timing
 ALTER TABLE event_share_settings ADD COLUMN public_sale_opens_at TIMESTAMPTZ;
 
--- 8. Member notification prefs
+-- 14. Early access ticket type flag
+ALTER TABLE event_ticket_types ADD COLUMN early_access_only BOOLEAN NOT NULL DEFAULT false;
+
+-- 15. Member notification prefs
 ALTER TABLE hub_group_members
   ADD COLUMN series_notify_events BOOLEAN NOT NULL DEFAULT true,
   ADD COLUMN series_notify_posts BOOLEAN NOT NULL DEFAULT true;
 
--- 9. Vanity slug (unique, for /s/{slug} URLs)
+-- 16. Vanity slug (unique, for /s/{slug} URLs)
 ALTER TABLE hub_groups ADD COLUMN series_slug TEXT;
 CREATE UNIQUE INDEX idx_hub_groups_series_slug
   ON hub_groups(series_slug) WHERE series_slug IS NOT NULL;
