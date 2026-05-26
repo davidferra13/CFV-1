@@ -26,6 +26,7 @@ function resolveCircleType(
   eventId: string | null,
   visibility: string | null
 ): CircleType {
+  if (groupType === 'series') return 'series'
   if (groupType === 'bridge') return 'collab'
   if (groupType === 'community') return 'community'
   if (eventId) return 'event'
@@ -38,6 +39,8 @@ function resolveCircleType(
  */
 function circleTypeToGroupType(circleType: CircleType): string {
   switch (circleType) {
+    case 'series':
+      return 'series'
     case 'collab':
       return 'bridge'
     case 'community':

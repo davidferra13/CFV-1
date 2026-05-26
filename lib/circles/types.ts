@@ -11,6 +11,7 @@ export type CircleType =
   | 'vendor' // Chef-vendor sourcing
   | 'collab' // Multi-chef collaboration
   | 'community' // Public/semi-public community
+  | 'series' // Persistent multi-host series
 
 export type CircleMemberRole =
   | 'owner'
