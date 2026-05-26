@@ -17,7 +17,7 @@ export type TablesPost = {
 
 export function normalizeHubFeedItem(item: SocialFeedItem): TablesPost {
   return {
-    id: item.id,
+    id: `hub-${item.id}`,
     source: 'circle',
     author: {
       name: item.author_name,
@@ -28,7 +28,7 @@ export function normalizeHubFeedItem(item: SocialFeedItem): TablesPost {
     reactions: null,
     timestamp: item.created_at,
     sourceLabel: item.group_emoji ? `${item.group_emoji} ${item.group_name}` : item.group_name,
-    sourceHref: `/hub/circles/${item.group_token}`,
+    sourceHref: `/hub/g/${item.group_token}`,
   }
 }
 
@@ -36,7 +36,7 @@ export function normalizeChefSocialPost(post: SocialPost): TablesPost {
   const authorName = post.author.display_name || post.author.business_name || 'Unknown Chef'
 
   return {
-    id: post.id,
+    id: `social-${post.id}`,
     source: 'network',
     author: {
       name: authorName,
@@ -47,7 +47,7 @@ export function normalizeChefSocialPost(post: SocialPost): TablesPost {
     reactions: post.reactions_count > 0 ? [{ emoji: '❤️', count: post.reactions_count }] : null,
     timestamp: post.created_at,
     sourceLabel: 'Chef Network',
-    sourceHref: '/social',
+    sourceHref: '/network',
   }
 }
 

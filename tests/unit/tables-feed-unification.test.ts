@@ -11,7 +11,7 @@ import {
 // ---- fixtures ----
 
 const hubItem: SocialFeedItem = {
-  id: 'hub-1',
+  id: 'msg-1',
   group_id: 'g-1',
   group_name: 'Friday Night Crew',
   group_emoji: '🍕',
@@ -34,7 +34,7 @@ const socialAuthor: SocialPostAuthor = {
 }
 
 const socialPost: SocialPost = {
-  id: 'social-1',
+  id: 'post-1',
   chef_id: 'chef-42',
   content: 'New summer menu just dropped',
   media_urls: ['https://img.test/menu.jpg'],
@@ -60,11 +60,11 @@ const socialPost: SocialPost = {
 // ---- normalizeHubFeedItem ----
 
 describe('normalizeHubFeedItem', () => {
-  it('converts a SocialFeedItem to TablesPost', () => {
+  it('converts a SocialFeedItem to TablesPost with hub- prefix', () => {
     const result = normalizeHubFeedItem(hubItem)
 
     expect(result).toEqual<TablesPost>({
-      id: 'hub-1',
+      id: 'hub-msg-1',
       source: 'circle',
       author: { name: 'Alice', avatarUrl: 'https://img.test/alice.jpg' },
       body: 'Who is bringing dessert?',
@@ -72,7 +72,7 @@ describe('normalizeHubFeedItem', () => {
       reactions: null,
       timestamp: '2026-05-20T18:00:00Z',
       sourceLabel: '🍕 Friday Night Crew',
-      sourceHref: '/hub/circles/friday-night-crew',
+      sourceHref: '/hub/g/friday-night-crew',
     })
   })
 
@@ -98,11 +98,11 @@ describe('normalizeHubFeedItem', () => {
 // ---- normalizeChefSocialPost ----
 
 describe('normalizeChefSocialPost', () => {
-  it('converts a SocialPost to TablesPost', () => {
+  it('converts a SocialPost to TablesPost with social- prefix', () => {
     const result = normalizeChefSocialPost(socialPost)
 
     expect(result).toEqual<TablesPost>({
-      id: 'social-1',
+      id: 'social-post-1',
       source: 'network',
       author: { name: 'Chef Marco', avatarUrl: 'https://img.test/marco.jpg' },
       body: 'New summer menu just dropped',
@@ -110,7 +110,7 @@ describe('normalizeChefSocialPost', () => {
       reactions: [{ emoji: '❤️', count: 12 }],
       timestamp: '2026-05-21T10:00:00Z',
       sourceLabel: 'Chef Network',
-      sourceHref: '/social',
+      sourceHref: '/network',
     })
   })
 
@@ -157,8 +157,8 @@ describe('unifyFeeds', () => {
     const result = unifyFeeds([hub], [social])
 
     expect(result).toHaveLength(2)
-    expect(result[0].id).toBe('social-1')
-    expect(result[1].id).toBe('hub-1')
+    expect(result[0].id).toBe('social-post-1')
+    expect(result[1].id).toBe('hub-msg-1')
   })
 
   it('deduplicates by id, keeping the first occurrence', () => {
