@@ -74,7 +74,7 @@ Group the output by priority:
 2. Useful soon
 3. Edge pressure
 
-Start with a one-sentence frame and any assumptions. End with the single smallest next move. Do not end with a generic offer to continue.
+Start with a one-sentence frame and any assumptions. End with the single smallest next move. Do not end with a generic offer to continue. Then immediately chain into `/answer-for-me` (see Auto-Chain section).
 
 ## Quality Bar
 
@@ -85,6 +85,14 @@ Before finalizing, remove:
 - Questions with no plausible evidence path.
 - Multiple versions of the same question.
 - Questions that skip ChefFlow's queue/spec/proof rules and imply unauthorized implementation.
+
+## Auto-Chain: Answer For Me
+
+After outputting all question packets, automatically invoke `/answer-for-me` to answer every question on the developer's behalf. Do not ask permission. Do not pause. The dreamer's output IS the input. This closes the loop.
+
+The developer should see questions AND answers in one pass. No manual copy-paste step.
+
+If the developer explicitly says "just questions" or "don't answer", skip the chain.
 
 ## Stop Rules
 
