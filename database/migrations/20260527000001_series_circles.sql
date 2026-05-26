@@ -18,7 +18,7 @@ CREATE TABLE IF NOT EXISTS series_hosts (
   series_id UUID NOT NULL REFERENCES hub_groups(id) ON DELETE CASCADE,
 
   -- Identity: ChefFlow user OR external collaborator
-  user_id UUID REFERENCES users(id),
+  user_id UUID REFERENCES auth.users(id),
   tenant_id UUID REFERENCES chefs(id),
 
   -- External host identity (when not a ChefFlow user)
