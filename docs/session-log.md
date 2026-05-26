@@ -14,6 +14,16 @@
   - Used postgres.js (project's DB driver) via temp script since drizzle-kit push hung (interactive) and psql not available on Windows
   - Cohosting Agreement Engine fully complete: types, templates, utils, 12 server actions, lifecycle hooks, completion gate, 7 UI components, tab wiring, DB tables live
 
+## 2026-05-27 ~03:00 EDT
+
+- Agent: Claude Opus 4.6 (main + Sonnet agent)
+- Task: Series Circles Phase 3, UI Routes and Components
+- Status: completed
+- Files touched: app/(chef)/series/page.tsx (new), app/(chef)/series/loading.tsx (new), app/(chef)/series/[id]/page.tsx (new), app/(chef)/series/[id]/loading.tsx (new), components/series/series-list-view.tsx (new), components/series/series-detail-shell.tsx (new)
+- Commits: 428b28848
+- Build state on departure: green
+- Notes: List page, detail page (3-tab shell: Feed/Hosts/Settings), loading skeletons. /series/create route not yet built (linked from list view). Next: Phase 4 (create form + event drop flow).
+
 ## 2026-05-27 ~02:00 EDT
 
 - Agent: Claude Opus 4.6 (main session)
