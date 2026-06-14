@@ -1,8 +1,6 @@
 # Build State
 
-**Status:** green
-**Last verified:** 2026-05-27 01:00 EST
-**Commit:** `428b28848`
-**Check:** `tsc --noEmit --skipLibCheck` passed (0 series errors; 1 pre-existing error in untracked `agreement-channel.tsx`)
-
-- If you break the build and can't fix it, update this to `broken` with details.
+**Status:** healthy
+**Last verified:** 2026-06-13 EST
+**Commit:** `79750fc63`
+**Check:** `tsc --noEmit --skipLibCheck` PASS (requires `--max-old-space-size=8192`)
