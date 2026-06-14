@@ -14,11 +14,7 @@
 
 import { unstable_cache } from 'next/cache'
 import { createAdminClient } from '@/lib/db/admin'
-import {
-  hasAdminAccess,
-  hasPersistedAdminAccessForAuthUser,
-  hasPrivilegedAccess,
-} from '@/lib/auth/admin-access'
+import { hasAdminAccess, hasPrivilegedAccess } from '@/lib/auth/admin-access'
 import { ARCHETYPE_IDS } from '@/lib/archetypes/presets'
 import type { ArchetypeId } from '@/lib/archetypes/presets'
 
@@ -55,7 +51,7 @@ export function getCachedCannabisAccess(authUserId: string): Promise<boolean> {
   return unstable_cache(
     async (): Promise<boolean> => {
       const db: any = createAdminClient()
-      if (await hasPersistedAdminAccessForAuthUser(authUserId)) return true
+      if (await hasAdminAccess(authUserId)) return true
 
       const { data, error } = await db
         .from('cannabis_tier_users')
@@ -66,7 +62,7 @@ export function getCachedCannabisAccess(authUserId: string): Promise<boolean> {
       if (error || !data) return false
       return data.status === 'active'
     },
-    [`cannabis-access-${authUserId}`],
+    [`cannabis-access-admin-tier-v2-${authUserId}`],
     { revalidate: 60, tags: [`cannabis-access-${authUserId}`] }
   )()
 }

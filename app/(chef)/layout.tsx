@@ -16,7 +16,7 @@ import { ChefMainContent } from '@/components/navigation/chef-main-content'
 import { ToastProvider } from '@/components/notifications/toast-provider'
 import { ChefProviders } from '@/components/providers/chef-providers'
 import { getChefLayoutData } from '@/lib/chef/layout-cache'
-import { getCachedChefPreferences } from '@/lib/chef/layout-data-cache'
+import { getCachedCannabisAccess, getCachedChefPreferences } from '@/lib/chef/layout-data-cache'
 import { KeyboardShortcutsWrapper } from '@/components/navigation/keyboard-shortcuts-wrapper'
 import { getCachedAnnouncement } from '@/lib/chef/layout-data-cache'
 import { PlatformAnnouncementBanner } from '@/components/admin/platform-announcement-banner'
@@ -175,6 +175,7 @@ export default async function ChefLayout({ children }: { children: React.ReactNo
     pinnedSurfaces,
     usageRanking,
     railGroupPriorities,
+    chefCannabisAccess,
     session,
   ] = await Promise.all([
     // Cached for 60s - slug and nav prefs change rarely, keyed per chef
@@ -194,6 +195,7 @@ export default async function ChefLayout({ children }: { children: React.ReactNo
     getPinnedSurfaces().catch(() => []),
     getCachedUsageRanking(user.entityId).catch(() => ({}) as Record<string, number>),
     getRailGroupPriorities().catch(() => [] as RailGroupPriority[]),
+    getCachedCannabisAccess(user.id).catch(() => false),
     // Auth session (was sequential after Promise.all, now parallel)
     auth(),
   ])
@@ -286,6 +288,7 @@ export default async function ChefLayout({ children }: { children: React.ReactNo
               pinnedSurfaces={pinnedSurfaces}
               usageRanking={usageRanking}
               railGroupPriorities={railGroupPriorities}
+              cannabisAccess={chefCannabisAccess}
             />
           ) : null}
           {/* Mobile nav (top bar + bottom tabs) */}

@@ -9,6 +9,9 @@ const standaloneTop = (navConfig.standaloneTop ?? navConfig.default?.standaloneT
 const actionBarItems = (navConfig.actionBarItems ??
   navConfig.default?.actionBarItems ??
   []) as any[]
+const createDropdownItems = (navConfig.createDropdownItems ??
+  navConfig.default?.createDropdownItems ??
+  []) as any[]
 const standaloneBottom = (navConfig.standaloneBottom ??
   navConfig.default?.standaloneBottom ??
   []) as any[]
@@ -56,6 +59,15 @@ function collectNavEntries(): NavEntry[] {
       normalizedHref: normalizeHref(item.href),
       visibility: 'primary',
       source: `actionBar:${item.label}`,
+    })
+  }
+
+  for (const item of createDropdownItems.filter(isVisibleNavItem)) {
+    entries.push({
+      href: item.href,
+      normalizedHref: normalizeHref(item.href),
+      visibility: 'secondary',
+      source: `createDropdown:${item.label}`,
     })
   }
 
@@ -224,11 +236,27 @@ function main() {
   }
 
   const navRoutes = new Set(navEntries.map((entry) => entry.normalizedHref))
+  const consolidatedRouteCoverage = [
+    {
+      hub: '/tables',
+      prefixes: ['/charity', '/community', '/explore', '/network', '/social'],
+    },
+    {
+      hub: '/circles',
+      prefixes: ['/series'],
+    },
+  ]
   const isCoveredByNav = (route: string) => {
     if (navRoutes.has(route)) return true
     const segments = route.split('/').filter(Boolean)
     for (let i = segments.length - 1; i > 0; i--) {
       if (navRoutes.has(`/${segments.slice(0, i).join('/')}`)) return true
+    }
+    for (const coverage of consolidatedRouteCoverage) {
+      if (!navRoutes.has(coverage.hub)) continue
+      if (coverage.prefixes.some((prefix) => route === prefix || route.startsWith(`${prefix}/`))) {
+        return true
+      }
     }
     return false
   }

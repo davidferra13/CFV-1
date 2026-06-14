@@ -60,6 +60,7 @@ import {
   Leaf,
   Bot,
   Armchair,
+  Flower,
   Search,
   Plus,
   Lock,
@@ -686,6 +687,17 @@ function sortStarterGroupsFirst(groups: NavGroup[]): NavGroup[] {
 
 // ---- Desktop Sidebar ----
 const SHOW_ALL_NAV_STORAGE_KEY = 'cf:show-all-nav-groups'
+const CANNABIS_PORTAL_HREF = '/events/cannabis'
+const PROMOTED_BOTTOM_HREFS = new Set(['/tables', CANNABIS_PORTAL_HREF])
+
+function isCannabisPortalActive(pathname: string): boolean {
+  return (
+    pathname.startsWith('/events/cannabis') ||
+    pathname.startsWith('/cannabis') ||
+    pathname.startsWith('/chef/cannabis') ||
+    /^\/events\/[^/]+\/cannabis(?:\/|$)/.test(pathname)
+  )
+}
 
 export function ChefSidebar({
   primaryNavHrefs,
@@ -703,6 +715,7 @@ export function ChefSidebar({
   pinnedSurfaces,
   usageRanking,
   railGroupPriorities,
+  cannabisAccess,
 }: {
   primaryNavHrefs?: string[]
   enabledModules?: string[]
@@ -719,6 +732,7 @@ export function ChefSidebar({
   pinnedSurfaces?: PinnedSurface[]
   usageRanking?: Record<string, number>
   railGroupPriorities?: { groupId: string; score: number }[]
+  cannabisAccess?: boolean
 }) {
   const pathname = usePathname() ?? ''
   const searchParams = useSearchParams()
@@ -875,6 +889,7 @@ export function ChefSidebar({
     [isAdmin]
   )
   const tablesRailActive = pathname.startsWith('/tables')
+  const cannabisRailActive = isCannabisPortalActive(pathname)
   const showTablesRailLink =
     isAdmin ||
     isPrivileged ||
@@ -883,6 +898,7 @@ export function ChefSidebar({
     !tenantPresence ||
     tenantPresence.hasNetwork ||
     tenantPresence.hasCircles
+  const showCannabisRailLink = Boolean(cannabisAccess || isAdmin)
   // Auto-expand group containing active route
   useEffect(() => {
     for (const { group } of groupEntries) {
@@ -1046,29 +1062,6 @@ export function ChefSidebar({
 
             <div className="w-6 border-t border-stone-800 my-1.5" />
 
-            {showTablesRailLink && (
-              <div className="flex flex-col items-center mb-3">
-                <Link
-                  href="/tables"
-                  title="Tables"
-                  aria-label="Tables"
-                  className={`relative flex items-center justify-center w-11 h-11 rounded-xl transition-all duration-200 ${
-                    tablesRailActive
-                      ? 'shadow-[0_0_24px_rgba(237,168,107,0.35)]'
-                      : 'hover:scale-105 hover:shadow-[0_0_16px_rgba(237,168,107,0.2)]'
-                  }`}
-                  style={{
-                    background: 'linear-gradient(135deg, #B15C26, #EDA86B)',
-                  }}
-                >
-                  <Armchair className="w-[18px] h-[18px] text-white" />
-                </Link>
-                <span className="text-[9px] font-semibold uppercase tracking-[0.5px] text-brand-400 mt-1">
-                  Tables
-                </span>
-              </div>
-            )}
-
             <div className="w-6 border-t border-stone-800 my-1.5" />
 
             {/* All Features */}
@@ -1087,7 +1080,7 @@ export function ChefSidebar({
 
             {/* Settings (filter /features - rendered separately above) */}
             {visibleBottomItems
-              .filter((item) => item.href !== '/features')
+              .filter((item) => item.href !== '/features' && !PROMOTED_BOTTOM_HREFS.has(item.href))
               .map((item) => {
                 const Icon = item.icon
                 const active = isItemActive(pathname, item.href, searchParams)
@@ -1174,10 +1167,14 @@ export function ChefSidebar({
             <RecentPagesSection />
 
             {/* Bottom standalone links */}
-            {visibleBottomItems.length > 0 && (
+            {visibleBottomItems.filter(
+              (item) => item.href !== '/settings' && !PROMOTED_BOTTOM_HREFS.has(item.href)
+            ).length > 0 && (
               <div className="mt-2 pt-2 border-t border-stone-800/40 space-y-0.5">
                 {visibleBottomItems
-                  .filter((item) => item.href !== '/settings')
+                  .filter(
+                    (item) => item.href !== '/settings' && !PROMOTED_BOTTOM_HREFS.has(item.href)
+                  )
                   .map((item) => {
                     const Icon = item.icon
                     const active = isItemActive(pathname, item.href, searchParams)
@@ -1202,6 +1199,96 @@ export function ChefSidebar({
           </div>
         )}
       </nav>
+
+      {showTablesRailLink && (
+        <div
+          className={`border-t border-stone-800/50 ${
+            effectiveCollapsed ? 'flex justify-center px-2 py-2' : 'px-3 py-2'
+          }`}
+        >
+          <Link
+            href="/tables"
+            title={effectiveCollapsed ? 'Tables' : undefined}
+            aria-label="Tables"
+            className={
+              effectiveCollapsed
+                ? `relative flex h-11 w-11 items-center justify-center rounded-xl transition-all duration-200 ${
+                    tablesRailActive
+                      ? 'shadow-[0_0_24px_rgba(237,168,107,0.35)]'
+                      : 'hover:scale-105 hover:shadow-[0_0_16px_rgba(237,168,107,0.2)]'
+                  }`
+                : `group flex items-center gap-3 rounded-xl px-3 py-2.5 text-sm font-semibold transition-all ${
+                    tablesRailActive
+                      ? 'text-white shadow-[0_0_24px_rgba(237,168,107,0.25)]'
+                      : 'text-white hover:shadow-[0_0_18px_rgba(237,168,107,0.18)]'
+                  }`
+            }
+            style={{
+              background: 'linear-gradient(135deg, #B15C26, #EDA86B)',
+            }}
+          >
+            <span className="flex h-8 w-8 flex-shrink-0 items-center justify-center rounded-lg bg-white/15">
+              <Armchair className="h-[18px] w-[18px] text-white" />
+            </span>
+            {tablesRailActive && effectiveCollapsed && (
+              <span className="absolute -right-1 top-1/2 h-6 w-1 -translate-y-1/2 rounded-full bg-white/85" />
+            )}
+            {!effectiveCollapsed && (
+              <span className="min-w-0 flex-1">
+                <span className="block leading-5">Tables</span>
+                <span className="block truncate text-[11px] font-medium text-white/75">
+                  Social hub
+                </span>
+              </span>
+            )}
+          </Link>
+        </div>
+      )}
+
+      {showCannabisRailLink && (
+        <div
+          className={`border-t border-stone-800/50 ${
+            effectiveCollapsed ? 'flex justify-center px-2 py-2' : 'px-3 py-2'
+          }`}
+        >
+          <Link
+            href={CANNABIS_PORTAL_HREF}
+            title={effectiveCollapsed ? 'Cannabis Portal' : undefined}
+            aria-label="Cannabis Portal"
+            className={
+              effectiveCollapsed
+                ? `relative flex h-11 w-11 items-center justify-center rounded-xl transition-all duration-200 ${
+                    cannabisRailActive
+                      ? 'shadow-[0_0_24px_rgba(74,124,78,0.38)]'
+                      : 'hover:scale-105 hover:shadow-[0_0_16px_rgba(74,124,78,0.22)]'
+                  }`
+                : `group flex items-center gap-3 rounded-xl px-3 py-2.5 text-sm font-semibold transition-all ${
+                    cannabisRailActive
+                      ? 'text-white shadow-[0_0_24px_rgba(74,124,78,0.28)]'
+                      : 'text-white hover:shadow-[0_0_18px_rgba(74,124,78,0.2)]'
+                  }`
+            }
+            style={{
+              background: 'linear-gradient(135deg, #1F4D2B, #4A7C4E)',
+            }}
+          >
+            <span className="flex h-8 w-8 flex-shrink-0 items-center justify-center rounded-lg bg-white/15">
+              <Flower className="h-[18px] w-[18px] text-white" />
+            </span>
+            {cannabisRailActive && effectiveCollapsed && (
+              <span className="absolute -right-1 top-1/2 h-6 w-1 -translate-y-1/2 rounded-full bg-white/85" />
+            )}
+            {!effectiveCollapsed && (
+              <span className="min-w-0 flex-1">
+                <span className="block leading-5">Cannabis Portal</span>
+                <span className="block truncate text-[11px] font-medium text-white/75">
+                  Dining tier
+                </span>
+              </span>
+            )}
+          </Link>
+        </div>
+      )}
 
       {/* Account chip — identity + settings entry (replaces standalone Settings link) */}
       {(() => {

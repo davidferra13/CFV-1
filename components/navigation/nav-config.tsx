@@ -8,6 +8,7 @@ import type { LucideIcon } from '@/components/ui/icons'
 import {
   Activity,
   AlertTriangle,
+  Armchair,
   BarChart3,
   Bell,
   BellRing,
@@ -181,7 +182,7 @@ export const standaloneTop: NavItem[] = [
   },
 ]
 
-// ─── NAV GROUPS ─────────────────────────────────────────────────
+// â”€â”€â”€ NAV GROUPS â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 // Groups are sorted alphabetically at runtime (see sort block after array).
 // Items and children within each group are also sorted A-Z at runtime.
 // Admin nav group moved to components/navigation/admin-nav-config.ts (admin-owned).
@@ -401,6 +402,7 @@ export const navGroups: NavGroup[] = [
     label: 'Commerce',
     icon: Store,
     module: 'commerce',
+    hidden: true,
     items: [
       {
         href: '/commerce/parity',
@@ -1513,6 +1515,8 @@ for (const group of navGroups) {
 }
 
 export const standaloneBottom: NavItem[] = [
+  { href: '/tables', label: 'Tables', icon: Armchair },
+  { href: '/events/cannabis', label: 'Cannabis Portal', icon: Flower },
   { href: '/features', label: 'Show all features', icon: Compass },
   { href: '/eat', label: 'Explore ChefFlow', icon: Compass },
   { href: '/settings/public-profile', label: 'My Public Profile', icon: Globe },
@@ -1534,10 +1538,12 @@ export const MOBILE_TAB_OPTIONS: NavItem[] = [
   { href: '/daily', label: 'Daily Ops', icon: ListChecks },
   { href: '/inbox', label: 'Inbox', icon: Inbox },
   { href: '/events', label: 'Events', icon: CalendarDays },
+  { href: '/tables', label: 'Tables', icon: Armchair },
   { href: '/clients', label: 'Clients', icon: Users },
   { href: '/culinary', label: 'Culinary', icon: ChefHat },
   { href: '/calendar', label: 'Calendar', icon: CalendarDays },
   { href: '/inquiries', label: 'Pipeline', icon: ChatTeardropText },
+  { href: '/circles', label: 'Circles', icon: MessagesSquare },
   { href: '/menus', label: 'Menus', icon: UtensilsCrossed },
   { href: '/recipes', label: 'Recipes', icon: BookOpen },
   { href: '/finance', label: 'Finance', icon: DollarSign },
@@ -1935,10 +1941,11 @@ export const actionBarItems: NavItem[] = [
   { href: '/culinary/prep', label: 'Prep', icon: Timer },
   { href: '/calendar', label: 'Calendar', icon: Calendar },
   { href: '/inquiries', label: 'Inquiries', icon: Funnel },
+  { href: '/circles', label: 'Circles', icon: MessagesSquare },
   { href: '/finance/invoices', label: 'Invoices', icon: Receipt },
 ]
 
-// ─── + Create dropdown: 15 direct navigation links ───
+// â”€â”€â”€ + Create dropdown: 15 direct navigation links â”€â”€â”€
 // Sorted by workflow chain: creative > pipeline > operational > uploads
 // Separators between groups at indices 2, 7, 11 (after Recipe, Expense, Inventory Item)
 export type CreateDropdownItem = {

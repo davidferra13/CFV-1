@@ -38,7 +38,7 @@ import {
   ChevronDown,
   Leaf,
   Bot,
-  Rss,
+  Armchair,
   Plus,
   Lock,
   Sparkles,
@@ -277,6 +277,9 @@ const MobileBottomTabBar = memo(function MobileBottomTabBar({
     return () => btn.removeEventListener('click', handler)
   }, [onMoreClick])
 
+  const hasTablesTab = tabItems.some((item) => item.href === '/tables')
+  const tablesActive = isItemActive(pathname, '/tables')
+
   return (
     <nav
       className="md:hidden fixed top-[calc(3.5rem+env(safe-area-inset-top,0px))] left-0 right-0 z-mobile-header border-b border-white/[0.06]"
@@ -311,6 +314,23 @@ const MobileBottomTabBar = memo(function MobileBottomTabBar({
             </a>
           )
         })}
+        {!hasTablesTab && (
+          <a
+            href="/tables"
+            onClick={(e) => {
+              e.preventDefault()
+              window.location.href = '/tables'
+            }}
+            className={`group flex flex-col items-center justify-center gap-0.5 flex-1 h-full text-xxs font-medium transition-colors no-underline ${
+              tablesActive
+                ? 'text-brand-600 drop-shadow-[0_0_6px_rgba(232,143,71,0.4)]'
+                : 'text-stone-400'
+            }`}
+          >
+            <Armchair className="w-4 h-4 group-active:scale-110 transition-transform duration-100" />
+            Tables
+          </a>
+        )}
         <button
           ref={moreRef}
           type="button"

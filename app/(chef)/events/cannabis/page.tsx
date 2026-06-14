@@ -157,6 +157,16 @@ export default async function EventsCannabisPage() {
           >
             Cannabis Portal
           </p>
+          <div
+            className="mb-4 rounded-lg px-4 py-3 text-sm font-semibold"
+            style={{
+              background: 'rgba(74, 124, 78, 0.14)',
+              border: '1px solid rgba(106, 170, 110, 0.28)',
+              color: '#d2e8d4',
+            }}
+          >
+            All cannabis dinners are strictly private.
+          </div>
           <ul className="space-y-2">
             {[
               'Cannabis events are tracked separately from your regular dining calendar.',
