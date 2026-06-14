@@ -43,7 +43,9 @@ const isDev = process.env.NODE_ENV !== 'production'
 /** Root pino instance, shared across all scoped loggers */
 export const pinoLogger = pino({
   level: process.env.LOG_LEVEL || (isDev ? 'debug' : 'info'),
-  transport: isDev ? { target: 'pino/file', options: { destination: 1 } } : undefined,
+  // In dev, write directly to stdout (no thread-stream worker) to avoid
+  // worker crash when .next-dev cache is cleared between recompiles.
+  // In production, no transport needed (stdout is collected by process manager).
   formatters: {
     level: (label) => ({ level: label }),
   },
