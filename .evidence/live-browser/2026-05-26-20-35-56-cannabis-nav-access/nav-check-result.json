@@ -1,0 +1,25 @@
+{
+  "base": "http://localhost:3100",
+  "desktop": {
+    "status": 200,
+    "finalUrl": "http://localhost:3100/my-events",
+    "cannabisLinks": []
+  },
+  "mobile": {
+    "cannabisLinks": []
+  },
+  "pageErrors": [],
+  "consoleErrors": [
+    "Failed to load resource: the server responded with a status of 401 (Unauthorized)",
+    "Failed to load resource: the server responded with a status of 401 (Unauthorized)",
+    "Failed to load resource: the server responded with a status of 401 (Unauthorized)",
+    "Failed to load resource: the server responded with a status of 401 (Unauthorized)",
+    "Failed to load resource: the server responded with a status of 401 (Unauthorized)",
+    "Failed to load resource: the server responded with a status of 401 (Unauthorized)",
+    "Failed to load resource: the server responded with a status of 401 (Unauthorized)"
+  ],
+  "screenshotPaths": [
+    ".evidence\\live-browser\\2026-05-26-20-35-56-cannabis-nav-access\\screenshots\\01-client-sidebar-nav-links.png",
+    ".evidence\\live-browser\\2026-05-26-20-35-56-cannabis-nav-access\\screenshots\\02-client-mobile-menu-nav-links.png"
+  ]
+}

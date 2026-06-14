@@ -1,0 +1,365 @@
+- main [ref=e989] [box=0,-1056,1434,2791]:
+  - navigation "Breadcrumb" [ref=e990] [box=288,-1056,1146,44]:
+    - list [ref=e993] [box=320,-1045,1016,22]:
+      - listitem [ref=e994] [box=320,-1045,72,22]:
+        - link "Dashboard" [ref=e995] [cursor=pointer] [box=320,-1045,72,22]:
+          - /url: /dashboard
+      - listitem [ref=e996] [box=398,-1045,68,22]:
+        - img [ref=e997] [box=398,-1040,12,12]
+        - link "Recipes" [ref=e999] [cursor=pointer] [box=416,-1045,50,22]:
+          - /url: /recipes
+      - listitem [ref=e1000] [box=472,-1045,49,22]:
+        - img [ref=e1001] [box=472,-1040,12,12]
+        - generic [ref=e1003] [box=490,-1045,31,22]: New
+    - generic [ref=e1004] [box=1336,-1048,66,28]:
+      - generic [ref=e1005] [box=1336,-1043,30,18]:
+        - generic [ref=e1006] [box=1342,-1041,11,14]: ⌘
+        - generic [ref=e1007] [box=1355,-1041,6,14]: K
+      - button "Refresh" [ref=e1008] [cursor=pointer] [box=1374,-1048,28,28]:
+        - img [ref=e1009] [box=1381,-1041,14,14]
+  - generic [ref=e1011] [box=288,-1012,1146,2747]:
+    - generic [ref=e1012] [box=320,-980,1082,32]:
+      - link "payment Chain Test 205640 $750 33d overdue" [ref=e1013] [cursor=pointer] [box=15,-978,281,28]:
+        - /url: /chef/events/0c271e6e-b56e-48e2-ae25-341a0b119fbe/financials
+        - generic [ref=e1015] [box=37,-971,43,14]: payment
+        - generic [ref=e1016] [box=86,-974,200,20]: Chain Test 205640 $750 33d overdue
+      - link "payment Chain Test 514533 $750 33d overdue" [ref=e1017] [cursor=pointer] [box=300,-978,281,28]:
+        - /url: /chef/events/987f745e-ff2b-430a-b3b2-ad2909ad279b/financials
+        - generic [ref=e1019] [box=322,-971,43,14]: payment
+        - generic [ref=e1020] [box=371,-974,200,20]: Chain Test 514533 $750 33d overdue
+      - link "payment Chain Test 791082 $750 33d overdue" [ref=e1021] [cursor=pointer] [box=585,-978,281,28]:
+        - /url: /chef/events/709255ca-7e32-46aa-8e22-5741aeb75bee/financials
+        - generic [ref=e1023] [box=607,-971,43,14]: payment
+        - generic [ref=e1024] [box=657,-974,200,20]: Chain Test 791082 $750 33d overdue
+      - link "payment Chain Test 292261 $750 33d overdue" [ref=e1025] [cursor=pointer] [box=871,-978,281,28]:
+        - /url: /chef/events/8106d7d3-a4a0-4c28-8223-b5cc98539957/financials
+        - generic [ref=e1027] [box=893,-971,43,14]: payment
+        - generic [ref=e1028] [box=942,-974,200,20]: Chain Test 292261 $750 33d overdue
+      - link "payment Chain Test 351716 $750 33d overdue" [ref=e1029] [cursor=pointer] [box=1156,-978,281,28]:
+        - /url: /chef/events/43998d73-40de-4a57-9690-6588acfe3a34/financials
+        - generic [ref=e1031] [box=1178,-971,43,14]: payment
+        - generic [ref=e1032] [box=1227,-974,200,20]: Chain Test 351716 $750 33d overdue
+    - generic [ref=e1034] [box=320,-948,1082,174]:
+      - generic [ref=e1035] [box=321,-947,1080,45]:
+        - generic [ref=e1036] [box=333,-932,93,15]: Contextual Rail
+        - button "Collapse rail" [ref=e1037] [cursor=pointer] [box=1357,-941,32,32]:
+          - img [ref=e1038] [box=1365,-933,16,16]
+      - generic [ref=e1043] [box=867,-894,522,62]:
+        - generic [ref=e1044] [box=867,-894,522,15]:
+          - img [ref=e1045] [box=875,-892,12,12]
+          - generic [ref=e1047] [box=893,-894,71,15]: Intelligence
+        - link "$750 unpaid - Dinner Party - Chain Test Completed on 2026-04-24" [ref=e1049] [cursor=pointer] [box=867,-875,522,43]:
+          - /url: /events/1375c682-0e1c-46f6-9412-d94c8f7ec573
+          - generic [ref=e1050] [box=867,-875,522,43]:
+            - img [ref=e1052] [box=889,-869,14,14]
+            - generic [ref=e1054] [box=911,-871,470,35]:
+              - generic [ref=e1055] [box=911,-871,180,20]: $750 unpaid - Dinner Party - Chain Test
+              - generic [ref=e1056] [box=911,-851,180,15]: Completed on 2026-04-24
+      - link "Send invoice" [ref=e1058] [cursor=pointer] [box=333,-815,99,32]:
+        - /url: /events/1375c682-0e1c-46f6-9412-d94c8f7ec573
+    - 'status "Save state: unsaved changes" [ref=e1060] [box=1254,-774,148,34]':
+      - img [ref=e1061] [box=1267,-764,14,14]
+      - generic [ref=e1063] [box=1289,-767,100,20]: Unsaved changes
+    - generic [ref=e1064] [box=413,-732,896,2435]:
+      - generic [ref=e1065] [box=413,-732,896,44]:
+        - heading "New Recipe" [level=1] [ref=e1067] [box=413,-732,165,36]
+        - link "Back to Recipes" [ref=e1068] [cursor=pointer] [box=1163,-732,146,44]:
+          - /url: /recipes
+          - button "Back to Recipes" [ref=e1069] [box=1163,-732,146,44]
+      - generic [ref=e1143] [box=432,-647,860,44]:
+        - img [ref=e1145] [box=432,-647,20,20]
+        - generic [ref=e1148] [box=464,-647,828,44]: "AI processing is temporarily unavailable. Please try again in a few moments. (Ollama unreachable at http://localhost:11434: AI processing is temporarily unavailable. Please try again in a few moments. (Ollama chat-fallback timed out after 60s))"
+      - generic [ref=e1070] [box=413,-562,896,40]:
+        - button "Smart Import" [ref=e1071] [cursor=pointer] [box=413,-562,124,40]
+        - button "Manual Entry" [ref=e1072] [cursor=pointer] [box=541,-562,123,40]
+      - generic [ref=e1150] [box=413,-498,896,2201]:
+        - generic [ref=e1151] [box=413,-498,896,1297]:
+          - heading "Recipe Details" [level=2] [ref=e1153] [box=438,-481,846,28]
+          - generic [ref=e1154] [box=414,-436,894,1234]:
+            - generic [ref=e1155] [box=438,-420,846,70]:
+              - generic [ref=e1156] [box=438,-420,415,70]:
+                - generic [ref=e1157] [box=438,-420,415,22]: Recipe Name \*
+                - textbox "e.g., Diane Sauce" [ref=e1160] [box=438,-394,415,44]: Pi Live Cost Test Miso Ginger Salmon Rice Bowls 20260527-0658
+              - generic [ref=e1161] [box=869,-420,415,70]:
+                - generic [ref=e1162] [box=869,-420,415,22]: Category \*
+                - combobox "Category" [ref=e1163] [cursor=pointer] [box=869,-394,415,44]:
+                  - option "Sauce" [box=0,0,0,0]
+                  - option "Protein" [selected] [box=0,0,0,0]
+                  - option "Starch" [box=0,0,0,0]
+                  - option "Vegetable" [box=0,0,0,0]
+                  - option "Fruit" [box=0,0,0,0]
+                  - option "Dessert" [box=0,0,0,0]
+                  - option "Bread" [box=0,0,0,0]
+                  - option "Pasta" [box=0,0,0,0]
+                  - option "Soup" [box=0,0,0,0]
+                  - option "Salad" [box=0,0,0,0]
+                  - option "Appetizer" [box=0,0,0,0]
+                  - option "Condiment" [box=0,0,0,0]
+                  - option "Beverage" [box=0,0,0,0]
+                  - option "Other" [box=0,0,0,0]
+            - generic [ref=e1164] [box=438,-334,846,70]:
+              - generic [ref=e1165] [box=438,-334,846,22]: Description
+              - textbox "Brief description" [ref=e1168] [box=438,-308,846,44]: Synthetic test recipe for observing live PIE ingredient costing from recipe creation to priced detail page.
+            - generic [ref=e1169] [box=438,-248,846,132]:
+              - generic [ref=e1170] [box=438,-248,846,22]: Method
+              - textbox "Concise, outcome-oriented. The chef knows how to cook - just capture what to do." [ref=e1172] [box=438,-222,846,106]: Whisk miso, soy, ginger, honey, sesame oil, and lime into a glaze. Roast salmon. Steam rice. Serve salmon over rice with scallions and extra glaze.
+            - generic [ref=e1173] [box=438,-100,846,110]:
+              - generic [ref=e1174] [box=438,-100,846,22]: Detailed Method
+              - 'textbox "Optional: more detailed version with specific techniques or timings" [ref=e1176] [box=438,-74,846,84]': "For evaluation only: use this to watch ingredient names get checked for price availability, then save and inspect the PIE cost summary and per-ingredient explainers."
+            - generic [ref=e1177] [box=438,26,846,70]:
+              - generic [ref=e1178] [box=438,26,200,70]:
+                - generic [ref=e1179] [box=438,26,200,22]: Prep (min)
+                - spinbutton [ref=e1182] [box=438,52,200,44]: "20"
+              - generic [ref=e1183] [box=654,26,200,70]:
+                - generic [ref=e1184] [box=654,26,200,22]: Cook (min)
+                - spinbutton [ref=e1187] [box=654,52,200,44]: "18"
+              - generic [ref=e1188] [box=869,26,200,70]:
+                - generic [ref=e1189] [box=869,26,200,22]: Yield
+                - spinbutton [ref=e1192] [box=869,52,200,44]: "8"
+              - generic [ref=e1193] [box=1085,26,200,70]:
+                - generic [ref=e1194] [box=1085,26,200,22]: Yield Unit
+                - textbox "servings" [ref=e1197] [box=1085,52,200,44]: portions
+            - generic [ref=e1198] [box=438,112,846,70]:
+              - generic [ref=e1199] [box=438,112,846,22]: Dietary Tags
+              - textbox "gluten-free, dairy-free (comma separated)" [ref=e1202] [box=438,138,846,44]: pescatarian
+            - generic [ref=e1203] [box=438,198,846,70]:
+              - generic [ref=e1204] [box=438,198,271,70]:
+                - generic [ref=e1205] [box=438,198,271,22]: Servings
+                - spinbutton [ref=e1208] [box=438,224,271,44]: "8"
+              - generic [ref=e1209] [box=725,198,271,70]:
+                - generic [ref=e1210] [box=725,198,271,22]: Calories / Serving
+                - spinbutton [ref=e1213] [box=725,224,271,44]
+              - generic [ref=e1214] [box=1013,198,271,70]:
+                - generic [ref=e1215] [box=1013,198,271,22]: Difficulty (1 to 5)
+                - generic [ref=e1216] [box=1013,224,271,36]:
+                  - button "1" [ref=e1217] [cursor=pointer] [box=1013,224,36,36]
+                  - button "2" [ref=e1218] [cursor=pointer] [box=1053,224,36,36]
+                  - button "3" [ref=e1219] [cursor=pointer] [box=1093,224,36,36]
+                  - button "4" [ref=e1220] [cursor=pointer] [box=1133,224,36,36]
+                  - button "5" [ref=e1221] [cursor=pointer] [box=1173,224,36,36]
+            - generic [ref=e1222] [box=438,284,846,70]:
+              - generic [ref=e1223] [box=438,284,846,22]: Equipment
+              - textbox "stand mixer, food processor, blowtorch (comma separated)" [ref=e1226] [box=438,310,846,44]
+            - generic [ref=e1227] [box=438,370,846,70]:
+              - generic [ref=e1228] [box=438,370,415,70]:
+                - generic [ref=e1229] [box=438,370,415,22]: Cuisine
+                - combobox "Cuisine" [ref=e1230] [cursor=pointer] [box=438,396,415,44]:
+                  - option "Select cuisine..." [selected] [box=0,0,0,0]
+                  - option "Chinese" [box=0,0,0,0]
+                  - option "Italian" [box=0,0,0,0]
+                  - option "Japanese" [box=0,0,0,0]
+                  - option "Mexican" [box=0,0,0,0]
+                  - option "French" [box=0,0,0,0]
+                  - option "Pizzeria" [box=0,0,0,0]
+                  - option "Indian" [box=0,0,0,0]
+                  - option "Sushi" [box=0,0,0,0]
+                  - option "Halal" [box=0,0,0,0]
+                  - option "Spanish" [box=0,0,0,0]
+                  - option "Greek" [box=0,0,0,0]
+                  - option "Turkish" [box=0,0,0,0]
+                  - option "Barbecue" [box=0,0,0,0]
+                  - option "Cafe" [box=0,0,0,0]
+                  - option "Seafood" [box=0,0,0,0]
+                  - option "Thai" [box=0,0,0,0]
+                  - option "Vegetarian" [box=0,0,0,0]
+                  - option "American" [box=0,0,0,0]
+                  - option "Bakery" [box=0,0,0,0]
+                  - option "Korean" [box=0,0,0,0]
+                  - option "Mediterranean" [box=0,0,0,0]
+                  - option "Ramen" [box=0,0,0,0]
+                  - option "Street Food" [box=0,0,0,0]
+                  - option "Vegan" [box=0,0,0,0]
+                  - option "Grill" [box=0,0,0,0]
+                  - option "Lebanese" [box=0,0,0,0]
+                  - option "Steakhouse" [box=0,0,0,0]
+                  - option "Middle Eastern" [box=0,0,0,0]
+                  - option "Brazilian" [box=0,0,0,0]
+                  - option "Casual Dining" [box=0,0,0,0]
+                  - option "Plant-Based" [box=0,0,0,0]
+                  - option "South Korean" [box=0,0,0,0]
+                  - option "Tex-Mex" [box=0,0,0,0]
+                  - option "Moroccan" [box=0,0,0,0]
+                  - option "Asian Fusion" [box=0,0,0,0]
+                  - option "Fast Casual" [box=0,0,0,0]
+                  - option "Fine Dining" [box=0,0,0,0]
+                  - option "Gluten-Free" [box=0,0,0,0]
+                  - option "Italian-American" [box=0,0,0,0]
+                  - option "Kebab House" [box=0,0,0,0]
+                  - option "Portuguese" [box=0,0,0,0]
+                  - option "German" [box=0,0,0,0]
+                  - option "Peruvian" [box=0,0,0,0]
+                  - option "American Chinese" [box=0,0,0,0]
+                  - option "Cantonese" [box=0,0,0,0]
+                  - option "Curry House" [box=0,0,0,0]
+                  - option "Dim Sum" [box=0,0,0,0]
+                  - option "European" [box=0,0,0,0]
+                  - option "Food Truck" [box=0,0,0,0]
+                  - option "Fusion" [box=0,0,0,0]
+                  - option "Keto" [box=0,0,0,0]
+                  - option "Mexican-American" [box=0,0,0,0]
+                  - option "Tapas" [box=0,0,0,0]
+                  - option "Taqueria" [box=0,0,0,0]
+                  - option "Vietnamese" [box=0,0,0,0]
+                  - option "Ethiopian" [box=0,0,0,0]
+                  - option "British" [box=0,0,0,0]
+                  - option "North American" [box=0,0,0,0]
+                  - option "Argentine" [box=0,0,0,0]
+                  - option "Caribbean" [box=0,0,0,0]
+                  - option "Persian / Iranian" [box=0,0,0,0]
+                  - option "Cuban" [box=0,0,0,0]
+                  - option "Jamaican" [box=0,0,0,0]
+                  - option "Levantine" [box=0,0,0,0]
+                  - option "Modern Fusion" [box=0,0,0,0]
+                  - option "North Indian" [box=0,0,0,0]
+                  - option "Pub Food" [box=0,0,0,0]
+                  - option "Sichuan" [box=0,0,0,0]
+                  - option "Tuscan" [box=0,0,0,0]
+                  - option "Western European" [box=0,0,0,0]
+                  - option "Colombian" [box=0,0,0,0]
+                  - option "Polish" [box=0,0,0,0]
+                  - option "Arab" [box=0,0,0,0]
+                  - option "Dairy-Free" [box=0,0,0,0]
+                  - option "Diner" [box=0,0,0,0]
+                  - option "Egyptian" [box=0,0,0,0]
+                  - option "English" [box=0,0,0,0]
+                  - option "Latin American" [box=0,0,0,0]
+                  - option "Market Food" [box=0,0,0,0]
+                  - option "Neapolitan" [box=0,0,0,0]
+                  - option "Soul Food" [box=0,0,0,0]
+                  - option "Southern European" [box=0,0,0,0]
+                  - option "Hungarian" [box=0,0,0,0]
+                  - option "Nigerian" [box=0,0,0,0]
+                  - option "Roman" [box=0,0,0,0]
+              - generic [ref=e1231] [box=869,370,415,70]:
+                - generic [ref=e1232] [box=869,370,415,22]: Meal Type
+                - combobox "Meal Type" [ref=e1233] [cursor=pointer] [box=869,396,415,44]:
+                  - option "Select meal type..." [selected] [box=0,0,0,0]
+                  - option "Breakfast" [box=0,0,0,0]
+                  - option "Brunch" [box=0,0,0,0]
+                  - option "Lunch" [box=0,0,0,0]
+                  - option "Dinner" [box=0,0,0,0]
+                  - option "Snack / Passed" [box=0,0,0,0]
+                  - option "Any" [box=0,0,0,0]
+            - generic [ref=e1234] [box=438,456,846,62]:
+              - generic [ref=e1235] [box=438,456,846,22]: Season
+              - generic [ref=e1236] [box=438,482,846,36]:
+                - button "Spring" [ref=e1237] [cursor=pointer] [box=438,482,69,36]
+                - button "Summer" [ref=e1238] [cursor=pointer] [box=515,482,81,36]
+                - button "Fall" [ref=e1239] [cursor=pointer] [box=604,482,48,36]
+                - button "Winter" [ref=e1240] [cursor=pointer] [box=660,482,70,36]
+                - button "Year-Round" [ref=e1241] [cursor=pointer] [box=738,482,104,36]
+            - generic [ref=e1242] [box=438,534,846,144]:
+              - generic [ref=e1243] [box=438,534,846,22]: Occasion Tags
+              - generic [ref=e1244] [box=438,560,846,66]:
+                - button "Date Night" [ref=e1245] [cursor=pointer] [box=438,560,85,30]
+                - button "Holiday" [ref=e1246] [cursor=pointer] [box=529,560,66,30]
+                - button "Wedding" [ref=e1247] [cursor=pointer] [box=601,560,74,30]
+                - button "Corporate" [ref=e1248] [cursor=pointer] [box=680,560,80,30]
+                - button "Kids Party" [ref=e1249] [cursor=pointer] [box=766,560,78,30]
+                - button "Outdoor/BBQ" [ref=e1250] [cursor=pointer] [box=850,560,101,30]
+                - button "Tasting Menu" [ref=e1251] [cursor=pointer] [box=957,560,99,30]
+                - button "Comfort Food" [ref=e1252] [cursor=pointer] [box=1062,560,102,30]
+                - button "Quick Weeknight" [ref=e1253] [cursor=pointer] [box=438,596,120,30]
+              - generic [ref=e1254] [box=438,634,846,44]:
+                - textbox "Add custom occasion..." [ref=e1257] [box=438,634,768,44]
+                - button "Add" [disabled] [box=1214,634,70,44]
+            - generic [ref=e1258] [box=438,694,846,88]:
+              - generic [ref=e1259] [box=438,694,846,22]: Notes
+              - textbox "Any additional notes about this recipe" [ref=e1261] [box=438,720,846,62]
+        - generic [ref=e1262] [box=413,823,896,627]:
+          - generic [ref=e1264] [box=438,840,846,44]:
+            - heading "Ingredients" [level=2] [ref=e1265] [box=438,848,93,28]
+            - button "Add Ingredient" [active] [ref=e1266] [cursor=pointer] [box=1151,840,133,44]
+          - generic [ref=e1268] [box=438,917,846,516]:
+            - generic [ref=e1269] [box=438,917,846,68]:
+              - generic [ref=e1270] [box=438,917,495,68]:
+                - generic [ref=e1271] [box=438,917,495,20]: Name
+                - generic [ref=e1272] [box=438,941,495,44]:
+                  - textbox "Ingredient name" [ref=e1275] [box=438,941,495,44]: salmon fillet
+                  - generic "No price data yet" [ref=e1307] [box=917,959,8,8]
+              - generic [ref=e1276] [box=941,917,80,68]:
+                - generic [ref=e1277] [box=941,917,80,20]: Qty
+                - spinbutton [ref=e1280] [box=941,941,80,44]: "2"
+              - generic [ref=e1281] [box=1029,917,96,68]:
+                - generic [ref=e1282] [box=1029,917,96,20]: Unit
+                - textbox "cup, tbsp" [ref=e1285] [box=1029,941,96,44]: lb
+              - generic [ref=e1286] [box=1133,917,112,68]:
+                - generic [ref=e1287] [box=1133,917,112,20]: Prep
+                - textbox "diced, etc." [ref=e1290] [box=1133,941,112,44]: skin-on
+              - button "×" [ref=e1293] [cursor=pointer] [box=1257,917,27,40]
+            - generic [ref=e1308] [box=438,997,846,44]:
+              - generic [ref=e1310] [box=438,997,499,44]:
+                - textbox "Ingredient name" [ref=e1313] [box=438,997,499,44]: white miso
+                - generic "No price data yet" [ref=e1314] [box=921,1015,8,8]
+              - spinbutton [ref=e1318] [box=945,997,80,44]: "0.5"
+              - textbox "cup, tbsp" [ref=e1322] [box=1033,997,96,44]: cup
+              - textbox "diced, etc." [ref=e1326] [box=1137,997,112,44]: paste
+              - button "×" [ref=e1328] [cursor=pointer] [box=1257,997,27,40]
+            - generic [ref=e1329] [box=438,1053,846,44]:
+              - generic [ref=e1331] [box=438,1053,499,44]:
+                - textbox "Ingredient name" [ref=e1334] [box=438,1053,499,44]: soy sauce
+                - generic "No price data yet" [ref=e1335] [box=921,1071,8,8]
+              - spinbutton [ref=e1339] [box=945,1053,80,44]: "0.25"
+              - textbox "cup, tbsp" [ref=e1343] [box=1033,1053,96,44]: cup
+              - textbox "diced, etc." [ref=e1347] [box=1137,1053,112,44]
+              - button "×" [ref=e1349] [cursor=pointer] [box=1257,1053,27,40]
+            - generic [ref=e1350] [box=438,1109,846,44]:
+              - generic [ref=e1352] [box=438,1109,499,44]:
+                - textbox "Ingredient name" [ref=e1355] [box=438,1109,499,44]: fresh ginger
+                - generic "No price data yet" [ref=e1356] [box=921,1127,8,8]
+              - spinbutton [ref=e1360] [box=945,1109,80,44]: "2"
+              - textbox "cup, tbsp" [ref=e1364] [box=1033,1109,96,44]: tbsp
+              - textbox "diced, etc." [ref=e1368] [box=1137,1109,112,44]: grated
+              - button "×" [ref=e1370] [cursor=pointer] [box=1257,1109,27,40]
+            - generic [ref=e1371] [box=438,1165,846,44]:
+              - generic [ref=e1373] [box=438,1165,499,44]:
+                - textbox "Ingredient name" [ref=e1376] [box=438,1165,499,44]: honey
+                - generic "No price data yet" [ref=e1377] [box=921,1183,8,8]
+              - spinbutton [ref=e1381] [box=945,1165,80,44]: "0.25"
+              - textbox "cup, tbsp" [ref=e1385] [box=1033,1165,96,44]: cup
+              - textbox "diced, etc." [ref=e1389] [box=1137,1165,112,44]
+              - button "×" [ref=e1391] [cursor=pointer] [box=1257,1165,27,40]
+            - generic [ref=e1392] [box=438,1221,846,44]:
+              - generic [ref=e1394] [box=438,1221,499,44]:
+                - textbox "Ingredient name" [ref=e1397] [box=438,1221,499,44]: jasmine rice
+                - generic "No price data yet" [ref=e1398] [box=921,1239,8,8]
+              - spinbutton [ref=e1402] [box=945,1221,80,44]: "2"
+              - textbox "cup, tbsp" [ref=e1406] [box=1033,1221,96,44]: cup
+              - textbox "diced, etc." [ref=e1410] [box=1137,1221,112,44]: uncooked
+              - button "×" [ref=e1412] [cursor=pointer] [box=1257,1221,27,40]
+            - generic [ref=e1413] [box=438,1277,846,44]:
+              - generic [ref=e1415] [box=438,1277,499,44]:
+                - textbox "Ingredient name" [ref=e1418] [box=438,1277,499,44]: scallions
+                - generic "No price data yet" [ref=e1419] [box=921,1295,8,8]
+              - spinbutton [ref=e1423] [box=945,1277,80,44]: "1"
+              - textbox "cup, tbsp" [ref=e1427] [box=1033,1277,96,44]: bunch
+              - textbox "diced, etc." [ref=e1431] [box=1137,1277,112,44]: sliced
+              - button "×" [ref=e1433] [cursor=pointer] [box=1257,1277,27,40]
+            - generic [ref=e1434] [box=438,1333,846,44]:
+              - generic [ref=e1436] [box=438,1333,499,44]:
+                - textbox "Ingredient name" [ref=e1439] [box=438,1333,499,44]: sesame oil
+                - generic "No price data yet" [ref=e1440] [box=921,1351,8,8]
+              - spinbutton [ref=e1444] [box=945,1333,80,44]: "2"
+              - textbox "cup, tbsp" [ref=e1448] [box=1033,1333,96,44]: tbsp
+              - textbox "diced, etc." [ref=e1452] [box=1137,1333,112,44]: toasted
+              - button "×" [ref=e1454] [cursor=pointer] [box=1257,1333,27,40]
+            - generic [ref=e1455] [box=438,1389,846,44]:
+              - generic [ref=e1457] [box=438,1389,499,44]:
+                - textbox "Ingredient name" [ref=e1460] [box=438,1389,499,44]: lime
+                - generic "No price data yet" [ref=e1461] [box=921,1407,8,8]
+              - spinbutton [ref=e1465] [box=945,1389,80,44]: "2"
+              - textbox "cup, tbsp" [ref=e1469] [box=1033,1389,96,44]: each
+              - textbox "diced, etc." [ref=e1473] [box=1137,1389,112,44]: juiced
+              - button "×" [ref=e1475] [cursor=pointer] [box=1257,1389,27,40]
+        - generic [ref=e1294] [box=413,1474,896,161]:
+          - generic [ref=e1295] [box=414,1475,894,83]:
+            - heading "NutritionalCalculator" [level=2] [ref=e1296] [box=438,1491,846,28]
+            - paragraph [ref=e1297] [box=438,1519,846,22]: USDA-powered nutrition estimates for total recipe and per-serving macros.
+          - generic [ref=e1299] [box=438,1574,846,44]:
+            - button "Calculate Nutrition" [ref=e1476] [cursor=pointer] [box=438,1574,168,44]
+            - generic [ref=e1300] [box=614,1586,142,20]: 9 ingredients · 8 servings
+        - generic [ref=e1302] [box=1092,1659,217,44]:
+          - link "Cancel" [ref=e1303] [cursor=pointer] [box=1092,1659,85,44]:
+            - /url: /recipes
+            - button "Cancel" [ref=e1304] [box=1092,1659,85,44]
+          - button "Save Recipe" [ref=e1305] [cursor=pointer] [box=1189,1659,120,44]

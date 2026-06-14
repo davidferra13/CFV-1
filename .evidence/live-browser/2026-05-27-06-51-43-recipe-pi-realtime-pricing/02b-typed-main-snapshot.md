@@ -1,0 +1,78 @@
+- main [ref=e989] [box=0,0,1440,837]:
+  - navigation "Breadcrumb" [ref=e990] [box=288,0,1152,44]:
+    - list [ref=e993] [box=320,11,1022,22]:
+      - listitem [ref=e994] [box=320,11,72,22]:
+        - link "Dashboard" [ref=e995] [cursor=pointer] [box=320,11,72,22]:
+          - /url: /dashboard
+      - listitem [ref=e996] [box=398,11,68,22]:
+        - img [ref=e997] [box=398,16,12,12]
+        - link "Recipes" [ref=e999] [cursor=pointer] [box=416,11,50,22]:
+          - /url: /recipes
+      - listitem [ref=e1000] [box=472,11,49,22]:
+        - img [ref=e1001] [box=472,16,12,12]
+        - generic [ref=e1003] [box=490,11,31,22]: New
+    - generic [ref=e1004] [box=1342,8,66,28]:
+      - generic [ref=e1005] [box=1342,13,30,18]:
+        - generic [ref=e1006] [box=1348,15,11,14]: ⌘
+        - generic [ref=e1007] [box=1361,15,6,14]: K
+      - button "Refresh" [ref=e1008] [cursor=pointer] [box=1380,8,28,28]:
+        - img [ref=e1009] [box=1387,15,14,14]
+  - generic [ref=e1011] [box=288,44,1152,793]:
+    - generic [ref=e1012] [box=320,76,1088,32]:
+      - link "payment Chain Test 205640 $750 33d overdue" [ref=e1013] [cursor=pointer] [box=246,78,281,28]:
+        - /url: /chef/events/0c271e6e-b56e-48e2-ae25-341a0b119fbe/financials
+        - generic [ref=e1015] [box=268,85,43,14]: payment
+        - generic [ref=e1016] [box=317,82,200,20]: Chain Test 205640 $750 33d overdue
+      - link "payment Chain Test 514533 $750 33d overdue" [ref=e1017] [cursor=pointer] [box=531,78,281,28]:
+        - /url: /chef/events/987f745e-ff2b-430a-b3b2-ad2909ad279b/financials
+        - generic [ref=e1019] [box=553,85,43,14]: payment
+        - generic [ref=e1020] [box=602,82,200,20]: Chain Test 514533 $750 33d overdue
+      - link "payment Chain Test 791082 $750 33d overdue" [ref=e1021] [cursor=pointer] [box=816,78,281,28]:
+        - /url: /chef/events/709255ca-7e32-46aa-8e22-5741aeb75bee/financials
+        - generic [ref=e1023] [box=838,85,43,14]: payment
+        - generic [ref=e1024] [box=888,82,200,20]: Chain Test 791082 $750 33d overdue
+      - link "payment Chain Test 292261 $750 33d overdue" [ref=e1025] [cursor=pointer] [box=1102,78,281,28]:
+        - /url: /chef/events/8106d7d3-a4a0-4c28-8223-b5cc98539957/financials
+        - generic [ref=e1027] [box=1124,85,43,14]: payment
+        - generic [ref=e1028] [box=1173,82,200,20]: Chain Test 292261 $750 33d overdue
+      - link "payment Chain Test 351716 $750 33d overdue" [ref=e1029] [cursor=pointer] [box=1387,78,281,28]:
+        - /url: /chef/events/43998d73-40de-4a57-9690-6588acfe3a34/financials
+        - generic [ref=e1031] [box=1409,85,43,14]: payment
+        - generic [ref=e1032] [box=1458,82,200,20]: Chain Test 351716 $750 33d overdue
+    - generic [ref=e1034] [box=320,108,1088,174]:
+      - generic [ref=e1035] [box=321,109,1086,45]:
+        - generic [ref=e1036] [box=333,124,93,15]: Contextual Rail
+        - button "Collapse rail" [ref=e1037] [cursor=pointer] [box=1363,115,32,32]:
+          - img [ref=e1038] [box=1371,123,16,16]
+      - generic [ref=e1043] [box=870,162,525,62]:
+        - generic [ref=e1044] [box=870,162,525,15]:
+          - img [ref=e1045] [box=878,164,12,12]
+          - generic [ref=e1047] [box=896,162,71,15]: Intelligence
+        - link "$750 unpaid - Dinner Party - Chain Test Completed on 2026-04-24" [ref=e1049] [cursor=pointer] [box=870,181,525,43]:
+          - /url: /events/1375c682-0e1c-46f6-9412-d94c8f7ec573
+          - generic [ref=e1050] [box=870,181,525,43]:
+            - img [ref=e1052] [box=892,187,14,14]
+            - generic [ref=e1054] [box=914,185,473,35]:
+              - generic [ref=e1055] [box=914,185,180,20]: $750 unpaid - Dinner Party - Chain Test
+              - generic [ref=e1056] [box=914,205,180,15]: Completed on 2026-04-24
+      - link "Send invoice" [ref=e1058] [cursor=pointer] [box=333,241,99,32]:
+        - /url: /events/1375c682-0e1c-46f6-9412-d94c8f7ec573
+    - 'status "Save state: unsaved changes" [ref=e1060] [box=1260,282,148,34]':
+      - img [ref=e1061] [box=1273,292,14,14]
+      - generic [ref=e1063] [box=1295,289,100,20]: Unsaved changes
+    - generic [ref=e1064] [box=416,324,896,481]:
+      - generic [ref=e1065] [box=416,324,896,44]:
+        - heading "New Recipe" [level=1] [ref=e1067] [box=416,324,165,36]
+        - link "Back to Recipes" [ref=e1068] [cursor=pointer] [box=1166,324,146,44]:
+          - /url: /recipes
+          - button "Back to Recipes" [ref=e1069] [box=1166,324,146,44]
+      - generic [ref=e1070] [box=416,392,896,40]:
+        - button "Smart Import" [ref=e1071] [cursor=pointer] [box=416,392,124,40]
+        - button "Manual Entry" [ref=e1072] [cursor=pointer] [box=544,392,123,40]
+      - generic [ref=e1073] [box=416,456,896,349]:
+        - heading "Describe Your Recipe" [level=2] [ref=e1075] [box=441,473,846,28]
+        - generic [ref=e1076] [box=417,518,894,286]:
+          - textbox "Diane sauce - sear the steak, set aside. Sauté shallots and mushrooms. Deglaze with cognac. Add beef stock, cream, worcestershire, dijon. Reduce. Finish with steak drippings, lemon, parsley. Makes about 2 cups." [active] [ref=e1078] [box=441,534,846,194]: "Pi live cost test: miso ginger salmon rice bowls. For 8 portions, use 2 lb salmon fillet, 1/2 cup white miso, 1/4 cup soy sauce, 2 tablespoons grated ginger, 1/4 cup honey, 2 cups jasmine rice, 1 bunch scallions, 2 tablespoons sesame oil, and 2 limes. Whisk miso, soy, ginger, honey, sesame oil, and lime juice into a glaze. Roast salmon until just cooked. Steam rice. Slice scallions. Serve salmon over rice with glaze and scallions."
+          - generic [ref=e1079] [box=441,744,846,44]:
+            - button "Parse Recipe" [ref=e1139] [cursor=pointer] [box=441,744,125,44]
+            - button "Clear" [ref=e1080] [cursor=pointer] [box=578,744,75,44]

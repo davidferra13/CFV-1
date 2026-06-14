@@ -1,0 +1,382 @@
+[
+  {
+    "name": "desktop-expanded-dashboard",
+    "status": 200,
+    "consoleErrorCount": 2,
+    "pageErrorCount": 0,
+    "consoleErrors": [
+      "Failed to load resource: the server responded with a status of 401 (Unauthorized)",
+      "Failed to load resource: the server responded with a status of 401 (Unauthorized)"
+    ],
+    "pageErrors": [],
+    "url": "http://localhost:3100/dashboard",
+    "title": "Dashboard | ChefFlow",
+    "aside": {
+      "x": 0,
+      "y": 0,
+      "width": 288,
+      "height": 1000
+    },
+    "viewport": {
+      "width": 1440,
+      "height": 1000
+    },
+    "elements": [
+      {
+        "tag": "button",
+        "href": null,
+        "aria": "Collapse sidebar",
+        "title": null,
+        "text": "",
+        "rect": {
+          "x": 349,
+          "y": 13,
+          "width": 32,
+          "height": 32
+        },
+        "inViewport": true
+      },
+      {
+        "tag": "a",
+        "href": "/circles",
+        "aria": null,
+        "title": null,
+        "text": "Circles",
+        "rect": {
+          "x": 25,
+          "y": 597,
+          "width": 238,
+          "height": 38
+        },
+        "inViewport": true
+      },
+      {
+        "tag": "a",
+        "href": "/tables",
+        "aria": "Tables",
+        "title": null,
+        "text": "Tables Social hub",
+        "rect": {
+          "x": 13,
+          "y": 876,
+          "width": 262,
+          "height": 62
+        },
+        "inViewport": true
+      },
+      {
+        "tag": "a",
+        "href": "/settings",
+        "aria": null,
+        "title": null,
+        "text": "A Agent Test Kitchen",
+        "rect": {
+          "x": 1,
+          "y": 946,
+          "width": 286,
+          "height": 53
+        },
+        "inViewport": true
+      },
+      {
+        "tag": "button",
+        "href": null,
+        "aria": null,
+        "title": null,
+        "text": "More",
+        "rect": {
+          "x": 1252,
+          "y": -7514,
+          "width": 143,
+          "height": 36
+        },
+        "inViewport": false
+      },
+      {
+        "tag": "a",
+        "href": "/circles",
+        "aria": null,
+        "title": null,
+        "text": "New Circle",
+        "rect": {
+          "x": 1267,
+          "y": 1340,
+          "width": 83,
+          "height": 20
+        },
+        "inViewport": false
+      },
+      {
+        "tag": "a",
+        "href": "/circles",
+        "aria": null,
+        "title": null,
+        "text": "View All",
+        "rect": {
+          "x": 1362,
+          "y": 1340,
+          "width": 46,
+          "height": 20
+        },
+        "inViewport": false
+      }
+    ],
+    "assertions": {
+      "onProtectedApp": true,
+      "hasTablesInViewport": true,
+      "hasCirclesInViewport": true,
+      "tablesViewportCount": 1,
+      "circlesViewportCount": 1,
+      "settingsViewportCount": 1,
+      "tablesOverlapsSettings": false,
+      "tablesAboveSettings": true
+    }
+  },
+  {
+    "name": "desktop-collapsed-dashboard",
+    "status": 200,
+    "consoleErrorCount": 2,
+    "pageErrorCount": 0,
+    "consoleErrors": [
+      "Failed to load resource: the server responded with a status of 401 (Unauthorized)",
+      "Failed to load resource: the server responded with a status of 401 (Unauthorized)"
+    ],
+    "pageErrors": [],
+    "url": "http://localhost:3100/dashboard",
+    "title": "Dashboard | ChefFlow",
+    "aside": {
+      "x": 0,
+      "y": 0,
+      "width": 80,
+      "height": 1000
+    },
+    "viewport": {
+      "width": 1440,
+      "height": 1000
+    },
+    "elements": [
+      {
+        "tag": "button",
+        "href": null,
+        "aria": "Expand sidebar",
+        "title": null,
+        "text": "",
+        "rect": {
+          "x": 20,
+          "y": 69,
+          "width": 40,
+          "height": 40
+        },
+        "inViewport": true
+      },
+      {
+        "tag": "a",
+        "href": "/circles",
+        "aria": null,
+        "title": "Circles",
+        "text": "",
+        "rect": {
+          "x": 20,
+          "y": 881,
+          "width": 40,
+          "height": 40
+        },
+        "inViewport": true
+      },
+      {
+        "tag": "a",
+        "href": "/settings",
+        "aria": null,
+        "title": "Settings",
+        "text": "",
+        "rect": {
+          "x": 20,
+          "y": 1380,
+          "width": 40,
+          "height": 40
+        },
+        "inViewport": false
+      },
+      {
+        "tag": "a",
+        "href": "/tables",
+        "aria": "Tables",
+        "title": "Tables",
+        "text": "",
+        "rect": {
+          "x": 18,
+          "y": 902,
+          "width": 44,
+          "height": 44
+        },
+        "inViewport": true
+      },
+      {
+        "tag": "a",
+        "href": "/settings",
+        "aria": null,
+        "title": "Settings",
+        "text": "A",
+        "rect": {
+          "x": 1,
+          "y": 954,
+          "width": 78,
+          "height": 45
+        },
+        "inViewport": true
+      },
+      {
+        "tag": "button",
+        "href": null,
+        "aria": null,
+        "title": null,
+        "text": "More",
+        "rect": {
+          "x": 1148,
+          "y": -7704,
+          "width": 143,
+          "height": 36
+        },
+        "inViewport": false
+      },
+      {
+        "tag": "a",
+        "href": "/circles",
+        "aria": null,
+        "title": null,
+        "text": "New Circle",
+        "rect": {
+          "x": 1163,
+          "y": 1150,
+          "width": 83,
+          "height": 20
+        },
+        "inViewport": false
+      },
+      {
+        "tag": "a",
+        "href": "/circles",
+        "aria": null,
+        "title": null,
+        "text": "View All",
+        "rect": {
+          "x": 1258,
+          "y": 1150,
+          "width": 46,
+          "height": 20
+        },
+        "inViewport": false
+      }
+    ],
+    "assertions": {
+      "onProtectedApp": true,
+      "hasTablesInViewport": true,
+      "hasCirclesInViewport": true,
+      "tablesViewportCount": 1,
+      "circlesViewportCount": 1,
+      "settingsViewportCount": 1,
+      "tablesOverlapsSettings": false,
+      "tablesAboveSettings": true
+    }
+  },
+  {
+    "name": "mobile-dashboard",
+    "status": 200,
+    "consoleErrorCount": 2,
+    "pageErrorCount": 0,
+    "consoleErrors": [
+      "Failed to load resource: the server responded with a status of 401 (Unauthorized)",
+      "Failed to load resource: the server responded with a status of 401 (Unauthorized)"
+    ],
+    "pageErrors": [],
+    "url": "http://localhost:3100/dashboard",
+    "title": "Dashboard | ChefFlow",
+    "aside": null,
+    "viewport": {
+      "width": 390,
+      "height": 844
+    },
+    "elements": [
+      {
+        "tag": "a",
+        "href": "/tables",
+        "aria": null,
+        "title": null,
+        "text": "Tables",
+        "rect": {
+          "x": 279,
+          "y": 56,
+          "width": 56,
+          "height": 44
+        },
+        "inViewport": true
+      },
+      {
+        "tag": "button",
+        "href": null,
+        "aria": null,
+        "title": null,
+        "text": "More",
+        "rect": {
+          "x": 334,
+          "y": 56,
+          "width": 56,
+          "height": 44
+        },
+        "inViewport": true
+      },
+      {
+        "tag": "button",
+        "href": null,
+        "aria": null,
+        "title": null,
+        "text": "More",
+        "rect": {
+          "x": 29,
+          "y": -9680,
+          "width": 332,
+          "height": 44
+        },
+        "inViewport": false
+      },
+      {
+        "tag": "a",
+        "href": "/circles",
+        "aria": null,
+        "title": null,
+        "text": "New Circle",
+        "rect": {
+          "x": 233,
+          "y": 357,
+          "width": 83,
+          "height": 20
+        },
+        "inViewport": true
+      },
+      {
+        "tag": "a",
+        "href": "/circles",
+        "aria": null,
+        "title": null,
+        "text": "View All",
+        "rect": {
+          "x": 328,
+          "y": 357,
+          "width": 46,
+          "height": 20
+        },
+        "inViewport": true
+      }
+    ],
+    "assertions": {
+      "onProtectedApp": true,
+      "hasTablesInViewport": true,
+      "hasCirclesInViewport": true,
+      "tablesViewportCount": 1,
+      "circlesViewportCount": 2,
+      "settingsViewportCount": 0,
+      "tablesOverlapsSettings": false,
+      "tablesAboveSettings": false
+    }
+  }
+]

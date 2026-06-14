@@ -1,0 +1,30 @@
+43. [POST] https://o4510955452366848.ingest.us.sentry.io/api/4510955466915840/envelope/?sentry_version=7&sentry_key=3143cfe23762c47ecc97e8bfacdc8109&sentry_client=sentry.javascript.nextjs%2F10.47.0 => [200] 
+47. [POST] https://o4510955452366848.ingest.us.sentry.io/api/4510955466915840/envelope/?sentry_version=7&sentry_key=3143cfe23762c47ecc97e8bfacdc8109&sentry_client=sentry.javascript.nextjs%2F10.47.0 => [200] 
+48. [POST] https://o4510955452366848.ingest.us.sentry.io/api/4510955466915840/envelope/?sentry_version=7&sentry_key=3143cfe23762c47ecc97e8bfacdc8109&sentry_client=sentry.javascript.nextjs%2F10.47.0 => [200] 
+50. [GET] http://localhost:4300/?_rsc=q3mOO9BClNZHexY7 => [200] OK
+51. [GET] http://localhost:4300/?_rsc=q3mOO9BClNZHexY7 => [200] OK
+52. [GET] http://localhost:4300/?_rsc=q3mOO9BClNZHexY7 => [200] OK
+53. [GET] http://localhost:4300/?_rsc=q3mOO9BClNZHexY7 => [200] OK
+54. [GET] http://localhost:4300/?_rsc=q3mOO9BClNZHexY7 => [200] OK
+55. [GET] http://localhost:4300/?_rsc=q3mOO9BClNZHexY7 => [200] OK
+56. [GET] http://localhost:4300/?_rsc=q3mOO9BClNZHexY7 => [200] OK
+57. [GET] http://localhost:4300/?_rsc=q3mOO9BClNZHexY7 => [200] OK
+58. [GET] http://localhost:4300/?_rsc=q3mOO9BClNZHexY7 => [200] OK
+59. [GET] http://localhost:4300/?_rsc=q3mOO9BClNZHexY7 => [200] OK
+60. [GET] http://localhost:4300/?_rsc=q3mOO9BClNZHexY7 => [200] OK
+61. [GET] http://localhost:4300/?_rsc=q3mOO9BClNZHexY7 => [200] OK
+62. [GET] http://localhost:4300/?_rsc=q3mOO9BClNZHexY7 => [200] OK
+63. [GET] http://localhost:4300/?_rsc=q3mOO9BClNZHexY7 => [200] OK
+64. [GET] http://localhost:4300/?_rsc=q3mOO9BClNZHexY7 => [200] OK
+65. [GET] http://localhost:4300/?_rsc=q3mOO9BClNZHexY7 => [200] OK
+66. [GET] http://localhost:4300/?_rsc=q3mOO9BClNZHexY7 => [200] OK
+67. [GET] http://localhost:4300/?_rsc=q3mOO9BClNZHexY7 => [200] OK
+80. [POST] http://localhost:4300/api/track => [FAILED] net::ERR_ABORTED
+81. [POST] http://localhost:4300/api/track => [FAILED] net::ERR_ABORTED
+120. [POST] https://o4510955452366848.ingest.us.sentry.io/api/4510955466915840/envelope/?sentry_version=7&sentry_key=3143cfe23762c47ecc97e8bfacdc8109&sentry_client=sentry.javascript.nextjs%2F10.47.0 => [200] 
+125. [POST] https://o4510955452366848.ingest.us.sentry.io/api/4510955466915840/envelope/?sentry_version=7&sentry_key=3143cfe23762c47ecc97e8bfacdc8109&sentry_client=sentry.javascript.nextjs%2F10.47.0 => [200] 
+126. [POST] https://o4510955452366848.ingest.us.sentry.io/api/4510955466915840/envelope/?sentry_version=7&sentry_key=3143cfe23762c47ecc97e8bfacdc8109&sentry_client=sentry.javascript.nextjs%2F10.47.0 => [200] 
+131. [GET] http://localhost:4300/?_rsc=q3mOO9BClNZHexY7 => [200] OK
+133. [GET] http://localhost:4300/?_rsc=q3mOO9BClNZHexY7 => [200] OK
+
+Note: 108 static requests not shown, run with "static" option to see them.

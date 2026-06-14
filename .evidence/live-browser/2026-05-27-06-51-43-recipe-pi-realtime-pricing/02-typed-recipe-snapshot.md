@@ -1,0 +1,145 @@
+- generic [ref=e1] [box=0,0,1440,1000]:
+  - link "Skip to main content" [ref=e2] [cursor=pointer] [box=-1,-1,1,1]:
+    - /url: "#main-content"
+  - region "Notifications alt+T" [box=0,0,1440,0]
+  - generic [ref=e3] [box=0,0,1440,1000]:
+    - link "Skip to main content" [ref=e4] [cursor=pointer] [box=-1,-1,1,1]:
+      - /url: "#main-content"
+    - generic [box=1391,8,37,24]:
+      - generic [box=1391,12,37,20]: Dev
+    - complementary [ref=e5] [box=0,0,288,1000]:
+      - generic [ref=e6] [box=1,1,286,56]:
+        - link "ChefFlow logo ChefFlow Chef Workspace" [ref=e7] [cursor=pointer] [box=13,8,152,42]:
+          - /url: /dashboard
+          - img "ChefFlow logo" [ref=e9] [box=13,13,32,32]
+          - generic [ref=e10] [box=53,8,112,42]:
+            - generic [ref=e11] [box=53,8,112,28]: ChefFlow
+            - generic [ref=e12] [box=53,36,112,14]: Chef Workspace
+        - generic [ref=e13] [box=165,7,338,44]:
+          - button "Server AI · 9ms" [ref=e1132] [cursor=pointer] [box=165,14,122,30]:
+            - generic [ref=e1134] [box=188,19,88,20]: Server AI · 9ms
+          - generic "System active" [ref=e1140] [box=287,13,32,32]
+          - button "Recent activity" [ref=e18] [cursor=pointer] [box=319,13,32,32]
+          - button "Open search" [ref=e23] [cursor=pointer] [box=351,7,44,44]:
+            - img [ref=e24] [box=364,20,18,18]
+          - button "Open Remy" [ref=e27] [cursor=pointer] [box=395,13,32,32]:
+            - img [ref=e28] [box=402,20,18,18]
+          - button "Notifications (1553 unread)" [ref=e1135] [cursor=pointer] [box=427,7,44,44]:
+            - img [ref=e32] [box=440,20,18,18]
+            - generic [ref=e1136] [box=444,5,28,16]: 99+
+          - button "Collapse sidebar" [ref=e34] [cursor=pointer] [box=471,13,32,32]:
+            - img [ref=e35] [box=479,21,16,16]
+      - navigation [ref=e37] [box=1,57,286,731]:
+        - generic [ref=e38] [box=1,69,282,2286]:
+          - generic [ref=e39] [box=13,69,258,32]:
+            - img [box=25,78,14,14]
+            - textbox [ref=e40] [box=17,69,250,32]:
+              - /placeholder: Search or ⌘K to jump...
+          - generic [ref=e41] [box=13,105,258,578]:
+            - button "Create" [ref=e42] [cursor=pointer] [box=25,113,234,40]
+            - generic [ref=e46] [box=25,157,234,518]
+          - generic [ref=e99] [box=13,691,258,1325]:
+            - button "All Features" [expanded] [ref=e101] [cursor=pointer] [box=13,700,258,36]
+            - generic [ref=e105] [box=13,736,258,1280]
+          - generic [ref=e1085] [box=13,2020,258,216]:
+            - generic [ref=e1086] [box=13,2020,258,38]
+            - generic [ref=e1097] [box=13,2058,258,178]
+          - generic [ref=e958] [box=13,2240,258,115]:
+            - link "Show all features" [ref=e959] [cursor=pointer] [box=13,2249,258,34]:
+              - /url: /features
+            - link "Explore ChefFlow" [ref=e962] [cursor=pointer] [box=13,2285,258,34]:
+              - /url: /eat
+            - link "My Public Profile" [ref=e965] [cursor=pointer] [box=13,2321,258,34]:
+              - /url: /settings/public-profile
+      - link "Tables" [ref=e969] [cursor=pointer] [box=13,797,262,62]:
+        - /url: /tables
+        - img [ref=e971] [box=32,819,18,18]
+        - generic [ref=e973] [box=69,807,194,42]:
+          - generic [ref=e974] [box=69,807,194,20]: Tables
+          - generic [ref=e975] [box=69,827,194,22]: Social hub
+      - link "Cannabis Portal" [ref=e977] [cursor=pointer] [box=13,876,262,62]:
+        - /url: /events/cannabis
+        - img [ref=e979] [box=32,898,18,18]
+        - generic [ref=e981] [box=69,886,194,42]:
+          - generic [ref=e982] [box=69,886,194,20]: Cannabis Portal
+          - generic [ref=e983] [box=69,906,194,22]: Dining tier
+      - link "A Agent Test Kitchen" [ref=e984] [cursor=pointer] [box=1,946,286,53]:
+        - /url: /settings
+        - generic [ref=e985] [box=17,959,28,28]: A
+        - generic [ref=e986] [box=57,962,188,22]: Agent Test Kitchen
+        - img [ref=e987] [box=257,966,14,14]
+    - main [ref=e989] [box=0,0,1440,837]:
+      - navigation "Breadcrumb" [ref=e990] [box=288,0,1152,44]:
+        - list [ref=e993] [box=320,11,1022,22]:
+          - listitem [ref=e994] [box=320,11,72,22]:
+            - link "Dashboard" [ref=e995] [cursor=pointer] [box=320,11,72,22]:
+              - /url: /dashboard
+          - listitem [ref=e996] [box=398,11,68,22]:
+            - img [ref=e997] [box=398,16,12,12]
+            - link "Recipes" [ref=e999] [cursor=pointer] [box=416,11,50,22]:
+              - /url: /recipes
+          - listitem [ref=e1000] [box=472,11,49,22]:
+            - img [ref=e1001] [box=472,16,12,12]
+            - generic [ref=e1003] [box=490,11,31,22]: New
+        - generic [ref=e1004] [box=1342,8,66,28]:
+          - generic [ref=e1005] [box=1342,13,30,18]:
+            - generic [ref=e1006] [box=1348,15,11,14]: ⌘
+            - generic [ref=e1007] [box=1361,15,6,14]: K
+          - button "Refresh" [ref=e1008] [cursor=pointer] [box=1380,8,28,28]:
+            - img [ref=e1009] [box=1387,15,14,14]
+      - generic [ref=e1011] [box=288,44,1152,793]:
+        - generic [ref=e1012] [box=320,76,1088,32]:
+          - link "payment Chain Test 205640 $750 33d overdue" [ref=e1013] [cursor=pointer] [box=263,78,281,28]:
+            - /url: /chef/events/0c271e6e-b56e-48e2-ae25-341a0b119fbe/financials
+            - generic [ref=e1015] [box=285,85,43,14]: payment
+            - generic [ref=e1016] [box=334,82,200,20]: Chain Test 205640 $750 33d overdue
+          - link "payment Chain Test 514533 $750 33d overdue" [ref=e1017] [cursor=pointer] [box=548,78,281,28]:
+            - /url: /chef/events/987f745e-ff2b-430a-b3b2-ad2909ad279b/financials
+            - generic [ref=e1019] [box=570,85,43,14]: payment
+            - generic [ref=e1020] [box=619,82,200,20]: Chain Test 514533 $750 33d overdue
+          - link "payment Chain Test 791082 $750 33d overdue" [ref=e1021] [cursor=pointer] [box=833,78,281,28]:
+            - /url: /chef/events/709255ca-7e32-46aa-8e22-5741aeb75bee/financials
+            - generic [ref=e1023] [box=855,85,43,14]: payment
+            - generic [ref=e1024] [box=905,82,200,20]: Chain Test 791082 $750 33d overdue
+          - link "payment Chain Test 292261 $750 33d overdue" [ref=e1025] [cursor=pointer] [box=1119,78,281,28]:
+            - /url: /chef/events/8106d7d3-a4a0-4c28-8223-b5cc98539957/financials
+            - generic [ref=e1027] [box=1141,85,43,14]: payment
+            - generic [ref=e1028] [box=1190,82,200,20]: Chain Test 292261 $750 33d overdue
+          - link "payment Chain Test 351716 $750 33d overdue" [ref=e1029] [cursor=pointer] [box=1404,78,281,28]:
+            - /url: /chef/events/43998d73-40de-4a57-9690-6588acfe3a34/financials
+            - generic [ref=e1031] [box=1426,85,43,14]: payment
+            - generic [ref=e1032] [box=1475,82,200,20]: Chain Test 351716 $750 33d overdue
+        - generic [ref=e1034] [box=320,108,1088,174]:
+          - generic [ref=e1035] [box=321,109,1086,45]:
+            - generic [ref=e1036] [box=333,124,93,15]: Contextual Rail
+            - button "Collapse rail" [ref=e1037] [cursor=pointer] [box=1363,115,32,32]
+          - generic [ref=e1043] [box=870,162,525,62]:
+            - generic [ref=e1044] [box=870,162,525,15]
+            - link "$750 unpaid - Dinner Party - Chain Test Completed on 2026-04-24" [ref=e1049] [cursor=pointer] [box=870,181,525,43]:
+              - /url: /events/1375c682-0e1c-46f6-9412-d94c8f7ec573
+          - link "Send invoice" [ref=e1058] [cursor=pointer] [box=333,241,99,32]:
+            - /url: /events/1375c682-0e1c-46f6-9412-d94c8f7ec573
+        - 'status "Save state: unsaved changes" [ref=e1060] [box=1260,282,148,34]':
+          - img [ref=e1061] [box=1273,292,14,14]
+          - generic [ref=e1063] [box=1295,289,100,20]: Unsaved changes
+        - generic [ref=e1064] [box=416,324,896,481]:
+          - generic [ref=e1065] [box=416,324,896,44]:
+            - heading "New Recipe" [level=1] [ref=e1067] [box=416,324,165,36]
+            - link "Back to Recipes" [ref=e1068] [cursor=pointer] [box=1166,324,146,44]:
+              - /url: /recipes
+          - generic [ref=e1070] [box=416,392,896,40]:
+            - button "Smart Import" [ref=e1071] [cursor=pointer] [box=416,392,124,40]
+            - button "Manual Entry" [ref=e1072] [cursor=pointer] [box=544,392,123,40]
+          - generic [ref=e1073] [box=416,456,896,349]:
+            - heading "Describe Your Recipe" [level=2] [ref=e1075] [box=441,473,846,28]
+            - generic [ref=e1076] [box=417,518,894,286]
+    - generic [ref=e1113] [box=1232,936,192,48]:
+      - button "Move Remy launcher" [box=1232,940,40,40]:
+        - img [box=1244,952,16,16]
+      - button "Show Remy character" [box=1280,940,40,40]:
+        - img [box=1292,952,16,16]
+      - button "Hide Remy launcher" [box=1328,940,40,40]:
+        - img [box=1340,952,16,16]
+      - button "Open Remy chat window" [ref=e1114] [cursor=pointer] [box=1376,936,48,48]:
+        - img [ref=e1115] [box=1390,950,20,20]
+  - alert [ref=e1081] [box=-1,999,1,1]

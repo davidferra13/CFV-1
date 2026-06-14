@@ -1,6 +1,6 @@
 {
   "version": "1.0",
-  "timestamp": "2026-05-26T18:08:09.736Z",
+  "timestamp": "2026-06-14T03:30:51.697Z",
   "source": "auto-postool",
   "partial": false,
   "phase": null,
@@ -18,21 +18,129 @@
   "uncommitted_files": [
     {
       "status": "M",
+      "path": ".claude-session-scope"
+    },
+    {
+      "status": "M",
+      "path": ".openclaw-deploy/captured-responses.json"
+    },
+    {
+      "status": "M",
+      "path": ".openclaw-deploy/captured-session.json"
+    },
+    {
+      "status": "M",
       "path": ".planning/HANDOFF.json"
     },
     {
       "status": "M",
-      "path": "app/(chef)/dashboard/page.tsx"
+      "path": "app/(chef)/events/cannabis/page.tsx"
+    },
+    {
+      "status": "M",
+      "path": "app/(chef)/layout.tsx"
+    },
+    {
+      "status": "M",
+      "path": "app/(public)/_components/discovery-fallback-panel.tsx"
+    },
+    {
+      "status": "M",
+      "path": "components/navigation/chef-mobile-nav.tsx"
+    },
+    {
+      "status": "M",
+      "path": "components/navigation/chef-nav.tsx"
+    },
+    {
+      "status": "M",
+      "path": "components/navigation/nav-config.tsx"
+    },
+    {
+      "status": "M",
+      "path": "components/pricing/ingredient-pie-popover.tsx"
+    },
+    {
+      "status": "M",
+      "path": "docs/build-state.md"
+    },
+    {
+      "status": "M",
+      "path": "docs/sync-status.json"
+    },
+    {
+      "status": "M",
+      "path": "lib/chef/layout-data-cache.ts"
+    },
+    {
+      "status": "M",
+      "path": "lib/inventory/price-history-actions.ts"
+    },
+    {
+      "status": "M",
+      "path": "lib/monitoring/logger.ts"
+    },
+    {
+      "status": "M",
+      "path": "lib/pricing/ingredient-pie-detail.ts"
+    },
+    {
+      "status": "M",
+      "path": "lib/pricing/resolve-price.ts"
+    },
+    {
+      "status": "M",
+      "path": "scripts/audit-chef-nav.ts"
+    },
+    {
+      "status": "M",
+      "path": "scripts/wiring-audit-results.json"
+    },
+    {
+      "status": "M",
+      "path": "scripts/wiring-audit.mjs"
+    },
+    {
+      "status": "M",
+      "path": "tests/unit/nav-regression.test.ts"
     },
     {
       "status": "??",
-      "path": "app/(chef)/series/"
+      "path": ".claude/skills/qol/"
     },
     {
       "status": "??",
-      "path": "components/series/"
+      "path": ".evidence/live-browser/2026-05-26-20-30-27-tables-sidebar-nav/"
+    },
+    {
+      "status": "??",
+      "path": ".evidence/live-browser/2026-05-26-20-35-56-cannabis-nav-access/"
+    },
+    {
+      "status": "??",
+      "path": ".evidence/live-browser/2026-05-27-02-27-55-agent-chef-client-portals/"
+    },
+    {
+      "status": "??",
+      "path": ".evidence/live-browser/2026-05-27-05-03-17-private-chef-chefflow-showcase/"
+    },
+    {
+      "status": "??",
+      "path": ".evidence/live-browser/2026-05-27-06-30-16-dirty-workspace-reconciliation/"
+    },
+    {
+      "status": "??",
+      "path": ".evidence/live-browser/2026-05-27-06-51-43-recipe-pi-realtime-pricing/"
+    },
+    {
+      "status": "??",
+      "path": ".evidence/live-browser/2026-05-27-17-53-49-private-chef-inquiry-proposal-workflow/"
+    },
+    {
+      "status": "??",
+      "path": "tests/unit/cannabis-portal-copy.test.ts"
     }
   ],
   "next_action": null,
-  "context_notes": "Recent commits:\nd89095d8c feat(dashboard): wire LayerDivider into dashboard sections\n61c6b2f69 chore: commit layer-divider component and session artifacts\n21815f06c feat(circles): add cohosting agreement engine\nb680b4196 fix(db): correct series_hosts FK to auth.users\n89f3a72c9 docs: update session log and build state for series Phase 2"
+  "context_notes": "Recent commits:\nbdaba2e33 docs: collaborative menu workspace implementation plan\n7b8c8b866 docs: collaborative menu workspace design spec\n557fbc24c docs: update session log and build state for series Phase 3\n014de9367 @ docs: session log for cohosting agreement migration completion\n428b28848 feat(series): add series UI routes and components (Phase 3)"
 }

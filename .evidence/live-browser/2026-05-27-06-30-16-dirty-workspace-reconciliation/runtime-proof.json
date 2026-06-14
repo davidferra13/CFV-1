@@ -1,0 +1,444 @@
+{
+  "generatedAt": "2026-05-27T06:32:43.558Z",
+  "base": "http://localhost:3100",
+  "storageState": ".auth/chef.json",
+  "observations": [
+    {
+      "route": "http://localhost:3100/dashboard",
+      "viewport": "1440x1000",
+      "status": 200,
+      "finalUrl": "http://localhost:3100/dashboard",
+      "screenshot": "screenshots/dashboard-desktop.png",
+      "hasTablesText": true,
+      "hasCirclesText": true,
+      "hasCannabisPortalText": true,
+      "hasStrictlyPrivateCopy": false,
+      "matchingLinks": [
+        {
+          "text": "Circles",
+          "href": "/circles"
+        },
+        {
+          "text": "TablesSocial hub",
+          "href": "/tables"
+        },
+        {
+          "text": "Cannabis PortalDining tier",
+          "href": "/events/cannabis"
+        },
+        {
+          "text": "Tables",
+          "href": "/tables"
+        },
+        {
+          "text": "New Circle",
+          "href": "/circles"
+        },
+        {
+          "text": "View All",
+          "href": "/circles"
+        }
+      ]
+    },
+    {
+      "route": "http://localhost:3100/events/cannabis",
+      "viewport": "1440x1000",
+      "status": 200,
+      "finalUrl": "http://localhost:3100/events/cannabis",
+      "screenshot": "screenshots/events-cannabis-desktop.png",
+      "hasTablesText": true,
+      "hasCirclesText": true,
+      "hasCannabisPortalText": true,
+      "hasStrictlyPrivateCopy": true,
+      "matchingLinks": [
+        {
+          "text": "Circles",
+          "href": "/circles"
+        },
+        {
+          "text": "TablesSocial hub",
+          "href": "/tables"
+        },
+        {
+          "text": "Cannabis PortalDining tier",
+          "href": "/events/cannabis"
+        },
+        {
+          "text": "Tables",
+          "href": "/tables"
+        }
+      ]
+    },
+    {
+      "route": "http://localhost:3100/dashboard",
+      "viewport": "390x844",
+      "status": 200,
+      "finalUrl": "http://localhost:3100/dashboard",
+      "screenshot": "screenshots/dashboard-mobile.png",
+      "hasTablesText": true,
+      "hasCirclesText": false,
+      "hasCannabisPortalText": false,
+      "hasStrictlyPrivateCopy": false,
+      "matchingLinks": [
+        {
+          "text": "Circles",
+          "href": "/circles"
+        },
+        {
+          "text": "TablesSocial hub",
+          "href": "/tables"
+        },
+        {
+          "text": "Cannabis PortalDining tier",
+          "href": "/events/cannabis"
+        },
+        {
+          "text": "Tables",
+          "href": "/tables"
+        },
+        {
+          "text": "New Circle",
+          "href": "/circles"
+        },
+        {
+          "text": "View All",
+          "href": "/circles"
+        }
+      ]
+    },
+    {
+      "route": "http://localhost:3100/events/cannabis",
+      "viewport": "390x844",
+      "status": 200,
+      "finalUrl": "http://localhost:3100/events/cannabis",
+      "screenshot": "screenshots/events-cannabis-mobile.png",
+      "hasTablesText": true,
+      "hasCirclesText": false,
+      "hasCannabisPortalText": false,
+      "hasStrictlyPrivateCopy": true,
+      "matchingLinks": [
+        {
+          "text": "Circles",
+          "href": "/circles"
+        },
+        {
+          "text": "TablesSocial hub",
+          "href": "/tables"
+        },
+        {
+          "text": "Cannabis PortalDining tier",
+          "href": "/events/cannabis"
+        },
+        {
+          "text": "Tables",
+          "href": "/tables"
+        }
+      ]
+    }
+  ],
+  "consoleMessages": [
+    {
+      "type": "error",
+      "text": "Failed to load resource: the server responded with a status of 403 (Forbidden)"
+    },
+    {
+      "type": "error",
+      "text": "Failed to load resource: the server responded with a status of 403 (Forbidden)"
+    },
+    {
+      "type": "error",
+      "text": "Failed to load resource: the server responded with a status of 403 (Forbidden)"
+    },
+    {
+      "type": "error",
+      "text": "Failed to load resource: the server responded with a status of 403 (Forbidden)"
+    },
+    {
+      "type": "error",
+      "text": "Failed to load resource: the server responded with a status of 403 (Forbidden)"
+    },
+    {
+      "type": "error",
+      "text": "Failed to load resource: the server responded with a status of 403 (Forbidden)"
+    },
+    {
+      "type": "error",
+      "text": "Failed to load resource: the server responded with a status of 403 (Forbidden)"
+    },
+    {
+      "type": "error",
+      "text": "Failed to load resource: the server responded with a status of 403 (Forbidden)"
+    },
+    {
+      "type": "error",
+      "text": "Failed to load resource: the server responded with a status of 403 (Forbidden)"
+    },
+    {
+      "type": "error",
+      "text": "Failed to load resource: the server responded with a status of 403 (Forbidden)"
+    },
+    {
+      "type": "error",
+      "text": "Failed to load resource: the server responded with a status of 403 (Forbidden)"
+    },
+    {
+      "type": "error",
+      "text": "Failed to load resource: the server responded with a status of 403 (Forbidden)"
+    },
+    {
+      "type": "error",
+      "text": "Failed to load resource: the server responded with a status of 403 (Forbidden)"
+    },
+    {
+      "type": "error",
+      "text": "Failed to load resource: the server responded with a status of 403 (Forbidden)"
+    },
+    {
+      "type": "error",
+      "text": "Failed to load resource: the server responded with a status of 403 (Forbidden)"
+    },
+    {
+      "type": "error",
+      "text": "Failed to load resource: the server responded with a status of 403 (Forbidden)"
+    },
+    {
+      "type": "error",
+      "text": "Failed to load resource: the server responded with a status of 403 (Forbidden)"
+    },
+    {
+      "type": "error",
+      "text": "Failed to load resource: the server responded with a status of 403 (Forbidden)"
+    },
+    {
+      "type": "error",
+      "text": "Failed to load resource: the server responded with a status of 403 (Forbidden)"
+    },
+    {
+      "type": "error",
+      "text": "Failed to load resource: the server responded with a status of 403 (Forbidden)"
+    },
+    {
+      "type": "error",
+      "text": "[onboarding-banner] Failed to load status TypeError: Failed to fetch\n    at fetchServerAction (webpack-internal:///(app-pages-browser)/./node_modules/next/dist/client/components/router-reducer/reducers/server-action-reducer.js:33:23)"
+    },
+    {
+      "type": "error",
+      "text": "Failed to load resource: the server responded with a status of 403 (Forbidden)"
+    },
+    {
+      "type": "error",
+      "text": "Failed to load resource: the server responded with a status of 403 (Forbidden)"
+    },
+    {
+      "type": "error",
+      "text": "Failed to load resource: the server responded with a status of 403 (Forbidden)"
+    }
+  ],
+  "requestFailures": [
+    {
+      "url": "http://localhost:3100/dashboard",
+      "method": "POST",
+      "failure": "net::ERR_ABORTED"
+    },
+    {
+      "url": "http://localhost:3100/dashboard",
+      "method": "POST",
+      "failure": "net::ERR_ABORTED"
+    },
+    {
+      "url": "http://localhost:3100/dashboard",
+      "method": "POST",
+      "failure": "net::ERR_ABORTED"
+    },
+    {
+      "url": "http://localhost:3100/dashboard",
+      "method": "POST",
+      "failure": "net::ERR_ABORTED"
+    },
+    {
+      "url": "http://localhost:3100/dashboard",
+      "method": "POST",
+      "failure": "net::ERR_ABORTED"
+    },
+    {
+      "url": "http://localhost:3100/dashboard",
+      "method": "POST",
+      "failure": "net::ERR_ABORTED"
+    },
+    {
+      "url": "http://localhost:3100/dashboard",
+      "method": "POST",
+      "failure": "net::ERR_ABORTED"
+    },
+    {
+      "url": "http://localhost:3100/api/realtime/rail",
+      "method": "GET",
+      "failure": "net::ERR_ABORTED"
+    },
+    {
+      "url": "http://localhost:3100/api/realtime/rail",
+      "method": "GET",
+      "failure": "net::ERR_ABORTED"
+    },
+    {
+      "url": "http://localhost:3100/api/realtime/quotes%3Aef2e89c6-508a-487a-97da-5500cfaeaa97",
+      "method": "GET",
+      "failure": "net::ERR_ABORTED"
+    },
+    {
+      "url": "http://localhost:3100/api/realtime/events%3Aef2e89c6-508a-487a-97da-5500cfaeaa97",
+      "method": "GET",
+      "failure": "net::ERR_ABORTED"
+    },
+    {
+      "url": "http://localhost:3100/api/health",
+      "method": "GET",
+      "failure": "net::ERR_ABORTED"
+    },
+    {
+      "url": "http://localhost:3100/api/realtime/notifications%3A435d1e04-e512-44c1-8c99-1eaa69bbb155",
+      "method": "GET",
+      "failure": "net::ERR_ABORTED"
+    },
+    {
+      "url": "http://localhost:3100/api/health",
+      "method": "GET",
+      "failure": "net::ERR_ABORTED"
+    },
+    {
+      "url": "http://localhost:3100/api/health",
+      "method": "GET",
+      "failure": "net::ERR_ABORTED"
+    },
+    {
+      "url": "http://localhost:3100/api/realtime/presence",
+      "method": "POST",
+      "failure": "net::ERR_ABORTED"
+    },
+    {
+      "url": "http://localhost:3100/dashboard",
+      "method": "POST",
+      "failure": "net::ERR_ABORTED"
+    },
+    {
+      "url": "http://localhost:3100/dashboard",
+      "method": "POST",
+      "failure": "net::ERR_ABORTED"
+    },
+    {
+      "url": "http://localhost:3100/api/health",
+      "method": "GET",
+      "failure": "net::ERR_ABORTED"
+    },
+    {
+      "url": "http://localhost:3100/api/realtime/conversations%3Aef2e89c6-508a-487a-97da-5500cfaeaa97",
+      "method": "GET",
+      "failure": "net::ERR_ABORTED"
+    },
+    {
+      "url": "http://localhost:3100/api/realtime/inquiries%3Aef2e89c6-508a-487a-97da-5500cfaeaa97",
+      "method": "GET",
+      "failure": "net::ERR_ABORTED"
+    },
+    {
+      "url": "http://localhost:3100/_next/static/webpack/webpack.3b775a6326fcf8e9.hot-update.js",
+      "method": "GET",
+      "failure": "net::ERR_ABORTED"
+    },
+    {
+      "url": "http://localhost:3100/events/cannabis",
+      "method": "POST",
+      "failure": "net::ERR_ABORTED"
+    },
+    {
+      "url": "http://localhost:3100/api/realtime/rail",
+      "method": "GET",
+      "failure": "net::ERR_ABORTED"
+    },
+    {
+      "url": "http://localhost:3100/api/realtime/notifications%3A435d1e04-e512-44c1-8c99-1eaa69bbb155",
+      "method": "GET",
+      "failure": "net::ERR_ABORTED"
+    },
+    {
+      "url": "http://localhost:3100/api/realtime/rail",
+      "method": "GET",
+      "failure": "net::ERR_ABORTED"
+    },
+    {
+      "url": "http://localhost:3100/events/cannabis",
+      "method": "POST",
+      "failure": "net::ERR_ABORTED"
+    },
+    {
+      "url": "http://localhost:3100/events/cannabis",
+      "method": "POST",
+      "failure": "net::ERR_ABORTED"
+    },
+    {
+      "url": "http://localhost:3100/events/cannabis",
+      "method": "POST",
+      "failure": "net::ERR_ABORTED"
+    },
+    {
+      "url": "http://localhost:3100/api/health",
+      "method": "GET",
+      "failure": "net::ERR_ABORTED"
+    },
+    {
+      "url": "http://localhost:3100/api/health",
+      "method": "GET",
+      "failure": "net::ERR_ABORTED"
+    },
+    {
+      "url": "http://localhost:3100/dashboard",
+      "method": "POST",
+      "failure": "net::ERR_ABORTED"
+    },
+    {
+      "url": "http://localhost:3100/api/realtime/conversations%3Aef2e89c6-508a-487a-97da-5500cfaeaa97",
+      "method": "GET",
+      "failure": "net::ERR_ABORTED"
+    },
+    {
+      "url": "http://localhost:3100/api/health",
+      "method": "GET",
+      "failure": "net::ERR_ABORTED"
+    },
+    {
+      "url": "http://localhost:3100/api/realtime/notifications%3A435d1e04-e512-44c1-8c99-1eaa69bbb155",
+      "method": "GET",
+      "failure": "net::ERR_ABORTED"
+    },
+    {
+      "url": "http://localhost:3100/api/health",
+      "method": "GET",
+      "failure": "net::ERR_ABORTED"
+    },
+    {
+      "url": "http://localhost:3100/api/realtime/quotes%3Aef2e89c6-508a-487a-97da-5500cfaeaa97",
+      "method": "GET",
+      "failure": "net::ERR_ABORTED"
+    },
+    {
+      "url": "http://localhost:3100/api/realtime/rail",
+      "method": "GET",
+      "failure": "net::ERR_ABORTED"
+    },
+    {
+      "url": "http://localhost:3100/api/realtime/chef-ef2e89c6-508a-487a-97da-5500cfaeaa97",
+      "method": "GET",
+      "failure": "net::ERR_ABORTED"
+    },
+    {
+      "url": "http://localhost:3100/api/realtime/rail",
+      "method": "GET",
+      "failure": "net::ERR_ABORTED"
+    },
+    {
+      "url": "http://localhost:3100/dashboard",
+      "method": "POST",
+      "failure": "net::ERR_ABORTED"
+    }
+  ]
+}

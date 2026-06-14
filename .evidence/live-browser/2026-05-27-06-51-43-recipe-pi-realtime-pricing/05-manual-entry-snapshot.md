@@ -1,0 +1,186 @@
+- main [ref=e989] [box=0,0,1434,2343]:
+  - navigation "Breadcrumb" [ref=e990] [box=288,0,1146,44]:
+    - list [ref=e993] [box=320,11,1016,22]:
+      - listitem [ref=e994] [box=320,11,72,22]:
+        - link "Dashboard" [ref=e995] [cursor=pointer] [box=320,11,72,22]:
+          - /url: /dashboard
+      - listitem [ref=e996] [box=398,11,68,22]:
+        - img [ref=e997] [box=398,16,12,12]
+        - link "Recipes" [ref=e999] [cursor=pointer] [box=416,11,50,22]:
+          - /url: /recipes
+      - listitem [ref=e1000] [box=472,11,49,22]:
+        - img [ref=e1001] [box=472,16,12,12]
+        - generic [ref=e1003] [box=490,11,31,22]: New
+    - generic [ref=e1004] [box=1336,8,66,28]:
+      - generic [ref=e1005] [box=1336,13,30,18]:
+        - generic [ref=e1006] [box=1342,15,11,14]: ⌘
+        - generic [ref=e1007] [box=1355,15,6,14]: K
+      - button "Refresh" [ref=e1008] [cursor=pointer] [box=1374,8,28,28]:
+        - img [ref=e1009] [box=1381,15,14,14]
+  - generic [ref=e1011] [box=288,44,1146,2299]:
+    - generic [ref=e1012] [box=320,76,1082,32]:
+      - link "payment Chain Test 205640 $750 33d overdue" [ref=e1013] [cursor=pointer] [box=131,78,281,28]:
+        - /url: /chef/events/0c271e6e-b56e-48e2-ae25-341a0b119fbe/financials
+        - generic [ref=e1015] [box=153,85,43,14]: payment
+        - generic [ref=e1016] [box=202,82,200,20]: Chain Test 205640 $750 33d overdue
+      - link "payment Chain Test 514533 $750 33d overdue" [ref=e1017] [cursor=pointer] [box=416,78,281,28]:
+        - /url: /chef/events/987f745e-ff2b-430a-b3b2-ad2909ad279b/financials
+        - generic [ref=e1019] [box=438,85,43,14]: payment
+        - generic [ref=e1020] [box=487,82,200,20]: Chain Test 514533 $750 33d overdue
+      - link "payment Chain Test 791082 $750 33d overdue" [ref=e1021] [cursor=pointer] [box=701,78,281,28]:
+        - /url: /chef/events/709255ca-7e32-46aa-8e22-5741aeb75bee/financials
+        - generic [ref=e1023] [box=723,85,43,14]: payment
+        - generic [ref=e1024] [box=773,82,200,20]: Chain Test 791082 $750 33d overdue
+      - link "payment Chain Test 292261 $750 33d overdue" [ref=e1025] [cursor=pointer] [box=987,78,281,28]:
+        - /url: /chef/events/8106d7d3-a4a0-4c28-8223-b5cc98539957/financials
+        - generic [ref=e1027] [box=1009,85,43,14]: payment
+        - generic [ref=e1028] [box=1058,82,200,20]: Chain Test 292261 $750 33d overdue
+      - link "payment Chain Test 351716 $750 33d overdue" [ref=e1029] [cursor=pointer] [box=1272,78,281,28]:
+        - /url: /chef/events/43998d73-40de-4a57-9690-6588acfe3a34/financials
+        - generic [ref=e1031] [box=1294,85,43,14]: payment
+        - generic [ref=e1032] [box=1343,82,200,20]: Chain Test 351716 $750 33d overdue
+    - generic [ref=e1034] [box=320,108,1082,174]:
+      - generic [ref=e1035] [box=321,109,1080,45]:
+        - generic [ref=e1036] [box=333,124,93,15]: Contextual Rail
+        - button "Collapse rail" [ref=e1037] [cursor=pointer] [box=1357,115,32,32]:
+          - img [ref=e1038] [box=1365,123,16,16]
+      - generic [ref=e1043] [box=867,162,522,62]:
+        - generic [ref=e1044] [box=867,162,522,15]:
+          - img [ref=e1045] [box=875,164,12,12]
+          - generic [ref=e1047] [box=893,162,71,15]: Intelligence
+        - link "$750 unpaid - Dinner Party - Chain Test Completed on 2026-04-24" [ref=e1049] [cursor=pointer] [box=867,181,522,43]:
+          - /url: /events/1375c682-0e1c-46f6-9412-d94c8f7ec573
+          - generic [ref=e1050] [box=867,181,522,43]:
+            - img [ref=e1052] [box=889,187,14,14]
+            - generic [ref=e1054] [box=911,185,470,35]:
+              - generic [ref=e1055] [box=911,185,180,20]: $750 unpaid - Dinner Party - Chain Test
+              - generic [ref=e1056] [box=911,205,180,15]: Completed on 2026-04-24
+      - link "Send invoice" [ref=e1058] [cursor=pointer] [box=333,241,99,32]:
+        - /url: /events/1375c682-0e1c-46f6-9412-d94c8f7ec573
+    - 'status "Save state: unsaved changes" [ref=e1060] [box=1254,282,148,34]':
+      - img [ref=e1061] [box=1267,292,14,14]
+      - generic [ref=e1063] [box=1289,289,100,20]: Unsaved changes
+    - generic [ref=e1064] [box=413,324,896,1987]:
+      - generic [ref=e1065] [box=413,324,896,44]:
+        - heading "New Recipe" [level=1] [ref=e1067] [box=413,324,165,36]
+        - link "Back to Recipes" [ref=e1068] [cursor=pointer] [box=1163,324,146,44]:
+          - /url: /recipes
+          - button "Back to Recipes" [ref=e1069] [box=1163,324,146,44]
+      - generic [ref=e1143] [box=432,409,860,44]:
+        - img [ref=e1145] [box=432,409,20,20]
+        - generic [ref=e1148] [box=464,409,828,44]: "AI processing is temporarily unavailable. Please try again in a few moments. (Ollama unreachable at http://localhost:11434: AI processing is temporarily unavailable. Please try again in a few moments. (Ollama chat-fallback timed out after 60s))"
+      - generic [ref=e1070] [box=413,494,896,40]:
+        - button "Smart Import" [ref=e1071] [cursor=pointer] [box=413,494,124,40]
+        - button "Manual Entry" [active] [ref=e1072] [cursor=pointer] [box=541,494,123,40]
+      - generic [ref=e1150] [box=413,558,896,1753]:
+        - generic [ref=e1151] [box=413,558,896,1297]:
+          - heading "Recipe Details" [level=2] [ref=e1153] [box=438,575,846,28]
+          - generic [ref=e1154] [box=414,620,894,1234]:
+            - generic [ref=e1155] [box=438,636,846,70]:
+              - generic [ref=e1156] [box=438,636,415,70]:
+                - generic [ref=e1157] [box=438,636,415,22]: Recipe Name \*
+                - textbox "e.g., Diane Sauce" [ref=e1160] [box=438,662,415,44]
+              - generic [ref=e1161] [box=869,636,415,70]:
+                - generic [ref=e1162] [box=869,636,415,22]: Category \*
+                - combobox "Category" [ref=e1163] [cursor=pointer] [box=869,662,415,44]
+            - generic [ref=e1164] [box=438,722,846,70]:
+              - generic [ref=e1165] [box=438,722,846,22]: Description
+              - textbox "Brief description" [ref=e1168] [box=438,748,846,44]
+            - generic [ref=e1169] [box=438,808,846,132]:
+              - generic [ref=e1170] [box=438,808,846,22]: Method
+              - textbox "Concise, outcome-oriented. The chef knows how to cook - just capture what to do." [ref=e1172] [box=438,834,846,106]
+            - generic [ref=e1173] [box=438,956,846,110]:
+              - generic [ref=e1174] [box=438,956,846,22]: Detailed Method
+              - 'textbox "Optional: more detailed version with specific techniques or timings" [ref=e1176] [box=438,982,846,84]'
+            - generic [ref=e1177] [box=438,1082,846,70]:
+              - generic [ref=e1178] [box=438,1082,200,70]:
+                - generic [ref=e1179] [box=438,1082,200,22]: Prep (min)
+                - spinbutton [ref=e1182] [box=438,1108,200,44]
+              - generic [ref=e1183] [box=654,1082,200,70]:
+                - generic [ref=e1184] [box=654,1082,200,22]: Cook (min)
+                - spinbutton [ref=e1187] [box=654,1108,200,44]
+              - generic [ref=e1188] [box=869,1082,200,70]:
+                - generic [ref=e1189] [box=869,1082,200,22]: Yield
+                - spinbutton [ref=e1192] [box=869,1108,200,44]
+              - generic [ref=e1193] [box=1085,1082,200,70]:
+                - generic [ref=e1194] [box=1085,1082,200,22]: Yield Unit
+                - textbox "servings" [ref=e1197] [box=1085,1108,200,44]
+            - generic [ref=e1198] [box=438,1168,846,70]:
+              - generic [ref=e1199] [box=438,1168,846,22]: Dietary Tags
+              - textbox "gluten-free, dairy-free (comma separated)" [ref=e1202] [box=438,1194,846,44]
+            - generic [ref=e1203] [box=438,1254,846,70]:
+              - generic [ref=e1204] [box=438,1254,271,70]:
+                - generic [ref=e1205] [box=438,1254,271,22]: Servings
+                - spinbutton [ref=e1208] [box=438,1280,271,44]
+              - generic [ref=e1209] [box=725,1254,271,70]:
+                - generic [ref=e1210] [box=725,1254,271,22]: Calories / Serving
+                - spinbutton [ref=e1213] [box=725,1280,271,44]
+              - generic [ref=e1214] [box=1013,1254,271,70]:
+                - generic [ref=e1215] [box=1013,1254,271,22]: Difficulty (1 to 5)
+                - generic [ref=e1216] [box=1013,1280,271,36]
+            - generic [ref=e1222] [box=438,1340,846,70]:
+              - generic [ref=e1223] [box=438,1340,846,22]: Equipment
+              - textbox "stand mixer, food processor, blowtorch (comma separated)" [ref=e1226] [box=438,1366,846,44]
+            - generic [ref=e1227] [box=438,1426,846,70]:
+              - generic [ref=e1228] [box=438,1426,415,70]:
+                - generic [ref=e1229] [box=438,1426,415,22]: Cuisine
+                - combobox "Cuisine" [ref=e1230] [cursor=pointer] [box=438,1452,415,44]
+              - generic [ref=e1231] [box=869,1426,415,70]:
+                - generic [ref=e1232] [box=869,1426,415,22]: Meal Type
+                - combobox "Meal Type" [ref=e1233] [cursor=pointer] [box=869,1452,415,44]
+            - generic [ref=e1234] [box=438,1512,846,62]:
+              - generic [ref=e1235] [box=438,1512,846,22]: Season
+              - generic [ref=e1236] [box=438,1538,846,36]:
+                - button "Spring" [ref=e1237] [cursor=pointer] [box=438,1538,69,36]
+                - button "Summer" [ref=e1238] [cursor=pointer] [box=515,1538,81,36]
+                - button "Fall" [ref=e1239] [cursor=pointer] [box=604,1538,48,36]
+                - button "Winter" [ref=e1240] [cursor=pointer] [box=660,1538,70,36]
+                - button "Year-Round" [ref=e1241] [cursor=pointer] [box=738,1538,103,36]
+            - generic [ref=e1242] [box=438,1590,846,144]:
+              - generic [ref=e1243] [box=438,1590,846,22]: Occasion Tags
+              - generic [ref=e1244] [box=438,1616,846,66]:
+                - button "Date Night" [ref=e1245] [cursor=pointer] [box=438,1616,85,30]
+                - button "Holiday" [ref=e1246] [cursor=pointer] [box=529,1616,66,30]
+                - button "Wedding" [ref=e1247] [cursor=pointer] [box=601,1616,74,30]
+                - button "Corporate" [ref=e1248] [cursor=pointer] [box=680,1616,80,30]
+                - button "Kids Party" [ref=e1249] [cursor=pointer] [box=766,1616,78,30]
+                - button "Outdoor/BBQ" [ref=e1250] [cursor=pointer] [box=850,1616,101,30]
+                - button "Tasting Menu" [ref=e1251] [cursor=pointer] [box=957,1616,99,30]
+                - button "Comfort Food" [ref=e1252] [cursor=pointer] [box=1062,1616,102,30]
+                - button "Quick Weeknight" [ref=e1253] [cursor=pointer] [box=438,1652,120,30]
+              - generic [ref=e1254] [box=438,1690,846,44]:
+                - textbox "Add custom occasion..." [ref=e1257] [box=438,1690,768,44]
+                - button "Add" [disabled] [box=1214,1690,70,44]
+            - generic [ref=e1258] [box=438,1750,846,88]:
+              - generic [ref=e1259] [box=438,1750,846,22]: Notes
+              - textbox "Any additional notes about this recipe" [ref=e1261] [box=438,1776,846,62]
+        - generic [ref=e1262] [box=413,1879,896,179]:
+          - generic [ref=e1264] [box=438,1896,846,44]:
+            - heading "Ingredients" [level=2] [ref=e1265] [box=438,1904,93,28]
+            - button "Add Ingredient" [ref=e1266] [cursor=pointer] [box=1151,1896,133,44]
+          - generic [ref=e1269] [box=438,1973,846,68]:
+            - generic [ref=e1270] [box=438,1973,495,68]:
+              - generic [ref=e1271] [box=438,1973,495,20]: Name
+              - textbox "Ingredient name" [ref=e1275] [box=438,1997,495,44]
+            - generic [ref=e1276] [box=941,1973,80,68]:
+              - generic [ref=e1277] [box=941,1973,80,20]: Qty
+              - spinbutton [ref=e1280] [box=941,1997,80,44]: "1"
+            - generic [ref=e1281] [box=1029,1973,96,68]:
+              - generic [ref=e1282] [box=1029,1973,96,20]: Unit
+              - textbox "cup, tbsp" [ref=e1285] [box=1029,1997,96,44]
+            - generic [ref=e1286] [box=1133,1973,112,68]:
+              - generic [ref=e1287] [box=1133,1973,112,20]: Prep
+              - textbox "diced, etc." [ref=e1290] [box=1133,1997,112,44]
+            - button "×" [ref=e1293] [cursor=pointer] [box=1257,1973,27,40]
+        - generic [ref=e1294] [box=413,2082,896,161]:
+          - generic [ref=e1295] [box=414,2083,894,83]:
+            - heading "NutritionalCalculator" [level=2] [ref=e1296] [box=438,2099,846,28]
+            - paragraph [ref=e1297] [box=438,2127,846,22]: USDA-powered nutrition estimates for total recipe and per-serving macros.
+          - generic [ref=e1299] [box=438,2182,846,44]:
+            - button "Calculate Nutrition" [disabled] [box=438,2182,168,44]
+            - generic [ref=e1300] [box=614,2194,142,20]: 0 ingredients · 1 servings
+        - generic [ref=e1302] [box=1092,2267,217,44]:
+          - link "Cancel" [ref=e1303] [cursor=pointer] [box=1092,2267,85,44]:
+            - /url: /recipes
+            - button "Cancel" [ref=e1304] [box=1092,2267,85,44]
+          - button "Save Recipe" [ref=e1305] [cursor=pointer] [box=1189,2267,120,44]

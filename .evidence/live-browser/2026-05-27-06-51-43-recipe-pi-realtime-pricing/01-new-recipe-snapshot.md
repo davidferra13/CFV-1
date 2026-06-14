@@ -1,0 +1,264 @@
+- generic [active] [ref=e1] [box=0,0,1440,1000]:
+  - link "Skip to main content" [ref=e2] [cursor=pointer] [box=-1,-1,1,1]:
+    - /url: "#main-content"
+  - region "Notifications alt+T" [box=0,0,1440,0]
+  - generic [ref=e3] [box=0,0,1440,1000]:
+    - link "Skip to main content" [ref=e4] [cursor=pointer] [box=-1,-1,1,1]:
+      - /url: "#main-content"
+    - generic [box=1391,8,37,24]:
+      - generic [box=1391,12,37,20]: Dev
+    - complementary [ref=e5] [box=0,0,288,1000]:
+      - generic [ref=e6] [box=1,1,286,56]:
+        - link "ChefFlow logo ChefFlow Chef Workspace" [ref=e7] [cursor=pointer] [box=13,8,152,42]:
+          - /url: /dashboard
+          - img "ChefFlow logo" [ref=e9] [box=13,13,32,32]
+          - generic [ref=e10] [box=53,8,112,42]:
+            - generic [ref=e11] [box=53,8,112,28]: ChefFlow
+            - generic [ref=e12] [box=53,36,112,14]: Chef Workspace
+        - generic [ref=e13] [box=165,7,216,44]:
+          - generic "System slow" [ref=e1129] [box=165,13,32,32]
+          - button "Recent activity" [ref=e18] [cursor=pointer] [box=197,13,32,32]
+          - button "Open search" [ref=e23] [cursor=pointer] [box=229,7,44,44]:
+            - img [ref=e24] [box=242,20,18,18]
+          - button "Open Remy" [ref=e27] [cursor=pointer] [box=273,13,32,32]:
+            - img [ref=e28] [box=280,20,18,18]
+          - button "Notifications" [ref=e31] [cursor=pointer] [box=305,7,44,44]:
+            - img [ref=e32] [box=318,20,18,18]
+          - button "Collapse sidebar" [ref=e34] [cursor=pointer] [box=349,13,32,32]:
+            - img [ref=e35] [box=357,21,16,16]
+      - navigation [ref=e37] [box=1,57,286,731]:
+        - generic [ref=e38] [box=1,69,282,2286]:
+          - generic [ref=e39] [box=13,69,258,32]:
+            - img [box=25,78,14,14]
+            - textbox [ref=e40] [box=17,69,250,32]:
+              - /placeholder: Search or ⌘K to jump...
+          - generic [ref=e41] [box=13,105,258,578]:
+            - button "Create" [ref=e42] [cursor=pointer] [box=25,113,234,40]:
+              - img [ref=e43] [box=38,125,16,16]
+              - generic [ref=e45] [box=62,122,44,22]: Create
+            - generic [ref=e46] [box=25,157,234,518]:
+              - link "Today" [ref=e47] [cursor=pointer] [box=25,157,234,38]:
+                - /url: /dashboard
+                - img [ref=e48] [box=35,167,18,18]
+                - generic [ref=e50] [box=65,165,40,22]: Today
+              - link "Inbox" [ref=e51] [cursor=pointer] [box=25,197,234,38]:
+                - /url: /inbox
+                - img [ref=e52] [box=35,207,18,18]
+                - generic [ref=e54] [box=65,205,38,22]: Inbox
+              - link "Events" [ref=e55] [cursor=pointer] [box=25,237,234,38]:
+                - /url: /events
+                - img [ref=e56] [box=35,247,18,18]
+                - generic [ref=e58] [box=65,245,44,22]: Events
+              - link "Clients" [ref=e59] [cursor=pointer] [box=25,277,234,38]:
+                - /url: /clients
+                - img [ref=e60] [box=35,287,18,18]
+                - generic [ref=e62] [box=65,285,46,22]: Clients
+              - link "Menus" [ref=e63] [cursor=pointer] [box=25,317,234,38]:
+                - /url: /menus
+                - img [ref=e64] [box=35,327,18,18]
+                - generic [ref=e66] [box=65,325,46,22]: Menus
+              - link "Recipes" [ref=e67] [cursor=pointer] [box=25,357,234,38]:
+                - /url: /recipes
+                - img [ref=e68] [box=35,367,18,18]
+                - generic [ref=e70] [box=65,365,51,22]: Recipes
+              - link "Pantry" [ref=e71] [cursor=pointer] [box=25,397,234,38]:
+                - /url: /recipes/ingredients
+                - img [ref=e72] [box=35,407,18,18]
+                - generic [ref=e74] [box=65,405,44,22]: Pantry
+              - link "Shopping" [ref=e75] [cursor=pointer] [box=25,437,234,38]:
+                - /url: /culinary/prep/shopping
+                - img [ref=e76] [box=35,447,18,18]
+                - generic [ref=e78] [box=65,445,66,22]: Shopping
+              - link "Prep" [ref=e79] [cursor=pointer] [box=25,477,234,38]:
+                - /url: /culinary/prep
+                - img [ref=e80] [box=35,487,18,18]
+                - generic [ref=e82] [box=65,485,31,22]: Prep
+              - link "Calendar" [ref=e83] [cursor=pointer] [box=25,517,234,38]:
+                - /url: /calendar
+                - img [ref=e84] [box=35,527,18,18]
+                - generic [ref=e86] [box=65,525,60,22]: Calendar
+              - link "Inquiries" [ref=e87] [cursor=pointer] [box=25,557,234,38]:
+                - /url: /inquiries
+                - img [ref=e88] [box=35,567,18,18]
+                - generic [ref=e90] [box=65,565,59,22]: Inquiries
+              - link "Circles" [ref=e91] [cursor=pointer] [box=25,597,234,38]:
+                - /url: /circles
+                - img [ref=e92] [box=35,607,18,18]
+                - generic [ref=e94] [box=65,605,44,22]: Circles
+              - link "Invoices" [ref=e95] [cursor=pointer] [box=25,637,234,38]:
+                - /url: /finance/invoices
+                - img [ref=e96] [box=35,647,18,18]
+                - generic [ref=e98] [box=65,645,55,22]: Invoices
+          - generic [ref=e99] [box=13,691,258,1325]:
+            - button "All Features" [expanded] [ref=e101] [cursor=pointer] [box=13,700,258,36]:
+              - generic [ref=e102] [box=29,708,92,20]: All Features
+              - img [ref=e103] [box=241,711,14,14]
+            - generic [ref=e105] [box=13,736,258,1280]:
+              - generic [ref=e106] [box=13,736,258,38]:
+                - button "Clients" [ref=e107] [cursor=pointer] [box=13,736,258,38]
+                - generic [ref=e113] [box=25,778,246,430]
+              - generic [ref=e273] [box=13,776,258,1120]:
+                - button "Culinary" [expanded] [ref=e274] [cursor=pointer] [box=13,776,258,38]
+                - generic [ref=e280] [box=25,818,246,1078]
+              - generic [ref=e485] [box=13,1898,258,38]:
+                - button "Events" [ref=e486] [cursor=pointer] [box=13,1898,258,38]
+                - generic [ref=e492] [box=25,1940,246,214]
+              - generic [ref=e562] [box=13,1938,258,38]:
+                - button "Finance" [ref=e563] [cursor=pointer] [box=13,1938,258,38]
+                - generic [ref=e569] [box=25,1980,246,610]
+              - generic [ref=e791] [box=13,1978,258,38]:
+                - button "Pipeline" [ref=e792] [cursor=pointer] [box=13,1978,258,38]
+                - generic [ref=e798] [box=25,2020,246,430]
+          - generic [ref=e1085] [box=13,2020,258,216]:
+            - generic [ref=e1086] [box=13,2020,258,38]:
+              - button "Recent" [expanded] [ref=e1087] [cursor=pointer] [box=13,2020,230,38]:
+                - img [ref=e1088] [box=25,2031,16,16]
+                - generic [ref=e1090] [box=49,2028,158,22]: Recent
+                - img [ref=e1091] [box=215,2031,16,16]
+              - button "Clear recent pages" [ref=e1093] [cursor=pointer] [box=251,2029,20,20]:
+                - img [ref=e1094] [box=255,2033,12,12]
+            - generic [ref=e1097] [box=13,2058,258,178]:
+              - button "Tables 8h" [ref=e1098] [cursor=pointer] [box=13,2058,258,34]:
+                - generic [ref=e1099] [box=25,2064,213,22]: Tables
+                - generic [ref=e1100] [box=246,2064,13,22]: 8h
+              - button "Circles 8h" [ref=e1101] [cursor=pointer] [box=13,2094,258,34]:
+                - generic [ref=e1102] [box=25,2100,213,22]: Circles
+                - generic [ref=e1103] [box=246,2100,13,22]: 8h
+              - button "Dashboard 10h" [ref=e1104] [cursor=pointer] [box=13,2130,258,34]:
+                - generic [ref=e1105] [box=25,2136,207,22]: Dashboard
+                - generic [ref=e1106] [box=240,2136,19,22]: 10h
+              - button "Calendar 1d" [ref=e1107] [cursor=pointer] [box=13,2166,258,34]:
+                - generic [ref=e1108] [box=25,2172,213,22]: Calendar
+                - generic [ref=e1109] [box=246,2172,13,22]: 1d
+              - button "Shopping 1d" [ref=e1110] [cursor=pointer] [box=13,2202,258,34]:
+                - generic [ref=e1111] [box=25,2208,213,22]: Shopping
+                - generic [ref=e1112] [box=246,2208,13,22]: 1d
+          - generic [ref=e958] [box=13,2240,258,115]:
+            - link "Show all features" [ref=e959] [cursor=pointer] [box=13,2249,258,34]:
+              - /url: /features
+              - img [ref=e960] [box=25,2258,16,16]
+              - text: Show all features
+            - link "Explore ChefFlow" [ref=e962] [cursor=pointer] [box=13,2285,258,34]:
+              - /url: /eat
+              - img [ref=e963] [box=25,2294,16,16]
+              - text: Explore ChefFlow
+            - link "My Public Profile" [ref=e965] [cursor=pointer] [box=13,2321,258,34]:
+              - /url: /settings/public-profile
+              - img [ref=e966] [box=25,2330,16,16]
+              - text: My Public Profile
+      - link "Tables" [ref=e969] [cursor=pointer] [box=13,797,262,62]:
+        - /url: /tables
+        - img [ref=e971] [box=32,819,18,18]
+        - generic [ref=e973] [box=69,807,194,42]:
+          - generic [ref=e974] [box=69,807,194,20]: Tables
+          - generic [ref=e975] [box=69,827,194,22]: Social hub
+      - link "Cannabis Portal" [ref=e977] [cursor=pointer] [box=13,876,262,62]:
+        - /url: /events/cannabis
+        - img [ref=e979] [box=32,898,18,18]
+        - generic [ref=e981] [box=69,886,194,42]:
+          - generic [ref=e982] [box=69,886,194,20]: Cannabis Portal
+          - generic [ref=e983] [box=69,906,194,22]: Dining tier
+      - link "A Agent Test Kitchen" [ref=e984] [cursor=pointer] [box=1,946,286,53]:
+        - /url: /settings
+        - generic [ref=e985] [box=17,959,28,28]: A
+        - generic [ref=e986] [box=57,962,188,22]: Agent Test Kitchen
+        - img [ref=e987] [box=257,966,14,14]
+    - main [ref=e989] [box=0,0,1440,837]:
+      - navigation "Breadcrumb" [ref=e990] [box=288,0,1152,44]:
+        - list [ref=e993] [box=320,11,1022,22]:
+          - listitem [ref=e994] [box=320,11,72,22]:
+            - link "Dashboard" [ref=e995] [cursor=pointer] [box=320,11,72,22]:
+              - /url: /dashboard
+          - listitem [ref=e996] [box=398,11,68,22]:
+            - img [ref=e997] [box=398,16,12,12]
+            - link "Recipes" [ref=e999] [cursor=pointer] [box=416,11,50,22]:
+              - /url: /recipes
+          - listitem [ref=e1000] [box=472,11,49,22]:
+            - img [ref=e1001] [box=472,16,12,12]
+            - generic [ref=e1003] [box=490,11,31,22]: New
+        - generic [ref=e1004] [box=1342,8,66,28]:
+          - generic [ref=e1005] [box=1342,13,30,18]:
+            - generic [ref=e1006] [box=1348,15,11,14]: ⌘
+            - generic [ref=e1007] [box=1361,15,6,14]: K
+          - button "Refresh" [ref=e1008] [cursor=pointer] [box=1380,8,28,28]:
+            - img [ref=e1009] [box=1387,15,14,14]
+      - generic [ref=e1011] [box=288,44,1152,793]:
+        - generic [ref=e1012] [box=320,76,1088,32]:
+          - link "payment Chain Test 205640 $750 33d overdue" [ref=e1013] [cursor=pointer] [box=317,78,281,28]:
+            - /url: /chef/events/0c271e6e-b56e-48e2-ae25-341a0b119fbe/financials
+            - generic [ref=e1015] [box=339,85,43,14]: payment
+            - generic [ref=e1016] [box=388,82,200,20]: Chain Test 205640 $750 33d overdue
+          - link "payment Chain Test 514533 $750 33d overdue" [ref=e1017] [cursor=pointer] [box=602,78,281,28]:
+            - /url: /chef/events/987f745e-ff2b-430a-b3b2-ad2909ad279b/financials
+            - generic [ref=e1019] [box=624,85,43,14]: payment
+            - generic [ref=e1020] [box=673,82,200,20]: Chain Test 514533 $750 33d overdue
+          - link "payment Chain Test 791082 $750 33d overdue" [ref=e1021] [cursor=pointer] [box=887,78,281,28]:
+            - /url: /chef/events/709255ca-7e32-46aa-8e22-5741aeb75bee/financials
+            - generic [ref=e1023] [box=909,85,43,14]: payment
+            - generic [ref=e1024] [box=959,82,200,20]: Chain Test 791082 $750 33d overdue
+          - link "payment Chain Test 292261 $750 33d overdue" [ref=e1025] [cursor=pointer] [box=1173,78,281,28]:
+            - /url: /chef/events/8106d7d3-a4a0-4c28-8223-b5cc98539957/financials
+            - generic [ref=e1027] [box=1195,85,43,14]: payment
+            - generic [ref=e1028] [box=1244,82,200,20]: Chain Test 292261 $750 33d overdue
+          - link "payment Chain Test 351716 $750 33d overdue" [ref=e1029] [cursor=pointer] [box=1458,78,281,28]:
+            - /url: /chef/events/43998d73-40de-4a57-9690-6588acfe3a34/financials
+            - generic [ref=e1031] [box=1480,85,43,14]: payment
+            - generic [ref=e1032] [box=1529,82,200,20]: Chain Test 351716 $750 33d overdue
+        - generic [ref=e1034] [box=320,108,1088,174]:
+          - generic [ref=e1035] [box=321,109,1086,45]:
+            - generic [ref=e1036] [box=333,124,93,15]: Contextual Rail
+            - button "Collapse rail" [ref=e1037] [cursor=pointer] [box=1363,115,32,32]:
+              - img [ref=e1038] [box=1371,123,16,16]
+          - generic [ref=e1043] [box=870,162,525,62]:
+            - generic [ref=e1044] [box=870,162,525,15]:
+              - img [ref=e1045] [box=878,164,12,12]
+              - generic [ref=e1047] [box=896,162,71,15]: Intelligence
+            - link "$750 unpaid - Dinner Party - Chain Test Completed on 2026-04-24" [ref=e1049] [cursor=pointer] [box=870,181,525,43]:
+              - /url: /events/1375c682-0e1c-46f6-9412-d94c8f7ec573
+              - generic [ref=e1050] [box=870,181,525,43]:
+                - img [ref=e1052] [box=892,187,14,14]
+                - generic [ref=e1054] [box=914,185,473,35]
+          - link "Send invoice" [ref=e1058] [cursor=pointer] [box=333,241,99,32]:
+            - /url: /events/1375c682-0e1c-46f6-9412-d94c8f7ec573
+        - 'status "Save state: unsaved changes" [ref=e1060] [box=1260,282,148,34]':
+          - img [ref=e1061] [box=1273,292,14,14]
+          - generic [ref=e1063] [box=1295,289,100,20]: Unsaved changes
+        - generic [ref=e1064] [box=416,324,896,481]:
+          - generic [ref=e1065] [box=416,324,896,44]:
+            - heading "New Recipe" [level=1] [ref=e1067] [box=416,324,165,36]
+            - link "Back to Recipes" [ref=e1068] [cursor=pointer] [box=1166,324,146,44]:
+              - /url: /recipes
+              - button "Back to Recipes" [ref=e1069] [box=1166,324,146,44]
+          - generic [ref=e1070] [box=416,392,896,40]:
+            - button "Smart Import" [ref=e1071] [cursor=pointer] [box=416,392,124,40]
+            - button "Manual Entry" [ref=e1072] [cursor=pointer] [box=544,392,123,40]
+          - generic [ref=e1073] [box=416,456,896,349]:
+            - heading "Describe Your Recipe" [level=2] [ref=e1075] [box=441,473,846,28]
+            - generic [ref=e1076] [box=417,518,894,286]:
+              - textbox "Diane sauce - sear the steak, set aside. Sauté shallots and mushrooms. Deglaze with cognac. Add beef stock, cream, worcestershire, dijon. Reduce. Finish with steak drippings, lemon, parsley. Makes about 2 cups." [ref=e1078] [box=441,534,846,194]
+              - generic [ref=e1079] [box=441,744,846,44]:
+                - button "Parse Recipe" [disabled] [box=441,744,125,44]
+                - button "Clear" [ref=e1080] [cursor=pointer] [box=578,744,75,44]
+    - generic [ref=e1113] [box=1232,936,192,48]:
+      - button "Move Remy launcher" [box=1232,940,40,40]:
+        - img [box=1244,952,16,16]
+      - button "Show Remy character" [box=1280,940,40,40]:
+        - img [box=1292,952,16,16]
+      - button "Hide Remy launcher" [box=1328,940,40,40]:
+        - img [box=1340,952,16,16]
+      - button "Open Remy chat window" [ref=e1114] [cursor=pointer] [box=1376,936,48,48]:
+        - img [ref=e1115] [box=1390,950,20,20]
+  - alert [ref=e1081] [box=-1,999,1,1]
+  - generic [ref=e1117] [box=720,906,672,78]:
+    - button "Dismiss cookie banner" [ref=e1118] [cursor=pointer] [box=1359,917,22,22]:
+      - img [ref=e1119] [box=1363,921,14,14]
+    - generic [ref=e1122] [box=745,923,622,44]:
+      - generic [ref=e1123] [box=745,923,336,44]:
+        - text: This site uses cookies for basic functionality and analytics. See our
+        - link "Privacy Policy" [ref=e1124] [cursor=pointer] [box=863,946,88,20]:
+          - /url: /privacy
+        - text: .
+      - generic [ref=e1125] [box=1097,926,270,38]:
+        - button "Dismiss cookie banner for now" [ref=e1126] [cursor=pointer] [box=1097,926,91,38]: Not now
+        - button "Decline cookies" [ref=e1127] [cursor=pointer] [box=1196,926,82,38]: Decline
+        - button "Accept cookies" [ref=e1128] [cursor=pointer] [box=1287,926,80,38]: Accept

@@ -1,0 +1,147 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Whole-Site Product Coherence Ledger - Draft Spec</title>
+    <style>
+      body {
+        margin: 0;
+        font-family:
+          Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+        background: #11100e;
+        color: #f6f1e8;
+      }
+      main {
+        max-width: 1080px;
+        margin: 0 auto;
+        padding: 40px 24px 64px;
+      }
+      h1,
+      h2 {
+        margin: 0 0 12px;
+        letter-spacing: 0;
+      }
+      h1 {
+        font-size: 32px;
+      }
+      h2 {
+        margin-top: 32px;
+        font-size: 20px;
+      }
+      p,
+      li {
+        line-height: 1.55;
+        color: #d8d0c4;
+      }
+      table {
+        width: 100%;
+        border-collapse: collapse;
+        margin-top: 12px;
+        font-size: 14px;
+      }
+      th,
+      td {
+        border-bottom: 1px solid #2f2a24;
+        padding: 10px 8px;
+        text-align: left;
+        vertical-align: top;
+      }
+      th {
+        color: #f2c37b;
+        font-weight: 700;
+      }
+      code {
+        background: #211d18;
+        border: 1px solid #3a3028;
+        border-radius: 4px;
+        padding: 1px 5px;
+        color: #ffdca0;
+      }
+      .badge {
+        display: inline-block;
+        border-radius: 999px;
+        padding: 3px 8px;
+        background: #263f2c;
+        color: #bde6bd;
+        font-size: 12px;
+        font-weight: 700;
+      }
+      .warn {
+        background: #4b351e;
+        color: #ffd18a;
+      }
+    </style>
+  </head>
+  <body>
+    <main>
+      <p class="badge">Draft only - not queued</p>
+      <h1>Whole-Site Product Coherence Ledger</h1>
+      <p>
+        Queue-ready spec for a read-only ChefFlow audit system that generates JSON machine state
+        and local HTML evidence reports for every major product surface.
+      </p>
+
+      <h2>Purpose</h2>
+      <p>
+        The ledger should answer whether ChefFlow's routes, navigation, role policies, domain
+        promises, actions, data flows, runtime proof, and queue implications describe one coherent
+        product. It should make missing or contradictory surfaces visible without implementing new
+        product behavior.
+      </p>
+
+      <h2>Core Outputs</h2>
+      <table>
+        <thead>
+          <tr>
+            <th>Artifact</th>
+            <th>Suggested Path</th>
+            <th>Contents</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td>Machine state</td>
+            <td><code>reports/product-coherence/state.json</code></td>
+            <td>Route inventory, role policy, nav coverage, domain matrix, probes, evidence, queue mapping, findings, scores.</td>
+          </tr>
+          <tr>
+            <td>HTML index</td>
+            <td><code>reports/product-coherence/index.html</code></td>
+            <td>Executive scorecard, domain summaries, severity filters, screenshots, source links, queue links.</td>
+          </tr>
+          <tr>
+            <td>Per-route reports</td>
+            <td><code>reports/product-coherence/routes/*.html</code></td>
+            <td>Route contract, inbound paths, actions, data dependencies, runtime status, proof caveats.</td>
+          </tr>
+        </tbody>
+      </table>
+
+      <h2>Required Domains</h2>
+      <p>
+        Page X-Ray, Dinner Circles, Universal Rail Intelligence, Priority Queue, Commitment UI,
+        Menu Intelligence, PIE, Client Intelligence, communications, lifecycle, ledger, navigation,
+        Remy, automation, and CIL.
+      </p>
+
+      <h2>First Slice</h2>
+      <p>
+        Build only the read-only generator and report shell. Inputs should be route inventory, route
+        policy, nav config, wiring audit results, affected-route probes, and a bounded browser
+        evidence sample. No queue item should be created without explicit user approval.
+      </p>
+
+      <h2>Acceptance Gate</h2>
+      <ul>
+        <li>JSON validates and can be diffed between runs.</li>
+        <li>HTML opens offline and links to local screenshots and source evidence.</li>
+        <li>Protected routes treat auth redirects, 401, and 403 as reachable but not fully proven.</li>
+        <li>Findings are classified as keep, blocked, queue-candidate, rejected-expansion, or needs-user-approval.</li>
+        <li>No secrets, cookies, tokens, PII, or private client details are included.</li>
+      </ul>
+
+      <p class="badge warn">Next action requires explicit queue approval.</p>
+    </main>
+  </body>
+</html>

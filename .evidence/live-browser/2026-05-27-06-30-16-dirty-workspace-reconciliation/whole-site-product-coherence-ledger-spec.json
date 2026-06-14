@@ -1,0 +1,110 @@
+{
+  "spec_id": "draft-whole-site-product-coherence-ledger-2026-05-27",
+  "title": "Whole-Site Product Coherence Ledger",
+  "queue_status": "draft_not_queued",
+  "priority": "P1",
+  "domain": "Product Coherence / Evidence / Route Intelligence",
+  "raw_request": "Draft the Whole-Site Product Coherence Ledger as a queue-ready spec, preferably with JSON machine state plus HTML evidence reports, but do not add it to the queue unless explicitly asked.",
+  "goal": "Create a read-only audit and evidence system that continuously maps every meaningful ChefFlow route, role surface, navigation entry, workflow promise, action path, data dependency, proof state, and queue implication into one machine-readable coherence ledger plus human-readable HTML evidence reports.",
+  "scope": {
+    "included": [
+      "Route inventory across public, chef, client, admin, staff, partner, vendor, API, and special route groups.",
+      "Role and route-policy classification.",
+      "Navigation, rail, command surface, dashboard, Page X-Ray, Remy, CIL, Priority Queue, ledger, communications, lifecycle, menu intelligence, PIE, client intelligence, Dinner Circles, automation, and universal rail implications where detectable.",
+      "Static code evidence from app/components/lib/scripts/tests/docs.",
+      "Runtime probes against canonical http://localhost:3100 for probeable routes.",
+      "Browser screenshot/DOM evidence for sampled critical surfaces.",
+      "Console, network, server/runtime caveats.",
+      "Queue mapping and queue-candidate output without automatic queue insertion."
+    ],
+    "excluded": [
+      "Implementing new product features.",
+      "Mutating tenant data.",
+      "Submitting forms or irreversible actions.",
+      "Deleting or rewriting unrelated dirty workspace artifacts.",
+      "Adding the spec to the build queue without explicit user approval."
+    ]
+  },
+  "outputs": {
+    "machine_state_json": {
+      "path_recommendation": "reports/product-coherence/state.json",
+      "schema_version": "1.0",
+      "top_level_keys": [
+        "generated_at",
+        "git",
+        "route_inventory",
+        "surface_inventory",
+        "role_policy",
+        "navigation",
+        "domain_matrix",
+        "runtime_probes",
+        "browser_evidence",
+        "queue_mapping",
+        "findings",
+        "score_summary"
+      ]
+    },
+    "html_report": {
+      "path_recommendation": "reports/product-coherence/index.html",
+      "requirements": [
+        "Route and domain scorecards.",
+        "Evidence thumbnails linked to local screenshots.",
+        "Per-route proof status and caveats.",
+        "Clickable links to source files and queue items.",
+        "Severity-filtered findings.",
+        "No secrets, cookies, tokens, PII, or private client data."
+      ]
+    },
+    "per_route_html": {
+      "path_recommendation": "reports/product-coherence/routes/*.html",
+      "requirements": [
+        "Route contract.",
+        "Role access result.",
+        "Inbound nav/rail/command paths.",
+        "Visible primary actions.",
+        "Data sources and tenant/auth notes.",
+        "Runtime status, console/network caveats, screenshots, and open gaps."
+      ]
+    }
+  },
+  "acceptance_criteria": [
+    "The ledger can be generated read-only from the current checkout without modifying product code or tenant records.",
+    "Every static page route has a route id, role/access classification, owner domain guess, and proof status.",
+    "Every probeable route records HTTP status, redirect class, timing, and whether it is under-500 reachable.",
+    "Navigation coverage distinguishes direct nav, parent coverage, consolidated hub coverage, command/rail coverage, and no known inbound path.",
+    "Critical domains are explicitly scored: Page X-Ray, Dinner Circles, Universal Rail Intelligence, Priority Queue, Commitment UI, Menu Intelligence, PIE, Client Intelligence, communications, lifecycle, ledger, navigation, Remy, automation, and CIL.",
+    "The JSON state can be diffed between runs and used by regression firewall or finish-check as an input.",
+    "The HTML report is readable offline and links back to screenshots, runtime JSON, route source files, and queue mapping.",
+    "Findings are split into keep, blocked, queue-candidate, rejected-expansion, and needs-user-approval buckets.",
+    "The report redacts or excludes secrets, cookies, auth tokens, private client data, and raw personal contact details.",
+    "No queue item is created unless the user explicitly asks to queue the spec."
+  ],
+  "verification_plan": [
+    "Run git status before generation and record dirty files without overwriting unrelated work.",
+    "Run existing wiring audit and chef nav audit.",
+    "Run app typecheck when code surfaces changed.",
+    "Probe affected/static routes under the canonical dev server.",
+    "Capture a bounded browser evidence sample for representative public, chef, client, and admin/staff/partner/vendor routes when auth states exist.",
+    "Validate JSON against the schema.",
+    "Open generated HTML locally and verify links, thumbnails, and redaction notes.",
+    "Run regression firewall after integration if the ledger becomes a protected gate."
+  ],
+  "risks": [
+    "A whole-site ledger can become noisy unless severity and proof-status rules are strict.",
+    "Role-auth proof may be blocked by stale or missing auth states.",
+    "Runtime probes must treat auth redirects, 401, and 403 as reachable for protected routes while still recording access class.",
+    "HTML reports can leak sensitive screenshots if redaction rules are weak.",
+    "Route consolidation rules can hide true orphan routes if hubs are overbroad."
+  ],
+  "suggested_queue_mapping": {
+    "new_item_needed": true,
+    "candidate_title": "Whole-Site Product Coherence Ledger",
+    "related_existing_items": [
+      "BQ-20260520T173350Z-cohesion-reachability-wiring-closure",
+      "BQ-20260520T173350Z-cohesion-completion-proof-pack",
+      "BQ-20260519T032212Z-page-x-ray-route-intelligence-and-native-context"
+    ],
+    "fire_readiness": "ready_after_user_approval_and_scope_limit",
+    "recommended_first_slice": "Read-only generator producing reports/product-coherence/state.json and reports/product-coherence/index.html from route inventory, route policy, nav config, wiring audit, and affected-route probes."
+  }
+}

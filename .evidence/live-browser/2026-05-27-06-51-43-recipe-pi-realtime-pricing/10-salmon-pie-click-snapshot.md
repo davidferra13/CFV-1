@@ -1,0 +1,417 @@
+- main [ref=e989] [box=0,-1048,1434,4555]:
+  - navigation "Breadcrumb" [ref=e990] [box=288,-1048,1146,44]:
+    - list [ref=e993] [box=320,-1037,1016,22]:
+      - listitem [ref=e994] [box=320,-1037,72,22]:
+        - link "Dashboard" [ref=e995] [cursor=pointer] [box=320,-1037,72,22]:
+          - /url: /dashboard
+      - listitem [ref=e996] [box=398,-1037,68,22]:
+        - img [ref=e997] [box=398,-1032,12,12]
+        - link "Recipes" [ref=e999] [cursor=pointer] [box=416,-1037,50,22]:
+          - /url: /recipes
+      - listitem [ref=e1482] [box=472,-1037,63,22]:
+        - img [ref=e1483] [box=472,-1032,12,12]
+        - generic [ref=e1485] [box=490,-1037,45,22]: Recipe
+    - generic [ref=e1004] [box=1336,-1040,66,28]:
+      - generic [ref=e1005] [box=1336,-1035,30,18]:
+        - generic [ref=e1006] [box=1342,-1033,11,14]: ⌘
+        - generic [ref=e1007] [box=1355,-1033,6,14]: K
+      - button "Refresh" [ref=e1008] [cursor=pointer] [box=1374,-1040,28,28]:
+        - img [ref=e1009] [box=1381,-1033,14,14]
+  - generic [ref=e1486] [box=288,-1004,1146,4511]:
+    - generic [ref=e1487] [box=320,-972,1082,32]:
+      - link "payment Chain Test 205640 $750 33d overdue" [ref=e1488] [cursor=pointer] [box=222,-970,281,28]:
+        - /url: /chef/events/0c271e6e-b56e-48e2-ae25-341a0b119fbe/financials
+        - generic [ref=e1490] [box=244,-963,43,14]: payment
+        - generic [ref=e1491] [box=293,-966,200,20]: Chain Test 205640 $750 33d overdue
+      - link "payment Chain Test 514533 $750 33d overdue" [ref=e1492] [cursor=pointer] [box=507,-970,281,28]:
+        - /url: /chef/events/987f745e-ff2b-430a-b3b2-ad2909ad279b/financials
+        - generic [ref=e1494] [box=529,-963,43,14]: payment
+        - generic [ref=e1495] [box=578,-966,200,20]: Chain Test 514533 $750 33d overdue
+      - link "payment Chain Test 791082 $750 33d overdue" [ref=e1496] [cursor=pointer] [box=792,-970,281,28]:
+        - /url: /chef/events/709255ca-7e32-46aa-8e22-5741aeb75bee/financials
+        - generic [ref=e1498] [box=814,-963,43,14]: payment
+        - generic [ref=e1499] [box=864,-966,200,20]: Chain Test 791082 $750 33d overdue
+      - link "payment Chain Test 292261 $750 33d overdue" [ref=e1500] [cursor=pointer] [box=1078,-970,281,28]:
+        - /url: /chef/events/8106d7d3-a4a0-4c28-8223-b5cc98539957/financials
+        - generic [ref=e1502] [box=1100,-963,43,14]: payment
+        - generic [ref=e1503] [box=1149,-966,200,20]: Chain Test 292261 $750 33d overdue
+      - link "payment Chain Test 351716 $750 33d overdue" [ref=e1504] [cursor=pointer] [box=1363,-970,281,28]:
+        - /url: /chef/events/43998d73-40de-4a57-9690-6588acfe3a34/financials
+        - generic [ref=e1506] [box=1385,-963,43,14]: payment
+        - generic [ref=e1507] [box=1434,-966,200,20]: Chain Test 351716 $750 33d overdue
+    - generic [ref=e1509] [box=320,-940,1082,174]:
+      - generic [ref=e1510] [box=321,-939,1080,45]:
+        - generic [ref=e1511] [box=333,-924,93,15]: Contextual Rail
+        - button "Collapse rail" [ref=e1512] [cursor=pointer] [box=1357,-933,32,32]:
+          - img [ref=e1513] [box=1365,-925,16,16]
+      - generic [ref=e1515] [box=321,-894,1080,78]:
+        - generic [ref=e1517] [box=333,-886,522,62]:
+          - generic [ref=e1518] [box=333,-886,522,15]:
+            - img [ref=e1519] [box=341,-884,12,12]
+            - generic [ref=e1521] [box=359,-886,57,15]: Readiness
+          - 'link "Pi Live Cost Test Miso Ginger Salmon Rice Bowls 20260527-0658: 71% ready 3 items remaining" [ref=e1523] [cursor=pointer] [box=333,-867,522,43]':
+            - /url: /culinary/price-catalog
+            - generic [ref=e1524] [box=333,-867,522,43]:
+              - img [ref=e1526] [box=355,-861,14,14]
+              - generic [ref=e1528] [box=377,-863,470,35]:
+                - generic [ref=e1529] [box=377,-863,180,20]: "Pi Live Cost Test Miso Ginger Salmon Rice Bowls 20260527-0658: 71% ready"
+                - generic [ref=e1530] [box=377,-843,180,15]: 3 items remaining
+        - generic [ref=e1532] [box=867,-886,522,62]:
+          - generic [ref=e1533] [box=867,-886,522,15]:
+            - img [ref=e1534] [box=875,-884,12,12]
+            - generic [ref=e1536] [box=893,-886,71,15]: Intelligence
+          - link "$750 unpaid - Dinner Party - Chain Test Completed on 2026-04-24" [ref=e1538] [cursor=pointer] [box=867,-867,522,43]:
+            - /url: /events/1375c682-0e1c-46f6-9412-d94c8f7ec573
+            - generic [ref=e1539] [box=867,-867,522,43]:
+              - img [ref=e1541] [box=889,-861,14,14]
+              - generic [ref=e1543] [box=911,-863,470,35]:
+                - generic [ref=e1544] [box=911,-863,180,20]: $750 unpaid - Dinner Party - Chain Test
+                - generic [ref=e1545] [box=911,-843,180,15]: Completed on 2026-04-24
+      - generic [ref=e1546] [box=321,-816,1080,49]:
+        - link "Send invoice" [ref=e1547] [cursor=pointer] [box=333,-807,99,32]:
+          - /url: /events/1375c682-0e1c-46f6-9412-d94c8f7ec573
+        - link "Review prices" [ref=e1548] [cursor=pointer] [box=440,-807,104,32]:
+          - /url: /culinary/price-catalog
+    - generic [ref=e1549] [box=413,-766,896,4241]:
+      - generic [ref=e1550] [box=413,-766,896,606]:
+        - generic [ref=e1551] [box=413,-766,287,606]:
+          - generic [ref=e1552] [box=413,-766,287,324]:
+            - heading "Pi Live Cost Test Miso Ginger Salmon Rice Bowls 20260527-0658" [level=1] [ref=e1553] [box=413,-766,150,324]
+            - generic [ref=e1554] [box=575,-616,46,24]: Draft
+            - generic [ref=e1555] [box=634,-618,67,28]: protein
+          - generic [ref=e1557] [box=413,-442,12,20]: v1
+          - paragraph [ref=e1558] [box=413,-418,287,72]: Synthetic test recipe for observing live PIE ingredient costing from recipe creation to priced detail page.
+          - generic [ref=e1559] [box=413,-338,287,178]:
+            - generic [ref=e1560] [box=413,-338,287,140]:
+              - link "Watch Whisk miso, soy, ginger, honey, sesame oil, and lime into a glaze. Roast salmon. Steam rice. Serve salmon over rice with scallions and extra glaze. on YouTube" [ref=e1561] [cursor=pointer] [box=413,-338,259,140]:
+                - /url: https://www.youtube.com/results?search_query=Whisk%20miso%2C%20soy%2C%20ginger%2C%20honey%2C%20sesame%20oil%2C%20and%20lime%20into%20a%20glaze.%20Roast%20salmon.%20Steam%20rice.%20Serve%20salmon%20over%20rice%20with%20scallions%20and%20extra%20glaze.+cooking+technique
+                - img [ref=e1562] [box=421,-275,14,14]
+                - generic [ref=e1564] [box=441,-334,223,132]: Watch Whisk miso, soy, ginger, honey, sesame oil, and lime into a glaze. Roast salmon. Steam rice. Serve salmon over rice with scallions and extra glaze. on YouTube
+              - button [ref=e1565] [cursor=pointer] [box=672,-290,28,44]
+            - link "FDA Safe Cooking Temperatures" [ref=e1567] [cursor=pointer] [box=413,-190,265,30]:
+              - /url: https://www.fda.gov/food/buy-store-serve-safe-food/safe-minimum-cooking-temperatures-chart
+              - img [ref=e1568] [box=421,-182,14,14]
+              - generic [ref=e1570] [box=441,-186,213,22]: FDA Safe Cooking Temperatures
+              - img [ref=e1571] [box=660,-180,10,10]
+        - generic [ref=e1575] [box=700,-766,627,66]:
+          - link "Edit" [ref=e1576] [cursor=pointer] [box=700,-766,68,66]:
+            - /url: /recipes/346853df-fb3a-45b2-afa7-458ec6d86819/edit
+            - button "Edit" [ref=e1577] [box=700,-766,68,44]
+          - button "Duplicate" [ref=e1578] [cursor=pointer] [box=776,-766,107,66]
+          - button "Export Cost CSV" [ref=e1579] [cursor=pointer] [box=891,-766,73,66]
+          - button "Share" [ref=e1580] [cursor=pointer] [box=972,-766,80,66]
+          - button "Create Product" [ref=e1581] [cursor=pointer] [box=1060,-766,95,66]
+          - button "Delete" [ref=e1582] [cursor=pointer] [box=1163,-766,84,66]
+          - link "Back" [ref=e1583] [cursor=pointer] [box=1255,-766,72,66]:
+            - /url: /recipes
+            - button "Back" [ref=e1584] [box=1255,-766,72,44]
+      - button "Add a photo of this dish JPEG · PNG · HEIC · WebP · max 10 MB" [ref=e1586] [cursor=pointer] [box=413,-136,896,158]:
+        - img [ref=e1587] [box=845,-102,32,32]
+        - generic [ref=e1590] [box=779,-62,164,22]: Add a photo of this dish
+        - generic [ref=e1591] [box=752,-32,218,20]: JPEG · PNG · HEIC · WebP · max 10 MB
+      - generic [ref=e1593] [box=430,63,862,188]:
+        - img [ref=e1594] [box=430,63,64,64]:
+          - generic [ref=e1597] [box=453,83,18,21]: "71"
+          - generic [ref=e1598] [box=454,99,16,9]: / 100
+        - generic [ref=e1599] [box=510,63,782,188]:
+          - generic [ref=e1600] [box=510,63,782,24]:
+            - heading "Completion" [level=4] [ref=e1601] [box=510,64,80,22]
+            - generic [ref=e1602] [box=598,63,53,24]: Partial
+          - paragraph [ref=e1603] [box=510,91,782,20]: Pi Live Cost Test Miso Ginger Salmon Rice Bowls 20260527-0658
+          - generic [ref=e1604] [box=510,119,782,88]:
+            - generic [ref=e1605] [box=510,119,782,28]:
+              - generic [ref=e1608] [box=524,123,122,20]: All ingredients priced
+              - link "Review prices" [ref=e1609] [cursor=pointer] [box=1233,126,59,15]:
+                - /url: /culinary/price-catalog
+            - generic [ref=e1610] [box=510,149,782,28]:
+              - generic [ref=e1613] [box=524,153,152,20]: No stale prices (< 90 days)
+              - link "Update stale prices" [ref=e1614] [cursor=pointer] [box=1208,156,84,15]:
+                - /url: /culinary/price-catalog
+            - generic [ref=e1615] [box=510,179,782,28]:
+              - generic [ref=e1618] [box=524,183,158,20]: Has peak freshness window
+              - link "Set peak window" [ref=e1619] [cursor=pointer] [box=1217,186,75,15]:
+                - /url: /recipes/346853df-fb3a-45b2-afa7-458ec6d86819/edit
+          - 'link "Next: Review prices" [ref=e1620] [cursor=pointer] [box=510,219,138,32]':
+            - /url: /culinary/price-catalog
+      - generic [ref=e1621] [box=413,292,896,48]:
+        - generic [ref=e1622] [box=430,305,73,22]: "Next steps:"
+        - link "Add to a menu →" [ref=e1623] [cursor=pointer] [box=519,305,116,22]:
+          - /url: /culinary/menus
+        - link "Create another recipe →" [ref=e1624] [cursor=pointer] [box=651,305,160,22]:
+          - /url: /recipes/new
+      - generic [ref=e1625] [box=413,364,896,871]:
+        - generic [ref=e1627] [box=438,381,846,44]:
+          - heading "Ingredients (9)" [level=2] [ref=e1628] [box=438,389,120,28]
+          - link "Edit Ingredients" [ref=e1629] [cursor=pointer] [box=1147,381,137,44]:
+            - /url: /recipes/346853df-fb3a-45b2-afa7-458ec6d86819/edit
+            - button "Edit Ingredients" [ref=e1630] [box=1147,381,137,44]
+        - generic [ref=e1632] [box=438,458,846,760]:
+          - generic [ref=e1633] [box=438,458,846,81]:
+            - generic [ref=e1634] [box=438,464,846,24]:
+              - generic [ref=e1635] [box=438,464,241,24]:
+                - generic "Cost verified" [ref=e1636] [box=438,472,8,8]
+                - generic [ref=e1637] [box=454,464,150,24]: 2.000 lb Salmon Fillet
+                - generic [ref=e1638] [box=612,465,58,22]: (skin-on)
+                - 'generic "Price source: openclaw_market, confidence: 50%" [box=679,476,0,0]'
+              - generic [ref=e1639] [box=1100,465,184,22]:
+                - generic [ref=e1640] [box=1100,465,36,22]: $4.98
+                - generic [ref=e1641] [box=1144,466,140,20]: at Kroger (Dearborn, MI)
+            - button "Loading..." [active] [ref=e1981] [cursor=pointer] [box=462,490,55,20]:
+              - generic [ref=e1982] [box=462,490,55,20]: Loading...
+            - link "USDA Nutrition Lookup for Salmon Fillet" [ref=e1647] [cursor=pointer] [box=462,512,259,20]:
+              - /url: https://fdc.nal.usda.gov/search?query=Salmon%20Fillet
+              - img [ref=e1648] [box=462,516,12,12]
+              - generic [ref=e1651] [box=478,512,231,20]: USDA Nutrition Lookup for Salmon Fillet
+              - img [ref=e1652] [box=713,518,8,8]
+          - generic [ref=e1656] [box=438,543,846,81]:
+            - generic [ref=e1657] [box=438,549,846,24]:
+              - generic [ref=e1658] [box=438,549,218,24]:
+                - generic "No price data for this ingredient" [ref=e1659] [box=438,557,8,8]
+                - generic [ref=e1660] [box=454,549,149,24]: 0.500 cup white miso
+                - generic [ref=e1661] [box=611,550,45,22]: (paste)
+              - generic [ref=e1663] [box=1237,551,47,20]: no price
+            - button "PIE" [ref=e1665] [cursor=pointer] [box=462,575,33,20]:
+              - img [ref=e1666] [box=462,579,12,12]
+              - text: PIE
+            - link "USDA Nutrition Lookup for white miso" [ref=e1669] [cursor=pointer] [box=462,597,248,20]:
+              - /url: https://fdc.nal.usda.gov/search?query=white%20miso
+              - img [ref=e1670] [box=462,601,12,12]
+              - generic [ref=e1673] [box=478,597,220,20]: USDA Nutrition Lookup for white miso
+              - img [ref=e1674] [box=702,603,8,8]
+          - generic [ref=e1678] [box=438,628,846,81]:
+            - generic [ref=e1679] [box=438,634,846,24]:
+              - generic [ref=e1680] [box=438,634,168,24]:
+                - generic "Cost verified" [ref=e1681] [box=438,642,8,8]
+                - generic [ref=e1682] [box=454,634,144,24]: 0.250 cup Soy Sauce
+                - 'generic "Price source: openclaw_market, confidence: 50%" [box=606,646,0,0]'
+              - generic [ref=e1683] [box=1079,635,205,22]:
+                - generic [ref=e1684] [box=1079,635,36,22]: $1.06
+                - generic [ref=e1685] [box=1123,636,161,20]: at brookshires (via Instacart)
+            - button "PIE" [ref=e1687] [cursor=pointer] [box=462,660,33,20]:
+              - img [ref=e1688] [box=462,664,12,12]
+              - text: PIE
+            - link "USDA Nutrition Lookup for Soy Sauce" [ref=e1691] [cursor=pointer] [box=462,682,244,20]:
+              - /url: https://fdc.nal.usda.gov/search?query=Soy%20Sauce
+              - img [ref=e1692] [box=462,686,12,12]
+              - generic [ref=e1695] [box=478,682,216,20]: USDA Nutrition Lookup for Soy Sauce
+              - img [ref=e1696] [box=698,688,8,8]
+          - generic [ref=e1700] [box=438,713,846,81]:
+            - generic [ref=e1701] [box=438,719,846,24]:
+              - generic [ref=e1702] [box=438,719,252,24]:
+                - generic "Uses tbsp, priced per lb (no conversion available)" [ref=e1703] [box=438,727,8,8]
+                - generic [ref=e1704] [box=454,719,167,24]: 2.000 tbsp Fresh Ginger
+                - generic [ref=e1705] [box=629,720,53,22]: (grated)
+                - 'generic "Price source: openclaw_market, confidence: 50%" [box=690,731,0,0]'
+              - generic [ref=e1706] [box=1091,720,193,22]:
+                - generic [ref=e1707] [box=1091,720,36,22]: $2.56
+                - generic [ref=e1708] [box=1135,721,149,20]: at wegmans (via Instacart)
+            - button "PIE" [ref=e1710] [cursor=pointer] [box=462,745,33,20]:
+              - img [ref=e1711] [box=462,749,12,12]
+              - text: PIE
+            - link "USDA Nutrition Lookup for Fresh Ginger" [ref=e1714] [cursor=pointer] [box=462,767,258,20]:
+              - /url: https://fdc.nal.usda.gov/search?query=Fresh%20Ginger
+              - img [ref=e1715] [box=462,771,12,12]
+              - generic [ref=e1718] [box=478,767,230,20]: USDA Nutrition Lookup for Fresh Ginger
+              - img [ref=e1719] [box=712,773,8,8]
+          - generic [ref=e1723] [box=438,798,846,81]:
+            - generic [ref=e1724] [box=438,804,846,24]:
+              - generic [ref=e1725] [box=438,804,143,24]:
+                - generic "Uses cup, priced per each (no conversion available)" [ref=e1726] [box=438,812,8,8]
+                - generic [ref=e1727] [box=454,804,119,24]: 0.250 cup Honey
+                - 'generic "Price source: openclaw_flyer, confidence: 50%" [box=581,816,0,0]'
+              - generic [ref=e1728] [box=1104,805,180,22]:
+                - generic [ref=e1729] [box=1104,805,36,22]: $0.08
+                - generic [ref=e1730] [box=1148,806,136,20]: at Sam's Club (via Flipp)
+            - button "PIE" [ref=e1732] [cursor=pointer] [box=462,830,33,20]:
+              - img [ref=e1733] [box=462,834,12,12]
+              - text: PIE
+            - link "USDA Nutrition Lookup for Honey" [ref=e1736] [cursor=pointer] [box=462,852,223,20]:
+              - /url: https://fdc.nal.usda.gov/search?query=Honey
+              - img [ref=e1737] [box=462,856,12,12]
+              - generic [ref=e1740] [box=478,852,195,20]: USDA Nutrition Lookup for Honey
+              - img [ref=e1741] [box=677,858,8,8]
+          - generic [ref=e1745] [box=438,883,846,81]:
+            - generic [ref=e1746] [box=438,889,846,24]:
+              - generic [ref=e1747] [box=438,889,269,24]:
+                - generic "Cost verified" [ref=e1748] [box=438,897,8,8]
+                - generic [ref=e1749] [box=454,889,162,24]: 2.000 cup Jasmine Rice
+                - generic [ref=e1750] [box=624,890,75,22]: (uncooked)
+                - 'generic "Price source: openclaw_market, confidence: 50%" [box=707,901,0,0]'
+              - generic [ref=e1751] [box=1116,890,168,22]:
+                - generic [ref=e1752] [box=1116,890,36,22]: $5.76
+                - generic [ref=e1753] [box=1160,891,124,20]: at Flipp Circulars (NV)
+            - button "PIE" [ref=e1755] [cursor=pointer] [box=462,915,33,20]:
+              - img [ref=e1756] [box=462,919,12,12]
+              - text: PIE
+            - link "USDA Nutrition Lookup for Jasmine Rice" [ref=e1759] [cursor=pointer] [box=462,937,259,20]:
+              - /url: https://fdc.nal.usda.gov/search?query=Jasmine%20Rice
+              - img [ref=e1760] [box=462,941,12,12]
+              - generic [ref=e1763] [box=478,937,231,20]: USDA Nutrition Lookup for Jasmine Rice
+              - img [ref=e1764] [box=713,943,8,8]
+          - generic [ref=e1768] [box=438,968,846,81]:
+            - generic [ref=e1769] [box=438,974,846,24]:
+              - generic [ref=e1770] [box=438,974,220,24]:
+                - generic "No price data for this ingredient" [ref=e1771] [box=438,982,8,8]
+                - generic [ref=e1772] [box=454,974,150,24]: 1.000 bunch scallions
+                - generic [ref=e1773] [box=612,975,46,22]: (sliced)
+              - generic [ref=e1775] [box=1237,976,47,20]: no price
+            - button "PIE" [ref=e1777] [cursor=pointer] [box=462,1000,33,20]:
+              - img [ref=e1778] [box=462,1004,12,12]
+              - text: PIE
+            - link "USDA Nutrition Lookup for scallions" [ref=e1781] [cursor=pointer] [box=462,1022,234,20]:
+              - /url: https://fdc.nal.usda.gov/search?query=scallions
+              - img [ref=e1782] [box=462,1026,12,12]
+              - generic [ref=e1785] [box=478,1022,206,20]: USDA Nutrition Lookup for scallions
+              - img [ref=e1786] [box=688,1028,8,8]
+          - generic [ref=e1790] [box=438,1053,846,81]:
+            - generic [ref=e1791] [box=438,1059,846,24]:
+              - generic [ref=e1792] [box=438,1059,247,24]:
+                - generic "Cost verified" [ref=e1793] [box=438,1067,8,8]
+                - generic [ref=e1794] [box=454,1059,156,24]: 2.000 tbsp Sesame Oil
+                - generic [ref=e1795] [box=618,1060,59,22]: (toasted)
+                - 'generic "Price source: openclaw_market, confidence: 50%" [box=685,1071,0,0]'
+              - generic [ref=e1796] [box=1099,1060,185,22]:
+                - generic [ref=e1797] [box=1099,1060,36,22]: $3.21
+                - generic [ref=e1798] [box=1143,1061,141,20]: at el-super (via Instacart)
+            - button "PIE" [ref=e1800] [cursor=pointer] [box=462,1085,33,20]:
+              - img [ref=e1801] [box=462,1089,12,12]
+              - text: PIE
+            - link "USDA Nutrition Lookup for Sesame Oil" [ref=e1804] [cursor=pointer] [box=462,1107,249,20]:
+              - /url: https://fdc.nal.usda.gov/search?query=Sesame%20Oil
+              - img [ref=e1805] [box=462,1111,12,12]
+              - generic [ref=e1808] [box=478,1107,221,20]: USDA Nutrition Lookup for Sesame Oil
+              - img [ref=e1809] [box=703,1113,8,8]
+          - generic [ref=e1813] [box=438,1138,846,80]:
+            - generic [ref=e1814] [box=438,1144,846,24]:
+              - generic [ref=e1815] [box=438,1144,194,24]:
+                - generic "Uses each, priced per lb (no conversion available)" [ref=e1816] [box=438,1152,8,8]
+                - generic [ref=e1817] [box=454,1144,113,24]: 2.000 each Lime
+                - generic [ref=e1818] [box=575,1145,48,22]: (juiced)
+                - 'generic "Price source: openclaw_market, confidence: 50%" [box=632,1156,0,0]'
+              - generic [ref=e1819] [box=1082,1145,202,22]:
+                - generic [ref=e1820] [box=1082,1145,36,22]: $0.30
+                - generic [ref=e1821] [box=1126,1146,158,20]: at ruler-foods (via Instacart)
+            - button "PIE" [ref=e1823] [cursor=pointer] [box=462,1170,33,20]:
+              - img [ref=e1824] [box=462,1174,12,12]
+              - text: PIE
+            - link "USDA Nutrition Lookup for Lime" [ref=e1827] [cursor=pointer] [box=462,1192,213,20]:
+              - /url: https://fdc.nal.usda.gov/search?query=Lime
+              - img [ref=e1828] [box=462,1196,12,12]
+              - generic [ref=e1831] [box=478,1192,185,20]: USDA Nutrition Lookup for Lime
+              - img [ref=e1832] [box=667,1198,8,8]
+      - generic [ref=e1836] [box=413,1259,896,167]:
+        - generic [ref=e1838] [box=438,1276,846,44]:
+          - heading "Sub-Recipes" [level=2] [ref=e1839] [box=438,1284,100,28]
+          - button "Add Sub-Recipe" [ref=e1840] [cursor=pointer] [box=1145,1276,139,44]
+        - paragraph [ref=e1842] [box=438,1353,846,56]: No sub-recipes added yet.
+      - generic [ref=e1843] [box=413,1450,896,148]:
+        - heading "Used In" [level=2] [ref=e1845] [box=438,1467,846,28]
+        - generic [ref=e1846] [box=414,1512,894,85]:
+          - paragraph [ref=e1979] [box=438,1528,846,22]: This recipe is not used in any menus yet.
+          - link "Add to a menu →" [ref=e1980] [cursor=pointer] [box=438,1558,116,22]:
+            - /url: /culinary/menus
+      - generic [ref=e1856] [box=438,1741,846,52]:
+        - generic [ref=e1857] [box=438,1741,130,52]:
+          - heading "Scale for Guests" [level=2] [ref=e1858] [box=438,1741,130,28]
+          - paragraph [ref=e1859] [box=438,1771,130,22]: "Base: 8.00 portions"
+        - button "Scale for Guests" [ref=e1860] [cursor=pointer] [box=1148,1741,136,44]
+      - generic [ref=e1861] [box=413,1835,896,133]:
+        - generic [ref=e1863] [box=438,1852,846,44]:
+          - heading "Nutrition" [level=2] [ref=e1864] [box=438,1860,75,28]
+          - button "Show Nutrition" [ref=e1865] [cursor=pointer] [box=1150,1852,134,44]
+        - paragraph [ref=e1867] [box=438,1929,846,22]: Estimate calories, protein, fat, carbs, and more using USDA data. Makes one API call per ingredient.
+      - generic [ref=e1868] [box=413,1992,896,133]:
+        - generic [ref=e1870] [box=438,2009,846,44]:
+          - heading "Allergen Detection" [level=2] [ref=e1871] [box=438,2017,153,28]
+          - button "Check Allergens" [ref=e1872] [cursor=pointer] [box=1145,2009,139,44]
+        - paragraph [ref=e1874] [box=438,2086,846,22]: Detect allergens, dietary flags, and cautions using Edamam Nutrition Analysis. Results are cached for 30 days.
+      - generic [ref=e1875] [box=413,2149,896,246]:
+        - heading "Method" [level=2] [ref=e1877] [box=438,2166,846,28]
+        - generic [ref=e1878] [box=414,2211,894,183]:
+          - paragraph [ref=e1879] [box=438,2227,846,48]: Whisk miso, soy, ginger, honey, sesame oil, and lime into a glaze. Roast salmon. Steam rice. Serve salmon over rice with scallions and extra glaze.
+          - generic [ref=e1880] [box=438,2291,846,87]:
+            - paragraph [ref=e1881] [box=438,2308,846,22]: Detailed Method
+            - paragraph [ref=e1882] [box=438,2334,846,44]: "For evaluation only: use this to watch ingredient names get checked for price availability, then save and inspect the PIE cost summary and per-ingredient explainers."
+      - generic [ref=e1883] [box=413,2419,896,498]:
+        - heading "Details" [level=2] [ref=e1885] [box=438,2436,846,28]
+        - generic [ref=e1886] [box=414,2481,894,435]:
+          - generic [ref=e1887] [box=438,2497,846,116]:
+            - generic [ref=e1888] [box=438,2497,200,50]:
+              - term [ref=e1889] [box=438,2497,200,22]: Yield
+              - definition [ref=e1890] [box=438,2523,200,24]: 8.00 portions
+            - generic [ref=e1891] [box=654,2497,200,50]:
+              - term [ref=e1892] [box=654,2497,200,22]: Servings
+              - definition [ref=e1893] [box=654,2523,200,24]: "8"
+            - generic [ref=e1894] [box=869,2497,200,50]:
+              - term [ref=e1895] [box=869,2497,200,22]: Prep Time
+              - definition [ref=e1896] [box=869,2523,200,24]: 20 min
+            - generic [ref=e1897] [box=1085,2497,200,50]:
+              - term [ref=e1898] [box=1085,2497,200,22]: Cook Time
+              - definition [ref=e1899] [box=1085,2523,200,24]: 18 min
+            - text: "0"
+            - generic [ref=e1900] [box=654,2563,200,50]:
+              - term [ref=e1901] [box=654,2563,200,22]: Protein per Serving
+              - definition [ref=e1902] [box=654,2589,200,24]: 0.00 g
+            - generic [ref=e1903] [box=869,2563,200,50]:
+              - term [ref=e1904] [box=869,2563,200,22]: Fat / Serving
+              - definition [ref=e1905] [box=869,2589,200,24]: 0.00 g
+            - generic [ref=e1906] [box=1085,2563,200,50]:
+              - term [ref=e1907] [box=1085,2563,200,22]: Carbs / Serving
+              - definition [ref=e1908] [box=1085,2589,200,24]: 0.00 g
+          - generic [ref=e1909] [box=438,2629,846,75]:
+            - paragraph [ref=e1910] [box=438,2646,846,22]: Dietary Tags
+            - generic [ref=e1912] [box=438,2676,91,28]: pescatarian
+          - generic [ref=e1913] [box=438,2720,846,89]:
+            - generic [ref=e1914] [box=438,2737,846,44]:
+              - paragraph [ref=e1915] [box=438,2748,145,22]: Dietary Compatibility
+              - button "Analyze" [ref=e1916] [cursor=pointer] [box=1191,2737,93,44]
+            - paragraph [ref=e1917] [box=438,2789,846,20]: Check this recipe's ingredients against 13 dietary rule sets (vegan, keto, gluten-free, etc.)
+          - generic [ref=e1918] [box=438,2825,846,75]:
+            - paragraph [ref=e1919] [box=438,2842,846,22]: Season
+            - generic [ref=e1921] [box=438,2872,92,28]: Year-Round
+      - generic [ref=e1922] [box=413,2941,896,345]:
+        - generic [ref=e1924] [box=438,2958,846,28]:
+          - heading "Cost Summary" [level=2] [ref=e1925] [box=438,2958,119,28]
+          - generic "7/9 ingredients priced, 3 estimated, 2 missing." [ref=e1926] [box=1113,2959,171,26]:
+            - text: Moderate confidence
+            - generic [ref=e1927] [box=1252,2962,23,20]: (48)
+        - generic [ref=e1928] [box=414,3003,894,282]:
+          - paragraph [ref=e1929] [box=438,3019,846,20]: 7/9 ingredients priced, 3 estimated, 2 missing.
+          - generic [ref=e1930] [box=438,3051,846,58]:
+            - generic [ref=e1931] [box=438,3051,271,58]:
+              - term [ref=e1932] [box=438,3051,271,22]:
+                - text: Total Cost
+                - 'button "Help: Food Cost Percentage" [ref=e1934] [cursor=pointer] [box=509,3053,18,18]':
+                  - img [ref=e1935] [box=511,3055,14,14]
+              - definition [ref=e1937] [box=438,3077,271,32]: $19.21
+            - generic [ref=e1938] [box=725,3051,271,58]:
+              - term [ref=e1939] [box=725,3051,271,22]:
+                - text: Cost per Portion
+                - 'button "Help: Per-Person Price" [ref=e1941] [cursor=pointer] [box=841,3053,18,18]':
+                  - img [ref=e1942] [box=843,3055,14,14]
+              - definition [ref=e1944] [box=725,3077,271,32]: $2.40
+            - generic [ref=e1945] [box=1013,3051,271,58]:
+              - term [ref=e1946] [box=1013,3051,271,22]: Price Data
+              - definition [ref=e1947] [box=1013,3077,271,28]:
+                - generic [ref=e1948] [box=1013,3077,100,28]: Approximate
+                - generic "Last price update" [ref=e1949] [box=1121,3082,81,17]: priced 1w ago
+          - generic [ref=e1951] [box=438,3134,846,90]:
+            - button "2 ingredients missing price data amber" [ref=e1953] [cursor=pointer] [box=439,3135,844,40]:
+              - img [ref=e1954] [box=451,3148,14,14]
+              - generic [ref=e1956] [box=473,3144,719,22]: 2 ingredients missing price data
+              - generic [ref=e1957] [box=1200,3143,49,24]: amber
+              - img [ref=e1958] [box=1257,3148,14,14]
+            - button "3 ingredients with unit mismatch (cost is estimated) info" [ref=e1961] [cursor=pointer] [box=439,3183,844,40]:
+              - img [ref=e1962] [box=451,3196,14,14]
+              - generic [ref=e1964] [box=473,3192,734,22]: 3 ingredients with unit mismatch (cost is estimated)
+              - generic [ref=e1965] [box=1215,3191,34,24]: info
+              - img [ref=e1966] [box=1257,3196,14,14]
+          - group [ref=e1968] [box=438,3236,846,33]:
+            - generic "Cost provenance (2 items)" [ref=e1969] [cursor=pointer] [box=438,3249,846,20]
+      - generic [ref=e1970] [box=413,3310,896,165]:
+        - generic [ref=e1972] [box=438,3327,846,44]:
+          - heading "Production History" [level=2] [ref=e1973] [box=438,3335,154,28]
+          - generic [ref=e1974] [box=1027,3327,257,44]:
+            - button "Load History" [ref=e1975] [cursor=pointer] [box=1027,3327,117,44]
+            - button "Log Production" [ref=e1976] [cursor=pointer] [box=1152,3327,133,44]
+        - paragraph [ref=e1978] [box=438,3404,846,54]: Click "Load History" to see past production entries.

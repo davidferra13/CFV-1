@@ -1,0 +1,25 @@
+{
+  "generatedAt": "2026-05-27T06:33:25.062Z",
+  "responses": [
+    {
+      "status": 403,
+      "method": "GET",
+      "url": "http://localhost:3100/api/realtime/inquiries%3Aef2e89c6-508a-487a-97da-5500cfaeaa97"
+    },
+    {
+      "status": 403,
+      "method": "GET",
+      "url": "http://localhost:3100/api/realtime/events%3Aef2e89c6-508a-487a-97da-5500cfaeaa97"
+    },
+    {
+      "status": 403,
+      "method": "GET",
+      "url": "http://localhost:3100/api/realtime/quotes%3Aef2e89c6-508a-487a-97da-5500cfaeaa97"
+    }
+  ],
+  "grouped": {
+    "403 GET http://localhost:3100/api/realtime/inquiries%3Aef2e89c6-508a-487a-97da-5500cfaeaa97": 1,
+    "403 GET http://localhost:3100/api/realtime/events%3Aef2e89c6-508a-487a-97da-5500cfaeaa97": 1,
+    "403 GET http://localhost:3100/api/realtime/quotes%3Aef2e89c6-508a-487a-97da-5500cfaeaa97": 1
+  }
+}

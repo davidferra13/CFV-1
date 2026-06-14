@@ -1,0 +1,5 @@
+Total messages: 7 (Errors: 0, Warnings: 1)
+Returning 2 messages for level "warning"
+
+[WARNING] Ignoring Event: localhost @ http://localhost:4300/_next/static/chunks/node_modules_%40sentry_core_build_esm_0b998jq._.js:10155
+[WARNING] Ignoring Event: localhost @ http://localhost:4300/_next/static/chunks/node_modules_%40sentry_core_build_esm_0b998jq._.js:10155
