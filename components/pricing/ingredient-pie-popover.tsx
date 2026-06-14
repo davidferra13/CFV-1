@@ -104,7 +104,9 @@ export function IngredientPiePopover({ ingredientId, ingredientName, className =
         setData(result)
         setExpanded(true)
       } catch (err) {
-        setError('Failed to load pricing data')
+        console.error('[PIE-POPOVER] catch:', err)
+        const msg = err instanceof Error ? err.message : String(err)
+        setError(`Failed: ${msg.slice(0, 120)}`)
       }
     })
   }

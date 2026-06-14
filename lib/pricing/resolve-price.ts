@@ -207,10 +207,15 @@ async function resolvePriceUncached(
   }
 
   for (const tier of tierResolvers) {
-    const result = await tier.resolve(ctx)
-    if (result) {
-      // Apply compound-learning corrections (regional bias + confidence calibration)
-      return applyLearningCorrections(result, preferredState)
+    try {
+      const result = await tier.resolve(ctx)
+      if (result) {
+        // Apply compound-learning corrections (regional bias + confidence calibration)
+        return applyLearningCorrections(result, preferredState)
+      }
+    } catch (err) {
+      // Tier resolver failed - skip to next tier rather than surfacing a 500
+      console.warn(`[PIE] Tier ${tier.name} failed for ingredient ${ingredientId}:`, err)
     }
   }
 

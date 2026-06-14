@@ -32,14 +32,25 @@ export interface IngredientPieDetail {
  * a chef expands an ingredient row on the recipe detail page.
  */
 export async function getIngredientPieDetail(ingredientId: string): Promise<IngredientPieDetail> {
+  console.log('[PIE-DETAIL] invoked', { ingredientId, ts: Date.now() })
   const user = await requireChef()
   const tenantId = user.tenantId!
+  console.log('[PIE-DETAIL] start', { ingredientId, tenantId })
 
   // Fetch all three data sources in parallel
   const [resolvedPrice, priceHistory, seasonalPattern] = await Promise.all([
-    resolvePrice(ingredientId, tenantId),
-    getIngredientPriceHistory(ingredientId, { months: 12, limit: 20 }),
-    getSeasonalPattern(ingredientId, tenantId),
+    resolvePrice(ingredientId, tenantId).catch((e) => {
+      console.error('[PIE-DETAIL] resolvePrice error:', e)
+      throw e
+    }),
+    getIngredientPriceHistory(ingredientId, { months: 12, limit: 20 }).catch((e) => {
+      console.error('[PIE-DETAIL] priceHistory error:', e)
+      throw e
+    }),
+    getSeasonalPattern(ingredientId, tenantId).catch((e) => {
+      console.error('[PIE-DETAIL] seasonalPattern error:', e)
+      throw e
+    }),
   ])
 
   // Compute current month's seasonal index

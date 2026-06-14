@@ -7,7 +7,8 @@
 
 import { revalidatePath } from 'next/cache'
 import { requireChef } from '@/lib/auth/get-user'
-import { createServerClient } from '@/lib/db/server'
+import { db } from '@/lib/db'
+import { sql } from 'drizzle-orm'
 
 // ── Types ────────────────────────────────────────────────────────────────────
 
@@ -71,52 +72,38 @@ export async function recordPricePoint(
   }
 ): Promise<{ id: string }> {
   const user = await requireChef()
-  const db: any = createServerClient()
 
-  // Insert price history entry
-  const { data, error } = await db
-    .from('ingredient_price_history')
-    .insert({
-      tenant_id: user.tenantId!,
-      ingredient_id: ingredientId,
-      price_cents: priceCents,
-      unit,
-      source,
-      source_id: options?.sourceId ?? null,
-      vendor_id: options?.vendorId ?? null,
-      purchase_date:
-        options?.recordedAt ??
-        ((_d) =>
-          `${_d.getFullYear()}-${String(_d.getMonth() + 1).padStart(2, '0')}-${String(_d.getDate()).padStart(2, '0')}`)(
-          new Date()
-        ),
-      notes: options?.notes ?? null,
-    })
-    .select('id')
-    .single()
+  const today = new Date()
+  const purchaseDate =
+    options?.recordedAt ??
+    `${today.getFullYear()}-${String(today.getMonth() + 1).padStart(2, '0')}-${String(today.getDate()).padStart(2, '0')}`
 
-  if (error) throw new Error(`Failed to record price point: ${error.message}`)
+  const rows = (await db.execute(sql`
+    INSERT INTO ingredient_price_history
+      (tenant_id, ingredient_id, price_cents, unit, source, source_id, vendor_id, purchase_date, notes)
+    VALUES
+      (${user.tenantId!}::uuid, ${ingredientId}::uuid, ${priceCents}, ${unit}, ${source},
+       ${options?.sourceId ?? null}::uuid, ${options?.vendorId ?? null}::uuid,
+       ${purchaseDate}::date, ${options?.notes ?? null})
+    RETURNING id
+  `)) as unknown as Array<{ id: string }>
+
+  if (!rows.length) throw new Error('Failed to record price point: no row returned')
 
   // Update ingredient's last known price (non-blocking)
   try {
-    await db
-      .from('ingredients')
-      .update({
-        last_price_cents: priceCents,
-        last_price_date:
-          options?.recordedAt ??
-          ((_d) =>
-            `${_d.getFullYear()}-${String(_d.getMonth() + 1).padStart(2, '0')}-${String(_d.getDate()).padStart(2, '0')}`)(
-            new Date()
-          ),
-      })
-      .eq('id', ingredientId)
-      .eq('tenant_id', user.tenantId!)
+    await db.execute(sql`
+      UPDATE ingredients
+      SET last_price_cents = ${priceCents},
+          last_price_date = ${purchaseDate}::date
+      WHERE id = ${ingredientId}::uuid
+        AND tenant_id = ${user.tenantId!}::uuid
+    `)
   } catch (err) {
     console.error('[non-blocking] Failed to update ingredient last price', err)
   }
 
-  return { id: data.id }
+  return { id: rows[0].id }
 }
 
 // ── Query Price History ──────────────────────────────────────────────────────
@@ -129,33 +116,40 @@ export async function getIngredientPriceHistory(
   options?: { months?: number; limit?: number }
 ): Promise<PriceHistoryEntry[]> {
   const user = await requireChef()
-  const db: any = createServerClient()
 
-  let query = db
-    .from('ingredient_price_history')
-    .select('*')
-    .eq('tenant_id', user.tenantId!)
-    .eq('ingredient_id', ingredientId)
-    .order('purchase_date', { ascending: false })
-
+  let cutoffClause = sql``
   if (options?.months) {
-    const _ct = new Date()
-    const cutoff = new Date(_ct.getFullYear(), _ct.getMonth() - options.months, _ct.getDate())
-    query = query.gte(
-      'purchase_date',
-      `${cutoff.getFullYear()}-${String(cutoff.getMonth() + 1).padStart(2, '0')}-${String(cutoff.getDate()).padStart(2, '0')}`
-    )
+    const cutoff = new Date()
+    cutoff.setMonth(cutoff.getMonth() - options.months)
+    const cutoffStr = `${cutoff.getFullYear()}-${String(cutoff.getMonth() + 1).padStart(2, '0')}-${String(cutoff.getDate()).padStart(2, '0')}`
+    cutoffClause = sql`AND purchase_date >= ${cutoffStr}::date`
   }
 
-  if (options?.limit) {
-    query = query.limit(options.limit)
-  }
+  const limitClause = options?.limit ? sql`LIMIT ${options.limit}` : sql``
 
-  const { data, error } = await query
+  const rows = (await db.execute(sql`
+    SELECT id, ingredient_id, price_cents, unit, source, source_id, vendor_id,
+           purchase_date::text AS purchase_date, notes, created_at::text AS created_at
+    FROM ingredient_price_history
+    WHERE tenant_id = ${user.tenantId!}::uuid
+      AND ingredient_id = ${ingredientId}::uuid
+      ${cutoffClause}
+    ORDER BY purchase_date DESC
+    ${limitClause}
+  `)) as unknown as Array<{
+    id: string
+    ingredient_id: string
+    price_cents: number
+    unit: string
+    source: string
+    source_id: string | null
+    vendor_id: string | null
+    purchase_date: string
+    notes: string | null
+    created_at: string
+  }>
 
-  if (error) throw new Error(`Failed to fetch price history: ${error.message}`)
-
-  return (data || []).map((row: any) => ({
+  return rows.map((row) => ({
     id: row.id,
     ingredientId: row.ingredient_id,
     priceCents: row.price_cents,
@@ -177,19 +171,17 @@ export async function getIngredientPriceHistory(
  */
 export async function getIngredientPriceTrend(ingredientId: string): Promise<PriceTrend> {
   const user = await requireChef()
-  const db: any = createServerClient()
 
-  const { data, error } = await db
-    .from('ingredient_price_history')
-    .select('price_cents')
-    .eq('tenant_id', user.tenantId!)
-    .eq('ingredient_id', ingredientId)
-    .order('purchase_date', { ascending: false })
-    .limit(10)
+  const rows = (await db.execute(sql`
+    SELECT price_cents
+    FROM ingredient_price_history
+    WHERE tenant_id = ${user.tenantId!}::uuid
+      AND ingredient_id = ${ingredientId}::uuid
+    ORDER BY purchase_date DESC
+    LIMIT 10
+  `)) as unknown as Array<{ price_cents: number }>
 
-  if (error) throw new Error(`Failed to fetch price trend: ${error.message}`)
-
-  const prices = (data || []).map((r: any) => r.price_cents as number)
+  const prices = rows.map((r) => r.price_cents)
 
   if (prices.length < 3) {
     return {
@@ -245,16 +237,22 @@ export async function getIngredientPriceTrend(ingredientId: string): Promise<Pri
  */
 export async function getSeasonalPricePattern(ingredientId: string): Promise<SeasonalPattern[]> {
   const user = await requireChef()
-  const db: any = createServerClient()
 
-  const { data, error } = await db
-    .from('ingredient_monthly_price_avg')
-    .select('month, avg_price_cents, min_price_cents, max_price_cents, data_points')
-    .eq('tenant_id', user.tenantId!)
-    .eq('ingredient_id', ingredientId)
-    .order('month', { ascending: true })
+  const rows = (await db.execute(sql`
+    SELECT month, avg_price_cents, min_price_cents, max_price_cents, data_points
+    FROM ingredient_monthly_price_avg
+    WHERE tenant_id = ${user.tenantId!}::uuid
+      AND ingredient_id = ${ingredientId}::uuid
+    ORDER BY month ASC
+  `)) as unknown as Array<{
+    month: number
+    avg_price_cents: number
+    min_price_cents: number
+    max_price_cents: number
+    data_points: number
+  }>
 
-  if (error) throw new Error(`Failed to fetch seasonal pattern: ${error.message}`)
+  const data = rows
 
   const MONTH_NAMES = [
     '',
@@ -316,25 +314,27 @@ export async function getMonthlyPriceAverages(
   months: number = 12
 ): Promise<MonthlyAverage[]> {
   const user = await requireChef()
-  const db: any = createServerClient()
 
   const cutoff = new Date()
   cutoff.setMonth(cutoff.getMonth() - months)
   const cutoffYear = cutoff.getFullYear()
   const cutoffMonth = cutoff.getMonth() + 1
 
-  const { data, error } = await db
-    .from('ingredient_monthly_price_avg')
-    .select('year, month, avg_price_cents, data_points')
-    .eq('tenant_id', user.tenantId!)
-    .eq('ingredient_id', ingredientId)
-    .or(`year.gt.${cutoffYear},and(year.eq.${cutoffYear},month.gte.${cutoffMonth})`)
-    .order('year', { ascending: true })
-    .order('month', { ascending: true })
+  const rows = (await db.execute(sql`
+    SELECT year, month, avg_price_cents, data_points
+    FROM ingredient_monthly_price_avg
+    WHERE tenant_id = ${user.tenantId!}::uuid
+      AND ingredient_id = ${ingredientId}::uuid
+      AND (year > ${cutoffYear} OR (year = ${cutoffYear} AND month >= ${cutoffMonth}))
+    ORDER BY year ASC, month ASC
+  `)) as unknown as Array<{
+    year: number
+    month: number
+    avg_price_cents: number
+    data_points: number
+  }>
 
-  if (error) throw new Error(`Failed to fetch monthly averages: ${error.message}`)
-
-  return (data || []).map((row: any) => ({
+  return rows.map((row) => ({
     year: row.year,
     month: row.month,
     avgPriceCents: row.avg_price_cents,
