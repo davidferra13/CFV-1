@@ -18,9 +18,7 @@ type ServiceIntentRouteProps = {
   }
 }
 
-export function generateStaticParams() {
-  return SERVICE_INTENT_PAGES.map((page) => ({ slug: page.slug }))
-}
+// generateStaticParams removed for build compatibility (no DB at build time)
 
 export async function generateMetadata({ params }: ServiceIntentRouteProps): Promise<Metadata> {
   const page = getServiceIntentPage(params.slug)

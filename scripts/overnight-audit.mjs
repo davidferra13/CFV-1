@@ -421,7 +421,7 @@ async function phaseSiteCrawl(routes) {
       }, {
         email,
         password,
-        dbUrl: process.env.NEXT_PUBLIC_DB_URL || 'http://127.0.0.1:54322',
+        dbUrl: process.env.DB_URL || 'http://127.0.0.1:54322',
         dbKey: process.env.NEXT_PUBLIC_DB_ANON_KEY || '',
       });
 
@@ -1092,7 +1092,7 @@ async function main() {
       log('  ⚠ .auth/seed-ids.json not found - crawl will run without auth');
     } else {
       const seed = JSON.parse(fs.readFileSync(seedPath, 'utf8'));
-      const dbUrl = process.env.NEXT_PUBLIC_DB_URL || 'http://127.0.0.1:54322';
+      const dbUrl = process.env.DB_URL || 'http://127.0.0.1:54322';
       const dbKey = process.env.NEXT_PUBLIC_DB_ANON_KEY || '';
       for (const role of ['chef', 'client']) {
         const email = role === 'chef' ? seed.chefEmail : seed.clientEmail;

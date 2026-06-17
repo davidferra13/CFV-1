@@ -3,13 +3,14 @@
 
 import { requireChef } from '@/lib/auth/get-user'
 import { auth } from '@/lib/auth'
-import dynamic from 'next/dynamic'
+import nextDynamic from 'next/dynamic'
+export const dynamic = 'force-dynamic'
 import { headers } from 'next/headers'
 import { redirect } from 'next/navigation'
-const ChefSidebar = dynamic(() =>
+const ChefSidebar = nextDynamic(() =>
   import('@/components/navigation/chef-nav').then((m) => m.ChefSidebar)
 )
-const ChefMobileNav = dynamic(() =>
+const ChefMobileNav = nextDynamic(() =>
   import('@/components/navigation/chef-mobile-nav').then((m) => m.ChefMobileNav)
 )
 import { ChefMainContent } from '@/components/navigation/chef-main-content'
@@ -34,7 +35,7 @@ import {
   getCachedUsageRanking,
 } from '@/lib/chef/layout-data-cache'
 import { TestAccountBanner } from '@/components/dev/test-account-banner'
-const CommandPaletteLauncher = dynamic(
+const CommandPaletteLauncher = nextDynamic(
   () =>
     import('@/components/search/command-palette-launcher').then((m) => m.CommandPaletteLauncher),
   { ssr: false }
@@ -52,45 +53,45 @@ import { resolveHiddenNavRoutes } from '@/lib/surfaces/resolve-chef-surfaces'
 import { getPinnedSurfaces } from '@/lib/surfaces/analytics/usage-tracking'
 import { RoleSwitcher } from '@/components/shared/role-switcher'
 
-const FeedbackNudgeCard = dynamic(
+const FeedbackNudgeCard = nextDynamic(
   () => import('@/components/feedback/feedback-nudge-card').then((m) => m.FeedbackNudgeCard),
   { ssr: false }
 )
-const OfflineStatusBar = dynamic(
+const OfflineStatusBar = nextDynamic(
   () => import('@/components/offline/offline-status-bar').then((m) => m.OfflineStatusBar),
   { ssr: false }
 )
-const RemyWrapper = dynamic(
+const RemyWrapper = nextDynamic(
   () => import('@/components/ai/remy-wrapper').then((m) => m.RemyWrapper),
   {
     ssr: false,
   }
 )
-const QuickCapture = dynamic(
+const QuickCapture = nextDynamic(
   () => import('@/components/mobile/quick-capture').then((m) => m.QuickCapture),
   { ssr: false }
 )
-const TriageDock = dynamic(
+const TriageDock = nextDynamic(
   () => import('@/components/capture/triage-dock').then((m) => m.TriageDock),
   { ssr: false }
 )
-const BreadcrumbTracker = dynamic(
+const BreadcrumbTracker = nextDynamic(
   () => import('@/components/activity/breadcrumb-tracker').then((m) => m.BreadcrumbTracker),
   { ssr: false }
 )
-const PresenceBeacon = dynamic(
+const PresenceBeacon = nextDynamic(
   () => import('@/components/admin/presence-beacon').then((m) => m.PresenceBeacon),
   { ssr: false }
 )
-const RouteTracker = dynamic(
+const RouteTracker = nextDynamic(
   () => import('@/components/session/route-tracker').then((m) => m.RouteTracker),
   { ssr: false }
 )
-const AiOutageBanner = dynamic(
+const AiOutageBanner = nextDynamic(
   () => import('@/components/dashboard/ai-outage-banner').then((m) => m.AiOutageBanner),
   { ssr: false }
 )
-const ChefLiveAlerts = dynamic(
+const ChefLiveAlerts = nextDynamic(
   () => import('@/components/calling/chef-live-alerts').then((m) => m.ChefLiveAlerts),
   { ssr: false }
 )

@@ -5,7 +5,7 @@
  * quote_state_transitions) reject UPDATE and DELETE operations.
  * This is P1 — if these fail, financial records can be tampered with.
  *
- * Requires: NEXT_PUBLIC_DB_URL + DB_SERVICE_ROLE_KEY in env
+ * Requires: DB_URL + DB_SERVICE_ROLE_KEY in env
  *
  * Run: npm run test:integration
  */

@@ -55,6 +55,15 @@ function getBlockedIngredientSlug(pathname: string): string | null {
   return isKnowledgeIngredientPubliclyIndexable({ slug }) ? null : slug
 }
 
+/** Hostnames that should be routed to the DF Private Chef surface. */
+const DFPC_HOSTNAMES = ['dfprivatechef.com', 'www.dfprivatechef.com']
+const DFPC_PATH_PREFIX = '/dfpc'
+
+function isDfpcHost(request: NextRequest): boolean {
+  const host = (request.headers.get('host') || '').split(':')[0].toLowerCase()
+  return DFPC_HOSTNAMES.includes(host)
+}
+
 /** Token-based path prefixes that expose private data via URL tokens. */
 const TOKEN_PATH_PREFIXES = [
   '/proposal/',
@@ -116,6 +125,23 @@ export default auth(async (request) => {
 
   if (isPublicAssetPath(pathname)) {
     return NextResponse.next()
+  }
+
+  // --- Multi-domain routing: dfprivatechef.com → /dfpc routes ---
+  if (isDfpcHost(request)) {
+    if (pathname.startsWith(DFPC_PATH_PREFIX)) {
+      return NextResponse.next()
+    }
+    const url = request.nextUrl.clone()
+    url.pathname = `${DFPC_PATH_PREFIX}${pathname === '/' ? '' : pathname}`
+    return NextResponse.rewrite(url)
+  }
+  // Block direct /dfpc access on non-DFPC hostnames
+  if (pathname.startsWith(DFPC_PATH_PREFIX)) {
+    return withRequestId(
+      new NextResponse('Not Found', { status: 404, headers: { 'content-type': 'text/plain' } }),
+      requestId
+    )
   }
 
   const staleRedirectPath = getStaleRouteRedirectPath(pathname)

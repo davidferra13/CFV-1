@@ -1,10 +1,11 @@
 // Public Layout - No authentication required
 
-import dynamic from 'next/dynamic'
+import nextDynamic from 'next/dynamic'
+export const dynamic = 'force-dynamic'
 import { auth } from '@/lib/auth'
 import { PublicHeader } from '@/components/navigation/public-header'
 import { PublicFooter } from '@/components/navigation/public-footer'
-const DiscoveryOutcomeTracker = dynamic(
+const DiscoveryOutcomeTracker = nextDynamic(
   () =>
     import('@/components/discovery/discovery-outcome-tracker').then(
       (m) => m.DiscoveryOutcomeTracker
@@ -12,19 +13,19 @@ const DiscoveryOutcomeTracker = dynamic(
   { ssr: false }
 )
 
-const PresenceBeacon = dynamic(
+const PresenceBeacon = nextDynamic(
   () => import('@/components/admin/presence-beacon').then((m) => m.PresenceBeacon),
   { ssr: false }
 )
-const GlobalReportButton = dynamic(
+const GlobalReportButton = nextDynamic(
   () => import('@/components/feedback/global-report-button').then((m) => m.GlobalReportButton),
   { ssr: false }
 )
-const RemyConciergeWidget = dynamic(
+const RemyConciergeWidget = nextDynamic(
   () => import('@/components/public/remy-concierge-widget').then((m) => m.RemyConciergeWidget),
   { ssr: false }
 )
-const MetaPixel = dynamic(
+const MetaPixel = nextDynamic(
   () => import('@/components/tracking/meta-pixel').then((m) => m.MetaPixel),
   { ssr: false }
 )

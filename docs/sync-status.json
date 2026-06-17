@@ -1,27 +1,27 @@
 {
-  "last_sync": "2026-06-14T03:27:11.158Z",
+  "last_sync": "2026-06-15T01:20:54.294Z",
   "status": "failed",
-  "next_sync": "2026-06-14T03:57:11.159Z",
+  "next_sync": "2026-06-15T01:50:54.294Z",
   "interval_hours": 2,
-  "consecutive_failures": 30,
+  "consecutive_failures": 19,
   "last_error": "Command failed: node \"C:\\Users\\david\\Documents\\CFv1\\scripts\\openclaw-pull\\sync-all.mjs\"",
   "last_sync_type": "full",
   "last_success_at": null,
-  "last_failure_at": "2026-06-14T03:27:11.158Z",
-  "completed_at": "2026-06-14T03:27:11.158Z",
+  "last_failure_at": "2026-06-15T01:20:54.294Z",
+  "completed_at": "2026-06-15T01:20:54.294Z",
   "error_kind": "exit_code",
   "exit_code": 1,
-  "last_elapsed_s": 9.1,
-  "run_id": "openclaw-full-1781407622059",
-  "started_at": "2026-06-14T03:27:02.059Z",
+  "last_elapsed_s": 8.6,
+  "run_id": "openclaw-full-1781486445653",
+  "started_at": "2026-06-15T01:20:45.653Z",
   "summary": {
-    "runId": "openclaw-full-1781407622129",
+    "runId": "openclaw-full-1781486445708",
     "syncType": "full",
     "status": "failed",
     "partialSuccess": false,
-    "startedAt": "2026-06-14T03:27:02.129Z",
-    "completedAt": "2026-06-14T03:27:11.110Z",
-    "durationSeconds": 9,
+    "startedAt": "2026-06-15T01:20:45.708Z",
+    "completedAt": "2026-06-15T01:20:54.278Z",
+    "durationSeconds": 8.6,
     "failedStepNames": [
       "Pull catalog from Pi",
       "Push stores to Pi",
@@ -38,9 +38,9 @@
       {
         "name": "Pull catalog from Pi",
         "status": "failed",
-        "startedAt": "2026-06-14T03:27:02.133Z",
-        "completedAt": "2026-06-14T03:27:06.491Z",
-        "durationSeconds": 4.4,
+        "startedAt": "2026-06-15T01:20:45.711Z",
+        "completedAt": "2026-06-15T01:20:49.847Z",
+        "durationSeconds": 4.1,
         "error": "Command failed: node C:\\Users\\david\\Documents\\CFv1\\scripts\\openclaw-pull\\pull.mjs",
         "details": {
           "exitCode": 1,
@@ -50,8 +50,8 @@
       {
         "name": "Push stores to Pi",
         "status": "failed",
-        "startedAt": "2026-06-14T03:27:06.492Z",
-        "completedAt": "2026-06-14T03:27:08.626Z",
+        "startedAt": "2026-06-15T01:20:49.847Z",
+        "completedAt": "2026-06-15T01:20:51.943Z",
         "durationSeconds": 2.1,
         "error": "Command failed: node C:\\Users\\david\\Documents\\CFv1\\scripts\\push-stores-to-pi.mjs",
         "details": {
@@ -62,8 +62,8 @@
       {
         "name": "Sync normalization + aliases",
         "status": "failed",
-        "startedAt": "2026-06-14T03:27:08.626Z",
-        "completedAt": "2026-06-14T03:27:08.712Z",
+        "startedAt": "2026-06-15T01:20:51.944Z",
+        "completedAt": "2026-06-15T01:20:52.010Z",
         "durationSeconds": 0.1,
         "error": "Command failed: node C:\\Users\\david\\Documents\\CFv1\\scripts\\openclaw-pull\\sync-normalization.mjs",
         "details": {
@@ -74,8 +74,8 @@
       {
         "name": "Promote canonical foods to system ingredients",
         "status": "failed",
-        "startedAt": "2026-06-14T03:27:08.712Z",
-        "completedAt": "2026-06-14T03:27:08.760Z",
+        "startedAt": "2026-06-15T01:20:52.011Z",
+        "completedAt": "2026-06-15T01:20:52.050Z",
         "durationSeconds": 0,
         "error": "Command failed: node C:\\Users\\david\\Documents\\CFv1\\scripts\\openclaw-promote-foods.mts",
         "details": {
@@ -86,8 +86,8 @@
       {
         "name": "Refresh system ingredient market prices",
         "status": "failed",
-        "startedAt": "2026-06-14T03:27:08.761Z",
-        "completedAt": "2026-06-14T03:27:08.832Z",
+        "startedAt": "2026-06-15T01:20:52.050Z",
+        "completedAt": "2026-06-15T01:20:52.106Z",
         "durationSeconds": 0.1,
         "error": "Command failed: node C:\\Users\\david\\Documents\\CFv1\\scripts\\sync-system-ingredient-prices.mjs",
         "details": {
@@ -98,8 +98,8 @@
       {
         "name": "Sync prices from Pi API",
         "status": "failed",
-        "startedAt": "2026-06-14T03:27:08.833Z",
-        "completedAt": "2026-06-14T03:27:08.911Z",
+        "startedAt": "2026-06-15T01:20:52.106Z",
+        "completedAt": "2026-06-15T01:20:52.162Z",
         "durationSeconds": 0.1,
         "error": "Command failed: node C:\\Users\\david\\Documents\\CFv1\\scripts\\run-openclaw-sync.mjs",
         "details": {
@@ -110,8 +110,8 @@
       {
         "name": "Incremental ingredient knowledge enrichment",
         "status": "failed",
-        "startedAt": "2026-06-14T03:27:08.913Z",
-        "completedAt": "2026-06-14T03:27:08.998Z",
+        "startedAt": "2026-06-15T01:20:52.163Z",
+        "completedAt": "2026-06-15T01:20:52.222Z",
         "durationSeconds": 0.1,
         "error": "Command failed: node C:\\Users\\david\\Documents\\CFv1\\scripts\\openclaw-wiki-enrichment.mjs --resume --limit 50",
         "details": {
@@ -122,24 +122,24 @@
       {
         "name": "Pull docket output documents",
         "status": "failed",
-        "startedAt": "2026-06-14T03:27:09.000Z",
-        "completedAt": "2026-06-14T03:27:11.070Z",
-        "durationSeconds": 2.1,
+        "startedAt": "2026-06-15T01:20:52.223Z",
+        "completedAt": "2026-06-15T01:20:54.265Z",
+        "durationSeconds": 2,
         "error": "Command failed: ssh davidferra@10.0.0.177 \"ls /home/davidferra/openclaw-docket/output/ 2>/dev/null\"\nssh: connect to host 10.0.0.177 port 22: Connection refused\r\n"
       },
       {
         "name": "Snapshot current prices",
         "status": "failed",
-        "startedAt": "2026-06-14T03:27:11.072Z",
-        "completedAt": "2026-06-14T03:27:11.082Z",
+        "startedAt": "2026-06-15T01:20:54.265Z",
+        "completedAt": "2026-06-15T01:20:54.270Z",
         "durationSeconds": 0,
         "error": "connect ECONNREFUSED 127.0.0.1:54322"
       },
       {
         "name": "Refresh materialized views",
         "status": "failed",
-        "startedAt": "2026-06-14T03:27:11.086Z",
-        "completedAt": "2026-06-14T03:27:11.107Z",
+        "startedAt": "2026-06-15T01:20:54.272Z",
+        "completedAt": "2026-06-15T01:20:54.276Z",
         "durationSeconds": 0,
         "error": "connect ECONNREFUSED 127.0.0.1:54322"
       }

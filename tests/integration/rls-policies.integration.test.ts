@@ -4,7 +4,7 @@
  * Verifies that RLS prevents cross-tenant data access.
  * This is P1 — a broken RLS policy leaks data between tenants.
  *
- * Requires: NEXT_PUBLIC_DB_URL + DB_SERVICE_ROLE_KEY in env
+ * Requires: DB_URL + DB_SERVICE_ROLE_KEY in env
  *
  * Run: npm run test:integration
  */

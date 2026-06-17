@@ -13,6 +13,9 @@ const PROJECT_ROOT = join(__dirname, '..')
 const APP_DIR = join(PROJECT_ROOT, 'app')
 const SEARCH_DIRS = ['app', 'components', 'lib'].map((d) => join(PROJECT_ROOT, d))
 
+// Routes wired via middleware domain routing (not nav). Single middleware ref is sufficient.
+const MIDDLEWARE_WIRED_PREFIXES = ['/dfpc']
+
 const CONSOLIDATED_ROUTE_COVERAGE = [
   {
     hub: '/tables',
@@ -320,6 +323,14 @@ function buildCorpus() {
     }
   }
   SEARCH_DIRS.forEach(walk)
+
+  // Include standalone root source files (e.g. middleware.ts) that reference routes
+  const ROOT_FILES = ['middleware.ts', 'next.config.js']
+  for (const name of ROOT_FILES) {
+    const full = join(PROJECT_ROOT, name)
+    if (existsSync(full)) files.push(full)
+  }
+
   return files
 }
 
@@ -397,7 +408,10 @@ function countRefs(routes, corpusFiles) {
       status = 'ORPHAN'
       orphanCount++
     } else if (refFiles.length === 1 && navRefs === 0) {
-      status = 'WEAK'
+      const isMiddlewareWired = MIDDLEWARE_WIRED_PREFIXES.some(
+        (p) => r.route === p || r.route.startsWith(p + '/')
+      )
+      status = isMiddlewareWired ? 'WIRED' : 'WEAK'
     }
 
     results.push({

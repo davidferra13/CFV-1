@@ -26,7 +26,7 @@ const _createdIds: { table: string; id: string }[] = []
  */
 export function hasDbCredentials(): boolean {
   // The admin client reads credentials internally; check env vars for skip logic
-  return !!(process.env.NEXT_PUBLIC_DB_URL && process.env.DB_SERVICE_ROLE_KEY)
+  return !!(process.env.DB_URL && process.env.DB_SERVICE_ROLE_KEY)
 }
 
 /**

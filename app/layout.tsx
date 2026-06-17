@@ -1,11 +1,16 @@
 ﻿import type { Metadata, Viewport } from 'next'
-import dynamic from 'next/dynamic'
+import nextDynamic from 'next/dynamic'
 import { Playfair_Display } from 'next/font/google'
 import { IconProvider } from '@/components/ui/icon-provider'
 import { ColorPaletteProvider, PaletteScript } from '@/components/ui/color-palette-provider'
 import { AppThemeProvider } from '@/components/ui/app-theme-provider'
 import { COMPANY_NAME, PUBLIC_SITE_URL, absoluteUrl } from '@/lib/site/public-site'
 import './globals.css'
+
+// Force all routes to render dynamically (skip static page generation).
+// This app has 962 routes that depend on auth/tenant context; SSG is
+// meaningless and crashes the build when PostgreSQL is not running.
+export const dynamic = 'force-dynamic'
 
 const playfairDisplay = Playfair_Display({
   subsets: ['latin'],
@@ -14,7 +19,7 @@ const playfairDisplay = Playfair_Display({
   variable: '--font-playfair',
 })
 
-const DeferredRootRuntime = dynamic(
+const DeferredRootRuntime = nextDynamic(
   () => import('@/components/runtime/deferred-root-runtime').then((m) => m.DeferredRootRuntime),
   { ssr: false }
 )

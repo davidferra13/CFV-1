@@ -4,7 +4,7 @@ import { useCallback, useEffect, useRef, useState } from 'react'
 import { formatDistanceToNow, isToday, isYesterday, isThisWeek, format } from 'date-fns'
 import { getChannelMeta } from '@/lib/communication/channel-meta'
 import { Badge } from '@/components/ui/badge'
-import type { UnifiedThreadItem } from '@/lib/communication/unified-thread'
+import type { UnifiedThreadItem } from '@/lib/communication/unified-thread-types'
 
 interface UnifiedThreadViewProps {
   items: UnifiedThreadItem[]
@@ -38,9 +38,7 @@ function ThreadBubble({ item }: { item: UnifiedThreadItem }) {
   const isNote = item.type === 'note'
 
   // Strip email subject lines from content display
-  const displayContent = item.content
-    .replace(/^(Re:|Fwd:|Subject:)\s*/gi, '')
-    .trim()
+  const displayContent = item.content.replace(/^(Re:|Fwd:|Subject:)\s*/gi, '').trim()
 
   if (isNote) {
     return (
@@ -79,9 +77,7 @@ function ThreadBubble({ item }: { item: UnifiedThreadItem }) {
 
         {/* Content */}
         <p className="text-sm whitespace-pre-wrap break-words leading-relaxed">
-          {displayContent.length > 500
-            ? displayContent.slice(0, 500) + '...'
-            : displayContent}
+          {displayContent.length > 500 ? displayContent.slice(0, 500) + '...' : displayContent}
         </p>
 
         {/* Timestamp + linked entity */}
@@ -167,10 +163,7 @@ export function UnifiedThreadView({ items, hasMore, onLoadMore, loading }: Unifi
           {loading ? (
             <span className="text-xs text-stone-500">Loading...</span>
           ) : (
-            <button
-              onClick={onLoadMore}
-              className="text-xs text-brand-500 hover:text-brand-400"
-            >
+            <button onClick={onLoadMore} className="text-xs text-brand-500 hover:text-brand-400">
               Load earlier messages
             </button>
           )}

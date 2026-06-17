@@ -166,7 +166,7 @@ async function main() {
   const rootDir = process.cwd()
   const forwardedArgs = process.argv.slice(2)
   const nextCliPath = require.resolve('next/dist/bin/next')
-  const maxOldSpaceSizeMb = String(process.env.NEXT_BUILD_MAX_OLD_SPACE_SIZE || '12288').trim()
+  const maxOldSpaceSizeMb = String(process.env.NEXT_BUILD_MAX_OLD_SPACE_SIZE || '16384').trim()
   const nodeOptions = withHeapOption(
     String(process.env.NODE_OPTIONS || '').trim(),
     maxOldSpaceSizeMb

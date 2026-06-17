@@ -50,7 +50,7 @@ function loadEnv() {
     return m ? m[1].trim() : ''
   }
   return {
-    dbUrl: get('NEXT_PUBLIC_DB_URL'),
+    dbUrl: get('DB_URL'),
     dbAnonKey: get('NEXT_PUBLIC_DB_ANON_KEY'),
   }
 }

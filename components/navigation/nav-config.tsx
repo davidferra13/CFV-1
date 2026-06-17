@@ -127,6 +127,7 @@ type NavGroup = {
   icon: LucideIcon
   items: NavCollapsibleItem[]
   module?: string
+  hidden?: boolean
 }
 type PrimaryShortcutOption = NavItem & { context: string }
 
@@ -331,6 +332,11 @@ export const navGroups: NavGroup[] = [
         label: 'Client Pulse',
         icon: Activity,
         children: [{ href: '/waiting', label: 'Waiting Radar' }],
+      },
+      {
+        href: '/waiting',
+        label: 'Waiting Radar',
+        icon: Clock,
       },
       {
         href: '/clients/communication',
@@ -1492,6 +1498,18 @@ export const navGroups: NavGroup[] = [
           { href: '/reputation/mentions', label: 'Mentions' },
           { href: '/reputation/studio', label: 'Reputation Studio' },
         ],
+      },
+      {
+        href: '/dev/diagnosis',
+        label: 'Diagnosis',
+        icon: Wrench,
+        hidden: true,
+      },
+      {
+        href: '/dev/integrity',
+        label: 'Integrity',
+        icon: ShieldCheck,
+        hidden: true,
       },
     ],
   },

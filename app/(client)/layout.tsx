@@ -1,5 +1,6 @@
 // Client Portal Layout - Layer 2 of Defense in Depth
 
+export const dynamic = 'force-dynamic'
 import { requireClient } from '@/lib/auth/get-user'
 import { headers } from 'next/headers'
 import { redirect } from 'next/navigation'

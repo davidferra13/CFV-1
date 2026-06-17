@@ -3,12 +3,8 @@
 import { revalidatePath } from 'next/cache'
 import { requireChef } from '@/lib/auth/get-user'
 import { createServerClient } from '@/lib/db/server'
-import {
-  getUnifiedThread,
-  getLastContactSummary,
-  type UnifiedThreadResult,
-  type LastContactInfo,
-} from './unified-thread'
+import { getUnifiedThread, getLastContactSummary } from './unified-thread'
+import type { UnifiedThreadResult, LastContactInfo } from './unified-thread-types'
 
 /**
  * Server action: get unified conversation thread for a client.
@@ -135,11 +131,13 @@ export async function sendQuickReplyToClient(
               color: '#1a1a1a',
             },
           },
-          ...trimmedMessage.split('\n').map((line: string, i: number) =>
-            line.trim() === ''
-              ? createElement('br', { key: i })
-              : createElement('p', { key: i, style: { margin: '0 0 4px 0' } }, line)
-          )
+          ...trimmedMessage
+            .split('\n')
+            .map((line: string, i: number) =>
+              line.trim() === ''
+                ? createElement('br', { key: i })
+                : createElement('p', { key: i, style: { margin: '0 0 4px 0' } }, line)
+            )
         ),
         replyTo: user.email,
       })
@@ -211,7 +209,8 @@ export async function sendQuickReplyToClient(
 
     return {
       success: false,
-      error: 'No active conversation thread found for SMS. Send an email first to establish a thread.',
+      error:
+        'No active conversation thread found for SMS. Send an email first to establish a thread.',
     }
   }
 

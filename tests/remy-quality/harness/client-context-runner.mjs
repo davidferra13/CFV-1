@@ -40,7 +40,7 @@ const VALID_CLIENT_ROUTES = [
 function loadEnv() {
   const env = fs.readFileSync(path.join(ROOT, '.env.local'), 'utf8')
   const get = (k) => { const m = env.match(new RegExp(`^${k}=(.+)$`, 'm')); return m ? m[1].trim() : '' }
-  return { dbUrl: get('NEXT_PUBLIC_DB_URL'), dbAnonKey: get('NEXT_PUBLIC_DB_ANON_KEY') }
+  return { dbUrl: get('DB_URL'), dbAnonKey: get('NEXT_PUBLIC_DB_ANON_KEY') }
 }
 
 function loadClientCredentials() {

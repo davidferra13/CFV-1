@@ -1,6 +1,8 @@
 // Minimal kiosk layout - no nav, no sidebar, no Remy, no portal links
 // Full-screen, touch-optimized, designed for dedicated tablets
 
+export const dynamic = 'force-dynamic'
+
 import type { Metadata, Viewport } from 'next'
 
 export const metadata: Metadata = {

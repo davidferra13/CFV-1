@@ -108,7 +108,7 @@ check('tests/helpers/ directory must exist', fs.existsSync(helpersDir))
 // 5. Required env vars (check .env.local or process.env)
 // ============================================================
 
-const requiredVars = ['NEXT_PUBLIC_DB_URL', 'NEXT_PUBLIC_DB_ANON_KEY']
+const requiredVars = ['DB_URL', 'NEXT_PUBLIC_DB_ANON_KEY']
 
 for (const varName of requiredVars) {
   const inEnv = !!process.env[varName]

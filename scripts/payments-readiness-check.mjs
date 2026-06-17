@@ -87,7 +87,7 @@ async function main() {
     warnings.push('STRIPE_WEBHOOK_SECRET does not use whsec_ prefix')
   }
 
-  const dbUrl = env.NEXT_PUBLIC_DB_URL
+  const dbUrl = env.DB_URL
   const serviceRole = env.DB_SERVICE_ROLE_KEY
   const platformOwnerChefId = env.PLATFORM_OWNER_CHEF_ID
 

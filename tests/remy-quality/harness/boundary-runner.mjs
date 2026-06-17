@@ -42,7 +42,7 @@ function loadEnv() {
     return m ? m[1].trim() : ''
   }
   return {
-    dbUrl: getEnv('NEXT_PUBLIC_DB_URL'),
+    dbUrl: getEnv('DB_URL'),
     dbKey: getEnv('NEXT_PUBLIC_DB_ANON_KEY'),
     agentEmail: getEnv('AGENT_EMAIL') || 'agent@chefflow.test',
     agentPassword: getEnv('AGENT_PASSWORD') || 'AgentChefFlow!2026',

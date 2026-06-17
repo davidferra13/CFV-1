@@ -17,9 +17,7 @@ type Props = {
   }
 }
 
-export function generateStaticParams() {
-  return CUSTOMER_STORIES.map((story) => ({ slug: story.slug }))
-}
+// generateStaticParams removed for build compatibility (no DB at build time)
 
 export async function generateMetadata({ params }: Props): Promise<Metadata> {
   const story = getCustomerStory(params.slug)

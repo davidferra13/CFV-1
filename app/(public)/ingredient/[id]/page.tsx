@@ -21,7 +21,6 @@ import {
   getPublicAlternatives,
 } from '@/lib/openclaw/public-ingredient-queries'
 import {
-  getEnrichedIngredientSlugs,
   getIngredientKnowledgeByName,
   getIngredientKnowledgeBySlug,
   getRelatedIngredients,
@@ -43,13 +42,14 @@ const getCachedIngredientKnowledgeBySlug = cache(getIngredientKnowledgeBySlug)
 
 const BASE_URL = process.env.NEXT_PUBLIC_APP_URL || 'https://cheflowhq.com'
 
-export const revalidate = 3600
+export const dynamic = 'force-dynamic'
 export const dynamicParams = true
 
-export async function generateStaticParams() {
-  const slugs = await getEnrichedIngredientSlugs()
-  return slugs.map((entry) => ({ id: entry.slug }))
-}
+/**
+ * generateStaticParams removed: this route depends on a DB query
+ * (getEnrichedIngredientSlugs) which fails at build time when PostgreSQL
+ * is not running.  force-dynamic renders every slug on demand instead.
+ */
 
 // ---------------------------------------------------------------------------
 // JSON-LD structured data helpers

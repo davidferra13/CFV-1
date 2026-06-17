@@ -408,7 +408,7 @@ async function updatePlatformOwnerEnv(chefId: string) {
 }
 
 async function main() {
-  const dbUrl = requireEnv('NEXT_PUBLIC_DB_URL')
+  const dbUrl = requireEnv('DB_URL')
   ensureLocalDb(dbUrl)
 
   const admin = createAdminClient()

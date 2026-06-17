@@ -61,7 +61,7 @@ const CONFIG = {
   ollamaPcUrl: process.env.OLLAMA_BASE_URL || 'http://localhost:11434',
   ollamaPcModel: process.env.OLLAMA_MODEL || 'gemma4',
   logFile: join(PROJECT_ROOT, 'mission-control.log'),
-  dbUrl: process.env.NEXT_PUBLIC_DB_URL || '',
+  dbUrl: process.env.DB_URL || '',
   dbServiceKey: process.env.DB_SERVICE_ROLE_KEY || '',
 }
 
@@ -6120,7 +6120,7 @@ async function getProdAnalytics() {
 
 async function validateEnv() {
   const required = [
-    'NEXT_PUBLIC_DB_URL',
+    'DB_URL',
     'NEXT_PUBLIC_DB_ANON_KEY',
     'DB_SERVICE_ROLE_KEY',
     'STRIPE_SECRET_KEY',

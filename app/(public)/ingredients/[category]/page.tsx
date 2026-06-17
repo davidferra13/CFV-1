@@ -30,10 +30,7 @@ type Params = {
 // Static params - pre-render all known categories (page 1)
 // ---------------------------------------------------------------------------
 
-export async function generateStaticParams() {
-  const cats = await getIngredientCategories().catch(() => [])
-  return cats.map((c) => ({ category: c.category }))
-}
+// generateStaticParams removed for build compatibility (no DB at build time)
 
 // ---------------------------------------------------------------------------
 // Metadata

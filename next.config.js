@@ -59,6 +59,8 @@ const nextConfig = {
   // Allow LAN access in development so internal /_next assets are not
   // rejected as cross-origin. Extra hosts can be added via NEXT_ALLOWED_DEV_ORIGINS=host1,host2
   allowedDevOrigins: [
+    'dfprivatechef.com',
+    'www.dfprivatechef.com',
     ...String(process.env.NEXT_ALLOWED_DEV_ORIGINS || '')
       .split(',')
       .map((value) => value.trim())

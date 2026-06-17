@@ -6,7 +6,8 @@
 import { requireAdmin } from '@/lib/auth/admin'
 import { headers } from 'next/headers'
 import { redirect } from 'next/navigation'
-import dynamic from 'next/dynamic'
+import nextDynamic from 'next/dynamic'
+export const dynamic = 'force-dynamic'
 import {
   AdminSidebarProvider,
   AdminSidebar,
@@ -30,7 +31,7 @@ export const metadata = {
   title: 'Admin',
 }
 
-const RemyWrapper = dynamic(
+const RemyWrapper = nextDynamic(
   () => import('@/components/ai/remy-wrapper').then((m) => m.RemyWrapper),
   { ssr: false }
 )

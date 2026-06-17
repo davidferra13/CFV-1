@@ -4,7 +4,7 @@
  * Verifies that the UNIQUE constraint on ledger_entries.transaction_reference
  * prevents duplicate entries (critical for Stripe webhook safety).
  *
- * Requires: NEXT_PUBLIC_DB_URL + DB_SERVICE_ROLE_KEY in env
+ * Requires: DB_URL + DB_SERVICE_ROLE_KEY in env
  *
  * Run: npm run test:integration
  */

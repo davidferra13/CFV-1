@@ -124,11 +124,7 @@ function Pagination({
   )
 }
 
-export function generateStaticParams() {
-  return listNearbyCollections().map((collection) => ({
-    slug: collection.slug,
-  }))
-}
+// generateStaticParams removed for build compatibility (no DB at build time)
 
 export async function generateMetadata({ params, searchParams }: PageProps): Promise<Metadata> {
   const collection = getNearbyCollectionBySlug(params.slug)

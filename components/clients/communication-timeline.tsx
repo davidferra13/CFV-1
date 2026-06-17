@@ -1,9 +1,9 @@
 'use client'
 
-import { useState, useTransition, useEffect } from 'react'
+import { useState } from 'react'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
-import type { UnifiedThreadItem } from '@/lib/communication/unified-thread'
+import type { UnifiedThreadItem } from '@/lib/communication/unified-thread-types'
 
 type Props = {
   clientId: string
@@ -68,16 +68,8 @@ export function CommunicationTimeline({ clientId, initialItems }: Props) {
   const [dateTo, setDateTo] = useState('')
   const [showSearch, setShowSearch] = useState(false)
 
-  // Load items if not provided
-  useEffect(() => {
-    if (initialItems) return
-    import('@/lib/communication/unified-thread')
-      .then(({ getUnifiedThread }) => {
-        // We need tenantId but this is client-side; fetch via server action pattern
-        // For now, items should be passed as initialItems from the server component
-      })
-      .catch(() => {})
-  }, [clientId, initialItems])
+  // Items are passed as initialItems from the server component.
+  // Client-side fetching would require a server action (not a direct import of the server module).
 
   // Filter items
   const filtered = items.filter((item) => {

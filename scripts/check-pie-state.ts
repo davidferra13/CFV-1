@@ -4,7 +4,7 @@ dotenv.config({ path: '.env.local' })
 
 import pg from 'postgres'
 
-const url = process.env.DATABASE_URL || process.env.NEXT_PUBLIC_DB_URL
+const url = process.env.DATABASE_URL || process.env.DB_URL
 const sql = pg(url)
 
 async function main() {

@@ -1,6 +1,8 @@
 // Minimal layout for embed pages - no header, no footer, no nav
 // Designed to be loaded inside an iframe on external websites
 
+export const dynamic = 'force-dynamic'
+
 import type { Metadata } from 'next'
 
 export const metadata: Metadata = {

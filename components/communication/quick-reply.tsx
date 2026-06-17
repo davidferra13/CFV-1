@@ -136,7 +136,7 @@ export function QuickReply({
         <Button
           onClick={handleSend}
           disabled={!message.trim() || isPending}
-          size={compact ? 'sm' : undefined}
+          size={compact ? 'sm' : 'md'}
         >
           {isPending ? 'Sending...' : 'Send'}
         </Button>

@@ -18,9 +18,7 @@ type Props = {
   }
 }
 
-export function generateStaticParams() {
-  return COMPARE_PAGES.map((page) => ({ slug: page.slug }))
-}
+// generateStaticParams removed for build compatibility (no DB at build time)
 
 export async function generateMetadata({ params }: Props): Promise<Metadata> {
   const page = getComparePage(params.slug)

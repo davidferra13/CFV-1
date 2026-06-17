@@ -1,6 +1,6 @@
 {
   "version": "1.0",
-  "timestamp": "2026-06-14T03:30:51.697Z",
+  "timestamp": "2026-06-17T04:34:42.187Z",
   "source": "auto-postool",
   "partial": false,
   "phase": null,
@@ -22,6 +22,10 @@
     },
     {
       "status": "M",
+      "path": ".gitignore"
+    },
+    {
+      "status": "M",
       "path": ".openclaw-deploy/captured-responses.json"
     },
     {
@@ -34,7 +38,11 @@
     },
     {
       "status": "M",
-      "path": "app/(chef)/events/cannabis/page.tsx"
+      "path": "app/(admin)/layout.tsx"
+    },
+    {
+      "status": "M",
+      "path": "app/(bare)/layout.tsx"
     },
     {
       "status": "M",
@@ -42,15 +50,79 @@
     },
     {
       "status": "M",
-      "path": "app/(public)/_components/discovery-fallback-panel.tsx"
+      "path": "app/(client)/layout.tsx"
     },
     {
       "status": "M",
-      "path": "components/navigation/chef-mobile-nav.tsx"
+      "path": "app/(demo)/layout.tsx"
     },
     {
       "status": "M",
-      "path": "components/navigation/chef-nav.tsx"
+      "path": "app/(dev)/layout.tsx"
+    },
+    {
+      "status": "M",
+      "path": "app/(public)/chef/[slug]/page.tsx"
+    },
+    {
+      "status": "M",
+      "path": "app/(public)/compare/[slug]/page.tsx"
+    },
+    {
+      "status": "M",
+      "path": "app/(public)/cuisines/[slug]/page.tsx"
+    },
+    {
+      "status": "M",
+      "path": "app/(public)/customers/[slug]/page.tsx"
+    },
+    {
+      "status": "M",
+      "path": "app/(public)/ingredient/[id]/page.tsx"
+    },
+    {
+      "status": "M",
+      "path": "app/(public)/ingredients/[category]/page.tsx"
+    },
+    {
+      "status": "M",
+      "path": "app/(public)/layout.tsx"
+    },
+    {
+      "status": "M",
+      "path": "app/(public)/nearby/collections/[slug]/page.tsx"
+    },
+    {
+      "status": "M",
+      "path": "app/(public)/services/[slug]/page.tsx"
+    },
+    {
+      "status": "M",
+      "path": "app/(staff)/layout.tsx"
+    },
+    {
+      "status": "M",
+      "path": "app/embed/layout.tsx"
+    },
+    {
+      "status": "M",
+      "path": "app/kiosk/layout.tsx"
+    },
+    {
+      "status": "M",
+      "path": "app/layout.tsx"
+    },
+    {
+      "status": "M",
+      "path": "components/clients/communication-timeline.tsx"
+    },
+    {
+      "status": "M",
+      "path": "components/communication/quick-reply.tsx"
+    },
+    {
+      "status": "M",
+      "path": "components/communication/unified-thread-view.tsx"
     },
     {
       "status": "M",
@@ -58,11 +130,7 @@
     },
     {
       "status": "M",
-      "path": "components/pricing/ingredient-pie-popover.tsx"
-    },
-    {
-      "status": "M",
-      "path": "docs/build-state.md"
+      "path": "docs/SHAKEDOWN-MANIFEST.md"
     },
     {
       "status": "M",
@@ -70,27 +138,83 @@
     },
     {
       "status": "M",
-      "path": "lib/chef/layout-data-cache.ts"
+      "path": "lib/communication/timeline-search.ts"
     },
     {
       "status": "M",
-      "path": "lib/inventory/price-history-actions.ts"
+      "path": "lib/communication/unified-actions.ts"
     },
     {
       "status": "M",
-      "path": "lib/monitoring/logger.ts"
+      "path": "lib/communication/unified-thread.ts"
     },
     {
       "status": "M",
-      "path": "lib/pricing/ingredient-pie-detail.ts"
+      "path": "middleware.ts"
     },
     {
       "status": "M",
-      "path": "lib/pricing/resolve-price.ts"
+      "path": "next.config.js"
     },
     {
       "status": "M",
-      "path": "scripts/audit-chef-nav.ts"
+      "path": "public/sw.js"
+    },
+    {
+      "status": "M",
+      "path": "scripts/check-pie-state.ts"
+    },
+    {
+      "status": "M",
+      "path": "scripts/dev-runtime.mjs"
+    },
+    {
+      "status": "M",
+      "path": "scripts/launcher/server.mjs"
+    },
+    {
+      "status": "M",
+      "path": "scripts/lib/db.mjs"
+    },
+    {
+      "status": "M",
+      "path": "scripts/migrate-phone-data.ts"
+    },
+    {
+      "status": "M",
+      "path": "scripts/overnight-audit.mjs"
+    },
+    {
+      "status": "M",
+      "path": "scripts/payments-readiness-check.mjs"
+    },
+    {
+      "status": "M",
+      "path": "scripts/run-next-build.mjs"
+    },
+    {
+      "status": "M",
+      "path": "scripts/run-pie-migrations.ts"
+    },
+    {
+      "status": "M",
+      "path": "scripts/seed-local-demo.ts"
+    },
+    {
+      "status": "M",
+      "path": "scripts/seed-pie-nationwide.ts"
+    },
+    {
+      "status": "M",
+      "path": "scripts/seed-pricing-regions.ts"
+    },
+    {
+      "status": "M",
+      "path": "scripts/verify-e2e-contract.js"
+    },
+    {
+      "status": "M",
+      "path": "scripts/verify-rls-harness.ts"
     },
     {
       "status": "M",
@@ -102,45 +226,77 @@
     },
     {
       "status": "M",
-      "path": "tests/unit/nav-regression.test.ts"
+      "path": "tests/helpers/auth-utils.ts"
+    },
+    {
+      "status": "M",
+      "path": "tests/helpers/e2e-seed.ts"
+    },
+    {
+      "status": "M",
+      "path": "tests/helpers/test-db.ts"
+    },
+    {
+      "status": "M",
+      "path": "tests/integration/immutability-triggers.integration.test.ts"
+    },
+    {
+      "status": "M",
+      "path": "tests/integration/ledger-idempotency.integration.test.ts"
+    },
+    {
+      "status": "M",
+      "path": "tests/integration/rls-policies.integration.test.ts"
+    },
+    {
+      "status": "M",
+      "path": "tests/remy-quality/harness/boundary-runner.mjs"
+    },
+    {
+      "status": "M",
+      "path": "tests/remy-quality/harness/client-adversarial-runner.mjs"
+    },
+    {
+      "status": "M",
+      "path": "tests/remy-quality/harness/client-boundary-runner.mjs"
+    },
+    {
+      "status": "M",
+      "path": "tests/remy-quality/harness/client-context-runner.mjs"
+    },
+    {
+      "status": "M",
+      "path": "tests/remy-quality/harness/client-edge-runner.mjs"
+    },
+    {
+      "status": "M",
+      "path": "tests/remy-quality/harness/client-multiturn-runner.mjs"
+    },
+    {
+      "status": "M",
+      "path": "tests/remy-quality/harness/client-quality-runner.mjs"
+    },
+    {
+      "status": "M",
+      "path": "tests/remy-quality/harness/client-resilience-runner.mjs"
     },
     {
       "status": "??",
-      "path": ".claude/skills/qol/"
+      "path": ".claude/agents/chefflow-builder/"
     },
     {
       "status": "??",
-      "path": ".evidence/live-browser/2026-05-26-20-30-27-tables-sidebar-nav/"
+      "path": "CHEFFLOW_BRIEFING_PROMPT.md"
     },
     {
       "status": "??",
-      "path": ".evidence/live-browser/2026-05-26-20-35-56-cannabis-nav-access/"
+      "path": "app/dfpc/"
     },
     {
       "status": "??",
-      "path": ".evidence/live-browser/2026-05-27-02-27-55-agent-chef-client-portals/"
-    },
-    {
-      "status": "??",
-      "path": ".evidence/live-browser/2026-05-27-05-03-17-private-chef-chefflow-showcase/"
-    },
-    {
-      "status": "??",
-      "path": ".evidence/live-browser/2026-05-27-06-30-16-dirty-workspace-reconciliation/"
-    },
-    {
-      "status": "??",
-      "path": ".evidence/live-browser/2026-05-27-06-51-43-recipe-pi-realtime-pricing/"
-    },
-    {
-      "status": "??",
-      "path": ".evidence/live-browser/2026-05-27-17-53-49-private-chef-inquiry-proposal-workflow/"
-    },
-    {
-      "status": "??",
-      "path": "tests/unit/cannabis-portal-copy.test.ts"
+      "path": "lib/communication/unified-thread-types.ts"
     }
   ],
   "next_action": null,
-  "context_notes": "Recent commits:\nbdaba2e33 docs: collaborative menu workspace implementation plan\n7b8c8b866 docs: collaborative menu workspace design spec\n557fbc24c docs: update session log and build state for series Phase 3\n014de9367 @ docs: session log for cohosting agreement migration completion\n428b28848 feat(series): add series UI routes and components (Phase 3)"
+  "context_notes": "Recent commits:\nd35344720 docs: update build state to healthy after workspace cleanup\n79750fc63 chore: commit session artifacts and evidence snapshots\n947b31c10 chore(tooling): add consolidated route coverage to wiring audit\n610210c07 refactor(ui): redesign discovery fallback panel, fix dev logger crash\n6252c0ce7 fix(pricing): add tier resilience, migrate price-history to Drizzle"
 }

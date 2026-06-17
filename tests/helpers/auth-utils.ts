@@ -64,11 +64,11 @@ export async function createUserDirect(opts?: {
   const email = opts?.email ?? generateUniqueEmail()
   const password = opts?.password ?? generateValidPassword()
 
-  const dbUrl = process.env.NEXT_PUBLIC_DB_URL
+  const dbUrl = process.env.DB_URL
   const serviceRoleKey = process.env.DB_SERVICE_ROLE_KEY
 
   if (!dbUrl || !serviceRoleKey) {
-    throw new Error('NEXT_PUBLIC_DB_URL and DB_SERVICE_ROLE_KEY required for direct user creation')
+    throw new Error('DB_URL and DB_SERVICE_ROLE_KEY required for direct user creation')
   }
 
   // Create auth user via the database Admin API
@@ -110,7 +110,7 @@ export async function createChefDirect(opts?: {
     role: 'chef',
   })
 
-  const dbUrl = process.env.NEXT_PUBLIC_DB_URL!
+  const dbUrl = process.env.DB_URL!
   const serviceRoleKey = process.env.DB_SERVICE_ROLE_KEY!
   const businessName = opts?.businessName ?? `Test Chef ${Date.now()}`
 

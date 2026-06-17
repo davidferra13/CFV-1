@@ -2,7 +2,7 @@
 // Used by Communication Timeline (Deliverable 4)
 
 import { getUnifiedThread } from '@/lib/communication/unified-thread'
-import type { UnifiedThreadItem } from '@/lib/communication/unified-thread'
+import type { UnifiedThreadItem } from '@/lib/communication/unified-thread-types'
 
 export type TimelineSearchResult = {
   items: UnifiedThreadItem[]

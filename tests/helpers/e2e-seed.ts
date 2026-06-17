@@ -1974,7 +1974,7 @@ async function ensurePartnerRole(admin, authUserId: string, partnerId: string) {
 // ─── Main Export ──────────────────────────────────────────────────────────────
 
 export async function seedE2EData(): Promise<SeedResult> {
-  const dbUrl = requireEnv('NEXT_PUBLIC_DB_URL')
+  const dbUrl = requireEnv('DB_URL')
   assertRemoteTestAllowed(dbUrl)
 
   const admin = createAdminClient()

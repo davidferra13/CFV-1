@@ -2,6 +2,7 @@
 // Simple layout with top navigation for staff members.
 // Staff see: Dashboard, Tasks, Station, Recipes, Schedule.
 
+export const dynamic = 'force-dynamic'
 import { requireStaff } from '@/lib/auth/get-user'
 import { getMyProfile } from '@/lib/staff/staff-portal-actions'
 import { headers } from 'next/headers'

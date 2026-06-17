@@ -24,9 +24,7 @@ function cuisineHref(slug: string) {
   return `/cuisines/${slug}`
 }
 
-export function generateStaticParams() {
-  return listPublicCuisinePages().map((page) => ({ slug: page.slug }))
-}
+// generateStaticParams removed for build compatibility (no DB at build time)
 
 export async function generateMetadata({ params }: PageProps): Promise<Metadata> {
   const page = buildPublicCuisinePage(params.slug)

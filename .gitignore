@@ -379,3 +379,9 @@ logs/
 assets/
 tc-out.txt
 chefflow-watchdog.log.old
+
+# Obsidian export (may contain sensitive vault data)
+obsidian_export/
+
+# Claude MCP config (may contain API keys)
+.claude/mcp.json

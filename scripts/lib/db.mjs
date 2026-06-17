@@ -76,12 +76,12 @@ export async function signInAgent(port = 3100) {
  * Create a postgres.js client for direct DB access in scripts.
  * Uses the local PostgreSQL connection (not Supabase).
  *
- * Requires: NEXT_PUBLIC_DB_URL in .env.local
+ * Requires: DB_URL in .env.local
  */
 export async function getDb() {
   const { default: postgres } = await import('postgres')
   const connectionString =
-    process.env.NEXT_PUBLIC_DB_URL || 'postgresql://postgres:postgres@127.0.0.1:54322/postgres'
+    process.env.DB_URL || 'postgresql://postgres:postgres@127.0.0.1:54322/postgres'
   return postgres(connectionString)
 }
 

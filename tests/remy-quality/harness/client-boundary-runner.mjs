@@ -31,7 +31,7 @@ const BASE_URL = 'http://localhost:3100'
 const CLIENT_ENDPOINT = `${BASE_URL}/api/remy/client`
 const OLLAMA_URL = 'http://localhost:11434'
 const INTER_REQUEST_DELAY_MS = 6500 // stay under 12/min rate limit
-const DB_URL = process.env.NEXT_PUBLIC_DB_URL
+const DB_URL = process.env.DB_URL
 const DB_ANON_KEY = process.env.NEXT_PUBLIC_DB_ANON_KEY
 
 // ─── Internal Leak Terms ────────────────────────────────────────────────────
@@ -75,10 +75,10 @@ function loadEnv() {
 async function authenticate() {
   loadEnv()
 
-  const dbUrl = DB_URL || process.env.NEXT_PUBLIC_DB_URL
+  const dbUrl = DB_URL || process.env.DB_URL
   const dbKey = DB_ANON_KEY || process.env.NEXT_PUBLIC_DB_ANON_KEY
   if (!dbUrl || !dbKey) {
-    throw new Error('Missing NEXT_PUBLIC_DB_URL or NEXT_PUBLIC_DB_ANON_KEY')
+    throw new Error('Missing DB_URL or NEXT_PUBLIC_DB_ANON_KEY')
   }
 
   // Read client credentials
@@ -124,7 +124,7 @@ async function authenticate() {
 
 // Also get a chef cookie (for wrong-role test reuse, if needed)
 async function getChefCookie() {
-  const dbUrl = process.env.NEXT_PUBLIC_DB_URL
+  const dbUrl = process.env.DB_URL
   const dbKey = process.env.NEXT_PUBLIC_DB_ANON_KEY
   const seedPath = join(PROJECT_ROOT, '.auth', 'seed-ids.json')
   const seeds = JSON.parse(readFileSync(seedPath, 'utf-8'))

@@ -70,9 +70,11 @@ async function getListeners() {
   `)
 }
 
+const NORMALIZED_ROOT = normalize(PROJECT_ROOT)
+
 function isChefFlowCommand(commandLine) {
   const command = normalize(commandLine)
-  return /\/users\/david\/documents\/cfv1(?:[\/\s"']|-)/.test(command)
+  return command.includes(NORMALIZED_ROOT)
 }
 
 function isThisCheckoutCommand(commandLine) {
@@ -80,7 +82,11 @@ function isThisCheckoutCommand(commandLine) {
 }
 
 function isOtherChefFlowWorktreeCommand(commandLine) {
-  return /\/users\/david\/documents\/cfv1-[^/\s"']+/.test(normalize(commandLine))
+  const command = normalize(commandLine)
+  // Match the project root path followed by a hyphen (e.g., cfv1-worktree-name)
+  // but not the exact project root itself
+  const rootWithHyphen = NORMALIZED_ROOT + '-'
+  return command.includes(rootWithHyphen)
 }
 
 function isNextDevCommand(commandLine) {
@@ -92,9 +98,22 @@ function isNextStartServer(commandLine) {
   return normalize(commandLine).includes('/next/dist/server/lib/start-server.js')
 }
 
+function portsForPid(listeners, pid) {
+  return listeners
+    .filter((item) => Number(item.OwningProcess) === Number(pid))
+    .map((item) => Number(item.LocalPort))
+}
+
 function portForPid(listeners, pid) {
-  const listener = listeners.find((item) => Number(item.OwningProcess) === Number(pid))
-  return listener ? Number(listener.LocalPort) : null
+  const ports = portsForPid(listeners, pid)
+  return ports.length > 0 ? ports[0] : null
+}
+
+function pidForPort(listeners, port) {
+  const listener = listeners.find(
+    (item) => Number(item.LocalPort) === port
+  )
+  return listener ? Number(listener.OwningProcess) : null
 }
 
 function buildProcessIndex(processes) {
@@ -158,7 +177,7 @@ function classifyRuntime(processes, listeners) {
         ? 'current'
         : 'worktree'
     const mode = isNextDevCommand(relatedCommand) ? 'dev' : 'next-server'
-    const descendantPorts = descendants.map((item) => portForPid(listeners, Number(item.ProcessId))).filter(Boolean)
+    const descendantPorts = descendants.flatMap((item) => portsForPid(listeners, Number(item.ProcessId)))
     const canonical = checkout === 'current' && (port === CANONICAL_PORT || descendantPorts.includes(CANONICAL_PORT))
     const duplicate =
       isNextDevCommand(relatedCommand) &&
@@ -187,6 +206,51 @@ function classifyRuntime(processes, listeners) {
     const key = `${runtime.pid}:${runtime.port || 'no-port'}`
     byKey.set(key, runtime)
   }
+
+  // Port-first fallback: if no runtime was marked canonical by the process-tree
+  // scan, look up who owns the canonical port directly and trace ancestors to
+  // confirm it belongs to this checkout. This handles cases where the next dev
+  // process CommandLine is null, the parent chain is broken (e.g., Start-Process
+  // detach), or the listener is a deeply nested child not matched by the
+  // descendant walk.
+  const hasCanonical = [...byKey.values()].some((r) => r.canonical)
+  if (!hasCanonical) {
+    const ownerPid = pidForPort(listeners, CANONICAL_PORT)
+    if (ownerPid) {
+      const chain = getAncestorChain(byPid, ownerPid)
+      const allCommands = chain.map((p) => p.CommandLine || '').join('\n')
+      const belongsToCheckout =
+        isThisCheckoutCommand(allCommands) ||
+        chain.some((p) => isThisCheckoutCommand(p.CommandLine || ''))
+      if (belongsToCheckout && !isOtherChefFlowWorktreeCommand(allCommands)) {
+        const nextDevAncestor = chain.find((p) => isNextDevCommand(p.CommandLine || ''))
+        const representativePid = nextDevAncestor ? Number(nextDevAncestor.ProcessId) : ownerPid
+        const ownerProc =
+          chain.find((p) => normalize(p.CommandLine || '').includes('scripts/run-playwright-dev-server.mjs')) ||
+          nextDevAncestor ||
+          byPid.get(ownerPid) ||
+          { ProcessId: ownerPid, Name: 'node.exe', CommandLine: '' }
+        const key = `${representativePid}:${CANONICAL_PORT}`
+        if (!byKey.has(key)) {
+          byKey.set(key, {
+            pid: representativePid,
+            ownerPid: Number(ownerProc.ProcessId),
+            parentPid: Number(
+              (byPid.get(representativePid) || {}).ParentProcessId || 0
+            ),
+            name: (byPid.get(representativePid) || {}).Name || 'node.exe',
+            port: CANONICAL_PORT,
+            checkout: 'current',
+            mode: 'dev',
+            canonical: true,
+            duplicate: false,
+            commandLine: (byPid.get(representativePid) || {}).CommandLine || '',
+          })
+        }
+      }
+    }
+  }
+
   return [...byKey.values()].sort((a, b) => (a.port || 0) - (b.port || 0) || a.pid - b.pid)
 }
 

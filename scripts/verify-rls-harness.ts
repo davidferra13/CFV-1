@@ -6,7 +6,7 @@
  * Tests multi-tenant isolation using REAL database clients (not SQL simulation)
  *
  * Requirements:
- * - NEXT_PUBLIC_DB_URL
+ * - DB_URL
  * - NEXT_PUBLIC_DB_ANON_KEY
  * - DB_SERVICE_ROLE_KEY
  *
