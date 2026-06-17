@@ -361,3 +361,28 @@
 - Wave 3: Agent E (server-side craving search)
 - All items in .agents/build-queue/active/ under BQ-20260519T183825Z through BQ-20260519T184244Z
 - Intensify findings persisted to docs/intensify/discovery.md (5 additional moves pending user pick)
+
+---
+
+## 2026-06-17 — PRODUCTION DEPLOYMENT SESSION
+
+**Decision:** Cathedral development ended. Full production deploy ordered.
+
+**Completed:**
+
+- PostgreSQL Docker container started (pgvector on port 54322)
+- Database initialized: 1,167 tables, 1,086 migrations, 3 demo accounts
+- Next.js production build complete (962 routes)
+- Production server running on port 3100 (HTTP 200 locally)
+- Cloudflare tunnel connected (4 QUIC connections to EWR edge)
+- Code committed (df680f2b5) and pushed to GitHub
+- Memory updated: cathedral -> production, services revoked
+
+**Blocker (for next session):**
+
+- Pi's stale cloudflared connector (linux_arm64, June 11) absorbs all BOS traffic
+- app.cheflowhq.com returns 404 because Pi's Next.js is down
+- New tunnel `chefflow-prod` created but DNS couldn't be updated (API token lacks zone perms)
+- User must fix via Cloudflare dashboard or Pi physical access
+
+**Handoff:** Swarm prompt generated for fresh session to complete tunnel fix + verification.
