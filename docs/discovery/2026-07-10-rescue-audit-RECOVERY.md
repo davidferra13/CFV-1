@@ -21,6 +21,13 @@ recoverable from the journal below (each `{"type":"result"}` line; assemble agen
 - Constraint: no deletion, no new features; modularize and tier only.
 - Hands off: uncommitted studio/ website-builder work (68 dirty files from another tool, see .planning/HANDOFF.json).
 
+## Second run: rescue plan workflow (2026-07-10, later same day)
+
+- Run ID: `wf_2df40594-7eb` (task `wjkpmx55p`)
+- Transcript dir: `C:\Users\david\.claude\projects\C--Users-david-Documents-CFv1\4bb154e1-2407-4de5-a66e-106c793a6782\subagents\workflows\wf_2df40594-7eb`
+- Shape: 4 parallel planners write plans directly to `docs/specs/rescue/2026-07-10-rescue-ws{1..4}-*.md`, then 2 critics, then 1 fixer edits the files in place.
+- If the session dies, the plan files on disk are the deliverable; the fixer's edit report is the last result line in that journal.jsonl.
+
 ## Workflow shape
 
 7 discovery agents (core-workflows, surface-census, duplication-map, dashboard-ia, prior-art, data-wiring, smallest-product) -> 1 synthesis -> 5 critics (constraint-verifier, security-adversary, persona-minimalism, anti-slop, missing-expectations) -> 1 assembly.

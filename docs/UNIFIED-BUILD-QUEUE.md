@@ -745,6 +745,21 @@
 
 ---
 
+## RESCUE RESTRUCTURE (6 items)
+
+> Added 2026-07-10 from the full-product rescue audit. Blueprint: `docs/discovery/2026-07-10-chefflow-rescue-blueprint.md`. Master plan: `docs/specs/rescue/2026-07-10-rescue-master-plan.md`. These supersede ad hoc nav/dashboard work; claim tasks from the workstream plans, not from here.
+
+| #   | Item                                                               | Status     | Depends On | Notes                                                                                                                          |
+| --- | ------------------------------------------------------------------ | ---------- | ---------- | ------------------------------------------------------------------------------------------------------------------------------ |
+| 1   | WS1 Security and integrity (12 tasks)                              | SPEC-READY | Gate G0    | `docs/specs/rescue/2026-07-10-rescue-ws1-security.md`. requirePro no-op P0, tier resolution, route policy, e2e/demo hardening. |
+| 2   | WS2 Phase A reorganize (15 tasks)                                  | SPEC-READY | #1 partial | `docs/specs/rescue/2026-07-10-rescue-ws2-phase-a-reorganize.md`. Task 0 workspace settlement gates ~15 tasks program-wide.     |
+| 3   | WS3 Phase B core completion (16 tasks)                             | SPEC-READY | #2         | `docs/specs/rescue/2026-07-10-rescue-ws3-phase-b-core.md`. Core journey e2e is the flagship task.                              |
+| 4   | WS4 Phase C module hardening (17 tasks)                            | SPEC-READY | #2, #3     | `docs/specs/rescue/2026-07-10-rescue-ws4-phase-c-modules.md`. Cron/notification tenant guards, OpenClaw containment.           |
+| 5   | Owner decision gates G0-G9                                         | BLOCKED    | Owner      | Ten answers listed in the master plan; G0 (dirty-tree settlement) and G1 (day-of cockpit winner) have no defaults.             |
+| 6   | CLAUDE.md test:affected correction + queue summary-count reconcile | SPEC-READY | None       | `npm run test:affected` does not exist; summary table counts stale (349 vs 427 DONE tags in body).                             |
+
+---
+
 ### Cross-Category Dependencies
 
 > All dependency chains are resolved. Every item that was blocked by another item is now DONE.
