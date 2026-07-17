@@ -25,6 +25,7 @@ import { ConnectGmailStep } from './onboarding-steps/connect-gmail-step'
 import { FirstMenuStep } from './onboarding-steps/first-menu-step'
 import { FirstBookingStep } from './onboarding-steps/first-booking-step'
 import { NetworkStep } from './onboarding-steps/network-step'
+import { ConnectStripeStep } from './onboarding-steps/connect-stripe-step'
 
 type ProgressEntry = {
   step_key: string
@@ -650,6 +651,9 @@ export function OnboardingWizard() {
               onSkip={handleSkip}
               existingData={existingData?.profile ?? undefined}
             />
+          )}
+          {currentStep.key === 'connect_stripe' && (
+            <ConnectStripeStep onComplete={handleComplete} onSkip={handleSkip} />
           )}
           {currentStep.key === 'portfolio' && (
             <PortfolioStep onComplete={handleComplete} onSkip={handleSkip} />

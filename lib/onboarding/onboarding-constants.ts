@@ -24,6 +24,13 @@ export const ONBOARDING_STEPS = [
     optional: false,
   },
   {
+    key: 'connect_stripe',
+    title: 'Get Paid',
+    description: 'Connect your Stripe account to accept payments from clients',
+    icon: 'credit-card',
+    optional: false,
+  },
+  {
     key: 'portfolio',
     title: 'Your Food',
     description: 'Upload photos of your best dishes and events',
@@ -116,6 +123,7 @@ export type OnboardingStepKey = (typeof ONBOARDING_STEPS)[number]['key']
 const STEP_ARCHETYPE_FILTER: Record<string, ArchetypeId[] | 'all'> = {
   archetype: 'all',
   profile: 'all',
+  connect_stripe: 'all',
   portfolio: 'all',
   first_menu: ['private-chef', 'caterer', 'restaurant', 'bakery'],
   pricing: 'all',

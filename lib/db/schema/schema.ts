@@ -30521,3 +30521,63 @@ export const cancellationFeeSchedule = pgTable("cancellation_fee_schedule", {
 	pgPolicy("cancel_fee_schedule_tenant", { as: "permissive", for: "all", to: ["public"], using: sql`(chef_id = get_current_tenant_id())` }),
 ])
 
+
+export const hermesQueue = pgTable("hermes_queue", {
+	id: text().primaryKey().notNull(),
+	tenantId: text("tenant_id").notNull(),
+	taskType: text("task_type").notNull(),
+	payload: jsonb(),
+	status: text().default('pending').notNull(),
+	priority: integer().default(0).notNull(),
+	attempts: integer().default(0).notNull(),
+	maxAttempts: integer("max_attempts").default(3).notNull(),
+	scheduledAt: timestamp("scheduled_at", { withTimezone: true, mode: 'string' }),
+	startedAt: timestamp("started_at", { withTimezone: true, mode: 'string' }),
+	completedAt: timestamp("completed_at", { withTimezone: true, mode: 'string' }),
+	failedAt: timestamp("failed_at", { withTimezone: true, mode: 'string' }),
+	error: text(),
+	createdAt: timestamp("created_at", { withTimezone: true, mode: 'string' }).defaultNow().notNull(),
+	updatedAt: timestamp("updated_at", { withTimezone: true, mode: 'string' }).defaultNow().notNull(),
+}, (table) => [
+	index("hermes_queue_tenant_id_idx").on(table.tenantId),
+	index("hermes_queue_status_idx").on(table.status),
+])
+
+export const hermesHeartbeats = pgTable("hermes_heartbeats", {
+	id: text().primaryKey().notNull(),
+	tenantId: text("tenant_id").notNull(),
+	workerId: text("worker_id").notNull(),
+	lastBeat: timestamp("last_beat", { withTimezone: true, mode: 'string' }).defaultNow().notNull(),
+	status: text().default('alive').notNull(),
+	metadata: jsonb(),
+	createdAt: timestamp("created_at", { withTimezone: true, mode: 'string' }).defaultNow().notNull(),
+}, (table) => [
+	index("hermes_heartbeats_tenant_id_idx").on(table.tenantId),
+])
+
+export const hermesActions = pgTable("hermes_actions", {
+	id: text().primaryKey().notNull(),
+	tenantId: text("tenant_id").notNull(),
+	actionType: text("action_type").notNull(),
+	sourceTaskId: text("source_task_id"),
+	payload: jsonb(),
+	result: jsonb(),
+	status: text().default('pending').notNull(),
+	executedAt: timestamp("executed_at", { withTimezone: true, mode: 'string' }),
+	createdAt: timestamp("created_at", { withTimezone: true, mode: 'string' }).defaultNow().notNull(),
+}, (table) => [
+	index("hermes_actions_tenant_id_idx").on(table.tenantId),
+])
+
+export const hermesFeedback = pgTable("hermes_feedback", {
+	id: text().primaryKey().notNull(),
+	tenantId: text("tenant_id").notNull(),
+	taskId: text("task_id"),
+	actionId: text("action_id"),
+	rating: integer(),
+	comment: text(),
+	category: text(),
+	createdAt: timestamp("created_at", { withTimezone: true, mode: 'string' }).defaultNow().notNull(),
+}, (table) => [
+	index("hermes_feedback_tenant_id_idx").on(table.tenantId),
+])

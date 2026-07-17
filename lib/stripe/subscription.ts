@@ -19,6 +19,7 @@ import {
 } from '@/lib/monetization/offers'
 import { getSupportStatus } from '@/lib/monetization/status'
 import { sendSupportEndedEmail, sendSupportStartedEmail } from '@/lib/monetization/email'
+import { resolveTierFromPriceId } from '@/lib/billing/subscription-tiers'
 
 const SITE_URL =
   process.env.NEXT_PUBLIC_SITE_URL || process.env.NEXT_PUBLIC_APP_URL || 'https://cheflowhq.com'
@@ -474,6 +475,16 @@ export async function handleSubscriptionUpdated(subscription: Stripe.Subscriptio
     },
   })
 
+  
+  // Resolve and store subscription tier from price
+  const priceId = (subscription as any).items?.data?.[0]?.price?.id ?? null
+  const resolvedTier = resolveTierFromPriceId(priceId)
+  const tierDb = createServerClient({ admin: true })
+  await tierDb
+    .from('chefs')
+    .update({ subscription_tier: resolvedTier } as any)
+    .eq('id', chef.id)
+
   await revalidateChefLayout(chef.id)
 
   if (recurringActive) {
@@ -519,6 +530,14 @@ export async function handleSubscriptionDeleted(subscription: Stripe.Subscriptio
       monthly_support_amount_cents: null,
     },
   })
+
+  
+  // Reset tier to free on cancellation
+  const tierDb = createServerClient({ admin: true })
+  await tierDb
+    .from('chefs')
+    .update({ subscription_tier: 'free' } as any)
+    .eq('id', chef.id)
 
   await revalidateChefLayout(chef.id)
 

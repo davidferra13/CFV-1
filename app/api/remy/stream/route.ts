@@ -80,6 +80,7 @@ import {
 } from '@/lib/ai/remy-vision-actions'
 import { formatVoiceMemoResponse } from '@/lib/ai/voice-memo-format'
 import { createStreamScanner } from '@/lib/ai/remy-output-guardrails'
+import { checkFeatureAccess, getChefTier } from '@/lib/billing/check-access'
 
 //  POST Handler
 
@@ -110,6 +111,41 @@ export async function POST(req: NextRequest) {
     if (!runtimeState.allowed) {
       return sseErrorResponse(runtimeState.message ?? 'Remy is disabled for this account.', 403)
     }
+
+    // Tier gating: Free tier cannot use Remy AI
+    const hasRemyAccess = await checkFeatureAccess(user.tenantId!, 'remy_ai')
+    if (!hasRemyAccess) {
+      return sseErrorResponse(
+        'Upgrade to Pro for AI assistance. Remy is available on Pro ($10/mo) and Business ($25/mo) plans.',
+        402
+      )
+    }
+
+    // Pro tier: enforce 50 queries/day limit
+    const chefTier = await getChefTier(user.tenantId!)
+    if (chefTier === 'pro') {
+      const today = new Date().toISOString().slice(0, 10)
+      const { createServerClient } = await import('@/lib/db/server')
+      const usageDb = createServerClient({ admin: true })
+      const { data: existing } = await usageDb
+        .from('remy_usage')
+        .select('query_count')
+        .eq('tenant_id', user.tenantId!)
+        .eq('usage_date', today)
+        .maybeSingle()
+      const count = (existing as any)?.query_count ?? 0
+      if (count >= 50) {
+        return sseErrorResponse(
+          'You have used all 50 Remy queries for today. Your limit resets at midnight. Upgrade to Business for unlimited queries.',
+          429
+        )
+      }
+      await usageDb.from('remy_usage').upsert(
+        { tenant_id: user.tenantId!, usage_date: today, query_count: count + 1 } as any,
+        { onConflict: 'tenant_id,usage_date' }
+      )
+    }
+
     if (!rawBody) {
       return sseErrorResponse('Request body must be valid JSON.', 400)
     }

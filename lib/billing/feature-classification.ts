@@ -25,7 +25,7 @@
 //
 // NOT a server action file.
 
-export type FeatureTier = 'free' | 'paid'
+export type FeatureTier = 'free' | 'pro' | 'business'
 
 export type FeatureCategory = 'core' | 'intelligence' | 'automation' | 'ops' | 'crm' | 'compliance'
 
@@ -246,7 +246,7 @@ const PAID_FEATURES: FeatureDefinition[] = [
     label: 'Multi-Location Operations',
     description:
       'Command center, cross-location metrics, centralized purchasing, recipe compliance, demand forecasting, and real-time alerts across all your sites',
-    tier: 'paid',
+    tier: 'business',
     category: 'ops',
     upgrade_trigger: {
       moment: 'Chef adds a second business location',
@@ -261,7 +261,7 @@ const PAID_FEATURES: FeatureDefinition[] = [
     label: 'Advanced Price Intelligence',
     description:
       'Historical price trends, supplier-level breakdowns, regional comparisons at scale',
-    tier: 'paid',
+    tier: 'pro',
     category: 'intelligence',
     upgrade_trigger: {
       moment: 'Chef views ingredient price after using basic lookup',
@@ -273,7 +273,7 @@ const PAID_FEATURES: FeatureDefinition[] = [
     slug: 'price-sync-live',
     label: 'Live Price Sync',
     description: 'Real-time price updates from live sourcing data (OpenClaw-fed)',
-    tier: 'paid',
+    tier: 'pro',
     category: 'intelligence',
     upgrade_trigger: {
       moment: 'Chef views a price that is more than 30 days stale',
@@ -286,7 +286,7 @@ const PAID_FEATURES: FeatureDefinition[] = [
     slug: 'ingredient-normalization',
     label: 'Ingredient Auto-Matching',
     description: 'Automatic normalization and matching of ingredient variations across suppliers',
-    tier: 'paid',
+    tier: 'pro',
     category: 'intelligence',
     upgrade_trigger: {
       moment: 'Chef manually resolves an ambiguous ingredient match',
@@ -298,7 +298,7 @@ const PAID_FEATURES: FeatureDefinition[] = [
     slug: 'ingredient-bulk-resolve',
     label: 'Bulk Ingredient Resolution',
     description: 'Resolve and price large ingredient lists in one operation',
-    tier: 'paid',
+    tier: 'pro',
     category: 'intelligence',
     upgrade_trigger: {
       moment: 'Chef has more than 10 unresolved ingredients in a menu',
@@ -310,7 +310,7 @@ const PAID_FEATURES: FeatureDefinition[] = [
     slug: 'price-export',
     label: 'Price Data Export',
     description: 'Export ingredient pricing data to CSV or spreadsheet',
-    tier: 'paid',
+    tier: 'pro',
     category: 'intelligence',
     upgrade_trigger: {
       moment: 'Chef attempts to export price data',
@@ -324,7 +324,7 @@ const PAID_FEATURES: FeatureDefinition[] = [
     slug: 'menu-costing-live',
     label: 'Live Menu Costing',
     description: 'Real-time cost recalculation as ingredients and prices change',
-    tier: 'paid',
+    tier: 'pro',
     category: 'intelligence',
     upgrade_trigger: {
       moment: 'Chef manually calculates food cost for a menu',
@@ -336,7 +336,7 @@ const PAID_FEATURES: FeatureDefinition[] = [
     slug: 'costing-component-breakdown',
     label: 'Component-Level Cost Breakdown',
     description: 'See cost at dish, course, and component level with margin per line',
-    tier: 'paid',
+    tier: 'pro',
     category: 'intelligence',
     upgrade_trigger: {
       moment: 'Chef views total menu cost',
@@ -348,7 +348,7 @@ const PAID_FEATURES: FeatureDefinition[] = [
     slug: 'margin-targeting',
     label: 'Margin Targeting + Profit Simulation',
     description: 'Set a target margin and simulate price adjustments to hit it',
-    tier: 'paid',
+    tier: 'pro',
     category: 'intelligence',
     upgrade_trigger: {
       moment: 'Chef completes food cost calculation',
@@ -360,7 +360,7 @@ const PAID_FEATURES: FeatureDefinition[] = [
     slug: 'event-profitability',
     label: 'Event Profitability Tracking',
     description: 'Track actual vs projected margins per event with post-event reconciliation',
-    tier: 'paid',
+    tier: 'pro',
     category: 'ops',
     upgrade_trigger: {
       moment: 'Chef marks an event as completed',
@@ -372,7 +372,7 @@ const PAID_FEATURES: FeatureDefinition[] = [
     slug: 'expense-ingestion',
     label: 'Expense Ingestion',
     description: 'Receipt scanning, AI parsing, and automatic categorization of expenses',
-    tier: 'paid',
+    tier: 'pro',
     category: 'automation',
     upgrade_trigger: {
       moment: 'Chef manually enters an expense',
@@ -384,7 +384,7 @@ const PAID_FEATURES: FeatureDefinition[] = [
     slug: 'finance-advanced',
     label: 'Advanced Finance',
     description: 'Cash flow forecasting, recurring invoices, tax tools, P&L reports',
-    tier: 'paid',
+    tier: 'pro',
     category: 'ops',
     upgrade_trigger: {
       moment: 'Chef views the finance dashboard',
@@ -396,7 +396,7 @@ const PAID_FEATURES: FeatureDefinition[] = [
     slug: 'payroll',
     label: 'Payroll',
     description: 'Staff compensation, contractor management, and 1099 generation',
-    tier: 'paid',
+    tier: 'business',
     category: 'ops',
     upgrade_trigger: {
       moment: 'Chef records a staff payment manually',
@@ -411,7 +411,7 @@ const PAID_FEATURES: FeatureDefinition[] = [
     label: 'Workflow Automation',
     description:
       'End-to-end automation: event confirmed auto-triggers menu, costing, and document generation',
-    tier: 'paid',
+    tier: 'pro',
     category: 'automation',
     upgrade_trigger: {
       moment: 'Chef manually kicks off menu-to-document workflow',
@@ -423,7 +423,7 @@ const PAID_FEATURES: FeatureDefinition[] = [
     slug: 'substitution-smart',
     label: 'Smart Substitutions',
     description: 'Availability-aware ingredient substitutions with automatic recipe adjustments',
-    tier: 'paid',
+    tier: 'pro',
     category: 'automation',
     upgrade_trigger: {
       moment: 'Chef looks up a substitution manually',
@@ -435,7 +435,7 @@ const PAID_FEATURES: FeatureDefinition[] = [
     slug: 'sourcing-auto',
     label: 'Auto-Sourcing Suggestions',
     description: 'Automatic sourcing recommendations based on location, price, and availability',
-    tier: 'paid',
+    tier: 'pro',
     category: 'automation',
     upgrade_trigger: {
       moment: 'Chef manually searches for an ingredient source',
@@ -447,7 +447,7 @@ const PAID_FEATURES: FeatureDefinition[] = [
     slug: 'ai-insights',
     label: 'AI Business Insights',
     description: 'Automated business intelligence, trend detection, and recommendations',
-    tier: 'paid',
+    tier: 'pro',
     category: 'automation',
     upgrade_trigger: {
       moment: 'Chef views the dashboard',
@@ -459,7 +459,7 @@ const PAID_FEATURES: FeatureDefinition[] = [
     slug: 'ai-parsing',
     label: 'AI Document Parsing',
     description: 'Smart parsing of inquiries, receipts, and unstructured documents',
-    tier: 'paid',
+    tier: 'pro',
     category: 'automation',
     upgrade_trigger: {
       moment: 'Chef manually types out an inquiry from a screenshot or email',
@@ -472,7 +472,7 @@ const PAID_FEATURES: FeatureDefinition[] = [
     label: 'Intelligence Hub',
     description:
       'Seasonal forecasting, rebooking predictions, cash flow projections, inquiry triage, price anomaly detection',
-    tier: 'paid',
+    tier: 'pro',
     category: 'automation',
     upgrade_trigger: {
       moment: 'Chef views analytics page',
@@ -487,7 +487,7 @@ const PAID_FEATURES: FeatureDefinition[] = [
     label: 'Full Client Portal',
     description:
       'Client-facing portal with booking flow, menu viewing, document access, and payment',
-    tier: 'paid',
+    tier: 'pro',
     category: 'crm',
     upgrade_trigger: {
       moment: 'Chef shares a menu or document link manually',
@@ -499,7 +499,7 @@ const PAID_FEATURES: FeatureDefinition[] = [
     slug: 'booking-flow',
     label: 'Booking Flow',
     description: 'End-to-end client booking with availability, deposit, and confirmation',
-    tier: 'paid',
+    tier: 'pro',
     category: 'crm',
     upgrade_trigger: {
       moment: 'Chef confirms an event after back-and-forth manually',
@@ -511,7 +511,7 @@ const PAID_FEATURES: FeatureDefinition[] = [
     slug: 'payment-integration',
     label: 'Payment Integration',
     description: 'Collect deposits and final payments directly through the platform',
-    tier: 'paid',
+    tier: 'pro',
     category: 'crm',
     upgrade_trigger: {
       moment: 'Chef records a payment received outside the platform',
@@ -523,7 +523,7 @@ const PAID_FEATURES: FeatureDefinition[] = [
     slug: 'client-history-full',
     label: 'Client History + Preferences',
     description: 'Full dietary preference tracking, event history, LTV, and relationship timeline',
-    tier: 'paid',
+    tier: 'pro',
     category: 'crm',
     upgrade_trigger: {
       moment: 'Chef looks up a returning client',
@@ -536,7 +536,7 @@ const PAID_FEATURES: FeatureDefinition[] = [
     slug: 'automated-followups',
     label: 'Automated Client Follow-Ups',
     description: 'Post-event follow-up sequences, re-engagement campaigns, review requests',
-    tier: 'paid',
+    tier: 'pro',
     category: 'crm',
     upgrade_trigger: {
       moment: 'Chef marks an event completed',
@@ -548,7 +548,7 @@ const PAID_FEATURES: FeatureDefinition[] = [
     slug: 'client-intelligence',
     label: 'Client Intelligence',
     description: 'Client segments, health scores, LTV trajectory, churn prediction',
-    tier: 'paid',
+    tier: 'pro',
     category: 'crm',
     upgrade_trigger: {
       moment: 'Chef views client list',
@@ -560,7 +560,7 @@ const PAID_FEATURES: FeatureDefinition[] = [
     slug: 'loyalty',
     label: 'Loyalty Program',
     description: 'Points, rewards, referrals, and automated award rules',
-    tier: 'paid',
+    tier: 'business',
     category: 'crm',
     upgrade_trigger: {
       moment: 'Chef has a returning client who has booked 3+ times',
@@ -572,7 +572,7 @@ const PAID_FEATURES: FeatureDefinition[] = [
     slug: 'marketing',
     label: 'Marketing Suite',
     description: 'Email campaigns, push dinners, social media publishing',
-    tier: 'paid',
+    tier: 'business',
     category: 'crm',
     upgrade_trigger: {
       moment: 'Chef has a gap in their calendar',
@@ -586,7 +586,7 @@ const PAID_FEATURES: FeatureDefinition[] = [
     slug: 'multi-event-dashboard',
     label: 'Multi-Event Management',
     description: 'Consolidated dashboard for managing multiple concurrent events',
-    tier: 'paid',
+    tier: 'business',
     category: 'ops',
     upgrade_trigger: {
       moment: 'Chef has 3+ active events',
@@ -598,7 +598,7 @@ const PAID_FEATURES: FeatureDefinition[] = [
     slug: 'team-collaboration',
     label: 'Team Collaboration',
     description: 'Staff roles, permissions, and multi-user access to shared events',
-    tier: 'paid',
+    tier: 'business',
     category: 'ops',
     upgrade_trigger: {
       moment: 'Chef adds a staff member',
@@ -610,7 +610,7 @@ const PAID_FEATURES: FeatureDefinition[] = [
     slug: 'staff-management',
     label: 'Staff Management',
     description: 'Scheduling, clock in/out, performance tracking, and labor costs',
-    tier: 'paid',
+    tier: 'business',
     category: 'ops',
     upgrade_trigger: {
       moment: 'Chef manually records staff hours',
@@ -622,7 +622,7 @@ const PAID_FEATURES: FeatureDefinition[] = [
     slug: 'prep-workflows',
     label: 'Prep Task Workflows',
     description: 'Structured prep checklists, station assignments, and timeline management',
-    tier: 'paid',
+    tier: 'pro',
     category: 'ops',
     upgrade_trigger: {
       moment: 'Chef views an event with no prep plan',
@@ -635,7 +635,7 @@ const PAID_FEATURES: FeatureDefinition[] = [
     label: 'Inventory + Purchasing',
     description:
       'Inventory counts, waste tracking, purchase orders, and vendor invoice reconciliation',
-    tier: 'paid',
+    tier: 'business',
     category: 'ops',
     upgrade_trigger: {
       moment: 'Chef generates a shopping list manually',
@@ -647,7 +647,7 @@ const PAID_FEATURES: FeatureDefinition[] = [
     slug: 'advanced-analytics',
     label: 'Advanced Analytics',
     description: 'Benchmarks, pipeline forecast, demand heatmap, custom reports',
-    tier: 'paid',
+    tier: 'pro',
     category: 'ops',
     upgrade_trigger: {
       moment: 'Chef views the basic analytics page',
@@ -659,7 +659,7 @@ const PAID_FEATURES: FeatureDefinition[] = [
     slug: 'advanced-calendar',
     label: 'Advanced Calendar',
     description: 'Calendar sharing, year view, protected time blocks, ICS sync',
-    tier: 'paid',
+    tier: 'pro',
     category: 'ops',
     upgrade_trigger: {
       moment: 'Chef tries to share their calendar or export to Google Calendar',
@@ -671,7 +671,7 @@ const PAID_FEATURES: FeatureDefinition[] = [
     slug: 'nutrition-analysis',
     label: 'Nutritional Analysis',
     description: 'Per-dish macro and calorie breakdown, allergen tracking, chef overrides',
-    tier: 'paid',
+    tier: 'pro',
     category: 'ops',
     upgrade_trigger: {
       moment: 'Chef has a client with specific dietary requirements',
@@ -684,7 +684,7 @@ const PAID_FEATURES: FeatureDefinition[] = [
     label: 'Meal Prep Operations',
     description:
       'Rotating menus, container tracking, and delivery scheduling for recurring prep clients',
-    tier: 'paid',
+    tier: 'business',
     category: 'ops',
     upgrade_trigger: {
       moment: 'Chef creates a recurring weekly event',
@@ -696,7 +696,7 @@ const PAID_FEATURES: FeatureDefinition[] = [
     slug: 'social-hub',
     label: 'Social Event Hub',
     description: 'Group chat, visual themes, collaborative planning, guest profiles, polls',
-    tier: 'paid',
+    tier: 'business',
     category: 'crm',
     upgrade_trigger: {
       moment: 'Chef creates an event with multiple guests',
@@ -708,7 +708,7 @@ const PAID_FEATURES: FeatureDefinition[] = [
     slug: 'integrations',
     label: 'Integrations',
     description: 'Gmail scanning, social OAuth, webhooks, custom fields',
-    tier: 'paid',
+    tier: 'pro',
     category: 'automation',
     upgrade_trigger: {
       moment: 'Chef manually copies information from Gmail into ChefFlow',
@@ -723,7 +723,7 @@ const PAID_FEATURES: FeatureDefinition[] = [
     label: 'Cannabis Dining Portal',
     description:
       'Full cannabis dining module: events, control packets, guest intake, host agreements, handbook, and dedicated ledger',
-    tier: 'paid',
+    tier: 'business',
     category: 'compliance',
     upgrade_trigger: {
       moment: 'Chef enables cannabis_preference on an event',
@@ -736,7 +736,7 @@ const PAID_FEATURES: FeatureDefinition[] = [
     slug: 'dose-tracking',
     label: 'Dose Tracking',
     description: 'Per-seat dosing records, limits, and tracking for infused events',
-    tier: 'paid',
+    tier: 'business',
     category: 'compliance',
     upgrade_trigger: {
       moment: 'Chef creates an event with infused menu items',
@@ -748,7 +748,7 @@ const PAID_FEATURES: FeatureDefinition[] = [
     slug: 'compliance-logs',
     label: 'Compliance Logs + Export',
     description: 'Event audit packets, compliance-ready exports, and regulatory documentation',
-    tier: 'paid',
+    tier: 'business',
     category: 'compliance',
     upgrade_trigger: {
       moment: 'Chef completes an infused event',
@@ -762,7 +762,7 @@ const PAID_FEATURES: FeatureDefinition[] = [
     slug: 'voice-automation',
     label: 'Voice Automation',
     description: 'Automated vendor calls, supplier outreach, and voice workflow integration',
-    tier: 'paid',
+    tier: 'business',
     category: 'automation',
     upgrade_trigger: {
       moment: 'Chef places a vendor call manually',
@@ -774,7 +774,7 @@ const PAID_FEATURES: FeatureDefinition[] = [
     slug: 'sms-workflows',
     label: 'SMS Notification Workflows',
     description: 'Automated SMS reminders, confirmations, and follow-ups to clients',
-    tier: 'paid',
+    tier: 'business',
     category: 'crm',
     upgrade_trigger: {
       moment: 'Chef sends a manual reminder to a client',
@@ -786,7 +786,7 @@ const PAID_FEATURES: FeatureDefinition[] = [
     slug: 'professional-dev',
     label: 'Professional Development',
     description: 'Skills inventory, growth check-ins, education tracking, and work journal',
-    tier: 'paid',
+    tier: 'business',
     category: 'ops',
     upgrade_trigger: {
       moment: 'Chef views the professional development page',
@@ -799,7 +799,7 @@ const PAID_FEATURES: FeatureDefinition[] = [
     label: 'Commerce Engine',
     description:
       'POS register, counter sales, product catalog, order-ahead, and payment processing',
-    tier: 'paid',
+    tier: 'business',
     category: 'ops',
     upgrade_trigger: {
       moment: 'Chef tries to process a counter sale',
@@ -811,7 +811,7 @@ const PAID_FEATURES: FeatureDefinition[] = [
     slug: 'community',
     label: 'Community Benchmarking',
     description: 'Anonymous industry benchmarking, peer comparisons, and community metrics',
-    tier: 'paid',
+    tier: 'business',
     category: 'intelligence',
     upgrade_trigger: {
       moment: 'Chef views benchmarking comparisons',
@@ -824,7 +824,7 @@ const PAID_FEATURES: FeatureDefinition[] = [
     label: 'Business Protection',
     description:
       'Insurance tracking, liability management, certificate storage, and compliance alerts',
-    tier: 'paid',
+    tier: 'business',
     category: 'ops',
     upgrade_trigger: {
       moment: 'Chef views the insurance and protection page',
@@ -850,8 +850,8 @@ export function getFeature(slug: string): FeatureDefinition | undefined {
 
 /** Access is universal, so legacy feature checks always pass. */
 export function isPaidFeature(slug: string): boolean {
-  void slug
-  return false
+  const feature = FEATURE_CLASSIFICATIONS.find((f) => f.slug === slug)
+  return feature ? feature.tier !== 'free' : false
 }
 
 /** Get all features in a specific category. */
@@ -861,7 +861,7 @@ export function getFeaturesByCategory(category: FeatureCategory): FeatureDefinit
 
 /** Legacy helper retained for old imports. Support UX must not use this list. */
 export function getPaidFeatures(): FeatureDefinition[] {
-  return []
+  return FEATURE_CLASSIFICATIONS.filter((f) => f.tier !== 'free')
 }
 
 /** Get the visible feature catalog. */
@@ -873,6 +873,6 @@ export function getFreeFeatures(): FeatureDefinition[] {
  * Legacy helper retained for old imports. Support UX does not render prompts.
  */
 export function getUpgradeTrigger(slug: string): UpgradeTrigger | null {
-  void slug
-  return null
+  const feature = FEATURE_CLASSIFICATIONS.find((f) => f.slug === slug)
+  return feature?.upgrade_trigger ?? null
 }

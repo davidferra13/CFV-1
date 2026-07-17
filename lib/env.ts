@@ -16,9 +16,12 @@ const envSchema = z.object({
   // Stripe
   STRIPE_SECRET_KEY: z.string().optional(),
   STRIPE_WEBHOOK_SECRET: z.string().optional(),
+  STRIPE_PRICE_PRO_MONTHLY: z.string().optional(),
+  STRIPE_PRICE_BUSINESS_MONTHLY: z.string().optional(),
 
   // Email
   RESEND_API_KEY: z.string().optional(),
+  EMAIL_FROM: z.string().optional(),
 
   // Security
   OUTREACH_ENCRYPTION_KEY: z.string().min(16).optional(),
@@ -50,6 +53,9 @@ const FEATURE_VARS = [
   'OLLAMA_BASE_URL',
   'TURNSTILE_SECRET_KEY',
   'OPENCLAW_API_URL',
+  'STRIPE_PRICE_PRO_MONTHLY',
+  'STRIPE_PRICE_BUSINESS_MONTHLY',
+  'EMAIL_FROM',
 ] as const
 
 function validateEnv(): Env {

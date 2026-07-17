@@ -12,6 +12,7 @@ import { mergeChips, filterActiveChips } from '@/lib/dashboard/chip-providers'
 import type { AttentionChip } from '@/lib/dashboard/section-types'
 import { WidgetErrorBoundary } from '@/components/ui/widget-error-boundary'
 import { WidgetCardSkeleton } from '@/components/dashboard/widget-cards/widget-card-shell'
+import { StripeConnectBanner } from '@/components/dashboard/stripe-connect-banner'
 import { TieredRailSkeleton } from '@/components/rail/tiered-rail'
 import { getDailyPlanStats } from '@/lib/daily-ops/actions'
 import { DailyPlanBanner } from '@/components/daily-ops/daily-plan-banner'
@@ -296,6 +297,7 @@ export default async function ChefDashboard() {
     <DashboardSectionWrapper>
       <div className="dashboard-page min-h-screen space-y-8 sm:space-y-10">
         <AttentionRail chips={allChips} />
+        <StripeConnectBanner />
 
         {/* 1. Command Center (smart mode: expands when items need attention, whispers when clear) */}
         <CommandCenterWithWeight data={ccData} />

@@ -1,22 +1,32 @@
-#!/bin/bash
-# Deploy latest main to Pi production
-# Usage: bash scripts/deploy-prod.sh
-set -e
+#!/usr/bin/env bash
+set -euo pipefail
 
-PI="davidferra@10.0.0.177"
-APP="/home/davidferra/apps/chefflow-prod"
+echo "=== ChefFlow Production Deploy ==="
 
-echo "=== Deploying to Pi production ==="
+# Build
+echo "[1/3] Building containers..."
+docker compose -f docker-compose.prod.yml build
 
-# Check connectivity
-ssh -o ConnectTimeout=5 "$PI" "echo 'Pi reachable'" || { echo "FAIL: Pi unreachable"; exit 1; }
+# Start
+echo "[2/3] Starting services..."
+docker compose -f docker-compose.prod.yml up -d
 
-# Pull, build, restart
-ssh "$PI" "cd $APP && git pull origin main && npm run build -- --no-lint && pm2 restart chefflow-prod"
+# Health check (wait up to 60s)
+echo "[3/3] Waiting for health check..."
+for i in $(seq 1 12); do
+  if curl -sf http://localhost:3200/api/health > /dev/null 2>&1; then
+    echo "Health check passed."
+    echo ""
+    echo "=== Deploy complete ==="
+    echo "App running at http://localhost:3200"
+    echo ""
+    echo "To expose via Cloudflare Tunnel:"
+    echo "  cloudflared tunnel run chefflow-beta"
+    exit 0
+  fi
+  echo "  Waiting... ($((i * 5))s)"
+  sleep 5
+done
 
-echo ""
-echo "=== Deploy complete. Verifying... ==="
-sleep 5
-curl -s --max-time 10 https://app.cheflowhq.com/api/build-version
-echo ""
-echo "=== Done ==="
+echo "ERROR: Health check failed after 60s"
+exit 1
