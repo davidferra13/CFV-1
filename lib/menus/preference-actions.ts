@@ -116,17 +116,31 @@ export async function submitMenuPreferences(input: SubmitPreferencesInput) {
 
 /**
  * Get menu preferences for an event.
- * Works for both chefs (tenant scope) and clients (client scope - RLS handles it).
+ * There is no RLS on this stack, so event_id alone would read across tenants.
+ * A chef is scoped to their tenant; a client must own the event.
  */
 export async function getMenuPreferences(eventId: string) {
-  await requireAuth()
+  const user = await requireAuth()
   const db: any = createServerClient()
 
-  const { data, error } = await db
-    .from('menu_preferences')
-    .select('*')
-    .eq('event_id', eventId)
-    .maybeSingle()
+  // A client may only read preferences for an event they own (mirrors the
+  // ownership check in submitMenuPreferences).
+  if (user.role === 'client') {
+    const { data: ownedEvent } = await db
+      .from('events')
+      .select('id')
+      .eq('id', eventId)
+      .eq('client_id', user.entityId)
+      .maybeSingle()
+    if (!ownedEvent) return null
+  }
+
+  let query = db.from('menu_preferences').select('*').eq('event_id', eventId)
+  if (user.role === 'chef') {
+    query = query.eq('tenant_id', user.tenantId!)
+  }
+
+  const { data, error } = await query.maybeSingle()
 
   if (error) {
     console.error('[getMenuPreferences] Error:', error)

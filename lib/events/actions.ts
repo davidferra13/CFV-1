@@ -611,10 +611,10 @@ export async function getEventsPaginated(options?: {
 
 /**
  * Get single event by ID.
- * Access is enforced entirely by RLS:
- *   - Event owners via the existing tenant_id policy
- *   - Accepted collaborators via the collaborators_can_view_events policy (migration 20260304000008)
- * The explicit tenant_id filter has been removed so both groups can load the page.
+ * There is no RLS on this stack (see lib/db/server.ts), so access is enforced in
+ * code: the owner query is tenant-scoped, and the collaborator fallback runs only
+ * for a chef with an event_collaborators row on this event. Client PII is joined
+ * afterward, so an unscoped fallback would leak it across tenants.
  */
 export async function getEventById(eventId: string) {
   const user = await requireChef()
@@ -640,15 +640,25 @@ export async function getEventById(eventId: string) {
   let event = ownerResponse.data
   let error = ownerResponse.error
 
-  // Collaborators still need the route. Fall back to the RLS-scoped read path
-  // only after the explicit owner query misses.
+  // Collaborators still need the route, but there is no RLS to scope this path,
+  // so fall back only after the owner query misses and only for a chef who is
+  // actually a collaborator on this event.
   if (!event) {
-    let collaboratorResponse = await runBaseQuery(db, true)
-    if (isMissingSoftDeleteColumn(collaboratorResponse.error)) {
-      collaboratorResponse = await runBaseQuery(db, false)
+    const { data: membership } = await db
+      .from('event_collaborators')
+      .select('event_id')
+      .eq('event_id', eventId)
+      .eq('chef_id', user.tenantId ?? user.entityId)
+      .maybeSingle()
+
+    if (membership) {
+      let collaboratorResponse = await runBaseQuery(db, true)
+      if (isMissingSoftDeleteColumn(collaboratorResponse.error)) {
+        collaboratorResponse = await runBaseQuery(db, false)
+      }
+      event = collaboratorResponse.data
+      error = collaboratorResponse.error
     }
-    event = collaboratorResponse.data
-    error = collaboratorResponse.error
   }
 
   if (error || !event) {
