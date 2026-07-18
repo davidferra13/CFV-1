@@ -5,6 +5,7 @@ import { createServerClient } from '@/lib/db/server'
 import { log } from '@/lib/logger'
 import { revalidatePath } from 'next/cache'
 import { transitionEvent } from './transitions'
+import { daysBetween, resolveFeeCents } from './cancellation-fee'
 
 // ── Types ──────────────────────────────────────────────────────────────────
 
@@ -23,20 +24,13 @@ type CancelEventResult = {
 
 // ── Helpers ────────────────────────────────────────────────────────────────
 
-function daysBetween(from: Date, to: Date): number {
-  const msPerDay = 1000 * 60 * 60 * 24
-  return Math.floor((to.getTime() - from.getTime()) / msPerDay)
-}
-
 async function calculateCancellationFeeFromSchedule(
   db: any,
   chefId: string,
   eventId: string,
   eventDate: string
 ): Promise<number> {
-  const now = new Date()
-  const original = new Date(eventDate)
-  const daysBefore = daysBetween(now, original)
+  const daysBefore = daysBetween(new Date(), new Date(eventDate))
 
   const { data: tiers } = await db
     .from('cancellation_fee_schedule')
@@ -44,27 +38,11 @@ async function calculateCancellationFeeFromSchedule(
     .eq('chef_id', chefId)
     .order('days_before_min', { ascending: true })
 
-  if (!tiers || tiers.length === 0) return 0
-
-  for (const tier of tiers) {
-    if (daysBefore >= tier.days_before_min && daysBefore <= tier.days_before_max) {
-      if (tier.fee_type === 'flat') {
-        return tier.fee_value
-      }
-      if (tier.fee_type === 'percent') {
-        try {
-          const { getEventFinancialSummary } = await import('@/lib/ledger/compute')
-          const financials = await getEventFinancialSummary(eventId)
-          const totalCents = financials?.totalPaidCents ?? 0
-          return Math.round(totalCents * (tier.fee_value / 10000))
-        } catch {
-          return 0
-        }
-      }
-    }
-  }
-
-  return 0
+  return resolveFeeCents(tiers, daysBefore, async () => {
+    const { getEventFinancialSummary } = await import('@/lib/ledger/compute')
+    const financials = await getEventFinancialSummary(eventId)
+    return financials?.totalPaidCents ?? 0
+  })
 }
 
 // ── Main Action ────────────────────────────────────────────────────────────
@@ -99,7 +77,16 @@ export async function cancelEvent(
 
   // 2. Calculate cancellation fee before transitioning
   const effectiveDate = event.original_event_date || event.event_date
-  const feeCents = await calculateCancellationFeeFromSchedule(db, tenantId, eventId, effectiveDate)
+  let feeCents: number
+  try {
+    feeCents = await calculateCancellationFeeFromSchedule(db, tenantId, eventId, effectiveDate)
+  } catch (err) {
+    log.events.error('Cancellation fee calculation failed; refusing to cancel on an unknown fee', {
+      error: err,
+      context: { eventId },
+    })
+    return { success: false, error: 'Could not calculate the cancellation fee. Please try again.' }
+  }
 
   // 3. Transition via FSM (handles state validation, permissions, audit log)
   try {

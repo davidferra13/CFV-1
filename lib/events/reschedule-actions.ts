@@ -4,6 +4,7 @@ import { requireChef } from '@/lib/auth/get-user'
 import { createServerClient } from '@/lib/db/server'
 import { log } from '@/lib/logger'
 import { revalidatePath } from 'next/cache'
+import { daysBetween, resolveFeeCents } from './cancellation-fee'
 
 // Statuses that allow rescheduling
 const RESCHEDULABLE_STATUSES = ['draft', 'proposed', 'accepted', 'paid', 'confirmed']
@@ -23,11 +24,6 @@ type RescheduleResult = {
   error?: string
 }
 
-function daysBetween(from: Date, to: Date): number {
-  const msPerDay = 1000 * 60 * 60 * 24
-  return Math.floor((to.getTime() - from.getTime()) / msPerDay)
-}
-
 /**
  * Calculate the reschedule fee based on cancellation_fee_schedule.
  * Uses days between now and the original event date to determine tier.
@@ -39,9 +35,7 @@ async function lookupFee(
   eventId: string,
   eventDate: string
 ): Promise<number> {
-  const now = new Date()
-  const original = new Date(eventDate)
-  const daysBefore = daysBetween(now, original)
+  const daysBefore = daysBetween(new Date(), new Date(eventDate))
 
   const { data: tiers } = await db
     .from('cancellation_fee_schedule')
@@ -49,27 +43,11 @@ async function lookupFee(
     .eq('chef_id', chefId)
     .order('days_before_min', { ascending: true })
 
-  if (!tiers || tiers.length === 0) return 0
-
-  for (const tier of tiers) {
-    if (daysBefore >= tier.days_before_min && daysBefore <= tier.days_before_max) {
-      if (tier.fee_type === 'flat') {
-        return tier.fee_value
-      }
-      if (tier.fee_type === 'percent') {
-        try {
-          const { getEventFinancialSummary } = await import('@/lib/ledger/compute')
-          const financials = await getEventFinancialSummary(eventId)
-          const totalCents = financials?.totalPaidCents ?? 0
-          return Math.round(totalCents * (tier.fee_value / 10000))
-        } catch {
-          return 0
-        }
-      }
-    }
-  }
-
-  return 0
+  return resolveFeeCents(tiers, daysBefore, async () => {
+    const { getEventFinancialSummary } = await import('@/lib/ledger/compute')
+    const financials = await getEventFinancialSummary(eventId)
+    return financials?.totalPaidCents ?? 0
+  })
 }
 
 /**
@@ -117,7 +95,19 @@ export async function rescheduleEventWithFee(
 
   // 5. Calculate fee
   const effectiveOriginalDate = event.original_event_date || event.event_date
-  let feeCents = await lookupFee(db, tenantId, eventId, effectiveOriginalDate)
+  let feeCents: number
+  try {
+    feeCents = await lookupFee(db, tenantId, eventId, effectiveOriginalDate)
+  } catch (err) {
+    log.events.error(
+      'Reschedule fee calculation failed; refusing to reschedule on an unknown fee',
+      {
+        error: err,
+        context: { eventId },
+      }
+    )
+    return { success: false, error: 'Could not calculate the reschedule fee. Please try again.' }
+  }
   const feeWaived = data.waiveFee === true && feeCents > 0
 
   if (feeWaived) {
