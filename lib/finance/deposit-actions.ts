@@ -7,6 +7,7 @@
 import { requireChef } from '@/lib/auth/get-user'
 import { createServerClient } from '@/lib/db/server'
 import { appendLedgerEntryForChef } from '@/lib/ledger/append'
+import { ledgerReference } from '@/lib/ledger/idempotency'
 import type { PaymentMethod } from '@/lib/ledger/append'
 import { differenceInDays, subDays, format } from 'date-fns'
 import { revalidatePath } from 'next/cache'
@@ -211,7 +212,7 @@ export async function recordDeposit(
     payment_method: method,
     description: `Deposit for ${event.occasion || 'event'}`,
     event_id: eventId,
-    transaction_reference: `dep_${eventId}_${Date.now()}`,
+    transaction_reference: ledgerReference('dep', eventId, amountCents),
   })
 
   // Bust financial caches so dashboard shows updated balance
@@ -318,7 +319,7 @@ export async function recordBalancePayment(
     payment_method: method,
     description: `Balance payment for ${event.occasion || 'event'}`,
     event_id: eventId,
-    transaction_reference: `bal_${eventId}_${Date.now()}`,
+    transaction_reference: ledgerReference('bal', eventId, amountCents),
   })
 
   // Bust financial caches so dashboard shows updated balance
