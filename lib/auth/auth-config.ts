@@ -179,7 +179,14 @@ export const authConfig: NextAuthConfig = {
             return null
           }
         } catch (err) {
-          console.error('[auth] Brute-force check failed, allowing attempt:', err)
+          // Fail closed: if we cannot confirm the account is not locked out, deny
+          // the attempt rather than bypassing brute-force protection.
+          console.error('[auth] Brute-force check failed; denying attempt:', err)
+          logSecurityEvent({
+            eventType: 'login_failed',
+            metadata: { email, reason: 'brute_force_check_error' },
+          })
+          return null
         }
 
         // Look up user in auth.users by email
@@ -252,7 +259,15 @@ export const authConfig: NextAuthConfig = {
         try {
           mfaEnabled = await userHasMfaEnabled(user.id)
         } catch (mfaErr) {
-          console.error('[auth] MFA check failed (table may not exist):', (mfaErr as Error).message)
+          // Fail closed: if we cannot determine whether MFA is required, deny the
+          // login rather than letting a possibly-protected account through without it.
+          console.error('[auth] MFA check failed; denying login:', (mfaErr as Error).message)
+          logSecurityEvent({
+            authUserId: user.id,
+            eventType: 'login_failed',
+            metadata: { email, reason: 'mfa_check_error' },
+          })
+          return null
         }
         if (mfaEnabled) {
           const mfaType = await getMfaMethodType(user.id)
