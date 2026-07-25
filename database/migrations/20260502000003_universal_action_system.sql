@@ -1,4 +1,4 @@
--- Universal Action System
+﻿-- Universal Action System
 -- Adds activity_log, user_pins tables and is_template columns for recipes/quotes
 
 -- ============================================
@@ -6,7 +6,7 @@
 -- ============================================
 CREATE TABLE IF NOT EXISTS activity_log (
   id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
-  tenant_id UUID NOT NULL REFERENCES tenants(id),
+  tenant_id UUID NOT NULL REFERENCES chefs(id),
   user_id UUID NOT NULL REFERENCES auth.users(id),
   action TEXT NOT NULL,
   entity_type TEXT NOT NULL,
@@ -22,10 +22,10 @@ CREATE INDEX IF NOT EXISTS idx_activity_log_entity ON activity_log(entity_type, 
 ALTER TABLE activity_log ENABLE ROW LEVEL SECURITY;
 
 CREATE POLICY "Tenants see own activity" ON activity_log
-  FOR SELECT USING (tenant_id = (SELECT tenant_id FROM public.users WHERE id = auth.uid()));
+  FOR SELECT USING (tenant_id = get_current_tenant_id());
 
 CREATE POLICY "Tenants insert own activity" ON activity_log
-  FOR INSERT WITH CHECK (tenant_id = (SELECT tenant_id FROM public.users WHERE id = auth.uid()));
+  FOR INSERT WITH CHECK (tenant_id = get_current_tenant_id());
 
 -- ============================================
 -- USER PINS (per-user favorites)

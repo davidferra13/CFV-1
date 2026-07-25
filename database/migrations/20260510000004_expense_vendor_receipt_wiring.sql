@@ -1,4 +1,4 @@
--- Wire expenses to vendors and receipts via foreign keys
+﻿-- Wire expenses to vendors and receipts via foreign keys
 -- Enables: vendor price tracking from expenses, bidirectional receipt linking,
 -- auto-categorization from vendor patterns
 
@@ -18,7 +18,7 @@ CREATE INDEX IF NOT EXISTS idx_expenses_receipt_photo_id ON expenses(receipt_pho
 -- Populated automatically when a vendor has 3+ expenses in the same category
 CREATE TABLE IF NOT EXISTS vendor_category_defaults (
   id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
-  tenant_id UUID NOT NULL REFERENCES tenants(id) ON DELETE CASCADE,
+  tenant_id UUID NOT NULL REFERENCES chefs(id) ON DELETE CASCADE,
   vendor_id UUID NOT NULL REFERENCES vendors(id) ON DELETE CASCADE,
   default_category TEXT NOT NULL,
   match_count INTEGER NOT NULL DEFAULT 1,
@@ -34,5 +34,5 @@ SET vendor_id = v.id
 FROM vendors v
 WHERE e.vendor_id IS NULL
   AND e.vendor_name IS NOT NULL
-  AND e.tenant_id = v.tenant_id
+  AND e.tenant_id = v.chef_id
   AND LOWER(TRIM(e.vendor_name)) = LOWER(TRIM(v.name));

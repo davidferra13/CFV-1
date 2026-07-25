@@ -1,6 +1,6 @@
-CREATE TABLE IF NOT EXISTS rail_engagement_log (
+﻿CREATE TABLE IF NOT EXISTS rail_engagement_log (
   id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
-  tenant_id UUID NOT NULL REFERENCES tenants(id),
+  tenant_id UUID NOT NULL REFERENCES chefs(id),
   user_id UUID NOT NULL REFERENCES users(id),
   item_source TEXT NOT NULL,
   item_category TEXT NOT NULL,
