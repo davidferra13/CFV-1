@@ -21,11 +21,12 @@ CREATE TABLE IF NOT EXISTS display_case_items (
   updated_at timestamptz NOT NULL DEFAULT now()
 );
 
-CREATE INDEX idx_display_case_items_tenant ON display_case_items(tenant_id);
-CREATE INDEX idx_display_case_items_tenant_active ON display_case_items(tenant_id) WHERE is_active = true;
+CREATE INDEX IF NOT EXISTS idx_display_case_items_tenant ON display_case_items(tenant_id);
+CREATE INDEX IF NOT EXISTS idx_display_case_items_tenant_active ON display_case_items(tenant_id) WHERE is_active = true;
 
 ALTER TABLE display_case_items ENABLE ROW LEVEL SECURITY;
 
+DROP POLICY IF EXISTS "Chefs can manage their own display case items" ON display_case_items;
 DROP POLICY IF EXISTS "Chefs can manage their own display case items" ON display_case_items;
 CREATE POLICY "Chefs can manage their own display case items"
   ON display_case_items
@@ -45,6 +46,7 @@ BEGIN
 END;
 $$ LANGUAGE plpgsql;
 
+DROP TRIGGER IF EXISTS display_case_items_updated_at ON display_case_items;
 CREATE TRIGGER display_case_items_updated_at
   BEFORE UPDATE ON display_case_items
   FOR EACH ROW
@@ -64,11 +66,12 @@ CREATE TABLE IF NOT EXISTS bakery_par_stock (
   updated_at timestamptz NOT NULL DEFAULT now()
 );
 
-CREATE INDEX idx_bakery_par_stock_tenant ON bakery_par_stock(tenant_id);
-CREATE INDEX idx_bakery_par_stock_tenant_active ON bakery_par_stock(tenant_id) WHERE is_active = true;
+CREATE INDEX IF NOT EXISTS idx_bakery_par_stock_tenant ON bakery_par_stock(tenant_id);
+CREATE INDEX IF NOT EXISTS idx_bakery_par_stock_tenant_active ON bakery_par_stock(tenant_id) WHERE is_active = true;
 
 ALTER TABLE bakery_par_stock ENABLE ROW LEVEL SECURITY;
 
+DROP POLICY IF EXISTS "Chefs can manage their own par stock" ON bakery_par_stock;
 DROP POLICY IF EXISTS "Chefs can manage their own par stock" ON bakery_par_stock;
 CREATE POLICY "Chefs can manage their own par stock"
   ON bakery_par_stock
@@ -88,6 +91,7 @@ BEGIN
 END;
 $$ LANGUAGE plpgsql;
 
+DROP TRIGGER IF EXISTS bakery_par_stock_updated_at ON bakery_par_stock;
 CREATE TRIGGER bakery_par_stock_updated_at
   BEFORE UPDATE ON bakery_par_stock
   FOR EACH ROW
@@ -111,10 +115,11 @@ CREATE TABLE IF NOT EXISTS bakery_production_log (
   updated_at timestamptz NOT NULL DEFAULT now()
 );
 
-CREATE INDEX idx_bakery_production_log_tenant_date ON bakery_production_log(tenant_id, production_date);
+CREATE INDEX IF NOT EXISTS idx_bakery_production_log_tenant_date ON bakery_production_log(tenant_id, production_date);
 
 ALTER TABLE bakery_production_log ENABLE ROW LEVEL SECURITY;
 
+DROP POLICY IF EXISTS "Chefs can manage their own production log" ON bakery_production_log;
 DROP POLICY IF EXISTS "Chefs can manage their own production log" ON bakery_production_log;
 CREATE POLICY "Chefs can manage their own production log"
   ON bakery_production_log
@@ -134,6 +139,7 @@ BEGIN
 END;
 $$ LANGUAGE plpgsql;
 
+DROP TRIGGER IF EXISTS bakery_production_log_updated_at ON bakery_production_log;
 CREATE TRIGGER bakery_production_log_updated_at
   BEFORE UPDATE ON bakery_production_log
   FOR EACH ROW

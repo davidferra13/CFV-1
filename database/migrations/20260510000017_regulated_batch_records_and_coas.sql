@@ -237,8 +237,10 @@ CREATE POLICY regulated_batch_corrections_chef_all
     get_current_user_role() = 'chef'
     AND tenant_id = get_current_tenant_id()
   );
-
-INSERT INTO storage.buckets (id, name, public, file_size_limit, allowed_mime_types)
+DO $cfguard$
+BEGIN
+  IF EXISTS (SELECT 1 FROM information_schema.schemata WHERE schema_name = 'storage') THEN
+    EXECUTE $cfstorage$INSERT INTO storage.buckets (id, name, public, file_size_limit, allowed_mime_types)
 VALUES (
   'regulated-coa-documents',
   'regulated-coa-documents',
@@ -250,9 +252,14 @@ ON CONFLICT (id) DO UPDATE
 SET
   public = EXCLUDED.public,
   file_size_limit = EXCLUDED.file_size_limit,
-  allowed_mime_types = EXCLUDED.allowed_mime_types;
-
-DO $$ BEGIN
+  allowed_mime_types = EXCLUDED.allowed_mime_types$cfstorage$;
+  END IF;
+END
+$cfguard$;
+DO $cfguard$
+BEGIN
+  IF EXISTS (SELECT 1 FROM information_schema.schemata WHERE schema_name = 'storage') THEN
+    EXECUTE $cfstorage$DO $$ BEGIN
   DROP POLICY IF EXISTS regulated_coa_storage_chef_insert ON storage.objects;
   CREATE POLICY regulated_coa_storage_chef_insert
   ON storage.objects FOR INSERT
@@ -263,9 +270,14 @@ DO $$ BEGIN
     AND split_part(name, '/', 1) = get_current_tenant_id()::text
   );
 EXCEPTION WHEN duplicate_object OR insufficient_privilege THEN NULL;
-END $$;
-
-DO $$ BEGIN
+END $$$cfstorage$;
+  END IF;
+END
+$cfguard$;
+DO $cfguard$
+BEGIN
+  IF EXISTS (SELECT 1 FROM information_schema.schemata WHERE schema_name = 'storage') THEN
+    EXECUTE $cfstorage$DO $$ BEGIN
   DROP POLICY IF EXISTS regulated_coa_storage_chef_select ON storage.objects;
   CREATE POLICY regulated_coa_storage_chef_select
   ON storage.objects FOR SELECT
@@ -276,9 +288,14 @@ DO $$ BEGIN
     AND split_part(name, '/', 1) = get_current_tenant_id()::text
   );
 EXCEPTION WHEN duplicate_object OR insufficient_privilege THEN NULL;
-END $$;
-
-DO $$ BEGIN
+END $$$cfstorage$;
+  END IF;
+END
+$cfguard$;
+DO $cfguard$
+BEGIN
+  IF EXISTS (SELECT 1 FROM information_schema.schemata WHERE schema_name = 'storage') THEN
+    EXECUTE $cfstorage$DO $$ BEGIN
   DROP POLICY IF EXISTS regulated_coa_storage_chef_delete ON storage.objects;
   CREATE POLICY regulated_coa_storage_chef_delete
   ON storage.objects FOR DELETE
@@ -289,4 +306,7 @@ DO $$ BEGIN
     AND split_part(name, '/', 1) = get_current_tenant_id()::text
   );
 EXCEPTION WHEN duplicate_object OR insufficient_privilege THEN NULL;
-END $$;
+END $$$cfstorage$;
+  END IF;
+END
+$cfguard$;

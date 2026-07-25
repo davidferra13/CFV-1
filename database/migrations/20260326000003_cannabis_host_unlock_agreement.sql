@@ -22,6 +22,7 @@ ALTER TABLE cannabis_host_agreements ENABLE ROW LEVEL SECURITY;
 
 -- Hosts can read only their own signed agreement rows.
 DROP POLICY IF EXISTS "cannabis_host_agreements_read_own" ON cannabis_host_agreements;
+DROP POLICY IF EXISTS "cannabis_host_agreements_read_own" ON cannabis_host_agreements;
 CREATE POLICY "cannabis_host_agreements_read_own"
   ON cannabis_host_agreements
   FOR SELECT
@@ -29,18 +30,19 @@ CREATE POLICY "cannabis_host_agreements_read_own"
 
 -- Hosts can insert only their own signature row.
 DROP POLICY IF EXISTS "cannabis_host_agreements_insert_own" ON cannabis_host_agreements;
+DROP POLICY IF EXISTS "cannabis_host_agreements_insert_own" ON cannabis_host_agreements;
 CREATE POLICY "cannabis_host_agreements_insert_own"
   ON cannabis_host_agreements
   FOR INSERT
   WITH CHECK (host_user_id = auth.uid());
 
-CREATE INDEX idx_cannabis_host_agreements_host_user_id
+CREATE INDEX IF NOT EXISTS idx_cannabis_host_agreements_host_user_id
   ON cannabis_host_agreements(host_user_id);
 
-CREATE INDEX idx_cannabis_host_agreements_signed_at
+CREATE INDEX IF NOT EXISTS idx_cannabis_host_agreements_signed_at
   ON cannabis_host_agreements(signed_at DESC);
 
-CREATE INDEX idx_cannabis_host_agreements_version
+CREATE INDEX IF NOT EXISTS idx_cannabis_host_agreements_version
   ON cannabis_host_agreements(agreement_version);
 
 -- Immutable record enforcement: no update/delete after insert.
@@ -51,6 +53,7 @@ BEGIN
 END;
 $$ LANGUAGE plpgsql;
 
+DROP TRIGGER IF EXISTS prevent_cannabis_host_agreement_mutation_trigger ON cannabis_host_agreements;
 CREATE TRIGGER prevent_cannabis_host_agreement_mutation_trigger
   BEFORE UPDATE OR DELETE ON cannabis_host_agreements
   FOR EACH ROW

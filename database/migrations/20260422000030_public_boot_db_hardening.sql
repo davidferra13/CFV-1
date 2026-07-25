@@ -3,10 +3,15 @@
 -- the current query shapes in lib/discover/actions.ts and lib/openclaw/*.
 
 CREATE EXTENSION IF NOT EXISTS pg_trgm WITH SCHEMA extensions;
-
-CREATE INDEX IF NOT EXISTS idx_canonical_ingredients_name_trgm
+DO $cfguard$
+BEGIN
+  IF EXISTS (SELECT 1 FROM information_schema.schemata WHERE schema_name = 'extensions') THEN
+    EXECUTE $cfstorage$CREATE INDEX IF NOT EXISTS idx_canonical_ingredients_name_trgm
   ON openclaw.canonical_ingredients
-  USING gin (name extensions.gin_trgm_ops);
+  USING gin (name extensions.gin_trgm_ops)$cfstorage$;
+  END IF;
+END
+$cfguard$;
 
 CREATE INDEX IF NOT EXISTS idx_chef_preferences_network_discoverable_chef
   ON public.chef_preferences (chef_id)
@@ -124,9 +129,14 @@ CREATE INDEX IF NOT EXISTS idx_directory_listings_canonical_state
     )
   )
   WHERE status IN ('discovered', 'claimed', 'verified');
-
-CREATE INDEX IF NOT EXISTS idx_directory_listings_city_trgm
+DO $cfguard$
+BEGIN
+  IF EXISTS (SELECT 1 FROM information_schema.schemata WHERE schema_name = 'extensions') THEN
+    EXECUTE $cfstorage$CREATE INDEX IF NOT EXISTS idx_directory_listings_city_trgm
   ON public.directory_listings
   USING gin (city extensions.gin_trgm_ops)
   WHERE city IS NOT NULL
-    AND status IN ('discovered', 'claimed', 'verified');
+    AND status IN ('discovered', 'claimed', 'verified')$cfstorage$;
+  END IF;
+END
+$cfguard$;

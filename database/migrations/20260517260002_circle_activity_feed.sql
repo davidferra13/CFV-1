@@ -1,4 +1,4 @@
-﻿CREATE TABLE IF NOT EXISTS circle_activity (
+CREATE TABLE IF NOT EXISTS circle_activity (
   id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
   tenant_id UUID NOT NULL REFERENCES chefs(id),
   event_id UUID NOT NULL REFERENCES events(id),

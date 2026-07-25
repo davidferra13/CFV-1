@@ -13,6 +13,7 @@ ALTER TABLE events
   ADD COLUMN IF NOT EXISTS mileage_miles DECIMAL(8,2);
 
 -- Constraint: mileage must be non-negative if provided
+ALTER TABLE events DROP CONSTRAINT IF EXISTS events_mileage_non_negative;
 ALTER TABLE events
   ADD CONSTRAINT events_mileage_non_negative
     CHECK (mileage_miles IS NULL OR mileage_miles >= 0);

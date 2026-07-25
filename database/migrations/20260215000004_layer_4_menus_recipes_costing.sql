@@ -13,15 +13,24 @@
 -- =====================================================================================
 
 -- Menu status state machine: draft → shared → locked → archived
-CREATE TYPE menu_status AS ENUM (
+DO $idem$
+BEGIN
+  IF NOT EXISTS (SELECT 1 FROM pg_type WHERE typname = 'menu_status') THEN
+    CREATE TYPE menu_status AS ENUM (
   'draft',
   'shared',
   'locked',
   'archived'
 );
+  END IF;
+END
+$idem$;
 
 -- Component categories (what type of building block is this)
-CREATE TYPE component_category AS ENUM (
+DO $idem$
+BEGIN
+  IF NOT EXISTS (SELECT 1 FROM pg_type WHERE typname = 'component_category') THEN
+    CREATE TYPE component_category AS ENUM (
   'sauce',
   'protein',
   'starch',
@@ -35,9 +44,15 @@ CREATE TYPE component_category AS ENUM (
   'beverage',
   'other'
 );
+  END IF;
+END
+$idem$;
 
 -- Recipe categories (what type of dish is this in the Recipe Bible)
-CREATE TYPE recipe_category AS ENUM (
+DO $idem$
+BEGIN
+  IF NOT EXISTS (SELECT 1 FROM pg_type WHERE typname = 'recipe_category') THEN
+    CREATE TYPE recipe_category AS ENUM (
   'sauce',
   'protein',
   'starch',
@@ -53,9 +68,15 @@ CREATE TYPE recipe_category AS ENUM (
   'beverage',
   'other'
 );
+  END IF;
+END
+$idem$;
 
 -- Ingredient categories (where does this live in the kitchen)
-CREATE TYPE ingredient_category AS ENUM (
+DO $idem$
+BEGIN
+  IF NOT EXISTS (SELECT 1 FROM pg_type WHERE typname = 'ingredient_category') THEN
+    CREATE TYPE ingredient_category AS ENUM (
   'protein',
   'produce',
   'dairy',
@@ -73,6 +94,9 @@ CREATE TYPE ingredient_category AS ENUM (
   'specialty',
   'other'
 );
+  END IF;
+END
+$idem$;
 
 -- =====================================================================================
 -- TABLE 1: menus
@@ -80,7 +104,7 @@ CREATE TYPE ingredient_category AS ENUM (
 -- A menu belongs to an event. Contains courses (dishes). Can exist as reusable template.
 -- State machine: draft → shared → locked → archived
 
-CREATE TABLE menus (
+CREATE TABLE IF NOT EXISTS menus (
   -- Identity & Relationships
   id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
   tenant_id UUID NOT NULL REFERENCES chefs(id) ON DELETE CASCADE,
@@ -116,17 +140,17 @@ CREATE TABLE menus (
 );
 
 -- Indexes
-CREATE INDEX idx_menus_tenant_id ON menus(tenant_id);
-CREATE INDEX idx_menus_event_id ON menus(event_id);
-CREATE INDEX idx_menus_status ON menus(status);
-CREATE INDEX idx_menus_is_template ON menus(is_template);
+CREATE INDEX IF NOT EXISTS idx_menus_tenant_id ON menus(tenant_id);
+CREATE INDEX IF NOT EXISTS idx_menus_event_id ON menus(event_id);
+CREATE INDEX IF NOT EXISTS idx_menus_status ON menus(status);
+CREATE INDEX IF NOT EXISTS idx_menus_is_template ON menus(is_template);
 
 -- =====================================================================================
 -- TABLE 2: menu_state_transitions
 -- =====================================================================================
 -- Immutable audit trail of menu state changes
 
-CREATE TABLE menu_state_transitions (
+CREATE TABLE IF NOT EXISTS menu_state_transitions (
   id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
   menu_id UUID NOT NULL REFERENCES menus(id) ON DELETE CASCADE,
   tenant_id UUID NOT NULL REFERENCES chefs(id) ON DELETE CASCADE,
@@ -139,15 +163,15 @@ CREATE TABLE menu_state_transitions (
 );
 
 -- Indexes
-CREATE INDEX idx_menu_transitions_menu_id ON menu_state_transitions(menu_id);
-CREATE INDEX idx_menu_transitions_tenant_id ON menu_state_transitions(tenant_id);
+CREATE INDEX IF NOT EXISTS idx_menu_transitions_menu_id ON menu_state_transitions(menu_id);
+CREATE INDEX IF NOT EXISTS idx_menu_transitions_tenant_id ON menu_state_transitions(tenant_id);
 
 -- =====================================================================================
 -- TABLE 3: dishes
 -- =====================================================================================
 -- A dish belongs to a menu and represents one course. Each dish contains multiple components.
 
-CREATE TABLE dishes (
+CREATE TABLE IF NOT EXISTS dishes (
   -- Identity & Relationships
   id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
   tenant_id UUID NOT NULL REFERENCES chefs(id) ON DELETE CASCADE,
@@ -179,9 +203,9 @@ CREATE TABLE dishes (
 );
 
 -- Indexes
-CREATE INDEX idx_dishes_tenant_id ON dishes(tenant_id);
-CREATE INDEX idx_dishes_menu_id ON dishes(menu_id);
-CREATE INDEX idx_dishes_menu_course ON dishes(menu_id, course_number);
+CREATE INDEX IF NOT EXISTS idx_dishes_tenant_id ON dishes(tenant_id);
+CREATE INDEX IF NOT EXISTS idx_dishes_menu_id ON dishes(menu_id);
+CREATE INDEX IF NOT EXISTS idx_dishes_menu_course ON dishes(menu_id, course_number);
 
 -- =====================================================================================
 -- TABLE 4: recipes
@@ -189,7 +213,7 @@ CREATE INDEX idx_dishes_menu_course ON dishes(menu_id, course_number);
 -- The Recipe Bible. A recipe exists independently of any event. Can be linked to many
 -- components across many events. Builds over time from real dinners.
 
-CREATE TABLE recipes (
+CREATE TABLE IF NOT EXISTS recipes (
   -- Identity
   id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
   tenant_id UUID NOT NULL REFERENCES chefs(id) ON DELETE CASCADE,
@@ -246,11 +270,11 @@ CREATE TABLE recipes (
 );
 
 -- Indexes
-CREATE INDEX idx_recipes_tenant_id ON recipes(tenant_id);
-CREATE INDEX idx_recipes_category ON recipes(category);
-CREATE INDEX idx_recipes_archived ON recipes(archived);
-CREATE INDEX idx_recipes_times_cooked ON recipes(times_cooked DESC);
-CREATE UNIQUE INDEX idx_recipes_tenant_name ON recipes(tenant_id, name);
+CREATE INDEX IF NOT EXISTS idx_recipes_tenant_id ON recipes(tenant_id);
+CREATE INDEX IF NOT EXISTS idx_recipes_category ON recipes(category);
+CREATE INDEX IF NOT EXISTS idx_recipes_archived ON recipes(archived);
+CREATE INDEX IF NOT EXISTS idx_recipes_times_cooked ON recipes(times_cooked DESC);
+CREATE UNIQUE INDEX IF NOT EXISTS idx_recipes_tenant_name ON recipes(tenant_id, name);
 
 -- =====================================================================================
 -- TABLE 5: ingredients
@@ -258,7 +282,7 @@ CREATE UNIQUE INDEX idx_recipes_tenant_name ON recipes(tenant_id, name);
 -- Master ingredient list. Tracks price history (V1 simple approach: last_price_cents,
 -- last_price_date).
 
-CREATE TABLE ingredients (
+CREATE TABLE IF NOT EXISTS ingredients (
   -- Identity
   id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
   tenant_id UUID NOT NULL REFERENCES chefs(id) ON DELETE CASCADE,
@@ -305,11 +329,11 @@ CREATE TABLE ingredients (
 );
 
 -- Indexes
-CREATE INDEX idx_ingredients_tenant_id ON ingredients(tenant_id);
-CREATE INDEX idx_ingredients_category ON ingredients(category);
-CREATE INDEX idx_ingredients_is_staple ON ingredients(is_staple);
-CREATE INDEX idx_ingredients_archived ON ingredients(archived);
-CREATE INDEX idx_ingredients_tenant_name ON ingredients(tenant_id, name);
+CREATE INDEX IF NOT EXISTS idx_ingredients_tenant_id ON ingredients(tenant_id);
+CREATE INDEX IF NOT EXISTS idx_ingredients_category ON ingredients(category);
+CREATE INDEX IF NOT EXISTS idx_ingredients_is_staple ON ingredients(is_staple);
+CREATE INDEX IF NOT EXISTS idx_ingredients_archived ON ingredients(archived);
+CREATE INDEX IF NOT EXISTS idx_ingredients_tenant_name ON ingredients(tenant_id, name);
 
 -- =====================================================================================
 -- TABLE 6: recipe_ingredients
@@ -317,7 +341,7 @@ CREATE INDEX idx_ingredients_tenant_name ON ingredients(tenant_id, name);
 -- Junction table linking recipes to ingredients with quantities.
 -- Defines "what goes into this recipe."
 
-CREATE TABLE recipe_ingredients (
+CREATE TABLE IF NOT EXISTS recipe_ingredients (
   -- Identity & Relationships
   id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
   recipe_id UUID NOT NULL REFERENCES recipes(id) ON DELETE CASCADE,
@@ -345,8 +369,8 @@ CREATE TABLE recipe_ingredients (
 );
 
 -- Indexes
-CREATE INDEX idx_recipe_ingredients_recipe_id ON recipe_ingredients(recipe_id);
-CREATE INDEX idx_recipe_ingredients_ingredient_id ON recipe_ingredients(ingredient_id);
+CREATE INDEX IF NOT EXISTS idx_recipe_ingredients_recipe_id ON recipe_ingredients(recipe_id);
+CREATE INDEX IF NOT EXISTS idx_recipe_ingredients_ingredient_id ON recipe_ingredients(ingredient_id);
 
 -- =====================================================================================
 -- TABLE 7: components
@@ -354,7 +378,7 @@ CREATE INDEX idx_recipe_ingredients_ingredient_id ON recipe_ingredients(ingredie
 -- A component belongs to a dish. This is the building block (e.g., 'Diane Sauce',
 -- 'Roasted Smashed Potatoes'). Links to recipes in the Recipe Bible.
 
-CREATE TABLE components (
+CREATE TABLE IF NOT EXISTS components (
   -- Identity & Relationships
   id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
   tenant_id UUID NOT NULL REFERENCES chefs(id) ON DELETE CASCADE,
@@ -387,19 +411,19 @@ CREATE TABLE components (
 );
 
 -- Indexes
-CREATE INDEX idx_components_tenant_id ON components(tenant_id);
-CREATE INDEX idx_components_dish_id ON components(dish_id);
-CREATE INDEX idx_components_recipe_id ON components(recipe_id);
-CREATE INDEX idx_components_category ON components(category);
-CREATE INDEX idx_components_is_make_ahead ON components(is_make_ahead);
+CREATE INDEX IF NOT EXISTS idx_components_tenant_id ON components(tenant_id);
+CREATE INDEX IF NOT EXISTS idx_components_dish_id ON components(dish_id);
+CREATE INDEX IF NOT EXISTS idx_components_recipe_id ON components(recipe_id);
+CREATE INDEX IF NOT EXISTS idx_components_category ON components(category);
+CREATE INDEX IF NOT EXISTS idx_components_is_make_ahead ON components(is_make_ahead);
 
 -- =====================================================================================
 -- FOREIGN KEY ADDITION TO LAYER 3
 -- =====================================================================================
 
 -- Add menu_id column to events table (linking event to its menu)
-ALTER TABLE events ADD COLUMN menu_id UUID REFERENCES menus(id) ON DELETE SET NULL;
-CREATE INDEX idx_events_menu_id ON events(menu_id);
+ALTER TABLE events ADD COLUMN IF NOT EXISTS menu_id UUID REFERENCES menus(id) ON DELETE SET NULL;
+CREATE INDEX IF NOT EXISTS idx_events_menu_id ON events(menu_id);
 
 -- =====================================================================================
 -- TRIGGER FUNCTIONS
@@ -516,43 +540,59 @@ $$ LANGUAGE plpgsql;
 -- =====================================================================================
 
 -- Update updated_at timestamps
+DROP TRIGGER IF EXISTS update_menus_updated_at ON menus;
+DROP TRIGGER IF EXISTS update_menus_updated_at ON menus;
 CREATE TRIGGER update_menus_updated_at
   BEFORE UPDATE ON menus
   FOR EACH ROW
   EXECUTE FUNCTION update_layer4_updated_at();
 
+DROP TRIGGER IF EXISTS update_dishes_updated_at ON dishes;
+DROP TRIGGER IF EXISTS update_dishes_updated_at ON dishes;
 CREATE TRIGGER update_dishes_updated_at
   BEFORE UPDATE ON dishes
   FOR EACH ROW
   EXECUTE FUNCTION update_layer4_updated_at();
 
+DROP TRIGGER IF EXISTS update_components_updated_at ON components;
+DROP TRIGGER IF EXISTS update_components_updated_at ON components;
 CREATE TRIGGER update_components_updated_at
   BEFORE UPDATE ON components
   FOR EACH ROW
   EXECUTE FUNCTION update_layer4_updated_at();
 
+DROP TRIGGER IF EXISTS update_recipes_updated_at ON recipes;
+DROP TRIGGER IF EXISTS update_recipes_updated_at ON recipes;
 CREATE TRIGGER update_recipes_updated_at
   BEFORE UPDATE ON recipes
   FOR EACH ROW
   EXECUTE FUNCTION update_layer4_updated_at();
 
+DROP TRIGGER IF EXISTS update_recipe_ingredients_updated_at ON recipe_ingredients;
+DROP TRIGGER IF EXISTS update_recipe_ingredients_updated_at ON recipe_ingredients;
 CREATE TRIGGER update_recipe_ingredients_updated_at
   BEFORE UPDATE ON recipe_ingredients
   FOR EACH ROW
   EXECUTE FUNCTION update_layer4_updated_at();
 
+DROP TRIGGER IF EXISTS update_ingredients_updated_at ON ingredients;
+DROP TRIGGER IF EXISTS update_ingredients_updated_at ON ingredients;
 CREATE TRIGGER update_ingredients_updated_at
   BEFORE UPDATE ON ingredients
   FOR EACH ROW
   EXECUTE FUNCTION update_layer4_updated_at();
 
 -- Menu state machine enforcement
+DROP TRIGGER IF EXISTS validate_menu_state_transition_trigger ON menus;
+DROP TRIGGER IF EXISTS validate_menu_state_transition_trigger ON menus;
 CREATE TRIGGER validate_menu_state_transition_trigger
   BEFORE UPDATE ON menus
   FOR EACH ROW
   WHEN (OLD.status IS DISTINCT FROM NEW.status)
   EXECUTE FUNCTION validate_menu_state_transition();
 
+DROP TRIGGER IF EXISTS log_menu_state_transition_trigger ON menus;
+DROP TRIGGER IF EXISTS log_menu_state_transition_trigger ON menus;
 CREATE TRIGGER log_menu_state_transition_trigger
   AFTER UPDATE ON menus
   FOR EACH ROW
@@ -560,17 +600,23 @@ CREATE TRIGGER log_menu_state_transition_trigger
   EXECUTE FUNCTION log_menu_state_transition();
 
 -- Menu state transitions immutability
+DROP TRIGGER IF EXISTS prevent_menu_transition_update ON menu_state_transitions;
+DROP TRIGGER IF EXISTS prevent_menu_transition_update ON menu_state_transitions;
 CREATE TRIGGER prevent_menu_transition_update
   BEFORE UPDATE ON menu_state_transitions
   FOR EACH ROW
   EXECUTE FUNCTION prevent_menu_transition_mutation();
 
+DROP TRIGGER IF EXISTS prevent_menu_transition_delete ON menu_state_transitions;
+DROP TRIGGER IF EXISTS prevent_menu_transition_delete ON menu_state_transitions;
 CREATE TRIGGER prevent_menu_transition_delete
   BEFORE DELETE ON menu_state_transitions
   FOR EACH ROW
   EXECUTE FUNCTION prevent_menu_transition_mutation();
 
 -- Recipe times_cooked increment (fires from Layer 3 events table)
+DROP TRIGGER IF EXISTS increment_recipe_times_cooked_on_event_completion_trigger ON events;
+DROP TRIGGER IF EXISTS increment_recipe_times_cooked_on_event_completion_trigger ON events;
 CREATE TRIGGER increment_recipe_times_cooked_on_event_completion_trigger
   AFTER UPDATE ON events
   FOR EACH ROW
@@ -595,15 +641,21 @@ ALTER TABLE ingredients ENABLE ROW LEVEL SECURITY;
 -- =====================================================================================
 
 DROP POLICY IF EXISTS tenant_isolation_select_menus ON menus;
+DROP POLICY IF EXISTS tenant_isolation_select_menus ON menus;
+DROP POLICY IF EXISTS tenant_isolation_select_menus ON menus;
 CREATE POLICY tenant_isolation_select_menus ON menus
   FOR SELECT
   USING (tenant_id = get_current_tenant_id());
 
 DROP POLICY IF EXISTS tenant_isolation_insert_menus ON menus;
+DROP POLICY IF EXISTS tenant_isolation_insert_menus ON menus;
+DROP POLICY IF EXISTS tenant_isolation_insert_menus ON menus;
 CREATE POLICY tenant_isolation_insert_menus ON menus
   FOR INSERT
   WITH CHECK (tenant_id = get_current_tenant_id());
 
+DROP POLICY IF EXISTS tenant_isolation_update_menus ON menus;
+DROP POLICY IF EXISTS tenant_isolation_update_menus ON menus;
 DROP POLICY IF EXISTS tenant_isolation_update_menus ON menus;
 CREATE POLICY tenant_isolation_update_menus ON menus
   FOR UPDATE
@@ -611,6 +663,8 @@ CREATE POLICY tenant_isolation_update_menus ON menus
   WITH CHECK (tenant_id = get_current_tenant_id());
 
 -- Client can view menus for their own events
+DROP POLICY IF EXISTS client_can_view_own_event_menu ON menus;
+DROP POLICY IF EXISTS client_can_view_own_event_menu ON menus;
 DROP POLICY IF EXISTS client_can_view_own_event_menu ON menus;
 CREATE POLICY client_can_view_own_event_menu ON menus
   FOR SELECT
@@ -628,10 +682,14 @@ CREATE POLICY client_can_view_own_event_menu ON menus
 -- =====================================================================================
 
 DROP POLICY IF EXISTS tenant_isolation_select_menu_transitions ON menu_state_transitions;
+DROP POLICY IF EXISTS tenant_isolation_select_menu_transitions ON menu_state_transitions;
+DROP POLICY IF EXISTS tenant_isolation_select_menu_transitions ON menu_state_transitions;
 CREATE POLICY tenant_isolation_select_menu_transitions ON menu_state_transitions
   FOR SELECT
   USING (tenant_id = get_current_tenant_id());
 
+DROP POLICY IF EXISTS tenant_isolation_insert_menu_transitions ON menu_state_transitions;
+DROP POLICY IF EXISTS tenant_isolation_insert_menu_transitions ON menu_state_transitions;
 DROP POLICY IF EXISTS tenant_isolation_insert_menu_transitions ON menu_state_transitions;
 CREATE POLICY tenant_isolation_insert_menu_transitions ON menu_state_transitions
   FOR INSERT
@@ -642,15 +700,21 @@ CREATE POLICY tenant_isolation_insert_menu_transitions ON menu_state_transitions
 -- =====================================================================================
 
 DROP POLICY IF EXISTS tenant_isolation_select_dishes ON dishes;
+DROP POLICY IF EXISTS tenant_isolation_select_dishes ON dishes;
+DROP POLICY IF EXISTS tenant_isolation_select_dishes ON dishes;
 CREATE POLICY tenant_isolation_select_dishes ON dishes
   FOR SELECT
   USING (tenant_id = get_current_tenant_id());
 
 DROP POLICY IF EXISTS tenant_isolation_insert_dishes ON dishes;
+DROP POLICY IF EXISTS tenant_isolation_insert_dishes ON dishes;
+DROP POLICY IF EXISTS tenant_isolation_insert_dishes ON dishes;
 CREATE POLICY tenant_isolation_insert_dishes ON dishes
   FOR INSERT
   WITH CHECK (tenant_id = get_current_tenant_id());
 
+DROP POLICY IF EXISTS tenant_isolation_update_dishes ON dishes;
+DROP POLICY IF EXISTS tenant_isolation_update_dishes ON dishes;
 DROP POLICY IF EXISTS tenant_isolation_update_dishes ON dishes;
 CREATE POLICY tenant_isolation_update_dishes ON dishes
   FOR UPDATE
@@ -658,6 +722,8 @@ CREATE POLICY tenant_isolation_update_dishes ON dishes
   WITH CHECK (tenant_id = get_current_tenant_id());
 
 -- Client can view dishes in their event menus
+DROP POLICY IF EXISTS client_can_view_menu_dishes ON dishes;
+DROP POLICY IF EXISTS client_can_view_menu_dishes ON dishes;
 DROP POLICY IF EXISTS client_can_view_menu_dishes ON dishes;
 CREATE POLICY client_can_view_menu_dishes ON dishes
   FOR SELECT
@@ -677,15 +743,21 @@ CREATE POLICY client_can_view_menu_dishes ON dishes
 -- =====================================================================================
 
 DROP POLICY IF EXISTS tenant_isolation_select_components ON components;
+DROP POLICY IF EXISTS tenant_isolation_select_components ON components;
+DROP POLICY IF EXISTS tenant_isolation_select_components ON components;
 CREATE POLICY tenant_isolation_select_components ON components
   FOR SELECT
   USING (tenant_id = get_current_tenant_id());
 
 DROP POLICY IF EXISTS tenant_isolation_insert_components ON components;
+DROP POLICY IF EXISTS tenant_isolation_insert_components ON components;
+DROP POLICY IF EXISTS tenant_isolation_insert_components ON components;
 CREATE POLICY tenant_isolation_insert_components ON components
   FOR INSERT
   WITH CHECK (tenant_id = get_current_tenant_id());
 
+DROP POLICY IF EXISTS tenant_isolation_update_components ON components;
+DROP POLICY IF EXISTS tenant_isolation_update_components ON components;
 DROP POLICY IF EXISTS tenant_isolation_update_components ON components;
 CREATE POLICY tenant_isolation_update_components ON components
   FOR UPDATE
@@ -693,6 +765,8 @@ CREATE POLICY tenant_isolation_update_components ON components
   WITH CHECK (tenant_id = get_current_tenant_id());
 
 -- Client can view components in their event menu dishes
+DROP POLICY IF EXISTS client_can_view_dish_components ON components;
+DROP POLICY IF EXISTS client_can_view_dish_components ON components;
 DROP POLICY IF EXISTS client_can_view_dish_components ON components;
 CREATE POLICY client_can_view_dish_components ON components
   FOR SELECT
@@ -714,15 +788,21 @@ CREATE POLICY client_can_view_dish_components ON components
 -- =====================================================================================
 
 DROP POLICY IF EXISTS tenant_isolation_select_recipes ON recipes;
+DROP POLICY IF EXISTS tenant_isolation_select_recipes ON recipes;
+DROP POLICY IF EXISTS tenant_isolation_select_recipes ON recipes;
 CREATE POLICY tenant_isolation_select_recipes ON recipes
   FOR SELECT
   USING (tenant_id = get_current_tenant_id());
 
 DROP POLICY IF EXISTS tenant_isolation_insert_recipes ON recipes;
+DROP POLICY IF EXISTS tenant_isolation_insert_recipes ON recipes;
+DROP POLICY IF EXISTS tenant_isolation_insert_recipes ON recipes;
 CREATE POLICY tenant_isolation_insert_recipes ON recipes
   FOR INSERT
   WITH CHECK (tenant_id = get_current_tenant_id());
 
+DROP POLICY IF EXISTS tenant_isolation_update_recipes ON recipes;
+DROP POLICY IF EXISTS tenant_isolation_update_recipes ON recipes;
 DROP POLICY IF EXISTS tenant_isolation_update_recipes ON recipes;
 CREATE POLICY tenant_isolation_update_recipes ON recipes
   FOR UPDATE
@@ -734,6 +814,8 @@ CREATE POLICY tenant_isolation_update_recipes ON recipes
 -- =====================================================================================
 
 DROP POLICY IF EXISTS tenant_isolation_select_recipe_ingredients ON recipe_ingredients;
+DROP POLICY IF EXISTS tenant_isolation_select_recipe_ingredients ON recipe_ingredients;
+DROP POLICY IF EXISTS tenant_isolation_select_recipe_ingredients ON recipe_ingredients;
 CREATE POLICY tenant_isolation_select_recipe_ingredients ON recipe_ingredients
   FOR SELECT
   USING (
@@ -743,6 +825,8 @@ CREATE POLICY tenant_isolation_select_recipe_ingredients ON recipe_ingredients
   );
 
 DROP POLICY IF EXISTS tenant_isolation_insert_recipe_ingredients ON recipe_ingredients;
+DROP POLICY IF EXISTS tenant_isolation_insert_recipe_ingredients ON recipe_ingredients;
+DROP POLICY IF EXISTS tenant_isolation_insert_recipe_ingredients ON recipe_ingredients;
 CREATE POLICY tenant_isolation_insert_recipe_ingredients ON recipe_ingredients
   FOR INSERT
   WITH CHECK (
@@ -751,6 +835,8 @@ CREATE POLICY tenant_isolation_insert_recipe_ingredients ON recipe_ingredients
     )
   );
 
+DROP POLICY IF EXISTS tenant_isolation_update_recipe_ingredients ON recipe_ingredients;
+DROP POLICY IF EXISTS tenant_isolation_update_recipe_ingredients ON recipe_ingredients;
 DROP POLICY IF EXISTS tenant_isolation_update_recipe_ingredients ON recipe_ingredients;
 CREATE POLICY tenant_isolation_update_recipe_ingredients ON recipe_ingredients
   FOR UPDATE
@@ -770,15 +856,21 @@ CREATE POLICY tenant_isolation_update_recipe_ingredients ON recipe_ingredients
 -- =====================================================================================
 
 DROP POLICY IF EXISTS tenant_isolation_select_ingredients ON ingredients;
+DROP POLICY IF EXISTS tenant_isolation_select_ingredients ON ingredients;
+DROP POLICY IF EXISTS tenant_isolation_select_ingredients ON ingredients;
 CREATE POLICY tenant_isolation_select_ingredients ON ingredients
   FOR SELECT
   USING (tenant_id = get_current_tenant_id());
 
 DROP POLICY IF EXISTS tenant_isolation_insert_ingredients ON ingredients;
+DROP POLICY IF EXISTS tenant_isolation_insert_ingredients ON ingredients;
+DROP POLICY IF EXISTS tenant_isolation_insert_ingredients ON ingredients;
 CREATE POLICY tenant_isolation_insert_ingredients ON ingredients
   FOR INSERT
   WITH CHECK (tenant_id = get_current_tenant_id());
 
+DROP POLICY IF EXISTS tenant_isolation_update_ingredients ON ingredients;
+DROP POLICY IF EXISTS tenant_isolation_update_ingredients ON ingredients;
 DROP POLICY IF EXISTS tenant_isolation_update_ingredients ON ingredients;
 CREATE POLICY tenant_isolation_update_ingredients ON ingredients
   FOR UPDATE
@@ -880,6 +972,7 @@ $$ LANGUAGE SQL STABLE;
 -- =====================================================================================
 
 -- Recipe cost summary (per recipe)
+DROP VIEW IF EXISTS recipe_cost_summary;
 CREATE VIEW recipe_cost_summary AS
 SELECT
   r.id AS recipe_id,
@@ -909,6 +1002,7 @@ FROM recipes r
 WHERE r.archived = false;
 
 -- Menu cost summary (per menu)
+DROP VIEW IF EXISTS menu_cost_summary;
 CREATE VIEW menu_cost_summary AS
 SELECT
   m.id AS menu_id,
@@ -937,6 +1031,7 @@ FROM menus m
 LEFT JOIN events e ON e.id = m.event_id;
 
 -- Dish component summary (per dish)
+DROP VIEW IF EXISTS dish_component_summary;
 CREATE VIEW dish_component_summary AS
 SELECT
   d.id AS dish_id,
@@ -951,6 +1046,7 @@ SELECT
 FROM dishes d;
 
 -- Ingredient usage summary (per ingredient)
+DROP VIEW IF EXISTS ingredient_usage_summary;
 CREATE VIEW ingredient_usage_summary AS
 SELECT
   i.id AS ingredient_id,

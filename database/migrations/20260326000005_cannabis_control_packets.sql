@@ -58,6 +58,7 @@ CREATE INDEX IF NOT EXISTS idx_ccp_snapshots_event_generated
   ON cannabis_control_packet_snapshots(event_id, generated_at DESC);
 
 DROP TRIGGER IF EXISTS set_ccp_snapshots_updated_at ON cannabis_control_packet_snapshots;
+DROP TRIGGER IF EXISTS set_ccp_snapshots_updated_at ON cannabis_control_packet_snapshots;
 CREATE TRIGGER set_ccp_snapshots_updated_at
   BEFORE UPDATE ON cannabis_control_packet_snapshots
   FOR EACH ROW EXECUTE FUNCTION update_updated_at_column();
@@ -98,6 +99,7 @@ CREATE TABLE IF NOT EXISTS cannabis_control_packet_reconciliations (
 CREATE INDEX IF NOT EXISTS idx_ccp_recon_tenant_event
   ON cannabis_control_packet_reconciliations(tenant_id, event_id, reconciled_at DESC);
 
+DROP TRIGGER IF EXISTS set_ccp_reconciliation_updated_at ON cannabis_control_packet_reconciliations;
 DROP TRIGGER IF EXISTS set_ccp_reconciliation_updated_at ON cannabis_control_packet_reconciliations;
 CREATE TRIGGER set_ccp_reconciliation_updated_at
   BEFORE UPDATE ON cannabis_control_packet_reconciliations
@@ -157,6 +159,7 @@ END;
 $$ LANGUAGE plpgsql;
 
 DROP TRIGGER IF EXISTS trg_validate_ccp_snapshot ON cannabis_control_packet_snapshots;
+DROP TRIGGER IF EXISTS trg_validate_ccp_snapshot ON cannabis_control_packet_snapshots;
 CREATE TRIGGER trg_validate_ccp_snapshot
   BEFORE INSERT ON cannabis_control_packet_snapshots
   FOR EACH ROW EXECUTE FUNCTION validate_cannabis_control_packet_snapshot();
@@ -192,6 +195,7 @@ END;
 $$ LANGUAGE plpgsql;
 
 DROP TRIGGER IF EXISTS trg_validate_ccp_reconciliation ON cannabis_control_packet_reconciliations;
+DROP TRIGGER IF EXISTS trg_validate_ccp_reconciliation ON cannabis_control_packet_reconciliations;
 CREATE TRIGGER trg_validate_ccp_reconciliation
   BEFORE INSERT OR UPDATE ON cannabis_control_packet_reconciliations
   FOR EACH ROW EXECUTE FUNCTION validate_cannabis_control_packet_reconciliation();
@@ -222,6 +226,7 @@ BEGIN
 END;
 $$ LANGUAGE plpgsql;
 
+DROP TRIGGER IF EXISTS trg_validate_ccp_evidence ON cannabis_control_packet_evidence;
 DROP TRIGGER IF EXISTS trg_validate_ccp_evidence ON cannabis_control_packet_evidence;
 CREATE TRIGGER trg_validate_ccp_evidence
   BEFORE INSERT ON cannabis_control_packet_evidence
@@ -272,6 +277,7 @@ END;
 $$ LANGUAGE plpgsql;
 
 DROP TRIGGER IF EXISTS trg_ccp_snapshot_immutable ON cannabis_control_packet_snapshots;
+DROP TRIGGER IF EXISTS trg_ccp_snapshot_immutable ON cannabis_control_packet_snapshots;
 CREATE TRIGGER trg_ccp_snapshot_immutable
   BEFORE UPDATE OR DELETE ON cannabis_control_packet_snapshots
   FOR EACH ROW EXECUTE FUNCTION enforce_cannabis_control_packet_snapshot_immutability();
@@ -304,6 +310,7 @@ END;
 $$ LANGUAGE plpgsql;
 
 DROP TRIGGER IF EXISTS trg_ccp_reconciliation_lock ON cannabis_control_packet_reconciliations;
+DROP TRIGGER IF EXISTS trg_ccp_reconciliation_lock ON cannabis_control_packet_reconciliations;
 CREATE TRIGGER trg_ccp_reconciliation_lock
   BEFORE UPDATE OR DELETE ON cannabis_control_packet_reconciliations
   FOR EACH ROW EXECUTE FUNCTION enforce_cannabis_control_packet_reconciliation_lock();
@@ -327,6 +334,7 @@ END;
 $$ LANGUAGE plpgsql;
 
 DROP TRIGGER IF EXISTS trg_ccp_evidence_lock ON cannabis_control_packet_evidence;
+DROP TRIGGER IF EXISTS trg_ccp_evidence_lock ON cannabis_control_packet_evidence;
 CREATE TRIGGER trg_ccp_evidence_lock
   BEFORE DELETE ON cannabis_control_packet_evidence
   FOR EACH ROW EXECUTE FUNCTION enforce_cannabis_control_packet_evidence_lock();
@@ -339,6 +347,7 @@ ALTER TABLE cannabis_control_packet_reconciliations ENABLE ROW LEVEL SECURITY;
 ALTER TABLE cannabis_control_packet_evidence ENABLE ROW LEVEL SECURITY;
 
 DROP POLICY IF EXISTS ccp_snapshots_chef_select ON cannabis_control_packet_snapshots;
+DROP POLICY IF EXISTS ccp_snapshots_chef_select ON cannabis_control_packet_snapshots;
 CREATE POLICY ccp_snapshots_chef_select
   ON cannabis_control_packet_snapshots FOR SELECT
   USING (
@@ -347,6 +356,7 @@ CREATE POLICY ccp_snapshots_chef_select
   );
 
 DROP POLICY IF EXISTS ccp_snapshots_chef_insert ON cannabis_control_packet_snapshots;
+DROP POLICY IF EXISTS ccp_snapshots_chef_insert ON cannabis_control_packet_snapshots;
 CREATE POLICY ccp_snapshots_chef_insert
   ON cannabis_control_packet_snapshots FOR INSERT
   WITH CHECK (
@@ -354,6 +364,7 @@ CREATE POLICY ccp_snapshots_chef_insert
     AND tenant_id = get_current_tenant_id()
   );
 
+DROP POLICY IF EXISTS ccp_snapshots_chef_update ON cannabis_control_packet_snapshots;
 DROP POLICY IF EXISTS ccp_snapshots_chef_update ON cannabis_control_packet_snapshots;
 CREATE POLICY ccp_snapshots_chef_update
   ON cannabis_control_packet_snapshots FOR UPDATE
@@ -367,6 +378,7 @@ CREATE POLICY ccp_snapshots_chef_update
   );
 
 DROP POLICY IF EXISTS ccp_reconciliation_chef_select ON cannabis_control_packet_reconciliations;
+DROP POLICY IF EXISTS ccp_reconciliation_chef_select ON cannabis_control_packet_reconciliations;
 CREATE POLICY ccp_reconciliation_chef_select
   ON cannabis_control_packet_reconciliations FOR SELECT
   USING (
@@ -375,6 +387,7 @@ CREATE POLICY ccp_reconciliation_chef_select
   );
 
 DROP POLICY IF EXISTS ccp_reconciliation_chef_insert ON cannabis_control_packet_reconciliations;
+DROP POLICY IF EXISTS ccp_reconciliation_chef_insert ON cannabis_control_packet_reconciliations;
 CREATE POLICY ccp_reconciliation_chef_insert
   ON cannabis_control_packet_reconciliations FOR INSERT
   WITH CHECK (
@@ -382,6 +395,7 @@ CREATE POLICY ccp_reconciliation_chef_insert
     AND tenant_id = get_current_tenant_id()
   );
 
+DROP POLICY IF EXISTS ccp_reconciliation_chef_update ON cannabis_control_packet_reconciliations;
 DROP POLICY IF EXISTS ccp_reconciliation_chef_update ON cannabis_control_packet_reconciliations;
 CREATE POLICY ccp_reconciliation_chef_update
   ON cannabis_control_packet_reconciliations FOR UPDATE
@@ -395,6 +409,7 @@ CREATE POLICY ccp_reconciliation_chef_update
   );
 
 DROP POLICY IF EXISTS ccp_evidence_chef_select ON cannabis_control_packet_evidence;
+DROP POLICY IF EXISTS ccp_evidence_chef_select ON cannabis_control_packet_evidence;
 CREATE POLICY ccp_evidence_chef_select
   ON cannabis_control_packet_evidence FOR SELECT
   USING (
@@ -402,6 +417,7 @@ CREATE POLICY ccp_evidence_chef_select
     AND tenant_id = get_current_tenant_id()
   );
 
+DROP POLICY IF EXISTS ccp_evidence_chef_insert ON cannabis_control_packet_evidence;
 DROP POLICY IF EXISTS ccp_evidence_chef_insert ON cannabis_control_packet_evidence;
 CREATE POLICY ccp_evidence_chef_insert
   ON cannabis_control_packet_evidence FOR INSERT
@@ -411,14 +427,17 @@ CREATE POLICY ccp_evidence_chef_insert
   );
 
 DROP POLICY IF EXISTS ccp_evidence_chef_delete ON cannabis_control_packet_evidence;
+DROP POLICY IF EXISTS ccp_evidence_chef_delete ON cannabis_control_packet_evidence;
 CREATE POLICY ccp_evidence_chef_delete
   ON cannabis_control_packet_evidence FOR DELETE
   USING (
     get_current_user_role() = 'chef'
     AND tenant_id = get_current_tenant_id()
   );
-
--- ============================================================================
+DO $cfguard$
+BEGIN
+  IF EXISTS (SELECT 1 FROM information_schema.schemata WHERE schema_name = 'storage') THEN
+    EXECUTE $cfstorage$-- ============================================================================
 -- 8) Private storage bucket for reconciliation photo evidence
 -- ============================================================================
 INSERT INTO storage.buckets (id, name, public, file_size_limit, allowed_mime_types)
@@ -433,18 +452,30 @@ ON CONFLICT (id) DO UPDATE
 SET
   public = EXCLUDED.public,
   file_size_limit = EXCLUDED.file_size_limit,
-  allowed_mime_types = EXCLUDED.allowed_mime_types;
-
--- Path format:
+  allowed_mime_types = EXCLUDED.allowed_mime_types$cfstorage$;
+  END IF;
+END
+$cfguard$;
+DO $cfguard$
+BEGIN
+  IF EXISTS (SELECT 1 FROM information_schema.schemata WHERE schema_name = 'storage') THEN
+    EXECUTE $cfstorage$-- Path format:
 -- cannabis-control-packets/{tenant_id}/{event_id}/{snapshot_id}/{evidence_id}.{ext}
 
 DO $$ BEGIN
   DROP POLICY IF EXISTS ccp_storage_chef_insert ON storage.objects;
 EXCEPTION WHEN insufficient_privilege THEN NULL;
-END $$;
-DO $$ BEGIN
+END $$$cfstorage$;
+  END IF;
+END
+$cfguard$;
+DO $cfguard$
+BEGIN
+  IF EXISTS (SELECT 1 FROM information_schema.schemata WHERE schema_name = 'storage') THEN
+    EXECUTE $cfstorage$DO $$ BEGIN
   DROP POLICY IF EXISTS ccp_storage_chef_insert ON storage.objects;
-  CREATE POLICY ccp_storage_chef_insert
+  DROP POLICY IF EXISTS ccp_storage_chef_insert ON storage.objects;
+CREATE POLICY ccp_storage_chef_insert
   ON storage.objects FOR INSERT
   TO authenticated
   WITH CHECK (
@@ -453,15 +484,27 @@ DO $$ BEGIN
     AND split_part(name, '/', 1) = get_current_tenant_id()::text
   );
 EXCEPTION WHEN duplicate_object OR insufficient_privilege THEN NULL;
-END $$;
-
-DO $$ BEGIN
+END $$$cfstorage$;
+  END IF;
+END
+$cfguard$;
+DO $cfguard$
+BEGIN
+  IF EXISTS (SELECT 1 FROM information_schema.schemata WHERE schema_name = 'storage') THEN
+    EXECUTE $cfstorage$DO $$ BEGIN
   DROP POLICY IF EXISTS ccp_storage_chef_select ON storage.objects;
 EXCEPTION WHEN insufficient_privilege THEN NULL;
-END $$;
-DO $$ BEGIN
+END $$$cfstorage$;
+  END IF;
+END
+$cfguard$;
+DO $cfguard$
+BEGIN
+  IF EXISTS (SELECT 1 FROM information_schema.schemata WHERE schema_name = 'storage') THEN
+    EXECUTE $cfstorage$DO $$ BEGIN
   DROP POLICY IF EXISTS ccp_storage_chef_select ON storage.objects;
-  CREATE POLICY ccp_storage_chef_select
+  DROP POLICY IF EXISTS ccp_storage_chef_select ON storage.objects;
+CREATE POLICY ccp_storage_chef_select
   ON storage.objects FOR SELECT
   TO authenticated
   USING (
@@ -470,15 +513,27 @@ DO $$ BEGIN
     AND split_part(name, '/', 1) = get_current_tenant_id()::text
   );
 EXCEPTION WHEN duplicate_object OR insufficient_privilege THEN NULL;
-END $$;
-
-DO $$ BEGIN
+END $$$cfstorage$;
+  END IF;
+END
+$cfguard$;
+DO $cfguard$
+BEGIN
+  IF EXISTS (SELECT 1 FROM information_schema.schemata WHERE schema_name = 'storage') THEN
+    EXECUTE $cfstorage$DO $$ BEGIN
   DROP POLICY IF EXISTS ccp_storage_chef_delete ON storage.objects;
 EXCEPTION WHEN insufficient_privilege THEN NULL;
-END $$;
-DO $$ BEGIN
+END $$$cfstorage$;
+  END IF;
+END
+$cfguard$;
+DO $cfguard$
+BEGIN
+  IF EXISTS (SELECT 1 FROM information_schema.schemata WHERE schema_name = 'storage') THEN
+    EXECUTE $cfstorage$DO $$ BEGIN
   DROP POLICY IF EXISTS ccp_storage_chef_delete ON storage.objects;
-  CREATE POLICY ccp_storage_chef_delete
+  DROP POLICY IF EXISTS ccp_storage_chef_delete ON storage.objects;
+CREATE POLICY ccp_storage_chef_delete
   ON storage.objects FOR DELETE
   TO authenticated
   USING (
@@ -487,4 +542,7 @@ DO $$ BEGIN
     AND split_part(name, '/', 1) = get_current_tenant_id()::text
   );
 EXCEPTION WHEN duplicate_object OR insufficient_privilege THEN NULL;
-END $$;
+END $$$cfstorage$;
+  END IF;
+END
+$cfguard$;

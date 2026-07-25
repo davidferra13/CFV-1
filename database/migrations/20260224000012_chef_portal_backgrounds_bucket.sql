@@ -1,4 +1,8 @@
--- Ensure chef portal background image storage bucket exists across environments.
+
+DO $cfguard$
+BEGIN
+  IF EXISTS (SELECT 1 FROM information_schema.schemata WHERE schema_name = 'storage') THEN
+    EXECUTE $cfstorage$-- Ensure chef portal background image storage bucket exists across environments.
 -- Prevents runtime upload failures when bucket is missing.
 
 INSERT INTO storage.buckets (id, name, public, file_size_limit, allowed_mime_types)
@@ -13,4 +17,7 @@ ON CONFLICT (id) DO UPDATE
 SET
   public = EXCLUDED.public,
   file_size_limit = EXCLUDED.file_size_limit,
-  allowed_mime_types = EXCLUDED.allowed_mime_types;
+  allowed_mime_types = EXCLUDED.allowed_mime_types$cfstorage$;
+  END IF;
+END
+$cfguard$;

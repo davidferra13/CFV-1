@@ -45,21 +45,29 @@ create index if not exists idx_menu_bev_pairings_bev on menu_beverage_pairings(b
 alter table beverages enable row level security;
 alter table menu_beverage_pairings enable row level security;
 -- Beverages: chef can CRUD their own
+DROP POLICY IF EXISTS "beverages_select_own" ON beverages;
 create policy "beverages_select_own" on beverages
   for select using (chef_id = (select entity_id from user_roles where auth_user_id = auth.uid() and role = 'chef'));
+DROP POLICY IF EXISTS "beverages_insert_own" ON beverages;
 create policy "beverages_insert_own" on beverages
   for insert with check (chef_id = (select entity_id from user_roles where auth_user_id = auth.uid() and role = 'chef'));
+DROP POLICY IF EXISTS "beverages_update_own" ON beverages;
 create policy "beverages_update_own" on beverages
   for update using (chef_id = (select entity_id from user_roles where auth_user_id = auth.uid() and role = 'chef'));
+DROP POLICY IF EXISTS "beverages_delete_own" ON beverages;
 create policy "beverages_delete_own" on beverages
   for delete using (chef_id = (select entity_id from user_roles where auth_user_id = auth.uid() and role = 'chef'));
 -- Menu Beverage Pairings: chef can CRUD their own
+DROP POLICY IF EXISTS "menu_bev_pairings_select_own" ON menu_beverage_pairings;
 create policy "menu_bev_pairings_select_own" on menu_beverage_pairings
   for select using (chef_id = (select entity_id from user_roles where auth_user_id = auth.uid() and role = 'chef'));
+DROP POLICY IF EXISTS "menu_bev_pairings_insert_own" ON menu_beverage_pairings;
 create policy "menu_bev_pairings_insert_own" on menu_beverage_pairings
   for insert with check (chef_id = (select entity_id from user_roles where auth_user_id = auth.uid() and role = 'chef'));
+DROP POLICY IF EXISTS "menu_bev_pairings_update_own" ON menu_beverage_pairings;
 create policy "menu_bev_pairings_update_own" on menu_beverage_pairings
   for update using (chef_id = (select entity_id from user_roles where auth_user_id = auth.uid() and role = 'chef'));
+DROP POLICY IF EXISTS "menu_bev_pairings_delete_own" ON menu_beverage_pairings;
 create policy "menu_bev_pairings_delete_own" on menu_beverage_pairings
   for delete using (chef_id = (select entity_id from user_roles where auth_user_id = auth.uid() and role = 'chef'));
 -- ─── Updated-at trigger ─────────────────────────────────────────────────────────
@@ -71,6 +79,7 @@ begin
   return new;
 end;
 $$ language plpgsql;
+DROP TRIGGER IF EXISTS trg_beverages_updated_at ON beverages;
 create trigger trg_beverages_updated_at
   before update on beverages
   for each row execute function update_beverages_updated_at();

@@ -21,10 +21,12 @@ ALTER TABLE venue_profiles
   ADD COLUMN IF NOT EXISTS kitchen_notes TEXT;
 
 -- Constraints on new columns
+ALTER TABLE venue_profiles DROP CONSTRAINT IF EXISTS venue_profiles_counter_space_rating_check;
 ALTER TABLE venue_profiles
   ADD CONSTRAINT venue_profiles_counter_space_rating_check
     CHECK (counter_space_rating IS NULL OR (counter_space_rating >= 1 AND counter_space_rating <= 5));
 
+ALTER TABLE venue_profiles DROP CONSTRAINT IF EXISTS venue_profiles_venue_type_check;
 ALTER TABLE venue_profiles
   ADD CONSTRAINT venue_profiles_venue_type_check
     CHECK (venue_type IS NULL OR venue_type IN (

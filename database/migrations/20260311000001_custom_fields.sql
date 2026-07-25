@@ -9,8 +9,17 @@
 
 -- ─── ENUMs ───────────────────────────────────────────────────────────────────
 
-CREATE TYPE custom_field_entity_type AS ENUM ('event', 'client', 'recipe');
-CREATE TYPE custom_field_type AS ENUM (
+DO $idem$
+BEGIN
+  IF NOT EXISTS (SELECT 1 FROM pg_type WHERE typname = 'custom_field_entity_type') THEN
+    CREATE TYPE custom_field_entity_type AS ENUM ('event', 'client', 'recipe');
+  END IF;
+END
+$idem$;
+DO $idem$
+BEGIN
+  IF NOT EXISTS (SELECT 1 FROM pg_type WHERE typname = 'custom_field_type') THEN
+    CREATE TYPE custom_field_type AS ENUM (
   'text',
   'number',
   'date',
@@ -18,10 +27,13 @@ CREATE TYPE custom_field_type AS ENUM (
   'multi_select',
   'toggle'
 );
+  END IF;
+END
+$idem$;
 
 -- ─── custom_field_definitions ────────────────────────────────────────────────
 
-CREATE TABLE custom_field_definitions (
+CREATE TABLE IF NOT EXISTS custom_field_definitions (
   id              UUID PRIMARY KEY DEFAULT gen_random_uuid(),
   tenant_id       UUID NOT NULL REFERENCES chefs(id) ON DELETE CASCADE,
   entity_type     custom_field_entity_type NOT NULL,
@@ -38,6 +50,7 @@ ALTER TABLE custom_field_definitions ENABLE ROW LEVEL SECURITY;
 
 -- Standard tenant-isolation policy: chef can only see/modify their own definitions
 DROP POLICY IF EXISTS "tenant_isolation" ON custom_field_definitions;
+DROP POLICY IF EXISTS "tenant_isolation" ON custom_field_definitions;
 CREATE POLICY "tenant_isolation" ON custom_field_definitions
   FOR ALL
   USING (
@@ -48,12 +61,12 @@ CREATE POLICY "tenant_isolation" ON custom_field_definitions
     )
   );
 
-CREATE INDEX idx_custom_field_definitions_tenant_entity
+CREATE INDEX IF NOT EXISTS idx_custom_field_definitions_tenant_entity
   ON custom_field_definitions (tenant_id, entity_type);
 
 -- ─── custom_field_values ─────────────────────────────────────────────────────
 
-CREATE TABLE custom_field_values (
+CREATE TABLE IF NOT EXISTS custom_field_values (
   id                    UUID PRIMARY KEY DEFAULT gen_random_uuid(),
   tenant_id             UUID NOT NULL REFERENCES chefs(id) ON DELETE CASCADE,
   -- The UUID of the entity this value belongs to (event.id / client.id / recipe.id)
@@ -74,6 +87,7 @@ CREATE TABLE custom_field_values (
 ALTER TABLE custom_field_values ENABLE ROW LEVEL SECURITY;
 
 DROP POLICY IF EXISTS "tenant_isolation" ON custom_field_values;
+DROP POLICY IF EXISTS "tenant_isolation" ON custom_field_values;
 CREATE POLICY "tenant_isolation" ON custom_field_values
   FOR ALL
   USING (
@@ -84,10 +98,10 @@ CREATE POLICY "tenant_isolation" ON custom_field_values
     )
   );
 
-CREATE INDEX idx_custom_field_values_entity
+CREATE INDEX IF NOT EXISTS idx_custom_field_values_entity
   ON custom_field_values (entity_id);
 
-CREATE INDEX idx_custom_field_values_tenant_entity
+CREATE INDEX IF NOT EXISTS idx_custom_field_values_tenant_entity
   ON custom_field_values (tenant_id, entity_id);
 
 -- Auto-update updated_at timestamp
@@ -99,6 +113,7 @@ BEGIN
 END;
 $$;
 
+DROP TRIGGER IF EXISTS trg_custom_field_values_updated_at ON custom_field_values;
 CREATE TRIGGER trg_custom_field_values_updated_at
   BEFORE UPDATE ON custom_field_values
   FOR EACH ROW EXECUTE FUNCTION update_custom_field_values_updated_at();

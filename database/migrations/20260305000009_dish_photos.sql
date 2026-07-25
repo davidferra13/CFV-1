@@ -22,8 +22,10 @@
 
 ALTER TABLE dishes
   ADD COLUMN IF NOT EXISTS photo_url TEXT;
-
--- ─── 2. Create dish-photos storage bucket (PUBLIC) ─────────────────────────────
+DO $cfguard$
+BEGIN
+  IF EXISTS (SELECT 1 FROM information_schema.schemata WHERE schema_name = 'storage') THEN
+    EXECUTE $cfstorage$-- ─── 2. Create dish-photos storage bucket (PUBLIC) ─────────────────────────────
 
 INSERT INTO storage.buckets (id, name, public, file_size_limit, allowed_mime_types)
 VALUES (
@@ -37,9 +39,14 @@ ON CONFLICT (id) DO UPDATE
 SET
   public             = EXCLUDED.public,
   file_size_limit    = EXCLUDED.file_size_limit,
-  allowed_mime_types = EXCLUDED.allowed_mime_types;
-
--- ─── 3. Storage RLS policies ────────────────────────────────────────────────────
+  allowed_mime_types = EXCLUDED.allowed_mime_types$cfstorage$;
+  END IF;
+END
+$cfguard$;
+DO $cfguard$
+BEGIN
+  IF EXISTS (SELECT 1 FROM information_schema.schemata WHERE schema_name = 'storage') THEN
+    EXECUTE $cfstorage$-- ─── 3. Storage RLS policies ────────────────────────────────────────────────────
 --
 -- Path structure:
 --   segment 1 (split_part(name, '/', 1)) = tenant_id
@@ -51,42 +58,84 @@ SET
 -- ────────────────────────────────────────────────────────────────────────────────
 
 -- Chefs: upload objects to their tenant prefix
-DROP POLICY IF EXISTS "dish_photos_chef_upload" ON storage.objects;
-CREATE POLICY "dish_photos_chef_upload"
+DROP POLICY IF EXISTS "dish_photos_chef_upload" ON storage.objects$cfstorage$;
+  END IF;
+END
+$cfguard$;
+DO $cfguard$
+BEGIN
+  IF EXISTS (SELECT 1 FROM information_schema.schemata WHERE schema_name = 'storage') THEN
+    EXECUTE $cfstorage$CREATE POLICY "dish_photos_chef_upload"
 ON storage.objects FOR INSERT
 TO authenticated
 WITH CHECK (
   bucket_id = 'dish-photos'
   AND get_current_user_role() = 'chef'
   AND split_part(name, '/', 1) = get_current_tenant_id()::text
-);
-
--- Chefs: replace objects in their tenant prefix (upsert path)
-DROP POLICY IF EXISTS "dish_photos_chef_update" ON storage.objects;
-CREATE POLICY "dish_photos_chef_update"
+)$cfstorage$;
+  END IF;
+END
+$cfguard$;
+DO $cfguard$
+BEGIN
+  IF EXISTS (SELECT 1 FROM information_schema.schemata WHERE schema_name = 'storage') THEN
+    EXECUTE $cfstorage$-- Chefs: replace objects in their tenant prefix (upsert path)
+DROP POLICY IF EXISTS "dish_photos_chef_update" ON storage.objects$cfstorage$;
+  END IF;
+END
+$cfguard$;
+DO $cfguard$
+BEGIN
+  IF EXISTS (SELECT 1 FROM information_schema.schemata WHERE schema_name = 'storage') THEN
+    EXECUTE $cfstorage$CREATE POLICY "dish_photos_chef_update"
 ON storage.objects FOR UPDATE
 TO authenticated
 USING (
   bucket_id = 'dish-photos'
   AND get_current_user_role() = 'chef'
   AND split_part(name, '/', 1) = get_current_tenant_id()::text
-);
-
--- Chefs: delete objects in their tenant prefix
-DROP POLICY IF EXISTS "dish_photos_chef_delete" ON storage.objects;
-CREATE POLICY "dish_photos_chef_delete"
+)$cfstorage$;
+  END IF;
+END
+$cfguard$;
+DO $cfguard$
+BEGIN
+  IF EXISTS (SELECT 1 FROM information_schema.schemata WHERE schema_name = 'storage') THEN
+    EXECUTE $cfstorage$-- Chefs: delete objects in their tenant prefix
+DROP POLICY IF EXISTS "dish_photos_chef_delete" ON storage.objects$cfstorage$;
+  END IF;
+END
+$cfguard$;
+DO $cfguard$
+BEGIN
+  IF EXISTS (SELECT 1 FROM information_schema.schemata WHERE schema_name = 'storage') THEN
+    EXECUTE $cfstorage$CREATE POLICY "dish_photos_chef_delete"
 ON storage.objects FOR DELETE
 TO authenticated
 USING (
   bucket_id = 'dish-photos'
   AND get_current_user_role() = 'chef'
   AND split_part(name, '/', 1) = get_current_tenant_id()::text
-);
-
--- Everyone (including unauthenticated): read all dish photos
+)$cfstorage$;
+  END IF;
+END
+$cfguard$;
+DO $cfguard$
+BEGIN
+  IF EXISTS (SELECT 1 FROM information_schema.schemata WHERE schema_name = 'storage') THEN
+    EXECUTE $cfstorage$-- Everyone (including unauthenticated): read all dish photos
 -- Public bucket = portfolio images safe to share publicly
-DROP POLICY IF EXISTS "dish_photos_public_read" ON storage.objects;
-CREATE POLICY "dish_photos_public_read"
+DROP POLICY IF EXISTS "dish_photos_public_read" ON storage.objects$cfstorage$;
+  END IF;
+END
+$cfguard$;
+DO $cfguard$
+BEGIN
+  IF EXISTS (SELECT 1 FROM information_schema.schemata WHERE schema_name = 'storage') THEN
+    EXECUTE $cfstorage$CREATE POLICY "dish_photos_public_read"
 ON storage.objects FOR SELECT
 TO public
-USING (bucket_id = 'dish-photos');
+USING (bucket_id = 'dish-photos')$cfstorage$;
+  END IF;
+END
+$cfguard$;

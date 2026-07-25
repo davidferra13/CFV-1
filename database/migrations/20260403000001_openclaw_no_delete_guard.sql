@@ -68,30 +68,37 @@ $$ LANGUAGE plpgsql;
 -- ============================================================
 -- openclaw schema tables: DELETE guards
 -- ============================================================
+DROP TRIGGER IF EXISTS guard_no_delete_chains ON openclaw.chains;
 CREATE TRIGGER guard_no_delete_chains
   BEFORE DELETE ON openclaw.chains
   FOR EACH ROW EXECUTE FUNCTION openclaw.prevent_delete();
 
+DROP TRIGGER IF EXISTS guard_no_delete_stores ON openclaw.stores;
 CREATE TRIGGER guard_no_delete_stores
   BEFORE DELETE ON openclaw.stores
   FOR EACH ROW EXECUTE FUNCTION openclaw.prevent_delete();
 
+DROP TRIGGER IF EXISTS guard_no_delete_products ON openclaw.products;
 CREATE TRIGGER guard_no_delete_products
   BEFORE DELETE ON openclaw.products
   FOR EACH ROW EXECUTE FUNCTION openclaw.prevent_delete();
 
+DROP TRIGGER IF EXISTS guard_no_delete_product_categories ON openclaw.product_categories;
 CREATE TRIGGER guard_no_delete_product_categories
   BEFORE DELETE ON openclaw.product_categories
   FOR EACH ROW EXECUTE FUNCTION openclaw.prevent_delete();
 
+DROP TRIGGER IF EXISTS guard_no_delete_store_products ON openclaw.store_products;
 CREATE TRIGGER guard_no_delete_store_products
   BEFORE DELETE ON openclaw.store_products
   FOR EACH ROW EXECUTE FUNCTION openclaw.prevent_delete();
 
+DROP TRIGGER IF EXISTS guard_no_delete_scrape_runs ON openclaw.scrape_runs;
 CREATE TRIGGER guard_no_delete_scrape_runs
   BEFORE DELETE ON openclaw.scrape_runs
   FOR EACH ROW EXECUTE FUNCTION openclaw.prevent_delete();
 
+DROP TRIGGER IF EXISTS guard_no_delete_sync_runs ON openclaw.sync_runs;
 CREATE TRIGGER guard_no_delete_sync_runs
   BEFORE DELETE ON openclaw.sync_runs
   FOR EACH ROW EXECUTE FUNCTION openclaw.prevent_delete();
@@ -99,30 +106,37 @@ CREATE TRIGGER guard_no_delete_sync_runs
 -- ============================================================
 -- openclaw schema tables: TRUNCATE guards
 -- ============================================================
+DROP TRIGGER IF EXISTS guard_no_truncate_chains ON openclaw.chains;
 CREATE TRIGGER guard_no_truncate_chains
   BEFORE TRUNCATE ON openclaw.chains
   EXECUTE FUNCTION openclaw.prevent_truncate();
 
+DROP TRIGGER IF EXISTS guard_no_truncate_stores ON openclaw.stores;
 CREATE TRIGGER guard_no_truncate_stores
   BEFORE TRUNCATE ON openclaw.stores
   EXECUTE FUNCTION openclaw.prevent_truncate();
 
+DROP TRIGGER IF EXISTS guard_no_truncate_products ON openclaw.products;
 CREATE TRIGGER guard_no_truncate_products
   BEFORE TRUNCATE ON openclaw.products
   EXECUTE FUNCTION openclaw.prevent_truncate();
 
+DROP TRIGGER IF EXISTS guard_no_truncate_product_categories ON openclaw.product_categories;
 CREATE TRIGGER guard_no_truncate_product_categories
   BEFORE TRUNCATE ON openclaw.product_categories
   EXECUTE FUNCTION openclaw.prevent_truncate();
 
+DROP TRIGGER IF EXISTS guard_no_truncate_store_products ON openclaw.store_products;
 CREATE TRIGGER guard_no_truncate_store_products
   BEFORE TRUNCATE ON openclaw.store_products
   EXECUTE FUNCTION openclaw.prevent_truncate();
 
+DROP TRIGGER IF EXISTS guard_no_truncate_scrape_runs ON openclaw.scrape_runs;
 CREATE TRIGGER guard_no_truncate_scrape_runs
   BEFORE TRUNCATE ON openclaw.scrape_runs
   EXECUTE FUNCTION openclaw.prevent_truncate();
 
+DROP TRIGGER IF EXISTS guard_no_truncate_sync_runs ON openclaw.sync_runs;
 CREATE TRIGGER guard_no_truncate_sync_runs
   BEFORE TRUNCATE ON openclaw.sync_runs
   EXECUTE FUNCTION openclaw.prevent_truncate();
@@ -131,26 +145,32 @@ CREATE TRIGGER guard_no_truncate_sync_runs
 -- Public-schema OpenClaw tables: DELETE + TRUNCATE guards
 -- Same function works across schemas (TG_TABLE_SCHEMA = 'public')
 -- ============================================================
+DROP TRIGGER IF EXISTS guard_no_delete_openclaw_leads ON openclaw_leads;
 CREATE TRIGGER guard_no_delete_openclaw_leads
   BEFORE DELETE ON openclaw_leads
   FOR EACH ROW EXECUTE FUNCTION openclaw.prevent_delete();
 
+DROP TRIGGER IF EXISTS guard_no_delete_openclaw_market_stats ON openclaw_market_stats;
 CREATE TRIGGER guard_no_delete_openclaw_market_stats
   BEFORE DELETE ON openclaw_market_stats
   FOR EACH ROW EXECUTE FUNCTION openclaw.prevent_delete();
 
+DROP TRIGGER IF EXISTS guard_no_delete_ingredient_price_history ON ingredient_price_history;
 CREATE TRIGGER guard_no_delete_ingredient_price_history
   BEFORE DELETE ON ingredient_price_history
   FOR EACH ROW EXECUTE FUNCTION openclaw.prevent_delete();
 
+DROP TRIGGER IF EXISTS guard_no_truncate_openclaw_leads ON openclaw_leads;
 CREATE TRIGGER guard_no_truncate_openclaw_leads
   BEFORE TRUNCATE ON openclaw_leads
   EXECUTE FUNCTION openclaw.prevent_truncate();
 
+DROP TRIGGER IF EXISTS guard_no_truncate_openclaw_market_stats ON openclaw_market_stats;
 CREATE TRIGGER guard_no_truncate_openclaw_market_stats
   BEFORE TRUNCATE ON openclaw_market_stats
   EXECUTE FUNCTION openclaw.prevent_truncate();
 
+DROP TRIGGER IF EXISTS guard_no_truncate_ingredient_price_history ON ingredient_price_history;
 CREATE TRIGGER guard_no_truncate_ingredient_price_history
   BEFORE TRUNCATE ON ingredient_price_history
   EXECUTE FUNCTION openclaw.prevent_truncate();

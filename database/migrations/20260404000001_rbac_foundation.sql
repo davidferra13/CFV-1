@@ -22,6 +22,7 @@ WHERE tenant_role IS NULL OR tenant_role = 'team_member';
 -- but this ensures correctness for the chef case since 'team_member' is the default)
 UPDATE user_roles SET tenant_role = 'tenant_owner' WHERE role = 'chef';
 
+ALTER TABLE user_roles DROP CONSTRAINT IF EXISTS user_roles_tenant_role_check;
 ALTER TABLE user_roles
   ADD CONSTRAINT user_roles_tenant_role_check
   CHECK (tenant_role IN ('tenant_owner', 'manager', 'team_member', 'client', 'partner'));
@@ -167,6 +168,7 @@ BEGIN
 END;
 $$ LANGUAGE plpgsql;
 
+DROP TRIGGER IF EXISTS protect_last_owner ON platform_admins;
 DROP TRIGGER IF EXISTS protect_last_owner ON platform_admins;
 CREATE TRIGGER protect_last_owner
   BEFORE UPDATE OR DELETE ON platform_admins

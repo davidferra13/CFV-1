@@ -13,7 +13,7 @@
 --            than 2x its expected schedule interval.
 -- ============================================================
 
-CREATE TABLE cron_executions (
+CREATE TABLE IF NOT EXISTS cron_executions (
   id           UUID        PRIMARY KEY DEFAULT gen_random_uuid(),
   cron_name    TEXT        NOT NULL,
   executed_at  TIMESTAMPTZ NOT NULL DEFAULT now(),
@@ -38,11 +38,11 @@ COMMENT ON COLUMN cron_executions.duration_ms IS
   'Useful for detecting slow crons approaching Vercel''s 25s limit.';
 
 -- Fast lookup: what was the last run of a given cron?
-CREATE INDEX idx_cron_executions_name_executed
+CREATE INDEX IF NOT EXISTS idx_cron_executions_name_executed
   ON cron_executions (cron_name, executed_at DESC);
 
 -- Fast lookup: all recent executions sorted by time
-CREATE INDEX idx_cron_executions_executed
+CREATE INDEX IF NOT EXISTS idx_cron_executions_executed
   ON cron_executions (executed_at DESC);
 
 -- RLS: This is a system/operational table.
@@ -70,6 +70,7 @@ COMMENT ON FUNCTION purge_old_cron_executions IS
   'Auto-purges cron_executions rows older than 30 days on each INSERT. '
   'Keeps the table lean without requiring a separate cleanup cron.';
 
+DROP TRIGGER IF EXISTS auto_purge_cron_executions ON cron_executions;
 CREATE TRIGGER auto_purge_cron_executions
   AFTER INSERT ON cron_executions
   FOR EACH STATEMENT

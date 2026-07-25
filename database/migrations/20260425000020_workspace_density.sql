@@ -1,7 +1,8 @@
 -- Add workspace density column for adaptive UI complexity
 ALTER TABLE chef_preferences
-ADD COLUMN workspace_density TEXT NOT NULL DEFAULT 'standard';
+ADD COLUMN IF NOT EXISTS workspace_density TEXT NOT NULL DEFAULT 'standard';
 
+ALTER TABLE chef_preferences DROP CONSTRAINT IF EXISTS chef_preferences_workspace_density_check;
 ALTER TABLE chef_preferences
 ADD CONSTRAINT chef_preferences_workspace_density_check
 CHECK (workspace_density IN ('minimal', 'standard', 'power'));

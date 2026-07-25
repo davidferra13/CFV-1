@@ -85,6 +85,7 @@ CREATE INDEX IF NOT EXISTS sca_tenant_platform_idx
   ON social_connected_accounts (tenant_id, platform);
 
 -- Auto-update updated_at
+DROP TRIGGER IF EXISTS social_connected_accounts_updated_at ON social_connected_accounts;
 CREATE TRIGGER social_connected_accounts_updated_at
   BEFORE UPDATE ON social_connected_accounts
   FOR EACH ROW EXECUTE FUNCTION update_updated_at_column();
@@ -98,6 +99,7 @@ CREATE TRIGGER social_connected_accounts_updated_at
 
 ALTER TABLE social_connected_accounts ENABLE ROW LEVEL SECURITY;
 
+DROP POLICY IF EXISTS "chef_sca_select" ON social_connected_accounts;
 DROP POLICY IF EXISTS "chef_sca_select" ON social_connected_accounts;
 CREATE POLICY "chef_sca_select"
   ON social_connected_accounts FOR SELECT

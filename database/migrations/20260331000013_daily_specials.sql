@@ -4,7 +4,13 @@
 -- Special category enum
 DO $$ BEGIN
   IF NOT EXISTS (SELECT 1 FROM pg_type WHERE typname = 'special_category') THEN
+    DO $idem$
+BEGIN
+  IF NOT EXISTS (SELECT 1 FROM pg_type WHERE typname = 'special_category') THEN
     CREATE TYPE special_category AS ENUM ('appetizer', 'entree', 'dessert', 'drink', 'side');
+  END IF;
+END
+$idem$;
   END IF;
 END $$;
 CREATE TABLE IF NOT EXISTS daily_specials (
@@ -31,14 +37,18 @@ CREATE INDEX IF NOT EXISTS idx_daily_specials_chef_recurring ON daily_specials(c
 -- RLS
 ALTER TABLE daily_specials ENABLE ROW LEVEL SECURITY;
 DROP POLICY IF EXISTS daily_specials_tenant_select ON daily_specials;
+DROP POLICY IF EXISTS daily_specials_tenant_select ON daily_specials;
 CREATE POLICY daily_specials_tenant_select ON daily_specials
   FOR SELECT USING (chef_id = (SELECT id FROM chefs WHERE auth_user_id = auth.uid()));
+DROP POLICY IF EXISTS daily_specials_tenant_insert ON daily_specials;
 DROP POLICY IF EXISTS daily_specials_tenant_insert ON daily_specials;
 CREATE POLICY daily_specials_tenant_insert ON daily_specials
   FOR INSERT WITH CHECK (chef_id = (SELECT id FROM chefs WHERE auth_user_id = auth.uid()));
 DROP POLICY IF EXISTS daily_specials_tenant_update ON daily_specials;
+DROP POLICY IF EXISTS daily_specials_tenant_update ON daily_specials;
 CREATE POLICY daily_specials_tenant_update ON daily_specials
   FOR UPDATE USING (chef_id = (SELECT id FROM chefs WHERE auth_user_id = auth.uid()));
+DROP POLICY IF EXISTS daily_specials_tenant_delete ON daily_specials;
 DROP POLICY IF EXISTS daily_specials_tenant_delete ON daily_specials;
 CREATE POLICY daily_specials_tenant_delete ON daily_specials
   FOR DELETE USING (chef_id = (SELECT id FROM chefs WHERE auth_user_id = auth.uid()));
@@ -50,6 +60,7 @@ BEGIN
   RETURN NEW;
 END;
 $$ LANGUAGE plpgsql;
+DROP TRIGGER IF EXISTS daily_specials_updated_at ON daily_specials;
 CREATE TRIGGER daily_specials_updated_at
   BEFORE UPDATE ON daily_specials
   FOR EACH ROW

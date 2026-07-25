@@ -29,6 +29,7 @@ ALTER TABLE client_incentives
   ADD COLUMN IF NOT EXISTS purchased_by_user_id UUID REFERENCES auth.users(id),
   ADD COLUMN IF NOT EXISTS purchased_by_email TEXT;
 
+ALTER TABLE client_incentives DROP CONSTRAINT IF EXISTS chk_incentive_purchase_status;
 ALTER TABLE client_incentives
   ADD CONSTRAINT chk_incentive_purchase_status
     CHECK (purchase_status IN ('issued', 'pending_payment', 'paid'));
@@ -54,6 +55,7 @@ BEGIN
 END;
 $$;
 
+DROP TRIGGER IF EXISTS trg_init_gift_card_balance ON client_incentives;
 DROP TRIGGER IF EXISTS trg_init_gift_card_balance ON client_incentives;
 CREATE TRIGGER trg_init_gift_card_balance
   BEFORE INSERT ON client_incentives
@@ -115,6 +117,7 @@ CREATE INDEX IF NOT EXISTS idx_gift_card_purchase_intents_status ON gift_card_pu
 ALTER TABLE gift_card_purchase_intents ENABLE ROW LEVEL SECURITY;
 
 DROP POLICY IF EXISTS gift_card_purchase_intents_chef_select ON gift_card_purchase_intents;
+DROP POLICY IF EXISTS gift_card_purchase_intents_chef_select ON gift_card_purchase_intents;
 CREATE POLICY gift_card_purchase_intents_chef_select ON gift_card_purchase_intents
   FOR SELECT USING (
     get_current_user_role() = 'chef'
@@ -166,6 +169,7 @@ ALTER TABLE incentive_redemptions ENABLE ROW LEVEL SECURITY;
 
 -- Chef sees all redemptions within their tenant
 DROP POLICY IF EXISTS incentive_redemptions_chef_select ON incentive_redemptions;
+DROP POLICY IF EXISTS incentive_redemptions_chef_select ON incentive_redemptions;
 CREATE POLICY incentive_redemptions_chef_select ON incentive_redemptions
   FOR SELECT USING (
     get_current_user_role() = 'chef'
@@ -173,6 +177,7 @@ CREATE POLICY incentive_redemptions_chef_select ON incentive_redemptions
   );
 
 -- Client sees their own redemptions
+DROP POLICY IF EXISTS incentive_redemptions_client_select ON incentive_redemptions;
 DROP POLICY IF EXISTS incentive_redemptions_client_select ON incentive_redemptions;
 CREATE POLICY incentive_redemptions_client_select ON incentive_redemptions
   FOR SELECT USING (

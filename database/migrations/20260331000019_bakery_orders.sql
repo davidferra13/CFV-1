@@ -35,12 +35,13 @@ CREATE TABLE IF NOT EXISTS bakery_orders (
 );
 
 -- Indexes
-CREATE INDEX idx_bakery_orders_tenant_pickup ON bakery_orders(tenant_id, pickup_date);
-CREATE INDEX idx_bakery_orders_tenant_status ON bakery_orders(tenant_id, status);
+CREATE INDEX IF NOT EXISTS idx_bakery_orders_tenant_pickup ON bakery_orders(tenant_id, pickup_date);
+CREATE INDEX IF NOT EXISTS idx_bakery_orders_tenant_status ON bakery_orders(tenant_id, status);
 
 -- RLS
 ALTER TABLE bakery_orders ENABLE ROW LEVEL SECURITY;
 
+DROP POLICY IF EXISTS "Chefs can manage their own bakery orders" ON bakery_orders;
 DROP POLICY IF EXISTS "Chefs can manage their own bakery orders" ON bakery_orders;
 CREATE POLICY "Chefs can manage their own bakery orders"
   ON bakery_orders
@@ -61,6 +62,7 @@ BEGIN
 END;
 $$ LANGUAGE plpgsql;
 
+DROP TRIGGER IF EXISTS bakery_orders_updated_at ON bakery_orders;
 CREATE TRIGGER bakery_orders_updated_at
   BEFORE UPDATE ON bakery_orders
   FOR EACH ROW

@@ -1,4 +1,4 @@
-﻿-- Universal Action System
+-- Universal Action System
 -- Adds activity_log, user_pins tables and is_template columns for recipes/quotes
 
 -- ============================================

@@ -7,29 +7,41 @@
 
 -- ─── Enums ──────────────────────────────────────────────────────────────
 
-CREATE TYPE chat_message_type AS ENUM (
+DO $idem$
+BEGIN
+  IF NOT EXISTS (SELECT 1 FROM pg_type WHERE typname = 'chat_message_type') THEN
+    CREATE TYPE chat_message_type AS ENUM (
   'text',           -- Plain text message
   'image',          -- Image attachment
   'link',           -- URL shared (with optional preview metadata)
   'event_ref',      -- Reference to an event (renders as card)
   'system'          -- Auto-generated system message
 );
+  END IF;
+END
+$idem$;
 
 COMMENT ON TYPE chat_message_type IS 'Content types for chat messages — extensible for Phase 2';
 
-CREATE TYPE conversation_context_type AS ENUM (
+DO $idem$
+BEGIN
+  IF NOT EXISTS (SELECT 1 FROM pg_type WHERE typname = 'conversation_context_type') THEN
+    CREATE TYPE conversation_context_type AS ENUM (
   'standalone',     -- General conversation, no specific context
   'inquiry',        -- Linked to an inquiry
   'event'           -- Linked to an event
   -- Phase 2 adds: 'chef_connection'
 );
+  END IF;
+END
+$idem$;
 
 COMMENT ON TYPE conversation_context_type IS 'What entity a conversation is linked to';
 
 -- ─── Tables ─────────────────────────────────────────────────────────────
 
 -- Conversations: groups messages between participants
-CREATE TABLE conversations (
+CREATE TABLE IF NOT EXISTS conversations (
   id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
 
   -- Tenant scoping: the chef who owns this conversation
@@ -59,14 +71,14 @@ CREATE TABLE conversations (
 
 COMMENT ON TABLE conversations IS 'Groups messages between participants. Optionally linked to an inquiry or event.';
 
-CREATE INDEX idx_conversations_tenant ON conversations(tenant_id);
-CREATE INDEX idx_conversations_tenant_last_msg ON conversations(tenant_id, last_message_at DESC NULLS LAST);
-CREATE INDEX idx_conversations_inquiry ON conversations(inquiry_id) WHERE inquiry_id IS NOT NULL;
-CREATE INDEX idx_conversations_event ON conversations(event_id) WHERE event_id IS NOT NULL;
+CREATE INDEX IF NOT EXISTS idx_conversations_tenant ON conversations(tenant_id);
+CREATE INDEX IF NOT EXISTS idx_conversations_tenant_last_msg ON conversations(tenant_id, last_message_at DESC NULLS LAST);
+CREATE INDEX IF NOT EXISTS idx_conversations_inquiry ON conversations(inquiry_id) WHERE inquiry_id IS NOT NULL;
+CREATE INDEX IF NOT EXISTS idx_conversations_event ON conversations(event_id) WHERE event_id IS NOT NULL;
 
 
 -- Conversation participants: join table supporting N participants (Phase 2 groups)
-CREATE TABLE conversation_participants (
+CREATE TABLE IF NOT EXISTS conversation_participants (
   id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
   conversation_id UUID NOT NULL REFERENCES conversations(id) ON DELETE CASCADE,
   auth_user_id UUID NOT NULL REFERENCES auth.users(id) ON DELETE CASCADE,
@@ -86,12 +98,12 @@ CREATE TABLE conversation_participants (
 
 COMMENT ON TABLE conversation_participants IS 'Join table linking users to conversations. Supports N participants for Phase 2 groups.';
 
-CREATE INDEX idx_conv_participants_conversation ON conversation_participants(conversation_id);
-CREATE INDEX idx_conv_participants_user ON conversation_participants(auth_user_id);
+CREATE INDEX IF NOT EXISTS idx_conv_participants_conversation ON conversation_participants(conversation_id);
+CREATE INDEX IF NOT EXISTS idx_conv_participants_user ON conversation_participants(auth_user_id);
 
 
 -- Chat messages: the actual messages in conversations
-CREATE TABLE chat_messages (
+CREATE TABLE IF NOT EXISTS chat_messages (
   id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
   conversation_id UUID NOT NULL REFERENCES conversations(id) ON DELETE CASCADE,
   sender_id UUID NOT NULL REFERENCES auth.users(id),
@@ -128,16 +140,18 @@ CREATE TABLE chat_messages (
 COMMENT ON TABLE chat_messages IS 'Chat messages within conversations. Supports text, images, links, event references, and system messages.';
 
 -- Critical index for message pagination (newest first within conversation)
-CREATE INDEX idx_chat_messages_conversation_active ON chat_messages(conversation_id, created_at DESC)
+CREATE INDEX IF NOT EXISTS idx_chat_messages_conversation_active ON chat_messages(conversation_id, created_at DESC)
   WHERE deleted_at IS NULL;
-CREATE INDEX idx_chat_messages_sender ON chat_messages(sender_id);
-CREATE INDEX idx_chat_messages_referenced_event ON chat_messages(referenced_event_id)
+CREATE INDEX IF NOT EXISTS idx_chat_messages_sender ON chat_messages(sender_id);
+CREATE INDEX IF NOT EXISTS idx_chat_messages_referenced_event ON chat_messages(referenced_event_id)
   WHERE referenced_event_id IS NOT NULL;
 
 
 -- ─── Triggers ───────────────────────────────────────────────────────────
 
 -- Auto-update updated_at on conversations (reuses existing function from Layer 1)
+DROP TRIGGER IF EXISTS conversations_updated_at ON conversations;
+DROP TRIGGER IF EXISTS conversations_updated_at ON conversations;
 CREATE TRIGGER conversations_updated_at
 BEFORE UPDATE ON conversations
 FOR EACH ROW EXECUTE FUNCTION update_updated_at_column();
@@ -171,6 +185,8 @@ $$ LANGUAGE plpgsql SECURITY DEFINER;
 
 COMMENT ON FUNCTION update_conversation_last_message IS 'Denormalizes last message info onto conversations table for efficient inbox queries';
 
+DROP TRIGGER IF EXISTS chat_messages_update_conversation ON chat_messages;
+DROP TRIGGER IF EXISTS chat_messages_update_conversation ON chat_messages;
 CREATE TRIGGER chat_messages_update_conversation
 AFTER INSERT ON chat_messages
 FOR EACH ROW
@@ -228,10 +244,14 @@ ALTER TABLE chat_messages ENABLE ROW LEVEL SECURITY;
 
 -- Users can see conversations they participate in
 DROP POLICY IF EXISTS conversations_participant_select ON conversations;
+DROP POLICY IF EXISTS conversations_participant_select ON conversations;
+DROP POLICY IF EXISTS conversations_participant_select ON conversations;
 CREATE POLICY conversations_participant_select ON conversations
   FOR SELECT USING (is_conversation_participant(id));
 
 -- Chefs can create conversations in their tenant
+DROP POLICY IF EXISTS conversations_chef_insert ON conversations;
+DROP POLICY IF EXISTS conversations_chef_insert ON conversations;
 DROP POLICY IF EXISTS conversations_chef_insert ON conversations;
 CREATE POLICY conversations_chef_insert ON conversations
   FOR INSERT WITH CHECK (
@@ -242,6 +262,8 @@ CREATE POLICY conversations_chef_insert ON conversations
 -- Allow updates on conversations (for trigger-based denormalized field updates)
 -- The trigger runs as SECURITY DEFINER so it bypasses RLS, but we also allow
 -- chef updates for manual operations
+DROP POLICY IF EXISTS conversations_chef_update ON conversations;
+DROP POLICY IF EXISTS conversations_chef_update ON conversations;
 DROP POLICY IF EXISTS conversations_chef_update ON conversations;
 CREATE POLICY conversations_chef_update ON conversations
   FOR UPDATE USING (
@@ -254,12 +276,16 @@ CREATE POLICY conversations_chef_update ON conversations
 
 -- Participants can see who else is in their conversations
 DROP POLICY IF EXISTS conv_participants_participant_select ON conversation_participants;
+DROP POLICY IF EXISTS conv_participants_participant_select ON conversation_participants;
+DROP POLICY IF EXISTS conv_participants_participant_select ON conversation_participants;
 CREATE POLICY conv_participants_participant_select ON conversation_participants
   FOR SELECT USING (
     is_conversation_participant(conversation_id)
   );
 
 -- Chefs can add participants to conversations in their tenant
+DROP POLICY IF EXISTS conv_participants_chef_insert ON conversation_participants;
+DROP POLICY IF EXISTS conv_participants_chef_insert ON conversation_participants;
 DROP POLICY IF EXISTS conv_participants_chef_insert ON conversation_participants;
 CREATE POLICY conv_participants_chef_insert ON conversation_participants
   FOR INSERT WITH CHECK (
@@ -272,6 +298,8 @@ CREATE POLICY conv_participants_chef_insert ON conversation_participants
 
 -- Users can update their own participant record (last_read_at, notifications_muted)
 DROP POLICY IF EXISTS conv_participants_self_update ON conversation_participants;
+DROP POLICY IF EXISTS conv_participants_self_update ON conversation_participants;
+DROP POLICY IF EXISTS conv_participants_self_update ON conversation_participants;
 CREATE POLICY conv_participants_self_update ON conversation_participants
   FOR UPDATE USING (auth_user_id = auth.uid());
 
@@ -280,10 +308,14 @@ CREATE POLICY conv_participants_self_update ON conversation_participants
 
 -- Participants can read messages in their conversations
 DROP POLICY IF EXISTS chat_messages_participant_select ON chat_messages;
+DROP POLICY IF EXISTS chat_messages_participant_select ON chat_messages;
+DROP POLICY IF EXISTS chat_messages_participant_select ON chat_messages;
 CREATE POLICY chat_messages_participant_select ON chat_messages
   FOR SELECT USING (is_conversation_participant(conversation_id));
 
 -- Participants can send messages into their conversations (must be themselves)
+DROP POLICY IF EXISTS chat_messages_participant_insert ON chat_messages;
+DROP POLICY IF EXISTS chat_messages_participant_insert ON chat_messages;
 DROP POLICY IF EXISTS chat_messages_participant_insert ON chat_messages;
 CREATE POLICY chat_messages_participant_insert ON chat_messages
   FOR INSERT WITH CHECK (
@@ -293,10 +325,14 @@ CREATE POLICY chat_messages_participant_insert ON chat_messages
 
 -- Senders can update their own messages (for soft delete / edit)
 DROP POLICY IF EXISTS chat_messages_sender_update ON chat_messages;
+DROP POLICY IF EXISTS chat_messages_sender_update ON chat_messages;
+DROP POLICY IF EXISTS chat_messages_sender_update ON chat_messages;
 CREATE POLICY chat_messages_sender_update ON chat_messages
   FOR UPDATE USING (sender_id = auth.uid());
 
 -- No hard deletes on chat_messages
+DROP POLICY IF EXISTS chat_messages_no_delete ON chat_messages;
+DROP POLICY IF EXISTS chat_messages_no_delete ON chat_messages;
 DROP POLICY IF EXISTS chat_messages_no_delete ON chat_messages;
 CREATE POLICY chat_messages_no_delete ON chat_messages
   FOR DELETE USING (false);

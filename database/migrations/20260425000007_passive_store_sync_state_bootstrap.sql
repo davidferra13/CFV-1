@@ -5,7 +5,7 @@ WITH bootstrap_candidate_chefs AS (
   SELECT tenant_id AS chef_id
   FROM public.menus
   WHERE tenant_id IS NOT NULL
-    AND COALESCE(status, '') <> 'archived'
+    AND COALESCE(status::text, '') <> 'archived'
 
   UNION
 

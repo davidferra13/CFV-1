@@ -19,6 +19,7 @@ ALTER TABLE components
   ADD COLUMN IF NOT EXISTS prep_station TEXT;
 
 -- Validate prep_time_of_day values
+ALTER TABLE components DROP CONSTRAINT IF EXISTS components_prep_time_of_day_valid;
 ALTER TABLE components
   ADD CONSTRAINT components_prep_time_of_day_valid
   CHECK (prep_time_of_day IS NULL OR prep_time_of_day IN (
@@ -26,6 +27,7 @@ ALTER TABLE components
   ));
 
 -- prep_day_offset must be 0 or negative (can't prep AFTER service)
+ALTER TABLE components DROP CONSTRAINT IF EXISTS components_prep_day_offset_valid;
 ALTER TABLE components
   ADD CONSTRAINT components_prep_day_offset_valid
   CHECK (prep_day_offset IS NULL OR prep_day_offset <= 0);

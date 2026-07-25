@@ -1,4 +1,8 @@
--- Fix: Harden storage bucket RLS policies
+
+DO $cfguard$
+BEGIN
+  IF EXISTS (SELECT 1 FROM information_schema.schemata WHERE schema_name = 'storage') THEN
+    EXECUTE $cfstorage$-- Fix: Harden storage bucket RLS policies
 -- Addresses: hub-media (no auth), inquiry-note-attachments (no tenant scope),
 -- chef-social-media (upload not scoped, delete uses wrong ID), and 4 buckets
 -- with no storage.objects policies at all.
@@ -10,55 +14,90 @@
 DO $$ BEGIN
   DROP POLICY IF EXISTS "hub_media_read_all" ON storage.objects;
 EXCEPTION WHEN insufficient_privilege THEN NULL;
-END $$;
-
-DO $$ BEGIN
+END $$$cfstorage$;
+  END IF;
+END
+$cfguard$;
+DO $cfguard$
+BEGIN
+  IF EXISTS (SELECT 1 FROM information_schema.schemata WHERE schema_name = 'storage') THEN
+    EXECUTE $cfstorage$DO $$ BEGIN
   DROP POLICY IF EXISTS "hub_media_upload_all" ON storage.objects;
 EXCEPTION WHEN insufficient_privilege THEN NULL;
-END $$;
-
--- Authenticated users can read hub media (group membership checked at app layer)
+END $$$cfstorage$;
+  END IF;
+END
+$cfguard$;
+DO $cfguard$
+BEGIN
+  IF EXISTS (SELECT 1 FROM information_schema.schemata WHERE schema_name = 'storage') THEN
+    EXECUTE $cfstorage$-- Authenticated users can read hub media (group membership checked at app layer)
 DO $$ BEGIN
   DROP POLICY IF EXISTS "hub_media_read_auth" ON storage.objects;
   CREATE POLICY "hub_media_read_auth" ON storage.objects
     FOR SELECT TO authenticated
     USING (bucket_id = 'hub-media');
 EXCEPTION WHEN duplicate_object OR insufficient_privilege THEN NULL;
-END $$;
-
--- Authenticated users can upload hub media (group membership checked at app layer)
+END $$$cfstorage$;
+  END IF;
+END
+$cfguard$;
+DO $cfguard$
+BEGIN
+  IF EXISTS (SELECT 1 FROM information_schema.schemata WHERE schema_name = 'storage') THEN
+    EXECUTE $cfstorage$-- Authenticated users can upload hub media (group membership checked at app layer)
 DO $$ BEGIN
   DROP POLICY IF EXISTS "hub_media_upload_auth" ON storage.objects;
   CREATE POLICY "hub_media_upload_auth" ON storage.objects
     FOR INSERT TO authenticated
     WITH CHECK (bucket_id = 'hub-media');
 EXCEPTION WHEN duplicate_object OR insufficient_privilege THEN NULL;
-END $$;
-
--- Authenticated users can delete their own uploads (first path segment = auth UID)
+END $$$cfstorage$;
+  END IF;
+END
+$cfguard$;
+DO $cfguard$
+BEGIN
+  IF EXISTS (SELECT 1 FROM information_schema.schemata WHERE schema_name = 'storage') THEN
+    EXECUTE $cfstorage$-- Authenticated users can delete their own uploads (first path segment = auth UID)
 DO $$ BEGIN
   DROP POLICY IF EXISTS "hub_media_delete_own" ON storage.objects;
   CREATE POLICY "hub_media_delete_own" ON storage.objects
     FOR DELETE TO authenticated
     USING (bucket_id = 'hub-media');
 EXCEPTION WHEN duplicate_object OR insufficient_privilege THEN NULL;
-END $$;
-
--- ============================================================
+END $$$cfstorage$;
+  END IF;
+END
+$cfguard$;
+DO $cfguard$
+BEGIN
+  IF EXISTS (SELECT 1 FROM information_schema.schemata WHERE schema_name = 'storage') THEN
+    EXECUTE $cfstorage$-- ============================================================
 -- 2. inquiry-note-attachments: Add tenant scoping + require auth for reads
 -- ============================================================
 
 DO $$ BEGIN
   DROP POLICY IF EXISTS "inquiry_note_attachments_insert" ON storage.objects;
 EXCEPTION WHEN insufficient_privilege THEN NULL;
-END $$;
-
-DO $$ BEGIN
+END $$$cfstorage$;
+  END IF;
+END
+$cfguard$;
+DO $cfguard$
+BEGIN
+  IF EXISTS (SELECT 1 FROM information_schema.schemata WHERE schema_name = 'storage') THEN
+    EXECUTE $cfstorage$DO $$ BEGIN
   DROP POLICY IF EXISTS "inquiry_note_attachments_select" ON storage.objects;
 EXCEPTION WHEN insufficient_privilege THEN NULL;
-END $$;
-
--- Upload: authenticated, first path segment must be caller's tenant ID
+END $$$cfstorage$;
+  END IF;
+END
+$cfguard$;
+DO $cfguard$
+BEGIN
+  IF EXISTS (SELECT 1 FROM information_schema.schemata WHERE schema_name = 'storage') THEN
+    EXECUTE $cfstorage$-- Upload: authenticated, first path segment must be caller's tenant ID
 DO $$ BEGIN
   DROP POLICY IF EXISTS "inquiry_note_attachments_upload_scoped" ON storage.objects;
   CREATE POLICY "inquiry_note_attachments_upload_scoped" ON storage.objects
@@ -71,9 +110,14 @@ DO $$ BEGIN
       )
     );
 EXCEPTION WHEN duplicate_object OR insufficient_privilege THEN NULL;
-END $$;
-
--- Read: authenticated, tenant-scoped
+END $$$cfstorage$;
+  END IF;
+END
+$cfguard$;
+DO $cfguard$
+BEGIN
+  IF EXISTS (SELECT 1 FROM information_schema.schemata WHERE schema_name = 'storage') THEN
+    EXECUTE $cfstorage$-- Read: authenticated, tenant-scoped
 DO $$ BEGIN
   DROP POLICY IF EXISTS "inquiry_note_attachments_read_scoped" ON storage.objects;
   CREATE POLICY "inquiry_note_attachments_read_scoped" ON storage.objects
@@ -86,9 +130,14 @@ DO $$ BEGIN
       )
     );
 EXCEPTION WHEN duplicate_object OR insufficient_privilege THEN NULL;
-END $$;
-
--- Delete: authenticated, tenant-scoped
+END $$$cfstorage$;
+  END IF;
+END
+$cfguard$;
+DO $cfguard$
+BEGIN
+  IF EXISTS (SELECT 1 FROM information_schema.schemata WHERE schema_name = 'storage') THEN
+    EXECUTE $cfstorage$-- Delete: authenticated, tenant-scoped
 DO $$ BEGIN
   DROP POLICY IF EXISTS "inquiry_note_attachments_delete_scoped" ON storage.objects;
   CREATE POLICY "inquiry_note_attachments_delete_scoped" ON storage.objects
@@ -101,22 +150,38 @@ DO $$ BEGIN
       )
     );
 EXCEPTION WHEN duplicate_object OR insufficient_privilege THEN NULL;
-END $$;
-
--- ============================================================
+END $$$cfstorage$;
+  END IF;
+END
+$cfguard$;
+DO $cfguard$
+BEGIN
+  IF EXISTS (SELECT 1 FROM information_schema.schemata WHERE schema_name = 'storage') THEN
+    EXECUTE $cfstorage$-- ============================================================
 -- 3. chef-social-media: Fix upload scoping + fix delete policy
 -- ============================================================
 
 DO $$ BEGIN
   DROP POLICY IF EXISTS "chef_social_media_upload" ON storage.objects;
 EXCEPTION WHEN insufficient_privilege THEN NULL;
-END $$;
-
-DO $$ BEGIN
+END $$$cfstorage$;
+  END IF;
+END
+$cfguard$;
+DO $cfguard$
+BEGIN
+  IF EXISTS (SELECT 1 FROM information_schema.schemata WHERE schema_name = 'storage') THEN
+    EXECUTE $cfstorage$DO $$ BEGIN
   DROP POLICY IF EXISTS "chef_social_media_delete_own" ON storage.objects;
 EXCEPTION WHEN insufficient_privilege THEN NULL;
-END $$;
--- Keep the public read policy — social media content is intentionally public
+END $$$cfstorage$;
+  END IF;
+END
+$cfguard$;
+DO $cfguard$
+BEGIN
+  IF EXISTS (SELECT 1 FROM information_schema.schemata WHERE schema_name = 'storage') THEN
+    EXECUTE $cfstorage$-- Keep the public read policy — social media content is intentionally public
 
 -- Upload: tenant-scoped (first path segment = tenant_id)
 DO $$ BEGIN
@@ -131,9 +196,14 @@ DO $$ BEGIN
       )
     );
 EXCEPTION WHEN duplicate_object OR insufficient_privilege THEN NULL;
-END $$;
-
--- Delete: tenant-scoped (matches how the app writes paths: tenantId/filename)
+END $$$cfstorage$;
+  END IF;
+END
+$cfguard$;
+DO $cfguard$
+BEGIN
+  IF EXISTS (SELECT 1 FROM information_schema.schemata WHERE schema_name = 'storage') THEN
+    EXECUTE $cfstorage$-- Delete: tenant-scoped (matches how the app writes paths: tenantId/filename)
 DO $$ BEGIN
   DROP POLICY IF EXISTS "chef_social_media_delete_scoped" ON storage.objects;
   CREATE POLICY "chef_social_media_delete_scoped" ON storage.objects
@@ -146,9 +216,14 @@ DO $$ BEGIN
       )
     );
 EXCEPTION WHEN duplicate_object OR insufficient_privilege THEN NULL;
-END $$;
-
--- ============================================================
+END $$$cfstorage$;
+  END IF;
+END
+$cfguard$;
+DO $cfguard$
+BEGIN
+  IF EXISTS (SELECT 1 FROM information_schema.schemata WHERE schema_name = 'storage') THEN
+    EXECUTE $cfstorage$-- ============================================================
 -- 4. chef-logos: Add upload + delete scoping (reads are public, correct)
 -- ============================================================
 
@@ -164,9 +239,14 @@ DO $$ BEGIN
       )
     );
 EXCEPTION WHEN duplicate_object OR insufficient_privilege THEN NULL;
-END $$;
-
-DO $$ BEGIN
+END $$$cfstorage$;
+  END IF;
+END
+$cfguard$;
+DO $cfguard$
+BEGIN
+  IF EXISTS (SELECT 1 FROM information_schema.schemata WHERE schema_name = 'storage') THEN
+    EXECUTE $cfstorage$DO $$ BEGIN
   DROP POLICY IF EXISTS "chef_logos_delete_scoped" ON storage.objects;
   CREATE POLICY "chef_logos_delete_scoped" ON storage.objects
     FOR DELETE TO authenticated
@@ -178,9 +258,14 @@ DO $$ BEGIN
       )
     );
 EXCEPTION WHEN duplicate_object OR insufficient_privilege THEN NULL;
-END $$;
-
--- ============================================================
+END $$$cfstorage$;
+  END IF;
+END
+$cfguard$;
+DO $cfguard$
+BEGIN
+  IF EXISTS (SELECT 1 FROM information_schema.schemata WHERE schema_name = 'storage') THEN
+    EXECUTE $cfstorage$-- ============================================================
 -- 5. chef-profile-images: Add upload + delete scoping
 -- ============================================================
 
@@ -196,9 +281,14 @@ DO $$ BEGIN
       )
     );
 EXCEPTION WHEN duplicate_object OR insufficient_privilege THEN NULL;
-END $$;
-
-DO $$ BEGIN
+END $$$cfstorage$;
+  END IF;
+END
+$cfguard$;
+DO $cfguard$
+BEGIN
+  IF EXISTS (SELECT 1 FROM information_schema.schemata WHERE schema_name = 'storage') THEN
+    EXECUTE $cfstorage$DO $$ BEGIN
   DROP POLICY IF EXISTS "chef_profile_images_delete_scoped" ON storage.objects;
   CREATE POLICY "chef_profile_images_delete_scoped" ON storage.objects
     FOR DELETE TO authenticated
@@ -210,9 +300,14 @@ DO $$ BEGIN
       )
     );
 EXCEPTION WHEN duplicate_object OR insufficient_privilege THEN NULL;
-END $$;
-
--- ============================================================
+END $$$cfstorage$;
+  END IF;
+END
+$cfguard$;
+DO $cfguard$
+BEGIN
+  IF EXISTS (SELECT 1 FROM information_schema.schemata WHERE schema_name = 'storage') THEN
+    EXECUTE $cfstorage$-- ============================================================
 -- 6. chef-portal-backgrounds: Add upload + delete scoping
 -- ============================================================
 
@@ -228,9 +323,14 @@ DO $$ BEGIN
       )
     );
 EXCEPTION WHEN duplicate_object OR insufficient_privilege THEN NULL;
-END $$;
-
-DO $$ BEGIN
+END $$$cfstorage$;
+  END IF;
+END
+$cfguard$;
+DO $cfguard$
+BEGIN
+  IF EXISTS (SELECT 1 FROM information_schema.schemata WHERE schema_name = 'storage') THEN
+    EXECUTE $cfstorage$DO $$ BEGIN
   DROP POLICY IF EXISTS "chef_portal_backgrounds_delete_scoped" ON storage.objects;
   CREATE POLICY "chef_portal_backgrounds_delete_scoped" ON storage.objects
     FOR DELETE TO authenticated
@@ -242,9 +342,14 @@ DO $$ BEGIN
       )
     );
 EXCEPTION WHEN duplicate_object OR insufficient_privilege THEN NULL;
-END $$;
-
--- ============================================================
+END $$$cfstorage$;
+  END IF;
+END
+$cfguard$;
+DO $cfguard$
+BEGIN
+  IF EXISTS (SELECT 1 FROM information_schema.schemata WHERE schema_name = 'storage') THEN
+    EXECUTE $cfstorage$-- ============================================================
 -- 7. chef-journal-media: Add upload + delete scoping
 -- ============================================================
 
@@ -260,9 +365,14 @@ DO $$ BEGIN
       )
     );
 EXCEPTION WHEN duplicate_object OR insufficient_privilege THEN NULL;
-END $$;
-
-DO $$ BEGIN
+END $$$cfstorage$;
+  END IF;
+END
+$cfguard$;
+DO $cfguard$
+BEGIN
+  IF EXISTS (SELECT 1 FROM information_schema.schemata WHERE schema_name = 'storage') THEN
+    EXECUTE $cfstorage$DO $$ BEGIN
   DROP POLICY IF EXISTS "chef_journal_media_delete_scoped" ON storage.objects;
   CREATE POLICY "chef_journal_media_delete_scoped" ON storage.objects
     FOR DELETE TO authenticated
@@ -274,9 +384,14 @@ DO $$ BEGIN
       )
     );
 EXCEPTION WHEN duplicate_object OR insufficient_privilege THEN NULL;
-END $$;
-
--- ============================================================
+END $$$cfstorage$;
+  END IF;
+END
+$cfguard$;
+DO $cfguard$
+BEGIN
+  IF EXISTS (SELECT 1 FROM information_schema.schemata WHERE schema_name = 'storage') THEN
+    EXECUTE $cfstorage$-- ============================================================
 -- 8. social-media-vault: Add upload + delete scoping
 -- ============================================================
 
@@ -292,9 +407,14 @@ DO $$ BEGIN
       )
     );
 EXCEPTION WHEN duplicate_object OR insufficient_privilege THEN NULL;
-END $$;
-
-DO $$ BEGIN
+END $$$cfstorage$;
+  END IF;
+END
+$cfguard$;
+DO $cfguard$
+BEGIN
+  IF EXISTS (SELECT 1 FROM information_schema.schemata WHERE schema_name = 'storage') THEN
+    EXECUTE $cfstorage$DO $$ BEGIN
   DROP POLICY IF EXISTS "social_media_vault_delete_scoped" ON storage.objects;
   CREATE POLICY "social_media_vault_delete_scoped" ON storage.objects
     FOR DELETE TO authenticated
@@ -306,4 +426,7 @@ DO $$ BEGIN
       )
     );
 EXCEPTION WHEN duplicate_object OR insufficient_privilege THEN NULL;
-END $$;
+END $$$cfstorage$;
+  END IF;
+END
+$cfguard$;

@@ -22,18 +22,22 @@ CREATE INDEX IF NOT EXISTS idx_content_drafts_status ON event_content_drafts(ten
 -- RLS
 ALTER TABLE event_content_drafts ENABLE ROW LEVEL SECURITY;
 
+DROP POLICY IF EXISTS "Chef can read own content drafts" ON event_content_drafts;
 CREATE POLICY "Chef can read own content drafts"
   ON event_content_drafts FOR SELECT
   USING (tenant_id = auth.uid());
 
+DROP POLICY IF EXISTS "Chef can insert own content drafts" ON event_content_drafts;
 CREATE POLICY "Chef can insert own content drafts"
   ON event_content_drafts FOR INSERT
   WITH CHECK (tenant_id = auth.uid());
 
+DROP POLICY IF EXISTS "Chef can update own content drafts" ON event_content_drafts;
 CREATE POLICY "Chef can update own content drafts"
   ON event_content_drafts FOR UPDATE
   USING (tenant_id = auth.uid());
 
+DROP POLICY IF EXISTS "Chef can delete own content drafts" ON event_content_drafts;
 CREATE POLICY "Chef can delete own content drafts"
   ON event_content_drafts FOR DELETE
   USING (tenant_id = auth.uid());
@@ -47,6 +51,7 @@ BEGIN
 END;
 $$ LANGUAGE plpgsql;
 
+DROP TRIGGER IF EXISTS trg_content_drafts_updated_at ON event_content_drafts;
 DROP TRIGGER IF EXISTS trg_content_drafts_updated_at ON event_content_drafts;
 CREATE TRIGGER trg_content_drafts_updated_at
   BEFORE UPDATE ON event_content_drafts

@@ -3,6 +3,7 @@ ALTER TABLE ingredients
   ADD COLUMN IF NOT EXISTS storage_requirement text;
 
 -- Constrain to valid values
+ALTER TABLE ingredients DROP CONSTRAINT IF EXISTS ingredients_storage_requirement_check;
 ALTER TABLE ingredients
   ADD CONSTRAINT ingredients_storage_requirement_check
   CHECK (storage_requirement IS NULL OR storage_requirement = ANY(

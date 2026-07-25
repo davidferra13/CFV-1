@@ -9,7 +9,10 @@
 -- ============================================
 
 -- Event lifecycle (8 states - full proposal-to-completion pipeline)
-CREATE TYPE event_status AS ENUM (
+DO $idem$
+BEGIN
+  IF NOT EXISTS (SELECT 1 FROM pg_type WHERE typname = 'event_status') THEN
+    CREATE TYPE event_status AS ENUM (
   'draft',        -- Event created from confirmed inquiry, not yet proposed to client
   'proposed',     -- Proposal sent to client, awaiting response
   'accepted',     -- Client accepted proposal, awaiting payment
@@ -19,25 +22,43 @@ CREATE TYPE event_status AS ENUM (
   'completed',    -- Service finished, on-site work done
   'cancelled'     -- Cancelled by either party (double-l spelling matches app code)
 );
+  END IF;
+END
+$idem$;
 
 -- Payment status (computed from ledger, not transitioned)
-CREATE TYPE payment_status AS ENUM (
+DO $idem$
+BEGIN
+  IF NOT EXISTS (SELECT 1 FROM pg_type WHERE typname = 'payment_status') THEN
+    CREATE TYPE payment_status AS ENUM (
   'unpaid',
   'deposit_paid',
   'partial',
   'paid',
   'refunded'
 );
+  END IF;
+END
+$idem$;
 
 -- Pricing models
-CREATE TYPE pricing_model AS ENUM (
+DO $idem$
+BEGIN
+  IF NOT EXISTS (SELECT 1 FROM pg_type WHERE typname = 'pricing_model') THEN
+    CREATE TYPE pricing_model AS ENUM (
   'per_person',
   'flat_rate',
   'custom'
 );
+  END IF;
+END
+$idem$;
 
 -- Service styles
-CREATE TYPE event_service_style AS ENUM (
+DO $idem$
+BEGIN
+  IF NOT EXISTS (SELECT 1 FROM pg_type WHERE typname = 'event_service_style') THEN
+    CREATE TYPE event_service_style AS ENUM (
   'plated',
   'family_style',
   'buffet',
@@ -45,9 +66,15 @@ CREATE TYPE event_service_style AS ENUM (
   'tasting_menu',
   'other'
 );
+  END IF;
+END
+$idem$;
 
 -- Payment methods
-CREATE TYPE payment_method AS ENUM (
+DO $idem$
+BEGIN
+  IF NOT EXISTS (SELECT 1 FROM pg_type WHERE typname = 'payment_method') THEN
+    CREATE TYPE payment_method AS ENUM (
   'cash',
   'venmo',
   'paypal',
@@ -56,25 +83,43 @@ CREATE TYPE payment_method AS ENUM (
   'check',
   'other'
 );
+  END IF;
+END
+$idem$;
 
 -- Cancellation initiator
-CREATE TYPE cancellation_initiator AS ENUM (
+DO $idem$
+BEGIN
+  IF NOT EXISTS (SELECT 1 FROM pg_type WHERE typname = 'cancellation_initiator') THEN
+    CREATE TYPE cancellation_initiator AS ENUM (
   'chef',
   'client',
   'mutual'
 );
+  END IF;
+END
+$idem$;
 
 -- Quote lifecycle
-CREATE TYPE quote_status AS ENUM (
+DO $idem$
+BEGIN
+  IF NOT EXISTS (SELECT 1 FROM pg_type WHERE typname = 'quote_status') THEN
+    CREATE TYPE quote_status AS ENUM (
   'draft',
   'sent',
   'accepted',
   'rejected',
   'expired'
 );
+  END IF;
+END
+$idem$;
 
 -- Ledger entry types
-CREATE TYPE ledger_entry_type AS ENUM (
+DO $idem$
+BEGIN
+  IF NOT EXISTS (SELECT 1 FROM pg_type WHERE typname = 'ledger_entry_type') THEN
+    CREATE TYPE ledger_entry_type AS ENUM (
   'payment',
   'deposit',
   'installment',
@@ -85,9 +130,15 @@ CREATE TYPE ledger_entry_type AS ENUM (
   'add_on',
   'credit'
 );
+  END IF;
+END
+$idem$;
 
 -- Expense categories
-CREATE TYPE expense_category AS ENUM (
+DO $idem$
+BEGIN
+  IF NOT EXISTS (SELECT 1 FROM pg_type WHERE typname = 'expense_category') THEN
+    CREATE TYPE expense_category AS ENUM (
   'groceries',
   'alcohol',
   'specialty_items',
@@ -96,12 +147,15 @@ CREATE TYPE expense_category AS ENUM (
   'supplies',
   'other'
 );
+  END IF;
+END
+$idem$;
 
 -- ============================================
 -- TABLE 1: EVENTS
 -- ============================================
 
-CREATE TABLE events (
+CREATE TABLE IF NOT EXISTS events (
   -- Identity & Relationships
   id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
   tenant_id UUID NOT NULL REFERENCES chefs(id) ON DELETE CASCADE,
@@ -212,13 +266,13 @@ CREATE TABLE events (
   CONSTRAINT events_tip_non_negative CHECK (tip_amount_cents >= 0)
 );
 
-CREATE INDEX idx_events_tenant_id ON events(tenant_id);
-CREATE INDEX idx_events_client_id ON events(client_id);
-CREATE INDEX idx_events_inquiry_id ON events(inquiry_id);
-CREATE INDEX idx_events_status ON events(status);
-CREATE INDEX idx_events_event_date ON events(event_date);
-CREATE INDEX idx_events_tenant_date ON events(tenant_id, event_date);
-CREATE INDEX idx_events_tenant_status ON events(tenant_id, status);
+CREATE INDEX IF NOT EXISTS idx_events_tenant_id ON events(tenant_id);
+CREATE INDEX IF NOT EXISTS idx_events_client_id ON events(client_id);
+CREATE INDEX IF NOT EXISTS idx_events_inquiry_id ON events(inquiry_id);
+CREATE INDEX IF NOT EXISTS idx_events_status ON events(status);
+CREATE INDEX IF NOT EXISTS idx_events_event_date ON events(event_date);
+CREATE INDEX IF NOT EXISTS idx_events_tenant_date ON events(tenant_id, event_date);
+CREATE INDEX IF NOT EXISTS idx_events_tenant_status ON events(tenant_id, status);
 
 COMMENT ON TABLE events IS 'The canonical event record. Events only exist once inquiry is confirmed and quote is accepted.';
 COMMENT ON COLUMN events.tenant_id IS 'FK to chefs.id - tenant scoping';
@@ -231,7 +285,7 @@ COMMENT ON COLUMN events.allergies IS 'IMMUTABLE after event creation - safety-c
 -- TABLE 2: EVENT STATE TRANSITIONS
 -- ============================================
 
-CREATE TABLE event_state_transitions (
+CREATE TABLE IF NOT EXISTS event_state_transitions (
   id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
   event_id UUID NOT NULL REFERENCES events(id) ON DELETE CASCADE,
   tenant_id UUID NOT NULL REFERENCES chefs(id) ON DELETE CASCADE,
@@ -243,8 +297,8 @@ CREATE TABLE event_state_transitions (
   metadata JSONB
 );
 
-CREATE INDEX idx_event_transitions_event_id ON event_state_transitions(event_id);
-CREATE INDEX idx_event_transitions_tenant_id ON event_state_transitions(tenant_id);
+CREATE INDEX IF NOT EXISTS idx_event_transitions_event_id ON event_state_transitions(event_id);
+CREATE INDEX IF NOT EXISTS idx_event_transitions_tenant_id ON event_state_transitions(tenant_id);
 
 COMMENT ON TABLE event_state_transitions IS 'Immutable audit trail of event state changes';
 COMMENT ON COLUMN event_state_transitions.from_status IS 'Nullable for initial state';
@@ -253,7 +307,7 @@ COMMENT ON COLUMN event_state_transitions.from_status IS 'Nullable for initial s
 -- TABLE 3: QUOTES
 -- ============================================
 
-CREATE TABLE quotes (
+CREATE TABLE IF NOT EXISTS quotes (
   -- Identity & Relationships
   id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
   tenant_id UUID NOT NULL REFERENCES chefs(id) ON DELETE CASCADE,
@@ -302,11 +356,11 @@ CREATE TABLE quotes (
   CONSTRAINT quotes_must_link_inquiry_or_event CHECK (inquiry_id IS NOT NULL OR event_id IS NOT NULL)
 );
 
-CREATE INDEX idx_quotes_tenant_id ON quotes(tenant_id);
-CREATE INDEX idx_quotes_inquiry_id ON quotes(inquiry_id);
-CREATE INDEX idx_quotes_event_id ON quotes(event_id);
-CREATE INDEX idx_quotes_client_id ON quotes(client_id);
-CREATE INDEX idx_quotes_status ON quotes(status);
+CREATE INDEX IF NOT EXISTS idx_quotes_tenant_id ON quotes(tenant_id);
+CREATE INDEX IF NOT EXISTS idx_quotes_inquiry_id ON quotes(inquiry_id);
+CREATE INDEX IF NOT EXISTS idx_quotes_event_id ON quotes(event_id);
+CREATE INDEX IF NOT EXISTS idx_quotes_client_id ON quotes(client_id);
+CREATE INDEX IF NOT EXISTS idx_quotes_status ON quotes(status);
 
 COMMENT ON TABLE quotes IS 'Pricing proposals linked to inquiry and/or event';
 COMMENT ON COLUMN quotes.pricing_snapshot IS 'Frozen pricing at acceptance - IMMUTABLE after status = accepted';
@@ -315,7 +369,7 @@ COMMENT ON COLUMN quotes.pricing_snapshot IS 'Frozen pricing at acceptance - IMM
 -- TABLE 4: QUOTE STATE TRANSITIONS
 -- ============================================
 
-CREATE TABLE quote_state_transitions (
+CREATE TABLE IF NOT EXISTS quote_state_transitions (
   id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
   quote_id UUID NOT NULL REFERENCES quotes(id) ON DELETE CASCADE,
   tenant_id UUID NOT NULL REFERENCES chefs(id) ON DELETE CASCADE,
@@ -327,8 +381,8 @@ CREATE TABLE quote_state_transitions (
   metadata JSONB
 );
 
-CREATE INDEX idx_quote_transitions_quote_id ON quote_state_transitions(quote_id);
-CREATE INDEX idx_quote_transitions_tenant_id ON quote_state_transitions(tenant_id);
+CREATE INDEX IF NOT EXISTS idx_quote_transitions_quote_id ON quote_state_transitions(quote_id);
+CREATE INDEX IF NOT EXISTS idx_quote_transitions_tenant_id ON quote_state_transitions(tenant_id);
 
 COMMENT ON TABLE quote_state_transitions IS 'Immutable audit trail of quote state changes';
 
@@ -336,7 +390,7 @@ COMMENT ON TABLE quote_state_transitions IS 'Immutable audit trail of quote stat
 -- TABLE 5: LEDGER ENTRIES (Append-Only)
 -- ============================================
 
-CREATE TABLE ledger_entries (
+CREATE TABLE IF NOT EXISTS ledger_entries (
   -- Identity & Relationships
   id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
   tenant_id UUID NOT NULL REFERENCES chefs(id) ON DELETE CASCADE,
@@ -374,13 +428,13 @@ CREATE TABLE ledger_entries (
   CONSTRAINT ledger_refund_type_match CHECK ((entry_type = 'refund' AND is_refund = true) OR entry_type != 'refund')
 );
 
-CREATE INDEX idx_ledger_entries_tenant_id ON ledger_entries(tenant_id);
-CREATE INDEX idx_ledger_entries_client_id ON ledger_entries(client_id);
-CREATE INDEX idx_ledger_entries_event_id ON ledger_entries(event_id);
-CREATE INDEX idx_ledger_entries_entry_type ON ledger_entries(entry_type);
-CREATE INDEX idx_ledger_entries_created_at ON ledger_entries(created_at);
-CREATE INDEX idx_ledger_entries_ledger_sequence ON ledger_entries(ledger_sequence);
-CREATE INDEX idx_ledger_entries_tenant_event ON ledger_entries(tenant_id, event_id);
+CREATE INDEX IF NOT EXISTS idx_ledger_entries_tenant_id ON ledger_entries(tenant_id);
+CREATE INDEX IF NOT EXISTS idx_ledger_entries_client_id ON ledger_entries(client_id);
+CREATE INDEX IF NOT EXISTS idx_ledger_entries_event_id ON ledger_entries(event_id);
+CREATE INDEX IF NOT EXISTS idx_ledger_entries_entry_type ON ledger_entries(entry_type);
+CREATE INDEX IF NOT EXISTS idx_ledger_entries_created_at ON ledger_entries(created_at);
+CREATE INDEX IF NOT EXISTS idx_ledger_entries_ledger_sequence ON ledger_entries(ledger_sequence);
+CREATE INDEX IF NOT EXISTS idx_ledger_entries_tenant_event ON ledger_entries(tenant_id, event_id);
 
 COMMENT ON TABLE ledger_entries IS 'CRITICAL: Append-only financial ledger. NEVER update or delete. Only INSERT allowed.';
 COMMENT ON COLUMN ledger_entries.ledger_sequence IS 'Immutable sequence number for audit ordering';
@@ -389,7 +443,7 @@ COMMENT ON COLUMN ledger_entries.ledger_sequence IS 'Immutable sequence number f
 -- TABLE 6: EXPENSES
 -- ============================================
 
-CREATE TABLE expenses (
+CREATE TABLE IF NOT EXISTS expenses (
   -- Identity & Relationships
   id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
   tenant_id UUID NOT NULL REFERENCES chefs(id) ON DELETE CASCADE,
@@ -435,12 +489,12 @@ CREATE TABLE expenses (
   CONSTRAINT expenses_mileage_rate_positive CHECK (mileage_rate_per_mile_cents > 0 OR mileage_rate_per_mile_cents IS NULL)
 );
 
-CREATE INDEX idx_expenses_tenant_id ON expenses(tenant_id);
-CREATE INDEX idx_expenses_event_id ON expenses(event_id);
-CREATE INDEX idx_expenses_category ON expenses(category);
-CREATE INDEX idx_expenses_expense_date ON expenses(expense_date);
-CREATE INDEX idx_expenses_tenant_date ON expenses(tenant_id, expense_date);
-CREATE INDEX idx_expenses_is_business ON expenses(is_business);
+CREATE INDEX IF NOT EXISTS idx_expenses_tenant_id ON expenses(tenant_id);
+CREATE INDEX IF NOT EXISTS idx_expenses_event_id ON expenses(event_id);
+CREATE INDEX IF NOT EXISTS idx_expenses_category ON expenses(category);
+CREATE INDEX IF NOT EXISTS idx_expenses_expense_date ON expenses(expense_date);
+CREATE INDEX IF NOT EXISTS idx_expenses_tenant_date ON expenses(tenant_id, expense_date);
+CREATE INDEX IF NOT EXISTS idx_expenses_is_business ON expenses(is_business);
 
 COMMENT ON TABLE expenses IS 'Cost tracking per event (cost side, vs ledger_entries for revenue side)';
 
@@ -448,7 +502,7 @@ COMMENT ON TABLE expenses IS 'Cost tracking per event (cost side, vs ledger_entr
 -- TABLE 7: AFTER ACTION REVIEWS
 -- ============================================
 
-CREATE TABLE after_action_reviews (
+CREATE TABLE IF NOT EXISTS after_action_reviews (
   -- Identity & Relationships
   id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
   event_id UUID UNIQUE NOT NULL REFERENCES events(id) ON DELETE CASCADE,
@@ -481,10 +535,10 @@ CREATE TABLE after_action_reviews (
   updated_by UUID REFERENCES auth.users(id)
 );
 
-CREATE INDEX idx_aar_event_id ON after_action_reviews(event_id);
-CREATE INDEX idx_aar_tenant_id ON after_action_reviews(tenant_id);
-CREATE INDEX idx_aar_calm_rating ON after_action_reviews(calm_rating);
-CREATE INDEX idx_aar_preparation_rating ON after_action_reviews(preparation_rating);
+CREATE INDEX IF NOT EXISTS idx_aar_event_id ON after_action_reviews(event_id);
+CREATE INDEX IF NOT EXISTS idx_aar_tenant_id ON after_action_reviews(tenant_id);
+CREATE INDEX IF NOT EXISTS idx_aar_calm_rating ON after_action_reviews(calm_rating);
+CREATE INDEX IF NOT EXISTS idx_aar_preparation_rating ON after_action_reviews(preparation_rating);
 
 COMMENT ON TABLE after_action_reviews IS 'Post-event retrospective. One per event. The real KPIs: calm_rating and preparation_rating.';
 
@@ -502,13 +556,15 @@ ALTER TABLE clients ADD COLUMN IF NOT EXISTS last_event_date DATE;
 -- ============================================
 
 -- Add FK constraint to inquiries.converted_to_event_id (deferred from Layer 2)
+ALTER TABLE inquiries DROP CONSTRAINT IF EXISTS fk_inquiries_converted_to_event;
 ALTER TABLE inquiries
 ADD CONSTRAINT fk_inquiries_converted_to_event
 FOREIGN KEY (converted_to_event_id) REFERENCES events(id) ON DELETE SET NULL;
 
-CREATE INDEX idx_inquiries_converted_to_event ON inquiries(converted_to_event_id) WHERE converted_to_event_id IS NOT NULL;
+CREATE INDEX IF NOT EXISTS idx_inquiries_converted_to_event ON inquiries(converted_to_event_id) WHERE converted_to_event_id IS NOT NULL;
 
 -- Add FK constraint to messages.event_id (deferred from Layer 2)
+ALTER TABLE messages DROP CONSTRAINT IF EXISTS fk_messages_event;
 ALTER TABLE messages
 ADD CONSTRAINT fk_messages_event
 FOREIGN KEY (event_id) REFERENCES events(id) ON DELETE CASCADE;
@@ -528,15 +584,23 @@ BEGIN
 END;
 $$ LANGUAGE plpgsql;
 
+DROP TRIGGER IF EXISTS events_updated_at ON events;
+DROP TRIGGER IF EXISTS events_updated_at ON events;
 CREATE TRIGGER events_updated_at BEFORE UPDATE ON events
   FOR EACH ROW EXECUTE FUNCTION update_updated_at_timestamp();
 
+DROP TRIGGER IF EXISTS quotes_updated_at ON quotes;
+DROP TRIGGER IF EXISTS quotes_updated_at ON quotes;
 CREATE TRIGGER quotes_updated_at BEFORE UPDATE ON quotes
   FOR EACH ROW EXECUTE FUNCTION update_updated_at_timestamp();
 
+DROP TRIGGER IF EXISTS expenses_updated_at ON expenses;
+DROP TRIGGER IF EXISTS expenses_updated_at ON expenses;
 CREATE TRIGGER expenses_updated_at BEFORE UPDATE ON expenses
   FOR EACH ROW EXECUTE FUNCTION update_updated_at_timestamp();
 
+DROP TRIGGER IF EXISTS aar_updated_at ON after_action_reviews;
+DROP TRIGGER IF EXISTS aar_updated_at ON after_action_reviews;
 CREATE TRIGGER aar_updated_at BEFORE UPDATE ON after_action_reviews
   FOR EACH ROW EXECUTE FUNCTION update_updated_at_timestamp();
 
@@ -567,6 +631,8 @@ BEGIN
 END;
 $$ LANGUAGE plpgsql;
 
+DROP TRIGGER IF EXISTS validate_event_state_transition_trigger ON events;
+DROP TRIGGER IF EXISTS validate_event_state_transition_trigger ON events;
 CREATE TRIGGER validate_event_state_transition_trigger
   BEFORE UPDATE OF status ON events
   FOR EACH ROW EXECUTE FUNCTION validate_event_state_transition();
@@ -587,6 +653,8 @@ BEGIN
 END;
 $$ LANGUAGE plpgsql;
 
+DROP TRIGGER IF EXISTS freeze_event_pricing_snapshot_trigger ON events;
+DROP TRIGGER IF EXISTS freeze_event_pricing_snapshot_trigger ON events;
 CREATE TRIGGER freeze_event_pricing_snapshot_trigger
   BEFORE INSERT ON events
   FOR EACH ROW EXECUTE FUNCTION freeze_event_pricing_snapshot();
@@ -614,6 +682,8 @@ BEGIN
 END;
 $$ LANGUAGE plpgsql;
 
+DROP TRIGGER IF EXISTS log_event_state_transition_trigger ON events;
+DROP TRIGGER IF EXISTS log_event_state_transition_trigger ON events;
 CREATE TRIGGER log_event_state_transition_trigger
   AFTER UPDATE OF status ON events
   FOR EACH ROW EXECUTE FUNCTION log_event_state_transition();
@@ -638,6 +708,8 @@ BEGIN
 END;
 $$ LANGUAGE plpgsql;
 
+DROP TRIGGER IF EXISTS validate_quote_state_transition_trigger ON quotes;
+DROP TRIGGER IF EXISTS validate_quote_state_transition_trigger ON quotes;
 CREATE TRIGGER validate_quote_state_transition_trigger
   BEFORE UPDATE OF status ON quotes
   FOR EACH ROW EXECUTE FUNCTION validate_quote_state_transition();
@@ -662,6 +734,8 @@ BEGIN
 END;
 $$ LANGUAGE plpgsql;
 
+DROP TRIGGER IF EXISTS freeze_quote_snapshot_on_acceptance_trigger ON quotes;
+DROP TRIGGER IF EXISTS freeze_quote_snapshot_on_acceptance_trigger ON quotes;
 CREATE TRIGGER freeze_quote_snapshot_on_acceptance_trigger
   BEFORE UPDATE OF status ON quotes
   FOR EACH ROW EXECUTE FUNCTION freeze_quote_snapshot_on_acceptance();
@@ -683,6 +757,8 @@ BEGIN
 END;
 $$ LANGUAGE plpgsql;
 
+DROP TRIGGER IF EXISTS prevent_quote_mutation_after_acceptance_trigger ON quotes;
+DROP TRIGGER IF EXISTS prevent_quote_mutation_after_acceptance_trigger ON quotes;
 CREATE TRIGGER prevent_quote_mutation_after_acceptance_trigger
   BEFORE UPDATE ON quotes
   FOR EACH ROW EXECUTE FUNCTION prevent_quote_mutation_after_acceptance();
@@ -710,6 +786,8 @@ BEGIN
 END;
 $$ LANGUAGE plpgsql;
 
+DROP TRIGGER IF EXISTS log_quote_state_transition_trigger ON quotes;
+DROP TRIGGER IF EXISTS log_quote_state_transition_trigger ON quotes;
 CREATE TRIGGER log_quote_state_transition_trigger
   AFTER UPDATE OF status ON quotes
   FOR EACH ROW EXECUTE FUNCTION log_quote_state_transition();
@@ -722,10 +800,14 @@ BEGIN
 END;
 $$ LANGUAGE plpgsql;
 
+DROP TRIGGER IF EXISTS prevent_ledger_update ON ledger_entries;
+DROP TRIGGER IF EXISTS prevent_ledger_update ON ledger_entries;
 CREATE TRIGGER prevent_ledger_update
   BEFORE UPDATE ON ledger_entries
   FOR EACH ROW EXECUTE FUNCTION prevent_ledger_mutation();
 
+DROP TRIGGER IF EXISTS prevent_ledger_delete ON ledger_entries;
+DROP TRIGGER IF EXISTS prevent_ledger_delete ON ledger_entries;
 CREATE TRIGGER prevent_ledger_delete
   BEFORE DELETE ON ledger_entries
   FOR EACH ROW EXECUTE FUNCTION prevent_ledger_mutation();
@@ -738,18 +820,26 @@ BEGIN
 END;
 $$ LANGUAGE plpgsql;
 
+DROP TRIGGER IF EXISTS prevent_event_transition_update ON event_state_transitions;
+DROP TRIGGER IF EXISTS prevent_event_transition_update ON event_state_transitions;
 CREATE TRIGGER prevent_event_transition_update
   BEFORE UPDATE ON event_state_transitions
   FOR EACH ROW EXECUTE FUNCTION prevent_transition_mutation();
 
+DROP TRIGGER IF EXISTS prevent_event_transition_delete ON event_state_transitions;
+DROP TRIGGER IF EXISTS prevent_event_transition_delete ON event_state_transitions;
 CREATE TRIGGER prevent_event_transition_delete
   BEFORE DELETE ON event_state_transitions
   FOR EACH ROW EXECUTE FUNCTION prevent_transition_mutation();
 
+DROP TRIGGER IF EXISTS prevent_quote_transition_update ON quote_state_transitions;
+DROP TRIGGER IF EXISTS prevent_quote_transition_update ON quote_state_transitions;
 CREATE TRIGGER prevent_quote_transition_update
   BEFORE UPDATE ON quote_state_transitions
   FOR EACH ROW EXECUTE FUNCTION prevent_transition_mutation();
 
+DROP TRIGGER IF EXISTS prevent_quote_transition_delete ON quote_state_transitions;
+DROP TRIGGER IF EXISTS prevent_quote_transition_delete ON quote_state_transitions;
 CREATE TRIGGER prevent_quote_transition_delete
   BEFORE DELETE ON quote_state_transitions
   FOR EACH ROW EXECUTE FUNCTION prevent_transition_mutation();
@@ -776,6 +866,8 @@ BEGIN
 END;
 $$ LANGUAGE plpgsql;
 
+DROP TRIGGER IF EXISTS update_client_lifetime_value_trigger ON ledger_entries;
+DROP TRIGGER IF EXISTS update_client_lifetime_value_trigger ON ledger_entries;
 CREATE TRIGGER update_client_lifetime_value_trigger
   AFTER INSERT ON ledger_entries
   FOR EACH ROW EXECUTE FUNCTION update_client_lifetime_value_on_ledger_insert();
@@ -837,6 +929,8 @@ BEGIN
 END;
 $$ LANGUAGE plpgsql;
 
+DROP TRIGGER IF EXISTS update_event_payment_status_trigger ON ledger_entries;
+DROP TRIGGER IF EXISTS update_event_payment_status_trigger ON ledger_entries;
 CREATE TRIGGER update_event_payment_status_trigger
   AFTER INSERT ON ledger_entries
   FOR EACH ROW EXECUTE FUNCTION update_event_payment_status_on_ledger_insert();
@@ -857,6 +951,8 @@ BEGIN
 END;
 $$ LANGUAGE plpgsql;
 
+DROP TRIGGER IF EXISTS update_client_stats_on_event_completion_trigger ON events;
+DROP TRIGGER IF EXISTS update_client_stats_on_event_completion_trigger ON events;
 CREATE TRIGGER update_client_stats_on_event_completion_trigger
   AFTER UPDATE OF status ON events
   FOR EACH ROW EXECUTE FUNCTION update_client_stats_on_event_completion();
@@ -872,6 +968,8 @@ BEGIN
 END;
 $$ LANGUAGE plpgsql;
 
+DROP TRIGGER IF EXISTS mark_event_aar_filed_trigger ON after_action_reviews;
+DROP TRIGGER IF EXISTS mark_event_aar_filed_trigger ON after_action_reviews;
 CREATE TRIGGER mark_event_aar_filed_trigger
   AFTER INSERT ON after_action_reviews
   FOR EACH ROW EXECUTE FUNCTION mark_event_aar_filed_on_insert();
@@ -891,13 +989,19 @@ ALTER TABLE after_action_reviews ENABLE ROW LEVEL SECURITY;
 
 -- EVENTS policies
 DROP POLICY IF EXISTS events_tenant_isolation_select ON events;
+DROP POLICY IF EXISTS events_tenant_isolation_select ON events;
+DROP POLICY IF EXISTS events_tenant_isolation_select ON events;
 CREATE POLICY events_tenant_isolation_select ON events
   FOR SELECT USING (tenant_id = get_current_tenant_id());
 
 DROP POLICY IF EXISTS events_tenant_isolation_insert ON events;
+DROP POLICY IF EXISTS events_tenant_isolation_insert ON events;
+DROP POLICY IF EXISTS events_tenant_isolation_insert ON events;
 CREATE POLICY events_tenant_isolation_insert ON events
   FOR INSERT WITH CHECK (tenant_id = get_current_tenant_id());
 
+DROP POLICY IF EXISTS events_tenant_isolation_update ON events;
+DROP POLICY IF EXISTS events_tenant_isolation_update ON events;
 DROP POLICY IF EXISTS events_tenant_isolation_update ON events;
 CREATE POLICY events_tenant_isolation_update ON events
   FOR UPDATE USING (tenant_id = get_current_tenant_id())
@@ -907,9 +1011,13 @@ CREATE POLICY events_tenant_isolation_update ON events
 
 -- EVENT_STATE_TRANSITIONS policies
 DROP POLICY IF EXISTS event_transitions_tenant_isolation_select ON event_state_transitions;
+DROP POLICY IF EXISTS event_transitions_tenant_isolation_select ON event_state_transitions;
+DROP POLICY IF EXISTS event_transitions_tenant_isolation_select ON event_state_transitions;
 CREATE POLICY event_transitions_tenant_isolation_select ON event_state_transitions
   FOR SELECT USING (tenant_id = get_current_tenant_id());
 
+DROP POLICY IF EXISTS event_transitions_tenant_isolation_insert ON event_state_transitions;
+DROP POLICY IF EXISTS event_transitions_tenant_isolation_insert ON event_state_transitions;
 DROP POLICY IF EXISTS event_transitions_tenant_isolation_insert ON event_state_transitions;
 CREATE POLICY event_transitions_tenant_isolation_insert ON event_state_transitions
   FOR INSERT WITH CHECK (tenant_id = get_current_tenant_id());
@@ -918,13 +1026,19 @@ CREATE POLICY event_transitions_tenant_isolation_insert ON event_state_transitio
 
 -- QUOTES policies
 DROP POLICY IF EXISTS quotes_tenant_isolation_select ON quotes;
+DROP POLICY IF EXISTS quotes_tenant_isolation_select ON quotes;
+DROP POLICY IF EXISTS quotes_tenant_isolation_select ON quotes;
 CREATE POLICY quotes_tenant_isolation_select ON quotes
   FOR SELECT USING (tenant_id = get_current_tenant_id());
 
 DROP POLICY IF EXISTS quotes_tenant_isolation_insert ON quotes;
+DROP POLICY IF EXISTS quotes_tenant_isolation_insert ON quotes;
+DROP POLICY IF EXISTS quotes_tenant_isolation_insert ON quotes;
 CREATE POLICY quotes_tenant_isolation_insert ON quotes
   FOR INSERT WITH CHECK (tenant_id = get_current_tenant_id());
 
+DROP POLICY IF EXISTS quotes_tenant_isolation_update ON quotes;
+DROP POLICY IF EXISTS quotes_tenant_isolation_update ON quotes;
 DROP POLICY IF EXISTS quotes_tenant_isolation_update ON quotes;
 CREATE POLICY quotes_tenant_isolation_update ON quotes
   FOR UPDATE USING (tenant_id = get_current_tenant_id())
@@ -934,9 +1048,13 @@ CREATE POLICY quotes_tenant_isolation_update ON quotes
 
 -- QUOTE_STATE_TRANSITIONS policies
 DROP POLICY IF EXISTS quote_transitions_tenant_isolation_select ON quote_state_transitions;
+DROP POLICY IF EXISTS quote_transitions_tenant_isolation_select ON quote_state_transitions;
+DROP POLICY IF EXISTS quote_transitions_tenant_isolation_select ON quote_state_transitions;
 CREATE POLICY quote_transitions_tenant_isolation_select ON quote_state_transitions
   FOR SELECT USING (tenant_id = get_current_tenant_id());
 
+DROP POLICY IF EXISTS quote_transitions_tenant_isolation_insert ON quote_state_transitions;
+DROP POLICY IF EXISTS quote_transitions_tenant_isolation_insert ON quote_state_transitions;
 DROP POLICY IF EXISTS quote_transitions_tenant_isolation_insert ON quote_state_transitions;
 CREATE POLICY quote_transitions_tenant_isolation_insert ON quote_state_transitions
   FOR INSERT WITH CHECK (tenant_id = get_current_tenant_id());
@@ -945,9 +1063,13 @@ CREATE POLICY quote_transitions_tenant_isolation_insert ON quote_state_transitio
 
 -- LEDGER_ENTRIES policies
 DROP POLICY IF EXISTS ledger_entries_tenant_isolation_select ON ledger_entries;
+DROP POLICY IF EXISTS ledger_entries_tenant_isolation_select ON ledger_entries;
+DROP POLICY IF EXISTS ledger_entries_tenant_isolation_select ON ledger_entries;
 CREATE POLICY ledger_entries_tenant_isolation_select ON ledger_entries
   FOR SELECT USING (tenant_id = get_current_tenant_id());
 
+DROP POLICY IF EXISTS ledger_entries_tenant_isolation_insert ON ledger_entries;
+DROP POLICY IF EXISTS ledger_entries_tenant_isolation_insert ON ledger_entries;
 DROP POLICY IF EXISTS ledger_entries_tenant_isolation_insert ON ledger_entries;
 CREATE POLICY ledger_entries_tenant_isolation_insert ON ledger_entries
   FOR INSERT WITH CHECK (tenant_id = get_current_tenant_id());
@@ -955,6 +1077,8 @@ CREATE POLICY ledger_entries_tenant_isolation_insert ON ledger_entries
 -- No UPDATE/DELETE policies - append-only ledger
 
 -- Client portal: clients can view their own ledger entries
+DROP POLICY IF EXISTS ledger_entries_client_can_view_own ON ledger_entries;
+DROP POLICY IF EXISTS ledger_entries_client_can_view_own ON ledger_entries;
 DROP POLICY IF EXISTS ledger_entries_client_can_view_own ON ledger_entries;
 CREATE POLICY ledger_entries_client_can_view_own ON ledger_entries
   FOR SELECT USING (
@@ -965,13 +1089,19 @@ CREATE POLICY ledger_entries_client_can_view_own ON ledger_entries
 
 -- EXPENSES policies
 DROP POLICY IF EXISTS expenses_tenant_isolation_select ON expenses;
+DROP POLICY IF EXISTS expenses_tenant_isolation_select ON expenses;
+DROP POLICY IF EXISTS expenses_tenant_isolation_select ON expenses;
 CREATE POLICY expenses_tenant_isolation_select ON expenses
   FOR SELECT USING (tenant_id = get_current_tenant_id());
 
 DROP POLICY IF EXISTS expenses_tenant_isolation_insert ON expenses;
+DROP POLICY IF EXISTS expenses_tenant_isolation_insert ON expenses;
+DROP POLICY IF EXISTS expenses_tenant_isolation_insert ON expenses;
 CREATE POLICY expenses_tenant_isolation_insert ON expenses
   FOR INSERT WITH CHECK (tenant_id = get_current_tenant_id());
 
+DROP POLICY IF EXISTS expenses_tenant_isolation_update ON expenses;
+DROP POLICY IF EXISTS expenses_tenant_isolation_update ON expenses;
 DROP POLICY IF EXISTS expenses_tenant_isolation_update ON expenses;
 CREATE POLICY expenses_tenant_isolation_update ON expenses
   FOR UPDATE USING (tenant_id = get_current_tenant_id())
@@ -981,13 +1111,19 @@ CREATE POLICY expenses_tenant_isolation_update ON expenses
 
 -- AFTER_ACTION_REVIEWS policies
 DROP POLICY IF EXISTS aar_tenant_isolation_select ON after_action_reviews;
+DROP POLICY IF EXISTS aar_tenant_isolation_select ON after_action_reviews;
+DROP POLICY IF EXISTS aar_tenant_isolation_select ON after_action_reviews;
 CREATE POLICY aar_tenant_isolation_select ON after_action_reviews
   FOR SELECT USING (tenant_id = get_current_tenant_id());
 
 DROP POLICY IF EXISTS aar_tenant_isolation_insert ON after_action_reviews;
+DROP POLICY IF EXISTS aar_tenant_isolation_insert ON after_action_reviews;
+DROP POLICY IF EXISTS aar_tenant_isolation_insert ON after_action_reviews;
 CREATE POLICY aar_tenant_isolation_insert ON after_action_reviews
   FOR INSERT WITH CHECK (tenant_id = get_current_tenant_id());
 
+DROP POLICY IF EXISTS aar_tenant_isolation_update ON after_action_reviews;
+DROP POLICY IF EXISTS aar_tenant_isolation_update ON after_action_reviews;
 DROP POLICY IF EXISTS aar_tenant_isolation_update ON after_action_reviews;
 CREATE POLICY aar_tenant_isolation_update ON after_action_reviews
   FOR UPDATE USING (tenant_id = get_current_tenant_id())
@@ -1000,7 +1136,8 @@ CREATE POLICY aar_tenant_isolation_update ON after_action_reviews
 -- ============================================
 
 -- Event financial summary
-CREATE OR REPLACE VIEW event_financial_summary AS
+DROP VIEW IF EXISTS event_financial_summary;
+CREATE VIEW event_financial_summary AS
 SELECT
   e.id AS event_id,
   e.tenant_id,
@@ -1029,7 +1166,8 @@ LEFT JOIN expenses ex ON ex.event_id = e.id
 GROUP BY e.id;
 
 -- Event time summary
-CREATE OR REPLACE VIEW event_time_summary AS
+DROP VIEW IF EXISTS event_time_summary;
+CREATE VIEW event_time_summary AS
 SELECT
   id AS event_id,
   tenant_id,
@@ -1051,7 +1189,8 @@ SELECT
 FROM events;
 
 -- Client financial summary
-CREATE OR REPLACE VIEW client_financial_summary AS
+DROP VIEW IF EXISTS client_financial_summary;
+CREATE VIEW client_financial_summary AS
 SELECT
   c.id AS client_id,
   c.tenant_id,

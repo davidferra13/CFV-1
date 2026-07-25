@@ -7,6 +7,7 @@ ALTER TABLE inquiries
   ADD COLUMN IF NOT EXISTS returning_client_confidence TEXT;
 
 -- Constrain confidence to known values
+ALTER TABLE inquiries DROP CONSTRAINT IF EXISTS inquiries_returning_client_confidence_check;
 ALTER TABLE inquiries
   ADD CONSTRAINT inquiries_returning_client_confidence_check
   CHECK (returning_client_confidence IS NULL OR returning_client_confidence IN ('confirmed', 'likely', 'possible'));

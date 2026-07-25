@@ -12,6 +12,7 @@
 import postgres from 'postgres'
 import { readdirSync, readFileSync } from 'node:fs'
 import path from 'node:path'
+import { splitStatements } from './sql-split.mjs'
 
 const DIR = path.join(process.cwd(), 'database', 'migrations')
 const APPLY = process.argv.includes('--apply')
@@ -63,8 +64,18 @@ function outstandingSet(existing, done) {
       continue
     }
     const missing = creates.filter((t) => !existing.has(t))
-    if (missing.length === 0) satisfied++
-    else out.push({ file, missing, body })
+    if (missing.length > 0) {
+      out.push({ file, missing, body })
+      continue
+    }
+    // A file whose tables all exist can still be carrying functions that were never
+    // created: that is how get_menu_total_component_count went missing while the menus
+    // tables it belongs to were present. CREATE OR REPLACE FUNCTION is safe to re-run.
+    if (INCLUDE_NONCREATING && /\bCREATE\s+(OR\s+REPLACE\s+)?FUNCTION\b/i.test(body)) {
+      out.push({ file, missing: [], body })
+      continue
+    }
+    satisfied++
   }
   return { out, satisfied, noCreate }
 }
@@ -97,10 +108,15 @@ for (let round = 1; ; round++) {
 
   for (const m of out) {
     try {
-      // CREATE INDEX CONCURRENTLY is illegal inside a transaction block, so those
-      // files run unwrapped and can leave an invalid index behind if they fail.
-      if (/create\s+index\s+concurrently/i.test(m.body)) await sql.unsafe(m.body)
-      else await sql.begin((tx) => [tx.unsafe(m.body)])
+      // CREATE INDEX CONCURRENTLY is illegal inside a transaction block, and a
+      // multi-statement query is itself one implicit transaction, so these files are
+      // split and sent a statement at a time. A failure mid-file can leave an invalid
+      // index behind, which is the trade CONCURRENTLY always makes.
+      if (/create\s+index\s+concurrently/i.test(m.body)) {
+        for (const stmt of splitStatements(m.body)) {
+          if (stmt.trim()) await sql.unsafe(stmt)
+        }
+      } else await sql.begin((tx) => [tx.unsafe(m.body)])
       done.add(m.file)
       appliedThisRound++
     } catch (err) {
@@ -111,6 +127,26 @@ for (let round = 1; ; round++) {
   console.log(`round ${round}: applied ${appliedThisRound}, failing ${errors.size}`)
   lastErrors = errors
   if (appliedThisRound === 0) break
+}
+
+// The retry loop breaks timestamp order: a file that fails in round 1 and succeeds in
+// round 2 lands after files that supersede it. event_financial_summary is defined three
+// times across the history, so whichever ran last wins, and that has to be the newest.
+// Every applied file is idempotent, so one final pass in filename order settles it.
+if (done.size > 0) {
+  let resettled = 0
+  for (const file of files) {
+    if (!done.has(file)) continue
+    const body = readFileSync(path.join(DIR, file), 'utf8')
+    if (/create\s+index\s+concurrently/i.test(body)) continue // not transactional, already applied
+    try {
+      await sql.begin((tx) => [tx.unsafe(body)])
+      resettled++
+    } catch {
+      // A file that will not re-apply cannot be reordered; it already had its effect.
+    }
+  }
+  console.log(`settle pass: re-applied ${resettled} in filename order`)
 }
 
 const after = await loadExistingTables()

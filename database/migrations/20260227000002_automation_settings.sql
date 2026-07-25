@@ -51,6 +51,7 @@ ALTER TABLE chef_automation_settings ENABLE ROW LEVEL SECURITY;
 
 -- Chefs read and write their own settings row
 DROP POLICY IF EXISTS "chef_automation_settings_chef_rw" ON chef_automation_settings;
+DROP POLICY IF EXISTS "chef_automation_settings_chef_rw" ON chef_automation_settings;
 CREATE POLICY "chef_automation_settings_chef_rw"
   ON chef_automation_settings
   FOR ALL
@@ -69,6 +70,7 @@ CREATE POLICY "chef_automation_settings_chef_rw"
   );
 
 -- Service role (crons, webhooks) can read all settings
+DROP POLICY IF EXISTS "chef_automation_settings_service_all" ON chef_automation_settings;
 DROP POLICY IF EXISTS "chef_automation_settings_service_all" ON chef_automation_settings;
 CREATE POLICY "chef_automation_settings_service_all"
   ON chef_automation_settings
@@ -104,6 +106,7 @@ BEGIN
 END;
 $$;
 
+DROP TRIGGER IF EXISTS chef_automation_settings_updated_at ON chef_automation_settings;
 CREATE TRIGGER chef_automation_settings_updated_at
   BEFORE UPDATE ON chef_automation_settings
   FOR EACH ROW EXECUTE FUNCTION set_chef_automation_settings_updated_at();

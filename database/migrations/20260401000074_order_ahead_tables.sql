@@ -62,16 +62,19 @@ alter table order_ahead_items enable row level security;
 alter table order_ahead_orders enable row level security;
 alter table order_ahead_order_items enable row level security;
 
+DROP POLICY IF EXISTS "Chefs manage their own order-ahead items" ON order_ahead_items;
 create policy "Chefs manage their own order-ahead items"
   on order_ahead_items for all
   using (chef_id = auth.uid())
   with check (chef_id = auth.uid());
 
+DROP POLICY IF EXISTS "Chefs manage their own orders" ON order_ahead_orders;
 create policy "Chefs manage their own orders"
   on order_ahead_orders for all
   using (chef_id = auth.uid())
   with check (chef_id = auth.uid());
 
+DROP POLICY IF EXISTS "Order items visible via order ownership" ON order_ahead_order_items;
 create policy "Order items visible via order ownership"
   on order_ahead_order_items for all
   using (
@@ -98,10 +101,12 @@ begin
 end;
 $$ language plpgsql;
 
+DROP TRIGGER IF EXISTS order_ahead_items_updated_at ON order_ahead_items;
 create trigger order_ahead_items_updated_at
   before update on order_ahead_items
   for each row execute function update_updated_at_column();
 
+DROP TRIGGER IF EXISTS order_ahead_orders_updated_at ON order_ahead_orders;
 create trigger order_ahead_orders_updated_at
   before update on order_ahead_orders
   for each row execute function update_updated_at_column();

@@ -13,7 +13,7 @@
 
 CREATE TABLE IF NOT EXISTS chef_ingredient_prices (
   id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
-  chef_id UUID NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+  chef_id UUID NOT NULL REFERENCES chefs(id) ON DELETE CASCADE,
   ingredient_id UUID NOT NULL REFERENCES ingredients(id) ON DELETE CASCADE,
   price_cents INT NOT NULL CHECK (price_cents > 0),
   price_unit TEXT NOT NULL DEFAULT 'lb',
@@ -48,7 +48,7 @@ COMMENT ON TABLE chef_ingredient_prices IS
 
 CREATE TABLE IF NOT EXISTS price_feedback (
   id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
-  chef_id UUID NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+  chef_id UUID NOT NULL REFERENCES chefs(id) ON DELETE CASCADE,
   ingredient_id UUID NOT NULL REFERENCES ingredients(id) ON DELETE CASCADE,
   pricing_region_id UUID REFERENCES openclaw.pricing_regions(id),
   shown_price_cents INT NOT NULL,

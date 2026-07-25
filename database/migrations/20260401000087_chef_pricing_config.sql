@@ -66,18 +66,21 @@ CREATE TABLE IF NOT EXISTS chef_pricing_config (
 -- RLS
 ALTER TABLE chef_pricing_config ENABLE ROW LEVEL SECURITY;
 
+DROP POLICY IF EXISTS "Chefs can view own pricing config" ON chef_pricing_config;
 CREATE POLICY "Chefs can view own pricing config"
   ON chef_pricing_config FOR SELECT
   USING (chef_id = auth.uid() OR chef_id IN (
     SELECT entity_id FROM user_roles WHERE auth_user_id = auth.uid() AND role = 'chef'
   ));
 
+DROP POLICY IF EXISTS "Chefs can insert own pricing config" ON chef_pricing_config;
 CREATE POLICY "Chefs can insert own pricing config"
   ON chef_pricing_config FOR INSERT
   WITH CHECK (chef_id IN (
     SELECT entity_id FROM user_roles WHERE auth_user_id = auth.uid() AND role = 'chef'
   ));
 
+DROP POLICY IF EXISTS "Chefs can update own pricing config" ON chef_pricing_config;
 CREATE POLICY "Chefs can update own pricing config"
   ON chef_pricing_config FOR UPDATE
   USING (chef_id IN (
@@ -93,6 +96,7 @@ BEGIN
 END;
 $$ LANGUAGE plpgsql;
 
+DROP TRIGGER IF EXISTS trg_chef_pricing_config_updated_at ON chef_pricing_config;
 DROP TRIGGER IF EXISTS trg_chef_pricing_config_updated_at ON chef_pricing_config;
 CREATE TRIGGER trg_chef_pricing_config_updated_at
   BEFORE UPDATE ON chef_pricing_config

@@ -23,7 +23,10 @@ CREATE INDEX IF NOT EXISTS idx_chef_documents_tenant_entity
 CREATE INDEX IF NOT EXISTS idx_chef_documents_tenant_hash
   ON chef_documents(tenant_id, file_hash)
   WHERE file_hash IS NOT NULL;
-INSERT INTO storage.buckets (id, name, public, file_size_limit, allowed_mime_types)
+DO $cfguard$
+BEGIN
+  IF EXISTS (SELECT 1 FROM information_schema.schemata WHERE schema_name = 'storage') THEN
+    EXECUTE $cfstorage$INSERT INTO storage.buckets (id, name, public, file_size_limit, allowed_mime_types)
 VALUES (
   'chef-documents',
   'chef-documents',
@@ -46,8 +49,14 @@ VALUES (
     'application/octet-stream'
   ]
 )
-ON CONFLICT (id) DO NOTHING;
-DO $$ BEGIN
+ON CONFLICT (id) DO NOTHING$cfstorage$;
+  END IF;
+END
+$cfguard$;
+DO $cfguard$
+BEGIN
+  IF EXISTS (SELECT 1 FROM information_schema.schemata WHERE schema_name = 'storage') THEN
+    EXECUTE $cfstorage$DO $$ BEGIN
   DROP POLICY IF EXISTS "chef_documents_upload_scoped" ON storage.objects;
 CREATE POLICY "chef_documents_upload_scoped"
     ON storage.objects FOR INSERT
@@ -61,8 +70,14 @@ CREATE POLICY "chef_documents_upload_scoped"
       )
     );
 EXCEPTION WHEN duplicate_object OR insufficient_privilege THEN NULL;
-END $$;
-DO $$ BEGIN
+END $$$cfstorage$;
+  END IF;
+END
+$cfguard$;
+DO $cfguard$
+BEGIN
+  IF EXISTS (SELECT 1 FROM information_schema.schemata WHERE schema_name = 'storage') THEN
+    EXECUTE $cfstorage$DO $$ BEGIN
   DROP POLICY IF EXISTS "chef_documents_read_scoped" ON storage.objects;
 CREATE POLICY "chef_documents_read_scoped"
     ON storage.objects FOR SELECT
@@ -76,8 +91,14 @@ CREATE POLICY "chef_documents_read_scoped"
       )
     );
 EXCEPTION WHEN duplicate_object OR insufficient_privilege THEN NULL;
-END $$;
-DO $$ BEGIN
+END $$$cfstorage$;
+  END IF;
+END
+$cfguard$;
+DO $cfguard$
+BEGIN
+  IF EXISTS (SELECT 1 FROM information_schema.schemata WHERE schema_name = 'storage') THEN
+    EXECUTE $cfstorage$DO $$ BEGIN
   DROP POLICY IF EXISTS "chef_documents_delete_scoped" ON storage.objects;
 CREATE POLICY "chef_documents_delete_scoped"
     ON storage.objects FOR DELETE
@@ -91,4 +112,7 @@ CREATE POLICY "chef_documents_delete_scoped"
       )
     );
 EXCEPTION WHEN duplicate_object OR insufficient_privilege THEN NULL;
-END $$;
+END $$$cfstorage$;
+  END IF;
+END
+$cfguard$;

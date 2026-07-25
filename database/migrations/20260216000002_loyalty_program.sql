@@ -13,37 +13,55 @@
 -- =====================================================================================
 
 -- Transaction types for the loyalty ledger
-CREATE TYPE loyalty_transaction_type AS ENUM (
+DO $idem$
+BEGIN
+  IF NOT EXISTS (SELECT 1 FROM pg_type WHERE typname = 'loyalty_transaction_type') THEN
+    CREATE TYPE loyalty_transaction_type AS ENUM (
   'earned',       -- points from completed events
   'redeemed',     -- points spent on rewards
   'bonus',        -- manual bonus from chef
   'adjustment',   -- admin correction
   'expired'       -- expired points (future use)
 );
+  END IF;
+END
+$idem$;
 
 -- Reward types (service-denominated, never cash)
-CREATE TYPE loyalty_reward_type AS ENUM (
+DO $idem$
+BEGIN
+  IF NOT EXISTS (SELECT 1 FROM pg_type WHERE typname = 'loyalty_reward_type') THEN
+    CREATE TYPE loyalty_reward_type AS ENUM (
   'discount_fixed',   -- e.g. $25 off next dinner
   'discount_percent', -- e.g. 15% off
   'free_course',      -- complimentary course
   'free_dinner',      -- full dinner coverage
   'upgrade'           -- bonus courses, tasting menu upgrade
 );
+  END IF;
+END
+$idem$;
 
 -- Loyalty tier enum (replaces untyped TEXT on clients)
-CREATE TYPE loyalty_tier AS ENUM (
+DO $idem$
+BEGIN
+  IF NOT EXISTS (SELECT 1 FROM pg_type WHERE typname = 'loyalty_tier') THEN
+    CREATE TYPE loyalty_tier AS ENUM (
   'bronze',
   'silver',
   'gold',
   'platinum'
 );
+  END IF;
+END
+$idem$;
 
 -- =====================================================================================
 -- TABLE 1: loyalty_transactions (append-only ledger)
 -- =====================================================================================
 -- Every point earn/redeem/bonus is an immutable record. Client balance is derived.
 
-CREATE TABLE loyalty_transactions (
+CREATE TABLE IF NOT EXISTS loyalty_transactions (
   -- Identity
   id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
   tenant_id UUID NOT NULL REFERENCES chefs(id) ON DELETE CASCADE,
@@ -74,7 +92,7 @@ COMMENT ON TABLE loyalty_transactions IS 'Append-only ledger of all loyalty poin
 -- =====================================================================================
 -- Service-denominated rewards the chef offers. Chef never spends money on rewards.
 
-CREATE TABLE loyalty_rewards (
+CREATE TABLE IF NOT EXISTS loyalty_rewards (
   -- Identity
   id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
   tenant_id UUID NOT NULL REFERENCES chefs(id) ON DELETE CASCADE,
@@ -112,7 +130,7 @@ COMMENT ON TABLE loyalty_rewards IS 'Service-denominated reward catalog. The che
 -- TABLE 3: loyalty_config (per-tenant program settings)
 -- =====================================================================================
 
-CREATE TABLE loyalty_config (
+CREATE TABLE IF NOT EXISTS loyalty_config (
   -- Identity (one row per tenant)
   id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
   tenant_id UUID NOT NULL REFERENCES chefs(id) ON DELETE CASCADE,
@@ -161,7 +179,7 @@ ALTER TABLE clients ADD COLUMN IF NOT EXISTS total_events_completed INTEGER DEFA
 -- Convert loyalty_tier from TEXT to the new enum
 -- (Drop the old text column and recreate as enum — the column has no data yet)
 ALTER TABLE clients DROP COLUMN IF EXISTS loyalty_tier;
-ALTER TABLE clients ADD COLUMN loyalty_tier loyalty_tier DEFAULT 'bronze' NOT NULL;
+ALTER TABLE clients ADD COLUMN IF NOT EXISTS loyalty_tier loyalty_tier DEFAULT 'bronze' NOT NULL;
 
 -- Add loyalty_points_awarded flag to events (for the closure checklist pattern)
 ALTER TABLE events ADD COLUMN IF NOT EXISTS loyalty_points_awarded BOOLEAN DEFAULT false NOT NULL;
@@ -170,19 +188,19 @@ ALTER TABLE events ADD COLUMN IF NOT EXISTS loyalty_points_awarded BOOLEAN DEFAU
 -- INDEXES
 -- =====================================================================================
 
-CREATE INDEX idx_loyalty_transactions_tenant ON loyalty_transactions(tenant_id);
-CREATE INDEX idx_loyalty_transactions_client ON loyalty_transactions(client_id);
-CREATE INDEX idx_loyalty_transactions_event ON loyalty_transactions(event_id);
-CREATE INDEX idx_loyalty_transactions_tenant_client ON loyalty_transactions(tenant_id, client_id);
-CREATE INDEX idx_loyalty_transactions_type ON loyalty_transactions(type);
+CREATE INDEX IF NOT EXISTS idx_loyalty_transactions_tenant ON loyalty_transactions(tenant_id);
+CREATE INDEX IF NOT EXISTS idx_loyalty_transactions_client ON loyalty_transactions(client_id);
+CREATE INDEX IF NOT EXISTS idx_loyalty_transactions_event ON loyalty_transactions(event_id);
+CREATE INDEX IF NOT EXISTS idx_loyalty_transactions_tenant_client ON loyalty_transactions(tenant_id, client_id);
+CREATE INDEX IF NOT EXISTS idx_loyalty_transactions_type ON loyalty_transactions(type);
 
-CREATE INDEX idx_loyalty_rewards_tenant ON loyalty_rewards(tenant_id);
-CREATE INDEX idx_loyalty_rewards_active ON loyalty_rewards(tenant_id, is_active);
+CREATE INDEX IF NOT EXISTS idx_loyalty_rewards_tenant ON loyalty_rewards(tenant_id);
+CREATE INDEX IF NOT EXISTS idx_loyalty_rewards_active ON loyalty_rewards(tenant_id, is_active);
 
-CREATE INDEX idx_loyalty_config_tenant ON loyalty_config(tenant_id);
+CREATE INDEX IF NOT EXISTS idx_loyalty_config_tenant ON loyalty_config(tenant_id);
 
-CREATE INDEX idx_clients_loyalty_tier ON clients(tenant_id, loyalty_tier);
-CREATE INDEX idx_clients_loyalty_points ON clients(tenant_id, loyalty_points);
+CREATE INDEX IF NOT EXISTS idx_clients_loyalty_tier ON clients(tenant_id, loyalty_tier);
+CREATE INDEX IF NOT EXISTS idx_clients_loyalty_points ON clients(tenant_id, loyalty_points);
 
 -- =====================================================================================
 -- RLS POLICIES
@@ -192,9 +210,13 @@ CREATE INDEX idx_clients_loyalty_points ON clients(tenant_id, loyalty_points);
 ALTER TABLE loyalty_transactions ENABLE ROW LEVEL SECURITY;
 
 DROP POLICY IF EXISTS tenant_isolation_select_loyalty_transactions ON loyalty_transactions;
+DROP POLICY IF EXISTS tenant_isolation_select_loyalty_transactions ON loyalty_transactions;
+DROP POLICY IF EXISTS tenant_isolation_select_loyalty_transactions ON loyalty_transactions;
 CREATE POLICY tenant_isolation_select_loyalty_transactions ON loyalty_transactions
   FOR SELECT USING (tenant_id = get_current_tenant_id());
 
+DROP POLICY IF EXISTS tenant_isolation_insert_loyalty_transactions ON loyalty_transactions;
+DROP POLICY IF EXISTS tenant_isolation_insert_loyalty_transactions ON loyalty_transactions;
 DROP POLICY IF EXISTS tenant_isolation_insert_loyalty_transactions ON loyalty_transactions;
 CREATE POLICY tenant_isolation_insert_loyalty_transactions ON loyalty_transactions
   FOR INSERT WITH CHECK (tenant_id = get_current_tenant_id());
@@ -205,13 +227,19 @@ CREATE POLICY tenant_isolation_insert_loyalty_transactions ON loyalty_transactio
 ALTER TABLE loyalty_rewards ENABLE ROW LEVEL SECURITY;
 
 DROP POLICY IF EXISTS tenant_isolation_select_loyalty_rewards ON loyalty_rewards;
+DROP POLICY IF EXISTS tenant_isolation_select_loyalty_rewards ON loyalty_rewards;
+DROP POLICY IF EXISTS tenant_isolation_select_loyalty_rewards ON loyalty_rewards;
 CREATE POLICY tenant_isolation_select_loyalty_rewards ON loyalty_rewards
   FOR SELECT USING (tenant_id = get_current_tenant_id());
 
 DROP POLICY IF EXISTS tenant_isolation_insert_loyalty_rewards ON loyalty_rewards;
+DROP POLICY IF EXISTS tenant_isolation_insert_loyalty_rewards ON loyalty_rewards;
+DROP POLICY IF EXISTS tenant_isolation_insert_loyalty_rewards ON loyalty_rewards;
 CREATE POLICY tenant_isolation_insert_loyalty_rewards ON loyalty_rewards
   FOR INSERT WITH CHECK (tenant_id = get_current_tenant_id());
 
+DROP POLICY IF EXISTS tenant_isolation_update_loyalty_rewards ON loyalty_rewards;
+DROP POLICY IF EXISTS tenant_isolation_update_loyalty_rewards ON loyalty_rewards;
 DROP POLICY IF EXISTS tenant_isolation_update_loyalty_rewards ON loyalty_rewards;
 CREATE POLICY tenant_isolation_update_loyalty_rewards ON loyalty_rewards
   FOR UPDATE
@@ -222,13 +250,19 @@ CREATE POLICY tenant_isolation_update_loyalty_rewards ON loyalty_rewards
 ALTER TABLE loyalty_config ENABLE ROW LEVEL SECURITY;
 
 DROP POLICY IF EXISTS tenant_isolation_select_loyalty_config ON loyalty_config;
+DROP POLICY IF EXISTS tenant_isolation_select_loyalty_config ON loyalty_config;
+DROP POLICY IF EXISTS tenant_isolation_select_loyalty_config ON loyalty_config;
 CREATE POLICY tenant_isolation_select_loyalty_config ON loyalty_config
   FOR SELECT USING (tenant_id = get_current_tenant_id());
 
 DROP POLICY IF EXISTS tenant_isolation_insert_loyalty_config ON loyalty_config;
+DROP POLICY IF EXISTS tenant_isolation_insert_loyalty_config ON loyalty_config;
+DROP POLICY IF EXISTS tenant_isolation_insert_loyalty_config ON loyalty_config;
 CREATE POLICY tenant_isolation_insert_loyalty_config ON loyalty_config
   FOR INSERT WITH CHECK (tenant_id = get_current_tenant_id());
 
+DROP POLICY IF EXISTS tenant_isolation_update_loyalty_config ON loyalty_config;
+DROP POLICY IF EXISTS tenant_isolation_update_loyalty_config ON loyalty_config;
 DROP POLICY IF EXISTS tenant_isolation_update_loyalty_config ON loyalty_config;
 CREATE POLICY tenant_isolation_update_loyalty_config ON loyalty_config
   FOR UPDATE
@@ -236,6 +270,8 @@ CREATE POLICY tenant_isolation_update_loyalty_config ON loyalty_config
   WITH CHECK (tenant_id = get_current_tenant_id());
 
 -- Client-side read access to loyalty_transactions (own records only)
+DROP POLICY IF EXISTS client_read_own_loyalty_transactions ON loyalty_transactions;
+DROP POLICY IF EXISTS client_read_own_loyalty_transactions ON loyalty_transactions;
 DROP POLICY IF EXISTS client_read_own_loyalty_transactions ON loyalty_transactions;
 CREATE POLICY client_read_own_loyalty_transactions ON loyalty_transactions
   FOR SELECT
@@ -247,6 +283,8 @@ CREATE POLICY client_read_own_loyalty_transactions ON loyalty_transactions
   );
 
 -- Client-side read access to loyalty_rewards (active only)
+DROP POLICY IF EXISTS client_read_active_loyalty_rewards ON loyalty_rewards;
+DROP POLICY IF EXISTS client_read_active_loyalty_rewards ON loyalty_rewards;
 DROP POLICY IF EXISTS client_read_active_loyalty_rewards ON loyalty_rewards;
 CREATE POLICY client_read_active_loyalty_rewards ON loyalty_rewards
   FOR SELECT
@@ -272,16 +310,22 @@ BEGIN
 END;
 $$ LANGUAGE plpgsql;
 
+DROP TRIGGER IF EXISTS enforce_loyalty_transaction_immutability ON loyalty_transactions;
+DROP TRIGGER IF EXISTS enforce_loyalty_transaction_immutability ON loyalty_transactions;
 CREATE TRIGGER enforce_loyalty_transaction_immutability
   BEFORE UPDATE OR DELETE ON loyalty_transactions
   FOR EACH ROW EXECUTE FUNCTION prevent_loyalty_transaction_mutation();
 
 -- Auto-update updated_at on loyalty_rewards
+DROP TRIGGER IF EXISTS update_loyalty_rewards_updated_at ON loyalty_rewards;
+DROP TRIGGER IF EXISTS update_loyalty_rewards_updated_at ON loyalty_rewards;
 CREATE TRIGGER update_loyalty_rewards_updated_at
   BEFORE UPDATE ON loyalty_rewards
   FOR EACH ROW EXECUTE FUNCTION update_updated_at_timestamp();
 
 -- Auto-update updated_at on loyalty_config
+DROP TRIGGER IF EXISTS update_loyalty_config_updated_at ON loyalty_config;
+DROP TRIGGER IF EXISTS update_loyalty_config_updated_at ON loyalty_config;
 CREATE TRIGGER update_loyalty_config_updated_at
   BEFORE UPDATE ON loyalty_config
   FOR EACH ROW EXECUTE FUNCTION update_updated_at_timestamp();

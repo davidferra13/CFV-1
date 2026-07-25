@@ -4,7 +4,7 @@
 -- ============================================
 
 ALTER TABLE chef_preferences
-  ADD COLUMN dashboard_widgets JSONB NOT NULL DEFAULT '[
+  ADD COLUMN IF NOT EXISTS dashboard_widgets JSONB NOT NULL DEFAULT '[
     {"id":"onboarding_accelerator","enabled":true},
     {"id":"todays_schedule","enabled":true},
     {"id":"next_action","enabled":true},
@@ -18,6 +18,7 @@ ALTER TABLE chef_preferences
     {"id":"activity","enabled":true}
   ]'::jsonb;
 
+ALTER TABLE chef_preferences DROP CONSTRAINT IF EXISTS chef_preferences_dashboard_widgets_array;
 ALTER TABLE chef_preferences
   ADD CONSTRAINT chef_preferences_dashboard_widgets_array
     CHECK (jsonb_typeof(dashboard_widgets) = 'array');

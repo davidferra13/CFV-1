@@ -6,7 +6,7 @@
 -- ============================================================
 -- 1. event_travel_legs
 -- ============================================================
-CREATE TABLE event_travel_legs (
+CREATE TABLE IF NOT EXISTS event_travel_legs (
   id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
 
   -- Ownership
@@ -68,7 +68,7 @@ CREATE TABLE event_travel_legs (
 -- 2. travel_leg_ingredients
 -- Specialty sourcing: link legs to specific recipe ingredients
 -- ============================================================
-CREATE TABLE travel_leg_ingredients (
+CREATE TABLE IF NOT EXISTS travel_leg_ingredients (
   id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
 
   leg_id        UUID NOT NULL REFERENCES event_travel_legs(id) ON DELETE CASCADE,
@@ -101,14 +101,14 @@ ALTER TABLE events ADD COLUMN IF NOT EXISTS travel_route_ready BOOLEAN NOT NULL 
 -- ============================================================
 -- 4. Indexes
 -- ============================================================
-CREATE INDEX idx_travel_legs_chef_id         ON event_travel_legs(chef_id);
-CREATE INDEX idx_travel_legs_tenant_id        ON event_travel_legs(tenant_id);
-CREATE INDEX idx_travel_legs_primary_event    ON event_travel_legs(primary_event_id);
-CREATE INDEX idx_travel_legs_leg_date         ON event_travel_legs(leg_date);
-CREATE INDEX idx_travel_legs_status           ON event_travel_legs(status);
+CREATE INDEX IF NOT EXISTS idx_travel_legs_chef_id         ON event_travel_legs(chef_id);
+CREATE INDEX IF NOT EXISTS idx_travel_legs_tenant_id        ON event_travel_legs(tenant_id);
+CREATE INDEX IF NOT EXISTS idx_travel_legs_primary_event    ON event_travel_legs(primary_event_id);
+CREATE INDEX IF NOT EXISTS idx_travel_legs_leg_date         ON event_travel_legs(leg_date);
+CREATE INDEX IF NOT EXISTS idx_travel_legs_status           ON event_travel_legs(status);
 
-CREATE INDEX idx_travel_leg_ingredients_leg_id ON travel_leg_ingredients(leg_id);
-CREATE INDEX idx_travel_leg_ingredients_event  ON travel_leg_ingredients(event_id);
+CREATE INDEX IF NOT EXISTS idx_travel_leg_ingredients_leg_id ON travel_leg_ingredients(leg_id);
+CREATE INDEX IF NOT EXISTS idx_travel_leg_ingredients_event  ON travel_leg_ingredients(event_id);
 
 -- ============================================================
 -- 5. updated_at trigger for travel_legs
@@ -121,6 +121,7 @@ BEGIN
 END;
 $$ LANGUAGE plpgsql;
 
+DROP TRIGGER IF EXISTS travel_leg_updated_at ON event_travel_legs;
 CREATE TRIGGER travel_leg_updated_at
   BEFORE UPDATE ON event_travel_legs
   FOR EACH ROW EXECUTE FUNCTION update_travel_leg_updated_at();
@@ -134,6 +135,7 @@ ALTER TABLE travel_leg_ingredients ENABLE ROW LEVEL SECURITY;
 -- Chefs can manage their own legs
 -- Uses get_current_user_role() / get_current_tenant_id() helpers (established project pattern)
 DROP POLICY IF EXISTS "chefs_manage_own_travel_legs" ON event_travel_legs;
+DROP POLICY IF EXISTS "chefs_manage_own_travel_legs" ON event_travel_legs;
 CREATE POLICY "chefs_manage_own_travel_legs"
   ON event_travel_legs
   FOR ALL
@@ -141,6 +143,7 @@ CREATE POLICY "chefs_manage_own_travel_legs"
   WITH CHECK (get_current_user_role() = 'chef' AND tenant_id = get_current_tenant_id());
 
 -- Chefs can manage travel_leg_ingredients via leg ownership (tenant-scoped join)
+DROP POLICY IF EXISTS "chefs_manage_own_travel_leg_ingredients" ON travel_leg_ingredients;
 DROP POLICY IF EXISTS "chefs_manage_own_travel_leg_ingredients" ON travel_leg_ingredients;
 CREATE POLICY "chefs_manage_own_travel_leg_ingredients"
   ON travel_leg_ingredients

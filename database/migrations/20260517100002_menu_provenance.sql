@@ -8,6 +8,7 @@ ALTER TABLE menus
   ADD COLUMN IF NOT EXISTS origin_metadata JSONB NOT NULL DEFAULT '{}';
 
 -- Constrain origin_type to known values
+ALTER TABLE menus DROP CONSTRAINT IF EXISTS menus_origin_type_check;
 ALTER TABLE menus
   ADD CONSTRAINT menus_origin_type_check
   CHECK (origin_type IN (

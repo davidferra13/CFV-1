@@ -3,7 +3,10 @@
 -- Previous behavior silently clamped to 0, hiding the overage from the chef.
 -- Tips are still excluded from outstanding calculation (correct).
 
-CREATE OR REPLACE VIEW event_financial_summary AS
+-- CREATE OR REPLACE cannot change a view column's type or drop one, so the
+-- view is dropped first. It has no dependent views.
+DROP VIEW IF EXISTS event_financial_summary;
+CREATE VIEW event_financial_summary AS
 SELECT
   e.id AS event_id,
   e.tenant_id,

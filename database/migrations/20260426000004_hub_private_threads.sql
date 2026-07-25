@@ -59,6 +59,7 @@ BEGIN
 END;
 $$ LANGUAGE plpgsql;
 
+DROP TRIGGER IF EXISTS trg_private_message_update_thread ON hub_private_messages;
 CREATE TRIGGER trg_private_message_update_thread
   AFTER INSERT ON hub_private_messages
   FOR EACH ROW
@@ -69,7 +70,9 @@ CREATE TRIGGER trg_private_message_update_thread
 ALTER TABLE hub_private_threads ENABLE ROW LEVEL SECURITY;
 ALTER TABLE hub_private_messages ENABLE ROW LEVEL SECURITY;
 
+DROP POLICY IF EXISTS "hub_private_threads_all" ON hub_private_threads;
 CREATE POLICY "hub_private_threads_all" ON hub_private_threads
   FOR ALL USING (true) WITH CHECK (true);
+DROP POLICY IF EXISTS "hub_private_messages_all" ON hub_private_messages;
 CREATE POLICY "hub_private_messages_all" ON hub_private_messages
   FOR ALL USING (true) WITH CHECK (true);

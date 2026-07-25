@@ -1,4 +1,4 @@
-﻿-- Studio / Website Builder: 5 new tables
+-- Studio / Website Builder: 5 new tables
 -- chef_sites, chef_site_pages, chef_site_sections, chef_site_media, chef_site_analytics
 
 -- Root entity: one site per tenant

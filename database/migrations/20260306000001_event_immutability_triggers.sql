@@ -55,6 +55,7 @@ COMMENT ON FUNCTION prevent_event_price_mutation_after_acceptance IS
 
 -- Fire ONLY when one of the three pricing columns is explicitly updated.
 -- This avoids overhead on every event UPDATE (status changes, notes, etc.).
+DROP TRIGGER IF EXISTS prevent_event_price_mutation_trigger ON events;
 CREATE TRIGGER prevent_event_price_mutation_trigger
   BEFORE UPDATE OF quoted_price_cents, deposit_amount_cents, pricing_model ON events
   FOR EACH ROW
@@ -97,6 +98,7 @@ COMMENT ON FUNCTION prevent_event_allergy_mutation IS
   'Fires on UPDATE OF allergies.';
 
 -- Fire ONLY when allergies column is explicitly updated.
+DROP TRIGGER IF EXISTS prevent_event_allergy_mutation_trigger ON events;
 CREATE TRIGGER prevent_event_allergy_mutation_trigger
   BEFORE UPDATE OF allergies ON events
   FOR EACH ROW

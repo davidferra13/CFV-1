@@ -18,11 +18,12 @@ CREATE TABLE IF NOT EXISTS client_quick_requests (
   updated_at timestamptz NOT NULL DEFAULT now()
 );
 -- Indexes for common access patterns
-CREATE INDEX idx_quick_requests_tenant_status ON client_quick_requests(tenant_id, status);
-CREATE INDEX idx_quick_requests_client ON client_quick_requests(client_id);
+CREATE INDEX IF NOT EXISTS idx_quick_requests_tenant_status ON client_quick_requests(tenant_id, status);
+CREATE INDEX IF NOT EXISTS idx_quick_requests_client ON client_quick_requests(client_id);
 -- RLS
 ALTER TABLE client_quick_requests ENABLE ROW LEVEL SECURITY;
 -- Chefs can see all requests for their tenant
+DROP POLICY IF EXISTS "Chefs see own tenant requests" ON client_quick_requests;
 DROP POLICY IF EXISTS "Chefs see own tenant requests" ON client_quick_requests;
 CREATE POLICY "Chefs see own tenant requests"
   ON client_quick_requests FOR SELECT
@@ -31,6 +32,7 @@ CREATE POLICY "Chefs see own tenant requests"
   ));
 -- Chefs can update requests (confirm, decline, convert)
 DROP POLICY IF EXISTS "Chefs update own tenant requests" ON client_quick_requests;
+DROP POLICY IF EXISTS "Chefs update own tenant requests" ON client_quick_requests;
 CREATE POLICY "Chefs update own tenant requests"
   ON client_quick_requests FOR UPDATE
   USING (tenant_id IN (
@@ -38,12 +40,14 @@ CREATE POLICY "Chefs update own tenant requests"
   ));
 -- Clients can see their own requests
 DROP POLICY IF EXISTS "Clients see own requests" ON client_quick_requests;
+DROP POLICY IF EXISTS "Clients see own requests" ON client_quick_requests;
 CREATE POLICY "Clients see own requests"
   ON client_quick_requests FOR SELECT
   USING (client_id IN (
     SELECT entity_id FROM user_roles WHERE auth_user_id = auth.uid() AND role = 'client'
   ));
 -- Clients can create requests
+DROP POLICY IF EXISTS "Clients create own requests" ON client_quick_requests;
 DROP POLICY IF EXISTS "Clients create own requests" ON client_quick_requests;
 CREATE POLICY "Clients create own requests"
   ON client_quick_requests FOR INSERT
@@ -58,6 +62,7 @@ BEGIN
   RETURN NEW;
 END;
 $$ LANGUAGE plpgsql;
+DROP TRIGGER IF EXISTS trg_quick_request_updated_at ON client_quick_requests;
 CREATE TRIGGER trg_quick_request_updated_at
   BEFORE UPDATE ON client_quick_requests
   FOR EACH ROW

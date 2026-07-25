@@ -8,6 +8,7 @@ ALTER TABLE chef_preferences
   ADD COLUMN IF NOT EXISTS saved_custom_nav_hrefs jsonb DEFAULT NULL;
 
 -- Validate archetype values
+ALTER TABLE chef_preferences DROP CONSTRAINT IF EXISTS chef_preferences_archetype_check;
 ALTER TABLE chef_preferences
   ADD CONSTRAINT chef_preferences_archetype_check
   CHECK (archetype IS NULL OR archetype IN (

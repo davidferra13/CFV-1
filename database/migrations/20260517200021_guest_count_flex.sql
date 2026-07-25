@@ -1,23 +1,14 @@
 -- Guest Count Flex: living guest counts, change history, cutoff policies
 -- ADDITIVE ONLY: no DROP, DELETE, or TRUNCATE
 
--- Change history: every guest count modification with impact assessment
-CREATE TABLE IF NOT EXISTS guest_count_changes (
-  id uuid PRIMARY KEY DEFAULT gen_random_uuid(),
-  event_id uuid NOT NULL REFERENCES events(id) ON DELETE CASCADE,
-  tenant_id uuid NOT NULL REFERENCES chefs(id) ON DELETE CASCADE,
-  from_count integer NOT NULL,
-  to_count integer NOT NULL,
-  stage text NOT NULL CHECK (stage IN ('quoted', 'confirmed', 'final', 'actual')),
-  changed_by uuid NOT NULL,
-  reason text,
-  impact_json jsonb,
-  changed_at timestamptz NOT NULL DEFAULT now()
-);
-
+-- Change history: guest_count_changes is created by 20260401000067_menu_collaboration.sql,
+-- which is the canonical shape (previous_count/new_count/requested_by/created_at). The
+-- from_count/to_count/changed_at definition that used to sit here never took effect: the
+-- CREATE TABLE IF NOT EXISTS no-opped against the existing table and the index below then
+-- failed on a column that did not exist, taking the rest of this migration with it.
 CREATE INDEX IF NOT EXISTS idx_guest_count_changes_event ON guest_count_changes(event_id);
 CREATE INDEX IF NOT EXISTS idx_guest_count_changes_tenant ON guest_count_changes(tenant_id);
-CREATE INDEX IF NOT EXISTS idx_guest_count_changes_time ON guest_count_changes(changed_at DESC);
+CREATE INDEX IF NOT EXISTS idx_guest_count_changes_time ON guest_count_changes(created_at DESC);
 
 -- Cutoff policies: per-event rules for when changes are restricted
 CREATE TABLE IF NOT EXISTS event_cutoff_policies (

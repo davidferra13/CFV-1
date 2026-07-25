@@ -14,11 +14,12 @@ CREATE TABLE IF NOT EXISTS packing_templates (
   updated_at TIMESTAMPTZ NOT NULL DEFAULT now()
 );
 -- Index for chef lookups
-CREATE INDEX idx_packing_templates_chef_id ON packing_templates(chef_id);
+CREATE INDEX IF NOT EXISTS idx_packing_templates_chef_id ON packing_templates(chef_id);
 -- Index for event_type matching (auto-suggest)
-CREATE INDEX idx_packing_templates_event_type ON packing_templates(chef_id, event_type) WHERE event_type IS NOT NULL;
+CREATE INDEX IF NOT EXISTS idx_packing_templates_event_type ON packing_templates(chef_id, event_type) WHERE event_type IS NOT NULL;
 -- RLS
 ALTER TABLE packing_templates ENABLE ROW LEVEL SECURITY;
+DROP POLICY IF EXISTS "Chefs can manage their own packing templates" ON packing_templates;
 DROP POLICY IF EXISTS "Chefs can manage their own packing templates" ON packing_templates;
 CREATE POLICY "Chefs can manage their own packing templates"
   ON packing_templates
@@ -43,6 +44,7 @@ BEGIN
   RETURN NEW;
 END;
 $$ LANGUAGE plpgsql;
+DROP TRIGGER IF EXISTS trg_packing_templates_updated_at ON packing_templates;
 CREATE TRIGGER trg_packing_templates_updated_at
   BEFORE UPDATE ON packing_templates
   FOR EACH ROW

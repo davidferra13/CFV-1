@@ -1,4 +1,8 @@
--- Create the menu-uploads storage bucket for preserving original uploaded files.
+
+DO $cfguard$
+BEGIN
+  IF EXISTS (SELECT 1 FROM information_schema.schemata WHERE schema_name = 'storage') THEN
+    EXECUTE $cfstorage$-- Create the menu-uploads storage bucket for preserving original uploaded files.
 -- Files are stored at: {tenant_id}/{job_id}/{filename}
 -- Referenced by: app/api/menus/upload/route.ts
 
@@ -20,9 +24,14 @@ VALUES (
     'application/octet-stream'
   ]
 )
-ON CONFLICT (id) DO NOTHING;
-
--- RLS: chefs can upload to their own tenant folder
+ON CONFLICT (id) DO NOTHING$cfstorage$;
+  END IF;
+END
+$cfguard$;
+DO $cfguard$
+BEGIN
+  IF EXISTS (SELECT 1 FROM information_schema.schemata WHERE schema_name = 'storage') THEN
+    EXECUTE $cfstorage$-- RLS: chefs can upload to their own tenant folder
 DO $$ BEGIN
   DROP POLICY IF EXISTS "Chefs can upload menu files" ON storage.objects;
 CREATE POLICY "Chefs can upload menu files"
@@ -37,9 +46,14 @@ CREATE POLICY "Chefs can upload menu files"
       )
     );
 EXCEPTION WHEN duplicate_object OR insufficient_privilege THEN NULL;
-END $$;
-
--- RLS: chefs can read their own uploads
+END $$$cfstorage$;
+  END IF;
+END
+$cfguard$;
+DO $cfguard$
+BEGIN
+  IF EXISTS (SELECT 1 FROM information_schema.schemata WHERE schema_name = 'storage') THEN
+    EXECUTE $cfstorage$-- RLS: chefs can read their own uploads
 DO $$ BEGIN
   DROP POLICY IF EXISTS "Chefs can read own menu files" ON storage.objects;
 CREATE POLICY "Chefs can read own menu files"
@@ -54,4 +68,7 @@ CREATE POLICY "Chefs can read own menu files"
       )
     );
 EXCEPTION WHEN duplicate_object OR insufficient_privilege THEN NULL;
-END $$;
+END $$$cfstorage$;
+  END IF;
+END
+$cfguard$;

@@ -10,17 +10,23 @@
 -- ============================================
 
 -- ─── New Enum ─────────────────────────────────
-CREATE TYPE chef_connection_status AS ENUM (
+DO $idem$
+BEGIN
+  IF NOT EXISTS (SELECT 1 FROM pg_type WHERE typname = 'chef_connection_status') THEN
+    CREATE TYPE chef_connection_status AS ENUM (
   'pending',    -- Request sent, waiting for response
   'accepted',   -- Both chefs connected
   'declined'    -- Request declined (can re-request later)
 );
+  END IF;
+END
+$idem$;
 
 -- ─── Profile Columns on chefs ─────────────────
 -- These are nullable and optional - business_name remains the primary identifier
-ALTER TABLE chefs ADD COLUMN display_name TEXT;
-ALTER TABLE chefs ADD COLUMN bio TEXT;
-ALTER TABLE chefs ADD COLUMN profile_image_url TEXT;
+ALTER TABLE chefs ADD COLUMN IF NOT EXISTS display_name TEXT;
+ALTER TABLE chefs ADD COLUMN IF NOT EXISTS bio TEXT;
+ALTER TABLE chefs ADD COLUMN IF NOT EXISTS profile_image_url TEXT;
 
 COMMENT ON COLUMN chefs.display_name IS 'Public display name for chef network (defaults to business_name if NULL)';
 COMMENT ON COLUMN chefs.bio IS 'Short bio shown in chef network directory';
@@ -28,12 +34,12 @@ COMMENT ON COLUMN chefs.profile_image_url IS 'Profile image URL for chef network
 
 -- ─── Discoverability Toggle on chef_preferences ──
 ALTER TABLE chef_preferences
-  ADD COLUMN network_discoverable BOOLEAN NOT NULL DEFAULT false;
+  ADD COLUMN IF NOT EXISTS network_discoverable BOOLEAN NOT NULL DEFAULT false;
 
 COMMENT ON COLUMN chef_preferences.network_discoverable IS 'When true, this chef appears in network search results. When false, completely hidden from discovery.';
 
 -- ─── Chef Connections Table ───────────────────
-CREATE TABLE chef_connections (
+CREATE TABLE IF NOT EXISTS chef_connections (
   id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
 
   -- The chef who sent the connection request
@@ -65,18 +71,20 @@ COMMENT ON COLUMN chef_connections.addressee_id IS 'The chef who received the co
 COMMENT ON COLUMN chef_connections.request_message IS 'Optional personal message sent with the request';
 
 -- ─── Indexes ──────────────────────────────────
-CREATE INDEX idx_chef_connections_requester ON chef_connections(requester_id);
-CREATE INDEX idx_chef_connections_addressee ON chef_connections(addressee_id);
-CREATE INDEX idx_chef_connections_status ON chef_connections(status);
+CREATE INDEX IF NOT EXISTS idx_chef_connections_requester ON chef_connections(requester_id);
+CREATE INDEX IF NOT EXISTS idx_chef_connections_addressee ON chef_connections(addressee_id);
+CREATE INDEX IF NOT EXISTS idx_chef_connections_status ON chef_connections(status);
 
 -- Partial indexes for the most common query: "my accepted friends"
-CREATE INDEX idx_chef_connections_requester_accepted
+CREATE INDEX IF NOT EXISTS idx_chef_connections_requester_accepted
   ON chef_connections(requester_id) WHERE status = 'accepted';
-CREATE INDEX idx_chef_connections_addressee_accepted
+CREATE INDEX IF NOT EXISTS idx_chef_connections_addressee_accepted
   ON chef_connections(addressee_id) WHERE status = 'accepted';
 
 -- ─── Auto-update updated_at Trigger ───────────
 -- Reuses the update_updated_at_column() function from Layer 1
+DROP TRIGGER IF EXISTS chef_connections_updated_at ON chef_connections;
+DROP TRIGGER IF EXISTS chef_connections_updated_at ON chef_connections;
 CREATE TRIGGER chef_connections_updated_at
   BEFORE UPDATE ON chef_connections
   FOR EACH ROW EXECUTE FUNCTION update_updated_at_column();
@@ -105,6 +113,8 @@ ALTER TABLE chef_connections ENABLE ROW LEVEL SECURITY;
 
 -- Chefs can see connections they are part of (either side)
 DROP POLICY IF EXISTS chef_connections_select_own ON chef_connections;
+DROP POLICY IF EXISTS chef_connections_select_own ON chef_connections;
+DROP POLICY IF EXISTS chef_connections_select_own ON chef_connections;
 CREATE POLICY chef_connections_select_own ON chef_connections
   FOR SELECT USING (
     get_current_user_role() = 'chef' AND (
@@ -115,6 +125,8 @@ CREATE POLICY chef_connections_select_own ON chef_connections
 
 -- Chefs can create connection requests (as requester only)
 DROP POLICY IF EXISTS chef_connections_insert_own ON chef_connections;
+DROP POLICY IF EXISTS chef_connections_insert_own ON chef_connections;
+DROP POLICY IF EXISTS chef_connections_insert_own ON chef_connections;
 CREATE POLICY chef_connections_insert_own ON chef_connections
   FOR INSERT WITH CHECK (
     get_current_user_role() = 'chef' AND
@@ -122,6 +134,8 @@ CREATE POLICY chef_connections_insert_own ON chef_connections
   );
 
 -- Chefs can update connections they are part of (accept/decline/remove)
+DROP POLICY IF EXISTS chef_connections_update_own ON chef_connections;
+DROP POLICY IF EXISTS chef_connections_update_own ON chef_connections;
 DROP POLICY IF EXISTS chef_connections_update_own ON chef_connections;
 CREATE POLICY chef_connections_update_own ON chef_connections
   FOR UPDATE USING (
@@ -139,6 +153,8 @@ COMMENT ON POLICY chef_connections_update_own ON chef_connections IS 'Chefs can 
 -- Allows chefs to see limited profile info of OTHER discoverable chefs
 -- (The existing chefs_select policy only allows self-read)
 DROP POLICY IF EXISTS chefs_network_discovery ON chefs;
+DROP POLICY IF EXISTS chefs_network_discovery ON chefs;
+DROP POLICY IF EXISTS chefs_network_discovery ON chefs;
 CREATE POLICY chefs_network_discovery ON chefs
   FOR SELECT USING (
     get_current_user_role() = 'chef' AND
@@ -153,6 +169,8 @@ COMMENT ON POLICY chefs_network_discovery ON chefs IS 'Chefs can see profiles of
 
 -- ─── Cross-tenant discovery on chef_preferences ──
 -- Allows chefs to read preferences of discoverable chefs (for location info in search)
+DROP POLICY IF EXISTS chef_preferences_network_check ON chef_preferences;
+DROP POLICY IF EXISTS chef_preferences_network_check ON chef_preferences;
 DROP POLICY IF EXISTS chef_preferences_network_check ON chef_preferences;
 CREATE POLICY chef_preferences_network_check ON chef_preferences
   FOR SELECT USING (

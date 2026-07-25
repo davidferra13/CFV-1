@@ -1,4 +1,4 @@
-﻿-- Workflow Step Overrides
+-- Workflow Step Overrides
 -- Persists manual skip/reorder actions on compound workflow steps.
 -- Step completion is derived from domain state; only overrides need storage.
 

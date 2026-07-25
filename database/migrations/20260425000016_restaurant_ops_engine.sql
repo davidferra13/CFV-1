@@ -209,14 +209,17 @@ BEGIN
 END;
 $$ LANGUAGE plpgsql;
 
+DROP TRIGGER IF EXISTS trg_service_days_updated_at ON public.service_days;
 CREATE TRIGGER trg_service_days_updated_at
   BEFORE UPDATE ON public.service_days
   FOR EACH ROW EXECUTE FUNCTION public.update_service_days_updated_at();
 
+DROP TRIGGER IF EXISTS trg_menu_item_sales_updated_at ON public.menu_item_sales;
 CREATE TRIGGER trg_menu_item_sales_updated_at
   BEFORE UPDATE ON public.menu_item_sales
   FOR EACH ROW EXECUTE FUNCTION public.update_service_days_updated_at();
 
+DROP TRIGGER IF EXISTS trg_service_prep_updated_at ON public.service_prep_requirements;
 CREATE TRIGGER trg_service_prep_updated_at
   BEFORE UPDATE ON public.service_prep_requirements
   FOR EACH ROW EXECUTE FUNCTION public.update_service_days_updated_at();

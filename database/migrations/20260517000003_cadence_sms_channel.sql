@@ -10,6 +10,7 @@ ALTER TABLE cadence_schedule
 ALTER TABLE cadence_schedule
   DROP CONSTRAINT IF EXISTS cadence_schedule_event_id_cadence_point_key;
 
+ALTER TABLE cadence_schedule DROP CONSTRAINT IF EXISTS cadence_schedule_event_point_channel_key;
 ALTER TABLE cadence_schedule
   ADD CONSTRAINT cadence_schedule_event_point_channel_key
     UNIQUE (event_id, cadence_point, channel);

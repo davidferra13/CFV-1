@@ -15,8 +15,10 @@ ALTER TABLE recipes ADD COLUMN IF NOT EXISTS prep_tier TEXT
   CHECK (prep_tier IN ('base', 'secondary', 'tertiary', 'finishing'));
 
 -- Constraints
+ALTER TABLE recipes DROP CONSTRAINT IF EXISTS chk_active_prep_positive;
 ALTER TABLE recipes ADD CONSTRAINT chk_active_prep_positive
   CHECK (active_prep_minutes >= 0 OR active_prep_minutes IS NULL);
+ALTER TABLE recipes DROP CONSTRAINT IF EXISTS chk_passive_prep_positive;
 ALTER TABLE recipes ADD CONSTRAINT chk_passive_prep_positive
   CHECK (passive_prep_minutes >= 0 OR passive_prep_minutes IS NULL);
 

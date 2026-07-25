@@ -37,27 +37,33 @@ $$ LANGUAGE plpgsql;
 -- ============================================================
 
 -- Tables with `id` column: use existing openclaw.prevent_delete()
+DROP TRIGGER IF EXISTS guard_no_delete_flyer_archive ON openclaw.flyer_archive;
 CREATE TRIGGER guard_no_delete_flyer_archive
   BEFORE DELETE ON openclaw.flyer_archive
   FOR EACH ROW EXECUTE FUNCTION openclaw.prevent_delete();
 
+DROP TRIGGER IF EXISTS guard_no_delete_usda_price_baselines ON openclaw.usda_price_baselines;
 CREATE TRIGGER guard_no_delete_usda_price_baselines
   BEFORE DELETE ON openclaw.usda_price_baselines
   FOR EACH ROW EXECUTE FUNCTION openclaw.prevent_delete();
 
+DROP TRIGGER IF EXISTS guard_no_delete_source_manifest ON openclaw.source_manifest;
 CREATE TRIGGER guard_no_delete_source_manifest
   BEFORE DELETE ON openclaw.source_manifest
   FOR EACH ROW EXECUTE FUNCTION openclaw.prevent_delete();
 
+DROP TRIGGER IF EXISTS guard_no_delete_usda_fdc_products ON openclaw.usda_fdc_products;
 CREATE TRIGGER guard_no_delete_usda_fdc_products
   BEFORE DELETE ON openclaw.usda_fdc_products
   FOR EACH ROW EXECUTE FUNCTION openclaw.prevent_delete();
 
 -- Tables without `id` column: use generic variant
+DROP TRIGGER IF EXISTS guard_no_delete_zip_centroids ON openclaw.zip_centroids;
 CREATE TRIGGER guard_no_delete_zip_centroids
   BEFORE DELETE ON openclaw.zip_centroids
   FOR EACH ROW EXECUTE FUNCTION openclaw.prevent_delete_generic();
 
+DROP TRIGGER IF EXISTS guard_no_delete_canonical_ingredients ON openclaw.canonical_ingredients;
 CREATE TRIGGER guard_no_delete_canonical_ingredients
   BEFORE DELETE ON openclaw.canonical_ingredients
   FOR EACH ROW EXECUTE FUNCTION openclaw.prevent_delete_generic();
@@ -65,26 +71,32 @@ CREATE TRIGGER guard_no_delete_canonical_ingredients
 -- ============================================================
 -- TRUNCATE guards (statement-level)
 -- ============================================================
+DROP TRIGGER IF EXISTS guard_no_truncate_flyer_archive ON openclaw.flyer_archive;
 CREATE TRIGGER guard_no_truncate_flyer_archive
   BEFORE TRUNCATE ON openclaw.flyer_archive
   EXECUTE FUNCTION openclaw.prevent_truncate();
 
+DROP TRIGGER IF EXISTS guard_no_truncate_zip_centroids ON openclaw.zip_centroids;
 CREATE TRIGGER guard_no_truncate_zip_centroids
   BEFORE TRUNCATE ON openclaw.zip_centroids
   EXECUTE FUNCTION openclaw.prevent_truncate();
 
+DROP TRIGGER IF EXISTS guard_no_truncate_usda_price_baselines ON openclaw.usda_price_baselines;
 CREATE TRIGGER guard_no_truncate_usda_price_baselines
   BEFORE TRUNCATE ON openclaw.usda_price_baselines
   EXECUTE FUNCTION openclaw.prevent_truncate();
 
+DROP TRIGGER IF EXISTS guard_no_truncate_canonical_ingredients ON openclaw.canonical_ingredients;
 CREATE TRIGGER guard_no_truncate_canonical_ingredients
   BEFORE TRUNCATE ON openclaw.canonical_ingredients
   EXECUTE FUNCTION openclaw.prevent_truncate();
 
+DROP TRIGGER IF EXISTS guard_no_truncate_source_manifest ON openclaw.source_manifest;
 CREATE TRIGGER guard_no_truncate_source_manifest
   BEFORE TRUNCATE ON openclaw.source_manifest
   EXECUTE FUNCTION openclaw.prevent_truncate();
 
+DROP TRIGGER IF EXISTS guard_no_truncate_usda_fdc_products ON openclaw.usda_fdc_products;
 CREATE TRIGGER guard_no_truncate_usda_fdc_products
   BEFORE TRUNCATE ON openclaw.usda_fdc_products
   EXECUTE FUNCTION openclaw.prevent_truncate();

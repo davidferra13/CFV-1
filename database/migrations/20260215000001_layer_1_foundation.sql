@@ -10,18 +10,33 @@
 -- ============================================
 
 -- Core roles
-CREATE TYPE user_role AS ENUM ('chef', 'client');
+DO $idem$
+BEGIN
+  IF NOT EXISTS (SELECT 1 FROM pg_type WHERE typname = 'user_role') THEN
+    CREATE TYPE user_role AS ENUM ('chef', 'client');
+  END IF;
+END
+$idem$;
 
 -- Client lifecycle status
-CREATE TYPE client_status AS ENUM (
+DO $idem$
+BEGIN
+  IF NOT EXISTS (SELECT 1 FROM pg_type WHERE typname = 'client_status') THEN
+    CREATE TYPE client_status AS ENUM (
   'active',        -- Currently engaged
   'dormant',       -- No recent activity
   'repeat_ready',  -- Ready for rebooking
   'vip'            -- High-value repeat client
 );
+  END IF;
+END
+$idem$;
 
 -- How client found the chef
-CREATE TYPE referral_source AS ENUM (
+DO $idem$
+BEGIN
+  IF NOT EXISTS (SELECT 1 FROM pg_type WHERE typname = 'referral_source') THEN
+    CREATE TYPE referral_source AS ENUM (
   'take_a_chef',
   'instagram',
   'referral',
@@ -30,29 +45,44 @@ CREATE TYPE referral_source AS ENUM (
   'email',
   'other'
 );
+  END IF;
+END
+$idem$;
 
 -- Preferred contact method
-CREATE TYPE contact_method AS ENUM (
+DO $idem$
+BEGIN
+  IF NOT EXISTS (SELECT 1 FROM pg_type WHERE typname = 'contact_method') THEN
+    CREATE TYPE contact_method AS ENUM (
   'phone',
   'email',
   'text',
   'instagram'
 );
+  END IF;
+END
+$idem$;
 
 -- Spice tolerance level
-CREATE TYPE spice_tolerance AS ENUM (
+DO $idem$
+BEGIN
+  IF NOT EXISTS (SELECT 1 FROM pg_type WHERE typname = 'spice_tolerance') THEN
+    CREATE TYPE spice_tolerance AS ENUM (
   'none',
   'mild',
   'medium',
   'hot',
   'very_hot'
 );
+  END IF;
+END
+$idem$;
 
 -- ============================================
 -- CHEFS (Tenant Owners)
 -- ============================================
 
-CREATE TABLE chefs (
+CREATE TABLE IF NOT EXISTS chefs (
   id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
   auth_user_id UUID UNIQUE NOT NULL REFERENCES auth.users(id) ON DELETE CASCADE,
   business_name TEXT NOT NULL,
@@ -62,7 +92,7 @@ CREATE TABLE chefs (
   updated_at TIMESTAMPTZ DEFAULT now() NOT NULL
 );
 
-CREATE INDEX idx_chefs_auth_user ON chefs(auth_user_id);
+CREATE INDEX IF NOT EXISTS idx_chefs_auth_user ON chefs(auth_user_id);
 
 COMMENT ON TABLE chefs IS 'Tenant owners - private chef businesses (multi-tenant root). Chef records are never deleted, only cascade-deleted if auth.users is deleted.';
 COMMENT ON COLUMN chefs.auth_user_id IS 'Foreign key to Supabase auth.users';
@@ -72,7 +102,7 @@ COMMENT ON COLUMN chefs.auth_user_id IS 'Foreign key to Supabase auth.users';
 -- Per Master Document Part 10
 -- ============================================
 
-CREATE TABLE clients (
+CREATE TABLE IF NOT EXISTS clients (
   id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
 
   -- Identity
@@ -137,10 +167,10 @@ CREATE TABLE clients (
   UNIQUE(tenant_id, email)
 );
 
-CREATE INDEX idx_clients_auth_user ON clients(auth_user_id);
-CREATE INDEX idx_clients_tenant ON clients(tenant_id);
-CREATE INDEX idx_clients_status ON clients(status);
-CREATE INDEX idx_clients_tenant_status ON clients(tenant_id, status);
+CREATE INDEX IF NOT EXISTS idx_clients_auth_user ON clients(auth_user_id);
+CREATE INDEX IF NOT EXISTS idx_clients_tenant ON clients(tenant_id);
+CREATE INDEX IF NOT EXISTS idx_clients_status ON clients(status);
+CREATE INDEX IF NOT EXISTS idx_clients_tenant_status ON clients(tenant_id, status);
 
 COMMENT ON TABLE clients IS 'Complete client relationship records - identity, household, preferences, site notes, relationship intelligence (Part 10). IMPORTANT: Client records are NEVER hard-deleted. To remove a client, set status to "dormant". Deletion is only via CASCADE if auth.users or chefs is deleted.';
 COMMENT ON COLUMN clients.auth_user_id IS 'Nullable - client can exist before they have an account';
@@ -157,7 +187,7 @@ COMMENT ON CONSTRAINT clients_tenant_id_email_key ON clients IS 'Email unique pe
 -- USER ROLES (Authoritative Role Assignment)
 -- ============================================
 
-CREATE TABLE user_roles (
+CREATE TABLE IF NOT EXISTS user_roles (
   id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
   auth_user_id UUID UNIQUE NOT NULL REFERENCES auth.users(id) ON DELETE CASCADE,
   role user_role NOT NULL,
@@ -165,8 +195,8 @@ CREATE TABLE user_roles (
   created_at TIMESTAMPTZ DEFAULT now() NOT NULL
 );
 
-CREATE UNIQUE INDEX idx_user_roles_auth_user ON user_roles(auth_user_id);
-CREATE INDEX idx_user_roles_entity ON user_roles(entity_id);
+CREATE UNIQUE INDEX IF NOT EXISTS idx_user_roles_auth_user ON user_roles(auth_user_id);
+CREATE INDEX IF NOT EXISTS idx_user_roles_entity ON user_roles(entity_id);
 
 COMMENT ON TABLE user_roles IS 'Authoritative role assignment - single source of truth for user roles';
 COMMENT ON COLUMN user_roles.entity_id IS 'If role=chef, references chefs.id; if role=client, references clients.id';
@@ -175,7 +205,7 @@ COMMENT ON COLUMN user_roles.entity_id IS 'If role=chef, references chefs.id; if
 -- CLIENT INVITATIONS (Invitation-based signup)
 -- ============================================
 
-CREATE TABLE client_invitations (
+CREATE TABLE IF NOT EXISTS client_invitations (
   id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
   tenant_id UUID NOT NULL REFERENCES chefs(id) ON DELETE CASCADE,
   email TEXT NOT NULL,
@@ -187,9 +217,9 @@ CREATE TABLE client_invitations (
   created_by UUID NOT NULL REFERENCES auth.users(id)
 );
 
-CREATE INDEX idx_invitations_tenant ON client_invitations(tenant_id);
-CREATE INDEX idx_invitations_token ON client_invitations(token);
-CREATE INDEX idx_invitations_email ON client_invitations(tenant_id, email);
+CREATE INDEX IF NOT EXISTS idx_invitations_tenant ON client_invitations(tenant_id);
+CREATE INDEX IF NOT EXISTS idx_invitations_token ON client_invitations(token);
+CREATE INDEX IF NOT EXISTS idx_invitations_email ON client_invitations(tenant_id, email);
 
 COMMENT ON TABLE client_invitations IS 'Client signup invitations sent by chefs';
 COMMENT ON COLUMN client_invitations.token IS 'Single-use cryptographically random token';
@@ -199,7 +229,7 @@ COMMENT ON COLUMN client_invitations.used_at IS 'Timestamp when invitation was a
 -- AUDIT LOG (General Purpose)
 -- ============================================
 
-CREATE TABLE audit_log (
+CREATE TABLE IF NOT EXISTS audit_log (
   id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
   tenant_id UUID REFERENCES chefs(id) ON DELETE CASCADE, -- Nullable for chef mutations
   table_name TEXT NOT NULL,
@@ -212,11 +242,11 @@ CREATE TABLE audit_log (
   change_summary TEXT -- Human-readable description of what changed
 );
 
-CREATE INDEX idx_audit_tenant ON audit_log(tenant_id);
-CREATE INDEX idx_audit_table ON audit_log(table_name);
-CREATE INDEX idx_audit_record ON audit_log(record_id);
-CREATE INDEX idx_audit_changed_at ON audit_log(changed_at DESC);
-CREATE INDEX idx_audit_changed_by ON audit_log(changed_by);
+CREATE INDEX IF NOT EXISTS idx_audit_tenant ON audit_log(tenant_id);
+CREATE INDEX IF NOT EXISTS idx_audit_table ON audit_log(table_name);
+CREATE INDEX IF NOT EXISTS idx_audit_record ON audit_log(record_id);
+CREATE INDEX IF NOT EXISTS idx_audit_changed_at ON audit_log(changed_at DESC);
+CREATE INDEX IF NOT EXISTS idx_audit_changed_by ON audit_log(changed_by);
 
 COMMENT ON TABLE audit_log IS 'General-purpose audit trail for all mutations (who changed what, when, before/after)';
 COMMENT ON COLUMN audit_log.tenant_id IS 'Nullable - NULL for chef record mutations, populated for tenant-scoped records';
@@ -359,19 +389,23 @@ COMMENT ON FUNCTION log_audit IS 'Logs all mutations to audit_log table with bef
 -- ============================================
 
 -- Auto-update timestamps
+DROP TRIGGER IF EXISTS chefs_updated_at ON chefs;
 CREATE TRIGGER chefs_updated_at
 BEFORE UPDATE ON chefs
 FOR EACH ROW EXECUTE FUNCTION update_updated_at_column();
 
+DROP TRIGGER IF EXISTS clients_updated_at ON clients;
 CREATE TRIGGER clients_updated_at
 BEFORE UPDATE ON clients
 FOR EACH ROW EXECUTE FUNCTION update_updated_at_column();
 
 -- Audit logging
+DROP TRIGGER IF EXISTS chefs_audit_log ON chefs;
 CREATE TRIGGER chefs_audit_log
 AFTER INSERT OR UPDATE OR DELETE ON chefs
 FOR EACH ROW EXECUTE FUNCTION log_audit();
 
+DROP TRIGGER IF EXISTS clients_audit_log ON clients;
 CREATE TRIGGER clients_audit_log
 AFTER INSERT OR UPDATE OR DELETE ON clients
 FOR EACH ROW EXECUTE FUNCTION log_audit();
@@ -393,11 +427,13 @@ ALTER TABLE audit_log ENABLE ROW LEVEL SECURITY;
 
 -- Chefs can read their own record only
 DROP POLICY IF EXISTS chefs_select ON chefs;
+DROP POLICY IF EXISTS chefs_select ON chefs;
 CREATE POLICY chefs_select ON chefs
   FOR SELECT
   USING (auth.uid() = auth_user_id);
 
 -- Chefs can update their own record only
+DROP POLICY IF EXISTS chefs_update ON chefs;
 DROP POLICY IF EXISTS chefs_update ON chefs;
 CREATE POLICY chefs_update ON chefs
   FOR UPDATE
@@ -412,6 +448,7 @@ COMMENT ON POLICY chefs_update ON chefs IS 'Chefs can only update their own prof
 
 -- Chefs can read their own clients only
 DROP POLICY IF EXISTS clients_chef_select ON clients;
+DROP POLICY IF EXISTS clients_chef_select ON clients;
 CREATE POLICY clients_chef_select ON clients
   FOR SELECT
   USING (
@@ -420,6 +457,7 @@ CREATE POLICY clients_chef_select ON clients
   );
 
 -- Chefs can insert clients into their tenant
+DROP POLICY IF EXISTS clients_chef_insert ON clients;
 DROP POLICY IF EXISTS clients_chef_insert ON clients;
 CREATE POLICY clients_chef_insert ON clients
   FOR INSERT
@@ -430,6 +468,7 @@ CREATE POLICY clients_chef_insert ON clients
 
 -- Chefs can update their clients
 DROP POLICY IF EXISTS clients_chef_update ON clients;
+DROP POLICY IF EXISTS clients_chef_update ON clients;
 CREATE POLICY clients_chef_update ON clients
   FOR UPDATE
   USING (
@@ -439,6 +478,7 @@ CREATE POLICY clients_chef_update ON clients
 
 -- Clients can read their own record
 DROP POLICY IF EXISTS clients_self_select ON clients;
+DROP POLICY IF EXISTS clients_self_select ON clients;
 CREATE POLICY clients_self_select ON clients
   FOR SELECT
   USING (
@@ -447,6 +487,7 @@ CREATE POLICY clients_self_select ON clients
   );
 
 -- Clients can update their own record (limited fields via app logic)
+DROP POLICY IF EXISTS clients_self_update ON clients;
 DROP POLICY IF EXISTS clients_self_update ON clients;
 CREATE POLICY clients_self_update ON clients
   FOR UPDATE
@@ -468,6 +509,7 @@ COMMENT ON POLICY clients_self_select ON clients IS 'Clients see only their own 
 
 -- Users can read their own role
 DROP POLICY IF EXISTS user_roles_self_select ON user_roles;
+DROP POLICY IF EXISTS user_roles_self_select ON user_roles;
 CREATE POLICY user_roles_self_select ON user_roles
   FOR SELECT
   USING (auth.uid() = auth_user_id);
@@ -483,6 +525,7 @@ COMMENT ON POLICY user_roles_self_select ON user_roles IS 'Users can see their o
 
 -- Chefs can manage invitations for their tenant
 DROP POLICY IF EXISTS invitations_chef_all ON client_invitations;
+DROP POLICY IF EXISTS invitations_chef_all ON client_invitations;
 CREATE POLICY invitations_chef_all ON client_invitations
   FOR ALL
   USING (
@@ -495,6 +538,7 @@ CREATE POLICY invitations_chef_all ON client_invitations
 -- always query with a specific token value in the WHERE clause to prevent enumeration.
 -- Example: SELECT * FROM client_invitations WHERE token = 'xyz123abc...'
 -- DO NOT query without filtering by token - this would expose all valid invitations.
+DROP POLICY IF EXISTS invitations_public_select_by_token ON client_invitations;
 DROP POLICY IF EXISTS invitations_public_select_by_token ON client_invitations;
 CREATE POLICY invitations_public_select_by_token ON client_invitations
   FOR SELECT
@@ -512,6 +556,7 @@ COMMENT ON POLICY invitations_public_select_by_token ON client_invitations IS 'P
 -- ============================================
 
 -- Chefs can read audit logs for their tenant
+DROP POLICY IF EXISTS audit_log_chef_select ON audit_log;
 DROP POLICY IF EXISTS audit_log_chef_select ON audit_log;
 CREATE POLICY audit_log_chef_select ON audit_log
   FOR SELECT

@@ -1,4 +1,4 @@
-﻿-- Wire expenses to vendors and receipts via foreign keys
+-- Wire expenses to vendors and receipts via foreign keys
 -- Enables: vendor price tracking from expenses, bidirectional receipt linking,
 -- auto-categorization from vendor patterns
 

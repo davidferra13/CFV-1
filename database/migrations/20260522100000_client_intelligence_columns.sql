@@ -17,6 +17,7 @@ CREATE INDEX IF NOT EXISTS idx_clients_predicted_churn_date
   WHERE predicted_churn_date IS NOT NULL AND deleted_at IS NULL;
 
 -- Constraint: satisfaction_trend must be a known enum value
+ALTER TABLE clients DROP CONSTRAINT IF EXISTS chk_clients_satisfaction_trend;
 ALTER TABLE clients
   ADD CONSTRAINT chk_clients_satisfaction_trend
   CHECK (satisfaction_trend IS NULL OR satisfaction_trend IN ('improving', 'stable', 'declining'));

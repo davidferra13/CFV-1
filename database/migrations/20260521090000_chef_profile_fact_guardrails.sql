@@ -8,6 +8,13 @@ ALTER TABLE public.chef_profiles
   ADD COLUMN IF NOT EXISTS public_bio_settings jsonb NOT NULL DEFAULT '{"maxChars":600,"proofChipMaxChars":60,"maxProofChips":8,"cannabisDisclosureMode":"hidden","externalLongFormLinks":[]}'::jsonb;
 
 ALTER TABLE public.chef_profiles
+  DROP CONSTRAINT IF EXISTS chef_profiles_birth_month_check,
+  DROP CONSTRAINT IF EXISTS chef_profiles_birth_day_check,
+  DROP CONSTRAINT IF EXISTS chef_profiles_profile_facts_array_check,
+  DROP CONSTRAINT IF EXISTS chef_profiles_public_bio_settings_object_check,
+  DROP CONSTRAINT IF EXISTS chef_profiles_birthdate_purpose_object_check;
+
+ALTER TABLE public.chef_profiles
   ADD CONSTRAINT chef_profiles_birth_month_check
     CHECK (birth_month IS NULL OR (birth_month >= 1 AND birth_month <= 12)) NOT VALID,
   ADD CONSTRAINT chef_profiles_birth_day_check

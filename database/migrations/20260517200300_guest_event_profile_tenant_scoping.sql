@@ -26,6 +26,7 @@ ALTER TABLE guest_event_profile
   ALTER COLUMN tenant_id SET NOT NULL;
 
 -- Step 5: Add foreign key to chefs (tenant = chef)
+ALTER TABLE guest_event_profile DROP CONSTRAINT IF EXISTS guest_event_profile_tenant_id_fkey;
 ALTER TABLE guest_event_profile
   ADD CONSTRAINT guest_event_profile_tenant_id_fkey
   FOREIGN KEY (tenant_id) REFERENCES chefs(id) ON DELETE CASCADE;

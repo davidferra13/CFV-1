@@ -5,7 +5,7 @@
 
 -- ─── Tables ─────────────────────────────────────────────────────────────
 
-CREATE TABLE notifications (
+CREATE TABLE IF NOT EXISTS notifications (
   id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
 
   -- Tenant scoping
@@ -39,21 +39,21 @@ CREATE TABLE notifications (
 COMMENT ON TABLE notifications IS 'Persistent notification history for chefs. Real-time delivery via Supabase Realtime.';
 
 -- Primary query: unread notifications for a user (bell badge + panel)
-CREATE INDEX idx_notifications_recipient_unread
+CREATE INDEX IF NOT EXISTS idx_notifications_recipient_unread
   ON notifications(recipient_id, created_at DESC)
   WHERE read_at IS NULL AND archived_at IS NULL;
 
 -- Secondary query: all non-archived notifications for a user (panel scroll)
-CREATE INDEX idx_notifications_recipient_all
+CREATE INDEX IF NOT EXISTS idx_notifications_recipient_all
   ON notifications(recipient_id, created_at DESC)
   WHERE archived_at IS NULL;
 
 -- Tenant isolation queries
-CREATE INDEX idx_notifications_tenant ON notifications(tenant_id);
+CREATE INDEX IF NOT EXISTS idx_notifications_tenant ON notifications(tenant_id);
 
 
 -- Notification preferences: per-user, per-category toast toggle
-CREATE TABLE notification_preferences (
+CREATE TABLE IF NOT EXISTS notification_preferences (
   id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
   tenant_id UUID NOT NULL REFERENCES chefs(id) ON DELETE CASCADE,
   auth_user_id UUID NOT NULL REFERENCES auth.users(id) ON DELETE CASCADE,
@@ -67,9 +67,10 @@ CREATE TABLE notification_preferences (
 
 COMMENT ON TABLE notification_preferences IS 'Per-category toast notification preferences. Missing row = toast enabled (default).';
 
-CREATE INDEX idx_notification_prefs_user ON notification_preferences(auth_user_id);
+CREATE INDEX IF NOT EXISTS idx_notification_prefs_user ON notification_preferences(auth_user_id);
 
 -- Auto-update updated_at on preferences (reuses existing function from Layer 1)
+DROP TRIGGER IF EXISTS notification_preferences_updated_at ON notification_preferences;
 CREATE TRIGGER notification_preferences_updated_at
 BEFORE UPDATE ON notification_preferences
 FOR EACH ROW EXECUTE FUNCTION update_updated_at_column();
@@ -99,10 +100,12 @@ ALTER TABLE notification_preferences ENABLE ROW LEVEL SECURITY;
 
 -- Recipients can read their own notifications
 DROP POLICY IF EXISTS notifications_recipient_select ON notifications;
+DROP POLICY IF EXISTS notifications_recipient_select ON notifications;
 CREATE POLICY notifications_recipient_select ON notifications
   FOR SELECT USING (recipient_id = auth.uid());
 
 -- Chefs can also read all notifications in their tenant (for admin/audit)
+DROP POLICY IF EXISTS notifications_chef_tenant_select ON notifications;
 DROP POLICY IF EXISTS notifications_chef_tenant_select ON notifications;
 CREATE POLICY notifications_chef_tenant_select ON notifications
   FOR SELECT USING (
@@ -112,6 +115,7 @@ CREATE POLICY notifications_chef_tenant_select ON notifications
 
 -- Server actions insert via service role, but allow chef insert for their tenant
 DROP POLICY IF EXISTS notifications_insert ON notifications;
+DROP POLICY IF EXISTS notifications_insert ON notifications;
 CREATE POLICY notifications_insert ON notifications
   FOR INSERT WITH CHECK (
     tenant_id = get_current_tenant_id()
@@ -119,10 +123,12 @@ CREATE POLICY notifications_insert ON notifications
 
 -- Recipients can update their own notifications (mark read, archive)
 DROP POLICY IF EXISTS notifications_recipient_update ON notifications;
+DROP POLICY IF EXISTS notifications_recipient_update ON notifications;
 CREATE POLICY notifications_recipient_update ON notifications
   FOR UPDATE USING (recipient_id = auth.uid());
 
 -- No hard deletes
+DROP POLICY IF EXISTS notifications_no_delete ON notifications;
 DROP POLICY IF EXISTS notifications_no_delete ON notifications;
 CREATE POLICY notifications_no_delete ON notifications
   FOR DELETE USING (false);
@@ -132,20 +138,24 @@ CREATE POLICY notifications_no_delete ON notifications
 
 -- Users can read their own preferences
 DROP POLICY IF EXISTS notification_prefs_self_select ON notification_preferences;
+DROP POLICY IF EXISTS notification_prefs_self_select ON notification_preferences;
 CREATE POLICY notification_prefs_self_select ON notification_preferences
   FOR SELECT USING (auth_user_id = auth.uid());
 
 -- Users can insert their own preferences
+DROP POLICY IF EXISTS notification_prefs_self_insert ON notification_preferences;
 DROP POLICY IF EXISTS notification_prefs_self_insert ON notification_preferences;
 CREATE POLICY notification_prefs_self_insert ON notification_preferences
   FOR INSERT WITH CHECK (auth_user_id = auth.uid());
 
 -- Users can update their own preferences
 DROP POLICY IF EXISTS notification_prefs_self_update ON notification_preferences;
+DROP POLICY IF EXISTS notification_prefs_self_update ON notification_preferences;
 CREATE POLICY notification_prefs_self_update ON notification_preferences
   FOR UPDATE USING (auth_user_id = auth.uid());
 
 -- No hard deletes on preferences
+DROP POLICY IF EXISTS notification_prefs_no_delete ON notification_preferences;
 DROP POLICY IF EXISTS notification_prefs_no_delete ON notification_preferences;
 CREATE POLICY notification_prefs_no_delete ON notification_preferences
   FOR DELETE USING (false);

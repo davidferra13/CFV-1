@@ -37,6 +37,7 @@ BEGIN
 END;
 $$;
 
+DROP TRIGGER IF EXISTS trg_chef_schedule_blocks_updated_at ON chef_schedule_blocks;
 CREATE TRIGGER trg_chef_schedule_blocks_updated_at
   BEFORE UPDATE ON chef_schedule_blocks
   FOR EACH ROW EXECUTE FUNCTION update_chef_schedule_blocks_updated_at();

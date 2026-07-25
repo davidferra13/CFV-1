@@ -40,7 +40,19 @@ CREATE TABLE IF NOT EXISTS client_passports (
   CONSTRAINT uq_client_passports_profile UNIQUE (profile_id)
 );
 
-CREATE INDEX idx_client_passports_profile ON client_passports(profile_id);
+-- 20260426000003_client_passports.sql re-keys this table onto tenant_id + client_id and
+-- explicitly drops profile_id, so on any database that already has the newer shape the
+-- CREATE TABLE above no-ops and this column is gone. Index it only where it survives.
+DO $passport_profile$
+BEGIN
+  IF EXISTS (
+    SELECT 1 FROM information_schema.columns
+    WHERE table_name = 'client_passports' AND column_name = 'profile_id'
+  ) THEN
+    EXECUTE 'CREATE INDEX IF NOT EXISTS idx_client_passports_profile ON client_passports(profile_id)';
+  END IF;
+END
+$passport_profile$;
 
 COMMENT ON TABLE client_passports IS 'Portable client preference profile. One per guest profile. Travels across chefs and circles.';
 COMMENT ON COLUMN client_passports.communication_mode IS 'direct = client handles comms, delegate_only = only assistant responds, delegate_preferred = assistant preferred but client may respond';
@@ -65,6 +77,7 @@ BEGIN
 END;
 $$ LANGUAGE plpgsql;
 
+DROP TRIGGER IF EXISTS trg_client_passports_updated_at ON client_passports;
 CREATE TRIGGER trg_client_passports_updated_at
   BEFORE UPDATE ON client_passports
   FOR EACH ROW

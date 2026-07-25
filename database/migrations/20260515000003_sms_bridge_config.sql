@@ -40,6 +40,7 @@ $$;
 -- RLS: chef can only see their own config
 ALTER TABLE sms_bridge_config ENABLE ROW LEVEL SECURITY;
 
+DROP POLICY IF EXISTS sms_bridge_config_chef_all ON sms_bridge_config;
 CREATE POLICY sms_bridge_config_chef_all ON sms_bridge_config
   FOR ALL TO public
   USING (tenant_id IN (
@@ -52,6 +53,7 @@ CREATE POLICY sms_bridge_config_chef_all ON sms_bridge_config
   ));
 
 -- Service role bypass (restrict to service_role only)
+DROP POLICY IF EXISTS sms_bridge_config_service_all ON sms_bridge_config;
 CREATE POLICY sms_bridge_config_service_all ON sms_bridge_config
   FOR ALL
   USING (auth.role() = 'service_role')

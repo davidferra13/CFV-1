@@ -4,7 +4,10 @@
 -- 1. Rebuild event_financial_summary to exclude soft-deleted events.
 --    Without this filter, soft-deleted events appear in financial reports,
 --    overstating revenue and expenses.
-CREATE OR REPLACE VIEW event_financial_summary AS
+-- CREATE OR REPLACE cannot change a view column's type or drop one, so the
+-- view is dropped first. It has no dependent views.
+DROP VIEW IF EXISTS event_financial_summary;
+CREATE VIEW event_financial_summary AS
 SELECT
   e.id AS event_id,
   e.tenant_id,

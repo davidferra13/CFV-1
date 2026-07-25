@@ -13,7 +13,7 @@ BEGIN
   RETURN NEW;
 END;
 $$ LANGUAGE plpgsql;
-CREATE TABLE plating_guides (
+CREATE TABLE IF NOT EXISTS plating_guides (
   id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
   chef_id UUID NOT NULL REFERENCES chefs(id) ON DELETE CASCADE,
   recipe_id UUID REFERENCES recipes(id) ON DELETE SET NULL,
@@ -29,9 +29,10 @@ CREATE TABLE plating_guides (
   updated_at TIMESTAMPTZ NOT NULL DEFAULT now()
 );
 -- Indexes
-CREATE INDEX idx_plating_guides_chef_id ON plating_guides(chef_id);
-CREATE INDEX idx_plating_guides_recipe_id ON plating_guides(recipe_id);
+CREATE INDEX IF NOT EXISTS idx_plating_guides_chef_id ON plating_guides(chef_id);
+CREATE INDEX IF NOT EXISTS idx_plating_guides_recipe_id ON plating_guides(recipe_id);
 -- Auto-update updated_at
+DROP TRIGGER IF EXISTS set_plating_guides_updated_at ON plating_guides;
 CREATE TRIGGER set_plating_guides_updated_at
   BEFORE UPDATE ON plating_guides
   FOR EACH ROW
@@ -41,6 +42,7 @@ CREATE TRIGGER set_plating_guides_updated_at
 -- =============================================================================
 
 ALTER TABLE plating_guides ENABLE ROW LEVEL SECURITY;
+DROP POLICY IF EXISTS chef_manages_own_plating_guides ON plating_guides;
 DROP POLICY IF EXISTS chef_manages_own_plating_guides ON plating_guides;
 CREATE POLICY chef_manages_own_plating_guides ON plating_guides
   FOR ALL

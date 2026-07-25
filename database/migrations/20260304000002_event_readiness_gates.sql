@@ -29,7 +29,7 @@
 
 -- ─── Table ──────────────────────────────────────────────────────────────────
 
-CREATE TABLE event_readiness_gates (
+CREATE TABLE IF NOT EXISTS event_readiness_gates (
   id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
   tenant_id UUID NOT NULL REFERENCES chefs(id) ON DELETE CASCADE,
   event_id UUID NOT NULL REFERENCES events(id) ON DELETE CASCADE,
@@ -78,11 +78,11 @@ COMMENT ON COLUMN event_readiness_gates.override_reason IS
 -- ─── Indexes ────────────────────────────────────────────────────────────────
 
 -- Most common: what gates are pending for a given event?
-CREATE INDEX idx_readiness_gates_event
+CREATE INDEX IF NOT EXISTS idx_readiness_gates_event
   ON event_readiness_gates(event_id, status);
 
 -- Chef dashboard: all pending gates across tenant
-CREATE INDEX idx_readiness_gates_tenant_pending
+CREATE INDEX IF NOT EXISTS idx_readiness_gates_tenant_pending
   ON event_readiness_gates(tenant_id, status)
   WHERE status = 'pending';
 
@@ -96,6 +96,7 @@ BEGIN
 END;
 $$;
 
+DROP TRIGGER IF EXISTS readiness_gate_updated_at ON event_readiness_gates;
 CREATE TRIGGER readiness_gate_updated_at
   BEFORE UPDATE ON event_readiness_gates
   FOR EACH ROW EXECUTE FUNCTION update_readiness_gate_updated_at();
@@ -104,6 +105,7 @@ CREATE TRIGGER readiness_gate_updated_at
 
 ALTER TABLE event_readiness_gates ENABLE ROW LEVEL SECURITY;
 
+DROP POLICY IF EXISTS readiness_gates_chef_all ON event_readiness_gates;
 DROP POLICY IF EXISTS readiness_gates_chef_all ON event_readiness_gates;
 CREATE POLICY readiness_gates_chef_all ON event_readiness_gates
   FOR ALL USING (

@@ -21,8 +21,20 @@ ALTER TABLE client_worksheets
   ADD COLUMN IF NOT EXISTS spice_tolerance text,
   ADD COLUMN IF NOT EXISTS kids_present boolean DEFAULT false;
 
--- Booking requests: add spice tolerance, cuisine preferences, kids present
-ALTER TABLE booking_requests
-  ADD COLUMN IF NOT EXISTS spice_tolerance text,
-  ADD COLUMN IF NOT EXISTS cuisine_preferences text[] DEFAULT '{}',
-  ADD COLUMN IF NOT EXISTS kids_present boolean DEFAULT false;
+-- Booking requests: add spice tolerance, cuisine preferences, kids present.
+-- No migration in this repo creates booking_requests and no code reads it (these
+-- preferences live on hub_guest_profiles and clients), so this is guarded rather than
+-- dropped: it still applies anywhere the table does exist, and no-ops here instead of
+-- aborting the migration and losing the two ALTERs above.
+DO $booking_requests$
+BEGIN
+  IF to_regclass('public.booking_requests') IS NOT NULL THEN
+    EXECUTE $stmt$
+      ALTER TABLE booking_requests
+        ADD COLUMN IF NOT EXISTS spice_tolerance text,
+        ADD COLUMN IF NOT EXISTS cuisine_preferences text[] DEFAULT '{}',
+        ADD COLUMN IF NOT EXISTS kids_present boolean DEFAULT false
+    $stmt$;
+  END IF;
+END
+$booking_requests$;

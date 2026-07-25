@@ -16,11 +16,12 @@ CREATE TABLE IF NOT EXISTS shopping_lists (
   updated_at timestamptz NOT NULL DEFAULT now()
 );
 -- Indexes
-CREATE INDEX idx_shopping_lists_chef_id ON shopping_lists(chef_id);
-CREATE INDEX idx_shopping_lists_status ON shopping_lists(chef_id, status);
-CREATE INDEX idx_shopping_lists_event_id ON shopping_lists(event_id) WHERE event_id IS NOT NULL;
+CREATE INDEX IF NOT EXISTS idx_shopping_lists_chef_id ON shopping_lists(chef_id);
+CREATE INDEX IF NOT EXISTS idx_shopping_lists_status ON shopping_lists(chef_id, status);
+CREATE INDEX IF NOT EXISTS idx_shopping_lists_event_id ON shopping_lists(event_id) WHERE event_id IS NOT NULL;
 -- RLS
 ALTER TABLE shopping_lists ENABLE ROW LEVEL SECURITY;
+DROP POLICY IF EXISTS "Chefs can manage their own shopping lists" ON shopping_lists;
 DROP POLICY IF EXISTS "Chefs can manage their own shopping lists" ON shopping_lists;
 CREATE POLICY "Chefs can manage their own shopping lists"
   ON shopping_lists
@@ -39,6 +40,7 @@ BEGIN
   RETURN NEW;
 END;
 $$ LANGUAGE plpgsql;
+DROP TRIGGER IF EXISTS trg_shopping_lists_updated_at ON shopping_lists;
 CREATE TRIGGER trg_shopping_lists_updated_at
   BEFORE UPDATE ON shopping_lists
   FOR EACH ROW

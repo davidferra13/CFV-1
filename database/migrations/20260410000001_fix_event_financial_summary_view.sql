@@ -4,7 +4,10 @@
 -- 2. Tip ledger entries were counted against outstanding balance (tips are bonus money, not owed service fees)
 -- Fix: exclude tips from outstanding calculation + GREATEST(0) floor
 
-CREATE OR REPLACE VIEW event_financial_summary AS
+-- CREATE OR REPLACE cannot change a view column's type or drop one, so the
+-- view is dropped first. It has no dependent views.
+DROP VIEW IF EXISTS event_financial_summary;
+CREATE VIEW event_financial_summary AS
 SELECT
   e.id AS event_id,
   e.tenant_id,

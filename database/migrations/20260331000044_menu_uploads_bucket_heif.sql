@@ -1,4 +1,8 @@
--- Allow HEIF uploads in the menu-uploads bucket for iPhone-originated menu photos.
+
+DO $cfguard$
+BEGIN
+  IF EXISTS (SELECT 1 FROM information_schema.schemata WHERE schema_name = 'storage') THEN
+    EXECUTE $cfstorage$-- Allow HEIF uploads in the menu-uploads bucket for iPhone-originated menu photos.
 
 UPDATE storage.buckets
 SET allowed_mime_types = ARRAY[
@@ -13,4 +17,7 @@ SET allowed_mime_types = ARRAY[
   'text/rtf',
   'application/octet-stream'
 ]
-WHERE id = 'menu-uploads';
+WHERE id = 'menu-uploads'$cfstorage$;
+  END IF;
+END
+$cfguard$;

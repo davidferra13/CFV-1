@@ -279,41 +279,41 @@ CREATE TABLE IF NOT EXISTS chef_post_hashtags (
 -- INDEXES
 -- ============================================================
 
-CREATE INDEX idx_chef_social_posts_chef_id    ON chef_social_posts(chef_id);
-CREATE INDEX idx_chef_social_posts_created_at ON chef_social_posts(created_at DESC);
-CREATE INDEX idx_chef_social_posts_channel    ON chef_social_posts(channel_id) WHERE channel_id IS NOT NULL;
-CREATE INDEX idx_chef_social_posts_visibility ON chef_social_posts(visibility);
-CREATE INDEX idx_chef_social_posts_hashtags   ON chef_social_posts USING gin(hashtags);
-CREATE INDEX idx_chef_social_posts_original   ON chef_social_posts(original_post_id) WHERE original_post_id IS NOT NULL;
+CREATE INDEX IF NOT EXISTS idx_chef_social_posts_chef_id    ON chef_social_posts(chef_id);
+CREATE INDEX IF NOT EXISTS idx_chef_social_posts_created_at ON chef_social_posts(created_at DESC);
+CREATE INDEX IF NOT EXISTS idx_chef_social_posts_channel    ON chef_social_posts(channel_id) WHERE channel_id IS NOT NULL;
+CREATE INDEX IF NOT EXISTS idx_chef_social_posts_visibility ON chef_social_posts(visibility);
+CREATE INDEX IF NOT EXISTS idx_chef_social_posts_hashtags   ON chef_social_posts USING gin(hashtags);
+CREATE INDEX IF NOT EXISTS idx_chef_social_posts_original   ON chef_social_posts(original_post_id) WHERE original_post_id IS NOT NULL;
 
-CREATE INDEX idx_chef_follows_follower   ON chef_follows(follower_chef_id);
-CREATE INDEX idx_chef_follows_following  ON chef_follows(following_chef_id);
+CREATE INDEX IF NOT EXISTS idx_chef_follows_follower   ON chef_follows(follower_chef_id);
+CREATE INDEX IF NOT EXISTS idx_chef_follows_following  ON chef_follows(following_chef_id);
 
-CREATE INDEX idx_chef_post_reactions_post  ON chef_post_reactions(post_id);
-CREATE INDEX idx_chef_post_reactions_chef  ON chef_post_reactions(chef_id);
+CREATE INDEX IF NOT EXISTS idx_chef_post_reactions_post  ON chef_post_reactions(post_id);
+CREATE INDEX IF NOT EXISTS idx_chef_post_reactions_chef  ON chef_post_reactions(chef_id);
 
-CREATE INDEX idx_chef_post_comments_post    ON chef_post_comments(post_id, created_at DESC) WHERE NOT is_deleted;
-CREATE INDEX idx_chef_post_comments_parent  ON chef_post_comments(parent_comment_id) WHERE parent_comment_id IS NOT NULL;
-CREATE INDEX idx_chef_post_comments_chef    ON chef_post_comments(chef_id);
+CREATE INDEX IF NOT EXISTS idx_chef_post_comments_post    ON chef_post_comments(post_id, created_at DESC) WHERE NOT is_deleted;
+CREATE INDEX IF NOT EXISTS idx_chef_post_comments_parent  ON chef_post_comments(parent_comment_id) WHERE parent_comment_id IS NOT NULL;
+CREATE INDEX IF NOT EXISTS idx_chef_post_comments_chef    ON chef_post_comments(chef_id);
 
-CREATE INDEX idx_chef_post_saves_chef  ON chef_post_saves(chef_id, created_at DESC);
-CREATE INDEX idx_chef_post_saves_post  ON chef_post_saves(post_id);
+CREATE INDEX IF NOT EXISTS idx_chef_post_saves_chef  ON chef_post_saves(chef_id, created_at DESC);
+CREATE INDEX IF NOT EXISTS idx_chef_post_saves_post  ON chef_post_saves(post_id);
 
-CREATE INDEX idx_chef_channel_memberships_chef     ON chef_channel_memberships(chef_id);
-CREATE INDEX idx_chef_channel_memberships_channel  ON chef_channel_memberships(channel_id);
+CREATE INDEX IF NOT EXISTS idx_chef_channel_memberships_chef     ON chef_channel_memberships(chef_id);
+CREATE INDEX IF NOT EXISTS idx_chef_channel_memberships_channel  ON chef_channel_memberships(channel_id);
 
-CREATE INDEX idx_chef_stories_chef     ON chef_stories(chef_id, created_at DESC);
-CREATE INDEX idx_chef_stories_expires  ON chef_stories(expires_at);
+CREATE INDEX IF NOT EXISTS idx_chef_stories_chef     ON chef_stories(chef_id, created_at DESC);
+CREATE INDEX IF NOT EXISTS idx_chef_stories_expires  ON chef_stories(expires_at);
 
-CREATE INDEX idx_chef_story_views_story   ON chef_story_views(story_id);
-CREATE INDEX idx_chef_story_views_viewer  ON chef_story_views(viewer_chef_id);
+CREATE INDEX IF NOT EXISTS idx_chef_story_views_story   ON chef_story_views(story_id);
+CREATE INDEX IF NOT EXISTS idx_chef_story_views_viewer  ON chef_story_views(viewer_chef_id);
 
-CREATE INDEX idx_chef_social_notifs_recipient  ON chef_social_notifications(recipient_chef_id, created_at DESC);
-CREATE INDEX idx_chef_social_notifs_unread     ON chef_social_notifications(recipient_chef_id) WHERE NOT is_read;
+CREATE INDEX IF NOT EXISTS idx_chef_social_notifs_recipient  ON chef_social_notifications(recipient_chef_id, created_at DESC);
+CREATE INDEX IF NOT EXISTS idx_chef_social_notifs_unread     ON chef_social_notifications(recipient_chef_id) WHERE NOT is_read;
 
-CREATE INDEX idx_chef_post_mentions_mentioned  ON chef_post_mentions(mentioned_chef_id);
+CREATE INDEX IF NOT EXISTS idx_chef_post_mentions_mentioned  ON chef_post_mentions(mentioned_chef_id);
 
-CREATE INDEX idx_chef_social_hashtags_count  ON chef_social_hashtags(post_count DESC);
+CREATE INDEX IF NOT EXISTS idx_chef_social_hashtags_count  ON chef_social_hashtags(post_count DESC);
 
 -- ============================================================
 -- TRIGGERS: Maintain denormalized counts
@@ -331,6 +331,7 @@ BEGIN
   RETURN NULL;
 END;
 $$;
+DROP TRIGGER IF EXISTS trg_post_reactions_count ON chef_post_reactions;
 CREATE TRIGGER trg_post_reactions_count
   AFTER INSERT OR DELETE ON chef_post_reactions
   FOR EACH ROW EXECUTE FUNCTION _trg_post_reactions_count();
@@ -353,6 +354,7 @@ BEGIN
   RETURN NULL;
 END;
 $$;
+DROP TRIGGER IF EXISTS trg_post_comments_count ON chef_post_comments;
 CREATE TRIGGER trg_post_comments_count
   AFTER INSERT OR UPDATE ON chef_post_comments
   FOR EACH ROW EXECUTE FUNCTION _trg_post_comments_count();
@@ -369,6 +371,7 @@ BEGIN
   RETURN NULL;
 END;
 $$;
+DROP TRIGGER IF EXISTS trg_post_saves_count ON chef_post_saves;
 CREATE TRIGGER trg_post_saves_count
   AFTER INSERT OR DELETE ON chef_post_saves
   FOR EACH ROW EXECUTE FUNCTION _trg_post_saves_count();
@@ -385,6 +388,7 @@ BEGIN
   RETURN NULL;
 END;
 $$;
+DROP TRIGGER IF EXISTS trg_post_shares_count ON chef_social_posts;
 CREATE TRIGGER trg_post_shares_count
   AFTER INSERT OR DELETE ON chef_social_posts
   FOR EACH ROW EXECUTE FUNCTION _trg_post_shares_count();
@@ -401,6 +405,7 @@ BEGIN
   RETURN NULL;
 END;
 $$;
+DROP TRIGGER IF EXISTS trg_channel_member_count ON chef_channel_memberships;
 CREATE TRIGGER trg_channel_member_count
   AFTER INSERT OR DELETE ON chef_channel_memberships
   FOR EACH ROW EXECUTE FUNCTION _trg_channel_member_count();
@@ -417,6 +422,7 @@ BEGIN
   RETURN NULL;
 END;
 $$;
+DROP TRIGGER IF EXISTS trg_channel_post_count ON chef_social_posts;
 CREATE TRIGGER trg_channel_post_count
   AFTER INSERT OR DELETE ON chef_social_posts
   FOR EACH ROW EXECUTE FUNCTION _trg_channel_post_count();
@@ -431,6 +437,7 @@ BEGIN
   RETURN NULL;
 END;
 $$;
+DROP TRIGGER IF EXISTS trg_story_views_count ON chef_story_views;
 CREATE TRIGGER trg_story_views_count
   AFTER INSERT ON chef_story_views
   FOR EACH ROW EXECUTE FUNCTION _trg_story_views_count();
@@ -447,6 +454,7 @@ BEGIN
   RETURN NULL;
 END;
 $$;
+DROP TRIGGER IF EXISTS trg_story_reactions_count ON chef_story_reactions;
 CREATE TRIGGER trg_story_reactions_count
   AFTER INSERT OR DELETE ON chef_story_reactions
   FOR EACH ROW EXECUTE FUNCTION _trg_story_reactions_count();
@@ -463,6 +471,7 @@ BEGIN
   RETURN NULL;
 END;
 $$;
+DROP TRIGGER IF EXISTS trg_comment_reactions_count ON chef_comment_reactions;
 CREATE TRIGGER trg_comment_reactions_count
   AFTER INSERT OR DELETE ON chef_comment_reactions
   FOR EACH ROW EXECUTE FUNCTION _trg_comment_reactions_count();
@@ -483,6 +492,7 @@ BEGIN
   RETURN NULL;
 END;
 $$;
+DROP TRIGGER IF EXISTS trg_hashtag_post_count ON chef_post_hashtags;
 CREATE TRIGGER trg_hashtag_post_count
   AFTER INSERT OR DELETE ON chef_post_hashtags
   FOR EACH ROW EXECUTE FUNCTION _trg_hashtag_post_count();
@@ -511,47 +521,62 @@ ALTER TABLE chef_post_hashtags         ENABLE ROW LEVEL SECURITY;
 
 -- Public posts readable by authenticated users
 DROP POLICY IF EXISTS "csp_posts_read" ON chef_social_posts;
+DROP POLICY IF EXISTS "csp_posts_read" ON chef_social_posts;
 CREATE POLICY "csp_posts_read" ON chef_social_posts
   FOR SELECT TO authenticated USING (visibility = 'public');
 
 -- Follows: all authenticated can see
+DROP POLICY IF EXISTS "csp_follows_read" ON chef_follows;
 DROP POLICY IF EXISTS "csp_follows_read" ON chef_follows;
 CREATE POLICY "csp_follows_read" ON chef_follows
   FOR SELECT TO authenticated USING (TRUE);
 
 -- Channels: public channels readable
 DROP POLICY IF EXISTS "csp_channels_read" ON chef_social_channels;
+DROP POLICY IF EXISTS "csp_channels_read" ON chef_social_channels;
 CREATE POLICY "csp_channels_read" ON chef_social_channels
   FOR SELECT TO authenticated USING (visibility = 'public');
 
 -- Reactions/comments/saves: readable
 DROP POLICY IF EXISTS "csp_reactions_read" ON chef_post_reactions;
+DROP POLICY IF EXISTS "csp_reactions_read" ON chef_post_reactions;
 CREATE POLICY "csp_reactions_read"     ON chef_post_reactions    FOR SELECT TO authenticated USING (TRUE);
+DROP POLICY IF EXISTS "csp_comments_read" ON chef_post_comments;
 DROP POLICY IF EXISTS "csp_comments_read" ON chef_post_comments;
 CREATE POLICY "csp_comments_read"      ON chef_post_comments     FOR SELECT TO authenticated USING (NOT is_deleted);
 DROP POLICY IF EXISTS "csp_comment_rxn_read" ON chef_comment_reactions;
+DROP POLICY IF EXISTS "csp_comment_rxn_read" ON chef_comment_reactions;
 CREATE POLICY "csp_comment_rxn_read"   ON chef_comment_reactions FOR SELECT TO authenticated USING (TRUE);
+DROP POLICY IF EXISTS "csp_saves_read" ON chef_post_saves;
 DROP POLICY IF EXISTS "csp_saves_read" ON chef_post_saves;
 CREATE POLICY "csp_saves_read"         ON chef_post_saves        FOR SELECT TO authenticated USING (TRUE);
 DROP POLICY IF EXISTS "csp_memberships_read" ON chef_channel_memberships;
+DROP POLICY IF EXISTS "csp_memberships_read" ON chef_channel_memberships;
 CREATE POLICY "csp_memberships_read"   ON chef_channel_memberships FOR SELECT TO authenticated USING (TRUE);
+DROP POLICY IF EXISTS "csp_hashtags_read" ON chef_social_hashtags;
 DROP POLICY IF EXISTS "csp_hashtags_read" ON chef_social_hashtags;
 CREATE POLICY "csp_hashtags_read"      ON chef_social_hashtags   FOR SELECT TO authenticated USING (TRUE);
 DROP POLICY IF EXISTS "csp_post_hashtags_read" ON chef_post_hashtags;
+DROP POLICY IF EXISTS "csp_post_hashtags_read" ON chef_post_hashtags;
 CREATE POLICY "csp_post_hashtags_read" ON chef_post_hashtags     FOR SELECT TO authenticated USING (TRUE);
+DROP POLICY IF EXISTS "csp_mentions_read" ON chef_post_mentions;
 DROP POLICY IF EXISTS "csp_mentions_read" ON chef_post_mentions;
 CREATE POLICY "csp_mentions_read"      ON chef_post_mentions     FOR SELECT TO authenticated USING (TRUE);
 
 -- Stories: non-expired readable
 DROP POLICY IF EXISTS "csp_stories_read" ON chef_stories;
+DROP POLICY IF EXISTS "csp_stories_read" ON chef_stories;
 CREATE POLICY "csp_stories_read" ON chef_stories
   FOR SELECT TO authenticated USING (expires_at > NOW());
 DROP POLICY IF EXISTS "csp_story_views_read" ON chef_story_views;
+DROP POLICY IF EXISTS "csp_story_views_read" ON chef_story_views;
 CREATE POLICY "csp_story_views_read"    ON chef_story_views    FOR SELECT TO authenticated USING (TRUE);
+DROP POLICY IF EXISTS "csp_story_reactions_read" ON chef_story_reactions;
 DROP POLICY IF EXISTS "csp_story_reactions_read" ON chef_story_reactions;
 CREATE POLICY "csp_story_reactions_read" ON chef_story_reactions FOR SELECT TO authenticated USING (TRUE);
 
 -- Notifications: only own
+DROP POLICY IF EXISTS "csp_notifs_self" ON chef_social_notifications;
 DROP POLICY IF EXISTS "csp_notifs_self" ON chef_social_notifications;
 CREATE POLICY "csp_notifs_self" ON chef_social_notifications
   FOR SELECT TO authenticated USING (TRUE);

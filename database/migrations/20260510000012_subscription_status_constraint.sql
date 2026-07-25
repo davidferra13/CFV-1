@@ -2,6 +2,7 @@
 -- Valid values are Stripe subscription statuses plus 'grandfathered' (custom).
 -- NULL is allowed (no subscription).
 
+ALTER TABLE chefs DROP CONSTRAINT IF EXISTS chefs_subscription_status_check;
 ALTER TABLE chefs
   ADD CONSTRAINT chefs_subscription_status_check
   CHECK (

@@ -77,30 +77,37 @@ ALTER TABLE hub_message_reactions ENABLE ROW LEVEL SECURITY;
 
 -- Messages: public read (link-based group access validated in app layer)
 DROP POLICY IF EXISTS "hub_messages_select_anon" ON hub_messages;
+DROP POLICY IF EXISTS "hub_messages_select_anon" ON hub_messages;
 CREATE POLICY "hub_messages_select_anon" ON hub_messages
   FOR SELECT USING (true);
 
 DROP POLICY IF EXISTS "hub_messages_insert_anon" ON hub_messages;
+DROP POLICY IF EXISTS "hub_messages_insert_anon" ON hub_messages;
 CREATE POLICY "hub_messages_insert_anon" ON hub_messages
   FOR INSERT WITH CHECK (true);
 
+DROP POLICY IF EXISTS "hub_messages_manage_service" ON hub_messages;
 DROP POLICY IF EXISTS "hub_messages_manage_service" ON hub_messages;
 CREATE POLICY "hub_messages_manage_service" ON hub_messages
   FOR ALL USING (auth.role() = 'service_role');
 
 -- Reactions: public read/write
 DROP POLICY IF EXISTS "hub_message_reactions_select_anon" ON hub_message_reactions;
+DROP POLICY IF EXISTS "hub_message_reactions_select_anon" ON hub_message_reactions;
 CREATE POLICY "hub_message_reactions_select_anon" ON hub_message_reactions
   FOR SELECT USING (true);
 
+DROP POLICY IF EXISTS "hub_message_reactions_insert_anon" ON hub_message_reactions;
 DROP POLICY IF EXISTS "hub_message_reactions_insert_anon" ON hub_message_reactions;
 CREATE POLICY "hub_message_reactions_insert_anon" ON hub_message_reactions
   FOR INSERT WITH CHECK (true);
 
 DROP POLICY IF EXISTS "hub_message_reactions_delete_anon" ON hub_message_reactions;
+DROP POLICY IF EXISTS "hub_message_reactions_delete_anon" ON hub_message_reactions;
 CREATE POLICY "hub_message_reactions_delete_anon" ON hub_message_reactions
   FOR DELETE USING (true);
 
+DROP POLICY IF EXISTS "hub_message_reactions_manage_service" ON hub_message_reactions;
 DROP POLICY IF EXISTS "hub_message_reactions_manage_service" ON hub_message_reactions;
 CREATE POLICY "hub_message_reactions_manage_service" ON hub_message_reactions
   FOR ALL USING (auth.role() = 'service_role');
@@ -124,6 +131,7 @@ BEGIN
 END;
 $$ LANGUAGE plpgsql;
 
+DROP TRIGGER IF EXISTS trg_hub_message_update_group ON hub_messages;
 CREATE TRIGGER trg_hub_message_update_group
   AFTER INSERT ON hub_messages
   FOR EACH ROW

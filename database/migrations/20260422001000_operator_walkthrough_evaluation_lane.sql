@@ -3,10 +3,10 @@
 -- can stay in a founder review inbox instead of auto-merging into generic contact handling.
 
 ALTER TABLE contact_submissions
-  ADD COLUMN intake_lane TEXT NOT NULL DEFAULT 'general_contact',
-  ADD COLUMN operator_evaluation_status TEXT,
-  ADD COLUMN source_page TEXT,
-  ADD COLUMN source_cta TEXT;
+  ADD COLUMN IF NOT EXISTS intake_lane TEXT NOT NULL DEFAULT 'general_contact',
+  ADD COLUMN IF NOT EXISTS operator_evaluation_status TEXT,
+  ADD COLUMN IF NOT EXISTS source_page TEXT,
+  ADD COLUMN IF NOT EXISTS source_cta TEXT;
 
 UPDATE contact_submissions
 SET
@@ -15,10 +15,12 @@ SET
 WHERE subject ILIKE 'Operator walkthrough request%'
    OR message ILIKE 'Operator walkthrough request%';
 
+ALTER TABLE contact_submissions DROP CONSTRAINT IF EXISTS contact_submissions_intake_lane_check;
 ALTER TABLE contact_submissions
   ADD CONSTRAINT contact_submissions_intake_lane_check
   CHECK (intake_lane = ANY (ARRAY['general_contact'::text, 'operator_walkthrough'::text]));
 
+ALTER TABLE contact_submissions DROP CONSTRAINT IF EXISTS contact_submissions_operator_evaluation_status_check;
 ALTER TABLE contact_submissions
   ADD CONSTRAINT contact_submissions_operator_evaluation_status_check
   CHECK (
@@ -35,6 +37,6 @@ ALTER TABLE contact_submissions
     )
   );
 
-CREATE INDEX idx_contact_submissions_operator_eval_status
+CREATE INDEX IF NOT EXISTS idx_contact_submissions_operator_eval_status
   ON contact_submissions (operator_evaluation_status, created_at DESC)
   WHERE intake_lane = 'operator_walkthrough';

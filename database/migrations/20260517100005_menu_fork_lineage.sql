@@ -20,9 +20,11 @@ CREATE INDEX IF NOT EXISTS idx_menus_fork_generation
   ON menus(tenant_id, fork_generation);
 
 -- 4. Constraint: fork_generation must be non-negative
+ALTER TABLE menus DROP CONSTRAINT IF EXISTS chk_menus_fork_generation_positive;
 ALTER TABLE menus ADD CONSTRAINT chk_menus_fork_generation_positive CHECK (fork_generation >= 0);
 
 -- 5. Constraint: fork_reason must be a known value (or NULL for originals)
+ALTER TABLE menus DROP CONSTRAINT IF EXISTS chk_menus_fork_reason_valid;
 ALTER TABLE menus ADD CONSTRAINT chk_menus_fork_reason_valid
   CHECK (fork_reason IS NULL OR fork_reason IN (
     'client_customization',

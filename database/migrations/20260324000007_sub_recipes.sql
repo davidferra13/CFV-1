@@ -11,7 +11,7 @@
 -- TABLE: recipe_sub_recipes
 -- =====================================================================================
 
-CREATE TABLE recipe_sub_recipes (
+CREATE TABLE IF NOT EXISTS recipe_sub_recipes (
   id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
   created_at TIMESTAMPTZ NOT NULL DEFAULT now(),
   updated_at TIMESTAMPTZ NOT NULL DEFAULT now(),
@@ -37,10 +37,11 @@ CREATE TABLE recipe_sub_recipes (
 );
 
 -- Indexes
-CREATE INDEX idx_recipe_sub_recipes_parent ON recipe_sub_recipes(parent_recipe_id);
-CREATE INDEX idx_recipe_sub_recipes_child ON recipe_sub_recipes(child_recipe_id);
+CREATE INDEX IF NOT EXISTS idx_recipe_sub_recipes_parent ON recipe_sub_recipes(parent_recipe_id);
+CREATE INDEX IF NOT EXISTS idx_recipe_sub_recipes_child ON recipe_sub_recipes(child_recipe_id);
 
 -- Updated_at trigger (reuse existing Layer 4 function)
+DROP TRIGGER IF EXISTS update_recipe_sub_recipes_updated_at ON recipe_sub_recipes;
 CREATE TRIGGER update_recipe_sub_recipes_updated_at
   BEFORE UPDATE ON recipe_sub_recipes
   FOR EACH ROW
@@ -53,6 +54,7 @@ CREATE TRIGGER update_recipe_sub_recipes_updated_at
 
 ALTER TABLE recipe_sub_recipes ENABLE ROW LEVEL SECURITY;
 
+DROP POLICY IF EXISTS tenant_isolation_select_recipe_sub_recipes ON recipe_sub_recipes;
 DROP POLICY IF EXISTS tenant_isolation_select_recipe_sub_recipes ON recipe_sub_recipes;
 CREATE POLICY tenant_isolation_select_recipe_sub_recipes ON recipe_sub_recipes
   FOR SELECT
@@ -70,6 +72,7 @@ CREATE POLICY tenant_isolation_select_recipe_sub_recipes ON recipe_sub_recipes
   );
 
 DROP POLICY IF EXISTS tenant_isolation_insert_recipe_sub_recipes ON recipe_sub_recipes;
+DROP POLICY IF EXISTS tenant_isolation_insert_recipe_sub_recipes ON recipe_sub_recipes;
 CREATE POLICY tenant_isolation_insert_recipe_sub_recipes ON recipe_sub_recipes
   FOR INSERT
   WITH CHECK (
@@ -80,6 +83,7 @@ CREATE POLICY tenant_isolation_insert_recipe_sub_recipes ON recipe_sub_recipes
     )
   );
 
+DROP POLICY IF EXISTS tenant_isolation_update_recipe_sub_recipes ON recipe_sub_recipes;
 DROP POLICY IF EXISTS tenant_isolation_update_recipe_sub_recipes ON recipe_sub_recipes;
 CREATE POLICY tenant_isolation_update_recipe_sub_recipes ON recipe_sub_recipes
   FOR UPDATE
@@ -98,6 +102,7 @@ CREATE POLICY tenant_isolation_update_recipe_sub_recipes ON recipe_sub_recipes
     )
   );
 
+DROP POLICY IF EXISTS tenant_isolation_delete_recipe_sub_recipes ON recipe_sub_recipes;
 DROP POLICY IF EXISTS tenant_isolation_delete_recipe_sub_recipes ON recipe_sub_recipes;
 CREATE POLICY tenant_isolation_delete_recipe_sub_recipes ON recipe_sub_recipes
   FOR DELETE
@@ -147,6 +152,7 @@ BEGIN
 END;
 $$ LANGUAGE plpgsql;
 
+DROP TRIGGER IF EXISTS prevent_circular_sub_recipe_trigger ON recipe_sub_recipes;
 CREATE TRIGGER prevent_circular_sub_recipe_trigger
   BEFORE INSERT OR UPDATE ON recipe_sub_recipes
   FOR EACH ROW

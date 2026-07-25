@@ -17,7 +17,7 @@
 --            + outcome summary — enough to trace any issue.
 -- ============================================================
 
-CREATE TABLE webhook_events (
+CREATE TABLE IF NOT EXISTS webhook_events (
   id                  UUID        PRIMARY KEY DEFAULT gen_random_uuid(),
   provider            TEXT        NOT NULL,
                       -- 'stripe' | 'resend' | 'wix' | 'generic'
@@ -46,21 +46,21 @@ COMMENT ON COLUMN webhook_events.provider_event_id IS
   'Allows cross-referencing this log with the provider''s dashboard.';
 
 -- Fast lookup: all events for a given provider in time order
-CREATE INDEX idx_webhook_events_provider_received
+CREATE INDEX IF NOT EXISTS idx_webhook_events_provider_received
   ON webhook_events (provider, received_at DESC);
 
 -- Fast lookup: find a specific provider event (e.g. "did we see evt_1234?")
-CREATE INDEX idx_webhook_events_provider_event_id
+CREATE INDEX IF NOT EXISTS idx_webhook_events_provider_event_id
   ON webhook_events (provider_event_id)
   WHERE provider_event_id IS NOT NULL;
 
 -- Fast lookup: all failed events for monitoring
-CREATE INDEX idx_webhook_events_failed
+CREATE INDEX IF NOT EXISTS idx_webhook_events_failed
   ON webhook_events (received_at DESC)
   WHERE status = 'failed';
 
 -- Chronological index for audit queries
-CREATE INDEX idx_webhook_events_received
+CREATE INDEX IF NOT EXISTS idx_webhook_events_received
   ON webhook_events (received_at DESC);
 
 -- RLS: System/operational table. Only accessible via service_role.
@@ -83,6 +83,7 @@ COMMENT ON FUNCTION purge_old_webhook_events IS
   'Auto-purges webhook_events rows older than 90 days on each INSERT. '
   'Keeps the table lean without a separate cleanup cron.';
 
+DROP TRIGGER IF EXISTS auto_purge_webhook_events ON webhook_events;
 CREATE TRIGGER auto_purge_webhook_events
   AFTER INSERT ON webhook_events
   FOR EACH STATEMENT

@@ -13,14 +13,17 @@ SELECT
   gen_random_uuid(),
   INITCAP(REPLACE(category::text, '_', ' ')),
   category,
-  NULL,
+  -- A category-level parent has no subcategory, but the column is NOT NULL, so the
+  -- empty string is the sentinel. Steps 3 to 5 below find parents by hierarchy_depth
+  -- and is_leaf, never by a null subcategory, so this does not change the linking.
+  '',
   0,
   false,
   1.0
 FROM (SELECT DISTINCT category FROM system_ingredients WHERE category IS NOT NULL) cats
 WHERE NOT EXISTS (
   SELECT 1 FROM system_ingredients si2
-  WHERE si2.name = INITCAP(REPLACE(cats.category, '_', ' '))
+  WHERE si2.name = INITCAP(REPLACE(cats.category::text, '_', ' '))
     AND si2.hierarchy_depth = 0
     AND si2.is_leaf = false
 );

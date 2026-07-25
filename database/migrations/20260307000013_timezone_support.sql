@@ -11,5 +11,6 @@ ALTER TABLE events
 -- NULL = use chef.timezone for this event (safe fallback for all existing events)
 
 -- Reasonable validation constraint on chef timezone (non-empty)
+ALTER TABLE chefs DROP CONSTRAINT IF EXISTS chefs_timezone_nonempty;
 ALTER TABLE chefs
   ADD CONSTRAINT chefs_timezone_nonempty CHECK (timezone <> '');

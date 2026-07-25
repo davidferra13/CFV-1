@@ -29,12 +29,13 @@ CREATE TABLE IF NOT EXISTS preset_automation_rules (
   UNIQUE (tenant_id, rule_type)
 );
 
-CREATE INDEX idx_preset_rules_tenant ON preset_automation_rules(tenant_id);
-CREATE INDEX idx_preset_rules_enabled ON preset_automation_rules(tenant_id, enabled)
+CREATE INDEX IF NOT EXISTS idx_preset_rules_tenant ON preset_automation_rules(tenant_id);
+CREATE INDEX IF NOT EXISTS idx_preset_rules_enabled ON preset_automation_rules(tenant_id, enabled)
   WHERE enabled = true;
 
 ALTER TABLE preset_automation_rules ENABLE ROW LEVEL SECURITY;
 
+DROP POLICY IF EXISTS "Chefs manage own preset rules" ON preset_automation_rules;
 DROP POLICY IF EXISTS "Chefs manage own preset rules" ON preset_automation_rules;
 CREATE POLICY "Chefs manage own preset rules"
   ON preset_automation_rules
@@ -53,6 +54,7 @@ CREATE POLICY "Chefs manage own preset rules"
   );
 
 DROP POLICY IF EXISTS "Service role manages preset rules" ON preset_automation_rules;
+DROP POLICY IF EXISTS "Service role manages preset rules" ON preset_automation_rules;
 CREATE POLICY "Service role manages preset rules"
   ON preset_automation_rules
   FOR ALL
@@ -68,6 +70,7 @@ BEGIN
 END;
 $$;
 
+DROP TRIGGER IF EXISTS preset_automation_rules_updated_at ON preset_automation_rules;
 CREATE TRIGGER preset_automation_rules_updated_at
   BEFORE UPDATE ON preset_automation_rules
   FOR EACH ROW EXECUTE FUNCTION set_preset_automation_rules_updated_at();

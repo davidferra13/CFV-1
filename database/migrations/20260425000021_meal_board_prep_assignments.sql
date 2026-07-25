@@ -2,11 +2,11 @@
 -- Enables learning mode where members see exactly what they need to do
 
 ALTER TABLE hub_meal_board
-  ADD COLUMN assigned_profile_id UUID REFERENCES hub_guest_profiles(id) ON DELETE SET NULL,
-  ADD COLUMN assigned_display_name TEXT,
-  ADD COLUMN assignment_notes TEXT;
+  ADD COLUMN IF NOT EXISTS assigned_profile_id UUID REFERENCES hub_guest_profiles(id) ON DELETE SET NULL,
+  ADD COLUMN IF NOT EXISTS assigned_display_name TEXT,
+  ADD COLUMN IF NOT EXISTS assignment_notes TEXT;
 
-CREATE INDEX idx_hub_meal_board_assigned
+CREATE INDEX IF NOT EXISTS idx_hub_meal_board_assigned
   ON hub_meal_board(assigned_profile_id)
   WHERE assigned_profile_id IS NOT NULL;
 

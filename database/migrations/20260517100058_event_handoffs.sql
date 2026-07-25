@@ -1,9 +1,15 @@
 -- Event Handoffs: chef-to-chef/staff event delegation with full context packets
 -- ADDITIVE ONLY
 
-CREATE TYPE handoff_status AS ENUM ('pending', 'accepted', 'completed', 'cancelled');
+DO $idem$
+BEGIN
+  IF NOT EXISTS (SELECT 1 FROM pg_type WHERE typname = 'handoff_status') THEN
+    CREATE TYPE handoff_status AS ENUM ('pending', 'accepted', 'completed', 'cancelled');
+  END IF;
+END
+$idem$;
 
-CREATE TABLE event_handoffs (
+CREATE TABLE IF NOT EXISTS event_handoffs (
   id            uuid PRIMARY KEY DEFAULT gen_random_uuid(),
   event_id      uuid NOT NULL REFERENCES events(id) ON DELETE CASCADE,
   tenant_id     uuid NOT NULL REFERENCES chefs(id) ON DELETE CASCADE,
@@ -17,10 +23,10 @@ CREATE TABLE event_handoffs (
   completed_at  timestamptz
 );
 
-CREATE INDEX idx_event_handoffs_event ON event_handoffs(event_id);
-CREATE INDEX idx_event_handoffs_tenant ON event_handoffs(tenant_id);
-CREATE INDEX idx_event_handoffs_to_user ON event_handoffs(to_user_id, status);
-CREATE INDEX idx_event_handoffs_from_user ON event_handoffs(from_user_id, status);
+CREATE INDEX IF NOT EXISTS idx_event_handoffs_event ON event_handoffs(event_id);
+CREATE INDEX IF NOT EXISTS idx_event_handoffs_tenant ON event_handoffs(tenant_id);
+CREATE INDEX IF NOT EXISTS idx_event_handoffs_to_user ON event_handoffs(to_user_id, status);
+CREATE INDEX IF NOT EXISTS idx_event_handoffs_from_user ON event_handoffs(from_user_id, status);
 
 -- RLS
 ALTER TABLE event_handoffs ENABLE ROW LEVEL SECURITY;

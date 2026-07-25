@@ -7,12 +7,12 @@
 -- and creates a tenant-scoped inquiry via the application layer.
 
 ALTER TABLE contact_submissions
-  ADD COLUMN claimed_by_chef_id UUID REFERENCES chefs(id),
-  ADD COLUMN claimed_at TIMESTAMPTZ,
-  ADD COLUMN inquiry_id UUID REFERENCES inquiries(id);
+  ADD COLUMN IF NOT EXISTS claimed_by_chef_id UUID REFERENCES chefs(id),
+  ADD COLUMN IF NOT EXISTS claimed_at TIMESTAMPTZ,
+  ADD COLUMN IF NOT EXISTS inquiry_id UUID REFERENCES inquiries(id);
 
 -- Fast lookup for unclaimed submissions
-CREATE INDEX idx_contact_submissions_unclaimed
+CREATE INDEX IF NOT EXISTS idx_contact_submissions_unclaimed
   ON contact_submissions (claimed_by_chef_id)
   WHERE claimed_by_chef_id IS NULL;
 

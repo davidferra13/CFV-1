@@ -19,6 +19,12 @@ CREATE TABLE IF NOT EXISTS chef_scheduling_rules (
 
 -- Constraints
 ALTER TABLE chef_scheduling_rules
+  DROP CONSTRAINT IF EXISTS csr_buffer_days_nonneg,
+  DROP CONSTRAINT IF EXISTS csr_lead_days_nonneg,
+  DROP CONSTRAINT IF EXISTS csr_max_week_pos,
+  DROP CONSTRAINT IF EXISTS csr_max_month_pos;
+
+ALTER TABLE chef_scheduling_rules
   ADD CONSTRAINT csr_buffer_days_nonneg CHECK (min_buffer_days >= 0),
   ADD CONSTRAINT csr_lead_days_nonneg   CHECK (min_lead_days >= 0),
   ADD CONSTRAINT csr_max_week_pos       CHECK (max_events_per_week IS NULL OR max_events_per_week > 0),
@@ -33,6 +39,7 @@ BEGIN
 END;
 $$;
 
+DROP TRIGGER IF EXISTS trg_chef_scheduling_rules_updated_at ON chef_scheduling_rules;
 CREATE TRIGGER trg_chef_scheduling_rules_updated_at
   BEFORE UPDATE ON chef_scheduling_rules
   FOR EACH ROW EXECUTE FUNCTION update_chef_scheduling_rules_updated_at();
@@ -43,6 +50,7 @@ CREATE INDEX IF NOT EXISTS idx_chef_scheduling_rules_tenant ON chef_scheduling_r
 -- RLS
 ALTER TABLE chef_scheduling_rules ENABLE ROW LEVEL SECURITY;
 
+DROP POLICY IF EXISTS "Chef can manage own scheduling rules" ON chef_scheduling_rules;
 DROP POLICY IF EXISTS "Chef can manage own scheduling rules" ON chef_scheduling_rules;
 CREATE POLICY "Chef can manage own scheduling rules"
   ON chef_scheduling_rules

@@ -5,6 +5,7 @@
 ALTER TABLE chef_preferences
 ADD COLUMN IF NOT EXISTS complexity_level TEXT NOT NULL DEFAULT 'pro';
 
+ALTER TABLE chef_preferences DROP CONSTRAINT IF EXISTS chef_preferences_complexity_level_check;
 ALTER TABLE chef_preferences
 ADD CONSTRAINT chef_preferences_complexity_level_check
 CHECK (complexity_level IN ('starter', 'standard', 'pro'));

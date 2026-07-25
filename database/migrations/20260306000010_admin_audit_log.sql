@@ -32,6 +32,7 @@ BEGIN
 END;
 $$;
 
+DROP TRIGGER IF EXISTS trg_audit_log_no_update ON admin_audit_log;
 CREATE TRIGGER trg_audit_log_no_update
   BEFORE UPDATE ON admin_audit_log
   FOR EACH ROW EXECUTE FUNCTION prevent_audit_log_update();

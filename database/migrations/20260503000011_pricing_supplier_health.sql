@@ -12,7 +12,7 @@
 
 CREATE TABLE IF NOT EXISTS chef_supplier_preferences (
   id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
-  chef_id UUID NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+  chef_id UUID NOT NULL REFERENCES chefs(id) ON DELETE CASCADE,
   store_name TEXT NOT NULL,              -- freeform store name
   chain_slug TEXT,                       -- links to openclaw.chains.slug if known
   vendor_id UUID REFERENCES vendors(id), -- links to ChefFlow vendor if applicable

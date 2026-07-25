@@ -21,6 +21,7 @@ BEGIN
 END;
 $$;
 
+DROP TRIGGER IF EXISTS trg_chef_feature_flags_updated_at ON chef_feature_flags;
 CREATE TRIGGER trg_chef_feature_flags_updated_at
   BEFORE UPDATE ON chef_feature_flags
   FOR EACH ROW EXECUTE FUNCTION set_feature_flag_updated_at();
@@ -29,6 +30,7 @@ CREATE TRIGGER trg_chef_feature_flags_updated_at
 ALTER TABLE chef_feature_flags ENABLE ROW LEVEL SECURITY;
 
 -- Chefs can read their own flags (for server-side feature gating)
+DROP POLICY IF EXISTS "chefs_read_own_flags" ON chef_feature_flags;
 DROP POLICY IF EXISTS "chefs_read_own_flags" ON chef_feature_flags;
 CREATE POLICY "chefs_read_own_flags"
   ON chef_feature_flags FOR SELECT

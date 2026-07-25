@@ -57,8 +57,16 @@ BEGIN
 END;
 $$ LANGUAGE plpgsql;
 
--- Same trigger under the shorter name some migrations use.
+-- Same trigger under the other two names migrations reach for.
 CREATE OR REPLACE FUNCTION update_updated_at()
+RETURNS TRIGGER AS $$
+BEGIN
+  NEW.updated_at = now();
+  RETURN NEW;
+END;
+$$ LANGUAGE plpgsql;
+
+CREATE OR REPLACE FUNCTION update_updated_at_timestamp()
 RETURNS TRIGGER AS $$
 BEGIN
   NEW.updated_at = now();

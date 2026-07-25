@@ -5,7 +5,7 @@
 -- Uses a VIEW (not materialized) to stay always-current without triggers.
 -- ============================================================================
 
-CREATE VIEW unified_inbox AS
+CREATE OR REPLACE VIEW unified_inbox AS
 
 -- Conversations (real-time chat, grouped at conversation level)
 SELECT

@@ -9,7 +9,10 @@
 -- ============================================
 
 -- Inquiry lifecycle states
-CREATE TYPE inquiry_status AS ENUM (
+DO $idem$
+BEGIN
+  IF NOT EXISTS (SELECT 1 FROM pg_type WHERE typname = 'inquiry_status') THEN
+    CREATE TYPE inquiry_status AS ENUM (
   'new',              -- Just received
   'awaiting_client',  -- Chef responded, waiting for client
   'awaiting_chef',    -- Client responded, waiting for chef
@@ -18,9 +21,15 @@ CREATE TYPE inquiry_status AS ENUM (
   'declined',         -- Chef or client declined
   'expired'           -- No response after follow-ups
 );
+  END IF;
+END
+$idem$;
 
 -- Inquiry source channel
-CREATE TYPE inquiry_channel AS ENUM (
+DO $idem$
+BEGIN
+  IF NOT EXISTS (SELECT 1 FROM pg_type WHERE typname = 'inquiry_channel') THEN
+    CREATE TYPE inquiry_channel AS ENUM (
   'text',
   'email',
   'instagram',
@@ -29,17 +38,29 @@ CREATE TYPE inquiry_channel AS ENUM (
   'website',
   'other'
 );
+  END IF;
+END
+$idem$;
 
 -- Message approval workflow states
-CREATE TYPE message_status AS ENUM (
+DO $idem$
+BEGIN
+  IF NOT EXISTS (SELECT 1 FROM pg_type WHERE typname = 'message_status') THEN
+    CREATE TYPE message_status AS ENUM (
   'draft',      -- Created but not approved
   'approved',   -- Approved but not sent
   'sent',       -- Successfully sent
   'logged'      -- Inbound message or already-sent message logged
 );
+  END IF;
+END
+$idem$;
 
 -- Message communication channel
-CREATE TYPE message_channel AS ENUM (
+DO $idem$
+BEGIN
+  IF NOT EXISTS (SELECT 1 FROM pg_type WHERE typname = 'message_channel') THEN
+    CREATE TYPE message_channel AS ENUM (
   'text',
   'email',
   'instagram',
@@ -47,18 +68,27 @@ CREATE TYPE message_channel AS ENUM (
   'phone',
   'internal_note'
 );
+  END IF;
+END
+$idem$;
 
 -- Message direction
-CREATE TYPE message_direction AS ENUM (
+DO $idem$
+BEGIN
+  IF NOT EXISTS (SELECT 1 FROM pg_type WHERE typname = 'message_direction') THEN
+    CREATE TYPE message_direction AS ENUM (
   'inbound',   -- Client to chef
   'outbound'   -- Chef to client
 );
+  END IF;
+END
+$idem$;
 
 -- ============================================
 -- INQUIRIES (Unified Inquiry Tracking)
 -- ============================================
 
-CREATE TABLE inquiries (
+CREATE TABLE IF NOT EXISTS inquiries (
   id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
   tenant_id UUID NOT NULL REFERENCES chefs(id) ON DELETE CASCADE,
   client_id UUID REFERENCES clients(id) ON DELETE SET NULL, -- Nullable - might be new lead
@@ -99,12 +129,12 @@ CREATE TABLE inquiries (
   updated_at TIMESTAMPTZ DEFAULT now() NOT NULL
 );
 
-CREATE INDEX idx_inquiries_tenant ON inquiries(tenant_id);
-CREATE INDEX idx_inquiries_client ON inquiries(client_id);
-CREATE INDEX idx_inquiries_status ON inquiries(status);
-CREATE INDEX idx_inquiries_tenant_status ON inquiries(tenant_id, status);
-CREATE INDEX idx_inquiries_follow_up_due ON inquiries(follow_up_due_at) WHERE follow_up_due_at IS NOT NULL;
-CREATE INDEX idx_inquiries_converted ON inquiries(converted_to_event_id) WHERE converted_to_event_id IS NOT NULL;
+CREATE INDEX IF NOT EXISTS idx_inquiries_tenant ON inquiries(tenant_id);
+CREATE INDEX IF NOT EXISTS idx_inquiries_client ON inquiries(client_id);
+CREATE INDEX IF NOT EXISTS idx_inquiries_status ON inquiries(status);
+CREATE INDEX IF NOT EXISTS idx_inquiries_tenant_status ON inquiries(tenant_id, status);
+CREATE INDEX IF NOT EXISTS idx_inquiries_follow_up_due ON inquiries(follow_up_due_at) WHERE follow_up_due_at IS NOT NULL;
+CREATE INDEX IF NOT EXISTS idx_inquiries_converted ON inquiries(converted_to_event_id) WHERE converted_to_event_id IS NOT NULL;
 
 COMMENT ON TABLE inquiries IS 'Unified inquiry tracking from all channels (Part 11). Every inquiry becomes a structured record.';
 COMMENT ON COLUMN inquiries.client_id IS 'Nullable - inquiry might be from new lead who is not yet a client';
@@ -117,7 +147,7 @@ COMMENT ON COLUMN inquiries.converted_to_event_id IS 'UUID of event created from
 -- INQUIRY STATE TRANSITIONS (Immutable Audit Trail)
 -- ============================================
 
-CREATE TABLE inquiry_state_transitions (
+CREATE TABLE IF NOT EXISTS inquiry_state_transitions (
   id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
   tenant_id UUID NOT NULL REFERENCES chefs(id) ON DELETE CASCADE,
   inquiry_id UUID NOT NULL REFERENCES inquiries(id) ON DELETE CASCADE,
@@ -129,9 +159,9 @@ CREATE TABLE inquiry_state_transitions (
   metadata JSONB
 );
 
-CREATE INDEX idx_inquiry_transitions_inquiry ON inquiry_state_transitions(inquiry_id);
-CREATE INDEX idx_inquiry_transitions_tenant ON inquiry_state_transitions(tenant_id);
-CREATE INDEX idx_inquiry_transitions_date ON inquiry_state_transitions(transitioned_at DESC);
+CREATE INDEX IF NOT EXISTS idx_inquiry_transitions_inquiry ON inquiry_state_transitions(inquiry_id);
+CREATE INDEX IF NOT EXISTS idx_inquiry_transitions_tenant ON inquiry_state_transitions(tenant_id);
+CREATE INDEX IF NOT EXISTS idx_inquiry_transitions_date ON inquiry_state_transitions(transitioned_at DESC);
 
 COMMENT ON TABLE inquiry_state_transitions IS 'Immutable audit trail of all inquiry status changes';
 COMMENT ON COLUMN inquiry_state_transitions.from_status IS 'Nullable for initial state (creation)';
@@ -141,7 +171,7 @@ COMMENT ON COLUMN inquiry_state_transitions.transitioned_by IS 'NULL for system 
 -- MESSAGES (Contextual, Event-Bound Communication)
 -- ============================================
 
-CREATE TABLE messages (
+CREATE TABLE IF NOT EXISTS messages (
   id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
   tenant_id UUID NOT NULL REFERENCES chefs(id) ON DELETE CASCADE,
   inquiry_id UUID REFERENCES inquiries(id) ON DELETE CASCADE,
@@ -168,12 +198,12 @@ CREATE TABLE messages (
   updated_at TIMESTAMPTZ DEFAULT now() NOT NULL
 );
 
-CREATE INDEX idx_messages_tenant ON messages(tenant_id);
-CREATE INDEX idx_messages_inquiry ON messages(inquiry_id);
-CREATE INDEX idx_messages_event ON messages(event_id);
-CREATE INDEX idx_messages_client ON messages(client_id);
-CREATE INDEX idx_messages_status ON messages(status);
-CREATE INDEX idx_messages_sent_at ON messages(sent_at DESC);
+CREATE INDEX IF NOT EXISTS idx_messages_tenant ON messages(tenant_id);
+CREATE INDEX IF NOT EXISTS idx_messages_inquiry ON messages(inquiry_id);
+CREATE INDEX IF NOT EXISTS idx_messages_event ON messages(event_id);
+CREATE INDEX IF NOT EXISTS idx_messages_client ON messages(client_id);
+CREATE INDEX IF NOT EXISTS idx_messages_status ON messages(status);
+CREATE INDEX IF NOT EXISTS idx_messages_sent_at ON messages(sent_at DESC);
 
 COMMENT ON TABLE messages IS 'Contextual, event-bound communication (Part 12). Messages are permanent records - NEVER deleted once logged. All outbound messages require explicit approval before sending.';
 COMMENT ON COLUMN messages.event_id IS 'UUID of related event. FK constraint will be added in Layer 3 when events table exists.';
@@ -185,7 +215,7 @@ COMMENT ON COLUMN messages.approved_by IS 'Required for outbound messages - NO a
 -- RESPONSE TEMPLATES (Pre-drafted Chef Voice)
 -- ============================================
 
-CREATE TABLE response_templates (
+CREATE TABLE IF NOT EXISTS response_templates (
   id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
   tenant_id UUID NOT NULL REFERENCES chefs(id) ON DELETE CASCADE,
   name TEXT NOT NULL,
@@ -197,8 +227,8 @@ CREATE TABLE response_templates (
   updated_at TIMESTAMPTZ DEFAULT now() NOT NULL
 );
 
-CREATE INDEX idx_templates_tenant ON response_templates(tenant_id);
-CREATE INDEX idx_templates_active ON response_templates(tenant_id, is_active) WHERE is_active = true;
+CREATE INDEX IF NOT EXISTS idx_templates_tenant ON response_templates(tenant_id);
+CREATE INDEX IF NOT EXISTS idx_templates_active ON response_templates(tenant_id, is_active) WHERE is_active = true;
 
 COMMENT ON TABLE response_templates IS 'Pre-drafted responses in chef voice. Require chef approval before sending.';
 COMMENT ON COLUMN response_templates.usage_count IS 'Incremented each time template is used';
@@ -320,40 +350,58 @@ COMMENT ON FUNCTION log_audit IS 'Logs all mutations to audit_log table with bef
 -- ============================================
 
 -- Auto-update timestamps
+DROP TRIGGER IF EXISTS inquiries_updated_at ON inquiries;
+DROP TRIGGER IF EXISTS inquiries_updated_at ON inquiries;
 CREATE TRIGGER inquiries_updated_at
 BEFORE UPDATE ON inquiries
 FOR EACH ROW EXECUTE FUNCTION update_updated_at_column();
 
+DROP TRIGGER IF EXISTS messages_updated_at ON messages;
+DROP TRIGGER IF EXISTS messages_updated_at ON messages;
 CREATE TRIGGER messages_updated_at
 BEFORE UPDATE ON messages
 FOR EACH ROW EXECUTE FUNCTION update_updated_at_column();
 
+DROP TRIGGER IF EXISTS templates_updated_at ON response_templates;
+DROP TRIGGER IF EXISTS templates_updated_at ON response_templates;
 CREATE TRIGGER templates_updated_at
 BEFORE UPDATE ON response_templates
 FOR EACH ROW EXECUTE FUNCTION update_updated_at_column();
 
 -- Audit logging
+DROP TRIGGER IF EXISTS inquiries_audit_log ON inquiries;
+DROP TRIGGER IF EXISTS inquiries_audit_log ON inquiries;
 CREATE TRIGGER inquiries_audit_log
 AFTER INSERT OR UPDATE OR DELETE ON inquiries
 FOR EACH ROW EXECUTE FUNCTION log_audit();
 
+DROP TRIGGER IF EXISTS messages_audit_log ON messages;
+DROP TRIGGER IF EXISTS messages_audit_log ON messages;
 CREATE TRIGGER messages_audit_log
 AFTER INSERT OR UPDATE OR DELETE ON messages
 FOR EACH ROW EXECUTE FUNCTION log_audit();
 
+DROP TRIGGER IF EXISTS templates_audit_log ON response_templates;
+DROP TRIGGER IF EXISTS templates_audit_log ON response_templates;
 CREATE TRIGGER templates_audit_log
 AFTER INSERT OR UPDATE OR DELETE ON response_templates
 FOR EACH ROW EXECUTE FUNCTION log_audit();
 
 -- Inquiry state transition validation and immutability
+DROP TRIGGER IF EXISTS inquiry_transitions_validate ON inquiry_state_transitions;
+DROP TRIGGER IF EXISTS inquiry_transitions_validate ON inquiry_state_transitions;
 CREATE TRIGGER inquiry_transitions_validate
 BEFORE INSERT ON inquiry_state_transitions
 FOR EACH ROW EXECUTE FUNCTION validate_inquiry_transition();
 
+DROP TRIGGER IF EXISTS inquiry_transitions_immutable_update ON inquiry_state_transitions;
+DROP TRIGGER IF EXISTS inquiry_transitions_immutable_update ON inquiry_state_transitions;
 CREATE TRIGGER inquiry_transitions_immutable_update
 BEFORE UPDATE ON inquiry_state_transitions
 FOR EACH ROW EXECUTE FUNCTION prevent_inquiry_transition_modification();
 
+DROP TRIGGER IF EXISTS inquiry_transitions_immutable_delete ON inquiry_state_transitions;
+DROP TRIGGER IF EXISTS inquiry_transitions_immutable_delete ON inquiry_state_transitions;
 CREATE TRIGGER inquiry_transitions_immutable_delete
 BEFORE DELETE ON inquiry_state_transitions
 FOR EACH ROW EXECUTE FUNCTION prevent_inquiry_transition_modification();
@@ -374,6 +422,8 @@ ALTER TABLE response_templates ENABLE ROW LEVEL SECURITY;
 
 -- Chefs can read their own inquiries
 DROP POLICY IF EXISTS inquiries_chef_select ON inquiries;
+DROP POLICY IF EXISTS inquiries_chef_select ON inquiries;
+DROP POLICY IF EXISTS inquiries_chef_select ON inquiries;
 CREATE POLICY inquiries_chef_select ON inquiries
   FOR SELECT
   USING (
@@ -382,6 +432,8 @@ CREATE POLICY inquiries_chef_select ON inquiries
   );
 
 -- Chefs can create inquiries
+DROP POLICY IF EXISTS inquiries_chef_insert ON inquiries;
+DROP POLICY IF EXISTS inquiries_chef_insert ON inquiries;
 DROP POLICY IF EXISTS inquiries_chef_insert ON inquiries;
 CREATE POLICY inquiries_chef_insert ON inquiries
   FOR INSERT
@@ -392,6 +444,8 @@ CREATE POLICY inquiries_chef_insert ON inquiries
 
 -- Chefs can update their inquiries
 DROP POLICY IF EXISTS inquiries_chef_update ON inquiries;
+DROP POLICY IF EXISTS inquiries_chef_update ON inquiries;
+DROP POLICY IF EXISTS inquiries_chef_update ON inquiries;
 CREATE POLICY inquiries_chef_update ON inquiries
   FOR UPDATE
   USING (
@@ -401,6 +455,8 @@ CREATE POLICY inquiries_chef_update ON inquiries
 
 -- Chefs can delete their inquiries (prefer status transition to 'declined' or 'expired')
 DROP POLICY IF EXISTS inquiries_chef_delete ON inquiries;
+DROP POLICY IF EXISTS inquiries_chef_delete ON inquiries;
+DROP POLICY IF EXISTS inquiries_chef_delete ON inquiries;
 CREATE POLICY inquiries_chef_delete ON inquiries
   FOR DELETE
   USING (
@@ -409,6 +465,8 @@ CREATE POLICY inquiries_chef_delete ON inquiries
   );
 
 -- Clients can read inquiries linked to them
+DROP POLICY IF EXISTS inquiries_client_select ON inquiries;
+DROP POLICY IF EXISTS inquiries_client_select ON inquiries;
 DROP POLICY IF EXISTS inquiries_client_select ON inquiries;
 CREATE POLICY inquiries_client_select ON inquiries
   FOR SELECT
@@ -426,6 +484,8 @@ COMMENT ON POLICY inquiries_client_select ON inquiries IS 'Clients see only inqu
 
 -- Chefs can read transitions for their inquiries
 DROP POLICY IF EXISTS inquiry_transitions_chef_select ON inquiry_state_transitions;
+DROP POLICY IF EXISTS inquiry_transitions_chef_select ON inquiry_state_transitions;
+DROP POLICY IF EXISTS inquiry_transitions_chef_select ON inquiry_state_transitions;
 CREATE POLICY inquiry_transitions_chef_select ON inquiry_state_transitions
   FOR SELECT
   USING (
@@ -434,6 +494,8 @@ CREATE POLICY inquiry_transitions_chef_select ON inquiry_state_transitions
   );
 
 -- Clients can read transitions for their inquiries
+DROP POLICY IF EXISTS inquiry_transitions_client_select ON inquiry_state_transitions;
+DROP POLICY IF EXISTS inquiry_transitions_client_select ON inquiry_state_transitions;
 DROP POLICY IF EXISTS inquiry_transitions_client_select ON inquiry_state_transitions;
 CREATE POLICY inquiry_transitions_client_select ON inquiry_state_transitions
   FOR SELECT
@@ -445,6 +507,8 @@ CREATE POLICY inquiry_transitions_client_select ON inquiry_state_transitions
   );
 
 -- Only chef who owns the inquiry can insert state transitions
+DROP POLICY IF EXISTS inquiry_transitions_insert ON inquiry_state_transitions;
+DROP POLICY IF EXISTS inquiry_transitions_insert ON inquiry_state_transitions;
 DROP POLICY IF EXISTS inquiry_transitions_insert ON inquiry_state_transitions;
 CREATE POLICY inquiry_transitions_insert ON inquiry_state_transitions
   FOR INSERT
@@ -464,6 +528,8 @@ COMMENT ON POLICY inquiry_transitions_insert ON inquiry_state_transitions IS 'On
 
 -- Chefs can read their messages
 DROP POLICY IF EXISTS messages_chef_select ON messages;
+DROP POLICY IF EXISTS messages_chef_select ON messages;
+DROP POLICY IF EXISTS messages_chef_select ON messages;
 CREATE POLICY messages_chef_select ON messages
   FOR SELECT
   USING (
@@ -473,6 +539,8 @@ CREATE POLICY messages_chef_select ON messages
 
 -- Chefs can create messages
 DROP POLICY IF EXISTS messages_chef_insert ON messages;
+DROP POLICY IF EXISTS messages_chef_insert ON messages;
+DROP POLICY IF EXISTS messages_chef_insert ON messages;
 CREATE POLICY messages_chef_insert ON messages
   FOR INSERT
   WITH CHECK (
@@ -481,6 +549,8 @@ CREATE POLICY messages_chef_insert ON messages
   );
 
 -- Chefs can update messages (only drafts via app logic - sent messages immutable in practice)
+DROP POLICY IF EXISTS messages_chef_update ON messages;
+DROP POLICY IF EXISTS messages_chef_update ON messages;
 DROP POLICY IF EXISTS messages_chef_update ON messages;
 CREATE POLICY messages_chef_update ON messages
   FOR UPDATE
@@ -494,6 +564,8 @@ CREATE POLICY messages_chef_update ON messages
 -- Deletion only occurs via CASCADE when parent records (inquiries, events, clients) are deleted.
 
 -- Clients can read messages related to them
+DROP POLICY IF EXISTS messages_client_select ON messages;
+DROP POLICY IF EXISTS messages_client_select ON messages;
 DROP POLICY IF EXISTS messages_client_select ON messages;
 CREATE POLICY messages_client_select ON messages
   FOR SELECT
@@ -510,6 +582,8 @@ COMMENT ON POLICY messages_client_select ON messages IS 'Clients see messages re
 -- ============================================
 
 -- Chefs can manage their templates
+DROP POLICY IF EXISTS templates_chef_all ON response_templates;
+DROP POLICY IF EXISTS templates_chef_all ON response_templates;
 DROP POLICY IF EXISTS templates_chef_all ON response_templates;
 CREATE POLICY templates_chef_all ON response_templates
   FOR ALL

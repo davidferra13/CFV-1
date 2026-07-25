@@ -13,6 +13,7 @@ ALTER TABLE components
   ADD COLUMN IF NOT EXISTS portion_unit TEXT;
 
 -- If portion_quantity is set, it must be positive
+ALTER TABLE components DROP CONSTRAINT IF EXISTS components_portion_quantity_positive;
 ALTER TABLE components
   ADD CONSTRAINT components_portion_quantity_positive
   CHECK (portion_quantity IS NULL OR portion_quantity > 0);

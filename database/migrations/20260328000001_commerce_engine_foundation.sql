@@ -20,7 +20,10 @@
 -- ENUMS
 -- ═══════════════════════════════════════════════════════
 
-CREATE TYPE sale_status AS ENUM (
+DO $idem$
+BEGIN
+  IF NOT EXISTS (SELECT 1 FROM pg_type WHERE typname = 'sale_status') THEN
+    CREATE TYPE sale_status AS ENUM (
   'draft',
   'pending_payment',
   'authorized',
@@ -30,16 +33,28 @@ CREATE TYPE sale_status AS ENUM (
   'fully_refunded',
   'voided'
 );
+  END IF;
+END
+$idem$;
 
-CREATE TYPE sale_channel AS ENUM (
+DO $idem$
+BEGIN
+  IF NOT EXISTS (SELECT 1 FROM pg_type WHERE typname = 'sale_channel') THEN
+    CREATE TYPE sale_channel AS ENUM (
   'counter',          -- In-person POS
   'order_ahead',      -- Client placed order for pickup/delivery
   'invoice',          -- Event invoice / ticket
   'online',           -- Web storefront (future)
   'phone'             -- Phone order
 );
+  END IF;
+END
+$idem$;
 
-CREATE TYPE commerce_payment_status AS ENUM (
+DO $idem$
+BEGIN
+  IF NOT EXISTS (SELECT 1 FROM pg_type WHERE typname = 'commerce_payment_status') THEN
+    CREATE TYPE commerce_payment_status AS ENUM (
   'pending',
   'authorized',
   'captured',
@@ -50,14 +65,26 @@ CREATE TYPE commerce_payment_status AS ENUM (
   'partially_refunded',
   'disputed'
 );
+  END IF;
+END
+$idem$;
 
-CREATE TYPE refund_status AS ENUM (
+DO $idem$
+BEGIN
+  IF NOT EXISTS (SELECT 1 FROM pg_type WHERE typname = 'refund_status') THEN
+    CREATE TYPE refund_status AS ENUM (
   'pending',
   'processed',
   'failed'
 );
+  END IF;
+END
+$idem$;
 
-CREATE TYPE tax_class AS ENUM (
+DO $idem$
+BEGIN
+  IF NOT EXISTS (SELECT 1 FROM pg_type WHERE typname = 'tax_class') THEN
+    CREATE TYPE tax_class AS ENUM (
   'standard',         -- Default food tax rate
   'reduced',          -- Lower rate (some states for groceries)
   'exempt',           -- Tax exempt (catering in some jurisdictions)
@@ -66,6 +93,9 @@ CREATE TYPE tax_class AS ENUM (
   'prepared_food',    -- Prepared food rate
   'zero'              -- Explicitly zero-rated
 );
+  END IF;
+END
+$idem$;
 
 
 -- ═══════════════════════════════════════════════════════
@@ -74,7 +104,7 @@ CREATE TYPE tax_class AS ENUM (
 -- POS reads only this table during checkout — no recipe joins.
 -- ═══════════════════════════════════════════════════════
 
-CREATE TABLE product_projections (
+CREATE TABLE IF NOT EXISTS product_projections (
   id              UUID PRIMARY KEY DEFAULT gen_random_uuid(),
   tenant_id       UUID NOT NULL REFERENCES chefs(id),
 
@@ -123,7 +153,7 @@ CREATE TABLE product_projections (
 -- Optional event_id bridges to existing event pipeline.
 -- ═══════════════════════════════════════════════════════
 
-CREATE TABLE sales (
+CREATE TABLE IF NOT EXISTS sales (
   id              UUID PRIMARY KEY DEFAULT gen_random_uuid(),
   tenant_id       UUID NOT NULL REFERENCES chefs(id),
 
@@ -174,7 +204,7 @@ CREATE TABLE sales (
 -- Immutable after payment.
 -- ═══════════════════════════════════════════════════════
 
-CREATE TABLE sale_items (
+CREATE TABLE IF NOT EXISTS sale_items (
   id                    UUID PRIMARY KEY DEFAULT gen_random_uuid(),
   sale_id               UUID NOT NULL REFERENCES sales(id) ON DELETE CASCADE,
   tenant_id             UUID NOT NULL REFERENCES chefs(id),
@@ -216,7 +246,7 @@ CREATE TABLE sale_items (
 -- are tracked via sale_financial_summary view instead).
 -- ═══════════════════════════════════════════════════════
 
-CREATE TABLE commerce_payments (
+CREATE TABLE IF NOT EXISTS commerce_payments (
   id                    UUID PRIMARY KEY DEFAULT gen_random_uuid(),
   tenant_id             UUID NOT NULL REFERENCES chefs(id),
   sale_id               UUID REFERENCES sales(id) ON DELETE SET NULL,
@@ -270,7 +300,7 @@ CREATE TABLE commerce_payments (
 -- Tracks refunds against commerce_payments.
 -- ═══════════════════════════════════════════════════════
 
-CREATE TABLE commerce_refunds (
+CREATE TABLE IF NOT EXISTS commerce_refunds (
   id                    UUID PRIMARY KEY DEFAULT gen_random_uuid(),
   tenant_id             UUID NOT NULL REFERENCES chefs(id),
   payment_id            UUID NOT NULL REFERENCES commerce_payments(id),
@@ -302,7 +332,7 @@ CREATE TABLE commerce_refunds (
 -- Installment plans for events/large orders.
 -- ═══════════════════════════════════════════════════════
 
-CREATE TABLE commerce_payment_schedules (
+CREATE TABLE IF NOT EXISTS commerce_payment_schedules (
   id                  UUID PRIMARY KEY DEFAULT gen_random_uuid(),
   tenant_id           UUID NOT NULL REFERENCES chefs(id),
   sale_id             UUID REFERENCES sales(id) ON DELETE CASCADE,
@@ -347,6 +377,8 @@ BEGIN
 END;
 $$ LANGUAGE plpgsql;
 
+DROP TRIGGER IF EXISTS generate_sale_number_trigger ON sales;
+DROP TRIGGER IF EXISTS generate_sale_number_trigger ON sales;
 CREATE TRIGGER generate_sale_number_trigger
   BEFORE INSERT ON sales
   FOR EACH ROW EXECUTE FUNCTION generate_sale_number();
@@ -357,65 +389,73 @@ CREATE TRIGGER generate_sale_number_trigger
 -- ═══════════════════════════════════════════════════════
 
 -- Product projections
-CREATE INDEX idx_product_projections_tenant ON product_projections(tenant_id);
-CREATE INDEX idx_product_projections_active ON product_projections(tenant_id, is_active)
+CREATE INDEX IF NOT EXISTS idx_product_projections_tenant ON product_projections(tenant_id);
+CREATE INDEX IF NOT EXISTS idx_product_projections_active ON product_projections(tenant_id, is_active)
   WHERE is_active = true;
-CREATE INDEX idx_product_projections_sku ON product_projections(tenant_id, sku)
+CREATE INDEX IF NOT EXISTS idx_product_projections_sku ON product_projections(tenant_id, sku)
   WHERE sku IS NOT NULL;
-CREATE INDEX idx_product_projections_category ON product_projections(tenant_id, category);
+CREATE INDEX IF NOT EXISTS idx_product_projections_category ON product_projections(tenant_id, category);
 
 -- Sales
-CREATE INDEX idx_sales_tenant ON sales(tenant_id);
-CREATE INDEX idx_sales_event ON sales(event_id) WHERE event_id IS NOT NULL;
-CREATE INDEX idx_sales_status ON sales(tenant_id, status);
-CREATE INDEX idx_sales_channel ON sales(tenant_id, channel);
-CREATE INDEX idx_sales_created ON sales(tenant_id, created_at DESC);
-CREATE INDEX idx_sales_number ON sales(tenant_id, sale_number);
-CREATE INDEX idx_sales_client ON sales(client_id) WHERE client_id IS NOT NULL;
+CREATE INDEX IF NOT EXISTS idx_sales_tenant ON sales(tenant_id);
+CREATE INDEX IF NOT EXISTS idx_sales_event ON sales(event_id) WHERE event_id IS NOT NULL;
+CREATE INDEX IF NOT EXISTS idx_sales_status ON sales(tenant_id, status);
+CREATE INDEX IF NOT EXISTS idx_sales_channel ON sales(tenant_id, channel);
+CREATE INDEX IF NOT EXISTS idx_sales_created ON sales(tenant_id, created_at DESC);
+CREATE INDEX IF NOT EXISTS idx_sales_number ON sales(tenant_id, sale_number);
+CREATE INDEX IF NOT EXISTS idx_sales_client ON sales(client_id) WHERE client_id IS NOT NULL;
 
 -- Sale items
-CREATE INDEX idx_sale_items_sale ON sale_items(sale_id);
-CREATE INDEX idx_sale_items_product ON sale_items(product_projection_id)
+CREATE INDEX IF NOT EXISTS idx_sale_items_sale ON sale_items(sale_id);
+CREATE INDEX IF NOT EXISTS idx_sale_items_product ON sale_items(product_projection_id)
   WHERE product_projection_id IS NOT NULL;
 
 -- Commerce payments
-CREATE INDEX idx_commerce_payments_tenant ON commerce_payments(tenant_id);
-CREATE INDEX idx_commerce_payments_sale ON commerce_payments(sale_id) WHERE sale_id IS NOT NULL;
-CREATE INDEX idx_commerce_payments_event ON commerce_payments(event_id) WHERE event_id IS NOT NULL;
-CREATE INDEX idx_commerce_payments_status ON commerce_payments(tenant_id, status);
-CREATE INDEX idx_commerce_payments_stripe_pi ON commerce_payments(stripe_payment_intent_id)
+CREATE INDEX IF NOT EXISTS idx_commerce_payments_tenant ON commerce_payments(tenant_id);
+CREATE INDEX IF NOT EXISTS idx_commerce_payments_sale ON commerce_payments(sale_id) WHERE sale_id IS NOT NULL;
+CREATE INDEX IF NOT EXISTS idx_commerce_payments_event ON commerce_payments(event_id) WHERE event_id IS NOT NULL;
+CREATE INDEX IF NOT EXISTS idx_commerce_payments_status ON commerce_payments(tenant_id, status);
+CREATE INDEX IF NOT EXISTS idx_commerce_payments_stripe_pi ON commerce_payments(stripe_payment_intent_id)
   WHERE stripe_payment_intent_id IS NOT NULL;
-CREATE INDEX idx_commerce_payments_settlement ON commerce_payments(tenant_id, settlement_date)
+CREATE INDEX IF NOT EXISTS idx_commerce_payments_settlement ON commerce_payments(tenant_id, settlement_date)
   WHERE settlement_date IS NOT NULL;
 
 -- Commerce refunds
-CREATE INDEX idx_commerce_refunds_payment ON commerce_refunds(payment_id);
-CREATE INDEX idx_commerce_refunds_sale ON commerce_refunds(sale_id) WHERE sale_id IS NOT NULL;
+CREATE INDEX IF NOT EXISTS idx_commerce_refunds_payment ON commerce_refunds(payment_id);
+CREATE INDEX IF NOT EXISTS idx_commerce_refunds_sale ON commerce_refunds(sale_id) WHERE sale_id IS NOT NULL;
 
 -- Payment schedules
-CREATE INDEX idx_commerce_schedules_sale ON commerce_payment_schedules(sale_id)
+CREATE INDEX IF NOT EXISTS idx_commerce_schedules_sale ON commerce_payment_schedules(sale_id)
   WHERE sale_id IS NOT NULL;
-CREATE INDEX idx_commerce_schedules_event ON commerce_payment_schedules(event_id)
+CREATE INDEX IF NOT EXISTS idx_commerce_schedules_event ON commerce_payment_schedules(event_id)
   WHERE event_id IS NOT NULL;
-CREATE INDEX idx_commerce_schedules_due ON commerce_payment_schedules(tenant_id, due_date, status);
+CREATE INDEX IF NOT EXISTS idx_commerce_schedules_due ON commerce_payment_schedules(tenant_id, due_date, status);
 
 
 -- ═══════════════════════════════════════════════════════
 -- TRIGGERS — updated_at
 -- ═══════════════════════════════════════════════════════
 
+DROP TRIGGER IF EXISTS update_product_projections_updated_at ON product_projections;
+DROP TRIGGER IF EXISTS update_product_projections_updated_at ON product_projections;
 CREATE TRIGGER update_product_projections_updated_at
   BEFORE UPDATE ON product_projections
   FOR EACH ROW EXECUTE FUNCTION update_updated_at_column();
 
+DROP TRIGGER IF EXISTS update_sales_updated_at ON sales;
+DROP TRIGGER IF EXISTS update_sales_updated_at ON sales;
 CREATE TRIGGER update_sales_updated_at
   BEFORE UPDATE ON sales
   FOR EACH ROW EXECUTE FUNCTION update_updated_at_column();
 
+DROP TRIGGER IF EXISTS update_commerce_payments_updated_at ON commerce_payments;
+DROP TRIGGER IF EXISTS update_commerce_payments_updated_at ON commerce_payments;
 CREATE TRIGGER update_commerce_payments_updated_at
   BEFORE UPDATE ON commerce_payments
   FOR EACH ROW EXECUTE FUNCTION update_updated_at_column();
 
+DROP TRIGGER IF EXISTS update_commerce_schedules_updated_at ON commerce_payment_schedules;
+DROP TRIGGER IF EXISTS update_commerce_schedules_updated_at ON commerce_payment_schedules;
 CREATE TRIGGER update_commerce_schedules_updated_at
   BEFORE UPDATE ON commerce_payment_schedules
   FOR EACH ROW EXECUTE FUNCTION update_updated_at_column();
@@ -493,6 +533,8 @@ BEGIN
 END;
 $$ LANGUAGE plpgsql;
 
+DROP TRIGGER IF EXISTS commerce_payment_to_ledger ON commerce_payments;
+DROP TRIGGER IF EXISTS commerce_payment_to_ledger ON commerce_payments;
 CREATE TRIGGER commerce_payment_to_ledger
   BEFORE INSERT ON commerce_payments
   FOR EACH ROW EXECUTE FUNCTION create_ledger_entry_from_commerce_payment();
@@ -545,6 +587,8 @@ BEGIN
 END;
 $$ LANGUAGE plpgsql;
 
+DROP TRIGGER IF EXISTS commerce_refund_to_ledger ON commerce_refunds;
+DROP TRIGGER IF EXISTS commerce_refund_to_ledger ON commerce_refunds;
 CREATE TRIGGER commerce_refund_to_ledger
   BEFORE INSERT ON commerce_refunds
   FOR EACH ROW EXECUTE FUNCTION create_ledger_entry_from_commerce_refund();
@@ -600,6 +644,8 @@ BEGIN
 END;
 $$ LANGUAGE plpgsql;
 
+DROP TRIGGER IF EXISTS guard_sale_status ON sales;
+DROP TRIGGER IF EXISTS guard_sale_status ON sales;
 CREATE TRIGGER guard_sale_status
   BEFORE UPDATE OF status ON sales
   FOR EACH ROW EXECUTE FUNCTION guard_sale_status_transition();
@@ -665,11 +711,15 @@ ALTER TABLE commerce_payment_schedules ENABLE ROW LEVEL SECURITY;
 
 -- Chef policies (full CRUD for tenant's data)
 DROP POLICY IF EXISTS "chef_product_projections" ON product_projections;
+DROP POLICY IF EXISTS "chef_product_projections" ON product_projections;
+DROP POLICY IF EXISTS "chef_product_projections" ON product_projections;
 CREATE POLICY "chef_product_projections" ON product_projections
   FOR ALL USING (
     tenant_id IN (SELECT entity_id FROM user_roles WHERE auth_user_id = auth.uid() AND role = 'chef')
   );
 
+DROP POLICY IF EXISTS "chef_sales" ON sales;
+DROP POLICY IF EXISTS "chef_sales" ON sales;
 DROP POLICY IF EXISTS "chef_sales" ON sales;
 CREATE POLICY "chef_sales" ON sales
   FOR ALL USING (
@@ -677,11 +727,15 @@ CREATE POLICY "chef_sales" ON sales
   );
 
 DROP POLICY IF EXISTS "chef_sale_items" ON sale_items;
+DROP POLICY IF EXISTS "chef_sale_items" ON sale_items;
+DROP POLICY IF EXISTS "chef_sale_items" ON sale_items;
 CREATE POLICY "chef_sale_items" ON sale_items
   FOR ALL USING (
     tenant_id IN (SELECT entity_id FROM user_roles WHERE auth_user_id = auth.uid() AND role = 'chef')
   );
 
+DROP POLICY IF EXISTS "chef_commerce_payments" ON commerce_payments;
+DROP POLICY IF EXISTS "chef_commerce_payments" ON commerce_payments;
 DROP POLICY IF EXISTS "chef_commerce_payments" ON commerce_payments;
 CREATE POLICY "chef_commerce_payments" ON commerce_payments
   FOR ALL USING (
@@ -689,11 +743,15 @@ CREATE POLICY "chef_commerce_payments" ON commerce_payments
   );
 
 DROP POLICY IF EXISTS "chef_commerce_refunds" ON commerce_refunds;
+DROP POLICY IF EXISTS "chef_commerce_refunds" ON commerce_refunds;
+DROP POLICY IF EXISTS "chef_commerce_refunds" ON commerce_refunds;
 CREATE POLICY "chef_commerce_refunds" ON commerce_refunds
   FOR ALL USING (
     tenant_id IN (SELECT entity_id FROM user_roles WHERE auth_user_id = auth.uid() AND role = 'chef')
   );
 
+DROP POLICY IF EXISTS "chef_commerce_schedules" ON commerce_payment_schedules;
+DROP POLICY IF EXISTS "chef_commerce_schedules" ON commerce_payment_schedules;
 DROP POLICY IF EXISTS "chef_commerce_schedules" ON commerce_payment_schedules;
 CREATE POLICY "chef_commerce_schedules" ON commerce_payment_schedules
   FOR ALL USING (
@@ -702,11 +760,15 @@ CREATE POLICY "chef_commerce_schedules" ON commerce_payment_schedules
 
 -- Client policies (read own sales and payments)
 DROP POLICY IF EXISTS "client_sales_read" ON sales;
+DROP POLICY IF EXISTS "client_sales_read" ON sales;
+DROP POLICY IF EXISTS "client_sales_read" ON sales;
 CREATE POLICY "client_sales_read" ON sales
   FOR SELECT USING (
     client_id IN (SELECT entity_id FROM user_roles WHERE auth_user_id = auth.uid() AND role = 'client')
   );
 
+DROP POLICY IF EXISTS "client_commerce_payments_read" ON commerce_payments;
+DROP POLICY IF EXISTS "client_commerce_payments_read" ON commerce_payments;
 DROP POLICY IF EXISTS "client_commerce_payments_read" ON commerce_payments;
 CREATE POLICY "client_commerce_payments_read" ON commerce_payments
   FOR SELECT USING (
@@ -715,25 +777,37 @@ CREATE POLICY "client_commerce_payments_read" ON commerce_payments
 
 -- Service role policies (for webhooks/background jobs)
 DROP POLICY IF EXISTS "service_product_projections" ON product_projections;
+DROP POLICY IF EXISTS "service_product_projections" ON product_projections;
+DROP POLICY IF EXISTS "service_product_projections" ON product_projections;
 CREATE POLICY "service_product_projections" ON product_projections
   FOR ALL USING (auth.role() = 'service_role');
 
+DROP POLICY IF EXISTS "service_sales" ON sales;
+DROP POLICY IF EXISTS "service_sales" ON sales;
 DROP POLICY IF EXISTS "service_sales" ON sales;
 CREATE POLICY "service_sales" ON sales
   FOR ALL USING (auth.role() = 'service_role');
 
 DROP POLICY IF EXISTS "service_sale_items" ON sale_items;
+DROP POLICY IF EXISTS "service_sale_items" ON sale_items;
+DROP POLICY IF EXISTS "service_sale_items" ON sale_items;
 CREATE POLICY "service_sale_items" ON sale_items
   FOR ALL USING (auth.role() = 'service_role');
 
+DROP POLICY IF EXISTS "service_commerce_payments" ON commerce_payments;
+DROP POLICY IF EXISTS "service_commerce_payments" ON commerce_payments;
 DROP POLICY IF EXISTS "service_commerce_payments" ON commerce_payments;
 CREATE POLICY "service_commerce_payments" ON commerce_payments
   FOR ALL USING (auth.role() = 'service_role');
 
 DROP POLICY IF EXISTS "service_commerce_refunds" ON commerce_refunds;
+DROP POLICY IF EXISTS "service_commerce_refunds" ON commerce_refunds;
+DROP POLICY IF EXISTS "service_commerce_refunds" ON commerce_refunds;
 CREATE POLICY "service_commerce_refunds" ON commerce_refunds
   FOR ALL USING (auth.role() = 'service_role');
 
+DROP POLICY IF EXISTS "service_commerce_schedules" ON commerce_payment_schedules;
+DROP POLICY IF EXISTS "service_commerce_schedules" ON commerce_payment_schedules;
 DROP POLICY IF EXISTS "service_commerce_schedules" ON commerce_payment_schedules;
 CREATE POLICY "service_commerce_schedules" ON commerce_payment_schedules
   FOR ALL USING (auth.role() = 'service_role');

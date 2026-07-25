@@ -6,4 +6,4 @@ CREATE INDEX IF NOT EXISTS idx_ledger_entries_tenant_event_created
 
 -- Covering index for tenant-level P&L queries (no event filter)
 CREATE INDEX IF NOT EXISTS idx_ledger_entries_tenant_created
-  ON ledger_entries (tenant_id, created_at DESC, type, amount_cents);
+  ON ledger_entries (tenant_id, created_at DESC, entry_type, amount_cents);

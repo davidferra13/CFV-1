@@ -39,6 +39,7 @@ BEGIN
 END;
 $$ LANGUAGE plpgsql;
 
+DROP TRIGGER IF EXISTS trg_event_station_dishes_updated_at ON public.event_station_dishes;
 CREATE TRIGGER trg_event_station_dishes_updated_at
   BEFORE UPDATE ON public.event_station_dishes
   FOR EACH ROW EXECUTE FUNCTION public.update_event_station_dishes_updated_at();
@@ -46,6 +47,7 @@ CREATE TRIGGER trg_event_station_dishes_updated_at
 -- RLS
 ALTER TABLE public.event_station_dishes ENABLE ROW LEVEL SECURITY;
 
+DROP POLICY IF EXISTS event_station_dishes_chef_policy ON public.event_station_dishes;
 DROP POLICY IF EXISTS event_station_dishes_chef_policy ON public.event_station_dishes;
 CREATE POLICY event_station_dishes_chef_policy
   ON public.event_station_dishes

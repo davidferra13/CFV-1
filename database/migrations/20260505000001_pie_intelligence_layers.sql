@@ -8,6 +8,12 @@
 -- 1. COVERAGE GAP DETECTOR
 -- ============================================================================
 
+-- 20260406000009_price_intelligence_pipeline.sql defines coverage_gaps as a computed
+-- diagnostic view, but PIE writes gap inventory rows here now
+-- (lib/pricing/coverage-gap-detector.ts INSERTs into it), which a view cannot accept.
+-- Nothing reads the view's columns: lib/pricing/coverage-report.ts computes its own.
+DROP VIEW IF EXISTS openclaw.coverage_gaps;
+
 CREATE TABLE IF NOT EXISTS openclaw.coverage_gaps (
   pricing_region_id UUID PRIMARY KEY REFERENCES openclaw.pricing_regions(id),
   state TEXT NOT NULL,
@@ -23,8 +29,8 @@ CREATE TABLE IF NOT EXISTS openclaw.coverage_gaps (
   detected_at TIMESTAMPTZ NOT NULL DEFAULT now()
 );
 
-CREATE INDEX idx_coverage_gaps_priority ON openclaw.coverage_gaps(priority_score DESC);
-CREATE INDEX idx_coverage_gaps_state ON openclaw.coverage_gaps(state);
+CREATE INDEX IF NOT EXISTS idx_coverage_gaps_priority ON openclaw.coverage_gaps(priority_score DESC);
+CREATE INDEX IF NOT EXISTS idx_coverage_gaps_state ON openclaw.coverage_gaps(state);
 
 -- ============================================================================
 -- 2. AUTO-EXPANSION ENGINE
@@ -46,9 +52,9 @@ CREATE TABLE IF NOT EXISTS openclaw.expansion_targets (
   notes TEXT
 );
 
-CREATE UNIQUE INDEX idx_expansion_targets_pending
+CREATE UNIQUE INDEX IF NOT EXISTS idx_expansion_targets_pending
   ON openclaw.expansion_targets(pricing_region_id) WHERE status = 'pending';
-CREATE INDEX idx_expansion_targets_status ON openclaw.expansion_targets(status, priority DESC);
+CREATE INDEX IF NOT EXISTS idx_expansion_targets_status ON openclaw.expansion_targets(status, priority DESC);
 
 CREATE TABLE IF NOT EXISTS openclaw.scrape_jobs (
   id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
@@ -68,9 +74,9 @@ CREATE TABLE IF NOT EXISTS openclaw.scrape_jobs (
   error TEXT
 );
 
-CREATE UNIQUE INDEX idx_scrape_jobs_store_queued
+CREATE UNIQUE INDEX IF NOT EXISTS idx_scrape_jobs_store_queued
   ON openclaw.scrape_jobs(store_id, status) WHERE status = 'queued';
-CREATE INDEX idx_scrape_jobs_status ON openclaw.scrape_jobs(status, priority DESC);
+CREATE INDEX IF NOT EXISTS idx_scrape_jobs_status ON openclaw.scrape_jobs(status, priority DESC);
 
 -- ============================================================================
 -- 3. TREND INTELLIGENCE
@@ -78,7 +84,9 @@ CREATE INDEX idx_scrape_jobs_status ON openclaw.scrape_jobs(status, priority DES
 
 CREATE TABLE IF NOT EXISTS openclaw.ingredient_trends (
   ingredient_id TEXT NOT NULL,
-  state TEXT,
+  -- Empty string is the sentinel for "no state": a NULL here could not take part in the
+  -- primary key, and the upsert conflict target needs both columns.
+  state TEXT NOT NULL DEFAULT '',
   direction TEXT NOT NULL CHECK (direction IN ('rising', 'falling', 'stable', 'volatile', 'insufficient_data')),
   change_pct NUMERIC(8,2) NOT NULL DEFAULT 0,
   confidence NUMERIC(5,4) NOT NULL DEFAULT 0,
@@ -90,19 +98,13 @@ CREATE TABLE IF NOT EXISTS openclaw.ingredient_trends (
   forecast_14d INT,
   forecast_30d INT,
   analyzed_at TIMESTAMPTZ NOT NULL DEFAULT now(),
-  PRIMARY KEY (ingredient_id, COALESCE(state, '__null__'))
+  -- A primary key cannot contain an expression, so the sentinel default on state
+  -- replaces what used to be PRIMARY KEY (ingredient_id, COALESCE(state, '__null__')).
+  PRIMARY KEY (ingredient_id, state)
 );
 
-CREATE INDEX idx_ingredient_trends_direction ON openclaw.ingredient_trends(direction);
-CREATE INDEX idx_ingredient_trends_volatility ON openclaw.ingredient_trends(volatility DESC);
-
--- Use a unique index instead of PK with COALESCE for the conflict target
-DROP INDEX IF EXISTS openclaw.ingredient_trends_pkey;
-ALTER TABLE openclaw.ingredient_trends DROP CONSTRAINT IF EXISTS ingredient_trends_pkey;
-ALTER TABLE openclaw.ingredient_trends ADD PRIMARY KEY (ingredient_id, state);
-
--- Handle null state: use empty string as sentinel
-ALTER TABLE openclaw.ingredient_trends ALTER COLUMN state SET DEFAULT '';
+CREATE INDEX IF NOT EXISTS idx_ingredient_trends_direction ON openclaw.ingredient_trends(direction);
+CREATE INDEX IF NOT EXISTS idx_ingredient_trends_volatility ON openclaw.ingredient_trends(volatility DESC);
 
 CREATE TABLE IF NOT EXISTS openclaw.volatility_alerts (
   id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
@@ -122,10 +124,10 @@ CREATE TABLE IF NOT EXISTS openclaw.volatility_alerts (
   is_active BOOLEAN NOT NULL DEFAULT true
 );
 
-CREATE UNIQUE INDEX idx_volatility_alerts_unique
+CREATE UNIQUE INDEX IF NOT EXISTS idx_volatility_alerts_unique
   ON openclaw.volatility_alerts(ingredient_id, COALESCE(state, ''), alert_type)
   WHERE is_active = true;
-CREATE INDEX idx_volatility_alerts_active ON openclaw.volatility_alerts(is_active, severity);
+CREATE INDEX IF NOT EXISTS idx_volatility_alerts_active ON openclaw.volatility_alerts(is_active, severity);
 
 CREATE TABLE IF NOT EXISTS openclaw.seasonal_patterns (
   ingredient_id TEXT PRIMARY KEY,
@@ -187,7 +189,7 @@ CREATE TABLE IF NOT EXISTS openclaw.chef_price_feedback (
   created_at TIMESTAMPTZ NOT NULL DEFAULT now()
 );
 
-CREATE INDEX idx_chef_price_feedback_unprocessed
+CREATE INDEX IF NOT EXISTS idx_chef_price_feedback_unprocessed
   ON openclaw.chef_price_feedback(processed_for_learning, created_at)
   WHERE processed_for_learning = false;
 
@@ -223,9 +225,9 @@ CREATE TABLE IF NOT EXISTS openclaw.wholesale_comparisons (
   updated_at TIMESTAMPTZ NOT NULL DEFAULT now()
 );
 
-CREATE UNIQUE INDEX idx_wholesale_comparisons_unique
+CREATE UNIQUE INDEX IF NOT EXISTS idx_wholesale_comparisons_unique
   ON openclaw.wholesale_comparisons(canonical_ingredient_id, distributor);
-CREATE INDEX idx_wholesale_comparisons_savings
+CREATE INDEX IF NOT EXISTS idx_wholesale_comparisons_savings
   ON openclaw.wholesale_comparisons(savings_pct DESC);
 
 -- ============================================================================
@@ -259,7 +261,7 @@ CREATE TABLE IF NOT EXISTS openclaw.supply_risk_scores (
   updated_at TIMESTAMPTZ NOT NULL DEFAULT now()
 );
 
-CREATE INDEX idx_supply_risk_scores_level ON openclaw.supply_risk_scores(risk_level, risk_score DESC);
+CREATE INDEX IF NOT EXISTS idx_supply_risk_scores_level ON openclaw.supply_risk_scores(risk_level, risk_score DESC);
 
 -- ============================================================================
 -- 8. OFFLINE CACHE

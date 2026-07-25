@@ -21,6 +21,7 @@ WHERE m.event_id IS NOT NULL
 -- Step 2: Add UNIQUE constraint on menus.event_id.
 -- PostgreSQL UNIQUE constraints allow multiple NULLs by default, so
 -- template/unattached menus (event_id IS NULL) are unaffected.
+ALTER TABLE menus DROP CONSTRAINT IF EXISTS menus_event_id_unique;
 ALTER TABLE menus
   ADD CONSTRAINT menus_event_id_unique UNIQUE (event_id);
 

@@ -146,7 +146,10 @@ $$ LANGUAGE plpgsql;
 -- 8. Update recipe_cost_summary view to include new columns
 -- ============================================
 
-CREATE OR REPLACE VIEW recipe_cost_summary AS
+-- CREATE OR REPLACE cannot change a view column's type or drop one, so the
+-- view is dropped first. It has no dependent views.
+DROP VIEW IF EXISTS recipe_cost_summary;
+CREATE VIEW recipe_cost_summary AS
 SELECT
   r.id AS recipe_id,
   r.tenant_id,

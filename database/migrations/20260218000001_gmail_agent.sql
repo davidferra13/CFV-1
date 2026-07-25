@@ -6,7 +6,7 @@
 -- ─── Google Connections ─────────────────────────────────────────────────────
 -- One row per chef — stores OAuth tokens and sync state for Google services.
 
-CREATE TABLE google_connections (
+CREATE TABLE IF NOT EXISTS google_connections (
   id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
   chef_id UUID NOT NULL REFERENCES chefs(id) ON DELETE CASCADE,
   tenant_id UUID NOT NULL REFERENCES chefs(id) ON DELETE CASCADE,
@@ -34,7 +34,7 @@ CREATE TABLE google_connections (
 );
 
 -- Index for cron: find all gmail-connected chefs quickly
-CREATE INDEX idx_google_connections_gmail_active
+CREATE INDEX IF NOT EXISTS idx_google_connections_gmail_active
   ON google_connections(gmail_connected) WHERE gmail_connected = true;
 
 -- ─── Gmail columns on messages ──────────────────────────────────────────────
@@ -44,14 +44,14 @@ ALTER TABLE messages
   ADD COLUMN IF NOT EXISTS gmail_message_id TEXT,
   ADD COLUMN IF NOT EXISTS gmail_thread_id TEXT;
 
-CREATE UNIQUE INDEX idx_messages_gmail_dedup
+CREATE UNIQUE INDEX IF NOT EXISTS idx_messages_gmail_dedup
   ON messages(tenant_id, gmail_message_id)
   WHERE gmail_message_id IS NOT NULL;
 
 -- ─── Gmail Sync Log ─────────────────────────────────────────────────────────
 -- Audit trail: every email processed gets a log entry, regardless of classification.
 
-CREATE TABLE gmail_sync_log (
+CREATE TABLE IF NOT EXISTS gmail_sync_log (
   id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
   tenant_id UUID NOT NULL REFERENCES chefs(id) ON DELETE CASCADE,
   gmail_message_id TEXT NOT NULL,
@@ -69,7 +69,7 @@ CREATE TABLE gmail_sync_log (
   CONSTRAINT unique_gmail_sync UNIQUE (tenant_id, gmail_message_id)
 );
 
-CREATE INDEX idx_gmail_sync_log_tenant ON gmail_sync_log(tenant_id, synced_at DESC);
+CREATE INDEX IF NOT EXISTS idx_gmail_sync_log_tenant ON gmail_sync_log(tenant_id, synced_at DESC);
 
 -- ─── RLS Policies ───────────────────────────────────────────────────────────
 
@@ -77,6 +77,7 @@ ALTER TABLE google_connections ENABLE ROW LEVEL SECURITY;
 ALTER TABLE gmail_sync_log ENABLE ROW LEVEL SECURITY;
 
 -- google_connections: chefs can read/write only their own row
+DROP POLICY IF EXISTS "Chefs manage own google connection" ON google_connections;
 DROP POLICY IF EXISTS "Chefs manage own google connection" ON google_connections;
 CREATE POLICY "Chefs manage own google connection"
   ON google_connections
@@ -96,6 +97,7 @@ CREATE POLICY "Chefs manage own google connection"
 
 -- gmail_sync_log: chefs can read their own tenant logs
 DROP POLICY IF EXISTS "Chefs read own gmail sync log" ON gmail_sync_log;
+DROP POLICY IF EXISTS "Chefs read own gmail sync log" ON gmail_sync_log;
 CREATE POLICY "Chefs read own gmail sync log"
   ON gmail_sync_log
   FOR SELECT
@@ -108,6 +110,7 @@ CREATE POLICY "Chefs read own gmail sync log"
 
 -- Service role can insert/update gmail_sync_log (for cron endpoint)
 DROP POLICY IF EXISTS "Service role manages gmail sync log" ON gmail_sync_log;
+DROP POLICY IF EXISTS "Service role manages gmail sync log" ON gmail_sync_log;
 CREATE POLICY "Service role manages gmail sync log"
   ON gmail_sync_log
   FOR ALL
@@ -115,6 +118,7 @@ CREATE POLICY "Service role manages gmail sync log"
   WITH CHECK (auth.role() = 'service_role');
 
 -- Service role can manage google_connections (for token refresh in cron)
+DROP POLICY IF EXISTS "Service role manages google connections" ON google_connections;
 DROP POLICY IF EXISTS "Service role manages google connections" ON google_connections;
 CREATE POLICY "Service role manages google connections"
   ON google_connections
@@ -132,6 +136,7 @@ BEGIN
 END;
 $$ LANGUAGE plpgsql;
 
+DROP TRIGGER IF EXISTS trg_google_connections_updated_at ON google_connections;
 CREATE TRIGGER trg_google_connections_updated_at
   BEFORE UPDATE ON google_connections
   FOR EACH ROW

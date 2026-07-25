@@ -1,4 +1,8 @@
--- =====================================================================================
+
+DO $cfguard$
+BEGIN
+  IF EXISTS (SELECT 1 FROM information_schema.schemata WHERE schema_name = 'storage') THEN
+    EXECUTE $cfstorage$-- =====================================================================================
 -- Event Photos Storage Bucket
 -- =====================================================================================
 -- Migration: 20260228000005_event_photos_bucket.sql
@@ -28,9 +32,14 @@ ON CONFLICT (id) DO UPDATE
 SET
   public             = EXCLUDED.public,
   file_size_limit    = EXCLUDED.file_size_limit,
-  allowed_mime_types = EXCLUDED.allowed_mime_types;
-
--- =====================================================================================
+  allowed_mime_types = EXCLUDED.allowed_mime_types$cfstorage$;
+  END IF;
+END
+$cfguard$;
+DO $cfguard$
+BEGIN
+  IF EXISTS (SELECT 1 FROM information_schema.schemata WHERE schema_name = 'storage') THEN
+    EXECUTE $cfstorage$-- =====================================================================================
 -- STEP 2: Storage RLS policies on storage.objects
 --
 -- Path structure: event-photos/{tenant_id}/{event_id}/{photo_id}.{ext}
@@ -53,9 +62,14 @@ CREATE POLICY "event_photos_chef_upload"
     AND split_part(name, '/', 1) = get_current_tenant_id()::text
   );
 EXCEPTION WHEN duplicate_object OR insufficient_privilege THEN NULL;
-END $$;
-
--- Chefs: read objects in their tenant prefix (needed for signed URL generation)
+END $$$cfstorage$;
+  END IF;
+END
+$cfguard$;
+DO $cfguard$
+BEGIN
+  IF EXISTS (SELECT 1 FROM information_schema.schemata WHERE schema_name = 'storage') THEN
+    EXECUTE $cfstorage$-- Chefs: read objects in their tenant prefix (needed for signed URL generation)
 DO $$ BEGIN
   DROP POLICY IF EXISTS "event_photos_chef_select" ON storage.objects;
 CREATE POLICY "event_photos_chef_select"
@@ -67,9 +81,14 @@ CREATE POLICY "event_photos_chef_select"
     AND split_part(name, '/', 1) = get_current_tenant_id()::text
   );
 EXCEPTION WHEN duplicate_object OR insufficient_privilege THEN NULL;
-END $$;
-
--- Chefs: delete objects in their tenant prefix
+END $$$cfstorage$;
+  END IF;
+END
+$cfguard$;
+DO $cfguard$
+BEGIN
+  IF EXISTS (SELECT 1 FROM information_schema.schemata WHERE schema_name = 'storage') THEN
+    EXECUTE $cfstorage$-- Chefs: delete objects in their tenant prefix
 -- (Hard delete in storage is triggered by server action after soft-deleting in DB)
 DO $$ BEGIN
   DROP POLICY IF EXISTS "event_photos_chef_delete" ON storage.objects;
@@ -82,9 +101,14 @@ CREATE POLICY "event_photos_chef_delete"
     AND split_part(name, '/', 1) = get_current_tenant_id()::text
   );
 EXCEPTION WHEN duplicate_object OR insufficient_privilege THEN NULL;
-END $$;
-
--- Clients: read objects for events that belong to them.
+END $$$cfstorage$;
+  END IF;
+END
+$cfguard$;
+DO $cfguard$
+BEGIN
+  IF EXISTS (SELECT 1 FROM information_schema.schemata WHERE schema_name = 'storage') THEN
+    EXECUTE $cfstorage$-- Clients: read objects for events that belong to them.
 -- segment 2 = event_id; verified via events.client_id join.
 -- Path construction is always server-controlled so the UUID cast is safe.
 DO $$ BEGIN
@@ -102,4 +126,7 @@ CREATE POLICY "event_photos_client_select"
     )
   );
 EXCEPTION WHEN duplicate_object OR insufficient_privilege THEN NULL;
-END $$;
+END $$$cfstorage$;
+  END IF;
+END
+$cfguard$;

@@ -29,7 +29,8 @@ EXCEPTION WHEN undefined_object THEN NULL; END $$;
 DO $$ BEGIN
   ALTER TABLE vendor_preferred_ingredients
     ADD CONSTRAINT vpi_chef_ingredient_vendor_unique UNIQUE (chef_id, ingredient_name, vendor_id);
-EXCEPTION WHEN duplicate_object THEN NULL; END $$;
+-- A UNIQUE constraint also creates an index, so a re-run raises duplicate_table.
+EXCEPTION WHEN duplicate_object OR duplicate_table THEN NULL; END $$;
 
 -- View: Best price per ingredient across all vendors
 CREATE OR REPLACE VIEW ingredient_best_vendor_price AS

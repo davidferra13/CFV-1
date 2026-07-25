@@ -26,7 +26,10 @@ END $$;
 -- ENUM: Storage location types
 -- ============================================
 DO $$ BEGIN
-  CREATE TYPE storage_location_type AS ENUM (
+  DO $idem$
+BEGIN
+  IF NOT EXISTS (SELECT 1 FROM pg_type WHERE typname = 'storage_location_type') THEN
+    CREATE TYPE storage_location_type AS ENUM (
     'home_fridge',
     'home_freezer',
     'home_pantry',
@@ -38,13 +41,16 @@ DO $$ BEGIN
     'event_site',
     'other'
   );
+  END IF;
+END
+$idem$;
 EXCEPTION WHEN duplicate_object THEN NULL;
 END $$;
 
 -- ============================================
 -- TABLE: storage_locations
 -- ============================================
-CREATE TABLE storage_locations (
+CREATE TABLE IF NOT EXISTS storage_locations (
   id              UUID PRIMARY KEY DEFAULT gen_random_uuid(),
   chef_id         UUID NOT NULL REFERENCES chefs(id) ON DELETE CASCADE,
   name            TEXT NOT NULL,
@@ -59,9 +65,10 @@ CREATE TABLE storage_locations (
   updated_at      TIMESTAMPTZ NOT NULL DEFAULT now()
 );
 
-CREATE INDEX idx_storage_locations_chef ON storage_locations(chef_id, is_active);
-CREATE UNIQUE INDEX idx_storage_locations_default ON storage_locations(chef_id) WHERE is_default = true;
+CREATE INDEX IF NOT EXISTS idx_storage_locations_chef ON storage_locations(chef_id, is_active);
+CREATE UNIQUE INDEX IF NOT EXISTS idx_storage_locations_default ON storage_locations(chef_id) WHERE is_default = true;
 
+DROP TRIGGER IF EXISTS trg_storage_locations_updated_at ON storage_locations;
 CREATE TRIGGER trg_storage_locations_updated_at
   BEFORE UPDATE ON storage_locations
   FOR EACH ROW EXECUTE FUNCTION update_updated_at_column();
@@ -71,7 +78,7 @@ CREATE TRIGGER trg_storage_locations_updated_at
 -- Append-only. Never update or delete rows.
 -- Current quantity = SUM(quantity) grouped by ingredient.
 -- ============================================
-CREATE TABLE inventory_transactions (
+CREATE TABLE IF NOT EXISTS inventory_transactions (
   id                UUID PRIMARY KEY DEFAULT gen_random_uuid(),
   chef_id           UUID NOT NULL REFERENCES chefs(id) ON DELETE CASCADE,
   ingredient_id     UUID REFERENCES ingredients(id) ON DELETE SET NULL,
@@ -113,14 +120,14 @@ COMMENT ON TABLE inventory_transactions IS
   'Append-only inventory ledger. Every movement is a transaction. Current qty = SUM(quantity). Never delete rows.';
 
 -- Indexes for common query patterns
-CREATE INDEX idx_inv_tx_chef_ingredient ON inventory_transactions(chef_id, ingredient_id, created_at DESC);
-CREATE INDEX idx_inv_tx_chef_type ON inventory_transactions(chef_id, transaction_type, created_at DESC);
-CREATE INDEX idx_inv_tx_event ON inventory_transactions(event_id) WHERE event_id IS NOT NULL;
-CREATE INDEX idx_inv_tx_location ON inventory_transactions(location_id, ingredient_id) WHERE location_id IS NOT NULL;
-CREATE INDEX idx_inv_tx_batch ON inventory_transactions(batch_id) WHERE batch_id IS NOT NULL;
-CREATE INDEX idx_inv_tx_created ON inventory_transactions(chef_id, created_at DESC);
-CREATE INDEX idx_inv_tx_po ON inventory_transactions(purchase_order_id) WHERE purchase_order_id IS NOT NULL;
-CREATE INDEX idx_inv_tx_audit ON inventory_transactions(audit_id) WHERE audit_id IS NOT NULL;
+CREATE INDEX IF NOT EXISTS idx_inv_tx_chef_ingredient ON inventory_transactions(chef_id, ingredient_id, created_at DESC);
+CREATE INDEX IF NOT EXISTS idx_inv_tx_chef_type ON inventory_transactions(chef_id, transaction_type, created_at DESC);
+CREATE INDEX IF NOT EXISTS idx_inv_tx_event ON inventory_transactions(event_id) WHERE event_id IS NOT NULL;
+CREATE INDEX IF NOT EXISTS idx_inv_tx_location ON inventory_transactions(location_id, ingredient_id) WHERE location_id IS NOT NULL;
+CREATE INDEX IF NOT EXISTS idx_inv_tx_batch ON inventory_transactions(batch_id) WHERE batch_id IS NOT NULL;
+CREATE INDEX IF NOT EXISTS idx_inv_tx_created ON inventory_transactions(chef_id, created_at DESC);
+CREATE INDEX IF NOT EXISTS idx_inv_tx_po ON inventory_transactions(purchase_order_id) WHERE purchase_order_id IS NOT NULL;
+CREATE INDEX IF NOT EXISTS idx_inv_tx_audit ON inventory_transactions(audit_id) WHERE audit_id IS NOT NULL;
 
 -- ============================================
 -- VIEW: inventory_current_stock
@@ -185,22 +192,28 @@ ALTER TABLE inventory_transactions ENABLE ROW LEVEL SECURITY;
 
 -- storage_locations: chef-only CRUD
 DROP POLICY IF EXISTS sl_chef_select ON storage_locations;
+DROP POLICY IF EXISTS sl_chef_select ON storage_locations;
 CREATE POLICY sl_chef_select ON storage_locations FOR SELECT
   USING (chef_id = (SELECT (current_setting('request.jwt.claims', true)::jsonb ->> 'tenant_id')::uuid));
+DROP POLICY IF EXISTS sl_chef_insert ON storage_locations;
 DROP POLICY IF EXISTS sl_chef_insert ON storage_locations;
 CREATE POLICY sl_chef_insert ON storage_locations FOR INSERT
   WITH CHECK (chef_id = (SELECT (current_setting('request.jwt.claims', true)::jsonb ->> 'tenant_id')::uuid));
 DROP POLICY IF EXISTS sl_chef_update ON storage_locations;
+DROP POLICY IF EXISTS sl_chef_update ON storage_locations;
 CREATE POLICY sl_chef_update ON storage_locations FOR UPDATE
   USING (chef_id = (SELECT (current_setting('request.jwt.claims', true)::jsonb ->> 'tenant_id')::uuid));
+DROP POLICY IF EXISTS sl_chef_delete ON storage_locations;
 DROP POLICY IF EXISTS sl_chef_delete ON storage_locations;
 CREATE POLICY sl_chef_delete ON storage_locations FOR DELETE
   USING (chef_id = (SELECT (current_setting('request.jwt.claims', true)::jsonb ->> 'tenant_id')::uuid));
 
 -- inventory_transactions: chef-only SELECT + INSERT (NO UPDATE, NO DELETE — append-only)
 DROP POLICY IF EXISTS it_chef_select ON inventory_transactions;
+DROP POLICY IF EXISTS it_chef_select ON inventory_transactions;
 CREATE POLICY it_chef_select ON inventory_transactions FOR SELECT
   USING (chef_id = (SELECT (current_setting('request.jwt.claims', true)::jsonb ->> 'tenant_id')::uuid));
+DROP POLICY IF EXISTS it_chef_insert ON inventory_transactions;
 DROP POLICY IF EXISTS it_chef_insert ON inventory_transactions;
 CREATE POLICY it_chef_insert ON inventory_transactions FOR INSERT
   WITH CHECK (chef_id = (SELECT (current_setting('request.jwt.claims', true)::jsonb ->> 'tenant_id')::uuid));

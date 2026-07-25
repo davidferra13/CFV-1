@@ -53,6 +53,32 @@ CREATE TABLE IF NOT EXISTS chef_insurance_policies (
   updated_at TIMESTAMPTZ NOT NULL DEFAULT now()
 );
 
+-- chef_insurance_policies already exists from 20260322000003_insurance_module.sql with a
+-- narrower shape (carrier / coverage_limit_cents / expiry_date), so the CREATE TABLE above
+-- no-ops and the business-ops columns never appear. lib/business-ops/insurance-actions.ts
+-- reads provider_name, coverage_amount_cents, premium_cents and renewal_date, so add them
+-- to the existing table. Additive: the original columns are left alone.
+ALTER TABLE chef_insurance_policies
+  ADD COLUMN IF NOT EXISTS provider_name TEXT,
+  ADD COLUMN IF NOT EXISTS coverage_amount_cents INTEGER,
+  ADD COLUMN IF NOT EXISTS premium_cents INTEGER,
+  ADD COLUMN IF NOT EXISTS premium_frequency TEXT,
+  ADD COLUMN IF NOT EXISTS renewal_date DATE,
+  ADD COLUMN IF NOT EXISTS agent_name TEXT,
+  ADD COLUMN IF NOT EXISTS agent_phone TEXT,
+  ADD COLUMN IF NOT EXISTS agent_email TEXT,
+  ADD COLUMN IF NOT EXISTS portal_url TEXT,
+  ADD COLUMN IF NOT EXISTS document_path TEXT,
+  ADD COLUMN IF NOT EXISTS reminder_sent_30d BOOLEAN DEFAULT false,
+  ADD COLUMN IF NOT EXISTS reminder_sent_7d BOOLEAN DEFAULT false,
+  ADD COLUMN IF NOT EXISTS updated_at TIMESTAMPTZ NOT NULL DEFAULT now();
+
+ALTER TABLE chef_insurance_policies
+  DROP CONSTRAINT IF EXISTS chef_insurance_policies_premium_frequency_check;
+ALTER TABLE chef_insurance_policies
+  ADD CONSTRAINT chef_insurance_policies_premium_frequency_check
+    CHECK (premium_frequency IS NULL OR premium_frequency IN ('annual', 'semi_annual', 'quarterly', 'monthly'));
+
 CREATE INDEX IF NOT EXISTS idx_chef_insurance_tenant ON chef_insurance_policies(tenant_id);
 CREATE INDEX IF NOT EXISTS idx_chef_insurance_renewal ON chef_insurance_policies(tenant_id, renewal_date)
   WHERE renewal_date IS NOT NULL;
@@ -112,6 +138,30 @@ CREATE TABLE IF NOT EXISTS chef_equipment (
   updated_at TIMESTAMPTZ NOT NULL DEFAULT now()
 );
 
-CREATE INDEX IF NOT EXISTS idx_chef_equipment_tenant ON chef_equipment(tenant_id);
-CREATE INDEX IF NOT EXISTS idx_chef_equipment_warranty ON chef_equipment(tenant_id, warranty_expiry)
+-- chef_equipment already exists from 20260401000032_packing_checklists.sql, keyed on
+-- chef_id, so the CREATE TABLE above no-ops. Add the business-ops columns to the real
+-- table and index on its actual identity column.
+--
+-- NOTE: lib/business-ops/equipment-actions.ts filters this table on tenant_id, which is
+-- not a column here. That is an application bug, not a schema one: chef_id is the tenant
+-- key. A duplicate tenant_id column is deliberately not added, since two identity columns
+-- on one table drift apart.
+ALTER TABLE chef_equipment
+  ADD COLUMN IF NOT EXISTS item_name TEXT,
+  ADD COLUMN IF NOT EXISTS brand TEXT,
+  ADD COLUMN IF NOT EXISTS model TEXT,
+  ADD COLUMN IF NOT EXISTS serial_number TEXT,
+  ADD COLUMN IF NOT EXISTS purchase_date DATE,
+  ADD COLUMN IF NOT EXISTS purchase_price_cents INTEGER,
+  ADD COLUMN IF NOT EXISTS purchase_source TEXT,
+  ADD COLUMN IF NOT EXISTS condition TEXT,
+  ADD COLUMN IF NOT EXISTS warranty_expiry DATE,
+  ADD COLUMN IF NOT EXISTS service_contact_name TEXT,
+  ADD COLUMN IF NOT EXISTS service_contact_phone TEXT,
+  ADD COLUMN IF NOT EXISTS service_contact_url TEXT,
+  ADD COLUMN IF NOT EXISTS retired_date DATE,
+  ADD COLUMN IF NOT EXISTS updated_at TIMESTAMPTZ NOT NULL DEFAULT now();
+
+CREATE INDEX IF NOT EXISTS idx_chef_equipment_tenant ON chef_equipment(chef_id);
+CREATE INDEX IF NOT EXISTS idx_chef_equipment_warranty ON chef_equipment(chef_id, warranty_expiry)
   WHERE warranty_expiry IS NOT NULL;

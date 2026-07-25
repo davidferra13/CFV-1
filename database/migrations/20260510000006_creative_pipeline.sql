@@ -25,12 +25,16 @@ CREATE INDEX IF NOT EXISTS idx_chef_captures_tags ON chef_captures USING gin(tag
 
 ALTER TABLE chef_captures ENABLE ROW LEVEL SECURITY;
 
+DROP POLICY IF EXISTS "Chef can read own captures" ON chef_captures;
 CREATE POLICY "Chef can read own captures"
   ON chef_captures FOR SELECT USING (tenant_id = auth.uid());
+DROP POLICY IF EXISTS "Chef can insert own captures" ON chef_captures;
 CREATE POLICY "Chef can insert own captures"
   ON chef_captures FOR INSERT WITH CHECK (tenant_id = auth.uid());
+DROP POLICY IF EXISTS "Chef can update own captures" ON chef_captures;
 CREATE POLICY "Chef can update own captures"
   ON chef_captures FOR UPDATE USING (tenant_id = auth.uid());
+DROP POLICY IF EXISTS "Chef can delete own captures" ON chef_captures;
 CREATE POLICY "Chef can delete own captures"
   ON chef_captures FOR DELETE USING (tenant_id = auth.uid());
 
@@ -39,6 +43,7 @@ RETURNS TRIGGER AS $$
 BEGIN NEW.updated_at = now(); RETURN NEW; END;
 $$ LANGUAGE plpgsql;
 
+DROP TRIGGER IF EXISTS trg_chef_captures_updated_at ON chef_captures;
 DROP TRIGGER IF EXISTS trg_chef_captures_updated_at ON chef_captures;
 CREATE TRIGGER trg_chef_captures_updated_at
   BEFORE UPDATE ON chef_captures
