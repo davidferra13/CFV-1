@@ -1,4 +1,4 @@
-﻿-- Notification Triage Support
+-- Notification Triage Support
 -- Adds snooze capability to notifications and creates triage audit log.
 
 -- 1. Add snoozed_until column to notifications table
