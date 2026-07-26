@@ -32,7 +32,8 @@ export async function resolvePackingStatus(
       LEFT JOIN clients c ON c.id = e.client_id
       LEFT JOIN packing_confirmations pc ON pc.event_id = e.id
       WHERE e.tenant_id = ${ctx.tenantId}
-        AND e.status NOT IN ('completed', 'cancelled', 'archived')
+        AND e.status NOT IN ('completed', 'cancelled')
+        AND e.archived = false
         AND e.event_date IS NOT NULL
         AND e.event_date >= CURRENT_DATE
         AND e.event_date <= (CURRENT_DATE + INTERVAL '1 day')::date

@@ -58,7 +58,8 @@ export async function resolveRevenueOpportunities(
     const result = await pgClient`
       SELECT
         e.id,
-        e.event_name as "eventName",
+        -- events has no event_name column; occasion is the event's display name.
+        e.occasion as "eventName",
         e.event_date as "eventDate",
         e.guest_count as "guestCount",
         e.occasion,

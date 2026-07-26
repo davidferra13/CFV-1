@@ -19,7 +19,8 @@ export async function resolveEquipmentConflicts(
         COUNT(*)::int as "eventCount"
       FROM events e
       WHERE e.tenant_id = ${ctx.tenantId}
-        AND e.status NOT IN ('completed', 'cancelled', 'archived')
+        AND e.status NOT IN ('completed', 'cancelled')
+        AND e.archived = false
         AND e.event_date IS NOT NULL
         AND e.event_date >= CURRENT_DATE
         AND e.event_date <= (CURRENT_DATE + INTERVAL '14 days')::date
@@ -59,7 +60,8 @@ export async function resolveEquipmentConflicts(
         FROM events e
         LEFT JOIN clients c ON c.id = e.client_id
         WHERE e.tenant_id = ${ctx.tenantId}
-          AND e.status NOT IN ('completed', 'cancelled', 'archived')
+          AND e.status NOT IN ('completed', 'cancelled')
+        AND e.archived = false
           AND e.event_date::date = ${dateStr}::date
         ORDER BY e.serve_time ASC NULLS LAST
       `

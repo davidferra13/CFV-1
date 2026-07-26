@@ -1,11 +1,14 @@
 import type { GodModeResolvedItem, GodModeResolverContext, RailTier } from '../../god-mode-types'
 
 const MS_DAY = 86_400_000
-const TERMINAL_STATUSES = new Set(['completed', 'cancelled', 'archived'])
+// Archiving is events.archived, not a status: the event_status enum has no such value,
+// so listing it here excluded nothing and archived events reached the rail.
+const TERMINAL_STATUSES = new Set(['completed', 'cancelled'])
 
 export interface EventRow {
   id: string
   status: string
+  archived?: boolean | null
   event_date: string | null
   serve_time: string | null
   guest_count: number | null
@@ -16,6 +19,7 @@ export interface EventRow {
 }
 
 export function assignEventTier(row: EventRow, now: Date): RailTier | null {
+  if (row.archived) return null
   if (TERMINAL_STATUSES.has(row.status)) return null
   if (!row.event_date) return 'p3'
 
@@ -65,6 +69,7 @@ async function resolveEntityScopedEvent(
       SELECT
         e.id,
         e.status,
+        e.archived,
         e.event_date,
         e.serve_time,
         e.guest_count,
@@ -186,6 +191,7 @@ async function resolveClientScopedEvents(
       SELECT
         e.id,
         e.status,
+        e.archived,
         e.event_date,
         e.serve_time,
         e.guest_count,

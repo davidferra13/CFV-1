@@ -38,7 +38,8 @@ export async function resolveStaffIssues(
       LEFT JOIN clients c ON c.id = e.client_id
       WHERE esa.chef_id = ${ctx.tenantId}
         AND esa.status = 'scheduled'
-        AND e.status NOT IN ('completed', 'cancelled', 'archived')
+        AND e.status NOT IN ('completed', 'cancelled')
+        AND e.archived = false
         AND e.event_date IS NOT NULL
         AND e.event_date >= CURRENT_DATE
         AND e.event_date <= (CURRENT_DATE + INTERVAL '7 days')::date

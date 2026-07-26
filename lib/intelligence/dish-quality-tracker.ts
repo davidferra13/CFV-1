@@ -54,8 +54,10 @@ async function fetchDishRatings(tenantId: string): Promise<DishRatingRow[]> {
       e.occasion AS event_occasion,
       e.event_date::text AS event_date,
       gf.submitted_at
-    FROM guest_feedback gf,
-         jsonb_array_elements(gf.dish_feedback) AS df(value)
+    -- The comma form binds the JOIN to jsonb_array_elements alone, which puts gf out of
+    -- scope in the ON clause. CROSS JOIN LATERAL keeps one flat FROM list.
+    FROM guest_feedback gf
+    CROSS JOIN LATERAL jsonb_array_elements(gf.dish_feedback) AS df(value)
     JOIN events e ON e.id = gf.event_id
     WHERE gf.tenant_id = ${tenantId}
       AND gf.submitted_at IS NOT NULL

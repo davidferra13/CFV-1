@@ -34,7 +34,8 @@ export async function resolvePrepStatus(
       LEFT JOIN clients c ON c.id = e.client_id
       INNER JOIN event_prep_steps eps ON eps.event_id = e.id
       WHERE e.tenant_id = ${ctx.tenantId}
-        AND e.status NOT IN ('completed', 'cancelled', 'archived')
+        AND e.status NOT IN ('completed', 'cancelled')
+        AND e.archived = false
         AND e.event_date IS NOT NULL
         AND e.event_date >= CURRENT_DATE
         AND e.event_date <= (CURRENT_DATE + INTERVAL '3 days')::date

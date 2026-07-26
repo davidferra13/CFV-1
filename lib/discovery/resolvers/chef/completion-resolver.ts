@@ -144,7 +144,8 @@ export async function resolveCompletionItems(
       SELECT id, occasion, event_date
       FROM events
       WHERE tenant_id = ${ctx.tenantId}
-        AND status NOT IN ('completed', 'cancelled', 'archived')
+        AND status NOT IN ('completed', 'cancelled')
+        AND archived = false
         AND event_date >= CURRENT_DATE
         AND event_date <= CURRENT_DATE + INTERVAL '30 days'
         AND deleted_at IS NULL

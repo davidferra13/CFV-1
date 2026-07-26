@@ -15,14 +15,16 @@ export async function resolveNetworkActivity(
     const result = await pgClient`
       SELECT
         cr.id,
-        cr.referring_client_id as "referringClientId",
-        cr.referred_name as "referredName",
-        cr.referred_email as "referredEmail",
+        cr.referrer_client_id as "referrerClientId",
+        -- The referred party is a client row, not free text on the referral.
+        rfc.full_name as "referredName",
+        rfc.email as "referredEmail",
         cr.status,
         cr.created_at as "createdAt",
         rc.full_name as "referrerName"
       FROM client_referrals cr
-      LEFT JOIN clients rc ON rc.id = cr.referring_client_id
+      LEFT JOIN clients rc ON rc.id = cr.referrer_client_id
+      LEFT JOIN clients rfc ON rfc.id = cr.referred_client_id
       WHERE cr.tenant_id = ${ctx.tenantId}
         AND cr.status = 'pending'
       ORDER BY cr.created_at DESC
@@ -70,9 +72,10 @@ export async function resolveNetworkActivity(
         ch.display_name as "chefName",
         ch.business_name as "businessName"
       FROM chef_social_posts csp
+      -- chef_connections stores the pair as requester/addressee, not from/to.
       JOIN chef_connections cc ON (
-        (cc.from_chef_id = ${ctx.tenantId} AND cc.to_chef_id = csp.chef_id)
-        OR (cc.to_chef_id = ${ctx.tenantId} AND cc.from_chef_id = csp.chef_id)
+        (cc.requester_id = ${ctx.tenantId} AND cc.addressee_id = csp.chef_id)
+        OR (cc.addressee_id = ${ctx.tenantId} AND cc.requester_id = csp.chef_id)
       )
       JOIN chefs ch ON ch.id = csp.chef_id
       WHERE cc.status = 'accepted'

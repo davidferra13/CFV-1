@@ -74,7 +74,8 @@ export async function resolveLifecycleStages(
       SELECT e.id, e.inquiry_id, e.occasion, e.event_date
       FROM events e
       WHERE e.tenant_id = ${ctx.tenantId}
-        AND e.status NOT IN ('completed', 'cancelled', 'archived')
+        AND e.status NOT IN ('completed', 'cancelled')
+        AND e.archived = false
         AND e.deleted_at IS NULL
       ORDER BY e.event_date ASC NULLS LAST
       LIMIT 10
