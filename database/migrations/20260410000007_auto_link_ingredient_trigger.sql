@@ -7,7 +7,10 @@
 --   - Knowledge panel in price catalog
 --   - Market price suggestions from openclaw.canonical_ingredients
 --
--- Requires: pg_trgm (already loaded as extensions.pg_trgm)
+-- Requires: pg_trgm. Supabase installs it into the extensions schema; on standalone
+-- Postgres it lands in public, so similarity() is called unqualified and resolved
+-- through search_path. Qualifying it as extensions.similarity made every ingredient
+-- INSERT fail here, because that schema does not exist.
 -- Safe: only fills NULL system_ingredient_id, never overwrites manual links.
 
 -- ============================================================================
@@ -29,11 +32,11 @@ BEGIN
   -- Threshold 0.65: high enough to avoid false positives on short names
   -- like "oil" or "salt" while catching "Chicken Breast" -> "Chicken, broilers or fryers".
   SELECT si.id,
-         extensions.similarity(lower(NEW.name), lower(si.name)) AS sim
+         similarity(lower(NEW.name), lower(si.name)) AS sim
   INTO   matched_id, best_sim
   FROM   system_ingredients si
   WHERE  si.is_active = true
-    AND  extensions.similarity(lower(NEW.name), lower(si.name)) > 0.65
+    AND  similarity(lower(NEW.name), lower(si.name)) > 0.65
   ORDER BY sim DESC
   LIMIT 1;
 

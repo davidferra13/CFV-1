@@ -56,23 +56,34 @@ interface UpcomingIngredient {
 
 async function getUpcomingEventIngredients(tenantId: string): Promise<UpcomingIngredient[]> {
   const rows = (await db.execute(sql`
+    -- A menu reaches its ingredients through dishes and components: there is no
+    -- event_menus or menu_recipes table. The ingredient name lives on ingredients, the
+    -- cost on recipe_ingredients.computed_cost_cents, and the canonical id comes from
+    -- openclaw.normalization_map, whose lower/trim index this join is shaped to use.
     SELECT DISTINCT
-      ri.name AS ingredient_name,
-      ri.canonical_ingredient_id,
+      i.name AS ingredient_name,
+      nm.canonical_ingredient_id,
       e.id AS event_id,
       COALESCE(e.occasion, c.full_name, 'Event') AS event_occasion,
       e.event_date::text AS event_date,
-      ri.cost_cents AS quoted_cost_cents
+      ri.computed_cost_cents AS quoted_cost_cents
     FROM events e
-    JOIN event_menus em ON em.event_id = e.id
-    JOIN menu_recipes mr ON mr.menu_id = em.menu_id
-    JOIN recipe_ingredients ri ON ri.recipe_id = mr.recipe_id
+    JOIN menus m ON m.event_id = e.id
+    JOIN dishes d ON d.menu_id = m.id
+    JOIN components comp ON comp.dish_id = d.id AND comp.recipe_id IS NOT NULL
+    JOIN recipe_ingredients ri ON ri.recipe_id = comp.recipe_id
+    JOIN ingredients i ON i.id = ri.ingredient_id
+    LEFT JOIN openclaw.normalization_map nm
+      ON LOWER(TRIM(nm.raw_name)) = LOWER(TRIM(i.name))
     LEFT JOIN clients c ON c.id = e.client_id
     WHERE e.tenant_id = ${tenantId}
-      AND e.status NOT IN ('completed', 'cancelled', 'archived')
+      AND e.status NOT IN ('completed', 'cancelled')
+      AND e.archived = false
       AND e.event_date >= CURRENT_DATE
       AND e.event_date <= CURRENT_DATE + INTERVAL '30 days'
-    ORDER BY e.event_date ASC
+    -- SELECT DISTINCT can only order by a selected expression, and the select list
+    -- carries the ::text cast. ISO dates sort chronologically as text.
+    ORDER BY event_date ASC
     LIMIT 500
   `)) as unknown as UpcomingIngredient[]
 
