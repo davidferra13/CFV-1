@@ -103,10 +103,7 @@ export async function syncMenuToIngredientBoard(input: {
   if (!board) return { success: false, added: 0, error: 'Board not found' }
 
   // Get menus assigned to this event
-  const { data: eventMenus } = await db
-    .from('event_menus')
-    .select('menu_id')
-    .eq('event_id', input.eventId)
+  const { data: eventMenus } = await db.from('menus').select('id').eq('event_id', input.eventId)
 
   if (!eventMenus || eventMenus.length === 0) {
     // Try direct menu assignment on event

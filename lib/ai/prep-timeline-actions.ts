@@ -65,11 +65,11 @@ export async function generatePrepTimeline(eventId: string): Promise<PrepTimelin
 
   // Load menu items if any menus are linked
   const { data: eventMenus } = await (db
-    .from('event_menus' as any)
-    .select('menu_id')
+    .from('menus' as any)
+    .select('id')
     .eq('event_id', eventId) as any)
 
-  const menuIds = ((eventMenus ?? []) as Array<{ menu_id: string }>).map((em) => em.menu_id)
+  const menuIds = ((eventMenus ?? []) as Array<{ id: string }>).map((em) => em.id)
   let menuItemNames: string[] = []
 
   if (menuIds.length > 0) {

@@ -50,7 +50,7 @@ export async function getPipelineRevenueForecast(): Promise<PipelineRevenueForec
       .from('inquiries')
       .select('id, status, confirmed_budget_cents')
       .eq('tenant_id', user.tenantId!)
-      .not('status', 'in', '("declined","expired","converted")'),
+      .not('status', 'in', '("declined","expired","confirmed")'),
     db
       .from('events')
       .select('id, status, quoted_price_cents')

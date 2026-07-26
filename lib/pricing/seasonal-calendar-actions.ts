@@ -38,12 +38,15 @@ export async function getSeasonalCalendar(ingredientIds?: string[]): Promise<Sea
   let ids = ingredientIds
   if (!ids || ids.length === 0) {
     const rows = (await db.execute(sql`
-      SELECT DISTINCT ri.canonical_ingredient_id
+      SELECT DISTINCT nm.canonical_ingredient_id
       FROM recipe_ingredients ri
       JOIN recipes r ON r.id = ri.recipe_id
+      JOIN ingredients i ON i.id = ri.ingredient_id
+      LEFT JOIN openclaw.normalization_map nm
+        ON LOWER(TRIM(nm.raw_name)) = LOWER(TRIM(i.name))
       WHERE r.tenant_id = ${chef.tenantId}
-        AND r.is_archived = false
-        AND ri.canonical_ingredient_id IS NOT NULL
+        AND r.archived = false
+        AND nm.canonical_ingredient_id IS NOT NULL
       LIMIT 200
     `)) as unknown as Array<{ canonical_ingredient_id: string }>
 

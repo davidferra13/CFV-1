@@ -270,8 +270,8 @@ export async function drawdownForEvent(eventId: string) {
 
   // 1. Get event's menu items and their recipes
   const { data: eventMenus, error: menuErr } = await db
-    .from('event_menus')
-    .select('menu_id')
+    .from('menus')
+    .select('id')
     .eq('event_id', eventId)
 
   if (menuErr) throw new Error(`Failed to load event menus: ${menuErr.message}`)

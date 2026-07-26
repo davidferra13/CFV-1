@@ -43,11 +43,14 @@ CREATE TABLE IF NOT EXISTS event_equipment_rentals (
 
 CREATE INDEX IF NOT EXISTS idx_event_equipment_rentals_event
   ON event_equipment_rentals(event_id);
+-- event_equipment_rentals already exists keyed on chef_id, so the CREATE TABLE IF NOT EXISTS above
+-- no-ops and tenant_id never appears. chef_id is the tenant key on the live table.
 CREATE INDEX IF NOT EXISTS idx_event_equipment_rentals_tenant
-  ON event_equipment_rentals(tenant_id);
+  ON event_equipment_rentals(chef_id);
 
 ALTER TABLE event_equipment_rentals ENABLE ROW LEVEL SECURITY;
 
+DROP POLICY IF EXISTS event_equipment_rentals_tenant ON event_equipment_rentals;
 CREATE POLICY event_equipment_rentals_tenant
   ON event_equipment_rentals
-  FOR ALL USING (tenant_id = (current_setting('app.current_tenant', true))::uuid);
+  FOR ALL USING (chef_id = (current_setting('app.current_tenant', true))::uuid);

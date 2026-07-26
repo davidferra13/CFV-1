@@ -146,23 +146,28 @@ export async function analyzeBulkBuyOpportunities(
   // Get chef's ingredient usage frequency (from recipe_ingredients + events)
   const usage = (await db.execute(sql`
     SELECT
-      ri.canonical_ingredient_id,
-      ri.name,
+      nm.canonical_ingredient_id,
+      i.name,
       COUNT(DISTINCT e.id) AS event_count,
       SUM(ri.quantity) AS total_quantity,
       ri.unit,
       ci_cat.category
     FROM recipe_ingredients ri
     JOIN recipes r ON r.id = ri.recipe_id
-    JOIN event_menus em ON em.recipe_id = r.id
-    JOIN events e ON e.id = em.event_id
+    JOIN ingredients i ON i.id = ri.ingredient_id
+    LEFT JOIN openclaw.normalization_map nm
+      ON LOWER(TRIM(nm.raw_name)) = LOWER(TRIM(i.name))
+    JOIN components comp ON comp.recipe_id = r.id
+    JOIN dishes d ON d.id = comp.dish_id
+    JOIN menus m ON m.id = d.menu_id
+    JOIN events e ON e.id = m.event_id
     LEFT JOIN (
       SELECT ingredient_id, category FROM openclaw.canonical_ingredients
-    ) ci_cat ON ci_cat.ingredient_id = ri.canonical_ingredient_id
+    ) ci_cat ON ci_cat.ingredient_id = nm.canonical_ingredient_id
     WHERE r.tenant_id = ${tenantId}
       AND e.event_date > now() - interval '6 months'
-      AND ri.canonical_ingredient_id IS NOT NULL
-    GROUP BY ri.canonical_ingredient_id, ri.name, ri.unit, ci_cat.category
+      AND nm.canonical_ingredient_id IS NOT NULL
+    GROUP BY nm.canonical_ingredient_id, i.name, ri.unit, ci_cat.category
     HAVING COUNT(DISTINCT e.id) >= 3
     ORDER BY COUNT(DISTINCT e.id) DESC
   `)) as unknown as Array<{
@@ -332,16 +337,21 @@ export async function generateShoppingPlan(
 
   const ingredients = (await db.execute(sql`
     SELECT
-      ri.canonical_ingredient_id,
-      ri.name,
+      nm.canonical_ingredient_id,
+      i.name,
       ri.quantity,
       ri.unit,
-      ri.cost_cents
+      ri.computed_cost_cents AS cost_cents
     FROM recipe_ingredients ri
     JOIN recipes r ON r.id = ri.recipe_id
-    JOIN event_menus em ON em.recipe_id = r.id
-    WHERE em.event_id = ${eventId}
-      AND ri.canonical_ingredient_id IS NOT NULL
+    JOIN ingredients i ON i.id = ri.ingredient_id
+    LEFT JOIN openclaw.normalization_map nm
+      ON LOWER(TRIM(nm.raw_name)) = LOWER(TRIM(i.name))
+    JOIN components comp ON comp.recipe_id = r.id
+    JOIN dishes d ON d.id = comp.dish_id
+    JOIN menus m ON m.id = d.menu_id
+    WHERE m.event_id = ${eventId}
+      AND nm.canonical_ingredient_id IS NOT NULL
   `)) as unknown as Array<{
     canonical_ingredient_id: string
     name: string
@@ -438,17 +448,22 @@ export async function getPantryRecommendations(tenantId: string): Promise<Pantry
   // Get all ingredients the chef uses, with frequency
   const usage = (await db.execute(sql`
     SELECT
-      ri.canonical_ingredient_id,
-      ri.name,
+      nm.canonical_ingredient_id,
+      i.name,
       COUNT(DISTINCT r.id) AS recipe_count,
       COUNT(DISTINCT e.id) AS event_count
     FROM recipe_ingredients ri
     JOIN recipes r ON r.id = ri.recipe_id
-    LEFT JOIN event_menus em ON em.recipe_id = r.id
-    LEFT JOIN events e ON e.id = em.event_id AND e.event_date > now() - interval '3 months'
+    JOIN ingredients i ON i.id = ri.ingredient_id
+    LEFT JOIN openclaw.normalization_map nm
+      ON LOWER(TRIM(nm.raw_name)) = LOWER(TRIM(i.name))
+    LEFT JOIN components comp ON comp.recipe_id = r.id
+    LEFT JOIN dishes d ON d.id = comp.dish_id
+    LEFT JOIN menus m ON m.id = d.menu_id
+    LEFT JOIN events e ON e.id = m.event_id AND e.event_date > now() - interval '3 months'
     WHERE r.tenant_id = ${tenantId}
-      AND ri.canonical_ingredient_id IS NOT NULL
-    GROUP BY ri.canonical_ingredient_id, ri.name
+      AND nm.canonical_ingredient_id IS NOT NULL
+    GROUP BY nm.canonical_ingredient_id, i.name
     ORDER BY COUNT(DISTINCT e.id) DESC
   `)) as unknown as Array<{
     canonical_ingredient_id: string

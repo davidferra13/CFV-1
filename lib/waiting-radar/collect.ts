@@ -25,17 +25,20 @@ async function collectInquiries(tenantId: string): Promise<WaitingItem[]> {
   try {
     const rows = await pgClient`
       SELECT i.id, i.status, i.created_at, i.updated_at,
-             i.client_name, i.event_type, i.follow_up_date,
-             i.quoted_price_cents
+             COALESCE(i.contact_name, c.full_name) AS client_name,
+             i.confirmed_occasion AS event_type,
+             i.follow_up_due_at AS follow_up_date,
+             i.confirmed_budget_cents AS quoted_price_cents
       FROM inquiries i
+      LEFT JOIN clients c ON c.id = i.client_id
       WHERE i.tenant_id = ${tenantId}
-        AND i.status IN ('new', 'contacted', 'follow_up')
-        AND i.archived_at IS NULL
+        AND i.status IN ('new', 'awaiting_client', 'awaiting_chef')
+        AND i.deleted_at IS NULL
       ORDER BY i.created_at ASC
       LIMIT 50
     `
     return rows.map((r: any) => {
-      const isNew = r.status === 'new'
+      const isNew = r.status === 'new' || r.status === 'awaiting_chef'
       return {
         id: `inquiry:${r.id}`,
         sourceKind: 'inquiry' as const,
@@ -65,14 +68,16 @@ async function collectQuotes(tenantId: string): Promise<WaitingItem[]> {
   try {
     const rows = await pgClient`
       SELECT q.id, q.status, q.created_at, q.sent_at,
-             q.total_cents, q.expires_at,
+             q.total_quoted_cents AS total_cents, q.valid_until AS expires_at,
              c.full_name AS client_name,
              e.occasion AS event_name
       FROM quotes q
       LEFT JOIN clients c ON c.id = q.client_id
       LEFT JOIN events e ON e.id = q.event_id
       WHERE q.tenant_id = ${tenantId}
-        AND q.status IN ('sent', 'viewed')
+        -- quote_status has no 'viewed': a quote sits at 'sent' until it is
+        -- accepted, rejected or expired.
+        AND q.status = 'sent'
       ORDER BY q.sent_at ASC NULLS LAST
       LIMIT 50
     `
@@ -88,7 +93,7 @@ async function collectQuotes(tenantId: string): Promise<WaitingItem[]> {
           : `Quote sent to ${r.client_name || 'client'}, awaiting acceptance`,
         followUpAt: r.expires_at || null,
         proofHref: `/quotes?highlight=${r.id}`,
-        riskLevel: isExpired ? 'high' as const : riskFromAge(r.sent_at || r.created_at, 7),
+        riskLevel: isExpired ? ('high' as const) : riskFromAge(r.sent_at || r.created_at, 7),
         waitingSince: r.sent_at || r.created_at,
         revenueCents: r.total_cents || null,
         clientName: r.client_name || null,
@@ -109,10 +114,10 @@ async function collectContracts(tenantId: string): Promise<WaitingItem[]> {
       SELECT ct.id, ct.status, ct.created_at, ct.sent_at,
              c.full_name AS client_name,
              e.occasion AS event_name
-      FROM contracts ct
+      FROM event_contracts ct
       LEFT JOIN clients c ON c.id = ct.client_id
       LEFT JOIN events e ON e.id = ct.event_id
-      WHERE ct.tenant_id = ${tenantId}
+      WHERE ct.chef_id = ${tenantId}
         AND ct.status = 'sent'
       ORDER BY ct.sent_at ASC NULLS LAST
       LIMIT 50
@@ -210,7 +215,8 @@ async function collectTasksAndReminders(tenantId: string): Promise<WaitingItem[]
         waitingReason: ta.title || 'Pending task',
         followUpAt: ta.due_date || null,
         proofHref: '/tasks',
-        riskLevel: ta.priority === 'urgent' ? 'critical' : ta.priority === 'high' ? 'high' : 'medium',
+        riskLevel:
+          ta.priority === 'urgent' ? 'critical' : ta.priority === 'high' ? 'high' : 'medium',
         waitingSince: ta.created_at,
         revenueCents: null,
         clientName: null,

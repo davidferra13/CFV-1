@@ -6,7 +6,7 @@
 -- U19: inventory_lots (FIFO / shelf life)
 -- ============================================
 
-CREATE TABLE inventory_lots (
+CREATE TABLE IF NOT EXISTS inventory_lots (
   id                  UUID PRIMARY KEY DEFAULT gen_random_uuid(),
   tenant_id           UUID NOT NULL REFERENCES chefs(id) ON DELETE CASCADE,
   ingredient_name     TEXT NOT NULL,
@@ -24,24 +24,29 @@ CREATE TABLE inventory_lots (
   created_at          TIMESTAMPTZ NOT NULL DEFAULT now(),
   updated_at          TIMESTAMPTZ NOT NULL DEFAULT now()
 );
-CREATE INDEX idx_inventory_lots_ingredient_expiry ON inventory_lots(tenant_id, ingredient_name, expiry_date);
-CREATE INDEX idx_inventory_lots_expiry ON inventory_lots(tenant_id, expiry_date);
-CREATE INDEX idx_inventory_lots_status ON inventory_lots(tenant_id, status);
+CREATE INDEX IF NOT EXISTS idx_inventory_lots_ingredient_expiry ON inventory_lots(tenant_id, ingredient_name, expiry_date);
+CREATE INDEX IF NOT EXISTS idx_inventory_lots_expiry ON inventory_lots(tenant_id, expiry_date);
+CREATE INDEX IF NOT EXISTS idx_inventory_lots_status ON inventory_lots(tenant_id, status);
+DROP TRIGGER IF EXISTS trg_inventory_lots_updated_at ON inventory_lots;
 CREATE TRIGGER trg_inventory_lots_updated_at
   BEFORE UPDATE ON inventory_lots
   FOR EACH ROW EXECUTE FUNCTION update_updated_at();
 ALTER TABLE inventory_lots ENABLE ROW LEVEL SECURITY;
 DROP POLICY IF EXISTS il_select ON inventory_lots;
+DROP POLICY IF EXISTS il_select ON inventory_lots;
 CREATE POLICY il_select ON inventory_lots FOR SELECT USING (tenant_id = get_current_tenant_id());
+DROP POLICY IF EXISTS il_insert ON inventory_lots;
 DROP POLICY IF EXISTS il_insert ON inventory_lots;
 CREATE POLICY il_insert ON inventory_lots FOR INSERT WITH CHECK (tenant_id = get_current_tenant_id());
 DROP POLICY IF EXISTS il_update ON inventory_lots;
+DROP POLICY IF EXISTS il_update ON inventory_lots;
 CREATE POLICY il_update ON inventory_lots FOR UPDATE USING (tenant_id = get_current_tenant_id());
+DROP POLICY IF EXISTS il_delete ON inventory_lots;
 DROP POLICY IF EXISTS il_delete ON inventory_lots;
 CREATE POLICY il_delete ON inventory_lots FOR DELETE USING (tenant_id = get_current_tenant_id());
 COMMENT ON TABLE inventory_lots IS 'Tracks individual ingredient lots for FIFO rotation and shelf-life management.';
 -- Default shelf life settings per ingredient
-CREATE TABLE ingredient_shelf_life_defaults (
+CREATE TABLE IF NOT EXISTS ingredient_shelf_life_defaults (
   id              UUID PRIMARY KEY DEFAULT gen_random_uuid(),
   tenant_id       UUID NOT NULL REFERENCES chefs(id) ON DELETE CASCADE,
   ingredient_name TEXT NOT NULL,
@@ -52,11 +57,15 @@ CREATE TABLE ingredient_shelf_life_defaults (
 );
 ALTER TABLE ingredient_shelf_life_defaults ENABLE ROW LEVEL SECURITY;
 DROP POLICY IF EXISTS isld_select ON ingredient_shelf_life_defaults;
+DROP POLICY IF EXISTS isld_select ON ingredient_shelf_life_defaults;
 CREATE POLICY isld_select ON ingredient_shelf_life_defaults FOR SELECT USING (tenant_id = get_current_tenant_id());
+DROP POLICY IF EXISTS isld_insert ON ingredient_shelf_life_defaults;
 DROP POLICY IF EXISTS isld_insert ON ingredient_shelf_life_defaults;
 CREATE POLICY isld_insert ON ingredient_shelf_life_defaults FOR INSERT WITH CHECK (tenant_id = get_current_tenant_id());
 DROP POLICY IF EXISTS isld_update ON ingredient_shelf_life_defaults;
+DROP POLICY IF EXISTS isld_update ON ingredient_shelf_life_defaults;
 CREATE POLICY isld_update ON ingredient_shelf_life_defaults FOR UPDATE USING (tenant_id = get_current_tenant_id());
+DROP POLICY IF EXISTS isld_delete ON ingredient_shelf_life_defaults;
 DROP POLICY IF EXISTS isld_delete ON ingredient_shelf_life_defaults;
 CREATE POLICY isld_delete ON ingredient_shelf_life_defaults FOR DELETE USING (tenant_id = get_current_tenant_id());
 COMMENT ON TABLE ingredient_shelf_life_defaults IS 'Default shelf life settings per ingredient for automatic expiry calculation.';
@@ -64,7 +73,7 @@ COMMENT ON TABLE ingredient_shelf_life_defaults IS 'Default shelf life settings 
 -- U21: business_locations (multi-location)
 -- ============================================
 
-CREATE TABLE business_locations (
+CREATE TABLE IF NOT EXISTS business_locations (
   id              UUID PRIMARY KEY DEFAULT gen_random_uuid(),
   tenant_id       UUID NOT NULL REFERENCES chefs(id) ON DELETE CASCADE,
   name            TEXT NOT NULL,
@@ -77,17 +86,22 @@ CREATE TABLE business_locations (
   created_at      TIMESTAMPTZ NOT NULL DEFAULT now(),
   updated_at      TIMESTAMPTZ NOT NULL DEFAULT now()
 );
-CREATE INDEX idx_business_locations_tenant ON business_locations(tenant_id);
+CREATE INDEX IF NOT EXISTS idx_business_locations_tenant ON business_locations(tenant_id);
+DROP TRIGGER IF EXISTS trg_business_locations_updated_at ON business_locations;
 CREATE TRIGGER trg_business_locations_updated_at
   BEFORE UPDATE ON business_locations
   FOR EACH ROW EXECUTE FUNCTION update_updated_at();
 ALTER TABLE business_locations ENABLE ROW LEVEL SECURITY;
 DROP POLICY IF EXISTS bl_select ON business_locations;
+DROP POLICY IF EXISTS bl_select ON business_locations;
 CREATE POLICY bl_select ON business_locations FOR SELECT USING (tenant_id = get_current_tenant_id());
+DROP POLICY IF EXISTS bl_insert ON business_locations;
 DROP POLICY IF EXISTS bl_insert ON business_locations;
 CREATE POLICY bl_insert ON business_locations FOR INSERT WITH CHECK (tenant_id = get_current_tenant_id());
 DROP POLICY IF EXISTS bl_update ON business_locations;
+DROP POLICY IF EXISTS bl_update ON business_locations;
 CREATE POLICY bl_update ON business_locations FOR UPDATE USING (tenant_id = get_current_tenant_id());
+DROP POLICY IF EXISTS bl_delete ON business_locations;
 DROP POLICY IF EXISTS bl_delete ON business_locations;
 CREATE POLICY bl_delete ON business_locations FOR DELETE USING (tenant_id = get_current_tenant_id());
 COMMENT ON TABLE business_locations IS 'Physical business locations for multi-location operations.';

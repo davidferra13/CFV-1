@@ -181,7 +181,7 @@ export async function getCriticalPath(input: {
   let menuConfirmed = false
   if (eventId) {
     const { data: menus } = await db
-      .from('event_menus')
+      .from('menus')
       .select('id, status')
       .eq('event_id', eventId)
       .limit(1)
@@ -359,7 +359,7 @@ export async function getCriticalPathForGuest(
   let menuStatus: CriticalPathStatus = 'missing'
   if (eventId) {
     const { data: menus } = await db
-      .from('event_menus')
+      .from('menus')
       .select('id, status')
       .eq('event_id', eventId)
       .limit(1)

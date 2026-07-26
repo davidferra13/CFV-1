@@ -384,14 +384,14 @@ export async function getPublicEventByShareToken(
   let menuSummary: string | null = null
   if (share.show_menu) {
     const { data: menuLink } = await db
-      .from('event_menus')
-      .select('menu_id, menus(name, description)')
+      .from('menus')
+      .select('id, name, description')
       .eq('event_id', event.id)
       .limit(1)
       .maybeSingle()
 
-    if (menuLink?.menus) {
-      menuSummary = (menuLink.menus as any).description || (menuLink.menus as any).name || null
+    if (menuLink) {
+      menuSummary = (menuLink as any).description || (menuLink as any).name || null
     }
 
     if (!menuSummary) {
@@ -417,12 +417,9 @@ export async function getPublicEventByShareToken(
   // Get menu dishes if visible
   let menuDishes: PublicEventInfo['menuDishes'] = null
   if (share.show_menu) {
-    const { data: menuLinks } = await db
-      .from('event_menus')
-      .select('menu_id')
-      .eq('event_id', event.id)
+    const { data: menuLinks } = await db.from('menus').select('id').eq('event_id', event.id)
 
-    let menuIds = (menuLinks ?? []).map((link: any) => link.menu_id).filter(Boolean)
+    let menuIds = (menuLinks ?? []).map((link: any) => link.id).filter(Boolean)
     if (menuIds.length === 0) {
       const { data: directMenus } = await db.from('menus').select('id').eq('event_id', event.id)
 

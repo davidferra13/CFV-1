@@ -32,7 +32,7 @@ async function getStageCounts(): Promise<StageCounts> {
       .from('inquiries')
       .select('id', { count: 'exact', head: true })
       .eq('tenant_id', tenantId)
-      .not('status', 'in', '(converted,declined,expired,archived)'),
+      .not('status', 'in', '(confirmed,declined,expired)'),
     db
       .from('quotes')
       .select('id', { count: 'exact', head: true })

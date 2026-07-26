@@ -30,7 +30,7 @@ export async function getEventReadiness(
   // Run all three lookups in parallel
   const [menuRes, contractRes, ledgerRes] = await Promise.all([
     db.from('menus').select('event_id').eq('tenant_id', tenantId).in('event_id', eventIds),
-    db.from('contracts').select('event_id').eq('tenant_id', tenantId).in('event_id', eventIds),
+    db.from('event_contracts').select('event_id').eq('chef_id', tenantId).in('event_id', eventIds),
     db
       .from('ledger_entries')
       .select('event_id')

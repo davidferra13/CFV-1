@@ -339,11 +339,11 @@ export async function analyzeCrossContamination(
 
   // Load menu items for this event's menus via event_menus -> dishes chain
   const { data: eventMenuLinks } = await db
-    .from('event_menus')
-    .select('menu_id')
+    .from('menus')
+    .select('id')
     .eq('event_id', event.id)
     .limit(3)
-  const menuIds = (eventMenuLinks ?? []).map((em: any) => em.menu_id)
+  const menuIds = (eventMenuLinks ?? []).map((em: any) => em.id)
   const { data: menuItems } =
     menuIds.length > 0
       ? await (db

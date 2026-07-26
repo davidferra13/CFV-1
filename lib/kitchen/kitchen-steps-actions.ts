@@ -79,8 +79,8 @@ export async function getKitchenModeContext(eventId?: string): Promise<KitchenEv
 
   // Fetch menu items for this event (via the event's linked menu)
   const { data: eventMenus } = await db
-    .from('event_menus')
-    .select('menu_id')
+    .from('menus')
+    .select('id')
     .eq('event_id', targetEventId)
     .limit(1)
 

@@ -125,12 +125,10 @@ export async function generateStaffBriefing(eventId: string): Promise<StaffBrief
 
   // Fetch active menu dishes for this event via event_menus -> dishes chain
   const { data: eventMenuLinks } = await (db
-    .from('event_menus' as any)
-    .select('menu_id')
+    .from('menus' as any)
+    .select('id')
     .eq('event_id', eventId) as any)
-  const briefingMenuIds = ((eventMenuLinks ?? []) as Array<{ menu_id: string }>).map(
-    (em) => em.menu_id
-  )
+  const briefingMenuIds = ((eventMenuLinks ?? []) as Array<{ id: string }>).map((em) => em.id)
   const { data: menuRows } =
     briefingMenuIds.length > 0
       ? await (db

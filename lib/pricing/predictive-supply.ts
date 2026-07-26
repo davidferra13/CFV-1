@@ -452,13 +452,18 @@ export async function assessEventRisk(
   // Get all ingredients for this event
   const ingredients = (await db.execute(sql`
     SELECT DISTINCT
-      ri.canonical_ingredient_id,
-      ri.name
+      nm.canonical_ingredient_id,
+      i.name
     FROM recipe_ingredients ri
     JOIN recipes r ON r.id = ri.recipe_id
-    JOIN event_menus em ON em.recipe_id = r.id
-    WHERE em.event_id = ${eventId}
-      AND ri.canonical_ingredient_id IS NOT NULL
+    JOIN ingredients i ON i.id = ri.ingredient_id
+    LEFT JOIN openclaw.normalization_map nm
+      ON LOWER(TRIM(nm.raw_name)) = LOWER(TRIM(i.name))
+    JOIN components comp ON comp.recipe_id = r.id
+    JOIN dishes d ON d.id = comp.dish_id
+    JOIN menus m ON m.id = d.menu_id
+    WHERE m.event_id = ${eventId}
+      AND nm.canonical_ingredient_id IS NOT NULL
   `)) as unknown as Array<{ canonical_ingredient_id: string; name: string }>
 
   const pgSql = pgClient

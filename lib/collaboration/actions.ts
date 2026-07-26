@@ -1034,9 +1034,9 @@ export async function canModifyEventMenu(menuId: string, chefId: string): Promis
 
   // Menu belongs to another chef. Check if linked to an event where we're a collaborator
   const { data: eventMenuLinks } = await (db as any)
-    .from('event_menus')
+    .from('menus')
     .select('event_id')
-    .eq('menu_id', menuId)
+    .eq('id', menuId)
 
   if (!eventMenuLinks || eventMenuLinks.length === 0) return false
 

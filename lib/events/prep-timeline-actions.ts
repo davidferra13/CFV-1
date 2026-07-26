@@ -187,12 +187,12 @@ export async function generatePrepTimeline(eventId: string): Promise<{
 
   // Get event menus (tenant-scoped)
   const { data: eventMenus } = await db
-    .from('event_menus')
-    .select('menu_id')
+    .from('menus')
+    .select('id')
     .eq('event_id', eventId)
     .eq('tenant_id', ownerTenantId)
 
-  let menuIds: string[] = (eventMenus || []).map((em: any) => em.menu_id)
+  let menuIds: string[] = (eventMenus || []).map((em: any) => em.id)
 
   if (menuIds.length === 0) {
     const { data: event } = await db

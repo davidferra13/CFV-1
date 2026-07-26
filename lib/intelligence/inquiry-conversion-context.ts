@@ -52,7 +52,7 @@ export async function getInquiryConversionContext(params: {
         'id, status, channel, confirmed_guest_count, confirmed_occasion, confirmed_budget_cents, created_at, updated_at, converted_to_event_id'
       )
       .eq('tenant_id', tenantId)
-      .in('status', ['converted', 'declined', 'expired'])
+      .in('status', ['confirmed', 'declined', 'expired'])
       .order('created_at', { ascending: false })
       .limit(200),
     // Current open inquiries for pipeline context

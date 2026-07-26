@@ -243,10 +243,10 @@ async function evaluateReadinessInternal(params: {
   if (targetStatus === 'confirmed' || targetStatus === 'in_progress') {
     try {
       const { data: contract } = await (db as any)
-        .from('contracts')
+        .from('event_contracts')
         .select('id, status')
         .eq('event_id', eventId)
-        .eq('tenant_id', tenantId)
+        .eq('chef_id', tenantId)
         .in('status', ['signed'])
         .limit(1)
         .maybeSingle()

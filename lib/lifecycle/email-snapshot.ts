@@ -108,7 +108,7 @@ export async function getEmailSnapshot(inquiryId: string): Promise<EmailSnapshot
   let menuConfirmed = false
   if (eventId) {
     const { data: menus } = await db
-      .from('event_menus')
+      .from('menus')
       .select('id, status')
       .eq('event_id', eventId)
       .limit(1)

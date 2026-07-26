@@ -204,10 +204,7 @@ export async function getSourcingReport(
     const db = createServerClient()
 
     // Get event menu items (recipe ingredients for this event)
-    const { data: eventMenus } = await db
-      .from('event_menus')
-      .select('menu_id')
-      .eq('event_id', eventId)
+    const { data: eventMenus } = await db.from('menus').select('id').eq('event_id', eventId)
 
     if (!eventMenus || eventMenus.length === 0) {
       return { report: null, error: 'No menus found for this event' }

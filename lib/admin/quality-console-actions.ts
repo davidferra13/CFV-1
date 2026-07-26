@@ -214,7 +214,7 @@ export async function getWorkflowHealth(): Promise<WorkflowHealth[]> {
   const [inquiries, quotes, contracts, events, completedEvents] = await Promise.all([
     db.from('inquiries').select('id, created_at', { count: 'exact' }).limit(1),
     db.from('quotes').select('id, created_at', { count: 'exact' }).limit(1),
-    db.from('contracts').select('id, created_at', { count: 'exact' }).limit(1),
+    db.from('event_contracts').select('id, created_at', { count: 'exact' }).limit(1),
     db.from('events').select('id, created_at, status', { count: 'exact' }).limit(1),
     db.from('events').select('id, created_at, updated_at').eq('status', 'completed').limit(5000),
   ])

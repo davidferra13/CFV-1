@@ -30,12 +30,13 @@ CREATE TABLE IF NOT EXISTS chef_ingredient_prices (
 
 ALTER TABLE chef_ingredient_prices ENABLE ROW LEVEL SECURITY;
 
+DROP POLICY IF EXISTS chef_ingredient_prices_tenant ON chef_ingredient_prices;
 CREATE POLICY chef_ingredient_prices_tenant ON chef_ingredient_prices
   USING (chef_id = current_setting('app.tenant_id', true)::uuid);
 
-CREATE INDEX idx_cip_chef ON chef_ingredient_prices(chef_id);
-CREATE INDEX idx_cip_ingredient ON chef_ingredient_prices(ingredient_id);
-CREATE INDEX idx_cip_confirmed ON chef_ingredient_prices(confirmed_at DESC);
+CREATE INDEX IF NOT EXISTS idx_cip_chef ON chef_ingredient_prices(chef_id);
+CREATE INDEX IF NOT EXISTS idx_cip_ingredient ON chef_ingredient_prices(ingredient_id);
+CREATE INDEX IF NOT EXISTS idx_cip_confirmed ON chef_ingredient_prices(confirmed_at DESC);
 
 COMMENT ON TABLE chef_ingredient_prices IS
   'Standing chef price overrides. Tier 0 in the resolution chain, above all market data.';
@@ -63,14 +64,15 @@ CREATE TABLE IF NOT EXISTS price_feedback (
 
 ALTER TABLE price_feedback ENABLE ROW LEVEL SECURITY;
 
+DROP POLICY IF EXISTS price_feedback_tenant ON price_feedback;
 CREATE POLICY price_feedback_tenant ON price_feedback
   USING (chef_id = current_setting('app.tenant_id', true)::uuid);
 
-CREATE INDEX idx_pf_chef ON price_feedback(chef_id);
-CREATE INDEX idx_pf_ingredient ON price_feedback(ingredient_id);
-CREATE INDEX idx_pf_region ON price_feedback(pricing_region_id) WHERE pricing_region_id IS NOT NULL;
-CREATE INDEX idx_pf_feedback ON price_feedback(feedback);
-CREATE INDEX idx_pf_created ON price_feedback(created_at DESC);
+CREATE INDEX IF NOT EXISTS idx_pf_chef ON price_feedback(chef_id);
+CREATE INDEX IF NOT EXISTS idx_pf_ingredient ON price_feedback(ingredient_id);
+CREATE INDEX IF NOT EXISTS idx_pf_region ON price_feedback(pricing_region_id) WHERE pricing_region_id IS NOT NULL;
+CREATE INDEX IF NOT EXISTS idx_pf_feedback ON price_feedback(feedback);
+CREATE INDEX IF NOT EXISTS idx_pf_created ON price_feedback(created_at DESC);
 
 COMMENT ON TABLE price_feedback IS
   'Chef feedback on shown prices. Aggregated to calibrate regional confidence.';

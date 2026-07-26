@@ -135,6 +135,16 @@ COMMENT ON TABLE openclaw.price_anomalies IS
 -- ══════════════════════════════════════════════════════════════════════
 -- Shows what we know and what we don't know.
 
+-- 20260505000001_pie_intelligence_layers.sql replaces this diagnostic view with a real
+-- table that PIE writes gap rows into. Where that has already happened the table wins,
+-- so the view is only created while the name is free or still holds a view.
+DO $coverage_gaps$
+BEGIN
+  IF to_regclass('openclaw.coverage_gaps') IS NOT NULL
+     AND (SELECT relkind FROM pg_class WHERE oid = 'openclaw.coverage_gaps'::regclass) <> 'v' THEN
+    RETURN;
+  END IF;
+  EXECUTE $coverage_gaps_sql$
 CREATE OR REPLACE VIEW openclaw.coverage_gaps AS
 WITH state_chains AS (
   SELECT DISTINCT s.state, c.id as chain_id, c.name as chain_name, c.source_type
@@ -169,7 +179,10 @@ SELECT
 FROM state_chains sc
 LEFT JOIN state_products sp ON sp.state = sc.state
 GROUP BY sc.state, sp.chains_with_data, sp.product_count, sp.price_count, sp.last_price_date
-ORDER BY COALESCE(sp.price_count, 0) ASC;
+ORDER BY COALESCE(sp.price_count, 0) ASC
+  $coverage_gaps_sql$;
+END
+$coverage_gaps$;
 
 -- ══════════════════════════════════════════════════════════════════════
 -- 6. GEOGRAPHIC PRICING REGIONS

@@ -125,11 +125,11 @@ export async function getEventGroceryList(
 
   // Fallback: extract from menu recipes
   const { data: eventMenus } = await (db
-    .from('event_menus' as any)
-    .select('menu_id')
+    .from('menus' as any)
+    .select('id')
     .eq('event_id', eventId) as any)
 
-  const menuIds = ((eventMenus ?? []) as Array<{ menu_id: string }>).map((em) => em.menu_id)
+  const menuIds = ((eventMenus ?? []) as Array<{ id: string }>).map((em) => em.id)
 
   if (menuIds.length === 0) {
     return {

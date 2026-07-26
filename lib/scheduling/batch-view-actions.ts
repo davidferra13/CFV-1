@@ -574,14 +574,11 @@ async function fetchSharedIngredients(
   }
 
   // Get event -> menu links
-  const { data: menuLinks } = await db
-    .from('event_menus')
-    .select('event_id, menu_id')
-    .in('event_id', eventIds)
+  const { data: menuLinks } = await db.from('menus').select('event_id, id').in('event_id', eventIds)
 
   if (!menuLinks || menuLinks.length === 0) return []
 
-  const menuIds = [...new Set(menuLinks.map((ml: any) => ml.menu_id))]
+  const menuIds = [...new Set(menuLinks.map((ml: any) => ml.id))]
   const menuToEvents = new Map<string, string[]>()
   for (const ml of menuLinks) {
     const existing = menuToEvents.get(ml.menu_id) ?? []

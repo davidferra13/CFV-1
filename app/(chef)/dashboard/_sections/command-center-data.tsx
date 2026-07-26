@@ -31,7 +31,7 @@ export async function CommandCenterSection() {
       q.not('status', 'in', '(completed,cancelled)')
     ),
     safeCount(db, 'inquiries', 'tenant_id', tid, (q: any) =>
-      q.not('status', 'in', '(converted,rejected,archived)')
+      q.not('status', 'in', '(confirmed,declined,expired)')
     ),
     safeCount(db, 'clients', 'tenant_id', tid),
     safeCount(db, 'menus', 'tenant_id', tid),

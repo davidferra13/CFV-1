@@ -13,7 +13,7 @@ export type EquipmentCondition = 'excellent' | 'good' | 'fair' | 'needs_service'
 
 export type Equipment = {
   id: string
-  tenant_id: string
+  chef_id: string
   item_name: string
   category: EquipmentCategory
   brand: string | null
@@ -66,7 +66,7 @@ export async function getEquipmentInventory(includeRetired = false): Promise<Equ
   const user = await requireChef()
   const db = createServerClient()
 
-  let query = db.from('chef_equipment').select('*').eq('tenant_id', user.tenantId!)
+  let query = db.from('chef_equipment').select('*').eq('chef_id', user.tenantId!)
 
   if (!includeRetired) {
     query = query.is('retired_date', null)
@@ -91,7 +91,7 @@ export async function createEquipment(
   const { data, error } = await db
     .from('chef_equipment')
     .insert({
-      tenant_id: user.tenantId!,
+      chef_id: user.tenantId!,
       item_name: input.item_name.trim(),
       category: input.category,
       brand: input.brand?.trim() || null,
@@ -148,7 +148,7 @@ export async function updateEquipment(
     .from('chef_equipment')
     .update(updates)
     .eq('id', id)
-    .eq('tenant_id', user.tenantId!)
+    .eq('chef_id', user.tenantId!)
 
   if (error) throw new Error(`Failed to update equipment: ${error.message}`)
 
@@ -168,7 +168,7 @@ export async function retireEquipment(id: string): Promise<{ success: true }> {
       updated_at: new Date().toISOString(),
     })
     .eq('id', id)
-    .eq('tenant_id', user.tenantId!)
+    .eq('chef_id', user.tenantId!)
 
   if (error) throw new Error(`Failed to retire equipment: ${error.message}`)
 
@@ -183,7 +183,7 @@ export async function getEquipmentValueSummary(): Promise<EquipmentValueSummary>
   const { data, error } = await db
     .from('chef_equipment')
     .select('purchase_price_cents, warranty_expiry')
-    .eq('tenant_id', user.tenantId!)
+    .eq('chef_id', user.tenantId!)
     .is('retired_date', null)
 
   if (error) throw new Error(`Failed to load equipment summary: ${error.message}`)

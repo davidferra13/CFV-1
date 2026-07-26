@@ -30,19 +30,20 @@ CREATE TABLE IF NOT EXISTS dietary_outreach (
 );
 
 -- Unique token for public access
-CREATE UNIQUE INDEX idx_dietary_outreach_token ON dietary_outreach(token);
+CREATE UNIQUE INDEX IF NOT EXISTS idx_dietary_outreach_token ON dietary_outreach(token);
 
 -- One outreach per guest per event (prevent duplicate sends)
-CREATE UNIQUE INDEX idx_dietary_outreach_guest_event
+CREATE UNIQUE INDEX IF NOT EXISTS idx_dietary_outreach_guest_event
   ON dietary_outreach(guest_id, event_id);
 
 -- Fast lookup by event
-CREATE INDEX idx_dietary_outreach_event ON dietary_outreach(event_id);
+CREATE INDEX IF NOT EXISTS idx_dietary_outreach_event ON dietary_outreach(event_id);
 
 -- Fast lookup by tenant
-CREATE INDEX idx_dietary_outreach_tenant ON dietary_outreach(tenant_id);
+CREATE INDEX IF NOT EXISTS idx_dietary_outreach_tenant ON dietary_outreach(tenant_id);
 
 -- Updated_at trigger
+DROP TRIGGER IF EXISTS set_dietary_outreach_updated_at ON dietary_outreach;
 CREATE TRIGGER set_dietary_outreach_updated_at
   BEFORE UPDATE ON dietary_outreach
   FOR EACH ROW EXECUTE FUNCTION update_updated_at_column();
@@ -50,6 +51,7 @@ CREATE TRIGGER set_dietary_outreach_updated_at
 -- RLS: chef tenant isolation
 ALTER TABLE dietary_outreach ENABLE ROW LEVEL SECURITY;
 
+DROP POLICY IF EXISTS dietary_outreach_tenant_isolation ON dietary_outreach;
 CREATE POLICY dietary_outreach_tenant_isolation ON dietary_outreach
   AS PERMISSIVE FOR ALL TO public
   USING (tenant_id = get_current_tenant_id())

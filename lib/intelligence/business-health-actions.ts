@@ -62,7 +62,8 @@ export async function fetchBusinessHealthScore(): Promise<HealthScoreDetail> {
   let trend: 'improving' | 'stable' | 'declining' = 'stable'
   if (history.length >= 3) {
     const recentAvg = history.slice(-3).reduce((s, h) => s + h.score, 0) / 3
-    const olderAvg = history.slice(0, Math.min(3, history.length - 3)).reduce((s, h) => s + h.score, 0) /
+    const olderAvg =
+      history.slice(0, Math.min(3, history.length - 3)).reduce((s, h) => s + h.score, 0) /
       Math.min(3, history.length - 3)
     if (recentAvg > olderAvg + 5) trend = 'improving'
     else if (recentAvg < olderAvg - 5) trend = 'declining'
@@ -121,15 +122,12 @@ async function buildQuadrantDetails(
       .eq('tenant_id', tenantId)
       .is('deleted_at' as any, null)
       .not('status', 'in', '("cancelled")'),
-    db
-      .from('clients')
-      .select('id', { count: 'exact', head: true })
-      .eq('tenant_id', tenantId),
+    db.from('clients').select('id', { count: 'exact', head: true }).eq('tenant_id', tenantId),
     db
       .from('inquiries')
       .select('id', { count: 'exact', head: true })
       .eq('tenant_id', tenantId)
-      .not('status', 'in', '("converted","declined")'),
+      .not('status', 'in', '("confirmed","declined")'),
   ])
 
   const eventCount = eventCountResult?.count ?? 0
@@ -179,7 +177,12 @@ async function buildQuadrantDetails(
         {
           label: 'Recent events (90 days)',
           value: String(recentEvents ?? 0),
-          impact: (recentEvents ?? 0) >= 3 ? 'positive' : (recentEvents ?? 0) > 0 ? 'neutral' : 'negative',
+          impact:
+            (recentEvents ?? 0) >= 3
+              ? 'positive'
+              : (recentEvents ?? 0) > 0
+                ? 'neutral'
+                : 'negative',
         },
       ],
     },
@@ -273,14 +276,24 @@ async function getHealthHistory(
 
     // Simple scoring: events per month contribute to monthly score
     const eventScore = Math.min(30, monthEvents.length * 8)
-    const revenueScore = Math.min(25, monthEvents.reduce((s: number, e: any) =>
-      s + Math.min(5, ((e.amount_paid_cents ?? 0) / 200000)), 0) * 5)
-    const completedScore = Math.min(25, monthEvents.filter((e: any) =>
-      e.status === 'completed').length * 8)
+    const revenueScore = Math.min(
+      25,
+      monthEvents.reduce(
+        (s: number, e: any) => s + Math.min(5, (e.amount_paid_cents ?? 0) / 200000),
+        0
+      ) * 5
+    )
+    const completedScore = Math.min(
+      25,
+      monthEvents.filter((e: any) => e.status === 'completed').length * 8
+    )
 
     // Base score + monthly performance
     const baseScore = 20
-    const monthScore = Math.min(100, Math.round(baseScore + eventScore + revenueScore + completedScore))
+    const monthScore = Math.min(
+      100,
+      Math.round(baseScore + eventScore + revenueScore + completedScore)
+    )
 
     history.push({
       date: monthLabel,

@@ -3,7 +3,11 @@
 -- (e.g., when a tip is deleted without updating the event column).
 -- This view now reads tips from the single source of truth: the ledger.
 
-CREATE OR REPLACE VIEW event_financial_summary AS
+-- CREATE OR REPLACE cannot change a view column's type, and this migration moves
+-- tip_amount_cents between integer and bigint depending on which of the nine
+-- event_financial_summary definitions ran last. Drop first; it has no dependents.
+DROP VIEW IF EXISTS event_financial_summary;
+CREATE VIEW event_financial_summary AS
 SELECT
   e.id AS event_id,
   e.tenant_id,

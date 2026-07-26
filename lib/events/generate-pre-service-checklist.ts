@@ -51,12 +51,10 @@ export async function generatePreServiceChecklist(eventId: string): Promise<PreS
 
   // Get menu dishes via event_menus -> dishes chain
   const { data: eventMenuLinks } = await (db
-    .from('event_menus' as any)
-    .select('menu_id')
+    .from('menus' as any)
+    .select('id')
     .eq('event_id', eventId) as any)
-  const checklistMenuIds = ((eventMenuLinks ?? []) as Array<{ menu_id: string }>).map(
-    (em) => em.menu_id
-  )
+  const checklistMenuIds = ((eventMenuLinks ?? []) as Array<{ id: string }>).map((em) => em.id)
   const menuDishData =
     checklistMenuIds.length > 0
       ? await (db

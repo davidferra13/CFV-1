@@ -30,6 +30,29 @@ async function loadExistingTables() {
   return new Set(rows.map((r) => `${r.table_schema}.${r.table_name}`))
 }
 
+async function loadExistingColumns() {
+  const rows = await sql`
+    select table_name, column_name from information_schema.columns
+    where table_schema in ('public', 'auth', 'openclaw')
+  `
+  return new Set(rows.map((r) => `${r.table_name}.${r.column_name}`.toLowerCase()))
+}
+
+// True when the file adds a column that is not in the database yet. Each ADD COLUMN
+// clause is attributed to the ALTER TABLE that opened the statement it sits in.
+function hasMissingColumn(body, columns) {
+  const stripped = body.replace(/--[^\n]*/g, '')
+  for (const stmt of stripped.split(';')) {
+    const table = stmt.match(/ALTER\s+TABLE\s+(?:IF\s+EXISTS\s+)?(?:public\.)?"?([a-z0-9_]+)"?/i)
+    if (!table) continue
+    const adds = [...stmt.matchAll(/ADD\s+COLUMN\s+(?:IF\s+NOT\s+EXISTS\s+)?"?([a-z0-9_]+)"?/gi)]
+    for (const add of adds) {
+      if (!columns.has(`${table[1]}.${add[1]}`.toLowerCase())) return true
+    }
+  }
+  return false
+}
+
 const qualify = (name) => {
   const n = name.toLowerCase().replace(/"/g, '')
   return n.includes('.') ? n : `public.${n}`
@@ -50,7 +73,7 @@ const INCLUDE_NONCREATING = process.argv.includes('--include-noncreating')
 const before = await loadExistingTables()
 const files = readdirSync(DIR).filter((f) => f.endsWith('.sql')).sort()
 
-function outstandingSet(existing, done) {
+function outstandingSet(existing, done, columns) {
   const out = []
   let satisfied = 0
   let noCreate = 0
@@ -68,10 +91,16 @@ function outstandingSet(existing, done) {
       out.push({ file, missing, body })
       continue
     }
-    // A file whose tables all exist can still be carrying functions that were never
-    // created: that is how get_menu_total_component_count went missing while the menus
-    // tables it belongs to were present. CREATE OR REPLACE FUNCTION is safe to re-run.
-    if (INCLUDE_NONCREATING && /\bCREATE\s+(OR\s+REPLACE\s+)?FUNCTION\b/i.test(body)) {
+    // A file whose tables all exist can still be carrying work that never ran. Functions:
+    // that is how get_menu_total_component_count went missing while the menus tables it
+    // belongs to were present. Columns: 20260526000005 adds the business-ops columns to
+    // tables an earlier migration created, so the whole file looked satisfied and its
+    // ALTERs never applied. Only pull such a file in when something it adds is genuinely
+    // absent, otherwise every ALTER in the history re-runs on every pass.
+    if (
+      INCLUDE_NONCREATING &&
+      (/\bCREATE\s+(OR\s+REPLACE\s+)?FUNCTION\b/i.test(body) || hasMissingColumn(body, columns))
+    ) {
       out.push({ file, missing: [], body })
       continue
     }
@@ -80,7 +109,8 @@ function outstandingSet(existing, done) {
   return { out, satisfied, noCreate }
 }
 
-const first = outstandingSet(before, new Set())
+const beforeColumns = await loadExistingColumns()
+const first = outstandingSet(before, new Set(), beforeColumns)
 console.log(
   `${files.length} migrations | ${first.satisfied} satisfied | ${first.noCreate} create no tables | ${first.out.length} candidates`
 )
@@ -100,7 +130,8 @@ let lastErrors = new Map()
 
 for (let round = 1; ; round++) {
   const existing = await loadExistingTables()
-  const { out } = outstandingSet(existing, done)
+  const columns = await loadExistingColumns()
+  const { out } = outstandingSet(existing, done, columns)
   if (out.length === 0) break
 
   let appliedThisRound = 0

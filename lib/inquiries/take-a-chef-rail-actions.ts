@@ -51,7 +51,7 @@ export async function getTakeAChefRailData(): Promise<TacRailData> {
       )
       .eq('tenant_id', user.tenantId!)
       .eq('channel', 'take_a_chef')
-      .not('status', 'in', '(confirmed,declined,expired,archived)')
+      .not('status', 'in', '(confirmed,declined,expired)')
       .order('created_at', { ascending: false })
 
     if (error) {

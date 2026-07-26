@@ -269,10 +269,10 @@ export async function buildTriggerContext(
   // Check contract status
   if (resolvedEventId) {
     const { data: contracts } = await db
-      .from('contracts')
+      .from('event_contracts')
       .select('status')
       .eq('event_id', resolvedEventId)
-      .eq('tenant_id', chefId)
+      .eq('chef_id', chefId)
       .order('created_at', { ascending: false })
       .limit(1)
     if (contracts && contracts.length > 0) {

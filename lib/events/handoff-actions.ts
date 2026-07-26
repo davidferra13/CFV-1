@@ -100,13 +100,13 @@ export async function generateHandoffPacket(
   let menuSummary: HandoffMenuSummary | null = null
   try {
     const { data: eventMenus } = await db
-      .from('event_menus')
-      .select('menu_id')
+      .from('menus')
+      .select('id')
       .eq('event_id', eventId)
       .limit(1)
 
     if (eventMenus?.length) {
-      const menuId = eventMenus[0].menu_id
+      const menuId = eventMenus[0].id
 
       const { data: menu } = await db.from('menus').select('id, name').eq('id', menuId).single()
 

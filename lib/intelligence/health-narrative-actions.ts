@@ -103,7 +103,7 @@ export async function getBusinessHealthSnapshot(
         .from('inquiries')
         .select('id', { count: 'exact', head: true })
         .eq('tenant_id', tenantId)
-        .not('status', 'in', '("converted","declined")'),
+        .not('status', 'in', '("confirmed","declined")'),
       // Cancelled events this period
       db
         .from('events')

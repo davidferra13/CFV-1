@@ -169,12 +169,15 @@ export async function analyzeDish(
   const ingredients = (await db.execute(sql`
     SELECT
       ri.ingredient_id,
-      ri.canonical_ingredient_id,
-      ri.name,
+      nm.canonical_ingredient_id,
+      i.name,
       ri.quantity,
       ri.unit,
-      ri.cost_cents
+      ri.computed_cost_cents AS cost_cents
     FROM recipe_ingredients ri
+    JOIN ingredients i ON i.id = ri.ingredient_id
+    LEFT JOIN openclaw.normalization_map nm
+      ON LOWER(TRIM(nm.raw_name)) = LOWER(TRIM(i.name))
     WHERE ri.recipe_id = ${recipeId}
   `)) as unknown as Array<{
     ingredient_id: string
@@ -497,15 +500,18 @@ export async function getSeasonalMenuRanking(tenantId: string): Promise<
     SELECT
       r.id AS recipe_id,
       r.name AS recipe_name,
-      ARRAY_AGG(ri.canonical_ingredient_id) FILTER (
-        WHERE ri.canonical_ingredient_id IS NOT NULL
+      ARRAY_AGG(nm.canonical_ingredient_id) FILTER (
+        WHERE nm.canonical_ingredient_id IS NOT NULL
       ) AS ingredient_ids,
-      ARRAY_AGG(ri.name) FILTER (
-        WHERE ri.canonical_ingredient_id IS NOT NULL
+      ARRAY_AGG(i.name) FILTER (
+        WHERE nm.canonical_ingredient_id IS NOT NULL
       ) AS ingredient_names
     FROM recipes r
     JOIN recipe_ingredients ri ON ri.recipe_id = r.id
-    WHERE r.tenant_id = ${tenantId} AND r.is_archived = false
+    JOIN ingredients i ON i.id = ri.ingredient_id
+    LEFT JOIN openclaw.normalization_map nm
+      ON LOWER(TRIM(nm.raw_name)) = LOWER(TRIM(i.name))
+    WHERE r.tenant_id = ${tenantId} AND r.archived = false
     GROUP BY r.id, r.name
   `)) as unknown as Array<{
     recipe_id: string

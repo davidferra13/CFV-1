@@ -290,12 +290,10 @@ export async function getClaimDocumentPackage(id: string) {
 
     // Get menu dishes via event_menus -> dishes chain
     const { data: claimEventMenus } = await (db
-      .from('event_menus' as any)
-      .select('menu_id')
+      .from('menus' as any)
+      .select('id')
       .eq('event_id', claim.event_id) as any)
-    const claimMenuIds = ((claimEventMenus ?? []) as Array<{ menu_id: string }>).map(
-      (em) => em.menu_id
-    )
+    const claimMenuIds = ((claimEventMenus ?? []) as Array<{ id: string }>).map((em) => em.id)
     if (claimMenuIds.length > 0) {
       const { data: claimDishes } = await (db
         .from('dishes' as any)

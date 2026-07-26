@@ -102,8 +102,8 @@ async function getTodayEventWithMenu(): Promise<EventWithMenu | null> {
 
   // Get linked menu
   const { data: eventMenus } = await db
-    .from('event_menus')
-    .select('menu_id')
+    .from('menus')
+    .select('id')
     .eq('event_id', targetEvent.id)
     .limit(1)
 

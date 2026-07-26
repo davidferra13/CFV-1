@@ -57,17 +57,13 @@ export async function getEventRecap(eventName: string): Promise<EventRecapResult
   const clientName = event.client?.full_name ?? 'Unknown'
 
   // Load menu items via event_menus -> dishes chain
-  const { data: eventMenus } = await db
-    .from('event_menus')
-    .select('menu_id')
-    .eq('event_id', event.id)
-    .limit(1)
+  const { data: eventMenus } = await db.from('menus').select('id').eq('event_id', event.id).limit(1)
   let menuItems: Array<{ name: string | null }> = []
   if (eventMenus?.length) {
     const { data: dishes } = await (db
       .from('dishes' as any)
       .select('name')
-      .eq('menu_id', eventMenus[0].menu_id)
+      .eq('menu_id', eventMenus[0].id)
       .eq('tenant_id', user.tenantId!)
       .not('name', 'is', null) as any)
     menuItems = dishes ?? []

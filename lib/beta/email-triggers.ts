@@ -139,12 +139,10 @@ export async function sendPostEventCircleThanks(eventId: string) {
 
   // Get menu dishes for the event via event_menus -> dishes chain
   const { data: eventMenuLinks2 } = await db
-    .from('event_menus' as any)
-    .select('menu_id')
+    .from('menus' as any)
+    .select('id')
     .eq('event_id', eventId)
-  const triggerMenuIds = ((eventMenuLinks2 ?? []) as Array<{ menu_id: string }>).map(
-    (em) => em.menu_id
-  )
+  const triggerMenuIds = ((eventMenuLinks2 ?? []) as Array<{ id: string }>).map((em) => em.id)
   const { data: menuDishes } =
     triggerMenuIds.length > 0
       ? await db

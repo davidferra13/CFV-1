@@ -18,14 +18,17 @@ export async function getTrendAlerts(): Promise<TrendAlert[]> {
   // Get chef's ingredients with their canonical IDs
   const ingredients = (await db.execute(sql`
     SELECT DISTINCT
-      ri.name,
-      ri.canonical_ingredient_id,
+      i.name,
+      nm.canonical_ingredient_id,
       ri.unit
     FROM recipe_ingredients ri
     JOIN recipes r ON r.id = ri.recipe_id
+    JOIN ingredients i ON i.id = ri.ingredient_id
+    LEFT JOIN openclaw.normalization_map nm
+      ON LOWER(TRIM(nm.raw_name)) = LOWER(TRIM(i.name))
     WHERE r.tenant_id = ${user.tenantId}
-      AND r.is_archived = false
-      AND ri.canonical_ingredient_id IS NOT NULL
+      AND r.archived = false
+      AND nm.canonical_ingredient_id IS NOT NULL
     LIMIT 200
   `)) as unknown as Array<{
     name: string

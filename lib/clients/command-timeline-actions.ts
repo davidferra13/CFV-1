@@ -183,9 +183,9 @@ export async function getClientTimeline(
       .order('created_at', { ascending: false })
       .limit(limit),
     db
-      .from('contracts')
+      .from('event_contracts')
       .select('id, created_at, sent_at, signed_at, status, event_id')
-      .eq('tenant_id', tenantId)
+      .eq('chef_id', tenantId)
       .eq('client_id', clientId)
       .order('created_at', { ascending: false })
       .limit(limit)
