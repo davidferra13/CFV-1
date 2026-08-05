@@ -172,15 +172,19 @@ export function FeeScheduleEditor({ initialTiers }: { initialTiers: FeeScheduleE
 
     startTransition(() => {
       void (async () => {
-        const result = await deleteFeeSchedule()
+        try {
+          const result = await deleteFeeSchedule()
 
-        if (!result.success) {
-          toast.error(result.error ?? 'Failed to clear fee schedule')
-          return
+          if (!result.success) {
+            toast.error(result.error ?? 'Failed to clear fee schedule')
+            return
+          }
+
+          toast.success('Fee schedule cleared')
+          setTiers([])
+        } catch {
+          toast.error('Something went wrong clearing the fee schedule')
         }
-
-        toast.success('Fee schedule cleared')
-        setTiers([])
       })()
     })
   }
@@ -215,7 +219,8 @@ export function FeeScheduleEditor({ initialTiers }: { initialTiers: FeeScheduleE
 
     startTransition(() => {
       void (async () => {
-        const payload = tiers
+        try {
+          const payload = tiers
           .map((tier) => ({
             days_before_min: tier.days_before_min,
             days_before_max: tier.days_before_max,
@@ -232,8 +237,11 @@ export function FeeScheduleEditor({ initialTiers }: { initialTiers: FeeScheduleE
           return
         }
 
-        toast.success('Fee schedule saved')
-        setTiers(payload.map(makeDraftTier))
+          toast.success('Fee schedule saved')
+          setTiers(payload.map(makeDraftTier))
+        } catch {
+          toast.error('Something went wrong saving the fee schedule')
+        }
       })()
     })
   }

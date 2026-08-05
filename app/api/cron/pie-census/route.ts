@@ -13,6 +13,7 @@
  */
 
 import { NextResponse } from 'next/server'
+import { verifyCronAuth } from '@/lib/auth/cron-auth'
 import { buildCensus, getCensusStats } from '@/lib/pricing/census'
 import { runSyntheticEngine } from '@/lib/pricing/synthetic-engine'
 import { enforcesFreshness } from '@/lib/pricing/freshness-enforcer'
@@ -24,10 +25,9 @@ export const dynamic = 'force-dynamic'
 export const maxDuration = 300 // 5 min max
 
 export async function GET(request: Request) {
-  const authHeader = request.headers.get('authorization')
-  if (authHeader !== `Bearer ${process.env.CRON_SECRET}`) {
-    return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
-  }
+  // Verify cron secret (timing-safe)
+  const authError = verifyCronAuth(request.headers.get('authorization'))
+  if (authError) return authError
 
   const results: Record<string, unknown> = {}
 

@@ -67,30 +67,38 @@ export function ChefNotesArchive({ initialNotes, initialTotal, categories, topTa
 
   function doSearch(searchVal?: string, tagVal?: string, typeVal?: string) {
     startTransition(async () => {
-      const result = await getChefNotes({
-        search: (searchVal ?? search) || undefined,
-        tag: (tagVal ?? tagFilter) || undefined,
-        note_type: ((typeVal ?? typeFilter) as ChefNoteType) || undefined,
-        limit: PAGE_SIZE,
-      })
-      setNotes(result.notes)
-      setTotal(result.total)
+        try {
+        const result = await getChefNotes({
+          search: (searchVal ?? search) || undefined,
+          tag: (tagVal ?? tagFilter) || undefined,
+          note_type: ((typeVal ?? typeFilter) as ChefNoteType) || undefined,
+          limit: PAGE_SIZE,
+        })
+        setNotes(result.notes)
+        setTotal(result.total)
+        } catch {
+          toast.error('Something went wrong')
+        }
     })
   }
 
   function handleLoadMore() {
     setIsLoadingMore(true)
     startTransition(async () => {
-      const result = await getChefNotes({
-        search: search || undefined,
-        tag: tagFilter || undefined,
-        note_type: typeFilter || undefined,
-        limit: PAGE_SIZE,
-        offset: notes.length,
-      })
-      setNotes((prev) => [...prev, ...result.notes])
-      setTotal(result.total)
-      setIsLoadingMore(false)
+        try {
+        const result = await getChefNotes({
+          search: search || undefined,
+          tag: tagFilter || undefined,
+          note_type: typeFilter || undefined,
+          limit: PAGE_SIZE,
+          offset: notes.length,
+        })
+        setNotes((prev) => [...prev, ...result.notes])
+        setTotal(result.total)
+        setIsLoadingMore(false)
+        } catch {
+          toast.error('Something went wrong')
+        }
     })
   }
 

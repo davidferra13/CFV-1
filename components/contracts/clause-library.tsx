@@ -125,32 +125,40 @@ export function ClauseLibrary({ clauses }: { clauses: Clause[] }) {
     }
 
     startTransition(async () => {
-      const result = draft.id
-        ? await updateClause({ id: draft.id, ...payload })
-        : await createClause(payload)
+        try {
+        const result = draft.id
+          ? await updateClause({ id: draft.id, ...payload })
+          : await createClause(payload)
 
-      if (!result.success) {
-        toast.error(result.error || 'Could not save clause')
-        return
-      }
+        if (!result.success) {
+          toast.error(result.error || 'Could not save clause')
+          return
+        }
 
-      toast.success(editing ? 'Clause updated' : 'Clause created')
-      resetDraft()
-      router.refresh()
+        toast.success(editing ? 'Clause updated' : 'Clause created')
+        resetDraft()
+        router.refresh()
+        } catch {
+          toast.error('Something went wrong')
+        }
     })
   }
 
   function removeClause(id: string) {
     startTransition(async () => {
-      const result = await deleteClause(id)
-      if (!result.success) {
-        toast.error(result.error || 'Could not delete clause')
-        return
-      }
+        try {
+        const result = await deleteClause(id)
+        if (!result.success) {
+          toast.error(result.error || 'Could not delete clause')
+          return
+        }
 
-      toast.success('Clause deleted')
-      if (draft.id === id) resetDraft()
-      router.refresh()
+        toast.success('Clause deleted')
+        if (draft.id === id) resetDraft()
+        router.refresh()
+        } catch {
+          toast.error('Something went wrong')
+        }
     })
   }
 

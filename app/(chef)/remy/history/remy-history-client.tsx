@@ -217,7 +217,11 @@ export function RemyHistoryClient({
       setActiveTab(tab)
       clearSearch()
       startTransition(async () => {
-        await refreshConversations(tab)
+          try {
+          await refreshConversations(tab)
+          } catch {
+            toast.error('Something went wrong')
+          }
       })
     },
     [clearSearch, refreshConversations]

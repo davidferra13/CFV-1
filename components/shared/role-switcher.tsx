@@ -12,6 +12,7 @@ import {
 } from '@/components/ui/dropdown-menu'
 import { Button } from '@/components/ui/button'
 import { ChefHat, User, Users, Truck, ArrowLeftRight } from 'lucide-react'
+import { toast } from 'sonner'
 
 const roleIcons: Record<string, React.ElementType> = {
   chef: ChefHat,
@@ -54,11 +55,15 @@ export function RoleSwitcher({
 
   function handleSwitch(roleId: string) {
     startTransition(async () => {
-      const result = await switchRole(roleId)
-      if (result.success) {
-        router.push(result.homePath)
-        router.refresh()
-      }
+        try {
+        const result = await switchRole(roleId)
+        if (result.success) {
+          router.push(result.homePath)
+          router.refresh()
+        }
+        } catch {
+          toast.error('Something went wrong')
+        }
     })
   }
 

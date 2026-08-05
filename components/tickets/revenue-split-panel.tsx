@@ -10,6 +10,7 @@ import {
   getSettlementStatus,
   type RevenueSplitConfig,
 } from '@/lib/tickets/revenue-split-actions'
+import { toast } from 'sonner'
 
 type Props = {
   eventId: string
@@ -42,13 +43,17 @@ export function RevenueSplitPanel({ eventId }: Props) {
 
   function handleSettle(chefId: string) {
     startTransition(async () => {
-      const result = await settleRevenueSplit({ eventId, collaboratorChefId: chefId })
-      if (result.success) {
-        setSettlements((prev) => {
-          const next = new Map(prev)
-          next.set(chefId, { settled: true, method: null })
-          return next
-        })
+      try {
+        const result = await settleRevenueSplit({ eventId, collaboratorChefId: chefId })
+        if (result.success) {
+          setSettlements((prev) => {
+            const next = new Map(prev)
+            next.set(chefId, { settled: true, method: null })
+            return next
+          })
+        }
+      } catch {
+        toast.error("Failed to settle revenue split")
       }
     })
   }

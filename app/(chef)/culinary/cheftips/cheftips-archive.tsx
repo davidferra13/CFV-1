@@ -70,13 +70,17 @@ export function ChefTipsArchive({
   const doSearch = useCallback(
     (searchVal?: string, tagVal?: string) => {
       startTransition(async () => {
-        const result = await getChefTips({
-          search: (searchVal ?? search) || undefined,
-          tag: (tagVal ?? tagFilter) || undefined,
-          limit: PAGE_SIZE,
-        })
-        setTips(result.tips)
-        setTotal(result.total)
+          try {
+          const result = await getChefTips({
+            search: (searchVal ?? search) || undefined,
+            tag: (tagVal ?? tagFilter) || undefined,
+            limit: PAGE_SIZE,
+          })
+          setTips(result.tips)
+          setTotal(result.total)
+          } catch {
+            toast.error('Something went wrong')
+          }
       })
     },
     [search, tagFilter]
@@ -85,15 +89,19 @@ export function ChefTipsArchive({
   function handleLoadMore() {
     setIsLoadingMore(true)
     startTransition(async () => {
-      const result = await getChefTips({
-        search: search || undefined,
-        tag: tagFilter || undefined,
-        limit: PAGE_SIZE,
-        offset: tips.length,
-      })
-      setTips((prev) => [...prev, ...result.tips])
-      setTotal(result.total)
-      setIsLoadingMore(false)
+        try {
+        const result = await getChefTips({
+          search: search || undefined,
+          tag: tagFilter || undefined,
+          limit: PAGE_SIZE,
+          offset: tips.length,
+        })
+        setTips((prev) => [...prev, ...result.tips])
+        setTotal(result.total)
+        setIsLoadingMore(false)
+        } catch {
+          toast.error('Something went wrong')
+        }
     })
   }
 

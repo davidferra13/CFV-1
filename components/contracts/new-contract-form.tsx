@@ -182,19 +182,23 @@ export function NewContractForm({ clients, templates, events, clauses }: Props) 
     setError(null)
 
     startTransition(async () => {
-      const result = await createStandaloneContract({
-        client_id: selectedClientId,
-        template_id: selectedTemplateId || undefined,
-        event_id: selectedEventId || undefined,
-        body_markdown: composedBody,
-      })
+        try {
+        const result = await createStandaloneContract({
+          client_id: selectedClientId,
+          template_id: selectedTemplateId || undefined,
+          event_id: selectedEventId || undefined,
+          body_markdown: composedBody,
+        })
 
-      if (!result.success) {
-        setError(result.error ?? 'Failed to create contract')
-        return
-      }
+        if (!result.success) {
+          setError(result.error ?? 'Failed to create contract')
+          return
+        }
 
-      router.push('/contracts')
+        router.push('/contracts')
+        } catch {
+          setError('Something went wrong')
+        }
     })
   }
 

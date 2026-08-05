@@ -26,10 +26,14 @@ export function StagedSignalsPanel({ clients }: { clients: StagedClient[] }) {
   function handleConfirm(clientId: string) {
     setError(null)
     startTransition(async () => {
-      const result = await confirmStagedClient(clientId)
-      if (!result.success) {
-        setError(result.error || 'Failed to confirm')
-      }
+        try {
+        const result = await confirmStagedClient(clientId)
+        if (!result.success) {
+          setError(result.error || 'Failed to confirm')
+        }
+        } catch {
+          setError('Something went wrong')
+        }
     })
   }
 
@@ -39,12 +43,16 @@ export function StagedSignalsPanel({ clients }: { clients: StagedClient[] }) {
     prev.add(clientId)
     setDismissed(prev)
     startTransition(async () => {
-      const result = await dismissStagedClient(clientId)
-      if (!result.success) {
-        prev.delete(clientId)
-        setDismissed(new Set(prev))
-        setError(result.error || 'Failed to dismiss')
-      }
+        try {
+        const result = await dismissStagedClient(clientId)
+        if (!result.success) {
+          prev.delete(clientId)
+          setDismissed(new Set(prev))
+          setError(result.error || 'Failed to dismiss')
+        }
+        } catch {
+          setError('Something went wrong')
+        }
     })
   }
 

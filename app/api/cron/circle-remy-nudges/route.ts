@@ -1,15 +1,14 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { createServerClient } from '@/lib/db/server'
 import { postRemyMessage } from '@/lib/hub/remy-circle-actions'
+import { verifyCronAuth } from '@/lib/auth/cron-auth'
 
 export const dynamic = 'force-dynamic'
 
 export async function GET(req: NextRequest) {
-  // Verify cron secret
-  const authHeader = req.headers.get('authorization')
-  if (authHeader !== `Bearer ${process.env.CRON_SECRET}`) {
-    return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
-  }
+  // Verify cron secret (timing-safe)
+  const authError = verifyCronAuth(req.headers.get('authorization'))
+  if (authError) return authError
 
   const db: any = createServerClient({ admin: true })
   const now = new Date()

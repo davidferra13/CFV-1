@@ -39,8 +39,12 @@ export function KnowledgeLinkPicker({ sourceType, sourceId, onClose }: Props) {
   // Load existing links on mount
   useEffect(() => {
     startTransition(async () => {
-      const links = await getLinksFor(sourceType, sourceId)
-      setExistingLinks(links)
+        try {
+        const links = await getLinksFor(sourceType, sourceId)
+        setExistingLinks(links)
+        } catch {
+          toast.error('Something went wrong')
+        }
     })
   }, [sourceType, sourceId])
 
@@ -51,48 +55,60 @@ export function KnowledgeLinkPicker({ sourceType, sourceId, onClose }: Props) {
   function handleSearch() {
     if (!query.trim()) return
     startTransition(async () => {
-      const data = await searchLinkableEntities(query, targetType)
-      // Filter out already-linked items
-      const linkedIds = new Set(
-        existingLinks.filter((l) => l.targetType === targetType).map((l) => l.targetId)
-      )
-      setResults(data.filter((r) => !linkedIds.has(r.id)))
+        try {
+        const data = await searchLinkableEntities(query, targetType)
+        // Filter out already-linked items
+        const linkedIds = new Set(
+          existingLinks.filter((l) => l.targetType === targetType).map((l) => l.targetId)
+        )
+        setResults(data.filter((r) => !linkedIds.has(r.id)))
+        } catch {
+          toast.error('Something went wrong')
+        }
     })
   }
 
   function handleLink(targetId: string, label: string) {
     startTransition(async () => {
-      const result = await linkKnowledge(sourceType, sourceId, targetType, targetId)
-      if (result.success) {
-        toast.success(`Linked to ${label}`)
-        setExistingLinks((prev) => [
-          ...prev,
-          {
-            id: crypto.randomUUID(),
-            sourceType,
-            sourceId,
-            targetType,
-            targetId: targetId,
-            targetLabel: label,
-            createdAt: new Date().toISOString(),
-          },
-        ])
-        setResults((prev) => prev.filter((r) => r.id !== targetId))
-      } else {
-        toast.error('Failed to link')
-      }
+        try {
+        const result = await linkKnowledge(sourceType, sourceId, targetType, targetId)
+        if (result.success) {
+          toast.success(`Linked to ${label}`)
+          setExistingLinks((prev) => [
+            ...prev,
+            {
+              id: crypto.randomUUID(),
+              sourceType,
+              sourceId,
+              targetType,
+              targetId: targetId,
+              targetLabel: label,
+              createdAt: new Date().toISOString(),
+            },
+          ])
+          setResults((prev) => prev.filter((r) => r.id !== targetId))
+        } else {
+          toast.error('Failed to link')
+        }
+        } catch {
+          toast.error('Something went wrong')
+        }
     })
   }
 
   function handleUnlink(linkId: string) {
     startTransition(async () => {
-      const result = await unlinkKnowledge(linkId)
-      if (result.success) {
-        setExistingLinks((prev) => prev.filter((l) => l.id !== linkId))
-        toast.success('Link removed')
-      } else {
-        toast.error('Failed to remove link')
-      }
+        try {
+        const result = await unlinkKnowledge(linkId)
+        if (result.success) {
+          setExistingLinks((prev) => prev.filter((l) => l.id !== linkId))
+          toast.success('Link removed')
+        } else {
+          toast.error('Failed to remove link')
+        }
+        } catch {
+          toast.error('Something went wrong')
+        }
     })
   }
 

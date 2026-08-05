@@ -9,6 +9,7 @@ import {
 } from '@/lib/knowledge/explore-actions'
 import type { ChefTip } from '@/lib/chef/knowledge/tip-types'
 import type { ChefNote } from '@/lib/chef/knowledge/note-types'
+import { toast } from 'sonner'
 
 type ExploreMode = 'tips' | 'notes'
 
@@ -29,20 +30,24 @@ export function ExplorePanel({ mode }: Props) {
 
   function loadData(tag?: string) {
     startTransition(async () => {
-      if (mode === 'tips') {
-        const [tipsResult, chefsResult] = await Promise.all([
-          getSharedTips({ tag: tag || undefined, limit: 20 }),
-          !loaded ? getMatchingChefsByTags() : Promise.resolve(matchingChefs),
-        ])
-        setSharedTips(tipsResult.tips)
-        setTotal(tipsResult.total)
-        if (!loaded) setMatchingChefs(chefsResult as any)
-      } else {
-        const result = await getSharedNotes({ tag: tag || undefined, limit: 20 })
-        setSharedNotes(result.notes)
-        setTotal(result.total)
-      }
-      setLoaded(true)
+        try {
+        if (mode === 'tips') {
+          const [tipsResult, chefsResult] = await Promise.all([
+            getSharedTips({ tag: tag || undefined, limit: 20 }),
+            !loaded ? getMatchingChefsByTags() : Promise.resolve(matchingChefs),
+          ])
+          setSharedTips(tipsResult.tips)
+          setTotal(tipsResult.total)
+          if (!loaded) setMatchingChefs(chefsResult as any)
+        } else {
+          const result = await getSharedNotes({ tag: tag || undefined, limit: 20 })
+          setSharedNotes(result.notes)
+          setTotal(result.total)
+        }
+        setLoaded(true)
+        } catch {
+          toast.error('Something went wrong')
+        }
     })
   }
 

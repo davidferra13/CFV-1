@@ -1,4 +1,5 @@
 import { NextResponse } from 'next/server'
+import { verifyCronAuth } from '@/lib/auth/cron-auth'
 import { getLearningStatus } from '@/lib/pricing/compound-learning'
 import { getAccuracyStats } from '@/lib/pricing/receipt-price-bridge'
 import { runGroundTruthValidation } from '@/lib/pricing/ground-truth-validation'
@@ -8,10 +9,9 @@ export const dynamic = 'force-dynamic'
 export const maxDuration = 300
 
 export async function GET(request: Request) {
-  const authHeader = request.headers.get('authorization')
-  if (authHeader !== `Bearer ${process.env.CRON_SECRET}`) {
-    return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
-  }
+  // Verify cron secret (timing-safe)
+  const authError = verifyCronAuth(request.headers.get('authorization'))
+  if (authError) return authError
 
   const results: Record<string, unknown> = {}
   const start = Date.now()

@@ -147,8 +147,12 @@ export function WorkHistoryEditor({ initialEntries }: Props) {
     setEntries(updated)
     const ids = updated.map((e) => e.id)
     startTransition(async () => {
-      const res = await reorderWorkHistoryEntries(ids)
-      if (!res.success) setError('Reorder failed')
+        try {
+        const res = await reorderWorkHistoryEntries(ids)
+        if (!res.success) setError('Reorder failed')
+        } catch {
+          setError('Something went wrong')
+        }
     })
   }
 
@@ -159,8 +163,12 @@ export function WorkHistoryEditor({ initialEntries }: Props) {
     setEntries(updated)
     const ids = updated.map((e) => e.id)
     startTransition(async () => {
-      const res = await reorderWorkHistoryEntries(ids)
-      if (!res.success) setError('Reorder failed')
+        try {
+        const res = await reorderWorkHistoryEntries(ids)
+        if (!res.success) setError('Reorder failed')
+        } catch {
+          setError('Something went wrong')
+        }
     })
   }
 

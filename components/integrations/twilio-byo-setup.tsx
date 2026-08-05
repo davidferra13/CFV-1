@@ -32,27 +32,35 @@ export function TwilioByoSetup({
     setError(null)
     setSuccess(false)
     startTransition(async () => {
-      const result = await saveTwilioCredentials({
-        accountSid: sid.trim(),
-        authToken: token.trim(),
-        phoneNumber: phone.trim(),
-      })
-      if (result.success) {
-        setSuccess(true)
-        setOpen(false)
-        setSid('')
-        setToken('')
-        setPhone('')
-      } else {
-        setError(result.error || 'Failed to save')
-      }
+        try {
+        const result = await saveTwilioCredentials({
+          accountSid: sid.trim(),
+          authToken: token.trim(),
+          phoneNumber: phone.trim(),
+        })
+        if (result.success) {
+          setSuccess(true)
+          setOpen(false)
+          setSid('')
+          setToken('')
+          setPhone('')
+        } else {
+          setError(result.error || 'Failed to save')
+        }
+        } catch {
+          setError('Something went wrong')
+        }
     })
   }
 
   function handleRemove() {
     setError(null)
     startTransition(async () => {
-      await removeTwilioCredentials()
+        try {
+        await removeTwilioCredentials()
+        } catch {
+          setError('Something went wrong')
+        }
     })
   }
 

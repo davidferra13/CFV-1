@@ -18,7 +18,11 @@ export function RemySignalFeedClient({ initialSignals }: Props) {
   const handleDismiss = useCallback((id: string) => {
     setSignals((prev) => prev.filter((s) => s.id !== id))
     startTransition(async () => {
-      await dismissSignalAction(id)
+        try {
+        await dismissSignalAction(id)
+        } catch {
+          // Prevent unhandled rejection
+        }
     })
   }, [])
 
@@ -26,10 +30,14 @@ export function RemySignalFeedClient({ initialSignals }: Props) {
     (signal: ProactiveSignal) => {
       setSignals((prev) => prev.filter((s) => s.id !== signal.id))
       startTransition(async () => {
-        await actOnSignal(signal)
-        if (signal.actionType === 'navigate' && signal.actionPayload?.href) {
-          router.push(signal.actionPayload.href as string)
-        }
+          try {
+          await actOnSignal(signal)
+          if (signal.actionType === 'navigate' && signal.actionPayload?.href) {
+            router.push(signal.actionPayload.href as string)
+          }
+          } catch {
+            // Prevent unhandled rejection
+          }
       })
     },
     [router]

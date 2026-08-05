@@ -1,4 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server'
+import { timingSafeEqual } from 'crypto'
 import { ingestManagedInboundCommunication } from '@/lib/communication/managed-ingest'
 import { createLogger } from '@/lib/logger'
 
@@ -25,10 +26,16 @@ function buildRawContent(subject: string, text: string): string {
 }
 
 export async function POST(req: NextRequest) {
-  // Verify shared secret
-  const secret = req.headers.get('x-webhook-secret')
+  // Verify shared secret (timing-safe)
+  const secret = req.headers.get('x-webhook-secret') ?? ''
   const expected = process.env.INBOUND_EMAIL_WEBHOOK_SECRET
-  if (!expected || secret !== expected) {
+  if (!expected) {
+    return NextResponse.json({ error: 'INBOUND_EMAIL_WEBHOOK_SECRET not configured' }, { status: 500 })
+  }
+  if (
+    secret.length !== expected.length ||
+    !timingSafeEqual(Buffer.from(secret), Buffer.from(expected))
+  ) {
     return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
   }
 

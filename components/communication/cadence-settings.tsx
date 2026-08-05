@@ -34,15 +34,19 @@ export function CadenceSettings({
 
     setDisabledPoints(updated)
     startTransition(async () => {
-      const result = await updateCadenceDisabledPoints(updated)
-      if (!result.success) {
-        // Rollback
-        setDisabledPoints(disabledPoints)
-        setFeedback('Failed to save. Try again.')
-      } else {
-        setFeedback('Saved')
-      }
-      if (result.success) setTimeout(() => setFeedback(null), 2000)
+        try {
+        const result = await updateCadenceDisabledPoints(updated)
+        if (!result.success) {
+          // Rollback
+          setDisabledPoints(disabledPoints)
+          setFeedback('Failed to save. Try again.')
+        } else {
+          setFeedback('Saved')
+        }
+        if (result.success) setTimeout(() => setFeedback(null), 2000)
+        } catch {
+          // Prevent unhandled rejection
+        }
     })
   }
 
@@ -68,13 +72,17 @@ export function CadenceSettings({
     setEditingPoint(null)
 
     startTransition(async () => {
-      const result = await updateCadenceMessage(point, msg)
-      if (!result.success) {
-        setFeedback('Failed to save message.')
-      } else {
-        setFeedback('Message saved')
-      }
-      if (result.success) setTimeout(() => setFeedback(null), 2000)
+        try {
+        const result = await updateCadenceMessage(point, msg)
+        if (!result.success) {
+          setFeedback('Failed to save message.')
+        } else {
+          setFeedback('Message saved')
+        }
+        if (result.success) setTimeout(() => setFeedback(null), 2000)
+        } catch {
+          // Prevent unhandled rejection
+        }
     })
   }
 

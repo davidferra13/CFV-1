@@ -21,44 +21,56 @@ export function SmsBridgePanel({ initial }: { initial: BridgeState }) {
 
   function handleSetup() {
     startTransition(async () => {
-      const result = await setupSmsBridge()
-      if (result.success && result.token) {
-        setToken(result.token)
-        const updated = await getSmsBridgeStatus()
-        setState(updated)
-        toast.success('Text messaging turned on')
-      } else {
-        toast.error(result.error || 'Setup failed')
-      }
+        try {
+        const result = await setupSmsBridge()
+        if (result.success && result.token) {
+          setToken(result.token)
+          const updated = await getSmsBridgeStatus()
+          setState(updated)
+          toast.success('Text messaging turned on')
+        } else {
+          toast.error(result.error || 'Setup failed')
+        }
+        } catch {
+          toast.error('Something went wrong')
+        }
     })
   }
 
   function handleRegenerate() {
     startTransition(async () => {
-      const result = await regenerateSmsBridgeToken()
-      if (result.success && result.token) {
-        setToken(result.token)
-        toast.success('New access code created')
-      } else {
-        toast.error(result.error || "Couldn't create a new code")
-      }
+        try {
+        const result = await regenerateSmsBridgeToken()
+        if (result.success && result.token) {
+          setToken(result.token)
+          toast.success('New access code created')
+        } else {
+          toast.error(result.error || "Couldn't create a new code")
+        }
+        } catch {
+          toast.error('Something went wrong')
+        }
     })
   }
 
   function handleToggle() {
     if (!state.config) return
     startTransition(async () => {
-      const next = !state.config!.enabled
-      const result = await toggleSmsBridge(next)
-      if (result.success) {
-        setState((prev) => ({
-          ...prev,
-          config: prev.config ? { ...prev.config, enabled: next } : null,
-        }))
-        toast.success(next ? 'Text messaging on' : 'Text messaging paused')
-      } else {
-        toast.error(result.error || "Couldn't change that setting")
-      }
+        try {
+        const next = !state.config!.enabled
+        const result = await toggleSmsBridge(next)
+        if (result.success) {
+          setState((prev) => ({
+            ...prev,
+            config: prev.config ? { ...prev.config, enabled: next } : null,
+          }))
+          toast.success(next ? 'Text messaging on' : 'Text messaging paused')
+        } else {
+          toast.error(result.error || "Couldn't change that setting")
+        }
+        } catch {
+          toast.error('Something went wrong')
+        }
     })
   }
 
@@ -66,24 +78,32 @@ export function SmsBridgePanel({ initial }: { initial: BridgeState }) {
     const phone = newPhone.trim()
     if (!phone) return
     startTransition(async () => {
-      const result = await addPersonalContact(phone)
-      if (result.success) {
-        setNewPhone('')
-        const updated = await getSmsBridgeStatus()
-        setState(updated)
-        toast.success('Contact blocked')
-      } else {
-        toast.error(result.error || 'Failed to add')
-      }
+        try {
+        const result = await addPersonalContact(phone)
+        if (result.success) {
+          setNewPhone('')
+          const updated = await getSmsBridgeStatus()
+          setState(updated)
+          toast.success('Contact blocked')
+        } else {
+          toast.error(result.error || 'Failed to add')
+        }
+        } catch {
+          toast.error('Something went wrong')
+        }
     })
   }
 
   function handleRemoveContact(phone: string) {
     startTransition(async () => {
-      await removePersonalContact(phone)
-      const updated = await getSmsBridgeStatus()
-      setState(updated)
-      toast.success('Contact unblocked')
+        try {
+        await removePersonalContact(phone)
+        const updated = await getSmsBridgeStatus()
+        setState(updated)
+        toast.success('Contact unblocked')
+        } catch {
+          toast.error('Something went wrong')
+        }
     })
   }
 
