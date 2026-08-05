@@ -34,15 +34,32 @@ const loadChefFlagOverrides = cache(async (chefId: string): Promise<Record<strin
   return Object.fromEntries((data ?? []).map((row: any) => [row.flag_name, row.enabled === true]))
 })
 
+import { resolveTierFromSubscription } from './tier-resolution'
+
 /**
- * Resolve the effective tier for a chef.
- * Currently returns 'free' as default since subscription billing is not yet live.
- * When Stripe subscription integration ships, this will read the chef's plan.
+ * Resolve the effective tier for a chef from the chefs table
+ * (subscription_status + trial_ends_at, written by lib/stripe/subscription.ts).
+ * Fails closed to 'free' when the row cannot be read.
+ * Cached per request via React.cache.
  */
-async function resolveChefTier(_chefId: string): Promise<GateTier> {
-  // TODO: read from subscription/billing table when it exists
-  return 'free'
-}
+const resolveChefTier = cache(async (chefId: string): Promise<GateTier> => {
+  const db: any = createServerClient({ admin: true })
+  const { data, error } = await db
+    .from('chefs')
+    .select('subscription_status, trial_ends_at')
+    .eq('id', chefId)
+    .single()
+
+  if (error || !data) {
+    if (error) console.error('[feature-gates] Failed to load chef plan:', error)
+    return 'free'
+  }
+
+  return resolveTierFromSubscription({
+    subscriptionStatus: (data as any).subscription_status ?? null,
+    trialEndsAt: (data as any).trial_ends_at ?? null,
+  })
+})
 
 /**
  * Check whether a chef can access a gated feature.
