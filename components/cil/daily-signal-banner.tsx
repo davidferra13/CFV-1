@@ -19,14 +19,10 @@ export function DailySignalBanner({ initialSignals }: Props) {
     (id: string) => {
       setSignals((prev) => prev.filter((s) => s.id !== id))
       startTransition(async () => {
-          try {
-          const result = await dismissSignalAction(id)
-          if (!result.success) {
-            setSignals(initialSignals)
-          }
-          } catch {
-            // Prevent unhandled rejection
-          }
+        const result = await dismissSignalAction(id)
+        if (!result.success) {
+          setSignals(initialSignals)
+        }
       })
     },
     [initialSignals]
@@ -36,14 +32,10 @@ export function DailySignalBanner({ initialSignals }: Props) {
     (signal: ProactiveSignal) => {
       setSignals((prev) => prev.filter((s) => s.id !== signal.id))
       startTransition(async () => {
-          try {
-          await actOnSignal(signal)
-          if (signal.actionType === 'navigate' && signal.actionPayload?.href) {
-            router.push(signal.actionPayload.href as string)
-          }
-          } catch {
-            // Prevent unhandled rejection
-          }
+        await actOnSignal(signal)
+        if (signal.actionType === 'navigate' && signal.actionPayload?.href) {
+          router.push(signal.actionPayload.href as string)
+        }
       })
     },
     [router]

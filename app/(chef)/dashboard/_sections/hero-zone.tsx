@@ -53,17 +53,15 @@ async function getHeroData(
       .from('inquiries')
       .select('id', { count: 'exact', head: true })
       .eq('tenant_id', tenantId)
-      .not('status', 'in', '("confirmed","declined")'),
+      .not('status', 'in', '("converted","declined")'),
     db
       .from('event_financial_summary')
       .select('outstanding_balance_cents')
       .eq('tenant_id', tenantId)
       .gt('outstanding_balance_cents', 0)
-      .then(({ data, error }: any) => {
-        if (error) { console.error('[HeroZone] Outstanding balance query failed:', error); return null }
-        if (!data) return 0
-        return data.reduce((sum: number, r: any) => sum + (r.outstanding_balance_cents || 0), 0)
-      }),
+      .then(({ data }: any) =>
+        (data ?? []).reduce((sum: number, r: any) => sum + (r.outstanding_balance_cents || 0), 0)
+      ),
     db
       .from('events')
       .select('id, occasion, event_date, client:clients(full_name)')
@@ -88,20 +86,14 @@ async function getHeroData(
     }
   }
 
-  // Check Supabase error field: count queries return { error, count }, not throw
-  const eventsError = eventsResult?.error != null
-  const inquiriesError = inquiriesResult?.error != null
-  if (eventsError) console.error('[HeroZone] Events count query failed:', eventsResult.error)
-  if (inquiriesError) console.error('[HeroZone] Inquiries count query failed:', inquiriesResult.error)
-
   return {
     greeting,
     timeOfDay,
     firstName,
     tenantId,
-    eventsThisWeek: eventsError ? null : (eventsResult?.count ?? 0),
-    openInquiries: inquiriesError ? null : (inquiriesResult?.count ?? 0),
-    outstandingCents: typeof outstandingResult === 'number' ? outstandingResult : (outstandingResult === null ? null : 0),
+    eventsThisWeek: eventsResult?.count ?? 0,
+    openInquiries: inquiriesResult?.count ?? 0,
+    outstandingCents: typeof outstandingResult === 'number' ? outstandingResult : 0,
     nextEvent,
     supportBadge: supportBadge ?? null,
   }
@@ -148,9 +140,9 @@ export async function HeroZone({ tenantId, userId, entityId, email }: HeroZonePr
       timeOfDay,
       firstName,
       tenantId,
-      eventsThisWeek: null,
-      openInquiries: null,
-      outstandingCents: null,
+      eventsThisWeek: 0,
+      openInquiries: 0,
+      outstandingCents: 0,
       nextEvent: null,
       supportBadge: null,
     }
