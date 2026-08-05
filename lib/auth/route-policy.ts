@@ -110,6 +110,7 @@ export const CHEF_PROTECTED_PATHS = [
   '/marketing/social',
   '/staff',
   '/stations',
+  '/studio',
   '/surveys',
   '/tables',
   '/tasks',

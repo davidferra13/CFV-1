@@ -137,7 +137,48 @@ type PrimaryShortcutOption = NavItem & { context: string }
 // subMenu: curated quick-access links shown in a collapsible drawer under the hub link
 // coreFeature: true = shown in Focus Mode
 // adminOnly items are hidden for non-admins
+// The chef nav is five links. Everything else stays on disk, stays exported, and
+// stays reachable by URL through hiddenNavItems. Nothing here is deleted.
 export const standaloneTop: NavItem[] = [
+  {
+    href: '/dashboard',
+    label: 'Today',
+    icon: LayoutDashboard,
+    coreFeature: true,
+    tier: 'primary',
+  },
+  {
+    href: '/events',
+    label: 'Dinners',
+    icon: CalendarDays,
+    coreFeature: true,
+    tier: 'primary',
+  },
+  {
+    href: '/clients',
+    label: 'Clients',
+    icon: Users,
+    coreFeature: true,
+    tier: 'primary',
+  },
+  {
+    href: '/finance',
+    label: 'Money',
+    icon: DollarSign,
+    coreFeature: true,
+    tier: 'primary',
+  },
+  {
+    href: '/settings',
+    label: 'Settings',
+    icon: Settings,
+    coreFeature: true,
+    tier: 'primary',
+  },
+]
+
+// The seven hub links the sidebar used to carry. Folded into hiddenNavItems below.
+const legacyStandaloneTop: NavItem[] = [
   {
     href: '/dashboard',
     label: 'Today',
@@ -973,6 +1014,20 @@ export const navGroups: NavGroup[] = [
         label: 'Reviews',
         icon: Star,
       },
+      {
+        href: '/studio',
+        label: 'Studio',
+        icon: Globe,
+        children: [
+          { href: '/studio', label: 'Dashboard' },
+          { href: '/studio/pages', label: 'Pages' },
+          { href: '/studio/branding', label: 'Branding' },
+          { href: '/studio/domain', label: 'Custom Domain' },
+          { href: '/studio/media', label: 'Media' },
+          { href: '/studio/seo', label: 'SEO' },
+          { href: '/studio/analytics', label: 'Analytics' },
+        ],
+      },
     ],
   },
   {
@@ -1532,7 +1587,8 @@ for (const group of navGroups) {
   }
 }
 
-export const standaloneBottom: NavItem[] = [
+// Footer links, folded into hiddenNavItems. Settings is now a primary link.
+const legacyStandaloneBottom: NavItem[] = [
   { href: '/tables', label: 'Tables', icon: Armchair },
   { href: '/events/cannabis', label: 'Cannabis Portal', icon: Flower },
   { href: '/features', label: 'Show all features', icon: Compass },
@@ -1540,6 +1596,8 @@ export const standaloneBottom: NavItem[] = [
   { href: '/settings/public-profile', label: 'My Public Profile', icon: Globe },
   { href: '/settings', label: 'Settings', icon: Settings },
 ]
+
+export const standaloneBottom: NavItem[] = []
 
 export const mobileTabItems: NavItem[] = [
   { href: '/dashboard', label: 'Today', icon: LayoutDashboard },
@@ -1938,7 +1996,8 @@ export function resolveStandaloneTop(preferredHrefs?: string[] | null): NavItem[
     resolved.push({ ...option })
   }
 
-  if (resolved.length > 0) return resolved
+  // Hard cap: the chef nav is five links, so a saved preference cannot grow it.
+  if (resolved.length > 0) return resolved.slice(0, standaloneTop.length)
   return standaloneTop.map((item) => ({ ...item }))
 }
 
@@ -1946,8 +2005,9 @@ export function getPrimaryShortcutOptions() {
   return PRIMARY_SHORTCUT_OPTIONS.map(({ href, label, context }) => ({ href, label, context }))
 }
 
-// Action Bar: daily-driver shortcuts always visible in the sidebar.
-export const actionBarItems: NavItem[] = [
+// Action Bar shortcuts, folded into hiddenNavItems. The sidebar carries five links,
+// so the bar renders no navigation of its own in this slice.
+const legacyActionBarItems: NavItem[] = [
   { href: '/dashboard', label: 'Today', icon: LayoutDashboard },
   { href: '/inbox', label: 'Inbox', icon: Inbox },
   { href: '/events', label: 'Events', icon: CalendarDays },
@@ -1961,6 +2021,27 @@ export const actionBarItems: NavItem[] = [
   { href: '/inquiries', label: 'Inquiries', icon: Funnel },
   { href: '/circles', label: 'Circles', icon: MessagesSquare },
   { href: '/finance/invoices', label: 'Invoices', icon: Receipt },
+]
+
+// The Action Bar is what actually paints the primary links in the desktop sidebar, so it
+// carries the same five as standaloneTop. Emptying it left the sidebar with no nav at all.
+export const actionBarItems: NavItem[] = standaloneTop
+
+// Every nav entry the chef nav no longer renders. Still exported, still typed, still
+// live by URL. all-features-collapse.tsx renders this behind one disclosure.
+export const hiddenNavItems: NavGroup[] = [
+  ...navGroups,
+  {
+    id: 'hidden-shortcuts',
+    label: 'Everything else',
+    icon: Compass,
+    module: 'more',
+    items: [...legacyStandaloneTop, ...legacyActionBarItems, ...legacyStandaloneBottom]
+      .filter((item) => !standaloneTop.some((primary) => primary.href === item.href))
+      .filter(
+        (item, index, all) => all.findIndex((other) => other.href === item.href) === index
+      ),
+  },
 ]
 
 // â”€â”€â”€ + Create dropdown: 15 direct navigation links â”€â”€â”€

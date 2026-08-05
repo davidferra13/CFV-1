@@ -15,7 +15,7 @@ import {
   memo,
 } from 'react'
 import type { LucideIcon } from '@/components/ui/icons'
-import { navGroups, standaloneBottom } from './nav-config'
+import { hiddenNavItems, standaloneBottom } from './nav-config'
 import { DEFAULT_ENABLED_MODULES } from '@/lib/billing/modules'
 
 const DEFAULT_MODULE_SLUGS = new Set(DEFAULT_ENABLED_MODULES)
@@ -769,7 +769,7 @@ export function ChefSidebar({
     [enabledModules]
   )
   const accessibleGroups = useMemo(() => {
-    const baseGroups = navGroups
+    const baseGroups = hiddenNavItems
       .filter((group) => {
         if (!group.module) return false
         if (enabledSet) return enabledSet.has(group.module)

@@ -15,6 +15,12 @@ const createDropdownItems = (navConfig.createDropdownItems ??
 const standaloneBottom = (navConfig.standaloneBottom ??
   navConfig.default?.standaloneBottom ??
   []) as any[]
+// The chef nav carries five primary links. Everything it no longer paints directly lives in
+// hiddenNavItems, still rendered behind one disclosure, so those routes are still discoverable
+// and must count as in-nav here.
+const hiddenNavItems = (navConfig.hiddenNavItems ??
+  navConfig.default?.hiddenNavItems ??
+  []) as any[]
 
 type Visibility = 'primary' | 'secondary' | 'advanced'
 
@@ -71,7 +77,7 @@ function collectNavEntries(): NavEntry[] {
     })
   }
 
-  for (const group of navGroups) {
+  for (const group of [...navGroups, ...hiddenNavItems]) {
     for (const item of (group.items ?? []).filter(isVisibleNavItem)) {
       entries.push({
         href: item.href,
