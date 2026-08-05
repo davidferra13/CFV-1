@@ -392,3 +392,25 @@ Every route has one home.
 Every concept has one canonical label.  
 Every duplicate must justify its existence by role.  
 Everything else is transitional debt.
+
+---
+
+## Amendment 1 (2026-07-10): Tiered IA per the Rescue Blueprint
+
+Filed per Section 13 of this contract. The study is `docs/discovery/2026-07-10-chefflow-rescue-blueprint.md`. This amendment records, in writing, the changes that blueprint makes to locked decisions:
+
+1. **Inquiries joins the floor.** The Tier 0 door set is: Today (dashboard), Inbox, Inquiries, Quotes, Events, Calendar, Clients, Menus, Recipes, Culinary, Finance, Receipts. This supersedes "Pipeline is secondary" at the earlier decision in this contract.
+2. **The word "Pipeline" is retired from the UI entirely.** The route `/inquiries` is labeled "Inquiries" on every surface. `/pipeline` becomes a redirect shell to `/inquiries`.
+3. **The money door is labeled "Finance"** (as this contract already fixed). The current nav label "Money" is a drift defect and is corrected. Owner may veto at amendment review (blueprint open question 7).
+4. **`/settings/modules` is the single module gallery.** `/features` and `/onboarding/features` become redirect shells into it in the same commit. Acceptance check preserving Principle 8 (the directory is sacred): the regrouped directory inside the gallery contains every one of the 474 existing links.
+5. **Tables bottom tab (mobile):** moves behind the Labs flag pending owner sign-off (blueprint open question 4). The convergence thesis stays on record.
+6. **The Six Pillars remain the completeness ledger; this contract's domains remain the IA.** They are not interchangeable.
+7. **Module naming table:** the chef-facing module names and their slugs are recorded in Appendix A below (filled by the module vocabulary task).
+8. **Tier vocabulary is internal.** The chef sees door names and module names only; "Tier", "Standard", "Labs", "Shell" never render in the UI.
+
+### Appendix A: module vocabulary (filled by the module vocabulary task)
+
+| Chef-facing name | Billing slug | Sections it covers | Gate keys | Plan tier |
+| ---------------- | ------------ | ------------------ | --------- | --------- |
+| (filled by lib/billing/modules.ts extension task) | | | | |
+

@@ -447,8 +447,13 @@
 
 **Ambiguous domain?** Pick the domain closest to the _entity being acted on_, not the _feature requesting it_. Example: a booking action that creates an event goes in `lib/events/`, not `lib/booking/`.
 
+## Navigation contract amendment (2026-07-10)
+
+Amendment 1 in docs/chef-navigation-decision-contract.md is in force: 12-door Tier 0 floor, "Pipeline" retired as a UI word, Finance label, single module gallery at /settings/modules, tier tags live in lib/navigation/ia-tier-map.json. Tier 4 shell conversions are recorded in this file as they land (see the "Shell conversions" section appended by the shell-conversion task).
+
 ## Stats
 
 - **265 domains**, ~2,400+ files
 - **Top 10 by size:** ai (232), email (107), clients (71), events (68), pricing (65), hub (58), finance (55), openclaw (51), commerce (47), analytics (41)
 - **Patterns:** `'use server'` actions, Drizzle ORM, Zod validation, Ollama/Gemini AI, multi-tenant via `requireChef()`/`requireAdmin()`, deterministic-first (formulas before AI), offline-first with IndexedDB
+
