@@ -84,6 +84,25 @@ export const GATE_REGISTRY: GateRegistry = {
     'CSV and PDF export of events, finances, and client data'
   ),
 
+  // --- Billing module gates (pro) ---
+  // These back the requirePro() billing slugs via lib/feature-gates/billing-slug-map.ts.
+  commerce: gate('commerce', 'Storefront and POS', 'pro', 'Product sales, registers, orders, and settlements'),
+  marketing: gate('marketing', 'Marketing', 'pro', 'Campaigns, social posts, and promotional content'),
+  integrations: gate('integrations', 'Integrations', 'pro', 'Calendar sync, payment providers, Yelp, Zapier, and other outside services'),
+  meal_prep_ops: gate('meal_prep_ops', 'Meal Prep', 'pro', 'Meal prep programs, containers, and deliveries'),
+  staff_management: gate('staff_management', 'Team and Staff', 'pro', 'Rosters, schedules, clock-in, and labor tracking'),
+  professional_dev: gate('professional_dev', 'Professional Development', 'pro', 'Certifications, goals, and career records'),
+  protection: gate('protection', 'Backup Chef', 'pro', 'Insurance records and coverage planning'),
+  nutrition_analysis: gate('nutrition_analysis', 'Nutrition Analysis', 'pro', 'Per-dish and per-menu nutrition breakdowns'),
+  cannabis_portal: gate('cannabis_portal', 'Cannabis Events', 'pro', 'Infused-event compliance, ledgers, and guest handling'),
+  advanced_calendar: gate('advanced_calendar', 'Advanced Calendar', 'pro', 'Protected time blocks and scheduling rules'),
+  client_intelligence: gate('client_intelligence', 'Client Insights', 'pro', 'Client lifetime value and retention analysis'),
+  intelligence_hub: gate('intelligence_hub', 'Trend Reports', 'pro', 'Price anomaly and dietary trend reporting'),
+  community: gate('community', 'Chef Community', 'pro', 'Cross-chef benchmarking and community features'),
+  advanced_analytics: gate('advanced_analytics', 'Custom Reports', 'pro', 'Build and save custom report definitions'),
+  payroll: gate('payroll', 'Payroll and Tax', 'pro', 'Staff tax reports and payroll paperwork'),
+  raffle: gate('raffle', 'Client Raffles', 'pro', 'Loyalty raffle draws for repeat clients'),
+
   // --- Enterprise features ---
   multi_location: gate(
     'multi_location',
