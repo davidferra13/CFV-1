@@ -1,6 +1,6 @@
 {
   "version": "1.0",
-  "timestamp": "2026-06-17T04:34:42.187Z",
+  "timestamp": "2026-07-26T18:55:52.749Z",
   "source": "auto-postool",
   "partial": false,
   "phase": null,
@@ -22,10 +22,6 @@
     },
     {
       "status": "M",
-      "path": ".gitignore"
-    },
-    {
-      "status": "M",
       "path": ".openclaw-deploy/captured-responses.json"
     },
     {
@@ -38,91 +34,159 @@
     },
     {
       "status": "M",
-      "path": "app/(admin)/layout.tsx"
+      "path": "app/(chef)/culinary/chefnotes/chefnotes-archive.tsx"
     },
     {
       "status": "M",
-      "path": "app/(bare)/layout.tsx"
+      "path": "app/(chef)/culinary/cheftips/cheftips-archive.tsx"
     },
     {
       "status": "M",
-      "path": "app/(chef)/layout.tsx"
+      "path": "app/(chef)/dashboard/_sections/hero-metrics-client.tsx"
     },
     {
       "status": "M",
-      "path": "app/(client)/layout.tsx"
+      "path": "app/(chef)/dashboard/_sections/hero-metrics.tsx"
     },
     {
       "status": "M",
-      "path": "app/(demo)/layout.tsx"
+      "path": "app/(chef)/dashboard/_sections/hero-zone.tsx"
     },
     {
       "status": "M",
-      "path": "app/(dev)/layout.tsx"
+      "path": "app/(chef)/dashboard/page.tsx"
     },
     {
       "status": "M",
-      "path": "app/(public)/chef/[slug]/page.tsx"
+      "path": "app/(chef)/events/[id]/_components/event-detail-guest-count-requests.tsx"
     },
     {
       "status": "M",
-      "path": "app/(public)/compare/[slug]/page.tsx"
+      "path": "app/(chef)/remy/history/remy-history-client.tsx"
     },
     {
       "status": "M",
-      "path": "app/(public)/cuisines/[slug]/page.tsx"
+      "path": "app/(chef)/remy/signals/remy-signal-feed-client.tsx"
     },
     {
       "status": "M",
-      "path": "app/(public)/customers/[slug]/page.tsx"
+      "path": "app/(client)/my-events/[id]/guest-count-change-card.tsx"
     },
     {
       "status": "M",
-      "path": "app/(public)/ingredient/[id]/page.tsx"
+      "path": "app/api/cron/circle-remy-nudges/route.ts"
     },
     {
       "status": "M",
-      "path": "app/(public)/ingredients/[category]/page.tsx"
+      "path": "app/api/cron/pie-accuracy-check/route.ts"
     },
     {
       "status": "M",
-      "path": "app/(public)/layout.tsx"
+      "path": "app/api/cron/pie-census/route.ts"
     },
     {
       "status": "M",
-      "path": "app/(public)/nearby/collections/[slug]/page.tsx"
+      "path": "app/api/webhooks/email/inbound/route.ts"
     },
     {
       "status": "M",
-      "path": "app/(public)/services/[slug]/page.tsx"
+      "path": "components/autopilot/autopilot-card.tsx"
     },
     {
       "status": "M",
-      "path": "app/(staff)/layout.tsx"
+      "path": "components/cil/daily-signal-banner.tsx"
     },
     {
       "status": "M",
-      "path": "app/embed/layout.tsx"
+      "path": "components/cil/domain-signals-client.tsx"
     },
     {
       "status": "M",
-      "path": "app/kiosk/layout.tsx"
+      "path": "components/client-portal/dinner-stewardship-foundation.tsx"
     },
     {
       "status": "M",
-      "path": "app/layout.tsx"
+      "path": "components/communication/cadence-settings.tsx"
     },
     {
       "status": "M",
-      "path": "components/clients/communication-timeline.tsx"
+      "path": "components/communication/staged-signals-panel.tsx"
     },
     {
       "status": "M",
-      "path": "components/communication/quick-reply.tsx"
+      "path": "components/contracts/clause-library.tsx"
     },
     {
       "status": "M",
-      "path": "components/communication/unified-thread-view.tsx"
+      "path": "components/contracts/new-contract-form.tsx"
+    },
+    {
+      "status": "M",
+      "path": "components/credentials/work-history-editor.tsx"
+    },
+    {
+      "status": "M",
+      "path": "components/dashboard/dashboard-hero.tsx"
+    },
+    {
+      "status": "M",
+      "path": "components/events/day-of-checklist-panel.tsx"
+    },
+    {
+      "status": "M",
+      "path": "components/events/post-event-learning-form.tsx"
+    },
+    {
+      "status": "M",
+      "path": "components/events/prep-timeline-panel.tsx"
+    },
+    {
+      "status": "M",
+      "path": "components/events/travel-equipment-section.tsx"
+    },
+    {
+      "status": "M",
+      "path": "components/events/vendor-contact-entry.tsx"
+    },
+    {
+      "status": "M",
+      "path": "components/events/venue-details-panel.tsx"
+    },
+    {
+      "status": "M",
+      "path": "components/hub/agreement-setup-wizard.tsx"
+    },
+    {
+      "status": "M",
+      "path": "components/hub/agreement-signature-block.tsx"
+    },
+    {
+      "status": "M",
+      "path": "components/hub/agreement-tab.tsx"
+    },
+    {
+      "status": "M",
+      "path": "components/hub/prep-assignment-badge.tsx"
+    },
+    {
+      "status": "M",
+      "path": "components/integrations/twilio-byo-setup.tsx"
+    },
+    {
+      "status": "M",
+      "path": "components/knowledge/explore-panel.tsx"
+    },
+    {
+      "status": "M",
+      "path": "components/knowledge/knowledge-link-picker.tsx"
+    },
+    {
+      "status": "M",
+      "path": "components/marketplace/take-a-chef-capture-tool.tsx"
+    },
+    {
+      "status": "M",
+      "path": "components/navigation/chef-nav.tsx"
     },
     {
       "status": "M",
@@ -130,7 +194,35 @@
     },
     {
       "status": "M",
-      "path": "docs/SHAKEDOWN-MANIFEST.md"
+      "path": "components/operations/event-day-dashboard.tsx"
+    },
+    {
+      "status": "M",
+      "path": "components/settings/fee-schedule-editor.tsx"
+    },
+    {
+      "status": "M",
+      "path": "components/settings/sms-bridge-panel.tsx"
+    },
+    {
+      "status": "M",
+      "path": "components/shared/role-switcher.tsx"
+    },
+    {
+      "status": "M",
+      "path": "components/stations/prep-sheet-table.tsx"
+    },
+    {
+      "status": "M",
+      "path": "components/tickets/revenue-split-panel.tsx"
+    },
+    {
+      "status": "M",
+      "path": "components/todos/linked-todos-panel.tsx"
+    },
+    {
+      "status": "M",
+      "path": "docs/specs/rescue/2026-07-10-rescue-master-plan.md"
     },
     {
       "status": "M",
@@ -138,23 +230,27 @@
     },
     {
       "status": "M",
-      "path": "lib/communication/timeline-search.ts"
+      "path": "lib/auth/route-policy.ts"
     },
     {
       "status": "M",
-      "path": "lib/communication/unified-actions.ts"
+      "path": "lib/hub/circle-notification-actions.ts"
     },
     {
       "status": "M",
-      "path": "lib/communication/unified-thread.ts"
+      "path": "lib/hub/hub-push-subscriptions.ts"
     },
     {
       "status": "M",
-      "path": "middleware.ts"
+      "path": "lib/hub/index.ts"
     },
     {
       "status": "M",
-      "path": "next.config.js"
+      "path": "lib/hub/meal-board/comments.ts"
+    },
+    {
+      "status": "M",
+      "path": "lib/hub/rsvp-actions.ts"
     },
     {
       "status": "M",
@@ -162,127 +258,23 @@
     },
     {
       "status": "M",
-      "path": "scripts/check-pie-state.ts"
-    },
-    {
-      "status": "M",
-      "path": "scripts/dev-runtime.mjs"
-    },
-    {
-      "status": "M",
-      "path": "scripts/launcher/server.mjs"
-    },
-    {
-      "status": "M",
-      "path": "scripts/lib/db.mjs"
-    },
-    {
-      "status": "M",
-      "path": "scripts/migrate-phone-data.ts"
-    },
-    {
-      "status": "M",
-      "path": "scripts/overnight-audit.mjs"
-    },
-    {
-      "status": "M",
-      "path": "scripts/payments-readiness-check.mjs"
-    },
-    {
-      "status": "M",
-      "path": "scripts/run-next-build.mjs"
-    },
-    {
-      "status": "M",
-      "path": "scripts/run-pie-migrations.ts"
-    },
-    {
-      "status": "M",
-      "path": "scripts/seed-local-demo.ts"
-    },
-    {
-      "status": "M",
-      "path": "scripts/seed-pie-nationwide.ts"
-    },
-    {
-      "status": "M",
-      "path": "scripts/seed-pricing-regions.ts"
-    },
-    {
-      "status": "M",
-      "path": "scripts/verify-e2e-contract.js"
-    },
-    {
-      "status": "M",
-      "path": "scripts/verify-rls-harness.ts"
+      "path": "scripts/audit-chef-nav.ts"
     },
     {
       "status": "M",
       "path": "scripts/wiring-audit-results.json"
     },
     {
-      "status": "M",
-      "path": "scripts/wiring-audit.mjs"
-    },
-    {
-      "status": "M",
-      "path": "tests/helpers/auth-utils.ts"
-    },
-    {
-      "status": "M",
-      "path": "tests/helpers/e2e-seed.ts"
-    },
-    {
-      "status": "M",
-      "path": "tests/helpers/test-db.ts"
-    },
-    {
-      "status": "M",
-      "path": "tests/integration/immutability-triggers.integration.test.ts"
-    },
-    {
-      "status": "M",
-      "path": "tests/integration/ledger-idempotency.integration.test.ts"
-    },
-    {
-      "status": "M",
-      "path": "tests/integration/rls-policies.integration.test.ts"
-    },
-    {
-      "status": "M",
-      "path": "tests/remy-quality/harness/boundary-runner.mjs"
-    },
-    {
-      "status": "M",
-      "path": "tests/remy-quality/harness/client-adversarial-runner.mjs"
-    },
-    {
-      "status": "M",
-      "path": "tests/remy-quality/harness/client-boundary-runner.mjs"
-    },
-    {
-      "status": "M",
-      "path": "tests/remy-quality/harness/client-context-runner.mjs"
-    },
-    {
-      "status": "M",
-      "path": "tests/remy-quality/harness/client-edge-runner.mjs"
-    },
-    {
-      "status": "M",
-      "path": "tests/remy-quality/harness/client-multiturn-runner.mjs"
-    },
-    {
-      "status": "M",
-      "path": "tests/remy-quality/harness/client-quality-runner.mjs"
-    },
-    {
-      "status": "M",
-      "path": "tests/remy-quality/harness/client-resilience-runner.mjs"
+      "status": "??",
+      "path": ".codex/"
     },
     {
       "status": "??",
-      "path": ".claude/agents/chefflow-builder/"
+      "path": ".evidence/live-browser/2026-07-10-20-49-19-chef-flow-live-ux-ia/"
+    },
+    {
+      "status": "??",
+      "path": ".evidence/live-browser/2026-07-23-18-57-14-app-wide-ux-ia-diagnosis/"
     },
     {
       "status": "??",
@@ -290,13 +282,81 @@
     },
     {
       "status": "??",
-      "path": "app/dfpc/"
+      "path": "app/(chef)/dashboard/_components/"
     },
     {
       "status": "??",
-      "path": "lib/communication/unified-thread-types.ts"
+      "path": "app/(chef)/studio/"
+    },
+    {
+      "status": "??",
+      "path": "app/(public)/s/"
+    },
+    {
+      "status": "??",
+      "path": "app/api/studio/"
+    },
+    {
+      "status": "??",
+      "path": "components/studio/"
+    },
+    {
+      "status": "??",
+      "path": "dash.html"
+    },
+    {
+      "status": "??",
+      "path": "dash2.html"
+    },
+    {
+      "status": "??",
+      "path": "docs/audit/2026-07-16/"
+    },
+    {
+      "status": "??",
+      "path": "docs/shakedown/"
+    },
+    {
+      "status": "??",
+      "path": "docs/specs/rescue/2026-07-10-rescue-ws5-integrity.md"
+    },
+    {
+      "status": "??",
+      "path": "docs/specs/rescue/OVERHAUL-MANIFEST.md"
+    },
+    {
+      "status": "??",
+      "path": "docs/specs/website-builder-studio.md"
+    },
+    {
+      "status": "??",
+      "path": "jar.txt"
+    },
+    {
+      "status": "??",
+      "path": "lib/hub/hub-push-subscriptions-internal.ts"
+    },
+    {
+      "status": "??",
+      "path": "lib/remy/verbs/"
+    },
+    {
+      "status": "??",
+      "path": "lib/studio/"
+    },
+    {
+      "status": "??",
+      "path": "scripts/count-chef-nav.mjs"
+    },
+    {
+      "status": "??",
+      "path": "scripts/seed-slice1-verification.ts"
+    },
+    {
+      "status": "??",
+      "path": "scripts/verify-slice1.mjs"
     }
   ],
   "next_action": null,
-  "context_notes": "Recent commits:\nd35344720 docs: update build state to healthy after workspace cleanup\n79750fc63 chore: commit session artifacts and evidence snapshots\n947b31c10 chore(tooling): add consolidated route coverage to wiring audit\n610210c07 refactor(ui): redesign discovery fallback panel, fix dev logger crash\n6252c0ce7 fix(pricing): add tier resilience, migrate price-history to Drizzle"
+  "context_notes": "Recent commits:\n88d26316b fix(db): point queries at tables and columns that exist\n3629d8efc docs(rescue): spec the one-surface overhaul, slice 1\na8e784bf7 fix(pie): repair the upcoming-ingredients query and the ingredient trigger\nddfb254ca fix(rail): correct resolver queries that never matched the schema\n935a22896 fix(db): make all 1091 migrations apply cleanly against local Postgres"
 }
