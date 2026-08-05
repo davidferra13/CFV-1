@@ -14,13 +14,21 @@ export function DomainSignalsClient({ signals }: DomainSignalsClientProps) {
 
   function handleDismiss(id: string) {
     startTransition(async () => {
-      await dismissSignalAction(id)
+        try {
+        await dismissSignalAction(id)
+        } catch {
+          // Prevent unhandled rejection
+        }
     })
   }
 
   function handleAct(signal: ProactiveSignal) {
     startTransition(async () => {
-      await actOnSignal(signal)
+        try {
+        await actOnSignal(signal)
+        } catch {
+          // Prevent unhandled rejection
+        }
     })
   }
 

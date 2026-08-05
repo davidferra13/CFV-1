@@ -17,6 +17,7 @@ type HeroMetric = {
   sparkData?: number[]
   isSurge?: boolean
   surgeCount?: number
+  isError?: boolean
 }
 
 async function getHeroMetrics(): Promise<HeroMetric[]> {
@@ -79,7 +80,7 @@ async function getHeroMetrics(): Promise<HeroMetric[]> {
       .from('inquiries')
       .select('id', { count: 'exact', head: true })
       .eq('tenant_id', tenantId)
-      .not('status', 'in', '("converted","declined")'),
+      .not('status', 'in', '("confirmed","declined")'),
 
     // Outstanding balance
     db
@@ -136,10 +137,18 @@ async function getHeroMetrics(): Promise<HeroMetric[]> {
   )
 
   const revenueCents = typeof revenueResult === 'number' ? revenueResult : 0
-  const eventsCount = eventsResult?.count ?? 0
-  const inquiriesCount = inquiriesResult?.count ?? 0
+  // Check Supabase error field: count queries return { error, count }, not throw
+  const eventsError = eventsResult?.error != null
+  const inquiriesError = inquiriesResult?.error != null
+  const eventsCount = eventsError ? null : (eventsResult?.count ?? 0)
+  const inquiriesCount = inquiriesError ? null : (inquiriesResult?.count ?? 0)
   const outstandingCents = typeof outstandingResult === 'number' ? outstandingResult : 0
-  const newThisWeek = newInquiriesThisWeek?.count ?? 0
+  const newThisWeekError = newInquiriesThisWeek?.error != null
+  const newThisWeek = newThisWeekError ? 0 : (newInquiriesThisWeek?.count ?? 0)
+
+  if (eventsError) console.error('[HeroMetrics] Events count query failed:', eventsResult.error)
+  if (inquiriesError) console.error('[HeroMetrics] Inquiries count query failed:', inquiriesResult.error)
+  if (newThisWeekError) console.error('[HeroMetrics] New inquiries count query failed:', newInquiriesThisWeek.error)
 
   // Surge detection: 5+ new inquiries in 7 days
   const isSurge = newThisWeek >= 5
@@ -148,21 +157,23 @@ async function getHeroMetrics(): Promise<HeroMetric[]> {
   return [
     {
       label: 'Events this week',
-      value: String(eventsCount),
+      value: eventsCount === null ? '-' : String(eventsCount),
       href: '/calendar',
       tier: 'hero',
-      sparkData: eventSparkData,
+      sparkData: eventsError ? undefined : eventSparkData,
+      isError: eventsError,
     },
     {
       label: 'Open inquiries',
-      value: String(inquiriesCount),
+      value: inquiriesCount === null ? '-' : String(inquiriesCount),
       href: '/inquiries',
-      trend: inquiryTrend,
-      trendUp: newThisWeek > 0,
+      trend: inquiriesError ? undefined : inquiryTrend,
+      trendUp: inquiriesError ? undefined : (newThisWeek > 0),
       tier: 'hero',
-      sparkData: inquirySparkData,
-      isSurge,
-      surgeCount: isSurge ? newThisWeek : undefined,
+      sparkData: inquiriesError ? undefined : inquirySparkData,
+      isSurge: inquiriesError ? false : isSurge,
+      surgeCount: isSurge && !inquiriesError ? newThisWeek : undefined,
+      isError: inquiriesError,
     },
     {
       label: 'Revenue (all time)',
@@ -202,9 +213,10 @@ async function getRestaurantHeroMetrics(): Promise<HeroMetric[]> {
       .in('status', ['captured', 'settled'])
       .gte('created_at', `${today}T00:00:00Z`)
       .lte('created_at', `${today}T23:59:59Z`)
-      .then(({ data }: any) =>
-        (data ?? []).reduce((sum: number, r: any) => sum + (r.total_cents ?? 0), 0)
-      ),
+      .then(({ data, error }: any) => {
+        if (error) { console.error('[HeroMetrics] Sales today query failed:', error); return null }
+        return (data ?? []).reduce((sum: number, r: any) => sum + (r.total_cents ?? 0), 0)
+      }),
 
     // Month-to-date sales
     db
@@ -213,9 +225,10 @@ async function getRestaurantHeroMetrics(): Promise<HeroMetric[]> {
       .eq('tenant_id', tenantId)
       .in('status', ['captured', 'settled'])
       .gte('created_at', `${monthStart}T00:00:00Z`)
-      .then(({ data }: any) =>
-        (data ?? []).reduce((sum: number, r: any) => sum + (r.total_cents ?? 0), 0)
-      ),
+      .then(({ data, error }: any) => {
+        if (error) { console.error('[HeroMetrics] Sales month query failed:', error); return null }
+        return (data ?? []).reduce((sum: number, r: any) => sum + (r.total_cents ?? 0), 0)
+      }),
 
     // Staff currently clocked in
     db
@@ -231,11 +244,18 @@ async function getRestaurantHeroMetrics(): Promise<HeroMetric[]> {
       .eq('tenant_id', tenantId)
       .eq('status', 'open')
       .then((r: any) => r)
-      .catch(() => ({ count: 0 })),
+      .catch(() => ({ count: 0, error: null })),
   ])
 
-  const fmtDollars = (cents: number) =>
-    `$${(cents / 100).toLocaleString('en-US', { minimumFractionDigits: 0, maximumFractionDigits: 0 })}`
+  const fmtDollars = (cents: number | null) => {
+    if (cents === null) return '-'
+    return `$${(cents / 100).toLocaleString('en-US', { minimumFractionDigits: 0, maximumFractionDigits: 0 })}`
+  }
+
+  const clockedInError = clockedIn?.error != null
+  const openChecksError = openChecks?.error != null
+  if (clockedInError) console.error('[HeroMetrics] Staff clock query failed:', clockedIn.error)
+  if (openChecksError) console.error('[HeroMetrics] Open checks query failed:', openChecks.error)
 
   return [
     {
@@ -243,24 +263,28 @@ async function getRestaurantHeroMetrics(): Promise<HeroMetric[]> {
       value: fmtDollars(salesToday),
       href: '/commerce',
       tier: 'hero',
+      isError: salesToday === null,
     },
     {
       label: 'Staff on clock',
-      value: String(clockedIn?.count ?? 0),
+      value: clockedInError ? '-' : String(clockedIn?.count ?? 0),
       href: '/staff',
       tier: 'hero',
+      isError: clockedInError,
     },
     {
       label: 'Month-to-date',
       value: fmtDollars(salesMonth),
       href: '/finance',
       tier: 'supporting',
+      isError: salesMonth === null,
     },
     {
       label: 'Open checks',
-      value: String(openChecks?.count ?? 0),
+      value: openChecksError ? '-' : String(openChecks?.count ?? 0),
       href: '/commerce/table-service',
       tier: 'supporting',
+      isError: openChecksError,
     },
   ]
 }

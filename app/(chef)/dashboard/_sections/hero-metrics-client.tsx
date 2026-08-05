@@ -14,6 +14,7 @@ type HeroMetric = {
   sparkData?: number[]
   isSurge?: boolean
   surgeCount?: number
+  isError?: boolean
 }
 
 export function HeroMetricsClient({ metrics }: { metrics: HeroMetric[] }) {
@@ -21,8 +22,9 @@ export function HeroMetricsClient({ metrics }: { metrics: HeroMetric[] }) {
   const supportingMetrics = metrics.filter((metric) => metric.tier === 'supporting')
   const surgeMetric = heroMetrics.find((m) => m.isSurge)
 
-  // Fresh account: all metrics are zero
-  const isNewAccount = metrics.every((m) => m.value === '0' || m.value === '$0')
+  // Fresh account: all metrics are zero (exclude errored metrics from this check)
+  const nonErrorMetrics = metrics.filter((m) => !m.isError)
+  const isNewAccount = nonErrorMetrics.length > 0 && nonErrorMetrics.every((m) => m.value === '0' || m.value === '$0')
 
   if (isNewAccount) {
     return (
@@ -88,8 +90,12 @@ export function HeroMetricsClient({ metrics }: { metrics: HeroMetric[] }) {
               {metric.label}
             </p>
             <div className="flex items-end gap-3 mt-1">
-              <p className="metric-display group-hover:text-brand-400 transition-colors">
-                <AnimatedCounter value={metric.value} />
+              <p className={`metric-display transition-colors ${metric.isError ? 'text-red-400' : 'group-hover:text-brand-400'}`}>
+                {metric.isError ? (
+                  <span title="Could not load this metric">{metric.value}</span>
+                ) : (
+                  <AnimatedCounter value={metric.value} />
+                )}
               </p>
               {metric.sparkData && metric.sparkData.some((v) => v > 0) && (
                 <Sparkline
@@ -141,8 +147,12 @@ export function HeroMetricsClient({ metrics }: { metrics: HeroMetric[] }) {
               <span className="text-xs font-semibold uppercase tracking-wide text-stone-500 dark:text-stone-500">
                 {metric.label}
               </span>
-              <span className="text-base font-semibold text-current">
-                <AnimatedCounter value={metric.value} />
+              <span className={`text-base font-semibold ${metric.isError ? 'text-red-400' : 'text-current'}`}>
+                {metric.isError ? (
+                  <span title="Could not load this metric">{metric.value}</span>
+                ) : (
+                  <AnimatedCounter value={metric.value} />
+                )}
               </span>
             </Link>
           ))}

@@ -13,9 +13,9 @@ export type HeroData = {
   timeOfDay: string
   firstName: string
   tenantId: string
-  eventsThisWeek: number
-  openInquiries: number
-  outstandingCents: number
+  eventsThisWeek: number | null
+  openInquiries: number | null
+  outstandingCents: number | null
   nextEvent: {
     occasion: string
     clientName: string
@@ -25,7 +25,8 @@ export type HeroData = {
   supportBadge?: string | null
 }
 
-function formatCurrency(cents: number): string {
+function formatCurrency(cents: number | null): string {
+  if (cents === null) return '-'
   if (cents === 0) return '$0'
   return `$${(cents / 100).toLocaleString('en-US', { minimumFractionDigits: 0, maximumFractionDigits: 0 })}`
 }
@@ -71,22 +72,25 @@ export function DashboardHero({ data }: { data: HeroData }) {
           <HeroMetricTile
             icon={Calendar}
             label="Events this week"
-            value={String(eventsThisWeek)}
+            value={eventsThisWeek === null ? '-' : String(eventsThisWeek)}
             href="/calendar"
+            isError={eventsThisWeek === null}
           />
           <HeroMetricTile
             icon={MessageSquare}
             label="Open inquiries"
-            value={String(openInquiries)}
+            value={openInquiries === null ? '-' : String(openInquiries)}
             href="/inquiries"
-            accent={openInquiries > 0}
+            accent={openInquiries != null && openInquiries > 0}
+            isError={openInquiries === null}
           />
           <HeroMetricTile
             icon={DollarSign}
             label="Outstanding"
             value={formatCurrency(outstandingCents)}
             href="/finance/payments"
-            accent={outstandingCents > 0}
+            accent={outstandingCents != null && outstandingCents > 0}
+            isError={outstandingCents === null}
           />
           {nextEvent ? (
             <Link href={nextEvent.href} className="group">
@@ -126,18 +130,20 @@ function HeroMetricTile({
   value,
   href,
   accent,
+  isError,
 }: {
   icon: React.ComponentType<{ className?: string }>
   label: string
   value: string
   href: string
   accent?: boolean
+  isError?: boolean
 }) {
   return (
     <Link href={href} className="group">
-      <div className="dashboard-metric-tile flex items-start gap-3 rounded-xl bg-stone-800/40 border border-stone-700/40 px-4 py-3.5 transition-all group-hover:border-brand-700/40 group-hover:bg-stone-800/60">
-        <div className="rounded-lg bg-brand-950/80 p-2 mt-0.5 shrink-0">
-          <Icon className="h-4 w-4 text-brand-400" />
+      <div className={`dashboard-metric-tile flex items-start gap-3 rounded-xl px-4 py-3.5 transition-all ${isError ? 'bg-red-950/30 border border-red-800/40 group-hover:border-red-700/50' : 'bg-stone-800/40 border border-stone-700/40 group-hover:border-brand-700/40 group-hover:bg-stone-800/60'}`}>
+        <div className={`rounded-lg p-2 mt-0.5 shrink-0 ${isError ? 'bg-red-950/80' : 'bg-brand-950/80'}`}>
+          <Icon className={`h-4 w-4 ${isError ? 'text-red-400' : 'text-brand-400'}`} />
         </div>
         <div className="min-w-0">
           <p className="text-[10px] font-semibold uppercase tracking-wider text-stone-500">
@@ -145,10 +151,11 @@ function HeroMetricTile({
           </p>
           <p
             className={`text-lg font-bold tabular-nums mt-0.5 ${
-              accent ? 'text-amber-300' : 'text-stone-100'
+              isError ? 'text-red-400' : accent ? 'text-amber-300' : 'text-stone-100'
             }`}
+            title={isError ? 'Could not load this metric' : undefined}
           >
-            <AnimatedCounter value={value} />
+            {isError ? value : <AnimatedCounter value={value} />}
           </p>
         </div>
       </div>

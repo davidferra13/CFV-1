@@ -60,25 +60,33 @@ export function AutopilotCard({ item }: { item: PendingClientUpdate }) {
       return
     }
     startTransition(async () => {
-      const result = await approveAndSendAutopilot({
-        eventId: item.eventId,
-        clientId: item.clientId,
-        clientEmail: item.clientEmail!,
-        subject: editedSubject,
-        body: editedBody,
-      })
-      if (result.success) {
-        setState('sent')
-      } else {
-        setErrorMsg(result.error ?? 'Send failed. Check email settings.')
-      }
+        try {
+        const result = await approveAndSendAutopilot({
+          eventId: item.eventId,
+          clientId: item.clientId,
+          clientEmail: item.clientEmail!,
+          subject: editedSubject,
+          body: editedBody,
+        })
+        if (result.success) {
+          setState('sent')
+        } else {
+          setErrorMsg(result.error ?? 'Send failed. Check email settings.')
+        }
+        } catch {
+          // Prevent unhandled rejection
+        }
     })
   }
 
   const handleDismiss = () => {
     startTransition(async () => {
-      await dismissAutopilotEvent({ eventId: item.eventId, clientId: item.clientId })
-      setState('dismissed')
+        try {
+        await dismissAutopilotEvent({ eventId: item.eventId, clientId: item.clientId })
+        setState('dismissed')
+        } catch {
+          // Prevent unhandled rejection
+        }
     })
   }
 
