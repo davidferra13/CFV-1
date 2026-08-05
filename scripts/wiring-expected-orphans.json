@@ -1,0 +1,4 @@
+{
+  "expected_orphans": ["/studio/preview"],
+  "note": "Routes here are known unreachable on purpose (in-flight work with a written destination). Each entry needs a blueprint or queue reference. /studio/preview: uncommitted Studio work, pre-assigned Tier 3 Labs per rescue blueprint Section 5."
+}

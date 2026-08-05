@@ -7,11 +7,27 @@ import { existsSync, readFileSync, writeFileSync, readdirSync } from 'fs'
 import { join, relative, dirname } from 'path'
 import { fileURLToPath } from 'url'
 import { execSync } from 'child_process'
+import { tierForRoute, classifyRouteStatus } from './wiring-tier-rules.mjs'
 
 const __dirname = dirname(fileURLToPath(import.meta.url))
 const PROJECT_ROOT = join(__dirname, '..')
 const APP_DIR = join(PROJECT_ROOT, 'app')
 const SEARCH_DIRS = ['app', 'components', 'lib'].map((d) => join(PROJECT_ROOT, d))
+
+const IA_TIER_MAP = JSON.parse(
+  readFileSync(join(PROJECT_ROOT, 'lib', 'navigation', 'ia-tier-map.json'), 'utf8')
+)
+const EXPECTED_ORPHANS = new Set(
+  JSON.parse(readFileSync(join(PROJECT_ROOT, 'scripts', 'wiring-expected-orphans.json'), 'utf8'))
+    .expected_orphans
+)
+const MODULE_SLUGS = new Set(
+  [
+    ...readFileSync(join(PROJECT_ROOT, 'lib', 'billing', 'modules.ts'), 'utf8').matchAll(
+      /slug:\s*'([^']+)'/g
+    ),
+  ].map((m) => m[1])
+)
 
 // Routes wired via middleware domain routing (not nav). Single middleware ref is sufficient.
 const MIDDLEWARE_WIRED_PREFIXES = ['/dfpc']
@@ -403,22 +419,27 @@ function countRefs(routes, corpusFiles) {
       }
     }
 
-    let status = 'WIRED'
-    if (refFiles.length === 0) {
-      status = 'ORPHAN'
-      orphanCount++
-    } else if (refFiles.length === 1 && navRefs === 0) {
-      const isMiddlewareWired = MIDDLEWARE_WIRED_PREFIXES.some(
-        (p) => r.route === p || r.route.startsWith(p + '/')
-      )
-      status = isMiddlewareWired ? 'WIRED' : 'WEAK'
-    }
+    const tierEntry = tierForRoute(r.route, IA_TIER_MAP)
+    const isMiddlewareWired = MIDDLEWARE_WIRED_PREFIXES.some(
+      (p) => r.route === p || r.route.startsWith(p + '/')
+    )
+    const status = classifyRouteStatus({
+      route: r.route,
+      refCount: refFiles.length,
+      navRefs,
+      tierEntry,
+      allowlist: EXPECTED_ORPHANS,
+      moduleSlugs: MODULE_SLUGS,
+      isMiddlewareWired,
+    })
+    if (status === 'ORPHAN') orphanCount++
 
     results.push({
       route: r.route,
       dynamic: r.dynamic,
       refs: refFiles.length,
       nav_refs: navRefs,
+      tier: tierEntry ? tierEntry.tier : null,
       status,
       ref_files: refFiles.slice(0, 5),
     })
@@ -445,6 +466,7 @@ const domainMatrix = buildDomainMatrix(changedFiles())
 const orphans = results.filter((r) => r.status === 'ORPHAN')
 const weak = results.filter((r) => r.status === 'WEAK')
 const wired = results.filter((r) => r.status === 'WIRED')
+const allowed = results.filter((r) => r.status === 'ALLOWED')
 
 const output = {
   generated: new Date().toISOString(),
@@ -453,6 +475,7 @@ const output = {
     wired: wired.length,
     weak: weak.length,
     orphans: orphanCount,
+    allowed: allowed.length,
     skipped: results.filter((r) => r.status === 'SKIP').length,
   },
   post_build_domain_matrix: domainMatrix,
