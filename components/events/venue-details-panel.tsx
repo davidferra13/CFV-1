@@ -10,6 +10,7 @@ import {
   type FarmShowcaseItem,
   type FarmCropItem,
 } from '@/lib/events/venue-details-actions'
+import { toast } from 'sonner'
 
 type Props = {
   eventId: string
@@ -80,40 +81,44 @@ export function VenueDetailsPanel({ eventId }: Props) {
 
   function handleSave() {
     startTransition(async () => {
-      const result = await upsertVenueDetails({
-        eventId,
-        data: {
-          parking_capacity: parkingCapacity ? parseInt(parkingCapacity) : null,
-          parking_instructions: parkingInstructions.trim() || null,
-          overflow_plan: overflowPlan.trim() || null,
-          gate_code: gateCode.trim() || null,
-          access_instructions: accessInstructions.trim() || null,
-          directions_from_road: directionsFromRoad.trim() || null,
-          rain_backup_plan: rainBackupPlan.trim() || null,
-          power_access_notes: powerNotes.trim() || null,
-          water_access_notes: waterNotes.trim() || null,
-          restroom_info: restroomInfo.trim() || null,
-          kitchen_zone: kitchenZone.trim() || null,
-          dining_zone: diningZone.trim() || null,
-          bar_zone: barZone.trim() || null,
-          welcome_message: welcomeMessage.trim() || null,
-          pet_policy: petPolicy.trim() || null,
-          property_rules: propertyRules
-            .split('\n')
-            .map((r) => r.trim())
-            .filter(Boolean),
-          farm_name: farmName.trim() || null,
-          farm_bio: farmBio.trim() || null,
-          farm_website: farmWebsite.trim() || null,
-          farm_animals: farmAnimals.filter((a) => a.name.trim()),
-          farm_crops: farmCrops.filter((c) => c.name.trim()),
-        },
-      })
-      if (result.success) {
-        const updated = await getVenueDetails(eventId)
-        setDetails(updated)
-        setEditing(false)
-      }
+        try {
+        const result = await upsertVenueDetails({
+          eventId,
+          data: {
+            parking_capacity: parkingCapacity ? parseInt(parkingCapacity) : null,
+            parking_instructions: parkingInstructions.trim() || null,
+            overflow_plan: overflowPlan.trim() || null,
+            gate_code: gateCode.trim() || null,
+            access_instructions: accessInstructions.trim() || null,
+            directions_from_road: directionsFromRoad.trim() || null,
+            rain_backup_plan: rainBackupPlan.trim() || null,
+            power_access_notes: powerNotes.trim() || null,
+            water_access_notes: waterNotes.trim() || null,
+            restroom_info: restroomInfo.trim() || null,
+            kitchen_zone: kitchenZone.trim() || null,
+            dining_zone: diningZone.trim() || null,
+            bar_zone: barZone.trim() || null,
+            welcome_message: welcomeMessage.trim() || null,
+            pet_policy: petPolicy.trim() || null,
+            property_rules: propertyRules
+              .split('\n')
+              .map((r) => r.trim())
+              .filter(Boolean),
+            farm_name: farmName.trim() || null,
+            farm_bio: farmBio.trim() || null,
+            farm_website: farmWebsite.trim() || null,
+            farm_animals: farmAnimals.filter((a) => a.name.trim()),
+            farm_crops: farmCrops.filter((c) => c.name.trim()),
+          },
+        })
+        if (result.success) {
+          const updated = await getVenueDetails(eventId)
+          setDetails(updated)
+          setEditing(false)
+        }
+        } catch {
+          toast.error('Something went wrong')
+        }
     })
   }
 

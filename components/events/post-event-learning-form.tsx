@@ -176,37 +176,41 @@ export function PostEventLearningForm({ capture }: Props) {
 
   function handleSave() {
     startTransition(async () => {
-      const payloadDishes = dishes
-        .map((dish) => ({
-          rowId: dish.rowId,
-          menuDishId: dish.menuDishId,
-          plannedName: dish.plannedName.trim(),
-          actualName: dish.actualName?.trim() || null,
-          courseName: dish.courseName?.trim() || null,
-          outcomeStatus: dish.outcomeStatus,
-          issueFlags: dish.issueFlags ?? [],
-          chefNotes: dish.chefNotes?.trim() || null,
-        }))
-        .filter((dish) => dish.plannedName.length > 0)
+        try {
+        const payloadDishes = dishes
+          .map((dish) => ({
+            rowId: dish.rowId,
+            menuDishId: dish.menuDishId,
+            plannedName: dish.plannedName.trim(),
+            actualName: dish.actualName?.trim() || null,
+            courseName: dish.courseName?.trim() || null,
+            outcomeStatus: dish.outcomeStatus,
+            issueFlags: dish.issueFlags ?? [],
+            chefNotes: dish.chefNotes?.trim() || null,
+          }))
+          .filter((dish) => dish.plannedName.length > 0)
 
-      const result = await saveChefOutcomeCapture({
-        eventId: capture.event.id,
-        prepAccuracy,
-        timeAccuracy,
-        executionChangeNotes: executionChangeNotes.trim() || null,
-        whatWentWell: whatWentWell.trim() || null,
-        whatWentWrong: whatWentWrong.trim() || null,
-        chefNotes: chefNotes.trim() || null,
-        dishes: payloadDishes,
-      })
+        const result = await saveChefOutcomeCapture({
+          eventId: capture.event.id,
+          prepAccuracy,
+          timeAccuracy,
+          executionChangeNotes: executionChangeNotes.trim() || null,
+          whatWentWell: whatWentWell.trim() || null,
+          whatWentWrong: whatWentWrong.trim() || null,
+          chefNotes: chefNotes.trim() || null,
+          dishes: payloadDishes,
+        })
 
-      if (!result.success) {
-        toast.error(result.error ?? 'Failed to save outcome capture.')
-        return
-      }
+        if (!result.success) {
+          toast.error(result.error ?? 'Failed to save outcome capture.')
+          return
+        }
 
-      toast.success('Outcome capture saved.')
-      router.refresh()
+        toast.success('Outcome capture saved.')
+        router.refresh()
+        } catch {
+          toast.error('Something went wrong')
+        }
     })
   }
 

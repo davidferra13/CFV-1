@@ -49,19 +49,23 @@ export function EventDetailGuestCountRequests({ changes }: { changes: GuestCount
     setActiveChangeId(changeId)
 
     startTransition(async () => {
-      const result = await reviewGuestCountChange({
-        changeId,
-        decision,
-        reviewNotes: reviewNotes[changeId]?.trim() || undefined,
-      })
+        try {
+        const result = await reviewGuestCountChange({
+          changeId,
+          decision,
+          reviewNotes: reviewNotes[changeId]?.trim() || undefined,
+        })
 
-      if (!result.success) {
-        setError(result.error || 'Could not review the guest-count request.')
-        setActiveChangeId(null)
-        return
-      }
+        if (!result.success) {
+          setError(result.error || 'Could not review the guest-count request.')
+          setActiveChangeId(null)
+          return
+        }
 
-      router.refresh()
+        router.refresh()
+        } catch {
+          setError('Something went wrong')
+        }
     })
   }
 

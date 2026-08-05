@@ -5,6 +5,7 @@ import { Button } from '@/components/ui/button'
 import type { VendorCoordinationEntry } from '@/lib/vendors/vendor-coordination-actions'
 import { updateVendorContactStatus } from '@/lib/vendors/vendor-coordination-actions'
 import { useState, useTransition } from 'react'
+import { toast } from 'sonner'
 
 type Props = {
   entry: VendorCoordinationEntry
@@ -37,10 +38,14 @@ export function VendorContactEntry({ entry }: Props) {
 
   function handleStatusChange(newStatus: string) {
     startTransition(async () => {
-      const result = await updateVendorContactStatus(entry.id, newStatus)
-      if (result.success) {
-        setStatus(newStatus)
-      }
+        try {
+        const result = await updateVendorContactStatus(entry.id, newStatus)
+        if (result.success) {
+          setStatus(newStatus)
+        }
+        } catch {
+          toast.error('Something went wrong')
+        }
     })
   }
 

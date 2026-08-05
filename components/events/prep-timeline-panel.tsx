@@ -13,6 +13,7 @@ import {
   type PrepTimeline,
   type PrepTimelineItem,
 } from '@/lib/events/prep-timeline-actions'
+import { toast } from 'sonner'
 
 const CATEGORY_CONFIG: Record<string, { emoji: string; color: string }> = {
   transport: { emoji: '🚗', color: 'text-blue-300' },
@@ -110,42 +111,54 @@ export function PrepTimelinePanel({ eventId, collaborators }: Props) {
 
   function handleToggle(item: PrepTimelineItem) {
     startTransition(async () => {
-      await togglePrepItem({ itemId: item.id, eventId, completed: !item.completed })
-      setTimeline((prev) =>
-        prev
-          ? {
-              ...prev,
-              items: prev.items.map((i) =>
-                i.id === item.id ? { ...i, completed: !i.completed } : i
-              ),
-            }
-          : prev
-      )
+        try {
+        await togglePrepItem({ itemId: item.id, eventId, completed: !item.completed })
+        setTimeline((prev) =>
+          prev
+            ? {
+                ...prev,
+                items: prev.items.map((i) =>
+                  i.id === item.id ? { ...i, completed: !i.completed } : i
+                ),
+              }
+            : prev
+        )
+        } catch {
+          toast.error('Something went wrong')
+        }
     })
   }
 
   function handleRemove(itemId: string) {
     startTransition(async () => {
-      await removePrepItem({ itemId, eventId })
-      setTimeline((prev) =>
-        prev ? { ...prev, items: prev.items.filter((i) => i.id !== itemId) } : prev
-      )
+        try {
+        await removePrepItem({ itemId, eventId })
+        setTimeline((prev) =>
+          prev ? { ...prev, items: prev.items.filter((i) => i.id !== itemId) } : prev
+        )
+        } catch {
+          toast.error('Something went wrong')
+        }
     })
   }
 
   function handleAssign(item: PrepTimelineItem, chefId: string | null, name: string | null) {
     startTransition(async () => {
-      await assignPrepItem({ itemId: item.id, eventId, assignedTo: chefId, assignedName: name })
-      setTimeline((prev) =>
-        prev
-          ? {
-              ...prev,
-              items: prev.items.map((i) =>
-                i.id === item.id ? { ...i, assigned_to: chefId, assigned_name: name } : i
-              ),
-            }
-          : prev
-      )
+        try {
+        await assignPrepItem({ itemId: item.id, eventId, assignedTo: chefId, assignedName: name })
+        setTimeline((prev) =>
+          prev
+            ? {
+                ...prev,
+                items: prev.items.map((i) =>
+                  i.id === item.id ? { ...i, assigned_to: chefId, assigned_name: name } : i
+                ),
+              }
+            : prev
+        )
+        } catch {
+          toast.error('Something went wrong')
+        }
     })
   }
 

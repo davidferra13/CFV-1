@@ -11,6 +11,7 @@ import {
   removeChecklistItem,
   type ChecklistItem,
 } from '@/lib/events/day-of-checklist-actions'
+import { toast } from 'sonner'
 
 const CATEGORY_CONFIG: Record<string, { label: string; emoji: string }> = {
   gear: { label: 'Gear', emoji: '🧰' },
@@ -61,8 +62,12 @@ export function DayOfChecklistPanel({ eventId }: Props) {
 
   function handleToggle(item: ChecklistItem) {
     startTransition(async () => {
-      await toggleChecklistItem({ itemId: item.id, eventId, checked: !item.checked })
-      setItems((prev) => prev.map((i) => (i.id === item.id ? { ...i, checked: !i.checked } : i)))
+        try {
+        await toggleChecklistItem({ itemId: item.id, eventId, checked: !item.checked })
+        setItems((prev) => prev.map((i) => (i.id === item.id ? { ...i, checked: !i.checked } : i)))
+        } catch {
+          toast.error('Something went wrong')
+        }
     })
   }
 
@@ -84,8 +89,12 @@ export function DayOfChecklistPanel({ eventId }: Props) {
 
   function handleRemove(itemId: string) {
     startTransition(async () => {
-      await removeChecklistItem({ itemId, eventId })
-      setItems((prev) => prev.filter((i) => i.id !== itemId))
+        try {
+        await removeChecklistItem({ itemId, eventId })
+        setItems((prev) => prev.filter((i) => i.id !== itemId))
+        } catch {
+          toast.error('Something went wrong')
+        }
     })
   }
 

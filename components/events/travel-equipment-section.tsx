@@ -54,39 +54,47 @@ export function TravelEquipmentSection({ eventId }: { eventId: string }) {
     if (!rentalName.trim()) return
     setError(null)
     startTransition(async () => {
-      const result = await createEquipmentRental({
-        event_id: eventId,
-        vendor_name: rentalName.trim(),
-        items: rentalItems
-          ? rentalItems
-              .split(',')
-              .map((s) => s.trim())
-              .filter(Boolean)
-          : [],
-        notes: rentalNotes.trim() || undefined,
-      })
-      if (!result.success) {
-        setError(result.error || 'Failed to add rental')
-        return
-      }
-      if (result.rental) setRentals((prev) => [...prev, result.rental!])
-      const cost = await getTotalRentalCost(eventId)
-      setTotalCost(cost)
-      setRentalName('')
-      setRentalItems('')
-      setRentalNotes('')
-      setShowRentalForm(false)
+        try {
+        const result = await createEquipmentRental({
+          event_id: eventId,
+          vendor_name: rentalName.trim(),
+          items: rentalItems
+            ? rentalItems
+                .split(',')
+                .map((s) => s.trim())
+                .filter(Boolean)
+            : [],
+          notes: rentalNotes.trim() || undefined,
+        })
+        if (!result.success) {
+          setError(result.error || 'Failed to add rental')
+          return
+        }
+        if (result.rental) setRentals((prev) => [...prev, result.rental!])
+        const cost = await getTotalRentalCost(eventId)
+        setTotalCost(cost)
+        setRentalName('')
+        setRentalItems('')
+        setRentalNotes('')
+        setShowRentalForm(false)
+        } catch {
+          setError('Something went wrong')
+        }
     })
   }
 
   const handleDeleteRental = (rentalId: string) => {
     startTransition(async () => {
-      const result = await deleteEquipmentRental(rentalId)
-      if (result.success) {
-        setRentals((prev) => prev.filter((r) => r.id !== rentalId))
-        const cost = await getTotalRentalCost(eventId)
-        setTotalCost(cost)
-      }
+        try {
+        const result = await deleteEquipmentRental(rentalId)
+        if (result.success) {
+          setRentals((prev) => prev.filter((r) => r.id !== rentalId))
+          const cost = await getTotalRentalCost(eventId)
+          setTotalCost(cost)
+        }
+        } catch {
+          setError('Something went wrong')
+        }
     })
   }
 

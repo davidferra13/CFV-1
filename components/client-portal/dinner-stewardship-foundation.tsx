@@ -45,7 +45,11 @@ export function DinnerStewardshipFoundation({
 
   function onSubmit(formData: FormData) {
     startTransition(async () => {
-      setState(await submitDinnerChangeIntake(state, formData))
+        try {
+        setState(await submitDinnerChangeIntake(state, formData))
+        } catch {
+          // Prevent unhandled rejection
+        }
     })
   }
 

@@ -56,24 +56,32 @@ export function LinkedTodosPanel({ todos: initialTodos, eventId, clientId }: Pro
       )
     )
     startTransition(async () => {
-      const result = await toggleTodo(id)
-      if (!result.success) {
-        setTodos(initialTodos)
-        toast.error(result.error || 'Failed to update')
-      }
-      router.refresh()
+        try {
+        const result = await toggleTodo(id)
+        if (!result.success) {
+          setTodos(initialTodos)
+          toast.error(result.error || 'Failed to update')
+        }
+        router.refresh()
+        } catch {
+          toast.error('Something went wrong')
+        }
     })
   }
 
   function handleDelete(id: string) {
     setTodos((prev) => prev.filter((t) => t.id !== id))
     startTransition(async () => {
-      const result = await deleteTodo(id)
-      if (!result.success) {
-        setTodos(initialTodos)
-        toast.error(result.error || 'Failed to delete')
-      }
-      router.refresh()
+        try {
+        const result = await deleteTodo(id)
+        if (!result.success) {
+          setTodos(initialTodos)
+          toast.error(result.error || 'Failed to delete')
+        }
+        router.refresh()
+        } catch {
+          toast.error('Something went wrong')
+        }
     })
   }
 
@@ -104,16 +112,20 @@ export function LinkedTodosPanel({ todos: initialTodos, eventId, clientId }: Pro
     setNewText('')
 
     startTransition(async () => {
-      const result = await createTodo({
-        text,
-        event_id: eventId || null,
-        client_id: clientId || null,
-      })
-      if (!result.success) {
-        setTodos((prev) => prev.filter((t) => t.id !== tempId))
-        toast.error(result.error || 'Failed to add todo')
-      }
-      router.refresh()
+        try {
+        const result = await createTodo({
+          text,
+          event_id: eventId || null,
+          client_id: clientId || null,
+        })
+        if (!result.success) {
+          setTodos((prev) => prev.filter((t) => t.id !== tempId))
+          toast.error(result.error || 'Failed to add todo')
+        }
+        router.refresh()
+        } catch {
+          toast.error('Something went wrong')
+        }
     })
   }
 

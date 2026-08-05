@@ -5,6 +5,7 @@ import { useRouter } from 'next/navigation'
 import { Badge } from '@/components/ui/badge'
 import { updatePrepStatus } from '@/lib/prep/prep-sheet-actions'
 import type { PrepItem } from '@/lib/prep/prep-sheet-actions'
+import { toast } from 'sonner'
 
 const statusBadge: Record<string, { variant: 'info' | 'warning' | 'success'; label: string }> = {
   pending: { variant: 'info', label: 'Pending' },
@@ -34,11 +35,15 @@ export function PrepSheetTable({ items }: { items: PrepItem[] }) {
 
   function handleStatusChange(prepId: string, next: 'pending' | 'in_progress' | 'done') {
     startTransition(async () => {
-      const result = await updatePrepStatus(prepId, next)
-      if (!result.success) {
-        console.error('[prep-sheet] status update failed:', result.error)
-      }
-      router.refresh()
+        try {
+        const result = await updatePrepStatus(prepId, next)
+        if (!result.success) {
+          console.error('[prep-sheet] status update failed:', result.error)
+        }
+        router.refresh()
+        } catch {
+          toast.error('Something went wrong')
+        }
     })
   }
 

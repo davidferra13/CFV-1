@@ -77,13 +77,17 @@ function PhaseChecklist({
       )
     )
     startTransition(async () => {
-      const result = await toggleChecklistItem({ eventId, itemId, completed })
-      if (!result.success) {
-        setItems((prev) =>
-          prev.map((item) => (item.id === itemId ? { ...item, completed: !completed } : item))
-        )
-        toast.error('Failed to update checklist')
-      }
+        try {
+        const result = await toggleChecklistItem({ eventId, itemId, completed })
+        if (!result.success) {
+          setItems((prev) =>
+            prev.map((item) => (item.id === itemId ? { ...item, completed: !completed } : item))
+          )
+          toast.error('Failed to update checklist')
+        }
+        } catch {
+          toast.error('Something went wrong')
+        }
     })
   }
 
@@ -209,25 +213,29 @@ function IssueLog({ issues: initialIssues, eventId }: { issues: ServiceIssue[]; 
   function handleSubmit() {
     if (!description.trim()) return
     startTransition(async () => {
-      const result = await logServiceIssue({ eventId, description: description.trim(), severity })
-      if (result.success) {
-        setIssues((prev) => [
-          {
-            id: Date.now().toString(),
-            eventId,
-            description: description.trim(),
-            severity,
-            resolvedAt: null,
-            createdAt: new Date().toISOString(),
-          },
-          ...prev,
-        ])
-        setDescription('')
-        setShowForm(false)
-        toast.success('Issue logged')
-      } else {
-        toast.error(result.error ?? 'Failed to log issue')
-      }
+        try {
+        const result = await logServiceIssue({ eventId, description: description.trim(), severity })
+        if (result.success) {
+          setIssues((prev) => [
+            {
+              id: Date.now().toString(),
+              eventId,
+              description: description.trim(),
+              severity,
+              resolvedAt: null,
+              createdAt: new Date().toISOString(),
+            },
+            ...prev,
+          ])
+          setDescription('')
+          setShowForm(false)
+          toast.success('Issue logged')
+        } else {
+          toast.error(result.error ?? 'Failed to log issue')
+        }
+        } catch {
+          toast.error('Something went wrong')
+        }
     })
   }
 

@@ -68,18 +68,22 @@ export function GuestCountChangeCard({
     setError(null)
 
     startTransition(async () => {
-      const result = await requestClientGuestCountChange({
-        eventId,
-        newCount: parsedCount,
-        notes: notes.trim() || undefined,
-      })
+        try {
+        const result = await requestClientGuestCountChange({
+          eventId,
+          newCount: parsedCount,
+          notes: notes.trim() || undefined,
+        })
 
-      if (!result.success) {
-        setError(result.error || 'Could not submit the guest-count request.')
-        return
-      }
+        if (!result.success) {
+          setError(result.error || 'Could not submit the guest-count request.')
+          return
+        }
 
-      router.refresh()
+        router.refresh()
+        } catch {
+          setError('Something went wrong')
+        }
     })
   }
 
