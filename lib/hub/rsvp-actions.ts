@@ -13,6 +13,50 @@ export type RsvpSummary = {
   total: number
 }
 
+const EMPTY_SUMMARY: RsvpSummary = {
+  going: 0,
+  maybe: 0,
+  notGoing: 0,
+  noResponse: 0,
+  total: 0,
+}
+
+/**
+ * Resolve the current hub guest profile from the hub_profile_token cookie.
+ * Returns null if no token or profile not found.
+ */
+async function resolveProfileFromCookie(db: any): Promise<{ id: string } | null> {
+  const cookieStore = await cookies()
+  const profileToken = cookieStore.get('hub_profile_token')?.value
+  if (!profileToken) return null
+
+  const { data: profile } = await db
+    .from('hub_guest_profiles')
+    .select('id')
+    .eq('profile_token', profileToken)
+    .single()
+
+  return profile ?? null
+}
+
+/**
+ * Verify the caller is a member of the given group.
+ */
+async function verifyGroupMembership(
+  db: any,
+  groupId: string,
+  profileId: string
+): Promise<boolean> {
+  const { data: membership } = await db
+    .from('hub_group_members')
+    .select('id')
+    .eq('group_id', groupId)
+    .eq('profile_id', profileId)
+    .single()
+
+  return Boolean(membership)
+}
+
 export async function updateRsvpStatus(input: {
   groupId: string
   status: RsvpStatus
@@ -45,6 +89,13 @@ export async function updateRsvpStatus(input: {
 
 export async function getRsvpSummary(groupId: string): Promise<RsvpSummary> {
   const db: any = createServerClient({ admin: true })
+
+  // Auth gate: verify caller has a valid profile token and is a member of this group
+  const profile = await resolveProfileFromCookie(db)
+  if (!profile) return EMPTY_SUMMARY
+
+  const isMember = await verifyGroupMembership(db, groupId, profile.id)
+  if (!isMember) return EMPTY_SUMMARY
 
   const { data: members } = await db
     .from('hub_group_members')

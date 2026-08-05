@@ -203,7 +203,7 @@ export async function notifyCircleMembers(input: {
 
         // Unauthenticated hub guests: use hub_push_subscriptions table
         try {
-          const { getHubPushSubscriptions } = await import('./hub-push-subscriptions')
+          const { getHubPushSubscriptions } = await import('./hub-push-subscriptions-internal')
           const hubSubs = await getHubPushSubscriptions(profile.id)
           await Promise.allSettled(
             hubSubs.map((sub: any) => sendPushNotification(sub, pushPayload))

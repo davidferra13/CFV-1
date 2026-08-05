@@ -13,6 +13,7 @@ import {
   completeAgreementItem,
   addCustomItem,
 } from '@/lib/hub/agreement-actions'
+import { toast } from 'sonner'
 
 interface AgreementTabProps {
   groupId: string
@@ -93,7 +94,11 @@ export function AgreementTab({
         : null
     )
     startTransition(async () => {
-      await updateAgreementItem({ itemId, assignment })
+        try {
+        await updateAgreementItem({ itemId, assignment })
+        } catch {
+          toast.error('Something went wrong')
+        }
     })
   }
 
@@ -104,7 +109,11 @@ export function AgreementTab({
         : null
     )
     startTransition(async () => {
-      await updateAgreementItem({ itemId, notes })
+        try {
+        await updateAgreementItem({ itemId, notes })
+        } catch {
+          toast.error('Something went wrong')
+        }
     })
   }
 
@@ -115,11 +124,15 @@ export function AgreementTab({
         : null
     )
     startTransition(async () => {
-      if (status === 'done') {
-        await completeAgreementItem(itemId)
-      } else {
-        await updateAgreementItem({ itemId, status })
-      }
+        try {
+        if (status === 'done') {
+          await completeAgreementItem(itemId)
+        } else {
+          await updateAgreementItem({ itemId, status })
+        }
+        } catch {
+          toast.error('Something went wrong')
+        }
     })
   }
 

@@ -13,6 +13,10 @@ const SaveHubPushSchema = z.object({
 /**
  * Save a Web Push subscription for a hub guest profile.
  * Token-validated, no auth session required.
+ *
+ * This is the only client-callable server action in this module.
+ * Read/deactivate/increment operations are in hub-push-subscriptions-internal.ts
+ * (not a 'use server' file) to prevent direct client invocation.
  */
 export async function saveHubPushSubscription(
   input: z.infer<typeof SaveHubPushSchema>
@@ -41,64 +45,4 @@ export async function saveHubPushSubscription(
     },
     { onConflict: 'endpoint' }
   )
-}
-
-/**
- * Get all active push subscriptions for a hub guest profile.
- * Used by circle-notification-actions to deliver push to unauthenticated guests.
- */
-export async function getHubPushSubscriptions(
-  profileId: string
-): Promise<{ id: string; endpoint: string; p256dh: string; auth_key: string }[]> {
-  const db: any = createServerClient({ admin: true })
-
-  const { data, error } = await db
-    .from('hub_push_subscriptions')
-    .select('id, endpoint, p256dh, auth_key')
-    .eq('profile_id', profileId)
-    .eq('is_active', true)
-    .lt('failed_count', 5)
-
-  if (error) {
-    console.error('[getHubPushSubscriptions] Query failed:', error)
-    return []
-  }
-
-  return data ?? []
-}
-
-/**
- * Deactivate a hub push subscription (e.g., on 410 Gone from push service).
- */
-export async function deactivateHubPushSubscription(endpoint: string): Promise<void> {
-  const db: any = createServerClient({ admin: true })
-  await db.from('hub_push_subscriptions').update({ is_active: false }).eq('endpoint', endpoint)
-}
-
-/**
- * Increment failed_count on a push subscription.
- * Auto-deactivates after 5 failures.
- */
-export async function incrementPushFailedCount(endpoint: string): Promise<void> {
-  const db: any = createServerClient({ admin: true })
-
-  // Get current count
-  const { data } = await db
-    .from('hub_push_subscriptions')
-    .select('id, failed_count')
-    .eq('endpoint', endpoint)
-    .maybeSingle()
-
-  if (!data) return
-
-  const newCount = (data.failed_count ?? 0) + 1
-
-  if (newCount >= 5) {
-    await db
-      .from('hub_push_subscriptions')
-      .update({ is_active: false, failed_count: newCount })
-      .eq('id', data.id)
-  } else {
-    await db.from('hub_push_subscriptions').update({ failed_count: newCount }).eq('id', data.id)
-  }
 }

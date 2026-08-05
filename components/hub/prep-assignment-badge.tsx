@@ -6,6 +6,7 @@ import {
   unassignMemberFromMeal,
   getAssignableMembers,
 } from '@/lib/hub/prep-assignment-actions'
+import { toast } from 'sonner'
 
 interface PrepAssignmentBadgeProps {
   groupId: string
@@ -53,31 +54,39 @@ export function PrepAssignmentBadge({
   const handleAssign = (profileId: string, displayName: string) => {
     if (!profileToken) return
     startTransition(async () => {
-      const result = await assignMemberToMeal({
-        groupId,
-        profileToken,
-        mealEntryId,
-        assigneeProfileId: profileId,
-        notes: notes.trim() || null,
-      })
-      if (result.success) {
-        setShowDropdown(false)
-        onAssigned?.()
-      }
+        try {
+        const result = await assignMemberToMeal({
+          groupId,
+          profileToken,
+          mealEntryId,
+          assigneeProfileId: profileId,
+          notes: notes.trim() || null,
+        })
+        if (result.success) {
+          setShowDropdown(false)
+          onAssigned?.()
+        }
+        } catch {
+          toast.error('Something went wrong')
+        }
     })
   }
 
   const handleUnassign = () => {
     if (!profileToken) return
     startTransition(async () => {
-      const result = await unassignMemberFromMeal({
-        groupId,
-        profileToken,
-        mealEntryId,
-      })
-      if (result.success) {
-        onAssigned?.()
-      }
+        try {
+        const result = await unassignMemberFromMeal({
+          groupId,
+          profileToken,
+          mealEntryId,
+        })
+        if (result.success) {
+          onAssigned?.()
+        }
+        } catch {
+          toast.error('Something went wrong')
+        }
     })
   }
 

@@ -27,8 +27,12 @@ export function AgreementSignatureBlock({
   const handleSign = () => {
     setError(null)
     startTransition(async () => {
-      const result = await signAgreement(agreementId)
-      if (!result.success) setError(result.error || 'Failed to sign')
+        try {
+        const result = await signAgreement(agreementId)
+        if (!result.success) setError(result.error || 'Failed to sign')
+        } catch {
+          setError('Something went wrong')
+        }
     })
   }
 

@@ -9,7 +9,7 @@ export async function getBatchCommentCounts(
     | string[]
     | {
         groupId: string
-        profileToken?: string
+        profileToken: string
         mealEntryIds: string[]
       }
 ): Promise<Record<string, number>> {
@@ -49,7 +49,7 @@ export async function getMealComments(
     | string
     | {
         mealEntryId: string
-        profileToken?: string
+        profileToken: string
       }
 ): Promise<MealComment[]> {
   if (typeof input === 'string') return []

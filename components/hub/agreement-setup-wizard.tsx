@@ -58,27 +58,35 @@ export function AgreementSetupWizard({
   const handleNext = () => {
     if (step === 'template') {
       startTransition(async () => {
-        const result = await createAgreement({
-          groupId,
-          eventId,
-          templateType: selectedTemplate,
-        })
-        if (result.success && result.agreementId) {
-          setAgreementId(result.agreementId)
-          setStep('compensation')
-        } else {
-          setError(result.error || 'Failed to create agreement')
-        }
+          try {
+          const result = await createAgreement({
+            groupId,
+            eventId,
+            templateType: selectedTemplate,
+          })
+          if (result.success && result.agreementId) {
+            setAgreementId(result.agreementId)
+            setStep('compensation')
+          } else {
+            setError(result.error || 'Failed to create agreement')
+          }
+          } catch {
+            setError('Something went wrong')
+          }
       })
     } else if (step === 'compensation') {
       if (agreementId && compensationDetails) {
         startTransition(async () => {
-          await updateCompensation({
-            agreementId: agreementId!,
-            compensationModel,
-            compensationDetails: compensationDetails as unknown as Record<string, unknown>,
-          })
-          setStep('checklist')
+            try {
+            await updateCompensation({
+              agreementId: agreementId!,
+              compensationModel,
+              compensationDetails: compensationDetails as unknown as Record<string, unknown>,
+            })
+            setStep('checklist')
+            } catch {
+              setError('Something went wrong')
+            }
         })
       }
     } else if (step === 'checklist') {
@@ -94,7 +102,11 @@ export function AgreementSetupWizard({
   const handleAssignmentChange = (itemId: string, assignment: ItemAssignment) => {
     setItems((prev) => prev.map((i) => (i.id === itemId ? { ...i, assignment } : i)))
     startTransition(async () => {
-      await updateAgreementItem({ itemId, assignment })
+        try {
+        await updateAgreementItem({ itemId, assignment })
+        } catch {
+          setError('Something went wrong')
+        }
     })
   }
 

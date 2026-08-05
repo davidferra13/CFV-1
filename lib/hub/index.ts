@@ -243,13 +243,17 @@ export type {
   MealAttendance,
 } from './household-actions'
 
-// hub-push-subscriptions ('use server')
+// hub-push-subscriptions ('use server') - only the client-callable action
 export {
   saveHubPushSubscription,
+} from './hub-push-subscriptions'
+
+// hub-push-subscriptions-internal (NOT 'use server') - server-only helpers
+export {
   getHubPushSubscriptions,
   deactivateHubPushSubscription,
   incrementPushFailedCount,
-} from './hub-push-subscriptions'
+} from './hub-push-subscriptions-internal'
 
 // inquiry-circle-actions ('use server')
 export {
