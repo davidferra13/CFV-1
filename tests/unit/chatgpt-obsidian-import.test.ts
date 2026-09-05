@@ -118,6 +118,52 @@ function createTempWorkspace() {
   return fs.mkdtempSync(path.join(os.tmpdir(), 'chatgpt-obsidian-import-'))
 }
 
+for (const sourceShape of ['array', 'envelope'] as const) {
+  test(`imports a direct ChatGPT JSON ${sourceShape} without changing source bytes or transcript behavior`, async () => {
+    const importer = await loadImporter()
+    const tempRoot = createTempWorkspace()
+    const exportDir = path.join(tempRoot, 'chatgpt-export')
+    const inputPath = path.join(exportDir, 'conversations.json')
+    const outputRoot = path.join(tempRoot, 'direct-output')
+    const conversations = createFixtureConversations()
+    conversations[0].mapping['user-1'].message.content.parts = ['do not send.']
+    const longText = `${'Synthetic source text. '.repeat(200)}END OF SOURCE`
+    conversations[0].mapping['assistant-1'].message.content.parts = [longText]
+    const sourceBytes = Buffer.from(JSON.stringify(
+      sourceShape === 'array' ? conversations : { conversations }, null, 2
+    ))
+    fs.mkdirSync(exportDir, { recursive: true })
+    fs.writeFileSync(inputPath, sourceBytes)
+
+    const direct = importer.importChatgptExport({ inputPath, outputRoot })
+    const folder = importer.importChatgptExport({
+      inputPath: exportDir,
+      outputRoot: path.join(tempRoot, 'folder-output'),
+    })
+
+    assert.equal(direct.sourceLabel, inputPath)
+    assert.equal(direct.totalConversations, 1)
+    assert.equal(direct.writtenNotes, 1)
+    assert.equal(direct.notes[0].totalMessageNodes, 5)
+    assert.equal(direct.notes[0].visibleMessageNodes, 4)
+    assert.equal(direct.notes[0].omittedBranchNodes, 1)
+    assert.deepEqual(direct.notes[0].messages, folder.notes[0].messages)
+    assert.equal(direct.notes[0].contentHash, folder.notes[0].contentHash)
+    const note = fs.readFileSync(direct.notes[0].notePath, 'utf8')
+    assert.equal(note, fs.readFileSync(folder.notes[0].notePath, 'utf8'))
+    assert.ok(note.includes('do not send.'))
+    assert.ok(note.includes(longText))
+    assert.match(note, /\[Attachment: sample.txt\]/)
+    assert.match(note, /omitted_branch_nodes: 1/)
+    assert.doesNotMatch(note, /Alternative branch answer/)
+
+    const repeated = importer.importChatgptExport({ inputPath, outputRoot })
+    assert.equal(repeated.writtenNotes, 0)
+    assert.equal(repeated.unchangedNotes, 1)
+    assert.deepEqual(fs.readFileSync(inputPath), sourceBytes)
+  })
+}
+
 test('imports an unpacked ChatGPT export folder into Obsidian markdown notes', async () => {
   const importer = await loadImporter()
   const tempRoot = createTempWorkspace()

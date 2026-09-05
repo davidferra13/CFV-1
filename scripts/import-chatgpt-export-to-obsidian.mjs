@@ -106,7 +106,13 @@ function loadChatgptSource(inputPath) {
   if (extension === '.json') {
     return {
       sourceLabel: inputPath,
-      conversations: parseJsonFile(inputPath),
+      batchLoaders: [
+        {
+          label: inputPath,
+          load: () => parseJsonFile(inputPath),
+        },
+      ],
+      cleanup: null,
     }
   }
 
