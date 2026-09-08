@@ -2,28 +2,28 @@
 
 These rules apply to Codex and other repo agents working in this workspace.
 
-## Build Queue First
+## Autonomous Execution And Delivery
 
-The developer is not hand-coding. Treat casual build requests as product intake, not immediate implementation.
+Read `docs/autonomous-delivery-contract.md` before every implementation task.
 
-Default behavior:
+An explicit implementation request is authorization to execute the whole delivery lifecycle. Phrases such as "build", "fix", "implement", "proceed", "do it", "keep building", and "ship it" mean: inspect, implement, verify, review, commit, push, deploy when the work affects a website/runtime, and verify the live result.
 
-- If the user explicitly asks to queue, backlog, save, batch, or defer work, add it to the build queue instead of editing application code.
-- If the user says they "have to add", "need to add", "want to add", "should add", or otherwise introduces a feature idea conversationally, do not immediately create a queue item. First go through the spec with the user.
-- Use `.agents/skills/build-queue/scripts/build-queue.mjs add` only after the request has enough spec shape to be useful, or when the user explicitly says to queue it now.
+- Never require a second prompt containing "fire the queue", "commit", "push", "publish", or "deploy".
+- The build queue is a tracking and coordination system, not a permission gate.
+- Claim or create a queue item when useful, then continue execution in the same task.
+- A conversational idea without execution language may be clarified or specified before coding.
+- Standing release authorization covers task-scoped commits, pushes, established production deployments, owned-service restarts, and live health/smoke checks.
+- Preserve unrelated dirty work and never deploy one project to another project's target.
+- Stop only for the hard blockers in the delivery contract; report the exact failed stage and evidence.
+
+## Build Queue Tracking
+
+- If the user explicitly asks to queue, backlog, save, batch, or defer work, add it to the build queue and do not execute it yet.
 - Preserve the raw request, then shape the queue item with goal, scope, acceptance criteria, risks, dependencies, and verification.
-- Do not start feature work from casual phrasing like "build this", "fix this", "add this", or "make this better".
-- For underspecified ideas, ask concise product/spec questions about the outcome, user flow, scope boundaries, acceptance criteria, edge cases, and verification before queueing.
+- Explicit implementation requests bypass queue waiting. Queue bookkeeping must not delay delivery.
+- For underspecified but explicit implementation requests, inspect the product and codebase, choose the safest reversible interpretation, document assumptions, and keep moving unless a product choice would materially change the result.
 
-Implementation is allowed only when the user explicitly says one of:
-
-- "fire the queue"
-- "build the queue"
-- "execute this queue item now"
-- "direct hotfix now"
-- "do not queue this"
-
-## Firing Rules
+## Queued Work Firing Rules
 
 When firing queued work:
 
@@ -87,13 +87,15 @@ Before implementation, inspect `git status --short`.
 
 If there is unrelated dirty work, do not overwrite it. Queue the request or create an isolated worktree. Never reset, checkout, or delete user or agent work unless the user explicitly asks.
 
-## Direct Work Exceptions
+## Direct Work Authorization
 
-Direct edits in the main workspace are acceptable for:
+Direct implementation is required when the user gives an explicit execution command. Use the queue for traceability and coordination without turning it into a pause.
 
-- Maintaining the queue system itself.
-- Read-only diagnosis and planning.
-- Tiny direct hotfixes only when the user explicitly says not to queue them.
+- Inspect the canonical repo, branch, upstream, dirty state, and deployment mapping first.
+- Work in the main checkout when it is clean and repo policy permits it; otherwise isolate task-owned changes in a branch/worktree and merge through the established path.
+- Complete the autonomous delivery contract before marking the task done.
+- Read-only diagnosis and planning remain non-mutating unless the user also asks to implement.
+
 
 ## Evidence-First Live Browser Research
 
@@ -126,7 +128,7 @@ Skill behavior contract:
 - User-named skills: load when present.
 - Implied skills: load only when the request clearly matches their trigger.
 - Historical or missing skills: guidance only, not an executed skill.
-- Broad build work: prefer the build queue firing workflow unless the user explicitly authorizes a direct hotfix or says not to queue.
+- Broad build work: explicit build requests execute immediately; use the build queue for tracking and non-overlapping coordination, never as a second approval gate.
 
 Use the inventory audit when routing looks stale:
 
