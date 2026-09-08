@@ -97,10 +97,10 @@ export function resolveApprovalGate(
     )
   }
 
-  if (action.riskLevel === 'high' && !preferences.allowHighRiskAuto) {
+  if (action.riskLevel === 'high') {
     return buildGate(
       'queue_for_approval',
-      'High-risk actions require chef approval by default.',
+      'High-risk actions always require exact chef approval.',
       minConfidence,
       'risk'
     )

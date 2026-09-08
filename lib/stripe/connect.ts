@@ -1,15 +1,15 @@
 'use server'
 
-// Stripe Connect Express
-// Handles chef-side Stripe account setup for receiving payouts.
-// Uses Express accounts: chefs are independent businesses, ChefFlow is the platform.
-//
-// NOTE: This module handles Connect ONBOARDING and STATUS only.
-// Routing payments through connected accounts (transfer_data.destination) is a
-// separate follow-on task and does not modify existing payment flows.
-
+import { randomUUID } from 'node:crypto'
 import { requireChef } from '@/lib/auth/get-user'
 import { createServerClient } from '@/lib/db/server'
+import {
+  executeExactApprovedAction,
+  loadExactApprovalAction,
+  requestExactActionApproval,
+  type ExactApprovalRequest,
+} from '@/lib/security/exact-action-approval'
+import type { ExactAction } from '@/lib/security/exact-action-approval-core'
 import { revalidatePath } from 'next/cache'
 import type Stripe from 'stripe'
 
@@ -25,31 +25,76 @@ function getStripe(): Stripe {
 }
 
 export type ConnectAccountStatus = {
-  connected: boolean // true when Stripe reports charges_enabled
-  pending: boolean // stripe_account_id set but not yet charges_enabled
+  connected: boolean
+  pending: boolean
   accountId: string | null
   chargesEnabled: boolean
   payoutsEnabled: boolean
 }
 
-// ─── Get status (no side effects) ────────────────────────────────────────────
+type ChefConnectState = {
+  stripe_account_id: string | null
+  email: string | null
+  business_name: string | null
+  stripe_onboarding_complete?: boolean | null
+}
 
-/**
- * Returns the current Stripe Connect status for the authenticated chef.
- * Reads only from the DB (fast). Use refreshConnectAccountStatus() to sync
- * with Stripe if the chef may have just completed their onboarding.
- */
+async function readChefConnectState(db: any, entityId: string): Promise<ChefConnectState> {
+  const { data, error } = await db
+    .from('chefs')
+    .select('stripe_account_id, email, business_name, stripe_onboarding_complete')
+    .eq('id', entityId)
+    .single()
+  if (error || !data) throw new Error('Stripe Connect chef state not found')
+  return data as ChefConnectState
+}
+
+function buildConnectAction(input: {
+  actionId: string
+  tenantId: string
+  actorId: string
+  fromOnboarding: boolean
+  chef: ChefConnectState
+}): ExactAction {
+  const origin = input.fromOnboarding ? 'onboarding' : 'settings'
+  return {
+    actionId: input.actionId,
+    tenantId: input.tenantId,
+    actorId: input.actorId,
+    toolName: 'stripe.connect.account_and_link',
+    category: 'identity',
+    operation: input.chef.stripe_account_id
+      ? 'create_connect_onboarding_link'
+      : 'create_connect_account_and_onboarding_link',
+    environment: 'external',
+    target: {
+      provider: 'stripe',
+      accountId: input.chef.stripe_account_id ?? 'new_account',
+      chefId: input.tenantId,
+    },
+    payload: {
+      createAccount: !input.chef.stripe_account_id,
+      email: input.chef.email,
+      businessName: input.chef.business_name,
+      returnUrl: `${SITE_URL}/api/stripe/connect/callback?from=${origin}`,
+      refreshUrl: `${SITE_URL}/api/stripe/connect/callback?from=${origin}&refresh=true`,
+      accountType: 'express',
+    },
+    contextVersion: [
+      input.chef.stripe_account_id ?? 'none',
+      input.chef.email ?? 'none',
+      input.chef.business_name ?? 'none',
+      input.fromOnboarding,
+    ].join(':'),
+  }
+}
+
 export async function getConnectAccountStatus(): Promise<ConnectAccountStatus> {
   const user = await requireChef()
   const db: any = createServerClient()
+  const chef = await readChefConnectState(db, user.entityId)
 
-  const { data } = await db
-    .from('chefs')
-    .select('stripe_account_id, stripe_onboarding_complete')
-    .eq('id', user.entityId)
-    .single()
-
-  if (!data?.stripe_account_id) {
+  if (!chef.stripe_account_id) {
     return {
       connected: false,
       pending: false,
@@ -60,97 +105,98 @@ export async function getConnectAccountStatus(): Promise<ConnectAccountStatus> {
   }
 
   return {
-    connected: data.stripe_onboarding_complete === true,
-    pending: data.stripe_account_id !== null && !data.stripe_onboarding_complete,
-    accountId: data.stripe_account_id,
-    chargesEnabled: data.stripe_onboarding_complete === true,
-    payoutsEnabled: data.stripe_onboarding_complete === true,
+    connected: chef.stripe_onboarding_complete === true,
+    pending: !chef.stripe_onboarding_complete,
+    accountId: chef.stripe_account_id,
+    chargesEnabled: chef.stripe_onboarding_complete === true,
+    payoutsEnabled: chef.stripe_onboarding_complete === true,
   }
 }
 
-// ─── Create Connect account link ─────────────────────────────────────────────
-
-/**
- * Creates a Stripe Express account (if not already created) and returns a
- * one-time hosted onboarding URL. Redirects the chef to Stripe's hosted UI.
- *
- * @param fromOnboarding - true when called from the wizard; affects the return URL.
- */
-export async function createConnectAccountLink(fromOnboarding = false): Promise<{ url: string }> {
+export async function prepareConnectAccountLinkApproval(
+  fromOnboarding = false
+): Promise<ExactApprovalRequest> {
   const user = await requireChef()
   const db: any = createServerClient()
-  const stripe = getStripe()
-
-  // Fetch current state
-  const { data: chef } = await db
-    .from('chefs')
-    .select('stripe_account_id, email, business_name')
-    .eq('id', user.entityId)
-    .single()
-
-  let accountId: string = chef?.stripe_account_id ?? ''
-
-  // Create Express account if not yet created
-  if (!accountId) {
-    const account = await stripe.accounts.create({
-      type: 'express',
-      email: chef?.email || undefined,
-      business_profile: {
-        name: chef?.business_name || undefined,
-      },
-      metadata: {
-        chef_id: user.entityId,
-        platform: 'chefflow',
-      },
-    } as Stripe.AccountCreateParams)
-
-    accountId = account.id
-
-    const { error } = await db
-      .from('chefs')
-      .update({ stripe_account_id: accountId })
-      .eq('id', user.entityId)
-
-    if (error) {
-      console.error('[createConnectAccountLink] Failed to save account ID:', error)
-      throw new Error('Failed to save Stripe account ID')
-    }
-  }
-
-  // Build return/refresh URLs (carry source context for the callback handler)
-  const origin = fromOnboarding ? 'onboarding' : 'settings'
-  const returnUrl = `${SITE_URL}/api/stripe/connect/callback?from=${origin}`
-  const refreshUrl = `${SITE_URL}/api/stripe/connect/callback?from=${origin}&refresh=true`
-
-  const accountLink = await stripe.accountLinks.create({
-    account: accountId,
-    refresh_url: refreshUrl,
-    return_url: returnUrl,
-    type: 'account_onboarding',
-  })
-
-  return { url: accountLink.url }
+  const chef = await readChefConnectState(db, user.entityId)
+  return requestExactActionApproval(
+    buildConnectAction({
+      actionId: randomUUID(),
+      tenantId: user.tenantId!,
+      actorId: user.id,
+      fromOnboarding,
+      chef,
+    })
+  )
 }
 
-// ─── Refresh status from Stripe API ──────────────────────────────────────────
+export async function createConnectAccountLink(
+  fromOnboarding: boolean,
+  approvalId: string
+): Promise<{ url: string }> {
+  if (!approvalId) throw new Error('exact_approval_required')
+  const user = await requireChef()
+  const db: any = createServerClient()
+  const [{ action: approvedAction }, chef] = await Promise.all([
+    loadExactApprovalAction(approvalId),
+    readChefConnectState(db, user.entityId),
+  ])
+  const action = buildConnectAction({
+    actionId: approvedAction.actionId,
+    tenantId: user.tenantId!,
+    actorId: user.id,
+    fromOnboarding,
+    chef,
+  })
+  const stripe = getStripe()
+  const execution = await executeExactApprovedAction({
+    approvalId,
+    action,
+    invoke: async () => {
+      let accountId = chef.stripe_account_id ?? ''
+      if (!accountId) {
+        const account = await stripe.accounts.create({
+          type: 'express',
+          email: chef.email || undefined,
+          business_profile: { name: chef.business_name || undefined },
+          metadata: { chef_id: user.entityId, platform: 'chefflow' },
+        } as Stripe.AccountCreateParams)
+        accountId = account.id
+        const { error } = await db
+          .from('chefs')
+          .update({ stripe_account_id: accountId })
+          .eq('id', user.entityId)
+        if (error) throw new Error('Created Stripe account but failed to persist its ID')
+      }
 
-/**
- * Queries Stripe's API to get the latest account status and updates the DB.
- * Call this when the chef returns from Stripe's hosted onboarding, and also
- * from the account.updated webhook handler.
- */
+      const origin = fromOnboarding ? 'onboarding' : 'settings'
+      const accountLink = await stripe.accountLinks.create({
+        account: accountId,
+        refresh_url: `${SITE_URL}/api/stripe/connect/callback?from=${origin}&refresh=true`,
+        return_url: `${SITE_URL}/api/stripe/connect/callback?from=${origin}`,
+        type: 'account_onboarding',
+      })
+      return { accountId, accountLink }
+    },
+    verify: async ({ accountId, accountLink }) => {
+      const verifiedAccount = await stripe.accounts.retrieve(accountId)
+      return {
+        verified: verifiedAccount.id === accountId && Boolean(accountLink.url),
+        receiptId: `${accountId}:${accountLink.expires_at}`,
+        providerState: 'onboarding_link_created',
+      }
+    },
+  })
+  return { url: execution.result.accountLink.url }
+}
+
 export async function refreshConnectAccountStatus(): Promise<ConnectAccountStatus> {
   const user = await requireChef()
   const db: any = createServerClient()
   const stripe = getStripe()
+  const chef = await readChefConnectState(db, user.entityId)
 
-  const { data: chef } = await db
-    .from('chefs')
-    .select('stripe_account_id')
-    .eq('id', user.entityId)
-    .single()
-
-  if (!chef?.stripe_account_id) {
+  if (!chef.stripe_account_id) {
     return {
       connected: false,
       pending: false,
@@ -161,10 +207,7 @@ export async function refreshConnectAccountStatus(): Promise<ConnectAccountStatu
   }
 
   const account = await stripe.accounts.retrieve(chef.stripe_account_id)
-
-  // Both charges AND payouts must be enabled for the chef to receive transfers
   const fullyOnboarded = account.charges_enabled === true && account.payouts_enabled === true
-
   await db
     .from('chefs')
     .update({ stripe_onboarding_complete: fullyOnboarded })
@@ -182,28 +225,16 @@ export async function refreshConnectAccountStatus(): Promise<ConnectAccountStatu
   }
 }
 
-// ─── Update status from webhook (no auth - uses chef ID directly) ─────────────
-
-/**
- * Updates stripe_onboarding_complete for a given Stripe account ID.
- * Called from the account.updated webhook handler (no chef auth context available).
- */
 export async function updateConnectStatusFromWebhook(
   stripeAccountId: string,
   chargesEnabled: boolean,
   payoutsEnabled?: boolean
 ): Promise<void> {
   const db = createServerClient({ admin: true })
-
-  // Both charges AND payouts must be enabled for full onboarding
   const fullyOnboarded = chargesEnabled && (payoutsEnabled ?? chargesEnabled)
-
   const { error } = await db
     .from('chefs')
     .update({ stripe_onboarding_complete: fullyOnboarded })
     .eq('stripe_account_id', stripeAccountId)
-
-  if (error) {
-    console.error('[updateConnectStatusFromWebhook]', error)
-  }
+  if (error) console.error('[updateConnectStatusFromWebhook]', error)
 }

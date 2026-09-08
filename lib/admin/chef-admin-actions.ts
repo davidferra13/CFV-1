@@ -100,23 +100,12 @@ export async function compChef(
 
   if (!chef) return { success: false, error: 'Chef not found.' }
 
-  // Cancel Stripe subscription if active (prevent continued billing)
+  // External subscription cancellation is consequential and cannot piggyback
+  // on the local comp action. It needs its own exact preview and approval.
   if (chef.stripe_subscription_id) {
-    try {
-      const key = process.env.STRIPE_SECRET_KEY
-      if (key) {
-        const StripeLib = require('stripe')
-        const StripeCtor = StripeLib.default || StripeLib
-        const stripe = new StripeCtor(key, {
-          apiVersion: '2025-12-18.acacia',
-        })
-        await stripe.subscriptions.cancel(chef.stripe_subscription_id)
-      }
-    } catch (err) {
-      console.error('[Admin] Failed to cancel Stripe subscription during comp:', err)
-      // Continue anyway; the subscription_status override will take effect locally.
-      // Stripe webhook may fire later and attempt to set 'canceled', but our
-      // handleSubscriptionDeleted preserves comped if already set.
+    return {
+      success: false,
+      error: 'Stripe subscription cancellation blocked: exact approval is required.',
     }
   }
 

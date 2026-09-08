@@ -552,38 +552,19 @@ async function handlePaymentSucceeded(event: Stripe.Event) {
   if (eventStatusRow?.status === 'cancelled') {
     log.warn(
       `[handlePaymentSucceeded] Payment received for CANCELLED event ${event_id}. ` +
-        `Issuing automatic refund for ${paymentIntent.amount}c.`
+        `Refund is blocked pending exact David approval for ${paymentIntent.amount}c.`
     )
-    try {
-      const stripe = getStripe()
-      await stripe.refunds.create({ payment_intent: paymentIntent.id })
-
-      const { recordSideEffectFailure } = await import('@/lib/monitoring/non-blocking')
-      await recordSideEffectFailure({
-        source: 'stripe:webhook',
-        operation: 'auto_refund_cancelled_event',
-        severity: 'high',
-        entityType: 'event',
-        entityId: event_id,
-        tenantId: tenant_id,
-        errorMessage: `Auto-refunded ${paymentIntent.amount}c - payment arrived after event cancellation`,
-      })
-    } catch (refundErr) {
-      log.error('[handlePaymentSucceeded] Auto-refund failed for cancelled event', {
-        error: refundErr,
-      })
-      const { recordSideEffectFailure } = await import('@/lib/monitoring/non-blocking')
-      await recordSideEffectFailure({
-        source: 'stripe:webhook',
-        operation: 'auto_refund_failed',
-        severity: 'critical',
-        entityType: 'event',
-        entityId: event_id,
-        tenantId: tenant_id,
-        errorMessage: `Payment ${paymentIntent.amount}c on cancelled event - auto-refund FAILED: ${(refundErr as Error).message}`,
-      })
-    }
-    return // Do not record in ledger or transition event
+    const { recordSideEffectFailure } = await import('@/lib/monitoring/non-blocking')
+    await recordSideEffectFailure({
+      source: 'stripe:webhook',
+      operation: 'refund_pending_exact_approval',
+      severity: 'critical',
+      entityType: 'event',
+      entityId: event_id,
+      tenantId: tenant_id,
+      errorMessage: `Payment ${paymentIntent.amount}c arrived after cancellation; no refund was issued because exact approval is required.`,
+    })
+    return // Do not mutate money, record in ledger, or transition event
   }
 
   log.info('[handlePaymentSucceeded] Processing payment for event', {

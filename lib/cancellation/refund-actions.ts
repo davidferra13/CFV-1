@@ -20,13 +20,17 @@ export type InitiateRefundInput = {
   amountCents: number // Actual amount to refund (chef may override)
   refundDepositAlso: boolean // Whether to also refund the deposit
   reason: string
+  approvalId?: string
 }
 
 export type RefundResult = {
   success: boolean
+  approvalRequired: boolean
+  approval?: import('@/lib/security/exact-action-approval').ExactApprovalRequest
   ledgerEntryId: string | null
   stripeRefundId: string | null
   isOfflineRefund: boolean
+  notificationSent: false
 }
 
 /**
@@ -132,7 +136,7 @@ export async function getCancellationRefundRecommendation(eventId: string) {
  *  - No Stripe API call
  */
 export async function initiateRefund(input: InitiateRefundInput): Promise<RefundResult> {
-  const { eventId, amountCents, reason } = input
+  const { eventId, amountCents, reason, approvalId } = input
 
   if (!Number.isInteger(amountCents) || amountCents <= 0) {
     throw new Error('Refund amount must be a positive integer (cents)')
@@ -170,83 +174,39 @@ export async function initiateRefund(input: InitiateRefundInput): Promise<Refund
   let ledgerEntryId: string | null = null
 
   if (isStripePayment && stripePaymentIntentId) {
-    // ── Stripe refund path ───────────────────────────────────────────────────
-    // The Stripe webhook will fire and handleRefund() writes the ledger entry.
-    // We only call the Stripe API here.
-    try {
-      const { createStripeRefund } = await import('@/lib/stripe/refund')
-      const refundResult = await createStripeRefund(
+    const { createStripeRefund, prepareStripeRefundApproval } = await import('@/lib/stripe/refund')
+
+    if (!approvalId) {
+      const approval = await prepareStripeRefundApproval(
         stripePaymentIntentId,
         amountCents,
         'requested_by_customer'
       )
-      stripeRefundId = refundResult.refundId
-    } catch (stripeErr) {
-      console.error('[initiateRefund] Stripe refund failed:', stripeErr)
-      throw new Error(`Stripe refund failed: ${(stripeErr as Error).message}`)
+      return {
+        success: false,
+        approvalRequired: true,
+        approval,
+        ledgerEntryId: null,
+        stripeRefundId: null,
+        isOfflineRefund: false,
+        notificationSent: false,
+      }
     }
+
+    const refundResult = await createStripeRefund(
+      stripePaymentIntentId,
+      amountCents,
+      'requested_by_customer',
+      approvalId
+    )
+    stripeRefundId = refundResult.refundId
   } else {
-    // ── Offline refund path ──────────────────────────────────────────────────
-    // Write ledger entry manually (negative amount, is_refund=true)
-    const dbAdmin = createServerClient({ admin: true })
-    const { data: ledgerEntry, error: ledgerError } = await dbAdmin
-      .from('ledger_entries')
-      .insert({
-        tenant_id: event.tenant_id,
-        client_id: event.client_id,
-        entry_type: 'refund',
-        amount_cents: -Math.abs(amountCents), // Negative for refunds
-        payment_method: 'cash', // Offline refunds default to cash
-        description: `Offline refund issued by chef`,
-        event_id: eventId,
-        transaction_reference: `offline_refund_${eventId}_${Date.now()}`,
-        is_refund: true,
-        refund_reason: reason,
-        internal_notes: `Manual refund by ${user.email} on ${new Date().toISOString()}. Reason: ${reason}`,
-        created_by: user.id,
-      })
-      .select('id')
-      .single()
-
-    if (ledgerError) {
-      console.error('[initiateRefund] Offline ledger entry failed:', ledgerError)
-      throw new Error('Failed to record refund in ledger')
-    }
-
-    ledgerEntryId = ledgerEntry?.id ?? null
+    throw new Error(
+      'Offline refunds are fail-closed until their exact-action approval executor is available.'
+    )
   }
 
-  // ── Send client refund notification email ────────────────────────────────
-  try {
-    const dbAdmin = createServerClient({ admin: true })
-    const { data: client } = await dbAdmin
-      .from('clients')
-      .select('email, full_name')
-      .eq('id', event.client_id)
-      .single()
-
-    const { data: chef } = await dbAdmin
-      .from('chefs')
-      .select('business_name')
-      .eq('id', event.tenant_id)
-      .single()
-
-    if (client?.email) {
-      const { sendRefundInitiatedEmail } = await import('@/lib/email/notifications')
-      await sendRefundInitiatedEmail({
-        clientEmail: client.email,
-        clientName: client.full_name,
-        chefName: chef?.business_name || 'Your Chef',
-        amountCents,
-        reason,
-        isStripeRefund: isStripePayment,
-        occasion: event.occasion || 'your event',
-        eventDate: event.event_date,
-      })
-    }
-  } catch (emailErr) {
-    console.error('[initiateRefund] Email failed (non-blocking):', emailErr)
-  }
+  // No client message is sent here. Outbound communication needs its own exact preview and approval.
 
   // ── Log chef activity ─────────────────────────────────────────────────────
   try {
@@ -282,8 +242,10 @@ export async function initiateRefund(input: InitiateRefundInput): Promise<Refund
 
   return {
     success: true,
+    approvalRequired: false,
     ledgerEntryId,
     stripeRefundId,
     isOfflineRefund: !isStripePayment,
+    notificationSent: false,
   }
 }

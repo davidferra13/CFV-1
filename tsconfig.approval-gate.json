@@ -1,0 +1,29 @@
+{
+  "extends": "./tsconfig.ci.json",
+  "compilerOptions": {
+    "incremental": false,
+    "noEmit": true
+  },
+  "include": [
+    "next-env.d.ts",
+    "lib/security/exact-action-approval-core.ts",
+    "lib/security/exact-action-approval.ts",
+    "lib/security/exact-action-approval-actions.ts",
+    "lib/stripe/refund.ts",
+    "lib/stripe/connect.ts",
+    "lib/stripe/deferred-transfers.ts",
+    "lib/cancellation/refund-actions.ts",
+    "components/events/initiate-refund-modal.tsx",
+    "app/(chef)/settings/stripe-connect/stripe-connect-client.tsx",
+    "components/onboarding/onboarding-steps/connect-stripe-step.tsx",
+    "lib/autonomy/approval-router.ts",
+    "lib/autonomy/approval-queue-actions.ts",
+    "lib/communication/remy-approval-guardrails.ts",
+    "app/api/webhooks/stripe/route.ts",
+    "lib/admin/chef-admin-actions.ts",
+    "lib/tickets/actions.ts",
+    "tests/unit/exact-action-approval-core.test.ts",
+    "tests/unit/exact-action-provider-boundary.test.ts"
+  ],
+  "exclude": ["node_modules", ".next", ".next-dev", "dist"]
+}

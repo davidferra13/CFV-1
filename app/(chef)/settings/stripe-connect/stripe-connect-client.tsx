@@ -5,7 +5,13 @@
 
 import { useState } from 'react'
 import { useRouter } from 'next/navigation'
-import { createConnectAccountLink, refreshConnectAccountStatus } from '@/lib/stripe/connect'
+import {
+  createConnectAccountLink,
+  prepareConnectAccountLinkApproval,
+  refreshConnectAccountStatus,
+} from '@/lib/stripe/connect'
+import { approveExactActionRequest } from '@/lib/security/exact-action-approval-actions'
+import type { ExactApprovalRequest } from '@/lib/security/exact-action-approval'
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
 import type { ConnectAccountStatus } from '@/lib/stripe/connect'
@@ -15,12 +21,22 @@ export function StripeConnectClient({ status }: { status: ConnectAccountStatus }
   const [loading, setLoading] = useState(false)
   const [refreshing, setRefreshing] = useState(false)
   const [error, setError] = useState<string | null>(null)
+  const [approval, setApproval] = useState<ExactApprovalRequest | null>(null)
 
   const handleConnect = async () => {
     setLoading(true)
     setError(null)
     try {
-      const { url } = await createConnectAccountLink(false)
+      if (!approval) {
+        setApproval(await prepareConnectAccountLinkApproval(false))
+        setLoading(false)
+        return
+      }
+      await approveExactActionRequest({
+        approvalId: approval.approvalId,
+        displayedActionHash: approval.preview.actionHash,
+      })
+      const { url } = await createConnectAccountLink(false, approval.approvalId)
       window.location.href = url
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Failed to start Stripe onboarding')
@@ -78,7 +94,7 @@ export function StripeConnectClient({ status }: { status: ConnectAccountStatus }
               to continue where you left off.
             </p>
             <Button variant="primary" onClick={handleConnect} loading={loading}>
-              Continue Stripe Setup
+              {approval ? 'Approve exact Stripe setup' : 'Continue Stripe Setup'}
             </Button>
           </div>
         )}
@@ -104,11 +120,54 @@ export function StripeConnectClient({ status }: { status: ConnectAccountStatus }
               </li>
             </ul>
             <Button variant="primary" onClick={handleConnect} loading={loading}>
-              Connect Stripe Account
+              {approval ? 'Approve exact Stripe setup' : 'Connect Stripe Account'}
             </Button>
           </div>
         )}
 
+        {approval && (
+          <div className="mt-4 rounded-lg border border-amber-700 bg-amber-950/40 p-4 text-sm">
+            <p className="font-semibold text-amber-200">Exact approval required</p>
+            <p className="mt-1 text-stone-300">
+              {approval.preview.action.operation === 'create_connect_account_and_onboarding_link'
+                ? 'Create a Stripe Express account and one-time onboarding link.'
+                : 'Create a new one-time onboarding link for the existing Stripe account.'}
+            </p>
+            <dl className="mt-3 space-y-1 text-xs text-stone-400">
+              <div>
+                <dt className="inline font-medium">Account: </dt>
+                <dd className="inline">{String(approval.preview.action.target.accountId)}</dd>
+              </div>
+              <div>
+                <dt className="inline font-medium">Email: </dt>
+                <dd className="inline">
+                  {String(approval.preview.action.payload.email ?? 'none')}
+                </dd>
+              </div>
+              <div>
+                <dt className="inline font-medium">Business: </dt>
+                <dd className="inline">
+                  {String(approval.preview.action.payload.businessName ?? 'none')}
+                </dd>
+              </div>
+              <div>
+                <dt className="inline font-medium">Return URL: </dt>
+                <dd className="inline break-all">
+                  {String(approval.preview.action.payload.returnUrl)}
+                </dd>
+              </div>
+              <div>
+                <dt className="inline font-medium">Expires: </dt>
+                <dd className="inline">
+                  {new Date(approval.preview.expiresAt).toLocaleTimeString()}
+                </dd>
+              </div>
+            </dl>
+            <p className="mt-2 text-xs text-stone-500 break-all">
+              Action {approval.preview.actionHash}
+            </p>
+          </div>
+        )}
         {error && <p className="mt-3 text-sm text-red-600">{error}</p>}
       </div>
 

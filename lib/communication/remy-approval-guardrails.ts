@@ -57,7 +57,6 @@ export type RemyCommunicationGuardrailDecision = {
 }
 
 const LOW_CONFIDENCE_THRESHOLD = 0.75
-const SAFE_AUTO_ACK_CONFIDENCE_THRESHOLD = 0.8
 
 const APPROVAL_PATTERNS: Array<{
   approvalClass: Exclude<RemyMandatoryApprovalClass, 'low_confidence' | 'external_send_side_effect'>
@@ -98,11 +97,6 @@ const APPROVAL_PATTERNS: Array<{
       /\b(vendor|supplier|venue|commit|committed|confirmed order|purchase order|minimum order|delivery window|substitution)\b/i,
   },
 ]
-
-const AUTO_ACK_PATTERN =
-  /\b(received|got your message|thanks for reaching out|will review|will follow up|status update|checking on it|no action needed)\b/i
-const COMMITMENT_PATTERN =
-  /\b(confirmed|guarantee|guaranteed|booked|reserved|approved|paid|refund|changed|cancelled|ordered|purchased|contracted|available for sure)\b/i
 
 export function evaluateRemyCommunicationGuardrails(
   input: RemyCommunicationGuardrailInput
@@ -145,17 +139,10 @@ export function evaluateRemyCommunicationGuardrails(
     input.channel === 'phone' ||
     /\b(send|text|sms|email|call|notify|message|reply|contact)\b/i.test(input.proposedNextAction)
 
-  const safeAutoAckAllowed =
-    confidence >= SAFE_AUTO_ACK_CONFIDENCE_THRESHOLD &&
-    externalSendSideEffect &&
-    input.sourceEvidence.length > 0 &&
-    AUTO_ACK_PATTERN.test(input.message) &&
-    !COMMITMENT_PATTERN.test(input.message) &&
-    !policyBlocks &&
-    !policyDelays &&
-    [...approvalClasses].every((approvalClass) => approvalClass === 'external_send_side_effect')
+  // David requires approval for every outbound message. No content-based exception.
+  const safeAutoAckAllowed = false
 
-  if (externalSendSideEffect && !safeAutoAckAllowed) {
+  if (externalSendSideEffect) {
     approvalClasses.add('external_send_side_effect')
   }
 

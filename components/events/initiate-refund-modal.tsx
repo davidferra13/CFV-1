@@ -8,6 +8,8 @@
 import { useState, useTransition } from 'react'
 import { useRouter } from 'next/navigation'
 import { initiateRefund } from '@/lib/cancellation/refund-actions'
+import { approveExactActionRequest } from '@/lib/security/exact-action-approval-actions'
+import type { ExactApprovalRequest } from '@/lib/security/exact-action-approval'
 import { formatCurrency } from '@/lib/utils/currency'
 import { Button } from '@/components/ui/button'
 import { Card } from '@/components/ui/card'
@@ -56,6 +58,7 @@ export function InitiateRefundModal({
   const [reason, setReason] = useState('')
   const [error, setError] = useState<string | null>(null)
   const [success, setSuccess] = useState(false)
+  const [approvalRequest, setApprovalRequest] = useState<ExactApprovalRequest | null>(null)
 
   const tierBadge: Record<PolicyTier, { label: string; color: string }> = {
     full_refund: { label: 'Full refund eligible', color: 'bg-green-900 text-green-800' },
@@ -88,21 +91,104 @@ export function InitiateRefundModal({
 
     startTransition(async () => {
       try {
-        await initiateRefund({
+        const result = await initiateRefund({
           eventId,
           amountCents,
           refundDepositAlso,
           reason: reason.trim(),
         })
+        if (result.approvalRequired && result.approval) {
+          setApprovalRequest(result.approval)
+          return
+        }
+        throw new Error('Refund did not produce an approval preview')
+      } catch (err) {
+        setError((err as Error).message || 'Failed to initiate refund')
+      }
+    })
+  }
+
+  function handleApproveAndProcess() {
+    if (!approvalRequest) return
+    setError(null)
+    const amountMinor = approvalRequest.preview.action.payload.amountMinor
+    if (typeof amountMinor !== 'number') {
+      setError('Approval preview is missing the exact refund amount')
+      return
+    }
+
+    startTransition(async () => {
+      try {
+        await approveExactActionRequest({
+          approvalId: approvalRequest.approvalId,
+          displayedActionHash: approvalRequest.preview.actionHash,
+        })
+        const result = await initiateRefund({
+          eventId,
+          amountCents: amountMinor,
+          refundDepositAlso,
+          reason: reason.trim(),
+          approvalId: approvalRequest.approvalId,
+        })
+        if (!result.success) throw new Error('Refund approval was not consumed')
         setSuccess(true)
         setTimeout(() => {
           onClose()
           router.refresh()
         }, 1500)
       } catch (err) {
-        setError((err as Error).message || 'Failed to initiate refund')
+        setError((err as Error).message || 'Failed to process approved refund')
       }
     })
+  }
+
+  if (approvalRequest) {
+    const action = approvalRequest.preview.action
+    const disclosure = action.financialDisclosure!
+    return (
+      <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-dialog p-4">
+        <Card className="p-6 max-w-md w-full space-y-4">
+          <h2 className="text-xl font-semibold text-stone-100">Approve exact refund</h2>
+          <p className="text-sm text-stone-400">
+            This approval can be used once and expires at{' '}
+            {new Date(approvalRequest.preview.expiresAt).toLocaleTimeString()}.
+          </p>
+          <div className="rounded-lg border border-stone-700 bg-stone-800 p-4 text-sm space-y-2">
+            <div className="flex justify-between">
+              <span>Refund</span>
+              <strong>{formatCurrency(disclosure.netMinor)}</strong>
+            </div>
+            <div className="flex justify-between">
+              <span>Destination</span>
+              <span>original payment •••• {disclosure.destination.last4}</span>
+            </div>
+            <div className="flex justify-between">
+              <span>Fees</span>
+              <span>{formatCurrency(0)}</span>
+            </div>
+            <div className="flex justify-between">
+              <span>Reversible</span>
+              <span>No</span>
+            </div>
+            <p className="pt-2 text-stone-400">No client message will be sent.</p>
+            <p className="text-xs text-stone-500">If denied: {disclosure.noActionResult}</p>
+            <p className="text-xs text-stone-500">Reversal: {disclosure.reversalPath}</p>
+            <p className="text-xs text-stone-500 break-all">
+              Action {approvalRequest.preview.actionHash}
+            </p>
+          </div>
+          {error && <p className="text-sm text-red-500">{error}</p>}
+          <div className="flex gap-3">
+            <Button type="button" onClick={handleApproveAndProcess} disabled={isPending}>
+              {isPending ? 'Processing…' : 'Approve and process refund'}
+            </Button>
+            <Button type="button" variant="secondary" onClick={onClose} disabled={isPending}>
+              Cancel
+            </Button>
+          </div>
+        </Card>
+      </div>
+    )
   }
 
   if (success) {
@@ -112,7 +198,7 @@ export function InitiateRefundModal({
           <div className="text-5xl mb-4">✓</div>
           <p className="text-lg font-semibold text-stone-100">Refund initiated</p>
           <p className="text-sm text-stone-500 mt-1">
-            Client has been notified. Page refreshing...
+            Verified by Stripe. No client message was sent. Page refreshing...
           </p>
         </Card>
       </div>

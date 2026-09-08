@@ -1,287 +1,53 @@
 {
-  "generated": "2026-08-05T17:18:01.646Z",
+  "generated": "2026-09-08T05:31:15.706Z",
   "summary": {
-    "total": 994,
-    "wired": 988,
+    "total": 982,
+    "wired": 979,
     "weak": 0,
     "orphans": 0,
-    "allowed": 1,
-    "skipped": 5
+    "allowed": 0,
+    "skipped": 3
   },
   "post_build_domain_matrix": {
     "changed_files": [
-      "scripts/wiring-audit-results.json",
-      "scripts/wiring-audit.mjs",
-      "app/(chef)/dashboard/_components/one-surface-input.tsx",
-      "app/(chef)/dashboard/_components/today-block.tsx",
-      "app/(chef)/studio/analytics/analytics-dashboard-client.tsx",
-      "app/(chef)/studio/analytics/page.tsx",
-      "app/(chef)/studio/branding/branding-editor-client.tsx",
-      "app/(chef)/studio/branding/page.tsx",
-      "app/(chef)/studio/domain/domain-setup-client.tsx",
-      "app/(chef)/studio/domain/page.tsx",
-      "app/(chef)/studio/media/media-library-client.tsx",
-      "app/(chef)/studio/media/page.tsx",
-      "app/(chef)/studio/page.tsx",
-      "app/(chef)/studio/pages/[pageId]/page.tsx",
-      "app/(chef)/studio/pages/[pageId]/section-list-client.tsx",
-      "app/(chef)/studio/pages/page-list-client.tsx",
-      "app/(chef)/studio/pages/page.tsx",
-      "app/(chef)/studio/preview/page.tsx",
-      "app/(chef)/studio/preview/site-preview-client.tsx",
-      "app/(chef)/studio/seo/page.tsx",
-      "app/(chef)/studio/seo/seo-editor-client.tsx",
-      "app/(chef)/studio/studio-dashboard-client.tsx",
-      "app/(chef)/studio/templates/page.tsx",
-      "app/(chef)/studio/templates/template-picker-client.tsx",
-      "app/(public)/s/[siteSlug]/[pageSlug]/page.tsx",
-      "app/(public)/s/[siteSlug]/layout.tsx",
-      "app/(public)/s/[siteSlug]/not-found.tsx",
-      "app/(public)/s/[siteSlug]/page.tsx",
-      "app/api/studio/analytics/route.ts",
-      "app/api/studio/upload/route.ts",
-      "components/studio/editors/BioSectionEditor.tsx",
-      "components/studio/editors/BookingEmbedSectionEditor.tsx",
-      "components/studio/editors/CTASectionEditor.tsx",
-      "components/studio/editors/ContactFormSectionEditor.tsx",
-      "components/studio/editors/DividerSectionEditor.tsx",
-      "components/studio/editors/FAQSectionEditor.tsx",
-      "components/studio/editors/GallerySectionEditor.tsx",
-      "components/studio/editors/ImageTextSectionEditor.tsx",
-      "components/studio/editors/MenuShowcaseSectionEditor.tsx",
-      "components/studio/editors/PricingSectionEditor.tsx",
-      "components/studio/editors/TeamSectionEditor.tsx",
-      "components/studio/editors/TestimonialsSectionEditor.tsx",
-      "components/studio/editors/TextSectionEditor.tsx",
-      "components/studio/editors/VideoSectionEditor.tsx",
-      "components/studio/renderers/BioRenderer.tsx",
-      "components/studio/renderers/BookingEmbedRenderer.tsx",
-      "components/studio/renderers/CTARenderer.tsx",
-      "components/studio/renderers/ContactFormRenderer.tsx",
-      "components/studio/renderers/DividerRenderer.tsx",
-      "components/studio/renderers/FAQRenderer.tsx",
-      "components/studio/renderers/GalleryRenderer.tsx",
-      "components/studio/renderers/HeroRenderer.tsx",
-      "components/studio/renderers/ImageTextRenderer.tsx",
-      "components/studio/renderers/MenuShowcaseRenderer.tsx",
-      "components/studio/renderers/PricingRenderer.tsx",
-      "components/studio/renderers/SectionRenderer.tsx",
-      "components/studio/renderers/StatsRenderer.tsx",
-      "components/studio/renderers/TeamRenderer.tsx",
-      "components/studio/renderers/TestimonialsRenderer.tsx",
-      "components/studio/renderers/TextRenderer.tsx",
-      "components/studio/renderers/VideoRenderer.tsx",
-      "docs/audit/2026-07-16/00-AUDIT-STATE-HANDOFF.md",
-      "docs/audit/2026-07-16/01-auth-trust-boundaries.md",
-      "docs/audit/2026-07-16/02-data-layer.md",
-      "docs/audit/2026-07-16/03-chef-portal.md",
-      "docs/audit/2026-07-16/04-other-surfaces.md",
-      "docs/audit/2026-07-16/05-backend-automation.md",
-      "docs/audit/2026-07-16/06-integrations-infra.md",
-      "docs/audit/2026-07-16/07-deception-sweep.md",
-      "docs/audit/2026-07-16/08-testing-ci-health.md",
-      "docs/audit/2026-07-16/09-notifications-intelligence.md",
-      "docs/audit/2026-07-16/10-ux-accessibility-mobile.md",
-      "docs/audit/2026-07-16/11-product-definition.md",
-      "docs/audit/2026-07-16/12-MASTER-REPORT.md",
-      "docs/shakedown/pass-1-critical-route-audit.md",
-      "docs/shakedown/pass-10-conversation-history-audit.md",
-      "docs/shakedown/pass-11-build-queue-reconciliation.md",
-      "docs/shakedown/pass-12-blueprint-reconciliation.md",
-      "docs/shakedown/pass-2-broad-route-scan.md",
-      "docs/shakedown/pass-3-server-action-audit.md",
-      "docs/shakedown/pass-4-zero-hallucination-audit.md",
-      "docs/shakedown/pass-5-lifecycle-simulation.md",
-      "docs/shakedown/pass-6-regression-recovery.md",
-      "docs/shakedown/pass-7-ai-degradation-audit.md",
-      "docs/shakedown/pass-8-data-density-audit.md",
-      "docs/shakedown/pass-9-multi-role-boundary-audit.md",
-      "docs/specs/rescue/2026-07-10-rescue-ws5-integrity.md",
-      "docs/specs/rescue/OVERHAUL-MANIFEST.md",
-      "docs/specs/website-builder-studio.md",
-      "lib/hub/hub-push-subscriptions-internal.ts",
-      "lib/navigation/ia-tier-map.json",
-      "lib/remy/verbs/entities.ts",
-      "lib/remy/verbs/registry.ts",
-      "lib/remy/verbs/resolve.test.ts",
-      "lib/remy/verbs/resolve.ts",
-      "lib/remy/verbs/run-verb-action.ts",
-      "lib/remy/verbs/verbs/cost.ts",
-      "lib/remy/verbs/verbs/paid.ts",
-      "lib/remy/verbs/verbs/prep.ts",
-      "lib/remy/verbs/verbs/quote.ts",
-      "lib/remy/verbs/verbs/reply.ts",
-      "lib/remy/verbs/verbs/today.ts",
-      "lib/studio/actions.ts",
-      "lib/studio/analytics.ts",
-      "lib/studio/data-resolvers.ts",
-      "lib/studio/domain-verification.ts",
-      "lib/studio/queries.ts",
-      "lib/studio/schemas.ts",
-      "lib/studio/templates/bakery.ts",
-      "lib/studio/templates/caterer.ts",
-      "lib/studio/templates/food-truck.ts",
-      "lib/studio/templates/index.ts",
-      "lib/studio/templates/meal-prep.ts",
-      "lib/studio/templates/private-chef.ts",
-      "lib/studio/templates/universal.ts",
-      "lib/studio/types.ts",
-      "scripts/count-chef-nav.mjs",
-      "scripts/seed-slice1-verification.ts",
-      "scripts/verify-slice1.mjs",
-      "scripts/wiring-expected-orphans.json",
-      "scripts/wiring-tier-rules.mjs",
-      "tests/unit/wiring-tier-rules.test.ts"
+      "app/(chef)/settings/stripe-connect/stripe-connect-client.tsx",
+      "app/api/webhooks/stripe/route.ts",
+      "components/events/initiate-refund-modal.tsx",
+      "components/onboarding/onboarding-steps/connect-stripe-step.tsx",
+      "lib/admin/chef-admin-actions.ts",
+      "lib/autonomy/approval-queue-actions.ts",
+      "lib/autonomy/approval-router.ts",
+      "lib/cancellation/refund-actions.ts",
+      "lib/communication/remy-approval-guardrails.ts",
+      "lib/stripe/connect.ts",
+      "lib/stripe/deferred-transfers.ts",
+      "lib/stripe/refund.ts",
+      "lib/tickets/actions.ts",
+      "tests/unit/remy-communication-approval-guardrails.test.ts",
+      "database/migrations/20260908000100_exact_action_approval_gateway.sql",
+      "docs/security/exact-action-approval-gateway.md",
+      "lib/security/exact-action-approval-actions.ts",
+      "lib/security/exact-action-approval-core.ts",
+      "lib/security/exact-action-approval.ts",
+      "tests/unit/exact-action-approval-core.test.ts",
+      "tests/unit/exact-action-provider-boundary.test.ts"
     ],
-    "affected_routes": [
-      "/studio/analytics",
-      "/studio/branding",
-      "/studio/domain",
-      "/studio/media",
-      "/studio",
-      "/studio/pages/[pageId]",
-      "/studio/pages",
-      "/studio/preview",
-      "/studio/seo",
-      "/studio/templates",
-      "/s/[siteSlug]/[pageSlug]",
-      "/s/[siteSlug]"
-    ],
+    "affected_routes": [],
     "domains": [
-      {
-        "id": "page_xray",
-        "label": "Page X-Ray",
-        "relevance": "high",
-        "score": 362,
-        "evidence": [
-          "scripts/wiring-audit-results.json",
-          "scripts/wiring-audit.mjs",
-          "app/(chef)/dashboard/_components/one-surface-input.tsx",
-          "app/(chef)/dashboard/_components/today-block.tsx",
-          "app/(chef)/studio/analytics/analytics-dashboard-client.tsx",
-          "app/(chef)/studio/analytics/page.tsx",
-          "app/(chef)/studio/branding/branding-editor-client.tsx",
-          "app/(chef)/studio/branding/page.tsx"
-        ],
-        "checks": [
-          "Run /page-xray --delta for every affected route, or --quick for a newly created route.",
-          "Update docs/xrays findings and developer notes when the page shape changed."
-        ]
-      },
-      {
-        "id": "universal_rail",
-        "label": "Universal Rail Intelligence",
-        "relevance": "high",
-        "score": 162,
-        "evidence": [
-          "scripts/wiring-audit-results.json",
-          "scripts/wiring-audit.mjs",
-          "app/(chef)/dashboard/_components/one-surface-input.tsx",
-          "app/(chef)/dashboard/_components/today-block.tsx",
-          "app/(chef)/studio/analytics/analytics-dashboard-client.tsx",
-          "app/(chef)/studio/analytics/page.tsx",
-          "app/(chef)/studio/branding/branding-editor-client.tsx",
-          "app/(chef)/studio/branding/page.tsx"
-        ],
-        "checks": [
-          "Verify lib/discovery/rail-profiles.ts has a matching surface profile.",
-          "Verify relevant resolvers exist in lib/discovery/resolvers and produce contextual cards."
-        ]
-      },
-      {
-        "id": "remy_command_surface",
-        "label": "Remy, Navigation, Command Surface",
-        "relevance": "high",
-        "score": 160,
-        "evidence": [
-          "scripts/wiring-audit-results.json",
-          "scripts/wiring-audit.mjs",
-          "app/(chef)/dashboard/_components/one-surface-input.tsx",
-          "app/(chef)/dashboard/_components/today-block.tsx",
-          "app/(chef)/studio/analytics/page.tsx",
-          "app/(chef)/studio/branding/page.tsx",
-          "app/(chef)/studio/domain/domain-setup-client.tsx",
-          "app/(chef)/studio/domain/page.tsx"
-        ],
-        "checks": [
-          "Verify new pages/actions are discoverable through nav, command surface, Remy, or a justified local entry point.",
-          "Verify no functional route is stranded without an inbound path."
-        ]
-      },
-      {
-        "id": "communications",
-        "label": "Communications and Notifications",
-        "relevance": "high",
-        "score": 125,
-        "evidence": [
-          "scripts/wiring-audit-results.json",
-          "scripts/wiring-audit.mjs",
-          "app/(chef)/dashboard/_components/one-surface-input.tsx",
-          "app/api/studio/analytics/route.ts",
-          "app/api/studio/upload/route.ts",
-          "components/studio/editors/ContactFormSectionEditor.tsx",
-          "components/studio/renderers/ContactFormRenderer.tsx",
-          "docs/audit/2026-07-16/00-AUDIT-STATE-HANDOFF.md"
-        ],
-        "checks": [
-          "Verify user-visible state changes notify the right party or appear in the correct inbox/feed.",
-          "Verify communications are threaded, tenant-scoped, and do not duplicate notifications."
-        ]
-      },
-      {
-        "id": "pie",
-        "label": "PIE and Pricing Intelligence",
-        "relevance": "high",
-        "score": 123,
-        "evidence": [
-          "scripts/wiring-audit-results.json",
-          "scripts/wiring-audit.mjs",
-          "app/(chef)/studio/domain/domain-setup-client.tsx",
-          "app/(chef)/studio/domain/page.tsx",
-          "app/(chef)/studio/pages/[pageId]/section-list-client.tsx",
-          "app/(chef)/studio/studio-dashboard-client.tsx",
-          "components/studio/editors/PricingSectionEditor.tsx",
-          "components/studio/renderers/PricingRenderer.tsx"
-        ],
-        "checks": [
-          "Verify pricing, ingredient, recipe, quote, and procurement work uses PIE or records why PIE is not applicable.",
-          "Verify pricing outputs do not hide failures as zeros or stale certainty."
-        ]
-      },
-      {
-        "id": "menu_intelligence",
-        "label": "Menu Intelligence",
-        "relevance": "high",
-        "score": 119,
-        "evidence": [
-          "scripts/wiring-audit-results.json",
-          "scripts/wiring-audit.mjs",
-          "app/(chef)/studio/pages/[pageId]/section-list-client.tsx",
-          "app/(chef)/studio/pages/page-list-client.tsx",
-          "app/(chef)/studio/studio-dashboard-client.tsx",
-          "app/(public)/s/[siteSlug]/layout.tsx",
-          "components/studio/editors/MenuShowcaseSectionEditor.tsx",
-          "components/studio/renderers/MenuShowcaseRenderer.tsx"
-        ],
-        "checks": [
-          "Verify menu, recipe, dish, dietary, and approval changes feed menu intelligence surfaces.",
-          "Verify menu intelligence cards or panels appear where chefs make menu decisions."
-        ]
-      },
       {
         "id": "ledger_finance",
         "label": "Ledger, Finance, Payments",
         "relevance": "high",
-        "score": 88,
+        "score": 56,
         "evidence": [
-          "scripts/wiring-audit-results.json",
-          "scripts/wiring-audit.mjs",
-          "docs/audit/2026-07-16/00-AUDIT-STATE-HANDOFF.md",
-          "docs/audit/2026-07-16/01-auth-trust-boundaries.md",
-          "docs/audit/2026-07-16/02-data-layer.md",
-          "docs/audit/2026-07-16/03-chef-portal.md",
-          "docs/audit/2026-07-16/04-other-surfaces.md",
-          "docs/audit/2026-07-16/05-backend-automation.md"
+          "app/(chef)/settings/stripe-connect/stripe-connect-client.tsx",
+          "app/api/webhooks/stripe/route.ts",
+          "components/events/initiate-refund-modal.tsx",
+          "components/onboarding/onboarding-steps/connect-stripe-step.tsx",
+          "lib/admin/chef-admin-actions.ts",
+          "lib/autonomy/approval-router.ts",
+          "lib/cancellation/refund-actions.ts",
+          "lib/communication/remy-approval-guardrails.ts"
         ],
         "checks": [
           "Verify money movement creates immutable ledger/payment records and avoids destructive changes.",
@@ -289,39 +55,59 @@
         ]
       },
       {
-        "id": "event_lifecycle",
-        "label": "Event Lifecycle and FSM",
+        "id": "communications",
+        "label": "Communications and Notifications",
         "relevance": "high",
-        "score": 78,
+        "score": 35,
         "evidence": [
-          "scripts/wiring-audit-results.json",
-          "scripts/wiring-audit.mjs",
-          "app/(chef)/dashboard/_components/one-surface-input.tsx",
-          "app/(chef)/studio/analytics/analytics-dashboard-client.tsx",
-          "app/(chef)/studio/branding/branding-editor-client.tsx",
-          "app/(chef)/studio/domain/domain-setup-client.tsx",
-          "app/(chef)/studio/media/media-library-client.tsx",
-          "app/(chef)/studio/pages/[pageId]/section-list-client.tsx"
+          "app/(chef)/settings/stripe-connect/stripe-connect-client.tsx",
+          "app/api/webhooks/stripe/route.ts",
+          "components/events/initiate-refund-modal.tsx",
+          "components/onboarding/onboarding-steps/connect-stripe-step.tsx",
+          "lib/admin/chef-admin-actions.ts",
+          "lib/autonomy/approval-queue-actions.ts",
+          "lib/cancellation/refund-actions.ts",
+          "lib/communication/remy-approval-guardrails.ts"
         ],
         "checks": [
-          "Verify event mutations use the canonical transition path where lifecycle state changes.",
-          "Verify dependent surfaces update after lifecycle transitions."
+          "Verify user-visible state changes notify the right party or appear in the correct inbox/feed.",
+          "Verify communications are threaded, tenant-scoped, and do not duplicate notifications."
+        ]
+      },
+      {
+        "id": "page_xray",
+        "label": "Page X-Ray",
+        "relevance": "high",
+        "score": 27,
+        "evidence": [
+          "app/(chef)/settings/stripe-connect/stripe-connect-client.tsx",
+          "app/api/webhooks/stripe/route.ts",
+          "components/events/initiate-refund-modal.tsx",
+          "components/onboarding/onboarding-steps/connect-stripe-step.tsx",
+          "lib/autonomy/approval-queue-actions.ts",
+          "lib/stripe/connect.ts",
+          "lib/tickets/actions.ts",
+          "database/migrations/20260908000100_exact_action_approval_gateway.sql"
+        ],
+        "checks": [
+          "Run /page-xray --delta for every affected route, or --quick for a newly created route.",
+          "Update docs/xrays findings and developer notes when the page shape changed."
         ]
       },
       {
         "id": "commitment",
         "label": "Commitment UI and Completion",
         "relevance": "high",
-        "score": 61,
+        "score": 16,
         "evidence": [
-          "scripts/wiring-audit-results.json",
-          "scripts/wiring-audit.mjs",
-          "docs/audit/2026-07-16/00-AUDIT-STATE-HANDOFF.md",
-          "docs/audit/2026-07-16/01-auth-trust-boundaries.md",
-          "docs/audit/2026-07-16/02-data-layer.md",
-          "docs/audit/2026-07-16/03-chef-portal.md",
-          "docs/audit/2026-07-16/05-backend-automation.md",
-          "docs/audit/2026-07-16/06-integrations-infra.md"
+          "app/(chef)/settings/stripe-connect/stripe-connect-client.tsx",
+          "app/api/webhooks/stripe/route.ts",
+          "components/events/initiate-refund-modal.tsx",
+          "lib/cancellation/refund-actions.ts",
+          "lib/communication/remy-approval-guardrails.ts",
+          "lib/stripe/deferred-transfers.ts",
+          "lib/stripe/refund.ts",
+          "tests/unit/remy-communication-approval-guardrails.test.ts"
         ],
         "checks": [
           "Verify the feature updates readiness, commitment, or completion state when it changes booking confidence.",
@@ -329,39 +115,70 @@
         ]
       },
       {
-        "id": "automation_cil",
-        "label": "Automation and CIL",
+        "id": "remy_command_surface",
+        "label": "Remy, Navigation, Command Surface",
         "relevance": "high",
-        "score": 55,
+        "score": 15,
         "evidence": [
-          "scripts/wiring-audit-results.json",
-          "scripts/wiring-audit.mjs",
-          "app/(chef)/studio/analytics/page.tsx",
-          "app/(chef)/studio/studio-dashboard-client.tsx",
-          "docs/audit/2026-07-16/00-AUDIT-STATE-HANDOFF.md",
-          "docs/audit/2026-07-16/01-auth-trust-boundaries.md",
-          "docs/audit/2026-07-16/02-data-layer.md",
-          "docs/audit/2026-07-16/03-chef-portal.md"
+          "app/(chef)/settings/stripe-connect/stripe-connect-client.tsx",
+          "app/api/webhooks/stripe/route.ts",
+          "components/events/initiate-refund-modal.tsx",
+          "lib/communication/remy-approval-guardrails.ts",
+          "tests/unit/remy-communication-approval-guardrails.test.ts",
+          "docs/security/exact-action-approval-gateway.md",
+          "tests/unit/exact-action-provider-boundary.test.ts"
         ],
         "checks": [
-          "Verify durable signals, automation hooks, and intelligence outputs are emitted where the feature creates new evidence.",
-          "Verify signal freshness and suppression rules are respected."
+          "Verify new pages/actions are discoverable through nav, command surface, Remy, or a justified local entry point.",
+          "Verify no functional route is stranded without an inbound path."
+        ]
+      },
+      {
+        "id": "universal_rail",
+        "label": "Universal Rail Intelligence",
+        "relevance": "high",
+        "score": 14,
+        "evidence": [
+          "app/(chef)/settings/stripe-connect/stripe-connect-client.tsx",
+          "app/api/webhooks/stripe/route.ts",
+          "components/events/initiate-refund-modal.tsx",
+          "components/onboarding/onboarding-steps/connect-stripe-step.tsx",
+          "lib/communication/remy-approval-guardrails.ts",
+          "tests/unit/remy-communication-approval-guardrails.test.ts"
+        ],
+        "checks": [
+          "Verify lib/discovery/rail-profiles.ts has a matching surface profile.",
+          "Verify relevant resolvers exist in lib/discovery/resolvers and produce contextual cards."
+        ]
+      },
+      {
+        "id": "event_lifecycle",
+        "label": "Event Lifecycle and FSM",
+        "relevance": "high",
+        "score": 11,
+        "evidence": [
+          "app/api/webhooks/stripe/route.ts",
+          "components/events/initiate-refund-modal.tsx",
+          "lib/admin/chef-admin-actions.ts",
+          "lib/cancellation/refund-actions.ts",
+          "lib/communication/remy-approval-guardrails.ts",
+          "lib/stripe/refund.ts",
+          "lib/tickets/actions.ts",
+          "docs/security/exact-action-approval-gateway.md"
+        ],
+        "checks": [
+          "Verify event mutations use the canonical transition path where lifecycle state changes.",
+          "Verify dependent surfaces update after lifecycle transitions."
         ]
       },
       {
         "id": "dinner_circles",
         "label": "Dinner Circles",
-        "relevance": "high",
-        "score": 51,
+        "relevance": "medium",
+        "score": 7,
         "evidence": [
-          "scripts/wiring-audit-results.json",
-          "scripts/wiring-audit.mjs",
-          "app/api/studio/analytics/route.ts",
-          "components/studio/editors/ContactFormSectionEditor.tsx",
-          "components/studio/renderers/ContactFormRenderer.tsx",
-          "docs/audit/2026-07-16/00-AUDIT-STATE-HANDOFF.md",
-          "docs/audit/2026-07-16/01-auth-trust-boundaries.md",
-          "docs/audit/2026-07-16/03-chef-portal.md"
+          "app/api/webhooks/stripe/route.ts",
+          "lib/tickets/actions.ts"
         ],
         "checks": [
           "If two parties interact around an event, inquiry, recurring client, staff assignment, or community group, verify an ensure*Circle or create*Circle path.",
@@ -371,17 +188,14 @@
       {
         "id": "client_intelligence",
         "label": "Client Intelligence",
-        "relevance": "high",
-        "score": 50,
+        "relevance": "medium",
+        "score": 5,
         "evidence": [
-          "scripts/wiring-audit-results.json",
-          "scripts/wiring-audit.mjs",
-          "components/studio/renderers/MenuShowcaseRenderer.tsx",
-          "components/studio/renderers/PricingRenderer.tsx",
-          "docs/audit/2026-07-16/00-AUDIT-STATE-HANDOFF.md",
-          "docs/audit/2026-07-16/01-auth-trust-boundaries.md",
-          "docs/audit/2026-07-16/02-data-layer.md",
-          "docs/audit/2026-07-16/03-chef-portal.md"
+          "app/api/webhooks/stripe/route.ts",
+          "lib/autonomy/approval-router.ts",
+          "lib/cancellation/refund-actions.ts",
+          "lib/communication/remy-approval-guardrails.ts",
+          "tests/unit/exact-action-provider-boundary.test.ts"
         ],
         "checks": [
           "Verify client-facing or client-derived facts feed the client intelligence ledger or summary.",
@@ -389,21 +203,59 @@
         ]
       },
       {
+        "id": "pie",
+        "label": "PIE and Pricing Intelligence",
+        "relevance": "medium",
+        "score": 5,
+        "evidence": [
+          "app/api/webhooks/stripe/route.ts",
+          "lib/communication/remy-approval-guardrails.ts"
+        ],
+        "checks": [
+          "Verify pricing, ingredient, recipe, quote, and procurement work uses PIE or records why PIE is not applicable.",
+          "Verify pricing outputs do not hide failures as zeros or stale certainty."
+        ]
+      },
+      {
         "id": "priority_queue",
         "label": "Priority Queue and Action Graph",
-        "relevance": "high",
-        "score": 12,
+        "relevance": "medium",
+        "score": 4,
         "evidence": [
-          "scripts/wiring-audit-results.json",
-          "scripts/wiring-audit.mjs",
-          "docs/audit/2026-07-16/08-testing-ci-health.md",
-          "docs/audit/2026-07-16/09-notifications-intelligence.md",
-          "docs/shakedown/pass-10-conversation-history-audit.md",
-          "docs/shakedown/pass-11-build-queue-reconciliation.md"
+          "lib/autonomy/approval-queue-actions.ts",
+          "lib/autonomy/approval-router.ts"
         ],
         "checks": [
           "Verify new waiting work, blockers, overdue work, or next actions appear in Priority Queue or Action Graph.",
           "Verify actions have source, urgency, due state, and deep links."
+        ]
+      },
+      {
+        "id": "automation_cil",
+        "label": "Automation and CIL",
+        "relevance": "low",
+        "score": 3,
+        "evidence": [
+          "app/api/webhooks/stripe/route.ts",
+          "lib/autonomy/approval-queue-actions.ts",
+          "lib/autonomy/approval-router.ts"
+        ],
+        "checks": [
+          "Verify durable signals, automation hooks, and intelligence outputs are emitted where the feature creates new evidence.",
+          "Verify signal freshness and suppression rules are respected."
+        ]
+      },
+      {
+        "id": "menu_intelligence",
+        "label": "Menu Intelligence",
+        "relevance": "low",
+        "score": 1,
+        "evidence": [
+          "lib/communication/remy-approval-guardrails.ts"
+        ],
+        "checks": [
+          "Verify menu, recipe, dish, dietary, and approval changes feed menu intelligence surfaces.",
+          "Verify menu intelligence cards or panels appear where chefs make menu decisions."
         ]
       }
     ]
@@ -1106,7 +958,7 @@
     {
       "route": "/activity",
       "dynamic": false,
-      "refs": 153,
+      "refs": 154,
       "nav_refs": 4,
       "tier": null,
       "status": "WIRED",
@@ -1333,7 +1185,7 @@
     {
       "route": "/analytics",
       "dynamic": false,
-      "refs": 214,
+      "refs": 209,
       "nav_refs": 5,
       "tier": null,
       "status": "WIRED",
@@ -1460,7 +1312,7 @@
     {
       "route": "/briefing",
       "dynamic": false,
-      "refs": 22,
+      "refs": 21,
       "nav_refs": 1,
       "tier": null,
       "status": "WIRED",
@@ -2399,7 +2251,7 @@
     {
       "route": "/clients",
       "dynamic": false,
-      "refs": 456,
+      "refs": 455,
       "nav_refs": 4,
       "tier": null,
       "status": "WIRED",
@@ -2547,7 +2399,7 @@
     {
       "route": "/clients/[id]/conversation",
       "dynamic": true,
-      "refs": 456,
+      "refs": 455,
       "nav_refs": 4,
       "tier": null,
       "status": "WIRED",
@@ -2562,7 +2414,7 @@
     {
       "route": "/clients/[id]",
       "dynamic": true,
-      "refs": 456,
+      "refs": 455,
       "nav_refs": 4,
       "tier": null,
       "status": "WIRED",
@@ -2577,7 +2429,7 @@
     {
       "route": "/clients/[id]/preferences",
       "dynamic": true,
-      "refs": 456,
+      "refs": 455,
       "nav_refs": 4,
       "tier": null,
       "status": "WIRED",
@@ -2592,7 +2444,7 @@
     {
       "route": "/clients/[id]/recurring",
       "dynamic": true,
-      "refs": 456,
+      "refs": 455,
       "nav_refs": 4,
       "tier": null,
       "status": "WIRED",
@@ -2607,7 +2459,7 @@
     {
       "route": "/clients/[id]/relationship",
       "dynamic": true,
-      "refs": 456,
+      "refs": 455,
       "nav_refs": 4,
       "tier": null,
       "status": "WIRED",
@@ -2622,7 +2474,7 @@
     {
       "route": "/clients/[id]/summary",
       "dynamic": true,
-      "refs": 456,
+      "refs": 455,
       "nav_refs": 4,
       "tier": null,
       "status": "WIRED",
@@ -2637,7 +2489,7 @@
     {
       "route": "/clients/[id]/support",
       "dynamic": true,
-      "refs": 456,
+      "refs": 455,
       "nav_refs": 4,
       "tier": null,
       "status": "WIRED",
@@ -2972,7 +2824,7 @@
     {
       "route": "/communication",
       "dynamic": false,
-      "refs": 126,
+      "refs": 125,
       "nav_refs": 4,
       "tier": null,
       "status": "WIRED",
@@ -4008,16 +3860,16 @@
     {
       "route": "/daily",
       "dynamic": false,
-      "refs": 51,
+      "refs": 52,
       "nav_refs": 1,
       "tier": null,
       "status": "WIRED",
       "ref_files": [
         "app/(chef)/analytics/daily-report/page.tsx",
         "app/(chef)/briefing/page.tsx",
+        "app/(chef)/dashboard/page.tsx",
         "app/(chef)/dashboard/_sections/business-section-loader.ts",
-        "app/(chef)/dashboard/_sections/business-section-mobile-content.tsx",
-        "app/(chef)/dashboard/_sections/hero-zone.tsx"
+        "app/(chef)/dashboard/_sections/business-section-mobile-content.tsx"
       ]
     },
     {
@@ -4036,7 +3888,7 @@
     {
       "route": "/dashboard",
       "dynamic": false,
-      "refs": 267,
+      "refs": 266,
       "nav_refs": 8,
       "tier": null,
       "status": "WIRED",
@@ -5596,7 +5448,7 @@
     {
       "route": "/finance",
       "dynamic": false,
-      "refs": 317,
+      "refs": 318,
       "nav_refs": 1,
       "tier": null,
       "status": "WIRED",
@@ -6553,7 +6405,7 @@
     {
       "route": "/inquiries",
       "dynamic": false,
-      "refs": 237,
+      "refs": 238,
       "nav_refs": 5,
       "tier": null,
       "status": "WIRED",
@@ -6581,7 +6433,7 @@
     {
       "route": "/inquiries/[id]",
       "dynamic": true,
-      "refs": 237,
+      "refs": 238,
       "nav_refs": 5,
       "tier": null,
       "status": "WIRED",
@@ -6625,7 +6477,7 @@
     {
       "route": "/intelligence",
       "dynamic": false,
-      "refs": 158,
+      "refs": 159,
       "nav_refs": 1,
       "tier": null,
       "status": "WIRED",
@@ -7426,7 +7278,7 @@
     {
       "route": "/meal-prep",
       "dynamic": false,
-      "refs": 20,
+      "refs": 19,
       "nav_refs": 1,
       "tier": null,
       "status": "WIRED",
@@ -7454,7 +7306,7 @@
     {
       "route": "/meal-prep/[programId]",
       "dynamic": true,
-      "refs": 20,
+      "refs": 19,
       "nav_refs": 1,
       "tier": null,
       "status": "WIRED",
@@ -7734,7 +7586,7 @@
     {
       "route": "/notifications",
       "dynamic": false,
-      "refs": 199,
+      "refs": 198,
       "nav_refs": 8,
       "tier": null,
       "status": "WIRED",
@@ -7837,7 +7689,7 @@
     {
       "route": "/onboarding",
       "dynamic": false,
-      "refs": 112,
+      "refs": 113,
       "nav_refs": 2,
       "tier": null,
       "status": "WIRED",
@@ -7845,8 +7697,8 @@
         "app/(admin)/admin/beta/onboarding/beta-onboarding-admin.tsx",
         "app/(admin)/admin/beta/onboarding/page.tsx",
         "app/(chef)/clients/clients-table.tsx",
-        "app/(chef)/dashboard/_sections/alerts-cards.tsx",
-        "app/(chef)/dashboard/_sections/alerts-section.tsx"
+        "app/(chef)/dashboard/page.tsx",
+        "app/(chef)/dashboard/_sections/alerts-cards.tsx"
       ]
     },
     {
@@ -8191,7 +8043,7 @@
     {
       "route": "/portfolio",
       "dynamic": false,
-      "refs": 32,
+      "refs": 31,
       "nav_refs": 1,
       "tier": null,
       "status": "WIRED",
@@ -8479,16 +8331,16 @@
     {
       "route": "/queue",
       "dynamic": false,
-      "refs": 58,
+      "refs": 59,
       "nav_refs": 1,
       "tier": null,
       "status": "WIRED",
       "ref_files": [
         "app/(chef)/briefing/page.tsx",
+        "app/(chef)/dashboard/page.tsx",
         "app/(chef)/dashboard/_sections/chef-operator-rail.tsx",
         "app/(chef)/dashboard/_sections/this-week-section.tsx",
-        "app/(chef)/dashboard/_sections/widget-sections.tsx",
-        "app/(chef)/ops/page.tsx"
+        "app/(chef)/dashboard/_sections/widget-sections.tsx"
       ]
     },
     {
@@ -8578,7 +8430,7 @@
     {
       "route": "/quotes",
       "dynamic": false,
-      "refs": 129,
+      "refs": 127,
       "nav_refs": 3,
       "tier": null,
       "status": "WIRED",
@@ -8632,7 +8484,7 @@
     {
       "route": "/quotes/[id]/edit",
       "dynamic": true,
-      "refs": 129,
+      "refs": 127,
       "nav_refs": 3,
       "tier": null,
       "status": "WIRED",
@@ -8647,7 +8499,7 @@
     {
       "route": "/quotes/[id]",
       "dynamic": true,
-      "refs": 129,
+      "refs": 127,
       "nav_refs": 3,
       "tier": null,
       "status": "WIRED",
@@ -8920,7 +8772,7 @@
     {
       "route": "/remy",
       "dynamic": false,
-      "refs": 207,
+      "refs": 203,
       "nav_refs": 1,
       "tier": null,
       "status": "WIRED",
@@ -8928,8 +8780,8 @@
         "app/(admin)/layout.tsx",
         "app/(chef)/circles/[id]/circle-detail-client.tsx",
         "app/(chef)/communication/page.tsx",
-        "app/(chef)/dashboard/page.tsx",
-        "app/(chef)/dashboard/_components/one-surface-input.tsx"
+        "app/(chef)/dashboard/_sections/alerts-section.tsx",
+        "app/(chef)/dashboard/_sections/ambient-layer.tsx"
       ]
     },
     {
@@ -9006,7 +8858,7 @@
     {
       "route": "/reviews",
       "dynamic": false,
-      "refs": 62,
+      "refs": 61,
       "nav_refs": 1,
       "tier": null,
       "status": "WIRED",
@@ -11184,134 +11036,6 @@
       ]
     },
     {
-      "route": "/studio/analytics",
-      "dynamic": false,
-      "refs": 5,
-      "nav_refs": 1,
-      "tier": null,
-      "status": "WIRED",
-      "ref_files": [
-        "app/(chef)/studio/analytics/analytics-dashboard-client.tsx",
-        "app/(chef)/studio/studio-dashboard-client.tsx",
-        "app/api/studio/analytics/route.ts",
-        "components/navigation/nav-config.tsx",
-        "components/studio/renderers/ContactFormRenderer.tsx"
-      ]
-    },
-    {
-      "route": "/studio/branding",
-      "dynamic": false,
-      "refs": 2,
-      "nav_refs": 1,
-      "tier": null,
-      "status": "WIRED",
-      "ref_files": [
-        "app/(chef)/studio/studio-dashboard-client.tsx",
-        "components/navigation/nav-config.tsx"
-      ]
-    },
-    {
-      "route": "/studio/domain",
-      "dynamic": false,
-      "refs": 2,
-      "nav_refs": 1,
-      "tier": null,
-      "status": "WIRED",
-      "ref_files": [
-        "app/(chef)/studio/studio-dashboard-client.tsx",
-        "components/navigation/nav-config.tsx"
-      ]
-    },
-    {
-      "route": "/studio/media",
-      "dynamic": false,
-      "refs": 2,
-      "nav_refs": 1,
-      "tier": null,
-      "status": "WIRED",
-      "ref_files": [
-        "app/(chef)/studio/studio-dashboard-client.tsx",
-        "components/navigation/nav-config.tsx"
-      ]
-    },
-    {
-      "route": "/studio",
-      "dynamic": false,
-      "refs": 35,
-      "nav_refs": 1,
-      "tier": null,
-      "status": "WIRED",
-      "ref_files": [
-        "app/(chef)/reputation/studio/page.tsx",
-        "app/(chef)/studio/analytics/analytics-dashboard-client.tsx",
-        "app/(chef)/studio/analytics/page.tsx",
-        "app/(chef)/studio/branding/branding-editor-client.tsx",
-        "app/(chef)/studio/branding/page.tsx"
-      ]
-    },
-    {
-      "route": "/studio/pages",
-      "dynamic": false,
-      "refs": 4,
-      "nav_refs": 1,
-      "tier": null,
-      "status": "WIRED",
-      "ref_files": [
-        "app/(chef)/studio/pages/page-list-client.tsx",
-        "app/(chef)/studio/pages/[pageId]/page.tsx",
-        "app/(chef)/studio/studio-dashboard-client.tsx",
-        "components/navigation/nav-config.tsx"
-      ]
-    },
-    {
-      "route": "/studio/pages/[pageId]",
-      "dynamic": true,
-      "refs": 3,
-      "nav_refs": 1,
-      "tier": null,
-      "status": "WIRED",
-      "ref_files": [
-        "app/(chef)/studio/pages/page-list-client.tsx",
-        "app/(chef)/studio/studio-dashboard-client.tsx",
-        "components/navigation/nav-config.tsx"
-      ]
-    },
-    {
-      "route": "/studio/preview",
-      "dynamic": false,
-      "refs": 0,
-      "nav_refs": 0,
-      "tier": null,
-      "status": "ALLOWED",
-      "ref_files": []
-    },
-    {
-      "route": "/studio/seo",
-      "dynamic": false,
-      "refs": 2,
-      "nav_refs": 1,
-      "tier": null,
-      "status": "WIRED",
-      "ref_files": [
-        "app/(chef)/studio/studio-dashboard-client.tsx",
-        "components/navigation/nav-config.tsx"
-      ]
-    },
-    {
-      "route": "/studio/templates",
-      "dynamic": false,
-      "refs": 4,
-      "nav_refs": 0,
-      "tier": null,
-      "status": "WIRED",
-      "ref_files": [
-        "app/(chef)/studio/branding/page.tsx",
-        "app/(chef)/studio/media/page.tsx",
-        "app/(chef)/studio/pages/page.tsx",
-        "app/(chef)/studio/pages/[pageId]/page.tsx"
-      ]
-    },
-    {
       "route": "/surveys",
       "dynamic": false,
       "refs": 16,
@@ -12536,7 +12260,7 @@
     {
       "route": "/chef/[slug]/dashboard",
       "dynamic": true,
-      "refs": 521,
+      "refs": 520,
       "nav_refs": 8,
       "tier": null,
       "status": "WIRED",
@@ -12551,7 +12275,7 @@
     {
       "route": "/client/[token]/events",
       "dynamic": true,
-      "refs": 690,
+      "refs": 689,
       "nav_refs": 5,
       "tier": null,
       "status": "WIRED",
@@ -12656,7 +12380,7 @@
     {
       "route": "/about",
       "dynamic": false,
-      "refs": 17,
+      "refs": 16,
       "nav_refs": 1,
       "tier": null,
       "status": "WIRED",
@@ -12726,7 +12450,7 @@
     {
       "route": "/book",
       "dynamic": false,
-      "refs": 119,
+      "refs": 118,
       "nav_refs": 1,
       "tier": null,
       "status": "WIRED",
@@ -12801,7 +12525,7 @@
     {
       "route": "/chef/[slug]/cart",
       "dynamic": true,
-      "refs": 522,
+      "refs": 521,
       "nav_refs": 8,
       "tier": null,
       "status": "WIRED",
@@ -12816,7 +12540,7 @@
     {
       "route": "/chef/[slug]/gift-cards",
       "dynamic": true,
-      "refs": 521,
+      "refs": 520,
       "nav_refs": 8,
       "tier": null,
       "status": "WIRED",
@@ -12831,7 +12555,7 @@
     {
       "route": "/chef/[slug]/gift-cards/success",
       "dynamic": true,
-      "refs": 521,
+      "refs": 520,
       "nav_refs": 8,
       "tier": null,
       "status": "WIRED",
@@ -12846,7 +12570,7 @@
     {
       "route": "/chef/[slug]/inquire",
       "dynamic": true,
-      "refs": 521,
+      "refs": 520,
       "nav_refs": 8,
       "tier": null,
       "status": "WIRED",
@@ -12861,7 +12585,7 @@
     {
       "route": "/chef/[slug]/locations/[locationId]",
       "dynamic": true,
-      "refs": 521,
+      "refs": 520,
       "nav_refs": 8,
       "tier": null,
       "status": "WIRED",
@@ -12876,7 +12600,7 @@
     {
       "route": "/chef/[slug]",
       "dynamic": true,
-      "refs": 521,
+      "refs": 520,
       "nav_refs": 8,
       "tier": null,
       "status": "WIRED",
@@ -12891,7 +12615,7 @@
     {
       "route": "/chef/[slug]/partner-signup",
       "dynamic": true,
-      "refs": 522,
+      "refs": 521,
       "nav_refs": 8,
       "tier": null,
       "status": "WIRED",
@@ -12906,7 +12630,7 @@
     {
       "route": "/chef/[slug]/store/orders/[token]",
       "dynamic": true,
-      "refs": 521,
+      "refs": 520,
       "nav_refs": 8,
       "tier": null,
       "status": "WIRED",
@@ -12921,7 +12645,7 @@
     {
       "route": "/chef/[slug]/store",
       "dynamic": true,
-      "refs": 521,
+      "refs": 520,
       "nav_refs": 8,
       "tier": null,
       "status": "WIRED",
@@ -12936,7 +12660,7 @@
     {
       "route": "/chef/[slug]/store/products/[productId]",
       "dynamic": true,
-      "refs": 521,
+      "refs": 520,
       "nav_refs": 8,
       "tier": null,
       "status": "WIRED",
@@ -13025,7 +12749,7 @@
     {
       "route": "/contact",
       "dynamic": false,
-      "refs": 46,
+      "refs": 45,
       "nav_refs": 2,
       "tier": null,
       "status": "WIRED",
@@ -13485,7 +13209,7 @@
     {
       "route": "/menu/[token]",
       "dynamic": true,
-      "refs": 350,
+      "refs": 348,
       "nav_refs": 3,
       "tier": null,
       "status": "WIRED",
@@ -13619,7 +13343,7 @@
     {
       "route": "/onboarding/[token]",
       "dynamic": true,
-      "refs": 112,
+      "refs": 113,
       "nav_refs": 2,
       "tier": null,
       "status": "WIRED",
@@ -13627,8 +13351,8 @@
         "app/(admin)/admin/beta/onboarding/beta-onboarding-admin.tsx",
         "app/(admin)/admin/beta/onboarding/page.tsx",
         "app/(chef)/clients/clients-table.tsx",
-        "app/(chef)/dashboard/_sections/alerts-cards.tsx",
-        "app/(chef)/dashboard/_sections/alerts-section.tsx"
+        "app/(chef)/dashboard/page.tsx",
+        "app/(chef)/dashboard/_sections/alerts-cards.tsx"
       ]
     },
     {
@@ -13773,7 +13497,7 @@
     {
       "route": "/review/[token]",
       "dynamic": true,
-      "refs": 77,
+      "refs": 76,
       "nav_refs": 1,
       "tier": null,
       "status": "WIRED",
@@ -13784,22 +13508,6 @@
         "app/(chef)/dashboard/_sections/widget-sections.tsx",
         "app/(chef)/events/[id]/_components/event-detail-wrap-tab.tsx"
       ]
-    },
-    {
-      "route": "/s/[siteSlug]",
-      "dynamic": true,
-      "refs": -1,
-      "nav_refs": 0,
-      "status": "SKIP",
-      "ref_files": []
-    },
-    {
-      "route": "/s/[siteSlug]/[pageSlug]",
-      "dynamic": true,
-      "refs": -1,
-      "nav_refs": 0,
-      "status": "SKIP",
-      "ref_files": []
     },
     {
       "route": "/services",
@@ -14446,7 +14154,7 @@
     {
       "route": "/book/[chefSlug]",
       "dynamic": true,
-      "refs": 119,
+      "refs": 118,
       "nav_refs": 1,
       "tier": null,
       "status": "WIRED",
@@ -14461,7 +14169,7 @@
     {
       "route": "/book/[chefSlug]/thank-you",
       "dynamic": true,
-      "refs": 120,
+      "refs": 119,
       "nav_refs": 1,
       "tier": null,
       "status": "WIRED",
@@ -14476,7 +14184,7 @@
     {
       "route": "/client/[token]/events/[eventId]/contract",
       "dynamic": true,
-      "refs": 690,
+      "refs": 689,
       "nav_refs": 5,
       "tier": null,
       "status": "WIRED",
@@ -14491,7 +14199,7 @@
     {
       "route": "/client/[token]",
       "dynamic": true,
-      "refs": 690,
+      "refs": 689,
       "nav_refs": 5,
       "tier": null,
       "status": "WIRED",
@@ -14506,7 +14214,7 @@
     {
       "route": "/client/[token]/pay/[eventId]",
       "dynamic": true,
-      "refs": 690,
+      "refs": 689,
       "nav_refs": 5,
       "tier": null,
       "status": "WIRED",
@@ -14521,7 +14229,7 @@
     {
       "route": "/client/[token]/quotes/[quoteId]",
       "dynamic": true,
-      "refs": 690,
+      "refs": 689,
       "nav_refs": 5,
       "tier": null,
       "status": "WIRED",

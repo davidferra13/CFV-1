@@ -732,7 +732,7 @@ export async function refundTicket(input: {
 
   const { data: ticket } = await db
     .from('event_tickets')
-    .select('id, payment_status, ticket_type_id, quantity, stripe_payment_intent_id')
+    .select('id, payment_status')
     .eq('id', input.ticketId)
     .eq('tenant_id', user.tenantId!)
     .single()
@@ -742,102 +742,12 @@ export async function refundTicket(input: {
     return { success: false, error: 'Only paid tickets can be refunded' }
   }
 
-  // If Stripe payment, initiate Stripe refund
-  if (ticket.stripe_payment_intent_id) {
-    try {
-      const StripeLib = require('stripe')
-      const StripeCtor = StripeLib.default || StripeLib
-      const stripe = new StripeCtor(process.env.STRIPE_SECRET_KEY!, {
-        apiVersion: '2025-12-18.acacia',
-      })
-      await stripe.refunds.create({
-        payment_intent: ticket.stripe_payment_intent_id,
-      })
-    } catch (err: any) {
-      return { success: false, error: `Stripe refund failed: ${err.message}` }
-    }
+  // No Stripe call and no local financial mutation may occur from this legacy
+  // action. A dedicated exact-action refund preview must be implemented first.
+  return {
+    success: false,
+    error: 'Ticket refund blocked: exact amount and destination approval is required.',
   }
-
-  // Update ticket status
-  await db
-    .from('event_tickets')
-    .update({
-      payment_status: 'refunded',
-      cancelled_at: new Date().toISOString(),
-    })
-    .eq('id', input.ticketId)
-    .eq('payment_status', 'paid') // CAS guard
-
-  // Decrement sold_count on ticket type
-  if (ticket.ticket_type_id) {
-    const { data: tt } = await db
-      .from('event_ticket_types')
-      .select('sold_count')
-      .eq('id', ticket.ticket_type_id)
-      .single()
-
-    if (tt && tt.sold_count > 0) {
-      await db
-        .from('event_ticket_types')
-        .update({ sold_count: Math.max(0, tt.sold_count - ticket.quantity) })
-        .eq('id', ticket.ticket_type_id)
-        .eq('sold_count', tt.sold_count) // CAS guard
-    }
-  }
-
-  // Remove refunded buyer from circle (non-blocking)
-  try {
-    const db2: any = createServerClient({ admin: true })
-
-    // Get the hub_profile_id from the ticket
-    const { data: ticketProfile } = await db2
-      .from('event_tickets')
-      .select('hub_profile_id, buyer_name, event_guest_id')
-      .eq('id', input.ticketId)
-      .single()
-
-    if (ticketProfile?.hub_profile_id) {
-      // Find circle for event
-      const { data: group } = await db2
-        .from('hub_groups')
-        .select('id')
-        .eq('event_id', input.eventId)
-        .eq('is_active', true)
-        .maybeSingle()
-
-      if (group) {
-        // Change role to viewer (can see history but not post)
-        await db2
-          .from('hub_group_members')
-          .update({ role: 'viewer', can_post: false, can_invite: false, can_pin: false })
-          .eq('group_id', group.id)
-          .eq('profile_id', ticketProfile.hub_profile_id)
-
-        // Post system message
-        await db2.from('hub_messages').insert({
-          group_id: group.id,
-          author_profile_id: ticketProfile.hub_profile_id,
-          message_type: 'system',
-          system_event_type: 'member_left',
-          body: `${ticketProfile.buyer_name || 'A guest'}'s ticket was refunded`,
-          system_metadata: { source: 'ticket_refund' },
-        })
-      }
-
-      // Update RSVP status if event_guest record exists
-      if (ticketProfile.event_guest_id) {
-        await db2
-          .from('event_guests')
-          .update({ rsvp_status: 'cancelled' })
-          .eq('id', ticketProfile.event_guest_id)
-      }
-    }
-  } catch (circleErr) {
-    console.error('[refundTicket] Circle cleanup failed (non-blocking):', circleErr)
-  }
-
-  revalidatePath(`/events/${input.eventId}`)
-  return { success: true }
 }
 
 // ─── Toggle Ticketing on Event ───────────────────────────────────────

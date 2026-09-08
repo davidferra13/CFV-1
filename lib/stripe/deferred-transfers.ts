@@ -1,21 +1,11 @@
-// Deferred Transfer Resolution
-// Admin-only: resolves payments that were collected before the chef completed Stripe Connect.
-// When a chef finishes onboarding, this scans ledger for un-transferred payments and creates
-// manual Stripe Transfers to the now-ready connected account.
+// Deferred transfer reconciliation.
+// Listing remains read-only. Execution is fail-closed until the admin cross-tenant
+// exact-action approval flow is available; no loop may move money silently.
 
 'use server'
 
 import { requireAdmin } from '@/lib/auth/admin'
 import { createServerClient } from '@/lib/db/server'
-import type Stripe from 'stripe'
-
-function getStripe(): Stripe {
-  const StripeLib = require('stripe')
-  const StripeCtor = StripeLib.default || StripeLib
-  return new StripeCtor(process.env.STRIPE_SECRET_KEY!, {
-    apiVersion: '2025-12-18.acacia' as Stripe.LatestApiVersion,
-  })
-}
 
 export type DeferredTransferSummary = {
   tenantId: string
@@ -26,16 +16,10 @@ export type DeferredTransferSummary = {
   canResolve: boolean
 }
 
-/**
- * List all chefs with deferred (un-transferred) payments.
- * Admin only - no tenant scoping.
- */
 export async function listDeferredTransferChefs(): Promise<DeferredTransferSummary[]> {
   await requireAdmin()
   const db = createServerClient({ admin: true })
 
-  // Find ledger entries that are payments/deposits with Stripe references
-  // but have NO matching stripe_transfers record
   const { data: entries } = await db
     .from('ledger_entries')
     .select('tenant_id, amount_cents, transaction_reference')
@@ -45,38 +29,29 @@ export async function listDeferredTransferChefs(): Promise<DeferredTransferSumma
 
   if (!entries || entries.length === 0) return []
 
-  // Get all existing stripe_transfer event references
   const { data: transfers } = await db
     .from('stripe_transfers')
     .select('stripe_payment_intent_id, tenant_id')
 
-  // Build set of transaction references that already have transfers
   const transferredRefs = new Set(
-    (transfers ?? []).map((t: any) => t.stripe_payment_intent_id).filter(Boolean)
+    (transfers ?? []).map((transfer: any) => transfer.stripe_payment_intent_id).filter(Boolean)
   )
-  // Also index by tenant+event for broader matching
-  const transferredByTenant = new Set(
-    (transfers ?? [])
-      .map((t: any) => `${t.tenant_id}:${t.stripe_payment_intent_id}`)
-      .filter(Boolean)
-  )
-
-  // Group deferred entries by tenant (per-entry matching, not per-tenant)
   const deferredByTenant = new Map<string, { count: number; totalCents: number }>()
 
   for (const entry of entries) {
-    // Skip entries whose transaction_reference matches a completed transfer
-    if (entry.transaction_reference && transferredRefs.has(entry.transaction_reference)) continue
-
-    const current = deferredByTenant.get(entry.tenant_id) ?? { count: 0, totalCents: 0 }
-    current.count++
+    if (entry.transaction_reference && transferredRefs.has(entry.transaction_reference)) {
+      continue
+    }
+    const current = deferredByTenant.get(entry.tenant_id) ?? {
+      count: 0,
+      totalCents: 0,
+    }
+    current.count += 1
     current.totalCents += entry.amount_cents
     deferredByTenant.set(entry.tenant_id, current)
   }
-
   if (deferredByTenant.size === 0) return []
 
-  // Fetch chef info
   const tenantIds = Array.from(deferredByTenant.keys())
   const { data: chefs } = await db
     .from('chefs')
@@ -84,146 +59,28 @@ export async function listDeferredTransferChefs(): Promise<DeferredTransferSumma
     .in('id', tenantIds)
 
   return (chefs ?? []).map((chef: any) => {
-    const deferred = deferredByTenant.get(chef.id) ?? { count: 0, totalCents: 0 }
-    const onboardingComplete = (chef as any).stripe_onboarding_complete === true
-    const stripeAccountId = (chef as any).stripe_account_id ?? null
-
+    const deferred = deferredByTenant.get(chef.id) ?? {
+      count: 0,
+      totalCents: 0,
+    }
+    const onboardingComplete = chef.stripe_onboarding_complete === true
+    const stripeAccountId = chef.stripe_account_id ?? null
     return {
       tenantId: chef.id,
-      chefName: chef.business_name || (chef as any).display_name || 'Unknown',
+      chefName: chef.business_name || chef.display_name || 'Unknown',
       deferredCount: deferred.count,
       deferredTotalCents: deferred.totalCents,
       stripeAccountId,
-      canResolve: !!stripeAccountId && onboardingComplete,
+      // Visibility is not execution authority. Transfers remain hard-disabled.
+      canResolve: false,
     }
   })
 }
-
-/**
- * Resolve deferred transfers for a specific chef.
- * Creates manual Stripe Transfers for each un-transferred payment.
- * Admin only.
- *
- * @returns Number of transfers successfully created
- */
 export async function resolveDeferredTransfers(
-  tenantId: string
+  _tenantId: string
 ): Promise<{ resolved: number; failed: number; errors: string[] }> {
   await requireAdmin()
-  const db = createServerClient({ admin: true })
-
-  // Verify chef has completed Connect onboarding
-  const { data: chef } = await db
-    .from('chefs')
-    .select(
-      'stripe_account_id, stripe_onboarding_complete, platform_fee_percent, platform_fee_fixed_cents'
-    )
-    .eq('id', tenantId)
-    .single()
-
-  const stripeAccountId = (chef as any)?.stripe_account_id
-  const onboardingComplete = (chef as any)?.stripe_onboarding_complete === true
-
-  if (!stripeAccountId || !onboardingComplete) {
-    return { resolved: 0, failed: 0, errors: ['Chef has not completed Stripe Connect onboarding'] }
-  }
-
-  // Find ledger entries that need transfers
-  const { data: entries } = await db
-    .from('ledger_entries')
-    .select('id, amount_cents, event_id, internal_notes, transaction_reference')
-    .eq('tenant_id', tenantId)
-    .in('entry_type', ['payment', 'deposit'])
-    .eq('is_refund', false)
-    .not('transaction_reference', 'is', null)
-    .order('created_at', { ascending: true })
-
-  if (!entries || entries.length === 0) {
-    return { resolved: 0, failed: 0, errors: [] }
-  }
-
-  // Check which entries already have transfers
-  const { data: existingTransfers } = await db
-    .from('stripe_transfers')
-    .select('event_id')
-    .eq('tenant_id', tenantId)
-
-  const transferredEventIds = new Set(
-    (existingTransfers ?? []).map((t: any) => t.event_id).filter(Boolean)
+  throw new Error(
+    'Deferred transfer execution is disabled: each transfer requires an exact, single-use approval bound to destination, gross amount, fees, net amount, and current Stripe state.'
   )
-
-  const stripe = getStripe()
-  const { recordStripeTransfer, recordPlatformFee, computeApplicationFee } =
-    await import('@/lib/stripe/transfer-routing')
-
-  const feePercent = Number((chef as any)?.platform_fee_percent ?? 0)
-  const feeFixed = Number((chef as any)?.platform_fee_fixed_cents ?? 0)
-
-  let resolved = 0
-  let failed = 0
-  const errors: string[] = []
-
-  for (const entry of entries) {
-    // Skip if already transferred
-    if (entry.event_id && transferredEventIds.has(entry.event_id)) continue
-
-    try {
-      const platformFee = computeApplicationFee(entry.amount_cents, feePercent, feeFixed)
-      const netTransfer = entry.amount_cents - platformFee
-
-      if (netTransfer <= 0) {
-        errors.push(`Entry ${entry.id}: net transfer would be <= 0, skipping`)
-        continue
-      }
-
-      // Create Stripe Transfer
-      const transfer = await stripe.transfers.create({
-        amount: netTransfer,
-        currency: 'usd',
-        destination: stripeAccountId,
-        metadata: {
-          tenant_id: tenantId,
-          event_id: entry.event_id ?? '',
-          ledger_entry_id: entry.id,
-          deferred_resolution: 'true',
-        },
-      })
-
-      // Record in stripe_transfers
-      await recordStripeTransfer({
-        tenantId,
-        eventId: entry.event_id,
-        stripeTransferId: transfer.id,
-        stripePaymentIntentId: null,
-        stripeChargeId: null,
-        stripeDestinationAccount: stripeAccountId,
-        grossAmountCents: entry.amount_cents,
-        platformFeeCents: platformFee,
-        netTransferCents: netTransfer,
-        status: 'paid',
-        isDeferred: true,
-        metadata: { ledger_entry_id: entry.id, resolved_at: new Date().toISOString() },
-      })
-
-      // Record platform fee
-      if (platformFee > 0) {
-        await recordPlatformFee({
-          tenantId,
-          eventId: entry.event_id,
-          stripeTransferId: transfer.id,
-          stripePaymentIntentId: null,
-          amountCents: platformFee,
-          description: `Deferred platform fee for entry ${entry.id}`,
-          transactionReference: `deferred_fee_${entry.id}`,
-        })
-      }
-
-      resolved++
-    } catch (err) {
-      failed++
-      errors.push(`Entry ${entry.id}: ${(err as Error).message}`)
-    }
-  }
-
-  return { resolved, failed, errors }
 }

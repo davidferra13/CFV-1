@@ -58,9 +58,20 @@ export async function approveAction(
     }
   }
 
+  const legacyCannotAuthorize =
+    approval.risk_level === 'high' ||
+    ['financial', 'communication', 'marketing', 'client', 'vendor'].includes(approval.domain)
+  if (legacyCannotAuthorize) {
+    return {
+      success: false,
+      actionId: approval.autonomy_action_id,
+      message: 'This consequential action requires a new exact-payload approval preview.',
+    }
+  }
+
   const reviewedAt = new Date().toISOString()
 
-  const { error: approvalError } = await db
+  const { data: approvedRow, error: approvalError } = await db
     .from('approval_queue')
     .update({
       status: 'approved',
@@ -69,9 +80,19 @@ export async function approveAction(
     })
     .eq('id', approvalId)
     .eq('tenant_id', user.tenantId!)
+    .eq('status', 'pending')
+    .select('id')
+    .maybeSingle()
 
   if (approvalError) {
     throw new Error(`Failed to approve autonomy action: ${approvalError.message}`)
+  }
+  if (!approvedRow) {
+    return {
+      success: false,
+      actionId: approval.autonomy_action_id,
+      message: 'Approval was already reviewed.',
+    }
   }
 
   const { error: actionError } = await db
@@ -126,7 +147,7 @@ export async function rejectAction(
 
   const reviewedAt = new Date().toISOString()
 
-  const { error: approvalError } = await db
+  const { data: rejectedRow, error: approvalError } = await db
     .from('approval_queue')
     .update({
       status: 'rejected',
@@ -136,9 +157,19 @@ export async function rejectAction(
     })
     .eq('id', approvalId)
     .eq('tenant_id', user.tenantId!)
+    .eq('status', 'pending')
+    .select('id')
+    .maybeSingle()
 
   if (approvalError) {
     throw new Error(`Failed to reject autonomy action: ${approvalError.message}`)
+  }
+  if (!rejectedRow) {
+    return {
+      success: false,
+      actionId: approval.autonomy_action_id,
+      message: 'Approval was already reviewed.',
+    }
   }
 
   const { error: actionError } = await db
@@ -200,17 +231,17 @@ export async function editAndApprove(
       ...(editedDraft.payload ?? {}),
     },
   }
-  const reviewedAt = new Date().toISOString()
-  const editedFields = Object.keys(editedDraft)
+  const editedAt = new Date().toISOString()
 
   const { error: approvalError } = await db
     .from('approval_queue')
     .update({
-      status: 'approved',
-      reviewed_at: reviewedAt,
-      reviewed_by: user.id,
+      status: 'pending',
+      reviewed_at: null,
+      reviewed_by: null,
       draft,
       preview: draft.preview,
+      rejection_reason: null,
     })
     .eq('id', approvalId)
     .eq('tenant_id', user.tenantId!)
@@ -222,9 +253,9 @@ export async function editAndApprove(
   const { error: actionError } = await db
     .from('autonomy_actions')
     .update({
-      status: 'approved',
+      status: 'queued',
       draft,
-      updated_at: reviewedAt,
+      updated_at: editedAt,
     })
     .eq('id', approval.autonomy_action_id)
     .eq('tenant_id', user.tenantId!)
@@ -233,21 +264,10 @@ export async function editAndApprove(
     throw new Error(`Failed to update edited autonomy action: ${actionError.message}`)
   }
 
-  await recordLearningSignal({
-    tenantId: user.tenantId!,
-    actionId: approval.autonomy_action_id,
-    approvalId,
-    domain: approval.domain as AutonomyDomain,
-    actionType: approval.action_type,
-    outcome: editedFields.length > 0 ? 'approved_with_edits' : 'approved',
-    confidenceScore: Number(approval.confidence_score ?? 0),
-    editedFields,
-  })
-
   return {
     success: true,
     actionId: approval.autonomy_action_id,
-    message: 'Edited action approved and ready for its domain executor.',
+    message: 'Edits saved. Review the new final preview before approving.',
   }
 }
 

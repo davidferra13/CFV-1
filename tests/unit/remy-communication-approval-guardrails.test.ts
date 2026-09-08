@@ -63,7 +63,7 @@ test('low confidence Remy drafts cannot auto-own canonical communication', () =>
   assert.ok(decision.approvalClasses.includes('low_confidence'))
 })
 
-test('safe auto-ack is allowed only when SMS policy passes and no commitment is made', () => {
+test('even a safe acknowledgement requires David approval before sending', () => {
   const decision = evaluateRemyCommunicationGuardrails({
     confidence: 0.9,
     trigger: 'inbound acknowledgement',
@@ -74,9 +74,10 @@ test('safe auto-ack is allowed only when SMS policy passes and no commitment is 
     smsPolicy: allowedSmsPolicy,
   })
 
-  assert.equal(decision.requiresApproval, false)
-  assert.equal(decision.safeAutoAckAllowed, true)
-  assert.equal(decision.status, 'auto_ack_allowed')
+  assert.equal(decision.requiresApproval, true)
+  assert.equal(decision.safeAutoAckAllowed, false)
+  assert.equal(decision.status, 'pending_approval')
+  assert.ok(decision.approvalClasses.includes('external_send_side_effect'))
 })
 
 test('blocked SMS policy blocks Remy auto-ack', () => {
