@@ -7,6 +7,8 @@ const requirements = [
   ['.agents/rules/autonomous-delivery.md', 'Always-On Autonomous Delivery'],
   ['docs/autonomous-delivery-contract.md', 'Do not wait for David to separately say'],
   ['docs/definition-of-done.md', '## Delivery Closure'],
+  ['scripts/install-global-agent-delivery-policy.ps1', 'BEGIN DAVID AUTONOMOUS DELIVERY V1'],
+  ['.claude/hooks/context-load-guard.sh', 'install-global-agent-delivery-policy.ps1'],
 ]
 
 const forbidden = [

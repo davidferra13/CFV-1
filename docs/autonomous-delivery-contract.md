@@ -63,6 +63,19 @@ Continue autonomously through recoverable failures. Stop only for:
 
 When blocked, commit and push any safe, independently valid work if the checks for that work pass. Never bypass a failing gate, hide a partial release, deploy to a guessed target, or claim success.
 
+## Cross-Project User-Level Installation
+
+Run `powershell -NoProfile -ExecutionPolicy Bypass -File scripts/install-global-agent-delivery-policy.ps1` to install the managed standing rule without overwriting other user instructions. ChefFlow's session-start hook runs this installer idempotently.
+
+The installer writes the managed block to the effective user-level instruction files for:
+
+- Codex: `$CODEX_HOME/AGENTS.md` or the active `AGENTS.override.md`;
+- Claude Code: `~/.claude/CLAUDE.md`;
+- OpenCode: `~/.config/opencode/AGENTS.md` (respecting `XDG_CONFIG_HOME`);
+- Antigravity: `~/.gemini/GEMINI.md`.
+
+Project-specific rules may add stricter checks, but they must not restore a redundant commit/push/deploy approval gate.
+
 ## Project Separation
 
 DFPrivateChef.com, Anthony's website/cheflicari.com, the weather app, ChefFlow, Chef Collect, and future products are separate release targets unless repository evidence explicitly proves otherwise. Inspect each target's own deployment mapping before shipping. Never use a successful deployment of one as evidence for another.
