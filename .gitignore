@@ -385,3 +385,13 @@ obsidian_export/
 
 # Claude MCP config (may contain API keys)
 .claude/mcp.json
+
+# Owner-local media runtime never belongs in source control
+scripts/local-media-privacy/__pycache__/
+tests/local-media-privacy/__pycache__/
+private-runtime/
+.media-privacy/
+data/media-privacy/
+**/review.sqlite3*
+**/authority.key
+**/worker.lock

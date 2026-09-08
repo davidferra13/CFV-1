@@ -22,6 +22,8 @@ export interface AiConfidenceThresholds {
 }
 
 export interface AiDispatchRequest {
+  /** Private review assets are handled only by the owner-local media worker. */
+  mediaOrigin?: 'private_review' | 'approved_local_archive'
   taskType?: string
   systemPrompt?: string
   userContent?: string

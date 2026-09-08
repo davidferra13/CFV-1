@@ -7,15 +7,25 @@ import { createRequire } from 'module'
 import path from 'path'
 import os from 'os'
 import fs from 'fs'
+import { assertPrivateRuntime, MediaPrivacyBlocked } from './media-privacy.mjs'
 
 const require = createRequire(import.meta.url)
 const Database = require('better-sqlite3')
 
-const DATA_DIR = path.join(os.homedir(), 'openclaw-archive-digester', 'data')
+const DATA_DIR = process.env.MEDIA_PRIVACY_HOME ? path.join(process.env.MEDIA_PRIVACY_HOME, 'archive') : ''
 const DB_PATH = path.join(DATA_DIR, 'archive.db')
 
 export function openDb(readonly = false) {
+  assertPrivateRuntime()
+  if (!DATA_DIR || (process.env.ARCHIVE_DATA_DIR && path.resolve(process.env.ARCHIVE_DATA_DIR) !== path.resolve(DATA_DIR))) {
+    throw new MediaPrivacyBlocked()
+  }
+  if (fs.existsSync(DATA_DIR) && fs.lstatSync(DATA_DIR).isSymbolicLink()) throw new MediaPrivacyBlocked()
   fs.mkdirSync(DATA_DIR, { recursive: true })
+  if (path.dirname(fs.realpathSync(DATA_DIR)).toLowerCase() !== fs.realpathSync(process.env.MEDIA_PRIVACY_HOME).toLowerCase()) {
+    throw new MediaPrivacyBlocked()
+  }
+  if (fs.existsSync(DB_PATH) && fs.lstatSync(DB_PATH).isSymbolicLink()) throw new MediaPrivacyBlocked()
   const db = new Database(DB_PATH, { readonly })
   db.pragma('journal_mode = WAL')
   return db
@@ -23,6 +33,7 @@ export function openDb(readonly = false) {
 
 export function initDb() {
   const db = openDb()
+  const existed = db.prepare("SELECT name FROM sqlite_master WHERE type='table' AND name='archive_files'").get()
 
   db.exec(`
     CREATE TABLE IF NOT EXISTS archive_files (
@@ -130,9 +141,15 @@ export function initDb() {
     CREATE INDEX IF NOT EXISTS idx_financials_event ON archive_financials(event_id);
   `)
 
+  // Additive migration only. Legacy derived records stay held until reconstructed.
+  db.exec("CREATE TABLE IF NOT EXISTS archive_privacy_meta (key TEXT PRIMARY KEY, value TEXT NOT NULL)")
+  db.prepare("INSERT OR IGNORE INTO archive_privacy_meta VALUES ('created_with_review_gate', ?)").run(existed ? '0' : '1')
+  const columns = db.prepare('PRAGMA table_info(archive_files)').all().map(row => row.name)
+  if (!columns.includes('privacy_receipt')) db.exec('ALTER TABLE archive_files ADD COLUMN privacy_receipt TEXT')
+
   // Crash recovery: reset any 'processing' files back to their previous state
   db.prepare("UPDATE archive_files SET status = 'pending' WHERE status = 'processing'").run()
 
   db.close()
-  console.log(`Archive DB initialized at ${DB_PATH}`)
+  console.log('Archive database initialized; review gate enabled')
 }

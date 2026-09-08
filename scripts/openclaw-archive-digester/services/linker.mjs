@@ -7,11 +7,13 @@
  */
 
 import crypto from 'crypto'
+import { assertArchiveApproved } from '../lib/media-privacy.mjs'
 import { openDb } from '../lib/db.mjs'
 import { findBestMatch, groupNameVariants } from '../lib/fuzzy-match.mjs'
 
 async function main() {
   const db = openDb()
+  assertArchiveApproved(db)
   const startTime = Date.now()
 
   // Get all extracted files
@@ -215,6 +217,6 @@ async function main() {
 }
 
 main().catch(err => {
-  console.error('[linker] Fatal:', err)
+  console.error('[linker] Held: current approval and complete lineage required')
   process.exit(1)
 })

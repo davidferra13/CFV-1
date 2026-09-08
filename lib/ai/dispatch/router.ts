@@ -1,6 +1,6 @@
 import { classifyAiTask } from './classifier'
 import { scanAiPrivacyRisk } from './privacy-gate'
-import { getAiRuntimePolicy, resolveOllamaModel } from './routing-table'
+import { getAiRuntimePolicy, isLocalOllamaUrl, resolveOllamaModel } from './routing-table'
 import type {
   AiActionDecision,
   AiActionSafety,
@@ -29,6 +29,7 @@ function selectRuntimeEndpoint(
   const reasons: string[] = []
 
   if (enabled.length === 0) {
+    if (privacyLevel === 'restricted') throw new Error('Restricted data requires an enabled local runtime.')
     reasons.push('No configured runtime endpoint is enabled.')
     return { endpoint: null, reasons }
   }
@@ -36,8 +37,11 @@ function selectRuntimeEndpoint(
   const local = enabled.find((endpoint) => endpoint.location === 'local') ?? null
   const cloud = enabled.find((endpoint) => endpoint.location === 'cloud') ?? null
 
-  if (privacyLevel === 'restricted' && local) {
-    reasons.push('Restricted data stays on-device when a local runtime is available.')
+  if (privacyLevel === 'restricted') {
+    if (!local || !isLocalOllamaUrl(local.baseUrl) || /cloud|remote/i.test(local.model)) {
+      throw new Error('Restricted data requires an enabled local runtime.')
+    }
+    reasons.push('Restricted data requires local execution; cloud fallback is blocked.')
     return { endpoint: local, reasons }
   }
 
@@ -155,6 +159,7 @@ export function resolveAiActionDecision(input: {
 }
 
 export function resolveAiDispatch(input: AiDispatchRequest): AiDispatchDecision {
+  if (input.mediaOrigin) throw new Error('Personal media requires the owner-local review worker.')
   const runtimePolicy = getAiRuntimePolicy()
   const privacy = scanAiPrivacyRisk(input)
   const classification = classifyAiTask(input)
@@ -193,6 +198,10 @@ export function resolveAiDispatch(input: AiDispatchRequest): AiDispatchDecision 
   reasons.push(...routeReasons)
 
   const location: AiExecutionLocation = endpoint?.location ?? runtimePolicy.defaultLocation
+  const model = resolveOllamaModel(input.modelTier ?? 'standard', location)
+  if (privacy.level === 'restricted' && /cloud|remote/i.test(model)) {
+    throw new Error('Restricted data requires a local model.')
+  }
 
   return {
     provider: 'ollama',
@@ -201,7 +210,7 @@ export function resolveAiDispatch(input: AiDispatchRequest): AiDispatchDecision 
     runtimePolicy,
     endpoint,
     executionLocation: endpoint?.location ?? null,
-    model: resolveOllamaModel(input.modelTier ?? 'standard', location),
+    model,
     reasons,
     confidenceDecision,
   }
