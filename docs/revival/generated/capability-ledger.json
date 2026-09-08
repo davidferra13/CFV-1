@@ -1,0 +1,852 @@
+{
+  "evidence_warning": "File-name matches are candidate evidence only. They do not prove a feature works.",
+  "projects": [
+    {
+      "canonical_path": "C:\\Users\\david\\Documents\\CFv1",
+      "capabilities": [
+        {
+          "evidence_state": "candidate-evidence",
+          "id": "inquiry-intake",
+          "matched_file_count": 271,
+          "sample_files": [
+            ".evidence/live-browser/2026-05-27-17-53-49-private-chef-inquiry-proposal-workflow/notes.md",
+            ".evidence/live-browser/2026-05-27-17-53-49-private-chef-inquiry-proposal-workflow/questions.md",
+            ".evidence/live-browser/2026-05-27-17-53-49-private-chef-inquiry-proposal-workflow/redactions.md",
+            ".evidence/live-browser/2026-05-27-17-53-49-private-chef-inquiry-proposal-workflow/report.md",
+            "app/(admin)/admin/inquiries/claim-button.tsx",
+            "app/(admin)/admin/inquiries/page.tsx",
+            "app/(chef)/clients/intake/intake-forms-client.tsx",
+            "app/(chef)/clients/intake/loading.tsx"
+          ]
+        },
+        {
+          "evidence_state": "candidate-evidence",
+          "id": "client-memory",
+          "matched_file_count": 1356,
+          "sample_files": [
+            ".claude/skills/client-pulse/SKILL.md",
+            ".evidence/RUN-20260520T171335Z-CLIENT-CONTRIBUTION-GROWTH/agent-storage.json",
+            ".evidence/live-browser/2026-05-27-02-27-55-agent-chef-client-portals/notes.md",
+            ".evidence/live-browser/2026-05-27-02-27-55-agent-chef-client-portals/questions.md",
+            ".evidence/live-browser/2026-05-27-02-27-55-agent-chef-client-portals/redactions.md",
+            ".evidence/live-browser/2026-05-27-02-27-55-agent-chef-client-portals/report.md",
+            "Chef Flow Personas/Completed/Client/aurelia-vance.txt",
+            "Chef Flow Personas/Completed/Client/bryan-rafanelli.txt"
+          ]
+        },
+        {
+          "evidence_state": "candidate-evidence",
+          "id": "quote-contract",
+          "matched_file_count": 436,
+          "sample_files": [
+            ".evidence/live-browser/2026-05-27-17-53-49-private-chef-inquiry-proposal-workflow/notes.md",
+            ".evidence/live-browser/2026-05-27-17-53-49-private-chef-inquiry-proposal-workflow/questions.md",
+            ".evidence/live-browser/2026-05-27-17-53-49-private-chef-inquiry-proposal-workflow/redactions.md",
+            ".evidence/live-browser/2026-05-27-17-53-49-private-chef-inquiry-proposal-workflow/report.md",
+            "app/(chef)/community/subcontracts/loading.tsx",
+            "app/(chef)/community/subcontracts/page.tsx",
+            "app/(chef)/contracts/[id]/history/loading.tsx",
+            "app/(chef)/contracts/[id]/history/page.tsx"
+          ]
+        },
+        {
+          "evidence_state": "candidate-evidence",
+          "id": "booking-event",
+          "matched_file_count": 1035,
+          "sample_files": [
+            ".constraints/event-fsm.json",
+            "app/(admin)/admin/events/page.tsx",
+            "app/(chef)/cannabis/events/[id]/control-packet/control-packet-client.tsx",
+            "app/(chef)/cannabis/events/[id]/control-packet/loading.tsx",
+            "app/(chef)/cannabis/events/[id]/control-packet/page.tsx",
+            "app/(chef)/cannabis/events/loading.tsx",
+            "app/(chef)/cannabis/events/page.tsx",
+            "app/(chef)/clients/[id]/client-events-table.tsx"
+          ]
+        },
+        {
+          "evidence_state": "candidate-evidence",
+          "id": "payment-ledger",
+          "matched_file_count": 250,
+          "sample_files": [
+            ".evidence/live-browser/2026-05-20-18-10-29-hermes-discord-setup/discord-claude-ledger-posted.md",
+            ".evidence/live-browser/2026-05-27-06-30-16-dirty-workspace-reconciliation/whole-site-product-coherence-ledger-report.html",
+            ".evidence/live-browser/2026-05-27-06-30-16-dirty-workspace-reconciliation/whole-site-product-coherence-ledger-spec.json",
+            "app/(admin)/admin/system/payments/page.tsx",
+            "app/(chef)/cannabis/ledger/loading.tsx",
+            "app/(chef)/cannabis/ledger/page.tsx",
+            "app/(chef)/events/[id]/invoice/loading.tsx",
+            "app/(chef)/events/[id]/invoice/page.tsx"
+          ]
+        },
+        {
+          "evidence_state": "candidate-evidence",
+          "id": "menu-recipe",
+          "matched_file_count": 2787,
+          "sample_files": [
+            ".claude/skills/recipe-blitz/SKILL.md",
+            ".evidence/live-browser/2026-05-27-06-51-43-recipe-pi-realtime-pricing/01-new-recipe-snapshot.md",
+            ".evidence/live-browser/2026-05-27-06-51-43-recipe-pi-realtime-pricing/02-typed-recipe-snapshot.md",
+            ".evidence/live-browser/2026-05-27-06-51-43-recipe-pi-realtime-pricing/02b-typed-main-snapshot.md",
+            ".evidence/live-browser/2026-05-27-06-51-43-recipe-pi-realtime-pricing/03-after-parse-attempt-snapshot.md",
+            ".evidence/live-browser/2026-05-27-06-51-43-recipe-pi-realtime-pricing/04-network-after-parse.txt",
+            ".evidence/live-browser/2026-05-27-06-51-43-recipe-pi-realtime-pricing/05-manual-entry-snapshot.md",
+            ".evidence/live-browser/2026-05-27-06-51-43-recipe-pi-realtime-pricing/06-filled-manual-snapshot.md"
+          ]
+        },
+        {
+          "evidence_state": "candidate-evidence",
+          "id": "costing-profit",
+          "matched_file_count": 704,
+          "sample_files": [
+            ".claude/skills/culinary-ontology-builder/references/PIE-PRICING.md",
+            ".claude/skills/pie-accuracy/SKILL.md",
+            ".claude/skills/pie-alert/SKILL.md",
+            ".claude/skills/pie-census/SKILL.md",
+            ".claude/skills/pie-fix/SKILL.md",
+            ".claude/skills/pie-forecast/SKILL.md",
+            ".claude/skills/pie-measure/SKILL.md",
+            ".claude/skills/pie-ratchet/SKILL.md"
+          ]
+        },
+        {
+          "evidence_state": "candidate-evidence",
+          "id": "procurement",
+          "matched_file_count": 433,
+          "sample_files": [
+            ".openclaw-deploy/dedup-ingredients.mjs",
+            "Chef Flow Personas/Completed/Vendor/aanya-sharma.txt",
+            "Chef Flow Personas/Completed/Vendor/ari-weinzweig.txt",
+            "Chef Flow Personas/Completed/Vendor/dean-deluca.txt",
+            "Chef Flow Personas/Completed/Vendor/eliot-coleman.txt",
+            "Chef Flow Personas/Completed/Vendor/jean.txt",
+            "Chef Flow Personas/Completed/Vendor/joel-salatin.txt",
+            "Chef Flow Personas/Completed/Vendor/leah-penniman.txt"
+          ]
+        },
+        {
+          "evidence_state": "candidate-evidence",
+          "id": "prep-logistics",
+          "matched_file_count": 337,
+          "sample_files": [
+            ".claude/hooks/check-recent-tasks.ps1",
+            ".openclaw-deploy/setup-scheduled-task.ps1",
+            "app/(chef)/culinary/prep/loading.tsx",
+            "app/(chef)/culinary/prep/page.tsx",
+            "app/(chef)/culinary/prep/shopping/loading.tsx",
+            "app/(chef)/culinary/prep/shopping/page.tsx",
+            "app/(chef)/culinary/prep/shopping/print/page.tsx",
+            "app/(chef)/culinary/prep/timeline/loading.tsx"
+          ]
+        },
+        {
+          "evidence_state": "candidate-evidence",
+          "id": "schedule-travel",
+          "matched_file_count": 730,
+          "sample_files": [
+            ".openclaw-build/scripts/schedule-all.sh",
+            ".openclaw-deploy/setup-scheduled-task.ps1",
+            "app/(admin)/admin/price-catalog/csv-export/route.ts",
+            "app/(chef)/calendar/availability-calendar-client.tsx",
+            "app/(chef)/calendar/day/day-view-client.tsx",
+            "app/(chef)/calendar/day/loading.tsx",
+            "app/(chef)/calendar/day/page.tsx",
+            "app/(chef)/calendar/error.tsx"
+          ]
+        },
+        {
+          "evidence_state": "candidate-evidence",
+          "id": "service-execution",
+          "matched_file_count": 212,
+          "sample_files": [
+            ".claude/skills/services/SKILL.md",
+            ".openclaw-build/services/aggregator.mjs",
+            ".openclaw-build/services/backup-db.mjs",
+            ".openclaw-build/services/clean-nonfood-v2.mjs",
+            ".openclaw-build/services/clean-nonfood.mjs",
+            ".openclaw-build/services/cross-match.mjs",
+            ".openclaw-build/services/goal-governor-agent.mjs",
+            ".openclaw-build/services/import-usda-csv.mjs"
+          ]
+        },
+        {
+          "evidence_state": "candidate-evidence",
+          "id": "closeout-learning",
+          "matched_file_count": 215,
+          "sample_files": [
+            ".claude/skills/feature-closeout/SKILL.md",
+            ".claude/skills/live-preview/skill.md",
+            ".claude/skills/review/SKILL.md",
+            "app/(admin)/admin/feedback/_components/issue-report-detail.tsx",
+            "app/(admin)/admin/feedback/page.tsx",
+            "app/(chef)/communication/drafts/draft-review-client.tsx",
+            "app/(chef)/reviews/loading.tsx",
+            "app/(chef)/reviews/page.tsx"
+          ]
+        },
+        {
+          "evidence_state": "candidate-evidence",
+          "id": "network-referral",
+          "matched_file_count": 514,
+          "sample_files": [
+            ".claude/skills/swarm-handoff/SKILL.md",
+            ".evidence/live-browser/2026-05-27-05-03-17-private-chef-chefflow-showcase/network-nonstatic.txt",
+            ".evidence/live-browser/2026-05-27-06-51-43-recipe-pi-realtime-pricing/04-network-after-parse.txt",
+            ".evidence/live-browser/2026-05-27-06-51-43-recipe-pi-realtime-pricing/08-network-after-save-click.txt",
+            ".evidence/live-browser/2026-05-27-06-51-43-recipe-pi-realtime-pricing/12-network-after-pie-api.txt",
+            ".patches/handoff.md",
+            ".planning/HANDOFF.json",
+            ".planning/exit-eval-swarm-handoff.md"
+          ]
+        }
+      ],
+      "evidence": [
+        "Git root verified on 2026-09-08 at commit 7924ac43024e4e21b205b0925492fb6faad6590e."
+      ],
+      "git": {
+        "branch": "main",
+        "changed_path_count": 26,
+        "dirty": true,
+        "head": "7924ac43024e4e21b205b0925492fb6faad6590e",
+        "root": "C:/Users/david/Documents/CFv1",
+        "tracked_file_count": 15116
+      },
+      "id": "chefflow",
+      "inspected_path": "C:\\Users\\david\\Documents\\CFv1",
+      "inspection_state": "git-verified",
+      "integration_rule": "Receive only proven generalized behavior through an explicit seam.",
+      "name": "ChefFlow",
+      "path_status": "verified",
+      "role": "canonical-platform",
+      "scan_path": "C:\\Users\\david\\Documents\\CFv1"
+    },
+    {
+      "canonical_path": "C:\\Users\\david\\Desktop\\DFPC",
+      "capabilities": [
+        {
+          "evidence_state": "candidate-evidence",
+          "id": "inquiry-intake",
+          "matched_file_count": 92,
+          "sample_files": [
+            "00_DEV_NOTES/CLIENT_LEADS/DHANNYA_JOSEPH_CALL_PREP_2026-06-03.md",
+            "00_DEV_NOTES/CLIENT_LEADS/DHANNYA_JOSEPH_CALL_TRANSCRIPT_2026-06-03.md",
+            "00_DEV_NOTES/CLIENT_LEADS/DHANNYA_JOSEPH_ELOPEMENT_BARTLETT_2026-06-20.md",
+            "00_DEV_NOTES/CLIENT_LEADS/DHANNYA_JOSEPH_POST_CALL_MENU_BRIEF_2026-06-03.md",
+            "00_DEV_NOTES/CLIENT_LEADS/DHANNYA_JOSEPH_RECORDING_FAILURE_2026-06-03.md",
+            "00_DEV_NOTES/CLIENT_LEADS/KRISTINA_JULY_2026_MENU_OPTIONS.md",
+            "00_DEV_NOTES/CLIENT_LEDGER_2026-07-17/backups/CLIENT_REGISTRY-pre-recon/anna-tac-lead.yaml",
+            "00_DEV_NOTES/CLIENT_LEDGER_2026-07-17/backups/CLIENT_REGISTRY-pre-recon/jenna-tac-lead.yaml"
+          ]
+        },
+        {
+          "evidence_state": "candidate-evidence",
+          "id": "client-memory",
+          "matched_file_count": 651,
+          "sample_files": [
+            "00_DEV_NOTES/AUTO_CLIENT_PAGE_PIPELINE_SPEC.md",
+            "00_DEV_NOTES/CLIENT_HISTORY_SYSTEM_AUDIT_2026-08-27.md",
+            "00_DEV_NOTES/CLIENT_IDENTITY_AUDIT.md",
+            "00_DEV_NOTES/CLIENT_JOURNEY_2026-07-18_client-page-stepper-prototype.html",
+            "00_DEV_NOTES/CLIENT_JOURNEY_2026-07-18_client-page-stepper-spec.md",
+            "00_DEV_NOTES/CLIENT_LEADS/DHANNYA_JOSEPH_CALL_PREP_2026-06-03.md",
+            "00_DEV_NOTES/CLIENT_LEADS/DHANNYA_JOSEPH_CALL_TRANSCRIPT_2026-06-03.md",
+            "00_DEV_NOTES/CLIENT_LEADS/DHANNYA_JOSEPH_ELOPEMENT_BARTLETT_2026-06-20.md"
+          ]
+        },
+        {
+          "evidence_state": "candidate-evidence",
+          "id": "quote-contract",
+          "matched_file_count": 30,
+          "sample_files": [
+            "00_DEV_NOTES/AGENT_EXECUTION_CONTRACT.md",
+            "00_DEV_NOTES/HONEY_STEM_2026_PRICING_PROPOSAL.md",
+            "00_DEV_NOTES/TRANSCRIPT_AUDIT_2026-08-29/phase0/baseline-contract-and-pilot.json",
+            "00_DEV_NOTES/TRANSCRIPT_AUDIT_2026-08-29/phase0/final-contract-and-pilot.json",
+            "00_DEV_NOTES/handoffs/archive/2026-06/handoff-2026-06-05-agent-execution-contract-hardening.md",
+            "00_DEV_NOTES/handoffs/archive/2026-06/handoff-2026-06-05-agent-execution-contract.md",
+            "00_DEV_NOTES/handoffs/handoff-2026-08-02-client-contracts.md",
+            "00_DEV_NOTES/handoffs/handoff-2026-09-04-remy-phase1c-contract-restart-hardening.md"
+          ]
+        },
+        {
+          "evidence_state": "candidate-evidence",
+          "id": "booking-event",
+          "matched_file_count": 215,
+          "sample_files": [
+            "00_DEV_NOTES/ACTIVE_WORK_EVENT_READY_INVENTORY_2026-06-04.md",
+            "00_DEV_NOTES/BOOKING_INTELLIGENCE_AUDIT_AND_FIRST_BRIEF_2026-07-10.md",
+            "00_DEV_NOTES/CLIENT_LEDGER_2026-07-17/backups/CLIENT_REGISTRY-pre-recon/camillemarinaevents.yaml",
+            "00_DEV_NOTES/CLIENT_LEDGER_2026-07-17/recovered-to-bookings.json",
+            "00_DEV_NOTES/CLIENT_REGISTRY/camillemarinaevents.yaml",
+            "00_DEV_NOTES/CODEX_HANDOFF_event_notifications.md",
+            "00_DEV_NOTES/DINNER_HISTORY_BACKFILL_2026-09-05/sources/drive-event-rows-2026-05-31.json",
+            "00_DEV_NOTES/EVENT_DISTRIBUTION_PLAYBOOK.md"
+          ]
+        },
+        {
+          "evidence_state": "candidate-evidence",
+          "id": "payment-ledger",
+          "matched_file_count": 301,
+          "sample_files": [
+            "00_DEV_NOTES/CHATGPT_CORPUS_RESEARCH_LEDGER.md",
+            "00_DEV_NOTES/CLIENT_LEDGER_2026-07-17/01-source-inventory.md",
+            "00_DEV_NOTES/CLIENT_LEDGER_2026-07-17/02-access-sync-status.md",
+            "00_DEV_NOTES/CLIENT_LEDGER_2026-07-17/03-canonical-data-model.md",
+            "00_DEV_NOTES/CLIENT_LEDGER_2026-07-17/04-identity-resolution-strategy.md",
+            "00_DEV_NOTES/CLIENT_LEDGER_2026-07-17/05-ingestion-migration-plan.md",
+            "00_DEV_NOTES/CLIENT_LEDGER_2026-07-17/06-completeness-criteria.md",
+            "00_DEV_NOTES/CLIENT_LEDGER_2026-07-17/07-risks-blocked-auth.md"
+          ]
+        },
+        {
+          "evidence_state": "candidate-evidence",
+          "id": "menu-recipe",
+          "matched_file_count": 212,
+          "sample_files": [
+            "00_DEV_NOTES/CLIENT_LEADS/DHANNYA_JOSEPH_POST_CALL_MENU_BRIEF_2026-06-03.md",
+            "00_DEV_NOTES/CLIENT_LEADS/KRISTINA_JULY_2026_MENU_OPTIONS.md",
+            "00_DEV_NOTES/HANNAH_2026_DISH_IDEAS_FOR_HANNAH.md",
+            "00_DEV_NOTES/HANNAH_2026_MENU_REFERENCE.md",
+            "00_DEV_NOTES/LIFETIME_MENU_ARCHIVE_AUDIT_2026-07-08.md",
+            "00_DEV_NOTES/MENU_ARCHIVE_6_MONTHS.md",
+            "00_DEV_NOTES/SELF_SELECTING_MENU_SPEC.md",
+            "00_DEV_NOTES/TAC_BEST_MENUS_2026-07-06.md"
+          ]
+        },
+        {
+          "evidence_state": "candidate-evidence",
+          "id": "costing-profit",
+          "matched_file_count": 20,
+          "sample_files": [
+            "00_DEV_NOTES/HONEY_STEM_2026_PRICING_PROPOSAL.md",
+            "00_DEV_NOTES/MULTI_DAY_PRICING_DOCTRINE.md",
+            "00_DEV_NOTES/PRICING_AUDIT_WAVE2.md",
+            "00_DEV_NOTES/PRICING_EVIDENCE_CENSUS_2026-06-26.md",
+            "00_DEV_NOTES/PRICING_RECONCILIATION_2026-07-06.md",
+            "00_DEV_NOTES/PRICING_STRUCTURE_ROOT_CAUSE_2026-06-26.md",
+            "00_DEV_NOTES/handoffs/SWARM_PROMPT_pricing_phase3.md",
+            "00_DEV_NOTES/handoffs/archive/2026-06/handoff-2026-06-11-bill-julie-pricing-doctrine.md"
+          ]
+        },
+        {
+          "evidence_state": "candidate-evidence",
+          "id": "procurement",
+          "matched_file_count": 10,
+          "sample_files": [
+            "00_DEV_NOTES/BECCA_JUNE13_GROCERY_LIST.md",
+            "00_DEV_NOTES/BECCA_JUNE13_GROCERY_LIST.pdf",
+            "00_DEV_NOTES/grocery-list-print.html",
+            "00_DEV_NOTES/grocery-pdf-base64.txt",
+            "00_DEV_NOTES/handoffs/handoff-2026-08-27-generic-vendor-packet-rebuild.md",
+            "00_DEV_NOTES/lindsay-dinner-docs/lindsay-june-9-grocery-list.pdf",
+            "00_DEV_NOTES/sandy-dinner-docs/sandy-june-6-grocery-list-market-basket.html",
+            "00_DEV_NOTES/sandy-dinner-docs/sandy-june-6-grocery-list.html"
+          ]
+        },
+        {
+          "evidence_state": "candidate-evidence",
+          "id": "prep-logistics",
+          "matched_file_count": 2035,
+          "sample_files": [
+            "00_DEV_NOTES/2025_TAX_FILING_CHECKLIST.md",
+            "00_DEV_NOTES/BECCA_JUNE13_PREP_TIMELINE.md",
+            "00_DEV_NOTES/CHASE_GARRETT_PAGE_REVIEW_CHECKLIST.md",
+            "00_DEV_NOTES/CLIENT_LEADS/DHANNYA_JOSEPH_CALL_PREP_2026-06-03.md",
+            "00_DEV_NOTES/TOMATOES_FIREFLIES_LAUNCH_CHECKLIST.md",
+            "00_DEV_NOTES/codex-capability-rollout/02-task-oversight.md",
+            "00_DEV_NOTES/codex-capability-rollout/02-task-snapshot.json",
+            "00_DEV_NOTES/handoffs/archive/2026-06/handoff-2026-06-03-dhannya-call-prep.md"
+          ]
+        },
+        {
+          "evidence_state": "candidate-evidence",
+          "id": "schedule-travel",
+          "matched_file_count": 71,
+          "sample_files": [
+            "00_DEV_NOTES/CALENDAR_GAP_MAP_2026-06-09.md",
+            "00_DEV_NOTES/CALENDAR_SYSTEM_QUESTIONNAIRE.md",
+            "00_DEV_NOTES/DINNER_HISTORY_BACKFILL_2026-09-05/sources/calendar-2026-09-05.json",
+            "00_DEV_NOTES/FACEBOOK_ARCHIVE/combined_content_calendar.json",
+            "00_DEV_NOTES/FACEBOOK_ARCHIVE/content_calendar_52week.json",
+            "00_DEV_NOTES/GOOGLE_CALENDAR_SETUP.md",
+            "00_DEV_NOTES/OVERNIGHT_2026-07-11/03_CALENDAR_DEFECTS.md",
+            "00_DEV_NOTES/PULSE_SCHEDULER_BUILD_SPEC.md"
+          ]
+        },
+        {
+          "evidence_state": "candidate-evidence",
+          "id": "service-execution",
+          "matched_file_count": 29,
+          "sample_files": [
+            "00_DEV_NOTES/AGENT_EXECUTION_CONTRACT.md",
+            "00_DEV_NOTES/CLIENT_LEDGER_2026-07-20_LIFETIME_SERVICE_CENSUS.html",
+            "00_DEV_NOTES/CLIENT_LEDGER_COMPLETION_EXECUTION_PLAN_2026-07-18.md",
+            "00_DEV_NOTES/PI_DISABLED_SERVICES_2026-07-18_RESTORE.md",
+            "00_DEV_NOTES/PROMPT_TAC_EXECUTION_2026-07-06.md",
+            "00_DEV_NOTES/TAC_GEO_EXECUTION_TRACKER.md",
+            "00_DEV_NOTES/chef-coordination/2026-09-04/SCHEDULED-EXECUTION.md",
+            "00_DEV_NOTES/codex-capability-rollout/03-scheduled-execution-proof.md"
+          ]
+        },
+        {
+          "evidence_state": "candidate-evidence",
+          "id": "closeout-learning",
+          "matched_file_count": 167,
+          "sample_files": [
+            "00_DEV_NOTES/AGENT_GAP_AUDIT_2026-09-04/03-codex-57-thread-review.md",
+            "00_DEV_NOTES/CHASE_GARRETT_PAGE_REVIEW_CHECKLIST.md",
+            "00_DEV_NOTES/CLIENT_LEDGER_2026-07-17/UNKNOWN_CLIENT_THREADS_REVIEW.md",
+            "00_DEV_NOTES/CLIENT_LEDGER_2026-07-17/backups/pre-mms-2026-07-17/UNKNOWN_CLIENT_THREADS_REVIEW.md",
+            "00_DEV_NOTES/CLIENT_LEDGER_2026-07-17/forgotten-clients-review-2026-07-18.md",
+            "00_DEV_NOTES/DINNER_HISTORY_BACKFILL_2026-09-05/owner-review-queue.json",
+            "00_DEV_NOTES/DINNER_HISTORY_BACKFILL_2026-09-05/sources/take-a-chef-review-identities-2026-07-19.json",
+            "00_DEV_NOTES/REACTIVATION_REVIEW_QUEUE_2026-08-28.md"
+          ]
+        },
+        {
+          "evidence_state": "candidate-evidence",
+          "id": "network-referral",
+          "matched_file_count": 1068,
+          "sample_files": [
+            "00_DEV_NOTES/CODEX_HANDOFF_event_notifications.md",
+            "00_DEV_NOTES/HANDOFF_TRACKER_2026-09-06.md",
+            "00_DEV_NOTES/HANDOFF_cfv1_steal.md",
+            "00_DEV_NOTES/HANDOFF_event_notifications_completion.md",
+            "00_DEV_NOTES/INBOX_HANDOFF_LEDGER_2026-09-05.md",
+            "00_DEV_NOTES/SWARM_HANDOFF_2026-06-02.md",
+            "00_DEV_NOTES/SWARM_HANDOFF_SPEC_FIXES.md",
+            "00_DEV_NOTES/SWARM_HANDOFF_widget-v2.md"
+          ]
+        }
+      ],
+      "evidence": [
+        "Digital_David_Verified_State_2026-09-07.md names this as the only verified current DFPC root; the current filesystem and project registry agree."
+      ],
+      "git": {
+        "branch": "agent/local-foreman-protocol",
+        "changed_path_count": 154,
+        "dirty": true,
+        "head": "bd97680ff0d3ce24252373f0fecb03c49bed3587",
+        "root": "C:/Users/david/Desktop/DFPC",
+        "tracked_file_count": 6092
+      },
+      "id": "dfpc",
+      "inspected_path": "C:\\Users\\david\\Desktop\\DFPC",
+      "inspection_state": "git-verified",
+      "integration_rule": "Generate operational truth from David's real business.",
+      "name": "DF Private Chef",
+      "path_status": "verified-canonical-root",
+      "role": "live-reference-implementation",
+      "scan_path": "C:\\Users\\david\\Desktop\\DFPC"
+    },
+    {
+      "canonical_path": null,
+      "capabilities": [
+        {
+          "evidence_state": "unresolved",
+          "id": "inquiry-intake",
+          "matched_file_count": 0,
+          "sample_files": []
+        },
+        {
+          "evidence_state": "unresolved",
+          "id": "client-memory",
+          "matched_file_count": 0,
+          "sample_files": []
+        },
+        {
+          "evidence_state": "unresolved",
+          "id": "quote-contract",
+          "matched_file_count": 0,
+          "sample_files": []
+        },
+        {
+          "evidence_state": "unresolved",
+          "id": "booking-event",
+          "matched_file_count": 0,
+          "sample_files": []
+        },
+        {
+          "evidence_state": "unresolved",
+          "id": "payment-ledger",
+          "matched_file_count": 0,
+          "sample_files": []
+        },
+        {
+          "evidence_state": "unresolved",
+          "id": "menu-recipe",
+          "matched_file_count": 0,
+          "sample_files": []
+        },
+        {
+          "evidence_state": "unresolved",
+          "id": "costing-profit",
+          "matched_file_count": 0,
+          "sample_files": []
+        },
+        {
+          "evidence_state": "unresolved",
+          "id": "procurement",
+          "matched_file_count": 0,
+          "sample_files": []
+        },
+        {
+          "evidence_state": "unresolved",
+          "id": "prep-logistics",
+          "matched_file_count": 0,
+          "sample_files": []
+        },
+        {
+          "evidence_state": "unresolved",
+          "id": "schedule-travel",
+          "matched_file_count": 0,
+          "sample_files": []
+        },
+        {
+          "evidence_state": "unresolved",
+          "id": "service-execution",
+          "matched_file_count": 0,
+          "sample_files": []
+        },
+        {
+          "evidence_state": "unresolved",
+          "id": "closeout-learning",
+          "matched_file_count": 0,
+          "sample_files": []
+        },
+        {
+          "evidence_state": "unresolved",
+          "id": "network-referral",
+          "matched_file_count": 0,
+          "sample_files": []
+        }
+      ],
+      "evidence": [
+        "Product role confirmed by David on 2026-09-08; canonical repository path remains unresolved."
+      ],
+      "git": null,
+      "id": "chef-os-default",
+      "inspection_state": "unresolved",
+      "integration_rule": "Become configuration and starter data inside ChefFlow, not a competing platform.",
+      "name": "Chef Operating System Default",
+      "path_status": "role-defined-path-unresolved",
+      "role": "default-chefflow-workspace",
+      "scan_path": null
+    },
+    {
+      "canonical_path": null,
+      "capabilities": [
+        {
+          "evidence_state": "unresolved",
+          "id": "inquiry-intake",
+          "matched_file_count": 0,
+          "sample_files": []
+        },
+        {
+          "evidence_state": "unresolved",
+          "id": "client-memory",
+          "matched_file_count": 0,
+          "sample_files": []
+        },
+        {
+          "evidence_state": "unresolved",
+          "id": "quote-contract",
+          "matched_file_count": 0,
+          "sample_files": []
+        },
+        {
+          "evidence_state": "unresolved",
+          "id": "booking-event",
+          "matched_file_count": 0,
+          "sample_files": []
+        },
+        {
+          "evidence_state": "unresolved",
+          "id": "payment-ledger",
+          "matched_file_count": 0,
+          "sample_files": []
+        },
+        {
+          "evidence_state": "unresolved",
+          "id": "menu-recipe",
+          "matched_file_count": 0,
+          "sample_files": []
+        },
+        {
+          "evidence_state": "unresolved",
+          "id": "costing-profit",
+          "matched_file_count": 0,
+          "sample_files": []
+        },
+        {
+          "evidence_state": "unresolved",
+          "id": "procurement",
+          "matched_file_count": 0,
+          "sample_files": []
+        },
+        {
+          "evidence_state": "unresolved",
+          "id": "prep-logistics",
+          "matched_file_count": 0,
+          "sample_files": []
+        },
+        {
+          "evidence_state": "unresolved",
+          "id": "schedule-travel",
+          "matched_file_count": 0,
+          "sample_files": []
+        },
+        {
+          "evidence_state": "unresolved",
+          "id": "service-execution",
+          "matched_file_count": 0,
+          "sample_files": []
+        },
+        {
+          "evidence_state": "unresolved",
+          "id": "closeout-learning",
+          "matched_file_count": 0,
+          "sample_files": []
+        },
+        {
+          "evidence_state": "unresolved",
+          "id": "network-referral",
+          "matched_file_count": 0,
+          "sample_files": []
+        }
+      ],
+      "evidence": [
+        "Product role confirmed by David on 2026-09-08; canonical repository path remains unresolved."
+      ],
+      "git": null,
+      "id": "chef-collect",
+      "inspection_state": "unresolved",
+      "integration_rule": "Connect chefs and trace referrals without charging for ChefFlow usage.",
+      "name": "Chef Collect",
+      "path_status": "role-defined-path-unresolved",
+      "role": "network-referral-commission-layer",
+      "scan_path": null
+    },
+    {
+      "canonical_path": "C:\\Users\\david\\Desktop\\AnthonyWebsite",
+      "capabilities": [
+        {
+          "evidence_state": "candidate-evidence",
+          "id": "inquiry-intake",
+          "matched_file_count": 65,
+          "sample_files": [
+            "migrations/011-inquiry-client-link.sql",
+            "migrations/024-inquiry-event-location.sql",
+            "migrations/068-inquiry-replied.sql",
+            "migrations/080-inquiry-status-token.sql",
+            "migrations/081-inquiry-source.sql",
+            "migrations/087-inquiry-outcome.sql",
+            "migrations/088-inquiry-drafts.sql",
+            "migrations/100-inquiry-qualification.sql"
+          ]
+        },
+        {
+          "evidence_state": "candidate-evidence",
+          "id": "client-memory",
+          "matched_file_count": 124,
+          "sample_files": [
+            "migrations/011-inquiry-client-link.sql",
+            "migrations/037-client-hub-tokens.sql",
+            "migrations/054-client-address.sql",
+            "migrations/090-client-day-of-note.sql",
+            "migrations/105-slot-claim-client-link.sql",
+            "migrations/108-slot-claim-client-index.sql",
+            "migrations/110-client-copy-publish-exclusion.sql",
+            "migrations/115-client-source.sql"
+          ]
+        },
+        {
+          "evidence_state": "candidate-evidence",
+          "id": "quote-contract",
+          "matched_file_count": 27,
+          "sample_files": [
+            "migrations/036-proposal-tokens.sql",
+            "migrations/167-null-proposal-ua.sql",
+            "migrations/174-inquiry-quote.sql",
+            "public/illustrations/quote.svg",
+            "public/js/proposal-confirm.js",
+            "server/lib/quote-calculator.js",
+            "server/templates/client/partials/proposal-messages.eta",
+            "server/templates/client/proposal-accepted.eta"
+          ]
+        },
+        {
+          "evidence_state": "candidate-evidence",
+          "id": "booking-event",
+          "matched_file_count": 50,
+          "sample_files": [
+            "migrations/008-event-type.sql",
+            "migrations/024-inquiry-event-location.sql",
+            "migrations/026-event-menu-share-tokens.sql",
+            "migrations/049-event-deposit.sql",
+            "migrations/050-public-booking.sql",
+            "migrations/055-event-arrival-time.sql",
+            "migrations/057-event-end-date.sql",
+            "migrations/091-shopping-list-event.sql"
+          ]
+        },
+        {
+          "evidence_state": "candidate-evidence",
+          "id": "payment-ledger",
+          "matched_file_count": 15,
+          "sample_files": [
+            "migrations/038-invoice-tokens.sql",
+            "migrations/051-invoice-paid.sql",
+            "migrations/052-invoice-number.sql",
+            "migrations/114-invoice-tax-and-payment.sql",
+            "public/illustrations/ledger.svg",
+            "server/lib/payment-clock.js",
+            "server/templates/client/invoice.eta",
+            "test/client-hub-past-invoice.test.js"
+          ]
+        },
+        {
+          "evidence_state": "candidate-evidence",
+          "id": "menu-recipe",
+          "matched_file_count": 109,
+          "sample_files": [
+            "migrations/007-menu-occasion.sql",
+            "migrations/012-menu-share-tokens.sql",
+            "migrations/026-event-menu-share-tokens.sql",
+            "migrations/030-menu-visibility.sql",
+            "migrations/047-accepted-menu-snapshot.sql",
+            "migrations/060-dish-reactions.sql",
+            "migrations/061-meal-dishes.sql",
+            "migrations/064-menu-library-public-visibility.sql"
+          ]
+        },
+        {
+          "evidence_state": "candidate-evidence",
+          "id": "costing-profit",
+          "matched_file_count": 20,
+          "sample_files": [
+            "migrations/053-accepted-price.sql",
+            "migrations/083-pricing-lines.sql",
+            "migrations/098-food-costing-records.sql",
+            "server/lib/menu-plate-cost.js",
+            "server/lib/purveyor-price-memory.js",
+            "server/routes/food-costs.js",
+            "server/templates/admin/food-costs.eta",
+            "server/templates/admin/pricing.eta"
+          ]
+        },
+        {
+          "evidence_state": "candidate-evidence",
+          "id": "procurement",
+          "matched_file_count": 23,
+          "sample_files": [
+            "migrations/029-shopping-list.sql",
+            "migrations/091-shopping-list-event.sql",
+            "migrations/143-shopping-have-on-hand.sql",
+            "migrations/177-shopping-quantity-note.sql",
+            "server/lib/grocery-aggregator.js",
+            "server/templates/admin/event-grocery-list.eta",
+            "server/templates/admin/grocery-batch.eta",
+            "test/allergen-ingredient-truth.test.js"
+          ]
+        },
+        {
+          "evidence_state": "candidate-evidence",
+          "id": "prep-logistics",
+          "matched_file_count": 20,
+          "sample_files": [
+            ".githooks/prepare-commit-msg",
+            "migrations/082-dinner-prep.sql",
+            "public/admin/js/prep-sheet-checkoff.js",
+            "server/lib/prep-timeline.js",
+            "server/routes/dinner-prep.js",
+            "server/templates/admin/kitchen-prep-sheet.eta",
+            "server/templates/client/dinner-prep.eta",
+            "test/client-notes-timeline.test.js"
+          ]
+        },
+        {
+          "evidence_state": "candidate-evidence",
+          "id": "schedule-travel",
+          "matched_file_count": 84,
+          "sample_files": [
+            "public/admin/js/calendar-1.js",
+            "public/admin/js/calendar-2.js",
+            "public/admin/js/calendar-harvest.js",
+            "public/admin/js/calendar-shortcuts.js",
+            "public/icons/calendar-blank.svg",
+            "public/icons/calendar-plus.svg",
+            "scripts/route-work-targets.js",
+            "server/lib/service-firing-schedule.js"
+          ]
+        },
+        {
+          "evidence_state": "candidate-evidence",
+          "id": "service-execution",
+          "matched_file_count": 20,
+          "sample_files": [
+            "migrations/004-services-text.sql",
+            "migrations/058-service-areas-southern-maine.sql",
+            "migrations/090-client-day-of-note.sql",
+            "migrations/153-service-area-pages.sql",
+            "migrations/162-day-of-contact.sql",
+            "public/archive/anthony-wix-2026-08-01/service-page.html",
+            "server/lib/service-areas.js",
+            "server/lib/service-firing-schedule.js"
+          ]
+        },
+        {
+          "evidence_state": "candidate-evidence",
+          "id": "closeout-learning",
+          "matched_file_count": 56,
+          "sample_files": [
+            "migrations/015-reviews.sql",
+            "migrations/023-unique-review-request.sql",
+            "migrations/027-admin-closeout.sql",
+            "migrations/031-review-source-tracking.sql",
+            "migrations/042-merge-testimonials-into-reviews.sql",
+            "migrations/077-dedupe-cross-source-reviews.sql",
+            "migrations/078-review-given-date-backfill.sql",
+            "migrations/085-review-request-dinner.sql"
+          ]
+        },
+        {
+          "evidence_state": "candidate-evidence",
+          "id": "network-referral",
+          "matched_file_count": 17,
+          "sample_files": [
+            "migrations/112-dinner-handoff.sql",
+            "migrations/132-handoff-multi-offer.sql",
+            "public/icons/check-circle.svg",
+            "public/icons/share-network.svg",
+            "public/icons/warning-circle.svg",
+            "public/js/share-referral.js",
+            "scripts/create-handoff-snapshot.js",
+            "server/routes/handoff.js"
+          ]
+        }
+      ],
+      "evidence": [
+        "Current filesystem listing and shared Git remote history identify this path as the strongest candidate."
+      ],
+      "git": {
+        "branch": "master",
+        "changed_path_count": 10,
+        "dirty": true,
+        "head": "b8aa09a8428955cd3ac53b6147d478c02c6bec73",
+        "root": "C:/Users/david/Desktop/AnthonyWebsite",
+        "tracked_file_count": 1582
+      },
+      "id": "anthony",
+      "inspected_path": "C:\\Users\\david\\Desktop\\AnthonyWebsite",
+      "inspection_state": "git-verified",
+      "integration_rule": "Prove which DFPC behavior generalizes to a second chef before wider rollout.",
+      "name": "Anthony's system",
+      "path_status": "candidate-pending-git-verification",
+      "role": "second-chef-validation-case",
+      "scan_path": "C:\\Users\\david\\Desktop\\AnthonyWebsite"
+    }
+  ],
+  "schema_version": 1,
+  "source_decision_id": "CHEFFLOW-REVIVAL-20260908"
+}

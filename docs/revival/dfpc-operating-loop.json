@@ -1,0 +1,109 @@
+{
+  "schema_version": 1,
+  "loop_id": "dfpc-real-event-v1",
+  "purpose": "Prove one real DF Private Chef engagement from first contact through closeout inside ChefFlow.",
+  "completion_rule": "A stage passes only with real persisted evidence and an honest failure state. Route visits, mock data, and AI-only operation do not count.",
+  "adoption_gate": {
+    "first_milestone": "One real DFPC engagement completes every applicable stage.",
+    "repeatability_milestone": "David completes the loop for three real engagements without a parallel private workflow.",
+    "second_chef_milestone": "Anthony completes the generalized loop with isolated data."
+  },
+  "stages": [
+    {
+      "order": 1,
+      "id": "inquiry",
+      "domain_entities": ["Inquiry", "Client"],
+      "required_evidence": ["source", "received_at", "contact", "requested_date", "location", "guest_count", "current_state"],
+      "pass_condition": "The real inquiry is persisted once and its source is attributable.",
+      "failure_state": "Missing or conflicting facts remain visible and do not become invented defaults."
+    },
+    {
+      "order": 2,
+      "id": "discovery",
+      "domain_entities": ["Client", "Guest", "Household"],
+      "required_evidence": ["service_fit", "dietary_needs", "preferences", "referral_source", "open_questions"],
+      "pass_condition": "Known client and guest facts are attached to the correct relationship record.",
+      "failure_state": "Unknowns remain explicitly unknown."
+    },
+    {
+      "order": 3,
+      "id": "quote-and-scope",
+      "domain_entities": ["Quote", "Contract"],
+      "required_evidence": ["line_items", "price", "currency", "travel", "scope", "expiration", "approval_state"],
+      "pass_condition": "The client sees an accurate proposal and its delivery is recorded.",
+      "failure_state": "A failed send cannot display a sent or viewed state."
+    },
+    {
+      "order": 4,
+      "id": "acceptance-and-booking",
+      "domain_entities": ["Quote", "Event", "Contract"],
+      "required_evidence": ["explicit_acceptance", "state_transition", "event_identity", "calendar_commitment"],
+      "pass_condition": "Acceptance creates one traceable Event through the defined state machine.",
+      "failure_state": "No Event is confirmed from an assumption or route visit."
+    },
+    {
+      "order": 5,
+      "id": "payment",
+      "domain_entities": ["Ledger Entry", "Payment Status", "Event Financial Summary"],
+      "required_evidence": ["provider_reference", "amount_cents", "currency", "ledger_entry", "derived_status"],
+      "pass_condition": "The immutable ledger and provider evidence agree.",
+      "failure_state": "Provider failure is visible; refunds, transfers, and payout changes require exact approval."
+    },
+    {
+      "order": 6,
+      "id": "menu",
+      "domain_entities": ["Menu", "Dish", "Recipe", "Component"],
+      "required_evidence": ["chef_authored_menu", "dietary_check", "client_approval", "locked_revision"],
+      "pass_condition": "A chef-authored menu is approved, locked, and attached to the Event.",
+      "failure_state": "AI never fabricates culinary content or silently substitutes a recipe."
+    },
+    {
+      "order": 7,
+      "id": "costing-and-profit-plan",
+      "domain_entities": ["Ingredient", "Recipe", "Expense", "Event Financial Summary"],
+      "required_evidence": ["quantities", "yield", "waste", "ingredient_cost", "labor", "overhead", "planned_margin"],
+      "pass_condition": "Every served portion rolls into a reviewable planned event profit.",
+      "failure_state": "Missing price coverage is shown with confidence and never converted to false zero cost."
+    },
+    {
+      "order": 8,
+      "id": "procurement-and-prep",
+      "domain_entities": ["Ingredient", "Vendor", "Event"],
+      "required_evidence": ["consolidated_shopping", "vendor_choice", "prep_tasks", "equipment", "facility", "owners", "deadlines"],
+      "pass_condition": "Purchasing and prep derive from the locked menu and current guest count.",
+      "failure_state": "Menu or guest changes invalidate stale quantities visibly."
+    },
+    {
+      "order": 9,
+      "id": "schedule-and-travel",
+      "domain_entities": ["Event"],
+      "required_evidence": ["prep_block", "load_block", "travel_time", "traffic_check", "parking", "arrival_buffer", "service_time"],
+      "pass_condition": "The calendar protects preparation, travel, parking, and arrival 30 minutes early.",
+      "failure_state": "Unknown route or parking details block a false ready state."
+    },
+    {
+      "order": 10,
+      "id": "service-execution",
+      "domain_entities": ["Event", "Guest", "Menu", "Staff Member"],
+      "required_evidence": ["callsheet", "service_timeline", "dietary_map", "staff_assignments", "live_exceptions"],
+      "pass_condition": "The current service plan is usable from a phone without searching another system.",
+      "failure_state": "Conflicting timing or dietary information is elevated before service."
+    },
+    {
+      "order": 11,
+      "id": "closeout",
+      "domain_entities": ["Event", "Expense", "Ledger Entry"],
+      "required_evidence": ["completion_transition", "actual_expenses", "final_payment", "tip", "variance", "incident_notes"],
+      "pass_condition": "The Event closes with reconciled financial and operational evidence.",
+      "failure_state": "Incomplete money or expense evidence keeps closeout open."
+    },
+    {
+      "order": 12,
+      "id": "follow-up-and-learning",
+      "domain_entities": ["Client", "Event"],
+      "required_evidence": ["approved_follow_up", "feedback", "review_status", "referral_attribution", "rebooking_signal", "lesson"],
+      "pass_condition": "Follow-up is approval-gated and the next relationship action is recorded.",
+      "failure_state": "Nothing is sent externally without David's approval."
+    }
+  ]
+}

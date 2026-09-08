@@ -1,0 +1,61 @@
+{
+  "schema_version": 1,
+  "policy": "A recovery disposition controls active use. It never authorizes deletion.",
+  "allowed_dispositions": ["adopt", "rebuild", "archive"],
+  "decisions": [
+    {
+      "id": "domain-language-and-state-machines",
+      "disposition": "adopt",
+      "reason": "Chef, Client, Inquiry, Quote, Event, Menu, Recipe, Ingredient, and Ledger Entry already form a coherent operating model.",
+      "evidence": ["CONTEXT.md"]
+    },
+    {
+      "id": "immutable-ledger-and-computed-financials",
+      "disposition": "adopt",
+      "reason": "Append-only money records and computed event financial summaries protect auditability and profit truth.",
+      "evidence": ["CONTEXT.md", "docs/architecture/current-state.md"]
+    },
+    {
+      "id": "tenant-auth-and-role-gates",
+      "disposition": "adopt",
+      "reason": "The existing model supports a Chef as tenant while preserving independent client, staff, partner, and admin surfaces.",
+      "evidence": ["AGENTS.md", "docs/architecture/current-state.md"]
+    },
+    {
+      "id": "operator-home-and-rail",
+      "disposition": "rebuild",
+      "reason": "Hundreds of routes and more than 100 navigation items create discovery and daily-use failure even when features exist.",
+      "evidence": ["docs/architecture/current-state.md", "docs/product-blueprint.md"]
+    },
+    {
+      "id": "real-chef-adoption-loop",
+      "disposition": "rebuild",
+      "reason": "Build completeness is high while validation is low; real usage must drive the interface and definition of done.",
+      "evidence": ["docs/product-blueprint.md", "docs/definition-of-done.md"]
+    },
+    {
+      "id": "sync-runtime-and-resource-control",
+      "disposition": "rebuild",
+      "reason": "The latest sync has no recorded success and CFV1 previously exhausted workstation and Raspberry Pi resources.",
+      "evidence": ["docs/sync-status.json", "docs/.codex-workspace-brief.md"]
+    },
+    {
+      "id": "mock-data-as-product-proof",
+      "disposition": "archive",
+      "reason": "Mock and seed data may support tests but cannot establish that a chef workflow is useful or complete.",
+      "evidence": ["docs/architecture/current-state.md", "docs/definition-of-done.md"]
+    },
+    {
+      "id": "duplicate-runtimes-and-dead-scaffolds",
+      "disposition": "archive",
+      "reason": "Duplicate environment copies and abandoned platform scaffolds add cost without proving user value.",
+      "evidence": ["docs/architecture/current-state.md", "docs/architecture/unification-plan.md"]
+    },
+    {
+      "id": "conflicting-generated-governance",
+      "disposition": "archive",
+      "reason": "Contradictory instructions and unmaintained generated documents cannot remain authoritative.",
+      "evidence": ["docs/architecture/current-state.md"]
+    }
+  ]
+}

@@ -1,0 +1,76 @@
+{
+  "schema_version": 1,
+  "decision_id": "CHEFFLOW-REVIVAL-20260908",
+  "decision_status": "adopted",
+  "canonical_product": "chefflow",
+  "operational_truth_source": "dfpc",
+  "rules": [
+    "Do not create another competing chef operating product.",
+    "Inspect and extract from CFV1 before changing its runtime behavior.",
+    "Treat project paths as unresolved until filesystem and Git evidence agree.",
+    "Do not use mock or seed data as proof that a workflow works.",
+    "Do not delete, merge, deploy, migrate data, send messages, or move money from this recovery lane."
+  ],
+  "projects": [
+    {
+      "id": "chefflow",
+      "name": "ChefFlow",
+      "role": "canonical-platform",
+      "canonical_path": "C:\\Users\\david\\Documents\\CFv1",
+      "scan_path": "C:\\Users\\david\\Documents\\CFv1",
+      "path_status": "verified",
+      "evidence": [
+        "Git root verified on 2026-09-08 at commit 7924ac43024e4e21b205b0925492fb6faad6590e."
+      ],
+      "integration_rule": "Receive only proven generalized behavior through an explicit seam."
+    },
+    {
+      "id": "dfpc",
+      "name": "DF Private Chef",
+      "role": "live-reference-implementation",
+      "canonical_path": "C:\\Users\\david\\Desktop\\DFPC",
+      "scan_path": "C:\\Users\\david\\Desktop\\DFPC",
+      "path_status": "verified-canonical-root",
+      "evidence": [
+        "Digital_David_Verified_State_2026-09-07.md names this as the only verified current DFPC root; the current filesystem and project registry agree."
+      ],
+      "integration_rule": "Generate operational truth from David's real business."
+    },
+    {
+      "id": "chef-os-default",
+      "name": "Chef Operating System Default",
+      "role": "default-chefflow-workspace",
+      "canonical_path": null,
+      "scan_path": null,
+      "path_status": "role-defined-path-unresolved",
+      "evidence": [
+        "Product role confirmed by David on 2026-09-08; canonical repository path remains unresolved."
+      ],
+      "integration_rule": "Become configuration and starter data inside ChefFlow, not a competing platform."
+    },
+    {
+      "id": "chef-collect",
+      "name": "Chef Collect",
+      "role": "network-referral-commission-layer",
+      "canonical_path": null,
+      "scan_path": null,
+      "path_status": "role-defined-path-unresolved",
+      "evidence": [
+        "Product role confirmed by David on 2026-09-08; canonical repository path remains unresolved."
+      ],
+      "integration_rule": "Connect chefs and trace referrals without charging for ChefFlow usage."
+    },
+    {
+      "id": "anthony",
+      "name": "Anthony's system",
+      "role": "second-chef-validation-case",
+      "canonical_path": "C:\\Users\\david\\Desktop\\AnthonyWebsite",
+      "scan_path": "C:\\Users\\david\\Desktop\\AnthonyWebsite",
+      "path_status": "candidate-pending-git-verification",
+      "evidence": [
+        "Current filesystem listing and shared Git remote history identify this path as the strongest candidate."
+      ],
+      "integration_rule": "Prove which DFPC behavior generalizes to a second chef before wider rollout."
+    }
+  ]
+}
