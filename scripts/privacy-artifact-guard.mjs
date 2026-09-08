@@ -7,9 +7,13 @@ const FORBIDDEN_PREFIXES = [
   'data/access-control-reports/',
   '.auth/',
   'backups/',
+  'data/media-privacy/',
+  'private-runtime/',
+  '.media-privacy/',
 ]
 
 const FORBIDDEN_PATTERNS = [
+  { label: 'private review artifact', test: p => /(?:^|\/)(?:review\.sqlite3(?:-wal|-shm)?|authority\.key|worker\.lock|allowlist\.json|approval-manifest[^/]*|private-thumbnail[^/]*|extracted-frame[^/]*)$/i.test(p) },
   {
     label: 'backup SQL dump',
     test: (filePath) => /^backup-.*\.sql$/i.test(filePath),
@@ -60,7 +64,7 @@ function main() {
 
   console.error('privacy-artifact-guard: FAIL')
   for (const finding of findings.slice(0, 100)) {
-    console.error(`- ${finding.filePath} [${finding.reason}]`)
+    console.error(`- ${finding.reason} (path withheld)`)
   }
   if (findings.length > 100) {
     console.error(`- ...and ${findings.length - 100} more`)

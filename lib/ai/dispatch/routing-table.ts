@@ -18,7 +18,13 @@ export function isLocalOllamaUrl(url?: string | null): boolean {
   const value = normalizeUrl(url)
   if (!value) return false
 
-  return value.includes('localhost') || value.includes('127.0.0.1') || value.includes('0.0.0.0')
+  try {
+    const parsed = new URL(value)
+    return parsed.protocol === 'http:' &&
+      ['localhost', '127.0.0.1', '[::1]'].includes(parsed.hostname) &&
+      !parsed.username && !parsed.password && parsed.pathname === '/' &&
+      !parsed.search && !parsed.hash
+  } catch { return false }
 }
 
 function getRawEndpointUrls(): { localUrl: string | null; cloudUrl: string | null } {
@@ -75,7 +81,7 @@ export function resolveOllamaModel(
 export function getAiRuntimePolicy(): AiRuntimePolicy {
   const { localUrl, cloudUrl } = getRawEndpointUrls()
 
-  const localEnabled = Boolean(localUrl)
+  const localEnabled = Boolean(localUrl && isLocalOllamaUrl(localUrl))
   const cloudEnabled = Boolean(cloudUrl)
 
   const endpoints: AiRuntimeEndpoint[] = [
