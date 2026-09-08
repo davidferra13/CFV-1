@@ -4,13 +4,13 @@
 
 ChefFlow is the canonical chef operating platform. The other culinary projects are permanent roles around that platform, not competing replacements.
 
-| Project | Permanent role | Current path status |
-| --- | --- | --- |
-| ChefFlow | Canonical platform | Verified |
-| DF Private Chef | Live reference implementation and operational truth source | Canonical root verified; current Git state pending scan |
-| Chef Operating System Default | Default ChefFlow workspace | Role defined, path unresolved |
-| Chef Collect | Network, referral, dispatch, and commission layer | Role defined, path unresolved |
-| Anthony's system | Second-chef validation case | Candidate path, Git verification pending |
+| Project                       | Permanent role                                             | Current path status                                     |
+| ----------------------------- | ---------------------------------------------------------- | ------------------------------------------------------- |
+| ChefFlow                      | Canonical platform                                         | Verified                                                |
+| DF Private Chef               | Live reference implementation and operational truth source | Canonical root verified; current Git state pending scan |
+| Chef Operating System Default | Default ChefFlow workspace                                 | Role defined, path unresolved                           |
+| Chef Collect                  | Network, referral, dispatch, and commission layer          | Role defined, path unresolved                           |
+| Anthony's system              | Second-chef validation case                                | Candidate path, Git verification pending                |
 
 This is a product decision. It does not authorize folder renames, repository merges, data migrations, deployments, or deletion.
 
@@ -38,6 +38,12 @@ The machine-readable decisions live in `docs/revival/recovery-decisions.json`.
 One real DFPC engagement must complete the contract in `docs/revival/dfpc-operating-loop.json`, from Inquiry through approved follow-up. The loop must use real persisted evidence, honest errors, immutable financial records, and David's direct use.
 
 The repeatability gate is three real engagements completed without maintaining a second private workflow in Gmail, memory, or scattered documents. Anthony is the second-chef gate after that.
+
+### First real shadow case
+
+`DFPC-REAL-001` is the first privacy-safe evaluation against live DFPC evidence. At the evidence cutoff, inquiry passed; discovery and quote-and-scope remained open; stages 4–12 were not due. The lifecycle was `availability-reviewed`, the next action belonged to the client, and nothing was sent or mutated.
+
+This shadow case proves the evaluator and honest failure states. It does not count as a completed engagement or advance the three-event repeatability gate. See `docs/revival/real-cases/generated/dfpc-0492597d-shadow-report.md`.
 
 ## Completion controls
 

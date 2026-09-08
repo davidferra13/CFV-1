@@ -1,0 +1,194 @@
+{
+  "schema_version": 1,
+  "case_id": "DFPC-REAL-001",
+  "source_system": "dfpc",
+  "source_record_id": "0492597d-20db-4207-b21f-08c9d708102a",
+  "evidence_cutoff_at": "2026-09-08T06:52:00Z",
+  "privacy": {
+    "client_identity": "omitted",
+    "contact_details": "omitted",
+    "message_bodies": "omitted",
+    "culinary_content": "omitted"
+  },
+  "controls": {
+    "mutation_state": "read-only-shadow",
+    "dispatch_state": "not-sent",
+    "due_through_order": 3
+  },
+  "event": {
+    "requested_date": "2026-09-12",
+    "guest_count": 2,
+    "locality": "Norway, Maine"
+  },
+  "coordination": {
+    "pending_action": {
+      "party": "client",
+      "reason": "reply-to-owner-questions-or-decline",
+      "evidence_ids": ["E4", "E6"]
+    },
+    "next_objective": "client-response-or-evidence-backed-disposition"
+  },
+  "source_coverage": [
+    {
+      "system": "gmail",
+      "status": "complete-thread-read-through-cutoff",
+      "result": "owner-reply-is-latest-message"
+    },
+    {
+      "system": "dfpc-registry",
+      "status": "checked",
+      "result": "identity-resolved-and-status-reconciled"
+    },
+    {
+      "system": "google-calendar",
+      "status": "checked",
+      "result": "no-busy-window-on-requested-date",
+      "caveat": "A blank calendar does not independently prove capacity or availability."
+    },
+    {
+      "system": "phone-and-google-messages",
+      "status": "not-checked",
+      "result": "access-gap-remains-visible"
+    }
+  ],
+  "evidence": [
+    {
+      "id": "E1",
+      "system": "dfpc-production",
+      "record_id": "0492597d-20db-4207-b21f-08c9d708102a",
+      "observed_at": "2026-09-03T02:04:19.587Z",
+      "kind": "lead-record"
+    },
+    {
+      "id": "E2",
+      "system": "gmail",
+      "record_id": "1a065028b7dd8033",
+      "observed_at": "2026-09-03T02:04:19.587Z",
+      "kind": "form-notification"
+    },
+    {
+      "id": "E3",
+      "system": "gmail",
+      "record_id": "1a065028e1567b5f",
+      "observed_at": "2026-09-03T02:04:00Z",
+      "kind": "automatic-acknowledgment"
+    },
+    {
+      "id": "E4",
+      "system": "gmail",
+      "record_id": "1a06ca4a4145cb75",
+      "observed_at": "2026-09-04T13:38:00Z",
+      "kind": "owner-reply"
+    },
+    {
+      "id": "E5",
+      "system": "dfpc-registry",
+      "record_id": "privacy-redacted-client-record",
+      "observed_at": "2026-09-06T00:00:00Z",
+      "kind": "identity-resolution"
+    },
+    {
+      "id": "E6",
+      "system": "dfpc-reconciliation",
+      "record_id": "lead-alert-reconciliation-2026-09-06",
+      "observed_at": "2026-09-06T00:00:00Z",
+      "kind": "status-reconciliation"
+    },
+    {
+      "id": "E7",
+      "system": "google-calendar",
+      "record_id": "primary-2026-09-12",
+      "observed_at": "2026-09-08T06:52:00Z",
+      "kind": "busy-window-check"
+    }
+  ],
+  "stage_evidence": {
+    "inquiry": {
+      "source": {
+        "state": "supported",
+        "value": "website-inquiry-form",
+        "evidence_ids": ["E1", "E2"]
+      },
+      "received_at": {
+        "state": "supported",
+        "value": "2026-09-03T02:04:19.587Z",
+        "evidence_ids": ["E1", "E2"]
+      },
+      "contact": {
+        "state": "supported",
+        "value": "identity-resolved-without-export",
+        "evidence_ids": ["E1", "E5"]
+      },
+      "requested_date": {
+        "state": "supported",
+        "value": "2026-09-12",
+        "evidence_ids": ["E1", "E5"]
+      },
+      "location": { "state": "supported", "value": "Norway, Maine", "evidence_ids": ["E1", "E5"] },
+      "guest_count": { "state": "supported", "value": 2, "evidence_ids": ["E1", "E5"] },
+      "current_state": {
+        "state": "supported",
+        "value": "owner-responded-awaiting-client",
+        "evidence_ids": ["E4", "E6"]
+      }
+    },
+    "discovery": {
+      "service_fit": {
+        "state": "supported",
+        "value": "owner-confirmed-date-open-and-service-path",
+        "evidence_ids": ["E4"]
+      },
+      "dietary_needs": { "state": "unknown", "evidence_ids": ["E4"] },
+      "preferences": { "state": "unknown", "evidence_ids": ["E4"] },
+      "referral_source": {
+        "state": "unknown",
+        "value": "unnamed-airbnb-host",
+        "evidence_ids": ["E1", "E4"]
+      },
+      "open_questions": {
+        "state": "supported",
+        "value": [
+          "dietary-needs",
+          "preferences",
+          "occasion",
+          "service-time",
+          "named-referral-source"
+        ],
+        "evidence_ids": ["E4"]
+      }
+    },
+    "quote-and-scope": {
+      "line_items": {
+        "state": "supported",
+        "value": "two-option-scope-with-flat-travel-component",
+        "evidence_ids": ["E4"]
+      },
+      "price": {
+        "state": "supported",
+        "value": "event-specific-option-totals-present-no-selection",
+        "evidence_ids": ["E4"]
+      },
+      "currency": {
+        "state": "unknown",
+        "value": "symbol-only-no-currency-code",
+        "evidence_ids": ["E4"]
+      },
+      "travel": { "state": "supported", "value": "flat-travel-fee-stated", "evidence_ids": ["E4"] },
+      "scope": {
+        "state": "supported",
+        "value": "service-inclusions-described",
+        "evidence_ids": ["E4"]
+      },
+      "expiration": {
+        "state": "unknown",
+        "value": "no-expiration-observed",
+        "evidence_ids": ["E4"]
+      },
+      "approval_state": {
+        "state": "supported",
+        "value": "owner-reply-sent",
+        "evidence_ids": ["E4", "E6"]
+      }
+    }
+  }
+}

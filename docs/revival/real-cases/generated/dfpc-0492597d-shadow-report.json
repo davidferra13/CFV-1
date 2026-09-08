@@ -1,0 +1,137 @@
+{
+  "schema_version": 1,
+  "case_id": "DFPC-REAL-001",
+  "source_record_id": "0492597d-20db-4207-b21f-08c9d708102a",
+  "evidence_cutoff_at": "2026-09-08T06:52:00Z",
+  "evaluation_mode": "read-only-shadow",
+  "external_dispatch": "not-sent",
+  "lifecycle_stage": "availability-reviewed",
+  "waiting_on": "client",
+  "next_objective": "client-response-or-evidence-backed-disposition",
+  "first_real_event_complete": false,
+  "completed_event_count_increment": 0,
+  "counts": {
+    "passed": 1,
+    "open": 2,
+    "blocked": 0,
+    "not-due": 9
+  },
+  "first_open_stage": "discovery",
+  "stages": [
+    {
+      "order": 1,
+      "id": "inquiry",
+      "status": "passed",
+      "open_evidence": [],
+      "blocked_evidence": []
+    },
+    {
+      "order": 2,
+      "id": "discovery",
+      "status": "open",
+      "open_evidence": [
+        "dietary_needs",
+        "preferences",
+        "referral_source"
+      ],
+      "blocked_evidence": []
+    },
+    {
+      "order": 3,
+      "id": "quote-and-scope",
+      "status": "open",
+      "open_evidence": [
+        "currency",
+        "expiration"
+      ],
+      "blocked_evidence": []
+    },
+    {
+      "order": 4,
+      "id": "acceptance-and-booking",
+      "status": "not-due",
+      "open_evidence": [],
+      "blocked_evidence": []
+    },
+    {
+      "order": 5,
+      "id": "payment",
+      "status": "not-due",
+      "open_evidence": [],
+      "blocked_evidence": []
+    },
+    {
+      "order": 6,
+      "id": "menu",
+      "status": "not-due",
+      "open_evidence": [],
+      "blocked_evidence": []
+    },
+    {
+      "order": 7,
+      "id": "costing-and-profit-plan",
+      "status": "not-due",
+      "open_evidence": [],
+      "blocked_evidence": []
+    },
+    {
+      "order": 8,
+      "id": "procurement-and-prep",
+      "status": "not-due",
+      "open_evidence": [],
+      "blocked_evidence": []
+    },
+    {
+      "order": 9,
+      "id": "schedule-and-travel",
+      "status": "not-due",
+      "open_evidence": [],
+      "blocked_evidence": []
+    },
+    {
+      "order": 10,
+      "id": "service-execution",
+      "status": "not-due",
+      "open_evidence": [],
+      "blocked_evidence": []
+    },
+    {
+      "order": 11,
+      "id": "closeout",
+      "status": "not-due",
+      "open_evidence": [],
+      "blocked_evidence": []
+    },
+    {
+      "order": 12,
+      "id": "follow-up-and-learning",
+      "status": "not-due",
+      "open_evidence": [],
+      "blocked_evidence": []
+    }
+  ],
+  "source_coverage": [
+    {
+      "system": "gmail",
+      "status": "complete-thread-read-through-cutoff",
+      "result": "owner-reply-is-latest-message"
+    },
+    {
+      "system": "dfpc-registry",
+      "status": "checked",
+      "result": "identity-resolved-and-status-reconciled"
+    },
+    {
+      "system": "google-calendar",
+      "status": "checked",
+      "result": "no-busy-window-on-requested-date",
+      "caveat": "A blank calendar does not independently prove capacity or availability."
+    },
+    {
+      "system": "phone-and-google-messages",
+      "status": "not-checked",
+      "result": "access-gap-remains-visible"
+    }
+  ],
+  "source_fingerprint": "e8cf7aae1626f34eab33d9299b71f1417351ca828a8b2e905b95e4c8f88165cb"
+}
