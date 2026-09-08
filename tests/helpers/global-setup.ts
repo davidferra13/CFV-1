@@ -18,13 +18,7 @@ const PUBLIC_ONLY_PROJECTS = new Set([
   'launch-public',
   'six-pillars', // authenticates via /api/e2e/auth directly, no seed needed
 ])
-const CHEF_ONLY_PROJECTS = new Set([
-  'chef',
-  'coverage-chef',
-  'coverage-api',
-  'interactions-chef',
-  'journey-chef',
-])
+const CHEF_ONLY_PROJECTS = new Set(['chef', 'coverage-chef', 'coverage-api', 'interactions-chef'])
 const CLIENT_ONLY_PROJECTS = new Set(['client', 'coverage-client', 'interactions-client'])
 const STAFF_ONLY_PROJECTS = new Set(['coverage-staff', 'interactions-staff'])
 const PARTNER_ONLY_PROJECTS = new Set(['coverage-partner'])
@@ -79,6 +73,12 @@ function getRequiredAuthStates(config: FullConfig): RequiredAuthStates {
 
   for (const projectName of selectedProjects) {
     if (PUBLIC_ONLY_PROJECTS.has(projectName)) continue
+    if (projectName === 'journey-chef') {
+      // The flagship core journey crosses from the chef portal into the client portal.
+      required.chef = true
+      required.client = true
+      continue
+    }
     if (CHEF_ONLY_PROJECTS.has(projectName)) {
       required.chef = true
       continue

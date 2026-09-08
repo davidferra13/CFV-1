@@ -102,7 +102,7 @@ Scanner: `/test-scan` skill
 
 These flows have NO behavioral tests beyond "page loads":
 
-1. **Client inquiry-to-booking lifecycle** - The CORE flow. Only coverage crawl. No journey test.
+1. **Client inquiry-to-booking lifecycle** - PARTIAL 2026-09: `tests/journey/00-core-loop.spec.ts` now covers inquiry -> quote -> acceptance -> event -> menu -> payment -> follow-up. Runtime proof is pending a local database and seeded chef/client auth. Navigation parity is blocked on Rescue WS2 Phase A.
 2. **Invoice creation and payment** - Money flow. Unit tests exist for ledger but no UI/action tests.
 3. **Menu creation and approval** - Chef creates menu, client approves. No e2e.
 4. **Client portal event management** - Approve, pay, view countdown. No tests.
