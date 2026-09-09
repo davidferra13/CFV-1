@@ -2,11 +2,12 @@
  * Ollama prompt templates for classification and entity extraction.
  */
 
-const OLLAMA_URL = process.env.OLLAMA_URL || 'http://localhost:11434'
-const TEXT_MODEL = process.env.OPENCLAW_LOCAL_MODEL || process.env.OLLAMA_TEXT_MODEL || process.env.OLLAMA_MODEL || 'gemma4'
+import { verifyDerivedText, localModelRequest } from './media-privacy.mjs'
+const TEXT_MODEL = process.env.OPENCLAW_LOCAL_MODEL || process.env.OLLAMA_TEXT_MODEL || process.env.OLLAMA_MODEL || 'qwen3.5:4b'
 const KEEP_ALIVE = process.env.OPENCLAW_OLLAMA_KEEP_ALIVE || '30m'
 
-export async function classifyDocument(filename, fileType, textContent) {
+export async function classifyDocument(filename, fileType, textContent, sourcePath, receipt) {
+  verifyDerivedText(sourcePath, textContent || '', receipt)
   const truncated = (textContent || '').substring(0, 2000)
 
   const prompt = `You are classifying a business document for a private chef.
@@ -24,7 +25,8 @@ Respond with JSON only: { "classification": "...", "confidence": 0.0-1.0, "reaso
   return callOllama(prompt)
 }
 
-export async function extractEntities(classification, textContent) {
+export async function extractEntities(classification, textContent, sourcePath, receipt) {
+  verifyDerivedText(sourcePath, textContent || '', receipt)
   const prompt = `You are extracting business entities from a private chef's ${classification}.
 Text content:
 ${(textContent || '').substring(0, 3000)}
@@ -50,17 +52,9 @@ Only include entities you are confident about. Do not guess.`
 
 async function callOllama(prompt) {
   try {
-    const res = await fetch(`${OLLAMA_URL}/api/generate`, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({
-        model: TEXT_MODEL,
-        prompt,
-        stream: false,
-        keep_alive: KEEP_ALIVE,
-        options: { temperature: 0.1, num_predict: 500 }
-      }),
-      signal: AbortSignal.timeout(60000)
+    const res = await localModelRequest(TEXT_MODEL, {
+      prompt, stream: false, keep_alive: KEEP_ALIVE,
+      options: { temperature: 0.1, num_predict: 500 },
     })
 
     if (!res.ok) return null
@@ -74,7 +68,7 @@ async function callOllama(prompt) {
 
     return JSON.parse(jsonMatch[0])
   } catch (err) {
-    console.warn('[ollama] Call failed:', err.message)
+    console.warn('[local-ai] Request unavailable')
     return null
   }
 }
