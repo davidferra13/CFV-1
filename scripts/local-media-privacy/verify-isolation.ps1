@@ -1,15 +1,10 @@
 $ErrorActionPreference = 'Stop'
 . (Join-Path $PSScriptRoot 'firewall-policy.ps1')
+. (Join-Path $PSScriptRoot 'storage-policy.ps1')
 try {
     $folder = Get-Item -LiteralPath $env:CF_PRIVACY_DIRECTORY
     if (!$folder.PSIsContainer -or ($folder.Attributes -band [IO.FileAttributes]::ReparsePoint)) { throw 'directory' }
-    $sid = [Security.Principal.WindowsIdentity]::GetCurrent().User.Value
-    $acl = Get-Acl -LiteralPath $folder.FullName
-    if (!$acl.AreAccessRulesProtected) { throw 'inheritance' }
-    foreach ($ace in $acl.Access) {
-        $identity = $ace.IdentityReference.Translate([Security.Principal.SecurityIdentifier]).Value
-        if ($ace.AccessControlType -eq 'Allow' -and $identity -notin @($sid, 'S-1-5-18', 'S-1-5-32-544')) { throw 'acl' }
-    }
+    Assert-PrivateRuntimeTree -Path $folder.FullName
     $volume = Get-BitLockerVolume -MountPoint $folder.PSDrive.Root
     if ($volume.ProtectionStatus -ne 'On') { throw 'encryption' }
     if (@(Get-NetFirewallProfile -PolicyStore ActiveStore | Where-Object { !$_.Enabled }).Count -gt 0) { throw 'firewall_disabled' }
@@ -17,7 +12,8 @@ try {
     if ($listener.Count -ne 1 -or $listener[0].LocalAddress -ne '127.0.0.1') { throw 'listener' }
     $ollama = (Get-Process -Id $listener[0].OwningProcess).Path
     if (!$ollama) { throw 'process' }
-    $programs = @($env:CF_PRIVACY_PYTHON, $ollama)
+    $programs = @($env:CF_PRIVACY_PYTHON, $ollama, $env:CF_PRIVACY_FFMPEG, $env:CF_PRIVACY_FFPROBE)
+    if (@($programs | Where-Object { !$_ }).Count -gt 0) { throw 'decoder_program_missing' }
     if ($env:CF_PRIVACY_CONSUMER) { $programs += $env:CF_PRIVACY_CONSUMER }
     $required = @('0.0.0.0-126.255.255.255', '128.0.0.0-255.255.255.255', '::/0')
     foreach ($program in $programs) {

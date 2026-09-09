@@ -138,6 +138,15 @@ class Store:
                 CREATE TABLE IF NOT EXISTS matches (
                   asset_id TEXT, candidate_path TEXT, matched_at REAL,
                   PRIMARY KEY (asset_id, candidate_path));
+                CREATE TABLE IF NOT EXISTS scan_state (
+                  key TEXT PRIMARY KEY, value TEXT NOT NULL);
+                CREATE TABLE IF NOT EXISTS checkpoints (
+                  asset_id TEXT PRIMARY KEY, bundle_hash TEXT NOT NULL,
+                  model TEXT NOT NULL, coverage TEXT NOT NULL, signal TEXT NOT NULL);
+                CREATE TABLE IF NOT EXISTS match_reviews (
+                  asset_id TEXT, candidate_path TEXT, sha256 TEXT NOT NULL,
+                  status TEXT NOT NULL, reviewed_at REAL,
+                  PRIMARY KEY (asset_id, candidate_path));
             ''')
             os.chmod(database, 0o600)
 
@@ -154,6 +163,8 @@ class Store:
             return row['id']
         asset_id = row['id'] if row else str(uuid.uuid4())
         with self.db:
+            self.db.execute('DELETE FROM checkpoints WHERE asset_id=?', (asset_id,))
+            self.db.execute('DELETE FROM match_reviews WHERE asset_id=?', (asset_id,))
             self.db.execute('''INSERT INTO assets(id,path,namespace,bundle_hash,components,updated_at)
                 VALUES(?,?,?,?,?,?) ON CONFLICT(path) DO UPDATE SET
                 bundle_hash=excluded.bundle_hash, components=excluded.components,
@@ -161,6 +172,35 @@ class Store:
                 inspected_at=NULL,revision=assets.revision+1,updated_at=excluded.updated_at''',
                 (asset_id, str(path), namespace, digest, json.dumps(components), time.time()))
         return asset_id
+
+    def setting(self, key, value=None):
+        if value is not None:
+            with self.db:
+                self.db.execute('INSERT OR REPLACE INTO scan_state VALUES(?,?)', (key, json.dumps(value)))
+        row = self.db.execute('SELECT value FROM scan_state WHERE key=?', (key,)).fetchone()
+        return json.loads(row[0]) if row else None
+
+    def load_checkpoint(self, asset_id, model):
+        row = self.row(asset_id)
+        saved = self.db.execute('SELECT * FROM checkpoints WHERE asset_id=?', (asset_id,)).fetchone()
+        if saved and saved['bundle_hash'] == row['bundle_hash'] and saved['model'] == model:
+            return json.loads(saved['coverage'])
+        return None
+
+    def save_checkpoint(self, asset_id, expected_bundle, model, signal, coverage):
+        # Inventory hashes the bundle on every resume. Per-frame writes do not
+        # rehash large videos; the worker checks file identity between frames.
+        if self.row(asset_id)['bundle_hash'] != expected_bundle:
+            raise PrivacyBlocked('stale_checkpoint')
+        with self.db:
+            self.db.execute('INSERT OR REPLACE INTO checkpoints VALUES(?,?,?,?,?)',
+                (asset_id, expected_bundle, model, json.dumps(coverage), signal))
+
+    def reset_inspection(self, asset_id):
+        self.row(asset_id)
+        with self.db:
+            self.db.execute('DELETE FROM checkpoints WHERE asset_id=?', (asset_id,))
+            self.db.execute("UPDATE assets SET inspected_at=NULL,signal='unknown',coverage='{}',model=NULL WHERE id=?", (asset_id,))
 
     def row(self, asset_id):
         row = self.db.execute('SELECT * FROM assets WHERE id=?', (asset_id,)).fetchone()
@@ -262,15 +302,40 @@ class Store:
             own = next(c for c in json.loads(row['components']) if c['path'] == row['path'])
             if fingerprint(row['path'])[0] != own['sha256']:
                 continue
-            hashes.setdefault(own['sha256'], []).append(row['id'])
+            hashes.setdefault(own['sha256'], []).append((row['id'], row['path']))
         count = 0
         for candidate in candidates:
             digest, _ = fingerprint(candidate)
-            for asset_id in hashes.get(digest, []):
+            for asset_id, original in hashes.get(digest, []):
+                if checked_path(candidate) == checked_path(original):
+                    continue
                 with self.db:
                     self.db.execute('INSERT OR REPLACE INTO matches VALUES(?,?,?)', (asset_id, str(candidate), time.time()))
+                    self.db.execute('''INSERT INTO match_reviews VALUES(?,?,?,?,NULL)
+                        ON CONFLICT(asset_id,candidate_path) DO UPDATE SET sha256=excluded.sha256,
+                        status=CASE WHEN match_reviews.sha256=excluded.sha256 THEN match_reviews.status ELSE 'candidate' END''',
+                        (asset_id, str(candidate), digest, 'candidate'))
                 count += 1
         return count
+
+    def match_candidates(self, asset_id):
+        return self.db.execute('SELECT * FROM match_reviews WHERE asset_id=? ORDER BY candidate_path', (asset_id,)).fetchall()
+
+    def confirm_match(self, asset_id, candidate):
+        match = self.db.execute('SELECT * FROM match_reviews WHERE asset_id=? AND candidate_path=?', (asset_id, candidate)).fetchone()
+        if not match:
+            raise PrivacyBlocked('match_missing')
+        row = self.row(asset_id)
+        try:
+            current, _ = bundle(row['path'])
+            valid = current == row['bundle_hash'] and fingerprint(row['path'])[0] == match['sha256'] and fingerprint(candidate)[0] == match['sha256']
+        except (OSError, PrivacyBlocked):
+            valid = False
+        with self.db:
+            self.db.execute('UPDATE match_reviews SET status=?,reviewed_at=? WHERE asset_id=? AND candidate_path=?',
+                ('confirmed' if valid else 'stale', time.time(), asset_id, candidate))
+        if not valid:
+            raise PrivacyBlocked('match_changed')
 
     @contextmanager
     def worker_lock(self):
