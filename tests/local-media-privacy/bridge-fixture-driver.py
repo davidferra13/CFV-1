@@ -19,6 +19,10 @@ elif action in {'approve', 'revoke'}:
     assert source.read_bytes() == b'HARMLESS IPC FIXTURE\n'
     store = Store(runtime)
     asset = store.inventory(source, 'synthetic-only')
+    if action == 'approve':
+        for unit in store.review_plan(asset):
+            store.mark_review_unit(asset, unit['id'])
+            store.mark_review_unit(asset, unit['id'], confirmed=True)
     store.decide(asset, 'approved_local_archive' if action == 'approve' else 'private', complete_review=True)
     store.close()
 elif action == 'bridge':

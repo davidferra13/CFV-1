@@ -6,10 +6,12 @@ from pathlib import Path
 import queue
 import shutil
 import subprocess
+from decoder_environment import decoder_environment
 import threading
 import time
 from privacy_core import PrivacyBlocked, checked_path
 
+SAFE_CONTAINERS = 'mov,matroska,webm,avi,mpegts,mpeg,flv,ogg,mp3,wav,flac,aac,gif,image2'
 FRAME_SIZE = 384
 FRAME_BYTES = FRAME_SIZE * FRAME_SIZE * 3
 
@@ -34,9 +36,9 @@ def decoder_tools():
 def video_streams(path):
     _, probe = decoder_tools()
     result = subprocess.run([probe, '-v', 'error', '-protocol_whitelist', 'file,pipe',
-        '-show_entries', 'stream=index,codec_type:stream_disposition=attached_pic',
+        '-format_whitelist', SAFE_CONTAINERS, '-show_entries', 'stream=index,codec_type:stream_disposition=attached_pic',
         '-of', 'json', str(checked_path(path))], stdin=subprocess.DEVNULL,
-        stdout=subprocess.PIPE, stderr=subprocess.DEVNULL, timeout=20,
+        stdout=subprocess.PIPE, stderr=subprocess.DEVNULL, timeout=20, env=decoder_environment(),
         creationflags=0x08000000 if os.name == 'nt' else 0)
     if result.returncode or len(result.stdout) > 1024 * 1024:
         raise PrivacyBlocked('video_probe_failed')
@@ -65,12 +67,12 @@ class VideoFrames:
         self.paused, self.timeout = paused, timeout
         self.queue, self.stop = queue.Queue(maxsize=2), threading.Event()
         self.process = subprocess.Popen([executable, '-nostdin', '-v', 'error', '-xerror',
-            '-protocol_whitelist', 'file,pipe', '-threads', '1', '-i', str(checked_path(path)),
+            '-protocol_whitelist', 'file,pipe', '-format_whitelist', SAFE_CONTAINERS, '-threads', '1', '-i', str(checked_path(path)),
             '-map', f'0:{int(stream)}', '-an', '-sn', '-dn', '-vf',
             f'trim=start_frame={int(start)},scale={FRAME_SIZE}:{FRAME_SIZE}:force_original_aspect_ratio=decrease,pad={FRAME_SIZE}:{FRAME_SIZE}:(ow-iw)/2:(oh-ih)/2',
             '-fps_mode', 'passthrough', '-threads', '1', '-pix_fmt', 'rgb24',
             '-f', 'rawvideo', 'pipe:1'], stdin=subprocess.DEVNULL, stdout=subprocess.PIPE,
-            stderr=subprocess.DEVNULL, bufsize=0,
+            stderr=subprocess.DEVNULL, bufsize=0, env=decoder_environment(),
             creationflags=0x08000000 if os.name == 'nt' else 0)
         self.reader = threading.Thread(target=self._read, daemon=True)
         self.reader.start()

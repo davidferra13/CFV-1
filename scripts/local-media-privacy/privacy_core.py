@@ -75,7 +75,7 @@ def fingerprint(value):
     return digest.hexdigest(), before.st_size
 
 
-def bundle(value):
+def bundle_members(value):
     path = checked_path(value)
     # Includes paired movies and same-stem sidecars, including Takeout sidecars.
     prefix = path.stem.casefold()
@@ -83,8 +83,12 @@ def bundle(value):
                if p.name.casefold() == path.name.casefold()
                or p.stem.casefold() == prefix
                or p.name.casefold().startswith(path.name.casefold() + '.')]
+    return sorted(members, key=lambda p: p.name.casefold())
+
+
+def bundle(value):
     rows = []
-    for member in sorted(members, key=lambda p: p.name.casefold()):
+    for member in bundle_members(value):
         if not member.is_file():
             raise PrivacyBlocked('unsupported_companion')
         digest, size = fingerprint(member)
@@ -138,6 +142,17 @@ class Store:
                 CREATE TABLE IF NOT EXISTS matches (
                   asset_id TEXT, candidate_path TEXT, matched_at REAL,
                   PRIMARY KEY (asset_id, candidate_path));
+                CREATE TABLE IF NOT EXISTS excluded_components (
+                  asset_id TEXT, path TEXT, directory TEXT,
+                  PRIMARY KEY (asset_id, path));
+                CREATE INDEX IF NOT EXISTS excluded_directory ON excluded_components(directory);
+                CREATE TABLE IF NOT EXISTS human_review_plans (
+                  asset_id TEXT PRIMARY KEY, bundle_hash TEXT NOT NULL,
+                  policy INTEGER NOT NULL, units TEXT NOT NULL, signature TEXT NOT NULL);
+                CREATE TABLE IF NOT EXISTS human_review_units (
+                  asset_id TEXT, unit_id TEXT, bundle_hash TEXT NOT NULL,
+                  state TEXT NOT NULL, signature TEXT NOT NULL, updated_at REAL NOT NULL,
+                  PRIMARY KEY (asset_id, unit_id));
                 CREATE TABLE IF NOT EXISTS scan_state (
                   key TEXT PRIMARY KEY, value TEXT NOT NULL);
                 CREATE TABLE IF NOT EXISTS checkpoints (
@@ -149,6 +164,10 @@ class Store:
                   PRIMARY KEY (asset_id, candidate_path));
             ''')
             os.chmod(database, 0o600)
+            # Migrate existing exclusions using local catalog metadata only.
+            with self.db:
+                for excluded in self.db.execute("SELECT * FROM assets WHERE decision='removal_review'").fetchall():
+                    self._remember_exclusion(excluded['id'], json.loads(excluded['components']))
 
     def close(self):
         self.db.close()
@@ -163,15 +182,49 @@ class Store:
             return row['id']
         asset_id = row['id'] if row else str(uuid.uuid4())
         with self.db:
+            self.db.execute('DELETE FROM human_review_plans WHERE asset_id=?', (asset_id,))
+            self.db.execute('DELETE FROM human_review_units WHERE asset_id=?', (asset_id,))
             self.db.execute('DELETE FROM checkpoints WHERE asset_id=?', (asset_id,))
             self.db.execute('DELETE FROM match_reviews WHERE asset_id=?', (asset_id,))
             self.db.execute('''INSERT INTO assets(id,path,namespace,bundle_hash,components,updated_at)
                 VALUES(?,?,?,?,?,?) ON CONFLICT(path) DO UPDATE SET
                 bundle_hash=excluded.bundle_hash, components=excluded.components,
-                decision='unreviewed',signature=NULL,signal='unknown',coverage='{}',
+                decision=CASE WHEN assets.decision='removal_review' THEN 'removal_review' ELSE 'unreviewed' END,
+                signature=NULL,signal='unknown',coverage='{}',
                 inspected_at=NULL,revision=assets.revision+1,updated_at=excluded.updated_at''',
                 (asset_id, str(path), namespace, digest, json.dumps(components), time.time()))
+            if row and row['decision'] == 'removal_review':
+                self._remember_exclusion(asset_id, components)
         return asset_id
+
+    def _remember_exclusion(self, asset_id, components):
+        for component in components:
+            path = Path(component['path'])
+            self.db.execute('INSERT OR IGNORE INTO excluded_components VALUES(?,?,?)',
+                (asset_id, str(path), os.path.normcase(str(path.parent))))
+
+    def is_excluded(self, value):
+        # Match companion names without decoding or hashing excluded media.
+        # Retained paths keep the hold even if the original is removed. Reuse of
+        # the same companion name is conservatively held until an owner reset.
+        path = Path(os.path.abspath(value))
+        records = self.db.execute('SELECT path FROM excluded_components WHERE directory=?',
+                                 (os.path.normcase(str(path.parent)),)).fetchall()
+        members = [path, *bundle_members(path)] if records else []
+        for record in records:
+            excluded = Path(record['path'])
+            for member in members:
+                a, b = member.name.casefold(), excluded.name.casefold()
+                if (a == b or member.stem.casefold() == excluded.stem.casefold()
+                        or a.startswith(b + '.') or b.startswith(a + '.')):
+                    return True
+        # Also supports conservative reading of a migrated decision record.
+        row = self.db.execute('SELECT decision FROM assets WHERE path=?', (str(path),)).fetchone()
+        return bool(row and row['decision'] == 'removal_review')
+
+    def assert_not_excluded(self, value, code='removal_review_preview_excluded'):
+        if self.is_excluded(value):
+            raise PrivacyBlocked(code)
 
     def setting(self, key, value=None):
         if value is not None:
@@ -208,6 +261,71 @@ class Store:
             raise PrivacyBlocked('asset_missing')
         return row
 
+    def _review_signature(self, *values):
+        encoded = json.dumps(values, separators=(',', ':'), sort_keys=True).encode()
+        return hmac.new(self.key, b'owner-review-v1:' + encoded, hashlib.sha256).hexdigest()
+
+    def review_plan(self, asset_id):
+        from review_media import REVIEW_POLICY, describe_components
+        row = self.row(asset_id)
+        self.assert_not_excluded(row['path'])
+        digest, current_components = bundle(row['path'])
+        if digest != row['bundle_hash']:
+            raise PrivacyBlocked('stale_review')
+        saved = self.db.execute('SELECT * FROM human_review_plans WHERE asset_id=?', (asset_id,)).fetchone()
+        if saved and saved['bundle_hash'] == row['bundle_hash'] and saved['policy'] == REVIEW_POLICY:
+            expected = self._review_signature(asset_id, saved['bundle_hash'], saved['policy'], saved['units'])
+            if not hmac.compare_digest(saved['signature'], expected):
+                raise PrivacyBlocked('review_plan_invalid')
+            return json.loads(saved['units'])
+        if self.readonly:
+            raise PrivacyBlocked('complete_human_review_required')
+        units = describe_components(current_components)
+        encoded = json.dumps(units, sort_keys=True, separators=(',', ':'))
+        signature = self._review_signature(asset_id, row['bundle_hash'], REVIEW_POLICY, encoded)
+        with self.db:
+            self.db.execute('DELETE FROM human_review_units WHERE asset_id=?', (asset_id,))
+            self.db.execute('INSERT OR REPLACE INTO human_review_plans VALUES(?,?,?,?,?)',
+                (asset_id, row['bundle_hash'], REVIEW_POLICY, encoded, signature))
+        return units
+
+    def review_unit(self, asset_id, unit_id):
+        unit = next((unit for unit in self.review_plan(asset_id) if unit['id'] == unit_id), None)
+        if unit is None or unit['kind'] == 'unsupported':
+            raise PrivacyBlocked('review_unit_unsupported')
+        return unit
+
+    def _review_state(self, asset_id, unit_id):
+        row = self.row(asset_id)
+        saved = self.db.execute('SELECT * FROM human_review_units WHERE asset_id=? AND unit_id=?',
+                                (asset_id, unit_id)).fetchone()
+        if saved and saved['bundle_hash'] == row['bundle_hash']:
+            expected = self._review_signature(asset_id, unit_id, row['bundle_hash'], saved['state'])
+            if hmac.compare_digest(saved['signature'], expected):
+                return saved['state']
+        return 'unreviewed'
+
+    def review_states(self, asset_id):
+        return {unit['id']: self._review_state(asset_id, unit['id']) for unit in self.review_plan(asset_id)}
+
+    def mark_review_unit(self, asset_id, unit_id, confirmed=False):
+        self.review_unit(asset_id, unit_id)
+        row = self.row(asset_id)
+        if confirmed and self._review_state(asset_id, unit_id) not in {'opened', 'confirmed'}:
+            raise PrivacyBlocked('open_review_unit_first')
+        state = 'confirmed' if confirmed else 'opened'
+        signature = self._review_signature(asset_id, unit_id, row['bundle_hash'], state)
+        with self.db:
+            self.db.execute('INSERT OR REPLACE INTO human_review_units VALUES(?,?,?,?,?,?)',
+                (asset_id, unit_id, row['bundle_hash'], state, signature, time.time()))
+
+    def assert_review_complete(self, asset_id):
+        units = self.review_plan(asset_id)
+        if not units or any(unit['kind'] == 'unsupported' for unit in units):
+            raise PrivacyBlocked('unsupported_bundle_review')
+        if any(self._review_state(asset_id, unit['id']) != 'confirmed' for unit in units):
+            raise PrivacyBlocked('complete_human_review_required')
+
     def _sign(self, row, decision, revision):
         body = json.dumps([row['id'], row['path'], row['namespace'], row['bundle_hash'], decision, revision])
         return hmac.new(self.key, body.encode(), hashlib.sha256).hexdigest()
@@ -218,13 +336,21 @@ class Store:
         if decision == 'approved_local_archive' and not complete_review:
             raise PrivacyBlocked('complete_human_review_required')
         row = self.row(asset_id)
-        digest, _ = bundle(row['path'])
+        digest, components = bundle(row['path'])
         if digest != row['bundle_hash']:
             raise PrivacyBlocked('stale_review')
+        if decision == 'approved_local_archive':
+            self.assert_review_complete(asset_id)
         revision = row['revision'] + 1
         signature = self._sign(row, decision, revision)
         now = time.time()
         with self.db:
+            if decision == 'removal_review':
+                self._remember_exclusion(asset_id, components)
+            else:
+                # This explicit owner decision releases only this asset's hold;
+                # overlapping exclusions belonging to other assets stay intact.
+                self.db.execute('DELETE FROM excluded_components WHERE asset_id=?', (asset_id,))
             self.db.execute('UPDATE assets SET decision=?,revision=?,signature=?,reviewed_at=? WHERE id=?',
                             (decision, revision, signature, now, asset_id))
             self.db.execute('INSERT INTO decisions(asset_id,revision,decision,bundle_hash,reviewed_at) VALUES(?,?,?,?,?)',
@@ -242,6 +368,7 @@ class Store:
                             (signal, json.dumps(coverage), model, time.time(), asset_id))
 
     def authorize(self, value):
+        self.assert_not_excluded(value, 'removal_review_consumer_excluded')
         path = checked_path(value)
         row = self.db.execute('SELECT * FROM assets WHERE path=?', (str(path),)).fetchone()
         if not row or row['decision'] != 'approved_local_archive':
@@ -255,6 +382,7 @@ class Store:
                 with self.db:
                     self.db.execute("UPDATE assets SET decision='unreviewed', signature=NULL, revision=revision+1 WHERE id=?", (row['id'],))
             raise PrivacyBlocked('stale_approval')
+        self.assert_review_complete(row['id'])
         return dict(row)
 
     def approved_bytes(self, value):

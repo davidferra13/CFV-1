@@ -282,7 +282,7 @@ def scan(store, source, namespace, detector, paused=lambda: False, batch_limit=1
                 previous = json.loads(row['coverage'])
                 terminal = previous.get('status') in {'complete', 'unsupported'} or previous.get('visual_complete')
                 same_policy = row['model'] == detector.identity and previous.get('policy') == INSPECTION_POLICY
-                if row['decision'] == 'removal_review' or (same_policy and (terminal or
+                if store.is_excluded(row['path']) or (same_policy and (terminal or
                         (previous.get('status') == 'failed' and not retry_failed))):
                     counts['unchanged'] += 1
                     continue
@@ -322,8 +322,7 @@ def restart_inspection(store, asset_id, detector, paused=lambda: False,
             counts.update(paused=True, reason=reason)
             return counts
         row = store.row(asset_id)
-        if row['decision'] == 'removal_review':
-            raise PrivacyBlocked('removal_review_inspection_excluded')
+        store.assert_not_excluded(row['path'], 'removal_review_inspection_excluded')
         detector.verify_model()
         store.inventory(row['path'], row['namespace'])
         store.reset_inspection(asset_id)
