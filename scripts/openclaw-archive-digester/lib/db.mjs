@@ -26,6 +26,8 @@ export function openDb(readonly = false) {
     throw new MediaPrivacyBlocked()
   }
   if (fs.existsSync(DB_PATH) && fs.lstatSync(DB_PATH).isSymbolicLink()) throw new MediaPrivacyBlocked()
+  // Recheck the created or reused child tree before opening a database.
+  assertPrivateRuntime()
   const db = new Database(DB_PATH, { readonly })
   db.pragma('journal_mode = WAL')
   return db

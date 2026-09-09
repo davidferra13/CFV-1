@@ -2,7 +2,7 @@
 
 Status: implementation under verification. Personal-media processing is not enabled automatically.
 
-This native Windows tool creates a virtual review queue. Originals stay in their source folders. It reuses Python 3.12, Pillow, OpenCV and the installed local Ollama vision model. No training, cloud fallback, Google credentials, file moves or deletion are implemented.
+This native Windows tool creates a virtual review queue. Originals stay in their source folders. It reuses Python 3.12, Pillow, FFmpeg/ffprobe and the installed local Ollama vision model. No training, cloud fallback, Google credentials, file moves or deletion are implemented.
 
 ## Open the harmless demo
 
@@ -19,13 +19,15 @@ The demo creates its own harmless image, labels its model result as synthetic, a
 The normal launcher opens a locked window until its read-only isolation checks pass:
 
 1. Set `MEDIA_PRIVACY_HOME` to an existing encrypted directory outside the repository, Documents, Desktop and known OneDrive roots. The default is `%LOCALAPPDATA%\ChefFlowMediaPrivacy`.
-2. The directory must be on a BitLocker-protected volume. Its ACL must disable inherited permissions and allow only the current owner, SYSTEM and Administrators. Custom sync software and backup exclusions must be checked separately; the program cannot discover every third-party sync configuration.
-3. All effective Windows firewall profiles must be enabled. The Python executable and the process listening on `127.0.0.1:11434` must have effective outbound block rules covering all non-loopback addresses. The verifier accepts a program-wide `Any` block or the exact IPv4 ranges `0.0.0.0-126.255.255.255`, `128.0.0.0-255.255.255.255` and IPv6 `::/0`.
+2. The directory must be on a BitLocker-protected volume. Its root ACL must disable inherited permissions and allow only the current owner, SYSTEM and Administrators. Every existing descendant is checked for broader permissions and reparse points, including a reused archive database. Custom sync software and backup exclusions must be checked separately; the program cannot discover every third-party sync configuration.
+3. All effective Windows firewall profiles must be enabled. The Python, resolved FFmpeg and ffprobe executables, and the process listening on `127.0.0.1:11434` must have effective outbound block rules covering all non-loopback addresses. The verifier accepts a program-wide `Any` block or the exact IPv4 ranges `0.0.0.0-126.255.255.255`, `128.0.0.0-255.255.255.255` and IPv6 `::/0`.
 4. For archive consumption, set `MEDIA_PRIVACY_PYTHON` to the absolute Python 3.12 executable. The consuming Node executable must also pass the outbound-block check. Use a dedicated executable for this workload: applying rules to the shared Node binary can interrupt unrelated ChefFlow network operations.
 
 The build does not change encryption, firewall rules, permissions, backup jobs or existing services. Those machine-level changes require a concrete configuration pass. A localhost URL alone does not prove zero egress. Effective firewall inspection is not packet-capture proof, and the current checks do not claim protection against same-user malware, administrator changes or unknown backup agents.
 
-Once the prerequisites pass, open the normal launcher and choose one source folder. Nothing starts automatically. Work runs in bounded batches with a single-worker lock, a two-GiB free-space stop and a pause control. Press Scan again to reach remaining new files; unchanged inspected files are skipped. Errors stay excluded.
+Once the prerequisites pass, open the normal launcher and choose one source folder. Nothing starts automatically. Work runs in batches of at most 100 files and 120 new frames per file, with a single-worker lock, a two-GiB free-space stop, a one-GiB available-memory stop and a pause control. No decision is granted by an inspection result.
+
+Use **Resume** to continue the last source after restarting the app. Successful frame checkpoints survive process interruption. **Review > Retry failed files in last source** retries from the last saved frame; **Restart selected inspection** discards that file's inspection progress. Complete unchanged files are skipped. Changes to a file, companion, model digest or checkpoint policy invalidate saved inference. Removal-review files are not sent through inference again. Progress shows the current phase, saved frames, elapsed time and pause state. An active model request can take up to its request timeout before pausing.
 
 ## Review meaning
 
@@ -36,18 +38,19 @@ Once the prerequisites pass, open the normal launcher and choose one source fold
 | Any | Exclude / removal review | Blocked |
 | Any | Explicit complete human review and approval | Local use only, while bytes and companions remain unchanged |
 
-Potential under-18 sexual material belongs in Exclude / removal review. That state suppresses previews. The model never estimates age, identity or consent. No private media is needed for developer tests.
+Potential under-18 sexual material belongs in Exclude / removal review. That state suppresses previews and subsequent inference. The model never estimates age, identity or consent. No private media is needed for developer tests.
 
 Approvals are signed locally and bound to source identity, complete file hashes, companion hashes and review revision. Direct OCR and extraction consumers consult this store again. An edited JSON allowlist cannot grant access. Runtime signing keys and review records never belong in git or a shared diagnostic report.
 
 ## Coverage and current limits
 
-- Images: Pillow-supported JPEG, PNG, GIF, WebP, BMP and TIFF. Animated images inspect at most 120 frames per invocation. Unsupported HEIC/RAW and decoder failures remain unknown.
-- Videos: OpenCV examines up to 120 sequential frames from its first video stream. All video results remain partial because this does not prove every stream was inspected. There is no audio analysis, full-video clearance, or resumed frame-by-frame progress yet.
-- Preview: the owner can reveal one still image locally. No thumbnails or extracted frames are stored. The first frame is a preview, not proof of complete animated-file or video review.
-- Linked files: same-stem companions and direct sidecars are fingerprinted. The program does not discover arbitrary embedded attachments or unrelated derivative filenames. Unsupported containers must remain excluded.
-- Large sources: inventory hashes are streamed, but consumers cap in-memory image/document snapshots at 64 MiB. The worker has a batch cap and disk guard; a measured CPU/memory budget and durable per-frame checkpointing are still release requirements for bulk operation.
-- Failed/partial inspections need an explicit retry/resume workflow before this can be called an exhaustive scanner.
+- Images: Pillow-supported JPEG, PNG, GIF, WebP, BMP and TIFF. Animated images inspect every frame across resumable batches. Unsupported HEIC/RAW and decoder failures remain unknown. Images above 64 MiB compressed or 32 million decoded pixels are held.
+- Videos: FFmpeg enumerates and processes each video track sequentially, with frame indices saved after successful inference. Decoding uses two queued 384-by-384 RGB frames, one decoder thread, a 30-second frame-read timeout and no extracted frame files. A resume redecodes the earlier prefix to reach the exact saved frame; it does not repeat that prefix's inference. Only clean decoder EOF on every video track establishes complete visual coverage.
+- Nonvisual content: audio, subtitles, data streams and attachments are not analyzed. Their presence keeps whole-file coverage partial even after video frames finish. Same-stem companions are fingerprinted and separately inventoried, not semantically cleared as a group.
+- Preview: the owner can reveal one still image locally. No thumbnails or extracted frames are stored. The first frame is a preview, not proof of complete animated-file or video review. Complete human review remains a separate attestation; this window has no video playback.
+- Linked files: same-stem companions and direct sidecars are fingerprinted. Arbitrary embedded content or unrelated derivative filenames are not discovered. Unsupported containers stay excluded.
+- Detector limits: the model receives resized images. A completed scan does not mean that every sensitive detail was found or that a file is safe to share. The installed model returned a neutral signal for one harmless generated image in 44.39 seconds. This is a functioning-inference check, not an accuracy benchmark or sustained throughput claim. Exhaustive long-video processing may be impractically slow on this configuration.
+- Resource proof: disk and memory stops, bounded frame queues and per-frame checkpoints have fixture coverage. Sustained CPU/GPU/memory behavior on large workloads still needs measurement before bulk operation.
 
 ## Existing archive integration
 
@@ -57,16 +60,20 @@ Old derived clients, timelines and exports are held because historical provenanc
 
 The former network archive API now serves loopback health only and returns 403 for archive data routes. Personal media has no cloud publication permission. General `parseWithOllama` image arguments are blocked until they use the dedicated local review flow; this intentionally affects existing image callers. Restricted dispatch also rejects missing local runtimes and cloud/remote overrides.
 
-Local export matching uses full-byte SHA-256 equality and records candidates privately. It cannot confirm a live Google Photos item or delete it. Filenames and dates are not identity. Recompressed or edited copies require separate candidate matching and manual confirmation.
+Local export matching uses full-byte SHA-256 equality and records candidates privately. Select a file and choose **View local export matches** to see paths and their last verification status. Confirmation rehashes both local files; changed candidates become stale. A prior confirmation is historical, not a permanent identity guarantee. It cannot confirm a live Google Photos item or delete it. Filenames and dates are not identity. Recompressed or edited copies require separate candidate matching and manual confirmation.
 
 ## Verify without private data
 
 ```powershell
 py -3.12 -m unittest discover -s tests/local-media-privacy -v
 node --test tests/local-media-privacy/archive-gate.test.mjs
+powershell -NoProfile -File tests/local-media-privacy/test-storage-policy.ps1
+powershell -NoProfile -File tests/local-media-privacy/test-firewall-policy.ps1
 py -3.12 scripts/local-media-privacy/probe-model.py
 ```
 
 The native tests create harmless fixtures, exercise real SQLite and Tkinter, and remove their temporary files. The probe makes one request using a generated geometric image and reports only the neutral result and elapsed time. It is not an accuracy benchmark or proof that explicit content will always be detected.
 
-Technical references: [Ollama cloud execution](https://docs.ollama.com/cloud), [Windows firewall rules](https://learn.microsoft.com/en-us/powershell/module/netsecurity/new-netfirewallrule), [effective address filters](https://learn.microsoft.com/en-us/powershell/module/netsecurity/get-netfirewalladdressfilter).
+The archive model adapter uses direct HTTP to the single verified `127.0.0.1:11434` listener. Alternate local ports, environment proxies, redirects and remote model metadata cannot select another transport.
+
+Technical references: [FFmpeg stream selection](https://ffmpeg.org/ffmpeg.html), [FFmpeg frame trimming](https://ffmpeg.org/ffmpeg-filters.html), [Ollama cloud execution](https://docs.ollama.com/cloud), [Windows firewall rules](https://learn.microsoft.com/en-us/powershell/module/netsecurity/new-netfirewallrule), [effective address filters](https://learn.microsoft.com/en-us/powershell/module/netsecurity/get-netfirewalladdressfilter).

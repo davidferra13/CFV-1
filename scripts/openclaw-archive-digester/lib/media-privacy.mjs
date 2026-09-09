@@ -1,5 +1,6 @@
 /** Current owner approval is required at each consumer, including direct calls. */
 import { spawnSync } from 'node:child_process'
+import http from 'node:http'
 import { fileURLToPath } from 'node:url'
 import { isAbsolute } from 'node:path'
 
@@ -53,26 +54,54 @@ export function assertArchiveApproved(db) {
 export function localEndpoint(value) {
   try {
     const url = new URL(value)
-    if (url.protocol !== 'http:' || !['localhost', '127.0.0.1', '[::1]'].includes(url.hostname)
+    // This is the single listener whose executable the OS isolation gate verifies.
+    if (url.origin !== 'http://127.0.0.1:11434'
         || url.username || url.password || url.pathname !== '/' || url.search || url.hash) throw new Error()
     return url.origin
   } catch { throw new MediaPrivacyBlocked() }
 }
 
+// Direct node:http deliberately ignores proxy environment variables and agents.
+function request(endpoint, route, body, timeout) {
+  const payload = Buffer.from(JSON.stringify(body))
+  return new Promise((resolve, reject) => {
+    const req = http.request(new URL(route, endpoint), {
+      method: 'POST', agent: false,
+      headers: { 'Content-Type': 'application/json', 'Content-Length': payload.length },
+    }, res => {
+      if (res.statusCode !== 200) {
+        res.resume()
+        reject(new MediaPrivacyBlocked())
+        return
+      }
+      const chunks = []
+      let size = 0
+      res.on('data', chunk => {
+        size += chunk.length
+        if (size > 1024 * 1024) { req.destroy(new MediaPrivacyBlocked()); return }
+        chunks.push(chunk)
+      })
+      res.on('error', () => reject(new MediaPrivacyBlocked()))
+      res.on('end', () => {
+        try { resolve(JSON.parse(Buffer.concat(chunks).toString('utf8'))) }
+        catch { reject(new MediaPrivacyBlocked()) }
+      })
+    })
+    const timer = setTimeout(() => req.destroy(new MediaPrivacyBlocked()), timeout)
+    req.on('close', () => clearTimeout(timer))
+    req.on('error', () => reject(new MediaPrivacyBlocked()))
+    req.end(payload)
+  })
+}
+
 export async function localModelRequest(model, payload) {
   const endpoint = localEndpoint(process.env.OLLAMA_URL || 'http://127.0.0.1:11434')
   if (!model || /cloud|remote/i.test(model)) throw new MediaPrivacyBlocked()
-  const shown = await fetch(`${endpoint}/api/show`, {
-    method: 'POST', redirect: 'error', headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({ model }), signal: AbortSignal.timeout(10000),
-  })
-  if (!shown.ok) throw new MediaPrivacyBlocked()
-  const details = await shown.json()
-  if (details.remote_host || details.remote_model || !details.model_info || !details.details?.parameter_size) {
+  const details = await request(endpoint, '/api/show', { model }, 10000)
+  if (!details || details.remote_host || details.remote_model || !details.model_info ||
+      !details.details?.parameter_size || details.details?.format !== 'gguf') {
     throw new MediaPrivacyBlocked()
   }
-  return fetch(`${endpoint}/api/generate`, {
-    method: 'POST', redirect: 'error', headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({ ...payload, model }), signal: AbortSignal.timeout(120000),
-  })
+  const data = await request(endpoint, '/api/generate', { ...payload, model, stream: false }, 120000)
+  return { ok: true, json: async () => data }
 }

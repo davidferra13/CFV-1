@@ -6,11 +6,59 @@ from pathlib import Path
 import queue
 import tempfile
 import threading
+import time
 import tkinter as tk
 from tkinter import filedialog, messagebox, ttk
 from privacy_core import Store, PrivacyBlocked, checked_path, bundle
 from security import require_isolation
-from worker import Detector, scan, walk_sources, IMAGE_EXT
+from worker import Detector, scan, restart_inspection, walk_sources, IMAGE_EXT
+
+
+RECOVERY = {
+    'worker_already_running': 'Another scan is running. Pause it or wait, then retry.',
+    'isolation_or_encryption_unverified': 'Access is locked. Complete the storage and network isolation setup, then Refresh.',
+    'runtime_directory_missing': 'Create the protected runtime using the setup guide, then Refresh.',
+    'runtime_source_overlap': 'Choose a media source folder outside the private runtime directory.',
+    'source_directory_required': 'Reconnect the source drive or choose an available source folder.',
+    'source_link_blocked': 'Choose the original local folder; linked sources are held.',
+    'source_namespace_conflict': 'Resume the original source selection for files already in this queue.',
+    'model_unavailable': 'The local model is unavailable. Check the installed Ollama service, then retry failed files.',
+    'local_model_missing': 'Start the installed local model service, then retry. No model is downloaded automatically.',
+    'local_vision_required': 'Select the supported installed local vision model in the setup guide.',
+    'decoder_missing': 'Make the installed FFmpeg and ffprobe executables available, then retry.',
+    'low_disk': 'Paused for low disk space. Free at least 2 GiB on the runtime drive, then Resume.',
+    'low_memory': 'Paused for low memory. Free at least 1 GiB of available memory, then Resume.',
+    'owner_paused': 'Paused. Choose Resume to continue from saved frames.',
+    'match_changed': 'A source or candidate changed. Run local export matching again before confirmation.',
+    'select_a_candidate': 'Select a local candidate before confirming.',
+    'select_a_file': 'Select a file in the review queue.',
+    'wait_for_current_task': 'Pause or wait for the current task, then retry.',
+    'unexpected': 'The operation was held. Check the source drive and local setup, then retry. Sources are unchanged.',
+}
+
+
+def safe_reason(error):
+    return error.code if isinstance(error, PrivacyBlocked) and error.code in RECOVERY else 'unexpected'
+
+
+def result_message(result):
+    if 'local_exact_candidates' in result:
+        count = result['local_exact_candidates']
+        return (f'Found {count} local exact matches. Select a file and choose View local export matches.' if count
+                else 'No exact matches found. Choose another local export folder to search again.')
+    if result.get('reason'):
+        message = RECOVERY.get(result['reason'], RECOVERY['unexpected'])
+    elif result.get('failed') or result.get('walk_errors'):
+        message = 'Some files could not be inspected. Use Review > Retry failed files after checking the source and model.'
+    elif result.get('partial') or result.get('batch_limited'):
+        message = 'Progress saved. Choose Resume for remaining visual frames; uninspected audio and unsupported content stay held.'
+    elif result.get('paused'):
+        message = RECOVERY['owner_paused']
+    else:
+        message = 'Batch checked. Human review is still required.'
+    return message + (f" Attempted: {result.get('attempted', 0)}; complete: {result.get('complete', 0)}; "
+                      f"partial: {result.get('partial', 0)}; unsupported: {result.get('unsupported', 0)}; "
+                      f"failed: {result.get('failed', 0)}; inaccessible folders: {result.get('walk_errors', 0)}.")
 
 
 class ReviewWindow:
@@ -20,9 +68,13 @@ class ReviewWindow:
         self.events = queue.Queue()
         self.stop = threading.Event()
         self.busy = False
+        self.progress = {}
+        self.started_at = 0
         self.photo = None
         self.page = 0
         self.action_buttons = []
+        self.demo_unavailable = []
+        ttk.Style(root).configure('Primary.TButton', font=('Segoe UI', 10, 'bold'), padding=(12, 7))
         # Surface mode: reviewing. Evidence, decision controls and queue only.
         root.title('ChefFlow | Local media privacy' + (' | SYNTHETIC DEMO' if demo else ''))
         root.geometry('1120x760')
@@ -36,12 +88,19 @@ class ReviewWindow:
         toolbar = ttk.Frame(outer)
         toolbar.pack(fill='x', pady=12)
         scan_button = ttk.Button(toolbar, text='Choose source and scan', command=self.start_scan)
+        self.scan_button = scan_button
         scan_button.pack(side='left')
+        self.demo_unavailable.append(scan_button)
         self.action_buttons.append(scan_button)
+        resume_button = ttk.Button(toolbar, text='Resume', command=self.resume_scan)
+        resume_button.pack(side='left', padx=4)
+        self.action_buttons.append(resume_button)
+        self.demo_unavailable.append(resume_button)
         ttk.Button(toolbar, text='Pause after current frame', command=self.stop.set).pack(side='left', padx=6)
         match_button = ttk.Button(toolbar, text='Match local export', command=self.start_match)
         match_button.pack(side='left')
         self.action_buttons.append(match_button)
+        self.demo_unavailable.append(match_button)
         ttk.Button(toolbar, text='Refresh', command=self.refresh).pack(side='left', padx=6)
         self.filter = tk.StringVar(value='All')
         filters = ttk.Combobox(toolbar, textvariable=self.filter, state='readonly', width=20,
@@ -72,8 +131,10 @@ class ReviewWindow:
         ttk.Label(right, textvariable=self.detail, wraplength=430, justify='left').pack(anchor='w')
         self.preview = ttk.Label(right, text='Preview hidden', anchor='center')
         self.preview.pack(fill='both', expand=True, pady=12)
-        ttk.Button(right, text='Reveal image locally', command=self.reveal).pack(fill='x')
+        self.review_button = ttk.Button(right, text='Reveal image locally', command=self.reveal)
+        self.review_button.pack(fill='x')
         ttk.Button(right, text='Hide preview', command=self.hide).pack(fill='x', pady=4)
+        ttk.Button(right, text='View local export matches', command=self.show_matches).pack(fill='x', pady=4)
         self.attest = tk.BooleanVar(value=False)
         ttk.Checkbutton(right, variable=self.attest, text='I reviewed the complete file and all companions.\nIt is appropriate for local archive use.').pack(anchor='w', pady=10)
         for label, decision in [('Keep private', 'private'), ('Exclude / removal review', 'removal_review'),
@@ -82,7 +143,13 @@ class ReviewWindow:
             button.pack(fill='x', pady=2)
             self.action_buttons.append(button)
         more = tk.Menu(root, tearoff=False)
+        more.add_command(label='Retry failed files in last source', command=lambda: self.resume_scan(retry_failed=True))
+        more.add_command(label='Restart selected inspection', command=self.restart_selected)
+        more.add_separator()
         more.add_command(label='Reset selected file to unreviewed', command=lambda: self.decide('unreviewed'))
+        if self.demo:
+            more.entryconfigure('Retry failed files in last source', state='disabled')
+            more.entryconfigure('Restart selected inspection', state='disabled')
         menu = tk.Menu(root)
         menu.add_cascade(label='Review', menu=more)
         root.configure(menu=menu)
@@ -106,6 +173,9 @@ class ReviewWindow:
                 self.store = Store(self.directory)
             for button in self.action_buttons:
                 button.state(['!disabled'])
+            if self.demo:
+                for button in self.demo_unavailable:
+                    button.state(['disabled'])
             self.hide()
             self.tree.delete(*self.tree.get_children())
             filters = {'Needs review': ('decision', 'unreviewed'), 'Suspected sensitive': ('signal', 'suspected_sensitive'),
@@ -115,6 +185,9 @@ class ReviewWindow:
             where = f' WHERE {criterion[0]}=?' if criterion else ''
             params = [criterion[1]] if criterion else []
             total = self.store.db.execute('SELECT count(*) FROM assets' + where, params).fetchone()[0]
+            self.scan_button.configure(style='Primary.TButton' if total == 0 and not self.demo else 'TButton')
+            self.review_button.configure(style='Primary.TButton' if total else 'TButton')
+            self.review_button.state(['!disabled'] if total else ['disabled'])
             self.page = min(self.page, max(0, (total - 1) // 200))
             rows = self.store.db.execute("SELECT * FROM assets" + where +
                 " ORDER BY CASE signal WHEN 'suspected_sensitive' THEN 0 WHEN 'unknown' THEN 1 ELSE 2 END, updated_at DESC LIMIT 200 OFFSET ?", params + [self.page * 200])
@@ -196,6 +269,8 @@ class ReviewWindow:
         if self.busy:
             return
         self.busy = True
+        self.started_at = time.monotonic()
+        self.progress = {'phase': 'starting', 'frames': 0}
         self.stop.clear()
         self.hide()
         self.status.set('Working locally. Pause takes effect after the current request; each request has a timeout.')
@@ -206,8 +281,8 @@ class ReviewWindow:
                 store = Store(self.directory)
                 result = task(store)
                 self.events.put(('done', result))
-            except Exception:
-                self.events.put(('error', {}))
+            except Exception as error:
+                self.events.put(('error', {'reason': safe_reason(error)}))
             finally:
                 if store:
                     store.close()
@@ -223,7 +298,7 @@ class ReviewWindow:
         if source:
             namespace = str(Path(source).absolute())
             self.background(lambda store: scan(store, source, namespace, Detector(), self.stop.is_set,
-                                              security_check=self.protect))
+                                              security_check=self.protect, progress=self.report_progress))
 
     def start_match(self):
         if not self.store or self.busy or self.demo:
@@ -232,14 +307,112 @@ class ReviewWindow:
         if source:
             self.background(lambda store: {'local_exact_candidates': store.match_exact(walk_sources(source, self.stop.is_set))})
 
-    def poll(self):
+    def report_progress(self, event):
+        self.events.put(('progress', event))
+
+    def resume_scan(self, retry_failed=False):
+        if not self.store or self.busy or self.demo:
+            return
         try:
-            kind, result = self.events.get_nowait()
+            self.protect()
+            source = self.store.setting('last_source')
+            if not source:
+                raise PrivacyBlocked('choose_a_source_first')
+            self.background(lambda store: scan(store, source['path'], source['namespace'], Detector(),
+                self.stop.is_set, security_check=self.protect, progress=self.report_progress,
+                retry_failed=retry_failed))
+        except PrivacyBlocked as error:
+            self.status.set(error.code.replace('_', ' '))
+
+    def restart_selected(self):
+        if not self.store or self.busy or self.demo:
+            return
+        try:
+            self.protect()
+            row = self.selected()
+            if row['decision'] == 'removal_review':
+                raise PrivacyBlocked('removal_review_inspection_excluded')
+            asset_id = row['id']
+            self.background(lambda store: restart_inspection(store, asset_id, Detector(), self.stop.is_set,
+                security_check=self.protect, progress=self.report_progress))
+        except PrivacyBlocked as error:
+            self.status.set(error.code.replace('_', ' '))
+
+    def show_matches(self):
+        if not self.store or self.busy:
+            return
+        try:
+            self.protect()
+            asset_id = self.selected()['id']
+            window = tk.Toplevel(self.root)
+            window.title('Local export match candidates')
+            window.geometry('860x420')
+            outer = ttk.Frame(window, padding=16)
+            outer.pack(fill='both', expand=True)
+            ttk.Label(outer, text='Exact bytes in a local export. Confirmation rechecks both files. No cloud identity or deletion.',
+                      wraplength=810).pack(anchor='w', pady=(0, 12))
+            tree = ttk.Treeview(outer, columns=('path', 'status'), show='headings', selectmode='browse')
+            tree.heading('path', text='Local candidate path')
+            tree.heading('status', text='Last verification')
+            tree.column('path', width=650)
+            tree.column('status', width=140)
+            tree.pack(fill='both', expand=True)
+            status = tk.StringVar(value='Select a candidate to verify. Previews stay hidden.')
+            ttk.Label(outer, textvariable=status, wraplength=810).pack(anchor='w', pady=8)
+            candidates = {}
+            def refresh(message=None):
+                tree.delete(*tree.get_children())
+                candidates.clear()
+                try:
+                    rows = self.store.match_candidates(asset_id)
+                    for i, row in enumerate(rows):
+                        candidates[str(i)] = row['candidate_path']
+                        tree.insert('', 'end', iid=str(i), values=(row['candidate_path'], row['status']))
+                    confirm_button.state(['!disabled'] if candidates else ['disabled'])
+                    status.set(message or ('Select a candidate to verify. Previews stay hidden.' if candidates
+                        else 'No matches recorded for this file. Close this window and choose Match local export.'))
+                except Exception as error:
+                    confirm_button.state(['disabled'])
+                    status.set('Could not load matches. Close this window, Refresh the queue and retry. ' + RECOVERY[safe_reason(error)])
+            def confirm():
+                message = None
+                try:
+                    if self.busy:
+                        raise PrivacyBlocked('wait_for_current_task')
+                    self.protect()
+                    selection = tree.selection()
+                    if not selection:
+                        raise PrivacyBlocked('select_a_candidate')
+                    self.store.confirm_match(asset_id, candidates[selection[0]])
+                    message = 'Both local files still match exactly. Nothing moved or deleted.'
+                except Exception as error:
+                    message = RECOVERY[safe_reason(error)]
+                finally:
+                    refresh(message)
+            confirm_button = ttk.Button(outer, text='Recheck and confirm selected match', command=confirm)
+            confirm_button.pack(anchor='e')
+            refresh()
+            return window
+        except PrivacyBlocked as error:
+            self.status.set(error.code.replace('_', ' '))
+
+    def poll(self):
+        while True:
+            try:
+                kind, result = self.events.get_nowait()
+            except queue.Empty:
+                break
+            if kind == 'progress':
+                self.progress = result
+                continue
             self.busy = False
             self.refresh()
-            self.status.set(('Completed batch: ' + json.dumps(result)) if kind == 'done' else 'Operation held. Sources are unchanged.')
-        except queue.Empty:
-            pass
+            self.status.set(result_message(result) if kind == 'done' else RECOVERY.get(result.get('reason'), RECOVERY['unexpected']))
+        if self.busy:
+            elapsed = int(time.monotonic() - self.started_at)
+            phase = self.progress.get('phase', 'working').replace('_', ' ')
+            self.status.set(f"{phase.capitalize()} | Saved frames in current file: {self.progress.get('frames', 0)} | "
+                            f"Run time: {elapsed}s | Pause requested: {'yes' if self.stop.is_set() else 'no'}")
         if self.root.winfo_exists():
             self.root.after(250, self.poll)
 
