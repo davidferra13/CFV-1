@@ -30,6 +30,32 @@ const TS_END = (name) => `  // === END GENERATED:${name} ===`
 const checkOnly = process.argv.includes('--check')
 const tokens = JSON.parse(fs.readFileSync(TOKENS_PATH, 'utf8'))
 
+/*
+ * The repo runs prettier on every staged file through lint-staged. If this
+ * generator emitted anything prettier would reformat, the committed file and the
+ * generated file would disagree forever and --check would be permanently red.
+ * So the generator formats its own output with the project's prettier config,
+ * which makes the two agree by construction. Prettier is a devDependency and is
+ * always present when npm scripts can run; if it is somehow missing the
+ * generator still works, it just emits unformatted output.
+ */
+let prettier = null
+try {
+  prettier = await import('prettier')
+} catch {
+  prettier = null
+}
+
+async function format(content, filepath) {
+  if (!prettier) return content
+  try {
+    const config = (await prettier.resolveConfig(filepath)) ?? {}
+    return await prettier.format(content, { ...config, filepath })
+  } catch {
+    return content
+  }
+}
+
 /* ------------------------------------------------------------------ helpers */
 
 function pick(value, mode) {
@@ -425,6 +451,10 @@ results.push(
     appendIfMissing: false,
   })
 )
+
+for (const r of results) {
+  r.next = await format(r.next, r.abs)
+}
 
 let stale = 0
 for (const r of results) {

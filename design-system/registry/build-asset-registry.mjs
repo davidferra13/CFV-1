@@ -364,7 +364,19 @@ const registry = {
   assets,
 }
 
-const next = JSON.stringify(registry, null, 2) + '\n'
+/*
+ * lint-staged runs prettier on every staged file, so unformatted output here
+ * would make --check permanently stale. Format with the project's own config so
+ * the generated file and the committed file agree by construction.
+ */
+let next = JSON.stringify(registry, null, 2) + '\n'
+try {
+  const prettier = await import('prettier')
+  const config = (await prettier.resolveConfig(OUT)) ?? {}
+  next = await prettier.format(next, { ...config, filepath: OUT })
+} catch {
+  // Prettier missing: emit plain JSON. The generator still works.
+}
 const prev = fs.existsSync(OUT) ? fs.readFileSync(OUT, 'utf8') : null
 
 if (checkOnly) {
