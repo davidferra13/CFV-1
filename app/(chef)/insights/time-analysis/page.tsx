@@ -1,138 +1,79 @@
-// Time Analysis Page
-// Shows where the chef's hours are actually going - event phases + administrative overhead.
-// Used to compute true effective hourly rate including all business time.
-
 import type { Metadata } from 'next'
-import { requireChef } from '@/lib/auth/get-user'
 import { getAdminTimeThisWeek, getMonthlyAdminTimeSummary } from '@/lib/admin-time/actions'
-import { ADMIN_TIME_CATEGORIES } from '@/lib/admin-time/constants'
-import { AdminTimeLogForm } from './admin-time-log-form'
+import { requireChef } from '@/lib/auth/get-user'
+import { getWorkLedger } from '@/lib/work-ledger/actions'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
+import { AdminTimeLogForm } from './admin-time-log-form'
+import { WorkLedgerClient } from './work-ledger-client'
 
-export const metadata: Metadata = { title: 'Time Analysis' }
+export const metadata: Metadata = { title: 'Work Ledger' }
 
 function formatMinutes(minutes: number) {
-  const h = Math.floor(minutes / 60)
-  const m = minutes % 60
-  if (h === 0) return `${m}m`
-  if (m === 0) return `${h}h`
-  return `${h}h ${m}m`
+  const hours = Math.floor(minutes / 60)
+  const remainder = minutes % 60
+  return hours ? `${hours}h ${remainder ? `${remainder}m` : ''}`.trim() : `${remainder}m`
 }
 
 export default async function TimeAnalysisPage() {
   await requireChef()
-
   const today = new Date()
-  const [thisWeek, thisMonth] = await Promise.all([
+  const [thisWeek, thisMonth, ledger] = await Promise.all([
     getAdminTimeThisWeek(),
     getMonthlyAdminTimeSummary(today.getFullYear(), today.getMonth() + 1),
+    getWorkLedger().catch(() => null),
   ])
 
   return (
-    <div className="max-w-2xl mx-auto px-4 py-8 space-y-6">
+    <div className="mx-auto max-w-6xl space-y-6 px-4 py-8">
       <div>
-        <h1 className="text-2xl font-bold text-stone-100">Time Analysis</h1>
-        <p className="mt-1 text-sm text-stone-500">
-          Track administrative time to see where your hours really go - not just on-site.
+        <h1 className="text-2xl font-bold text-stone-100">Work Ledger</h1>
+        <p className="mt-1 max-w-3xl text-sm text-stone-500">
+          One evidence-backed timeline for active work, supervision, agent runtime, and staff time.
+          Only approved human time enters economics.
         </p>
       </div>
 
-      {/* Summary cards */}
+      {ledger ? (
+        <WorkLedgerClient ledger={ledger} />
+      ) : (
+        <Card className="border-amber-500/30">
+          <CardHeader>
+            <CardTitle>Ledger database setup required</CardTitle>
+          </CardHeader>
+          <CardContent className="text-sm text-stone-400">
+            The interface is ready, but the work-ledger migration has not been applied to this
+            environment. Existing admin time remains available below.
+          </CardContent>
+        </Card>
+      )}
+
       <div className="grid grid-cols-2 gap-4">
         <Card>
           <CardHeader className="pb-1">
-            <CardTitle className="text-sm text-stone-500">This Week (Admin)</CardTitle>
+            <CardTitle className="text-sm text-stone-500">Legacy admin · this week</CardTitle>
           </CardHeader>
           <CardContent>
-            <p className="text-2xl font-bold text-stone-100">
-              {formatMinutes(thisWeek.totalMinutes)}
-            </p>
+            <p className="text-2xl font-bold">{formatMinutes(thisWeek.totalMinutes)}</p>
           </CardContent>
         </Card>
         <Card>
           <CardHeader className="pb-1">
-            <CardTitle className="text-sm text-stone-500">This Month (Admin)</CardTitle>
+            <CardTitle className="text-sm text-stone-500">Legacy admin · this month</CardTitle>
           </CardHeader>
           <CardContent>
-            <p className="text-2xl font-bold text-stone-100">
-              {formatMinutes(thisMonth.totalMinutes)}
-            </p>
+            <p className="text-2xl font-bold">{formatMinutes(thisMonth.totalMinutes)}</p>
           </CardContent>
         </Card>
       </div>
-
-      {/* Monthly breakdown by category */}
-      {thisMonth.totalMinutes > 0 && (
-        <Card>
-          <CardHeader>
-            <CardTitle className="text-base">This Month by Category</CardTitle>
-          </CardHeader>
-          <CardContent>
-            <div className="space-y-2">
-              {ADMIN_TIME_CATEGORIES.filter((c) => (thisMonth.byCategory[c.value] ?? 0) > 0)
-                .sort(
-                  (a, b) =>
-                    (thisMonth.byCategory[b.value] ?? 0) - (thisMonth.byCategory[a.value] ?? 0)
-                )
-                .map((c) => {
-                  const mins = thisMonth.byCategory[c.value] ?? 0
-                  const pct = Math.round((mins / thisMonth.totalMinutes) * 100)
-                  return (
-                    <div key={c.value} className="flex items-center gap-3">
-                      <div className="w-28 text-xs text-stone-400">{c.label}</div>
-                      <div className="flex-1 bg-stone-800 rounded-full h-2">
-                        <div
-                          className="bg-amber-500 h-2 rounded-full"
-                          style={{ width: `${pct}%` }}
-                        />
-                      </div>
-                      <div className="text-xs text-stone-500 w-16 text-right">
-                        {formatMinutes(mins)} ({pct}%)
-                      </div>
-                    </div>
-                  )
-                })}
-            </div>
-          </CardContent>
-        </Card>
-      )}
-
-      {/* Recent logs */}
-      {thisWeek.logs.length > 0 && (
-        <Card>
-          <CardHeader>
-            <CardTitle className="text-base">This Week&apos;s Log</CardTitle>
-          </CardHeader>
-          <CardContent>
-            <div className="space-y-1">
-              {thisWeek.logs.map((log: any) => {
-                const cat = ADMIN_TIME_CATEGORIES.find((c) => c.value === log.category)
-                return (
-                  <div
-                    key={log.id}
-                    className="flex items-center justify-between text-sm py-1 border-b border-stone-800 last:border-0"
-                  >
-                    <div>
-                      <span className="text-stone-300">{cat?.label ?? log.category}</span>
-                      {log.notes && (
-                        <span className="text-stone-400 ml-2 text-xs">- {log.notes}</span>
-                      )}
-                    </div>
-                    <div className="text-stone-500">{formatMinutes(log.minutes)}</div>
-                  </div>
-                )
-              })}
-            </div>
-          </CardContent>
-        </Card>
-      )}
-
-      {/* Log new time */}
       <Card>
         <CardHeader>
-          <CardTitle className="text-base">Log Admin Time</CardTitle>
+          <CardTitle className="text-base">Compatibility admin log</CardTitle>
         </CardHeader>
         <CardContent>
+          <p className="mb-4 text-xs text-stone-500">
+            Existing admin logs remain intact while they are projected into the canonical ledger
+            without double counting.
+          </p>
           <AdminTimeLogForm />
         </CardContent>
       </Card>

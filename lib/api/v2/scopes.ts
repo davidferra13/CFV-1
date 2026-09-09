@@ -53,6 +53,8 @@ export const API_SCOPES = {
   'remy:write': 'Create, update, and delete Remy approval policies',
   'quick-notes:read': 'List and view quick notes',
   'quick-notes:write': 'Create, triage, and delete quick notes',
+  'work-ledger:read': 'View work evidence, sessions, and coverage',
+  'work-ledger:write': 'Ingest evidence and reconstruct work sessions',
 
   // Admin scopes
   'webhooks:manage': 'Manage outbound webhook subscriptions',

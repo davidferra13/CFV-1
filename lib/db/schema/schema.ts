@@ -30581,3 +30581,131 @@ export const hermesFeedback = pgTable("hermes_feedback", {
 }, (table) => [
 	index("hermes_feedback_tenant_id_idx").on(table.tenantId),
 ])
+
+
+// Canonical work ledger: immutable evidence and reviewable interpretations.
+export const workEvidence = pgTable("work_evidence", {
+	id: uuid().defaultRandom().primaryKey().notNull(),
+	tenantId: uuid("tenant_id").notNull().references(() => chefs.id, { onDelete: "cascade" }),
+	sourceType: text("source_type").notNull(),
+	sourceAccount: text("source_account"),
+	sourceRecordId: text("source_record_id").notNull(),
+	sourceHash: text("source_hash").notNull(),
+	sourceCreatedAt: timestamp("source_created_at", { withTimezone: true, mode: 'string' }),
+	intervalStart: timestamp("interval_start", { withTimezone: true, mode: 'string' }),
+	intervalEnd: timestamp("interval_end", { withTimezone: true, mode: 'string' }),
+	actorType: text("actor_type").notNull(),
+	actorId: text("actor_id"),
+	eventId: uuid("event_id").references(() => events.id, { onDelete: "set null" }),
+	clientId: uuid("client_id").references(() => clients.id, { onDelete: "set null" }),
+	projectKey: text("project_key"),
+	activityHint: text("activity_hint"),
+	signalType: text("signal_type").notNull(),
+	signalSummary: text("signal_summary").notNull(),
+	minimalMetadata: jsonb("minimal_metadata").default({}).notNull(),
+	privacyClass: text("privacy_class").notNull(),
+	ingestedAt: timestamp("ingested_at", { withTimezone: true, mode: 'string' }).defaultNow().notNull(),
+}, (table) => [
+	uniqueIndex("work_evidence_source_unique").on(table.tenantId, table.sourceType, table.sourceAccount, table.sourceRecordId),
+	index("work_evidence_tenant_time_idx").on(table.tenantId, table.sourceCreatedAt),
+	index("work_evidence_event_idx").on(table.tenantId, table.eventId),
+	pgPolicy("work_evidence_tenant_select", { as: "permissive", for: "select", to: ["public"], using: sql`tenant_id = get_current_tenant_id()` }),
+	pgPolicy("work_evidence_tenant_insert", { as: "permissive", for: "insert", to: ["public"], withCheck: sql`tenant_id = get_current_tenant_id()` }),
+	check("work_evidence_interval_check", sql`interval_end IS NULL OR interval_start IS NULL OR interval_end >= interval_start`),
+	check("work_evidence_actor_check", sql`actor_type = ANY (ARRAY['david_active','david_supervisory','ai_agent_runtime','staff','system'])`),
+])
+
+export const workSessions = pgTable("work_sessions", {
+	id: uuid().defaultRandom().primaryKey().notNull(),
+	tenantId: uuid("tenant_id").notNull().references(() => chefs.id, { onDelete: "cascade" }),
+	actorType: text("actor_type").notNull(),
+	actorId: text("actor_id"),
+	activityType: text("activity_type").notNull(),
+	eventId: uuid("event_id").references(() => events.id, { onDelete: "set null" }),
+	clientId: uuid("client_id").references(() => clients.id, { onDelete: "set null" }),
+	projectKey: text("project_key"),
+	startedAt: timestamp("started_at", { withTimezone: true, mode: 'string' }),
+	endedAt: timestamp("ended_at", { withTimezone: true, mode: 'string' }),
+	durationMinutes: integer("duration_minutes"),
+	durationKind: text("duration_kind").notNull(),
+	status: text().notNull(),
+	confidenceTier: text("confidence_tier").notNull(),
+	creationMode: text("creation_mode").notNull(),
+	boundaryGap: text("boundary_gap"),
+	summary: text().notNull(),
+	reviewedBy: uuid("reviewed_by"),
+	reviewedAt: timestamp("reviewed_at", { withTimezone: true, mode: 'string' }),
+	supersededBy: uuid("superseded_by").references((): AnyPgColumn => workSessions.id, { onDelete: "set null" }),
+	createdAt: timestamp("created_at", { withTimezone: true, mode: 'string' }).defaultNow().notNull(),
+	updatedAt: timestamp("updated_at", { withTimezone: true, mode: 'string' }).defaultNow().notNull(),
+}, (table) => [
+	index("work_sessions_tenant_status_time_idx").on(table.tenantId, table.status, table.startedAt),
+	index("work_sessions_event_idx").on(table.tenantId, table.eventId),
+	uniqueIndex("work_sessions_one_open_manual_clock").on(table.tenantId).where(sql`ended_at IS NULL AND creation_mode = 'manual_clock' AND status <> 'rejected'`),
+	pgPolicy("work_sessions_tenant_all", { as: "permissive", for: "all", to: ["public"], using: sql`tenant_id = get_current_tenant_id()`, withCheck: sql`tenant_id = get_current_tenant_id()` }),
+	check("work_sessions_duration_check", sql`duration_minutes IS NULL OR duration_minutes >= 0`),
+	check("work_sessions_interval_check", sql`ended_at IS NULL OR started_at IS NULL OR ended_at >= started_at`),
+	check("work_sessions_actor_check", sql`actor_type = ANY (ARRAY['david_active','david_supervisory','ai_agent_runtime','staff','system'])`),
+])
+
+export const workSessionEvidence = pgTable("work_session_evidence", {
+	sessionId: uuid("session_id").notNull().references(() => workSessions.id, { onDelete: "cascade" }),
+	evidenceId: uuid("evidence_id").notNull().references(() => workEvidence.id, { onDelete: "restrict" }),
+	evidenceRole: text("evidence_role").default('supporting').notNull(),
+	weight: numeric({ precision: 4, scale: 3 }).default('1.000').notNull(),
+}, (table) => [
+	primaryKey({ columns: [table.sessionId, table.evidenceId] }),
+])
+
+export const workSessionCorrections = pgTable("work_session_corrections", {
+	id: uuid().defaultRandom().primaryKey().notNull(),
+	tenantId: uuid("tenant_id").notNull().references(() => chefs.id, { onDelete: "cascade" }),
+	sessionId: uuid("session_id").notNull().references(() => workSessions.id, { onDelete: "cascade" }),
+	previousValues: jsonb("previous_values").notNull(),
+	replacementValues: jsonb("replacement_values").notNull(),
+	correctionReason: text("correction_reason").notNull(),
+	reviewerId: uuid("reviewer_id"),
+	ruleId: uuid("rule_id"),
+	createdAt: timestamp("created_at", { withTimezone: true, mode: 'string' }).defaultNow().notNull(),
+}, (table) => [
+	index("work_corrections_tenant_session_idx").on(table.tenantId, table.sessionId),
+	pgPolicy("work_corrections_tenant_select", { as: "permissive", for: "select", to: ["public"], using: sql`tenant_id = get_current_tenant_id()` }),
+	pgPolicy("work_corrections_tenant_insert", { as: "permissive", for: "insert", to: ["public"], withCheck: sql`tenant_id = get_current_tenant_id()` }),
+])
+
+export const workInferenceRules = pgTable("work_inference_rules", {
+	id: uuid().defaultRandom().primaryKey().notNull(),
+	tenantId: uuid("tenant_id").notNull().references(() => chefs.id, { onDelete: "cascade" }),
+	ruleKey: text("rule_key").notNull(),
+	version: integer().notNull(),
+	enabled: boolean().default(true).notNull(),
+	configuration: jsonb().default({}).notNull(),
+	evidenceThreshold: integer("evidence_threshold").default(1).notNull(),
+	acceptedCount: integer("accepted_count").default(0).notNull(),
+	editedCount: integer("edited_count").default(0).notNull(),
+	rejectedCount: integer("rejected_count").default(0).notNull(),
+	falsePositiveCount: integer("false_positive_count").default(0).notNull(),
+	falseNegativeCount: integer("false_negative_count").default(0).notNull(),
+	createdAt: timestamp("created_at", { withTimezone: true, mode: 'string' }).defaultNow().notNull(),
+}, (table) => [
+	uniqueIndex("work_inference_rules_tenant_key_version_unique").on(table.tenantId, table.ruleKey, table.version),
+	pgPolicy("work_inference_rules_tenant_all", { as: "permissive", for: "all", to: ["public"], using: sql`tenant_id = get_current_tenant_id()`, withCheck: sql`tenant_id = get_current_tenant_id()` }),
+])
+
+export const workCaptureDevices = pgTable("work_capture_devices", {
+	id: uuid().defaultRandom().primaryKey().notNull(),
+	tenantId: uuid("tenant_id").notNull().references(() => chefs.id, { onDelete: "cascade" }),
+	deviceKey: text("device_key").notNull(),
+	deviceType: text("device_type").notNull(),
+	label: text().notNull(),
+	lastSuccessfulSync: timestamp("last_successful_sync", { withTimezone: true, mode: 'string' }),
+	lastEvidenceAt: timestamp("last_evidence_at", { withTimezone: true, mode: 'string' }),
+	paused: boolean().default(false).notNull(),
+	privacyPolicyVersion: text("privacy_policy_version").notNull(),
+	coverageGapReason: text("coverage_gap_reason"),
+	createdAt: timestamp("created_at", { withTimezone: true, mode: 'string' }).defaultNow().notNull(),
+	updatedAt: timestamp("updated_at", { withTimezone: true, mode: 'string' }).defaultNow().notNull(),
+}, (table) => [
+	uniqueIndex("work_capture_devices_tenant_key_unique").on(table.tenantId, table.deviceKey),
+	pgPolicy("work_capture_devices_tenant_all", { as: "permissive", for: "all", to: ["public"], using: sql`tenant_id = get_current_tenant_id()`, withCheck: sql`tenant_id = get_current_tenant_id()` }),
+])
