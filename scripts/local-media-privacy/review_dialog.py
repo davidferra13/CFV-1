@@ -3,7 +3,8 @@ from pathlib import Path
 import time
 import tkinter as tk
 from tkinter import ttk
-from privacy_core import PrivacyBlocked, checked_path
+from privacy_core import Store, PrivacyBlocked, checked_path
+from ui_task import UiTask
 from review_media import LocalPlayer, read_text
 from worker import resource_stop_reason
 
@@ -26,7 +27,9 @@ class ReviewDialog:
         self.viewers, self.closed = [], False
         self.lock = None
         self.poll_timer = None
+        self.units, self.states = {}, {}
         self.window = tk.Toplevel(owner.root)
+        self.task = UiTask(self.window)
         self.window.title('Local private review | File and companions')
         self.window.geometry('1000x650')
         self.window.transient(owner.root)
@@ -64,20 +67,55 @@ class ReviewDialog:
         ttk.Button(controls, text='Return to queue', command=self.close).pack(side='right')
         ttk.Label(outer, text='For video: Space pauses, F toggles full screen, S advances one frame while paused, '
                   'arrow keys seek, Q closes the player. Unsupported streams remain excluded.', wraplength=940).pack(anchor='w', pady=10)
+        self.window.grab_set()
+        self.select()
+        self.poll_timer = self.window.after(250, self.poll_player)
+        self.run(self.prepare, self.loaded, 'Preparing the local checklist...')
+
+    def prepare(self, store):
+        lock = store.worker_lock()
+        lock.__enter__()
+        self.lock = lock
         try:
-            owner.protect()
-            self.lock = self.store.worker_lock()
-            self.lock.__enter__()
-            self.units = {unit['id']: unit for unit in self.store.review_plan(asset_id)}
-            self.refresh()
-            self.window.grab_set()
-            self.poll_timer = self.window.after(250, self.poll_player)
+            return self.snapshot(store)
         except Exception:
-            if self.lock is not None:
-                self.lock.__exit__(None, None, None)
-                self.lock = None
-            self.window.destroy()
+            lock.__exit__(None, None, None)
+            self.lock = None
             raise
+
+    def snapshot(self, store):
+        units = store.review_plan(self.asset_id)
+        return units, {unit['id']: store._review_state(self.asset_id, unit['id']) for unit in units}
+
+    def loaded(self, value, message=None):
+        units, self.states = value
+        self.units = {unit['id']: unit for unit in units}
+        self.refresh(message)
+
+    def run(self, work, done, message):
+        if self.task.busy or self.closed:
+            return False
+        self.status.set(message)
+        self.attest.set(False)
+        def execute():
+            self.owner.protect()
+            store = Store(self.owner.directory)
+            try:
+                return work(store)
+            finally:
+                store.close()
+        def complete(value):
+            try:
+                done(value)
+            except Exception as error:
+                self.error(error)
+            self.select(reset=False)
+        def failed(error):
+            self.error(error)
+            self.select(reset=False)
+        self.task.start(execute, complete, failed)
+        self.select(reset=False)
+        return True
 
     def error(self, error):
         code = error.code if isinstance(error, PrivacyBlocked) else ''
@@ -85,7 +123,7 @@ class ReviewDialog:
 
     def refresh(self, message=None):
         selected = self.tree.selection()
-        states = self.store.review_states(self.asset_id)
+        states = self.states
         self.tree.delete(*self.tree.get_children())
         for unit in self.units.values():
             part = unit['kind'].replace('_', ' ')
@@ -107,47 +145,70 @@ class ReviewDialog:
         ids = self.tree.selection()
         if not ids:
             raise PrivacyBlocked('open_review_unit_first')
-        return self.store.review_unit(self.asset_id, ids[0])
+        unit = self.units[ids[0]]
+        if unit['kind'] == 'unsupported':
+            raise PrivacyBlocked('review_unit_unsupported')
+        return unit
 
     def select(self, reset=True):
         if reset:
             self.attest.set(False)
         ids = self.tree.selection()
-        available = bool(ids) and self.units[ids[0]]['kind'] != 'unsupported' and not self.player
+        available = bool(ids) and self.units[ids[0]]['kind'] != 'unsupported' and not self.player and not self.task.busy
         self.open_button.state(['!disabled'] if available else ['disabled'])
-        state = self.store._review_state(self.asset_id, ids[0]) if ids else 'unreviewed'
+        state = self.states.get(ids[0], 'unreviewed') if ids else 'unreviewed'
         self.mark_button.state(['!disabled'] if available and state in {'opened', 'confirmed'} else ['disabled'])
-        self.stop_button.state(['!disabled'] if self.player else ['disabled'])
+        self.stop_button.state(['!disabled'] if self.player and not self.task.busy else ['disabled'])
 
     def open_selected(self):
+        if self.task.busy:
+            return
         try:
             if self.player:
                 raise PrivacyBlocked('open_review_unit_first')
-            self.owner.protect()
+            unit_id = self.selected()['id']
+        except Exception as error:
+            self.error(error)
+            return
+        def prepare(store):
             reason = resource_stop_reason(self.owner.directory)
             if reason:
                 raise PrivacyBlocked(reason)
-            unit = self.selected()
+            unit = store.review_unit(self.asset_id, unit_id)
             if unit['kind'] in {'video', 'audio'}:
-                self.player = LocalPlayer(unit)
-                self.playing_unit = unit['id']
+                return unit, LocalPlayer(unit)
+            if unit['kind'] == 'text':
+                return unit, read_text(unit['path'])
+            from PIL import Image, ImageOps
+            with Image.open(checked_path(unit['path'])) as source:
+                source.seek(unit['stream'] or 0)
+                if source.width * source.height > 32_000_000:
+                    raise PrivacyBlocked('review_unit_unsupported')
+                image = ImageOps.exif_transpose(source).convert('RGB')
+                fitted = image.copy()
+                fitted.thumbnail((900, 600))
+                return unit, (image, fitted)
+        def opened(value):
+            unit, content = value
+            if unit['kind'] in {'video', 'audio'}:
+                self.player, self.playing_unit = content, unit['id']
                 self.status.set('Playing locally. Review the whole track; closing playback does not mark it reviewed.')
             else:
-                self.open_document(unit)
-                self.store.mark_review_unit(self.asset_id, unit['id'])
-                self.refresh('Opened locally. Mark the part reviewed only after examining all of it.')
-            self.select()
-        except Exception as error:
-            self.error(error)
+                self.open_document(unit, content)
+                def mark(store):
+                    store.mark_review_unit(self.asset_id, unit['id'])
+                    return self.snapshot(store)
+                self.run(mark, lambda value: self.loaded(value,
+                    'Opened locally. Mark the part reviewed only after examining all of it.'), 'Verifying the opened part...')
+        self.run(prepare, opened, 'Checking and opening the selected part locally...')
 
-    def open_document(self, unit):
+    def open_document(self, unit, content):
         view = tk.Toplevel(self.window)
         view.title('Local private review | Selected part')
         view.geometry('960x720')
-        image = None
+        image, fitted = content if unit['kind'] != 'text' else (None, None)
         try:
             if unit['kind'] == 'text':
-                content = read_text(unit['path'])
                 text = tk.Text(view, wrap='word', padx=12, pady=12)
                 scroll = ttk.Scrollbar(view, command=text.yview)
                 text.configure(yscrollcommand=scroll.set)
@@ -156,12 +217,7 @@ class ReviewDialog:
                 scroll.pack(side='right', fill='y')
                 text.pack(fill='both', expand=True)
             else:
-                from PIL import Image, ImageOps, ImageTk
-                with Image.open(checked_path(unit['path'])) as source:
-                    source.seek(unit['stream'] or 0)
-                    if source.width * source.height > 32_000_000:
-                        raise PrivacyBlocked('review_unit_unsupported')
-                    image = ImageOps.exif_transpose(source).convert('RGB')
+                from PIL import ImageTk
                 controls = ttk.Frame(view, padding=8)
                 controls.pack(fill='x')
                 frame = ttk.Frame(view)
@@ -174,11 +230,7 @@ class ReviewDialog:
                 horizontal.pack(side='bottom', fill='x')
                 canvas.pack(fill='both', expand=True)
                 def render(actual=False):
-                    shown = image.copy()
-                    if not actual:
-                        shown.thumbnail((900, 600))
-                    view.photo = ImageTk.PhotoImage(shown)
-                    shown.close()
+                    view.photo = ImageTk.PhotoImage(image if actual else fitted)
                     canvas.delete('all')
                     canvas.create_image(0, 0, image=view.photo, anchor='nw')
                     canvas.configure(scrollregion=canvas.bbox('all'))
@@ -188,6 +240,7 @@ class ReviewDialog:
             def close_view():
                 if image is not None:
                     image.close()
+                    fitted.close()
                 view.photo = None
                 if view.winfo_exists():
                     view.destroy()
@@ -196,19 +249,24 @@ class ReviewDialog:
         except Exception:
             if image is not None:
                 image.close()
+                fitted.close()
             view.destroy()
             raise
 
     def confirm_selected(self):
+        if self.task.busy:
+            return
         try:
             if self.player or not self.attest.get():
                 raise PrivacyBlocked('open_review_unit_first')
-            self.owner.protect()
-            unit = self.selected()
-            self.store.mark_review_unit(self.asset_id, unit['id'], confirmed=True)
-            self.refresh()
+            unit_id = self.selected()['id']
         except Exception as error:
             self.error(error)
+            return
+        def confirm(store):
+            store.mark_review_unit(self.asset_id, unit_id, confirmed=True)
+            return self.snapshot(store)
+        self.run(confirm, self.loaded, 'Verifying this complete-part confirmation...')
 
     def poll_player(self):
         if self.poll_timer is not None:
@@ -216,48 +274,57 @@ class ReviewDialog:
             self.poll_timer = None
         if self.closed:
             return
-        if self.player and self.player.poll() is not None:
+        if self.player and not self.task.busy and self.player.poll() is not None:
             result = self.player.poll()
-            try:
-                self.player.close()
-            except Exception:
-                self.error(PrivacyBlocked('player_shutdown_pending'))
-                self.poll_timer = self.window.after(250, self.poll_player)
-                return
-            self.player = None
-            try:
-                if result == 0:
-                    self.owner.protect()
-                    self.store.mark_review_unit(self.asset_id, self.playing_unit)
-                    self.refresh('Player closed. Confirm only if you reviewed the complete track; otherwise reopen it.')
-                else:
-                    self.status.set('Playback failed or stopped. Reopen the part to review it; no new review was recorded.')
-            except Exception as error:
-                self.error(error)
-            self.select()
+            self.finish_player(result)
         if self.window.winfo_exists():
             self.poll_timer = self.window.after(250, self.poll_player)
 
-    def stop_playback(self):
-        if self.player:
-            try:
-                self.player.close()
-            except Exception:
-                self.error(PrivacyBlocked('player_shutdown_pending'))
-                return False
+    def finish_player(self, result=None):
+        if self.task.busy or not self.player:
+            return False
+        player, unit_id = self.player, self.playing_unit
+        def finished(_):
             self.player = None
             self.playing_unit = None
-            self.status.set('Playback stopped. No new review was recorded. Reopen the part when ready.')
-            self.select()
+            if result == 0:
+                def mark(store):
+                    store.mark_review_unit(self.asset_id, unit_id)
+                    return self.snapshot(store)
+                self.run(mark, lambda value: self.loaded(value,
+                    'Player closed. Confirm only if you reviewed the complete track; otherwise reopen it.'),
+                    'Verifying the played part...')
+            else:
+                self.status.set('Playback stopped. No new review was recorded. Reopen the part when ready.')
+            self.select(reset=False)
+        def failed(_):
+            # Keep the handle, window and worker slot for another stop attempt.
+            self.error(PrivacyBlocked('player_shutdown_pending'))
+            self.select(reset=False)
+        self.status.set('Stopping the owned local player...')
+        self.task.start(player.close, finished, failed)
+        self.select(reset=False)
+        return False
+
+    def stop_playback(self):
+        if self.task.busy:
+            self.status.set('Wait for the current local check or player shutdown, then retry.')
+            return False
+        if self.player:
+            return self.finish_player()
         return True
 
     def close(self):
         if self.closed:
             return True
+        if self.task.busy:
+            self.status.set('A local check is finishing. Keep this window open, then retry Return to queue.')
+            return False
         # A failed shutdown retains the player handle, worker slot and a usable
         # window. The next Close/Stop retries instead of abandoning playback.
         if not self.stop_playback():
             return False
+        self.task.close()
         if self.poll_timer is not None:
             self.window.after_cancel(self.poll_timer)
             self.poll_timer = None
@@ -266,6 +333,7 @@ class ReviewDialog:
                 close_view()
             except tk.TclError:
                 pass
+        self.viewers.clear()
         try:
             self.window.grab_release()
             self.window.destroy()
@@ -275,6 +343,7 @@ class ReviewDialog:
                 self.lock = None
             self.closed = True
             self.owner.busy = False
+            self.owner.review_dialog = None
         self.owner.refresh()
         if self.owner.tree.exists(self.asset_id):
             self.owner.tree.selection_set(self.asset_id)

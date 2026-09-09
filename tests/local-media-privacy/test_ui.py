@@ -9,6 +9,30 @@ from unittest.mock import patch
 sys.path.insert(0, str(Path(__file__).resolve().parents[2] / 'scripts/local-media-privacy'))
 
 
+from test_responsiveness import settle, fixture
+
+
+def wait_ui(window):
+    settle(window.root, lambda: not window.ui_task.busy, timeout=15)
+
+
+def wait_review(dialog):
+    settle(dialog.window, lambda: not dialog.task.busy, timeout=15)
+
+
+def close_review(dialog):
+    if dialog.closed:
+        return True
+    wait_review(dialog)
+    deadline = time.monotonic() + 15
+    while not dialog.close():
+        wait_review(dialog)
+        if time.monotonic() > deadline:
+            raise AssertionError('Owned player did not stop')
+    wait_ui(dialog.owner)
+    return True
+
+
 @unittest.skipUnless(os.name == 'nt', 'Native Windows GUI verification')
 class NativeWindowTests(unittest.TestCase):
     def test_visible_fixture_review_flow_and_reopen(self):
@@ -18,6 +42,7 @@ class NativeWindowTests(unittest.TestCase):
             runtime = demo_fixture(Path(directory))
             root = tk.Tk()
             window = ReviewWindow(root, runtime, demo=True)
+            wait_ui(window)
             try:
                 root.update_idletasks()
                 self.assertGreaterEqual(root.winfo_width(), 900)
@@ -26,25 +51,33 @@ class NativeWindowTests(unittest.TestCase):
                 window.select()
                 self.assertIsNone(window.photo)
                 window.reveal()
+                wait_ui(window)
                 self.assertIsNotNone(window.photo)
                 window.decide('approved_local_archive')
-                self.assertEqual(window.store.row(asset)['decision'], 'unreviewed')
+                wait_ui(window)
+                self.assertEqual(fixture(window).row(asset)['decision'], 'unreviewed')
                 window.open_full_review()
                 dialog = window.review_dialog
+                wait_review(dialog)
                 unit = dialog.tree.get_children()[0]
                 dialog.tree.selection_set(unit)
                 dialog.open_selected()
+                wait_review(dialog)
                 dialog.attest.set(True)
                 dialog.confirm_selected()
-                dialog.close()
+                wait_review(dialog)
+                close_review(dialog)
                 window.attest.set(True)
                 window.decide('approved_local_archive')
-                self.assertEqual(window.store.row(asset)['decision'], 'approved_local_archive')
+                wait_ui(window)
+                self.assertEqual(fixture(window).row(asset)['decision'], 'approved_local_archive')
                 self.assertIsNone(window.photo)
                 window.tree.selection_set(asset)
                 window.decide('private')
-                self.assertEqual(window.store.row(asset)['decision'], 'private')
+                wait_ui(window)
+                self.assertEqual(fixture(window).row(asset)['decision'], 'private')
             finally:
+                wait_ui(window)
                 window.close()
 
     def test_unconfigured_storage_stays_locked(self):
@@ -53,12 +86,14 @@ class NativeWindowTests(unittest.TestCase):
         with tempfile.TemporaryDirectory() as directory:
             root = tk.Tk()
             window = ReviewWindow(root, Path(directory) / 'not-configured')
+            wait_ui(window)
             try:
                 root.update_idletasks()
                 self.assertIsNone(window.store)
                 self.assertIn('locked', window.status.get())
                 self.assertEqual(len(window.tree.get_children()), 0)
             finally:
+                wait_ui(window)
                 window.close()
 
     def test_progress_does_not_mark_background_task_finished(self):
@@ -67,18 +102,22 @@ class NativeWindowTests(unittest.TestCase):
         with tempfile.TemporaryDirectory() as directory:
             root = tk.Tk()
             window = ReviewWindow(root, demo_fixture(Path(directory)), demo=True)
+            wait_ui(window)
             try:
                 window.busy = True
                 window.started_at = time.monotonic()
                 window.report_progress({'phase': 'waiting_for_model', 'frames': 3})
                 window.poll()
+                wait_ui(window)
                 self.assertTrue(window.busy)
                 self.assertIn('Saved frames in current file: 3', window.status.get())
                 window.events.put(('done', {'inspected': 1}))
                 window.poll()
+                wait_ui(window)
                 self.assertFalse(window.busy)
             finally:
                 window.busy = False
+                wait_ui(window)
                 window.close()
 
     def test_owner_match_window_is_local_and_contains_candidate(self):
@@ -87,22 +126,25 @@ class NativeWindowTests(unittest.TestCase):
         with tempfile.TemporaryDirectory() as directory:
             root = tk.Tk()
             window = ReviewWindow(root, demo_fixture(Path(directory)), demo=True)
+            wait_ui(window)
             candidate_window = None
             try:
                 asset = window.tree.get_children()[0]
-                source = window.store.row(asset)['path']
+                source = fixture(window).row(asset)['path']
                 candidate = Path(directory) / 'synthetic-export.png'
                 shutil.copyfile(source, candidate)
-                window.store.match_exact([candidate])
+                fixture(window).match_exact([candidate])
                 window.tree.selection_set(asset)
                 candidate_window = window.show_matches()
+                wait_ui(window)
                 root.update_idletasks()
                 self.assertEqual(candidate_window.title(), 'Local export match candidates')
-                self.assertEqual(len(window.store.match_candidates(asset)), 1)
+                self.assertEqual(len(fixture(window).match_candidates(asset)), 1)
                 self.assertIsNone(window.photo)
             finally:
                 if candidate_window:
                     candidate_window.destroy()
+                wait_ui(window)
                 window.close()
 
     def test_failed_completion_has_recovery_and_demo_controls_are_disabled(self):
@@ -111,20 +153,25 @@ class NativeWindowTests(unittest.TestCase):
         with tempfile.TemporaryDirectory() as directory:
             root = tk.Tk()
             window = ReviewWindow(root, demo_fixture(Path(directory)), demo=True)
+            wait_ui(window)
             try:
                 self.assertTrue(all(button.instate(['disabled']) for button in window.demo_unavailable))
                 self.assertEqual(window.review_button.cget('style'), 'Primary.TButton')
                 window.events.put(('done', {'attempted': 1, 'failed': 1, 'inspected': 0}))
                 window.poll()
+                wait_ui(window)
                 self.assertIn('Retry failed files', window.status.get())
                 self.assertNotIn('Completed', window.status.get())
                 window.events.put(('error', {'reason': 'worker_already_running'}))
                 window.poll()
+                wait_ui(window)
                 self.assertIn('Another scan', window.status.get())
                 window.events.put(('done', {'failed': 1, 'reason': 'model_unavailable'}))
                 window.poll()
+                wait_ui(window)
                 self.assertIn('local model is unavailable', window.status.get())
             finally:
+                wait_ui(window)
                 window.close()
 
     def test_empty_and_failed_match_lists_are_distinct(self):
@@ -134,12 +181,15 @@ class NativeWindowTests(unittest.TestCase):
         with tempfile.TemporaryDirectory() as directory:
             root = tk.Tk()
             window = ReviewWindow(root, demo_fixture(Path(directory)), demo=True)
+            wait_ui(window)
             windows = []
             try:
                 window.tree.selection_set(window.tree.get_children()[0])
                 windows.append(window.show_matches())
-                with patch.object(window.store, 'match_candidates', side_effect=RuntimeError()):
+                wait_ui(window)
+                with patch('privacy_core.Store.match_candidates', side_effect=RuntimeError()):
                     windows.append(window.show_matches())
+                    wait_ui(window)
                 messages = []
                 for candidate_window in windows:
                     widgets = candidate_window.winfo_children()[0].winfo_children()
@@ -148,10 +198,11 @@ class NativeWindowTests(unittest.TestCase):
                     label = next(widget for widget in widgets if isinstance(widget, ttk.Label) and widget.cget('textvariable'))
                     messages.append(root.getvar(label.cget('textvariable')))
                 self.assertIn('No matches recorded', messages[0])
-                self.assertIn('Could not load matches', messages[1])
+                self.assertIn('Could not load or confirm matches', messages[1])
             finally:
                 for candidate_window in windows:
                     candidate_window.destroy()
+                wait_ui(window)
                 window.close()
 
     def test_full_review_requires_each_companion_and_owns_worker_lock(self):
@@ -162,39 +213,46 @@ class NativeWindowTests(unittest.TestCase):
             runtime = demo_fixture(Path(directory))
             root = tk.Tk()
             window = ReviewWindow(root, runtime, demo=True)
+            wait_ui(window)
             dialog = None
             try:
                 asset = window.tree.get_children()[0]
-                row = window.store.row(asset)
+                row = fixture(window).row(asset)
                 Path(row['path']).with_suffix('.json').write_text('{"generated":true}', encoding='utf-8')
-                window.store.inventory(row['path'], row['namespace'])
+                fixture(window).inventory(row['path'], row['namespace'])
                 window.tree.selection_set(asset)
                 window.open_full_review()
                 dialog = window.review_dialog
+                wait_review(dialog)
                 self.assertTrue(window.busy)
                 with self.assertRaises(PrivacyBlocked):
-                    with window.store.worker_lock():
+                    with fixture(window).worker_lock():
                         self.fail('review must own the single-worker slot')
                 units = dialog.tree.get_children()
                 self.assertEqual(len(units), 2)
                 for index, unit in enumerate(units):
                     dialog.tree.selection_set(unit)
                     dialog.open_selected()
+                    wait_review(dialog)
                     root.update_idletasks()
-                    self.assertEqual(window.store._review_state(asset, unit), 'opened')
+                    self.assertEqual(fixture(window)._review_state(asset, unit), 'opened')
                     dialog.confirm_selected()
-                    self.assertEqual(window.store._review_state(asset, unit), 'opened')
+                    wait_review(dialog)
+                    self.assertEqual(fixture(window)._review_state(asset, unit), 'opened')
                     dialog.attest.set(True)
                     dialog.confirm_selected()
-                    self.assertEqual(window.store._review_state(asset, unit), 'confirmed')
-                dialog.close()
+                    wait_review(dialog)
+                    self.assertEqual(fixture(window)._review_state(asset, unit), 'confirmed')
+                close_review(dialog)
                 dialog = None
                 window.attest.set(True)
                 window.decide('approved_local_archive')
-                self.assertEqual(window.store.row(asset)['decision'], 'approved_local_archive')
+                wait_ui(window)
+                self.assertEqual(fixture(window).row(asset)['decision'], 'approved_local_archive')
             finally:
                 if dialog:
-                    dialog.close()
+                    close_review(dialog)
+                wait_ui(window)
                 window.close()
 
     def test_native_player_closing_requires_separate_human_confirmation(self):
@@ -210,36 +268,44 @@ class NativeWindowTests(unittest.TestCase):
                 capture_output=True, check=True, timeout=20)
             root = tk.Tk()
             window = ReviewWindow(root, runtime, demo=True)
+            wait_ui(window)
             dialog = None
             try:
-                asset = window.store.inventory(video, 'synthetic-demo')
+                asset = fixture(window).inventory(video, 'synthetic-demo')
                 window.refresh()
+                wait_ui(window)
                 window.tree.selection_set(asset)
                 window.open_full_review()
                 dialog = window.review_dialog
+                wait_review(dialog)
                 units = dialog.tree.get_children()
                 self.assertEqual({unit['kind'] for unit in dialog.units.values()}, {'video', 'audio'})
                 for unit in units:
                     dialog.tree.selection_set(unit)
                     dialog.open_selected()
+                    wait_review(dialog)
                     self.assertIsNotNone(dialog.player)
                     deadline = time.monotonic() + 12
                     while dialog.player and time.monotonic() < deadline:
                         root.update()
                         time.sleep(0.05)
                     self.assertIsNone(dialog.player)
-                    self.assertEqual(window.store._review_state(asset, unit), 'opened')
-                    self.assertEqual(window.store.row(asset)['decision'], 'unreviewed')
+                    wait_review(dialog)
+                    self.assertEqual(fixture(window)._review_state(asset, unit), 'opened')
+                    self.assertEqual(fixture(window).row(asset)['decision'], 'unreviewed')
                     dialog.attest.set(True)
                     dialog.confirm_selected()
-                dialog.close()
+                    wait_review(dialog)
+                close_review(dialog)
                 dialog = None
                 window.attest.set(True)
                 window.decide('approved_local_archive')
-                self.assertEqual(window.store.row(asset)['decision'], 'approved_local_archive')
+                wait_ui(window)
+                self.assertEqual(fixture(window).row(asset)['decision'], 'approved_local_archive')
             finally:
                 if dialog:
-                    dialog.close()
+                    close_review(dialog)
+                wait_ui(window)
                 window.close()
 
     def test_player_stops_after_abrupt_parent_exit(self):
@@ -306,30 +372,40 @@ os._exit(0)
         with tempfile.TemporaryDirectory() as directory:
             root = tk.Tk()
             window = ReviewWindow(root, demo_fixture(Path(directory)), demo=True)
+            wait_ui(window)
             dialog = None
             try:
                 window.tree.selection_set(window.tree.get_children()[0])
                 window.open_full_review()
                 dialog = window.review_dialog
+                wait_review(dialog)
                 player = MagicMock()
+                player.poll.return_value = None
                 player.close.side_effect = [TimeoutError(), None]
                 dialog.player = player
+                with patch('threading.Thread.start', side_effect=RuntimeError('test start failure')):
+                    self.assertFalse(dialog.stop_playback())
+                    self.assertIn('retry Stop playback', dialog.status.get())
+                    self.assertIs(dialog.player, player)
+                    player.close.assert_not_called()
                 self.assertFalse(dialog.close())
+                wait_review(dialog)
                 self.assertFalse(dialog.closed)
                 self.assertTrue(window.busy)
                 self.assertIs(dialog.player, player)
                 self.assertTrue(dialog.window.winfo_exists())
                 self.assertIn('retry Stop playback', dialog.status.get())
                 with self.assertRaises(PrivacyBlocked):
-                    with window.store.worker_lock():
+                    with fixture(window).worker_lock():
                         self.fail('worker slot released before player stopped')
-                self.assertTrue(dialog.close())
+                self.assertTrue(close_review(dialog))
                 self.assertTrue(dialog.closed)
                 self.assertFalse(window.busy)
-                self.assertTrue(dialog.close())
-                with window.store.worker_lock():
+                self.assertTrue(close_review(dialog))
+                with fixture(window).worker_lock():
                     pass
             finally:
                 if dialog and not dialog.closed:
-                    dialog.close()
+                    close_review(dialog)
+                wait_ui(window)
                 window.close()

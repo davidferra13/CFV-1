@@ -11,6 +11,7 @@ import tkinter as tk
 from tkinter import filedialog, messagebox, ttk
 from privacy_core import Store, PrivacyBlocked, checked_path, bundle
 from security import require_isolation
+from ui_task import UiTask, TkGarbageCollection
 from worker import Detector, scan, restart_inspection, walk_sources, IMAGE_EXT
 
 
@@ -68,6 +69,8 @@ class ReviewWindow:
     def __init__(self, root, directory, demo=False):
         self.root, self.directory, self.demo = root, Path(directory), demo
         self.store = None
+        self.gc_owner = TkGarbageCollection(root)
+        self.ui_task = UiTask(root)
         self.events = queue.Queue()
         self.stop = threading.Event()
         self.busy = False
@@ -109,6 +112,7 @@ class ReviewWindow:
         self.filter = tk.StringVar(value='All')
         filters = ttk.Combobox(toolbar, textvariable=self.filter, state='readonly', width=20,
             values=['All', 'Needs review', 'Suspected sensitive', 'Private', 'Removal review', 'Approved'])
+        self.filters = filters
         filters.pack(side='right')
         filters.bind('<<ComboboxSelected>>', lambda _: self.change_page(reset=True))
         panes = ttk.Panedwindow(outer, orient='horizontal')
@@ -169,48 +173,101 @@ class ReviewWindow:
         if not self.demo:
             require_isolation(self.directory)
 
-    def refresh(self):
+    def submit(self, work, done, phase, failed=None):
+        if self.busy:
+            return False
+        self.busy = True
+        self.started_at = time.monotonic()
+        self.progress = {'phase': phase, 'frames': 0}
+        self.hide()
+        for button in self.action_buttons:
+            button.state(['disabled'])
+        self.review_button.state(['disabled'])
+        self.filters.configure(state='disabled')
+        criterion, page = self.filter.get(), self.page
+        self.status.set(phase.replace('_', ' ').capitalize() + '...')
+        def run():
+            self.protect()
+            store = Store(self.directory)
+            try:
+                result = work(store)
+                return result, self.catalog_snapshot(store, criterion, page)
+            finally:
+                store.close()
+        def complete(value):
+            result, self.store = value
+            self.busy = False
+            done(result)
+        def error(exc):
+            self.busy = False
+            self.filters.configure(state='readonly')
+            if failed:
+                failed(exc)
+            else:
+                self._render_refresh()
+                self.status.set(RECOVERY.get(safe_reason(exc), RECOVERY['unexpected']))
+        return self.ui_task.start(run, complete, error)
+
+    def refresh(self, message=None):
         if self.busy:
             return
-        try:
-            self.protect()
-            if self.store is None:
-                self.store = Store(self.directory)
-            for button in self.action_buttons:
-                button.state(['!disabled'])
-            if self.demo:
-                for button in self.demo_unavailable:
-                    button.state(['disabled'])
-            self.hide()
-            self.tree.delete(*self.tree.get_children())
-            filters = {'Needs review': ('decision', 'unreviewed'), 'Suspected sensitive': ('signal', 'suspected_sensitive'),
-                       'Private': ('decision', 'private'), 'Removal review': ('decision', 'removal_review'),
-                       'Approved': ('decision', 'approved_local_archive')}
-            criterion = filters.get(self.filter.get())
-            where = f' WHERE {criterion[0]}=?' if criterion else ''
-            params = [criterion[1]] if criterion else []
-            total = self.store.db.execute('SELECT count(*) FROM assets' + where, params).fetchone()[0]
-            self.scan_button.configure(style='Primary.TButton' if total == 0 and not self.demo else 'TButton')
-            self.review_button.configure(style='Primary.TButton' if total else 'TButton')
-            self.review_button.state(['!disabled'] if total else ['disabled'])
-            self.page = min(self.page, max(0, (total - 1) // 200))
-            rows = self.store.db.execute("SELECT * FROM assets" + where +
-                " ORDER BY CASE signal WHEN 'suspected_sensitive' THEN 0 WHEN 'unknown' THEN 1 ELSE 2 END, updated_at DESC LIMIT 200 OFFSET ?", params + [self.page * 200])
-            self.page_label.set(f'Page {self.page + 1} of {max(1, (total + 199) // 200)} | {total} matching files')
-            for row in rows:
-                criterion = filters.get(self.filter.get())
-                if criterion and row[criterion[0]] != criterion[1]:
-                    continue
-                self.tree.insert('', 'end', iid=row['id'], values=(Path(row['path']).name, row['signal'], row['decision']))
-            counts = self.store.counts()
-            self.status.set(' | '.join(f'{key.replace("_", " ")}: {value}' for key, value in counts.items() if value)
-                            or 'Ready. Choose a source folder. Nothing has been scanned.')
-        except Exception:
+        def loaded(_):
+            self._render_refresh()
+            if message:
+                self.status.set(message)
+        def failed(_):
             for button in self.action_buttons:
                 button.state(['disabled'])
+            self.review_button.state(['disabled'])
             self.status.set('Real-media access is locked: encrypted owner-only storage and outbound isolation must pass. See the setup guide. No media opened.')
+        self.submit(lambda store: None, loaded, 'checking_local_protection', failed)
+
+    @staticmethod
+    def catalog_snapshot(store, selected_filter, page):
+        filters = {'Needs review': ('decision', 'unreviewed'), 'Suspected sensitive': ('signal', 'suspected_sensitive'),
+                   'Private': ('decision', 'private'), 'Removal review': ('decision', 'removal_review'),
+                   'Approved': ('decision', 'approved_local_archive')}
+        criterion = filters.get(selected_filter)
+        where = f' WHERE {criterion[0]}=?' if criterion else ''
+        params = [criterion[1]] if criterion else []
+        total = store.db.execute('SELECT count(*) FROM assets' + where, params).fetchone()[0]
+        page = min(page, max(0, (total - 1) // 200))
+        rows = store.db.execute("SELECT * FROM assets" + where +
+            " ORDER BY CASE signal WHEN 'suspected_sensitive' THEN 0 WHEN 'unknown' THEN 1 ELSE 2 END, updated_at DESC LIMIT 200 OFFSET ?",
+            params + [page * 200])
+        return {'rows': {row['id']: dict(row) for row in rows}, 'total': total, 'page': page,
+                'counts': store.counts(), 'last_source': store.setting('last_source')}
+
+    def _render_refresh(self, keep_rows=False):
+        if not self.store:
+            return
+        for button in self.action_buttons:
+            button.state(['!disabled'])
+        self.filters.configure(state='readonly')
+        if self.demo:
+            for button in self.demo_unavailable:
+                button.state(['disabled'])
+        total, self.page = self.store['total'], self.store['page']
+        self.scan_button.configure(style='Primary.TButton' if total == 0 and not self.demo else 'TButton')
+        self.review_button.configure(style='Primary.TButton' if total else 'TButton')
+        self.review_button.state(['!disabled'] if total else ['disabled'])
+        if keep_rows:
+            return
+        self.hide()
+        selection = self.tree.selection()
+        self.tree.delete(*self.tree.get_children())
+        self.page_label.set(f'Page {self.page + 1} of {max(1, (total + 199) // 200)} | {total} matching files')
+        for row in self.store['rows'].values():
+            self.tree.insert('', 'end', iid=row['id'], values=(Path(row['path']).name, row['signal'], row['decision']))
+        if selection and self.tree.exists(selection[0]):
+            self.tree.selection_set(selection)
+            self.select()
+        self.status.set(' | '.join(f'{key.replace("_", " ")}: {value}' for key, value in self.store['counts'].items() if value)
+                        or 'Ready. Choose a source folder. Nothing has been scanned.')
 
     def change_page(self, change=0, reset=False):
+        if self.busy:
+            return
         self.page = 0 if reset else max(0, self.page + change)
         self.refresh()
 
@@ -218,7 +275,10 @@ class ReviewWindow:
         selection = self.tree.selection()
         if not selection or not self.store:
             raise PrivacyBlocked('select_a_file')
-        return self.store.row(selection[0])
+        row = self.store['rows'].get(selection[0])
+        if row is None:
+            raise PrivacyBlocked('select_a_file')
+        return row
 
     def select(self, _event=None):
         self.hide()
@@ -240,7 +300,6 @@ class ReviewWindow:
         if self.busy or not self.store:
             return
         try:
-            self.protect()
             asset_id = self.selected()['id']
             from review_dialog import ReviewDialog
             self.hide()
@@ -253,60 +312,65 @@ class ReviewWindow:
             self.status.set(RECOVERY.get(safe_reason(error), RECOVERY['unexpected']))
 
     def reveal(self):
+        if self.busy:
+            return
         try:
-            self.protect()
-            row = self.selected()
-            self.store.assert_not_excluded(row['path'])
+            asset_id = self.selected()['id']
+        except PrivacyBlocked as error:
+            self.status.set(RECOVERY[safe_reason(error)])
+            return
+        def prepare(store):
+            row = store.row(asset_id)
+            store.assert_not_excluded(row['path'])
             path = checked_path(row['path'])
             if path.suffix.lower() not in IMAGE_EXT or path.stat().st_size > 64 * 1024**2:
                 raise PrivacyBlocked('image_preview_only')
             if bundle(path)[0] != row['bundle_hash']:
                 raise PrivacyBlocked('stale_review')
-            from PIL import Image, ImageTk
+            from PIL import Image
             with Image.open(path) as source:
+                if source.width * source.height > 32_000_000:
+                    raise PrivacyBlocked('review_unit_unsupported')
                 image = source.convert('RGB')
                 image.thumbnail((420, 330))
+                return image
+        def display(image):
+            try:
+                self._render_refresh(keep_rows=True)
+                if self.tree.selection() != (asset_id,):
+                    self.status.set('Selection changed. Choose Preview again for the selected file.')
+                    return
+                self.select()
+                from PIL import ImageTk
                 self.photo = ImageTk.PhotoImage(image)
-            self.preview.configure(image=self.photo, text='')
-        except PrivacyBlocked as error:
-            self.status.set(error.code.replace('_', ' '))
-        except Exception:
-            self.status.set('Preview unavailable. No external viewer was opened.')
+                self.preview.configure(image=self.photo, text='')
+            finally:
+                image.close()
+        self.submit(prepare, display, 'checking_local_preview')
 
     def decide(self, decision):
         if self.busy:
-            self.status.set('Pause and wait for the current scan before reviewing.')
+            self.status.set('Wait for the current local operation before reviewing.')
             return
         try:
-            self.protect()
-            row = self.selected()
-            self.store.decide(row['id'], decision, self.attest.get())
-            self.refresh()
+            asset_id = self.selected()['id']
+            attested = self.attest.get()
         except PrivacyBlocked as error:
-            self.status.set(RECOVERY.get(error.code, error.code.replace('_', ' ')))
+            self.status.set(RECOVERY[safe_reason(error)])
+            return
+        def save(store):
+            with store.worker_lock():
+                store.decide(asset_id, decision, attested)
+        self.submit(save, lambda _: self._render_refresh(), 'verifying_owner_decision')
 
     def background(self, task):
         if self.busy:
             return
-        self.busy = True
-        self.started_at = time.monotonic()
-        self.progress = {'phase': 'starting', 'frames': 0}
         self.stop.clear()
-        self.hide()
-        self.status.set('Working locally. Pause takes effect after the current request; each request has a timeout.')
-        def run():
-            store = None
-            try:
-                self.protect()
-                store = Store(self.directory)
-                result = task(store)
-                self.events.put(('done', result))
-            except Exception as error:
-                self.events.put(('error', {'reason': safe_reason(error)}))
-            finally:
-                if store:
-                    store.close()
-        threading.Thread(target=run, daemon=False).start()
+        def finished(result):
+            self._render_refresh()
+            self.status.set(result_message(result))
+        self.submit(task, finished, 'working_locally')
 
     def start_scan(self):
         if not self.store or self.busy:
@@ -334,8 +398,7 @@ class ReviewWindow:
         if not self.store or self.busy or self.demo:
             return
         try:
-            self.protect()
-            source = self.store.setting('last_source')
+            source = self.store['last_source']
             if not source:
                 raise PrivacyBlocked('choose_a_source_first')
             self.background(lambda store: scan(store, source['path'], source['namespace'], Detector(),
@@ -348,9 +411,7 @@ class ReviewWindow:
         if not self.store or self.busy or self.demo:
             return
         try:
-            self.protect()
             row = self.selected()
-            self.store.assert_not_excluded(row['path'], 'removal_review_inspection_excluded')
             asset_id = row['id']
             self.background(lambda store: restart_inspection(store, asset_id, Detector(), self.stop.is_set,
                 security_check=self.protect, progress=self.report_progress))
@@ -361,7 +422,6 @@ class ReviewWindow:
         if not self.store or self.busy:
             return
         try:
-            self.protect()
             asset_id = self.selected()['id']
             window = tk.Toplevel(self.root)
             window.title('Local export match candidates')
@@ -379,38 +439,45 @@ class ReviewWindow:
             status = tk.StringVar(value='Select a candidate to verify. Previews stay hidden.')
             ttk.Label(outer, textvariable=status, wraplength=810).pack(anchor='w', pady=8)
             candidates = {}
-            def refresh(message=None):
+            def loaded(rows, message=None):
+                self._render_refresh()
+                if not window.winfo_exists():
+                    return
                 tree.delete(*tree.get_children())
                 candidates.clear()
-                try:
-                    rows = self.store.match_candidates(asset_id)
-                    for i, row in enumerate(rows):
-                        candidates[str(i)] = row['candidate_path']
-                        tree.insert('', 'end', iid=str(i), values=(row['candidate_path'], row['status']))
-                    confirm_button.state(['!disabled'] if candidates else ['disabled'])
-                    status.set(message or ('Select a candidate to verify. Previews stay hidden.' if candidates
-                        else 'No matches recorded for this file. Close this window and choose Match local export.'))
-                except Exception as error:
+                for i, row in enumerate(rows):
+                    candidates[str(i)] = row['candidate_path']
+                    tree.insert('', 'end', iid=str(i), values=(row['candidate_path'], row['status']))
+                confirm_button.state(['!disabled'] if candidates else ['disabled'])
+                status.set(message or ('Select a candidate to verify. Previews stay hidden.' if candidates
+                    else 'No matches recorded for this file. Close this window and choose Match local export.'))
+            def failed(error):
+                self._render_refresh()
+                if window.winfo_exists():
                     confirm_button.state(['disabled'])
-                    status.set('Could not load matches. Close this window, Refresh the queue and retry. ' + RECOVERY[safe_reason(error)])
+                    status.set('Could not load or confirm matches. Close this window, Refresh the queue and retry. ' + RECOVERY[safe_reason(error)])
             def confirm():
-                message = None
-                try:
-                    if self.busy:
-                        raise PrivacyBlocked('wait_for_current_task')
-                    self.protect()
-                    selection = tree.selection()
-                    if not selection:
-                        raise PrivacyBlocked('select_a_candidate')
-                    self.store.confirm_match(asset_id, candidates[selection[0]])
-                    message = 'Both local files still match exactly. Nothing moved or deleted.'
-                except Exception as error:
-                    message = RECOVERY[safe_reason(error)]
-                finally:
-                    refresh(message)
+                if self.busy:
+                    return
+                selected = tree.selection()
+                if not selected:
+                    status.set(RECOVERY['select_a_candidate'])
+                    return
+                candidate = candidates[selected[0]]
+                confirm_button.state(['disabled'])
+                status.set('Checking both local files...')
+                def verify(store):
+                    with store.worker_lock():
+                        store.confirm_match(asset_id, candidate)
+                        return [dict(row) for row in store.match_candidates(asset_id)]
+                self.submit(verify, lambda rows: loaded(rows,
+                    'Both local files still match exactly. Nothing moved or deleted.'), 'verifying_local_match', failed)
             confirm_button = ttk.Button(outer, text='Recheck and confirm selected match', command=confirm)
             confirm_button.pack(anchor='e')
-            refresh()
+            confirm_button.state(['disabled'])
+            status.set('Checking local protection and loading matches...')
+            self.submit(lambda store: [dict(row) for row in store.match_candidates(asset_id)], loaded,
+                        'loading_local_matches', failed)
             return window
         except PrivacyBlocked as error:
             self.status.set(error.code.replace('_', ' '))
@@ -428,8 +495,7 @@ class ReviewWindow:
                 self.progress = result
                 continue
             self.busy = False
-            self.refresh()
-            self.status.set(result_message(result) if kind == 'done' else RECOVERY.get(result.get('reason'), RECOVERY['unexpected']))
+            self.refresh(message=result_message(result) if kind == 'done' else RECOVERY.get(result.get('reason'), RECOVERY['unexpected']))
         if self.busy:
             elapsed = int(time.monotonic() - self.started_at)
             phase = self.progress.get('phase', 'working').replace('_', ' ')
@@ -446,9 +512,13 @@ class ReviewWindow:
         if self.poll_timer is not None:
             self.root.after_cancel(self.poll_timer)
             self.poll_timer = None
-        if self.store:
-            self.store.close()
+        if not self.ui_task.close():
+            return
+        self.store = None
+        # Remove the root -> callback -> owner cycle before Tcl teardown.
+        del self.root.report_callback_exception
         self.root.destroy()
+        self.gc_owner.close()
 
 
 def demo_fixture(directory):
