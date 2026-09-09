@@ -1,0 +1,242 @@
+{
+  "generated": "2026-09-09T22:20:21.317Z",
+  "passed": 47,
+  "failed": 0,
+  "results": [
+    {
+      "name": "no-horizontal-overflow dark@375",
+      "ok": true,
+      "detail": ""
+    },
+    {
+      "name": "axe-no-serious dark@375",
+      "ok": true,
+      "detail": "clean"
+    },
+    {
+      "name": "touch-targets dark@375",
+      "ok": true,
+      "detail": ""
+    },
+    {
+      "name": "no-horizontal-overflow dark@768",
+      "ok": true,
+      "detail": ""
+    },
+    {
+      "name": "axe-no-serious dark@768",
+      "ok": true,
+      "detail": "clean"
+    },
+    {
+      "name": "touch-targets dark@768",
+      "ok": true,
+      "detail": ""
+    },
+    {
+      "name": "no-horizontal-overflow dark@1024",
+      "ok": true,
+      "detail": ""
+    },
+    {
+      "name": "axe-no-serious dark@1024",
+      "ok": true,
+      "detail": "clean"
+    },
+    {
+      "name": "no-horizontal-overflow dark@1440",
+      "ok": true,
+      "detail": ""
+    },
+    {
+      "name": "axe-no-serious dark@1440",
+      "ok": true,
+      "detail": "clean"
+    },
+    {
+      "name": "no-horizontal-overflow light@375",
+      "ok": true,
+      "detail": ""
+    },
+    {
+      "name": "axe-no-serious light@375",
+      "ok": true,
+      "detail": "clean"
+    },
+    {
+      "name": "touch-targets light@375",
+      "ok": true,
+      "detail": ""
+    },
+    {
+      "name": "no-horizontal-overflow light@768",
+      "ok": true,
+      "detail": ""
+    },
+    {
+      "name": "axe-no-serious light@768",
+      "ok": true,
+      "detail": "clean"
+    },
+    {
+      "name": "touch-targets light@768",
+      "ok": true,
+      "detail": ""
+    },
+    {
+      "name": "no-horizontal-overflow light@1024",
+      "ok": true,
+      "detail": ""
+    },
+    {
+      "name": "axe-no-serious light@1024",
+      "ok": true,
+      "detail": "clean"
+    },
+    {
+      "name": "no-horizontal-overflow light@1440",
+      "ok": true,
+      "detail": ""
+    },
+    {
+      "name": "axe-no-serious light@1440",
+      "ok": true,
+      "detail": "clean"
+    },
+    {
+      "name": "focus-visible",
+      "ok": true,
+      "detail": "every sampled focusable shows an outline or ring"
+    },
+    {
+      "name": "contrast dark --text-primary",
+      "ok": true,
+      "detail": "15.73:1"
+    },
+    {
+      "name": "contrast dark --text-secondary",
+      "ok": true,
+      "detail": "13.26:1"
+    },
+    {
+      "name": "contrast dark --text-muted",
+      "ok": true,
+      "detail": "7.83:1"
+    },
+    {
+      "name": "contrast dark --text-muted-soft",
+      "ok": true,
+      "detail": "9.33:1"
+    },
+    {
+      "name": "contrast dark --text-placeholder",
+      "ok": true,
+      "detail": "4.96:1"
+    },
+    {
+      "name": "contrast dark status-success",
+      "ok": true,
+      "detail": "13.8:1"
+    },
+    {
+      "name": "contrast dark status-warning",
+      "ok": true,
+      "detail": "13.45:1"
+    },
+    {
+      "name": "contrast dark status-danger",
+      "ok": true,
+      "detail": "13.22:1"
+    },
+    {
+      "name": "contrast dark status-info",
+      "ok": true,
+      "detail": "13.17:1"
+    },
+    {
+      "name": "contrast dark status-neutral",
+      "ok": true,
+      "detail": "13.9:1"
+    },
+    {
+      "name": "contrast dark focus-ring",
+      "ok": true,
+      "detail": "9.8:1"
+    },
+    {
+      "name": "contrast light --text-primary",
+      "ok": true,
+      "detail": "18.43:1"
+    },
+    {
+      "name": "contrast light --text-secondary",
+      "ok": true,
+      "detail": "16.61:1"
+    },
+    {
+      "name": "contrast light --text-muted",
+      "ok": true,
+      "detail": "12.98:1"
+    },
+    {
+      "name": "contrast light --text-muted-soft",
+      "ok": true,
+      "detail": "9.51:1"
+    },
+    {
+      "name": "contrast light --text-placeholder",
+      "ok": true,
+      "detail": "6.92:1"
+    },
+    {
+      "name": "contrast light status-success",
+      "ok": true,
+      "detail": "8.3:1"
+    },
+    {
+      "name": "contrast light status-warning",
+      "ok": true,
+      "detail": "8.15:1"
+    },
+    {
+      "name": "contrast light status-danger",
+      "ok": true,
+      "detail": "8.2:1"
+    },
+    {
+      "name": "contrast light status-info",
+      "ok": true,
+      "detail": "7.48:1"
+    },
+    {
+      "name": "contrast light status-neutral",
+      "ok": true,
+      "detail": "14.35:1"
+    },
+    {
+      "name": "contrast light focus-ring",
+      "ok": true,
+      "detail": "4.63:1"
+    },
+    {
+      "name": "reduced-motion-content-visible",
+      "ok": true,
+      "detail": "body text still 12389 chars"
+    },
+    {
+      "name": "reduced-motion-suppresses-transitions",
+      "ok": true,
+      "detail": "transition-duration 1e-05s"
+    },
+    {
+      "name": "reduced-motion-keeps-spinner",
+      "ok": true,
+      "detail": "spinner still 0.9s"
+    },
+    {
+      "name": "text-zoom-200",
+      "ok": true,
+      "detail": "no horizontal scroll, 12389 chars still rendered"
+    }
+  ]
+}

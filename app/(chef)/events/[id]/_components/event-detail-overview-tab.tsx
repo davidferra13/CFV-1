@@ -663,11 +663,15 @@ export function EventDetailOverviewTab(props: EventDetailOverviewTabProps) {
                   Printable client-facing menu, generated from your courses.
                 </p>
               </div>
-              <a href={`/print/menu/${event.menu_id}`} target="_blank" rel="noopener noreferrer">
-                <Button variant="secondary" size="sm">
-                  Preview Menu
-                </Button>
-              </a>
+              <Button
+                href={`/print/menu/${event.menu_id}`}
+                target="_blank"
+                rel="noopener noreferrer"
+                variant="secondary"
+                size="sm"
+              >
+                Preview Menu
+              </Button>
             </div>
           </Card>
         )}

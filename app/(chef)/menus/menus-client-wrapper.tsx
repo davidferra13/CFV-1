@@ -231,12 +231,10 @@ export function MenusClientWrapper({
           </p>
         </div>
         <div className="flex gap-2">
-          <a href="/menus/csv-export" download>
-            <Button variant="secondary">
-              <Download className="mr-1.5 h-4 w-4" />
-              Export CSV
-            </Button>
-          </a>
+          <Button href="/menus/csv-export" download variant="secondary">
+            <Download className="mr-1.5 h-4 w-4" />
+            Export CSV
+          </Button>
           <Link href="/menus/dishes">
             <Button variant="secondary">
               <ChefHat className="mr-1.5 h-4 w-4" />

@@ -1,0 +1,763 @@
+{
+  "meta": {
+    "name": "ChefFlow component registry",
+    "version": "1.0.0",
+    "generated": "2026-09-09",
+    "rule": "Search this registry before writing any interface element. Reuse the canonical entry. If it almost fits, add a documented variant to the canonical component. Only build something new when no entry covers the need, and register it in the same change.",
+    "statusMeaning": {
+      "canonical": "The one implementation. Use it.",
+      "canonical-gap": "Canonical, but with a named gap that must be closed before heavy new use.",
+      "deprecated": "Superseded. Do not use in new code.",
+      "missing": "No implementation exists. Building one is a legitimate addition; register it here.",
+      "duplicate": "Overlaps a canonical entry and should be folded into it."
+    },
+    "tokenPolicy": "A component consumes semantic tokens (var(--...), brand-*, stone-*, surface-*, status-*). A component never contains a raw hex, rgb() literal or an inline style colour.",
+    "statePolicy": "Every interactive component defines default, hover, focus-visible, active and disabled. Anything that can be async also defines loading and error.",
+    "meaningPolicy": "Status meaning is global, silhouette is local. success/warning/danger/info/neutral mean the same thing whether they appear as a dot, chip, row accent, icon or text.",
+    "importPolicy": "Icons come from '@/components/ui/icons'. Class merging uses cn() from '@/lib/utils'. Note that cn is clsx only, with no tailwind-merge, so a caller className does NOT override a conflicting base class; pass the variant prop instead of fighting it with className."
+  },
+
+  "components": [
+    {
+      "id": "button",
+      "name": "Button",
+      "path": "components/ui/button.tsx",
+      "status": "canonical",
+      "category": "action",
+      "importedBy": 1074,
+      "purpose": "Every user-triggered action. Renders a <button>, or an <a> when href is given.",
+      "anatomy": [
+        "optional loading spinner",
+        "optional leading icon",
+        "label",
+        "optional trailing icon"
+      ],
+      "variants": {
+        "primary": "bg-brand-700 text-white hover:bg-brand-800 active:bg-brand-900 focus-visible:ring-brand-500",
+        "secondary": "surface-2 ground, stone border, surface-3 hover",
+        "danger": "bg-red-700 text-white hover:bg-red-800 active:bg-red-900",
+        "ghost": "transparent, stone-300 text, surface-2 hover"
+      },
+      "variantSource": "lib/ui/contrast-contract.ts CTA_CONTRAST_CLASSES",
+      "sizes": {
+        "sm": "min-h-[44px] px-3.5 text-sm",
+        "md": "min-h-[44px] px-5 py-2.5 text-sm",
+        "lg": "h-12 px-6 py-3 text-base"
+      },
+      "props": ["variant", "size", "loading", "disabled", "href", "tooltip"],
+      "states": {
+        "hover": true,
+        "focusVisible": true,
+        "active": true,
+        "disabled": true,
+        "loading": true,
+        "error": "n/a"
+      },
+      "responsive": "Every size clears the 44px touch minimum. Full-width on mobile is the caller's className (w-full sm:w-auto).",
+      "a11y": [
+        "White on brand-700 measures 4.74:1, passing WCAG AA.",
+        "focus-visible ring offset now uses --ring-offset-surface rather than a pinned dark colour.",
+        "An href Button that is disabled or loading drops its href, leaves the tab order and sets aria-disabled."
+      ],
+      "contentLimits": "One to three words. Never a sentence. Maximum one primary Button per screen.",
+      "correct": "<Button variant=\"primary\" loading={isSaving}>Save</Button>",
+      "incorrect": "<button className=\"bg-brand-600 rounded-lg px-4 py-2\"> - a hand-built button. 3,395 raw <button> elements exist across 1,178 files; every styled one is a violation.",
+      "doNotUse": ["outline", "default", "warning", "success"],
+      "changed2026_09_09": [
+        "href variant no longer ignores disabled/loading",
+        "removed the pinned ring-offset-stone-900"
+      ]
+    },
+    {
+      "id": "card",
+      "name": "Card, CardHeader, CardTitle, CardDescription, CardContent, CardFooter",
+      "path": "components/ui/card.tsx",
+      "status": "canonical",
+      "category": "surface",
+      "importedBy": 1574,
+      "purpose": "The grouping container. The most-used component in the codebase.",
+      "variants": {
+        "default": "surface-2 + card shadow + card gradient",
+        "elevated": "surface-3 + card-hover shadow",
+        "glass": "glass-bg + backdrop-blur-xl",
+        "highlight": "surface-2 with a brand-600/30 border"
+      },
+      "props": ["variant", "interactive", "plus every div prop"],
+      "sizes": "No size prop. Padding is fixed at px-6 py-4 on header, content and footer.",
+      "states": {
+        "hover": "only when interactive",
+        "focusVisible": true,
+        "active": false,
+        "disabled": false,
+        "loading": "use ListPageSkeleton / DetailPageSkeleton instead"
+      },
+      "responsive": "Fluid. Stack cards in a grid with gap-card-grid (1.25rem).",
+      "a11y": [
+        "An interactive Card with an onClick now takes role=button, tabIndex 0, Enter/Space activation and a visible focus ring.",
+        "Prefer wrapping a real <a> or <Button> inside the card when the whole card is a link, so the browser gives you the semantics for free."
+      ],
+      "contentLimits": "Use a card to group 3 to 8 related things. Never one card per single toggle. Never cards for a list of 10+ similar items; use rows.",
+      "correct": "<Card variant=\"default\"><CardHeader><CardTitle>Upcoming</CardTitle></CardHeader><CardContent>...</CardContent></Card>",
+      "incorrect": "A hand-written div with rounded-xl border border-stone-700/40. 385 files do this.",
+      "knownGap": "Borders are hardcoded stone-* rather than --border-* tokens.",
+      "changed2026_09_09": ["interactive cards became keyboard operable and focusable"]
+    },
+    {
+      "id": "badge",
+      "name": "Badge",
+      "path": "components/ui/badge.tsx",
+      "status": "canonical",
+      "category": "status",
+      "importedBy": 670,
+      "purpose": "A small labelled status or category chip.",
+      "variants": {
+        "default": "neutral",
+        "success": "emerald",
+        "warning": "amber",
+        "error": "danger red",
+        "info": "brand"
+      },
+      "variantSource": "lib/ui/contrast-contract.ts STATUS_BADGE_CONTRAST_CLASSES",
+      "sizes": "None. Every badge is px-3 py-1 text-xs.",
+      "states": { "hover": false, "focusVisible": "n/a", "disabled": false },
+      "a11y": [
+        "Every status pair measures above 7:1. Never rely on the colour alone; the label carries the meaning."
+      ],
+      "contentLimits": "One or two words.",
+      "knownGap": "Variant naming drifts from the token role names: error maps to danger, default maps to neutral.",
+      "relatedDuplicates": ["status-badge", "save-state-badge", "environment-badge"]
+    },
+    {
+      "id": "status-badge",
+      "name": "StatusBadge",
+      "path": "components/ui/status-badge.tsx",
+      "status": "duplicate",
+      "category": "status",
+      "importedBy": 0,
+      "purpose": "Maps 25 domain statuses (draft, proposed, accepted, paid, confirmed, in_progress, completed, cancelled, ...) onto a tier, then to a chip.",
+      "decision": "Zero importers. Its STATUS_MAP is genuinely useful; its chip is a second Badge. Fold the map into Badge as a `status` prop and delete the chip. Until then, do not import it.",
+      "action": "MIGRATION.md M-07"
+    },
+    {
+      "id": "save-state-badge",
+      "name": "SaveStateBadge",
+      "path": "components/ui/save-state-badge.tsx",
+      "status": "canonical-gap",
+      "category": "status",
+      "purpose": "Draft save state: SAVING, SAVED, OFFLINE_QUEUED, ERROR with retry.",
+      "states": { "loading": true, "error": true },
+      "a11y": ["role=status aria-live=polite is already correct."],
+      "knownGap": "A fourth badge implementation that does not reuse STATUS_BADGE_CONTRAST_CLASSES."
+    },
+    {
+      "id": "status-dot",
+      "name": "StatusDot",
+      "path": "components/ui/status-dot.tsx",
+      "status": "canonical",
+      "category": "status",
+      "importedBy": 0,
+      "purpose": "The smallest silhouette of a status: a coloured dot with an optional ping.",
+      "variants": {
+        "active": "emerald",
+        "idle": "stone",
+        "warning": "amber",
+        "error": "red",
+        "offline": "stone-600"
+      },
+      "sizes": { "sm": "6px", "md": "10px" },
+      "a11y": [
+        "A dot alone is colour-only meaning. Always pair it with adjacent text or an aria-label."
+      ],
+      "note": "Currently unused, but it is the right primitive for the dot silhouette of a status. Use it rather than a hand-rolled span."
+    },
+    {
+      "id": "input",
+      "name": "Input",
+      "path": "components/ui/input.tsx",
+      "status": "canonical",
+      "category": "form",
+      "importedBy": 233,
+      "purpose": "Single-line text entry with label, helper text and error.",
+      "props": ["label", "error", "helperText", "plus every input prop"],
+      "states": { "hover": true, "focus": true, "disabled": true, "error": true },
+      "a11y": [
+        "Wires aria-invalid, aria-describedby and role=alert on the error text.",
+        "Renders at max(16px, 0.9375rem) so iOS does not auto-zoom. Never override that down."
+      ],
+      "knownGap": "Uses bg-stone-900 rather than a --surface-* token, so a form inside a Card sits on a different surface scale than the card. Correcting it is a visual change across 233 files and is queued as MIGRATION.md M-05, not done blind.",
+      "correct": "<Input label=\"Email\" error={errors.email} />",
+      "incorrect": "<input className=\"rounded-lg border border-stone-600 bg-stone-800 px-3 py-2\" />"
+    },
+    {
+      "id": "textarea",
+      "name": "Textarea",
+      "path": "components/ui/textarea.tsx",
+      "status": "canonical",
+      "category": "form",
+      "importedBy": 103,
+      "props": ["label", "error", "helperText", "showCount", "maxLength"],
+      "states": { "focus": true, "disabled": true, "error": true },
+      "note": "Character counter turns amber above 90% and red at the limit, which matches the status roles."
+    },
+    {
+      "id": "select",
+      "name": "Select (native) and SelectRoot/Trigger/Value/Content/Item (compound)",
+      "path": "components/ui/select.tsx",
+      "status": "canonical-gap",
+      "category": "form",
+      "importedBy": 57,
+      "states": {
+        "focus": true,
+        "disabled": true,
+        "error": "native only",
+        "hover": "compound only"
+      },
+      "knownGap": "The compound variant has no keyboard navigation, no Escape, no outside-click close and no role=listbox. Prefer the native Select until that is fixed. Tracked as MIGRATION.md M-06.",
+      "changed2026_09_09": [
+        "SelectContent no longer hardcodes rgba(28,25,23,0.9); it uses --glass-heavy-bg, --border-subtle and --elevation-overlay",
+        "z-float now resolves to a real layer (70)"
+      ]
+    },
+    {
+      "id": "radio-group",
+      "name": "RadioGroup",
+      "path": "components/ui/radio-group.tsx",
+      "status": "canonical",
+      "category": "form",
+      "states": { "hover": true, "focus": true, "error": true },
+      "note": "Fully brand-tokenised. Use it as the model for new form controls."
+    },
+    {
+      "id": "checkbox-group",
+      "name": "CheckboxGroup",
+      "path": "components/ui/checkbox-group.tsx",
+      "status": "canonical",
+      "category": "form",
+      "states": { "hover": true, "disabled": true, "error": true },
+      "props": ["maxSelections"]
+    },
+    {
+      "id": "switch",
+      "name": "Switch",
+      "path": "components/ui/switch.tsx",
+      "status": "canonical",
+      "category": "form",
+      "importedBy": 8,
+      "states": { "hover": false, "focusVisible": true, "disabled": true },
+      "a11y": ["role=switch with aria-checked and aria-disabled."],
+      "changed2026_09_09": [
+        "disabled is now applied to the interactive <button>. Before this it landed only on the hidden input, so a disabled Switch looked enabled and still toggled."
+      ]
+    },
+    {
+      "id": "label",
+      "name": "Label",
+      "path": "components/ui/label.tsx",
+      "status": "canonical",
+      "category": "form"
+    },
+    {
+      "id": "tag-input",
+      "name": "TagInput / TagArrayInput",
+      "path": "components/ui/tag-input.tsx",
+      "status": "canonical",
+      "category": "form"
+    },
+    {
+      "id": "combobox-input",
+      "name": "ComboboxInput",
+      "path": "components/ui/combobox-input.tsx",
+      "status": "canonical",
+      "category": "form"
+    },
+    {
+      "id": "address-autocomplete",
+      "name": "AddressAutocomplete / LocationAutocomplete / StoreAutocomplete",
+      "path": "components/ui/address-autocomplete.tsx",
+      "status": "canonical",
+      "category": "form",
+      "note": "Google Maps backed. Any new place-entry field uses one of these, never a raw text input."
+    },
+    {
+      "id": "rich-text-editor",
+      "name": "RichTextEditor / RichNoteEditor / RichTextRenderer",
+      "path": "components/ui/rich-text-editor.tsx",
+      "status": "canonical",
+      "category": "form",
+      "note": "TipTap. Its styles live in components/ui/rich-text-editor-styles.css, the only CSS file outside globals.css."
+    },
+
+    {
+      "id": "table",
+      "name": "Table, TableHeader, TableBody, TableRow, TableHead, TableCell",
+      "path": "components/ui/table.tsx",
+      "status": "canonical-gap",
+      "category": "data",
+      "importedBy": 93,
+      "states": { "hover": "row only" },
+      "contentLimits": "7 columns by default; anything beyond goes behind a column chooser.",
+      "knownGap": "No selected, focused, sorted, disabled or loading row state. Every cell is whitespace-nowrap. 100% hardcoded stone-*.",
+      "responsive": "Wrap in ResponsiveTable, or give the mobile breakpoint a card list. A table that only scrolls sideways on a phone is a defect."
+    },
+    {
+      "id": "responsive-table",
+      "name": "ResponsiveTable",
+      "path": "components/ui/responsive-table.tsx",
+      "status": "canonical",
+      "category": "data",
+      "importedBy": 0,
+      "purpose": "Renders a table above the breakpoint and a stacked card list below it.",
+      "note": "Unused today. This is the answer to the mobile-table problem; reach for it before inventing another one."
+    },
+    {
+      "id": "bulk-select-table",
+      "name": "BulkSelectTable",
+      "path": "components/ui/bulk-select-table.tsx",
+      "status": "canonical",
+      "category": "data"
+    },
+    {
+      "id": "inline-edit-cell",
+      "name": "InlineEditCell",
+      "path": "components/ui/inline-edit-cell.tsx",
+      "status": "canonical",
+      "category": "data"
+    },
+    {
+      "id": "stat-card",
+      "name": "StatCard",
+      "path": "components/ui/stat-card.tsx",
+      "status": "canonical-gap",
+      "category": "data",
+      "importedBy": 3,
+      "variants": { "trend.up": "emerald", "trend.down": "red", "trend.flat": "stone" },
+      "knownGap": "Reimplements Card variant=default interactive with its own hardcoded stone classes. Should be built on Card.",
+      "contentLimits": "Two hero metrics per dashboard, five supporting metrics. If everything is a hero, nothing is."
+    },
+    {
+      "id": "sparkline",
+      "name": "Sparkline",
+      "path": "components/ui/sparkline.tsx",
+      "status": "canonical",
+      "category": "data"
+    },
+    {
+      "id": "animated-counter",
+      "name": "AnimatedCounter",
+      "path": "components/ui/animated-counter.tsx",
+      "status": "canonical",
+      "category": "data",
+      "a11y": [
+        "Count-up motion must be suppressed under prefers-reduced-motion; the global block now handles it."
+      ]
+    },
+    {
+      "id": "charts",
+      "name": "Recharts wrappers",
+      "path": "components/analytics/insights-charts.tsx",
+      "status": "canonical-gap",
+      "category": "data",
+      "knownGap": "120 raw hex values. Chart series colours must come from the token palette; this is the single worst offender file for raw colour.",
+      "action": "MIGRATION.md M-03"
+    },
+
+    {
+      "id": "alert",
+      "name": "Alert",
+      "path": "components/ui/alert.tsx",
+      "status": "canonical",
+      "category": "feedback",
+      "importedBy": 135,
+      "variants": { "info": "brand", "success": "emerald", "warning": "amber", "error": "red" },
+      "states": { "hover": false },
+      "a11y": [
+        "error and warning take role=alert with aria-live=assertive; info and success take role=status with aria-live=polite. Callers can override role for static page furniture."
+      ],
+      "changed2026_09_09": [
+        "Added the announcement roles. Before this, none of the ~135 call sites were announced by a screen reader."
+      ],
+      "knownGap": "Not dismissible. Four hand-inlined SVGs instead of components/ui/icons."
+    },
+    {
+      "id": "toast",
+      "name": "toast (sonner) and showUndoToast",
+      "path": "components/ui/undo-toast.tsx",
+      "status": "canonical",
+      "category": "feedback",
+      "importedBy": 19,
+      "purpose": "Transient confirmation. showUndoToast adds a deferred-execute-with-undo pattern.",
+      "contentLimits": "Confirmation auto-dismisses at 3s, warning at 5s, error never. Never more than 2 toasts at once.",
+      "note": "Toast visual styling lives in the sonner Toaster config, not here."
+    },
+    {
+      "id": "error-state",
+      "name": "ErrorState, InlineError, DataGuard",
+      "path": "components/ui/error-state.tsx",
+      "status": "canonical",
+      "category": "feedback",
+      "sizes": { "sm": "py-4", "md": "py-8", "lg": "py-12" },
+      "a11y": ["role=alert"],
+      "purpose": "The failure state of a data region. Never show $0.00 or an empty list when a load actually failed."
+    },
+    {
+      "id": "empty-state",
+      "name": "EmptyState",
+      "path": "components/ui/empty-state.tsx",
+      "status": "canonical",
+      "category": "feedback",
+      "importedBy": 11,
+      "props": [
+        "title",
+        "description",
+        "icon",
+        "illustration",
+        "remy",
+        "action",
+        "secondaryAction"
+      ],
+      "variants": { "remy": "pondering | idle | sleeping | aha | straight-face | false" },
+      "contentLimits": "One sentence of description, at most two actions.",
+      "changed2026_09_09": [
+        "Replaced the raw rgba(232,143,71,0.15) drop shadow with rgb(var(--brand-500)/0.15)."
+      ]
+    },
+    {
+      "id": "skeleton",
+      "name": "Skeleton, SkeletonCard, SkeletonRow, SkeletonTable, SkeletonKPITile",
+      "path": "components/ui/skeleton.tsx",
+      "status": "canonical-gap",
+      "category": "feedback",
+      "importedBy": 6,
+      "knownGap": "Two independent skeleton systems exist: the .skeleton CSS class (6 importers) and .loading-bone* via page-skeleton (155 importers). page-skeleton is the de-facto standard."
+    },
+    {
+      "id": "page-skeleton",
+      "name": "ListPageSkeleton, DetailPageSkeleton, FormPageSkeleton, GridPageSkeleton",
+      "path": "components/ui/page-skeleton.tsx",
+      "status": "canonical",
+      "category": "feedback",
+      "importedBy": 155,
+      "purpose": "The loading.tsx body for a route. Match the skeleton to the page shape so nothing shifts when data lands.",
+      "a11y": ["Skeletons are aria-hidden; the surrounding region carries role=status."]
+    },
+    {
+      "id": "loading-state",
+      "name": "LoadingSpinner, LoadingBone, CenteredLoadingState",
+      "path": "components/ui/loading-state.tsx",
+      "status": "canonical",
+      "category": "feedback",
+      "sizes": { "xs": "12px", "sm": "16px", "md": "24px", "lg": "32px" },
+      "a11y": [
+        "CenteredLoadingState carries role=status aria-live=polite.",
+        "Spinners are exempt from the reduced-motion suppression because they are the only feedback that work is happening."
+      ],
+      "contentLimits": "No indicator below 1s. Skeleton or spinner 1-2s. Progress 2-10s. Background task plus notification beyond 10s."
+    },
+    {
+      "id": "progress",
+      "name": "DeterminateProgress, ProgressPill, ProgressRing, StepProgress, RouteProgress",
+      "path": "components/ui/determinate-progress.tsx",
+      "status": "canonical-gap",
+      "category": "feedback",
+      "knownGap": "Five separate progress primitives with no shared base and inconsistent colour derivation.",
+      "action": "MIGRATION.md M-08"
+    },
+    {
+      "id": "success-check",
+      "name": "SuccessCheck",
+      "path": "components/ui/success-check.tsx",
+      "status": "canonical",
+      "category": "feedback"
+    },
+
+    {
+      "id": "accessible-dialog",
+      "name": "AccessibleDialog",
+      "path": "components/ui/accessible-dialog.tsx",
+      "status": "canonical",
+      "category": "overlay",
+      "importedBy": 18,
+      "purpose": "The modal primitive. Focus trap, Escape, scroll lock, focus restore, full ARIA.",
+      "props": [
+        "open",
+        "title",
+        "description",
+        "onClose",
+        "footer",
+        "initialFocusRef",
+        "closeOnBackdrop (default false)",
+        "escapeCloses (default true)",
+        "widthClassName (default max-w-md)"
+      ],
+      "sizes": "widthClassName is the size prop: max-w-sm | max-w-md | max-w-lg | max-w-2xl.",
+      "states": { "focusTrap": true, "escape": true, "scrollLock": true },
+      "a11y": [
+        "role=dialog aria-modal aria-labelledby aria-describedby. The best-implemented primitive in the repo."
+      ],
+      "changed2026_09_09": [
+        "Panel colour moved from the literal rgba(28,25,23,0.85) to --glass-heavy-bg so it follows the theme.",
+        "z-dialog now resolves to layer 60 instead of z-index auto."
+      ]
+    },
+    {
+      "id": "confirm-modal",
+      "name": "ConfirmModal",
+      "path": "components/ui/confirm-modal.tsx",
+      "status": "canonical",
+      "category": "overlay",
+      "importedBy": 83,
+      "variants": { "primary": "confirm", "danger": "destructive" },
+      "states": { "loading": true, "disabled": true },
+      "a11y": [
+        "Destructive confirm is never adjacent to cancel without at least 16px of separation."
+      ]
+    },
+    {
+      "id": "dropdown-menu",
+      "name": "DropdownMenu and parts",
+      "path": "components/ui/dropdown-menu.tsx",
+      "status": "canonical",
+      "category": "overlay",
+      "importedBy": 4,
+      "purpose": "The only Radix-backed primitive. Keyboard navigation, Escape and focus trap come free.",
+      "states": { "highlighted": true, "disabled": true },
+      "note": "Only 4 files import it while 189 hand-roll a dropdown. Use this one.",
+      "changed2026_09_09": [
+        "z-50 became z-float (70) so a menu opened inside a dialog renders above it."
+      ]
+    },
+    {
+      "id": "tooltip",
+      "name": "GlobalTooltipProvider",
+      "path": "components/ui/global-tooltip-provider.tsx",
+      "status": "canonical",
+      "category": "overlay",
+      "purpose": "A single delegated tooltip engine. Add data-tooltip to any element; do not mount a tooltip component.",
+      "timings": {
+        "pointerDelay": "480ms",
+        "focusDelay": "140ms",
+        "hideDelay": "60ms",
+        "exit": "140ms"
+      },
+      "a11y": [
+        "Tooltips appear on focus as well as hover. A tooltip is never the only place information lives."
+      ]
+    },
+    {
+      "id": "sheet",
+      "name": "Sheet / Drawer",
+      "path": null,
+      "status": "missing",
+      "category": "overlay",
+      "purpose": "An edge-anchored panel for mobile actions and filters.",
+      "note": "Feature-local drawers exist (components/dinner-circles/action-drawer.tsx, components/ai/remy-drawer.tsx) but there is no primitive. Build one on AccessibleDialog's focus-management core rather than from scratch."
+    },
+    {
+      "id": "popover",
+      "name": "Popover",
+      "path": null,
+      "status": "missing",
+      "category": "overlay",
+      "note": "Use DropdownMenu where a menu fits. A true popover primitive is an open gap."
+    },
+
+    {
+      "id": "tab-nav",
+      "name": "TabNav and TabNav.Panel",
+      "path": "components/shared/tab-nav.tsx",
+      "status": "canonical-gap",
+      "category": "navigation",
+      "purpose": "The app's only tabs primitive. Roving tabIndex, Arrow/Home/End keys, scroll-into-view, lazy and keepMounted panels.",
+      "contentLimits": "6 tabs per page; overflow into a dropdown.",
+      "a11y": [
+        "Full role=tablist/tab/tabpanel with aria-selected. The best-engineered component in the repo."
+      ],
+      "knownGap": "The active tab is hardcoded amber-500 rather than brand-*. It is the single most visible token violation in the shared layer.",
+      "action": "MIGRATION.md M-01"
+    },
+    {
+      "id": "breadcrumb",
+      "name": "BreadcrumbBar",
+      "path": "components/navigation/breadcrumb-bar.tsx",
+      "status": "canonical",
+      "category": "navigation"
+    },
+    {
+      "id": "pagination",
+      "name": "Pagination",
+      "path": null,
+      "status": "missing",
+      "category": "navigation",
+      "note": "Zero implementations repo-wide. Lists page by server query today. Build one primitive before the second list needs it."
+    },
+    {
+      "id": "accordion",
+      "name": "Accordion / Disclosure",
+      "path": "components/help/faq-accordion.tsx",
+      "status": "canonical-gap",
+      "category": "navigation",
+      "knownGap": "Only a feature-local FAQ accordion exists. Promote it to components/ui with aria-expanded, aria-controls and height motion honouring reduced motion."
+    },
+    {
+      "id": "step-wizard",
+      "name": "StepWizard",
+      "path": "components/shared/step-wizard.tsx",
+      "status": "canonical",
+      "category": "navigation",
+      "purpose": "Multi-step flow with a step indicator. Pair with StepProgress."
+    },
+    {
+      "id": "role-switcher",
+      "name": "RoleSwitcher",
+      "path": "components/shared/role-switcher.tsx",
+      "status": "canonical",
+      "category": "navigation"
+    },
+
+    {
+      "id": "avatar",
+      "name": "Avatar, AvatarImage, AvatarFallback",
+      "path": "components/ui/avatar.tsx",
+      "status": "canonical",
+      "category": "media",
+      "importedBy": 6,
+      "purpose": "Person or entity image with an initials fallback. Cloudinary-optimised.",
+      "sizes": "Size comes from the caller className. Use the avatar scale: 24 / 32 / 40 / 56 / 80.",
+      "note": "Any new avatar surface uses this, never a raw <img> with a remote URL."
+    },
+    {
+      "id": "image-with-fallback",
+      "name": "ImageWithFallback",
+      "path": "components/pricing/image-with-fallback.tsx",
+      "status": "canonical",
+      "category": "media",
+      "rule": "Documented in docs/specs/visual-representation-strategy.md as the standard image display. Do not create a new image component."
+    },
+    {
+      "id": "food-placeholder-image",
+      "name": "FoodPlaceholderImage, PlaceholderAttribution",
+      "path": "components/ui/food-placeholder-image.tsx",
+      "status": "canonical",
+      "category": "media"
+    },
+    {
+      "id": "gallery",
+      "name": "Photo galleries",
+      "path": "components/photos/portfolio-gallery.tsx",
+      "status": "canonical-gap",
+      "category": "media",
+      "knownGap": "Ten separate gallery implementations across photos, portfolio, profile, events, client-portal, hub, sharing, recipes and clients. One Gallery primitive with a per-domain adapter is the consolidation target.",
+      "action": "MIGRATION.md M-09"
+    },
+    {
+      "id": "carousel",
+      "name": "Carousel",
+      "path": null,
+      "status": "missing",
+      "category": "media",
+      "note": "No carousel library and no primitive. The discovery rail is a scroll-snap row, which is the preferred pattern: it degrades to a plain scrollable list and needs no JavaScript."
+    },
+    {
+      "id": "media-player",
+      "name": "TrackedVideo",
+      "path": "components/analytics/tracked-video.tsx",
+      "status": "canonical-gap",
+      "category": "media",
+      "knownGap": "The one demo video has no poster frame, no WebM fallback and no captions track. Captions are an accessibility requirement, not a nicety."
+    },
+
+    {
+      "id": "page-header",
+      "name": "PageHeader",
+      "path": "components/ui/page-header.tsx",
+      "status": "canonical",
+      "category": "layout",
+      "importedBy": 0,
+      "purpose": "h1 plus subtitle plus actions. Unused today but it is the right primitive; use it instead of hand-writing a heading block."
+    },
+    {
+      "id": "section-divider",
+      "name": "SectionDivider",
+      "path": "components/ui/section-divider.tsx",
+      "status": "canonical",
+      "category": "layout",
+      "note": "Delegates to the .section-label CSS class, which is fully tokenised."
+    },
+    {
+      "id": "responsive-page",
+      "name": "ResponsivePage",
+      "path": "components/layout/responsive-page.tsx",
+      "status": "canonical",
+      "category": "layout",
+      "props": ["maxWidth (xl..7xl|full)", "padding (standard|tight|none)"],
+      "note": "Handles safe-area insets. Use it for any new full-page surface."
+    },
+    {
+      "id": "error-boundary",
+      "name": "ErrorBoundary, WidgetErrorBoundary",
+      "path": "components/ui/error-boundary.tsx",
+      "status": "canonical",
+      "category": "layout",
+      "rule": "Every independently-loading dashboard section is wrapped in WidgetErrorBoundary so one failure does not blank the page."
+    },
+    {
+      "id": "fade-in",
+      "name": "FadeIn, FadeInStagger",
+      "path": "components/ui/fade-in.tsx",
+      "status": "canonical",
+      "category": "motion",
+      "a11y": [
+        "Suppressed by the global reduced-motion block, which forces the final state rather than leaving content at opacity 0."
+      ]
+    },
+    {
+      "id": "theme-toggle",
+      "name": "ThemeToggle",
+      "path": "components/ui/theme-toggle.tsx",
+      "status": "canonical",
+      "category": "chrome",
+      "rule": "Pinned by tests/unit/theme-and-color-guards.test.ts to appear only in components/navigation/public-header.tsx."
+    },
+    {
+      "id": "color-palette-provider",
+      "name": "ColorPaletteProvider, PaletteScript, usePalette",
+      "path": "components/ui/color-palette-provider.tsx",
+      "status": "canonical",
+      "category": "theming",
+      "purpose": "Swaps the --brand-* ramp at runtime across 8 named palettes. PaletteScript runs inline in <head> to avoid a flash.",
+      "rule": "Because the brand ramp is swappable, a component that hardcodes #e88f47 breaks every non-default palette. That is the concrete reason the Prism rule exists."
+    },
+    {
+      "id": "icons",
+      "name": "Icon re-exports",
+      "path": "components/ui/icons.ts",
+      "status": "canonical",
+      "category": "iconography",
+      "purpose": "347 Phosphor icons re-exported under their Lucide-equivalent names.",
+      "rule": "Import from '@/components/ui/icons'. 53 files still import lucide-react directly; both libraries currently ship."
+    },
+    {
+      "id": "branded-illustrations",
+      "name": "Branded illustrations",
+      "path": "components/ui/branded-illustrations.tsx",
+      "status": "canonical-gap",
+      "category": "illustration",
+      "knownGap": "91 raw hex values inline. Illustration colours should read from the brand ramp so they follow the active palette."
+    }
+  ],
+
+  "duplicateCounts": {
+    "note": "Canonical exports are clean: exactly one Button, Card, Badge, Input, Select, Table, Switch, Avatar, Alert, Skeleton, EmptyState. The duplication is ad-hoc re-implementation, not competing exports.",
+    "cardLikeFiles": 168,
+    "buttonLikeFiles": 88,
+    "badgeLikeFiles": 72,
+    "rawButtonElements": 3395,
+    "rawButtonFiles": 1178,
+    "filesHandRollingACard": 385,
+    "filesHandRollingAButton": 189,
+    "modalFiles": 19,
+    "dialogFiles": 17,
+    "progressPrimitives": 5,
+    "galleryImplementations": 10
+  }
+}

@@ -47,6 +47,15 @@ jobs:
       - name: Accessibility markup audit
         run: npm run audit:a11y:markup:strict
 
+      - name: Design tokens in sync
+        run: npm run tokens:check
+
+      - name: Asset registry in sync
+        run: npm run registry:check
+
+      - name: Design system ratchet (no rule may get worse)
+        run: npm run audit:design:strict
+
       - name: Notification audit (strict required actions)
         run: npm run audit:notifications:strict
 

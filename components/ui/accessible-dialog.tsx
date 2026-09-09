@@ -118,7 +118,11 @@ export function AccessibleDialog({
         tabIndex={-1}
         className={`relative w-full ${widthClassName} rounded-xl border border-white/[0.08] p-5 shadow-2xl outline-none animate-[dialog-enter_0.25s_cubic-bezier(0.22,1,0.36,1)]`}
         style={{
-          background: 'rgba(28, 25, 23, 0.85)',
+          // Token, not a literal. Was rgba(28, 25, 23, 0.85), which pinned the
+          // dialog to the dark theme regardless of the active mode.
+          background: 'var(--glass-heavy-bg)',
+          borderColor: 'var(--border-subtle)',
+          boxShadow: 'var(--elevation-overlay)',
           WebkitBackdropFilter: 'blur(20px) saturate(1.3)',
           backdropFilter: 'blur(20px) saturate(1.3)',
         }}

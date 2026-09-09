@@ -39,7 +39,7 @@ export const Select = forwardRef<HTMLSelectElement, SelectProps>(
         {label && (
           <label htmlFor={selectId} className="block text-sm font-medium text-stone-300 mb-1.5">
             {label}
-            {props.required && <span className="text-red-500 ml-1">*</span>}
+            {props.required && <span className="text-red-600 dark:text-red-400 ml-1">*</span>}
           </label>
         )}
         <select
@@ -68,7 +68,11 @@ export const Select = forwardRef<HTMLSelectElement, SelectProps>(
               ))}
         </select>
         {error && (
-          <p id={errorId} className="mt-1 text-sm text-red-600 animate-fade-slide-up" role="alert">
+          <p
+            id={errorId}
+            className="mt-1 text-sm text-red-600 dark:text-red-400 animate-fade-slide-up"
+            role="alert"
+          >
             {error}
           </p>
         )}
@@ -164,7 +168,10 @@ export function SelectContent({
     <div
       className={`absolute z-float mt-1 w-full rounded-lg border border-white/[0.08] shadow-2xl animate-[dialog-enter_0.15s_cubic-bezier(0.22,1,0.36,1)] ${className}`}
       style={{
-        background: 'rgba(28, 25, 23, 0.9)',
+        // Token, not a literal. Was rgba(28, 25, 23, 0.9).
+        background: 'var(--glass-heavy-bg)',
+        borderColor: 'var(--border-subtle)',
+        boxShadow: 'var(--elevation-overlay)',
         WebkitBackdropFilter: 'blur(16px) saturate(1.2)',
         backdropFilter: 'blur(16px) saturate(1.2)',
       }}

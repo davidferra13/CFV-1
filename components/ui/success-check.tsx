@@ -34,15 +34,15 @@ export function SuccessCheck({ size = 32, className = '' }: SuccessCheckProps) {
           cx="12"
           cy="12"
           r="10"
-          stroke="#10b981"
+          stroke="var(--status-success-solid)"
           strokeWidth="2"
-          fill="#10b981"
+          fill="var(--status-success-solid)"
           fillOpacity="0.1"
         />
         <path
           className="success-check-path"
           d="M7 12.5l3 3 7-7"
-          stroke="#10b981"
+          stroke="var(--status-success-solid)"
           strokeWidth="2.5"
           strokeLinecap="round"
           strokeLinejoin="round"

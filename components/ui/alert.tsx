@@ -8,7 +8,21 @@ export interface AlertProps extends HTMLAttributes<HTMLDivElement> {
   title?: string
 }
 
-export function Alert({ variant = 'info', title, children, className = '', ...props }: AlertProps) {
+export function Alert({
+  variant = 'info',
+  title,
+  children,
+  className = '',
+  role,
+  ...props
+}: AlertProps) {
+  // Before 2026-09-09 an Alert was a plain <div>, so none of its ~135 call sites
+  // were announced by a screen reader. error and warning are assertive (role
+  // "alert"); info and success are polite (role "status"). Callers can still
+  // override `role` when an alert is static page furniture rather than a
+  // response to something the user just did.
+  const resolvedRole = role ?? (variant === 'error' || variant === 'warning' ? 'alert' : 'status')
+  const live = resolvedRole === 'alert' ? 'assertive' : 'polite'
   const variants = {
     info: 'bg-brand-100 border-brand-200 text-brand-900 dark:bg-brand-950/60 dark:border-brand-800/60 dark:text-brand-100 dark:border-l-brand-500',
     success:
@@ -28,6 +42,8 @@ export function Alert({ variant = 'info', title, children, className = '', ...pr
 
   return (
     <div
+      role={resolvedRole}
+      aria-live={live}
       className={`rounded-lg border border-l-[3px] p-4 animate-fade-slide-up ${variants[variant]} ${className}`}
       {...props}
     >

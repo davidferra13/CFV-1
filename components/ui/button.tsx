@@ -45,7 +45,7 @@ export const Button = forwardRef<any, ButtonProps>(
     ref
   ) => {
     const baseStyles =
-      'inline-flex items-center justify-center font-medium transition-all duration-200 ease-out active:scale-[0.97] active:duration-75 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:ring-offset-stone-900 disabled:pointer-events-none disabled:opacity-50'
+      'inline-flex items-center justify-center font-medium transition-all duration-200 ease-out active:scale-[0.97] active:duration-75 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50'
 
     const variants = CTA_CONTRAST_CLASSES
 
@@ -61,10 +61,24 @@ export const Button = forwardRef<any, ButtonProps>(
     const loadingIndicator = loading ? <LoadingSpinner size="sm" className="-ml-1 mr-1.5" /> : null
 
     // If href provided, render an anchor so we can use it for in-page anchors and links.
+    // An anchor has no `disabled` attribute, so a disabled or loading link is made
+    // inert explicitly: href removed, taken out of the tab order, marked
+    // aria-disabled, and pointer events dropped. Before 2026-09-09 a loading link
+    // showed a spinner while staying fully clickable.
     if (href) {
+      const inert = Boolean(disabled || loading)
       return (
         // cast props to any to avoid passing button-only props to <a>
-        <a ref={ref} className={classes} href={href} {...tooltipProps} {...(props as any)}>
+        <a
+          ref={ref}
+          className={`${classes}${inert ? ' pointer-events-none opacity-50' : ''}`}
+          href={inert ? undefined : href}
+          role={inert ? 'link' : undefined}
+          aria-disabled={inert || undefined}
+          tabIndex={inert ? -1 : undefined}
+          {...tooltipProps}
+          {...(props as any)}
+        >
           {loadingIndicator}
           {children}
         </a>

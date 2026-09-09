@@ -1,6 +1,6 @@
 // Card Component - Container with consistent styling
 
-import { HTMLAttributes, forwardRef } from 'react'
+import { HTMLAttributes, KeyboardEventHandler, forwardRef } from 'react'
 
 export type CardVariant = 'default' | 'elevated' | 'glass' | 'highlight'
 
@@ -21,13 +21,50 @@ const variantStyles: Record<CardVariant, string> = {
     'bg-[var(--surface-2)] border-brand-600/30 shadow-[var(--shadow-card)] bg-[image:var(--card-gradient)]',
 }
 
+const interactiveStyles =
+  'hover:border-stone-600 hover:bg-stone-800/80 hover:shadow-[var(--shadow-card-hover)] cursor-pointer ' +
+  'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--focus-ring-color)] focus-visible:ring-offset-2'
+
 export const Card = forwardRef<HTMLDivElement, CardProps>(
-  ({ className = '', variant = 'default', interactive, children, ...props }, ref) => {
+  (
+    {
+      className = '',
+      variant = 'default',
+      interactive,
+      children,
+      onClick,
+      onKeyDown,
+      role,
+      tabIndex,
+      ...props
+    },
+    ref
+  ) => {
+    // An interactive card was previously a cursor-pointer div with no focus ring
+    // and no keyboard path. When it is given an onClick it now behaves like a
+    // button: reachable by Tab, activated by Enter or Space, and visibly focused.
+    // A caller that already supplies its own role keeps it, and an interactive
+    // card that merely wraps a real link or button still gets the focus ring.
+    const isButtonLike = Boolean(interactive && onClick && !role)
+
+    const handleKeyDown: KeyboardEventHandler<HTMLDivElement> = (event) => {
+      onKeyDown?.(event)
+      if (!isButtonLike || event.defaultPrevented) return
+      if (event.key === 'Enter' || event.key === ' ') {
+        event.preventDefault()
+        event.currentTarget.click()
+      }
+    }
+
     return (
       <div
         ref={ref}
-        className={`rounded-xl border card-transition ${variantStyles[variant]} ${interactive ? 'hover:border-stone-600 hover:bg-stone-800/80 hover:shadow-[var(--shadow-card-hover)] cursor-pointer' : ''} ${className}`}
         {...props}
+        onClick={onClick}
+        onKeyDown={onKeyDown || isButtonLike ? handleKeyDown : undefined}
+        role={isButtonLike ? 'button' : role}
+        tabIndex={isButtonLike ? (tabIndex ?? 0) : tabIndex}
+        className={`rounded-xl border card-transition ${variantStyles[variant]} ${interactive ? interactiveStyles : ''} ${className}`}
       >
         {children}
       </div>

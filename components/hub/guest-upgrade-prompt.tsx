@@ -25,11 +25,14 @@ export function GuestUpgradePrompt({ profileToken, guestName }: GuestUpgradeProm
             dinners.
           </p>
         </div>
-        <a href={`/auth/signup?upgrade=${profileToken}`} className="shrink-0">
-          <Button variant="primary" size="sm">
-            Create Free Account
-          </Button>
-        </a>
+        <Button
+          href={`/auth/signup?upgrade=${profileToken}`}
+          className="shrink-0"
+          variant="primary"
+          size="sm"
+        >
+          Create Free Account
+        </Button>
       </CardContent>
     </Card>
   )

@@ -1,0 +1,369 @@
+{
+  "meta": {
+    "name": "ChefFlow pattern registry",
+    "version": "1.0.0",
+    "generated": "2026-09-09",
+    "definition": "A pattern is a complete assembly built from registered components. It is not page-specific code copied around. If you find yourself rebuilding one of these, you are duplicating a pattern.",
+    "rule": "Declare the surface mode before you lay anything out (docs/specs/surface-grammar-governance.md). Then pick the pattern. Then compose it from the component registry."
+  },
+  "surfaceModes": {
+    "source": "docs/specs/surface-grammar-governance.md",
+    "modes": [
+      "triage",
+      "planning",
+      "editing",
+      "reviewing",
+      "monitoring",
+      "configuring",
+      "browsing"
+    ],
+    "rule": "Every authenticated shell stamps data-cf-portal and data-cf-surface on its root element. The mode sets the shell budget and the allowed primitives. Declaring it is mandatory before layout."
+  },
+  "shells": [
+    {
+      "id": "root-layout",
+      "path": "app/layout.tsx",
+      "purpose": "The one place fonts, providers, metadata and viewport are configured.",
+      "provides": [
+        "Playfair via next/font",
+        "AppThemeProvider (next-themes, class attribute, light default, system disabled)",
+        "skip-to-content link",
+        "IconProvider (Phosphor duotone 20px)",
+        "ColorPaletteProvider + inline PaletteScript",
+        "DeferredRootRuntime (ssr:false)"
+      ],
+      "rules": [
+        "Never load a font anywhere else, with the single scoped exception of the culinary board.",
+        "Never add a redirect gate here.",
+        "themeColor and manifest live here, nowhere else."
+      ]
+    },
+    {
+      "id": "public-shell",
+      "path": "app/(public)/layout.tsx",
+      "purpose": "Unauthenticated marketing and marketplace.",
+      "anatomy": ["PublicHeader", "main#main-content", "PublicFooter"],
+      "background": "--page-bg-gradient plus three fixed radial ambient glows",
+      "data": "data-cf-portal=public data-cf-surface=browsing"
+    },
+    {
+      "id": "chef-shell",
+      "path": "app/(chef)/layout.tsx",
+      "purpose": "The operator product. The largest shell in the app.",
+      "anatomy": [
+        "ChefSidebar",
+        "ChefMobileNav",
+        "ChefMainContent (max-w-content mx-auto px-4 py-6 sm:px-6 lg:px-8)",
+        "banner stack",
+        "ssr:false docks"
+      ],
+      "rules": [
+        "Never add a full-page onboarding blocker or redirect gate here. Onboarding is opt-in and the dashboard banner is the only nudge.",
+        "Heavy chrome is always nextDynamic ssr:false, never a static import."
+      ]
+    },
+    {
+      "id": "client-shell",
+      "path": "app/(client)/layout.tsx",
+      "purpose": "Customer portal."
+    },
+    {
+      "id": "admin-shell",
+      "path": "app/(admin)/layout.tsx",
+      "purpose": "Platform admin. Uses its own admin-shell nav components."
+    },
+    {
+      "id": "staff-shell",
+      "path": "app/(staff)/layout.tsx",
+      "purpose": "Top-nav, no sidebar. main is mx-auto max-w-7xl px-4 py-6 sm:px-6 lg:px-8."
+    },
+    {
+      "id": "partner-shell",
+      "path": "app/(partner)/partner/layout.tsx"
+    },
+    {
+      "id": "vendor-shell",
+      "path": "app/(vendor)/vendor/layout.tsx"
+    },
+    {
+      "id": "bare-shell",
+      "path": "app/(bare)/layout.tsx",
+      "purpose": "Chromeless outreach landings. Zero ChefFlow branding, deliberately."
+    },
+    {
+      "id": "auth-shell",
+      "path": "app/auth/layout.tsx"
+    },
+    {
+      "id": "kiosk-shell",
+      "path": "app/kiosk/layout.tsx",
+      "purpose": "Full-screen touch. select-none, noindex, userScalable false.",
+      "note": "userScalable:false fails WCAG 1.4.4. Justified only because it is a dedicated fixed-hardware kiosk; never copy it to a normal route."
+    },
+    {
+      "id": "embed-shell",
+      "path": "app/embed/layout.tsx",
+      "purpose": "Transparent background for iframe embedding."
+    },
+    {
+      "id": "print-shell",
+      "path": "app/print/menu/[id]/layout.tsx",
+      "purpose": "@page margins, .no-print hidden. Print is a real output surface with its own rules."
+    },
+    {
+      "id": "hub-sub-shell",
+      "path": "app/(chef)/{events,clients,culinary,finance}/layout.tsx",
+      "purpose": "A sibling *-hub-nav.tsx above {children}. This is how you add tabbed sub-sections without duplicating chrome."
+    },
+    {
+      "id": "settings-shell",
+      "path": "app/(chef)/settings/layout.tsx",
+      "purpose": "Sticky md:w-60 sidebar plus SettingsSearch, content capped at max-w-3xl px-4 py-6.",
+      "rules": [
+        "Settings content never stretches to the full viewport. Cap at 680-800px.",
+        "Row height 44-56px. Card padding 16-24px. 24-32px between groups, 8-12px between rows.",
+        "Cards group 3-8 related settings. Never one card per toggle."
+      ]
+    }
+  ],
+  "patterns": [
+    {
+      "id": "marketing-homepage",
+      "reference": "app/(public)/page.tsx",
+      "sections": [
+        "PublicPageView analytics beacon",
+        "Organization + WebSite JSON-LD",
+        "Hero with layered radial background and HeroBackgroundImage",
+        "HomepageDiscovery rail",
+        "dual TrackedLink CTA",
+        "HeroTrustBar social proof",
+        "TrustBadges",
+        "seasonal spotlight",
+        "featured chef spotlight",
+        "BuiltByChefSection",
+        "PlatformShowcase",
+        "LandingBelowFold",
+        "DataPromise",
+        "PublicFooter"
+      ],
+      "rules": [
+        "Exactly one primary CTA above the fold.",
+        "Text over the hero photograph uses .media-scrim, never a flat colour wash.",
+        "The sticky mobile CTA is driven by an IntersectionObserver on #hero-cta-sentinel, not by a scroll listener."
+      ]
+    },
+    {
+      "id": "hero-section",
+      "anatomy": [
+        "eyebrow or trust pill",
+        "h1 in font-display at fluid-display-xl",
+        "one sentence of subcopy",
+        "one primary CTA plus at most one secondary",
+        "optional background image with media-scrim"
+      ],
+      "rules": [
+        "Background media must never reduce heading contrast below 4.5:1.",
+        "Ken Burns and parallax are suppressed under reduced motion."
+      ]
+    },
+    {
+      "id": "feature-section",
+      "anatomy": ["section label (overline)", "h2", "2 to 4 feature cards or an icon grid"],
+      "contentLimits": "Never more than 7 items in one group."
+    },
+    {
+      "id": "media-led-section",
+      "rules": [
+        "The image is the message. Do not bury it under an aggressive gradient.",
+        "Aspect ratio is fixed by the container so nothing shifts on load.",
+        "Every image has real alt text or is explicitly decorative."
+      ]
+    },
+    {
+      "id": "social-proof",
+      "reference": "components/marketing/trust-badges.tsx and _components/hero-trust-bar.tsx",
+      "rules": [
+        "Numbers shown must be computed from a real source. A figure not computed from a source is a rumour."
+      ]
+    },
+    {
+      "id": "pricing",
+      "reference": "app/(public)/pricing/page.tsx",
+      "includes": ["SoftwareApplicationJsonLd", "BreadcrumbJsonLd", "FAQPageJsonLd"],
+      "rules": [
+        "Never hide pricing.",
+        "No locked buttons and no Pro badges on disabled controls. The free path always executes; the upgrade prompt comes after the free action completes."
+      ]
+    },
+    {
+      "id": "faq",
+      "reference": "app/(public)/faq/page.tsx",
+      "component": "faq-accordion",
+      "includes": ["FAQPageJsonLd"]
+    },
+    {
+      "id": "contact-inquiry",
+      "reference": "app/(public)/contact/",
+      "components": ["public-inquiry-form", "form-shield spam guard"],
+      "includes": ["ContactPage JSON-LD with ContactPoint and OpeningHoursSpecification"]
+    },
+    {
+      "id": "booking-flow",
+      "reference": "app/(public)/book/, app/book/[chefSlug]/, components/booking/booking-form.tsx",
+      "rules": [
+        "Single column on mobile. Side-by-side fields cause input errors on a phone.",
+        "Inline validation as the user types, never only on submit.",
+        "Show step N of M. Autofill must work.",
+        "A sticky bottom CTA keeps the primary action in thumb reach."
+      ]
+    },
+    {
+      "id": "auth",
+      "reference": "app/auth/*",
+      "components": ["Input", "Button", "Card", "Alert", "CenteredLoadingState"],
+      "rules": [
+        "Post-login restore goes through lib/session/recovery.ts getLastActivePath.",
+        "The UI is never the security boundary; the server gate must exist independently."
+      ]
+    },
+    {
+      "id": "dashboard",
+      "reference": "app/(chef)/dashboard/page.tsx",
+      "anatomy": [
+        "CommandCenterLayout",
+        "AttentionRail",
+        "zone sections, each in Suspense with a matching skeleton and a WidgetErrorBoundary"
+      ],
+      "contentLimits": "2 hero metrics, 3-5 supporting, everything else in the detail tier.",
+      "rules": [
+        "Adding a widget requires removing or consolidating something of equal or lesser value.",
+        "Vanity metric test: what decision would be made differently because of this number?"
+      ]
+    },
+    {
+      "id": "list-page",
+      "reference": "app/(chef)/clients/page.tsx",
+      "anatomy": [
+        "page header with title and actions",
+        "intelligence strip",
+        "Suspense-wrapped table with SkeletonTable",
+        "EmptyState when zero",
+        "ErrorState on fetch failure",
+        "hub nav for sub-views"
+      ],
+      "rules": [
+        "All five data states are handled: empty, loading, loaded, error, partial.",
+        "Never render a failed load as an empty list."
+      ]
+    },
+    {
+      "id": "detail-page",
+      "reference": "app/(chef)/events/[id]/page.tsx",
+      "anatomy": [
+        "identity header",
+        "lifecycle action panel",
+        "Suspense-wrapped section cards",
+        "sub-route tab strip",
+        "co-located error.tsx and loading.tsx"
+      ]
+    },
+    {
+      "id": "search-and-filter",
+      "reference": "lib/shared/use-filterable-list.ts + components/shared/filterable-list.tsx, lib/shared/use-search.ts + components/shared/searchable-content.tsx",
+      "rules": [
+        "Use the shared hooks. There are already 12 domain filter bars; do not add a thirteenth bespoke one.",
+        "Debounce input through lib/hooks/use-debounce.ts.",
+        "Filter state belongs in the URL so a filtered view is shareable."
+      ]
+    },
+    {
+      "id": "command-palette",
+      "reference": "components/search/command-palette.tsx",
+      "rules": ["Hand-rolled, no cmdk. Mounted ssr:false from the chef shell."]
+    },
+    {
+      "id": "settings-page",
+      "reference": "app/(chef)/settings/**",
+      "rules": "See the settings-shell entry above for the metrics."
+    },
+    {
+      "id": "empty-dashboard",
+      "component": "EmptyState with remy",
+      "rules": ["An empty state names the next action, it does not just say there is nothing here."]
+    },
+    {
+      "id": "error-page",
+      "reference": "app/(chef)/error.tsx",
+      "anatomy": [
+        "chunk-error branch offering Reload",
+        "otherwise a Card with a copyable error id, Try Again (reset), a portal home link and ErrorReportButton"
+      ],
+      "rules": [
+        "Every route group has an error.tsx. app/global-error.tsx is self-contained with inline styles because no provider is available at that point."
+      ]
+    },
+    {
+      "id": "loading-page",
+      "reference": "780 loading.tsx files",
+      "rules": [
+        "The skeleton mirrors the loaded layout so nothing jumps.",
+        "Use ListPageSkeleton / DetailPageSkeleton / FormPageSkeleton / GridPageSkeleton rather than a bespoke one."
+      ]
+    },
+    {
+      "id": "not-found",
+      "reference": "app/not-found.tsx plus 7 group-level variants"
+    },
+    {
+      "id": "legal-policy",
+      "reference": "app/(public)/_components/legal-policy-placeholder.tsx",
+      "note": "14 legal routes share this shell."
+    },
+    {
+      "id": "mobile-navigation",
+      "reference": "components/navigation/chef-mobile-nav.tsx and the per-portal equivalents",
+      "rules": [
+        "Every portal has a mobile nav. Touch, open and close must work without hover.",
+        "Primary action reachable by thumb.",
+        "Safe-area insets via .pb-safe / .pt-safe / .pt-mobile-header."
+      ]
+    },
+    {
+      "id": "rail-strip",
+      "reference": "components/rail/*-rail-strip.tsx, config in components/navigation/portal-rail-standard.ts",
+      "purpose": "Every authenticated portal renders a Suspense-wrapped rail strip. Follow the standard config rather than inventing a per-portal rail."
+    },
+    {
+      "id": "section-skeleton-boundary-triad",
+      "purpose": "The repo's core composition idiom: a page-level _sections/ directory, a co-located section-skeletons.tsx, and every section wrapped in Suspense plus WidgetErrorBoundary.",
+      "rule": "Any new dashboard-like page follows this triad. It is what keeps one slow or failing query from blanking a page."
+    },
+    {
+      "id": "print-surface",
+      "reference": "components/print/*, app/print/**",
+      "rules": [
+        "Print is a first-class output. Standard paper, thermal 80mm (48 columns) and thermal 58mm (32 columns) are all supported in globals.css.",
+        "!important is legitimate in a print block; it is not legitimate anywhere else."
+      ]
+    },
+    {
+      "id": "og-image",
+      "reference": "app/opengraph-image.tsx and 8 more ImageResponse routes",
+      "rules": [
+        "Every share image is exactly 1200x630.",
+        "Satori needs inline styles; that is the one sanctioned place for them.",
+        "Twitter card is summary_large_image."
+      ],
+      "knownConflict": "The OG routes say 'Ops for Artists' while layout.tsx and manifest.json say 'Food and Chef Marketplace'. See OPEN-CONFLICTS.md C-01."
+    },
+    {
+      "id": "design-system-catalog",
+      "reference": "app/(dev)/design-system/page.tsx and design-system/gallery/index.html",
+      "purpose": "The rendered visual catalog. The in-app route renders the real React primitives and is gated to the founder by app/(dev)/layout.tsx; the static copy is dependency-free, is built by npm run gallery:build and is verified in a real browser by npm run gallery:validate.",
+      "rules": [
+        "The catalog is generated, never hand-maintained. If a component changes, rebuild rather than editing the catalog.",
+        "Any new component or variant appears here in the same change that adds it."
+      ]
+    }
+  ]
+}

@@ -1,0 +1,21 @@
+{
+  "note": "Ratchet baseline for scripts/audit-design-system.mjs. A count may only go DOWN. Raising a number here requires a line in design-system/DECISIONS.md saying why.",
+  "updated": "2026-09-09",
+  "rules": {
+    "no-raw-hex": 3029,
+    "no-raw-rgb-literal": 359,
+    "no-off-identity-color-family": 662,
+    "no-arbitrary-font-size": 870,
+    "no-font-family-declaration": 69,
+    "no-external-font-link": 0,
+    "no-arbitrary-z-index": 10,
+    "no-arbitrary-radius": 68,
+    "no-hardcoded-breakpoint-in-js": 8,
+    "no-styled-raw-button": 24,
+    "touch-target-too-small": 1,
+    "no-inline-style-color": 656,
+    "no-link-wraps-button": 427,
+    "no-emoji-as-icon": 139,
+    "no-lucide-import": 53
+  }
+}

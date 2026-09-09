@@ -43,12 +43,10 @@ export function QuoteFromMenuButton({
 
   if (generatedQuoteId) {
     return (
-      <a href={`/quotes/${generatedQuoteId}`}>
-        <Button variant="primary" size="sm" className="gap-1.5">
-          <ArrowRight className="h-3.5 w-3.5" />
-          Review Quote Draft
-        </Button>
-      </a>
+      <Button href={`/quotes/${generatedQuoteId}`} variant="primary" size="sm" className="gap-1.5">
+        <ArrowRight className="h-3.5 w-3.5" />
+        Review Quote Draft
+      </Button>
     )
   }
 

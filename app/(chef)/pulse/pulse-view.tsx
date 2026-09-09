@@ -4,6 +4,7 @@ import { useState } from 'react'
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent } from '@/components/ui/card'
+import { Mail } from '@/components/ui/icons'
 import type { ClientPulse, PulseItem } from '@/lib/clients/pulse-actions'
 import Link from 'next/link'
 
@@ -173,11 +174,16 @@ function PulseItemRow({ item, clientEmail }: { item: PulseItem; clientEmail: str
           {item.daysWaiting}d
         </Badge>
         {clientEmail && (
-          <a href={`mailto:${clientEmail}`} title="Quick email">
-            <Button variant="ghost" size="sm" className="px-2">
-              ✉️
-            </Button>
-          </a>
+          <Button
+            href={`mailto:${clientEmail}`}
+            title="Quick email"
+            aria-label="Send a quick email"
+            variant="ghost"
+            size="sm"
+            className="px-2"
+          >
+            <Mail className="h-4 w-4" aria-hidden="true" />
+          </Button>
         )}
         <Link href={item.href}>
           <Button variant="ghost" size="sm">

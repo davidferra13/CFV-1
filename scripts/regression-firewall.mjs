@@ -17,6 +17,7 @@ function parseArgs(argv) {
     skipTypecheck: argv.includes('--skip-typecheck'),
     skipWiring: argv.includes('--skip-wiring'),
     skipNav: argv.includes('--skip-nav'),
+    skipDesign: argv.includes('--skip-design'),
     skipRouteProbes: argv.includes('--skip-route-probes'),
     routeProbeLimit: numberArg(argv, '--route-probe-limit', 40),
     routeProbeTimeoutMs: numberArg(argv, '--route-probe-timeout-ms', 60_000),
@@ -224,6 +225,23 @@ async function runAffectedRouteProbes(options) {
 async function main() {
   const args = parseArgs(process.argv.slice(2))
   const results = []
+
+  // Design system gate. Zero dependencies, runs in about a second, and catches
+  // the two failure modes that matter: generated token output drifting from
+  // design-system/tokens/tokens.json, and a design rule getting worse.
+  // See design-system/SPEC.md section 9.
+  if (!args.skipDesign) {
+    results.push(
+      await runStep('design tokens in sync', nodeCommand(), ['design-system/tokens/build-tokens.mjs', '--check'], {
+        timeoutMs: args.stepTimeoutMs,
+      })
+    )
+    results.push(
+      await runStep('design system ratchet', nodeCommand(), ['scripts/audit-design-system.mjs', '--strict'], {
+        timeoutMs: args.stepTimeoutMs,
+      })
+    )
+  }
 
   if (!args.skipNav) {
     results.push(

@@ -41,7 +41,7 @@ export const Textarea = forwardRef<HTMLTextAreaElement, TextareaProps>(
             {label && (
               <label htmlFor={textareaId} className="block text-sm font-medium text-stone-300">
                 {label}
-                {props.required && <span className="text-red-500 ml-1">*</span>}
+                {props.required && <span className="text-red-600 dark:text-red-400 ml-1">*</span>}
               </label>
             )}
             {showCharCount && (
@@ -49,9 +49,9 @@ export const Textarea = forwardRef<HTMLTextAreaElement, TextareaProps>(
                 className={`text-xs tabular-nums transition-colors duration-200 ${
                   currentLength > maxLen * 0.9
                     ? currentLength >= maxLen
-                      ? 'text-red-400 font-medium'
-                      : 'text-amber-400'
-                    : 'text-stone-500'
+                      ? 'text-red-600 dark:text-red-400 font-medium'
+                      : 'text-amber-700 dark:text-amber-400'
+                    : 'text-[var(--text-placeholder)]'
                 }`}
               >
                 {currentLength}/{maxLen}
@@ -70,7 +70,11 @@ export const Textarea = forwardRef<HTMLTextAreaElement, TextareaProps>(
           {...props}
         />
         {error && (
-          <p id={errorId} className="mt-1 text-sm text-red-600 animate-fade-slide-up" role="alert">
+          <p
+            id={errorId}
+            className="mt-1 text-sm text-red-600 dark:text-red-400 animate-fade-slide-up"
+            role="alert"
+          >
             {error}
           </p>
         )}

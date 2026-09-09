@@ -52,6 +52,7 @@ Before Haiku, consider `ollama-delegate` MCP tools ($0). Delegate mechanical wor
 - **Product Blueprint:** `docs/product-blueprint.md` (V1 scope, progress, exit criteria)
 - **Project Map:** `project-map/` (browsable product mirror, update when building)
 - **Definition of done:** `docs/definition-of-done.md`
+- **Design system (MANDATORY for any UI work):** `design-system/BUILD-CHECKLIST.md` first, `design-system/SPEC.md` for the rules. Before writing any interface code run `node design-system/registry/find.mjs "<what you need>"`. Reuse beats extend, extend beats add. Tokens live in `design-system/tokens/tokens.json`; `app/globals.css` and `tailwind.config.ts` are generated from it (`npm run tokens:build`). Gate: `npm run design:check`. Catalog: `npm run gallery:build` then open `design-system/gallery/index.html`, or `/design-system` in the app.
 - **Interface philosophy:** `docs/specs/universal-interface-philosophy.md` (mandatory for UI work)
 - **Surface grammar:** `docs/specs/surface-grammar-governance.md` (declare mode before layout)
 - **Stack:** Next.js, PostgreSQL (Drizzle/postgres.js), Auth.js v5, Stripe, Local FS, SSE
@@ -62,6 +63,10 @@ Before Haiku, consider `ollama-delegate` MCP tools ($0). Delegate mechanical wor
 ## PROMPT PIPELINE
 
 The developer is a chef, not an engineer. He describes what he wants in business/product language ("I want to copy an old dinner and start fresh"), not engineering terms ("build a server action in lib/chef"). Claude translates intent into technical implementation. Never ask for file paths, component names, or technical clarification. Figure it out.
+
+### NO INVENTED VISUAL LANGUAGE (ABSOLUTE)
+
+Never pick a font, a colour, a radius, a shadow, a z-index or an animation curve inside a component. Every one of those already has a token. Search `design-system/registry/find.mjs` before building any interface element, and never hand-write a `<button className="bg-brand-600 rounded-lg px-4 py-2">` when `<Button>` exists. `npm run audit:design:strict` is a ratchet: a rule's violation count may go down but never up.
 
 ### NO EM DASHES (ABSOLUTE, HOOK-ENFORCED)
 

@@ -1,0 +1,416 @@
+{
+  "meta": {
+    "name": "ChefFlow feature registry",
+    "version": "1.0.0",
+    "generated": "2026-09-09",
+    "definition": "A feature is recurring FUNCTIONALITY, tracked separately from the visual components that render it. A registry entry says: does it exist, where is the established implementation, and under what conditions should a new surface adopt it.",
+    "rule": "Not every feature belongs in every project. Read `selectWhen` first. If the condition applies, reuse the `canonical` implementation. Never build a second one."
+  },
+
+  "features": [
+    {
+      "id": "auth",
+      "name": "Authentication and account states",
+      "exists": true,
+      "canonical": [
+        "lib/auth/auth-config.ts",
+        "lib/auth/get-user.ts (requireChef/requireClient/requireStaff/requirePartner/requireVendor)",
+        "lib/auth/route-policy.ts",
+        "lib/auth/route-access-registry.ts",
+        "lib/auth/tenant-scope.ts",
+        "middleware.ts",
+        "app/auth/*"
+      ],
+      "library": "next-auth v5 beta + @auth/drizzle-adapter, Google OAuth, MFA route",
+      "selectWhen": "Any surface that shows data belonging to a specific account.",
+      "rules": [
+        "Defence in depth: middleware, then the group layout requireX() guard, then a server-action auth gate. All three.",
+        "The UI is not a security boundary. Hiding nav or a button protects nothing.",
+        "Account states to design for: signed out, signed in, wrong role, expired session, MFA required, deletion pending, test account."
+      ]
+    },
+    {
+      "id": "search",
+      "name": "Search",
+      "exists": true,
+      "canonical": [
+        "lib/search/universal-search.ts",
+        "components/search/global-search.tsx",
+        "components/search/command-palette.tsx",
+        "lib/search/search-recents.ts"
+      ],
+      "library": "custom server actions plus useDebounce. No cmdk.",
+      "selectWhen": "More than roughly 20 records of one kind, or the user needs to jump between areas.",
+      "rules": [
+        "Debounce. Show recents when the query is empty. Never block the UI while searching."
+      ]
+    },
+    {
+      "id": "filter-sort",
+      "name": "Filtering and sorting",
+      "exists": true,
+      "canonical": [
+        "lib/shared/use-filterable-list.ts",
+        "components/shared/filterable-list.tsx",
+        "lib/shared/use-search.ts",
+        "components/shared/searchable-content.tsx"
+      ],
+      "selectWhen": "Any list over roughly 20 items or with more than one meaningful dimension.",
+      "rules": [
+        "Filter state lives in the URL. Show active filters as removable pills with a clear-all. Empty results get an EmptyState that explains which filter caused it."
+      ],
+      "note": "@tanstack/react-table and react-virtual are installed but no .tsx imports react-table. Tables are hand-rolled and sorting is per-query. There is no shared sort hook; that is an open gap."
+    },
+    {
+      "id": "forms",
+      "name": "Forms and validation",
+      "exists": true,
+      "canonical": [
+        "zod schemas across 584 files",
+        "server actions as the default submit path",
+        "lib/hooks/use-field-validation.ts",
+        "lib/hooks/use-server-action.ts",
+        "components/ui/draft-restore-prompt.tsx",
+        "components/ui/draft-save-indicator.tsx",
+        "components/ui/unsaved-changes-dialog.tsx",
+        "components/forms/form-shield.tsx"
+      ],
+      "library": "zod v4; react-hook-form only in 3 large forms",
+      "selectWhen": "Always, for any input.",
+      "rules": [
+        "Validate inline as the user types, not only on submit.",
+        "An error message names what to do, not just what is wrong.",
+        "Never show success without server confirmation. Optimistic updates need try/catch with rollback and a failure toast.",
+        "Long forms save a draft and warn on unsaved navigation.",
+        "Maximum 7 fields per visible section; chunk the rest into collapsible groups."
+      ]
+    },
+    {
+      "id": "booking",
+      "name": "Booking",
+      "exists": true,
+      "canonical": [
+        "components/booking/booking-form.tsx",
+        "components/booking/booking-calendar.tsx",
+        "app/(public)/book/",
+        "app/book/[chefSlug]/",
+        "app/embed/"
+      ],
+      "selectWhen": "The product takes appointments or events.",
+      "rules": [
+        "Capacity Is Inventory: an unclassified date is never offered as Available.",
+        "No custom work before a survey or a direct call."
+      ]
+    },
+    {
+      "id": "payments",
+      "name": "Payments",
+      "exists": true,
+      "canonical": [
+        "lib/stripe/checkout.ts",
+        "lib/stripe/connect.ts",
+        "lib/stripe/subscription.ts",
+        "lib/stripe/refund.ts",
+        "lib/stripe/payment-policy.ts",
+        "components/stripe/payment-form.tsx",
+        "components/billing/*"
+      ],
+      "library": "stripe v20, Connect plus subscriptions",
+      "selectWhen": "Money moves.",
+      "rules": [
+        "Never render a locked or disabled paid button. The free path always executes and the upgrade prompt follows the completed action.",
+        "Never hide pricing."
+      ]
+    },
+    {
+      "id": "uploads",
+      "name": "File uploads",
+      "exists": true,
+      "canonical": [
+        "lib/storage/index.ts (local FS, sanitised paths, signed URLs)",
+        "app/api/menus/upload/route.ts",
+        "lib/images/cloudinary.ts"
+      ],
+      "selectWhen": "Users supply files.",
+      "rules": [
+        "Show per-file progress, accepted types and the size limit before the picker opens.",
+        "A failed upload keeps the file selected and offers retry.",
+        "react-dropzone is installed with zero importers; either use it or drop the dependency."
+      ]
+    },
+    {
+      "id": "media",
+      "name": "Galleries and media playback",
+      "exists": true,
+      "canonical": [
+        "components/photos/portfolio-gallery.tsx (10 competing implementations, see components.json gallery entry)",
+        "components/analytics/tracked-video.tsx",
+        "components/documents/pdf-viewer-modal.tsx"
+      ],
+      "selectWhen": "Images or video are the content.",
+      "rules": [
+        "Fixed aspect-ratio containers so nothing shifts on load.",
+        "Video needs a poster frame and captions.",
+        "Lightbox is a dialog: focus trap, Escape, arrow keys."
+      ]
+    },
+    {
+      "id": "sharing",
+      "name": "Sharing",
+      "exists": true,
+      "canonical": [
+        "lib/sharing/actions.ts",
+        "lib/sharing/policy.ts",
+        "lib/sharing/public-contract.ts",
+        "components/sharing/*",
+        "app/(public)/{share,view,e,g,split,tip,proposal}"
+      ],
+      "selectWhen": "Something is shown to someone without an account.",
+      "rules": [
+        "A guest surface is noindex when it carries personal data.",
+        "Token-addressed pages state clearly what the recipient can and cannot do."
+      ]
+    },
+    {
+      "id": "notifications",
+      "name": "Notifications (push, in-app, toast)",
+      "exists": true,
+      "canonical": [
+        "components/notifications/notification-provider.tsx",
+        "components/notifications/notification-bell.tsx",
+        "components/notifications/use-push-subscription.ts",
+        "components/notifications/toast-provider.tsx",
+        "lib/notifications/channel-router.ts",
+        "lib/notifications/off-hours-check.ts"
+      ],
+      "library": "web-push, OneSignal, sonner",
+      "selectWhen": "Something happens while the user is not looking at it.",
+      "rules": [
+        "Never more than 2 toasts at once. 3s confirmation, 5s warning, errors do not auto-dismiss.",
+        "Push asks permission in context, after the value is obvious, never on first load."
+      ]
+    },
+    {
+      "id": "preferences",
+      "name": "User preferences and theming",
+      "exists": true,
+      "canonical": [
+        "components/ui/app-theme-provider.tsx",
+        "components/ui/theme-toggle.tsx",
+        "components/ui/color-palette-provider.tsx",
+        "app/(chef)/settings/appearance",
+        "lib/hooks/use-format-context.ts"
+      ],
+      "library": "next-themes, class attribute, storageKey chefflow-theme, light default, system disabled",
+      "selectWhen": "Always, for theme. Palette swapping when the product is white-labelled or personal.",
+      "rules": [
+        "PaletteScript is inlined in <head> so there is no flash.",
+        "Pinned by tests/unit/theme-and-color-guards.test.ts: do not change defaultTheme, enableSystem, storageKey or add forcedTheme without updating that test deliberately."
+      ]
+    },
+    {
+      "id": "analytics",
+      "name": "Analytics",
+      "exists": true,
+      "canonical": [
+        "components/analytics/posthog-provider.tsx",
+        "components/analytics/tracked-link.tsx",
+        "components/analytics/section-view-tracker.tsx",
+        "components/tracking/meta-pixel.tsx"
+      ],
+      "library": "posthog-js, Meta Pixel, recharts for display",
+      "selectWhen": "There is a funnel worth measuring.",
+      "rules": [
+        "PostHog init is gated behind consent.",
+        "Use TrackedLink rather than adding a click handler to a plain anchor."
+      ]
+    },
+    {
+      "id": "consent",
+      "name": "Consent and privacy controls",
+      "exists": true,
+      "canonical": [
+        "components/ui/cookie-consent.tsx via components/runtime/deferred-root-runtime.tsx",
+        "lib/ai/privacy-internal.ts",
+        "app/(chef)/settings/ai-privacy",
+        "app/(chef)/settings/data-export",
+        "app/(chef)/settings/delete-account",
+        "app/(public)/data-request"
+      ],
+      "selectWhen": "Any analytics, tracking or third-party AI processing.",
+      "rules": [
+        "Decline-by-default for non-essential cookies.",
+        "The consent banner never blocks the primary content of the page."
+      ]
+    },
+    {
+      "id": "seo",
+      "name": "SEO metadata",
+      "exists": true,
+      "canonical": [
+        "lib/site/public-site.ts buildMarketingMetadata()",
+        "lib/site/public-route-seo.ts",
+        "app/layout.tsx metadata",
+        "app/feed.xml"
+      ],
+      "selectWhen": "The page is public.",
+      "rules": [
+        "Every public route uses buildMarketingMetadata. Never hand-write a metadata object.",
+        "Canonical URL on every public page."
+      ]
+    },
+    {
+      "id": "structured-data",
+      "name": "Structured data (JSON-LD)",
+      "exists": true,
+      "canonical": [
+        "components/seo/json-ld.tsx: JsonLd, OrganizationJsonLd, SoftwareApplicationJsonLd, FAQPageJsonLd, WebSiteJsonLd, BreadcrumbJsonLd, PersonJsonLd"
+      ],
+      "selectWhen": "A public page maps to a schema.org type.",
+      "rules": ["Reuse the exported helpers. Do not hand-write a script tag."]
+    },
+    {
+      "id": "og",
+      "name": "Open Graph previews",
+      "exists": true,
+      "canonical": [
+        "public/social/*.png (static 1200x630)",
+        "app/opengraph-image.tsx and 8 further ImageResponse routes",
+        "buildMarketingMetadata imagePath/imageAlt"
+      ],
+      "selectWhen": "The page will be shared.",
+      "rules": [
+        "Exactly 1200x630. Runtime edge. Inline styles are required by satori and are sanctioned only here."
+      ]
+    },
+    {
+      "id": "error-recovery",
+      "name": "Error recovery",
+      "exists": true,
+      "canonical": [
+        "app/global-error.tsx",
+        "38 route error.tsx files",
+        "components/ui/error-boundary.tsx",
+        "components/ui/widget-error-boundary.tsx",
+        "lib/hooks/use-chunk-error-recovery.ts",
+        "lib/monitoring/report-client-error.ts",
+        "lib/utils/safe-fetch.ts"
+      ],
+      "library": "@sentry/nextjs v10",
+      "selectWhen": "Always.",
+      "rules": [
+        "Every independently-loading region is inside a WidgetErrorBoundary.",
+        "Chunk load errors get the reload path, not the generic error card.",
+        "Show a copyable error id so a user can report it."
+      ]
+    },
+    {
+      "id": "offline",
+      "name": "Offline and reconnection",
+      "exists": true,
+      "canonical": [
+        "public/sw.js",
+        "public/offline.html",
+        "components/offline/offline-provider.tsx",
+        "components/offline/offline-status-bar.tsx",
+        "components/ui/offline-banner.tsx",
+        "lib/offline/idb-queue.ts",
+        "lib/offline/sync-engine.ts",
+        "lib/offline/use-network-status.ts",
+        "lib/offline/use-offline-form.ts"
+      ],
+      "library": "hand-rolled service worker plus IndexedDB. No Workbox.",
+      "selectWhen": "The product is used away from reliable connectivity. For a chef in a client kitchen, that is always.",
+      "rules": [
+        "A queued action shows as queued, never as saved.",
+        "The offline banner is persistent, not a toast.",
+        "public/offline.html cannot import the design system, so its inline styles must be kept in sync with the tokens by hand."
+      ]
+    },
+    {
+      "id": "permissions",
+      "name": "Permission and role states",
+      "exists": true,
+      "canonical": [
+        "lib/auth/permissions.ts (PermissionAction, PermissionDomain, TenantRole, PermissionSet, requirePermission)",
+        "lib/auth/route-access-registry.ts",
+        "components/shared/role-switcher.tsx",
+        "app/unauthorized",
+        "lib/billing/require-pro.ts",
+        "lib/features/chef-feature-flags.ts"
+      ],
+      "selectWhen": "More than one kind of user.",
+      "rules": [
+        "Design the denied state, not just the allowed one. Say what is missing and who can grant it.",
+        "Never a lock icon on a disabled button as the only explanation."
+      ]
+    },
+    {
+      "id": "admin",
+      "name": "Admin tools",
+      "exists": true,
+      "canonical": ["app/(admin)/admin/** (36 areas)", "components/navigation/admin-shell.tsx"],
+      "selectWhen": "There is an operator behind the product."
+    },
+    {
+      "id": "i18n",
+      "name": "Internationalisation",
+      "exists": false,
+      "canonical": null,
+      "library": "next-intl v4 is installed with zero imports; no messages/ or locales/ directory; <html lang=\"en\"> is hardcoded.",
+      "selectWhen": "A second locale is actually planned.",
+      "rules": [
+        "Do not scatter t() calls in anticipation. Adopting i18n is a project, not a habit.",
+        "date-fns and lib/hooks/use-format.ts already handle locale-ish formatting; use those.",
+        "If i18n is never adopted, remove the unused dependency."
+      ]
+    },
+    {
+      "id": "pwa",
+      "name": "Installable app",
+      "exists": true,
+      "canonical": [
+        "public/manifest.json",
+        "components/pwa/sw-register.tsx",
+        "components/pwa/install-prompt.tsx",
+        "capacitor.config.ts",
+        "src-tauri/"
+      ],
+      "selectWhen": "The product is used on a phone repeatedly.",
+      "knownDefect": "manifest.json points at /screenshots/mobile.png and /screenshots/desktop.png; neither exists, so Chrome drops the richer install UI. Maskable icons have no safe zone."
+    }
+  ],
+
+  "unusedDependencies": [
+    {
+      "package": "motion",
+      "version": "^12.38.0",
+      "importers": 0,
+      "action": "Remove. All animation is CSS keyframes plus Tailwind utilities, which is the better default anyway."
+    },
+    {
+      "package": "next-intl",
+      "version": "^4.9.0",
+      "importers": 0,
+      "action": "Remove until i18n is actually planned."
+    },
+    {
+      "package": "react-dropzone",
+      "version": "^15.0.0",
+      "importers": 0,
+      "action": "Either adopt it in the upload flow or remove it."
+    },
+    {
+      "package": "@tanstack/react-table",
+      "version": "^8.21.3",
+      "importers": 0,
+      "action": "Tables are hand-rolled. Adopt it when a table needs real sorting and virtualisation, or remove it."
+    },
+    {
+      "package": "lucide-react",
+      "version": "^0.564.0",
+      "importers": 53,
+      "action": "Migrate the 53 files to '@/components/ui/icons' and remove. Two icon libraries currently ship to the client."
+    }
+  ]
+}

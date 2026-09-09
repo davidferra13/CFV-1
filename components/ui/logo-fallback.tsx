@@ -27,7 +27,7 @@ export function LogoFallback({
   size?: 'sm' | 'md' | 'lg'
 }) {
   const { box, text } = SIZES[size]
-  const bg = primaryColor || '#44403c' // stone-700
+  const bg = primaryColor || 'rgb(var(--stone-700))'
 
   return (
     <div

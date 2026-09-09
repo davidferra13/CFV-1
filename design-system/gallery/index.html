@@ -1,0 +1,388 @@
+<!doctype html>
+<html lang="en" class="dark">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+<title>ChefFlow Design System</title>
+<link rel="stylesheet" href="./gallery.css" />
+</head>
+<body class="font-sans">
+<header class="ds-header">
+  <div class="ds-header-inner">
+    <div>
+      <h1 class="font-display ds-h1">ChefFlow Design System</h1>
+      <p class="ds-blurb">Version 1.0.0. Generated from <code>design-system/tokens/tokens.json</code> and rendered with the product's own compiled CSS, so this is what ships.</p>
+    </div>
+    <div class="ds-controls">
+      <button id="ds-theme" class="ds-ctl" aria-pressed="true">Dark</button>
+      <button class="ds-ctl ds-w" data-w="375">375</button>
+      <button class="ds-ctl ds-w" data-w="768">768</button>
+      <button class="ds-ctl ds-w" data-w="1024">1024</button>
+      <button class="ds-ctl ds-w ds-ctl-on" data-w="0">Full</button>
+      <button id="ds-motion" class="ds-ctl" aria-pressed="false">Reduce motion</button>
+    </div>
+  </div>
+  <div class="ds-nav-wrap"><nav class="ds-nav" aria-label="Catalog sections"><a href="#colour">Colour</a><a href="#typography">Typography</a><a href="#space">Space and size</a><a href="#radius-elevation">Radius and elevation</a><a href="#layer">Layering</a><a href="#motion">Motion</a><a href="#actions">Actions</a><a href="#status">Status</a><a href="#surfaces">Surfaces</a><a href="#forms">Forms</a><a href="#data">Data</a><a href="#states">Feedback states</a><a href="#overlays">Overlays</a><a href="#media">Media</a><a href="#limits">Limits</a><a href="#index">Component index</a></nav></div>
+</header>
+<main id="ds-main" class="ds-main">
+<section id="colour" class="ds-section">
+    <h2 class="ds-h2">Colour</h2>
+    <p class="ds-blurb">Every colour comes from a role. The brand ramp is swapped at runtime across eight palettes, which is why a hardcoded hex is a correctness bug and not a style preference.</p>
+    <div class="ds-sub"><h3 class="ds-h3">Brand ramp</h3><p class="ds-note">Stops 600 and 700 are deliberately identical: the light-mode focus ring resolves to brand-600 and measures 4.63:1 there.</p><div class="ds-sub-body"><div class="ds-swatches"><figure class="ds-swatch">
+    <div class="ds-swatch-chip" style="background:rgb(var(--brand-50))"></div>
+    <figcaption><code>brand-50</code></figcaption>
+  </figure><figure class="ds-swatch">
+    <div class="ds-swatch-chip" style="background:rgb(var(--brand-100))"></div>
+    <figcaption><code>brand-100</code></figcaption>
+  </figure><figure class="ds-swatch">
+    <div class="ds-swatch-chip" style="background:rgb(var(--brand-200))"></div>
+    <figcaption><code>brand-200</code></figcaption>
+  </figure><figure class="ds-swatch">
+    <div class="ds-swatch-chip" style="background:rgb(var(--brand-300))"></div>
+    <figcaption><code>brand-300</code></figcaption>
+  </figure><figure class="ds-swatch">
+    <div class="ds-swatch-chip" style="background:rgb(var(--brand-400))"></div>
+    <figcaption><code>brand-400</code></figcaption>
+  </figure><figure class="ds-swatch">
+    <div class="ds-swatch-chip" style="background:rgb(var(--brand-500))"></div>
+    <figcaption><code>brand-500</code></figcaption>
+  </figure><figure class="ds-swatch">
+    <div class="ds-swatch-chip" style="background:rgb(var(--brand-600))"></div>
+    <figcaption><code>brand-600</code></figcaption>
+  </figure><figure class="ds-swatch">
+    <div class="ds-swatch-chip" style="background:rgb(var(--brand-700))"></div>
+    <figcaption><code>brand-700</code></figcaption>
+  </figure><figure class="ds-swatch">
+    <div class="ds-swatch-chip" style="background:rgb(var(--brand-800))"></div>
+    <figcaption><code>brand-800</code></figcaption>
+  </figure><figure class="ds-swatch">
+    <div class="ds-swatch-chip" style="background:rgb(var(--brand-900))"></div>
+    <figcaption><code>brand-900</code></figcaption>
+  </figure><figure class="ds-swatch">
+    <div class="ds-swatch-chip" style="background:rgb(var(--brand-950))"></div>
+    <figcaption><code>brand-950</code></figcaption>
+  </figure></div></div></div><div class="ds-sub"><h3 class="ds-h3">Neutral ramp</h3><p class="ds-note">Inverted in light mode on purpose, so dark-first utility usage renders correctly on a light ground. zinc, gray and neutral are aliases of this scale.</p><div class="ds-sub-body"><div class="ds-swatches"><figure class="ds-swatch">
+    <div class="ds-swatch-chip" style="background:rgb(var(--stone-50))"></div>
+    <figcaption><code>stone-50</code></figcaption>
+  </figure><figure class="ds-swatch">
+    <div class="ds-swatch-chip" style="background:rgb(var(--stone-100))"></div>
+    <figcaption><code>stone-100</code></figcaption>
+  </figure><figure class="ds-swatch">
+    <div class="ds-swatch-chip" style="background:rgb(var(--stone-200))"></div>
+    <figcaption><code>stone-200</code></figcaption>
+  </figure><figure class="ds-swatch">
+    <div class="ds-swatch-chip" style="background:rgb(var(--stone-300))"></div>
+    <figcaption><code>stone-300</code></figcaption>
+  </figure><figure class="ds-swatch">
+    <div class="ds-swatch-chip" style="background:rgb(var(--stone-400))"></div>
+    <figcaption><code>stone-400</code></figcaption>
+  </figure><figure class="ds-swatch">
+    <div class="ds-swatch-chip" style="background:rgb(var(--stone-500))"></div>
+    <figcaption><code>stone-500</code></figcaption>
+  </figure><figure class="ds-swatch">
+    <div class="ds-swatch-chip" style="background:rgb(var(--stone-600))"></div>
+    <figcaption><code>stone-600</code></figcaption>
+  </figure><figure class="ds-swatch">
+    <div class="ds-swatch-chip" style="background:rgb(var(--stone-700))"></div>
+    <figcaption><code>stone-700</code></figcaption>
+  </figure><figure class="ds-swatch">
+    <div class="ds-swatch-chip" style="background:rgb(var(--stone-800))"></div>
+    <figcaption><code>stone-800</code></figcaption>
+  </figure><figure class="ds-swatch">
+    <div class="ds-swatch-chip" style="background:rgb(var(--stone-900))"></div>
+    <figcaption><code>stone-900</code></figcaption>
+  </figure><figure class="ds-swatch">
+    <div class="ds-swatch-chip" style="background:rgb(var(--stone-950))"></div>
+    <figcaption><code>stone-950</code></figcaption>
+  </figure></div></div></div><div class="ds-sub"><h3 class="ds-h3">Surfaces</h3><div class="ds-sub-body"><div class="ds-swatches"><figure class="ds-swatch">
+    <div class="ds-swatch-chip" style="background:var(--surface-0)"></div>
+    <figcaption><code>--surface-0</code><span>page background</span></figcaption>
+  </figure><figure class="ds-swatch">
+    <div class="ds-swatch-chip" style="background:var(--surface-1)"></div>
+    <figcaption><code>--surface-1</code><span>app shell, sidebar</span></figcaption>
+  </figure><figure class="ds-swatch">
+    <div class="ds-swatch-chip" style="background:var(--surface-2)"></div>
+    <figcaption><code>--surface-2</code><span>card default, input field</span></figcaption>
+  </figure><figure class="ds-swatch">
+    <div class="ds-swatch-chip" style="background:var(--surface-3)"></div>
+    <figcaption><code>--surface-3</code><span>elevated card, hover surface</span></figcaption>
+  </figure><figure class="ds-swatch">
+    <div class="ds-swatch-chip" style="background:var(--surface-4)"></div>
+    <figcaption><code>--surface-4</code><span>pressed surface, highest chrome</span></figcaption>
+  </figure></div></div></div><div class="ds-sub"><h3 class="ds-h3">Text tiers</h3><div class="ds-sub-body"><div class="ds-text-tiers"><div class="ds-text-row"><span style="color:var(--text-primary)">The quick brown fox jumps</span><code>--text-primary</code><span class="ds-note">headings and body</span></div><div class="ds-text-row"><span style="color:var(--text-secondary)">The quick brown fox jumps</span><code>--text-secondary</code><span class="ds-note">supporting copy</span></div><div class="ds-text-row"><span style="color:var(--text-muted)">The quick brown fox jumps</span><code>--text-muted</code><span class="ds-note">metadata, labels</span></div><div class="ds-text-row"><span style="color:var(--text-muted-soft)">The quick brown fox jumps</span><code>--text-muted-soft</code><span class="ds-note">de-emphasised metadata</span></div><div class="ds-text-row"><span style="color:var(--text-placeholder)">The quick brown fox jumps</span><code>--text-placeholder</code><span class="ds-note">input placeholder only</span></div><div class="ds-text-row"><span style="color:var(--text-inverse)">The quick brown fox jumps</span><code>--text-inverse</code><span class="ds-note">text on a filled brand surface</span></div></div></div></div><div class="ds-sub"><h3 class="ds-h3">Borders</h3><div class="ds-sub-body"><div class="ds-borders"><div class="ds-border-row"><div class="ds-border-box" style="border-color:var(--border-subtle)"></div><code>--border-subtle</code><span class="ds-note">card and divider hairlines</span></div><div class="ds-border-row"><div class="ds-border-box" style="border-color:var(--border-default)"></div><code>--border-default</code><span class="ds-note">input and control outlines</span></div><div class="ds-border-row"><div class="ds-border-box" style="border-color:var(--border-strong)"></div><code>--border-strong</code><span class="ds-note">emphasis, hover outline</span></div><div class="ds-border-row"><div class="ds-border-box" style="border-color:var(--border-warm)"></div><code>--border-warm</code><span class="ds-note">brand-tinted container edge</span></div><div class="ds-border-row"><div class="ds-border-box" style="border-color:var(--border-warm-hover)"></div><code>--border-warm-hover</code><span class="ds-note">brand-tinted container edge, hover</span></div></div></div></div><div class="ds-sub"><h3 class="ds-h3">Status roles</h3><p class="ds-note">Meaning is global, silhouette is local. The same role must read the same whether it is a chip, a dot, a row accent or an icon.</p><div class="ds-sub-body"><div class="ds-status-grid"><div class="ds-status-cell">
+      <div class="ds-status-chip status-success">success</div>
+      <div class="ds-status-dot"><span style="background:var(--status-success-solid)"></span> dot</div>
+      <div class="ds-status-row" style="border-left:3px solid var(--status-success-solid)">row accent</div>
+      <code>--status-success-*</code>
+    </div><div class="ds-status-cell">
+      <div class="ds-status-chip status-warning">warning</div>
+      <div class="ds-status-dot"><span style="background:var(--status-warning-solid)"></span> dot</div>
+      <div class="ds-status-row" style="border-left:3px solid var(--status-warning-solid)">row accent</div>
+      <code>--status-warning-*</code>
+    </div><div class="ds-status-cell">
+      <div class="ds-status-chip status-danger">danger</div>
+      <div class="ds-status-dot"><span style="background:var(--status-danger-solid)"></span> dot</div>
+      <div class="ds-status-row" style="border-left:3px solid var(--status-danger-solid)">row accent</div>
+      <code>--status-danger-*</code>
+    </div><div class="ds-status-cell">
+      <div class="ds-status-chip status-info">info</div>
+      <div class="ds-status-dot"><span style="background:var(--status-info-solid)"></span> dot</div>
+      <div class="ds-status-row" style="border-left:3px solid var(--status-info-solid)">row accent</div>
+      <code>--status-info-*</code>
+    </div><div class="ds-status-cell">
+      <div class="ds-status-chip status-neutral">neutral</div>
+      <div class="ds-status-dot"><span style="background:var(--status-neutral-solid)"></span> dot</div>
+      <div class="ds-status-row" style="border-left:3px solid var(--status-neutral-solid)">row accent</div>
+      <code>--status-neutral-*</code>
+    </div></div></div></div>
+  </section>
+<section id="typography" class="ds-section">
+    <h2 class="ds-h2">Typography</h2>
+    <p class="ds-blurb">Two visible families and one functional monospace. Playfair Display carries the editorial voice; the interface family is a system stack with no webfont cost.</p>
+    <div class="ds-type"><div class="ds-type-row">
+      <div class="font-display text-fluid-display-xl" style="font-weight:700;letter-spacing:-0.02em">Ops for Artists</div>
+      <div class="ds-type-meta"><code>display</code><span class="ds-note">font-display fluid-display-xl 700 h1 on marketing heroes</span></div>
+    </div><div class="ds-type-row">
+      <div class="font-display text-2xl" style="font-weight:700;letter-spacing:-0.01em">Ops for Artists</div>
+      <div class="ds-type-meta"><code>page-title</code><span class="ds-note">font-display 2xl sm:3xl 700 h1</span></div>
+    </div><div class="ds-type-row">
+      <div class="font-display text-xl" style="font-weight:600">Ops for Artists</div>
+      <div class="ds-type-meta"><code>section-heading</code><span class="ds-note">font-display xl 600 h2</span></div>
+    </div><div class="ds-type-row">
+      <div class="font-sans text-lg" style="font-weight:600">Ops for Artists</div>
+      <div class="ds-type-meta"><code>card-title</code><span class="ds-note">font-sans lg 600 h3</span></div>
+    </div><div class="ds-type-row">
+      <div class="font-sans text-sm" style="font-weight:400;line-height:1.375rem">Ops for Artists</div>
+      <div class="ds-type-meta"><code>body</code><span class="ds-note">font-sans sm 400 </span></div>
+    </div><div class="ds-type-row">
+      <div class="font-sans text-base" style="font-weight:400;line-height:1.7">Ops for Artists</div>
+      <div class="ds-type-meta"><code>body-long</code><span class="ds-note">font-sans base 400 </span></div>
+    </div><div class="ds-type-row">
+      <div class="font-sans text-xs" style="font-weight:500">Ops for Artists</div>
+      <div class="ds-type-meta"><code>label</code><span class="ds-note">font-sans xs 500 </span></div>
+    </div><div class="ds-type-row">
+      <div class="font-sans text-sm" style="font-weight:500">Ops for Artists</div>
+      <div class="ds-type-meta"><code>nav</code><span class="ds-note">font-sans sm 500 </span></div>
+    </div><div class="ds-type-row">
+      <div class="font-sans text-sm" style="font-weight:500">Ops for Artists</div>
+      <div class="ds-type-meta"><code>button</code><span class="ds-note">font-sans sm 500 </span></div>
+    </div><div class="ds-type-row">
+      <div class="font-sans text-xs" style="font-weight:400;color:var(--text-muted)">Ops for Artists</div>
+      <div class="ds-type-meta"><code>caption</code><span class="ds-note">font-sans xs 400 </span></div>
+    </div><div class="ds-type-row">
+      <div class="font-sans text-xxs" style="font-weight:700;letter-spacing:0.06em;text-transform:uppercase;color:var(--text-muted)">Ops for Artists</div>
+      <div class="ds-type-meta"><code>overline</code><span class="ds-note">font-sans xxs 700 </span></div>
+    </div><div class="ds-type-row">
+      <div class="font-display text-xl" style="font-weight:400;font-style:italic">Ops for Artists</div>
+      <div class="ds-type-meta"><code>quote</code><span class="ds-note">font-display xl 400 </span></div>
+    </div><div class="ds-type-row">
+      <div class="font-display " style="font-size:clamp(1.75rem, 3vw, 2.5rem);font-weight:700;letter-spacing:-0.02em;line-height:1;font-variant-numeric:tabular-nums">128 covers</div>
+      <div class="ds-type-meta"><code>metric</code><span class="ds-note">font-display clamp(1.75rem, 3vw, 2.5rem) 700 </span></div>
+    </div><div class="ds-type-row">
+      <div class="font-display text-1.5rem" style="font-weight:700;line-height:1;font-variant-numeric:tabular-nums">128 covers</div>
+      <div class="ds-type-meta"><code>metric-sm</code><span class="ds-note">font-display 1.5rem 700 </span></div>
+    </div><div class="ds-type-row">
+      <div class="font-mono text-xs" style="font-weight:400">evt_01J9K2M4</div>
+      <div class="ds-type-meta"><code>code</code><span class="ds-note">font-mono xs 400 </span></div>
+    </div></div>
+  </section>
+<section id="space" class="ds-section">
+    <h2 class="ds-h2">Space and size</h2>
+    <p class="ds-blurb">A 4px grid, with a named 2px half-step for dense control padding. Touch targets are 44px minimum, always.</p>
+    <div class="ds-sub"><h3 class="ds-h3">Semantic spacing</h3><div class="ds-sub-body"><div class="ds-spaces"><div class="ds-space-row"><span class="ds-space-bar" style="width:0.5rem"></span><code>--space-control-gap</code><span class="ds-note">0.5rem</span></div><div class="ds-space-row"><span class="ds-space-bar" style="width:1rem"></span><code>--space-field-gap</code><span class="ds-note">1rem</span></div><div class="ds-space-row"><span class="ds-space-bar" style="width:1.5rem"></span><code>--space-card-padding</code><span class="ds-note">1.5rem</span></div><div class="ds-space-row"><span class="ds-space-bar" style="width:1rem"></span><code>--space-card-padding-compact</code><span class="ds-note">1rem</span></div><div class="ds-space-row"><span class="ds-space-bar" style="width:1.25rem"></span><code>--space-card-grid</code><span class="ds-note">1.25rem</span></div><div class="ds-space-row"><span class="ds-space-bar" style="width:1rem"></span><code>--space-stack</code><span class="ds-note">1rem</span></div><div class="ds-space-row"><span class="ds-space-bar" style="width:3rem"></span><code>--space-section</code><span class="ds-note">3rem</span></div><div class="ds-space-row"><span class="ds-space-bar" style="width:4rem"></span><code>--space-section-lg</code><span class="ds-note">4rem</span></div><div class="ds-space-row"><span class="ds-space-bar" style="width:1rem"></span><code>--space-page-gutter</code><span class="ds-note">1rem</span></div><div class="ds-space-row"><span class="ds-space-bar" style="width:1.5rem"></span><code>--space-page-gutter-sm</code><span class="ds-note">1.5rem</span></div><div class="ds-space-row"><span class="ds-space-bar" style="width:2rem"></span><code>--space-page-gutter-lg</code><span class="ds-note">2rem</span></div></div></div></div><div class="ds-sub"><h3 class="ds-h3">Touch target</h3><div class="ds-sub-body"><div class="ds-targets"><div class="ds-target-ok">44 x 44</div><div class="ds-target-bad">32 x 32</div><span class="ds-note">44px minimum on touch, 24px for mouse-only, 8px between adjacent targets.</span></div></div></div>
+  </section>
+<section id="radius-elevation" class="ds-section">
+    <h2 class="ds-h2">Radius and elevation</h2>
+    <p class="ds-blurb">Semantic radius aliases sit on top of Tailwind’s own numeric scale, so nothing that already shipped moved. Three elevation tiers, not five.</p>
+    <div class="ds-sub"><h3 class="ds-h3">Radius</h3><div class="ds-sub-body"><div class="ds-radii"><div class="ds-radius"><div class="ds-radius-box" style="border-radius:8px"></div><code>rounded-field</code><span class="ds-note">8px</span></div><div class="ds-radius"><div class="ds-radius-box" style="border-radius:8px"></div><code>rounded-control</code><span class="ds-note">8px</span></div><div class="ds-radius"><div class="ds-radius-box" style="border-radius:12px"></div><code>rounded-card</code><span class="ds-note">12px</span></div><div class="ds-radius"><div class="ds-radius-box" style="border-radius:16px"></div><code>rounded-sheet</code><span class="ds-note">16px</span></div><div class="ds-radius"><div class="ds-radius-box" style="border-radius:9999px"></div><code>rounded-pill</code><span class="ds-note">9999px</span></div><div class="ds-radius"><div class="ds-radius-box" style="border-radius:9999px"></div><code>rounded-avatar</code><span class="ds-note">9999px</span></div><div class="ds-radius"><div class="ds-radius-box" style="border-radius:12px"></div><code>rounded-media</code><span class="ds-note">12px</span></div></div></div></div><div class="ds-sub"><h3 class="ds-h3">Elevation</h3><div class="ds-sub-body"><div class="ds-elevs"><div class="ds-elev" style="box-shadow:var(--elevation-flat)"><code>flat</code><span class="ds-note">rows, list items, table cells</span></div><div class="ds-elev" style="box-shadow:var(--elevation-card)"><code>card</code><span class="ds-note">resting card</span></div><div class="ds-elev" style="box-shadow:var(--elevation-card-hover)"><code>card-hover</code><span class="ds-note">hovered interactive card</span></div><div class="ds-elev" style="box-shadow:var(--elevation-overlay)"><code>overlay</code><span class="ds-note">dialog, drawer, popover, menu, toast</span></div></div></div></div>
+  </section>
+<section id="layer" class="ds-section">
+    <h2 class="ds-h2">Layering</h2>
+    <p class="ds-blurb">The complete stacking contract. Four of these class names were used in 122 files while being undefined, so every dialog and popover stacked by DOM order.</p>
+    <div class="ds-table-wrap" tabindex="0" role="region" aria-label="Reference table"><table class="ds-table"><thead><tr><th>class</th><th>z-index</th><th>use</th></tr></thead><tbody><tr><td><code>z-below</code></td><td>-1</td><td class="ds-note">behind the flow</td></tr><tr><td><code>z-base</code></td><td>0</td><td class="ds-note">default</td></tr><tr><td><code>z-raised</code></td><td>10</td><td class="ds-note">in-card raised elements</td></tr><tr><td><code>z-sticky</code></td><td>20</td><td class="ds-note">sticky headers inside a scroll region</td></tr><tr><td><code>z-subnav</code></td><td>25</td><td class="ds-note"></td></tr><tr><td><code>z-chrome</code></td><td>30</td><td class="ds-note">app chrome, skip link</td></tr><tr><td><code>z-page-bar</code></td><td>32</td><td class="ds-note"></td></tr><tr><td><code>z-mobile-header</code></td><td>35</td><td class="ds-note"></td></tr><tr><td><code>z-nav</code></td><td>40</td><td class="ds-note">sidebar, mobile nav</td></tr><tr><td><code>z-island</code></td><td>42</td><td class="ds-note"></td></tr><tr><td><code>z-fab-secondary</code></td><td>44</td><td class="ds-note"></td></tr><tr><td><code>z-fab</code></td><td>45</td><td class="ds-note"></td></tr><tr><td><code>z-status</code></td><td>46</td><td class="ds-note"></td></tr><tr><td><code>z-offline</code></td><td>48</td><td class="ds-note"></td></tr><tr><td><code>z-overlay</code></td><td>50</td><td class="ds-note">dialog scrim</td></tr><tr><td><code>z-dialog</code></td><td>60</td><td class="ds-note">dialog and drawer panels</td></tr><tr><td><code>z-float</code></td><td>70</td><td class="ds-note">menus, selects, popovers (deliberately above dialog)</td></tr><tr><td><code>z-context-menu</code></td><td>72</td><td class="ds-note"></td></tr><tr><td><code>z-command</code></td><td>74</td><td class="ds-note"></td></tr><tr><td><code>z-spotlight</code></td><td>78</td><td class="ds-note"></td></tr><tr><td><code>z-toast</code></td><td>80</td><td class="ds-note">toasts</td></tr><tr><td><code>z-system-overlay</code></td><td>85</td><td class="ds-note"></td></tr><tr><td><code>z-tooltip</code></td><td>90</td><td class="ds-note">the tooltip singleton</td></tr><tr><td><code>z-max</code></td><td>9999</td><td class="ds-note">last resort, justify it</td></tr></tbody></table></div>
+  </section>
+<section id="motion" class="ds-section">
+    <h2 class="ds-h2">Motion</h2>
+    <p class="ds-blurb">Motion explains hierarchy, state, causality or spatial movement. Nothing animates to look richer. Hover a bar to see its duration.</p>
+    <div class="ds-motions"><div class="ds-motion"><div class="ds-motion-bar" style="transition-duration:75ms"></div><code>duration-instant</code><span class="ds-note">75ms</span></div><div class="ds-motion"><div class="ds-motion-bar" style="transition-duration:100ms"></div><code>duration-fast</code><span class="ds-note">100ms</span></div><div class="ds-motion"><div class="ds-motion-bar" style="transition-duration:200ms"></div><code>duration-normal</code><span class="ds-note">200ms</span></div><div class="ds-motion"><div class="ds-motion-bar" style="transition-duration:350ms"></div><code>duration-slow</code><span class="ds-note">350ms</span></div><div class="ds-motion"><div class="ds-motion-bar" style="transition-duration:220ms"></div><code>duration-enter</code><span class="ds-note">220ms</span></div><div class="ds-motion"><div class="ds-motion-bar" style="transition-duration:150ms"></div><code>duration-exit</code><span class="ds-note">150ms</span></div><div class="ds-motion"><div class="ds-motion-bar" style="transition-duration:500ms"></div><code>duration-deliberate</code><span class="ds-note">500ms</span></div></div><p class="ds-note">Under <code>prefers-reduced-motion</code> everything here collapses to 0.01ms and entrance animations resolve to their final state. Spinners, skeleton shimmer and progress fills are exempt, because they are the only feedback that work is happening.</p>
+  </section>
+<section id="actions" class="ds-section">
+    <h2 class="ds-h2">Actions</h2>
+    <p class="ds-blurb">One primary button per screen. Every size clears the 44px touch minimum; sizes differ in padding and type, not height.</p>
+    <div class="ds-sub"><h3 class="ds-h3">Variants and sizes</h3><div class="ds-sub-body"><div class="ds-matrix"><div class="ds-matrix-row"><code class="ds-matrix-label">primary</code><button class="inline-flex items-center justify-center font-medium transition-all duration-200 ease-out focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 touch-manipulation bg-brand-700 text-white hover:bg-brand-800 focus-visible:ring-brand-500 shadow-sm min-h-touch px-3.5 text-sm rounded-lg gap-1.5">primary sm</button><button class="inline-flex items-center justify-center font-medium transition-all duration-200 ease-out focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 touch-manipulation bg-brand-700 text-white hover:bg-brand-800 focus-visible:ring-brand-500 shadow-sm min-h-touch px-5 py-2.5 text-sm rounded-lg gap-2">primary md</button><button class="inline-flex items-center justify-center font-medium transition-all duration-200 ease-out focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 touch-manipulation bg-brand-700 text-white hover:bg-brand-800 focus-visible:ring-brand-500 shadow-sm h-12 px-6 py-3 text-base rounded-lg gap-2">primary lg</button></div><div class="ds-matrix-row"><code class="ds-matrix-label">secondary</code><button class="inline-flex items-center justify-center font-medium transition-all duration-200 ease-out focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 touch-manipulation bg-[var(--surface-2)] text-stone-100 border border-stone-600/80 hover:bg-[var(--surface-3)] focus-visible:ring-stone-400 shadow-sm min-h-touch px-3.5 text-sm rounded-lg gap-1.5">secondary sm</button><button class="inline-flex items-center justify-center font-medium transition-all duration-200 ease-out focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 touch-manipulation bg-[var(--surface-2)] text-stone-100 border border-stone-600/80 hover:bg-[var(--surface-3)] focus-visible:ring-stone-400 shadow-sm min-h-touch px-5 py-2.5 text-sm rounded-lg gap-2">secondary md</button><button class="inline-flex items-center justify-center font-medium transition-all duration-200 ease-out focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 touch-manipulation bg-[var(--surface-2)] text-stone-100 border border-stone-600/80 hover:bg-[var(--surface-3)] focus-visible:ring-stone-400 shadow-sm h-12 px-6 py-3 text-base rounded-lg gap-2">secondary lg</button></div><div class="ds-matrix-row"><code class="ds-matrix-label">danger</code><button class="inline-flex items-center justify-center font-medium transition-all duration-200 ease-out focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 touch-manipulation bg-red-700 text-white hover:bg-red-800 focus-visible:ring-red-500 shadow-sm min-h-touch px-3.5 text-sm rounded-lg gap-1.5">danger sm</button><button class="inline-flex items-center justify-center font-medium transition-all duration-200 ease-out focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 touch-manipulation bg-red-700 text-white hover:bg-red-800 focus-visible:ring-red-500 shadow-sm min-h-touch px-5 py-2.5 text-sm rounded-lg gap-2">danger md</button><button class="inline-flex items-center justify-center font-medium transition-all duration-200 ease-out focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 touch-manipulation bg-red-700 text-white hover:bg-red-800 focus-visible:ring-red-500 shadow-sm h-12 px-6 py-3 text-base rounded-lg gap-2">danger lg</button></div><div class="ds-matrix-row"><code class="ds-matrix-label">ghost</code><button class="inline-flex items-center justify-center font-medium transition-all duration-200 ease-out focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 touch-manipulation bg-transparent text-stone-300 hover:bg-[var(--surface-2)] focus-visible:ring-stone-400 min-h-touch px-3.5 text-sm rounded-lg gap-1.5">ghost sm</button><button class="inline-flex items-center justify-center font-medium transition-all duration-200 ease-out focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 touch-manipulation bg-transparent text-stone-300 hover:bg-[var(--surface-2)] focus-visible:ring-stone-400 min-h-touch px-5 py-2.5 text-sm rounded-lg gap-2">ghost md</button><button class="inline-flex items-center justify-center font-medium transition-all duration-200 ease-out focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 touch-manipulation bg-transparent text-stone-300 hover:bg-[var(--surface-2)] focus-visible:ring-stone-400 h-12 px-6 py-3 text-base rounded-lg gap-2">ghost lg</button></div></div></div></div><div class="ds-sub"><h3 class="ds-h3">States</h3><p class="ds-note">White on brand-700 measures 4.74:1.</p><div class="ds-sub-body"><div class="ds-matrix">
+<div class="ds-matrix-row"><code class="ds-matrix-label">default</code><button class="inline-flex items-center justify-center font-medium transition-all duration-200 ease-out focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 touch-manipulation bg-brand-700 text-white hover:bg-brand-800 focus-visible:ring-brand-500 shadow-sm min-h-touch px-5 py-2.5 text-sm rounded-lg gap-2">Save</button></div>
+<div class="ds-matrix-row"><code class="ds-matrix-label">hover</code><button class="inline-flex items-center justify-center font-medium transition-all duration-200 ease-out focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 touch-manipulation bg-brand-800 text-white shadow-md min-h-touch px-5 py-2.5 text-sm rounded-lg gap-2">Save</button></div>
+<div class="ds-matrix-row"><code class="ds-matrix-label">active</code><button class="inline-flex items-center justify-center font-medium transition-all duration-200 ease-out focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 touch-manipulation bg-brand-900 text-white min-h-touch px-5 py-2.5 text-sm rounded-lg gap-2" style="transform:scale(.97)">Save</button></div>
+<div class="ds-matrix-row"><code class="ds-matrix-label">focus-visible</code><button class="inline-flex items-center justify-center font-medium transition-all duration-200 ease-out focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 touch-manipulation bg-brand-700 text-white hover:bg-brand-800 focus-visible:ring-brand-500 shadow-sm min-h-touch px-5 py-2.5 text-sm rounded-lg gap-2" style="outline:3px solid var(--focus-ring-color);outline-offset:2px">Save</button></div>
+<div class="ds-matrix-row"><code class="ds-matrix-label">disabled</code><button class="inline-flex items-center justify-center font-medium transition-all duration-200 ease-out focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 touch-manipulation bg-brand-700 text-white hover:bg-brand-800 focus-visible:ring-brand-500 shadow-sm min-h-touch px-5 py-2.5 text-sm rounded-lg gap-2 opacity-50 pointer-events-none" disabled>Save</button></div>
+<div class="ds-matrix-row"><code class="ds-matrix-label">loading</code><button disabled aria-busy="true" class="inline-flex items-center justify-center font-medium transition-all duration-200 ease-out focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 touch-manipulation bg-brand-700 text-white hover:bg-brand-800 focus-visible:ring-brand-500 shadow-sm min-h-touch px-5 py-2.5 text-sm rounded-lg gap-2 opacity-50 pointer-events-none"><span class="ds-spinner motion-essential"></span>Saving</button></div></div></div></div>
+  </section>
+<section id="status" class="ds-section">
+    <h2 class="ds-h2">Status</h2>
+    <p class="ds-blurb">Badges and alerts. Colour is never the only carrier of meaning: the label does the work.</p>
+    <div class="ds-sub"><h3 class="ds-h3">Badges</h3><div class="ds-sub-body"><div class="ds-inline"><span class="inline-flex items-center px-3 py-1 rounded-md text-xs font-medium ring-1 ring-inset bg-stone-800 text-stone-100 ring-stone-600">default</span><span class="inline-flex items-center px-3 py-1 rounded-md text-xs font-medium ring-1 ring-inset bg-brand-950/70 text-brand-100 ring-brand-800">info</span><span class="inline-flex items-center px-3 py-1 rounded-md text-xs font-medium ring-1 ring-inset bg-emerald-950/70 text-emerald-100 ring-emerald-800">success</span><span class="inline-flex items-center px-3 py-1 rounded-md text-xs font-medium ring-1 ring-inset bg-amber-950/70 text-amber-100 ring-amber-800">warning</span><span class="inline-flex items-center px-3 py-1 rounded-md text-xs font-medium ring-1 ring-inset bg-red-950/70 text-red-100 ring-red-800">error</span></div></div></div><div class="ds-sub"><h3 class="ds-h3">Alerts</h3><div class="ds-sub-body"><div class="ds-stack"><div role="status" class="rounded-lg border border-l-[3px] p-4 bg-brand-100 border-brand-200 text-brand-900 border-l-brand-600 dark:bg-brand-950/60 dark:border-brand-800/60 dark:text-brand-100 dark:border-l-brand-500"><strong>info</strong><div class="text-sm mt-1">Every alert now announces. error and warning are assertive; info and success are polite.</div></div><div role="status" class="rounded-lg border border-l-[3px] p-4 bg-emerald-100 border-emerald-200 text-emerald-900 border-l-emerald-600 dark:bg-emerald-950/60 dark:border-emerald-800/60 dark:text-emerald-100 dark:border-l-emerald-500"><strong>success</strong><div class="text-sm mt-1">Every alert now announces. error and warning are assertive; info and success are polite.</div></div><div role="alert" class="rounded-lg border border-l-[3px] p-4 bg-amber-100 border-amber-200 text-amber-900 border-l-amber-600 dark:bg-amber-950/60 dark:border-amber-800/60 dark:text-amber-100 dark:border-l-amber-500"><strong>warning</strong><div class="text-sm mt-1">Every alert now announces. error and warning are assertive; info and success are polite.</div></div><div role="alert" class="rounded-lg border border-l-[3px] p-4 bg-red-100 border-red-200 text-red-900 border-l-red-600 dark:bg-red-950/60 dark:border-red-800/60 dark:text-red-100 dark:border-l-red-500"><strong>error</strong><div class="text-sm mt-1">Every alert now announces. error and warning are assertive; info and success are polite.</div></div></div></div></div>
+  </section>
+<section id="surfaces" class="ds-section">
+    <h2 class="ds-h2">Surfaces</h2>
+    <p class="ds-blurb">Cards group 3 to 8 related things. Never one card per toggle, never cards for a list of ten similar items.</p>
+    <div class="ds-cards"><div class="rounded-card border bg-[var(--surface-2)] border-stone-700/40 shadow-card">
+      <div class="px-6 py-4 border-b border-stone-800"><h4 class="text-lg font-semibold text-stone-50">default</h4><p class="text-sm text-stone-300">Card variant</p></div>
+      <div class="px-6 py-4 text-sm text-stone-300">Cards group 3 to 8 related things. Never one card per toggle.</div>
+      <div class="px-6 py-4 border-t border-stone-800 bg-stone-800/40" style="border-bottom-left-radius:12px;border-bottom-right-radius:12px"><button class="inline-flex items-center justify-center font-medium transition-all duration-200 ease-out focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 touch-manipulation bg-transparent text-stone-300 hover:bg-[var(--surface-2)] focus-visible:ring-stone-400 min-h-touch px-3.5 text-sm rounded-lg gap-1.5">Action</button></div>
+    </div><div class="rounded-card border bg-[var(--surface-3)] border-stone-600/50 shadow-card-hover">
+      <div class="px-6 py-4 border-b border-stone-800"><h4 class="text-lg font-semibold text-stone-50">elevated</h4><p class="text-sm text-stone-300">Card variant</p></div>
+      <div class="px-6 py-4 text-sm text-stone-300">Cards group 3 to 8 related things. Never one card per toggle.</div>
+      <div class="px-6 py-4 border-t border-stone-800 bg-stone-800/40" style="border-bottom-left-radius:12px;border-bottom-right-radius:12px"><button class="inline-flex items-center justify-center font-medium transition-all duration-200 ease-out focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 touch-manipulation bg-transparent text-stone-300 hover:bg-[var(--surface-2)] focus-visible:ring-stone-400 min-h-touch px-3.5 text-sm rounded-lg gap-1.5">Action</button></div>
+    </div><div class="rounded-card border bg-[var(--glass-bg)] border-stone-600/30 shadow-card backdrop-blur-xl">
+      <div class="px-6 py-4 border-b border-stone-800"><h4 class="text-lg font-semibold text-stone-50">glass</h4><p class="text-sm text-stone-300">Card variant</p></div>
+      <div class="px-6 py-4 text-sm text-stone-300">Cards group 3 to 8 related things. Never one card per toggle.</div>
+      <div class="px-6 py-4 border-t border-stone-800 bg-stone-800/40" style="border-bottom-left-radius:12px;border-bottom-right-radius:12px"><button class="inline-flex items-center justify-center font-medium transition-all duration-200 ease-out focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 touch-manipulation bg-transparent text-stone-300 hover:bg-[var(--surface-2)] focus-visible:ring-stone-400 min-h-touch px-3.5 text-sm rounded-lg gap-1.5">Action</button></div>
+    </div><div class="rounded-card border bg-[var(--surface-2)] border-brand-600/30 shadow-card">
+      <div class="px-6 py-4 border-b border-stone-800"><h4 class="text-lg font-semibold text-stone-50">highlight</h4><p class="text-sm text-stone-300">Card variant</p></div>
+      <div class="px-6 py-4 text-sm text-stone-300">Cards group 3 to 8 related things. Never one card per toggle.</div>
+      <div class="px-6 py-4 border-t border-stone-800 bg-stone-800/40" style="border-bottom-left-radius:12px;border-bottom-right-radius:12px"><button class="inline-flex items-center justify-center font-medium transition-all duration-200 ease-out focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 touch-manipulation bg-transparent text-stone-300 hover:bg-[var(--surface-2)] focus-visible:ring-stone-400 min-h-touch px-3.5 text-sm rounded-lg gap-1.5">Action</button></div>
+    </div></div>
+  </section>
+<section id="forms" class="ds-section">
+    <h2 class="ds-h2">Forms</h2>
+    <p class="ds-blurb">Validate inline. An error message names what to do. Inputs never render below 16px, so iOS does not auto-zoom.</p>
+    <div class="ds-fields">
+<label class="ds-field"><span class="text-xs font-medium text-stone-300">Default</span><input class="block w-full min-h-touch rounded-field border border-stone-600 bg-stone-900 px-3 py-2 text-sm text-stone-100 placeholder:text-stone-400" placeholder="hello@example.com" /></label>
+<label class="ds-field"><span class="text-xs font-medium text-stone-300">Focus</span><input class="block w-full min-h-touch rounded-field border border-stone-600 bg-stone-900 px-3 py-2 text-sm text-stone-100 placeholder:text-stone-400" placeholder="focused" style="border-color:rgb(var(--brand-500));box-shadow:0 0 0 2px rgb(var(--brand-500)/.2)" /></label>
+<label class="ds-field"><span class="text-xs font-medium text-stone-300">Error</span><input class="block w-full min-h-touch rounded-field border border-stone-600 bg-stone-900 px-3 py-2 text-sm text-stone-100 placeholder:text-stone-400 border-red-400" aria-invalid="true" placeholder="not an email" /><span role="alert" class="text-xs text-red-600 dark:text-red-400">Enter a valid email address.</span></label>
+<label class="ds-field"><span class="text-xs font-medium text-stone-300">Disabled</span><input class="block w-full min-h-touch rounded-field border border-stone-600 bg-stone-900 px-3 py-2 text-sm text-stone-100 placeholder:text-stone-400 bg-stone-800 text-stone-500 cursor-not-allowed" disabled placeholder="disabled" /></label>
+<label class="ds-field"><span class="text-xs font-medium text-stone-300">Textarea with counter</span><textarea class="block w-full min-h-touch rounded-field border border-stone-600 bg-stone-900 px-3 py-2 text-sm text-stone-100 placeholder:text-stone-400" rows="3" placeholder="Notes"></textarea><span class="text-xs" style="color:var(--text-placeholder)">0 / 280</span></label>
+<div class="ds-field"><span class="text-xs font-medium text-stone-300">Switch</span>
+  <div class="flex items-center gap-4">
+    <button role="switch" aria-checked="true" aria-label="Notifications on" data-hit-expanded="true" class="relative inline-flex h-7 w-12 items-center rounded-full border-2 border-transparent bg-brand-600"><span class="block h-5 w-5 rounded-full bg-stone-900 shadow-lg" style="transform:translateX(1.25rem)"></span></button>
+    <button role="switch" aria-checked="false" aria-label="Notifications off" data-hit-expanded="true" class="relative inline-flex h-7 w-12 items-center rounded-full border-2 border-transparent bg-stone-700"><span class="block h-5 w-5 rounded-full bg-stone-900 shadow-lg" style="transform:translateX(.125rem)"></span></button>
+    <button role="switch" aria-checked="false" aria-disabled="true" aria-label="Notifications, unavailable" data-hit-expanded="true" disabled class="relative inline-flex h-7 w-12 items-center rounded-full border-2 border-transparent bg-stone-700 opacity-50 cursor-not-allowed"><span class="block h-5 w-5 rounded-full bg-stone-900 shadow-lg" style="transform:translateX(.125rem)"></span></button>
+    <span class="ds-note">on / off / disabled</span>
+  </div>
+</div></div>
+  </section>
+<section id="data" class="ds-section">
+    <h2 class="ds-h2">Data</h2>
+    <p class="ds-blurb">Seven columns by default; anything more goes behind a column chooser. On a phone a table becomes a card list rather than a sideways scroll.</p>
+    <div class="overflow-x-auto rounded-card border border-stone-700/40" tabindex="0" role="region" aria-label="Upcoming events">
+<table class="min-w-full divide-y divide-stone-700 text-left">
+  <thead class="bg-stone-800/60"><tr>
+    <th class="px-6 py-3 text-xs font-medium text-stone-400 uppercase tracking-wider">Client</th>
+    <th class="px-6 py-3 text-xs font-medium text-stone-400 uppercase tracking-wider">Date</th>
+    <th class="px-6 py-3 text-xs font-medium text-stone-400 uppercase tracking-wider">Status</th>
+    <th class="px-6 py-3 text-xs font-medium text-stone-400 uppercase tracking-wider text-right">Total</th>
+  </tr></thead>
+  <tbody class="bg-stone-900 divide-y divide-stone-800">
+    <tr class="hover:bg-stone-800/50"><td class="px-6 py-4 text-sm text-stone-300">Harbour House</td><td class="px-6 py-4 text-sm text-stone-300">12 Sep</td><td class="px-6 py-4"><span class="inline-flex items-center px-3 py-1 rounded-md text-xs font-medium ring-1 ring-inset bg-emerald-950/70 text-emerald-100 ring-emerald-800">confirmed</span></td><td class="px-6 py-4 text-sm text-stone-300 text-right font-mono">1,290.00</td></tr>
+    <tr class="hover:bg-stone-800/50"><td class="px-6 py-4 text-sm text-stone-300">Elm Street</td><td class="px-6 py-4 text-sm text-stone-300">19 Sep</td><td class="px-6 py-4"><span class="inline-flex items-center px-3 py-1 rounded-md text-xs font-medium ring-1 ring-inset bg-amber-950/70 text-amber-100 ring-amber-800">awaiting client</span></td><td class="px-6 py-4 text-sm text-stone-300 text-right font-mono">860.00</td></tr>
+    <tr class="hover:bg-stone-800/50"><td class="px-6 py-4 text-sm text-stone-300">Ridgeway</td><td class="px-6 py-4 text-sm text-stone-300">02 Oct</td><td class="px-6 py-4"><span class="inline-flex items-center px-3 py-1 rounded-md text-xs font-medium ring-1 ring-inset bg-red-950/70 text-red-100 ring-red-800">expired</span></td><td class="px-6 py-4 text-sm text-stone-300 text-right font-mono">0.00</td></tr>
+  </tbody>
+</table></div>
+  </section>
+<section id="states" class="ds-section">
+    <h2 class="ds-h2">Feedback states</h2>
+    <p class="ds-blurb">All five data states, every time: empty, loading, loaded, error, partial. Never render a failed load as an empty list.</p>
+    
+<div class="ds-state-grid">
+  <div class="rounded-card border border-stone-700/40 bg-[var(--surface-2)] p-6">
+    <div class="text-xs uppercase tracking-wider text-stone-400 mb-4">loading</div>
+    <div class="skeleton h-4 w-2/3 mb-2"></div><div class="skeleton h-4 w-1/2 mb-2"></div><div class="skeleton h-4 w-5/6"></div>
+  </div>
+  <div class="rounded-card border border-stone-700/40 bg-[var(--surface-2)] p-6 text-center">
+    <div class="text-xs uppercase tracking-wider text-stone-400 mb-4">empty</div>
+    <h4 class="text-lg font-semibold text-stone-100 mb-2 tracking-tight">No events yet</h4>
+    <p class="text-sm text-stone-400 mb-6">An empty state names the next action, it does not just say there is nothing here.</p>
+    <button class="inline-flex items-center justify-center font-medium transition-all duration-200 ease-out focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 touch-manipulation bg-brand-700 text-white hover:bg-brand-800 focus-visible:ring-brand-500 shadow-sm min-h-touch px-3.5 text-sm rounded-lg gap-1.5">Create an event</button>
+  </div>
+  <div class="rounded-card border border-stone-700/40 bg-[var(--surface-2)] p-6 text-center" role="alert">
+    <div class="text-xs uppercase tracking-wider text-stone-400 mb-4">error</div>
+    <div class="mx-auto mb-3 inline-flex rounded-full bg-red-500/10 p-2"><span style="width:24px;height:24px;display:block;border-radius:9999px;background:var(--status-danger-solid)"></span></div>
+    <h4 class="text-base font-semibold text-stone-100 mb-1">Could not load events</h4>
+    <p class="text-sm text-stone-400 mb-4">Never render a failed load as an empty list.</p>
+    <button class="inline-flex items-center justify-center font-medium transition-all duration-200 ease-out focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 touch-manipulation bg-[var(--surface-2)] text-stone-100 border border-stone-600/80 hover:bg-[var(--surface-3)] focus-visible:ring-stone-400 shadow-sm min-h-touch px-3.5 text-sm rounded-lg gap-1.5">Try again</button>
+  </div>
+  <div class="rounded-card border border-stone-700/40 bg-[var(--surface-2)] p-6">
+    <div class="text-xs uppercase tracking-wider text-stone-400 mb-4">partial</div>
+    <p class="text-sm text-stone-300 mb-3">3 of 5 sections loaded.</p>
+    <div class="h-2 w-full rounded-pill bg-stone-700 overflow-hidden"><div class="h-full rounded-pill motion-essential" style="width:60%;background:var(--status-info-solid)"></div></div>
+  </div>
+</div>
+  </section>
+<section id="overlays" class="ds-section">
+    <h2 class="ds-h2">Overlays</h2>
+    <p class="ds-blurb">Dialogs trap focus, close on Escape, restore focus, and carry the full ARIA. Destructive and confirm actions sit apart.</p>
+    <div class="ds-overlay-demo">
+  <div class="ds-scrim"></div>
+  <div class="ds-dialog" role="dialog" aria-modal="true" aria-label="Delete event">
+    <h4 class="text-lg font-semibold text-stone-100">Delete this event?</h4>
+    <p class="mt-2 text-sm text-stone-400">This cannot be undone. Destructive actions are never adjacent to confirm actions.</p>
+    <div class="ds-dialog-footer">
+      <button class="inline-flex items-center justify-center font-medium transition-all duration-200 ease-out focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 touch-manipulation bg-transparent text-stone-300 hover:bg-[var(--surface-2)] focus-visible:ring-stone-400 min-h-touch px-3.5 text-sm rounded-lg gap-1.5">Cancel</button>
+      <span style="flex:1"></span>
+      <button class="inline-flex items-center justify-center font-medium transition-all duration-200 ease-out focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 touch-manipulation bg-red-700 text-white hover:bg-red-800 focus-visible:ring-red-500 shadow-sm min-h-touch px-3.5 text-sm rounded-lg gap-1.5">Delete</button>
+    </div>
+  </div>
+</div>
+<div class="ds-menu-demo">
+  <div class="ds-menu">
+    <div class="ds-menu-item">Duplicate</div>
+    <div class="ds-menu-item ds-menu-item-hi">Export</div>
+    <div class="ds-menu-sep"></div>
+    <div class="ds-menu-item ds-menu-item-off">Archive</div>
+  </div>
+  <p class="ds-note">A menu sits at <code>z-float</code> (70), above <code>z-dialog</code> (60), so a menu opened inside a modal renders over it.</p>
+</div>
+  </section>
+<section id="media" class="ds-section">
+    <h2 class="ds-h2">Media</h2>
+    <p class="ds-blurb">Real photography, kept legible. Do not bury important media under an aggressive gradient.</p>
+    <div class="ds-media">
+  <div class="ds-media-img"></div>
+  <div class="ds-media-scrim media-scrim"></div>
+  <div class="ds-media-copy"><h4 class="font-display text-2xl">Text over photography</h4><p class="text-sm">Only <code>.media-scrim</code>. Never a flat colour wash, and never below 4.5:1.</p></div>
+</div>
+  </section>
+<section id="limits" class="ds-section">
+    <h2 class="ds-h2">Limits</h2>
+    <p class="ds-blurb">Exceeding one of these is a design defect, not a preference.</p>
+    <div class="ds-table-wrap" tabindex="0" role="region" aria-label="Reference table"><table class="ds-table"><tbody><tr><td>top level nav items</td><td><strong>6</strong></td></tr><tr><td>dashboard hero metrics</td><td><strong>2</strong></td></tr><tr><td>dashboard supporting metrics</td><td><strong>5</strong></td></tr><tr><td>form fields per visible section</td><td><strong>7</strong></td></tr><tr><td>table columns default</td><td><strong>7</strong></td></tr><tr><td>buttons per toolbar</td><td><strong>5</strong></td></tr><tr><td>simultaneous toasts</td><td><strong>2</strong></td></tr><tr><td>tabs per page</td><td><strong>6</strong></td></tr><tr><td>primary buttons per screen</td><td><strong>1</strong></td></tr><tr><td>accent colors per view</td><td><strong>2</strong></td></tr></tbody></table></div>
+  </section>
+<section id="index" class="ds-section">
+    <h2 class="ds-h2">Component index</h2>
+    <p class="ds-blurb">The full registry. Search it with <code>node design-system/registry/find.mjs &lt;query&gt;</code>.</p>
+    <div class="ds-table-wrap" tabindex="0" role="region" aria-label="Reference table"><table class="ds-table"><thead><tr><th>component</th><th>status</th><th>path</th></tr></thead><tbody><tr><td><code>Button</code></td><td class="ds-status-tag ds-status-canonical">canonical</td><td class="ds-note">components/ui/button.tsx</td></tr><tr><td><code>Card</code></td><td class="ds-status-tag ds-status-canonical">canonical</td><td class="ds-note">components/ui/card.tsx</td></tr><tr><td><code>Badge</code></td><td class="ds-status-tag ds-status-canonical">canonical</td><td class="ds-note">components/ui/badge.tsx</td></tr><tr><td><code>StatusBadge</code></td><td class="ds-status-tag ds-status-duplicate">duplicate</td><td class="ds-note">components/ui/status-badge.tsx</td></tr><tr><td><code>SaveStateBadge</code></td><td class="ds-status-tag ds-status-canonical-gap">canonical-gap</td><td class="ds-note">components/ui/save-state-badge.tsx</td></tr><tr><td><code>StatusDot</code></td><td class="ds-status-tag ds-status-canonical">canonical</td><td class="ds-note">components/ui/status-dot.tsx</td></tr><tr><td><code>Input</code></td><td class="ds-status-tag ds-status-canonical">canonical</td><td class="ds-note">components/ui/input.tsx</td></tr><tr><td><code>Textarea</code></td><td class="ds-status-tag ds-status-canonical">canonical</td><td class="ds-note">components/ui/textarea.tsx</td></tr><tr><td><code>Select (native) and SelectRoot/Trigger/Value/Content/Item (compound)</code></td><td class="ds-status-tag ds-status-canonical-gap">canonical-gap</td><td class="ds-note">components/ui/select.tsx</td></tr><tr><td><code>RadioGroup</code></td><td class="ds-status-tag ds-status-canonical">canonical</td><td class="ds-note">components/ui/radio-group.tsx</td></tr><tr><td><code>CheckboxGroup</code></td><td class="ds-status-tag ds-status-canonical">canonical</td><td class="ds-note">components/ui/checkbox-group.tsx</td></tr><tr><td><code>Switch</code></td><td class="ds-status-tag ds-status-canonical">canonical</td><td class="ds-note">components/ui/switch.tsx</td></tr><tr><td><code>Label</code></td><td class="ds-status-tag ds-status-canonical">canonical</td><td class="ds-note">components/ui/label.tsx</td></tr><tr><td><code>TagInput / TagArrayInput</code></td><td class="ds-status-tag ds-status-canonical">canonical</td><td class="ds-note">components/ui/tag-input.tsx</td></tr><tr><td><code>ComboboxInput</code></td><td class="ds-status-tag ds-status-canonical">canonical</td><td class="ds-note">components/ui/combobox-input.tsx</td></tr><tr><td><code>AddressAutocomplete / LocationAutocomplete / StoreAutocomplete</code></td><td class="ds-status-tag ds-status-canonical">canonical</td><td class="ds-note">components/ui/address-autocomplete.tsx</td></tr><tr><td><code>RichTextEditor / RichNoteEditor / RichTextRenderer</code></td><td class="ds-status-tag ds-status-canonical">canonical</td><td class="ds-note">components/ui/rich-text-editor.tsx</td></tr><tr><td><code>Table</code></td><td class="ds-status-tag ds-status-canonical-gap">canonical-gap</td><td class="ds-note">components/ui/table.tsx</td></tr><tr><td><code>ResponsiveTable</code></td><td class="ds-status-tag ds-status-canonical">canonical</td><td class="ds-note">components/ui/responsive-table.tsx</td></tr><tr><td><code>BulkSelectTable</code></td><td class="ds-status-tag ds-status-canonical">canonical</td><td class="ds-note">components/ui/bulk-select-table.tsx</td></tr><tr><td><code>InlineEditCell</code></td><td class="ds-status-tag ds-status-canonical">canonical</td><td class="ds-note">components/ui/inline-edit-cell.tsx</td></tr><tr><td><code>StatCard</code></td><td class="ds-status-tag ds-status-canonical-gap">canonical-gap</td><td class="ds-note">components/ui/stat-card.tsx</td></tr><tr><td><code>Sparkline</code></td><td class="ds-status-tag ds-status-canonical">canonical</td><td class="ds-note">components/ui/sparkline.tsx</td></tr><tr><td><code>AnimatedCounter</code></td><td class="ds-status-tag ds-status-canonical">canonical</td><td class="ds-note">components/ui/animated-counter.tsx</td></tr><tr><td><code>Recharts wrappers</code></td><td class="ds-status-tag ds-status-canonical-gap">canonical-gap</td><td class="ds-note">components/analytics/insights-charts.tsx</td></tr><tr><td><code>Alert</code></td><td class="ds-status-tag ds-status-canonical">canonical</td><td class="ds-note">components/ui/alert.tsx</td></tr><tr><td><code>toast (sonner) and showUndoToast</code></td><td class="ds-status-tag ds-status-canonical">canonical</td><td class="ds-note">components/ui/undo-toast.tsx</td></tr><tr><td><code>ErrorState</code></td><td class="ds-status-tag ds-status-canonical">canonical</td><td class="ds-note">components/ui/error-state.tsx</td></tr><tr><td><code>EmptyState</code></td><td class="ds-status-tag ds-status-canonical">canonical</td><td class="ds-note">components/ui/empty-state.tsx</td></tr><tr><td><code>Skeleton</code></td><td class="ds-status-tag ds-status-canonical-gap">canonical-gap</td><td class="ds-note">components/ui/skeleton.tsx</td></tr><tr><td><code>ListPageSkeleton</code></td><td class="ds-status-tag ds-status-canonical">canonical</td><td class="ds-note">components/ui/page-skeleton.tsx</td></tr><tr><td><code>LoadingSpinner</code></td><td class="ds-status-tag ds-status-canonical">canonical</td><td class="ds-note">components/ui/loading-state.tsx</td></tr><tr><td><code>DeterminateProgress</code></td><td class="ds-status-tag ds-status-canonical-gap">canonical-gap</td><td class="ds-note">components/ui/determinate-progress.tsx</td></tr><tr><td><code>SuccessCheck</code></td><td class="ds-status-tag ds-status-canonical">canonical</td><td class="ds-note">components/ui/success-check.tsx</td></tr><tr><td><code>AccessibleDialog</code></td><td class="ds-status-tag ds-status-canonical">canonical</td><td class="ds-note">components/ui/accessible-dialog.tsx</td></tr><tr><td><code>ConfirmModal</code></td><td class="ds-status-tag ds-status-canonical">canonical</td><td class="ds-note">components/ui/confirm-modal.tsx</td></tr><tr><td><code>DropdownMenu and parts</code></td><td class="ds-status-tag ds-status-canonical">canonical</td><td class="ds-note">components/ui/dropdown-menu.tsx</td></tr><tr><td><code>GlobalTooltipProvider</code></td><td class="ds-status-tag ds-status-canonical">canonical</td><td class="ds-note">components/ui/global-tooltip-provider.tsx</td></tr><tr><td><code>Sheet / Drawer</code></td><td class="ds-status-tag ds-status-missing">missing</td><td class="ds-note">not implemented</td></tr><tr><td><code>Popover</code></td><td class="ds-status-tag ds-status-missing">missing</td><td class="ds-note">not implemented</td></tr><tr><td><code>TabNav and TabNav.Panel</code></td><td class="ds-status-tag ds-status-canonical-gap">canonical-gap</td><td class="ds-note">components/shared/tab-nav.tsx</td></tr><tr><td><code>BreadcrumbBar</code></td><td class="ds-status-tag ds-status-canonical">canonical</td><td class="ds-note">components/navigation/breadcrumb-bar.tsx</td></tr><tr><td><code>Pagination</code></td><td class="ds-status-tag ds-status-missing">missing</td><td class="ds-note">not implemented</td></tr><tr><td><code>Accordion / Disclosure</code></td><td class="ds-status-tag ds-status-canonical-gap">canonical-gap</td><td class="ds-note">components/help/faq-accordion.tsx</td></tr><tr><td><code>StepWizard</code></td><td class="ds-status-tag ds-status-canonical">canonical</td><td class="ds-note">components/shared/step-wizard.tsx</td></tr><tr><td><code>RoleSwitcher</code></td><td class="ds-status-tag ds-status-canonical">canonical</td><td class="ds-note">components/shared/role-switcher.tsx</td></tr><tr><td><code>Avatar</code></td><td class="ds-status-tag ds-status-canonical">canonical</td><td class="ds-note">components/ui/avatar.tsx</td></tr><tr><td><code>ImageWithFallback</code></td><td class="ds-status-tag ds-status-canonical">canonical</td><td class="ds-note">components/pricing/image-with-fallback.tsx</td></tr><tr><td><code>FoodPlaceholderImage</code></td><td class="ds-status-tag ds-status-canonical">canonical</td><td class="ds-note">components/ui/food-placeholder-image.tsx</td></tr><tr><td><code>Photo galleries</code></td><td class="ds-status-tag ds-status-canonical-gap">canonical-gap</td><td class="ds-note">components/photos/portfolio-gallery.tsx</td></tr><tr><td><code>Carousel</code></td><td class="ds-status-tag ds-status-missing">missing</td><td class="ds-note">not implemented</td></tr><tr><td><code>TrackedVideo</code></td><td class="ds-status-tag ds-status-canonical-gap">canonical-gap</td><td class="ds-note">components/analytics/tracked-video.tsx</td></tr><tr><td><code>PageHeader</code></td><td class="ds-status-tag ds-status-canonical">canonical</td><td class="ds-note">components/ui/page-header.tsx</td></tr><tr><td><code>SectionDivider</code></td><td class="ds-status-tag ds-status-canonical">canonical</td><td class="ds-note">components/ui/section-divider.tsx</td></tr><tr><td><code>ResponsivePage</code></td><td class="ds-status-tag ds-status-canonical">canonical</td><td class="ds-note">components/layout/responsive-page.tsx</td></tr><tr><td><code>ErrorBoundary</code></td><td class="ds-status-tag ds-status-canonical">canonical</td><td class="ds-note">components/ui/error-boundary.tsx</td></tr><tr><td><code>FadeIn</code></td><td class="ds-status-tag ds-status-canonical">canonical</td><td class="ds-note">components/ui/fade-in.tsx</td></tr><tr><td><code>ThemeToggle</code></td><td class="ds-status-tag ds-status-canonical">canonical</td><td class="ds-note">components/ui/theme-toggle.tsx</td></tr><tr><td><code>ColorPaletteProvider</code></td><td class="ds-status-tag ds-status-canonical">canonical</td><td class="ds-note">components/ui/color-palette-provider.tsx</td></tr><tr><td><code>Icon re-exports</code></td><td class="ds-status-tag ds-status-canonical">canonical</td><td class="ds-note">components/ui/icons.ts</td></tr><tr><td><code>Branded illustrations</code></td><td class="ds-status-tag ds-status-canonical-gap">canonical-gap</td><td class="ds-note">components/ui/branded-illustrations.tsx</td></tr></tbody></table></div>
+  </section>
+</main>
+<footer class="ds-footer">
+  <p>Rules: <code>design-system/SPEC.md</code>. Checklist: <code>design-system/BUILD-CHECKLIST.md</code>. Search: <code>node design-system/registry/find.mjs &lt;query&gt;</code>.</p>
+</footer>
+<script>
+(function () {
+  var root = document.documentElement
+  var theme = document.getElementById('ds-theme')
+  theme.addEventListener('click', function () {
+    var dark = root.classList.toggle('dark')
+    theme.textContent = dark ? 'Dark' : 'Light'
+    theme.setAttribute('aria-pressed', String(dark))
+  })
+  var main = document.getElementById('ds-main')
+  Array.prototype.forEach.call(document.querySelectorAll('.ds-w'), function (b) {
+    b.addEventListener('click', function () {
+      Array.prototype.forEach.call(document.querySelectorAll('.ds-w'), function (x) { x.classList.remove('ds-ctl-on') })
+      b.classList.add('ds-ctl-on')
+      var w = b.getAttribute('data-w')
+      main.style.maxWidth = w === '0' ? '' : w + 'px'
+      main.style.margin = w === '0' ? '' : '0 auto'
+      main.style.outline = w === '0' ? '' : '1px dashed var(--border-strong)'
+    })
+  })
+  var motion = document.getElementById('ds-motion')
+  motion.addEventListener('click', function () {
+    var on = root.classList.toggle('ds-reduce')
+    motion.setAttribute('aria-pressed', String(on))
+    motion.textContent = on ? 'Motion reduced' : 'Reduce motion'
+  })
+})()
+</script>
+</body>
+</html>

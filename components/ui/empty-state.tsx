@@ -67,7 +67,7 @@ export function EmptyState({
             alt="Remy"
             width={80}
             height={80}
-            className="relative opacity-90 drop-shadow-[0_4px_12px_rgba(232,143,71,0.15)]"
+            className="relative opacity-90 drop-shadow-[0_4px_12px_rgb(var(--brand-500)/0.15)]"
             priority={false}
           />
         </div>

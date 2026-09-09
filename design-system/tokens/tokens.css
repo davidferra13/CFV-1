@@ -1,0 +1,547 @@
+/*
+ * ChefFlow design tokens - standalone copy.
+ * GENERATED from design-system/tokens/tokens.json. Do not edit by hand.
+ *
+ * app/globals.css already contains this block inline (Tailwind needs it in the
+ * same file to avoid an extra request). This copy exists so non-Tailwind
+ * surfaces - generated PDFs, emails, embeds, the visual catalog - can import
+ * exactly the same values.
+ */
+/* === GENERATED:design-system-tokens - do not edit by hand. Run npm run tokens:build === */
+/*
+ * Source: design-system/tokens/tokens.json
+ * Spec:   design-system/SPEC.md
+ *
+ * These declarations sit AFTER the historical :root/.dark blocks on purpose,
+ * so the generated values win. Aliases at the bottom keep every legacy variable
+ * name working while pointing it at a single source.
+ */
+:root {
+  /* brand ramp - The Copper and Cast Iron identity */
+  --brand-50: 254 249 243;
+  --brand-100: 252 240 224;
+  --brand-200: 248 221 192;
+  --brand-300: 245 209 171;
+  --brand-400: 243 197 150;
+  --brand-500: 237 168 107;
+  --brand-600: 177 92 38;
+  --brand-700: 177 92 38;
+  --brand-800: 142 74 36;
+  --brand-900: 116 64 33;
+  --brand-950: 62 32 15;
+
+  /* surface scale */
+  --surface-0-rgb: var(--stone-950);
+  --surface-1-rgb: var(--stone-900);
+  --surface-2-rgb: var(--stone-800);
+  --surface-3-rgb: var(--stone-700);
+  --surface-4-rgb: var(--stone-600);
+  --surface-0: rgb(var(--surface-0-rgb));
+  --surface-1: rgb(var(--surface-1-rgb));
+  --surface-2: rgb(var(--surface-2-rgb));
+  --surface-3: rgb(var(--surface-3-rgb));
+  --surface-4: rgb(var(--surface-4-rgb));
+
+  /* text tiers */
+  --text-primary: rgb(var(--stone-50));
+  --text-secondary: rgb(var(--stone-100));
+  --text-muted: rgb(var(--stone-200));
+  --text-muted-soft: rgb(var(--stone-300));
+  --text-placeholder: rgb(var(--stone-400));
+  --text-inverse: rgb(var(--stone-950));
+
+  /* borders */
+  --border-subtle: rgb(var(--stone-700) / 0.9);
+  --border-default: rgb(var(--stone-600) / 0.9);
+  --border-strong: rgb(var(--stone-500) / 0.75);
+  --border-warm: rgb(var(--brand-500) / 0.12);
+  --border-warm-hover: rgb(var(--brand-500) / 0.24);
+
+  /* status roles - meaning is global, silhouette is local */
+  --status-success-bg: rgb(220 252 231);
+  --status-success-fg: rgb(20 83 45);
+  --status-success-border: rgb(134 239 172);
+  --status-success-solid: rgb(16 185 129);
+  --status-warning-bg: rgb(254 243 199);
+  --status-warning-fg: rgb(120 53 15);
+  --status-warning-border: rgb(252 211 77);
+  --status-warning-solid: rgb(245 158 11);
+  --status-danger-bg: rgb(254 226 226);
+  --status-danger-fg: rgb(127 29 29);
+  --status-danger-border: rgb(252 165 165);
+  --status-danger-solid: rgb(220 38 38);
+  --status-info-bg: rgb(var(--brand-100));
+  --status-info-fg: rgb(var(--brand-900));
+  --status-info-border: rgb(var(--brand-300));
+  --status-info-solid: rgb(var(--brand-600));
+  --status-neutral-bg: rgb(var(--stone-800));
+  --status-neutral-fg: rgb(var(--stone-100));
+  --status-neutral-border: rgb(var(--stone-600));
+  --status-neutral-solid: rgb(var(--stone-500));
+
+  /* interaction */
+  --focus-ring-color: rgb(var(--brand-600));
+  --focus-ring-width: 3px;
+  --focus-ring-width-field: 2px;
+  --focus-ring-offset: 2px;
+  --selected-surface: rgb(var(--brand-100));
+  --selected-foreground: rgb(var(--brand-900));
+  --disabled-opacity: 0.5;
+  --disabled-foreground: rgb(var(--stone-400));
+
+  /* overlay and media */
+  --scrim: rgb(0 0 0 / 0.5);
+  --scrim-blur: blur(4px);
+  --glass-bg: rgb(var(--stone-900) / 0.78);
+  --glass-subtle-bg: rgb(var(--stone-900) / 0.62);
+  --glass-heavy-bg: rgb(var(--stone-950) / 0.86);
+  --media-scrim: linear-gradient(
+    180deg,
+    rgb(0 0 0 / 0) 0%,
+    rgb(0 0 0 / 0.15) 45%,
+    rgb(0 0 0 / 0.72) 100%
+  );
+
+  /* radius scale */
+  --radius-none: 0px;
+  --radius-sm: 2px;
+  --radius-DEFAULT: 4px;
+  --radius-md: 6px;
+  --radius-lg: 8px;
+  --radius-xl: 12px;
+  --radius-2xl: 16px;
+  --radius-3xl: 24px;
+  --radius-full: 9999px;
+  --radius-role-field: 8px;
+  --radius-role-control: 8px;
+  --radius-role-card: 12px;
+  --radius-role-sheet: 16px;
+  --radius-role-pill: 9999px;
+  --radius-role-avatar: 9999px;
+  --radius-role-media: 12px;
+
+  /* elevation */
+  --elevation-flat: none;
+  --elevation-card: 0 10px 30px rgba(36, 29, 23, 0.07), 0 0 0 1px rgb(36 29 23 / 0.04);
+  --elevation-card-hover:
+    0 18px 40px rgba(36, 29, 23, 0.12), 0 0 0 1px rgb(var(--brand-500) / 0.08);
+  --elevation-overlay: 0 24px 48px rgba(36, 29, 23, 0.18), 0 0 0 1px rgb(var(--brand-500) / 0.1);
+
+  /* layering */
+  --layer-below: -1;
+  --layer-base: 0;
+  --layer-raised: 10;
+  --layer-sticky: 20;
+  --layer-subnav: 25;
+  --layer-chrome: 30;
+  --layer-page-bar: 32;
+  --layer-mobile-header: 35;
+  --layer-nav: 40;
+  --layer-island: 42;
+  --layer-fab-secondary: 44;
+  --layer-fab: 45;
+  --layer-status: 46;
+  --layer-offline: 48;
+  --layer-overlay: 50;
+  --layer-dialog: 60;
+  --layer-float: 70;
+  --layer-context-menu: 72;
+  --layer-command: 74;
+  --layer-spotlight: 78;
+  --layer-toast: 80;
+  --layer-system-overlay: 85;
+  --layer-tooltip: 90;
+  --layer-max: 9999;
+
+  /* motion */
+  --duration-instant: 75ms;
+  --duration-fast: 100ms;
+  --duration-normal: 200ms;
+  --duration-slow: 350ms;
+  --duration-enter: 220ms;
+  --duration-exit: 150ms;
+  --duration-deliberate: 500ms;
+  --ease-spring: cubic-bezier(0.16, 1, 0.3, 1);
+  --ease-bounce: cubic-bezier(0.34, 1.56, 0.64, 1);
+  --ease-out: cubic-bezier(0, 0, 0.2, 1);
+  --ease-in: cubic-bezier(0.4, 0, 1, 1);
+  --ease-in-out: cubic-bezier(0.4, 0, 0.2, 1);
+
+  /* sizing */
+  --touch-target-min: 44px;
+  --control-height-sm: 44px;
+  --control-height-md: 44px;
+  --control-height-lg: 48px;
+  --icon-inline: 16px;
+  --icon-default: 20px;
+  --icon-nav: 20px;
+  --icon-primary: 24px;
+  --container-content: 72rem;
+  --container-prose: 42rem;
+  --container-form: 36rem;
+  --container-settings: 48rem;
+
+  /* spacing roles */
+  --space-control-gap: 0.5rem;
+  --space-field-gap: 1rem;
+  --space-card-padding: 1.5rem;
+  --space-card-padding-compact: 1rem;
+  --space-card-grid: 1.25rem;
+  --space-stack: 1rem;
+  --space-section: 3rem;
+  --space-section-lg: 4rem;
+  --space-page-gutter: 1rem;
+  --space-page-gutter-sm: 1.5rem;
+  --space-page-gutter-lg: 2rem;
+
+  /* typography */
+  --font-display: var(--font-playfair), Georgia, 'Times New Roman', serif;
+  --font-sans:
+    -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif,
+    'Apple Color Emoji', 'Segoe UI Emoji';
+  --font-mono:
+    ui-monospace, SFMono-Regular, 'SF Mono', Menlo, Consolas, 'Liberation Mono', monospace;
+  --measure-prose: 68ch;
+
+  /* legacy aliases - single source of truth, old names still resolve */
+  --contrast-status-info-bg: var(--status-info-bg);
+  --contrast-status-info-fg: var(--status-info-fg);
+  --contrast-status-warning-bg: var(--status-warning-bg);
+  --contrast-status-warning-fg: var(--status-warning-fg);
+  --contrast-status-success-bg: var(--status-success-bg);
+  --contrast-status-success-fg: var(--status-success-fg);
+  --contrast-status-danger-bg: var(--status-danger-bg);
+  --contrast-status-danger-fg: var(--status-danger-fg);
+  --contrast-active-surface: var(--selected-surface);
+  --contrast-active-foreground: var(--selected-foreground);
+  --shadow-card: var(--elevation-card);
+  --shadow-card-hover: var(--elevation-card-hover);
+  --shadow-overlay: var(--elevation-overlay);
+  --shadow-toast: var(--elevation-overlay);
+}
+
+.dark {
+  /* brand ramp - The Copper and Cast Iron identity */
+  --brand-50: 254 249 243;
+  --brand-100: 252 240 224;
+  --brand-200: 248 221 192;
+  --brand-300: 245 209 171;
+  --brand-400: 243 197 150;
+  --brand-500: 237 168 107;
+  --brand-600: 177 92 38;
+  --brand-700: 177 92 38;
+  --brand-800: 142 74 36;
+  --brand-900: 116 64 33;
+  --brand-950: 62 32 15;
+
+  /* surface scale */
+  --surface-0-rgb: var(--stone-950);
+  --surface-1-rgb: var(--stone-900);
+  --surface-2-rgb: var(--stone-800);
+  --surface-3-rgb: var(--stone-700);
+  --surface-4-rgb: var(--stone-600);
+  --surface-0: rgb(var(--surface-0-rgb));
+  --surface-1: rgb(var(--surface-1-rgb));
+  --surface-2: rgb(var(--surface-2-rgb));
+  --surface-3: rgb(var(--surface-3-rgb));
+  --surface-4: rgb(var(--surface-4-rgb));
+
+  /* text tiers */
+  --text-primary: rgb(var(--stone-200));
+  --text-secondary: rgb(var(--stone-300));
+  --text-muted: rgb(var(--stone-400));
+  --text-muted-soft: rgb(184 177 171);
+  --text-placeholder: rgb(134 126 120);
+  --text-inverse: rgb(var(--stone-100));
+
+  /* borders */
+  --border-subtle: rgb(var(--stone-800) / 0.95);
+  --border-default: rgb(var(--stone-700) / 0.9);
+  --border-strong: rgb(var(--stone-600) / 0.85);
+  --border-warm: rgb(var(--brand-500) / 0.12);
+  --border-warm-hover: rgb(var(--brand-500) / 0.24);
+
+  /* status roles - meaning is global, silhouette is local */
+  --status-success-bg: rgb(2 44 34 / 0.72);
+  --status-success-fg: rgb(220 252 231);
+  --status-success-border: rgb(6 95 70);
+  --status-success-solid: rgb(16 185 129);
+  --status-warning-bg: rgb(69 26 3 / 0.72);
+  --status-warning-fg: rgb(254 243 199);
+  --status-warning-border: rgb(146 64 14);
+  --status-warning-solid: rgb(245 158 11);
+  --status-danger-bg: rgb(69 10 10 / 0.72);
+  --status-danger-fg: rgb(254 226 226);
+  --status-danger-border: rgb(153 27 27);
+  --status-danger-solid: rgb(239 68 68);
+  --status-info-bg: rgb(var(--brand-950) / 0.72);
+  --status-info-fg: rgb(var(--brand-100));
+  --status-info-border: rgb(var(--brand-800));
+  --status-info-solid: rgb(var(--brand-500));
+  --status-neutral-bg: rgb(var(--stone-800));
+  --status-neutral-fg: rgb(var(--stone-100));
+  --status-neutral-border: rgb(var(--stone-600));
+  --status-neutral-solid: rgb(var(--stone-500));
+
+  /* interaction */
+  --focus-ring-color: rgb(var(--brand-500));
+  --focus-ring-width: 3px;
+  --focus-ring-width-field: 2px;
+  --focus-ring-offset: 2px;
+  --selected-surface: rgb(var(--brand-950) / 0.72);
+  --selected-foreground: rgb(var(--brand-100));
+  --disabled-opacity: 0.5;
+  --disabled-foreground: rgb(var(--stone-400));
+
+  /* overlay and media */
+  --scrim: rgb(0 0 0 / 0.5);
+  --scrim-blur: blur(4px);
+  --glass-bg: rgb(var(--stone-900) / 0.72);
+  --glass-subtle-bg: rgb(var(--stone-900) / 0.58);
+  --glass-heavy-bg: rgb(var(--stone-950) / 0.84);
+  --media-scrim: linear-gradient(
+    180deg,
+    rgb(0 0 0 / 0) 0%,
+    rgb(0 0 0 / 0.15) 45%,
+    rgb(0 0 0 / 0.72) 100%
+  );
+
+  /* radius scale */
+  --radius-none: 0px;
+  --radius-sm: 2px;
+  --radius-DEFAULT: 4px;
+  --radius-md: 6px;
+  --radius-lg: 8px;
+  --radius-xl: 12px;
+  --radius-2xl: 16px;
+  --radius-3xl: 24px;
+  --radius-full: 9999px;
+  --radius-role-field: 8px;
+  --radius-role-control: 8px;
+  --radius-role-card: 12px;
+  --radius-role-sheet: 16px;
+  --radius-role-pill: 9999px;
+  --radius-role-avatar: 9999px;
+  --radius-role-media: 12px;
+
+  /* elevation */
+  --elevation-flat: none;
+  --elevation-card: 0 1px 3px rgba(0, 0, 0, 0.4), 0 0 0 1px rgba(0, 0, 0, 0.06);
+  --elevation-card-hover: 0 8px 24px rgba(0, 0, 0, 0.4), 0 0 0 1px rgb(var(--brand-500) / 0.06);
+  --elevation-overlay: 0 24px 48px rgba(0, 0, 0, 0.5), 0 0 0 1px rgb(var(--brand-500) / 0.08);
+
+  /* layering */
+  --layer-below: -1;
+  --layer-base: 0;
+  --layer-raised: 10;
+  --layer-sticky: 20;
+  --layer-subnav: 25;
+  --layer-chrome: 30;
+  --layer-page-bar: 32;
+  --layer-mobile-header: 35;
+  --layer-nav: 40;
+  --layer-island: 42;
+  --layer-fab-secondary: 44;
+  --layer-fab: 45;
+  --layer-status: 46;
+  --layer-offline: 48;
+  --layer-overlay: 50;
+  --layer-dialog: 60;
+  --layer-float: 70;
+  --layer-context-menu: 72;
+  --layer-command: 74;
+  --layer-spotlight: 78;
+  --layer-toast: 80;
+  --layer-system-overlay: 85;
+  --layer-tooltip: 90;
+  --layer-max: 9999;
+
+  /* motion */
+  --duration-instant: 75ms;
+  --duration-fast: 100ms;
+  --duration-normal: 200ms;
+  --duration-slow: 350ms;
+  --duration-enter: 220ms;
+  --duration-exit: 150ms;
+  --duration-deliberate: 500ms;
+  --ease-spring: cubic-bezier(0.16, 1, 0.3, 1);
+  --ease-bounce: cubic-bezier(0.34, 1.56, 0.64, 1);
+  --ease-out: cubic-bezier(0, 0, 0.2, 1);
+  --ease-in: cubic-bezier(0.4, 0, 1, 1);
+  --ease-in-out: cubic-bezier(0.4, 0, 0.2, 1);
+
+  /* sizing */
+  --touch-target-min: 44px;
+  --control-height-sm: 44px;
+  --control-height-md: 44px;
+  --control-height-lg: 48px;
+  --icon-inline: 16px;
+  --icon-default: 20px;
+  --icon-nav: 20px;
+  --icon-primary: 24px;
+  --container-content: 72rem;
+  --container-prose: 42rem;
+  --container-form: 36rem;
+  --container-settings: 48rem;
+
+  /* spacing roles */
+  --space-control-gap: 0.5rem;
+  --space-field-gap: 1rem;
+  --space-card-padding: 1.5rem;
+  --space-card-padding-compact: 1rem;
+  --space-card-grid: 1.25rem;
+  --space-stack: 1rem;
+  --space-section: 3rem;
+  --space-section-lg: 4rem;
+  --space-page-gutter: 1rem;
+  --space-page-gutter-sm: 1.5rem;
+  --space-page-gutter-lg: 2rem;
+
+  /* typography */
+  --font-display: var(--font-playfair), Georgia, 'Times New Roman', serif;
+  --font-sans:
+    -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif,
+    'Apple Color Emoji', 'Segoe UI Emoji';
+  --font-mono:
+    ui-monospace, SFMono-Regular, 'SF Mono', Menlo, Consolas, 'Liberation Mono', monospace;
+  --measure-prose: 68ch;
+}
+
+/* ---- Semantic utility classes built from the tokens above ---- */
+.surface-0 {
+  background-color: var(--surface-0);
+}
+.surface-1 {
+  background-color: var(--surface-1);
+}
+.surface-2 {
+  background-color: var(--surface-2);
+}
+.surface-3 {
+  background-color: var(--surface-3);
+}
+.surface-4 {
+  background-color: var(--surface-4);
+}
+.text-inverse {
+  color: var(--text-inverse);
+}
+.border-token-subtle {
+  border-color: var(--border-subtle);
+}
+.border-token-default {
+  border-color: var(--border-default);
+}
+.border-token-strong {
+  border-color: var(--border-strong);
+}
+.measure-prose {
+  max-width: var(--measure-prose);
+}
+.media-scrim {
+  background-image: var(--media-scrim);
+}
+
+.status-success {
+  background-color: var(--status-success-bg);
+  color: var(--status-success-fg);
+  border-color: var(--status-success-border);
+}
+.status-success-fg {
+  color: var(--status-success-fg);
+}
+.status-success-solid {
+  background-color: var(--status-success-solid);
+}
+.status-warning {
+  background-color: var(--status-warning-bg);
+  color: var(--status-warning-fg);
+  border-color: var(--status-warning-border);
+}
+.status-warning-fg {
+  color: var(--status-warning-fg);
+}
+.status-warning-solid {
+  background-color: var(--status-warning-solid);
+}
+.status-danger {
+  background-color: var(--status-danger-bg);
+  color: var(--status-danger-fg);
+  border-color: var(--status-danger-border);
+}
+.status-danger-fg {
+  color: var(--status-danger-fg);
+}
+.status-danger-solid {
+  background-color: var(--status-danger-solid);
+}
+.status-info {
+  background-color: var(--status-info-bg);
+  color: var(--status-info-fg);
+  border-color: var(--status-info-border);
+}
+.status-info-fg {
+  color: var(--status-info-fg);
+}
+.status-info-solid {
+  background-color: var(--status-info-solid);
+}
+.status-neutral {
+  background-color: var(--status-neutral-bg);
+  color: var(--status-neutral-fg);
+  border-color: var(--status-neutral-border);
+}
+.status-neutral-fg {
+  color: var(--status-neutral-fg);
+}
+.status-neutral-solid {
+  background-color: var(--status-neutral-solid);
+}
+
+/* ---- Reduced motion (WCAG 2.1 SC 2.3.3) ----
+ * Documented as resolved in docs/ui-ux-full-reconciliation.md Q7 but never shipped.
+ * Shipped 2026-09-09. Entrance animations are forced to their FINAL state rather than
+ * merely shortened, so nothing is left invisible at opacity 0.
+ * Escape hatch: add class "motion-essential" to the three essential cases
+ * (route progress, loading spinner, determinate progress fill).
+ */
+@media (prefers-reduced-motion: reduce) {
+  html {
+    scroll-behavior: auto !important;
+  }
+  *:not(.motion-essential):not(.motion-essential *):not(.animate-spin):not(.loading-spinner):not(
+      .loading-bone
+    ):not(.skeleton):not(.loading-progress-indeterminate):not([role='progressbar']),
+  *:not(.motion-essential):not(.motion-essential *):not(.animate-spin):not(.loading-spinner):not(
+      .loading-bone
+    ):not(.skeleton):not(.loading-progress-indeterminate):not([role='progressbar'])::before,
+  *:not(.motion-essential):not(.motion-essential *):not(.animate-spin):not(.loading-spinner):not(
+      .loading-bone
+    ):not(.skeleton):not(.loading-progress-indeterminate):not([role='progressbar'])::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    animation-delay: 0ms !important;
+    transition-duration: 0.01ms !important;
+    transition-delay: 0ms !important;
+    animation-fill-mode: forwards !important;
+    scroll-behavior: auto !important;
+  }
+  /* Entrance animations must resolve to their final state, never stay invisible. */
+  [class*='animate-']:not(.motion-essential):not(.motion-essential *):not(.animate-spin):not(
+      .loading-spinner
+    ):not(.loading-bone):not(.skeleton):not(.loading-progress-indeterminate):not(
+      [role='progressbar']
+    ) {
+    opacity: 1 !important;
+    transform: none !important;
+  }
+}
+
+/* ---- Forced colors / high contrast ---- */
+@media (forced-colors: active) {
+  *:focus-visible {
+    outline: 3px solid CanvasText !important;
+    outline-offset: 2px !important;
+  }
+}
+/* === END GENERATED:design-system-tokens === */
