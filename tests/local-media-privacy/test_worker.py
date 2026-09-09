@@ -116,6 +116,9 @@ class WorkerTests(unittest.TestCase):
 
     def test_provenance_receipt_binds_text_and_current_decision(self):
         asset = self.store.inventory(self.path, 'fixture')
+        for unit in self.store.review_plan(asset):
+            self.store.mark_review_unit(asset, unit['id'])
+            self.store.mark_review_unit(asset, unit['id'], confirmed=True)
         self.store.decide(asset, 'approved_local_archive', complete_review=True)
         receipt = self.store.receipt(self.path, 'harmless OCR text')
         self.store.verify_receipt(self.path, 'harmless OCR text', receipt)

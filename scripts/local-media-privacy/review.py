@@ -15,6 +15,9 @@ from worker import Detector, scan, restart_inspection, walk_sources, IMAGE_EXT
 
 
 RECOVERY = {
+    'complete_human_review_required': 'Open Review file and companions and mark every part reviewed before approval.',
+    'unsupported_bundle_review': 'This bundle contains unsupported parts. Keep it private or excluded.',
+    'player_missing': 'FFplay is unavailable. Check the installed local player before reviewing media.',
     'worker_already_running': 'Another scan is running. Pause it or wait, then retry.',
     'isolation_or_encryption_unverified': 'Access is locked. Complete the storage and network isolation setup, then Refresh.',
     'runtime_directory_missing': 'Create the protected runtime using the setup guide, then Refresh.',
@@ -71,6 +74,7 @@ class ReviewWindow:
         self.progress = {}
         self.started_at = 0
         self.photo = None
+        self.poll_timer = None
         self.page = 0
         self.action_buttons = []
         self.demo_unavailable = []
@@ -131,12 +135,12 @@ class ReviewWindow:
         ttk.Label(right, textvariable=self.detail, wraplength=430, justify='left').pack(anchor='w')
         self.preview = ttk.Label(right, text='Preview hidden', anchor='center')
         self.preview.pack(fill='both', expand=True, pady=12)
-        self.review_button = ttk.Button(right, text='Reveal image locally', command=self.reveal)
+        self.review_button = ttk.Button(right, text='Review file and companions', command=self.open_full_review)
         self.review_button.pack(fill='x')
         ttk.Button(right, text='Hide preview', command=self.hide).pack(fill='x', pady=4)
         ttk.Button(right, text='View local export matches', command=self.show_matches).pack(fill='x', pady=4)
         self.attest = tk.BooleanVar(value=False)
-        ttk.Checkbutton(right, variable=self.attest, text='I reviewed the complete file and all companions.\nIt is appropriate for local archive use.').pack(anchor='w', pady=10)
+        ttk.Checkbutton(right, variable=self.attest, text='Every supported part is marked reviewed.\nI approve this bundle for local archive use.').pack(anchor='w', pady=10)
         for label, decision in [('Keep private', 'private'), ('Exclude / removal review', 'removal_review'),
                                 ('Approve local archive use', 'approved_local_archive')]:
             button = ttk.Button(right, text=label, command=lambda d=decision: self.decide(d))
@@ -145,6 +149,7 @@ class ReviewWindow:
         more = tk.Menu(root, tearoff=False)
         more.add_command(label='Retry failed files in last source', command=lambda: self.resume_scan(retry_failed=True))
         more.add_command(label='Restart selected inspection', command=self.restart_selected)
+        more.add_command(label='Quick still-image preview', command=self.reveal)
         more.add_separator()
         more.add_command(label='Reset selected file to unreviewed', command=lambda: self.decide('unreviewed'))
         if self.demo:
@@ -158,7 +163,7 @@ class ReviewWindow:
         root.protocol('WM_DELETE_WINDOW', self.close)
         root.report_callback_exception = lambda *_: self.status.set('Operation unavailable. Sources are unchanged.')
         self.refresh()
-        root.after(250, self.poll)
+        self.poll_timer = root.after(250, self.poll)
 
     def protect(self):
         if not self.demo:
@@ -231,12 +236,27 @@ class ReviewWindow:
         self.preview.configure(image='', text='Preview hidden')
         self.attest.set(False)
 
+    def open_full_review(self):
+        if self.busy or not self.store:
+            return
+        try:
+            self.protect()
+            asset_id = self.selected()['id']
+            from review_dialog import ReviewDialog
+            self.hide()
+            self.busy = True
+            self.started_at = time.monotonic()
+            self.progress = {'phase': 'owner_review', 'frames': 0}
+            self.review_dialog = ReviewDialog(self, asset_id)
+        except Exception as error:
+            self.busy = False
+            self.status.set(RECOVERY.get(safe_reason(error), RECOVERY['unexpected']))
+
     def reveal(self):
         try:
             self.protect()
             row = self.selected()
-            if row['decision'] == 'removal_review':
-                raise PrivacyBlocked('removal_review_preview_excluded')
+            self.store.assert_not_excluded(row['path'])
             path = checked_path(row['path'])
             if path.suffix.lower() not in IMAGE_EXT or path.stat().st_size > 64 * 1024**2:
                 raise PrivacyBlocked('image_preview_only')
@@ -263,7 +283,7 @@ class ReviewWindow:
             self.store.decide(row['id'], decision, self.attest.get())
             self.refresh()
         except PrivacyBlocked as error:
-            self.status.set(error.code.replace('_', ' '))
+            self.status.set(RECOVERY.get(error.code, error.code.replace('_', ' ')))
 
     def background(self, task):
         if self.busy:
@@ -330,8 +350,7 @@ class ReviewWindow:
         try:
             self.protect()
             row = self.selected()
-            if row['decision'] == 'removal_review':
-                raise PrivacyBlocked('removal_review_inspection_excluded')
+            self.store.assert_not_excluded(row['path'], 'removal_review_inspection_excluded')
             asset_id = row['id']
             self.background(lambda store: restart_inspection(store, asset_id, Detector(), self.stop.is_set,
                 security_check=self.protect, progress=self.report_progress))
@@ -397,6 +416,9 @@ class ReviewWindow:
             self.status.set(error.code.replace('_', ' '))
 
     def poll(self):
+        if self.poll_timer is not None:
+            self.root.after_cancel(self.poll_timer)
+            self.poll_timer = None
         while True:
             try:
                 kind, result = self.events.get_nowait()
@@ -414,13 +436,16 @@ class ReviewWindow:
             self.status.set(f"{phase.capitalize()} | Saved frames in current file: {self.progress.get('frames', 0)} | "
                             f"Run time: {elapsed}s | Pause requested: {'yes' if self.stop.is_set() else 'no'}")
         if self.root.winfo_exists():
-            self.root.after(250, self.poll)
+            self.poll_timer = self.root.after(250, self.poll)
 
     def close(self):
         self.stop.set()
         if self.busy:
             self.status.set('Pausing. Close again after the current request completes.')
             return
+        if self.poll_timer is not None:
+            self.root.after_cancel(self.poll_timer)
+            self.poll_timer = None
         if self.store:
             self.store.close()
         self.root.destroy()

@@ -28,9 +28,10 @@ def require_isolation(directory):
     if any(path == p.resolve() or p.resolve() in path.parents for p in forbidden):
         raise PrivacyBlocked('unsynced_runtime_directory_required')
     from video_frames import decoder_tools
+    from review_media import player_path
     ffmpeg, ffprobe = decoder_tools()
     env = dict(os.environ, CF_PRIVACY_DIRECTORY=str(path), CF_PRIVACY_PYTHON=sys.executable,
-               CF_PRIVACY_FFMPEG=ffmpeg, CF_PRIVACY_FFPROBE=ffprobe)
+               CF_PRIVACY_FFMPEG=ffmpeg, CF_PRIVACY_FFPROBE=ffprobe, CF_PRIVACY_FFPLAY=player_path())
     try:
         result = subprocess.run(['powershell.exe', '-NoProfile', '-NonInteractive', '-File',
             str(Path(__file__).with_name('verify-isolation.ps1'))], env=env,

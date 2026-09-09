@@ -26,6 +26,9 @@ class ReviewTests(unittest.TestCase):
         self.tmp.cleanup()
 
     def approve(self):
+        for unit in self.store.review_plan(self.asset):
+            self.store.mark_review_unit(self.asset, unit['id'])
+            self.store.mark_review_unit(self.asset, unit['id'], confirmed=True)
         self.store.decide(self.asset, 'approved_local_archive', complete_review=True)
 
     def test_unknown_cannot_enter_archive(self):
