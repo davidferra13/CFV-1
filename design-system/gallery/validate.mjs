@@ -274,7 +274,10 @@ console.log(`  screenshots: design-system/gallery/screenshots/\n`)
 
 fs.writeFileSync(
   path.join(HERE, 'validation-report.json'),
-  JSON.stringify({ generated: new Date().toISOString(), passed: results.length - failed.length, failed: failed.length, results }, null, 2) + '\n'
+  // No timestamp: this file is committed as proof that validation passed, and a
+  // clock reading would dirty the working tree on every run. The commit date
+  // already records when it ran.
+  JSON.stringify({ passed: results.length - failed.length, failed: failed.length, results }, null, 2) + '\n'
 )
 
 process.exit(failed.length ? 1 : 0)

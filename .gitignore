@@ -385,3 +385,6 @@ obsidian_export/
 
 # Claude MCP config (may contain API keys)
 .claude/mcp.json
+
+# Design-system catalog screenshots. Regenerate with: npm run gallery:validate
+design-system/gallery/screenshots/
