@@ -222,19 +222,34 @@ function curatedFor(rel) {
 
 /* -------------------------------------------------------------------- build */
 
+/*
+ * Text assets (SVG, JSON, plain text) are checked out with CRLF on Windows and
+ * LF elsewhere, so their on-disk size differs by one byte per line between
+ * clones of the same commit. Recording the raw size would make this registry
+ * disagree with itself across platforms and keep `registry:check` red on
+ * Windows forever. Size text assets from their normalised bytes; binaries are
+ * read straight off disk.
+ */
+const TEXT_EXT = new Set(['svg', 'json', 'txt', 'xml', 'webmanifest', 'md', 'csv'])
+
+function assetBytes(abs, ext) {
+  if (!TEXT_EXT.has(ext)) return fs.statSync(abs).size
+  return Buffer.byteLength(fs.readFileSync(abs, 'utf8').replace(/\r\n/g, '\n'), 'utf8')
+}
+
 const files = walk(PUBLIC_DIR)
 const bySize = new Map()
 const assets = files.map((f) => {
-  const stat = fs.statSync(f.abs)
   const dim = dimensions(f.abs)
   const ext = path.extname(f.rel).slice(1).toLowerCase()
-  const key = `${stat.size}`
+  const size = assetBytes(f.abs, ext)
+  const key = `${size}`
   bySize.set(key, [...(bySize.get(key) ?? []), f.rel])
   return {
     path: `public/${f.rel}`,
     url: `/${f.rel}`,
     ext,
-    bytes: stat.size,
+    bytes: size,
     ...(dim ? { width: dim.width, height: dim.height } : {}),
     ...curatedFor(f.rel),
   }
