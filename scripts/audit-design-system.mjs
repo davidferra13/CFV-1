@@ -230,7 +230,9 @@ for (const abs of files) {
   if (applicable.length === 0) continue
   let lines
   try {
-    lines = fs.readFileSync(abs, 'utf8').split('\n')
+    // Normalise CRLF first: a Windows checkout would otherwise leave a trailing
+    // \r on every line and shift the counts this ratchet compares against.
+    lines = fs.readFileSync(abs, 'utf8').replace(/\r\n/g, '\n').split('\n')
   } catch {
     continue
   }

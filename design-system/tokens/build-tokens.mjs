@@ -56,6 +56,21 @@ async function format(content, filepath) {
   }
 }
 
+/*
+ * Line endings are a checkout detail, not a token change. Git on Windows checks
+ * these files out with CRLF (core.autocrlf=true) while this generator emits LF,
+ * so a byte comparison reports every generated file stale on a Windows clone
+ * even when nothing about the design system moved. Compare on normalised text,
+ * and when writing, keep whatever convention the file already uses so running
+ * the generator never rewrites a working copy's line endings.
+ */
+const normaliseEol = (text) => text.replace(/\r\n/g, '\n')
+
+function matchEol(next, original) {
+  const lf = normaliseEol(next)
+  return original.includes('\r\n') ? lf.replace(/\n/g, '\r\n') : lf
+}
+
 /* ------------------------------------------------------------------ helpers */
 
 function pick(value, mode) {
@@ -458,7 +473,7 @@ for (const r of results) {
 
 let stale = 0
 for (const r of results) {
-  const changed = r.original !== r.next
+  const changed = normaliseEol(r.original) !== normaliseEol(r.next)
   if (checkOnly) {
     if (changed) {
       stale += 1
@@ -467,7 +482,7 @@ for (const r of results) {
       console.log(`ok     ${r.filePath}`)
     }
   } else {
-    if (changed) fs.writeFileSync(r.abs, r.next)
+    if (changed) fs.writeFileSync(r.abs, matchEol(r.next, r.original))
     console.log(`${changed ? 'wrote ' : 'ok    '} ${r.filePath}`)
   }
 }
