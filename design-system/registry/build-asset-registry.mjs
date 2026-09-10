@@ -230,7 +230,26 @@ function curatedFor(rel) {
  * Windows forever. Size text assets from their normalised bytes; binaries are
  * read straight off disk.
  */
-const TEXT_EXT = new Set(['svg', 'json', 'txt', 'xml', 'webmanifest', 'md', 'csv'])
+const TEXT_EXT = new Set([
+  'svg',
+  'json',
+  'txt',
+  'xml',
+  'webmanifest',
+  'md',
+  'csv',
+  'js',
+  'mjs',
+  'cjs',
+  'css',
+  'html',
+  'htm',
+  'map',
+  'vtt',
+  'srt',
+  'yml',
+  'yaml',
+])
 
 function assetBytes(abs, ext) {
   if (!TEXT_EXT.has(ext)) return fs.statSync(abs).size
@@ -408,6 +427,23 @@ const normaliseEol = (text) => text.replace(/\r\n/g, '\n')
 if (checkOnly) {
   if (prev === null || normaliseEol(prev) !== normaliseEol(next)) {
     console.error('STALE  design-system/registry/assets.json - run: npm run registry:build')
+    // Say what moved. "STALE" on its own sends the next agent hunting; the
+    // usual causes are an asset added or removed, or a text asset whose
+    // extension is missing from TEXT_EXT above so its size is being read
+    // with the checkout's line endings.
+    try {
+      const before = JSON.parse(prev ?? '{"assets":[]}')
+      const beforeBy = new Map((before.assets ?? []).map((a) => [a.path, a]))
+      const afterBy = new Map(assets.map((a) => [a.path, a]))
+      for (const [p, a] of afterBy) {
+        const b = beforeBy.get(p)
+        if (!b) console.error(`  added    ${p}`)
+        else if (b.bytes !== a.bytes) console.error(`  resized  ${p}  ${b.bytes} -> ${a.bytes}`)
+      }
+      for (const p of beforeBy.keys()) if (!afterBy.has(p)) console.error(`  removed  ${p}`)
+    } catch {
+      // Unparseable previous file: the plain STALE line is all we can offer.
+    }
     process.exit(1)
   }
   console.log('ok     design-system/registry/assets.json')
