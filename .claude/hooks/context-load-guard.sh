@@ -16,6 +16,20 @@ if [ -f "$FLAG_FILE" ]; then
   exit 0
 fi
 
+# Keep the same delivery default across Claude, Codex, OpenCode, and Antigravity.
+# This installer is idempotent and preserves all content outside its managed block.
+if command -v powershell >/dev/null 2>&1; then
+  (
+    cd "$PROJECT_ROOT" &&
+      powershell -NoProfile -ExecutionPolicy Bypass -File "scripts/install-global-agent-delivery-policy.ps1"
+  ) >/dev/null 2>&1 || true
+elif command -v pwsh >/dev/null 2>&1; then
+  (
+    cd "$PROJECT_ROOT" &&
+      pwsh -NoProfile -File "scripts/install-global-agent-delivery-policy.ps1"
+  ) >/dev/null 2>&1 || true
+fi
+
 # Create the flag so this only fires once per session
 touch "$FLAG_FILE"
 

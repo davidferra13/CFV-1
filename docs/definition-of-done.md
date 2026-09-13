@@ -12,11 +12,12 @@ A feature is done only when it is verified, honest, and protected against drift.
 
 If the app can silently lie, drift out of sync, pretend success, or guide the user to the wrong thing, the feature is not done.
 
-## Built vs Working vs Done
+## Built vs Working vs Shipped vs Done
 
 - Built: code was written.
 - Working: someone can make it appear to work.
-- Done: it is tied to reality, verified in the real UI, handles failure honestly, and has checks that catch drift later.
+- Shipped: the verified change is committed, pushed, deployed to its intended runtime when applicable, and confirmed on the canonical live surface.
+- Done: it is tied to reality, shipped, verified in the real UI, handles failure honestly, and has checks that catch drift later.
 
 Do not confuse these stages.
 
@@ -133,3 +134,19 @@ Use this sentence as the standard:
 > Done means verified, honest, and resilient against drift.
 
 Anything less is built. Maybe working. Not done.
+
+
+## Delivery Closure
+
+For every website or runtime change, Done also requires:
+
+- A task-scoped commit exists and its SHA is reported.
+- The commit is pushed to the correct upstream branch.
+- The established production deployment completes.
+- The canonical public domain passes health checks.
+- The requested behavior is verified on the live surface.
+- The deployed revision matches the pushed commit when the runtime exposes revision metadata.
+
+Documentation-only and non-runtime tooling changes require commit and push but do not require a production restart.
+
+Never label work Done when it exists only in a local checkout, unmerged worktree, preview, or unverified deployment.

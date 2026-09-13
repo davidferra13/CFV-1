@@ -1,5 +1,7 @@
 # ChefFlow V1 - Project Rules
 
+@docs/autonomous-delivery-contract.md
+
 This file is read by Claude Code at the start of every conversation. These rules are mandatory.
 
 ---
@@ -13,6 +15,7 @@ This file is read by Claude Code at the start of every conversation. These rules
 > 5. **FIX IT, DON'T REPORT IT.** Broken/dirty/unhealthy = fix it silently. Never report without fixing.
 > 6. **Act, don't ask.** If you can determine the answer from context, code, memory, or prior conversations, act. Only ask about irreversible actions, ambiguous product decisions, or unspecified scope.
 > 7. **DELEGATE BUILDS.** Main session = architect/coordinator. Build work goes to parallel agents (Agent tool, `model: "haiku"` for mechanical, `model: "opus"` for complex). Only build directly for tiny fixes (< 20 lines) or debugging requiring conversation context. Dispatch multiple agents in parallel when tasks are independent. NEVER single-handedly build an entire feature in main session.
+> 8. **SHIP THE RESULT.** An explicit build, fix, implement, proceed, do it, keep building, or ship request includes verification, a task-scoped commit, push, production deployment for website/runtime work, and live verification. Never ask for separate commit, push, publish, or deploy permission. The build queue tracks the work; it does not pause it.
 
 ---
 
@@ -157,7 +160,7 @@ If build is broken: flag it, fix it. If uncommitted work exists: don't clobber i
 
 ### On End
 
-Run `/close-session`. Commit + push. Work must be on GitHub before signing off.
+Run `/close-session`, then complete the autonomous delivery contract. Every completed task must be committed and pushed immediately; website/runtime work must also be deployed and verified live before signing off. Do not wait for the session to end and do not ask for a separate shipping prompt.
 
 ---
 
@@ -230,10 +233,15 @@ Required closeout:
 - **End of session:** Run `/test-scan` to reconcile routes vs. tests
 - **Critical gaps** in the blueprint are P0 work targets for test authors
 
-### Commits & Git
+### Commits, Push, And Production Delivery
 
-- Conventional commits: `feat`, `fix`, `docs`, `chore`, `refactor`
-- Push to GitHub at session end. Commit to `main` unless told otherwise.
+- Conventional commits: `feat`, `fix`, `docs`, `chore`, `refactor`.
+- Stage only task-owned files; preserve unrelated dirty work.
+- Commit and push each completed, verified task immediately. Do not wait until session end.
+- Commit to `main` when the checkout and repository policy permit it; otherwise complete the repository's branch/merge path without leaving verified work stranded.
+- Website/runtime changes deploy to the established production target by default, then verify the public domain and deployed revision.
+- Documentation-only or non-runtime tooling changes still commit and push, but do not restart production solely to publish inert files.
+- A local build, unpushed commit, successful deploy command without live proof, or preview URL is not done.
 
 ### Health Checks
 
@@ -261,7 +269,7 @@ Credentials in `.auth/agent.json`. Sign in via `POST http://localhost:3100/api/e
 
 ## BUILD QUEUE CONTRACT (SHARED WITH CODEX)
 
-**`docs/UNIFIED-BUILD-QUEUE.md` is the single source of truth for all build work.** Both Claude and Codex read from and update this file. No separate inventories.
+**`docs/UNIFIED-BUILD-QUEUE.md` is the single source of truth for tracking build work.** Both Claude and Codex read from and update this file. It is not a permission gate: explicit execution requests are claimed and executed immediately without a second prompt.
 
 - **Before building:** read the queue. Claim items by marking status `IN-FLIGHT`.
 - **After building:** mark items `PARTIAL` (built, unverified) or `DONE` (verified).
