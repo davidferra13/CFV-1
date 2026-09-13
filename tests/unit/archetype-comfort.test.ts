@@ -16,8 +16,8 @@ import {
 } from '@/lib/archetypes/presets'
 import { MODULES } from '@/lib/billing/modules'
 import {
+  CORE_GROUP_IDS,
   CORE_OWNER,
-  NAV_GROUP_OWNER,
   getRouteOwner,
   isNavGroupEnabled,
 } from '@/lib/surfaces/route-module-ownership'
@@ -65,19 +65,31 @@ test('every owner is a real module slug or the core owner', () => {
     const owner = getRouteOwner(href)!
     assert.ok(owner === CORE_OWNER || slugs.has(owner), `${href} claims unknown owner "${owner}"`)
   }
-  for (const [groupId, owner] of Object.entries(NAV_GROUP_OWNER)) {
-    assert.ok(
-      owner === CORE_OWNER || slugs.has(owner),
-      `nav group ${groupId} claims unknown owner "${owner}"`
-    )
+})
+
+test('every nav group declares a module that exists', () => {
+  // The group's own `module` field is the single source of truth for door
+  // gating. A group that declares nothing, or declares a module that is not in
+  // the registry, can never be switched off.
+  const slugs = new Set(MODULES.map((m) => m.slug))
+  for (const group of navGroups as any[]) {
+    if (CORE_GROUP_IDS.has(group.id)) continue
+    assert.ok(group.module, `nav group ${group.id} declares no module`)
+    assert.ok(slugs.has(group.module), `nav group ${group.id} claims unknown module ${group.module}`)
   }
+})
+
+test('a door closes when its module is off and stays open when it is on', () => {
+  const culinary = (navGroups as any[]).find((g) => g.id === 'culinary')
+  assert.equal(isNavGroupEnabled('culinary', culinary.module, ['culinary']), true)
+  assert.equal(isNavGroupEnabled('culinary', culinary.module, ['finance']), false)
 })
 
 test('the escape hatches are never hidden by a module toggle', () => {
   for (const href of ['/settings', '/settings/modules', '/help', '/inbox', '/dashboard']) {
     assert.equal(getRouteOwner(href), CORE_OWNER, `${href} must stay reachable`)
   }
-  assert.equal(isNavGroupEnabled('tools', []), true, 'the tools group is the way back')
+  assert.equal(isNavGroupEnabled('tools', 'more', []), true, 'the tools group is the way back')
 })
 
 test('archetypes are not all the same, and none enables everything', () => {

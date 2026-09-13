@@ -70,7 +70,7 @@ export function resolveHiddenNavRoutes(params: {
   // switch away in Settings > Modules.
   if (!params.isAdmin) {
     for (const group of navGroups) {
-      if (isNavGroupEnabled(group.id, params.enabledModules)) continue
+      if (isNavGroupEnabled(group.id, group.module, params.enabledModules)) continue
       for (const item of group.items) {
         hidden.add(item.href)
         for (const child of item.children ?? []) hidden.add(child.href)

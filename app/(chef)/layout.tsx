@@ -301,6 +301,7 @@ export default async function ChefLayout({ children }: { children: React.ReactNo
               isAdmin={effectiveAdmin}
               isPrivileged={effectivePrivileged}
               focusMode={focusMode}
+              hiddenRoutes={hiddenRoutes}
               userId={user.id}
               tenantId={user.tenantId ?? user.entityId}
               chefName={layoutData.business_name}

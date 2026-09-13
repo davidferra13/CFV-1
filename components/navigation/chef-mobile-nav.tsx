@@ -17,6 +17,9 @@ import {
 import { DEFAULT_ENABLED_MODULES } from '@/lib/billing/modules'
 
 const DEFAULT_MODULE_SLUGS = new Set(DEFAULT_ENABLED_MODULES)
+
+/** Rows a door shows in the mobile drawer before "N more in ...". */
+const MOBILE_GROUP_ITEM_CAP = 6
 import type { NavGroup, NavCollapsibleItem, NavItem } from './nav-config'
 import { NotificationBell } from '@/components/notifications/notification-bell'
 import { GlobalSearch } from '@/components/search/global-search'
@@ -106,6 +109,20 @@ const MobileGroupSection = memo(function MobileGroupSection({
   const GroupIcon = group.icon
   const active = isGroupActive(pathname, group, searchParams)
 
+  // Same cap as the desktop sidebar: a door opens to a readable number of rows
+  // and keeps the rest one tap away. This matters more at 375px than anywhere.
+  const [showAllItems, setShowAllItems] = useState(false)
+  const activeItemIndex = group.items.findIndex((item) =>
+    isCollapsibleItemActive(pathname, item, searchParams)
+  )
+  const forceAll = activeItemIndex >= MOBILE_GROUP_ITEM_CAP
+  const overflowCount = group.items.length - MOBILE_GROUP_ITEM_CAP
+  const showOverflowToggle = overflowCount > 1 && !forceAll
+  const visibleItems =
+    showAllItems || forceAll || !showOverflowToggle
+      ? group.items
+      : group.items.slice(0, MOBILE_GROUP_ITEM_CAP)
+
   return (
     <div>
       <button
@@ -140,7 +157,7 @@ const MobileGroupSection = memo(function MobileGroupSection({
         }`}
       >
         <div className="ml-3 pl-3 border-l border-stone-800 mt-0.5 space-y-0.5">
-          {group.items.map((item) => {
+          {visibleItems.map((item) => {
             const Icon = item.icon
             const itemActive = isCollapsibleItemActive(pathname, item, searchParams)
 
@@ -244,6 +261,21 @@ const MobileGroupSection = memo(function MobileGroupSection({
               </Link>
             )
           })}
+          {showOverflowToggle && (
+            <button
+              type="button"
+              onClick={() => setShowAllItems((prev) => !prev)}
+              aria-expanded={showAllItems}
+              className="flex items-center gap-2 w-full px-3 py-2.5 rounded-lg text-xs font-semibold uppercase tracking-wider text-stone-500 hover:bg-stone-800 hover:text-stone-300 transition-colors"
+            >
+              <ChevronDown
+                className={`w-4 h-4 transition-transform duration-200 ${
+                  showAllItems ? 'rotate-180' : 'rotate-0'
+                }`}
+              />
+              {showAllItems ? 'Show less' : `${overflowCount} more in ${group.label}`}
+            </button>
+          )}
         </div>
       </div>
     </div>
@@ -402,6 +434,7 @@ export function ChefMobileNav({
   isAdmin,
   isPrivileged,
   focusMode,
+  hiddenRoutes,
   userId,
   tenantId,
   chefName,
@@ -413,6 +446,12 @@ export function ChefMobileNav({
   isAdmin?: boolean
   isPrivileged?: boolean
   focusMode?: boolean
+  /**
+   * Routes the surface graph resolved as hidden for this chef. The desktop
+   * sidebar has honoured this since the comfort model landed; mobile did not,
+   * so at 375px the archetype hid nothing. Same list, same server resolution.
+   */
+  hiddenRoutes?: string[]
   userId: string
   tenantId: string
   chefName?: string | null
@@ -443,6 +482,7 @@ export function ChefMobileNav({
     () => (enabledModules ? new Set(enabledModules) : null),
     [enabledModules]
   )
+  const hiddenSet = useMemo(() => new Set(hiddenRoutes ?? []), [hiddenRoutes])
   const accessibleGroups = useMemo(() => {
     const baseGroups = navGroups
       .filter((group) => {
@@ -461,9 +501,15 @@ export function ChefMobileNav({
             }
             return true
           })
+          .filter((item) => isAdmin || !hiddenSet.has(item.href))
           .map((item) =>
             item.children
-              ? { ...item, children: item.children.filter((child) => !child.hidden) }
+              ? {
+                  ...item,
+                  children: item.children.filter(
+                    (child) => !child.hidden && (isAdmin || !hiddenSet.has(child.href))
+                  ),
+                }
               : item
           ),
       }))
@@ -477,7 +523,7 @@ export function ChefMobileNav({
     return strictGroups.sort(
       (a, b) => getStrictFocusGroupRank(a.id) - getStrictFocusGroupRank(b.id)
     )
-  }, [isAdmin, isPrivileged, focusMode, enabledSet, hasPermission])
+  }, [isAdmin, isPrivileged, focusMode, enabledSet, hiddenSet, hasPermission])
   const groupEntries = useMemo(
     () => accessibleGroups.map((group) => ({ group, isLocked: false })),
     [accessibleGroups]

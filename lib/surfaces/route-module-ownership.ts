@@ -156,37 +156,31 @@ export function isModuleOwned(routePath: string): boolean {
 }
 
 /**
- * Nav group id (from components/navigation/nav-config.tsx) -> owning module slug,
- * or CORE_OWNER for the group that must never disappear.
+ * Nav groups that must never disappear, whatever the module set.
  *
  * Route-level ownership alone does not collapse a group, because a group mixes
  * routes from many segments: one core-owned route such as /settings keeps the
- * whole group on screen. This map is what lets a group leave the sidebar when
- * the operator does not use it, which is the difference between hiding a link
- * and hiding a door.
+ * whole group on screen. Gating the group by the module it declares is what
+ * lets a door leave the sidebar, which is different from hiding a link.
  *
- * `tools` is CORE_OWNER on purpose: it holds settings, help and import, the way
+ * `tools` is exempt on purpose: it holds settings, help and import, the way
  * back for anything that has been switched off.
  */
-export const NAV_GROUP_OWNER: Record<string, RouteOwner> = {
-  analytics: 'more',
-  clients: 'clients',
-  commerce: 'commerce',
-  culinary: 'culinary',
-  events: 'events',
-  finance: 'finance',
-  locations: 'multi-location',
-  marketing: 'more',
-  operations: 'station-ops',
-  pipeline: 'pipeline',
-  protection: 'protection',
-  'supply-chain': 'operations',
-  tools: CORE_OWNER,
-}
+export const CORE_GROUP_IDS = new Set<string>(['tools'])
 
-/** True when a nav group should be shown for this set of enabled modules. */
-export function isNavGroupEnabled(groupId: string, enabledModules: string[]): boolean {
-  const owner = NAV_GROUP_OWNER[groupId]
-  if (owner === undefined || owner === CORE_OWNER) return true
-  return enabledModules.includes(owner)
+/**
+ * True when a nav group should be shown for this set of enabled modules.
+ *
+ * `groupModule` comes from the group's own `module` field in nav-config, which
+ * is the single source of truth. This used to be a second hand-written map here
+ * and the two could drift apart.
+ */
+export function isNavGroupEnabled(
+  groupId: string,
+  groupModule: string | undefined,
+  enabledModules: string[]
+): boolean {
+  if (CORE_GROUP_IDS.has(groupId)) return true
+  if (!groupModule) return true
+  return enabledModules.includes(groupModule)
 }
