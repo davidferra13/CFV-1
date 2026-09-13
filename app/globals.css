@@ -324,6 +324,71 @@ html {
   .pt-mobile-header {
     padding-top: calc(6.25rem + env(safe-area-inset-top, 0px));
   }
+
+  /* ---- Layering scale ----------------------------------------------------
+     The app uses named z utilities in 190 places: z-dialog, z-float, z-fab,
+     z-mobile-header and the rest. None of them were ever defined, in this file
+     or in the Tailwind config, so every one of them produced no CSS and the
+     whole layering system fell back to DOM order. That is why a card in the
+     main content could paint over the fixed mobile header and swallow a tap
+     meant for the nav.
+
+     One scale, lowest to highest. Anything added later belongs on this list
+     rather than as a bare number in a component. */
+  .z-island {
+    z-index: 10;
+  }
+  .z-subnav {
+    z-index: 20;
+  }
+  .z-page-bar {
+    z-index: 25;
+  }
+  .z-chrome {
+    z-index: 30;
+  }
+  .z-mobile-header {
+    z-index: 40;
+  }
+  .z-status {
+    z-index: 45;
+  }
+  .z-offline {
+    z-index: 50;
+  }
+  .z-fab-secondary {
+    z-index: 55;
+  }
+  .z-fab {
+    z-index: 60;
+  }
+  .z-float {
+    z-index: 70;
+  }
+  .z-context-menu {
+    z-index: 80;
+  }
+  .z-command {
+    z-index: 90;
+  }
+  /* Slide-out panels and the assistant surface */
+  .z-ai {
+    z-index: 100;
+  }
+  /* Modals sit above panels, because a panel can open one */
+  .z-dialog {
+    z-index: 110;
+  }
+  .z-system-overlay {
+    z-index: 120;
+  }
+  /* Toasts must never be covered: they are how the app reports what happened */
+  .z-toast {
+    z-index: 130;
+  }
+  .z-spotlight {
+    z-index: 140;
+  }
 }
 
 @layer components {

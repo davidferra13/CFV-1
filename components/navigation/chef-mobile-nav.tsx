@@ -462,7 +462,9 @@ export function ChefMobileNav({
   const [menuOpen, setMenuOpen] = useState(false)
   const [openGroups, setOpenGroups] = useState<Set<string>>(new Set())
   const [openItems, setOpenItems] = useState<Set<string>>(new Set())
-  const [mobileQuickCreateOpen, setMobileQuickCreateOpen] = useState(true)
+  // Opens closed. The drawer used to open onto 13 "New ..." rows, which pushed
+  // every actual destination below the fold at 375px. Create is one tap away.
+  const [mobileQuickCreateOpen, setMobileQuickCreateOpen] = useState(false)
   const [navFilter, setNavFilter] = useState('')
   const { has: hasPermission } = usePermissions()
   const tabItems = useMemo(
