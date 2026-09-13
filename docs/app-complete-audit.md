@@ -93,7 +93,8 @@
 ### Current Today operator surface (2026-09-13)
 
 - Purpose: triage, not reporting. It answers one question: what needs the chef now?
-- Primary action: the live priority queue's `nextAction`, shown as one dominant `Start` link with context and an optional time estimate.
+- Primary action: the live priority queue's `nextAction`, shown as one dominant guided card with a plain-language dinner step (`Details`, `Menu`, `Quote`, `Deposit`, `Prepare`, or `Service`).
+- Completion: missing serve time is saved and confirmed inline; other event work gets one `Continue` link to the exact operational tool instead of the generic event page.
 - Secondary context: the next booked dinner plus no more than two `After this` actions.
 - Honest states: queue and schedule failures are shown explicitly; an empty queue says the chef is caught up and does not invent busywork.
 - Shell budget: sidebar and mobile navigation remain. Breadcrumbs, market research, feedback prompts, quick expense, Remy, quick capture, live alerts, and the contextual rail are suppressed on `/dashboard`.

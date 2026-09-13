@@ -6,6 +6,53 @@ import type { QueueItem, ScoreInputs } from '../types'
 import type { EventWorkSurface, WorkItem, WorkUrgency } from '@/lib/workflow/types'
 import { computeScore, urgencyFromScore } from '../score'
 
+const WORKFLOW_STEP_LABELS: Record<WorkItem['stage'], string> = {
+  inquiry_intake: 'Details',
+  qualification: 'Details',
+  menu_development: 'Menu',
+  quote: 'Quote',
+  financial_commitment: 'Deposit',
+  grocery_list: 'Prepare',
+  prep_list: 'Prepare',
+  equipment_planning: 'Prepare',
+  packing: 'Prepare',
+  timeline: 'Prepare',
+  travel_arrival: 'Prepare',
+  execution: 'Service',
+  breakdown: 'Service',
+  post_event_capture: 'Close out',
+  follow_up: 'Follow up',
+  financial_closure: 'Close out',
+  inquiry_closure: 'Close out',
+}
+
+const WORK_ITEM_ROUTE_SUFFIX: Record<string, string> = {
+  assign_client: 'edit',
+  set_date: 'edit',
+  set_location: 'edit',
+  set_guest_count: 'edit',
+  set_serve_time: 'edit',
+  set_pricing: 'edit',
+  set_deposit: 'edit',
+  grocery_phase_a: 'grocery-run',
+  grocery_phase_b: 'grocery-run',
+  grocery_phase_c: 'grocery-run',
+  draft_prep_plan: 'prep-plan',
+  prep_early_items: 'prep-plan',
+  prep_day_of: 'prep-plan',
+  equipment_level_1: 'gear',
+  equipment_level_2: 'gear',
+  equipment_level_3: 'gear',
+  build_packing_list: 'pack',
+  pack_and_load: 'pack',
+  draft_timeline: 'schedule',
+  finalize_timeline: 'schedule',
+  model_travel: 'travel',
+  confirm_travel: 'travel',
+  start_event: 'service',
+  complete_event: 'service',
+}
+
 const WORK_URGENCY_IMPACT: Record<WorkUrgency, number> = {
   fragile: 0.85,
   normal: 0.6,
@@ -42,6 +89,9 @@ export function convertWorkItemsToQueueItems(
   const preEventItems = workItems.filter((wi) => wi.stageNumber <= 13)
 
   const workQueueItems = preEventItems.map((wi) => {
+    const actionKey = wi.id.split(':').pop() ?? ''
+    const routeSuffix = WORK_ITEM_ROUTE_SUFFIX[actionKey]
+    const isSetServeTime = actionKey === 'set_serve_time'
     const eventDate = new Date(wi.eventDate)
     const hoursUntilEvent = (eventDate.getTime() - now.getTime()) / 3600000
 
@@ -62,7 +112,7 @@ export function convertWorkItemsToQueueItems(
       score,
       title: wi.title,
       description: wi.description,
-      href: `/events/${wi.eventId}`,
+      href: routeSuffix ? `/events/${wi.eventId}/${routeSuffix}` : `/events/${wi.eventId}`,
       icon: STAGE_ICONS[wi.stage] ?? 'CircleDot',
       context: {
         primaryLabel: wi.clientName,
@@ -73,6 +123,13 @@ export function convertWorkItemsToQueueItems(
       blocks: wi.blockedBy,
       entityId: wi.eventId,
       entityType: 'event',
+      workflowStep: { label: WORKFLOW_STEP_LABELS[wi.stage] },
+      inlineAction: isSetServeTime
+        ? {
+            type: 'set_serve_time' as const,
+            prefill: { eventId: wi.eventId },
+          }
+        : undefined,
     }
   })
 

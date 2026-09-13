@@ -88,6 +88,11 @@ export interface QueueItem {
   /** Original entity type for grouping */
   entityType: string
 
+  /** Current dinner workflow step, expressed without fake percentage progress */
+  workflowStep?: {
+    label: string
+  }
+
   /** Inline action (allows completing from dashboard without navigation) */
   inlineAction?: InlineAction
 
@@ -108,6 +113,7 @@ export type InlineActionType =
   | 'record_payment'
   | 'send_message'
   | 'log_expense'
+  | 'set_serve_time'
 
 export interface InlineAction {
   type: InlineActionType

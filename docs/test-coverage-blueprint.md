@@ -136,10 +136,11 @@ Every feature has exactly one state. No "partial" or "in progress."
 
 ## Test Run History
 
-| Date       | Layer             | Result   | Notes                                                                                                                                        |
-| ---------- | ----------------- | -------- | -------------------------------------------------------------------------------------------------------------------------------------------- |
-| 2026-09-13 | Unit + live UI    | VERIFIED | `/dashboard` shell budget passed 7 unit assertions; authenticated 375x812 and 1440x1000 audits passed density, contrast, and overflow checks |
-| 2026-05-16 | Manual simulation | BLOCKED  | Server action hang under parallel agent load                                                                                                 |
+| Date       | Layer             | Result   | Notes                                                                                                                                                            |
+| ---------- | ----------------- | -------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| 2026-09-13 | Unit              | VERIFIED | Guided dinner workspace passed 8 assertions covering route projection, inline completion, validation, tenant/concurrency guards, silent writes, and Queue parity |
+| 2026-09-13 | Unit + live UI    | VERIFIED | `/dashboard` shell budget passed 7 unit assertions; authenticated 375x812 and 1440x1000 audits passed density, contrast, and overflow checks                     |
+| 2026-05-16 | Manual simulation | BLOCKED  | Server action hang under parallel agent load                                                                                                                     |
 
 ---
 

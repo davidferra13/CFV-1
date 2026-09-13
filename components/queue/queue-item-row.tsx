@@ -48,6 +48,7 @@ const INLINE_ACTION_LABELS: Record<InlineActionType, string> = {
   record_payment: 'Record Payment',
   send_message: 'Send Message',
   log_expense: 'Log Expense',
+  set_serve_time: 'Set Serve Time',
 }
 
 interface Props {

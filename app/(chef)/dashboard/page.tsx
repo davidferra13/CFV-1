@@ -3,6 +3,7 @@ import type { Metadata } from 'next'
 import { requireChef } from '@/lib/auth/get-user'
 import { getPriorityQueue } from '@/lib/queue/actions'
 import type { QueueItem } from '@/lib/queue/types'
+import { TodayPrimaryAction } from '@/components/dashboard/today-primary-action'
 import {
   getMobileChefDashboardData,
   type MobileChefDashboardData,
@@ -35,42 +36,6 @@ function formatClockTime(value: string | null): string | null {
 
 function contextText(item: QueueItem): string {
   return [item.context.primaryLabel, item.context.secondaryLabel].filter(Boolean).join(' · ')
-}
-
-function PrimaryAction({ item }: { item: QueueItem }) {
-  const detail = contextText(item)
-
-  return (
-    <section
-      aria-labelledby="do-this-now"
-      className="rounded-2xl bg-[var(--text-primary)] px-5 py-5 text-[var(--text-inverse)] shadow-sm sm:px-6 sm:py-6"
-    >
-      <p
-        id="do-this-now"
-        className="text-xs font-semibold uppercase tracking-[0.18em] text-brand-300"
-      >
-        Do this now
-      </p>
-      <h1 className="mt-2 text-2xl font-semibold leading-tight sm:text-3xl">{item.title}</h1>
-      {detail ? (
-        <p className="mt-2 text-sm text-[var(--text-inverse)] opacity-75">{detail}</p>
-      ) : null}
-      <p className="mt-3 max-w-2xl text-sm leading-6 text-[var(--text-inverse)] opacity-85">
-        {item.description}
-      </p>
-      <div className="mt-5 flex flex-wrap items-center gap-3">
-        <Link
-          href={item.href}
-          className="inline-flex min-h-11 items-center justify-center rounded-xl bg-brand-500 px-5 py-2.5 text-sm font-semibold text-white transition-colors hover:bg-brand-400 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-200"
-        >
-          Start
-        </Link>
-        {item.estimatedMinutes ? (
-          <span className="text-sm text-stone-400">About {item.estimatedMinutes} min</span>
-        ) : null}
-      </div>
-    </section>
-  )
 }
 
 function QueueUnavailable() {
@@ -248,7 +213,7 @@ export default async function ChefDashboard() {
       {!queueState.ok ? (
         <QueueUnavailable />
       ) : primary ? (
-        <PrimaryAction item={primary} />
+        <TodayPrimaryAction item={primary} />
       ) : (
         <CaughtUp />
       )}

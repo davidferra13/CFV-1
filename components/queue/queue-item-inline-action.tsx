@@ -24,6 +24,7 @@ const ACTION_LABELS: Record<InlineActionType, { button: string; placeholder: str
   record_payment: { button: 'Record Payment', placeholder: 'Add a note about this payment...' },
   send_message: { button: 'Send Message', placeholder: 'Write your message...' },
   log_expense: { button: 'Log Expense', placeholder: 'Describe this expense...' },
+  set_serve_time: { button: 'Save Serve Time', placeholder: 'Choose the serve time' },
 }
 
 export function QueueItemInlineAction({ action, onComplete, onCancel }: Props) {
@@ -74,6 +75,15 @@ export function QueueItemInlineAction({ action, onComplete, onCancel }: Props) {
             } as any)
             break
           }
+          case 'set_serve_time': {
+            const { setTodayServeTime } = await import('@/lib/events/today-actions')
+            const result = await setTodayServeTime({
+              eventId: action.prefill.eventId ?? '',
+              serveTime: message,
+            })
+            if (!result.ok) throw new Error(result.message)
+            break
+          }
           case 'log_expense': {
             // Expense logging will use existing expense action
             break
@@ -117,14 +127,25 @@ export function QueueItemInlineAction({ action, onComplete, onCancel }: Props) {
         </p>
       )}
 
-      {/* Message textarea */}
-      <textarea
-        value={message}
-        onChange={(e) => setMessage(e.target.value)}
-        placeholder={labels.placeholder}
-        rows={3}
-        className="w-full bg-stone-900 border border-stone-700 rounded-md px-3 py-2 text-sm text-stone-200 placeholder:text-stone-500 focus:outline-none focus:ring-1 focus:ring-brand-500 resize-none"
-      />
+      {action.type === 'set_serve_time' ? (
+        <input
+          aria-label="Serve time"
+          type="time"
+          step={300}
+          required
+          value={message}
+          onChange={(e) => setMessage(e.target.value)}
+          className="min-h-11 w-full rounded-md border border-stone-700 bg-stone-900 px-3 py-2 text-base text-stone-200 focus:outline-none focus:ring-1 focus:ring-brand-500"
+        />
+      ) : (
+        <textarea
+          value={message}
+          onChange={(e) => setMessage(e.target.value)}
+          placeholder={labels.placeholder}
+          rows={3}
+          className="w-full resize-none rounded-md border border-stone-700 bg-stone-900 px-3 py-2 text-sm text-stone-200 placeholder:text-stone-500 focus:outline-none focus:ring-1 focus:ring-brand-500"
+        />
+      )}
 
       {error && <p className="text-xs text-red-400">{error}</p>}
 
@@ -150,7 +171,11 @@ export function QueueItemInlineAction({ action, onComplete, onCancel }: Props) {
           className="text-xs"
           disabled={isPending || (!message && action.type !== 'record_payment')}
         >
-          {isPending ? 'Sending...' : labels.button}
+          {isPending
+            ? action.type === 'set_serve_time'
+              ? 'Saving...'
+              : 'Sending...'
+            : labels.button}
         </Button>
       </div>
     </div>
