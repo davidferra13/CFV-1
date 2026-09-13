@@ -223,7 +223,8 @@ export default async function ChefDashboard() {
         .filter(
           (item, index, items) =>
             items.findIndex(
-              (candidate) => candidate.href === item.href && candidate.title === item.title
+              (candidate) =>
+                candidate.title === item.title && contextText(candidate) === contextText(item)
             ) === index
         )
         .slice(0, 2)
