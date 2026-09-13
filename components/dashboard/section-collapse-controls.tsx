@@ -3,7 +3,7 @@
 import { createContext, useContext } from 'react'
 import { ChevronsDownUp, ChevronsUpDown } from '@/components/ui/icons'
 import { useCollapsedWidgets } from '@/lib/hooks/use-collapsed-widgets'
-import { SECTION_IDS } from '@/lib/dashboard/section-types'
+import { SECTION_IDS, DEFAULT_COLLAPSED_SECTION_IDS } from '@/lib/dashboard/section-types'
 import { Button } from '@/components/ui/button'
 
 const STORAGE_KEY = 'cf:dashboard-sections-collapsed'
@@ -22,7 +22,7 @@ export function useSectionCollapseContext() {
 }
 
 export function DashboardSectionCollapseProvider({ children }: { children: React.ReactNode }) {
-  const collapse = useCollapsedWidgets(STORAGE_KEY)
+  const collapse = useCollapsedWidgets(STORAGE_KEY, DEFAULT_COLLAPSED_SECTION_IDS)
   return (
     <SectionCollapseContext.Provider value={collapse}>{children}</SectionCollapseContext.Provider>
   )

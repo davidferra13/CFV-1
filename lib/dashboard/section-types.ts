@@ -50,6 +50,26 @@ export const SECTION_ORDER: SectionOrderEntry[] = [
 
 export const SECTION_IDS = SECTION_ORDER.map((s) => s.id)
 
+/**
+ * Layers that are open the first time a chef lands on Today.
+ *
+ * All 19 sections used to render expanded, because the collapsed set started
+ * empty and nothing had been stored yet. Measured on a near-empty account that
+ * was 11,761px, about 14.5 screens of scrolling at 375px, 58 buttons and 104
+ * links before the chef had done anything.
+ *
+ * Urgent and tactical are what "today" means: what needs me now, what I am
+ * doing today, what is coming this week. Everything else keeps its header and
+ * its one-line summary on screen and opens with one tap. Nothing is removed,
+ * and once the chef opens or closes anything their own choice is stored and
+ * wins from then on.
+ */
+export const DEFAULT_OPEN_SECTION_LAYERS = new Set(['urgent', 'tactical'])
+
+export const DEFAULT_COLLAPSED_SECTION_IDS = SECTION_ORDER.filter(
+  (s) => !DEFAULT_OPEN_SECTION_LAYERS.has(s.layer)
+).map((s) => s.id)
+
 export function getSectionEntry(id: string): SectionOrderEntry | undefined {
   return SECTION_ORDER.find((s) => s.id === id)
 }

@@ -8,8 +8,19 @@ const STORAGE_KEY = 'cf:dashboard-collapsed'
  * Manages collapsed/expanded state for dashboard widgets via localStorage.
  * Hydration-safe: reads localStorage only after mount via useEffect.
  */
-export function useCollapsedWidgets(storageKey: string = STORAGE_KEY) {
-  const [collapsedIds, setCollapsedIds] = useState<string[]>([])
+export function useCollapsedWidgets(
+  storageKey: string = STORAGE_KEY,
+  /**
+   * What starts collapsed before the reader has chosen anything. Used on the
+   * very first visit only: the moment they open or close one thing, their own
+   * set is stored and takes over. Defaults to nothing collapsed, which is the
+   * old behaviour for every other caller.
+   */
+  defaultCollapsedIds: string[] = []
+) {
+  // Initialised from the defaults rather than empty, so the server render and
+  // the first client render agree and nothing flashes open then shut.
+  const [collapsedIds, setCollapsedIds] = useState<string[]>(defaultCollapsedIds)
 
   // Hydration-safe localStorage read
   useEffect(() => {
@@ -22,7 +33,7 @@ export function useCollapsedWidgets(storageKey: string = STORAGE_KEY) {
         }
       }
     } catch {
-      // Ignore parse errors - start with all expanded
+      // Ignore parse errors - keep the defaults
     }
   }, [storageKey])
 

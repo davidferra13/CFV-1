@@ -16,7 +16,9 @@ export function IndustryLinksSection() {
   return (
     <div className="space-y-3">
       <div className="flex flex-wrap items-center gap-2">
-        <ExitLinkButton exitId={92} context={ctx} />
+        {/* Exit 92, the booking platform, was the first button on this row and
+            the owner's account there is permanently closed. Removed from the
+            dashboard on 2026-09-13. The registry entry is untouched. */}
         <ExitLinkButton exitId={54} context={ctx} />
         <ExitLinkButton exitId={85} context={ctx} />
         <ExitLinkButton exitId={10} context={ctx} />

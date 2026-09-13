@@ -57,15 +57,17 @@ export function SectionShell({
         )}
       </button>
 
-      {/* Animated content area */}
-      <div
-        className="grid transition-[grid-template-rows] duration-200 ease-in-out"
-        style={{ gridTemplateRows: isCollapsed ? '0fr' : '1fr' }}
-      >
+      {/* Content area. A collapsed section renders nothing at all rather than
+          hiding a full section behind a zero-height grid row. The old version
+          kept every collapsed section's markup mounted, so Today still carried
+          its entire weight: same 58 buttons and 104 links whether the sections
+          were open or shut. The header and its summary above stay visible, so
+          nothing is lost from the page, only from the DOM. */}
+      {!isCollapsed && (
         <div className="overflow-hidden">
           <div className="pt-1">{children}</div>
         </div>
-      </div>
+      )}
     </div>
   )
 }
