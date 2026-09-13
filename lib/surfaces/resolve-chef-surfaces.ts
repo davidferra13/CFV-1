@@ -3,6 +3,7 @@
 // result passed as serializable string[] to the client sidebar.
 
 import { resolveSurfaceBatch, type ChefSurfaceContext } from './surface-graph'
+import { isNavGroupEnabled } from './route-module-ownership'
 import type { TenantDataPresence } from '@/lib/progressive-disclosure/types'
 import type { WorkspaceDensity } from '@/lib/interface/surface-governance'
 import type { ArchetypeId } from '@/lib/archetypes/presets'
@@ -55,9 +56,27 @@ export function resolveHiddenNavRoutes(params: {
   const allHrefs = collectNavHrefs()
   const results = resolveSurfaceBatch(allHrefs, context)
 
-  const hidden: string[] = []
+  const hidden = new Set<string>()
   for (const [route, vis] of results) {
-    if (!vis.visible) hidden.push(route)
+    if (!vis.visible) hidden.add(route)
   }
-  return hidden
+
+  // Amendment 2 of docs/chef-navigation-decision-contract.md: hide the whole
+  // door, not just some of its links. A nav group mixes routes from many
+  // segments, so one always-reachable route such as /settings used to keep a
+  // group on screen for an operator who does not use any of it. When the module
+  // that owns a group is switched off, every route in that group leaves the
+  // sidebar. Nothing is deleted: the routes still resolve, and the module is one
+  // switch away in Settings > Modules.
+  if (!params.isAdmin) {
+    for (const group of navGroups) {
+      if (isNavGroupEnabled(group.id, params.enabledModules)) continue
+      for (const item of group.items) {
+        hidden.add(item.href)
+        for (const child of item.children ?? []) hidden.add(child.href)
+      }
+    }
+  }
+
+  return [...hidden]
 }

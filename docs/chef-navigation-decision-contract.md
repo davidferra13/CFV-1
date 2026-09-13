@@ -414,3 +414,125 @@ Filed per Section 13 of this contract. The study is `docs/discovery/2026-07-10-c
 | ---------------- | ------------ | ------------------ | --------- | --------- |
 | (filled by lib/billing/modules.ts extension task) | | | | |
 
+
+
+---
+
+## Amendment 2 (2026-09-12): The comfort model. Archetype gating, nothing removed
+
+Filed from owner direction given 2026-09-12. Chefs he interviewed, including chefs he looks
+up to, told him ChefFlow is far more than they need and that the interface is exhausting.
+Several said they would not use it because there is too much going on at once.
+
+The owner's correction, recorded as direction and not as interpretation:
+
+- The app is not too big. The app is close to done and is probably already enough for most
+  food operators, from a preschool kitchen to a caterer to a restaurant.
+- The interface is the defect. Too much is shown at once.
+- The fix is hiding, not deleting. Nothing is removed, nothing is pruned.
+- Defaults come from the operator's archetype. If you are not a caterer, catering is off.
+- Every hidden thing stays reachable and togglable by the chef, the way a phone ships with
+  apps most people never open but anyone can open.
+- The target is the most versatile, most customizable, most tailored experience of any tool
+  in this category.
+
+### Measured starting state, read-only audit, 2026-09-12
+
+Audit scripts, gitignored, `scripts/scratch/audit-archetype-visibility.ts`,
+`audit-proposed-archetypes.ts`, `audit-module-coverage.ts`. Run with
+`node --import tsx <path>`. They import the live `nav-config`, `presets`, `surface-graph`
+and `modules` and change nothing.
+
+| Fact | Number |
+| --- | --- |
+| Chef sidebar entries as authored | 654 entries, 470 unique routes |
+| Nav groups | 13 groups plus 5 standalone top items plus 14 hidden groups |
+| Largest groups | finance 77, culinary 69, clients 52, pipeline 51, operations 48, tools 39 |
+| Modules defined in `lib/billing/modules.ts` | 13 |
+| Modules each of the 6 archetypes enables today | 12 of 13, identical for all six |
+| Routes a brand-new chef sees | 22 of 470 |
+| Routes an established chef sees | 458 of 470, identical for all six archetypes |
+| Routes no module toggle can ever hide | 99 (settings 23, studio 7, partners 6, import 4, remy 4, and 44 more segments) |
+| Routes a private chef would see with a differentiated module set | 335 of 470 |
+
+Read these four rows together, because they are the whole diagnosis:
+
+1. **What exists today is a maturity ramp, not an archetype filter.** Visibility is driven by
+   data presence. Day one the chef sees 22 routes and the app looks broken. The moment they
+   have real data, 458 routes appear at once. Every chef the owner interviewed is in the
+   second state. That is the exhaustion they described.
+2. **The archetype picker is currently cosmetic.** All six archetypes share the same
+   `ALWAYS_ON` list in `lib/archetypes/presets.ts`, which holds 12 of the 13 modules. The
+   only real difference between a private chef and a restaurant today is 7 shortcut buttons
+   and 5 mobile tabs.
+3. **Module toggles cannot reach most of the app.** `findModuleForRoute` in
+   `lib/surfaces/surface-graph.ts` maps first path segments to modules and covers 50 of them.
+   99 routes have no owning module, so no toggle, preset or archetype can hide them.
+4. **The wiring is already built and already correct.** `app/(chef)/layout.tsx` calls
+   `resolveHiddenNavRoutes`, which calls the surface graph, which wraps all six visibility
+   systems, and passes the result to `chef-nav.tsx` as `hiddenRoutes`. Nothing new needs to
+   be invented. The data feeding it is empty.
+
+### Binding decisions
+
+1. **Nothing retires.** 470 stays 470. Cardinality lock applies: no route, section, module or
+   nav entry may be deleted, merged away, sampled or reordered out of existence as part of
+   comfort work. Hidden is a default, not a removal. Any diff that reduces the route
+   inventory fails this amendment.
+2. **Archetype presets must differentiate.** `ALWAYS_ON` in `lib/archetypes/presets.ts` is the
+   named defect. It is replaced by a small always-on core plus a per-archetype set. Core:
+   `dashboard`, `events`, `culinary`, `clients`, `finance`. Everything else is per archetype.
+   Owner sets the per-archetype table; the audit script reports the resulting count per
+   archetype so the table is chosen against numbers, not intuition.
+3. **Every route gets exactly one owning module.** Section 2 of this contract already requires
+   one owner per route for humans. This amendment makes it machine-readable: the
+   route-to-module map must cover all 470 routes, so that every route is reachable by some
+   toggle. Coverage is an acceptance number, not a goal: 470 of 470.
+4. **The sidebar ships the 7 daily drivers plus one index.** Daily drivers, per
+   `docs/WHERE-TO-IMPROVE.md`: dashboard, calendar, events, clients, menus, inbox, finance.
+   Everything else lives behind the module gallery and contextual navigation. This is
+   compatible with the Tier 0 door set in Amendment 1; the door set is the IA, the 7 drivers
+   are what is persistent by default.
+5. **Settings is the toggle surface, and both surfaces already exist.**
+   `app/(chef)/settings/modules` is the module gallery and `app/(chef)/settings/navigation` is
+   the nav customizer. The chef must be able to switch archetype, and to toggle any module on
+   or off individually regardless of archetype, from there. An archetype is a starting set,
+   never a lock.
+6. **Archetype is not a plan and not a role.** It never gates billing and never gates
+   permissions. It selects defaults only. Switching archetype must never destroy the chef's
+   own toggles: an explicit chef choice outranks any preset, on switch and on every later
+   preset change.
+
+7. **The 99-row evidence table resolves without pruning.**
+   `docs/audit/2026-09-12-chef-surface-evidence-table.md` has a blank Decision column per
+   section. Under this amendment that column is not keep/demote/retire. It is
+   `owning module` plus `default-on for which archetypes`. No row may be marked retire.
+8. **The archetype list is owner-owned and open.** Six exist today: private chef, caterer,
+   meal prep, restaurant, food truck, bakery. The owner's examples include operators none of
+   these cover, such as a school or preschool kitchen, an institutional or mall food
+   operation, and a teaching or consulting chef. New archetypes are additive: a new archetype
+   adds a preset row and never adds a route or removes one.
+9. **Tier vocabulary stays internal** per Amendment 1. Archetype names are chef-facing;
+   "tier", "module", "gate" and "shell" are not.
+
+### Acceptance for any implementation of this amendment
+
+- Route inventory before equals route inventory after. 470 unique, counted programmatically.
+- Route-to-module coverage reports 470 of 470 owned.
+- The audit script prints a materially different visible count per archetype. Six identical
+  numbers is a failed implementation.
+- A chef can turn any hidden module back on from `settings/modules` in one interaction, and
+  the sidebar reflects it without a sign-out.
+- Switching archetype twice and back leaves the chef's explicit toggles intact.
+- Screenshots at 375px and desktop, per archetype, before and after.
+
+### Lifecycle state of this amendment
+
+Decision recorded. Not implemented. No application code was changed when this was filed.
+Execution is queued as `BQ-20260913T000000Z-archetype-comfort-model-chef-interface`.
+
+Correction to the line above, same session: the queue item was created by
+`build-queue.mjs add` and its real id is
+`BQ-20260912T234820Z-archetype-comfort-model-for-the-chef-interface-hide-by-defau`, in
+`.agents/build-queue/active/`. The placeholder id printed earlier in this amendment was
+written before the item existed and is not a real queue id.

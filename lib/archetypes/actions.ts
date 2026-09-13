@@ -3,8 +3,14 @@
 import { requireChef } from '@/lib/auth/get-user'
 import { createServerClient } from '@/lib/db/server'
 import { revalidatePath, revalidateTag } from 'next/cache'
-import { getArchetype, ARCHETYPE_IDS } from './presets'
-import type { ArchetypeId } from './presets'
+import {
+  getArchetype,
+  ARCHETYPE_IDS,
+  resolveModulesForArchetypeSwitch,
+  applyModuleOverrides,
+  normalizeModuleOverrides,
+} from './presets'
+import type { ArchetypeId, ModuleOverrides } from './presets'
 import { normalizePrimaryNavHrefs } from '@/lib/interface/surface-governance'
 
 function fromChefPreferences(db: any): any {
@@ -26,18 +32,57 @@ export async function selectArchetype(archetypeId: ArchetypeId) {
   const user = await requireChef()
   const db: any = createServerClient()
 
+  // Upsert into chef_preferences
+  const { data: existing } = await fromChefPreferences(db)
+    .select('id, archetype, enabled_modules')
+    .eq('chef_id', user.entityId)
+    .single()
+
+  // Amendment 2 of docs/chef-navigation-decision-contract.md: an explicit chef
+  // toggle outranks any preset. Switching archetype used to overwrite
+  // enabled_modules outright, which threw away every module the chef had turned
+  // on or off by hand. We can recover those choices without a new column: any
+  // module enabled that their previous archetype's preset did not include was
+  // turned on by the chef, and any module the previous preset included that is
+  // not enabled was turned off by the chef. Both survive the switch.
+  const rawPrevious = (existing as any)?.archetype
+  const previousArchetype: ArchetypeId | null =
+    typeof rawPrevious === 'string' && (ARCHETYPE_IDS as string[]).includes(rawPrevious)
+      ? (rawPrevious as ArchetypeId)
+      : null
+
+  // Preferred source of truth: the recorded deviation from the previous preset.
+  // The column arrives with 20260913000001_chef_module_overrides.sql, so this
+  // read is defensive and an unmigrated database simply falls through to the
+  // inference below.
+  let storedOverrides: ModuleOverrides | null = null
+  try {
+    const { data: overrideRow, error: overrideError } = await fromChefPreferences(db)
+      .select('module_overrides')
+      .eq('chef_id', user.entityId)
+      .single()
+    if (!overrideError && overrideRow) {
+      const normalized = normalizeModuleOverrides((overrideRow as any).module_overrides)
+      if (normalized.on.length > 0 || normalized.off.length > 0) storedOverrides = normalized
+    }
+  } catch {
+    storedOverrides = null
+  }
+
+  const nextModules = storedOverrides
+    ? applyModuleOverrides(archetypeId, storedOverrides)
+    : resolveModulesForArchetypeSwitch({
+        previousArchetype,
+        previousEnabledModules: (existing as any)?.enabled_modules,
+        nextArchetype: archetypeId,
+      })
+
   const payload = {
     archetype: archetypeId,
-    enabled_modules: archetype.enabledModules,
+    enabled_modules: nextModules,
     primary_nav_hrefs: normalizePrimaryNavHrefs(archetype.primaryNavHrefs),
     updated_at: new Date().toISOString(),
   }
-
-  // Upsert into chef_preferences
-  const { data: existing } = await fromChefPreferences(db)
-    .select('id')
-    .eq('chef_id', user.entityId)
-    .single()
 
   if (existing) {
     const { error } = await fromChefPreferences(db).update(payload).eq('chef_id', user.entityId)

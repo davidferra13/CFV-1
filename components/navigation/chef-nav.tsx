@@ -392,6 +392,13 @@ const RailFlyout = memo(function RailFlyout({
   )
 })
 
+/**
+ * How many rows a door shows when it opens, before "more in ...".
+ * Amendment 2, second pass: the doors were reduced from 12 to 6 for a private
+ * chef, but opening one still dropped up to 21 rows at once.
+ */
+const GROUP_ITEM_CAP = 6
+
 // ---- Collapsible group for expanded sidebar ----
 const NavGroupSection = memo(function NavGroupSection({
   group,
@@ -416,6 +423,22 @@ const NavGroupSection = memo(function NavGroupSection({
 }) {
   const GroupIcon = group.icon
   const active = isGroupActive(pathname, group, searchParams)
+
+  // Amendment 2 of docs/chef-navigation-decision-contract.md, second pass:
+  // opening a door used to drop the whole domain on the chef at once. Culinary
+  // is 21 rows, finance 13, tools 14. Show the first few and keep the rest one
+  // click away. Nothing is removed and search still reaches everything.
+  const [showAllItems, setShowAllItems] = useState(false)
+  const activeItemIndex = group.items.findIndex((item) =>
+    isCollapsibleItemActive(pathname, item, searchParams)
+  )
+  const forceAll = activeItemIndex >= GROUP_ITEM_CAP
+  const overflowCount = group.items.length - GROUP_ITEM_CAP
+  const showOverflowToggle = overflowCount > 1 && !forceAll
+  const visibleItems =
+    showAllItems || forceAll || !showOverflowToggle
+      ? group.items
+      : group.items.slice(0, GROUP_ITEM_CAP)
 
   return (
     <div>
@@ -453,7 +476,7 @@ const NavGroupSection = memo(function NavGroupSection({
         }`}
       >
         <div className="ml-3 pl-3 border-l border-stone-800/40 mt-1 space-y-0.5">
-          {group.items.map((item) => {
+          {visibleItems.map((item) => {
             const Icon = item.icon
             const itemActive = isCollapsibleItemActive(pathname, item, searchParams)
 
@@ -562,6 +585,21 @@ const NavGroupSection = memo(function NavGroupSection({
               </PendingNavLink>
             )
           })}
+          {showOverflowToggle && (
+            <button
+              type="button"
+              onClick={() => setShowAllItems((prev) => !prev)}
+              aria-expanded={showAllItems}
+              className="nav-item-hover flex items-center gap-2 w-full pl-2 pr-3 py-1.5 rounded-lg text-xs font-semibold uppercase tracking-wider text-stone-500 hover:text-stone-300"
+            >
+              <ChevronDown
+                className={`w-3.5 h-3.5 transition-transform duration-200 ${
+                  showAllItems ? 'rotate-180' : 'rotate-0'
+                }`}
+              />
+              {showAllItems ? 'Show less' : `${overflowCount} more in ${group.label}`}
+            </button>
+          )}
         </div>
       </div>
     </div>

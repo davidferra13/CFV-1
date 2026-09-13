@@ -9,6 +9,7 @@ import { requireChef } from '@/lib/auth/get-user'
 import { revalidateTag } from 'next/cache'
 import { CHEF_LAYOUT_CACHE_TAG } from '@/lib/chef'
 import { ALL_MODULE_SLUGS, DEFAULT_ENABLED_MODULES } from '@/lib/billing/modules'
+import { ARCHETYPE_IDS, diffModulesAgainstPreset } from '@/lib/archetypes/presets'
 
 /**
  * Get the chef's currently enabled modules.
@@ -47,10 +48,39 @@ export async function updateEnabledModules(modules: string[]): Promise<void> {
   }
 
   const db: any = createServerClient()
-  const { error } = await db
+
+  // Amendment 2 of docs/chef-navigation-decision-contract.md: record what the
+  // chef changed by hand, measured against their archetype's preset, so a later
+  // archetype switch cannot silently undo it. Written best-effort: on a database
+  // that has not taken 20260913000001_chef_module_overrides.sql yet, the module
+  // list still saves and the switch logic falls back to inference.
+  let archetype: string | null = null
+  try {
+    const { data: prefs } = await db
+      .from('chef_preferences')
+      .select('archetype')
+      .eq('chef_id', user.entityId)
+      .single()
+    const raw = (prefs as any)?.archetype
+    if (typeof raw === 'string' && ARCHETYPE_IDS.includes(raw as any)) archetype = raw
+  } catch {
+    archetype = null
+  }
+
+  const overrides = diffModulesAgainstPreset(archetype as any, filtered)
+
+  let { error } = await db
     .from('chef_preferences')
-    .update({ enabled_modules: filtered } as any)
+    .update({ enabled_modules: filtered, module_overrides: overrides } as any)
     .eq('chef_id', user.entityId)
+
+  if (error) {
+    const retry = await db
+      .from('chef_preferences')
+      .update({ enabled_modules: filtered } as any)
+      .eq('chef_id', user.entityId)
+    error = retry.error
+  }
 
   if (error) {
     throw new Error('Failed to update modules')

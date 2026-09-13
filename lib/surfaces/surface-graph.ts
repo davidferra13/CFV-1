@@ -29,6 +29,7 @@ import { isBrandNewChef, isNavGroupVisible } from '@/lib/progressive-disclosure/
 import { resolveChefShellBudget } from '@/lib/interface/surface-governance'
 import { getRouteTier } from './route-metadata'
 import { isDay1Route } from './day-one-defaults'
+import { SEGMENT_OWNER, CORE_OWNER } from './route-module-ownership'
 
 // ─── Public Types ────────────────────────────────────────────────
 
@@ -88,7 +89,18 @@ function findModuleForRoute(routePath: string): { slug: string; navGroupId: stri
 
   const firstSegment = segments[0]
 
-  // Direct mapping from route domain to nav group / module
+  // Amendment 2 of the chef navigation decision contract: the ownership map is
+  // authoritative and covers every route in the chef nav. CORE_OWNER routes are
+  // owned but never hidden by a module toggle, so settings, help and the inbox
+  // stay reachable no matter which modules are off.
+  const owner = SEGMENT_OWNER[firstSegment]
+  if (owner === CORE_OWNER) return undefined
+  if (owner) {
+    const owned = MODULES.find((m) => m.slug === owner)
+    if (owned) return { slug: owned.slug, navGroupId: owned.navGroupId ?? owner }
+  }
+
+  // Legacy fallback for any segment not yet in the ownership map
   const ROUTE_TO_NAV_GROUP: Record<string, string> = {
     dashboard: 'dashboard',
     inquiries: 'pipeline',
