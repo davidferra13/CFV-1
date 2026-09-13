@@ -28,7 +28,13 @@ export function registerCaptureAction() {
       amount?: string
       capturedAt?: string
     }
-    if (!payload?.text) return
+    if (typeof payload?.text !== 'string' || !payload.text.trim()) {
+      throw new Error('Offline capture has no valid text. The original remains on this device.')
+    }
+
+    if (payload.amount !== undefined && typeof payload.amount !== 'string') {
+      throw new Error('Offline capture has an invalid amount. The original remains on this device.')
+    }
 
     // Build todo text with context from the capture
     const prefix =
@@ -40,7 +46,26 @@ export function registerCaptureAction() {
             ? '[Event note] '
             : ''
 
-    const todoText = `${prefix}${payload.text}`.slice(0, 500)
-    await createTodo(todoText)
+    const todoText = `${prefix}${payload.text}`.trim()
+    if (todoText.length > 2000) {
+      throw new Error(
+        'Offline capture exceeds 2,000 characters. The original remains on this device.'
+      )
+    }
+
+    // The title is limited to 500 characters; retain longer captures in notes.
+    const input =
+      todoText.length > 500 ? { text: `${todoText.slice(0, 497)}...`, notes: todoText } : todoText
+    const result = await createTodo(input)
+
+    // A resolved promise can still contain a failed server-action result.
+    // Throw so the sync engine keeps the original queue entry for recovery.
+    if (result?.success !== true || typeof result.id !== 'string' || !result.id.trim()) {
+      throw new Error(
+        result?.error || 'The server did not confirm that the offline capture was saved.'
+      )
+    }
+
+    return result
   })
 }

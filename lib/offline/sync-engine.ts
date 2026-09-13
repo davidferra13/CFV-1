@@ -1,8 +1,8 @@
 // Sync Engine - Replays queued offline actions when connectivity returns.
-// Processes actions in strict chronological order (FIFO) to maintain consistency.
-// Failed actions are retried up to 3 times, then marked as permanently failed.
+// Processes pending actions in their stored order.
+// Failed entries remain stored for recovery; this loop does not schedule retries.
 
-import { getPendingActions, updateActionStatus, removeAction, type QueuedAction } from './idb-queue'
+import { getPendingActions, updateActionStatus, removeAction } from './idb-queue'
 import { trackQolMetric } from '@/lib/qol/metrics-client'
 
 const MAX_RETRIES = 3
@@ -59,90 +59,106 @@ export async function replayPendingActions(): Promise<SyncProgress> {
   }
 
   isSyncing = true
-  const pending = await getPendingActions()
-
-  if (pending.length === 0) {
-    isSyncing = false
-    return { total: 0, completed: 0, failed: 0, current: null, isSyncing: false }
-  }
-
   const progress: SyncProgress = {
-    total: pending.length,
+    total: 0,
     completed: 0,
     failed: 0,
     current: null,
     isSyncing: true,
   }
 
-  notifyListeners(progress)
-
-  for (const action of pending) {
-    progress.current = action.actionName
-
-    const fn = actionRegistry.get(action.actionName)
-    if (!fn) {
-      // Action not registered - can't replay, mark as failed
-      await updateActionStatus(action.id, 'failed', `Action "${action.actionName}" not registered`)
-      trackQolMetric({
-        metricKey: 'offline_replay_failed',
-        entityType: action.actionName,
-        entityId: action.id,
-        metadata: { reason: 'action_not_registered' },
-      })
-      progress.failed += 1
-      notifyListeners(progress)
-      continue
-    }
-
-    if (action.retries >= MAX_RETRIES) {
-      await updateActionStatus(action.id, 'failed', 'Max retries exceeded')
-      trackQolMetric({
-        metricKey: 'offline_replay_failed',
-        entityType: action.actionName,
-        entityId: action.id,
-        metadata: { reason: 'max_retries_exceeded', retries: action.retries },
-      })
-      progress.failed += 1
-      notifyListeners(progress)
-      continue
-    }
-
-    try {
-      await updateActionStatus(action.id, 'syncing')
-      notifyListeners(progress)
-
-      await fn(...action.args)
-
-      // Success - remove from queue
-      await removeAction(action.id)
-      trackQolMetric({
-        metricKey: 'offline_replay_succeeded',
-        entityType: action.actionName,
-        entityId: action.id,
-        metadata: { retries: action.retries },
-      })
-      progress.completed += 1
-    } catch (err) {
-      const message = err instanceof Error ? err.message : 'Unknown error'
-      await updateActionStatus(action.id, 'failed', message)
-      trackQolMetric({
-        metricKey: 'offline_replay_failed',
-        entityType: action.actionName,
-        entityId: action.id,
-        metadata: { reason: message, retries: action.retries },
-      })
-      progress.failed += 1
-    }
+  try {
+    const pending = await getPendingActions()
+    progress.total = pending.length
+    if (pending.length === 0) return progress
 
     notifyListeners(progress)
+
+    for (const action of pending) {
+      progress.current = action.actionName
+
+      const fn = actionRegistry.get(action.actionName)
+      if (!fn) {
+        // Action not registered - can't replay, mark as failed
+        await updateActionStatus(
+          action.id,
+          'failed',
+          `Action "${action.actionName}" not registered`
+        )
+        trackQolMetric({
+          metricKey: 'offline_replay_failed',
+          entityType: action.actionName,
+          entityId: action.id,
+          metadata: { reason: 'action_not_registered' },
+        })
+        progress.failed += 1
+        notifyListeners(progress)
+        continue
+      }
+
+      if (action.retries >= MAX_RETRIES) {
+        await updateActionStatus(action.id, 'failed', 'Max retries exceeded')
+        trackQolMetric({
+          metricKey: 'offline_replay_failed',
+          entityType: action.actionName,
+          entityId: action.id,
+          metadata: { reason: 'max_retries_exceeded', retries: action.retries },
+        })
+        progress.failed += 1
+        notifyListeners(progress)
+        continue
+      }
+
+      try {
+        await updateActionStatus(action.id, 'syncing')
+        notifyListeners(progress)
+
+        const result = await fn(...action.args)
+        if (
+          result &&
+          typeof result === 'object' &&
+          'success' in result &&
+          result.success === false
+        ) {
+          const message =
+            'error' in result && typeof result.error === 'string'
+              ? result.error
+              : 'The server rejected this offline change.'
+          throw new Error(message)
+        }
+
+        // Success - remove from queue
+        await removeAction(action.id)
+        trackQolMetric({
+          metricKey: 'offline_replay_succeeded',
+          entityType: action.actionName,
+          entityId: action.id,
+          metadata: { retries: action.retries },
+        })
+        progress.completed += 1
+      } catch (err) {
+        const message = err instanceof Error ? err.message : 'Unknown error'
+        await updateActionStatus(action.id, 'failed', message)
+        trackQolMetric({
+          metricKey: 'offline_replay_failed',
+          entityType: action.actionName,
+          entityId: action.id,
+          metadata: { reason: message, retries: action.retries },
+        })
+        progress.failed += 1
+      }
+
+      notifyListeners(progress)
+    }
+
+    return progress
+  } finally {
+    // Storage can fail before or during replay. Always permit the next attempt.
+    progress.current = null
+    progress.isSyncing = false
+    isSyncing = false
+    notifyListeners(progress)
   }
-
-  progress.current = null
-  progress.isSyncing = false
-  isSyncing = false
-  notifyListeners(progress)
-
-  return progress
 }
 
 /** Get whether a sync is currently in progress */
