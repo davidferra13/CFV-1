@@ -410,11 +410,9 @@ Filed per Section 13 of this contract. The study is `docs/discovery/2026-07-10-c
 
 ### Appendix A: module vocabulary (filled by the module vocabulary task)
 
-| Chef-facing name | Billing slug | Sections it covers | Gate keys | Plan tier |
-| ---------------- | ------------ | ------------------ | --------- | --------- |
-| (filled by lib/billing/modules.ts extension task) | | | | |
-
-
+| Chef-facing name                                  | Billing slug | Sections it covers | Gate keys | Plan tier |
+| ------------------------------------------------- | ------------ | ------------------ | --------- | --------- |
+| (filled by lib/billing/modules.ts extension task) |              |                    |           |           |
 
 ---
 
@@ -443,17 +441,17 @@ Audit scripts, gitignored, `scripts/scratch/audit-archetype-visibility.ts`,
 `node --import tsx <path>`. They import the live `nav-config`, `presets`, `surface-graph`
 and `modules` and change nothing.
 
-| Fact | Number |
-| --- | --- |
-| Chef sidebar entries as authored | 654 entries, 470 unique routes |
-| Nav groups | 13 groups plus 5 standalone top items plus 14 hidden groups |
-| Largest groups | finance 77, culinary 69, clients 52, pipeline 51, operations 48, tools 39 |
-| Modules defined in `lib/billing/modules.ts` | 13 |
-| Modules each of the 6 archetypes enables today | 12 of 13, identical for all six |
-| Routes a brand-new chef sees | 22 of 470 |
-| Routes an established chef sees | 458 of 470, identical for all six archetypes |
-| Routes no module toggle can ever hide | 99 (settings 23, studio 7, partners 6, import 4, remy 4, and 44 more segments) |
-| Routes a private chef would see with a differentiated module set | 335 of 470 |
+| Fact                                                             | Number                                                                         |
+| ---------------------------------------------------------------- | ------------------------------------------------------------------------------ |
+| Chef sidebar entries as authored                                 | 654 entries, 470 unique routes                                                 |
+| Nav groups                                                       | 13 groups plus 5 standalone top items plus 14 hidden groups                    |
+| Largest groups                                                   | finance 77, culinary 69, clients 52, pipeline 51, operations 48, tools 39      |
+| Modules defined in `lib/billing/modules.ts`                      | 13                                                                             |
+| Modules each of the 6 archetypes enables today                   | 12 of 13, identical for all six                                                |
+| Routes a brand-new chef sees                                     | 22 of 470                                                                      |
+| Routes an established chef sees                                  | 458 of 470, identical for all six archetypes                                   |
+| Routes no module toggle can ever hide                            | 99 (settings 23, studio 7, partners 6, import 4, remy 4, and 44 more segments) |
+| Routes a private chef would see with a differentiated module set | 335 of 470                                                                     |
 
 Read these four rows together, because they are the whole diagnosis:
 

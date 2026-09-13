@@ -52,7 +52,11 @@ test('the chef nav route inventory does not shrink', () => {
 
 test('every chef nav route has exactly one owner', () => {
   const unowned = allNavHrefs().filter((href) => getRouteOwner(href) === undefined)
-  assert.deepEqual(unowned, [], `unowned routes cannot be hidden by any toggle: ${unowned.join(' ')}`)
+  assert.deepEqual(
+    unowned,
+    [],
+    `unowned routes cannot be hidden by any toggle: ${unowned.join(' ')}`
+  )
 })
 
 test('every owner is a real module slug or the core owner', () => {
