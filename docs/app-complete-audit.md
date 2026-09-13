@@ -90,7 +90,20 @@
 
 **Route:** `/dashboard`
 
-### Header (always visible)
+### Current Today operator surface (2026-09-13)
+
+- Purpose: triage, not reporting. It answers one question: what needs the chef now?
+- Primary action: the live priority queue's `nextAction`, shown as one dominant `Start` link with context and an optional time estimate.
+- Secondary context: the next booked dinner plus no more than two `After this` actions.
+- Honest states: queue and schedule failures are shown explicitly; an empty queue says the chef is caught up and does not invent busywork.
+- Shell budget: sidebar and mobile navigation remain. Breadcrumbs, market research, feedback prompts, quick expense, Remy, quick capture, live alerts, and the contextual rail are suppressed on `/dashboard`.
+- Live viewport audit: 3 sections, 1 heading, 0 buttons, 4 links, 0 collapsible blocks, no horizontal overflow; 1.0 mobile screens at 375x812 and 0.7 desktop screens at 1440x1000.
+
+### Retired legacy dashboard inventory (historical reference; no longer rendered)
+
+The inventory below documents the former mega-dashboard compositor. Its widgets and routes still exist elsewhere in the product, but `/dashboard` no longer mounts them.
+
+#### Header
 
 | Element                                    | Type                  | What It Does                                                                                                                                                                                                                                                                               |
 | ------------------------------------------ | --------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |

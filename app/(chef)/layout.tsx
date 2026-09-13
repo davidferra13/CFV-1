@@ -323,9 +323,11 @@ export default async function ChefLayout({ children }: { children: React.ReactNo
                 channel="chef_portal"
               />
             )}
-            <Suspense fallback={<RailStripSkeleton />}>
-              <RailStripWrapper />
-            </Suspense>
+            {shellBudget.showContextualRail && (
+              <Suspense fallback={<RailStripSkeleton />}>
+                <RailStripWrapper />
+              </Suspense>
+            )}
             {shellBudget.showContextualRail && (
               <Suspense fallback={<ContextualRailSkeleton />}>
                 <ContextualRailServer />

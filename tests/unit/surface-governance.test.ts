@@ -112,16 +112,16 @@ describe('surface governance', () => {
   it('suppresses ambient shell prompts outside triage surfaces', () => {
     assert.deepEqual(resolveChefShellBudget('/dashboard'), {
       mode: 'triage',
-      showMarketResearchBanner: true,
-      showFeedbackNudge: true,
+      showMarketResearchBanner: false,
+      showFeedbackNudge: false,
       showDesktopSidebar: true,
       showMobileNav: true,
-      showBreadcrumbBar: true,
-      showQuickExpenseTrigger: true,
-      showRemy: true,
-      showQuickCapture: true,
-      showLiveAlerts: true,
-      showContextualRail: true,
+      showBreadcrumbBar: false,
+      showQuickExpenseTrigger: false,
+      showRemy: false,
+      showQuickCapture: false,
+      showLiveAlerts: false,
+      showContextualRail: false,
       contentWidth: 'constrained',
     })
     assert.deepEqual(resolveChefShellBudget('/settings/modules'), {

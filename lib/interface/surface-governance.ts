@@ -283,6 +283,24 @@ export function resolveChefShellBudget(pathname: string): ChefShellBudget {
   const allowAmbientResearchPrompts = mode === 'triage'
   const isImmersiveEditor = /^\/menus\/[^/]+\/editor(?:\/|$)/.test(pathname)
   const isWelcome = pathname === '/welcome'
+  const isDashboard = pathname === '/dashboard'
+
+  if (isDashboard) {
+    return {
+      mode,
+      showMarketResearchBanner: false,
+      showFeedbackNudge: false,
+      showDesktopSidebar: true,
+      showMobileNav: true,
+      showBreadcrumbBar: false,
+      showQuickExpenseTrigger: false,
+      showRemy: false,
+      showQuickCapture: false,
+      showLiveAlerts: false,
+      showContextualRail: false,
+      contentWidth: 'constrained',
+    }
+  }
 
   if (isImmersiveEditor || isWelcome) {
     return {
