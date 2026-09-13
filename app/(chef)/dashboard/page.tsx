@@ -218,7 +218,15 @@ export default async function ChefDashboard() {
 
   const primary = queueState.ok ? queueState.value.nextAction : null
   const after = queueState.ok
-    ? queueState.value.items.filter((item) => item.id !== primary?.id).slice(0, 2)
+    ? queueState.value.items
+        .filter((item) => item.id !== primary?.id)
+        .filter(
+          (item, index, items) =>
+            items.findIndex(
+              (candidate) => candidate.href === item.href && candidate.title === item.title
+            ) === index
+        )
+        .slice(0, 2)
     : []
   const today = new Date().toLocaleDateString('en-US', {
     weekday: 'long',
