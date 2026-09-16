@@ -1,0 +1,90 @@
+import type { OrderOpsAdapterDefinition } from './types'
+import { TOAST_ORDER_ADAPTER } from './toast'
+
+export const ORDER_OPS_ADAPTER_CATALOG: OrderOpsAdapterDefinition[] = [
+  TOAST_ORDER_ADAPTER,
+  {
+    provider: 'opentable',
+    label: 'OpenTable',
+    category: 'reservation',
+    maturity: 'PARTNERSHIP_REQUIRED',
+    requiresPartnerApproval: true,
+    capabilities: ['SEARCH_AVAILABILITY', 'CREATE_RESERVATION', 'UPDATE_RESERVATION'],
+    documentation: 'https://docs.opentable.com/',
+    notes: ['Consumer API v2 is the preferred path for new online-booking integrations.', 'ChefFlow must use the API product that matches the interaction surface and partner agreement.'],
+  },
+  {
+    provider: 'deliverect',
+    label: 'Deliverect',
+    category: 'delivery',
+    maturity: 'CONTRACT_ONLY',
+    requiresPartnerApproval: true,
+    capabilities: ['INGEST', 'CREATE_ORDER', 'MENU_SYNC'],
+    documentation: 'https://developers.deliverect.com/v3.0-ordering-experience/reference/commerce-api-overview',
+    notes: ['Commerce flow covers stores, menus, basket construction, checkout, and checkout-status webhooks.'],
+  },
+  {
+    provider: 'doordash',
+    label: 'DoorDash',
+    category: 'delivery',
+    maturity: 'PARTNERSHIP_REQUIRED',
+    requiresPartnerApproval: true,
+    capabilities: ['INGEST', 'MENU_SYNC'],
+    documentation: 'https://developer.doordash.com/en-US/docs/marketplace/faq/getting_started/',
+    notes: ['Marketplace API access is limited and requires partner approval.', 'Webhook flow includes order receipt and cancellation events.'],
+  },
+  {
+    provider: 'square',
+    label: 'Square',
+    category: 'pos',
+    maturity: 'CONTRACT_ONLY',
+    requiresPartnerApproval: false,
+    capabilities: ['INGEST', 'GET_ORDER', 'CREATE_ORDER'],
+    documentation: 'https://developer.squareup.com/reference/square/orders-api',
+    notes: ['Existing ChefFlow provider inventory can be upgraded to a verified command adapter.'],
+  },
+  {
+    provider: 'clover',
+    label: 'Clover',
+    category: 'pos',
+    maturity: 'CONTRACT_ONLY',
+    requiresPartnerApproval: false,
+    capabilities: ['INGEST', 'GET_ORDER', 'CREATE_ORDER'],
+    documentation: 'https://docs.clover.com/dev/docs/orders',
+    notes: ['Existing ChefFlow provider inventory can be upgraded to a verified command adapter.'],
+  },
+  {
+    provider: 'lightspeed',
+    label: 'Lightspeed',
+    category: 'pos',
+    maturity: 'CONTRACT_ONLY',
+    requiresPartnerApproval: false,
+    capabilities: ['INGEST', 'GET_ORDER', 'CREATE_ORDER'],
+    documentation: 'https://api-docs.lsk.lightspeed.app/',
+    notes: ['Existing ChefFlow provider inventory can be upgraded to a verified command adapter.'],
+  },
+  {
+    provider: 'sevenrooms',
+    label: 'SevenRooms',
+    category: 'reservation',
+    maturity: 'PARTNERSHIP_REQUIRED',
+    requiresPartnerApproval: true,
+    capabilities: ['INGEST', 'SEARCH_AVAILABILITY', 'CREATE_RESERVATION', 'UPDATE_RESERVATION'],
+    documentation: 'https://sevenrooms.com/',
+    notes: ['Treat access and exact API surface as partnership-dependent until credentials and current partner docs are verified.'],
+  },
+  {
+    provider: 'uber_eats',
+    label: 'Uber Eats',
+    category: 'delivery',
+    maturity: 'PARTNERSHIP_REQUIRED',
+    requiresPartnerApproval: true,
+    capabilities: ['INGEST', 'MENU_SYNC'],
+    documentation: 'https://developer.uber.com/docs/eats/introduction',
+    notes: ['Treat ordering access as partner-dependent and verify the currently granted API surface before enabling commands.'],
+  },
+]
+
+export function getOrderOpsAdapterDefinition(provider: string) {
+  return ORDER_OPS_ADAPTER_CATALOG.find((adapter) => adapter.provider === provider) ?? null
+}

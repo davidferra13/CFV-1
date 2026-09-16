@@ -1,3 +1,5 @@
+import type { OrderOpsAdapterMaturity } from './adapters/types'
+
 export type OrderOpsKind = 'order' | 'reservation' | 'waitlist' | 'external_event'
 export type OrderOpsLane = 'attention' | 'scheduled' | 'active' | 'ready' | 'done'
 export type OrderOpsInteractionMode = 'NATIVE' | 'INTEGRATED' | 'OBSERVED'
@@ -48,6 +50,8 @@ export type OrderOpsCoverage = {
   system: string
   category: 'pos' | 'reservation' | 'delivery'
   state: 'configured' | 'available' | 'adapter_required'
+  maturity: OrderOpsAdapterMaturity
+  requiresPartnerApproval: boolean
   interactionMode: OrderOpsInteractionMode
   detail: string
 }

@@ -226,6 +226,9 @@ export function OrderOperationsDashboard({ snapshot, activeOrders }: Props) {
                 <Badge variant={coverageVariant(channel.state)}>{channel.state.replaceAll('_', ' ')}</Badge>
               </div>
               <p className="mt-2 text-xs text-stone-500">{channel.detail}</p>
+              <p className="mt-1 text-[11px] uppercase tracking-wide text-stone-600">
+                {channel.maturity.replaceAll('_', ' ')}{channel.requiresPartnerApproval ? ' · partner access required' : ''}
+              </p>
             </div>
           ))}
         </div>

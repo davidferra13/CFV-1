@@ -1,3 +1,4 @@
+import { ORDER_OPS_ADAPTER_CATALOG } from './adapters/catalog'
 import type {
   OrderOpsCoverage,
   OrderOpsDebt,
@@ -199,54 +200,53 @@ export function buildOrderOpsMetrics(items: OrderOpsItem[]): OrderOpsMetrics {
   }
 }
 
-const REQUIRED_EXTERNAL_SYSTEMS: Array<Pick<OrderOpsCoverage, 'system' | 'category'>> = [
-  { system: 'Toast', category: 'pos' },
-  { system: 'Square', category: 'pos' },
-  { system: 'Clover', category: 'pos' },
-  { system: 'Lightspeed', category: 'pos' },
-  { system: 'OpenTable', category: 'reservation' },
-  { system: 'SevenRooms', category: 'reservation' },
-  { system: 'Deliverect', category: 'delivery' },
-  { system: 'DoorDash', category: 'delivery' },
-  { system: 'Uber Eats', category: 'delivery' },
-]
+const REQUIRED_EXTERNAL_SYSTEMS = ORDER_OPS_ADAPTER_CATALOG
 
 function canonicalProviderLabel(value: string): string {
   return value.toLowerCase().replaceAll(/[^a-z0-9]/g, '')
 }
 export function buildOrderOpsCoverage(connectedProviders: string[]): OrderOpsCoverage[] {
-  const connected = new Set(connectedProviders.map(canonicalProviderLabel))
+  const configured = new Set(connectedProviders.map(canonicalProviderLabel))
   return REQUIRED_EXTERNAL_SYSTEMS.map((entry) => {
-    const providerKey = canonicalProviderLabel(entry.system)
-    const isConnected = connected.has(providerKey)
-    const isKnownProvider = ['toast', 'square', 'clover', 'lightspeed'].includes(providerKey)
+    const providerKey = canonicalProviderLabel(entry.provider)
+    const isConfigured = configured.has(providerKey)
+    const isInCurrentConnectionInventory = ['toast', 'square', 'clover', 'lightspeed'].includes(entry.provider)
+    const base = {
+      system: entry.label,
+      category: entry.category,
+      maturity: entry.maturity,
+      requiresPartnerApproval: entry.requiresPartnerApproval,
+    }
 
-    if (isConnected) {
+    if (isConfigured) {
       return {
-        ...entry,
+        ...base,
         state: 'configured' as const,
         interactionMode: 'OBSERVED' as const,
         detail: 'A connection record exists, but end-to-end read/write command capability is not yet verified.',
       }
     }
 
-    if (isKnownProvider) {
+    if (isInCurrentConnectionInventory) {
       return {
-        ...entry,
+        ...base,
         state: 'available' as const,
         interactionMode: 'OBSERVED' as const,
-        detail: 'Provider exists in ChefFlow integration inventory but is not connected for this tenant.',
+        detail: 'ChefFlow has a connection slot for this provider; tenant setup and command verification are still required.',
       }
     }
 
     return {
-      ...entry,
+      ...base,
       state: 'adapter_required' as const,
       interactionMode: 'OBSERVED' as const,
-      detail: 'Dedicated ChefFlow adapter is not yet implemented.',
+      detail: entry.requiresPartnerApproval
+        ? 'Provider access or partnership approval and a dedicated ChefFlow adapter are required.'
+        : 'Dedicated ChefFlow adapter is not yet implemented.',
     }
   })
 }
+
 export function buildOrderOpsDebt(
   items: OrderOpsItem[],
   coverage: OrderOpsCoverage[]
