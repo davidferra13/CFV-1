@@ -1,7 +1,7 @@
 # ChefFlow Canonical Project Definition and Scope
 
 Status: canonical source of truth
-Last updated: 2026-04-02
+Last updated: 2026-09-16
 Purpose: define what ChefFlow is, what it is for, who it serves, and how conflicting summaries should be resolved
 
 ## Why This Document Exists
@@ -20,11 +20,13 @@ If another document conflicts with this one on project identity, audience, scope
 
 ## Canonical Definition
 
-ChefFlow is a chef-first operating system for independent and small culinary businesses.
+ChefFlow is the universal operating system for professional culinary work.
 
-It is designed to unify the operational stack of a chef-led business into one shared system: sales, client relationships, events, menus, recipes, pricing, inventory, staffing, finance, documents, communication, and follow-through.
+It is designed so chefs across restaurants, private and personal chef businesses, catering, hotels, resorts, casinos, bakeries, food trucks, commissaries, ghost kitchens, hospitals, senior living, schools, universities, stadiums, corporate dining, estates, yachts, meal-prep businesses, R&D kitchens, multi-location groups, and other professional culinary operations can run their working day from one system.
 
-ChefFlow is not a collection of separate apps. It is one platform with multiple surfaces around a shared domain model.
+The north-star question is: "Can a chef operate their entire working day from ChefFlow without needing to think about or manually switch between a stack of other applications?" If the answer is no for a normal chef workflow, that workflow is a ChefFlow capability gap.
+
+ChefFlow is not a collection of separate apps and it is not another app added to the stack. It is one persona-aware operating environment around a shared domain model whose product objective is to eliminate the stack.
 
 ## Canonical Product Shape
 
@@ -68,21 +70,19 @@ ChefFlow is chef-first, but not chef-only.
 
 ### Primary audience
 
-- independent private chefs
-- small chef-led catering operations
-- recurring meal-prep operators
-- chef businesses with small teams
+- chefs and culinary operators in restaurants, hotels, resorts, casinos, stadiums, and corporate dining
+- private and personal chefs, catering teams, meal-prep businesses, bakeries, food trucks, commissaries, and ghost kitchens
+- culinary teams in hospitals, senior living, schools, and universities
+- estate and yacht culinary teams
+- culinary R&D teams and multi-location culinary groups
 
-### Secondary adjacent audience
+### Persona-aware delivery
 
-- food trucks
-- pop-ups
-- chef-led hospitality businesses with retail or service extensions
-- other small culinary operators when the workflows still fit the chef-led operating model
+ChefFlow is universal in capability coverage but selective in presentation. A pastry chef, private chef, institutional foodservice director, line lead, purchasing chef, and multi-location culinary director should not see the same clutter. Modules and actions that do not serve the active persona or operation should remain hidden while the shared operating model stays intact.
 
 ### Important clarification
 
-ChefFlow is not best described as a generic software platform for every food business. The repo contains broader operator and retail-adjacent capabilities, but the product identity remains chef-led and operator-first.
+ChefFlow is not generic software merely because it covers many operation types. Its identity remains chef-first: model the actual jobs professional chefs perform, normalize the fragmented systems behind those jobs, and keep the chef inside one operating environment.
 
 ## Core Problem ChefFlow Solves
 
@@ -103,43 +103,48 @@ ChefFlow brings those workflows into one system with shared state and role-aware
 
 These are the project's stable goals:
 
-1. Replace fragmented operational tooling with one integrated system for chef-led businesses.
+1. Eliminate fragmented operational tooling so professional chefs can run the working day from one operating environment.
 2. Give operators clearer financial truth, pricing clarity, and business visibility.
 3. Protect the chef-client relationship and treat operational data carefully.
 4. Surface the right next action through queueing, briefing, and workflow guidance.
-5. Help operators get discovered and contacted without turning ChefFlow into a commission marketplace.
-6. Support relationship surfaces around the business: clients, staff, collaborators, partners, and admins.
+5. Normalize specialized external services behind ChefFlow integrations when owning the workflow is not technically or commercially sensible.
+6. Keep capability delivery persona-aware so universal coverage does not create universal clutter.
+
+## Stack-Elimination Workflow Test
+
+For every screen and workflow, answer these questions in order:
+
+1. What job is the chef trying to complete?
+2. What applications do chefs currently switch between to complete it?
+3. Can ChefFlow own the complete workflow?
+4. If not, can ChefFlow integrate the external service so the chef never leaves ChefFlow?
+5. If multiple services provide the information, can ChefFlow aggregate them into one normalized interface?
+6. What remaining external interaction still prevents ChefFlow from becoming the chef's single operating environment?
+
+Every unanswered item becomes product backlog. The canonical machine-readable backlog is `lib/capabilities/registry.ts`; `npm run audit:capabilities` audits it against current repository evidence and writes the current report to `docs/audit/2026-09-16-chefflow-capability-registry.md`.
 
 ## Scope Boundaries
 
 ### Clearly in scope
 
-- chef/operator business management
-- inquiry-to-event lifecycle
-- client relationship and follow-through
-- culinary workflow management
-- pricing, costing, and procurement support
-- finance, invoices, payments, and ledger support
-- day-of operations and documentation
-- public discovery and operator acquisition support
-- client visibility and self-service
-- admin oversight and internal control surfaces
-- APIs, integrations, automation, and supporting infrastructure
+- Today command center, tasks, scheduling, team coordination, and unified inbox
+- clients, guests, orders, reservations, events, and relationship workflows
+- menus, recipes, prep, inventory, purchasing, receiving, vendors, and food safety
+- payments, documents, employees, payroll coordination, financials, and analytics
+- POS, delivery, CRM, catering, maintenance, marketing, compliance, nutrition, and employee-management workflows
+- public discovery, client visibility, staff execution, partner surfaces, and admin oversight
+- APIs, integrations, aggregation, automation, offline continuity, and supporting infrastructure
+- operation-specific requirements for restaurants, independent chefs, institutional foodservice, hospitality, mobile food, commissaries, R&D kitchens, and multi-location groups
 
-### In scope but not core identity
+### Strategy boundary
 
-- partner and referral workflows
-- public directory and discovery
-- staff execution tooling
-- kiosk, mobile, demo, and tokenized delivery surfaces
-- retail and commerce extensions
-- restaurant- or bakery-adjacent schema and experiments
+A workflow may be owned by ChefFlow, integrated through a specialized service, or aggregated from multiple systems. A workflow that still requires the chef to open an external system is LAUNCH ONLY and remains product debt until that handoff can be removed.
 
 ### Not the primary identity
 
-- a consumer marketplace that owns the transaction
+- a consumer marketplace that owns the chef-client transaction
 - a commission-based booking intermediary
-- a generic enterprise suite for all restaurant operations
+- a thin dashboard that merely links to the chef's existing app stack
 - a collection of unrelated products
 
 ## Public Directory Position
@@ -186,25 +191,28 @@ If monetization changes in the future, this document must be updated first befor
 
 If someone needs the shortest correct answer, use this:
 
-ChefFlow is a chef-first operating system for independent and small culinary businesses, centered on the operator workspace and supported by public discovery, client, staff, partner, admin, and API surfaces.
+ChefFlow is the universal operating system for professional culinary work, designed to let chefs complete their working day without thinking about or manually switching between a stack of other applications.
 
 ## Questions Everyone Should Be Able To Answer
 
 Everyone working on ChefFlow should be able to answer these the same way:
 
 1. What is ChefFlow?
-   A chef-first operating system for independent and small culinary businesses.
-2. What is the primary product?
-   The authenticated operator workspace.
-3. Is the public directory the whole product?
+   The universal operating system for professional culinary work.
+2. What is the north-star test?
+   A chef should be able to complete a normal working day without thinking about or manually switching between a stack of other applications.
+3. What is the primary product?
+   The authenticated, persona-aware ChefFlow operating environment.
+4. Is the public directory the whole product?
    No. It is a supporting acquisition surface.
-4. Is ChefFlow chef-only?
-   No. It is chef-first, with adjacent support for other small culinary operators.
-5. Is ChefFlow a commission marketplace?
+5. Is ChefFlow only for independent chefs and small teams?
+   No. It serves professional chefs across independent, restaurant, hospitality, institutional, mobile, commissary, R&D, and multi-location operations.
+6. Is ChefFlow a commission marketplace?
    No. Discovery is in scope; platform-owned booking take-rate is not the current identity.
-6. Are legacy Pro and gating terms the current canonical monetization story?
+7. What happens when a workflow still opens another app?
+   It remains a capability gap. LAUNCH ONLY is explicit product debt.
+8. Are legacy Pro and gating terms the current canonical monetization story?
    No. They are implementation/history artifacts unless explicitly reintroduced by updated strategy.
-
 ## Documentation Precedence
 
 For project identity and scope questions, use this order:

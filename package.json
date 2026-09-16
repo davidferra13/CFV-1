@@ -191,6 +191,7 @@
     "audit:variant": "node scripts/overnight-audit-variant.mjs",
     "audit:a11y:markup": "node scripts/audit-a11y-markup.mjs",
     "audit:a11y:markup:strict": "node scripts/audit-a11y-markup.mjs --strict",
+    "audit:capabilities": "tsx scripts/audit-capability-registry.ts",
     "audit:completeness": "tsx scripts/audit-surface-completeness.ts",
     "audit:completeness:json": "tsx scripts/audit-surface-completeness.ts --json",
     "audit:completeness:graph": "tsx scripts/audit-surface-completeness.ts --graph-json",
