@@ -154,3 +154,34 @@ export async function getReservation(id: string) {
 
   return data
 }
+
+export type GuestReservationStatus =
+  | 'confirmed'
+  | 'seated'
+  | 'completed'
+  | 'no_show'
+  | 'cancelled'
+
+const GUEST_RESERVATION_STATUSES: GuestReservationStatus[] = [
+  'confirmed',
+  'seated',
+  'completed',
+  'no_show',
+  'cancelled',
+]
+
+export async function setReservationStatus(id: string, status: GuestReservationStatus) {
+  const user = await requireChef()
+  const db: any = createServerClient()
+  if (!GUEST_RESERVATION_STATUSES.includes(status)) throw new Error('Invalid reservation status')
+
+  const { error } = await db
+    .from('guest_reservations')
+    .update({ status, updated_at: new Date().toISOString() })
+    .eq('id', id)
+    .eq('chef_id', user.tenantId!)
+
+  if (error) throw new Error(`Failed to update reservation status: ${error.message}`)
+  revalidatePath('/guests/reservations')
+  revalidatePath('/commerce/orders')
+}

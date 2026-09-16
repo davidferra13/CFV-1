@@ -1,6 +1,6 @@
 # ChefFlow Capability Registry Audit
 
-Generated: 2026-09-16T19:01:05.984Z
+Generated: 2026-09-16T19:31:14.950Z
 
 North star: **Can a chef operate their entire working day from ChefFlow without needing to think about or manually switch between a stack of other applications?**
 
@@ -40,9 +40,9 @@ North star: **Can a chef operate their entire working day from ChefFlow without 
 | P0 | Clients / Guests | Preference, allergy, and dietary memory | OWN | PARTIAL | AUDIT_REQUIRED | CANDIDATE_CODE_AND_TEST_SIGNAL |
 | P1 | Clients / Guests | CRM segmentation and lifecycle | OWN | PARTIAL | AUDIT_REQUIRED | CANDIDATE_CODE_AND_TEST_SIGNAL |
 | P1 | Clients / Guests | Relationship marketing and retention | OWN | PARTIAL | AUDIT_REQUIRED | CANDIDATE_CODE_AND_TEST_SIGNAL |
-| P0 | Orders / Reservations | POS order lifecycle | INTEGRATE | MISSING | AUDIT_REQUIRED | CANDIDATE_CODE_AND_TEST_SIGNAL |
-| P0 | Orders / Reservations | Reservations, waitlist, table, and pacing management | INTEGRATE | MISSING | AUDIT_REQUIRED | CANDIDATE_CODE_AND_TEST_SIGNAL |
-| P0 | Orders / Reservations | Delivery channel aggregation | AGGREGATE | MISSING | AUDIT_REQUIRED | CANDIDATE_CODE_AND_TEST_SIGNAL |
+| P0 | Orders / Reservations | POS order lifecycle | INTEGRATE | PARTIAL | AUDIT_REQUIRED | CANDIDATE_CODE_AND_TEST_SIGNAL |
+| P0 | Orders / Reservations | Reservations, waitlist, table, and pacing management | INTEGRATE | PARTIAL | AUDIT_REQUIRED | CANDIDATE_CODE_AND_TEST_SIGNAL |
+| P0 | Orders / Reservations | Delivery channel aggregation | AGGREGATE | PARTIAL | AUDIT_REQUIRED | CANDIDATE_CODE_AND_TEST_SIGNAL |
 | P0 | Orders / Reservations | Catering and private-event booking | OWN | PARTIAL | AUDIT_REQUIRED | CANDIDATE_CODE_AND_TEST_SIGNAL |
 | P0 | Menus | Canonical menu system | OWN | PARTIAL | AUDIT_REQUIRED | CANDIDATE_CODE_AND_TEST_SIGNAL |
 | P0 | Menus | Multi-channel menu publishing | AGGREGATE | PARTIAL | AUDIT_REQUIRED | CANDIDATE_CODE_AND_TEST_SIGNAL |
