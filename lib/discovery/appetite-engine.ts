@@ -72,6 +72,18 @@ export type AppetiteDemandEntry = {
   evidenceCount: number
 }
 
+export type AppetiteSupplyObservation = {
+  tagIds: readonly string[]
+  availabilityWeight?: number
+}
+
+export type AppetiteMarketGap = {
+  tagId: string
+  demandScore: number
+  supplyScore: number
+  gapScore: number
+}
+
 export type AppetiteDiscoveryProjection = {
   craving?: string
   dietary?: string
@@ -369,4 +381,33 @@ export function describeAppetiteState(state: AppetiteState): string[] {
     .sort((a, b) => Number(Boolean(b.locked)) - Number(Boolean(a.locked)))
     .map((signal) => getAppetiteTag(signal.tagId)?.label)
     .filter((label): label is string => Boolean(label))
+}
+
+
+export function measureAppetiteMarketGaps(
+  demand: readonly AppetiteDemandEntry[],
+  supply: readonly AppetiteSupplyObservation[]
+): AppetiteMarketGap[] {
+  const supplyScores = new Map<string, number>()
+
+  for (const observation of supply) {
+    const weight = Math.max(0, observation.availabilityWeight ?? 1)
+    for (const tagId of new Set(observation.tagIds)) {
+      if (!TAG_BY_ID.has(tagId)) continue
+      supplyScores.set(tagId, (supplyScores.get(tagId) ?? 0) + weight)
+    }
+  }
+
+  return demand
+    .filter((entry) => entry.score > 0 && TAG_BY_ID.has(entry.tagId))
+    .map((entry) => {
+      const supplyScore = supplyScores.get(entry.tagId) ?? 0
+      return {
+        tagId: entry.tagId,
+        demandScore: entry.score,
+        supplyScore,
+        gapScore: entry.score / (1 + supplyScore),
+      }
+    })
+    .sort((a, b) => b.gapScore - a.gapScore || b.demandScore - a.demandScore)
 }
