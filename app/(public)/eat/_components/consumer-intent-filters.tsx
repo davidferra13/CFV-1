@@ -15,6 +15,40 @@ import {
   Wine,
 } from 'lucide-react'
 import { DiscoveryViewModeToggle } from './discovery-view-mode-toggle'
+import { AppetiteSpinControl } from './appetite-spin-control'
+import {
+  removeAppetiteTagsForDiscoveryFacet,
+  type AppetiteDiscoveryProjection,
+} from '@/lib/discovery/appetite-engine'
+
+
+function clearAppetiteFacet(
+  params: URLSearchParams,
+  facet: keyof AppetiteDiscoveryProjection
+) {
+  for (const key of ['appetite', 'appetiteLocks'] as const) {
+    const current = (params.get(key) || '')
+      .split(',')
+      .map((value) => value.trim())
+      .filter(Boolean)
+    const next = removeAppetiteTagsForDiscoveryFacet(current, facet)
+    if (next.length > 0) params.set(key, next.join(','))
+    else params.delete(key)
+  }
+}
+
+function appetiteFacetForParam(key: string): keyof AppetiteDiscoveryProjection | null {
+  if (
+    key === 'craving' ||
+    key === 'dietary' ||
+    key === 'budget' ||
+    key === 'eventStyle' ||
+    key === 'useCase'
+  ) {
+    return key
+  }
+  return null
+}
 
 type IntentChip = {
   value: string
@@ -69,6 +103,9 @@ export function ConsumerIntentFilters({
   const setParam = useCallback(
     (key: string, value: string | null) => {
       const params = new URLSearchParams(searchParams.toString())
+      const appetiteFacet = appetiteFacetForParam(key)
+      if (appetiteFacet) clearAppetiteFacet(params, appetiteFacet)
+
       if (value) {
         params.set(key, value)
       } else {
@@ -84,6 +121,7 @@ export function ConsumerIntentFilters({
     (value: string) => {
       const nextValue = activeIntent === value ? null : value
       const params = new URLSearchParams(searchParams.toString())
+      clearAppetiteFacet(params, 'intent')
 
       if (nextValue) {
         params.set('intent', nextValue)
@@ -116,6 +154,8 @@ export function ConsumerIntentFilters({
 
   return (
     <div className="space-y-4">
+      <AppetiteSpinControl />
+
       <div className="flex flex-wrap gap-2" aria-label="Discovery intent">
         {INTENT_CHIPS.map((chip) => {
           const selected = activeIntent === chip.value

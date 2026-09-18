@@ -486,6 +486,8 @@ If you have employees: Financials > Payroll manages wages, Form 941 (quarterly p
 - Utilization rates (days booked vs. available)
 - Cost tracking (ingredient cost %, labor cost %)
 
+**Analytics > Demand Forecast** (`/analytics/demand`) combines three different demand views: seasonal booking patterns, aggregate Appetite demand from public food discovery, and a link to Ingredient Demand. Appetite demand shows only aggregate behavior, labels early/growing/strong signals honestly, and links each tag or combination back to `/eat` so you can inspect what people are leaning toward without exposing individual browsing history.
+
 ### Intelligence Hub
 
 Analytics > Intelligence provides AI-powered insights:
