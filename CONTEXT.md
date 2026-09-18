@@ -152,7 +152,9 @@ The 10-stage end-to-end engagement model (see `docs/service-lifecycle-blueprint.
 | **Appetite Evidence** | An observed interaction that teaches the appetite model. Locks, rejects, opens, shortlists, conversions, and repeats have different weights. |
 | **Appetite Demand** | Aggregate weighted Appetite Evidence for a tag. Demand is not raw click count. |
 | **Appetite Supply** | Availability-weighted food, menu, chef, or operator coverage associated with Appetite Tags. |
-| **Appetite Market Gap** | Appetite Demand normalized against Appetite Supply. High-gap tags represent demand that the currently known supply serves poorly. |
+| **Appetite Market Gap** | Appetite Demand normalized against Appetite Supply. High-gap tags or tag bundles represent demand that the currently known supply serves poorly. |
+| **Appetite Market Snapshot** | Aggregate appetite demand, compound bundle demand, supply coverage, and market gaps for a bounded time window. It is built from appetite evidence without exposing actor identity. |
+| **Group Appetite** | A merged Appetite State across multiple participants. Hard constraints act as vetoes while soft wants and avoids contribute weighted shared evidence. |
 | **Appetite Spin** | A controlled exploration action over Appetite State. Modes are For Me, Fresh, and Chaos. Locks and hard constraints survive spins. |
 
 ---
