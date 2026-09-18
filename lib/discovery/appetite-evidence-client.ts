@@ -85,12 +85,17 @@ export function recordAppetiteResultEvidence(
 ) {
   const tagIds = new Set([...currentSessionAppetiteTagIds(), ...appetiteTagIdsForResult(card)])
   const occurredAt = new Date().toISOString()
+  const decisionId =
+    typeof crypto !== 'undefined' && typeof crypto.randomUUID === 'function'
+      ? crypto.randomUUID()
+      : occurredAt + ':' + action
 
   recordAppetiteEvidence(
     [...tagIds].map((tagId) => ({
       tagId,
       action,
       occurredAt,
+      decisionId,
     }))
   )
 }
