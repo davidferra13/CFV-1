@@ -3,6 +3,7 @@ import {
   APPETITE_DOMAINS,
   aggregateAppetiteBundleDemand,
   aggregateAppetiteDemand,
+  buildAppetiteMarketSnapshot,
   buildAppetiteState,
   inferAppetiteTagIds,
   measureAppetiteBundleMarketGaps,
@@ -294,6 +295,35 @@ describe('appetite engine', () => {
     expect(group.sharedWants[0]).toEqual(
       expect.objectContaining({ tagId: 'food-thai', participantCount: 2 })
     )
+  })
+
+  it('builds one market snapshot from demand evidence and known supply', () => {
+    const snapshot = buildAppetiteMarketSnapshot(
+      [
+        {
+          tagId: 'food-thai',
+          action: 'shortlist',
+          occurredAt: '2026-09-18T12:00:00Z',
+          decisionId: 'd1',
+        },
+        {
+          tagId: 'need-gluten-free',
+          action: 'shortlist',
+          occurredAt: '2026-09-18T12:00:00Z',
+          decisionId: 'd1',
+        },
+      ],
+      [{ tagIds: ['food-thai'], availabilityWeight: 2 }]
+    )
+
+    expect(snapshot.demand).toContainEqual(
+      expect.objectContaining({ tagId: 'food-thai', score: 1.4 })
+    )
+    expect(snapshot.bundleDemand).toContainEqual(
+      expect.objectContaining({ tagIds: ['food-thai', 'need-gluten-free'] })
+    )
+    expect(snapshot.marketGaps).toHaveLength(2)
+    expect(snapshot.bundleMarketGaps).toHaveLength(1)
   })
 
   it('tracks compound appetite demand as bundles and measures bundle supply gaps', () => {
