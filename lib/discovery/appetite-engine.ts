@@ -77,6 +77,35 @@ export type AppetiteSupplyObservation = {
   availabilityWeight?: number
 }
 
+export type AppetiteSupplyCandidate = AppetiteSupplyObservation & {
+  id: string
+}
+
+export type RankedAppetiteSupply = AppetiteSupplyCandidate & {
+  eligible: boolean
+  score: number
+  matchedTagIds: string[]
+  missingHardTagIds: string[]
+  conflictingHardTagIds: string[]
+}
+
+export type GroupAppetiteParticipant = {
+  participantId: string
+  state: AppetiteState
+}
+
+export type GroupAppetitePreference = {
+  tagId: string
+  score: number
+  participantCount: number
+}
+
+export type GroupAppetiteResolution = {
+  state: AppetiteState
+  sharedWants: GroupAppetitePreference[]
+  sharedAvoids: GroupAppetitePreference[]
+}
+
 export type AppetiteMarketGap = {
   tagId: string
   demandScore: number
@@ -389,6 +418,184 @@ export function describeAppetiteState(state: AppetiteState): string[] {
     .filter((label): label is string => Boolean(label))
 }
 
+
+export function rankAppetiteSupply(
+  state: AppetiteState,
+  candidates: readonly AppetiteSupplyCandidate[]
+): RankedAppetiteSupply[] {
+  const hardWants = state.signals.filter(
+    (signal) => signal.hardness === 'hard' && signal.polarity === 'want'
+  )
+  const hardAvoids = state.signals.filter(
+    (signal) => signal.hardness === 'hard' && signal.polarity === 'avoid'
+  )
+  const softSignals = state.signals.filter((signal) => signal.hardness === 'soft')
+
+  return candidates
+    .map((candidate) => {
+      const tags = new Set(candidate.tagIds.filter((tagId) => TAG_BY_ID.has(tagId)))
+      const missingHardTagIds = hardWants
+        .filter((signal) => !tags.has(signal.tagId))
+        .map((signal) => signal.tagId)
+      const conflictingHardTagIds = hardAvoids
+        .filter((signal) => tags.has(signal.tagId))
+        .map((signal) => signal.tagId)
+      const eligible = missingHardTagIds.length === 0 && conflictingHardTagIds.length === 0
+      const matchedTagIds: string[] = []
+      let score = 0
+
+      if (eligible) {
+        for (const signal of softSignals) {
+          const matches = tags.has(signal.tagId)
+          const weight = signal.strength * signal.confidence
+          if (signal.polarity === 'want' && matches) {
+            score += weight
+            matchedTagIds.push(signal.tagId)
+          } else if (signal.polarity === 'avoid' && matches) {
+            score -= weight
+          }
+        }
+
+        for (const signal of hardWants) {
+          if (tags.has(signal.tagId)) {
+            score += 2
+            matchedTagIds.push(signal.tagId)
+          }
+        }
+
+        score *= Math.max(0, candidate.availabilityWeight ?? 1)
+      }
+
+      return {
+        ...candidate,
+        eligible,
+        score,
+        matchedTagIds: [...new Set(matchedTagIds)],
+        missingHardTagIds,
+        conflictingHardTagIds,
+      }
+    })
+    .sort(
+      (a, b) =>
+        Number(b.eligible) - Number(a.eligible) ||
+        b.score - a.score ||
+        (b.availabilityWeight ?? 1) - (a.availabilityWeight ?? 1)
+    )
+}
+
+export function resolveGroupAppetite(
+  participants: readonly GroupAppetiteParticipant[]
+): GroupAppetiteResolution {
+  const aggregate = new Map<
+    string,
+    {
+      wantScore: number
+      avoidScore: number
+      wantParticipants: Set<string>
+      avoidParticipants: Set<string>
+      hardWant?: AppetiteSignal
+      hardAvoid?: AppetiteSignal
+    }
+  >()
+
+  for (const participant of participants) {
+    for (const signal of participant.state.signals) {
+      if (!TAG_BY_ID.has(signal.tagId)) continue
+      const entry = aggregate.get(signal.tagId) ?? {
+        wantScore: 0,
+        avoidScore: 0,
+        wantParticipants: new Set<string>(),
+        avoidParticipants: new Set<string>(),
+      }
+      const weight = signal.strength * signal.confidence
+
+      if (signal.polarity === 'want') {
+        entry.wantScore += weight
+        entry.wantParticipants.add(participant.participantId)
+        if (
+          signal.hardness === 'hard' &&
+          (!entry.hardWant || scoreSignal(signal) > scoreSignal(entry.hardWant))
+        ) {
+          entry.hardWant = signal
+        }
+      } else {
+        entry.avoidScore += weight
+        entry.avoidParticipants.add(participant.participantId)
+        if (
+          signal.hardness === 'hard' &&
+          (!entry.hardAvoid || scoreSignal(signal) > scoreSignal(entry.hardAvoid))
+        ) {
+          entry.hardAvoid = signal
+        }
+      }
+
+      aggregate.set(signal.tagId, entry)
+    }
+  }
+
+  const signals: AppetiteSignal[] = []
+  const sharedWants: GroupAppetitePreference[] = []
+  const sharedAvoids: GroupAppetitePreference[] = []
+
+  for (const [tagId, entry] of aggregate) {
+    if (entry.hardAvoid) {
+      signals.push({
+        ...entry.hardAvoid,
+        scope: 'session',
+        source: 'context',
+        locked: true,
+      })
+    } else if (entry.hardWant) {
+      signals.push({
+        ...entry.hardWant,
+        scope: 'session',
+        source: 'context',
+        locked: true,
+      })
+    } else {
+      const netScore = entry.wantScore - entry.avoidScore
+      if (netScore !== 0) {
+        signals.push({
+          tagId,
+          polarity: netScore > 0 ? 'want' : 'avoid',
+          strength: clamp01(Math.abs(netScore) / Math.max(1, participants.length)),
+          confidence: clamp01(
+            Math.max(entry.wantParticipants.size, entry.avoidParticipants.size) /
+              Math.max(1, participants.length)
+          ),
+          hardness: 'soft',
+          scope: 'session',
+          source: 'context',
+          locked: false,
+        })
+      }
+    }
+
+    if (entry.wantParticipants.size > 0) {
+      sharedWants.push({
+        tagId,
+        score: entry.wantScore,
+        participantCount: entry.wantParticipants.size,
+      })
+    }
+    if (entry.avoidParticipants.size > 0) {
+      sharedAvoids.push({
+        tagId,
+        score: entry.avoidScore,
+        participantCount: entry.avoidParticipants.size,
+      })
+    }
+  }
+
+  const preferenceSort = (a: GroupAppetitePreference, b: GroupAppetitePreference) =>
+    b.participantCount - a.participantCount || b.score - a.score
+
+  return {
+    state: buildAppetiteState(signals),
+    sharedWants: sharedWants.sort(preferenceSort),
+    sharedAvoids: sharedAvoids.sort(preferenceSort),
+  }
+}
 
 export function measureAppetiteMarketGaps(
   demand: readonly AppetiteDemandEntry[],
