@@ -1,9 +1,11 @@
 import { describe, expect, it } from 'vitest'
 import {
   APPETITE_DOMAINS,
+  aggregateAppetiteBundleDemand,
   aggregateAppetiteDemand,
   buildAppetiteState,
   inferAppetiteTagIds,
+  measureAppetiteBundleMarketGaps,
   measureAppetiteMarketGaps,
   rankAppetiteSupply,
   resolveGroupAppetite,
@@ -292,6 +294,46 @@ describe('appetite engine', () => {
     expect(group.sharedWants[0]).toEqual(
       expect.objectContaining({ tagId: 'food-thai', participantCount: 2 })
     )
+  })
+
+  it('tracks compound appetite demand as bundles and measures bundle supply gaps', () => {
+    const evidence = [
+      {
+        tagId: 'food-thai',
+        action: 'shortlist' as const,
+        occurredAt: '2026-09-18T12:00:00Z',
+        decisionId: 'decision-1',
+      },
+      {
+        tagId: 'need-gluten-free',
+        action: 'shortlist' as const,
+        occurredAt: '2026-09-18T12:00:00Z',
+        decisionId: 'decision-1',
+      },
+      {
+        tagId: 'taste-spicy',
+        action: 'shortlist' as const,
+        occurredAt: '2026-09-18T12:00:00Z',
+        decisionId: 'decision-1',
+      },
+    ]
+
+    const bundles = aggregateAppetiteBundleDemand(evidence)
+    expect(bundles).toContainEqual(
+      expect.objectContaining({
+        tagIds: ['food-thai', 'need-gluten-free', 'taste-spicy'],
+        score: 1.4,
+      })
+    )
+
+    const gaps = measureAppetiteBundleMarketGaps(bundles, [
+      { tagIds: ['food-thai', 'taste-spicy'], availabilityWeight: 3 },
+      { tagIds: ['food-thai', 'need-gluten-free', 'taste-spicy'], availabilityWeight: 0.25 },
+    ])
+
+    expect(
+      gaps.find((entry) => entry.tagIds.length === 3)?.gapScore
+    ).toBeGreaterThan(0)
   })
 
   it('ranks unmet appetite demand above well-supplied demand', () => {
