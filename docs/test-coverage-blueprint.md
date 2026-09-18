@@ -55,7 +55,7 @@ Scanner: `/test-scan` skill
 | events     | 58     | YES (FSM)            | -           | YES (journey)        | YES            | BEST COVERED           |
 | culinary   | 48     | YES (menu truth)     | -           | YES (culinary truth) | YES            | GOOD                   |
 | clients    | 39     | -                    | -           | -                    | YES            | GAP: CRUD lifecycle    |
-| analytics  | 22     | -                    | -           | -                    | YES            | GAP: data accuracy     |
+| analytics  | 22     | PARTIAL (appetite demand) | -        | -                    | YES            | PARTIAL                |
 | commerce   | 21     | -                    | -           | -                    | YES            | GAP: payment flows     |
 | stations   | 19     | -                    | -           | -                    | YES            | UNTESTED beyond crawl  |
 | inventory  | 19     | -                    | -           | -                    | YES            | UNTESTED beyond crawl  |
@@ -89,7 +89,7 @@ Scanner: `/test-scan` skill
 | Blog             | 5+     | -    | -   | YES | PARTIAL          |
 | Book/inquire     | 5+     | -    | -   | -   | GAP: intake flow |
 | SEO guards       | ALL    | YES  | YES | YES | GOOD             |
-| Appetite engine  | /eat   | YES  | -   | -   | NEEDS-TEST       |
+| Appetite engine  | /eat   | YES  | LIVE UI | - | VERIFIED         |
 
 ### Admin Portal (43 routes)
 
