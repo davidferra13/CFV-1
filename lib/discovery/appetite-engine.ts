@@ -239,6 +239,42 @@ export function getAppetiteTag(tagId: string): AppetiteTag | undefined {
   return TAG_BY_ID.get(tagId)
 }
 
+
+function normalizeAppetiteText(value: string) {
+  return value
+    .toLowerCase()
+    .replace(/[+&/]/g, ' ')
+    .replace(/[^a-z0-9\s-]/g, ' ')
+    .replace(/\s+/g, ' ')
+    .trim()
+}
+
+export function inferAppetiteTagIds(values: readonly (string | null | undefined)[]): string[] {
+  const haystack = ' ' + normalizeAppetiteText(values.filter(Boolean).join(' ')) + ' '
+  const matches: string[] = []
+
+  for (const tag of APPETITE_TAGS) {
+    const candidates = [
+      tag.label,
+      ...(tag.aliases ?? []),
+      tag.discovery?.craving,
+      tag.discovery?.dietary,
+      tag.discovery?.budget,
+    ].filter((value): value is string => Boolean(value))
+
+    if (
+      candidates.some((candidate) => {
+        const normalized = normalizeAppetiteText(candidate)
+        return normalized.length > 1 && haystack.includes(' ' + normalized + ' ')
+      })
+    ) {
+      matches.push(tag.id)
+    }
+  }
+
+  return matches
+}
+
 export function buildAppetiteState(signals: readonly AppetiteSignal[] = []): AppetiteState {
   const merged = new Map<string, AppetiteSignal>()
 
