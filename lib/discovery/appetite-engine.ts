@@ -64,6 +64,18 @@ export type AppetiteEvidence = {
   tagId: string
   action: AppetiteEvidenceAction
   occurredAt: string
+  decisionId?: string
+}
+
+export type AppetiteBundleDemandEntry = {
+  tagIds: string[]
+  score: number
+  evidenceCount: number
+}
+
+export type AppetiteBundleMarketGap = AppetiteBundleDemandEntry & {
+  supplyScore: number
+  gapScore: number
 }
 
 export type AppetiteDemandEntry = {
@@ -631,6 +643,101 @@ export function resolveGroupAppetite(
     sharedWants: sharedWants.sort(preferenceSort),
     sharedAvoids: sharedAvoids.sort(preferenceSort),
   }
+}
+
+function combinations(values: readonly string[], size: number): string[][] {
+  if (size <= 0) return [[]]
+  if (values.length < size) return []
+
+  const result: string[][] = []
+  for (let index = 0; index <= values.length - size; index += 1) {
+    const head = values[index]
+    for (const tail of combinations(values.slice(index + 1), size - 1)) {
+      result.push([head, ...tail])
+    }
+  }
+  return result
+}
+
+export function aggregateAppetiteBundleDemand(
+  evidence: readonly AppetiteEvidence[],
+  options: { minSize?: number; maxSize?: number } = {}
+): AppetiteBundleDemandEntry[] {
+  const minSize = Math.max(2, options.minSize ?? 2)
+  const maxSize = Math.max(minSize, Math.min(4, options.maxSize ?? 3))
+  const decisions = new Map<
+    string,
+    { action: AppetiteEvidenceAction; tagIds: Set<string>; weight: number }
+  >()
+
+  for (const item of evidence) {
+    if (!TAG_BY_ID.has(item.tagId)) continue
+    const weight = EVIDENCE_WEIGHTS[item.action]
+    if (typeof weight !== 'number' || weight === 0) continue
+    const decisionKey = item.decisionId ?? item.occurredAt + ':' + item.action
+    const current = decisions.get(decisionKey) ?? {
+      action: item.action,
+      tagIds: new Set<string>(),
+      weight,
+    }
+
+    if (current.action !== item.action) continue
+    current.tagIds.add(item.tagId)
+    decisions.set(decisionKey, current)
+  }
+
+  const bundles = new Map<string, AppetiteBundleDemandEntry>()
+
+  for (const decision of decisions.values()) {
+    const tagIds = [...decision.tagIds].sort()
+    for (let size = minSize; size <= Math.min(maxSize, tagIds.length); size += 1) {
+      for (const bundle of combinations(tagIds, size)) {
+        const key = bundle.join('|')
+        const current = bundles.get(key) ?? {
+          tagIds: bundle,
+          score: 0,
+          evidenceCount: 0,
+        }
+        current.score += decision.weight
+        current.evidenceCount += 1
+        bundles.set(key, current)
+      }
+    }
+  }
+
+  return [...bundles.values()].sort(
+    (a, b) =>
+      b.score - a.score ||
+      b.tagIds.length - a.tagIds.length ||
+      b.evidenceCount - a.evidenceCount
+  )
+}
+
+export function measureAppetiteBundleMarketGaps(
+  demand: readonly AppetiteBundleDemandEntry[],
+  supply: readonly AppetiteSupplyObservation[]
+): AppetiteBundleMarketGap[] {
+  return demand
+    .filter((entry) => entry.score > 0 && entry.tagIds.length >= 2)
+    .map((entry) => {
+      const supplyScore = supply.reduce((score, observation) => {
+        const tags = new Set(observation.tagIds)
+        const coversBundle = entry.tagIds.every((tagId) => tags.has(tagId))
+        return coversBundle ? score + Math.max(0, observation.availabilityWeight ?? 1) : score
+      }, 0)
+
+      return {
+        ...entry,
+        supplyScore,
+        gapScore: entry.score / (1 + supplyScore),
+      }
+    })
+    .sort(
+      (a, b) =>
+        b.gapScore - a.gapScore ||
+        b.tagIds.length - a.tagIds.length ||
+        b.score - a.score
+    )
 }
 
 export function measureAppetiteMarketGaps(
