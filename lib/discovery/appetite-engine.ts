@@ -78,6 +78,13 @@ export type AppetiteBundleMarketGap = AppetiteBundleDemandEntry & {
   gapScore: number
 }
 
+export type AppetiteMarketSnapshot = {
+  demand: AppetiteDemandEntry[]
+  bundleDemand: AppetiteBundleDemandEntry[]
+  marketGaps: AppetiteMarketGap[]
+  bundleMarketGaps: AppetiteBundleMarketGap[]
+}
+
 export type AppetiteDemandEntry = {
   tagId: string
   score: number
@@ -738,6 +745,21 @@ export function measureAppetiteBundleMarketGaps(
         b.tagIds.length - a.tagIds.length ||
         b.score - a.score
     )
+}
+
+export function buildAppetiteMarketSnapshot(
+  evidence: readonly AppetiteEvidence[],
+  supply: readonly AppetiteSupplyObservation[]
+): AppetiteMarketSnapshot {
+  const demand = aggregateAppetiteDemand(evidence)
+  const bundleDemand = aggregateAppetiteBundleDemand(evidence)
+
+  return {
+    demand,
+    bundleDemand,
+    marketGaps: measureAppetiteMarketGaps(demand, supply),
+    bundleMarketGaps: measureAppetiteBundleMarketGaps(bundleDemand, supply),
+  }
 }
 
 export function measureAppetiteMarketGaps(
