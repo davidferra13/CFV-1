@@ -3,6 +3,7 @@ import {
   APPETITE_DOMAINS,
   aggregateAppetiteDemand,
   buildAppetiteState,
+  measureAppetiteMarketGaps,
   projectAppetiteStateToDiscovery,
   spinAppetite,
   type AppetiteSignal,
@@ -129,6 +130,28 @@ describe('appetite engine', () => {
         budget: 'Under $30/person',
       })
     )
+  })
+
+  it('ranks unmet appetite demand above well-supplied demand', () => {
+    const gaps = measureAppetiteMarketGaps(
+      [
+        { tagId: 'food-thai', score: 6, evidenceCount: 4 },
+        { tagId: 'food-pizza', score: 6, evidenceCount: 4 },
+      ],
+      [
+        { tagIds: ['food-pizza'], availabilityWeight: 3 },
+        { tagIds: ['food-pizza'], availabilityWeight: 2 },
+        { tagIds: ['food-thai'], availabilityWeight: 0.25 },
+      ]
+    )
+
+    expect(gaps[0]).toEqual(
+      expect.objectContaining({
+        tagId: 'food-thai',
+        demandScore: 6,
+      })
+    )
+    expect(gaps[0].gapScore).toBeGreaterThan(gaps[1].gapScore)
   })
 
   it('turns evidence into a demand vector instead of treating every interaction equally', () => {
