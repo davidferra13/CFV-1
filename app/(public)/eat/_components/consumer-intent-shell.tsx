@@ -35,6 +35,10 @@ import {
 import type { DiscoveryRuntimePlan } from '@/lib/discovery/discovery-runtime-module'
 import type { ActiveFilterSummaryToken } from '@/lib/discovery/action-contracts'
 import {
+  removeAppetiteTagsForDiscoveryFacet,
+  type AppetiteDiscoveryProjection,
+} from '@/lib/discovery/appetite-engine'
+import {
   buildDiscoveryResetPlan,
   buildSmartEmptyResultsRepairActions,
   type EmptyResultsRepairAction,
@@ -109,6 +113,29 @@ function clearTokenHref(searchParams: ConsumerDiscoveryFilters, token: ActiveFil
     eventStyle: ['eventStyle', 'mood'],
   }
   for (const key of aliases[token.key] ?? []) params.delete(key)
+
+  const appetiteFacet =
+    token.key === 'craving' ||
+    token.key === 'dietary' ||
+    token.key === 'budget' ||
+    token.key === 'eventStyle'
+      ? (token.key as keyof AppetiteDiscoveryProjection)
+      : token.key === 'intent'
+        ? ('intent' as const)
+        : null
+
+  if (appetiteFacet) {
+    for (const key of ['appetite', 'appetiteLocks'] as const) {
+      const current = (params.get(key) || '')
+        .split(',')
+        .map((value) => value.trim())
+        .filter(Boolean)
+      const next = removeAppetiteTagsForDiscoveryFacet(current, appetiteFacet)
+      if (next.length > 0) params.set(key, next.join(','))
+      else params.delete(key)
+    }
+  }
+
   const query = params.toString()
   return query ? `/eat?${query}` : '/eat'
 }
