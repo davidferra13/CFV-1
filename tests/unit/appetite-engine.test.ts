@@ -9,6 +9,7 @@ import {
   measureAppetiteBundleMarketGaps,
   measureAppetiteMarketGaps,
   rankAppetiteSupply,
+  removeAppetiteTagsForDiscoveryFacet,
   resolveGroupAppetite,
   projectAppetiteStateToDiscovery,
   spinAppetite,
@@ -128,6 +129,22 @@ describe('appetite engine', () => {
     expect(spun.signals).toContainEqual(
       expect.objectContaining({ tagId: 'feel-crispy', locked: true })
     )
+  })
+
+  it('removes stale appetite tags when a manual discovery facet becomes authoritative', () => {
+    expect(
+      removeAppetiteTagsForDiscoveryFacet(
+        ['food-thai', 'taste-spicy', 'need-vegan'],
+        'craving'
+      )
+    ).toEqual(['taste-spicy', 'need-vegan'])
+
+    expect(
+      removeAppetiteTagsForDiscoveryFacet(
+        ['food-thai', 'taste-spicy', 'need-vegan'],
+        'dietary'
+      )
+    ).toEqual(['food-thai', 'taste-spicy'])
   })
 
   it('projects appetite state into existing discovery filters without inventing a second search system', () => {
