@@ -259,6 +259,17 @@ export function getAppetiteTag(tagId: string): AppetiteTag | undefined {
 }
 
 
+export function removeAppetiteTagsForDiscoveryFacet(
+  tagIds: readonly string[],
+  facet: keyof AppetiteDiscoveryProjection
+): string[] {
+  return tagIds.filter((tagId) => {
+    const tag = getAppetiteTag(tagId)
+    return !tag?.discovery?.[facet]
+  })
+}
+
+
 function normalizeAppetiteText(value: string) {
   return value
     .toLowerCase()
