@@ -142,6 +142,21 @@ The 10-stage end-to-end engagement model (see `docs/service-lifecycle-blueprint.
 
 ---
 
+## Appetite and Food Discovery
+
+| Term | Definition |
+| --- | --- |
+| **Appetite Tag** | A canonical concept in one of 12 appetite domains: food, taste, feel, preparation, needs, body, emotion, moment, people, logistics, economics, or memory. Tags describe why food fits, not only what the food is. |
+| **Appetite Signal** | A weighted statement about an Appetite Tag with polarity, strength, confidence, hardness, scope, source, and optional lock state. Hard constraints outrank soft preferences. |
+| **Appetite State** | The current set of Appetite Signals used by food discovery. Session state is distinct from learned preference history and person-level hard constraints. |
+| **Appetite Evidence** | An observed interaction that teaches the appetite model. Locks, rejects, opens, shortlists, conversions, and repeats have different weights. |
+| **Appetite Demand** | Aggregate weighted Appetite Evidence for a tag. Demand is not raw click count. |
+| **Appetite Supply** | Availability-weighted food, menu, chef, or operator coverage associated with Appetite Tags. |
+| **Appetite Market Gap** | Appetite Demand normalized against Appetite Supply. High-gap tags represent demand that the currently known supply serves poorly. |
+| **Appetite Spin** | A controlled exploration action over Appetite State. Modes are For Me, Fresh, and Chaos. Locks and hard constraints survive spins. |
+
+---
+
 ## Infrastructure vs Expansion
 
 **Infrastructure** = the personal tool, built to 100%. Works offline, works alone, solves a real problem.
