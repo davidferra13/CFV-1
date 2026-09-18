@@ -72,6 +72,20 @@ function querySignals(searchParams: URLSearchParams): AppetiteSignal[] {
       locked: lockedIds.has(tagId),
     }))
 
+  const cravingTagId = matchingTagId('craving', searchParams.get('craving'))
+  if (cravingTagId && !signals.some((signal) => signal.tagId === cravingTagId)) {
+    signals.push({
+      tagId: cravingTagId,
+      polarity: 'want',
+      strength: 0.9,
+      confidence: 1,
+      hardness: 'soft',
+      scope: 'session',
+      source: 'explicit',
+      locked: false,
+    })
+  }
+
   const constraints = [
     { tagId: matchingTagId('dietary', searchParams.get('dietary')), hardness: 'hard' as const },
     { tagId: matchingTagId('budget', searchParams.get('budget')), hardness: 'soft' as const },
@@ -141,7 +155,7 @@ export function AppetiteSpinControl() {
         .slice(0, 5),
     [state.signals]
   )
-  const labels = describeAppetiteState({ signals: visibleSignals })
+  describeAppetiteState({ signals: visibleSignals })
 
   const pushState = useCallback(
     (nextSignals: AppetiteSignal[]) => {
@@ -254,7 +268,7 @@ export function AppetiteSpinControl() {
 
       <div className="mt-4 flex min-h-11 flex-wrap items-center gap-2">
         {visibleSignals.length > 0 ? (
-          visibleSignals.map((signal, index) => (
+          visibleSignals.map((signal) => (
             <button
               key={signal.tagId}
               type="button"
@@ -268,7 +282,7 @@ export function AppetiteSpinControl() {
                   : 'border-stone-700 bg-stone-900 text-stone-300 hover:border-stone-600',
               ].join(' ')}
             >
-              <span>{labels[index] ?? getAppetiteTag(signal.tagId)?.label ?? signal.tagId}</span>
+              <span>{getAppetiteTag(signal.tagId)?.label ?? signal.tagId}</span>
               {signal.locked ? (
                 <Lock className="h-3.5 w-3.5" />
               ) : (
