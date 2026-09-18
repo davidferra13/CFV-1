@@ -223,11 +223,14 @@ export function buildAppetiteState(signals: readonly AppetiteSignal[] = []): App
       continue
     }
 
-    const candidateWeight = signal.strength * signal.confidence + (signal.hardness === 'hard' ? 2 : 0)
-    const existingWeight =
-      existing.strength * existing.confidence + (existing.hardness === 'hard' ? 2 : 0)
+    const precedence = (value: AppetiteSignal) =>
+      value.strength * value.confidence +
+      (value.hardness === 'hard' ? 4 : 0) +
+      (value.locked ? 2 : 0) +
+      (value.source === 'explicit' ? 1.5 : 0) +
+      (value.scope === 'session' ? 1 : value.scope === 'person' ? 0.5 : 0)
 
-    if (candidateWeight >= existingWeight) merged.set(signal.tagId, signal)
+    if (precedence(signal) >= precedence(existing)) merged.set(signal.tagId, signal)
   }
 
   return { signals: [...merged.values()] }
@@ -345,7 +348,7 @@ export function projectAppetiteStateToDiscovery(
 }
 
 const EVIDENCE_WEIGHTS: Record<AppetiteEvidenceAction, number> = {
-  spin_seen: 0.05,
+  spin_seen: 0,
   lock: 1.2,
   unlock: -0.15,
   reject: -1,
@@ -362,12 +365,15 @@ export function aggregateAppetiteDemand(
 
   for (const item of evidence) {
     if (!TAG_BY_ID.has(item.tagId)) continue
+    const weight = EVIDENCE_WEIGHTS[item.action]
+    if (typeof weight !== 'number') continue
+
     const current = demand.get(item.tagId) ?? {
       tagId: item.tagId,
       score: 0,
       evidenceCount: 0,
     }
-    current.score += EVIDENCE_WEIGHTS[item.action]
+    current.score += weight
     current.evidenceCount += 1
     demand.set(item.tagId, current)
   }
