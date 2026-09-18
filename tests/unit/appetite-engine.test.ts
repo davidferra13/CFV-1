@@ -4,6 +4,8 @@ import {
   aggregateAppetiteDemand,
   buildAppetiteState,
   measureAppetiteMarketGaps,
+  rankAppetiteSupply,
+  resolveGroupAppetite,
   projectAppetiteStateToDiscovery,
   spinAppetite,
   type AppetiteEvidence,
@@ -161,6 +163,123 @@ describe('appetite engine', () => {
         dietary: 'Vegan',
         budget: 'Under $30/person',
       })
+    )
+  })
+
+  it('ranks supply by appetite fit and rejects hard conflicts', () => {
+    const state = buildAppetiteState([
+      {
+        tagId: 'food-thai',
+        polarity: 'want',
+        strength: 0.9,
+        confidence: 1,
+        hardness: 'soft',
+        scope: 'session',
+        source: 'explicit',
+      },
+      {
+        tagId: 'need-gluten-free',
+        polarity: 'want',
+        strength: 1,
+        confidence: 1,
+        hardness: 'hard',
+        scope: 'person',
+        source: 'explicit',
+      },
+      {
+        tagId: 'taste-spicy',
+        polarity: 'want',
+        strength: 0.7,
+        confidence: 0.8,
+        hardness: 'soft',
+        scope: 'session',
+        source: 'explicit',
+      },
+    ])
+
+    const ranked = rankAppetiteSupply(state, [
+      {
+        id: 'thai-gf',
+        tagIds: ['food-thai', 'need-gluten-free', 'taste-spicy'],
+        availabilityWeight: 1,
+      },
+      {
+        id: 'thai-unknown-gf',
+        tagIds: ['food-thai', 'taste-spicy'],
+        availabilityWeight: 1,
+      },
+      {
+        id: 'pizza-gf',
+        tagIds: ['food-pizza', 'need-gluten-free'],
+        availabilityWeight: 1,
+      },
+    ])
+
+    expect(ranked[0]).toEqual(expect.objectContaining({ id: 'thai-gf', eligible: true }))
+    expect(ranked.find((item) => item.id === 'thai-unknown-gf')).toEqual(
+      expect.objectContaining({ eligible: false })
+    )
+  })
+
+  it('resolves group appetite with hard constraints as vetoes and soft preferences as shared evidence', () => {
+    const group = resolveGroupAppetite([
+      {
+        participantId: 'a',
+        state: buildAppetiteState([
+          {
+            tagId: 'need-vegan',
+            polarity: 'want',
+            strength: 1,
+            confidence: 1,
+            hardness: 'hard',
+            scope: 'person',
+            source: 'explicit',
+          },
+          {
+            tagId: 'food-thai',
+            polarity: 'want',
+            strength: 0.8,
+            confidence: 1,
+            hardness: 'soft',
+            scope: 'session',
+            source: 'explicit',
+          },
+        ]),
+      },
+      {
+        participantId: 'b',
+        state: buildAppetiteState([
+          {
+            tagId: 'food-thai',
+            polarity: 'want',
+            strength: 0.7,
+            confidence: 1,
+            hardness: 'soft',
+            scope: 'session',
+            source: 'explicit',
+          },
+          {
+            tagId: 'taste-spicy',
+            polarity: 'avoid',
+            strength: 0.9,
+            confidence: 1,
+            hardness: 'soft',
+            scope: 'session',
+            source: 'explicit',
+          },
+        ]),
+      },
+    ])
+
+    expect(group.state.signals).toContainEqual(
+      expect.objectContaining({
+        tagId: 'need-vegan',
+        polarity: 'want',
+        hardness: 'hard',
+      })
+    )
+    expect(group.sharedWants[0]).toEqual(
+      expect.objectContaining({ tagId: 'food-thai', participantCount: 2 })
     )
   })
 
