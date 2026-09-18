@@ -3,6 +3,7 @@ import {
   APPETITE_DOMAINS,
   aggregateAppetiteDemand,
   buildAppetiteState,
+  inferAppetiteTagIds,
   measureAppetiteMarketGaps,
   rankAppetiteSupply,
   resolveGroupAppetite,
@@ -164,6 +165,16 @@ describe('appetite engine', () => {
         budget: 'Under $30/person',
       })
     )
+  })
+
+  it('infers canonical appetite tags from real result text without inventing new tags', () => {
+    expect(
+      inferAppetiteTagIds([
+        'Spicy Thai dinner',
+        'Gluten-Free options',
+        'budget-friendly',
+      ])
+    ).toEqual(expect.arrayContaining(['food-thai', 'taste-spicy', 'need-gluten-free', 'economics-budget']))
   })
 
   it('ranks supply by appetite fit and rejects hard conflicts', () => {
