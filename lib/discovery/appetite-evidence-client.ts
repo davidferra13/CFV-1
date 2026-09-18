@@ -1,14 +1,53 @@
 'use client'
 
 import {
+  getAppetiteTag,
   inferAppetiteTagIds,
   type AppetiteEvidence,
   type AppetiteEvidenceAction,
 } from '@/lib/discovery/appetite-engine'
 import type { ConsumerResultCard } from '@/lib/public-consumer/discovery-actions'
+import {
+  trackDiscoveryEvent,
+  type DiscoveryInteractionAction,
+} from '@/lib/discovery/track-discovery-click'
 
 const EVIDENCE_KEY = 'chefflow:appetite-evidence:v1'
 const EVIDENCE_LIMIT = 500
+
+const DISCOVERY_ACTION_BY_APPETITE_ACTION: Record<AppetiteEvidenceAction, DiscoveryInteractionAction> = {
+  spin_seen: 'impression',
+  lock: 'pin',
+  unlock: 'unpin',
+  reject: 'hate',
+  result_open: 'click',
+  shortlist: 'save',
+  conversion: 'booking',
+  repeat: 'love',
+}
+
+function persistAppetiteEvidence(items: readonly AppetiteEvidence[]) {
+  const groupedTagIds = [...new Set(items.map((item) => item.tagId))]
+  for (const item of items) {
+    const tag = getAppetiteTag(item.tagId)
+    if (!tag) continue
+
+    trackDiscoveryEvent({
+      action: DISCOVERY_ACTION_BY_APPETITE_ACTION[item.action],
+      itemType: 'appetite_tag',
+      itemValue: item.tagId,
+      itemLabel: tag.label,
+      destinationPath: '/eat',
+      eventContext: {
+        source: 'eat_appetite',
+        appetite_action: item.action,
+        appetite_domain: tag.domain,
+        appetite_tags: groupedTagIds,
+        decision_id: item.decisionId ?? null,
+      },
+    })
+  }
+}
 
 function isEvidenceAction(value: unknown): value is AppetiteEvidenceAction {
   return (
@@ -49,13 +88,18 @@ export function readAppetiteEvidence(): AppetiteEvidence[] {
 
 export function recordAppetiteEvidence(items: readonly AppetiteEvidence[]) {
   if (typeof window === 'undefined' || items.length === 0) return
-  const next = [...readAppetiteEvidence(), ...items].slice(-EVIDENCE_LIMIT)
+  const validItems = items.filter((item) => Boolean(getAppetiteTag(item.tagId)))
+  if (validItems.length === 0) return
+
+  const next = [...readAppetiteEvidence(), ...validItems].slice(-EVIDENCE_LIMIT)
 
   try {
     window.localStorage.setItem(EVIDENCE_KEY, JSON.stringify(next))
   } catch {
     // Appetite learning is optional when browser storage is unavailable.
   }
+
+  persistAppetiteEvidence(validItems)
 }
 
 export function currentSessionAppetiteTagIds(): string[] {
