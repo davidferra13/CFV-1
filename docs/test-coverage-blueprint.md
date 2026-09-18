@@ -88,7 +88,8 @@ Scanner: `/test-scan` skill
 | Services/pricing | 10+    | -    | YES | YES | GOOD             |
 | Blog             | 5+     | -    | -   | YES | PARTIAL          |
 | Book/inquire     | 5+     | -    | -   | -   | GAP: intake flow |
-| SEO guards       | ALL    | YES  | YES | YES | GOOD             |\n| Appetite engine  | /eat   | YES  | -   | -   | NEEDS-TEST |
+| SEO guards       | ALL    | YES  | YES | YES | GOOD             |
+| Appetite engine  | /eat   | YES  | -   | -   | NEEDS-TEST       |
 
 ### Admin Portal (43 routes)
 
