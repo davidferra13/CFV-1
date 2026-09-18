@@ -7,7 +7,6 @@ import {
   APPETITE_TAGS,
   aggregateAppetiteDemand,
   buildAppetiteState,
-  describeAppetiteState,
   getAppetiteTag,
   projectAppetiteStateToDiscovery,
   spinAppetite,
@@ -155,7 +154,6 @@ export function AppetiteSpinControl() {
         .slice(0, 5),
     [state.signals]
   )
-  describeAppetiteState({ signals: visibleSignals })
 
   const pushState = useCallback(
     (nextSignals: AppetiteSignal[]) => {
