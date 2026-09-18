@@ -15,6 +15,7 @@ import {
   Wine,
 } from 'lucide-react'
 import { DiscoveryViewModeToggle } from './discovery-view-mode-toggle'
+import { AppetiteSpinControl } from './appetite-spin-control'
 
 type IntentChip = {
   value: string
