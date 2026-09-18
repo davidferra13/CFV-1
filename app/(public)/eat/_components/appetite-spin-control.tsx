@@ -243,6 +243,7 @@ export function AppetiteSpinControl() {
 
         <div
           className="inline-flex rounded-full border border-stone-800 bg-stone-900 p-1"
+          role="group"
           aria-label="Appetite spin mode"
         >
           {(Object.keys(MODE_LABELS) as AppetiteSpinMode[]).map((value) => (
@@ -252,7 +253,7 @@ export function AppetiteSpinControl() {
               onClick={() => setMode(value)}
               aria-pressed={mode === value}
               className={[
-                'min-h-9 rounded-full px-3 text-xs font-medium transition-colors',
+                'min-h-10 rounded-full px-3 text-xs font-medium transition-colors',
                 mode === value
                   ? 'bg-stone-700 text-stone-100'
                   : 'text-stone-400 hover:text-stone-200',
