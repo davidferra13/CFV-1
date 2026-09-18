@@ -6,6 +6,7 @@ import {
   measureAppetiteMarketGaps,
   projectAppetiteStateToDiscovery,
   spinAppetite,
+  type AppetiteEvidence,
   type AppetiteSignal,
 } from '@/lib/discovery/appetite-engine'
 
@@ -31,6 +32,37 @@ describe('appetite engine', () => {
       'economics',
       'memory',
     ])
+  })
+
+  it('keeps the current explicit signal when learned history contains the same tag', () => {
+    const state = buildAppetiteState([
+      {
+        tagId: 'food-thai',
+        polarity: 'want',
+        strength: 0.9,
+        confidence: 1,
+        hardness: 'soft',
+        scope: 'session',
+        source: 'explicit',
+      },
+      {
+        tagId: 'food-thai',
+        polarity: 'want',
+        strength: 1,
+        confidence: 1,
+        hardness: 'soft',
+        scope: 'learned',
+        source: 'behavior',
+      },
+    ])
+
+    expect(state.signals).toContainEqual(
+      expect.objectContaining({
+        tagId: 'food-thai',
+        scope: 'session',
+        source: 'explicit',
+      })
+    )
   })
 
   it('keeps hard constraints when Fresh ignores learned taste history', () => {
@@ -165,5 +197,24 @@ describe('appetite engine', () => {
     expect(demand[0]).toEqual(expect.objectContaining({ tagId: 'food-thai' }))
     expect(demand.find((entry) => entry.tagId === 'food-thai')!.score).toBeGreaterThan(1)
     expect(demand.find((entry) => entry.tagId === 'food-pizza')!.score).toBeLessThan(0)
+  })
+
+  it('ignores malformed evidence instead of corrupting the demand vector', () => {
+    const demand = aggregateAppetiteDemand([
+      {
+        tagId: 'food-thai',
+        action: 'not-a-real-action',
+        occurredAt: '2026-09-18T12:00:00Z',
+      } as unknown as AppetiteEvidence,
+      { tagId: 'food-thai', action: 'lock', occurredAt: '2026-09-18T12:01:00Z' },
+    ])
+
+    expect(demand).toEqual([
+      expect.objectContaining({
+        tagId: 'food-thai',
+        score: 1.2,
+        evidenceCount: 1,
+      }),
+    ])
   })
 })
