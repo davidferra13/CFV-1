@@ -17,13 +17,13 @@ const EVIDENCE_LIMIT = 500
 
 const DISCOVERY_ACTION_BY_APPETITE_ACTION: Record<AppetiteEvidenceAction, DiscoveryInteractionAction> = {
   spin_seen: 'impression',
-  lock: 'pin',
-  unlock: 'unpin',
-  reject: 'hate',
+  lock: 'click',
+  unlock: 'click',
+  reject: 'ignore',
   result_open: 'click',
-  shortlist: 'save',
+  shortlist: 'click',
   conversion: 'booking',
-  repeat: 'love',
+  repeat: 'click',
 }
 
 function persistAppetiteEvidence(items: readonly AppetiteEvidence[]) {
@@ -34,7 +34,7 @@ function persistAppetiteEvidence(items: readonly AppetiteEvidence[]) {
 
     trackDiscoveryEvent({
       action: DISCOVERY_ACTION_BY_APPETITE_ACTION[item.action],
-      itemType: 'appetite_tag',
+      itemType: 'culinary_signal',
       itemValue: item.tagId,
       itemLabel: tag.label,
       destinationPath: '/eat',
