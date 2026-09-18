@@ -14,30 +14,17 @@ import {
   type AppetiteSignal,
   type AppetiteSpinMode,
 } from '@/lib/discovery/appetite-engine'
+import {
+  readAppetiteEvidence,
+  recordAppetiteEvidence,
+} from '@/lib/discovery/appetite-evidence-client'
 
-const EVIDENCE_KEY = 'chefflow:appetite-evidence:v1'
 const EVIDENCE_LIMIT = 500
 
 const MODE_LABELS: Record<AppetiteSpinMode, string> = {
   for_me: 'For me',
   fresh: 'Fresh',
   chaos: 'Chaos',
-}
-
-function safeReadEvidence(): AppetiteEvidence[] {
-  if (typeof window === 'undefined') return []
-  try {
-    const parsed = JSON.parse(window.localStorage.getItem(EVIDENCE_KEY) || '[]')
-    return Array.isArray(parsed) ? parsed.slice(-EVIDENCE_LIMIT) : []
-  } catch {
-    return []
-  }
-}
-
-function recordEvidence(items: AppetiteEvidence[]) {
-  if (typeof window === 'undefined' || items.length === 0) return
-  const next = [...safeReadEvidence(), ...items].slice(-EVIDENCE_LIMIT)
-  window.localStorage.setItem(EVIDENCE_KEY, JSON.stringify(next))
 }
 
 function matchingTagId(field: 'craving' | 'dietary' | 'budget' | 'intent', value: string | null) {
@@ -135,7 +122,7 @@ export function AppetiteSpinControl() {
   const [evidence, setEvidence] = useState<AppetiteEvidence[]>([])
 
   useEffect(() => {
-    setEvidence(safeReadEvidence())
+    setEvidence(readAppetiteEvidence())
   }, [])
 
   const state = useMemo(
@@ -195,7 +182,7 @@ export function AppetiteSpinControl() {
       action: 'spin_seen',
       occurredAt: now,
     }))
-    recordEvidence(events)
+    recordAppetiteEvidence(events)
     setEvidence((current) => [...current, ...events].slice(-EVIDENCE_LIMIT))
     pushState(next.signals)
   }, [mode, pushState, state])
@@ -215,7 +202,7 @@ export function AppetiteSpinControl() {
         action: locked ? 'lock' : 'unlock',
         occurredAt: new Date().toISOString(),
       }
-      recordEvidence([event])
+      recordAppetiteEvidence([event])
       setEvidence((current) => [...current, event].slice(-EVIDENCE_LIMIT))
       pushState(nextSignals)
     },
