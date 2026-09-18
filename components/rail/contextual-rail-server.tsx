@@ -19,7 +19,7 @@ export async function ContextualRailServer() {
       pathname
     )
 
-    if (data.totalItems === 0) return null
+    if (data.totalItems === 0 && profile.id !== 'dashboard-attention') return null
 
     return <ContextualRailClient data={data} />
   } catch (err) {

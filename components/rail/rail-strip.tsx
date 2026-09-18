@@ -37,8 +37,13 @@ const StripItem = memo(function StripItem({ item }: { item: GodModeResolvedItem 
 
 export function RailStrip({ initialData }: { initialData: GodModeStripResult }) {
   const [data, setData] = useState(initialData)
+  const [motionEnabled, setMotionEnabled] = useState(true)
 
-  const { scrollRef } = useAutoScroll({ tier: 'critical', itemCount: data.items.length })
+  const { scrollRef } = useAutoScroll({
+    tier: 'critical',
+    itemCount: data.items.length,
+    enabled: motionEnabled,
+  })
 
   useSSE('rail', {
     onMessage: useCallback(() => {
@@ -60,15 +65,28 @@ export function RailStrip({ initialData }: { initialData: GodModeStripResult }) 
 
   return (
     <div
-      ref={scrollRef}
+      aria-label="Global attention ticker"
       className={cn(
-        'flex items-center gap-1 px-3 h-8 border-b overflow-x-auto scrollbar-hide transition-colors',
+        'flex h-8 items-center border-b transition-colors',
         data.hasP0 ? 'bg-red-950/20 border-red-900/30' : 'bg-stone-950/80 border-stone-800/50'
       )}
     >
-      {data.items.map((item) => (
-        <StripItem key={`${item.definitionId}-${item.destination}`} item={item} />
-      ))}
+      <div
+        ref={scrollRef}
+        className="flex min-w-0 flex-1 items-center gap-1 overflow-x-auto px-3 scrollbar-hide"
+      >
+        {data.items.map((item) => (
+          <StripItem key={`${item.definitionId}-${item.destination}`} item={item} />
+        ))}
+      </div>
+      <button
+        type="button"
+        aria-pressed={!motionEnabled}
+        onClick={() => setMotionEnabled((value) => !value)}
+        className="mr-1 hidden h-6 shrink-0 items-center rounded px-2 text-[10px] text-stone-500 hover:bg-stone-800/70 hover:text-stone-300 sm:inline-flex"
+      >
+        {motionEnabled ? 'Pause' : 'Resume'}
+      </button>
     </div>
   )
 }

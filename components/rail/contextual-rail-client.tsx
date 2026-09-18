@@ -7,6 +7,7 @@ import { useSSE } from '@/lib/realtime/sse-client'
 import { cn } from '@/lib/utils'
 import { CollapsedBar } from './collapsed-bar'
 import { ExpandedPanel } from './expanded-panel'
+import { AttentionDeck } from './attention-deck'
 
 function getStorageKey(profileId: string) {
   return `rail-expanded-${profileId}`
@@ -63,7 +64,9 @@ export function ContextualRailClient({ data }: { data: ContextualRailData }) {
     return () => window.removeEventListener('keydown', handleKeyDown)
   }, [])
 
-  if (data.totalItems === 0) return null
+  const isAttentionDeck = data.profile.layout === 'tickers'
+
+  if (data.totalItems === 0 && !isAttentionDeck) return null
 
   return (
     <div
@@ -71,11 +74,15 @@ export function ContextualRailClient({ data }: { data: ContextualRailData }) {
       data-cf-contextual-rail-state={expanded ? 'expanded' : 'collapsed'}
       className={cn(
         'overflow-hidden transition-all duration-200 ease-out',
-        expanded ? 'max-h-[320px]' : 'max-h-9'
+        expanded ? (isAttentionDeck ? 'max-h-[720px]' : 'max-h-[320px]') : 'max-h-9'
       )}
     >
       {expanded ? (
-        <ExpandedPanel data={data} onCollapse={() => setExpanded(false)} />
+        isAttentionDeck ? (
+          <AttentionDeck data={data} onCollapse={() => setExpanded(false)} />
+        ) : (
+          <ExpandedPanel data={data} onCollapse={() => setExpanded(false)} />
+        )
       ) : (
         <CollapsedBar data={data} onExpand={() => setExpanded(true)} />
       )}

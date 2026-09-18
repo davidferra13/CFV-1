@@ -74,6 +74,14 @@ test('matches analytics prefix', () => {
   assert.equal(result.profile.id, 'analytics')
 })
 
+test('dashboard restores the eight-category attention ticker deck', () => {
+  const result = matchRailProfile('/dashboard')
+  assert.equal(result.profile.id, 'dashboard-attention')
+  assert.equal(result.profile.layout, 'tickers')
+  assert.deepEqual(result.profile.categories, [...RAIL_CATEGORIES])
+  assert.equal(result.profile.defaultExpanded, true)
+})
+
 test('falls back to fallback for unknown routes', () => {
   const result = matchRailProfile('/settings/billing')
   assert.equal(result.profile.id, 'fallback')
