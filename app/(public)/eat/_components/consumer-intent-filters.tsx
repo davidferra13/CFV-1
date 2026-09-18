@@ -117,6 +117,8 @@ export function ConsumerIntentFilters({
 
   return (
     <div className="space-y-4">
+      <AppetiteSpinControl />
+
       <div className="flex flex-wrap gap-2" aria-label="Discovery intent">
         {INTENT_CHIPS.map((chip) => {
           const selected = activeIntent === chip.value
