@@ -46,9 +46,9 @@ test('batch PIE resolver preserves executable trust order', () => {
     'if (quote && quote.best_cents !== null && quote.best_cents > 0)',
     "const wholesaleRow = findBestRow(openclaw, 'openclaw_wholesale', 30)",
     'const denorm = denormPriceById.get(id)',
-    "const scrapeRow = findBestRow(openclaw, 'openclaw_scrape', 14)",
-    "const flyerRow = findBestRow(openclaw, 'openclaw_flyer', 14)",
-    "const instacartRow = findBestRow(openclaw, 'openclaw_instacart', 30)",
+    'const scrapeRow = findBestRow(',
+    'const flyerRow = findBestRow(',
+    'const instacartRow = findBestRow(',
     'const regional = regionalAverages.get(id)',
     'const resolvedNational = resolvedNationalByIngredient.get(id)',
     'const marketAggregate = marketAggregateByIngredient.get(id)',
@@ -64,6 +64,28 @@ test('batch PIE resolver preserves executable trust order', () => {
     const index = batch.indexOf(stage)
     assert.ok(index > previous, `${stage} must execute after the previous batch stage`)
     previous = index
+  }
+})
+
+test('batch row selection mirrors tier-specific store and state preferences', () => {
+  const batch = functionBody('resolvePricesBatch')
+  assert.match(batch, /preference\?\.preferStore && preferredStore/)
+  assert.match(batch, /preference\?\.preferState && preferredState/)
+
+  for (const variable of ['scrapeRow', 'flyerRow', 'instacartRow']) {
+    const start = batch.indexOf(`const ${variable} = findBestRow`)
+    assert.notEqual(start, -1)
+    const call = batch.slice(start, start + 220)
+    assert.match(call, /preferStore: true/)
+    assert.match(call, /preferState: true/)
+  }
+
+  for (const variable of ['wholesaleRow', 'govRow']) {
+    const start = batch.indexOf(`const ${variable} = findBestRow`)
+    assert.notEqual(start, -1)
+    const call = batch.slice(start, start + 140)
+    assert.doesNotMatch(call, /preferStore: true/)
+    assert.doesNotMatch(call, /preferState: true/)
   }
 })
 

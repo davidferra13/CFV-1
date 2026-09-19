@@ -665,11 +665,12 @@ export async function resolvePricesBatch(
       continue
     }
 
-    // Helper: find best row for a source, preferring the chef's store
+    // Helper: mirror each single-item tier's store/state/recency ordering without N+1 queries
     const findBestRow = (
       rows: (PriceRow & { ingredient_id: string })[],
       source: string,
-      maxDays: number | null
+      maxDays: number | null,
+      preference?: { preferStore?: boolean; preferState?: boolean }
     ) => {
       const eligible = rows.filter(
         (r) =>
@@ -678,11 +679,16 @@ export async function resolvePricesBatch(
           (maxDays === null || daysAgo(r.purchase_date) <= maxDays)
       )
       if (eligible.length === 0) return undefined
-      if (preferredStore) {
+      if (preference?.preferStore && preferredStore) {
         const storeMatch = eligible.find(
           (r) => r.store_name?.toLowerCase() === preferredStore.toLowerCase()
         )
         if (storeMatch) return storeMatch
+      }
+      if (preference?.preferState && preferredState) {
+        const state = preferredState.toLowerCase()
+        const stateMatch = eligible.find((r) => r.store_name?.toLowerCase().includes(state))
+        if (stateMatch) return stateMatch
       }
       return eligible[0] // already ordered by purchase_date DESC
     }
@@ -745,7 +751,10 @@ export async function resolvePricesBatch(
     }
 
     // Tier 3: Direct scrape (within 14 days) [PostgreSQL fallback]
-    const scrapeRow = findBestRow(openclaw, 'openclaw_scrape', 14)
+    const scrapeRow = findBestRow(openclaw, 'openclaw_scrape', 14, {
+      preferStore: true,
+      preferState: true,
+    })
     if (scrapeRow && scrapeRow.price_per_unit_cents !== null) {
       const batchScrapeStatus = await getMarketSeasonStatus(scrapeRow.store_name, preferredState)
       if (!shouldExcludeForSeason(batchScrapeStatus)) {
@@ -777,7 +786,10 @@ export async function resolvePricesBatch(
     }
 
     // Tier 4: Flyer (within 14 days)
-    const flyerRow = findBestRow(openclaw, 'openclaw_flyer', 14)
+    const flyerRow = findBestRow(openclaw, 'openclaw_flyer', 14, {
+      preferStore: true,
+      preferState: true,
+    })
     if (flyerRow && flyerRow.price_per_unit_cents !== null) {
       const batchFlyerStatus = await getMarketSeasonStatus(flyerRow.store_name, preferredState)
       if (!shouldExcludeForSeason(batchFlyerStatus)) {
@@ -809,7 +821,10 @@ export async function resolvePricesBatch(
     }
 
     // Tier 5: Instacart (within 30 days)
-    const instacartRow = findBestRow(openclaw, 'openclaw_instacart', 30)
+    const instacartRow = findBestRow(openclaw, 'openclaw_instacart', 30, {
+      preferStore: true,
+      preferState: true,
+    })
     if (instacartRow && instacartRow.price_per_unit_cents !== null) {
       const batchIcStatus = await getMarketSeasonStatus(instacartRow.store_name, preferredState)
       if (!shouldExcludeForSeason(batchIcStatus)) {
