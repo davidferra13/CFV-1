@@ -1,16 +1,18 @@
 /**
  * Unified Price Resolution Chain
  * Single function that resolves the best price for any ingredient
- * using a 13-tier fallback chain.
+ * using 11 major trust tiers (0-10), expanded into 17 ordered resolver steps.
  *
  * This is NOT a 'use server' file. It's internal logic called by
  * server actions and server components.
  *
  * Resolution order (by trust):
  *   0. CHEF OVERRIDE      - Standing override from chef_ingredient_prices
+ *  0.5 PINNED PRICE       - Chef-pinned non-expired ingredient price
  *   1. RECEIPT            - Chef's own purchase (manual, grocery_entry, po_receipt, vendor_invoice)
  *   2. API QUOTE          - Live API price from Kroger/Spoonacular/MealMe
  *  2.5 WHOLESALE          - Wholesale distributor pricing (openclaw_wholesale)
+ * 2.75 DENORMALIZED       - Fresh price synced onto ingredients.last_price_*
  *   3. DIRECT SCRAPE      - Real store website price (openclaw_scrape) [PostgreSQL fallback]
  *   4. FLYER              - Weekly circular (openclaw_flyer)
  *   5. INSTACART          - Markup-adjusted proxy (openclaw_instacart)
@@ -474,6 +476,44 @@ export async function resolvePricesBatch(
     // resolved_prices table may not exist yet; gracefully skip
   }
 
+  // Query 6.5: Batch market aggregate lookup via ingredient alias bridge
+  type MarketAggregateRow = {
+    ingredient_id: string
+    avg_price_cents: number
+    median_price_cents: number | null
+    price_unit: string
+    store_count: number
+    state_count: number
+    confidence: number
+    newest_date: string | null
+    covered_states: string[] | null
+  }
+  const marketAggregateByIngredient = new Map<string, MarketAggregateRow>()
+  try {
+    const marketRows = (await db.execute(sql`
+      SELECT ia.ingredient_id,
+        sip.avg_price_cents, sip.median_price_cents, sip.price_unit,
+        sip.store_count, sip.state_count, sip.confidence,
+        sip.newest_price_at::text AS newest_date,
+        sip.states AS covered_states
+      FROM ingredient_aliases ia
+      JOIN openclaw.system_ingredient_prices sip
+        ON sip.system_ingredient_id = ia.system_ingredient_id
+      WHERE ia.ingredient_id = ANY(${ingredientIds})
+        AND ia.tenant_id = ${tenantId}
+        AND ia.system_ingredient_id IS NOT NULL
+        AND ia.match_method != 'dismissed'
+    `)) as unknown as MarketAggregateRow[]
+
+    for (const row of marketRows) {
+      if (!marketAggregateByIngredient.has(row.ingredient_id)) {
+        marketAggregateByIngredient.set(row.ingredient_id, row)
+      }
+    }
+  } catch {
+    // system_ingredient_prices may be unavailable during partial local setup; skip this tier.
+  }
+
   // Query 7: Batch synthetic_prices lookup (Tier 9.5)
   // Bridge: ingredient name -> normalized slug -> synthetic_prices
   type SyntheticRow = {
@@ -625,42 +665,6 @@ export async function resolvePricesBatch(
       continue
     }
 
-    // Tier 2.75: Denormalized ingredient price (273K+ ingredients have fresh prices here)
-    const denorm = denormPriceById.get(id)
-    if (denorm) {
-      const DENORM_SRC: Record<string, PriceSource> = {
-        openclaw_market: 'direct_scrape',
-        openclaw_flyer: 'flyer',
-        openclaw_instacart: 'instacart',
-      }
-      const DENORM_CONF: Record<string, number> = {
-        openclaw_market: 0.85,
-        openclaw_flyer: 0.7,
-        openclaw_instacart: 0.6,
-      }
-      const rawSrc = denorm.source || 'openclaw_market'
-      const priceSrc: PriceSource = DENORM_SRC[rawSrc] || 'direct_scrape'
-      const storedConf = denorm.confidence ? parseFloat(denorm.confidence) : null
-      const conf =
-        storedConf && storedConf > 0 ? Math.min(storedConf, 0.9) : DENORM_CONF[rawSrc] || 0.6
-      result.set(
-        id,
-        withDecay({
-          cents: denorm.cents,
-          unit: 'each',
-          source: priceSrc,
-          sourceTier: rawSrc,
-          resolutionTier: denorm.store ? 'regional' : 'market_national',
-          store: sourceDisplayStore(priceSrc, denorm.store),
-          confidence: conf,
-          freshness: computeFreshness(denorm.date),
-          confirmedAt: denorm.date,
-          reason: null,
-        })
-      )
-      continue
-    }
-
     // Helper: find best row for a source, preferring the chef's store
     const findBestRow = (
       rows: (PriceRow & { ingredient_id: string })[],
@@ -698,6 +702,42 @@ export async function resolvePricesBatch(
           confidence: 0.8,
           freshness: computeFreshness(wholesaleRow.purchase_date),
           confirmedAt: wholesaleRow.purchase_date,
+          reason: null,
+        })
+      )
+      continue
+    }
+
+    // Tier 2.75: Denormalized ingredient price (273K+ ingredients have fresh prices here)
+    const denorm = denormPriceById.get(id)
+    if (denorm) {
+      const DENORM_SRC: Record<string, PriceSource> = {
+        openclaw_market: 'direct_scrape',
+        openclaw_flyer: 'flyer',
+        openclaw_instacart: 'instacart',
+      }
+      const DENORM_CONF: Record<string, number> = {
+        openclaw_market: 0.85,
+        openclaw_flyer: 0.7,
+        openclaw_instacart: 0.6,
+      }
+      const rawSrc = denorm.source || 'openclaw_market'
+      const priceSrc: PriceSource = DENORM_SRC[rawSrc] || 'direct_scrape'
+      const storedConf = denorm.confidence ? parseFloat(denorm.confidence) : null
+      const conf =
+        storedConf && storedConf > 0 ? Math.min(storedConf, 0.9) : DENORM_CONF[rawSrc] || 0.6
+      result.set(
+        id,
+        withDecay({
+          cents: denorm.cents,
+          unit: 'each',
+          source: priceSrc,
+          sourceTier: rawSrc,
+          resolutionTier: denorm.store ? 'regional' : 'market_national',
+          store: sourceDisplayStore(priceSrc, denorm.store),
+          confidence: conf,
+          freshness: computeFreshness(denorm.date),
+          confirmedAt: denorm.date,
           reason: null,
         })
       )
@@ -842,6 +882,48 @@ export async function resolvePricesBatch(
         })
       )
       continue
+    }
+
+    // Tier 6.5: Market aggregate (system-level price via ingredient alias bridge)
+    const marketAggregate = marketAggregateByIngredient.get(id)
+    if (marketAggregate) {
+      const priceCents =
+        marketAggregate.median_price_cents ?? marketAggregate.avg_price_cents
+      if (priceCents > 0) {
+        const statesArr = marketAggregate.covered_states || []
+        const coversRequestedState = preferredState
+          ? statesArr.includes(preferredState)
+          : false
+        const baseConf = Math.min(
+          parseFloat(String(marketAggregate.confidence)) || 0.55,
+          0.65
+        )
+        const adjustedConf = coversRequestedState ? Math.min(baseConf + 0.1, 0.75) : baseConf
+        const adjustedCents = coversRequestedState
+          ? priceCents
+          : applyRpp(priceCents, preferredState)
+
+        result.set(
+          id,
+          withDecay({
+            cents: adjustedCents,
+            unit: marketAggregate.price_unit || 'each',
+            source: 'market_aggregate',
+            sourceTier: 'system_ingredient_market',
+            resolutionTier: coversRequestedState ? 'market_state' : 'market_national',
+            store: `Market Average (${marketAggregate.store_count} stores, ${marketAggregate.state_count} state${marketAggregate.state_count !== 1 ? 's' : ''})`,
+            confidence: adjustedConf,
+            freshness: computeFreshness(marketAggregate.newest_date),
+            confirmedAt: marketAggregate.newest_date,
+            reason: coversRequestedState
+              ? null
+              : preferredState
+                ? `National avg adjusted for ${preferredState}`
+                : null,
+          })
+        )
+        continue
+      }
     }
 
     // Tier 7: Government (no age limit, RPP-adjusted)

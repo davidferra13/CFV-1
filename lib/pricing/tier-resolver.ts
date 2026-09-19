@@ -1,7 +1,7 @@
 /**
  * Shared interface for PIE tier resolvers.
  *
- * Each tier in the 13-tier resolution waterfall implements TierResolver.
+ * Each of the 17 ordered resolver steps across major trust tiers 0-10 implements TierResolver.
  * The waterfall loop in resolve-price.ts calls resolve() on each tier
  * in order until one returns a non-null result.
  */

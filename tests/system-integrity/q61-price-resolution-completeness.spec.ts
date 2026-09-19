@@ -1,28 +1,8 @@
 /**
- * Q61: Price Resolution Chain Completeness
+ * Q61: PIE price-resolution parity and terminal completeness
  *
- * Hypothesis: resolvePrice() in lib/pricing/resolve-price.ts always returns
- * a result object with either a numeric price (cents) or an explicit null
- * indicator for "no price available". Never returns undefined, NaN, or
- * throws without catch.
- *
- * Failure: Ingredient costs silently become NaN, corrupting menu costing
- * and financial displays.
- *
- * Tests:
- *
- * 1. resolvePrice function exists and is exported
- * 2. Function returns ResolvedPrice type (not bare number)
- * 3. Every return statement in resolvePrice returns an object (not undefined)
- * 4. The 10-tier chain has a terminal fallback returning null explicitly
- * 5. No bare `return;` (void return) exists in the function
- * 6. The batch resolution function calls resolvePrice or mirrors the chain
- *
- * Approach: Read lib/pricing/resolve-price.ts fully, extract function bodies
- * using line-range parsing (not brace-counting, which breaks on SQL template
- * literals), and check all return paths.
- *
- * Run: npx playwright test -c playwright.system-integrity.config.ts tests/system-integrity/q61-price-resolution-completeness.spec.ts
+ * Guards the contract that single-item and batch pricing follow the same
+ * trust order and that PIE Law 9 always returns a numeric synthetic fallback.
  */
 import { test, expect } from '@playwright/test'
 import { readFileSync, existsSync } from 'fs'
@@ -30,29 +10,14 @@ import { resolve } from 'path'
 
 const ROOT = process.cwd()
 const RESOLVE_PRICE = resolve(ROOT, 'lib/pricing/resolve-price.ts')
+const RESOLVE_HELPERS = resolve(ROOT, 'lib/pricing/resolve-price-helpers.ts')
 
-/**
- * Extract the lines belonging to a named exported async function.
- *
- * Uses line-range extraction: finds the line containing the function
- * declaration and takes everything up to (but not including) the next
- * top-level `export` statement. This avoids brace-counting, which
- * breaks on SQL template literals containing `${...}`.
- */
 function extractFunctionLines(src: string, funcName: string): string | null {
   const lines = src.split('\n')
   const pattern = new RegExp(`export\\s+async\\s+function\\s+${funcName}\\s*\\(`)
-  let startLine = -1
-
-  for (let i = 0; i < lines.length; i++) {
-    if (pattern.test(lines[i])) {
-      startLine = i
-      break
-    }
-  }
+  const startLine = lines.findIndex((line) => pattern.test(line))
   if (startLine === -1) return null
 
-  // Find the next top-level export (or end of file)
   let endLine = lines.length
   for (let i = startLine + 1; i < lines.length; i++) {
     if (/^export\s/.test(lines[i])) {
@@ -60,153 +25,105 @@ function extractFunctionLines(src: string, funcName: string): string | null {
       break
     }
   }
-
   return lines.slice(startLine, endLine).join('\n')
 }
-
-test.describe('Q61: Price resolution chain completeness', () => {
+test.describe('Q61: PIE price resolution completeness', () => {
   let src: string
+  let helpers: string
 
   test.beforeAll(() => {
-    expect(existsSync(RESOLVE_PRICE), 'lib/pricing/resolve-price.ts must exist').toBe(true)
-    src = readFileSync(RESOLVE_PRICE, 'utf-8')
+    expect(existsSync(RESOLVE_PRICE), 'resolve-price.ts must exist').toBe(true)
+    expect(existsSync(RESOLVE_HELPERS), 'resolve-price-helpers.ts must exist').toBe(true)
+    src = readFileSync(RESOLVE_PRICE, 'utf8')
+    helpers = readFileSync(RESOLVE_HELPERS, 'utf8')
   })
 
-  // -------------------------------------------------------------------------
-  // Test 1: resolvePrice function exists and is exported
-  // -------------------------------------------------------------------------
-  test('resolvePrice is exported as an async function', () => {
-    expect(
-      /export\s+async\s+function\s+resolvePrice\s*\(/.test(src),
-      'resolvePrice must be an exported async function in resolve-price.ts'
-    ).toBe(true)
+  test('single and batch resolvers are exported', () => {
+    expect(/export\s+async\s+function\s+resolvePrice\s*\(/.test(src)).toBe(true)
+    expect(/export\s+async\s+function\s+resolvePricesBatch\s*\(/.test(src)).toBe(true)
+    expect(src.includes('Promise<ResolvedPrice>')).toBe(true)
+    expect(src.includes('Map<string, ResolvedPrice>')).toBe(true)
   })
 
-  // -------------------------------------------------------------------------
-  // Test 2: Function returns ResolvedPrice type (object with cents field)
-  // -------------------------------------------------------------------------
-  test('resolvePrice return type includes ResolvedPrice with cents field', () => {
-    // Verify the ResolvedPrice interface exists with cents field
-    expect(
-      src.includes('cents: number | null'),
-      'ResolvedPrice interface must declare cents as number | null (explicit about missing data)'
-    ).toBe(true)
-
-    // Verify the return type annotation references ResolvedPrice
-    expect(
-      src.includes('Promise<ResolvedPrice>'),
-      'resolvePrice must declare Promise<ResolvedPrice> return type'
-    ).toBe(true)
+  test('ResolvedPrice cents are always numeric under PIE Law 9', () => {
+    const interfaceStart = helpers.indexOf('export interface ResolvedPrice')
+    const interfaceEnd = helpers.indexOf('\n}', interfaceStart)
+    const contract = helpers.slice(interfaceStart, interfaceEnd)
+    expect(contract).toContain('cents: number')
+    expect(contract).not.toContain('cents: number | null')
   })
+  test('single-item resolver keeps the canonical 17-step order', () => {
+    const match = src.match(/const tierResolvers: TierResolver\[] = \[([\s\S]*?)\n\]/)
+    expect(match, 'tierResolvers must be extractable').toBeTruthy()
+    const actual = [...match![1].matchAll(/^\s*([A-Za-z]+Resolver),/gm)].map((entry) => entry[1])
 
-  // -------------------------------------------------------------------------
-  // Test 3: Every return statement in resolvePrice returns an object
-  // -------------------------------------------------------------------------
-  test('every return in resolvePrice returns an object (no bare returns)', () => {
-    const body = extractFunctionLines(src, 'resolvePrice')
-    expect(body, 'resolvePrice function body must be extractable').toBeTruthy()
+    expect(actual).toEqual([
+      'chefOverrideResolver',
+      'pinnedPriceResolver',
+      'receiptPriceResolver',
+      'apiQuoteResolver',
+      'wholesaleResolver',
+      'ingredientDenormalizedResolver',
+      'directScrapeResolver',
+      'flyerPriceResolver',
+      'instacartProxyResolver',
+      'regionalAverageResolver',
+      'resolvedNationalResolver',
+      'marketAggregateResolver',
+      'governmentResolver',
+      'historicalResolver',
+      'categoryBaselineResolver',
+      'syntheticDbResolver',
+      'syntheticInlineResolver',
+    ])
+  })
+  test('batch resolver preserves executable trust order', () => {
+    const batch = extractFunctionLines(src, 'resolvePricesBatch')
+    expect(batch).toBeTruthy()
 
-    // Find all return statements in the function
-    const returnStatements = body!.match(/\breturn\b[^;]*/g) || []
+    const stages = [
+      'const override = overrideByIngredient.get(id)',
+      'const pinned = pinnedPriceByIngredient.get(id)',
+      'const recentReceipt = receipts.find(',
+      'if (quote && quote.best_cents !== null && quote.best_cents > 0)',
+      "const wholesaleRow = findBestRow(openclaw, 'openclaw_wholesale', 30)",
+      'const denorm = denormPriceById.get(id)',
+      "const scrapeRow = findBestRow(openclaw, 'openclaw_scrape', 14)",
+      "const flyerRow = findBestRow(openclaw, 'openclaw_flyer', 14)",
+      "const instacartRow = findBestRow(openclaw, 'openclaw_instacart', 30)",
+      'const regional = regionalAverages.get(id)',
+      'const resolvedNational = resolvedNationalByIngredient.get(id)',
+      'const marketAggregate = marketAggregateByIngredient.get(id)',
+      "const govRow = findBestRow(openclaw, 'openclaw_government', null)",
+      'const allReceiptPrices = receipts',
+      'const category = categoryById.get(id)',
+      'const synRow = slug ? syntheticBySlug.get(slug) : undefined',
+      'const { cents: synCents, reason: synReason } = generateInlineSynthetic(',
+    ]
 
-    expect(
-      returnStatements.length,
-      'resolvePrice must have at least one return statement'
-    ).toBeGreaterThan(0)
-
-    for (const stmt of returnStatements) {
-      const trimmed = stmt.replace(/^return\s*/, '').trim()
-
-      // Must not be a bare "return" (void return)
-      expect(
-        trimmed.length > 0,
-        `Found bare 'return;' (void return) in resolvePrice. Every path must return a ResolvedPrice object. Statement: "${stmt}"`
-      ).toBe(true)
-
-      // Must not return undefined literally
-      expect(
-        trimmed !== 'undefined',
-        `Found 'return undefined' in resolvePrice. Must return a ResolvedPrice object. Statement: "${stmt}"`
-      ).toBe(true)
+    let previous = -1
+    for (const stage of stages) {
+      const index = batch!.indexOf(stage)
+      expect(index, `${stage} must execute after the previous batch stage`).toBeGreaterThan(previous)
+      previous = index
     }
   })
 
-  // -------------------------------------------------------------------------
-  // Test 4: Terminal fallback returns null cents explicitly (Tier 10: NONE)
-  // -------------------------------------------------------------------------
-  test('the final fallback tier returns a ResolvedPrice with cents: null', () => {
-    const body = extractFunctionLines(src, 'resolvePrice')
-    expect(body, 'resolvePrice function body must be extractable').toBeTruthy()
-
-    // The noPrice sentinel should have cents: null
-    expect(
-      src.includes('cents: null'),
-      'resolve-price.ts must have a sentinel value with cents: null for the "no price" case'
-    ).toBe(true)
-
-    // The function must return the noPrice sentinel
-    expect(
-      body!.includes('return noPrice'),
-      'resolvePrice must have a terminal fallback that returns the noPrice sentinel'
-    ).toBe(true)
-
-    // Verify noPrice is defined with source: 'none' and cents: null
-    expect(
-      src.includes("source: 'none'") && src.includes('cents: null'),
-      "The noPrice sentinel must have source: 'none' and cents: null"
-    ).toBe(true)
+  test('batch market aggregate is batched and tenant-scoped', () => {
+    const batch = extractFunctionLines(src, 'resolvePricesBatch')!
+    expect(batch).toContain('marketAggregateByIngredient')
+    expect(batch).toContain('openclaw.system_ingredient_prices')
+    expect(batch).toContain('ANY(${ingredientIds})')
+    expect(batch).toContain('ia.tenant_id = ${tenantId}')
+    expect(batch).toContain("source: 'market_aggregate'")
+    expect(batch).toContain("sourceTier: 'system_ingredient_market'")
   })
 
-  // -------------------------------------------------------------------------
-  // Test 5: No void return exists in the function
-  // -------------------------------------------------------------------------
-  test('no bare return; statements exist in resolvePrice', () => {
-    const body = extractFunctionLines(src, 'resolvePrice')
-    expect(body, 'resolvePrice function body must be extractable').toBeTruthy()
-
-    // Look for "return;" or "return\n" patterns (void returns)
-    // Must exclude "return withDecay", "return noPrice", "return {" etc.
-    const lines = body!.split('\n')
-    const voidReturns = lines.filter((line) => {
-      const trimmed = line.trim()
-      return trimmed === 'return;' || trimmed === 'return'
-    })
-
-    expect(
-      voidReturns.length,
-      `Found ${voidReturns.length} bare return statement(s) in resolvePrice. ` +
-        'Every code path must return a ResolvedPrice object (with cents: null for no data).'
-    ).toBe(0)
-  })
-
-  // -------------------------------------------------------------------------
-  // Test 6: Batch resolution function exists and mirrors the chain
-  // -------------------------------------------------------------------------
-  test('resolvePricesBatch exists and produces the same ResolvedPrice type', () => {
-    expect(
-      /export\s+async\s+function\s+resolvePricesBatch\s*\(/.test(src),
-      'resolvePricesBatch must be an exported async function'
-    ).toBe(true)
-
-    // The batch function should return a Map of ResolvedPrice
-    expect(
-      src.includes('Map<string, ResolvedPrice>'),
-      'resolvePricesBatch must return Map<string, ResolvedPrice> to match single-resolve type'
-    ).toBe(true)
-
-    // The batch function should handle the "no price" case with a sentinel
-    const batchBody = extractFunctionLines(src, 'resolvePricesBatch')
-    expect(batchBody, 'resolvePricesBatch function body must be extractable').toBeTruthy()
-
-    // It should set a noPrice default for ingredients without any match
-    const hasNoPriceFallback =
-      batchBody!.includes('noPrice') ||
-      batchBody!.includes("source: 'none'") ||
-      batchBody!.includes('cents: null')
-
-    expect(
-      hasNoPriceFallback,
-      'resolvePricesBatch must handle ingredients with no price data (return cents: null, not skip them)'
-    ).toBe(true)
+  test('both paths terminate with synthetic pricing rather than null', () => {
+    const batch = extractFunctionLines(src, 'resolvePricesBatch')!
+    expect(src).toContain('syntheticInlineResolver, // 10')
+    expect(batch).toContain('generateInlineSynthetic')
+    expect(batch).not.toContain('cents: null')
+    expect(batch).not.toContain("source: 'none'")
   })
 })
