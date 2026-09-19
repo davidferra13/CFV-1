@@ -1,0 +1,218 @@
+<!doctype html>
+<html lang="en"><head>
+<meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<title>Thunderbird Storage — Dad View</title>
+<meta name="theme-color" content="#0b1220">
+<style>
+*{box-sizing:border-box}html{scroll-behavior:smooth}body{margin:0;background:#f3f6fa;color:#0f172a;font-family:Inter,system-ui,-apple-system,Segoe UI,Roboto,Arial,sans-serif}
+a{text-decoration:none;color:inherit}.bar{position:sticky;top:0;z-index:20;background:rgba(243,246,250,.94);backdrop-filter:blur(14px);border-bottom:1px solid #dfe5ec}
+.barin{max-width:1080px;margin:auto;padding:9px 12px;display:flex;gap:8px;overflow:auto}.bar a{background:white;border:1px solid #dfe5ec;padding:10px 13px;border-radius:999px;font-size:13px;font-weight:900;white-space:nowrap}
+.wrap{max-width:1080px;margin:auto;padding:0 12px 60px}.hero{padding:30px 0 20px}.kicker{font-size:12px;letter-spacing:.09em;font-weight:900;color:#0f766e;text-transform:uppercase}
+h1{font-size:clamp(40px,8vw,76px);letter-spacing:-.055em;line-height:.92;margin:10px 0 14px}.hero>p{font-size:20px;line-height:1.45;color:#475569;max-width:780px;margin:0}
+.answer{margin-top:20px;background:#0b1220;color:white;border-radius:24px;padding:20px;display:grid;grid-template-columns:auto 1fr;gap:16px;align-items:center}
+.answer .num{width:70px;height:70px;border-radius:50%;display:grid;place-items:center;background:#0f766e;font-size:30px;font-weight:1000}.answer h2{margin:0 0 5px;font-size:24px}.answer p{margin:0;color:#cbd5e1;line-height:1.4}
+.stats{display:grid;grid-template-columns:repeat(4,1fr);gap:8px;margin-top:12px}.stat{background:white;border:1px solid #dfe5ec;border-radius:16px;padding:13px}.stat span{display:block;color:#64748b;font-size:10px;text-transform:uppercase;font-weight:900;letter-spacing:.06em}.stat strong{display:block;margin-top:4px;font-size:18px}
+.sec{display:flex;justify-content:space-between;align-items:end;gap:12px;margin:32px 0 12px}.sec h2{font-size:30px;margin:0;letter-spacing:-.04em}.sec p{margin:0;color:#64748b}
+.grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(300px,1fr));gap:14px}.top-card{background:#fff;border-radius:22px;overflow:hidden;border:1px solid #dfe5ec;box-shadow:0 10px 30px rgba(15,23,42,.06)}
+.photo{height:220px;position:relative;background:#cbd5e1;overflow:hidden}.photo img{width:100%;height:100%;object-fit:cover;display:block}.rank{position:absolute;left:12px;top:12px;width:48px;height:48px;border-radius:50%;display:grid;place-items:center;background:#0b1220;color:white;font-size:18px;font-weight:1000}.badge{position:absolute;right:12px;top:12px;background:rgba(255,255,255,.94);padding:8px 10px;border-radius:999px;font-size:10px;font-weight:1000;letter-spacing:.05em}
+.body{padding:15px}.head{display:flex;justify-content:space-between;gap:12px;align-items:start}.head h3{font-size:23px;line-height:1.03;margin:0 0 3px}.head p{margin:0;color:#64748b;font-size:14px}.price{font-size:23px;font-weight:1000;color:#0f766e;white-space:nowrap}.space{display:inline-block;margin-top:10px;background:#eef2f7;border-radius:999px;padding:7px 10px;font-size:12px;font-weight:900}.line{font-size:16px;line-height:1.42;margin:12px 0;color:#334155;font-weight:750}.actions{display:flex;gap:7px;flex-wrap:wrap;align-items:center}.actions>a,.actions summary{cursor:pointer;background:#0b1220;color:white;padding:10px 12px;border-radius:999px;font-size:12px;font-weight:900;list-style:none}.actions .call{background:#0f766e}.actions details{display:inline-block}.actions details p{background:#f8fafc;border-radius:12px;padding:10px;margin:7px 0 0;font-size:13px;line-height:1.4;color:#475569}.best{border-top:4px solid #0f766e}.check{border-top:4px solid #eab308}.watch{border-top:4px solid #f97316}.no{border-top:4px solid #94a3b8}
+.all{background:white;border:1px solid #dfe5ec;border-radius:20px;overflow:hidden}.row{display:grid;grid-template-columns:52px 1.4fr .7fr 1fr 1.6fr;gap:10px;align-items:center;padding:13px 14px;border-bottom:1px solid #edf1f5}.row:last-child{border-bottom:0}.r{font-weight:1000;color:#64748b}.n{display:flex;flex-direction:column}.n span{font-size:12px;color:#64748b}.p{font-weight:1000}.s{font-size:13px;color:#475569}.v{font-size:13px;color:#334155}
+.note{margin-top:22px;color:#64748b;font-size:12px;line-height:1.5}
+@media(max-width:760px){.stats{grid-template-columns:1fr 1fr}.answer{grid-template-columns:1fr}.answer .num{width:58px;height:58px}.row{grid-template-columns:40px 1fr auto}.row .s,.row .v{grid-column:2/4}.photo{height:205px}.price{font-size:20px}.hero{padding-top:20px}}
+</style></head><body>
+<nav class="bar"><div class="barin"><a href="#top">best 10</a><a href="#all">all 24</a></div></nav>
+<main class="wrap">
+<section class="hero"><div class="kicker">1977 Thunderbird storage</div><h1>Dad view.</h1><p>Pictures first. Best options first. Every place we checked is still here.</p>
+<div class="answer"><div class="num">#1</div><div><h2>Start with Storage King in Newbury.</h2><p>10×25 enclosed, $134 base rate, easiest physical fit. Then compare it against the $107 Salisbury unit and the two Plaistow independents.</p></div></div>
+<div class="stats"><div class="stat"><span>places checked</span><strong>24</strong></div><div class="stat"><span>priority list</span><strong>10</strong></div><div class="stat"><span>budget</span><strong>≤ $150/mo</strong></div><div class="stat"><span>car length</span><strong>almost 18 ft</strong></div></div>
+</section>
+<section id="top"><div class="sec"><div><h2>Best 10</h2><p>Work down this list in order.</p></div></div><div class="grid">
+<article class="top-card best">
+  <div class="photo"><img src="https://cdn-zero-one.storagekingusa.com/media/l188-newbury-web_1779205952261.webp" alt="Storage King USA" loading="lazy" referrerpolicy="no-referrer"><div class="rank">#1</div><div class="badge">BEST OVERALL</div></div>
+  <div class="body">
+    <div class="head"><div><h3>Storage King USA</h3><p>Newbury, MA</p></div><div class="price">$134/mo</div></div>
+    <div class="space">10×25 enclosed</div>
+    <p class="line">Biggest clean fit under the budget. Start here.</p>
+    <div class="actions"><a class="call" href="tel:9782259071">call</a><a href="https://www.storagekingusa.com/locations/massachusetts/newbury/storage-king-usa-newbury/" target="_blank" rel="noopener">website</a><details><summary>what to confirm</summary><p>Confirm door opening + exact all-in monthly total.</p></details></div>
+  </div>
+</article>
+<article class="top-card best">
+  <div class="photo"><img src="https://images.ctfassets.net/fynvlmu126fq/AW9LnX4PuXlzXNoNgmgGx/714e4156a52d810a82ab68281cb3c208/7501_facilityHeroImage_original?w=1200&amp;h=630&amp;fit=fill" alt="Extra Space" loading="lazy" referrerpolicy="no-referrer"><div class="rank">#2</div><div class="badge">CHEAPEST VERIFIED</div></div>
+  <div class="body">
+    <div class="head"><div><h3>Extra Space</h3><p>242 Lafayette Rd • Salisbury</p></div><div class="price">$107/mo</div></div>
+    <div class="space">10×20 enclosed</div>
+    <p class="line">Real enclosed car unit and the cheapest strong option.</p>
+    <div class="actions"><a class="call" href="tel:6035564669">call</a><a href="https://www.extraspace.com/storage/facilities/us/massachusetts/salisbury/7501/" target="_blank" rel="noopener">website</a><details><summary>what to confirm</summary><p>Measure inside depth + roll-up door before bringing the Thunderbird.</p></details></div>
+  </div>
+</article>
+<article class="top-card best">
+  <div class="photo"><img src="https://irp.cdn-website.com//3d9b11522c284130ab73b899483cd33e/dms3rep/multi/opt/226-602w.jpg" alt="Rockingham Self Storage" loading="lazy" referrerpolicy="no-referrer"><div class="rank">#3</div><div class="badge">BEST NEARBY LEAD</div></div>
+  <div class="body">
+    <div class="head"><div><h3>Rockingham Self Storage</h3><p>Plaistow, NH</p></div><div class="price">CALL</div></div>
+    <div class="space">10×20 / 10×30 garage</div>
+    <p class="line">Close to Haverhill. Could jump to #1 if the rate is ≤ $150.</p>
+    <div class="actions"><a class="call" href="tel:6033822460">call</a><a href="https://www.rockinghamselfstorage.com/" target="_blank" rel="noopener">website</a><details><summary>what to confirm</summary><p>Get the monthly rate + actual door/inside dimensions.</p></details></div>
+  </div>
+</article>
+<article class="top-card best">
+  <div class="photo"><img src="https://irp.cdn-website.com//d820af14/dms3rep/multi/opt/home-page-storage-e487931e-1920w.jpg" alt="Bresnahan / Stormart" loading="lazy" referrerpolicy="no-referrer"><div class="rank">#4</div><div class="badge">CAR-STORAGE SPECIALIST</div></div>
+  <div class="body">
+    <div class="head"><div><h3>Bresnahan / Stormart</h3><p>Plaistow, NH</p></div><div class="price">CALL</div></div>
+    <div class="space">actual automobile storage</div>
+    <p class="line">Made for storing cars, not just boxes. Strong nearby option.</p>
+    <div class="actions"><a class="call" href="tel:6033821320">call</a><a href="https://www.bresnahanmovingandstorage.com/storage-units" target="_blank" rel="noopener">website</a><details><summary>what to confirm</summary><p>Get rate + bay size + door clearance.</p></details></div>
+  </div>
+</article>
+<article class="top-card check">
+  <div class="photo"><img src="https://cdnsc.rentcafe.com/dmslivecafe/3/1070811/1070811-1-1.jpg?width=-1&amp;height=385&amp;quality=80" alt="RAJ Realty Self-Storage" loading="lazy" referrerpolicy="no-referrer"><div class="rank">#5</div><div class="badge">POTENTIAL BARGAIN</div></div>
+  <div class="body">
+    <div class="head"><div><h3>RAJ Realty Self-Storage</h3><p>Methuen, MA</p></div><div class="price">$105/mo</div></div>
+    <div class="space">11×20 drive-up</div>
+    <p class="line">Very cheap and wider than a normal 10×20.</p>
+    <div class="actions"><a class="call" href="tel:6038944631">call</a><a href="https://www.rentcafe.com/storage/ma/methuen/raj-realty-self-storage-11-pine-street/default.aspx" target="_blank" rel="noopener">website</a><details><summary>what to confirm</summary><p>Must confirm a gasoline car is allowed inside this exact unit.</p></details></div>
+  </div>
+</article>
+<article class="top-card check">
+  <div class="photo"><img src="https://cubesmart-dot-com-main-images-production.s3.us-east-2.amazonaws.com/post/facility_virtual_tour/5814_1.jpg" alt="CubeSmart" loading="lazy" referrerpolicy="no-referrer"><div class="rank">#6</div><div class="badge">GOOD PRICE</div></div>
+  <div class="body">
+    <div class="head"><div><h3>CubeSmart</h3><p>95 Rabbit Rd • Salisbury</p></div><div class="price">$128.40/mo</div></div>
+    <div class="space">10×20 drive-up</div>
+    <p class="line">Price works. We only need to prove the car is allowed in this unit.</p>
+    <div class="actions"><a class="call" href="tel:9784993739">call</a><a href="https://www.cubesmart.com/massachusetts-self-storage/salisbury-self-storage/4082.html" target="_blank" rel="noopener">website</a><details><summary>what to confirm</summary><p>Confirm vehicle permission + enclosure + all recurring fees.</p></details></div>
+  </div>
+</article>
+<article class="top-card check">
+  <div class="photo"><img src="https://images.ctfassets.net/fynvlmu126fq/2UMg9KakJj8lZmgv0t1vzE/f9245b2a7cdd7c8b5c057f9c4a23f083/267_facilityHeroImage_original?w=1200&amp;h=630&amp;fit=fill" alt="Extra Space" loading="lazy" referrerpolicy="no-referrer"><div class="rank">#7</div><div class="badge">GREAT FIT / MAX BUDGET</div></div>
+  <div class="body">
+    <div class="head"><div><h3>Extra Space</h3><p>143 Lafayette Rd • Salisbury</p></div><div class="price">$150/mo</div></div>
+    <div class="space">10×25 enclosed</div>
+    <p class="line">Excellent 10×25 size, but base rent already uses the whole budget.</p>
+    <div class="actions"><a class="call" href="tel:9785187913">call</a><a href="https://www.extraspace.com/storage/facilities/us/massachusetts/salisbury/501599/" target="_blank" rel="noopener">website</a><details><summary>what to confirm</summary><p>Confirm all-in monthly total stays acceptable.</p></details></div>
+  </div>
+</article>
+<article class="top-card check">
+  <div class="photo"><img src="https://images.ctfassets.net/fynvlmu126fq/2LO2W8ADtgYBdD01ANYiZT/f7a8c1cd61d35da83735e7c071e2bc24/3652_facilityHeroImage_size800x600?w=1200&amp;h=630&amp;fit=fill" alt="Extra Space" loading="lazy" referrerpolicy="no-referrer"><div class="rank">#8</div><div class="badge">VERIFIED FALLBACK</div></div>
+  <div class="body">
+    <div class="head"><div><h3>Extra Space</h3><p>230 Rockingham Rd • Derry</p></div><div class="price">$150/mo</div></div>
+    <div class="space">10×20 enclosed</div>
+    <p class="line">Legit enclosed vehicle storage. Price is right at the ceiling.</p>
+    <div class="actions"><a class="call" href="tel:6038255375">call</a><a href="https://www.extraspace.com/storage/facilities/us/new_hampshire/derry/3652/" target="_blank" rel="noopener">website</a><details><summary>what to confirm</summary><p>Confirm actual clearances + any required monthly protection.</p></details></div>
+  </div>
+</article>
+<article class="top-card check">
+  <div class="photo"><img src="https://le-cdn.hibuwebsites.com/34e1dc9ee04b4bf987fcc3ec62550c2d/dms3rep/multi/opt/home-hero-northeast-storage-cust-1920w.jpg" alt="Northeast Storage" loading="lazy" referrerpolicy="no-referrer"><div class="rank">#9</div><div class="badge">PROMISING</div></div>
+  <div class="body">
+    <div class="head"><div><h3>Northeast Storage</h3><p>North Andover, MA</p></div><div class="price">~$130 listing</div></div>
+    <div class="space">10×20 vehicle</div>
+    <p class="line">Close and car-focused. The exact $130 space may be parking, not a private bay.</p>
+    <div class="actions"><a class="call" href="tel:9787380200">call</a><a href="https://www.thenortheaststorage.com/services/vehicle-storage-units" target="_blank" rel="noopener">website</a><details><summary>what to confirm</summary><p>Confirm the $130 space is fully enclosed.</p></details></div>
+  </div>
+</article>
+<article class="top-card watch">
+  <div class="photo"><img src="https://cdnsc.rentcafe.com/dmslivecafe/3/1069838/1069838-1-1.jpg?width=-1&amp;height=385&amp;quality=80" alt="ABZ Self Storage" loading="lazy" referrerpolicy="no-referrer"><div class="rank">#10</div><div class="badge">CAR-FRIENDLY / OVER BUDGET</div></div>
+  <div class="body">
+    <div class="head"><div><h3>ABZ Self Storage</h3><p>Rowley, MA</p></div><div class="price">$219 current 10×20</div></div>
+    <div class="space">indoor vehicle storage</div>
+    <p class="line">Very car-friendly and 12-month rate lock, but current 10×20 is above budget.</p>
+    <div class="actions"><a class="call" href="tel:9789485544">call</a><a href="https://www.abzstorage.com/vehicle-storage/" target="_blank" rel="noopener">website</a><details><summary>what to confirm</summary><p>Watch for a promotion or cheaper suitable indoor bay.</p></details></div>
+  </div>
+</article></div></section>
+<section id="all"><div class="sec"><div><h2>Every place checked</h2><p>Nothing gets lost or searched twice.</p></div></div><div class="all">
+<div class="row best">
+ <div class="r">#1</div><div class="n"><strong>Storage King USA</strong><span>Newbury, MA</span></div>
+ <div class="p">$134/mo</div><div class="s">10×25 enclosed</div><div class="v">Biggest clean fit under the budget. Start here.</div>
+</div>
+<div class="row best">
+ <div class="r">#2</div><div class="n"><strong>Extra Space</strong><span>242 Lafayette Rd • Salisbury</span></div>
+ <div class="p">$107/mo</div><div class="s">10×20 enclosed</div><div class="v">Real enclosed car unit and the cheapest strong option.</div>
+</div>
+<div class="row best">
+ <div class="r">#3</div><div class="n"><strong>Rockingham Self Storage</strong><span>Plaistow, NH</span></div>
+ <div class="p">CALL</div><div class="s">10×20 / 10×30 garage</div><div class="v">Close to Haverhill. Could jump to #1 if the rate is ≤ $150.</div>
+</div>
+<div class="row best">
+ <div class="r">#4</div><div class="n"><strong>Bresnahan / Stormart</strong><span>Plaistow, NH</span></div>
+ <div class="p">CALL</div><div class="s">actual automobile storage</div><div class="v">Made for storing cars, not just boxes. Strong nearby option.</div>
+</div>
+<div class="row check">
+ <div class="r">#5</div><div class="n"><strong>RAJ Realty Self-Storage</strong><span>Methuen, MA</span></div>
+ <div class="p">$105/mo</div><div class="s">11×20 drive-up</div><div class="v">Very cheap and wider than a normal 10×20.</div>
+</div>
+<div class="row check">
+ <div class="r">#6</div><div class="n"><strong>CubeSmart</strong><span>95 Rabbit Rd • Salisbury</span></div>
+ <div class="p">$128.40/mo</div><div class="s">10×20 drive-up</div><div class="v">Price works. We only need to prove the car is allowed in this unit.</div>
+</div>
+<div class="row check">
+ <div class="r">#7</div><div class="n"><strong>Extra Space</strong><span>143 Lafayette Rd • Salisbury</span></div>
+ <div class="p">$150/mo</div><div class="s">10×25 enclosed</div><div class="v">Excellent 10×25 size, but base rent already uses the whole budget.</div>
+</div>
+<div class="row check">
+ <div class="r">#8</div><div class="n"><strong>Extra Space</strong><span>230 Rockingham Rd • Derry</span></div>
+ <div class="p">$150/mo</div><div class="s">10×20 enclosed</div><div class="v">Legit enclosed vehicle storage. Price is right at the ceiling.</div>
+</div>
+<div class="row check">
+ <div class="r">#9</div><div class="n"><strong>Northeast Storage</strong><span>North Andover, MA</span></div>
+ <div class="p">~$130 listing</div><div class="s">10×20 vehicle</div><div class="v">Close and car-focused. The exact $130 space may be parking, not a private bay.</div>
+</div>
+<div class="row watch">
+ <div class="r">#10</div><div class="n"><strong>ABZ Self Storage</strong><span>Rowley, MA</span></div>
+ <div class="p">$219 current 10×20</div><div class="s">indoor vehicle storage</div><div class="v">Very car-friendly and 12-month rate lock, but current 10×20 is above budget.</div>
+</div>
+<div class="row check">
+ <div class="r">#11</div><div class="n"><strong>Storage Rentals of America</strong><span>Plaistow, NH</span></div>
+ <div class="p">$146 listing</div><div class="s">10×20 class</div><div class="v">Price works, but enclosed-car permission was not proven.</div>
+</div>
+<div class="row watch">
+ <div class="r">#12</div><div class="n"><strong>Super Self Storage</strong><span>Salisbury, MA</span></div>
+ <div class="p">UNKNOWN</div><div class="s">20-ft+ bay requested</div><div class="v">Secure facility; no qualifying car bay confirmed yet.</div>
+</div>
+<div class="row watch">
+ <div class="r">#13</div><div class="n"><strong>Prime Storage</strong><span>Plaistow, NH</span></div>
+ <div class="p">UNKNOWN</div><div class="s">garage-size facility</div><div class="v">Good location and facility type, but the right unit wasn&#39;t available.</div>
+</div>
+<div class="row watch">
+ <div class="r">#14</div><div class="n"><strong>Extra Space</strong><span>Seabrook, NH</span></div>
+ <div class="p">$155/mo</div><div class="s">10×20 enclosed</div><div class="v">Only $5 over base-rent ceiling.</div>
+</div>
+<div class="row no">
+ <div class="r">#15</div><div class="n"><strong>Extra Space</strong><span>Methuen, MA</span></div>
+ <div class="p">$164/mo</div><div class="s">10×20 drive-up</div><div class="v">Convenient, but current useful unit costs too much.</div>
+</div>
+<div class="row no">
+ <div class="r">#16</div><div class="n"><strong>Extra Space</strong><span>Danville, NH</span></div>
+ <div class="p">$165/mo</div><div class="s">10×20 enclosed</div><div class="v">Good unit type. Older $104 result was stale.</div>
+</div>
+<div class="row no">
+ <div class="r">#17</div><div class="n"><strong>Extra Space</strong><span>167 Elm St • Salisbury</span></div>
+ <div class="p">$166/mo</div><div class="s">10×20 enclosed</div><div class="v">Older $133 price was stale.</div>
+</div>
+<div class="row no">
+ <div class="r">#18</div><div class="n"><strong>Public Storage</strong><span>Brentwood, NH</span></div>
+ <div class="p">$166/mo</div><div class="s">10×20 drive-up</div><div class="v">Price and enclosure data did not line up cleanly.</div>
+</div>
+<div class="row no">
+ <div class="r">#19</div><div class="n"><strong>Extra Space</strong><span>Salem, NH</span></div>
+ <div class="p">$169/mo</div><div class="s">10×20 enclosed</div><div class="v">Valid car unit, wrong price.</div>
+</div>
+<div class="row no">
+ <div class="r">#20</div><div class="n"><strong>Public Storage</strong><span>Hampstead, NH</span></div>
+ <div class="p">$182/mo</div><div class="s">10×20 enclosed</div><div class="v">Works physically, not financially.</div>
+</div>
+<div class="row no">
+ <div class="r">#21</div><div class="n"><strong>Private garage listing</strong><span>Haverhill, MA</span></div>
+ <div class="p">$200/mo</div><div class="s">garage</div><div class="v">Closest private-garage result, still too expensive.</div>
+</div>
+<div class="row no">
+ <div class="r">#22</div><div class="n"><strong>Extra Space</strong><span>Kingston, NH</span></div>
+ <div class="p">$231/mo</div><div class="s">10×25 enclosed</div><div class="v">The old cheap 10×20 disappeared.</div>
+</div>
+<div class="row no">
+ <div class="r">#23</div><div class="n"><strong>Exotic Car Club</strong><span>Methuen, MA</span></div>
+ <div class="p">$235/mo</div><div class="s">indoor car storage</div><div class="v">Best specialized experience, wrong budget.</div>
+</div>
+<div class="row no">
+ <div class="r">#24</div><div class="n"><strong>Extra Space</strong><span>Haverhill, MA</span></div>
+ <div class="p">$243/mo</div><div class="s">10×20 indoor</div><div class="v">Nearby, but expensive and not a clean drive-in car solution.</div>
+</div></div></section>
+<p class="note">Rates and availability move fast. “Enclosed” still needs the exact assigned unit’s inside depth and clear door opening confirmed before the Thunderbird is driven there.</p>
+</main></body></html>
