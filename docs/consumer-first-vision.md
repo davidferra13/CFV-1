@@ -1,14 +1,20 @@
-# ChefFlow: Consumer-First Food Discovery Platform
+# ChefFlow: Consumer-First Public Discovery Strategy
+
+> **Status:** supporting-surface strategy, not canonical product identity
+>
+> **Canonical authority:** `docs/project-definition-and-scope.md`
+>
+> **Scope:** this document governs how ChefFlow's public discovery experience should feel to a consumer. It does **not** make consumer discovery the primary ChefFlow product. The authenticated, persona-aware operator workspace remains the primary product; public discovery is a supporting acquisition surface. If language below appears to conflict with the canonical project definition, interpret it within the public discovery surface only.
 
 ## Core Concept
 
-ChefFlow is a **food discovery platform** where consumers find exactly what they want to eat. Think Airbnb, but for food: private chefs, restaurants, caterers, food trucks, bakeries, and every kind of food experience, all in one search.
+On its public discovery surface, ChefFlow acts as a **food discovery layer** where consumers find exactly what they want to eat: private chefs, restaurants, caterers, food trucks, bakeries, and other food experiences in one search experience.
 
-The consumer journey is the PRIMARY experience. Everything a visitor sees should answer: "What do I want to eat?"
+The consumer journey is the PRIMARY experience **within public discovery**. Everything a visitor sees on that surface should answer: "What do I want to eat?"
 
 ## Design Principles
 
-1. **Consumer-first, always.** The landing page is a search experience, not a sales pitch. No "one place for everything," no aggregator language, no operator jargon.
+1. **Consumer-first on public discovery surfaces.** The discovery landing experience is search-first, not an operator sales pitch. No "one place for everything," no aggregator language, no operator jargon.
 
 2. **Direct connections.** ChefFlow connects consumers directly to food providers. No commission, no gatekeeping, no middleman. Providers keep their own platforms, websites, and booking systems. We redirect, not capture.
 
@@ -16,11 +22,11 @@ The consumer journey is the PRIMARY experience. Everything a visitor sees should
 
 4. **Minimal friction.** The first interaction is a search. No sign-up wall, no onboarding quiz, no "choose your audience" gate. Search immediately.
 
-5. **Operator sign-up is secondary.** Chef/restaurant/business sign-up exists but is subtle: a footer link, a settings section, a secondary CTA. Never the hero.
+5. **Operator sign-up is secondary within consumer discovery.** Chef/restaurant/business sign-up can remain subtle on consumer-facing discovery routes. This does not make the operator workspace secondary in ChefFlow overall.
 
 ## User Journeys
 
-### Consumer (Primary)
+### Consumer (Primary on the public discovery surface)
 
 1. Land on homepage
 2. See search form immediately: "What are you looking for?" + "Where?" + service type filter
@@ -28,7 +34,7 @@ The consumer journey is the PRIMARY experience. Everything a visitor sees should
 4. View provider profiles with real menus
 5. Connect directly with the provider (inquiry form, external link, contact info)
 
-### Operator (Secondary)
+### Operator (Secondary entry path from public discovery)
 
 1. Discover ChefFlow organically or via subtle footer/header link
 2. Sign up to list their business
@@ -86,8 +92,9 @@ The consumer journey is the PRIMARY experience. Everything a visitor sees should
 - Real menus (not stock photos)
 - No commission
 
-## What This Is NOT
+## What The Public Discovery Surface Is NOT
 
+- Not a replacement for ChefFlow's primary operator workspace
 - Not a booking engine (we redirect, not transact)
 - Not a food delivery app (we discover, not deliver)
 - Not a restaurant reservation system (we connect, not book)

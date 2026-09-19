@@ -57,7 +57,9 @@ A row is only "done" when it is either `LOCKED` or `OUT_OF_SCOPE`.
 
 ## 4. Source Precedence
 
-Until a stronger policy exists, use this precedence order:
+For project identity, audience, scope, and monetization posture, `docs/project-definition-and-scope.md` is the canonical source of truth and overrides this ledger when they conflict.
+
+For implementation and behavior questions not settled by that canonical project definition, use this precedence order:
 
 1. Current code plus current automated tests
 2. Current canonical specs intended to govern behavior
@@ -94,7 +96,7 @@ If a feature cannot map cleanly to those primitives, it is underspecified, redun
 | -------- | ----------------------------------------------------- | ------------------------------------------------------------------------------------------------------- | ------------ |
 | CFDL-001 | Corpus precedence and freshness                       | Precedence order published; first enforcement pass complete (route + taxonomy + stale claims fixed)     | IMPLEMENTED  |
 | CFDL-002 | Canonical public discovery route                      | `/nearby` is canonical; `/discover` redirects. All docs, code, tests aligned                            | LOCKED       |
-| CFDL-003 | Public discovery promise                              | Both chef marketplace and broader food-operator directory exist; primary promise undecided              | PROVISIONAL  |
+| CFDL-003 | Public discovery promise                              | Operator-first identity is settled; public discovery has two promises, but its primary public promise remains undecided | PROVISIONAL  |
 | CFDL-004 | Geography commitment                                  | Code covers 50 states + D.C.; public promise not yet written                                            | PROVISIONAL  |
 | CFDL-005 | In-scope operator taxonomy                            | 8 types in code and all specs aligned; broader national expansion undecided                             | LOCKED       |
 | CFDL-006 | Canonical listing entity and lifecycle                | `directory_listings` with `discovered -> claimed -> verified -> removed` is real                        | LOCKED       |
@@ -172,14 +174,15 @@ If a feature cannot map cleanly to those primitives, it is underspecified, redun
 - Decision: ChefFlow supports two public discovery promises:
   - a chef marketplace for operators using ChefFlow
   - a broader food-operator directory for establishments that may not use ChefFlow
-- Current state: this is present in the system behavior spec, website-goals survey, and public route tree, but older product framing still swings between B2B operating system and consumer-first discovery platform.
+- Current state: global product identity is no longer open. `docs/project-definition-and-scope.md` establishes ChefFlow as an operator-first culinary operating system with public discovery as a supporting acquisition surface. The remaining ambiguity is narrower: within public discovery, the chef marketplace and broader food-operator directory both exist, but the primary public promise is not yet locked. `docs/consumer-first-vision.md` now governs consumer-facing discovery UX only.
 - Evidence:
+  - `docs/project-definition-and-scope.md` (canonical product identity and scope)
   - `docs/system-behavior-specification.md`
   - `docs/website-goals-survey.md`
   - `project-map/public/directory.md`
-  - `docs/consumer-first-vision.md`
+  - `docs/consumer-first-vision.md` (public discovery surface strategy only)
 - Open questions:
-  - Which promise is primary on the public site?
+  - Which promise is primary within the public discovery surface?
   - Are chef marketplace and broader directory separate products, or two faces of one consumer flow?
   - What shared infrastructure must benefit both by default?
 - Proof to close:

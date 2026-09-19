@@ -87,7 +87,7 @@ Phase 1 rules:
 This inventory is grounded in the following repo sources:
 
 - `docs/chefflow-product-definition.md`
-- `docs/consumer-first-vision.md`
+- `docs/consumer-first-vision.md` (public discovery UX strategy only; product identity is governed by `docs/project-definition-and-scope.md`)
 - `docs/chefflow-system-manual.md`
 - `docs/app-complete-audit.md`
 - `lib/auth/route-policy.ts`
