@@ -450,6 +450,7 @@ export async function resolvePricesBatch(
       JOIN openclaw.resolved_prices rp
         ON rp.canonical_ingredient_id = si.id::text
       JOIN openclaw.pricing_regions pr ON pr.id = rp.pricing_region_id
+      JOIN chefs ch ON ch.id = ${tenantId}
       WHERE ia.ingredient_id = ANY(${ingredientIds})
         AND ia.tenant_id = ${tenantId}
         AND ia.system_ingredient_id IS NOT NULL
@@ -457,14 +458,28 @@ export async function resolvePricesBatch(
         AND rp.price_type = 'retail'
         AND rp.confidence > 0.2
         AND (
-          pr.slug = ${preferredState?.toLowerCase() || ''}
-          OR rp.pricing_region_id IN (
-            SELECT zc.pricing_region_id FROM openclaw.zip_centroids zc
-            JOIN chefs ch ON ch.zip_code = zc.zip
-            WHERE ch.id = ${tenantId}
+          EXISTS (
+            SELECT 1
+            FROM openclaw.zip_centroids zc
+            WHERE zc.pricing_region_id = rp.pricing_region_id
+              AND zc.zip = ch.zip_code
+          )
+          OR EXISTS (
+            SELECT 1
+            FROM openclaw.zip_centroids zc
+            WHERE zc.pricing_region_id = rp.pricing_region_id
+              AND zc.state = ${preferredState || ''}
           )
         )
-      ORDER BY ia.ingredient_id, rp.confidence DESC
+      ORDER BY
+        ia.ingredient_id,
+        CASE WHEN EXISTS (
+          SELECT 1
+          FROM openclaw.zip_centroids zc
+          WHERE zc.pricing_region_id = rp.pricing_region_id
+            AND zc.zip = ch.zip_code
+        ) THEN 0 ELSE 1 END,
+        rp.confidence DESC
     `)) as unknown as ResolvedNationalRow[]
 
     for (const row of rnRows) {

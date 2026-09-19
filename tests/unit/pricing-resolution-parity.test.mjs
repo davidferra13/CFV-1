@@ -89,6 +89,24 @@ test('batch row selection mirrors tier-specific store and state preferences', ()
   }
 })
 
+test('batch resolved-national mirrors ZIP-first then state fallback', () => {
+  const batch = functionBody('resolvePricesBatch')
+  const start = batch.indexOf('// Query 6.25:')
+  const end = batch.indexOf('// Query 6.5:', start)
+  assert.ok(start >= 0 && end > start, 'resolved-national batch query must be extractable')
+  const query = batch.slice(start, end)
+
+  assert.doesNotMatch(query, /pr\.slug\s*=/)
+  assert.match(query, /JOIN chefs ch ON ch\.id/)
+  assert.match(query, /zc\.zip = ch\.zip_code/)
+  assert.match(query, /zc\.state =/)
+  assert.match(query, /CASE WHEN EXISTS/)
+
+  const zipMatch = query.indexOf('zc.zip = ch.zip_code')
+  const stateMatch = query.indexOf('zc.state =')
+  assert.ok(zipMatch >= 0 && stateMatch > zipMatch, 'ZIP match must be preferred before state fallback')
+})
+
 test('batch PIE includes batched market aggregate resolution', () => {
   const batch = functionBody('resolvePricesBatch')
   assert.match(batch, /marketAggregateByIngredient/)
