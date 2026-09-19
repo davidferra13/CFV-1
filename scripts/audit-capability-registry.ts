@@ -11,6 +11,7 @@ const {
 } = capabilityApi
 
 const root = process.cwd()
+const isCheckMode = process.argv.includes("--check")
 
 function walk(dir: string): string[] {
   if (!existsSync(dir)) return []
@@ -66,6 +67,7 @@ const observedCounts = rows.reduce<Record<string, number>>((acc, row) => {
   return acc
 }, {})
 
+if (!isCheckMode) {
 const report = {
   generatedAt: new Date().toISOString(),
   doctrine: "A normal chef workflow that cannot be completed without thinking about or manually switching to another application is a ChefFlow capability gap.",
@@ -113,4 +115,6 @@ Repo evidence means candidate implementation paths exist; it does **not** prove 
 
 mkdirSync(join(root, "docs", "audit"), { recursive: true })
 writeFileSync(join(root, "docs", "audit", "2026-09-16-chefflow-capability-registry.md"), markdown)
+}
+
 console.log(JSON.stringify({ total: summary.total, gaps: summary.gaps.length, launchOnly: summary.launchOnlyDebt.length, observedCounts }, null, 2))

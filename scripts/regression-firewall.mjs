@@ -17,6 +17,7 @@ function parseArgs(argv) {
     skipTypecheck: argv.includes('--skip-typecheck'),
     skipWiring: argv.includes('--skip-wiring'),
     skipNav: argv.includes('--skip-nav'),
+    skipCapabilities: argv.includes('--skip-capabilities'),
     skipRouteProbes: argv.includes('--skip-route-probes'),
     routeProbeLimit: numberArg(argv, '--route-probe-limit', 40),
     routeProbeTimeoutMs: numberArg(argv, '--route-probe-timeout-ms', 60_000),
@@ -228,6 +229,14 @@ async function main() {
   if (!args.skipNav) {
     results.push(
       await runStep('chef nav audit', npmCommand(), ['run', 'verify:chef-nav'], {
+        timeoutMs: args.stepTimeoutMs,
+      })
+    )
+  }
+
+  if (!args.skipCapabilities) {
+    results.push(
+      await runStep('capability registry audit', npmCommand(), ['run', 'audit:capabilities:check'], {
         timeoutMs: args.stepTimeoutMs,
       })
     )
