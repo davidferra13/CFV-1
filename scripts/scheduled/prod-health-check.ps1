@@ -1,5 +1,5 @@
 # ChefFlow Production Health Check (FREE - no AI, no API cost)
-# Checks prod (3000) and dev (3100) servers, Docker, Ollama
+# Checks canonical app origin, public production surfaces, Docker, and Ollama
 # Runs every 15 minutes
 
 $projectDir = "C:\Users\david\Documents\CFv1"
@@ -18,30 +18,36 @@ if ((Test-Path $logFile) -and (Get-Item $logFile).Length -gt 2MB) {
 $timestamp = Get-Date -Format "yyyy-MM-dd HH:mm:ss"
 $issues = @()
 
-# 1. Production server (port 3000)
-try {
-    $resp = Invoke-WebRequest -Uri "http://localhost:3000/api/health/ping" -TimeoutSec 10 -UseBasicParsing -ErrorAction Stop
-    if ($resp.StatusCode -eq 200) {
-        $prodStatus = "OK"
-    } else {
-        $prodStatus = "HTTP $($resp.StatusCode)"
-        $issues += "Prod server returned $($resp.StatusCode)"
+# 1. Canonical production trust: origin 3100 + public edge/routes
+$trustStatus = "CHECK_ERROR"
+$nodeExe = if (Test-Path "C:\nvm4w\nodejs\node.exe") {
+    "C:\nvm4w\nodejs\node.exe"
+} else {
+    (Get-Command node -ErrorAction SilentlyContinue).Source
+}
+
+if (-not $nodeExe) {
+    $issues += "Node.js executable not found for production trust check"
+} else {
+    try {
+        $trustRaw = & $nodeExe "$projectDir\scripts\production-trust-check.mjs" --json 2>&1
+        $trust = ($trustRaw -join "`n") | ConvertFrom-Json
+        $trustStatus = $trust.classification
+
+        if (-not $trust.ok) {
+            $failedNames = @(
+                $trust.results |
+                    Where-Object { -not $_.ok } |
+                    ForEach-Object { $_.name }
+            ) -join ", "
+            $issues += "Production trust failed ($trustStatus): $failedNames"
+        }
+    } catch {
+        $issues += "Production trust check could not run: $($_.Exception.Message)"
     }
-} catch {
-    $prodStatus = "DOWN"
-    $issues += "Prod server (port 3000) unreachable"
 }
 
-# 2. Dev server (port 3100)
-try {
-    $resp = Invoke-WebRequest -Uri "http://localhost:3100/api/health/ping" -TimeoutSec 10 -UseBasicParsing -ErrorAction Stop
-    if ($resp.StatusCode -eq 200) { $devStatus = "OK" } else { $devStatus = "HTTP $($resp.StatusCode)" }
-} catch {
-    $devStatus = "DOWN"
-    # Dev server being down is informational, not critical
-}
-
-# 3. Docker (PostgreSQL)
+# 2. Docker (PostgreSQL)
 try {
     $docker = docker ps --filter "name=chefflow_postgres" --format "{{.Status}}" 2>&1
     if ($docker -match "Up") {
@@ -55,7 +61,7 @@ try {
     $issues += "Docker not accessible"
 }
 
-# 4. Ollama
+# 3. Ollama
 try {
     $resp = Invoke-WebRequest -Uri "http://localhost:11434/api/tags" -TimeoutSec 5 -UseBasicParsing -ErrorAction Stop
     $ollamaStatus = "OK"
@@ -64,16 +70,7 @@ try {
     $issues += "Ollama (port 11434) unreachable"
 }
 
-# 5. Cloudflare Tunnel (check if app.cheflowhq.com resolves to prod)
-try {
-    $resp = Invoke-WebRequest -Uri "https://app.cheflowhq.com/api/health/ping" -TimeoutSec 15 -UseBasicParsing -ErrorAction Stop
-    $tunnelStatus = "OK"
-} catch {
-    $tunnelStatus = "DOWN"
-    $issues += "Cloudflare Tunnel (app.cheflowhq.com) unreachable"
-}
-
-# 6. Disk space (alert if any drive < 10GB free)
+# 4. Disk space (alert if any drive < 10GB free)
 Get-PSDrive -PSProvider FileSystem | Where-Object { $_.Free -gt 0 } | ForEach-Object {
     $freeGB = [math]::Round($_.Free / 1GB, 1)
     if ($freeGB -lt 10) {
@@ -81,20 +78,20 @@ Get-PSDrive -PSProvider FileSystem | Where-Object { $_.Free -gt 0 } | ForEach-Ob
     }
 }
 
-# 7. Memory usage (alert if > 90% used)
+# 5. Memory usage (alert if > 90% used)
 $os = Get-CimInstance Win32_OperatingSystem
 $memUsedPct = [math]::Round((($os.TotalVisibleMemorySize - $os.FreePhysicalMemory) / $os.TotalVisibleMemorySize) * 100, 1)
 if ($memUsedPct -gt 90) {
     $issues += "High memory usage: ${memUsedPct}%"
 }
 
-# 8. CPU usage (alert if > 90% sustained)
+# 6. CPU usage (alert if > 90% sustained)
 $cpuPct = [math]::Round((Get-CimInstance Win32_Processor | Measure-Object -Property LoadPercentage -Average).Average, 1)
 if ($cpuPct -gt 90) {
     $issues += "High CPU usage: ${cpuPct}%"
 }
 
-# 9. Healthchecks.io ping (dead-man's-switch: if THIS task stops, Healthchecks alerts you)
+# 7. Healthchecks.io ping (dead-man's-switch: if THIS task stops, Healthchecks alerts you)
 # To enable: create a check at https://healthchecks.io, paste the ping URL below
 $healthchecksUrl = $env:HEALTHCHECKS_PING_URL
 if ($healthchecksUrl) {
@@ -106,7 +103,7 @@ if ($healthchecksUrl) {
 }
 
 # Log result
-$line = "[$timestamp] Prod=$prodStatus | Dev=$devStatus | DB=$dbStatus | Ollama=$ollamaStatus | Tunnel=$tunnelStatus | Mem=${memUsedPct}% | CPU=${cpuPct}%"
+$line = "[$timestamp] Trust=$trustStatus | DB=$dbStatus | Ollama=$ollamaStatus | Mem=${memUsedPct}% | CPU=${cpuPct}%"
 if ($issues.Count -gt 0) {
     $line += " | ISSUES: $($issues -join '; ')"
 }
