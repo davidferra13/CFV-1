@@ -257,6 +257,11 @@ export type PublicOpenBookingPrefill = {
   occasion?: string
   service_type?: string
   additional_notes?: string
+  location?: string
+  event_date?: string
+  guest_count?: number
+  budget_range?: string
+  dietary_restrictions?: string
 }
 
 export type ResolvedPublicOpenBookingPrefill = {
@@ -268,9 +273,7 @@ export type ResolvedPublicOpenBookingPrefill = {
 export type PublicSeasonalMarketPulseSourceMode = 'market-backed' | 'seasonal-fallback'
 
 export type PublicSeasonalMarketPulseFallbackReason =
-  | 'none'
-  | 'market_data_unavailable'
-  | 'stale_market_evidence'
+  'none' | 'market_data_unavailable' | 'stale_market_evidence'
 
 export type PublicSeasonalPulseIngredient = {
   name: string
@@ -614,10 +617,24 @@ async function getPublicSeasonalMarketPulseUncached(
 export function readPublicOpenBookingPrefillFromSearchParams(
   input: SearchParamInput
 ): PublicOpenBookingPrefill {
+  const guestCountRaw = Number(getSearchParamValue(input, 'guest_count'))
+  const guestCount =
+    Number.isFinite(guestCountRaw) && guestCountRaw > 0
+      ? Math.min(500, Math.floor(guestCountRaw))
+      : undefined
+
   return {
     occasion: sanitizePrefillValue(getSearchParamValue(input, 'occasion'), 500),
     service_type: sanitizePrefillValue(getSearchParamValue(input, 'service_type'), 100),
     additional_notes: sanitizePrefillValue(getSearchParamValue(input, 'additional_notes'), 5000),
+    location: sanitizePrefillValue(getSearchParamValue(input, 'location'), 240),
+    event_date: sanitizePrefillValue(getSearchParamValue(input, 'event_date'), 10),
+    guest_count: guestCount,
+    budget_range: sanitizePrefillValue(getSearchParamValue(input, 'budget_range'), 80),
+    dietary_restrictions: sanitizePrefillValue(
+      getSearchParamValue(input, 'dietary_restrictions'),
+      1200
+    ),
   }
 }
 
@@ -632,6 +649,13 @@ export function mergePublicOpenBookingPrefill(
     if (prefill.service_type?.trim()) merged.service_type = prefill.service_type.trim()
     if (prefill.additional_notes?.trim()) {
       merged.additional_notes = prefill.additional_notes.trim()
+    }
+    if (prefill.location?.trim()) merged.location = prefill.location.trim()
+    if (prefill.event_date?.trim()) merged.event_date = prefill.event_date.trim()
+    if (prefill.guest_count && prefill.guest_count > 0) merged.guest_count = prefill.guest_count
+    if (prefill.budget_range?.trim()) merged.budget_range = prefill.budget_range.trim()
+    if (prefill.dietary_restrictions?.trim()) {
+      merged.dietary_restrictions = prefill.dietary_restrictions.trim()
     }
   }
 

@@ -62,6 +62,7 @@ export interface ConsumerResultCard {
   serviceModes: string[]
   ctaLabel: string
   ctaHref: string
+  profileHref?: string | null
   rating: number | null
   reviewCount: number | null
   isAvailable: boolean
@@ -197,9 +198,7 @@ function withDiscoveryTimeout<T>(promise: Promise<T>, fallback: T, timeoutMs = 4
   })
 }
 
-function appetiteSignalsFromFilters(
-  filters: ConsumerDiscoveryFilters
-): AppetiteSignal[] {
+function appetiteSignalsFromFilters(filters: ConsumerDiscoveryFilters): AppetiteSignal[] {
   return (filters.appetiteTagIds ?? []).map((tagId) => ({
     tagId,
     polarity: 'want',
@@ -282,6 +281,7 @@ function chefToCard(chef: DirectoryChef, intent?: ConsumerIntent): ConsumerResul
     ctaLabel: isInstantBook ? 'Book now' : 'View chef',
     ctaHref:
       isInstantBook && chef.booking_slug ? `/book/${chef.booking_slug}` : `/chef/${chef.slug}`,
+    profileHref: `/chef/${chef.slug}`,
     rating: discovery.avg_rating ?? null,
     reviewCount: discovery.review_count ?? null,
     isAvailable: discovery.accepting_inquiries ?? true,
@@ -347,6 +347,7 @@ function spotlightToCard(row: SpotlightRow): ConsumerResultCard {
     serviceModes: row.service_modes || [],
     ctaLabel: 'View chef',
     ctaHref: `/chef/${row.chef_slug}`,
+    profileHref: `/chef/${row.chef_slug}`,
     rating: null,
     reviewCount: null,
     isAvailable: true,
