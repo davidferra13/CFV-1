@@ -27,18 +27,14 @@ const WEB_BETA_INCLUDE = Object.freeze([
   { path: 'app/auth/forgot-password', kind: BUILD_SURFACE_INCLUDE_KINDS.PAGE_TREE },
   { path: 'app/auth/reset-password', kind: BUILD_SURFACE_INCLUDE_KINDS.PAGE_TREE },
   { path: 'app/auth/role-selection', kind: BUILD_SURFACE_INCLUDE_KINDS.PAGE_TREE },
+  { path: 'app/auth/signin', kind: BUILD_SURFACE_INCLUDE_KINDS.PAGE_TREE },
+  { path: 'app/(chef)/layout.tsx', kind: BUILD_SURFACE_INCLUDE_KINDS.SUPPORT_FILE },
+  { path: 'app/(chef)/dashboard', kind: BUILD_SURFACE_INCLUDE_KINDS.PAGE_TREE },
   { path: 'app/(chef)/onboarding', kind: BUILD_SURFACE_INCLUDE_KINDS.PAGE_TREE },
+  { path: 'app/(client)/layout.tsx', kind: BUILD_SURFACE_INCLUDE_KINDS.SUPPORT_FILE },
+  { path: 'app/(client)/my-events', kind: BUILD_SURFACE_INCLUDE_KINDS.PAGE_TREE },
   { path: 'app/(client)/my-profile', kind: BUILD_SURFACE_INCLUDE_KINDS.PAGE_TREE },
   { path: 'app/unauthorized', kind: BUILD_SURFACE_INCLUDE_KINDS.PAGE_TREE },
-])
-
-const WEB_BETA_REQUIRED_OVERLAY_PATHS = Object.freeze([
-  'build-surfaces/web-beta/app/(chef)/layout.tsx',
-  'build-surfaces/web-beta/app/(chef)/dashboard/page.tsx',
-  'build-surfaces/web-beta/app/(client)/layout.tsx',
-  'build-surfaces/web-beta/app/(client)/my-events/page.tsx',
-  'build-surfaces/web-beta/app/auth/signin/page.tsx',
-  'build-surfaces/web-beta/app/_components/release-portal-shell.tsx',
 ])
 
 const WEB_BETA_EXPECTED_PAGE_ROUTES = Object.freeze([
@@ -63,8 +59,6 @@ export const BUILD_SURFACE_MANIFESTS = {
     description:
       'Hosted beta surface: public marketing, health endpoints, auth recovery, and minimal onboarding/profile routes.',
     include: WEB_BETA_INCLUDE,
-    overlayAppDir: 'build-surfaces/web-beta/app',
-    requiredOverlayPaths: WEB_BETA_REQUIRED_OVERLAY_PATHS,
     expectedPageRoutes: WEB_BETA_EXPECTED_PAGE_ROUTES,
     expectedApiRoutes: WEB_BETA_EXPECTED_API_ROUTES,
     releaseProfile: {
