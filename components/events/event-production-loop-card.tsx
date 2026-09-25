@@ -1,5 +1,5 @@
 import Link from 'next/link'
-import { ArrowRight, CheckCircle, AlertTriangle, Clock } from '@/components/ui/icons'
+import { CheckCircle, AlertTriangle, Clock } from '@/components/ui/icons'
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
 import { Card } from '@/components/ui/card'
@@ -36,7 +36,7 @@ export function EventProductionLoopCard({ snapshot }: { snapshot: EventProductio
   ).length
 
   const stageHref: Record<string, string> = {
-    scale: `/events/${event.id}?tab=money`,
+    scale: `/events/${event.id}`,
     buy: `/culinary/prep/shopping?${eventQuery}`,
     prep: `/events/${event.id}/prep-plan`,
     reconcile: `/events/${event.id}/receipts`,
@@ -167,12 +167,6 @@ export function EventProductionLoopCard({ snapshot }: { snapshot: EventProductio
         </div>
       </div>
 
-      <div className="mt-5 flex justify-end">
-        <Button href={`/events/${event.id}/production`} variant="secondary" size="sm">
-          Open full production workspace
-          <ArrowRight className="h-4 w-4" />
-        </Button>
-      </div>
     </Card>
   )
 }
