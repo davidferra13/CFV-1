@@ -2,6 +2,7 @@
 import { appendFileSync, existsSync, mkdirSync, readFileSync, readdirSync, writeFileSync } from 'node:fs'
 import { dirname, extname, join, relative, resolve } from 'node:path'
 import { execFileSync } from 'node:child_process'
+import { createHash } from 'node:crypto'
 import { fileURLToPath } from 'node:url'
 
 const ROOT = resolve(dirname(fileURLToPath(import.meta.url)), '..')
@@ -10,6 +11,7 @@ const COMPLETED_DIR = join(ROOT, 'Chef Flow Personas', 'Completed')
 const STRESS_DIR = join(ROOT, 'docs', 'stress-tests')
 const GATE_DIR = join(ROOT, 'system', 'persona-gates')
 const LEDGER_FILE = join(GATE_DIR, 'coverage-ledger.jsonl')
+const CODEX_QUEUE_DIR = join(ROOT, 'system', 'codex-queue')
 const TYPES = ['Chef', 'Client', 'Guest', 'Vendor', 'Staff', 'Partner', 'Public']
 
 const CATEGORY_RULES = {
@@ -342,6 +344,61 @@ async function runInteraction(pair, model, context) {
   return runAnalyzer({ slug: compositeSlug, type: `${a.type}+${b.type}`, content }, model, context)
 }
 
+function queueBlockingGaps(payload) {
+  mkdirSync(CODEX_QUEUE_DIR, { recursive: true })
+  const queued = []
+  for (const result of payload.results || []) {
+    for (const gap of result.blocking_gaps || []) {
+      const fingerprint = createHash('sha256')
+        .update(JSON.stringify({ gap, persona: result.slug, categories: payload.categories, files: payload.substantive_files }))
+        .digest('hex')
+        .slice(0, 12)
+      const file = `persona-gate-${fingerprint}.md`
+      const path = join(CODEX_QUEUE_DIR, file)
+      const relativePath = relative(ROOT, path).replace(/\\/g, '/')
+      const existed = existsSync(path)
+      if (!existed) {
+        const changed = (payload.substantive_files || []).map(filePath => `- ${filePath}`).join('\n') || '- none'
+        const categories = (payload.categories || []).join(', ') || 'general-workflow'
+        const spec = `---
+status: "pending"
+priority: "high"
+category: "${categories}"
+source: "persona-gate:${result.slug}"
+confidence: "high"
+generated: "${payload.generated_at}"
+---
+# Close persona gate: ${gap}
+
+## Blocking Gap
+${gap}
+
+## Persona Evidence
+- persona: ${result.slug}
+- role: ${result.type}
+- gate score: ${result.score}
+- categories: ${categories}
+
+## Changed Files
+${changed}
+
+## Required Closure
+Implement the smallest product change that directly closes this blocking gap. Preserve unrelated behavior and existing work.
+
+## Acceptance Criteria
+1. The blocking gap has direct code-level evidence of closure.
+2. Relevant automated tests pass.
+3. \`npm run personas:gate\` passes the affected persona and cross-role interaction.
+4. Production/real-device proof is required for user-facing UI changes.
+`
+        writeFileSync(path, spec, 'utf8')
+      }
+      queued.push({ path: relativePath, status: existed ? 'existing' : 'queued', persona: result.slug, gap })
+    }
+  }
+  return queued
+}
+
 function writeReceipt(payload) {
   mkdirSync(GATE_DIR, { recursive: true })
   const stamp = payload.generated_at.replace(/[:.]/g, '-')
@@ -395,11 +452,13 @@ async function main() {
     results,
     status: failed.length ? 'FAIL' : 'PASS',
   }
+  payload.queued_specs = failed.length ? queueBlockingGaps(payload) : []
   const receipt = writeReceipt(payload)
   if (opts.json) process.stdout.write(JSON.stringify({ ...payload, receipt }, null, 2) + '\n')
   else {
     console.log(`[persona-gate] ${payload.status}: ${results.length} scenario(s), categories=${categories.join(', ') || 'fallback'}`)
     for (const r of results) console.log(`[persona-gate] ${r.ok ? 'PASS' : 'FAIL'} ${r.type} ${r.slug}: score=${r.score ?? '--'} gaps=${r.blocking_gaps?.length || 0}`)
+    if (payload.queued_specs.length) console.log(`[persona-gate] queued build specs: ${payload.queued_specs.length}`)
     console.log(`[persona-gate] receipt: ${receipt}`)
   }
   if (failed.length) process.exitCode = 1
