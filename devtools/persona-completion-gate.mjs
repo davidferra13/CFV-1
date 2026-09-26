@@ -243,14 +243,14 @@ function getPatchContext(files) {
   try {
     let patch = git(['diff', '--unified=1', 'HEAD', '--', ...files])
     if (!patch) patch = git(['diff', '--unified=1', 'HEAD^', 'HEAD', '--', ...files])
-    return patch.slice(0, 7000) || `Changed files: ${files.join(', ')}`
+    return patch.slice(0, 4500) || `Changed files: ${files.join(', ')}`
   } catch {
     return `Changed files: ${files.join(', ')}`
   }
 }
 
 async function runAnalyzer(source, model, context = {}) {
-  const persona = String(source.content || readFileSync(source.path, 'utf8')).slice(0, 9000)
+  const persona = String(source.content || readFileSync(source.path, 'utf8')).slice(0, 4500)
   const prompt = [
     'You are the ChefFlow persona completion gate.',
     'Evaluate ONLY the current product change against this persona. Do not complain about unrelated missing features.',
@@ -264,18 +264,21 @@ async function runAnalyzer(source, model, context = {}) {
     `Target categories: ${(context.categories || []).join(', ') || 'general workflow'}`,
     `Changed files: ${(context.changedFiles || []).join(', ')}`,
     'Patch:',
-    String(context.patch || '').slice(0, 7000),
+    String(context.patch || '').slice(0, 4500),
     'Persona:',
     persona,
   ].join('\n\n')
   let lastError = null
   for (const numPredict of [320, 520]) {
     try {
+      const attemptPrompt = numPredict === 320
+        ? prompt
+        : `${prompt}\n\nRETRY: Keep every gap/risk under 12 words and reason under 20 words. Return complete JSON only.`
       const response = await fetch('http://127.0.0.1:11434/api/generate', {
         method: 'POST',
         headers: { 'content-type': 'application/json' },
         body: JSON.stringify({
-          model, prompt, stream: false, think: false, keep_alive: '10m',
+          model, prompt: attemptPrompt, stream: false, think: false, keep_alive: '10m',
           format: {
             type: 'object',
             properties: {
@@ -332,9 +335,9 @@ async function runInteraction(pair, model, context) {
     `Cross-role ChefFlow handoff stress scenario between a ${a.type} and a ${b.type}.`,
     'Focus on shared state, permissions, communication, handoffs, stale data, safety, and responsibility boundaries.',
     `## ${a.type}: ${a.slug}`,
-    readFileSync(a.path, 'utf8').slice(0, 4000),
+    readFileSync(a.path, 'utf8').slice(0, 2200),
     `## ${b.type}: ${b.slug}`,
-    readFileSync(b.path, 'utf8').slice(0, 4000),
+    readFileSync(b.path, 'utf8').slice(0, 2200),
   ].join('\n\n')
   return runAnalyzer({ slug: compositeSlug, type: `${a.type}+${b.type}`, content }, model, context)
 }
