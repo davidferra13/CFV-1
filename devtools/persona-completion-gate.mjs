@@ -268,42 +268,49 @@ async function runAnalyzer(source, model, context = {}) {
     'Persona:',
     persona,
   ].join('\n\n')
-  try {
-    const response = await fetch('http://127.0.0.1:11434/api/generate', {
-      method: 'POST',
-      headers: { 'content-type': 'application/json' },
-      body: JSON.stringify({
-        model, prompt, stream: false, think: false, keep_alive: '10m',
-        format: {
-          type: 'object',
-          properties: {
-            pass: { type: 'boolean' },
-            score: { type: 'integer' },
-            blocking_gaps: { type: 'array', items: { type: 'string' } },
-            risks: { type: 'array', items: { type: 'string' } },
-            reason: { type: 'string' },
+  let lastError = null
+  for (const numPredict of [320, 520]) {
+    try {
+      const response = await fetch('http://127.0.0.1:11434/api/generate', {
+        method: 'POST',
+        headers: { 'content-type': 'application/json' },
+        body: JSON.stringify({
+          model, prompt, stream: false, think: false, keep_alive: '10m',
+          format: {
+            type: 'object',
+            properties: {
+              pass: { type: 'boolean' },
+              score: { type: 'integer' },
+              blocking_gaps: { type: 'array', maxItems: 3, items: { type: 'string', maxLength: 220 } },
+              risks: { type: 'array', maxItems: 3, items: { type: 'string', maxLength: 220 } },
+              reason: { type: 'string', maxLength: 280 },
+            },
+            required: ['pass', 'score', 'blocking_gaps', 'risks', 'reason'],
           },
-          required: ['pass', 'score', 'blocking_gaps', 'risks', 'reason'],
-        },
-        options: { temperature: 0, num_predict: 320 },
-      }),
-      signal: AbortSignal.timeout(90000),
-    })
-    if (!response.ok) throw new Error(`Ollama HTTP ${response.status}`)
-    const body = await response.json()
-    const verdict = JSON.parse(body.response || '{}')
-    const gaps = Array.isArray(verdict.blocking_gaps) ? verdict.blocking_gaps : []
-    const score = Number(verdict.score) || 0
-    return {
-      slug: source.slug, type: source.type,
-      ok: verdict.pass === true && gaps.length === 0 && score >= (context.minScore || 60),
-      score,
-      blocking_gaps: gaps,
-      risks: Array.isArray(verdict.risks) ? verdict.risks : [],
-      reason: String(verdict.reason || '').slice(0, 1000),
+          options: { temperature: 0, num_predict: numPredict },
+        }),
+        signal: AbortSignal.timeout(90000),
+      })
+      if (!response.ok) throw new Error(`Ollama HTTP ${response.status}`)
+      const body = await response.json()
+      const verdict = JSON.parse(body.response || '{}')
+      const gaps = Array.isArray(verdict.blocking_gaps) ? verdict.blocking_gaps : []
+      const score = Number(verdict.score) || 0
+      return {
+        slug: source.slug, type: source.type,
+        ok: verdict.pass === true && gaps.length === 0 && score >= (context.minScore || 60),
+        score,
+        blocking_gaps: gaps,
+        risks: Array.isArray(verdict.risks) ? verdict.risks : [],
+        reason: String(verdict.reason || '').slice(0, 1000),
+      }
+    } catch (error) {
+      lastError = error
     }
-  } catch (error) {
-    return { slug: source.slug, type: source.type, ok: false, score: 0, blocking_gaps: [], risks: [], error: error.message }
+  }
+  return {
+    slug: source.slug, type: source.type, ok: false, score: 0,
+    blocking_gaps: [], risks: [], error: lastError?.message || 'persona evaluator failed',
   }
 }
 
