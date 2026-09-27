@@ -13,6 +13,28 @@ test('new chef starts with one obvious first action and no fake history', () => 
   assert.equal(journey.steps.filter((step) => step.status === 'current').length, 1)
 })
 
+test('direct-created onboarding event does not send the chef back to inquiry intake', () => {
+  const journey = buildChefOperatorJob({
+    title: 'First dinner',
+    clientName: 'First Client',
+    event: {
+      id: 'event-1',
+      status: 'draft',
+      clientId: 'client-1',
+      menuId: 'menu-1',
+      timelineReady: false,
+      groceryListReady: false,
+      prepListReady: false,
+      packingListReady: false,
+      financialAvailable: true,
+    },
+  })
+
+  assert.equal(journey.connectionKey, 'event:event-1')
+  assert.equal(journey.currentStep.key, 'event_plan')
+  assert.equal(journey.currentStep.href, '/events/event-1/schedule')
+})
+
 test('DF Private Chef inquiry keeps one client record and pre-fills the proposal from it', () => {
   const journey = buildChefOperatorJob({
     title: '70th birthday dinner',
