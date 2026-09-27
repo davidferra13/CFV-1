@@ -3,6 +3,7 @@
 import { requireChef } from '@/lib/auth/get-user'
 import { createServerClient } from '@/lib/db/server'
 import { getEventFinancialSummaryInternal } from '@/lib/ledger/compute'
+import { dateToDateString } from '@/lib/utils/format'
 import {
   buildChefOperatorJob,
   type ChefOperatorJobInput,
@@ -256,7 +257,7 @@ export async function getChefOperatorTodayJob(): Promise<ChefOperatorJobJourney>
   const user = await requireChef()
   const chef = { tenantId: user.tenantId! }
   const db: any = createServerClient()
-  const today = new Date().toISOString().slice(0, 10)
+  const today = dateToDateString(new Date())
 
   const { data: inProgressEvent, error: inProgressError } = await db
     .from('events')
@@ -291,7 +292,7 @@ export async function getChefOperatorTodayJob(): Promise<ChefOperatorJobJourney>
 
   const lookback = new Date()
   lookback.setDate(lookback.getDate() - 14)
-  const completedSince = lookback.toISOString().slice(0, 10)
+  const completedSince = dateToDateString(lookback)
   const { data: recentCompleted, error: completedError } = await db
     .from('events')
     .select('id')
