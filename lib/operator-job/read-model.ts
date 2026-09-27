@@ -251,21 +251,58 @@ export async function getChefOperatorTodayJob(): Promise<ChefOperatorJobJourney>
   const db: any = createServerClient()
   const today = new Date().toISOString().slice(0, 10)
 
-  const { data: event, error: eventError } = await db
+  const { data: inProgressEvent, error: inProgressError } = await db
     .from('events')
     .select('id')
     .eq('tenant_id', chef.tenantId)
-    .gte('event_date', today)
-    .not('status', 'in', '("cancelled","completed")')
+    .eq('status', 'in_progress')
     .order('event_date', { ascending: true })
     .order('serve_time', { ascending: true, nullsFirst: false })
     .limit(1)
     .maybeSingle()
 
-  if (eventError) {
-    throw new Error(`Failed to load operator-job Today event: ${eventError.message}`)
+  if (inProgressError) {
+    throw new Error(`Failed to load operator-job live event: ${inProgressError.message}`)
   }
-  if (event?.id) return loadByEvent(chef, event.id)
+  if (inProgressEvent?.id) return loadByEvent(chef, inProgressEvent.id)
+
+  const { data: upcomingEvent, error: upcomingError } = await db
+    .from('events')
+    .select('id')
+    .eq('tenant_id', chef.tenantId)
+    .gte('event_date', today)
+    .not('status', 'in', '("cancelled","completed","in_progress")')
+    .order('event_date', { ascending: true })
+    .order('serve_time', { ascending: true, nullsFirst: false })
+    .limit(1)
+    .maybeSingle()
+
+  if (upcomingError) {
+    throw new Error(`Failed to load operator-job upcoming event: ${upcomingError.message}`)
+  }
+  if (upcomingEvent?.id) return loadByEvent(chef, upcomingEvent.id)
+
+  const lookback = new Date()
+  lookback.setDate(lookback.getDate() - 14)
+  const completedSince = lookback.toISOString().slice(0, 10)
+  const { data: recentCompleted, error: completedError } = await db
+    .from('events')
+    .select('id')
+    .eq('tenant_id', chef.tenantId)
+    .eq('status', 'completed')
+    .gte('event_date', completedSince)
+    .order('event_date', { ascending: false })
+    .order('serve_time', { ascending: false, nullsFirst: false })
+    .limit(8)
+
+  if (completedError) {
+    throw new Error(`Failed to load operator-job recent closeout events: ${completedError.message}`)
+  }
+
+  for (const completed of recentCompleted || []) {
+    const journey = await loadByEvent(chef, completed.id)
+    if (!journey.complete) return journey
+  }
 
   const { data: inquiry, error: inquiryError } = await db
     .from('inquiries')
