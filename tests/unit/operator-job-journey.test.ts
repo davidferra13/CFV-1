@@ -86,6 +86,62 @@ test('accepted quote and selected menu advance to booking without re-entry', () 
   assert.equal(journey.record.menuId, null)
 })
 
+test('required unpaid deposit keeps the connected job at booking', () => {
+  const journey = buildChefOperatorJob({
+    inquiry: {
+      id: 'inquiry-1',
+      status: 'confirmed',
+      clientId: 'client-1',
+      convertedEventId: 'event-1',
+    },
+    quote: { id: 'quote-1', status: 'accepted' },
+    selectedMenuId: 'menu-source-1',
+    menu: { id: 'menu-event-1', forkedFromId: 'menu-source-1' },
+    event: {
+      id: 'event-1',
+      status: 'accepted',
+      clientId: 'client-1',
+      menuId: 'menu-event-1',
+      depositAmountCents: 30000,
+      totalPaidCents: 10000,
+      financialAvailable: true,
+      timelineReady: false,
+    },
+  })
+
+  assert.equal(journey.currentStep.key, 'booking')
+  assert.equal(journey.currentStep.actionLabel, 'Record deposit')
+  assert.equal(journey.currentStep.href, '/events/event-1/billing')
+})
+
+test('unknown required deposit status blocks before planning', () => {
+  const journey = buildChefOperatorJob({
+    inquiry: {
+      id: 'inquiry-1',
+      status: 'confirmed',
+      clientId: 'client-1',
+      convertedEventId: 'event-1',
+    },
+    quote: { id: 'quote-1', status: 'accepted' },
+    selectedMenuId: 'menu-source-1',
+    menu: { id: 'menu-event-1', forkedFromId: 'menu-source-1' },
+    event: {
+      id: 'event-1',
+      status: 'accepted',
+      clientId: 'client-1',
+      menuId: 'menu-event-1',
+      depositAmountCents: 30000,
+      totalPaidCents: null,
+      financialAvailable: false,
+      timelineReady: false,
+    },
+  })
+
+  assert.equal(journey.currentStep.key, 'booking')
+  assert.equal(journey.currentStep.status, 'blocked')
+  assert.match(journey.currentStep.summary, /could not be verified/i)
+})
+
 test('booked event preserves selected menu lineage into event planning and production', () => {
   const base = {
     inquiry: {
