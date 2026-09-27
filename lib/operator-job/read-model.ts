@@ -81,6 +81,20 @@ async function loadEvent(db: any, tenantId: string, eventId: string): Promise<Ev
   return data as EventRow
 }
 
+async function loadMenuLineage(db: any, tenantId: string, menuId: string | null) {
+  if (!menuId) return null
+
+  const { data, error } = await db
+    .from('menus')
+    .select('id, forked_from_id')
+    .eq('id', menuId)
+    .eq('tenant_id', tenantId)
+    .maybeSingle()
+
+  if (error) throw new Error(`Failed to load operator-job menu lineage: ${error.message}`)
+  return data ?? null
+}
+
 async function loadFinancialState(eventId: string, tenantId: string) {
   try {
     const financial = await getEventFinancialSummaryInternal(eventId, tenantId)
@@ -149,7 +163,7 @@ async function loadByInquiry(
   const event = inquiry.converted_to_event_id
     ? await loadEvent(db, chef.tenantId, inquiry.converted_to_event_id)
     : null
-  const [clientName, quote, financial] = await Promise.all([
+  const [clientName, quote, financial, eventMenu] = await Promise.all([
     loadClientName(db, chef.tenantId, inquiry.client_id),
     loadLatestQuote(db, chef.tenantId, { inquiryId: inquiry.id }),
     event
@@ -159,6 +173,7 @@ async function loadByInquiry(
           paymentStatus: null,
           outstandingBalanceCents: null,
         }),
+    event ? loadMenuLineage(db, chef.tenantId, event.menu_id) : Promise.resolve(null),
   ])
 
   return buildChefOperatorJob({
@@ -172,8 +187,13 @@ async function loadByInquiry(
     },
     client: inquiry.client_id ? { id: inquiry.client_id } : null,
     quote: quote ? { id: quote.id, status: quote.status } : null,
-    menuSourceId: inquiry.selected_menu_id ?? null,
-    menu: event?.menu_id ? { id: event.menu_id } : null,
+    selectedMenuId: inquiry.selected_menu_id ?? null,
+    menu: event?.menu_id
+      ? {
+          id: event.menu_id,
+          forkedFromId: eventMenu?.forked_from_id ?? null,
+        }
+      : null,
     event: event ? eventInput(event, financial) : null,
   })
 }
@@ -189,10 +209,11 @@ async function loadByEvent(
     return loadByInquiry(chef, event.inquiry_id)
   }
 
-  const [clientName, quote, financial] = await Promise.all([
+  const [clientName, quote, financial, eventMenu] = await Promise.all([
     loadClientName(db, chef.tenantId, event.client_id),
     loadLatestQuote(db, chef.tenantId, { eventId: event.id }),
     loadFinancialState(event.id, chef.tenantId),
+    loadMenuLineage(db, chef.tenantId, event.menu_id),
   ])
 
   return buildChefOperatorJob({
@@ -200,7 +221,12 @@ async function loadByEvent(
     clientName,
     client: event.client_id ? { id: event.client_id } : null,
     quote: quote ? { id: quote.id, status: quote.status } : null,
-    menu: event.menu_id ? { id: event.menu_id } : null,
+    menu: event.menu_id
+      ? {
+          id: event.menu_id,
+          forkedFromId: eventMenu?.forked_from_id ?? null,
+        }
+      : null,
     event: eventInput(event, financial),
   })
 }
