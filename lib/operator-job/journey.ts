@@ -77,7 +77,6 @@ export type ChefOperatorJobJourney = {
   complete: boolean
 }
 
-const QUOTE_READY_STATUSES = new Set(['sent', 'viewed', 'accepted'])
 const QUOTE_ACCEPTED_STATUSES = new Set(['accepted'])
 const PAYMENT_COMPLETE_STATUSES = new Set(['paid', 'settled'])
 const SERVICE_COMPLETE_STATUSES = new Set(['completed'])
@@ -172,9 +171,8 @@ export function buildChefOperatorJob(input: ChefOperatorJobInput): ChefOperatorJ
   }
 
   const event = input.event ?? null
-  const quoteReady = Boolean(input.quote && QUOTE_READY_STATUSES.has(input.quote.status))
   const quoteAccepted = Boolean(input.quote && QUOTE_ACCEPTED_STATUSES.has(input.quote.status))
-  const quoteMenuComplete = Boolean(eventId || (quoteReady && menuId))
+  const quoteMenuComplete = Boolean(quoteAccepted && menuId)
   const bookingComplete = Boolean(eventId)
   const eventPlanComplete = Boolean(event && event.timelineReady)
   const productionComplete = Boolean(
