@@ -31,6 +31,21 @@ test('DF Private Chef inquiry keeps one client record and pre-fills the proposal
   assert.match(journey.currentStep.href, /inquiry_id=11111111-1111-4111-8111-111111111111/)
 })
 
+test('sent quote stays on the proposal step until the booking is actually accepted', () => {
+  const journey = buildChefOperatorJob({
+    inquiry: {
+      id: '11111111-1111-4111-8111-111111111111',
+      status: 'qualified',
+      clientId: '22222222-2222-4222-8222-222222222222',
+    },
+    quote: { id: 'quote-1', status: 'sent' },
+    menu: { id: 'menu-1' },
+  })
+
+  assert.equal(journey.currentStep.key, 'quote_menu')
+  assert.equal(journey.complete, false)
+})
+
 test('accepted quote and menu advance to booking without reconstructing the job', () => {
   const journey = buildChefOperatorJob({
     inquiry: {
