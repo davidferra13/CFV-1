@@ -60,7 +60,7 @@ test('sent quote stays on the proposal step until the booking is actually accept
       status: 'qualified',
       clientId: '22222222-2222-4222-8222-222222222222',
     },
-    quote: { id: 'quote-1', status: 'sent', sourceMenuId: 'template-1' },
+    quote: { id: 'quote-1', status: 'sent',  },
   })
 
   assert.equal(journey.currentStep.key, 'quote_menu')
@@ -74,7 +74,7 @@ test('accepted quote and menu advance to booking without reconstructing the job'
       status: 'confirmed',
       clientId: '22222222-2222-4222-8222-222222222222',
     },
-    quote: { id: 'quote-1', status: 'accepted', sourceMenuId: 'template-1' },
+    quote: { id: 'quote-1', status: 'accepted',  },
   })
 
   assert.equal(journey.currentStep.key, 'booking')
@@ -91,12 +91,12 @@ test('accepted proposal carries its selected menu source into booking before an 
     quote: {
       id: 'quote-1',
       status: 'accepted',
-      sourceMenuId: 'template-1',
+      ,
     },
   })
 
   assert.equal(journey.currentStep.key, 'booking')
-  assert.equal(journey.record.menuSourceId, 'template-1')
+  assert.equal(journey.record.selectedMenuId, 'menu-source-1')
   assert.equal(journey.record.menuId, null)
 })
 
@@ -165,6 +165,35 @@ test('booked event with no operational menu stays blocked at quote and menu cont
 
   assert.equal(journey.currentStep.key, 'quote_menu')
   assert.equal(journey.record.menuId, null)
+})
+
+test('booked event blocks when its operational menu loses selected-menu lineage', () => {
+  const journey = buildChefOperatorJob({
+    inquiry: {
+      id: 'inquiry-1',
+      status: 'confirmed',
+      clientId: 'client-1',
+      convertedEventId: 'event-1',
+    },
+    quote: { id: 'quote-1', status: 'accepted' },
+    selectedMenuId: 'menu-source-1',
+    menu: { id: 'menu-event-1', forkedFromId: 'different-menu' },
+    event: {
+      id: 'event-1',
+      status: 'draft',
+      clientId: 'client-1',
+      menuId: 'menu-event-1',
+      timelineReady: false,
+      groceryListReady: false,
+      prepListReady: false,
+      packingListReady: false,
+      financialAvailable: true,
+    },
+  })
+
+  assert.equal(journey.currentStep.key, 'quote_menu')
+  assert.equal(journey.currentStep.status, 'blocked')
+  assert.equal(journey.currentStep.actionLabel, 'Reconcile event menu')
 })
 
 test('production readiness advances into service on the same event', () => {
