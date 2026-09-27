@@ -141,6 +141,32 @@ test('converted booking carries the same event through plan and production', () 
   assert.equal(shopping.currentStep.href, '/events/event-1/grocery-run')
 })
 
+test('booked event with no operational menu stays blocked at quote and menu continuity', () => {
+  const journey = buildChefOperatorJob({
+    inquiry: {
+      id: 'inquiry-1',
+      status: 'confirmed',
+      clientId: 'client-1',
+      convertedEventId: 'event-1',
+    },
+    quote: { id: 'quote-1', status: 'accepted' },
+    event: {
+      id: 'event-1',
+      status: 'draft',
+      clientId: 'client-1',
+      menuId: null,
+      timelineReady: false,
+      groceryListReady: false,
+      prepListReady: false,
+      packingListReady: false,
+      financialAvailable: true,
+    },
+  })
+
+  assert.equal(journey.currentStep.key, 'quote_menu')
+  assert.equal(journey.record.menuId, null)
+})
+
 test('production readiness advances into service on the same event', () => {
   const journey = buildChefOperatorJob({
     inquiry: { id: 'inquiry-1', status: 'confirmed', clientId: 'client-1' },
