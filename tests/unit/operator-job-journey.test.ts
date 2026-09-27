@@ -38,8 +38,7 @@ test('sent quote stays on the proposal step until the booking is actually accept
       status: 'qualified',
       clientId: '22222222-2222-4222-8222-222222222222',
     },
-    quote: { id: 'quote-1', status: 'sent' },
-    menu: { id: 'menu-1' },
+    quote: { id: 'quote-1', status: 'sent', sourceMenuId: 'template-1' },
   })
 
   assert.equal(journey.currentStep.key, 'quote_menu')
@@ -53,12 +52,30 @@ test('accepted quote and menu advance to booking without reconstructing the job'
       status: 'confirmed',
       clientId: '22222222-2222-4222-8222-222222222222',
     },
-    quote: { id: 'quote-1', status: 'accepted' },
-    menu: { id: 'menu-1' },
+    quote: { id: 'quote-1', status: 'accepted', sourceMenuId: 'template-1' },
   })
 
   assert.equal(journey.currentStep.key, 'booking')
   assert.equal(journey.currentStep.href, '/inquiries/11111111-1111-4111-8111-111111111111')
+})
+
+test('accepted proposal carries its selected menu source into booking before an event menu exists', () => {
+  const journey = buildChefOperatorJob({
+    inquiry: {
+      id: 'inquiry-1',
+      status: 'confirmed',
+      clientId: 'client-1',
+    },
+    quote: {
+      id: 'quote-1',
+      status: 'accepted',
+      sourceMenuId: 'template-1',
+    },
+  })
+
+  assert.equal(journey.currentStep.key, 'booking')
+  assert.equal(journey.record.menuSourceId, 'template-1')
+  assert.equal(journey.record.menuId, null)
 })
 
 test('converted booking carries the same event through plan and production', () => {
