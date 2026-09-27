@@ -20,6 +20,7 @@ type EventRow = {
   occasion: string | null
   status: string
   menu_id: string | null
+  deposit_amount_cents: number | null
   timeline_ready: boolean | null
   grocery_list_ready: boolean | null
   prep_list_ready: boolean | null
@@ -68,7 +69,7 @@ async function loadEvent(db: any, tenantId: string, eventId: string): Promise<Ev
   const { data, error } = await db
     .from('events')
     .select(
-      'id, inquiry_id, client_id, occasion, status, menu_id, timeline_ready, grocery_list_ready, prep_list_ready, packing_list_ready, service_started_at, service_completed_at, financially_closed, follow_up_sent'
+      'id, inquiry_id, client_id, occasion, status, menu_id, deposit_amount_cents, timeline_ready, grocery_list_ready, prep_list_ready, packing_list_ready, service_started_at, service_completed_at, financially_closed, follow_up_sent'
     )
     .eq('id', eventId)
     .eq('tenant_id', tenantId)
@@ -103,6 +104,7 @@ async function loadFinancialState(eventId: string, tenantId: string) {
       return {
         financialAvailable: false,
         paymentStatus: null,
+        totalPaidCents: null,
         outstandingBalanceCents: null,
       }
     }
@@ -110,12 +112,14 @@ async function loadFinancialState(eventId: string, tenantId: string) {
     return {
       financialAvailable: true,
       paymentStatus: financial.paymentStatus ?? null,
+      totalPaidCents: financial.totalPaidCents,
       outstandingBalanceCents: financial.outstandingBalanceCents,
     }
   } catch {
     return {
       financialAvailable: false,
       paymentStatus: null,
+      totalPaidCents: null,
       outstandingBalanceCents: null,
     }
   }
@@ -137,6 +141,8 @@ function eventInput(event: EventRow, financial: Awaited<ReturnType<typeof loadFi
     followUpSent: event.follow_up_sent,
     financialAvailable: financial.financialAvailable,
     paymentStatus: financial.paymentStatus,
+    totalPaidCents: financial.totalPaidCents,
+    depositAmountCents: event.deposit_amount_cents,
     outstandingBalanceCents: financial.outstandingBalanceCents,
   } satisfies NonNullable<ChefOperatorJobInput['event']>
 }
@@ -171,6 +177,7 @@ async function loadByInquiry(
       : Promise.resolve({
           financialAvailable: false,
           paymentStatus: null,
+          totalPaidCents: null,
           outstandingBalanceCents: null,
         }),
     event ? loadMenuLineage(db, chef.tenantId, event.menu_id) : Promise.resolve(null),
