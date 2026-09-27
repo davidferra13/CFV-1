@@ -179,7 +179,9 @@ export function buildChefOperatorJob(input: ChefOperatorJobInput): ChefOperatorJ
   const event = input.event ?? null
   const quoteAccepted = Boolean(input.quote && QUOTE_ACCEPTED_STATUSES.has(input.quote.status))
   const proposalMenuSelected = Boolean(menuSourceId || menuId)
-  const quoteMenuComplete = Boolean(eventId || (quoteAccepted && proposalMenuSelected))
+  const quoteMenuComplete = eventId
+    ? Boolean(menuId)
+    : Boolean(quoteAccepted && proposalMenuSelected)
   const bookingComplete = Boolean(eventId)
   const eventPlanComplete = Boolean(event && event.timelineReady)
   const productionComplete = Boolean(
