@@ -44,6 +44,8 @@ function StepRow({ step }: { step: OperatorJobStep }) {
 }
 
 export function OperatorJobPath({ journey }: { journey: ChefOperatorJobJourney }) {
+  const completeCount = journey.steps.filter((step) => step.status === 'complete').length
+
   return (
     <Card
       className="p-4 sm:p-5"
@@ -78,7 +80,18 @@ export function OperatorJobPath({ journey }: { journey: ChefOperatorJobJourney }
         </div>
       </div>
 
-      <div className="mt-5 grid gap-2 sm:grid-cols-2 xl:grid-cols-3">
+      <details className="mt-4 md:hidden">
+        <summary className="cursor-pointer text-sm font-medium text-stone-300">
+          Full job path · {completeCount}/{journey.steps.length} complete
+        </summary>
+        <div className="mt-3 grid gap-2">
+          {journey.steps.map((step) => (
+            <StepRow key={step.key} step={step} />
+          ))}
+        </div>
+      </details>
+
+      <div className="mt-5 hidden gap-2 md:grid md:grid-cols-2 xl:grid-cols-3">
         {journey.steps.map((step) => (
           <StepRow key={step.key} step={step} />
         ))}
