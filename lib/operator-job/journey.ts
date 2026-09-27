@@ -64,6 +64,8 @@ export type ChefOperatorJobInput = {
     serviceStartedAt?: string | null
     serviceCompletedAt?: string | null
     paymentStatus?: string | null
+    totalPaidCents?: number | null
+    depositAmountCents?: number | null
     outstandingBalanceCents?: number | null
     financialAvailable?: boolean
     financiallyClosed?: boolean | null
@@ -189,7 +191,15 @@ export function buildChefOperatorJob(input: ChefOperatorJobInput): ChefOperatorJ
   const quoteMenuComplete = eventId
     ? Boolean(menuId && !menuContinuityBroken)
     : Boolean(quoteAccepted && proposalMenuSelected)
-  const bookingComplete = Boolean(eventId)
+  const depositRequired = Boolean(event && (event.depositAmountCents ?? 0) > 0)
+  const depositKnown = !depositRequired || event?.financialAvailable !== false
+  const depositComplete = Boolean(
+    event &&
+      (!depositRequired ||
+        (typeof event.totalPaidCents === 'number' &&
+          event.totalPaidCents >= (event.depositAmountCents ?? 0)))
+  )
+  const bookingComplete = Boolean(eventId && depositComplete)
   const eventPlanComplete = Boolean(event && event.timelineReady)
   const productionComplete = Boolean(
     event && event.groceryListReady && event.prepListReady && event.packingListReady
@@ -264,11 +274,22 @@ export function buildChefOperatorJob(input: ChefOperatorJobInput): ChefOperatorJ
       key: 'booking',
       label: 'Booking',
       complete: bookingComplete,
+      blocked: Boolean(eventId && depositRequired && !depositKnown),
       summary: bookingComplete
-        ? 'The inquiry is connected to an event record.'
-        : 'Convert the approved inquiry without re-entering the client or event facts.',
-      href: bookingHref,
-      actionLabel: bookingComplete ? 'Open booking' : 'Create booking',
+        ? depositRequired
+          ? 'The booking is connected to the event and the required deposit is recorded.'
+          : 'The booking is connected to the event; no deposit is blocking planning.'
+        : eventId && depositRequired && !depositKnown
+          ? 'The event exists, but deposit status could not be verified. Do not assume the booking is financially clear.'
+          : eventId && depositRequired
+            ? 'The event exists, but the required deposit is still outstanding.'
+            : 'Convert the approved inquiry without re-entering the client or event facts.',
+      href: eventId && depositRequired ? `/events/${eventId}/billing` : bookingHref,
+      actionLabel: bookingComplete
+        ? 'Open booking'
+        : eventId && depositRequired
+          ? 'Record deposit'
+          : 'Create booking',
     },
     {
       key: 'event_plan',
