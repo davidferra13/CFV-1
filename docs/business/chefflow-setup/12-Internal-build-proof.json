@@ -1,0 +1,32 @@
+{
+  "verifiedAt": "2026-09-27T17:08:53.561Z",
+  "computer": "DESKTOP-DKCONSS",
+  "repository": "C:/Users/david/Documents/CFv1-worktrees/setup-service-launch-20260927",
+  "unitTests": {
+    "passed": 20,
+    "failed": 0
+  },
+  "realResearchRecords": 20,
+  "needsQualification": 2,
+  "needsResearch": 4,
+  "excluded": 14,
+  "qualifiedClients": 0,
+  "refusedCommands": ["send", "email", "call", "submit", "apply", "publish", "import", "activate"],
+  "refusedCommandsCreatedOutput": false,
+  "independentProcessRebuildMatched": true,
+  "snapshotPath": "C:\\Users\\david\\Documents\\CFv1-worktrees\\setup-service-launch-20260927\\docs\\business\\chefflow-setup\\generated\\a9f920ca14785f201881e61046e72f43a95a98347bfc32b9f8bb6732e7d5f46c",
+  "contentHash": "a9f920ca14785f201881e61046e72f43a95a98347bfc32b9f8bb6732e7d5f46c",
+  "generatedFileHashesMatched": 3,
+  "outreachAttempted": false,
+  "providerApplicationsSubmitted": false,
+  "mailboxCreated": false,
+  "newNetworkServices": 0,
+  "webApplicationCodeChanged": false,
+  "sourceHashes": {
+    "scripts/setup-service/core.mjs": "c7169f428bc68b3894a6114f15bbfab9a3b46c879ff864ba566357769a4ad93c",
+    "scripts/setup-service/cli.mjs": "689e1f7767773f749cd11a1fa72173da7b9f06c9ac57083303e90adf764c0827",
+    "scripts/setup-service/core.test.mjs": "321770c4034d579a077d041e2f1a00bd75a5f05a870bc6368daa2d308567ffb2",
+    "docs/business/chefflow-setup/10-Campaign-settings.json": "c8ac682f8feffd8564c1ad2021d542c09ef8a8d58618e86110b7cef6e1bd1f3e",
+    "docs/business/chefflow-setup/11-Qualification-inputs.json": "3ec5f83a374833d11caa77bba6b71d7231697616a3625b5c06166649628a46b3"
+  }
+}

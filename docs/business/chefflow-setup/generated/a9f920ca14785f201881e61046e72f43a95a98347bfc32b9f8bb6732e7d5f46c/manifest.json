@@ -1,0 +1,20 @@
+{
+  "contentHash": "a9f920ca14785f201881e61046e72f43a95a98347bfc32b9f8bb6732e7d5f46c",
+  "files": [
+    {
+      "file": "quote-packets.md",
+      "bytes": 3153,
+      "sha256": "d4dc36d1597d2bc0e6d5da14f7de94f2070128fea5a4718d3e7bbedf008e815f"
+    },
+    {
+      "file": "readiness.json",
+      "bytes": 10272,
+      "sha256": "e97a3128f4542f2b35280b0360f9af2cb0967bf0b16b8d2349f88d173f960c7c"
+    },
+    {
+      "file": "report.md",
+      "bytes": 3963,
+      "sha256": "86a951fd3a33de4ffdfe9ce09f199554b108db9417d81ff0beeff8a64aa05b11"
+    }
+  ]
+}

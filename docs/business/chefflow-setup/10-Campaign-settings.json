@@ -1,0 +1,40 @@
+{
+  "schemaVersion": 1,
+  "campaignId": "chefflow-setup-pilot-20260927",
+  "brand": "ChefFlow Setup",
+  "mode": "internal-only",
+  "outreachAllowed": false,
+  "applicationsAllowed": false,
+  "identity": {
+    "legalSeller": "DF Private Chef LLC",
+    "legalSellerStatus": "internal-working-default",
+    "senderAddress": null,
+    "plannedSender": "setup@cheflowhq.com",
+    "mailboxStatus": "not-provisioned",
+    "postalAddress": null
+  },
+  "offer": {
+    "currency": "USD",
+    "setupFeeCents": 50000,
+    "depositCents": 25000,
+    "maxLocations": 1,
+    "maxMenuItems": 30,
+    "fulfillment": "pickup",
+    "supportDays": 14,
+    "pilotCapacity": 3
+  },
+  "planning": {
+    "totalHours": 8,
+    "internalHourlyCostCents": 5000,
+    "directCostCents": 0,
+    "minimumContributionPercent": 20,
+    "referralRevenueCents": 0
+  },
+  "assumptions": [
+    "Pricing is a pilot hypothesis, not evidence of market demand.",
+    "Eight total hours includes qualification, setup, QA, handover and the expected setup-fix allowance; actual time must be recorded.",
+    "Provider fees and hardware are paid directly by the merchant after approval.",
+    "Legal seller is an internal default only; no entity, DBA, contract or mailbox has been registered.",
+    "No prospect contact, application, public publication, account creation or automated CRM enrollment is authorized."
+  ]
+}
