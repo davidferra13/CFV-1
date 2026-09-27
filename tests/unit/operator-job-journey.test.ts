@@ -28,6 +28,7 @@ test('direct-created onboarding event does not send the chef back to inquiry int
       packingListReady: false,
       financialAvailable: true,
     },
+    menu: { id: 'menu-1' },
   })
 
   assert.equal(journey.connectionKey, 'event:event-1')
@@ -53,54 +54,39 @@ test('DF Private Chef inquiry keeps one client record and pre-fills the proposal
   assert.match(journey.currentStep.href, /inquiry_id=11111111-1111-4111-8111-111111111111/)
 })
 
-test('sent quote stays on the proposal step until the booking is actually accepted', () => {
+test('sent quote and selected menu stay on proposal until acceptance', () => {
   const journey = buildChefOperatorJob({
     inquiry: {
-      id: '11111111-1111-4111-8111-111111111111',
-      status: 'qualified',
-      clientId: '22222222-2222-4222-8222-222222222222',
+      id: 'inquiry-1',
+      status: 'quoted',
+      clientId: 'client-1',
     },
-    quote: { id: 'quote-1', status: 'sent',  },
+    quote: { id: 'quote-1', status: 'sent' },
+    selectedMenuId: 'menu-source-1',
   })
 
   assert.equal(journey.currentStep.key, 'quote_menu')
   assert.equal(journey.complete, false)
 })
 
-test('accepted quote and menu advance to booking without reconstructing the job', () => {
-  const journey = buildChefOperatorJob({
-    inquiry: {
-      id: '11111111-1111-4111-8111-111111111111',
-      status: 'confirmed',
-      clientId: '22222222-2222-4222-8222-222222222222',
-    },
-    quote: { id: 'quote-1', status: 'accepted',  },
-  })
-
-  assert.equal(journey.currentStep.key, 'booking')
-  assert.equal(journey.currentStep.href, '/inquiries/11111111-1111-4111-8111-111111111111')
-})
-
-test('accepted proposal carries its selected menu source into booking before an event menu exists', () => {
+test('accepted quote and selected menu advance to booking without re-entry', () => {
   const journey = buildChefOperatorJob({
     inquiry: {
       id: 'inquiry-1',
       status: 'confirmed',
       clientId: 'client-1',
     },
-    quote: {
-      id: 'quote-1',
-      status: 'accepted',
-      ,
-    },
+    quote: { id: 'quote-1', status: 'accepted' },
+    selectedMenuId: 'menu-source-1',
   })
 
   assert.equal(journey.currentStep.key, 'booking')
+  assert.equal(journey.currentStep.href, '/inquiries/inquiry-1')
   assert.equal(journey.record.selectedMenuId, 'menu-source-1')
   assert.equal(journey.record.menuId, null)
 })
 
-test('converted booking carries the same event through plan and production', () => {
+test('booked event preserves selected menu lineage into event planning and production', () => {
   const base = {
     inquiry: {
       id: 'inquiry-1',
@@ -109,7 +95,8 @@ test('converted booking carries the same event through plan and production', () 
       convertedEventId: 'event-1',
     },
     quote: { id: 'quote-1', status: 'accepted' },
-    menu: { id: 'menu-1' },
+    selectedMenuId: 'menu-source-1',
+    menu: { id: 'menu-event-1', forkedFromId: 'menu-source-1' },
   } as const
 
   const plan = buildChefOperatorJob({
@@ -117,7 +104,8 @@ test('converted booking carries the same event through plan and production', () 
     event: {
       id: 'event-1',
       status: 'confirmed',
-      menuId: 'menu-1',
+      clientId: 'client-1',
+      menuId: 'menu-event-1',
       timelineReady: false,
     },
   })
@@ -130,7 +118,8 @@ test('converted booking carries the same event through plan and production', () 
     event: {
       id: 'event-1',
       status: 'confirmed',
-      menuId: 'menu-1',
+      clientId: 'client-1',
+      menuId: 'menu-event-1',
       timelineReady: true,
       groceryListReady: false,
       prepListReady: false,
@@ -141,7 +130,7 @@ test('converted booking carries the same event through plan and production', () 
   assert.equal(shopping.currentStep.href, '/events/event-1/grocery-run')
 })
 
-test('booked event with no operational menu stays blocked at quote and menu continuity', () => {
+test('booked event with no operational menu stays at quote and menu continuity', () => {
   const journey = buildChefOperatorJob({
     inquiry: {
       id: 'inquiry-1',
@@ -150,15 +139,13 @@ test('booked event with no operational menu stays blocked at quote and menu cont
       convertedEventId: 'event-1',
     },
     quote: { id: 'quote-1', status: 'accepted' },
+    selectedMenuId: 'menu-source-1',
     event: {
       id: 'event-1',
       status: 'draft',
       clientId: 'client-1',
       menuId: null,
       timelineReady: false,
-      groceryListReady: false,
-      prepListReady: false,
-      packingListReady: false,
       financialAvailable: true,
     },
   })
@@ -167,7 +154,7 @@ test('booked event with no operational menu stays blocked at quote and menu cont
   assert.equal(journey.record.menuId, null)
 })
 
-test('booked event blocks when its operational menu loses selected-menu lineage', () => {
+test('booked event blocks when operational menu loses selected-menu lineage', () => {
   const journey = buildChefOperatorJob({
     inquiry: {
       id: 'inquiry-1',
@@ -184,9 +171,6 @@ test('booked event blocks when its operational menu loses selected-menu lineage'
       clientId: 'client-1',
       menuId: 'menu-event-1',
       timelineReady: false,
-      groceryListReady: false,
-      prepListReady: false,
-      packingListReady: false,
       financialAvailable: true,
     },
   })
@@ -204,6 +188,7 @@ test('production readiness advances into service on the same event', () => {
     event: {
       id: 'event-1',
       status: 'in_progress',
+      clientId: 'client-1',
       menuId: 'menu-1',
       timelineReady: true,
       groceryListReady: true,
@@ -228,6 +213,7 @@ test('completed service advances to final payment before follow-up', () => {
     event: {
       id: 'event-1',
       status: 'completed',
+      clientId: 'client-1',
       menuId: 'menu-1',
       timelineReady: true,
       groceryListReady: true,
@@ -253,6 +239,7 @@ test('unknown payment state blocks truthfully instead of assuming zero balance',
     event: {
       id: 'event-1',
       status: 'completed',
+      clientId: 'client-1',
       menuId: 'menu-1',
       timelineReady: true,
       groceryListReady: true,
@@ -277,6 +264,7 @@ test('paid completed job advances to follow-up, then becomes complete', () => {
     event: {
       id: 'event-1',
       status: 'completed',
+      clientId: 'client-1',
       menuId: 'menu-1',
       timelineReady: true,
       groceryListReady: true,
