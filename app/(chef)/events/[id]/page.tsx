@@ -36,6 +36,13 @@ import { buildEventSuggestions } from '@/lib/suggestions/event-suggestions'
 import { ContextualNextAction } from '@/components/suggestions/contextual-next-action'
 import { VendorCoordinationLog } from '@/components/events/vendor-coordination-log'
 import { QuickCaptureTrigger } from '@/components/communication/quick-capture-trigger'
+import { getChefOperatorJobByEvent } from '@/lib/operator-job/read-model'
+import { OperatorJobPath } from '@/components/operator-job/operator-job-path'
+
+async function EventOperatorJobSection({ eventId }: { eventId: string }) {
+  const journey = await getChefOperatorJobByEvent(eventId)
+  return <OperatorJobPath journey={journey} />
+}
 
 async function DayOfServiceSection({ eventId }: { eventId: string }) {
   const [trackerState, timeline] = await Promise.all([
@@ -89,6 +96,9 @@ export default async function EventDetailPage({
       </Suspense>
       <Suspense fallback={<SkeletonCard />}>
         <EventHeaderSection {...sectionProps} />
+      </Suspense>
+      <Suspense fallback={<SkeletonCard />}>
+        <EventOperatorJobSection eventId={params.id} />
       </Suspense>
       <Suspense fallback={<SkeletonCard />}>
         <EventSuggestionsSection eventId={params.id} event={event} />
