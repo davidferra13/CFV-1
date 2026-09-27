@@ -26,7 +26,7 @@ export type OperatorJobRecord = {
   inquiryId: string | null
   clientId: string | null
   quoteId: string | null
-  menuSourceId: string | null
+  selectedMenuId: string | null
   menuId: string | null
   eventId: string | null
 }
@@ -46,11 +46,11 @@ export type ChefOperatorJobInput = {
   quote?: {
     id: string
     status: string
-    sourceMenuId?: string | null
   } | null
-  menuSourceId?: string | null
+  selectedMenuId?: string | null
   menu?: {
     id: string
+    forkedFromId?: string | null
   } | null
   event?: {
     id: string
@@ -133,14 +133,14 @@ export function buildChefOperatorJob(input: ChefOperatorJobInput): ChefOperatorJ
   const clientId = input.client?.id ?? input.inquiry?.clientId ?? input.event?.clientId ?? null
   const eventId = input.event?.id ?? input.inquiry?.convertedEventId ?? null
   const quoteId = input.quote?.id ?? null
-  const menuSourceId = input.menuSourceId ?? input.quote?.sourceMenuId ?? null
+  const selectedMenuId = input.selectedMenuId ?? null
   const menuId = input.menu?.id ?? input.event?.menuId ?? null
 
   const record: OperatorJobRecord = {
     inquiryId,
     clientId,
     quoteId,
-    menuSourceId,
+    selectedMenuId,
     menuId,
     eventId,
   }
@@ -178,9 +178,16 @@ export function buildChefOperatorJob(input: ChefOperatorJobInput): ChefOperatorJ
 
   const event = input.event ?? null
   const quoteAccepted = Boolean(input.quote && QUOTE_ACCEPTED_STATUSES.has(input.quote.status))
-  const proposalMenuSelected = Boolean(menuSourceId || menuId)
+  const proposalMenuSelected = Boolean(selectedMenuId || menuId)
+  const menuContinuityBroken = Boolean(
+    eventId &&
+      selectedMenuId &&
+      menuId &&
+      menuId !== selectedMenuId &&
+      input.menu?.forkedFromId !== selectedMenuId
+  )
   const quoteMenuComplete = eventId
-    ? Boolean(menuId)
+    ? Boolean(menuId && !menuContinuityBroken)
     : Boolean(quoteAccepted && proposalMenuSelected)
   const bookingComplete = Boolean(eventId)
   const eventPlanComplete = Boolean(event && event.timelineReady)
@@ -236,15 +243,22 @@ export function buildChefOperatorJob(input: ChefOperatorJobInput): ChefOperatorJ
       key: 'quote_menu',
       label: 'Quote + menu',
       complete: quoteMenuComplete,
-      summary: quoteMenuComplete
-        ? eventId && menuId
-          ? 'The accepted proposal menu is now the operational event menu.'
-          : 'The accepted proposal and selected menu source are connected to this job.'
-        : quoteAccepted
-          ? 'The quote is accepted; select the menu source before booking.'
-          : 'Build the proposal and menu from the same client and inquiry facts.',
+      blocked: menuContinuityBroken,
+      summary: menuContinuityBroken
+        ? 'The booked event menu does not descend from the menu selected on the inquiry. Reconcile the menu before production.'
+        : quoteMenuComplete
+          ? eventId && menuId
+            ? 'The selected proposal menu is preserved as the operational event menu.'
+            : 'The accepted proposal and selected menu are connected to this job.'
+          : quoteAccepted
+            ? 'The quote is accepted; select the menu before booking.'
+            : 'Build the proposal and menu from the same client and inquiry facts.',
       href: proposalHref,
-      actionLabel: input.quote?.id ? 'Open quote + menu' : 'Build quote + menu',
+      actionLabel: menuContinuityBroken
+        ? 'Reconcile event menu'
+        : input.quote?.id
+          ? 'Open quote + menu'
+          : 'Build quote + menu',
     },
     {
       key: 'booking',
