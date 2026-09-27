@@ -55,6 +55,7 @@ export type ChefOperatorJobInput = {
   event?: {
     id: string
     status: string
+    clientId?: string | null
     menuId?: string | null
     timelineReady?: boolean | null
     groceryListReady?: boolean | null
@@ -129,7 +130,7 @@ function waitingStep(
 
 export function buildChefOperatorJob(input: ChefOperatorJobInput): ChefOperatorJobJourney {
   const inquiryId = input.inquiry?.id ?? null
-  const clientId = input.client?.id ?? input.inquiry?.clientId ?? null
+  const clientId = input.client?.id ?? input.inquiry?.clientId ?? input.event?.clientId ?? null
   const eventId = input.event?.id ?? input.inquiry?.convertedEventId ?? null
   const quoteId = input.quote?.id ?? null
   const menuSourceId = input.menuSourceId ?? input.quote?.sourceMenuId ?? null
@@ -144,7 +145,7 @@ export function buildChefOperatorJob(input: ChefOperatorJobInput): ChefOperatorJ
     eventId,
   }
 
-  if (!input.inquiry) {
+  if (!input.inquiry && !input.event) {
     const steps: OperatorJobStep[] = [
       {
         key: 'inquiry',
@@ -178,7 +179,7 @@ export function buildChefOperatorJob(input: ChefOperatorJobInput): ChefOperatorJ
   const event = input.event ?? null
   const quoteAccepted = Boolean(input.quote && QUOTE_ACCEPTED_STATUSES.has(input.quote.status))
   const proposalMenuSelected = Boolean(menuSourceId || menuId)
-  const quoteMenuComplete = Boolean(quoteAccepted && proposalMenuSelected)
+  const quoteMenuComplete = Boolean(eventId || (quoteAccepted && proposalMenuSelected))
   const bookingComplete = Boolean(eventId)
   const eventPlanComplete = Boolean(event && event.timelineReady)
   const productionComplete = Boolean(
@@ -198,8 +199,10 @@ export function buildChefOperatorJob(input: ChefOperatorJobInput): ChefOperatorJ
   )
   const followUpComplete = Boolean(event && event.followUpSent)
 
-  const bookingHref = inquiryId ? `/inquiries/${inquiryId}` : '/inquiries'
-  const eventHref = eventId ? `/events/${eventId}` : bookingHref
+  const eventHref = eventId ? `/events/${eventId}` : inquiryId ? `/inquiries/${inquiryId}` : '/events'
+  const bookingHref = inquiryId ? `/inquiries/${inquiryId}` : eventHref
+  const proposalHref =
+    eventId && menuId ? `/menus/${menuId}` : input.inquiry ? quoteMenuHref(input, clientId) : eventHref
   const productionNext = eventId && event ? productionAction(eventId, event) : null
 
   const stepDefs: Array<Omit<OperatorJobStep, 'status'> & { complete: boolean; blocked?: boolean }> = [
@@ -207,9 +210,11 @@ export function buildChefOperatorJob(input: ChefOperatorJobInput): ChefOperatorJ
       key: 'inquiry',
       label: 'Inquiry',
       complete: true,
-      summary: 'The client request is captured in ChefFlow.',
-      href: `/inquiries/${input.inquiry.id}`,
-      actionLabel: 'Open inquiry',
+      summary: input.inquiry
+        ? 'The client request is captured in ChefFlow.'
+        : 'This job was created directly as an event, so the event is the canonical starting record.',
+      href: input.inquiry ? `/inquiries/${input.inquiry.id}` : eventHref,
+      actionLabel: input.inquiry ? 'Open inquiry' : 'Open event',
     },
     {
       key: 'client',
@@ -218,7 +223,11 @@ export function buildChefOperatorJob(input: ChefOperatorJobInput): ChefOperatorJ
       summary: clientId
         ? 'The job is attached to one client record.'
         : 'Link or create the client once. Preferences should live there from now on.',
-      href: clientId ? `/clients/${clientId}` : `/inquiries/${input.inquiry.id}`,
+      href: clientId
+        ? `/clients/${clientId}`
+        : input.inquiry
+          ? `/inquiries/${input.inquiry.id}`
+          : eventHref,
       actionLabel: clientId ? 'Open client' : 'Link client',
     },
     {
@@ -232,7 +241,7 @@ export function buildChefOperatorJob(input: ChefOperatorJobInput): ChefOperatorJ
         : quoteAccepted
           ? 'The quote is accepted; select the menu source before booking.'
           : 'Build the proposal and menu from the same client and inquiry facts.',
-      href: quoteMenuHref(input, clientId),
+      href: proposalHref,
       actionLabel: input.quote?.id ? 'Open quote + menu' : 'Build quote + menu',
     },
     {
@@ -315,7 +324,11 @@ export function buildChefOperatorJob(input: ChefOperatorJobInput): ChefOperatorJ
     steps[steps.length - 1]
 
   return {
-    connectionKey: eventId ? `event:${eventId}` : `inquiry:${input.inquiry.id}`,
+    connectionKey: eventId
+      ? `event:${eventId}`
+      : input.inquiry
+        ? `inquiry:${input.inquiry.id}`
+        : 'chef-job:unlinked',
     title: input.title?.trim() || 'Chef job',
     clientName: input.clientName?.trim() || null,
     record,
