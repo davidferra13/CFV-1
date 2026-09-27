@@ -6,6 +6,7 @@
     "codex:brief": "node scripts/codex-readiness.mjs",
     "repo:hygiene": "node scripts/repo-hygiene-guard.mjs",
     "repo:hygiene:fix": "node scripts/repo-hygiene-guard.mjs --fix",
+    "audit:capabilities:gate": "node --import tsx scripts/verify-capability-claims.mjs",
     "regression:firewall": "node scripts/regression-firewall.mjs",
     "regression:firewall:fast": "node scripts/regression-firewall.mjs --skip-typecheck --skip-runtime",
     "regression:firewall:full": "node scripts/regression-firewall.mjs --full",

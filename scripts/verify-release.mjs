@@ -202,6 +202,7 @@ export function buildReleaseStepCatalog(context = buildReleaseProfileContext()) 
 
   return {
     'verify:secrets': buildScriptStep('verify:secrets', 'verify:secrets', sharedStepEnv),
+    'audit:capabilities:gate': buildScriptStep('audit:capabilities:gate', 'audit:capabilities:gate', sharedStepEnv),
     'audit:completeness:json': buildScriptStep(
       'audit:completeness:json',
       'audit:completeness:json',
@@ -474,7 +475,8 @@ function executeStepAttempt(step) {
 
     const child = spawn(command, step.args, {
       stdio: ['ignore', 'pipe', 'pipe'],
-      shell: false,
+      // Windows requires a shell for the npm.cmd shim; native executables stay direct.
+      shell: process.platform === 'win32' && command.endsWith('.cmd'),
       env: {
         ...process.env,
         ...step.env,
