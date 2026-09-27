@@ -16,7 +16,6 @@ Payment assumption: $250.00 after written scope approval; remainder after the ag
 Excluded: POS migration, full website redesign, delivery logistics and custom catering checkout.
 
 Unresolved facts / scope decisions:
-
 - Decision maker confirmed the need and supplied evidence
 - Business is currently operating
 - Owner wants direct online pickup
@@ -44,7 +43,6 @@ Payment assumption: $250.00 after written scope approval; remainder after the ag
 Excluded: POS migration, full website redesign, delivery logistics and custom catering checkout.
 
 Unresolved facts / scope decisions:
-
 - Decision maker confirmed the need and supplied evidence
 - Business is currently operating
 - Owner wants direct online pickup
