@@ -26,6 +26,7 @@ export type OperatorJobRecord = {
   inquiryId: string | null
   clientId: string | null
   quoteId: string | null
+  menuSourceId: string | null
   menuId: string | null
   eventId: string | null
 }
@@ -45,7 +46,9 @@ export type ChefOperatorJobInput = {
   quote?: {
     id: string
     status: string
+    sourceMenuId?: string | null
   } | null
+  menuSourceId?: string | null
   menu?: {
     id: string
   } | null
@@ -129,12 +132,14 @@ export function buildChefOperatorJob(input: ChefOperatorJobInput): ChefOperatorJ
   const clientId = input.client?.id ?? input.inquiry?.clientId ?? null
   const eventId = input.event?.id ?? input.inquiry?.convertedEventId ?? null
   const quoteId = input.quote?.id ?? null
+  const menuSourceId = input.menuSourceId ?? input.quote?.sourceMenuId ?? null
   const menuId = input.menu?.id ?? input.event?.menuId ?? null
 
   const record: OperatorJobRecord = {
     inquiryId,
     clientId,
     quoteId,
+    menuSourceId,
     menuId,
     eventId,
   }
@@ -172,7 +177,8 @@ export function buildChefOperatorJob(input: ChefOperatorJobInput): ChefOperatorJ
 
   const event = input.event ?? null
   const quoteAccepted = Boolean(input.quote && QUOTE_ACCEPTED_STATUSES.has(input.quote.status))
-  const quoteMenuComplete = Boolean(quoteAccepted && menuId)
+  const proposalMenuSelected = Boolean(menuSourceId || menuId)
+  const quoteMenuComplete = Boolean(quoteAccepted && proposalMenuSelected)
   const bookingComplete = Boolean(eventId)
   const eventPlanComplete = Boolean(event && event.timelineReady)
   const productionComplete = Boolean(
@@ -220,9 +226,11 @@ export function buildChefOperatorJob(input: ChefOperatorJobInput): ChefOperatorJ
       label: 'Quote + menu',
       complete: quoteMenuComplete,
       summary: quoteMenuComplete
-        ? 'Proposal pricing and menu context are connected to this job.'
+        ? eventId && menuId
+          ? 'The accepted proposal menu is now the operational event menu.'
+          : 'The accepted proposal and selected menu source are connected to this job.'
         : quoteAccepted
-          ? 'The quote is accepted; finish the connected menu before production.'
+          ? 'The quote is accepted; select the menu source before booking.'
           : 'Build the proposal and menu from the same client and inquiry facts.',
       href: quoteMenuHref(input, clientId),
       actionLabel: input.quote?.id ? 'Open quote + menu' : 'Build quote + menu',
