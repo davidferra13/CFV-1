@@ -11,6 +11,7 @@ const wrong = [
   ['Fresh Epazote', 'Pambazo', 'Mexican traditional dish'],
   ['Fresh Mint', 'Mint julep', 'Cocktail of bourbon, sugar and fresh mint'],
   ['Ginger Root', 'Ginger Root (music project)', 'American indie soul music project'],
+  ['Lobster Tail', 'Lobster-tailed pot helmet', 'Burgonet with a long neck guard'],
 ]
 test('observed wrong entities are never accepted as ingredients', () => {
   for (const [name, title, description] of wrong) {
