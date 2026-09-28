@@ -73,6 +73,9 @@ jobs:
       - name: Install dependencies
         run: npm ci --legacy-peer-deps
 
+      - name: Simulation Forge focused tests
+        run: node --import tsx --test tools/simulation-forge/*.test.mjs
+
       - name: Simulation Forge release suite
         run: node --import tsx tools/simulation-forge/cli.mjs release
 
