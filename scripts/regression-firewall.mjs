@@ -271,6 +271,13 @@ async function main() {
     })
   )
 
+  // Small deterministic fixture replay on every code release, independent of the app server.
+  results.push(
+    await runStep('simulation forge release', nodeCommand(), ['--import', 'tsx', 'tools/simulation-forge/cli.mjs', 'release'], {
+      timeoutMs: 30_000,
+    })
+  )
+
   if (!args.skipTypecheck) {
     results.push(
       await runStep('app typecheck', npmCommand(), ['run', 'typecheck:app'], {

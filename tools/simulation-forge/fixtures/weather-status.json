@@ -1,0 +1,86 @@
+{
+  "schemaVersion": 1,
+  "id": "weather-status-001",
+  "provenance": {
+    "kind": "synthetic",
+    "source": "Simulation Forge portability fixture",
+    "note": "Interface proof; no WeatherHQ product code or actual forecast is exercised."
+  },
+  "product": {
+    "id": "WeatherHQ",
+    "version": "fixture",
+    "capabilities": [
+      "forecast_status"
+    ],
+    "interfaces": [
+      "forecast_check"
+    ],
+    "tools": [
+      "fixtureForecast"
+    ],
+    "workflows": [
+      "check_forecast"
+    ],
+    "permissions": [],
+    "externalDependencies": [],
+    "successCriteria": [
+      "truthful status"
+    ],
+    "invariants": [
+      "truthful_status"
+    ]
+  },
+  "actors": [
+    {
+      "id": "viewer",
+      "role": "viewer",
+      "persona": "Simple weather viewer",
+      "goals": [
+        "check forecast"
+      ],
+      "preferences": {},
+      "knowledge": [],
+      "authority": [
+        "view"
+      ],
+      "constraints": {},
+      "tendencies": [],
+      "history": {},
+      "memory": [],
+      "relationships": [],
+      "publicState": {},
+      "privateState": {}
+    }
+  ],
+  "environment": {
+    "at": "2026-09-27T20:00:00.000Z",
+    "geography": "local",
+    "serviceStatus": "down",
+    "resources": {},
+    "device": "tablet",
+    "latencyMs": 0,
+    "marketState": {}
+  },
+  "objective": "See an honest unavailable message during dependency outage",
+  "initialState": {
+    "forecast": {
+      "alert": "Clear skies"
+    }
+  },
+  "events": [
+    {
+      "type": "check_forecast"
+    }
+  ],
+  "hiddenInformation": [],
+  "mutations": [],
+  "stoppingConditions": [
+    "check_forecast"
+  ],
+  "expectedInvariants": [
+    {
+      "id": "truthful_status",
+      "description": "Outage never claims a current forecast"
+    }
+  ]
+}
