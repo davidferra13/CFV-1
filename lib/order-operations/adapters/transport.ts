@@ -1,9 +1,9 @@
-import type { OrderOpsTransport } from './types'
+import type { OrderOpsHttpRequest, OrderOpsTransport } from './types'
 
 type FetchLike = typeof fetch
 
 export function createFetchTransport(fetchImpl: FetchLike = fetch): OrderOpsTransport {
-  return async <T>({ url, method, headers, body }) => {
+  return async <T>({ url, method, headers, body }: OrderOpsHttpRequest) => {
     const response = await fetchImpl(url, {
       method,
       headers,
