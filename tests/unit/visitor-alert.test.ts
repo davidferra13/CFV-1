@@ -70,7 +70,9 @@ function loadVisitorAlertWithMocks(input: {
 
   const dbPath = require.resolve('../../lib/db/server.ts')
   const sendPath = require.resolve('../../lib/notifications/send.ts')
+  const notificationIndexPath = require.resolve('../../lib/notifications/index.ts')
   const visitorPath = require.resolve('../../lib/activity/visitor-alert.ts')
+  const originalNotificationIndex = require.cache[notificationIndexPath]
 
   // Ensure clean module instance so imports capture the mocks below.
   delete require.cache[visitorPath]
@@ -89,12 +91,16 @@ function loadVisitorAlertWithMocks(input: {
     sendNotification: input.sendNotification,
   }
 
+  // visitor-alert imports the barrel, whose re-export can cache an earlier send.
+  delete require.cache[notificationIndexPath]
   const { triggerVisitorAlert } = require(visitorPath)
 
   const restore = () => {
     require.cache[dbPath]!.exports = originalDbExports
     require.cache[sendPath]!.exports = originalSendExports
     delete require.cache[visitorPath]
+    delete require.cache[notificationIndexPath]
+    if (originalNotificationIndex) require.cache[notificationIndexPath] = originalNotificationIndex
   }
 
   return { triggerVisitorAlert, restore }
