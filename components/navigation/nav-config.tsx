@@ -1018,6 +1018,7 @@ export const navGroups: NavGroup[] = [
         href: '/studio',
         label: 'Studio',
         icon: Globe,
+        hidden: true,
         children: [
           { href: '/studio', label: 'Dashboard' },
           { href: '/studio/pages', label: 'Pages' },
