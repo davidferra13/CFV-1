@@ -1,0 +1,65 @@
+import test from 'node:test'
+import assert from 'node:assert/strict'
+import { readFileSync } from 'node:fs'
+import { runScenario, replay, minimize, compare } from './core.mjs'
+import { bookingScenario, bookingAdapter, bookingVariants, availabilityRegression } from './booking.mjs'
+const persona = JSON.parse(readFileSync(new URL('./fixtures/chef-enthusiast.json', import.meta.url)))
+const scenario = bookingScenario(persona)
+const fixed = bookingAdapter()
+const fault = bookingAdapter({ injectMissingAvailabilityRecheck: true })
+test('client, platform and chef progress through modeled inquiry and actual pure event FSM', async () => {
+  const run = await runScenario(scenario, fixed, { seed: 101 })
+  assert.deepEqual(run.violations, [])
+  assert.equal(run.scores.simulatedConfirmation, 1)
+  assert.equal(run.observations.find(x => x.kind === 'booking_state').depositAcknowledgments.length, 1)
+  const calls = run.trajectory.flatMap(x => x.data.toolCalls ?? []).filter(x => x.name === 'validateTransition')
+  assert.deepEqual(calls.map(x => [x.from, x.to, x.actor]), [
+    ['draft', 'proposed', 'chef'], ['proposed', 'accepted', 'client'],
+    ['accepted', 'paid', 'system'], ['paid', 'confirmed', 'chef']])
+  assert.ok(run.trajectory.some(x => x.data.messages?.some(m => m.from === 'client' && m.to === 'chef')))
+  assert.ok(run.trajectory.some(x => x.data.messages?.some(m => m.from === 'chef' && m.to === 'client')))
+  assert.ok(run.trajectory.some(x => x.data.messages?.some(m => m.from === 'platform' && m.to === 'client')))
+})
+test('injected stale-availability confirmation shrinks, is repaired and stays repaired', async () => {
+  const mutated = availabilityRegression(scenario)
+  const bad = await runScenario(mutated, fault, { seed: 101 })
+  assert.ok(bad.violations.some(v => v.invariant === 'confirmed_requires_available_chef'))
+  const reduced = await minimize(mutated, fault, 'confirmed_requires_available_chef', { seed: 101 })
+  assert.ok(reduced.scenario.events.length < mutated.events.length)
+  assert.equal(reduced.evidence.violations[0].invariant, 'confirmed_requires_available_chef')
+  const repaired = await runScenario(reduced.scenario, fixed, { seed: 101 })
+  assert.deepEqual(repaired.violations, [])
+  assert.equal(repaired.scores.simulatedConfirmation, 0)
+  assert.ok(repaired.observations.find(x => x.kind === 'blocked_events').values.some(x => x.reason.includes('availability')))
+  const repeated = await replay(reduced.scenario, fixed, 10, { seed: 101 })
+  assert.ok(repeated.every(x => x.violations.length === 0))
+  assert.equal(new Set(repeated.map(x => JSON.stringify([x.trajectory, x.scores]))).size, 1)
+  const comparison = await compare([reduced.scenario], fault, fixed, { seed: 101 })
+  assert.equal(comparison[0].before.violations.length, 1)
+  assert.equal(comparison[0].after.violations.length, 0)
+})
+test('dietary changes, cancellation, duplicate and early deposit events stay safe', async () => {
+  const variants = bookingVariants(scenario)
+  assert.equal(variants.length, 6)
+  const runs = await Promise.all(variants.map(x => runScenario(x, fixed, { seed: 101 })))
+  assert.ok(runs.every(r => r.violations.length === 0))
+  assert.equal(runs[0].scores.simulatedConfirmation, 0)
+  assert.equal(runs[1].scores.simulatedConfirmation, 0)
+  assert.equal(runs[2].observations.find(x => x.kind === 'booking_state').eventStatus, 'cancelled')
+  assert.equal(runs[3].scores.syntheticAcknowledgmentCount, 1)
+  assert.ok(runs[3].trajectory.some(x => x.data.decisions?.some(x => x.kind === 'duplicate_ignored')))
+  assert.equal(runs[4].scores.simulatedConfirmation, 1)
+  assert.ok(runs[4].observations.find(x => x.kind === 'blocked_events').values.some(x => x.eventId === 'deposit-early'))
+  assert.equal(runs[5].scores.simulatedConfirmation, 0)
+})
+
+test('retained minimum availability case is a permanent replay regression', async () => {
+  const retained = JSON.parse(readFileSync(new URL('./fixtures/booking-availability-regression.json', import.meta.url)))
+  assert.equal(retained.provenance.realEventFsm, 'lib/events/fsm.ts#validateTransition')
+  assert.equal(retained.events.length, 9)
+  const before = await runScenario(retained, fault, { seed: 101 })
+  const after = await runScenario(retained, fixed, { seed: 101 })
+  assert.equal(before.violations[0].invariant, 'confirmed_requires_available_chef')
+  assert.deepEqual(after.violations, [])
+  assert.equal(after.scores.simulatedConfirmation, 0)
+})
