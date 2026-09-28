@@ -78,3 +78,26 @@ test('scoreDiscoveryRailItems hides hard negative learned signals', () => {
     ['Italian']
   )
 })
+
+
+test('scoreDiscoveryRailItems honors hard suppression when ranked preference is missing', () => {
+  const signals: UserScrollSignals = {
+    ...emptySignals,
+    hasHistory: true,
+    suppressedItems: [{ itemType: 'cuisine', itemValue: 'thai', score: -12 }],
+  }
+
+  const scored = scoreDiscoveryRailItems(
+    [
+      { type: 'cuisine', label: 'Italian', href: '/chefs?cuisine=italian' },
+      { type: 'cuisine', label: 'Thai', href: '/chefs?cuisine=thai' },
+    ],
+    signals,
+    { role: 'cuisine' }
+  )
+
+  assert.deepEqual(
+    scored.map((entry) => entry.item.label),
+    ['Italian']
+  )
+})
