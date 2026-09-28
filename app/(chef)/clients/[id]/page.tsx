@@ -38,6 +38,7 @@ import { getClients } from '@/lib/clients/actions'
 import { ClientConnections } from '@/components/clients/client-connections'
 import { getEntityActivityTimeline } from '@/lib/activity/entity-timeline'
 import { EntityActivityTimeline } from '@/components/activity/entity-activity-timeline'
+import { ArchiveClientButton } from '@/components/clients/archive-client-button'
 import { getClientTimeline } from '@/lib/activity/actions'
 import type { Milestone } from '@/lib/clients/milestones'
 import { ClientEmailToggle } from '@/components/clients/client-email-toggle'
@@ -1573,6 +1574,9 @@ export default async function ClientDetailPage({ params }: ClientDetailPageProps
           <ClientMenuHistory clientId={client.id} />
         </CardContent>
       </Card>
+
+      {/* Archive: last on the page, always confirms, reversible from /clients */}
+      <ArchiveClientButton clientId={client.id} clientName={client.full_name || 'this client'} />
     </div>
   )
 }
