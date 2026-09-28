@@ -5,6 +5,7 @@ import { fileURLToPath } from 'node:url'
 import { execFileSync } from 'node:child_process'
 import { runScenario, replay, mutate, minimize, cluster, compare } from './core.mjs'
 import { chefFlowAdapter, weatherFixtureAdapter } from './adapters.mjs'
+import { homepageTasteScenario, homepageTasteAdapter } from './homepage-source.mjs'
 
 const here = dirname(fileURLToPath(import.meta.url))
 const root = join(here, '..', '..')
@@ -23,11 +24,14 @@ const mutations = mutate(chef, [
 const command = process.argv[2] ?? 'release'
 const commit = execFileSync('git', ['rev-parse', 'HEAD'], { cwd: root, encoding: 'utf8' }).trim()
 const opts = { commit, seed: 101 }
+const sourceScenario = homepageTasteScenario(chef)
+const sourceAdapter = homepageTasteAdapter()
 if (command === 'release') {
   const runs = await Promise.all([chef, ...mutations].map(s => runScenario(s, fixed, opts)))
   const second = await runScenario(weather, weatherFixtureAdapter, opts)
-  const violations = cluster([...runs, second])
-  console.log(JSON.stringify({ command, commit, cases: runs.length + 1, violations, runIds: [...runs, second].map(x => x.runId) }))
+  const realSource = await runScenario(sourceScenario, sourceAdapter, opts)
+  const violations = cluster([...runs, second, realSource])
+  console.log(JSON.stringify({ command, commit, cases: runs.length + 2, violations, runIds: [...runs, second, realSource].map(x => x.runId) }))
   if (violations.length) process.exitCode = 1
 } else if (command === 'replay') {
   const n = Number(process.argv[3] ?? 10)
@@ -35,6 +39,21 @@ if (command === 'release') {
   console.log(JSON.stringify({ command, count: runs.length, distinctOutcomes: new Set(runs.map(x => JSON.stringify([x.scores,x.violations]))).size,
     clusters: cluster(runs), runId: runs[0].runId }))
   if (runs.some(r => r.violations.length)) process.exitCode = 1
+} else if (command === 'source-proof') {
+  const real = await runScenario(sourceScenario, sourceAdapter, opts)
+  const repeats = await replay(sourceScenario, sourceAdapter, 10, opts)
+  const unavailable = await runScenario(sourceScenario, homepageTasteAdapter({ loadCandidates: () => { throw Error('offline') } }), opts)
+  if (real.violations.length || repeats.some(r => r.violations.length) ||
+    !unavailable.violations.some(v => v.invariant === 'candidate_source_available')) throw Error('Homepage source proof failed')
+  const proof = { kind: 'simulation-forge-homepage-source-proof', generatedAt: new Date().toISOString(), commit,
+    note: 'Real ChefFlow homepage candidate code was executed offline. Prices, inventory, availability, and live route behavior are not established.',
+    real, replay: { count: repeats.length, distinctTrajectories: new Set(repeats.map(r => JSON.stringify(r.trajectory))).size },
+    outage: unavailable }
+  const target = join(root, 'docs', 'simulation-forge', 'homepage-source-evidence.json')
+  writeFileSync(target, JSON.stringify(proof, null, 2) + '\n')
+  console.log(JSON.stringify({ command, target, runId: real.runId, candidateCount: real.observations.find(x => x.kind === 'real_source').count,
+    priceKnownCount: real.observations.find(x => x.kind === 'real_source').priceKnownCount,
+    repeatCount: repeats.length, outageViolation: unavailable.violations[0]?.invariant }))
 } else if (command === 'prove') {
   const baseline = await runScenario(chef, before, opts)
   const reproducible = await replay(chef, before, 10, opts)
@@ -59,4 +78,4 @@ if (command === 'release') {
   console.log(JSON.stringify({ command, target, baselineViolations: baseline.violations.length, minimizedItems: reduced.scenario.initialState.items.length,
     minimizedEvents: reduced.scenario.events.length, fixedReplays: replayFixed.length, mutations: allFixed.length, portability: portability.product,
     comparison, runIds: [baseline.runId, repaired.runId, portability.runId] }))
-} else throw Error('Use prove, release, or replay [count]')
+} else throw Error('Use prove, source-proof, release, or replay [count]')
