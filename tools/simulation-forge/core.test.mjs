@@ -42,3 +42,25 @@ test('same interface can run a second product fixture without modifying it', asy
   assert.equal(result.scores.truthfulStatus, 1)
   assert.equal(result.violations.length, 0)
 })
+
+test('run identity includes code commit, evaluator and configuration while exact replay stays stable', async () => {
+  const a = await runScenario(chef, fixed, { seed: 101, commit: 'commit-a', configId: 'config-a' })
+  const repeated = await runScenario(chef, fixed, { seed: 101, commit: 'commit-a', configId: 'config-a' })
+  const b = await runScenario(chef, fixed, { seed: 101, commit: 'commit-b', configId: 'config-a' })
+  const c = await runScenario(chef, fixed, { seed: 101, commit: 'commit-a', configId: 'config-b' })
+  const d = await runScenario(chef, { ...fixed, evaluatorVersion: 'revised-rubric' },
+    { seed: 101, commit: 'commit-a', configId: 'config-a' })
+  assert.equal(a.runId, repeated.runId)
+  assert.equal(JSON.stringify(a.trajectory), JSON.stringify(repeated.trajectory))
+  assert.equal(new Set([a.runId, b.runId, c.runId, d.runId]).size, 4)
+  assert.equal(a.configId, 'config-a')
+})
+test('minimizer handles scenarios without an items array', async () => {
+  const scenario = structuredClone(weather)
+  assert.equal('items' in scenario.initialState, false)
+  const brokenWeather = { ...weatherFixtureAdapter, version: 'injected-weather-failure',
+    evaluate: () => ({ observations: [], scores: {}, violations: [{ invariant: 'forced_failure' }] }) }
+  const result = await minimize(scenario, brokenWeather, 'forced_failure')
+  assert.equal(result.evidence.violations[0].invariant, 'forced_failure')
+  assert.equal(result.scenario.events.length, 0)
+})
