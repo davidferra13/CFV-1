@@ -648,7 +648,7 @@ function Ensure-ProdServerRunning {
             return
         }
 
-        Write-Log "Port $prodPort occupied by non-ChefFlow process. Reclaiming before prod launch."
+        Write-Log "Port $prodPort occupied by non-ChefFlow process. Leaving it untouched; prod launch deferred."
         Stop-NonProjectPortOwners $prodPort
         return
     }
@@ -707,6 +707,7 @@ function Ensure-CloudflaredTunnelRunning {
 }
 
 function Ensure-ProductionTunnelMaterial {
+    $originUrl = "http://127.0.0.1:$prodPort"
     $configText = ''
     if (Test-Path $prodTunnelConfig) {
         try {
@@ -720,7 +721,8 @@ function Ensure-ProductionTunnelMaterial {
         -not [string]::IsNullOrWhiteSpace($configText) -and
         $configText.Contains($prodTunnelId) -and
         $configText.Contains('app.cheflowhq.com') -and
-        $configText.Contains('cheflowhq.com')
+        $configText.Contains('cheflowhq.com') -and
+        $configText.Contains("service: $originUrl")
     )
 
     if ($configMatchesTunnel -and (Test-Path $prodTunnelCredential)) {
@@ -732,7 +734,6 @@ function Ensure-ProductionTunnelMaterial {
         return $false
     }
 
-    $originUrl = "http://127.0.0.1:$prodPort"
     $arguments = "-NoProfile -ExecutionPolicy Bypass -File `"$prodTunnelBootstrap`" -TunnelId `"$prodTunnelId`" -OriginUrl `"$originUrl`" -ConfigPath `"$prodTunnelConfig`" -ForceConfig"
 
     try {
