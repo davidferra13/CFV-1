@@ -1,6 +1,19 @@
 #!/usr/bin/env bash
 set -euo pipefail
 
+PROJECT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
+cd "$PROJECT_DIR"
+
+# This is the legacy Docker/3200 path, not the documented Windows/3100 runtime.
+# Refuse before mutating services when its required build inputs are absent.
+for required in Dockerfile .env.production; do
+  if [ ! -f "$required" ]; then
+    echo "ERROR: Legacy Docker deployment requires $required. See docs/production-tunnel-recovery.md."
+    exit 1
+  fi
+done
+command -v node >/dev/null || { echo "ERROR: Node.js is required for the public reachability gate."; exit 1; }
+
 echo "=== ChefFlow Production Deploy ==="
 
 # Build
@@ -17,11 +30,9 @@ for i in $(seq 1 12); do
   if curl -sf http://localhost:3200/api/health > /dev/null 2>&1; then
     echo "Health check passed."
     echo ""
-    echo "=== Deploy complete ==="
-    echo "App running at http://localhost:3200"
-    echo ""
-    echo "To expose via Cloudflare Tunnel:"
-    echo "  cloudflared tunnel run chefflow-beta"
+    echo "Local Docker origin healthy at http://localhost:3200; checking both public domains..."
+    node scripts/production-public-check.mjs
+    echo "Public reachability passed. Release readiness and deployed revision still require verification."
     exit 0
   fi
   echo "  Waiting... ($((i * 5))s)"

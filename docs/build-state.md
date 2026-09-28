@@ -1,5 +1,9 @@
 # Build State
 
+> Historical snapshot below, not current production proof. On 2026-09-28 both
+> public domains returned HTTP 530 / Cloudflare 1033; the named production tunnel
+> had no connections. See [recovery evidence](production-tunnel-recovery.md).
+
 **Status:** PRODUCTION
 **Deployed:** 2026-06-17 EST
 **URL:** https://app.cheflowhq.com
