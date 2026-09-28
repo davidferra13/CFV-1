@@ -1,6 +1,6 @@
 import test from 'node:test'
 import assert from 'node:assert/strict'
-import { createRequire } from 'node:module'
+import { createRequire, Module } from 'node:module'
 
 const require = createRequire(import.meta.url)
 
@@ -72,35 +72,37 @@ function loadVisitorAlertWithMocks(input: {
   const sendPath = require.resolve('../../lib/notifications/send.ts')
   const notificationIndexPath = require.resolve('../../lib/notifications/index.ts')
   const visitorPath = require.resolve('../../lib/activity/visitor-alert.ts')
+  const originalDbModule = require.cache[dbPath]
+  const originalSendModule = require.cache[sendPath]
   const originalNotificationIndex = require.cache[notificationIndexPath]
 
-  // Ensure clean module instance so imports capture the mocks below.
+  // Install module mocks before importing the subject: loading the real send
+  // module also loads the database client and can leave open handles.
+  const dbMock = new Module(dbPath)
+  dbMock.filename = dbPath
+  dbMock.loaded = true
+  dbMock.exports = { createServerClient: input.createServerClient }
+  require.cache[dbPath] = dbMock
+
+  const sendMock = new Module(sendPath)
+  sendMock.filename = sendPath
+  sendMock.loaded = true
+  sendMock.exports = { sendNotification: input.sendNotification }
+  require.cache[sendPath] = sendMock
+
+  // visitor-alert imports the barrel; refresh its cached re-export too.
   delete require.cache[visitorPath]
-
-  // Ensure both modules are loaded in cache, then replace their exports.
-  require(dbPath)
-  require(sendPath)
-
-  const originalDbExports = require.cache[dbPath]!.exports
-  const originalSendExports = require.cache[sendPath]!.exports
-
-  require.cache[dbPath]!.exports = {
-    createServerClient: input.createServerClient,
-  }
-  require.cache[sendPath]!.exports = {
-    sendNotification: input.sendNotification,
-  }
-
-  // visitor-alert imports the barrel, whose re-export can cache an earlier send.
   delete require.cache[notificationIndexPath]
   const { triggerVisitorAlert } = require(visitorPath)
 
   const restore = () => {
-    require.cache[dbPath]!.exports = originalDbExports
-    require.cache[sendPath]!.exports = originalSendExports
     delete require.cache[visitorPath]
-    delete require.cache[notificationIndexPath]
+    if (originalDbModule) require.cache[dbPath] = originalDbModule
+    else delete require.cache[dbPath]
+    if (originalSendModule) require.cache[sendPath] = originalSendModule
+    else delete require.cache[sendPath]
     if (originalNotificationIndex) require.cache[notificationIndexPath] = originalNotificationIndex
+    else delete require.cache[notificationIndexPath]
   }
 
   return { triggerVisitorAlert, restore }
