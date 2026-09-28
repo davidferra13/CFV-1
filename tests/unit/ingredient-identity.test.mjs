@@ -12,6 +12,8 @@ const wrong = [
   ['Fresh Mint', 'Mint julep', 'Cocktail of bourbon, sugar and fresh mint'],
   ['Ginger Root', 'Ginger Root (music project)', 'American indie soul music project'],
   ['Lobster Tail', 'Lobster-tailed pot helmet', 'Burgonet with a long neck guard'],
+  ['Mature Spinach', 'Spinach salad', 'Salad of green leaves'],
+  ['Meringue Powder', 'Buttercream', 'Sweet filling made with butter'],
 ]
 test('observed wrong entities are never accepted as ingredients', () => {
   for (const [name, title, description] of wrong) {
@@ -34,7 +36,8 @@ test('valid aliases stay in review instead of being guessed or discarded', () =>
   for (const [name, title, description] of [
     ['Dukkah', 'Duqqa', 'Egyptian condiment'],
     ['Fresh Cilantro', 'Coriander', 'Annual herb'],
-    ['Cremini Mushroom', 'Agaricus bisporus', 'Species of mushroom']
+    ['Cremini Mushroom', 'Agaricus bisporus', 'Species of mushroom'],
+    ['MCT Oil', 'Medium-chain triglyceride', 'Medium-chain fatty acids']
   ]) {
     const result = assessIngredientIdentity(name, { title, description })
     assert.equal(result.accepted, false)
