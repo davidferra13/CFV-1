@@ -95,3 +95,39 @@ test('varying seeds explores stochastic outcomes without changing exact replay s
   await assert.rejects(() => replay(weather, stochastic, 2, { seedMode: 'unknown' }),
     /seed mode/)
 })
+
+test('an unresolved adapter step or grader fails within the runtime budget', async () => {
+  let stepSignal
+  const hangingStep = {
+    version: 'hanging-step-fixture',
+    step(_state, _event, ctx) {
+      stepSignal = ctx.signal
+      return new Promise(() => {})
+    },
+    evaluate() {
+      throw Error('Evaluator must not run after an aborted step')
+    }
+  }
+  const stepRun = await runScenario(weather, hangingStep, { budget: { maxMs: 60 } })
+  assert.ok(stepSignal?.aborted)
+  assert.match(stepRun.violations[0].detail, /Runtime budget/)
+  assert.equal(stepRun.violations[0].invariant, 'engine_error')
+  assert.ok(stepRun.measuredMs < 2000)
+
+  let graderSignal
+  const hangingGrader = {
+    version: 'hanging-grader-fixture',
+    step(state) { return { state } },
+    evaluate(_state, _scenario, _trajectory, ctx) {
+      graderSignal = ctx.signal
+      return new Promise(() => {})
+    }
+  }
+  const graderRun = await runScenario(weather, hangingGrader, { budget: { maxMs: 60 } })
+  assert.ok(graderSignal?.aborted)
+  assert.match(graderRun.violations[0].detail, /Runtime budget/)
+  assert.equal(graderRun.violations[0].invariant, 'engine_error')
+  assert.ok(graderRun.measuredMs < 2000)
+  await assert.rejects(() => runScenario(weather, hangingStep, { budget: { maxMs: Infinity } }),
+    /Invalid runtime budget/)
+})
