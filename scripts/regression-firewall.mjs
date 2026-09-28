@@ -266,6 +266,10 @@ async function main() {
   }
 
   results.push(
+    await runStep('ingredient identity regression', nodeCommand(), ['--test', 'tests/unit/ingredient-identity.test.mjs'])
+  )
+
+  results.push(
     await runStep('persona completion gate', nodeCommand(), ['devtools/persona-completion-gate.mjs'], {
       timeoutMs: 360_000,
     })

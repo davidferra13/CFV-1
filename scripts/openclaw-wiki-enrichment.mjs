@@ -3,8 +3,8 @@
  * OpenClaw Ingredient Knowledge Enrichment v2
  *
  * 5 improvements over v1:
- *   1. Name cleaning  - strips USDA qualifiers before searching Wikipedia
- *                       ("Artichoke, (globe or french), raw" -> "artichoke")
+ *   1. Name cleaning  - removes explicit preparation labels conservatively
+ *                       ("Dill, fresh" -> "dill"); unresolved identities require review
  *   2. Section extraction - pulls "Culinary use", "Flavor", "History" sections
  *                       directly instead of keyword-scanning the full extract
  *   3. USDA nutrition - fetches macros + vitamins from FoodData Central API
@@ -28,6 +28,7 @@
  */
 
 import postgres from 'postgres'
+import { normalizeIngredientName, assessIngredientIdentity } from './lib/ingredient-identity.mjs'
 import { readFileSync } from 'fs'
 import { fileURLToPath } from 'url'
 import { dirname, join } from 'path'
@@ -82,17 +83,11 @@ async function fetchJson(url, opts = {}) {
 
 // ---------------------------------------------------------------------------
 // Improvement 1: Name cleaning
-// Strips USDA-style qualifiers so Wikipedia search works on the core term
+// Preserve identity-bearing words while removing explicit preparation labels
 // ---------------------------------------------------------------------------
 
 function cleanName(raw) {
-  return raw
-    .replace(/\(.*?\)/g, '')            // remove (globe or french), (raw), etc.
-    .replace(/,\s*(raw|cooked|dried|fresh|canned|frozen|boiled|roasted|smoked|salted|pickled|ground|whole|sliced|diced|chopped|minced|uncooked|prepared|dehydrated|reconstituted|NS as to form|NS as to type|all varieties|all types|generic|unspecified|not specified|from concentrate|with added|without added|fat free|low fat|reduced fat|low sodium|no salt added|extra lean|lean|regular|extra firm|firm|soft|silken)\s*$/gi, '')
-    .replace(/,.*$/, '')                // take only first segment before any comma
-    .replace(/\s{2,}/g, ' ')
-    .trim()
-    .toLowerCase()
+  return normalizeIngredientName(raw)
 }
 
 // ---------------------------------------------------------------------------
@@ -134,6 +129,7 @@ async function getWikipediaSummary(title) {
 
   return {
     title:       data.title,
+    type:        data.type ?? null,
     description: data.description ?? null,
     extract:     data.extract     ?? null,
     wikidataQid: data.wikibase_item ?? null,
@@ -438,6 +434,22 @@ async function enrichIngredient(ingredient) {
 
   if (!summary) return { success: false, reason: 'summary fetch failed' }
 
+  // Article richness cannot substitute for matching the ingredient entity.
+  const identity = assessIngredientIdentity(name, summary)
+  if (!identity.accepted) {
+    await sql`
+      INSERT INTO ingredient_knowledge (
+        system_ingredient_id, wikipedia_slug, wiki_summary, wiki_extract,
+        enrichment_source, enrichment_confidence, needs_review, enriched_at
+      ) VALUES (
+        ${id}, ${summary.title ?? wikiTitle}, ${summary.description ?? null},
+        ${summary.extract ?? null}, 'wikipedia', 0.05, true, NOW()
+      )
+      ON CONFLICT (system_ingredient_id) DO NOTHING
+    `
+    return { success: false, reviewRequired: true, reason: 'identity requires review: ' + identity.reason }
+  }
+
   // 4. Wikipedia section extraction (culinary/flavor/history)
   const sections = await getWikipediaSections(wikiTitle)
   await delay(WIKI_MS)
@@ -468,7 +480,7 @@ async function enrichIngredient(ingredient) {
 
   // 9. Compute confidence
   const confidence = computeConfidence({
-    nameMatch:          wikiTitle.toLowerCase().startsWith(searchName.split(' ')[0]),
+    nameMatch:          identity.accepted,
     hasQid:             !!summary.wikidataQid,
     hasExtract:         !!summary.extract,
     hasCulinarySection: !!sections.culinary,
@@ -614,7 +626,7 @@ async function main() {
   console.log(`Processing ${ingredients.length} ingredients...`)
   console.log()
 
-  let enriched = 0, failed = 0, withSection = 0, withImage = 0, withNutrition = 0
+  let enriched = 0, failed = 0, held = 0, withSection = 0, withImage = 0, withNutrition = 0
 
   for (let i = 0; i < ingredients.length; i++) {
     const ing = ingredients[i]
@@ -634,8 +646,9 @@ async function main() {
           console.log(`  [OK] ${ing.name} -> "${r.wikiTitle}" conf=${r.confidence?.toFixed(2)} section=${r.hasSection} img=${r.hasImage} nutrition=${r.hasNutrition}`)
         }
       } else {
-        failed++
-        if (SINGLE || ingredients.length <= 20) console.log(`  [--] ${ing.name}: ${r.reason}`)
+        if (r.reviewRequired) held++
+        else failed++
+        if (SINGLE || ingredients.length <= 20) console.log(`  [${r.reviewRequired ? 'REVIEW' : '--'}] ${ing.name}: ${r.reason}`)
       }
     } catch (err) {
       failed++
@@ -644,7 +657,7 @@ async function main() {
   }
 
   console.log()
-  console.log(`=== Done: ${enriched} enriched | ${failed} failed | ${withSection} with sections | ${withImage} with images | ${withNutrition} with nutrition ===`)
+  console.log(`=== Done: ${enriched} enriched | ${held} held for identity review | ${failed} failed | ${withSection} with sections | ${withImage} with images | ${withNutrition} with nutrition ===`)
   await sql.end()
 }
 
