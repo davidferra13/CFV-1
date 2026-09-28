@@ -1,6 +1,6 @@
-$projectDir     = "C:\Users\david\Documents\CFv1"
-$watchdogScript = "$projectDir\chefflow-watchdog.ps1"
-$taskName       = "ChefFlow Server"
+$projectDir     = Split-Path -Parent $MyInvocation.MyCommand.Path
+$watchdogScript = Join-Path $projectDir 'chefflow-watchdog.ps1'
+$taskName       = 'ChefFlow-Watchdog'
 
 Write-Host ""
 Write-Host "  ============================================" -ForegroundColor Cyan

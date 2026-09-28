@@ -7,6 +7,9 @@ const root = process.cwd()
 const watchdog = readFileSync(join(root, 'chefflow-watchdog.ps1'), 'utf8')
 const bootstrap = readFileSync(join(root, 'scripts', 'ensure-production-tunnel.ps1'), 'utf8')
 const prodRunner = readFileSync(join(root, 'scripts', 'run-next-prod.mjs'), 'utf8')
+const rootLauncher = readFileSync(join(root, 'chefflow-launcher.vbs'), 'utf8')
+const taskLauncher = readFileSync(join(root, 'scripts', 'watchdog-launcher.vbs'), 'utf8')
+const autostart = readFileSync(join(root, 'install-autostart.ps1'), 'utf8')
 const template = readFileSync(
   join(root, '.cloudflared', 'chefflow-prod.yml.example'),
   'utf8'
@@ -30,6 +33,15 @@ test('watchdog and production runner never force-terminate foreign port owners',
   assert.ok(prodRunner.includes("process.env.PORT || '3100'"))
   assert.ok(prodRunner.includes('const foreignOwners = owners.filter((owner) => !isRepoOwned(owner))'))
   assert.ok(prodRunner.includes('refusing destructive cleanup'))
+})
+
+test('autostart launchers resolve their checkout instead of the dirty primary path', () => {
+  for (const launcher of [rootLauncher, taskLauncher]) {
+    assert.ok(launcher.includes('WScript.ScriptFullName'))
+    assert.ok(!launcher.includes('C:\\Users\\david\\Documents\\CFv1'))
+  }
+  assert.ok(autostart.includes("Split-Path -Parent $MyInvocation.MyCommand.Path"))
+  assert.ok(autostart.includes("$taskName       = 'ChefFlow-Watchdog'"))
 })
 
 test('tunnel bootstrap recovers credentials outside git and validates ingress', () => {
