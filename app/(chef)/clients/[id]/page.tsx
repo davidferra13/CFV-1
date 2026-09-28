@@ -36,7 +36,8 @@ import { getClientNotes } from '@/lib/notes/actions'
 import { getClientConnections } from '@/lib/connections/actions'
 import { getClients } from '@/lib/clients/actions'
 import { ClientConnections } from '@/components/clients/client-connections'
-import { getClientChefActivity } from '@/lib/activity/chef-actions'
+import { getEntityActivityTimeline } from '@/lib/activity/entity-timeline'
+import { EntityActivityTimeline } from '@/components/activity/entity-activity-timeline'
 import { getClientTimeline } from '@/lib/activity/actions'
 import type { Milestone } from '@/lib/clients/milestones'
 import { ClientEmailToggle } from '@/components/clients/client-email-toggle'
@@ -185,7 +186,7 @@ export default async function ClientDetailPage({ params }: ClientDetailPageProps
     clientNotes,
     connections,
     allClients,
-    chefActivity,
+    recordChanges,
     clientPortalActivity,
     financialDetail,
     funQAAnswers,
@@ -219,7 +220,9 @@ export default async function ClientDetailPage({ params }: ClientDetailPageProps
     getClientNotes(params.id).catch(() => []),
     getClientConnections(params.id).catch(() => []),
     getClients().catch(() => []),
-    getClientChefActivity(params.id).catch(() => []),
+    // Chef-side edits to this client record, with before/after values
+    // (written by lib/clients/mutation-pipeline.ts on every updateClient).
+    getEntityActivityTimeline('client', params.id).catch(() => []),
     getClientTimeline(params.id).catch(() => []),
     getClientFinancialDetail(params.id).catch(() => null),
     getClientFunQA(params.id).catch(() => ({})),
@@ -1513,6 +1516,27 @@ export default async function ClientDetailPage({ params }: ClientDetailPageProps
           <UnifiedClientTimeline items={unifiedTimeline} />
         </CardContent>
       </Card>
+
+      {/* Changes to this client record: collapsed, and hidden entirely until there is one */}
+      {recordChanges.length > 0 && (
+        <details
+          className="group rounded-lg border border-stone-700"
+          data-testid="client-record-changes"
+        >
+          <summary className="flex min-h-12 cursor-pointer list-none items-center justify-between gap-3 px-4 py-3 text-sm font-medium text-stone-200">
+            <span>Record changes ({recordChanges.length})</span>
+            <span className="text-xs text-stone-400 group-open:hidden">Show</span>
+            <span className="hidden text-xs text-stone-400 group-open:inline">Hide</span>
+          </summary>
+          <div className="border-t border-stone-700">
+            <EntityActivityTimeline
+              entityType="client"
+              entityId={client.id}
+              entries={recordChanges}
+            />
+          </div>
+        </details>
+      )}
 
       {/* Event History */}
       <Card>
