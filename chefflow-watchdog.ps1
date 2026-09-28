@@ -71,12 +71,23 @@ $script:dockerLaunchAttempted = $false
 $dashboardPort = 41937
 $devPort = 3100
 $betaPort = 3200
-$prodPort = 3000
+$prodPort = 3100
 $dbPort = 54322
 $prodBuildMarker = "$projectDir\.next\BUILD_ID"
 $trayScript = "$projectDir\scripts\launcher\tray.ps1"
-$prodTunnelId = 'f38df8e8-3b6d-463d-b39b-a9265ea5ebcd'
-$prodTunnelConfig = 'C:\Users\david\.cloudflared\config.yml'
+$prodTunnelId = '9dab6929-68e3-4775-9b8e-17482f714e83'
+$prodTunnelConfig = "$env:USERPROFILE\.cloudflared\chefflow-prod.yml"
+$prodTunnelCredential = "$env:USERPROFILE\.cloudflared\$prodTunnelId.json"
+$prodTunnelBootstrap = "$projectDir\scripts\ensure-production-tunnel.ps1"
+$prodEnvironment = @{
+    PORT = [string]$prodPort
+    HOST = '127.0.0.1'
+    NODE_ENV = 'production'
+    NEXT_PUBLIC_SITE_URL = 'https://app.cheflowhq.com'
+    NEXT_PUBLIC_APP_URL = 'https://app.cheflowhq.com'
+    NEXTAUTH_URL = 'https://app.cheflowhq.com'
+    AUTH_URL = 'https://app.cheflowhq.com'
+}
 $betaTunnelId = '03fc407c-cfe6-4758-a239-299cfa615fcc'
 $betaTunnelConfig = "$projectDir\.cloudflared\config.yml"
 
@@ -135,12 +146,9 @@ function Stop-NonProjectPortOwners {
         $displayCommand = if ([string]::IsNullOrWhiteSpace($commandLine)) { '<unknown>' } else { $commandLine }
 
         if ([string]::IsNullOrWhiteSpace($commandLine) -or -not $commandLine.ToLower().Contains($projectMarker)) {
-            Write-Log "Port $Port occupied by foreign process PID $($owner.ProcessId) [$($owner.Name)] $displayCommand -- terminating."
-            Stop-Process -Id $owner.ProcessId -Force -ErrorAction SilentlyContinue
+            Write-Log "Port $Port occupied by foreign process PID $($owner.ProcessId) [$($owner.Name)] $displayCommand -- leaving it untouched."
         }
     }
-
-    Start-Sleep -Seconds 2
 }
 
 function Test-ProcessCommandRunning {
@@ -317,7 +325,8 @@ function Ensure-ReleaseBuildReady {
         -Key 'releaseBuild' `
         -Label '[build] Release build' `
         -FileName $nodeExe `
-        -Arguments 'scripts/run-next-build.mjs'
+        -Arguments 'scripts/run-next-build.mjs' `
+        -EnvironmentVariables $prodEnvironment
 
     return $false
 }
@@ -661,7 +670,8 @@ function Ensure-ProdServerRunning {
         -Key 'prod' `
         -Label '[prod] Production server' `
         -FileName $nodeExe `
-        -Arguments 'scripts/run-next-prod.mjs'
+        -Arguments 'scripts/run-next-prod.mjs' `
+        -EnvironmentVariables $prodEnvironment
 }
 
 function Ensure-CloudflaredTunnelRunning {
@@ -696,6 +706,56 @@ function Ensure-CloudflaredTunnelRunning {
         -Arguments "tunnel --config `"$ConfigPath`" run $TunnelId"
 }
 
+function Ensure-ProductionTunnelMaterial {
+    $configText = ''
+    if (Test-Path $prodTunnelConfig) {
+        try {
+            $configText = Get-Content $prodTunnelConfig -Raw -ErrorAction Stop
+        } catch {
+            $configText = ''
+        }
+    }
+
+    $configMatchesTunnel = (
+        -not [string]::IsNullOrWhiteSpace($configText) -and
+        $configText.Contains($prodTunnelId) -and
+        $configText.Contains('app.cheflowhq.com') -and
+        $configText.Contains('cheflowhq.com')
+    )
+
+    if ($configMatchesTunnel -and (Test-Path $prodTunnelCredential)) {
+        return $true
+    }
+
+    if (-not (Test-Path $prodTunnelBootstrap)) {
+        Write-Log "[prod-tunnel] Bootstrap script missing at $prodTunnelBootstrap."
+        return $false
+    }
+
+    $originUrl = "http://127.0.0.1:$prodPort"
+    $arguments = "-NoProfile -ExecutionPolicy Bypass -File `"$prodTunnelBootstrap`" -TunnelId `"$prodTunnelId`" -OriginUrl `"$originUrl`" -ConfigPath `"$prodTunnelConfig`" -ForceConfig"
+
+    try {
+        $process = Start-Process `
+            -FilePath $powershellExe `
+            -ArgumentList $arguments `
+            -WorkingDirectory $projectDir `
+            -WindowStyle Hidden `
+            -Wait `
+            -PassThru
+
+        if ($process.ExitCode -ne 0) {
+            Write-Log "[prod-tunnel] Bootstrap failed with exit code $($process.ExitCode)."
+            return $false
+        }
+    } catch {
+        Write-Log "[prod-tunnel] Bootstrap failed: $($_.Exception.Message)"
+        return $false
+    }
+
+    return (Test-Path $prodTunnelConfig) -and (Test-Path $prodTunnelCredential)
+}
+
 Write-Log '=== ChefFlow Watchdog Started ==='
 Ensure-OllamaRunning
 Ensure-MissionControlRunning
@@ -716,13 +776,17 @@ while ($true) {
     }
 
     Ensure-ProdServerRunning
-    Ensure-CloudflaredTunnelRunning `
-        -Key 'prodTunnel' `
-        -Label '[prod-tunnel] Production Cloudflare tunnel' `
-        -TunnelId $prodTunnelId `
-        -ConfigPath $prodTunnelConfig
+    if (Ensure-ProductionTunnelMaterial) {
+        Ensure-CloudflaredTunnelRunning `
+            -Key 'prodTunnel' `
+            -Label '[prod-tunnel] Production Cloudflare tunnel' `
+            -TunnelId $prodTunnelId `
+            -ConfigPath $prodTunnelConfig
+    }
 
-    Ensure-DevServerRunning
+    if ($devPort -ne $prodPort) {
+        Ensure-DevServerRunning
+    }
     # Beta server (port 3200) DISABLED 2026-04-09:
     # User runs single-environment only (see memory/feedback_single_app_version.md).
     # Beta was spawning a port 3200 server every 30 seconds, fighting cleanup
