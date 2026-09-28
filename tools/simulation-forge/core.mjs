@@ -10,7 +10,7 @@ export function validate(s) {
   if (!['synthetic','observed','inferred'].includes(s.provenance?.kind)) throw Error('Provenance kind required')
   return s
 }
-export async function runScenario(s, adapter, { seed = 1, commit = 'unknown', budget: override = {} } = {}) {
+export async function runScenario(s, adapter, { seed = 1, commit = 'unknown', configId = 'default', budget: override = {} } = {}) {
   validate(s)
   const budget = { ...budgetDefaults, ...override }
   if (freemem() < budget.minFreeRamBytes) throw Error('Low memory headroom')
@@ -38,8 +38,9 @@ export async function runScenario(s, adapter, { seed = 1, commit = 'unknown', bu
   catch (e) { error = String(e); evalResult = { observations: [], scores: {}, violations: [] } }
   const violations = [...(evalResult.violations ?? []), ...(error ? [{ invariant: 'engine_error', detail: error }] : [])]
   emit('outcome', { observations: evalResult.observations, scores: evalResult.scores, violations })
-  return { runId: hash([s, seed, adapter.version]), scenarioId: s.id, product: s.product.id, source: s.provenance,
-    adapterVersion: adapter.version, productVersion: s.product.version, model: 'none', seed, commit,
+  return { runId: hash([s, seed, adapter.version, adapter.evaluatorVersion ?? adapter.version, commit, configId, budget]), scenarioId: s.id, product: s.product.id, source: s.provenance,
+    adapterVersion: adapter.version, evaluatorVersion: adapter.evaluatorVersion ?? adapter.version,
+    configId, productVersion: s.product.version, model: 'none', seed, commit,
     environment: s.environment, actors: s.actors, observations: evalResult.observations, scores: evalResult.scores,
     violations, trajectory, measuredMs: +(performance.now() - start).toFixed(3) }
 }
@@ -69,7 +70,8 @@ export async function minimize(s, adapter, invariant, opts = {}) {
   const failing = async candidate => { attempts++; return (await runScenario(candidate, adapter, opts)).violations.some(v => v.invariant === invariant) }
   if (!(await failing(smallest))) throw Error('Cannot reproduce failure')
   for (const key of ['events','items']) {
-    for (let i = (key === 'events' ? smallest.events : smallest.initialState.items).length - 1; i >= 0; i--) {
+    const members = key === 'events' ? smallest.events : (Array.isArray(smallest.initialState.items) ? smallest.initialState.items : [])
+    for (let i = members.length - 1; i >= 0; i--) {
       const candidate = clone(smallest)
       if (key === 'events') candidate.events.splice(i, 1)
       else candidate.initialState.items.splice(i, 1)
