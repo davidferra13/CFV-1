@@ -55,7 +55,7 @@ const files = [...selected].sort()
 if (listOnly) {
   console.log(files.join('\n'))
 } else {
-  const result = spawnSync(process.execPath, ['--test', '--import', 'tsx', ...files], {
+  const result = spawnSync(process.execPath, ['--test', '--test-concurrency=4', '--import', 'tsx', ...files], {
     cwd: root,
     stdio: 'inherit',
   })
