@@ -47,10 +47,18 @@ export async function runScenario(s, adapter, { seed = 1, commit = 'unknown', co
 export async function replay(s, adapter, count = 10, opts = {}) {
   const budget = { ...budgetDefaults, ...opts.budget }
   if (!Number.isInteger(count) || count < 1 || count > budget.maxRuns) throw Error('Run budget exceeded')
+  const seedMode = opts.seedMode ?? 'fixed'
+  if (!['fixed', 'vary'].includes(seedMode)) throw Error('Unknown replay seed mode')
+  const baseSeed = opts.seed ?? 1
+  if (seedMode === 'vary' &&
+    (!Number.isSafeInteger(baseSeed) || baseSeed < 0 || baseSeed + count - 1 > 0xffffffff))
+    throw Error('Replay seed range exceeded')
   const start = performance.now(), runs = []
   for (let i = 0; i < count; i++) {
     if (performance.now() - start > budget.maxMs) throw Error('Replay time budget exceeded')
-    runs.push(await runScenario(s, adapter, { ...opts, budget }))
+    runs.push(await runScenario(s, adapter, {
+      ...opts, seed: seedMode === 'vary' ? baseSeed + i : baseSeed, budget
+    }))
   }
   return runs
 }
