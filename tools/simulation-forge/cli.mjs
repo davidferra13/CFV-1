@@ -47,8 +47,11 @@ if (command === 'release') {
   if (violations.length) process.exitCode = 1
 } else if (command === 'replay') {
   const n = Number(process.argv[3] ?? 10)
-  const runs = await replay(chef, fixed, n, opts)
-  console.log(JSON.stringify({ command, count: runs.length, distinctOutcomes: new Set(runs.map(x => JSON.stringify([x.scores,x.violations]))).size,
+  const seedMode = process.argv[4] ?? 'fixed'
+  const runs = await replay(chef, fixed, n, { ...opts, seedMode })
+  console.log(JSON.stringify({ command, count: runs.length, seedMode, firstSeed: runs[0].seed,
+    lastSeed: runs.at(-1).seed, distinctRunIds: new Set(runs.map(x => x.runId)).size,
+    distinctOutcomes: new Set(runs.map(x => JSON.stringify([x.scores,x.violations]))).size,
     clusters: cluster(runs), runId: runs[0].runId }))
   if (runs.some(r => r.violations.length)) process.exitCode = 1
 } else if (command === 'marketplace-proof') {
@@ -171,4 +174,4 @@ if (command === 'release') {
   console.log(JSON.stringify({ command, target, baselineViolations: baseline.violations.length, minimizedItems: reduced.scenario.initialState.items.length,
     minimizedEvents: reduced.scenario.events.length, fixedReplays: replayFixed.length, mutations: allFixed.length, portability: portability.product,
     comparison, runIds: [baseline.runId, repaired.runId, portability.runId] }))
-} else throw Error('Use prove, source-proof, booking-proof, marketplace-proof, release, or replay [count]')
+} else throw Error('Use prove, source-proof, booking-proof, marketplace-proof, release, or replay [count] [fixed|vary]')
