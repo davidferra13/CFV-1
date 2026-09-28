@@ -26,6 +26,20 @@ const mutations = mutate(chef, [
 const command = process.argv[2] ?? 'release'
 const commit = execFileSync('git', ['rev-parse', 'HEAD'], { cwd: root, encoding: 'utf8' }).trim()
 const opts = { commit, seed: 101 }
+const maxQueuedCases = 32
+const maxConcurrentCases = 2
+async function boundedMap(items, fn) {
+  if (items.length > maxQueuedCases) throw Error('Scenario queue budget exceeded')
+  const results = new Array(items.length)
+  let next = 0
+  await Promise.all(Array.from({ length: Math.min(maxConcurrentCases, items.length) }, async () => {
+    while (next < items.length) {
+      const i = next++
+      results[i] = await fn(items[i])
+    }
+  }))
+  return results
+}
 const sourceScenario = homepageTasteScenario(chef)
 const sourceAdapter = homepageTasteAdapter()
 const booking = bookingScenario(chef)
@@ -33,14 +47,14 @@ const bookingFixed = bookingAdapter()
 const marketplace = marketplaceScenario(chef)
 const marketplaceFixed = marketplaceAdapter()
 if (command === 'release') {
-  const runs = await Promise.all([chef, ...mutations].map(s => runScenario(s, fixed, opts)))
+  const runs = await boundedMap([chef, ...mutations], s => runScenario(s, fixed, opts))
   const second = await runScenario(weather, weatherFixtureAdapter, opts)
   const realSource = await runScenario(sourceScenario, sourceAdapter, opts)
   const retained = load('booking-availability-regression.json')
-  const bookings = await Promise.all([booking, ...bookingVariants(booking), retained].map(s => runScenario(s, bookingFixed, opts)))
+  const bookings = await boundedMap([booking, ...bookingVariants(booking), retained], s => runScenario(s, bookingFixed, opts))
   const retainedMarket = load('marketplace-availability-regression.json')
-  const markets = await Promise.all([marketplace, ...marketplaceVariants(marketplace), retainedMarket]
-    .map(s => runScenario(s, marketplaceFixed, opts)))
+  const markets = await boundedMap([marketplace, ...marketplaceVariants(marketplace), retainedMarket],
+    s => runScenario(s, marketplaceFixed, opts))
   const all = [...runs, second, realSource, ...bookings, ...markets]
   const violations = cluster(all)
   console.log(JSON.stringify({ command, commit, cases: all.length, violations, runIds: all.map(x => x.runId) }))
@@ -61,20 +75,20 @@ if (command === 'release') {
   const reduced = await minimize(changedSupply, injectedAdapter, 'match_requires_available_chef', opts)
   const repaired = await runScenario(reduced.scenario, marketplaceFixed, opts)
   const repeated = await replay(reduced.scenario, marketplaceFixed, 10, opts)
-  const family = await Promise.all([marketplace, ...marketplaceVariants(marketplace)]
-    .map(s => runScenario(s, marketplaceFixed, opts)))
+  const family = await boundedMap([marketplace, ...marketplaceVariants(marketplace)],
+    s => runScenario(s, marketplaceFixed, opts))
   const comparison = await compare([reduced.scenario], injectedAdapter, marketplaceFixed, opts)
   const trialSeeds = [1, 101, 1001, 10001, 1234567, 987654321]
-  const paired = await Promise.all(trialSeeds.map(async seed => {
+  const paired = await boundedMap(trialSeeds, async seed => {
     const [before, after] = await Promise.all([
       runScenario(reduced.scenario, injectedAdapter, { ...opts, seed }),
       runScenario(reduced.scenario, marketplaceFixed, { ...opts, seed })])
     return { seed, before: { runId: before.runId, observations: before.observations, scores: before.scores,
       violations: before.violations }, after: { runId: after.runId, observations: after.observations,
       scores: after.scores, violations: after.violations } }
-  }))
+  })
   const summer = marketplaceVariants(marketplace).find(s => s.mutation.kind === 'summer-demand')
-  const sensitivity = await Promise.all(trialSeeds.map(seed => runScenario(summer, marketplaceFixed, { ...opts, seed })))
+  const sensitivity = await boundedMap(trialSeeds, seed => runScenario(summer, marketplaceFixed, { ...opts, seed }))
   if (!injected.violations.some(v => v.invariant === 'match_requires_available_chef') ||
     reduced.scenario.events.length >= changedSupply.events.length || repaired.violations.length ||
     repeated.some(r => r.violations.length) || family.some(r => r.violations.length) ||
@@ -110,7 +124,7 @@ if (command === 'release') {
   const reduced = await minimize(changedAvailability, injectedAdapter, 'confirmed_requires_available_chef', opts)
   const repaired = await runScenario(reduced.scenario, bookingFixed, opts)
   const repeated = await replay(reduced.scenario, bookingFixed, 10, opts)
-  const family = await Promise.all([booking, ...bookingVariants(booking)].map(s => runScenario(s, bookingFixed, opts)))
+  const family = await boundedMap([booking, ...bookingVariants(booking)], s => runScenario(s, bookingFixed, opts))
   const comparison = await compare([reduced.scenario], injectedAdapter, bookingFixed, opts)
   if (!injected.violations.some(v => v.invariant === 'confirmed_requires_available_chef') ||
     reduced.scenario.events.length >= changedAvailability.events.length || repaired.violations.length ||
@@ -156,7 +170,7 @@ if (command === 'release') {
   const reduced = await minimize(chef, before, 'hard_eligibility', opts)
   const repaired = await runScenario(reduced.scenario, fixed, opts)
   const replayFixed = await replay(chef, fixed, 10, opts)
-  const allFixed = await Promise.all([chef, ...mutations].map(s => runScenario(s, fixed, opts)))
+  const allFixed = await boundedMap([chef, ...mutations], s => runScenario(s, fixed, opts))
   const portability = await runScenario(weather, weatherFixtureAdapter, opts)
   const comparison = await compare([chef, ...mutations], before, fixed, opts)
   if (!baseline.violations.length || repaired.violations.length || replayFixed.some(x => x.violations.length) ||
