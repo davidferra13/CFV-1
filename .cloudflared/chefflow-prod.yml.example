@@ -1,0 +1,15 @@
+# ChefFlow production tunnel template.
+# Materialize this outside the repository with scripts/ensure-production-tunnel.ps1.
+# Never commit the generated credential JSON.
+tunnel: <TUNNEL_ID>
+credentials-file: '<CREDENTIALS_FILE>'
+protocol: http2
+
+ingress:
+  - hostname: app.cheflowhq.com
+    service: <ORIGIN_URL>
+  - hostname: cheflowhq.com
+    service: <ORIGIN_URL>
+  - hostname: mc.cheflowhq.com
+    service: http://127.0.0.1:41937
+  - service: http_status:404

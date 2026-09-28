@@ -10,7 +10,7 @@ const require = createRequire(import.meta.url)
 const rootDir = resolve(process.cwd())
 const rootMarker = normalizePath(rootDir)
 const nextCliPath = require.resolve('next/dist/bin/next')
-const port = Number(process.env.PORT || '3000')
+const port = Number(process.env.PORT || '3100')
 const host = String(process.env.HOST || '0.0.0.0')
 const shouldBuild = process.argv.includes('--build')
 
@@ -157,7 +157,17 @@ async function releasePort(listenPort) {
     return
   }
 
-  console.log(`[run-next-prod] Releasing port ${listenPort} before start:`)
+  const foreignOwners = owners.filter((owner) => !isRepoOwned(owner))
+  if (foreignOwners.length > 0) {
+    for (const owner of foreignOwners) {
+      console.error(`[run-next-prod] Refusing to terminate ${describeProcess(owner)}`)
+    }
+    throw new Error(
+      `Port ${listenPort} is occupied by non-ChefFlow process(es); refusing destructive cleanup.`
+    )
+  }
+
+  console.log(`[run-next-prod] Releasing ChefFlow-owned port ${listenPort} before start:`)
   for (const owner of owners) {
     console.log(`[run-next-prod]   ${describeProcess(owner)}`)
     stopProcessTree(owner.pid)
