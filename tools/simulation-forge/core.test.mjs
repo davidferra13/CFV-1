@@ -64,3 +64,34 @@ test('minimizer handles scenarios without an items array', async () => {
   assert.equal(result.evidence.violations[0].invariant, 'forced_failure')
   assert.equal(result.scenario.events.length, 0)
 })
+
+test('varying seeds explores stochastic outcomes without changing exact replay semantics', async () => {
+  const stochastic = {
+    version: 'seed-probe-v1',
+    async step(state, _event, { random }) {
+      state.draw = random()
+      return { state }
+    },
+    evaluate(state) {
+      return { observations: [{ kind: 'draw', value: state.draw }],
+        scores: { draw: state.draw }, violations: [] }
+    }
+  }
+  const fixedSeeds = await replay(weather, stochastic, 6, { seed: 101 })
+  assert.equal(new Set(fixedSeeds.map(x => x.runId)).size, 1)
+  assert.equal(new Set(fixedSeeds.map(x => x.scores.draw)).size, 1)
+
+  const varied = await replay(weather, stochastic, 6, { seed: 101, seedMode: 'vary' })
+  assert.deepEqual(varied.map(x => x.seed), [101, 102, 103, 104, 105, 106])
+  assert.equal(new Set(varied.map(x => x.runId)).size, 6)
+  assert.equal(new Set(varied.map(x => x.scores.draw)).size, 6)
+  assert.deepEqual(
+    varied.map(x => x.scores.draw),
+    (await replay(weather, stochastic, 6, { seed: 101, seedMode: 'vary' }))
+      .map(x => x.scores.draw)
+  )
+  await assert.rejects(() => replay(weather, stochastic, 2, { seedMode: 'vary', seed: 0xffffffff }),
+    /seed range/)
+  await assert.rejects(() => replay(weather, stochastic, 2, { seedMode: 'unknown' }),
+    /seed mode/)
+})
