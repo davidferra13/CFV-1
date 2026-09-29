@@ -1,0 +1,18 @@
+{
+  "verifiedAt": "2026-09-27T16:44:30.605Z",
+  "computer": "DESKTOP-DKCONSS",
+  "target": "C:\\Users\\david\\Documents\\CFv1-worktrees\\setup-service-launch-20260927\\docs\\business\\chefflow-setup",
+  "filesHashMatched": 10,
+  "researchCount": 20,
+  "counts": {
+    "Investigate": 2,
+    "Hold": 4,
+    "Exclude": 14
+  },
+  "importCount": 2,
+  "importCompatibility": "Verified with the actual parseCSV and CSV_FIELD_MAP extracted from canonical lib/prospecting/pipeline-actions.ts",
+  "databaseImportPerformed": false,
+  "outreachSent": 0,
+  "newAppOrHostedPrototype": false,
+  "uiRuntimeCodeChanged": false
+}

@@ -2,11 +2,19 @@
 /**
  * Action Surface Audit
  *
- * Inventories all server-action exports across lib/ and checks which UI
- * surfaces consume them (app pages, rail, search/palette, hub/circles).
+ * Inventories every server-action export in lib/ and classifies how it is used:
+ *   - ui-wired:     referenced from app/ or components/ (a chef can reach it)
+ *   - server-only:  referenced only by other lib/ or hooks/ code
+ *   - unreferenced: referenced nowhere outside its own file
  *
- * Output: docs/action-surface-audit.json
- * Run:    npx tsx scripts/action-surface-audit.ts
+ * It also records which named surfaces reference each action (app pages, rail,
+ * search/palette, hub/circles, other components) so multi-surface coverage can
+ * still be read. Test files are ignored. Matching is by exported name, so a
+ * result is structural evidence, not proof: an unreferenced action may have
+ * been superseded by a differently named one.
+ *
+ * Output: docs/action-surface-audit.json (or --out <path>)
+ * Run:    npx tsx scripts/action-surface-audit.ts [--out <path>]
  */
 
 import * as fs from 'node:fs'
@@ -17,107 +25,91 @@ const __filename = fileURLToPath(import.meta.url)
 const __dirname = path.dirname(__filename)
 const ROOT = path.resolve(__dirname, '..')
 
-// ---------------------------------------------------------------------------
-// 1. Discover action files
-// ---------------------------------------------------------------------------
+const SKIP_DIRS = new Set(['node_modules', '.next', '.git'])
+const SOURCE_RE = /\.(tsx?|jsx?|mjs|cjs)$/
+const TEST_RE = /\.(test|spec)\.|__tests__/
 
-type ActionFile = { relPath: string; exports: string[] }
-
-/** Recursively collect files matching a predicate. */
 function walkDir(dir: string, predicate: (f: string) => boolean): string[] {
   const results: string[] = []
   if (!fs.existsSync(dir)) return results
-
   for (const entry of fs.readdirSync(dir, { withFileTypes: true })) {
+    if (SKIP_DIRS.has(entry.name)) continue
     const full = path.join(dir, entry.name)
-    if (entry.isDirectory()) {
-      results.push(...walkDir(full, predicate))
-    } else if (predicate(entry.name)) {
-      results.push(full)
-    }
+    if (entry.isDirectory()) results.push(...walkDir(full, predicate))
+    else if (predicate(full)) results.push(full)
   }
   return results
 }
 
-function discoverActionFiles(): ActionFile[] {
-  const libDir = path.join(ROOT, 'lib')
-  const files = walkDir(libDir, (name) => {
-    // Match actions.ts or *-actions.ts (not .test.ts, not .d.ts)
-    if (!name.endsWith('.ts') || name.endsWith('.d.ts') || name.endsWith('.test.ts')) return false
-    return name === 'actions.ts' || name.endsWith('-actions.ts')
-  })
+const rel = (p: string) => path.relative(ROOT, p).replace(/\\/g, '/')
 
-  const actionFiles: ActionFile[] = []
+// ---------------------------------------------------------------------------
+// 1. Discover server actions
+// ---------------------------------------------------------------------------
 
-  for (const filePath of files) {
-    const content = fs.readFileSync(filePath, 'utf-8')
-    // Only consider files with 'use server' directive
-    if (!content.includes("'use server'") && !content.includes('"use server"')) continue
+type ActionFile = { relPath: string; exports: string[] }
 
-    const exports = extractExportedAsyncFunctions(content)
-    if (exports.length === 0) continue
-
-    const relPath = path.relative(ROOT, filePath).replace(/\\/g, '/')
-    actionFiles.push({ relPath, exports })
-  }
-
-  return actionFiles
-}
-
-/** Extract names of exported async functions via regex. */
 function extractExportedAsyncFunctions(content: string): string[] {
   const names: string[] = []
-  // Pattern: export async function NAME(
   const re = /export\s+async\s+function\s+(\w+)\s*\(/g
   let match: RegExpExecArray | null
-  while ((match = re.exec(content)) !== null) {
-    names.push(match[1])
-  }
+  while ((match = re.exec(content)) !== null) names.push(match[1])
   return names
 }
 
-// ---------------------------------------------------------------------------
-// 2. Surface categories and scanning
-// ---------------------------------------------------------------------------
-
-type SurfaceCategory = 'app' | 'rail' | 'search' | 'hub'
-
-const SURFACE_DIRS: Record<SurfaceCategory, string> = {
-  app: path.join(ROOT, 'app'),
-  rail: path.join(ROOT, 'components', 'rail'),
-  search: path.join(ROOT, 'components', 'search'),
-  hub: path.join(ROOT, 'lib', 'hub'),
+function discoverActionFiles(): ActionFile[] {
+  const files = walkDir(path.join(ROOT, 'lib'), (full) => {
+    const name = path.basename(full)
+    if (!name.endsWith('.ts') || name.endsWith('.d.ts') || TEST_RE.test(name)) return false
+    return name === 'actions.ts' || name.endsWith('-actions.ts')
+  })
+  const out: ActionFile[] = []
+  for (const filePath of files) {
+    const content = fs.readFileSync(filePath, 'utf-8')
+    if (!content.includes("'use server'") && !content.includes('"use server"')) continue
+    const exports = extractExportedAsyncFunctions(content)
+    if (exports.length > 0) out.push({ relPath: rel(filePath), exports })
+  }
+  return out
 }
 
-/** Collect all .ts/.tsx file contents for a surface into a single string for fast searching. */
-function loadSurfaceContent(dir: string): string {
-  if (!fs.existsSync(dir)) return ''
-  const files = walkDir(dir, (name) => name.endsWith('.ts') || name.endsWith('.tsx'))
-  const chunks: string[] = []
-  for (const f of files) {
+// ---------------------------------------------------------------------------
+// 2. Index every identifier by the files that mention it
+// ---------------------------------------------------------------------------
+
+type SurfaceCategory = 'app' | 'rail' | 'search' | 'hub' | 'components'
+type ActionStatus = 'ui-wired' | 'server-only' | 'unreferenced'
+
+function surfaceOf(relPath: string): SurfaceCategory | null {
+  if (relPath.startsWith('app/')) return 'app'
+  if (relPath.startsWith('components/rail/')) return 'rail'
+  if (relPath.startsWith('components/search/')) return 'search'
+  if (relPath.startsWith('lib/hub/')) return 'hub'
+  if (relPath.startsWith('components/')) return 'components'
+  return null
+}
+
+function buildIdentifierIndex(): Map<string, Set<string>> {
+  const index = new Map<string, Set<string>>()
+  const dirs = ['app', 'components', 'lib', 'hooks', 'src']
+  const files = dirs.flatMap((d) =>
+    walkDir(path.join(ROOT, d), (full) => SOURCE_RE.test(full) && !TEST_RE.test(rel(full)))
+  )
+  for (const full of files) {
+    let content: string
     try {
-      chunks.push(fs.readFileSync(f, 'utf-8'))
+      content = fs.readFileSync(full, 'utf-8')
     } catch {
-      // Skip unreadable files
+      continue
+    }
+    const r = rel(full)
+    for (const token of new Set(content.match(/\b[A-Za-z_]\w*\b/g) ?? [])) {
+      let set = index.get(token)
+      if (!set) index.set(token, (set = new Set()))
+      set.add(r)
     }
   }
-  return chunks.join('\n')
-}
-
-/** Preload all surface contents into memory for fast multi-action searching. */
-function preloadSurfaces(): Record<SurfaceCategory, string> {
-  const loaded = {} as Record<SurfaceCategory, string>
-  for (const [cat, dir] of Object.entries(SURFACE_DIRS)) {
-    loaded[cat as SurfaceCategory] = loadSurfaceContent(dir)
-  }
-  return loaded
-}
-
-/** Check if an action name appears in a surface's content (import or direct reference). */
-function actionAppearsInSurface(actionName: string, surfaceContent: string): boolean {
-  // Look for the function name as a whole word (import statement, call, or reference)
-  const re = new RegExp(`\\b${actionName}\\b`)
-  return re.test(surfaceContent)
+  return index
 }
 
 // ---------------------------------------------------------------------------
@@ -127,70 +119,93 @@ function actionAppearsInSurface(actionName: string, surfaceContent: string): boo
 type ActionEntry = {
   action: string
   module: string
+  status: ActionStatus
   surfaces: SurfaceCategory[]
   surfaceCount: number
 }
 
 type AuditReport = {
   generatedAt: string
+  method: string
   summary: {
     totalActions: number
-    singleSurface: number
+    uiWired: number
+    serverOnly: number
+    unreferenced: number
+    uiWiredPercent: number
     multiSurface: number
-    zeroSurface: number
-    coveragePercent: number
   }
+  byDomain: Record<
+    string,
+    { total: number; uiWired: number; serverOnly: number; unreferenced: number }
+  >
   actions: ActionEntry[]
 }
 
 function buildReport(): AuditReport {
   const actionFiles = discoverActionFiles()
-  const surfaces = preloadSurfaces()
-  const surfaceCategories = Object.keys(SURFACE_DIRS) as SurfaceCategory[]
-
+  const index = buildIdentifierIndex()
   const actions: ActionEntry[] = []
 
   for (const file of actionFiles) {
     for (const fnName of file.exports) {
-      const found: SurfaceCategory[] = []
-      for (const cat of surfaceCategories) {
-        // Skip self-references: don't count hub actions appearing in lib/hub/
-        if (cat === 'hub' && file.relPath.startsWith('lib/hub/')) continue
-        if (actionAppearsInSurface(fnName, surfaces[cat])) {
-          found.push(cat)
-        }
+      const users = [...(index.get(fnName) ?? [])].filter((r) => r !== file.relPath)
+      const surfaces = new Set<SurfaceCategory>()
+      for (const r of users) {
+        const s = surfaceOf(r)
+        // Hub actions referenced from other hub files are internal, not a surface.
+        if (s === 'hub' && file.relPath.startsWith('lib/hub/')) continue
+        if (s) surfaces.add(s)
       }
+      const ui = users.some((r) => r.startsWith('app/') || r.startsWith('components/'))
+      const status: ActionStatus = ui
+        ? 'ui-wired'
+        : users.length > 0
+          ? 'server-only'
+          : 'unreferenced'
       actions.push({
         action: fnName,
         module: file.relPath,
-        surfaces: found,
-        surfaceCount: found.length,
+        status,
+        surfaces: [...surfaces].sort(),
+        surfaceCount: surfaces.size,
       })
     }
   }
 
-  // Sort: zero-surface first, then single, then by name
-  actions.sort((a, b) => {
-    if (a.surfaceCount !== b.surfaceCount) return a.surfaceCount - b.surfaceCount
-    return a.action.localeCompare(b.action)
-  })
+  const order: Record<ActionStatus, number> = { unreferenced: 0, 'server-only': 1, 'ui-wired': 2 }
+  actions.sort(
+    (a, b) =>
+      order[a.status] - order[b.status] ||
+      a.module.localeCompare(b.module) ||
+      a.action.localeCompare(b.action)
+  )
 
-  const totalActions = actions.length
-  const zeroSurface = actions.filter((a) => a.surfaceCount === 0).length
-  const singleSurface = actions.filter((a) => a.surfaceCount === 1).length
-  const multiSurface = actions.filter((a) => a.surfaceCount >= 2).length
-  const coveragePercent =
-    totalActions > 0 ? Math.round(((totalActions - zeroSurface) / totalActions) * 1000) / 10 : 0
+  const byDomain: AuditReport['byDomain'] = {}
+  for (const a of actions) {
+    const domain = a.module.split('/')[1] ?? 'root'
+    const d = (byDomain[domain] ??= { total: 0, uiWired: 0, serverOnly: 0, unreferenced: 0 })
+    d.total++
+    if (a.status === 'ui-wired') d.uiWired++
+    else if (a.status === 'server-only') d.serverOnly++
+    else d.unreferenced++
+  }
 
+  const total = actions.length
+  const uiWired = actions.filter((a) => a.status === 'ui-wired').length
   return {
     generatedAt: new Date().toISOString(),
+    method:
+      'Exported async functions in use-server lib/**/actions.ts and *-actions.ts, matched by name against app/, components/, lib/, hooks/, src/ (tests excluded). Structural evidence only.',
     summary: {
-      totalActions,
-      singleSurface,
-      multiSurface,
-      zeroSurface,
-      coveragePercent,
+      totalActions: total,
+      uiWired,
+      serverOnly: actions.filter((a) => a.status === 'server-only').length,
+      unreferenced: actions.filter((a) => a.status === 'unreferenced').length,
+      uiWiredPercent: total > 0 ? Math.round((uiWired / total) * 1000) / 10 : 0,
+      multiSurface: actions.filter((a) => a.surfaceCount >= 2).length,
     },
+    byDomain,
     actions,
   }
 }
@@ -200,18 +215,23 @@ function buildReport(): AuditReport {
 // ---------------------------------------------------------------------------
 
 function main() {
-  console.log('[action-surface-audit] Scanning action files...')
+  const outArg = process.argv.indexOf('--out')
+  const outPath =
+    outArg > -1 && process.argv[outArg + 1]
+      ? path.resolve(process.argv[outArg + 1])
+      : path.join(ROOT, 'docs', 'action-surface-audit.json')
+
+  console.log('[action-surface-audit] Scanning...')
   const report = buildReport()
+  fs.writeFileSync(outPath, JSON.stringify(report, null, 2) + '\n', 'utf-8')
 
-  const outPath = path.join(ROOT, 'docs', 'action-surface-audit.json')
-  fs.writeFileSync(outPath, JSON.stringify(report, null, 2), 'utf-8')
-
-  console.log(`[action-surface-audit] Found ${report.summary.totalActions} actions`)
-  console.log(`  Zero-surface:  ${report.summary.zeroSurface}`)
-  console.log(`  Single-surface: ${report.summary.singleSurface}`)
-  console.log(`  Multi-surface:  ${report.summary.multiSurface}`)
-  console.log(`  Coverage:       ${report.summary.coveragePercent}%`)
-  console.log(`[action-surface-audit] Report written to ${path.relative(ROOT, outPath)}`)
+  const s = report.summary
+  console.log(`[action-surface-audit] ${s.totalActions} server actions`)
+  console.log(`  UI-wired:      ${s.uiWired} (${s.uiWiredPercent}%)`)
+  console.log(`  Server-only:   ${s.serverOnly}`)
+  console.log(`  Unreferenced:  ${s.unreferenced}`)
+  console.log(`  Multi-surface: ${s.multiSurface}`)
+  console.log(`[action-surface-audit] Report written to ${outPath}`)
 }
 
 main()

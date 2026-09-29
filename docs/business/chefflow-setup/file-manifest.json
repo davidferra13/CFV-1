@@ -1,0 +1,58 @@
+{
+  "createdAt": "2026-09-27T16:43:22.424Z",
+  "root": "C:\\Users\\david\\Documents\\CFv1\\docs\\business\\chefflow-setup",
+  "files": [
+    {
+      "file": "START-HERE.md",
+      "bytes": 4444,
+      "sha256": "777b4d46675256d246394325f65f7781715f1796c99c62b1773ac2b0e1e33f67"
+    },
+    {
+      "file": "01-Offer.md",
+      "bytes": 2135,
+      "sha256": "3e2eac9ff499ea1c2e138afdb90ed4449aae768a014bb512bc3195dbd2199fc6"
+    },
+    {
+      "file": "02-Prospect-review.csv",
+      "bytes": 7847,
+      "sha256": "6a87db54ec8bbb0d05189ad6502f863b9d3a8bfac8f33cfd3d6217958793ba47"
+    },
+    {
+      "file": "03-ChefFlow-import.csv",
+      "bytes": 1660,
+      "sha256": "398a9ee22643c15ad9e19c8cfffee24b742d5fd0c7998a99beaad87fb93c64da"
+    },
+    {
+      "file": "04-Outreach-for-review.md",
+      "bytes": 3639,
+      "sha256": "762df0600fe1533ff29c7af9e737cf725d8e2d7fdeecd488a8b0361193dfb98b"
+    },
+    {
+      "file": "05-Fulfillment.md",
+      "bytes": 3597,
+      "sha256": "3a607aeee0c0f11f6f0675455d370f1c2a6c6f8d45efbd556eb8ef5b2e043c96"
+    },
+    {
+      "file": "06-Referral-programs.md",
+      "bytes": 4262,
+      "sha256": "d069d21746770332fedb75482b90cf0abb77c41e92837e28df9f24eac285e1df"
+    },
+    {
+      "file": "07-Client-intake-and-acceptance.md",
+      "bytes": 1986,
+      "sha256": "a71b5b0bc476da5f28364ab8bdf8a857b515a918265473072fce4ab5d22e8a71"
+    },
+    {
+      "file": "08-Sales-and-delivery-ledger.csv",
+      "bytes": 267,
+      "sha256": "cc3cabff8a6a3b3f036f4a21a8d3527e8dd2010e692ac99c8e19a156d245bec4"
+    },
+    {
+      "file": "09-Delivery-status.md",
+      "bytes": 2958,
+      "sha256": "257a01c81337e4883fa4f1407779bb833511846ee9ceabfccc43cf756ca07070"
+    }
+  ],
+  "computer": "DESKTOP-DKCONSS",
+  "updatedAt": "2026-09-27T17:58:36.378Z"
+}

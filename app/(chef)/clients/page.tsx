@@ -20,6 +20,8 @@ import { SkeletonTable } from '@/components/ui/skeleton'
 import { ClientInvitationForm } from './client-invitation-form'
 import { ClientsTable } from './clients-table'
 import { PendingInvitationsTable } from './pending-invitations-table'
+import { getArchivedClients } from '@/lib/clients/archive-actions'
+import { ArchivedClientsSection } from '@/components/clients/archived-clients-section'
 import { ClientInvitationPanel } from './client-invitation-panel'
 import { RebookingBar } from '@/components/intelligence/rebooking-bar'
 import { safeFetch } from '@/lib/utils/safe-fetch'
@@ -221,8 +223,21 @@ export default async function ClientsPage({
           </Suspense>
         </CardContent>
       </Card>
+
+      {/* Archived clients: collapsed, and absent until one exists */}
+      <WidgetErrorBoundary name="Archived Clients" compact>
+        <Suspense fallback={null}>
+          <ArchivedClientsContent />
+        </Suspense>
+      </WidgetErrorBoundary>
     </div>
   )
+}
+
+async function ArchivedClientsContent() {
+  const archived = await getArchivedClients().catch(() => [])
+  if (archived.length === 0) return null
+  return <ArchivedClientsSection clients={archived} />
 }
 
 async function PendingInvitationsContent() {

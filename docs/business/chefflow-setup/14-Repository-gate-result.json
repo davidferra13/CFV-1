@@ -1,0 +1,88 @@
+{
+  "checkedAt": "2026-09-27T17:14:41.871Z",
+  "command": "node scripts/regression-firewall.mjs --no-restart --json",
+  "gate": {
+    "ok": false,
+    "failed": [
+      {
+        "name": "chef nav audit",
+        "code": 1,
+        "signal": null,
+        "timedOut": false,
+        "durationMs": 764,
+        "stderr": "'tsx' is not recognized as an internal or external command,\r\noperable program or batch file."
+      },
+      {
+        "name": "app typecheck",
+        "code": 1,
+        "signal": null,
+        "timedOut": false,
+        "durationMs": 603,
+        "stderr": "[run-typecheck] Failed to start TypeScript: Error: Cannot find module 'typescript/bin/tsc'\nRequire stack:\n- C:\\Users\\david\\Documents\\CFv1-worktrees\\setup-service-launch-20260927\\scripts\\run-typecheck.mjs\n    at Module._resolveFilename (node:internal/modules/cjs/loader:1517:15)\n    at wrapResolveFilename (node:internal/modules/cjs/loader:1071:27)\n    at resolveForCJSWithHooks (node:internal/modules/cjs/loader:1122:12)\n    at require.resolve (node:internal/modules/helpers:171:31)\n    at runTypeScript (file:///C:/Users/david/Documents/CFv1-worktrees/setup-service-launch-20260927/scripts/run-typecheck.mjs:114:30)\n    at main (file:///C:/Users/david/Documents/CFv1-worktrees/setup-service-launch-20260927/scripts/run-typecheck.mjs:212:24)\n    at async file:///C:/Users/david/Documents/CFv1-worktrees/setup-service-launch-20260927/scripts/run-typecheck.mjs:225:1 {\n  code: 'MODULE_NOT_FOUND',\n  requireStack: [\n    'C:\\\\Users\\\\david\\\\Documents\\\\CFv1-worktrees\\\\setup-service-launch-20260927\\\\scripts\\\\run-typecheck.mjs'\n  ]\n}"
+      },
+      {
+        "name": "canonical runtime verify",
+        "code": 1,
+        "signal": null,
+        "timedOut": false,
+        "durationMs": 3126,
+        "stderr": "runtime: FAIL canonical server is not running on port 3100\nruntime: FAIL canonical health failed: fetch failed"
+      },
+      {
+        "name": "canonical runtime verify after route probes",
+        "code": 1,
+        "signal": null,
+        "timedOut": false,
+        "durationMs": 2811,
+        "stderr": "runtime: FAIL canonical server is not running on port 3100\nruntime: FAIL canonical health failed: fetch failed"
+      }
+    ],
+    "steps": [
+      {
+        "name": "chef nav audit",
+        "ok": false,
+        "durationMs": 764,
+        "timedOut": false
+      },
+      {
+        "name": "wiring audit",
+        "ok": true,
+        "durationMs": 24484,
+        "timedOut": false
+      },
+      {
+        "name": "persona completion gate",
+        "ok": true,
+        "durationMs": 841,
+        "timedOut": false
+      },
+      {
+        "name": "app typecheck",
+        "ok": false,
+        "durationMs": 603,
+        "timedOut": false
+      },
+      {
+        "name": "canonical runtime verify",
+        "ok": false,
+        "durationMs": 3126,
+        "timedOut": false
+      },
+      {
+        "name": "affected route probes",
+        "ok": true,
+        "durationMs": 2,
+        "timedOut": false
+      },
+      {
+        "name": "canonical runtime verify after route probes",
+        "ok": false,
+        "durationMs": 2811,
+        "timedOut": false
+      }
+    ]
+  },
+  "interpretation": "The standalone local preparation engine passes its own 20 tests and real-data verification. Full ChefFlow app release is not verified: worktree tsx/TypeScript dependencies are absent and the canonical app is not running.",
+  "runtimeRestartAttempted": false,
+  "outreachAttempted": false
+}

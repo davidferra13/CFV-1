@@ -49,3 +49,24 @@ test('tenant-scoped aliases still validate against the tenant id', async () => {
   assert.equal(allowed, true)
   assert.equal(denied, false)
 })
+
+test('calling feed chef-{tenantId} is scoped to the chef tenant', async () => {
+  const ctx = { isAdmin: false, tenantId: 'tenant-1', userId: 'user-1' }
+
+  assert.equal(await validateRealtimeChannelAccess('chef-tenant-1', ctx), true)
+  assert.equal(await validateRealtimeChannelAccess('chef-tenant-2', ctx), false)
+  assert.equal(await validateRealtimeChannelAccess('chef-', ctx), false)
+  assert.equal(await validateRealtimeChannelAccess('chef-user-1', ctx), false)
+  assert.equal(
+    await validateRealtimeChannelAccess('chef-tenant-1', { ...ctx, tenantId: null }),
+    false
+  )
+  assert.equal(await validateRealtimeChannelAccess('chef-tenant-1:extra', ctx), false)
+})
+
+test('presence and typing wrappers apply the chef feed rule', async () => {
+  const ctx = { isAdmin: false, tenantId: 'tenant-1', userId: 'user-1' }
+
+  assert.equal(await validateRealtimeChannelAccess('presence:chef-tenant-1', ctx), true)
+  assert.equal(await validateRealtimeChannelAccess('typing:chef-tenant-2', ctx), false)
+})

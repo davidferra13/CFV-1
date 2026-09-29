@@ -529,28 +529,28 @@
 > Extraction: `docs/research/weather-intelligence-extraction-pack.md`
 > Deep-pass: `docs/intensify/weather.md`
 
-| #   | Item                                           | Status | Depends On | Notes                                                                                                                                            |
+| # | Item | Status | Depends On | Notes |
 | --- | ---------------------------------------------- | ------ | ---------- | ------------------------------------------------------------------------------------------------------------------------------------------------ | ------------------------------------ |
-| 1   | Wire remy-weather.ts to shared weather utility | DONE   | None       | BUILT 2026-05-17 (Wave 10b). Already consolidated; imports from open-meteo.ts + nominatim.ts. No duplicate calls.                                |
-| 2   | Fix Geocoding Redundancy                       | DONE   | None       | BUILT 2026-05-16 (Wave 1). `remy-weather.ts` now uses stored lat/lng first, falls back to geocoding.                                             |
-| 3   | Fill Venue Details Nulls in Risk Engine        | DONE   | None       | BUILT 2026-05-16 (Wave 1). `event-risk-assessment.ts` queries `venue_profiles` table, fills 4 null fields.                                       |
-| 4   | Wire weather-risk.ts into operational-risk.ts  | DONE   | #3         | BUILT 2026-05-16 (Wave 2). Venue dimension enhanced: >50 = +15, >75 = +30. 3s timeout. Null-safe.                                                |
-| 5   | Enrich Weather Alert Language                  | DONE   | #2         | BUILT 2026-05-17 (Wave 10b). Extracted to weather-alert-enrichment.ts. 6 rule categories, event-type-aware. remy-weather.ts now imports.         |
-| 6   | Activate Dead Weather Rail Resolver            | DONE   | None       | BUILT 2026-05-16 (Wave 1). `weather-resolver.ts` created, registered in `god-mode-dispatcher.ts`. Maps alerts to rail items, capped at 3.        |
-| 7   | Wire Weather into Drive Briefing               | DONE   | None       | BUILT 2026-05-16 (Wave 1). `drive-briefing.ts` now has `weather: EventWeather                                                                    | null` field with try/catch fallback. |
-| 8   | Prep Sheet Weather Line                        | DONE   | None       | BUILT 2026-05-16 (Wave 1). One-line forecast after prep timeline. Omitted when no coords/forecast.                                               |
-| 9   | Event Summary PDF Weather Section              | DONE   | None       | BUILT 2026-05-16 (Wave 1). FORECAST section with condition, temp range, wind, rain, sunset. Graceful degradation.                                |
-| 10  | Cadence Weather Context                        | DONE   | None       | BUILT 2026-05-16 (Wave 2). `{weatherLine}` template var for 3-day/48h touchpoints. Client-facing tone. Empty string fallback.                    |
-| 11  | Wire Weather into Operational Load Scoring     | DONE   | None       | BUILT 2026-05-16 (Wave 2). `weatherRisk` in `DayLoadBreakdown`, weight 0.15. Averaged across day's events. Try/catch, 0 default.                 |
-| 12  | Wire WeatherForecastCard Orphan                | DONE   | None       | BUILT 2026-05-16 (Wave 3). Replaced `WeatherAlertPanel` in tickets tab with cached `WeatherForecastCard`. Old component left importable.         |
-| 13  | Connect Weather Risk to Contingency Template   | DONE   | None       | BUILT 2026-05-16 (Wave 3). Live warnings from forecast/assessWeatherRisk injected into trigger conditions. Static thresholds remain as fallback. |
-| 14  | CIL Weather Signal Source                      | DONE   | None       | BUILT 2026-05-16 (Wave 3). `'weather'` in SignalSource, ingestor added, emission wired into `checkWeatherForEvents()`.                           |
-| 15  | Verify Packing List Weather Prop               | DONE   | None       | BUILT 2026-05-17 (Wave 4 verify). Already wired, parent page passes weather data.                                                                |
-| 16  | Sunset/Sunrise in Event Timeline               | DONE   | None       | BUILT 2026-05-17 (Wave 11). solar-times.ts + solar-actions.ts. Sunrise/sunset markers, golden hour for outdoor. No migration.                    |
-| 17  | Client Countdown Page Weather                  | DONE   | None       | BUILT 2026-05-17 (Wave 4 verify). `countdown-actions.ts` fetches forecast, passes to component.                                                  |
-| 18  | Autopilot Draft Weather Context                | DONE   | None       | BUILT 2026-05-17 (Wave 4 verify). `draft-generator.ts` appends weather to LLM prompt.                                                            |
-| 19  | Weather-Conditional Pre-Event Checklist        | DONE   | #4         | BUILT 2026-05-17 (Wave 4 verify). `weather-checklist.ts` has 6 rule categories, capped at 5 items, outdoor-only.                                 |
-| 20  | Historical Weather Snapshots                   | DONE   | None       | BUILT 2026-05-17 (Wave 10b). `getWeatherHistory()` added, `postEventWeatherSnapshot` Inngest job wired. Migration + schema already existed.      |
+| 1 | Wire remy-weather.ts to shared weather utility | DONE | None | BUILT 2026-05-17 (Wave 10b). Already consolidated; imports from open-meteo.ts + nominatim.ts. No duplicate calls. |
+| 2 | Fix Geocoding Redundancy | DONE | None | BUILT 2026-05-16 (Wave 1). `remy-weather.ts` now uses stored lat/lng first, falls back to geocoding. |
+| 3 | Fill Venue Details Nulls in Risk Engine | DONE | None | BUILT 2026-05-16 (Wave 1). `event-risk-assessment.ts` queries `venue_profiles` table, fills 4 null fields. |
+| 4 | Wire weather-risk.ts into operational-risk.ts | DONE | #3 | BUILT 2026-05-16 (Wave 2). Venue dimension enhanced: >50 = +15, >75 = +30. 3s timeout. Null-safe. |
+| 5 | Enrich Weather Alert Language | DONE | #2 | BUILT 2026-05-17 (Wave 10b). Extracted to weather-alert-enrichment.ts. 6 rule categories, event-type-aware. remy-weather.ts now imports. |
+| 6 | Activate Dead Weather Rail Resolver | DONE | None | BUILT 2026-05-16 (Wave 1). `weather-resolver.ts` created, registered in `god-mode-dispatcher.ts`. Maps alerts to rail items, capped at 3. |
+| 7 | Wire Weather into Drive Briefing | DONE | None | BUILT 2026-05-16 (Wave 1). `drive-briefing.ts` now has `weather: EventWeather                                                                    | null` field with try/catch fallback. |
+| 8 | Prep Sheet Weather Line | DONE | None | BUILT 2026-05-16 (Wave 1). One-line forecast after prep timeline. Omitted when no coords/forecast. |
+| 9 | Event Summary PDF Weather Section | DONE | None | BUILT 2026-05-16 (Wave 1). FORECAST section with condition, temp range, wind, rain, sunset. Graceful degradation. |
+| 10 | Cadence Weather Context | DONE | None | BUILT 2026-05-16 (Wave 2). `{weatherLine}` template var for 3-day/48h touchpoints. Client-facing tone. Empty string fallback. |
+| 11 | Wire Weather into Operational Load Scoring | DONE | None | BUILT 2026-05-16 (Wave 2). `weatherRisk` in `DayLoadBreakdown`, weight 0.15. Averaged across day's events. Try/catch, 0 default. |
+| 12 | Wire WeatherForecastCard Orphan | DONE | None | BUILT 2026-05-16 (Wave 3). Replaced `WeatherAlertPanel` in tickets tab with cached `WeatherForecastCard`. Old component left importable. |
+| 13 | Connect Weather Risk to Contingency Template | DONE | None | BUILT 2026-05-16 (Wave 3). Live warnings from forecast/assessWeatherRisk injected into trigger conditions. Static thresholds remain as fallback. |
+| 14 | CIL Weather Signal Source | DONE | None | BUILT 2026-05-16 (Wave 3). `'weather'` in SignalSource, ingestor added, emission wired into `checkWeatherForEvents()`. |
+| 15 | Verify Packing List Weather Prop | DONE | None | BUILT 2026-05-17 (Wave 4 verify). Already wired, parent page passes weather data. |
+| 16 | Sunset/Sunrise in Event Timeline | DONE | None | BUILT 2026-05-17 (Wave 11). solar-times.ts + solar-actions.ts. Sunrise/sunset markers, golden hour for outdoor. No migration. |
+| 17 | Client Countdown Page Weather | DONE | None | BUILT 2026-05-17 (Wave 4 verify). `countdown-actions.ts` fetches forecast, passes to component. |
+| 18 | Autopilot Draft Weather Context | DONE | None | BUILT 2026-05-17 (Wave 4 verify). `draft-generator.ts` appends weather to LLM prompt. |
+| 19 | Weather-Conditional Pre-Event Checklist | DONE | #4 | BUILT 2026-05-17 (Wave 4 verify). `weather-checklist.ts` has 6 rule categories, capped at 5 items, outdoor-only. |
+| 20 | Historical Weather Snapshots | DONE | None | BUILT 2026-05-17 (Wave 10b). `getWeatherHistory()` added, `postEventWeatherSnapshot` Inngest job wired. Migration + schema already existed. |
 
 ### Weather Build Waves (Deep-Pass Validated)
 
@@ -739,9 +739,9 @@
 
 ## DEV INFRASTRUCTURE (1 item)
 
-| #   | Item                                 | Status | Depends On | Notes                                                                                                                                               |
-| --- | ------------------------------------ | ------ | ---------- | --------------------------------------------------------------------------------------------------------------------------------------------------- |
-| 1   | Action Surface Coverage Audit Script | DONE   | None       | BUILT 2026-05-18. scripts/action-surface-audit.ts. 5,287 actions inventoried, 32.6% multi-surface coverage. Output: docs/action-surface-audit.json. |
+| #   | Item                                 | Status | Depends On | Notes                                                                                                                                                                                                                                                                                                                                                      |
+| --- | ------------------------------------ | ------ | ---------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| 1   | Action Surface Coverage Audit Script | DONE   | None       | BUILT 2026-05-18, corrected 2026-09-28. scripts/action-surface-audit.ts. The 2026-05-18 "32.6% multi-surface" was any-surface coverage over 4 dirs (true multi-surface was 13). 2026-09-28 rerun scanning all of app/ and components/: 5,645 actions, 3,368 UI-wired (59.7%), 492 server-only, 1,785 unreferenced. Output: docs/action-surface-audit.json. |
 
 ---
 

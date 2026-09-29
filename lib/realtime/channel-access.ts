@@ -16,6 +16,16 @@ export async function validateRealtimeChannelAccess(
   channel: string,
   context: RealtimeAccessContext
 ): Promise<boolean> {
+  // chef-{tenantId}: the calling system's tenant feed (supplier call results,
+  // inbound call alerts, voicemail, AI call results). It predates the
+  // prefix:id convention and is used by every publisher in lib/calling and
+  // app/api/calling plus ChefLiveAlerts in the chef layout, so it is matched
+  // exactly here rather than renamed across those call sites.
+  if (channel.startsWith('chef-')) {
+    const tenantId = channel.slice('chef-'.length)
+    return Boolean(context.tenantId) && tenantId.length > 0 && tenantId === context.tenantId
+  }
+
   const colonIdx = channel.indexOf(':')
 
   if (colonIdx === -1) {

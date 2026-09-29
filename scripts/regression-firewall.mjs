@@ -53,7 +53,10 @@ async function runStep(name, command, args, options = {}) {
         DEV_RUNTIME_HEALTH_TIMEOUT_MS: process.env.DEV_RUNTIME_HEALTH_TIMEOUT_MS || '45000',
       },
       stdio: ['ignore', 'pipe', 'pipe'],
-      shell: isWin,
+      // Windows batch shims need a shell; native executables do not. Running a native
+      // executable such as C:\\Program Files\\nodejs\\node.exe through cmd.exe splits
+      // the path at the space and makes the wiring-audit step fail before Node starts.
+      shell: isWin && /\.cmd$/i.test(command),
     })
 
     let stdout = ''
@@ -261,6 +264,12 @@ async function main() {
       }
     }
   }
+
+  results.push(
+    await runStep('persona completion gate', nodeCommand(), ['devtools/persona-completion-gate.mjs'], {
+      timeoutMs: 360_000,
+    })
+  )
 
   if (!args.skipTypecheck) {
     results.push(

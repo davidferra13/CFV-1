@@ -1,0 +1,331 @@
+{
+  "schemaVersion": 1,
+  "campaignId": "chefflow-setup-pilot-20260927",
+  "brand": "ChefFlow Setup",
+  "asOf": "2026-09-27",
+  "mode": "internal-only",
+  "outreachAllowed": false,
+  "readyForOutreach": false,
+  "providerApplicationsAllowed": false,
+  "records": 20,
+  "counts": {
+    "needs-qualification": 2,
+    "needs-research": 4,
+    "excluded": 14,
+    "not-a-fit": 0,
+    "separate-scope": 0,
+    "fit-for-scope-review": 0
+  },
+  "economics": {
+    "assumptionOnly": true,
+    "totalHours": 8,
+    "laborCostCents": 40000,
+    "directCostCents": 0,
+    "referralRevenueCents": 0,
+    "contributionCents": 10000,
+    "contributionPercent": 20,
+    "needsRescope": false
+  },
+  "assessments": [
+    {
+      "key": "chef co restaurant|methuen, ma",
+      "name": "Chef Co Restaurant",
+      "town": "Methuen, MA",
+      "researchDisposition": "Investigate",
+      "evidenceAgeDays": 0,
+      "missing": [
+        "ownerConfirmed",
+        "operatingNow",
+        "wantsDirectPickup",
+        "locationCount",
+        "menuItemCount",
+        "simpleOptions",
+        "posMigrationRequired",
+        "existingSystemKnown",
+        "ownerOwnsAccounts",
+        "providerFeesApproved"
+      ],
+      "reasons": [
+        "Decision maker confirmed the need and supplied evidence",
+        "Business is currently operating",
+        "Owner wants direct online pickup",
+        "Number of locations",
+        "Number of standard menu items",
+        "Menu options fit the simple-option scope",
+        "Whether a point-of-sale migration is required",
+        "Current website, ordering and point-of-sale systems are known",
+        "Owner will control accounts, billing and recovery",
+        "Owner reviewed and approved actual provider costs"
+      ],
+      "outreachAllowed": false,
+      "status": "needs-qualification"
+    },
+    {
+      "key": "gourmet bites catering / cafe|salem, nh",
+      "name": "Gourmet Bites Catering / Cafe",
+      "town": "Salem, NH",
+      "researchDisposition": "Investigate",
+      "evidenceAgeDays": 0,
+      "missing": [
+        "ownerConfirmed",
+        "operatingNow",
+        "wantsDirectPickup",
+        "locationCount",
+        "menuItemCount",
+        "simpleOptions",
+        "posMigrationRequired",
+        "existingSystemKnown",
+        "ownerOwnsAccounts",
+        "providerFeesApproved"
+      ],
+      "reasons": [
+        "Decision maker confirmed the need and supplied evidence",
+        "Business is currently operating",
+        "Owner wants direct online pickup",
+        "Number of locations",
+        "Number of standard menu items",
+        "Menu options fit the simple-option scope",
+        "Whether a point-of-sale migration is required",
+        "Current website, ordering and point-of-sale systems are known",
+        "Owner will control accounts, billing and recovery",
+        "Owner reviewed and approved actual provider costs"
+      ],
+      "outreachAllowed": false,
+      "status": "needs-qualification"
+    },
+    {
+      "key": "butch’s uptown|haverhill, ma",
+      "name": "Butch’s Uptown",
+      "town": "Haverhill, MA",
+      "researchDisposition": "Hold",
+      "evidenceAgeDays": 0,
+      "missing": [],
+      "reasons": [
+        "Inspect the customer ordering journey in a normal browser before making any claim. A crawler error is not a broken customer website."
+      ],
+      "outreachAllowed": false,
+      "status": "needs-research"
+    },
+    {
+      "key": "piro’s bakery / pizza plus|methuen, ma",
+      "name": "Piro’s Bakery / Pizza Plus",
+      "town": "Methuen, MA",
+      "researchDisposition": "Hold",
+      "evidenceAgeDays": 0,
+      "missing": [],
+      "reasons": [
+        "Verify the current direct ordering flow and identify whether standard pizza pickup, rather than custom cakes, is a useful fit."
+      ],
+      "outreachAllowed": false,
+      "status": "needs-research"
+    },
+    {
+      "key": "kashmir indian cuisine|salem, nh",
+      "name": "Kashmir Indian Cuisine",
+      "town": "Salem, NH",
+      "researchDisposition": "Hold",
+      "evidenceAgeDays": 0,
+      "missing": [],
+      "reasons": [
+        "Check the actual ordering destination. Do not pitch missing online ordering based on extraction limits."
+      ],
+      "outreachAllowed": false,
+      "status": "needs-research"
+    },
+    {
+      "key": "thai chili|salem, nh",
+      "name": "Thai Chili",
+      "town": "Salem, NH",
+      "researchDisposition": "Hold",
+      "evidenceAgeDays": 0,
+      "missing": [],
+      "reasons": [
+        "Verify the business-owned domain and real public contact through an independent source. A website cleanup opportunity may exist, outside this pickup pilot."
+      ],
+      "outreachAllowed": false,
+      "status": "needs-research"
+    },
+    {
+      "key": "lucky corner|haverhill, ma",
+      "name": "Lucky Corner",
+      "town": "Haverhill, MA",
+      "researchDisposition": "Exclude",
+      "evidenceAgeDays": 0,
+      "missing": [],
+      "reasons": [
+        "Existing ordering or outside this specific offer; retain the research exclusion."
+      ],
+      "outreachAllowed": false,
+      "status": "excluded"
+    },
+    {
+      "key": "suppa’s pizza|salem, nh",
+      "name": "Suppa’s Pizza",
+      "town": "Salem, NH",
+      "researchDisposition": "Exclude",
+      "evidenceAgeDays": 0,
+      "missing": [],
+      "reasons": [
+        "Existing ordering or outside this specific offer; retain the research exclusion."
+      ],
+      "outreachAllowed": false,
+      "status": "excluded"
+    },
+    {
+      "key": "maddies|salem, nh",
+      "name": "Maddies",
+      "town": "Salem, NH",
+      "researchDisposition": "Exclude",
+      "evidenceAgeDays": 0,
+      "missing": [],
+      "reasons": [
+        "Existing ordering or outside this specific offer; retain the research exclusion."
+      ],
+      "outreachAllowed": false,
+      "status": "excluded"
+    },
+    {
+      "key": "nelly’s kitchen|haverhill, ma",
+      "name": "Nelly’s Kitchen",
+      "town": "Haverhill, MA",
+      "researchDisposition": "Exclude",
+      "evidenceAgeDays": 0,
+      "missing": [],
+      "reasons": [
+        "Existing ordering or outside this specific offer; retain the research exclusion."
+      ],
+      "outreachAllowed": false,
+      "status": "excluded"
+    },
+    {
+      "key": "geo’s roast beef & pizzeria|amesbury, ma",
+      "name": "Geo’s Roast Beef & Pizzeria",
+      "town": "Amesbury, MA",
+      "researchDisposition": "Exclude",
+      "evidenceAgeDays": 0,
+      "missing": [],
+      "reasons": [
+        "Existing ordering or outside this specific offer; retain the research exclusion."
+      ],
+      "outreachAllowed": false,
+      "status": "excluded"
+    },
+    {
+      "key": "yang ming restaurant|salem, nh",
+      "name": "Yang Ming Restaurant",
+      "town": "Salem, NH",
+      "researchDisposition": "Exclude",
+      "evidenceAgeDays": 0,
+      "missing": [],
+      "reasons": [
+        "Existing ordering or outside this specific offer; retain the research exclusion."
+      ],
+      "outreachAllowed": false,
+      "status": "excluded"
+    },
+    {
+      "key": "lucky dragon|salem, nh",
+      "name": "Lucky Dragon",
+      "town": "Salem, NH",
+      "researchDisposition": "Exclude",
+      "evidenceAgeDays": 0,
+      "missing": [],
+      "reasons": [
+        "Existing ordering or outside this specific offer; retain the research exclusion."
+      ],
+      "outreachAllowed": false,
+      "status": "excluded"
+    },
+    {
+      "key": "oriental garden|haverhill, ma",
+      "name": "Oriental Garden",
+      "town": "Haverhill, MA",
+      "researchDisposition": "Exclude",
+      "evidenceAgeDays": 0,
+      "missing": [],
+      "reasons": [
+        "Existing ordering or outside this specific offer; retain the research exclusion."
+      ],
+      "outreachAllowed": false,
+      "status": "excluded"
+    },
+    {
+      "key": "oyummy asian bistro|haverhill, ma",
+      "name": "Oyummy Asian Bistro",
+      "town": "Haverhill, MA",
+      "researchDisposition": "Exclude",
+      "evidenceAgeDays": 0,
+      "missing": [],
+      "reasons": [
+        "Existing ordering or outside this specific offer; retain the research exclusion."
+      ],
+      "outreachAllowed": false,
+      "status": "excluded"
+    },
+    {
+      "key": "sevmar mediterranean bistro|salem, nh",
+      "name": "Sevmar Mediterranean Bistro",
+      "town": "Salem, NH",
+      "researchDisposition": "Exclude",
+      "evidenceAgeDays": 0,
+      "missing": [],
+      "reasons": [
+        "Existing ordering or outside this specific offer; retain the research exclusion."
+      ],
+      "outreachAllowed": false,
+      "status": "excluded"
+    },
+    {
+      "key": "phoenician restaurant|haverhill, ma",
+      "name": "Phoenician Restaurant",
+      "town": "Haverhill, MA",
+      "researchDisposition": "Exclude",
+      "evidenceAgeDays": 0,
+      "missing": [],
+      "reasons": [
+        "Existing ordering or outside this specific offer; retain the research exclusion."
+      ],
+      "outreachAllowed": false,
+      "status": "excluded"
+    },
+    {
+      "key": "mac daddies and a little more|haverhill, ma",
+      "name": "Mac Daddies and a Little More",
+      "town": "Haverhill, MA",
+      "researchDisposition": "Exclude",
+      "evidenceAgeDays": 0,
+      "missing": [],
+      "reasons": [
+        "Existing ordering or outside this specific offer; retain the research exclusion."
+      ],
+      "outreachAllowed": false,
+      "status": "excluded"
+    },
+    {
+      "key": "roma ristorante|haverhill, ma",
+      "name": "Roma Ristorante",
+      "town": "Haverhill, MA",
+      "researchDisposition": "Exclude",
+      "evidenceAgeDays": 0,
+      "missing": [],
+      "reasons": [
+        "Existing ordering or outside this specific offer; retain the research exclusion."
+      ],
+      "outreachAllowed": false,
+      "status": "excluded"
+    },
+    {
+      "key": "haverhill beef co.|haverhill, ma",
+      "name": "Haverhill Beef Co.",
+      "town": "Haverhill, MA",
+      "researchDisposition": "Exclude",
+      "evidenceAgeDays": 0,
+      "missing": [],
+      "reasons": [
+        "Existing ordering or outside this specific offer; retain the research exclusion."
+      ],
+      "outreachAllowed": false,
+      "status": "excluded"
+    }
+  ]
+}

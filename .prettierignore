@@ -6,6 +6,7 @@ node_modules/
 out/
 
 # Generated files - never format these
+docs/business/chefflow-setup/generated/
 types/database.ts
 lib/db/schema/schema.ts
 lib/db/schema/relations.ts
