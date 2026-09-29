@@ -5,14 +5,15 @@ import { breakers } from '../../lib/resilience/circuit-breaker'
 import { GET, HEAD } from '../../app/api/health/route'
 
 const REQUIRED_ENV_KEYS = ['DATABASE_URL'] as const
+const MANAGED_ENV_KEYS = ['DATABASE_URL', 'PUBLIC_HEALTH_SKIP_DB_BOOT_CONTRACT'] as const
 
 function withEnv(
-  values: Partial<Record<(typeof REQUIRED_ENV_KEYS)[number], string>>,
+  values: Partial<Record<(typeof MANAGED_ENV_KEYS)[number], string>>,
   fn: () => Promise<void>
 ) {
   return (async () => {
     const original = new Map<string, string | undefined>()
-    for (const key of REQUIRED_ENV_KEYS) {
+    for (const key of MANAGED_ENV_KEYS) {
       original.set(key, process.env[key])
       const nextValue = values[key]
       if (nextValue === undefined) {
@@ -41,6 +42,7 @@ test('GET /api/health returns checks and request id when required env is present
   await withEnv(
     {
       DATABASE_URL: 'postgresql://user:pass@example.com:5432/postgres',
+      PUBLIC_HEALTH_SKIP_DB_BOOT_CONTRACT: '1',
     },
     async () => {
       const response = await GET(new NextRequest('http://localhost/api/health'))

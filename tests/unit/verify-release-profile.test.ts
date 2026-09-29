@@ -1,6 +1,6 @@
 import test from 'node:test'
 import assert from 'node:assert/strict'
-import { readFileSync } from 'node:fs'
+import { existsSync, readFileSync } from 'node:fs'
 import { join } from 'node:path'
 import { buildReleaseProfileContext, buildReleaseProfiles } from '../../scripts/verify-release.mjs'
 import { resolveBuildSurfaceManifest } from '../../scripts/build-surface-manifest.mjs'
@@ -48,7 +48,8 @@ test('verify-release supports profile selection and exposes beta release scripts
   )
   assert.match(buildSurfaceManifest, /'web-beta': \{/)
   assert.match(buildSurfaceManifest, /app\/\(public\)/)
-  assert.match(buildSurfaceManifest, /build-surfaces\/web-beta\/app/)
+  assert.match(buildSurfaceManifest, /app\/auth\/signin/)
+  assert.doesNotMatch(buildSurfaceManifest, /build-surfaces\/web-beta\/app/)
   assert.ok(manifest)
   assert.ok(webBetaProfile)
   assert.deepEqual(
@@ -80,7 +81,17 @@ test('verify-release supports profile selection and exposes beta release scripts
     'npx playwright test --config=playwright.web-beta-release.config.ts'
   )
   assert.match(packageJson.scripts?.['test:unit:web-beta'] ?? '', /api\.health-route\.test\.ts/)
-  assert.match(packageJson.scripts?.['lint:web-beta'] ?? '', /app\/api\/health\/route\.ts/)
+  const webBetaLintScript = packageJson.scripts?.['lint:web-beta'] ?? ''
+  assert.match(webBetaLintScript, /app\/api\/health\/route\.ts/)
+  const lintTargets = [...webBetaLintScript.matchAll(/"([^"]+)"/g)].map((match) => match[1])
+  assert.ok(lintTargets.length > 0, 'lint:web-beta must enumerate its release-surface targets')
+  for (const relativePath of lintTargets) {
+    const wildcardAt = relativePath.search(/[?*[{]/)
+    const target = wildcardAt >= 0
+      ? relativePath.slice(0, wildcardAt).replace(/[\\/]+$/, '')
+      : relativePath
+    assert.ok(existsSync(join(process.cwd(), target)), `lint:web-beta target is missing: ${relativePath}`)
+  }
   assert.equal(
     packageJson.scripts?.['verify:release:web-beta'],
     'node scripts/verify-release.mjs --profile web-beta'
