@@ -1,5 +1,5 @@
 param(
-  [string]$PiHost = 'davidferra@10.0.0.177',
+  [string]$PiHost = 'davidferra@10.0.0.176',
   [string]$PiDir = '/home/davidferra/openclaw-prices'
 )
 
@@ -17,11 +17,27 @@ $Files = @(
   '.openclaw-build/tests/collector-policy.test.mjs'
 )
 
+function Test-SshPort {
+  $hostPart = ($PiHost -split '@')[-1]
+  $client = New-Object System.Net.Sockets.TcpClient
+  try {
+    $async = $client.BeginConnect($hostPart, 22, $null, $null)
+    if (-not $async.AsyncWaitHandle.WaitOne(2500, $false)) { return $false }
+    $client.EndConnect($async)
+    return $client.Connected
+  } catch {
+    return $false
+  } finally {
+    $client.Close()
+  }
+}
+
 function Invoke-Ssh([string]$Command) {
   & ssh -o BatchMode=yes -o ConnectTimeout=6 $PiHost $Command
-  if ($LASTEXITCODE -ne 0) { throw "SSH failed: $Command" }
+  if ($LASTEXITCODE -ne 0) { throw "SSH authentication or command failed for $PiHost." }
 }
 Write-Output "Checking $PiHost..."
+if (-not (Test-SshPort)) { throw "Pi SSH port is not reachable at $PiHost." }
 Invoke-Ssh "test -d '$PiDir' && echo PI_RUNTIME_FOUND"
 
 $stamp = Get-Date -Format 'yyyyMMdd-HHmmss'
