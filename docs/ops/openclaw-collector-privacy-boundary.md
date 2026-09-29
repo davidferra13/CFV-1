@@ -25,6 +25,10 @@ Until isolated egress is configured and verified, the daily scheduler skips Inst
 
 `scripts/openclaw-collector-vpn-run.ps1` is the temporary desktop path while the Pi management stack is unavailable. It fails closed unless the installed NordVPN service is already running, records the normal public IP, connects NordVPN, requires both a live Nord/OpenVPN adapter and a changed public IP, and only then injects `OPENCLAW_EGRESS_PROFILE=isolated` into the child collector process. The flag is removed and VPN disconnect is requested in a `finally` block.
 
+### Pi promotion
+
+`scripts/deploy-collector-privacy-to-pi.ps1` is the recovery/deployment path once Pi SSH is healthy. It stages the exact privacy files, validates them before promotion, preserves timestamped copies of every replaced runtime file, promotes only after validation passes, reruns tests on the live Pi tree, and leaves direct scrapers fail-closed unless isolated egress is separately declared and verified.
+
 ## Verification
 
 Run:
