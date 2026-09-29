@@ -297,7 +297,7 @@ export function resolveChefShellBudget(pathname: string): ChefShellBudget {
       showRemy: false,
       showQuickCapture: false,
       showLiveAlerts: false,
-      showContextualRail: false,
+      showContextualRail: true,
       contentWidth: 'constrained',
     }
   }

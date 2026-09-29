@@ -55,7 +55,7 @@ export interface RailProfile {
   entityScoped: boolean
   collapsedSummary: CollapsedSummaryType
   collapsedMetrics: CollapsedMetric[]
-  layout: 'columns' | 'stack'
+  layout: 'columns' | 'stack' | 'tickers'
   columnCount?: 2 | 3 | 4
   maxItems: number
   refreshInterval?: number
@@ -174,6 +174,9 @@ export const RESOLVER_CATEGORY_MAP: Record<string, RailCategory> = {
   'weather-alerts': 'risk',
   'equipment-conflicts': 'risk',
   'quality-drift': 'risk',
+  'client-risk': 'risk',
+  'churn-signals': 'risk',
+  'price-anomalies': 'risk',
   insurance: 'risk',
   certifications: 'risk',
   'cil-signals': 'intelligence',

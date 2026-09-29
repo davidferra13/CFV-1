@@ -32,18 +32,6 @@ function getResolverName(item: GodModeResolvedItem): string | null {
 }
 
 function resolveItemCategory(item: GodModeResolvedItem, profile: RailProfile): RailCategory {
-  if (item.sourceKind) {
-    const sourceMap: Record<string, RailCategory> = {
-      event: 'time',
-      inquiry: 'communication',
-      task: 'actions',
-      payment: 'money',
-      message: 'communication',
-    }
-    const mapped = sourceMap[item.sourceKind]
-    if (mapped && mapped !== 'actions' && profile.categories.includes(mapped)) return mapped
-  }
-
   const resolverName = getResolverName(item)
   if (resolverName) {
     const resolverCategory = RESOLVER_CATEGORY_MAP[resolverName]
@@ -54,6 +42,18 @@ function resolveItemCategory(item: GodModeResolvedItem, profile: RailProfile): R
     ) {
       return resolverCategory
     }
+  }
+
+  if (item.sourceKind) {
+    const sourceMap: Record<string, RailCategory> = {
+      event: 'time',
+      inquiry: 'communication',
+      task: 'actions',
+      payment: 'money',
+      message: 'communication',
+    }
+    const mapped = sourceMap[item.sourceKind]
+    if (mapped && mapped !== 'actions' && profile.categories.includes(mapped)) return mapped
   }
 
   const domain = extractResolverDomain(item.definitionId)
@@ -232,10 +232,16 @@ export async function assembleContextualRail(
     if (item.tier === 'p0' || (item.score != null && item.score >= 80)) {
       criticalCount++
     }
-    const category = resolveItemCategory(item, profile)
-    const categoryData = categories[category]
-    if (categoryData) {
-      categoryData.items.push(toContextualRailItem(item))
+    const resolverName = getResolverName(item)
+    const resolverCategory = resolverName ? RESOLVER_CATEGORY_MAP[resolverName] : undefined
+    const actionOnlySource = resolverCategory === 'actions' || item.sourceKind === 'task'
+
+    if (!actionOnlySource) {
+      const category = resolveItemCategory(item, profile)
+      const categoryData = categories[category]
+      if (categoryData) {
+        categoryData.items.push(toContextualRailItem(item))
+      }
     }
   }
 

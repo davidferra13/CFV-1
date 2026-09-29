@@ -121,7 +121,7 @@ describe('surface governance', () => {
       showRemy: false,
       showQuickCapture: false,
       showLiveAlerts: false,
-      showContextualRail: false,
+      showContextualRail: true,
       contentWidth: 'constrained',
     })
     assert.deepEqual(resolveChefShellBudget('/settings/modules'), {
