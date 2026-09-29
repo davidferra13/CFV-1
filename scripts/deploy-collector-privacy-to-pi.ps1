@@ -1,5 +1,5 @@
 param(
-  [string]$PiHost = 'davidferra@10.0.0.176',
+  [string]$PiHost = 'pi',
   [string]$PiDir = '/home/davidferra/openclaw-prices'
 )
 
@@ -18,18 +18,22 @@ $Files = @(
 )
 
 function Test-SshPort {
-  $hostPart = ($PiHost -split '@')[-1]
-  $client = New-Object System.Net.Sockets.TcpClient
-  try {
-    $async = $client.BeginConnect($hostPart, 22, $null, $null)
-    if (-not $async.AsyncWaitHandle.WaitOne(2500, $false)) { return $false }
-    $client.EndConnect($async)
-    return $client.Connected
-  } catch {
-    return $false
-  } finally {
-    $client.Close()
+  $addresses = @(Resolve-DnsName 'raspberrypi.local' -Type A -ErrorAction SilentlyContinue |
+    Where-Object { $_.IPAddress } | Select-Object -ExpandProperty IPAddress -Unique)
+  foreach ($address in $addresses) {
+    $client = New-Object System.Net.Sockets.TcpClient
+    try {
+      $async = $client.BeginConnect($address, 22, $null, $null)
+      if ($async.AsyncWaitHandle.WaitOne(1500, $false)) {
+        $client.EndConnect($async)
+        if ($client.Connected) { return $true }
+      }
+    } catch {
+    } finally {
+      $client.Close()
+    }
   }
+  return $false
 }
 
 function Invoke-Ssh([string]$Command) {
