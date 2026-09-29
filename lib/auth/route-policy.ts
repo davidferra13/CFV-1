@@ -180,6 +180,7 @@ export const PUBLIC_UNAUTHENTICATED_PATHS = [
   '/client-terms',
   '/cookie-policy',
   '/data-request',
+  '/dfpc',
   '/dmca',
   '/faq',
   '/contact',
@@ -259,7 +260,7 @@ export const PUBLIC_ASSET_PATHS = [
 const PUBLIC_ASSET_PATH_PREFIXES = ['/_next/static', '/_next/image', '/images'] as const
 const PUBLIC_ASSET_EXTENSION_PATTERN = /\.(?:svg|png|jpg|jpeg|gif|webp|html)$/i
 
-export const ADMIN_PATHS = ['/admin'] as const
+export const ADMIN_PATHS = ['/admin', '/hermes'] as const
 
 // Prefix-based (not exact) because these are technical namespaces.
 export const API_SKIP_AUTH_PREFIXES = [

@@ -1,8 +1,10 @@
+import { requireAdmin } from '@/lib/auth/admin'
 import { fetchHermesDashboard } from './actions'
 
 export const dynamic = 'force-dynamic'
 
 export default async function HermesDevPage() {
+  await requireAdmin()
   const { status, actions, queueDepth, recentFeedback } = await fetchHermesDashboard()
 
   return (

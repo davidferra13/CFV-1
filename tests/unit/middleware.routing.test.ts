@@ -8,6 +8,7 @@ import { describe, it } from 'node:test'
 import assert from 'node:assert/strict'
 import fs from 'node:fs'
 import path from 'node:path'
+import { isHermesOwnerEmail } from '../../lib/auth/hermes-owner'
 import {
   API_SKIP_AUTH_PREFIXES,
   PUBLIC_ASSET_PATHS,
@@ -292,5 +293,40 @@ describe('Middleware - edge cases', () => {
     assert.equal(isChefRoutePath('/events'), true)
     assert.equal(isPublicUnauthenticatedPath('/event/123'), true)
     assert.equal(isChefRoutePath('/events/123'), true)
+  })
+})
+
+describe('DFPC and Hermes route boundaries', () => {
+  it('keeps DFPC public through its host rewrite and blocks direct cross-host access', () => {
+    assert.equal(isPublicUnauthenticatedPath('/dfpc'), true)
+    assert.equal(isPublicUnauthenticatedPath('/dfpc/'), true)
+    assert.equal(isPublicUnauthenticatedPath('/dfpc-private'), false)
+
+    const source = fs.readFileSync(path.join(process.cwd(), 'middleware.ts'), 'utf8')
+    const hostGate = source.indexOf('if (isDfpcHost(request))')
+    const directBlock = source.indexOf('if (pathname.startsWith(DFPC_PATH_PREFIX))', hostGate + 1)
+    const publicBypass = source.indexOf('if (isPublicUnauthenticatedPath(pathname))', directBlock + 1)
+    assert.ok(hostGate >= 0 && hostGate < directBlock && directBlock < publicBypass)
+    assert.match(source.slice(directBlock, publicBypass), /status: 404/)
+  })
+
+  it('requires both admin access and the dev owner email for Hermes data', () => {
+    assert.equal(isPublicUnauthenticatedPath('/hermes'), false)
+    assert.equal(isAdminRoutePath('/hermes'), true)
+    assert.equal(getRouteAccountMode('/hermes'), 'admin_console')
+    assert.equal(isHermesOwnerEmail(null), false)
+    assert.equal(isHermesOwnerEmail('member@example.com'), false)
+    assert.equal(isHermesOwnerEmail('DAVIDFERRA13@gmail.com'), true)
+
+    const middleware = fs.readFileSync(path.join(process.cwd(), 'middleware.ts'), 'utf8')
+    const layout = fs.readFileSync(path.join(process.cwd(), 'app/(dev)/layout.tsx'), 'utf8')
+    const page = fs.readFileSync(path.join(process.cwd(), 'app/(dev)/hermes/page.tsx'), 'utf8')
+    const actions = fs.readFileSync(path.join(process.cwd(), 'app/(dev)/hermes/actions.ts'), 'utf8')
+    assert.ok(middleware.indexOf('if (!session?.user)') <
+      middleware.indexOf('if (isAdminRoutePath(pathname) && !isAdmin)'))
+    assert.match(layout, /devEmails\.includes\(session\.user\.email\)/)
+    assert.ok(page.indexOf('await requireAdmin()') < page.indexOf('await fetchHermesDashboard()'))
+    assert.ok(actions.indexOf('await requireAdmin()') < actions.indexOf('await Promise.all(['))
+    assert.match(actions, /!isHermesOwnerEmail\(admin\.email\)/)
   })
 })

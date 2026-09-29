@@ -79,6 +79,7 @@ export const routePolicy: Record<string, RoutePolicyTier> = {
   '/admin/users/[chefId]': 'admin',
   '/admin/users': 'admin',
   '/admin/web-research': 'admin',
+  '/hermes': 'admin',
 
   // ─────────────────────────────────────────────────────────────
   // BARE routes: app/(bare)/** (authenticated, no specific role)
@@ -897,6 +898,7 @@ export const routePolicy: Record<string, RoutePolicyTier> = {
   '/customers/[slug]': 'public',
   '/customers': 'public',
   '/data-request': 'public',
+  '/dfpc': 'public',
   '/discover/[[...path]]': 'public',
   '/dmca': 'public',
   '/e/[shareToken]': 'public',
