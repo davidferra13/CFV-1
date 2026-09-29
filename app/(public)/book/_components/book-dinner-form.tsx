@@ -56,6 +56,11 @@ function applyPrefill(form: FormState, prefill?: PublicOpenBookingPrefill | null
     ...(prefill.occasion ? { occasion: prefill.occasion } : {}),
     ...(prefill.service_type ? { service_type: prefill.service_type } : {}),
     ...(prefill.additional_notes ? { additional_notes: prefill.additional_notes } : {}),
+    ...(prefill.location ? { location: prefill.location } : {}),
+    ...(prefill.event_date ? { event_date: prefill.event_date } : {}),
+    ...(prefill.guest_count ? { guest_count: prefill.guest_count } : {}),
+    ...(prefill.budget_range ? { budget_range: prefill.budget_range } : {}),
+    ...(prefill.dietary_restrictions ? { dietary_restrictions: prefill.dietary_restrictions } : {}),
   }
 }
 

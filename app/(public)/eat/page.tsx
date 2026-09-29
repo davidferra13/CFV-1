@@ -40,6 +40,16 @@ function parsePartySize(value: string | string[] | undefined): number | undefine
   return Math.floor(parsed)
 }
 
+function parseCsv(value: string | string[] | undefined): string[] | undefined {
+  const raw = firstParam(value)
+  if (!raw) return undefined
+  const values = raw
+    .split(',')
+    .map((item) => item.trim())
+    .filter(Boolean)
+  return values.length > 0 ? values : undefined
+}
+
 function parseIntent(value: string | string[] | undefined): ConsumerIntent | undefined {
   const raw = firstParam(value)
   if (
@@ -67,6 +77,7 @@ function buildFilters(
   const intent = parseIntent(searchParams.intent)
   return {
     intent,
+    appetiteTagIds: parseCsv(searchParams.appetite),
     craving: firstParam(searchParams.craving),
     location: firstParam(searchParams.location),
     budget: firstParam(searchParams.budget) ?? firstParam(searchParams.priceRange),

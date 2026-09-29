@@ -8,6 +8,7 @@ import {
 } from '@/lib/hub/planning-candidate-actions'
 import type { PlanningBrief } from '@/lib/hub/types'
 import type { ConsumerResultCard } from '@/lib/public-consumer/discovery-actions'
+import { recordAppetiteResultEvidence } from '@/lib/discovery/appetite-evidence-client'
 
 type StoredPlanningContext = {
   groupToken: string
@@ -120,6 +121,7 @@ export function ShortlistButton({
         setExpanded(false)
         setContext(nextContext)
         writeStoredPlanningContext(nextContext)
+        recordAppetiteResultEvidence(card, 'shortlist')
       } catch {
         setError('Could not add this option. Please try again.')
       }
@@ -177,6 +179,7 @@ export function ShortlistButton({
         setExpanded(false)
         setContext(nextContext)
         writeStoredPlanningContext(nextContext)
+        recordAppetiteResultEvidence(card, 'shortlist')
       } catch {
         setError('Could not start the shortlist. Please try again.')
       }

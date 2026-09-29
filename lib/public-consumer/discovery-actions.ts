@@ -8,6 +8,12 @@ import {
   type DirectoryChef,
 } from '@/lib/directory/actions'
 import { pgClient } from '@/lib/db'
+import {
+  buildAppetiteState,
+  inferAppetiteTagIds,
+  rankAppetiteSupply,
+  type AppetiteSignal,
+} from '@/lib/discovery/appetite-engine'
 
 export type ConsumerIntent =
   | 'tonight'
@@ -27,6 +33,7 @@ export type FulfillmentMode = 'private_chef' | 'restaurant' | 'meal_prep' | 'any
 
 export interface ConsumerDiscoveryFilters {
   intent?: ConsumerIntent
+  appetiteTagIds?: string[]
   craving?: string
   fulfillment?: FulfillmentMode
   location?: string
@@ -55,6 +62,7 @@ export interface ConsumerResultCard {
   serviceModes: string[]
   ctaLabel: string
   ctaHref: string
+  profileHref?: string | null
   rating: number | null
   reviewCount: number | null
   isAvailable: boolean
@@ -190,6 +198,49 @@ function withDiscoveryTimeout<T>(promise: Promise<T>, fallback: T, timeoutMs = 4
   })
 }
 
+function appetiteSignalsFromFilters(filters: ConsumerDiscoveryFilters): AppetiteSignal[] {
+  return (filters.appetiteTagIds ?? []).map((tagId) => ({
+    tagId,
+    polarity: 'want',
+    strength: 0.75,
+    confidence: 0.8,
+    hardness: 'soft',
+    scope: 'session',
+    source: 'explicit',
+    locked: false,
+  }))
+}
+
+function boostCardsByAppetite(
+  cards: ConsumerResultCard[],
+  filters: ConsumerDiscoveryFilters
+): ConsumerResultCard[] {
+  if (!filters.appetiteTagIds?.length || cards.length === 0) return cards
+
+  const state = buildAppetiteState(appetiteSignalsFromFilters(filters))
+  const ranked = rankAppetiteSupply(
+    state,
+    cards.map((card) => ({
+      id: card.id,
+      tagIds: inferAppetiteTagIds([
+        card.title,
+        card.subtitle,
+        card.eyebrow,
+        card.priceLabel,
+        ...card.dietaryTags,
+        ...card.serviceModes,
+      ]),
+      availabilityWeight: 1,
+    }))
+  )
+  const scoreById = new Map(ranked.map((candidate) => [candidate.id, candidate.score]))
+
+  return cards.map((card) => ({
+    ...card,
+    relevanceScore: card.relevanceScore + (scoreById.get(card.id) ?? 0) * 18,
+  }))
+}
+
 function matchesText(card: ConsumerResultCard, query: string | undefined) {
   if (!query) return true
   const normalized = query.toLowerCase()
@@ -230,6 +281,7 @@ function chefToCard(chef: DirectoryChef, intent?: ConsumerIntent): ConsumerResul
     ctaLabel: isInstantBook ? 'Book now' : 'View chef',
     ctaHref:
       isInstantBook && chef.booking_slug ? `/book/${chef.booking_slug}` : `/chef/${chef.slug}`,
+    profileHref: `/chef/${chef.slug}`,
     rating: discovery.avg_rating ?? null,
     reviewCount: discovery.review_count ?? null,
     isAvailable: discovery.accepting_inquiries ?? true,
@@ -295,6 +347,7 @@ function spotlightToCard(row: SpotlightRow): ConsumerResultCard {
     serviceModes: row.service_modes || [],
     ctaLabel: 'View chef',
     ctaHref: `/chef/${row.chef_slug}`,
+    profileHref: `/chef/${row.chef_slug}`,
     rating: null,
     reviewCount: null,
     isAvailable: true,
@@ -462,6 +515,10 @@ export async function getConsumerDiscoveryFeed(
     listingCards = listingCards.filter((card) => matchesText(card, craving))
     spotlightCards = spotlightCards.filter((card) => matchesText(card, craving))
   }
+
+  chefCards = boostCardsByAppetite(chefCards, filters)
+  listingCards = boostCardsByAppetite(listingCards, filters)
+  spotlightCards = boostCardsByAppetite(spotlightCards, filters)
 
   if (filters.partySize) {
     chefCards = chefCards.map((card) => ({

@@ -1,7 +1,7 @@
-import Link from 'next/link'
 import { ArrowRight, MapPin, Star } from 'lucide-react'
 import type { PlanningBrief } from '@/lib/hub/types'
 import type { ConsumerResultCard as CardData } from '@/lib/public-consumer/discovery-actions'
+import { AppetiteResultLink } from './appetite-result-link'
 import { ShortlistButton } from './shortlist-button'
 
 export function ConsumerResultCard({
@@ -18,7 +18,7 @@ export function ConsumerResultCard({
 
   return (
     <article className="group relative flex flex-col overflow-hidden rounded-2xl border border-stone-700 bg-stone-900 ring-1 ring-stone-800/50 transition-all duration-200 hover:-translate-y-1 hover:border-stone-600 hover:shadow-xl hover:shadow-black/30">
-      <Link href={card.ctaHref} className="block">
+      <AppetiteResultLink card={card} className="block">
         <div className={`relative ${aspectClass} w-full overflow-hidden bg-stone-800`}>
           {card.imageUrl ? (
             <img
@@ -45,16 +45,16 @@ export function ConsumerResultCard({
             </span>
           )}
         </div>
-      </Link>
+      </AppetiteResultLink>
 
       <div className="flex flex-1 flex-col gap-3 p-4">
         <div>
-          <Link
-            href={card.ctaHref}
+          <AppetiteResultLink
+            card={card}
             className="text-base font-semibold text-stone-100 transition-colors line-clamp-1 hover:text-brand-200"
           >
             {card.title}
-          </Link>
+          </AppetiteResultLink>
           {card.subtitle && (
             <p className="mt-1 text-sm leading-relaxed text-stone-400 line-clamp-2">
               {card.subtitle}
@@ -92,13 +92,13 @@ export function ConsumerResultCard({
         )}
 
         <div className="mt-auto space-y-2">
-          <Link
-            href={card.ctaHref}
+          <AppetiteResultLink
+            card={card}
             className="inline-flex min-h-10 w-full items-center justify-center gap-2 rounded-xl bg-brand-600 px-3 text-sm font-semibold text-white transition-colors hover:bg-brand-500"
           >
             {card.ctaLabel}
             <ArrowRight className="h-4 w-4" />
-          </Link>
+          </AppetiteResultLink>
           <ShortlistButton card={card} planningBrief={planningBrief} />
         </div>
       </div>

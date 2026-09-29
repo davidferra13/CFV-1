@@ -9,16 +9,26 @@ import { getHolidayYearOverYear } from '@/lib/analytics/seasonality'
 import { DemandHeatmap } from '@/components/analytics/demand-heatmap'
 import { HolidayYoYTable } from '@/components/analytics/holiday-yoy-table'
 import { CrossDomainLinks } from '@/components/ui/cross-domain-links'
+import { AppetiteDemandPanel } from '@/components/analytics/appetite-demand-panel'
+import { buildAppetiteDemandPanelModel } from '@/lib/analytics/appetite-demand'
+import { getAppetiteMarketSnapshot } from '@/lib/discovery/appetite-market-server'
 
 export const metadata: Metadata = { title: 'Demand Forecast' }
 
 export default async function DemandForecastPage() {
   const user = await requireChef()
 
-  const [heatmapData, holidayYoY] = await Promise.all([
+  const [heatmapData, holidayYoY, appetiteResult] = await Promise.all([
     getSeasonalHeatmap().catch(() => null),
     getHolidayYearOverYear().catch(() => []),
+    getAppetiteMarketSnapshot({ days: 30 }).then(
+      (snapshot) => ({ ok: true as const, snapshot }),
+      () => ({ ok: false as const, snapshot: null })
+    ),
   ])
+  const appetiteModel = appetiteResult.ok
+    ? buildAppetiteDemandPanelModel(appetiteResult.snapshot)
+    : null
 
   return (
     <div className="space-y-6">
@@ -46,6 +56,8 @@ export default async function DemandForecastPage() {
           { label: 'Events', href: '/events' },
         ]}
       />
+
+      <AppetiteDemandPanel model={appetiteModel} loadFailed={!appetiteResult.ok} days={30} />
 
       {heatmapData ? (
         <DemandHeatmap data={heatmapData} />
