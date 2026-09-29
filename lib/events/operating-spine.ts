@@ -270,10 +270,10 @@ export function buildChefEventOperatingSpine(input: ChefSpineInput): EventOperat
     }
   } else if (!prepReady && ['paid', 'confirmed'].includes(event.status)) {
     nextAction = {
-      label: 'Build prep plan',
-      href: eventPath(event.id, 'prep'),
+      label: 'Open production loop',
+      href: `/events/${event.id}/production`,
       owner: 'Chef',
-      reason: 'Prep work is not scheduled yet.',
+      reason: 'Scale recipes, resolve purchasing, then schedule prep from one workspace.',
     }
   } else if (hasParAlerts && ['paid', 'confirmed', 'in_progress'].includes(event.status)) {
     nextAction = {
@@ -355,7 +355,7 @@ export function buildChefEventOperatingSpine(input: ChefSpineInput): EventOperat
         : prepReady
           ? `${packingConfirmedCount} packed item${packingConfirmedCount === 1 ? '' : 's'}`
           : 'Open prep timeline',
-      href: hasParAlerts ? '/inventory' : eventPath(event.id, 'prep'),
+      href: hasParAlerts ? '/inventory' : `/events/${event.id}/production`,
     },
     {
       key: 'finance',
