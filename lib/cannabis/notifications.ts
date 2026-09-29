@@ -1,4 +1,4 @@
-'use server'
+import 'server-only'
 
 import { createNotification } from '@/lib/notifications/actions'
 
