@@ -1,0 +1,152 @@
+{
+  "schemaVersion": 1,
+  "id": "chef-discovery-enthusiast-001",
+  "provenance": {
+    "kind": "inferred",
+    "source": "Chef Flow Personas/Completed/Public/the-enthusiast.txt",
+    "sourceSections": [
+      "Business Reality",
+      "Psychological Model",
+      "Pass / Fail Conditions"
+    ],
+    "note": "Actor budget and desire for operational clarity come from an existing persona; items and interaction are synthetic test fixtures, not observed customer behavior."
+  },
+  "product": {
+    "id": "ChefFlow",
+    "version": "422605dd0",
+    "capabilities": [
+      "discovery_rail"
+    ],
+    "interfaces": [
+      "discovery_rail_scoring"
+    ],
+    "tools": [
+      "scoreDiscoveryRailItems"
+    ],
+    "workflows": [
+      "discover",
+      "choose"
+    ],
+    "permissions": [],
+    "externalDependencies": [],
+    "successCriteria": [
+      "eligible ranked choices"
+    ],
+    "invariants": [
+      "hard_eligibility"
+    ]
+  },
+  "actors": [
+    {
+      "id": "enthusiast",
+      "role": "diner",
+      "persona": "The Enthusiast",
+      "goals": [
+        "discover novel local cuisine",
+        "reach usable booking facts"
+      ],
+      "preferences": {
+        "novelty": true,
+        "operationalClarity": true
+      },
+      "knowledge": [],
+      "authority": [
+        "browse"
+      ],
+      "constraints": {
+        "maxPricePerPerson": 150
+      },
+      "tendencies": [
+        "abandon vague price"
+      ],
+      "history": {
+        "rankedPreferences": [
+          {
+            "itemType": "cuisine",
+            "itemValue": "peruvian",
+            "score": 3
+          }
+        ],
+        "suppressedItems": []
+      },
+      "memory": [],
+      "relationships": [],
+      "publicState": {},
+      "privateState": {
+        "budgetRange": [
+          80,
+          150
+        ]
+      }
+    }
+  ],
+  "environment": {
+    "at": "2026-09-27T20:00:00.000Z",
+    "geography": "urban",
+    "serviceStatus": "up",
+    "resources": {},
+    "device": "mobile",
+    "latencyMs": 0,
+    "marketState": {}
+  },
+  "objective": "Find an actionable, affordable culinary experience",
+  "initialState": {
+    "items": [
+      {
+        "id": "high-price",
+        "type": "seasonal",
+        "label": "Seasonal chef table",
+        "href": "/discover?q=chef_table",
+        "pricePerPerson": 175,
+        "location": "urban",
+        "available": true,
+        "dietary": []
+      },
+      {
+        "id": "peruvian",
+        "type": "cuisine",
+        "label": "Peruvian tasting",
+        "href": "/discover?cuisine=peruvian",
+        "pricePerPerson": 120,
+        "location": "urban",
+        "available": true,
+        "dietary": [
+          "vegan"
+        ]
+      },
+      {
+        "id": "market",
+        "type": "food_type",
+        "label": "Street food market",
+        "href": "/discover?q=street_food",
+        "pricePerPerson": 80,
+        "location": "urban",
+        "available": true,
+        "dietary": []
+      }
+    ]
+  },
+  "events": [
+    {
+      "type": "discover"
+    },
+    {
+      "type": "choose"
+    }
+  ],
+  "hiddenInformation": [],
+  "mutations": [
+    "budget",
+    "dietary",
+    "outage"
+  ],
+  "stoppingConditions": [
+    "choose"
+  ],
+  "expectedInvariants": [
+    {
+      "id": "hard_eligibility",
+      "description": "Never show items outside the actor's hard budget, dietary, location, availability, and service constraints"
+    }
+  ]
+}

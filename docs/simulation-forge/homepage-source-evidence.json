@@ -1,0 +1,3562 @@
+{
+  "kind": "simulation-forge-homepage-source-proof",
+  "generatedAt": "2026-09-28T04:01:24.374Z",
+  "commit": "43e3f4bcfebefe84fb6fc75154eef6c5a37b23fe",
+  "note": "Real ChefFlow homepage candidate code was executed offline. Prices, inventory, availability, and live route behavior are not established.",
+  "real": {
+    "runId": "085b5d83e64ee46f",
+    "scenarioId": "chef-real-homepage-taste-001",
+    "product": "ChefFlow",
+    "source": {
+      "kind": "inferred",
+      "source": "lib/discovery/homepage-taste-rail.ts#buildHomepageTasteRailItems",
+      "actorSource": "Chef Flow Personas/Completed/Public/the-enthusiast.txt",
+      "note": "Real production code generates candidate links; actor behavior and events remain synthetic. Candidate prices and availability are unknown."
+    },
+    "adapterVersion": "chef-homepage-source-v1",
+    "productVersion": "source-checkout",
+    "model": "none",
+    "seed": 101,
+    "commit": "43e3f4bcfebefe84fb6fc75154eef6c5a37b23fe",
+    "environment": {
+      "at": "2026-09-27T20:00:00.000Z",
+      "geography": "urban",
+      "serviceStatus": "up",
+      "resources": {},
+      "device": "mobile",
+      "latencyMs": 0,
+      "marketState": {}
+    },
+    "actors": [
+      {
+        "id": "enthusiast",
+        "role": "diner",
+        "persona": "The Enthusiast",
+        "goals": [
+          "discover novel local cuisine",
+          "reach usable booking facts"
+        ],
+        "preferences": {
+          "novelty": true,
+          "operationalClarity": true
+        },
+        "knowledge": [],
+        "authority": [
+          "browse"
+        ],
+        "constraints": {},
+        "tendencies": [
+          "abandon vague price"
+        ],
+        "history": {
+          "rankedPreferences": [
+            {
+              "itemType": "cuisine",
+              "itemValue": "peruvian",
+              "score": 3
+            }
+          ],
+          "suppressedItems": []
+        },
+        "memory": [],
+        "relationships": [],
+        "publicState": {},
+        "privateState": {
+          "budgetRange": [
+            80,
+            150
+          ]
+        }
+      }
+    ],
+    "observations": [
+      {
+        "kind": "ranked_items",
+        "items": [
+          {
+            "id": "cuisine:/cuisines/italian",
+            "score": 3
+          },
+          {
+            "id": "cuisine:/chefs?cuisine=british_chinese",
+            "score": 2.97
+          },
+          {
+            "id": "cuisine:/cuisines/pizza",
+            "score": 2.94
+          },
+          {
+            "id": "cuisine:/chefs?cuisine=northeastern_chinese",
+            "score": 2.91
+          },
+          {
+            "id": "cuisine:/chefs?cuisine=lowcountry",
+            "score": 2.88
+          },
+          {
+            "id": "cuisine:/cuisines/bakery",
+            "score": 2.85
+          },
+          {
+            "id": "cuisine:/cuisines/cafe",
+            "score": 2.82
+          },
+          {
+            "id": "cuisine:/chefs?cuisine=parisian",
+            "score": 2.79
+          },
+          {
+            "id": "cuisine:/chefs?cuisine=hubei",
+            "score": 2.76
+          },
+          {
+            "id": "cuisine:/chefs?cuisine=buryat",
+            "score": 2.73
+          },
+          {
+            "id": "cuisine:/chefs?cuisine=bicolano",
+            "score": 2.7
+          },
+          {
+            "id": "cuisine:/cuisines/barbecue",
+            "score": 2.67
+          },
+          {
+            "id": "cuisine:/cuisines/food_truck",
+            "score": 2.64
+          },
+          {
+            "id": "cuisine:/chefs?cuisine=oceanian",
+            "score": 2.61
+          },
+          {
+            "id": "cuisine:/chefs?cuisine=koryo_saram",
+            "score": 2.58
+          },
+          {
+            "id": "cuisine:/chefs?cuisine=curacaoan",
+            "score": 2.55
+          },
+          {
+            "id": "cuisine:/cuisines/moroccan",
+            "score": 2.52
+          },
+          {
+            "id": "cuisine:/chefs?cuisine=russian",
+            "score": 2.49
+          },
+          {
+            "id": "cuisine:/chefs?cuisine=estonian",
+            "score": 2.46
+          },
+          {
+            "id": "cuisine:/chefs?cuisine=corsican",
+            "score": 2.43
+          },
+          {
+            "id": "cuisine:/chefs?cuisine=kazakh",
+            "score": 2.4
+          },
+          {
+            "id": "cuisine:/chefs?cuisine=finnish",
+            "score": 2.37
+          },
+          {
+            "id": "cuisine:/chefs?cuisine=gujarati",
+            "score": 2.34
+          },
+          {
+            "id": "cuisine:/chefs?cuisine=balearic",
+            "score": 2.31
+          },
+          {
+            "id": "cuisine:/cuisines/mediterranean",
+            "score": 2.28
+          },
+          {
+            "id": "cuisine:/cuisines/modern_fusion",
+            "score": 2.25
+          },
+          {
+            "id": "cuisine:/chefs?cuisine=jewish_american",
+            "score": 2.22
+          },
+          {
+            "id": "cuisine:/chefs?cuisine=romani",
+            "score": 2.19
+          },
+          {
+            "id": "cuisine:/chefs?cuisine=libyan",
+            "score": 2.16
+          },
+          {
+            "id": "cuisine:/cuisines/french",
+            "score": 2.13
+          },
+          {
+            "id": "cuisine:/chefs?cuisine=bulgarian",
+            "score": 2.1
+          },
+          {
+            "id": "cuisine:/chefs?cuisine=somali",
+            "score": 2.07
+          },
+          {
+            "id": "cuisine:/chefs?cuisine=pacific_northwest",
+            "score": 2.04
+          },
+          {
+            "id": "cuisine:/chefs?cuisine=pacific_fusion",
+            "score": 2.01
+          },
+          {
+            "id": "cuisine:/cuisines/gluten_free",
+            "score": 1.98
+          },
+          {
+            "id": "cuisine:/chefs?cuisine=iraqi",
+            "score": 1.95
+          },
+          {
+            "id": "cuisine:/chefs?cuisine=azerbaijani",
+            "score": 1.92
+          },
+          {
+            "id": "cuisine:/chefs?cuisine=chinese_islamic",
+            "score": 1.89
+          },
+          {
+            "id": "cuisine:/chefs?cuisine=northern_chinese",
+            "score": 1.86
+          },
+          {
+            "id": "cuisine:/cuisines/steakhouse",
+            "score": 1.83
+          }
+        ]
+      },
+      {
+        "kind": "selected",
+        "id": "cuisine:/cuisines/italian"
+      },
+      {
+        "kind": "real_source",
+        "status": "loaded",
+        "count": 40,
+        "priceKnownCount": 0,
+        "candidateIds": [
+          "cuisine:/cuisines/italian",
+          "cuisine:/chefs?cuisine=british_chinese",
+          "cuisine:/cuisines/pizza",
+          "cuisine:/chefs?cuisine=northeastern_chinese",
+          "cuisine:/chefs?cuisine=lowcountry",
+          "cuisine:/cuisines/bakery",
+          "cuisine:/cuisines/cafe",
+          "cuisine:/chefs?cuisine=parisian",
+          "cuisine:/chefs?cuisine=hubei",
+          "cuisine:/chefs?cuisine=buryat",
+          "cuisine:/chefs?cuisine=bicolano",
+          "cuisine:/cuisines/barbecue",
+          "cuisine:/cuisines/food_truck",
+          "cuisine:/chefs?cuisine=oceanian",
+          "cuisine:/chefs?cuisine=koryo_saram",
+          "cuisine:/chefs?cuisine=curacaoan",
+          "cuisine:/cuisines/moroccan",
+          "cuisine:/chefs?cuisine=russian",
+          "cuisine:/chefs?cuisine=estonian",
+          "cuisine:/chefs?cuisine=corsican",
+          "cuisine:/chefs?cuisine=kazakh",
+          "cuisine:/chefs?cuisine=finnish",
+          "cuisine:/chefs?cuisine=gujarati",
+          "cuisine:/chefs?cuisine=balearic",
+          "cuisine:/cuisines/mediterranean",
+          "cuisine:/cuisines/modern_fusion",
+          "cuisine:/chefs?cuisine=jewish_american",
+          "cuisine:/chefs?cuisine=romani",
+          "cuisine:/chefs?cuisine=libyan",
+          "cuisine:/cuisines/french",
+          "cuisine:/chefs?cuisine=bulgarian",
+          "cuisine:/chefs?cuisine=somali",
+          "cuisine:/chefs?cuisine=pacific_northwest",
+          "cuisine:/chefs?cuisine=pacific_fusion",
+          "cuisine:/cuisines/gluten_free",
+          "cuisine:/chefs?cuisine=iraqi",
+          "cuisine:/chefs?cuisine=azerbaijani",
+          "cuisine:/chefs?cuisine=chinese_islamic",
+          "cuisine:/chefs?cuisine=northern_chinese",
+          "cuisine:/cuisines/steakhouse"
+        ],
+        "invalid": []
+      }
+    ],
+    "scores": {
+      "hardConstraintPass": 1,
+      "completion": 1,
+      "diversity": 0.025,
+      "userActions": 2,
+      "validDestinations": 1,
+      "sourceAvailable": 1
+    },
+    "violations": [],
+    "trajectory": [
+      {
+        "index": 0,
+        "at": "2026-09-27T20:00:00.001Z",
+        "kind": "start",
+        "data": {
+          "product": "ChefFlow",
+          "actors": [
+            "enthusiast"
+          ]
+        }
+      },
+      {
+        "index": 1,
+        "at": "2026-09-27T20:00:00.002Z",
+        "kind": "input",
+        "data": {
+          "type": "discover"
+        }
+      },
+      {
+        "index": 2,
+        "at": "2026-09-27T20:00:00.003Z",
+        "kind": "transition",
+        "data": {
+          "before": {
+            "items": [],
+            "sourceStatus": "not_loaded"
+          },
+          "after": {
+            "items": [
+              {
+                "type": "cuisine",
+                "label": "Italian",
+                "href": "/cuisines/italian",
+                "icon": "pasta",
+                "sublabel": "Southern Europe",
+                "id": "cuisine:/cuisines/italian"
+              },
+              {
+                "type": "cuisine",
+                "label": "British Chinese",
+                "href": "/chefs?cuisine=british_chinese",
+                "icon": "spark",
+                "sublabel": "Fusion",
+                "id": "cuisine:/chefs?cuisine=british_chinese"
+              },
+              {
+                "type": "cuisine",
+                "label": "Pizzeria",
+                "href": "/cuisines/pizza",
+                "icon": "pizza",
+                "sublabel": "Commercial",
+                "id": "cuisine:/cuisines/pizza"
+              },
+              {
+                "type": "cuisine",
+                "label": "Northeastern Chinese",
+                "href": "/chefs?cuisine=northeastern_chinese",
+                "icon": "bowl",
+                "sublabel": "East Asia",
+                "id": "cuisine:/chefs?cuisine=northeastern_chinese"
+              },
+              {
+                "type": "cuisine",
+                "label": "Lowcountry",
+                "href": "/chefs?cuisine=lowcountry",
+                "icon": "avocado",
+                "sublabel": "North America",
+                "id": "cuisine:/chefs?cuisine=lowcountry"
+              },
+              {
+                "type": "cuisine",
+                "label": "Bakery",
+                "href": "/cuisines/bakery",
+                "icon": "cookie",
+                "sublabel": "Commercial",
+                "id": "cuisine:/cuisines/bakery"
+              },
+              {
+                "type": "cuisine",
+                "label": "Cafe",
+                "href": "/cuisines/cafe",
+                "icon": "coffee",
+                "sublabel": "Commercial",
+                "id": "cuisine:/cuisines/cafe"
+              },
+              {
+                "type": "cuisine",
+                "label": "Parisian",
+                "href": "/chefs?cuisine=parisian",
+                "icon": "bread",
+                "sublabel": "Western Europe",
+                "id": "cuisine:/chefs?cuisine=parisian"
+              },
+              {
+                "type": "cuisine",
+                "label": "Hubei",
+                "href": "/chefs?cuisine=hubei",
+                "icon": "bowl",
+                "sublabel": "East Asia",
+                "id": "cuisine:/chefs?cuisine=hubei"
+              },
+              {
+                "type": "cuisine",
+                "label": "Buryat",
+                "href": "/chefs?cuisine=buryat",
+                "icon": "bowl",
+                "sublabel": "North Asia",
+                "id": "cuisine:/chefs?cuisine=buryat"
+              },
+              {
+                "type": "cuisine",
+                "label": "Bicolano",
+                "href": "/chefs?cuisine=bicolano",
+                "icon": "bowl",
+                "sublabel": "Southeast Asia",
+                "id": "cuisine:/chefs?cuisine=bicolano"
+              },
+              {
+                "type": "cuisine",
+                "label": "Barbecue",
+                "href": "/cuisines/barbecue",
+                "icon": "bbq",
+                "sublabel": "Commercial",
+                "id": "cuisine:/cuisines/barbecue"
+              },
+              {
+                "type": "cuisine",
+                "label": "Food Truck",
+                "href": "/cuisines/food_truck",
+                "icon": "spark",
+                "sublabel": "Commercial",
+                "id": "cuisine:/cuisines/food_truck"
+              },
+              {
+                "type": "cuisine",
+                "label": "Oceanian",
+                "href": "/chefs?cuisine=oceanian",
+                "icon": "seafood",
+                "sublabel": "General",
+                "id": "cuisine:/chefs?cuisine=oceanian"
+              },
+              {
+                "type": "cuisine",
+                "label": "Koryo-saram",
+                "href": "/chefs?cuisine=koryo_saram",
+                "icon": "bowl",
+                "sublabel": "Central Asia",
+                "id": "cuisine:/chefs?cuisine=koryo_saram"
+              },
+              {
+                "type": "cuisine",
+                "label": "Curacaoan",
+                "href": "/chefs?cuisine=curacaoan",
+                "icon": "avocado",
+                "sublabel": "Caribbean",
+                "id": "cuisine:/chefs?cuisine=curacaoan"
+              },
+              {
+                "type": "cuisine",
+                "label": "Moroccan",
+                "href": "/cuisines/moroccan",
+                "icon": "grains",
+                "sublabel": "North Africa",
+                "id": "cuisine:/cuisines/moroccan"
+              },
+              {
+                "type": "cuisine",
+                "label": "Russian",
+                "href": "/chefs?cuisine=russian",
+                "icon": "bread",
+                "sublabel": "Eastern Europe",
+                "id": "cuisine:/chefs?cuisine=russian"
+              },
+              {
+                "type": "cuisine",
+                "label": "Estonian",
+                "href": "/chefs?cuisine=estonian",
+                "icon": "bread",
+                "sublabel": "Northern Europe",
+                "id": "cuisine:/chefs?cuisine=estonian"
+              },
+              {
+                "type": "cuisine",
+                "label": "Corsican",
+                "href": "/chefs?cuisine=corsican",
+                "icon": "bread",
+                "sublabel": "Western Europe",
+                "id": "cuisine:/chefs?cuisine=corsican"
+              },
+              {
+                "type": "cuisine",
+                "label": "Kazakh",
+                "href": "/chefs?cuisine=kazakh",
+                "icon": "bowl",
+                "sublabel": "Central Asia",
+                "id": "cuisine:/chefs?cuisine=kazakh"
+              },
+              {
+                "type": "cuisine",
+                "label": "Finnish",
+                "href": "/chefs?cuisine=finnish",
+                "icon": "bread",
+                "sublabel": "Northern Europe",
+                "id": "cuisine:/chefs?cuisine=finnish"
+              },
+              {
+                "type": "cuisine",
+                "label": "Gujarati",
+                "href": "/chefs?cuisine=gujarati",
+                "icon": "bowl",
+                "sublabel": "South Asia",
+                "id": "cuisine:/chefs?cuisine=gujarati"
+              },
+              {
+                "type": "cuisine",
+                "label": "Balearic",
+                "href": "/chefs?cuisine=balearic",
+                "icon": "bread",
+                "sublabel": "Southern Europe",
+                "id": "cuisine:/chefs?cuisine=balearic"
+              },
+              {
+                "type": "cuisine",
+                "label": "Mediterranean",
+                "href": "/cuisines/mediterranean",
+                "icon": "leaf",
+                "sublabel": "Southern Europe",
+                "id": "cuisine:/cuisines/mediterranean"
+              },
+              {
+                "type": "cuisine",
+                "label": "Modern Fusion",
+                "href": "/cuisines/modern_fusion",
+                "icon": "spark",
+                "sublabel": "Fusion",
+                "id": "cuisine:/cuisines/modern_fusion"
+              },
+              {
+                "type": "cuisine",
+                "label": "Jewish-American",
+                "href": "/chefs?cuisine=jewish_american",
+                "icon": "spark",
+                "sublabel": "Fusion",
+                "id": "cuisine:/chefs?cuisine=jewish_american"
+              },
+              {
+                "type": "cuisine",
+                "label": "Romani",
+                "href": "/chefs?cuisine=romani",
+                "icon": "bread",
+                "sublabel": "Eastern Europe",
+                "id": "cuisine:/chefs?cuisine=romani"
+              },
+              {
+                "type": "cuisine",
+                "label": "Libyan",
+                "href": "/chefs?cuisine=libyan",
+                "icon": "grains",
+                "sublabel": "North Africa",
+                "id": "cuisine:/chefs?cuisine=libyan"
+              },
+              {
+                "type": "cuisine",
+                "label": "French",
+                "href": "/cuisines/french",
+                "icon": "wine",
+                "sublabel": "Western Europe",
+                "id": "cuisine:/cuisines/french"
+              },
+              {
+                "type": "cuisine",
+                "label": "Bulgarian",
+                "href": "/chefs?cuisine=bulgarian",
+                "icon": "bread",
+                "sublabel": "Eastern Europe",
+                "id": "cuisine:/chefs?cuisine=bulgarian"
+              },
+              {
+                "type": "cuisine",
+                "label": "Somali",
+                "href": "/chefs?cuisine=somali",
+                "icon": "grains",
+                "sublabel": "East Africa",
+                "id": "cuisine:/chefs?cuisine=somali"
+              },
+              {
+                "type": "cuisine",
+                "label": "Pacific Northwest",
+                "href": "/chefs?cuisine=pacific_northwest",
+                "icon": "avocado",
+                "sublabel": "North America",
+                "id": "cuisine:/chefs?cuisine=pacific_northwest"
+              },
+              {
+                "type": "cuisine",
+                "label": "Pacific Fusion",
+                "href": "/chefs?cuisine=pacific_fusion",
+                "icon": "spark",
+                "sublabel": "Fusion",
+                "id": "cuisine:/chefs?cuisine=pacific_fusion"
+              },
+              {
+                "type": "cuisine",
+                "label": "Gluten-Free",
+                "href": "/cuisines/gluten_free",
+                "icon": "leaf",
+                "sublabel": "Dietary",
+                "id": "cuisine:/cuisines/gluten_free"
+              },
+              {
+                "type": "cuisine",
+                "label": "Iraqi",
+                "href": "/chefs?cuisine=iraqi",
+                "icon": "grains",
+                "sublabel": "Mesopotamia",
+                "id": "cuisine:/chefs?cuisine=iraqi"
+              },
+              {
+                "type": "cuisine",
+                "label": "Azerbaijani",
+                "href": "/chefs?cuisine=azerbaijani",
+                "icon": "bread",
+                "sublabel": "Caucasus",
+                "id": "cuisine:/chefs?cuisine=azerbaijani"
+              },
+              {
+                "type": "cuisine",
+                "label": "Chinese Islamic",
+                "href": "/chefs?cuisine=chinese_islamic",
+                "icon": "bowl",
+                "sublabel": "East Asia",
+                "id": "cuisine:/chefs?cuisine=chinese_islamic"
+              },
+              {
+                "type": "cuisine",
+                "label": "Northern Chinese",
+                "href": "/chefs?cuisine=northern_chinese",
+                "icon": "bowl",
+                "sublabel": "East Asia",
+                "id": "cuisine:/chefs?cuisine=northern_chinese"
+              },
+              {
+                "type": "cuisine",
+                "label": "Steakhouse",
+                "href": "/cuisines/steakhouse",
+                "icon": "spark",
+                "sublabel": "Commercial",
+                "id": "cuisine:/cuisines/steakhouse"
+              }
+            ],
+            "sourceStatus": "loaded",
+            "ranked": [
+              {
+                "type": "cuisine",
+                "label": "Italian",
+                "href": "/cuisines/italian",
+                "icon": "pasta",
+                "sublabel": "Southern Europe",
+                "id": "cuisine:/cuisines/italian",
+                "debug": {
+                  "score": 3,
+                  "preferenceScore": 0,
+                  "editorialScore": 3,
+                  "reason": "Editorial discovery mix"
+                }
+              },
+              {
+                "type": "cuisine",
+                "label": "British Chinese",
+                "href": "/chefs?cuisine=british_chinese",
+                "icon": "spark",
+                "sublabel": "Fusion",
+                "id": "cuisine:/chefs?cuisine=british_chinese",
+                "debug": {
+                  "score": 2.97,
+                  "preferenceScore": 0,
+                  "editorialScore": 2.97,
+                  "reason": "Editorial discovery mix"
+                }
+              },
+              {
+                "type": "cuisine",
+                "label": "Pizzeria",
+                "href": "/cuisines/pizza",
+                "icon": "pizza",
+                "sublabel": "Commercial",
+                "id": "cuisine:/cuisines/pizza",
+                "debug": {
+                  "score": 2.94,
+                  "preferenceScore": 0,
+                  "editorialScore": 2.94,
+                  "reason": "Editorial discovery mix"
+                }
+              },
+              {
+                "type": "cuisine",
+                "label": "Northeastern Chinese",
+                "href": "/chefs?cuisine=northeastern_chinese",
+                "icon": "bowl",
+                "sublabel": "East Asia",
+                "id": "cuisine:/chefs?cuisine=northeastern_chinese",
+                "debug": {
+                  "score": 2.91,
+                  "preferenceScore": 0,
+                  "editorialScore": 2.91,
+                  "reason": "Editorial discovery mix"
+                }
+              },
+              {
+                "type": "cuisine",
+                "label": "Lowcountry",
+                "href": "/chefs?cuisine=lowcountry",
+                "icon": "avocado",
+                "sublabel": "North America",
+                "id": "cuisine:/chefs?cuisine=lowcountry",
+                "debug": {
+                  "score": 2.88,
+                  "preferenceScore": 0,
+                  "editorialScore": 2.88,
+                  "reason": "Editorial discovery mix"
+                }
+              },
+              {
+                "type": "cuisine",
+                "label": "Bakery",
+                "href": "/cuisines/bakery",
+                "icon": "cookie",
+                "sublabel": "Commercial",
+                "id": "cuisine:/cuisines/bakery",
+                "debug": {
+                  "score": 2.85,
+                  "preferenceScore": 0,
+                  "editorialScore": 2.85,
+                  "reason": "Editorial discovery mix"
+                }
+              },
+              {
+                "type": "cuisine",
+                "label": "Cafe",
+                "href": "/cuisines/cafe",
+                "icon": "coffee",
+                "sublabel": "Commercial",
+                "id": "cuisine:/cuisines/cafe",
+                "debug": {
+                  "score": 2.82,
+                  "preferenceScore": 0,
+                  "editorialScore": 2.82,
+                  "reason": "Editorial discovery mix"
+                }
+              },
+              {
+                "type": "cuisine",
+                "label": "Parisian",
+                "href": "/chefs?cuisine=parisian",
+                "icon": "bread",
+                "sublabel": "Western Europe",
+                "id": "cuisine:/chefs?cuisine=parisian",
+                "debug": {
+                  "score": 2.79,
+                  "preferenceScore": 0,
+                  "editorialScore": 2.79,
+                  "reason": "Editorial discovery mix"
+                }
+              },
+              {
+                "type": "cuisine",
+                "label": "Hubei",
+                "href": "/chefs?cuisine=hubei",
+                "icon": "bowl",
+                "sublabel": "East Asia",
+                "id": "cuisine:/chefs?cuisine=hubei",
+                "debug": {
+                  "score": 2.76,
+                  "preferenceScore": 0,
+                  "editorialScore": 2.76,
+                  "reason": "Editorial discovery mix"
+                }
+              },
+              {
+                "type": "cuisine",
+                "label": "Buryat",
+                "href": "/chefs?cuisine=buryat",
+                "icon": "bowl",
+                "sublabel": "North Asia",
+                "id": "cuisine:/chefs?cuisine=buryat",
+                "debug": {
+                  "score": 2.73,
+                  "preferenceScore": 0,
+                  "editorialScore": 2.73,
+                  "reason": "Editorial discovery mix"
+                }
+              },
+              {
+                "type": "cuisine",
+                "label": "Bicolano",
+                "href": "/chefs?cuisine=bicolano",
+                "icon": "bowl",
+                "sublabel": "Southeast Asia",
+                "id": "cuisine:/chefs?cuisine=bicolano",
+                "debug": {
+                  "score": 2.7,
+                  "preferenceScore": 0,
+                  "editorialScore": 2.7,
+                  "reason": "Editorial discovery mix"
+                }
+              },
+              {
+                "type": "cuisine",
+                "label": "Barbecue",
+                "href": "/cuisines/barbecue",
+                "icon": "bbq",
+                "sublabel": "Commercial",
+                "id": "cuisine:/cuisines/barbecue",
+                "debug": {
+                  "score": 2.67,
+                  "preferenceScore": 0,
+                  "editorialScore": 2.67,
+                  "reason": "Editorial discovery mix"
+                }
+              },
+              {
+                "type": "cuisine",
+                "label": "Food Truck",
+                "href": "/cuisines/food_truck",
+                "icon": "spark",
+                "sublabel": "Commercial",
+                "id": "cuisine:/cuisines/food_truck",
+                "debug": {
+                  "score": 2.64,
+                  "preferenceScore": 0,
+                  "editorialScore": 2.64,
+                  "reason": "Editorial discovery mix"
+                }
+              },
+              {
+                "type": "cuisine",
+                "label": "Oceanian",
+                "href": "/chefs?cuisine=oceanian",
+                "icon": "seafood",
+                "sublabel": "General",
+                "id": "cuisine:/chefs?cuisine=oceanian",
+                "debug": {
+                  "score": 2.61,
+                  "preferenceScore": 0,
+                  "editorialScore": 2.61,
+                  "reason": "Editorial discovery mix"
+                }
+              },
+              {
+                "type": "cuisine",
+                "label": "Koryo-saram",
+                "href": "/chefs?cuisine=koryo_saram",
+                "icon": "bowl",
+                "sublabel": "Central Asia",
+                "id": "cuisine:/chefs?cuisine=koryo_saram",
+                "debug": {
+                  "score": 2.58,
+                  "preferenceScore": 0,
+                  "editorialScore": 2.58,
+                  "reason": "Editorial discovery mix"
+                }
+              },
+              {
+                "type": "cuisine",
+                "label": "Curacaoan",
+                "href": "/chefs?cuisine=curacaoan",
+                "icon": "avocado",
+                "sublabel": "Caribbean",
+                "id": "cuisine:/chefs?cuisine=curacaoan",
+                "debug": {
+                  "score": 2.55,
+                  "preferenceScore": 0,
+                  "editorialScore": 2.55,
+                  "reason": "Editorial discovery mix"
+                }
+              },
+              {
+                "type": "cuisine",
+                "label": "Moroccan",
+                "href": "/cuisines/moroccan",
+                "icon": "grains",
+                "sublabel": "North Africa",
+                "id": "cuisine:/cuisines/moroccan",
+                "debug": {
+                  "score": 2.52,
+                  "preferenceScore": 0,
+                  "editorialScore": 2.52,
+                  "reason": "Editorial discovery mix"
+                }
+              },
+              {
+                "type": "cuisine",
+                "label": "Russian",
+                "href": "/chefs?cuisine=russian",
+                "icon": "bread",
+                "sublabel": "Eastern Europe",
+                "id": "cuisine:/chefs?cuisine=russian",
+                "debug": {
+                  "score": 2.49,
+                  "preferenceScore": 0,
+                  "editorialScore": 2.49,
+                  "reason": "Editorial discovery mix"
+                }
+              },
+              {
+                "type": "cuisine",
+                "label": "Estonian",
+                "href": "/chefs?cuisine=estonian",
+                "icon": "bread",
+                "sublabel": "Northern Europe",
+                "id": "cuisine:/chefs?cuisine=estonian",
+                "debug": {
+                  "score": 2.46,
+                  "preferenceScore": 0,
+                  "editorialScore": 2.46,
+                  "reason": "Editorial discovery mix"
+                }
+              },
+              {
+                "type": "cuisine",
+                "label": "Corsican",
+                "href": "/chefs?cuisine=corsican",
+                "icon": "bread",
+                "sublabel": "Western Europe",
+                "id": "cuisine:/chefs?cuisine=corsican",
+                "debug": {
+                  "score": 2.43,
+                  "preferenceScore": 0,
+                  "editorialScore": 2.43,
+                  "reason": "Editorial discovery mix"
+                }
+              },
+              {
+                "type": "cuisine",
+                "label": "Kazakh",
+                "href": "/chefs?cuisine=kazakh",
+                "icon": "bowl",
+                "sublabel": "Central Asia",
+                "id": "cuisine:/chefs?cuisine=kazakh",
+                "debug": {
+                  "score": 2.4,
+                  "preferenceScore": 0,
+                  "editorialScore": 2.4,
+                  "reason": "Editorial discovery mix"
+                }
+              },
+              {
+                "type": "cuisine",
+                "label": "Finnish",
+                "href": "/chefs?cuisine=finnish",
+                "icon": "bread",
+                "sublabel": "Northern Europe",
+                "id": "cuisine:/chefs?cuisine=finnish",
+                "debug": {
+                  "score": 2.37,
+                  "preferenceScore": 0,
+                  "editorialScore": 2.37,
+                  "reason": "Editorial discovery mix"
+                }
+              },
+              {
+                "type": "cuisine",
+                "label": "Gujarati",
+                "href": "/chefs?cuisine=gujarati",
+                "icon": "bowl",
+                "sublabel": "South Asia",
+                "id": "cuisine:/chefs?cuisine=gujarati",
+                "debug": {
+                  "score": 2.34,
+                  "preferenceScore": 0,
+                  "editorialScore": 2.34,
+                  "reason": "Editorial discovery mix"
+                }
+              },
+              {
+                "type": "cuisine",
+                "label": "Balearic",
+                "href": "/chefs?cuisine=balearic",
+                "icon": "bread",
+                "sublabel": "Southern Europe",
+                "id": "cuisine:/chefs?cuisine=balearic",
+                "debug": {
+                  "score": 2.31,
+                  "preferenceScore": 0,
+                  "editorialScore": 2.31,
+                  "reason": "Editorial discovery mix"
+                }
+              },
+              {
+                "type": "cuisine",
+                "label": "Mediterranean",
+                "href": "/cuisines/mediterranean",
+                "icon": "leaf",
+                "sublabel": "Southern Europe",
+                "id": "cuisine:/cuisines/mediterranean",
+                "debug": {
+                  "score": 2.28,
+                  "preferenceScore": 0,
+                  "editorialScore": 2.28,
+                  "reason": "Editorial discovery mix"
+                }
+              },
+              {
+                "type": "cuisine",
+                "label": "Modern Fusion",
+                "href": "/cuisines/modern_fusion",
+                "icon": "spark",
+                "sublabel": "Fusion",
+                "id": "cuisine:/cuisines/modern_fusion",
+                "debug": {
+                  "score": 2.25,
+                  "preferenceScore": 0,
+                  "editorialScore": 2.25,
+                  "reason": "Editorial discovery mix"
+                }
+              },
+              {
+                "type": "cuisine",
+                "label": "Jewish-American",
+                "href": "/chefs?cuisine=jewish_american",
+                "icon": "spark",
+                "sublabel": "Fusion",
+                "id": "cuisine:/chefs?cuisine=jewish_american",
+                "debug": {
+                  "score": 2.22,
+                  "preferenceScore": 0,
+                  "editorialScore": 2.22,
+                  "reason": "Editorial discovery mix"
+                }
+              },
+              {
+                "type": "cuisine",
+                "label": "Romani",
+                "href": "/chefs?cuisine=romani",
+                "icon": "bread",
+                "sublabel": "Eastern Europe",
+                "id": "cuisine:/chefs?cuisine=romani",
+                "debug": {
+                  "score": 2.19,
+                  "preferenceScore": 0,
+                  "editorialScore": 2.19,
+                  "reason": "Editorial discovery mix"
+                }
+              },
+              {
+                "type": "cuisine",
+                "label": "Libyan",
+                "href": "/chefs?cuisine=libyan",
+                "icon": "grains",
+                "sublabel": "North Africa",
+                "id": "cuisine:/chefs?cuisine=libyan",
+                "debug": {
+                  "score": 2.16,
+                  "preferenceScore": 0,
+                  "editorialScore": 2.16,
+                  "reason": "Editorial discovery mix"
+                }
+              },
+              {
+                "type": "cuisine",
+                "label": "French",
+                "href": "/cuisines/french",
+                "icon": "wine",
+                "sublabel": "Western Europe",
+                "id": "cuisine:/cuisines/french",
+                "debug": {
+                  "score": 2.13,
+                  "preferenceScore": 0,
+                  "editorialScore": 2.13,
+                  "reason": "Editorial discovery mix"
+                }
+              },
+              {
+                "type": "cuisine",
+                "label": "Bulgarian",
+                "href": "/chefs?cuisine=bulgarian",
+                "icon": "bread",
+                "sublabel": "Eastern Europe",
+                "id": "cuisine:/chefs?cuisine=bulgarian",
+                "debug": {
+                  "score": 2.1,
+                  "preferenceScore": 0,
+                  "editorialScore": 2.1,
+                  "reason": "Editorial discovery mix"
+                }
+              },
+              {
+                "type": "cuisine",
+                "label": "Somali",
+                "href": "/chefs?cuisine=somali",
+                "icon": "grains",
+                "sublabel": "East Africa",
+                "id": "cuisine:/chefs?cuisine=somali",
+                "debug": {
+                  "score": 2.07,
+                  "preferenceScore": 0,
+                  "editorialScore": 2.07,
+                  "reason": "Editorial discovery mix"
+                }
+              },
+              {
+                "type": "cuisine",
+                "label": "Pacific Northwest",
+                "href": "/chefs?cuisine=pacific_northwest",
+                "icon": "avocado",
+                "sublabel": "North America",
+                "id": "cuisine:/chefs?cuisine=pacific_northwest",
+                "debug": {
+                  "score": 2.04,
+                  "preferenceScore": 0,
+                  "editorialScore": 2.04,
+                  "reason": "Editorial discovery mix"
+                }
+              },
+              {
+                "type": "cuisine",
+                "label": "Pacific Fusion",
+                "href": "/chefs?cuisine=pacific_fusion",
+                "icon": "spark",
+                "sublabel": "Fusion",
+                "id": "cuisine:/chefs?cuisine=pacific_fusion",
+                "debug": {
+                  "score": 2.01,
+                  "preferenceScore": 0,
+                  "editorialScore": 2.01,
+                  "reason": "Editorial discovery mix"
+                }
+              },
+              {
+                "type": "cuisine",
+                "label": "Gluten-Free",
+                "href": "/cuisines/gluten_free",
+                "icon": "leaf",
+                "sublabel": "Dietary",
+                "id": "cuisine:/cuisines/gluten_free",
+                "debug": {
+                  "score": 1.98,
+                  "preferenceScore": 0,
+                  "editorialScore": 1.98,
+                  "reason": "Editorial discovery mix"
+                }
+              },
+              {
+                "type": "cuisine",
+                "label": "Iraqi",
+                "href": "/chefs?cuisine=iraqi",
+                "icon": "grains",
+                "sublabel": "Mesopotamia",
+                "id": "cuisine:/chefs?cuisine=iraqi",
+                "debug": {
+                  "score": 1.95,
+                  "preferenceScore": 0,
+                  "editorialScore": 1.95,
+                  "reason": "Editorial discovery mix"
+                }
+              },
+              {
+                "type": "cuisine",
+                "label": "Azerbaijani",
+                "href": "/chefs?cuisine=azerbaijani",
+                "icon": "bread",
+                "sublabel": "Caucasus",
+                "id": "cuisine:/chefs?cuisine=azerbaijani",
+                "debug": {
+                  "score": 1.92,
+                  "preferenceScore": 0,
+                  "editorialScore": 1.92,
+                  "reason": "Editorial discovery mix"
+                }
+              },
+              {
+                "type": "cuisine",
+                "label": "Chinese Islamic",
+                "href": "/chefs?cuisine=chinese_islamic",
+                "icon": "bowl",
+                "sublabel": "East Asia",
+                "id": "cuisine:/chefs?cuisine=chinese_islamic",
+                "debug": {
+                  "score": 1.89,
+                  "preferenceScore": 0,
+                  "editorialScore": 1.89,
+                  "reason": "Editorial discovery mix"
+                }
+              },
+              {
+                "type": "cuisine",
+                "label": "Northern Chinese",
+                "href": "/chefs?cuisine=northern_chinese",
+                "icon": "bowl",
+                "sublabel": "East Asia",
+                "id": "cuisine:/chefs?cuisine=northern_chinese",
+                "debug": {
+                  "score": 1.86,
+                  "preferenceScore": 0,
+                  "editorialScore": 1.86,
+                  "reason": "Editorial discovery mix"
+                }
+              },
+              {
+                "type": "cuisine",
+                "label": "Steakhouse",
+                "href": "/cuisines/steakhouse",
+                "icon": "spark",
+                "sublabel": "Commercial",
+                "id": "cuisine:/cuisines/steakhouse",
+                "debug": {
+                  "score": 1.83,
+                  "preferenceScore": 0,
+                  "editorialScore": 1.83,
+                  "reason": "Editorial discovery mix"
+                }
+              }
+            ]
+          },
+          "messages": [],
+          "toolCalls": [
+            {
+              "name": "buildHomepageTasteRailItems",
+              "status": "loaded",
+              "count": 40
+            },
+            {
+              "name": "scoreDiscoveryRailItems",
+              "candidateCount": 40
+            }
+          ],
+          "decisions": [
+            {
+              "kind": "rank",
+              "candidateIds": [
+                "cuisine:/cuisines/italian",
+                "cuisine:/chefs?cuisine=british_chinese",
+                "cuisine:/cuisines/pizza",
+                "cuisine:/chefs?cuisine=northeastern_chinese",
+                "cuisine:/chefs?cuisine=lowcountry",
+                "cuisine:/cuisines/bakery",
+                "cuisine:/cuisines/cafe",
+                "cuisine:/chefs?cuisine=parisian",
+                "cuisine:/chefs?cuisine=hubei",
+                "cuisine:/chefs?cuisine=buryat",
+                "cuisine:/chefs?cuisine=bicolano",
+                "cuisine:/cuisines/barbecue",
+                "cuisine:/cuisines/food_truck",
+                "cuisine:/chefs?cuisine=oceanian",
+                "cuisine:/chefs?cuisine=koryo_saram",
+                "cuisine:/chefs?cuisine=curacaoan",
+                "cuisine:/cuisines/moroccan",
+                "cuisine:/chefs?cuisine=russian",
+                "cuisine:/chefs?cuisine=estonian",
+                "cuisine:/chefs?cuisine=corsican",
+                "cuisine:/chefs?cuisine=kazakh",
+                "cuisine:/chefs?cuisine=finnish",
+                "cuisine:/chefs?cuisine=gujarati",
+                "cuisine:/chefs?cuisine=balearic",
+                "cuisine:/cuisines/mediterranean",
+                "cuisine:/cuisines/modern_fusion",
+                "cuisine:/chefs?cuisine=jewish_american",
+                "cuisine:/chefs?cuisine=romani",
+                "cuisine:/chefs?cuisine=libyan",
+                "cuisine:/cuisines/french",
+                "cuisine:/chefs?cuisine=bulgarian",
+                "cuisine:/chefs?cuisine=somali",
+                "cuisine:/chefs?cuisine=pacific_northwest",
+                "cuisine:/chefs?cuisine=pacific_fusion",
+                "cuisine:/cuisines/gluten_free",
+                "cuisine:/chefs?cuisine=iraqi",
+                "cuisine:/chefs?cuisine=azerbaijani",
+                "cuisine:/chefs?cuisine=chinese_islamic",
+                "cuisine:/chefs?cuisine=northern_chinese",
+                "cuisine:/cuisines/steakhouse"
+              ]
+            }
+          ]
+        }
+      },
+      {
+        "index": 3,
+        "at": "2026-09-27T20:00:00.004Z",
+        "kind": "input",
+        "data": {
+          "type": "choose"
+        }
+      },
+      {
+        "index": 4,
+        "at": "2026-09-27T20:00:00.005Z",
+        "kind": "transition",
+        "data": {
+          "before": {
+            "items": [
+              {
+                "type": "cuisine",
+                "label": "Italian",
+                "href": "/cuisines/italian",
+                "icon": "pasta",
+                "sublabel": "Southern Europe",
+                "id": "cuisine:/cuisines/italian"
+              },
+              {
+                "type": "cuisine",
+                "label": "British Chinese",
+                "href": "/chefs?cuisine=british_chinese",
+                "icon": "spark",
+                "sublabel": "Fusion",
+                "id": "cuisine:/chefs?cuisine=british_chinese"
+              },
+              {
+                "type": "cuisine",
+                "label": "Pizzeria",
+                "href": "/cuisines/pizza",
+                "icon": "pizza",
+                "sublabel": "Commercial",
+                "id": "cuisine:/cuisines/pizza"
+              },
+              {
+                "type": "cuisine",
+                "label": "Northeastern Chinese",
+                "href": "/chefs?cuisine=northeastern_chinese",
+                "icon": "bowl",
+                "sublabel": "East Asia",
+                "id": "cuisine:/chefs?cuisine=northeastern_chinese"
+              },
+              {
+                "type": "cuisine",
+                "label": "Lowcountry",
+                "href": "/chefs?cuisine=lowcountry",
+                "icon": "avocado",
+                "sublabel": "North America",
+                "id": "cuisine:/chefs?cuisine=lowcountry"
+              },
+              {
+                "type": "cuisine",
+                "label": "Bakery",
+                "href": "/cuisines/bakery",
+                "icon": "cookie",
+                "sublabel": "Commercial",
+                "id": "cuisine:/cuisines/bakery"
+              },
+              {
+                "type": "cuisine",
+                "label": "Cafe",
+                "href": "/cuisines/cafe",
+                "icon": "coffee",
+                "sublabel": "Commercial",
+                "id": "cuisine:/cuisines/cafe"
+              },
+              {
+                "type": "cuisine",
+                "label": "Parisian",
+                "href": "/chefs?cuisine=parisian",
+                "icon": "bread",
+                "sublabel": "Western Europe",
+                "id": "cuisine:/chefs?cuisine=parisian"
+              },
+              {
+                "type": "cuisine",
+                "label": "Hubei",
+                "href": "/chefs?cuisine=hubei",
+                "icon": "bowl",
+                "sublabel": "East Asia",
+                "id": "cuisine:/chefs?cuisine=hubei"
+              },
+              {
+                "type": "cuisine",
+                "label": "Buryat",
+                "href": "/chefs?cuisine=buryat",
+                "icon": "bowl",
+                "sublabel": "North Asia",
+                "id": "cuisine:/chefs?cuisine=buryat"
+              },
+              {
+                "type": "cuisine",
+                "label": "Bicolano",
+                "href": "/chefs?cuisine=bicolano",
+                "icon": "bowl",
+                "sublabel": "Southeast Asia",
+                "id": "cuisine:/chefs?cuisine=bicolano"
+              },
+              {
+                "type": "cuisine",
+                "label": "Barbecue",
+                "href": "/cuisines/barbecue",
+                "icon": "bbq",
+                "sublabel": "Commercial",
+                "id": "cuisine:/cuisines/barbecue"
+              },
+              {
+                "type": "cuisine",
+                "label": "Food Truck",
+                "href": "/cuisines/food_truck",
+                "icon": "spark",
+                "sublabel": "Commercial",
+                "id": "cuisine:/cuisines/food_truck"
+              },
+              {
+                "type": "cuisine",
+                "label": "Oceanian",
+                "href": "/chefs?cuisine=oceanian",
+                "icon": "seafood",
+                "sublabel": "General",
+                "id": "cuisine:/chefs?cuisine=oceanian"
+              },
+              {
+                "type": "cuisine",
+                "label": "Koryo-saram",
+                "href": "/chefs?cuisine=koryo_saram",
+                "icon": "bowl",
+                "sublabel": "Central Asia",
+                "id": "cuisine:/chefs?cuisine=koryo_saram"
+              },
+              {
+                "type": "cuisine",
+                "label": "Curacaoan",
+                "href": "/chefs?cuisine=curacaoan",
+                "icon": "avocado",
+                "sublabel": "Caribbean",
+                "id": "cuisine:/chefs?cuisine=curacaoan"
+              },
+              {
+                "type": "cuisine",
+                "label": "Moroccan",
+                "href": "/cuisines/moroccan",
+                "icon": "grains",
+                "sublabel": "North Africa",
+                "id": "cuisine:/cuisines/moroccan"
+              },
+              {
+                "type": "cuisine",
+                "label": "Russian",
+                "href": "/chefs?cuisine=russian",
+                "icon": "bread",
+                "sublabel": "Eastern Europe",
+                "id": "cuisine:/chefs?cuisine=russian"
+              },
+              {
+                "type": "cuisine",
+                "label": "Estonian",
+                "href": "/chefs?cuisine=estonian",
+                "icon": "bread",
+                "sublabel": "Northern Europe",
+                "id": "cuisine:/chefs?cuisine=estonian"
+              },
+              {
+                "type": "cuisine",
+                "label": "Corsican",
+                "href": "/chefs?cuisine=corsican",
+                "icon": "bread",
+                "sublabel": "Western Europe",
+                "id": "cuisine:/chefs?cuisine=corsican"
+              },
+              {
+                "type": "cuisine",
+                "label": "Kazakh",
+                "href": "/chefs?cuisine=kazakh",
+                "icon": "bowl",
+                "sublabel": "Central Asia",
+                "id": "cuisine:/chefs?cuisine=kazakh"
+              },
+              {
+                "type": "cuisine",
+                "label": "Finnish",
+                "href": "/chefs?cuisine=finnish",
+                "icon": "bread",
+                "sublabel": "Northern Europe",
+                "id": "cuisine:/chefs?cuisine=finnish"
+              },
+              {
+                "type": "cuisine",
+                "label": "Gujarati",
+                "href": "/chefs?cuisine=gujarati",
+                "icon": "bowl",
+                "sublabel": "South Asia",
+                "id": "cuisine:/chefs?cuisine=gujarati"
+              },
+              {
+                "type": "cuisine",
+                "label": "Balearic",
+                "href": "/chefs?cuisine=balearic",
+                "icon": "bread",
+                "sublabel": "Southern Europe",
+                "id": "cuisine:/chefs?cuisine=balearic"
+              },
+              {
+                "type": "cuisine",
+                "label": "Mediterranean",
+                "href": "/cuisines/mediterranean",
+                "icon": "leaf",
+                "sublabel": "Southern Europe",
+                "id": "cuisine:/cuisines/mediterranean"
+              },
+              {
+                "type": "cuisine",
+                "label": "Modern Fusion",
+                "href": "/cuisines/modern_fusion",
+                "icon": "spark",
+                "sublabel": "Fusion",
+                "id": "cuisine:/cuisines/modern_fusion"
+              },
+              {
+                "type": "cuisine",
+                "label": "Jewish-American",
+                "href": "/chefs?cuisine=jewish_american",
+                "icon": "spark",
+                "sublabel": "Fusion",
+                "id": "cuisine:/chefs?cuisine=jewish_american"
+              },
+              {
+                "type": "cuisine",
+                "label": "Romani",
+                "href": "/chefs?cuisine=romani",
+                "icon": "bread",
+                "sublabel": "Eastern Europe",
+                "id": "cuisine:/chefs?cuisine=romani"
+              },
+              {
+                "type": "cuisine",
+                "label": "Libyan",
+                "href": "/chefs?cuisine=libyan",
+                "icon": "grains",
+                "sublabel": "North Africa",
+                "id": "cuisine:/chefs?cuisine=libyan"
+              },
+              {
+                "type": "cuisine",
+                "label": "French",
+                "href": "/cuisines/french",
+                "icon": "wine",
+                "sublabel": "Western Europe",
+                "id": "cuisine:/cuisines/french"
+              },
+              {
+                "type": "cuisine",
+                "label": "Bulgarian",
+                "href": "/chefs?cuisine=bulgarian",
+                "icon": "bread",
+                "sublabel": "Eastern Europe",
+                "id": "cuisine:/chefs?cuisine=bulgarian"
+              },
+              {
+                "type": "cuisine",
+                "label": "Somali",
+                "href": "/chefs?cuisine=somali",
+                "icon": "grains",
+                "sublabel": "East Africa",
+                "id": "cuisine:/chefs?cuisine=somali"
+              },
+              {
+                "type": "cuisine",
+                "label": "Pacific Northwest",
+                "href": "/chefs?cuisine=pacific_northwest",
+                "icon": "avocado",
+                "sublabel": "North America",
+                "id": "cuisine:/chefs?cuisine=pacific_northwest"
+              },
+              {
+                "type": "cuisine",
+                "label": "Pacific Fusion",
+                "href": "/chefs?cuisine=pacific_fusion",
+                "icon": "spark",
+                "sublabel": "Fusion",
+                "id": "cuisine:/chefs?cuisine=pacific_fusion"
+              },
+              {
+                "type": "cuisine",
+                "label": "Gluten-Free",
+                "href": "/cuisines/gluten_free",
+                "icon": "leaf",
+                "sublabel": "Dietary",
+                "id": "cuisine:/cuisines/gluten_free"
+              },
+              {
+                "type": "cuisine",
+                "label": "Iraqi",
+                "href": "/chefs?cuisine=iraqi",
+                "icon": "grains",
+                "sublabel": "Mesopotamia",
+                "id": "cuisine:/chefs?cuisine=iraqi"
+              },
+              {
+                "type": "cuisine",
+                "label": "Azerbaijani",
+                "href": "/chefs?cuisine=azerbaijani",
+                "icon": "bread",
+                "sublabel": "Caucasus",
+                "id": "cuisine:/chefs?cuisine=azerbaijani"
+              },
+              {
+                "type": "cuisine",
+                "label": "Chinese Islamic",
+                "href": "/chefs?cuisine=chinese_islamic",
+                "icon": "bowl",
+                "sublabel": "East Asia",
+                "id": "cuisine:/chefs?cuisine=chinese_islamic"
+              },
+              {
+                "type": "cuisine",
+                "label": "Northern Chinese",
+                "href": "/chefs?cuisine=northern_chinese",
+                "icon": "bowl",
+                "sublabel": "East Asia",
+                "id": "cuisine:/chefs?cuisine=northern_chinese"
+              },
+              {
+                "type": "cuisine",
+                "label": "Steakhouse",
+                "href": "/cuisines/steakhouse",
+                "icon": "spark",
+                "sublabel": "Commercial",
+                "id": "cuisine:/cuisines/steakhouse"
+              }
+            ],
+            "sourceStatus": "loaded",
+            "ranked": [
+              {
+                "type": "cuisine",
+                "label": "Italian",
+                "href": "/cuisines/italian",
+                "icon": "pasta",
+                "sublabel": "Southern Europe",
+                "id": "cuisine:/cuisines/italian",
+                "debug": {
+                  "score": 3,
+                  "preferenceScore": 0,
+                  "editorialScore": 3,
+                  "reason": "Editorial discovery mix"
+                }
+              },
+              {
+                "type": "cuisine",
+                "label": "British Chinese",
+                "href": "/chefs?cuisine=british_chinese",
+                "icon": "spark",
+                "sublabel": "Fusion",
+                "id": "cuisine:/chefs?cuisine=british_chinese",
+                "debug": {
+                  "score": 2.97,
+                  "preferenceScore": 0,
+                  "editorialScore": 2.97,
+                  "reason": "Editorial discovery mix"
+                }
+              },
+              {
+                "type": "cuisine",
+                "label": "Pizzeria",
+                "href": "/cuisines/pizza",
+                "icon": "pizza",
+                "sublabel": "Commercial",
+                "id": "cuisine:/cuisines/pizza",
+                "debug": {
+                  "score": 2.94,
+                  "preferenceScore": 0,
+                  "editorialScore": 2.94,
+                  "reason": "Editorial discovery mix"
+                }
+              },
+              {
+                "type": "cuisine",
+                "label": "Northeastern Chinese",
+                "href": "/chefs?cuisine=northeastern_chinese",
+                "icon": "bowl",
+                "sublabel": "East Asia",
+                "id": "cuisine:/chefs?cuisine=northeastern_chinese",
+                "debug": {
+                  "score": 2.91,
+                  "preferenceScore": 0,
+                  "editorialScore": 2.91,
+                  "reason": "Editorial discovery mix"
+                }
+              },
+              {
+                "type": "cuisine",
+                "label": "Lowcountry",
+                "href": "/chefs?cuisine=lowcountry",
+                "icon": "avocado",
+                "sublabel": "North America",
+                "id": "cuisine:/chefs?cuisine=lowcountry",
+                "debug": {
+                  "score": 2.88,
+                  "preferenceScore": 0,
+                  "editorialScore": 2.88,
+                  "reason": "Editorial discovery mix"
+                }
+              },
+              {
+                "type": "cuisine",
+                "label": "Bakery",
+                "href": "/cuisines/bakery",
+                "icon": "cookie",
+                "sublabel": "Commercial",
+                "id": "cuisine:/cuisines/bakery",
+                "debug": {
+                  "score": 2.85,
+                  "preferenceScore": 0,
+                  "editorialScore": 2.85,
+                  "reason": "Editorial discovery mix"
+                }
+              },
+              {
+                "type": "cuisine",
+                "label": "Cafe",
+                "href": "/cuisines/cafe",
+                "icon": "coffee",
+                "sublabel": "Commercial",
+                "id": "cuisine:/cuisines/cafe",
+                "debug": {
+                  "score": 2.82,
+                  "preferenceScore": 0,
+                  "editorialScore": 2.82,
+                  "reason": "Editorial discovery mix"
+                }
+              },
+              {
+                "type": "cuisine",
+                "label": "Parisian",
+                "href": "/chefs?cuisine=parisian",
+                "icon": "bread",
+                "sublabel": "Western Europe",
+                "id": "cuisine:/chefs?cuisine=parisian",
+                "debug": {
+                  "score": 2.79,
+                  "preferenceScore": 0,
+                  "editorialScore": 2.79,
+                  "reason": "Editorial discovery mix"
+                }
+              },
+              {
+                "type": "cuisine",
+                "label": "Hubei",
+                "href": "/chefs?cuisine=hubei",
+                "icon": "bowl",
+                "sublabel": "East Asia",
+                "id": "cuisine:/chefs?cuisine=hubei",
+                "debug": {
+                  "score": 2.76,
+                  "preferenceScore": 0,
+                  "editorialScore": 2.76,
+                  "reason": "Editorial discovery mix"
+                }
+              },
+              {
+                "type": "cuisine",
+                "label": "Buryat",
+                "href": "/chefs?cuisine=buryat",
+                "icon": "bowl",
+                "sublabel": "North Asia",
+                "id": "cuisine:/chefs?cuisine=buryat",
+                "debug": {
+                  "score": 2.73,
+                  "preferenceScore": 0,
+                  "editorialScore": 2.73,
+                  "reason": "Editorial discovery mix"
+                }
+              },
+              {
+                "type": "cuisine",
+                "label": "Bicolano",
+                "href": "/chefs?cuisine=bicolano",
+                "icon": "bowl",
+                "sublabel": "Southeast Asia",
+                "id": "cuisine:/chefs?cuisine=bicolano",
+                "debug": {
+                  "score": 2.7,
+                  "preferenceScore": 0,
+                  "editorialScore": 2.7,
+                  "reason": "Editorial discovery mix"
+                }
+              },
+              {
+                "type": "cuisine",
+                "label": "Barbecue",
+                "href": "/cuisines/barbecue",
+                "icon": "bbq",
+                "sublabel": "Commercial",
+                "id": "cuisine:/cuisines/barbecue",
+                "debug": {
+                  "score": 2.67,
+                  "preferenceScore": 0,
+                  "editorialScore": 2.67,
+                  "reason": "Editorial discovery mix"
+                }
+              },
+              {
+                "type": "cuisine",
+                "label": "Food Truck",
+                "href": "/cuisines/food_truck",
+                "icon": "spark",
+                "sublabel": "Commercial",
+                "id": "cuisine:/cuisines/food_truck",
+                "debug": {
+                  "score": 2.64,
+                  "preferenceScore": 0,
+                  "editorialScore": 2.64,
+                  "reason": "Editorial discovery mix"
+                }
+              },
+              {
+                "type": "cuisine",
+                "label": "Oceanian",
+                "href": "/chefs?cuisine=oceanian",
+                "icon": "seafood",
+                "sublabel": "General",
+                "id": "cuisine:/chefs?cuisine=oceanian",
+                "debug": {
+                  "score": 2.61,
+                  "preferenceScore": 0,
+                  "editorialScore": 2.61,
+                  "reason": "Editorial discovery mix"
+                }
+              },
+              {
+                "type": "cuisine",
+                "label": "Koryo-saram",
+                "href": "/chefs?cuisine=koryo_saram",
+                "icon": "bowl",
+                "sublabel": "Central Asia",
+                "id": "cuisine:/chefs?cuisine=koryo_saram",
+                "debug": {
+                  "score": 2.58,
+                  "preferenceScore": 0,
+                  "editorialScore": 2.58,
+                  "reason": "Editorial discovery mix"
+                }
+              },
+              {
+                "type": "cuisine",
+                "label": "Curacaoan",
+                "href": "/chefs?cuisine=curacaoan",
+                "icon": "avocado",
+                "sublabel": "Caribbean",
+                "id": "cuisine:/chefs?cuisine=curacaoan",
+                "debug": {
+                  "score": 2.55,
+                  "preferenceScore": 0,
+                  "editorialScore": 2.55,
+                  "reason": "Editorial discovery mix"
+                }
+              },
+              {
+                "type": "cuisine",
+                "label": "Moroccan",
+                "href": "/cuisines/moroccan",
+                "icon": "grains",
+                "sublabel": "North Africa",
+                "id": "cuisine:/cuisines/moroccan",
+                "debug": {
+                  "score": 2.52,
+                  "preferenceScore": 0,
+                  "editorialScore": 2.52,
+                  "reason": "Editorial discovery mix"
+                }
+              },
+              {
+                "type": "cuisine",
+                "label": "Russian",
+                "href": "/chefs?cuisine=russian",
+                "icon": "bread",
+                "sublabel": "Eastern Europe",
+                "id": "cuisine:/chefs?cuisine=russian",
+                "debug": {
+                  "score": 2.49,
+                  "preferenceScore": 0,
+                  "editorialScore": 2.49,
+                  "reason": "Editorial discovery mix"
+                }
+              },
+              {
+                "type": "cuisine",
+                "label": "Estonian",
+                "href": "/chefs?cuisine=estonian",
+                "icon": "bread",
+                "sublabel": "Northern Europe",
+                "id": "cuisine:/chefs?cuisine=estonian",
+                "debug": {
+                  "score": 2.46,
+                  "preferenceScore": 0,
+                  "editorialScore": 2.46,
+                  "reason": "Editorial discovery mix"
+                }
+              },
+              {
+                "type": "cuisine",
+                "label": "Corsican",
+                "href": "/chefs?cuisine=corsican",
+                "icon": "bread",
+                "sublabel": "Western Europe",
+                "id": "cuisine:/chefs?cuisine=corsican",
+                "debug": {
+                  "score": 2.43,
+                  "preferenceScore": 0,
+                  "editorialScore": 2.43,
+                  "reason": "Editorial discovery mix"
+                }
+              },
+              {
+                "type": "cuisine",
+                "label": "Kazakh",
+                "href": "/chefs?cuisine=kazakh",
+                "icon": "bowl",
+                "sublabel": "Central Asia",
+                "id": "cuisine:/chefs?cuisine=kazakh",
+                "debug": {
+                  "score": 2.4,
+                  "preferenceScore": 0,
+                  "editorialScore": 2.4,
+                  "reason": "Editorial discovery mix"
+                }
+              },
+              {
+                "type": "cuisine",
+                "label": "Finnish",
+                "href": "/chefs?cuisine=finnish",
+                "icon": "bread",
+                "sublabel": "Northern Europe",
+                "id": "cuisine:/chefs?cuisine=finnish",
+                "debug": {
+                  "score": 2.37,
+                  "preferenceScore": 0,
+                  "editorialScore": 2.37,
+                  "reason": "Editorial discovery mix"
+                }
+              },
+              {
+                "type": "cuisine",
+                "label": "Gujarati",
+                "href": "/chefs?cuisine=gujarati",
+                "icon": "bowl",
+                "sublabel": "South Asia",
+                "id": "cuisine:/chefs?cuisine=gujarati",
+                "debug": {
+                  "score": 2.34,
+                  "preferenceScore": 0,
+                  "editorialScore": 2.34,
+                  "reason": "Editorial discovery mix"
+                }
+              },
+              {
+                "type": "cuisine",
+                "label": "Balearic",
+                "href": "/chefs?cuisine=balearic",
+                "icon": "bread",
+                "sublabel": "Southern Europe",
+                "id": "cuisine:/chefs?cuisine=balearic",
+                "debug": {
+                  "score": 2.31,
+                  "preferenceScore": 0,
+                  "editorialScore": 2.31,
+                  "reason": "Editorial discovery mix"
+                }
+              },
+              {
+                "type": "cuisine",
+                "label": "Mediterranean",
+                "href": "/cuisines/mediterranean",
+                "icon": "leaf",
+                "sublabel": "Southern Europe",
+                "id": "cuisine:/cuisines/mediterranean",
+                "debug": {
+                  "score": 2.28,
+                  "preferenceScore": 0,
+                  "editorialScore": 2.28,
+                  "reason": "Editorial discovery mix"
+                }
+              },
+              {
+                "type": "cuisine",
+                "label": "Modern Fusion",
+                "href": "/cuisines/modern_fusion",
+                "icon": "spark",
+                "sublabel": "Fusion",
+                "id": "cuisine:/cuisines/modern_fusion",
+                "debug": {
+                  "score": 2.25,
+                  "preferenceScore": 0,
+                  "editorialScore": 2.25,
+                  "reason": "Editorial discovery mix"
+                }
+              },
+              {
+                "type": "cuisine",
+                "label": "Jewish-American",
+                "href": "/chefs?cuisine=jewish_american",
+                "icon": "spark",
+                "sublabel": "Fusion",
+                "id": "cuisine:/chefs?cuisine=jewish_american",
+                "debug": {
+                  "score": 2.22,
+                  "preferenceScore": 0,
+                  "editorialScore": 2.22,
+                  "reason": "Editorial discovery mix"
+                }
+              },
+              {
+                "type": "cuisine",
+                "label": "Romani",
+                "href": "/chefs?cuisine=romani",
+                "icon": "bread",
+                "sublabel": "Eastern Europe",
+                "id": "cuisine:/chefs?cuisine=romani",
+                "debug": {
+                  "score": 2.19,
+                  "preferenceScore": 0,
+                  "editorialScore": 2.19,
+                  "reason": "Editorial discovery mix"
+                }
+              },
+              {
+                "type": "cuisine",
+                "label": "Libyan",
+                "href": "/chefs?cuisine=libyan",
+                "icon": "grains",
+                "sublabel": "North Africa",
+                "id": "cuisine:/chefs?cuisine=libyan",
+                "debug": {
+                  "score": 2.16,
+                  "preferenceScore": 0,
+                  "editorialScore": 2.16,
+                  "reason": "Editorial discovery mix"
+                }
+              },
+              {
+                "type": "cuisine",
+                "label": "French",
+                "href": "/cuisines/french",
+                "icon": "wine",
+                "sublabel": "Western Europe",
+                "id": "cuisine:/cuisines/french",
+                "debug": {
+                  "score": 2.13,
+                  "preferenceScore": 0,
+                  "editorialScore": 2.13,
+                  "reason": "Editorial discovery mix"
+                }
+              },
+              {
+                "type": "cuisine",
+                "label": "Bulgarian",
+                "href": "/chefs?cuisine=bulgarian",
+                "icon": "bread",
+                "sublabel": "Eastern Europe",
+                "id": "cuisine:/chefs?cuisine=bulgarian",
+                "debug": {
+                  "score": 2.1,
+                  "preferenceScore": 0,
+                  "editorialScore": 2.1,
+                  "reason": "Editorial discovery mix"
+                }
+              },
+              {
+                "type": "cuisine",
+                "label": "Somali",
+                "href": "/chefs?cuisine=somali",
+                "icon": "grains",
+                "sublabel": "East Africa",
+                "id": "cuisine:/chefs?cuisine=somali",
+                "debug": {
+                  "score": 2.07,
+                  "preferenceScore": 0,
+                  "editorialScore": 2.07,
+                  "reason": "Editorial discovery mix"
+                }
+              },
+              {
+                "type": "cuisine",
+                "label": "Pacific Northwest",
+                "href": "/chefs?cuisine=pacific_northwest",
+                "icon": "avocado",
+                "sublabel": "North America",
+                "id": "cuisine:/chefs?cuisine=pacific_northwest",
+                "debug": {
+                  "score": 2.04,
+                  "preferenceScore": 0,
+                  "editorialScore": 2.04,
+                  "reason": "Editorial discovery mix"
+                }
+              },
+              {
+                "type": "cuisine",
+                "label": "Pacific Fusion",
+                "href": "/chefs?cuisine=pacific_fusion",
+                "icon": "spark",
+                "sublabel": "Fusion",
+                "id": "cuisine:/chefs?cuisine=pacific_fusion",
+                "debug": {
+                  "score": 2.01,
+                  "preferenceScore": 0,
+                  "editorialScore": 2.01,
+                  "reason": "Editorial discovery mix"
+                }
+              },
+              {
+                "type": "cuisine",
+                "label": "Gluten-Free",
+                "href": "/cuisines/gluten_free",
+                "icon": "leaf",
+                "sublabel": "Dietary",
+                "id": "cuisine:/cuisines/gluten_free",
+                "debug": {
+                  "score": 1.98,
+                  "preferenceScore": 0,
+                  "editorialScore": 1.98,
+                  "reason": "Editorial discovery mix"
+                }
+              },
+              {
+                "type": "cuisine",
+                "label": "Iraqi",
+                "href": "/chefs?cuisine=iraqi",
+                "icon": "grains",
+                "sublabel": "Mesopotamia",
+                "id": "cuisine:/chefs?cuisine=iraqi",
+                "debug": {
+                  "score": 1.95,
+                  "preferenceScore": 0,
+                  "editorialScore": 1.95,
+                  "reason": "Editorial discovery mix"
+                }
+              },
+              {
+                "type": "cuisine",
+                "label": "Azerbaijani",
+                "href": "/chefs?cuisine=azerbaijani",
+                "icon": "bread",
+                "sublabel": "Caucasus",
+                "id": "cuisine:/chefs?cuisine=azerbaijani",
+                "debug": {
+                  "score": 1.92,
+                  "preferenceScore": 0,
+                  "editorialScore": 1.92,
+                  "reason": "Editorial discovery mix"
+                }
+              },
+              {
+                "type": "cuisine",
+                "label": "Chinese Islamic",
+                "href": "/chefs?cuisine=chinese_islamic",
+                "icon": "bowl",
+                "sublabel": "East Asia",
+                "id": "cuisine:/chefs?cuisine=chinese_islamic",
+                "debug": {
+                  "score": 1.89,
+                  "preferenceScore": 0,
+                  "editorialScore": 1.89,
+                  "reason": "Editorial discovery mix"
+                }
+              },
+              {
+                "type": "cuisine",
+                "label": "Northern Chinese",
+                "href": "/chefs?cuisine=northern_chinese",
+                "icon": "bowl",
+                "sublabel": "East Asia",
+                "id": "cuisine:/chefs?cuisine=northern_chinese",
+                "debug": {
+                  "score": 1.86,
+                  "preferenceScore": 0,
+                  "editorialScore": 1.86,
+                  "reason": "Editorial discovery mix"
+                }
+              },
+              {
+                "type": "cuisine",
+                "label": "Steakhouse",
+                "href": "/cuisines/steakhouse",
+                "icon": "spark",
+                "sublabel": "Commercial",
+                "id": "cuisine:/cuisines/steakhouse",
+                "debug": {
+                  "score": 1.83,
+                  "preferenceScore": 0,
+                  "editorialScore": 1.83,
+                  "reason": "Editorial discovery mix"
+                }
+              }
+            ]
+          },
+          "after": {
+            "items": [
+              {
+                "type": "cuisine",
+                "label": "Italian",
+                "href": "/cuisines/italian",
+                "icon": "pasta",
+                "sublabel": "Southern Europe",
+                "id": "cuisine:/cuisines/italian"
+              },
+              {
+                "type": "cuisine",
+                "label": "British Chinese",
+                "href": "/chefs?cuisine=british_chinese",
+                "icon": "spark",
+                "sublabel": "Fusion",
+                "id": "cuisine:/chefs?cuisine=british_chinese"
+              },
+              {
+                "type": "cuisine",
+                "label": "Pizzeria",
+                "href": "/cuisines/pizza",
+                "icon": "pizza",
+                "sublabel": "Commercial",
+                "id": "cuisine:/cuisines/pizza"
+              },
+              {
+                "type": "cuisine",
+                "label": "Northeastern Chinese",
+                "href": "/chefs?cuisine=northeastern_chinese",
+                "icon": "bowl",
+                "sublabel": "East Asia",
+                "id": "cuisine:/chefs?cuisine=northeastern_chinese"
+              },
+              {
+                "type": "cuisine",
+                "label": "Lowcountry",
+                "href": "/chefs?cuisine=lowcountry",
+                "icon": "avocado",
+                "sublabel": "North America",
+                "id": "cuisine:/chefs?cuisine=lowcountry"
+              },
+              {
+                "type": "cuisine",
+                "label": "Bakery",
+                "href": "/cuisines/bakery",
+                "icon": "cookie",
+                "sublabel": "Commercial",
+                "id": "cuisine:/cuisines/bakery"
+              },
+              {
+                "type": "cuisine",
+                "label": "Cafe",
+                "href": "/cuisines/cafe",
+                "icon": "coffee",
+                "sublabel": "Commercial",
+                "id": "cuisine:/cuisines/cafe"
+              },
+              {
+                "type": "cuisine",
+                "label": "Parisian",
+                "href": "/chefs?cuisine=parisian",
+                "icon": "bread",
+                "sublabel": "Western Europe",
+                "id": "cuisine:/chefs?cuisine=parisian"
+              },
+              {
+                "type": "cuisine",
+                "label": "Hubei",
+                "href": "/chefs?cuisine=hubei",
+                "icon": "bowl",
+                "sublabel": "East Asia",
+                "id": "cuisine:/chefs?cuisine=hubei"
+              },
+              {
+                "type": "cuisine",
+                "label": "Buryat",
+                "href": "/chefs?cuisine=buryat",
+                "icon": "bowl",
+                "sublabel": "North Asia",
+                "id": "cuisine:/chefs?cuisine=buryat"
+              },
+              {
+                "type": "cuisine",
+                "label": "Bicolano",
+                "href": "/chefs?cuisine=bicolano",
+                "icon": "bowl",
+                "sublabel": "Southeast Asia",
+                "id": "cuisine:/chefs?cuisine=bicolano"
+              },
+              {
+                "type": "cuisine",
+                "label": "Barbecue",
+                "href": "/cuisines/barbecue",
+                "icon": "bbq",
+                "sublabel": "Commercial",
+                "id": "cuisine:/cuisines/barbecue"
+              },
+              {
+                "type": "cuisine",
+                "label": "Food Truck",
+                "href": "/cuisines/food_truck",
+                "icon": "spark",
+                "sublabel": "Commercial",
+                "id": "cuisine:/cuisines/food_truck"
+              },
+              {
+                "type": "cuisine",
+                "label": "Oceanian",
+                "href": "/chefs?cuisine=oceanian",
+                "icon": "seafood",
+                "sublabel": "General",
+                "id": "cuisine:/chefs?cuisine=oceanian"
+              },
+              {
+                "type": "cuisine",
+                "label": "Koryo-saram",
+                "href": "/chefs?cuisine=koryo_saram",
+                "icon": "bowl",
+                "sublabel": "Central Asia",
+                "id": "cuisine:/chefs?cuisine=koryo_saram"
+              },
+              {
+                "type": "cuisine",
+                "label": "Curacaoan",
+                "href": "/chefs?cuisine=curacaoan",
+                "icon": "avocado",
+                "sublabel": "Caribbean",
+                "id": "cuisine:/chefs?cuisine=curacaoan"
+              },
+              {
+                "type": "cuisine",
+                "label": "Moroccan",
+                "href": "/cuisines/moroccan",
+                "icon": "grains",
+                "sublabel": "North Africa",
+                "id": "cuisine:/cuisines/moroccan"
+              },
+              {
+                "type": "cuisine",
+                "label": "Russian",
+                "href": "/chefs?cuisine=russian",
+                "icon": "bread",
+                "sublabel": "Eastern Europe",
+                "id": "cuisine:/chefs?cuisine=russian"
+              },
+              {
+                "type": "cuisine",
+                "label": "Estonian",
+                "href": "/chefs?cuisine=estonian",
+                "icon": "bread",
+                "sublabel": "Northern Europe",
+                "id": "cuisine:/chefs?cuisine=estonian"
+              },
+              {
+                "type": "cuisine",
+                "label": "Corsican",
+                "href": "/chefs?cuisine=corsican",
+                "icon": "bread",
+                "sublabel": "Western Europe",
+                "id": "cuisine:/chefs?cuisine=corsican"
+              },
+              {
+                "type": "cuisine",
+                "label": "Kazakh",
+                "href": "/chefs?cuisine=kazakh",
+                "icon": "bowl",
+                "sublabel": "Central Asia",
+                "id": "cuisine:/chefs?cuisine=kazakh"
+              },
+              {
+                "type": "cuisine",
+                "label": "Finnish",
+                "href": "/chefs?cuisine=finnish",
+                "icon": "bread",
+                "sublabel": "Northern Europe",
+                "id": "cuisine:/chefs?cuisine=finnish"
+              },
+              {
+                "type": "cuisine",
+                "label": "Gujarati",
+                "href": "/chefs?cuisine=gujarati",
+                "icon": "bowl",
+                "sublabel": "South Asia",
+                "id": "cuisine:/chefs?cuisine=gujarati"
+              },
+              {
+                "type": "cuisine",
+                "label": "Balearic",
+                "href": "/chefs?cuisine=balearic",
+                "icon": "bread",
+                "sublabel": "Southern Europe",
+                "id": "cuisine:/chefs?cuisine=balearic"
+              },
+              {
+                "type": "cuisine",
+                "label": "Mediterranean",
+                "href": "/cuisines/mediterranean",
+                "icon": "leaf",
+                "sublabel": "Southern Europe",
+                "id": "cuisine:/cuisines/mediterranean"
+              },
+              {
+                "type": "cuisine",
+                "label": "Modern Fusion",
+                "href": "/cuisines/modern_fusion",
+                "icon": "spark",
+                "sublabel": "Fusion",
+                "id": "cuisine:/cuisines/modern_fusion"
+              },
+              {
+                "type": "cuisine",
+                "label": "Jewish-American",
+                "href": "/chefs?cuisine=jewish_american",
+                "icon": "spark",
+                "sublabel": "Fusion",
+                "id": "cuisine:/chefs?cuisine=jewish_american"
+              },
+              {
+                "type": "cuisine",
+                "label": "Romani",
+                "href": "/chefs?cuisine=romani",
+                "icon": "bread",
+                "sublabel": "Eastern Europe",
+                "id": "cuisine:/chefs?cuisine=romani"
+              },
+              {
+                "type": "cuisine",
+                "label": "Libyan",
+                "href": "/chefs?cuisine=libyan",
+                "icon": "grains",
+                "sublabel": "North Africa",
+                "id": "cuisine:/chefs?cuisine=libyan"
+              },
+              {
+                "type": "cuisine",
+                "label": "French",
+                "href": "/cuisines/french",
+                "icon": "wine",
+                "sublabel": "Western Europe",
+                "id": "cuisine:/cuisines/french"
+              },
+              {
+                "type": "cuisine",
+                "label": "Bulgarian",
+                "href": "/chefs?cuisine=bulgarian",
+                "icon": "bread",
+                "sublabel": "Eastern Europe",
+                "id": "cuisine:/chefs?cuisine=bulgarian"
+              },
+              {
+                "type": "cuisine",
+                "label": "Somali",
+                "href": "/chefs?cuisine=somali",
+                "icon": "grains",
+                "sublabel": "East Africa",
+                "id": "cuisine:/chefs?cuisine=somali"
+              },
+              {
+                "type": "cuisine",
+                "label": "Pacific Northwest",
+                "href": "/chefs?cuisine=pacific_northwest",
+                "icon": "avocado",
+                "sublabel": "North America",
+                "id": "cuisine:/chefs?cuisine=pacific_northwest"
+              },
+              {
+                "type": "cuisine",
+                "label": "Pacific Fusion",
+                "href": "/chefs?cuisine=pacific_fusion",
+                "icon": "spark",
+                "sublabel": "Fusion",
+                "id": "cuisine:/chefs?cuisine=pacific_fusion"
+              },
+              {
+                "type": "cuisine",
+                "label": "Gluten-Free",
+                "href": "/cuisines/gluten_free",
+                "icon": "leaf",
+                "sublabel": "Dietary",
+                "id": "cuisine:/cuisines/gluten_free"
+              },
+              {
+                "type": "cuisine",
+                "label": "Iraqi",
+                "href": "/chefs?cuisine=iraqi",
+                "icon": "grains",
+                "sublabel": "Mesopotamia",
+                "id": "cuisine:/chefs?cuisine=iraqi"
+              },
+              {
+                "type": "cuisine",
+                "label": "Azerbaijani",
+                "href": "/chefs?cuisine=azerbaijani",
+                "icon": "bread",
+                "sublabel": "Caucasus",
+                "id": "cuisine:/chefs?cuisine=azerbaijani"
+              },
+              {
+                "type": "cuisine",
+                "label": "Chinese Islamic",
+                "href": "/chefs?cuisine=chinese_islamic",
+                "icon": "bowl",
+                "sublabel": "East Asia",
+                "id": "cuisine:/chefs?cuisine=chinese_islamic"
+              },
+              {
+                "type": "cuisine",
+                "label": "Northern Chinese",
+                "href": "/chefs?cuisine=northern_chinese",
+                "icon": "bowl",
+                "sublabel": "East Asia",
+                "id": "cuisine:/chefs?cuisine=northern_chinese"
+              },
+              {
+                "type": "cuisine",
+                "label": "Steakhouse",
+                "href": "/cuisines/steakhouse",
+                "icon": "spark",
+                "sublabel": "Commercial",
+                "id": "cuisine:/cuisines/steakhouse"
+              }
+            ],
+            "sourceStatus": "loaded",
+            "ranked": [
+              {
+                "type": "cuisine",
+                "label": "Italian",
+                "href": "/cuisines/italian",
+                "icon": "pasta",
+                "sublabel": "Southern Europe",
+                "id": "cuisine:/cuisines/italian",
+                "debug": {
+                  "score": 3,
+                  "preferenceScore": 0,
+                  "editorialScore": 3,
+                  "reason": "Editorial discovery mix"
+                }
+              },
+              {
+                "type": "cuisine",
+                "label": "British Chinese",
+                "href": "/chefs?cuisine=british_chinese",
+                "icon": "spark",
+                "sublabel": "Fusion",
+                "id": "cuisine:/chefs?cuisine=british_chinese",
+                "debug": {
+                  "score": 2.97,
+                  "preferenceScore": 0,
+                  "editorialScore": 2.97,
+                  "reason": "Editorial discovery mix"
+                }
+              },
+              {
+                "type": "cuisine",
+                "label": "Pizzeria",
+                "href": "/cuisines/pizza",
+                "icon": "pizza",
+                "sublabel": "Commercial",
+                "id": "cuisine:/cuisines/pizza",
+                "debug": {
+                  "score": 2.94,
+                  "preferenceScore": 0,
+                  "editorialScore": 2.94,
+                  "reason": "Editorial discovery mix"
+                }
+              },
+              {
+                "type": "cuisine",
+                "label": "Northeastern Chinese",
+                "href": "/chefs?cuisine=northeastern_chinese",
+                "icon": "bowl",
+                "sublabel": "East Asia",
+                "id": "cuisine:/chefs?cuisine=northeastern_chinese",
+                "debug": {
+                  "score": 2.91,
+                  "preferenceScore": 0,
+                  "editorialScore": 2.91,
+                  "reason": "Editorial discovery mix"
+                }
+              },
+              {
+                "type": "cuisine",
+                "label": "Lowcountry",
+                "href": "/chefs?cuisine=lowcountry",
+                "icon": "avocado",
+                "sublabel": "North America",
+                "id": "cuisine:/chefs?cuisine=lowcountry",
+                "debug": {
+                  "score": 2.88,
+                  "preferenceScore": 0,
+                  "editorialScore": 2.88,
+                  "reason": "Editorial discovery mix"
+                }
+              },
+              {
+                "type": "cuisine",
+                "label": "Bakery",
+                "href": "/cuisines/bakery",
+                "icon": "cookie",
+                "sublabel": "Commercial",
+                "id": "cuisine:/cuisines/bakery",
+                "debug": {
+                  "score": 2.85,
+                  "preferenceScore": 0,
+                  "editorialScore": 2.85,
+                  "reason": "Editorial discovery mix"
+                }
+              },
+              {
+                "type": "cuisine",
+                "label": "Cafe",
+                "href": "/cuisines/cafe",
+                "icon": "coffee",
+                "sublabel": "Commercial",
+                "id": "cuisine:/cuisines/cafe",
+                "debug": {
+                  "score": 2.82,
+                  "preferenceScore": 0,
+                  "editorialScore": 2.82,
+                  "reason": "Editorial discovery mix"
+                }
+              },
+              {
+                "type": "cuisine",
+                "label": "Parisian",
+                "href": "/chefs?cuisine=parisian",
+                "icon": "bread",
+                "sublabel": "Western Europe",
+                "id": "cuisine:/chefs?cuisine=parisian",
+                "debug": {
+                  "score": 2.79,
+                  "preferenceScore": 0,
+                  "editorialScore": 2.79,
+                  "reason": "Editorial discovery mix"
+                }
+              },
+              {
+                "type": "cuisine",
+                "label": "Hubei",
+                "href": "/chefs?cuisine=hubei",
+                "icon": "bowl",
+                "sublabel": "East Asia",
+                "id": "cuisine:/chefs?cuisine=hubei",
+                "debug": {
+                  "score": 2.76,
+                  "preferenceScore": 0,
+                  "editorialScore": 2.76,
+                  "reason": "Editorial discovery mix"
+                }
+              },
+              {
+                "type": "cuisine",
+                "label": "Buryat",
+                "href": "/chefs?cuisine=buryat",
+                "icon": "bowl",
+                "sublabel": "North Asia",
+                "id": "cuisine:/chefs?cuisine=buryat",
+                "debug": {
+                  "score": 2.73,
+                  "preferenceScore": 0,
+                  "editorialScore": 2.73,
+                  "reason": "Editorial discovery mix"
+                }
+              },
+              {
+                "type": "cuisine",
+                "label": "Bicolano",
+                "href": "/chefs?cuisine=bicolano",
+                "icon": "bowl",
+                "sublabel": "Southeast Asia",
+                "id": "cuisine:/chefs?cuisine=bicolano",
+                "debug": {
+                  "score": 2.7,
+                  "preferenceScore": 0,
+                  "editorialScore": 2.7,
+                  "reason": "Editorial discovery mix"
+                }
+              },
+              {
+                "type": "cuisine",
+                "label": "Barbecue",
+                "href": "/cuisines/barbecue",
+                "icon": "bbq",
+                "sublabel": "Commercial",
+                "id": "cuisine:/cuisines/barbecue",
+                "debug": {
+                  "score": 2.67,
+                  "preferenceScore": 0,
+                  "editorialScore": 2.67,
+                  "reason": "Editorial discovery mix"
+                }
+              },
+              {
+                "type": "cuisine",
+                "label": "Food Truck",
+                "href": "/cuisines/food_truck",
+                "icon": "spark",
+                "sublabel": "Commercial",
+                "id": "cuisine:/cuisines/food_truck",
+                "debug": {
+                  "score": 2.64,
+                  "preferenceScore": 0,
+                  "editorialScore": 2.64,
+                  "reason": "Editorial discovery mix"
+                }
+              },
+              {
+                "type": "cuisine",
+                "label": "Oceanian",
+                "href": "/chefs?cuisine=oceanian",
+                "icon": "seafood",
+                "sublabel": "General",
+                "id": "cuisine:/chefs?cuisine=oceanian",
+                "debug": {
+                  "score": 2.61,
+                  "preferenceScore": 0,
+                  "editorialScore": 2.61,
+                  "reason": "Editorial discovery mix"
+                }
+              },
+              {
+                "type": "cuisine",
+                "label": "Koryo-saram",
+                "href": "/chefs?cuisine=koryo_saram",
+                "icon": "bowl",
+                "sublabel": "Central Asia",
+                "id": "cuisine:/chefs?cuisine=koryo_saram",
+                "debug": {
+                  "score": 2.58,
+                  "preferenceScore": 0,
+                  "editorialScore": 2.58,
+                  "reason": "Editorial discovery mix"
+                }
+              },
+              {
+                "type": "cuisine",
+                "label": "Curacaoan",
+                "href": "/chefs?cuisine=curacaoan",
+                "icon": "avocado",
+                "sublabel": "Caribbean",
+                "id": "cuisine:/chefs?cuisine=curacaoan",
+                "debug": {
+                  "score": 2.55,
+                  "preferenceScore": 0,
+                  "editorialScore": 2.55,
+                  "reason": "Editorial discovery mix"
+                }
+              },
+              {
+                "type": "cuisine",
+                "label": "Moroccan",
+                "href": "/cuisines/moroccan",
+                "icon": "grains",
+                "sublabel": "North Africa",
+                "id": "cuisine:/cuisines/moroccan",
+                "debug": {
+                  "score": 2.52,
+                  "preferenceScore": 0,
+                  "editorialScore": 2.52,
+                  "reason": "Editorial discovery mix"
+                }
+              },
+              {
+                "type": "cuisine",
+                "label": "Russian",
+                "href": "/chefs?cuisine=russian",
+                "icon": "bread",
+                "sublabel": "Eastern Europe",
+                "id": "cuisine:/chefs?cuisine=russian",
+                "debug": {
+                  "score": 2.49,
+                  "preferenceScore": 0,
+                  "editorialScore": 2.49,
+                  "reason": "Editorial discovery mix"
+                }
+              },
+              {
+                "type": "cuisine",
+                "label": "Estonian",
+                "href": "/chefs?cuisine=estonian",
+                "icon": "bread",
+                "sublabel": "Northern Europe",
+                "id": "cuisine:/chefs?cuisine=estonian",
+                "debug": {
+                  "score": 2.46,
+                  "preferenceScore": 0,
+                  "editorialScore": 2.46,
+                  "reason": "Editorial discovery mix"
+                }
+              },
+              {
+                "type": "cuisine",
+                "label": "Corsican",
+                "href": "/chefs?cuisine=corsican",
+                "icon": "bread",
+                "sublabel": "Western Europe",
+                "id": "cuisine:/chefs?cuisine=corsican",
+                "debug": {
+                  "score": 2.43,
+                  "preferenceScore": 0,
+                  "editorialScore": 2.43,
+                  "reason": "Editorial discovery mix"
+                }
+              },
+              {
+                "type": "cuisine",
+                "label": "Kazakh",
+                "href": "/chefs?cuisine=kazakh",
+                "icon": "bowl",
+                "sublabel": "Central Asia",
+                "id": "cuisine:/chefs?cuisine=kazakh",
+                "debug": {
+                  "score": 2.4,
+                  "preferenceScore": 0,
+                  "editorialScore": 2.4,
+                  "reason": "Editorial discovery mix"
+                }
+              },
+              {
+                "type": "cuisine",
+                "label": "Finnish",
+                "href": "/chefs?cuisine=finnish",
+                "icon": "bread",
+                "sublabel": "Northern Europe",
+                "id": "cuisine:/chefs?cuisine=finnish",
+                "debug": {
+                  "score": 2.37,
+                  "preferenceScore": 0,
+                  "editorialScore": 2.37,
+                  "reason": "Editorial discovery mix"
+                }
+              },
+              {
+                "type": "cuisine",
+                "label": "Gujarati",
+                "href": "/chefs?cuisine=gujarati",
+                "icon": "bowl",
+                "sublabel": "South Asia",
+                "id": "cuisine:/chefs?cuisine=gujarati",
+                "debug": {
+                  "score": 2.34,
+                  "preferenceScore": 0,
+                  "editorialScore": 2.34,
+                  "reason": "Editorial discovery mix"
+                }
+              },
+              {
+                "type": "cuisine",
+                "label": "Balearic",
+                "href": "/chefs?cuisine=balearic",
+                "icon": "bread",
+                "sublabel": "Southern Europe",
+                "id": "cuisine:/chefs?cuisine=balearic",
+                "debug": {
+                  "score": 2.31,
+                  "preferenceScore": 0,
+                  "editorialScore": 2.31,
+                  "reason": "Editorial discovery mix"
+                }
+              },
+              {
+                "type": "cuisine",
+                "label": "Mediterranean",
+                "href": "/cuisines/mediterranean",
+                "icon": "leaf",
+                "sublabel": "Southern Europe",
+                "id": "cuisine:/cuisines/mediterranean",
+                "debug": {
+                  "score": 2.28,
+                  "preferenceScore": 0,
+                  "editorialScore": 2.28,
+                  "reason": "Editorial discovery mix"
+                }
+              },
+              {
+                "type": "cuisine",
+                "label": "Modern Fusion",
+                "href": "/cuisines/modern_fusion",
+                "icon": "spark",
+                "sublabel": "Fusion",
+                "id": "cuisine:/cuisines/modern_fusion",
+                "debug": {
+                  "score": 2.25,
+                  "preferenceScore": 0,
+                  "editorialScore": 2.25,
+                  "reason": "Editorial discovery mix"
+                }
+              },
+              {
+                "type": "cuisine",
+                "label": "Jewish-American",
+                "href": "/chefs?cuisine=jewish_american",
+                "icon": "spark",
+                "sublabel": "Fusion",
+                "id": "cuisine:/chefs?cuisine=jewish_american",
+                "debug": {
+                  "score": 2.22,
+                  "preferenceScore": 0,
+                  "editorialScore": 2.22,
+                  "reason": "Editorial discovery mix"
+                }
+              },
+              {
+                "type": "cuisine",
+                "label": "Romani",
+                "href": "/chefs?cuisine=romani",
+                "icon": "bread",
+                "sublabel": "Eastern Europe",
+                "id": "cuisine:/chefs?cuisine=romani",
+                "debug": {
+                  "score": 2.19,
+                  "preferenceScore": 0,
+                  "editorialScore": 2.19,
+                  "reason": "Editorial discovery mix"
+                }
+              },
+              {
+                "type": "cuisine",
+                "label": "Libyan",
+                "href": "/chefs?cuisine=libyan",
+                "icon": "grains",
+                "sublabel": "North Africa",
+                "id": "cuisine:/chefs?cuisine=libyan",
+                "debug": {
+                  "score": 2.16,
+                  "preferenceScore": 0,
+                  "editorialScore": 2.16,
+                  "reason": "Editorial discovery mix"
+                }
+              },
+              {
+                "type": "cuisine",
+                "label": "French",
+                "href": "/cuisines/french",
+                "icon": "wine",
+                "sublabel": "Western Europe",
+                "id": "cuisine:/cuisines/french",
+                "debug": {
+                  "score": 2.13,
+                  "preferenceScore": 0,
+                  "editorialScore": 2.13,
+                  "reason": "Editorial discovery mix"
+                }
+              },
+              {
+                "type": "cuisine",
+                "label": "Bulgarian",
+                "href": "/chefs?cuisine=bulgarian",
+                "icon": "bread",
+                "sublabel": "Eastern Europe",
+                "id": "cuisine:/chefs?cuisine=bulgarian",
+                "debug": {
+                  "score": 2.1,
+                  "preferenceScore": 0,
+                  "editorialScore": 2.1,
+                  "reason": "Editorial discovery mix"
+                }
+              },
+              {
+                "type": "cuisine",
+                "label": "Somali",
+                "href": "/chefs?cuisine=somali",
+                "icon": "grains",
+                "sublabel": "East Africa",
+                "id": "cuisine:/chefs?cuisine=somali",
+                "debug": {
+                  "score": 2.07,
+                  "preferenceScore": 0,
+                  "editorialScore": 2.07,
+                  "reason": "Editorial discovery mix"
+                }
+              },
+              {
+                "type": "cuisine",
+                "label": "Pacific Northwest",
+                "href": "/chefs?cuisine=pacific_northwest",
+                "icon": "avocado",
+                "sublabel": "North America",
+                "id": "cuisine:/chefs?cuisine=pacific_northwest",
+                "debug": {
+                  "score": 2.04,
+                  "preferenceScore": 0,
+                  "editorialScore": 2.04,
+                  "reason": "Editorial discovery mix"
+                }
+              },
+              {
+                "type": "cuisine",
+                "label": "Pacific Fusion",
+                "href": "/chefs?cuisine=pacific_fusion",
+                "icon": "spark",
+                "sublabel": "Fusion",
+                "id": "cuisine:/chefs?cuisine=pacific_fusion",
+                "debug": {
+                  "score": 2.01,
+                  "preferenceScore": 0,
+                  "editorialScore": 2.01,
+                  "reason": "Editorial discovery mix"
+                }
+              },
+              {
+                "type": "cuisine",
+                "label": "Gluten-Free",
+                "href": "/cuisines/gluten_free",
+                "icon": "leaf",
+                "sublabel": "Dietary",
+                "id": "cuisine:/cuisines/gluten_free",
+                "debug": {
+                  "score": 1.98,
+                  "preferenceScore": 0,
+                  "editorialScore": 1.98,
+                  "reason": "Editorial discovery mix"
+                }
+              },
+              {
+                "type": "cuisine",
+                "label": "Iraqi",
+                "href": "/chefs?cuisine=iraqi",
+                "icon": "grains",
+                "sublabel": "Mesopotamia",
+                "id": "cuisine:/chefs?cuisine=iraqi",
+                "debug": {
+                  "score": 1.95,
+                  "preferenceScore": 0,
+                  "editorialScore": 1.95,
+                  "reason": "Editorial discovery mix"
+                }
+              },
+              {
+                "type": "cuisine",
+                "label": "Azerbaijani",
+                "href": "/chefs?cuisine=azerbaijani",
+                "icon": "bread",
+                "sublabel": "Caucasus",
+                "id": "cuisine:/chefs?cuisine=azerbaijani",
+                "debug": {
+                  "score": 1.92,
+                  "preferenceScore": 0,
+                  "editorialScore": 1.92,
+                  "reason": "Editorial discovery mix"
+                }
+              },
+              {
+                "type": "cuisine",
+                "label": "Chinese Islamic",
+                "href": "/chefs?cuisine=chinese_islamic",
+                "icon": "bowl",
+                "sublabel": "East Asia",
+                "id": "cuisine:/chefs?cuisine=chinese_islamic",
+                "debug": {
+                  "score": 1.89,
+                  "preferenceScore": 0,
+                  "editorialScore": 1.89,
+                  "reason": "Editorial discovery mix"
+                }
+              },
+              {
+                "type": "cuisine",
+                "label": "Northern Chinese",
+                "href": "/chefs?cuisine=northern_chinese",
+                "icon": "bowl",
+                "sublabel": "East Asia",
+                "id": "cuisine:/chefs?cuisine=northern_chinese",
+                "debug": {
+                  "score": 1.86,
+                  "preferenceScore": 0,
+                  "editorialScore": 1.86,
+                  "reason": "Editorial discovery mix"
+                }
+              },
+              {
+                "type": "cuisine",
+                "label": "Steakhouse",
+                "href": "/cuisines/steakhouse",
+                "icon": "spark",
+                "sublabel": "Commercial",
+                "id": "cuisine:/cuisines/steakhouse",
+                "debug": {
+                  "score": 1.83,
+                  "preferenceScore": 0,
+                  "editorialScore": 1.83,
+                  "reason": "Editorial discovery mix"
+                }
+              }
+            ],
+            "choice": {
+              "type": "cuisine",
+              "label": "Italian",
+              "href": "/cuisines/italian",
+              "icon": "pasta",
+              "sublabel": "Southern Europe",
+              "id": "cuisine:/cuisines/italian",
+              "debug": {
+                "score": 3,
+                "preferenceScore": 0,
+                "editorialScore": 3,
+                "reason": "Editorial discovery mix"
+              }
+            }
+          },
+          "messages": [
+            {
+              "from": "ChefFlow",
+              "to": "enthusiast",
+              "text": "Italian"
+            }
+          ],
+          "toolCalls": [],
+          "decisions": []
+        }
+      },
+      {
+        "index": 5,
+        "at": "2026-09-27T20:00:00.006Z",
+        "kind": "outcome",
+        "data": {
+          "observations": [
+            {
+              "kind": "ranked_items",
+              "items": [
+                {
+                  "id": "cuisine:/cuisines/italian",
+                  "score": 3
+                },
+                {
+                  "id": "cuisine:/chefs?cuisine=british_chinese",
+                  "score": 2.97
+                },
+                {
+                  "id": "cuisine:/cuisines/pizza",
+                  "score": 2.94
+                },
+                {
+                  "id": "cuisine:/chefs?cuisine=northeastern_chinese",
+                  "score": 2.91
+                },
+                {
+                  "id": "cuisine:/chefs?cuisine=lowcountry",
+                  "score": 2.88
+                },
+                {
+                  "id": "cuisine:/cuisines/bakery",
+                  "score": 2.85
+                },
+                {
+                  "id": "cuisine:/cuisines/cafe",
+                  "score": 2.82
+                },
+                {
+                  "id": "cuisine:/chefs?cuisine=parisian",
+                  "score": 2.79
+                },
+                {
+                  "id": "cuisine:/chefs?cuisine=hubei",
+                  "score": 2.76
+                },
+                {
+                  "id": "cuisine:/chefs?cuisine=buryat",
+                  "score": 2.73
+                },
+                {
+                  "id": "cuisine:/chefs?cuisine=bicolano",
+                  "score": 2.7
+                },
+                {
+                  "id": "cuisine:/cuisines/barbecue",
+                  "score": 2.67
+                },
+                {
+                  "id": "cuisine:/cuisines/food_truck",
+                  "score": 2.64
+                },
+                {
+                  "id": "cuisine:/chefs?cuisine=oceanian",
+                  "score": 2.61
+                },
+                {
+                  "id": "cuisine:/chefs?cuisine=koryo_saram",
+                  "score": 2.58
+                },
+                {
+                  "id": "cuisine:/chefs?cuisine=curacaoan",
+                  "score": 2.55
+                },
+                {
+                  "id": "cuisine:/cuisines/moroccan",
+                  "score": 2.52
+                },
+                {
+                  "id": "cuisine:/chefs?cuisine=russian",
+                  "score": 2.49
+                },
+                {
+                  "id": "cuisine:/chefs?cuisine=estonian",
+                  "score": 2.46
+                },
+                {
+                  "id": "cuisine:/chefs?cuisine=corsican",
+                  "score": 2.43
+                },
+                {
+                  "id": "cuisine:/chefs?cuisine=kazakh",
+                  "score": 2.4
+                },
+                {
+                  "id": "cuisine:/chefs?cuisine=finnish",
+                  "score": 2.37
+                },
+                {
+                  "id": "cuisine:/chefs?cuisine=gujarati",
+                  "score": 2.34
+                },
+                {
+                  "id": "cuisine:/chefs?cuisine=balearic",
+                  "score": 2.31
+                },
+                {
+                  "id": "cuisine:/cuisines/mediterranean",
+                  "score": 2.28
+                },
+                {
+                  "id": "cuisine:/cuisines/modern_fusion",
+                  "score": 2.25
+                },
+                {
+                  "id": "cuisine:/chefs?cuisine=jewish_american",
+                  "score": 2.22
+                },
+                {
+                  "id": "cuisine:/chefs?cuisine=romani",
+                  "score": 2.19
+                },
+                {
+                  "id": "cuisine:/chefs?cuisine=libyan",
+                  "score": 2.16
+                },
+                {
+                  "id": "cuisine:/cuisines/french",
+                  "score": 2.13
+                },
+                {
+                  "id": "cuisine:/chefs?cuisine=bulgarian",
+                  "score": 2.1
+                },
+                {
+                  "id": "cuisine:/chefs?cuisine=somali",
+                  "score": 2.07
+                },
+                {
+                  "id": "cuisine:/chefs?cuisine=pacific_northwest",
+                  "score": 2.04
+                },
+                {
+                  "id": "cuisine:/chefs?cuisine=pacific_fusion",
+                  "score": 2.01
+                },
+                {
+                  "id": "cuisine:/cuisines/gluten_free",
+                  "score": 1.98
+                },
+                {
+                  "id": "cuisine:/chefs?cuisine=iraqi",
+                  "score": 1.95
+                },
+                {
+                  "id": "cuisine:/chefs?cuisine=azerbaijani",
+                  "score": 1.92
+                },
+                {
+                  "id": "cuisine:/chefs?cuisine=chinese_islamic",
+                  "score": 1.89
+                },
+                {
+                  "id": "cuisine:/chefs?cuisine=northern_chinese",
+                  "score": 1.86
+                },
+                {
+                  "id": "cuisine:/cuisines/steakhouse",
+                  "score": 1.83
+                }
+              ]
+            },
+            {
+              "kind": "selected",
+              "id": "cuisine:/cuisines/italian"
+            },
+            {
+              "kind": "real_source",
+              "status": "loaded",
+              "count": 40,
+              "priceKnownCount": 0,
+              "candidateIds": [
+                "cuisine:/cuisines/italian",
+                "cuisine:/chefs?cuisine=british_chinese",
+                "cuisine:/cuisines/pizza",
+                "cuisine:/chefs?cuisine=northeastern_chinese",
+                "cuisine:/chefs?cuisine=lowcountry",
+                "cuisine:/cuisines/bakery",
+                "cuisine:/cuisines/cafe",
+                "cuisine:/chefs?cuisine=parisian",
+                "cuisine:/chefs?cuisine=hubei",
+                "cuisine:/chefs?cuisine=buryat",
+                "cuisine:/chefs?cuisine=bicolano",
+                "cuisine:/cuisines/barbecue",
+                "cuisine:/cuisines/food_truck",
+                "cuisine:/chefs?cuisine=oceanian",
+                "cuisine:/chefs?cuisine=koryo_saram",
+                "cuisine:/chefs?cuisine=curacaoan",
+                "cuisine:/cuisines/moroccan",
+                "cuisine:/chefs?cuisine=russian",
+                "cuisine:/chefs?cuisine=estonian",
+                "cuisine:/chefs?cuisine=corsican",
+                "cuisine:/chefs?cuisine=kazakh",
+                "cuisine:/chefs?cuisine=finnish",
+                "cuisine:/chefs?cuisine=gujarati",
+                "cuisine:/chefs?cuisine=balearic",
+                "cuisine:/cuisines/mediterranean",
+                "cuisine:/cuisines/modern_fusion",
+                "cuisine:/chefs?cuisine=jewish_american",
+                "cuisine:/chefs?cuisine=romani",
+                "cuisine:/chefs?cuisine=libyan",
+                "cuisine:/cuisines/french",
+                "cuisine:/chefs?cuisine=bulgarian",
+                "cuisine:/chefs?cuisine=somali",
+                "cuisine:/chefs?cuisine=pacific_northwest",
+                "cuisine:/chefs?cuisine=pacific_fusion",
+                "cuisine:/cuisines/gluten_free",
+                "cuisine:/chefs?cuisine=iraqi",
+                "cuisine:/chefs?cuisine=azerbaijani",
+                "cuisine:/chefs?cuisine=chinese_islamic",
+                "cuisine:/chefs?cuisine=northern_chinese",
+                "cuisine:/cuisines/steakhouse"
+              ],
+              "invalid": []
+            }
+          ],
+          "scores": {
+            "hardConstraintPass": 1,
+            "completion": 1,
+            "diversity": 0.025,
+            "userActions": 2,
+            "validDestinations": 1,
+            "sourceAvailable": 1
+          },
+          "violations": []
+        }
+      }
+    ],
+    "measuredMs": 7.029
+  },
+  "replay": {
+    "count": 10,
+    "distinctTrajectories": 1
+  },
+  "outage": {
+    "runId": "16fa08f6e474b5af",
+    "scenarioId": "chef-real-homepage-taste-001",
+    "product": "ChefFlow",
+    "source": {
+      "kind": "inferred",
+      "source": "lib/discovery/homepage-taste-rail.ts#buildHomepageTasteRailItems",
+      "actorSource": "Chef Flow Personas/Completed/Public/the-enthusiast.txt",
+      "note": "Real production code generates candidate links; actor behavior and events remain synthetic. Candidate prices and availability are unknown."
+    },
+    "adapterVersion": "chef-homepage-source-injected-v1",
+    "productVersion": "source-checkout",
+    "model": "none",
+    "seed": 101,
+    "commit": "43e3f4bcfebefe84fb6fc75154eef6c5a37b23fe",
+    "environment": {
+      "at": "2026-09-27T20:00:00.000Z",
+      "geography": "urban",
+      "serviceStatus": "up",
+      "resources": {},
+      "device": "mobile",
+      "latencyMs": 0,
+      "marketState": {}
+    },
+    "actors": [
+      {
+        "id": "enthusiast",
+        "role": "diner",
+        "persona": "The Enthusiast",
+        "goals": [
+          "discover novel local cuisine",
+          "reach usable booking facts"
+        ],
+        "preferences": {
+          "novelty": true,
+          "operationalClarity": true
+        },
+        "knowledge": [],
+        "authority": [
+          "browse"
+        ],
+        "constraints": {},
+        "tendencies": [
+          "abandon vague price"
+        ],
+        "history": {
+          "rankedPreferences": [
+            {
+              "itemType": "cuisine",
+              "itemValue": "peruvian",
+              "score": 3
+            }
+          ],
+          "suppressedItems": []
+        },
+        "memory": [],
+        "relationships": [],
+        "publicState": {},
+        "privateState": {
+          "budgetRange": [
+            80,
+            150
+          ]
+        }
+      }
+    ],
+    "observations": [
+      {
+        "kind": "ranked_items",
+        "items": []
+      },
+      {
+        "kind": "selected",
+        "id": null
+      },
+      {
+        "kind": "real_source",
+        "status": "unavailable",
+        "count": 0,
+        "priceKnownCount": 0,
+        "candidateIds": [],
+        "invalid": []
+      }
+    ],
+    "scores": {
+      "hardConstraintPass": 1,
+      "completion": 0,
+      "diversity": 0,
+      "userActions": 2,
+      "validDestinations": 1,
+      "sourceAvailable": 0
+    },
+    "violations": [
+      {
+        "invariant": "candidate_source_available",
+        "class": "dependency_failure"
+      }
+    ],
+    "trajectory": [
+      {
+        "index": 0,
+        "at": "2026-09-27T20:00:00.001Z",
+        "kind": "start",
+        "data": {
+          "product": "ChefFlow",
+          "actors": [
+            "enthusiast"
+          ]
+        }
+      },
+      {
+        "index": 1,
+        "at": "2026-09-27T20:00:00.002Z",
+        "kind": "input",
+        "data": {
+          "type": "discover"
+        }
+      },
+      {
+        "index": 2,
+        "at": "2026-09-27T20:00:00.003Z",
+        "kind": "transition",
+        "data": {
+          "before": {
+            "items": [],
+            "sourceStatus": "not_loaded"
+          },
+          "after": {
+            "items": [],
+            "sourceStatus": "unavailable",
+            "ranked": []
+          },
+          "messages": [],
+          "toolCalls": [
+            {
+              "name": "buildHomepageTasteRailItems",
+              "status": "unavailable",
+              "count": 0
+            },
+            {
+              "name": "scoreDiscoveryRailItems",
+              "candidateCount": 0
+            }
+          ],
+          "decisions": [
+            {
+              "kind": "rank",
+              "candidateIds": []
+            }
+          ]
+        }
+      },
+      {
+        "index": 3,
+        "at": "2026-09-27T20:00:00.004Z",
+        "kind": "input",
+        "data": {
+          "type": "choose"
+        }
+      },
+      {
+        "index": 4,
+        "at": "2026-09-27T20:00:00.005Z",
+        "kind": "transition",
+        "data": {
+          "before": {
+            "items": [],
+            "sourceStatus": "unavailable",
+            "ranked": []
+          },
+          "after": {
+            "items": [],
+            "sourceStatus": "unavailable",
+            "ranked": [],
+            "choice": null
+          },
+          "messages": [
+            {
+              "from": "ChefFlow",
+              "to": "enthusiast",
+              "text": "No verified fit found"
+            }
+          ],
+          "toolCalls": [],
+          "decisions": []
+        }
+      },
+      {
+        "index": 5,
+        "at": "2026-09-27T20:00:00.006Z",
+        "kind": "outcome",
+        "data": {
+          "observations": [
+            {
+              "kind": "ranked_items",
+              "items": []
+            },
+            {
+              "kind": "selected",
+              "id": null
+            },
+            {
+              "kind": "real_source",
+              "status": "unavailable",
+              "count": 0,
+              "priceKnownCount": 0,
+              "candidateIds": [],
+              "invalid": []
+            }
+          ],
+          "scores": {
+            "hardConstraintPass": 1,
+            "completion": 0,
+            "diversity": 0,
+            "userActions": 2,
+            "validDestinations": 1,
+            "sourceAvailable": 0
+          },
+          "violations": [
+            {
+              "invariant": "candidate_source_available",
+              "class": "dependency_failure"
+            }
+          ]
+        }
+      }
+    ],
+    "measuredMs": 0.253
+  }
+}

@@ -1,0 +1,1453 @@
+{
+  "kind": "simulation-forge-m1-proof",
+  "generatedAt": "2026-09-28T03:25:06.488Z",
+  "commit": "015f15a303e22994768f8bd7197f7d56cef99442",
+  "fixtureSource": {
+    "kind": "inferred",
+    "source": "Chef Flow Personas/Completed/Public/the-enthusiast.txt",
+    "sourceSections": [
+      "Business Reality",
+      "Psychological Model",
+      "Pass / Fail Conditions"
+    ],
+    "note": "Actor budget and desire for operational clarity come from an existing persona; items and interaction are synthetic test fixtures, not observed customer behavior."
+  },
+  "note": "Fault-injected adapter deliberately omitted hard eligibility. Fixed adapter filters before calling the real ChefFlow scorer. Synthetic test items are not real customer outcomes.",
+  "baseline": {
+    "runId": "6356d4e03c2888d4",
+    "scenarioId": "chef-discovery-enthusiast-001",
+    "product": "ChefFlow",
+    "source": {
+      "kind": "inferred",
+      "source": "Chef Flow Personas/Completed/Public/the-enthusiast.txt",
+      "sourceSections": [
+        "Business Reality",
+        "Psychological Model",
+        "Pass / Fail Conditions"
+      ],
+      "note": "Actor budget and desire for operational clarity come from an existing persona; items and interaction are synthetic test fixtures, not observed customer behavior."
+    },
+    "adapterVersion": "chef-discovery-fault-injected",
+    "productVersion": "422605dd0",
+    "model": "none",
+    "seed": 101,
+    "commit": "015f15a303e22994768f8bd7197f7d56cef99442",
+    "environment": {
+      "at": "2026-09-27T20:00:00.000Z",
+      "geography": "urban",
+      "serviceStatus": "up",
+      "resources": {},
+      "device": "mobile",
+      "latencyMs": 0,
+      "marketState": {}
+    },
+    "actors": [
+      {
+        "id": "enthusiast",
+        "role": "diner",
+        "persona": "The Enthusiast",
+        "goals": [
+          "discover novel local cuisine",
+          "reach usable booking facts"
+        ],
+        "preferences": {
+          "novelty": true,
+          "operationalClarity": true
+        },
+        "knowledge": [],
+        "authority": [
+          "browse"
+        ],
+        "constraints": {
+          "maxPricePerPerson": 150
+        },
+        "tendencies": [
+          "abandon vague price"
+        ],
+        "history": {
+          "rankedPreferences": [
+            {
+              "itemType": "cuisine",
+              "itemValue": "peruvian",
+              "score": 3
+            }
+          ],
+          "suppressedItems": []
+        },
+        "memory": [],
+        "relationships": [],
+        "publicState": {},
+        "privateState": {
+          "budgetRange": [
+            80,
+            150
+          ]
+        }
+      }
+    ],
+    "observations": [
+      {
+        "kind": "ranked_items",
+        "items": [
+          {
+            "id": "peruvian",
+            "score": 5.97,
+            "pricePerPerson": 120
+          },
+          {
+            "id": "high-price",
+            "score": 4.4,
+            "pricePerPerson": 175
+          },
+          {
+            "id": "market",
+            "score": 3.54,
+            "pricePerPerson": 80
+          }
+        ]
+      },
+      {
+        "kind": "selected",
+        "id": "peruvian"
+      }
+    ],
+    "scores": {
+      "hardConstraintPass": 0,
+      "completion": 1,
+      "diversity": 1,
+      "userActions": 2
+    },
+    "violations": [
+      {
+        "invariant": "hard_eligibility",
+        "class": "candidate_filter",
+        "itemId": "high-price"
+      }
+    ],
+    "trajectory": [
+      {
+        "index": 0,
+        "at": "2026-09-27T20:00:00.001Z",
+        "kind": "start",
+        "data": {
+          "product": "ChefFlow",
+          "actors": [
+            "enthusiast"
+          ]
+        }
+      },
+      {
+        "index": 1,
+        "at": "2026-09-27T20:00:00.002Z",
+        "kind": "input",
+        "data": {
+          "type": "discover"
+        }
+      },
+      {
+        "index": 2,
+        "at": "2026-09-27T20:00:00.003Z",
+        "kind": "transition",
+        "data": {
+          "before": {
+            "items": [
+              {
+                "id": "high-price",
+                "type": "seasonal",
+                "label": "Seasonal chef table",
+                "href": "/discover?q=chef_table",
+                "pricePerPerson": 175,
+                "location": "urban",
+                "available": true,
+                "dietary": []
+              },
+              {
+                "id": "peruvian",
+                "type": "cuisine",
+                "label": "Peruvian tasting",
+                "href": "/discover?cuisine=peruvian",
+                "pricePerPerson": 120,
+                "location": "urban",
+                "available": true,
+                "dietary": [
+                  "vegan"
+                ]
+              },
+              {
+                "id": "market",
+                "type": "food_type",
+                "label": "Street food market",
+                "href": "/discover?q=street_food",
+                "pricePerPerson": 80,
+                "location": "urban",
+                "available": true,
+                "dietary": []
+              }
+            ]
+          },
+          "after": {
+            "items": [
+              {
+                "id": "high-price",
+                "type": "seasonal",
+                "label": "Seasonal chef table",
+                "href": "/discover?q=chef_table",
+                "pricePerPerson": 175,
+                "location": "urban",
+                "available": true,
+                "dietary": []
+              },
+              {
+                "id": "peruvian",
+                "type": "cuisine",
+                "label": "Peruvian tasting",
+                "href": "/discover?cuisine=peruvian",
+                "pricePerPerson": 120,
+                "location": "urban",
+                "available": true,
+                "dietary": [
+                  "vegan"
+                ]
+              },
+              {
+                "id": "market",
+                "type": "food_type",
+                "label": "Street food market",
+                "href": "/discover?q=street_food",
+                "pricePerPerson": 80,
+                "location": "urban",
+                "available": true,
+                "dietary": []
+              }
+            ],
+            "ranked": [
+              {
+                "id": "peruvian",
+                "type": "cuisine",
+                "label": "Peruvian tasting",
+                "href": "/discover?cuisine=peruvian",
+                "pricePerPerson": 120,
+                "location": "urban",
+                "available": true,
+                "dietary": [
+                  "vegan"
+                ],
+                "debug": {
+                  "score": 5.97,
+                  "preferenceScore": 3,
+                  "editorialScore": 2.97,
+                  "reason": "Matched learned cuisine signal"
+                }
+              },
+              {
+                "id": "high-price",
+                "type": "seasonal",
+                "label": "Seasonal chef table",
+                "href": "/discover?q=chef_table",
+                "pricePerPerson": 175,
+                "location": "urban",
+                "available": true,
+                "dietary": [],
+                "debug": {
+                  "score": 4.4,
+                  "preferenceScore": 0,
+                  "editorialScore": 4.4,
+                  "reason": "Boosted by seasonal discovery"
+                }
+              },
+              {
+                "id": "market",
+                "type": "food_type",
+                "label": "Street food market",
+                "href": "/discover?q=street_food",
+                "pricePerPerson": 80,
+                "location": "urban",
+                "available": true,
+                "dietary": [],
+                "debug": {
+                  "score": 3.54,
+                  "preferenceScore": 0,
+                  "editorialScore": 3.54,
+                  "reason": "Editorial discovery mix"
+                }
+              }
+            ]
+          },
+          "messages": [],
+          "toolCalls": [
+            {
+              "name": "scoreDiscoveryRailItems",
+              "candidateCount": 3
+            }
+          ],
+          "decisions": [
+            {
+              "kind": "rank",
+              "candidateIds": [
+                "high-price",
+                "peruvian",
+                "market"
+              ]
+            }
+          ]
+        }
+      },
+      {
+        "index": 3,
+        "at": "2026-09-27T20:00:00.004Z",
+        "kind": "input",
+        "data": {
+          "type": "choose"
+        }
+      },
+      {
+        "index": 4,
+        "at": "2026-09-27T20:00:00.005Z",
+        "kind": "transition",
+        "data": {
+          "before": {
+            "items": [
+              {
+                "id": "high-price",
+                "type": "seasonal",
+                "label": "Seasonal chef table",
+                "href": "/discover?q=chef_table",
+                "pricePerPerson": 175,
+                "location": "urban",
+                "available": true,
+                "dietary": []
+              },
+              {
+                "id": "peruvian",
+                "type": "cuisine",
+                "label": "Peruvian tasting",
+                "href": "/discover?cuisine=peruvian",
+                "pricePerPerson": 120,
+                "location": "urban",
+                "available": true,
+                "dietary": [
+                  "vegan"
+                ]
+              },
+              {
+                "id": "market",
+                "type": "food_type",
+                "label": "Street food market",
+                "href": "/discover?q=street_food",
+                "pricePerPerson": 80,
+                "location": "urban",
+                "available": true,
+                "dietary": []
+              }
+            ],
+            "ranked": [
+              {
+                "id": "peruvian",
+                "type": "cuisine",
+                "label": "Peruvian tasting",
+                "href": "/discover?cuisine=peruvian",
+                "pricePerPerson": 120,
+                "location": "urban",
+                "available": true,
+                "dietary": [
+                  "vegan"
+                ],
+                "debug": {
+                  "score": 5.97,
+                  "preferenceScore": 3,
+                  "editorialScore": 2.97,
+                  "reason": "Matched learned cuisine signal"
+                }
+              },
+              {
+                "id": "high-price",
+                "type": "seasonal",
+                "label": "Seasonal chef table",
+                "href": "/discover?q=chef_table",
+                "pricePerPerson": 175,
+                "location": "urban",
+                "available": true,
+                "dietary": [],
+                "debug": {
+                  "score": 4.4,
+                  "preferenceScore": 0,
+                  "editorialScore": 4.4,
+                  "reason": "Boosted by seasonal discovery"
+                }
+              },
+              {
+                "id": "market",
+                "type": "food_type",
+                "label": "Street food market",
+                "href": "/discover?q=street_food",
+                "pricePerPerson": 80,
+                "location": "urban",
+                "available": true,
+                "dietary": [],
+                "debug": {
+                  "score": 3.54,
+                  "preferenceScore": 0,
+                  "editorialScore": 3.54,
+                  "reason": "Editorial discovery mix"
+                }
+              }
+            ]
+          },
+          "after": {
+            "items": [
+              {
+                "id": "high-price",
+                "type": "seasonal",
+                "label": "Seasonal chef table",
+                "href": "/discover?q=chef_table",
+                "pricePerPerson": 175,
+                "location": "urban",
+                "available": true,
+                "dietary": []
+              },
+              {
+                "id": "peruvian",
+                "type": "cuisine",
+                "label": "Peruvian tasting",
+                "href": "/discover?cuisine=peruvian",
+                "pricePerPerson": 120,
+                "location": "urban",
+                "available": true,
+                "dietary": [
+                  "vegan"
+                ]
+              },
+              {
+                "id": "market",
+                "type": "food_type",
+                "label": "Street food market",
+                "href": "/discover?q=street_food",
+                "pricePerPerson": 80,
+                "location": "urban",
+                "available": true,
+                "dietary": []
+              }
+            ],
+            "ranked": [
+              {
+                "id": "peruvian",
+                "type": "cuisine",
+                "label": "Peruvian tasting",
+                "href": "/discover?cuisine=peruvian",
+                "pricePerPerson": 120,
+                "location": "urban",
+                "available": true,
+                "dietary": [
+                  "vegan"
+                ],
+                "debug": {
+                  "score": 5.97,
+                  "preferenceScore": 3,
+                  "editorialScore": 2.97,
+                  "reason": "Matched learned cuisine signal"
+                }
+              },
+              {
+                "id": "high-price",
+                "type": "seasonal",
+                "label": "Seasonal chef table",
+                "href": "/discover?q=chef_table",
+                "pricePerPerson": 175,
+                "location": "urban",
+                "available": true,
+                "dietary": [],
+                "debug": {
+                  "score": 4.4,
+                  "preferenceScore": 0,
+                  "editorialScore": 4.4,
+                  "reason": "Boosted by seasonal discovery"
+                }
+              },
+              {
+                "id": "market",
+                "type": "food_type",
+                "label": "Street food market",
+                "href": "/discover?q=street_food",
+                "pricePerPerson": 80,
+                "location": "urban",
+                "available": true,
+                "dietary": [],
+                "debug": {
+                  "score": 3.54,
+                  "preferenceScore": 0,
+                  "editorialScore": 3.54,
+                  "reason": "Editorial discovery mix"
+                }
+              }
+            ],
+            "choice": {
+              "id": "peruvian",
+              "type": "cuisine",
+              "label": "Peruvian tasting",
+              "href": "/discover?cuisine=peruvian",
+              "pricePerPerson": 120,
+              "location": "urban",
+              "available": true,
+              "dietary": [
+                "vegan"
+              ],
+              "debug": {
+                "score": 5.97,
+                "preferenceScore": 3,
+                "editorialScore": 2.97,
+                "reason": "Matched learned cuisine signal"
+              }
+            }
+          },
+          "messages": [
+            {
+              "from": "ChefFlow",
+              "to": "enthusiast",
+              "text": "Peruvian tasting"
+            }
+          ],
+          "toolCalls": [],
+          "decisions": []
+        }
+      },
+      {
+        "index": 5,
+        "at": "2026-09-27T20:00:00.006Z",
+        "kind": "outcome",
+        "data": {
+          "observations": [
+            {
+              "kind": "ranked_items",
+              "items": [
+                {
+                  "id": "peruvian",
+                  "score": 5.97,
+                  "pricePerPerson": 120
+                },
+                {
+                  "id": "high-price",
+                  "score": 4.4,
+                  "pricePerPerson": 175
+                },
+                {
+                  "id": "market",
+                  "score": 3.54,
+                  "pricePerPerson": 80
+                }
+              ]
+            },
+            {
+              "kind": "selected",
+              "id": "peruvian"
+            }
+          ],
+          "scores": {
+            "hardConstraintPass": 0,
+            "completion": 1,
+            "diversity": 1,
+            "userActions": 2
+          },
+          "violations": [
+            {
+              "invariant": "hard_eligibility",
+              "class": "candidate_filter",
+              "itemId": "high-price"
+            }
+          ]
+        }
+      }
+    ],
+    "measuredMs": 2.744
+  },
+  "repeatBefore": {
+    "count": 10,
+    "distinctOutcomes": 1,
+    "clusters": [
+      {
+        "key": "ChefFlow:hard_eligibility:candidate_filter",
+        "count": 10,
+        "runIds": [
+          "6356d4e03c2888d4",
+          "6356d4e03c2888d4",
+          "6356d4e03c2888d4",
+          "6356d4e03c2888d4",
+          "6356d4e03c2888d4",
+          "6356d4e03c2888d4",
+          "6356d4e03c2888d4",
+          "6356d4e03c2888d4",
+          "6356d4e03c2888d4",
+          "6356d4e03c2888d4"
+        ]
+      }
+    ]
+  },
+  "minimized": {
+    "attempts": 6,
+    "scenario": {
+      "schemaVersion": 1,
+      "id": "chef-discovery-enthusiast-001",
+      "provenance": {
+        "kind": "inferred",
+        "source": "Chef Flow Personas/Completed/Public/the-enthusiast.txt",
+        "sourceSections": [
+          "Business Reality",
+          "Psychological Model",
+          "Pass / Fail Conditions"
+        ],
+        "note": "Actor budget and desire for operational clarity come from an existing persona; items and interaction are synthetic test fixtures, not observed customer behavior."
+      },
+      "product": {
+        "id": "ChefFlow",
+        "version": "422605dd0",
+        "capabilities": [
+          "discovery_rail"
+        ],
+        "interfaces": [
+          "discovery_rail_scoring"
+        ],
+        "tools": [
+          "scoreDiscoveryRailItems"
+        ],
+        "workflows": [
+          "discover",
+          "choose"
+        ],
+        "permissions": [],
+        "externalDependencies": [],
+        "successCriteria": [
+          "eligible ranked choices"
+        ],
+        "invariants": [
+          "hard_eligibility"
+        ]
+      },
+      "actors": [
+        {
+          "id": "enthusiast",
+          "role": "diner",
+          "persona": "The Enthusiast",
+          "goals": [
+            "discover novel local cuisine",
+            "reach usable booking facts"
+          ],
+          "preferences": {
+            "novelty": true,
+            "operationalClarity": true
+          },
+          "knowledge": [],
+          "authority": [
+            "browse"
+          ],
+          "constraints": {
+            "maxPricePerPerson": 150
+          },
+          "tendencies": [
+            "abandon vague price"
+          ],
+          "history": {
+            "rankedPreferences": [
+              {
+                "itemType": "cuisine",
+                "itemValue": "peruvian",
+                "score": 3
+              }
+            ],
+            "suppressedItems": []
+          },
+          "memory": [],
+          "relationships": [],
+          "publicState": {},
+          "privateState": {
+            "budgetRange": [
+              80,
+              150
+            ]
+          }
+        }
+      ],
+      "environment": {
+        "at": "2026-09-27T20:00:00.000Z",
+        "geography": "urban",
+        "serviceStatus": "up",
+        "resources": {},
+        "device": "mobile",
+        "latencyMs": 0,
+        "marketState": {}
+      },
+      "objective": "Find an actionable, affordable culinary experience",
+      "initialState": {
+        "items": [
+          {
+            "id": "high-price",
+            "type": "seasonal",
+            "label": "Seasonal chef table",
+            "href": "/discover?q=chef_table",
+            "pricePerPerson": 175,
+            "location": "urban",
+            "available": true,
+            "dietary": []
+          }
+        ]
+      },
+      "events": [
+        {
+          "type": "discover"
+        }
+      ],
+      "hiddenInformation": [],
+      "mutations": [
+        "budget",
+        "dietary",
+        "outage"
+      ],
+      "stoppingConditions": [
+        "choose"
+      ],
+      "expectedInvariants": [
+        {
+          "id": "hard_eligibility",
+          "description": "Never show items outside the actor's hard budget, dietary, location, availability, and service constraints"
+        }
+      ]
+    },
+    "failingTrajectory": [
+      {
+        "index": 0,
+        "at": "2026-09-27T20:00:00.001Z",
+        "kind": "start",
+        "data": {
+          "product": "ChefFlow",
+          "actors": [
+            "enthusiast"
+          ]
+        }
+      },
+      {
+        "index": 1,
+        "at": "2026-09-27T20:00:00.002Z",
+        "kind": "input",
+        "data": {
+          "type": "discover"
+        }
+      },
+      {
+        "index": 2,
+        "at": "2026-09-27T20:00:00.003Z",
+        "kind": "transition",
+        "data": {
+          "before": {
+            "items": [
+              {
+                "id": "high-price",
+                "type": "seasonal",
+                "label": "Seasonal chef table",
+                "href": "/discover?q=chef_table",
+                "pricePerPerson": 175,
+                "location": "urban",
+                "available": true,
+                "dietary": []
+              }
+            ]
+          },
+          "after": {
+            "items": [
+              {
+                "id": "high-price",
+                "type": "seasonal",
+                "label": "Seasonal chef table",
+                "href": "/discover?q=chef_table",
+                "pricePerPerson": 175,
+                "location": "urban",
+                "available": true,
+                "dietary": []
+              }
+            ],
+            "ranked": [
+              {
+                "id": "high-price",
+                "type": "seasonal",
+                "label": "Seasonal chef table",
+                "href": "/discover?q=chef_table",
+                "pricePerPerson": 175,
+                "location": "urban",
+                "available": true,
+                "dietary": [],
+                "debug": {
+                  "score": 4.4,
+                  "preferenceScore": 0,
+                  "editorialScore": 4.4,
+                  "reason": "Boosted by seasonal discovery"
+                }
+              }
+            ]
+          },
+          "messages": [],
+          "toolCalls": [
+            {
+              "name": "scoreDiscoveryRailItems",
+              "candidateCount": 1
+            }
+          ],
+          "decisions": [
+            {
+              "kind": "rank",
+              "candidateIds": [
+                "high-price"
+              ]
+            }
+          ]
+        }
+      },
+      {
+        "index": 3,
+        "at": "2026-09-27T20:00:00.004Z",
+        "kind": "outcome",
+        "data": {
+          "observations": [
+            {
+              "kind": "ranked_items",
+              "items": [
+                {
+                  "id": "high-price",
+                  "score": 4.4,
+                  "pricePerPerson": 175
+                }
+              ]
+            },
+            {
+              "kind": "selected",
+              "id": null
+            }
+          ],
+          "scores": {
+            "hardConstraintPass": 0,
+            "completion": 0,
+            "diversity": 1,
+            "userActions": 1
+          },
+          "violations": [
+            {
+              "invariant": "hard_eligibility",
+              "class": "candidate_filter",
+              "itemId": "high-price"
+            }
+          ]
+        }
+      }
+    ]
+  },
+  "repaired": {
+    "runId": "fb252ebfce518efd",
+    "scenarioId": "chef-discovery-enthusiast-001",
+    "product": "ChefFlow",
+    "source": {
+      "kind": "inferred",
+      "source": "Chef Flow Personas/Completed/Public/the-enthusiast.txt",
+      "sourceSections": [
+        "Business Reality",
+        "Psychological Model",
+        "Pass / Fail Conditions"
+      ],
+      "note": "Actor budget and desire for operational clarity come from an existing persona; items and interaction are synthetic test fixtures, not observed customer behavior."
+    },
+    "adapterVersion": "chef-discovery-eligibility-v1",
+    "productVersion": "422605dd0",
+    "model": "none",
+    "seed": 101,
+    "commit": "015f15a303e22994768f8bd7197f7d56cef99442",
+    "environment": {
+      "at": "2026-09-27T20:00:00.000Z",
+      "geography": "urban",
+      "serviceStatus": "up",
+      "resources": {},
+      "device": "mobile",
+      "latencyMs": 0,
+      "marketState": {}
+    },
+    "actors": [
+      {
+        "id": "enthusiast",
+        "role": "diner",
+        "persona": "The Enthusiast",
+        "goals": [
+          "discover novel local cuisine",
+          "reach usable booking facts"
+        ],
+        "preferences": {
+          "novelty": true,
+          "operationalClarity": true
+        },
+        "knowledge": [],
+        "authority": [
+          "browse"
+        ],
+        "constraints": {
+          "maxPricePerPerson": 150
+        },
+        "tendencies": [
+          "abandon vague price"
+        ],
+        "history": {
+          "rankedPreferences": [
+            {
+              "itemType": "cuisine",
+              "itemValue": "peruvian",
+              "score": 3
+            }
+          ],
+          "suppressedItems": []
+        },
+        "memory": [],
+        "relationships": [],
+        "publicState": {},
+        "privateState": {
+          "budgetRange": [
+            80,
+            150
+          ]
+        }
+      }
+    ],
+    "observations": [
+      {
+        "kind": "ranked_items",
+        "items": []
+      },
+      {
+        "kind": "selected",
+        "id": null
+      }
+    ],
+    "scores": {
+      "hardConstraintPass": 1,
+      "completion": 0,
+      "diversity": 0,
+      "userActions": 1
+    },
+    "violations": [],
+    "trajectory": [
+      {
+        "index": 0,
+        "at": "2026-09-27T20:00:00.001Z",
+        "kind": "start",
+        "data": {
+          "product": "ChefFlow",
+          "actors": [
+            "enthusiast"
+          ]
+        }
+      },
+      {
+        "index": 1,
+        "at": "2026-09-27T20:00:00.002Z",
+        "kind": "input",
+        "data": {
+          "type": "discover"
+        }
+      },
+      {
+        "index": 2,
+        "at": "2026-09-27T20:00:00.003Z",
+        "kind": "transition",
+        "data": {
+          "before": {
+            "items": [
+              {
+                "id": "high-price",
+                "type": "seasonal",
+                "label": "Seasonal chef table",
+                "href": "/discover?q=chef_table",
+                "pricePerPerson": 175,
+                "location": "urban",
+                "available": true,
+                "dietary": []
+              }
+            ]
+          },
+          "after": {
+            "items": [
+              {
+                "id": "high-price",
+                "type": "seasonal",
+                "label": "Seasonal chef table",
+                "href": "/discover?q=chef_table",
+                "pricePerPerson": 175,
+                "location": "urban",
+                "available": true,
+                "dietary": []
+              }
+            ],
+            "ranked": []
+          },
+          "messages": [],
+          "toolCalls": [
+            {
+              "name": "scoreDiscoveryRailItems",
+              "candidateCount": 0
+            }
+          ],
+          "decisions": [
+            {
+              "kind": "rank",
+              "candidateIds": []
+            }
+          ]
+        }
+      },
+      {
+        "index": 3,
+        "at": "2026-09-27T20:00:00.004Z",
+        "kind": "outcome",
+        "data": {
+          "observations": [
+            {
+              "kind": "ranked_items",
+              "items": []
+            },
+            {
+              "kind": "selected",
+              "id": null
+            }
+          ],
+          "scores": {
+            "hardConstraintPass": 1,
+            "completion": 0,
+            "diversity": 0,
+            "userActions": 1
+          },
+          "violations": []
+        }
+      }
+    ],
+    "measuredMs": 0.12
+  },
+  "repeatAfter": {
+    "count": 10,
+    "violations": []
+  },
+  "mutationRuns": [
+    {
+      "scenarioId": "chef-discovery-enthusiast-001",
+      "runId": "567bbcd371a74999",
+      "scores": {
+        "hardConstraintPass": 1,
+        "completion": 1,
+        "diversity": 1,
+        "userActions": 2
+      },
+      "violations": []
+    },
+    {
+      "scenarioId": "chef-discovery-enthusiast-001:budget-floor",
+      "runId": "9234449766c5f768",
+      "scores": {
+        "hardConstraintPass": 1,
+        "completion": 1,
+        "diversity": 1,
+        "userActions": 2
+      },
+      "violations": []
+    },
+    {
+      "scenarioId": "chef-discovery-enthusiast-001:budget-ceiling",
+      "runId": "d26a42be1ad465d9",
+      "scores": {
+        "hardConstraintPass": 1,
+        "completion": 1,
+        "diversity": 1,
+        "userActions": 2
+      },
+      "violations": []
+    },
+    {
+      "scenarioId": "chef-discovery-enthusiast-001:dietary-vegan",
+      "runId": "3ff5a1be0b52d283",
+      "scores": {
+        "hardConstraintPass": 1,
+        "completion": 1,
+        "diversity": 1,
+        "userActions": 2
+      },
+      "violations": []
+    },
+    {
+      "scenarioId": "chef-discovery-enthusiast-001:service-outage",
+      "runId": "afd2bb4a5e2c4b5e",
+      "scores": {
+        "hardConstraintPass": 1,
+        "completion": 0,
+        "diversity": 0,
+        "userActions": 2
+      },
+      "violations": []
+    },
+    {
+      "scenarioId": "chef-discovery-enthusiast-001:location-mismatch",
+      "runId": "569de1750a42143a",
+      "scores": {
+        "hardConstraintPass": 1,
+        "completion": 0,
+        "diversity": 0,
+        "userActions": 2
+      },
+      "violations": []
+    }
+  ],
+  "comparison": [
+    {
+      "scenarioId": "chef-discovery-enthusiast-001",
+      "seed": 101,
+      "before": {
+        "version": "chef-discovery-fault-injected",
+        "violations": [
+          {
+            "invariant": "hard_eligibility",
+            "class": "candidate_filter",
+            "itemId": "high-price"
+          }
+        ],
+        "scores": {
+          "hardConstraintPass": 0,
+          "completion": 1,
+          "diversity": 1,
+          "userActions": 2
+        }
+      },
+      "after": {
+        "version": "chef-discovery-eligibility-v1",
+        "violations": [],
+        "scores": {
+          "hardConstraintPass": 1,
+          "completion": 1,
+          "diversity": 1,
+          "userActions": 2
+        }
+      },
+      "runIds": [
+        "6356d4e03c2888d4",
+        "567bbcd371a74999"
+      ]
+    },
+    {
+      "scenarioId": "chef-discovery-enthusiast-001:budget-floor",
+      "seed": 101,
+      "before": {
+        "version": "chef-discovery-fault-injected",
+        "violations": [
+          {
+            "invariant": "hard_eligibility",
+            "class": "candidate_filter",
+            "itemId": "peruvian"
+          },
+          {
+            "invariant": "hard_eligibility",
+            "class": "candidate_filter",
+            "itemId": "high-price"
+          }
+        ],
+        "scores": {
+          "hardConstraintPass": 0,
+          "completion": 1,
+          "diversity": 1,
+          "userActions": 2
+        }
+      },
+      "after": {
+        "version": "chef-discovery-eligibility-v1",
+        "violations": [],
+        "scores": {
+          "hardConstraintPass": 1,
+          "completion": 1,
+          "diversity": 1,
+          "userActions": 2
+        }
+      },
+      "runIds": [
+        "f868a67499e4a128",
+        "9234449766c5f768"
+      ]
+    },
+    {
+      "scenarioId": "chef-discovery-enthusiast-001:budget-ceiling",
+      "seed": 101,
+      "before": {
+        "version": "chef-discovery-fault-injected",
+        "violations": [],
+        "scores": {
+          "hardConstraintPass": 1,
+          "completion": 1,
+          "diversity": 1,
+          "userActions": 2
+        }
+      },
+      "after": {
+        "version": "chef-discovery-eligibility-v1",
+        "violations": [],
+        "scores": {
+          "hardConstraintPass": 1,
+          "completion": 1,
+          "diversity": 1,
+          "userActions": 2
+        }
+      },
+      "runIds": [
+        "d286d639911049ea",
+        "d26a42be1ad465d9"
+      ]
+    },
+    {
+      "scenarioId": "chef-discovery-enthusiast-001:dietary-vegan",
+      "seed": 101,
+      "before": {
+        "version": "chef-discovery-fault-injected",
+        "violations": [
+          {
+            "invariant": "hard_eligibility",
+            "class": "candidate_filter",
+            "itemId": "high-price"
+          },
+          {
+            "invariant": "hard_eligibility",
+            "class": "candidate_filter",
+            "itemId": "market"
+          }
+        ],
+        "scores": {
+          "hardConstraintPass": 0,
+          "completion": 1,
+          "diversity": 1,
+          "userActions": 2
+        }
+      },
+      "after": {
+        "version": "chef-discovery-eligibility-v1",
+        "violations": [],
+        "scores": {
+          "hardConstraintPass": 1,
+          "completion": 1,
+          "diversity": 1,
+          "userActions": 2
+        }
+      },
+      "runIds": [
+        "2f73bd829496b567",
+        "3ff5a1be0b52d283"
+      ]
+    },
+    {
+      "scenarioId": "chef-discovery-enthusiast-001:service-outage",
+      "seed": 101,
+      "before": {
+        "version": "chef-discovery-fault-injected",
+        "violations": [
+          {
+            "invariant": "hard_eligibility",
+            "class": "candidate_filter",
+            "itemId": "peruvian"
+          },
+          {
+            "invariant": "hard_eligibility",
+            "class": "candidate_filter",
+            "itemId": "high-price"
+          },
+          {
+            "invariant": "hard_eligibility",
+            "class": "candidate_filter",
+            "itemId": "market"
+          }
+        ],
+        "scores": {
+          "hardConstraintPass": 0,
+          "completion": 1,
+          "diversity": 1,
+          "userActions": 2
+        }
+      },
+      "after": {
+        "version": "chef-discovery-eligibility-v1",
+        "violations": [],
+        "scores": {
+          "hardConstraintPass": 1,
+          "completion": 0,
+          "diversity": 0,
+          "userActions": 2
+        }
+      },
+      "runIds": [
+        "6c6757baff1761ba",
+        "afd2bb4a5e2c4b5e"
+      ]
+    },
+    {
+      "scenarioId": "chef-discovery-enthusiast-001:location-mismatch",
+      "seed": 101,
+      "before": {
+        "version": "chef-discovery-fault-injected",
+        "violations": [
+          {
+            "invariant": "hard_eligibility",
+            "class": "candidate_filter",
+            "itemId": "peruvian"
+          },
+          {
+            "invariant": "hard_eligibility",
+            "class": "candidate_filter",
+            "itemId": "high-price"
+          },
+          {
+            "invariant": "hard_eligibility",
+            "class": "candidate_filter",
+            "itemId": "market"
+          }
+        ],
+        "scores": {
+          "hardConstraintPass": 0,
+          "completion": 1,
+          "diversity": 1,
+          "userActions": 2
+        }
+      },
+      "after": {
+        "version": "chef-discovery-eligibility-v1",
+        "violations": [],
+        "scores": {
+          "hardConstraintPass": 1,
+          "completion": 0,
+          "diversity": 0,
+          "userActions": 2
+        }
+      },
+      "runIds": [
+        "17880ebba7f29420",
+        "569de1750a42143a"
+      ]
+    }
+  ],
+  "portability": {
+    "runId": "5f38ee8792b316cd",
+    "scenarioId": "weather-status-001",
+    "product": "WeatherHQ",
+    "source": {
+      "kind": "synthetic",
+      "source": "Simulation Forge portability fixture",
+      "note": "Interface proof; no WeatherHQ product code or actual forecast is exercised."
+    },
+    "adapterVersion": "weather-fixture-v1",
+    "productVersion": "fixture",
+    "model": "none",
+    "seed": 101,
+    "commit": "015f15a303e22994768f8bd7197f7d56cef99442",
+    "environment": {
+      "at": "2026-09-27T20:00:00.000Z",
+      "geography": "local",
+      "serviceStatus": "down",
+      "resources": {},
+      "device": "tablet",
+      "latencyMs": 0,
+      "marketState": {}
+    },
+    "actors": [
+      {
+        "id": "viewer",
+        "role": "viewer",
+        "persona": "Simple weather viewer",
+        "goals": [
+          "check forecast"
+        ],
+        "preferences": {},
+        "knowledge": [],
+        "authority": [
+          "view"
+        ],
+        "constraints": {},
+        "tendencies": [],
+        "history": {},
+        "memory": [],
+        "relationships": [],
+        "publicState": {},
+        "privateState": {}
+      }
+    ],
+    "observations": [
+      {
+        "kind": "forecast_message",
+        "value": "Forecast unavailable"
+      }
+    ],
+    "scores": {
+      "truthfulStatus": 1
+    },
+    "violations": [],
+    "trajectory": [
+      {
+        "index": 0,
+        "at": "2026-09-27T20:00:00.001Z",
+        "kind": "start",
+        "data": {
+          "product": "WeatherHQ",
+          "actors": [
+            "viewer"
+          ]
+        }
+      },
+      {
+        "index": 1,
+        "at": "2026-09-27T20:00:00.002Z",
+        "kind": "input",
+        "data": {
+          "type": "check_forecast"
+        }
+      },
+      {
+        "index": 2,
+        "at": "2026-09-27T20:00:00.003Z",
+        "kind": "transition",
+        "data": {
+          "before": {
+            "forecast": {
+              "alert": "Clear skies"
+            }
+          },
+          "after": {
+            "forecast": {
+              "alert": "Clear skies"
+            },
+            "message": "Forecast unavailable"
+          },
+          "messages": [
+            {
+              "from": "WeatherHQ fixture",
+              "to": "viewer",
+              "text": "Forecast unavailable"
+            }
+          ],
+          "toolCalls": [
+            {
+              "name": "fixtureForecast",
+              "status": "down"
+            }
+          ],
+          "decisions": []
+        }
+      },
+      {
+        "index": 3,
+        "at": "2026-09-27T20:00:00.004Z",
+        "kind": "outcome",
+        "data": {
+          "observations": [
+            {
+              "kind": "forecast_message",
+              "value": "Forecast unavailable"
+            }
+          ],
+          "scores": {
+            "truthfulStatus": 1
+          },
+          "violations": []
+        }
+      }
+    ],
+    "measuredMs": 0.224
+  }
+}

@@ -1,0 +1,13 @@
+# Simulation Forge: real ChefFlow homepage candidate source slice
+
+Status: independently verified offline, not a live route release. Branch: `fix/chef-flow-transport-type-gate-20260928` based on pushed Forge core.
+
+`tools/simulation-forge/homepage-source.mjs` calls the real, unchanged `lib/discovery/homepage-taste-rail.ts#buildHomepageTasteRailItems` at each `discover` step. It caps the production source to 40 cuisine links, invokes the existing Forge ChefFlow scorer, and checks every returned destination using `lib/discovery/homepage-discovery-destinations.ts#auditRailDestinations`. The same `runScenario` contract, actor shape, trajectory, scoring and release command from milestone 1 are reused.
+
+The historical Public/The Enthusiast persona supplies a goal, while discovery events are synthetic. Cuisine links are actual code-generated candidates, but no production customer actions were observed. `DiscoveryRailItem` has no per-person price or availability field; this scenario removes the actor's hard budget constraint and explicitly records `priceKnownCount: 0`. Valid links do **not** imply affordable or currently bookable options. No UI, API, database, product runtime, external device or production service was changed.
+
+The adapter injects a source outage to verify an empty result and an explicit `candidate_source_available` violation instead of a fabricated success. The normal source, 10 replays, outage case, actor, source commit, raw trajectory, observations, and scores are retained by `node --import tsx tools/simulation-forge/cli.mjs source-proof`. The existing firewall invokes `cli.mjs release`, now with eight bounded scenarios including this real source case. The source test is `node --import tsx --test tools/simulation-forge/homepage-source.test.mjs`.
+
+The separate `feat/simulation-forge-m1-20260927` worktree has foreign commits `377d0dcdd` (stdin discovery runner) and `88e17e68c` (suppression scorer fix). These were inspected read-only; no cherry-pick or merge happened. The new adapter file does not overlap them. An integrator should combine branches only after checking the scorer behavior under both suites and resolving release gates.
+
+Next product integration: enrich actual candidate metadata with verified price/availability if the user experience promises hard eligibility; connect the tested adapter/policy to the homepage ranking call; then verify the canonical `http://localhost:3100` route, adjacent behavior, and production revision. The existing seven missing `/studio*` routes remain a distinct nav-owner task `CF-STUDIO-NAV-20260928`; do not hide that red gate with placeholders.
