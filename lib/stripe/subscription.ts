@@ -203,21 +203,15 @@ async function updateChefSupportFields({
   supportPatch: Record<string, unknown>
   hasSupportColumns: boolean
 }): Promise<void> {
+  if (!hasSupportColumns && Object.keys(supportPatch).length > 0) {
+    throw new Error('Support state migration is required before recording a contribution')
+  }
   const db = createServerClient({ admin: true })
-  const patch = hasSupportColumns ? { ...legacyPatch, ...supportPatch } : legacyPatch
+  const patch = { ...legacyPatch, ...supportPatch }
   const { error } = await db
     .from('chefs')
     .update(patch as any)
     .eq('id', chefId)
-
-  if (error && hasSupportColumns && isMissingSupportColumnError(error)) {
-    const retry = await db
-      .from('chefs')
-      .update(legacyPatch as any)
-      .eq('id', chefId)
-    if (retry.error) throw retry.error
-    return
-  }
 
   if (error) throw error
 }
@@ -373,6 +367,11 @@ export async function createSupportCheckoutSession({
     throw new Error('Enter a contribution between $1 and $500')
   }
 
+  // Reject checkout before creating a customer or charging when support state cannot persist.
+  const supportSchema = await selectChefBy('id', chefId)
+  if (!supportSchema.hasSupportColumns) {
+    throw new Error('Support checkout is temporarily unavailable while storage is updated')
+  }
   const stripe = getStripe()
   const { customerId } = await resolveOrCreateStripeCustomer(chefId)
   const frequency = offer.frequency === 'monthly' ? 'monthly' : 'one_time'
