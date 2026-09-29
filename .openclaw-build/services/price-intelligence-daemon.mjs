@@ -22,6 +22,7 @@ import { existsSync, readFileSync, writeFileSync } from 'fs';
 import { join, dirname } from 'path';
 import { fileURLToPath } from 'url';
 import { spawn } from 'child_process';
+import { isIsolatedEgressConfigured } from '../lib/collector-policy.mjs';
 
 const __dirname = dirname(fileURLToPath(import.meta.url));
 const STATUS_FILE = join(__dirname, '..', 'data', 'daemon-status.json');
@@ -64,6 +65,7 @@ const SCRAPERS = [
     tier: 3,
     interval_hours: 168, // weekly (if not blocked)
     requires_env: [],
+    requires_isolated_egress: true,
     enabled: false, // disabled until captcha resolved
   },
   {
@@ -73,6 +75,7 @@ const SCRAPERS = [
     tier: 3,
     interval_hours: 168, // weekly - ~6h run time, all 50 states
     requires_env: [],
+    requires_isolated_egress: true,
     enabled: true,
   },
   {
@@ -125,6 +128,7 @@ function getScraperState(id) {
 
 function shouldRun(scraper) {
   if (!scraper.enabled) return false;
+  if (scraper.requires_isolated_egress && !isIsolatedEgressConfigured()) return false;
 
   // Check environment requirements
   for (const env of scraper.requires_env) {
@@ -229,7 +233,10 @@ async function main() {
   log(`Registered scrapers: ${SCRAPERS.length}`);
   for (const s of SCRAPERS) {
     const envOk = s.requires_env.every(e => process.env[e]);
-    log(`  [${s.enabled ? 'ON' : 'OFF'}] ${s.name} (tier ${s.tier}, every ${s.interval_hours}h)${!envOk && s.requires_env.length ? ' [MISSING ENV]' : ''}`);
+    const privacyGate = s.requires_isolated_egress && !isIsolatedEgressConfigured()
+      ? ' [PRIVACY GATE: ISOLATED EGRESS REQUIRED]'
+      : '';
+    log(`  [${s.enabled ? 'ON' : 'OFF'}] ${s.name} (tier ${s.tier}, every ${s.interval_hours}h)${!envOk && s.requires_env.length ? ' [MISSING ENV]' : ''}${privacyGate}`);
   }
 
   // Run immediately, then check every 30 minutes
