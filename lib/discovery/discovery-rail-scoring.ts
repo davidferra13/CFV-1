@@ -36,18 +36,23 @@ export function scoreDiscoveryRailItems<T extends DiscoveryRailScoringItem>(
   context: DiscoveryRailScoringContext
 ): Array<DiscoveryRailScoredItem<T>> {
   const preferences = userSignals?.rankedPreferences ?? []
-  const suppressed = new Set(
-    (userSignals?.suppressedItems ?? []).map((item) => signalKey(item.itemType, item.itemValue))
+  const suppressed = new Map(
+    (userSignals?.suppressedItems ?? []).map((item) => [
+      signalKey(item.itemType, item.itemValue),
+      item.score,
+    ])
   )
 
   return items
     .map((item, index) => {
       const preference = findBestPreference(item, preferences)
-      const preferenceScore = preference?.score ?? 0
+      const suppressedScore =
+        suppressed.get(signalKey(item.type, getItemSignalValue(item))) ??
+        suppressed.get(signalKey(item.type, item.label))
+      const preferenceScore = preference?.score ?? suppressedScore ?? 0
       const editorialScore = getEditorialScore(item, index, context)
       const negativePenalty =
-        suppressed.has(signalKey(item.type, getItemSignalValue(item))) ||
-        suppressed.has(signalKey(item.type, item.label))
+        suppressedScore !== undefined
           ? Math.abs(Math.min(preferenceScore, SOFT_NEGATIVE_THRESHOLD))
           : 0
       const score = editorialScore + preferenceScore - negativePenalty
