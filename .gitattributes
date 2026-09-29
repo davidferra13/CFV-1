@@ -1,0 +1,2 @@
+.openclaw-build/**/*.sh text eol=lf
+.openclaw-deploy/**/*.sh text eol=lf

@@ -14,6 +14,10 @@ log() {
   echo "[$(date -Iseconds)] $1"
 }
 
+has_isolated_egress() {
+  [ "${OPENCLAW_EGRESS_PROFILE:-}" = "isolated" ]
+}
+
 run_scraper() {
   local name="$1"
   local script="$2"
@@ -40,26 +44,41 @@ log "=== OpenClaw daily scrape started ==="
 # 1. Whole Foods (both regions)
 run_scraper "Whole Foods" "services/scraper-wholefoodsapfresh.mjs"
 
-# 2. Instacart stores (Market Basket, Hannaford, Shaw's, etc.)
-run_scraper "Instacart Bulk" "services/scraper-instacart-bulk.mjs"
+# 2. Session-derived scraping is opt-in only.
+# It must never reuse a personal browser profile or ambient login state.
+if [ "${OPENCLAW_ALLOW_SESSION_SCRAPERS:-0}" = "1" ] && has_isolated_egress; then
+  run_scraper "Instacart Bulk" "services/scraper-instacart-bulk.mjs"
+else
+  log "Skipping Instacart Bulk (requires isolated egress + explicit session-scraper opt-in)"
+fi
 
-# 3. Walmart
-run_scraper "Walmart" "services/scraper-walmart.mjs"
+# 3. Direct website scraping never runs from an unisolated network.
+if has_isolated_egress; then
+  run_scraper "Walmart" "services/scraper-walmart.mjs"
+else
+  log "Skipping Walmart direct scrape (isolated egress required)"
+fi
 
 # 4. Target
 run_scraper "Target" "services/scraper-target.mjs"
 
 # 4b. Walmart Nationwide (52 stores, all 50 states)
-run_scraper "Walmart Nationwide" "services/scraper-walmart-nationwide.mjs"
+if has_isolated_egress; then
+  run_scraper "Walmart Nationwide" "services/scraper-walmart-nationwide.mjs"
+else
+  log "Skipping Walmart Nationwide (isolated egress required)"
+fi
 
 # 4c. Target Nationwide (24 stores, 24 states)
 run_scraper "Target Nationwide" "services/scraper-target-nationwide.mjs"
 
-# 5. Hannaford direct
-run_scraper "Hannaford" "services/scraper-hannaford.mjs"
-
-# 6. Stop & Shop / Shaw's direct
-run_scraper "Stop & Shop / Shaw's" "services/scraper-stopsandshop.mjs"
+# 5-6. Direct retailer sites require isolated egress.
+if has_isolated_egress; then
+  run_scraper "Hannaford" "services/scraper-hannaford.mjs"
+  run_scraper "Stop & Shop / Shaw's" "services/scraper-stopsandshop.mjs"
+else
+  log "Skipping Hannaford + Stop & Shop direct scrapes (isolated egress required)"
+fi
 
 # 7. Flipp flyers
 run_scraper "Flipp Flyers" "services/scraper-flipp.mjs"

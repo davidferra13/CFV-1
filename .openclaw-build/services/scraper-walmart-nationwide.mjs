@@ -18,9 +18,11 @@ async function searchWalmart(keyword, storeId) {
 
   try {
     const res = await httpFetch(url, {
+      collector: {
+        allowedCookieNames: ['walmart.nearestStoreId'],
+      },
       headers: {
         'Accept': 'text/html,application/xhtml+xml',
-        'User-Agent': 'Mozilla/5.0 (X11; Linux aarch64) AppleWebKit/537.36 Chrome/120.0.0.0 Safari/537.36',
         'Cookie': `walmart.nearestStoreId=${storeId}; walmart.shippingZip=; vtc=`,
       },
     });
