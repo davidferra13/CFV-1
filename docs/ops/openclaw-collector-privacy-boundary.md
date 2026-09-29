@@ -21,6 +21,10 @@ Keep public-data collection operationally separate from the owner's personal bro
 
 Until isolated egress is configured and verified, the daily scheduler skips Instacart session scraping, Walmart direct scraping, Walmart nationwide HTML scraping, Hannaford, and Stop & Shop/Shaw's direct scraping. Structured/API lanes continue independently.
 
+### Desktop fallback
+
+`scripts/openclaw-collector-vpn-run.ps1` is the temporary desktop path while the Pi management stack is unavailable. It fails closed unless the installed NordVPN service is already running, records the normal public IP, connects NordVPN, requires both a live Nord/OpenVPN adapter and a changed public IP, and only then injects `OPENCLAW_EGRESS_PROFILE=isolated` into the child collector process. The flag is removed and VPN disconnect is requested in a `finally` block.
+
 ## Verification
 
 Run:
