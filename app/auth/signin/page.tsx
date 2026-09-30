@@ -154,7 +154,7 @@ function SignInForm() {
 
                 <Link
                   href="/auth/forgot-password"
-                  className={`text-sm font-medium text-brand-400 hover:text-brand-300 ${
+                  className={`text-sm font-medium text-brand-600 hover:text-brand-700 dark:text-brand-400 dark:hover:text-brand-300 ${
                     isWorking ? 'pointer-events-none opacity-60' : ''
                   }`}
                   aria-disabled={isWorking}
@@ -216,7 +216,7 @@ function SignInForm() {
                 Don&apos;t have an account?{' '}
                 <Link
                   href="/auth/signup"
-                  className={`font-medium text-brand-400 hover:text-brand-300 ${
+                  className={`font-medium text-brand-600 hover:text-brand-700 dark:text-brand-400 dark:hover:text-brand-300 ${
                     isWorking ? 'pointer-events-none opacity-60' : ''
                   }`}
                   aria-disabled={isWorking}
@@ -227,7 +227,7 @@ function SignInForm() {
                 or{' '}
                 <Link
                   href="/auth/client-signup"
-                  className={`font-medium text-brand-400 hover:text-brand-300 ${
+                  className={`font-medium text-brand-600 hover:text-brand-700 dark:text-brand-400 dark:hover:text-brand-300 ${
                     isWorking ? 'pointer-events-none opacity-60' : ''
                   }`}
                   aria-disabled={isWorking}

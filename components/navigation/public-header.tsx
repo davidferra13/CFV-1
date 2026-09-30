@@ -228,11 +228,10 @@ export function PublicHeader({ user }: { user?: PublicHeaderUser | null }) {
         <div className="flex items-center gap-5 sm:gap-8">
           <Link href="/" className="flex items-center gap-2.5">
             <AppLogo size={36} className="shadow-sm" />
-            <span
-              className={`text-base font-display tracking-tight ${
-                solidChrome ? 'text-stone-100' : 'text-white'
-              }`}
-            >
+            {/* Theme-aware like the nav links beside it. The transparent header
+                sits over the light page top in light mode, where the old
+                hardcoded text-white wordmark was invisible. */}
+            <span className="text-base font-display tracking-tight text-stone-100">
               ChefFlow
             </span>
           </Link>
