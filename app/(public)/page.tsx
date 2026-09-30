@@ -63,7 +63,7 @@ const workflowSteps = [
 
 export default function Home() {
   return (
-    <main className="min-h-screen bg-[#120b08] text-white">
+    <div className="min-h-screen bg-[#120b08] text-white">
       <section className="mx-auto max-w-6xl px-4 pb-20 pt-16 sm:px-6 sm:pt-24">
         <div className="mx-auto max-w-4xl text-center">
           <p className="text-sm font-semibold uppercase tracking-[0.18em] text-orange-400">
@@ -254,25 +254,6 @@ export default function Home() {
         </Link>
       </section>
 
-      <footer className="border-t border-stone-800 py-8 text-center text-xs text-stone-500">
-        <div className="flex flex-wrap items-center justify-center gap-x-6 gap-y-3">
-          <Link href="/for-operators" className="hover:text-stone-300">
-            For chefs
-          </Link>
-          <Link href="/chefs" className="hover:text-stone-300">
-            Find a chef
-          </Link>
-          <Link href="/trust" className="hover:text-stone-300">
-            Trust
-          </Link>
-          <Link href="/terms" className="hover:text-stone-300">
-            Terms
-          </Link>
-          <Link href="/privacy" className="hover:text-stone-300">
-            Privacy
-          </Link>
-        </div>
-      </footer>
-    </main>
+    </div>
   )
 }
