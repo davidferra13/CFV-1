@@ -228,6 +228,13 @@ async function main() {
   const args = parseArgs(process.argv.slice(2))
   const results = []
 
+  results.push(
+    await runStep('capability completion claims', nodeCommand(),
+      ['--import', 'tsx', 'scripts/verify-capability-claims.mjs'], {
+        timeoutMs: args.stepTimeoutMs,
+      })
+  )
+
   if (!args.skipNav) {
     results.push(
       await runStep('chef nav audit', npmCommand(), ['run', 'verify:chef-nav'], {

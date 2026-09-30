@@ -2238,14 +2238,50 @@ export async function convertInquiryToEventWithContext(
       .eq('tenant_id', tenantId)
   }
 
-  const { data: existingMenu } = await db
-    .from('menus')
-    .select('id')
-    .eq('tenant_id', tenantId)
-    .eq('event_id', event.id)
-    .order('created_at', { ascending: true })
-    .limit(1)
-    .maybeSingle()
+  let inheritedMenuId: string | null = null
+  if (inquiry.selected_menu_id) {
+    const { materializeSelectedMenuForEvent } = await import(
+      '@/lib/menus/booking-menu-continuity'
+    )
+    const materialized = await materializeSelectedMenuForEvent({
+      db,
+      tenantId,
+      actorId,
+      sourceMenuId: inquiry.selected_menu_id,
+      eventId: event.id,
+      targetGuestCount: inquiry.confirmed_guest_count || 1,
+    })
+
+    const { error: eventMenuLinkError } = await db
+      .from('events')
+      .update({
+        menu_id: materialized.menuId,
+        course_count: materialized.courseCount,
+        updated_by: actorId,
+      })
+      .eq('id', event.id)
+      .eq('tenant_id', tenantId)
+
+    if (eventMenuLinkError) {
+      throw new UnknownAppError(
+        `Failed to link the selected menu to the event: ${eventMenuLinkError.message}`
+      )
+    }
+    inheritedMenuId = materialized.menuId
+  }
+
+  const existingMenu = inheritedMenuId
+    ? { id: inheritedMenuId }
+    : (
+        await db
+          .from('menus')
+          .select('id')
+          .eq('tenant_id', tenantId)
+          .eq('event_id', event.id)
+          .order('created_at', { ascending: true })
+          .limit(1)
+          .maybeSingle()
+      ).data
 
   if (!existingMenu?.id) {
     const dishNames = buildAutoMenuCourseNamesFromConversation(conversationText)
@@ -2616,14 +2652,50 @@ export async function convertInquiryToEvent(inquiryId: string) {
 
   // Auto-scaffold an operational menu from inquiry conversation so event PDFs are
   // immediately usable even before manual menu entry.
-  const { data: existingMenu } = await db
-    .from('menus')
-    .select('id')
-    .eq('tenant_id', user.tenantId!)
-    .eq('event_id', event.id)
-    .order('created_at', { ascending: true })
-    .limit(1)
-    .maybeSingle()
+  let inheritedMenuId: string | null = null
+  if (inquiry.selected_menu_id) {
+    const { materializeSelectedMenuForEvent } = await import(
+      '@/lib/menus/booking-menu-continuity'
+    )
+    const materialized = await materializeSelectedMenuForEvent({
+      db,
+      tenantId: user.tenantId!,
+      actorId: user.id,
+      sourceMenuId: inquiry.selected_menu_id,
+      eventId: event.id,
+      targetGuestCount: inquiry.confirmed_guest_count || 1,
+    })
+
+    const { error: eventMenuLinkError } = await db
+      .from('events')
+      .update({
+        menu_id: materialized.menuId,
+        course_count: materialized.courseCount,
+        updated_by: user.id,
+      })
+      .eq('id', event.id)
+      .eq('tenant_id', user.tenantId!)
+
+    if (eventMenuLinkError) {
+      throw new UnknownAppError(
+        `Failed to link the selected menu to the event: ${eventMenuLinkError.message}`
+      )
+    }
+    inheritedMenuId = materialized.menuId
+  }
+
+  const existingMenu = inheritedMenuId
+    ? { id: inheritedMenuId }
+    : (
+        await db
+          .from('menus')
+          .select('id')
+          .eq('tenant_id', user.tenantId!)
+          .eq('event_id', event.id)
+          .order('created_at', { ascending: true })
+          .limit(1)
+          .maybeSingle()
+      ).data
 
   if (!existingMenu?.id) {
     const dishNames = buildAutoMenuCourseNamesFromConversation(conversationText)

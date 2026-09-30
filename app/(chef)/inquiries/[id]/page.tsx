@@ -89,6 +89,8 @@ import {
   readPublicSeasonalMarketPulseIntentFromUnknownFields,
   type PublicSeasonalMarketPulseIntent,
 } from '@/lib/public/public-seasonal-market-pulse'
+import { getChefOperatorJobByInquiry } from '@/lib/operator-job/read-model'
+import { OperatorJobPath } from '@/components/operator-job/operator-job-path'
 
 function InquiryIntelligenceSkeleton() {
   return (
@@ -278,6 +280,8 @@ export default async function InquiryDetailPage({ params }: { params: { id: stri
     notFound()
   }
 
+  const operatorJourney = await getChefOperatorJobByInquiry(params.id)
+
   // Fetch platform record data (non-blocking, catches errors gracefully)
   const isMarketplaceInquiry = !!(inquiry as any).external_platform
   const [platformRecord, platformSnapshots, platformPayout] = isMarketplaceInquiry
@@ -448,6 +452,8 @@ export default async function InquiryDetailPage({ params }: { params: { id: stri
           <Button variant="ghost">Back to Pipeline</Button>
         </Link>
       </div>
+
+      <OperatorJobPath journey={operatorJourney} />
 
       {/* Confirmed inquiry warning - no event linked after commitment */}
       {!convertedEventId &&
