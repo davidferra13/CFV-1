@@ -29,7 +29,7 @@ Commands used Node **20.20.2**, matching the original CI runner, unless explicit
 | Visitor alert tests                                                                               | **5 passed**                                                                                |
 | Simulation Forge tests                                                                            | **19 passed**                                                                               |
 | Simulation Forge release                                                                          | **25 cases, zero violations**                                                               |
-| Full unit suite after root repairs                                                                | **3,438 Node tests: 3,306 passed, 132 failed, zero skipped; 60/60 Vitest tests passed**     |
+| Full unit suite after root repairs                                                                | **3,438 Node tests: 3,315 passed, 123 failed, zero skipped; 60/60 Vitest tests passed**     |
 | Original local unit run                                                                           | 3,349 Node tests: 3,205 passed, 144 failed; 60/60 Vitest tests passed                       |
 | Production dependency audit                                                                       | **79 reported: 6 low, 51 moderate, 21 high, 1 critical**; original 84 with 5 critical       |
 | Autonomous delivery contract                                                                      | Passed                                                                                      |
@@ -48,7 +48,7 @@ The original GitHub unit count was 141 failures. Local counts differ; do not sub
 The adjacent JSON records every observed failing unit TAP entry by file, all 171 line-budget violations, all strict-lint findings, and the remaining critical dependency advisories.
 
 - **Framework security:** Next `14.2.35` remains critical. Registry inspection finds no newer 14.x patch. The two critical advisory ranges end at `15.5.24`; clearing these requires a verified framework migration. Do not use `npm audit fix --force`, suppress the audit, or label the dependency gate green.
-- **Unit contracts:** 132 failures remain across multiple domains. Examples include tests importing missing `lib/post-event/learning-logic`, `lib/post-event/trust-loop-helpers`, and `lib/db/client`; pricing tests expecting legacy nonzero system defaults while production constants intentionally start at zero; database mocks that no longer match their action APIs; request-scope and incremental-cache setup; navigation and feature-gate alignment. These need domain-specific repairs, not deleted tests or restored obsolete business defaults.
+- **Unit contracts:** 123 failures remain across multiple domains in the final clean-install local run. Examples include tests importing missing `lib/post-event/learning-logic`, `lib/post-event/trust-loop-helpers`, and `lib/db/client`; pricing tests expecting legacy nonzero system defaults while production constants intentionally start at zero; database mocks that no longer match their action APIs; request-scope and incremental-cache setup; navigation and feature-gate alignment. These need domain-specific repairs, not deleted tests or restored obsolete business defaults.
 - **Previously skipped static gates:** file-size violations, conditional React hooks and other lint errors, nested interactive elements, and notification emitters all block the quality job after route coverage is repaired.
 - **Runtime/build:** the native regression firewall was invoked unchanged. The `tsx` CLI nav substep hit a local IPC `EPERM`; its equivalent Node import invocation passed. The firewall app typecheck passed; the firewall still failed its persona completion gate (four scenarios), canonical runtime identity/health and restart checks. No healthy canonical runtime was established at http://localhost:3100. Build and smoke cannot be represented as green while prerequisites fail.
 
@@ -64,3 +64,11 @@ Safe changes may be reviewed on the repair branch. Merge and deploy only after t
 - The first PR CI run, 36714019023, rejected the npm 11-generated protobuf lock layout under npm 10.8.2 (`Missing: protobufjs@8.6.6 from lock file`). The override was narrowed to the exact vulnerable protobuf version to preserve 7.x consumers, and the lockfile was regenerated using Node 20.20.2 and npm 10.8.2, matching CI. No install gate was bypassed.
 
 - Exact-tooling clean install passed: Node 20.20.2 / npm 10.8.2, `npm ci --legacy-peer-deps` (1,764 packages). `npm ls protobufjs --all` passed with no invalid ranges: 0.208.0 telemetry keeps protobuf 7.6.6; 0.212.0 telemetry uses 8.6.6. All 98 focused tests passed again after this clean install.
+
+- Final clean-install full unit verification: 3,438 Node tests, 3,315 pass / 123 fail / zero skipped; Vitest 60/60 pass. The earlier intermediate run reported 132 failures. The blocker JSON records only compact per-file failed TAP names, plus static gate findings.
+
+## GitHub verification of the final code
+
+Run [36714647360](https://github.com/davidferra13/CFV-1/actions/runs/36714647360) at code commit `15eaa393473ac59aa0f3ccfaba570e89c6dba5e5` completed: clean installs and Critical Tests **passed**; the route gate **passed 40/40**. The quality job failed next at the unchanged file-line budget. Production audit still reports **79 vulnerabilities, 1 critical (Next)**. Unit tests ran **3,438 cases: 3,321 passed, 117 failed, zero skipped**; all **60 Vitest tests passed**. Build and smoke were skipped because prerequisite gates failed.
+
+The remaining GitHub unit failures are explicitly listed under `githubVerification` in the adjacent JSON. Local and GitHub counts are kept separate. Subsequent evidence-only edits do not change the verified implementation. **Not fixed as a whole; do not merge or deploy.**
