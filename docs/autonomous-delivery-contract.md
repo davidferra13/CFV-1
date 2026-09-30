@@ -80,12 +80,24 @@ Project-specific rules may add stricter checks, but they must not restore a redu
 
 DFPrivateChef.com, Anthony's website/cheflicari.com, the weather app, ChefFlow, Chef Collect, and future products are separate release targets unless repository evidence explicitly proves otherwise. Inspect each target's own deployment mapping before shipping. Never use a successful deployment of one as evidence for another.
 
+## One Source of Truth, One Deployer (ChefFlow)
+
+Owner complaint 2026-09-30: "ChefFlow looks different every single time we work on something." Measured cause: 41 working copies, production served for months out of the dirty `Documents\CFv1` folder, finished UI work left uncommitted there (the 2026-09-24 chef Today/navigation pass was only recovered on 2026-09-30), and unregistered agents changing main and the production folder at the same time. These rules exist so the owner always sees the same app.
+
+1. **Only `origin/main` is ChefFlow.** Work that is not on main does not exist for the owner. Commit and push to main the moment it is verified (lifecycle steps 6 and 7). Uncommitted or branch-only UI work older than a working session is a defect, not a draft.
+2. **Production only ever serves main.** `Documents\CFv1-worktrees\production-live` stays checked out on `main` at exactly the commit it serves (`.next\BUILD_ID` equals `git rev-parse --short HEAD`). Never commit, cherry-pick, or create a branch inside `production-live`; do the work in your own worktree, push to main, then deploy main.
+3. **One deployer at a time.** Before building or swapping in `production-live`, register with `C:\Users\david\Desktop\AGENT COMMAND\agent-control\checkin.ps1 start -Agent <you> -Repo "Documents\CFv1-worktrees\production-live" -Task "<deploy commit>"`. If `checkin.ps1 who -Repo "Documents\CFv1-worktrees\production-live"` exits 3, or a `run-next-build` process is already running there, wait for it; do not start a second build. Release with `checkin.ps1 end` after production is verified.
+4. **Never serve a folder agents edit.** No dev server, `next start`, or tunnel may point production hostnames at `Documents\CFv1` or any feature worktree.
+5. **Before moving production, rescue stranded work.** Run `node scripts/stranded-work-scan.mjs` and commit or explicitly hand off anything it lists under `app/`, `components/`, or `lib/`, so a deploy never silently drops work someone could see before.
+6. **Direction changes are the owner's.** A change that alters what the public homepage or the chef Today page is for (who it addresses, its primary action) needs the owner's explicit instruction in the task. Record that instruction in the commit message.
+
 ## ChefFlow Release Mapping
 
 For this repository, re-verify these facts at runtime because historical documents conflict:
 
 - Primary release gate: `npm run regression:firewall`; use `npm run verify:release` for production website releases.
-- Current production deploy entrypoint in source: `bash scripts/deploy-prod.sh`.
+- Production runtime (verified 2026-09-30): `Documents\CFv1-worktrees\production-live` on main, served by `next start` on `127.0.0.1:3100`, supervised by `production-live\chefflow-watchdog.ps1` (launched by `scripts\watchdog-launcher.vbs`), public through the `chefflow-prod` Cloudflare tunnel. `scripts/deploy-prod.sh` targets a Docker build on 3200 that no hostname routes to; do not use it.
+- Zero-downtime deploy: `scripts/run-next-build.mjs` deletes `.next` before building, so never build into the live `.next`. Build with `NEXT_DIST_DIR=.next-staging` (and `NODE_ENV=production`) in `production-live`, confirm `.next-staging\BUILD_ID` equals HEAD and `prerender-manifest.json` exists, then stop the 3100 server, rename `.next` to `.next-prev` and `.next-staging` to `.next`; the watchdog relaunches in about 30 seconds. Roll back by the reverse rename.
 - Current documented production health URL: `https://app.cheflowhq.com/api/health/readiness?strict=1`.
 - Current documented revision URL: `https://app.cheflowhq.com/api/build-version`.
 - `dfprivatechef.com` appears in historical routing documentation; do not treat that as proof of the current DF Private Chef website deployment without checking the live mapping.
