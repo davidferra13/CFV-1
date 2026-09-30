@@ -90,6 +90,7 @@ Scanner: `/test-scan` skill
 | Book/inquire     | 5+     | -    | -   | -   | GAP: intake flow |
 | SEO guards       | ALL    | YES  | YES | YES | GOOD             |
 | Appetite engine  | /eat   | YES  | LIVE UI | - | VERIFIED         |
+| Chef partner network | 2 | YES (11 attribution/econ) | - | - | NEEDS-TEST: browser verification |
 
 ### Admin Portal (43 routes)
 

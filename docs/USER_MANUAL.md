@@ -631,3 +631,15 @@ ChefFlow is built and maintained by a solo developer. All features are free.
 
 - **Optional supporter contribution:** $12/month via Settings > Billing (cancel anytime)
 - **Feedback and bug reports:** Settings > Share Feedback
+
+## Chef Partner Network
+
+ChefFlow has a separate invitation-based booking-partner path for independent chefs.
+
+- `/chef-partners` explains the economics and what ChefFlow does before a chef accepts any work.
+- Existing clients and chef-generated leads remain chef-owned.
+- The chef controls price, availability, service area, menu, and whether to accept a booking.
+- Only qualifying ChefFlow-originated bookings processed through ChefFlow are commissionable under an accepted chef-specific schedule.
+- A later direct booking does not carry a perpetual ChefFlow commission merely because ChefFlow made an earlier introduction.
+- Unknown or disputed attribution is held for review instead of auto-charging a commission.
+- `/chef-partners/terms` contains the operational agreement draft and identifies the chef-specific schedule that must be accepted before commissionable work.

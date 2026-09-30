@@ -177,6 +177,7 @@ export const PUBLIC_UNAUTHENTICATED_PATHS = [
   '/acceptable-use',
   '/auth',
   '/chef-agreement',
+  '/chef-partners',
   '/client-terms',
   '/cookie-policy',
   '/data-request',

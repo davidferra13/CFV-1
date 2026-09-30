@@ -2159,3 +2159,22 @@ For Operators section: Why ChefFlow (`/for-operators`), Marketplace Chefs, Becom
 Resources: FAQ, Trust Center.
 Legal: Privacy Policy, Terms of Service.
 Newsletter signup + legal links at bottom.
+
+---
+
+## 24. Chef Partner Network (added 2026-09-24)
+
+### Public routes
+
+| Route                  | Mode      | What it shows                                                                                                                                                                                 |
+| ---------------------- | --------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `/chef-partners`       | browsing  | Invitation-based chef booking partnership economics, existing-client protection, attribution rules, sample commission math, workflow, and objection FAQ.                                      |
+| `/chef-partners/terms` | reviewing | Versioned operational partner-agreement draft covering source ownership, commission basis, direct rebooks, disputes, payments, professional responsibility, data boundaries, and termination. |
+
+### Attribution engine
+
+`lib/chef-network/attribution.ts` decides whether a booking is commissionable, non-commissionable, or requires review. Chef-owned demand, documented prior relationships, later direct rebooks, unresolved source ownership, open disputes, and bookings without an accepted agreement cannot auto-charge commission.
+
+### Persistence
+
+Migration `20260924000001_chef_partner_attribution.sql` adds versioned chef partner agreements, per-booking attribution snapshots, and an append-only attribution audit trail. The migration is additive and has been syntax-validated against local PostgreSQL inside a rolled-back transaction.
