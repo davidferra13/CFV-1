@@ -211,6 +211,8 @@ export const PUBLIC_UNAUTHENTICATED_PATHS = [
   '/chefs',
   '/survey',
   '/book',
+  '/find',
+  '/matches',
   '/compare',
   '/customers',
   '/embed',

@@ -42,7 +42,7 @@ export const PUBLIC_DINNER_CIRCLES_ENTRY: PublicCta = {
 
 export const PUBLIC_OPERATOR_ENTRY: PublicCta = {
   href: '/for-operators',
-  label: 'For Operators',
+  label: 'For Chefs',
 }
 
 export const PUBLIC_ROUTE_ROLE: Record<string, PublicRouteRole> = {

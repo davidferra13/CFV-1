@@ -24,7 +24,7 @@ describe('Public Surface Contract', () => {
     })
     assert.deepEqual(PUBLIC_OPERATOR_ENTRY, {
       href: '/for-operators',
-      label: 'For Operators',
+      label: 'For Chefs',
     })
     assert.match(PUBLIC_DIRECTORY_HELPER, /restaurants|caterers|food trucks/i)
   })
@@ -37,22 +37,34 @@ describe('Public Surface Contract', () => {
     assert.equal(PUBLIC_ROUTE_ROLE['/for-operators/walkthrough'], 'operator_software')
   })
 
-  it('keeps global navigation consumer-first while leaving operator entry visible', () => {
-    const hireAChefEntry = PUBLIC_NAV[0]
+  it('keeps chef software primary while preserving the consumer hiring path', () => {
+    const chefEntry = PUBLIC_NAV[0]
+    assert.ok(!isGroup(chefEntry))
+    if (isGroup(chefEntry)) {
+      throw new Error('Expected For Chefs to remain a single nav item')
+    }
+    assert.equal(chefEntry.href, '/for-operators')
+    assert.equal(chefEntry.label, 'For Chefs')
+    assert.equal(chefEntry.cta, true)
+
+    const pricingEntry = PUBLIC_NAV[1]
+    assert.ok(!isGroup(pricingEntry))
+    if (isGroup(pricingEntry)) {
+      throw new Error('Expected Pricing to remain a single nav item')
+    }
+    assert.equal(pricingEntry.href, '/pricing')
+
+    const hireAChefEntry = PUBLIC_NAV[2]
     assert.ok(isGroup(hireAChefEntry))
+    if (!isGroup(hireAChefEntry)) {
+      throw new Error('Expected Hire a Chef to remain a nav group')
+    }
     assert.equal(hireAChefEntry.label, 'Hire a Chef')
     assert.equal(hireAChefEntry.items.length, 7)
     assert.deepEqual(
       hireAChefEntry.items.map((item) => item.href),
       ['/book', '/chefs', '/services', '/gift-cards', '/how-it-works', '/trust', '/nearby']
     )
-
-    const operatorEntry = PUBLIC_NAV[1]
-    assert.ok(!isGroup(operatorEntry))
-    if (isGroup(operatorEntry)) {
-      throw new Error('Expected For Operators to remain a single nav item')
-    }
-    assert.equal(operatorEntry.href, '/for-operators')
   })
 
   it('keeps footer hierarchy aligned to the same public story', () => {
@@ -71,6 +83,7 @@ describe('Public Surface Contract', () => {
         'Dinner Circles',
       ]
     )
+    assert.equal(FOOTER_SECTIONS.forOperators.heading, 'For Chefs')
     assert.equal(FOOTER_SECTIONS.forOperators.links[0]?.href, '/for-operators')
   })
 
