@@ -1,7 +1,8 @@
 ---
 name: acknowledge
-description: Auto-acknowledge new inquiries within minutes. Sends a warm "got it, working on it" response so clients never sit in silence. Use when user says "acknowledge", "ack inquiries", or when morning report shows unacknowledged inquiries.
+description: User-invoked acknowledgment drafting workflow. Prepares drafts only when David explicitly asks; external delivery requires separate explicit approval.
 user-invocable: true
+disable-model-invocation: true
 ---
 
 # Acknowledge - Inquiry Auto-Ack
@@ -10,11 +11,7 @@ Clients should never wonder if their inquiry was received. This skill sends a wa
 
 ## Trigger Conditions
 
-Auto-fire when:
-
-- User says "acknowledge", "ack", "acknowledge inquiries"
-- `/client-pulse` shows new/unacknowledged inquiries
-- Morning report flags silent inquiries
+Run only when David explicitly invokes `/acknowledge` or explicitly asks to prepare acknowledgments. Never auto-fire from client-pulse, morning reports, timers, or inferred silence. Sending remains a separate explicit approval action.
 
 ## Step 1: Find Unacknowledged Inquiries
 
@@ -25,7 +22,7 @@ Query for inquiries that:
 - Were created in the last 7 days (older ones need a different approach)
 
 ```bash
-curl -s "http://localhost:3000/api/v2/inquiries?status=new,awaiting_chef" \
+curl -s "http://localhost:3100/api/v2/inquiries?status=new,awaiting_chef" \
   -H "Cookie: $(cat .auth/agent-cookie.txt 2>/dev/null || echo '')" \
   2>/dev/null
 ```

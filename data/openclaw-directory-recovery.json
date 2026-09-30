@@ -1,0 +1,14 @@
+{
+  "cursor": 150563,
+  "restored": 141764,
+  "processed": 143383,
+  "lastBatch": 783,
+  "inserted": 783,
+  "existing": 0,
+  "directoryCount": 143383,
+  "freeGb": 28.46,
+  "status": "complete",
+  "updatedAt": "2026-09-29T20:39:50.765Z",
+  "total": 143383,
+  "completedAt": "2026-09-30T12:40:17.392Z"
+}

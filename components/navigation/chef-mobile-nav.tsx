@@ -11,10 +11,11 @@ import {
   navGroups,
   resolveStandaloneTop,
   resolveMobileTabs,
-  actionBarItems,
+  resolveActionBarItems,
   createDropdownItems,
 } from './nav-config'
 import { DEFAULT_ENABLED_MODULES } from '@/lib/billing/modules'
+import { getArchetypeCopy } from '@/lib/archetypes/ui-copy'
 
 const DEFAULT_MODULE_SLUGS = new Set(DEFAULT_ENABLED_MODULES)
 
@@ -379,11 +380,13 @@ const MobileBottomTabBar = memo(function MobileBottomTabBar({
 
 // ---- MobileActionBarLinks (with pending nav feedback) ----
 const MobileActionBarLinks = memo(function MobileActionBarLinks({
+  items,
   pathname,
   searchParams,
   navFilter,
   onNavigate,
 }: {
+  items: NavItem[]
   pathname: string
   searchParams?: SearchParamsLike | null
   navFilter: string
@@ -393,7 +396,7 @@ const MobileActionBarLinks = memo(function MobileActionBarLinks({
 
   return (
     <div className="space-y-0.5">
-      {actionBarItems
+      {items
         .filter((item) => !navFilter || item.label.toLowerCase().includes(navFilter.toLowerCase()))
         .map((item) => {
           const Icon = item.icon
@@ -439,6 +442,7 @@ export function ChefMobileNav({
   tenantId,
   chefName,
   chefAvatar,
+  archetype,
 }: {
   primaryNavHrefs?: string[]
   mobileTabHrefs?: string[]
@@ -456,6 +460,7 @@ export function ChefMobileNav({
   tenantId: string
   chefName?: string | null
   chefAvatar?: string | null
+  archetype?: string | null
 }) {
   const pathname = usePathname() ?? ''
   const searchParams = useSearchParams()
@@ -467,15 +472,24 @@ export function ChefMobileNav({
   const [mobileQuickCreateOpen, setMobileQuickCreateOpen] = useState(false)
   const [navFilter, setNavFilter] = useState('')
   const { has: hasPermission } = usePermissions()
-  const tabItems = useMemo(
-    () =>
+  const eventLabel = getArchetypeCopy(archetype).eventsLabel
+  const tabItems = useMemo(() => {
+    const items =
       focusMode && !isPrivileged
         ? resolveStandaloneTop([...STRICT_FOCUS_PRIMARY_SHORTCUT_HREFS]).map((item) => ({
             ...item,
             label: item.href === '/dashboard' ? 'Today' : item.label,
           }))
-        : resolveMobileTabs(mobileTabHrefs),
-    [focusMode, isPrivileged, mobileTabHrefs]
+        : resolveMobileTabs(mobileTabHrefs)
+
+    return items.map((item) => (item.href === '/events' ? { ...item, label: eventLabel } : item))
+  }, [eventLabel, focusMode, isPrivileged, mobileTabHrefs])
+  const primaryItems = useMemo(
+    () =>
+      resolveActionBarItems(primaryNavHrefs).map((item) =>
+        item.href === '/events' ? { ...item, label: eventLabel } : item
+      ),
+    [eventLabel, primaryNavHrefs]
   )
 
   // Filter nav groups by role + focus mode.
@@ -716,6 +730,7 @@ export function ChefMobileNav({
 
               {/* Action Bar items (unified with desktop) */}
               <MobileActionBarLinks
+                items={primaryItems}
                 pathname={pathname}
                 searchParams={searchParams}
                 navFilter={navFilter}

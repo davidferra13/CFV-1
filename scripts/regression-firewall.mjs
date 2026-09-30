@@ -200,7 +200,9 @@ async function runAffectedRouteProbes(options) {
     )
   }
   if (omitted > 0) {
-    console.log(`[regression-firewall] route probes omitted ${omitted} routes after limit ${options.limit}`)
+    console.log(
+      `[regression-firewall] route probes omitted ${omitted} routes after limit ${options.limit}`
+    )
   }
 
   const failures = probes.filter((probe) => !probe.ok)
@@ -291,9 +293,14 @@ async function main() {
           timeoutMs: 180_000,
         })
       )
-      runtime = await runStep('canonical runtime verify after restart', npmCommand(), ['run', 'dev:verify'], {
-        timeoutMs: 120_000,
-      })
+      runtime = await runStep(
+        'canonical runtime verify after restart',
+        npmCommand(),
+        ['run', 'dev:verify'],
+        {
+          timeoutMs: 120_000,
+        }
+      )
       results.push(runtime)
     }
 
@@ -305,9 +312,14 @@ async function main() {
         })
       )
       results.push(
-        await runStep('canonical runtime verify after route probes', npmCommand(), ['run', 'dev:verify'], {
-          timeoutMs: 120_000,
-        })
+        await runStep(
+          'canonical runtime verify after route probes',
+          npmCommand(),
+          ['run', 'dev:verify'],
+          {
+            timeoutMs: 120_000,
+          }
+        )
       )
     }
   }

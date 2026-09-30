@@ -137,13 +137,21 @@ type PrimaryShortcutOption = NavItem & { context: string }
 // subMenu: curated quick-access links shown in a collapsible drawer under the hub link
 // coreFeature: true = shown in Focus Mode
 // adminOnly items are hidden for non-admins
-// The chef nav is five links. Everything else stays on disk, stays exported, and
-// stays reachable by URL through hiddenNavItems. Nothing here is deleted.
+// Amendment 2 comfort-model fallback: seven daily drivers, no feature sprawl.
+// A saved chef/archetype preference can replace these at runtime; everything
+// else stays reachable through contextual navigation and the feature index.
 export const standaloneTop: NavItem[] = [
   {
     href: '/dashboard',
     label: 'Today',
     icon: LayoutDashboard,
+    coreFeature: true,
+    tier: 'primary',
+  },
+  {
+    href: '/calendar',
+    label: 'Calendar',
+    icon: Calendar,
     coreFeature: true,
     tier: 'primary',
   },
@@ -162,16 +170,23 @@ export const standaloneTop: NavItem[] = [
     tier: 'primary',
   },
   {
-    href: '/finance',
-    label: 'Money',
-    icon: DollarSign,
+    href: '/menus',
+    label: 'Menus',
+    icon: UtensilsCrossed,
     coreFeature: true,
     tier: 'primary',
   },
   {
-    href: '/settings',
-    label: 'Settings',
-    icon: Settings,
+    href: '/inbox',
+    label: 'Inbox',
+    icon: Inbox,
+    coreFeature: true,
+    tier: 'primary',
+  },
+  {
+    href: '/finance',
+    label: 'Finance',
+    icon: DollarSign,
     coreFeature: true,
     tier: 'primary',
   },
@@ -189,14 +204,14 @@ const legacyStandaloneTop: NavItem[] = [
   { href: '/inbox', label: 'Inbox', icon: Inbox, coreFeature: true, tier: 'primary' },
   {
     href: '/inquiries',
-    label: 'Pipeline',
+    label: 'Inquiries',
     icon: ChatTeardropText,
     coreFeature: true,
     tier: 'primary',
   },
   {
     href: '/events',
-    label: 'Events',
+    label: 'Dinners',
     icon: CalendarDays,
     coreFeature: true,
     tier: 'primary',
@@ -217,7 +232,7 @@ const legacyStandaloneTop: NavItem[] = [
   },
   {
     href: '/finance',
-    label: 'Money',
+    label: 'Finance',
     icon: DollarSign,
     coreFeature: true,
     tier: 'primary',
@@ -243,7 +258,7 @@ export const navGroups: NavGroup[] = [
           { href: '/analytics/client-ltv', label: 'Client Value' },
           { href: '/analytics/demand', label: 'Demand Heatmap' },
           { href: '/analytics/demand/ingredients', label: 'Ingredient Demand' },
-          { href: '/analytics/pipeline', label: 'Pipeline Forecast' },
+          { href: '/analytics/pipeline', label: 'Inquiry Forecast' },
           { href: '/analytics/reconciliation', label: 'Payment Matching' },
           { href: '/analytics/referral-sources', label: 'Referral Sources' },
         ],
@@ -845,7 +860,7 @@ export const navGroups: NavGroup[] = [
       },
       {
         href: '/finance/ledger',
-        label: 'Money',
+        label: 'Ledger',
         icon: NotebookIcon,
         children: [
           { href: '/finance/ledger/adjustments', label: 'Adjustments' },
@@ -1158,7 +1173,7 @@ export const navGroups: NavGroup[] = [
   },
   {
     id: 'pipeline',
-    label: 'Pipeline',
+    label: 'Inquiries',
     icon: Funnel,
     module: 'pipeline',
     items: [
@@ -1226,7 +1241,7 @@ export const navGroups: NavGroup[] = [
       },
       {
         href: '/pipeline',
-        label: 'Pipeline Board',
+        label: 'Inquiry Board',
         icon: Kanban,
       },
       {
@@ -1251,7 +1266,7 @@ export const navGroups: NavGroup[] = [
           { href: '/prospecting/clusters', label: 'Clusters' },
           { href: '/prospecting/import', label: 'Import Leads' },
           { href: '/prospecting/openclaw', label: 'Auto-Found Leads' },
-          { href: '/prospecting/pipeline', label: 'Pipeline' },
+          { href: '/prospecting/pipeline', label: 'Prospecting Board' },
         ],
       },
       {
@@ -1587,7 +1602,7 @@ for (const group of navGroups) {
   }
 }
 
-// Footer links, folded into hiddenNavItems. Settings is now a primary link.
+// Footer links, folded into hiddenNavItems. Settings remains reachable through the account/settings surfaces.
 const legacyStandaloneBottom: NavItem[] = [
   { href: '/tables', label: 'Tables', icon: Armchair },
   { href: '/events/cannabis', label: 'Cannabis Portal', icon: Flower },
@@ -1601,10 +1616,10 @@ export const standaloneBottom: NavItem[] = []
 
 export const mobileTabItems: NavItem[] = [
   { href: '/dashboard', label: 'Today', icon: LayoutDashboard },
+  { href: '/calendar', label: 'Calendar', icon: CalendarDays },
+  { href: '/events', label: 'Dinners', icon: CalendarDays },
   { href: '/inbox', label: 'Inbox', icon: Inbox },
-  { href: '/inquiries', label: 'Pipeline', icon: ChatTeardropText },
-  { href: '/events', label: 'Events', icon: CalendarDays },
-  { href: '/daily', label: 'Daily Ops', icon: ListChecks },
+  { href: '/clients', label: 'Clients', icon: Users },
 ]
 
 // All available options for mobile tab customization.
@@ -1613,12 +1628,12 @@ export const MOBILE_TAB_OPTIONS: NavItem[] = [
   { href: '/dashboard', label: 'Today', icon: LayoutDashboard },
   { href: '/daily', label: 'Daily Ops', icon: ListChecks },
   { href: '/inbox', label: 'Inbox', icon: Inbox },
-  { href: '/events', label: 'Events', icon: CalendarDays },
+  { href: '/events', label: 'Dinners', icon: CalendarDays },
   { href: '/tables', label: 'Tables', icon: Armchair },
   { href: '/clients', label: 'Clients', icon: Users },
   { href: '/culinary', label: 'Culinary', icon: ChefHat },
   { href: '/calendar', label: 'Calendar', icon: CalendarDays },
-  { href: '/inquiries', label: 'Pipeline', icon: ChatTeardropText },
+  { href: '/inquiries', label: 'Inquiries', icon: ChatTeardropText },
   { href: '/circles', label: 'Circles', icon: MessagesSquare },
   { href: '/menus', label: 'Menus', icon: UtensilsCrossed },
   { href: '/recipes', label: 'Recipes', icon: BookOpen },
@@ -1965,6 +1980,13 @@ function buildPrimaryShortcutOptions(): PrimaryShortcutOption[] {
     }
   }
 
+  // Archetype presets may promote a destination that normally lives only in
+  // the mobile/customization pool (for example /chat for a private chef).
+  // Include that pool so a saved preference never evaporates at render time.
+  for (const item of MOBILE_TAB_OPTIONS) {
+    pushPrimaryShortcut(map, { ...item, context: 'Navigation options' })
+  }
+
   for (const item of standaloneBottom) {
     pushPrimaryShortcut(map, { ...item, context: 'Footer' })
   }
@@ -1996,7 +2018,7 @@ export function resolveStandaloneTop(preferredHrefs?: string[] | null): NavItem[
     resolved.push({ ...option })
   }
 
-  // Hard cap: the chef nav is five links, so a saved preference cannot grow it.
+  // Hard cap: primary shortcuts stay within the seven-item comfort-model budget.
   if (resolved.length > 0) return resolved.slice(0, standaloneTop.length)
   return standaloneTop.map((item) => ({ ...item }))
 }
@@ -2005,8 +2027,7 @@ export function getPrimaryShortcutOptions() {
   return PRIMARY_SHORTCUT_OPTIONS.map(({ href, label, context }) => ({ href, label, context }))
 }
 
-// Action Bar shortcuts, folded into hiddenNavItems. The sidebar carries five links,
-// so the bar renders no navigation of its own in this slice.
+// Legacy Action Bar shortcuts remain indexed so no destination disappears.
 const legacyActionBarItems: NavItem[] = [
   { href: '/dashboard', label: 'Today', icon: LayoutDashboard },
   { href: '/inbox', label: 'Inbox', icon: Inbox },
@@ -2023,9 +2044,16 @@ const legacyActionBarItems: NavItem[] = [
   { href: '/finance/invoices', label: 'Invoices', icon: Receipt },
 ]
 
-// The Action Bar is what actually paints the primary links in the desktop sidebar, so it
-// carries the same five as standaloneTop. Emptying it left the sidebar with no nav at all.
+// Fallback daily drivers. Desktop/mobile replace this with the chef's saved
+// primary_nav_hrefs when present.
 export const actionBarItems: NavItem[] = standaloneTop
+
+export function resolveActionBarItems(preferredHrefs?: string[] | null): NavItem[] {
+  if (preferredHrefs && preferredHrefs.length > 0) {
+    return resolveStandaloneTop(preferredHrefs)
+  }
+  return actionBarItems.map((item) => ({ ...item }))
+}
 
 // Every nav entry the chef nav no longer renders. Still exported, still typed, still
 // live by URL. all-features-collapse.tsx renders this behind one disclosure.
@@ -2038,9 +2066,7 @@ export const hiddenNavItems: NavGroup[] = [
     module: 'more',
     items: [...legacyStandaloneTop, ...legacyActionBarItems, ...legacyStandaloneBottom]
       .filter((item) => !standaloneTop.some((primary) => primary.href === item.href))
-      .filter(
-        (item, index, all) => all.findIndex((other) => other.href === item.href) === index
-      ),
+      .filter((item, index, all) => all.findIndex((other) => other.href === item.href) === index),
   },
 ]
 

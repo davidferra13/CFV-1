@@ -49,12 +49,15 @@ const nextConfig = {
   // enough time on resource-constrained build environments (default 60s).
   staticPageGenerationTimeout: 180,
   experimental: {
+    // Keep the production compiler in a worker so this very large module graph does not
+    // compete with the parent Next process for the same V8 heap.
+    webpackBuildWorker: true,
     // Large shared icon/chart barrels otherwise dominate the module graph during production builds.
     optimizePackageImports: ['@phosphor-icons/react', 'recharts', 'lucide-react', 'date-fns'],
     // Next 14 still uses the experimental flag for keeping server-only SDKs out of the
     // RSC/route-handler bundle graph. These packages are only instantiated on Node.
     serverComponentsExternalPackages: ['resend', 'stripe', 'svix', '@resvg/resvg-js'],
-    cpus: 2,
+    cpus: 1,
   },
   // Allow LAN access in development so internal /_next assets are not
   // rejected as cross-origin. Extra hosts can be added via NEXT_ALLOWED_DEV_ORIGINS=host1,host2

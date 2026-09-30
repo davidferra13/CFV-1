@@ -22,7 +22,7 @@ Auto-fire when:
 Query for the nearest future event:
 
 ```bash
-curl -s "http://localhost:3000/api/v2/events?upcoming=true&limit=1" \
+curl -s "http://localhost:3100/api/v2/events?upcoming=true&limit=1" \
   -H "Cookie: $(cat .auth/agent-cookie.txt 2>/dev/null || echo '')" \
   2>/dev/null
 ```

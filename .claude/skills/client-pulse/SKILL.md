@@ -27,7 +27,7 @@ Auto-fire when:
 Hit the local server to get pulse data:
 
 ```bash
-curl -s http://localhost:3000/api/v2/clients/pulse \
+curl -s http://localhost:3100/api/v2/clients/pulse \
   -H "Content-Type: application/json" \
   -H "Cookie: $(cat .auth/agent-cookie.txt 2>/dev/null || echo '')" \
   2>/dev/null
@@ -36,7 +36,7 @@ curl -s http://localhost:3000/api/v2/clients/pulse \
 If the API endpoint doesn't exist yet, fall back to querying the database directly:
 
 ```bash
-curl -s http://localhost:3000/api/trpc/clients.list 2>/dev/null
+curl -s http://localhost:3100/api/trpc/clients.list 2>/dev/null
 ```
 
 Or read `lib/clients/pulse-actions.ts` and understand the `getClientPulse()` function to know what data it returns. The function queries:

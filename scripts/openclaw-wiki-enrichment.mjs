@@ -28,7 +28,7 @@
  */
 
 import postgres from 'postgres'
-import { readFileSync } from 'fs'
+import dotenv from 'dotenv'
 import { fileURLToPath } from 'url'
 import { dirname, join } from 'path'
 
@@ -37,14 +37,7 @@ import { dirname, join } from 'path'
 // ---------------------------------------------------------------------------
 
 const __dir = dirname(fileURLToPath(import.meta.url))
-
-try {
-  const env = readFileSync(join(__dir, '../.env.local'), 'utf8')
-  for (const line of env.split('\n')) {
-    const m = line.match(/^([A-Z_][A-Z0-9_]*)=(.*)$/)
-    if (m) process.env[m[1]] = m[2].replace(/^["']|["']$/g, '')
-  }
-} catch {}
+dotenv.config({ path: join(__dir, '../.env.local') })
 
 const DATABASE_URL  = process.env.DATABASE_URL || 'postgresql://postgres:postgres@127.0.0.1:54322/postgres'
 const USDA_API_KEY  = process.env.USDA_FDC_API_KEY || 'DEMO_KEY'

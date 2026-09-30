@@ -1,7 +1,8 @@
 ---
 name: quick-update
-description: Send a one-liner status update to a client. Picks the right channel, drafts in David's voice, sends via Remy. Use when user says "tell [client]", "update [client]", "let them know", or wants to break silence with a client.
+description: User-invoked status-drafting workflow. Prepares a short draft only when David explicitly asks; external delivery requires separate explicit approval.
 user-invocable: true
+disable-model-invocation: true
 ---
 
 # Quick Update
@@ -10,7 +11,7 @@ One-liner status update to any client. Breaks silence fast.
 
 ## Trigger Conditions
 
-Auto-fire when:
+This skill is user-invoked only and cannot auto-fire. Historical trigger examples below do not grant send authority:
 
 - User says "tell Sarah...", "update Mike...", "let [client] know..."
 - User wants to send a quick status to a client
@@ -29,7 +30,7 @@ Auto-fire when:
 Parse the client name from the command. Search for them:
 
 ```bash
-curl -s "http://localhost:3000/api/v2/clients?search=[name]" \
+curl -s "http://localhost:3100/api/v2/clients?search=[name]" \
   -H "Cookie: $(cat .auth/agent-cookie.txt 2>/dev/null || echo '')" \
   2>/dev/null
 ```

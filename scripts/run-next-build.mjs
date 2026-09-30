@@ -103,12 +103,12 @@ async function stageBuildSurface(rootDir, surfaceName) {
   const backupDir = join(rootDir, `.app-build-backup-${surfaceName}-${process.pid}-${Date.now()}`)
 
   if (!(await pathExists(appDir))) {
-    throw new Error(`[run-next-build] Cannot stage build surface "${surfaceName}" because /app is missing.`)
+    throw new Error(
+      `[run-next-build] Cannot stage build surface "${surfaceName}" because /app is missing.`
+    )
   }
 
-  console.log(
-    `[run-next-build] Staging build surface "${surfaceName}": ${manifest.description}`
-  )
+  console.log(`[run-next-build] Staging build surface "${surfaceName}": ${manifest.description}`)
 
   await rename(appDir, backupDir)
 
@@ -174,22 +174,31 @@ async function main() {
   const tempTsconfigPath = 'tsconfig.next.json'
   const buildSurface = String(process.env.NEXT_BUILD_SURFACE || '').trim()
   const distDirName = String(process.env.NEXT_DIST_DIR || '').trim() || '.next'
+  // Windows 11 build 26200 can fast-fail Node/V8 with 0xC0000409 while Maglev
+  // optimizes large build workloads. Keep the workaround scoped to the production
+  // build child; set NEXT_BUILD_ENABLE_MAGLEV=1 to opt back in when upstream is fixed.
+  const disableMaglev = process.platform === 'win32' && process.env.NEXT_BUILD_ENABLE_MAGLEV !== '1'
+  const childNodeArgs = disableMaglev ? ['--no-maglev'] : []
   const restoreBuildSurface = await stageBuildSurface(rootDir, buildSurface)
   let exitCode = 1
 
   try {
     await prepareBuildDist(rootDir, distDirName)
 
-    const child = spawn(process.execPath, [nextCliPath, 'build', ...forwardedArgs], {
-      stdio: 'inherit',
-      shell: false,
-      detached: process.platform !== 'win32',
-      env: {
-        ...process.env,
-        NODE_OPTIONS: nodeOptions,
-        NEXT_TSCONFIG_PATH: tempTsconfigPath,
-      },
-    })
+    const child = spawn(
+      process.execPath,
+      [...childNodeArgs, nextCliPath, 'build', ...forwardedArgs],
+      {
+        stdio: 'inherit',
+        shell: false,
+        detached: process.platform !== 'win32',
+        env: {
+          ...process.env,
+          NODE_OPTIONS: nodeOptions,
+          NEXT_TSCONFIG_PATH: tempTsconfigPath,
+        },
+      }
+    )
 
     const stopChild = (signal = 'SIGTERM') => {
       stopChildTree(child, signal)
@@ -227,7 +236,6 @@ async function main() {
         `[run-next-build] ${changed ? 'Stamped' : 'Verified'} public/sw.js with BUILD_ID ${buildId}.`
       )
     }
-
   } finally {
     if (restoreBuildSurface) {
       await restoreBuildSurface()

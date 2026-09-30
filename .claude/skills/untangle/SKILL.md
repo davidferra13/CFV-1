@@ -55,7 +55,7 @@ Ask: "Good to commit in this order? Move anything?"
 For each proposed commit:
 
 1. `git add [specific files]` (NEVER `git add -A`)
-2. `git commit -m "message\n\nCo-Authored-By: Claude Opus 4.6 <noreply@anthropic.com>"`
+2. `git commit -m "message\n\nCo-Authored-By: Claude <noreply@anthropic.com>"`
 3. Verify commit succeeded
 4. Move to next group
 

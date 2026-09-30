@@ -38,9 +38,9 @@
 | Feature touches Remy-accessible area | `/remy-gate`                     | Ensure Remy write parity                    |
 | Feature discussion concluded         | `/audit`                         | Lock down before moving on                  |
 | "Who's waiting" / client silence     | `/client-pulse`                  | Show clients needing response               |
-| "Tell [client]..." / update client   | `/quick-update`                  | Draft and send status update                |
+| Explicit `/quick-update` / client ask | `/quick-update`                  | User-invoked draft; send only after approval |
 | "Let me tell you a recipe..."        | `/brain-dump`                    | Capture recipe from memory                  |
-| Unacked inquiries found              | `/acknowledge`                   | Bulk-ack new inquiries                      |
+| Explicit `/acknowledge` request       | `/acknowledge`                   | User-invoked acknowledgment drafting only   |
 | "Next dinner" / "what's coming up"   | `/next-dinner`                   | Full event briefing                         |
 | "Recipe blitz" / batch recipes       | `/recipe-blitz`                  | Rapid-fire batch recipe capture             |
 | "Money check" / "who owes me"        | `/money-check`                   | Quick P&L snapshot                          |
@@ -60,7 +60,7 @@
 
 | Behavior                     | When                                                             | How                                                                                    |
 | ---------------------------- | ---------------------------------------------------------------- | -------------------------------------------------------------------------------------- |
-| **Check server before work** | Before any localhost testing/verification                        | `curl -s localhost:3000`, if down: `bash scripts/services.sh up`                       |
+| **Check server before work** | Before any localhost testing/verification                        | Reuse `http://localhost:3100`; if stale/broken, use the canonical dev-runtime restart path |
 | **Check services on start**  | First message of session                                         | `bash scripts/services.sh status`, kill garbage silently                               |
 | **TDD-first (default)**      | When building any new feature, fix, or significant change        | Write test first (RED), implement minimum to pass (GREEN), refactor. Small steps only  |
 | **Run tsc after TS edits**   | After completing a logical unit of work (not every edit)         | `npx tsc --noEmit --skipLibCheck`, fix errors before moving on                         |
@@ -188,15 +188,15 @@ Different names are intentional. Don't "fix" one to match another.
 | "Should I update the docs?"           | If you changed UI/features, update them.      |
 | "Want me to run the tests?"           | If you changed code, run them.                |
 | "Should I check the build?"           | Check build-state.md first. Skip if green.    |
-| "Should I restart the dev server?"    | No. Use the running one. Core Mandate #9.     |
+| "Should I restart the dev server?"    | Reuse 3100; restart only if stale/broken. Core Mandate #4. |
 | "Should I run next build to verify?"  | Only if you changed types. Check freshness.   |
 | "Where was this discussed before?"    | Check session digests, MemPalace, memory.     |
 | "What's the current state of X?"      | Read build-state.md, session-log.md, git log. |
 | "Should I clean up imports?"          | Clean them. Always.                           |
-| "Is the server on port 3000 or 3100?" | 3000. Always.                                 |
-| "Should I push to GitHub?"            | At session end, yes. Always.                  |
+| "Is the server on port 3000 or 3100?" | 3100 for canonical ChefFlow dev work.         |
+| "Should I push to GitHub?"            | After verified task completion, through the approval broker when present. |
 | "Which branch?"                       | main, unless told otherwise.                  |
 
 **The test:** "Could I answer this by reading a file, running a command, or checking memory?" If yes, do that.
 
-**Only ask about:** irreversible actions (DB drops, deploys, force pushes), ambiguous product decisions, scope choices.
+**Only ask about:** irreversible/destructive data actions, ambiguous product decisions, external/client contact, credential or MFA ceremonies, missing approval-broker authority, and scope choices that materially change the product.

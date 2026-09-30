@@ -5,12 +5,7 @@
 // NOT a server action file - no 'use server'.
 
 export type ArchetypeId =
-  | 'private-chef'
-  | 'caterer'
-  | 'meal-prep'
-  | 'restaurant'
-  | 'food-truck'
-  | 'bakery'
+  'private-chef' | 'caterer' | 'meal-prep' | 'restaurant' | 'food-truck' | 'bakery'
 
 export type ArchetypeDefinition = {
   id: ArchetypeId
@@ -50,12 +45,12 @@ export const ARCHETYPES: ArchetypeDefinition[] = [
     enabledModules: [...CORE, 'pipeline'],
     primaryNavHrefs: [
       '/dashboard',
-      '/inbox',
-      '/clients',
-      '/inquiries',
-      '/chat',
       '/calendar',
       '/events',
+      '/clients',
+      '/menus',
+      '/inbox',
+      '/finance',
     ],
     mobileTabHrefs: ['/dashboard', '/inbox', '/events', '/clients', '/calendar'],
   },

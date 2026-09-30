@@ -1,8 +1,9 @@
 # ChefFlow V1 - Project Rules
 
 @docs/autonomous-delivery-contract.md
+@AGENTS.md
 
-This file is read by Claude Code at the start of every conversation. These rules are mandatory.
+This file is read by Claude Code at the start of every conversation. ChefFlow-specific rules here and in `AGENTS.md` override generic user-level default-stack assumptions. These rules are mandatory.
 
 ---
 
@@ -12,10 +13,10 @@ This file is read by Claude Code at the start of every conversation. These rules
 > 2. **Keep moving.** If you know the next step, do it. No unnecessary back-and-forth.
 > 3. **Be terse.** No caveats, no restating, no multiple options when one is right.
 > 4. **Use the canonical app server.** Reuse `http://localhost:3100` for ChefFlow app work. If it is stale or broken, restart it. Do not start duplicate app servers on random ports.
-> 5. **FIX IT, DON'T REPORT IT.** Broken/dirty/unhealthy = fix it silently. Never report without fixing.
+> 5. **FIX WITHIN SCOPE, THEN REPORT CLEARLY.** Repair normal defects that are inside the authorized task, verify the repair, and state what changed. Read-only/diagnostic requests stay read-only, and genuine external or owner-only blockers are reported precisely.
 > 6. **Act, don't ask.** If you can determine the answer from context, code, memory, or prior conversations, act. Only ask about irreversible actions, ambiguous product decisions, or unspecified scope.
-> 7. **DELEGATE BUILDS.** Main session = architect/coordinator. Build work goes to parallel agents (Agent tool, `model: "haiku"` for mechanical, `model: "opus"` for complex). Only build directly for tiny fixes (< 20 lines) or debugging requiring conversation context. Dispatch multiple agents in parallel when tasks are independent. NEVER single-handedly build an entire feature in main session.
-> 8. **SHIP THE RESULT.** An explicit build, fix, implement, proceed, do it, keep building, or ship request includes verification, a task-scoped commit, push, production deployment for website/runtime work, and live verification. Never ask for separate commit, push, publish, or deploy permission. The build queue tracks the work; it does not pause it.
+> 7. **DELEGATE IN ONE ORDER.** Use Codex first for clear spec-following implementation. Use `chefflow-builder` when ChefFlow-specific project context matters, `haiku-worker` only for mechanical low-judgment work, and `opus-advisor` only for hard strategic decisions. The main session may implement tiny fixes (< 20 lines) or debugging that requires conversation context. Parallelize only non-overlapping work.
+> 8. **SHIP THE RESULT.** An explicit build, fix, implement, proceed, do it, keep building, or ship request includes verification, a task-scoped commit, push, production deployment for website/runtime work, and live verification. The build queue tracks the work; it does not pause it. When the shared approval broker is present, consequential pushes/deploys/merges must route through it and may not bypass its authority; existing standing authorization should be reused so the user is not asked twice.
 
 ---
 
@@ -25,9 +26,9 @@ This file is read by Claude Code at the start of every conversation. These rules
 | ------------ | ------------- | ----------------- | --------- | ---------------------------------------------------- |
 | **Local**    | Gemma 4 (e4b) | `ollama-delegate` | $0        | Mechanical bulk work. Drafts, boilerplate, summaries |
 | **Codex**    | Codex CLI     | `codex exec`      | Flat-rate | Spec-following builds, tests, UI, single-concern     |
-| **Worker**   | Haiku 4. to 5 | `haiku-worker`    | Cheap     | Judgment-light Claude agent tasks                    |
-| **Executor** | Opus 4.6      | (main session)    | Standard  | All normal work. Default                             |
-| **Advisor**  | Opus 4.6      | `opus-advisor`    | Expensive | Hard decisions only                                  |
+| **Worker**   | Haiku (`haiku`) | `haiku-worker`    | Low       | Judgment-light Claude agent tasks                    |
+| **Executor** | Opus (`opus`) | (main session)    | Included/quota | Normal high-judgment Claude work                 |
+| **Advisor**  | Opus (`opus`) | `opus-advisor`    | Premium reasoning | Hard decisions only                          |
 
 ### MODEL SELECTION
 
@@ -78,7 +79,7 @@ Forbidden in UI, errors, emails, localStorage, metadata. Use "system" or "engine
 
 ## ANTI-LOOP RULE (MANDATORY)
 
-**3-Strike Rule:** Same approach fails 3 times = STOP. Commit partial progress, report, let user decide. Forward progress (error A fixed, new error B) is not a strike.
+**3-Strike Strategy Switch:** If the same approach fails 3 times, stop repeating that approach, preserve the evidence, and switch strategy or isolate the failing layer. Continue toward verified closure unless there is a genuine owner-only or external blocker. Forward progress (error A fixed, new error B) is not a strike.
 
 ---
 
@@ -124,12 +125,13 @@ Never create `@ts-nocheck` files. Existing ones must not export callable functio
 
 ## SKILLS ARE REFLEXES (HOOK-ASSISTED)
 
-Skills auto-fire on context triggers. Four are now hook-enforced (can't be skipped):
+Three behaviors are hook-enforced:
 
-- **Context-load** on session start (`context-load-guard.sh`)
+- **Context-load** on the first tool call (`context-load-guard.sh`)
 - **Compliance check** after every Edit/Write (`compliance-guard.sh`)
 - **Review reminder** before git commit (`commit-guard.sh`)
-- **Wire-audit** after every build (`/wire-audit`): checks 30 integration domains with relevance scoring. No build is done until wire-audit runs. Include "Run /wire-audit before marking done" in every agent dispatch prompt.
+
+**Wiring audit is a required closeout gate, not a hook.** Run `/wiring-audit` after builds when relevant; the native regression firewall also runs its wiring checks.
 
 All other skill triggers, autonomous behaviors, and the full skill catalog: `@docs/CLAUDE-SKILLS-REFERENCE.md`
 
@@ -150,7 +152,7 @@ All other skill triggers, autonomous behaviors, and the full skill catalog: `@do
 1. `bash scripts/session-briefing.sh` then read `docs/.session-briefing.md`
 2. Last 3 session digests from `docs/session-digests/`
 3. `docs/build-state.md`
-4. `memory/project_current_priorities.md`
+4. `memory/project_current_priorities.md` if it exists
 5. `git log --oneline -10` + `git status --short`
 6. Last entry in `docs/session-log.md`
 7. MemPalace search if available
@@ -193,7 +195,7 @@ Run `/close-session`, then complete the autonomous delivery contract. Every comp
 2. Never retest what already passes (deterministic tests are permanent proof).
 3. Code change to verified feature = re-run its test. Still green? Still VERIFIED.
 4. Test failure = REGRESSED. Fix before building anything else.
-5. `npm run test:affected` before every commit. Failures block the commit.
+5. Run focused tests for the owned change, then `npm run regression:firewall` before completion. Failures block the commit/release path.
 
 ### Ubiquitous Language (CONTEXT.md)
 
@@ -269,16 +271,14 @@ Credentials in `.auth/agent.json`. Sign in via `POST http://localhost:3100/api/e
 
 ## BUILD QUEUE CONTRACT (SHARED WITH CODEX)
 
-**`docs/UNIFIED-BUILD-QUEUE.md` is the single source of truth for tracking build work.** Both Claude and Codex read from and update this file. It is not a permission gate: explicit execution requests are claimed and executed immediately without a second prompt.
+**`.agents/build-queue/` is the single source of truth for tracked build work.** Use `node .agents/skills/build-queue/scripts/build-queue.mjs <command>` to inspect or mutate it. `docs/UNIFIED-BUILD-QUEUE.md` is historical and must not receive new queue state.
 
-- **Before building:** read the queue. Claim items by marking status `IN-FLIGHT`.
-- **After building:** mark items `PARTIAL` (built, unverified) or `DONE` (verified).
-- **New work discovered:** add it to the appropriate category with correct status tag.
-- **Blocked items:** mark `BLOCKED` with reason. Unblock by fixing the dependency.
-- **Never rebuild the queue from scratch.** Update in place. The merge history matters.
-- **Swarm handoff** (`/swarm-handoff`) reads this queue to assign waves and tiers.
-
-Status tags: `SPEC-READY`, `PARTIAL`, `DRAFT`, `UNSPECCED`, `BLOCKED`, `IN-FLIGHT`, `DONE`
+- **Before building:** run `status`, inspect `active`, `in-flight`, and `blocked`, then check duplicates/overlap.
+- **Claiming work:** use the queue CLI (`fire`/preflight flow) so run IDs, ownership, and movement are recorded.
+- **After building:** use proof-pack/finish-check and move items through the CLI only after acceptance evidence passes.
+- **New work discovered:** use `add`; do not append ad hoc rows to legacy markdown.
+- **Blocked/cancelled work:** use `block` or `cancel` with the exact reason.
+- **Never rebuild the queue from scratch.** Preserve `.agents/build-queue/events.jsonl` and item history.
 
 ---
 
@@ -292,7 +292,7 @@ Skills, triggers, power tools, brand names: `@docs/CLAUDE-SKILLS-REFERENCE.md`
 
 ## graphify
 
-Knowledge graph at `graphify-out/`. Read `GRAPH_REPORT.md` before architecture questions. Run `graphify update .` after modifying code files.
+If `graphify-out/GRAPH_REPORT.md` exists, read it before architecture questions. Run `graphify update .` only when Graphify is installed and the graph is part of the current task; do not treat missing graph output as a blocker.
 
 ---
 

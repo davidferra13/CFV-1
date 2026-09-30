@@ -1,0 +1,23 @@
+{
+  "running": false,
+  "status": "error",
+  "startedAt": "2026-09-30T12:53:18.875Z",
+  "pid": 106116,
+  "completedAt": "2026-09-30T12:55:19.438Z",
+  "reason": "spawnSync C:\\Program Files\\nodejs\\node.exe ETIMEDOUT",
+  "knowledge": {
+    "before": {
+      "total": 563,
+      "known": 537
+    },
+    "after": {
+      "total": 563,
+      "known": 537
+    },
+    "delta": 0,
+    "status": "idle",
+    "outputTail": "◇ injected env (0) from .env.local // tip: ⌁ auth for agents [www.vestauth.com]\n=== OpenClaw Ingredient Knowledge Enrichment v2 ===\nMode: resume | Limit: 10 | Dry: false\n\nNothing to process.\n"
+  },
+  "stdoutTail": "",
+  "stderrTail": ""
+}
