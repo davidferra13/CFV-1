@@ -58,18 +58,30 @@ test('starter groups are visible while advanced groups wait for data or expansio
   assert.equal(isNavGroupVisible('finance', empty, true), true)
 })
 
-test('action bar hides noisy shortcuts for zero-data chefs but preserves bypasses', () => {
+test('action bar keeps daily-driver destinations stable for zero-data chefs', () => {
   const empty = presence()
 
-  assert.equal(isActionBarItemVisible('/inquiries', empty, false, false), true)
-  assert.equal(isActionBarItemVisible('/events', empty, false, false), true)
-  assert.equal(isActionBarItemVisible('/clients', empty, false, false), true)
-  assert.equal(isActionBarItemVisible('/culinary', empty, false, false), true)
+  for (const href of [
+    '/dashboard',
+    '/calendar',
+    '/events',
+    '/clients',
+    '/menus',
+    '/inbox',
+    '/finance',
+    '/inquiries',
+    '/culinary',
+  ]) {
+    assert.equal(
+      isActionBarItemVisible(href, empty, false, false),
+      true,
+      `${href} must not disappear just because its data set is empty`
+    )
+  }
 
-  assert.equal(isActionBarItemVisible('/inbox', empty, false, false), false)
-  assert.equal(isActionBarItemVisible('/finance', empty, false, false), false)
-  assert.equal(isActionBarItemVisible('/finance', empty, true, false), true)
-  assert.equal(isActionBarItemVisible('/finance', empty, false, true), true)
+  assert.equal(isActionBarItemVisible('/circles', empty, false, false), false)
+  assert.equal(isActionBarItemVisible('/circles', empty, true, false), true)
+  assert.equal(isActionBarItemVisible('/circles', empty, false, true), true)
 })
 
 test('dashboard keeps starter creation actions visible for zero-data chefs', () => {

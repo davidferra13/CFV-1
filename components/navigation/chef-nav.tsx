@@ -1079,6 +1079,7 @@ export function ChefSidebar({
             <ActionBar
               navFilter={navFilter}
               collapsed
+              primaryNavHrefs={primaryNavHrefs}
               archetype={archetype}
               tenantPresence={tenantPresence}
               showAllFeatures={showAllNav}
@@ -1146,6 +1147,7 @@ export function ChefSidebar({
             {/* ─── Action Bar (daily-driver shortcuts + Create) ─── */}
             <ActionBar
               navFilter={navFilter}
+              primaryNavHrefs={primaryNavHrefs}
               archetype={archetype}
               tenantPresence={tenantPresence}
               showAllFeatures={showAllNav}
