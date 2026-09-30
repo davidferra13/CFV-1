@@ -1,0 +1,22 @@
+name: Production tunnel recovery checks
+on:
+  pull_request:
+    paths:
+      - '.cloudflared/production.yml'
+      - 'scripts/production-public-check.mjs'
+      - 'scripts/deploy-prod.sh'
+      - 'tests/unit/production-public-check.test.mjs'
+      - '.github/workflows/production-tunnel-config.yml'
+permissions:
+  contents: read
+jobs:
+  recovery-contract:
+    runs-on: ubuntu-latest
+    timeout-minutes: 2
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+      - run: node --test tests/unit/production-public-check.test.mjs
+      - run: bash -n scripts/deploy-prod.sh

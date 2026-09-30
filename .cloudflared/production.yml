@@ -1,0 +1,14 @@
+# Recovery configuration for the existing chefflow-prod tunnel.
+# Not activated by committing this file. See docs/production-tunnel-recovery.md.
+# Restore the matching credential JSON outside Git, then validate this config.
+# cloudflared defaults to ~/.cloudflared/<tunnel UUID>.json for credentials.
+# Port 3100 is the documented Windows production origin; verify it before use.
+tunnel: 9dab6929-68e3-4775-9b8e-17482f714e83
+protocol: http2
+
+ingress:
+  - hostname: app.cheflowhq.com
+    service: http://127.0.0.1:3100
+  - hostname: cheflowhq.com
+    service: http://127.0.0.1:3100
+  - service: http_status:404

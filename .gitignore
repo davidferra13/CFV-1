@@ -25,6 +25,8 @@ chroma.sqlite3
 *.pfx
 .npmrc
 credentials.json
+.cloudflared/*.json
+.cloudflared/*.token
 service-account.json
 service-account-*.json
 
