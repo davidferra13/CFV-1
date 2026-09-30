@@ -86,6 +86,10 @@ describe('D2: Server actions use tenantId from session', () => {
       // and use tenantId only for read filtering.
       'lib/admin/owner-observability.ts',
       'lib/admin/cannabis-actions.ts',
+      // Explicit admin-only cross-tenant maintenance actions.
+      'lib/compliance/compliance-infrastructure-actions.ts',
+      'lib/openclaw/archive-digester-actions.ts',
+      'lib/openclaw/enrichment-actions.ts',
       'lib/activity/log-chef.ts',
       'lib/activity/track.ts',
       'lib/ai/queue/actions.ts',

@@ -211,7 +211,7 @@ function toRoutinePayload(
 const routineSelect =
   'id, tenant_id, name, description, status, trigger_type, trigger_config, condition_group, actions, priority, approval_required, idempotency_window_seconds, created_by_auth_user_id, updated_by_auth_user_id, created_at, updated_at'
 
-async function logRoutineChangeAudit(input: {
+async function logRoutineChangeAudit(context: {
   tenantId: string
   authUserId: string
   routineId: string
@@ -221,15 +221,15 @@ async function logRoutineChangeAudit(input: {
   const db: any = createServerClient()
   const now = new Date().toISOString()
   const { error } = await db.from('remy_routine_execution_audit').insert({
-    tenant_id: input.tenantId,
-    routine_id: input.routineId,
+    tenant_id: context.tenantId,
+    routine_id: context.routineId,
     execution_id: null,
-    auth_user_id: input.authUserId,
+    auth_user_id: context.authUserId,
     status: 'success',
     request_payload: toSafeJsonb({
-      event: input.event,
-      routineId: input.routineId,
-      payload: input.payload,
+      event: context.event,
+      routineId: context.routineId,
+      payload: context.payload,
     }),
     result_payload: toSafeJsonb({ recorded: true }),
     started_at: now,

@@ -60,16 +60,16 @@
     "seed:local": "tsx scripts/seed-local-demo.ts",
     "local:bootstrap": "docker compose up -d && npm run seed:local",
     "test:e2e": "npx playwright test",
-    "test:unit": "node --test --import tsx \"tests/unit/**/*.test.ts\"",
+    "test:unit": "tsx --test --test-concurrency=4 \"tests/unit/**/*.test.ts\"",
     "test:unit:web-beta": "node --test --import tsx \"tests/unit/api.health-route.test.ts\" \"tests/unit/api.readiness-route.test.ts\" \"tests/unit/launch-surface-guards.test.ts\" \"tests/unit/verify-release-profile.test.ts\" \"tests/unit/web-beta-build-surface.test.ts\"",
-    "test:critical": "node --test --import tsx \"tests/unit/ledger.*.test.ts\" \"tests/unit/events.fsm.test.ts\" \"tests/unit/quotes.*.test.ts\" \"tests/unit/auth.*.test.ts\" \"tests/unit/focus-mode.test.ts\"",
-    "test:unit:financial": "node --test --import tsx \"tests/unit/ledger.*.test.ts\" \"tests/unit/quotes.*.test.ts\"",
+    "test:critical": "tsx --test \"tests/unit/ledger.*.test.ts\" \"tests/unit/events.fsm.test.ts\" \"tests/unit/quotes.*.test.ts\" \"tests/unit/auth.*.test.ts\" \"tests/unit/focus-mode.test.ts\"",
+    "test:unit:financial": "tsx --test \"tests/unit/ledger.*.test.ts\" \"tests/unit/quotes.*.test.ts\"",
     "test:unit:fsm": "node --test --import tsx \"tests/unit/events.fsm.test.ts\"",
-    "test:unit:auth": "node --test --import tsx \"tests/unit/auth.*.test.ts\"",
+    "test:unit:auth": "tsx --test \"tests/unit/auth.*.test.ts\"",
     "test:culinary-truth": "node --test --import tsx \"tests/unit/menu.culinary-truth.test.ts\"",
     "test:culinary-truth:e2e": "node scripts/test-culinary-truth.mjs",
     "test:culinary-truth:e2e:headed": "node scripts/test-culinary-truth.mjs --headed",
-    "test:integration": "node --test --import tsx \"tests/integration/**/*.integration.test.ts\"",
+    "test:integration": "tsx --test --test-concurrency=4 \"tests/integration/**/*.integration.test.ts\"",
     "verify:chef-nav": "tsx scripts/audit-chef-nav.ts",
     "test:e2e:headed": "npm run verify:e2e-contract && npx playwright test --headed",
     "test:e2e:debug": "npx playwright test --debug",
@@ -275,7 +275,7 @@
   },
   "dependencies": {
     "@ai-sdk/openai-compatible": "^2.0.47",
-    "@auth/drizzle-adapter": "^1.11.1",
+    "@auth/drizzle-adapter": "^1.11.3",
     "@dnd-kit/core": "^6.3.1",
     "@dnd-kit/sortable": "^10.0.0",
     "@dnd-kit/utilities": "^3.2.2",
@@ -331,7 +331,7 @@
     "mammoth": "^1.11.0",
     "motion": "^12.38.0",
     "next": "^14.2.18",
-    "next-auth": "^5.0.0-beta.30",
+    "next-auth": "^5.0.0-beta.32",
     "next-intl": "^4.9.0",
     "next-themes": "^0.4.6",
     "ollama": "^0.6.3",
@@ -412,5 +412,9 @@
     "*.{js,jsx,json,md,css}": [
       "prettier --write"
     ]
+  },
+  "overrides": {
+    "protobufjs@<8": "7.6.6",
+    "protobufjs@>=8 <9": "8.8.0"
   }
 }

@@ -1,5 +1,3 @@
-'use server'
-
 import { createNotification } from '@/lib/notifications/actions'
 
 export async function notifyCannabisAccessGranted(input: {

@@ -643,7 +643,7 @@ async function listVendorExtractionTasks(db: any, tenantId: string) {
   return data ?? []
 }
 
-async function safeRecordLearning(input: {
+async function safeRecordLearning(context: {
   tenantId: string
   actionId: string
   approvalId: string
@@ -654,14 +654,14 @@ async function safeRecordLearning(input: {
 }) {
   try {
     await recordLearningSignal({
-      tenantId: input.tenantId,
-      actionId: input.actionId,
-      approvalId: input.approvalId,
+      tenantId: context.tenantId,
+      actionId: context.actionId,
+      approvalId: context.approvalId,
       domain: 'vendor',
-      actionType: input.actionType,
-      outcome: input.outcome,
-      confidenceScore: input.confidenceScore,
-      metadata: input.metadata,
+      actionType: context.actionType,
+      outcome: context.outcome,
+      confidenceScore: context.confidenceScore,
+      metadata: context.metadata,
     })
   } catch (error) {
     console.error('[vendor-action-extraction] learning signal failed:', error)

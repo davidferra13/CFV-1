@@ -113,7 +113,7 @@ async function getLatestReviewState(
 
 async function writeReviewState(
   db: any,
-  input: {
+  context: {
     tenantId: string
     actorId: string
     clientId: string
@@ -123,8 +123,8 @@ async function writeReviewState(
   const { data: client } = await db
     .from('clients')
     .select('id')
-    .eq('id', input.clientId)
-    .eq('tenant_id', input.tenantId)
+    .eq('id', context.clientId)
+    .eq('tenant_id', context.tenantId)
     .maybeSingle()
 
   if (!client) {
@@ -132,11 +132,11 @@ async function writeReviewState(
   }
 
   const { error } = await db.from('client_notes').insert({
-    tenant_id: input.tenantId,
-    client_id: input.clientId,
-    note_text: serializeReviewState(input.state),
+    tenant_id: context.tenantId,
+    client_id: context.clientId,
+    note_text: serializeReviewState(context.state),
     category: 'relationship',
-    pinned: input.state.pinned,
+    pinned: context.state.pinned,
     source: CONTRIBUTION_NOTE_SOURCE,
   })
 
@@ -146,7 +146,7 @@ async function writeReviewState(
   }
 
   revalidatePath('/clients/contribution')
-  revalidatePath(`/clients/${input.clientId}`)
+  revalidatePath(`/clients/${context.clientId}`)
 }
 
 function eventFinancialByClient(events: any[], summaries: any[]) {
