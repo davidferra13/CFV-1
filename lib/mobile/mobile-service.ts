@@ -10,6 +10,13 @@ export type MobileChefDashboardData = {
     serveTime: string | null
     status: string
     clientName: string | null
+    guestCount: number | null
+    readiness: {
+      prep: boolean
+      grocery: boolean
+      timeline: boolean
+      packing: boolean
+    }
   }>
   metrics: {
     unreadNotifications: number
@@ -43,10 +50,14 @@ export async function getMobileChefDashboardData(chefId: string): Promise<Mobile
   const [eventsResult, unreadCount] = await Promise.all([
     db
       .from('events')
-      .select('id, occasion, event_date, serve_time, status, clients(full_name)')
+      .select(
+        'id, occasion, event_date, serve_time, status, guest_count, prep_list_ready, grocery_list_ready, timeline_ready, packing_list_ready, clients(full_name)'
+      )
       .eq('tenant_id', user.tenantId!)
       .gte('event_date', today)
+      .not('status', 'in', '("cancelled","completed")')
       .order('event_date', { ascending: true })
+      .order('serve_time', { ascending: true, nullsFirst: false })
       .limit(8),
     getUnreadCount().catch(() => 0),
   ])
@@ -62,6 +73,13 @@ export async function getMobileChefDashboardData(chefId: string): Promise<Mobile
     serveTime: event.serve_time,
     status: event.status,
     clientName: event.clients?.full_name || null,
+    guestCount: event.guest_count ?? null,
+    readiness: {
+      prep: event.prep_list_ready === true,
+      grocery: event.grocery_list_ready === true,
+      timeline: event.timeline_ready === true,
+      packing: event.packing_list_ready === true,
+    },
   }))
 
   return {

@@ -4,6 +4,7 @@ import { readFileSync } from 'node:fs'
 import {
   actionBarItems,
   createDropdownItems,
+  hiddenNavItems,
   navGroups,
   standaloneBottom,
 } from '@/components/navigation/nav-config'
@@ -16,22 +17,43 @@ describe('Navigation regression guard', () => {
     )
   )
   const bottomHrefs = new Set(standaloneBottom.map((i) => i.href))
+  const hiddenHrefs = new Set(
+    hiddenNavItems.flatMap((g) =>
+      g.items.flatMap((item) => [item.href, ...(item.children?.map((c) => c.href) ?? [])])
+    )
+  )
   const createHrefs = new Set(createDropdownItems.map((i) => i.href))
-  const allHrefs = new Set([...actionBarHrefs, ...allNavGroupHrefs, ...bottomHrefs, ...createHrefs])
+  const allHrefs = new Set([
+    ...actionBarHrefs,
+    ...allNavGroupHrefs,
+    ...bottomHrefs,
+    ...hiddenHrefs,
+    ...createHrefs,
+  ])
 
-  it('Action Bar contains critical daily-driver items', () => {
-    const required = ['/dashboard', '/inbox', '/inquiries', '/events', '/circles']
+  it('Action Bar contains the seven comfort-model daily drivers', () => {
+    const required = [
+      '/dashboard',
+      '/calendar',
+      '/events',
+      '/clients',
+      '/menus',
+      '/inbox',
+      '/finance',
+    ]
     for (const href of required) {
       assert.ok(actionBarHrefs.has(href), `Action Bar missing: ${href}`)
     }
   })
 
-  it('Tables is preserved as a bottom social-zone entry point', () => {
-    assert.ok(bottomHrefs.has('/tables'), 'standaloneBottom missing /tables')
+  it('Tables is preserved without forcing it into persistent navigation', () => {
+    assert.equal(bottomHrefs.has('/tables'), false)
+    assert.ok(hiddenHrefs.has('/tables'), 'hidden feature index missing /tables')
   })
 
-  it('Cannabis Portal is preserved as a bottom tier entry point', () => {
-    assert.ok(bottomHrefs.has('/events/cannabis'), 'standaloneBottom missing /events/cannabis')
+  it('Cannabis Portal is preserved without forcing it into persistent navigation', () => {
+    assert.equal(bottomHrefs.has('/events/cannabis'), false)
+    assert.ok(hiddenHrefs.has('/events/cannabis'), 'hidden feature index missing /events/cannabis')
   })
 
   it('Cannabis Portal bottom visibility excludes VIP-only privileged access', () => {
@@ -125,14 +147,15 @@ describe('Navigation regression guard', () => {
     }
   })
 
-  it('standaloneBottom has Settings link', () => {
-    assert.ok(bottomHrefs.has('/settings'), 'standaloneBottom missing /settings')
+  it('Settings remains reachable without consuming a persistent footer slot', () => {
+    assert.equal(bottomHrefs.has('/settings'), false)
+    assert.ok(hiddenHrefs.has('/settings'), 'hidden feature index missing /settings')
   })
 
-  it('Action Bar item count stays within budget (max 20)', () => {
+  it('Action Bar item count stays within the seven-driver comfort budget', () => {
     assert.ok(
-      actionBarItems.length <= 20,
-      `Action Bar has ${actionBarItems.length} items, exceeds budget of 20`
+      actionBarItems.length <= 7,
+      `Action Bar has ${actionBarItems.length} items, exceeds budget of 7`
     )
   })
 })

@@ -16,19 +16,20 @@ export function isActionBarItemVisible(
   if (!presence || showAll || bypassProgressiveDisclosure) return true
 
   switch (href) {
+    // Comfort-model daily drivers stay stable even when a chef has no data yet.
+    // An empty Inbox or Finance screen is still a valid destination; hiding it
+    // makes the product reshape itself unpredictably as data appears.
     case '/dashboard':
-    case '/inquiries':
-    case '/events':
-    case '/culinary':
-    case '/clients':
     case '/calendar':
+    case '/events':
+    case '/clients':
     case '/menus':
+    case '/inbox':
+    case '/finance':
+    case '/inquiries':
+    case '/culinary':
     case '/culinary/prep':
       return true
-    case '/inbox':
-      return presence.hasConversations || presence.hasInquiries
-    case '/finance':
-      return presence.hasInvoices || presence.hasExpenses || presence.hasEvents
     case '/circles':
       return presence.hasCircles || presence.hasNetwork
     default:

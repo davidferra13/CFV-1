@@ -1,5 +1,6 @@
 import { describe, it } from 'node:test'
 import assert from 'node:assert/strict'
+import { readFileSync } from 'node:fs'
 import {
   DEFAULT_PRIMARY_SHORTCUT_HREFS,
   MOBILE_TAB_OPTIONS,
@@ -8,16 +9,18 @@ import {
   getPrimaryShortcutOptions,
   mobileTabItems,
   navGroups,
+  resolveActionBarItems,
   standaloneTop,
 } from '@/components/navigation/nav-config'
+import { ARCHETYPES } from '@/lib/archetypes/presets'
 
 const TARGET_PRIMARY_HREFS = [
   '/dashboard',
-  '/inbox',
-  '/inquiries',
+  '/calendar',
   '/events',
-  '/culinary',
   '/clients',
+  '/menus',
+  '/inbox',
   '/finance',
 ]
 
@@ -30,6 +33,9 @@ const DEMOTED_PRIMARY_HREFS = [
   '/network',
   '/inventory',
   '/vendors',
+  '/inquiries',
+  '/culinary',
+  '/daily',
 ]
 
 function collectNavGroupHrefs() {
@@ -48,7 +54,7 @@ function collectNavGroupHrefs() {
 }
 
 describe('chef nav priority defaults', () => {
-  it('uses the canonical Today to Money primary nav defaults', () => {
+  it('uses the September comfort-model daily-driver fallback', () => {
     assert.deepEqual(DEFAULT_PRIMARY_SHORTCUT_HREFS, TARGET_PRIMARY_HREFS)
     assert.deepEqual(
       standaloneTop.map((item) => item.href),
@@ -57,8 +63,8 @@ describe('chef nav priority defaults', () => {
 
     const labelsByHref = new Map(standaloneTop.map((item) => [item.href, item.label]))
     assert.equal(labelsByHref.get('/dashboard'), 'Today')
-    assert.equal(labelsByHref.get('/inquiries'), 'Pipeline')
-    assert.equal(labelsByHref.get('/finance'), 'Money')
+    assert.equal(labelsByHref.get('/events'), 'Dinners')
+    assert.equal(labelsByHref.get('/finance'), 'Finance')
   })
 
   it('keeps demoted clusters out of primary nav defaults', () => {
@@ -69,24 +75,40 @@ describe('chef nav priority defaults', () => {
     }
   })
 
-  it('aligns the action bar to six active-work shortcuts', () => {
+  it('uses the same seven daily drivers as the fallback action bar', () => {
     assert.deepEqual(
       actionBarItems.map((item) => item.href),
-      ['/dashboard', '/inbox', '/inquiries', '/events', '/culinary', '/finance']
-    )
-    assert.equal(
-      actionBarItems.some((item) => item.href === '/clients'),
-      false
+      TARGET_PRIMARY_HREFS
     )
   })
 
-  it('uses service-day mobile defaults with Pipeline and without Clients', () => {
+  it('resolves every archetype primary shortcut list in its saved order', () => {
+    for (const archetype of ARCHETYPES) {
+      assert.deepEqual(
+        resolveActionBarItems(archetype.primaryNavHrefs).map((item) => item.href),
+        [...new Set(archetype.primaryNavHrefs)].slice(0, TARGET_PRIMARY_HREFS.length),
+        `${archetype.id} primary shortcuts must render exactly as configured`
+      )
+    }
+  })
+
+  it('wires saved primary shortcuts into both desktop and mobile navigation', () => {
+    const actionBarSource = readFileSync('components/navigation/action-bar.tsx', 'utf8')
+    const desktopSource = readFileSync('components/navigation/chef-nav.tsx', 'utf8')
+    const mobileSource = readFileSync('components/navigation/chef-mobile-nav.tsx', 'utf8')
+
+    assert.match(actionBarSource, /resolveActionBarItems\(primaryNavHrefs\)/)
+    assert.match(desktopSource, /primaryNavHrefs=\{primaryNavHrefs\}/)
+    assert.match(mobileSource, /resolveActionBarItems\(primaryNavHrefs\)/)
+  })
+
+  it('uses five mobile daily drivers without a second Today screen', () => {
     assert.deepEqual(
       mobileTabItems.map((item) => item.href),
-      ['/dashboard', '/inbox', '/inquiries', '/events', '/daily']
+      ['/dashboard', '/calendar', '/events', '/inbox', '/clients']
     )
     assert.equal(
-      mobileTabItems.some((item) => item.href === '/clients'),
+      mobileTabItems.some((item) => item.href === '/daily'),
       false
     )
 

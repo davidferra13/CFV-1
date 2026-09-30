@@ -75,12 +75,12 @@ function PrimaryAction({ item }: { item: QueueItem }) {
 
 function QueueUnavailable() {
   return (
-    <section className="rounded-2xl border border-amber-300 bg-amber-50 px-5 py-5 text-stone-50">
+    <section className="rounded-2xl border border-amber-300 bg-amber-50 px-5 py-5 text-stone-900">
       <p className="text-xs font-semibold uppercase tracking-[0.18em] text-amber-800">
         Priorities unavailable
       </p>
       <h1 className="mt-2 text-xl font-semibold">I could not read what needs you next.</h1>
-      <p className="mt-2 text-sm leading-6 text-stone-200">
+      <p className="mt-2 text-sm leading-6 text-stone-700">
         Nothing was marked clear. Refresh to try the priority check again.
       </p>
       <a
@@ -95,7 +95,7 @@ function QueueUnavailable() {
 
 function CaughtUp() {
   return (
-    <section className="rounded-2xl border border-emerald-200 bg-emerald-50 px-5 py-5 text-stone-50">
+    <section className="rounded-2xl border border-emerald-200 bg-emerald-50 px-5 py-5 text-stone-900">
       <p className="text-xs font-semibold uppercase tracking-[0.18em] text-emerald-800">
         Do this now
       </p>
@@ -110,11 +110,11 @@ function CaughtUp() {
 function NextDinner({ state }: { state: LoadState<MobileChefDashboardData> }) {
   if (!state.ok) {
     return (
-      <section className="rounded-xl border border-stone-700 bg-white px-4 py-4">
+      <section className="rounded-xl border border-stone-800 bg-stone-900/70 px-4 py-4">
         <p className="text-xs font-semibold uppercase tracking-[0.16em] text-stone-300">
           Next dinner
         </p>
-        <p className="mt-2 text-sm text-stone-700">The schedule could not be read.</p>
+        <p className="mt-2 text-sm text-stone-400">The schedule could not be read.</p>
       </section>
     )
   }
@@ -122,14 +122,14 @@ function NextDinner({ state }: { state: LoadState<MobileChefDashboardData> }) {
   const event = state.value.upcomingEvents[0]
   if (!event) {
     return (
-      <section className="rounded-xl border border-stone-700 bg-white px-4 py-4">
+      <section className="rounded-xl border border-stone-800 bg-stone-900/70 px-4 py-4">
         <p className="text-xs font-semibold uppercase tracking-[0.16em] text-stone-300">
           Next dinner
         </p>
         <p className="mt-2 text-sm font-medium text-stone-50">
           No upcoming dinner is on the books.
         </p>
-        <Link href="/events" className="mt-2 inline-block text-sm font-semibold text-brand-700">
+        <Link href="/events" className="mt-2 inline-block text-sm font-semibold text-brand-400">
           Open events
         </Link>
       </section>
@@ -138,12 +138,24 @@ function NextDinner({ state }: { state: LoadState<MobileChefDashboardData> }) {
 
   const time = formatClockTime(event.serveTime)
   const title = event.occasion || event.clientName || 'Dinner'
-  const detail = [formatCalendarDate(event.eventDate), time, event.clientName]
+  const detail = [
+    formatCalendarDate(event.eventDate),
+    time,
+    event.clientName,
+    event.guestCount ? `${event.guestCount} guests` : null,
+  ]
     .filter(Boolean)
     .join(' · ')
+  const readinessItems = [
+    ['Prep', event.readiness.prep, `/events/${event.id}/prep-plan`],
+    ['Groceries', event.readiness.grocery, `/events/${event.id}/grocery-run`],
+    ['Timeline', event.readiness.timeline, `/events/${event.id}/schedule`],
+    ['Packing', event.readiness.packing, `/events/${event.id}/pack`],
+  ] as const
+  const readyCount = readinessItems.filter(([, ready]) => ready).length
 
   return (
-    <section className="rounded-xl border border-stone-700 bg-white px-4 py-4">
+    <section className="rounded-xl border border-stone-800 bg-stone-900/70 px-4 py-4">
       <p className="text-xs font-semibold uppercase tracking-[0.16em] text-stone-300">
         Next dinner
       </p>
@@ -154,10 +166,46 @@ function NextDinner({ state }: { state: LoadState<MobileChefDashboardData> }) {
         </div>
         <Link
           href={`/events/${event.id}`}
-          className="shrink-0 text-sm font-semibold text-brand-700"
+          className="shrink-0 text-sm font-semibold text-brand-400"
         >
           Open
         </Link>
+      </div>
+      <div className="mt-4 border-t border-stone-800 pt-3">
+        <div className="flex items-center justify-between gap-3">
+          <p className="text-xs font-semibold uppercase tracking-[0.14em] text-stone-400">
+            Event readiness
+          </p>
+          <p
+            className={`text-xs font-semibold ${
+              readyCount === readinessItems.length ? 'text-emerald-400' : 'text-amber-400'
+            }`}
+          >
+            {readyCount}/{readinessItems.length} ready
+          </p>
+        </div>
+        <div className="mt-2 grid grid-cols-2 gap-2 sm:grid-cols-4">
+          {readinessItems.map(([label, ready, href]) => (
+            <Link
+              key={label}
+              href={href}
+              aria-label={`${label}: ${ready ? 'ready' : 'needs attention'}`}
+              className={`inline-flex min-h-9 items-center justify-between gap-2 rounded-lg border px-3 py-2 text-xs font-medium transition-colors hover:border-brand-700 hover:text-brand-300 ${
+                ready
+                  ? 'border-emerald-900/70 bg-emerald-950/40 text-emerald-300'
+                  : 'border-stone-700 bg-stone-950/60 text-stone-300'
+              }`}
+            >
+              <span className="inline-flex items-center gap-2">
+                <span aria-hidden="true">{ready ? '✓' : '○'}</span>
+                {label}
+              </span>
+              <span aria-hidden="true" className="text-stone-500">
+                →
+              </span>
+            </Link>
+          ))}
+        </div>
       </div>
     </section>
   )

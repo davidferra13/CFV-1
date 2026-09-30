@@ -2,7 +2,7 @@
 
 import Link from 'next/link'
 import { usePathname, useSearchParams } from 'next/navigation'
-import { actionBarItems } from './nav-config'
+import { resolveActionBarItems } from './nav-config'
 import { CreateMenuDropdown } from './create-menu-dropdown'
 import { isItemActive } from './chef-nav-helpers'
 import { InboxUnreadBadge } from '@/components/communication/inbox-unread-badge'
@@ -19,6 +19,7 @@ const PINNED_HREFS = new Set(['/inbox', '/notifications', '/inquiries', '/circle
 type ActionBarProps = {
   navFilter?: string
   collapsed?: boolean
+  primaryNavHrefs?: string[]
   archetype?: string | null
   tenantPresence?: TenantDataPresence | null
   showAllFeatures?: boolean
@@ -29,6 +30,7 @@ type ActionBarProps = {
 export function ActionBar({
   navFilter = '',
   collapsed = false,
+  primaryNavHrefs,
   archetype,
   tenantPresence,
   showAllFeatures = false,
@@ -40,7 +42,8 @@ export function ActionBar({
   const { pendingHref, setPendingHref } = useNavigationPending()
 
   const copy = getArchetypeCopy(archetype)
-  const visibleItems = actionBarItems
+  const baseItems = resolveActionBarItems(primaryNavHrefs)
+  const visibleItems = baseItems
     .filter(
       (item) =>
         isItemActive(pathname, item.href, searchParams) ||
@@ -53,8 +56,11 @@ export function ActionBar({
     )
     .map((item) => (item.href === '/events' ? { ...item, label: copy.eventsLabel } : item))
 
+  // A chef's saved shortcut order is explicit intent and must beat adaptive ranking.
   const items =
-    usageRanking && Object.keys(usageRanking).length > 0
+    (!primaryNavHrefs || primaryNavHrefs.length === 0) &&
+    usageRanking &&
+    Object.keys(usageRanking).length > 0
       ? sortByUsage(visibleItems, usageRanking)
       : visibleItems
 
@@ -119,7 +125,7 @@ export function ActionBar({
       {/* + Create button */}
       <CreateMenuDropdown />
 
-      {/* 12 primary shortcuts */}
+      {/* Primary shortcuts */}
       <div className="mt-1 space-y-0.5">
         {filtered.map((item) => {
           const Icon = item.icon
@@ -155,9 +161,9 @@ export function ActionBar({
 }
 
 function sortByUsage(
-  items: typeof actionBarItems,
+  items: ReturnType<typeof resolveActionBarItems>,
   ranking: Record<string, number>
-): typeof actionBarItems {
+): ReturnType<typeof resolveActionBarItems> {
   const pinned = items.filter((i) => PINNED_HREFS.has(i.href))
   const sortable = items.filter((i) => !PINNED_HREFS.has(i.href))
   sortable.sort((a, b) => (ranking[b.href] ?? 0) - (ranking[a.href] ?? 0))
