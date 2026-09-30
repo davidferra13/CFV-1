@@ -1,7 +1,7 @@
 # ChefFlow Canonical Project Definition and Scope
 
 Status: canonical source of truth
-Last updated: 2026-04-02
+Last updated: 2026-09-24
 Purpose: define what ChefFlow is, what it is for, who it serves, and how conflicting summaries should be resolved
 
 ## Why This Document Exists
@@ -78,6 +78,7 @@ ChefFlow is chef-first, but not chef-only.
 - food trucks
 - pop-ups
 - chef-led hospitality businesses with retail or service extensions
+- independent restaurants and restaurant teams when the workflows fit the chef-led operating model
 - other small culinary operators when the workflows still fit the chef-led operating model
 
 ### Important clarification
@@ -98,6 +99,27 @@ Today, many chef-led businesses run across disconnected tools:
 - ad hoc documents for execution and follow-up
 
 ChefFlow brings those workflows into one system with shared state and role-aware delivery surfaces.
+
+## Zero-Exit Internal Operations Contract
+
+For every normal internal operating workflow that ChefFlow claims to support, the operator-facing workflow belongs inside ChefFlow.
+
+If a chef, restaurant operator, manager, or staff member must manually leave ChefFlow to complete the normal digital portion of that workflow, the workflow is incomplete.
+
+External providers can remain underneath ChefFlow. Banks, payment networks, payroll rails, vendor systems, tax authorities, maps, email providers, and printer drivers do not need to be recreated. ChefFlow should integrate with, invoke, or synchronize those systems so the operator does not manually move business context between tools when that can reasonably be automated.
+
+Physical work and authority-only actions are boundaries, not excuses for lost context. Cooking, driving, receiving a physical delivery, repairing equipment, or completing an action that legally must occur in an authority-owned system may happen outside the app. ChefFlow must still prepare the action, preserve context, capture the outcome, and continue the workflow without duplicate entry.
+
+Operational completeness uses four states:
+
+1. `not_built`
+2. `partial`
+3. `functional`
+4. `closed_loop_verified`
+
+Only `closed_loop_verified` means complete.
+
+The canonical workflow matrix is `config/chef-os-coverage.json`. Its human-readable contract is `docs/chef-os-coverage-matrix.md`. The strict completeness gate is `npm run verify:chef-os-complete`.
 
 ## Core Goals
 
@@ -133,7 +155,7 @@ These are the project's stable goals:
 - staff execution tooling
 - kiosk, mobile, demo, and tokenized delivery surfaces
 - retail and commerce extensions
-- restaurant- or bakery-adjacent schema and experiments
+- restaurant and bakery operating extensions that fit the small culinary operator model
 
 ### Not the primary identity
 

@@ -34,6 +34,23 @@ Every shipped feature must satisfy all of the following:
 - The feature is tested after implementation by actually running it.
 - There is at least one automated check that would catch the feature drifting out of sync later.
 
+## Chef OS Workflow Completion
+
+For normal internal chef and restaurant operations, a feature is not done if the operator must manually leave ChefFlow to finish the digital workflow.
+
+An external provider can remain underneath ChefFlow, but the operator-facing flow should be integrated into ChefFlow whenever that can reasonably be automated.
+
+A workflow is complete only when it is `closed_loop_verified` in `config/chef-os-coverage.json`. That requires:
+
+- start and finish inside ChefFlow for the normal digital workflow
+- automatic downstream propagation
+- honest failure and recovery
+- source evidence and audit history where relevant
+- current verification evidence for the full loop
+- no manual external step for the workflow being claimed complete
+
+Run `npm run verify:chef-os-coverage` on normal builds. Run `npm run verify:chef-os-complete` before making any product-wide claim that ChefFlow covers the complete internal operating system.
+
 ## Interface Philosophy Compliance
 
 Every UI change must comply with the Universal Interface Philosophy (`docs/specs/universal-interface-philosophy.md`). These checks are release blockers:

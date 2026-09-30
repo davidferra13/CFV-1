@@ -25,12 +25,16 @@ Receipt approved
 **Details:**
 
 - Only ingredients that were auto-matched (confidence >= 0.7) or manually matched get receive transactions
-- Quantity defaults to 1 unit in the ingredient's `default_unit` (since receipt OCR does not reliably parse quantities)
-- The chef can adjust quantities via the inventory UI after the fact
+- Parsed receipt quantity is preserved instead of always recording one unit
+- Compatible weight or volume units are normalized into the ingredient's default inventory unit
+- Incompatible source units are preserved rather than inventing a conversion
+- Quantity falls back to one only when OCR provides no usable quantity
+- The receipt photo URL is retained on the inventory transaction as source evidence
+- The chef can adjust uncertain quantities through the inventory UI
 - Non-blocking: if the inventory insert fails, the receipt approval still succeeds
-- Each transaction records the store name and links to the event (if applicable)
+- Each transaction records the store name and links to the event when applicable
 
-**Limitation:** Receipt line items don't have parsed quantity/unit data. The system records 1 unit per matched item. Future enhancement: parse "2 LB" or "1 GAL" from receipt descriptions to record accurate quantities.
+**Remaining limitation:** OCR quantity and unit quality varies by receipt. Count-to-weight and volume-to-weight conversions require stronger ingredient-specific evidence before they should be automated.
 
 ## 2. Auto-Deduct on Event Completion
 
@@ -116,7 +120,7 @@ Event completed                             |
 
 ## Future Enhancements
 
-1. **Receipt quantity parsing:** Extract "2 LB" or "1 GAL" from receipt descriptions to record accurate receive quantities instead of defaulting to 1
+1. **Receipt quantity confidence:** Surface uncertain OCR quantity or incompatible-unit cases for explicit review instead of relying only on the transaction note
 2. **Multi-event grocery consolidation:** Merge grocery lists across events in the same week
 3. **Low stock alerts on grocery list:** Flag ingredients that will go below par level after this event
 4. **Expiry-aware subtraction:** Don't count inventory that expires before the event date

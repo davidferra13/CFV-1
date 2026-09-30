@@ -17,6 +17,7 @@ import { z } from 'zod'
 import { parseReceiptImage } from '@/lib/ai/parse-receipt'
 import { ensureReceiptFolder, createReceiptDocument } from '@/lib/documents/auto-organize'
 import { logDocumentActivity } from '@/lib/documents/activity-logging'
+import { normalizeReceiptInventoryQuantity } from '@/lib/receipts/inventory-normalization'
 
 // ─── Types ────────────────────────────────────────────────────────────────────
 
@@ -241,6 +242,8 @@ const UpdateLineItemSchema = z.object({
   ingredientCategory: z.string().nullable().optional(),
   description: z.string().min(1).optional(),
   priceCents: z.number().int().nonnegative().nullable().optional(),
+  quantity: z.number().positive().nullable().optional(),
+  unit: z.string().trim().min(1).nullable().optional(),
 })
 
 /** Chef edits a line item inline - tag, category, description, or price. */
@@ -530,16 +533,25 @@ export async function approveReceiptSummary(receiptPhotoId: string) {
               .filter((li) => ingredientMap.has(li.ingredientId!))
               .map((li) => {
                 const ing = ingredientMap.get(li.ingredientId!)!
+                const inventoryQuantity = normalizeReceiptInventoryQuantity({
+                  quantity: li.quantity,
+                  sourceUnit: li.unit,
+                  targetUnit: ing.unit,
+                })
+                const quantityNote = inventoryQuantity.issue
+                  ? ` Quantity note: ${inventoryQuantity.issue}.`
+                  : ''
                 return {
                   chef_id: user.tenantId!,
                   ingredient_id: li.ingredientId,
                   ingredient_name: ing.name,
                   transaction_type: 'receive',
-                  quantity: 1, // Default to 1 unit; chef can adjust via inventory UI
-                  unit: ing.unit,
+                  quantity: inventoryQuantity.quantity,
+                  unit: inventoryQuantity.unit,
                   cost_cents: li.amountCents,
                   event_id: photo.event_id ?? null,
-                  notes: `Auto-received from receipt at ${vendorName ?? 'unknown store'}`,
+                  photo_url: photo.photo_url,
+                  notes: `Auto-received from receipt at ${vendorName ?? 'unknown store'}.${quantityNote}`,
                   created_by: user.id,
                 }
               })

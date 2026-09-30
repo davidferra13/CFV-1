@@ -28,6 +28,8 @@
 > - `docs/specs/zero-friction-exit-handoffs.md`
 >
 > **Date:** 2026-05-25
+>
+> **2026-09-24 precedence update:** This document remains useful research for identifying outside ecosystems and physical boundaries. It no longer defines operational completeness. For a normal internal chef or restaurant workflow, a manual digital exit is now an incomplete ChefFlow workflow. External rails may stay external underneath the product, but ChefFlow should orchestrate them from the operator surface whenever that can reasonably be automated. See `docs/project-definition-and-scope.md` and `docs/chef-os-coverage-matrix.md`.
 
 ---
 
@@ -44,7 +46,7 @@
 | Public guest     |             65 |              219 | Funnel and event-quality value; exits cluster around RSVP, maps, calendar, payment, dietary confidence, photos, and social proof |
 | **Total mapped** |        **489** |        **1,344** | ChefFlow already owns most structured work; the remaining work is boundary design                                                |
 
-The mapped problem is not "make users never leave." The correct product goal is: users leave only for the external systems that should own that job, and every exit has a prepared handoff, provenance capture, and clean return path.
+The mapped exits are evidence about where ChefFlow currently hands work to outside systems. For normal internal digital operations, those handoffs are now completeness gaps until ChefFlow can orchestrate the workflow without requiring the operator to manually leave. Physical-world actions and authority-only destinations remain legitimate boundaries, but ChefFlow must preserve context and capture the result.
 
 ---
 
@@ -69,7 +71,7 @@ These patterns recur across roles and should be solved once as platform primitiv
 
 ## Permanent Boundaries
 
-These exits should not become product-replacement projects. ChefFlow should make them deliberate, contextual, and recoverable.
+These underlying networks and physical systems should not be rebuilt. This classification does not make manual operator context switching acceptable for an internal workflow. Where an integration can invoke or synchronize the outside system, ChefFlow remains the operator-facing control plane.
 
 | Boundary                                            | Why permanent                                             | Product duty                                                                |
 | --------------------------------------------------- | --------------------------------------------------------- | --------------------------------------------------------------------------- |
@@ -82,7 +84,7 @@ These exits should not become product-replacement projects. ChefFlow should make
 | Infrastructure/provider consoles                    | Admins need source-of-truth provider controls             | Surface health, link runbooks, preserve incident evidence                   |
 | Physical service and cooking tools                  | The kitchen and real-world movement are outside software  | Provide prep, checklist, and recovery context before action                 |
 
-Do not queue replacement work for these. Queue handoff, capture, and proof work.
+Do not rebuild these external networks. Build integration, orchestration, capture, and proof so internal operator workflows stay in ChefFlow. Direct external action remains acceptable only when the outside destination itself is the required physical or authority-owned action.
 
 ---
 

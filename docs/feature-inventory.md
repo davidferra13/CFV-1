@@ -22,6 +22,8 @@ Classification rules:
 Interpretation note:
 
 - `chef_privileged`, `gated`, `requirePro(...)`, and related terms in this inventory describe implementation history, control sensitivity, or complexity. They should not be treated as the canonical public monetization promise unless `docs/project-definition-and-scope.md` is updated to say so.
+- A `complete` status in this implementation inventory means the feature family exists and is wired at the implementation level. It does not mean the operator workflow is closed-loop complete.
+- Operational completeness is governed by `config/chef-os-coverage.json` and `docs/chef-os-coverage-matrix.md`. Only `closed_loop_verified` in that matrix means the user can rely on the workflow as complete.
 
 ## Pipeline
 

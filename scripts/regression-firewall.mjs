@@ -225,6 +225,12 @@ async function main() {
   const args = parseArgs(process.argv.slice(2))
   const results = []
 
+  results.push(
+    await runStep('Chef OS coverage manifest', npmCommand(), ['run', 'verify:chef-os-coverage'], {
+      timeoutMs: args.stepTimeoutMs,
+    })
+  )
+
   if (!args.skipNav) {
     results.push(
       await runStep('chef nav audit', npmCommand(), ['run', 'verify:chef-nav'], {

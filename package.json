@@ -6,6 +6,8 @@
     "codex:brief": "node scripts/codex-readiness.mjs",
     "repo:hygiene": "node scripts/repo-hygiene-guard.mjs",
     "repo:hygiene:fix": "node scripts/repo-hygiene-guard.mjs --fix",
+    "verify:chef-os-coverage": "node scripts/verify-chef-os-coverage.mjs",
+    "verify:chef-os-complete": "node scripts/verify-chef-os-coverage.mjs --strict",
     "regression:firewall": "node scripts/regression-firewall.mjs",
     "regression:firewall:fast": "node scripts/regression-firewall.mjs --skip-typecheck --skip-runtime",
     "regression:firewall:full": "node scripts/regression-firewall.mjs --full",
