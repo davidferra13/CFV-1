@@ -33,7 +33,10 @@ $gitExe = Resolve-ExecutablePath -PreferredPath 'C:\Program Files\Git\cmd\git.ex
 $dockerExe = Resolve-ExecutablePath -PreferredPath 'C:\Program Files\Docker\Docker\resources\bin\docker.exe' -CommandName 'docker'
 $dockerDesktopExe = Resolve-ExecutablePath -PreferredPath 'C:\Program Files\Docker\Docker\Docker Desktop.exe' -CommandName ''
 $ollamaExe = Resolve-ExecutablePath -PreferredPath 'C:\Users\david\AppData\Local\Programs\Ollama\ollama.exe' -CommandName 'ollama'
-$cloudflaredExe = Resolve-ExecutablePath -PreferredPath 'C:\Users\david\AppData\Roaming\npm\node_modules\cloudflared\bin\cloudflared.exe' -CommandName 'cloudflared'
+$stableCloudflared = Join-Path $env:USERPROFILE 'Tools\cloudflared\cloudflared.exe'
+$legacyCloudflared = Join-Path $env:APPDATA 'npm\node_modules\cloudflared\bin\cloudflared.exe'
+$preferredCloudflared = if (Test-Path $stableCloudflared) { $stableCloudflared } else { $legacyCloudflared }
+$cloudflaredExe = Resolve-ExecutablePath -PreferredPath $preferredCloudflared -CommandName 'cloudflared'
 $powershellExe = Resolve-ExecutablePath -PreferredPath "$env:WINDIR\System32\WindowsPowerShell\v1.0\powershell.exe" -CommandName 'powershell'
 
 # ============================================
