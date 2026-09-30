@@ -1,30 +1,27 @@
-# Simulation Forge milestone 1 release checkpoint
+# Simulation Forge review and release checkpoint
 
-State: **BLOCKED for ChefFlow release**, while the independent offline Forge slice passes. No production deployment or app-server restart occurred.
+State: **BLOCKED for ChefFlow release**. The Forge developer tooling is validated on a clean review branch, but no ChefFlow production route, payment flow, customer interaction, app server or deployed revision was changed.
 
-## Proven behavior
+## Exact main-based review branch
 
-- Source branch: `feat/simulation-forge-codex-20260928` from `422605dd004b584c459692dcd4726b6322d23fc4`.
-- `node --import tsx --test tools/simulation-forge/core.test.mjs`: 3 passed, 0 failed.
-- `node --import tsx tools/simulation-forge/cli.mjs prove`: injected run `6356d4e03c2888d4` violated `hard_eligibility`, seed 101; minimized to one item and one event; fixed replay and comparison passed. Full raw observations, scores, trajectory, versions, actors, source and seed in `first-milestone-evidence.json`.
-- `node --import tsx tools/simulation-forge/cli.mjs release`: seven cases, zero violations, including five mutations and a WeatherHQ portability fixture. WeatherHQ remains fixture-only.
-- No real customer interaction was ingested; the actor is derived from an existing persona, and offered items/events are labeled synthetic.
+- Branch `feat/simulation-forge-review-20260928` began at `origin/main e944ed554897ddb0d7686b38312c7e28083a3e71`. The latest verified Forge code SHA is `d38e85750e27ca99e1706bf03b5ae7a123df2f78` ([CI run #1320](https://github.com/davidferra13/CFV-1/actions/runs/36429238374)).
+- Relative to main, the diff contains only `tools/simulation-forge/**`, `docs/simulation-forge/**`, and targeted `scripts/regression-firewall.mjs` and `.github/workflows/ci.yml` hooks. The foreign persona gate and order-operations subsystem were excluded.
+- Earlier focused local tests passed **106/106**, including ChefFlow's unchanged event FSM and capacity-model tests. On the current code revision, Node 20 CI passed **19/19 Forge tests** and exercised **25 bounded release cases with zero invariant violations**, including retained ChefFlow booking and marketplace counterexamples and a WeatherHQ portability fixture.
+- The three ChefFlow slices are recommendation replay (including the actual homepage candidate source offline), a synthetic booking funnel, and a synthetic marketplace twin. Booking uses a modeled private inquiry transition map and unchanged real event FSM; its deposit acknowledgment is expressly synthetic. Marketplace invokes unchanged real capacity functions; its supply, prices and demand are synthetic. This is not evidence of live booking or real customer behavior.
+- `npm run verify:chef-nav` **failed on this review branch**: seven advertised routes have no page: `/studio`, `/studio/analytics`, `/studio/branding`, `/studio/domain`, `/studio/media`, `/studio/pages`, `/studio/seo`. Their hrefs are present in `origin/main:components/navigation/nav-config.tsx`; `origin/main` has no corresponding Studio pages. The Forge diff touches neither navigation nor routes.
+- Full `npm run regression:firewall -- --skip-runtime` has **not** run on this review branch. Headroom checks were 84–100% CPU, so repeating a long whole-app typecheck then was inappropriate. No review-branch full-gate result or typecheck result is claimed.
+- `lib/order-operations/adapters/transport.ts` is absent from `origin/main`; a narrow transport typing repair belongs with that separate order-operations feature and was not carried into this branch.
 
-## Full repo gate result
+## GitHub CI hook and existing PR baseline
 
-Command: `npm run regression:firewall -- --skip-runtime` in this worktree. Runtime was skipped because only developer tooling/gate files changed, port 3100 had no listener, and running a different worktree's app server was out of scope. The gate ran for 380.37 s and exited 1:
+The existing `Critical Tests` job now runs `node --import tsx --test tools/simulation-forge/*.test.mjs`, then the 25-case Forge release suite before the unchanged `npm run test:critical` step. Both Forge steps passed on [CI run #1320](https://github.com/davidferra13/CFV-1/actions/runs/36429238374) for code SHA `d38e85750e27ca99e1706bf03b5ae7a123df2f78`. Replay supports exact and distinct seeds; release execution has two concurrent scenario workers, a 32-case queue cap per batch and a cooperative elapsed-time budget for asynchronous adapter calls. A stalled synchronous or signal-ignoring adapter still needs process isolation for a hard resource stop.
 
-- Chef nav audit failed on seven missing routes: `/studio`, `/studio/analytics`, `/studio/branding`, `/studio/domain`, `/studio/media`, `/studio/pages`, `/studio/seo`.
-- Wiring audit passed: 982 routes, 0 weak, 0 orphan.
-- Existing persona completion gate ran; new Forge gate passed 7/7.
-- App typecheck reported `lib/order-operations/adapters/transport.ts(6,3)` TS2322 and `(6,22/27/35/44)` TS7031, then timed out. Free physical RAM remained about 30 GB; no repeated whole-app typecheck was launched.
+[PR CI run #1295](https://github.com/davidferra13/CFV-1/actions/runs/36379554855) on prehook commit `8834ba08687d4484977471ff061f84b0d34ef4d5` failed in existing steps: the route policy gate reports public routes `/dfpc` and `/hermes` uncovered; the unit test script passed a literal `tests/unit/**/*.test.ts` glob to Node; the critical test script passed a literal `tests/unit/ledger.*.test.ts` glob; and the dependency audit failed with 84 reported vulnerabilities (6 low, 51 moderate, 22 high, 5 critical). Build and smoke jobs were skipped. This run predates the Forge CI hook and proves nothing about the new step. ChefFlow release remains blocked; no unrelated route, test-script, or dependency changes are included here.
 
-These failures precede this branch: `git grep -n 'studio/analytics' HEAD -- components lib app` identifies `HEAD:components/navigation/nav-config.tsx:1028`; `git ls-tree -r --name-only HEAD -- app` has no studio page tree; `git show HEAD:lib/order-operations/adapters/transport.ts` contains the exact untyped destructured parameter at line 6. `git diff --name-only` showed only the Forge gate and generated wiring audit file among tracked changes; neither nav nor transport was edited here.
+## Historical source-worktree evidence
 
-The missing studio routes need the owning product decision whether to implement routes or remove nav entries; placeholders would misrepresent functionality. The transport type error is a small candidate repair, but that file also has unrelated dirty changes in the primary checkout, so this lane will not overwrite it. Route both to ChefFlow's nav/transport owners, then rerun `npm run regression:firewall` in the canonical release worktree before claiming a ChefFlow release.
+The original isolated source branch `feat/simulation-forge-codex-20260928` began at `422605dd004b584c459692dcd4726b6322d23fc4`. Its earlier `regression:firewall -- --skip-runtime` took 380.37 seconds and exited 1: seven Studio links failed navigation audit, wiring passed with 982 routes and zero weak/orphan routes, its persona gate and Forge gate ran, and its then-untyped order-operations transport produced TypeScript errors before timeout. This is **historical source-branch evidence**, not a full-gate or transport finding on the current main-based review branch. The source's disappearing nightshift worktree incident is recorded in the reuse audit; all later work used named isolated worktrees.
 
-## Worktree handling
+The permanent evidence files retain their original source commits, run IDs, actors, seeds, trajectories, observations and scores. Run IDs gained commit, evaluator, configuration and budget identity in the later marketplace slice; older evidence keeps the older run-ID format.
 
-The initial clean nightshift worktree `C:\PCW\nightshift\chef-flow` lost a newly created Forge directory between two verified writes; no scheduler or owner fleet was changed. The named worktree `C:\Users\david\Documents\CFv1-worktrees\simulation-forge-codex-20260928` isolates task files from that automatic cleanup and from substantial dirty work in the primary checkout. The generated `scripts/wiring-audit-results.json` is not part of the task-owned commit.
-
-Next executable action after independent code push: hand the seven studio route decisions and the transport typing failure to the corresponding ChefFlow owners, then rerun full firewall and promote the branch only after their gates pass. The product runtime is not using the new adapter yet; the next product slice must connect a real candidate source and prove the live discovery route.
+Separate draft [PR #11](https://github.com/davidferra13/CFV-1/pull/11) hides the absent Studio destinations and passes the nav audit; [PR #8](https://github.com/davidferra13/CFV-1/pull/8) fixes test glob enumeration, [PR #10](https://github.com/davidferra13/CFV-1/pull/10) repairs DFPC/Hermes route classification, and [PR #12](https://github.com/davidferra13/CFV-1/pull/12) verifies the visitor-alert test fixture. These are independent reviews, not yet an integrated release revision. The tenant isolation test, broader `createNotification` action boundary, file line budget drift, dependency audit and whole-app gate remain unresolved. Product integration and live behavior verification remain separate work after a green integration revision. No PR merge or deployment has occurred.

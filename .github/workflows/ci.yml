@@ -75,6 +75,11 @@ jobs:
 
       - name: Verify visitor alert notifications
         run: node --import tsx --test tests/unit/visitor-alert.test.ts
+      - name: Simulation Forge focused tests
+        run: node --import tsx --test tools/simulation-forge/*.test.mjs
+
+      - name: Simulation Forge release suite
+        run: node --import tsx tools/simulation-forge/cli.mjs release
 
       - name: Run critical tests (financial, FSM, quotes, auth)
         run: npm run test:critical

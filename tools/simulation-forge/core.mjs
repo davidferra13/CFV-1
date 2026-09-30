@@ -10,17 +10,28 @@ export function validate(s) {
   if (!['synthetic','observed','inferred'].includes(s.provenance?.kind)) throw Error('Provenance kind required')
   return s
 }
-export async function runScenario(s, adapter, { seed = 1, commit = 'unknown', budget: override = {} } = {}) {
+export async function runScenario(s, adapter, { seed = 1, commit = 'unknown', configId = 'default', budget: override = {} } = {}) {
   validate(s)
   const budget = { ...budgetDefaults, ...override }
   if (freemem() < budget.minFreeRamBytes) throw Error('Low memory headroom')
+  if (!Number.isFinite(budget.maxMs) || budget.maxMs <= 0) throw Error('Invalid runtime budget')
   const start = performance.now(), epoch = Date.parse(s.environment.at)
   if (!Number.isFinite(epoch)) throw Error('Invalid environment.at')
+  const controller = new AbortController()
+  const withinBudget = work => {
+    const remaining = budget.maxMs - (performance.now() - start)
+    if (remaining <= 0) { controller.abort(); return Promise.reject(Error('Runtime budget')) }
+    let timer
+    const timeout = new Promise((_, reject) => {
+      timer = setTimeout(() => { controller.abort(); reject(Error('Runtime budget')) }, remaining)
+    })
+    return Promise.race([Promise.resolve().then(work), timeout]).finally(() => clearTimeout(timer))
+  }
   let state = clone(s.initialState), index = 0, error = null
   const trajectory = []
   const emit = (kind, data) => trajectory.push({ index: index++, at: new Date(epoch + index).toISOString(), kind, data: clone(data) })
   let randomState = seed >>> 0
-  const ctx = { actors: clone(s.actors), environment: clone(s.environment), emit,
+  const ctx = { actors: clone(s.actors), environment: clone(s.environment), emit, signal: controller.signal,
     random: () => ((randomState = (Math.imul(randomState, 1664525) + 1013904223) >>> 0) / 4294967296) }
   emit('start', { product: s.product.id, actors: s.actors.map(a => a.id) })
   for (const event of s.events) {
@@ -28,28 +39,39 @@ export async function runScenario(s, adapter, { seed = 1, commit = 'unknown', bu
     emit('input', event)
     const before = clone(state)
     try {
-      const result = await adapter.step(clone(state), clone(event), ctx)
+      const result = await withinBudget(() => adapter.step(clone(state), clone(event), ctx))
       state = result.state
       emit('transition', { before, after: state, messages: result.messages ?? [], toolCalls: result.toolCalls ?? [], decisions: result.decisions ?? [] })
     } catch (e) { error = String(e); emit('error', { message: error }); break }
   }
-  let evalResult
-  try { evalResult = await adapter.evaluate(clone(state), s, clone(trajectory)) }
-  catch (e) { error = String(e); evalResult = { observations: [], scores: {}, violations: [] } }
+  let evalResult = { observations: [], scores: {}, violations: [] }
+  if (!controller.signal.aborted) {
+    try { evalResult = await withinBudget(() => adapter.evaluate(clone(state), s, clone(trajectory), { signal: controller.signal })) }
+    catch (e) { error = String(e) }
+  }
   const violations = [...(evalResult.violations ?? []), ...(error ? [{ invariant: 'engine_error', detail: error }] : [])]
   emit('outcome', { observations: evalResult.observations, scores: evalResult.scores, violations })
-  return { runId: hash([s, seed, adapter.version]), scenarioId: s.id, product: s.product.id, source: s.provenance,
-    adapterVersion: adapter.version, productVersion: s.product.version, model: 'none', seed, commit,
+  return { runId: hash([s, seed, adapter.version, adapter.evaluatorVersion ?? adapter.version, commit, configId, budget]), scenarioId: s.id, product: s.product.id, source: s.provenance,
+    adapterVersion: adapter.version, evaluatorVersion: adapter.evaluatorVersion ?? adapter.version,
+    configId, productVersion: s.product.version, model: 'none', seed, commit,
     environment: s.environment, actors: s.actors, observations: evalResult.observations, scores: evalResult.scores,
     violations, trajectory, measuredMs: +(performance.now() - start).toFixed(3) }
 }
 export async function replay(s, adapter, count = 10, opts = {}) {
   const budget = { ...budgetDefaults, ...opts.budget }
   if (!Number.isInteger(count) || count < 1 || count > budget.maxRuns) throw Error('Run budget exceeded')
+  const seedMode = opts.seedMode ?? 'fixed'
+  if (!['fixed', 'vary'].includes(seedMode)) throw Error('Unknown replay seed mode')
+  const baseSeed = opts.seed ?? 1
+  if (seedMode === 'vary' &&
+    (!Number.isSafeInteger(baseSeed) || baseSeed < 0 || baseSeed + count - 1 > 0xffffffff))
+    throw Error('Replay seed range exceeded')
   const start = performance.now(), runs = []
   for (let i = 0; i < count; i++) {
     if (performance.now() - start > budget.maxMs) throw Error('Replay time budget exceeded')
-    runs.push(await runScenario(s, adapter, { ...opts, budget }))
+    runs.push(await runScenario(s, adapter, {
+      ...opts, seed: seedMode === 'vary' ? baseSeed + i : baseSeed, budget
+    }))
   }
   return runs
 }
@@ -69,7 +91,8 @@ export async function minimize(s, adapter, invariant, opts = {}) {
   const failing = async candidate => { attempts++; return (await runScenario(candidate, adapter, opts)).violations.some(v => v.invariant === invariant) }
   if (!(await failing(smallest))) throw Error('Cannot reproduce failure')
   for (const key of ['events','items']) {
-    for (let i = (key === 'events' ? smallest.events : smallest.initialState.items).length - 1; i >= 0; i--) {
+    const members = key === 'events' ? smallest.events : (Array.isArray(smallest.initialState.items) ? smallest.initialState.items : [])
+    for (let i = members.length - 1; i >= 0; i--) {
       const candidate = clone(smallest)
       if (key === 'events') candidate.events.splice(i, 1)
       else candidate.initialState.items.splice(i, 1)

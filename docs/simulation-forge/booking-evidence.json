@@ -1,0 +1,3875 @@
+{
+  "kind": "simulation-forge-booking-proof",
+  "generatedAt": "2026-09-28T04:25:07.330Z",
+  "commit": "7bff843dca47974a6cc6a12c439d5a3e3c93a23e",
+  "note": "Historical persona with synthetic chef and interactions. The paid FSM state is reached by an explicitly synthetic acknowledgment. No payment, client message or production write occurred.",
+  "source": {
+    "persona": "Chef Flow Personas/Completed/Public/the-enthusiast.txt",
+    "modeledInquiryMap": "lib/inquiries/actions.ts:VALID_TRANSITIONS",
+    "realEventFsm": "lib/events/fsm.ts#validateTransition"
+  },
+  "injected": {
+    "runId": "5ba1dd67596b58a2",
+    "scenarioId": "chef-booking-enthusiast-001:lost-availability",
+    "product": "ChefFlow",
+    "source": {
+      "kind": "inferred",
+      "source": "Chef Flow Personas/Completed/Public/the-enthusiast.txt",
+      "modeledInquiryMap": "lib/inquiries/actions.ts:VALID_TRANSITIONS",
+      "realEventFsm": "lib/events/fsm.ts#validateTransition",
+      "note": "Historical persona; chef, messages, availability, dietary events and deposit acknowledgment are synthetic."
+    },
+    "adapterVersion": "chef-booking-fault-injected-v1",
+    "productVersion": "source-checkout",
+    "model": "none",
+    "seed": 101,
+    "commit": "7bff843dca47974a6cc6a12c439d5a3e3c93a23e",
+    "environment": {
+      "at": "2026-09-27T20:00:00.000Z",
+      "geography": "urban",
+      "serviceStatus": "up",
+      "resources": {},
+      "device": "mobile",
+      "latencyMs": 0,
+      "marketState": {},
+      "chefAvailable": true
+    },
+    "actors": [
+      {
+        "id": "client",
+        "role": "private-chef client",
+        "persona": "The Enthusiast",
+        "goals": [
+          "discover novel local cuisine",
+          "reach usable booking facts"
+        ],
+        "preferences": {
+          "novelty": true,
+          "operationalClarity": true
+        },
+        "knowledge": [],
+        "authority": [
+          "browse"
+        ],
+        "constraints": {
+          "maxPricePerPerson": 150
+        },
+        "tendencies": [
+          "abandon vague price"
+        ],
+        "history": {
+          "rankedPreferences": [
+            {
+              "itemType": "cuisine",
+              "itemValue": "peruvian",
+              "score": 3
+            }
+          ],
+          "suppressedItems": []
+        },
+        "memory": [],
+        "relationships": [],
+        "publicState": {},
+        "privateState": {
+          "budgetRange": [
+            80,
+            150
+          ]
+        }
+      },
+      {
+        "id": "chef",
+        "role": "chef",
+        "persona": "Synthetic available chef",
+        "goals": [
+          "deliver a safe dinner"
+        ],
+        "preferences": {},
+        "knowledge": [],
+        "authority": [
+          "reply",
+          "quote",
+          "confirm",
+          "cancel"
+        ],
+        "constraints": {},
+        "tendencies": [],
+        "history": {},
+        "memory": [],
+        "relationships": [
+          "client"
+        ],
+        "publicState": {},
+        "privateState": {}
+      },
+      {
+        "id": "platform",
+        "role": "marketplace operator",
+        "persona": "Simulation-only platform",
+        "goals": [
+          "deliver a safe dinner"
+        ],
+        "preferences": {},
+        "knowledge": [],
+        "authority": [
+          "match",
+          "record synthetic deposit acknowledgment"
+        ],
+        "constraints": {},
+        "tendencies": [],
+        "history": {},
+        "memory": [],
+        "relationships": [
+          "client",
+          "chef"
+        ],
+        "publicState": {},
+        "privateState": {}
+      }
+    ],
+    "observations": [
+      {
+        "kind": "booking_state",
+        "inquiryStatus": "confirmed",
+        "eventStatus": "confirmed",
+        "chefAvailable": false,
+        "dietary": [
+          "vegan"
+        ],
+        "quoteRevision": 0,
+        "depositAcknowledgments": [
+          "deposit-1"
+        ]
+      },
+      {
+        "kind": "confirmation_snapshots",
+        "values": [
+          {
+            "eventId": "confirm-1",
+            "available": false,
+            "dietaryReviewed": true,
+            "syntheticDepositAcknowledged": true
+          }
+        ]
+      },
+      {
+        "kind": "blocked_events",
+        "values": []
+      }
+    ],
+    "scores": {
+      "simulatedConfirmation": 1,
+      "safeConfirmation": 0,
+      "blockedEvents": 0,
+      "syntheticAcknowledgmentCount": 1
+    },
+    "violations": [
+      {
+        "invariant": "confirmed_requires_available_chef",
+        "class": "availability_recheck",
+        "eventId": "confirm-1"
+      }
+    ],
+    "trajectory": [
+      {
+        "index": 0,
+        "at": "2026-09-27T20:00:00.001Z",
+        "kind": "start",
+        "data": {
+          "product": "ChefFlow",
+          "actors": [
+            "client",
+            "chef",
+            "platform"
+          ]
+        }
+      },
+      {
+        "index": 1,
+        "at": "2026-09-27T20:00:00.002Z",
+        "kind": "input",
+        "data": {
+          "id": "discover-1",
+          "type": "discover",
+          "actor": "client"
+        }
+      },
+      {
+        "index": 2,
+        "at": "2026-09-27T20:00:00.003Z",
+        "kind": "transition",
+        "data": {
+          "before": {
+            "items": [],
+            "selectedChefId": null,
+            "inquiry": {
+              "status": null,
+              "dietary": [
+                "vegan"
+              ],
+              "dietaryVersion": 0,
+              "partySize": 6
+            },
+            "chef": {
+              "id": "chef",
+              "available": true,
+              "supportsDietary": [
+                "vegan"
+              ]
+            },
+            "eventStatus": null,
+            "quoteRevision": null,
+            "acceptedRevision": null,
+            "depositAcknowledgments": [],
+            "processedEvents": [],
+            "confirmationHistory": [],
+            "blocked": []
+          },
+          "after": {
+            "items": [],
+            "selectedChefId": "chef",
+            "inquiry": {
+              "status": null,
+              "dietary": [
+                "vegan"
+              ],
+              "dietaryVersion": 0,
+              "partySize": 6
+            },
+            "chef": {
+              "id": "chef",
+              "available": true,
+              "supportsDietary": [
+                "vegan"
+              ]
+            },
+            "eventStatus": null,
+            "quoteRevision": null,
+            "acceptedRevision": null,
+            "depositAcknowledgments": [],
+            "processedEvents": [
+              "discover-1"
+            ],
+            "confirmationHistory": [],
+            "blocked": []
+          },
+          "messages": [
+            {
+              "from": "platform",
+              "to": "client",
+              "text": "Chef candidate found"
+            }
+          ],
+          "toolCalls": [],
+          "decisions": []
+        }
+      },
+      {
+        "index": 3,
+        "at": "2026-09-27T20:00:00.004Z",
+        "kind": "input",
+        "data": {
+          "id": "inquiry-1",
+          "type": "send_inquiry",
+          "actor": "client"
+        }
+      },
+      {
+        "index": 4,
+        "at": "2026-09-27T20:00:00.005Z",
+        "kind": "transition",
+        "data": {
+          "before": {
+            "items": [],
+            "selectedChefId": "chef",
+            "inquiry": {
+              "status": null,
+              "dietary": [
+                "vegan"
+              ],
+              "dietaryVersion": 0,
+              "partySize": 6
+            },
+            "chef": {
+              "id": "chef",
+              "available": true,
+              "supportsDietary": [
+                "vegan"
+              ]
+            },
+            "eventStatus": null,
+            "quoteRevision": null,
+            "acceptedRevision": null,
+            "depositAcknowledgments": [],
+            "processedEvents": [
+              "discover-1"
+            ],
+            "confirmationHistory": [],
+            "blocked": []
+          },
+          "after": {
+            "items": [],
+            "selectedChefId": "chef",
+            "inquiry": {
+              "status": "new",
+              "dietary": [
+                "vegan"
+              ],
+              "dietaryVersion": 0,
+              "partySize": 6
+            },
+            "chef": {
+              "id": "chef",
+              "available": true,
+              "supportsDietary": [
+                "vegan"
+              ]
+            },
+            "eventStatus": null,
+            "quoteRevision": null,
+            "acceptedRevision": null,
+            "depositAcknowledgments": [],
+            "processedEvents": [
+              "discover-1",
+              "inquiry-1"
+            ],
+            "confirmationHistory": [],
+            "blocked": []
+          },
+          "messages": [
+            {
+              "from": "client",
+              "to": "chef",
+              "text": "Dinner inquiry for six guests"
+            }
+          ],
+          "toolCalls": [],
+          "decisions": []
+        }
+      },
+      {
+        "index": 5,
+        "at": "2026-09-27T20:00:00.006Z",
+        "kind": "input",
+        "data": {
+          "id": "chef-reply-1",
+          "type": "chef_reply",
+          "actor": "chef"
+        }
+      },
+      {
+        "index": 6,
+        "at": "2026-09-27T20:00:00.007Z",
+        "kind": "transition",
+        "data": {
+          "before": {
+            "items": [],
+            "selectedChefId": "chef",
+            "inquiry": {
+              "status": "new",
+              "dietary": [
+                "vegan"
+              ],
+              "dietaryVersion": 0,
+              "partySize": 6
+            },
+            "chef": {
+              "id": "chef",
+              "available": true,
+              "supportsDietary": [
+                "vegan"
+              ]
+            },
+            "eventStatus": null,
+            "quoteRevision": null,
+            "acceptedRevision": null,
+            "depositAcknowledgments": [],
+            "processedEvents": [
+              "discover-1",
+              "inquiry-1"
+            ],
+            "confirmationHistory": [],
+            "blocked": []
+          },
+          "after": {
+            "items": [],
+            "selectedChefId": "chef",
+            "inquiry": {
+              "status": "awaiting_client",
+              "dietary": [
+                "vegan"
+              ],
+              "dietaryVersion": 0,
+              "partySize": 6
+            },
+            "chef": {
+              "id": "chef",
+              "available": true,
+              "supportsDietary": [
+                "vegan"
+              ]
+            },
+            "eventStatus": null,
+            "quoteRevision": null,
+            "acceptedRevision": null,
+            "depositAcknowledgments": [],
+            "processedEvents": [
+              "discover-1",
+              "inquiry-1",
+              "chef-reply-1"
+            ],
+            "confirmationHistory": [],
+            "blocked": []
+          },
+          "messages": [
+            {
+              "from": "chef",
+              "to": "client",
+              "text": "Please confirm dietary needs and timing"
+            }
+          ],
+          "toolCalls": [],
+          "decisions": [
+            {
+              "kind": "modeled_inquiry_transition",
+              "from": "new",
+              "to": "awaiting_client"
+            }
+          ]
+        }
+      },
+      {
+        "index": 7,
+        "at": "2026-09-27T20:00:00.008Z",
+        "kind": "input",
+        "data": {
+          "id": "client-reply-1",
+          "type": "client_reply",
+          "actor": "client"
+        }
+      },
+      {
+        "index": 8,
+        "at": "2026-09-27T20:00:00.009Z",
+        "kind": "transition",
+        "data": {
+          "before": {
+            "items": [],
+            "selectedChefId": "chef",
+            "inquiry": {
+              "status": "awaiting_client",
+              "dietary": [
+                "vegan"
+              ],
+              "dietaryVersion": 0,
+              "partySize": 6
+            },
+            "chef": {
+              "id": "chef",
+              "available": true,
+              "supportsDietary": [
+                "vegan"
+              ]
+            },
+            "eventStatus": null,
+            "quoteRevision": null,
+            "acceptedRevision": null,
+            "depositAcknowledgments": [],
+            "processedEvents": [
+              "discover-1",
+              "inquiry-1",
+              "chef-reply-1"
+            ],
+            "confirmationHistory": [],
+            "blocked": []
+          },
+          "after": {
+            "items": [],
+            "selectedChefId": "chef",
+            "inquiry": {
+              "status": "awaiting_chef",
+              "dietary": [
+                "vegan"
+              ],
+              "dietaryVersion": 0,
+              "partySize": 6
+            },
+            "chef": {
+              "id": "chef",
+              "available": true,
+              "supportsDietary": [
+                "vegan"
+              ]
+            },
+            "eventStatus": null,
+            "quoteRevision": null,
+            "acceptedRevision": null,
+            "depositAcknowledgments": [],
+            "processedEvents": [
+              "discover-1",
+              "inquiry-1",
+              "chef-reply-1",
+              "client-reply-1"
+            ],
+            "confirmationHistory": [],
+            "blocked": []
+          },
+          "messages": [
+            {
+              "from": "client",
+              "to": "chef",
+              "text": "Six guests; vegan requirement confirmed"
+            }
+          ],
+          "toolCalls": [],
+          "decisions": [
+            {
+              "kind": "modeled_inquiry_transition",
+              "from": "awaiting_client",
+              "to": "awaiting_chef"
+            }
+          ]
+        }
+      },
+      {
+        "index": 9,
+        "at": "2026-09-27T20:00:00.010Z",
+        "kind": "input",
+        "data": {
+          "id": "quote-1",
+          "type": "chef_quote",
+          "actor": "chef"
+        }
+      },
+      {
+        "index": 10,
+        "at": "2026-09-27T20:00:00.011Z",
+        "kind": "transition",
+        "data": {
+          "before": {
+            "items": [],
+            "selectedChefId": "chef",
+            "inquiry": {
+              "status": "awaiting_chef",
+              "dietary": [
+                "vegan"
+              ],
+              "dietaryVersion": 0,
+              "partySize": 6
+            },
+            "chef": {
+              "id": "chef",
+              "available": true,
+              "supportsDietary": [
+                "vegan"
+              ]
+            },
+            "eventStatus": null,
+            "quoteRevision": null,
+            "acceptedRevision": null,
+            "depositAcknowledgments": [],
+            "processedEvents": [
+              "discover-1",
+              "inquiry-1",
+              "chef-reply-1",
+              "client-reply-1"
+            ],
+            "confirmationHistory": [],
+            "blocked": []
+          },
+          "after": {
+            "items": [],
+            "selectedChefId": "chef",
+            "inquiry": {
+              "status": "quoted",
+              "dietary": [
+                "vegan"
+              ],
+              "dietaryVersion": 0,
+              "partySize": 6
+            },
+            "chef": {
+              "id": "chef",
+              "available": true,
+              "supportsDietary": [
+                "vegan"
+              ]
+            },
+            "eventStatus": "proposed",
+            "quoteRevision": 0,
+            "acceptedRevision": null,
+            "depositAcknowledgments": [],
+            "processedEvents": [
+              "discover-1",
+              "inquiry-1",
+              "chef-reply-1",
+              "client-reply-1",
+              "quote-1"
+            ],
+            "confirmationHistory": [],
+            "blocked": []
+          },
+          "messages": [
+            {
+              "from": "chef",
+              "to": "client",
+              "text": "Synthetic quote and menu proposal ready"
+            }
+          ],
+          "toolCalls": [
+            {
+              "name": "validateTransition",
+              "source": "lib/events/fsm.ts",
+              "from": "draft",
+              "to": "proposed",
+              "actor": "chef",
+              "valid": true
+            }
+          ],
+          "decisions": [
+            {
+              "kind": "modeled_inquiry_transition",
+              "from": "awaiting_chef",
+              "to": "quoted"
+            },
+            {
+              "kind": "synthetic_event_materialized",
+              "from": null,
+              "to": "draft"
+            },
+            {
+              "kind": "real_fsm_rule_applied",
+              "from": "draft",
+              "to": "proposed"
+            }
+          ]
+        }
+      },
+      {
+        "index": 11,
+        "at": "2026-09-27T20:00:00.012Z",
+        "kind": "input",
+        "data": {
+          "id": "menu-1",
+          "type": "menu_preview",
+          "actor": "chef"
+        }
+      },
+      {
+        "index": 12,
+        "at": "2026-09-27T20:00:00.013Z",
+        "kind": "transition",
+        "data": {
+          "before": {
+            "items": [],
+            "selectedChefId": "chef",
+            "inquiry": {
+              "status": "quoted",
+              "dietary": [
+                "vegan"
+              ],
+              "dietaryVersion": 0,
+              "partySize": 6
+            },
+            "chef": {
+              "id": "chef",
+              "available": true,
+              "supportsDietary": [
+                "vegan"
+              ]
+            },
+            "eventStatus": "proposed",
+            "quoteRevision": 0,
+            "acceptedRevision": null,
+            "depositAcknowledgments": [],
+            "processedEvents": [
+              "discover-1",
+              "inquiry-1",
+              "chef-reply-1",
+              "client-reply-1",
+              "quote-1"
+            ],
+            "confirmationHistory": [],
+            "blocked": []
+          },
+          "after": {
+            "items": [],
+            "selectedChefId": "chef",
+            "inquiry": {
+              "status": "quoted",
+              "dietary": [
+                "vegan"
+              ],
+              "dietaryVersion": 0,
+              "partySize": 6
+            },
+            "chef": {
+              "id": "chef",
+              "available": true,
+              "supportsDietary": [
+                "vegan"
+              ]
+            },
+            "eventStatus": "proposed",
+            "quoteRevision": 0,
+            "acceptedRevision": null,
+            "depositAcknowledgments": [],
+            "processedEvents": [
+              "discover-1",
+              "inquiry-1",
+              "chef-reply-1",
+              "client-reply-1",
+              "quote-1",
+              "menu-1"
+            ],
+            "confirmationHistory": [],
+            "blocked": []
+          },
+          "messages": [
+            {
+              "from": "chef",
+              "to": "client",
+              "text": "Synthetic menu preview shared"
+            }
+          ],
+          "toolCalls": [],
+          "decisions": []
+        }
+      },
+      {
+        "index": 13,
+        "at": "2026-09-27T20:00:00.014Z",
+        "kind": "input",
+        "data": {
+          "id": "accept-1",
+          "type": "client_accept",
+          "actor": "client"
+        }
+      },
+      {
+        "index": 14,
+        "at": "2026-09-27T20:00:00.015Z",
+        "kind": "transition",
+        "data": {
+          "before": {
+            "items": [],
+            "selectedChefId": "chef",
+            "inquiry": {
+              "status": "quoted",
+              "dietary": [
+                "vegan"
+              ],
+              "dietaryVersion": 0,
+              "partySize": 6
+            },
+            "chef": {
+              "id": "chef",
+              "available": true,
+              "supportsDietary": [
+                "vegan"
+              ]
+            },
+            "eventStatus": "proposed",
+            "quoteRevision": 0,
+            "acceptedRevision": null,
+            "depositAcknowledgments": [],
+            "processedEvents": [
+              "discover-1",
+              "inquiry-1",
+              "chef-reply-1",
+              "client-reply-1",
+              "quote-1",
+              "menu-1"
+            ],
+            "confirmationHistory": [],
+            "blocked": []
+          },
+          "after": {
+            "items": [],
+            "selectedChefId": "chef",
+            "inquiry": {
+              "status": "quoted",
+              "dietary": [
+                "vegan"
+              ],
+              "dietaryVersion": 0,
+              "partySize": 6
+            },
+            "chef": {
+              "id": "chef",
+              "available": true,
+              "supportsDietary": [
+                "vegan"
+              ]
+            },
+            "eventStatus": "accepted",
+            "quoteRevision": 0,
+            "acceptedRevision": 0,
+            "depositAcknowledgments": [],
+            "processedEvents": [
+              "discover-1",
+              "inquiry-1",
+              "chef-reply-1",
+              "client-reply-1",
+              "quote-1",
+              "menu-1",
+              "accept-1"
+            ],
+            "confirmationHistory": [],
+            "blocked": []
+          },
+          "messages": [
+            {
+              "from": "client",
+              "to": "chef",
+              "text": "Synthetic proposal accepted"
+            }
+          ],
+          "toolCalls": [
+            {
+              "name": "validateTransition",
+              "source": "lib/events/fsm.ts",
+              "from": "proposed",
+              "to": "accepted",
+              "actor": "client",
+              "valid": true
+            }
+          ],
+          "decisions": [
+            {
+              "kind": "real_fsm_rule_applied",
+              "from": "proposed",
+              "to": "accepted"
+            }
+          ]
+        }
+      },
+      {
+        "index": 15,
+        "at": "2026-09-27T20:00:00.016Z",
+        "kind": "input",
+        "data": {
+          "id": "deposit-1",
+          "type": "deposit_ack",
+          "actor": "platform",
+          "synthetic": true
+        }
+      },
+      {
+        "index": 16,
+        "at": "2026-09-27T20:00:00.017Z",
+        "kind": "transition",
+        "data": {
+          "before": {
+            "items": [],
+            "selectedChefId": "chef",
+            "inquiry": {
+              "status": "quoted",
+              "dietary": [
+                "vegan"
+              ],
+              "dietaryVersion": 0,
+              "partySize": 6
+            },
+            "chef": {
+              "id": "chef",
+              "available": true,
+              "supportsDietary": [
+                "vegan"
+              ]
+            },
+            "eventStatus": "accepted",
+            "quoteRevision": 0,
+            "acceptedRevision": 0,
+            "depositAcknowledgments": [],
+            "processedEvents": [
+              "discover-1",
+              "inquiry-1",
+              "chef-reply-1",
+              "client-reply-1",
+              "quote-1",
+              "menu-1",
+              "accept-1"
+            ],
+            "confirmationHistory": [],
+            "blocked": []
+          },
+          "after": {
+            "items": [],
+            "selectedChefId": "chef",
+            "inquiry": {
+              "status": "quoted",
+              "dietary": [
+                "vegan"
+              ],
+              "dietaryVersion": 0,
+              "partySize": 6
+            },
+            "chef": {
+              "id": "chef",
+              "available": true,
+              "supportsDietary": [
+                "vegan"
+              ]
+            },
+            "eventStatus": "paid",
+            "quoteRevision": 0,
+            "acceptedRevision": 0,
+            "depositAcknowledgments": [
+              "deposit-1"
+            ],
+            "processedEvents": [
+              "discover-1",
+              "inquiry-1",
+              "chef-reply-1",
+              "client-reply-1",
+              "quote-1",
+              "menu-1",
+              "accept-1",
+              "deposit-1"
+            ],
+            "confirmationHistory": [],
+            "blocked": []
+          },
+          "messages": [
+            {
+              "from": "platform",
+              "to": "chef",
+              "text": "Synthetic deposit acknowledgment recorded; no payment processed"
+            }
+          ],
+          "toolCalls": [
+            {
+              "name": "validateTransition",
+              "source": "lib/events/fsm.ts",
+              "from": "accepted",
+              "to": "paid",
+              "actor": "system",
+              "valid": true
+            }
+          ],
+          "decisions": [
+            {
+              "kind": "real_fsm_rule_applied",
+              "from": "accepted",
+              "to": "paid"
+            },
+            {
+              "kind": "synthetic_deposit_ack",
+              "externalPayment": false,
+              "eventId": "deposit-1"
+            }
+          ]
+        }
+      },
+      {
+        "index": 17,
+        "at": "2026-09-27T20:00:00.018Z",
+        "kind": "input",
+        "data": {
+          "id": "availability-lost",
+          "type": "availability_change",
+          "actor": "platform",
+          "available": false
+        }
+      },
+      {
+        "index": 18,
+        "at": "2026-09-27T20:00:00.019Z",
+        "kind": "transition",
+        "data": {
+          "before": {
+            "items": [],
+            "selectedChefId": "chef",
+            "inquiry": {
+              "status": "quoted",
+              "dietary": [
+                "vegan"
+              ],
+              "dietaryVersion": 0,
+              "partySize": 6
+            },
+            "chef": {
+              "id": "chef",
+              "available": true,
+              "supportsDietary": [
+                "vegan"
+              ]
+            },
+            "eventStatus": "paid",
+            "quoteRevision": 0,
+            "acceptedRevision": 0,
+            "depositAcknowledgments": [
+              "deposit-1"
+            ],
+            "processedEvents": [
+              "discover-1",
+              "inquiry-1",
+              "chef-reply-1",
+              "client-reply-1",
+              "quote-1",
+              "menu-1",
+              "accept-1",
+              "deposit-1"
+            ],
+            "confirmationHistory": [],
+            "blocked": []
+          },
+          "after": {
+            "items": [],
+            "selectedChefId": "chef",
+            "inquiry": {
+              "status": "quoted",
+              "dietary": [
+                "vegan"
+              ],
+              "dietaryVersion": 0,
+              "partySize": 6
+            },
+            "chef": {
+              "id": "chef",
+              "available": false,
+              "supportsDietary": [
+                "vegan"
+              ]
+            },
+            "eventStatus": "paid",
+            "quoteRevision": 0,
+            "acceptedRevision": 0,
+            "depositAcknowledgments": [
+              "deposit-1"
+            ],
+            "processedEvents": [
+              "discover-1",
+              "inquiry-1",
+              "chef-reply-1",
+              "client-reply-1",
+              "quote-1",
+              "menu-1",
+              "accept-1",
+              "deposit-1",
+              "availability-lost"
+            ],
+            "confirmationHistory": [],
+            "blocked": []
+          },
+          "messages": [],
+          "toolCalls": [],
+          "decisions": [
+            {
+              "kind": "availability_change",
+              "available": false
+            }
+          ]
+        }
+      },
+      {
+        "index": 19,
+        "at": "2026-09-27T20:00:00.020Z",
+        "kind": "input",
+        "data": {
+          "id": "confirm-1",
+          "type": "chef_confirm",
+          "actor": "chef"
+        }
+      },
+      {
+        "index": 20,
+        "at": "2026-09-27T20:00:00.021Z",
+        "kind": "transition",
+        "data": {
+          "before": {
+            "items": [],
+            "selectedChefId": "chef",
+            "inquiry": {
+              "status": "quoted",
+              "dietary": [
+                "vegan"
+              ],
+              "dietaryVersion": 0,
+              "partySize": 6
+            },
+            "chef": {
+              "id": "chef",
+              "available": false,
+              "supportsDietary": [
+                "vegan"
+              ]
+            },
+            "eventStatus": "paid",
+            "quoteRevision": 0,
+            "acceptedRevision": 0,
+            "depositAcknowledgments": [
+              "deposit-1"
+            ],
+            "processedEvents": [
+              "discover-1",
+              "inquiry-1",
+              "chef-reply-1",
+              "client-reply-1",
+              "quote-1",
+              "menu-1",
+              "accept-1",
+              "deposit-1",
+              "availability-lost"
+            ],
+            "confirmationHistory": [],
+            "blocked": []
+          },
+          "after": {
+            "items": [],
+            "selectedChefId": "chef",
+            "inquiry": {
+              "status": "confirmed",
+              "dietary": [
+                "vegan"
+              ],
+              "dietaryVersion": 0,
+              "partySize": 6
+            },
+            "chef": {
+              "id": "chef",
+              "available": false,
+              "supportsDietary": [
+                "vegan"
+              ]
+            },
+            "eventStatus": "confirmed",
+            "quoteRevision": 0,
+            "acceptedRevision": 0,
+            "depositAcknowledgments": [
+              "deposit-1"
+            ],
+            "processedEvents": [
+              "discover-1",
+              "inquiry-1",
+              "chef-reply-1",
+              "client-reply-1",
+              "quote-1",
+              "menu-1",
+              "accept-1",
+              "deposit-1",
+              "availability-lost",
+              "confirm-1"
+            ],
+            "confirmationHistory": [
+              {
+                "eventId": "confirm-1",
+                "available": false,
+                "dietaryReviewed": true,
+                "syntheticDepositAcknowledged": true
+              }
+            ],
+            "blocked": []
+          },
+          "messages": [
+            {
+              "from": "platform",
+              "to": "client",
+              "text": "Simulation-only booking confirmed"
+            }
+          ],
+          "toolCalls": [
+            {
+              "name": "validateTransition",
+              "source": "lib/events/fsm.ts",
+              "from": "paid",
+              "to": "confirmed",
+              "actor": "chef",
+              "valid": true
+            }
+          ],
+          "decisions": [
+            {
+              "kind": "real_fsm_rule_applied",
+              "from": "paid",
+              "to": "confirmed"
+            },
+            {
+              "kind": "modeled_inquiry_transition",
+              "from": "quoted",
+              "to": "confirmed"
+            }
+          ]
+        }
+      },
+      {
+        "index": 21,
+        "at": "2026-09-27T20:00:00.022Z",
+        "kind": "outcome",
+        "data": {
+          "observations": [
+            {
+              "kind": "booking_state",
+              "inquiryStatus": "confirmed",
+              "eventStatus": "confirmed",
+              "chefAvailable": false,
+              "dietary": [
+                "vegan"
+              ],
+              "quoteRevision": 0,
+              "depositAcknowledgments": [
+                "deposit-1"
+              ]
+            },
+            {
+              "kind": "confirmation_snapshots",
+              "values": [
+                {
+                  "eventId": "confirm-1",
+                  "available": false,
+                  "dietaryReviewed": true,
+                  "syntheticDepositAcknowledged": true
+                }
+              ]
+            },
+            {
+              "kind": "blocked_events",
+              "values": []
+            }
+          ],
+          "scores": {
+            "simulatedConfirmation": 1,
+            "safeConfirmation": 0,
+            "blockedEvents": 0,
+            "syntheticAcknowledgmentCount": 1
+          },
+          "violations": [
+            {
+              "invariant": "confirmed_requires_available_chef",
+              "class": "availability_recheck",
+              "eventId": "confirm-1"
+            }
+          ]
+        }
+      }
+    ],
+    "measuredMs": 2.891
+  },
+  "minimized": {
+    "attempts": 11,
+    "eventCount": 9,
+    "fixture": "tools/simulation-forge/fixtures/booking-availability-regression.json",
+    "evidence": {
+      "runId": "6ddaa0c5b5cd6152",
+      "scenarioId": "chef-booking-enthusiast-001:lost-availability",
+      "product": "ChefFlow",
+      "source": {
+        "kind": "inferred",
+        "source": "Chef Flow Personas/Completed/Public/the-enthusiast.txt",
+        "modeledInquiryMap": "lib/inquiries/actions.ts:VALID_TRANSITIONS",
+        "realEventFsm": "lib/events/fsm.ts#validateTransition",
+        "note": "Historical persona; chef, messages, availability, dietary events and deposit acknowledgment are synthetic."
+      },
+      "adapterVersion": "chef-booking-fault-injected-v1",
+      "productVersion": "source-checkout",
+      "model": "none",
+      "seed": 101,
+      "commit": "7bff843dca47974a6cc6a12c439d5a3e3c93a23e",
+      "environment": {
+        "at": "2026-09-27T20:00:00.000Z",
+        "geography": "urban",
+        "serviceStatus": "up",
+        "resources": {},
+        "device": "mobile",
+        "latencyMs": 0,
+        "marketState": {},
+        "chefAvailable": true
+      },
+      "actors": [
+        {
+          "id": "client",
+          "role": "private-chef client",
+          "persona": "The Enthusiast",
+          "goals": [
+            "discover novel local cuisine",
+            "reach usable booking facts"
+          ],
+          "preferences": {
+            "novelty": true,
+            "operationalClarity": true
+          },
+          "knowledge": [],
+          "authority": [
+            "browse"
+          ],
+          "constraints": {
+            "maxPricePerPerson": 150
+          },
+          "tendencies": [
+            "abandon vague price"
+          ],
+          "history": {
+            "rankedPreferences": [
+              {
+                "itemType": "cuisine",
+                "itemValue": "peruvian",
+                "score": 3
+              }
+            ],
+            "suppressedItems": []
+          },
+          "memory": [],
+          "relationships": [],
+          "publicState": {},
+          "privateState": {
+            "budgetRange": [
+              80,
+              150
+            ]
+          }
+        },
+        {
+          "id": "chef",
+          "role": "chef",
+          "persona": "Synthetic available chef",
+          "goals": [
+            "deliver a safe dinner"
+          ],
+          "preferences": {},
+          "knowledge": [],
+          "authority": [
+            "reply",
+            "quote",
+            "confirm",
+            "cancel"
+          ],
+          "constraints": {},
+          "tendencies": [],
+          "history": {},
+          "memory": [],
+          "relationships": [
+            "client"
+          ],
+          "publicState": {},
+          "privateState": {}
+        },
+        {
+          "id": "platform",
+          "role": "marketplace operator",
+          "persona": "Simulation-only platform",
+          "goals": [
+            "deliver a safe dinner"
+          ],
+          "preferences": {},
+          "knowledge": [],
+          "authority": [
+            "match",
+            "record synthetic deposit acknowledgment"
+          ],
+          "constraints": {},
+          "tendencies": [],
+          "history": {},
+          "memory": [],
+          "relationships": [
+            "client",
+            "chef"
+          ],
+          "publicState": {},
+          "privateState": {}
+        }
+      ],
+      "observations": [
+        {
+          "kind": "booking_state",
+          "inquiryStatus": "confirmed",
+          "eventStatus": "confirmed",
+          "chefAvailable": false,
+          "dietary": [
+            "vegan"
+          ],
+          "quoteRevision": 0,
+          "depositAcknowledgments": [
+            "deposit-1"
+          ]
+        },
+        {
+          "kind": "confirmation_snapshots",
+          "values": [
+            {
+              "eventId": "confirm-1",
+              "available": false,
+              "dietaryReviewed": true,
+              "syntheticDepositAcknowledged": true
+            }
+          ]
+        },
+        {
+          "kind": "blocked_events",
+          "values": []
+        }
+      ],
+      "scores": {
+        "simulatedConfirmation": 1,
+        "safeConfirmation": 0,
+        "blockedEvents": 0,
+        "syntheticAcknowledgmentCount": 1
+      },
+      "violations": [
+        {
+          "invariant": "confirmed_requires_available_chef",
+          "class": "availability_recheck",
+          "eventId": "confirm-1"
+        }
+      ],
+      "trajectory": [
+        {
+          "index": 0,
+          "at": "2026-09-27T20:00:00.001Z",
+          "kind": "start",
+          "data": {
+            "product": "ChefFlow",
+            "actors": [
+              "client",
+              "chef",
+              "platform"
+            ]
+          }
+        },
+        {
+          "index": 1,
+          "at": "2026-09-27T20:00:00.002Z",
+          "kind": "input",
+          "data": {
+            "id": "discover-1",
+            "type": "discover",
+            "actor": "client"
+          }
+        },
+        {
+          "index": 2,
+          "at": "2026-09-27T20:00:00.003Z",
+          "kind": "transition",
+          "data": {
+            "before": {
+              "items": [],
+              "selectedChefId": null,
+              "inquiry": {
+                "status": null,
+                "dietary": [
+                  "vegan"
+                ],
+                "dietaryVersion": 0,
+                "partySize": 6
+              },
+              "chef": {
+                "id": "chef",
+                "available": true,
+                "supportsDietary": [
+                  "vegan"
+                ]
+              },
+              "eventStatus": null,
+              "quoteRevision": null,
+              "acceptedRevision": null,
+              "depositAcknowledgments": [],
+              "processedEvents": [],
+              "confirmationHistory": [],
+              "blocked": []
+            },
+            "after": {
+              "items": [],
+              "selectedChefId": "chef",
+              "inquiry": {
+                "status": null,
+                "dietary": [
+                  "vegan"
+                ],
+                "dietaryVersion": 0,
+                "partySize": 6
+              },
+              "chef": {
+                "id": "chef",
+                "available": true,
+                "supportsDietary": [
+                  "vegan"
+                ]
+              },
+              "eventStatus": null,
+              "quoteRevision": null,
+              "acceptedRevision": null,
+              "depositAcknowledgments": [],
+              "processedEvents": [
+                "discover-1"
+              ],
+              "confirmationHistory": [],
+              "blocked": []
+            },
+            "messages": [
+              {
+                "from": "platform",
+                "to": "client",
+                "text": "Chef candidate found"
+              }
+            ],
+            "toolCalls": [],
+            "decisions": []
+          }
+        },
+        {
+          "index": 3,
+          "at": "2026-09-27T20:00:00.004Z",
+          "kind": "input",
+          "data": {
+            "id": "inquiry-1",
+            "type": "send_inquiry",
+            "actor": "client"
+          }
+        },
+        {
+          "index": 4,
+          "at": "2026-09-27T20:00:00.005Z",
+          "kind": "transition",
+          "data": {
+            "before": {
+              "items": [],
+              "selectedChefId": "chef",
+              "inquiry": {
+                "status": null,
+                "dietary": [
+                  "vegan"
+                ],
+                "dietaryVersion": 0,
+                "partySize": 6
+              },
+              "chef": {
+                "id": "chef",
+                "available": true,
+                "supportsDietary": [
+                  "vegan"
+                ]
+              },
+              "eventStatus": null,
+              "quoteRevision": null,
+              "acceptedRevision": null,
+              "depositAcknowledgments": [],
+              "processedEvents": [
+                "discover-1"
+              ],
+              "confirmationHistory": [],
+              "blocked": []
+            },
+            "after": {
+              "items": [],
+              "selectedChefId": "chef",
+              "inquiry": {
+                "status": "new",
+                "dietary": [
+                  "vegan"
+                ],
+                "dietaryVersion": 0,
+                "partySize": 6
+              },
+              "chef": {
+                "id": "chef",
+                "available": true,
+                "supportsDietary": [
+                  "vegan"
+                ]
+              },
+              "eventStatus": null,
+              "quoteRevision": null,
+              "acceptedRevision": null,
+              "depositAcknowledgments": [],
+              "processedEvents": [
+                "discover-1",
+                "inquiry-1"
+              ],
+              "confirmationHistory": [],
+              "blocked": []
+            },
+            "messages": [
+              {
+                "from": "client",
+                "to": "chef",
+                "text": "Dinner inquiry for six guests"
+              }
+            ],
+            "toolCalls": [],
+            "decisions": []
+          }
+        },
+        {
+          "index": 5,
+          "at": "2026-09-27T20:00:00.006Z",
+          "kind": "input",
+          "data": {
+            "id": "chef-reply-1",
+            "type": "chef_reply",
+            "actor": "chef"
+          }
+        },
+        {
+          "index": 6,
+          "at": "2026-09-27T20:00:00.007Z",
+          "kind": "transition",
+          "data": {
+            "before": {
+              "items": [],
+              "selectedChefId": "chef",
+              "inquiry": {
+                "status": "new",
+                "dietary": [
+                  "vegan"
+                ],
+                "dietaryVersion": 0,
+                "partySize": 6
+              },
+              "chef": {
+                "id": "chef",
+                "available": true,
+                "supportsDietary": [
+                  "vegan"
+                ]
+              },
+              "eventStatus": null,
+              "quoteRevision": null,
+              "acceptedRevision": null,
+              "depositAcknowledgments": [],
+              "processedEvents": [
+                "discover-1",
+                "inquiry-1"
+              ],
+              "confirmationHistory": [],
+              "blocked": []
+            },
+            "after": {
+              "items": [],
+              "selectedChefId": "chef",
+              "inquiry": {
+                "status": "awaiting_client",
+                "dietary": [
+                  "vegan"
+                ],
+                "dietaryVersion": 0,
+                "partySize": 6
+              },
+              "chef": {
+                "id": "chef",
+                "available": true,
+                "supportsDietary": [
+                  "vegan"
+                ]
+              },
+              "eventStatus": null,
+              "quoteRevision": null,
+              "acceptedRevision": null,
+              "depositAcknowledgments": [],
+              "processedEvents": [
+                "discover-1",
+                "inquiry-1",
+                "chef-reply-1"
+              ],
+              "confirmationHistory": [],
+              "blocked": []
+            },
+            "messages": [
+              {
+                "from": "chef",
+                "to": "client",
+                "text": "Please confirm dietary needs and timing"
+              }
+            ],
+            "toolCalls": [],
+            "decisions": [
+              {
+                "kind": "modeled_inquiry_transition",
+                "from": "new",
+                "to": "awaiting_client"
+              }
+            ]
+          }
+        },
+        {
+          "index": 7,
+          "at": "2026-09-27T20:00:00.008Z",
+          "kind": "input",
+          "data": {
+            "id": "client-reply-1",
+            "type": "client_reply",
+            "actor": "client"
+          }
+        },
+        {
+          "index": 8,
+          "at": "2026-09-27T20:00:00.009Z",
+          "kind": "transition",
+          "data": {
+            "before": {
+              "items": [],
+              "selectedChefId": "chef",
+              "inquiry": {
+                "status": "awaiting_client",
+                "dietary": [
+                  "vegan"
+                ],
+                "dietaryVersion": 0,
+                "partySize": 6
+              },
+              "chef": {
+                "id": "chef",
+                "available": true,
+                "supportsDietary": [
+                  "vegan"
+                ]
+              },
+              "eventStatus": null,
+              "quoteRevision": null,
+              "acceptedRevision": null,
+              "depositAcknowledgments": [],
+              "processedEvents": [
+                "discover-1",
+                "inquiry-1",
+                "chef-reply-1"
+              ],
+              "confirmationHistory": [],
+              "blocked": []
+            },
+            "after": {
+              "items": [],
+              "selectedChefId": "chef",
+              "inquiry": {
+                "status": "awaiting_chef",
+                "dietary": [
+                  "vegan"
+                ],
+                "dietaryVersion": 0,
+                "partySize": 6
+              },
+              "chef": {
+                "id": "chef",
+                "available": true,
+                "supportsDietary": [
+                  "vegan"
+                ]
+              },
+              "eventStatus": null,
+              "quoteRevision": null,
+              "acceptedRevision": null,
+              "depositAcknowledgments": [],
+              "processedEvents": [
+                "discover-1",
+                "inquiry-1",
+                "chef-reply-1",
+                "client-reply-1"
+              ],
+              "confirmationHistory": [],
+              "blocked": []
+            },
+            "messages": [
+              {
+                "from": "client",
+                "to": "chef",
+                "text": "Six guests; vegan requirement confirmed"
+              }
+            ],
+            "toolCalls": [],
+            "decisions": [
+              {
+                "kind": "modeled_inquiry_transition",
+                "from": "awaiting_client",
+                "to": "awaiting_chef"
+              }
+            ]
+          }
+        },
+        {
+          "index": 9,
+          "at": "2026-09-27T20:00:00.010Z",
+          "kind": "input",
+          "data": {
+            "id": "quote-1",
+            "type": "chef_quote",
+            "actor": "chef"
+          }
+        },
+        {
+          "index": 10,
+          "at": "2026-09-27T20:00:00.011Z",
+          "kind": "transition",
+          "data": {
+            "before": {
+              "items": [],
+              "selectedChefId": "chef",
+              "inquiry": {
+                "status": "awaiting_chef",
+                "dietary": [
+                  "vegan"
+                ],
+                "dietaryVersion": 0,
+                "partySize": 6
+              },
+              "chef": {
+                "id": "chef",
+                "available": true,
+                "supportsDietary": [
+                  "vegan"
+                ]
+              },
+              "eventStatus": null,
+              "quoteRevision": null,
+              "acceptedRevision": null,
+              "depositAcknowledgments": [],
+              "processedEvents": [
+                "discover-1",
+                "inquiry-1",
+                "chef-reply-1",
+                "client-reply-1"
+              ],
+              "confirmationHistory": [],
+              "blocked": []
+            },
+            "after": {
+              "items": [],
+              "selectedChefId": "chef",
+              "inquiry": {
+                "status": "quoted",
+                "dietary": [
+                  "vegan"
+                ],
+                "dietaryVersion": 0,
+                "partySize": 6
+              },
+              "chef": {
+                "id": "chef",
+                "available": true,
+                "supportsDietary": [
+                  "vegan"
+                ]
+              },
+              "eventStatus": "proposed",
+              "quoteRevision": 0,
+              "acceptedRevision": null,
+              "depositAcknowledgments": [],
+              "processedEvents": [
+                "discover-1",
+                "inquiry-1",
+                "chef-reply-1",
+                "client-reply-1",
+                "quote-1"
+              ],
+              "confirmationHistory": [],
+              "blocked": []
+            },
+            "messages": [
+              {
+                "from": "chef",
+                "to": "client",
+                "text": "Synthetic quote and menu proposal ready"
+              }
+            ],
+            "toolCalls": [
+              {
+                "name": "validateTransition",
+                "source": "lib/events/fsm.ts",
+                "from": "draft",
+                "to": "proposed",
+                "actor": "chef",
+                "valid": true
+              }
+            ],
+            "decisions": [
+              {
+                "kind": "modeled_inquiry_transition",
+                "from": "awaiting_chef",
+                "to": "quoted"
+              },
+              {
+                "kind": "synthetic_event_materialized",
+                "from": null,
+                "to": "draft"
+              },
+              {
+                "kind": "real_fsm_rule_applied",
+                "from": "draft",
+                "to": "proposed"
+              }
+            ]
+          }
+        },
+        {
+          "index": 11,
+          "at": "2026-09-27T20:00:00.012Z",
+          "kind": "input",
+          "data": {
+            "id": "accept-1",
+            "type": "client_accept",
+            "actor": "client"
+          }
+        },
+        {
+          "index": 12,
+          "at": "2026-09-27T20:00:00.013Z",
+          "kind": "transition",
+          "data": {
+            "before": {
+              "items": [],
+              "selectedChefId": "chef",
+              "inquiry": {
+                "status": "quoted",
+                "dietary": [
+                  "vegan"
+                ],
+                "dietaryVersion": 0,
+                "partySize": 6
+              },
+              "chef": {
+                "id": "chef",
+                "available": true,
+                "supportsDietary": [
+                  "vegan"
+                ]
+              },
+              "eventStatus": "proposed",
+              "quoteRevision": 0,
+              "acceptedRevision": null,
+              "depositAcknowledgments": [],
+              "processedEvents": [
+                "discover-1",
+                "inquiry-1",
+                "chef-reply-1",
+                "client-reply-1",
+                "quote-1"
+              ],
+              "confirmationHistory": [],
+              "blocked": []
+            },
+            "after": {
+              "items": [],
+              "selectedChefId": "chef",
+              "inquiry": {
+                "status": "quoted",
+                "dietary": [
+                  "vegan"
+                ],
+                "dietaryVersion": 0,
+                "partySize": 6
+              },
+              "chef": {
+                "id": "chef",
+                "available": true,
+                "supportsDietary": [
+                  "vegan"
+                ]
+              },
+              "eventStatus": "accepted",
+              "quoteRevision": 0,
+              "acceptedRevision": 0,
+              "depositAcknowledgments": [],
+              "processedEvents": [
+                "discover-1",
+                "inquiry-1",
+                "chef-reply-1",
+                "client-reply-1",
+                "quote-1",
+                "accept-1"
+              ],
+              "confirmationHistory": [],
+              "blocked": []
+            },
+            "messages": [
+              {
+                "from": "client",
+                "to": "chef",
+                "text": "Synthetic proposal accepted"
+              }
+            ],
+            "toolCalls": [
+              {
+                "name": "validateTransition",
+                "source": "lib/events/fsm.ts",
+                "from": "proposed",
+                "to": "accepted",
+                "actor": "client",
+                "valid": true
+              }
+            ],
+            "decisions": [
+              {
+                "kind": "real_fsm_rule_applied",
+                "from": "proposed",
+                "to": "accepted"
+              }
+            ]
+          }
+        },
+        {
+          "index": 13,
+          "at": "2026-09-27T20:00:00.014Z",
+          "kind": "input",
+          "data": {
+            "id": "deposit-1",
+            "type": "deposit_ack",
+            "actor": "platform",
+            "synthetic": true
+          }
+        },
+        {
+          "index": 14,
+          "at": "2026-09-27T20:00:00.015Z",
+          "kind": "transition",
+          "data": {
+            "before": {
+              "items": [],
+              "selectedChefId": "chef",
+              "inquiry": {
+                "status": "quoted",
+                "dietary": [
+                  "vegan"
+                ],
+                "dietaryVersion": 0,
+                "partySize": 6
+              },
+              "chef": {
+                "id": "chef",
+                "available": true,
+                "supportsDietary": [
+                  "vegan"
+                ]
+              },
+              "eventStatus": "accepted",
+              "quoteRevision": 0,
+              "acceptedRevision": 0,
+              "depositAcknowledgments": [],
+              "processedEvents": [
+                "discover-1",
+                "inquiry-1",
+                "chef-reply-1",
+                "client-reply-1",
+                "quote-1",
+                "accept-1"
+              ],
+              "confirmationHistory": [],
+              "blocked": []
+            },
+            "after": {
+              "items": [],
+              "selectedChefId": "chef",
+              "inquiry": {
+                "status": "quoted",
+                "dietary": [
+                  "vegan"
+                ],
+                "dietaryVersion": 0,
+                "partySize": 6
+              },
+              "chef": {
+                "id": "chef",
+                "available": true,
+                "supportsDietary": [
+                  "vegan"
+                ]
+              },
+              "eventStatus": "paid",
+              "quoteRevision": 0,
+              "acceptedRevision": 0,
+              "depositAcknowledgments": [
+                "deposit-1"
+              ],
+              "processedEvents": [
+                "discover-1",
+                "inquiry-1",
+                "chef-reply-1",
+                "client-reply-1",
+                "quote-1",
+                "accept-1",
+                "deposit-1"
+              ],
+              "confirmationHistory": [],
+              "blocked": []
+            },
+            "messages": [
+              {
+                "from": "platform",
+                "to": "chef",
+                "text": "Synthetic deposit acknowledgment recorded; no payment processed"
+              }
+            ],
+            "toolCalls": [
+              {
+                "name": "validateTransition",
+                "source": "lib/events/fsm.ts",
+                "from": "accepted",
+                "to": "paid",
+                "actor": "system",
+                "valid": true
+              }
+            ],
+            "decisions": [
+              {
+                "kind": "real_fsm_rule_applied",
+                "from": "accepted",
+                "to": "paid"
+              },
+              {
+                "kind": "synthetic_deposit_ack",
+                "externalPayment": false,
+                "eventId": "deposit-1"
+              }
+            ]
+          }
+        },
+        {
+          "index": 15,
+          "at": "2026-09-27T20:00:00.016Z",
+          "kind": "input",
+          "data": {
+            "id": "availability-lost",
+            "type": "availability_change",
+            "actor": "platform",
+            "available": false
+          }
+        },
+        {
+          "index": 16,
+          "at": "2026-09-27T20:00:00.017Z",
+          "kind": "transition",
+          "data": {
+            "before": {
+              "items": [],
+              "selectedChefId": "chef",
+              "inquiry": {
+                "status": "quoted",
+                "dietary": [
+                  "vegan"
+                ],
+                "dietaryVersion": 0,
+                "partySize": 6
+              },
+              "chef": {
+                "id": "chef",
+                "available": true,
+                "supportsDietary": [
+                  "vegan"
+                ]
+              },
+              "eventStatus": "paid",
+              "quoteRevision": 0,
+              "acceptedRevision": 0,
+              "depositAcknowledgments": [
+                "deposit-1"
+              ],
+              "processedEvents": [
+                "discover-1",
+                "inquiry-1",
+                "chef-reply-1",
+                "client-reply-1",
+                "quote-1",
+                "accept-1",
+                "deposit-1"
+              ],
+              "confirmationHistory": [],
+              "blocked": []
+            },
+            "after": {
+              "items": [],
+              "selectedChefId": "chef",
+              "inquiry": {
+                "status": "quoted",
+                "dietary": [
+                  "vegan"
+                ],
+                "dietaryVersion": 0,
+                "partySize": 6
+              },
+              "chef": {
+                "id": "chef",
+                "available": false,
+                "supportsDietary": [
+                  "vegan"
+                ]
+              },
+              "eventStatus": "paid",
+              "quoteRevision": 0,
+              "acceptedRevision": 0,
+              "depositAcknowledgments": [
+                "deposit-1"
+              ],
+              "processedEvents": [
+                "discover-1",
+                "inquiry-1",
+                "chef-reply-1",
+                "client-reply-1",
+                "quote-1",
+                "accept-1",
+                "deposit-1",
+                "availability-lost"
+              ],
+              "confirmationHistory": [],
+              "blocked": []
+            },
+            "messages": [],
+            "toolCalls": [],
+            "decisions": [
+              {
+                "kind": "availability_change",
+                "available": false
+              }
+            ]
+          }
+        },
+        {
+          "index": 17,
+          "at": "2026-09-27T20:00:00.018Z",
+          "kind": "input",
+          "data": {
+            "id": "confirm-1",
+            "type": "chef_confirm",
+            "actor": "chef"
+          }
+        },
+        {
+          "index": 18,
+          "at": "2026-09-27T20:00:00.019Z",
+          "kind": "transition",
+          "data": {
+            "before": {
+              "items": [],
+              "selectedChefId": "chef",
+              "inquiry": {
+                "status": "quoted",
+                "dietary": [
+                  "vegan"
+                ],
+                "dietaryVersion": 0,
+                "partySize": 6
+              },
+              "chef": {
+                "id": "chef",
+                "available": false,
+                "supportsDietary": [
+                  "vegan"
+                ]
+              },
+              "eventStatus": "paid",
+              "quoteRevision": 0,
+              "acceptedRevision": 0,
+              "depositAcknowledgments": [
+                "deposit-1"
+              ],
+              "processedEvents": [
+                "discover-1",
+                "inquiry-1",
+                "chef-reply-1",
+                "client-reply-1",
+                "quote-1",
+                "accept-1",
+                "deposit-1",
+                "availability-lost"
+              ],
+              "confirmationHistory": [],
+              "blocked": []
+            },
+            "after": {
+              "items": [],
+              "selectedChefId": "chef",
+              "inquiry": {
+                "status": "confirmed",
+                "dietary": [
+                  "vegan"
+                ],
+                "dietaryVersion": 0,
+                "partySize": 6
+              },
+              "chef": {
+                "id": "chef",
+                "available": false,
+                "supportsDietary": [
+                  "vegan"
+                ]
+              },
+              "eventStatus": "confirmed",
+              "quoteRevision": 0,
+              "acceptedRevision": 0,
+              "depositAcknowledgments": [
+                "deposit-1"
+              ],
+              "processedEvents": [
+                "discover-1",
+                "inquiry-1",
+                "chef-reply-1",
+                "client-reply-1",
+                "quote-1",
+                "accept-1",
+                "deposit-1",
+                "availability-lost",
+                "confirm-1"
+              ],
+              "confirmationHistory": [
+                {
+                  "eventId": "confirm-1",
+                  "available": false,
+                  "dietaryReviewed": true,
+                  "syntheticDepositAcknowledged": true
+                }
+              ],
+              "blocked": []
+            },
+            "messages": [
+              {
+                "from": "platform",
+                "to": "client",
+                "text": "Simulation-only booking confirmed"
+              }
+            ],
+            "toolCalls": [
+              {
+                "name": "validateTransition",
+                "source": "lib/events/fsm.ts",
+                "from": "paid",
+                "to": "confirmed",
+                "actor": "chef",
+                "valid": true
+              }
+            ],
+            "decisions": [
+              {
+                "kind": "real_fsm_rule_applied",
+                "from": "paid",
+                "to": "confirmed"
+              },
+              {
+                "kind": "modeled_inquiry_transition",
+                "from": "quoted",
+                "to": "confirmed"
+              }
+            ]
+          }
+        },
+        {
+          "index": 19,
+          "at": "2026-09-27T20:00:00.020Z",
+          "kind": "outcome",
+          "data": {
+            "observations": [
+              {
+                "kind": "booking_state",
+                "inquiryStatus": "confirmed",
+                "eventStatus": "confirmed",
+                "chefAvailable": false,
+                "dietary": [
+                  "vegan"
+                ],
+                "quoteRevision": 0,
+                "depositAcknowledgments": [
+                  "deposit-1"
+                ]
+              },
+              {
+                "kind": "confirmation_snapshots",
+                "values": [
+                  {
+                    "eventId": "confirm-1",
+                    "available": false,
+                    "dietaryReviewed": true,
+                    "syntheticDepositAcknowledged": true
+                  }
+                ]
+              },
+              {
+                "kind": "blocked_events",
+                "values": []
+              }
+            ],
+            "scores": {
+              "simulatedConfirmation": 1,
+              "safeConfirmation": 0,
+              "blockedEvents": 0,
+              "syntheticAcknowledgmentCount": 1
+            },
+            "violations": [
+              {
+                "invariant": "confirmed_requires_available_chef",
+                "class": "availability_recheck",
+                "eventId": "confirm-1"
+              }
+            ]
+          }
+        }
+      ],
+      "measuredMs": 0.654
+    }
+  },
+  "repaired": {
+    "runId": "1ec9c3ed5494588c",
+    "scenarioId": "chef-booking-enthusiast-001:lost-availability",
+    "product": "ChefFlow",
+    "source": {
+      "kind": "inferred",
+      "source": "Chef Flow Personas/Completed/Public/the-enthusiast.txt",
+      "modeledInquiryMap": "lib/inquiries/actions.ts:VALID_TRANSITIONS",
+      "realEventFsm": "lib/events/fsm.ts#validateTransition",
+      "note": "Historical persona; chef, messages, availability, dietary events and deposit acknowledgment are synthetic."
+    },
+    "adapterVersion": "chef-booking-guarded-v1",
+    "productVersion": "source-checkout",
+    "model": "none",
+    "seed": 101,
+    "commit": "7bff843dca47974a6cc6a12c439d5a3e3c93a23e",
+    "environment": {
+      "at": "2026-09-27T20:00:00.000Z",
+      "geography": "urban",
+      "serviceStatus": "up",
+      "resources": {},
+      "device": "mobile",
+      "latencyMs": 0,
+      "marketState": {},
+      "chefAvailable": true
+    },
+    "actors": [
+      {
+        "id": "client",
+        "role": "private-chef client",
+        "persona": "The Enthusiast",
+        "goals": [
+          "discover novel local cuisine",
+          "reach usable booking facts"
+        ],
+        "preferences": {
+          "novelty": true,
+          "operationalClarity": true
+        },
+        "knowledge": [],
+        "authority": [
+          "browse"
+        ],
+        "constraints": {
+          "maxPricePerPerson": 150
+        },
+        "tendencies": [
+          "abandon vague price"
+        ],
+        "history": {
+          "rankedPreferences": [
+            {
+              "itemType": "cuisine",
+              "itemValue": "peruvian",
+              "score": 3
+            }
+          ],
+          "suppressedItems": []
+        },
+        "memory": [],
+        "relationships": [],
+        "publicState": {},
+        "privateState": {
+          "budgetRange": [
+            80,
+            150
+          ]
+        }
+      },
+      {
+        "id": "chef",
+        "role": "chef",
+        "persona": "Synthetic available chef",
+        "goals": [
+          "deliver a safe dinner"
+        ],
+        "preferences": {},
+        "knowledge": [],
+        "authority": [
+          "reply",
+          "quote",
+          "confirm",
+          "cancel"
+        ],
+        "constraints": {},
+        "tendencies": [],
+        "history": {},
+        "memory": [],
+        "relationships": [
+          "client"
+        ],
+        "publicState": {},
+        "privateState": {}
+      },
+      {
+        "id": "platform",
+        "role": "marketplace operator",
+        "persona": "Simulation-only platform",
+        "goals": [
+          "deliver a safe dinner"
+        ],
+        "preferences": {},
+        "knowledge": [],
+        "authority": [
+          "match",
+          "record synthetic deposit acknowledgment"
+        ],
+        "constraints": {},
+        "tendencies": [],
+        "history": {},
+        "memory": [],
+        "relationships": [
+          "client",
+          "chef"
+        ],
+        "publicState": {},
+        "privateState": {}
+      }
+    ],
+    "observations": [
+      {
+        "kind": "booking_state",
+        "inquiryStatus": "quoted",
+        "eventStatus": "paid",
+        "chefAvailable": false,
+        "dietary": [
+          "vegan"
+        ],
+        "quoteRevision": 0,
+        "depositAcknowledgments": [
+          "deposit-1"
+        ]
+      },
+      {
+        "kind": "confirmation_snapshots",
+        "values": []
+      },
+      {
+        "kind": "blocked_events",
+        "values": [
+          {
+            "eventId": "confirm-1",
+            "type": "chef_confirm",
+            "reason": "chef availability changed; confirmation requires recheck"
+          }
+        ]
+      }
+    ],
+    "scores": {
+      "simulatedConfirmation": 0,
+      "safeConfirmation": 1,
+      "blockedEvents": 1,
+      "syntheticAcknowledgmentCount": 1
+    },
+    "violations": [],
+    "trajectory": [
+      {
+        "index": 0,
+        "at": "2026-09-27T20:00:00.001Z",
+        "kind": "start",
+        "data": {
+          "product": "ChefFlow",
+          "actors": [
+            "client",
+            "chef",
+            "platform"
+          ]
+        }
+      },
+      {
+        "index": 1,
+        "at": "2026-09-27T20:00:00.002Z",
+        "kind": "input",
+        "data": {
+          "id": "discover-1",
+          "type": "discover",
+          "actor": "client"
+        }
+      },
+      {
+        "index": 2,
+        "at": "2026-09-27T20:00:00.003Z",
+        "kind": "transition",
+        "data": {
+          "before": {
+            "items": [],
+            "selectedChefId": null,
+            "inquiry": {
+              "status": null,
+              "dietary": [
+                "vegan"
+              ],
+              "dietaryVersion": 0,
+              "partySize": 6
+            },
+            "chef": {
+              "id": "chef",
+              "available": true,
+              "supportsDietary": [
+                "vegan"
+              ]
+            },
+            "eventStatus": null,
+            "quoteRevision": null,
+            "acceptedRevision": null,
+            "depositAcknowledgments": [],
+            "processedEvents": [],
+            "confirmationHistory": [],
+            "blocked": []
+          },
+          "after": {
+            "items": [],
+            "selectedChefId": "chef",
+            "inquiry": {
+              "status": null,
+              "dietary": [
+                "vegan"
+              ],
+              "dietaryVersion": 0,
+              "partySize": 6
+            },
+            "chef": {
+              "id": "chef",
+              "available": true,
+              "supportsDietary": [
+                "vegan"
+              ]
+            },
+            "eventStatus": null,
+            "quoteRevision": null,
+            "acceptedRevision": null,
+            "depositAcknowledgments": [],
+            "processedEvents": [
+              "discover-1"
+            ],
+            "confirmationHistory": [],
+            "blocked": []
+          },
+          "messages": [
+            {
+              "from": "platform",
+              "to": "client",
+              "text": "Chef candidate found"
+            }
+          ],
+          "toolCalls": [],
+          "decisions": []
+        }
+      },
+      {
+        "index": 3,
+        "at": "2026-09-27T20:00:00.004Z",
+        "kind": "input",
+        "data": {
+          "id": "inquiry-1",
+          "type": "send_inquiry",
+          "actor": "client"
+        }
+      },
+      {
+        "index": 4,
+        "at": "2026-09-27T20:00:00.005Z",
+        "kind": "transition",
+        "data": {
+          "before": {
+            "items": [],
+            "selectedChefId": "chef",
+            "inquiry": {
+              "status": null,
+              "dietary": [
+                "vegan"
+              ],
+              "dietaryVersion": 0,
+              "partySize": 6
+            },
+            "chef": {
+              "id": "chef",
+              "available": true,
+              "supportsDietary": [
+                "vegan"
+              ]
+            },
+            "eventStatus": null,
+            "quoteRevision": null,
+            "acceptedRevision": null,
+            "depositAcknowledgments": [],
+            "processedEvents": [
+              "discover-1"
+            ],
+            "confirmationHistory": [],
+            "blocked": []
+          },
+          "after": {
+            "items": [],
+            "selectedChefId": "chef",
+            "inquiry": {
+              "status": "new",
+              "dietary": [
+                "vegan"
+              ],
+              "dietaryVersion": 0,
+              "partySize": 6
+            },
+            "chef": {
+              "id": "chef",
+              "available": true,
+              "supportsDietary": [
+                "vegan"
+              ]
+            },
+            "eventStatus": null,
+            "quoteRevision": null,
+            "acceptedRevision": null,
+            "depositAcknowledgments": [],
+            "processedEvents": [
+              "discover-1",
+              "inquiry-1"
+            ],
+            "confirmationHistory": [],
+            "blocked": []
+          },
+          "messages": [
+            {
+              "from": "client",
+              "to": "chef",
+              "text": "Dinner inquiry for six guests"
+            }
+          ],
+          "toolCalls": [],
+          "decisions": []
+        }
+      },
+      {
+        "index": 5,
+        "at": "2026-09-27T20:00:00.006Z",
+        "kind": "input",
+        "data": {
+          "id": "chef-reply-1",
+          "type": "chef_reply",
+          "actor": "chef"
+        }
+      },
+      {
+        "index": 6,
+        "at": "2026-09-27T20:00:00.007Z",
+        "kind": "transition",
+        "data": {
+          "before": {
+            "items": [],
+            "selectedChefId": "chef",
+            "inquiry": {
+              "status": "new",
+              "dietary": [
+                "vegan"
+              ],
+              "dietaryVersion": 0,
+              "partySize": 6
+            },
+            "chef": {
+              "id": "chef",
+              "available": true,
+              "supportsDietary": [
+                "vegan"
+              ]
+            },
+            "eventStatus": null,
+            "quoteRevision": null,
+            "acceptedRevision": null,
+            "depositAcknowledgments": [],
+            "processedEvents": [
+              "discover-1",
+              "inquiry-1"
+            ],
+            "confirmationHistory": [],
+            "blocked": []
+          },
+          "after": {
+            "items": [],
+            "selectedChefId": "chef",
+            "inquiry": {
+              "status": "awaiting_client",
+              "dietary": [
+                "vegan"
+              ],
+              "dietaryVersion": 0,
+              "partySize": 6
+            },
+            "chef": {
+              "id": "chef",
+              "available": true,
+              "supportsDietary": [
+                "vegan"
+              ]
+            },
+            "eventStatus": null,
+            "quoteRevision": null,
+            "acceptedRevision": null,
+            "depositAcknowledgments": [],
+            "processedEvents": [
+              "discover-1",
+              "inquiry-1",
+              "chef-reply-1"
+            ],
+            "confirmationHistory": [],
+            "blocked": []
+          },
+          "messages": [
+            {
+              "from": "chef",
+              "to": "client",
+              "text": "Please confirm dietary needs and timing"
+            }
+          ],
+          "toolCalls": [],
+          "decisions": [
+            {
+              "kind": "modeled_inquiry_transition",
+              "from": "new",
+              "to": "awaiting_client"
+            }
+          ]
+        }
+      },
+      {
+        "index": 7,
+        "at": "2026-09-27T20:00:00.008Z",
+        "kind": "input",
+        "data": {
+          "id": "client-reply-1",
+          "type": "client_reply",
+          "actor": "client"
+        }
+      },
+      {
+        "index": 8,
+        "at": "2026-09-27T20:00:00.009Z",
+        "kind": "transition",
+        "data": {
+          "before": {
+            "items": [],
+            "selectedChefId": "chef",
+            "inquiry": {
+              "status": "awaiting_client",
+              "dietary": [
+                "vegan"
+              ],
+              "dietaryVersion": 0,
+              "partySize": 6
+            },
+            "chef": {
+              "id": "chef",
+              "available": true,
+              "supportsDietary": [
+                "vegan"
+              ]
+            },
+            "eventStatus": null,
+            "quoteRevision": null,
+            "acceptedRevision": null,
+            "depositAcknowledgments": [],
+            "processedEvents": [
+              "discover-1",
+              "inquiry-1",
+              "chef-reply-1"
+            ],
+            "confirmationHistory": [],
+            "blocked": []
+          },
+          "after": {
+            "items": [],
+            "selectedChefId": "chef",
+            "inquiry": {
+              "status": "awaiting_chef",
+              "dietary": [
+                "vegan"
+              ],
+              "dietaryVersion": 0,
+              "partySize": 6
+            },
+            "chef": {
+              "id": "chef",
+              "available": true,
+              "supportsDietary": [
+                "vegan"
+              ]
+            },
+            "eventStatus": null,
+            "quoteRevision": null,
+            "acceptedRevision": null,
+            "depositAcknowledgments": [],
+            "processedEvents": [
+              "discover-1",
+              "inquiry-1",
+              "chef-reply-1",
+              "client-reply-1"
+            ],
+            "confirmationHistory": [],
+            "blocked": []
+          },
+          "messages": [
+            {
+              "from": "client",
+              "to": "chef",
+              "text": "Six guests; vegan requirement confirmed"
+            }
+          ],
+          "toolCalls": [],
+          "decisions": [
+            {
+              "kind": "modeled_inquiry_transition",
+              "from": "awaiting_client",
+              "to": "awaiting_chef"
+            }
+          ]
+        }
+      },
+      {
+        "index": 9,
+        "at": "2026-09-27T20:00:00.010Z",
+        "kind": "input",
+        "data": {
+          "id": "quote-1",
+          "type": "chef_quote",
+          "actor": "chef"
+        }
+      },
+      {
+        "index": 10,
+        "at": "2026-09-27T20:00:00.011Z",
+        "kind": "transition",
+        "data": {
+          "before": {
+            "items": [],
+            "selectedChefId": "chef",
+            "inquiry": {
+              "status": "awaiting_chef",
+              "dietary": [
+                "vegan"
+              ],
+              "dietaryVersion": 0,
+              "partySize": 6
+            },
+            "chef": {
+              "id": "chef",
+              "available": true,
+              "supportsDietary": [
+                "vegan"
+              ]
+            },
+            "eventStatus": null,
+            "quoteRevision": null,
+            "acceptedRevision": null,
+            "depositAcknowledgments": [],
+            "processedEvents": [
+              "discover-1",
+              "inquiry-1",
+              "chef-reply-1",
+              "client-reply-1"
+            ],
+            "confirmationHistory": [],
+            "blocked": []
+          },
+          "after": {
+            "items": [],
+            "selectedChefId": "chef",
+            "inquiry": {
+              "status": "quoted",
+              "dietary": [
+                "vegan"
+              ],
+              "dietaryVersion": 0,
+              "partySize": 6
+            },
+            "chef": {
+              "id": "chef",
+              "available": true,
+              "supportsDietary": [
+                "vegan"
+              ]
+            },
+            "eventStatus": "proposed",
+            "quoteRevision": 0,
+            "acceptedRevision": null,
+            "depositAcknowledgments": [],
+            "processedEvents": [
+              "discover-1",
+              "inquiry-1",
+              "chef-reply-1",
+              "client-reply-1",
+              "quote-1"
+            ],
+            "confirmationHistory": [],
+            "blocked": []
+          },
+          "messages": [
+            {
+              "from": "chef",
+              "to": "client",
+              "text": "Synthetic quote and menu proposal ready"
+            }
+          ],
+          "toolCalls": [
+            {
+              "name": "validateTransition",
+              "source": "lib/events/fsm.ts",
+              "from": "draft",
+              "to": "proposed",
+              "actor": "chef",
+              "valid": true
+            }
+          ],
+          "decisions": [
+            {
+              "kind": "modeled_inquiry_transition",
+              "from": "awaiting_chef",
+              "to": "quoted"
+            },
+            {
+              "kind": "synthetic_event_materialized",
+              "from": null,
+              "to": "draft"
+            },
+            {
+              "kind": "real_fsm_rule_applied",
+              "from": "draft",
+              "to": "proposed"
+            }
+          ]
+        }
+      },
+      {
+        "index": 11,
+        "at": "2026-09-27T20:00:00.012Z",
+        "kind": "input",
+        "data": {
+          "id": "accept-1",
+          "type": "client_accept",
+          "actor": "client"
+        }
+      },
+      {
+        "index": 12,
+        "at": "2026-09-27T20:00:00.013Z",
+        "kind": "transition",
+        "data": {
+          "before": {
+            "items": [],
+            "selectedChefId": "chef",
+            "inquiry": {
+              "status": "quoted",
+              "dietary": [
+                "vegan"
+              ],
+              "dietaryVersion": 0,
+              "partySize": 6
+            },
+            "chef": {
+              "id": "chef",
+              "available": true,
+              "supportsDietary": [
+                "vegan"
+              ]
+            },
+            "eventStatus": "proposed",
+            "quoteRevision": 0,
+            "acceptedRevision": null,
+            "depositAcknowledgments": [],
+            "processedEvents": [
+              "discover-1",
+              "inquiry-1",
+              "chef-reply-1",
+              "client-reply-1",
+              "quote-1"
+            ],
+            "confirmationHistory": [],
+            "blocked": []
+          },
+          "after": {
+            "items": [],
+            "selectedChefId": "chef",
+            "inquiry": {
+              "status": "quoted",
+              "dietary": [
+                "vegan"
+              ],
+              "dietaryVersion": 0,
+              "partySize": 6
+            },
+            "chef": {
+              "id": "chef",
+              "available": true,
+              "supportsDietary": [
+                "vegan"
+              ]
+            },
+            "eventStatus": "accepted",
+            "quoteRevision": 0,
+            "acceptedRevision": 0,
+            "depositAcknowledgments": [],
+            "processedEvents": [
+              "discover-1",
+              "inquiry-1",
+              "chef-reply-1",
+              "client-reply-1",
+              "quote-1",
+              "accept-1"
+            ],
+            "confirmationHistory": [],
+            "blocked": []
+          },
+          "messages": [
+            {
+              "from": "client",
+              "to": "chef",
+              "text": "Synthetic proposal accepted"
+            }
+          ],
+          "toolCalls": [
+            {
+              "name": "validateTransition",
+              "source": "lib/events/fsm.ts",
+              "from": "proposed",
+              "to": "accepted",
+              "actor": "client",
+              "valid": true
+            }
+          ],
+          "decisions": [
+            {
+              "kind": "real_fsm_rule_applied",
+              "from": "proposed",
+              "to": "accepted"
+            }
+          ]
+        }
+      },
+      {
+        "index": 13,
+        "at": "2026-09-27T20:00:00.014Z",
+        "kind": "input",
+        "data": {
+          "id": "deposit-1",
+          "type": "deposit_ack",
+          "actor": "platform",
+          "synthetic": true
+        }
+      },
+      {
+        "index": 14,
+        "at": "2026-09-27T20:00:00.015Z",
+        "kind": "transition",
+        "data": {
+          "before": {
+            "items": [],
+            "selectedChefId": "chef",
+            "inquiry": {
+              "status": "quoted",
+              "dietary": [
+                "vegan"
+              ],
+              "dietaryVersion": 0,
+              "partySize": 6
+            },
+            "chef": {
+              "id": "chef",
+              "available": true,
+              "supportsDietary": [
+                "vegan"
+              ]
+            },
+            "eventStatus": "accepted",
+            "quoteRevision": 0,
+            "acceptedRevision": 0,
+            "depositAcknowledgments": [],
+            "processedEvents": [
+              "discover-1",
+              "inquiry-1",
+              "chef-reply-1",
+              "client-reply-1",
+              "quote-1",
+              "accept-1"
+            ],
+            "confirmationHistory": [],
+            "blocked": []
+          },
+          "after": {
+            "items": [],
+            "selectedChefId": "chef",
+            "inquiry": {
+              "status": "quoted",
+              "dietary": [
+                "vegan"
+              ],
+              "dietaryVersion": 0,
+              "partySize": 6
+            },
+            "chef": {
+              "id": "chef",
+              "available": true,
+              "supportsDietary": [
+                "vegan"
+              ]
+            },
+            "eventStatus": "paid",
+            "quoteRevision": 0,
+            "acceptedRevision": 0,
+            "depositAcknowledgments": [
+              "deposit-1"
+            ],
+            "processedEvents": [
+              "discover-1",
+              "inquiry-1",
+              "chef-reply-1",
+              "client-reply-1",
+              "quote-1",
+              "accept-1",
+              "deposit-1"
+            ],
+            "confirmationHistory": [],
+            "blocked": []
+          },
+          "messages": [
+            {
+              "from": "platform",
+              "to": "chef",
+              "text": "Synthetic deposit acknowledgment recorded; no payment processed"
+            }
+          ],
+          "toolCalls": [
+            {
+              "name": "validateTransition",
+              "source": "lib/events/fsm.ts",
+              "from": "accepted",
+              "to": "paid",
+              "actor": "system",
+              "valid": true
+            }
+          ],
+          "decisions": [
+            {
+              "kind": "real_fsm_rule_applied",
+              "from": "accepted",
+              "to": "paid"
+            },
+            {
+              "kind": "synthetic_deposit_ack",
+              "externalPayment": false,
+              "eventId": "deposit-1"
+            }
+          ]
+        }
+      },
+      {
+        "index": 15,
+        "at": "2026-09-27T20:00:00.016Z",
+        "kind": "input",
+        "data": {
+          "id": "availability-lost",
+          "type": "availability_change",
+          "actor": "platform",
+          "available": false
+        }
+      },
+      {
+        "index": 16,
+        "at": "2026-09-27T20:00:00.017Z",
+        "kind": "transition",
+        "data": {
+          "before": {
+            "items": [],
+            "selectedChefId": "chef",
+            "inquiry": {
+              "status": "quoted",
+              "dietary": [
+                "vegan"
+              ],
+              "dietaryVersion": 0,
+              "partySize": 6
+            },
+            "chef": {
+              "id": "chef",
+              "available": true,
+              "supportsDietary": [
+                "vegan"
+              ]
+            },
+            "eventStatus": "paid",
+            "quoteRevision": 0,
+            "acceptedRevision": 0,
+            "depositAcknowledgments": [
+              "deposit-1"
+            ],
+            "processedEvents": [
+              "discover-1",
+              "inquiry-1",
+              "chef-reply-1",
+              "client-reply-1",
+              "quote-1",
+              "accept-1",
+              "deposit-1"
+            ],
+            "confirmationHistory": [],
+            "blocked": []
+          },
+          "after": {
+            "items": [],
+            "selectedChefId": "chef",
+            "inquiry": {
+              "status": "quoted",
+              "dietary": [
+                "vegan"
+              ],
+              "dietaryVersion": 0,
+              "partySize": 6
+            },
+            "chef": {
+              "id": "chef",
+              "available": false,
+              "supportsDietary": [
+                "vegan"
+              ]
+            },
+            "eventStatus": "paid",
+            "quoteRevision": 0,
+            "acceptedRevision": 0,
+            "depositAcknowledgments": [
+              "deposit-1"
+            ],
+            "processedEvents": [
+              "discover-1",
+              "inquiry-1",
+              "chef-reply-1",
+              "client-reply-1",
+              "quote-1",
+              "accept-1",
+              "deposit-1",
+              "availability-lost"
+            ],
+            "confirmationHistory": [],
+            "blocked": []
+          },
+          "messages": [],
+          "toolCalls": [],
+          "decisions": [
+            {
+              "kind": "availability_change",
+              "available": false
+            }
+          ]
+        }
+      },
+      {
+        "index": 17,
+        "at": "2026-09-27T20:00:00.018Z",
+        "kind": "input",
+        "data": {
+          "id": "confirm-1",
+          "type": "chef_confirm",
+          "actor": "chef"
+        }
+      },
+      {
+        "index": 18,
+        "at": "2026-09-27T20:00:00.019Z",
+        "kind": "transition",
+        "data": {
+          "before": {
+            "items": [],
+            "selectedChefId": "chef",
+            "inquiry": {
+              "status": "quoted",
+              "dietary": [
+                "vegan"
+              ],
+              "dietaryVersion": 0,
+              "partySize": 6
+            },
+            "chef": {
+              "id": "chef",
+              "available": false,
+              "supportsDietary": [
+                "vegan"
+              ]
+            },
+            "eventStatus": "paid",
+            "quoteRevision": 0,
+            "acceptedRevision": 0,
+            "depositAcknowledgments": [
+              "deposit-1"
+            ],
+            "processedEvents": [
+              "discover-1",
+              "inquiry-1",
+              "chef-reply-1",
+              "client-reply-1",
+              "quote-1",
+              "accept-1",
+              "deposit-1",
+              "availability-lost"
+            ],
+            "confirmationHistory": [],
+            "blocked": []
+          },
+          "after": {
+            "items": [],
+            "selectedChefId": "chef",
+            "inquiry": {
+              "status": "quoted",
+              "dietary": [
+                "vegan"
+              ],
+              "dietaryVersion": 0,
+              "partySize": 6
+            },
+            "chef": {
+              "id": "chef",
+              "available": false,
+              "supportsDietary": [
+                "vegan"
+              ]
+            },
+            "eventStatus": "paid",
+            "quoteRevision": 0,
+            "acceptedRevision": 0,
+            "depositAcknowledgments": [
+              "deposit-1"
+            ],
+            "processedEvents": [
+              "discover-1",
+              "inquiry-1",
+              "chef-reply-1",
+              "client-reply-1",
+              "quote-1",
+              "accept-1",
+              "deposit-1",
+              "availability-lost"
+            ],
+            "confirmationHistory": [],
+            "blocked": [
+              {
+                "eventId": "confirm-1",
+                "type": "chef_confirm",
+                "reason": "chef availability changed; confirmation requires recheck"
+              }
+            ]
+          },
+          "messages": [],
+          "toolCalls": [],
+          "decisions": [
+            {
+              "kind": "blocked",
+              "reason": "chef availability changed; confirmation requires recheck"
+            }
+          ]
+        }
+      },
+      {
+        "index": 19,
+        "at": "2026-09-27T20:00:00.020Z",
+        "kind": "outcome",
+        "data": {
+          "observations": [
+            {
+              "kind": "booking_state",
+              "inquiryStatus": "quoted",
+              "eventStatus": "paid",
+              "chefAvailable": false,
+              "dietary": [
+                "vegan"
+              ],
+              "quoteRevision": 0,
+              "depositAcknowledgments": [
+                "deposit-1"
+              ]
+            },
+            {
+              "kind": "confirmation_snapshots",
+              "values": []
+            },
+            {
+              "kind": "blocked_events",
+              "values": [
+                {
+                  "eventId": "confirm-1",
+                  "type": "chef_confirm",
+                  "reason": "chef availability changed; confirmation requires recheck"
+                }
+              ]
+            }
+          ],
+          "scores": {
+            "simulatedConfirmation": 0,
+            "safeConfirmation": 1,
+            "blockedEvents": 1,
+            "syntheticAcknowledgmentCount": 1
+          },
+          "violations": []
+        }
+      }
+    ],
+    "measuredMs": 0.849
+  },
+  "replay": {
+    "count": 10,
+    "distinctTrajectories": 1,
+    "runIds": [
+      "1ec9c3ed5494588c",
+      "1ec9c3ed5494588c",
+      "1ec9c3ed5494588c",
+      "1ec9c3ed5494588c",
+      "1ec9c3ed5494588c",
+      "1ec9c3ed5494588c",
+      "1ec9c3ed5494588c",
+      "1ec9c3ed5494588c",
+      "1ec9c3ed5494588c",
+      "1ec9c3ed5494588c"
+    ]
+  },
+  "family": [
+    {
+      "scenarioId": "chef-booking-enthusiast-001",
+      "runId": "4fc73da210ded700",
+      "observations": [
+        {
+          "kind": "booking_state",
+          "inquiryStatus": "confirmed",
+          "eventStatus": "confirmed",
+          "chefAvailable": true,
+          "dietary": [
+            "vegan"
+          ],
+          "quoteRevision": 0,
+          "depositAcknowledgments": [
+            "deposit-1"
+          ]
+        },
+        {
+          "kind": "confirmation_snapshots",
+          "values": [
+            {
+              "eventId": "confirm-1",
+              "available": true,
+              "dietaryReviewed": true,
+              "syntheticDepositAcknowledged": true
+            }
+          ]
+        },
+        {
+          "kind": "blocked_events",
+          "values": []
+        }
+      ],
+      "scores": {
+        "simulatedConfirmation": 1,
+        "safeConfirmation": 1,
+        "blockedEvents": 0,
+        "syntheticAcknowledgmentCount": 1
+      },
+      "violations": []
+    },
+    {
+      "scenarioId": "chef-booking-enthusiast-001:lost-availability",
+      "runId": "4c032ff002f305c8",
+      "observations": [
+        {
+          "kind": "booking_state",
+          "inquiryStatus": "quoted",
+          "eventStatus": "paid",
+          "chefAvailable": false,
+          "dietary": [
+            "vegan"
+          ],
+          "quoteRevision": 0,
+          "depositAcknowledgments": [
+            "deposit-1"
+          ]
+        },
+        {
+          "kind": "confirmation_snapshots",
+          "values": []
+        },
+        {
+          "kind": "blocked_events",
+          "values": [
+            {
+              "eventId": "confirm-1",
+              "type": "chef_confirm",
+              "reason": "chef availability changed; confirmation requires recheck"
+            }
+          ]
+        }
+      ],
+      "scores": {
+        "simulatedConfirmation": 0,
+        "safeConfirmation": 1,
+        "blockedEvents": 1,
+        "syntheticAcknowledgmentCount": 1
+      },
+      "violations": []
+    },
+    {
+      "scenarioId": "chef-booking-enthusiast-001:dietary-update",
+      "runId": "da646f8350130057",
+      "observations": [
+        {
+          "kind": "booking_state",
+          "inquiryStatus": "quoted",
+          "eventStatus": "paid",
+          "chefAvailable": true,
+          "dietary": [
+            "vegan",
+            "nut-free"
+          ],
+          "quoteRevision": 0,
+          "depositAcknowledgments": [
+            "deposit-1"
+          ]
+        },
+        {
+          "kind": "confirmation_snapshots",
+          "values": []
+        },
+        {
+          "kind": "blocked_events",
+          "values": [
+            {
+              "eventId": "confirm-1",
+              "type": "chef_confirm",
+              "reason": "dietary change requires quote review"
+            }
+          ]
+        }
+      ],
+      "scores": {
+        "simulatedConfirmation": 0,
+        "safeConfirmation": 1,
+        "blockedEvents": 1,
+        "syntheticAcknowledgmentCount": 1
+      },
+      "violations": []
+    },
+    {
+      "scenarioId": "chef-booking-enthusiast-001:chef-cancel",
+      "runId": "eaae9e8cf56b7262",
+      "observations": [
+        {
+          "kind": "booking_state",
+          "inquiryStatus": "declined",
+          "eventStatus": "cancelled",
+          "chefAvailable": true,
+          "dietary": [
+            "vegan"
+          ],
+          "quoteRevision": 0,
+          "depositAcknowledgments": []
+        },
+        {
+          "kind": "confirmation_snapshots",
+          "values": []
+        },
+        {
+          "kind": "blocked_events",
+          "values": [
+            {
+              "eventId": "deposit-1",
+              "type": "deposit_ack",
+              "reason": "synthetic deposit acknowledgment requires accepted proposal"
+            },
+            {
+              "eventId": "confirm-1",
+              "type": "chef_confirm",
+              "reason": "paid simulated event and quoted inquiry required"
+            }
+          ]
+        }
+      ],
+      "scores": {
+        "simulatedConfirmation": 0,
+        "safeConfirmation": 1,
+        "blockedEvents": 2,
+        "syntheticAcknowledgmentCount": 0
+      },
+      "violations": []
+    },
+    {
+      "scenarioId": "chef-booking-enthusiast-001:duplicate-deposit",
+      "runId": "f81a40cd9a05b409",
+      "observations": [
+        {
+          "kind": "booking_state",
+          "inquiryStatus": "confirmed",
+          "eventStatus": "confirmed",
+          "chefAvailable": true,
+          "dietary": [
+            "vegan"
+          ],
+          "quoteRevision": 0,
+          "depositAcknowledgments": [
+            "deposit-1"
+          ]
+        },
+        {
+          "kind": "confirmation_snapshots",
+          "values": [
+            {
+              "eventId": "confirm-1",
+              "available": true,
+              "dietaryReviewed": true,
+              "syntheticDepositAcknowledged": true
+            }
+          ]
+        },
+        {
+          "kind": "blocked_events",
+          "values": []
+        }
+      ],
+      "scores": {
+        "simulatedConfirmation": 1,
+        "safeConfirmation": 1,
+        "blockedEvents": 0,
+        "syntheticAcknowledgmentCount": 1
+      },
+      "violations": []
+    },
+    {
+      "scenarioId": "chef-booking-enthusiast-001:early-deposit",
+      "runId": "a055e7e0b4738a98",
+      "observations": [
+        {
+          "kind": "booking_state",
+          "inquiryStatus": "confirmed",
+          "eventStatus": "confirmed",
+          "chefAvailable": true,
+          "dietary": [
+            "vegan"
+          ],
+          "quoteRevision": 0,
+          "depositAcknowledgments": [
+            "deposit-1"
+          ]
+        },
+        {
+          "kind": "confirmation_snapshots",
+          "values": [
+            {
+              "eventId": "confirm-1",
+              "available": true,
+              "dietaryReviewed": true,
+              "syntheticDepositAcknowledged": true
+            }
+          ]
+        },
+        {
+          "kind": "blocked_events",
+          "values": [
+            {
+              "eventId": "deposit-early",
+              "type": "deposit_ack",
+              "reason": "synthetic deposit acknowledgment requires accepted proposal"
+            }
+          ]
+        }
+      ],
+      "scores": {
+        "simulatedConfirmation": 1,
+        "safeConfirmation": 1,
+        "blockedEvents": 1,
+        "syntheticAcknowledgmentCount": 1
+      },
+      "violations": []
+    },
+    {
+      "scenarioId": "chef-booking-enthusiast-001:initial-unavailable",
+      "runId": "92ec91e24b7edbb1",
+      "observations": [
+        {
+          "kind": "booking_state",
+          "inquiryStatus": null,
+          "eventStatus": null,
+          "chefAvailable": false,
+          "dietary": [
+            "vegan"
+          ],
+          "quoteRevision": null,
+          "depositAcknowledgments": []
+        },
+        {
+          "kind": "confirmation_snapshots",
+          "values": []
+        },
+        {
+          "kind": "blocked_events",
+          "values": [
+            {
+              "eventId": "inquiry-1",
+              "type": "send_inquiry",
+              "reason": "matching chef and new inquiry required"
+            },
+            {
+              "eventId": "chef-reply-1",
+              "type": "chef_reply",
+              "reason": "inquiry not awaiting chef reply"
+            },
+            {
+              "eventId": "client-reply-1",
+              "type": "client_reply",
+              "reason": "inquiry not awaiting client reply"
+            },
+            {
+              "eventId": "quote-1",
+              "type": "chef_quote",
+              "reason": "chef unavailable or dietary review incomplete"
+            },
+            {
+              "eventId": "menu-1",
+              "type": "menu_preview",
+              "reason": "quote required for menu preview"
+            },
+            {
+              "eventId": "accept-1",
+              "type": "client_accept",
+              "reason": "quoted inquiry required for acceptance"
+            },
+            {
+              "eventId": "deposit-1",
+              "type": "deposit_ack",
+              "reason": "synthetic deposit acknowledgment requires accepted proposal"
+            },
+            {
+              "eventId": "confirm-1",
+              "type": "chef_confirm",
+              "reason": "paid simulated event and quoted inquiry required"
+            }
+          ]
+        }
+      ],
+      "scores": {
+        "simulatedConfirmation": 0,
+        "safeConfirmation": 1,
+        "blockedEvents": 8,
+        "syntheticAcknowledgmentCount": 0
+      },
+      "violations": []
+    }
+  ],
+  "comparison": [
+    {
+      "scenarioId": "chef-booking-enthusiast-001:lost-availability",
+      "seed": 101,
+      "before": {
+        "version": "chef-booking-fault-injected-v1",
+        "violations": [
+          {
+            "invariant": "confirmed_requires_available_chef",
+            "class": "availability_recheck",
+            "eventId": "confirm-1"
+          }
+        ],
+        "scores": {
+          "simulatedConfirmation": 1,
+          "safeConfirmation": 0,
+          "blockedEvents": 0,
+          "syntheticAcknowledgmentCount": 1
+        }
+      },
+      "after": {
+        "version": "chef-booking-guarded-v1",
+        "violations": [],
+        "scores": {
+          "simulatedConfirmation": 0,
+          "safeConfirmation": 1,
+          "blockedEvents": 1,
+          "syntheticAcknowledgmentCount": 1
+        }
+      },
+      "runIds": [
+        "6ddaa0c5b5cd6152",
+        "1ec9c3ed5494588c"
+      ]
+    }
+  ]
+}

@@ -1,0 +1,241 @@
+{
+  "schemaVersion": 1,
+  "id": "chef-booking-enthusiast-001:lost-availability",
+  "provenance": {
+    "kind": "inferred",
+    "source": "Chef Flow Personas/Completed/Public/the-enthusiast.txt",
+    "modeledInquiryMap": "lib/inquiries/actions.ts:VALID_TRANSITIONS",
+    "realEventFsm": "lib/events/fsm.ts#validateTransition",
+    "note": "Historical persona; chef, messages, availability, dietary events and deposit acknowledgment are synthetic."
+  },
+  "product": {
+    "id": "ChefFlow",
+    "version": "source-checkout",
+    "capabilities": [
+      "inquiry",
+      "quote",
+      "event_fsm"
+    ],
+    "interfaces": [
+      "synthetic_booking_funnel"
+    ],
+    "tools": [
+      "validateTransition"
+    ],
+    "workflows": [
+      "inquiry",
+      "quote",
+      "accept",
+      "confirm"
+    ],
+    "permissions": [],
+    "externalDependencies": [],
+    "successCriteria": [
+      "safe simulated confirmation"
+    ],
+    "invariants": [
+      "confirmed_requires_available_chef",
+      "confirmed_requires_dietary_review",
+      "confirmed_requires_deposit_ack"
+    ]
+  },
+  "actors": [
+    {
+      "id": "client",
+      "role": "private-chef client",
+      "persona": "The Enthusiast",
+      "goals": [
+        "discover novel local cuisine",
+        "reach usable booking facts"
+      ],
+      "preferences": {
+        "novelty": true,
+        "operationalClarity": true
+      },
+      "knowledge": [],
+      "authority": [
+        "browse"
+      ],
+      "constraints": {
+        "maxPricePerPerson": 150
+      },
+      "tendencies": [
+        "abandon vague price"
+      ],
+      "history": {
+        "rankedPreferences": [
+          {
+            "itemType": "cuisine",
+            "itemValue": "peruvian",
+            "score": 3
+          }
+        ],
+        "suppressedItems": []
+      },
+      "memory": [],
+      "relationships": [],
+      "publicState": {},
+      "privateState": {
+        "budgetRange": [
+          80,
+          150
+        ]
+      }
+    },
+    {
+      "id": "chef",
+      "role": "chef",
+      "persona": "Synthetic available chef",
+      "goals": [
+        "deliver a safe dinner"
+      ],
+      "preferences": {},
+      "knowledge": [],
+      "authority": [
+        "reply",
+        "quote",
+        "confirm",
+        "cancel"
+      ],
+      "constraints": {},
+      "tendencies": [],
+      "history": {},
+      "memory": [],
+      "relationships": [
+        "client"
+      ],
+      "publicState": {},
+      "privateState": {}
+    },
+    {
+      "id": "platform",
+      "role": "marketplace operator",
+      "persona": "Simulation-only platform",
+      "goals": [
+        "deliver a safe dinner"
+      ],
+      "preferences": {},
+      "knowledge": [],
+      "authority": [
+        "match",
+        "record synthetic deposit acknowledgment"
+      ],
+      "constraints": {},
+      "tendencies": [],
+      "history": {},
+      "memory": [],
+      "relationships": [
+        "client",
+        "chef"
+      ],
+      "publicState": {},
+      "privateState": {}
+    }
+  ],
+  "environment": {
+    "at": "2026-09-27T20:00:00.000Z",
+    "geography": "urban",
+    "serviceStatus": "up",
+    "resources": {},
+    "device": "mobile",
+    "latencyMs": 0,
+    "marketState": {},
+    "chefAvailable": true
+  },
+  "objective": "Reach safe simulated booking confirmation after inquiry, quote and synthetic deposit acknowledgment",
+  "initialState": {
+    "items": [],
+    "selectedChefId": null,
+    "inquiry": {
+      "status": null,
+      "dietary": [
+        "vegan"
+      ],
+      "dietaryVersion": 0,
+      "partySize": 6
+    },
+    "chef": {
+      "id": "chef",
+      "available": true,
+      "supportsDietary": [
+        "vegan"
+      ]
+    },
+    "eventStatus": null,
+    "quoteRevision": null,
+    "acceptedRevision": null,
+    "depositAcknowledgments": [],
+    "processedEvents": [],
+    "confirmationHistory": [],
+    "blocked": []
+  },
+  "events": [
+    {
+      "id": "discover-1",
+      "type": "discover",
+      "actor": "client"
+    },
+    {
+      "id": "inquiry-1",
+      "type": "send_inquiry",
+      "actor": "client"
+    },
+    {
+      "id": "chef-reply-1",
+      "type": "chef_reply",
+      "actor": "chef"
+    },
+    {
+      "id": "client-reply-1",
+      "type": "client_reply",
+      "actor": "client"
+    },
+    {
+      "id": "quote-1",
+      "type": "chef_quote",
+      "actor": "chef"
+    },
+    {
+      "id": "accept-1",
+      "type": "client_accept",
+      "actor": "client"
+    },
+    {
+      "id": "deposit-1",
+      "type": "deposit_ack",
+      "actor": "platform",
+      "synthetic": true
+    },
+    {
+      "id": "availability-lost",
+      "type": "availability_change",
+      "actor": "platform",
+      "available": false
+    },
+    {
+      "id": "confirm-1",
+      "type": "chef_confirm",
+      "actor": "chef"
+    }
+  ],
+  "expectedInvariants": [
+    "confirmed_requires_available_chef",
+    "confirmed_requires_dietary_review",
+    "confirmed_requires_deposit_ack",
+    "no_duplicate_deposit_ack"
+  ],
+  "hiddenInformation": [
+    "client budget"
+  ],
+  "mutations": [
+    "availability",
+    "dietary",
+    "cancel",
+    "duplicate",
+    "out_of_order"
+  ],
+  "mutation": {
+    "from": "chef-booking-enthusiast-001",
+    "kind": "availability_lost_after_acceptance"
+  }
+}

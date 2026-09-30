@@ -42,3 +42,92 @@ test('same interface can run a second product fixture without modifying it', asy
   assert.equal(result.scores.truthfulStatus, 1)
   assert.equal(result.violations.length, 0)
 })
+
+test('run identity includes code commit, evaluator and configuration while exact replay stays stable', async () => {
+  const a = await runScenario(chef, fixed, { seed: 101, commit: 'commit-a', configId: 'config-a' })
+  const repeated = await runScenario(chef, fixed, { seed: 101, commit: 'commit-a', configId: 'config-a' })
+  const b = await runScenario(chef, fixed, { seed: 101, commit: 'commit-b', configId: 'config-a' })
+  const c = await runScenario(chef, fixed, { seed: 101, commit: 'commit-a', configId: 'config-b' })
+  const d = await runScenario(chef, { ...fixed, evaluatorVersion: 'revised-rubric' },
+    { seed: 101, commit: 'commit-a', configId: 'config-a' })
+  assert.equal(a.runId, repeated.runId)
+  assert.equal(JSON.stringify(a.trajectory), JSON.stringify(repeated.trajectory))
+  assert.equal(new Set([a.runId, b.runId, c.runId, d.runId]).size, 4)
+  assert.equal(a.configId, 'config-a')
+})
+test('minimizer handles scenarios without an items array', async () => {
+  const scenario = structuredClone(weather)
+  assert.equal('items' in scenario.initialState, false)
+  const brokenWeather = { ...weatherFixtureAdapter, version: 'injected-weather-failure',
+    evaluate: () => ({ observations: [], scores: {}, violations: [{ invariant: 'forced_failure' }] }) }
+  const result = await minimize(scenario, brokenWeather, 'forced_failure')
+  assert.equal(result.evidence.violations[0].invariant, 'forced_failure')
+  assert.equal(result.scenario.events.length, 0)
+})
+
+test('varying seeds explores stochastic outcomes without changing exact replay semantics', async () => {
+  const stochastic = {
+    version: 'seed-probe-v1',
+    async step(state, _event, { random }) {
+      state.draw = random()
+      return { state }
+    },
+    evaluate(state) {
+      return { observations: [{ kind: 'draw', value: state.draw }],
+        scores: { draw: state.draw }, violations: [] }
+    }
+  }
+  const fixedSeeds = await replay(weather, stochastic, 6, { seed: 101 })
+  assert.equal(new Set(fixedSeeds.map(x => x.runId)).size, 1)
+  assert.equal(new Set(fixedSeeds.map(x => x.scores.draw)).size, 1)
+
+  const varied = await replay(weather, stochastic, 6, { seed: 101, seedMode: 'vary' })
+  assert.deepEqual(varied.map(x => x.seed), [101, 102, 103, 104, 105, 106])
+  assert.equal(new Set(varied.map(x => x.runId)).size, 6)
+  assert.equal(new Set(varied.map(x => x.scores.draw)).size, 6)
+  assert.deepEqual(
+    varied.map(x => x.scores.draw),
+    (await replay(weather, stochastic, 6, { seed: 101, seedMode: 'vary' }))
+      .map(x => x.scores.draw)
+  )
+  await assert.rejects(() => replay(weather, stochastic, 2, { seedMode: 'vary', seed: 0xffffffff }),
+    /seed range/)
+  await assert.rejects(() => replay(weather, stochastic, 2, { seedMode: 'unknown' }),
+    /seed mode/)
+})
+
+test('an unresolved adapter step or grader fails within the runtime budget', async () => {
+  let stepSignal
+  const hangingStep = {
+    version: 'hanging-step-fixture',
+    step(_state, _event, ctx) {
+      stepSignal = ctx.signal
+      return new Promise(() => {})
+    },
+    evaluate() {
+      throw Error('Evaluator must not run after an aborted step')
+    }
+  }
+  const stepRun = await runScenario(weather, hangingStep, { budget: { maxMs: 60 } })
+  assert.ok(stepSignal?.aborted)
+  assert.match(stepRun.violations[0].detail, /Runtime budget/)
+  assert.equal(stepRun.violations[0].invariant, 'engine_error')
+  assert.ok(stepRun.measuredMs < 2000)
+
+  let graderSignal
+  const hangingGrader = {
+    version: 'hanging-grader-fixture',
+    step(state) { return { state } },
+    evaluate(_state, _scenario, _trajectory, ctx) {
+      graderSignal = ctx.signal
+      return new Promise(() => {})
+    }
+  }
+  const graderRun = await runScenario(weather, hangingGrader, { budget: { maxMs: 60 } })
+  assert.ok(graderSignal?.aborted)
+  assert.match(graderRun.violations[0].detail, /Runtime budget/)
+  assert.equal(graderRun.violations[0].invariant, 'engine_error')
+  assert.ok(graderRun.measuredMs < 2000)
+  await assert.rejects(() => runScenario(weather, hangingStep, { budget: { maxMs: Infinity } }),
+    /Invalid runtime budget/)
+})

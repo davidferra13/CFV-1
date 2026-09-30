@@ -1,0 +1,328 @@
+{
+  "schemaVersion": 1,
+  "id": "chef-marketplace-enthusiast-001:chef-unavailable-after-quote",
+  "provenance": {
+    "kind": "inferred",
+    "source": "Chef Flow Personas/Completed/Public/the-enthusiast.txt",
+    "realCapacityModel": "lib/intelligence/chef-capacity-twin.ts#deriveCapacityDecision",
+    "note": "First client is persona-derived; other actors, inventory, demand, prices, geography, season and events are synthetic."
+  },
+  "product": {
+    "id": "ChefFlow",
+    "version": "source-checkout",
+    "capabilities": [
+      "marketplace_matching",
+      "capacity_decision"
+    ],
+    "interfaces": [
+      "synthetic_marketplace_twin"
+    ],
+    "tools": [
+      "buildCapacityProfile",
+      "deriveCapacityDecision"
+    ],
+    "workflows": [
+      "demand",
+      "quote",
+      "confirm",
+      "cancel"
+    ],
+    "permissions": [],
+    "externalDependencies": [],
+    "successCriteria": [
+      "feasible synthetic allocations"
+    ],
+    "invariants": [
+      "match_requires_available_chef",
+      "match_respects_geography",
+      "match_within_budget",
+      "no_double_booking",
+      "capacity_decision_allows_allocation"
+    ]
+  },
+  "actors": [
+    {
+      "id": "client-1",
+      "role": "private-chef client",
+      "persona": "The Enthusiast",
+      "goals": [
+        "discover novel local cuisine",
+        "reach usable booking facts"
+      ],
+      "preferences": {
+        "novelty": true,
+        "operationalClarity": true
+      },
+      "knowledge": [],
+      "authority": [
+        "browse"
+      ],
+      "constraints": {
+        "maxPricePerPerson": 150
+      },
+      "tendencies": [
+        "abandon vague price"
+      ],
+      "history": {
+        "rankedPreferences": [
+          {
+            "itemType": "cuisine",
+            "itemValue": "peruvian",
+            "score": 3
+          }
+        ],
+        "suppressedItems": []
+      },
+      "memory": [],
+      "relationships": [],
+      "publicState": {},
+      "privateState": {
+        "budgetRange": [
+          80,
+          150
+        ]
+      }
+    },
+    {
+      "id": "client-2",
+      "role": "client",
+      "persona": "Synthetic market demand",
+      "goals": [],
+      "preferences": {},
+      "knowledge": [],
+      "authority": [],
+      "constraints": {},
+      "tendencies": [],
+      "history": {},
+      "memory": [],
+      "relationships": [],
+      "publicState": {},
+      "privateState": {}
+    },
+    {
+      "id": "client-3",
+      "role": "client",
+      "persona": "Synthetic market demand",
+      "goals": [],
+      "preferences": {},
+      "knowledge": [],
+      "authority": [],
+      "constraints": {},
+      "tendencies": [],
+      "history": {},
+      "memory": [],
+      "relationships": [],
+      "publicState": {},
+      "privateState": {}
+    },
+    {
+      "id": "client-4",
+      "role": "client",
+      "persona": "Synthetic market demand",
+      "goals": [],
+      "preferences": {},
+      "knowledge": [],
+      "authority": [],
+      "constraints": {},
+      "tendencies": [],
+      "history": {},
+      "memory": [],
+      "relationships": [],
+      "publicState": {},
+      "privateState": {}
+    },
+    {
+      "id": "chef-a",
+      "role": "chef",
+      "persona": "Synthetic chef",
+      "goals": [],
+      "preferences": {},
+      "knowledge": [],
+      "authority": [],
+      "constraints": {},
+      "tendencies": [],
+      "history": {},
+      "memory": [],
+      "relationships": [],
+      "publicState": {},
+      "privateState": {}
+    },
+    {
+      "id": "chef-b",
+      "role": "chef",
+      "persona": "Synthetic chef",
+      "goals": [],
+      "preferences": {},
+      "knowledge": [],
+      "authority": [],
+      "constraints": {},
+      "tendencies": [],
+      "history": {},
+      "memory": [],
+      "relationships": [],
+      "publicState": {},
+      "privateState": {}
+    },
+    {
+      "id": "chef-c",
+      "role": "chef",
+      "persona": "Synthetic chef",
+      "goals": [],
+      "preferences": {},
+      "knowledge": [],
+      "authority": [],
+      "constraints": {},
+      "tendencies": [],
+      "history": {},
+      "memory": [],
+      "relationships": [],
+      "publicState": {},
+      "privateState": {}
+    },
+    {
+      "id": "platform",
+      "role": "marketplace operator",
+      "persona": "Synthetic allocator",
+      "goals": [],
+      "preferences": {},
+      "knowledge": [],
+      "authority": [],
+      "constraints": {},
+      "tendencies": [],
+      "history": {},
+      "memory": [],
+      "relationships": [],
+      "publicState": {},
+      "privateState": {}
+    }
+  ],
+  "environment": {
+    "at": "2026-09-27T20:00:00.000Z",
+    "geography": "urban",
+    "serviceStatus": "up",
+    "resources": {},
+    "device": "mobile",
+    "latencyMs": 0,
+    "marketState": {},
+    "season": "winter"
+  },
+  "objective": "Probe sensitivity of synthetic matching to demand, supply, location, budget and season",
+  "initialState": {
+    "items": [],
+    "chefs": [
+      {
+        "id": "chef-a",
+        "geography": "urban",
+        "pricePerPerson": 110,
+        "available": true,
+        "maxHoursPerWeek": 16,
+        "bookedDates": []
+      },
+      {
+        "id": "chef-b",
+        "geography": "urban",
+        "pricePerPerson": 125,
+        "available": true,
+        "maxHoursPerWeek": 16,
+        "bookedDates": []
+      },
+      {
+        "id": "chef-c",
+        "geography": "coastal",
+        "pricePerPerson": 95,
+        "available": true,
+        "maxHoursPerWeek": 12,
+        "bookedDates": []
+      }
+    ],
+    "templates": [
+      {
+        "id": "request-1",
+        "clientId": "client-1",
+        "geography": "urban",
+        "budgetPerPerson": 140,
+        "guestCount": 6,
+        "date": "2026-11-14"
+      },
+      {
+        "id": "request-2",
+        "clientId": "client-2",
+        "geography": "urban",
+        "budgetPerPerson": 130,
+        "guestCount": 8,
+        "date": "2026-11-14"
+      },
+      {
+        "id": "request-3",
+        "clientId": "client-3",
+        "geography": "coastal",
+        "budgetPerPerson": 110,
+        "guestCount": 5,
+        "date": "2026-11-14"
+      },
+      {
+        "id": "request-4",
+        "clientId": "client-4",
+        "geography": "urban",
+        "budgetPerPerson": 105,
+        "guestCount": 4,
+        "date": "2026-11-14"
+      }
+    ],
+    "season": "winter",
+    "requests": [],
+    "quotes": [],
+    "allocations": [],
+    "confirmations": [],
+    "blocked": [],
+    "processed": [],
+    "demandDraw": null
+  },
+  "events": [
+    {
+      "id": "market-1",
+      "type": "market_cycle",
+      "actor": "platform"
+    },
+    {
+      "id": "quote-1",
+      "type": "quote",
+      "actor": "client-1",
+      "requestId": "request-1"
+    },
+    {
+      "id": "supply-lost",
+      "type": "availability_change",
+      "actor": "platform",
+      "chefId": "chef-a",
+      "available": false
+    },
+    {
+      "id": "confirm-1",
+      "type": "confirm",
+      "actor": "client-1",
+      "requestId": "request-1"
+    }
+  ],
+  "expectedInvariants": [
+    "match_requires_available_chef",
+    "match_respects_geography",
+    "match_within_budget",
+    "no_double_booking",
+    "capacity_decision_allows_allocation"
+  ],
+  "hiddenInformation": [
+    "synthetic chef capacity"
+  ],
+  "mutations": [
+    "season",
+    "price",
+    "geography",
+    "availability",
+    "cancellation"
+  ],
+  "mutation": {
+    "from": "chef-marketplace-enthusiast-001",
+    "kind": "chef_unavailable_after_quote"
+  }
+}
