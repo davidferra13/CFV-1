@@ -16,7 +16,9 @@ $credentialPath = Join-Path $configDir "$TunnelId.json"
 $originCert = Join-Path $env:USERPROFILE '.cloudflared\cert.pem'
 $templatePath = Join-Path (Split-Path $PSScriptRoot -Parent) '.cloudflared\chefflow-prod.yml.example'
 
-$preferredCloudflared = Join-Path $env:APPDATA 'npm\node_modules\cloudflared\bin\cloudflared.exe'
+$stableCloudflared = Join-Path $env:USERPROFILE 'Tools\cloudflared\cloudflared.exe'
+$legacyCloudflared = Join-Path $env:APPDATA 'npm\node_modules\cloudflared\bin\cloudflared.exe'
+$preferredCloudflared = if (Test-Path $stableCloudflared) { $stableCloudflared } else { $legacyCloudflared }
 $cloudflared = if (Test-Path $preferredCloudflared) {
     $preferredCloudflared
 } else {
