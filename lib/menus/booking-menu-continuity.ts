@@ -1,7 +1,9 @@
 type BookingMenuContext = {
   db: any
   tenantId: string
-  actorId: string
+  // Null when the booking is converted by the system (public or instant
+  // booking) rather than by a signed-in chef; it only fills audit columns.
+  actorId: string | null
   sourceMenuId: string
   eventId: string
   targetGuestCount: number
