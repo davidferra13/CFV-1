@@ -1,7 +1,8 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest'
 
+// lib/pricing/fallback-cron.ts queries through the pgClient tagged template.
 vi.mock('@/lib/db', () => ({
-  db: { execute: vi.fn() },
+  pgClient: vi.fn(() => Promise.resolve([])),
 }))
 vi.mock('@/lib/pricing/hermes-heartbeat', () => ({
   isHermesAlive: vi.fn(),
@@ -44,11 +45,11 @@ describe('fallback-cron', () => {
 
   it('runs freshness task when Hermes is down', async () => {
     mockIsAlive.mockResolvedValue(false)
-    const { db } = await import('@/lib/db')
-    vi.mocked(db.execute).mockResolvedValue([] as any)
+    const { pgClient } = await import('@/lib/db')
 
     const result = await runFallbackTask('freshness')
     expect(result.skipped).toBe(false)
+    expect(vi.mocked(pgClient)).toHaveBeenCalled()
     expect(mockLogAction).toHaveBeenCalledWith(
       expect.objectContaining({
         skill: 'pie-acquire',

@@ -1,5 +1,5 @@
 #!/usr/bin/env node
-import { readdirSync } from 'node:fs'
+import { readdirSync, readFileSync } from 'node:fs'
 import { dirname, join, relative, resolve, sep } from 'node:path'
 import { fileURLToPath } from 'node:url'
 import { spawnSync } from 'node:child_process'
@@ -55,10 +55,31 @@ const files = [...selected].sort()
 if (listOnly) {
   console.log(files.join('\n'))
 } else {
-  const result = spawnSync(process.execPath, ['--test', '--test-concurrency=4', '--import', 'tsx', ...files], {
-    cwd: root,
-    stdio: 'inherit',
-  })
-  if (result.error) throw result.error
-  process.exitCode = result.status ?? 1
+  // Some files under tests/unit are written for Vitest (import from 'vitest',
+  // vi.mock). node:test cannot load them, so they used to count as failures
+  // on every run and their assertions never executed anywhere. Route each
+  // file to the runner it was written for; the command fails if either does.
+  const usesVitest = file => /from\s+['"]vitest['"]/.test(readFileSync(join(root, file), 'utf8'))
+  const vitestFiles = files.filter(usesVitest)
+  const nodeFiles = files.filter(file => !vitestFiles.includes(file))
+  let status = 0
+  if (nodeFiles.length) {
+    const result = spawnSync(process.execPath, ['--test', '--test-concurrency=4', '--import', 'tsx', ...nodeFiles], {
+      cwd: root,
+      stdio: 'inherit',
+    })
+    if (result.error) throw result.error
+    status = Math.max(status, result.status ?? 1)
+  }
+  if (vitestFiles.length) {
+    console.log(`\n[run-node-test-globs] ${vitestFiles.length} Vitest file(s): running with vitest`)
+    const vitestCli = join(root, 'node_modules', 'vitest', 'vitest.mjs')
+    const result = spawnSync(process.execPath, [vitestCli, 'run', ...vitestFiles], {
+      cwd: root,
+      stdio: 'inherit',
+    })
+    if (result.error) throw result.error
+    status = Math.max(status, result.status ?? 1)
+  }
+  process.exitCode = status
 }
