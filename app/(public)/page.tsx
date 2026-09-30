@@ -148,7 +148,7 @@ export default function Home() {
             <p className="text-sm font-semibold uppercase tracking-[0.16em] text-orange-400">
               one operating flow
             </p>
-            <h2 className="mt-3 text-3xl font-bold tracking-tight">Lead to paid, without the handoffs.</h2>
+            <h2 className="mt-3 text-3xl font-bold tracking-tight">\n              Lead to paid, without the handoffs.\n            </h2>
           </div>
 
           <div className="mt-9 grid gap-6 sm:grid-cols-2 lg:grid-cols-4">
