@@ -81,6 +81,10 @@ $prodTunnelId = '9dab6929-68e3-4775-9b8e-17482f714e83'
 $prodTunnelConfig = "$env:USERPROFILE\.cloudflared\chefflow-prod.yml"
 $prodTunnelCredential = "$env:USERPROFILE\.cloudflared\$prodTunnelId.json"
 $prodTunnelBootstrap = "$projectDir\scripts\ensure-production-tunnel.ps1"
+$publicAppHealthUrl = 'https://app.cheflowhq.com/api/health/ping'
+$publicRootUrl = 'https://cheflowhq.com/'
+$script:publicEdgeFailureCount = 0
+$script:publicEdgeCooldownUntil = [datetime]::MinValue
 $prodEnvironment = @{
     PORT = [string]$prodPort
     HOST = '127.0.0.1'
@@ -98,6 +102,17 @@ function Test-PortInUse {
 
     $listener = Get-NetTCPConnection -LocalPort $Port -State Listen -ErrorAction SilentlyContinue
     return ($null -ne $listener)
+}
+
+function Test-HttpHealthy {
+    param([string]$Url)
+
+    try {
+        $response = Invoke-WebRequest -Uri $Url -TimeoutSec 10 -UseBasicParsing -ErrorAction Stop
+        return ($response.StatusCode -ge 200 -and $response.StatusCode -lt 400)
+    } catch {
+        return $false
+    }
 }
 
 function Get-PortOwners {
@@ -767,6 +782,66 @@ function Ensure-ProductionTunnelMaterial {
     return (Test-Path $prodTunnelConfig) -and (Test-Path $prodTunnelCredential)
 }
 
+function Repair-ProductionPublicEdgeIfNeeded {
+    if ([datetime]::UtcNow -lt $script:publicEdgeCooldownUntil) {
+        return
+    }
+
+    $originHealthUrl = "http://127.0.0.1:$prodPort/api/health/ping"
+    if (-not (Test-HttpHealthy -Url $originHealthUrl)) {
+        $script:publicEdgeFailureCount = 0
+        return
+    }
+
+    $appHealthy = Test-HttpHealthy -Url $publicAppHealthUrl
+    $rootHealthy = Test-HttpHealthy -Url $publicRootUrl
+
+    if ($appHealthy -or $rootHealthy) {
+        if ($script:publicEdgeFailureCount -gt 0) {
+            Write-Log '[prod-tunnel] Public edge recovered before restart threshold.'
+        }
+        $script:publicEdgeFailureCount = 0
+        return
+    }
+
+    $script:publicEdgeFailureCount++
+    Write-Log "[prod-tunnel] Public edge unhealthy while origin is healthy (consecutive failures=$($script:publicEdgeFailureCount))."
+
+    if ($script:publicEdgeFailureCount -lt 2) {
+        return
+    }
+
+    $tunnelProcesses = Get-CimInstance Win32_Process -ErrorAction SilentlyContinue |
+        Where-Object {
+            $_.Name -eq 'cloudflared.exe' -and
+            -not [string]::IsNullOrWhiteSpace([string]$_.CommandLine) -and
+            ([string]$_.CommandLine).Contains($prodTunnelId)
+        }
+
+    foreach ($tunnelProcess in $tunnelProcesses) {
+        try {
+            Stop-Process -Id $tunnelProcess.ProcessId -Force -ErrorAction Stop
+            Write-Log "[prod-tunnel] Recycled unhealthy tunnel process PID $($tunnelProcess.ProcessId)."
+        } catch {
+            Write-Log "[prod-tunnel] Failed to stop tunnel PID $($tunnelProcess.ProcessId): $($_.Exception.Message)"
+        }
+    }
+
+    if ($script:managedProcesses.ContainsKey('prodTunnel')) {
+        $script:managedProcesses.Remove('prodTunnel')
+    }
+
+    Start-Sleep -Seconds 2
+    Ensure-CloudflaredTunnelRunning `
+        -Key 'prodTunnel' `
+        -Label '[prod-tunnel] Production Cloudflare tunnel' `
+        -TunnelId $prodTunnelId `
+        -ConfigPath $prodTunnelConfig
+
+    $script:publicEdgeFailureCount = 0
+    $script:publicEdgeCooldownUntil = [datetime]::UtcNow.AddMinutes(10)
+}
+
 Write-Log '=== ChefFlow Watchdog Started ==='
 Ensure-OllamaRunning
 Ensure-MissionControlRunning
@@ -793,6 +868,10 @@ while ($true) {
             -Label '[prod-tunnel] Production Cloudflare tunnel' `
             -TunnelId $prodTunnelId `
             -ConfigPath $prodTunnelConfig
+
+        if ($loopCount % 4 -eq 0) {
+            Repair-ProductionPublicEdgeIfNeeded
+        }
     }
 
     if ($devPort -ne $prodPort) {
