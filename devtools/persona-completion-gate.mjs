@@ -251,6 +251,31 @@ function getPatchContext(files) {
   }
 }
 
+// Give the persona evaluator verifiable surrounding contracts before it judges a diff.
+// A diff alone cannot establish whether a referenced column or destination exists.
+function getRelevantContracts(files) {
+  const content = files.map(file => {
+    const path = resolve(ROOT, file)
+    return path.startsWith(ROOT + '\\') && existsSync(path) ? readFileSync(path, 'utf8') : ''
+  }).join('\n')
+  const evidence = []
+  if (/\b(prep_list_ready|grocery_list_ready|timeline_ready|packing_list_ready|guest_count)\b/.test(content)) {
+    const schema = readFileSync(join(ROOT, 'database/migrations/20260215000003_layer_3_events_quotes_financials.sql'), 'utf8')
+    for (const field of ['guest_count', 'prep_list_ready', 'grocery_list_ready', 'timeline_ready', 'packing_list_ready']) {
+      if (!content.includes(field)) continue
+      const definition = schema.split(/\r?\n/).find(line => new RegExp(`\\b${field}\\b`).test(line))
+      if (definition) evidence.push(`events schema: ${definition.trim()}`)
+    }
+  }
+  if (content.includes('/events/${event.id}/')) {
+    for (const route of ['prep-plan', 'grocery-run', 'schedule', 'pack']) {
+      const path = join(ROOT, 'app', '(chef)', 'events', '[id]', route, 'page.tsx')
+      evidence.push(`/events/[id]/${route}: ${existsSync(path) ? 'page exists' : 'page missing'}`)
+    }
+  }
+  return evidence.join('\n') || 'No related schema or route contracts identified.'
+}
+
 async function runAnalyzer(source, model, context = {}) {
   const persona = String(source.content || readFileSync(source.path, 'utf8')).slice(0, 4500)
   const prompt = [
@@ -265,6 +290,8 @@ async function runAnalyzer(source, model, context = {}) {
     `Persona role: ${source.type}`,
     `Target categories: ${(context.categories || []).join(', ') || 'general workflow'}`,
     `Changed files: ${(context.changedFiles || []).join(', ')}`,
+    'Existing repository contracts (verify these, and do not infer absent fields from the patch alone):',
+    String(context.contracts || ''),
     'Patch:',
     String(context.patch || '').slice(0, 4500),
     'Persona:',
@@ -435,7 +462,7 @@ async function main() {
   }
 
   if (selected.length === 0) throw new Error('No matching persona sources were available for this change.')
-  const context = { categories, changedFiles: substantiveFiles, patch: getPatchContext(substantiveFiles), minScore: opts.minScore }
+  const context = { categories, changedFiles: substantiveFiles, patch: getPatchContext(substantiveFiles), contracts: getRelevantContracts(substantiveFiles), minScore: opts.minScore }
   const results = []
   for (const source of selected) results.push(await runAnalyzer(source, opts.model, context))
   const interactionResult = await runInteraction(interaction, opts.model, context)

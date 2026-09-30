@@ -1,0 +1,33 @@
+{
+  "schemaVersion": 1,
+  "capabilityId": "today-command-center",
+  "recordedAt": "2026-09-27T17:56:14.593Z",
+  "target": "DESKTOP-DKCONSS / ChefFlow main checkout / http://127.0.0.1:3100",
+  "method": "read-only HTTP probes plus repository inspection",
+  "observations": [
+    {
+      "path": "/api/health",
+      "status": 200,
+      "result": "local service returned status ok, db ok"
+    },
+    {
+      "path": "/dashboard",
+      "status": 307,
+      "result": "redirected to /auth/signin?redirect=%2Fdashboard without chef session"
+    },
+    {
+      "path": "phone 390x844 Today -> next dinner -> prep/groceries/timeline/packing",
+      "status": "UNVERIFIED",
+      "result": "No authorized chef browser state is available; no phone task was exercised"
+    }
+  ],
+  "chefJobFinished": false,
+  "externalAppSwitches": "unknown (chef flow did not start)",
+  "tapsBefore": null,
+  "tapsAfter": null,
+  "limits": [
+    "main checkout Today draft is not deployed",
+    "production app.cheflowhq.com returned HTTP 530",
+    "no client messages, purchases, or data modifications were made"
+  ]
+}
