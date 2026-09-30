@@ -72,3 +72,7 @@ Safe changes may be reviewed on the repair branch. Merge and deploy only after t
 Run [36714647360](https://github.com/davidferra13/CFV-1/actions/runs/36714647360) at code commit `15eaa393473ac59aa0f3ccfaba570e89c6dba5e5` completed: clean installs and Critical Tests **passed**; the route gate **passed 40/40**. The quality job failed next at the unchanged file-line budget. Production audit still reports **79 vulnerabilities, 1 critical (Next)**. Unit tests ran **3,438 cases: 3,321 passed, 117 failed, zero skipped**; all **60 Vitest tests passed**. Build and smoke were skipped because prerequisite gates failed.
 
 The remaining GitHub unit failures are explicitly listed under `githubVerification` in the adjacent JSON. Local and GitHub counts are kept separate. Subsequent evidence-only edits do not change the verified implementation. **Not fixed as a whole; do not merge or deploy.**
+
+## Concurrent main reconciliation
+
+The final live-ref recheck found main had advanced to `10d83ac23f165f6be05f8ffa1e296ede27a2267d` (chef-first public homepage). That upstream commit independently registers `/find` and `/matches`. It was merged into this repair branch, preserving all homepage/navigation changes and retaining each public entry exactly once. Relative to current main, the route-policy patch adds only the four missing chef paths. Focused checks were rerun with the upstream public-surface contract before publication; a fresh GitHub run verifies the reconciled code. The earlier run/counts above remain historical evidence for `15eaa393`.

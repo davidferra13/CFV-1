@@ -47,6 +47,8 @@ export { isGroup }
 
 /** Desktop/mobile header nav items. Groups render as dropdown menus. */
 export const PUBLIC_NAV: PublicNavEntry[] = [
+  { ...PUBLIC_OPERATOR_ENTRY, cta: true },
+  { href: '/pricing', label: 'Pricing' },
   {
     label: 'Hire a Chef',
     items: [
@@ -59,8 +61,6 @@ export const PUBLIC_NAV: PublicNavEntry[] = [
       PUBLIC_SUPPORTING_DIRECTORY_ENTRY,
     ],
   },
-  PUBLIC_OPERATOR_ENTRY,
-  { href: '/pricing', label: 'Pricing' },
 ]
 
 // ---------------------------------------------------------------------------
@@ -83,7 +83,7 @@ export const FOOTER_SECTIONS = {
     ],
   },
   forOperators: {
-    heading: 'For Operators',
+    heading: 'For Chefs',
     links: [PUBLIC_OPERATOR_ENTRY, { href: '/marketplace-chefs', label: 'Marketplace Chefs' }],
   },
   resources: {
