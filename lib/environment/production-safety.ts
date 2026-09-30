@@ -46,9 +46,23 @@ export function evaluateProductionSafetyEnv(
     return { errors, warnings }
   }
 
-  const missing = REQUIRED_PRODUCTION_ENV_VARS.filter((key) => !env[key])
+  // RESEND_API_KEY is required only while outbound notifications are on.
+  // With NOTIFICATIONS_OUTBOUND_ENABLED=false the operator has turned email
+  // off on purpose, and every sender (lib/email/send.ts, campaigns,
+  // push-dinner) already logs and skips without a key. Refusing to boot in
+  // that state took the whole app offline for a missing email credential
+  // (2026-09-29 outage). It is still reported, as a warning.
+  const outboundDisabled = env.NOTIFICATIONS_OUTBOUND_ENABLED === 'false'
+  const missing = REQUIRED_PRODUCTION_ENV_VARS.filter(
+    (key) => !env[key] && !(key === 'RESEND_API_KEY' && outboundDisabled)
+  )
   if (missing.length > 0) {
     errors.push(`Missing required env vars for production: ${missing.join(', ')}`)
+  }
+  if (!env.RESEND_API_KEY && outboundDisabled) {
+    warnings.push(
+      'RESEND_API_KEY is not set and NOTIFICATIONS_OUTBOUND_ENABLED=false: no email will be sent until a key is configured'
+    )
   }
 
   const missingOptional = OPTIONAL_PRODUCTION_ENV_VARS.filter((key) => !env[key])
@@ -121,6 +135,9 @@ export function evaluateProductionSafetyEnv(
 
 export function assertProductionSafetyEnv(env: NodeJS.ProcessEnv = process.env): void {
   const report = evaluateProductionSafetyEnv(env)
+  for (const warning of report.warnings) {
+    console.warn(`[ChefFlow] Production environment warning: ${warning}`)
+  }
   if (report.errors.length === 0) return
 
   const details = report.errors.map((err) => `- ${err}`).join('\n')
