@@ -36,11 +36,6 @@ const devConnectSrc = isDev ? ['ws://127.0.0.1:3100', 'ws://localhost:3100'] : [
 const devEval = isDev ? " 'unsafe-eval'" : ''
 
 const nextConfig = {
-  // Allow large FormData payloads for photo uploads (default is 1MB).
-  // Applies globally to all server actions.
-  serverActions: {
-    bodySizeLimit: '2mb',
-  },
   // Keep dev artifacts separate from production build output.
   // This prevents `npm run build` from corrupting a running `next dev` session.
   distDir:
@@ -49,6 +44,10 @@ const nextConfig = {
   // enough time on resource-constrained build environments (default 60s).
   staticPageGenerationTimeout: 180,
   experimental: {
+    // Allow large FormData payloads for photo uploads (default is 1MB).
+    serverActions: {
+      bodySizeLimit: '2mb',
+    },
     // Large shared icon/chart barrels otherwise dominate the module graph during production builds.
     optimizePackageImports: ['@phosphor-icons/react', 'recharts', 'lucide-react', 'date-fns'],
     // Next 14 still uses the experimental flag for keeping server-only SDKs out of the

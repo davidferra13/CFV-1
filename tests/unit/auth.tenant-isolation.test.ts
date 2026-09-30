@@ -90,6 +90,14 @@ describe('D2: Server actions use tenantId from session', () => {
       'lib/activity/track.ts',
       'lib/ai/queue/actions.ts',
       'lib/ai/remy-input-validation.ts',
+      // Private helpers receive session-derived tenant IDs from authenticated actions.
+      'lib/ai/remy-routines-actions.ts',
+      'lib/calling/vendor-action-extraction-actions.ts',
+      'lib/client-contribution/actions.ts',
+      // Admin-only actions intentionally accept a tenant target after requireAdmin().
+      'lib/compliance/compliance-infrastructure-actions.ts',
+      'lib/openclaw/archive-digester-actions.ts',
+      'lib/openclaw/enrichment-actions.ts',
       'lib/communication/actions.ts',
       'lib/communication/pipeline.ts',
       'lib/copilot/orchestrator.ts',

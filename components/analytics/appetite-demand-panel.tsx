@@ -58,7 +58,7 @@ export function AppetiteDemandPanel({
           </p>
         </div>
       ) : (
-        <div className="mt-5 grid gap-5 lg:grid-cols-2">
+        <div className="mt-5 grid gap-5 lg:grid-cols-3">
           <div>
             <h3 className="text-sm font-semibold text-stone-200">Top signals</h3>
             <div className="mt-3 space-y-2">
@@ -104,6 +104,29 @@ export function AppetiteDemandPanel({
               {model.topBundles.length === 0 && (
                 <p className="rounded-xl border border-stone-800 bg-stone-950/60 p-3 text-xs text-stone-500">
                   Compound demand will appear after people act on combinations of appetite tags.
+                </p>
+              )}
+            </div>
+          </div>
+
+          <div>
+            <h3 className="text-sm font-semibold text-stone-200">Demand vs. supply</h3>
+            <div className="mt-3 space-y-2">
+              {model.topGaps.map((gap) => (
+                <Link
+                  key={gap.tagId}
+                  href={gap.href}
+                  className="flex min-h-12 cursor-pointer items-center justify-between gap-3 rounded-xl border border-stone-800 bg-stone-950/70 px-3 py-2 transition-colors hover:border-stone-700"
+                >
+                  <p className="text-sm font-medium text-stone-100">{gap.label}</p>
+                  <span className="text-xs text-amber-300">Opportunity</span>
+                </Link>
+              ))}
+              {model.topGaps.length === 0 && (
+                <p className="rounded-xl border border-stone-800 bg-stone-950/60 p-3 text-xs text-stone-500">
+                  {model.supplyCoverage === 'complete'
+                    ? 'No material demand and supply gaps in this window.'
+                    : 'Supply coverage is incomplete, so opportunity gaps are withheld.'}
                 </p>
               )}
             </div>

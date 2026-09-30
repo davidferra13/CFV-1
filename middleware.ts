@@ -306,13 +306,9 @@ export default auth(async (request) => {
 })
 
 export const config = {
+  // Next requires this matcher to be statically analyzable at build time.
+  // Development-only API exceptions are handled by isApiSkipAuthPath above.
   matcher: [
-    ...(process.env.NODE_ENV === 'production'
-      ? [
-          '/((?!api/(?:auth|webhooks|build-version|gmail|scheduled|remy/client|remy/stream|remy/public|remy/landing|ollama-status|health|ai/health|ai/monitor|documents|embed|monitoring|inngest|kiosk|feeds|v2|storage|realtime|book|cron|discovery|sentinel|openclaw/webhook|ingredients|calling|llm-txt)|_next/static|_next/image|favicon.ico|manifest.json|robots.txt|sitemap.xml|sw.js|inbox-sw.js|.*\\.(?:svg|png|jpg|jpeg|gif|webp|html)$).*)',
-        ]
-      : [
-          '/((?!api/(?:auth|webhooks|build-version|gmail|scheduled|e2e|remy/client|remy/stream|remy/public|remy/landing|ollama-status|health|ai/health|ai/monitor|documents|embed|demo|monitoring|inngest|kiosk|feeds|v2|storage|realtime|book|cron|discovery|sentinel|openclaw/webhook|ingredients|calling|llm-txt)|_next/static|_next/image|favicon.ico|manifest.json|robots.txt|sitemap.xml|sw.js|inbox-sw.js|.*\\.(?:svg|png|jpg|jpeg|gif|webp|html)$).*)',
-        ]),
+    '/((?!api/(?:auth|webhooks|build-version|gmail|scheduled|remy/client|remy/stream|remy/public|remy/landing|ollama-status|health|ai/health|ai/monitor|documents|embed|monitoring|inngest|kiosk|feeds|v2|storage|realtime|book|cron|discovery|sentinel|openclaw/webhook|ingredients|calling|llm-txt)|_next/static|_next/image|favicon.ico|manifest.json|robots.txt|sitemap.xml|sw.js|inbox-sw.js|.*\\.(?:svg|png|jpg|jpeg|gif|webp|html)$).*)',
   ],
 }

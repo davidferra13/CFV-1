@@ -18,6 +18,7 @@ import {
   readAppetiteEvidence,
   recordAppetiteEvidence,
 } from '@/lib/discovery/appetite-evidence-client'
+import { appetiteSignalsFromTagIds } from '@/lib/discovery/appetite-discovery'
 
 const EVIDENCE_LIMIT = 500
 
@@ -30,7 +31,9 @@ const MODE_LABELS: Record<AppetiteSpinMode, string> = {
 function matchingTagId(field: 'craving' | 'dietary' | 'budget' | 'intent', value: string | null) {
   if (!value) return null
   const normalized = value.trim().toLowerCase()
-  return APPETITE_TAGS.find((tag) => tag.discovery?.[field]?.toLowerCase() === normalized)?.id ?? null
+  return (
+    APPETITE_TAGS.find((tag) => tag.discovery?.[field]?.toLowerCase() === normalized)?.id ?? null
+  )
 }
 
 function querySignals(searchParams: URLSearchParams): AppetiteSignal[] {
@@ -45,18 +48,10 @@ function querySignals(searchParams: URLSearchParams): AppetiteSignal[] {
       .filter(Boolean)
   )
 
-  const signals: AppetiteSignal[] = appetiteIds
-    .filter((tagId) => Boolean(getAppetiteTag(tagId)))
-    .map((tagId) => ({
-      tagId,
-      polarity: 'want',
-      strength: 0.7,
-      confidence: 0.8,
-      hardness: 'soft',
-      scope: 'session',
-      source: 'explicit',
-      locked: lockedIds.has(tagId),
-    }))
+  const signals: AppetiteSignal[] = appetiteSignalsFromTagIds(appetiteIds).map((signal) => ({
+    ...signal,
+    locked: lockedIds.has(signal.tagId),
+  }))
 
   const cravingTagId = matchingTagId('craving', searchParams.get('craving'))
   if (cravingTagId && !signals.some((signal) => signal.tagId === cravingTagId)) {
@@ -149,7 +144,9 @@ export function AppetiteSpinControl() {
         (signal) => signal.scope === 'session' && signal.polarity === 'want'
       )
       const appetiteIds = sessionSignals.map((signal) => signal.tagId)
-      const lockedIds = sessionSignals.filter((signal) => signal.locked).map((signal) => signal.tagId)
+      const lockedIds = sessionSignals
+        .filter((signal) => signal.locked)
+        .map((signal) => signal.tagId)
 
       if (appetiteIds.length > 0) params.set('appetite', appetiteIds.join(','))
       else params.delete('appetite')

@@ -12,6 +12,7 @@ import { CrossDomainLinks } from '@/components/ui/cross-domain-links'
 import { AppetiteDemandPanel } from '@/components/analytics/appetite-demand-panel'
 import { buildAppetiteDemandPanelModel } from '@/lib/analytics/appetite-demand'
 import { getAppetiteMarketSnapshot } from '@/lib/discovery/appetite-market-server'
+import { getAppetiteSupplyCensus } from '@/lib/discovery/appetite-supply-server'
 
 export const metadata: Metadata = { title: 'Demand Forecast' }
 
@@ -21,13 +22,23 @@ export default async function DemandForecastPage() {
   const [heatmapData, holidayYoY, appetiteResult] = await Promise.all([
     getSeasonalHeatmap().catch(() => null),
     getHolidayYearOverYear().catch(() => []),
-    getAppetiteMarketSnapshot({ days: 30 }).then(
-      (snapshot) => ({ ok: true as const, snapshot }),
-      () => ({ ok: false as const, snapshot: null })
-    ),
+    (async () => {
+      try {
+        const supply = await getAppetiteSupplyCensus()
+        const snapshot = await getAppetiteMarketSnapshot({
+          days: 30,
+          supply: supply.canMeasureGaps ? supply.observations : [],
+        })
+        return { ok: true as const, snapshot, supplyCoverage: supply.coverage }
+      } catch {
+        return { ok: false as const, snapshot: null, supplyCoverage: 'unavailable' as const }
+      }
+    })(),
   ])
   const appetiteModel = appetiteResult.ok
-    ? buildAppetiteDemandPanelModel(appetiteResult.snapshot)
+    ? buildAppetiteDemandPanelModel(appetiteResult.snapshot, {
+        supplyCoverage: appetiteResult.supplyCoverage,
+      })
     : null
 
   return (

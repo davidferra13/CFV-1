@@ -3,6 +3,7 @@ import {
   type AppetiteDomain,
   type AppetiteMarketSnapshot,
 } from '@/lib/discovery/appetite-engine'
+import type { AppetiteSupplyCoverage } from '@/lib/discovery/appetite-supply'
 
 export type AppetiteDemandConfidence = 'early' | 'growing' | 'strong'
 
@@ -23,10 +24,19 @@ export type AppetiteDemandBundle = {
   href: string
 }
 
+export type AppetiteDemandGap = {
+  tagId: string
+  label: string
+  gapScore: number
+  href: string
+}
+
 export type AppetiteDemandPanelModel = {
   hasDemand: boolean
   topSignals: AppetiteDemandSignal[]
   topBundles: AppetiteDemandBundle[]
+  topGaps: AppetiteDemandGap[]
+  supplyCoverage: AppetiteSupplyCoverage | 'unknown'
 }
 
 function confidenceForEvidence(count: number): AppetiteDemandConfidence {
@@ -43,10 +53,17 @@ function appetiteHref(tagIds: readonly string[]): string {
 
 export function buildAppetiteDemandPanelModel(
   snapshot: AppetiteMarketSnapshot,
-  options: { signalLimit?: number; bundleLimit?: number } = {}
+  options: {
+    signalLimit?: number
+    bundleLimit?: number
+    gapLimit?: number
+    supplyCoverage?: AppetiteSupplyCoverage
+  } = {}
 ): AppetiteDemandPanelModel {
   const signalLimit = Math.max(1, options.signalLimit ?? 4)
   const bundleLimit = Math.max(1, options.bundleLimit ?? 3)
+  const gapLimit = Math.max(1, options.gapLimit ?? 3)
+  const supplyCoverage = options.supplyCoverage ?? 'unknown'
 
   const topSignals = snapshot.demand
     .filter((entry) => entry.score > 0)
@@ -89,9 +106,31 @@ export function buildAppetiteDemandPanelModel(
     })
     .slice(0, bundleLimit)
 
+  const topGaps =
+    supplyCoverage === 'complete'
+      ? snapshot.marketGaps
+          .filter((entry) => entry.gapScore > 0)
+          .flatMap((entry) => {
+            const tag = getAppetiteTag(entry.tagId)
+            return tag
+              ? [
+                  {
+                    tagId: entry.tagId,
+                    label: tag.label,
+                    gapScore: entry.gapScore,
+                    href: appetiteHref([entry.tagId]),
+                  },
+                ]
+              : []
+          })
+          .slice(0, gapLimit)
+      : []
+
   return {
     hasDemand: topSignals.length > 0 || topBundles.length > 0,
     topSignals,
     topBundles,
+    topGaps,
+    supplyCoverage,
   }
 }

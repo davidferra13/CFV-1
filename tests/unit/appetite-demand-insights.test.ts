@@ -13,7 +13,7 @@ const snapshot: AppetiteMarketSnapshot = {
     { tagIds: ['food-thai', 'feel-crispy'], score: 4, evidenceCount: 5 },
     { tagIds: ['food-thai', 'taste-spicy'], score: 2, evidenceCount: 1 },
   ],
-  marketGaps: [],
+  marketGaps: [{ tagId: 'food-thai', demandScore: 5, supplyScore: 1, gapScore: 4 }],
   bundleMarketGaps: [],
 }
 
@@ -45,6 +45,18 @@ describe('appetite demand analytics', () => {
       })
     )
     expect(model.topBundles[0].href).toContain('food-thai%2Cfeel-crispy')
+  })
+
+  it('shows measured gaps only when the supply census is complete', () => {
+    const complete = buildAppetiteDemandPanelModel(snapshot, { supplyCoverage: 'complete' })
+    const partial = buildAppetiteDemandPanelModel(snapshot, { supplyCoverage: 'partial' })
+
+    expect(complete.topGaps).toEqual([
+      expect.objectContaining({ tagId: 'food-thai', label: 'Thai', gapScore: 4 }),
+    ])
+    expect(complete.supplyCoverage).toBe('complete')
+    expect(partial.topGaps).toEqual([])
+    expect(partial.supplyCoverage).toBe('partial')
   })
 
   it('labels sparse evidence honestly as early rather than overstating confidence', () => {

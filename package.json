@@ -60,9 +60,9 @@
     "seed:local": "tsx scripts/seed-local-demo.ts",
     "local:bootstrap": "docker compose up -d && npm run seed:local",
     "test:e2e": "npx playwright test",
-    "test:unit": "node --test --import tsx \"tests/unit/**/*.test.ts\"",
+    "test:unit": "node scripts/run-unit-tests.mjs",
     "test:unit:web-beta": "node --test --import tsx \"tests/unit/api.health-route.test.ts\" \"tests/unit/api.readiness-route.test.ts\" \"tests/unit/launch-surface-guards.test.ts\" \"tests/unit/verify-release-profile.test.ts\" \"tests/unit/web-beta-build-surface.test.ts\"",
-    "test:critical": "node --test --import tsx \"tests/unit/ledger.*.test.ts\" \"tests/unit/events.fsm.test.ts\" \"tests/unit/quotes.*.test.ts\" \"tests/unit/auth.*.test.ts\" \"tests/unit/focus-mode.test.ts\"",
+    "test:critical": "node scripts/run-unit-tests.mjs \"ledger.*.test.ts\" \"events.fsm.test.ts\" \"quotes.*.test.ts\" \"auth.*.test.ts\" \"focus-mode.test.ts\"",
     "test:unit:financial": "node --test --import tsx \"tests/unit/ledger.*.test.ts\" \"tests/unit/quotes.*.test.ts\"",
     "test:unit:fsm": "node --test --import tsx \"tests/unit/events.fsm.test.ts\"",
     "test:unit:auth": "node --test --import tsx \"tests/unit/auth.*.test.ts\"",
@@ -275,7 +275,7 @@
   },
   "dependencies": {
     "@ai-sdk/openai-compatible": "^2.0.47",
-    "@auth/drizzle-adapter": "^1.11.1",
+    "@auth/drizzle-adapter": "^1.11.3",
     "@dnd-kit/core": "^6.3.1",
     "@dnd-kit/sortable": "^10.0.0",
     "@dnd-kit/utilities": "^3.2.2",
@@ -323,7 +323,7 @@
     "fflate": "^0.8.2",
     "fuse.js": "^7.2.0",
     "html5-qrcode": "^2.3.8",
-    "inngest": "^3.52.4",
+    "inngest": "^3.54.2",
     "jsbarcode": "^3.12.3",
     "jspdf": "^4.2.1",
     "libphonenumber-js": "^1.12.42",
@@ -331,7 +331,7 @@
     "mammoth": "^1.11.0",
     "motion": "^12.38.0",
     "next": "^14.2.18",
-    "next-auth": "^5.0.0-beta.30",
+    "next-auth": "^5.0.0-beta.32",
     "next-intl": "^4.9.0",
     "next-themes": "^0.4.6",
     "ollama": "^0.6.3",
@@ -374,6 +374,7 @@
     "@next/bundle-analyzer": "^16.2.6",
     "@playwright/test": "^1.50.0",
     "@tauri-apps/cli": "^2.10.0",
+    "@types/better-sqlite3": "^9.6.0",
     "@types/dompurify": "^3.0.5",
     "@types/google.maps": "^3.58.1",
     "@types/node": "^20.17.10",
@@ -397,6 +398,9 @@
     "tsx": "^4.21.0",
     "typescript": "^5.7.2",
     "vitest": "^4.1.7"
+  },
+  "overrides": {
+    "protobufjs": "8.8.0"
   },
   "browserslist": [
     ">0.3%",

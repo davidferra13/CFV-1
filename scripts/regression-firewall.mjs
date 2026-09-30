@@ -53,7 +53,7 @@ async function runStep(name, command, args, options = {}) {
         DEV_RUNTIME_HEALTH_TIMEOUT_MS: process.env.DEV_RUNTIME_HEALTH_TIMEOUT_MS || '45000',
       },
       stdio: ['ignore', 'pipe', 'pipe'],
-      shell: isWin,
+      shell: options.shell ?? isWin,
     })
 
     let stdout = ''
@@ -237,6 +237,7 @@ async function main() {
     results.push(
       await runStep('wiring audit', nodeCommand(), ['scripts/wiring-audit.mjs'], {
         timeoutMs: args.stepTimeoutMs,
+        shell: false,
       })
     )
     const wiringResult = results[results.length - 1]

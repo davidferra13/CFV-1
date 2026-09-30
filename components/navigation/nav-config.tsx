@@ -1014,20 +1014,6 @@ export const navGroups: NavGroup[] = [
         label: 'Reviews',
         icon: Star,
       },
-      {
-        href: '/studio',
-        label: 'Studio',
-        icon: Globe,
-        children: [
-          { href: '/studio', label: 'Dashboard' },
-          { href: '/studio/pages', label: 'Pages' },
-          { href: '/studio/branding', label: 'Branding' },
-          { href: '/studio/domain', label: 'Custom Domain' },
-          { href: '/studio/media', label: 'Media' },
-          { href: '/studio/seo', label: 'SEO' },
-          { href: '/studio/analytics', label: 'Analytics' },
-        ],
-      },
     ],
   },
   {
