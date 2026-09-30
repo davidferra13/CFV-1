@@ -3,6 +3,7 @@
 import { requireChef } from '@/lib/auth/get-user'
 import { db } from '@/lib/db'
 import { sql } from 'drizzle-orm'
+import { getOpenClawApiUrl } from '@/lib/openclaw/endpoints'
 
 // --- Types ---
 
@@ -356,7 +357,7 @@ export async function refreshCartPrices(
     if (items.length === 0) return { success: true, updated: 0 }
 
     // Batch fetch prices from Pi in a single call
-    const OPENCLAW_API = process.env.OPENCLAW_API_URL || 'http://10.0.0.177:8081'
+    const OPENCLAW_API = getOpenClawApiUrl()
     let updated = 0
     const names = items.map((item: any) => item.ingredient_name).filter(Boolean)
 

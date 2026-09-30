@@ -10,8 +10,9 @@
 'use server'
 
 import { requireChef } from '@/lib/auth/get-user'
+import { getOpenClawServiceUrl } from '@/lib/openclaw/endpoints'
 
-const PI_SYNTHESIS_BASE = 'http://10.0.0.177:8090/api/synthesis'
+const PI_SYNTHESIS_BASE = getOpenClawServiceUrl(8090, 'OPENCLAW_SYNTHESIS_API_URL', '/api/synthesis')
 const TIMEOUT_MS = 10000
 
 // --- Types ---

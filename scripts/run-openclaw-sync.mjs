@@ -7,8 +7,9 @@
  * ingredient_price_history. Each run is logged to openclaw.sync_audit_log.
  */
 import postgres from 'postgres'
+import { getOpenClawApiUrl } from './lib/openclaw-endpoints.mjs'
 
-const PI_URL = 'http://10.0.0.177:8081'
+const PI_URL = getOpenClawApiUrl()
 const DB_URL = process.env.DATABASE_URL || 'postgresql://postgres:postgres@127.0.0.1:54322/postgres'
 
 const sql = postgres(DB_URL)

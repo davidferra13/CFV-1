@@ -14,8 +14,9 @@
 
 import { chromium } from 'playwright';
 import { writeFileSync, existsSync, readFileSync } from 'fs';
+import { getOpenClawApiUrl } from './lib/openclaw-endpoints.mjs';
 
-const PI_API = process.env.OPENCLAW_API || 'http://10.0.0.177:8081';
+const PI_API = getOpenClawApiUrl();
 const INSTACART_BASE = 'https://www.instacart.com';
 
 // Stores to scrape

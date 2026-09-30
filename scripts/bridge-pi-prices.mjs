@@ -12,6 +12,7 @@ import path from 'node:path'
 import { spawn } from 'node:child_process'
 import readline from 'node:readline'
 import postgres from 'postgres'
+import { getPiSshTarget } from './lib/openclaw-endpoints.mjs'
 
 const ROOT = process.cwd()
 const EXPORT_DIR = path.join(ROOT, '.openclaw-temp', 'pi-export')
@@ -21,7 +22,7 @@ const LOCK_FILE = path.join(EXPORT_DIR, 'bridge.lock.json')
 const STORE_MAP_FILE = path.join(EXPORT_DIR, 'store-map.jsonl')
 const PRODUCT_MAP_FILE = path.join(EXPORT_DIR, 'product-map.jsonl')
 
-const PI_SSH = process.env.PI_SSH || 'davidferra@10.0.0.177'
+const PI_SSH = process.env.PI_SSH || getPiSshTarget()
 const PI_DB = process.env.PI_DB || '/home/davidferra/openclaw-prices/data/prices.db'
 const DB_URL = process.env.DATABASE_URL || 'postgresql://postgres:postgres@127.0.0.1:54322/postgres'
 

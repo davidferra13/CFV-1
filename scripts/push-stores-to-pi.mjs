@@ -25,12 +25,13 @@ import { execSync } from 'child_process'
 import { writeFileSync, unlinkSync, mkdirSync } from 'fs'
 import { resolve, dirname } from 'path'
 import { fileURLToPath } from 'url'
+import { getPiSshTarget } from './lib/openclaw-endpoints.mjs'
 
 const __dirname = dirname(fileURLToPath(import.meta.url))
 const rootDir = resolve(__dirname, '..')
 
 const DB_URL = process.env.DATABASE_URL || 'postgresql://postgres:postgres@127.0.0.1:54322/postgres'
-const PI_HOST = process.env.PI_HOST || 'davidferra@10.0.0.177'
+const PI_HOST = getPiSshTarget()
 const PI_DB_PATH = '/home/davidferra/openclaw-prices/data/prices.db'
 const TEMP_DIR = resolve(rootDir, '.openclaw-temp')
 

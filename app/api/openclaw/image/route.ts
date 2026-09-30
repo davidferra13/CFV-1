@@ -1,10 +1,11 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { lookup } from 'dns/promises'
+import { getOpenClawApiUrl } from '@/lib/openclaw/endpoints'
 
 export const runtime = 'nodejs'
 export const dynamic = 'force-dynamic'
 
-const OPENCLAW_API_URL = process.env.OPENCLAW_API_URL || 'http://10.0.0.177:8081'
+const OPENCLAW_API_URL = getOpenClawApiUrl()
 const MAX_IMAGE_BYTES = 10 * 1024 * 1024
 const IMAGE_CACHE_CONTROL = 'public, max-age=3600, s-maxage=86400, stale-while-revalidate=604800'
 

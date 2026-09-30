@@ -1,7 +1,9 @@
+import { getOpenClawApiUrl } from '../lib/openclaw-endpoints.mjs'
+
 // Test the enriched endpoint after tier passthrough + outlier filter fixes
 const items = ['chicken breast', 'garlic', 'cream cheese', 'filet mignon', 'eggs'];
 
-const res = await fetch('http://10.0.0.177:8081/api/prices/enriched', {
+const res = await fetch(`${getOpenClawApiUrl()}/api/prices/enriched`, {
   method: 'POST',
   headers: { 'Content-Type': 'application/json' },
   body: JSON.stringify({ items }),

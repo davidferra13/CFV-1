@@ -11,9 +11,10 @@
  */
 
 import postgres from 'postgres'
+import { getOpenClawApiUrl } from './lib/openclaw-endpoints.mjs'
 
 const DB_URL = process.env.DATABASE_URL || 'postgresql://postgres:postgres@127.0.0.1:54322/postgres'
-const PI_API = process.env.OPENCLAW_API_URL || 'http://10.0.0.177:8081'
+const PI_API = getOpenClawApiUrl()
 const sql = postgres(DB_URL, { connect_timeout: 10 })
 
 const isDryRun = process.argv.includes('--dry-run')

@@ -18,6 +18,7 @@ import { getMenus } from '@/lib/menus/actions'
 import { getTenantFinancialSummary } from '@/lib/ledger/compute'
 import { checkCalendarAvailability } from '@/lib/scheduling/calendar-sync'
 import { generateFollowUpDraft } from '@/lib/ai/followup-draft'
+import { getOpenClawApiUrl } from '@/lib/openclaw/endpoints'
 
 function localDateISO(d: Date): string {
   return [
@@ -1821,7 +1822,7 @@ async function executeSingleTask(
         const resolved = await resolvePricesBatch(pcIds, tenantId)
 
         // Also query Pi for live market comparison (non-blocking)
-        const piApi = process.env.OPENCLAW_API_URL || 'http://10.0.0.177:8081'
+        const piApi = getOpenClawApiUrl()
         let piPrices: Map<string, { cents: number; store: string }> = new Map()
         try {
           const piRes = await fetch(`${piApi}/api/lookup/batch`, {

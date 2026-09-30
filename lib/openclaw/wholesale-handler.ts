@@ -7,8 +7,9 @@
 
 import { pgClient } from '@/lib/db'
 import type { CartridgeSyncResult } from './cartridge-registry'
+import { getOpenClawApiUrl } from '@/lib/openclaw/endpoints'
 
-const OPENCLAW_API = process.env.OPENCLAW_API_URL || 'http://10.0.0.177:8081'
+const OPENCLAW_API = getOpenClawApiUrl()
 
 export async function handleWholesaleSync(_data: unknown): Promise<CartridgeSyncResult> {
   const sql = pgClient

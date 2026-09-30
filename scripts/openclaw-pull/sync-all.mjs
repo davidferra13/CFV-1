@@ -19,6 +19,7 @@ import { fileURLToPath } from 'url'
 import { existsSync, mkdirSync, readdirSync, readFileSync, writeFileSync } from 'fs'
 import postgres from 'postgres'
 import config from './config.mjs'
+import { getPiSshTarget } from '../lib/openclaw-endpoints.mjs'
 
 const __dirname = dirname(fileURLToPath(import.meta.url))
 const rootDir = resolve(__dirname, '../..')
@@ -193,7 +194,7 @@ function pullDocketDocs() {
 
   try {
     // List done (not yet pulled) files on Pi
-    const piHost = process.env.PI_HOST || 'davidferra@10.0.0.177'
+    const piHost = getPiSshTarget()
     const fileList = execSync(
       `ssh ${piHost} "ls ${piOutputDir}/ 2>/dev/null"`,
       { encoding: 'utf8', timeout: 15000 }

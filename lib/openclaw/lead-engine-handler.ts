@@ -9,9 +9,10 @@
 import { pgClient } from '@/lib/db'
 import { revalidateTag } from 'next/cache'
 import type { CartridgeSyncResult } from './cartridge-registry'
+import { getOpenClawServiceUrl } from '@/lib/openclaw/endpoints'
 
 const OPENCLAW_LEAD_ENGINE_API =
-  process.env.OPENCLAW_LEAD_ENGINE_API_URL || 'http://10.0.0.177:8083'
+  getOpenClawServiceUrl(8083, 'OPENCLAW_LEAD_ENGINE_API_URL')
 
 interface PiBusinessLead {
   id: number

@@ -1,9 +1,11 @@
+import { getOpenClawApiUrl } from '@/lib/openclaw/endpoints'
+
 /**
  * Resolve the OpenClaw API base URL at call time so env changes
- * (e.g. correcting the Pi IP) take effect without a server restart.
+ * take effect without a server restart.
  */
 function resolveOpenClawApi(): string {
-  return process.env.OPENCLAW_API_URL || 'http://10.0.0.177:8081'
+  return getOpenClawApiUrl()
 }
 
 /** Backwards-compatible constant (reads env at import time). Prefer resolveOpenClawApi(). */

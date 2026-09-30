@@ -18,9 +18,10 @@ import postgres from 'postgres'
 import { readFileSync } from 'fs'
 import { resolve, dirname } from 'path'
 import { fileURLToPath } from 'url'
+import { getOpenClawApiUrl } from './lib/openclaw-endpoints.mjs'
 
 const __dirname = dirname(fileURLToPath(import.meta.url))
-const OPENCLAW_API = process.env.OPENCLAW_API_URL || 'http://10.0.0.177:8081'
+const OPENCLAW_API = getOpenClawApiUrl()
 
 // Parse args
 const args = process.argv.slice(2)

@@ -2,6 +2,8 @@
  * OpenClaw Pull Service Configuration
  * Standalone Node.js script config - no Next.js dependency.
  */
+import { getOpenClawPiHost } from '../lib/openclaw-endpoints.mjs'
+
 export default {
   pi: {
     host: '10.0.0.177',

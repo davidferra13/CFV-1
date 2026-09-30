@@ -10,8 +10,9 @@ import { requireChef } from '@/lib/auth/get-user'
 import { db } from '@/lib/db'
 import { sql } from 'drizzle-orm'
 import { resolvePricesBatch } from '@/lib/pricing/resolve-price'
+import { getOpenClawApiUrl } from '@/lib/openclaw/endpoints'
 
-const OPENCLAW_API = process.env.OPENCLAW_API_URL || 'http://10.0.0.177:8081'
+const OPENCLAW_API = getOpenClawApiUrl()
 
 // --- Types ---
 

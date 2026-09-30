@@ -3,8 +3,9 @@
 import { requireChef } from '@/lib/auth/get-user'
 import { createServerClient } from '@/lib/db/server'
 import { revalidatePath } from 'next/cache'
+import { getOpenClawApiUrl } from '@/lib/openclaw/endpoints'
 
-const OPENCLAW_API = process.env.OPENCLAW_API_URL || 'http://10.0.0.177:8081'
+const OPENCLAW_API = getOpenClawApiUrl()
 
 /**
  * Resolve a single ingredient's image by matching against the OpenClaw catalog.

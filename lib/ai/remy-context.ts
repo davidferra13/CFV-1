@@ -26,6 +26,7 @@ import { getCachedChefArchetype } from '@/lib/chef/layout-data-cache'
 import { archetypeToOperatorType, OPERATOR_TARGETS } from '@/lib/costing/knowledge'
 import { loadEmailDigest } from '@/lib/ai/remy-email-actions'
 import { sanitizeForPrompt } from '@/lib/ai/remy-input-validation'
+import { getOpenClawApiUrl } from '@/lib/openclaw/endpoints'
 import { recordSideEffectFailure } from '@/lib/monitoring/non-blocking'
 import { getBusinessHealthSummary } from '@/lib/intelligence/business-health-summary'
 import { getEventIntelligenceContext } from '@/lib/intelligence/event-context'
@@ -39,7 +40,7 @@ import { getPortfolioLTVSummary } from '@/lib/analytics/client-ltv-actions'
 import { getHealthScoreDistribution } from '@/lib/clients/health-score'
 import { getPipelineQualityScore } from '@/lib/analytics/booking-score'
 
-const OPENCLAW_API = process.env.OPENCLAW_API_URL || 'http://10.0.0.177:8081'
+const OPENCLAW_API = getOpenClawApiUrl()
 
 /** Load price intelligence from Pi for Remy prompt (3s timeout, non-blocking) */
 async function loadPriceContext(

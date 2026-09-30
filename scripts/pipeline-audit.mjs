@@ -2,7 +2,9 @@
  * Full pipeline audit: compare current state against projected targets.
  */
 import postgres from 'postgres'
+import { getOpenClawApiUrl } from './lib/openclaw-endpoints.mjs'
 
+const OPENCLAW_API = getOpenClawApiUrl()
 const sql = postgres('postgresql://postgres:postgres@127.0.0.1:54322/postgres')
 
 async function q(query) {
@@ -133,7 +135,7 @@ async function main() {
 
   // ── Pi Status ───────────────────────────────────────────────────────────
   try {
-    const res = await fetch('http://10.0.0.177:8081/api/stats', { signal: AbortSignal.timeout(5000) })
+    const res = await fetch(`${OPENCLAW_API}/api/stats`, { signal: AbortSignal.timeout(5000) })
     const data = await res.json()
     console.log(`\nPI STATUS:`)
     console.log(`  Canonical ingredients: ${data.canonicalIngredients}`)

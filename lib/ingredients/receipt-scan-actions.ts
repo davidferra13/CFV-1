@@ -10,8 +10,9 @@ import {
 } from '@/lib/ai/receipt-ocr'
 import { OllamaOfflineError } from '@/lib/ai/ollama-errors'
 import { revalidatePath, revalidateTag } from 'next/cache'
+import { getOpenClawApiUrl } from '@/lib/openclaw/endpoints'
 
-const OPENCLAW_API = process.env.OPENCLAW_API_URL || 'http://10.0.0.177:8081'
+const OPENCLAW_API = getOpenClawApiUrl()
 
 export interface ReceiptScanResult {
   success: boolean

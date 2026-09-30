@@ -10,9 +10,10 @@ import { pgClient } from '@/lib/db'
 import { upload, getPublicUrl } from '@/lib/storage'
 import { revalidatePath } from 'next/cache'
 import type { CartridgeSyncResult } from './cartridge-registry'
+import { getOpenClawServiceUrl } from '@/lib/openclaw/endpoints'
 
 const OPENCLAW_DIRECTORY_IMAGES_API =
-  process.env.OPENCLAW_DIRECTORY_IMAGES_API_URL || 'http://10.0.0.177:8085'
+  getOpenClawServiceUrl(8085, 'OPENCLAW_DIRECTORY_IMAGES_API_URL')
 
 const STORAGE_BUCKET = 'directory-photos'
 

@@ -7,8 +7,9 @@
 
 import { requireChef } from '@/lib/auth/get-user'
 import { getPreferredStores } from '@/lib/grocery/store-shopping-actions'
+import { getOpenClawApiUrl } from '@/lib/openclaw/endpoints'
 
-const OPENCLAW_API = process.env.OPENCLAW_API_URL || 'http://10.0.0.177:8081'
+const OPENCLAW_API = getOpenClawApiUrl()
 
 // --- Helpers ---
 
