@@ -22,6 +22,7 @@ test('normalizeCreateTaskInput parses the task form payload', () => {
   )
 
   assert.deepEqual(normalizeCreateTaskInput(formData), {
+    time_estimate_minutes: undefined,
     title: 'Fire prep list',
     description: 'Pull proteins',
     assigned_to: null,
@@ -36,6 +37,23 @@ test('normalizeCreateTaskInput parses the task form payload', () => {
       end_date: '2030-02-01',
     },
   })
+})
+
+test('normalizeCreateTaskInput preserves valid estimates and clears invalid estimates', () => {
+  for (const [raw, expected] of [
+    ['45', 45],
+    [' 12.7 ', 13],
+    ['', null],
+    ['0', null],
+    ['-5', null],
+    ['not-a-number', null],
+  ] as const) {
+    const formData = new FormData()
+    formData.set('title', 'Prep')
+    formData.set('due_date', '2030-01-15')
+    formData.set('time_estimate_minutes', raw)
+    assert.equal(normalizeCreateTaskInput(formData).time_estimate_minutes, expected)
+  }
 })
 
 test('normalizeUpdateTaskInput keeps empty optional fields as explicit nulls', () => {
