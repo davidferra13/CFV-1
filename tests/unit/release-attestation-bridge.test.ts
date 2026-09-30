@@ -127,8 +127,12 @@ test('runReleaseVerification writes an attestation report with tracked advisorie
       report.advisories.map((finding: { policyId: string | null }) => finding.policyId).sort(),
       ['dynamic_server_usage', 'next_server_actions_config']
     )
-    assert.equal(report.steps[1]?.name, 'audit:completeness:json')
-    assert.equal(report.steps[1]?.machineReadableOutput?.failCount, 0)
+    // Located by name: audit:capabilities:gate (d4be1d51c) now runs before it.
+    const completenessStep = report.steps.find(
+      (step: { name: string }) => step.name === 'audit:completeness:json'
+    )
+    assert.ok(completenessStep)
+    assert.equal(completenessStep?.machineReadableOutput?.failCount, 0)
     assert.ok(existsSync(attestationPaths.primaryPath))
 
     const persisted = JSON.parse(readFileSync(attestationPaths.primaryPath, 'utf8'))
@@ -165,8 +169,10 @@ test('runReleaseVerification records blocking machine-readable contract drift on
     })
 
     assert.equal(report.status, 'failed')
-    assert.equal(report.steps.length, 2)
-    assert.equal(report.steps[1]?.status, 'failed')
+    // verify:secrets, audit:capabilities:gate, then the failing completeness step.
+    assert.equal(report.steps.length, 3)
+    assert.equal(report.steps[2]?.name, 'audit:completeness:json')
+    assert.equal(report.steps[2]?.status, 'failed')
     assert.match(report.blockers[0]?.code ?? '', /invalid_json/)
     assert.ok(existsSync(attestationPaths.primaryPath))
 
