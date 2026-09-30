@@ -305,14 +305,15 @@ export default auth(async (request) => {
   return response
 })
 
+// Next.js reads this matcher statically at build time. A computed value (the
+// earlier NODE_ENV spread) is rejected with "Unsupported spread operator" and
+// silently replaced by the default, which ran middleware on every request,
+// including static assets. One literal, the stricter production list, is used
+// everywhere: /api/e2e and /api/demo still pass the middleware in development
+// because isPublicUnauthenticatedPath() lists them, and their own handlers keep
+// the E2E_ALLOW_TEST_AUTH / demo-mode gates.
 export const config = {
   matcher: [
-    ...(process.env.NODE_ENV === 'production'
-      ? [
-          '/((?!api/(?:auth|webhooks|build-version|gmail|scheduled|remy/client|remy/stream|remy/public|remy/landing|ollama-status|health|ai/health|ai/monitor|documents|embed|monitoring|inngest|kiosk|feeds|v2|storage|realtime|book|cron|discovery|sentinel|openclaw/webhook|ingredients|calling|llm-txt)|_next/static|_next/image|favicon.ico|manifest.json|robots.txt|sitemap.xml|sw.js|inbox-sw.js|.*\\.(?:svg|png|jpg|jpeg|gif|webp|html)$).*)',
-        ]
-      : [
-          '/((?!api/(?:auth|webhooks|build-version|gmail|scheduled|e2e|remy/client|remy/stream|remy/public|remy/landing|ollama-status|health|ai/health|ai/monitor|documents|embed|demo|monitoring|inngest|kiosk|feeds|v2|storage|realtime|book|cron|discovery|sentinel|openclaw/webhook|ingredients|calling|llm-txt)|_next/static|_next/image|favicon.ico|manifest.json|robots.txt|sitemap.xml|sw.js|inbox-sw.js|.*\\.(?:svg|png|jpg|jpeg|gif|webp|html)$).*)',
-        ]),
+    '/((?!api/(?:auth|webhooks|build-version|gmail|scheduled|remy/client|remy/stream|remy/public|remy/landing|ollama-status|health|ai/health|ai/monitor|documents|embed|monitoring|inngest|kiosk|feeds|v2|storage|realtime|book|cron|discovery|sentinel|openclaw/webhook|ingredients|calling|llm-txt)|_next/static|_next/image|favicon.ico|manifest.json|robots.txt|sitemap.xml|sw.js|inbox-sw.js|.*\\.(?:svg|png|jpg|jpeg|gif|webp|html)$).*)',
   ],
 }

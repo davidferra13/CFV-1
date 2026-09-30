@@ -192,6 +192,14 @@ describe('Middleware - API skip paths', () => {
     assert.equal(source.includes('|cron|'), true)
     assert.equal(source.includes('|discovery|'), true)
   })
+
+  it('matcher is a static literal Next.js can read at build time', () => {
+    const source = fs.readFileSync(path.join(process.cwd(), 'middleware.ts'), 'utf8')
+    const configBlock = source.slice(source.indexOf('export const config'))
+    // A spread or conditional makes Next.js fall back to running middleware on every path.
+    assert.equal(/matcher:\s*\[\s*\.\.\./.test(configBlock), false)
+    assert.equal(configBlock.includes('process.env'), false)
+  })
 })
 
 describe('Middleware - admin route matching', () => {
