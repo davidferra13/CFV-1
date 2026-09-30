@@ -2,7 +2,7 @@
 # Checks canonical app origin, public production surfaces, Docker, and Ollama
 # Runs every 15 minutes
 
-$projectDir = "C:\Users\david\Documents\CFv1"
+$projectDir = Split-Path (Split-Path $PSScriptRoot -Parent) -Parent
 $logFile    = "$projectDir\logs\health-check.log"
 
 if (-not (Test-Path "$projectDir\logs")) {
@@ -85,10 +85,15 @@ if ($memUsedPct -gt 90) {
     $issues += "High memory usage: ${memUsedPct}%"
 }
 
-# 6. CPU usage (alert if > 90% sustained)
-$cpuPct = [math]::Round((Get-CimInstance Win32_Processor | Measure-Object -Property LoadPercentage -Average).Average, 1)
+# 6. CPU usage (alert only when > 90% across multiple samples)
+try {
+    $cpuCounter = Get-Counter '\Processor(_Total)\% Processor Time' -SampleInterval 1 -MaxSamples 3 -ErrorAction Stop
+    $cpuPct = [math]::Round(($cpuCounter.CounterSamples | Measure-Object -Property CookedValue -Average).Average, 1)
+} catch {
+    $cpuPct = [math]::Round((Get-CimInstance Win32_Processor | Measure-Object -Property LoadPercentage -Average).Average, 1)
+}
 if ($cpuPct -gt 90) {
-    $issues += "High CPU usage: ${cpuPct}%"
+    $issues += "High sustained CPU usage: ${cpuPct}%"
 }
 
 # 7. Healthchecks.io ping (dead-man's-switch: if THIS task stops, Healthchecks alerts you)
