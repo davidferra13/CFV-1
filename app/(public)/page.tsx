@@ -1,6 +1,8 @@
 import type { Metadata } from 'next'
 import Link from 'next/link'
 import { buildMarketingMetadata } from '@/lib/site/public-site'
+import { getDiscoverableChefs } from '@/lib/directory/actions'
+import { ChefCard } from './chefs/_components/chef-card'
 
 const marketingMetadata = buildMarketingMetadata({
   title: 'Hire a Private Chef Near You | ChefFlow',
@@ -77,7 +79,17 @@ const occasions = [
   },
 ] as const
 
-export default function Home() {
+export default async function Home() {
+  let featuredChefs: Awaited<ReturnType<typeof getDiscoverableChefs>> = []
+
+  try {
+    featuredChefs = (await getDiscoverableChefs())
+      .filter((chef) => chef.discovery.accepting_inquiries)
+      .slice(0, 3)
+  } catch {
+    // Keep the public landing page available even if directory data is temporarily unavailable.
+  }
+
   return (
     <div className="min-h-screen bg-[#120b08] text-white">
       <section className="relative overflow-hidden">
@@ -213,6 +225,38 @@ export default function Home() {
           </div>
         </div>
       </section>
+
+      {featuredChefs.length > 0 && (
+        <section className="mx-auto max-w-6xl px-4 py-16 sm:px-6 sm:py-20">
+          <div className="flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">
+            <div>
+              <p className="text-sm font-semibold uppercase tracking-[0.16em] text-orange-400">
+                chefs you can explore now
+              </p>
+              <h2 className="mt-3 text-3xl font-bold tracking-tight sm:text-4xl">
+                Start with real ChefFlow chefs.
+              </h2>
+              <p className="mt-3 max-w-2xl text-base leading-7 text-stone-400">
+                Open a profile, see service details, or send an inquiry when someone looks like the
+                right fit.
+              </p>
+            </div>
+            <Link
+              href="/chefs"
+              className="text-sm font-semibold text-white transition hover:text-orange-300"
+            >
+              View all chefs →
+            </Link>
+          </div>
+
+          <div className="mt-8 grid gap-5 sm:grid-cols-2 lg:grid-cols-3">
+            {featuredChefs.map((chef) => (
+              <ChefCard key={chef.id} chef={chef} />
+            ))}
+          </div>
+        </section>
+      )}
+
       <section className="mx-auto max-w-6xl px-4 py-16 sm:px-6 sm:py-20">
         <div className="grid gap-5 lg:grid-cols-2">
           <article className="rounded-3xl border border-orange-500/30 bg-orange-950/25 p-7 sm:p-9">
