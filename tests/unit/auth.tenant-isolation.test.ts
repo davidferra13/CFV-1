@@ -124,6 +124,18 @@ describe('D2: Server actions use tenantId from session', () => {
       'lib/sharing/actions.ts',
       'lib/tickets/actions.ts',
       'lib/tickets/purchase-actions.ts',
+      // Audited 2026-09-29. input.tenantId appears only inside a non-exported
+      // helper, so no client can call it as a server action; every exported
+      // caller passes tenant scope taken from requireChef() on the session.
+      'lib/ai/remy-routines-actions.ts', // logRoutineChangeAudit
+      'lib/calling/vendor-action-extraction-actions.ts', // safeRecordLearning
+      'lib/client-contribution/actions.ts', // writeReviewState
+      // Audited 2026-09-29. Platform-admin tools gated by requireAdmin(); the
+      // admin is choosing which tenant a platform job or compliance record
+      // belongs to, which is the intended cross-tenant capability.
+      'lib/compliance/compliance-infrastructure-actions.ts', // upsertComplianceItem
+      'lib/openclaw/archive-digester-actions.ts', // createDigesterJob
+      'lib/openclaw/enrichment-actions.ts', // createEnrichmentJob
     ])
 
     for (const file of files) {
