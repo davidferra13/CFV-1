@@ -1,0 +1,50 @@
+{
+  "schemaVersion": 1,
+  "projectId": "chef-flow",
+  "canonicalName": "ChefFlow",
+  "mission": "Be the chef operating system with a marketplace attached: remove back-office drudgery while preserving chef control and culinary truth.",
+  "brain": {
+    "mode": "project-native",
+    "steward": "Remy",
+    "builder": "Dex",
+    "sharedRuntime": "Project Command",
+    "intentProtocol": "project-brain-v1"
+  },
+  "contextSources": [
+    "CONTEXT.md",
+    "MEMORY.md",
+    "AGENTS.md",
+    ".planning/CURRENT-BUILD-PLAN.md",
+    ".planning/CURRENT-STATE.md",
+    "runtime telemetry",
+    "tests and verification evidence",
+    "owner and ChatGPT project intents"
+  ],
+  "capabilities": {
+    "reason": true,
+    "plan": true,
+    "queue": true,
+    "editInIsolatedWorktree": true,
+    "test": true,
+    "reviewWithIndependentLocalModel": true,
+    "recordEvidence": true,
+    "resumeAcrossRestarts": true
+  },
+  "permissions": {
+    "destructiveChanges": false,
+    "deploy": false,
+    "push": false,
+    "outreach": false,
+    "productionDataWrites": false,
+    "authOrSecretChanges": false,
+    "databaseMigrations": false
+  },
+  "modelPolicy": {
+    "routing": "local-first-no-silent-cloud",
+    "cloudFallback": false,
+    "router": "granite4.2:3b",
+    "agent": "qwen3.5:4b",
+    "heavyAgent": "qwen3.6:35b-a3b",
+    "reasoning": "deepseek-r1:8b"
+  }
+}
