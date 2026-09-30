@@ -40,6 +40,10 @@ test('autostart launchers resolve their checkout instead of the dirty primary pa
     assert.ok(launcher.includes('WScript.ScriptFullName'))
     assert.ok(!launcher.includes('C:\\Users\\david\\Documents\\CFv1'))
   }
+  // The watchdog the launchers start must serve its own checkout too, or a clean
+  // production checkout would build and serve the dirty primary tree.
+  assert.ok(watchdog.includes('$projectDir = $PSScriptRoot'))
+  assert.ok(!watchdog.includes('$projectDir = "C:\\Users\\david\\Documents\\CFv1"'))
   assert.ok(autostart.includes("Split-Path -Parent $MyInvocation.MyCommand.Path"))
   assert.ok(autostart.includes("$taskName       = 'ChefFlow-Watchdog'"))
 })

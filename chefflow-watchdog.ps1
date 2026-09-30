@@ -3,7 +3,9 @@ param(
     [switch]$SinglePass
 )
 
-$projectDir = "C:\Users\david\Documents\CFv1"
+# Resolve from this script's own checkout so the launcher, task, and watchdog
+# always serve the same tree (production runs from a clean main checkout).
+$projectDir = $PSScriptRoot
 $logFile = "$projectDir\chefflow-watchdog.log"
 
 function Resolve-ExecutablePath {
@@ -421,8 +423,16 @@ function Get-PostgresContainerState {
 }
 
 function Ensure-PostgresRunning {
+    # The database the app uses is whatever answers on $dbPort. After the
+    # 2026-09-17 rebuild that container is named differently from the compose
+    # file, so a listening port counts as ready; compose startup is only the
+    # fallback when nothing is listening at all.
+    if (Test-PortInUse $dbPort) {
+        return $true
+    }
+
     $state = Get-PostgresContainerState
-    if ($state.Running -and (($state.Health -eq 'healthy') -or (Test-PortInUse $dbPort))) {
+    if ($state.Running -and ($state.Health -eq 'healthy')) {
         return $true
     }
 
