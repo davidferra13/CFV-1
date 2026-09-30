@@ -15,6 +15,7 @@
 //   IRS_MILEAGE_RATE_CENTS: 70 ($0.70/mile)
 //   MINIMUM_BOOKING_CENTS: 30000 ($300)
 
+import { configuredPricing } from '../helpers/pricing-config'
 import test from 'node:test'
 import assert from 'node:assert/strict'
 import { evaluateChefPricing, isQuotable, generateQuoteSummary } from '@/lib/pricing/evaluate'
@@ -23,6 +24,7 @@ import { evaluateChefPricing, isQuotable, generateQuoteSummary } from '@/lib/pri
 
 test('eligibility: no context → pricingAllowed = true (chef-tool mode)', async () => {
   const result = await evaluateChefPricing({
+    config: configuredPricing,
     serviceType: 'private_dinner',
     guestCount: 4,
     courseCount: 4,
@@ -33,6 +35,7 @@ test('eligibility: no context → pricingAllowed = true (chef-tool mode)', async
 
 test('eligibility: all conditions met → pricingAllowed = true', async () => {
   const result = await evaluateChefPricing({
+    config: configuredPricing,
     serviceType: 'private_dinner',
     guestCount: 4,
     courseCount: 4,
@@ -49,6 +52,7 @@ test('eligibility: all conditions met → pricingAllowed = true', async () => {
 
 test('eligibility: client did not ask for pricing → pricingAllowed = false', async () => {
   const result = await evaluateChefPricing({
+    config: configuredPricing,
     serviceType: 'private_dinner',
     guestCount: 4,
     courseCount: 4,
@@ -65,6 +69,7 @@ test('eligibility: client did not ask for pricing → pricingAllowed = false', a
 
 test('eligibility: clientReferencedPriorPricing counts as trigger', async () => {
   const result = await evaluateChefPricing({
+    config: configuredPricing,
     serviceType: 'private_dinner',
     guestCount: 2,
     courseCount: 3,
@@ -81,6 +86,7 @@ test('eligibility: clientReferencedPriorPricing counts as trigger', async () => 
 
 test('eligibility: missing guestCount → fail reason present', async () => {
   const result = await evaluateChefPricing({
+    config: configuredPricing,
     serviceType: 'private_dinner',
     guestCount: 2,
     courseCount: 3,
@@ -97,6 +103,7 @@ test('eligibility: missing guestCount → fail reason present', async () => {
 
 test('eligibility: missing date → fail reason present', async () => {
   const result = await evaluateChefPricing({
+    config: configuredPricing,
     serviceType: 'private_dinner',
     guestCount: 2,
     courseCount: 3,
@@ -113,6 +120,7 @@ test('eligibility: missing date → fail reason present', async () => {
 
 test('eligibility: isLegitimateChefRequest = false → fail', async () => {
   const result = await evaluateChefPricing({
+    config: configuredPricing,
     serviceType: 'private_dinner',
     guestCount: 2,
     courseCount: 3,
@@ -130,6 +138,7 @@ test('eligibility: isLegitimateChefRequest = false → fail', async () => {
 
 test('eligibility: pricing blocked, but breakdown is always computed', async () => {
   const result = await evaluateChefPricing({
+    config: configuredPricing,
     serviceType: 'private_dinner',
     guestCount: 4,
     courseCount: 4,
@@ -150,6 +159,7 @@ test('eligibility: pricing blocked, but breakdown is always computed', async () 
 
 test('private dinner: group rate — 4 guests, 4 courses → $185 × 4 = $740', async () => {
   const result = await evaluateChefPricing({
+    config: configuredPricing,
     serviceType: 'private_dinner',
     guestCount: 4,
     courseCount: 4,
@@ -168,6 +178,7 @@ test('private dinner: group rate — 4 guests, 4 courses → $185 × 4 = $740', 
 
 test('private dinner: group rate — 6 guests, 3 courses → $155 × 6 = $930', async () => {
   const result = await evaluateChefPricing({
+    config: configuredPricing,
     serviceType: 'private_dinner',
     guestCount: 6,
     courseCount: 3,
@@ -178,6 +189,7 @@ test('private dinner: group rate — 6 guests, 3 courses → $155 × 6 = $930', 
 
 test('private dinner: group rate — 4 guests, 5 courses → $215 × 4 = $860', async () => {
   const result = await evaluateChefPricing({
+    config: configuredPricing,
     serviceType: 'private_dinner',
     guestCount: 4,
     courseCount: 5,
@@ -189,6 +201,7 @@ test('private dinner: group rate — 4 guests, 5 courses → $215 × 4 = $860', 
 
 test('private dinner: couples rate — 2 guests, 4 courses → $250 × 2 = $500', async () => {
   const result = await evaluateChefPricing({
+    config: configuredPricing,
     serviceType: 'private_dinner',
     guestCount: 2,
     courseCount: 4,
@@ -200,6 +213,7 @@ test('private dinner: couples rate — 2 guests, 4 courses → $250 × 2 = $500'
 
 test('private dinner: couples rate — 2 guests, 3 courses → $200 × 2 = $400', async () => {
   const result = await evaluateChefPricing({
+    config: configuredPricing,
     serviceType: 'private_dinner',
     guestCount: 2,
     courseCount: 3,
@@ -210,6 +224,7 @@ test('private dinner: couples rate — 2 guests, 3 courses → $200 × 2 = $400'
 
 test('private dinner: 1 guest treated as couple → couples rate', async () => {
   const result = await evaluateChefPricing({
+    config: configuredPricing,
     serviceType: 'private_dinner',
     guestCount: 1,
     courseCount: 3,
@@ -220,6 +235,7 @@ test('private dinner: 1 guest treated as couple → couples rate', async () => {
 
 test('private dinner: missing courseCount → requiresCustomPricing = true, clientFacingText = null', async () => {
   const result = await evaluateChefPricing({
+    config: configuredPricing,
     serviceType: 'private_dinner',
     guestCount: 4,
     // no courseCount
@@ -231,6 +247,7 @@ test('private dinner: missing courseCount → requiresCustomPricing = true, clie
 
 test('private dinner: large group (10 guests) uses group rate + isLargeGroup flag', async () => {
   const result = await evaluateChefPricing({
+    config: configuredPricing,
     serviceType: 'private_dinner',
     guestCount: 10,
     courseCount: 3,
@@ -243,6 +260,7 @@ test('private dinner: large group (10 guests) uses group rate + isLargeGroup fla
 
 test('private dinner: buyout (16 guests) → requiresCustomPricing = true', async () => {
   const result = await evaluateChefPricing({
+    config: configuredPricing,
     serviceType: 'private_dinner',
     guestCount: 16,
     courseCount: 4,
@@ -259,6 +277,7 @@ test('private dinner: buyout (16 guests) → requiresCustomPricing = true', asyn
 
 test('weekendPremiumEnabled: chef-tool mode auto-defaults to true for Friday event', async () => {
   const result = await evaluateChefPricing({
+    config: configuredPricing,
     serviceType: 'private_dinner',
     guestCount: 4,
     courseCount: 4,
@@ -276,6 +295,7 @@ test('weekendPremiumEnabled: chef-tool mode auto-defaults to true for Friday eve
 
 test('weekendPremiumEnabled: AI path (eligibility passed) does NOT auto-apply weekend premium', async () => {
   const result = await evaluateChefPricing({
+    config: configuredPricing,
     serviceType: 'private_dinner',
     guestCount: 4,
     courseCount: 4,
@@ -295,6 +315,7 @@ test('weekendPremiumEnabled: AI path (eligibility passed) does NOT auto-apply we
 
 test('weekendPremiumEnabled: explicit false overrides chef-tool default', async () => {
   const result = await evaluateChefPricing({
+    config: configuredPricing,
     serviceType: 'private_dinner',
     guestCount: 4,
     courseCount: 4,
@@ -306,6 +327,7 @@ test('weekendPremiumEnabled: explicit false overrides chef-tool default', async 
 
 test('weekendPremiumEnabled: explicit true in AI path applies premium', async () => {
   const result = await evaluateChefPricing({
+    config: configuredPricing,
     serviceType: 'private_dinner',
     guestCount: 4,
     courseCount: 4,
@@ -331,6 +353,7 @@ test("holiday: Valentine's Day 2026-02-14 — Tier 1, 45% premium applied", asyn
   // weekendPremium = 10% of $500 = $50
   // holidayPremium = 45% of ($500 + $50) = 45% of $550 = $247.50 → rounds to $248 (Math.round)
   const result = await evaluateChefPricing({
+    config: configuredPricing,
     serviceType: 'private_dinner',
     guestCount: 2,
     courseCount: 4,
@@ -348,6 +371,7 @@ test("holiday: Valentine's Day 2026-02-14 — Tier 1, 45% premium applied", asyn
 
 test('holiday: non-holiday Tuesday → no holiday premium', async () => {
   const result = await evaluateChefPricing({
+    config: configuredPricing,
     serviceType: 'private_dinner',
     guestCount: 4,
     courseCount: 4,
@@ -363,6 +387,7 @@ test('holiday premium is stacked on top of weekend premium', async () => {
   // For a Tier-1 holiday on a Friday/Saturday the holiday premium is applied
   // to (serviceFeeCents + weekendPremiumCents), not just serviceFeeCents.
   const result = await evaluateChefPricing({
+    config: configuredPricing,
     serviceType: 'private_dinner',
     guestCount: 4,
     courseCount: 4,
@@ -380,6 +405,7 @@ test('holiday premium is stacked on top of weekend premium', async () => {
 
 test('weekly_standard: hasRange = true, low and high computed', async () => {
   const result = await evaluateChefPricing({
+    config: configuredPricing,
     serviceType: 'weekly_standard',
     guestCount: 3,
     numberOfDays: 5,
@@ -405,6 +431,7 @@ test('weekly_standard: hasRange = true, low and high computed', async () => {
 
 test('weekly_commitment: hasRange = true, correct rates ($300–$350/day)', async () => {
   const result = await evaluateChefPricing({
+    config: configuredPricing,
     serviceType: 'weekly_commitment',
     guestCount: 2,
     numberOfDays: 5,
@@ -420,6 +447,7 @@ test('weekly_commitment: hasRange = true, correct rates ($300–$350/day)', asyn
 
 test('weekly_standard: clientFacingText contains both low and high totals', async () => {
   const result = await evaluateChefPricing({
+    config: configuredPricing,
     serviceType: 'weekly_standard',
     guestCount: 3,
     numberOfDays: 5,
@@ -438,6 +466,7 @@ test('weekly_standard: clientFacingText contains both low and high totals', asyn
 
 test('private_dinner: hasRange = false (not a weekly type)', async () => {
   const result = await evaluateChefPricing({
+    config: configuredPricing,
     serviceType: 'private_dinner',
     guestCount: 4,
     courseCount: 4,
@@ -453,6 +482,7 @@ test('weekly_standard range: premiums scale proportionally with day rate', async
   // scalingFactor = 200000 / 250000 = 0.8
   // weekendPremium on low side = round(25000 × 0.8) = 20000
   const result = await evaluateChefPricing({
+    config: configuredPricing,
     serviceType: 'weekly_standard',
     guestCount: 2,
     numberOfDays: 5,
@@ -471,6 +501,7 @@ test('weekly_standard range: premiums scale proportionally with day rate', async
 
 test('weekly_standard range: travel is same on both sides (does not scale)', async () => {
   const result = await evaluateChefPricing({
+    config: configuredPricing,
     serviceType: 'weekly_standard',
     guestCount: 2,
     numberOfDays: 5,
@@ -488,6 +519,7 @@ test('weekly_standard range: travel is same on both sides (does not scale)', asy
 test('adjustment: loyalty_discount reduces finalTotalCents and recalculates deposit', async () => {
   // 4 guests, 3 courses → $155 × 4 = $620. Discount $50 → final = $570.
   const result = await evaluateChefPricing({
+    config: configuredPricing,
     serviceType: 'private_dinner',
     guestCount: 4,
     courseCount: 3,
@@ -508,6 +540,7 @@ test('adjustment: loyalty_discount reduces finalTotalCents and recalculates depo
 
 test('adjustment: surcharge adds to final total', async () => {
   const result = await evaluateChefPricing({
+    config: configuredPricing,
     serviceType: 'private_dinner',
     guestCount: 2,
     courseCount: 4,
@@ -525,6 +558,7 @@ test('adjustment: surcharge adds to final total', async () => {
 
 test('adjustment: custom_total overrides entire computed price', async () => {
   const result = await evaluateChefPricing({
+    config: configuredPricing,
     serviceType: 'private_dinner',
     guestCount: 4,
     courseCount: 4,
@@ -543,6 +577,7 @@ test('adjustment: custom_total overrides entire computed price', async () => {
 
 test('adjustment: loyalty_discount cannot push total below zero', async () => {
   const result = await evaluateChefPricing({
+    config: configuredPricing,
     serviceType: 'private_dinner',
     guestCount: 2,
     courseCount: 3,
@@ -558,6 +593,7 @@ test('adjustment: loyalty_discount cannot push total below zero', async () => {
 
 test('adjustment: no adjustment → adjustmentApplied = false, originals preserved', async () => {
   const result = await evaluateChefPricing({
+    config: configuredPricing,
     serviceType: 'private_dinner',
     guestCount: 4,
     courseCount: 4,
@@ -572,6 +608,7 @@ test('adjustment: no adjustment → adjustmentApplied = false, originals preserv
 
 test('travel: 10 miles → $0.70/mile = $7 (700 cents)', async () => {
   const result = await evaluateChefPricing({
+    config: configuredPricing,
     serviceType: 'private_dinner',
     guestCount: 4,
     courseCount: 4,
@@ -583,6 +620,7 @@ test('travel: 10 miles → $0.70/mile = $7 (700 cents)', async () => {
 
 test('travel: no distance → travelFeeCents = 0', async () => {
   const result = await evaluateChefPricing({
+    config: configuredPricing,
     serviceType: 'private_dinner',
     guestCount: 4,
     courseCount: 4,
@@ -594,6 +632,7 @@ test('travel: no distance → travelFeeCents = 0', async () => {
 
 test('isQuotable: standard valid result → true', async () => {
   const result = await evaluateChefPricing({
+    config: configuredPricing,
     serviceType: 'private_dinner',
     guestCount: 4,
     courseCount: 4,
@@ -603,6 +642,7 @@ test('isQuotable: standard valid result → true', async () => {
 
 test('isQuotable: requiresCustomPricing → false', async () => {
   const result = await evaluateChefPricing({
+    config: configuredPricing,
     serviceType: 'private_dinner',
     guestCount: 4,
     // no courseCount → custom pricing required
@@ -612,6 +652,7 @@ test('isQuotable: requiresCustomPricing → false', async () => {
 
 test('isQuotable: buyout guest count → false', async () => {
   const result = await evaluateChefPricing({
+    config: configuredPricing,
     serviceType: 'private_dinner',
     guestCount: 16,
     courseCount: 4,
@@ -621,6 +662,7 @@ test('isQuotable: buyout guest count → false', async () => {
 
 test('isQuotable: loyalty discount wipes total → false', async () => {
   const result = await evaluateChefPricing({
+    config: configuredPricing,
     serviceType: 'private_dinner',
     guestCount: 2,
     courseCount: 3,
@@ -637,6 +679,7 @@ test('isQuotable: loyalty discount wipes total → false', async () => {
 test('isQuotable: pricingAllowed = false does NOT block quoting', async () => {
   // Chef can always create a quote regardless of AI eligibility gate.
   const result = await evaluateChefPricing({
+    config: configuredPricing,
     serviceType: 'private_dinner',
     guestCount: 4,
     courseCount: 4,
@@ -655,6 +698,7 @@ test('isQuotable: pricingAllowed = false does NOT block quoting', async () => {
 
 test('generateQuoteSummary: private dinner → includes course count and total', async () => {
   const result = await evaluateChefPricing({
+    config: configuredPricing,
     serviceType: 'private_dinner',
     guestCount: 4,
     courseCount: 4,
@@ -668,6 +712,7 @@ test('generateQuoteSummary: private dinner → includes course count and total',
 
 test('generateQuoteSummary: with loyalty discount → includes (adjusted)', async () => {
   const result = await evaluateChefPricing({
+    config: configuredPricing,
     serviceType: 'private_dinner',
     guestCount: 4,
     courseCount: 4,
@@ -679,6 +724,7 @@ test('generateQuoteSummary: with loyalty discount → includes (adjusted)', asyn
 
 test("generateQuoteSummary: Valentine's Day → includes holiday name", async () => {
   const result = await evaluateChefPricing({
+    config: configuredPricing,
     serviceType: 'private_dinner',
     guestCount: 4,
     courseCount: 4,
@@ -690,6 +736,7 @@ test("generateQuoteSummary: Valentine's Day → includes holiday name", async ()
 
 test('generateQuoteSummary: requiresCustomPricing → starts with "Custom pricing required"', async () => {
   const result = await evaluateChefPricing({
+    config: configuredPricing,
     serviceType: 'private_dinner',
     guestCount: 4,
     // no courseCount
@@ -700,6 +747,7 @@ test('generateQuoteSummary: requiresCustomPricing → starts with "Custom pricin
 
 test('generateQuoteSummary: weekly service → includes days', async () => {
   const result = await evaluateChefPricing({
+    config: configuredPricing,
     serviceType: 'weekly_standard',
     guestCount: 2,
     numberOfDays: 5,
@@ -713,6 +761,7 @@ test('generateQuoteSummary: weekly service → includes days', async () => {
 
 test('pendingConfirmations: catalog add-on surfaces confirmation prompt', async () => {
   const result = await evaluateChefPricing({
+    config: configuredPricing,
     serviceType: 'private_dinner',
     guestCount: 4,
     courseCount: 4,
@@ -726,6 +775,7 @@ test('pendingConfirmations: catalog add-on surfaces confirmation prompt', async 
 
 test('pendingConfirmations: zero-priced multi-night package surfaces', async () => {
   const result = await evaluateChefPricing({
+    config: configuredPricing,
     serviceType: 'multi_night',
     guestCount: 2,
     multiNightPackage: 'three_night_4_course', // price = 0 placeholder
@@ -739,6 +789,7 @@ test('pendingConfirmations: zero-priced multi-night package surfaces', async () 
 
 test('pendingConfirmations: confirmed two-night package has no price confirmation', async () => {
   const result = await evaluateChefPricing({
+    config: configuredPricing,
     serviceType: 'multi_night',
     guestCount: 2,
     multiNightPackage: 'two_night_4_course', // price = $900, confirmed
@@ -752,6 +803,7 @@ test('pendingConfirmations: confirmed two-night package has no price confirmatio
 
 test('cook_and_leave: $150/session, 1 session', async () => {
   const result = await evaluateChefPricing({
+    config: configuredPricing,
     serviceType: 'cook_and_leave',
     guestCount: 2,
     numberOfDays: 1,
@@ -763,6 +815,7 @@ test('cook_and_leave: $150/session, 1 session', async () => {
 
 test('pizza_experience: $150/person', async () => {
   const result = await evaluateChefPricing({
+    config: configuredPricing,
     serviceType: 'pizza_experience',
     guestCount: 6,
   })
@@ -773,6 +826,7 @@ test('pizza_experience: $150/person', async () => {
 
 test('multi_night: two_night_4_course → $900 flat', async () => {
   const result = await evaluateChefPricing({
+    config: configuredPricing,
     serviceType: 'multi_night',
     guestCount: 2,
     multiNightPackage: 'two_night_4_course',
@@ -784,6 +838,7 @@ test('multi_night: two_night_4_course → $900 flat', async () => {
 
 test('custom service type → requiresCustomPricing = true', async () => {
   const result = await evaluateChefPricing({
+    config: configuredPricing,
     serviceType: 'custom',
     guestCount: 10,
   })
@@ -796,6 +851,7 @@ test('custom service type → requiresCustomPricing = true', async () => {
 test('minimum floor: cook_and_leave below $300 minimum → floor applied', async () => {
   // cook_and_leave = $150, minimum floor = $300
   const result = await evaluateChefPricing({
+    config: configuredPricing,
     serviceType: 'cook_and_leave',
     guestCount: 2,
     numberOfDays: 1,
@@ -807,6 +863,7 @@ test('minimum floor: cook_and_leave below $300 minimum → floor applied', async
 
 test('minimum floor: private dinner above $300 → no floor applied', async () => {
   const result = await evaluateChefPricing({
+    config: configuredPricing,
     serviceType: 'private_dinner',
     guestCount: 4,
     courseCount: 4,

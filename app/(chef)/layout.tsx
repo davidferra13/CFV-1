@@ -306,6 +306,7 @@ export default async function ChefLayout({ children }: { children: React.ReactNo
               tenantId={user.tenantId ?? user.entityId}
               chefName={layoutData.business_name}
               chefAvatar={layoutData.profile_image_url}
+              archetype={chefArchetype}
             />
           ) : null}
 

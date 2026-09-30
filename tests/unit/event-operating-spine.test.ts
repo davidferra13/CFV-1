@@ -99,10 +99,10 @@ test('event missing detail helper reports only operational blockers', () => {
   )
 })
 
-test('chef primary navigation follows the six-domain contract', () => {
+test('chef primary navigation follows the September comfort-model contract', () => {
   assert.deepEqual(
     actionBarItems.map((item) => item.label),
-    ['Today', 'Inbox', 'Events', 'Clients', 'Culinary', 'Finance']
+    ['Today', 'Calendar', 'Dinners', 'Clients', 'Menus', 'Inbox', 'Finance']
   )
   assert.equal(
     actionBarItems.some((item) => item.href === '/inquiries'),
@@ -113,11 +113,12 @@ test('chef primary navigation follows the six-domain contract', () => {
     false
   )
   assert.equal(
-    mobileTabItems.some((item) => item.label === 'Pipeline'),
+    mobileTabItems.some((item) => item.href === '/daily'),
     false
   )
   assert.equal(
-    navGroups.some((group) => group.id === 'pipeline'),
-    true
+    mobileTabItems.some((item) => item.label === 'Pipeline'),
+    false
   )
+  assert.equal(navGroups.find((group) => group.id === 'pipeline')?.label, 'Inquiries')
 })

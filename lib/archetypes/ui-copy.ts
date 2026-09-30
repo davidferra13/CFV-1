@@ -9,7 +9,7 @@ interface PrimaryAction {
 }
 
 const ARCHETYPE_ACTIONS: Record<ArchetypeId, PrimaryAction> = {
-  'private-chef': { label: 'New Event', href: '/events/new' },
+  'private-chef': { label: 'New Dinner', href: '/events/new' },
   caterer: { label: 'New Event', href: '/events/new' },
   'meal-prep': { label: 'New Prep Order', href: '/events/new' },
   restaurant: { label: 'New Reservation', href: '/events/new' },
@@ -28,7 +28,7 @@ export function getDashboardPrimaryAction(
 
 // ─── Archetype-Aware Label Overrides ─────────────────────────────────────────
 // Maps default labels to archetype-specific replacements.
-// Only non-obvious overrides are listed; private-chef and caterer use defaults.
+// Only archetypes that need operator-specific language are listed; caterer uses defaults.
 
 interface ArchetypeCopy {
   /** Nav/action bar label for "Events" hub */
@@ -44,6 +44,13 @@ interface ArchetypeCopy {
 }
 
 const ARCHETYPE_COPY: Partial<Record<ArchetypeId, Partial<ArchetypeCopy>>> = {
+  'private-chef': {
+    eventsLabel: 'Dinners',
+    eventSingular: 'dinner',
+    newEventLabel: 'New Dinner',
+    noEventsMessage: 'No dinners scheduled yet. Add your next dinner to get started.',
+    eventsPageTitle: 'Dinners',
+  },
   'meal-prep': {
     eventsLabel: 'Orders',
     eventSingular: 'prep order',
@@ -83,7 +90,7 @@ const DEFAULT_COPY: ArchetypeCopy = {
 }
 
 /**
- * Get archetype-specific UI copy. Falls back to default for private-chef/caterer/unknown.
+ * Get archetype-specific UI copy. Falls back to default for archetypes without overrides.
  */
 export function getArchetypeCopy(
   archetype: ArchetypeId | string | null | undefined

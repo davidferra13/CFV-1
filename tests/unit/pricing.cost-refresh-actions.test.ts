@@ -329,7 +329,12 @@ test('propagatePriceChange refreshes affected recipe costs, parent recipes, even
       ]
     )
 
-    assert.deepEqual(harness.calls.revalidatedPaths, ['/culinary/costing', '/culinary/recipes'])
+    assert.deepEqual(harness.calls.revalidatedPaths, [
+      '/culinary/costing',
+      '/culinary/recipes',
+      '/menus',
+      '/events',
+    ])
     assert.deepEqual(harness.calls.revalidatedTags, ['recipe-costs'])
   } finally {
     harness.restore()

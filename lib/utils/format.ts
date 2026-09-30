@@ -225,6 +225,8 @@ export function dateToMonthString(val: Date | string): string {
  * returns TIMESTAMPTZ and DATE columns as JavaScript Date objects, not strings.
  */
 export function dateToDateString(val: Date | string): string {
+  // A calendar date has no timezone; parsing it as UTC shifts it west of UTC.
+  if (typeof val === 'string' && /^\d{4}-\d{2}-\d{2}$/.test(val)) return val
   const d = val instanceof Date ? val : new Date(val)
   return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`
 }

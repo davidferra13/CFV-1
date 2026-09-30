@@ -264,8 +264,12 @@ export interface PricingBreakdown {
  * Always returns a result - never throws. Errors are informational.
  * Exported so callers (e.g., quote forms) can pre-validate UI state.
  */
-export function validatePricingInput(input: PricingInput): { valid: boolean; errors: string[] } {
+export function validatePricingInput(
+  input: PricingInput,
+  config?: PricingConfig
+): { valid: boolean; errors: string[] } {
   const errors: string[] = []
+  const packages = config?.multi_night_packages ?? MULTI_NIGHT_PACKAGES
 
   // guestCount must be a positive integer
   if (!Number.isInteger(input.guestCount) || input.guestCount < 1) {
@@ -306,11 +310,11 @@ export function validatePricingInput(input: PricingInput): { valid: boolean; err
       errors.push(
         'multiNightPackage key is required for multi_night service type (e.g., "two_night_4_course")'
       )
-    } else if (!(input.multiNightPackage in MULTI_NIGHT_PACKAGES)) {
+    } else if (!(input.multiNightPackage in packages)) {
       errors.push(
-        `Unknown multi-night package "${input.multiNightPackage}". Valid keys: ${Object.keys(MULTI_NIGHT_PACKAGES).join(', ')}`
+        `Unknown multi-night package "${input.multiNightPackage}". Valid keys: ${Object.keys(packages).join(', ')}`
       )
-    } else if (MULTI_NIGHT_PACKAGES[input.multiNightPackage] === 0) {
+    } else if (packages[input.multiNightPackage] === 0) {
       errors.push(
         `Multi-night package "${input.multiNightPackage}" is a placeholder - price not yet confirmed. Requires custom pricing.`
       )
@@ -437,7 +441,7 @@ export async function computePricing(
   const rc = resolveConfig(config)
 
   // ── Step 0: Validate input ────────────────────────────────────────────────
-  const validation = validatePricingInput(input)
+  const validation = validatePricingInput(input, config)
   const validationErrors = validation.errors
 
   const {
