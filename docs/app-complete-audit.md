@@ -1,5 +1,11 @@
 # ChefFlow — Complete Application Audit
 
+## Shopping error propagation - 2026-10-01
+
+Source changes in `/culinary/prep/shopping` and `/culinary/prep/shopping/print` let initial data-loading failures reach the existing chef error boundary. The boundary offers Try Again and Dashboard. A failed calculation no longer produces an empty $0 list. The print page reuses the existing client PrintButton in place of its server-page event handler and script listener. No new route or control was added.
+
+Two regression tests demonstrate that each server page rejects when its shopping action fails. This is source-level evidence; rendered authenticated failure/retry behavior has not been verified. This scoped update does not recertify the historical application audit below. See [the delivery record](recovery/grocery-unit-integrity-20261001.md).
+
 > **Generated:** 2026-02-23 ~6:00 PM EST (snapshot — source code may have changed since)
 > **Scope:** Every page, every button, every tab, every link, every form, every modal, every overlay, every data display, every conditional element, every navigation path in the entire ChefFlow application.
 > **Source:** Direct source code analysis of all ~265 page.tsx files and their imported components.

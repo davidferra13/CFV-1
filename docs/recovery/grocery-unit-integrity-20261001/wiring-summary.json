@@ -1,0 +1,265 @@
+{
+  "generated": "2026-10-01T20:16:59.036Z",
+  "summary": {
+    "total": 985,
+    "wired": 982,
+    "weak": 0,
+    "orphans": 0,
+    "allowed": 0,
+    "skipped": 3
+  },
+  "post_build_domain_matrix": {
+    "changed_files": [
+      "app/(chef)/culinary/prep/shopping/page.tsx",
+      "app/(chef)/culinary/prep/shopping/print/page.tsx",
+      "docs/USER_MANUAL.md",
+      "docs/app-complete-audit.md",
+      "docs/test-coverage-blueprint.md",
+      "lib/culinary/shopping-list-actions.ts",
+      "lib/grocery/generate-grocery-list.ts",
+      "lib/grocery/unit-conversion.ts",
+      "scripts/wiring-audit-results.json",
+      "tests/unit/grocery-cross-type-merge.test.ts",
+      "docs/recovery/grocery-unit-integrity-20261001.md",
+      "docs/specs/open-source-cooking-parity-20261001.md",
+      "tests/unit/grocery-action-unit-integrity.test.ts",
+      "tests/unit/grocery-unit-integrity.test.ts"
+    ],
+    "affected_routes": [
+      "/culinary/prep/shopping",
+      "/culinary/prep/shopping/print"
+    ],
+    "domains": [
+      {
+        "id": "menu_intelligence",
+        "label": "Menu Intelligence",
+        "relevance": "high",
+        "score": 46,
+        "evidence": [
+          "app/(chef)/culinary/prep/shopping/page.tsx",
+          "app/(chef)/culinary/prep/shopping/print/page.tsx",
+          "docs/USER_MANUAL.md",
+          "docs/app-complete-audit.md",
+          "docs/test-coverage-blueprint.md",
+          "lib/culinary/shopping-list-actions.ts",
+          "lib/grocery/generate-grocery-list.ts",
+          "lib/grocery/unit-conversion.ts"
+        ],
+        "checks": [
+          "Verify menu, recipe, dish, dietary, and approval changes feed menu intelligence surfaces.",
+          "Verify menu intelligence cards or panels appear where chefs make menu decisions."
+        ]
+      },
+      {
+        "id": "pie",
+        "label": "PIE and Pricing Intelligence",
+        "relevance": "high",
+        "score": 36,
+        "evidence": [
+          "app/(chef)/culinary/prep/shopping/print/page.tsx",
+          "docs/USER_MANUAL.md",
+          "docs/app-complete-audit.md",
+          "docs/test-coverage-blueprint.md",
+          "lib/culinary/shopping-list-actions.ts",
+          "lib/grocery/generate-grocery-list.ts",
+          "lib/grocery/unit-conversion.ts",
+          "scripts/wiring-audit-results.json"
+        ],
+        "checks": [
+          "Verify pricing, ingredient, recipe, quote, and procurement work uses PIE or records why PIE is not applicable.",
+          "Verify pricing outputs do not hide failures as zeros or stale certainty."
+        ]
+      },
+      {
+        "id": "page_xray",
+        "label": "Page X-Ray",
+        "relevance": "high",
+        "score": 21,
+        "evidence": [
+          "app/(chef)/culinary/prep/shopping/page.tsx",
+          "app/(chef)/culinary/prep/shopping/print/page.tsx",
+          "docs/app-complete-audit.md",
+          "docs/test-coverage-blueprint.md",
+          "scripts/wiring-audit-results.json",
+          "docs/recovery/grocery-unit-integrity-20261001.md",
+          "tests/unit/grocery-action-unit-integrity.test.ts"
+        ],
+        "checks": [
+          "Run /page-xray --delta for every affected route, or --quick for a newly created route.",
+          "Update docs/xrays findings and developer notes when the page shape changed."
+        ]
+      },
+      {
+        "id": "remy_command_surface",
+        "label": "Remy, Navigation, Command Surface",
+        "relevance": "high",
+        "score": 20,
+        "evidence": [
+          "app/(chef)/culinary/prep/shopping/page.tsx",
+          "app/(chef)/culinary/prep/shopping/print/page.tsx",
+          "docs/USER_MANUAL.md",
+          "docs/app-complete-audit.md",
+          "docs/test-coverage-blueprint.md",
+          "lib/culinary/shopping-list-actions.ts",
+          "scripts/wiring-audit-results.json",
+          "docs/recovery/grocery-unit-integrity-20261001.md"
+        ],
+        "checks": [
+          "Verify new pages/actions are discoverable through nav, command surface, Remy, or a justified local entry point.",
+          "Verify no functional route is stranded without an inbound path."
+        ]
+      },
+      {
+        "id": "client_intelligence",
+        "label": "Client Intelligence",
+        "relevance": "high",
+        "score": 19,
+        "evidence": [
+          "app/(chef)/culinary/prep/shopping/print/page.tsx",
+          "docs/USER_MANUAL.md",
+          "docs/app-complete-audit.md",
+          "docs/test-coverage-blueprint.md",
+          "lib/culinary/shopping-list-actions.ts",
+          "lib/grocery/generate-grocery-list.ts",
+          "scripts/wiring-audit-results.json",
+          "docs/recovery/grocery-unit-integrity-20261001.md"
+        ],
+        "checks": [
+          "Verify client-facing or client-derived facts feed the client intelligence ledger or summary.",
+          "Verify sensitive client intelligence is role-gated and tenant-scoped."
+        ]
+      },
+      {
+        "id": "commitment",
+        "label": "Commitment UI and Completion",
+        "relevance": "high",
+        "score": 16,
+        "evidence": [
+          "docs/USER_MANUAL.md",
+          "docs/app-complete-audit.md",
+          "lib/culinary/shopping-list-actions.ts",
+          "scripts/wiring-audit-results.json",
+          "docs/recovery/grocery-unit-integrity-20261001.md"
+        ],
+        "checks": [
+          "Verify the feature updates readiness, commitment, or completion state when it changes booking confidence.",
+          "Verify the UI distinguishes draft, proposed, committed, paid, confirmed, and complete states."
+        ]
+      },
+      {
+        "id": "ledger_finance",
+        "label": "Ledger, Finance, Payments",
+        "relevance": "high",
+        "score": 15,
+        "evidence": [
+          "docs/USER_MANUAL.md",
+          "docs/app-complete-audit.md",
+          "docs/test-coverage-blueprint.md",
+          "scripts/wiring-audit-results.json"
+        ],
+        "checks": [
+          "Verify money movement creates immutable ledger/payment records and avoids destructive changes.",
+          "Verify finance and rail summaries reflect payment, invoice, and revenue changes."
+        ]
+      },
+      {
+        "id": "communications",
+        "label": "Communications and Notifications",
+        "relevance": "high",
+        "score": 13,
+        "evidence": [
+          "docs/USER_MANUAL.md",
+          "docs/app-complete-audit.md",
+          "lib/culinary/shopping-list-actions.ts",
+          "scripts/wiring-audit-results.json"
+        ],
+        "checks": [
+          "Verify user-visible state changes notify the right party or appear in the correct inbox/feed.",
+          "Verify communications are threaded, tenant-scoped, and do not duplicate notifications."
+        ]
+      },
+      {
+        "id": "event_lifecycle",
+        "label": "Event Lifecycle and FSM",
+        "relevance": "high",
+        "score": 12,
+        "evidence": [
+          "docs/USER_MANUAL.md",
+          "docs/app-complete-audit.md",
+          "docs/test-coverage-blueprint.md",
+          "lib/culinary/shopping-list-actions.ts",
+          "scripts/wiring-audit-results.json",
+          "tests/unit/grocery-action-unit-integrity.test.ts"
+        ],
+        "checks": [
+          "Verify event mutations use the canonical transition path where lifecycle state changes.",
+          "Verify dependent surfaces update after lifecycle transitions."
+        ]
+      },
+      {
+        "id": "dinner_circles",
+        "label": "Dinner Circles",
+        "relevance": "high",
+        "score": 11,
+        "evidence": [
+          "docs/USER_MANUAL.md",
+          "docs/app-complete-audit.md",
+          "lib/culinary/shopping-list-actions.ts",
+          "lib/grocery/generate-grocery-list.ts",
+          "scripts/wiring-audit-results.json",
+          "tests/unit/grocery-action-unit-integrity.test.ts"
+        ],
+        "checks": [
+          "If two parties interact around an event, inquiry, recurring client, staff assignment, or community group, verify an ensure*Circle or create*Circle path.",
+          "Verify important lifecycle updates post to the relevant Circle feed when user-visible."
+        ]
+      },
+      {
+        "id": "automation_cil",
+        "label": "Automation and CIL",
+        "relevance": "high",
+        "score": 10,
+        "evidence": [
+          "docs/USER_MANUAL.md",
+          "docs/app-complete-audit.md",
+          "scripts/wiring-audit-results.json"
+        ],
+        "checks": [
+          "Verify durable signals, automation hooks, and intelligence outputs are emitted where the feature creates new evidence.",
+          "Verify signal freshness and suppression rules are respected."
+        ]
+      },
+      {
+        "id": "universal_rail",
+        "label": "Universal Rail Intelligence",
+        "relevance": "high",
+        "score": 8,
+        "evidence": [
+          "app/(chef)/culinary/prep/shopping/page.tsx",
+          "app/(chef)/culinary/prep/shopping/print/page.tsx",
+          "docs/USER_MANUAL.md",
+          "docs/app-complete-audit.md",
+          "scripts/wiring-audit-results.json"
+        ],
+        "checks": [
+          "Verify lib/discovery/rail-profiles.ts has a matching surface profile.",
+          "Verify relevant resolvers exist in lib/discovery/resolvers and produce contextual cards."
+        ]
+      },
+      {
+        "id": "priority_queue",
+        "label": "Priority Queue and Action Graph",
+        "relevance": "medium",
+        "score": 7,
+        "evidence": [
+          "docs/USER_MANUAL.md",
+          "docs/app-complete-audit.md"
+        ],
+        "checks": [
+          "Verify new waiting work, blockers, overdue work, or next actions appear in Priority Queue or Action Graph.",
+          "Verify actions have source, urgency, due state, and deep links."
+        ]
+      }
+    ]
+  }
+}

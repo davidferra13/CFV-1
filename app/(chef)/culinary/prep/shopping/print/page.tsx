@@ -2,6 +2,7 @@ import type { Metadata } from 'next'
 import { requireChef } from '@/lib/auth/get-user'
 import { generateShoppingList } from '@/lib/culinary/shopping-list-actions'
 import { groupByCategory } from '@/lib/culinary/shopping-list-utils'
+import { PrintButton } from '@/components/events/print-button'
 
 export const metadata: Metadata = { title: 'Shopping List - Print' }
 
@@ -50,14 +51,7 @@ export default async function PrintShoppingListPage({ searchParams }: PageProps)
   const endDate = params?.endDate ?? defaultWindow.endDate
   const eventIds = params?.eventIds ? params.eventIds.split(',').filter(Boolean) : undefined
 
-  const result = await generateShoppingList({ startDate, endDate, eventIds }).catch(() => ({
-    startDate,
-    endDate,
-    items: [],
-    totalEstimatedCostCents: 0,
-    shortageCount: 0,
-    incompleteRecipes: [],
-  }))
+  const result = await generateShoppingList({ startDate, endDate, eventIds })
 
   const shortageItems = result.items.filter((i) => i.toBuy > 0)
   const grouped = groupByCategory(shortageItems)
@@ -167,19 +161,7 @@ export default async function PrintShoppingListPage({ searchParams }: PageProps)
         </div>
 
         <div className="no-print" style={{ marginTop: '24px', textAlign: 'center' }}>
-          <button
-            type="button"
-            onClick={() => {}}
-            className="rounded-md bg-stone-700 px-4 py-2 text-sm text-stone-100 hover:bg-stone-600"
-            data-print-trigger
-          >
-            Print This Page
-          </button>
-          <script
-            dangerouslySetInnerHTML={{
-              __html: `document.querySelector('[data-print-trigger]')?.addEventListener('click', () => window.print())`,
-            }}
-          />
+          <PrintButton />
         </div>
       </div>
     </>

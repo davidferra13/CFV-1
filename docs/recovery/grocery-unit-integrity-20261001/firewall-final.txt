@@ -1,0 +1,144 @@
+
+> chefflow@0.1.0 regression:firewall
+> node scripts/regression-firewall.mjs --no-restart --step-timeout-ms 60000 --route-probe-timeout-ms 5000
+
+
+[regression-firewall] capability completion claims
+{"ok":true,"states":{"MISSING":84},"blockers":[]}
+
+[regression-firewall] chef nav audit
+(node:86852) [DEP0190] DeprecationWarning: Passing args to a child process with shell option true can lead to security vulnerabilities, as the arguments are not escaped, only concatenated.
+(Use `node --trace-deprecation ...` to show where the warning was created)
+
+> chefflow@0.1.0 verify:chef-nav
+> tsx scripts/audit-chef-nav.ts
+
+Chef nav audit passed
+Top-level visible count: 8
+Total unique nav hrefs: 462
+Discoverable static routes covered: 505
+
+[regression-firewall] wiring audit
+=== ChefFlow Wiring Audit ===
+Extracted 985 routes
+Built corpus: 8714 source files
+Scanning 8714 source files for references...
+  100/985 (orphans: 0)
+  200/985 (orphans: 0)
+  300/985 (orphans: 0)
+  400/985 (orphans: 0)
+  500/985 (orphans: 0)
+  600/985 (orphans: 0)
+  700/985 (orphans: 0)
+  800/985 (orphans: 0)
+  900/985 (orphans: 0)
+
+=== COMPLETE ===
+Total routes: 985
+Wired (2+ refs): 982
+Weak (1 ref, no nav): 0
+Orphans (0 refs): 0
+Skipped: 3
+
+Orphans:
+
+Weak:
+
+Post-build domain matrix:
+  HIGH Menu Intelligence (score 34)
+    - app/(chef)/culinary/prep/shopping/page.tsx
+    - app/(chef)/culinary/prep/shopping/print/page.tsx
+    - lib/culinary/shopping-list-actions.ts
+  HIGH PIE and Pricing Intelligence (score 24)
+    - app/(chef)/culinary/prep/shopping/print/page.tsx
+    - lib/culinary/shopping-list-actions.ts
+    - lib/grocery/generate-grocery-list.ts
+  HIGH Page X-Ray (score 16)
+    - app/(chef)/culinary/prep/shopping/page.tsx
+    - app/(chef)/culinary/prep/shopping/print/page.tsx
+    - scripts/wiring-audit-results.json
+  HIGH Client Intelligence (score 10)
+    - app/(chef)/culinary/prep/shopping/print/page.tsx
+    - lib/culinary/shopping-list-actions.ts
+    - lib/grocery/generate-grocery-list.ts
+  MEDIUM Remy, Navigation, Command Surface (score 7)
+    - app/(chef)/culinary/prep/shopping/page.tsx
+    - app/(chef)/culinary/prep/shopping/print/page.tsx
+    - lib/culinary/shopping-list-actions.ts
+  MEDIUM Commitment UI and Completion (score 6)
+    - lib/culinary/shopping-list-actions.ts
+    - scripts/wiring-audit-results.json
+  MEDIUM Dinner Circles (score 6)
+    - lib/culinary/shopping-list-actions.ts
+    - lib/grocery/generate-grocery-list.ts
+    - scripts/wiring-audit-results.json
+  MEDIUM Universal Rail Intelligence (score 6)
+    - app/(chef)/culinary/prep/shopping/page.tsx
+    - app/(chef)/culinary/prep/shopping/print/page.tsx
+    - scripts/wiring-audit-results.json
+  MEDIUM Communications and Notifications (score 5)
+    - lib/culinary/shopping-list-actions.ts
+    - scripts/wiring-audit-results.json
+  MEDIUM Event Lifecycle and FSM (score 5)
+    - lib/culinary/shopping-list-actions.ts
+    - scripts/wiring-audit-results.json
+    - tests/unit/grocery-action-unit-integrity.test.ts
+  MEDIUM Ledger, Finance, Payments (score 4)
+    - scripts/wiring-audit-results.json
+  LOW Automation and CIL (score 3)
+    - scripts/wiring-audit-results.json
+
+Affected routes:
+  /culinary/prep/shopping
+  /culinary/prep/shopping/print
+[regression-firewall] wiring zero-orphan contract passed
+
+[regression-firewall] ingredient identity regression
+✔ observed wrong entities are never accepted as ingredients (3.5914ms)
+✔ whole ingredient identities survive ordinary preparation labels (2.2113ms)
+✔ valid aliases stay in review instead of being guessed or discarded (0.2705ms)
+✔ same-name non-food entities, disambiguation and unknown types stay held (0.2234ms)
+✔ normalization preserves identity-bearing words and unknown qualifiers (0.2194ms)
+✔ worker holds Duck Fat before trusted effects (2.3329ms)
+✔ worker holds Fresh Basil before trusted effects (1.3381ms)
+✔ worker holds Fresh Epazote before trusted effects (0.6968ms)
+✔ worker holds Fresh Mint before trusted effects (0.7746ms)
+✔ worker holds Ginger Root before trusted effects (0.8223ms)
+✔ worker holds Lobster Tail before trusted effects (4.0605ms)
+✔ worker holds Mature Spinach before trusted effects (1.3984ms)
+✔ worker holds Meringue Powder before trusted effects (2.1223ms)
+✔ worker checks resolved article, not only selected search title (1.0329ms)
+✔ accepted identity continues normal enrichment and promotion (0.9274ms)
+ℹ tests 15
+ℹ suites 0
+ℹ pass 15
+ℹ fail 0
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 170.5155
+
+[regression-firewall] persona completion gate
+warning: in the working copy of 'app/(chef)/culinary/prep/shopping/page.tsx', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'app/(chef)/culinary/prep/shopping/print/page.tsx', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'lib/culinary/shopping-list-actions.ts', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'lib/grocery/generate-grocery-list.ts', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'lib/grocery/unit-conversion.ts', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'scripts/wiring-audit-results.json', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'tests/unit/grocery-cross-type-merge.test.ts', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'app/(chef)/culinary/prep/shopping/page.tsx', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'app/(chef)/culinary/prep/shopping/print/page.tsx', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'lib/culinary/shopping-list-actions.ts', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'lib/grocery/generate-grocery-list.ts', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'lib/grocery/unit-conversion.ts', LF will be replaced by CRLF the next time Git touches it
+
+[regression-firewall] simulation forge release
+{"command":"release","commit":"3fa5a0818494e557f5fb679f6268bdb537a58cde","cases":25,"violations":[],"runIds":["99c08099e78e3ef9","1fb832dd1532da80","0c2ae4d915163aa5","98cba4fe62708ce4","5ea9453890faa467","f8662c72c0a32e86","4fb9ebcaea9020ff","2e229be8d1c67edd","36153a840cf73571","4b017887419dc4a9","18d75b73c242f326","6e757ff1789bda0c","c6aba0af19744074","c7b7ad24a0d0862d","5c070745a5bf65b4","aa6e2923f0c6ae9f","73f25685cefcc9cf","f4bd9877e9ba9539","169693f687ff9d0e","a5082bd2f9b50b32","659ca773d1dd6263","91def3d25ffbd11a","73ac955fd25fff06","d1035b10927e0b0f","e2d36eb6a7b0ce52"]}
+
+[regression-firewall] app typecheck
+
+> chefflow@0.1.0 typecheck:app
+> node scripts/run-typecheck.mjs -p tsconfig.ci.json
+
+
+Outer timeout: 720 seconds; task-owned process tree stopped; launcher exit 1.

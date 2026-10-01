@@ -1,5 +1,11 @@
 # Test Coverage Blueprint
 
+## Grocery unit integrity - 2026-10-01
+
+29 focused regressions pass across `grocery-cross-type-merge.test.ts`, `grocery-unit-integrity.test.ts` and `grocery-action-unit-integrity.test.ts`. They cover incompatible measurement rejection, canonical extended units, quantity/density guards in the arithmetic helper, both grocery actions, and propagation of initial shopping/print failures.
+
+The action tests load the actual action source with an isolated database fixture; page tests replace the action dependency. These are not live database or browser checks. The focused typecheck passed; full release verification remains pending. See [the delivery record](recovery/grocery-unit-integrity-20261001.md) for commands, red/green evidence and blockers. Historical summary totals below have not been rescanned.
+
 > **Contract:** Every route, action, and feature in ChefFlow has a test status. This file grows when the codebase grows. Both Claude and Codex update it when building.
 
 Last scan: 2026-05-16
@@ -48,27 +54,27 @@ Scanner: `/test-scan` skill
 
 ### Chef Portal (679 routes)
 
-| Domain     | Routes | Unit                 | Integration | E2E/Journey          | Coverage Crawl | Status                 |
-| ---------- | ------ | -------------------- | ----------- | -------------------- | -------------- | ---------------------- |
-| settings   | 96     | PARTIAL              | -           | -                    | YES            | GAP: interaction tests |
-| finance    | 72     | YES (ledger, quotes) | -           | -                    | YES            | GAP: invoice flow e2e  |
-| events     | 58     | YES (FSM)            | -           | YES (journey)        | YES            | BEST COVERED           |
-| culinary   | 48     | YES (menu truth)     | -           | YES (culinary truth) | YES            | GOOD                   |
-| clients    | 39     | -                    | -           | -                    | YES            | GAP: CRUD lifecycle    |
-| analytics  | 22     | PARTIAL (appetite demand) | -        | -                    | YES            | PARTIAL                |
-| commerce   | 21     | -                    | -           | -                    | YES            | GAP: payment flows     |
-| stations   | 19     | -                    | -           | -                    | YES            | UNTESTED beyond crawl  |
-| inventory  | 19     | -                    | -           | -                    | YES            | UNTESTED beyond crawl  |
-| marketing  | 15     | -                    | -           | -                    | YES            | UNTESTED beyond crawl  |
-| cannabis   | 14     | YES (batch, packet)  | -           | -                    | YES            | PARTIAL                |
-| staff      | 11     | -                    | -           | -                    | YES            | UNTESTED beyond crawl  |
-| social     | 11     | -                    | -           | -                    | YES            | UNTESTED beyond crawl  |
-| quotes     | 11     | YES                  | -           | -                    | YES            | GOOD (unit + crawl)    |
-| recipes    | 10     | -                    | -           | -                    | YES            | GAP: save/edit flow    |
-| menus      | 10     | YES (culinary truth) | -           | -                    | YES            | PARTIAL                |
-| inquiries  | 8      | -                    | -           | YES (agent flow)     | YES            | PARTIAL                |
-| proposals  | 4      | -                    | -           | -                    | YES            | UNTESTED beyond crawl  |
-| All others | 200+   | VARIES               | -           | -                    | YES            | SCAN NEEDED            |
+| Domain     | Routes | Unit                      | Integration | E2E/Journey          | Coverage Crawl | Status                 |
+| ---------- | ------ | ------------------------- | ----------- | -------------------- | -------------- | ---------------------- |
+| settings   | 96     | PARTIAL                   | -           | -                    | YES            | GAP: interaction tests |
+| finance    | 72     | YES (ledger, quotes)      | -           | -                    | YES            | GAP: invoice flow e2e  |
+| events     | 58     | YES (FSM)                 | -           | YES (journey)        | YES            | BEST COVERED           |
+| culinary   | 48     | YES (menu truth)          | -           | YES (culinary truth) | YES            | GOOD                   |
+| clients    | 39     | -                         | -           | -                    | YES            | GAP: CRUD lifecycle    |
+| analytics  | 22     | PARTIAL (appetite demand) | -           | -                    | YES            | PARTIAL                |
+| commerce   | 21     | -                         | -           | -                    | YES            | GAP: payment flows     |
+| stations   | 19     | -                         | -           | -                    | YES            | UNTESTED beyond crawl  |
+| inventory  | 19     | -                         | -           | -                    | YES            | UNTESTED beyond crawl  |
+| marketing  | 15     | -                         | -           | -                    | YES            | UNTESTED beyond crawl  |
+| cannabis   | 14     | YES (batch, packet)       | -           | -                    | YES            | PARTIAL                |
+| staff      | 11     | -                         | -           | -                    | YES            | UNTESTED beyond crawl  |
+| social     | 11     | -                         | -           | -                    | YES            | UNTESTED beyond crawl  |
+| quotes     | 11     | YES                       | -           | -                    | YES            | GOOD (unit + crawl)    |
+| recipes    | 10     | -                         | -           | -                    | YES            | GAP: save/edit flow    |
+| menus      | 10     | YES (culinary truth)      | -           | -                    | YES            | PARTIAL                |
+| inquiries  | 8      | -                         | -           | YES (agent flow)     | YES            | PARTIAL                |
+| proposals  | 4      | -                         | -           | -                    | YES            | UNTESTED beyond crawl  |
+| All others | 200+   | VARIES                    | -           | -                    | YES            | SCAN NEEDED            |
 
 ### Client Portal (63 routes)
 
@@ -83,13 +89,13 @@ Scanner: `/test-scan` skill
 
 ### Public Portal (92 routes)
 
-| Domain           | Routes | Unit | E2E | SEO | Status           |
-| ---------------- | ------ | ---- | --- | --- | ---------------- |
-| Services/pricing | 10+    | -    | YES | YES | GOOD             |
-| Blog             | 5+     | -    | -   | YES | PARTIAL          |
-| Book/inquire     | 5+     | -    | -   | -   | GAP: intake flow |
-| SEO guards       | ALL    | YES  | YES | YES | GOOD             |
-| Appetite engine  | /eat   | YES  | LIVE UI | - | VERIFIED         |
+| Domain           | Routes | Unit | E2E     | SEO | Status           |
+| ---------------- | ------ | ---- | ------- | --- | ---------------- |
+| Services/pricing | 10+    | -    | YES     | YES | GOOD             |
+| Blog             | 5+     | -    | -       | YES | PARTIAL          |
+| Book/inquire     | 5+     | -    | -       | -   | GAP: intake flow |
+| SEO guards       | ALL    | YES  | YES     | YES | GOOD             |
+| Appetite engine  | /eat   | YES  | LIVE UI | -   | VERIFIED         |
 
 ### Admin Portal (43 routes)
 
