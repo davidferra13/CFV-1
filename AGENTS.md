@@ -2,6 +2,14 @@
 
 These rules apply to Codex and other repo agents working in this workspace.
 
+## Product Workflow Contract
+
+Before product planning, workflow implementation, or review, read the Outcome-First Workflow Contract in `docs/specs/universal-interface-philosophy.md` and the Outcome-First Workflow Review in `docs/definition-of-done.md`.
+
+Required outcomes and correctness rules are fixed; user routines may vary when equally dependable. Provide one simple default, justify alternatives with demonstrated needs, and reuse canonical records and deterministic calculations. Capability growth must not automatically create interface growth.
+
+Complete the five applicable workflow review questions with evidence before marking affected work done. Do not add speculative workflow choices, duplicate subsystems, or user-facing AI dependencies. These linked documents are the canonical policy and review criteria; maintain them rather than creating parallel copies.
+
 ## Autonomous Execution And Delivery
 
 Read `docs/autonomous-delivery-contract.md` before every implementation task.

@@ -50,6 +50,20 @@ Every UI change must comply with the Universal Interface Philosophy (`docs/specs
 - All animations respect `prefers-reduced-motion` (no decorative motion for users who opt out)
 - Responsive layout verified at 375px, 768px, 1024px, and 1440px (no horizontal scroll, no content behind fixed navbars)
 
+## Outcome-First Workflow Review
+
+For a new or changed product workflow, record concise answers and evidence for these five questions in the existing feature review or proof pack. Apply the [Outcome-First Workflow Contract](specs/universal-interface-philosophy.md#outcome-first-workflow-contract).
+
+- [ ] **What result must the user achieve?** Define successful completion, required facts, correctness checks, and how the default path proves the outcome.
+- [ ] **What actually requires a fixed method?** Identify genuine constraints and distinguish them from our preferred routine. Explain any necessary single-method restriction.
+- [ ] **Are we unnecessarily forcing a new habit?** Identify relevant established routines, available facts we can reuse, and any avoidable setup or repeated entry. No hypothetical alternative is required.
+- [ ] **Does each alternative justify its complexity?** Cite the demonstrated need and confirm shared canonical records, calculations, and validation. Show equivalent results from equivalent facts; label estimates and incomplete evidence honestly.
+- [ ] **Can the user finish correctly with less work?** Compare user effort and default interface exposure before and after. Exercise recovery and switching between supported methods where applicable, without lost or duplicate records.
+
+Unanswered applicable questions, unjustified default-interface growth, competing sources of truth, or an alternative that weakens correctness block workflow completion. Use focused behavioral tests and user-flow evidence for implemented paths; a checkbox or test that only searches for these words is not proof.
+
+Documentation-only changes and unrelated technical maintenance may state why workflow evidence does not apply. This review requirement does not require new user-facing controls, speculative methods, or a separate review system. It is a required review standard, not a claim of automatic semantic enforcement by CI.
+
 ## Release Blockers
 
 Any one of these means the feature is not done:

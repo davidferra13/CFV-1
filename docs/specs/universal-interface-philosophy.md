@@ -118,6 +118,39 @@ The system makes decisions so the user does not have to. Defaults are correct fo
 
 ---
 
+## Outcome-First Workflow Contract
+
+**Owner-approved direction, 2026-10-01:** required outcomes do not automatically require one specific workflow. ChefFlow must produce dependable professional results while fitting established user habits and keeping the default experience simple.
+
+This contract applies to product planning, workflow design, implementation, and review. It extends the existing interface philosophy; it does not authorize a catalogue of new features or require every imaginable method.
+
+1. **Define the outcome before the interaction.** State what successful completion means and the facts, rules, permissions, and checks required for correctness. Separate those requirements from conventions about screens, tools, timing, or order of entry.
+2. **Use proven professional methods as the baseline.** Identify established ways to do the job. Do not mistake the first method described, or our current implementation, for the only valid method. If only one method meets the requirements, keep it and explain the constraint.
+3. **Choose one simple default.** Someone without an existing routine must be able to finish without choosing a workflow, configuring modules, or learning internal machinery first.
+4. **Make alternatives earn their place.** Support an established routine only when evidence shows meaningful friction or an accessibility need that the default cannot reasonably accommodate. Compare completeness, accuracy, reliability, total user effort, and ongoing engineering cost. Preference alone does not justify a separate subsystem. Do not invent hypothetical options or equate a weaker shortcut with an equally good method.
+5. **Share the underlying system.** Different inputs, sequences, or batch sizes must converge on canonical records, deterministic calculations, and common validation. Prefer adapting existing inputs over adding separate features. A different method must not produce a competing ledger or different truth from the same facts.
+6. **Reuse facts and preserve work.** Reuse available information with its source and status. Ask only for facts that cannot otherwise be established reliably. Allow corrections, interruptions, and switches between supported methods without losing work or counting the same work twice.
+7. **Keep uncertainty honest.** Missing is not zero. Planned is not completed. An estimate, inference, or user-entered claim is not independently verified merely because it was imported or calculated. Show the relevant evidence status and resolve conflicts without silently overwriting facts.
+8. **Keep the common path quiet.** Reveal alternatives in context, with accessible discovery, when relevant. Do not add a permanent menu, wizard, mode selector, setting, or dashboard card for every supported method. Capability growth must not automatically create interface growth.
+9. **Keep core behavior deterministic.** Core records, calculations, validation, and workflow completion must not depend on user-facing AI. AI used for internal development is outside this product dependency.
+10. **Verify the outcome and the effort.** Exercise each supported path against the same acceptance standard. Compare taps, decisions, repeated entry, setup, and recovery effort before and after. Reuse the existing feature evidence and review process; do not create a second policy engine or reporting ritual.
+
+### Reference case: actual hourly earnings
+
+The required facts are earned revenue, attributable costs, and all applicable owner working hours for a stated job or period. The accounting basis, allocation rules, and treatment of owner compensation must be explicit and consistent across input methods.
+
+A timer, a completed timesheet, confirmed actual calendar durations, or an import can supply equivalent time facts. None is inherently complete or independently verified. Planned calendar time remains planned until actual time is established; a forgotten timer requires correction; duplicate imports must not duplicate hours. These are examples for evaluating methods, not a commitment to build all four.
+
+Accept an alternative only when it meets the same correctness standard and solves an evidenced need. If facts are incomplete, preserve an explicitly provisional result and request the specific missing facts instead of claiming an exact earnings rate.
+
+### Acceptance and scope
+
+Use the five review questions in [Definition of Done](../definition-of-done.md#outcome-first-workflow-review) for affected features. Existing interface, complexity, privacy, security, and release checks still apply. If older guidance would force unnecessary configuration or a new habit where an equally dependable supported method fits, this contract governs that workflow decision.
+
+This is a standing design and review requirement. Saving the document does not prove existing features comply, that every running agent has loaded it, or that CI can judge usability automatically. Validate changed workflows with actual outcome evidence; do not retrofit the entire product merely because this rule was installed.
+
+---
+
 ## 2. VISIBILITY RULES
 
 ### What is visible by default

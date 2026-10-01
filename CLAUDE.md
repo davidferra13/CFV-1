@@ -2,6 +2,8 @@
 
 @docs/autonomous-delivery-contract.md
 
+Before product planning, workflow changes, or review, read the Outcome-First Workflow Contract in `docs/specs/universal-interface-philosophy.md`. Apply one simple default, evidence-backed alternatives, shared records and deterministic validation, and no automatic interface growth. Complete the five applicable review questions in `docs/definition-of-done.md#outcome-first-workflow-review` before marking affected work done.
+
 This file is read by Claude Code at the start of every conversation. These rules are mandatory.
 
 ---
