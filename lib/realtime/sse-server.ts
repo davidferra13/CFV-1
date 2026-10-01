@@ -82,7 +82,8 @@ export function getPresenceState(channel: string): Record<string, any> {
   return state
 }
 
-// Clean up stale presence entries periodically
+// Clean up stale presence entries while the server is alive. Maintenance alone
+// must not keep scripts, build workers, or completed tests running.
 setInterval(() => {
   const now = Date.now()
   for (const [channel, members] of presenceStore) {
@@ -94,4 +95,4 @@ setInterval(() => {
     }
     if (members.size === 0) presenceStore.delete(channel)
   }
-}, 30_000)
+}, 30_000).unref()

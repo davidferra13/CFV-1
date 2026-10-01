@@ -34,6 +34,7 @@ test('buildTaskCreateDraftFromFormData preserves the submitted create draft', ()
     priority: 'urgent',
     notes: 'Leave by door',
     recurring_rule: '{"frequency":"weekly","days_of_week":[2,4],"end_date":"2030-02-01"}',
+    time_estimate_minutes: '',
   })
 })
 
@@ -51,6 +52,7 @@ test('task create draft and error round-trip through the /tasks query string', (
       priority: 'high',
       notes: 'Ask expo',
       recurring_rule: '{"frequency":"daily"}',
+      time_estimate_minutes: '45',
     },
   })
 
@@ -66,6 +68,7 @@ test('task create draft and error round-trip through the /tasks query string', (
     priority: 'high',
     notes: 'Ask expo',
     recurring_rule: '{"frequency":"daily"}',
+    time_estimate_minutes: '45',
   })
   assert.equal(readTaskCreateErrorFromSearchParams(params), 'Invalid uuid')
 })

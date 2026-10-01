@@ -67,6 +67,20 @@ describe('Route Policy - source of truth coverage', () => {
 })
 
 describe('Middleware - chef route matching', () => {
+  it('keeps operator, reference, and series pages in the chef workspace', () => {
+    for (const path of [
+      '/business/ops',
+      '/reference/dietary-conditions',
+      '/reference/food-safety',
+      '/series',
+    ]) {
+      assert.equal(isChefRoutePath(path), true)
+      assert.equal(isPublicUnauthenticatedPath(path), false)
+      assert.equal(getRoutePolicyDecisionForRole(path, 'client').allowed, false)
+      assert.equal(getRoutePolicyDecisionForRole(path, 'chef').allowed, true)
+    }
+  })
+
   it('matches exact chef paths', () => {
     assert.equal(isChefRoutePath('/dashboard'), true)
     assert.equal(isChefRoutePath('/clients'), true)
@@ -113,6 +127,15 @@ describe('Middleware - staff route matching', () => {
 })
 
 describe('Middleware - public unauthenticated paths', () => {
+  it('lets guests reach the chef matching flow without exposing chef workspaces', () => {
+    for (const path of ['/find', '/matches']) {
+      assert.equal(isPublicUnauthenticatedPath(path), true)
+      assert.equal(isChefRoutePath(path), false)
+    }
+    assert.equal(isPublicUnauthenticatedPath('/matches-admin'), false)
+    assert.equal(isPublicUnauthenticatedPath('/finder'), false)
+  })
+
   it('matches static marketing pages', () => {
     assert.equal(isPublicUnauthenticatedPath('/compare'), true)
     assert.equal(isPublicUnauthenticatedPath('/customers'), true)
@@ -313,7 +336,10 @@ describe('DFPC and Hermes route boundaries', () => {
     const source = fs.readFileSync(path.join(process.cwd(), 'middleware.ts'), 'utf8')
     const hostGate = source.indexOf('if (isDfpcHost(request))')
     const directBlock = source.indexOf('if (pathname.startsWith(DFPC_PATH_PREFIX))', hostGate + 1)
-    const publicBypass = source.indexOf('if (isPublicUnauthenticatedPath(pathname))', directBlock + 1)
+    const publicBypass = source.indexOf(
+      'if (isPublicUnauthenticatedPath(pathname))',
+      directBlock + 1
+    )
     assert.ok(hostGate >= 0 && hostGate < directBlock && directBlock < publicBypass)
     assert.match(source.slice(directBlock, publicBypass), /status: 404/)
   })
@@ -330,8 +356,10 @@ describe('DFPC and Hermes route boundaries', () => {
     const layout = fs.readFileSync(path.join(process.cwd(), 'app/(dev)/layout.tsx'), 'utf8')
     const page = fs.readFileSync(path.join(process.cwd(), 'app/(dev)/hermes/page.tsx'), 'utf8')
     const actions = fs.readFileSync(path.join(process.cwd(), 'app/(dev)/hermes/actions.ts'), 'utf8')
-    assert.ok(middleware.indexOf('if (!session?.user)') <
-      middleware.indexOf('if (isAdminRoutePath(pathname) && !isAdmin)'))
+    assert.ok(
+      middleware.indexOf('if (!session?.user)') <
+        middleware.indexOf('if (isAdminRoutePath(pathname) && !isAdmin)')
+    )
     assert.match(layout, /devEmails\.includes\(session\.user\.email\)/)
     assert.ok(page.indexOf('await requireAdmin()') < page.indexOf('await fetchHermesDashboard()'))
     assert.ok(actions.indexOf('await requireAdmin()') < actions.indexOf('await Promise.all(['))
