@@ -44,11 +44,8 @@ test('addQuantities: merges cross-type flour (cup + oz) into single quantity', (
   assert.ok(result.quantity < 5, `Expected < 5 cups, got ${result.quantity}`)
 })
 
-test('addQuantities: falls back to raw addition without density', () => {
-  const result = addQuantities(2, 'cup', 8, 'oz')
-  // Without density, incompatible units: add raw numbers, keep first unit
-  assert.equal(result.unit, 'cup')
-  assert.equal(result.quantity, 10)
+test('addQuantities: rejects incompatible units without density', () => {
+  assert.throws(() => addQuantities(2, 'cup', 8, 'oz'), /Cannot combine cup and oz/)
 })
 
 test('addQuantities: same-type merge unaffected by density param', () => {

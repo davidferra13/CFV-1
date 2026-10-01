@@ -60,6 +60,7 @@ const UNIT_ALIASES: Record<string, string> = {
 
 // Conversion factors to a base unit within each family (from canonical knowledge layer)
 const WEIGHT_TO_G: Record<string, number> = {
+  mg: WEIGHT_CONVERSIONS.MG_TO_G,
   g: 1,
   oz: WEIGHT_CONVERSIONS.OZ_TO_G,
   lb: WEIGHT_CONVERSIONS.LB_TO_G,
@@ -67,6 +68,8 @@ const WEIGHT_TO_G: Record<string, number> = {
 }
 const VOLUME_TO_ML: Record<string, number> = {
   ml: 1,
+  dl: VOLUME_CONVERSIONS.DL_TO_ML,
+  fl_oz: VOLUME_CONVERSIONS.FL_OZ_TO_ML,
   tsp: VOLUME_CONVERSIONS.TSP_TO_ML,
   tbsp: VOLUME_CONVERSIONS.TBSP_TO_ML,
   cup: VOLUME_CONVERSIONS.CUP_TO_ML,
@@ -103,7 +106,7 @@ export function canConvert(
       : typeof densityOrName === 'string'
         ? lookupDensity(densityOrName)
         : null
-  if (density && density > 0) return engineCanConvert(a, b, density)
+  if (density && Number.isFinite(density) && density > 0) return engineCanConvert(a, b, density)
   return false
 }
 
@@ -116,6 +119,10 @@ export function addQuantities(
 ): { quantity: number; unit: string } {
   const a = normalizeUnit(unitA)
   const b = normalizeUnit(unitB)
+
+  if (!Number.isFinite(qtyA) || !Number.isFinite(qtyB) || qtyA < 0 || qtyB < 0) {
+    throw new RangeError('Shopping quantities must be finite and non-negative')
+  }
 
   if (a === b) return { quantity: qtyA + qtyB, unit: a }
 
@@ -159,15 +166,16 @@ export function addQuantities(
   }
 
   // Cross-type via density
-  if (densityGPerMl && densityGPerMl > 0) {
+  if (densityGPerMl && Number.isFinite(densityGPerMl) && densityGPerMl > 0) {
     const converted = convertWithDensity(qtyB, b, a, densityGPerMl)
     if (converted !== null) {
       return { quantity: Math.round((qtyA + converted) * 100) / 100, unit: a }
     }
   }
 
-  // Incompatible units - just add and keep first unit
-  return { quantity: qtyA + qtyB, unit: a }
+  throw new Error(
+    `Cannot combine ${a} and ${b}. Use compatible units or provide an ingredient density.`
+  )
 }
 
 export function formatQuantity(quantity: number, unit: string): string {
