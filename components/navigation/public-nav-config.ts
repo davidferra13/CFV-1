@@ -47,20 +47,18 @@ export { isGroup }
 
 /** Desktop/mobile header nav items. Groups render as dropdown menus. */
 export const PUBLIC_NAV: PublicNavEntry[] = [
-  { ...PUBLIC_OPERATOR_ENTRY, cta: true },
-  { href: '/pricing', label: 'Pricing' },
+  PUBLIC_SECONDARY_CONSUMER_CTA,
+  { href: '/how-it-works', label: 'How It Works' },
   {
-    label: 'Hire a Chef',
+    label: 'Explore',
     items: [
-      PUBLIC_PRIMARY_CONSUMER_CTA,
-      PUBLIC_SECONDARY_CONSUMER_CTA,
       { href: '/services', label: 'Services' },
       { href: '/gift-cards', label: 'Gift Cards' },
-      { href: '/how-it-works', label: 'How It Works' },
       { href: '/trust', label: 'Trust Center' },
       PUBLIC_SUPPORTING_DIRECTORY_ENTRY,
     ],
   },
+  PUBLIC_OPERATOR_ENTRY,
 ]
 
 // ---------------------------------------------------------------------------

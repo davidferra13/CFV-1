@@ -16,7 +16,7 @@ import { SERVICE_INTENT_PAGES } from '../../app/(public)/services/_intent-pages'
 
 describe('Public Surface Contract', () => {
   it('keeps one canonical buyer CTA hierarchy', () => {
-    assert.deepEqual(PUBLIC_PRIMARY_CONSUMER_CTA, { href: '/book', label: 'Book Now' })
+    assert.deepEqual(PUBLIC_PRIMARY_CONSUMER_CTA, { href: '/book', label: 'Start Request' })
     assert.deepEqual(PUBLIC_SECONDARY_CONSUMER_CTA, { href: '/chefs', label: 'Browse Chefs' })
     assert.deepEqual(PUBLIC_SUPPORTING_DIRECTORY_ENTRY, {
       href: '/nearby',
@@ -37,34 +37,40 @@ describe('Public Surface Contract', () => {
     assert.equal(PUBLIC_ROUTE_ROLE['/for-operators/walkthrough'], 'operator_software')
   })
 
-  it('keeps chef software primary while preserving the consumer hiring path', () => {
-    const chefEntry = PUBLIC_NAV[0]
+  it('keeps the guest hiring journey primary while preserving chef software', () => {
+    const browseEntry = PUBLIC_NAV[0]
+    assert.ok(!isGroup(browseEntry))
+    if (isGroup(browseEntry)) {
+      throw new Error('Expected Browse Chefs to remain a single nav item')
+    }
+    assert.equal(browseEntry.href, '/chefs')
+    assert.equal(browseEntry.label, 'Browse Chefs')
+
+    const howItWorksEntry = PUBLIC_NAV[1]
+    assert.ok(!isGroup(howItWorksEntry))
+    if (isGroup(howItWorksEntry)) {
+      throw new Error('Expected How It Works to remain a single nav item')
+    }
+    assert.equal(howItWorksEntry.href, '/how-it-works')
+
+    const exploreEntry = PUBLIC_NAV[2]
+    assert.ok(isGroup(exploreEntry))
+    if (!isGroup(exploreEntry)) {
+      throw new Error('Expected Explore to remain a nav group')
+    }
+    assert.equal(exploreEntry.label, 'Explore')
+    assert.deepEqual(
+      exploreEntry.items.map((item) => item.href),
+      ['/services', '/gift-cards', '/trust', '/nearby']
+    )
+
+    const chefEntry = PUBLIC_NAV[3]
     assert.ok(!isGroup(chefEntry))
     if (isGroup(chefEntry)) {
       throw new Error('Expected For Chefs to remain a single nav item')
     }
     assert.equal(chefEntry.href, '/for-operators')
     assert.equal(chefEntry.label, 'For Chefs')
-    assert.equal(chefEntry.cta, true)
-
-    const pricingEntry = PUBLIC_NAV[1]
-    assert.ok(!isGroup(pricingEntry))
-    if (isGroup(pricingEntry)) {
-      throw new Error('Expected Pricing to remain a single nav item')
-    }
-    assert.equal(pricingEntry.href, '/pricing')
-
-    const hireAChefEntry = PUBLIC_NAV[2]
-    assert.ok(isGroup(hireAChefEntry))
-    if (!isGroup(hireAChefEntry)) {
-      throw new Error('Expected Hire a Chef to remain a nav group')
-    }
-    assert.equal(hireAChefEntry.label, 'Hire a Chef')
-    assert.equal(hireAChefEntry.items.length, 7)
-    assert.deepEqual(
-      hireAChefEntry.items.map((item) => item.href),
-      ['/book', '/chefs', '/services', '/gift-cards', '/how-it-works', '/trust', '/nearby']
-    )
   })
 
   it('keeps footer hierarchy aligned to the same public story', () => {
@@ -72,7 +78,7 @@ describe('Public Surface Contract', () => {
     assert.deepEqual(
       FOOTER_SECTIONS.discover.links.map((link) => link.label),
       [
-        'Book Now',
+        'Start Request',
         'Browse Chefs',
         'Services',
         'Gift Cards',
