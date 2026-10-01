@@ -1,0 +1,39 @@
+✔ event grocery generation refuses a fabricated incompatible total (357.6136ms)
+✔ shopping-window generation refuses a fabricated incompatible total (801.3267ms)
+✔ event grocery generation still combines compatible extended units (37.2773ms)
+✔ failed shopping data is never presented as an empty zero-cost page: app/(chef)/culinary/prep/shopping/page.tsx (28.4644ms)
+✔ failed shopping data is never presented as an empty zero-cost page: app/(chef)/culinary/prep/shopping/print/page.tsx (19.784ms)
+✔ canConvert: same type works without density (1.1273ms)
+✔ canConvert: cross-type fails without density (0.1436ms)
+✔ canConvert: cross-type succeeds with numeric density (0.2365ms)
+✔ canConvert: cross-type succeeds with ingredient name (0.2016ms)
+✔ canConvert: cross-type fails with unknown ingredient name (0.162ms)
+✔ addQuantities: merges cross-type flour (cup + oz) into single quantity (0.3706ms)
+✔ addQuantities: rejects incompatible units without density (0.4985ms)
+✔ addQuantities: same-type merge unaffected by density param (0.307ms)
+✔ addQuantities: weight-to-weight merge ignores density (0.3096ms)
+✔ shopping merges fluid ounces with cup using canonical factors (2.1413ms)
+✔ shopping merges deciliters with ml using canonical factors (0.3464ms)
+✔ shopping merges milligrams with g using canonical factors (0.1078ms)
+✔ counts and weights cannot become a single grocery total (0.4321ms)
+✔ container sizes are not guessed from matching ingredient names (0.1205ms)
+✔ invalid shopping quantities are rejected: NaN (0.1263ms)
+✔ invalid shopping quantities are rejected: Infinity (0.2041ms)
+✔ invalid shopping quantities are rejected: -1 (0.1416ms)
+✔ invalid density cannot authorize weight/volume conversion: NaN (0.2226ms)
+✔ invalid density cannot authorize weight/volume conversion: Infinity (0.1379ms)
+✔ invalid density cannot authorize weight/volume conversion: 0 (0.0812ms)
+✔ invalid density cannot authorize weight/volume conversion: -1 (0.3098ms)
+✔ zero quantities remain valid (1.5532ms)
+✔ known ingredient density still supports mixed weight/volume recipes (0.2841ms)
+✔ an unused density does not block compatible measurements (0.162ms)
+ℹ tests 29
+ℹ suites 0
+ℹ pass 29
+ℹ fail 0
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 5916.7197
+
+EXIT=0
