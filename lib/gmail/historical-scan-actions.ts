@@ -6,10 +6,10 @@
 
 import { revalidatePath } from 'next/cache'
 import { createServerClient } from '@/lib/db/server'
+import { pgClient } from '@/lib/db'
+import { persistHistoricalInquiry } from '@/lib/business-history-import/persist-inquiry'
+import { parseHistoricalInquirySource } from '@/lib/business-history-import/parse-source'
 import { requireChef } from '@/lib/auth/get-user'
-import { parseInquiryFromText } from '@/lib/ai/parse-inquiry'
-import { createClientFromLead } from '@/lib/clients/actions'
-import type { Json } from '@/types/database'
 import { getGoogleGmailControl, listGoogleGmailMailboxes } from '@/lib/google/mailbox-control'
 
 // ─── Types ────────────────────────────────────────────────────────────────────
@@ -74,7 +74,7 @@ export async function enableHistoricalEmailScan(): Promise<void> {
   }
 
   if (mailboxes.length > 0) {
-    await db
+    const { error: mailboxError } = await db
       .from('google_mailboxes')
       .update({
         historical_scan_enabled: true,
@@ -86,9 +86,10 @@ export async function enableHistoricalEmailScan(): Promise<void> {
         mailboxes.map((mailbox) => mailbox.id)
       )
       .eq('tenant_id', user.tenantId!)
+    if (mailboxError) throw new Error(mailboxError.message)
   }
 
-  await db
+  const { error: connectionError } = await db
     .from('google_connections')
     .update({
       historical_scan_enabled: true,
@@ -97,6 +98,7 @@ export async function enableHistoricalEmailScan(): Promise<void> {
     })
     .eq('chef_id', user.entityId)
     .eq('tenant_id', user.tenantId!)
+  if (connectionError) throw new Error(connectionError.message)
 
   revalidatePath('/settings')
   revalidatePath('/settings/connections')
@@ -117,7 +119,7 @@ export async function disableHistoricalEmailScan(): Promise<void> {
   })
 
   if (mailboxes.length > 0) {
-    await db
+    const { error: mailboxError } = await db
       .from('google_mailboxes')
       .update({
         historical_scan_enabled: false,
@@ -128,10 +130,11 @@ export async function disableHistoricalEmailScan(): Promise<void> {
         mailboxes.map((mailbox) => mailbox.id)
       )
       .eq('tenant_id', user.tenantId!)
+    if (mailboxError) throw new Error(mailboxError.message)
   }
 
   // Pause (not reset) - preserves progress and existing findings
-  await db
+  const { error: connectionError } = await db
     .from('google_connections')
     .update({
       historical_scan_enabled: false,
@@ -139,6 +142,7 @@ export async function disableHistoricalEmailScan(): Promise<void> {
     })
     .eq('chef_id', user.entityId)
     .eq('tenant_id', user.tenantId!)
+  if (connectionError) throw new Error(connectionError.message)
 
   revalidatePath('/settings')
   revalidatePath('/settings/connections')
@@ -248,109 +252,35 @@ export async function importHistoricalFinding(findingId: string): Promise<{ inqu
     .single()
 
   if (findErr || !finding) throw new Error('Finding not found')
-  if (finding.status !== 'pending') throw new Error('Finding already reviewed')
-
-  // Parse email body into structured inquiry data
-  const bodyText = finding.body_preview ?? ''
-  const parseResult = await parseInquiryFromText(bodyText)
-
-  // Parse sender name and email from from_address field
-  // Format stored: "Name <email>" or just "<email>"
-  const fromAddressRaw = finding.from_address as string
-  const emailMatch = fromAddressRaw.match(/<([^>]+)>/)
-  const leadEmail = emailMatch ? emailMatch[1] : fromAddressRaw.trim()
-  const nameMatch = fromAddressRaw.match(/^(.+?)\s*</)
-  const leadName =
-    parseResult.parsed.client_name || (nameMatch ? nameMatch[1].trim() : null) || 'Unknown'
-
-  // Find or create client
-  let clientId: string | null = null
-  try {
-    const clientResult = await createClientFromLead(user.tenantId!, {
-      email: leadEmail,
-      full_name: leadName,
-      phone: parseResult.parsed.client_phone ?? null,
-      dietary_restrictions: parseResult.parsed.confirmed_dietary_restrictions ?? null,
-      source: 'email',
-    })
-    clientId = clientResult.id
-  } catch {
-    // Non-fatal - create inquiry without client link
+  if (finding.status === 'dismissed') throw new Error('Finding was dismissed')
+  if (!['inquiry', 'existing_thread'].includes(finding.classification)) {
+    throw new Error('This finding needs destination mapping before it can be imported')
   }
 
-  // Build audit trail
-  const unknownFields: Record<string, string> = {
-    imported_from: 'historical_email_scan',
-    original_sender: fromAddressRaw,
-    gmail_message_id: finding.gmail_message_id,
-  }
-  if (finding.subject) unknownFields.subject = finding.subject
-
-  // Create the inquiry
-  const receivedAt = finding.received_at
-    ? new Date(finding.received_at).toISOString()
-    : new Date().toISOString()
-
-  const { data: inquiry, error: inquiryErr } = await db
-    .from('inquiries')
-    .insert({
-      tenant_id: user.tenantId!,
-      channel: 'email' as const,
-      client_id: clientId,
-      first_contact_at: receivedAt,
-      confirmed_date: parseResult.parsed.confirmed_date ?? null,
-      confirmed_guest_count: parseResult.parsed.confirmed_guest_count ?? null,
-      confirmed_location: parseResult.parsed.confirmed_location ?? null,
-      confirmed_occasion: parseResult.parsed.confirmed_occasion ?? null,
-      confirmed_budget_cents: parseResult.parsed.confirmed_budget_cents ?? null,
-      confirmed_dietary_restrictions:
-        (parseResult.parsed.confirmed_dietary_restrictions?.length ?? 0) > 0
-          ? parseResult.parsed.confirmed_dietary_restrictions
-          : null,
-      confirmed_service_expectations: parseResult.parsed.confirmed_service_expectations ?? null,
-      source_message: bodyText,
-      unknown_fields:
-        Object.keys(unknownFields).length > 0 ? (unknownFields as unknown as Json) : null,
-      next_action_required: 'Review imported historical inquiry',
-      next_action_by: 'chef',
-    })
-    .select()
-    .single()
-
-  if (inquiryErr) throw new Error(inquiryErr.message)
-
-  // Log original email as a message on the inquiry
-  await db.from('messages').insert({
-    tenant_id: user.tenantId!,
-    inquiry_id: inquiry.id,
-    client_id: clientId,
-    mailbox_id: finding.mailbox_id ?? null,
-    channel: 'email' as const,
-    direction: 'inbound' as const,
-    status: 'logged' as const,
+  const source = {
+    gmailMessageId: finding.gmail_message_id,
+    gmailThreadId: finding.gmail_thread_id ?? null,
+    mailboxId: finding.mailbox_id ?? null,
+    fromAddress: finding.from_address,
     subject: finding.subject ?? null,
-    body: bodyText,
-    sent_at: receivedAt,
-    gmail_message_id: finding.gmail_message_id,
-    gmail_thread_id: finding.gmail_thread_id ?? null,
+    bodyPreview: finding.body_preview ?? null,
+    receivedAt: finding.received_at ?? null,
+    classification: finding.classification,
+  }
+  const parsed = parseHistoricalInquirySource(source)
+  const result = await persistHistoricalInquiry(pgClient, {
+    tenantId: user.tenantId!,
+    findingId,
+    expectedSource: source,
+    inquiryFields: parsed.fields,
+    clientLead: parsed.clientLead ?? undefined,
   })
-
-  // Mark finding as imported
-  await db
-    .from('gmail_historical_findings')
-    .update({
-      status: 'imported',
-      imported_inquiry_id: inquiry.id,
-      reviewed_at: new Date().toISOString(),
-    })
-    .eq('id', findingId)
-    .eq('tenant_id', user.tenantId!)
 
   revalidatePath('/inbox/history-scan')
   revalidatePath('/inquiries')
   revalidatePath('/imports/business-history')
 
-  return { inquiryId: inquiry.id }
+  return result
 }
 
 // ─── Dismiss a Single Finding ─────────────────────────────────────────────────
@@ -359,7 +289,7 @@ export async function dismissHistoricalFinding(findingId: string): Promise<void>
   const user = await requireChef()
   const db: any = createServerClient()
 
-  await db
+  const { error } = await db
     .from('gmail_historical_findings')
     .update({
       status: 'dismissed',
@@ -367,6 +297,11 @@ export async function dismissHistoricalFinding(findingId: string): Promise<void>
     })
     .eq('id', findingId)
     .eq('tenant_id', user.tenantId!)
+    .eq('status', 'pending')
+    .select('id')
+    .single()
+
+  if (error) throw new Error(error.message)
 
   revalidatePath('/inbox/history-scan')
   revalidatePath('/imports/business-history')

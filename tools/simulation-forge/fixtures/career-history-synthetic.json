@@ -1,0 +1,1548 @@
+{
+  "schemaVersion": 1,
+  "id": "fictional-career-2016-2026",
+  "mode": "synthetic",
+  "description": "Fictional test data only. Not David or real customer history.",
+  "records": [
+    {
+      "id": "synthetic-2016-inquiry_received",
+      "source": {
+        "id": "synthetic-2016-inquiry_received",
+        "kind": "synthetic",
+        "evidence": "fixture:fictional-career:synthetic-2016-inquiry_received"
+      },
+      "knownAt": "2016-03-01T12:00:00Z",
+      "action": "inquiry_received",
+      "actor": "client",
+      "clientId": "synthetic-client-1",
+      "eventId": "synthetic-dinner-2016",
+      "facts": [
+        {
+          "key": "guestCount",
+          "value": 2,
+          "visibleTo": ["chef", "client"],
+          "certainty": "documented"
+        }
+      ]
+    },
+    {
+      "id": "synthetic-2016-menu_proposed",
+      "source": {
+        "id": "synthetic-2016-menu_proposed",
+        "kind": "synthetic",
+        "evidence": "fixture:fictional-career:synthetic-2016-menu_proposed"
+      },
+      "knownAt": "2016-03-02T12:00:00Z",
+      "action": "menu_proposed",
+      "actor": "chef",
+      "clientId": "synthetic-client-1",
+      "eventId": "synthetic-dinner-2016",
+      "facts": []
+    },
+    {
+      "id": "synthetic-2016-quote_issued",
+      "source": {
+        "id": "synthetic-2016-quote_issued",
+        "kind": "synthetic",
+        "evidence": "fixture:fictional-career:synthetic-2016-quote_issued"
+      },
+      "knownAt": "2016-03-03T12:00:00Z",
+      "action": "quote_issued",
+      "actor": "chef",
+      "clientId": "synthetic-client-1",
+      "eventId": "synthetic-dinner-2016",
+      "facts": [
+        {
+          "key": "quoteCents",
+          "value": 25000,
+          "visibleTo": ["chef", "client"],
+          "certainty": "documented"
+        }
+      ]
+    },
+    {
+      "id": "synthetic-2016-booking_confirmed",
+      "source": {
+        "id": "synthetic-2016-booking_confirmed",
+        "kind": "synthetic",
+        "evidence": "fixture:fictional-career:synthetic-2016-booking_confirmed"
+      },
+      "knownAt": "2016-03-04T12:00:00Z",
+      "action": "booking_confirmed",
+      "actor": "client",
+      "clientId": "synthetic-client-1",
+      "eventId": "synthetic-dinner-2016",
+      "facts": []
+    },
+    {
+      "id": "synthetic-2016-deposit_recorded",
+      "source": {
+        "id": "synthetic-2016-deposit_recorded",
+        "kind": "synthetic",
+        "evidence": "fixture:fictional-career:synthetic-2016-deposit_recorded"
+      },
+      "knownAt": "2016-03-05T12:00:00Z",
+      "action": "deposit_recorded",
+      "actor": "chef",
+      "clientId": "synthetic-client-1",
+      "eventId": "synthetic-dinner-2016",
+      "facts": []
+    },
+    {
+      "id": "synthetic-2016-event_planned",
+      "source": {
+        "id": "synthetic-2016-event_planned",
+        "kind": "synthetic",
+        "evidence": "fixture:fictional-career:synthetic-2016-event_planned"
+      },
+      "knownAt": "2016-03-06T12:00:00Z",
+      "action": "event_planned",
+      "actor": "chef",
+      "clientId": "synthetic-client-1",
+      "eventId": "synthetic-dinner-2016",
+      "facts": []
+    },
+    {
+      "id": "synthetic-2016-service_completed",
+      "source": {
+        "id": "synthetic-2016-service_completed",
+        "kind": "synthetic",
+        "evidence": "fixture:fictional-career:synthetic-2016-service_completed"
+      },
+      "knownAt": "2016-03-07T12:00:00Z",
+      "action": "service_completed",
+      "actor": "chef",
+      "clientId": "synthetic-client-1",
+      "eventId": "synthetic-dinner-2016",
+      "facts": []
+    },
+    {
+      "id": "synthetic-2016-final_payment_recorded",
+      "source": {
+        "id": "synthetic-2016-final_payment_recorded",
+        "kind": "synthetic",
+        "evidence": "fixture:fictional-career:synthetic-2016-final_payment_recorded"
+      },
+      "knownAt": "2016-03-08T12:00:00Z",
+      "action": "final_payment_recorded",
+      "actor": "chef",
+      "clientId": "synthetic-client-1",
+      "eventId": "synthetic-dinner-2016",
+      "facts": []
+    },
+    {
+      "id": "synthetic-2016-follow_up_sent",
+      "source": {
+        "id": "synthetic-2016-follow_up_sent",
+        "kind": "synthetic",
+        "evidence": "fixture:fictional-career:synthetic-2016-follow_up_sent"
+      },
+      "knownAt": "2016-03-09T12:00:00Z",
+      "action": "follow_up_sent",
+      "actor": "chef",
+      "clientId": "synthetic-client-1",
+      "eventId": "synthetic-dinner-2016",
+      "facts": []
+    },
+    {
+      "id": "synthetic-2017-inquiry_received",
+      "source": {
+        "id": "synthetic-2017-inquiry_received",
+        "kind": "synthetic",
+        "evidence": "fixture:fictional-career:synthetic-2017-inquiry_received"
+      },
+      "knownAt": "2017-03-01T12:00:00Z",
+      "action": "inquiry_received",
+      "actor": "client",
+      "clientId": "synthetic-client-2",
+      "eventId": "synthetic-dinner-2017",
+      "facts": [
+        {
+          "key": "guestCount",
+          "value": 3,
+          "visibleTo": ["chef", "client"],
+          "certainty": "documented"
+        }
+      ]
+    },
+    {
+      "id": "synthetic-2017-menu_proposed",
+      "source": {
+        "id": "synthetic-2017-menu_proposed",
+        "kind": "synthetic",
+        "evidence": "fixture:fictional-career:synthetic-2017-menu_proposed"
+      },
+      "knownAt": "2017-03-02T12:00:00Z",
+      "action": "menu_proposed",
+      "actor": "chef",
+      "clientId": "synthetic-client-2",
+      "eventId": "synthetic-dinner-2017",
+      "facts": []
+    },
+    {
+      "id": "synthetic-2017-quote_issued",
+      "source": {
+        "id": "synthetic-2017-quote_issued",
+        "kind": "synthetic",
+        "evidence": "fixture:fictional-career:synthetic-2017-quote_issued"
+      },
+      "knownAt": "2017-03-03T12:00:00Z",
+      "action": "quote_issued",
+      "actor": "chef",
+      "clientId": "synthetic-client-2",
+      "eventId": "synthetic-dinner-2017",
+      "facts": [
+        {
+          "key": "quoteCents",
+          "value": 30000,
+          "visibleTo": ["chef", "client"],
+          "certainty": "documented"
+        }
+      ]
+    },
+    {
+      "id": "synthetic-2017-booking_confirmed",
+      "source": {
+        "id": "synthetic-2017-booking_confirmed",
+        "kind": "synthetic",
+        "evidence": "fixture:fictional-career:synthetic-2017-booking_confirmed"
+      },
+      "knownAt": "2017-03-04T12:00:00Z",
+      "action": "booking_confirmed",
+      "actor": "client",
+      "clientId": "synthetic-client-2",
+      "eventId": "synthetic-dinner-2017",
+      "facts": []
+    },
+    {
+      "id": "synthetic-2017-deposit_recorded",
+      "source": {
+        "id": "synthetic-2017-deposit_recorded",
+        "kind": "synthetic",
+        "evidence": "fixture:fictional-career:synthetic-2017-deposit_recorded"
+      },
+      "knownAt": "2017-03-05T12:00:00Z",
+      "action": "deposit_recorded",
+      "actor": "chef",
+      "clientId": "synthetic-client-2",
+      "eventId": "synthetic-dinner-2017",
+      "facts": []
+    },
+    {
+      "id": "synthetic-2017-event_planned",
+      "source": {
+        "id": "synthetic-2017-event_planned",
+        "kind": "synthetic",
+        "evidence": "fixture:fictional-career:synthetic-2017-event_planned"
+      },
+      "knownAt": "2017-03-06T12:00:00Z",
+      "action": "event_planned",
+      "actor": "chef",
+      "clientId": "synthetic-client-2",
+      "eventId": "synthetic-dinner-2017",
+      "facts": []
+    },
+    {
+      "id": "synthetic-2017-service_completed",
+      "source": {
+        "id": "synthetic-2017-service_completed",
+        "kind": "synthetic",
+        "evidence": "fixture:fictional-career:synthetic-2017-service_completed"
+      },
+      "knownAt": "2017-03-07T12:00:00Z",
+      "action": "service_completed",
+      "actor": "chef",
+      "clientId": "synthetic-client-2",
+      "eventId": "synthetic-dinner-2017",
+      "facts": []
+    },
+    {
+      "id": "synthetic-2017-final_payment_recorded",
+      "source": {
+        "id": "synthetic-2017-final_payment_recorded",
+        "kind": "synthetic",
+        "evidence": "fixture:fictional-career:synthetic-2017-final_payment_recorded"
+      },
+      "knownAt": "2017-03-08T12:00:00Z",
+      "action": "final_payment_recorded",
+      "actor": "chef",
+      "clientId": "synthetic-client-2",
+      "eventId": "synthetic-dinner-2017",
+      "facts": []
+    },
+    {
+      "id": "synthetic-2017-follow_up_sent",
+      "source": {
+        "id": "synthetic-2017-follow_up_sent",
+        "kind": "synthetic",
+        "evidence": "fixture:fictional-career:synthetic-2017-follow_up_sent"
+      },
+      "knownAt": "2017-03-09T12:00:00Z",
+      "action": "follow_up_sent",
+      "actor": "chef",
+      "clientId": "synthetic-client-2",
+      "eventId": "synthetic-dinner-2017",
+      "facts": []
+    },
+    {
+      "id": "synthetic-2018-inquiry_received",
+      "source": {
+        "id": "synthetic-2018-inquiry_received",
+        "kind": "synthetic",
+        "evidence": "fixture:fictional-career:synthetic-2018-inquiry_received"
+      },
+      "knownAt": "2018-03-01T12:00:00Z",
+      "action": "inquiry_received",
+      "actor": "client",
+      "clientId": "synthetic-client-3",
+      "eventId": "synthetic-dinner-2018",
+      "facts": [
+        {
+          "key": "guestCount",
+          "value": 4,
+          "visibleTo": ["chef", "client"],
+          "certainty": "documented"
+        }
+      ]
+    },
+    {
+      "id": "synthetic-2018-menu_proposed",
+      "source": {
+        "id": "synthetic-2018-menu_proposed",
+        "kind": "synthetic",
+        "evidence": "fixture:fictional-career:synthetic-2018-menu_proposed"
+      },
+      "knownAt": "2018-03-02T12:00:00Z",
+      "action": "menu_proposed",
+      "actor": "chef",
+      "clientId": "synthetic-client-3",
+      "eventId": "synthetic-dinner-2018",
+      "facts": []
+    },
+    {
+      "id": "synthetic-2018-quote_issued",
+      "source": {
+        "id": "synthetic-2018-quote_issued",
+        "kind": "synthetic",
+        "evidence": "fixture:fictional-career:synthetic-2018-quote_issued"
+      },
+      "knownAt": "2018-03-03T12:00:00Z",
+      "action": "quote_issued",
+      "actor": "chef",
+      "clientId": "synthetic-client-3",
+      "eventId": "synthetic-dinner-2018",
+      "facts": [
+        {
+          "key": "quoteCents",
+          "value": 35000,
+          "visibleTo": ["chef", "client"],
+          "certainty": "documented"
+        }
+      ]
+    },
+    {
+      "id": "synthetic-2018-booking_confirmed",
+      "source": {
+        "id": "synthetic-2018-booking_confirmed",
+        "kind": "synthetic",
+        "evidence": "fixture:fictional-career:synthetic-2018-booking_confirmed"
+      },
+      "knownAt": "2018-03-04T12:00:00Z",
+      "action": "booking_confirmed",
+      "actor": "client",
+      "clientId": "synthetic-client-3",
+      "eventId": "synthetic-dinner-2018",
+      "facts": []
+    },
+    {
+      "id": "synthetic-2018-deposit_recorded",
+      "source": {
+        "id": "synthetic-2018-deposit_recorded",
+        "kind": "synthetic",
+        "evidence": "fixture:fictional-career:synthetic-2018-deposit_recorded"
+      },
+      "knownAt": "2018-03-05T12:00:00Z",
+      "action": "deposit_recorded",
+      "actor": "chef",
+      "clientId": "synthetic-client-3",
+      "eventId": "synthetic-dinner-2018",
+      "facts": []
+    },
+    {
+      "id": "synthetic-2018-event_planned",
+      "source": {
+        "id": "synthetic-2018-event_planned",
+        "kind": "synthetic",
+        "evidence": "fixture:fictional-career:synthetic-2018-event_planned"
+      },
+      "knownAt": "2018-03-06T12:00:00Z",
+      "action": "event_planned",
+      "actor": "chef",
+      "clientId": "synthetic-client-3",
+      "eventId": "synthetic-dinner-2018",
+      "facts": []
+    },
+    {
+      "id": "synthetic-2018-service_completed",
+      "source": {
+        "id": "synthetic-2018-service_completed",
+        "kind": "synthetic",
+        "evidence": "fixture:fictional-career:synthetic-2018-service_completed"
+      },
+      "knownAt": "2018-03-07T12:00:00Z",
+      "action": "service_completed",
+      "actor": "chef",
+      "clientId": "synthetic-client-3",
+      "eventId": "synthetic-dinner-2018",
+      "facts": []
+    },
+    {
+      "id": "synthetic-2018-final_payment_recorded",
+      "source": {
+        "id": "synthetic-2018-final_payment_recorded",
+        "kind": "synthetic",
+        "evidence": "fixture:fictional-career:synthetic-2018-final_payment_recorded"
+      },
+      "knownAt": "2018-03-08T12:00:00Z",
+      "action": "final_payment_recorded",
+      "actor": "chef",
+      "clientId": "synthetic-client-3",
+      "eventId": "synthetic-dinner-2018",
+      "facts": []
+    },
+    {
+      "id": "synthetic-2018-follow_up_sent",
+      "source": {
+        "id": "synthetic-2018-follow_up_sent",
+        "kind": "synthetic",
+        "evidence": "fixture:fictional-career:synthetic-2018-follow_up_sent"
+      },
+      "knownAt": "2018-03-09T12:00:00Z",
+      "action": "follow_up_sent",
+      "actor": "chef",
+      "clientId": "synthetic-client-3",
+      "eventId": "synthetic-dinner-2018",
+      "facts": []
+    },
+    {
+      "id": "synthetic-2019-inquiry_received",
+      "source": {
+        "id": "synthetic-2019-inquiry_received",
+        "kind": "synthetic",
+        "evidence": "fixture:fictional-career:synthetic-2019-inquiry_received"
+      },
+      "knownAt": "2019-03-01T12:00:00Z",
+      "action": "inquiry_received",
+      "actor": "client",
+      "clientId": "synthetic-client-1",
+      "eventId": "synthetic-dinner-2019",
+      "facts": [
+        {
+          "key": "guestCount",
+          "value": 5,
+          "visibleTo": ["chef", "client"],
+          "certainty": "documented"
+        }
+      ]
+    },
+    {
+      "id": "synthetic-2019-menu_proposed",
+      "source": {
+        "id": "synthetic-2019-menu_proposed",
+        "kind": "synthetic",
+        "evidence": "fixture:fictional-career:synthetic-2019-menu_proposed"
+      },
+      "knownAt": "2019-03-02T12:00:00Z",
+      "action": "menu_proposed",
+      "actor": "chef",
+      "clientId": "synthetic-client-1",
+      "eventId": "synthetic-dinner-2019",
+      "facts": []
+    },
+    {
+      "id": "synthetic-2019-quote_issued",
+      "source": {
+        "id": "synthetic-2019-quote_issued",
+        "kind": "synthetic",
+        "evidence": "fixture:fictional-career:synthetic-2019-quote_issued"
+      },
+      "knownAt": "2019-03-03T12:00:00Z",
+      "action": "quote_issued",
+      "actor": "chef",
+      "clientId": "synthetic-client-1",
+      "eventId": "synthetic-dinner-2019",
+      "facts": [
+        {
+          "key": "quoteCents",
+          "value": 40000,
+          "visibleTo": ["chef", "client"],
+          "certainty": "documented"
+        }
+      ]
+    },
+    {
+      "id": "synthetic-2019-booking_confirmed",
+      "source": {
+        "id": "synthetic-2019-booking_confirmed",
+        "kind": "synthetic",
+        "evidence": "fixture:fictional-career:synthetic-2019-booking_confirmed"
+      },
+      "knownAt": "2019-03-04T12:00:00Z",
+      "action": "booking_confirmed",
+      "actor": "client",
+      "clientId": "synthetic-client-1",
+      "eventId": "synthetic-dinner-2019",
+      "facts": []
+    },
+    {
+      "id": "synthetic-2019-deposit_recorded",
+      "source": {
+        "id": "synthetic-2019-deposit_recorded",
+        "kind": "synthetic",
+        "evidence": "fixture:fictional-career:synthetic-2019-deposit_recorded"
+      },
+      "knownAt": "2019-03-05T12:00:00Z",
+      "action": "deposit_recorded",
+      "actor": "chef",
+      "clientId": "synthetic-client-1",
+      "eventId": "synthetic-dinner-2019",
+      "facts": []
+    },
+    {
+      "id": "synthetic-2019-event_planned",
+      "source": {
+        "id": "synthetic-2019-event_planned",
+        "kind": "synthetic",
+        "evidence": "fixture:fictional-career:synthetic-2019-event_planned"
+      },
+      "knownAt": "2019-03-06T12:00:00Z",
+      "action": "event_planned",
+      "actor": "chef",
+      "clientId": "synthetic-client-1",
+      "eventId": "synthetic-dinner-2019",
+      "facts": []
+    },
+    {
+      "id": "synthetic-2019-service_completed",
+      "source": {
+        "id": "synthetic-2019-service_completed",
+        "kind": "synthetic",
+        "evidence": "fixture:fictional-career:synthetic-2019-service_completed"
+      },
+      "knownAt": "2019-03-07T12:00:00Z",
+      "action": "service_completed",
+      "actor": "chef",
+      "clientId": "synthetic-client-1",
+      "eventId": "synthetic-dinner-2019",
+      "facts": []
+    },
+    {
+      "id": "synthetic-2019-final_payment_recorded",
+      "source": {
+        "id": "synthetic-2019-final_payment_recorded",
+        "kind": "synthetic",
+        "evidence": "fixture:fictional-career:synthetic-2019-final_payment_recorded"
+      },
+      "knownAt": "2019-03-08T12:00:00Z",
+      "action": "final_payment_recorded",
+      "actor": "chef",
+      "clientId": "synthetic-client-1",
+      "eventId": "synthetic-dinner-2019",
+      "facts": []
+    },
+    {
+      "id": "synthetic-2019-follow_up_sent",
+      "source": {
+        "id": "synthetic-2019-follow_up_sent",
+        "kind": "synthetic",
+        "evidence": "fixture:fictional-career:synthetic-2019-follow_up_sent"
+      },
+      "knownAt": "2019-03-09T12:00:00Z",
+      "action": "follow_up_sent",
+      "actor": "chef",
+      "clientId": "synthetic-client-1",
+      "eventId": "synthetic-dinner-2019",
+      "facts": []
+    },
+    {
+      "id": "synthetic-2020-inquiry_received",
+      "source": {
+        "id": "synthetic-2020-inquiry_received",
+        "kind": "synthetic",
+        "evidence": "fixture:fictional-career:synthetic-2020-inquiry_received"
+      },
+      "knownAt": "2020-03-01T12:00:00Z",
+      "action": "inquiry_received",
+      "actor": "client",
+      "clientId": "synthetic-client-2",
+      "eventId": "synthetic-dinner-2020",
+      "facts": [
+        {
+          "key": "guestCount",
+          "value": 6,
+          "visibleTo": ["chef", "client"],
+          "certainty": "documented"
+        }
+      ]
+    },
+    {
+      "id": "synthetic-2020-menu_proposed",
+      "source": {
+        "id": "synthetic-2020-menu_proposed",
+        "kind": "synthetic",
+        "evidence": "fixture:fictional-career:synthetic-2020-menu_proposed"
+      },
+      "knownAt": "2020-03-02T12:00:00Z",
+      "action": "menu_proposed",
+      "actor": "chef",
+      "clientId": "synthetic-client-2",
+      "eventId": "synthetic-dinner-2020",
+      "facts": []
+    },
+    {
+      "id": "synthetic-2020-quote_issued",
+      "source": {
+        "id": "synthetic-2020-quote_issued",
+        "kind": "synthetic",
+        "evidence": "fixture:fictional-career:synthetic-2020-quote_issued"
+      },
+      "knownAt": "2020-03-03T12:00:00Z",
+      "action": "quote_issued",
+      "actor": "chef",
+      "clientId": "synthetic-client-2",
+      "eventId": "synthetic-dinner-2020",
+      "facts": [
+        {
+          "key": "quoteCents",
+          "value": 45000,
+          "visibleTo": ["chef", "client"],
+          "certainty": "documented"
+        }
+      ]
+    },
+    {
+      "id": "synthetic-2020-booking_confirmed",
+      "source": {
+        "id": "synthetic-2020-booking_confirmed",
+        "kind": "synthetic",
+        "evidence": "fixture:fictional-career:synthetic-2020-booking_confirmed"
+      },
+      "knownAt": "2020-03-04T12:00:00Z",
+      "action": "booking_confirmed",
+      "actor": "client",
+      "clientId": "synthetic-client-2",
+      "eventId": "synthetic-dinner-2020",
+      "facts": []
+    },
+    {
+      "id": "synthetic-2020-deposit_recorded",
+      "source": {
+        "id": "synthetic-2020-deposit_recorded",
+        "kind": "synthetic",
+        "evidence": "fixture:fictional-career:synthetic-2020-deposit_recorded"
+      },
+      "knownAt": "2020-03-05T12:00:00Z",
+      "action": "deposit_recorded",
+      "actor": "chef",
+      "clientId": "synthetic-client-2",
+      "eventId": "synthetic-dinner-2020",
+      "facts": []
+    },
+    {
+      "id": "synthetic-2020-event_planned",
+      "source": {
+        "id": "synthetic-2020-event_planned",
+        "kind": "synthetic",
+        "evidence": "fixture:fictional-career:synthetic-2020-event_planned"
+      },
+      "knownAt": "2020-03-06T12:00:00Z",
+      "action": "event_planned",
+      "actor": "chef",
+      "clientId": "synthetic-client-2",
+      "eventId": "synthetic-dinner-2020",
+      "facts": []
+    },
+    {
+      "id": "synthetic-2020-service_completed",
+      "source": {
+        "id": "synthetic-2020-service_completed",
+        "kind": "synthetic",
+        "evidence": "fixture:fictional-career:synthetic-2020-service_completed"
+      },
+      "knownAt": "2020-03-07T12:00:00Z",
+      "action": "service_completed",
+      "actor": "chef",
+      "clientId": "synthetic-client-2",
+      "eventId": "synthetic-dinner-2020",
+      "facts": []
+    },
+    {
+      "id": "synthetic-2020-final_payment_recorded",
+      "source": {
+        "id": "synthetic-2020-final_payment_recorded",
+        "kind": "synthetic",
+        "evidence": "fixture:fictional-career:synthetic-2020-final_payment_recorded"
+      },
+      "knownAt": "2020-03-08T12:00:00Z",
+      "action": "final_payment_recorded",
+      "actor": "chef",
+      "clientId": "synthetic-client-2",
+      "eventId": "synthetic-dinner-2020",
+      "facts": []
+    },
+    {
+      "id": "synthetic-2020-follow_up_sent",
+      "source": {
+        "id": "synthetic-2020-follow_up_sent",
+        "kind": "synthetic",
+        "evidence": "fixture:fictional-career:synthetic-2020-follow_up_sent"
+      },
+      "knownAt": "2020-03-09T12:00:00Z",
+      "action": "follow_up_sent",
+      "actor": "chef",
+      "clientId": "synthetic-client-2",
+      "eventId": "synthetic-dinner-2020",
+      "facts": []
+    },
+    {
+      "id": "synthetic-2021-inquiry_received",
+      "source": {
+        "id": "synthetic-2021-inquiry_received",
+        "kind": "synthetic",
+        "evidence": "fixture:fictional-career:synthetic-2021-inquiry_received"
+      },
+      "knownAt": "2021-03-01T12:00:00Z",
+      "action": "inquiry_received",
+      "actor": "client",
+      "clientId": "synthetic-client-3",
+      "eventId": "synthetic-dinner-2021",
+      "facts": [
+        {
+          "key": "guestCount",
+          "value": 7,
+          "visibleTo": ["chef", "client"],
+          "certainty": "documented"
+        }
+      ]
+    },
+    {
+      "id": "synthetic-2021-menu_proposed",
+      "source": {
+        "id": "synthetic-2021-menu_proposed",
+        "kind": "synthetic",
+        "evidence": "fixture:fictional-career:synthetic-2021-menu_proposed"
+      },
+      "knownAt": "2021-03-02T12:00:00Z",
+      "action": "menu_proposed",
+      "actor": "chef",
+      "clientId": "synthetic-client-3",
+      "eventId": "synthetic-dinner-2021",
+      "facts": []
+    },
+    {
+      "id": "synthetic-2021-quote_issued",
+      "source": {
+        "id": "synthetic-2021-quote_issued",
+        "kind": "synthetic",
+        "evidence": "fixture:fictional-career:synthetic-2021-quote_issued"
+      },
+      "knownAt": "2021-03-03T12:00:00Z",
+      "action": "quote_issued",
+      "actor": "chef",
+      "clientId": "synthetic-client-3",
+      "eventId": "synthetic-dinner-2021",
+      "facts": [
+        {
+          "key": "quoteCents",
+          "value": 50000,
+          "visibleTo": ["chef", "client"],
+          "certainty": "documented"
+        }
+      ]
+    },
+    {
+      "id": "synthetic-2021-booking_confirmed",
+      "source": {
+        "id": "synthetic-2021-booking_confirmed",
+        "kind": "synthetic",
+        "evidence": "fixture:fictional-career:synthetic-2021-booking_confirmed"
+      },
+      "knownAt": "2021-03-04T12:00:00Z",
+      "action": "booking_confirmed",
+      "actor": "client",
+      "clientId": "synthetic-client-3",
+      "eventId": "synthetic-dinner-2021",
+      "facts": []
+    },
+    {
+      "id": "synthetic-2021-deposit_recorded",
+      "source": {
+        "id": "synthetic-2021-deposit_recorded",
+        "kind": "synthetic",
+        "evidence": "fixture:fictional-career:synthetic-2021-deposit_recorded"
+      },
+      "knownAt": "2021-03-05T12:00:00Z",
+      "action": "deposit_recorded",
+      "actor": "chef",
+      "clientId": "synthetic-client-3",
+      "eventId": "synthetic-dinner-2021",
+      "facts": []
+    },
+    {
+      "id": "synthetic-2021-event_planned",
+      "source": {
+        "id": "synthetic-2021-event_planned",
+        "kind": "synthetic",
+        "evidence": "fixture:fictional-career:synthetic-2021-event_planned"
+      },
+      "knownAt": "2021-03-06T12:00:00Z",
+      "action": "event_planned",
+      "actor": "chef",
+      "clientId": "synthetic-client-3",
+      "eventId": "synthetic-dinner-2021",
+      "facts": []
+    },
+    {
+      "id": "synthetic-2021-service_completed",
+      "source": {
+        "id": "synthetic-2021-service_completed",
+        "kind": "synthetic",
+        "evidence": "fixture:fictional-career:synthetic-2021-service_completed"
+      },
+      "knownAt": "2021-03-07T12:00:00Z",
+      "action": "service_completed",
+      "actor": "chef",
+      "clientId": "synthetic-client-3",
+      "eventId": "synthetic-dinner-2021",
+      "facts": []
+    },
+    {
+      "id": "synthetic-2021-final_payment_recorded",
+      "source": {
+        "id": "synthetic-2021-final_payment_recorded",
+        "kind": "synthetic",
+        "evidence": "fixture:fictional-career:synthetic-2021-final_payment_recorded"
+      },
+      "knownAt": "2021-03-08T12:00:00Z",
+      "action": "final_payment_recorded",
+      "actor": "chef",
+      "clientId": "synthetic-client-3",
+      "eventId": "synthetic-dinner-2021",
+      "facts": []
+    },
+    {
+      "id": "synthetic-2021-follow_up_sent",
+      "source": {
+        "id": "synthetic-2021-follow_up_sent",
+        "kind": "synthetic",
+        "evidence": "fixture:fictional-career:synthetic-2021-follow_up_sent"
+      },
+      "knownAt": "2021-03-09T12:00:00Z",
+      "action": "follow_up_sent",
+      "actor": "chef",
+      "clientId": "synthetic-client-3",
+      "eventId": "synthetic-dinner-2021",
+      "facts": []
+    },
+    {
+      "id": "synthetic-2022-inquiry_received",
+      "source": {
+        "id": "synthetic-2022-inquiry_received",
+        "kind": "synthetic",
+        "evidence": "fixture:fictional-career:synthetic-2022-inquiry_received"
+      },
+      "knownAt": "2022-03-01T12:00:00Z",
+      "action": "inquiry_received",
+      "actor": "client",
+      "clientId": "synthetic-client-1",
+      "eventId": "synthetic-dinner-2022",
+      "facts": [
+        {
+          "key": "guestCount",
+          "value": 8,
+          "visibleTo": ["chef", "client"],
+          "certainty": "documented"
+        }
+      ]
+    },
+    {
+      "id": "synthetic-2022-menu_proposed",
+      "source": {
+        "id": "synthetic-2022-menu_proposed",
+        "kind": "synthetic",
+        "evidence": "fixture:fictional-career:synthetic-2022-menu_proposed"
+      },
+      "knownAt": "2022-03-02T12:00:00Z",
+      "action": "menu_proposed",
+      "actor": "chef",
+      "clientId": "synthetic-client-1",
+      "eventId": "synthetic-dinner-2022",
+      "facts": []
+    },
+    {
+      "id": "synthetic-2022-quote_issued",
+      "source": {
+        "id": "synthetic-2022-quote_issued",
+        "kind": "synthetic",
+        "evidence": "fixture:fictional-career:synthetic-2022-quote_issued"
+      },
+      "knownAt": "2022-03-03T12:00:00Z",
+      "action": "quote_issued",
+      "actor": "chef",
+      "clientId": "synthetic-client-1",
+      "eventId": "synthetic-dinner-2022",
+      "facts": [
+        {
+          "key": "quoteCents",
+          "value": 55000,
+          "visibleTo": ["chef", "client"],
+          "certainty": "documented"
+        }
+      ]
+    },
+    {
+      "id": "synthetic-2022-booking_confirmed",
+      "source": {
+        "id": "synthetic-2022-booking_confirmed",
+        "kind": "synthetic",
+        "evidence": "fixture:fictional-career:synthetic-2022-booking_confirmed"
+      },
+      "knownAt": "2022-03-04T12:00:00Z",
+      "action": "booking_confirmed",
+      "actor": "client",
+      "clientId": "synthetic-client-1",
+      "eventId": "synthetic-dinner-2022",
+      "facts": []
+    },
+    {
+      "id": "synthetic-2022-deposit_recorded",
+      "source": {
+        "id": "synthetic-2022-deposit_recorded",
+        "kind": "synthetic",
+        "evidence": "fixture:fictional-career:synthetic-2022-deposit_recorded"
+      },
+      "knownAt": "2022-03-05T12:00:00Z",
+      "action": "deposit_recorded",
+      "actor": "chef",
+      "clientId": "synthetic-client-1",
+      "eventId": "synthetic-dinner-2022",
+      "facts": []
+    },
+    {
+      "id": "synthetic-2022-event_planned",
+      "source": {
+        "id": "synthetic-2022-event_planned",
+        "kind": "synthetic",
+        "evidence": "fixture:fictional-career:synthetic-2022-event_planned"
+      },
+      "knownAt": "2022-03-06T12:00:00Z",
+      "action": "event_planned",
+      "actor": "chef",
+      "clientId": "synthetic-client-1",
+      "eventId": "synthetic-dinner-2022",
+      "facts": []
+    },
+    {
+      "id": "synthetic-2022-service_completed",
+      "source": {
+        "id": "synthetic-2022-service_completed",
+        "kind": "synthetic",
+        "evidence": "fixture:fictional-career:synthetic-2022-service_completed"
+      },
+      "knownAt": "2022-03-07T12:00:00Z",
+      "action": "service_completed",
+      "actor": "chef",
+      "clientId": "synthetic-client-1",
+      "eventId": "synthetic-dinner-2022",
+      "facts": []
+    },
+    {
+      "id": "synthetic-2022-final_payment_recorded",
+      "source": {
+        "id": "synthetic-2022-final_payment_recorded",
+        "kind": "synthetic",
+        "evidence": "fixture:fictional-career:synthetic-2022-final_payment_recorded"
+      },
+      "knownAt": "2022-03-08T12:00:00Z",
+      "action": "final_payment_recorded",
+      "actor": "chef",
+      "clientId": "synthetic-client-1",
+      "eventId": "synthetic-dinner-2022",
+      "facts": []
+    },
+    {
+      "id": "synthetic-2022-follow_up_sent",
+      "source": {
+        "id": "synthetic-2022-follow_up_sent",
+        "kind": "synthetic",
+        "evidence": "fixture:fictional-career:synthetic-2022-follow_up_sent"
+      },
+      "knownAt": "2022-03-09T12:00:00Z",
+      "action": "follow_up_sent",
+      "actor": "chef",
+      "clientId": "synthetic-client-1",
+      "eventId": "synthetic-dinner-2022",
+      "facts": []
+    },
+    {
+      "id": "synthetic-2023-inquiry_received",
+      "source": {
+        "id": "synthetic-2023-inquiry_received",
+        "kind": "synthetic",
+        "evidence": "fixture:fictional-career:synthetic-2023-inquiry_received"
+      },
+      "knownAt": "2023-03-01T12:00:00Z",
+      "action": "inquiry_received",
+      "actor": "client",
+      "clientId": "synthetic-client-2",
+      "eventId": "synthetic-dinner-2023",
+      "facts": [
+        {
+          "key": "guestCount",
+          "value": 2,
+          "visibleTo": ["chef", "client"],
+          "certainty": "documented"
+        }
+      ]
+    },
+    {
+      "id": "synthetic-2023-menu_proposed",
+      "source": {
+        "id": "synthetic-2023-menu_proposed",
+        "kind": "synthetic",
+        "evidence": "fixture:fictional-career:synthetic-2023-menu_proposed"
+      },
+      "knownAt": "2023-03-02T12:00:00Z",
+      "action": "menu_proposed",
+      "actor": "chef",
+      "clientId": "synthetic-client-2",
+      "eventId": "synthetic-dinner-2023",
+      "facts": []
+    },
+    {
+      "id": "synthetic-2023-quote_issued",
+      "source": {
+        "id": "synthetic-2023-quote_issued",
+        "kind": "synthetic",
+        "evidence": "fixture:fictional-career:synthetic-2023-quote_issued"
+      },
+      "knownAt": "2023-03-03T12:00:00Z",
+      "action": "quote_issued",
+      "actor": "chef",
+      "clientId": "synthetic-client-2",
+      "eventId": "synthetic-dinner-2023",
+      "facts": [
+        {
+          "key": "quoteCents",
+          "value": 60000,
+          "visibleTo": ["chef", "client"],
+          "certainty": "documented"
+        }
+      ]
+    },
+    {
+      "id": "synthetic-2023-booking_confirmed",
+      "source": {
+        "id": "synthetic-2023-booking_confirmed",
+        "kind": "synthetic",
+        "evidence": "fixture:fictional-career:synthetic-2023-booking_confirmed"
+      },
+      "knownAt": "2023-03-04T12:00:00Z",
+      "action": "booking_confirmed",
+      "actor": "client",
+      "clientId": "synthetic-client-2",
+      "eventId": "synthetic-dinner-2023",
+      "facts": []
+    },
+    {
+      "id": "synthetic-2023-deposit_recorded",
+      "source": {
+        "id": "synthetic-2023-deposit_recorded",
+        "kind": "synthetic",
+        "evidence": "fixture:fictional-career:synthetic-2023-deposit_recorded"
+      },
+      "knownAt": "2023-03-05T12:00:00Z",
+      "action": "deposit_recorded",
+      "actor": "chef",
+      "clientId": "synthetic-client-2",
+      "eventId": "synthetic-dinner-2023",
+      "facts": []
+    },
+    {
+      "id": "synthetic-2023-event_planned",
+      "source": {
+        "id": "synthetic-2023-event_planned",
+        "kind": "synthetic",
+        "evidence": "fixture:fictional-career:synthetic-2023-event_planned"
+      },
+      "knownAt": "2023-03-06T12:00:00Z",
+      "action": "event_planned",
+      "actor": "chef",
+      "clientId": "synthetic-client-2",
+      "eventId": "synthetic-dinner-2023",
+      "facts": []
+    },
+    {
+      "id": "synthetic-2023-service_completed",
+      "source": {
+        "id": "synthetic-2023-service_completed",
+        "kind": "synthetic",
+        "evidence": "fixture:fictional-career:synthetic-2023-service_completed"
+      },
+      "knownAt": "2023-03-07T12:00:00Z",
+      "action": "service_completed",
+      "actor": "chef",
+      "clientId": "synthetic-client-2",
+      "eventId": "synthetic-dinner-2023",
+      "facts": []
+    },
+    {
+      "id": "synthetic-2023-final_payment_recorded",
+      "source": {
+        "id": "synthetic-2023-final_payment_recorded",
+        "kind": "synthetic",
+        "evidence": "fixture:fictional-career:synthetic-2023-final_payment_recorded"
+      },
+      "knownAt": "2023-03-08T12:00:00Z",
+      "action": "final_payment_recorded",
+      "actor": "chef",
+      "clientId": "synthetic-client-2",
+      "eventId": "synthetic-dinner-2023",
+      "facts": []
+    },
+    {
+      "id": "synthetic-2023-follow_up_sent",
+      "source": {
+        "id": "synthetic-2023-follow_up_sent",
+        "kind": "synthetic",
+        "evidence": "fixture:fictional-career:synthetic-2023-follow_up_sent"
+      },
+      "knownAt": "2023-03-09T12:00:00Z",
+      "action": "follow_up_sent",
+      "actor": "chef",
+      "clientId": "synthetic-client-2",
+      "eventId": "synthetic-dinner-2023",
+      "facts": []
+    },
+    {
+      "id": "synthetic-2024-inquiry_received",
+      "source": {
+        "id": "synthetic-2024-inquiry_received",
+        "kind": "synthetic",
+        "evidence": "fixture:fictional-career:synthetic-2024-inquiry_received"
+      },
+      "knownAt": "2024-03-01T12:00:00Z",
+      "action": "inquiry_received",
+      "actor": "client",
+      "clientId": "synthetic-client-3",
+      "eventId": "synthetic-dinner-2024",
+      "facts": [
+        {
+          "key": "guestCount",
+          "value": 3,
+          "visibleTo": ["chef", "client"],
+          "certainty": "documented"
+        }
+      ]
+    },
+    {
+      "id": "synthetic-2024-menu_proposed",
+      "source": {
+        "id": "synthetic-2024-menu_proposed",
+        "kind": "synthetic",
+        "evidence": "fixture:fictional-career:synthetic-2024-menu_proposed"
+      },
+      "knownAt": "2024-03-02T12:00:00Z",
+      "action": "menu_proposed",
+      "actor": "chef",
+      "clientId": "synthetic-client-3",
+      "eventId": "synthetic-dinner-2024",
+      "facts": []
+    },
+    {
+      "id": "synthetic-2024-quote_issued",
+      "source": {
+        "id": "synthetic-2024-quote_issued",
+        "kind": "synthetic",
+        "evidence": "fixture:fictional-career:synthetic-2024-quote_issued"
+      },
+      "knownAt": "2024-03-03T12:00:00Z",
+      "action": "quote_issued",
+      "actor": "chef",
+      "clientId": "synthetic-client-3",
+      "eventId": "synthetic-dinner-2024",
+      "facts": [
+        {
+          "key": "quoteCents",
+          "value": 65000,
+          "visibleTo": ["chef", "client"],
+          "certainty": "documented"
+        }
+      ]
+    },
+    {
+      "id": "synthetic-2024-booking_confirmed",
+      "source": {
+        "id": "synthetic-2024-booking_confirmed",
+        "kind": "synthetic",
+        "evidence": "fixture:fictional-career:synthetic-2024-booking_confirmed"
+      },
+      "knownAt": "2024-03-04T12:00:00Z",
+      "action": "booking_confirmed",
+      "actor": "client",
+      "clientId": "synthetic-client-3",
+      "eventId": "synthetic-dinner-2024",
+      "facts": []
+    },
+    {
+      "id": "synthetic-2024-deposit_recorded",
+      "source": {
+        "id": "synthetic-2024-deposit_recorded",
+        "kind": "synthetic",
+        "evidence": "fixture:fictional-career:synthetic-2024-deposit_recorded"
+      },
+      "knownAt": "2024-03-05T12:00:00Z",
+      "action": "deposit_recorded",
+      "actor": "chef",
+      "clientId": "synthetic-client-3",
+      "eventId": "synthetic-dinner-2024",
+      "facts": []
+    },
+    {
+      "id": "synthetic-2024-event_planned",
+      "source": {
+        "id": "synthetic-2024-event_planned",
+        "kind": "synthetic",
+        "evidence": "fixture:fictional-career:synthetic-2024-event_planned"
+      },
+      "knownAt": "2024-03-06T12:00:00Z",
+      "action": "event_planned",
+      "actor": "chef",
+      "clientId": "synthetic-client-3",
+      "eventId": "synthetic-dinner-2024",
+      "facts": []
+    },
+    {
+      "id": "synthetic-2024-service_completed",
+      "source": {
+        "id": "synthetic-2024-service_completed",
+        "kind": "synthetic",
+        "evidence": "fixture:fictional-career:synthetic-2024-service_completed"
+      },
+      "knownAt": "2024-03-07T12:00:00Z",
+      "action": "service_completed",
+      "actor": "chef",
+      "clientId": "synthetic-client-3",
+      "eventId": "synthetic-dinner-2024",
+      "facts": []
+    },
+    {
+      "id": "synthetic-2024-final_payment_recorded",
+      "source": {
+        "id": "synthetic-2024-final_payment_recorded",
+        "kind": "synthetic",
+        "evidence": "fixture:fictional-career:synthetic-2024-final_payment_recorded"
+      },
+      "knownAt": "2024-03-08T12:00:00Z",
+      "action": "final_payment_recorded",
+      "actor": "chef",
+      "clientId": "synthetic-client-3",
+      "eventId": "synthetic-dinner-2024",
+      "facts": []
+    },
+    {
+      "id": "synthetic-2024-follow_up_sent",
+      "source": {
+        "id": "synthetic-2024-follow_up_sent",
+        "kind": "synthetic",
+        "evidence": "fixture:fictional-career:synthetic-2024-follow_up_sent"
+      },
+      "knownAt": "2024-03-09T12:00:00Z",
+      "action": "follow_up_sent",
+      "actor": "chef",
+      "clientId": "synthetic-client-3",
+      "eventId": "synthetic-dinner-2024",
+      "facts": []
+    },
+    {
+      "id": "synthetic-2025-inquiry_received",
+      "source": {
+        "id": "synthetic-2025-inquiry_received",
+        "kind": "synthetic",
+        "evidence": "fixture:fictional-career:synthetic-2025-inquiry_received"
+      },
+      "knownAt": "2025-03-01T12:00:00Z",
+      "action": "inquiry_received",
+      "actor": "client",
+      "clientId": "synthetic-client-1",
+      "eventId": "synthetic-dinner-2025",
+      "facts": [
+        {
+          "key": "guestCount",
+          "value": 4,
+          "visibleTo": ["chef", "client"],
+          "certainty": "documented"
+        }
+      ]
+    },
+    {
+      "id": "synthetic-2025-menu_proposed",
+      "source": {
+        "id": "synthetic-2025-menu_proposed",
+        "kind": "synthetic",
+        "evidence": "fixture:fictional-career:synthetic-2025-menu_proposed"
+      },
+      "knownAt": "2025-03-02T12:00:00Z",
+      "action": "menu_proposed",
+      "actor": "chef",
+      "clientId": "synthetic-client-1",
+      "eventId": "synthetic-dinner-2025",
+      "facts": []
+    },
+    {
+      "id": "synthetic-2025-quote_issued",
+      "source": {
+        "id": "synthetic-2025-quote_issued",
+        "kind": "synthetic",
+        "evidence": "fixture:fictional-career:synthetic-2025-quote_issued"
+      },
+      "knownAt": "2025-03-03T12:00:00Z",
+      "action": "quote_issued",
+      "actor": "chef",
+      "clientId": "synthetic-client-1",
+      "eventId": "synthetic-dinner-2025",
+      "facts": [
+        {
+          "key": "quoteCents",
+          "value": 70000,
+          "visibleTo": ["chef", "client"],
+          "certainty": "documented"
+        }
+      ]
+    },
+    {
+      "id": "synthetic-2025-booking_confirmed",
+      "source": {
+        "id": "synthetic-2025-booking_confirmed",
+        "kind": "synthetic",
+        "evidence": "fixture:fictional-career:synthetic-2025-booking_confirmed"
+      },
+      "knownAt": "2025-03-04T12:00:00Z",
+      "action": "booking_confirmed",
+      "actor": "client",
+      "clientId": "synthetic-client-1",
+      "eventId": "synthetic-dinner-2025",
+      "facts": []
+    },
+    {
+      "id": "synthetic-2025-deposit_recorded",
+      "source": {
+        "id": "synthetic-2025-deposit_recorded",
+        "kind": "synthetic",
+        "evidence": "fixture:fictional-career:synthetic-2025-deposit_recorded"
+      },
+      "knownAt": "2025-03-05T12:00:00Z",
+      "action": "deposit_recorded",
+      "actor": "chef",
+      "clientId": "synthetic-client-1",
+      "eventId": "synthetic-dinner-2025",
+      "facts": []
+    },
+    {
+      "id": "synthetic-2025-event_planned",
+      "source": {
+        "id": "synthetic-2025-event_planned",
+        "kind": "synthetic",
+        "evidence": "fixture:fictional-career:synthetic-2025-event_planned"
+      },
+      "knownAt": "2025-03-06T12:00:00Z",
+      "action": "event_planned",
+      "actor": "chef",
+      "clientId": "synthetic-client-1",
+      "eventId": "synthetic-dinner-2025",
+      "facts": []
+    },
+    {
+      "id": "synthetic-2025-service_completed",
+      "source": {
+        "id": "synthetic-2025-service_completed",
+        "kind": "synthetic",
+        "evidence": "fixture:fictional-career:synthetic-2025-service_completed"
+      },
+      "knownAt": "2025-03-07T12:00:00Z",
+      "action": "service_completed",
+      "actor": "chef",
+      "clientId": "synthetic-client-1",
+      "eventId": "synthetic-dinner-2025",
+      "facts": []
+    },
+    {
+      "id": "synthetic-2025-final_payment_recorded",
+      "source": {
+        "id": "synthetic-2025-final_payment_recorded",
+        "kind": "synthetic",
+        "evidence": "fixture:fictional-career:synthetic-2025-final_payment_recorded"
+      },
+      "knownAt": "2025-03-08T12:00:00Z",
+      "action": "final_payment_recorded",
+      "actor": "chef",
+      "clientId": "synthetic-client-1",
+      "eventId": "synthetic-dinner-2025",
+      "facts": []
+    },
+    {
+      "id": "synthetic-2025-follow_up_sent",
+      "source": {
+        "id": "synthetic-2025-follow_up_sent",
+        "kind": "synthetic",
+        "evidence": "fixture:fictional-career:synthetic-2025-follow_up_sent"
+      },
+      "knownAt": "2025-03-09T12:00:00Z",
+      "action": "follow_up_sent",
+      "actor": "chef",
+      "clientId": "synthetic-client-1",
+      "eventId": "synthetic-dinner-2025",
+      "facts": []
+    },
+    {
+      "id": "synthetic-2026-inquiry_received",
+      "source": {
+        "id": "synthetic-2026-inquiry_received",
+        "kind": "synthetic",
+        "evidence": "fixture:fictional-career:synthetic-2026-inquiry_received"
+      },
+      "knownAt": "2026-03-01T12:00:00Z",
+      "action": "inquiry_received",
+      "actor": "client",
+      "clientId": "synthetic-client-2",
+      "eventId": "synthetic-dinner-2026",
+      "facts": [
+        {
+          "key": "guestCount",
+          "value": 5,
+          "visibleTo": ["chef", "client"],
+          "certainty": "documented"
+        }
+      ]
+    },
+    {
+      "id": "synthetic-2026-menu_proposed",
+      "source": {
+        "id": "synthetic-2026-menu_proposed",
+        "kind": "synthetic",
+        "evidence": "fixture:fictional-career:synthetic-2026-menu_proposed"
+      },
+      "knownAt": "2026-03-02T12:00:00Z",
+      "action": "menu_proposed",
+      "actor": "chef",
+      "clientId": "synthetic-client-2",
+      "eventId": "synthetic-dinner-2026",
+      "facts": []
+    },
+    {
+      "id": "synthetic-2026-quote_issued",
+      "source": {
+        "id": "synthetic-2026-quote_issued",
+        "kind": "synthetic",
+        "evidence": "fixture:fictional-career:synthetic-2026-quote_issued"
+      },
+      "knownAt": "2026-03-03T12:00:00Z",
+      "action": "quote_issued",
+      "actor": "chef",
+      "clientId": "synthetic-client-2",
+      "eventId": "synthetic-dinner-2026",
+      "facts": [
+        {
+          "key": "quoteCents",
+          "value": 75000,
+          "visibleTo": ["chef", "client"],
+          "certainty": "documented"
+        }
+      ]
+    },
+    {
+      "id": "synthetic-2026-booking_confirmed",
+      "source": {
+        "id": "synthetic-2026-booking_confirmed",
+        "kind": "synthetic",
+        "evidence": "fixture:fictional-career:synthetic-2026-booking_confirmed"
+      },
+      "knownAt": "2026-03-04T12:00:00Z",
+      "action": "booking_confirmed",
+      "actor": "client",
+      "clientId": "synthetic-client-2",
+      "eventId": "synthetic-dinner-2026",
+      "facts": []
+    },
+    {
+      "id": "synthetic-2026-deposit_recorded",
+      "source": {
+        "id": "synthetic-2026-deposit_recorded",
+        "kind": "synthetic",
+        "evidence": "fixture:fictional-career:synthetic-2026-deposit_recorded"
+      },
+      "knownAt": "2026-03-05T12:00:00Z",
+      "action": "deposit_recorded",
+      "actor": "chef",
+      "clientId": "synthetic-client-2",
+      "eventId": "synthetic-dinner-2026",
+      "facts": []
+    },
+    {
+      "id": "synthetic-2026-event_planned",
+      "source": {
+        "id": "synthetic-2026-event_planned",
+        "kind": "synthetic",
+        "evidence": "fixture:fictional-career:synthetic-2026-event_planned"
+      },
+      "knownAt": "2026-03-06T12:00:00Z",
+      "action": "event_planned",
+      "actor": "chef",
+      "clientId": "synthetic-client-2",
+      "eventId": "synthetic-dinner-2026",
+      "facts": []
+    },
+    {
+      "id": "synthetic-2026-service_completed",
+      "source": {
+        "id": "synthetic-2026-service_completed",
+        "kind": "synthetic",
+        "evidence": "fixture:fictional-career:synthetic-2026-service_completed"
+      },
+      "knownAt": "2026-03-07T12:00:00Z",
+      "action": "service_completed",
+      "actor": "chef",
+      "clientId": "synthetic-client-2",
+      "eventId": "synthetic-dinner-2026",
+      "facts": []
+    },
+    {
+      "id": "synthetic-2026-final_payment_recorded",
+      "source": {
+        "id": "synthetic-2026-final_payment_recorded",
+        "kind": "synthetic",
+        "evidence": "fixture:fictional-career:synthetic-2026-final_payment_recorded"
+      },
+      "knownAt": "2026-03-08T12:00:00Z",
+      "action": "final_payment_recorded",
+      "actor": "chef",
+      "clientId": "synthetic-client-2",
+      "eventId": "synthetic-dinner-2026",
+      "facts": []
+    },
+    {
+      "id": "synthetic-2026-follow_up_sent",
+      "source": {
+        "id": "synthetic-2026-follow_up_sent",
+        "kind": "synthetic",
+        "evidence": "fixture:fictional-career:synthetic-2026-follow_up_sent"
+      },
+      "knownAt": "2026-03-09T12:00:00Z",
+      "action": "follow_up_sent",
+      "actor": "chef",
+      "clientId": "synthetic-client-2",
+      "eventId": "synthetic-dinner-2026",
+      "facts": []
+    }
+  ]
+}
