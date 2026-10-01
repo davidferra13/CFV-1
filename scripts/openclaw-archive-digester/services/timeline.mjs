@@ -5,10 +5,12 @@
  * financial records, and linked files.
  */
 
+import { assertArchiveApproved } from '../lib/media-privacy.mjs'
 import { openDb } from '../lib/db.mjs'
 
 async function main() {
   const db = openDb()
+  assertArchiveApproved(db)
   const startTime = Date.now()
 
   const clients = db.prepare('SELECT * FROM archive_clients').all()
@@ -86,7 +88,7 @@ async function main() {
     updateClient.run(firstSeen, lastSeen, totalEvents, totalRevenueCents, notes, client.id)
     updated++
 
-    console.log(`  ${client.canonical_name}: ${totalEvents} events, ${files.length} files, $${(totalRevenueCents / 100).toFixed(2)} revenue`)
+    console.log('  Approved client timeline updated')
   }
 
   const durationMs = Date.now() - startTime
@@ -102,6 +104,6 @@ async function main() {
 }
 
 main().catch(err => {
-  console.error('[timeline] Fatal:', err)
+  console.error('[timeline] Held: current approval and complete lineage required')
   process.exit(1)
 })

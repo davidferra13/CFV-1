@@ -5,19 +5,20 @@
  * Idempotent - only processes files with status 'ingested'.
  */
 
+import { verifyDerivedText } from '../lib/media-privacy.mjs'
 import { openDb } from '../lib/db.mjs'
 import { mapWithConcurrency } from '../lib/async-pool.mjs'
 import { classifyDocument } from '../lib/ollama-prompts.mjs'
 
 const BATCH_SIZE = parseInt(process.env.CLASSIFY_BATCH_SIZE || '64', 10)
-const CLASSIFY_CONCURRENCY = parseInt(process.env.CLASSIFY_CONCURRENCY || '8', 10)
+const CLASSIFY_CONCURRENCY = parseInt(process.env.CLASSIFY_CONCURRENCY || '1', 10)
 
 async function main() {
   const db = openDb()
   const startTime = Date.now()
 
   const pending = db.prepare(`
-    SELECT id, original_path, file_type, ocr_text
+    SELECT id, original_path, file_type, ocr_text, privacy_receipt
     FROM archive_files
     WHERE status = 'ingested'
     ORDER BY created_at ASC
@@ -48,21 +49,22 @@ async function main() {
 
   await mapWithConcurrency(pending, CLASSIFY_CONCURRENCY, async (file) => {
     try {
+      verifyDerivedText(file.original_path, file.ocr_text || '', file.privacy_receipt)
       const filename = file.original_path.split(/[/\\]/).pop()
-      const result = await classifyDocument(filename, file.file_type, file.ocr_text)
+      const result = await classifyDocument(filename, file.file_type, file.ocr_text, file.original_path, file.privacy_receipt)
 
       if (result && result.classification) {
         updateClassification.run(result.classification, result.confidence || 0, file.id)
-        console.log(`  [${result.classification}] ${filename} (${((result.confidence || 0) * 100).toFixed(0)}%)`)
+        console.log('  Local record processed')
         succeeded++
       } else {
         updateClassification.run('unknown', 0, file.id)
-        console.log(`  [unknown] ${filename} (Gemma returned no classification)`)
+        console.log('  Local record processed')
         succeeded++
       }
     } catch (err) {
-      markFailed.run(err.message, file.id)
-      console.error(`  [FAIL] ${file.original_path}: ${err.message}`)
+      markFailed.run('processing_unavailable', file.id)
+      console.error('  Record held for local review')
       failed++
     }
   })
@@ -80,6 +82,6 @@ async function main() {
 }
 
 main().catch(err => {
-  console.error('[classify] Fatal:', err)
+  console.error('[classify] Pipeline unavailable')
   process.exit(1)
 })
