@@ -1,0 +1,1115 @@
+{
+  "schemaVersion": 1,
+  "scope": "Atomic editorial ChefFlow requirements anchored to specific vendor statements. Acceptance criteria are our proposed bar, not claims about a competitor.",
+  "benchmarks": [
+    {
+      "id": "booking-request",
+      "title": "Describe a dinner without creating an account",
+      "categoryId": "chef-marketplaces",
+      "persona": "HOST",
+      "priority": "P0",
+      "strategy": "OWN",
+      "canonicalCapabilityIds": ["orders-catering-booking"],
+      "codeReferences": ["lib/chef-consumer/book-actions.ts"],
+      "dependsOn": [],
+      "competitorClaims": [
+        {
+          "sourceId": "take-a-chef",
+          "productId": "take-a-chef",
+          "statement": "Customers provide date, party size and preferences."
+        }
+      ],
+      "acceptance": [
+        "A guest can draft a request on a phone without an account or password wall.",
+        "Validate date, location, party size and dietary notes; show a real saved/submitted result and recoverable errors.",
+        "Any later identity step preserves the request and explains its purpose."
+      ],
+      "parity": "NOT_ASSESSED",
+      "rationale": "Remove a repeated food-related handoff while preserving authorization, source provenance and truthful failure states."
+    },
+    {
+      "id": "booking-proposal-comparison",
+      "title": "Compare chef proposals",
+      "categoryId": "chef-marketplaces",
+      "persona": "HOST",
+      "priority": "P0",
+      "strategy": "OWN",
+      "canonicalCapabilityIds": ["orders-catering-booking"],
+      "codeReferences": ["lib/chef-consumer/book-actions.ts"],
+      "dependsOn": ["booking-request"],
+      "competitorClaims": [
+        {
+          "sourceId": "take-a-chef",
+          "productId": "take-a-chef",
+          "statement": "Customers receive chef proposals."
+        }
+      ],
+      "acceptance": [
+        "Compare actual offers for one request, with per-person and total price, currency, fees and inclusions.",
+        "Never fabricate availability or proposals; distinguish no offers, loading and request failure."
+      ],
+      "parity": "NOT_ASSESSED",
+      "rationale": "Remove a repeated food-related handoff while preserving authorization, source provenance and truthful failure states."
+    },
+    {
+      "id": "booking-context-chat",
+      "title": "Discuss and customize a menu",
+      "categoryId": "chef-marketplaces",
+      "persona": "HOST",
+      "priority": "P0",
+      "strategy": "OWN",
+      "canonicalCapabilityIds": ["team-context-chat", "menus-source"],
+      "codeReferences": ["lib/chef-consumer/book-actions.ts"],
+      "dependsOn": ["booking-proposal-comparison"],
+      "competitorClaims": [
+        {
+          "sourceId": "take-a-chef",
+          "productId": "take-a-chef",
+          "statement": "Customers message chefs and customize menus."
+        }
+      ],
+      "acceptance": [
+        "Host and chef messages refer to the same proposal and menu revision.",
+        "A dietary change remains visible through acceptance; the wrong participant cannot read the conversation."
+      ],
+      "parity": "NOT_ASSESSED",
+      "rationale": "Remove a repeated food-related handoff while preserving authorization, source provenance and truthful failure states."
+    },
+    {
+      "id": "booking-confirmation",
+      "title": "Book with an explicit confirmed state",
+      "categoryId": "chef-marketplaces",
+      "persona": "HOST",
+      "priority": "P0",
+      "strategy": "OWN",
+      "canonicalCapabilityIds": ["orders-catering-booking", "payments-deposits"],
+      "codeReferences": ["lib/chef-consumer/book-actions.ts"],
+      "dependsOn": ["booking-context-chat"],
+      "competitorClaims": [
+        {
+          "sourceId": "take-a-chef",
+          "productId": "take-a-chef",
+          "statement": "Customers book after discussing their proposals."
+        }
+      ],
+      "acceptance": [
+        "Confirm the exact chef, date, agreed menu, amount and cancellation terms before submission.",
+        "Use idempotency for repeated taps and show confirmation only after the authoritative booking/payment result.",
+        "Failed or incomplete payments never appear as confirmed bookings."
+      ],
+      "parity": "NOT_ASSESSED",
+      "rationale": "Remove a repeated food-related handoff while preserving authorization, source provenance and truthful failure states."
+    },
+    {
+      "id": "booking-operations-continuity",
+      "title": "Carry a booked dinner into service preparation",
+      "categoryId": "business-operations",
+      "persona": "PROFESSIONAL_CHEF",
+      "priority": "P0",
+      "strategy": "OWN",
+      "canonicalCapabilityIds": ["events-catering-system", "prep-production-plan"],
+      "codeReferences": ["lib/events", "lib/prep"],
+      "dependsOn": ["booking-confirmation"],
+      "competitorClaims": [
+        {
+          "sourceId": "take-a-chef",
+          "productId": "take-a-chef",
+          "statement": "The booked service includes groceries, service and cleanup."
+        }
+      ],
+      "acceptance": [
+        "One accepted booking feeds the event, dietary requirements, menu, shopping and prep without retyping.",
+        "Changes to the agreed menu are tracked, not silently substituted."
+      ],
+      "parity": "NOT_ASSESSED",
+      "rationale": "Remove a repeated food-related handoff while preserving authorization, source provenance and truthful failure states."
+    },
+    {
+      "id": "recipe-library",
+      "title": "Keep a personal recipe collection",
+      "categoryId": "personal-cookbooks",
+      "persona": "HOME_COOK",
+      "priority": "P0",
+      "strategy": "OWN",
+      "canonicalCapabilityIds": ["recipes-system"],
+      "codeReferences": ["lib/recipes"],
+      "dependsOn": [],
+      "competitorClaims": [
+        {
+          "sourceId": "samsung-food",
+          "productId": "samsung-food",
+          "statement": "Users save recipes in a personal collection."
+        }
+      ],
+      "acceptance": [
+        "Create, find, edit and reopen a private recipe after refresh.",
+        "Distinguish personal copies from credited public originals; do not silently publish private chef recipes."
+      ],
+      "parity": "NOT_ASSESSED",
+      "rationale": "Remove a repeated food-related handoff while preserving authorization, source provenance and truthful failure states."
+    },
+    {
+      "id": "recipe-web-import",
+      "title": "Import a recipe from a permitted web source",
+      "categoryId": "personal-cookbooks",
+      "persona": "HOME_COOK",
+      "priority": "P0",
+      "strategy": "OWN",
+      "canonicalCapabilityIds": ["recipes-system", "documents-import-search"],
+      "codeReferences": ["lib/recipes", "lib/ai/parse-recipe-schema.ts"],
+      "dependsOn": ["recipe-library"],
+      "competitorClaims": [
+        {
+          "sourceId": "paprika",
+          "productId": "paprika-recipe-manager",
+          "statement": "The built-in browser imports web recipes."
+        }
+      ],
+      "acceptance": [
+        "Import authorized structured recipe data with title, ingredients, instructions and original-source attribution.",
+        "Preview and correct parsing before save; duplicates, unsupported pages and failures have explicit outcomes.",
+        "Respect access restrictions and content rights; never bypass a paywall or treat a failed parse as success."
+      ],
+      "parity": "NOT_ASSESSED",
+      "rationale": "Remove a repeated food-related handoff while preserving authorization, source provenance and truthful failure states."
+    },
+    {
+      "id": "recipe-scale",
+      "title": "Scale ingredient quantities without changing instructions",
+      "categoryId": "personal-cookbooks",
+      "persona": "HOME_COOK",
+      "priority": "P0",
+      "strategy": "OWN",
+      "canonicalCapabilityIds": ["recipes-scale-yield"],
+      "codeReferences": ["lib/scaling", "lib/ai/recipe-scaling.ts"],
+      "dependsOn": ["recipe-library"],
+      "competitorClaims": [
+        {
+          "sourceId": "paprika",
+          "productId": "paprika-recipe-manager",
+          "statement": "Ingredient quantities can be scaled."
+        }
+      ],
+      "acceptance": [
+        "Changing servings scales numeric amounts deterministically, preserving source servings and mixed fractions.",
+        "Non-numeric amounts and cooking times are not blindly multiplied; rounding is visible."
+      ],
+      "parity": "NOT_ASSESSED",
+      "rationale": "Remove a repeated food-related handoff while preserving authorization, source provenance and truthful failure states."
+    },
+    {
+      "id": "recipe-unit-conversion",
+      "title": "Convert compatible recipe measurements",
+      "categoryId": "personal-cookbooks",
+      "persona": "HOME_COOK",
+      "priority": "P1",
+      "strategy": "OWN",
+      "canonicalCapabilityIds": ["recipes-scale-yield"],
+      "codeReferences": ["lib/scaling"],
+      "dependsOn": ["recipe-scale"],
+      "competitorClaims": [
+        {
+          "sourceId": "paprika",
+          "productId": "paprika-recipe-manager",
+          "statement": "The app converts ingredient units."
+        }
+      ],
+      "acceptance": [
+        "Convert compatible mass and volume units with reversible rounding.",
+        "Never convert mass to volume without an explicit ingredient-specific density; unknown conversion is shown."
+      ],
+      "parity": "NOT_ASSESSED",
+      "rationale": "Remove a repeated food-related handoff while preserving authorization, source provenance and truthful failure states."
+    },
+    {
+      "id": "grocery-from-recipes",
+      "title": "Build a grocery list from selected recipes",
+      "categoryId": "grocery-lists",
+      "persona": "HOUSEHOLD_COORDINATOR",
+      "priority": "P0",
+      "strategy": "OWN",
+      "canonicalCapabilityIds": ["purchasing-suggested"],
+      "codeReferences": ["lib/grocery", "lib/shopping"],
+      "dependsOn": ["recipe-library", "recipe-scale"],
+      "competitorClaims": [
+        {
+          "sourceId": "anylist",
+          "productId": "anylist",
+          "statement": "Recipe ingredients can be added to grocery lists."
+        }
+      ],
+      "acceptance": [
+        "Selected recipes and servings produce a persisted shopping list with provenance to each recipe.",
+        "Manual edits survive recomputation; missing amounts are flagged rather than invented."
+      ],
+      "parity": "NOT_ASSESSED",
+      "rationale": "Remove a repeated food-related handoff while preserving authorization, source provenance and truthful failure states."
+    },
+    {
+      "id": "grocery-aggregation",
+      "title": "Combine equivalent grocery ingredients",
+      "categoryId": "grocery-lists",
+      "persona": "HOUSEHOLD_COORDINATOR",
+      "priority": "P0",
+      "strategy": "OWN",
+      "canonicalCapabilityIds": ["vendors-catalog", "purchasing-suggested"],
+      "codeReferences": ["lib/ingredients", "lib/shopping"],
+      "dependsOn": ["grocery-from-recipes", "recipe-unit-conversion"],
+      "competitorClaims": [
+        {
+          "sourceId": "paprika",
+          "productId": "paprika-recipe-manager",
+          "statement": "Grocery quantities are automatically combined."
+        }
+      ],
+      "acceptance": [
+        "Combine the same ingredient in compatible units while retaining all recipe contributions.",
+        "Keep incompatible units, dietary variants and materially different preparations separate."
+      ],
+      "parity": "NOT_ASSESSED",
+      "rationale": "Remove a repeated food-related handoff while preserving authorization, source provenance and truthful failure states."
+    },
+    {
+      "id": "grocery-aisles",
+      "title": "Group a shopping list by aisle",
+      "categoryId": "grocery-lists",
+      "persona": "HOME_COOK",
+      "priority": "P1",
+      "strategy": "OWN",
+      "canonicalCapabilityIds": ["purchasing-suggested"],
+      "codeReferences": ["lib/shopping"],
+      "dependsOn": ["grocery-from-recipes"],
+      "competitorClaims": [
+        {
+          "sourceId": "paprika",
+          "productId": "paprika-recipe-manager",
+          "statement": "Grocery items can be sorted by aisle."
+        }
+      ],
+      "acceptance": [
+        "Group items into editable store categories with an uncategorized fallback.",
+        "Checking an item updates the saved list and is reversible on a phone."
+      ],
+      "parity": "NOT_ASSESSED",
+      "rationale": "Remove a repeated food-related handoff while preserving authorization, source provenance and truthful failure states."
+    },
+    {
+      "id": "grocery-household-sharing",
+      "title": "Share a live household shopping list",
+      "categoryId": "grocery-lists",
+      "persona": "HOUSEHOLD_COORDINATOR",
+      "priority": "P1",
+      "strategy": "OWN",
+      "canonicalCapabilityIds": ["team-context-chat"],
+      "codeReferences": ["lib/chef-consumer/community-actions.ts", "lib/shopping"],
+      "dependsOn": ["grocery-from-recipes"],
+      "competitorClaims": [
+        {
+          "sourceId": "anylist",
+          "productId": "anylist",
+          "statement": "Shared list changes appear for other participants."
+        }
+      ],
+      "acceptance": [
+        "Two authorized household members see edits without overwriting each other.",
+        "Test simultaneous edits, reconnect, revoked access and read-only participants; exclude unrelated tenants."
+      ],
+      "parity": "NOT_ASSESSED",
+      "rationale": "Remove a repeated food-related handoff while preserving authorization, source provenance and truthful failure states."
+    },
+    {
+      "id": "meal-calendar",
+      "title": "Plan meals across a week",
+      "categoryId": "meal-planning",
+      "persona": "HOUSEHOLD_COORDINATOR",
+      "priority": "P1",
+      "strategy": "OWN",
+      "canonicalCapabilityIds": ["schedule-unified-calendar"],
+      "codeReferences": ["lib/calendar", "lib/recipes"],
+      "dependsOn": ["recipe-library"],
+      "competitorClaims": [
+        {
+          "sourceId": "samsung-food",
+          "productId": "samsung-food",
+          "statement": "The planner supports arranging meals for the week."
+        }
+      ],
+      "acceptance": [
+        "Place recipes into dated meals with servings; support moving, replacing and removing entries.",
+        "Mobile and keyboard interaction work without mandatory drag-and-drop."
+      ],
+      "parity": "NOT_ASSESSED",
+      "rationale": "Remove a repeated food-related handoff while preserving authorization, source provenance and truthful failure states."
+    },
+    {
+      "id": "meal-plan-shopping",
+      "title": "Turn the meal plan into one shopping list",
+      "categoryId": "meal-planning",
+      "persona": "HOUSEHOLD_COORDINATOR",
+      "priority": "P1",
+      "strategy": "OWN",
+      "canonicalCapabilityIds": ["purchasing-suggested"],
+      "codeReferences": ["lib/shopping", "lib/grocery"],
+      "dependsOn": ["meal-calendar", "grocery-aggregation"],
+      "competitorClaims": [
+        {
+          "sourceId": "samsung-food",
+          "productId": "samsung-food",
+          "statement": "Recipes and meal plans become grocery lists."
+        }
+      ],
+      "acceptance": [
+        "Generate one list for the selected date range, with per-meal provenance and servings.",
+        "Change a planned meal without duplicating items or erasing manual shopping entries."
+      ],
+      "parity": "NOT_ASSESSED",
+      "rationale": "Remove a repeated food-related handoff while preserving authorization, source provenance and truthful failure states."
+    },
+    {
+      "id": "reusable-menus",
+      "title": "Reuse a saved meal template",
+      "categoryId": "meal-planning",
+      "persona": "HOUSEHOLD_COORDINATOR",
+      "priority": "P2",
+      "strategy": "OWN",
+      "canonicalCapabilityIds": ["menus-source"],
+      "codeReferences": ["lib/menus"],
+      "dependsOn": ["meal-calendar"],
+      "competitorClaims": [
+        {
+          "sourceId": "paprika",
+          "productId": "paprika-recipe-manager",
+          "statement": "Reusable menus support meal planning."
+        }
+      ],
+      "acceptance": [
+        "Copy a saved meal template into a new date range without mutating the original.",
+        "Shopping reflects the newly selected servings and excludes removed meals."
+      ],
+      "parity": "NOT_ASSESSED",
+      "rationale": "Remove a repeated food-related handoff while preserving authorization, source provenance and truthful failure states."
+    },
+    {
+      "id": "guided-cooking-progress",
+      "title": "Follow a recipe step by step",
+      "categoryId": "guided-cooking",
+      "persona": "BEGINNER",
+      "priority": "P1",
+      "strategy": "OWN",
+      "canonicalCapabilityIds": ["recipes-system"],
+      "codeReferences": ["lib/recipes"],
+      "dependsOn": ["recipe-library"],
+      "competitorClaims": [
+        {
+          "sourceId": "paprika",
+          "productId": "paprika-recipe-manager",
+          "statement": "Ingredients and current cooking steps can be marked."
+        }
+      ],
+      "acceptance": [
+        "Track completed ingredients and the active instruction without altering the source recipe.",
+        "Persist progress across accidental navigation; expose accessible controls at phone width."
+      ],
+      "parity": "NOT_ASSESSED",
+      "rationale": "Remove a repeated food-related handoff while preserving authorization, source provenance and truthful failure states."
+    },
+    {
+      "id": "cooking-timers",
+      "title": "Start timers from recipe instructions",
+      "categoryId": "guided-cooking",
+      "persona": "HOME_COOK",
+      "priority": "P2",
+      "strategy": "OWN",
+      "canonicalCapabilityIds": ["recipes-system"],
+      "codeReferences": ["lib/recipes"],
+      "dependsOn": ["guided-cooking-progress"],
+      "competitorClaims": [
+        {
+          "sourceId": "paprika",
+          "productId": "paprika-recipe-manager",
+          "statement": "Cooking timers are detected from recipe directions."
+        }
+      ],
+      "acceptance": [
+        "Recognize explicit durations and ask before creating an ambiguous timer.",
+        "Multiple named timers remain accurate after backgrounding; notification permission failure is explained."
+      ],
+      "parity": "NOT_ASSESSED",
+      "rationale": "Remove a repeated food-related handoff while preserving authorization, source provenance and truthful failure states."
+    },
+    {
+      "id": "cooking-active-recipes",
+      "title": "Keep multiple dishes active while cooking",
+      "categoryId": "guided-cooking",
+      "persona": "HOME_COOK",
+      "priority": "P2",
+      "strategy": "OWN",
+      "canonicalCapabilityIds": ["recipes-system"],
+      "codeReferences": ["lib/recipes"],
+      "dependsOn": ["guided-cooking-progress"],
+      "competitorClaims": [
+        {
+          "sourceId": "paprika",
+          "productId": "paprika-recipe-manager",
+          "statement": "Multiple active recipes can be pinned."
+        }
+      ],
+      "acceptance": [
+        "Switch between dishes without losing servings, step progress or timer ownership.",
+        "Unpinning one dish does not clear another dish."
+      ],
+      "parity": "NOT_ASSESSED",
+      "rationale": "Remove a repeated food-related handoff while preserving authorization, source provenance and truthful failure states."
+    },
+    {
+      "id": "recipe-sync",
+      "title": "Reopen recipes and plans on another device",
+      "categoryId": "personal-cookbooks",
+      "persona": "HOME_COOK",
+      "priority": "P1",
+      "strategy": "OWN",
+      "canonicalCapabilityIds": ["recipes-system"],
+      "codeReferences": ["lib/recipes"],
+      "dependsOn": ["recipe-library"],
+      "competitorClaims": [
+        {
+          "sourceId": "paprika",
+          "productId": "paprika-recipe-manager",
+          "statement": "Cloud synchronization connects devices."
+        }
+      ],
+      "acceptance": [
+        "Reopen the same authorized saved collection on phone and desktop.",
+        "Make synchronization errors and conflicts visible without overwriting newer work."
+      ],
+      "parity": "NOT_ASSESSED",
+      "rationale": "Remove a repeated food-related handoff while preserving authorization, source provenance and truthful failure states."
+    },
+    {
+      "id": "food-community-sharing",
+      "title": "Share food knowledge by explicit choice",
+      "categoryId": "food-community",
+      "persona": "HOME_COOK",
+      "priority": "P2",
+      "strategy": "OWN",
+      "canonicalCapabilityIds": ["team-context-chat"],
+      "codeReferences": ["lib/chef-consumer/community-actions.ts"],
+      "dependsOn": ["recipe-library"],
+      "competitorClaims": [
+        {
+          "sourceId": "samsung-food",
+          "productId": "samsung-food",
+          "statement": "Communities support food and recipe sharing."
+        }
+      ],
+      "acceptance": [
+        "Share only specifically selected content, preserving attribution and permission.",
+        "Unsharing removes public access while retaining the owner copy; default is private."
+      ],
+      "parity": "NOT_ASSESSED",
+      "rationale": "Remove a repeated food-related handoff while preserving authorization, source provenance and truthful failure states."
+    },
+    {
+      "id": "nutrition-provenance",
+      "title": "Show nutrition with provenance and uncertainty",
+      "categoryId": "nutrition",
+      "persona": "HOME_COOK",
+      "priority": "P1",
+      "strategy": "INTEGRATE",
+      "canonicalCapabilityIds": ["recipes-nutrition"],
+      "codeReferences": ["lib/nutrition"],
+      "dependsOn": ["recipe-scale"],
+      "competitorClaims": [
+        {
+          "sourceId": "samsung-food",
+          "productId": "samsung-food",
+          "statement": "Recipes show nutritional information."
+        }
+      ],
+      "acceptance": [
+        "Display source, serving size and completeness alongside nutrient values.",
+        "Unknown values stay unknown, not zero; estimates are not medical advice or an allergen guarantee."
+      ],
+      "parity": "NOT_ASSESSED",
+      "rationale": "Remove a repeated food-related handoff while preserving authorization, source provenance and truthful failure states."
+    },
+    {
+      "id": "guided-shopping-handoff",
+      "title": "Hand a reviewed ingredient basket to a retailer",
+      "categoryId": "grocery-commerce",
+      "persona": "NON_COOK",
+      "priority": "P2",
+      "strategy": "INTEGRATE",
+      "canonicalCapabilityIds": ["purchasing-vendor-ordering"],
+      "codeReferences": ["lib/grocery"],
+      "dependsOn": ["grocery-aggregation"],
+      "competitorClaims": [
+        {
+          "sourceId": "sidechef",
+          "productId": "sidechef",
+          "statement": "Shoppable ingredients lead to Walmart checkout."
+        }
+      ],
+      "acceptance": [
+        "Let the user review quantities, substitutions and retailer before an authorized handoff.",
+        "Show that checkout occurs externally; do not claim a purchase until the retailer confirms it.",
+        "Missing products and stale prices remain explicit; never purchase automatically."
+      ],
+      "parity": "NOT_ASSESSED",
+      "rationale": "Remove a repeated food-related handoff while preserving authorization, source provenance and truthful failure states."
+    },
+    {
+      "id": "guided-cooking-instructions",
+      "title": "Provide structured guided cooking",
+      "categoryId": "guided-cooking",
+      "persona": "BEGINNER",
+      "priority": "P1",
+      "strategy": "OWN",
+      "canonicalCapabilityIds": ["recipes-system"],
+      "codeReferences": ["lib/recipes"],
+      "dependsOn": ["guided-cooking-progress"],
+      "competitorClaims": [
+        {
+          "sourceId": "sidechef",
+          "productId": "sidechef",
+          "statement": "Recipes include step-by-step cooking guidance."
+        }
+      ],
+      "acceptance": [
+        "Preserve ordered instructions, ingredient references and credited media.",
+        "The complete core recipe remains usable when media fails to load."
+      ],
+      "parity": "NOT_ASSESSED",
+      "rationale": "Remove a repeated food-related handoff while preserving authorization, source provenance and truthful failure states."
+    },
+    {
+      "id": "weekly-personalized-plan",
+      "title": "Suggest a weekly plan under explicit constraints",
+      "categoryId": "meal-planning",
+      "persona": "RELUCTANT_COOK",
+      "priority": "P2",
+      "strategy": "OWN",
+      "canonicalCapabilityIds": ["clients-dietary-memory"],
+      "codeReferences": ["lib/discovery/consumer-discovery-model.ts"],
+      "dependsOn": ["meal-calendar", "nutrition-provenance"],
+      "competitorClaims": [
+        {
+          "sourceId": "mealime",
+          "productId": "mealime",
+          "statement": "The service describes personalized weekly meal plans."
+        }
+      ],
+      "acceptance": [
+        "Build a reviewable plan from permitted recipes using budget, time and stated preferences.",
+        "Hard dietary restrictions outrank preference ranking; explain incomplete ingredient/allergen information.",
+        "A suggestion is a draft, never an automatically committed plan."
+      ],
+      "parity": "NOT_ASSESSED",
+      "rationale": "Remove a repeated food-related handoff while preserving authorization, source provenance and truthful failure states."
+    },
+    {
+      "id": "professional-recipe-versioning",
+      "title": "Maintain versioned culinary knowledge",
+      "categoryId": "professional-recipes",
+      "persona": "PROFESSIONAL_CHEF",
+      "priority": "P0",
+      "strategy": "OWN",
+      "canonicalCapabilityIds": ["recipes-system"],
+      "codeReferences": ["lib/recipes"],
+      "dependsOn": [],
+      "competitorClaims": [
+        {
+          "sourceId": "meez",
+          "productId": "meez",
+          "statement": "Recipes are searchable and versioned."
+        }
+      ],
+      "acceptance": [
+        "Keep recipe versions with author, change time and reproducible ingredients and instructions.",
+        "Events retain their selected version unless an authorized update is explicitly accepted."
+      ],
+      "parity": "NOT_ASSESSED",
+      "rationale": "Remove a repeated food-related handoff while preserving authorization, source provenance and truthful failure states."
+    },
+    {
+      "id": "professional-yield-cost",
+      "title": "Cost edible yield and sub-recipes",
+      "categoryId": "food-costing",
+      "persona": "PROFESSIONAL_CHEF",
+      "priority": "P0",
+      "strategy": "OWN",
+      "canonicalCapabilityIds": ["recipes-scale-yield", "recipes-costing"],
+      "codeReferences": ["lib/scaling", "lib/costing/recipe-cost-provenance.ts"],
+      "dependsOn": ["professional-recipe-versioning"],
+      "competitorClaims": [
+        {
+          "sourceId": "meez",
+          "productId": "meez",
+          "statement": "Yield, conversion and scaling inform recipe costs."
+        }
+      ],
+      "acceptance": [
+        "Calculate purchase-to-edible yield, nested recipe costs and portions deterministically.",
+        "Detect cycles, incompatible units and missing prices; show incomplete totals instead of a false exact margin."
+      ],
+      "parity": "NOT_ASSESSED",
+      "rationale": "Remove a repeated food-related handoff while preserving authorization, source provenance and truthful failure states."
+    },
+    {
+      "id": "professional-price-updates",
+      "title": "Propagate ingredient price updates into costs",
+      "categoryId": "food-costing",
+      "persona": "PROFESSIONAL_CHEF",
+      "priority": "P0",
+      "strategy": "OWN",
+      "canonicalCapabilityIds": ["recipes-costing"],
+      "codeReferences": ["lib/costing/recipe-cost-provenance.ts"],
+      "dependsOn": ["professional-yield-cost"],
+      "competitorClaims": [
+        {
+          "sourceId": "meez",
+          "productId": "meez",
+          "statement": "Invoice-fed ingredient costs update recipes."
+        }
+      ],
+      "acceptance": [
+        "A reviewed supplier price update recalculates affected recipe cost with source and effective date.",
+        "Historical booked-event pricing is not silently rewritten by a current price change."
+      ],
+      "parity": "NOT_ASSESSED",
+      "rationale": "Remove a repeated food-related handoff while preserving authorization, source provenance and truthful failure states."
+    },
+    {
+      "id": "menu-margin-analysis",
+      "title": "Compare menu-item contribution margins",
+      "categoryId": "food-costing",
+      "persona": "PROFESSIONAL_CHEF",
+      "priority": "P1",
+      "strategy": "OWN",
+      "canonicalCapabilityIds": ["menus-engineering", "analytics-menu"],
+      "codeReferences": ["lib/menu-performance", "lib/pricing"],
+      "dependsOn": ["professional-price-updates"],
+      "competitorClaims": [
+        {
+          "sourceId": "meez",
+          "productId": "meez",
+          "statement": "Menu engineering uses costs and profitability."
+        }
+      ],
+      "acceptance": [
+        "Show cost, selling price and contribution by item with consistent units and declared exclusions.",
+        "Do not rank an item with missing cost data as highly profitable."
+      ],
+      "parity": "NOT_ASSESSED",
+      "rationale": "Remove a repeated food-related handoff while preserving authorization, source provenance and truthful failure states."
+    },
+    {
+      "id": "recipe-allergen-management",
+      "title": "Carry ingredient allergen information into service",
+      "categoryId": "professional-recipes",
+      "persona": "PROFESSIONAL_CHEF",
+      "priority": "P0",
+      "strategy": "OWN",
+      "canonicalCapabilityIds": ["recipes-nutrition", "safety-allergen"],
+      "codeReferences": ["lib/dietary", "lib/nutrition"],
+      "dependsOn": ["professional-recipe-versioning"],
+      "competitorClaims": [
+        {
+          "sourceId": "meez",
+          "productId": "meez",
+          "statement": "Recipes support allergen tags."
+        }
+      ],
+      "acceptance": [
+        "Propagate reviewed ingredient allergen data through nested recipes and menu revisions.",
+        "Flag unknown ingredients and cross-contact considerations; absence of a tag never means safe."
+      ],
+      "parity": "NOT_ASSESSED",
+      "rationale": "Remove a repeated food-related handoff while preserving authorization, source provenance and truthful failure states."
+    },
+    {
+      "id": "recipe-visual-training",
+      "title": "Train staff using the selected recipe version",
+      "categoryId": "professional-recipes",
+      "persona": "PROFESSIONAL_CHEF",
+      "priority": "P2",
+      "strategy": "OWN",
+      "canonicalCapabilityIds": ["employees-training"],
+      "codeReferences": ["lib/recipes", "lib/team"],
+      "dependsOn": ["professional-recipe-versioning"],
+      "competitorClaims": [
+        {
+          "sourceId": "meez",
+          "productId": "meez",
+          "statement": "Recipes include visual preparation training."
+        }
+      ],
+      "acceptance": [
+        "Authorized staff can open credited visual instructions for the assigned version.",
+        "A receipt records which version was acknowledged, without claiming demonstrated competence."
+      ],
+      "parity": "NOT_ASSESSED",
+      "rationale": "Remove a repeated food-related handoff while preserving authorization, source provenance and truthful failure states."
+    },
+    {
+      "id": "recipe-document-import",
+      "title": "Review imported professional recipe documents",
+      "categoryId": "professional-recipes",
+      "persona": "PROFESSIONAL_CHEF",
+      "priority": "P1",
+      "strategy": "OWN",
+      "canonicalCapabilityIds": ["documents-import-search", "recipes-system"],
+      "codeReferences": ["lib/ai/parse-recipe-vision.ts", "lib/ai/parse-recipe-schema.ts"],
+      "dependsOn": ["professional-recipe-versioning"],
+      "competitorClaims": [
+        {
+          "sourceId": "meez",
+          "productId": "meez",
+          "statement": "Recipe documents can be imported."
+        }
+      ],
+      "acceptance": [
+        "Import an owned document into a draft with the original retained privately.",
+        "A chef reviews ambiguous quantities, yields and instructions before promotion; never invent missing content."
+      ],
+      "parity": "NOT_ASSESSED",
+      "rationale": "Remove a repeated food-related handoff while preserving authorization, source provenance and truthful failure states."
+    },
+    {
+      "id": "client-pipeline",
+      "title": "Track inquiry status through a client pipeline",
+      "categoryId": "business-operations",
+      "persona": "PROFESSIONAL_CHEF",
+      "priority": "P0",
+      "strategy": "OWN",
+      "canonicalCapabilityIds": ["clients-crm-segmentation", "inbox-action-extraction"],
+      "codeReferences": ["lib/clients", "lib/inbox"],
+      "dependsOn": [],
+      "competitorClaims": [
+        {
+          "sourceId": "honeybook",
+          "productId": "honeybook",
+          "statement": "The product lists a CRM."
+        }
+      ],
+      "acceptance": [
+        "An inquiry has an owner, next action and dated status history.",
+        "Conversion links the original inquiry to the client and event rather than creating untraceable duplicates."
+      ],
+      "parity": "NOT_ASSESSED",
+      "rationale": "Remove a repeated food-related handoff while preserving authorization, source provenance and truthful failure states."
+    },
+    {
+      "id": "client-proposal",
+      "title": "Create a reviewable client proposal",
+      "categoryId": "business-operations",
+      "persona": "PROFESSIONAL_CHEF",
+      "priority": "P0",
+      "strategy": "OWN",
+      "canonicalCapabilityIds": ["orders-catering-booking", "menus-source"],
+      "codeReferences": ["lib/booking", "lib/menus"],
+      "dependsOn": ["client-pipeline"],
+      "competitorClaims": [
+        {
+          "sourceId": "honeybook",
+          "productId": "honeybook",
+          "statement": "The product lists proposals."
+        }
+      ],
+      "acceptance": [
+        "Generate a proposal from canonical client, service, menu and pricing records.",
+        "Preview before sending; changed prices require a new visible revision."
+      ],
+      "parity": "NOT_ASSESSED",
+      "rationale": "Remove a repeated food-related handoff while preserving authorization, source provenance and truthful failure states."
+    },
+    {
+      "id": "client-contract",
+      "title": "Associate the agreement with the accepted proposal",
+      "categoryId": "business-operations",
+      "persona": "PROFESSIONAL_CHEF",
+      "priority": "P1",
+      "strategy": "INTEGRATE",
+      "canonicalCapabilityIds": ["documents-esign"],
+      "codeReferences": ["lib/contracts"],
+      "dependsOn": ["client-proposal"],
+      "competitorClaims": [
+        {
+          "sourceId": "honeybook",
+          "productId": "honeybook",
+          "statement": "The product lists contracts."
+        }
+      ],
+      "acceptance": [
+        "Show the exact agreement revision and authorized signers attached to the proposal.",
+        "Any signature provider handoff and incomplete signing status remain explicit."
+      ],
+      "parity": "NOT_ASSESSED",
+      "rationale": "Remove a repeated food-related handoff while preserving authorization, source provenance and truthful failure states."
+    },
+    {
+      "id": "client-invoice",
+      "title": "Issue an invoice with a truthful balance",
+      "categoryId": "business-operations",
+      "persona": "PROFESSIONAL_CHEF",
+      "priority": "P0",
+      "strategy": "OWN",
+      "canonicalCapabilityIds": ["payments-deposits"],
+      "codeReferences": ["lib/invoices", "lib/ledger"],
+      "dependsOn": ["client-proposal"],
+      "competitorClaims": [
+        {
+          "sourceId": "honeybook",
+          "productId": "honeybook",
+          "statement": "The product lists invoices and payments."
+        }
+      ],
+      "acceptance": [
+        "Create line items, due dates and tax/fee disclosures from the accepted terms.",
+        "Derive paid and remaining balance from immutable transactions, never from the button click."
+      ],
+      "parity": "NOT_ASSESSED",
+      "rationale": "Remove a repeated food-related handoff while preserving authorization, source provenance and truthful failure states."
+    },
+    {
+      "id": "inventory-mobile-count",
+      "title": "Count kitchen stock on a phone",
+      "categoryId": "pantry-inventory",
+      "persona": "KITCHEN_OPERATOR",
+      "priority": "P1",
+      "strategy": "OWN",
+      "canonicalCapabilityIds": ["inventory-counts"],
+      "codeReferences": ["lib/inventory"],
+      "dependsOn": [],
+      "competitorClaims": [
+        {
+          "sourceId": "marketman",
+          "productId": "marketman",
+          "statement": "Mobile inventory counting is advertised."
+        }
+      ],
+      "acceptance": [
+        "Record item, unit, location and count timestamp with interruption recovery.",
+        "Concurrent counts and corrections preserve history without double-adding stock."
+      ],
+      "parity": "NOT_ASSESSED",
+      "rationale": "Remove a repeated food-related handoff while preserving authorization, source provenance and truthful failure states."
+    },
+    {
+      "id": "inventory-actual-theoretical",
+      "title": "Compare actual and theoretical ingredient usage",
+      "categoryId": "pantry-inventory",
+      "persona": "KITCHEN_OPERATOR",
+      "priority": "P1",
+      "strategy": "OWN",
+      "canonicalCapabilityIds": ["inventory-theoretical"],
+      "codeReferences": ["lib/inventory"],
+      "dependsOn": ["inventory-mobile-count", "professional-yield-cost"],
+      "competitorClaims": [
+        {
+          "sourceId": "marketman",
+          "productId": "marketman",
+          "statement": "Plans include actual-versus-theoretical usage."
+        }
+      ],
+      "acceptance": [
+        "Reconcile opening stock, receipts, transfers, waste and closing stock against recipe-based usage.",
+        "Expose coverage gaps and timing boundaries instead of attributing unexplained variance to theft."
+      ],
+      "parity": "NOT_ASSESSED",
+      "rationale": "Remove a repeated food-related handoff while preserving authorization, source provenance and truthful failure states."
+    },
+    {
+      "id": "supplier-ordering",
+      "title": "Create and reconcile a supplier order",
+      "categoryId": "business-operations",
+      "persona": "KITCHEN_OPERATOR",
+      "priority": "P1",
+      "strategy": "INTEGRATE",
+      "canonicalCapabilityIds": ["purchasing-vendor-ordering"],
+      "codeReferences": ["lib/procurement", "lib/vendors"],
+      "dependsOn": ["inventory-mobile-count"],
+      "competitorClaims": [
+        {
+          "sourceId": "marketman",
+          "productId": "marketman",
+          "statement": "Mobile supplier ordering is offered."
+        }
+      ],
+      "acceptance": [
+        "Review quantities, units and current supplier terms before submitting an authorized order.",
+        "Distinguish draft, submitted, accepted, partial and failed; no success without provider confirmation."
+      ],
+      "parity": "NOT_ASSESSED",
+      "rationale": "Remove a repeated food-related handoff while preserving authorization, source provenance and truthful failure states."
+    },
+    {
+      "id": "inventory-suggested-order",
+      "title": "Suggest replenishment from stock and demand",
+      "categoryId": "pantry-inventory",
+      "persona": "KITCHEN_OPERATOR",
+      "priority": "P2",
+      "strategy": "OWN",
+      "canonicalCapabilityIds": ["purchasing-suggested"],
+      "codeReferences": ["lib/procurement"],
+      "dependsOn": ["inventory-mobile-count", "inventory-actual-theoretical"],
+      "competitorClaims": [
+        {
+          "sourceId": "marketman",
+          "productId": "marketman",
+          "statement": "Suggested orders use inventory and demand."
+        }
+      ],
+      "acceptance": [
+        "Suggest quantities from pars, planned production and available stock with visible inputs.",
+        "Suggestions are editable drafts; missing counts and uncertain demand reduce confidence explicitly."
+      ],
+      "parity": "NOT_ASSESSED",
+      "rationale": "Remove a repeated food-related handoff while preserving authorization, source provenance and truthful failure states."
+    },
+    {
+      "id": "invoice-reviewed-capture",
+      "title": "Review invoice lines before updating purchasing data",
+      "categoryId": "food-costing",
+      "persona": "KITCHEN_OPERATOR",
+      "priority": "P0",
+      "strategy": "OWN",
+      "canonicalCapabilityIds": ["receiving-capture"],
+      "codeReferences": ["lib/receipts", "lib/invoices", "lib/ocr"],
+      "dependsOn": [],
+      "competitorClaims": [
+        {
+          "sourceId": "marginedge",
+          "productId": "marginedge",
+          "statement": "The product automates invoice processing."
+        }
+      ],
+      "acceptance": [
+        "Extract supplier, date, line amounts and totals from an authorized document into a review state.",
+        "Prevent duplicate processing; low-confidence lines never silently alter inventory or ledger truth."
+      ],
+      "parity": "NOT_ASSESSED",
+      "rationale": "Remove a repeated food-related handoff while preserving authorization, source provenance and truthful failure states."
+    },
+    {
+      "id": "invoice-cost-link",
+      "title": "Link received invoice prices to culinary costs",
+      "categoryId": "food-costing",
+      "persona": "KITCHEN_OPERATOR",
+      "priority": "P0",
+      "strategy": "OWN",
+      "canonicalCapabilityIds": ["receiving-match", "recipes-costing"],
+      "codeReferences": ["lib/receipts", "lib/costing/recipe-cost-provenance.ts"],
+      "dependsOn": ["invoice-reviewed-capture", "professional-yield-cost"],
+      "competitorClaims": [
+        {
+          "sourceId": "marginedge",
+          "productId": "marginedge",
+          "statement": "Invoice data contributes to food-cost visibility."
+        }
+      ],
+      "acceptance": [
+        "Review unit and ingredient mappings before applying an invoice-derived price.",
+        "Retain a trace from invoice line to ingredient, recipe and observed margin change."
+      ],
+      "parity": "NOT_ASSESSED",
+      "rationale": "Remove a repeated food-related handoff while preserving authorization, source provenance and truthful failure states."
+    },
+    {
+      "id": "operating-pl",
+      "title": "Read operating profit with coverage and source context",
+      "categoryId": "finance-infrastructure",
+      "persona": "PROFESSIONAL_CHEF",
+      "priority": "P1",
+      "strategy": "INTEGRATE",
+      "canonicalCapabilityIds": ["financials-pl-cash"],
+      "codeReferences": ["lib/finance", "lib/ledger"],
+      "dependsOn": ["invoice-reviewed-capture", "client-invoice"],
+      "competitorClaims": [
+        {
+          "sourceId": "marginedge",
+          "productId": "marginedge",
+          "statement": "The product provides profit-and-loss visibility."
+        }
+      ],
+      "acceptance": [
+        "Display the reporting period, data-through timestamp and missing-source coverage with the totals.",
+        "Separate accrual/cash assumptions and reconcile to the ledger; an integration failure is not zero expense."
+      ],
+      "parity": "NOT_ASSESSED",
+      "rationale": "Remove a repeated food-related handoff while preserving authorization, source provenance and truthful failure states."
+    },
+    {
+      "id": "staff-availability",
+      "title": "Plan staff against submitted availability",
+      "categoryId": "workforce",
+      "persona": "KITCHEN_OPERATOR",
+      "priority": "P1",
+      "strategy": "OWN",
+      "canonicalCapabilityIds": ["schedule-staff", "schedule-changes"],
+      "codeReferences": ["lib/scheduling", "lib/shifts", "lib/availability"],
+      "dependsOn": [],
+      "competitorClaims": [
+        {
+          "sourceId": "7shifts",
+          "productId": "7shifts",
+          "statement": "Schedules account for availability and time off."
+        }
+      ],
+      "acceptance": [
+        "An authorized scheduler sees submitted availability and conflicts against an event or shift.",
+        "Publishing confirms delivery state and preserves a dated schedule revision."
+      ],
+      "parity": "NOT_ASSESSED",
+      "rationale": "Remove a repeated food-related handoff while preserving authorization, source provenance and truthful failure states."
+    },
+    {
+      "id": "staff-shift-swap",
+      "title": "Approve a shift swap without losing coverage",
+      "categoryId": "workforce",
+      "persona": "KITCHEN_OPERATOR",
+      "priority": "P2",
+      "strategy": "OWN",
+      "canonicalCapabilityIds": ["schedule-changes"],
+      "codeReferences": ["lib/shifts", "lib/availability"],
+      "dependsOn": ["staff-availability"],
+      "competitorClaims": [
+        {
+          "sourceId": "7shifts",
+          "productId": "7shifts",
+          "statement": "Shift swaps can require manager approval."
+        }
+      ],
+      "acceptance": [
+        "Keep the original assignment until an eligible replacement and manager approval are recorded.",
+        "Prevent conflicting swaps and notify affected staff from the authoritative outcome."
+      ],
+      "parity": "NOT_ASSESSED",
+      "rationale": "Remove a repeated food-related handoff while preserving authorization, source provenance and truthful failure states."
+    },
+    {
+      "id": "staff-training-record",
+      "title": "Track assigned training and acknowledgements",
+      "categoryId": "workforce",
+      "persona": "KITCHEN_OPERATOR",
+      "priority": "P2",
+      "strategy": "OWN",
+      "canonicalCapabilityIds": ["employees-training"],
+      "codeReferences": ["lib/team", "lib/staff"],
+      "dependsOn": [],
+      "competitorClaims": [
+        {
+          "sourceId": "7shifts",
+          "productId": "7shifts",
+          "statement": "Training supports assignments, quizzes and acknowledgements."
+        }
+      ],
+      "acceptance": [
+        "Assign a specific training version and record acknowledgement or quiz completion separately.",
+        "Do not convert acknowledgement into an unsupported safety or competence certification."
+      ],
+      "parity": "NOT_ASSESSED",
+      "rationale": "Remove a repeated food-related handoff while preserving authorization, source provenance and truthful failure states."
+    }
+  ]
+}
