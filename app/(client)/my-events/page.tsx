@@ -397,7 +397,7 @@ export default async function MyEventsPage() {
     return (
       <div className="space-y-6">
         <div>
-          <h1 className="text-3xl font-bold text-stone-100">My Events</h1>
+          <h1 className="text-3xl font-semibold tracking-tight text-stone-100">My Events</h1>
           <p className="text-stone-400 mt-1">Your upcoming and past events</p>
         </div>
         <div className="rounded-xl border border-red-800/50 bg-red-950/30 p-6 text-center space-y-3">
@@ -1162,7 +1162,7 @@ export default async function MyEventsPage() {
       <ClientDashboardWidgetShell title="Event History" description="Past and cancelled bookings.">
         <div className="space-y-8">
           <section>
-            <div className="mb-4 flex items-center justify-between">
+            <div className="mb-4 flex flex-wrap items-center justify-between gap-3">
               <h3 className="text-lg font-semibold text-stone-100">Past Events</h3>
               {pastTotalCount > 5 ? (
                 <TrackedActivityLink
@@ -1729,12 +1729,12 @@ export default async function MyEventsPage() {
   const assistantEnabled = visibleWidgets.some((widget) => widget.id === 'assistant')
 
   return (
-    <div className="mx-auto max-w-5xl">
-      <div className="mb-8 flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
+    <div className="mx-auto max-w-5xl space-y-6">
+      <div className="mb-6 border-b border-stone-700 pb-6 flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
         <div data-tour="client-events-overview">
           <h1 className="text-3xl font-bold text-stone-100">My Events</h1>
           <p className="mt-2 text-stone-400" data-tour="client-make-payment">
-            Manage your upcoming events and view past bookings
+            Your plans, menus, and next steps in one place
           </p>
         </div>
       </div>

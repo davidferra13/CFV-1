@@ -7,7 +7,7 @@
  * All color values stored as space-separated RGB channels ("237 168 107")
  * so Tailwind's opacity modifier syntax works: bg-brand-500/20
  *
- * Default palette: Copper and Cast Iron (the brand identity)
+ * Default palette: Graphite. Explicitly chosen color palettes remain available.
  */
 
 export interface ColorPalette {
@@ -40,6 +40,32 @@ export interface ColorPalette {
 }
 
 export const PALETTES: ColorPalette[] = [
+  {
+    id: 'graphite',
+    name: 'Graphite',
+    description: 'Clean white surfaces and crisp charcoal. Let the food bring the color.',
+    colors: {
+      50: '250 250 250',
+      100: '244 244 245',
+      200: '228 228 231',
+      300: '113 113 122',
+      400: '82 82 91',
+      500: '82 82 91',
+      600: '63 63 70',
+      700: '39 39 42',
+      800: '24 24 27',
+      900: '15 15 18',
+      950: '9 9 11',
+    },
+    swatches: {
+      deep: '#27272a',
+      hero: '#52525b',
+      soft: '#e4e4e7',
+      anchor: '#18181b',
+      foundation: '#ffffff',
+      text: '#27272a',
+    },
+  },
   // ──────────────────────────────────────────────
   // 1. Copper and Cast Iron (DEFAULT)
   // ──────────────────────────────────────────────
@@ -281,7 +307,7 @@ export const PALETTES: ColorPalette[] = [
   },
 ]
 
-export const DEFAULT_PALETTE_ID = 'copper'
+export const DEFAULT_PALETTE_ID = 'graphite'
 
 export function getPaletteById(id: string): ColorPalette {
   return PALETTES.find((p) => p.id === id) ?? PALETTES[0]

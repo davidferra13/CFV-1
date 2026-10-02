@@ -10,32 +10,32 @@
    DESIGN TOKENS - CSS Custom Properties
    ============================================ */
 :root {
-  --brand-50: 254 249 243;
-  --brand-100: 252 240 224;
-  --brand-200: 248 221 192;
-  --brand-300: 243 197 150;
-  --brand-400: 243 197 150;
-  --brand-500: 237 168 107;
-  --brand-600: 177 92 38;
-  --brand-700: 177 92 38;
-  --brand-800: 142 74 36;
-  --brand-900: 116 64 33;
-  --brand-950: 62 32 15;
+  --brand-50: 250 250 250;
+  --brand-100: 244 244 245;
+  --brand-200: 228 228 231;
+  --brand-300: 113 113 122;
+  --brand-400: 82 82 91;
+  --brand-500: 82 82 91;
+  --brand-600: 63 63 70;
+  --brand-700: 39 39 42;
+  --brand-800: 24 24 27;
+  --brand-900: 15 15 18;
+  --brand-950: 9 9 11;
 
   /* Light theme flips the stone scale so dark-first utility usage renders as light.
      Scale darkened for readability (March 2026): 300-500 shifted ~15-25 points darker
      so secondary/muted text stands out against light card and page backgrounds. */
-  --stone-50: 22 16 12;
-  --stone-100: 34 27 21;
-  --stone-200: 55 46 38;
-  --stone-300: 78 66 55;
-  --stone-400: 100 86 72;
-  --stone-500: 135 120 105;
-  --stone-600: 201 190 178;
-  --stone-700: 226 217 206;
-  --stone-800: 241 235 227;
-  --stone-900: 250 247 242;
-  --stone-950: 255 252 247;
+  --stone-50: 24 24 27;
+  --stone-100: 39 39 42;
+  --stone-200: 63 63 70;
+  --stone-300: 82 82 91;
+  --stone-400: 99 99 108;
+  --stone-500: 113 113 122;
+  --stone-600: 180 180 187;
+  --stone-700: 224 224 228;
+  --stone-800: 240 240 243;
+  --stone-900: 248 248 250;
+  --stone-950: 255 255 255;
 
   --surface-0-rgb: var(--stone-950);
   --surface-1-rgb: var(--stone-900);
@@ -61,12 +61,7 @@
   --border-strong: rgb(var(--stone-500) / 0.75);
 
   --card-gradient: linear-gradient(180deg, rgb(255 255 255 / 0.6) 0%, transparent 42%);
-  --page-bg-gradient: linear-gradient(
-    180deg,
-    rgb(var(--brand-50) / 0.55) 0%,
-    rgb(var(--surface-0-rgb)) 38%,
-    rgb(var(--surface-1-rgb)) 100%
-  );
+  --page-bg-gradient: var(--surface-0);
 
   --border-warm: rgb(var(--brand-500) / 0.12);
   --border-warm-hover: rgb(var(--brand-500) / 0.24);
@@ -107,22 +102,25 @@
   --duration-slow: 350ms;
   --duration-enter: 220ms;
   --duration-exit: 150ms;
+  --action-bg: #242427;
+  --action-fg: #ffffff;
+  --action-hover: #3f3f46;
 }
 
 .dark {
   color-scheme: dark;
 
-  --stone-50: 250 250 249;
-  --stone-100: 245 245 244;
-  --stone-200: 231 229 228;
-  --stone-300: 214 211 209;
-  --stone-400: 168 162 158;
-  --stone-500: 120 113 108;
-  --stone-600: 87 83 78;
-  --stone-700: 68 64 60;
-  --stone-800: 41 37 36;
-  --stone-900: 28 25 23;
-  --stone-950: 12 10 9;
+  --stone-50: 250 250 250;
+  --stone-100: 244 244 245;
+  --stone-200: 228 228 231;
+  --stone-300: 212 212 216;
+  --stone-400: 161 161 170;
+  --stone-500: 113 113 122;
+  --stone-600: 82 82 91;
+  --stone-700: 63 63 70;
+  --stone-800: 39 39 42;
+  --stone-900: 24 24 27;
+  --stone-950: 15 15 18;
 
   --surface-0-rgb: var(--stone-950);
   --surface-1-rgb: var(--stone-900);
@@ -135,19 +133,14 @@
   --text-muted: rgb(var(--stone-400));
   --text-muted-soft: rgb(184 177 171);
   --text-placeholder: rgb(var(--stone-500));
-  --text-inverse: rgb(var(--stone-100));
+  --text-inverse: rgb(var(--stone-950));
 
   --border-subtle: rgb(var(--stone-800) / 0.95);
   --border-default: rgb(var(--stone-700) / 0.9);
   --border-strong: rgb(var(--stone-600) / 0.85);
 
   --card-gradient: linear-gradient(180deg, rgb(255 255 255 / 0.03) 0%, transparent 40%);
-  --page-bg-gradient: linear-gradient(
-    180deg,
-    rgb(var(--brand-950) / 0.2) 0%,
-    rgb(var(--surface-0-rgb)) 40%,
-    rgb(var(--surface-1-rgb)) 100%
-  );
+  --page-bg-gradient: var(--surface-0);
 
   --shadow-card: 0 1px 3px rgba(0, 0, 0, 0.4), 0 0 0 1px rgba(0, 0, 0, 0.06);
   --shadow-card-hover: 0 8px 24px rgba(0, 0, 0, 0.4), 0 0 0 1px rgb(var(--brand-500) / 0.06);
@@ -175,6 +168,11 @@
   --contrast-status-danger-fg: rgb(254 226 226);
   --contrast-muted-functional: rgb(var(--stone-300));
   --contrast-disabled-functional: rgb(var(--stone-400));
+  --brand-300: 212 212 216;
+  --brand-400: 161 161 170;
+  --action-bg: #f4f4f5;
+  --action-fg: #18181b;
+  --action-hover: #d4d4d8;
 }
 
 /* ============================================
@@ -2007,31 +2005,31 @@ html {
 
 /* ── Homepage color temperature zones ── */
 .zone-hero {
-  background: #1a0e08;
+  background: var(--surface-0);
 }
 
 .zone-seasonal {
-  background: linear-gradient(to bottom, rgba(26, 14, 8, 0.95), rgba(15, 13, 12, 0.98));
+  background: var(--surface-0);
 }
 
 .zone-discovery {
-  background: linear-gradient(to bottom, #0f0d0c, #0e0c0b);
+  background: var(--surface-0);
 }
 
 .zone-featured {
-  background: linear-gradient(to bottom, #0e0c0b, #0c0a09);
+  background: var(--surface-0);
 }
 
 .zone-howit {
-  background: #111111;
+  background: var(--surface-0);
 }
 
 .zone-providers {
-  background: #0c0a09;
+  background: var(--surface-0);
 }
 
 .zone-cta {
-  background: linear-gradient(to bottom, #0c0a09, #0a0a0a);
+  background: var(--surface-0);
 }
 
 /* Smooth zone transitions */
@@ -2531,20 +2529,13 @@ html {
 
 /* ── Shimmer text (for accents and labels) ── */
 .text-warm-gradient {
-  background: linear-gradient(135deg, #e8a96b, #d4945a, #c4824a);
-  -webkit-background-clip: text;
-  -webkit-text-fill-color: transparent;
-  background-clip: text;
+  color: var(--text-primary);
 }
 
 /* ── Brand Gradient Accent (for CTAs and hero elements) ── */
 .gradient-accent {
-  background: linear-gradient(
-    135deg,
-    rgb(var(--brand-600)),
-    rgb(var(--brand-500)),
-    rgb(var(--brand-400))
-  );
+  background: var(--action-bg);
+  color: var(--action-fg);
 }
 
 /* ── Form micro-interactions ── */
@@ -2807,26 +2798,24 @@ select:focus {
 .dashboard-page {
   --dashboard-font-heading:
     -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
-  --dashboard-bg: #dee8de;
-  --dashboard-bg-band: #d3dfd3;
-  --dashboard-surface: #fffefa;
-  --dashboard-surface-raised: #ffffff;
-  --dashboard-surface-muted: #edf3ee;
-  --dashboard-border: #aebbaf;
-  --dashboard-border-strong: #718b7e;
+  --dashboard-bg: var(--surface-0);
+  --dashboard-bg-band: var(--surface-1);
+  --dashboard-surface: var(--surface-0);
+  --dashboard-surface-raised: var(--surface-0);
+  --dashboard-surface-muted: var(--surface-1);
+  --dashboard-border: var(--border-subtle);
+  --dashboard-border-strong: var(--border-strong);
   --dashboard-shadow: 0 18px 42px rgb(49 63 54 / 0.12), 0 1px 0 rgb(255 255 255 / 0.75) inset;
   --dashboard-shadow-soft: 0 10px 28px rgb(49 63 54 / 0.08);
-  --dashboard-text: #20231f;
-  --dashboard-text-secondary: #3c453e;
-  --dashboard-text-muted: #667267;
-  --dashboard-accent: #008c7a;
-  --dashboard-accent-strong: #006d60;
-  --dashboard-action: #9a5125;
-  --dashboard-widget-bg: #fbfaf6;
+  --dashboard-text: var(--text-primary);
+  --dashboard-text-secondary: var(--text-secondary);
+  --dashboard-text-muted: var(--text-muted);
+  --dashboard-accent: var(--action-bg);
+  --dashboard-accent-strong: var(--action-hover);
+  --dashboard-action: var(--action-bg);
+  --dashboard-widget-bg: var(--surface-0);
 
-  background:
-    linear-gradient(180deg, rgb(211 223 211 / 0.92), rgb(222 232 222 / 0.72) 18rem),
-    var(--dashboard-bg);
+  background: var(--dashboard-bg);
   color: var(--dashboard-text);
   font-family:
     -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
@@ -2995,22 +2984,22 @@ select:focus {
 }
 
 .dark .dashboard-page {
-  --dashboard-bg: #12100e;
-  --dashboard-bg-band: #1c1917;
-  --dashboard-surface: #211d1a;
-  --dashboard-surface-raised: #292421;
-  --dashboard-surface-muted: #332d28;
-  --dashboard-border: #57504a;
-  --dashboard-border-strong: #8a8076;
+  --dashboard-bg: var(--surface-0);
+  --dashboard-bg-band: var(--surface-1);
+  --dashboard-surface: var(--surface-0);
+  --dashboard-surface-raised: var(--surface-0);
+  --dashboard-surface-muted: var(--surface-1);
+  --dashboard-border: var(--border-subtle);
+  --dashboard-border-strong: var(--border-strong);
   --dashboard-shadow: 0 18px 42px rgb(0 0 0 / 0.38), 0 1px 0 rgb(255 255 255 / 0.04) inset;
   --dashboard-shadow-soft: 0 10px 28px rgb(0 0 0 / 0.28);
-  --dashboard-text: #f7f3ee;
-  --dashboard-text-secondary: #ddd6ce;
-  --dashboard-text-muted: #c2b9ae;
-  --dashboard-accent: #4bc0ad;
-  --dashboard-accent-strong: #7bd8c9;
-  --dashboard-action: #f2a163;
-  --dashboard-widget-bg: #24201d;
+  --dashboard-text: var(--text-primary);
+  --dashboard-text-secondary: var(--text-secondary);
+  --dashboard-text-muted: var(--text-muted);
+  --dashboard-accent: var(--action-bg);
+  --dashboard-accent-strong: var(--action-hover);
+  --dashboard-action: var(--action-bg);
+  --dashboard-widget-bg: var(--surface-0);
 
   background:
     linear-gradient(180deg, rgb(28 25 23 / 0.96), rgb(18 16 14 / 0.9) 18rem), var(--dashboard-bg);
@@ -3200,7 +3189,7 @@ select:focus {
 [data-cf-portal='client'] input:focus,
 [data-cf-portal='client'] textarea:focus,
 [data-cf-portal='client'] select:focus {
-  border-color: #c4a35a;
-  box-shadow: 0 0 0 3px rgb(196 163 90 / 0.15);
+  border-color: var(--focus-ring-color);
+  box-shadow: 0 0 0 3px rgb(var(--brand-500) / 0.2);
   outline: none;
 }

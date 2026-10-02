@@ -32,7 +32,8 @@ function applyPalette(palette: ColorPalette) {
   const style = document.documentElement.style
   const steps = [50, 100, 200, 300, 400, 500, 600, 700, 800, 900, 950] as const
   for (const step of steps) {
-    style.setProperty(`--brand-${step}`, palette.colors[step])
+    if (palette.id === DEFAULT_PALETTE_ID) style.removeProperty(`--brand-${step}`)
+    else style.setProperty(`--brand-${step}`, palette.colors[step])
   }
 }
 
@@ -84,7 +85,7 @@ export function ColorPaletteProvider({ children }: { children: React.ReactNode }
  * Rendered as a <script> in <head> via layout.tsx.
  */
 export function PaletteScript() {
-  const scriptContent = `(function(){try{var id=localStorage.getItem("${PALETTE_STORAGE_KEY}");if(!id||id==="copper")return;var p=${JSON.stringify(
+  const scriptContent = `(function(){try{var id=localStorage.getItem("${PALETTE_STORAGE_KEY}");if(!id||id==="${DEFAULT_PALETTE_ID}")return;var p=${JSON.stringify(
     Object.fromEntries(
       PALETTES.filter((p) => p.id !== DEFAULT_PALETTE_ID).map((p) => [p.id, p.colors])
     )

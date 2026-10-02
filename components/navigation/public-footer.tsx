@@ -2,7 +2,6 @@ import dynamic from 'next/dynamic'
 import Link from 'next/link'
 import { AppLogo } from '@/components/branding/app-logo'
 import { LAUNCH_MODE } from '@/lib/marketing/launch-mode'
-import { PLATFORM_SHORT_DESCRIPTION } from '@/lib/marketing/platform-positioning'
 import { buildMarketingSignupHref } from '@/lib/marketing/signup-links'
 import { FOOTER_SECTIONS } from './public-nav-config'
 
@@ -23,9 +22,6 @@ export function PublicFooter() {
       {/* Warm top border */}
       <div className="divider-warm" />
 
-      {/* Subtle warm glow */}
-      <div className="pointer-events-none absolute top-0 left-1/2 h-[300px] w-[600px] -translate-x-1/2 rounded-full bg-[radial-gradient(ellipse,_rgba(142,74,36,0.06),_transparent_70%)]" />
-
       <div className="relative mx-auto w-full max-w-6xl px-4 py-16 sm:px-6 sm:py-20 lg:px-8">
         <div className="grid grid-cols-1 gap-12 sm:grid-cols-2 lg:grid-cols-[1.5fr_1fr_1fr_1.2fr] lg:gap-16">
           {/* Brand column */}
@@ -37,10 +33,10 @@ export function PublicFooter() {
               </span>
             </Link>
             <p className="mt-5 max-w-xs text-sm leading-relaxed text-stone-400">
-              {PLATFORM_SHORT_DESCRIPTION}
+              Discover food, find your chef, and bring people together.
             </p>
-            <p className="mt-4 text-sm leading-relaxed text-[#8b7355]">
-              The workspace for chef-led food businesses.
+            <p className="mt-4 text-sm leading-relaxed text-stone-400">
+              Food, people, and possibilities.
             </p>
           </div>
 
@@ -52,7 +48,7 @@ export function PublicFooter() {
                 <li key={link.href}>
                   <Link
                     href={link.href}
-                    className="text-sm text-stone-400 transition-colors duration-200 hover:text-[#e8a96b]"
+                    className="text-sm text-stone-400 transition-colors duration-200 hover:text-stone-100"
                   >
                     {link.label}
                   </Link>
@@ -64,7 +60,7 @@ export function PublicFooter() {
                     sourcePage: 'footer',
                     sourceCta: 'operator_signup',
                   })}
-                  className="text-sm text-[#e8a96b] transition-colors duration-200 hover:text-[#f0c090]"
+                  className="text-sm text-stone-100 transition-colors duration-200 hover:text-stone-50"
                 >
                   {isBeta ? 'Request operator access' : 'Operator sign up'}
                 </Link>
@@ -80,7 +76,7 @@ export function PublicFooter() {
                 <li key={link.href}>
                   <Link
                     href={link.href}
-                    className="text-sm text-stone-400 transition-colors duration-200 hover:text-[#e8a96b]"
+                    className="text-sm text-stone-400 transition-colors duration-200 hover:text-stone-100"
                   >
                     {link.label}
                   </Link>
@@ -90,7 +86,7 @@ export function PublicFooter() {
                 <li key={link.href}>
                   <Link
                     href={link.href}
-                    className="text-sm text-stone-400 transition-colors duration-200 hover:text-[#e8a96b]"
+                    className="text-sm text-stone-400 transition-colors duration-200 hover:text-stone-100"
                   >
                     {link.label}
                   </Link>
