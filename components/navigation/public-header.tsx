@@ -6,7 +6,6 @@ import { useEffect, useRef, useState } from 'react'
 import { ChevronDown, Menu, X } from '@/components/ui/icons'
 import { TrackedLink } from '@/components/analytics/tracked-link'
 import { AppLogo } from '@/components/branding/app-logo'
-import { ThemeToggle } from '@/components/ui/theme-toggle'
 import { signOut } from '@/lib/auth/actions'
 
 import { PUBLIC_PRIMARY_CONSUMER_CTA } from '@/lib/public/public-surface-config'
@@ -55,8 +54,8 @@ function NavDropdown({ group, pathname }: { group: PublicNavGroup; pathname: str
         onClick={() => setOpen((o) => !o)}
         className={`flex items-center gap-1 rounded-lg px-3 py-2 text-sm font-medium transition-colors ${
           groupActive
-            ? 'bg-brand-950 text-brand-400'
-            : 'text-stone-400 hover:bg-[#2a1a10]/60 hover:text-stone-200'
+            ? 'bg-stone-800 text-stone-100'
+            : 'text-stone-400 hover:bg-stone-800 hover:text-stone-200'
         }`}
         aria-expanded={open}
         aria-haspopup="true"
@@ -65,7 +64,7 @@ function NavDropdown({ group, pathname }: { group: PublicNavGroup; pathname: str
         <ChevronDown className={`h-3.5 w-3.5 transition-transform ${open ? 'rotate-180' : ''}`} />
       </button>
       {open && (
-        <div className="absolute left-0 top-full z-[120] mt-1 min-w-[180px] rounded-xl border border-[#4a3020]/40 bg-[#1a110c]/95 py-1.5 shadow-[0_12px_40px_rgba(0,0,0,0.5)] backdrop-blur-2xl">
+        <div className="absolute left-0 top-full z-[120] mt-1 min-w-[180px] rounded-xl border border-stone-700 bg-stone-950 py-1.5 shadow-[0_12px_40px_rgba(40,48,39,0.12)] backdrop-blur-2xl">
           {group.items.map((item) => {
             const active = isPublicNavActive(pathname, item.href)
             return (
@@ -76,8 +75,8 @@ function NavDropdown({ group, pathname }: { group: PublicNavGroup; pathname: str
                 analyticsProps={{ section: 'public_header', group: group.label }}
                 className={`block px-4 py-2 text-sm transition-colors ${
                   active
-                    ? 'bg-brand-950/60 text-brand-400'
-                    : 'text-stone-300 hover:bg-[#2a1a10]/60 hover:text-stone-100'
+                    ? 'bg-stone-800 text-stone-100'
+                    : 'text-stone-300 hover:bg-stone-800 hover:text-stone-100'
                 }`}
                 onClick={() => setOpen(false)}
               >
@@ -165,8 +164,8 @@ function AuthUserDropdown({ user }: { user: PublicHeaderUser }) {
         {initials}
       </button>
       {open && (
-        <div className="absolute right-0 top-full z-[120] mt-2 min-w-[200px] rounded-xl border border-[#4a3020]/40 bg-[#1a110c]/95 py-1.5 shadow-[0_12px_40px_rgba(0,0,0,0.5)] backdrop-blur-2xl">
-          <div className="border-b border-[#4a3020]/30 px-4 py-2.5">
+        <div className="absolute right-0 top-full z-[120] mt-2 min-w-[200px] rounded-xl border border-stone-700 bg-stone-950 py-1.5 shadow-[0_12px_40px_rgba(40,48,39,0.12)] backdrop-blur-2xl">
+          <div className="border-b border-stone-700 px-4 py-2.5">
             <p className="text-sm font-medium text-stone-100 truncate">{displayName}</p>
             {user.email && user.name && (
               <p className="text-xs text-stone-500 truncate">{user.email}</p>
@@ -176,7 +175,7 @@ function AuthUserDropdown({ user }: { user: PublicHeaderUser }) {
             href={user.portalHref}
             analyticsName="header_dropdown_portal"
             analyticsProps={{ section: 'public_header', role: user.role }}
-            className="block px-4 py-2 text-sm text-stone-300 transition-colors hover:bg-[#2a1a10]/60 hover:text-stone-100"
+            className="block px-4 py-2 text-sm text-stone-300 transition-colors hover:bg-stone-800 hover:text-stone-100"
             onClick={() => setOpen(false)}
           >
             {user.label}
@@ -184,7 +183,7 @@ function AuthUserDropdown({ user }: { user: PublicHeaderUser }) {
           <button
             type="button"
             onClick={handleSignOut}
-            className="w-full px-4 py-2 text-left text-sm text-stone-400 transition-colors hover:bg-[#2a1a10]/60 hover:text-stone-200"
+            className="w-full px-4 py-2 text-left text-sm text-stone-400 transition-colors hover:bg-stone-800 hover:text-stone-200"
           >
             Sign out
           </button>
@@ -220,7 +219,7 @@ export function PublicHeader({ user }: { user?: PublicHeaderUser | null }) {
     <header
       className={`sticky top-0 z-[100] border-b transition-all duration-300 ${
         solidChrome
-          ? 'border-stone-700/70 bg-stone-950/88 shadow-[0_4px_24px_rgba(0,0,0,0.12)] backdrop-blur-2xl dark:border-[#4a3020]/40 dark:bg-[#1a110c]/85 dark:shadow-[0_4px_24px_rgba(0,0,0,0.3)]'
+          ? 'border-stone-700/70 bg-stone-950/88 shadow-[0_4px_24px_rgba(0,0,0,0.12)] backdrop-blur-2xl dark:border-stone-700 dark:bg-stone-950 dark:shadow-[0_4px_24px_rgba(0,0,0,0.3)]'
           : 'border-transparent bg-transparent'
       }`}
     >
@@ -231,9 +230,7 @@ export function PublicHeader({ user }: { user?: PublicHeaderUser | null }) {
             {/* Theme-aware like the nav links beside it. The transparent header
                 sits over the light page top in light mode, where the old
                 hardcoded text-white wordmark was invisible. */}
-            <span className="text-base font-display tracking-tight text-stone-100">
-              ChefFlow
-            </span>
+            <span className="text-base font-display tracking-tight text-stone-100">ChefFlow</span>
           </Link>
 
           {/* Desktop nav */}
@@ -252,8 +249,8 @@ export function PublicHeader({ user }: { user?: PublicHeaderUser | null }) {
                   analyticsProps={{ section: 'public_header' }}
                   className={`rounded-lg px-3 py-2 text-sm font-medium transition-colors ${
                     active
-                      ? 'bg-brand-950 text-brand-400'
-                      : 'text-stone-400 hover:bg-[#2a1a10]/60 hover:text-stone-200'
+                      ? 'bg-stone-800 text-stone-100'
+                      : 'text-stone-400 hover:bg-stone-800 hover:text-stone-200'
                   }`}
                 >
                   {item.label}
@@ -265,10 +262,6 @@ export function PublicHeader({ user }: { user?: PublicHeaderUser | null }) {
 
         {/* Desktop actions */}
         <div className="hidden items-center gap-2 md:flex">
-          <ThemeToggle
-            className="h-10 w-10 rounded-lg text-stone-300 hover:bg-[#2a1a10]/50 hover:text-stone-100 dark:text-stone-300"
-            dataTestId="public-theme-toggle"
-          />
           {user ? (
             <AuthUserDropdown user={user} />
           ) : (
@@ -277,7 +270,7 @@ export function PublicHeader({ user }: { user?: PublicHeaderUser | null }) {
                 href="/auth/signin"
                 analyticsName="header_signin"
                 analyticsProps={{ section: 'public_header' }}
-                className="inline-flex h-10 items-center justify-center rounded-lg bg-transparent px-3 text-sm font-medium text-stone-300 transition-colors hover:bg-[#2a1a10]/50 hover:text-stone-100"
+                className="inline-flex h-10 items-center justify-center rounded-lg bg-transparent px-3 text-sm font-medium text-stone-300 transition-colors hover:bg-stone-800 hover:text-stone-100"
               >
                 Sign In
               </TrackedLink>
@@ -295,23 +288,21 @@ export function PublicHeader({ user }: { user?: PublicHeaderUser | null }) {
 
         {/* Mobile actions */}
         <div className="flex items-center gap-2 md:hidden">
-          <ThemeToggle
-            className="h-10 w-10 rounded-xl text-stone-300 hover:bg-[#2a1a10]/50 hover:text-stone-100"
-            dataTestId="public-mobile-theme-toggle"
-          />
           <TrackedLink
             href={PUBLIC_PRIMARY_CONSUMER_CTA.href}
             analyticsName="header_mobile_book_a_chef_quick"
             analyticsProps={{ section: 'public_header_mobile' }}
-            className="inline-flex min-h-[40px] items-center justify-center rounded-xl border border-brand-700/50 bg-brand-950/50 px-2.5 text-[11px] font-semibold uppercase tracking-[0.12em] text-brand-200 touch-manipulation"
+            className="inline-flex min-h-[44px] items-center justify-center rounded-xl border border-stone-700 bg-stone-900 px-2.5 text-[11px] font-semibold uppercase tracking-[0.12em] text-stone-100 touch-manipulation"
           >
             Book
           </TrackedLink>
           <button
             type="button"
             onClick={() => setMobileMenuOpen((open) => !open)}
-            className="flex h-10 w-10 items-center justify-center rounded-xl text-stone-300 hover:bg-[#2a1a10]/50 hover:text-stone-100 touch-manipulation"
+            className="flex h-11 w-11 items-center justify-center rounded-xl text-stone-300 hover:bg-stone-800 hover:text-stone-100 touch-manipulation"
             aria-label="Toggle menu"
+            aria-expanded={mobileMenuOpen}
+            aria-controls="public-mobile-menu"
           >
             {mobileMenuOpen ? <X className="h-5 w-5" /> : <Menu className="h-5 w-5" />}
           </button>
@@ -320,7 +311,10 @@ export function PublicHeader({ user }: { user?: PublicHeaderUser | null }) {
 
       {/* Mobile menu */}
       {mobileMenuOpen && (
-        <div className="border-t border-[#4a3020]/30 bg-[#1a110c]/95 backdrop-blur-2xl md:hidden">
+        <div
+          id="public-mobile-menu"
+          className="border-t border-stone-700 bg-stone-950 backdrop-blur-2xl md:hidden"
+        >
           <div className="mx-auto max-w-6xl space-y-1 px-4 py-3 sm:px-6 lg:px-8">
             {PUBLIC_NAV.map((entry) => {
               if (isGroup(entry)) {
@@ -339,8 +333,8 @@ export function PublicHeader({ user }: { user?: PublicHeaderUser | null }) {
                           analyticsProps={{ section: 'public_header_mobile', group: entry.label }}
                           className={`block rounded-lg px-3 py-2 text-sm font-medium ${
                             active
-                              ? 'bg-brand-950 text-brand-400'
-                              : 'text-stone-300 hover:bg-[#2a1a10]/60'
+                              ? 'bg-stone-800 text-stone-100'
+                              : 'text-stone-300 hover:bg-stone-800'
                           }`}
                           onClick={() => setMobileMenuOpen(false)}
                         >
@@ -360,7 +354,7 @@ export function PublicHeader({ user }: { user?: PublicHeaderUser | null }) {
                   analyticsName={`header_mobile_nav_${item.label.toLowerCase().replace(/\s+/g, '_')}`}
                   analyticsProps={{ section: 'public_header_mobile' }}
                   className={`block rounded-lg px-3 py-2 text-sm font-medium ${
-                    active ? 'bg-brand-950 text-brand-400' : 'text-stone-300 hover:bg-[#2a1a10]/60'
+                    active ? 'bg-stone-800 text-stone-100' : 'text-stone-300 hover:bg-stone-800'
                   }`}
                   onClick={() => setMobileMenuOpen(false)}
                 >
@@ -392,7 +386,7 @@ export function PublicHeader({ user }: { user?: PublicHeaderUser | null }) {
                     }
                     window.location.href = '/'
                   }}
-                  className="inline-flex h-10 items-center justify-center rounded-lg border border-[#4a3020]/40 bg-[#1a110c] px-3 text-sm font-medium text-stone-300 transition-colors hover:bg-[#2a1a10]/60 hover:text-stone-100"
+                  className="inline-flex h-10 items-center justify-center rounded-lg border border-stone-700 bg-stone-950 px-3 text-sm font-medium text-stone-300 transition-colors hover:bg-stone-800 hover:text-stone-100"
                 >
                   Sign out
                 </button>
@@ -401,7 +395,7 @@ export function PublicHeader({ user }: { user?: PublicHeaderUser | null }) {
               <>
                 <TrackedLink
                   href="/auth/signin"
-                  className="inline-flex h-10 flex-1 items-center justify-center rounded-lg border border-[#4a3020]/40 bg-[#1a110c] px-3 text-sm font-medium text-stone-300 transition-colors hover:bg-[#2a1a10]/60 hover:text-stone-100"
+                  className="inline-flex h-10 flex-1 items-center justify-center rounded-lg border border-stone-700 bg-stone-950 px-3 text-sm font-medium text-stone-300 transition-colors hover:bg-stone-800 hover:text-stone-100"
                   analyticsName="header_mobile_signin"
                   analyticsProps={{ section: 'public_header_mobile' }}
                   onClick={() => setMobileMenuOpen(false)}

@@ -58,6 +58,8 @@ export const API_AUTH_ALTERNATIVE_PATTERNS = [
 ] as const
 
 export const API_NO_STANDARD_AUTH_ALLOWLIST_EXTRAS = [
+  // Guest capability link: database token lookup plus expiry before guest access.
+  'dietary-confirm/[token]',
   'activity',
   'availability/ical',
   'admin',

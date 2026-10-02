@@ -43,25 +43,23 @@ function PrimaryAction({ item }: { item: QueueItem }) {
   return (
     <section
       aria-labelledby="do-this-now"
-      className="rounded-2xl bg-[var(--text-primary)] px-5 py-5 text-[var(--text-inverse)] shadow-sm sm:px-6 sm:py-6"
+      className="rounded-2xl border border-stone-700 bg-stone-950 px-5 py-5 text-stone-100 shadow-sm sm:px-6 sm:py-6"
     >
       <p
         id="do-this-now"
-        className="text-xs font-semibold uppercase tracking-[0.18em] text-brand-300"
+        className="text-xs font-semibold uppercase tracking-[0.18em] text-stone-400"
       >
-        Do this now
+        Your next step
       </p>
       <h1 className="mt-2 text-2xl font-semibold leading-tight sm:text-3xl">{item.title}</h1>
-      {detail ? (
-        <p className="mt-2 text-sm text-[var(--text-inverse)] opacity-75">{detail}</p>
-      ) : null}
-      <p className="mt-3 max-w-2xl text-sm leading-6 text-[var(--text-inverse)] opacity-85">
+      {detail ? <p className="mt-2 text-sm text-stone-300 opacity-75">{detail}</p> : null}
+      <p className="mt-3 max-w-2xl text-sm leading-6 text-stone-300 opacity-85">
         {item.description}
       </p>
       <div className="mt-5 flex flex-wrap items-center gap-3">
         <Link
           href={item.href}
-          className="inline-flex min-h-11 items-center justify-center rounded-xl bg-brand-500 px-5 py-2.5 text-sm font-semibold text-white transition-colors hover:bg-brand-400 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-200"
+          className="inline-flex min-h-11 items-center justify-center rounded-xl bg-[var(--action-bg)] px-5 py-2.5 text-sm font-semibold text-[var(--action-fg)] transition-colors hover:bg-[var(--action-hover)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-600"
         >
           Start
         </Link>
@@ -75,17 +73,17 @@ function PrimaryAction({ item }: { item: QueueItem }) {
 
 function QueueUnavailable() {
   return (
-    <section className="rounded-2xl border border-amber-300 bg-amber-50 px-5 py-5 text-stone-900">
+    <section className="rounded-2xl border border-amber-300 bg-amber-50 px-5 py-5 text-amber-950">
       <p className="text-xs font-semibold uppercase tracking-[0.18em] text-amber-800">
         Priorities unavailable
       </p>
-      <h1 className="mt-2 text-xl font-semibold">I could not read what needs you next.</h1>
-      <p className="mt-2 text-sm leading-6 text-stone-700">
-        Nothing was marked clear. Refresh to try the priority check again.
+      <h1 className="mt-2 text-xl font-semibold">Your priorities could not load.</h1>
+      <p className="mt-2 text-sm leading-6 text-amber-900">
+        Refresh to check your priorities again.
       </p>
       <a
         href="/dashboard"
-        className="mt-4 inline-flex min-h-11 items-center justify-center rounded-xl bg-[var(--text-primary)] px-4 py-2 text-sm font-semibold text-[var(--text-inverse)]"
+        className="mt-4 inline-flex min-h-11 items-center justify-center rounded-xl bg-[var(--action-bg)] px-4 py-2 text-sm font-semibold text-[var(--action-fg)]"
       >
         Try again
       </a>
@@ -95,13 +93,13 @@ function QueueUnavailable() {
 
 function CaughtUp() {
   return (
-    <section className="rounded-2xl border border-emerald-200 bg-emerald-50 px-5 py-5 text-stone-900">
+    <section className="rounded-2xl border border-emerald-200 bg-emerald-50 px-5 py-5 text-emerald-950">
       <p className="text-xs font-semibold uppercase tracking-[0.18em] text-emerald-800">
-        Do this now
+        Your next step
       </p>
-      <h1 className="mt-2 text-xl font-semibold">Nothing needs you right now.</h1>
-      <p className="mt-2 text-sm text-stone-700">
-        You are caught up. Chef Flow is not adding busywork.
+      <h1 className="mt-2 text-xl font-semibold">You’re all caught up.</h1>
+      <p className="mt-2 text-sm text-emerald-800">
+        Take a breath. Your next dinner is below when you need it.
       </p>
     </section>
   )
@@ -178,7 +176,7 @@ function NextDinner({ state }: { state: LoadState<MobileChefDashboardData> }) {
           </p>
           <p
             className={`text-xs font-semibold ${
-              readyCount === readinessItems.length ? 'text-emerald-400' : 'text-amber-400'
+              readyCount === readinessItems.length ? 'text-emerald-800' : 'text-amber-800'
             }`}
           >
             {readyCount}/{readinessItems.length} ready
@@ -192,7 +190,7 @@ function NextDinner({ state }: { state: LoadState<MobileChefDashboardData> }) {
               aria-label={`${label}: ${ready ? 'ready' : 'needs attention'}`}
               className={`inline-flex min-h-9 items-center justify-between gap-2 rounded-lg border px-3 py-2 text-xs font-medium transition-colors hover:border-brand-700 hover:text-brand-300 ${
                 ready
-                  ? 'border-emerald-900/70 bg-emerald-950/40 text-emerald-300'
+                  ? 'border-emerald-200 bg-emerald-50 text-emerald-800'
                   : 'border-stone-700 bg-stone-950/60 text-stone-300'
               }`}
             >
@@ -286,10 +284,10 @@ export default async function ChefDashboard() {
   return (
     <div
       data-surface-mode="triage"
-      className="mx-auto w-full max-w-3xl space-y-4 px-3 py-3 sm:space-y-5 sm:px-5 sm:py-5"
+      className="mx-auto w-full max-w-4xl space-y-5 px-4 py-6 sm:space-y-6 sm:px-6 sm:py-8"
     >
-      <header className="flex items-baseline justify-between gap-4 px-1">
-        <p className="text-lg font-semibold text-stone-50">Today</p>
+      <header className="flex flex-wrap items-baseline justify-between gap-2 px-1">
+        <p className="text-2xl font-semibold tracking-tight text-stone-50">Today</p>
         <p className="text-sm text-stone-300">{today}</p>
       </header>
 

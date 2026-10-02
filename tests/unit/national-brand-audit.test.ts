@@ -107,3 +107,15 @@ test('shared neutral examples stay clear of forbidden regional terms', () => {
 
   assert.equal(findings.length, 0)
 })
+
+test('regional business copy stays scoped to the DFPC brand surface', () => {
+  const content = 'const title = "Private Chef Services in New England"'
+  assert.equal(
+    scanNationalBrandAuditContent({ relativePath: 'app/dfpc/page.tsx', content }).length,
+    0
+  )
+  assert.deepEqual(
+    findingIds(scanNationalBrandAuditContent({ relativePath: 'app/(public)/page.tsx', content })),
+    ['new-england']
+  )
+})

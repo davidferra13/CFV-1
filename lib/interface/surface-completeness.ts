@@ -424,8 +424,11 @@ const SURFACE_MODE_CONTRACT_EXPECTATIONS: SurfaceModeContractExpectation[] = [
     role: 'partner',
   },
 ]
+// Web beta now reuses canonical layouts; the retired overlay shell is not built.
 const BUILD_SURFACE_MODE_SHELL_PATHS = [
-  'build-surfaces/web-beta/app/_components/release-portal-shell.tsx',
+  { path: 'app/(public)/layout.tsx', portal: 'public' },
+  { path: 'app/(chef)/layout.tsx', portal: 'chef' },
+  { path: 'app/(client)/layout.tsx', portal: 'client' },
 ]
 
 const SYSTEM_AUDIT_ENTRYPOINT_DEFINITIONS: SystemAuditEntrypointDefinition[] = [
@@ -1156,7 +1159,7 @@ function runSurfaceModeDeclarationCheck(): SurfaceCompletenessCheckResult {
     }
   }
 
-  for (const relativePath of BUILD_SURFACE_MODE_SHELL_PATHS) {
+  for (const { path: relativePath, portal } of BUILD_SURFACE_MODE_SHELL_PATHS) {
     const absolutePath = path.join(process.cwd(), relativePath)
     const source = readSourceFileIfExists(absolutePath)
 
@@ -1171,10 +1174,7 @@ function runSurfaceModeDeclarationCheck(): SurfaceCompletenessCheckResult {
       continue
     }
 
-    if (
-      !source.includes('data-cf-portal={portal}') ||
-      !source.includes('data-cf-surface={surfaceMode}')
-    ) {
+    if (!source.includes(`data-cf-portal="${portal}"`) || !source.includes('data-cf-surface=')) {
       missingBuildSurfaceShellMarkers += 1
       findings.push({
         checkId: 'surface-mode-declaration',

@@ -1,13 +1,13 @@
 /**
  * ChefFlow Color Palette System
  *
- * 8 palettes, each following the same 6-swatch identity structure:
+ * Curated palettes, each following the same 6-swatch identity structure:
  *   Deep / Hero / Soft / Anchor / Foundation / Text
  *
  * All color values stored as space-separated RGB channels ("237 168 107")
  * so Tailwind's opacity modifier syntax works: bg-brand-500/20
  *
- * Default palette: Copper and Cast Iron (the brand identity)
+ * Default palette: Garden & Linen. Explicitly chosen color palettes remain available.
  */
 
 export interface ColorPalette {
@@ -40,8 +40,60 @@ export interface ColorPalette {
 }
 
 export const PALETTES: ColorPalette[] = [
+  {
+    id: 'garden',
+    name: 'Garden & Linen',
+    description: 'Warm ivory, fresh greens, and a welcoming place for good food.',
+    colors: {
+      '50': '244 248 239',
+      '100': '232 240 222',
+      '200': '205 221 189',
+      '300': '86 113 90',
+      '400': '66 102 74',
+      '500': '66 102 74',
+      '600': '53 88 61',
+      '700': '43 72 50',
+      '800': '35 58 41',
+      '900': '28 46 33',
+      '950': '21 35 25',
+    },
+    swatches: {
+      deep: '#2b4832',
+      hero: '#42664a',
+      soft: '#e8f0de',
+      anchor: '#283027',
+      foundation: '#fffdf8',
+      text: '#30382f',
+    },
+  },
+  {
+    id: 'graphite',
+    name: 'Graphite',
+    description: 'Clean white surfaces and crisp charcoal. Let the food bring the color.',
+    colors: {
+      50: '250 250 250',
+      100: '244 244 245',
+      200: '228 228 231',
+      300: '113 113 122',
+      400: '82 82 91',
+      500: '82 82 91',
+      600: '63 63 70',
+      700: '39 39 42',
+      800: '24 24 27',
+      900: '15 15 18',
+      950: '9 9 11',
+    },
+    swatches: {
+      deep: '#27272a',
+      hero: '#52525b',
+      soft: '#e4e4e7',
+      anchor: '#18181b',
+      foundation: '#ffffff',
+      text: '#27272a',
+    },
+  },
   // ──────────────────────────────────────────────
-  // 1. Copper and Cast Iron (DEFAULT)
+  // 1. Copper and Cast Iron
   // ──────────────────────────────────────────────
   {
     id: 'copper',
@@ -281,7 +333,7 @@ export const PALETTES: ColorPalette[] = [
   },
 ]
 
-export const DEFAULT_PALETTE_ID = 'copper'
+export const DEFAULT_PALETTE_ID = 'garden'
 
 export function getPaletteById(id: string): ColorPalette {
   return PALETTES.find((p) => p.id === id) ?? PALETTES[0]

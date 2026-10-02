@@ -72,6 +72,8 @@ type PlannerCheckResult = {
   planSummary: string[]
   relationNames: string[]
   usedIndexes: string[]
+  indexEligibilityVerified?: boolean
+  relationBytes?: Record<string, number>
 }
 
 type RuntimeInvariantResult = {
@@ -341,6 +343,8 @@ export async function validateMigrationRollback(filePath: string, rootDir = proc
   try {
     await sqlClient.begin(async (sql: any) => {
       await sql.unsafe('SET LOCAL search_path = public, openclaw, extensions')
+      await sql.unsafe("SET LOCAL lock_timeout = '3s'")
+      await sql.unsafe("SET LOCAL statement_timeout = '30s'")
       await sql.unsafe(sqlText)
       throw rollbackSignal
     })
@@ -369,12 +373,17 @@ export async function validateMigrationRollback(filePath: string, rootDir = proc
   }
 }
 
-async function explainQuery(sqlText: string, params: Array<string | number>) {
+async function explainQuery(
+  sqlText: string,
+  params: Array<string | number>,
+  verifyIndexEligibility = false
+) {
   const sqlClient = await createQuietSqlClient()
 
   try {
     const rows = (await sqlClient.begin(async (sql: any) => {
       await sql.unsafe('SET LOCAL search_path = public, openclaw, extensions')
+      if (verifyIndexEligibility) await sql.unsafe('SET LOCAL enable_seqscan = off')
       return sql.unsafe(`EXPLAIN (FORMAT JSON) ${sqlText}`, params)
     })) as Array<{ 'QUERY PLAN'?: unknown }>
     const rawPlan = rows[0]?.['QUERY PLAN']
@@ -397,6 +406,34 @@ async function explainQuery(sqlText: string, params: Array<string | number>) {
   }
 }
 
+// Small-table sequential scans are valid only with a usable required index and a bounded heap.
+// Keep normal planner evidence; never change the application's planner settings.
+export function acceptsBoundedSmallTablePlan(
+  expected: readonly string[],
+  eligible: readonly string[],
+  sizes: Record<string, number>
+) {
+  return (
+    expected.every((name) => eligible.includes(name)) &&
+    Object.keys(sizes).length > 0 &&
+    Object.values(sizes).every(
+      (bytes) => Number.isFinite(bytes) && bytes >= 0 && bytes <= 256 * 1024
+    )
+  )
+}
+async function relationSizes(relations: readonly string[]) {
+  const client = await createQuietSqlClient()
+  try {
+    const sizes: Record<string, number> = {}
+    for (const relation of relations) {
+      const rows = await client.unsafe('SELECT pg_relation_size($1::regclass) AS bytes', [relation])
+      sizes[relation] = Number(rows[0]?.bytes)
+    }
+    return sizes
+  } finally {
+    await client.end({ timeout: 1 })
+  }
+}
 export async function runPlannerChecks(): Promise<PlannerCheckResult[]> {
   const discoverableStatusSql = DIRECTORY_DISCOVERABLE_STATUSES.map((status) => `'${status}'`).join(
     ', '
@@ -422,18 +459,21 @@ export async function runPlannerChecks(): Promise<PlannerCheckResult[]> {
   const plannerSpecs = [
     {
       id: 'directory-state-browse',
+      relations: ['public.directory_listings'],
       sqlText: canonicalStateQuery,
       params: ['CA'],
       expectedIndexes: ['idx_directory_listings_canonical_state'],
     },
     {
       id: 'directory-geo-radius',
+      relations: ['public.directory_listings'],
       sqlText: directoryGeoQuery,
       params: ['CA', 33.5, 35.0, -119.5, -117.0],
       expectedIndexes: ['idx_directory_listings_geo'],
     },
     {
       id: 'discoverable-chefs',
+      relations: ['public.chefs', 'public.chef_preferences'],
       sqlText: `SELECT c.id
         FROM public.chefs c
         JOIN public.chef_preferences cp
@@ -448,6 +488,7 @@ export async function runPlannerChecks(): Promise<PlannerCheckResult[]> {
     },
     {
       id: 'canonical-ingredient-trigram',
+      relations: ['openclaw.canonical_ingredients'],
       sqlText: `SELECT ingredient_id
         FROM openclaw.canonical_ingredients
         WHERE name % $1
@@ -458,6 +499,7 @@ export async function runPlannerChecks(): Promise<PlannerCheckResult[]> {
     },
     {
       id: 'ingredient-knowledge-trigram',
+      relations: ['public.system_ingredients'],
       sqlText: `SELECT si.id
         FROM public.system_ingredients si
         WHERE si.name % $1
@@ -472,12 +514,29 @@ export async function runPlannerChecks(): Promise<PlannerCheckResult[]> {
   for (const spec of plannerSpecs) {
     try {
       const explained = await explainQuery(spec.sqlText, spec.params)
+      const naturalIndexPlan = spec.expectedIndexes.every((name) =>
+        explained.usedIndexes.includes(name)
+      )
+      const sizes = naturalIndexPlan ? {} : await relationSizes(spec.relations)
+      const eligible = naturalIndexPlan
+        ? explained
+        : await explainQuery(spec.sqlText, spec.params, true)
+      const boundedPlan =
+        !naturalIndexPlan &&
+        acceptsBoundedSmallTablePlan(spec.expectedIndexes, eligible.usedIndexes, sizes)
       results.push({
         expectedIndexes: [...spec.expectedIndexes],
         id: spec.id,
         nodeTypes: explained.nodeTypes,
-        ok: spec.expectedIndexes.every((indexName) => explained.usedIndexes.includes(indexName)),
+        ok: naturalIndexPlan || boundedPlan,
+        indexEligibilityVerified: spec.expectedIndexes.every((name) =>
+          eligible.usedIndexes.includes(name)
+        ),
+        relationBytes: sizes,
         planSummary: [
+          ...(boundedPlan
+            ? ['bounded small-table plan; required index eligibility separately verified']
+            : []),
           `nodes=${explained.nodeTypes.join(', ') || 'none'}`,
           `indexes=${explained.usedIndexes.join(', ') || 'none'}`,
           `relations=${explained.relationNames.join(', ') || 'none'}`,

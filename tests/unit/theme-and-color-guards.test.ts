@@ -38,7 +38,7 @@ const BLUE_UTILITY_ALLOWLIST = new Set([
 ])
 const BLUE_UTILITY_PATTERN = /[A-Za-z:-]*(?:blue|sky|cyan|indigo)-[0-9]{2,3}(?:\/[0-9]{1,3})?/g
 
-test('theme defaults to light while preserving stored dark preference support', () => {
+test('theme is light-only even with a saved dark preference', () => {
   const tailwindConfig = read('tailwind.config.ts')
   const rootLayout = read('app/layout.tsx')
   const themeProvider = read('components/ui/app-theme-provider.tsx')
@@ -50,18 +50,18 @@ test('theme defaults to light while preserving stored dark preference support', 
   assert.match(tailwindConfig, /darkMode:\s*'class'/)
   assert.match(rootLayout, /<AppThemeProvider>/)
   assert.match(themeProvider, /defaultTheme="light"/)
-  assert.doesNotMatch(themeProvider, /forcedTheme=/)
+  assert.match(themeProvider, /forcedTheme="light"/)
   assert.match(themeProvider, /enableSystem=\{false\}/)
   assert.match(themeProvider, /storageKey="chefflow-theme"/)
   assert.match(paletteProvider, /PALETTE_STORAGE_KEY/)
   assert.match(colorPalettes, /PALETTE_STORAGE_KEY\s*=\s*'chefflow-palette'/)
   assert.match(globals, /:root\s*\{/)
-  assert.match(globals, /\.dark\s*\{/)
+  assert.doesNotMatch(globals, /color-scheme:\s*dark/)
   assert.doesNotMatch(globals, /html\.dark\s*\{/)
   assert.doesNotMatch(chefLayout, /ThemeProvider/)
 })
 
-test('ThemeToggle is restored to the public header without coupling palette selection', () => {
+test('public and signed-in navigation do not offer dark mode', () => {
   const authLayout = read('app/auth/layout.tsx')
   const publicHeader = read('components/navigation/public-header.tsx')
   const clientNav = read('components/navigation/client-nav.tsx')
@@ -70,8 +70,8 @@ test('ThemeToggle is restored to the public header without coupling palette sele
   const staffNav = read('components/staff/staff-nav.tsx')
 
   assert.doesNotMatch(authLayout, /ThemeToggle/)
-  assert.match(publicHeader, /ThemeToggle/)
-  assert.match(publicHeader, /public-theme-toggle/)
+  assert.doesNotMatch(publicHeader, /ThemeToggle/)
+  assert.doesNotMatch(publicHeader, /public-theme-toggle/)
   assert.doesNotMatch(clientNav, /ThemeToggle/)
   assert.doesNotMatch(chefNav, /ThemeToggle/)
   assert.doesNotMatch(chefMobileNav, /ThemeToggle/)

@@ -40,7 +40,7 @@ export const STATUS_BADGE_CONTRAST_CLASSES: Record<ContrastTone, string> = {
 
 export const CTA_CONTRAST_CLASSES = {
   primary:
-    'bg-brand-700 text-white hover:bg-brand-800 active:bg-brand-900 focus-visible:ring-brand-500 shadow-sm hover:shadow-md',
+    'bg-[var(--action-bg)] text-[var(--action-fg)] hover:bg-[var(--action-hover)] focus-visible:ring-brand-500 shadow-sm',
   secondary:
     'bg-[var(--surface-2)] text-stone-100 border border-stone-600/80 hover:bg-[var(--surface-3)] hover:text-stone-50 hover:border-stone-500 active:bg-[var(--surface-4)] focus-visible:ring-stone-400 shadow-sm hover:shadow-md',
   danger:
