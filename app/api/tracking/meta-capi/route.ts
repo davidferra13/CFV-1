@@ -1,7 +1,15 @@
 import { NextRequest, NextResponse } from 'next/server'
+import { requireAdmin } from '@/lib/auth/admin'
 import { sendConversionEvent, type CAPIEvent } from '@/lib/tracking/meta-capi'
 
 export async function POST(request: NextRequest) {
+  // This server-side conversion relay has no public browser callers.
+  // Restrict privileged Meta event submission to platform administrators.
+  try {
+    await requireAdmin()
+  } catch {
+    return NextResponse.json({ error: 'Forbidden' }, { status: 403 })
+  }
   try {
     const body = await request.json()
 

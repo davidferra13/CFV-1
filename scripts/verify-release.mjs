@@ -21,17 +21,12 @@ const {
   evaluateReleaseGateWarnings,
   getReleaseGateManifest,
 } = releaseGateManifestModule
-const {
-  RELEASE_ATTESTATION_CONTRACT_VERSION,
-  getCurrentGitSnapshot,
-  writeReleaseAttestation,
-} = releaseAttestationModule
+const { RELEASE_ATTESTATION_CONTRACT_VERSION, getCurrentGitSnapshot, writeReleaseAttestation } =
+  releaseAttestationModule
 
 const RELEASE_GATE_MANIFEST = getReleaseGateManifest()
 
-export const SUPPORTED_RELEASE_PROFILES = Object.freeze(
-  Object.keys(RELEASE_GATE_MANIFEST.profiles)
-)
+export const SUPPORTED_RELEASE_PROFILES = Object.freeze(Object.keys(RELEASE_GATE_MANIFEST.profiles))
 
 function npmCommand() {
   return process.platform === 'win32' ? 'npm.cmd' : 'npm'
@@ -202,7 +197,11 @@ export function buildReleaseStepCatalog(context = buildReleaseProfileContext()) 
 
   return {
     'verify:secrets': buildScriptStep('verify:secrets', 'verify:secrets', sharedStepEnv),
-    'audit:capabilities:gate': buildScriptStep('audit:capabilities:gate', 'audit:capabilities:gate', sharedStepEnv),
+    'audit:capabilities:gate': buildScriptStep(
+      'audit:capabilities:gate',
+      'audit:capabilities:gate',
+      sharedStepEnv
+    ),
     'audit:completeness:json': buildScriptStep(
       'audit:completeness:json',
       'audit:completeness:json',
@@ -252,10 +251,13 @@ export function buildReleaseProfiles(context = buildReleaseProfileContext()) {
         )
       }
 
+      const executableStep = stepManifest.machineReadable
+        ? { ...resolvedStep, args: ['--silent', ...resolvedStep.args] }
+        : resolvedStep
       return {
-        ...resolvedStep,
+        ...executableStep,
         classification: stepManifest.classification,
-        command: toStepCommand(resolvedStep),
+        command: toStepCommand(executableStep),
         gateSeverity: stepManifest.gateSeverity,
         machineReadable: Boolean(stepManifest.machineReadable),
         warningPolicyIds: [...(stepManifest.warningPolicyIds ?? [])],
@@ -344,7 +346,7 @@ function parseMachineReadableStepOutput(step, output) {
   }
 }
 
-function evaluateStepExecution(step, executionResult) {
+export function evaluateStepExecution(step, executionResult) {
   const findings = evaluateReleaseGateWarnings(
     executionResult.output,
     step.warningPolicyIds ?? []
@@ -360,7 +362,10 @@ function evaluateStepExecution(step, executionResult) {
     })
   )
 
-  const machineReadableResult = parseMachineReadableStepOutput(step, executionResult.output)
+  const machineReadableResult = parseMachineReadableStepOutput(
+    step,
+    executionResult.stdout ?? executionResult.output
+  )
   if (machineReadableResult.finding) {
     findings.push(machineReadableResult.finding)
   }
@@ -464,8 +469,24 @@ export function buildReleaseReport({
   }
 }
 
+export function resolveStepInvocation(step, env = process.env) {
+  // Only the DB contract audit receives the established DB environment.
+  // Never propagate production credentials to unit or browser tests.
+  if (step.name === 'audit:db:contract:json' && env.CF_VERIFY_DB_ENV_FILE) {
+    return {
+      command: process.execPath,
+      args: [
+        '--env-file=' + env.CF_VERIFY_DB_ENV_FILE,
+        '--import',
+        'tsx',
+        'scripts/audit-db-contract.ts',
+      ],
+    }
+  }
+  return { command: npmCommand(), args: step.args }
+}
 function executeStepAttempt(step) {
-  const command = npmCommand()
+  const { command, args } = resolveStepInvocation(step)
   const startedAt = new Date().toISOString()
 
   return new Promise((resolve) => {
@@ -473,7 +494,7 @@ function executeStepAttempt(step) {
     const stderrChunks = []
     let settled = false
 
-    const child = spawn(command, step.args, {
+    const child = spawn(command, args, {
       stdio: ['ignore', 'pipe', 'pipe'],
       // Windows requires a shell for the npm.cmd shim; native executables stay direct.
       shell: process.platform === 'win32' && command.endsWith('.cmd'),
@@ -489,11 +510,13 @@ function executeStepAttempt(step) {
       const output = [...stdoutChunks, ...stderrChunks].join('')
       const completedAt = new Date().toISOString()
       resolve({
-        command: `${command} ${step.args.join(' ')}`,
+        command: `${command} ${args.join(' ')}`,
         completedAt,
         durationMs: Date.parse(completedAt) - Date.parse(startedAt),
         ...payload,
         output,
+        stdout: stdoutChunks.join(''),
+        stderr: stderrChunks.join(''),
         outputSummary: summarizeOutput(output),
         startedAt,
       })
@@ -519,7 +542,7 @@ function executeStepAttempt(step) {
       })
     })
 
-    child.on('exit', (code) => {
+    child.on('close', (code) => {
       finalize({
         errorMessage: code === 0 ? null : null,
         exitCode: typeof code === 'number' ? code : null,
@@ -675,7 +698,10 @@ function isDirectExecution() {
 
 if (isDirectExecution()) {
   main().catch((error) => {
-    console.error('[verify:release] FAILED:', error instanceof Error ? error.message : String(error))
+    console.error(
+      '[verify:release] FAILED:',
+      error instanceof Error ? error.message : String(error)
+    )
     process.exitCode = 1
   })
 }

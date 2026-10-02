@@ -4,9 +4,11 @@ import { spawn } from 'node:child_process'
 import { readFile } from 'node:fs/promises'
 import { dirname, join, resolve } from 'node:path'
 import { fileURLToPath } from 'node:url'
+import { resolveVerificationPort } from './verification-runtime-target.mjs'
 
 const ROOT = resolve(dirname(fileURLToPath(import.meta.url)), '..')
 const isWin = process.platform === 'win32'
+const verificationPort = resolveVerificationPort(process.env.CF_VERIFY_PORT)
 
 function parseArgs(argv) {
   return {
@@ -145,7 +147,7 @@ async function probeRoute(route, timeoutMs) {
   const controller = new AbortController()
   const timer = setTimeout(() => controller.abort(), timeoutMs)
   const started = Date.now()
-  const url = `http://localhost:3100${route}`
+  const url = `http://localhost:${verificationPort}${route}`
   try {
     const response = await fetch(url, {
       signal: controller.signal,
@@ -278,7 +280,8 @@ async function main() {
 
   results.push(
     await runStep('persona completion gate', nodeCommand(), ['devtools/persona-completion-gate.mjs'], {
-      timeoutMs: 360_000,
+      // Up to four persona evaluations, each with two bounded 90s attempts.
+      timeoutMs: 780_000,
     })
   )
 

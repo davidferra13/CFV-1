@@ -2,6 +2,10 @@
 // This is the single source of truth for public/protected route matching.
 
 export const CHEF_PROTECTED_PATHS = [
+  '/business/ops',
+  '/reference/dietary-conditions',
+  '/reference/food-safety',
+  '/series',
   '/aar',
   '/activity',
   '/analytics',

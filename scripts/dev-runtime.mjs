@@ -6,13 +6,14 @@ import { mkdir, readFile, writeFile } from 'node:fs/promises'
 import { dirname, join, resolve } from 'node:path'
 import { fileURLToPath } from 'node:url'
 import { promisify } from 'node:util'
+import { resolveVerificationPort, assertReadOnlyVerificationCommand } from './verification-runtime-target.mjs'
 
 const execFileAsync = promisify(execFile)
 const __dirname = dirname(fileURLToPath(import.meta.url))
 const PROJECT_ROOT = resolve(__dirname, '..')
 const TMP_DIR = join(PROJECT_ROOT, '.agents', 'tmp')
 const SNAPSHOT_FILE = join(TMP_DIR, 'dev-runtime-snapshot.json')
-const CANONICAL_PORT = 3100
+const CANONICAL_PORT = resolveVerificationPort(process.env.CF_VERIFY_PORT)
 const CANONICAL_URL = `http://localhost:${CANONICAL_PORT}`
 const HEALTH_URL = `${CANONICAL_URL}/api/health`
 const START_TIMEOUT_MS = 60_000
@@ -414,7 +415,7 @@ async function assertRuntime(args) {
   await writeSnapshot(data)
   const allowIsolated = Boolean(args['allow-isolated'])
   const failures = []
-  if (!data.canonicalRunning) failures.push('canonical server is not running on port 3100')
+  if (!data.canonicalRunning) failures.push(`expected checkout is not running on port ${CANONICAL_PORT}`)
   if (!data.canonicalHealthy) failures.push(`canonical health failed: ${data.canonicalHealth.error || data.canonicalHealth.status}`)
   if (data.duplicates.length > 0 && !allowIsolated) {
     failures.push(`duplicate ChefFlow dev runtimes detected: ${data.duplicates.map((runtime) => `${runtime.pid}:${runtime.port || 'no-port'}`).join(', ')}`)
@@ -424,6 +425,7 @@ async function assertRuntime(args) {
 
 async function main() {
   const [command = 'status', ...rest] = process.argv.slice(2)
+  assertReadOnlyVerificationCommand(CANONICAL_PORT, command)
   const args = parseArgs(rest)
   if (command === 'status' || command === 'snapshot') {
     const data = await snapshot(args)

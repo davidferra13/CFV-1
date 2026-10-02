@@ -47,6 +47,12 @@ export const NATIONAL_BRAND_AUDIT_RULES = [
 
 export const NATIONAL_BRAND_AUDIT_ALLOWLIST = [
   {
+    path: /^app\/dfpc\/(?:layout|page)\.tsx$/i,
+    ruleIds: ['new-england'],
+    reason:
+      'DF Private Chef is a separate regional business surface; its real service area is not ChefFlow marketplace positioning.',
+  },
+  {
     path: /^lib\/email-references\/deterministic-extractors\.ts$/i,
     ruleIds: ['cape-cod'],
     reason: 'Legitimate inbound-location parsing for real customer text.',

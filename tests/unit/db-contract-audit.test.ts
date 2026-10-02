@@ -55,3 +55,12 @@ test('auditRuntimeInvariants keeps the shared Postgres runtime and SQLite sideca
       .join('; ')
   )
 })
+
+test('small-table planner exception requires usable indexes and a bounded heap', async () => {
+  const { acceptsBoundedSmallTablePlan } = await import('../../scripts/audit-db-contract.ts')
+  assert.equal(acceptsBoundedSmallTablePlan(['required'], ['required'], { table: 16384 }), true)
+  assert.equal(acceptsBoundedSmallTablePlan(['required'], [], { table: 16384 }), false)
+  assert.equal(acceptsBoundedSmallTablePlan(['required'], ['required'], { table: 262145 }), false)
+  assert.equal(acceptsBoundedSmallTablePlan(['required'], ['required'], {}), false)
+  assert.equal(acceptsBoundedSmallTablePlan(['required'], ['required'], { table: NaN }), false)
+})
