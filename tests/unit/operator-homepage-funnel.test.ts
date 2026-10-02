@@ -7,17 +7,16 @@ function read(relativePath: string) {
   return readFileSync(join(process.cwd(), relativePath), 'utf8')
 }
 
-test('homepage keeps the operator proof path above the consumer marketplace branch', () => {
+test('inviting homepage connects discovery and planning while retaining the operator path', () => {
   const home = read('app/(public)/page.tsx')
-
-  assert.match(
-    home,
-    /Run private chef, catering, and meal prep work without spreadsheet patchwork\./
-  )
-  assert.match(home, /sourceCta: 'hero_operator_proof'/)
-  assert.match(home, /See operator proof/)
-  assert.match(home, /Request an operator walkthrough/)
-  assert.doesNotMatch(home, /Browse live chefs, then book the one that fits your table\./)
+  assert.match(home, /<Link href="\/eat" className={styles.primary}>/)
+  for (const destination of ['/eat', '/hub', '/find']) {
+    assert.ok(home.includes("href: '" + destination + "'"), destination + ' must remain reachable')
+    assert.ok(read('app/(public)' + destination + '/page.tsx').length > 0)
+  }
+  assert.match(home, /<Link href="\/for-operators"/)
+  assert.ok(read('app/(public)/for-operators/page.tsx').length > 0)
+  assert.doesNotMatch(home, /sourceCta: 'hero_operator_proof'/)
 })
 
 test('operator proof page makes the walkthrough the default qualified next step', () => {
