@@ -357,19 +357,19 @@ const WORK_ITEM_CATEGORY_LABELS: Record<ClientWorkItem['category'], string> = {
 }
 
 const WORK_ITEM_CATEGORY_STYLES: Record<ClientWorkItem['category'], string> = {
-  event: 'border-amber-700/40 bg-amber-950/30 text-amber-300',
-  quote: 'border-sky-700/40 bg-sky-950/30 text-sky-300',
-  inquiry: 'border-indigo-700/40 bg-indigo-950/30 text-indigo-300',
+  event: 'border-amber-200 bg-amber-50 text-amber-800',
+  quote: 'border-sky-200 bg-sky-50 text-sky-800',
+  inquiry: 'border-indigo-200 bg-indigo-50 text-indigo-800',
   profile: 'border-stone-700 bg-stone-900/60 text-stone-300',
-  rsvp: 'border-emerald-700/40 bg-emerald-950/30 text-emerald-300',
-  hub: 'border-pink-700/40 bg-pink-950/30 text-pink-300',
-  notification: 'border-cyan-700/40 bg-cyan-950/30 text-cyan-300',
-  planning: 'border-violet-700/40 bg-violet-950/30 text-violet-300',
+  rsvp: 'border-emerald-200 bg-emerald-50 text-emerald-800',
+  hub: 'border-pink-200 bg-pink-50 text-pink-800',
+  notification: 'border-cyan-200 bg-cyan-50 text-cyan-800',
+  planning: 'border-violet-200 bg-violet-50 text-violet-800',
 }
 
 const WORK_ITEM_URGENCY_STYLES: Record<ClientWorkItem['urgency'], string> = {
-  high: 'border-red-700/40 bg-red-950/30 text-red-300',
-  medium: 'border-amber-700/40 bg-amber-950/30 text-amber-300',
+  high: 'border-red-200 bg-red-50 text-red-800',
+  medium: 'border-amber-200 bg-amber-50 text-amber-800',
   low: 'border-stone-700 bg-stone-900/60 text-stone-400',
 }
 
@@ -400,8 +400,8 @@ export default async function MyEventsPage() {
           <h1 className="text-3xl font-semibold tracking-tight text-stone-100">My Events</h1>
           <p className="text-stone-400 mt-1">Your upcoming and past events</p>
         </div>
-        <div className="rounded-xl border border-red-800/50 bg-red-950/30 p-6 text-center space-y-3">
-          <p className="text-sm text-red-400">
+        <div className="rounded-xl border border-red-200 bg-red-50 p-6 text-center space-y-3">
+          <p className="text-sm text-red-800">
             Could not load your dashboard. Your connection may have dropped.
           </p>
           <Link

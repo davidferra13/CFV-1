@@ -22,10 +22,10 @@ export function PublicFooter() {
       {/* Warm top border */}
       <div className="divider-warm" />
 
-      <div className="relative mx-auto w-full max-w-6xl px-4 py-16 sm:px-6 sm:py-20 lg:px-8">
-        <div className="grid grid-cols-1 gap-12 sm:grid-cols-2 lg:grid-cols-[1.5fr_1fr_1fr_1.2fr] lg:gap-16">
+      <div className="relative mx-auto w-full max-w-6xl px-4 py-10 sm:px-6 sm:py-16 lg:px-8">
+        <div className="grid grid-cols-2 gap-8 sm:gap-12 lg:grid-cols-[1.5fr_1fr_1fr_1.2fr] lg:gap-16">
           {/* Brand column */}
-          <div>
+          <div className="col-span-2 lg:col-span-1">
             <Link href="/" className="inline-flex items-center gap-2.5">
               <AppLogo />
               <span className="text-base font-extrabold tracking-tight text-stone-100">
@@ -96,7 +96,7 @@ export function PublicFooter() {
           </div>
 
           {/* Newsletter */}
-          <div>
+          <div className="col-span-2 lg:col-span-1">
             <p className="text-sm font-semibold text-warm-gradient">Stay in the loop</p>
             <p className="mt-5 text-sm leading-relaxed text-stone-400">
               Short guides for modern food-business operations.
@@ -112,8 +112,8 @@ export function PublicFooter() {
       <div className="divider-warm" />
       <div className="px-4 py-5 sm:px-6 lg:px-8">
         <div className="mx-auto flex max-w-6xl flex-col items-center justify-between gap-2 sm:flex-row">
-          <p className="text-xs text-[#6b5c4a]">&copy; {year} ChefFlow. All rights reserved.</p>
-          <p className="text-xs text-[#5a4d3e]">{PLATFORM_SHORT_DESCRIPTION}</p>
+          <p className="text-xs text-stone-400">&copy; {year} ChefFlow. All rights reserved.</p>
+          <p className="text-xs text-stone-400">Good food starts here.</p>
         </div>
       </div>
     </footer>

@@ -1,30 +1,26 @@
 # ChefFlow theme and homepage correction — 2026-10-02
 
-Status: BLOCKED at release verification. Not deployed.
+Status: BLOCKED at the repository release gate. Not deployed.
+Owner direction: “I hate the color theme ... all of the homepages”; “fix everything”; then “keep improving. I HATE DARK MODE. this app needs to feel inviting”.
+The latest instruction supersedes the earlier neutral light/dark approach: ChefFlow is light-only, with a warm and inviting default.
 
-Owner request: "I hate the color theme of chef flow and ... all of the homepages" followed by "fix everything". This authorizes the neutral visual reset and food-first public entry discussed in the thread.
-
-Target: davidferra13/CFV-1. Base origin/main 3fa5a0818; observed production build 065916ad4. Worktree: theme-homepages-20261002; branch fix/theme-homepages-20261002. Integration path: verified commit to origin/main, established production-live staging build and swap. No production changes made.
+Target: davidferra13/CFV-1; branch fix/theme-homepages-20261002; draft PR #23. Base origin/main 3fa5a0818; last observed production build 065916ad4. Main-only integration and production-live staging/swap remain the required release path. No production changes made.
 
 Changes:
-- Neutral light/dark surface tokens, Graphite default palette, coherent primary action colors.
-- Removed fixed dark homepage backgrounds and brown ambient glows.
-- Rebuilt public homepage around existing /eat, /hub, /find, /for-operators destinations; no invented listings or new backend.
-- Corrected public dropdown/mobile navigation colors, touch targets and menu accessibility state.
-- Simplified chef Today and client My Events presentation; preserved data, guards, actions, preferences, and error handling.
-- Removed public floating AI concierge from the public layout in line with the deterministic product direction.
+- Forced light theme regardless of saved theme or operating-system preference; removed public theme switches and the unused toggle component.
+- Garden & Linen default: warm ivory surfaces, readable green accents, pale peach/sage cards, editorial homepage type, softened photo caption, rounded actions.
+- Light browser/PWA chrome; compact two-column mobile footer.
+- Public homepage uses existing /eat, /hub, /find, /for-operators destinations. No fabricated records or new backend.
+- Corrected hardcoded dark Find a Chef surface, operator panels, chef success/error/readiness states, and client status/error cards.
+- Preserved existing auth, data, navigation destinations, and event actions. Removed public floating AI concierge in the earlier pass.
+- Browser caught and verified the repair of a dangling footer constant from the earlier pass.
 
 Verification:
-- Focused ESLint passed for all changed TS/TSX files.
-- Existing contrast/theme suite passed 8/8, including rerun after palette-provider changes.
-- Native regression firewall: navigation/wiring zero-orphan contract passed, ingredient regression 15/15, Simulation Forge reported 25 cases / zero violations.
-- Full release verification failed at existing completeness findings (4 failures), plus its machine-readable parser rejected npm's banner.
-- Read-only audit of production-live also reported 4 completeness failures, confirming this is not introduced by the visual changes.
-- Repository-wide typecheck failed with "Zone Allocation failed - process out of memory". It did not prove type correctness.
-- Worktree runtime validation does not identify the separate production checkout as its canonical runtime; probes of production /, /dashboard, /my-events returned 200/307/307.
-- Isolated test server 3112 stopped before browser proof. No responsive screenshots or authenticated role-flow proof established.
-- Automatic review rejected copying production .env.local into the isolated worktree; no credentials copied. A credential-free preview was attempted instead.
+- Focused ESLint passed; existing contrast/theme tests 8/8 passed; git diff whitespace check passed.
+- Native Edge browser smoke PASS at 390px and 1440px: saved dark theme plus dark OS still rendered light ivory before and after reload; no dark switch, no horizontal overflow, zero page errors. Mobile menu opened and closed. Screenshots visually reviewed.
+- Earlier regression firewall: navigation/wiring zero-orphan pass, ingredient 15/15 pass, simulation 25 cases / zero violations. Persona timeout and repository-wide typecheck OOM prevented overall pass.
+- Current full release run verify-25624-1790949778135: secret scan and capability gate pass; completeness audit still reports four failing checks, and the runner rejects npm's banner as invalid JSON. Production baseline also had four completeness failures.
+- Attestation: .agents/release-attestations/full-verify-25624-1790949778135.json. Logs/screenshots: .agents/proof/theme-homepages-20261002.
+- No authenticated chef/client browser proof or repository-wide type correctness established. Local preview uses a temporary synthetic auth secret, no production credentials.
 
-Outcome-first review: visitors reach an existing food flow in one action; the public page adds no setup or parallel records. Existing chef/client routines and guards are preserved. Role-specific paths address existing distinct needs, not new workflow options. Final end-to-end and visual evidence remains pending.
-
-Next: recover the native release gates without weakening them; complete desktop/mobile light/dark and role-flow evidence, then integrate and deploy through the documented main-only release path. Do not call this live based on code, lint, or unit tests.
+Next action: repair the existing completeness/release-gate failures without weakening the checks; finish remaining role-flow and release verification, then integrate main and deploy via the established production mechanism. A draft PR is not the live app.

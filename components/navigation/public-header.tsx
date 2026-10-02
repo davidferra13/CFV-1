@@ -6,7 +6,6 @@ import { useEffect, useRef, useState } from 'react'
 import { ChevronDown, Menu, X } from '@/components/ui/icons'
 import { TrackedLink } from '@/components/analytics/tracked-link'
 import { AppLogo } from '@/components/branding/app-logo'
-import { ThemeToggle } from '@/components/ui/theme-toggle'
 import { signOut } from '@/lib/auth/actions'
 
 import { PUBLIC_PRIMARY_CONSUMER_CTA } from '@/lib/public/public-surface-config'
@@ -65,7 +64,7 @@ function NavDropdown({ group, pathname }: { group: PublicNavGroup; pathname: str
         <ChevronDown className={`h-3.5 w-3.5 transition-transform ${open ? 'rotate-180' : ''}`} />
       </button>
       {open && (
-        <div className="absolute left-0 top-full z-[120] mt-1 min-w-[180px] rounded-xl border border-stone-700 bg-stone-950 py-1.5 shadow-[0_12px_40px_rgba(0,0,0,0.5)] backdrop-blur-2xl">
+        <div className="absolute left-0 top-full z-[120] mt-1 min-w-[180px] rounded-xl border border-stone-700 bg-stone-950 py-1.5 shadow-[0_12px_40px_rgba(40,48,39,0.12)] backdrop-blur-2xl">
           {group.items.map((item) => {
             const active = isPublicNavActive(pathname, item.href)
             return (
@@ -165,7 +164,7 @@ function AuthUserDropdown({ user }: { user: PublicHeaderUser }) {
         {initials}
       </button>
       {open && (
-        <div className="absolute right-0 top-full z-[120] mt-2 min-w-[200px] rounded-xl border border-stone-700 bg-stone-950 py-1.5 shadow-[0_12px_40px_rgba(0,0,0,0.5)] backdrop-blur-2xl">
+        <div className="absolute right-0 top-full z-[120] mt-2 min-w-[200px] rounded-xl border border-stone-700 bg-stone-950 py-1.5 shadow-[0_12px_40px_rgba(40,48,39,0.12)] backdrop-blur-2xl">
           <div className="border-b border-stone-700 px-4 py-2.5">
             <p className="text-sm font-medium text-stone-100 truncate">{displayName}</p>
             {user.email && user.name && (
@@ -263,10 +262,6 @@ export function PublicHeader({ user }: { user?: PublicHeaderUser | null }) {
 
         {/* Desktop actions */}
         <div className="hidden items-center gap-2 md:flex">
-          <ThemeToggle
-            className="h-11 w-11 rounded-lg text-stone-300 hover:bg-stone-800 hover:text-stone-100 dark:text-stone-300"
-            dataTestId="public-theme-toggle"
-          />
           {user ? (
             <AuthUserDropdown user={user} />
           ) : (
@@ -293,10 +288,6 @@ export function PublicHeader({ user }: { user?: PublicHeaderUser | null }) {
 
         {/* Mobile actions */}
         <div className="flex items-center gap-2 md:hidden">
-          <ThemeToggle
-            className="h-10 w-10 rounded-xl text-stone-300 hover:bg-stone-800 hover:text-stone-100"
-            dataTestId="public-mobile-theme-toggle"
-          />
           <TrackedLink
             href={PUBLIC_PRIMARY_CONSUMER_CTA.href}
             analyticsName="header_mobile_book_a_chef_quick"
@@ -308,7 +299,7 @@ export function PublicHeader({ user }: { user?: PublicHeaderUser | null }) {
           <button
             type="button"
             onClick={() => setMobileMenuOpen((open) => !open)}
-            className="flex h-10 w-10 items-center justify-center rounded-xl text-stone-300 hover:bg-stone-800 hover:text-stone-100 touch-manipulation"
+            className="flex h-11 w-11 items-center justify-center rounded-xl text-stone-300 hover:bg-stone-800 hover:text-stone-100 touch-manipulation"
             aria-label="Toggle menu"
             aria-expanded={mobileMenuOpen}
             aria-controls="public-mobile-menu"
@@ -395,7 +386,7 @@ export function PublicHeader({ user }: { user?: PublicHeaderUser | null }) {
                     }
                     window.location.href = '/'
                   }}
-                  className="inline-flex h-10 items-center justify-center rounded-lg border border-stone-700 bg-[#1a110c] px-3 text-sm font-medium text-stone-300 transition-colors hover:bg-stone-800 hover:text-stone-100"
+                  className="inline-flex h-10 items-center justify-center rounded-lg border border-stone-700 bg-stone-950 px-3 text-sm font-medium text-stone-300 transition-colors hover:bg-stone-800 hover:text-stone-100"
                 >
                   Sign out
                 </button>
@@ -404,7 +395,7 @@ export function PublicHeader({ user }: { user?: PublicHeaderUser | null }) {
               <>
                 <TrackedLink
                   href="/auth/signin"
-                  className="inline-flex h-10 flex-1 items-center justify-center rounded-lg border border-stone-700 bg-[#1a110c] px-3 text-sm font-medium text-stone-300 transition-colors hover:bg-stone-800 hover:text-stone-100"
+                  className="inline-flex h-10 flex-1 items-center justify-center rounded-lg border border-stone-700 bg-stone-950 px-3 text-sm font-medium text-stone-300 transition-colors hover:bg-stone-800 hover:text-stone-100"
                   analyticsName="header_mobile_signin"
                   analyticsProps={{ section: 'public_header_mobile' }}
                   onClick={() => setMobileMenuOpen(false)}

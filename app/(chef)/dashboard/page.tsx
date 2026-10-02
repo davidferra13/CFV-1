@@ -49,7 +49,7 @@ function PrimaryAction({ item }: { item: QueueItem }) {
         id="do-this-now"
         className="text-xs font-semibold uppercase tracking-[0.18em] text-stone-400"
       >
-        Do this now
+        Your next step
       </p>
       <h1 className="mt-2 text-2xl font-semibold leading-tight sm:text-3xl">{item.title}</h1>
       {detail ? <p className="mt-2 text-sm text-stone-300 opacity-75">{detail}</p> : null}
@@ -59,7 +59,7 @@ function PrimaryAction({ item }: { item: QueueItem }) {
       <div className="mt-5 flex flex-wrap items-center gap-3">
         <Link
           href={item.href}
-          className="inline-flex min-h-11 items-center justify-center rounded-xl bg-[var(--action-bg)] px-5 py-2.5 text-sm font-semibold text-[var(--action-fg)] transition-colors hover:bg-[var(--action-hover)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-200"
+          className="inline-flex min-h-11 items-center justify-center rounded-xl bg-[var(--action-bg)] px-5 py-2.5 text-sm font-semibold text-[var(--action-fg)] transition-colors hover:bg-[var(--action-hover)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-600"
         >
           Start
         </Link>
@@ -77,13 +77,13 @@ function QueueUnavailable() {
       <p className="text-xs font-semibold uppercase tracking-[0.18em] text-amber-800">
         Priorities unavailable
       </p>
-      <h1 className="mt-2 text-xl font-semibold">I could not read what needs you next.</h1>
+      <h1 className="mt-2 text-xl font-semibold">Your priorities could not load.</h1>
       <p className="mt-2 text-sm leading-6 text-amber-900">
-        Nothing was marked clear. Refresh to try the priority check again.
+        Refresh to check your priorities again.
       </p>
       <a
         href="/dashboard"
-        className="mt-4 inline-flex min-h-11 items-center justify-center rounded-xl bg-[var(--text-primary)] px-4 py-2 text-sm font-semibold text-stone-300"
+        className="mt-4 inline-flex min-h-11 items-center justify-center rounded-xl bg-[var(--action-bg)] px-4 py-2 text-sm font-semibold text-[var(--action-fg)]"
       >
         Try again
       </a>
@@ -93,13 +93,13 @@ function QueueUnavailable() {
 
 function CaughtUp() {
   return (
-    <section className="rounded-2xl border border-emerald-200 bg-emerald-50 px-5 py-5 text-stone-900">
+    <section className="rounded-2xl border border-emerald-200 bg-emerald-50 px-5 py-5 text-emerald-950">
       <p className="text-xs font-semibold uppercase tracking-[0.18em] text-emerald-800">
-        Do this now
+        Your next step
       </p>
-      <h1 className="mt-2 text-xl font-semibold">Nothing needs you right now.</h1>
-      <p className="mt-2 text-sm text-stone-700">
-        You are caught up. Chef Flow is not adding busywork.
+      <h1 className="mt-2 text-xl font-semibold">You’re all caught up.</h1>
+      <p className="mt-2 text-sm text-emerald-800">
+        Take a breath. Your next dinner is below when you need it.
       </p>
     </section>
   )
@@ -176,7 +176,7 @@ function NextDinner({ state }: { state: LoadState<MobileChefDashboardData> }) {
           </p>
           <p
             className={`text-xs font-semibold ${
-              readyCount === readinessItems.length ? 'text-emerald-400' : 'text-amber-400'
+              readyCount === readinessItems.length ? 'text-emerald-800' : 'text-amber-800'
             }`}
           >
             {readyCount}/{readinessItems.length} ready
@@ -190,7 +190,7 @@ function NextDinner({ state }: { state: LoadState<MobileChefDashboardData> }) {
               aria-label={`${label}: ${ready ? 'ready' : 'needs attention'}`}
               className={`inline-flex min-h-9 items-center justify-between gap-2 rounded-lg border px-3 py-2 text-xs font-medium transition-colors hover:border-brand-700 hover:text-brand-300 ${
                 ready
-                  ? 'border-emerald-900/70 bg-emerald-950/40 text-emerald-300'
+                  ? 'border-emerald-200 bg-emerald-50 text-emerald-800'
                   : 'border-stone-700 bg-stone-950/60 text-stone-300'
               }`}
             >
@@ -286,7 +286,7 @@ export default async function ChefDashboard() {
       data-surface-mode="triage"
       className="mx-auto w-full max-w-4xl space-y-5 px-4 py-6 sm:space-y-6 sm:px-6 sm:py-8"
     >
-      <header className="flex items-baseline justify-between gap-4 px-1">
+      <header className="flex flex-wrap items-baseline justify-between gap-2 px-1">
         <p className="text-2xl font-semibold tracking-tight text-stone-50">Today</p>
         <p className="text-sm text-stone-300">{today}</p>
       </header>

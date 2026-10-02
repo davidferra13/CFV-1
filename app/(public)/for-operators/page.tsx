@@ -304,7 +304,7 @@ export default async function ForOperatorsPage({ searchParams }: ForOperatorsPag
         <div className="relative z-10 mx-auto w-full max-w-6xl px-4 pb-16 pt-20 sm:px-6 md:pb-20 md:pt-24 lg:px-8">
           <div className="grid gap-10 lg:grid-cols-[minmax(0,1.1fr)_minmax(340px,0.9fr)] lg:items-start">
             <div>
-              <p className="inline-flex rounded-full border border-brand-700/40 bg-brand-950/30 px-4 py-1.5 text-xs font-semibold uppercase tracking-[0.16em] text-brand-300">
+              <p className="inline-flex rounded-full border border-brand-700/40 bg-brand-50 px-4 py-1.5 text-xs font-semibold uppercase tracking-[0.16em] text-brand-300">
                 For chef-led operators
               </p>
               <h1 className="mt-6 max-w-4xl fluid-display-xl font-display tracking-tight text-stone-100">
@@ -487,7 +487,7 @@ export default async function ForOperatorsPage({ searchParams }: ForOperatorsPag
                 execution, and money without rebuilding the record every time.
               </p>
             </div>
-            <div className="rounded-2xl border border-brand-700/30 bg-brand-950/20 px-4 py-3 text-sm text-stone-300">
+            <div className="rounded-2xl border border-brand-700/30 bg-brand-50 px-4 py-3 text-sm text-stone-300">
               Not a commission marketplace. Not a generic restaurant suite.
             </div>
           </div>
@@ -501,7 +501,7 @@ export default async function ForOperatorsPage({ searchParams }: ForOperatorsPag
                   key={item.title}
                   className="rounded-[1.75rem] border border-stone-800/60 bg-stone-900/40 p-6 shadow-[var(--shadow-card)]"
                 >
-                  <div className="inline-flex rounded-2xl bg-brand-950/60 p-3 text-brand-300">
+                  <div className="inline-flex rounded-2xl bg-brand-100 p-3 text-brand-300">
                     <Icon className="h-5 w-5" />
                   </div>
                   <h3 className="mt-4 text-xl font-semibold text-stone-100">{item.title}</h3>
@@ -544,7 +544,7 @@ export default async function ForOperatorsPage({ searchParams }: ForOperatorsPag
             preload="metadata"
             playsInline
             poster="/social/chefflow-operators.png"
-            className="w-full rounded-[1.25rem] border border-stone-800 bg-black"
+            className="w-full rounded-[1.25rem] border border-stone-800 bg-stone-900"
           >
             <source src="/demo/operator-demo.mp4" type="video/mp4" />
           </TrackedVideo>
@@ -565,7 +565,7 @@ export default async function ForOperatorsPage({ searchParams }: ForOperatorsPag
                   className="h-auto w-full object-cover object-top"
                   priority={index === 0}
                 />
-                <div className="absolute left-4 top-4 inline-flex items-center gap-2 rounded-full border border-black/20 bg-black/55 px-3 py-1 text-xs font-semibold uppercase tracking-[0.12em] text-stone-100 backdrop-blur-sm">
+                <div className="absolute left-4 top-4 inline-flex items-center gap-2 rounded-full border border-stone-700 bg-stone-950/95 px-3 py-1 text-xs font-semibold uppercase tracking-[0.12em] text-stone-100 backdrop-blur-sm">
                   <LayoutDashboard className="h-3.5 w-3.5" />
                   Live screen
                 </div>
@@ -781,7 +781,7 @@ export default async function ForOperatorsPage({ searchParams }: ForOperatorsPag
                 key={card.title}
                 className={`rounded-[1.75rem] border p-6 ${
                   card.featured
-                    ? 'border-brand-700/35 bg-brand-950/15 shadow-[var(--shadow-card)]'
+                    ? 'border-brand-700/35 bg-brand-50 shadow-[var(--shadow-card)]'
                     : 'border-stone-800/60 bg-stone-900/40'
                 }`}
               >

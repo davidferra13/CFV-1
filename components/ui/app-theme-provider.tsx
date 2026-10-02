@@ -7,6 +7,7 @@ export function AppThemeProvider({ children }: { children: React.ReactNode }) {
     <ThemeProvider
       attribute="class"
       defaultTheme="light"
+      forcedTheme="light"
       enableSystem={false}
       storageKey="chefflow-theme"
       disableTransitionOnChange

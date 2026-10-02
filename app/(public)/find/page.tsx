@@ -12,15 +12,15 @@ export const metadata: Metadata = buildMarketingMetadata({
 })
 
 const fieldClass =
-  'h-12 w-full rounded-xl border border-stone-700 bg-stone-950 px-4 text-sm text-white outline-none transition focus:border-orange-500'
+  'h-12 w-full rounded-xl border border-stone-700 bg-stone-950 px-4 text-sm text-stone-100 outline-none transition focus:border-brand-600 focus:ring-2 focus:ring-brand-600/20'
 const labelClass = 'mb-2 block text-sm font-medium text-stone-200'
 
 export default function FindChefPage() {
   return (
-    <main className="min-h-screen bg-[#120b08] text-white">
+    <main className="min-h-screen bg-stone-950 text-stone-100">
       <section className="mx-auto max-w-3xl px-4 pb-20 pt-14 sm:px-6 sm:pt-20">
         <div className="mb-10 text-center">
-          <Link href="/" className="text-sm font-semibold text-orange-400">
+          <Link href="/" className="text-sm font-semibold text-brand-600">
             ChefFlow
           </Link>
           <h1 className="mt-5 text-4xl font-bold tracking-tight sm:text-5xl">Find your chef.</h1>
@@ -33,7 +33,7 @@ export default function FindChefPage() {
         <form
           action="/matches"
           method="get"
-          className="rounded-3xl border border-stone-800 bg-stone-900/70 p-5 shadow-2xl sm:p-8"
+          className="rounded-3xl border border-stone-800 bg-stone-900/70 p-5 shadow-sm sm:p-8"
         >
           <div className="grid gap-5 sm:grid-cols-2">
             <div className="sm:col-span-2">
@@ -111,7 +111,7 @@ export default function FindChefPage() {
 
           <button
             type="submit"
-            className="mt-7 w-full rounded-xl bg-orange-600 px-6 py-3.5 text-base font-semibold text-white transition hover:bg-orange-500 active:scale-[0.99]"
+            className="mt-7 w-full rounded-xl bg-[var(--action-bg)] px-6 py-3.5 text-base font-semibold text-white transition hover:bg-[var(--action-hover)] active:scale-[0.99]"
           >
             Show my best chef matches
           </button>
