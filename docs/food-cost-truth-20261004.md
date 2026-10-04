@@ -88,3 +88,11 @@ Navigation still fails on the seven missing studio routes; wiring passed its
 zero weak/orphan route contract. Final gate details are retained in
 .evidence/food-cost-truth-20261004/precision-firewall.log.
 The previous production-release checkpoint still applies.
+
+Final precision release check: navigation failed; wiring passed. The persona
+completion step stalled despite the configured 60-second step timeout. The
+owned checker session was terminated. Full app typecheck/runtime stages were
+not reached in this run. Scoped TypeScript passed. Code commit 4590e4290 was
+pushed to origin/fix/ingredient-cost-precision-20261004; deployment is BLOCKED.
+Next action is to repair the studio route targets and the stalled persona gate,
+then resume the existing full release and production verification path.
