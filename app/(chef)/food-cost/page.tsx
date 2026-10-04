@@ -2,6 +2,7 @@
 // Part of the Vendor & Food Cost System
 
 import type { Metadata } from 'next'
+import { summarizePurchaseCosts } from '@/lib/finance/purchase-cost-summary'
 import { requireChef } from '@/lib/auth/get-user'
 import { listDailyRevenue } from '@/lib/vendors/revenue-actions'
 import { listInvoices } from '@/lib/vendors/invoice-actions'
@@ -69,63 +70,16 @@ export default async function FoodCostPage({
     listInvoices(undefined, monthRange.start, monthRange.end),
   ])
 
-  // Calculate week food cost %
-  const weekRevenueCents = weekRevenue.reduce(
-    (sum: number, r: any) => sum + (r.total_revenue_cents || 0),
-    0
-  )
-  const weekPurchaseCents = weekInvoices.reduce(
-    (sum: number, i: any) => sum + (i.total_cents || 0),
-    0
-  )
-  const thisWeekPercent = weekRevenueCents > 0 ? (weekPurchaseCents / weekRevenueCents) * 100 : 0
-
-  // Calculate month food cost %
-  const monthRevenueCents = monthRevenue.reduce(
-    (sum: number, r: any) => sum + (r.total_revenue_cents || 0),
-    0
-  )
-  const monthPurchaseCents = monthInvoices.reduce(
-    (sum: number, i: any) => sum + (i.total_cents || 0),
-    0
-  )
-  const thisMonthPercent =
-    monthRevenueCents > 0 ? (monthPurchaseCents / monthRevenueCents) * 100 : 0
-
-  // Build daily data for the selected range
-  const revenueByDate = new Map<string, number>()
-  for (const r of revenue) {
-    revenueByDate.set((r as any).date, (r as any).total_revenue_cents || 0)
-  }
-
-  const purchasesByDate = new Map<string, number>()
-  for (const inv of invoices) {
-    const date = (inv as any).invoice_date
-    purchasesByDate.set(date, (purchasesByDate.get(date) || 0) + ((inv as any).total_cents || 0))
-  }
-
-  const allDates = new Set<string>([...revenueByDate.keys(), ...purchasesByDate.keys()])
-  const dailyData = Array.from(allDates)
-    .sort()
-    .reverse()
-    .map((date) => {
-      const revCents = revenueByDate.get(date) || 0
-      const purchCents = purchasesByDate.get(date) || 0
-      const foodCostPercent = revCents > 0 ? (purchCents / revCents) * 100 : 0
-      return {
-        date,
-        revenueCents: revCents,
-        purchasesCents: purchCents,
-        foodCostPercent,
-      }
-    })
+  const weekSummary = summarizePurchaseCosts(weekRevenue, weekInvoices)
+  const monthSummary = summarizePurchaseCosts(monthRevenue, monthInvoices)
+  const { dailyData } = summarizePurchaseCosts(revenue, invoices)
 
   return (
     <div className="max-w-4xl mx-auto px-4 py-8 space-y-6">
       <div>
         <h1 className="text-2xl font-bold text-stone-100">Food Cost Dashboard</h1>
         <p className="mt-1 text-sm text-stone-500">
-          Track your food cost percentage by comparing daily revenue against vendor purchases.
+          See what you spent on ingredients and how it compares with recorded revenue.
         </p>
       </div>
 
@@ -177,7 +131,9 @@ export default async function FoodCostPage({
       <PriceComparison data={priceComparison as any} />
 
       {/* Daily revenue entry */}
-      <DailyRevenueForm />
+      <div id="daily-revenue" className="scroll-mt-24">
+        <DailyRevenueForm />
+      </div>
 
       {/* Quick invoice logging */}
       <details>
