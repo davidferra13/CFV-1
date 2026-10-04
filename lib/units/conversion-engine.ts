@@ -177,7 +177,7 @@ export function normalizeUnit(unit: string): string {
  *
  * For cross-type conversions (volume-to-weight), use convertWithDensity().
  */
-export function convertQuantity(qty: number, fromUnit: string, toUnit: string): number | null {
+function convertQuantityUnrounded(qty: number, fromUnit: string, toUnit: string): number | null {
   const from = normalizeUnit(fromUnit)
   const to = normalizeUnit(toUnit)
 
@@ -186,16 +186,23 @@ export function convertQuantity(qty: number, fromUnit: string, toUnit: string): 
   // Volume to volume
   if (from in VOLUME_TO_ML && to in VOLUME_TO_ML) {
     const ml = qty * VOLUME_TO_ML[from]
-    return round4(ml / VOLUME_TO_ML[to])
+    return ml / VOLUME_TO_ML[to]
   }
 
   // Weight to weight
   if (from in WEIGHT_TO_G && to in WEIGHT_TO_G) {
     const g = qty * WEIGHT_TO_G[from]
-    return round4(g / WEIGHT_TO_G[to])
+    return g / WEIGHT_TO_G[to]
   }
 
   return null
+}
+
+// Quantities displayed or stored by callers retain the existing four-decimal contract.
+export function convertQuantity(qty: number, fromUnit: string, toUnit: string): number | null {
+  const converted = convertQuantityUnrounded(qty, fromUnit, toUnit)
+  if (converted === null || normalizeUnit(fromUnit) === normalizeUnit(toUnit)) return converted
+  return round4(converted)
 }
 
 /**
@@ -207,7 +214,7 @@ export function convertQuantity(qty: number, fromUnit: string, toUnit: string): 
  * Returns null if either unit is not volume/weight, or density is not provided
  * when needed for cross-type conversion.
  */
-export function convertWithDensity(
+function convertWithDensityUnrounded(
   qty: number,
   fromUnit: string,
   toUnit: string,
@@ -219,7 +226,7 @@ export function convertWithDensity(
   if (from === to) return qty
 
   // Same-type: no density needed
-  const sameType = convertQuantity(qty, fromUnit, toUnit)
+  const sameType = convertQuantityUnrounded(qty, fromUnit, toUnit)
   if (sameType !== null) return sameType
 
   // Cross-type: need density
@@ -232,17 +239,28 @@ export function convertWithDensity(
   if (fromType === 'volume' && toType === 'weight') {
     const ml = qty * VOLUME_TO_ML[from]
     const grams = ml * densityGPerMl
-    return round4(grams / WEIGHT_TO_G[to])
+    return grams / WEIGHT_TO_G[to]
   }
 
   // Weight -> Volume: convert weight to grams, divide by density to get ml, convert ml to target volume
   if (fromType === 'weight' && toType === 'volume') {
     const grams = qty * WEIGHT_TO_G[from]
     const ml = grams / densityGPerMl
-    return round4(ml / VOLUME_TO_ML[to])
+    return ml / VOLUME_TO_ML[to]
   }
 
   return null
+}
+
+export function convertWithDensity(
+  qty: number,
+  fromUnit: string,
+  toUnit: string,
+  densityGPerMl: number | null | undefined
+): number | null {
+  const converted = convertWithDensityUnrounded(qty, fromUnit, toUnit, densityGPerMl)
+  if (converted === null || normalizeUnit(fromUnit) === normalizeUnit(toUnit)) return converted
+  return round4(converted)
 }
 
 // ── Cost normalization ──────────────────────────────────────────────────────
@@ -292,7 +310,8 @@ export function computeIngredientCost(
   }
 
   // Convert qty from recipeUnit to costUnit
-  const qtyInCostUnit = convertWithDensity(qty, recipeUnit, costUnit, densityGPerMl)
+  // Preserve conversion precision until the final amount is rounded to cents.
+  const qtyInCostUnit = convertWithDensityUnrounded(qty, recipeUnit, costUnit, densityGPerMl)
   if (qtyInCostUnit === null) return null
 
   return Math.round(qtyInCostUnit * costPerUnitCents)
