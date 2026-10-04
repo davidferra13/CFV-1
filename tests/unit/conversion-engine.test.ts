@@ -577,3 +577,23 @@ test('scenario: round-trip conversion preserves cost', () => {
     `Round-trip: 16 oz should cost ~${costPerLb}, got ${totalFor16oz}`
   )
 })
+
+// Monetary calculations must retain precision until the final cent rounding.
+test('computeIngredientCost does not erase a small spice portion during weight conversion', () => {
+  assert.equal(computeIngredientCost(0.03, 'g', 400000, 'kg'), 12)
+})
+test('computeIngredientCost does not round a spice portion up before pricing', () => {
+  assert.equal(computeIngredientCost(0.06, 'grams', 400000, 'kilograms'), 24)
+})
+test('computeIngredientCost retains small liquid quantities through volume conversion', () => {
+  assert.equal(computeIngredientCost(0.03, 'ml', 100000, 'l'), 3)
+})
+test('computeIngredientCost retains density precision from volume to weight', () => {
+  assert.equal(computeIngredientCost(0.03, 'ml', 400000, 'kg', 0.5), 6)
+})
+test('computeIngredientCost retains density precision from weight to volume', () => {
+  assert.equal(computeIngredientCost(0.03, 'g', 100000, 'l', 0.5), 6)
+})
+test('computeIngredientCost rounds a sub-cent converted amount only at the end', () => {
+  assert.equal(computeIngredientCost(0.002, 'g', 400000, 'kg'), 1)
+})

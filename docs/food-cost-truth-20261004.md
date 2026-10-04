@@ -61,3 +61,30 @@ Concurrent work and production processes were preserved.
 Generated wiring-audit-results.json is excluded from this change.
 Attempt logs and the rendering probe remain at
 .evidence/food-cost-truth-20261004 in the worktree.
+
+
+## Next improvement: small-quantity ingredient-cost precision
+
+Branch: fix/ingredient-cost-precision-20261004, based on af041bea6.
+The shared computeIngredientCost function converted quantities through a helper
+that rounded to four decimals before multiplying by the ingredient price.
+This erased or exaggerated small spice and liquid portions.
+
+Using a fixture price of 400000 cents/kg, 0.03g previously cost 0 cents and
+0.06g cost 40 cents. They now cost 12 and 24 cents.
+Private unrounded conversion helpers retain precision for costing; exported
+quantity-conversion functions preserve their existing four-decimal contract.
+Auth, schemas, source prices, recipe data and model dependencies are unchanged.
+Existing recipe, financial and inventory callers already use this shared function.
+
+Six regression tests failed with the old code and passed after the repair.
+128 focused tests pass: conversion engine, food-cost calculator and purchase summary.
+Formatting, task-scoped ESLint, scoped TypeScript and diff checks pass.
+Direct execution confirms the corrected fixture amounts.
+No persisted recipe cost refresh or production behavior is claimed.
+
+The native regression firewall was rerun with no restart and bounded step timeouts.
+Navigation still fails on the seven missing studio routes; wiring passed its
+zero weak/orphan route contract. Final gate details are retained in
+.evidence/food-cost-truth-20261004/precision-firewall.log.
+The previous production-release checkpoint still applies.
