@@ -8,7 +8,7 @@ import { fileURLToPath } from 'node:url'
 const ROOT = resolve(dirname(fileURLToPath(import.meta.url)), '..')
 const isWin = process.platform === 'win32'
 
-function parseArgs(argv) {
+export function parseArgs(argv) {
   return {
     full: argv.includes('--full'),
     json: argv.includes('--json'),
@@ -22,6 +22,7 @@ function parseArgs(argv) {
     routeProbeTimeoutMs: numberArg(argv, '--route-probe-timeout-ms', 60_000),
     sentinelTimeoutMs: numberArg(argv, '--sentinel-timeout-ms', 600_000),
     stepTimeoutMs: numberArg(argv, '--step-timeout-ms', 300_000),
+    personaTimeoutMs: numberArg(argv, '--step-timeout-ms', 360_000),
   }
 }
 
@@ -40,11 +41,43 @@ function nodeCommand() {
   return process.execPath
 }
 
-async function runStep(name, command, args, options = {}) {
+async function terminateStepTree(child) {
+  if (!child.pid) return ''
+  if (!isWin) {
+    try {
+      // Each step gets its own process group; never signal the firewall's group.
+      process.kill(-child.pid, 'SIGKILL')
+      return ''
+    } catch (error) {
+      return error.code === 'ESRCH' ? '' : error.message
+    }
+  }
+  return new Promise((resolveCleanup) => {
+    const killer = spawn('taskkill.exe', ['/PID', String(child.pid), '/T', '/F'], {
+      stdio: 'ignore',
+      windowsHide: true,
+    })
+    let finished = false
+    const finish = (error) => {
+      if (finished) return
+      finished = true
+      clearTimeout(timer)
+      resolveCleanup(error)
+    }
+    const timer = setTimeout(() => {
+      killer.kill()
+      killer.unref()
+      finish('taskkill did not finish within 15000ms')
+    }, 15000)
+    killer.on('error', (error) => finish(error.message))
+    killer.on('close', (code) => finish(code === 0 ? '' : 'taskkill exited with code ' + code))
+  })
+}
+
+export async function runStep(name, command, args, options = {}) {
   const timeoutMs = options.timeoutMs ?? 300_000
   const started = Date.now()
-  process.stdout.write(`\n[regression-firewall] ${name}\n`)
-
+  process.stdout.write('\n[regression-firewall] ' + name + '\n')
   return new Promise((resolveStep) => {
     const child = spawn(command, args, {
       cwd: ROOT,
@@ -53,59 +86,69 @@ async function runStep(name, command, args, options = {}) {
         DEV_RUNTIME_HEALTH_TIMEOUT_MS: process.env.DEV_RUNTIME_HEALTH_TIMEOUT_MS || '45000',
       },
       stdio: ['ignore', 'pipe', 'pipe'],
-      // Windows batch shims need a shell; native executables do not. Running a native
-      // executable such as C:\\Program Files\\nodejs\\node.exe through cmd.exe splits
-      // the path at the space and makes the wiring-audit step fail before Node starts.
+      detached: !isWin,
+      // Batch shims need cmd.exe; native executable paths may contain spaces.
       shell: isWin && /\.cmd$/i.test(command),
     })
-
     let stdout = ''
     let stderr = ''
     let timedOut = false
-
-    const timer = setTimeout(() => {
-      timedOut = true
-      child.kill(isWin ? undefined : 'SIGTERM')
-    }, timeoutMs)
-
-    child.stdout.on('data', (chunk) => {
-      const text = chunk.toString()
-      stdout += text
-      process.stdout.write(text)
-    })
-
-    child.stderr.on('data', (chunk) => {
-      const text = chunk.toString()
-      stderr += text
-      process.stderr.write(text)
-    })
-
-    child.on('close', (code, signal) => {
+    let settled = false
+    let exitCode = null
+    let exitSignal = null
+    const finish = () => {
+      if (settled) return
+      settled = true
       clearTimeout(timer)
       resolveStep({
         name,
-        ok: code === 0 && !timedOut,
-        code,
-        signal,
+        ok: exitCode === 0 && !timedOut,
+        code: exitCode,
+        signal: exitSignal,
         timedOut,
         durationMs: Date.now() - started,
         stdout,
         stderr,
       })
+    }
+    const timer = setTimeout(async () => {
+      timedOut = true
+      process.stderr.write(
+        '[regression-firewall] ' + name + ' timed out after ' + timeoutMs + 'ms\n'
+      )
+      const cleanupError = await terminateStepTree(child)
+      if (cleanupError) {
+        stderr += '\nProcess-tree cleanup failed: ' + cleanupError
+        child.kill()
+      }
+      // A descendant holding inherited pipes must not prevent a failure receipt.
+      child.stdout.destroy()
+      child.stderr.destroy()
+      child.unref()
+      finish()
+    }, timeoutMs)
+    child.stdout.on('data', (chunk) => {
+      const text = chunk.toString()
+      stdout += text
+      process.stdout.write(text)
     })
-
+    child.stderr.on('data', (chunk) => {
+      const text = chunk.toString()
+      stderr += text
+      process.stderr.write(text)
+    })
+    child.on('exit', (code, signal) => {
+      exitCode = code
+      exitSignal = signal
+    })
+    child.on('close', (code, signal) => {
+      exitCode = code
+      exitSignal = signal
+      if (!timedOut) finish()
+    })
     child.on('error', (error) => {
-      clearTimeout(timer)
-      resolveStep({
-        name,
-        ok: false,
-        code: null,
-        signal: null,
-        timedOut,
-        durationMs: Date.now() - started,
-        stdout,
-        stderr: `${stderr}\n${error.message}`.trim(),
-      })
+      stderr = (stderr + '\n' + error.message).trim()
+      if (!timedOut) finish()
     })
   })
 }
@@ -200,7 +243,9 @@ async function runAffectedRouteProbes(options) {
     )
   }
   if (omitted > 0) {
-    console.log(`[regression-firewall] route probes omitted ${omitted} routes after limit ${options.limit}`)
+    console.log(
+      `[regression-firewall] route probes omitted ${omitted} routes after limit ${options.limit}`
+    )
   }
 
   const failures = probes.filter((probe) => !probe.ok)
@@ -266,9 +311,14 @@ async function main() {
   }
 
   results.push(
-    await runStep('persona completion gate', nodeCommand(), ['devtools/persona-completion-gate.mjs'], {
-      timeoutMs: 360_000,
-    })
+    await runStep(
+      'persona completion gate',
+      nodeCommand(),
+      ['devtools/persona-completion-gate.mjs'],
+      {
+        timeoutMs: args.personaTimeoutMs,
+      }
+    )
   )
 
   if (!args.skipTypecheck) {
@@ -291,9 +341,14 @@ async function main() {
           timeoutMs: 180_000,
         })
       )
-      runtime = await runStep('canonical runtime verify after restart', npmCommand(), ['run', 'dev:verify'], {
-        timeoutMs: 120_000,
-      })
+      runtime = await runStep(
+        'canonical runtime verify after restart',
+        npmCommand(),
+        ['run', 'dev:verify'],
+        {
+          timeoutMs: 120_000,
+        }
+      )
       results.push(runtime)
     }
 
@@ -305,9 +360,14 @@ async function main() {
         })
       )
       results.push(
-        await runStep('canonical runtime verify after route probes', npmCommand(), ['run', 'dev:verify'], {
-          timeoutMs: 120_000,
-        })
+        await runStep(
+          'canonical runtime verify after route probes',
+          npmCommand(),
+          ['run', 'dev:verify'],
+          {
+            timeoutMs: 120_000,
+          }
+        )
       )
     }
   }
@@ -353,7 +413,9 @@ async function main() {
   if (!summary.ok) process.exitCode = 1
 }
 
-main().catch((error) => {
-  console.error(`[regression-firewall] ERROR ${error.stack || error.message}`)
-  process.exitCode = 1
-})
+const isMain = process.argv[1] && resolve(process.argv[1]) === fileURLToPath(import.meta.url)
+if (isMain)
+  main().catch((error) => {
+    console.error(`[regression-firewall] ERROR ${error.stack || error.message}`)
+    process.exitCode = 1
+  })
