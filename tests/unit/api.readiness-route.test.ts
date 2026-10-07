@@ -122,7 +122,7 @@ test('GET /api/health/readiness degrades background jobs when required crons are
   )
 })
 
-test('GET /api/health/readiness degrades production when AI is only pointed at localhost', async () => {
+test('GET /api/health/readiness keeps production core ready while reporting local-only AI degradation', async () => {
   await withEnv(
     {
       DATABASE_URL: 'postgresql://user:pass@example.com:5432/postgres',
@@ -136,10 +136,15 @@ test('GET /api/health/readiness degrades production when AI is only pointed at l
       const response = await GET(new NextRequest('http://localhost/api/health/readiness?strict=1'))
       const body = await response.json()
 
-      assert.equal(response.status, 503)
-      assert.equal(body.status, 'degraded')
+      assert.equal(response.status, 200)
+      assert.equal(body.status, 'ok')
       assert.equal(body.checks.aiRuntime, 'degraded')
       assert.equal(body.details.aiRuntime.reason, 'local_only_in_production')
+      assert.equal(body.details.aiRuntime.required, false)
+
+      const head = await HEAD(new NextRequest('http://localhost/api/health/readiness?strict=1'))
+      assert.equal(head.status, 200)
+      assert.equal(head.headers.get('x-health-status'), 'ok')
     }
   )
 })
