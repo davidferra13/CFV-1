@@ -23,10 +23,9 @@ import {
 } from './compute'
 
 import type { PricingConfig } from './config-types'
+import { computeWeeklyRange } from './weekly-range'
 
 import {
-  WEEKLY_RATES,
-  DEPOSIT_PERCENTAGE,
   MINIMUM_BOOKING_CENTS,
   WEEKLY_COMMITMENT_MIN_DAYS,
   ADD_ON_CATALOG,
@@ -100,7 +99,7 @@ export interface PricingAdjustment {
 
   /**
    * For custom_total only: the total override amount.
-   * Deposit will be recalculated as 50% of this value.
+   * Deposit follows the chef's configured percentage of this value.
    */
   totalCents?: number
 
@@ -154,7 +153,7 @@ export interface PricingRangeSide {
   subtotalCents: number
   /** Final total = subtotal + travel + add-ons (after minimum floor) */
   totalServiceCents: number
-  /** 50% deposit of totalServiceCents */
+  /** Deposit at the chef's configured percentage of totalServiceCents */
   depositCents: number
   /** Balance due = totalServiceCents − depositCents */
   balanceCents: number
@@ -207,7 +206,7 @@ export interface PricingEvaluationResult {
    */
   finalTotalCents: number
 
-  /** Deposit = 50% of finalTotalCents */
+  /** Deposit at the chef's configured percentage of finalTotalCents */
   finalDepositCents: number
 
   /** Balance due = finalTotalCents − finalDepositCents */
@@ -379,7 +378,7 @@ export async function evaluateChefPricing(
   const weekendPremiumEnabled =
     inputWeekendPremium !== undefined ? inputWeekendPremium : eligibility === undefined // true = chef tool, false = AI path
 
-  const pricingInput = { ...rest, weekendPremiumEnabled }
+  const pricingInput = { ...rest, config, weekendPremiumEnabled }
 
   // ── Step 1: Eligibility ────────────────────────────────────────────────────
   // Determines whether pricing may be presented to this client right now.
@@ -413,6 +412,7 @@ export async function evaluateChefPricing(
       : formatPricingForEmail(breakdown)
 
   const chefSummaryText = formatPricingForChef(breakdown, {
+    config,
     serviceType: input.serviceType,
     eventDate: input.eventDate,
     weekendPremiumEnabled, // resolved value - what the engine actually used, not raw input
@@ -501,76 +501,6 @@ function assessEligibility(ctx?: PricingEligibilityContext): {
 // Weekly services have min/max day rates. The engine quotes the high end by default.
 // Here we compute the low end and expose both sides.
 
-function computeWeeklyRange(
-  input: PricingEvaluationInput,
-  breakdown: PricingBreakdown
-): { hasRange: boolean; low?: PricingRangeSide; high?: PricingRangeSide } {
-  const weeklyRangeTypes: ServiceType[] = ['weekly_standard', 'weekly_commitment']
-
-  // Only weekly services with a computable service fee get a range
-  if (
-    !weeklyRangeTypes.includes(input.serviceType) ||
-    breakdown.requiresCustomPricing ||
-    breakdown.serviceFeeCents === 0
-  ) {
-    return { hasRange: false }
-  }
-
-  const rates =
-    input.serviceType === 'weekly_standard'
-      ? WEEKLY_RATES.standard_day
-      : WEEKLY_RATES.commitment_day
-
-  const days = breakdown.numberOfDays
-
-  // The breakdown was computed using the max rate; the high side mirrors it exactly.
-  const high: PricingRangeSide = {
-    label: 'high',
-    dayRateCents: rates.max,
-    serviceFeeCents: breakdown.serviceFeeCents,
-    subtotalCents: breakdown.subtotalCents,
-    totalServiceCents: breakdown.totalServiceCents,
-    depositCents: breakdown.depositCents,
-    balanceCents: breakdown.totalServiceCents - breakdown.depositCents,
-    rateDescription: `${formatCentsAsDollars(rates.max)}/day × ${days} day${days > 1 ? 's' : ''} = ${formatCentsAsDollars(breakdown.serviceFeeCents)}`,
-  }
-
-  // Compute the low side by scaling all premium amounts proportionally.
-  // This is valid because weekend premium and holiday premiums are both
-  // percentage-based on serviceFeeCents, so they scale linearly with the day rate.
-  const lowServiceFee = rates.min * days
-  const scalingFactor = lowServiceFee / breakdown.serviceFeeCents // always ≤ 1
-
-  const lowWeekendPremium = Math.round(breakdown.weekendPremiumCents * scalingFactor)
-  const lowHolidayPremium = Math.round(breakdown.holidayPremiumCents * scalingFactor)
-  const lowNearHolidayPremium = Math.round(breakdown.nearHolidayPremiumCents * scalingFactor)
-  const lowSubtotal = lowServiceFee + lowWeekendPremium + lowHolidayPremium + lowNearHolidayPremium
-
-  // Travel and add-ons are fixed (do not change with day rate choice)
-  const lowPreTotal = lowSubtotal + breakdown.travelFeeCents + breakdown.addOnTotalCents
-
-  // Apply minimum booking floor if needed (same rule as in computePricing)
-  const lowTotal =
-    lowSubtotal > 0 && lowSubtotal < MINIMUM_BOOKING_CENTS
-      ? MINIMUM_BOOKING_CENTS + breakdown.travelFeeCents + breakdown.addOnTotalCents
-      : lowPreTotal
-
-  const lowDeposit = Math.round(lowTotal * DEPOSIT_PERCENTAGE)
-
-  const low: PricingRangeSide = {
-    label: 'low',
-    dayRateCents: rates.min,
-    serviceFeeCents: lowServiceFee,
-    subtotalCents: lowSubtotal,
-    totalServiceCents: lowTotal,
-    depositCents: lowDeposit,
-    balanceCents: lowTotal - lowDeposit,
-    rateDescription: `${formatCentsAsDollars(rates.min)}/day × ${days} day${days > 1 ? 's' : ''} = ${formatCentsAsDollars(lowServiceFee)}`,
-  }
-
-  return { hasRange: true, low, high }
-}
-
 // ─── Adjustment Resolution ────────────────────────────────────────────────────
 
 function resolveAdjustment(
@@ -608,7 +538,7 @@ function resolveAdjustment(
       finalTotalCents = baseTotal
   }
 
-  const finalDepositCents = Math.round(finalTotalCents * DEPOSIT_PERCENTAGE)
+  const finalDepositCents = Math.round(finalTotalCents * (breakdown.depositPercent / 100))
   const finalBalanceCents = finalTotalCents - finalDepositCents
 
   let description: string
@@ -661,10 +591,12 @@ function collectPendingConfirmations(
 
   // Multi-night packages with price = 0 (not yet confirmed by chef)
   if (input.serviceType === 'multi_night' && input.multiNightPackage) {
-    const price = MULTI_NIGHT_PACKAGES[input.multiNightPackage]
+    const price = (input.config?.multi_night_packages ?? MULTI_NIGHT_PACKAGES)[
+      input.multiNightPackage
+    ]
     if (price === 0) {
       confirmations.push(
-        `Multi-night package "${input.multiNightPackage}" has no confirmed price - set value in lib/pricing/constants.ts before quoting`
+        `Multi-night package "${input.multiNightPackage}" has no confirmed price - set its price in pricing settings before quoting`
       )
     }
   }
@@ -672,7 +604,7 @@ function collectPendingConfirmations(
   // Minimum booking floor was applied - remind chef to verify the floor amount is current
   if (breakdown.minimumApplied) {
     confirmations.push(
-      `Minimum booking floor of ${formatCentsAsDollars(MINIMUM_BOOKING_CENTS)} was applied - confirm this minimum is still current`
+      `Minimum booking floor of ${formatCentsAsDollars(input.config?.minimum_booking_cents ?? MINIMUM_BOOKING_CENTS)} was applied - confirm this minimum is still current`
     )
   }
 
@@ -737,9 +669,9 @@ function collectWarnings(
   // Loyalty discount brings total below minimum floor
   if (adjustment?.type === 'loyalty_discount' && adjustment.amountCents) {
     const adjustedTotal = Math.max(0, breakdown.totalServiceCents - adjustment.amountCents)
-    if (adjustedTotal < MINIMUM_BOOKING_CENTS) {
+    if (adjustedTotal < (input.config?.minimum_booking_cents ?? MINIMUM_BOOKING_CENTS)) {
       warnings.push(
-        `Loyalty discount brings total to ${formatCentsAsDollars(adjustedTotal)}, below the ${formatCentsAsDollars(MINIMUM_BOOKING_CENTS)} minimum booking floor - confirm this is intentional`
+        `Loyalty discount brings total to ${formatCentsAsDollars(adjustedTotal)}, below the ${formatCentsAsDollars(input.config?.minimum_booking_cents ?? MINIMUM_BOOKING_CENTS)} minimum booking floor - confirm this is intentional`
       )
     }
   }
@@ -762,10 +694,10 @@ function buildChefChecklist(
       `Review the total (${formatCentsAsDollars(adjustment.finalTotalCents)}) - does this feel right for this event?`
     )
     checklist.push(
-      `Deposit: ${formatCentsAsDollars(adjustment.finalDepositCents)} (50% non-refundable) - client must pay this to lock the date`
+      `Deposit: ${formatCentsAsDollars(adjustment.finalDepositCents)} (${breakdown.depositPercent}% non-refundable) - client must pay this to lock the date`
     )
     checklist.push(
-      `Balance: ${formatCentsAsDollars(adjustment.finalBalanceCents)} due 24 hours before service`
+      `Balance: ${formatCentsAsDollars(adjustment.finalBalanceCents)} due ${breakdown.balanceDueHours} hours before service`
     )
   } else {
     checklist.push('Custom pricing required - set your price before creating a quote in the system')
@@ -779,7 +711,7 @@ function buildChefChecklist(
 
   if (input.distanceMiles && input.distanceMiles > 0) {
     checklist.push(
-      `Travel fee: ${formatCentsAsDollars(breakdown.travelFeeCents)} (${input.distanceMiles} miles at $${(IRS_MILEAGE_RATE_CENTS / 100).toFixed(2)}/mile) - verify the distance is accurate`
+      `Travel fee: ${formatCentsAsDollars(breakdown.travelFeeCents)} (${input.distanceMiles} miles at $${((input.config?.mileage_rate_cents ?? IRS_MILEAGE_RATE_CENTS) / 100).toFixed(2)}/mile) - verify the distance is accurate`
     )
   } else {
     checklist.push('Confirm whether travel reimbursement applies and get the client address')
@@ -894,6 +826,7 @@ function formatWeeklyRangeForEmail(
 export function formatPricingForChef(
   breakdown: PricingBreakdown,
   options?: {
+    config?: PricingConfig
     serviceType?: ServiceType
     eventDate?: string
     weekendPremiumEnabled?: boolean
@@ -972,7 +905,10 @@ export function formatPricingForChef(
       )
     } else if (breakdown.isWeekend) {
       // Event is on Fri/Sat but premium was not applied - show the opportunity cost
-      const potential = Math.round(breakdown.serviceFeeCents * WEEKEND_PREMIUM_PERCENT)
+      const potential = Math.round(
+        breakdown.serviceFeeCents *
+          (opts.config ? opts.config.weekend_premium_pct / 100 : WEEKEND_PREMIUM_PERCENT)
+      )
       const reason =
         opts.weekendPremiumEnabled === false
           ? 'opt-in disabled'
@@ -1012,7 +948,7 @@ export function formatPricingForChef(
     // Travel fee
     if (breakdown.travelFeeCents > 0) {
       lines.push(
-        `  ${step++}. Travel:       ${breakdown.distanceMiles} mi × $${(IRS_MILEAGE_RATE_CENTS / 100).toFixed(2)}/mi = ${formatCentsAsDollars(breakdown.travelFeeCents)}`
+        `  ${step++}. Travel:       ${breakdown.distanceMiles} mi × $${((opts.config?.mileage_rate_cents ?? IRS_MILEAGE_RATE_CENTS) / 100).toFixed(2)}/mi = ${formatCentsAsDollars(breakdown.travelFeeCents)}`
       )
     } else {
       lines.push(`  ${step++}. Travel:       $0 (no distance provided or no travel)`)
@@ -1032,15 +968,17 @@ export function formatPricingForChef(
     // Minimum booking floor
     if (breakdown.minimumApplied) {
       lines.push(
-        `  ${step++}. Minimum floor applied → raised to ${formatCentsAsDollars(MINIMUM_BOOKING_CENTS)}`
+        `  ${step++}. Minimum floor applied → raised to ${formatCentsAsDollars(breakdown.totalServiceCents - breakdown.travelFeeCents - breakdown.addOnTotalCents)}`
       )
     }
 
     // Final total and deposit
     lines.push(`  ${step++}. TOTAL:        ${formatCentsAsDollars(breakdown.totalServiceCents)}`)
-    lines.push(`  ${step++}. Deposit (50%): ${formatCentsAsDollars(breakdown.depositCents)}`)
     lines.push(
-      `  ${step++}. Balance due:  ${formatCentsAsDollars(breakdown.totalServiceCents - breakdown.depositCents)}  (24 hours before service)`
+      `  ${step++}. Deposit (${breakdown.depositPercent}%): ${formatCentsAsDollars(breakdown.depositCents)}`
+    )
+    lines.push(
+      `  ${step++}. Balance due:  ${formatCentsAsDollars(breakdown.totalServiceCents - breakdown.depositCents)}  (${breakdown.balanceDueHours} hours before service)`
     )
     lines.push('')
   }

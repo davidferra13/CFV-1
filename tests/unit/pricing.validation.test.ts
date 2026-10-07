@@ -13,6 +13,7 @@
 
 import { describe, it } from 'node:test'
 import assert from 'node:assert/strict'
+import { makePricingTestConfig } from './fixtures/pricing-config'
 import { validatePricingInput } from '../../lib/pricing/compute.js'
 
 // ─────────────────────────────────────────────────────────────────────────────
@@ -216,11 +217,14 @@ describe('Pricing Validation — service types', () => {
   })
 
   it('multi_night with valid package is valid', () => {
-    const result = validatePricingInput({
-      serviceType: 'multi_night',
-      guestCount: 2,
-      multiNightPackage: 'two_night_4_course',
-    })
+    const result = validatePricingInput(
+      {
+        serviceType: 'multi_night',
+        guestCount: 2,
+        multiNightPackage: 'two_night_4_course',
+      },
+      makePricingTestConfig()
+    )
     assert.equal(result.valid, true)
   })
 
@@ -235,11 +239,14 @@ describe('Pricing Validation — service types', () => {
   })
 
   it('multi_night with placeholder (0-value) package requires custom pricing', () => {
-    const result = validatePricingInput({
-      serviceType: 'multi_night',
-      guestCount: 2,
-      multiNightPackage: 'three_night_3_course', // $0 placeholder
-    })
+    const result = validatePricingInput(
+      {
+        serviceType: 'multi_night',
+        guestCount: 2,
+        multiNightPackage: 'three_night_3_course', // $0 placeholder
+      },
+      makePricingTestConfig()
+    )
     assert.equal(result.valid, false)
     assert.ok(result.errors.some((e) => e.includes('placeholder') || e.includes('custom')))
   })
