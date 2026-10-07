@@ -36,7 +36,7 @@ export function BookingConfirmationEmail({
     : `${guestCount}`
   const preview = hasMatches
     ? `Your request was sent to ${matchedChefCount} chef${matchedChefCount !== 1 ? 's' : ''}.`
-    : 'We received your request and will reach out when a chef becomes available.'
+    : 'Your request is saved. No eligible chef matched it yet.'
 
   return (
     <BaseLayout preview={preview}>
@@ -46,12 +46,13 @@ export function BookingConfirmationEmail({
         <Text style={paragraph}>
           Your request has been sent to {matchedChefCount} chef
           {matchedChefCount !== 1 ? 's' : ''} near {location}. Matched chefs will review the details
-          and reach out directly, usually within 24 hours.
+          and may contact you directly. A response time is not guaranteed.
         </Text>
       ) : (
         <Text style={paragraph}>
           We do not have an available chef match near {location} yet. Your request has been saved,
-          and you can use the status page below to check for updates or browse chef profiles.
+          and no chef has received it. A future match or reply is not guaranteed. Use the status
+          page below to check for updates or browse chef profiles.
         </Text>
       )}
 
@@ -97,7 +98,7 @@ export function BookingConfirmationEmail({
       <Text style={footer}>
         {hasMatches
           ? 'You will receive an email when a chef responds. If no chef responds within 48 hours, we will follow up with alternative options.'
-          : 'We will email you if coverage opens up for this request.'}
+          : 'No payment is due. Your request is saved, but chef coverage and availability are not guaranteed.'}
       </Text>
     </BaseLayout>
   )

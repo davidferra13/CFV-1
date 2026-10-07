@@ -1,0 +1,172 @@
+# Zero-supply booking correction — 2026-10-07
+
+Status: BLOCKED at release verification. This change has not been deployed.
+
+## Requested behavior
+
+David explicitly requested a current public-page and implementation check, a truthful zero-supply booking flow, useful lead capture without guaranteed coverage, regression coverage, and live verification.
+
+The public directory and booking page were checked on October 7. The directory reported zero live chefs and zero accepting inquiries; booking still promised typical replies within 24 hours. Production reported build 065916ad4. Readiness returned HTTP 503 and a database connection refusal at 127.0.0.1:54322. An empty public directory is therefore not proof that the underlying marketplace has no chefs.
+
+## Change
+
+The booking page reads the same discoverable directory source and counts chefs listed as accepting inquiries. When that count is zero, it explains coverage before the form and labels submission as saving an event request. Global directory availability never promises a location-specific match or a response deadline.
+
+The existing POST handler continues to save a no_match booking with zero matched chefs and creates no chef inquiries for an empty eligible-chef result. Its response, confirmation email, status page, and form fallback describe the request as saved and explain that no chef received it. Future matching, availability, and replies are not guaranteed. Empty-directory copy uses the same request language.
+
+No matching algorithm, database schema, payment behavior, or notification transport is changed.
+
+## Evidence and limits
+
+- Five rendered regression tests failed against the original copy, then passed after the change.
+- Eight focused tests (six rendered public surfaces plus the existing positive POST path and a new empty-chef POST path) passed before final Prettier formatting.
+- Final reruns failed before assertions with native Node memory errors, including “Zone Allocation failed - process out of memory” at approximately 24–44 MB heap. A direct renderer process exited 3221226505 without test output. The Windows tasklist command also failed with “Out of memory.” A fresh passing run remains required.
+- The zero-chef POST test verifies one persisted no_match booking with matched_chef_count 0, no client/inquiry/event/link writes, and no chef notification transport calls. All records and recipients are synthetic.
+- The rendered tests check the zero-supply booking page, initial zero/positive form states, empty directory, zero-match email, and zero-match status page. The inline post-submit fallback is reviewed but is not directly exercised by a client interaction test.
+- Read-only review found no critical or important issues; it identified the inline fallback coverage gap above.
+- Prettier completed successfully on the nine owned source/test files.
+- Regression firewall passed navigation/wiring audits (zero orphan routes) and ingredient-identity tests, then app typecheck failed with native V8 allocation errors. The later canonical-runtime check did not finish; this task's stuck session was stopped.
+- Production release gate passed secrets/capability stages but failed audit:completeness: npm preamble broke JSON parsing. A bounded retry with npm_config_loglevel=silent still failed with “Unexpected non-whitespace character after JSON at position 41477 (line 893 column 1).” The underlying audit also reported failures; no gate was bypassed.
+- Standalone app typecheck also exited 134 with a native memory-allocation failure.
+- The whole unit suite did not complete. The initial suite and a concurrency-limited retry were stopped after stalls/resource failures. Neither is claimed as passed.
+- Latest public browser inspection still showed the original booking claims. Candidate UI rendering in unit tests is not live verification.
+
+## Source and release boundary
+
+Work began from origin/main 3fa5a0818 in the isolated fix/zero-supply-booking-20261007 worktree. The canonical CFv1 checkout contained unrelated work and was preserved. Production-live remained on main at 065916ad4; no production build, swap, restart, or database mutation was performed. A generated wiring-audit result from this task was restored to its starting bytes before commit.
+
+Native shared-task admission returned “no .agent-command/project.json found” for this unregistered repository. The bounded source-preservation guard captured a clean isolated baseline before edits. No managed admission policy was bypassed.
+
+## Resume
+
+Restore the existing ChefFlow verification environment, then rerun the focused tests, regression firewall, and verify:release without skipping gates. Resolve the completeness audit failures and the production database connection refusal. With passing evidence, finish the normal main merge path, obtain the existing one-deployer claim, run the stranded-work scan, build main into .next-staging, and use the documented production swap/rollback mechanism. Verify revision identity, readiness, directory, booking desktop/mobile, and the synthetic zero-match outcome without contacting real chefs or customers.
+
+The public correction must not be described as LIVE until those checks succeed.
+
+
+## Take a Chef delivery continuation — 2026-10-07, 19:55 UTC
+
+Owner request: "Cheflowhq.com MUST be better than takeachef.com in ALL ways."
+
+Treat Take a Chef and its Private Chef Manager product as the direct guest/chef benchmark. Preserve ChefFlow's broader food-and-cooking destination direction. "Better" is an acceptance target, not a current superiority claim. Product breadth, test counts, and marketing copy do not establish competitive superiority. Do not fabricate chefs, reviews, coverage, partnerships, or support guarantees.
+
+### Observed baseline
+
+Fresh public retrieval inspected ChefFlow /, /find, /chefs, /book, and /food-plan. The directory displayed 0 public profiles and 0 accepting inquiries; booking still described typical replies within 24 hours. /food-plan redirected to sign-in with no guest continuation in the retrieved page. The homepage described private-chef business software, a narrower presentation than the owner-approved food destination. These are page observations, not a count of all database chefs or proof of a submitted booking.
+
+Take a Chef's live US page displayed real chef profile cards, review content, menu examples, and a request-to-proposal-to-booking explanation. Its official documentation also describes Private Chef Manager's inbox, calendar, menus, quotes, payments, and distribution channels. Those operator and payment functions were documented, not executed in an authenticated competitor account. Exa reviewed 15 search result slots across guest booking, chef operations, and support/payment workstreams; this is not an exhaustive all-feature inventory.
+
+Source references:
+- https://www.takeachef.com/en-us
+- https://helpcenter.takeachef.com/how-to-book-a-private-chef-through-take-a-chef
+- https://helpcenter.takeachef.com/key-features-of-private-chef-manager
+- https://helpcenter.takeachef.com/private-chef-manager-pro-the-complete-chef-guide
+- https://helpcenter.takeachef.com/payout-policy
+- https://helpcenter.takeachef.com/how-do-i-cancel-my-confirmed-booking-and-whats-the-policy
+
+Firecrawl successfully retrieved ChefFlow public pages and the Take a Chef US page. The help-center scrape returned INVALID_ARGUMENT; Exa supplied official help-page excerpts. Firecrawl's interactive mobile session timed out and returned no session identifier or screenshot. No comparative visual, latency, checkout, authenticated operator, refund, or support test is claimed.
+
+### Competitive acceptance target
+
+| Dimension | ChefFlow acceptance requirement | Current evidence |
+| --- | --- | --- |
+| Discovery and supply | Show genuine eligible chefs and location/date fit; explain empty and unavailable coverage accurately | Public directory displays zero; underlying eligible supply unverified |
+| Guest entry | Start inquiry and review permitted content without an account; optional account later | Public booking form exists; food planner guest entry fails |
+| Booking | Inquiry → client → quote/menu → guest review → acceptance + test deposit → booked dinner, with no premature booked state | Complete persisted journey unverified |
+| Menus and dietary needs | Preserve dietary information across guest, menu, chef and event; record revisions and chef confirmation | Scoped booking unit evidence only |
+| Price and chef economics | Correct totals, taxes, travel, deposits and payment state; show charges before commitment | Live money workflow unverified; no pricing/fee changes authorized by this note |
+| Communication | One owned relationship, clear recipient and reply status, recovery for delivery failure | Homepage claims connected records; runtime unverified |
+| Payments and cancellation | Idempotent test payments; reconciled failures/refunds; terms shown before acceptance | Unverified; competitor policy documentation is not a reason to rewrite owner agreements |
+| Trust and support | Accurate profile/review provenance, privacy, owned support path and explicit limits | Unsupported response-time copy remains live |
+| Phone usability and accessibility | Complete the main flows at phone width with usable labels/focus, no overflow, saved-progress recovery | Fresh comparative browser proof unavailable |
+| Chef operations | Connected inquiry, calendar, clients, proposals, menus, event execution and closeout; compare against PCM too | Documented product claims; integrated journey unverified |
+| Reliability | Correct failures, healthy required dependencies, matching deployed revision, successful reload/retry | Database currently healthy; strict readiness still degraded |
+| Food destination | Guest planning → shopping → cooking → resume; routine operation without model calls | Planner sign-in wall observed; broader capabilities remain unverified |
+
+Weakest inspected experience: guest discovery-to-booking, because the displayed coverage and response promise conflict. Highest-priority repair: finish the existing truthful guest booking lane through the real release gates, preserving account/privacy boundaries. Counterargument: ChefFlow also serves operators and cooking audiences; broader value may matter more than global chef count. That changes priority only when its actual intended user journeys succeed on the identified production build.
+
+### Implemented and tested in this continuation
+
+The native chef route-coverage test failed on /business/ops, /reference/dietary-conditions, /reference/food-safety, and /series. Four added behavioral tests also failed because the real route policy classified these paths as public. The minimal repair registers all four as chef-protected routes. Tests assert chef access and denial for unauthenticated, client, staff, partner, vendor and admin contexts, including child pages. This is policy behavior evidence, not live middleware or tenant-data proof.
+
+- Existing zero-supply regressions: fresh 8/8 passes, zero skipped, native exit 0.
+- Combined policy/booking scope: fresh 20/20 passes, zero skipped, native exit 0.
+- After Prettier: all 12 selected route-policy checks pass, zero skipped, native exit 0.
+- Diff review: four route additions and four behavioral cases; Prettier and git diff --check pass.
+- Booking test logs still contain a nonblocking plain-Node React.cache notification import warning. Mocks suppress real customer transports; the passes do not establish notification delivery.
+- Completeness audit: 4 failing check groups before repair, 3 after. Remaining: missing build-surfaces/web-beta/app/_components/release-portal-shell.tsx; API inventory entries dietary-confirm/[token]/route.ts and tracking/meta-capi/route.ts; four national-brand findings. No allowlist, assertion, gate or policy was weakened.
+- Regression firewall passed navigation, wiring (985 routes, zero weak/orphan routes), 15 ingredient checks and 25 fixture replay cases, then failed to settle after the 60-second app-typecheck timeout. The source kills the npm shim and waits for close; inherited descendant pipes can prevent settlement. No full firewall pass is claimed.
+
+### Updated environment and recovery boundary
+
+At 19:40 UTC native memory commit was 86.758%, with 22,629,408,768 bytes of headroom; this supersedes the earlier memory-pressure sample. Both ports 3100 and 54322 listened. Docker reported chefflow_postgres_cfv1 running. Local/public curl readiness now reports db:ok and aiRuntime:degraded with reason local_only_in_production. The deployed build remains 065916ad4. Python's public request received Cloudflare 1010; that client-specific denial is not an outage claim.
+
+The working source is the existing isolated zero-supply worktree/branch from 8000bc6f5. Canonical unrelated changes and other worktrees were preserved. The task-generated wiring report was copied to the native temp evidence path before restoring only that generated file to its clean starting bytes. A process census verified executable, command line, creation time, Windows owner and descendants before stopping only this task's stuck firewall worker PID 423264 and malformed read-only PowerShell probe PID 370228. No other worker or production service was stopped. Both tracked wrappers then exited; absence of every orphan descendant is not claimed.
+
+Evidence is retained at C:/Users/david/AppData/Local/Temp/chefflow-tac-{runtime,owned-processes,zero-tests,policy-red,policy-boundary-red,policy-green,policy-final,completeness,completeness-final,firewall,wiring}-20261007 with the .json or .log suffix appropriate to each receipt.
+
+Status remains BLOCKED, not deployed or verified live. Next executable action: repair the firewall timeout settlement/owned-worker lifecycle so verification terminates with honest failure, then resolve the three remaining completeness groups, preserve optional AI observability without making normal product tasks depend on model calls, and finish the full established main-only release/one-deployer path. Require matching live revision and both actual guest journeys before any competitive-success claim.
+
+
+### Timeout repair and final recovery checkpoint — 20:14 UTC
+
+The next action above is now implemented: regression steps reject on timeout, stop subsequent phases, bound inherited-pipe settlement to a one-second grace period, and emit an owned-child PID plus an explicit unconfirmed-cleanup receipt. Normal successful and unsuccessful exit/output behavior is preserved. The change does not skip required phases or convert a timeout into a pass; it does not kill a descendant tree.
+
+A native fixture first demonstrated two passing controls and two failing timeout cases. The corrected Windows shell fixture actually printed its marker and took 4,665 ms to settle despite a 500 ms limit. After the repair, all four lifecycle tests passed with zero skips, both before and after formatting. The final shell case settled in 1,648 ms. The tests execute the actual private step runner with native children; they do not replace the runner with a mock. Test descendants have a finite four-second lifetime. The production diff retains only 37 inserted lines and one changed line inside that runner; unrelated formatting was removed. Native node --check and git diff --check pass.
+
+The full required regression firewall was rerun without restart or skipped phases. Navigation, zero-orphan/zero-weak wiring, 15 ingredient checks, 25 deterministic fixture replay cases and app typechecking completed. Canonical runtime verification then hit its 120,000 ms limit. The repaired CLI exited 1 after 226.82 seconds overall with the explicit owned-child PID 438752 recovery message, rather than hanging. Runtime/affected-route verification and the full release gate therefore remain incomplete; no overall firewall success is claimed.
+
+Independent recovery inspection traced the interrupted dev:verify lineage to its npm/cmd wrappers, Node verifier, two PowerShell process/socket inspections and the task console. Executable, command, creation time, Windows owner and project directory were captured before cleanup. A guarded native cleanup opened each process handle and rechecked all five identity fields against that independent receipt before stopping exactly six matching task processes. No application server, database, other task or unknown process was stopped. PID 423264 had been reused for this new PowerShell probe, so the earlier same-number receipt was not used as authorization. Complete absence of every possible unobserved descendant is not claimed.
+
+The final generated wiring report was copied into native evidence before restoring only that owned generated file to HEAD. A zero-byte shell-test artifact created at 16:02 local time was removed from the isolated worktree. Unrelated checkouts and user changes remain preserved.
+
+Fresh native curl at 20:14:13 UTC confirms public build-version HTTP 200 with buildId 065916ad4. Loopback strict readiness remains HTTP 503: env/db/circuitBreakers/backgroundJobs are ok; only aiRuntime is degraded, reason local_only_in_production. These results supersede the earlier database refusal and resource-failure observations. No deployment or runtime restart occurred.
+
+Additional native evidence:
+- chefflow-tac-firewall-lifecycle-red3-20261007.log: reliable native failing baseline.
+- chefflow-tac-firewall-lifecycle-green-20261007.log and chefflow-tac-firewall-lifecycle-final-20261007.log: 4/4 passes, zero skips, exit 0.
+- chefflow-tac-firewall-final-20261007.log: bounded real required-run failure.
+- chefflow-tac-firewall-{final,runtime,recovery}-processes-20261007.json: independent identity/lineage receipts.
+- chefflow-tac-firewall-owned-cleanup-20261007.json: exact-identity cleanup results.
+- chefflow-tac-wiring-final-20261007.json: generated audit retained before restoration.
+
+Current status: source fixes are ready for review; production remains unchanged and competitive superiority is not established. Remaining delivery sequence: repair the bounded Windows process/socket inspections used by canonical runtime verification; resolve the three completeness groups listed above; align optional AI health reporting with the owner-approved deterministic routine flows; pass regression:firewall and verify:release; then complete the established main-only staged release and verify the live guest booking and guest planning journeys on the matching deployed revision.
+
+### Secure guest confirmation and release-tooling checkpoint — 21:29 UTC
+
+Status: implemented and locally verified; release remains BLOCKED. This section supersedes the previous list of three completeness failures and the verifier's default-credential database refusal.
+
+The guest dietary API now derives tenant/event/guest ownership from the unique bearer link, rejects malformed or expired links, scopes every guest/outreach read and update, validates rather than silently discards allergy input, applies a rate limit, and sends private no-store responses. Guest access remains account-free. Success requires both the guest update and its outreach receipt. Those two writes are not atomic: a receipt failure explicitly reports the saved information and asks for a retry, rather than claiming confirmation. The existing form sends the validated arrays/enums and retains its entered fields when POST fails. No real guest record or customer notification was used by route tests.
+
+The Meta collection API now uses the actual shared authentication/validation/rate guard, permits a bounded set of nonfinancial events, rejects client-originated purchases and foreign source URLs, derives request metadata on the server, and reports provider failures as HTTP 502 without exposing provider details. The transport helper itself was not changed or verified against Meta. Tests use synthetic users and a mocked provider; no tracking event was sent.
+
+API middleware exemptions now match a path or its children, so similarly prefixed sibling paths do not inherit exemptions. The dietary bearer handler can be reached without an account; its own capability checks enforce access.
+
+The stale web-beta overlay requirement now comes from the active build manifest. Runtime layouts and any overlay actually required by a manifest remain checked. A behavioral test injects a required missing overlay and proves that it still fails. Global discovery copy says seasonal dishes. The national-brand audit permits the distinct DF Private Chef operator's real New England service area only on its own two business pages; platform and unrelated geography controls still fail.
+
+Windows process/socket inspection has a 15-second bound and reports its owned probe PID plus unknown runtime ownership on timeout. A failed inspection is not treated as an empty or healthy runtime. Release verification now suppresses npm banners only for JSON steps, parses their stdout separately, retains diagnostic output, waits for output-stream closure, and loads the checkout's normal Next environment before executing gates. Explicitly supplied CI environment values retain precedence.
+
+#### Outcome-first review of the dietary workflow
+
+1. Result: save the correct guest's explicit dietary information and record the host-facing response; synthetic persisted-row and failure cases prove those boundaries. The full live guest journey remains unverified.
+2. Thinking retained: guests choose their own restrictions, severity and notes. Invalid information is rejected; there is no model call or automatic interpretation.
+3. Existing workflow reused: the same bearer link, form, event_guests record and dietary_outreach receipt are used.
+4. Canonical records reused: no duplicate guest, event, status store or alternate confirmation lane was introduced.
+5. Effort justified: no guest account is required, and failed submission keeps the existing form state available for correction or retry.
+
+#### Fresh verification and remaining blockers
+
+- 59 focused API, policy, booking, audit and native lifecycle tests pass across the 52-test run and the seven additional real route-coverage cases; zero skipped. Two initially guessed filenames were absent and were replaced with the actual coverage files before this count was recorded.
+- Ten release protocol/environment and existing attestation/profile tests pass; zero skipped. Total selected unique checks: 69. The dietary route's ten tests also pass after its type annotation correction; repeated cases are not added to that total.
+- App typecheck passes on final source, native exit 0 at 21:28:54 UTC. An earlier run compiled the previous object parameter annotation and failed; its evidence is retained rather than counted as success.
+- ESLint passes for all changed TypeScript source/tests, including the new environment test. Both changed runtime scripts pass node --check; git diff --check passes.
+- Full completeness audit: 7 pass, 5 warn, 0 fail, exit 0. Warnings remain in dynamic route resolution, server-action inventories, derived-output provenance and public SEO. This is not an all-warning-clean audit or proof of every public/authenticated journey.
+- Required regression firewall ran without restarts or skipped phases. Navigation, zero-orphan/zero-weak wiring (985 routes), and 15 ingredient checks passed. The mandatory persona evaluator timed out at 360 seconds, owned child PID 21076; overall exit 1. No later phase is claimed as passed in that run.
+- Independent runtime verification exits 1 after 15 seconds, identifying Windows probe PID 438020. A native read-only census at 21:20:55 UTC found neither of those two owned PIDs nor descendants associated with those roots. No service or unknown process was stopped.
+- Full verify:release passes secrets, capability claims and the parsed completeness stage. With the normal local environment loaded, live DB contract status is ok, no required objects are missing, and all four rollback validations pass. It still exits 1: two unapproved migration timestamp collisions and three required-index EXPLAIN checks fail. The database report is preserved; no migration was renumbered or planner assertion relaxed.
+- The whole unit suite, full release typecheck/lint/build/smoke stages and live candidate desktop/mobile flows are not claimed as passed.
+- Fresh native public build-version at 21:19:11 UTC is HTTP 200, build 065916ad4. Strict loopback readiness is HTTP 503: env/db/circuitBreakers/backgroundJobs ok, aiRuntime degraded, reason local_only_in_production. No production build, swap, restart or durable customer-data write occurred. Existing DB gate rollback validations committed no migration.
+
+The generated wiring report is preserved before restoring its starting tracked content. Unrelated canonical changes are preserved. Native receipts/logs use the chefflow-improve-*-20261007 prefix in the existing temporary evidence directory. The final release attestation is full-verify-444428-1791408382850.json under the existing .agents/release-attestations path.
+
+Next executable action: inspect the two migration collisions against actual migration history and the three query plans against real indexes/statistics, then repair their causes without changing gate severity. Recover the required evaluator and Windows ownership inspection, rerun the unskipped gates, and finish the established main-only staged release. Require matching deployed revision and actual guest booking/food-planning journeys before describing these changes as live or ChefFlow as superior to Take a Chef.

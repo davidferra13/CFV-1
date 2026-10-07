@@ -277,7 +277,7 @@ export async function POST(request: NextRequest) {
         matched_count: 0,
         booking_token: bookingToken,
         message:
-          'No chefs are currently available in your area for this request. We have saved your details and will notify you when a chef becomes available.',
+          'No eligible chef matched this request. Your details are saved and no chef has received them. A future match or reply is not guaranteed. Use your request status page to check for updates.',
         location: resolvedLocation.displayLabel,
       })
     }

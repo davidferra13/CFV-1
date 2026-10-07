@@ -107,3 +107,45 @@ test('shared neutral examples stay clear of forbidden regional terms', () => {
 
   assert.equal(findings.length, 0)
 })
+
+test('permits the real DFPC service region only in its two business surfaces', () => {
+  for (const relativePath of ['app/dfpc/layout.tsx', 'app/dfpc/page.tsx']) {
+    assert.deepEqual(
+      scanNationalBrandAuditContent({
+        relativePath,
+        content: 'Private Chef Services in New England',
+      }),
+      []
+    )
+  }
+})
+
+test('DFPC regional scope does not exempt ChefFlow or other business pages', () => {
+  for (const relativePath of [
+    'app/(public)/find/page.tsx',
+    'app/dfpc/other.tsx',
+    'app/other-business/page.tsx',
+  ]) {
+    assert.deepEqual(
+      findingIds(
+        scanNationalBrandAuditContent({
+          relativePath,
+          content: 'Private Chef Services in New England',
+        })
+      ),
+      ['new-england']
+    )
+  }
+})
+
+test('DFPC scope still catches unrelated regional example bias', () => {
+  assert.deepEqual(
+    findingIds(
+      scanNationalBrandAuditContent({
+        relativePath: 'app/dfpc/page.tsx',
+        content: 'placeholder="Private chefs in Haverhill..."',
+      })
+    ),
+    ['haverhill']
+  )
+})

@@ -178,6 +178,7 @@ const DEFAULT_FORM: FormState = {
 }
 
 type BookDinnerFormProps = {
+  acceptingChefCount?: number
   initialPrefill?: PublicOpenBookingPrefill
   seasonalContext?: PublicSeasonalMarketPulseBookingContext | null
   analyticsEntryContext?: string | null
@@ -191,6 +192,7 @@ type BookDinnerFormProps = {
 }
 
 export function BookDinnerForm({
+  acceptingChefCount,
   initialPrefill,
   seasonalContext,
   analyticsEntryContext,
@@ -384,10 +386,18 @@ export function BookDinnerForm({
     if (form.service_type === 'dinner_party') browseParams.set('intent', 'dinner_party')
     const browseHref = `/eat${browseParams.toString() ? `?${browseParams.toString()}` : ''}`
     const steps = [
-      { label: 'Request received', note: 'Your details are with the chef.', done: true },
       {
-        label: 'Chef reviews and responds',
-        note: 'Usually within 24 hours. You will get an email.',
+        label: hasMatches ? 'Request sent to matched chefs' : 'Request saved',
+        note: hasMatches
+          ? 'Eligible matched chefs received your details.'
+          : 'No chef has received this request.',
+        done: true,
+      },
+      {
+        label: hasMatches ? 'Chef may review and respond' : 'No chef match yet',
+        note: hasMatches
+          ? 'Interested chefs may contact you. No response deadline is promised.'
+          : 'A match or reply is not guaranteed. Check your request status for updates.',
         done: false,
       },
       {
@@ -418,7 +428,9 @@ export function BookDinnerForm({
             </svg>
           </div>
           <div>
-            <h2 className="text-xl font-semibold text-stone-100">Request sent</h2>
+            <h2 className="text-xl font-semibold text-stone-100">
+              {hasMatches ? 'Request sent' : 'Request saved'}
+            </h2>
             <p className="text-sm text-stone-400 mt-0.5">{result.message}</p>
           </div>
         </div>
@@ -429,7 +441,7 @@ export function BookDinnerForm({
             What happens next
           </p>
           <ol className="space-y-3">
-            {steps.map((step, i) => (
+            {(hasMatches ? steps : steps.slice(0, 2)).map((step, i) => (
               <li key={i} className="flex items-start gap-3">
                 <span
                   className={`mt-0.5 flex h-5 w-5 shrink-0 items-center justify-center rounded-full text-xs font-bold ${
@@ -892,15 +904,18 @@ export function BookDinnerForm({
                 d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z"
               />
             </svg>
-            Finding chefs near you...
+            Saving your request...
           </>
+        ) : acceptingChefCount === 0 ? (
+          'Save my event request'
         ) : (
-          'Find chefs for my event'
+          'Submit my event request'
         )}
       </button>
 
       <p className="text-center text-xs text-stone-400">
-        Matched chefs typically respond within 24 hours. Free to submit, no obligation.
+        A chef match and reply are not guaranteed. With no eligible match, your request is saved
+        without being sent to a chef. Free to submit, no obligation.
       </p>
       <p className="text-center text-xs text-stone-500">
         Your information is shared only with matched chefs. We never sell your data.

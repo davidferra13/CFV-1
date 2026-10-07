@@ -16,6 +16,7 @@ const CANONICAL_PORT = 3100
 const CANONICAL_URL = `http://localhost:${CANONICAL_PORT}`
 const HEALTH_URL = `${CANONICAL_URL}/api/health`
 const START_TIMEOUT_MS = 60_000
+const PROCESS_INSPECTION_TIMEOUT_MS = 15_000
 const HEALTH_TIMEOUT_MS = Number(process.env.DEV_RUNTIME_HEALTH_TIMEOUT_MS || 30_000)
 
 function normalize(value) {
@@ -43,11 +44,35 @@ function parseArgs(argv) {
 }
 
 async function powershellJson(script) {
-  const { stdout } = await execFileAsync(
+  const inspection = execFileAsync(
     'powershell.exe',
-    ['-NoProfile', '-ExecutionPolicy', 'Bypass', '-Command', `& { ${script} } | ConvertTo-Json -Depth 5`],
-    { cwd: PROJECT_ROOT, maxBuffer: 20 * 1024 * 1024 }
+    [
+      '-NoProfile',
+      '-ExecutionPolicy',
+      'Bypass',
+      '-Command',
+      `& { ${script} } | ConvertTo-Json -Depth 5`,
+    ],
+    {
+      cwd: PROJECT_ROOT,
+      maxBuffer: 20 * 1024 * 1024,
+      timeout: PROCESS_INSPECTION_TIMEOUT_MS,
+    }
   )
+  let stdout
+  try {
+    ;({ stdout } = await inspection)
+  } catch (error) {
+    if (error.killed) {
+      throw Object.assign(
+        new Error(
+          `Windows runtime inspection timed out after ${PROCESS_INSPECTION_TIMEOUT_MS}ms; owned probe PID ${inspection.child?.pid ?? 'unknown'}; runtime ownership is unknown. Verify ownership before service control.`
+        ),
+        { code: 'DEV_RUNTIME_INSPECTION_TIMEOUT', ownedPid: inspection.child?.pid }
+      )
+    }
+    throw error
+  }
   const trimmed = stdout.trim()
   if (!trimmed) return []
   const parsed = JSON.parse(trimmed)

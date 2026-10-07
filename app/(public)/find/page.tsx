@@ -79,7 +79,7 @@ export default function FindChefPage() {
               <input
                 id="find-craving"
                 name="craving"
-                placeholder="Italian, tasting menu, steak, seasonal New England..."
+                placeholder="Italian, tasting menu, steak, seasonal dishes..."
                 className={fieldClass}
               />
             </div>

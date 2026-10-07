@@ -451,13 +451,13 @@ export default async function ChefDirectoryPage({ searchParams }: PageProps) {
           <div className="py-20 text-center">
             <h2 className="text-xl font-semibold text-stone-300">
               {allChefs.length === 0
-                ? 'The directory is accepting nationwide requests'
+                ? 'No chefs are currently listed'
                 : 'No chefs match these filters'}
             </h2>
             <p className="mx-auto mt-2 max-w-md text-sm text-stone-500">
               {allChefs.length === 0
-                ? 'Chef onboarding is underway. Describe your event and we will match you when coverage expands.'
-                : 'Try a broader search, or describe your event so matched chefs can review the request directly.'}
+                ? 'Chef onboarding is underway. You can submit your event details while coverage grows. A chef match, availability, and a reply are not guaranteed.'
+                : 'Try a broader search, or submit an event request. It is shared only if eligible chefs match; a match or reply is not guaranteed.'}
             </p>
 
             <div className="mt-6 flex items-center justify-center gap-4">
@@ -467,7 +467,9 @@ export default async function ChefDirectoryPage({ searchParams }: PageProps) {
                 analyticsProps={{ section: 'zero_results' }}
                 className="rounded-xl bg-brand-600 px-5 py-2.5 text-sm font-semibold text-white transition-colors hover:bg-brand-700"
               >
-                {PUBLIC_PRIMARY_CONSUMER_CTA.label}
+                {directorySummary.acceptingChefs === 0
+                  ? 'Submit an event request'
+                  : PUBLIC_PRIMARY_CONSUMER_CTA.label}
               </TrackedLink>
               <Link
                 href="/chefs"

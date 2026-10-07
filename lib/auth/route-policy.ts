@@ -7,6 +7,7 @@ export const CHEF_PROTECTED_PATHS = [
   '/analytics',
   '/autopilot',
   '/briefing',
+  '/business/ops',
   '/calendar',
   '/calls',
   '/cannabis',
@@ -89,6 +90,8 @@ export const CHEF_PROTECTED_PATHS = [
   '/quotes',
   '/rate-card',
   '/receipts',
+  '/reference/dietary-conditions',
+  '/reference/food-safety',
   '/recipes',
   '/remy',
   '/remy/operating',
@@ -97,6 +100,7 @@ export const CHEF_PROTECTED_PATHS = [
   '/reputation',
   '/reviews',
   '/safety',
+  '/series',
   '/settings',
   '/shopping/bulk',
   '/social',
@@ -296,6 +300,7 @@ export const API_SKIP_AUTH_PREFIXES = [
   '/api/storage',
   '/api/realtime',
   '/api/book',
+  '/api/dietary-confirm',
   '/api/cron',
   '/api/discovery',
   '/api/sentinel',
@@ -379,7 +384,7 @@ export function isAdminRoutePath(pathname: string): boolean {
 }
 
 export function isApiSkipAuthPath(pathname: string): boolean {
-  return matchesAnyPrefix(pathname, API_SKIP_AUTH_PREFIXES)
+  return matchesAnyPathOrChild(pathname, API_SKIP_AUTH_PREFIXES)
 }
 
 export function getHomePathForRole(role: string | null | undefined): string {

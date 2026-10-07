@@ -45,7 +45,7 @@ async function runStep(name, command, args, options = {}) {
   const started = Date.now()
   process.stdout.write(`\n[regression-firewall] ${name}\n`)
 
-  return new Promise((resolveStep) => {
+  return new Promise((resolveStep, rejectStep) => {
     const child = spawn(command, args, {
       cwd: ROOT,
       env: {
@@ -62,9 +62,37 @@ async function runStep(name, command, args, options = {}) {
     let stdout = ''
     let stderr = ''
     let timedOut = false
+    let settled = false
+    let cleanupTimer
+
+    // A Windows shell can close while its descendant still owns these pipes.
+    // Do not wait indefinitely or continue release phases with cleanup unknown.
+    const rejectTimedOut = () => {
+      if (settled) return
+      settled = true
+      clearTimeout(timer)
+      clearTimeout(cleanupTimer)
+      child.stdout.destroy()
+      child.stderr.destroy()
+      child.unref()
+      const error = new Error(
+        `${name} timed out after ${timeoutMs}ms; owned child PID ${child.pid ?? 'unavailable'}. ` +
+          'Descendant cleanup is unconfirmed. Reconcile this process lineage before restarting verification.'
+      )
+      Object.assign(error, {
+        code: 'REGRESSION_STEP_CLEANUP_UNCONFIRMED',
+        ownedPid: child.pid,
+        timedOut: true,
+        durationMs: Date.now() - started,
+        stdout,
+        stderr,
+      })
+      rejectStep(error)
+    }
 
     const timer = setTimeout(() => {
       timedOut = true
+      cleanupTimer = setTimeout(rejectTimedOut, 1000)
       child.kill(isWin ? undefined : 'SIGTERM')
     }, timeoutMs)
 
@@ -82,6 +110,10 @@ async function runStep(name, command, args, options = {}) {
 
     child.on('close', (code, signal) => {
       clearTimeout(timer)
+      clearTimeout(cleanupTimer)
+      if (settled) return
+      if (timedOut) return rejectTimedOut()
+      settled = true
       resolveStep({
         name,
         ok: code === 0 && !timedOut,
@@ -96,6 +128,10 @@ async function runStep(name, command, args, options = {}) {
 
     child.on('error', (error) => {
       clearTimeout(timer)
+      clearTimeout(cleanupTimer)
+      if (settled) return
+      if (timedOut) return rejectTimedOut()
+      settled = true
       resolveStep({
         name,
         ok: false,

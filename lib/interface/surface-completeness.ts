@@ -424,9 +424,6 @@ const SURFACE_MODE_CONTRACT_EXPECTATIONS: SurfaceModeContractExpectation[] = [
     role: 'partner',
   },
 ]
-const BUILD_SURFACE_MODE_SHELL_PATHS = [
-  'build-surfaces/web-beta/app/_components/release-portal-shell.tsx',
-]
 
 const SYSTEM_AUDIT_ENTRYPOINT_DEFINITIONS: SystemAuditEntrypointDefinition[] = [
   {
@@ -1083,7 +1080,17 @@ async function runBuildSurfaceIntegrityCheck(): Promise<SurfaceCompletenessCheck
   }
 }
 
-function runSurfaceModeDeclarationCheck(): SurfaceCompletenessCheckResult {
+async function runSurfaceModeDeclarationCheck(): Promise<SurfaceCompletenessCheckResult> {
+  const buildSurfaceModule = await importScriptModule<BuildSurfaceManifestModule>(
+    'scripts/build-surface-manifest.mjs'
+  )
+  const buildSurfaceShellPaths = [
+    ...new Set(
+      Object.values(buildSurfaceModule.BUILD_SURFACE_MANIFESTS ?? {})
+        .flatMap((manifest) => manifest.requiredOverlayPaths ?? [])
+        .filter((relativePath) => relativePath.endsWith('/release-portal-shell.tsx'))
+    ),
+  ]
   const findings: SurfaceCompletenessFinding[] = []
   let missingPortalMarkers = 0
   let missingSurfaceMarkers = 0
@@ -1156,7 +1163,7 @@ function runSurfaceModeDeclarationCheck(): SurfaceCompletenessCheckResult {
     }
   }
 
-  for (const relativePath of BUILD_SURFACE_MODE_SHELL_PATHS) {
+  for (const relativePath of buildSurfaceShellPaths) {
     const absolutePath = path.join(process.cwd(), relativePath)
     const source = readSourceFileIfExists(absolutePath)
 
@@ -1194,7 +1201,7 @@ function runSurfaceModeDeclarationCheck(): SurfaceCompletenessCheckResult {
     status: resolveStatus(findings),
     summary: {
       runtimeLayoutsChecked: SURFACE_MODE_CONTRACT_EXPECTATIONS.length,
-      buildSurfaceShellsChecked: BUILD_SURFACE_MODE_SHELL_PATHS.length,
+      buildSurfaceShellsChecked: buildSurfaceShellPaths.length,
       missingPortalMarkers,
       missingSurfaceMarkers,
       missingResolvers,
