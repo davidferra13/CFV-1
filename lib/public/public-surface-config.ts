@@ -17,7 +17,7 @@ export type PublicCta = {
 
 export const PUBLIC_PRIMARY_CONSUMER_CTA: PublicCta = {
   href: '/book',
-  label: 'Book Now',
+  label: 'Start Request',
 }
 
 export const PUBLIC_CONSUMER_DISCOVERY_ENTRY: PublicCta = {
