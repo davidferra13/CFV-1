@@ -106,3 +106,28 @@ The working source is the existing isolated zero-supply worktree/branch from 800
 Evidence is retained at C:/Users/david/AppData/Local/Temp/chefflow-tac-{runtime,owned-processes,zero-tests,policy-red,policy-boundary-red,policy-green,policy-final,completeness,completeness-final,firewall,wiring}-20261007 with the .json or .log suffix appropriate to each receipt.
 
 Status remains BLOCKED, not deployed or verified live. Next executable action: repair the firewall timeout settlement/owned-worker lifecycle so verification terminates with honest failure, then resolve the three remaining completeness groups, preserve optional AI observability without making normal product tasks depend on model calls, and finish the full established main-only release/one-deployer path. Require matching live revision and both actual guest journeys before any competitive-success claim.
+
+
+### Timeout repair and final recovery checkpoint — 20:14 UTC
+
+The next action above is now implemented: regression steps reject on timeout, stop subsequent phases, bound inherited-pipe settlement to a one-second grace period, and emit an owned-child PID plus an explicit unconfirmed-cleanup receipt. Normal successful and unsuccessful exit/output behavior is preserved. The change does not skip required phases or convert a timeout into a pass; it does not kill a descendant tree.
+
+A native fixture first demonstrated two passing controls and two failing timeout cases. The corrected Windows shell fixture actually printed its marker and took 4,665 ms to settle despite a 500 ms limit. After the repair, all four lifecycle tests passed with zero skips, both before and after formatting. The final shell case settled in 1,648 ms. The tests execute the actual private step runner with native children; they do not replace the runner with a mock. Test descendants have a finite four-second lifetime. The production diff retains only 37 inserted lines and one changed line inside that runner; unrelated formatting was removed. Native node --check and git diff --check pass.
+
+The full required regression firewall was rerun without restart or skipped phases. Navigation, zero-orphan/zero-weak wiring, 15 ingredient checks, 25 deterministic fixture replay cases and app typechecking completed. Canonical runtime verification then hit its 120,000 ms limit. The repaired CLI exited 1 after 226.82 seconds overall with the explicit owned-child PID 438752 recovery message, rather than hanging. Runtime/affected-route verification and the full release gate therefore remain incomplete; no overall firewall success is claimed.
+
+Independent recovery inspection traced the interrupted dev:verify lineage to its npm/cmd wrappers, Node verifier, two PowerShell process/socket inspections and the task console. Executable, command, creation time, Windows owner and project directory were captured before cleanup. A guarded native cleanup opened each process handle and rechecked all five identity fields against that independent receipt before stopping exactly six matching task processes. No application server, database, other task or unknown process was stopped. PID 423264 had been reused for this new PowerShell probe, so the earlier same-number receipt was not used as authorization. Complete absence of every possible unobserved descendant is not claimed.
+
+The final generated wiring report was copied into native evidence before restoring only that owned generated file to HEAD. A zero-byte shell-test artifact created at 16:02 local time was removed from the isolated worktree. Unrelated checkouts and user changes remain preserved.
+
+Fresh native curl at 20:14:13 UTC confirms public build-version HTTP 200 with buildId 065916ad4. Loopback strict readiness remains HTTP 503: env/db/circuitBreakers/backgroundJobs are ok; only aiRuntime is degraded, reason local_only_in_production. These results supersede the earlier database refusal and resource-failure observations. No deployment or runtime restart occurred.
+
+Additional native evidence:
+- chefflow-tac-firewall-lifecycle-red3-20261007.log: reliable native failing baseline.
+- chefflow-tac-firewall-lifecycle-green-20261007.log and chefflow-tac-firewall-lifecycle-final-20261007.log: 4/4 passes, zero skips, exit 0.
+- chefflow-tac-firewall-final-20261007.log: bounded real required-run failure.
+- chefflow-tac-firewall-{final,runtime,recovery}-processes-20261007.json: independent identity/lineage receipts.
+- chefflow-tac-firewall-owned-cleanup-20261007.json: exact-identity cleanup results.
+- chefflow-tac-wiring-final-20261007.json: generated audit retained before restoration.
+
+Current status: source fixes are ready for review; production remains unchanged and competitive superiority is not established. Remaining delivery sequence: repair the bounded Windows process/socket inspections used by canonical runtime verification; resolve the three completeness groups listed above; align optional AI health reporting with the owner-approved deterministic routine flows; pass regression:firewall and verify:release; then complete the established main-only staged release and verify the live guest booking and guest planning journeys on the matching deployed revision.
