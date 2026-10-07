@@ -26,6 +26,19 @@ For requested implementation work in an already-linked repository and its establ
 
 Do not ask for these actions again.
 
+## Independence From Agent Command
+
+Owner direction, October 7, 2026: retire Agent Command as a mandatory software-delivery dependency.
+
+- Use this repository's authenticated Git/GitHub operations, required checks, and established production path. Routine approved delivery must not require an Agent Command broker proposal, observer-to-worker assignment, context-bus session, Digital David consultation, or management dashboard to be available.
+- Repository permissions, branch protection, source ownership, required tests, resource admission, data preservation, backups, rollback, and one-deployer protection still apply. Preserve peer changes and use isolated worktrees when needed.
+- Agent Command and Paperclip may provide optional coordination and history. Neither may become a product runtime dependency or a substitute for real release evidence.
+- Preserve existing boundaries for client contact, money, credentials, destructive actions, third-party launches, and household/device access. This direction grants no additional authority for those actions.
+- Do not reinstall retired Agent Command callbacks or restore a mandatory broker gate as a routine setup or contract-sync step. Re-enabling that dependency requires a new explicit owner instruction.
+
+This section supersedes older instructions that make Agent Command a prerequisite for routine authorized repository work. It does not grant access through a denied platform permission or permission to overwrite another writer's bytes.
+
+
 ## Required Lifecycle
 
 1. **Resolve the target.** Identify the canonical repository/worktree, requested product, branch and upstream, dirty state, deployment configuration, production domain, and current live revision. Never infer a target from a nearby project.
@@ -86,7 +99,7 @@ Owner complaint 2026-09-30: "ChefFlow looks different every single time we work 
 
 1. **Only `origin/main` is ChefFlow.** Work that is not on main does not exist for the owner. Commit and push to main the moment it is verified (lifecycle steps 6 and 7). Uncommitted or branch-only UI work older than a working session is a defect, not a draft.
 2. **Production only ever serves main.** `Documents\CFv1-worktrees\production-live` stays checked out on `main` at exactly the commit it serves (`.next\BUILD_ID` equals `git rev-parse --short HEAD`). Never commit, cherry-pick, or create a branch inside `production-live`; do the work in your own worktree, push to main, then deploy main.
-3. **One deployer at a time.** Before building or swapping in `production-live`, register with `C:\Users\david\Desktop\AGENT COMMAND\agent-control\checkin.ps1 start -Agent <you> -Repo "Documents\CFv1-worktrees\production-live" -Task "<deploy commit>"`. If `checkin.ps1 who -Repo "Documents\CFv1-worktrees\production-live"` exits 3, or a `run-next-build` process is already running there, wait for it; do not start a second build. Release with `checkin.ps1 end` after production is verified.
+3. **One deployer at a time.** Serialize the established production path with a target-scoped operating-system lock held by the deployment process through build, swap, and verification, or the established hosting/CI deployment concurrency control. Inspect the target checkout and current build/server processes before starting; an active `run-next-build` process or unresolved source ownership blocks a second deployment. Agent Command check-in may report activity but is not a required release authority. Release the deployment lock after production is verified; a process-owned lock must release on process exit.
 4. **Never serve a folder agents edit.** No dev server, `next start`, or tunnel may point production hostnames at `Documents\CFv1` or any feature worktree.
 5. **Before moving production, rescue stranded work.** Run `node scripts/stranded-work-scan.mjs` and commit or explicitly hand off anything it lists under `app/`, `components/`, or `lib/`, so a deploy never silently drops work someone could see before.
 6. **Direction changes are the owner's.** A change that alters what the public homepage or the chef Today page is for (who it addresses, its primary action) needs the owner's explicit instruction in the task. Record that instruction in the commit message.
