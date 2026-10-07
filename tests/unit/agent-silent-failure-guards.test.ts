@@ -54,7 +54,7 @@ test('cron monitor supports strict unhealthy status for external alerting', () =
   const source = read('app/api/scheduled/monitor/route.ts')
 
   assert.match(source, /const strict = request\.nextUrl\.searchParams\.get\('strict'\) === '1'/)
-  assert.match(source, /status:\s*strict && !overallHealthy \? 503 : 200/)
+  assert.match(source, /status:\s*strict && !report\.healthy \? 503 : 200/)
 })
 
 test('queue actions durably record state-transition failures instead of ignoring writes', () => {
