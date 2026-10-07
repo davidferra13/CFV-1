@@ -1,4 +1,5 @@
 import { spawn } from 'node:child_process'
+import nextEnv from '@next/env'
 import { rm } from 'node:fs/promises'
 import path from 'node:path'
 import { pathToFileURL } from 'node:url'
@@ -252,10 +253,14 @@ export function buildReleaseProfiles(context = buildReleaseProfileContext()) {
         )
       }
 
+      const executionStep = stepManifest.machineReadable
+        ? { ...resolvedStep, args: ['--silent', ...resolvedStep.args] }
+        : resolvedStep
+
       return {
-        ...resolvedStep,
+        ...executionStep,
         classification: stepManifest.classification,
-        command: toStepCommand(resolvedStep),
+        command: toStepCommand(executionStep),
         gateSeverity: stepManifest.gateSeverity,
         machineReadable: Boolean(stepManifest.machineReadable),
         warningPolicyIds: [...(stepManifest.warningPolicyIds ?? [])],
@@ -360,7 +365,10 @@ function evaluateStepExecution(step, executionResult) {
     })
   )
 
-  const machineReadableResult = parseMachineReadableStepOutput(step, executionResult.output)
+  const machineReadableResult = parseMachineReadableStepOutput(
+    step,
+    executionResult.stdout ?? executionResult.output
+  )
   if (machineReadableResult.finding) {
     findings.push(machineReadableResult.finding)
   }
@@ -486,13 +494,17 @@ function executeStepAttempt(step) {
     const finalize = (payload) => {
       if (settled) return
       settled = true
-      const output = [...stdoutChunks, ...stderrChunks].join('')
+      const stdout = stdoutChunks.join('')
+      const stderr = stderrChunks.join('')
+      const output = stdout + stderr
       const completedAt = new Date().toISOString()
       resolve({
         command: `${command} ${step.args.join(' ')}`,
         completedAt,
         durationMs: Date.parse(completedAt) - Date.parse(startedAt),
         ...payload,
+        stdout,
+        stderr,
         output,
         outputSummary: summarizeOutput(output),
         startedAt,
@@ -519,7 +531,7 @@ function executeStepAttempt(step) {
       })
     })
 
-    child.on('exit', (code) => {
+    child.on('close', (code) => {
       finalize({
         errorMessage: code === 0 ? null : null,
         exitCode: typeof code === 'number' ? code : null,
@@ -624,7 +636,12 @@ export async function runReleaseVerification({
   }
 }
 
+export function loadReleaseEnvironment(cwd = process.cwd(), env = process.env) {
+  nextEnv.loadEnvConfig(cwd, env.NODE_ENV !== 'production')
+}
+
 export async function main(args = process.argv.slice(2), env = process.env) {
+  loadReleaseEnvironment(process.cwd(), env)
   const profile = resolveProfile(args)
   const context = buildReleaseProfileContext(env)
 

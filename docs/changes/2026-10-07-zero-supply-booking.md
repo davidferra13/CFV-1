@@ -131,3 +131,42 @@ Additional native evidence:
 - chefflow-tac-wiring-final-20261007.json: generated audit retained before restoration.
 
 Current status: source fixes are ready for review; production remains unchanged and competitive superiority is not established. Remaining delivery sequence: repair the bounded Windows process/socket inspections used by canonical runtime verification; resolve the three completeness groups listed above; align optional AI health reporting with the owner-approved deterministic routine flows; pass regression:firewall and verify:release; then complete the established main-only staged release and verify the live guest booking and guest planning journeys on the matching deployed revision.
+
+### Secure guest confirmation and release-tooling checkpoint — 21:29 UTC
+
+Status: implemented and locally verified; release remains BLOCKED. This section supersedes the previous list of three completeness failures and the verifier's default-credential database refusal.
+
+The guest dietary API now derives tenant/event/guest ownership from the unique bearer link, rejects malformed or expired links, scopes every guest/outreach read and update, validates rather than silently discards allergy input, applies a rate limit, and sends private no-store responses. Guest access remains account-free. Success requires both the guest update and its outreach receipt. Those two writes are not atomic: a receipt failure explicitly reports the saved information and asks for a retry, rather than claiming confirmation. The existing form sends the validated arrays/enums and retains its entered fields when POST fails. No real guest record or customer notification was used by route tests.
+
+The Meta collection API now uses the actual shared authentication/validation/rate guard, permits a bounded set of nonfinancial events, rejects client-originated purchases and foreign source URLs, derives request metadata on the server, and reports provider failures as HTTP 502 without exposing provider details. The transport helper itself was not changed or verified against Meta. Tests use synthetic users and a mocked provider; no tracking event was sent.
+
+API middleware exemptions now match a path or its children, so similarly prefixed sibling paths do not inherit exemptions. The dietary bearer handler can be reached without an account; its own capability checks enforce access.
+
+The stale web-beta overlay requirement now comes from the active build manifest. Runtime layouts and any overlay actually required by a manifest remain checked. A behavioral test injects a required missing overlay and proves that it still fails. Global discovery copy says seasonal dishes. The national-brand audit permits the distinct DF Private Chef operator's real New England service area only on its own two business pages; platform and unrelated geography controls still fail.
+
+Windows process/socket inspection has a 15-second bound and reports its owned probe PID plus unknown runtime ownership on timeout. A failed inspection is not treated as an empty or healthy runtime. Release verification now suppresses npm banners only for JSON steps, parses their stdout separately, retains diagnostic output, waits for output-stream closure, and loads the checkout's normal Next environment before executing gates. Explicitly supplied CI environment values retain precedence.
+
+#### Outcome-first review of the dietary workflow
+
+1. Result: save the correct guest's explicit dietary information and record the host-facing response; synthetic persisted-row and failure cases prove those boundaries. The full live guest journey remains unverified.
+2. Thinking retained: guests choose their own restrictions, severity and notes. Invalid information is rejected; there is no model call or automatic interpretation.
+3. Existing workflow reused: the same bearer link, form, event_guests record and dietary_outreach receipt are used.
+4. Canonical records reused: no duplicate guest, event, status store or alternate confirmation lane was introduced.
+5. Effort justified: no guest account is required, and failed submission keeps the existing form state available for correction or retry.
+
+#### Fresh verification and remaining blockers
+
+- 59 focused API, policy, booking, audit and native lifecycle tests pass across the 52-test run and the seven additional real route-coverage cases; zero skipped. Two initially guessed filenames were absent and were replaced with the actual coverage files before this count was recorded.
+- Ten release protocol/environment and existing attestation/profile tests pass; zero skipped. Total selected unique checks: 69. The dietary route's ten tests also pass after its type annotation correction; repeated cases are not added to that total.
+- App typecheck passes on final source, native exit 0 at 21:28:54 UTC. An earlier run compiled the previous object parameter annotation and failed; its evidence is retained rather than counted as success.
+- ESLint passes for all changed TypeScript source/tests, including the new environment test. Both changed runtime scripts pass node --check; git diff --check passes.
+- Full completeness audit: 7 pass, 5 warn, 0 fail, exit 0. Warnings remain in dynamic route resolution, server-action inventories, derived-output provenance and public SEO. This is not an all-warning-clean audit or proof of every public/authenticated journey.
+- Required regression firewall ran without restarts or skipped phases. Navigation, zero-orphan/zero-weak wiring (985 routes), and 15 ingredient checks passed. The mandatory persona evaluator timed out at 360 seconds, owned child PID 21076; overall exit 1. No later phase is claimed as passed in that run.
+- Independent runtime verification exits 1 after 15 seconds, identifying Windows probe PID 438020. A native read-only census at 21:20:55 UTC found neither of those two owned PIDs nor descendants associated with those roots. No service or unknown process was stopped.
+- Full verify:release passes secrets, capability claims and the parsed completeness stage. With the normal local environment loaded, live DB contract status is ok, no required objects are missing, and all four rollback validations pass. It still exits 1: two unapproved migration timestamp collisions and three required-index EXPLAIN checks fail. The database report is preserved; no migration was renumbered or planner assertion relaxed.
+- The whole unit suite, full release typecheck/lint/build/smoke stages and live candidate desktop/mobile flows are not claimed as passed.
+- Fresh native public build-version at 21:19:11 UTC is HTTP 200, build 065916ad4. Strict loopback readiness is HTTP 503: env/db/circuitBreakers/backgroundJobs ok, aiRuntime degraded, reason local_only_in_production. No production build, swap, restart or durable customer-data write occurred. Existing DB gate rollback validations committed no migration.
+
+The generated wiring report is preserved before restoring its starting tracked content. Unrelated canonical changes are preserved. Native receipts/logs use the chefflow-improve-*-20261007 prefix in the existing temporary evidence directory. The final release attestation is full-verify-444428-1791408382850.json under the existing .agents/release-attestations path.
+
+Next executable action: inspect the two migration collisions against actual migration history and the three query plans against real indexes/statistics, then repair their causes without changing gate severity. Recover the required evaluator and Windows ownership inspection, rerun the unskipped gates, and finish the established main-only staged release. Require matching deployed revision and actual guest booking/food-planning journeys before describing these changes as live or ChefFlow as superior to Take a Chef.

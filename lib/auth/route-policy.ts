@@ -300,6 +300,7 @@ export const API_SKIP_AUTH_PREFIXES = [
   '/api/storage',
   '/api/realtime',
   '/api/book',
+  '/api/dietary-confirm',
   '/api/cron',
   '/api/discovery',
   '/api/sentinel',
@@ -383,7 +384,7 @@ export function isAdminRoutePath(pathname: string): boolean {
 }
 
 export function isApiSkipAuthPath(pathname: string): boolean {
-  return matchesAnyPrefix(pathname, API_SKIP_AUTH_PREFIXES)
+  return matchesAnyPathOrChild(pathname, API_SKIP_AUTH_PREFIXES)
 }
 
 export function getHomePathForRole(role: string | null | undefined): string {

@@ -48,3 +48,38 @@ test('web-beta build surface keeps the supported route graph explicit', async ()
   assert.deepEqual(webBetaNode?.metadata.missingExpectedApiRoutes, [])
   assert.equal(webBetaNode?.metadata.releaseProfileId, 'web-beta')
 })
+
+test('active web-beta shared layouts retain their surface contracts without a retired overlay', async () => {
+  const report = await runSurfaceCompletenessAudit({ checkIds: ['surface-mode-declaration'] })
+  const result = report.results[0]
+  assert.equal(result?.status, 'pass', JSON.stringify(result?.findings))
+  assert.ok(
+    Number(result?.summary.runtimeLayoutsChecked) >= 6,
+    'all role shells must still be audited'
+  )
+  assert.equal(result?.summary.missingPortalMarkers, 0)
+  assert.equal(result?.summary.missingSurfaceMarkers, 0)
+  assert.equal(result?.summary.missingResolvers, 0)
+  assert.equal(result?.summary.missingPathnameBindings, 0)
+})
+
+test('a required portal overlay declared by an active manifest is still enforced', async () => {
+  const manifestPath = new URL('../../scripts/build-surface-manifest.mjs', import.meta.url).href
+  const manifestModule = await import(manifestPath)
+  const manifests = manifestModule.BUILD_SURFACE_MANIFESTS
+  const requiredPath = 'build-surfaces/unit-fixture/app/_components/release-portal-shell.tsx'
+  manifests['unit-fixture'] = { ...manifests['web-beta'], requiredOverlayPaths: [requiredPath] }
+  try {
+    const report = await runSurfaceCompletenessAudit({ checkIds: ['surface-mode-declaration'] })
+    assert.equal(report.results[0]?.status, 'fail')
+    assert.ok(
+      report.results[0]?.findings.some(
+        (finding) =>
+          finding.code === 'missing-build-surface-shell' && finding.paths?.includes(requiredPath)
+      ),
+      'an active manifest cannot silently lose its declared portal shell'
+    )
+  } finally {
+    delete manifests['unit-fixture']
+  }
+})
