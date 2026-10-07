@@ -17,6 +17,8 @@ import { log } from '@/lib/logger'
 import { incrementAiMetric, recordAiLatency, recordAiTier } from './ai-metrics'
 import { reportAppError } from '@/lib/monitoring/sentry-reporter'
 import { resolveAiDispatch } from './dispatch/router'
+import { isLocalOllamaUrl } from './dispatch/routing-table'
+import { localPrivateParse } from './local-private-transport'
 import type { AiDispatchRequest } from './dispatch/types'
 import { isSharedAiRuntimeEnabled } from './server-runtime-guard'
 
@@ -104,6 +106,9 @@ export async function parseWithOllama<T>(
   schema: z.ZodType<T>,
   options?: ParseOllamaOptions
 ): Promise<T> {
+  if (options?.images?.length || options?.dispatchHint?.mediaOrigin) {
+    throw new Error('Media requires the owner-local review worker before OCR or AI parsing.')
+  }
   if (options?.endpointUrl && !isSharedAiRuntimeEnabled()) {
     throw new OllamaOfflineError(
       'Shared server AI runtime is disabled in production',
@@ -154,6 +159,18 @@ export async function parseWithOllama<T>(
 
   const baseUrl = options?.endpointUrl || dispatch.endpoint?.baseUrl || routedConfig.baseUrl
   const model = options?.model || dispatch.model || routedConfig.model
+  if (dispatch.privacy.level === 'restricted' &&
+      (!isLocalOllamaUrl(baseUrl) || /cloud|remote/i.test(model))) {
+    throw new Error('Restricted data requires local execution.')
+  }
+  if (dispatch.privacy.level === 'restricted') {
+    try {
+      return await localPrivateParse(baseUrl, model, systemPrompt, userContent, schema,
+        options?.timeoutMs ?? DEFAULT_OLLAMA_TIMEOUT_MS, options?.maxTokens ?? DEFAULT_MAX_TOKENS)
+    } catch {
+      throw new OllamaOfflineError('Local AI request unavailable', 'unreachable')
+    }
+  }
 
   log.ai.info('AI dispatch resolved for parseWithOllama', {
     context: {

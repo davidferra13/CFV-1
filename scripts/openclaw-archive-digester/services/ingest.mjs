@@ -10,6 +10,7 @@ import path from 'path'
 import crypto from 'crypto'
 import os from 'os'
 import { initDb, openDb } from '../lib/db.mjs'
+import { readApprovedBytes, assertMediaApproved, sealDerivedText } from '../lib/media-privacy.mjs'
 import { extractTextFromImage, extractTextFromPdf } from '../lib/ocr-pipeline.mjs'
 
 // Directories to scan (configurable via env)
@@ -33,7 +34,7 @@ const EMAIL_EXTENSIONS = new Set(['.eml', '.mbox'])
 
 function sha256(filePath) {
   const hash = crypto.createHash('sha256')
-  hash.update(fs.readFileSync(filePath))
+  hash.update(readApprovedBytes(filePath))
   return hash.digest('hex')
 }
 
@@ -49,7 +50,7 @@ function getFileType(ext) {
 
 function scanDirectory(dirPath, results = []) {
   if (!fs.existsSync(dirPath)) {
-    console.warn(`[ingest] Directory not found: ${dirPath}`)
+    console.warn('[ingest] Source directory unavailable')
     return results
   }
 
@@ -72,6 +73,7 @@ function scanDirectory(dirPath, results = []) {
 }
 
 async function extractText(filePath, fileType) {
+  assertMediaApproved(filePath)
   switch (fileType) {
     case 'image':
       return await extractTextFromImage(filePath)
@@ -79,12 +81,12 @@ async function extractText(filePath, fileType) {
       return await extractTextFromPdf(filePath)
     case 'text':
       try {
-        const text = fs.readFileSync(filePath, 'utf-8')
+        const text = readApprovedBytes(filePath).toString('utf8')
         return { text: text.substring(0, 50000), method: 'direct-read', confidence: 'high' }
       } catch { return { text: '', method: 'none', confidence: 'low' } }
     case 'email':
       try {
-        const raw = fs.readFileSync(filePath, 'utf-8')
+        const raw = readApprovedBytes(filePath).toString('utf8')
         // Basic email text extraction (full parsing in classify stage)
         const bodyMatch = raw.match(/\r?\n\r?\n([\s\S]+)/)
         return { text: bodyMatch ? bodyMatch[1].substring(0, 50000) : '', method: 'email-body', confidence: 'medium' }
@@ -100,15 +102,15 @@ async function main() {
   const startTime = Date.now()
 
   const insertFile = db.prepare(`
-    INSERT OR IGNORE INTO archive_files (id, file_hash, original_path, file_type, file_size_bytes, ocr_text, status, created_at)
-    VALUES (?, ?, ?, ?, ?, ?, 'ingested', datetime('now'))
+    INSERT OR IGNORE INTO archive_files (id, file_hash, original_path, file_type, file_size_bytes, ocr_text, privacy_receipt, status, created_at)
+    VALUES (?, ?, ?, ?, ?, ?, ?, 'ingested', datetime('now'))
   `)
 
   const checkHash = db.prepare('SELECT id FROM archive_files WHERE file_hash = ?')
 
   let scanned = 0, ingested = 0, duplicates = 0, errors = 0
 
-  console.log(`[ingest] Scanning directories: ${SCAN_DIRS.join(', ')}`)
+  console.log('[ingest] Reviewing configured sources against local approvals')
 
   const files = []
   for (const dir of SCAN_DIRS) {
@@ -132,7 +134,9 @@ async function main() {
       const ocrResult = await extractText(file.path, fileType)
       const id = crypto.randomUUID()
 
-      insertFile.run(id, hash, file.path, fileType, stat.size, ocrResult.text || null)
+      const receipt = sealDerivedText(file.path, ocrResult.text || '')
+      if (sha256(file.path) !== hash) throw new Error('source_changed')
+      insertFile.run(id, hash, file.path, fileType, stat.size, ocrResult.text || null, receipt)
       ingested++
 
       if (scanned % 50 === 0) {
@@ -140,7 +144,7 @@ async function main() {
       }
     } catch (err) {
       errors++
-      console.error(`[ingest] Error processing ${file.path}: ${err.message}`)
+      console.error('[ingest] File held: approval required or processing unavailable')
     }
   }
 
@@ -163,6 +167,6 @@ async function main() {
 }
 
 main().catch(err => {
-  console.error('[ingest] Fatal:', err)
+  console.error('[ingest] Pipeline unavailable; sources unchanged')
   process.exit(1)
 })
