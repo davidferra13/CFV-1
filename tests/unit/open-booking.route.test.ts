@@ -33,6 +33,10 @@ class QueryBuilder implements PromiseLike<{ data: any; error: null }> {
     return this
   }
 
+  upsert(values: any) {
+    return this.insert(values)
+  }
+
   update(values: Record<string, unknown>) {
     this.mode = 'update'
     this.updatedValues = values
@@ -105,7 +109,9 @@ class QueryBuilder implements PromiseLike<{ data: any; error: null }> {
   }
 }
 
-function loadRouteModule() {
+function loadRouteModule(
+  matchedChefs = [{ id: 'chef-1', display_name: 'Chef One', distance_miles: 4 }]
+) {
   const adminPath = require.resolve('../../lib/db/admin.ts')
   const emailValidatorPath = require.resolve('../../lib/email/email-validator.ts')
   const rateLimitPath = require.resolve('../../lib/rateLimit.ts')
@@ -177,7 +183,7 @@ function loadRouteModule() {
     loaded: true,
     exports: {
       matchChefsForBooking: async () => ({
-        chefs: [{ id: 'chef-1', display_name: 'Chef One', distance_miles: 4 }],
+        chefs: matchedChefs,
         resolvedLocation: {
           displayLabel: 'Boston, MA',
           city: 'Boston',
@@ -349,7 +355,7 @@ test('open booking preserves dietary context through client, inquiry, and event 
           email: 'casey@example.com',
           phone: '555-111-2222',
           location: 'Boston, MA',
-          event_date: '2026-06-20',
+          event_date: new Date(Date.now() + 7 * 86400000).toISOString().slice(0, 10),
           serve_time: '18:30',
           guest_count: 8,
           occasion: 'Birthday dinner',
@@ -432,6 +438,44 @@ test('open booking preserves dietary context through client, inquiry, and event 
       false,
       'intake should not link inquiries to draft events before commitment'
     )
+  } finally {
+    restore()
+  }
+})
+
+test('zero-chef request is saved as no_match without disclosing details to any chef', async () => {
+  const { mod, state, notificationCalls, restore } = loadRouteModule([])
+  try {
+    const response = await mod.POST(
+      new Request('http://localhost/api/book', {
+        method: 'POST',
+        headers: { 'content-type': 'application/json', 'x-forwarded-for': '198.51.100.4' },
+        body: JSON.stringify({
+          full_name: 'Synthetic Host',
+          email: 'zero-supply@example.com',
+          location: 'Boston, MA',
+          event_date: new Date(Date.now() + 7 * 86400000).toISOString().slice(0, 10),
+          guest_count: 4,
+          occasion: 'Internal regression dinner',
+        }),
+      })
+    )
+    assert.equal(response.status, 200)
+    const result = await response.json()
+    assert.equal(result.success, true)
+    assert.equal(result.matched_count, 0)
+    assert.equal(result.booking_token, 'abc123def4567890')
+    assert.equal(state.inserts.open_bookings?.length, 1)
+    assert.equal(state.inserts.open_bookings[0].status, 'no_match')
+    assert.equal(state.inserts.open_bookings[0].matched_chef_count, 0)
+    assert.equal(state.inserts.inquiries?.length ?? 0, 0)
+    assert.equal(state.inserts.clients?.length ?? 0, 0)
+    assert.equal(state.inserts.open_booking_inquiries?.length ?? 0, 0)
+    assert.equal(state.inserts.events?.length ?? 0, 0)
+    assert.equal(notificationCalls.chef, 0)
+    assert.match(result.message, /saved/i)
+    assert.match(result.message, /not guaranteed/i)
+    assert.doesNotMatch(result.message, /will notify you when|within 24 hours/i)
   } finally {
     restore()
   }

@@ -31,19 +31,21 @@ export const PUBLIC_INTAKE_LANE_CONFIG = {
     label: 'Open Booking',
     expectation: {
       eyebrow: 'Matched-chef request',
-      title: 'ChefFlow shares this request only with matched chefs.',
+      title: 'A request starts with checking chef coverage.',
       summary:
-        'Use this lane when you want help finding the right chef. Multiple matched chefs may review the request, and interested chefs contact you directly.',
+        'Submit your event details without an account. If eligible chefs match your location and needs, your request can be shared with them. With no match, your details are saved; coverage, a reply, and response times are not guaranteed.',
       facts: [
         {
           label: 'Lead sharing',
           value: 'Matched chefs only',
-          detail: 'The request is shared only with chefs who fit the location and job.',
+          detail:
+            'Only eligible matched chefs can receive the request. With no match, no chef receives it.',
         },
         {
           label: 'Response path',
-          value: 'Chefs reply directly',
-          detail: 'Matched chefs follow up by email, and by phone if you choose to share it.',
+          value: 'Replies depend on a match',
+          detail:
+            'Interested matched chefs may contact you by email, or by phone if you provide it. No reply deadline is promised.',
         },
         {
           label: 'Commitment',

@@ -222,11 +222,12 @@ export default async function BookingStatusPage({ params }: Props) {
         {isNoMatch && (
           <div className="mb-8 rounded-2xl border border-stone-700 bg-stone-900/60 p-6">
             <p className="text-sm font-medium text-stone-300">
-              No chef is available in this area yet
+              No eligible chef matched this request
             </p>
             <p className="mt-1 text-sm text-stone-400">
-              Your request is saved. You can browse nearby food experiences or try a specific chef
-              profile while coverage expands.
+              Your request is saved and no chef has received it. A future match, availability, or
+              reply is not guaranteed. You can check this page for updates or browse other food
+              options.
             </p>
             <div className="mt-4 flex flex-wrap gap-3">
               <Link

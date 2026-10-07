@@ -3,6 +3,7 @@ import Link from 'next/link'
 import { PublicPageView } from '@/components/analytics/public-page-view'
 import { SectionViewTracker } from '@/components/analytics/section-view-tracker'
 import { TrackedLink } from '@/components/analytics/tracked-link'
+import { getDiscoverableChefs } from '@/lib/directory/actions'
 import { BookDinnerForm } from './_components/book-dinner-form'
 import { IntakeLaneExpectations } from '@/components/public/intake-lane-expectations'
 import { PublicSecondaryEntryCluster } from '@/components/public/public-secondary-entry-cluster'
@@ -17,10 +18,12 @@ import { PUBLIC_DIRECTORY_HELPER } from '@/lib/public/public-surface-config'
 import { PUBLIC_MARKET_SCOPE, buildMarketingMetadata, absoluteUrl } from '@/lib/site/public-site'
 import { BreadcrumbJsonLd } from '@/components/seo/json-ld'
 
+export const dynamic = 'force-dynamic'
+
 export const metadata: Metadata = buildMarketingMetadata({
-  title: 'Book a Private Chef - Hire a Chef Near You',
+  title: 'Request a Private Chef - Check Chef Coverage',
   description:
-    'Hire a private chef for dinner parties, meal prep, or catering. Describe your event and ChefFlow matches you with qualified chefs in your area. Free to submit, no obligation.',
+    'Submit an event request for dinner parties, meal prep, or catering. Matching depends on chef coverage and availability; a match or reply is not guaranteed. Free to submit.',
   path: '/book',
   imagePath: '/social/chefflow-booking.png',
   imageAlt: 'ChefFlow booking flow preview',
@@ -37,6 +40,8 @@ function firstSearchParam(value: string | string[] | undefined): string {
 }
 
 export default async function BookPage({ searchParams }: BookPageProps) {
+  const chefs = await getDiscoverableChefs()
+  const acceptingChefCount = chefs.filter((chef) => chef.discovery.accepting_inquiries).length
   const resolvedSearchParams = await searchParams
   const urlPrefill = readPublicOpenBookingPrefillFromSearchParams(resolvedSearchParams)
   const seasonalContext = readPublicSeasonalMarketPulseContext(resolvedSearchParams)
@@ -78,11 +83,11 @@ export default async function BookPage({ searchParams }: BookPageProps) {
         <div className="pointer-events-none absolute inset-0 bg-gradient-to-b from-brand-600/8 via-transparent to-transparent" />
         <div className="relative z-10 mx-auto max-w-3xl px-4 pt-16 pb-8 text-center sm:px-6 md:pt-24 lg:px-8">
           <h1 className="text-3xl font-display tracking-tight text-white md:text-4xl lg:text-5xl">
-            Book a private chef
+            Request a private chef
           </h1>
           <p className="mt-4 text-base text-stone-300 md:text-lg leading-relaxed max-w-xl mx-auto">
-            Tell us about your event. ChefFlow shares your request only with matched chefs in your
-            area, and matched chefs reach out to you directly. Free to submit, no obligation.
+            Tell us about your event. If eligible chefs match your location and needs, they may
+            contact you directly. A match or reply is not guaranteed. Free to submit, no obligation.
           </p>
         </div>
       </section>
@@ -93,6 +98,15 @@ export default async function BookPage({ searchParams }: BookPageProps) {
           pageName="open_booking"
           properties={seasonalAnalytics}
         />
+        {acceptingChefCount === 0 && (
+          <p
+            role="status"
+            className="mb-6 rounded-xl border border-amber-700/40 bg-amber-950/30 px-5 py-4 text-sm text-amber-200"
+          >
+            No chefs are currently listed as accepting inquiries. You can still save an event
+            request while coverage grows. A match or reply is not guaranteed.
+          </p>
+        )}
         <IntakeLaneExpectations lane={PUBLIC_INTAKE_LANE_KEYS.open_booking} />
 
         <div className="mt-6 flex flex-col gap-3 rounded-[1.75rem] border border-stone-700 bg-stone-900/60 px-6 py-5 sm:flex-row sm:items-center sm:justify-between sm:px-8">
@@ -127,18 +141,19 @@ export default async function BookPage({ searchParams }: BookPageProps) {
               {
                 step: '2',
                 title: 'Matched chefs review',
-                detail: 'ChefFlow shares your request with chefs who fit. Usually within 24 hours.',
+                detail:
+                  'If eligible chefs match, they can review your request. Otherwise it is saved without being sent to a chef. No response deadline is promised.',
               },
               {
                 step: '3',
                 title: 'Review menu and pricing',
-                detail:
-                  'Your chef sends a proposed menu and quote. Ask questions, request changes.',
+                detail: 'If a chef responds, review their proposed menu and quote before deciding.',
               },
               {
                 step: '4',
                 title: 'Confirm with a deposit',
-                detail: 'Pay a deposit to lock in your date. The rest is due before the event.',
+                detail:
+                  'After a chef confirms availability and you agree to their terms, follow their deposit instructions.',
               },
               {
                 step: '5',
@@ -163,6 +178,7 @@ export default async function BookPage({ searchParams }: BookPageProps) {
       {/* Form */}
       <section className="mx-auto max-w-2xl px-4 pb-20 sm:px-6 lg:px-8">
         <BookDinnerForm
+          acceptingChefCount={acceptingChefCount}
           initialPrefill={initialPrefill}
           seasonalContext={seasonalContext}
           analyticsEntryContext={seasonalContext?.entryContext ?? null}
@@ -223,7 +239,7 @@ export default async function BookPage({ searchParams }: BookPageProps) {
                   clipRule="evenodd"
                 />
               </svg>
-              Chefs contact you directly
+              Eligible chefs may contact you
             </span>
             <span className="flex items-center gap-2">
               <svg className="h-4 w-4 text-brand-400" fill="currentColor" viewBox="0 0 20 20">
