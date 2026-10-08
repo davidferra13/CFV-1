@@ -46,6 +46,14 @@ const BookingSchema = z.object({
     .min(1, 'Event date is required')
     .refine(
       (val) => {
+        if (!/^\d{4}-\d{2}-\d{2}$/.test(val)) return false
+        const date = new Date(val + 'T00:00:00.000Z')
+        return Number.isFinite(date.getTime()) && date.toISOString().slice(0, 10) === val
+      },
+      { message: 'Enter a valid event date (YYYY-MM-DD)' }
+    )
+    .refine(
+      (val) => {
         const _bkd = new Date()
         const today = `${_bkd.getFullYear()}-${String(_bkd.getMonth() + 1).padStart(2, '0')}-${String(_bkd.getDate()).padStart(2, '0')}`
         return val >= today

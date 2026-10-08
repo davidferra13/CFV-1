@@ -1,3 +1,4 @@
+import './fixtures/react-server-context.cjs'
 import test from 'node:test'
 import assert from 'node:assert/strict'
 import { createRequire } from 'node:module'
@@ -333,7 +334,8 @@ function loadRouteModule() {
   return { mod, state, notificationCalls, restore }
 }
 
-test('open booking preserves dietary context through client, inquiry, and event creation', async () => {
+test('open booking preserves dietary context through client, inquiry, and event creation', async (t) => {
+  t.mock.timers.enable({ apis: ['Date'], now: new Date('2026-05-01T12:00:00.000Z') })
   const { mod, state, notificationCalls, restore } = loadRouteModule()
 
   try {
@@ -436,3 +438,61 @@ test('open booking preserves dietary context through client, inquiry, and event 
     restore()
   }
 })
+
+test('open booking rejects a past event date before creating client or inquiry records', async (t) => {
+  t.mock.timers.enable({ apis: ['Date'], now: new Date('2026-05-01T12:00:00.000Z') })
+  const { mod, state, notificationCalls, restore } = loadRouteModule()
+  try {
+    const response = await mod.POST(
+      new Request('http://localhost/api/book', {
+        method: 'POST',
+        headers: { 'content-type': 'application/json', 'x-forwarded-for': '1.2.3.4' },
+        body: JSON.stringify({
+          full_name: 'Casey Client',
+          email: 'casey@example.com',
+          location: 'Boston, MA',
+          event_date: '2026-04-30',
+          guest_count: 8,
+          occasion: 'Birthday dinner',
+        }),
+      })
+    )
+    assert.equal(response.status, 400)
+    assert.deepEqual(await response.json(), { error: 'Event date must be in the future' })
+    assert.deepEqual(state.inserts, {})
+    assert.equal(notificationCalls.chef, 0)
+    assert.equal(notificationCalls.client, 0)
+  } finally {
+    restore()
+  }
+})
+
+for (const eventDate of ['2026-06-31', '2026-13-01', '2026-6-20', 'not-a-date']) {
+  test(`open booking rejects invalid calendar date ${eventDate} before writing records`, async (t) => {
+    t.mock.timers.enable({ apis: ['Date'], now: new Date('2026-05-01T12:00:00.000Z') })
+    const { mod, state, notificationCalls, restore } = loadRouteModule()
+    try {
+      const response = await mod.POST(
+        new Request('http://localhost/api/book', {
+          method: 'POST',
+          headers: { 'content-type': 'application/json', 'x-forwarded-for': '1.2.3.4' },
+          body: JSON.stringify({
+            full_name: 'Casey Client',
+            email: 'casey@example.com',
+            location: 'Boston, MA',
+            event_date: eventDate,
+            guest_count: 8,
+            occasion: 'Birthday dinner',
+          }),
+        })
+      )
+      assert.equal(response.status, 400)
+      assert.deepEqual(await response.json(), { error: 'Enter a valid event date (YYYY-MM-DD)' })
+      assert.deepEqual(state.inserts, {})
+      assert.equal(notificationCalls.chef, 0)
+      assert.equal(notificationCalls.client, 0)
+    } finally {
+      restore()
+    }
+  })
+}
