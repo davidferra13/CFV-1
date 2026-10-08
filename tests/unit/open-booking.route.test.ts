@@ -1,7 +1,10 @@
 import './fixtures/react-server-context.cjs'
 import test from 'node:test'
 import assert from 'node:assert/strict'
-import { createRequire } from 'node:module'
+import Module, { createRequire } from 'node:module'
+import { readFileSync } from 'node:fs'
+import { dirname } from 'node:path'
+import ts from 'typescript'
 
 const require = createRequire(import.meta.url)
 
@@ -287,8 +290,22 @@ function loadRouteModule() {
     },
   } as any
 
-  delete require.cache[routePath]
-  const mod = require(routePath)
+  // Compile the real route as CommonJS so lazy imports use the same dependency
+  // cache as the test doubles on both Node 20 (CI) and Node 24 (native).
+  const compiled = ts.transpileModule(readFileSync(routePath, 'utf8'), {
+    fileName: routePath,
+    compilerOptions: {
+      module: ts.ModuleKind.CommonJS,
+      target: ts.ScriptTarget.ES2020,
+      esModuleInterop: true,
+    },
+  })
+  const routeModule = new (Module as any)(routePath)
+  routeModule.filename = routePath
+  routeModule.paths = (Module as any)._nodeModulePaths(dirname(routePath))
+  require.cache[routePath] = routeModule
+  routeModule._compile(compiled.outputText, routePath)
+  const mod = routeModule.exports
 
   const restore = () => {
     if (originalAdmin) require.cache[adminPath] = originalAdmin
