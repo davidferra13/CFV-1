@@ -47,3 +47,18 @@ Production checkout, runtime, database contents, and public release have not bee
 - Critical/unit suites, production build, release smoke, full firewall, and authenticated chef/client browser verification are not yet proven. Earlier firewall subchecks passed navigation/wiring, ingredient identity (15/15), and simulation (25 cases, zero violations).
 
 Next action: repair the baseline lint failures, then pass both required gates and role-flow checks before merging origin/main and deploying through production-live staging/swap. Do not bypass checks or treat this PR as the live app.
+
+
+## Update 2026-10-07 (Claude)
+
+Status: still BLOCKED at the release gate. Not deployed. Production untouched.
+
+- 1a4304ac6: /pricing was unreadable on the light theme (white headline and prices on ivory, orange accents on the green brand). Switched to theme tokens. Homepage h1 now renders serif: `var(--font-playfair)` had no fallback inside var() and the variable is not set on the rendered document, so the whole font-family was dropped. Checked in Edge at 375px and 1440px on an isolated dev server (port 3117, no database).
+- 0207cdb88: committed the 2026-10-04 lint repairs that were sitting uncommitted here. lint:strict now reports 0 errors, 72 warnings (exhaustive-deps 27, no-img-element 39, alt-text 2, combobox aria 1, anonymous default export 3). typecheck:app passes.
+- Not run: unit suites, production build, verify:release, firewall, authenticated chef/client browser checks.
+
+Open items:
+- The 72 warnings. lint:strict uses --max-warnings 0, so the gate may still be red until the warning policy or the warnings are dealt with.
+- Why the next/font `--font-playfair` class is missing from <html> at runtime.
+- Hero photo public/images/hero-bg.jpg is 834x469 and looks soft on desktop. Needs a higher-resolution original from the owner.
+- Owner decisions: the homepage moves from chef-first (live main) to eater-first (this branch); /pricing sells Free/$10/$25 plans while /for-operators says the charge is a voluntary supporter contribution.
