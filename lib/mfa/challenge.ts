@@ -9,7 +9,7 @@ import { db } from '@/lib/db'
 import { mfaChallenges, userMfaMethods } from '@/lib/db/schema/security'
 import { eq, and, gt } from 'drizzle-orm'
 import { verifyTotpCode, decryptSecret } from './totp'
-import { useRecoveryCode } from './recovery'
+import { useRecoveryCode as consumeRecoveryCode } from './recovery'
 
 const CHALLENGE_TTL_MS = 5 * 60 * 1000 // 5 minutes
 const MAX_ATTEMPTS = 5
@@ -104,7 +104,7 @@ export async function verifyMfaChallenge(
   let verified = false
 
   if (isRecoveryCode) {
-    verified = await useRecoveryCode(challenge.authUserId, code)
+    verified = await consumeRecoveryCode(challenge.authUserId, code)
   } else {
     // Fetch the user's TOTP secret
     const [method] = await db

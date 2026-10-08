@@ -2,6 +2,7 @@
 
 import { useState, useCallback, useRef } from 'react'
 import { useRouter } from 'next/navigation'
+import Image from 'next/image'
 import { Button } from '@/components/ui/button'
 import { Card } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
@@ -61,8 +62,6 @@ export function RecipePhotoBatchImport({ open, onClose }: Props) {
   )
   const [isRunning, setIsRunning] = useState(false)
   const fileInputRef = useRef<HTMLInputElement>(null)
-
-  if (!open) return null
 
   const handleClose = () => {
     if (isRunning) return
@@ -220,6 +219,8 @@ export function RecipePhotoBatchImport({ open, onClose }: Props) {
     return 'error'
   }
 
+  if (!open) return null
+
   return (
     <div className="fixed inset-0 z-dialog flex items-center justify-center p-4">
       <div className="fixed inset-0 bg-black/40" onClick={handleClose} />
@@ -326,7 +327,10 @@ export function RecipePhotoBatchImport({ open, onClose }: Props) {
                         key={photo.id}
                         className="relative group aspect-square rounded-lg overflow-hidden border border-stone-200"
                       >
-                        <img
+                        <Image
+                          fill
+                          unoptimized
+                          sizes="(min-width: 768px) 100px, 20vw"
                           src={photo.preview}
                           alt={photo.file.name}
                           className="w-full h-full object-cover"
@@ -373,7 +377,10 @@ export function RecipePhotoBatchImport({ open, onClose }: Props) {
                   key={photo.id}
                   className="flex items-center gap-3 p-2 rounded-lg border border-stone-100"
                 >
-                  <img
+                  <Image
+                    width={48}
+                    height={48}
+                    unoptimized
                     src={photo.preview}
                     alt=""
                     className="w-12 h-12 rounded object-cover shrink-0"
@@ -468,7 +475,10 @@ export function RecipePhotoBatchImport({ open, onClose }: Props) {
                           : 'border-stone-200 bg-white'
                   }`}
                 >
-                  <img
+                  <Image
+                    width={64}
+                    height={64}
+                    unoptimized
                     src={photo.preview}
                     alt=""
                     className="w-16 h-16 rounded-lg object-cover shrink-0"

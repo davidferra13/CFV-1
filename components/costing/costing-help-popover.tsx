@@ -30,10 +30,6 @@ export function CostingHelpPopover({
   const containerRef = useRef<HTMLSpanElement>(null)
 
   const content = HELP_CONTENT[topic]
-  if (!content) return null
-
-  const contextual = getContextualGuidance(topic, currentValue, targetValue, operationType)
-
   // Close on click outside
   useEffect(() => {
     if (!open) return
@@ -55,6 +51,10 @@ export function CostingHelpPopover({
     document.addEventListener('keydown', handleKey)
     return () => document.removeEventListener('keydown', handleKey)
   }, [open])
+
+  if (!content) return null
+
+  const contextual = getContextualGuidance(topic, currentValue, targetValue, operationType)
 
   return (
     <span ref={containerRef} className="relative inline-flex items-center">

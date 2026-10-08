@@ -58,13 +58,13 @@ function LifecycleStagePanel({ stage, currentStage, children }: LifecycleStagePa
   const isCurrentStage = relation === 'current'
   const [expanded, setExpanded] = useState(isCurrentStage)
 
+  const toggle = useCallback(() => setExpanded((prev) => !prev), [])
+
   const config = LIFECYCLE_STAGE_CONFIGS.find((c) => c.key === stage)
   if (!config) return null
 
   const colors = STAGE_COLORS[stage]
   const Icon = STAGE_ICONS[stage]
-
-  const toggle = useCallback(() => setExpanded((prev) => !prev), [])
 
   const relationLabel =
     relation === 'past' ? 'Completed' : relation === 'future' ? 'Upcoming' : 'Current'

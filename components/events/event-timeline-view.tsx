@@ -173,6 +173,11 @@ export function EventTimelineView({ events }: Props) {
   )
 
   // ── Empty State ────────────────────────────────────────────────
+  const activeStatuses = useMemo(() => {
+    const set = new Set(sorted.map((e) => e.status))
+    return (Object.keys(STATUS_COLORS) as EventStatus[]).filter((s) => set.has(s))
+  }, [sorted])
+
   if (events.length === 0) {
     return (
       <div className="flex flex-col items-center justify-center py-20 text-center">
@@ -191,10 +196,7 @@ export function EventTimelineView({ events }: Props) {
   }
 
   // ── Legend ──────────────────────────────────────────────────────
-  const activeStatuses = useMemo(() => {
-    const set = new Set(sorted.map((e) => e.status))
-    return (Object.keys(STATUS_COLORS) as EventStatus[]).filter((s) => set.has(s))
-  }, [sorted])
+
 
   const timelineWidth = totalDays * DAY_WIDTH
 

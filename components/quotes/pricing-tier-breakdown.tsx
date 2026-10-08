@@ -82,8 +82,6 @@ export function PricingTierBreakdown({
     return rows
   }, [serviceType, courseCount, couplesRates, groupRates, largeGroupMin, largeGroupMax])
 
-  if (tiers.length === 0) return null
-
   // Determine which tier the current guest count falls into
   const activeTierIndex = useMemo(() => {
     if (!currentGuestCount) return -1
@@ -92,6 +90,8 @@ export function PricingTierBreakdown({
     if (currentGuestCount <= largeGroupMax) return 2
     return 3
   }, [currentGuestCount, largeGroupMin, largeGroupMax])
+
+  if (tiers.length === 0) return null
 
   return (
     <div className="rounded-lg border border-stone-700 bg-stone-900/50 p-3 space-y-2">

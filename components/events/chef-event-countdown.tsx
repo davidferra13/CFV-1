@@ -80,8 +80,6 @@ function getCountdownParts(diffMs: number) {
 }
 
 export function ChefEventCountdown({ eventDate, serveTime, status }: Props) {
-  if (status === 'completed' || status === 'cancelled') return null
-
   const target = useMemo(() => parseEventDateTime(eventDate, serveTime), [eventDate, serveTime])
   const [now, setNow] = useState(() => new Date())
 
@@ -90,7 +88,7 @@ export function ChefEventCountdown({ eventDate, serveTime, status }: Props) {
     return () => window.clearInterval(interval)
   }, [])
 
-  if (!target) return null
+  if (status === 'completed' || status === 'cancelled' || !target) return null
 
   const diffMs = target.getTime() - now.getTime()
 

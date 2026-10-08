@@ -54,8 +54,6 @@ export function PostEventChecklist({
 
   const applicableCount = [showPhotos, showThankReferrer, showDietary].filter(Boolean).length
 
-  if (applicableCount === 0 || dismissed) return null
-
   // Completion states
   const photosComplete = photoCount > 0
   const thankYouComplete = thankYouSent
@@ -77,7 +75,7 @@ export function PostEventChecklist({
     }
   }, [allComplete])
 
-  if (allDoneCollapsed) return null
+  if (applicableCount === 0 || dismissed || allDoneCollapsed) return null
 
   function handleDismiss() {
     if (typeof window !== 'undefined') {

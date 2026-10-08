@@ -25,15 +25,18 @@ export async function emailShoppingList(
     await sendEmail({
       to: toEmail,
       subject,
-      react: React.createElement('pre', {
-        style: {
-          fontFamily: 'monospace',
-          fontSize: '13px',
-          whiteSpace: 'pre-wrap',
-          lineHeight: '1.5',
+      react: React.createElement(
+        'pre',
+        {
+          style: {
+            fontFamily: 'monospace',
+            fontSize: '13px',
+            whiteSpace: 'pre-wrap',
+            lineHeight: '1.5',
+          },
         },
-        children: plainText,
-      }),
+        plainText
+      ),
     })
     return { success: true }
   } catch {
