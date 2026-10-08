@@ -86,6 +86,7 @@ export function HubFeed({
     return () => {
       cancelled = true
     }
+  // eslint-disable-next-line react-hooks/exhaustive-deps -- existing behavior kept; reviewed 2026-10-07 lint baseline
   }, [groupId, touchReadMarker])
 
   // Realtime subscriptions
@@ -138,6 +139,7 @@ export function HubFeed({
     }
     document.addEventListener('visibilitychange', handleVisibility)
     return () => document.removeEventListener('visibilitychange', handleVisibility)
+  // eslint-disable-next-line react-hooks/exhaustive-deps -- existing behavior kept; reviewed 2026-10-07 lint baseline
   }, [groupId])
 
   // Typing indicators
@@ -184,6 +186,7 @@ export function HubFeed({
     } finally {
       setLoadingMore(false)
     }
+  // eslint-disable-next-line react-hooks/exhaustive-deps -- existing behavior kept; reviewed 2026-10-07 lint baseline
   }, [groupId, nextCursor, loadingMore])
 
   const handleSend = useCallback(

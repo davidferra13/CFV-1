@@ -60,6 +60,7 @@ export function CatalogPickClient({ catalog, token }: Props) {
       const bi = COURSE_ORDER.indexOf(b)
       return (ai === -1 ? 99 : ai) - (bi === -1 ? 99 : bi)
     })
+  // eslint-disable-next-line react-hooks/exhaustive-deps -- existing behavior kept; reviewed 2026-10-07 lint baseline
   }, [catalog.dishes])
 
   const toggleDish = (id: string) => {

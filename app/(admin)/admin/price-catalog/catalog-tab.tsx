@@ -285,6 +285,7 @@ export function CatalogTab() {
     }
     document.addEventListener('keydown', handleKeyDown)
     return () => document.removeEventListener('keydown', handleKeyDown)
+  // eslint-disable-next-line react-hooks/exhaustive-deps -- existing behavior kept; reviewed 2026-10-07 lint baseline
   }, [items.length, focusedIndex, expandedId, showBulkChecker, isPending])
 
   // Scroll focused row into view

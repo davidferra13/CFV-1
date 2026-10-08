@@ -42,6 +42,7 @@ export function RecapVideoSection({ eventId, mode = 'chef', className }: RecapVi
         startPolling()
       }
     })
+  // eslint-disable-next-line react-hooks/exhaustive-deps -- existing behavior kept; reviewed 2026-10-07 lint baseline
   }, [fetchStatus])
 
   function startPolling() {

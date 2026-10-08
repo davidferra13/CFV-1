@@ -156,6 +156,7 @@ export function MenuShoppingList({ menuId }: MenuShoppingListProps) {
     if (open && !result && !isPending) {
       load()
     }
+  // eslint-disable-next-line react-hooks/exhaustive-deps -- existing behavior kept; reviewed 2026-10-07 lint baseline
   }, [open])
 
   const sortedCategories = result

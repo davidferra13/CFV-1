@@ -6,7 +6,7 @@ import {
   createEventReference,
   deleteEventReference,
 } from '@/lib/events/reference-actions'
-import { Link, Image, File, Plus, Trash2 } from '@/components/ui/icons'
+import { Link, Image as ImageIcon, File, Plus, Trash2 } from '@/components/ui/icons'
 
 const CATEGORY_OPTIONS = [
   { value: 'general', label: 'General' },
@@ -19,7 +19,7 @@ const CATEGORY_OPTIONS = [
 ] as const
 
 function refIcon(refType: string) {
-  if (refType === 'image') return <Image className="h-4 w-4 text-stone-400" />
+  if (refType === 'image') return <ImageIcon className="h-4 w-4 text-stone-400" />
   if (refType === 'file') return <File className="h-4 w-4 text-stone-400" />
   return <Link className="h-4 w-4 text-stone-400" />
 }

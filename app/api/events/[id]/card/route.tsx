@@ -1,3 +1,4 @@
+/* eslint-disable @next/next/no-img-element -- remote and user-supplied image URLs; next/image remotePatterns not configured for them */
 // Event Card Image Generator
 // Produces a 1080x1080 PNG optimized for Instagram sharing.
 // GET /api/events/[id]/card
@@ -175,6 +176,7 @@ export async function GET(_request: Request, { params }: { params: Promise<{ id:
           {chef?.profile_image_url && (
             <img
               src={chef.profile_image_url}
+              alt=""
               width={56}
               height={56}
               style={{ borderRadius: '50%', objectFit: 'cover' }}

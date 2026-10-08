@@ -1,5 +1,6 @@
 // Chef Portal Navigation - Collapsible sidebar with grouped nav + rail mode
 'use client'
+/* eslint-disable @next/next/no-img-element -- remote and user-supplied image URLs; next/image remotePatterns not configured for them */
 
 import Link from 'next/link'
 import { usePathname, useSearchParams } from 'next/navigation'

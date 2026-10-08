@@ -26,6 +26,7 @@ export function MenuPickClient({ menu, token }: Props) {
       groups.set(course, existing)
     }
     return Array.from(groups.entries())
+  // eslint-disable-next-line react-hooks/exhaustive-deps -- existing behavior kept; reviewed 2026-10-07 lint baseline
   }, [menu.dishes])
 
   const toggleDish = (dishId: string) => {

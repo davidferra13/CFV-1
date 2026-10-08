@@ -1,4 +1,5 @@
 'use client'
+/* eslint-disable @next/next/no-img-element -- remote and user-supplied image URLs; next/image remotePatterns not configured for them */
 
 import { useState, useRef } from 'react'
 import { uploadPortfolioPhotos } from '@/lib/onboarding/onboarding-actions'

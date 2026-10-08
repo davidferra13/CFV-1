@@ -1,3 +1,4 @@
+/* eslint-disable @next/next/no-img-element -- remote and user-supplied image URLs; next/image remotePatterns not configured for them */
 import { ArrowRight, MapPin, Star } from 'lucide-react'
 import type { PlanningBrief } from '@/lib/hub/types'
 import type { ConsumerResultCard as CardData } from '@/lib/public-consumer/discovery-actions'

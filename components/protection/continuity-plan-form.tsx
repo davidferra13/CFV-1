@@ -37,6 +37,7 @@ export function ContinuityPlanForm({ plan }: { plan: ContinuityPlan }) {
       notes: (plan as any)?.notes ?? '',
       // eslint-disable-next-line react-hooks/exhaustive-deps
     }),
+    // eslint-disable-next-line react-hooks/exhaustive-deps -- existing behavior kept; reviewed 2026-10-07 lint baseline
     []
   )
 

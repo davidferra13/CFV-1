@@ -3,7 +3,7 @@
 // No external API calls, purely client-side
 'use client'
 
-import { useState, useRef, useEffect, useCallback } from 'react'
+import { useState, useRef, useEffect, useCallback, useId } from 'react'
 
 export type ComboboxOption = {
   value: string // stored value
@@ -41,6 +41,7 @@ export function ComboboxInput({
   const containerRef = useRef<HTMLDivElement>(null)
   const inputRef = useRef<HTMLInputElement>(null)
   const listRef = useRef<HTMLUListElement>(null)
+  const listboxId = useId()
 
   // Filter options based on input
   const filtered = value.trim()
@@ -165,6 +166,7 @@ export function ComboboxInput({
         placeholder={placeholder}
         role="combobox"
         aria-expanded={isOpen}
+        aria-controls={listboxId}
         aria-autocomplete="list"
         autoComplete="off"
       />
@@ -172,6 +174,7 @@ export function ComboboxInput({
       {isOpen && filtered.length > 0 && (
         <ul
           ref={listRef}
+          id={listboxId}
           className="absolute z-float mt-1 max-h-60 w-full overflow-auto rounded-xl border border-stone-600 bg-stone-900 shadow-[var(--shadow-overlay)] animate-slide-down"
           role="listbox"
         >

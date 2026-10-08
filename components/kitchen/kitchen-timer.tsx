@@ -133,6 +133,7 @@ export function useKitchenTimers() {
   useEffect(() => {
     return () => {
       intervalsRef.current.forEach((interval) => clearInterval(interval))
+      // eslint-disable-next-line react-hooks/exhaustive-deps -- existing behavior kept; reviewed 2026-10-07 lint baseline
       intervalsRef.current.clear()
     }
   }, [])

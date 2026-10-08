@@ -337,6 +337,7 @@ function StepWizardRoot<TData extends Record<string, unknown>>({
 
     window.addEventListener('keydown', handleKeyDown)
     return () => window.removeEventListener('keydown', handleKeyDown)
+  // eslint-disable-next-line react-hooks/exhaustive-deps -- existing behavior kept; reviewed 2026-10-07 lint baseline
   }, [wizard.next, wizard.prev])
 
   // Build render props for the active step

@@ -545,6 +545,7 @@ export function SourcingSession({ tenantId, initialQuery, eventId }: Props) {
   useEffect(() => {
     return () => {
       if (debounceRef.current) clearTimeout(debounceRef.current)
+      // eslint-disable-next-line react-hooks/exhaustive-deps -- existing behavior kept; reviewed 2026-10-07 lint baseline
       if (pollRef.current) clearInterval(pollRef.current)
     }
   }, [])

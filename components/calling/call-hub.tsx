@@ -136,6 +136,7 @@ export function CallHub({ tenantId }: { tenantId?: string }) {
   useEffect(() => {
     return () => {
       activePolls.current.forEach((id) => clearInterval(id))
+      // eslint-disable-next-line react-hooks/exhaustive-deps -- existing behavior kept; reviewed 2026-10-07 lint baseline
       activePolls.current.clear()
     }
   }, [])

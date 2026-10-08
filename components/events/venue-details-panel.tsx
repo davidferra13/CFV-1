@@ -1,4 +1,5 @@
 'use client'
+/* eslint-disable @next/next/no-img-element -- remote and user-supplied image URLs; next/image remotePatterns not configured for them */
 
 import { useState, useEffect, useTransition } from 'react'
 import { Card } from '@/components/ui/card'

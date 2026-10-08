@@ -1,6 +1,7 @@
 // Chef Portal Mobile Navigation - bottom tab bar, slide-out menu, mobile groups.
 // Extracted from chef-nav.tsx for maintainability.
 'use client'
+/* eslint-disable @next/next/no-img-element -- remote and user-supplied image URLs; next/image remotePatterns not configured for them */
 
 import Link from 'next/link'
 import { usePathname, useSearchParams } from 'next/navigation'

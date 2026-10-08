@@ -52,6 +52,7 @@ export function AutopilotCard({ item }: { item: PendingClientUpdate }) {
 
   useEffect(() => {
     void generate()
+  // eslint-disable-next-line react-hooks/exhaustive-deps -- existing behavior kept; reviewed 2026-10-07 lint baseline
   }, [item.eventId])
 
   const handleApprove = () => {

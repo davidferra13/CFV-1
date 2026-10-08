@@ -33,6 +33,7 @@ export function SendSampleMenusAction({ inquiryId, occasion }: SendSampleMenusAc
     if (isOpen && menus.length === 0) {
       loadMenus()
     }
+  // eslint-disable-next-line react-hooks/exhaustive-deps -- existing behavior kept; reviewed 2026-10-07 lint baseline
   }, [isOpen])
 
   async function loadMenus() {

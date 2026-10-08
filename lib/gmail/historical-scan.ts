@@ -643,7 +643,9 @@ async function logScanEntry(
   }
 }
 
-export default {
+const historicalScanModule = {
   buildHistoricalScanQuery,
   runHistoricalScanBatch,
 }
+
+export default historicalScanModule

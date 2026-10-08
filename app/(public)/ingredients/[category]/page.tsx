@@ -1,3 +1,4 @@
+/* eslint-disable @next/next/no-img-element -- remote and user-supplied image URLs; next/image remotePatterns not configured for them */
 /**
  * /ingredients/[category] - Category landing pages for the ingredient encyclopedia.
  *

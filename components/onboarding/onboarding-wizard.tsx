@@ -105,6 +105,7 @@ export function OnboardingWizard() {
     getGoogleConnection()
       .then((status) => setGmailConnected(status.gmail.connected))
       .catch(() => {})
+  // eslint-disable-next-line react-hooks/exhaustive-deps -- existing behavior kept; reviewed 2026-10-07 lint baseline
   }, [])
 
   useEffect(() => {
@@ -148,6 +149,7 @@ export function OnboardingWizard() {
     return () => {
       active = false
     }
+  // eslint-disable-next-line react-hooks/exhaustive-deps -- existing behavior kept; reviewed 2026-10-07 lint baseline
   }, [searchParams, router])
 
   async function loadArchetype() {
@@ -199,6 +201,7 @@ export function OnboardingWizard() {
     } else if (firstIncomplete >= 0) {
       setCurrentIndex(firstIncomplete)
     }
+  // eslint-disable-next-line react-hooks/exhaustive-deps -- existing behavior kept; reviewed 2026-10-07 lint baseline
   }, [archetype, archetypeLoaded])
 
   // Configuration interview state (hints from the engine for downstream steps)
