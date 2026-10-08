@@ -119,7 +119,7 @@ export default function PricingPage() {
           <p className="text-xs font-semibold uppercase tracking-[0.18em] text-brand-300">
             Pricing
           </p>
-          <h1 className="mt-4 max-w-3xl text-4xl font-display tracking-tight text-white md:text-5xl">
+          <h1 className="mt-4 max-w-3xl text-4xl font-display tracking-tight text-stone-100 md:text-5xl">
             Start free. Upgrade when you need more.
           </h1>
           <p className="mt-5 max-w-2xl text-base leading-relaxed text-stone-300 md:text-lg">
@@ -137,12 +137,12 @@ export default function PricingPage() {
               key={tier.name}
               className={`relative flex flex-col rounded-2xl border p-6 ${
                 tier.highlighted
-                  ? 'border-orange-500/60 bg-gradient-to-b from-orange-950/20 to-stone-900'
+                  ? 'border-brand-600/60 bg-brand-950/30'
                   : 'border-stone-800/60 bg-stone-900/40'
               }`}
             >
               {tier.highlighted && (
-                <span className="absolute -top-3 left-1/2 -translate-x-1/2 rounded-full bg-orange-600 px-3 py-0.5 text-xs font-semibold text-white">
+                <span className="absolute -top-3 left-1/2 -translate-x-1/2 rounded-full bg-brand-600 px-3 py-0.5 text-xs font-semibold text-white">
                   Most Popular
                 </span>
               )}
@@ -151,7 +151,7 @@ export default function PricingPage() {
                 <p className="mt-1 text-sm text-stone-400">{tier.description}</p>
               </div>
               <div className="mt-5">
-                <span className="text-4xl font-bold tracking-tight text-white">
+                <span className="text-4xl font-bold tracking-tight text-stone-100">
                   ${tier.price}
                 </span>
                 <span className="text-sm text-stone-400">/month</span>
@@ -168,7 +168,7 @@ export default function PricingPage() {
                 href="/auth/signup"
                 className={`mt-8 inline-flex h-11 w-full items-center justify-center rounded-xl text-sm font-semibold transition-colors ${
                   tier.highlighted
-                    ? 'bg-orange-600 text-white hover:bg-orange-500'
+                    ? 'bg-brand-600 text-white hover:bg-brand-700'
                     : 'border border-stone-700 bg-stone-900/60 text-stone-200 hover:border-stone-600 hover:bg-stone-800'
                 }`}
               >
@@ -213,7 +213,7 @@ export default function PricingPage() {
           </p>
           <Link
             href="/auth/signup"
-            className="mt-2 inline-flex h-11 items-center justify-center rounded-xl bg-orange-600 px-6 text-sm font-semibold text-white hover:bg-orange-500"
+            className="mt-2 inline-flex h-11 items-center justify-center rounded-xl bg-brand-600 px-6 text-sm font-semibold text-white hover:bg-brand-700"
           >
             Start Free
           </Link>

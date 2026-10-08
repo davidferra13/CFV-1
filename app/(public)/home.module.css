@@ -23,7 +23,7 @@
   margin-top: 1.25rem;
   font-size: clamp(3.25rem, 5.5vw, 5.25rem);
   line-height: 1.02;
-  font-family: var(--font-playfair), Georgia, serif;
+  font-family: var(--font-playfair, Georgia), Georgia, 'Times New Roman', serif;
   font-weight: 400;
   letter-spacing: -0.045em;
 }
