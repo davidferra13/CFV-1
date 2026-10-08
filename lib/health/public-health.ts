@@ -22,6 +22,9 @@ type BackgroundJobSummary = {
 type BuildSnapshotOptions = {
   includeBackgroundJobs?: boolean
   requiredEnvVars: readonly string[]
+  // Core food and business workflows do not depend on model availability.
+  // A specifically AI-dependent caller can opt into the stricter dependency.
+  requireAiRuntime?: boolean
 }
 
 type AiRuntimeSummary = {
@@ -164,6 +167,7 @@ export async function buildPublicHealthSnapshot(
   const requestId = getRequestId() ?? randomUUID()
   const timestamp = new Date().toISOString()
   const missingEnv = options.requiredEnvVars.filter((name) => !process.env[name])
+  const requireAiRuntime = options.requireAiRuntime === true
   const circuitBreakers = getCircuitBreakerHealth()
   const degradedCircuitBreakers = Object.entries(circuitBreakers)
     .filter(([, value]) => value.state !== 'CLOSED')
@@ -171,10 +175,12 @@ export async function buildPublicHealthSnapshot(
       name,
       state: value.state,
       failures: value.failures,
+      // Gemini is the known model-only breaker. Unknown services stay required.
+      required: requireAiRuntime || name !== 'gemini',
     }))
 
   const backgroundJobs = options.includeBackgroundJobs ? await getBackgroundJobSummary() : null
-  const aiRuntime = getAiRuntimeSummary()
+  const aiRuntime = { ...getAiRuntimeSummary(), required: requireAiRuntime }
 
   let dbStatus = missingEnv.includes('DATABASE_URL') ? 'missing_env' : 'ok'
   let dbHealthy = dbStatus === 'ok'
@@ -206,9 +212,9 @@ export async function buildPublicHealthSnapshot(
   }
 
   const envHealthy = missingEnv.length === 0
-  const circuitBreakersHealthy = degradedCircuitBreakers.length === 0
+  const circuitBreakersHealthy = degradedCircuitBreakers.every((breaker) => !breaker.required)
   const backgroundJobsHealthy = backgroundJobs ? backgroundJobs.status === 'ok' : true
-  const aiRuntimeHealthy = aiRuntime.status === 'ok'
+  const aiRuntimeHealthy = !requireAiRuntime || aiRuntime.status === 'ok'
   const status: PublicHealthStatus =
     envHealthy && circuitBreakersHealthy && backgroundJobsHealthy && dbHealthy && aiRuntimeHealthy
       ? 'ok'

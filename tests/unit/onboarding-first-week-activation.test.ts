@@ -1,3 +1,4 @@
+import './fixtures/react-server-context.cjs'
 import { describe, it } from 'node:test'
 import assert from 'node:assert/strict'
 import {

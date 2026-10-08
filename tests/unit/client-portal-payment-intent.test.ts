@@ -255,7 +255,8 @@ function loadPaymentAction(options: {
   }
 }
 
-test('client portal payment checkout returns ok for a valid token and payable event', async () => {
+test('client portal payment checkout returns ok for a valid token and payable event', async (t) => {
+  t.mock.timers.enable({ apis: ['Date'], now: new Date('2026-05-01T12:00:00.000Z') })
   const token = `valid-${Date.now()}`
   const state = createState(token, [
     { id: 'event-1', client_id: 'client-1', tenant_id: 'tenant-1' },
@@ -277,7 +278,8 @@ test('client portal payment checkout returns ok for a valid token and payable ev
   }
 })
 
-test('client portal payment checkout returns not_found for an invalid token', async () => {
+test('client portal payment checkout returns not_found for an invalid token', async (t) => {
+  t.mock.timers.enable({ apis: ['Date'], now: new Date('2026-05-01T12:00:00.000Z') })
   const token = `invalid-${Date.now()}`
   const state = createState(token, [
     { id: 'event-1', client_id: 'client-1', tenant_id: 'tenant-1' },
@@ -294,7 +296,8 @@ test('client portal payment checkout returns not_found for an invalid token', as
   }
 })
 
-test('client portal payment checkout dedupes repeated anonymous hits for the same token and event', async () => {
+test('client portal payment checkout dedupes repeated anonymous hits for the same token and event', async (t) => {
+  t.mock.timers.enable({ apis: ['Date'], now: new Date('2026-05-01T12:00:00.000Z') })
   const token = `dedupe-${Date.now()}`
   const state = createState(token, [
     { id: 'event-1', client_id: 'client-1', tenant_id: 'tenant-1' },
@@ -325,7 +328,8 @@ test('client portal payment checkout dedupes repeated anonymous hits for the sam
   }
 })
 
-test('client portal payment checkout returns rate_limited when the public intent guard rejects attempts', async () => {
+test('client portal payment checkout returns rate_limited when the public intent guard rejects attempts', async (t) => {
+  t.mock.timers.enable({ apis: ['Date'], now: new Date('2026-05-01T12:00:00.000Z') })
   const token = `rate-${Date.now()}`
   const state = createState(token, [
     { id: 'event-1', client_id: 'client-1', tenant_id: 'tenant-1' },
@@ -345,7 +349,8 @@ test('client portal payment checkout returns rate_limited when the public intent
   }
 })
 
-test('client portal payment checkout scopes tenant from resolved portal access and event lookup', async () => {
+test('client portal payment checkout scopes tenant from resolved portal access and event lookup', async (t) => {
+  t.mock.timers.enable({ apis: ['Date'], now: new Date('2026-05-01T12:00:00.000Z') })
   const token = `tenant-${Date.now()}`
   const state = createState(token, [
     { id: 'event-1', client_id: 'client-1', tenant_id: 'tenant-from-request-must-not-be-used' },
@@ -363,6 +368,54 @@ test('client portal payment checkout scopes tenant from resolved portal access a
       ),
       true
     )
+  } finally {
+    restore()
+  }
+})
+
+for (const [label, overrides] of [
+  ['expired', { portal_token_expires_at: '2026-04-30T12:00:00.000Z' }],
+  ['at expiry boundary', { portal_token_expires_at: '2026-05-01T12:00:00.000Z' }],
+  ['revoked', { portal_token_revoked_at: '2026-05-01T11:00:00.000Z' }],
+] as const) {
+  test(`client portal payment checkout rejects ${label} token before event access`, async (t) => {
+    t.mock.timers.enable({ apis: ['Date'], now: new Date('2026-05-01T12:00:00.000Z') })
+    const token = `rejected-${label}`
+    const state = createState(token, [
+      { id: 'event-1', client_id: 'client-1', tenant_id: 'tenant-1' },
+    ])
+    Object.assign(state.clients[0], overrides)
+    const { mod, checkoutCalls, restore } = loadPaymentAction({ state })
+    try {
+      assert.deepEqual(await mod.getClientPortalPaymentCheckoutUrl(token, 'event-1'), {
+        status: 'not_found',
+      })
+      assert.equal(checkoutCalls.length, 0)
+      assert.equal(state.eventSelects.length, 0)
+    } finally {
+      restore()
+    }
+  })
+}
+
+test('client portal payment checkout rechecks token expiry before returning a cached link', async (t) => {
+  t.mock.timers.enable({ apis: ['Date'], now: new Date('2026-05-01T12:00:00.000Z') })
+  const token = 'cached-expiry'
+  const state = createState(token, [
+    { id: 'event-1', client_id: 'client-1', tenant_id: 'tenant-1' },
+  ])
+  state.clients[0].portal_token_expires_at = '2026-05-01T13:00:00.000Z'
+  const { mod, checkoutCalls, restore } = loadPaymentAction({ state })
+  try {
+    assert.deepEqual(await mod.getClientPortalPaymentCheckoutUrl(token, 'event-1'), {
+      status: 'ok',
+      checkoutUrl: 'https://stripe.test/session-1',
+    })
+    t.mock.timers.setTime(new Date('2026-05-01T13:00:00.000Z').getTime())
+    assert.deepEqual(await mod.getClientPortalPaymentCheckoutUrl(token, 'event-1'), {
+      status: 'not_found',
+    })
+    assert.equal(checkoutCalls.length, 1)
   } finally {
     restore()
   }

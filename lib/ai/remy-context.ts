@@ -62,28 +62,36 @@ async function loadPriceContext(
     )
   }
 
+  // Each endpoint degrades independently, but an unreachable endpoint is recorded
+  // rather than collapsed into an anonymous null.
+  const fetchPriceEndpoint = async (
+    operation: string,
+    path: string,
+    init?: RequestInit
+  ): Promise<Response | null> => {
+    try {
+      return await fetch(`${OPENCLAW_API}${path}`, {
+        ...init,
+        signal: AbortSignal.timeout(3000),
+        cache: 'no-store',
+      })
+    } catch (error) {
+      await recordContextFailure(tenantId, operation, error, { endpoint: path })
+      return null
+    }
+  }
+
   const [dropsRes, costRes, stockRes, freshnessRes] = await Promise.all([
-    fetch(`${OPENCLAW_API}/api/alerts/price-drops?limit=5`, {
-      signal: AbortSignal.timeout(3000),
-      cache: 'no-store',
-    }).catch(() => null),
+    fetchPriceEndpoint('load_price_drops', '/api/alerts/price-drops?limit=5'),
     ingredientNames.length > 0
-      ? fetch(`${OPENCLAW_API}/api/prices/cost-impact`, {
+      ? fetchPriceEndpoint('load_price_cost_impact', '/api/prices/cost-impact', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({ items: ingredientNames, days: 7 }),
-          signal: AbortSignal.timeout(3000),
-          cache: 'no-store',
-        }).catch(() => null)
+        })
       : Promise.resolve(null),
-    fetch(`${OPENCLAW_API}/api/stock/summary`, {
-      signal: AbortSignal.timeout(3000),
-      cache: 'no-store',
-    }).catch(() => null),
-    fetch(`${OPENCLAW_API}/api/freshness`, {
-      signal: AbortSignal.timeout(3000),
-      cache: 'no-store',
-    }).catch(() => null),
+    fetchPriceEndpoint('load_price_stock_summary', '/api/stock/summary'),
+    fetchPriceEndpoint('load_price_freshness', '/api/freshness'),
   ])
 
   const drops: Array<{ name: string; priceCents: number; dropPct: number; store: string }> = []

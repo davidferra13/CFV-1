@@ -150,7 +150,9 @@ function loadAvailabilityRoute(fixtures: Fixtures, calendarTruth: any) {
   return { mod, restore }
 }
 
-test('public booking availability blocks dates that are only busy in Google Calendar', async () => {
+test('public booking availability blocks dates that are only busy in Google Calendar', async (t) => {
+  // Keep the June booking fixtures ahead of the notice cutoff on every run.
+  t.mock.timers.enable({ apis: ['Date'], now: new Date('2026-06-01T12:00:00.000Z') })
   const fixtures: Fixtures = {
     chefs: [
       {
@@ -192,7 +194,9 @@ test('public booking availability blocks dates that are only busy in Google Cale
   }
 })
 
-test('public booking availability holds dates when Google Calendar truth is degraded', async () => {
+test('public booking availability holds dates when Google Calendar truth is degraded', async (t) => {
+  // Keep the June booking fixtures ahead of the notice cutoff on every run.
+  t.mock.timers.enable({ apis: ['Date'], now: new Date('2026-06-01T12:00:00.000Z') })
   const fixtures: Fixtures = {
     chefs: [
       {

@@ -1,3 +1,4 @@
+import './fixtures/react-server-context.cjs'
 /**
  * Contract test for the Tiered Rail system.
  *
