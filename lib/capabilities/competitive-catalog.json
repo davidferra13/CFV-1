@@ -1,0 +1,3146 @@
+{
+  "schemaVersion": 1,
+  "snapshotDate": "2026-09-30",
+  "scope": "Non-exhaustive candidate universe, seeded from the conversation. Not a verified inventory of all active or finished products.",
+  "methodology": "Category assignments are editorial competitive hypotheses. Vendor documentation is not hands-on testing. Unconfirmed candidates may be retired, renamed, modules, or ambiguous brands. Exact duplicates and named surface aliases are counted once; distinct modules remain separate.",
+  "sourceReviewDays": 30,
+  "categories": [
+    {
+      "id": "chef-marketplaces",
+      "label": "Chef booking marketplaces",
+      "relationship": "DIRECT"
+    },
+    {
+      "id": "business-operations",
+      "label": "Chef and event business operations",
+      "relationship": "ADJACENT"
+    },
+    {
+      "id": "professional-recipes",
+      "label": "Professional recipe systems",
+      "relationship": "DIRECT"
+    },
+    {
+      "id": "restaurant-operations",
+      "label": "Restaurant operating systems",
+      "relationship": "ADJACENT"
+    },
+    {
+      "id": "personal-cookbooks",
+      "label": "Personal cookbooks and food organization",
+      "relationship": "DIRECT"
+    },
+    {
+      "id": "recipe-discovery",
+      "label": "Recipe discovery destinations",
+      "relationship": "DIRECT"
+    },
+    {
+      "id": "guided-cooking",
+      "label": "Guided cooking and appliance ecosystems",
+      "relationship": "ADJACENT"
+    },
+    {
+      "id": "meal-planning",
+      "label": "Meal planning",
+      "relationship": "DIRECT"
+    },
+    {
+      "id": "ingredient-discovery",
+      "label": "Cooking with available ingredients",
+      "relationship": "DIRECT"
+    },
+    {
+      "id": "grocery-lists",
+      "label": "Grocery lists",
+      "relationship": "DIRECT"
+    },
+    {
+      "id": "grocery-commerce",
+      "label": "Grocery commerce and fulfillment",
+      "relationship": "ADJACENT"
+    },
+    {
+      "id": "meal-kits",
+      "label": "Meal kits and dinner substitutes",
+      "relationship": "ADJACENT"
+    },
+    {
+      "id": "prepared-meals",
+      "label": "Prepared meals and chef-made food",
+      "relationship": "ADJACENT"
+    },
+    {
+      "id": "restaurant-discovery",
+      "label": "Dining discovery",
+      "relationship": "ADJACENT"
+    },
+    {
+      "id": "reservations",
+      "label": "Reservations and dining transactions",
+      "relationship": "ADJACENT"
+    },
+    {
+      "id": "food-community",
+      "label": "Food community and social discovery",
+      "relationship": "ATTENTION"
+    },
+    {
+      "id": "cooking-video",
+      "label": "Cooking video",
+      "relationship": "ATTENTION"
+    },
+    {
+      "id": "cooking-education",
+      "label": "Cooking education",
+      "relationship": "ADJACENT"
+    },
+    {
+      "id": "nutrition",
+      "label": "Nutrition and dietary planning",
+      "relationship": "ADJACENT"
+    },
+    {
+      "id": "pantry-inventory",
+      "label": "Household pantry and kitchen inventory",
+      "relationship": "DIRECT"
+    },
+    {
+      "id": "food-costing",
+      "label": "Food costing and menu engineering",
+      "relationship": "DIRECT"
+    },
+    {
+      "id": "workforce",
+      "label": "Kitchen workforce and scheduling",
+      "relationship": "ADJACENT"
+    },
+    {
+      "id": "finance-infrastructure",
+      "label": "Payments and bookkeeping infrastructure",
+      "relationship": "INFRASTRUCTURE"
+    },
+    {
+      "id": "ai-assistants",
+      "label": "General food-answer assistants",
+      "relationship": "ATTENTION"
+    }
+  ],
+  "products": [
+    {
+      "id": "17hats",
+      "name": "17hats",
+      "aliases": [],
+      "categoryIds": ["business-operations"],
+      "researchStatus": "UNCONFIRMED",
+      "sourceIds": [],
+      "lifecycle": {
+        "state": "UNKNOWN"
+      },
+      "notes": []
+    },
+    {
+      "id": "7shifts",
+      "name": "7shifts",
+      "aliases": [],
+      "categoryIds": ["restaurant-operations", "workforce"],
+      "researchStatus": "VENDOR_DOCUMENTED",
+      "sourceIds": ["7shifts"],
+      "lifecycle": {
+        "state": "OFFERING_DOCUMENTED",
+        "observedAt": "2026-09-30"
+      },
+      "notes": []
+    },
+    {
+      "id": "airbnb-services-chefs",
+      "name": "Airbnb Services - Chefs",
+      "aliases": [],
+      "categoryIds": ["chef-marketplaces"],
+      "researchStatus": "UNCONFIRMED",
+      "sourceIds": [],
+      "lifecycle": {
+        "state": "UNKNOWN"
+      },
+      "notes": []
+    },
+    {
+      "id": "airtasker",
+      "name": "Airtasker",
+      "aliases": [],
+      "categoryIds": ["chef-marketplaces"],
+      "researchStatus": "UNCONFIRMED",
+      "sourceIds": [],
+      "lifecycle": {
+        "state": "UNKNOWN"
+      },
+      "notes": []
+    },
+    {
+      "id": "allrecipes",
+      "name": "Allrecipes",
+      "aliases": [],
+      "categoryIds": ["recipe-discovery", "ingredient-discovery"],
+      "researchStatus": "UNCONFIRMED",
+      "sourceIds": [],
+      "lifecycle": {
+        "state": "UNKNOWN"
+      },
+      "notes": []
+    },
+    {
+      "id": "amazon-fresh",
+      "name": "Amazon Fresh",
+      "aliases": [],
+      "categoryIds": ["grocery-commerce"],
+      "researchStatus": "UNCONFIRMED",
+      "sourceIds": [],
+      "lifecycle": {
+        "state": "UNKNOWN"
+      },
+      "notes": []
+    },
+    {
+      "id": "america-s-test-kitchen",
+      "name": "America's Test Kitchen",
+      "aliases": [],
+      "categoryIds": ["recipe-discovery", "cooking-video", "cooking-education"],
+      "researchStatus": "UNCONFIRMED",
+      "sourceIds": [],
+      "lifecycle": {
+        "state": "UNKNOWN"
+      },
+      "notes": []
+    },
+    {
+      "id": "anova-culinary",
+      "name": "Anova Culinary",
+      "aliases": [],
+      "categoryIds": ["guided-cooking"],
+      "researchStatus": "UNCONFIRMED",
+      "sourceIds": [],
+      "lifecycle": {
+        "state": "UNKNOWN"
+      },
+      "notes": []
+    },
+    {
+      "id": "anylist",
+      "name": "AnyList",
+      "aliases": [],
+      "categoryIds": ["personal-cookbooks", "meal-planning", "grocery-lists", "pantry-inventory"],
+      "researchStatus": "VENDOR_DOCUMENTED",
+      "sourceIds": ["anylist"],
+      "lifecycle": {
+        "state": "OFFERING_DOCUMENTED",
+        "observedAt": "2026-09-30"
+      },
+      "notes": []
+    },
+    {
+      "id": "apicbase",
+      "name": "Apicbase",
+      "aliases": [],
+      "categoryIds": ["professional-recipes", "pantry-inventory", "food-costing"],
+      "researchStatus": "UNCONFIRMED",
+      "sourceIds": [],
+      "lifecycle": {
+        "state": "UNKNOWN"
+      },
+      "notes": []
+    },
+    {
+      "id": "apple-reminders",
+      "name": "Apple Reminders",
+      "aliases": [],
+      "categoryIds": ["grocery-lists"],
+      "researchStatus": "UNCONFIRMED",
+      "sourceIds": [],
+      "lifecycle": {
+        "state": "UNKNOWN"
+      },
+      "notes": []
+    },
+    {
+      "id": "bark",
+      "name": "Bark",
+      "aliases": [],
+      "categoryIds": ["chef-marketplaces"],
+      "researchStatus": "UNCONFIRMED",
+      "sourceIds": [],
+      "lifecycle": {
+        "state": "UNKNOWN"
+      },
+      "notes": []
+    },
+    {
+      "id": "bbc-good-food",
+      "name": "BBC Good Food",
+      "aliases": [],
+      "categoryIds": ["recipe-discovery"],
+      "researchStatus": "UNCONFIRMED",
+      "sourceIds": [],
+      "lifecycle": {
+        "state": "UNKNOWN"
+      },
+      "notes": []
+    },
+    {
+      "id": "bbc-maestro",
+      "name": "BBC Maestro",
+      "aliases": [],
+      "categoryIds": ["cooking-education"],
+      "researchStatus": "UNCONFIRMED",
+      "sourceIds": [],
+      "lifecycle": {
+        "state": "UNKNOWN"
+      },
+      "notes": []
+    },
+    {
+      "id": "better-cater",
+      "name": "Better Cater",
+      "aliases": [],
+      "categoryIds": ["business-operations"],
+      "researchStatus": "UNCONFIRMED",
+      "sourceIds": [],
+      "lifecycle": {
+        "state": "UNKNOWN"
+      },
+      "notes": []
+    },
+    {
+      "id": "bigoven",
+      "name": "BigOven",
+      "aliases": [],
+      "categoryIds": [
+        "personal-cookbooks",
+        "recipe-discovery",
+        "meal-planning",
+        "ingredient-discovery",
+        "grocery-lists",
+        "food-community"
+      ],
+      "researchStatus": "UNCONFIRMED",
+      "sourceIds": [],
+      "lifecycle": {
+        "state": "UNKNOWN"
+      },
+      "notes": []
+    },
+    {
+      "id": "blue-apron",
+      "name": "Blue Apron",
+      "aliases": [],
+      "categoryIds": ["meal-kits"],
+      "researchStatus": "UNCONFIRMED",
+      "sourceIds": [],
+      "lifecycle": {
+        "state": "UNKNOWN"
+      },
+      "notes": []
+    },
+    {
+      "id": "bon-appetit",
+      "name": "Bon Appetit",
+      "aliases": [],
+      "categoryIds": ["recipe-discovery"],
+      "researchStatus": "UNCONFIRMED",
+      "sourceIds": [],
+      "lifecycle": {
+        "state": "UNKNOWN"
+      },
+      "notes": []
+    },
+    {
+      "id": "bonsai",
+      "name": "Bonsai",
+      "aliases": [],
+      "categoryIds": ["business-operations"],
+      "researchStatus": "UNCONFIRMED",
+      "sourceIds": [],
+      "lifecycle": {
+        "state": "UNKNOWN"
+      },
+      "notes": [
+        "Confirm exact product identity, current availability, and any retirement or rebrand before counting as an active benchmark."
+      ]
+    },
+    {
+      "id": "bring",
+      "name": "Bring!",
+      "aliases": [],
+      "categoryIds": ["grocery-lists"],
+      "researchStatus": "UNCONFIRMED",
+      "sourceIds": [],
+      "lifecycle": {
+        "state": "UNKNOWN"
+      },
+      "notes": []
+    },
+    {
+      "id": "budget-bytes",
+      "name": "Budget Bytes",
+      "aliases": [],
+      "categoryIds": ["recipe-discovery"],
+      "researchStatus": "UNCONFIRMED",
+      "sourceIds": [],
+      "lifecycle": {
+        "state": "UNKNOWN"
+      },
+      "notes": []
+    },
+    {
+      "id": "carb-manager",
+      "name": "Carb Manager",
+      "aliases": [],
+      "categoryIds": ["nutrition"],
+      "researchStatus": "UNCONFIRMED",
+      "sourceIds": [],
+      "lifecycle": {
+        "state": "UNKNOWN"
+      },
+      "notes": []
+    },
+    {
+      "id": "caterease",
+      "name": "Caterease",
+      "aliases": [],
+      "categoryIds": ["business-operations"],
+      "researchStatus": "UNCONFIRMED",
+      "sourceIds": [],
+      "lifecycle": {
+        "state": "UNKNOWN"
+      },
+      "notes": []
+    },
+    {
+      "id": "caterzen",
+      "name": "CaterZen",
+      "aliases": [],
+      "categoryIds": ["business-operations"],
+      "researchStatus": "UNCONFIRMED",
+      "sourceIds": [],
+      "lifecycle": {
+        "state": "UNKNOWN"
+      },
+      "notes": []
+    },
+    {
+      "id": "cbord",
+      "name": "CBORD",
+      "aliases": [],
+      "categoryIds": ["professional-recipes"],
+      "researchStatus": "UNCONFIRMED",
+      "sourceIds": [],
+      "lifecycle": {
+        "state": "UNKNOWN"
+      },
+      "notes": [
+        "Confirm exact product identity, current availability, and any retirement or rebrand before counting as an active benchmark."
+      ]
+    },
+    {
+      "id": "chatgpt",
+      "name": "ChatGPT",
+      "aliases": [],
+      "categoryIds": ["ai-assistants"],
+      "researchStatus": "UNCONFIRMED",
+      "sourceIds": [],
+      "lifecycle": {
+        "state": "UNKNOWN"
+      },
+      "notes": []
+    },
+    {
+      "id": "chefmaison",
+      "name": "ChefMaison",
+      "aliases": [],
+      "categoryIds": ["chef-marketplaces"],
+      "researchStatus": "VENDOR_DOCUMENTED",
+      "sourceIds": ["chefmaison"],
+      "lifecycle": {
+        "state": "OFFERING_DOCUMENTED",
+        "observedAt": "2026-09-30"
+      },
+      "notes": []
+    },
+    {
+      "id": "cheftec",
+      "name": "ChefTec",
+      "aliases": [],
+      "categoryIds": ["professional-recipes", "food-costing"],
+      "researchStatus": "UNCONFIRMED",
+      "sourceIds": [],
+      "lifecycle": {
+        "state": "UNKNOWN"
+      },
+      "notes": []
+    },
+    {
+      "id": "claude",
+      "name": "Claude",
+      "aliases": [],
+      "categoryIds": ["ai-assistants"],
+      "researchStatus": "UNCONFIRMED",
+      "sourceIds": [],
+      "lifecycle": {
+        "state": "UNKNOWN"
+      },
+      "notes": []
+    },
+    {
+      "id": "clover",
+      "name": "Clover",
+      "aliases": [],
+      "categoryIds": ["restaurant-operations"],
+      "researchStatus": "UNCONFIRMED",
+      "sourceIds": [],
+      "lifecycle": {
+        "state": "UNKNOWN"
+      },
+      "notes": []
+    },
+    {
+      "id": "computrition",
+      "name": "Computrition",
+      "aliases": [],
+      "categoryIds": ["professional-recipes"],
+      "researchStatus": "UNCONFIRMED",
+      "sourceIds": [],
+      "lifecycle": {
+        "state": "UNKNOWN"
+      },
+      "notes": []
+    },
+    {
+      "id": "connecteam",
+      "name": "Connecteam",
+      "aliases": [],
+      "categoryIds": ["workforce"],
+      "researchStatus": "UNCONFIRMED",
+      "sourceIds": [],
+      "lifecycle": {
+        "state": "UNKNOWN"
+      },
+      "notes": []
+    },
+    {
+      "id": "cook-s-illustrated",
+      "name": "Cook's Illustrated",
+      "aliases": [],
+      "categoryIds": ["recipe-discovery"],
+      "researchStatus": "UNCONFIRMED",
+      "sourceIds": [],
+      "lifecycle": {
+        "state": "UNKNOWN"
+      },
+      "notes": []
+    },
+    {
+      "id": "cookbook",
+      "name": "CookBook",
+      "aliases": [],
+      "categoryIds": ["personal-cookbooks"],
+      "researchStatus": "UNCONFIRMED",
+      "sourceIds": [],
+      "lifecycle": {
+        "state": "UNKNOWN"
+      },
+      "notes": []
+    },
+    {
+      "id": "cooklist",
+      "name": "Cooklist",
+      "aliases": [],
+      "categoryIds": ["pantry-inventory"],
+      "researchStatus": "UNCONFIRMED",
+      "sourceIds": [],
+      "lifecycle": {
+        "state": "UNKNOWN"
+      },
+      "notes": []
+    },
+    {
+      "id": "cookpad",
+      "name": "Cookpad",
+      "aliases": [],
+      "categoryIds": [
+        "recipe-discovery",
+        "guided-cooking",
+        "meal-planning",
+        "ingredient-discovery",
+        "food-community"
+      ],
+      "researchStatus": "UNCONFIRMED",
+      "sourceIds": [],
+      "lifecycle": {
+        "state": "UNKNOWN"
+      },
+      "notes": []
+    },
+    {
+      "id": "cookunity",
+      "name": "CookUnity",
+      "aliases": [],
+      "categoryIds": ["meal-kits", "prepared-meals"],
+      "researchStatus": "UNCONFIRMED",
+      "sourceIds": [],
+      "lifecycle": {
+        "state": "UNKNOWN"
+      },
+      "notes": []
+    },
+    {
+      "id": "copilot",
+      "name": "Copilot",
+      "aliases": [],
+      "categoryIds": ["ai-assistants"],
+      "researchStatus": "UNCONFIRMED",
+      "sourceIds": [],
+      "lifecycle": {
+        "state": "UNKNOWN"
+      },
+      "notes": []
+    },
+    {
+      "id": "copy-me-that",
+      "name": "Copy Me That",
+      "aliases": [],
+      "categoryIds": ["personal-cookbooks"],
+      "researchStatus": "UNCONFIRMED",
+      "sourceIds": [],
+      "lifecycle": {
+        "state": "UNKNOWN"
+      },
+      "notes": []
+    },
+    {
+      "id": "cozymeal",
+      "name": "Cozymeal",
+      "aliases": [],
+      "categoryIds": ["chef-marketplaces"],
+      "researchStatus": "UNCONFIRMED",
+      "sourceIds": [],
+      "lifecycle": {
+        "state": "UNKNOWN"
+      },
+      "notes": []
+    },
+    {
+      "id": "craftable",
+      "name": "Craftable",
+      "aliases": [],
+      "categoryIds": [
+        "professional-recipes",
+        "restaurant-operations",
+        "pantry-inventory",
+        "food-costing"
+      ],
+      "researchStatus": "UNCONFIRMED",
+      "sourceIds": [],
+      "lifecycle": {
+        "state": "UNKNOWN"
+      },
+      "notes": []
+    },
+    {
+      "id": "cronometer",
+      "name": "Cronometer",
+      "aliases": [],
+      "categoryIds": ["nutrition"],
+      "researchStatus": "UNCONFIRMED",
+      "sourceIds": [],
+      "lifecycle": {
+        "state": "UNKNOWN"
+      },
+      "notes": []
+    },
+    {
+      "id": "crouton",
+      "name": "Crouton",
+      "aliases": [],
+      "categoryIds": ["personal-cookbooks"],
+      "researchStatus": "UNCONFIRMED",
+      "sourceIds": [],
+      "lifecycle": {
+        "state": "UNKNOWN"
+      },
+      "notes": []
+    },
+    {
+      "id": "crunchtime",
+      "name": "Crunchtime",
+      "aliases": [],
+      "categoryIds": ["restaurant-operations", "pantry-inventory"],
+      "researchStatus": "UNCONFIRMED",
+      "sourceIds": [],
+      "lifecycle": {
+        "state": "UNKNOWN"
+      },
+      "notes": []
+    },
+    {
+      "id": "curate",
+      "name": "Curate",
+      "aliases": [],
+      "categoryIds": ["business-operations"],
+      "researchStatus": "UNCONFIRMED",
+      "sourceIds": [],
+      "lifecycle": {
+        "state": "UNKNOWN"
+      },
+      "notes": []
+    },
+    {
+      "id": "daily-harvest",
+      "name": "Daily Harvest",
+      "aliases": [],
+      "categoryIds": ["prepared-meals"],
+      "researchStatus": "UNCONFIRMED",
+      "sourceIds": [],
+      "lifecycle": {
+        "state": "UNKNOWN"
+      },
+      "notes": []
+    },
+    {
+      "id": "delish",
+      "name": "Delish",
+      "aliases": [],
+      "categoryIds": ["recipe-discovery"],
+      "researchStatus": "UNCONFIRMED",
+      "sourceIds": [],
+      "lifecycle": {
+        "state": "UNKNOWN"
+      },
+      "notes": []
+    },
+    {
+      "id": "deputy",
+      "name": "Deputy",
+      "aliases": [],
+      "categoryIds": ["restaurant-operations", "workforce"],
+      "researchStatus": "UNCONFIRMED",
+      "sourceIds": [],
+      "lifecycle": {
+        "state": "UNKNOWN"
+      },
+      "notes": []
+    },
+    {
+      "id": "dinnerly",
+      "name": "Dinnerly",
+      "aliases": [],
+      "categoryIds": ["meal-kits"],
+      "researchStatus": "UNCONFIRMED",
+      "sourceIds": [],
+      "lifecycle": {
+        "state": "UNKNOWN"
+      },
+      "notes": []
+    },
+    {
+      "id": "doordash",
+      "name": "DoorDash",
+      "aliases": [],
+      "categoryIds": ["grocery-commerce", "restaurant-discovery"],
+      "researchStatus": "UNCONFIRMED",
+      "sourceIds": [],
+      "lifecycle": {
+        "state": "UNKNOWN"
+      },
+      "notes": []
+    },
+    {
+      "id": "dubsado",
+      "name": "Dubsado",
+      "aliases": [],
+      "categoryIds": ["business-operations"],
+      "researchStatus": "UNCONFIRMED",
+      "sourceIds": [],
+      "lifecycle": {
+        "state": "UNKNOWN"
+      },
+      "notes": []
+    },
+    {
+      "id": "eat-app",
+      "name": "Eat App",
+      "aliases": [],
+      "categoryIds": ["reservations"],
+      "researchStatus": "UNCONFIRMED",
+      "sourceIds": [],
+      "lifecycle": {
+        "state": "UNKNOWN"
+      },
+      "notes": []
+    },
+    {
+      "id": "eat-this-much",
+      "name": "Eat This Much",
+      "aliases": [],
+      "categoryIds": ["meal-planning", "nutrition"],
+      "researchStatus": "UNCONFIRMED",
+      "sourceIds": [],
+      "lifecycle": {
+        "state": "UNKNOWN"
+      },
+      "notes": []
+    },
+    {
+      "id": "eater",
+      "name": "Eater",
+      "aliases": [],
+      "categoryIds": ["restaurant-discovery"],
+      "researchStatus": "UNCONFIRMED",
+      "sourceIds": [],
+      "lifecycle": {
+        "state": "UNKNOWN"
+      },
+      "notes": []
+    },
+    {
+      "id": "eatingwell",
+      "name": "EatingWell",
+      "aliases": [],
+      "categoryIds": ["recipe-discovery"],
+      "researchStatus": "UNCONFIRMED",
+      "sourceIds": [],
+      "lifecycle": {
+        "state": "UNKNOWN"
+      },
+      "notes": []
+    },
+    {
+      "id": "emeals",
+      "name": "eMeals",
+      "aliases": [],
+      "categoryIds": ["meal-planning"],
+      "researchStatus": "UNCONFIRMED",
+      "sourceIds": [],
+      "lifecycle": {
+        "state": "UNKNOWN"
+      },
+      "notes": []
+    },
+    {
+      "id": "epicurious",
+      "name": "Epicurious",
+      "aliases": [],
+      "categoryIds": ["recipe-discovery", "ingredient-discovery"],
+      "researchStatus": "UNCONFIRMED",
+      "sourceIds": [],
+      "lifecycle": {
+        "state": "UNKNOWN"
+      },
+      "notes": []
+    },
+    {
+      "id": "event-temple",
+      "name": "Event Temple",
+      "aliases": [],
+      "categoryIds": ["business-operations"],
+      "researchStatus": "UNCONFIRMED",
+      "sourceIds": [],
+      "lifecycle": {
+        "state": "UNKNOWN"
+      },
+      "notes": []
+    },
+    {
+      "id": "everyplate",
+      "name": "EveryPlate",
+      "aliases": [],
+      "categoryIds": ["meal-kits"],
+      "researchStatus": "UNCONFIRMED",
+      "sourceIds": [],
+      "lifecycle": {
+        "state": "UNKNOWN"
+      },
+      "notes": []
+    },
+    {
+      "id": "facebook-groups",
+      "name": "Facebook Groups",
+      "aliases": [],
+      "categoryIds": ["food-community"],
+      "researchStatus": "UNCONFIRMED",
+      "sourceIds": [],
+      "lifecycle": {
+        "state": "UNKNOWN"
+      },
+      "notes": []
+    },
+    {
+      "id": "factor",
+      "name": "Factor",
+      "aliases": [],
+      "categoryIds": ["meal-kits", "prepared-meals"],
+      "researchStatus": "UNCONFIRMED",
+      "sourceIds": [],
+      "lifecycle": {
+        "state": "UNKNOWN"
+      },
+      "notes": []
+    },
+    {
+      "id": "fash",
+      "name": "Fash",
+      "aliases": [],
+      "categoryIds": ["chef-marketplaces"],
+      "researchStatus": "UNCONFIRMED",
+      "sourceIds": [],
+      "lifecycle": {
+        "state": "UNKNOWN"
+      },
+      "notes": []
+    },
+    {
+      "id": "fillet",
+      "name": "Fillet",
+      "aliases": [],
+      "categoryIds": ["professional-recipes", "food-costing"],
+      "researchStatus": "UNCONFIRMED",
+      "sourceIds": [],
+      "lifecycle": {
+        "state": "UNKNOWN"
+      },
+      "notes": []
+    },
+    {
+      "id": "flex-catering",
+      "name": "Flex Catering",
+      "aliases": [],
+      "categoryIds": ["business-operations"],
+      "researchStatus": "UNCONFIRMED",
+      "sourceIds": [],
+      "lifecycle": {
+        "state": "UNKNOWN"
+      },
+      "notes": []
+    },
+    {
+      "id": "food-network",
+      "name": "Food Network",
+      "aliases": [],
+      "categoryIds": ["recipe-discovery", "cooking-video", "cooking-education"],
+      "researchStatus": "UNCONFIRMED",
+      "sourceIds": [],
+      "lifecycle": {
+        "state": "UNKNOWN"
+      },
+      "notes": []
+    },
+    {
+      "id": "food-network-kitchen",
+      "name": "Food Network Kitchen",
+      "aliases": [],
+      "categoryIds": ["guided-cooking"],
+      "researchStatus": "UNCONFIRMED",
+      "sourceIds": [],
+      "lifecycle": {
+        "state": "UNKNOWN"
+      },
+      "notes": []
+    },
+    {
+      "id": "food52",
+      "name": "Food52",
+      "aliases": [],
+      "categoryIds": ["recipe-discovery", "food-community"],
+      "researchStatus": "UNCONFIRMED",
+      "sourceIds": [],
+      "lifecycle": {
+        "state": "UNKNOWN"
+      },
+      "notes": []
+    },
+    {
+      "id": "foodager",
+      "name": "Foodager",
+      "aliases": [],
+      "categoryIds": ["pantry-inventory"],
+      "researchStatus": "UNCONFIRMED",
+      "sourceIds": [],
+      "lifecycle": {
+        "state": "UNKNOWN"
+      },
+      "notes": [
+        "Confirm exact product identity, current availability, and any retirement or rebrand before counting as an active benchmark."
+      ]
+    },
+    {
+      "id": "foodnoms",
+      "name": "FoodNoms",
+      "aliases": [],
+      "categoryIds": ["nutrition"],
+      "researchStatus": "UNCONFIRMED",
+      "sourceIds": [],
+      "lifecycle": {
+        "state": "UNKNOWN"
+      },
+      "notes": []
+    },
+    {
+      "id": "foodnotify",
+      "name": "FoodNotify",
+      "aliases": [],
+      "categoryIds": ["professional-recipes"],
+      "researchStatus": "UNCONFIRMED",
+      "sourceIds": [],
+      "lifecycle": {
+        "state": "UNKNOWN"
+      },
+      "notes": []
+    },
+    {
+      "id": "foodstorm",
+      "name": "FoodStorm",
+      "aliases": [],
+      "categoryIds": ["business-operations"],
+      "researchStatus": "UNCONFIRMED",
+      "sourceIds": [],
+      "lifecycle": {
+        "state": "UNKNOWN"
+      },
+      "notes": []
+    },
+    {
+      "id": "forks-over-knives",
+      "name": "Forks Over Knives",
+      "aliases": [],
+      "categoryIds": ["recipe-discovery", "nutrition"],
+      "researchStatus": "UNCONFIRMED",
+      "sourceIds": [],
+      "lifecycle": {
+        "state": "UNKNOWN"
+      },
+      "notes": []
+    },
+    {
+      "id": "forks-over-knives-meal-planner",
+      "name": "Forks Over Knives Meal Planner",
+      "aliases": [],
+      "categoryIds": ["meal-planning"],
+      "researchStatus": "UNCONFIRMED",
+      "sourceIds": [],
+      "lifecycle": {
+        "state": "UNKNOWN"
+      },
+      "notes": []
+    },
+    {
+      "id": "foursquare",
+      "name": "Foursquare",
+      "aliases": [],
+      "categoryIds": ["restaurant-discovery"],
+      "researchStatus": "UNCONFIRMED",
+      "sourceIds": [],
+      "lifecycle": {
+        "state": "UNKNOWN"
+      },
+      "notes": []
+    },
+    {
+      "id": "fresh-n-lean",
+      "name": "Fresh N Lean",
+      "aliases": [],
+      "categoryIds": ["prepared-meals"],
+      "researchStatus": "UNCONFIRMED",
+      "sourceIds": [],
+      "lifecycle": {
+        "state": "UNKNOWN"
+      },
+      "notes": [
+        "Confirm exact product identity, current availability, and any retirement or rebrand before counting as an active benchmark."
+      ]
+    },
+    {
+      "id": "freshbooks",
+      "name": "FreshBooks",
+      "aliases": [],
+      "categoryIds": ["business-operations", "finance-infrastructure"],
+      "researchStatus": "UNCONFIRMED",
+      "sourceIds": [],
+      "lifecycle": {
+        "state": "UNKNOWN"
+      },
+      "notes": []
+    },
+    {
+      "id": "freshdirect",
+      "name": "FreshDirect",
+      "aliases": [],
+      "categoryIds": ["grocery-commerce"],
+      "researchStatus": "UNCONFIRMED",
+      "sourceIds": [],
+      "lifecycle": {
+        "state": "UNKNOWN"
+      },
+      "notes": []
+    },
+    {
+      "id": "fridgely",
+      "name": "Fridgely",
+      "aliases": [],
+      "categoryIds": ["pantry-inventory"],
+      "researchStatus": "UNCONFIRMED",
+      "sourceIds": [],
+      "lifecycle": {
+        "state": "UNKNOWN"
+      },
+      "notes": []
+    },
+    {
+      "id": "galley",
+      "name": "Galley",
+      "aliases": [],
+      "categoryIds": ["professional-recipes", "food-costing"],
+      "researchStatus": "UNCONFIRMED",
+      "sourceIds": [],
+      "lifecycle": {
+        "state": "UNKNOWN"
+      },
+      "notes": []
+    },
+    {
+      "id": "gemini",
+      "name": "Gemini",
+      "aliases": [],
+      "categoryIds": ["ai-assistants"],
+      "researchStatus": "UNCONFIRMED",
+      "sourceIds": [],
+      "lifecycle": {
+        "state": "UNKNOWN"
+      },
+      "notes": []
+    },
+    {
+      "id": "gigsalad",
+      "name": "GigSalad",
+      "aliases": [],
+      "categoryIds": ["chef-marketplaces"],
+      "researchStatus": "UNCONFIRMED",
+      "sourceIds": [],
+      "lifecycle": {
+        "state": "UNKNOWN"
+      },
+      "notes": []
+    },
+    {
+      "id": "gobble",
+      "name": "Gobble",
+      "aliases": [],
+      "categoryIds": ["meal-kits"],
+      "researchStatus": "UNCONFIRMED",
+      "sourceIds": [],
+      "lifecycle": {
+        "state": "UNKNOWN"
+      },
+      "notes": []
+    },
+    {
+      "id": "google-keep",
+      "name": "Google Keep",
+      "aliases": [],
+      "categoryIds": ["grocery-lists"],
+      "researchStatus": "UNCONFIRMED",
+      "sourceIds": [],
+      "lifecycle": {
+        "state": "UNKNOWN"
+      },
+      "notes": []
+    },
+    {
+      "id": "google-maps",
+      "name": "Google Maps",
+      "aliases": [],
+      "categoryIds": ["restaurant-discovery"],
+      "researchStatus": "UNCONFIRMED",
+      "sourceIds": [],
+      "lifecycle": {
+        "state": "UNKNOWN"
+      },
+      "notes": []
+    },
+    {
+      "id": "google-search",
+      "name": "Google Search",
+      "aliases": [],
+      "categoryIds": ["restaurant-discovery"],
+      "researchStatus": "UNCONFIRMED",
+      "sourceIds": [],
+      "lifecycle": {
+        "state": "UNKNOWN"
+      },
+      "notes": []
+    },
+    {
+      "id": "gopuff",
+      "name": "Gopuff",
+      "aliases": [],
+      "categoryIds": ["grocery-commerce"],
+      "researchStatus": "UNCONFIRMED",
+      "sourceIds": [],
+      "lifecycle": {
+        "state": "UNKNOWN"
+      },
+      "notes": []
+    },
+    {
+      "id": "grazecart",
+      "name": "GrazeCart",
+      "aliases": [],
+      "categoryIds": ["business-operations"],
+      "researchStatus": "UNCONFIRMED",
+      "sourceIds": [],
+      "lifecycle": {
+        "state": "UNKNOWN"
+      },
+      "notes": []
+    },
+    {
+      "id": "green-chef",
+      "name": "Green Chef",
+      "aliases": [],
+      "categoryIds": ["meal-kits"],
+      "researchStatus": "UNCONFIRMED",
+      "sourceIds": [],
+      "lifecycle": {
+        "state": "UNKNOWN"
+      },
+      "notes": []
+    },
+    {
+      "id": "grok",
+      "name": "Grok",
+      "aliases": [],
+      "categoryIds": ["ai-assistants"],
+      "researchStatus": "UNCONFIRMED",
+      "sourceIds": [],
+      "lifecycle": {
+        "state": "UNKNOWN"
+      },
+      "notes": []
+    },
+    {
+      "id": "grubhub",
+      "name": "Grubhub",
+      "aliases": [],
+      "categoryIds": ["restaurant-discovery"],
+      "researchStatus": "UNCONFIRMED",
+      "sourceIds": [],
+      "lifecycle": {
+        "state": "UNKNOWN"
+      },
+      "notes": []
+    },
+    {
+      "id": "happycow",
+      "name": "HappyCow",
+      "aliases": [],
+      "categoryIds": ["restaurant-discovery"],
+      "researchStatus": "UNCONFIRMED",
+      "sourceIds": [],
+      "lifecycle": {
+        "state": "UNKNOWN"
+      },
+      "notes": []
+    },
+    {
+      "id": "hellofresh",
+      "name": "HelloFresh",
+      "aliases": [],
+      "categoryIds": ["meal-kits"],
+      "researchStatus": "UNCONFIRMED",
+      "sourceIds": [],
+      "lifecycle": {
+        "state": "UNKNOWN"
+      },
+      "notes": []
+    },
+    {
+      "id": "hestan-cue",
+      "name": "Hestan Cue",
+      "aliases": [],
+      "categoryIds": ["guided-cooking"],
+      "researchStatus": "UNCONFIRMED",
+      "sourceIds": [],
+      "lifecycle": {
+        "state": "UNKNOWN"
+      },
+      "notes": []
+    },
+    {
+      "id": "hireachef-uspca",
+      "name": "HireAChef / USPCA",
+      "aliases": [],
+      "categoryIds": ["chef-marketplaces"],
+      "researchStatus": "UNCONFIRMED",
+      "sourceIds": [],
+      "lifecycle": {
+        "state": "UNKNOWN"
+      },
+      "notes": []
+    },
+    {
+      "id": "home-chef",
+      "name": "Home Chef",
+      "aliases": [],
+      "categoryIds": ["meal-kits"],
+      "researchStatus": "UNCONFIRMED",
+      "sourceIds": [],
+      "lifecycle": {
+        "state": "UNKNOWN"
+      },
+      "notes": []
+    },
+    {
+      "id": "homebase",
+      "name": "Homebase",
+      "aliases": [],
+      "categoryIds": ["restaurant-operations", "workforce"],
+      "researchStatus": "UNCONFIRMED",
+      "sourceIds": [],
+      "lifecycle": {
+        "state": "UNKNOWN"
+      },
+      "notes": []
+    },
+    {
+      "id": "honeybook",
+      "name": "HoneyBook",
+      "aliases": [],
+      "categoryIds": ["business-operations", "finance-infrastructure"],
+      "researchStatus": "VENDOR_DOCUMENTED",
+      "sourceIds": ["honeybook"],
+      "lifecycle": {
+        "state": "OFFERING_DOCUMENTED",
+        "observedAt": "2026-09-30"
+      },
+      "notes": []
+    },
+    {
+      "id": "hotschedules",
+      "name": "HotSchedules",
+      "aliases": [],
+      "categoryIds": ["restaurant-operations", "workforce"],
+      "researchStatus": "UNCONFIRMED",
+      "sourceIds": [],
+      "lifecycle": {
+        "state": "UNKNOWN"
+      },
+      "notes": []
+    },
+    {
+      "id": "hubspot",
+      "name": "HubSpot",
+      "aliases": [],
+      "categoryIds": ["business-operations"],
+      "researchStatus": "UNCONFIRMED",
+      "sourceIds": [],
+      "lifecycle": {
+        "state": "UNKNOWN"
+      },
+      "notes": []
+    },
+    {
+      "id": "hungryroot",
+      "name": "Hungryroot",
+      "aliases": [],
+      "categoryIds": ["grocery-commerce", "meal-kits"],
+      "researchStatus": "UNCONFIRMED",
+      "sourceIds": [],
+      "lifecycle": {
+        "state": "UNKNOWN"
+      },
+      "notes": []
+    },
+    {
+      "id": "innit",
+      "name": "Innit",
+      "aliases": [],
+      "categoryIds": ["guided-cooking"],
+      "researchStatus": "UNCONFIRMED",
+      "sourceIds": [],
+      "lifecycle": {
+        "state": "UNKNOWN"
+      },
+      "notes": []
+    },
+    {
+      "id": "instacart",
+      "name": "Instacart",
+      "aliases": [],
+      "categoryIds": ["grocery-commerce"],
+      "researchStatus": "UNCONFIRMED",
+      "sourceIds": [],
+      "lifecycle": {
+        "state": "UNKNOWN"
+      },
+      "notes": []
+    },
+    {
+      "id": "instagram",
+      "name": "Instagram",
+      "aliases": ["Instagram Reels"],
+      "categoryIds": ["food-community", "cooking-video"],
+      "researchStatus": "UNCONFIRMED",
+      "sourceIds": [],
+      "lifecycle": {
+        "state": "UNKNOWN"
+      },
+      "notes": []
+    },
+    {
+      "id": "intent",
+      "name": "Intent",
+      "aliases": [],
+      "categoryIds": ["meal-planning"],
+      "researchStatus": "UNCONFIRMED",
+      "sourceIds": [],
+      "lifecycle": {
+        "state": "UNKNOWN"
+      },
+      "notes": [
+        "Confirm exact product identity, current availability, and any retirement or rebrand before counting as an active benchmark."
+      ]
+    },
+    {
+      "id": "jolt",
+      "name": "Jolt",
+      "aliases": [],
+      "categoryIds": ["restaurant-operations", "workforce"],
+      "researchStatus": "UNCONFIRMED",
+      "sourceIds": [],
+      "lifecycle": {
+        "state": "UNKNOWN"
+      },
+      "notes": []
+    },
+    {
+      "id": "june",
+      "name": "June",
+      "aliases": [],
+      "categoryIds": ["guided-cooking"],
+      "researchStatus": "UNCONFIRMED",
+      "sourceIds": [],
+      "lifecycle": {
+        "state": "UNKNOWN"
+      },
+      "notes": [
+        "Confirm exact product identity, current availability, and any retirement or rebrand before counting as an active benchmark."
+      ]
+    },
+    {
+      "id": "kitchen-stories",
+      "name": "Kitchen Stories",
+      "aliases": [],
+      "categoryIds": ["recipe-discovery", "guided-cooking", "food-community", "cooking-video"],
+      "researchStatus": "UNCONFIRMED",
+      "sourceIds": [],
+      "lifecycle": {
+        "state": "UNKNOWN"
+      },
+      "notes": []
+    },
+    {
+      "id": "kitchenpal",
+      "name": "KitchenPal",
+      "aliases": [],
+      "categoryIds": ["personal-cookbooks", "ingredient-discovery", "pantry-inventory"],
+      "researchStatus": "UNCONFIRMED",
+      "sourceIds": [],
+      "lifecycle": {
+        "state": "UNKNOWN"
+      },
+      "notes": []
+    },
+    {
+      "id": "kroger",
+      "name": "Kroger",
+      "aliases": [],
+      "categoryIds": ["grocery-commerce"],
+      "researchStatus": "UNCONFIRMED",
+      "sourceIds": [],
+      "lifecycle": {
+        "state": "UNKNOWN"
+      },
+      "notes": []
+    },
+    {
+      "id": "lifesum",
+      "name": "Lifesum",
+      "aliases": [],
+      "categoryIds": ["nutrition"],
+      "researchStatus": "UNCONFIRMED",
+      "sourceIds": [],
+      "lifecycle": {
+        "state": "UNKNOWN"
+      },
+      "notes": []
+    },
+    {
+      "id": "lightspeed-restaurant",
+      "name": "Lightspeed Restaurant",
+      "aliases": [],
+      "categoryIds": ["restaurant-operations"],
+      "researchStatus": "UNCONFIRMED",
+      "sourceIds": [],
+      "lifecycle": {
+        "state": "UNKNOWN"
+      },
+      "notes": []
+    },
+    {
+      "id": "listonic",
+      "name": "Listonic",
+      "aliases": [],
+      "categoryIds": ["grocery-lists"],
+      "researchStatus": "UNCONFIRMED",
+      "sourceIds": [],
+      "lifecycle": {
+        "state": "UNKNOWN"
+      },
+      "notes": []
+    },
+    {
+      "id": "lollipop",
+      "name": "Lollipop",
+      "aliases": [],
+      "categoryIds": ["meal-planning"],
+      "researchStatus": "UNCONFIRMED",
+      "sourceIds": [],
+      "lifecycle": {
+        "state": "UNKNOWN"
+      },
+      "notes": [
+        "Confirm exact product identity, current availability, and any retirement or rebrand before counting as an active benchmark."
+      ]
+    },
+    {
+      "id": "lose-it",
+      "name": "Lose It!",
+      "aliases": [],
+      "categoryIds": ["nutrition"],
+      "researchStatus": "UNCONFIRMED",
+      "sourceIds": [],
+      "lifecycle": {
+        "state": "UNKNOWN"
+      },
+      "notes": []
+    },
+    {
+      "id": "macrofactor",
+      "name": "MacroFactor",
+      "aliases": [],
+      "categoryIds": ["nutrition"],
+      "researchStatus": "UNCONFIRMED",
+      "sourceIds": [],
+      "lifecycle": {
+        "state": "UNKNOWN"
+      },
+      "notes": []
+    },
+    {
+      "id": "marginedge",
+      "name": "MarginEdge",
+      "aliases": [],
+      "categoryIds": [
+        "professional-recipes",
+        "restaurant-operations",
+        "pantry-inventory",
+        "food-costing"
+      ],
+      "researchStatus": "VENDOR_DOCUMENTED",
+      "sourceIds": ["marginedge"],
+      "lifecycle": {
+        "state": "OFFERING_DOCUMENTED",
+        "observedAt": "2026-09-30"
+      },
+      "notes": []
+    },
+    {
+      "id": "marketman",
+      "name": "MarketMan",
+      "aliases": [],
+      "categoryIds": [
+        "professional-recipes",
+        "restaurant-operations",
+        "pantry-inventory",
+        "food-costing"
+      ],
+      "researchStatus": "VENDOR_DOCUMENTED",
+      "sourceIds": ["marketman"],
+      "lifecycle": {
+        "state": "OFFERING_DOCUMENTED",
+        "observedAt": "2026-09-30"
+      },
+      "notes": []
+    },
+    {
+      "id": "marley-spoon",
+      "name": "Marley Spoon",
+      "aliases": [],
+      "categoryIds": ["meal-kits"],
+      "researchStatus": "UNCONFIRMED",
+      "sourceIds": [],
+      "lifecycle": {
+        "state": "UNKNOWN"
+      },
+      "notes": []
+    },
+    {
+      "id": "masterclass",
+      "name": "MasterClass",
+      "aliases": [],
+      "categoryIds": ["cooking-video", "cooking-education"],
+      "researchStatus": "UNCONFIRMED",
+      "sourceIds": [],
+      "lifecycle": {
+        "state": "UNKNOWN"
+      },
+      "notes": []
+    },
+    {
+      "id": "mastercook",
+      "name": "MasterCook",
+      "aliases": [],
+      "categoryIds": ["professional-recipes", "personal-cookbooks"],
+      "researchStatus": "UNCONFIRMED",
+      "sourceIds": [],
+      "lifecycle": {
+        "state": "UNKNOWN"
+      },
+      "notes": []
+    },
+    {
+      "id": "mealime",
+      "name": "Mealime",
+      "aliases": [],
+      "categoryIds": ["meal-planning"],
+      "researchStatus": "VENDOR_DOCUMENTED",
+      "sourceIds": ["mealime"],
+      "lifecycle": {
+        "state": "WINDING_DOWN_ANNOUNCED",
+        "observedAt": "2026-09-30",
+        "announcedEndDate": "2026-10-21",
+        "sourceId": "mealime"
+      },
+      "notes": []
+    },
+    {
+      "id": "meez",
+      "name": "meez",
+      "aliases": [],
+      "categoryIds": ["professional-recipes", "food-costing"],
+      "researchStatus": "VENDOR_DOCUMENTED",
+      "sourceIds": ["meez"],
+      "lifecycle": {
+        "state": "OFFERING_DOCUMENTED",
+        "observedAt": "2026-09-30"
+      },
+      "notes": []
+    },
+    {
+      "id": "mela",
+      "name": "Mela",
+      "aliases": [],
+      "categoryIds": ["personal-cookbooks"],
+      "researchStatus": "UNCONFIRMED",
+      "sourceIds": [],
+      "lifecycle": {
+        "state": "UNKNOWN"
+      },
+      "notes": []
+    },
+    {
+      "id": "menusano",
+      "name": "MenuSano",
+      "aliases": [],
+      "categoryIds": ["professional-recipes"],
+      "researchStatus": "UNCONFIRMED",
+      "sourceIds": [],
+      "lifecycle": {
+        "state": "UNKNOWN"
+      },
+      "notes": []
+    },
+    {
+      "id": "meta-ai",
+      "name": "Meta AI",
+      "aliases": [],
+      "categoryIds": ["ai-assistants"],
+      "researchStatus": "UNCONFIRMED",
+      "sourceIds": [],
+      "lifecycle": {
+        "state": "UNKNOWN"
+      },
+      "notes": []
+    },
+    {
+      "id": "michelin-guide",
+      "name": "Michelin Guide",
+      "aliases": [],
+      "categoryIds": ["restaurant-discovery"],
+      "researchStatus": "UNCONFIRMED",
+      "sourceIds": [],
+      "lifecycle": {
+        "state": "UNKNOWN"
+      },
+      "notes": []
+    },
+    {
+      "id": "misfits-market",
+      "name": "Misfits Market",
+      "aliases": [],
+      "categoryIds": ["grocery-commerce"],
+      "researchStatus": "UNCONFIRMED",
+      "sourceIds": [],
+      "lifecycle": {
+        "state": "UNKNOWN"
+      },
+      "notes": []
+    },
+    {
+      "id": "mosaic-foods",
+      "name": "Mosaic Foods",
+      "aliases": [],
+      "categoryIds": ["prepared-meals"],
+      "researchStatus": "UNCONFIRMED",
+      "sourceIds": [],
+      "lifecycle": {
+        "state": "UNKNOWN"
+      },
+      "notes": []
+    },
+    {
+      "id": "myfitnesspal",
+      "name": "MyFitnessPal",
+      "aliases": [],
+      "categoryIds": ["nutrition"],
+      "researchStatus": "UNCONFIRMED",
+      "sourceIds": [],
+      "lifecycle": {
+        "state": "UNKNOWN"
+      },
+      "notes": []
+    },
+    {
+      "id": "myfridgefood",
+      "name": "MyFridgeFood",
+      "aliases": [],
+      "categoryIds": ["ingredient-discovery"],
+      "researchStatus": "UNCONFIRMED",
+      "sourceIds": [],
+      "lifecycle": {
+        "state": "UNKNOWN"
+      },
+      "notes": []
+    },
+    {
+      "id": "mynetdiary",
+      "name": "MyNetDiary",
+      "aliases": [],
+      "categoryIds": ["nutrition"],
+      "researchStatus": "UNCONFIRMED",
+      "sourceIds": [],
+      "lifecycle": {
+        "state": "UNKNOWN"
+      },
+      "notes": []
+    },
+    {
+      "id": "ncr-aloha",
+      "name": "NCR Aloha",
+      "aliases": [],
+      "categoryIds": ["restaurant-operations"],
+      "researchStatus": "UNCONFIRMED",
+      "sourceIds": [],
+      "lifecycle": {
+        "state": "UNKNOWN"
+      },
+      "notes": []
+    },
+    {
+      "id": "noom",
+      "name": "Noom",
+      "aliases": [],
+      "categoryIds": ["nutrition"],
+      "researchStatus": "UNCONFIRMED",
+      "sourceIds": [],
+      "lifecycle": {
+        "state": "UNKNOWN"
+      },
+      "notes": []
+    },
+    {
+      "id": "nowaste",
+      "name": "NoWaste",
+      "aliases": [],
+      "categoryIds": ["pantry-inventory"],
+      "researchStatus": "UNCONFIRMED",
+      "sourceIds": [],
+      "lifecycle": {
+        "state": "UNKNOWN"
+      },
+      "notes": []
+    },
+    {
+      "id": "nutricalc",
+      "name": "NutriCalc",
+      "aliases": [],
+      "categoryIds": ["professional-recipes"],
+      "researchStatus": "UNCONFIRMED",
+      "sourceIds": [],
+      "lifecycle": {
+        "state": "UNKNOWN"
+      },
+      "notes": []
+    },
+    {
+      "id": "nyt-cooking",
+      "name": "NYT Cooking",
+      "aliases": [],
+      "categoryIds": ["recipe-discovery", "guided-cooking"],
+      "researchStatus": "UNCONFIRMED",
+      "sourceIds": [],
+      "lifecycle": {
+        "state": "UNKNOWN"
+      },
+      "notes": []
+    },
+    {
+      "id": "opentable",
+      "name": "OpenTable",
+      "aliases": [],
+      "categoryIds": ["restaurant-discovery", "reservations"],
+      "researchStatus": "UNCONFIRMED",
+      "sourceIds": [],
+      "lifecycle": {
+        "state": "UNKNOWN"
+      },
+      "notes": []
+    },
+    {
+      "id": "oracle-micros",
+      "name": "Oracle MICROS",
+      "aliases": [],
+      "categoryIds": ["restaurant-operations"],
+      "researchStatus": "UNCONFIRMED",
+      "sourceIds": [],
+      "lifecycle": {
+        "state": "UNKNOWN"
+      },
+      "notes": []
+    },
+    {
+      "id": "organizeat",
+      "name": "OrganizEat",
+      "aliases": [],
+      "categoryIds": ["personal-cookbooks"],
+      "researchStatus": "UNCONFIRMED",
+      "sourceIds": [],
+      "lifecycle": {
+        "state": "UNKNOWN"
+      },
+      "notes": []
+    },
+    {
+      "id": "ottimate",
+      "name": "Ottimate",
+      "aliases": [],
+      "categoryIds": ["restaurant-operations"],
+      "researchStatus": "UNCONFIRMED",
+      "sourceIds": [],
+      "lifecycle": {
+        "state": "UNKNOWN"
+      },
+      "notes": [
+        "Confirm exact product identity, current availability, and any retirement or rebrand before counting as an active benchmark."
+      ]
+    },
+    {
+      "id": "ourgroceries",
+      "name": "OurGroceries",
+      "aliases": [],
+      "categoryIds": ["grocery-lists"],
+      "researchStatus": "UNCONFIRMED",
+      "sourceIds": [],
+      "lifecycle": {
+        "state": "UNKNOWN"
+      },
+      "notes": []
+    },
+    {
+      "id": "pantry-check",
+      "name": "Pantry Check",
+      "aliases": [],
+      "categoryIds": ["pantry-inventory"],
+      "researchStatus": "UNCONFIRMED",
+      "sourceIds": [],
+      "lifecycle": {
+        "state": "UNKNOWN"
+      },
+      "notes": []
+    },
+    {
+      "id": "paprika-recipe-manager",
+      "name": "Paprika Recipe Manager",
+      "aliases": ["Paprika"],
+      "categoryIds": ["personal-cookbooks", "meal-planning", "grocery-lists", "pantry-inventory"],
+      "researchStatus": "VENDOR_DOCUMENTED",
+      "sourceIds": ["paprika"],
+      "lifecycle": {
+        "state": "OFFERING_DOCUMENTED",
+        "observedAt": "2026-09-30"
+      },
+      "notes": []
+    },
+    {
+      "id": "par-brink-pos",
+      "name": "PAR Brink POS",
+      "aliases": [],
+      "categoryIds": ["restaurant-operations"],
+      "researchStatus": "UNCONFIRMED",
+      "sourceIds": [],
+      "lifecycle": {
+        "state": "UNKNOWN"
+      },
+      "notes": []
+    },
+    {
+      "id": "paypal",
+      "name": "PayPal",
+      "aliases": [],
+      "categoryIds": ["finance-infrastructure"],
+      "researchStatus": "UNCONFIRMED",
+      "sourceIds": [],
+      "lifecycle": {
+        "state": "UNKNOWN"
+      },
+      "notes": []
+    },
+    {
+      "id": "pepper",
+      "name": "Pepper",
+      "aliases": [],
+      "categoryIds": ["personal-cookbooks"],
+      "researchStatus": "UNCONFIRMED",
+      "sourceIds": [],
+      "lifecycle": {
+        "state": "UNKNOWN"
+      },
+      "notes": [
+        "Confirm exact product identity, current availability, and any retirement or rebrand before counting as an active benchmark."
+      ]
+    },
+    {
+      "id": "perfect-venue",
+      "name": "Perfect Venue",
+      "aliases": [],
+      "categoryIds": ["business-operations"],
+      "researchStatus": "UNCONFIRMED",
+      "sourceIds": [],
+      "lifecycle": {
+        "state": "UNKNOWN"
+      },
+      "notes": []
+    },
+    {
+      "id": "perplexity",
+      "name": "Perplexity",
+      "aliases": [],
+      "categoryIds": ["ai-assistants"],
+      "researchStatus": "UNCONFIRMED",
+      "sourceIds": [],
+      "lifecycle": {
+        "state": "UNKNOWN"
+      },
+      "notes": []
+    },
+    {
+      "id": "pestle",
+      "name": "Pestle",
+      "aliases": [],
+      "categoryIds": ["personal-cookbooks"],
+      "researchStatus": "UNCONFIRMED",
+      "sourceIds": [],
+      "lifecycle": {
+        "state": "UNKNOWN"
+      },
+      "notes": []
+    },
+    {
+      "id": "pinterest",
+      "name": "Pinterest",
+      "aliases": [],
+      "categoryIds": ["food-community"],
+      "researchStatus": "UNCONFIRMED",
+      "sourceIds": [],
+      "lifecycle": {
+        "state": "UNKNOWN"
+      },
+      "notes": []
+    },
+    {
+      "id": "plan-to-eat",
+      "name": "Plan to Eat",
+      "aliases": [],
+      "categoryIds": ["personal-cookbooks", "meal-planning", "grocery-lists"],
+      "researchStatus": "UNCONFIRMED",
+      "sourceIds": [],
+      "lifecycle": {
+        "state": "UNKNOWN"
+      },
+      "notes": []
+    },
+    {
+      "id": "planning-pod",
+      "name": "Planning Pod",
+      "aliases": [],
+      "categoryIds": ["business-operations"],
+      "researchStatus": "UNCONFIRMED",
+      "sourceIds": [],
+      "lifecycle": {
+        "state": "UNKNOWN"
+      },
+      "notes": []
+    },
+    {
+      "id": "plate-iq",
+      "name": "Plate IQ",
+      "aliases": [],
+      "categoryIds": ["restaurant-operations"],
+      "researchStatus": "UNCONFIRMED",
+      "sourceIds": [],
+      "lifecycle": {
+        "state": "UNKNOWN"
+      },
+      "notes": [
+        "Confirm exact product identity, current availability, and any retirement or rebrand before counting as an active benchmark."
+      ]
+    },
+    {
+      "id": "prepear",
+      "name": "Prepear",
+      "aliases": [],
+      "categoryIds": ["meal-planning"],
+      "researchStatus": "UNCONFIRMED",
+      "sourceIds": [],
+      "lifecycle": {
+        "state": "UNKNOWN"
+      },
+      "notes": []
+    },
+    {
+      "id": "purple-carrot",
+      "name": "Purple Carrot",
+      "aliases": [],
+      "categoryIds": ["meal-kits"],
+      "researchStatus": "UNCONFIRMED",
+      "sourceIds": [],
+      "lifecycle": {
+        "state": "UNKNOWN"
+      },
+      "notes": []
+    },
+    {
+      "id": "quandoo",
+      "name": "Quandoo",
+      "aliases": [],
+      "categoryIds": ["reservations"],
+      "researchStatus": "UNCONFIRMED",
+      "sourceIds": [],
+      "lifecycle": {
+        "state": "UNKNOWN"
+      },
+      "notes": []
+    },
+    {
+      "id": "quickbooks",
+      "name": "QuickBooks",
+      "aliases": [],
+      "categoryIds": ["business-operations", "finance-infrastructure"],
+      "researchStatus": "UNCONFIRMED",
+      "sourceIds": [],
+      "lifecycle": {
+        "state": "UNKNOWN"
+      },
+      "notes": []
+    },
+    {
+      "id": "recime",
+      "name": "ReciMe",
+      "aliases": [],
+      "categoryIds": ["personal-cookbooks"],
+      "researchStatus": "UNCONFIRMED",
+      "sourceIds": [],
+      "lifecycle": {
+        "state": "UNKNOWN"
+      },
+      "notes": []
+    },
+    {
+      "id": "recipe-keeper",
+      "name": "Recipe Keeper",
+      "aliases": [],
+      "categoryIds": ["personal-cookbooks", "grocery-lists"],
+      "researchStatus": "UNCONFIRMED",
+      "sourceIds": [],
+      "lifecycle": {
+        "state": "UNKNOWN"
+      },
+      "notes": []
+    },
+    {
+      "id": "recipesage",
+      "name": "RecipeSage",
+      "aliases": [],
+      "categoryIds": ["personal-cookbooks"],
+      "researchStatus": "UNCONFIRMED",
+      "sourceIds": [],
+      "lifecycle": {
+        "state": "UNKNOWN"
+      },
+      "notes": []
+    },
+    {
+      "id": "recipetin-eats",
+      "name": "RecipeTin Eats",
+      "aliases": [],
+      "categoryIds": ["recipe-discovery"],
+      "researchStatus": "UNCONFIRMED",
+      "sourceIds": [],
+      "lifecycle": {
+        "state": "UNKNOWN"
+      },
+      "notes": []
+    },
+    {
+      "id": "reddit-cooking-communities",
+      "name": "Reddit cooking communities",
+      "aliases": [],
+      "categoryIds": ["food-community"],
+      "researchStatus": "UNCONFIRMED",
+      "sourceIds": [],
+      "lifecycle": {
+        "state": "UNKNOWN"
+      },
+      "notes": []
+    },
+    {
+      "id": "resortsuite",
+      "name": "ResortSuite",
+      "aliases": [],
+      "categoryIds": ["professional-recipes"],
+      "researchStatus": "UNCONFIRMED",
+      "sourceIds": [],
+      "lifecycle": {
+        "state": "UNKNOWN"
+      },
+      "notes": [
+        "Confirm exact product identity, current availability, and any retirement or rebrand before counting as an active benchmark."
+      ]
+    },
+    {
+      "id": "restaurant365",
+      "name": "Restaurant365",
+      "aliases": ["R365"],
+      "categoryIds": [
+        "professional-recipes",
+        "restaurant-operations",
+        "pantry-inventory",
+        "food-costing"
+      ],
+      "researchStatus": "UNCONFIRMED",
+      "sourceIds": [],
+      "lifecycle": {
+        "state": "UNKNOWN"
+      },
+      "notes": []
+    },
+    {
+      "id": "resy",
+      "name": "Resy",
+      "aliases": [],
+      "categoryIds": ["restaurant-discovery", "reservations"],
+      "researchStatus": "UNCONFIRMED",
+      "sourceIds": [],
+      "lifecycle": {
+        "state": "UNKNOWN"
+      },
+      "notes": []
+    },
+    {
+      "id": "revel-systems",
+      "name": "Revel Systems",
+      "aliases": [],
+      "categoryIds": ["restaurant-operations"],
+      "researchStatus": "UNCONFIRMED",
+      "sourceIds": [],
+      "lifecycle": {
+        "state": "UNKNOWN"
+      },
+      "notes": []
+    },
+    {
+      "id": "rouxbe",
+      "name": "Rouxbe",
+      "aliases": [],
+      "categoryIds": ["cooking-video", "cooking-education"],
+      "researchStatus": "UNCONFIRMED",
+      "sourceIds": [],
+      "lifecycle": {
+        "state": "UNKNOWN"
+      },
+      "notes": []
+    },
+    {
+      "id": "samsung-food",
+      "name": "Samsung Food",
+      "aliases": ["Samsung Food Communities"],
+      "categoryIds": [
+        "personal-cookbooks",
+        "guided-cooking",
+        "meal-planning",
+        "ingredient-discovery",
+        "grocery-lists",
+        "food-community",
+        "nutrition",
+        "pantry-inventory"
+      ],
+      "researchStatus": "VENDOR_DOCUMENTED",
+      "sourceIds": ["samsung-food"],
+      "lifecycle": {
+        "state": "OFFERING_DOCUMENTED",
+        "observedAt": "2026-09-30"
+      },
+      "notes": []
+    },
+    {
+      "id": "serious-eats",
+      "name": "Serious Eats",
+      "aliases": [],
+      "categoryIds": ["recipe-discovery"],
+      "researchStatus": "UNCONFIRMED",
+      "sourceIds": [],
+      "lifecycle": {
+        "state": "UNKNOWN"
+      },
+      "notes": []
+    },
+    {
+      "id": "sevenrooms",
+      "name": "SevenRooms",
+      "aliases": [],
+      "categoryIds": ["reservations"],
+      "researchStatus": "UNCONFIRMED",
+      "sourceIds": [],
+      "lifecycle": {
+        "state": "UNKNOWN"
+      },
+      "notes": []
+    },
+    {
+      "id": "shef",
+      "name": "Shef",
+      "aliases": [],
+      "categoryIds": ["prepared-meals"],
+      "researchStatus": "UNCONFIRMED",
+      "sourceIds": [],
+      "lifecycle": {
+        "state": "UNKNOWN"
+      },
+      "notes": []
+    },
+    {
+      "id": "shipt",
+      "name": "Shipt",
+      "aliases": [],
+      "categoryIds": ["grocery-commerce"],
+      "researchStatus": "UNCONFIRMED",
+      "sourceIds": [],
+      "lifecycle": {
+        "state": "UNKNOWN"
+      },
+      "notes": []
+    },
+    {
+      "id": "sidechef",
+      "name": "SideChef",
+      "aliases": ["SideChef Premium"],
+      "categoryIds": [
+        "recipe-discovery",
+        "guided-cooking",
+        "meal-planning",
+        "ingredient-discovery",
+        "grocery-lists",
+        "cooking-video",
+        "cooking-education"
+      ],
+      "researchStatus": "VENDOR_DOCUMENTED",
+      "sourceIds": ["sidechef"],
+      "lifecycle": {
+        "state": "OFFERING_DOCUMENTED",
+        "observedAt": "2026-09-30"
+      },
+      "notes": []
+    },
+    {
+      "id": "simply-recipes",
+      "name": "Simply Recipes",
+      "aliases": [],
+      "categoryIds": ["recipe-discovery"],
+      "researchStatus": "UNCONFIRMED",
+      "sourceIds": [],
+      "lifecycle": {
+        "state": "UNKNOWN"
+      },
+      "notes": []
+    },
+    {
+      "id": "skillshare",
+      "name": "Skillshare",
+      "aliases": [],
+      "categoryIds": ["cooking-education"],
+      "researchStatus": "UNCONFIRMED",
+      "sourceIds": [],
+      "lifecycle": {
+        "state": "UNKNOWN"
+      },
+      "notes": []
+    },
+    {
+      "id": "sling",
+      "name": "Sling",
+      "aliases": [],
+      "categoryIds": ["restaurant-operations", "workforce"],
+      "researchStatus": "UNCONFIRMED",
+      "sourceIds": [],
+      "lifecycle": {
+        "state": "UNKNOWN"
+      },
+      "notes": []
+    },
+    {
+      "id": "sorted-sidekick",
+      "name": "Sorted Sidekick",
+      "aliases": [],
+      "categoryIds": ["guided-cooking", "meal-planning"],
+      "researchStatus": "UNCONFIRMED",
+      "sourceIds": [],
+      "lifecycle": {
+        "state": "UNKNOWN"
+      },
+      "notes": []
+    },
+    {
+      "id": "splendid-spoon",
+      "name": "Splendid Spoon",
+      "aliases": [],
+      "categoryIds": ["prepared-meals"],
+      "researchStatus": "UNCONFIRMED",
+      "sourceIds": [],
+      "lifecycle": {
+        "state": "UNKNOWN"
+      },
+      "notes": []
+    },
+    {
+      "id": "spoonfed",
+      "name": "Spoonfed",
+      "aliases": [],
+      "categoryIds": ["business-operations"],
+      "researchStatus": "UNCONFIRMED",
+      "sourceIds": [],
+      "lifecycle": {
+        "state": "UNKNOWN"
+      },
+      "notes": []
+    },
+    {
+      "id": "spoton",
+      "name": "SpotOn",
+      "aliases": [],
+      "categoryIds": ["restaurant-operations"],
+      "researchStatus": "UNCONFIRMED",
+      "sourceIds": [],
+      "lifecycle": {
+        "state": "UNKNOWN"
+      },
+      "notes": []
+    },
+    {
+      "id": "square",
+      "name": "Square",
+      "aliases": [],
+      "categoryIds": ["business-operations", "finance-infrastructure"],
+      "researchStatus": "UNCONFIRMED",
+      "sourceIds": [],
+      "lifecycle": {
+        "state": "UNKNOWN"
+      },
+      "notes": []
+    },
+    {
+      "id": "square-appointments",
+      "name": "Square Appointments",
+      "aliases": [],
+      "categoryIds": ["business-operations"],
+      "researchStatus": "UNCONFIRMED",
+      "sourceIds": [],
+      "lifecycle": {
+        "state": "UNKNOWN"
+      },
+      "notes": []
+    },
+    {
+      "id": "square-for-restaurants",
+      "name": "Square for Restaurants",
+      "aliases": [],
+      "categoryIds": ["restaurant-operations"],
+      "researchStatus": "UNCONFIRMED",
+      "sourceIds": [],
+      "lifecycle": {
+        "state": "UNKNOWN"
+      },
+      "notes": []
+    },
+    {
+      "id": "square-invoices",
+      "name": "Square Invoices",
+      "aliases": [],
+      "categoryIds": ["business-operations"],
+      "researchStatus": "UNCONFIRMED",
+      "sourceIds": [],
+      "lifecycle": {
+        "state": "UNKNOWN"
+      },
+      "notes": []
+    },
+    {
+      "id": "stripe",
+      "name": "Stripe",
+      "aliases": [],
+      "categoryIds": ["business-operations", "finance-infrastructure"],
+      "researchStatus": "UNCONFIRMED",
+      "sourceIds": [],
+      "lifecycle": {
+        "state": "UNKNOWN"
+      },
+      "notes": []
+    },
+    {
+      "id": "sunbasket",
+      "name": "Sunbasket",
+      "aliases": [],
+      "categoryIds": ["meal-kits"],
+      "researchStatus": "UNCONFIRMED",
+      "sourceIds": [],
+      "lifecycle": {
+        "state": "UNKNOWN"
+      },
+      "notes": []
+    },
+    {
+      "id": "supercook",
+      "name": "SuperCook",
+      "aliases": [],
+      "categoryIds": ["ingredient-discovery", "pantry-inventory"],
+      "researchStatus": "UNCONFIRMED",
+      "sourceIds": [],
+      "lifecycle": {
+        "state": "UNKNOWN"
+      },
+      "notes": []
+    },
+    {
+      "id": "tablecheck",
+      "name": "TableCheck",
+      "aliases": [],
+      "categoryIds": ["reservations"],
+      "researchStatus": "UNCONFIRMED",
+      "sourceIds": [],
+      "lifecycle": {
+        "state": "UNKNOWN"
+      },
+      "notes": []
+    },
+    {
+      "id": "take-a-chef",
+      "name": "Take a Chef",
+      "aliases": [],
+      "categoryIds": ["chef-marketplaces"],
+      "researchStatus": "VENDOR_DOCUMENTED",
+      "sourceIds": ["take-a-chef"],
+      "lifecycle": {
+        "state": "OFFERING_DOCUMENTED",
+        "observedAt": "2026-09-30"
+      },
+      "notes": []
+    },
+    {
+      "id": "target",
+      "name": "Target",
+      "aliases": [],
+      "categoryIds": ["grocery-commerce"],
+      "researchStatus": "UNCONFIRMED",
+      "sourceIds": [],
+      "lifecycle": {
+        "state": "UNKNOWN"
+      },
+      "notes": []
+    },
+    {
+      "id": "taste-of-home",
+      "name": "Taste of Home",
+      "aliases": [],
+      "categoryIds": ["recipe-discovery"],
+      "researchStatus": "UNCONFIRMED",
+      "sourceIds": [],
+      "lifecycle": {
+        "state": "UNKNOWN"
+      },
+      "notes": []
+    },
+    {
+      "id": "tasty",
+      "name": "Tasty",
+      "aliases": [],
+      "categoryIds": [
+        "recipe-discovery",
+        "guided-cooking",
+        "meal-planning",
+        "food-community",
+        "cooking-video"
+      ],
+      "researchStatus": "UNCONFIRMED",
+      "sourceIds": [],
+      "lifecycle": {
+        "state": "UNKNOWN"
+      },
+      "notes": []
+    },
+    {
+      "id": "territory-foods",
+      "name": "Territory Foods",
+      "aliases": [],
+      "categoryIds": ["prepared-meals"],
+      "researchStatus": "UNCONFIRMED",
+      "sourceIds": [],
+      "lifecycle": {
+        "state": "UNKNOWN"
+      },
+      "notes": []
+    },
+    {
+      "id": "tesco-real-food",
+      "name": "Tesco Real Food",
+      "aliases": [],
+      "categoryIds": ["ingredient-discovery"],
+      "researchStatus": "UNCONFIRMED",
+      "sourceIds": [],
+      "lifecycle": {
+        "state": "UNKNOWN"
+      },
+      "notes": []
+    },
+    {
+      "id": "the-bash",
+      "name": "The Bash",
+      "aliases": [],
+      "categoryIds": ["chef-marketplaces"],
+      "researchStatus": "UNCONFIRMED",
+      "sourceIds": [],
+      "lifecycle": {
+        "state": "UNKNOWN"
+      },
+      "notes": []
+    },
+    {
+      "id": "the-infatuation",
+      "name": "The Infatuation",
+      "aliases": [],
+      "categoryIds": ["restaurant-discovery"],
+      "researchStatus": "UNCONFIRMED",
+      "sourceIds": [],
+      "lifecycle": {
+        "state": "UNKNOWN"
+      },
+      "notes": []
+    },
+    {
+      "id": "the-kitchn",
+      "name": "The Kitchn",
+      "aliases": [],
+      "categoryIds": ["recipe-discovery"],
+      "researchStatus": "UNCONFIRMED",
+      "sourceIds": [],
+      "lifecycle": {
+        "state": "UNKNOWN"
+      },
+      "notes": []
+    },
+    {
+      "id": "the-spruce-eats",
+      "name": "The Spruce Eats",
+      "aliases": [],
+      "categoryIds": ["recipe-discovery"],
+      "researchStatus": "UNCONFIRMED",
+      "sourceIds": [],
+      "lifecycle": {
+        "state": "UNKNOWN"
+      },
+      "notes": []
+    },
+    {
+      "id": "thefork",
+      "name": "TheFork",
+      "aliases": [],
+      "categoryIds": ["reservations"],
+      "researchStatus": "UNCONFIRMED",
+      "sourceIds": [],
+      "lifecycle": {
+        "state": "UNKNOWN"
+      },
+      "notes": []
+    },
+    {
+      "id": "thermomix-cookidoo",
+      "name": "Thermomix Cookidoo",
+      "aliases": [],
+      "categoryIds": ["guided-cooking"],
+      "researchStatus": "UNCONFIRMED",
+      "sourceIds": [],
+      "lifecycle": {
+        "state": "UNKNOWN"
+      },
+      "notes": []
+    },
+    {
+      "id": "thistle",
+      "name": "Thistle",
+      "aliases": [],
+      "categoryIds": ["prepared-meals"],
+      "researchStatus": "UNCONFIRMED",
+      "sourceIds": [],
+      "lifecycle": {
+        "state": "UNKNOWN"
+      },
+      "notes": []
+    },
+    {
+      "id": "thrive-market",
+      "name": "Thrive Market",
+      "aliases": [],
+      "categoryIds": ["grocery-commerce"],
+      "researchStatus": "UNCONFIRMED",
+      "sourceIds": [],
+      "lifecycle": {
+        "state": "UNKNOWN"
+      },
+      "notes": []
+    },
+    {
+      "id": "thumbtack",
+      "name": "Thumbtack",
+      "aliases": [],
+      "categoryIds": ["chef-marketplaces"],
+      "researchStatus": "UNCONFIRMED",
+      "sourceIds": [],
+      "lifecycle": {
+        "state": "UNKNOWN"
+      },
+      "notes": []
+    },
+    {
+      "id": "tiktok",
+      "name": "TikTok",
+      "aliases": [],
+      "categoryIds": ["food-community", "cooking-video"],
+      "researchStatus": "UNCONFIRMED",
+      "sourceIds": [],
+      "lifecycle": {
+        "state": "UNKNOWN"
+      },
+      "notes": []
+    },
+    {
+      "id": "toast",
+      "name": "Toast",
+      "aliases": [],
+      "categoryIds": ["restaurant-operations"],
+      "researchStatus": "UNCONFIRMED",
+      "sourceIds": [],
+      "lifecycle": {
+        "state": "UNKNOWN"
+      },
+      "notes": []
+    },
+    {
+      "id": "tock",
+      "name": "Tock",
+      "aliases": [],
+      "categoryIds": ["reservations"],
+      "researchStatus": "UNCONFIRMED",
+      "sourceIds": [],
+      "lifecycle": {
+        "state": "UNKNOWN"
+      },
+      "notes": []
+    },
+    {
+      "id": "total-party-planner",
+      "name": "Total Party Planner",
+      "aliases": [],
+      "categoryIds": ["business-operations"],
+      "researchStatus": "UNCONFIRMED",
+      "sourceIds": [],
+      "lifecycle": {
+        "state": "UNKNOWN"
+      },
+      "notes": []
+    },
+    {
+      "id": "touchbistro",
+      "name": "TouchBistro",
+      "aliases": [],
+      "categoryIds": ["restaurant-operations"],
+      "researchStatus": "UNCONFIRMED",
+      "sourceIds": [],
+      "lifecycle": {
+        "state": "UNKNOWN"
+      },
+      "notes": []
+    },
+    {
+      "id": "tovala",
+      "name": "Tovala",
+      "aliases": [],
+      "categoryIds": ["meal-kits"],
+      "researchStatus": "UNCONFIRMED",
+      "sourceIds": [],
+      "lifecycle": {
+        "state": "UNKNOWN"
+      },
+      "notes": []
+    },
+    {
+      "id": "traeger-app",
+      "name": "Traeger app",
+      "aliases": [],
+      "categoryIds": ["guided-cooking"],
+      "researchStatus": "UNCONFIRMED",
+      "sourceIds": [],
+      "lifecycle": {
+        "state": "UNKNOWN"
+      },
+      "notes": []
+    },
+    {
+      "id": "tripadvisor",
+      "name": "Tripadvisor",
+      "aliases": [],
+      "categoryIds": ["restaurant-discovery"],
+      "researchStatus": "UNCONFIRMED",
+      "sourceIds": [],
+      "lifecycle": {
+        "state": "UNKNOWN"
+      },
+      "notes": []
+    },
+    {
+      "id": "tripleseat",
+      "name": "Tripleseat",
+      "aliases": [],
+      "categoryIds": ["business-operations"],
+      "researchStatus": "UNCONFIRMED",
+      "sourceIds": [],
+      "lifecycle": {
+        "state": "UNKNOWN"
+      },
+      "notes": []
+    },
+    {
+      "id": "uber-eats",
+      "name": "Uber Eats",
+      "aliases": [],
+      "categoryIds": ["grocery-commerce", "restaurant-discovery"],
+      "researchStatus": "UNCONFIRMED",
+      "sourceIds": [],
+      "lifecycle": {
+        "state": "UNKNOWN"
+      },
+      "notes": []
+    },
+    {
+      "id": "udemy",
+      "name": "Udemy",
+      "aliases": [],
+      "categoryIds": ["cooking-education"],
+      "researchStatus": "UNCONFIRMED",
+      "sourceIds": [],
+      "lifecycle": {
+        "state": "UNKNOWN"
+      },
+      "notes": []
+    },
+    {
+      "id": "venmo-business",
+      "name": "Venmo Business",
+      "aliases": [],
+      "categoryIds": ["finance-infrastructure"],
+      "researchStatus": "UNCONFIRMED",
+      "sourceIds": [],
+      "lifecycle": {
+        "state": "UNKNOWN"
+      },
+      "notes": []
+    },
+    {
+      "id": "walmart",
+      "name": "Walmart",
+      "aliases": [],
+      "categoryIds": ["grocery-commerce"],
+      "researchStatus": "UNCONFIRMED",
+      "sourceIds": [],
+      "lifecycle": {
+        "state": "UNKNOWN"
+      },
+      "notes": []
+    },
+    {
+      "id": "wave",
+      "name": "Wave",
+      "aliases": [],
+      "categoryIds": ["business-operations", "finance-infrastructure"],
+      "researchStatus": "UNCONFIRMED",
+      "sourceIds": [],
+      "lifecycle": {
+        "state": "UNKNOWN"
+      },
+      "notes": []
+    },
+    {
+      "id": "weber-connect",
+      "name": "Weber Connect",
+      "aliases": [],
+      "categoryIds": ["guided-cooking"],
+      "researchStatus": "UNCONFIRMED",
+      "sourceIds": [],
+      "lifecycle": {
+        "state": "UNKNOWN"
+      },
+      "notes": []
+    },
+    {
+      "id": "when-i-work",
+      "name": "When I Work",
+      "aliases": [],
+      "categoryIds": ["restaurant-operations", "workforce"],
+      "researchStatus": "UNCONFIRMED",
+      "sourceIds": [],
+      "lifecycle": {
+        "state": "UNKNOWN"
+      },
+      "notes": []
+    },
+    {
+      "id": "whole-foods-market",
+      "name": "Whole Foods Market",
+      "aliases": [],
+      "categoryIds": ["grocery-commerce"],
+      "researchStatus": "UNCONFIRMED",
+      "sourceIds": [],
+      "lifecycle": {
+        "state": "UNKNOWN"
+      },
+      "notes": []
+    },
+    {
+      "id": "ww",
+      "name": "WW",
+      "aliases": [],
+      "categoryIds": ["nutrition"],
+      "researchStatus": "UNCONFIRMED",
+      "sourceIds": [],
+      "lifecycle": {
+        "state": "UNKNOWN"
+      },
+      "notes": []
+    },
+    {
+      "id": "xero",
+      "name": "Xero",
+      "aliases": [],
+      "categoryIds": ["business-operations", "finance-infrastructure"],
+      "researchStatus": "UNCONFIRMED",
+      "sourceIds": [],
+      "lifecycle": {
+        "state": "UNKNOWN"
+      },
+      "notes": []
+    },
+    {
+      "id": "xtrachef-by-toast",
+      "name": "xtraCHEF by Toast",
+      "aliases": ["xtraCHEF"],
+      "categoryIds": [
+        "professional-recipes",
+        "restaurant-operations",
+        "pantry-inventory",
+        "food-costing"
+      ],
+      "researchStatus": "UNCONFIRMED",
+      "sourceIds": [],
+      "lifecycle": {
+        "state": "UNKNOWN"
+      },
+      "notes": []
+    },
+    {
+      "id": "yazio",
+      "name": "Yazio",
+      "aliases": [],
+      "categoryIds": ["nutrition"],
+      "researchStatus": "UNCONFIRMED",
+      "sourceIds": [],
+      "lifecycle": {
+        "state": "UNKNOWN"
+      },
+      "notes": []
+    },
+    {
+      "id": "yelp",
+      "name": "Yelp",
+      "aliases": [],
+      "categoryIds": ["restaurant-discovery"],
+      "researchStatus": "UNCONFIRMED",
+      "sourceIds": [],
+      "lifecycle": {
+        "state": "UNKNOWN"
+      },
+      "notes": []
+    },
+    {
+      "id": "yelp-reservations",
+      "name": "Yelp Reservations",
+      "aliases": [],
+      "categoryIds": ["reservations"],
+      "researchStatus": "UNCONFIRMED",
+      "sourceIds": [],
+      "lifecycle": {
+        "state": "UNKNOWN"
+      },
+      "notes": []
+    },
+    {
+      "id": "yeschef",
+      "name": "YesChef",
+      "aliases": [],
+      "categoryIds": ["cooking-video", "cooking-education"],
+      "researchStatus": "UNCONFIRMED",
+      "sourceIds": [],
+      "lifecycle": {
+        "state": "UNKNOWN"
+      },
+      "notes": []
+    },
+    {
+      "id": "yhangry",
+      "name": "yhangry",
+      "aliases": [],
+      "categoryIds": ["chef-marketplaces"],
+      "researchStatus": "UNCONFIRMED",
+      "sourceIds": [],
+      "lifecycle": {
+        "state": "UNKNOWN"
+      },
+      "notes": []
+    },
+    {
+      "id": "youtube",
+      "name": "YouTube",
+      "aliases": [],
+      "categoryIds": ["food-community", "cooking-video", "cooking-education"],
+      "researchStatus": "UNCONFIRMED",
+      "sourceIds": [],
+      "lifecycle": {
+        "state": "UNKNOWN"
+      },
+      "notes": []
+    },
+    {
+      "id": "zenput",
+      "name": "Zenput",
+      "aliases": [],
+      "categoryIds": ["restaurant-operations"],
+      "researchStatus": "UNCONFIRMED",
+      "sourceIds": [],
+      "lifecycle": {
+        "state": "UNKNOWN"
+      },
+      "notes": []
+    },
+    {
+      "id": "zoho-books",
+      "name": "Zoho Books",
+      "aliases": [],
+      "categoryIds": ["finance-infrastructure"],
+      "researchStatus": "UNCONFIRMED",
+      "sourceIds": [],
+      "lifecycle": {
+        "state": "UNKNOWN"
+      },
+      "notes": []
+    },
+    {
+      "id": "zoho-crm",
+      "name": "Zoho CRM",
+      "aliases": [],
+      "categoryIds": ["business-operations"],
+      "researchStatus": "UNCONFIRMED",
+      "sourceIds": [],
+      "lifecycle": {
+        "state": "UNKNOWN"
+      },
+      "notes": []
+    },
+    {
+      "id": "zoho-invoice",
+      "name": "Zoho Invoice",
+      "aliases": [],
+      "categoryIds": ["business-operations"],
+      "researchStatus": "UNCONFIRMED",
+      "sourceIds": [],
+      "lifecycle": {
+        "state": "UNKNOWN"
+      },
+      "notes": []
+    }
+  ],
+  "sources": [
+    {
+      "id": "take-a-chef",
+      "productId": "take-a-chef",
+      "url": "https://www.takeachef.com/en-us",
+      "reviewedAt": "2026-09-30",
+      "kind": "VENDOR_DOCUMENTATION",
+      "locator": "How it works",
+      "summary": "Date and party-size request, chef proposals, messaging, customization and booking.",
+      "handsOnTested": false
+    },
+    {
+      "id": "paprika",
+      "productId": "paprika-recipe-manager",
+      "url": "https://www.paprikaapp.com/",
+      "reviewedAt": "2026-09-30",
+      "kind": "VENDOR_DOCUMENTATION",
+      "locator": "Features",
+      "summary": "Web recipe import, scaling, conversion, meal plans, grocery aggregation, timers and synchronization.",
+      "handsOnTested": false
+    },
+    {
+      "id": "samsung-food",
+      "productId": "samsung-food",
+      "url": "https://samsungfood.com/",
+      "reviewedAt": "2026-09-30",
+      "kind": "VENDOR_DOCUMENTATION",
+      "locator": "Product overview",
+      "summary": "Recipe saving, meal planning, communities, grocery lists and nutritional information.",
+      "handsOnTested": false
+    },
+    {
+      "id": "meez",
+      "productId": "meez",
+      "url": "https://www.getmeez.com/",
+      "reviewedAt": "2026-09-30",
+      "kind": "VENDOR_DOCUMENTATION",
+      "locator": "Recipe system and feature overview",
+      "summary": "Recipe knowledge, yield calculations, live costs, menu engineering, allergens and training.",
+      "handsOnTested": false
+    },
+    {
+      "id": "anylist",
+      "productId": "anylist",
+      "url": "https://www.anylist.com/",
+      "reviewedAt": "2026-09-30",
+      "kind": "VENDOR_DOCUMENTATION",
+      "locator": "Features",
+      "summary": "Shared lists, categories, recipe import, meal calendar and multi-device synchronization.",
+      "handsOnTested": false
+    },
+    {
+      "id": "sidechef",
+      "productId": "sidechef",
+      "url": "https://www.sidechef.com/",
+      "reviewedAt": "2026-09-30",
+      "kind": "VENDOR_DOCUMENTATION",
+      "locator": "Frequently asked questions",
+      "summary": "Meal planning, guided recipes and shoppable ingredients with checkout at Walmart.",
+      "handsOnTested": false
+    },
+    {
+      "id": "mealime",
+      "productId": "mealime",
+      "url": "https://www.mealime.com/",
+      "reviewedAt": "2026-09-30",
+      "kind": "VENDOR_DOCUMENTATION",
+      "locator": "Shutdown announcement and product features",
+      "summary": "Shutdown announced for October 21, 2026; meal plans and categorized grocery lists described.",
+      "handsOnTested": false
+    },
+    {
+      "id": "honeybook",
+      "productId": "honeybook",
+      "url": "https://www.honeybook.com/",
+      "reviewedAt": "2026-09-30",
+      "kind": "VENDOR_DOCUMENTATION",
+      "locator": "Product navigation",
+      "summary": "CRM, proposals, contracts, invoices, scheduling and payments are listed as product areas.",
+      "handsOnTested": false
+    },
+    {
+      "id": "chefmaison",
+      "productId": "chefmaison",
+      "url": "https://chefmaison.com/en-us/",
+      "reviewedAt": "2026-09-30",
+      "kind": "VENDOR_DOCUMENTATION",
+      "locator": "Private-chef offering",
+      "summary": "Private-chef marketplace and culinary experiences are advertised.",
+      "handsOnTested": false
+    },
+    {
+      "id": "marketman",
+      "productId": "marketman",
+      "url": "https://www.marketman.com/",
+      "reviewedAt": "2026-09-30",
+      "kind": "VENDOR_DOCUMENTATION",
+      "locator": "Inventory, ordering and plan features",
+      "summary": "Inventory counts, ordering, recipe costing, invoice scanning and actual-versus-theoretical usage.",
+      "handsOnTested": false
+    },
+    {
+      "id": "marginedge",
+      "productId": "marginedge",
+      "url": "https://www.marginedge.com/",
+      "reviewedAt": "2026-09-30",
+      "kind": "VENDOR_DOCUMENTATION",
+      "locator": "Product capabilities",
+      "summary": "Invoice processing, inventory, food cost, menu analysis and profit-and-loss reporting.",
+      "handsOnTested": false
+    },
+    {
+      "id": "7shifts",
+      "productId": "7shifts",
+      "url": "https://www.7shifts.com/",
+      "reviewedAt": "2026-09-30",
+      "kind": "VENDOR_DOCUMENTATION",
+      "locator": "Scheduling and training features",
+      "summary": "Staff scheduling, availability, shift swaps, training and acknowledgement workflows.",
+      "handsOnTested": false
+    }
+  ]
+}
