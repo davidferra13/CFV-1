@@ -1,0 +1,1001 @@
+{
+  "baseCommit": "744db5efb6ed110940f6b438c37a6c4fdad06f7e",
+  "status": "BLOCKED",
+  "localRuntime": "Node 20.20.2 / npm 10.8.2, clean npm ci",
+  "unitAfter": {
+    "tests": 3438,
+    "pass": 3315,
+    "fail": 123,
+    "skipped": 0,
+    "vitestPass": 60
+  },
+  "unitFailedTapEntriesByFile": {
+    "agent-silent-failure-guards.test.ts": [
+      "cron monitor supports strict unhealthy status for external alerting",
+      "remy context records degraded fallbacks instead of collapsing failures into hidden nulls"
+    ],
+    "availability-session-conflicts.test.ts": [
+      "detectSessionEventConflicts flags same-day events when timing is unknown",
+      "detectSessionEventConflicts flags overlapping time windows",
+      "detectSessionEventConflicts falls back to meal-slot overlap when windows do not overlap",
+      "detectSessionEventConflicts ignores different dates"
+    ],
+    "chef-nav-priority.test.ts": [
+      "uses the canonical Today to Money primary nav defaults",
+      "aligns the action bar to six active-work shortcuts",
+      "chef nav priority defaults"
+    ],
+    "chef-shell-consistency.test.ts": [
+      "social route header stays page-local instead of becoming a sticky shell bar",
+      "navigation settings keep shell diagnostics and reset reachable from settings",
+      "route-level chef layouts keep shell bars and outer shell backgrounds behind an allowlist"
+    ],
+    "client-portal-payment-intent.test.ts": [
+      "client portal payment checkout returns ok for a valid token and payable event",
+      "client portal payment checkout dedupes repeated anonymous hits for the same token and event",
+      "client portal payment checkout returns rate_limited when the public intent guard rejects attempts",
+      "client portal payment checkout scopes tenant from resolved portal access and event lookup"
+    ],
+    "commerce-checkout-actions.test.ts": [
+      "counterCheckout enforces cashier role when POS role matrix is enabled",
+      "counterCheckout voids sale when cash tendered is below total due",
+      "counterCheckout applies promotion code discount to line items and sale totals",
+      "counterCheckout returns success even when register sync and audit logging fail"
+    ],
+    "contact-support.test.ts": [
+      "falls back to static public support defaults when business hours are unavailable",
+      "buildContactSupportInfo"
+    ],
+    "cron-monitoring-coverage.test.ts": [
+      "scheduled routes record both success and failure cron telemetry",
+      "monitored cron names are registered in the shared monitor definitions"
+    ],
+    "db-migration-versions.test.ts": [
+      "has unique numeric version prefixes",
+      "Database migration versions"
+    ],
+    "developer-tools-gating.test.ts": [
+      "settings hub keeps developer tools off the default surface"
+    ],
+    "discovery-search-query-controls.test.ts": [
+      "autocomplete ranks prefix, alias, recent, and favorite matches across discovery entities"
+    ],
+    "event-operating-spine.test.ts": ["chef primary navigation follows the six-domain contract"],
+    "google-oauth.test.ts": ["tests/unit/google-oauth.test.ts"],
+    "homepage-discovery-rail.test.ts": [
+      "homepage page mounts the canonical rail without parallel rail renderers"
+    ],
+    "mempalace-remy-continuity.test.ts": [
+      "Remy prompt now biases toward concise, answer-first responses",
+      "operator response token budgets shrink for narrow questions and expand for strategic ones"
+    ],
+    "modules.test.ts": [
+      "every module has required fields",
+      "Module Definitions \u2014 registry integrity",
+      "all modules are free tier (no Pro gating)",
+      "Module Definitions \u2014 tier assignment"
+    ],
+    "nav-regression.test.ts": [
+      "Action Bar contains critical daily-driver items",
+      "Tables is preserved as a bottom social-zone entry point",
+      "Cannabis Portal is preserved as a bottom tier entry point",
+      "Critical routes reachable from at least one nav surface",
+      "standaloneBottom has Settings link",
+      "Navigation regression guard"
+    ],
+    "nearby-saved-search-actions.test.ts": [
+      "saveNearbySavedSearchAlert stores the current nearby filter state and refreshes email preferences",
+      "saveNearbySavedSearchAlert updates an existing saved search instead of inserting a duplicate"
+    ],
+    "nearby.listing-card.test.ts": ["tests/unit/nearby.listing-card.test.ts"],
+    "open-booking.route.test.ts": [
+      "open booking preserves dietary context through client, inquiry, and event creation"
+    ],
+    "openclaw-control-plane.test.ts": [
+      "OpenClaw capacity governor fails closed on DB and overload signals",
+      "OpenClaw frontier planner ranks weak high-demand cells first",
+      "OpenClaw source discovery dedupes without approving risky candidates",
+      "OpenClaw receipt validation excludes unit-family mismatches",
+      "OpenClaw router dedupes bounded tasks"
+    ],
+    "openclaw-quarantine-review.test.ts": [
+      "review flow is wired through the shared contract and internal refresh path"
+    ],
+    "operator-homepage-funnel.test.ts": [
+      "homepage keeps the operator proof path above the consumer marketplace branch"
+    ],
+    "passive-store-sync-migration.test.ts": [
+      "passive store sync bootstrap migration backfills dirty rows from existing sources"
+    ],
+    "payment-milestones.test.ts": [
+      "calculates days_before_event correctly",
+      "handles month boundaries",
+      "calculateMilestoneDueDate"
+    ],
+    "post-event-learning-logic.test.ts": ["tests/unit/post-event-learning-logic.test.ts"],
+    "post-event-trust-loop.test.ts": ["tests/unit/post-event-trust-loop.test.ts"],
+    "pricing.cost-refresh-actions.test.ts": [
+      "propagatePriceChange refreshes affected recipe costs, parent recipes, events, and caches"
+    ],
+    "pricing.evaluate.test.ts": [
+      "eligibility: pricing blocked, but breakdown is always computed",
+      "private dinner: group rate \u2014 4 guests, 4 courses \u2192 $185 \u00d7 4 = $740",
+      "private dinner: group rate \u2014 6 guests, 3 courses \u2192 $155 \u00d7 6 = $930",
+      "private dinner: group rate \u2014 4 guests, 5 courses \u2192 $215 \u00d7 4 = $860",
+      "private dinner: couples rate \u2014 2 guests, 4 courses \u2192 $250 \u00d7 2 = $500",
+      "private dinner: couples rate \u2014 2 guests, 3 courses \u2192 $200 \u00d7 2 = $400",
+      "private dinner: 1 guest treated as couple \u2192 couples rate",
+      "private dinner: large group (10 guests) uses group rate + isLargeGroup flag",
+      "weekendPremiumEnabled: chef-tool mode auto-defaults to true for Friday event",
+      "weekendPremiumEnabled: AI path (eligibility passed) does NOT auto-apply weekend premium",
+      "weekendPremiumEnabled: explicit true in AI path applies premium",
+      "holiday: Valentine's Day 2026-02-14 \u2014 Tier 1, 45% premium applied",
+      "holiday premium is stacked on top of weekend premium",
+      "weekly_standard: hasRange = true, low and high computed",
+      "weekly_commitment: hasRange = true, correct rates ($300\u2013$350/day)",
+      "weekly_standard: clientFacingText contains both low and high totals",
+      "weekly_standard range: premiums scale proportionally with day rate",
+      "weekly_standard range: travel is same on both sides (does not scale)",
+      "adjustment: loyalty_discount reduces finalTotalCents and recalculates deposit",
+      "adjustment: surcharge adds to final total",
+      "travel: 10 miles \u2192 $0.70/mile = $7 (700 cents)",
+      "isQuotable: standard valid result \u2192 true",
+      "isQuotable: pricingAllowed = false does NOT block quoting",
+      "generateQuoteSummary: private dinner \u2192 includes course count and total",
+      "generateQuoteSummary: with loyalty discount \u2192 includes (adjusted)",
+      "generateQuoteSummary: Valentine's Day \u2192 includes holiday name",
+      "generateQuoteSummary: weekly service \u2192 includes days",
+      "pendingConfirmations: zero-priced multi-night package surfaces",
+      "cook_and_leave: $150/session, 1 session",
+      "pizza_experience: $150/person",
+      "multi_night: two_night_4_course \u2192 $900 flat",
+      "minimum floor: cook_and_leave below $300 minimum \u2192 floor applied",
+      "minimum floor: private dinner above $300 \u2192 no floor applied"
+    ],
+    "pricing.validation.test.ts": [
+      "multi_night with valid package is valid",
+      "multi_night with placeholder (0-value) package requires custom pricing",
+      "Pricing Validation \u2014 service types"
+    ],
+    "private-memory-visibility-contract.test.ts": [
+      "client, staff, website, and public projections never expose private source records",
+      "role-safe derived read model wraps projections with source-filter and route contract proof",
+      "safe briefings compose from derived views and retain redaction trace for chef review",
+      "safe briefing composer builds purpose-specific role-safe variants from approved derived facts",
+      "public claims that require evidence suppress until public-approved proof exists"
+    ],
+    "public-booking-availability-calendar-truth.test.ts": [
+      "public booking availability blocks dates that are only busy in Google Calendar",
+      "public booking availability holds dates when Google Calendar truth is degraded"
+    ],
+    "public-national-surfaces.test.ts": ["book form renders shared neutral location guidance"],
+    "public-seasonal-market-pulse.test.ts": [
+      "builds a market-backed pulse with canonical provenance and booking handoff",
+      "withholds stale market evidence behind the canonical fallback contract",
+      "falls back honestly when ingredient spotlights are unavailable"
+    ],
+    "pwa-service-worker.test.ts": [
+      "serves the branded offline fallback and standalone manifest metadata",
+      "pwa service worker regressions"
+    ],
+    "remy-communication-approval-guardrails.test.ts": [
+      "public Remy communication blocks private ChefFlow facts before approval"
+    ],
+    "request-auth-context.test.ts": [
+      "middleware auth context still requires the authenticated sentinel"
+    ],
+    "runtime-log-regressions.test.ts": [
+      "uses the corrected finance and client dashboard columns",
+      "uses name in receipt-library client joins",
+      "ships follow-up migrations for collab recursion and prep-block drift",
+      "Runtime log regression guards"
+    ],
+    "security-trust-reset.test.ts": [
+      "report-actions uses requireChef for tenant scoping",
+      "raffle-actions uses requireChef for tenant scoping",
+      "requirePro calls requireChef internally (session-based, not input-based)"
+    ],
+    "settings-readability.test.ts": ["settings hub cards keep contrast-forward text tokens"],
+    "staff-trust-delegation-read-model.test.ts": [
+      "summarizes collaborator trust without leaking private assignment facts",
+      "Staff Trust and Delegation read model"
+    ],
+    "surface-completeness.test.ts": [
+      "surface completeness audit passes core structural checks",
+      "surface completeness audit exposes surface mode declarations"
+    ],
+    "waiting-radar.test.ts": [
+      "collects action-center waiting items with canonical proof links",
+      "collects operating-loop waiting state without mutating source work",
+      "turns waiting without follow-up into an explicit contract risk",
+      "suppresses snoozed work until the quiet period is due soon",
+      "collects explicit payment, vendor, and system source shapes",
+      "ranks overdue and high-risk waiting ahead of normal future follow-ups",
+      "summarizes empty states separately for no source data and no waiting items",
+      "summarizes missing follow-up as first-class waiting pressure",
+      "waiting radar collectors"
+    ],
+    "zapier-subscribe.route.test.ts": [
+      "zapier subscribe rejects localhost webhook targets before any database write",
+      "zapier subscribe stores the normalized webhook URL for valid targets"
+    ]
+  },
+  "lineBudgetViolations": [
+    "app/(chef)/cannabis/about/page.tsx grew to 1258 lines (baseline 1255, allowed growth 0)",
+    "app/(chef)/cannabis/events/[id]/control-packet/control-packet-client.tsx grew to 1169 lines (baseline 1049, allowed growth 0)",
+    "app/(chef)/cannabis/rsvps/rsvps-dashboard-client.tsx is 981 lines (limit 900) and is not in baseline (new oversize file)",
+    "app/(chef)/clients/[id]/page.tsx grew to 1620 lines (baseline 932, allowed growth 0)",
+    "app/(chef)/clients/contribution/page.tsx is 1708 lines (limit 900) and is not in baseline (new oversize file)",
+    "app/(chef)/culinary/chromatic-atlas/chromatic-atlas-client.tsx is 1279 lines (limit 900) and is not in baseline (new oversize file)",
+    "app/(chef)/culinary/price-catalog/catalog-browser.tsx is 2009 lines (limit 900) and is not in baseline (new oversize file)",
+    "app/(chef)/dashboard/_sections/business-section-mobile-content.tsx is 1044 lines (limit 900) and is not in baseline (new oversize file)",
+    "app/(chef)/dashboard/_sections/lifecycle-actions.tsx is 1192 lines (limit 900) and is not in baseline (new oversize file)",
+    "app/(chef)/documents/page.tsx is 938 lines (limit 900) and is not in baseline (new oversize file)",
+    "app/(chef)/events/[id]/_components/event-detail-tickets-tab.tsx is 1075 lines (limit 900) and is not in baseline (new oversize file)",
+    "app/(chef)/events/[id]/documents/page.tsx grew to 1146 lines (baseline 1114, allowed growth 0)",
+    "app/(chef)/events/[id]/lifecycle-action-panels.tsx is 1219 lines (limit 900) and is not in baseline (new oversize file)",
+    "app/(chef)/inquiries/[id]/page.tsx is 1269 lines (limit 900) and is not in baseline (new oversize file)",
+    "app/(chef)/loyalty/settings/loyalty-settings-form.tsx is 1129 lines (limit 900) and is not in baseline (new oversize file)",
+    "app/(chef)/marketplace/page.tsx is 913 lines (limit 900) and is not in baseline (new oversize file)",
+    "app/(chef)/menus/[id]/menu-detail-client.tsx grew to 1163 lines (baseline 926, allowed growth 0)",
+    "app/(chef)/network/collab-inbox.tsx grew to 1635 lines (baseline 1397, allowed growth 0)",
+    "app/(chef)/recipes/[id]/edit/edit-recipe-client.tsx is 1262 lines (limit 900) and is not in baseline (new oversize file)",
+    "app/(chef)/recipes/[id]/recipe-detail-client.tsx grew to 1815 lines (baseline 1141, allowed growth 0)",
+    "app/(chef)/recipes/new/create-recipe-client.tsx is 1108 lines (limit 900) and is not in baseline (new oversize file)",
+    "app/(client)/my-events/[id]/page.tsx is 991 lines (limit 900) and is not in baseline (new oversize file)",
+    "app/(client)/my-events/page.tsx grew to 1822 lines (baseline 1589, allowed growth 0)",
+    "app/(public)/_components/cuisine-marquee.tsx is 3588 lines (limit 900) and is not in baseline (new oversize file)",
+    "app/(public)/book/_components/book-dinner-form.tsx is 911 lines (limit 900) and is not in baseline (new oversize file)",
+    "app/(public)/chef/[slug]/page.tsx is 2378 lines (limit 900) and is not in baseline (new oversize file)",
+    "app/(public)/e/[shareToken]/public-event-view.tsx is 1548 lines (limit 900) and is not in baseline (new oversize file)",
+    "app/(public)/event/[eventId]/guest/[secureToken]/portal-client.tsx is 1290 lines (limit 900) and is not in baseline (new oversize file)",
+    "app/(public)/ingredient/[id]/page.tsx is 956 lines (limit 900) and is not in baseline (new oversize file)",
+    "app/(public)/nearby/page.tsx is 956 lines (limit 900) and is not in baseline (new oversize file)",
+    "app/api/calling/gather/route.ts is 1065 lines (limit 900) and is not in baseline (new oversize file)",
+    "app/api/remy/stream/route-instant-answers.ts is 1941 lines (limit 900) and is not in baseline (new oversize file)",
+    "app/api/remy/stream/route-prompt-utils.ts is 1678 lines (limit 900) and is not in baseline (new oversize file)",
+    "app/api/remy/stream/route-runtime-utils.ts is 1071 lines (limit 900) and is not in baseline (new oversize file)",
+    "app/api/remy/stream/route.ts is 1253 lines (limit 900) and is not in baseline (new oversize file)",
+    "app/api/scheduled/lifecycle/route.ts grew to 1344 lines (baseline 916, allowed growth 0)",
+    "app/api/webhooks/stripe/route.ts grew to 1946 lines (baseline 1610, allowed growth 0)",
+    "components/ai/remy-drawer.tsx grew to 1534 lines (baseline 1273, allowed growth 0)",
+    "components/analytics/analytics-hub-client.tsx grew to 1442 lines (baseline 1150, allowed growth 0)",
+    "components/calendar/unified-calendar-view.tsx is 1175 lines (limit 900) and is not in baseline (new oversize file)",
+    "components/calling/sourcing-session.tsx is 1082 lines (limit 900) and is not in baseline (new oversize file)",
+    "components/campaigns/push-dinner-builder.tsx grew to 1196 lines (baseline 1088, allowed growth 0)",
+    "components/commerce/pos-register.tsx grew to 2693 lines (baseline 2692, allowed growth 0)",
+    "components/culinary/MenuEditor.tsx is 1046 lines (limit 900) and is not in baseline (new oversize file)",
+    "components/events/close-out-wizard.tsx grew to 1223 lines (baseline 916, allowed growth 0)",
+    "components/events/event-form.tsx grew to 1241 lines (baseline 999, allowed growth 0)",
+    "components/hub/weekly-meal-board.tsx is 1218 lines (limit 900) and is not in baseline (new oversize file)",
+    "components/import/smart-import-hub.tsx grew to 1375 lines (baseline 1346, allowed growth 0)",
+    "components/intelligence/intelligence-hub.tsx is 1535 lines (limit 900) and is not in baseline (new oversize file)",
+    "components/menus/menu-doc-editor.tsx grew to 2219 lines (baseline 1397, allowed growth 0)",
+    "components/navigation/nav-config.tsx grew to 2087 lines (baseline 1217, allowed growth 0)",
+    "components/print/cannabis-dosing-packet-print.tsx is 1050 lines (limit 900) and is not in baseline (new oversize file)",
+    "components/public/public-inquiry-form.tsx is 914 lines (limit 900) and is not in baseline (new oversize file)",
+    "components/quotes/quote-form.tsx grew to 1489 lines (baseline 1246, allowed growth 0)",
+    "components/social/social-post-card.tsx is 969 lines (limit 900) and is not in baseline (new oversize file)",
+    "lib/ai/command-intent-parser.ts is 2236 lines (limit 900) and is not in baseline (new oversize file)",
+    "lib/ai/command-orchestrator.ts grew to 3728 lines (baseline 1732, allowed growth 0)",
+    "lib/ai/command-task-descriptions.ts is 1802 lines (limit 900) and is not in baseline (new oversize file)",
+    "lib/ai/queue/actions.ts is 966 lines (limit 900) and is not in baseline (new oversize file)",
+    "lib/ai/remy-actions.ts is 1454 lines (limit 900) and is not in baseline (new oversize file)",
+    "lib/ai/remy-context.ts grew to 3470 lines (baseline 1497, allowed growth 0)",
+    "lib/ai/remy-intelligence-actions.ts is 1417 lines (limit 900) and is not in baseline (new oversize file)",
+    "lib/ai/remy-local-storage.ts grew to 1379 lines (baseline 1267, allowed growth 0)",
+    "lib/ai/remy-write-commands.ts is 901 lines (limit 900) and is not in baseline (new oversize file)",
+    "lib/analytics/insights-actions.ts grew to 1012 lines (baseline 983, allowed growth 0)",
+    "lib/auth/actions.ts is 1298 lines (limit 900) and is not in baseline (new oversize file)",
+    "lib/auth/server-action-inventory.ts is 1715 lines (limit 900) and is not in baseline (new oversize file)",
+    "lib/autonomy/domains/financial.ts is 901 lines (limit 900) and is not in baseline (new oversize file)",
+    "lib/autonomy/domains/logistics.ts is 1040 lines (limit 900) and is not in baseline (new oversize file)",
+    "lib/calling/role-handlers.ts is 1342 lines (limit 900) and is not in baseline (new oversize file)",
+    "lib/calling/sourcing-session-actions.ts is 1272 lines (limit 900) and is not in baseline (new oversize file)",
+    "lib/calling/twilio-actions.ts is 1185 lines (limit 900) and is not in baseline (new oversize file)",
+    "lib/chat/actions.ts grew to 1318 lines (baseline 1247, allowed growth 0)",
+    "lib/chef-decision-engine/actions.ts is 1933 lines (limit 900) and is not in baseline (new oversize file)",
+    "lib/chef-decision-engine/engine.ts is 1340 lines (limit 900) and is not in baseline (new oversize file)",
+    "lib/chef/cannabis-control-packet-actions.ts grew to 1342 lines (baseline 1176, allowed growth 0)",
+    "lib/client-contribution/scoring.ts is 1837 lines (limit 900) and is not in baseline (new oversize file)",
+    "lib/client-contribution/strategy.ts is 1095 lines (limit 900) and is not in baseline (new oversize file)",
+    "lib/client-intelligence/projection.ts is 1666 lines (limit 900) and is not in baseline (new oversize file)",
+    "lib/clients/actions.ts grew to 1876 lines (baseline 1452, allowed growth 0)",
+    "lib/clients/ambient-intelligence.ts is 1422 lines (limit 900) and is not in baseline (new oversize file)",
+    "lib/clients/client-profile-actions.ts is 979 lines (limit 900) and is not in baseline (new oversize file)",
+    "lib/clients/client-profile-service.ts is 2444 lines (limit 900) and is not in baseline (new oversize file)",
+    "lib/clients/interaction-ledger-core.ts is 1285 lines (limit 900) and is not in baseline (new oversize file)",
+    "lib/collaboration/actions.ts is 1051 lines (limit 900) and is not in baseline (new oversize file)",
+    "lib/communication/actions.ts grew to 1810 lines (baseline 1565, allowed growth 0)",
+    "lib/communication/cadence-scheduler.ts is 1257 lines (limit 900) and is not in baseline (new oversize file)",
+    "lib/communication/control-plane.ts is 1521 lines (limit 900) and is not in baseline (new oversize file)",
+    "lib/constants/cuisines.ts is 5400 lines (limit 900) and is not in baseline (new oversize file)",
+    "lib/constants/dietary-rules.ts is 1139 lines (limit 900) and is not in baseline (new oversize file)",
+    "lib/contracts/actions.ts is 1168 lines (limit 900) and is not in baseline (new oversize file)",
+    "lib/costing/knowledge.ts is 1086 lines (limit 900) and is not in baseline (new oversize file)",
+    "lib/costing/operator-cost-lines.ts is 944 lines (limit 900) and is not in baseline (new oversize file)",
+    "lib/dashboard/actions.ts grew to 1332 lines (baseline 995, allowed growth 0)",
+    "lib/dashboard/widget-actions.ts is 1058 lines (limit 900) and is not in baseline (new oversize file)",
+    "lib/db/compat.ts is 1765 lines (limit 900) and is not in baseline (new oversize file)",
+    "lib/db/fk-map.ts is 1355 lines (limit 900) and is not in baseline (new oversize file)",
+    "lib/db/migrations/relations.ts is 12163 lines (limit 900) and is not in baseline (new oversize file)",
+    "lib/db/migrations/schema.ts is 30835 lines (limit 900) and is not in baseline (new oversize file)",
+    "lib/db/schema/relations.ts is 9920 lines (limit 900) and is not in baseline (new oversize file)",
+    "lib/db/schema/schema.ts is 30584 lines (limit 900) and is not in baseline (new oversize file)",
+    "lib/demo/fixtures.ts grew to 1317 lines (baseline 1054, allowed growth 0)",
+    "lib/discover/actions.ts is 1676 lines (limit 900) and is not in baseline (new oversize file)",
+    "lib/discovery/registries/admin-rail-registry.ts is 4266 lines (limit 900) and is not in baseline (new oversize file)",
+    "lib/discovery/registries/chef-rail-registry.ts is 5813 lines (limit 900) and is not in baseline (new oversize file)",
+    "lib/discovery/registries/client-rail-registry.ts is 4195 lines (limit 900) and is not in baseline (new oversize file)",
+    "lib/discovery/registries/guest-rail-registry.ts is 916 lines (limit 900) and is not in baseline (new oversize file)",
+    "lib/discovery/registries/partner-rail-registry.ts is 2010 lines (limit 900) and is not in baseline (new oversize file)",
+    "lib/discovery/registries/public-rail-registry.ts is 1422 lines (limit 900) and is not in baseline (new oversize file)",
+    "lib/discovery/registries/staff-rail-registry.ts is 1516 lines (limit 900) and is not in baseline (new oversize file)",
+    "lib/documents/generate-event-summary.ts is 936 lines (limit 900) and is not in baseline (new oversize file)",
+    "lib/documents/interactive-specs.ts grew to 1359 lines (baseline 1017, allowed growth 0)",
+    "lib/email/notifications.ts grew to 1822 lines (baseline 1302, allowed growth 0)",
+    "lib/events/actions.ts grew to 1631 lines (baseline 1013, allowed growth 0)",
+    "lib/events/event-readiness-assistant.ts is 1100 lines (limit 900) and is not in baseline (new oversize file)",
+    "lib/events/post-event-learning-actions.ts is 1063 lines (limit 900) and is not in baseline (new oversize file)",
+    "lib/events/transitions.ts is 2124 lines (limit 900) and is not in baseline (new oversize file)",
+    "lib/events/view-types.ts is 2042 lines (limit 900) and is not in baseline (new oversize file)",
+    "lib/exit-links/registry.ts is 1188 lines (limit 900) and is not in baseline (new oversize file)",
+    "lib/expenses/actions.ts is 906 lines (limit 900) and is not in baseline (new oversize file)",
+    "lib/features/registry.ts is 1486 lines (limit 900) and is not in baseline (new oversize file)",
+    "lib/finance/cpa-export-actions.ts is 1051 lines (limit 900) and is not in baseline (new oversize file)",
+    "lib/finance/revenue-forecast-run.ts is 984 lines (limit 900) and is not in baseline (new oversize file)",
+    "lib/gmail/sync.ts grew to 4101 lines (baseline 2437, allowed growth 0)",
+    "lib/grazing/actions.ts is 947 lines (limit 900) and is not in baseline (new oversize file)",
+    "lib/grocery/pricing-actions.ts is 968 lines (limit 900) and is not in baseline (new oversize file)",
+    "lib/grocery/smart-list-actions.ts is 1019 lines (limit 900) and is not in baseline (new oversize file)",
+    "lib/grocery/usda-prices.ts is 1004 lines (limit 900) and is not in baseline (new oversize file)",
+    "lib/hooks/use-remy-send.ts is 1063 lines (limit 900) and is not in baseline (new oversize file)",
+    "lib/hub/chef-circle-actions.ts is 1369 lines (limit 900) and is not in baseline (new oversize file)",
+    "lib/hub/circle-detail-actions.ts is 948 lines (limit 900) and is not in baseline (new oversize file)",
+    "lib/hub/household-actions.ts is 928 lines (limit 900) and is not in baseline (new oversize file)",
+    "lib/hub/menu-poll-actions.ts is 1095 lines (limit 900) and is not in baseline (new oversize file)",
+    "lib/inquiries/actions.ts grew to 3456 lines (baseline 1985, allowed growth 0)",
+    "lib/intelligence/private-memory-visibility-contract.ts is 1112 lines (limit 900) and is not in baseline (new oversize file)",
+    "lib/interface/surface-completeness.ts is 2543 lines (limit 900) and is not in baseline (new oversize file)",
+    "lib/inventory/purchase-order-actions.ts grew to 940 lines (baseline 916, allowed growth 0)",
+    "lib/lifecycle/proof-surface-actions.ts is 923 lines (limit 900) and is not in baseline (new oversize file)",
+    "lib/lifecycle/seed.ts is 2187 lines (limit 900) and is not in baseline (new oversize file)",
+    "lib/loading/loading-registry.ts is 1093 lines (limit 900) and is not in baseline (new oversize file)",
+    "lib/loyalty/actions.ts grew to 2414 lines (baseline 1483, allowed growth 0)",
+    "lib/loyalty/store.ts is 1338 lines (limit 900) and is not in baseline (new oversize file)",
+    "lib/marketing/actions.ts grew to 1235 lines (baseline 1116, allowed growth 0)",
+    "lib/menus/actions.ts grew to 2600 lines (baseline 1670, allowed growth 0)",
+    "lib/menus/intelligence/cross-reference.ts is 1104 lines (limit 900) and is not in baseline (new oversize file)",
+    "lib/menus/menu-engineering-actions.ts is 950 lines (limit 900) and is not in baseline (new oversize file)",
+    "lib/navigation/url-capability-registry.ts is 1112 lines (limit 900) and is not in baseline (new oversize file)",
+    "lib/openclaw/catalog-actions.ts is 1225 lines (limit 900) and is not in baseline (new oversize file)",
+    "lib/openclaw/sync.ts is 915 lines (limit 900) and is not in baseline (new oversize file)",
+    "lib/partners/actions.ts grew to 1796 lines (baseline 1154, allowed growth 0)",
+    "lib/pricing/compute.ts grew to 1307 lines (baseline 1049, allowed growth 0)",
+    "lib/pricing/evaluate.ts grew to 1229 lines (baseline 1216, allowed growth 0)",
+    "lib/pricing/pie-canonical-pricing-ontology.ts is 1224 lines (limit 900) and is not in baseline (new oversize file)",
+    "lib/pricing/pie-fallback-decision-table.ts is 915 lines (limit 900) and is not in baseline (new oversize file)",
+    "lib/pricing/pie-national-price-oracle-contract.ts is 2439 lines (limit 900) and is not in baseline (new oversize file)",
+    "lib/pricing/resolve-price.ts is 987 lines (limit 900) and is not in baseline (new oversize file)",
+    "lib/pricing/universal-price-lookup.ts is 1668 lines (limit 900) and is not in baseline (new oversize file)",
+    "lib/prospecting/pipeline-actions.ts grew to 1481 lines (baseline 1463, allowed growth 0)",
+    "lib/public/public-seasonal-market-pulse.ts is 1122 lines (limit 900) and is not in baseline (new oversize file)",
+    "lib/quotes/actions.ts grew to 1473 lines (baseline 985, allowed growth 0)",
+    "lib/recipes/actions.ts grew to 2750 lines (baseline 1458, allowed growth 0)",
+    "lib/recurring/actions.ts grew to 1547 lines (baseline 1481, allowed growth 0)",
+    "lib/reviews/actions.ts is 1042 lines (limit 900) and is not in baseline (new oversize file)",
+    "lib/scheduling/actions.ts is 968 lines (limit 900) and is not in baseline (new oversize file)",
+    "lib/scheduling/types.ts is 1240 lines (limit 900) and is not in baseline (new oversize file)",
+    "lib/security/route-policy.ts is 1059 lines (limit 900) and is not in baseline (new oversize file)",
+    "lib/service-simulation/engine.ts is 1281 lines (limit 900) and is not in baseline (new oversize file)",
+    "lib/sharing/actions.ts grew to 4185 lines (baseline 3186, allowed growth 0)",
+    "lib/staff/staff-portal-actions.ts is 912 lines (limit 900) and is not in baseline (new oversize file)",
+    "lib/tickets/actions.ts is 995 lines (limit 900) and is not in baseline (new oversize file)",
+    "lib/tickets/purchase-actions.ts is 1197 lines (limit 900) and is not in baseline (new oversize file)"
+  ],
+  "lintFindings": [
+    {
+      "file": "app/(admin)/admin/price-catalog/catalog-tab.tsx",
+      "finding": "288:6  Warning: React Hook useEffect has missing dependencies: 'handleExpand' and 'items'. Either include them or remove the dependency array.  react-hooks/exhaustive-deps"
+    },
+    {
+      "file": "app/(admin)/admin/price-catalog/price-catalog-client.tsx",
+      "finding": "40:6  Warning: React Hook useEffect has a missing dependency: 'loadData'. Either include it or remove the dependency array.  react-hooks/exhaustive-deps"
+    },
+    {
+      "file": "app/(chef)/culinary/price-catalog/catalog-browser.tsx",
+      "finding": "713:5  Warning: React Hook useCallback has a missing dependency: 'items'. Either include it or remove the dependency array.  react-hooks/exhaustive-deps"
+    },
+    {
+      "file": "app/(client)/my-events/[id]/recap/recap-client.tsx",
+      "finding": "72:23  Warning: Using `<img>` could result in slower LCP and higher bandwidth. Consider using `<Image />` from `next/image` to automatically optimize images. This may incur additional usage or cost from your provider. See: https://nextjs.org/docs/messages/no-img-element  @next/next/no-img-element"
+    },
+    {
+      "file": "app/(client)/my-meals/meals-client.tsx",
+      "finding": "32:9  Warning: Using `<img>` could result in slower LCP and higher bandwidth. Consider using `<Image />` from `next/image` to automatically optimize images. This may incur additional usage or cost from your provider. See: https://nextjs.org/docs/messages/no-img-element  @next/next/no-img-element"
+    },
+    {
+      "file": "app/(client)/my-receipts/receipts-client.tsx",
+      "finding": "73:19  Warning: Using `<img>` could result in slower LCP and higher bandwidth. Consider using `<Image />` from `next/image` to automatically optimize images. This may incur additional usage or cost from your provider. See: https://nextjs.org/docs/messages/no-img-element  @next/next/no-img-element"
+    },
+    {
+      "file": "app/(client)/my-receipts/receipts-client.tsx",
+      "finding": "131:13  Warning: Using `<img>` could result in slower LCP and higher bandwidth. Consider using `<Image />` from `next/image` to automatically optimize images. This may incur additional usage or cost from your provider. See: https://nextjs.org/docs/messages/no-img-element  @next/next/no-img-element"
+    },
+    {
+      "file": "app/(public)/_components/cuisine-marquee.tsx",
+      "finding": "1967:35  Warning: Using `<img>` could result in slower LCP and higher bandwidth. Consider using `<Image />` from `next/image` to automatically optimize images. This may incur additional usage or cost from your provider. See: https://nextjs.org/docs/messages/no-img-element  @next/next/no-img-element"
+    },
+    {
+      "file": "app/(public)/catalog-pick/[token]/catalog-pick-client.tsx",
+      "finding": "63:6  Warning: React Hook useMemo has a missing dependency: 'catalog'. Either include it or remove the dependency array.  react-hooks/exhaustive-deps"
+    },
+    {
+      "file": "app/(public)/e/[shareToken]/public-event-view.tsx",
+      "finding": "453:17  Warning: Using `<img>` could result in slower LCP and higher bandwidth. Consider using `<Image />` from `next/image` to automatically optimize images. This may incur additional usage or cost from your provider. See: https://nextjs.org/docs/messages/no-img-element  @next/next/no-img-element"
+    },
+    {
+      "file": "app/(public)/eat/_components/consumer-result-card.tsx",
+      "finding": "24:13  Warning: Using `<img>` could result in slower LCP and higher bandwidth. Consider using `<Image />` from `next/image` to automatically optimize images. This may incur additional usage or cost from your provider. See: https://nextjs.org/docs/messages/no-img-element  @next/next/no-img-element"
+    },
+    {
+      "file": "app/(public)/ingredient/[id]/page.tsx",
+      "finding": "341:19  Warning: Using `<img>` could result in slower LCP and higher bandwidth. Consider using `<Image />` from `next/image` to automatically optimize images. This may incur additional usage or cost from your provider. See: https://nextjs.org/docs/messages/no-img-element  @next/next/no-img-element"
+    },
+    {
+      "file": "app/(public)/ingredient/[id]/page.tsx",
+      "finding": "494:23  Warning: Using `<img>` could result in slower LCP and higher bandwidth. Consider using `<Image />` from `next/image` to automatically optimize images. This may incur additional usage or cost from your provider. See: https://nextjs.org/docs/messages/no-img-element  @next/next/no-img-element"
+    },
+    {
+      "file": "app/(public)/ingredient/[id]/page.tsx",
+      "finding": "614:19  Warning: Using `<img>` could result in slower LCP and higher bandwidth. Consider using `<Image />` from `next/image` to automatically optimize images. This may incur additional usage or cost from your provider. See: https://nextjs.org/docs/messages/no-img-element  @next/next/no-img-element"
+    },
+    {
+      "file": "app/(public)/ingredient/[id]/page.tsx",
+      "finding": "665:23  Warning: Using `<img>` could result in slower LCP and higher bandwidth. Consider using `<Image />` from `next/image` to automatically optimize images. This may incur additional usage or cost from your provider. See: https://nextjs.org/docs/messages/no-img-element  @next/next/no-img-element"
+    },
+    {
+      "file": "app/(public)/ingredients/[category]/page.tsx",
+      "finding": "218:11  Warning: Using `<img>` could result in slower LCP and higher bandwidth. Consider using `<Image />` from `next/image` to automatically optimize images. This may incur additional usage or cost from your provider. See: https://nextjs.org/docs/messages/no-img-element  @next/next/no-img-element"
+    },
+    {
+      "file": "app/(public)/ingredients/page.tsx",
+      "finding": "345:23  Warning: Using `<img>` could result in slower LCP and higher bandwidth. Consider using `<Image />` from `next/image` to automatically optimize images. This may incur additional usage or cost from your provider. See: https://nextjs.org/docs/messages/no-img-element  @next/next/no-img-element"
+    },
+    {
+      "file": "app/(public)/ingredients/page.tsx",
+      "finding": "510:11  Warning: Using `<img>` could result in slower LCP and higher bandwidth. Consider using `<Image />` from `next/image` to automatically optimize images. This may incur additional usage or cost from your provider. See: https://nextjs.org/docs/messages/no-img-element  @next/next/no-img-element"
+    },
+    {
+      "file": "app/(public)/menu-pick/[token]/menu-pick-client.tsx",
+      "finding": "29:6  Warning: React Hook useMemo has a missing dependency: 'menu'. Either include it or remove the dependency array.  react-hooks/exhaustive-deps"
+    },
+    {
+      "file": "app/api/events/[id]/card/route.tsx",
+      "finding": "176:13  Warning: Using `<img>` could result in slower LCP and higher bandwidth. Consider using `<Image />` from `next/image` to automatically optimize images. This may incur additional usage or cost from your provider. See: https://nextjs.org/docs/messages/no-img-element  @next/next/no-img-element"
+    },
+    {
+      "file": "app/api/events/[id]/card/route.tsx",
+      "finding": "176:13  Warning: img elements must have an alt prop, either with meaningful text, or an empty string for decorative images.  jsx-a11y/alt-text"
+    },
+    {
+      "file": "components/autopilot/autopilot-card.tsx",
+      "finding": "55:6  Warning: React Hook useEffect has a missing dependency: 'generate'. Either include it or remove the dependency array.  react-hooks/exhaustive-deps"
+    },
+    {
+      "file": "components/calling/call-hub.tsx",
+      "finding": "139:19  Warning: The ref value 'activePolls.current' will likely have changed by the time this effect cleanup function runs. If this ref points to a node rendered by React, copy 'activePolls.current' to a variable inside the effect, and use that variable in the cleanup function.  react-hooks/exhaustive-deps"
+    },
+    {
+      "file": "components/calling/sourcing-session.tsx",
+      "finding": "548:50  Warning: The ref value 'pollRef.current' will likely have changed by the time this effect cleanup function runs. If this ref points to a node rendered by React, copy 'pollRef.current' to a variable inside the effect, and use that variable in the cleanup function.  react-hooks/exhaustive-deps"
+    },
+    {
+      "file": "components/circles/redesign/channels/chat-channel.tsx",
+      "finding": "79:7  Warning: Using `<img>` could result in slower LCP and higher bandwidth. Consider using `<Image />` from `next/image` to automatically optimize images. This may incur additional usage or cost from your provider. See: https://nextjs.org/docs/messages/no-img-element  @next/next/no-img-element"
+    },
+    {
+      "file": "components/circles/redesign/channels/what-to-bring.tsx",
+      "finding": "146:13  Warning: Using `<img>` could result in slower LCP and higher bandwidth. Consider using `<Image />` from `next/image` to automatically optimize images. This may incur additional usage or cost from your provider. See: https://nextjs.org/docs/messages/no-img-element  @next/next/no-img-element"
+    },
+    {
+      "file": "components/circles/redesign/channels/whos-coming.tsx",
+      "finding": "133:11  Warning: Using `<img>` could result in slower LCP and higher bandwidth. Consider using `<Image />` from `next/image` to automatically optimize images. This may incur additional usage or cost from your provider. See: https://nextjs.org/docs/messages/no-img-element  @next/next/no-img-element"
+    },
+    {
+      "file": "components/client-portal/post-event-experience.tsx",
+      "finding": "145:19  Warning: Using `<img>` could result in slower LCP and higher bandwidth. Consider using `<Image />` from `next/image` to automatically optimize images. This may incur additional usage or cost from your provider. See: https://nextjs.org/docs/messages/no-img-element  @next/next/no-img-element"
+    },
+    {
+      "file": "components/collaboration/cohost-event-archive.tsx",
+      "finding": "63:21  Warning: Using `<img>` could result in slower LCP and higher bandwidth. Consider using `<Image />` from `next/image` to automatically optimize images. This may incur additional usage or cost from your provider. See: https://nextjs.org/docs/messages/no-img-element  @next/next/no-img-element"
+    },
+    {
+      "file": "components/community/subcontract-form.tsx",
+      "finding": "125:5  Warning: React Hook useMemo has missing dependencies: 'agreement' and 'eventId'. Either include them or remove the dependency array.  react-hooks/exhaustive-deps"
+    },
+    {
+      "file": "components/costing/costing-help-popover.tsx",
+      "finding": "38:3  Error: React Hook \"useEffect\" is called conditionally. React Hooks must be called in the exact same order in every component render.  react-hooks/rules-of-hooks"
+    },
+    {
+      "file": "components/costing/costing-help-popover.tsx",
+      "finding": "50:3  Error: React Hook \"useEffect\" is called conditionally. React Hooks must be called in the exact same order in every component render.  react-hooks/rules-of-hooks"
+    },
+    {
+      "file": "components/culinary/menu-shopping-list.tsx",
+      "finding": "159:6  Warning: React Hook useEffect has missing dependencies: 'isPending', 'load', and 'result'. Either include them or remove the dependency array.  react-hooks/exhaustive-deps"
+    },
+    {
+      "file": "components/culinary/substitution-lookup.tsx",
+      "finding": "46:6  Warning: React Hook useCallback has a missing dependency: 'clientId'. Either include it or remove the dependency array.  react-hooks/exhaustive-deps"
+    },
+    {
+      "file": "components/dashboard/dashboard-section.tsx",
+      "finding": "47:6  Warning: React Hook useEffect has a missing dependency: 'defaultCollapsed'. Either include it or remove the dependency array.  react-hooks/exhaustive-deps"
+    },
+    {
+      "file": "components/discovery/discovery-card.tsx",
+      "finding": "57:9  Warning: Using `<img>` could result in slower LCP and higher bandwidth. Consider using `<Image />` from `next/image` to automatically optimize images. This may incur additional usage or cost from your provider. See: https://nextjs.org/docs/messages/no-img-element  @next/next/no-img-element"
+    },
+    {
+      "file": "components/discovery/discovery-card.tsx",
+      "finding": "141:9  Warning: Using `<img>` could result in slower LCP and higher bandwidth. Consider using `<Image />` from `next/image` to automatically optimize images. This may incur additional usage or cost from your provider. See: https://nextjs.org/docs/messages/no-img-element  @next/next/no-img-element"
+    },
+    {
+      "file": "components/events/chef-event-countdown.tsx",
+      "finding": "85:18  Error: React Hook \"useMemo\" is called conditionally. React Hooks must be called in the exact same order in every component render. Did you accidentally call a React Hook after an early return?  react-hooks/rules-of-hooks"
+    },
+    {
+      "file": "components/events/chef-event-countdown.tsx",
+      "finding": "86:25  Error: React Hook \"useState\" is called conditionally. React Hooks must be called in the exact same order in every component render. Did you accidentally call a React Hook after an early return?  react-hooks/rules-of-hooks"
+    },
+    {
+      "file": "components/events/chef-event-countdown.tsx",
+      "finding": "88:3  Error: React Hook \"useEffect\" is called conditionally. React Hooks must be called in the exact same order in every component render. Did you accidentally call a React Hook after an early return?  react-hooks/rules-of-hooks"
+    },
+    {
+      "file": "components/events/event-references-panel.tsx",
+      "finding": "22:35  Warning: Image elements must have an alt prop, either with meaningful text, or an empty string for decorative images.  jsx-a11y/alt-text"
+    },
+    {
+      "file": "components/events/event-timeline-view.tsx",
+      "finding": "194:26  Error: React Hook \"useMemo\" is called conditionally. React Hooks must be called in the exact same order in every component render.  react-hooks/rules-of-hooks"
+    },
+    {
+      "file": "components/events/lifecycle-workspace-panel.tsx",
+      "finding": "67:18  Error: React Hook \"useCallback\" is called conditionally. React Hooks must be called in the exact same order in every component render.  react-hooks/rules-of-hooks"
+    },
+    {
+      "file": "components/events/post-event-checklist.tsx",
+      "finding": "73:3  Error: React Hook \"useEffect\" is called conditionally. React Hooks must be called in the exact same order in every component render. Did you accidentally call a React Hook after an early return?  react-hooks/rules-of-hooks"
+    },
+    {
+      "file": "components/events/recap-video-section.tsx",
+      "finding": "45:6  Warning: React Hook useEffect has a missing dependency: 'startPolling'. Either include it or remove the dependency array.  react-hooks/exhaustive-deps"
+    },
+    {
+      "file": "components/events/venue-details-panel.tsx",
+      "finding": "287:25  Warning: Using `<img>` could result in slower LCP and higher bandwidth. Consider using `<Image />` from `next/image` to automatically optimize images. This may incur additional usage or cost from your provider. See: https://nextjs.org/docs/messages/no-img-element  @next/next/no-img-element"
+    },
+    {
+      "file": "components/events/venue-details-panel.tsx",
+      "finding": "314:25  Warning: Using `<img>` could result in slower LCP and higher bandwidth. Consider using `<Image />` from `next/image` to automatically optimize images. This may incur additional usage or cost from your provider. See: https://nextjs.org/docs/messages/no-img-element  @next/next/no-img-element"
+    },
+    {
+      "file": "components/guests/guest-form.tsx",
+      "finding": "42:5  Warning: React Hook useMemo has missing dependencies: 'guest?.email', 'guest?.name', 'guest?.notes', and 'guest?.phone'. Either include them or remove the dependency array.  react-hooks/exhaustive-deps"
+    },
+    {
+      "file": "components/hub/agreement-tab.tsx",
+      "finding": "40:6  Warning: React Hook useEffect has a missing dependency: 'loadAgreement'. Either include it or remove the dependency array.  react-hooks/exhaustive-deps"
+    },
+    {
+      "file": "components/hub/circle-qr-code.tsx",
+      "finding": "39:7  Warning: Using `<img>` could result in slower LCP and higher bandwidth. Consider using `<Image />` from `next/image` to automatically optimize images. This may incur additional usage or cost from your provider. See: https://nextjs.org/docs/messages/no-img-element  @next/next/no-img-element"
+    },
+    {
+      "file": "components/hub/hub-bridge-view.tsx",
+      "finding": "124:17  Warning: Using `<img>` could result in slower LCP and higher bandwidth. Consider using `<Image />` from `next/image` to automatically optimize images. This may incur additional usage or cost from your provider. See: https://nextjs.org/docs/messages/no-img-element  @next/next/no-img-element"
+    },
+    {
+      "file": "components/hub/hub-feed.tsx",
+      "finding": "89:6  Warning: React Hook useEffect has a missing dependency: 'groupToken'. Either include it or remove the dependency array.  react-hooks/exhaustive-deps"
+    },
+    {
+      "file": "components/hub/hub-feed.tsx",
+      "finding": "141:6  Warning: React Hook useEffect has a missing dependency: 'groupToken'. Either include it or remove the dependency array.  react-hooks/exhaustive-deps"
+    },
+    {
+      "file": "components/hub/hub-feed.tsx",
+      "finding": "187:6  Warning: React Hook useCallback has a missing dependency: 'groupToken'. Either include it or remove the dependency array.  react-hooks/exhaustive-deps"
+    },
+    {
+      "file": "components/hub/hub-message-search.tsx",
+      "finding": "37:5  Warning: React Hook useCallback has a missing dependency: 'groupToken'. Either include it or remove the dependency array.  react-hooks/exhaustive-deps"
+    },
+    {
+      "file": "components/hub/private-thread-list.tsx",
+      "finding": "91:15  Warning: Using `<img>` could result in slower LCP and higher bandwidth. Consider using `<Image />` from `next/image` to automatically optimize images. This may incur additional usage or cost from your provider. See: https://nextjs.org/docs/messages/no-img-element  @next/next/no-img-element"
+    },
+    {
+      "file": "components/inquiries/send-sample-menus-action.tsx",
+      "finding": "36:6  Warning: React Hook useEffect has missing dependencies: 'loadMenus' and 'menus.length'. Either include them or remove the dependency array.  react-hooks/exhaustive-deps"
+    },
+    {
+      "file": "components/kitchen/kitchen-timer.tsx",
+      "finding": "136:20  Warning: The ref value 'intervalsRef.current' will likely have changed by the time this effect cleanup function runs. If this ref points to a node rendered by React, copy 'intervalsRef.current' to a variable inside the effect, and use that variable in the cleanup function.  react-hooks/exhaustive-deps"
+    },
+    {
+      "file": "components/navigation/chef-mobile-nav.tsx",
+      "finding": "766:25  Warning: Using `<img>` could result in slower LCP and higher bandwidth. Consider using `<Image />` from `next/image` to automatically optimize images. This may incur additional usage or cost from your provider. See: https://nextjs.org/docs/messages/no-img-element  @next/next/no-img-element"
+    },
+    {
+      "file": "components/navigation/chef-nav.tsx",
+      "finding": "1348:17  Warning: Using `<img>` could result in slower LCP and higher bandwidth. Consider using `<Image />` from `next/image` to automatically optimize images. This may incur additional usage or cost from your provider. See: https://nextjs.org/docs/messages/no-img-element  @next/next/no-img-element"
+    },
+    {
+      "file": "components/onboarding/onboarding-steps/portfolio-step.tsx",
+      "finding": "148:13  Warning: Using `<img>` could result in slower LCP and higher bandwidth. Consider using `<Image />` from `next/image` to automatically optimize images. This may incur additional usage or cost from your provider. See: https://nextjs.org/docs/messages/no-img-element  @next/next/no-img-element"
+    },
+    {
+      "file": "components/onboarding/onboarding-steps/profile-step.tsx",
+      "finding": "218:17  Warning: Using `<img>` could result in slower LCP and higher bandwidth. Consider using `<Image />` from `next/image` to automatically optimize images. This may incur additional usage or cost from your provider. See: https://nextjs.org/docs/messages/no-img-element  @next/next/no-img-element"
+    },
+    {
+      "file": "components/onboarding/onboarding-steps/profile-step.tsx",
+      "finding": "271:17  Warning: Using `<img>` could result in slower LCP and higher bandwidth. Consider using `<Image />` from `next/image` to automatically optimize images. This may incur additional usage or cost from your provider. See: https://nextjs.org/docs/messages/no-img-element  @next/next/no-img-element"
+    },
+    {
+      "file": "components/onboarding/onboarding-wizard.tsx",
+      "finding": "108:6  Warning: React Hook useEffect has a missing dependency: 'loadProgress'. Either include it or remove the dependency array.  react-hooks/exhaustive-deps"
+    },
+    {
+      "file": "components/onboarding/onboarding-wizard.tsx",
+      "finding": "151:6  Warning: React Hook useEffect has a missing dependency: 'loadProgress'. Either include it or remove the dependency array.  react-hooks/exhaustive-deps"
+    },
+    {
+      "file": "components/onboarding/onboarding-wizard.tsx",
+      "finding": "202:6  Warning: React Hook useEffect has a missing dependency: 'progress'. Either include it or remove the dependency array.  react-hooks/exhaustive-deps"
+    },
+    {
+      "file": "components/protection/continuity-plan-form.tsx",
+      "finding": "40:5  Warning: React Hook useMemo has a missing dependency: 'plan'. Either include it or remove the dependency array.  react-hooks/exhaustive-deps"
+    },
+    {
+      "file": "components/pwa/install-prompt.tsx",
+      "finding": "77:11  Warning: Using `<img>` could result in slower LCP and higher bandwidth. Consider using `<Image />` from `next/image` to automatically optimize images. This may incur additional usage or cost from your provider. See: https://nextjs.org/docs/messages/no-img-element  @next/next/no-img-element"
+    },
+    {
+      "file": "components/quotes/pricing-tier-breakdown.tsx",
+      "finding": "88:27  Error: React Hook \"useMemo\" is called conditionally. React Hooks must be called in the exact same order in every component render.  react-hooks/rules-of-hooks"
+    },
+    {
+      "file": "components/recipes/recipe-photo-batch-import.tsx",
+      "finding": "92:22  Error: React Hook \"useCallback\" is called conditionally. React Hooks must be called in the exact same order in every component render.  react-hooks/rules-of-hooks"
+    },
+    {
+      "file": "components/recipes/recipe-photo-batch-import.tsx",
+      "finding": "329:25  Warning: Using `<img>` could result in slower LCP and higher bandwidth. Consider using `<Image />` from `next/image` to automatically optimize images. This may incur additional usage or cost from your provider. See: https://nextjs.org/docs/messages/no-img-element  @next/next/no-img-element"
+    },
+    {
+      "file": "components/recipes/recipe-photo-batch-import.tsx",
+      "finding": "376:19  Warning: Using `<img>` could result in slower LCP and higher bandwidth. Consider using `<Image />` from `next/image` to automatically optimize images. This may incur additional usage or cost from your provider. See: https://nextjs.org/docs/messages/no-img-element  @next/next/no-img-element"
+    },
+    {
+      "file": "components/recipes/recipe-photo-batch-import.tsx",
+      "finding": "471:19  Warning: Using `<img>` could result in slower LCP and higher bandwidth. Consider using `<Image />` from `next/image` to automatically optimize images. This may incur additional usage or cost from your provider. See: https://nextjs.org/docs/messages/no-img-element  @next/next/no-img-element"
+    },
+    {
+      "file": "components/search/command-palette.tsx",
+      "finding": "383:5  Warning: React Hook useCallback has a missing dependency: 'query'. Either include it or remove the dependency array.  react-hooks/exhaustive-deps"
+    },
+    {
+      "file": "components/series/series-detail-shell.tsx",
+      "finding": "128:19  Warning: Using `<img>` could result in slower LCP and higher bandwidth. Consider using `<Image />` from `next/image` to automatically optimize images. This may incur additional usage or cost from your provider. See: https://nextjs.org/docs/messages/no-img-element  @next/next/no-img-element"
+    },
+    {
+      "file": "components/series/series-detail-shell.tsx",
+      "finding": "202:15  Warning: Using `<img>` could result in slower LCP and higher bandwidth. Consider using `<Image />` from `next/image` to automatically optimize images. This may incur additional usage or cost from your provider. See: https://nextjs.org/docs/messages/no-img-element  @next/next/no-img-element"
+    },
+    {
+      "file": "components/series/series-list-view.tsx",
+      "finding": "49:21  Warning: Using `<img>` could result in slower LCP and higher bandwidth. Consider using `<Image />` from `next/image` to automatically optimize images. This may incur additional usage or cost from your provider. See: https://nextjs.org/docs/messages/no-img-element  @next/next/no-img-element"
+    },
+    {
+      "file": "components/settings/mfa-setup-client.tsx",
+      "finding": "196:15  Warning: Using `<img>` could result in slower LCP and higher bandwidth. Consider using `<Image />` from `next/image` to automatically optimize images. This may incur additional usage or cost from your provider. See: https://nextjs.org/docs/messages/no-img-element  @next/next/no-img-element"
+    },
+    {
+      "file": "components/shared/step-wizard.tsx",
+      "finding": "340:6  Warning: React Hook useEffect has a missing dependency: 'wizard'. Either include it or remove the dependency array.  react-hooks/exhaustive-deps"
+    },
+    {
+      "file": "components/tables/tables-feed.tsx",
+      "finding": "25:13  Warning: Using `<img>` could result in slower LCP and higher bandwidth. Consider using `<Image />` from `next/image` to automatically optimize images. This may incur additional usage or cost from your provider. See: https://nextjs.org/docs/messages/no-img-element  @next/next/no-img-element"
+    },
+    {
+      "file": "components/tracking/meta-pixel.tsx",
+      "finding": "58:9  Warning: Using `<img>` could result in slower LCP and higher bandwidth. Consider using `<Image />` from `next/image` to automatically optimize images. This may incur additional usage or cost from your provider. See: https://nextjs.org/docs/messages/no-img-element  @next/next/no-img-element"
+    },
+    {
+      "file": "components/ui/combobox-input.tsx",
+      "finding": "166:9  Warning: Elements with the ARIA role \"combobox\" must have the following attributes defined: aria-controls,aria-expanded  jsx-a11y/role-has-required-aria-props"
+    },
+    {
+      "file": "lib/culinary/shopping-list-export.ts",
+      "finding": "28:14  Error: Do not pass children as props. Instead, pass them as additional arguments to React.createElement.  react/no-children-prop"
+    },
+    {
+      "file": "lib/db/migrations/schema.ts",
+      "finding": "1442:81  Error: Parsing error: Invalid character."
+    },
+    {
+      "file": "lib/gmail/historical-scan.ts",
+      "finding": "646:1  Warning: Assign object to a variable before exporting as module default  import/no-anonymous-default-export"
+    },
+    {
+      "file": "lib/mfa/challenge.ts",
+      "finding": "107:22  Error: React Hook \"useRecoveryCode\" is called in function \"verifyMfaChallenge\" that is neither a React function component nor a custom React Hook function. React component names must start with an uppercase letter. React Hook names must start with the word \"use\".  react-hooks/rules-of-hooks"
+    },
+    {
+      "file": "lib/release/release-attestation.js",
+      "finding": "51:1  Warning: Assign object to a variable before exporting as module default  import/no-anonymous-default-export"
+    },
+    {
+      "file": "lib/release/release-gate-manifest.js",
+      "finding": "123:1  Warning: Assign object to a variable before exporting as module default  import/no-anonymous-default-export"
+    }
+  ],
+  "auditCounts": {
+    "info": 0,
+    "low": 6,
+    "moderate": 51,
+    "high": 21,
+    "critical": 1,
+    "total": 79
+  },
+  "criticalPackages": [
+    {
+      "name": "next",
+      "range": "9.3.4-canary.0 - 16.3.0-preview.10",
+      "advisories": [
+        {
+          "title": "Next.js: Unauthenticated Remote Code Execution on windows-hosted servers",
+          "range": ">=13.4.0 <15.5.24",
+          "url": "https://github.com/advisories/GHSA-p293-qw3h-jr36"
+        },
+        {
+          "title": "Next.js: Unauthenticated Remote Code Execution in Image Optimization API when AVIF files are used",
+          "range": ">=10.0.0 <15.5.24",
+          "url": "https://github.com/advisories/GHSA-2xp9-vwfh-vxw4"
+        }
+      ]
+    }
+  ],
+  "evidenceNote": "Final clean-install local run; suite-level failed TAP entries are included in the per-file inventory and are not an additional test count.",
+  "githubVerification": {
+    "commit": "15eaa393473ac59aa0f3ccfaba570e89c6dba5e5",
+    "runUrl": "https://github.com/davidferra13/CFV-1/actions/runs/36714647360",
+    "unit": {
+      "tests": 3438,
+      "pass": 3321,
+      "fail": 117,
+      "skipped": 0,
+      "vitestPass": 60
+    },
+    "failedTapEntriesByFile": {
+      "agent-silent-failure-guards.test.ts": [
+        "cron monitor supports strict unhealthy status for external alerting",
+        "remy context records degraded fallbacks instead of collapsing failures into hidden nulls"
+      ],
+      "chef-nav-priority.test.ts": [
+        "uses the canonical Today to Money primary nav defaults",
+        "aligns the action bar to six active-work shortcuts",
+        "chef nav priority defaults"
+      ],
+      "chef-shell-consistency.test.ts": [
+        "social route header stays page-local instead of becoming a sticky shell bar",
+        "navigation settings keep shell diagnostics and reset reachable from settings",
+        "route-level chef layouts keep shell bars and outer shell backgrounds behind an allowlist"
+      ],
+      "client-portal-payment-intent.test.ts": [
+        "client portal payment checkout returns ok for a valid token and payable event",
+        "client portal payment checkout dedupes repeated anonymous hits for the same token and event",
+        "client portal payment checkout returns rate_limited when the public intent guard rejects attempts",
+        "client portal payment checkout scopes tenant from resolved portal access and event lookup"
+      ],
+      "commerce-checkout-actions.test.ts": [
+        "counterCheckout enforces cashier role when POS role matrix is enabled",
+        "counterCheckout voids sale when cash tendered is below total due",
+        "counterCheckout applies promotion code discount to line items and sale totals",
+        "counterCheckout returns success even when register sync and audit logging fail"
+      ],
+      "contact-support.test.ts": [
+        "falls back to static public support defaults when business hours are unavailable",
+        "buildContactSupportInfo"
+      ],
+      "cron-monitoring-coverage.test.ts": [
+        "scheduled routes record both success and failure cron telemetry",
+        "monitored cron names are registered in the shared monitor definitions"
+      ],
+      "db-migration-versions.test.ts": [
+        "has unique numeric version prefixes",
+        "Database migration versions"
+      ],
+      "developer-tools-gating.test.ts": [
+        "settings hub keeps developer tools off the default surface"
+      ],
+      "discovery-search-query-controls.test.ts": [
+        "autocomplete ranks prefix, alias, recent, and favorite matches across discovery entities"
+      ],
+      "event-operating-spine.test.ts": ["chef primary navigation follows the six-domain contract"],
+      "google-oauth.test.ts": ["tests/unit/google-oauth.test.ts"],
+      "homepage-discovery-rail.test.ts": [
+        "homepage page mounts the canonical rail without parallel rail renderers"
+      ],
+      "mempalace-remy-continuity.test.ts": [
+        "Remy prompt now biases toward concise, answer-first responses",
+        "operator response token budgets shrink for narrow questions and expand for strategic ones"
+      ],
+      "modules.test.ts": [
+        "every module has required fields",
+        "Module Definitions \u2014 registry integrity",
+        "all modules are free tier (no Pro gating)",
+        "Module Definitions \u2014 tier assignment"
+      ],
+      "nav-regression.test.ts": [
+        "Action Bar contains critical daily-driver items",
+        "Tables is preserved as a bottom social-zone entry point",
+        "Cannabis Portal is preserved as a bottom tier entry point",
+        "Critical routes reachable from at least one nav surface",
+        "standaloneBottom has Settings link",
+        "Navigation regression guard"
+      ],
+      "nearby-saved-search-actions.test.ts": [
+        "saveNearbySavedSearchAlert stores the current nearby filter state and refreshes email preferences",
+        "saveNearbySavedSearchAlert updates an existing saved search instead of inserting a duplicate"
+      ],
+      "nearby.listing-card.test.ts": ["tests/unit/nearby.listing-card.test.ts"],
+      "open-booking.route.test.ts": [
+        "open booking preserves dietary context through client, inquiry, and event creation"
+      ],
+      "openclaw-control-plane.test.ts": [
+        "OpenClaw capacity governor fails closed on DB and overload signals",
+        "OpenClaw frontier planner ranks weak high-demand cells first",
+        "OpenClaw source discovery dedupes without approving risky candidates",
+        "OpenClaw receipt validation excludes unit-family mismatches",
+        "OpenClaw router dedupes bounded tasks"
+      ],
+      "openclaw-quarantine-review.test.ts": [
+        "review flow is wired through the shared contract and internal refresh path"
+      ],
+      "operator-homepage-funnel.test.ts": [
+        "homepage keeps the operator proof path above the consumer marketplace branch"
+      ],
+      "passive-store-sync-migration.test.ts": [
+        "passive store sync bootstrap migration backfills dirty rows from existing sources"
+      ],
+      "post-event-learning-logic.test.ts": ["tests/unit/post-event-learning-logic.test.ts"],
+      "post-event-trust-loop.test.ts": ["tests/unit/post-event-trust-loop.test.ts"],
+      "pricing.cost-refresh-actions.test.ts": [
+        "propagatePriceChange refreshes affected recipe costs, parent recipes, events, and caches"
+      ],
+      "pricing.evaluate.test.ts": [
+        "eligibility: pricing blocked, but breakdown is always computed",
+        "private dinner: group rate \u2014 4 guests, 4 courses \u2192 $185 \u00d7 4 = $740",
+        "private dinner: group rate \u2014 6 guests, 3 courses \u2192 $155 \u00d7 6 = $930",
+        "private dinner: group rate \u2014 4 guests, 5 courses \u2192 $215 \u00d7 4 = $860",
+        "private dinner: couples rate \u2014 2 guests, 4 courses \u2192 $250 \u00d7 2 = $500",
+        "private dinner: couples rate \u2014 2 guests, 3 courses \u2192 $200 \u00d7 2 = $400",
+        "private dinner: 1 guest treated as couple \u2192 couples rate",
+        "private dinner: large group (10 guests) uses group rate + isLargeGroup flag",
+        "weekendPremiumEnabled: chef-tool mode auto-defaults to true for Friday event",
+        "weekendPremiumEnabled: explicit true in AI path applies premium",
+        "holiday: Valentine's Day 2026-02-14 \u2014 Tier 1, 45% premium applied",
+        "holiday premium is stacked on top of weekend premium",
+        "weekly_standard: hasRange = true, low and high computed",
+        "weekly_commitment: hasRange = true, correct rates ($300\u2013$350/day)",
+        "weekly_standard: clientFacingText contains both low and high totals",
+        "weekly_standard range: premiums scale proportionally with day rate",
+        "weekly_standard range: travel is same on both sides (does not scale)",
+        "adjustment: loyalty_discount reduces finalTotalCents and recalculates deposit",
+        "adjustment: surcharge adds to final total",
+        "travel: 10 miles \u2192 $0.70/mile = $7 (700 cents)",
+        "isQuotable: standard valid result \u2192 true",
+        "isQuotable: pricingAllowed = false does NOT block quoting",
+        "generateQuoteSummary: private dinner \u2192 includes course count and total",
+        "generateQuoteSummary: with loyalty discount \u2192 includes (adjusted)",
+        "generateQuoteSummary: Valentine's Day \u2192 includes holiday name",
+        "generateQuoteSummary: weekly service \u2192 includes days",
+        "pendingConfirmations: zero-priced multi-night package surfaces",
+        "cook_and_leave: $150/session, 1 session",
+        "pizza_experience: $150/person",
+        "multi_night: two_night_4_course \u2192 $900 flat",
+        "minimum floor: cook_and_leave below $300 minimum \u2192 floor applied",
+        "minimum floor: private dinner above $300 \u2192 no floor applied"
+      ],
+      "pricing.validation.test.ts": [
+        "multi_night with valid package is valid",
+        "multi_night with placeholder (0-value) package requires custom pricing",
+        "Pricing Validation \u2014 service types"
+      ],
+      "private-memory-visibility-contract.test.ts": [
+        "client, staff, website, and public projections never expose private source records",
+        "role-safe derived read model wraps projections with source-filter and route contract proof",
+        "safe briefings compose from derived views and retain redaction trace for chef review",
+        "safe briefing composer builds purpose-specific role-safe variants from approved derived facts",
+        "public claims that require evidence suppress until public-approved proof exists"
+      ],
+      "public-booking-availability-calendar-truth.test.ts": [
+        "public booking availability blocks dates that are only busy in Google Calendar",
+        "public booking availability holds dates when Google Calendar truth is degraded"
+      ],
+      "public-national-surfaces.test.ts": ["book form renders shared neutral location guidance"],
+      "public-seasonal-market-pulse.test.ts": [
+        "builds a market-backed pulse with canonical provenance and booking handoff",
+        "withholds stale market evidence behind the canonical fallback contract",
+        "falls back honestly when ingredient spotlights are unavailable"
+      ],
+      "pwa-service-worker.test.ts": [
+        "serves the branded offline fallback and standalone manifest metadata",
+        "pwa service worker regressions"
+      ],
+      "remy-communication-approval-guardrails.test.ts": [
+        "public Remy communication blocks private ChefFlow facts before approval"
+      ],
+      "remy-stream-runtime.test.ts": ["greeting fast path stays deterministic and context-free"],
+      "request-auth-context.test.ts": [
+        "middleware auth context still requires the authenticated sentinel"
+      ],
+      "runtime-log-regressions.test.ts": [
+        "uses the corrected finance and client dashboard columns",
+        "uses name in receipt-library client joins",
+        "ships follow-up migrations for collab recursion and prep-block drift",
+        "Runtime log regression guards"
+      ],
+      "security-trust-reset.test.ts": [
+        "report-actions uses requireChef for tenant scoping",
+        "raffle-actions uses requireChef for tenant scoping",
+        "requirePro calls requireChef internally (session-based, not input-based)"
+      ],
+      "settings-readability.test.ts": ["settings hub cards keep contrast-forward text tokens"],
+      "staff-trust-delegation-read-model.test.ts": [
+        "summarizes collaborator trust without leaking private assignment facts",
+        "Staff Trust and Delegation read model"
+      ],
+      "surface-completeness.test.ts": [
+        "surface completeness audit passes core structural checks",
+        "surface completeness audit exposes surface mode declarations"
+      ],
+      "waiting-radar.test.ts": [
+        "collects action-center waiting items with canonical proof links",
+        "collects operating-loop waiting state without mutating source work",
+        "turns waiting without follow-up into an explicit contract risk",
+        "suppresses snoozed work until the quiet period is due soon",
+        "collects explicit payment, vendor, and system source shapes",
+        "ranks overdue and high-risk waiting ahead of normal future follow-ups",
+        "summarizes empty states separately for no source data and no waiting items",
+        "summarizes missing follow-up as first-class waiting pressure",
+        "waiting radar collectors"
+      ],
+      "zapier-subscribe.route.test.ts": [
+        "zapier subscribe rejects localhost webhook targets before any database write",
+        "zapier subscribe stores the normalized webhook URL for valid targets"
+      ]
+    },
+    "criticalTests": "success",
+    "routeGate": {
+      "tests": 40,
+      "pass": 40,
+      "fail": 0
+    },
+    "dependencyAudit": {
+      "total": 79,
+      "critical": 1
+    },
+    "lineBudget": "failure",
+    "build": "skipped: prerequisite gate failure",
+    "smoke": "skipped: prerequisite gate failure"
+  }
+}

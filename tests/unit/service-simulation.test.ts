@@ -50,6 +50,7 @@ function buildPanelState(
 
 function makeEarlyStageContext(): ServiceSimulationContext {
   return {
+    allergenConflicts: { checked: false, hasConflicts: false, conflicts: [], checkedAt: null },
     referenceDate: '2026-04-22',
     event: {
       id: 'event-early',
@@ -153,6 +154,7 @@ function makeEarlyStageContext(): ServiceSimulationContext {
 
 function makeConfirmedContext(): ServiceSimulationContext {
   return {
+    allergenConflicts: { checked: false, hasConflicts: false, conflicts: [], checkedAt: null },
     referenceDate: '2026-04-22',
     event: {
       id: 'event-confirmed',
@@ -264,6 +266,35 @@ function makeConfirmedContext(): ServiceSimulationContext {
 }
 
 describe('service simulation engine', () => {
+  it('keeps unchecked or conflicting allergen evidence blocking', () => {
+    const context = makeConfirmedContext()
+    const unchecked = buildServiceSimulation(context).proofs.find(
+      (proof) => proof.id === 'allergen_safety'
+    )!
+    assert.equal(unchecked.status, 'unverified')
+    assert.equal(unchecked.blocking, true)
+
+    context.allergenConflicts = {
+      checked: true,
+      hasConflicts: true,
+      conflicts: [{ allergen: 'sesame', severity: 'severe', menuItem: 'salad' }],
+      checkedAt: '2026-04-22T12:00:00.000Z',
+    }
+    const conflicting = buildServiceSimulation(context).proofs.find(
+      (proof) => proof.id === 'allergen_safety'
+    )!
+    assert.equal(conflicting.status, 'unverified')
+    assert.equal(conflicting.blocking, true)
+    assert.match(conflicting.sourceOfTruth, /CONFLICT: sesame/)
+
+    context.allergenConflicts.hasConflicts = false
+    context.allergenConflicts.conflicts = []
+    const checked = buildServiceSimulation(context).proofs.find(
+      (proof) => proof.id === 'allergen_safety'
+    )!
+    assert.equal(checked.status, 'verified')
+  })
+
   it('keeps downstream phases waiting when early-stage truth is missing', () => {
     const context = makeEarlyStageContext()
     const simulation = buildServiceSimulation(context)
