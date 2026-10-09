@@ -442,7 +442,9 @@ export async function generateShoppingList(input: {
       if (canConvert(rResult.unit, next.unit, density)) {
         rResult = addQuantities(rResult.quantity, rResult.unit, next.qty, next.unit, density)
       } else {
-        rResult.quantity += next.qty
+        throw new Error(
+          `Cannot combine ${item.ingredientName} quantities in ${rResult.unit} and ${next.unit}. Use compatible units in the linked recipes.`
+        )
       }
     }
     item.recipeQty = rResult.quantity
@@ -457,7 +459,9 @@ export async function generateShoppingList(input: {
       if (canConvert(bResult.unit, next.unit, density)) {
         bResult = addQuantities(bResult.quantity, bResult.unit, next.qty, next.unit, density)
       } else {
-        bResult.quantity += next.qty
+        throw new Error(
+          `Cannot combine ${item.ingredientName} quantities in ${bResult.unit} and ${next.unit}. Use compatible units in the linked recipes.`
+        )
       }
     }
     item.totalRequired = bResult.quantity

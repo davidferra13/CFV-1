@@ -367,7 +367,9 @@ export async function generateGroceryList(eventId: string): Promise<GroceryListD
         if (canConvert(result.unit, next.unit, density)) {
           result = addQuantities(result.quantity, result.unit, next.qty, next.unit, density)
         } else {
-          result.quantity += next.qty
+          throw new Error(
+            `Cannot combine ${entry.ingredientName} quantities in ${result.unit} and ${next.unit}. Use compatible units in the linked recipes.`
+          )
         }
       }
       recipeQty = result.quantity
@@ -387,7 +389,9 @@ export async function generateGroceryList(eventId: string): Promise<GroceryListD
         if (canConvert(result.unit, next.unit, density)) {
           result = addQuantities(result.quantity, result.unit, next.qty, next.unit, density)
         } else {
-          result.quantity += next.qty
+          throw new Error(
+            `Cannot combine ${entry.ingredientName} quantities in ${result.unit} and ${next.unit}. Use compatible units in the linked recipes.`
+          )
         }
       }
       totalQty = result.quantity

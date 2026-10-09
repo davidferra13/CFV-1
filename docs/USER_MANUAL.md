@@ -1,5 +1,13 @@
 # ChefFlow User Manual
 
+## Shopping quantities - pending release
+
+Shopping quantities combine only when their units are compatible or ChefFlow has an ingredient density for the weight/volume conversion. Counts and unspecified container sizes are not converted into weights.
+
+If a linked recipe uses incompatible measurements, correct the units in the recipes and generate the list again. Initial shopping and print-page failures use the existing error screen and retry control; they must not appear as an empty list with a $0 estimate. An event list or a regenerated list reports the calculation error through its existing controls.
+
+This behavior is covered by source-level regression tests. Live authenticated verification and release are still pending; see [the delivery record](recovery/grocery-unit-integrity-20261001.md).
+
 > **For:** Chefs, clients, and anyone using ChefFlow
 > **Last updated:** 2026-04-24
 > **App:** app.cheflowhq.com

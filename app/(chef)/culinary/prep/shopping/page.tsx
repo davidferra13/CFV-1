@@ -34,15 +34,8 @@ export default async function ConsolidatedShoppingPage({ searchParams }: PagePro
   const eventIds = params?.eventIds ? params.eventIds.split(',').filter(Boolean) : undefined
 
   const [initialResult, initialEvents] = await Promise.all([
-    generateShoppingList({ startDate, endDate, eventIds }).catch(() => ({
-      startDate,
-      endDate,
-      items: [],
-      totalEstimatedCostCents: 0,
-      shortageCount: 0,
-      incompleteRecipes: [],
-    })),
-    getUpcomingEventsForShopping({ startDate, endDate }).catch(() => []),
+    generateShoppingList({ startDate, endDate, eventIds }),
+    getUpcomingEventsForShopping({ startDate, endDate }),
   ])
 
   return (
