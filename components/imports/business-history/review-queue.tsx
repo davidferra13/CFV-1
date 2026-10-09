@@ -69,10 +69,7 @@ export function BusinessHistoryReviewQueue({ findings }: { findings: BusinessHis
 }
 
 function FindingReviewCard({ finding }: { finding: BusinessHistoryFinding }) {
-  const approveLabel =
-    finding.category === 'inquiry' || finding.category === 'existing_thread'
-      ? 'Approve as inquiry'
-      : 'Mark reviewed'
+  const canImportInquiry = finding.category === 'inquiry' || finding.category === 'existing_thread'
 
   return (
     <div className="rounded-lg border border-stone-800 bg-stone-900 p-4">
@@ -116,12 +113,16 @@ function FindingReviewCard({ finding }: { finding: BusinessHistoryFinding }) {
               Source
             </a>
           )}
-          <form action={approveBusinessHistoryFinding}>
-            <input type="hidden" name="findingId" value={finding.id} />
-            <button className="rounded-md bg-brand-600 px-3 py-1.5 text-xs font-medium text-white hover:bg-brand-500">
-              {approveLabel}
-            </button>
-          </form>
+          {canImportInquiry ? (
+            <form action={approveBusinessHistoryFinding}>
+              <input type="hidden" name="findingId" value={finding.id} />
+              <button className="rounded-md bg-brand-600 px-3 py-1.5 text-xs font-medium text-white hover:bg-brand-500">
+                Approve as inquiry
+              </button>
+            </form>
+          ) : (
+            <span className="px-3 py-1.5 text-xs text-amber-400">Needs mapping before import</span>
+          )}
           <form action={dismissBusinessHistoryFinding}>
             <input type="hidden" name="findingId" value={finding.id} />
             <button className="rounded-md border border-stone-700 px-3 py-1.5 text-xs font-medium text-stone-300 hover:bg-stone-800">

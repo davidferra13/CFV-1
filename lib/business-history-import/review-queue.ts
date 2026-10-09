@@ -104,6 +104,10 @@ export function findDuplicateHints(
 
 export function mapGmailFindingRow(row: any): BusinessHistoryFinding {
   const category = (row.classification || 'inquiry') as BusinessHistoryFindingCategory
+  const imported =
+    row.status === 'imported' &&
+    Boolean(row.imported_inquiry_id) &&
+    (category === 'inquiry' || category === 'existing_thread')
   return {
     id: row.id,
     source: 'gmail',
@@ -114,7 +118,7 @@ export function mapGmailFindingRow(row: any): BusinessHistoryFinding {
     category,
     proposedDestination: getProposedDestinationForCategory(category),
     confidence: row.confidence || 'low',
-    status: row.status || 'pending',
+    status: row.status === 'dismissed' ? 'dismissed' : imported ? 'imported' : 'pending',
     summary: row.subject || row.ai_reasoning || row.body_preview || 'Untitled email finding',
     detail: row.body_preview || null,
     fromAddress: row.from_address || null,

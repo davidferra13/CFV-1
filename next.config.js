@@ -49,6 +49,8 @@ const nextConfig = {
   // enough time on resource-constrained build environments (default 60s).
   staticPageGenerationTimeout: 180,
   experimental: {
+    // Background jobs and production safety checks are independent of Sentry.
+    instrumentationHook: true,
     // Large shared icon/chart barrels otherwise dominate the module graph during production builds.
     optimizePackageImports: ['@phosphor-icons/react', 'recharts', 'lucide-react', 'date-fns'],
     // Next 14 still uses the experimental flag for keeping server-only SDKs out of the
@@ -678,7 +680,7 @@ const nextConfig = {
 }
 
 // Sentry source-map upload and performance instrumentation.
-// withSentryConfig is a no-op if SENTRY_DSN is not set.
+// Activate build hooks only when runtime reporting or source-map upload is configured.
 // Gracefully skip if @sentry/nextjs is not installed.
 let withSentryConfig
 try {
@@ -688,6 +690,8 @@ try {
 }
 
 const sentryConfig = {
+  // Verification builds must not send build metadata to Sentry.
+  telemetry: false,
   // Upload source maps to Sentry during build (requires SENTRY_ORG + SENTRY_PROJECT in env).
   // Disable source map upload in development or when Sentry is not configured.
   silent: true,
@@ -702,6 +706,12 @@ const sentryConfig = {
   disableClientWebpackPlugin: true,
 }
 
+const sentryConfigured = Boolean(
+  process.env.SENTRY_DSN || process.env.NEXT_PUBLIC_SENTRY_DSN || process.env.SENTRY_AUTH_TOKEN
+)
+
 module.exports = withBundleAnalyzer(
-  withSentryConfig ? withSentryConfig(withPWA(nextConfig), sentryConfig) : withPWA(nextConfig)
+  withSentryConfig && sentryConfigured
+    ? withSentryConfig(withPWA(nextConfig), sentryConfig)
+    : withPWA(nextConfig)
 )

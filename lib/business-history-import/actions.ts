@@ -16,10 +16,11 @@ import {
 import type { BusinessHistoryFinding, BusinessHistorySummary } from './types'
 
 async function countTenantRows(db: any, table: string, tenantId: string): Promise<number> {
-  const { count } = await db
+  const { count, error } = await db
     .from(table)
     .select('id', { count: 'exact', head: true })
     .eq('tenant_id', tenantId)
+  if (error) throw new Error(error.message)
   return count ?? 0
 }
 
@@ -68,7 +69,7 @@ export async function getBusinessHistoryImportDashboard(): Promise<{
       .eq('tenant_id', tenantId)
       .order('event_date', { ascending: false })
       .limit(500),
-    getHistoricalScanStatus().catch(() => null),
+    getHistoricalScanStatus(),
     db
       .from('import_logs')
       .select('id')
@@ -82,6 +83,9 @@ export async function getBusinessHistoryImportDashboard(): Promise<{
     countTenantRows(db, 'ledger_entries', tenantId),
   ])
 
+  for (const result of [clients, events, importLogs]) {
+    if (result.error) throw new Error(result.error.message)
+  }
   const findings = buildUnifiedReviewQueue({
     gmailRows,
     existingClients:
@@ -140,20 +144,13 @@ export async function approveBusinessHistoryFinding(formData: FormData): Promise
     .single()
 
   if (error || !row) throw new Error('Finding not found')
+  if (row.status === 'dismissed') throw new Error('Finding has been dismissed')
   const finding = mapGmailFindingRow(row)
 
   if (finding.category === 'inquiry' || finding.category === 'existing_thread') {
     await importHistoricalFinding(finding.id)
   } else {
-    await db
-      .from('gmail_historical_findings')
-      .update({
-        status: 'imported',
-        reviewed_at: new Date().toISOString(),
-        ai_reasoning: `${row.ai_reasoning ?? ''}\nReviewed as ${finding.category}; ready for ${finding.proposedDestination} mapping.`,
-      })
-      .eq('id', finding.id)
-      .eq('tenant_id', user.tenantId!)
+    throw new Error('This finding needs destination mapping before it can be imported')
   }
 
   revalidatePath('/imports/business-history')
@@ -178,6 +175,10 @@ export async function deleteBusinessHistoryFindings(formData: FormData): Promise
 
   if (status === 'dismissed' || status === 'imported') {
     query = query.eq('status', status)
+    if (status === 'imported')
+      query = query
+        .in('classification', ['inquiry', 'existing_thread'])
+        .not('imported_inquiry_id', 'is', null)
   } else {
     throw new Error('Only dismissed or imported staged findings can be deleted from this control')
   }
